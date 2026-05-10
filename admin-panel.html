@@ -322,6 +322,26 @@
         <div class="card">
           <div class="card-title">Site ayarları</div>
           <div class="form-group">
+            <label>Site adı (logo yanı)</label>
+            <input type="text" id="s-site-name" placeholder="isteBul.com" />
+          </div>
+          <div class="form-group">
+            <label>Site alt başlığı</label>
+            <input type="text" id="s-site-subtitle" placeholder="Yapay zeka destekli karar platformu" />
+          </div>
+          <div class="form-group">
+            <label>Hero eyebrow (küçük üst yazı)</label>
+            <input type="text" id="s-hero-eyebrow" placeholder="Türkiye için AI karar merkezi" />
+          </div>
+          <div class="form-group">
+            <label>Ana başlık</label>
+            <input type="text" id="s-hero-title" placeholder="Satın almadan önce doğru kararı görün" />
+          </div>
+          <div class="form-group">
+            <label>Ana açıklama</label>
+            <textarea id="s-hero-desc" placeholder="Araç, ev ve tatil için..."></textarea>
+          </div>
+          <div class="form-group">
             <label>Site başlığı</label>
             <input type="text" id="s-title" placeholder="isteBu — Akıllı Seçim Platformu" />
           </div>
@@ -533,6 +553,11 @@ async function saveSettings() {
     facebook: document.getElementById('s-facebook').value,
     linkedin: document.getElementById('s-linkedin').value,
     title: document.getElementById('s-title').value,
+    'site-name': document.getElementById('s-site-name').value,
+    'site-subtitle': document.getElementById('s-site-subtitle').value,
+    'hero-eyebrow': document.getElementById('s-hero-eyebrow').value,
+    'hero-title': document.getElementById('s-hero-title').value,
+    'hero-desc': document.getElementById('s-hero-desc').value,
     description: document.getElementById('s-description').value,
     maintenance: document.getElementById('s-maintenance').checked ? 'true' : 'false'
   };
