@@ -2,7 +2,7 @@ const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const root = path.resolve(__dirname, '..');
+const root = process.cwd();
 const ignoredDirs = new Set(['node_modules', '.git', 'recovered', 'dist']);
 const requiredAssets = [
   'assets/images/placeholder.svg',
