@@ -3,6 +3,7 @@ import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
 import { state } from './core/state.js';
+import { loadCMS } from './core/cms.js';
 import { supabase } from './core/supabase.js';
 import API from './core/api.js';
 import { monitoring } from './core/monitoring.js';
@@ -3448,6 +3449,7 @@ class App {
 
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    loadCMS();
     window.app = new App();
 });
 
