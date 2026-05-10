@@ -3,7 +3,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const esbuild = require('esbuild');
 
-const root = path.resolve(__dirname, '..');
+const root = process.cwd();
 const dist = path.join(root, 'dist');
 const staticRoots = ['assets', 'data'];
 const staticFiles = ['index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml'];
