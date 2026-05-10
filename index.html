@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>isteBu - AI Destekli Karar Asistanı</title>
+    <meta name="description" content="Araç, ev ve tatil kararlarınız için soru-cevap akışı, toplam maliyet hesabı, kredi karşılaştırması ve satın alma yönlendirmeleri.">
+    <meta name="theme-color" content="#2563eb" id="theme-color-meta">
+    <meta property="og:title" content="isteBu - AI Destekli Karar Asistanı">
+    <meta property="og:description" content="Araç, ev ve tatil için ihtiyacınızı anlayan, toplam maliyeti ve finansmanı gösteren karar destek platformu.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://istebul.com/">
+    <meta property="og:image" content="https://istebul.com/assets/images/og-image.svg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="isteBu - AI Destekli Karar Asistanı">
+    <meta name="twitter:description" content="Araç, ev ve tatil seçeneklerini maliyet, kredi ve satın alma kanallarıyla birlikte değerlendirin.">
+    <meta name="twitter:image" content="https://istebul.com/assets/images/og-image.svg">
+    <link rel="canonical" href="https://istebul.com/">
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="assets/icons/favicon-192.png">
+    <link rel="icon" type="image/png" href="assets/icons/favicon-192.png">
+    <script src="/env.js"></script>
+    <script>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem('istebu_theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = savedTheme || (prefersDark ? 'dark' : 'light');
+                document.documentElement.dataset.theme = theme;
+                document.documentElement.style.colorScheme = theme;
+            } catch (error) {
+                document.documentElement.dataset.theme = 'light';
+                document.documentElement.style.colorScheme = 'light';
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="top-bar" id="announcement-ticker">
+        <p><strong>Bugün:</strong> Kullanıcılar araç, ev ve tatil kararları için toplam maliyet ve kredi karşılaştırması yaptı.</p>
+    </div>
+    <!-- Navigation -->
+    <nav id="main-nav" class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>isteBu</h1>
+                <span class="nav-subtitle">Akıllı seçim platformu</span>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="/" class="nav-link active">Ana Sayfa</a>
+                <a href="/karar-asistani" class="nav-link">AI Asistan</a>
+                <a href="/ilanlar" class="nav-link">İlanlar</a>
+                <a href="/karsilastir" class="nav-link">Karşılaştır <span id="comparison-count" class="nav-count" hidden>0</span></a>
+                <a href="#how-it-works" class="nav-link">Nasıl Çalışır</a>
+                <a href="/favoriler" class="nav-link">Favoriler <span id="favorites-count" class="nav-count" hidden>0</span></a>
+                <a href="/gecmis" class="nav-link">Geçmiş</a>
+                <a href="/messages" class="nav-link" id="nav-messages" style="display: none;">Mesajlar</a>
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-btn">Hizmetler <i data-lucide="chevron-down"></i></button>
+                    <div class="nav-dropdown-content" id="category-menu">
+                        <a href="/ilanlar" data-category="arac">Araç İlanları</a>
+                        <a href="/ilanlar" data-category="ev">Ev İlanları</a>
+                        <a href="/ilanlar" data-category="tatil">Tatil İlanları</a>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-controls">
+                <div class="nav-auth" id="nav-auth">
+                    <button id="login-btn" class="btn btn-outline">Giriş Yap</button>
+                    <button id="register-btn" class="btn btn-primary">Üye Ol</button>
+                </div>
+                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Koyu modu aç" aria-pressed="false" title="Tema değiştir">
+                    <i data-lucide="moon"></i>
+                    <span class="sr-only">Koyu modu aç</span>
+                </button>
+            </div>
+            <div class="nav-user" id="nav-user" style="display: none;">
+                <div class="user-menu">
+                    <button class="user-menu-btn">
+                        <i data-lucide="user"></i>
+                        <span id="user-name"></span>
+                    </button>
+                    <div class="user-dropdown">
+                        <a href="/profil">Profilim</a>
+                        <a href="#" data-my-listings>İlanlarım</a>
+                        <a href="/admin" id="admin-link" style="display: none;">Admin Panel</a>
+                        <hr>
+                        <a href="#" id="logout-btn">Çıkış Yap</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <!-- Home Section -->
+        <section id="home" class="hero-section">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <span class="hero-eyebrow"><i data-lucide="radar"></i> Türkiye için AI karar merkezi</span>
+                    <h1>Satın almadan önce doğru kararı görün</h1>
+                    <p>Araç, ev ve tatil için birkaç soruya cevap verin; isteBu size en uygun seçenekleri, toplam maliyeti, kredi ihtimalini ve nereden alabileceğinizi tek sonuç ekranında sunsun.</p>
+                    <div class="hero-badges">
+                        <span>İhtiyaç analizi</span>
+                        <span>Toplam maliyet hesabı</span>
+                        <span>Kredi karşılaştırması</span>
+                    </div>
+                    <div class="hero-actions">
+                        <a href="/karar-asistani" class="btn btn-primary">
+                            <i data-lucide="sparkles"></i> Bana en uygununu bul
+                        </a>
+                        <a href="/ilanlar" class="btn btn-outline">
+                            <i data-lucide="compass"></i> Piyasayı keşfet
+                        </a>
+                    </div>
+                    <div class="hero-search">
+                        <div class="search-box">
+                            <input type="text" placeholder="Model, semt veya tatil rotası arayın" id="search-input">
+                            <button class="btn btn-primary" id="search-btn">
+                                <i data-lucide="search"></i> Ara
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hero-proof" aria-label="Platform kapsamı">
+                        <span><strong>81</strong> il</span>
+                        <span><strong>973</strong> ilçe</span>
+                        <span><strong>148+</strong> model</span>
+                    </div>
+                    <div class="hero-categories" id="hero-categories">
+                        <button type="button" class="category-card category-card-arac" data-assistant-start="arac">
+                            <span class="category-visual category-visual-arac" aria-hidden="true">
+                                <i data-lucide="car-front"></i>
+                            </span>
+                            <span>Araç</span>
+                        </button>
+                        <button type="button" class="category-card category-card-ev" data-assistant-start="ev">
+                            <span class="category-visual category-visual-ev" aria-hidden="true">
+                                <i data-lucide="house"></i>
+                            </span>
+                            <span>Ev</span>
+                        </button>
+                        <button type="button" class="category-card category-card-tatil" data-assistant-start="tatil">
+                            <span class="category-visual category-visual-tatil" aria-hidden="true">
+                                <i data-lucide="plane-takeoff"></i>
+                            </span>
+                            <span>Tatil</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-image decision-preview" aria-label="Karar sonucu önizlemesi">
+                    <div class="preview-toolbar">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="preview-tabs" role="tablist" aria-label="Önizleme kategorisi">
+                        <button type="button" class="active" role="tab" aria-selected="true" data-preview-category="arac">Araç</button>
+                        <button type="button" role="tab" aria-selected="false" data-preview-category="ev">Ev</button>
+                        <button type="button" role="tab" aria-selected="false" data-preview-category="tatil">Tatil</button>
+                    </div>
+                    <div class="preview-score-card">
+                        <div>
+                            <span class="preview-kicker">Önerilen seçenek</span>
+                            <h3 data-preview-title>Hibrit Kompakt SUV</h3>
+                            <p data-preview-note>Yakıt, kasko ve bakım maliyetleriyle dengeli aile aracı.</p>
+                        </div>
+                        <strong data-preview-score>92</strong>
+                    </div>
+                    <div class="preview-metrics">
+                        <div data-preview-metric><span>Yıllık maliyet</span><strong>114.000 ₺</strong></div>
+                        <div data-preview-metric><span>Aylık kredi</span><strong>76.820 ₺</strong></div>
+                        <div data-preview-metric><span>Eşleşme</span><strong>%92</strong></div>
+                    </div>
+                    <div class="preview-bars">
+                        <div data-preview-bar-row><span>Yakıt</span><i style="width: 62%"></i></div>
+                        <div data-preview-bar-row><span>Sigorta</span><i style="width: 48%"></i></div>
+                        <div data-preview-bar-row><span>Bakım</span><i style="width: 34%"></i></div>
+                    </div>
+                    <div class="preview-source-strip" data-preview-sources>
+                        <a href="https://www.sahibinden.com/otomobil" target="_blank" rel="noopener noreferrer" data-preview-source>Sahibinden</a>
+                        <a href="https://www.hangikredi.com/kredi/ihtiyac-kredisi" target="_blank" rel="noopener noreferrer" data-preview-source>Hangikredi</a>
+                        <a href="https://www.sigortam.net/" target="_blank" rel="noopener noreferrer" data-preview-source>Sigorta</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="trust" class="trust-section">
+            <div class="container trust-grid">
+                <div class="trust-card">
+                    <h3>1.200+</h3>
+                    <p>Başarılı karşılaştırma yapıldı</p>
+                </div>
+                <div class="trust-card">
+                    <h3>%94</h3>
+                    <p>Kullanıcı memnuniyeti</p>
+                </div>
+                <div class="trust-card">
+                    <h3>23</h3>
+                    <p>Bugün karşılaştırılan araç</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="how-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Nasıl çalışır?</h2>
+                    <p>Sorulara cevap verin, seçenekleri maliyetleriyle görün, kredi ve satın alma kanallarını karşılaştırın.</p>
+                </div>
+                <div class="how-grid">
+                    <div class="how-step">
+                        <span class="step-number">1</span>
+                        <h3>Kategori ve ihtiyacı seçin</h3>
+                        <p>Araç, daire, yazlık, müstakil ev, villa veya tatil planınız için beklentinizi netleştirin.</p>
+                    </div>
+                    <div class="how-step">
+                        <span class="step-number">2</span>
+                        <h3>Gizli maliyetleri görün</h3>
+                        <p>Yakıt, kasko, sigorta, bakım, aidat, vergi, konaklama ve ulaşım gibi kalemleri birlikte değerlendirin.</p>
+                    </div>
+                    <div class="how-step">
+                        <span class="step-number">3</span>
+                        <h3>Karar ekranına geçin</h3>
+                        <p>En iyi seçenekleri, banka kredi simülasyonlarını ve nereden alabileceğinizi tek ekranda görün.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="decision-sample" class="decision-section">
+            <div class="container decision-card">
+                <div class="decision-header">
+                    <h2>Sonuç ekranı nasıl görünür?</h2>
+                    <p>Örnek araç kararında sistem yalnızca fiyatı değil, yıllık sahip olma maliyetini de hesaba katar.</p>
+                </div>
+                <div class="decision-body">
+                    <div class="decision-pill">Hibrit Kompakt SUV</div>
+                    <p class="decision-text">“Şehir içi kullanım ve aile ihtiyacı için yakıt, kasko, sigorta ve bakım dengesi en güçlü seçenek.”</p>
+                    <div class="decision-meta">
+                        <span>Yıllık yakıt: 52.000 ₺</span>
+                        <span>Kasko + sigorta: 44.000 ₺</span>
+                        <span>Bakım: 18.000 ₺</span>
+                    </div>
+                    <div class="decision-actions">
+                        <a href="/karar-asistani" class="btn btn-primary">Kendi kararımı hesapla</a>
+                        <a href="/ilanlar" class="btn btn-outline">Piyasadaki benzerleri incele</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="user-guide" class="guide-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Nasıl kullanılır?</h2>
+                    <p>İlk karardan ilan yayınlamaya kadar temel kullanıcı turu.</p>
+                </div>
+                <div class="guide-grid">
+                    <article class="guide-card">
+                        <span>1</span>
+                        <h3>Giriş yapın veya üye olun</h3>
+                        <p>Favoriler, geçmiş ve ilan yönetimi için Supabase güvenli oturumunu kullanın.</p>
+                    </article>
+                    <article class="guide-card">
+                        <span>2</span>
+                        <h3>İlan ekleyin</h3>
+                        <p>Başlık, açıklama, fiyat, kategori ve görselleri ekleyip ilanınızı yayınlayın.</p>
+                    </article>
+                    <article class="guide-card">
+                        <span>3</span>
+                        <h3>Arayın ve karşılaştırın</h3>
+                        <p>Arama filtreleriyle seçenekleri daraltın, favorilere veya karşılaştırmaya ekleyin.</p>
+                    </article>
+                    <article class="guide-card">
+                        <span>4</span>
+                        <h3>Karar asistanını kullanın</h3>
+                        <p>Araç, ev veya tatil sorularını yanıtlayarak toplam maliyet ve kredi simülasyonunu görün.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="decision-assistant" class="assistant-section" style="display:none;">
+            <div class="container">
+                <div class="section-header assistant-header">
+                    <div>
+                        <h2>Akıllı karar akışı</h2>
+                        <p>Satın almak veya rezervasyon yapmak istediğiniz alanı seçin. Cevaplarınıza göre öneri, toplam maliyet, kredi karşılaştırması ve satın alma kanalları hazırlanır.</p>
+                    </div>
+                </div>
+                <div class="assistant-shell">
+                    <aside class="assistant-category-rail" id="assistant-category-rail" aria-label="Karar kategorileri"></aside>
+                    <div class="assistant-workspace">
+                        <div class="assistant-progress" id="assistant-progress"></div>
+                        <form id="decision-assistant-form" class="assistant-form">
+                            <div id="assistant-questions"></div>
+                            <div class="assistant-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-lucide="sparkles"></i> Sonucu hesapla
+                                </button>
+                                <button type="button" class="btn btn-outline" data-assistant-reset>
+                                    <i data-lucide="rotate-ccw"></i> Temizle
+                                </button>
+                            </div>
+                        </form>
+                        <div id="assistant-results" class="assistant-results" aria-live="polite"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section id="categories" class="categories-section">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <h2>Popüler Kategoriler</h2>
+                        <p>Araç, ev ve tatil kararları için aynı disiplinle çalışan, konum ve bütçe odaklı ana akışlar.</p>
+                    </div>
+                </div>
+                <div class="categories-grid" id="categories-grid">
+                    <!-- Categories will be loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Listings Section -->
+        <section id="ilanlar" class="listings-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 id="active-category-label">Son İlanlar</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-outline" id="filter-btn">
+                            <i data-lucide="filter"></i> Filtrele
+                        </button>
+                        <button class="btn btn-primary" id="add-listing-btn">
+                            <i data-lucide="plus"></i> İlan Ver
+                        </button>
+                    </div>
+                </div>
+                <form id="listing-filter-form" class="filter-panel" hidden>
+                    <div class="form-grid marketplace-filter-grid">
+                        <div class="form-group">
+                            <label for="filter-category">Kategori</label>
+                            <select id="filter-category" name="category">
+                                <option value="">Tümü</option>
+                                <option value="arac">Araç</option>
+                                <option value="ev">Ev</option>
+                                <option value="tatil">Tatil</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-province">İl</label>
+                            <select id="filter-province" name="province">
+                                <option value="">Türkiye geneli</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-district">İlçe <span>opsiyonel</span></label>
+                            <select id="filter-district" name="district" disabled>
+                                <option value="">Tüm ilçeler</option>
+                            </select>
+                        </div>
+                        <div class="form-group" data-filter-scope="arac" hidden>
+                            <label for="filter-vehicle-brand">Araç markası</label>
+                            <select id="filter-vehicle-brand" name="vehicle_brand">
+                                <option value="">Tüm markalar</option>
+                            </select>
+                        </div>
+                        <div class="form-group" data-filter-scope="ev" hidden>
+                            <label for="filter-property-type">Emlak tipi</label>
+                            <select id="filter-property-type" name="property_type">
+                                <option value="">Tüm ev tipleri</option>
+                            </select>
+                        </div>
+                        <div class="form-group" data-filter-scope="tatil" hidden>
+                            <label for="filter-vacation-type">Tatil profili</label>
+                            <select id="filter-vacation-type" name="vacation_type">
+                                <option value="">Tüm tatil profilleri</option>
+                                <option value="familyResort">Aile / her şey dahil</option>
+                                <option value="luxury">Lüks / premium</option>
+                                <option value="nature">Doğa / sakinlik</option>
+                                <option value="culture">Kültür / deneyim</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-min-price">Minimum fiyat</label>
+                            <input type="number" id="filter-min-price" name="min_price" min="0" step="1000" placeholder="Alt sınır yok">
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-max-price">Maksimum fiyat</label>
+                            <input type="number" id="filter-max-price" name="max_price" min="0" step="1000" placeholder="Üst sınır yok">
+                        </div>
+                        <div class="form-group full-span">
+                            <label for="filter-search">Anahtar kelime</label>
+                            <input type="text" id="filter-search" name="search" placeholder="Toyota, Kadıköy, villa, Karadeniz, her şey dahil">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary"><i data-lucide="sliders-horizontal"></i> Uygula</button>
+                        <button type="button" class="btn btn-outline" id="clear-filter-btn"><i data-lucide="x"></i> Temizle</button>
+                    </div>
+                </form>
+                <div id="active-filter-summary" class="active-filter-summary" hidden></div>
+                <div id="marketplace-results-toolbar" class="marketplace-results-toolbar" aria-live="polite">
+                    <div class="marketplace-result-copy">
+                        <span id="listing-result-count">0 sonuç</span>
+                        <small id="listing-result-context">AI skoruna göre listeleniyor</small>
+                    </div>
+                    <div class="marketplace-result-controls">
+                        <label for="listing-sort">Sırala</label>
+                        <select id="listing-sort" name="listing_sort">
+                            <option value="aiScore">AI öneri skoru</option>
+                            <option value="newest">En yeni</option>
+                            <option value="priceAsc">Fiyat artan</option>
+                            <option value="priceDesc">Fiyat azalan</option>
+                        </select>
+                        <div class="listing-view-toggle" aria-label="İlan görünümü">
+                            <button type="button" class="active" data-listing-view="grid" aria-pressed="true" title="Kart görünümü"><i data-lucide="layout-grid"></i></button>
+                            <button type="button" data-listing-view="compact" aria-pressed="false" title="Kompakt görünüm"><i data-lucide="rows-3"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="listings-grid" id="listings-grid">
+                    <!-- Listings will be loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <section id="listing-detail" class="listing-detail-section" style="display: none; padding: 4rem 0; background: var(--background-color);">
+            <div class="container">
+                <div class="section-header">
+                    <h2>İlan Detayı</h2>
+                    <p>Seçtiğiniz ilanın ayrıntılarını burada görebilirsiniz.</p>
+                </div>
+                <div id="listing-detail-content">
+                    <div class="empty-state">
+                        <i data-lucide="info"></i>
+                        <h3>İlan seçilmedi</h3>
+                        <p>Bir ilan seçerek detaylarını inceleyebilirsiniz.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="compare" class="compare-section" style="display:none;">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <h2>Karşılaştırma Merkezi</h2>
+                        <p>Seçtiğiniz araç, ev veya tatil seçeneklerini fiyat, toplam maliyet, kredi ve AI skoruyla yan yana inceleyin.</p>
+                    </div>
+                </div>
+                <div id="comparison-content" class="comparison-content">
+                    <div class="empty-state">
+                        <i data-lucide="columns-3"></i>
+                        <h3>Karşılaştırma listesi boş</h3>
+                        <p>Karar sonucu veya ilan kartlarından seçenekleri karşılaştırmaya ekleyin.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="favoriler" class="favorites-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Favorileriniz</h2>
+                    <p>Beğendiğiniz ilanları tek yerde saklayın. Henüz giriş yapmadıysanız kaydederek sonra bakabilirsiniz.</p>
+                </div>
+                <div class="favorites-grid" id="favorites-grid">
+                    <div class="empty-state">
+                        <i data-lucide="heart"></i>
+                        <h3>Henüz favori ilan yok</h3>
+                        <p>Bir ilana göz atın ve kalp ikonuna basarak favorilerinize ekleyin.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="profil" class="profile-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Profilim</h2>
+                    <p>Hesabınıza ait ilanlar, favoriler ve geçmiş kararlar burada tutulur.</p>
+                </div>
+                <div class="profile-card">
+                    <h3>Hoş geldiniz!</h3>
+                    <p>Giriş yaparak profilinizi tamamlayabilir, ilan ekleyebilir ve geçmiş karşılaştırmalarınızı yönetebilirsiniz.</p>
+                    <button class="btn btn-primary" id="profile-login-btn">Giriş Yap veya Kayıt Ol</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="history" class="history-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Karar geçmişi</h2>
+                    <p>Karar ve arama geçmişiniz hesabınıza bağlı saklanır. Giriş yaptıktan sonra sonuçları tekrar açabilir veya silebilirsiniz.</p>
+                </div>
+                <div class="history-list" id="history-list">
+                    <div class="empty-state history-auth-gate">
+                        <i data-lucide="lock-keyhole"></i>
+                        <h3>Geçmiş için giriş yapın</h3>
+                        <p>Geçmiş verileri yalnızca hesabınıza bağlı görüntülenir.</p>
+                        <div class="history-auth-actions">
+                            <button type="button" class="btn btn-primary" data-history-login><i data-lucide="log-in"></i> Giriş Yap</button>
+                            <button type="button" class="btn btn-outline" data-history-register><i data-lucide="user-plus"></i> Üye Ol</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="quiz" class="quiz-section" style="display:none; padding:4rem 0; background: var(--background-color);">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Quiz</h2>
+                    <p>AI destekli ilan seçimini kolaylaştıracak hızlı quiz.</p>
+                </div>
+                <div class="quiz-card" id="quiz-content">
+                    <div class="empty-state">
+                        <i data-lucide="help-circle"></i>
+                        <h3>Quiz yükleniyor</h3>
+                        <p>Sorular yükleniyor, birazdan burada görünecek.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin" class="admin-section" style="display:none; padding:4rem 0; background: var(--surface-color);">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Admin Panel</h2>
+                    <p>Yönetici araçları ve sistem istatistikleri burada görünecek.</p>
+                </div>
+                <div class="admin-card">
+                    <p>Bu alan sadece yönetici kullanıcılar için ayrılmıştır.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="add-listing" class="add-listing-section" style="display:none; padding:4rem 0; background: var(--background-color);">
+            <div class="container">
+                <div class="section-header">
+                    <h2>İlan Ekle</h2>
+                    <p>Kendi ilanınızı hızlıca ekleyin ve AI destekli karşılaştırmaya dahil edin.</p>
+                </div>
+                <form id="add-listing-form" class="add-listing-card listing-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="listing-title">Başlık</label>
+                            <input type="text" id="listing-title" name="title" minlength="5" maxlength="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="listing-category">Kategori</label>
+                            <select id="listing-category" name="category" required>
+                                <option value="arac">Araç</option>
+                                <option value="ev">Ev</option>
+                                <option value="tatil">Tatil</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="listing-price">Fiyat</label>
+                            <input type="number" id="listing-price" name="price" min="0" max="50000000" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="listing-location">Konum</label>
+                            <input type="text" id="listing-location" name="location" maxlength="120" required>
+                        </div>
+                        <div class="form-group full-span">
+                            <label for="listing-description">Açıklama</label>
+                            <textarea id="listing-description" name="description" minlength="20" maxlength="2000" rows="6" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="listing-image-url">Görsel URL</label>
+                            <input type="url" id="listing-image-url" name="image_url" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label for="listing-external-url">Dış ilan URL</label>
+                            <input type="url" id="listing-external-url" name="external_url" placeholder="https://...">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">İlanı Yayınla</button>
+                        <button type="reset" class="btn btn-outline">Temizle</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Giriş Yap</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">E-posta</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Şifre</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary full-width">Giriş Yap</button>
+                </form>
+                <div class="modal-footer">
+                    <p>Hesabınız yok mu? <a href="#" id="switch-to-register">Üye olun</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="newsletter-card">
+                <div>
+                    <h3>Fiyat düştüğünde haber ver</h3>
+                    <p>En iyi ilanları ve AI karar önerilerini e-posta ile alın.</p>
+                </div>
+                <form id="newsletter-form" class="newsletter-form">
+                    <input type="email" id="newsletter-email" placeholder="E-posta adresinizi girin" required>
+                    <button type="submit" class="btn btn-primary">Abone Ol</button>
+                </form>
+            </div>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>isteBu</h4>
+                    <p>AI destekli seçim ve satın alma platformu</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Hızlı Bağlantılar</h4>
+                    <ul>
+                        <li><a href="#home">Ana Sayfa</a></li>
+                        <li><a href="/karar-asistani">AI Asistan</a></li>
+                        <li><a href="/ilanlar">İlanlar</a></li>
+                        <li><a href="/karsilastir">Karşılaştır</a></li>
+                        <li><a href="/gecmis">Geçmiş</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>İletişim</h4>
+                    <ul>
+                        <li><a href="mailto:info@istebul.com">info@istebul.com</a></li>
+                        <li><a href="tel:+902121234567">+90 212 123 45 67</a></li>
+                        <li><a href="mailto:privacy@istebul.com">Veri silme talebi</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="cookie-consent" id="cookie-consent" role="region" aria-label="Çerez ve analiz tercihi">
+                <p>Deneyimi iyileştirmek ve anonim kullanım metrikleri toplamak için çerez ve gizlilik dostu analytics kullanıyoruz.</p>
+                <div>
+                    <button type="button" class="btn btn-outline" data-cookie-decline>Reddet</button>
+                    <button type="button" class="btn btn-primary" data-cookie-accept>Kabul Et</button>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 isteBu. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

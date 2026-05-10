@@ -1,0 +1,174 @@
+openapi: 3.0.3
+info:
+  title: isteBu Netlify Functions API
+  version: 2.0.0
+  description: Netlify Functions üzerinden yayınlanan isteBu API uçları.
+servers:
+  - url: https://istebul.com/.netlify/functions
+  - url: http://localhost:3000/.netlify/functions
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      summary: Health check
+      security: []
+      responses:
+        '200':
+          description: Service status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: istebul
+                  timestamp:
+                    type: string
+                    format: date-time
+  /supabase-proxy/listings:
+    get:
+      summary: Aktif ilanları listeler
+      parameters:
+        - in: query
+          name: category
+          schema: { type: string, enum: [arac, ev, tatil] }
+        - in: query
+          name: search
+          schema: { type: string, maxLength: 100 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200': { description: İlan listesi }
+        '401': { description: Yetkilendirme gerekli }
+    post:
+      summary: Yeni ilan oluşturur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListingInput'
+      responses:
+        '200': { description: Oluşturulan ilan }
+        '401': { description: Yetkilendirme gerekli }
+  /supabase-proxy/listings/{id}:
+    get:
+      summary: İlan detayını getirir
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: İlan detayı }
+        '404': { description: İlan bulunamadı }
+    put:
+      summary: İlanı günceller
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListingInput'
+      responses:
+        '200': { description: Güncellenen ilan }
+        '403': { description: Yetkisiz işlem }
+    delete:
+      summary: İlanı soft-delete yapar
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Silme sonucu }
+        '403': { description: Yetkisiz işlem }
+  /supabase-proxy/profile:
+    get:
+      summary: Oturum açmış kullanıcının profilini getirir
+      responses:
+        '200': { description: Profil }
+    put:
+      summary: Profili günceller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileInput'
+      responses:
+        '200': { description: Güncellenen profil }
+  /upload-image:
+    post:
+      summary: Görsel yükler
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fileName, contentType, base64]
+              properties:
+                fileName: { type: string }
+                contentType: { type: string, enum: [image/jpeg, image/png, image/webp, image/gif] }
+                base64: { type: string }
+      responses:
+        '200': { description: Yüklenen dosya bilgisi }
+        '400': { description: Geçersiz dosya }
+  /claude-proxy:
+    post:
+      summary: AI destekli yanıt üretir
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompt]
+              properties:
+                prompt: { type: string, maxLength: 4000 }
+                context:
+                  type: object
+                  properties:
+                    type: { type: string, enum: [listing_description, pricing_advice, customer_support] }
+      responses:
+        '200': { description: AI yanıtı }
+        '429': { description: Rate limit aşıldı }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Supabase JWT
+  schemas:
+    ListingInput:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        price: { type: number }
+        currency: { type: string, default: TRY }
+        location: { type: string }
+        images: { type: array, items: { type: string } }
+        category: { type: string, enum: [arac, ev, tatil] }
+        status: { type: string }
+        tags: { type: array, items: { type: string } }
+        metadata: { type: object }
+        external_url: { type: string, format: uri }
+    ProfileInput:
+      type: object
+      properties:
+        full_name: { type: string }
+        avatar_url: { type: string, format: uri }
+        phone: { type: string }
+        location: { type: string }
+        bio: { type: string }

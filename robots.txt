@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://istebul.com/sitemap.xml
