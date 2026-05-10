@@ -535,7 +535,7 @@ async function loadSettings() {
   if (!data) return;
   const map = {};
   data.forEach(r => map[r.key] = r.value);
-  const fields = ['phone','email','address','instagram','twitter','facebook','linkedin','title','description'];
+  const fields = ['phone','email','address','instagram','twitter','facebook','linkedin','title','description','site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc'];
   fields.forEach(f => {
     const el = document.getElementById('s-' + f);
     if (el && map[f]) el.value = map[f];
