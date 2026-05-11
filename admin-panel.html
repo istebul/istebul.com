@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>isteBu — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#242424;--border:#2e2e2e;
+  --accent:#00e5a0;--accent2:#0099ff;--text:#f0f0f0;--muted:#888;
+  --danger:#ff4757;--radius:8px;
+}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;min-height:100vh;}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;width:360px;}
+.login-box .logo{display:flex;align-items:center;gap:8px;margin-bottom:24px;}
+.logo-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);}
+.login-box h1{font-size:22px;font-weight:600;margin-bottom:4px;}
+.login-box p{color:var(--muted);font-size:13px;margin-bottom:28px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;}
+.field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .15s;}
+.field input:focus{border-color:var(--accent);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:var(--radius);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:opacity .15s,transform .1s;text-decoration:none;}
+.btn:active{transform:scale(.98);}
+.btn-primary{background:var(--accent);color:#000;width:100%;}
+.btn-primary:hover{opacity:.9;}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--surface2);}
+.btn-sm{padding:6px 12px;font-size:13px;}
+#app{display:none;}
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+.sidebar-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sidebar-header span{font-weight:600;font-size:16px;}
+.sidebar-header small{font-size:11px;color:var(--accent);font-weight:500;}
+.nav{padding:12px 8px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius);color:var(--muted);cursor:pointer;transition:all .15s;font-size:13px;font-weight:500;margin-bottom:2px;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--surface2);color:var(--accent);}
+.nav-icon{font-size:16px;width:18px;text-align:center;}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border);}
+.user-info{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#000;}
+.user-email{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.main{flex:1;overflow-y:auto;}
+.page{display:none;padding:32px;max-width:900px;}
+.page.active{display:block;}
+.page-header{margin-bottom:28px;}
+.page-header h2{font-size:22px;font-weight:600;}
+.page-header p{color:var(--muted);font-size:13px;margin-top:4px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;}
+.card-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;}
+.form-group input,.form-group textarea,.form-group select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .15s;}
+.form-group textarea{resize:vertical;min-height:100px;}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--accent);}
+.actions{display:flex;gap:8px;margin-top:20px;}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-green{background:rgba(0,229,160,.15);color:var(--accent);}
+.badge-red{background:rgba(255,71,87,.15);color:var(--danger);}
+.badge-blue{background:rgba(0,153,255,.15);color:var(--accent2);}
+.table{width:100%;border-collapse:collapse;}
+.table th{text-align:left;padding:10px 12px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+.table td{padding:12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+.table tr:last-child td{border-bottom:none;}
+.table tr:hover td{background:var(--surface2);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:8px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:9999;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:var(--accent);}
+.toast.error{border-color:var(--danger);}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.stat-value{font-size:28px;font-weight:600;}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.toggle{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.toggle input{display:none;}
+.toggle-track{width:36px;height:20px;background:var(--border);border-radius:10px;position:relative;transition:background .2s;}
+.toggle input:checked+.toggle-track{background:var(--accent);}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;}
+.toggle input:checked~.toggle-track .toggle-thumb{transform:translateX(16px);}
+.error-msg{color:var(--danger);font-size:12px;margin-top:8px;}
+.loading{color:var(--muted);font-size:13px;padding:20px 0;}
+.section-divider{height:1px;background:var(--border);margin:20px 0;}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="logo"><div class="logo-dot"></div><span>isteBu</span><small>ADMIN</small></div>
+    <h1>Giriş yap</h1>
+    <p>Admin paneline erişmek için giriş yapın</p>
+    <div class="field"><label>E-posta</label><input type="email" id="login-email" placeholder="admin@istebul.com" /></div>
+    <div class="field"><label>Şifre</label><input type="password" id="login-password" placeholder="••••••••" /></div>
+    <p class="error-msg" id="login-error" style="display:none;margin-bottom:12px;"></p>
+    <button class="btn btn-primary" onclick="login()">Giriş yap</button>
+  </div>
+</div>
+
+<div id="app">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-dot"></div>
+        <div><span>isteBu</span><br><small>Admin Panel</small></div>
+      </div>
+      <nav class="nav">
+        <div class="nav-item active" onclick="showPage('dashboard',this)">◈ Genel Bakış</div>
+        <div class="nav-item" onclick="showPage('settings',this)">◎ Site Bilgileri</div>
+        <div class="nav-item" onclick="showPage('content',this)">✎ Sayfa İçerikleri</div>
+        <div class="nav-item" onclick="showPage('announcements',this)">◈ Duyurular</div>
+        <div class="nav-item" onclick="showPage('listings',this)">◉ İlanlar</div>
+        <div class="nav-item" onclick="showPage('users',this)">◌ Kullanıcılar</div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">A</div>
+          <div class="user-email" id="user-email">yükleniyor...</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="width:100%" onclick="logout()">Çıkış yap</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <!-- GENEL BAKIŞ -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header"><h2>Genel Bakış</h2><p>Platform özeti</p></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">Toplam kullanıcı</div><div class="stat-value" id="stat-users">—</div></div>
+          <div class="stat-card"><div class="stat-label">Toplam ilan</div><div class="stat-value" id="stat-listings">—</div></div>
+          <div class="stat-card"><div class="stat-label">Aktif duyuru</div><div class="stat-value" id="stat-ann">—</div></div>
+          <div class="stat-card"><div class="stat-label">Sayfa</div><div class="stat-value" id="stat-pages">—</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Hızlı işlemler</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="showPage('announcements')">+ Duyuru ekle</button>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('settings')">Site bilgilerini düzenle</button>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('content')">İçerik düzenle</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SİTE BİLGİLERİ -->
+      <div class="page" id="page-settings">
+        <div class="page-header"><h2>Site Bilgileri</h2><p>İletişim, adres ve sosyal medya</p></div>
+        <div class="card">
+          <div class="card-title">İletişim bilgileri</div>
+          <div class="form-row">
+            <div class="form-group"><label>Telefon</label><input type="text" id="s-phone" placeholder="+90 555 000 00 00" /></div>
+            <div class="form-group"><label>E-posta</label><input type="email" id="s-email" placeholder="info@istebul.com" /></div>
+          </div>
+          <div class="form-group"><label>Adres</label><input type="text" id="s-address" placeholder="Kadıköy, İstanbul" /></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Sosyal medya</div>
+          <div class="form-row">
+            <div class="form-group"><label>Instagram</label><input type="text" id="s-instagram" placeholder="@istebulcom" /></div>
+            <div class="form-group"><label>Twitter / X</label><input type="text" id="s-twitter" placeholder="@istebulcom" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Facebook</label><input type="text" id="s-facebook" placeholder="facebook.com/istebul" /></div>
+            <div class="form-group"><label>LinkedIn</label><input type="text" id="s-linkedin" placeholder="linkedin.com/company/istebul" /></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Sistem ayarları</div>
+          <div class="form-group">
+            <label>Bakım modu</label>
+            <label class="toggle">
+              <input type="checkbox" id="s-maintenance" />
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span style="font-size:13px;color:var(--muted)">Siteyi bakım moduna al</span>
+            </label>
+          </div>
+        </div>
+        <div class="actions"><button class="btn btn-primary" onclick="saveSettings()">Kaydet</button></div>
+      </div>
+
+      <!-- SAYFA İÇERİKLERİ -->
+      <div class="page" id="page-content">
+        <div class="page-header"><h2>Sayfa İçerikleri</h2><p>Ana sayfa metinleri ve içerikler</p></div>
+        <div class="card">
+          <div class="card-title">Logo & Başlık</div>
+          <div class="form-group"><label>Site adı (logo yanındaki)</label><input type="text" id="s-site-name" placeholder="isteBul.com" /></div>
+          <div class="form-group"><label>Site alt başlığı</label><input type="text" id="s-site-subtitle" placeholder="Yapay zeka destekli karar platformu" /></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Ana Sayfa Hero Bölümü</div>
+          <div class="form-group"><label>Üst küçük yazı (eyebrow)</label><input type="text" id="s-hero-eyebrow" placeholder="Türkiye için AI karar merkezi" /></div>
+          <div class="form-group"><label>Ana başlık</label><input type="text" id="s-hero-title" placeholder="Satın almadan önce doğru kararı görün" /></div>
+          <div class="form-group"><label>Alt açıklama</label><textarea id="s-hero-desc" placeholder="Araç, ev ve tatil için birkaç soruya cevap verin..."></textarea></div>
+        </div>
+        <div class="card">
+          <div class="card-title">SEO Ayarları</div>
+          <div class="form-group"><label>Tarayıcı sekmesi başlığı</label><input type="text" id="s-title" placeholder="isteBu — Akıllı Seçim Platformu" /></div>
+          <div class="form-group"><label>Meta açıklama</label><textarea id="s-description" placeholder="Araç, ev ve tatil kararlarınızı kolaylaştırın"></textarea></div>
+        </div>
+        <div class="actions"><button class="btn btn-primary" onclick="saveSettings()">Kaydet</button></div>
+      </div>
+
+      <!-- DUYURULAR -->
+      <div class="page" id="page-announcements">
+        <div class="page-header"><h2>Duyurular</h2><p>Site genelinde gösterilen duyurular</p></div>
+        <div class="card">
+          <div class="card-title">Yeni duyuru</div>
+          <div class="form-group"><label>Başlık</label><input type="text" id="a-title" placeholder="Duyuru başlığı" /></div>
+          <div class="form-group"><label>İçerik</label><textarea id="a-content" placeholder="Duyuru metni..."></textarea></div>
+          <div class="form-group">
+            <label class="toggle">
+              <input type="checkbox" id="a-active" checked />
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span style="font-size:13px;color:var(--muted)">Aktif olarak yayınla</span>
+            </label>
+          </div>
+          <div class="actions"><button class="btn btn-primary" onclick="saveAnnouncement()">Duyuru ekle</button></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Mevcut duyurular</div>
+          <div id="announcements-list"><div class="loading">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <!-- İLANLAR -->
+      <div class="page" id="page-listings">
+        <div class="page-header"><h2>İlanlar</h2><p>Platforma eklenen ilanlar</p></div>
+        <div class="card"><div id="listings-list"><div class="loading">Yükleniyor...</div></div></div>
+      </div>
+
+      <!-- KULLANICILAR -->
+      <div class="page" id="page-users">
+        <div class="page-header"><h2>Kullanıcılar</h2><p>Kayıtlı kullanıcılar</p></div>
+        <div class="card"><div id="users-list"><div class="loading">Yükleniyor...</div></div></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'SUPABASE_URL_BURAYA';
+const SUPABASE_KEY = 'SUPABASE_ANON_KEY_BURAYA';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+
+async function login() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { errEl.textContent = 'Hata: ' + error.message; errEl.style.display = 'block'; return; }
+  currentUser = data.user;
+  showApp();
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  const email = currentUser.email || '';
+  document.getElementById('user-email').textContent = email;
+  document.getElementById('user-avatar').textContent = email[0]?.toUpperCase() || 'A';
+  loadDashboard(); loadSettings(); loadAnnouncements(); loadListings(); loadUsers();
+}
+
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function loadDashboard() {
+  try {
+    const [u, l, a] = await Promise.all([
+      sb.from('profiles').select('id', { count: 'exact', head: true }),
+      sb.from('listings').select('id', { count: 'exact', head: true }),
+      sb.from('announcements').select('id', { count: 'exact', head: true }).eq('is_active', true)
+    ]);
+    document.getElementById('stat-users').textContent = u.count ?? '—';
+    document.getElementById('stat-listings').textContent = l.count ?? '—';
+    document.getElementById('stat-ann').textContent = a.count ?? '—';
+    document.getElementById('stat-pages').textContent = '—';
+  } catch(e) {}
+}
+
+async function loadSettings() {
+  const { data } = await sb.from('site_settings').select('*');
+  if (!data) return;
+  const map = {};
+  data.forEach(r => map[r.key] = r.value);
+  const ids = ['phone','email','address','instagram','twitter','facebook','linkedin',
+               'title','description','site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc'];
+  ids.forEach(f => {
+    const el = document.getElementById('s-' + f);
+    if (el && map[f] !== undefined) el.value = map[f];
+  });
+  if (map['maintenance'] === 'true') document.getElementById('s-maintenance').checked = true;
+}
+
+async function saveSettings() {
+  const ids = ['phone','email','address','instagram','twitter','facebook','linkedin',
+               'title','description','site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc'];
+  const rows = ids.map(f => {
+    const el = document.getElementById('s-' + f);
+    return { key: f, value: el ? el.value : '', updated_at: new Date().toISOString() };
+  });
+  rows.push({ key: 'maintenance', value: document.getElementById('s-maintenance').checked ? 'true' : 'false', updated_at: new Date().toISOString() });
+  const { error } = await sb.from('site_settings').upsert(rows, { onConflict: 'key' });
+  if (error) { showToast('Hata: ' + error.message, 'error'); return; }
+  showToast('Kaydedildi!');
+}
+
+async function loadAnnouncements() {
+  const { data } = await sb.from('announcements').select('*').order('created_at', { ascending: false });
+  const el = document.getElementById('announcements-list');
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">Henüz duyuru yok.</p>'; return; }
+  el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>İçerik</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
+    data.map(a => `<tr>
+      <td>${a.title||'—'}</td>
+      <td style="color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.content||'—'}</td>
+      <td><span class="badge ${a.is_active?'badge-green':'badge-red'}">${a.is_active?'Aktif':'Pasif'}</span></td>
+      <td style="color:var(--muted)">${new Date(a.created_at).toLocaleDateString('tr-TR')}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="toggleAnn('${a.id}',${a.is_active})">${a.is_active?'Durdur':'Yayınla'}</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteAnn('${a.id}')">Sil</button>
+      </td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+async function saveAnnouncement() {
+  const title = document.getElementById('a-title').value;
+  const content = document.getElementById('a-content').value;
+  const is_active = document.getElementById('a-active').checked;
+  if (!title) { showToast('Başlık zorunlu', 'error'); return; }
+  const { error } = await sb.from('announcements').insert({ title, content, is_active });
+  if (error) { showToast('Hata: ' + error.message, 'error'); return; }
+  showToast('Duyuru eklendi');
+  document.getElementById('a-title').value = '';
+  document.getElementById('a-content').value = '';
+  loadAnnouncements();
+}
+
+async function toggleAnn(id, current) {
+  await sb.from('announcements').update({ is_active: !current }).eq('id', id);
+  showToast(current ? 'Durduruldu' : 'Yayınlandı');
+  loadAnnouncements();
+}
+
+async function deleteAnn(id) {
+  if (!confirm('Silmek istediğinize emin misiniz?')) return;
+  await sb.from('announcements').delete().eq('id', id);
+  showToast('Silindi');
+  loadAnnouncements();
+}
+
+async function loadListings() {
+  const { data } = await sb.from('listings').select('*').order('created_at', { ascending: false }).limit(50);
+  const el = document.getElementById('listings-list');
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">Henüz ilan yok.</p>'; return; }
+  el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Kategori</th><th>Fiyat</th><th>Tarih</th></tr></thead><tbody>' +
+    data.map(l => `<tr>
+      <td>${l.title||l.name||'—'}</td>
+      <td><span class="badge badge-blue">${l.category||l.type||'—'}</span></td>
+      <td>${l.price?l.price.toLocaleString('tr-TR')+' ₺':'—'}</td>
+      <td style="color:var(--muted)">${l.created_at?new Date(l.created_at).toLocaleDateString('tr-TR'):'—'}</td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+async function loadUsers() {
+  const { data } = await sb.from('profiles').select('*').order('created_at', { ascending: false }).limit(50);
+  const el = document.getElementById('users-list');
+  if (!data?.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">Henüz kullanıcı yok.</p>'; return; }
+  el.innerHTML = '<table class="table"><thead><tr><th>Ad</th><th>E-posta</th><th>Kayıt tarihi</th></tr></thead><tbody>' +
+    data.map(u => `<tr>
+      <td>${u.full_name||u.name||'—'}</td>
+      <td style="color:var(--muted)">${u.email||'—'}</td>
+      <td style="color:var(--muted)">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+sb.auth.getSession().then(({ data }) => {
+  if (data.session) { currentUser = data.session.user; showApp(); }
+});
+</script>
+</body>
+</html>
