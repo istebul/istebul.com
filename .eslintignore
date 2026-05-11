@@ -1,7 +1,7 @@
-node_modules
-.dist
-dist
-coverage
-.DS_Store
-.env*
-*.log
+scripts/
+js/
+functions/
+playwright-report/
+test-results/
+dist/
+node_modules/
