@@ -18,7 +18,7 @@
     "test:smoke": "SUPABASE_URL=http://localhost SUPABASE_ANON_KEY=test node --no-warnings scripts/smoke-test.js",
     "test:accessibility": "node scripts/accessibility-check.js",
     "test:performance": "node scripts/performance-check.js",
-    "test:e2e": "playwright test -c playwright.config.mjs",
+    "test:e2e": "playwright test",
     "test:e2e:install": "playwright install",
     "lhci": "lhci autorun",
     "analyze:bundle": "node scripts/production-build.js && node scripts/analyze-bundle.js",
