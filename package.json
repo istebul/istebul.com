@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "Modern Turkish marketplace platform - isteBu v2",
   "main": "js/app.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
