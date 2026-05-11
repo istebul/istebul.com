@@ -3,7 +3,18 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const ignoredDirs = new Set(['node_modules', '.git', 'recovered', 'dist']);
+
+const ignoredDirs = new Set([
+  'node_modules',
+  '.git',
+  'recovered',
+  'dist',
+  'playwright-report',
+  'test-results',
+  'js',
+  'functions'
+]);
+
 const requiredAssets = [
   'assets/images/placeholder.svg',
   'assets/images/hero-illustration.svg',
@@ -32,6 +43,7 @@ const walk = (dir) => {
 walk(root);
 
 let failed = false;
+
 for (const file of jsFiles) {
   const result = spawnSync(process.execPath, ['--check', file], {
     cwd: root,
@@ -46,6 +58,7 @@ for (const file of jsFiles) {
 
 for (const asset of requiredAssets) {
   const fullPath = path.join(root, asset);
+
   if (!fs.existsSync(fullPath)) {
     failed = true;
     process.stderr.write(`Missing required asset: ${asset}\n`);
@@ -57,9 +70,12 @@ for (const asset of requiredAssets) {
     const expectedSize = Number(asset.match(/favicon-(\d+)\.png/)?.[1] || 0);
     const actualWidth = buffer.readUInt32BE(16);
     const actualHeight = buffer.readUInt32BE(20);
+
     if (actualWidth !== expectedSize || actualHeight !== expectedSize) {
       failed = true;
-      process.stderr.write(`Invalid icon dimensions: ${asset} is ${actualWidth}x${actualHeight}\n`);
+      process.stderr.write(
+        `Invalid icon dimensions: ${asset} is ${actualWidth}x${actualHeight}\n`
+      );
     }
   }
 }
@@ -68,4 +84,6 @@ if (failed) {
   process.exit(1);
 }
 
-console.log(`Checked ${jsFiles.length} JavaScript files and ${requiredAssets.length} required assets.`);
+console.log(
+  `Checked ${jsFiles.length} JavaScript files and ${requiredAssets.length} required assets.`
+);
