@@ -114,5 +114,10 @@ walk(dist, (file) => {
 writeFile('build-manifest.json', JSON.stringify(manifest, null, 2));
 
 fs.copyFileSync(path.join(root, '_redirects'), path.join(dist, '_redirects'));
+
+if (fs.existsSync(path.join(root, '_headers'))) {
+  fs.copyFileSync(path.join(root, '_headers'), path.join(dist, '_headers'));
+}
+
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');
