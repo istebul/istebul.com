@@ -1,4 +1,6 @@
 // Monitoring & Error Tracking Module
+import * as Sentry from '@sentry/browser';
+import LogRocket from 'logrocket';
 import config from './config.js';
 
 export class MonitoringManager {
@@ -23,12 +25,10 @@ export class MonitoringManager {
             }
 
             if (this.sentryDSN) {
-                await this.loadScript('https://browser.sentry-cdn.com/7.100.0/bundle.min.js', 'sentry');
                 this.initSentry();
             }
 
             if (this.logRocketAppId) {
-                await this.loadScript('https://cdn.lr-in-prod.com/LogRocket.min.js', 'logrocket');
                 this.initLogRocket();
             }
 
@@ -38,29 +38,9 @@ export class MonitoringManager {
         }
     }
 
-    loadScript(src, provider) {
-        return new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[data-monitoring-provider="${provider}"]`);
-            if (existing) {
-                resolve();
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.async = true;
-            script.defer = true;
-            script.src = src;
-            script.dataset.monitoringProvider = provider;
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-    }
-
     initSentry() {
-        // Sentry is loaded from CDN script tag in index.html
-        if (typeof window !== 'undefined' && window.Sentry) {
-            window.Sentry.init({
+        if (typeof window !== 'undefined') {
+            Sentry.init({
                 dsn: this.sentryDSN,
                 environment: this.getEnvironment(),
                 release: config.app?.version || '2.0.0',
@@ -81,9 +61,8 @@ export class MonitoringManager {
     }
 
     initLogRocket() {
-        // LogRocket is loaded from CDN script tag in index.html
-        if (typeof window !== 'undefined' && window.LogRocket) {
-            window.LogRocket.init(this.logRocketAppId, {
+        if (typeof window !== 'undefined') {
+            LogRocket.init(this.logRocketAppId, {
                 console: { shouldAggregateConsoleErrors: true },
                 network: { requestSanitizer: this.sanitizeRequest }
             });
@@ -91,7 +70,7 @@ export class MonitoringManager {
             // Identify user if logged in
             const user = this.getCurrentUser();
             if (user) {
-                window.LogRocket.identify(user.id, {
+                LogRocket.identify(user.id, {
                     name: user.name,
                     email: user.email
                 });
@@ -117,7 +96,7 @@ export class MonitoringManager {
 
         try {
             if (typeof window !== 'undefined' && window.Sentry) {
-                window.Sentry.captureException(error, { extra: context });
+                Sentry.captureException(error, { extra: context });
             }
             if (typeof window !== 'undefined' && window.LogRocket) {
                 window.LogRocket.captureException(error, { extra: context });
@@ -154,7 +133,7 @@ export class MonitoringManager {
                 });
             }
             if (typeof window !== 'undefined' && window.LogRocket && user) {
-                window.LogRocket.identify(user.id, {
+                LogRocket.identify(user.id, {
                     name: user.full_name,
                     email: user.email
                 });
@@ -172,7 +151,7 @@ export class MonitoringManager {
                 window.Sentry.setUser(null);
             }
             if (typeof window !== 'undefined' && window.LogRocket) {
-                window.LogRocket.identify(null);
+                LogRocket.identify(null);
             }
         } catch (err) {
             console.error('Failed to clear user:', err);
