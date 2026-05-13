@@ -31,7 +31,7 @@ export const config = {
         baseUrl: '/.netlify/functions',
         endpoints: {
             uploadImage: '/upload-image',
-            claudeProxy: '/claude-proxy',
+            aiProxy: '/ai-proxy',
             supabaseProxy: '/supabase-proxy'
         }
     },
