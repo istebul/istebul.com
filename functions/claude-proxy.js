@@ -77,7 +77,7 @@ export async function onRequestPost(context) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022',
+        model: env.CLAUDE_MODEL || 'claude-3-5-sonnet-latest',
         max_tokens: 1000,
         system: getSystemMessage(safeType),
         messages: [{ role: 'user', content: cleanPrompt }],
