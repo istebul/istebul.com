@@ -106,13 +106,23 @@ class App {
                 });
             }
 
-            // Load initial data
-            await this.loadCategories();
+            // Load critical UI first
             await this.loadListings();
-            await this.loadFavorites();
-            this.loadComparisonItems();
-            this.loadDecisionHistory();
-            this.loadComparisonHistory();
+
+            // Defer non-critical data until after first render
+            const deferLoad = () => {
+                this.loadCategories().catch(console.warn);
+                this.loadFavorites().catch(console.warn);
+                this.loadComparisonItems();
+                this.loadDecisionHistory();
+                this.loadComparisonHistory();
+            };
+
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(deferLoad, { timeout: 1500 });
+            } else {
+                setTimeout(deferLoad, 800);
+            }
 
             this.setupCookieConsent();
             this.renderDecisionAssistant();
@@ -338,10 +348,8 @@ class App {
         ];
 
         try {
-            const [categories, counts] = await Promise.all([
-                API.getCategories(),
-                API.getCategoryCounts().catch(() => ({}))
-            ]);
+            const categories = await API.getCategories();
+            const counts = {};
             const normalizedCategories = (categories || [])
                 .filter((category) => category.active !== false)
                 .map((category) => {
