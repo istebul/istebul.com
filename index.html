@@ -24,21 +24,8 @@
     <link rel="icon" type="image/png" href="assets/icons/favicon-192.png">
     <script src="/env.js"></script>
     <script async src="https://plausible.io/js/pa--H_Y1pUCzpGoa8_5K7Gw2.js"></script>
-    <script>window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()</script>
-    <script>
-        (function () {
-            try {
-                var savedTheme = localStorage.getItem('istebu_theme');
-                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var theme = savedTheme || (prefersDark ? 'dark' : 'light');
-                document.documentElement.dataset.theme = theme;
-                document.documentElement.style.colorScheme = theme;
-            } catch (error) {
-                document.documentElement.dataset.theme = 'light';
-                document.documentElement.style.colorScheme = 'light';
-            }
-        })();
-    </script>
+    <script src="js/runtime/plausible-init.js"></script>
+    <script src="js/runtime/theme-init.js"></script>
     <link rel="stylesheet" href="css/style.css?v=2">
     <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 

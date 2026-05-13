@@ -239,10 +239,6 @@
             </aside>
         </section>
     </main>
-    <script>
-        const retry = () => window.location.reload();
-        document.getElementById('retry-button').addEventListener('click', retry);
-        window.addEventListener('online', () => setTimeout(retry, 500));
-    </script>
+    <script src="js/runtime/offline.js"></script>
 </body>
 </html>
