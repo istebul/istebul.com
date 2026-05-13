@@ -1,7 +1,7 @@
-const ALLOWED_ORIGIN = 'https://istebul-com.pages.dev';
+const getSiteUrl = (context) => (context.env.SITE_URL || 'https://istebul.com').replace(/\/$/, '');
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+  'Access-Control-Allow-Origin': 'https://istebul.com',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'
@@ -60,8 +60,8 @@ export async function onRequestPost(context) {
       'line_items[0][price]': STRIPE_PRICE_ID,
       'line_items[0][quantity]': '1',
       mode: 'subscription',
-      success_url: 'https://istebul-com.pages.dev/profil?subscribed=true',
-      cancel_url: 'https://istebul-com.pages.dev/profil?cancelled=true',
+      success_url: `${getSiteUrl(context)}/profil?subscribed=true`,
+      cancel_url: `${getSiteUrl(context)}/profil?cancelled=true`,
       customer_email: user.email,
       'metadata[userId]': user.id
     });

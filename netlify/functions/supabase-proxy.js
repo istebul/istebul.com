@@ -1,6 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 
-const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://istebul-com.pages.dev';
+const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://istebul.com';
 const corsHeaders = {
   'Access-Control-Allow-Origin': allowedOrigin,
   'Vary': 'Origin',
