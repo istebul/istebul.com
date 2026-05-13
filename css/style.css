@@ -7710,3 +7710,37 @@ main > section:not(.hero-section) {
 #cookie-consent {
   min-height: 80px;
 }
+
+/* CLS FIX */
+.hero-section {
+  min-height: 760px;
+}
+
+.hero-container {
+  min-height: 680px;
+}
+
+.hero-content {
+  min-height: 620px;
+}
+
+.hero-categories {
+  min-height: 80px;
+}
+
+.hero-image,
+.decision-preview {
+  min-height: 560px;
+}
+
+.preview-score-card,
+.preview-metrics,
+.preview-bars,
+.preview-source-strip {
+  min-height: 60px;
+}
+
+.cookie-consent,
+#cookie-consent {
+  min-height: 80px;
+}
