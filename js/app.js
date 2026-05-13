@@ -204,7 +204,7 @@ class App {
 
         // Load icons
         if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+            createIcons({ icons });
         }
     }
 
@@ -239,7 +239,7 @@ class App {
 
         // Load icons
         if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+            createIcons({ icons });
         }
 
         // Auto remove after 30 seconds
@@ -3449,7 +3449,7 @@ class App {
             });
         }
         if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+            createIcons({ icons });
         }
     }
 }
