@@ -1,21 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from './core/supabase.js';
 
-const SUPABASE_URL = 'https://hjfrcdstbyonmgatgwcc.supabase.co' ;
-const SUPABASE_KEY= 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqZnJjZHN0Ynlvbm1nYXRnd2NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjY5MTEsImV4cCI6MjA5NDAwMjkxMX0.CB6O7Dx1V7dJuPBw8PorCQOlYj9sT6eKp_--7ZRuNVA';
+const sb = getSupabaseClient();
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
+if (!sb) {
   document.body.innerHTML = `
-    <div style="
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#0f0f0f;
-      color:#ffffff;
-      font-family:system-ui,sans-serif;
-      padding:24px;
-      text-align:center;
-    ">
+    <div class="admin-config-error">
       <div>
         <h2>Supabase yapılandırması eksik</h2>
         <p>SUPABASE_URL veya SUPABASE_ANON_KEY yüklenemedi.</p>
@@ -24,8 +13,6 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
   `;
   throw new Error('Supabase config missing');
 }
-
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 
 async function login() {
