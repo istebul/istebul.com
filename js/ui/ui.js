@@ -910,7 +910,7 @@ export class UIManager {
 
     getCategoryCardMarkup(category, activeCategory = null) {
         return `
-            <button type="button" class="category-card category-card-${this.escapeHtml(category.id)} ${category.id === activeCategory ? "active" : ""}" data-category="${this.escapeHtml(category.id)}">
+            <button type="button" class="category-card category-card-${this.escapeHtml(category.id)} ${category.id === activeCategory ? "active" : ""}" data-assistant-start="${this.escapeHtml(category.id)}">
                 <span class="category-visual category-visual-${this.escapeHtml(category.id)}" aria-hidden="true">
                     <i data-lucide="${this.escapeHtml(this.getCategoryVisualIcon(category.id, category.icon))}"></i>
                 </span>
