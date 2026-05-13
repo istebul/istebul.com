@@ -105,6 +105,17 @@ esbuild.buildSync({
   outfile: path.join(dist, 'js/app.bundle.js')
 });
 
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/admin-panel.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: path.join(dist, 'js/admin-panel.js')
+});
+
 const manifest = {
   builtAt: new Date().toISOString(),
   files: []

@@ -48,7 +48,7 @@ const createFallbackSupabaseClient = () => {
     };
 };
 
-const getSupabaseClient = () => {
+export const getSupabaseClient = () => {
     if (!supabaseUrl || !supabaseKey) {
         return createFallbackSupabaseClient();
     }
