@@ -231,7 +231,14 @@ export class AuthManager {
             });
 
             this.showAuthSuccess('Hesabınız oluşturuldu! Lütfen e-posta adresinizi doğrulayın.');
-            fetch('/api/send-email', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ to: email, type: 'welcome' }) }).catch(() => {});
+            // Welcome email is optional; auth flow must not depend on it.
+            if (window.location.hostname === 'istebul.com' || window.location.hostname === 'www.istebul.com') {
+                fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to: email, type: 'welcome' })
+                }).catch(() => {});
+            }
             setTimeout(() => this.showLoginModal(), 2000);
 
         } catch (error) {
