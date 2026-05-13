@@ -46,7 +46,7 @@ export class API {
     }
 
     static async request(endpoint, options = {}) {
-        const url = `${config.api.baseUrl}${endpoint}`;
+        const url = endpoint.startsWith('/claude-proxy') ? endpoint : `${config.api.baseUrl}${endpoint}`;
 
         const defaultOptions = {
             headers: {
