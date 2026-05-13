@@ -16,6 +16,6 @@ for (const tag of imageTags) {
 
 assert(buildScript.includes('minify: true'), 'Production build should minify JS/CSS.');
 assert(netlifyConfig.includes('max-age=31536000'), 'Long-lived asset caching is missing.');
-assert(index.includes('rel="preconnect"') || index.includes('rel="dns-prefetch"') || index.includes('cdn.jsdelivr.net'), 'Third-party delivery strategy should be explicit.');
+assert(index.includes('rel="preconnect"') || index.includes('rel="dns-prefetch"'), 'Third-party delivery strategy should be explicit.');
 
 console.log('Performance static checks passed.');
