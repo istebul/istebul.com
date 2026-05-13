@@ -1,4 +1,5 @@
 import config from './config.js';
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = config.supabase.url;
 const supabaseKey = config.supabase.anonKey;
@@ -52,11 +53,7 @@ const getSupabaseClient = () => {
         return createFallbackSupabaseClient();
     }
 
-    if (typeof window !== 'undefined' && window.supabase?.createClient) {
-        return window.supabase.createClient(supabaseUrl, supabaseKey);
-    }
-
-    return createFallbackSupabaseClient();
+    return createClient(supabaseUrl, supabaseKey);
 };
 
 export const supabase = getSupabaseClient();
