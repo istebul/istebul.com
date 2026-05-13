@@ -304,6 +304,9 @@ sb.auth.getSession().then(({ data }) => {
 });
 function bindAdminPanelEvents() {
   document.getElementById('login-btn')?.addEventListener('click', login);
+  document.getElementById('login-password')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') login();
+  });
   document.getElementById('logout-btn')?.addEventListener('click', logout);
 
   document.querySelectorAll('[data-page-target]').forEach((el) => {
