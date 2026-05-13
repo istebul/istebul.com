@@ -1,3 +1,4 @@
+import { createIcons, icons } from 'lucide';
 // isteBu v2 - Main Application
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
@@ -13,6 +14,12 @@ import { ProfileManager } from './features/profil/profil.js';
 import { AdminManager } from './features/admin/admin.js';
 import { messaging } from './features/messaging.js';
 import './features/i18n/i18n.js';
+
+window.lucide = window.lucide || {
+    createIcons,
+    icons
+};
+
 import {
     PROPERTY_TYPES,
     VACATION_PLACES,

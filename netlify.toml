@@ -40,7 +40,7 @@
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://unpkg.com https://plausible.io https://browser.sentry-cdn.com https://cdn.lr-in-prod.com; style-src 'self'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.anthropic.com https://plausible.io https://*.sentry.io https://*.ingest.sentry.io https://*.logrocket.io https://*.lr-ingest.com; font-src 'self' data:; frame-ancestors 'none'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://plausible.io https://browser.sentry-cdn.com https://cdn.lr-in-prod.com; style-src 'self'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.anthropic.com https://plausible.io https://*.sentry.io https://*.ingest.sentry.io https://*.logrocket.io https://*.lr-ingest.com; font-src 'self' data:; frame-ancestors 'none'"
 
 [[headers]]
   for = "/assets/*"
