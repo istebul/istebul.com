@@ -304,8 +304,31 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL = 'https://hjfrcdstbyonmgatgwcc.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqZnJjZHN0Ynlvbm1nYXRnd2NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjY5MTEsImV4cCI6MjA5NDAwMjkxMX0.CB6O7Dx1V7dJuPBw8PorCQOlYj9sT6eKp_--7ZRuNVA';
+const SUPABASE_URL = 'https://hjfrcdstbyonmgatgwcc.supabase.co' ;
+const SUPABASE_KEY= 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqZnJjZHN0Ynlvbm1nYXRnd2NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjY5MTEsImV4cCI6MjA5NDAwMjkxMX0.CB6O7Dx1V7dJuPBw8PorCQOlYj9sT6eKp_--7ZRuNVA';
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  document.body.innerHTML = `
+    <div style="
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#0f0f0f;
+      color:#ffffff;
+      font-family:system-ui,sans-serif;
+      padding:24px;
+      text-align:center;
+    ">
+      <div>
+        <h2>Supabase yapılandırması eksik</h2>
+        <p>SUPABASE_URL veya SUPABASE_ANON_KEY yüklenemedi.</p>
+      </div>
+    </div>
+  `;
+  throw new Error('Supabase config missing');
+}
+
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 
@@ -326,7 +349,24 @@ async function logout() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-function showApp() {
+async function showApp() {
+  const { data: profile, error } = await sb
+    .from('profiles')
+    .select('role, is_banned')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (error || !profile || profile.role !== 'admin' || profile.is_banned === true) {
+    await sb.auth.signOut();
+    currentUser = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    const err = document.getElementById('login-error');
+    err.textContent = 'Bu panele erişim yetkiniz yok.';
+    err.style.display = 'block';
+    return;
+  }
+
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   const email = currentUser?.email || '';
@@ -348,6 +388,38 @@ function toast(msg, type = 'success') {
   t.className = 'toast ' + type + ' show';
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+async function adminAction(payload) {
+  const { data: sessionData } = await sb.auth.getSession();
+  const token = sessionData?.session?.access_token;
+
+  if (!token) {
+    toast('Oturum bulunamadı. Tekrar giriş yapın.', 'error');
+    throw new Error('No session token');
+  }
+
+  const { data, error } = await sb.functions.invoke('admin-action', {
+    body: payload,
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (error) {
+    console.error(error);
+    toast('Hata: ' + error.message, 'error');
+    throw error;
+  }
+
+  if (data?.error) {
+    console.error(data.error);
+    toast('Hata: ' + data.error, 'error');
+    throw new Error(data.error);
+  }
+
+  return data;
+}
+
 
 async function loadDashboard() {
   try {
@@ -411,14 +483,14 @@ async function saveAnnouncement() {
 }
 
 async function toggleAnn(id, current) {
-  await sb.from('announcements').update({ is_active: !current }).eq('id', id);
+  await adminAction({ action: 'update', table: 'announcements', id, values: { is_active: !current } });
   toast(current ? 'Durduruldu' : 'Yayınlandı');
   loadAnnouncements();
 }
 
 async function deleteAnn(id) {
   if (!confirm('Silmek istediğinize emin misiniz?')) return;
-  await sb.from('announcements').delete().eq('id', id);
+  await adminAction({ action: 'delete', table: 'announcements', id });
   toast('Silindi');
   loadAnnouncements(); loadDashboard();
 }
@@ -446,14 +518,14 @@ async function saveFaq() {
 }
 
 async function toggleFaq(id, current) {
-  await sb.from('faqs').update({ is_active: !current }).eq('id', id);
+  await adminAction({ action: 'update', table: 'faqs', id, values: { is_active: !current } });
   toast(current ? 'Gizlendi' : 'Gösterildi');
   loadFaqs();
 }
 
 async function deleteFaq(id) {
   if (!confirm('Silmek istediğinize emin misiniz?')) return;
-  await sb.from('faqs').delete().eq('id', id);
+  await adminAction({ action: 'delete', table: 'faqs', id });
   toast('Silindi');
   loadFaqs(); loadDashboard();
 }
@@ -489,14 +561,14 @@ async function savePost() {
 }
 
 async function togglePost(id, current) {
-  await sb.from('posts').update({ is_published: !current }).eq('id', id);
+  await adminAction({ action: 'update', table: 'posts', id, values: { is_published: !current } });
   toast(current ? 'Taslağa alındı' : 'Yayınlandı');
   loadPosts(); loadDashboard();
 }
 
 async function deletePost(id) {
   if (!confirm('Silmek istediğinize emin misiniz?')) return;
-  await sb.from('posts').delete().eq('id', id);
+  await adminAction({ action: 'delete', table: 'posts', id });
   toast('Silindi');
   loadPosts(); loadDashboard();
 }
@@ -510,14 +582,14 @@ async function loadListings() {
 }
 
 async function featureListing(id, current) {
-  await sb.from('listings').update({ is_featured: !current }).eq('id', id);
+  await adminAction({ action: 'update', table: 'listings', id, values: { is_featured: !current } });
   toast(current ? 'Kaldırıldı' : 'Öne çıkarıldı');
   loadListings();
 }
 
 async function deleteListing(id) {
   if (!confirm('Bu ilanı silmek istediğinize emin misiniz?')) return;
-  await sb.from('listings').delete().eq('id', id);
+  await adminAction({ action: 'delete', table: 'listings', id });
   toast('İlan silindi');
   loadListings(); loadDashboard();
 }
@@ -527,21 +599,19 @@ async function loadUsers() {
   const el = document.getElementById('users-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz kullanıcı yok.</p>'; return; }
   el.innerHTML = '<table class="table"><thead><tr><th>Ad</th><th>E-posta</th><th>Rol</th><th>Kayıt</th><th></th></tr></thead><tbody>' +
-    data.map(u => `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td style="color:var(--muted)">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':'badge-green'}">${u.role||'kullanıcı'}</span></td><td style="color:var(--muted);white-space:nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" onclick="makeAdmin('${u.id}','${u.role||''}')">${u.role==='admin'?'Adminliği kaldır':'Admin yap'}</button><button class="btn btn-danger btn-sm" onclick="banUser('${u.id}')">Engelle</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(u => `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td style="color:var(--muted)">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td style="color:var(--muted);white-space:nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" onclick="setUserRole('${u.id}','admin')">Admin yap</button><button class="btn btn-warning btn-sm" onclick="setUserRole('${u.id}','moderator')">Moderator yap</button><button class="btn btn-ghost btn-sm" onclick="setUserRole('${u.id}','user')">Yetki kaldır</button><button class="btn btn-danger btn-sm" onclick="banUser('${u.id}')">Engelle</button></div></td></tr>`).join('') + '</tbody></table>';
 }
 
-async function makeAdmin(id, currentRole) {
-  const newRole = currentRole === 'admin' ? 'user' : 'admin';
-  const { error } = await sb.from('profiles').update({ role: newRole }).eq('id', id);
-  if (error) { toast('Hata: ' + error.message, 'error'); return; }
-  toast(newRole === 'admin' ? 'Admin yapıldı' : 'Admin rolü kaldırıldı');
+async function setUserRole(id, role) {
+  await adminAction({ action: 'update', table: 'profiles', id, values: { role } });
+  const labels = { admin: 'Admin yapıldı', moderator: 'Moderator yapıldı', user: 'Yetki kaldırıldı' };
+  toast(labels[role] || 'Rol güncellendi');
   loadUsers();
 }
 
 async function banUser(id) {
   if (!confirm('Bu kullanıcıyı engellemek istediğinize emin misiniz?')) return;
-  const { error } = await sb.from('profiles').update({ is_banned: true }).eq('id', id);
-  if (error) { toast('Hata: ' + error.message, 'error'); return; }
+  await adminAction({ action: 'update', table: 'profiles', id, values: { is_banned: true } });
   toast('Kullanıcı engellendi');
   loadUsers();
 }

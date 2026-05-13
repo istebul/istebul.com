@@ -1,6 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 
-const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://istebul.com';
+const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://istebul-com.pages.dev';
 const corsHeaders = {
   'Access-Control-Allow-Origin': allowedOrigin,
   'Vary': 'Origin',
@@ -71,7 +71,14 @@ exports.handler = async (event) => {
 
     const path = event.path.replace('/.netlify/functions/supabase-proxy', '');
     const method = event.httpMethod;
-    const body = event.body ? JSON.parse(event.body) : {};
+
+    let body = {};
+    try {
+      body = event.body ? JSON.parse(event.body) : {};
+    } catch {
+      return json(400, { error: 'Invalid JSON body' });
+    }
+
     let result;
 
     switch (method) {
@@ -107,7 +114,7 @@ exports.handler = async (event) => {
         } else if (path === '/profile') {
           result = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, full_name, avatar_url, phone, location, bio')
             .eq('id', user.id)
             .single();
         }
@@ -151,7 +158,7 @@ exports.handler = async (event) => {
             .from('profiles')
             .update(pick(body, profileFields))
             .eq('id', user.id)
-            .select()
+            .select('id, full_name, avatar_url, phone, location, bio')
             .single();
         }
         break;
