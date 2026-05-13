@@ -77,7 +77,7 @@ Bu doküman, projeyi **istebul.com** domain’i ile **Netlify + Supabase** üzer
   - `SUPABASE_SERVICE_ROLE_KEY`
 - [ ] AI (opsiyonel):
   - `CLAUDE_API_KEY`
-  - `CLAUDE_MODEL` (varsayılan: `claude-3-5-sonnet-20241022`)
+  - `CLAUDE_MODEL` (varsayılan: `ai-3-5-sonnet-20241022`)
 - [ ] Monitoring (opsiyonel ama önerilir):
   - `SENTRY_DSN`
   - `LOGROCKET_APP_ID`
@@ -119,7 +119,7 @@ Bu doküman, projeyi **istebul.com** domain’i ile **Netlify + Supabase** üzer
   - Karar asistanı akışı
 - [ ] Netlify Functions:
   - `/.netlify/functions/health` 200 dönüyor mu?
-  - `upload-image` ve `claude-proxy` yetkisizken 401 dönüyor mu?
+  - `upload-image` ve `ai-proxy` yetkisizken 401 dönüyor mu?
 - [ ] PWA:
   - Offline sayfası
   - Service worker update davranışı (cache versiyonu)

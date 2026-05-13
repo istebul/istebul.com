@@ -49,7 +49,7 @@ assert(fs.existsSync(path.join(root, 'docker-compose.yml')), 'docker-compose.yml
 assert(fs.existsSync(path.join(root, 'netlify/functions/health.js')), 'Health endpoint is missing.');
 assert(read('robots.txt').includes('Sitemap: https://istebul.com/sitemap.xml'), 'robots.txt sitemap declaration is missing.');
 assert(read('sitemap.xml').includes('https://istebul.com/karar-asistani'), 'sitemap.xml decision assistant URL is missing.');
-assert(read('docs/openapi.yaml').includes('/claude-proxy'), 'OpenAPI spec should document AI proxy.');
+assert(read('docs/openapi.yaml').includes('/ai-proxy'), 'OpenAPI spec should document AI proxy.');
 assert(read('docs/quality-security-checklist.md').includes('OWASP'), 'Security checklist is missing OWASP coverage.');
 assert(fs.existsSync(path.join(root, 'docs/architecture.md')), 'Architecture guide is missing.');
 assert(fs.existsSync(path.join(root, 'docs/contributing.md')), 'Contributing guide is missing.');
@@ -96,8 +96,8 @@ assert(fs.existsSync(path.join(root, 'js/core/error-boundary.js')), 'Error bound
 const rateLimit = read('netlify/functions/_rate-limit.js');
 assert(rateLimit.includes('Retry-After'), 'Rate limit retry header is missing.');
 assert(rateLimit.includes('crypto'), 'Rate limit keys should be hashed.');
-const claudeProxy = read('netlify/functions/claude-proxy.js');
-assert(claudeProxy.includes('checkRateLimit'), 'AI proxy rate limiting is missing.');
+const aiProxy = read('functions/ai-proxy.js');
+assert(aiProxy.includes('checkRateLimit'), 'AI proxy rate limiting is missing.');
 const uploadImage = read('netlify/functions/upload-image.js');
 assert(uploadImage.includes('checkRateLimit'), 'Upload rate limiting is missing.');
 const ui = read('js/ui/ui.js');

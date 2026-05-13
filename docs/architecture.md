@@ -11,7 +11,7 @@ istebul is a vanilla JavaScript single-page marketplace application deployed on 
 - **API client:** `js/core/api.js`
 - **Auth/data/storage:** Supabase Auth, Postgres and Storage
 - **Serverless API:** Netlify Functions in `netlify/functions`
-- **AI proxy:** `netlify/functions/claude-proxy.js`
+- **AI proxy:** `functions/ai-proxy.js`
 - **Image upload:** `netlify/functions/upload-image.js`
 - **Health check:** `netlify/functions/health.js`
 

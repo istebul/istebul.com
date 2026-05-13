@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { handler: healthHandler } = require('../../netlify/functions/health.js');
-const { handler: claudeHandler } = require('../../netlify/functions/claude-proxy.js');
+const { handler: aiHandler } = require('../../functions/ai-proxy.js');
 const { handler: uploadHandler } = require('../../netlify/functions/upload-image.js');
 const { handler: supabaseProxyHandler } = require('../../netlify/functions/supabase-proxy.js');
 const { checkRateLimit, withRateLimitHeaders } = require('../../netlify/functions/_rate-limit.js');
@@ -35,7 +35,7 @@ test('rate limit helper returns limit and retry headers', () => {
 test('protected function CORS defaults are scoped to production origin', async () => {
   const event = { httpMethod: 'OPTIONS', headers: {} };
   const responses = await Promise.all([
-    claudeHandler(event),
+    aiHandler(event),
     uploadHandler(event),
     supabaseProxyHandler(event)
   ]);

@@ -1886,7 +1886,7 @@ JSON şeması:
   "next_steps": ["sonraki adım"]
 }`;
 
-        const aiResponse = await API.askClaude(prompt, {
+        const aiResponse = await API.askAI(prompt, {
             type: 'decision_vehicle',
             category: 'arac'
         });

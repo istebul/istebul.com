@@ -124,7 +124,7 @@ paths:
       responses:
         '200': { description: Yüklenen dosya bilgisi }
         '400': { description: Geçersiz dosya }
-  /claude-proxy:
+  /ai-proxy:
     post:
       summary: AI destekli yanıt üretir
       requestBody:

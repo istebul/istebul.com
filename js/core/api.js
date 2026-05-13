@@ -430,8 +430,8 @@ export class API {
         return data;
     }
 
-    // Claude AI proxy
-    static async askClaude(prompt, context = {}) {
+    // OpenAI proxy
+    static async askAI(prompt, context = {}) {
         const { data: { session } } = await supabase.auth.getSession();
 
         const headers = {
@@ -442,7 +442,7 @@ export class API {
             headers.Authorization = `Bearer ${session.access_token}`;
         }
 
-        return this.request(config.api.endpoints.claudeProxy, {
+        return this.request(config.api.endpoints.aiProxy, {
             method: 'POST',
             headers,
             body: JSON.stringify({ prompt, context })
