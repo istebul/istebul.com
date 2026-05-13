@@ -94,11 +94,15 @@ walk(path.join(root, 'css'), (file) => {
   writeFile(relative(file), esbuild.transformSync(source, { loader: 'css', minify: true }).code);
 });
 
-walk(path.join(root, 'js'), (file) => {
-  if (!file.endsWith('.js')) return;
-
-  const source = fs.readFileSync(file, 'utf8');
-  writeFile(relative(file), esbuild.transformSync(source, { loader: 'js', minify: true, target: 'es2020' }).code);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/app.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: path.join(dist, 'js/app.bundle.js')
 });
 
 const manifest = {
