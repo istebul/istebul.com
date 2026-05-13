@@ -1784,7 +1784,7 @@ class App {
         this.renderDecisionAssistant();
     }
 
-    handleDecisionAssistantSubmit(event) {
+    async handleDecisionAssistantSubmit(event) {
         event.preventDefault();
         const categoryConfig = this.getResolvedDecisionAssistantConfig()[this.assistantCategory];
         if (!categoryConfig) return;
@@ -1801,7 +1801,21 @@ class App {
         }
 
         this.assistantAnswers = answers;
-        const result = this.buildDecisionResult(categoryConfig, answers);
+
+        let result;
+        if (this.assistantCategory === 'arac') {
+            try {
+                this.ui.showInfo?.('AI araç analizi hazırlanıyor...');
+                result = await this.buildAIVehicleDecision(categoryConfig, answers);
+            } catch (error) {
+                console.warn('AI vehicle decision failed, falling back to rule engine:', error);
+                result = this.buildDecisionResult(categoryConfig, answers);
+                result.insight = 'AI analizi şu anda alınamadı. Sonuç, mevcut karar motoruyla hazırlandı.';
+            }
+        } else {
+            result = this.buildDecisionResult(categoryConfig, answers);
+        }
+
         this.lastDecisionResult = result;
         this.ui.renderDecisionResults(result);
         const savedToHistory = this.saveDecisionHistory(result);
@@ -1828,6 +1842,84 @@ class App {
             dataHealth,
             summary: this.createDecisionSummary(categoryConfig, primary),
             insight: this.createDecisionInsight(categoryConfig, primary, recommendations)
+        };
+    }
+
+    async buildAIVehicleDecision(categoryConfig, answers) {
+        const fallback = this.buildDecisionResult(categoryConfig, answers);
+        const answerLines = categoryConfig.questions
+            .map((question) => `- ${question.label}: ${this.getAnswerDisplayValue(question, answers[question.id]) || 'Belirtilmedi'}`)
+            .join('\n');
+
+        const prompt = `Türkiye pazarı için araç karar danışmanısın.
+
+Kullanıcı araç seçmek istiyor. Kriterler:
+${answerLines}
+
+Sadece geçerli JSON döndür. Markdown kullanma.
+
+JSON şeması:
+{
+  "summary": "Kısa karar özeti",
+  "insight": "Neden bu öneriyi verdiğini açıklayan Türkçe analiz",
+  "best_match": {
+    "title": "Araç önerisi",
+    "score": 0,
+    "price": 0,
+    "reason": "Kısa gerekçe",
+    "pros": ["artı"],
+    "cons": ["eksi"],
+    "estimated_yearly_cost": 0
+  },
+  "alternatives": [
+    {
+      "title": "Alternatif araç",
+      "score": 0,
+      "price": 0,
+      "reason": "Kısa gerekçe",
+      "pros": ["artı"],
+      "cons": ["eksi"],
+      "estimated_yearly_cost": 0
+    }
+  ],
+  "risks": ["risk"],
+  "next_steps": ["sonraki adım"]
+}`;
+
+        const aiResponse = await API.askClaude(prompt, {
+            type: 'decision_vehicle',
+            category: 'arac'
+        });
+
+        const rawText = aiResponse?.response || '';
+        const jsonText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim();
+        const parsed = JSON.parse(jsonText);
+
+        const aiRecommendations = [parsed.best_match, ...(parsed.alternatives || [])]
+            .filter(Boolean)
+            .slice(0, 3)
+            .map((item, index) => ({
+                ...fallback.recommendations[index],
+                id: `ai-vehicle-${index + 1}`,
+                title: item.title || fallback.recommendations[index]?.title || 'Araç önerisi',
+                name: item.title || fallback.recommendations[index]?.name || 'Araç önerisi',
+                score: Number(item.score || fallback.recommendations[index]?.score || 80),
+                price: Number(item.price || fallback.recommendations[index]?.price || 0),
+                yearlyCost: Number(item.estimated_yearly_cost || fallback.recommendations[index]?.yearlyCost || 0),
+                reason: item.reason || fallback.recommendations[index]?.reason || '',
+                pros: Array.isArray(item.pros) ? item.pros : [],
+                cons: Array.isArray(item.cons) ? item.cons : [],
+                aiGenerated: true
+            }));
+
+        return {
+            ...fallback,
+            aiGenerated: true,
+            summary: parsed.summary || fallback.summary,
+            insight: parsed.insight || fallback.insight,
+            recommendations: aiRecommendations.length ? aiRecommendations : fallback.recommendations,
+            risks: Array.isArray(parsed.risks) ? parsed.risks : [],
+            nextSteps: Array.isArray(parsed.next_steps) ? parsed.next_steps : fallback.nextSteps
         };
     }
 

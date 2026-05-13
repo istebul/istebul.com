@@ -13,7 +13,8 @@ const corsHeaders = {
 const allowedTypes = [
   'listing_description',
   'pricing_advice',
-  'customer_support'
+  'customer_support',
+  'decision_vehicle'
 ];
 
 const json = (statusCode, body) => ({
@@ -48,7 +49,9 @@ const getSystemMessage = (type) => {
     pricing_advice:
       'You are providing pricing advice for items on a Turkish marketplace. Consider market conditions, item condition, demand, and local economic factors.',
     customer_support:
-      'You are a customer support AI for isteBu marketplace. Be helpful, polite, and solve user problems efficiently. Respond in Turkish when appropriate.'
+      'You are a customer support AI for isteBu marketplace. Be helpful, polite, and solve user problems efficiently. Respond in Turkish when appropriate.',
+    decision_vehicle:
+      'You are an AI vehicle decision advisor for isteBul, a Turkish AI decision platform. Recommend realistic vehicle options for Turkey, explain tradeoffs clearly, and respond in Turkish. Return valid JSON when requested.'
   };
 
   return messages[type] ||
