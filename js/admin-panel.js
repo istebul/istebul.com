@@ -149,7 +149,7 @@ async function loadAnnouncements() {
   const el = document.getElementById('announcements-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz duyuru yok.</p>'; return; }
   el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>İçerik</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
-    data.map(a => `<tr><td><strong>${a.title||'—'}</strong></td><td style="color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.content||'—'}</td><td><span class="badge ${a.is_active?'badge-green':'badge-red'}">${a.is_active?'Aktif':'Pasif'}</span></td><td style="color:var(--muted);white-space:nowrap">${new Date(a.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" onclick="toggleAnn('${a.id}',${a.is_active})">${a.is_active?'Durdur':'Yayınla'}</button><button class="btn btn-danger btn-sm" onclick="deleteAnn('${a.id}')">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(a => `<tr><td><strong>${a.title||'—'}</strong></td><td style="color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.content||'—'}</td><td><span class="badge ${a.is_active?'badge-green':'badge-red'}">${a.is_active?'Aktif':'Pasif'}</span></td><td style="color:var(--muted);white-space:nowrap">${new Date(a.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-ann" data-id="${a.id}" data-active="${a.is_active}">${a.is_active?'Durdur':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-ann" data-id="${a.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
 }
 
 async function saveAnnouncement() {
@@ -183,7 +183,7 @@ async function loadFaqs() {
   const el = document.getElementById('faqs-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz SSS yok.</p>'; return; }
   el.innerHTML = '<table class="table"><thead><tr><th>#</th><th>Soru</th><th>Durum</th><th></th></tr></thead><tbody>' +
-    data.map(f => `<tr><td style="color:var(--muted)">${f.order_num||0}</td><td>${f.question||'—'}</td><td><span class="badge ${f.is_active?'badge-green':'badge-red'}">${f.is_active?'Aktif':'Pasif'}</span></td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" onclick="toggleFaq('${f.id}',${f.is_active})">${f.is_active?'Gizle':'Göster'}</button><button class="btn btn-danger btn-sm" onclick="deleteFaq('${f.id}')">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(f => `<tr><td style="color:var(--muted)">${f.order_num||0}</td><td>${f.question||'—'}</td><td><span class="badge ${f.is_active?'badge-green':'badge-red'}">${f.is_active?'Aktif':'Pasif'}</span></td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-faq" data-id="${f.id}" data-active="${f.is_active}">${f.is_active?'Gizle':'Göster'}</button><button class="btn btn-danger btn-sm" data-action="delete-faq" data-id="${f.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
 }
 
 async function saveFaq() {
@@ -225,7 +225,7 @@ async function loadPosts() {
   const el = document.getElementById('posts-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz yazı yok.</p>'; return; }
   el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Slug</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
-    data.map(p => `<tr><td><strong>${p.title||'—'}</strong></td><td style="color:var(--muted);font-size:12px">/${p.slug||'—'}</td><td><span class="badge ${p.is_published?'badge-green':'badge-yellow'}">${p.is_published?'Yayında':'Taslak'}</span></td><td style="color:var(--muted);white-space:nowrap">${new Date(p.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" onclick="togglePost('${p.id}',${p.is_published})">${p.is_published?'Taslağa al':'Yayınla'}</button><button class="btn btn-danger btn-sm" onclick="deletePost('${p.id}')">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(p => `<tr><td><strong>${p.title||'—'}</strong></td><td style="color:var(--muted);font-size:12px">/${p.slug||'—'}</td><td><span class="badge ${p.is_published?'badge-green':'badge-yellow'}">${p.is_published?'Yayında':'Taslak'}</span></td><td style="color:var(--muted);white-space:nowrap">${new Date(p.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-post" data-id="${p.id}" data-active="${p.is_published}">${p.is_published?'Taslağa al':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-post" data-id="${p.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
 }
 
 async function savePost() {
@@ -261,7 +261,7 @@ async function loadListings() {
   const el = document.getElementById('listings-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz ilan yok.</p>'; return; }
   el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Kategori</th><th>Fiyat</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
-    data.map(l => `<tr><td><strong>${l.title||l.name||'—'}</strong></td><td><span class="badge badge-blue">${l.category||l.type||'—'}</span></td><td style="white-space:nowrap">${l.price?Number(l.price).toLocaleString('tr-TR')+' ₺':'—'}</td><td><span class="badge ${!l.status||l.status==='active'?'badge-green':'badge-red'}">${l.status||'aktif'}</span></td><td style="color:var(--muted);white-space:nowrap">${l.created_at?new Date(l.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-warning btn-sm" onclick="featureListing('${l.id}',${!!l.is_featured})">${l.is_featured?'Öne çıkarmayı kaldır':'Öne çıkar'}</button><button class="btn btn-danger btn-sm" onclick="deleteListing('${l.id}')">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(l => `<tr><td><strong>${l.title||l.name||'—'}</strong></td><td><span class="badge badge-blue">${l.category||l.type||'—'}</span></td><td style="white-space:nowrap">${l.price?Number(l.price).toLocaleString('tr-TR')+' ₺':'—'}</td><td><span class="badge ${!l.status||l.status==='active'?'badge-green':'badge-red'}">${l.status||'aktif'}</span></td><td style="color:var(--muted);white-space:nowrap">${l.created_at?new Date(l.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-warning btn-sm" data-action="feature-listing" data-id="${l.id}" data-active="${!!l.is_featured}">${l.is_featured?'Öne çıkarmayı kaldır':'Öne çıkar'}</button><button class="btn btn-danger btn-sm" data-action="delete-listing" data-id="${l.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
 }
 
 async function featureListing(id, current) {
@@ -282,7 +282,7 @@ async function loadUsers() {
   const el = document.getElementById('users-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz kullanıcı yok.</p>'; return; }
   el.innerHTML = '<table class="table"><thead><tr><th>Ad</th><th>E-posta</th><th>Rol</th><th>Kayıt</th><th></th></tr></thead><tbody>' +
-    data.map(u => `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td style="color:var(--muted)">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td style="color:var(--muted);white-space:nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" onclick="setUserRole('${u.id}','admin')">Admin yap</button><button class="btn btn-warning btn-sm" onclick="setUserRole('${u.id}','moderator')">Moderator yap</button><button class="btn btn-ghost btn-sm" onclick="setUserRole('${u.id}','user')">Yetki kaldır</button><button class="btn btn-danger btn-sm" onclick="banUser('${u.id}')">Engelle</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(u => `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td style="color:var(--muted)">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td style="color:var(--muted);white-space:nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="admin">Admin yap</button><button class="btn btn-warning btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="moderator">Moderator yap</button><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="user">Yetki kaldır</button><button class="btn btn-danger btn-sm" data-action="ban-user" data-id="${u.id}">Engelle</button></div></td></tr>`).join('') + '</tbody></table>';
 }
 
 async function setUserRole(id, role) {
@@ -302,3 +302,40 @@ async function banUser(id) {
 sb.auth.getSession().then(({ data }) => {
   if (data.session) { currentUser = data.session.user; showApp(); }
 });
+function bindAdminPanelEvents() {
+  document.getElementById('login-btn')?.addEventListener('click', login);
+  document.getElementById('logout-btn')?.addEventListener('click', logout);
+
+  document.querySelectorAll('[data-page-target]').forEach((el) => {
+    el.addEventListener('click', () => showPage(el.dataset.pageTarget, el));
+  });
+
+  document.querySelectorAll('[data-action="save-settings"]').forEach((el) => {
+    el.addEventListener('click', saveSettings);
+  });
+
+  document.querySelector('[data-action="save-announcement"]')?.addEventListener('click', saveAnnouncement);
+  document.querySelector('[data-action="save-faq"]')?.addEventListener('click', saveFaq);
+  document.querySelector('[data-action="save-post"]')?.addEventListener('click', savePost);
+
+  document.addEventListener('click', (event) => {
+    const el = event.target.closest('[data-action]');
+    if (!el) return;
+
+    const { action, id, active, role } = el.dataset;
+    const isActive = active === 'true';
+
+    if (action === 'toggle-ann') toggleAnn(id, isActive);
+    if (action === 'delete-ann') deleteAnn(id);
+    if (action === 'toggle-faq') toggleFaq(id, isActive);
+    if (action === 'delete-faq') deleteFaq(id);
+    if (action === 'toggle-post') togglePost(id, isActive);
+    if (action === 'delete-post') deletePost(id);
+    if (action === 'feature-listing') featureListing(id, isActive);
+    if (action === 'delete-listing') deleteListing(id);
+    if (action === 'set-user-role') setUserRole(id, role);
+    if (action === 'ban-user') banUser(id);
+  });
+}
+
+bindAdminPanelEvents();

@@ -100,7 +100,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
     <div class="field"><label>E-posta</label><input type="email" id="login-email" placeholder="admin@istebul.com" /></div>
     <div class="field"><label>Şifre</label><input type="password" id="login-password" onkeydown="if(event.key==='Enter')login()" /></div>
     <p class="error-msg" id="login-error" style="display:none;margin-bottom:12px;"></p>
-    <button class="btn btn-primary btn-full" onclick="login()">Giriş yap</button>
+    <button class="btn btn-primary btn-full" id="login-btn">Giriş yap</button>
   </div>
 </div>
 
@@ -113,23 +113,23 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
       </div>
       <nav class="nav">
         <div class="nav-section">Genel</div>
-        <div class="nav-item active" onclick="showPage('dashboard',this)">📊 Genel Bakış</div>
+        <div class="nav-item active" data-page-target="dashboard">📊 Genel Bakış</div>
         <div class="nav-section">İçerik</div>
-        <div class="nav-item" onclick="showPage('settings',this)">⚙️ Site Bilgileri</div>
-        <div class="nav-item" onclick="showPage('content',this)">✏️ Sayfa İçerikleri</div>
-        <div class="nav-item" onclick="showPage('announcements',this)">📢 Duyurular</div>
-        <div class="nav-item" onclick="showPage('faqs',this)">❓ SSS</div>
-        <div class="nav-item" onclick="showPage('blog',this)">📝 Blog / Haberler</div>
+        <div class="nav-item" data-page-target="settings">⚙️ Site Bilgileri</div>
+        <div class="nav-item" data-page-target="content">✏️ Sayfa İçerikleri</div>
+        <div class="nav-item" data-page-target="announcements">📢 Duyurular</div>
+        <div class="nav-item" data-page-target="faqs">❓ SSS</div>
+        <div class="nav-item" data-page-target="blog">📝 Blog / Haberler</div>
         <div class="nav-section">Platform</div>
-        <div class="nav-item" onclick="showPage('listings',this)">🏷️ İlanlar</div>
-        <div class="nav-item" onclick="showPage('users',this)">👥 Kullanıcılar</div>
+        <div class="nav-item" data-page-target="listings">🏷️ İlanlar</div>
+        <div class="nav-item" data-page-target="users">👥 Kullanıcılar</div>
       </nav>
       <div class="sidebar-footer">
         <div class="user-info">
           <div class="user-avatar" id="user-avatar">A</div>
           <div class="user-email" id="user-email">yükleniyor...</div>
         </div>
-        <button class="btn btn-ghost btn-sm btn-full" onclick="logout()">Çıkış yap</button>
+        <button class="btn btn-ghost btn-sm btn-full" id="logout-btn">Çıkış yap</button>
       </div>
     </aside>
 
@@ -147,11 +147,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="card">
           <div class="card-title">Hızlı işlemler</div>
           <div class="quick-actions">
-            <button class="btn btn-ghost btn-sm" onclick="showPage('announcements')">+ Duyuru</button>
-            <button class="btn btn-ghost btn-sm" onclick="showPage('faqs')">+ SSS</button>
-            <button class="btn btn-ghost btn-sm" onclick="showPage('blog')">+ Blog yazısı</button>
-            <button class="btn btn-ghost btn-sm" onclick="showPage('content')">İçerik düzenle</button>
-            <button class="btn btn-ghost btn-sm" onclick="showPage('settings')">Site bilgileri</button>
+            <button class="btn btn-ghost btn-sm" data-page-target="announcements">+ Duyuru</button>
+            <button class="btn btn-ghost btn-sm" data-page-target="faqs">+ SSS</button>
+            <button class="btn btn-ghost btn-sm" data-page-target="blog">+ Blog yazısı</button>
+            <button class="btn btn-ghost btn-sm" data-page-target="content">İçerik düzenle</button>
+            <button class="btn btn-ghost btn-sm" data-page-target="settings">Site bilgileri</button>
           </div>
         </div>
       </div>
@@ -191,7 +191,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
             </label>
           </div>
         </div>
-        <div class="actions"><button class="btn btn-primary" onclick="saveSettings()">Kaydet</button></div>
+        <div class="actions"><button class="btn btn-primary" data-action="save-settings">Kaydet</button></div>
       </div>
 
       <div class="page" id="page-content">
@@ -214,7 +214,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
           <div class="form-group"><label>Sekme başlığı</label><input type="text" id="s-title" /></div>
           <div class="form-group"><label>Meta açıklama</label><textarea id="s-description" style="min-height:70px;"></textarea></div>
         </div>
-        <div class="actions"><button class="btn btn-primary" onclick="saveSettings()">Kaydet</button></div>
+        <div class="actions"><button class="btn btn-primary" data-action="save-settings">Kaydet</button></div>
       </div>
 
       <div class="page" id="page-announcements">
@@ -230,7 +230,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
               <span style="font-size:13px;color:var(--muted)">Aktif olarak yayınla</span>
             </label>
           </div>
-          <div class="actions"><button class="btn btn-primary" onclick="saveAnnouncement()">Ekle</button></div>
+          <div class="actions"><button class="btn btn-primary" data-action="save-announcement">Ekle</button></div>
         </div>
         <div class="card">
           <div class="card-title">Mevcut duyurular</div>
@@ -254,7 +254,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
               </label>
             </div>
           </div>
-          <div class="actions"><button class="btn btn-primary" onclick="saveFaq()">Ekle</button></div>
+          <div class="actions"><button class="btn btn-primary" data-action="save-faq">Ekle</button></div>
         </div>
         <div class="card">
           <div class="card-title">Mevcut sorular</div>
@@ -278,7 +278,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
               <span style="font-size:13px;color:var(--muted)">Hemen yayınla</span>
             </label>
           </div>
-          <div class="actions"><button class="btn btn-primary" onclick="savePost()">Ekle</button></div>
+          <div class="actions"><button class="btn btn-primary" data-action="save-post">Ekle</button></div>
         </div>
         <div class="card">
           <div class="card-title">Mevcut yazılar</div>
