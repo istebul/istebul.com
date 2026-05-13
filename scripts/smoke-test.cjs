@@ -34,7 +34,7 @@ assert(index.includes('Piyasayı keşfet'), 'Hero marketplace CTA should be cont
 assert(index.includes('Piyasadaki benzerleri incele'), 'Decision demo CTA should avoid duplicate nav copy.');
 
 const pkg = JSON.parse(read('package.json'));
-assert(pkg.scripts.build.includes('scripts/production-build.js'), 'Production build script should create optimized output.');
+assert(pkg.scripts.build.includes('scripts/production-build.cjs'), 'Production build script should create optimized output.');
 assert(pkg.scripts['build:check'].includes('check-build-output.js'), 'Build output check script is missing.');
 const netlifyConfig = read('netlify.toml');
 assert(netlifyConfig.includes('publish = "dist"'), 'Netlify should publish optimized dist output.');

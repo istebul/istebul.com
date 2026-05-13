@@ -5,7 +5,7 @@ const assert = require('assert');
 const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const index = read('index.html');
-const buildScript = read('scripts/production-build.js');
+const buildScript = read('scripts/production-build.cjs');
 const netlifyConfig = read('netlify.toml');
 
 const imageTags = index.match(/<img\b[^>]*>/gi) || [];
