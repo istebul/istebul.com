@@ -213,11 +213,14 @@ export class UIManager {
         this.loadIcons();
     }
 
-    showAdminLink() {
+    showAdminLink(user = null) {
         const adminLink = document.getElementById('admin-link');
-        if (adminLink) {
-            adminLink.style.display = 'block';
-        }
+        if (!adminLink) return;
+
+        const role = user?.role?.toLowerCase?.() || '';
+        const isAdmin = role === 'admin' || role === 'super_admin';
+
+        adminLink.style.display = isAdmin ? 'block' : 'none';
     }
 
     renderCategories(categories, activeCategory = null) {
@@ -994,7 +997,7 @@ export class UIManager {
 
         toolbar.hidden = false;
         if (countLabel) {
-            countLabel.textContent = count === 1 ? '1 sonuç' : this.formatPrice(count) + ' sonuç';
+            countLabel.textContent = count === 0 ? 'Henüz ilan bulunamadı' : (count === 1 ? '1 sonuç' : this.formatPrice(count) + ' sonuç');
         }
         if (contextLabel) {
             contextLabel.textContent = this.getListingToolbarContext(options, count);
@@ -1022,7 +1025,7 @@ export class UIManager {
         if (options.search) parts.push('Arama: ' + options.search);
 
         if (options.ownedOnly || options.userId) return count ? 'Yayınladığınız ilanlar' : 'Henüz ilan yayınlamadınız';
-        if (!count) return 'Filtreleri genişleterek yeni sonuçlar bulun';
+        if (!count) return 'Henüz ilan yok. İlk ilan yayınlandığında burada görünecek.';
         return parts.length ? parts.join(' · ') : 'Türkiye geneli · AI skoruna göre keşif';
     }
 

@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>isteBu - AI Destekli Karar Asistanı</title>
+    <title>isteBul - AI Destekli Karar Asistanı</title>
     <meta name="description" content="Araç, ev ve tatil kararlarınız için soru-cevap akışı, toplam maliyet hesabı, kredi karşılaştırması ve satın alma yönlendirmeleri.">
     <meta name="theme-color" content="#2563eb" id="theme-color-meta">
-    <meta property="og:title" content="isteBu - AI Destekli Karar Asistanı">
+    <meta property="og:title" content="isteBul - AI Destekli Karar Asistanı">
     <meta property="og:description" content="Araç, ev ve tatil için ihtiyacınızı anlayan, toplam maliyeti ve finansmanı gösteren karar destek platformu.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://istebul.com/">
     <meta property="og:image" content="https://istebul.com/assets/images/og-image.svg">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="isteBu - AI Destekli Karar Asistanı">
+    <meta name="twitter:title" content="isteBul - AI Destekli Karar Asistanı">
     <meta name="twitter:description" content="Araç, ev ve tatil seçeneklerini maliyet, kredi ve satın alma kanallarıyla birlikte değerlendirin.">
     <meta name="twitter:image" content="https://istebul.com/assets/images/og-image.svg">
     <link rel="canonical" href="https://istebul.com/">
@@ -107,7 +107,7 @@
                 <div class="hero-content">
                     <span class="hero-eyebrow"><i data-lucide="radar"></i> <span data-cms="hero-eyebrow">Türkiye için AI karar merkezi</span></span>
                     <h1 data-cms="hero-title">Satın almadan önce doğru kararı görün</h1>
-                    <p data-cms="hero-desc">Araç, ev ve tatil için birkaç soruya cevap verin; isteBu size en uygun seçenekleri, toplam maliyeti, kredi ihtimalini ve nereden alabileceğinizi tek sonuç ekranında sunsun.</p>
+                    <p data-cms="hero-desc">Araç, ev ve tatil için birkaç soruya cevap verin; isteBul size en uygun seçenekleri, toplam maliyeti, kredi ihtimalini ve nereden alabileceğinizi tek sonuç ekranında sunsun.</p>
                     <div class="hero-badges">
                         <span>İhtiyaç analizi</span>
                         <span>Toplam maliyet hesabı</span>
@@ -413,7 +413,7 @@
                 <div id="active-filter-summary" class="active-filter-summary" hidden></div>
                 <div id="marketplace-results-toolbar" class="marketplace-results-toolbar" aria-live="polite">
                     <div class="marketplace-result-copy">
-                        <span id="listing-result-count">0 sonuç</span>
+                        <span id="listing-result-count">Henüz ilan bulunamadı</span>
                         <small id="listing-result-context">AI skoruna göre listeleniyor</small>
                     </div>
                     <div class="marketplace-result-controls">
@@ -639,7 +639,7 @@
             </div>
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4>isteBu</h4>
+                    <h4>isteBul</h4>
                     <p>AI destekli seçim ve satın alma platformu</p>
                 </div>
                 <div class="footer-section">
@@ -656,7 +656,7 @@
                     <h4>İletişim</h4>
                     <ul>
                         <li><a href="mailto:info@istebul.com" data-cms="email">info@istebul.com</a></li>
-                        <li><a href="tel:+902121234567" data-cms="phone">+90 212 123 45 67</a></li>
+                        <li><a href="mailto:info@istebul.com" data-cms="phone">info@istebul.com</a></li>
                         <li><a href="mailto:privacy@istebul.com">Veri silme talebi</a></li>
                     </ul>
                 </div>
@@ -669,12 +669,15 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 isteBu. Tüm hakları saklıdır.</p>
+                <p>&copy; <span id="current-year"></span> isteBul. Tüm hakları saklıdır.</p>
             </div>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script type="module" src="js/app.bundle.js"></script>
+<script>
+    document.getElementById("current-year").textContent = new Date().getFullYear();
+</script>
 </body>
 </html>

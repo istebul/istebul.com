@@ -21,7 +21,7 @@ export const config = {
 
     // App settings
     app: {
-        name: 'isteBu v2',
+        name: 'isteBul v2',
         version: '2.0.0',
         description: 'Modern Turkish marketplace platform'
     },

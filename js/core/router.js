@@ -137,20 +137,20 @@ export class Router {
 
     updateTitle(route) {
         const titles = {
-            'home': 'isteBu - Modern İlan Platformu',
-            'ilanlar': 'İlanlar - isteBu',
-            'compare': 'Karşılaştırma Merkezi - isteBu',
-            'decision-assistant': 'Karar Asistanı - isteBu',
-            'favoriler': 'Favoriler - isteBu',
-            'history': 'Karar Geçmişi - isteBu',
-            'quiz': 'Quiz - isteBu',
-            'profil': 'Profilim - isteBu',
-            'admin': 'Admin Panel - isteBu',
-            'messages': 'Mesajlar - isteBu',
-            'add-listing': 'İlan Ekle - isteBu',
-            'listing-detail': 'İlan Detayı - isteBu'
+            'home': 'isteBul - Modern İlan Platformu',
+            'ilanlar': 'İlanlar - isteBul',
+            'compare': 'Karşılaştırma Merkezi - isteBul',
+            'decision-assistant': 'Karar Asistanı - isteBul',
+            'favoriler': 'Favoriler - isteBul',
+            'history': 'Karar Geçmişi - isteBul',
+            'quiz': 'Quiz - isteBul',
+            'profil': 'Profilim - isteBul',
+            'admin': 'Admin Panel - isteBul',
+            'messages': 'Mesajlar - isteBul',
+            'add-listing': 'İlan Ekle - isteBul',
+            'listing-detail': 'İlan Detayı - isteBul'
         };
 
-        document.title = titles[route] || 'isteBu - Modern İlan Platformu';
+        document.title = titles[route] || 'isteBul - Modern İlan Platformu';
     }
 }

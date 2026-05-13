@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'lucide';
-// isteBu v2 - Main Application
+// isteBul v2 - Main Application
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
@@ -330,7 +330,7 @@ class App {
 
                 // Check if user is admin
                 if (profile.role === 'admin') {
-                    this.ui.showAdminLink();
+                    this.ui.showAdminLink(this.currentUser || this.user || profile);
                 }
             }
         } catch (error) {
