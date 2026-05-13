@@ -128,6 +128,7 @@ export class Router {
         // Show target section
         const targetSection = document.getElementById(routeId);
         if (targetSection) {
+            targetSection.classList.remove('hidden');
             targetSection.style.display = 'block';
         } else {
             // Show home if section not found
