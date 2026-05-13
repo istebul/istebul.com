@@ -102,7 +102,10 @@ esbuild.buildSync({
   target: 'es2020',
   minify: true,
   sourcemap: false,
-  outfile: path.join(dist, 'js/app.bundle.js')
+  splitting: true,
+  chunkNames: 'chunks/[name]-[hash]',
+  entryNames: 'app.bundle',
+  outdir: path.join(dist, 'js')
 });
 
 esbuild.buildSync({

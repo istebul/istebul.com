@@ -1,4 +1,3 @@
-import { createIcons, icons } from 'lucide';
 // isteBul v2 - Main Application
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
@@ -214,7 +213,7 @@ class App {
 
         // Load icons
         if (typeof lucide !== 'undefined') {
-            createIcons({ icons });
+            window.lucide?.createIcons();
         }
     }
 
@@ -249,7 +248,7 @@ class App {
 
         // Load icons
         if (typeof lucide !== 'undefined') {
-            createIcons({ icons });
+            window.lucide?.createIcons();
         }
 
         // Auto remove after 30 seconds
@@ -3457,7 +3456,7 @@ class App {
             });
         }
         if (typeof lucide !== 'undefined') {
-            createIcons({ icons });
+            window.lucide?.createIcons();
         }
     }
 }

@@ -1,4 +1,3 @@
-import { createIcons, icons } from 'lucide';
 import { escapeHtml as escapeHtmlValue, safeImageUrl as sanitizeImageUrl, safeUrl } from '../core/security.js';
 // UI Manager
 import { state } from '../core/state.js';
@@ -138,7 +137,7 @@ export class UIManager {
     loadIcons() {
         // Load Lucide icons
         if (typeof lucide !== 'undefined') {
-            createIcons({ icons });
+            window.lucide?.createIcons();
         }
     }
 

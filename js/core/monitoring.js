@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/browser';
 import config from './config.js';
 
 export class MonitoringManager {
@@ -6,6 +5,7 @@ export class MonitoringManager {
         this.initialized = false;
         this.sentryDSN = config.monitoring?.sentryDsn;
         this.handlersAttached = false;
+        this.sentry = null;
     }
 
     async init(consentGranted = false) {
@@ -22,7 +22,7 @@ export class MonitoringManager {
             }
 
             if (this.sentryDSN) {
-                this.initSentry();
+                await this.initSentry();
             }
 
             this.initialized = true;
@@ -31,13 +31,17 @@ export class MonitoringManager {
         }
     }
 
-    initSentry() {
+    async initSentry() {
+        const Sentry = await import('@sentry/browser');
+        this.sentry = Sentry;
+
         Sentry.init({
             dsn: this.sentryDSN,
             environment: this.getEnvironment(),
             release: config.app?.version || '2.0.0',
             tracesSampleRate: this.getEnvironment() === 'production' ? 0.1 : 1.0,
-            attachStacktrace: true
+            attachStacktrace: true,
+            integrations: []
         });
     }
 
@@ -55,7 +59,7 @@ export class MonitoringManager {
         if (!this.initialized) return;
 
         try {
-            Sentry.captureException(error, { extra: context });
+            this.sentry?.captureException(error, { extra: context });
         } catch {}
     }
 
@@ -63,7 +67,7 @@ export class MonitoringManager {
         if (!this.initialized) return;
 
         try {
-            Sentry.captureMessage(message, { level, extra: context });
+            this.sentry?.captureMessage(message, { level, extra: context });
         } catch {}
     }
 
@@ -71,7 +75,7 @@ export class MonitoringManager {
         if (!this.initialized || !user) return;
 
         try {
-            Sentry.setUser({
+            this.sentry?.setUser({
                 id: user.id,
                 email: user.email,
                 username: user.full_name
@@ -83,7 +87,7 @@ export class MonitoringManager {
         if (!this.initialized) return;
 
         try {
-            Sentry.setUser(null);
+            this.sentry?.setUser(null);
         } catch {}
     }
 
