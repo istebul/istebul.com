@@ -84,19 +84,17 @@ exports.handler = async (event) => {
   try {
     const token = getBearerToken(event.headers);
 
-    if (!token) {
-      return json(401, { error: 'Authorization required' });
-    }
+    if (token) {
+      const supabase = getSupabaseAdmin();
 
-    const supabase = getSupabaseAdmin();
+      const {
+        data: { user },
+        error: authError
+      } = await supabase.auth.getUser(token);
 
-    const {
-      data: { user },
-      error: authError
-    } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return json(401, { error: 'Invalid token' });
+      if (authError || !user) {
+        return json(401, { error: 'Invalid token' });
+      }
     }
 
     let payload = {};

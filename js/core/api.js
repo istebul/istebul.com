@@ -434,16 +434,17 @@ export class API {
     static async askClaude(prompt, context = {}) {
         const { data: { session } } = await supabase.auth.getSession();
 
-        if (!session?.access_token) {
-            throw new Error('AI desteğini kullanmak için giriş yapmalısınız.');
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        if (session?.access_token) {
+            headers.Authorization = `Bearer ${session.access_token}`;
         }
 
         return this.request(config.api.endpoints.claudeProxy, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${session.access_token}`
-            },
+            headers,
             body: JSON.stringify({ prompt, context })
         });
     }
