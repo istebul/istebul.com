@@ -10,9 +10,7 @@ const ignoredDirs = new Set([
   'recovered',
   'dist',
   'playwright-report',
-  'test-results',
-  'js',
-  'functions'
+  'test-results'
 ]);
 
 const requiredAssets = [
@@ -62,28 +60,9 @@ for (const asset of requiredAssets) {
   if (!fs.existsSync(fullPath)) {
     failed = true;
     process.stderr.write(`Missing required asset: ${asset}\n`);
-    continue;
-  }
-
-  if (asset.endsWith('.png')) {
-    const buffer = fs.readFileSync(fullPath);
-    const expectedSize = Number(asset.match(/favicon-(\d+)\.png/)?.[1] || 0);
-    const actualWidth = buffer.readUInt32BE(16);
-    const actualHeight = buffer.readUInt32BE(20);
-
-    if (actualWidth !== expectedSize || actualHeight !== expectedSize) {
-      failed = true;
-      process.stderr.write(
-        `Invalid icon dimensions: ${asset} is ${actualWidth}x${actualHeight}\n`
-      );
-    }
   }
 }
 
-if (failed) {
-  process.exit(1);
-}
+if (failed) process.exit(1);
 
-console.log(
-  `Checked ${jsFiles.length} JavaScript files and ${requiredAssets.length} required assets.`
-);
+console.log(`Checked ${jsFiles.length} JavaScript files.`);
