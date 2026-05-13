@@ -451,6 +451,7 @@ export class UIManager {
                     '<span><strong>' + this.escapeHtml(answer.label) + ':</strong> ' + this.escapeHtml(answer.value) + '</span>'
                 ).join('') + '</div>' +
                 this.getDecisionInsightMarkup(result.insight) +
+                this.getAIDecisionExtrasMarkup(result) +
                 this.getChoiceSummaryMarkup(result.categoryId, result.recommendations) +
                 '<div class="assistant-recommendations">' + result.recommendations.map((item, index) =>
                     '<article class="assistant-recommendation ' + (index === 0 ? 'featured' : '') + '">' +
@@ -484,6 +485,23 @@ export class UIManager {
 
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.loadIcons();
+    }
+
+    getAIDecisionExtrasMarkup(result) {
+        if (!result.aiGenerated) return '';
+
+        const primary = result.recommendations?.[0];
+        const pros = primary?.pros || [];
+        const cons = primary?.cons || [];
+        const risks = result.risks || [];
+        const nextSteps = result.nextSteps || [];
+
+        return '<div class="assistant-ai-extras">' +
+            (pros.length ? '<div class="assistant-ai-box"><h5>Avantajlar</h5><ul>' + pros.map(item => '<li>' + this.escapeHtml(item) + '</li>').join('') + '</ul></div>' : '') +
+            (cons.length ? '<div class="assistant-ai-box"><h5>Dikkat edilmesi gerekenler</h5><ul>' + cons.map(item => '<li>' + this.escapeHtml(item) + '</li>').join('') + '</ul></div>' : '') +
+            (risks.length ? '<div class="assistant-ai-box"><h5>Riskler</h5><ul>' + risks.map(item => '<li>' + this.escapeHtml(item) + '</li>').join('') + '</ul></div>' : '') +
+            (nextSteps.length ? '<div class="assistant-ai-box"><h5>Sonraki adımlar</h5><ul>' + nextSteps.map(item => '<li>' + this.escapeHtml(item) + '</li>').join('') + '</ul></div>' : '') +
+        '</div>';
     }
 
     getDecisionMetricMarkup(label, value, note, icon) {
