@@ -36,7 +36,10 @@ export async function onRequestPost({ request, env }) {
     if (!response.ok) {
       return json({
         error: 'OpenAI request failed',
-        details: data
+        status: response.status,
+        message: data?.error?.message || 'Unknown OpenAI error',
+        type: data?.error?.type,
+        code: data?.error?.code
       }, response.status);
     }
 
