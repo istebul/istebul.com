@@ -1770,7 +1770,7 @@ class App {
         this.assistantAnswers = {};
         this.assistantStep = 0;
         this.ui.clearDecisionResults();
-        this.router.navigate('/decision-assistant');
+        this.router.navigate('/karar-asistani');
         this.renderDecisionAssistant();
     }
 
@@ -2554,7 +2554,7 @@ class App {
         this.assistantCategory = record.categoryId;
         this.assistantAnswers = record.rawAnswers || {};
         this.assistantStep = Math.max(this.getAssistantWizardSteps(this.getResolvedDecisionAssistantConfig()[this.assistantCategory]).length - 1, 0);
-        this.router.navigate('/decision-assistant');
+        this.router.navigate('/karar-asistani');
         this.renderDecisionAssistant();
         const result = this.buildDecisionResult(this.getResolvedDecisionAssistantConfig()[this.assistantCategory], this.assistantAnswers);
         this.lastDecisionResult = result;
