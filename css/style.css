@@ -7694,3 +7694,19 @@ main > section:not(.hero-section) {
     background: var(--bg-secondary);
     color: var(--text-primary);
 }
+
+/* Performance: prevent CLS */
+#hero-categories,
+.hero-categories {
+  min-height: 72px;
+}
+
+.hero-image,
+.decision-preview {
+  min-height: 520px;
+}
+
+.cookie-consent,
+#cookie-consent {
+  min-height: 80px;
+}
