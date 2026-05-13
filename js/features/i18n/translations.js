@@ -25,9 +25,9 @@ export const translations = {
             haveAccount: 'Zaten hesabınız var mı?'
         },
         listings: {
-            title: 'İlanlar',
+            title: 'Seçenekler',
             addListing: 'İlan Ekle',
-            myListings: 'İlanlarım',
+            myListings: 'Seçeneklerım',
             favorites: 'Favorilerim',
             price: 'Fiyat',
             location: 'Konum',

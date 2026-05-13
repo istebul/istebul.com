@@ -190,7 +190,7 @@ export class UIManager {
         if (profile && (profile.full_name || profile.email)) {
             profileCard.innerHTML = `
                 <h3>Merhaba, ${this.escapeHtml(profile.full_name || profile.email)}</h3>
-                <p>Hesabınız hazır. Profil bilgilerinizi güncelleyebilir, ilanlarınızı yönetebilir ve favorilerinizi takip edebilirsiniz.</p>
+                <p>Hesabınız hazır. Profil bilgilerinizi güncelleyebilir, seçeneklerinızı yönetebilir ve favorilerinizi takip edebilirsiniz.</p>
                 <div class="profile-summary">
                     <div><strong>Ad Soyad:</strong> ${this.escapeHtml(profile.full_name || 'Bilinmiyor')}</div>
                     <div><strong>E-posta:</strong> ${this.escapeHtml(profile.email || 'Bilinmiyor')}</div>
@@ -243,7 +243,7 @@ export class UIManager {
         if (!container) return;
 
         container.innerHTML = categories.map(category => `
-            <a href="/ilanlar" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} İlanları</a>
+            <a href="/ilanlar" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçeneklerı</a>
         `).join('');
     }
 
@@ -894,7 +894,7 @@ export class UIManager {
         });
 
         if (label) {
-            label.textContent = category ? `${category.name} ilanları` : 'Son İlanlar';
+            label.textContent = category ? `${category.name} seçenekleri` : 'Öne çıkan seçenekler';
         }
     }
 

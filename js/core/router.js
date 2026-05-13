@@ -138,8 +138,8 @@ export class Router {
 
     updateTitle(route) {
         const titles = {
-            'home': 'isteBul - Modern İlan Platformu',
-            'ilanlar': 'İlanlar - isteBul',
+            'home': 'isteBul - Yapay Zeka Destekli Karar Platformu',
+            'ilanlar': 'Seçenekler - isteBul',
             'compare': 'Karşılaştırma Merkezi - isteBul',
             'decision-assistant': 'Karar Asistanı - isteBul',
             'favoriler': 'Favoriler - isteBul',
@@ -152,6 +152,6 @@ export class Router {
             'listing-detail': 'İlan Detayı - isteBul'
         };
 
-        document.title = titles[route] || 'isteBul - Modern İlan Platformu';
+        document.title = titles[route] || 'isteBul - Yapay Zeka Destekli Karar Platformu';
     }
 }
