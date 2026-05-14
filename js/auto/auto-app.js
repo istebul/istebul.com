@@ -45,33 +45,43 @@ function readForm(form) {
   return Object.fromEntries(new FormData(form).entries());
 }
 
-async function trackAutoEvent(eventName, metadata = {}) {
+async function callAutoIntake(payload) {
   const supabaseUrl = window.__env?.SUPABASE_URL;
   const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseKey) return;
+  if (!supabaseUrl || !supabaseKey) return null;
 
+  const response = await fetch(`${supabaseUrl}/functions/v1/auto-intake`, {
+    method: 'POST',
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Auto intake failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+async function trackAutoEvent(eventName, metadata = {}) {
   const email = localStorage.getItem('istebul_auto_lead_email') || metadata.email || null;
   const phone = metadata.phone || null;
 
   try {
-    await fetch(`${supabaseUrl}/rest/v1/auto_events`, {
-      method: 'POST',
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal'
-      },
-      body: JSON.stringify({
-        event_name: eventName,
-        email,
-        phone,
-        metadata: {
-          session_id: getSessionId(),
-          ...metadata
-        }
-      })
+    await callAutoIntake({
+      type: 'event',
+      event_name: eventName,
+      email,
+      phone,
+      metadata: {
+        session_id: getSessionId(),
+        ...metadata
+      }
     });
   } catch (error) {
     console.warn('Auto event tracking failed:', error);
@@ -107,9 +117,6 @@ async function saveLead(email, phone, formData) {
     throw new Error('Çok sık deneme yapıldı. Lütfen biraz sonra tekrar deneyin.');
   }
 
-  const supabaseUrl = window.__env?.SUPABASE_URL;
-  const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
-
   const payload = {
     email,
     phone,
@@ -125,70 +132,29 @@ async function saveLead(email, phone, formData) {
   localStorage.setItem('istebul_auto_lead_email', email);
   localStorage.setItem('istebul_auto_lead_payload', JSON.stringify(payload));
 
-  if (!supabaseUrl || !supabaseKey) {
-    return;
-  }
-
-  const headers = {
-    apikey: supabaseKey,
-    Authorization: `Bearer ${supabaseKey}`,
-    'Content-Type': 'application/json',
-    Prefer: 'return=representation'
-  };
-
-  const updateResponse = await fetch(
-    `${supabaseUrl}/rest/v1/auto_leads?email=eq.${encodeURIComponent(email)}`,
-    {
-      method: 'PATCH',
-      headers,
-      body: JSON.stringify(payload)
-    }
-  );
-
-  if (!updateResponse.ok) {
-    throw new Error(`Lead update failed: ${updateResponse.status}`);
-  }
-
-  const updatedRows = await updateResponse.json();
-
-  if (Array.isArray(updatedRows) && updatedRows.length > 0) {
-    return;
-  }
-
-  const insertResponse = await fetch(`${supabaseUrl}/rest/v1/auto_leads`, {
-    method: 'POST',
-    headers: {
-      ...headers,
-      Prefer: 'return=minimal'
-    },
-    body: JSON.stringify(payload)
+  await callAutoIntake({
+    type: 'lead',
+    email,
+    phone,
+    formData: payload
   });
-
-  if (!insertResponse.ok) {
-    throw new Error(`Lead insert failed: ${insertResponse.status}`);
-  }
 }
 
 async function updateLeadInterest(phone, interestType) {
-  const supabaseUrl = window.__env?.SUPABASE_URL;
-  const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
   const email = localStorage.getItem('istebul_auto_lead_email');
+  const storedPayload = JSON.parse(localStorage.getItem('istebul_auto_lead_payload') || '{}');
 
-  if (!supabaseUrl || !supabaseKey || !email) {
-    return;
-  }
+  if (!email) return;
 
-  await fetch(`${supabaseUrl}/rest/v1/auto_leads?email=eq.${encodeURIComponent(email)}`, {
-    method: 'PATCH',
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
+  await callAutoIntake({
+    type: 'lead',
+    email,
+    phone,
+    formData: {
+      ...storedPayload,
       phone,
       interest_type: interestType
-    })
+    }
   });
 }
 
