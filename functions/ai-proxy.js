@@ -7,8 +7,8 @@ export async function onRequestOptions() {
 
 export async function onRequestPost({ request, env }) {
   try {
-    if (!env.OPENAI_API_KEY) {
-      return json({ error: 'OPENAI_API_KEY missing' }, 500);
+    if (!env.GEMINI_API_KEY) {
+      return json({ error: 'GEMINI_API_KEY missing' }, 500);
     }
 
     const body = await request.json().catch(() => ({}));
@@ -18,40 +18,42 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'Prompt required' }, 400);
     }
 
-    const response = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        input: prompt,
-        temperature: 0.4
-      })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ]
+        })
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
       return json({
-        error: 'OpenAI request failed',
+        error: 'Gemini request failed',
         status: response.status,
-        message: data?.error?.message || 'Unknown OpenAI error',
-        type: data?.error?.type,
-        code: data?.error?.code
+        details: data
       }, response.status);
     }
 
     const result =
-      data.output_text ||
-      data.output?.flatMap(item => item.content || [])
-        ?.map(content => content.text || '')
-        ?.join('')
-        ?.trim() ||
-      '';
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     return json({ result });
+
   } catch (error) {
     return json({
       error: 'AI proxy error',
@@ -69,7 +71,7 @@ function json(data, status = 200) {
 
 function corsHeaders() {
   return {
-    'Access-Control-Allow-Origin': 'https://istebul.com',
+    'Access-Control-Allow-Origin': 'https://istebul-com.pages.dev',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json'
