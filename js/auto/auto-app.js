@@ -25,6 +25,41 @@ function renderLoading() {
   `;
 }
 
+
+async function saveLead(email, formData) {
+  const supabaseUrl = window.__env?.SUPABASE_URL;
+  const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
+
+  const payload = {
+    email,
+    budget: Number(formData.budget || 0),
+    usage: formData.usage,
+    body: formData.body,
+    fuel: formData.fuel,
+    km: Number(formData.km || 0),
+    loan: formData.loan,
+    source: 'auto'
+  };
+
+  localStorage.setItem('istebul_auto_lead_email', email);
+  localStorage.setItem('istebul_auto_lead_payload', JSON.stringify(payload));
+
+  if (!supabaseUrl || !supabaseKey) {
+    return;
+  }
+
+  await fetch(`${supabaseUrl}/rest/v1/auto_leads`, {
+    method: 'POST',
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal'
+    },
+    body: JSON.stringify(payload)
+  });
+}
+
 function renderEmailGate(results) {
   const root = document.getElementById('auto-results');
 
@@ -43,11 +78,16 @@ function renderEmailGate(results) {
     </div>
   `;
 
-  document.getElementById('lead-form').addEventListener('submit', event => {
+  document.getElementById('lead-form').addEventListener('submit', async event => {
     event.preventDefault();
 
     const email = new FormData(event.currentTarget).get('email');
-    localStorage.setItem('istebul_auto_lead_email', email);
+
+    try {
+      await saveLead(email, readForm(form));
+    } catch (error) {
+      console.warn('Lead kaydı yapılamadı:', error);
+    }
 
     renderResults(results);
   });
