@@ -286,7 +286,25 @@ async function loadUsers() {
   const el = document.getElementById('users-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz kullanıcı yok.</p>'; return; }
   el.innerHTML = '<table class="table"><thead><tr><th>Ad</th><th>E-posta</th><th>Rol</th><th>Kayıt</th><th></th></tr></thead><tbody>' +
-    data.map(u => `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td class="text-muted">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td class="text-muted cell-nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="admin">Admin yap</button><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="user">Yetki kaldır</button><button class="btn btn-danger btn-sm" data-action="ban-user" data-id="${u.id}">Engelle</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(u => {
+      const isAdmin = u.role === 'admin';
+      const isSelf = u.id === currentUser?.id;
+      const actions = [];
+
+      if (!isAdmin) {
+        actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="admin">Admin yap</button>`);
+      }
+
+      if (isAdmin && !isSelf) {
+        actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="user">Yetki kaldır</button>`);
+      }
+
+      if (!isSelf) {
+        actions.push(`<button class="btn btn-danger btn-sm" data-action="ban-user" data-id="${u.id}">Engelle</button>`);
+      }
+
+      return `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td class="text-muted">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td class="text-muted cell-nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions">${actions.join('')}</div></td></tr>`;
+    }).join('') + '</tbody></table>';
 }
 
 
