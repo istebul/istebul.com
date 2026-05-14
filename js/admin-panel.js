@@ -454,6 +454,10 @@ async function loadAutoLeads() {
   const searchValue = (document.getElementById('auto-leads-search')?.value || '').toLowerCase().trim();
   const statusFilter = document.getElementById('auto-leads-status-filter')?.value || '';
   const notesOnly = document.getElementById('auto-leads-notes-only')?.checked || false;
+  const followFilter = document.getElementById('auto-leads-follow-filter')?.value || '';
+  const now = new Date();
+  const todayEnd = new Date();
+  todayEnd.setHours(23, 59, 59, 999);
 
   const filteredData = data.filter((lead) => {
     const matchesStatus = !statusFilter || lead.status === statusFilter;
@@ -469,7 +473,16 @@ async function loadAutoLeads() {
       lead.fuel
     ].filter(Boolean).join(' ').toLowerCase();
 
-    return matchesStatus && matchesNotes && (!searchValue || haystack.includes(searchValue));
+    const followDate = lead.follow_up_at ? new Date(lead.follow_up_at) : null;
+    const isFollowDone = lead.follow_up_done === true;
+    const matchesFollow =
+      !followFilter ||
+      (followFilter === 'today' && followDate && followDate <= todayEnd && !isFollowDone) ||
+      (followFilter === 'overdue' && followDate && followDate < now && !isFollowDone) ||
+      (followFilter === 'open' && followDate && !isFollowDone) ||
+      (followFilter === 'done' && isFollowDone);
+
+    return matchesStatus && matchesNotes && matchesFollow && (!searchValue || haystack.includes(searchValue));
   });
 
   if (!filteredData.length) {
