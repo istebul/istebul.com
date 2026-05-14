@@ -67,7 +67,6 @@ class App {
         this.assistantAnswers = {};
         this.assistantStep = 0;
         this.lastDecisionResult = null;
-        this.init();
     }
 
     async init() {
