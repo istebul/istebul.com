@@ -612,7 +612,15 @@ function openLeadDrawer(lead) {
     <div class="table-actions" style="margin-bottom:14px;">
       ${lead.phone ? `<button class="btn btn-ghost btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="${whatsappUrl}">WhatsApp</button>` : ''}
       ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
-      <button class="btn btn-ghost btn-sm" disabled>Follow-up yakında</button>
+      <button class="btn btn-ghost btn-sm" data-action="complete-follow-up" data-id="${lead.id}">Takibi Tamamla</button>
+      <input
+        type="datetime-local"
+        class="form-input"
+        id="follow-up-date"
+        value="${lead.follow_up_at ? new Date(lead.follow_up_at).toISOString().slice(0,16) : ''}"
+        style="max-width:220px;"
+      >
+      <button class="btn btn-ghost btn-sm" data-action="save-follow-up" data-id="${lead.id}">Takip Kaydet</button>
     </div>
     <div class="lead-detail-grid">
       <div class="lead-detail-item"><div class="lead-detail-label">Email</div><div class="lead-detail-value">${fmt(lead.email)}</div></div>
@@ -636,6 +644,44 @@ function openLeadDrawer(lead) {
 function closeLeadDrawer() {
   document.getElementById('lead-drawer')?.classList.remove('open');
   document.getElementById('lead-drawer-overlay')?.classList.remove('open');
+}
+
+
+
+async function completeFollowUp(id) {
+  await adminAction({
+    action: 'update',
+    table: 'auto_leads',
+    id,
+    values: {
+      follow_up_done: true
+    }
+  });
+
+  toast('Takip tamamlandı');
+  closeLeadDrawer();
+  loadAutoLeads();
+}
+
+async function saveFollowUp(id) {
+  const input = document.getElementById('follow-up-date');
+  if (!input?.value) {
+    toast('Takip tarihi seçin');
+    return;
+  }
+
+  await adminAction({
+    action: 'update',
+    table: 'auto_leads',
+    id,
+    values: {
+      follow_up_at: new Date(input.value).toISOString(),
+      follow_up_done: false
+    }
+  });
+
+  toast('Takip tarihi kaydedildi');
+  loadAutoLeads();
 }
 
 
@@ -824,6 +870,8 @@ function bindAdminPanelEvents() {
     if (action === 'delete-auto-lead') deleteAutoLead(id);
     if (action === 'export-auto-leads') exportAutoLeadsCsv();
     if (action === 'close-lead-drawer') closeLeadDrawer();
+    if (action === 'complete-follow-up') completeFollowUp(id);
+    if (action === 'save-follow-up') saveFollowUp(id);
     if (action === 'view-auto-lead') openLeadDrawer(JSON.parse(el.dataset.lead.replace(/&apos;/g, "'")));
     if (action === 'track-whatsapp-click') {
       event.preventDefault();
