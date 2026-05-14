@@ -156,7 +156,7 @@ async function loadAnnouncements() {
   const { data } = await sb.from('announcements').select('*').order('created_at', { ascending: false });
   const el = document.getElementById('announcements-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz duyuru yok.</p>'; return; }
-  el.innerHTML = '<table class="table"><thead>
+  el.innerHTML = `<table class="table"><thead>
       <tr>
         <th>Email</th>
         <th>Telefon</th>
@@ -172,7 +172,7 @@ async function loadAnnouncements() {
         <th>Aksiyon</th>
       </tr>
     </thead><tbody>' +
-    data.map(a => `<tr><td><strong>${a.title||'—'}</strong></td><td class="cell-truncate">${a.content||'—'}</td><td><span class="badge ${a.is_active?'badge-green':'badge-red'}">${a.is_active?'Aktif':'Pasif'}</span></td><td class="text-muted cell-nowrap">${new Date(a.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-ann" data-id="${a.id}" data-active="${a.is_active}">${a.is_active?'Durdur':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-ann" data-id="${a.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(a => `<tr><td><strong>${a.title||'—'}</strong></td><td class="cell-truncate">${a.content||'—'}</td><td><span class="badge ${a.is_active?'badge-green':'badge-red'}">${a.is_active?'Aktif':'Pasif'}</span></td><td class="text-muted cell-nowrap">${new Date(a.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-ann" data-id="${a.id}" data-active="${a.is_active}">${a.is_active?'Durdur':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-ann" data-id="${a.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>`;
 }
 
 async function saveAnnouncement() {
@@ -205,7 +205,7 @@ async function loadFaqs() {
   const { data } = await sb.from('faqs').select('*').order('order_num').order('created_at', { ascending: false });
   const el = document.getElementById('faqs-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz SSS yok.</p>'; return; }
-  el.innerHTML = '<table class="table"><thead>
+  el.innerHTML = `<table class="table"><thead>
       <tr>
         <th>Email</th>
         <th>Telefon</th>
@@ -221,7 +221,7 @@ async function loadFaqs() {
         <th>Aksiyon</th>
       </tr>
     </thead><tbody>' +
-    data.map(f => `<tr><td class="text-muted">${f.order_num||0}</td><td>${f.question||'—'}</td><td><span class="badge ${f.is_active?'badge-green':'badge-red'}">${f.is_active?'Aktif':'Pasif'}</span></td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-faq" data-id="${f.id}" data-active="${f.is_active}">${f.is_active?'Gizle':'Göster'}</button><button class="btn btn-danger btn-sm" data-action="delete-faq" data-id="${f.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(f => `<tr><td class="text-muted">${f.order_num||0}</td><td>${f.question||'—'}</td><td><span class="badge ${f.is_active?'badge-green':'badge-red'}">${f.is_active?'Aktif':'Pasif'}</span></td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-faq" data-id="${f.id}" data-active="${f.is_active}">${f.is_active?'Gizle':'Göster'}</button><button class="btn btn-danger btn-sm" data-action="delete-faq" data-id="${f.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>`;
 }
 
 async function saveFaq() {
@@ -262,7 +262,7 @@ async function loadPosts() {
   const { data } = await sb.from('posts').select('*').order('created_at', { ascending: false });
   const el = document.getElementById('posts-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz yazı yok.</p>'; return; }
-  el.innerHTML = '<table class="table"><thead>
+  el.innerHTML = `<table class="table"><thead>
       <tr>
         <th>Email</th>
         <th>Telefon</th>
@@ -278,7 +278,7 @@ async function loadPosts() {
         <th>Aksiyon</th>
       </tr>
     </thead><tbody>' +
-    data.map(p => `<tr><td><strong>${p.title||'—'}</strong></td><td class="text-muted text-xs">/${p.slug||'—'}</td><td><span class="badge ${p.is_published?'badge-green':'badge-yellow'}">${p.is_published?'Yayında':'Taslak'}</span></td><td class="text-muted cell-nowrap">${new Date(p.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-post" data-id="${p.id}" data-active="${p.is_published}">${p.is_published?'Taslağa al':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-post" data-id="${p.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(p => `<tr><td><strong>${p.title||'—'}</strong></td><td class="text-muted text-xs">/${p.slug||'—'}</td><td><span class="badge ${p.is_published?'badge-green':'badge-yellow'}">${p.is_published?'Yayında':'Taslak'}</span></td><td class="text-muted cell-nowrap">${new Date(p.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-post" data-id="${p.id}" data-active="${p.is_published}">${p.is_published?'Taslağa al':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-post" data-id="${p.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>`;
 }
 
 async function savePost() {
@@ -313,7 +313,7 @@ async function loadListings() {
   const { data } = await sb.from('listings').select('*').order('created_at', { ascending: false }).limit(100);
   const el = document.getElementById('listings-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz ilan yok.</p>'; return; }
-  el.innerHTML = '<table class="table"><thead>
+  el.innerHTML = `<table class="table"><thead>
       <tr>
         <th>Email</th>
         <th>Telefon</th>
@@ -329,7 +329,7 @@ async function loadListings() {
         <th>Aksiyon</th>
       </tr>
     </thead><tbody>' +
-    data.map(l => `<tr><td><strong>${l.title||l.name||'—'}</strong></td><td><span class="badge badge-blue">${l.category||l.type||'—'}</span></td><td class="cell-nowrap">${l.price?Number(l.price).toLocaleString('tr-TR')+' ₺':'—'}</td><td><span class="badge ${!l.status||l.status==='active'?'badge-green':'badge-red'}">${l.status||'aktif'}</span></td><td class="text-muted cell-nowrap">${l.created_at?new Date(l.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-warning btn-sm" data-action="feature-listing" data-id="${l.id}" data-active="${!!l.is_featured}">${l.is_featured?'Öne çıkarmayı kaldır':'Öne çıkar'}</button><button class="btn btn-danger btn-sm" data-action="delete-listing" data-id="${l.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(l => `<tr><td><strong>${l.title||l.name||'—'}</strong></td><td><span class="badge badge-blue">${l.category||l.type||'—'}</span></td><td class="cell-nowrap">${l.price?Number(l.price).toLocaleString('tr-TR')+' ₺':'—'}</td><td><span class="badge ${!l.status||l.status==='active'?'badge-green':'badge-red'}">${l.status||'aktif'}</span></td><td class="text-muted cell-nowrap">${l.created_at?new Date(l.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-warning btn-sm" data-action="feature-listing" data-id="${l.id}" data-active="${!!l.is_featured}">${l.is_featured?'Öne çıkarmayı kaldır':'Öne çıkar'}</button><button class="btn btn-danger btn-sm" data-action="delete-listing" data-id="${l.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>`;
 }
 
 async function featureListing(id, current) {
@@ -349,7 +349,7 @@ async function loadUsers() {
   const { data } = await sb.from('profiles').select('*').order('created_at', { ascending: false }).limit(100);
   const el = document.getElementById('users-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz kullanıcı yok.</p>'; return; }
-  el.innerHTML = '<table class="table"><thead>
+  el.innerHTML = `<table class="table"><thead>
       <tr>
         <th>Email</th>
         <th>Telefon</th>
@@ -365,7 +365,7 @@ async function loadUsers() {
         <th>Aksiyon</th>
       </tr>
     </thead><tbody>' +
-    data.map(u => `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td class="text-muted">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td class="text-muted cell-nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="admin">Admin yap</button><button class="btn btn-warning btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="moderator">Moderator yap</button><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="user">Yetki kaldır</button><button class="btn btn-danger btn-sm" data-action="ban-user" data-id="${u.id}">Engelle</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(u => `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td class="text-muted">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td class="text-muted cell-nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="admin">Admin yap</button><button class="btn btn-warning btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="moderator">Moderator yap</button><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="user">Yetki kaldır</button><button class="btn btn-danger btn-sm" data-action="ban-user" data-id="${u.id}">Engelle</button></div></td></tr>`).join('') + '</tbody></table>`;
 }
 
 
