@@ -94,6 +94,7 @@ Deno.serve(async (req) => {
     "posts",
     "listings",
     "profiles",
+    "auto_leads",
   ];
 
   if (!action || !allowedTables.includes(table)) {
@@ -131,6 +132,7 @@ Deno.serve(async (req) => {
         posts: ["is_published"],
         listings: ["is_featured"],
         profiles: ["role", "is_banned"],
+        auto_leads: ["status", "notes"],
       };
 
       const keys = Object.keys(values);
