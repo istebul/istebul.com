@@ -43,7 +43,9 @@ const getAuthenticatedUser = async (context, token) => {
 };
 
 export async function onRequestPost(context) {
-  const origin = context.request.headers.get('Origin');\n\n  try {
+  const origin = context.request.headers.get('Origin');
+
+  try {
     const STRIPE_SECRET_KEY = context.env.STRIPE_SECRET_KEY;
     const STRIPE_PRICE_ID = context.env.STRIPE_PRICE_ID;
 
