@@ -313,34 +313,26 @@ async function trackAdminAutoEvent(eventName, metadata = {}) {
 }
 
 async function loadAutoAnalytics() {
-  const [
-    autoEventsRes,
-    autoLeadsRes
-  ] = await Promise.all([
-    sb.from('auto_events').select('*').order('created_at', { ascending: false }).limit(200),
+  const [autoEventsRes, autoLeadsRes] = await Promise.all([
+    sb.from('auto_events').select('*').order('created_at', { ascending: false }).limit(500),
     sb.from('auto_leads').select('status')
   ]);
 
   const { data, error } = autoEventsRes;
-  const { data: leads } = autoLeadsRes;
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(500);
-
+  const { data: leads, error: leadsError } = autoLeadsRes;
   const el = document.getElementById('auto-analytics-list');
+
   if (!el) return;
 
-  if (error) {
-    el.innerHTML = `<p class="empty">Hata: ${error.message}</p>`;
+  if (error || leadsError) {
+    el.innerHTML = `<p class="empty">Hata: ${(error || leadsError).message}</p>`;
     return;
   }
 
-  if (!data?.length) {
-    el.innerHTML = '<p class="empty">Henüz analytics event yok.</p>';
-    return;
-  }
+  const events = data || [];
+  const leadRows = leads || [];
 
-  const counts = data.reduce((acc, event) => {
+  const counts = events.reduce((acc, event) => {
     acc[event.event_name] = (acc[event.event_name] || 0) + 1;
     return acc;
   }, {});
@@ -366,16 +358,17 @@ async function loadAutoAnalytics() {
     ['auto_whatsapp_click', labels.auto_whatsapp_click, counts.auto_whatsapp_click || 0, pct(counts.auto_whatsapp_click || 0, counts.auto_finance_click || 0)]
   ];
 
-  const leadCounts = (leads || []).reduce((acc, lead) => {
+  const leadCounts = leadRows.reduce((acc, lead) => {
     const status = lead.status || 'new';
     acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {});
 
-  const totalLeads = (leads || []).length;
+  const totalLeads = leadRows.length;
   const crmPct = (value) => totalLeads ? Math.round((value / totalLeads) * 100) + '%' : '—';
 
   const crmCards = [
+    ['Toplam Lead', totalLeads, '100%'],
     ['Yeni', leadCounts.new || 0, crmPct(leadCounts.new || 0)],
     ['Arandı', leadCounts.called || 0, crmPct(leadCounts.called || 0)],
     ['İlgileniyor', leadCounts.interested || 0, crmPct(leadCounts.interested || 0)],
@@ -398,7 +391,6 @@ async function loadAutoAnalytics() {
     <div style="height:20px"></div>
 
     <h3 style="margin:0 0 14px 0;">Acquisition Funnel</h3>
-
     <div class="stat-grid">
       ${analyticsCards.map(([key, label, value, sub]) => `
         <div class="stat-card">
@@ -411,28 +403,31 @@ async function loadAutoAnalytics() {
 
     <div style="height:20px"></div>
 
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Event</th>
-          <th>Email</th>
-          <th>Telefon</th>
-          <th>Tarih</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.slice(0, 100).map(event => `
+    ${events.length ? `
+      <table class="table">
+        <thead>
           <tr>
-            <td><strong>${labels[event.event_name] || event.event_name}</strong></td>
-            <td>${event.email || '—'}</td>
-            <td>${event.phone || '—'}</td>
-            <td>${event.created_at ? new Date(event.created_at).toLocaleString('tr-TR') : '—'}</td>
+            <th>Event</th>
+            <th>Email</th>
+            <th>Telefon</th>
+            <th>Tarih</th>
           </tr>
-        `).join('')}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          ${events.slice(0, 100).map(event => `
+            <tr>
+              <td><strong>${labels[event.event_name] || event.event_name}</strong></td>
+              <td>${event.email || '—'}</td>
+              <td>${event.phone || '—'}</td>
+              <td>${event.created_at ? new Date(event.created_at).toLocaleString('tr-TR') : '—'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    ` : '<p class="empty">Henüz analytics event yok.</p>'}
   `;
 }
+
 
 
 async function loadAutoLeads() {
