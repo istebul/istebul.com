@@ -263,54 +263,6 @@ export class API {
     }
 
     // Image upload
-    static async uploadImage(file, path) {
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session?.access_token) {
-            throw new Error('Görsel yüklemek için giriş yapmalısınız.');
-        }
-
-        const base64 = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = () => reject(reader.error);
-            reader.readAsDataURL(file);
-        });
-
-        const result = await this.request(config.api.endpoints.uploadImage, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${session.access_token}`
-            },
-            body: JSON.stringify({
-                fileName: path || file.name,
-                contentType: file.type,
-                base64
-            })
-        });
-
-        return result.file;
-    }
-
-    static getImageUrl(path) {
-        const { data } = supabase.storage
-            .from('images')
-            .getPublicUrl(path);
-
-        return data.publicUrl;
-    }
-
-    // Categories API
-    static async getCategories() {
-        const { data, error } = await supabase
-            .from('categories')
-            .select('*')
-            .order('name');
-
-        if (error) throw error;
-        return data;
-    }
 
     static async getCategoryCounts() {
         const { data, error } = await supabase

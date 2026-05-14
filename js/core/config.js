@@ -30,9 +30,7 @@ export const config = {
     api: {
         baseUrl: '/.netlify/functions',
         endpoints: {
-            uploadImage: '/upload-image',
-            aiProxy: '/ai-proxy',
-            supabaseProxy: '/supabase-proxy'
+            aiProxy: '/ai-proxy'
         }
     },
 
