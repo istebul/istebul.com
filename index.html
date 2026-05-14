@@ -57,6 +57,7 @@
             <div class="nav-menu" id="nav-menu">
                 <a href="/" class="nav-link active">Ana Sayfa</a>
                 <a href="/karar-asistani" class="nav-link">AI Asistan</a>
+                <a href="/auto" class="nav-link">Auto</a>
                 <a href="/ilanlar" class="nav-link">Seçenekler</a>
                 <a href="/karsilastir" class="nav-link">Karşılaştır <span id="comparison-count" class="nav-count" hidden>0</span></a>
                 <a href="#how-it-works" class="nav-link">Nasıl Çalışır</a>
@@ -122,6 +123,16 @@
                             <i data-lucide="compass"></i> Piyasayı keşfet
                         </a>
                     </div>
+                    
+                    <a href="/auto" class="auto-feature-banner">
+                        <div>
+                            <span class="auto-badge">YENİ</span>
+                            <strong>AI Araç Satın Alma Danışmanı</strong>
+                            <p>Bütçe, kredi ve kullanımınıza göre en doğru aracı analiz edin.</p>
+                        </div>
+                        <span class="auto-arrow">→</span>
+                    </a>
+
                     <div class="hero-search">
                         <div class="search-box">
                             <input type="text" placeholder="Model, semt veya tatil rotası arayın" id="search-input">
@@ -136,7 +147,7 @@
                         <span><strong>148+</strong> model</span>
                     </div>
                     <div class="hero-categories" id="hero-categories">
-                        <button type="button" class="category-card category-card-arac" data-assistant-start="arac">
+                        <button type="button" class="category-card category-card-arac" onclick="window.location.href='/auto'">
                             <span class="category-visual category-visual-arac" aria-hidden="true">
                                 <i data-lucide="car-front"></i>
                             </span>

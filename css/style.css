@@ -7744,3 +7744,50 @@ main > section:not(.hero-section) {
 #cookie-consent {
   min-height: 80px;
 }
+
+.auto-feature-banner{
+  margin-top:20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  padding:20px 24px;
+  background:#fff;
+  border:1px solid rgba(37,99,235,.12);
+  border-radius:22px;
+  text-decoration:none;
+  color:inherit;
+  box-shadow:0 14px 50px rgba(37,99,235,.08);
+  transition:.2s ease;
+}
+
+.auto-feature-banner:hover{
+  transform:translateY(-2px);
+  box-shadow:0 22px 60px rgba(37,99,235,.12);
+}
+
+.auto-badge{
+  display:inline-block;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.08em;
+  color:#2563eb;
+  margin-bottom:8px;
+}
+
+.auto-feature-banner strong{
+  display:block;
+  font-size:20px;
+  margin-bottom:6px;
+}
+
+.auto-feature-banner p{
+  margin:0;
+  color:#64748b;
+}
+
+.auto-arrow{
+  font-size:28px;
+  font-weight:700;
+  color:#2563eb;
+}
