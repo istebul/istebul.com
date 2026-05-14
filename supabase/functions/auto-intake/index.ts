@@ -53,9 +53,7 @@ function clampNumber(value: unknown, min = 0, max = 100000000) {
 }
 
 function getClientIp(req: Request) {
-  return req.headers.get("cf-connecting-ip")
-    || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    || "unknown";
+  return req.headers.get("cf-connecting-ip") || "unknown";
 }
 
 async function checkRateLimit(adminClient: any, key: string, limit: number, windowMs: number) {
@@ -184,6 +182,7 @@ Deno.serve(async (req) => {
       .from("auto_leads")
       .update(payload)
       .eq("email", email)
+      .eq("phone", phone)
       .select("id");
 
     if (updateError) return json({ error: updateError.message }, 500, origin);
