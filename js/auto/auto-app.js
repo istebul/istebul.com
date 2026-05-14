@@ -2,6 +2,14 @@ import { recommendVehicles } from './auto-ai.js';
 
 const formatter = new Intl.NumberFormat('tr-TR');
 
+function safeJsonParse(value, fallback = {}) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
 function getSessionId() {
   let id = sessionStorage.getItem('istebul_auto_session');
   if (!id) {
@@ -84,7 +92,7 @@ async function trackAutoEvent(eventName, metadata = {}) {
       }
     });
   } catch (error) {
-    console.warn('Auto event tracking failed:', error);
+    
   }
 }
 
@@ -142,7 +150,7 @@ async function saveLead(email, phone, formData) {
 
 async function updateLeadInterest(phone, interestType) {
   const email = localStorage.getItem('istebul_auto_lead_email');
-  const storedPayload = JSON.parse(localStorage.getItem('istebul_auto_lead_payload') || '{}');
+  const storedPayload = safeJsonParse(localStorage.getItem('istebul_auto_lead_payload'), {});
 
   if (!email) return;
 
@@ -213,6 +221,16 @@ function trackUniqueAutoEvent(eventName, metadata = {}, key = '') {
 function renderResults(results) {
   const root = document.getElementById('auto-results');
 
+  if (!Array.isArray(results) || !results.length) {
+    root.innerHTML = `
+      <article>
+        <h3>Uygun araç bulunamadı</h3>
+        <p>Filtreleri genişletip tekrar deneyin.</p>
+      </article>
+    `;
+    return;
+  }
+
   root.innerHTML = results.map(vehicle => `
     <article>
       <div class="top-row">
@@ -241,6 +259,8 @@ function renderResults(results) {
       <div class="cost">
         <p><strong>Tahmini yıllık maliyet:</strong><br>${formatter.format(vehicle.costs.total)} ₺</p>
         <p>Yakıt/enerji: ${formatter.format(vehicle.costs.fuel)} ₺</p>
+        <p>Sigorta: ${formatter.format(vehicle.costs.insurance)} ₺</p>
+        <p>Bakım: ${formatter.format(vehicle.costs.maintenance)} ₺</p>
       </div>
 
       <div class="cta-row">
@@ -251,20 +271,8 @@ function renderResults(results) {
           Finansman seçenekleri
         </button>
       </div>
-        <p>Sigorta: ${formatter.format(vehicle.costs.insurance)} ₺</p>
-        <p>Bakım: ${formatter.format(vehicle.costs.maintenance)} ₺</p>
-      </div>
-
-      <button class="btn secondary finance-btn" type="button">Finansman seçeneklerini gör</button>
     </article>
   `).join('');
-
-  document.querySelectorAll('.finance-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      trackAutoEvent('auto_finance_click');
-      openLeadModal('finance');
-    });
-  });
 }
 
 document.getElementById('year').textContent = new Date().getFullYear();
@@ -272,6 +280,13 @@ document.getElementById('year').textContent = new Date().getFullYear();
 const form = document.getElementById('auto-form');
 
 trackAutoEvent('auto_page_view');
+
+document.querySelectorAll('#gelir .btn.secondary').forEach((btn, index) => {
+  const types = ['finance', 'insurance', 'report'];
+  btn.dataset.interest = types[index] || 'finance';
+  btn.classList.add('auto-interest-btn');
+});
+
 
 form.addEventListener('submit', event => {
   event.preventDefault();
