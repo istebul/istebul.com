@@ -170,25 +170,25 @@
                     <div class="preview-score-card">
                         <div>
                             <span class="preview-kicker">Önerilen seçenek</span>
-                            <h3 data-preview-title>Hibrit Kompakt SUV</h3>
-                            <p data-preview-note>Yakıt, kasko ve bakım maliyetleriyle dengeli aile aracı.</p>
+                            <h3 data-preview-title>2023 Toyota Corolla Cross Hybrid</h3>
+                            <p data-preview-note>Yakıt tüketimi, sigorta ve toplam sahip olma maliyetine göre dengeli aile seçeneği.</p>
                         </div>
-                        <strong data-preview-score>92</strong>
+                        <strong data-preview-score>89</strong>
                     </div>
                     <div class="preview-metrics">
-                        <div data-preview-metric><span>Yıllık maliyet</span><strong>114.000 ₺</strong></div>
-                        <div data-preview-metric><span>Aylık kredi</span><strong>76.820 ₺</strong></div>
-                        <div data-preview-metric><span>Eşleşme</span><strong>%92</strong></div>
+                        <div data-preview-metric><span>Yıllık maliyet</span><strong>128.400 ₺</strong></div>
+                        <div data-preview-metric><span>Aylık kredi</span><strong>71.450 ₺</strong></div>
+                        <div data-preview-metric><span>Eşleşme</span><strong>%89</strong></div>
                     </div>
                     <div class="preview-bars">
                         <div data-preview-bar-row><span>Yakıt</span><i class="preview-bar-w-62"></i></div>
-                        <div data-preview-bar-row><span>Sigorta</span><i class="preview-bar-w-48"></i></div>
+                        <div data-preview-bar-row><span>Sigorta Modeli</span><i class="preview-bar-w-48"></i></div>
                         <div data-preview-bar-row><span>Bakım</span><i class="preview-bar-w-34"></i></div>
                     </div>
                     <div class="preview-source-strip" data-preview-sources>
-                        <a href="https://www.sahibinden.com/otomobil" target="_blank" rel="noopener noreferrer" data-preview-source>Sahibinden</a>
-                        <a href="https://www.hangikredi.com/kredi/ihtiyac-kredisi" target="_blank" rel="noopener noreferrer" data-preview-source>Hangikredi</a>
-                        <a href="https://www.sigortam.net/" target="_blank" rel="noopener noreferrer" data-preview-source>Sigorta</a>
+                        <a href="#veri-modeli" target="_blank" rel="noopener noreferrer" data-preview-source>Piyasa Verisi</a>
+                        <a href="#veri-modeli" target="_blank" rel="noopener noreferrer" data-preview-source>Finans Verisi</a>
+                        <a href="#veri-modeli" target="_blank" rel="noopener noreferrer" data-preview-source>Sigorta Modeli</a>
                     </div>
                 </div>
             </div>
@@ -197,16 +197,16 @@
         <section id="trust" class="trust-section">
             <div class="container trust-grid">
                 <div class="trust-card">
-                    <h3>1.200+</h3>
-                    <p>Başarılı karşılaştırma yapıldı</p>
+                    <h3>AI</h3>
+                    <p>Çok kriterli karar analizi</p>
                 </div>
                 <div class="trust-card">
-                    <h3>%94</h3>
-                    <p>Kullanıcı memnuniyeti</p>
+                    <h3>Şeffaf</h3>
+                    <p>Karşılaştırma metodolojisi</p>
                 </div>
                 <div class="trust-card">
-                    <h3>23</h3>
-                    <p>Bugün karşılaştırılan araç</p>
+                    <h3>Veri</h3>
+                    <p>Güncel maliyet modellemesi</p>
                 </div>
             </div>
         </section>
@@ -244,7 +244,7 @@
                     <p>Örnek araç kararında sistem yalnızca fiyatı değil, yıllık sahip olma maliyetini de hesaba katar.</p>
                 </div>
                 <div class="decision-body">
-                    <div class="decision-pill">Hibrit Kompakt SUV</div>
+                    <div class="decision-pill">2023 Toyota Corolla Cross Hybrid</div>
                     <p class="decision-text">“Şehir içi kullanım ve aile ihtiyacı için yakıt, kasko, sigorta ve bakım dengesi en güçlü seçenek.”</p>
                     <div class="decision-meta">
                         <span>Yıllık yakıt: 52.000 ₺</span>
@@ -344,7 +344,7 @@
                             <i data-lucide="filter"></i> Filtrele
                         </button>
                         <button class="btn btn-primary" id="add-listing-btn">
-                            <i data-lucide="plus"></i> İlan Ver
+                            <i data-lucide="plus"></i> Öneri Oluştur
                         </button>
                     </div>
                 </div>
@@ -414,7 +414,7 @@
                 <div id="active-filter-summary" class="active-filter-summary" hidden></div>
                 <div id="marketplace-results-toolbar" class="marketplace-results-toolbar" aria-live="polite">
                     <div class="marketplace-result-copy">
-                        <span id="listing-result-count">Henüz ilan bulunamadı</span>
+                        <span id="listing-result-count">Size uygun seçenekler hazırlanıyor</span>
                         <small id="listing-result-context">AI skoruna göre listeleniyor</small>
                     </div>
                     <div class="marketplace-result-controls">
@@ -464,7 +464,7 @@
                 <div id="comparison-content" class="comparison-content">
                     <div class="empty-state">
                         <i data-lucide="columns-3"></i>
-                        <h3>Karşılaştırma listesi boş</h3>
+                        <h3>Karşılaştırma için seçenek ekleyin</h3>
                         <p>Karar sonucu veya ilan kartlarından seçenekleri karşılaştırmaya ekleyin.</p>
                     </div>
                 </div>
@@ -530,8 +530,8 @@
                 <div class="quiz-card" id="quiz-content">
                     <div class="empty-state">
                         <i data-lucide="help-circle"></i>
-                        <h3>Quiz yükleniyor</h3>
-                        <p>Sorular yükleniyor, birazdan burada görünecek.</p>
+                        <h3>Karar analizi hazırlanıyor</h3>
+                        <p>Size en uygun önerileri oluşturmak için analiz akışı hazırlanıyor.</p>
                     </div>
                 </div>
             </div>
@@ -657,7 +657,7 @@
                     <h4>İletişim</h4>
                     <ul>
                         <li><a href="mailto:info@istebul.com" data-cms="email">info@istebul.com</a></li>
-                        <li><a href="mailto:info@istebul.com" data-cms="phone">info@istebul.com</a></li>
+                        <li><a href="/gizlilik-politikasi">Gizlilik Politikası</a></li>
                         <li><a href="mailto:privacy@istebul.com">Veri silme talebi</a></li>
                     </ul>
                 </div>

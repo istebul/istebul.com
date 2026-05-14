@@ -530,7 +530,7 @@ class App {
         const listings = [
             {
                 id: 'demo-arac-1',
-                title: 'Toyota Corolla Cross Hibrit - aile ve şehir içi kullanım',
+                title: '2023 Toyota Corolla Cross Hybrid Flame X-Pack',
                 description: 'Düşük yakıt tüketimi, güçlü ikinci el değeri ve dengeli kasko maliyetiyle karar asistanı için örnek Toyota hibrit araç.',
                 price: 1650000,
                 currency: 'TRY',
@@ -548,7 +548,7 @@ class App {
             },
             {
                 id: 'demo-arac-2',
-                title: 'Elektrikli Şehir Aracı - düşük kullanım maliyeti',
+                title: '2024 MG4 Electric Comfort',
                 description: 'Kısa mesafe kullananlar için düşük enerji ve bakım gideriyle örnek elektrikli araç.',
                 price: 1350000,
                 currency: 'TRY',
@@ -566,7 +566,7 @@ class App {
             },
             {
                 id: 'demo-ev-1',
-                title: 'Merkezi 2+1 Daire - düşük aidatlı yatırım',
+                title: 'İstanbul Kadıköy 2+1 Yeni Daire',
                 description: 'Ulaşımı güçlü lokasyonda, aidat ve bakım yükü düşük örnek daire seçeneği.',
                 price: 3200000,
                 currency: 'TRY',
@@ -583,7 +583,7 @@ class App {
             },
             {
                 id: 'demo-ev-2',
-                title: 'Güvenlikli Site Villası - konfor odaklı yaşam',
+                title: 'İzmir Urla Güvenlikli 4+1 Villa',
                 description: 'Villa tercih edenler için aidat, sigorta, bakım ve kredi yükünü değerlendiren örnek ilan.',
                 price: 18500000,
                 currency: 'TRY',
@@ -600,7 +600,7 @@ class App {
             },
             {
                 id: 'demo-tatil-1',
-                title: 'Antalya Aile Resort Paketi - her şey dahil',
+                title: 'Antalya Lara 5★ Aile Resort Tatili',
                 description: 'Konaklama, transfer, ulaşım ve sigorta dahil toplam maliyetle örnek aile tatili.',
                 price: 98000,
                 currency: 'TRY',
@@ -617,7 +617,7 @@ class App {
             },
             {
                 id: 'demo-tatil-2',
-                title: 'Karadeniz Doğa Rotası - sakin tatil planı',
+                title: 'Karadeniz Yayla & Doğa Deneyimi',
                 description: 'Konaklama, araç ve aktivite bütçesi dengeli, sakinlik isteyenlere uygun örnek rota.',
                 price: 54000,
                 currency: 'TRY',
@@ -1142,7 +1142,7 @@ class App {
                 ],
                 options: [
                     {
-                        name: 'Hibrit Kompakt SUV',
+                        name: 'Toyota Corolla Cross Hybrid',
                         price: 1650000,
                         scoreNote: 'Şehir içi tüketim, aile kullanımı ve ikinci el dengesi güçlü.',
                         match: { usage: ['city', 'family'], budget: ['1800000', '2500000', '3500000'], fuel: 'hybrid', body: 'suv', priority: ['lowCost', 'resale', 'safety'] },
@@ -1273,7 +1273,7 @@ class App {
                 ],
                 options: [
                     {
-                        name: 'Merkezi 2+1 Daire',
+                        name: 'İstanbul Kadıköy 2+1 Daire',
                         price: 3200000,
                         scoreNote: 'Ulaşım, düşük aidat ve yatırım likiditesiyle dengeli başlangıç seçeneği.',
                         match: { propertyType: 'daire', purpose: ['live', 'investment'], budget: ['3500000', '6500000', '12000000', '25000000'], location: 'central', priority: ['lowMonthly', 'valueGrowth', 'maintenance'] },
@@ -1412,7 +1412,7 @@ class App {
                 ],
                 options: [
                     {
-                        name: 'Antalya Aile Resort Paketi',
+                        name: 'Antalya Lara Resort Paketi',
                         price: 98000,
                         scoreNote: 'Çocuklu aileler için her şey dahil maliyet kontrolü sağlar.',
                         match: { vacationType: ['familyResort'], destination: 'mediterranean', travelers: ['family', 'group'], budget: ['120000', '220000', '400000'], priority: ['allInclusive'] },
@@ -1633,13 +1633,13 @@ class App {
         return {
             arac: {
                 id: 'arac',
-                title: 'Hibrit Kompakt SUV',
-                note: 'Yakıt, kasko ve bakım maliyetleriyle dengeli aile aracı.',
-                score: 92,
+                title: '2023 Toyota Corolla Cross Hybrid',
+                note: 'Yakıt tüketimi, sigorta ve toplam sahip olma maliyetine göre dengeli aile seçeneği.',
+                score: 89,
                 metrics: [
-                    { label: 'Yıllık maliyet', value: '114.000 ₺' },
-                    { label: 'Aylık kredi', value: '76.820 ₺' },
-                    { label: 'Eşleşme', value: '%92' }
+                    { label: 'Yıllık maliyet', value: '128.400 ₺' },
+                    { label: 'Aylık kredi', value: '71.450 ₺' },
+                    { label: 'Eşleşme', value: '%89' }
                 ],
                 bars: [
                     { label: 'Yakıt', value: 62 },
@@ -1647,14 +1647,14 @@ class App {
                     { label: 'Bakım', value: 34 }
                 ],
                 sources: [
-                    { label: 'Sahibinden', url: 'https://www.sahibinden.com/otomobil' },
-                    { label: 'Hangikredi', url: 'https://www.hangikredi.com/kredi/ihtiyac-kredisi' },
-                    { label: 'Sigorta', url: 'https://www.sigortam.net/' }
+                    { label: 'Piyasa verisi', url: '#veri-modeli' },
+                    { label: 'Finans verisi', url: '#veri-modeli' },
+                    { label: 'Sigorta modeli', url: '#veri-modeli' }
                 ]
             },
             ev: {
                 id: 'ev',
-                title: 'Merkezi 2+1 Daire',
+                title: 'İstanbul Kadıköy 2+1 Yeni Daire',
                 note: 'Aidat, DASK, konut kredisi ve değer artışı dengesi güçlü seçenek.',
                 score: 89,
                 metrics: [
@@ -1668,14 +1668,14 @@ class App {
                     { label: 'Kredi', value: 58 }
                 ],
                 sources: [
-                    { label: 'Emlak ilanı', url: 'https://www.sahibinden.com/satilik-daire' },
-                    { label: 'Konut kredisi', url: 'https://www.hangikredi.com/kredi/konut-kredisi' },
-                    { label: 'Tapu/DASK', url: 'https://www.tkgm.gov.tr/' }
+                    { label: 'Emlak piyasa verisi', url: '#veri-modeli' },
+                    { label: 'Konut finans verisi', url: '#veri-modeli' },
+                    { label: 'Tapu/DASK modeli', url: '#veri-modeli' }
                 ]
             },
             tatil: {
                 id: 'tatil',
-                title: 'Antalya Aile Resort',
+                title: 'Antalya Lara 5★ Aile Resort Tatili',
                 note: 'Konaklama, ulaşım, transfer ve sigorta kalemleri tek bütçede dengelenir.',
                 score: 91,
                 metrics: [
@@ -1689,9 +1689,9 @@ class App {
                     { label: 'Sigorta', value: 24 }
                 ],
                 sources: [
-                    { label: 'Tatil paketi', url: 'https://www.etstur.com/' },
-                    { label: 'Uçuş/transfer', url: 'https://www.enuygun.com/' },
-                    { label: 'Sigorta', url: 'https://www.sigortam.net/seyahat-sigortasi' }
+                    { label: 'Tatil piyasa verisi', url: '#veri-modeli' },
+                    { label: 'Ulaşım maliyet modeli', url: '#veri-modeli' },
+                    { label: 'Seyahat sigortası modeli', url: '#veri-modeli' }
                 ]
             }
         };

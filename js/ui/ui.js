@@ -1014,7 +1014,7 @@ export class UIManager {
 
         toolbar.hidden = false;
         if (countLabel) {
-            countLabel.textContent = count === 0 ? 'Henüz ilan bulunamadı' : (count === 1 ? '1 sonuç' : this.formatPrice(count) + ' sonuç');
+            countLabel.textContent = count === 0 ? 'Size uygun seçenekler hazırlanıyor' : (count === 1 ? '1 sonuç' : this.formatPrice(count) + ' sonuç');
         }
         if (contextLabel) {
             contextLabel.textContent = this.getListingToolbarContext(options, count);
@@ -1074,7 +1074,7 @@ export class UIManager {
                     <i data-lucide="badge-plus"></i>
                     <h3>Henüz ilanınız yok</h3>
                     <p>İlk ilanınızı eklediğinizde burada görünecek ve AI karşılaştırma akışına dahil olacak.</p>
-                    <a href="/ilan-ekle" class="btn btn-primary"><i data-lucide="plus"></i> İlan Ver</a>
+                    <a href="/ilan-ekle" class="btn btn-primary"><i data-lucide="plus"></i> Öneri Oluştur</a>
                 </div>
             ` : `
                 <div class="empty-state marketplace-empty-state">
@@ -1292,7 +1292,7 @@ export class UIManager {
             container.innerHTML =
                 '<div class="empty-state">' +
                     '<i data-lucide="columns-3"></i>' +
-                    '<h3>Karşılaştırma listesi boş</h3>' +
+                    '<h3>Karşılaştırma için seçenek ekleyin</h3>' +
                     '<p>Karar sonucu veya ilan kartlarından seçenekleri karşılaştırmaya ekleyin.</p>' +
                 '</div>';
             this.loadIcons();
