@@ -1,2 +1,5 @@
 /admin-panel.html /admin-panel.html 200
+/auto /auto/index.html 200
+/auto/ /auto/index.html 200
+/auto/* /auto/index.html 200
 /* /index.html 200
