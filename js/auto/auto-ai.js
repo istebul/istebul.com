@@ -47,9 +47,10 @@ export function recommendVehicles(form) {
       let score = 40;
 
       if (vehicle.price <= budget) score += 25;
-      else score -= 30;
+      else score -= Math.min(18, Math.round((vehicle.price - budget) / 50000));
 
-      if (form.body === vehicle.body) score += 30;
+      if (form.body === vehicle.body) score += 45;
+      else score -= 18;
 
       if (form.fuel === 'any' || form.fuel === vehicle.fuel) score += 15;
 
