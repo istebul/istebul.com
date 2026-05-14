@@ -455,6 +455,16 @@ function formatFollowUpLabel(lead) {
 }
 
 
+
+function getFollowUpBadgeClass(label) {
+  if (label === 'Gecikti') return 'badge-red';
+  if (label === 'Bugün') return 'badge-yellow';
+  if (label === 'Yarın') return 'badge-blue';
+  if (label === 'Tamamlandı') return 'badge-green';
+  return '';
+}
+
+
 async function loadAutoLeads() {
   const { data, error } = await sb
     .from('auto_leads')
@@ -555,7 +565,15 @@ async function loadAutoLeads() {
                 data-id="${lead.id}"
               />
             </td>
-            <td>${formatFollowUpLabel(lead)}</td>
+            <td>
+              ${(() => {
+                const followLabel = formatFollowUpLabel(lead);
+                const badgeClass = getFollowUpBadgeClass(followLabel);
+                return badgeClass
+                  ? `<span class="badge ${badgeClass}">${followLabel}</span>`
+                  : followLabel;
+              })()}
+            </td>
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
               <div class="table-actions">
