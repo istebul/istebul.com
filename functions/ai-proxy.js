@@ -63,7 +63,11 @@ export async function onRequestPost({ request, env }) {
     const data = await response.json();
 
     if (!response.ok) {
-      return json({ error: 'Groq request failed' }, response.status, origin);
+      return json({
+        error: 'Groq request failed',
+        status: response.status,
+        details: data
+      }, response.status, origin);
     }
 
     return json({
