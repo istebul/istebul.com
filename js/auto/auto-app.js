@@ -26,12 +26,13 @@ function renderLoading() {
 }
 
 
-async function saveLead(email, formData) {
+async function saveLead(email, phone, formData) {
   const supabaseUrl = window.__env?.SUPABASE_URL;
   const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
 
   const payload = {
     email,
+    phone,
     budget: Number(formData.budget || 0),
     usage: formData.usage,
     body: formData.body,
@@ -71,6 +72,7 @@ function renderEmailGate(results) {
 
       <form id="lead-form" class="lead-form">
         <input name="email" type="email" placeholder="E-posta adresiniz" required>
+        <input name="phone" type="tel" placeholder="Telefon numaranız" required>
         <button class="btn primary" type="submit">Sonuçları göster</button>
       </form>
 
@@ -81,10 +83,12 @@ function renderEmailGate(results) {
   document.getElementById('lead-form').addEventListener('submit', async event => {
     event.preventDefault();
 
-    const email = new FormData(event.currentTarget).get('email');
+    const leadFormData = new FormData(event.currentTarget);
+    const email = leadFormData.get('email');
+    const phone = leadFormData.get('phone');
 
     try {
-      await saveLead(email, readForm(form));
+      await saveLead(email, phone, readForm(form));
     } catch (error) {
       console.warn('Lead kaydı yapılamadı:', error);
     }
