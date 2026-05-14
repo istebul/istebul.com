@@ -581,6 +581,64 @@ async function updateAutoLeadNotes(id, notes) {
   loadAutoLeads();
 }
 
+
+async function exportAutoLeadsCsv() {
+  const { data, error } = await sb
+    .from('auto_leads')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    toast(`CSV hata: ${error.message}`);
+    return;
+  }
+
+  const rows = data || [];
+  if (!rows.length) {
+    toast('Dışa aktarılacak lead yok');
+    return;
+  }
+
+  const headers = [
+    'email',
+    'phone',
+    'budget',
+    'usage',
+    'body',
+    'fuel',
+    'loan',
+    'interest_type',
+    'status',
+    'notes',
+    'created_at'
+  ];
+
+  const escapeCsv = (value) => {
+    const text = value === null || value === undefined ? '' : String(value);
+    return `"${text.replace(/"/g, '""')}"`;
+  };
+
+  const csv = [
+    headers.join(','),
+    ...rows.map((row) => headers.map((key) => escapeCsv(row[key])).join(','))
+  ].join('\n');
+
+  const blob = new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+
+  a.href = url;
+  a.download = `auto-leads-${date}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  toast('CSV indirildi');
+}
+
+
 async function deleteAutoLead(id) {
   if (!confirm('Bu lead silinsin mi?')) return;
 
@@ -654,6 +712,7 @@ function bindAdminPanelEvents() {
     if (action === 'set-user-role') setUserRole(id, role);
     if (action === 'ban-user') banUser(id);
     if (action === 'delete-auto-lead') deleteAutoLead(id);
+    if (action === 'export-auto-leads') exportAutoLeadsCsv();
     if (action === 'track-whatsapp-click') {
       event.preventDefault();
       trackAdminAutoEvent('auto_whatsapp_click', {
