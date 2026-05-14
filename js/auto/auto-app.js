@@ -49,16 +49,44 @@ async function saveLead(email, phone, formData) {
     return;
   }
 
-  await fetch(`${supabaseUrl}/rest/v1/auto_leads?on_conflict=email`, {
+  const headers = {
+    apikey: supabaseKey,
+    Authorization: `Bearer ${supabaseKey}`,
+    'Content-Type': 'application/json',
+    Prefer: 'return=representation'
+  };
+
+  const updateResponse = await fetch(
+    `${supabaseUrl}/rest/v1/auto_leads?email=eq.${encodeURIComponent(email)}`,
+    {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(payload)
+    }
+  );
+
+  if (!updateResponse.ok) {
+    throw new Error(`Lead update failed: ${updateResponse.status}`);
+  }
+
+  const updatedRows = await updateResponse.json();
+
+  if (Array.isArray(updatedRows) && updatedRows.length > 0) {
+    return;
+  }
+
+  const insertResponse = await fetch(`${supabaseUrl}/rest/v1/auto_leads`, {
     method: 'POST',
     headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json',
-      Prefer: 'resolution=merge-duplicates,return=minimal'
+      ...headers,
+      Prefer: 'return=minimal'
     },
     body: JSON.stringify(payload)
   });
+
+  if (!insertResponse.ok) {
+    throw new Error(`Lead insert failed: ${insertResponse.status}`);
+  }
 }
 
 function renderEmailGate(results) {
