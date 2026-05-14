@@ -104,8 +104,10 @@ Deno.serve(async (req) => {
 
   try {
     if (action === "delete") {
-      if (table === "profiles") {
-        return json({ error: "Deleting profiles is not allowed here" }, 400);
+      const deletableTables = ["announcements", "faqs", "posts", "listings"];
+
+      if (!deletableTables.includes(table)) {
+        return json({ error: "Delete not allowed for this table" }, 400);
       }
 
       const { error } = await adminClient
