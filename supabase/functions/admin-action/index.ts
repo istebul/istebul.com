@@ -18,20 +18,22 @@ function corsHeaders(origin: string | null) {
   };
 }
 
-function json(body: unknown, status = 200) {
+function json(body: unknown, status = 200, origin: string | null = null) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders(null), "Content-Type": "application/json" },
+    headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
   });
 }
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get("origin");
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders(req.headers.get("origin")) });
   }
 
   if (req.method !== "POST") {
-    return json({ error: "Method not allowed" }, 405);
+    return json({ error: "Method not allowed" }, 405, origin);
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -39,13 +41,13 @@ Deno.serve(async (req) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
   if (!supabaseUrl || !anonKey || !serviceKey) {
-    return json({ error: "Supabase environment variables missing" }, 500);
+    return json({ error: "Supabase environment variables missing" }, 500, origin);
   }
 
   const authHeader = req.headers.get("Authorization");
 
   if (!authHeader) {
-    return json({ error: "Authorization header missing" }, 401);
+    return json({ error: "Authorization header missing" }, 401, origin);
   }
 
   const userClient = createClient(supabaseUrl, anonKey, {
@@ -69,7 +71,7 @@ Deno.serve(async (req) => {
   } = await userClient.auth.getUser();
 
   if (userError || !user) {
-    return json({ error: "Unauthorized" }, 401);
+    return json({ error: "Unauthorized" }, 401, origin);
   }
 
   const { data: profile, error: profileError } = await adminClient
@@ -80,11 +82,11 @@ Deno.serve(async (req) => {
 
 
   if (profileError || !profile) {
-    return json({ error: "Profile not found" }, 403);
+    return json({ error: "Profile not found" }, 403, origin);
   }
 
   if (profile.role !== "admin") {
-    return json({ error: "Forbidden: admin only" }, 403);
+    return json({ error: "Forbidden: admin only" }, 403, origin);
   }
 
   let body: any;
@@ -92,7 +94,7 @@ Deno.serve(async (req) => {
   try {
     body = await req.json();
   } catch {
-    return json({ error: "Invalid JSON body" }, 400);
+    return json({ error: "Invalid JSON body" }, 400, origin);
   }
 
   const { action, table, id, values } = body;
@@ -107,11 +109,11 @@ Deno.serve(async (req) => {
   ];
 
   if (!action || !allowedTables.includes(table)) {
-    return json({ error: "Invalid action or table" }, 400);
+    return json({ error: "Invalid action or table" }, 400, origin);
   }
 
   if (!id) {
-    return json({ error: "Missing id" }, 400);
+    return json({ error: "Missing id" }, 400, origin);
   }
 
   try {
@@ -119,7 +121,7 @@ Deno.serve(async (req) => {
       const deletableTables = ["announcements", "faqs", "posts", "listings"];
 
       if (!deletableTables.includes(table)) {
-        return json({ error: "Delete not allowed for this table" }, 400);
+        return json({ error: "Delete not allowed for this table" }, 400, origin);
       }
 
       const { error } = await adminClient
@@ -129,12 +131,12 @@ Deno.serve(async (req) => {
 
       if (error) throw error;
 
-      return json({ ok: true });
+      return json({ ok: true }, 200, origin);
     }
 
     if (action === "insert") {
       if (!values || typeof values !== "object") {
-        return json({ error: "Missing insert values" }, 400);
+        return json({ error: "Missing insert values" }, 400, origin);
       }
 
       const allowedInserts: Record<string, string[]> = {
@@ -148,11 +150,11 @@ Deno.serve(async (req) => {
       const invalidKey = keys.find((key) => !allowedKeys.includes(key));
 
       if (!allowedKeys.length) {
-        return json({ error: "Insert not allowed for this table" }, 400);
+        return json({ error: "Insert not allowed for this table" }, 400, origin);
       }
 
       if (invalidKey) {
-        return json({ error: `Invalid insert field: ${invalidKey}` }, 400);
+        return json({ error: `Invalid insert field: ${invalidKey}` }, 400, origin);
       }
 
       const { error } = await adminClient
@@ -161,12 +163,12 @@ Deno.serve(async (req) => {
 
       if (error) throw error;
 
-      return json({ ok: true });
+      return json({ ok: true }, 200, origin);
     }
 
     if (action === "upsert_settings") {
       if (!Array.isArray(values)) {
-        return json({ error: "Settings payload must be an array" }, 400);
+        return json({ error: "Settings payload must be an array" }, 400, origin);
       }
 
       const { error } = await adminClient
@@ -175,12 +177,12 @@ Deno.serve(async (req) => {
 
       if (error) throw error;
 
-      return json({ ok: true });
+      return json({ ok: true }, 200, origin);
     }
 
     if (action === "insert") {
       if (!values || typeof values !== "object") {
-        return json({ error: "Missing insert values" }, 400);
+        return json({ error: "Missing insert values" }, 400, origin);
       }
 
       const allowedInserts: Record<string, string[]> = {
@@ -194,11 +196,11 @@ Deno.serve(async (req) => {
       const invalidKey = keys.find((key) => !allowedKeys.includes(key));
 
       if (!allowedKeys.length) {
-        return json({ error: "Insert not allowed for this table" }, 400);
+        return json({ error: "Insert not allowed for this table" }, 400, origin);
       }
 
       if (invalidKey) {
-        return json({ error: `Invalid insert field: ${invalidKey}` }, 400);
+        return json({ error: `Invalid insert field: ${invalidKey}` }, 400, origin);
       }
 
       const { error } = await adminClient
@@ -207,12 +209,12 @@ Deno.serve(async (req) => {
 
       if (error) throw error;
 
-      return json({ ok: true });
+      return json({ ok: true }, 200, origin);
     }
 
     if (action === "upsert_settings") {
       if (!Array.isArray(values)) {
-        return json({ error: "Settings payload must be an array" }, 400);
+        return json({ error: "Settings payload must be an array" }, 400, origin);
       }
 
       const { error } = await adminClient
@@ -221,12 +223,12 @@ Deno.serve(async (req) => {
 
       if (error) throw error;
 
-      return json({ ok: true });
+      return json({ ok: true }, 200, origin);
     }
 
     if (action === "update") {
       if (!values || typeof values !== "object") {
-        return json({ error: "Missing update values" }, 400);
+        return json({ error: "Missing update values" }, 400, origin);
       }
 
       const allowedUpdates: Record<string, string[]> = {
@@ -243,7 +245,7 @@ Deno.serve(async (req) => {
 
       const invalidKey = keys.find((key) => !allowedKeys.includes(key));
       if (invalidKey) {
-        return json({ error: `Invalid update field: ${invalidKey}` }, 400);
+        return json({ error: `Invalid update field: ${invalidKey}` }, 400, origin);
       }
 
       if (
@@ -251,15 +253,15 @@ Deno.serve(async (req) => {
         values.role &&
         !["admin", "user"].includes(values.role)
      ) {
-        return json({ error: "Invalid role value" }, 400);
+        return json({ error: "Invalid role value" }, 400, origin);
       }
 
       if (table === "profiles" && id === user.id && values.role === "user") {
-        return json({ error: "You cannot remove your own admin role" }, 400);
+        return json({ error: "You cannot remove your own admin role" }, 400, origin);
       }
 
       if (table === "profiles" && id === user.id && values.is_banned === true) {
-         return json({ error: "You cannot ban your own account" }, 400);
+         return json({ error: "You cannot ban your own account" }, 400, origin);
       }
 
       const { error } = await adminClient
@@ -269,12 +271,12 @@ Deno.serve(async (req) => {
 
       if (error) throw error;
 
-      return json({ ok: true });
+      return json({ ok: true }, 200, origin);
     }
 
-    return json({ error: "Unsupported action" }, 400);
+    return json({ error: "Unsupported action" }, 400, origin);
   } catch (err) {
     console.error(err);
-    return json({ error: err?.message || "Server error" }, 500);
+    return json({ error: err?.message || "Server error" }, 500, origin);
   }
 });

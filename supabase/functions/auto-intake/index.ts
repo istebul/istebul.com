@@ -18,10 +18,10 @@ function corsHeaders(origin: string | null) {
   };
 }
 
-function json(body: unknown, status = 200) {
+function json(body: unknown, status = 200, origin: string | null = null) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders(null), "Content-Type": "application/json" },
+    headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
   });
 }
 
@@ -34,21 +34,23 @@ function isValidEmail(value: unknown) {
 }
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get("origin");
+
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(req.headers.get("origin")) });
-  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405, origin);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
   if (!supabaseUrl || !serviceKey) {
-    return json({ error: "Supabase environment variables missing" }, 500);
+    return json({ error: "Supabase environment variables missing" }, 500, origin);
   }
 
   let body: any;
   try {
     body = await req.json();
   } catch {
-    return json({ error: "Invalid JSON body" }, 400);
+    return json({ error: "Invalid JSON body" }, 400, origin);
   }
 
   const type = String(body.type || "");
@@ -64,7 +66,7 @@ Deno.serve(async (req) => {
     const eventName = String(body.event_name || "").trim();
 
     if (!eventName || eventName.length > 80) {
-      return json({ error: "Invalid event name" }, 400);
+      return json({ error: "Invalid event name" }, 400, origin);
     }
 
     const { error } = await adminClient.from("auto_events").insert({
@@ -74,13 +76,13 @@ Deno.serve(async (req) => {
       metadata,
     });
 
-    if (error) return json({ error: error.message }, 500);
-    return json({ ok: true });
+    if (error) return json({ error: error.message }, 500, origin);
+    return json({ ok: true }, 200, origin);
   }
 
   if (type === "lead") {
     if (!isValidEmail(email) || phone.length < 10 || phone.length > 15) {
-      return json({ error: "Invalid contact information" }, 400);
+      return json({ error: "Invalid contact information" }, 400, origin);
     }
 
     const form = body.formData && typeof body.formData === "object" ? body.formData : metadata;
@@ -103,15 +105,15 @@ Deno.serve(async (req) => {
       .eq("email", email)
       .select("id");
 
-    if (updateError) return json({ error: updateError.message }, 500);
+    if (updateError) return json({ error: updateError.message }, 500, origin);
 
     if (!updatedRows?.length) {
       const { error: insertError } = await adminClient.from("auto_leads").insert(payload);
-      if (insertError) return json({ error: insertError.message }, 500);
+      if (insertError) return json({ error: insertError.message }, 500, origin);
     }
 
-    return json({ ok: true });
+    return json({ ok: true }, 200, origin);
   }
 
-  return json({ error: "Invalid intake type" }, 400);
+  return json({ error: "Invalid intake type" }, 400, origin);
 });
