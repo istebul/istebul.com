@@ -406,7 +406,7 @@ async function loadAutoAnalytics() {
     ${events.length ? `
       <table class="table">
         <thead>
-          <tr>
+          <tr data-action="view-auto-lead" data-lead='${JSON.stringify(lead).replace(/'/g, "&apos;")}'>
             <th>Event</th>
             <th>Email</th>
             <th>Telefon</th>
@@ -415,7 +415,7 @@ async function loadAutoAnalytics() {
         </thead>
         <tbody>
           ${events.slice(0, 100).map(event => `
-            <tr>
+            <tr data-action="view-auto-lead" data-lead='${JSON.stringify(lead).replace(/'/g, "&apos;")}'>
               <td><strong>${labels[event.event_name] || event.event_name}</strong></td>
               <td>${event.email || '—'}</td>
               <td>${event.phone || '—'}</td>
@@ -497,7 +497,7 @@ async function loadAutoLeads() {
       </thead>
       <tbody>
         ${filteredData.map(lead => `
-          <tr>
+          <tr data-action="view-auto-lead" data-lead='${JSON.stringify(lead).replace(/'/g, "&apos;")}'>
             <td><strong>${lead.email || '—'}</strong></td>
             <td>${lead.phone || '—'}</td>
             <td>${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</td>
@@ -542,7 +542,6 @@ async function loadAutoLeads() {
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
               <div class="table-actions">
-                <button class="btn btn-ghost btn-sm" data-action="view-auto-lead" data-lead='${JSON.stringify(lead).replace(/'/g, "&apos;")}'>Detay</button>
                 <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
                   Sil
                 </button>
