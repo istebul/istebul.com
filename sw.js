@@ -51,6 +51,14 @@ const getPlaceholderImage = async () => {
   return cache.match('/assets/images/placeholder.svg');
 };
 
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  if (url.pathname.startsWith('/ai-proxy') || event.request.method !== 'GET') {
+    return;
+  }
+});
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
