@@ -15,8 +15,8 @@ import { messaging } from './features/messaging.js';
 import './features/i18n/i18n.js';
 
 window.lucide = window.lucide || {
-    createIcons,
-    icons
+    createIcons() {},
+    icons: {}
 };
 
 import {
