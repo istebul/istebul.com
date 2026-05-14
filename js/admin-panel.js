@@ -582,11 +582,38 @@ function closeLeadDrawer() {
 
 
 async function updateAutoLeadStatus(id, status) {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const twoDaysLater = new Date();
+  twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+
+  const values = { status };
+
+  if (status === 'called') {
+    values.follow_up_at = tomorrow.toISOString();
+    values.follow_up_done = false;
+  }
+
+  if (status === 'interested') {
+    values.follow_up_at = twoDaysLater.toISOString();
+    values.follow_up_done = false;
+  }
+
+  if (status === 'closed' || status === 'rejected') {
+    values.follow_up_done = true;
+  }
+
+  if (status === 'new') {
+    values.follow_up_at = null;
+    values.follow_up_done = false;
+  }
+
   await adminAction({
     action: 'update',
     table: 'auto_leads',
     id,
-    values: { status }
+    values
   });
 
   toast('Lead durumu güncellendi');
