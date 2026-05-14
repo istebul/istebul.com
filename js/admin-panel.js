@@ -315,7 +315,7 @@ async function trackAdminAutoEvent(eventName, metadata = {}) {
 async function loadAutoAnalytics() {
   const [autoEventsRes, autoLeadsRes] = await Promise.all([
     sb.from('auto_events').select('*').order('created_at', { ascending: false }).limit(500),
-    sb.from('auto_leads').select('status')
+    sb.from('auto_leads').select('status, follow_up_at, follow_up_done')
   ]);
 
   const { data, error } = autoEventsRes;
@@ -367,6 +367,29 @@ async function loadAutoAnalytics() {
   const totalLeads = leadRows.length;
   const crmPct = (value) => totalLeads ? Math.round((value / totalLeads) * 100) + '%' : '—';
 
+  const now = new Date();
+  const todayEnd = new Date();
+  todayEnd.setHours(23, 59, 59, 999);
+
+  const overdueCount = leadRows.filter(
+    lead => lead.follow_up_at && !lead.follow_up_done && new Date(lead.follow_up_at) < now
+  ).length;
+
+  const todayCount = leadRows.filter(
+    lead => lead.follow_up_at && !lead.follow_up_done && new Date(lead.follow_up_at) <= todayEnd
+  ).length;
+
+  const activeCount = leadRows.filter(
+    lead => lead.follow_up_at && !lead.follow_up_done
+  ).length;
+
+  const opsCards = [
+    ['🔴 Geciken', overdueCount, 'acil'],
+    ['🟠 Bugün', todayCount, 'takip'],
+    ['🟢 Aktif', activeCount, 'pipeline'],
+    ['⚪ Toplam', totalLeads, 'lead']
+  ];
+
   const crmCards = [
     ['Toplam Lead', totalLeads, '100%'],
     ['Yeni', leadCounts.new || 0, crmPct(leadCounts.new || 0)],
@@ -377,6 +400,19 @@ async function loadAutoAnalytics() {
   ];
 
   el.innerHTML = `
+    <h3 style="margin:0 0 14px 0;">Operasyon</h3>
+    <div class="stat-grid">
+      ${opsCards.map(([label, value, sub]) => `
+        <div class="stat-card">
+          <div class="stat-label">${label}</div>
+          <div class="stat-value">${value}</div>
+          <div class="stat-sub">${sub}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="height:20px"></div>
+
     <h3 style="margin:0 0 14px 0;">CRM Funnel</h3>
     <div class="stat-grid">
       ${crmCards.map(([label, value, sub]) => `
