@@ -5,7 +5,7 @@ const esbuild = require('esbuild');
 
 const root = process.cwd();
 const dist = path.join(root, 'dist');
-const staticRoots = ['assets', 'data'];
+const staticRoots = ['js/auto', 'assets', 'data'];
 const staticFiles = ['index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'favicon.ico', 'auto/index.html'];
 const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
 
