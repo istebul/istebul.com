@@ -41,6 +41,29 @@ function isValidLeadContact(email, phone) {
     && normalizedPhone.length <= 15;
 }
 
+function canSubmitAutoLead() {
+  const key = 'istebul_auto_last_lead_submit';
+  const last = Number(localStorage.getItem(key) || 0);
+  const now = Date.now();
+  const minIntervalMs = 60 * 1000;
+
+  if (now - last < minIntervalMs) {
+    return false;
+  }
+
+  localStorage.setItem(key, String(now));
+  return true;
+}
+
+function isValidLeadContact(email, phone) {
+  const normalizedEmail = String(email || '').trim();
+  const normalizedPhone = String(phone || '').replace(/\D/g, '');
+
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)
+    && normalizedPhone.length >= 10
+    && normalizedPhone.length <= 15;
+}
+
 function readForm(form) {
   return Object.fromEntries(new FormData(form).entries());
 }
