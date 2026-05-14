@@ -105,10 +105,6 @@ function safeExternalUrl(value) {
   }
 }
 
-function safeAttr(value) {
-  return escapeHtml(value).replaceAll('`', '&#096;');
-}
-
 function toast(msg, type = 'success') {
   const t = document.getElementById('toast');
   t.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
