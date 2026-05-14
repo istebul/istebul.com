@@ -293,6 +293,14 @@ async function loadUsers() {
 }
 
 
+function normalizePhoneForWhatsapp(phone) {
+  if (!phone) return '';
+  const digits = String(phone).replace(/\D/g, '');
+  if (digits.startsWith('90')) return digits;
+  if (digits.startsWith('0')) return `90${digits.slice(1)}`;
+  return `90${digits}`;
+}
+
 async function loadAutoLeads() {
   const { data, error } = await sb
     .from('auto_leads')
@@ -357,9 +365,13 @@ async function loadAutoLeads() {
             <td>${lead.interest_type || '—'}</td>
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
-              <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
-                Sil
-              </button>
+              <div class="table-actions">
+                ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}
+                ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
+                <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
+                  Sil
+                </button>
+              </div>
             </td>
           </tr>
         `).join('')}
