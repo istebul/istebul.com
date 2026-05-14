@@ -49,7 +49,7 @@ async function saveLead(email, phone, formData) {
     return;
   }
 
-  await fetch(`${supabaseUrl}/rest/v1/auto_leads`, {
+  await fetch(`${supabaseUrl}/rest/v1/auto_leads?on_conflict=email`, {
     method: 'POST',
     headers: {
       apikey: supabaseKey,
