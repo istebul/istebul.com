@@ -171,6 +171,23 @@ Deno.serve(async (req) => {
         return json({ error: "Settings payload must be an array" }, 400, origin);
       }
 
+      const allowedSettingKeys = [
+        "phone","email","address","instagram","twitter","facebook",
+        "linkedin","youtube","tiktok","site-name","site-subtitle",
+        "hero-eyebrow","hero-title","hero-desc","title","description",
+        "maintenance"
+      ];
+
+      for (const row of values) {
+        if (!row || typeof row !== "object") {
+          return json({ error: "Invalid settings row" }, 400, origin);
+        }
+
+        if (!allowedSettingKeys.includes(String(row.key || ""))) {
+          return json({ error: `Invalid settings key: ${row.key}` }, 400, origin);
+        }
+      }
+
       const { error } = await adminClient
         .from("site_settings")
         .upsert(values, { onConflict: "key" });
@@ -217,6 +234,17 @@ Deno.serve(async (req) => {
       if (table === "profiles" && id === user.id && values.is_banned === true) {
          return json({ error: "You cannot ban your own account" }, 400, origin);
       }
+      if (table === "profiles" && (values.role === "user" || values.is_banned === true)) {
+        const { count } = await adminClient
+          .from("profiles")
+          .select("*", { count: "exact", head: true })
+          .eq("role", "admin");
+
+        if ((count || 0) <= 1) {
+          return json({ error: "At least one admin account must remain" }, 400, origin);
+        }
+      }
+
 
       const { error } = await adminClient
         .from(table)
