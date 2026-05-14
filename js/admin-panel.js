@@ -542,8 +542,7 @@ async function loadAutoLeads() {
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
               <div class="table-actions">
-                ${lead.phone ? `<button class="btn btn-ghost btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}">WhatsApp</button>` : ''}
-                ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
+                <button class="btn btn-ghost btn-sm" data-action="view-auto-lead" data-lead='${JSON.stringify(lead).replace(/'/g, "&apos;")}'>Detay</button>
                 <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
                   Sil
                 </button>
@@ -555,6 +554,42 @@ async function loadAutoLeads() {
     </table>
   `;
 }
+
+
+function openLeadDrawer(lead) {
+  const drawer = document.getElementById('lead-drawer');
+  const overlay = document.getElementById('lead-drawer-overlay');
+  const content = document.getElementById('lead-drawer-content');
+
+  if (!drawer || !overlay || !content) return;
+
+  const fmt = (v) => v || '—';
+
+  content.innerHTML = `
+    <div class="lead-detail-grid">
+      <div class="lead-detail-item"><div class="lead-detail-label">Email</div><div class="lead-detail-value">${fmt(lead.email)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Telefon</div><div class="lead-detail-value">${fmt(lead.phone)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Bütçe</div><div class="lead-detail-value">${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Kullanım</div><div class="lead-detail-value">${fmt(lead.usage)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Kasa</div><div class="lead-detail-value">${fmt(lead.body)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Yakıt</div><div class="lead-detail-value">${fmt(lead.fuel)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Kredi</div><div class="lead-detail-value">${fmt(lead.loan)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">İlgi</div><div class="lead-detail-value">${fmt(lead.interest_type)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Durum</div><div class="lead-detail-value">${fmt(lead.status)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Not</div><div class="lead-detail-value">${fmt(lead.notes)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Tarih</div><div class="lead-detail-value">${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</div></div>
+    </div>
+  `;
+
+  drawer.classList.add('open');
+  overlay.classList.add('open');
+}
+
+function closeLeadDrawer() {
+  document.getElementById('lead-drawer')?.classList.remove('open');
+  document.getElementById('lead-drawer-overlay')?.classList.remove('open');
+}
+
 
 async function updateAutoLeadStatus(id, status) {
   await adminAction({
@@ -713,6 +748,8 @@ function bindAdminPanelEvents() {
     if (action === 'ban-user') banUser(id);
     if (action === 'delete-auto-lead') deleteAutoLead(id);
     if (action === 'export-auto-leads') exportAutoLeadsCsv();
+    if (action === 'close-lead-drawer') closeLeadDrawer();
+    if (action === 'view-auto-lead') openLeadDrawer(JSON.parse(el.dataset.lead.replace(/&apos;/g, "'")));
     if (action === 'track-whatsapp-click') {
       event.preventDefault();
       trackAdminAutoEvent('auto_whatsapp_click', {
@@ -727,7 +764,9 @@ function bindAdminPanelEvents() {
 }
 
 
-  document.addEventListener('change', (event) => {
+  document.getElementById('lead-drawer-overlay')?.addEventListener('click', closeLeadDrawer);
+
+document.addEventListener('change', (event) => {
     const el = event.target.closest('[data-action="update-auto-notes"]');
     if (!el) return;
 
