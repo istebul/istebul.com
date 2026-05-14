@@ -336,6 +336,21 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
           <p>AI araç danışmanından gelen müşteri adayları</p>
         </div>
         <div class="card">
+          <div class="auto-leads-toolbar">
+            <input id="auto-leads-search" class="form-input" type="search" placeholder="Email, telefon, not ara...">
+            <select id="auto-leads-status-filter" class="status-select">
+              <option value="">Tüm durumlar</option>
+              <option value="new">Yeni</option>
+              <option value="called">Arandı</option>
+              <option value="interested">İlgileniyor</option>
+              <option value="closed">Kapandı</option>
+              <option value="rejected">Uygun değil</option>
+            </select>
+            <label class="auto-leads-check">
+              <input id="auto-leads-notes-only" type="checkbox">
+              Sadece notu olanlar
+            </label>
+          </div>
           <div id="auto-leads-list"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
@@ -353,6 +368,34 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 
 <script src="/env.js"></script>
 <script type="module" src="js/admin-panel.js"></script>
+
+<style>
+.auto-leads-toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-bottom:14px;
+}
+.auto-leads-toolbar .form-input{
+  min-width:240px;
+  flex:1;
+}
+.auto-leads-check{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  color:#cbd5e1;
+  font-size:14px;
+  white-space:nowrap;
+}
+.status-select.status-new{border-color:#64748b;}
+.status-select.status-called{border-color:#38bdf8;}
+.status-select.status-interested{border-color:#f59e0b;}
+.status-select.status-closed{border-color:#22c55e;}
+.status-select.status-rejected{border-color:#ef4444;}
+</style>
+
 </body>
 </html>
 <style>

@@ -416,6 +416,32 @@ async function loadAutoLeads() {
     return;
   }
 
+  const searchValue = (document.getElementById('auto-leads-search')?.value || '').toLowerCase().trim();
+  const statusFilter = document.getElementById('auto-leads-status-filter')?.value || '';
+  const notesOnly = document.getElementById('auto-leads-notes-only')?.checked || false;
+
+  const filteredData = data.filter((lead) => {
+    const matchesStatus = !statusFilter || lead.status === statusFilter;
+    const hasNotes = !!(lead.notes || '').trim();
+    const matchesNotes = !notesOnly || hasNotes;
+    const haystack = [
+      lead.email,
+      lead.phone,
+      lead.notes,
+      lead.interest_type,
+      lead.usage,
+      lead.body,
+      lead.fuel
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    return matchesStatus && matchesNotes && (!searchValue || haystack.includes(searchValue));
+  });
+
+  if (!filteredData.length) {
+    el.innerHTML = '<p class="empty">Filtreye uygun lead bulunamadı.</p>';
+    return;
+  }
+
   el.innerHTML = `
     <table class="table">
       <thead>
@@ -435,7 +461,7 @@ async function loadAutoLeads() {
         </tr>
       </thead>
       <tbody>
-        ${data.map(lead => `
+        ${filteredData.map(lead => `
           <tr>
             <td><strong>${lead.email || '—'}</strong></td>
             <td>${lead.phone || '—'}</td>
@@ -460,7 +486,7 @@ async function loadAutoLeads() {
             <td>${lead.loan === 'yes' ? 'Evet' : lead.loan === 'no' ? 'Hayır' : '—'}</td>
             <td>${lead.interest_type || '—'}</td>
             <td>
-              <select class="status-select" data-action="update-auto-status" data-id="${lead.id}">
+              <select class="status-select status-${lead.status || 'new'}" data-action="update-auto-status" data-id="${lead.id}">
                 <option value="new" ${lead.status === 'new' ? 'selected' : ''}>Yeni</option>
                 <option value="called" ${lead.status === 'called' ? 'selected' : ''}>Arandı</option>
                 <option value="interested" ${lead.status === 'interested' ? 'selected' : ''}>İlgileniyor</option>
@@ -612,6 +638,12 @@ function bindAdminPanelEvents() {
     if (!el) return;
 
     updateAutoLeadNotes(el.dataset.id, el.value);
+  });
+
+
+  ['auto-leads-search', 'auto-leads-status-filter', 'auto-leads-notes-only'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', loadAutoLeads);
+    document.getElementById(id)?.addEventListener('change', loadAutoLeads);
   });
 
 bindAdminPanelEvents();
