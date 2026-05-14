@@ -607,6 +607,7 @@ function openLeadDrawer(lead) {
   const statusLabels = { new: 'Yeni', called: 'Arandı', interested: 'İlgileniyor', closed: 'Kapandı', rejected: 'Uygun değil' };
 
   const whatsappUrl = lead.phone ? `https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}` : '';
+  const notesHistory = Array.isArray(lead.notes_history) ? lead.notes_history : [];
 
   content.innerHTML = `
     <div class="table-actions" style="margin-bottom:14px;">
@@ -632,7 +633,24 @@ function openLeadDrawer(lead) {
       <div class="lead-detail-item"><div class="lead-detail-label">Kredi</div><div class="lead-detail-value">${label(loanLabels, lead.loan)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">İlgi</div><div class="lead-detail-value">${fmt(lead.interest_type)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Durum</div><div class="lead-detail-value">${label(statusLabels, lead.status)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Not</div><div class="lead-detail-value">${fmt(lead.notes)}</div></div>
+      <div class="lead-detail-item">
+        <div class="lead-detail-label">Yeni Not</div>
+        <textarea id="new-lead-note" class="form-input" rows="3" placeholder="Yeni not ekle..."></textarea>
+        <div style="height:8px"></div>
+        <button class="btn btn-ghost btn-sm" data-action="add-lead-note" data-id="${lead.id}" data-history='${JSON.stringify(notesHistory).replace(/'/g, "&apos;")}'>Not Ekle</button>
+      </div>
+      <div class="lead-detail-item">
+        <div class="lead-detail-label">Not Geçmişi</div>
+        <div class="lead-detail-value">
+          ${notesHistory.length ? notesHistory.slice().reverse().map((item) => `
+            <div style="padding:8px 0;border-bottom:1px solid #2a3441;">
+              <div style="font-size:12px;color:#94a3b8;">${item.at ? new Date(item.at).toLocaleString('tr-TR') : '—'}</div>
+              <div>${item.text || '—'}</div>
+            </div>
+          `).join('') : 'Henüz not geçmişi yok.'}
+        </div>
+      </div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Son Not</div><div class="lead-detail-value">${fmt(lead.notes)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Tarih</div><div class="lead-detail-value">${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</div></div>
     </div>
   `;
@@ -646,6 +664,41 @@ function closeLeadDrawer() {
   document.getElementById('lead-drawer-overlay')?.classList.remove('open');
 }
 
+
+
+
+async function addLeadNote(id, history) {
+  const input = document.getElementById('new-lead-note');
+  const text = input?.value?.trim();
+
+  if (!text) {
+    toast('Not yazın');
+    return;
+  }
+
+  const notesHistory = Array.isArray(history) ? history : [];
+  const nextHistory = [
+    ...notesHistory,
+    {
+      at: new Date().toISOString(),
+      text
+    }
+  ];
+
+  await adminAction({
+    action: 'update',
+    table: 'auto_leads',
+    id,
+    values: {
+      notes: text,
+      notes_history: nextHistory
+    }
+  });
+
+  toast('Not geçmişe eklendi');
+  closeLeadDrawer();
+  loadAutoLeads();
+}
 
 
 async function completeFollowUp(id) {
@@ -872,6 +925,7 @@ function bindAdminPanelEvents() {
     if (action === 'close-lead-drawer') closeLeadDrawer();
     if (action === 'complete-follow-up') completeFollowUp(id);
     if (action === 'save-follow-up') saveFollowUp(id);
+    if (action === 'add-lead-note') addLeadNote(id, JSON.parse(el.dataset.history.replace(/&apos;/g, "'")));
     if (action === 'view-auto-lead') openLeadDrawer(JSON.parse(el.dataset.lead.replace(/&apos;/g, "'")));
     if (action === 'track-whatsapp-click') {
       event.preventDefault();
