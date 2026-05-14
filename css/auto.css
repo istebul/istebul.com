@@ -25,3 +25,16 @@ h1{font-size:clamp(40px,6vw,72px);line-height:.96;margin:10px 0 22px}h2{font-siz
 .risk-box{background:#fff7ed}
 .analysis-box ul,.risk-box ul{margin:10px 0 0;padding-left:18px}
 .analysis-box li,.risk-box li{margin:6px 0}
+
+.hero-quiz{
+  grid-template-columns:repeat(2,1fr);
+  align-self:start;
+}
+
+.hero-quiz button{
+  grid-column:1/-1;
+}
+
+.metric{
+  display:none;
+}
