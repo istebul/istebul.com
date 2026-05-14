@@ -365,6 +365,17 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
   </div>
 </div>
 
+
+<div class="lead-drawer-overlay" id="lead-drawer-overlay"></div>
+<div class="lead-drawer" id="lead-drawer">
+  <div class="lead-drawer-header">
+    <h3>Lead Detayı</h3>
+    <button class="btn btn-danger btn-sm" data-action="close-lead-drawer">Kapat</button>
+  </div>
+  <div id="lead-drawer-content"></div>
+</div>
+
+
 <div class="toast" id="toast"></div>
 
 <script src="/env.js"></script>
@@ -395,6 +406,67 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 .status-select.status-interested{border-color:#f59e0b;}
 .status-select.status-closed{border-color:#22c55e;}
 .status-select.status-rejected{border-color:#ef4444;}
+
+.lead-drawer-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:9998;
+  display:none;
+}
+.lead-drawer{
+  position:fixed;
+  top:0;
+  right:-520px;
+  width:500px;
+  max-width:95vw;
+  height:100vh;
+  background:#0f172a;
+  border-left:1px solid #2a3441;
+  z-index:9999;
+  padding:20px;
+  overflow-y:auto;
+  transition:right .25s ease;
+}
+.lead-drawer.open{right:0;}
+.lead-drawer-overlay.open{display:block;}
+.lead-drawer-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+.lead-detail-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+.lead-detail-item{
+  padding:12px;
+  border:1px solid #2a3441;
+  border-radius:12px;
+  background:#111827;
+}
+.lead-detail-label{
+  font-size:12px;
+  color:#94a3b8;
+  margin-bottom:4px;
+}
+.lead-detail-value{
+  font-size:14px;
+  color:#fff;
+  word-break:break-word;
+}
+
+
+.table th:last-child,
+.table td:last-child{
+  position:sticky;
+  right:0;
+  background:#16181d;
+  z-index:2;
+}
+
 </style>
 
 </body>
