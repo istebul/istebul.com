@@ -313,8 +313,16 @@ async function trackAdminAutoEvent(eventName, metadata = {}) {
 }
 
 async function loadAutoAnalytics() {
-  const { data, error } = await sb
-    .from('auto_events')
+  const [
+    autoEventsRes,
+    autoLeadsRes
+  ] = await Promise.all([
+    sb.from('auto_events').select('*').order('created_at', { ascending: false }).limit(200),
+    sb.from('auto_leads').select('status')
+  ]);
+
+  const { data, error } = autoEventsRes;
+  const { data: leads } = autoLeadsRes;
     .select('*')
     .order('created_at', { ascending: false })
     .limit(500);
@@ -358,7 +366,39 @@ async function loadAutoAnalytics() {
     ['auto_whatsapp_click', labels.auto_whatsapp_click, counts.auto_whatsapp_click || 0, pct(counts.auto_whatsapp_click || 0, counts.auto_finance_click || 0)]
   ];
 
+  const leadCounts = (leads || []).reduce((acc, lead) => {
+    const status = lead.status || 'new';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const totalLeads = (leads || []).length;
+  const crmPct = (value) => totalLeads ? Math.round((value / totalLeads) * 100) + '%' : '—';
+
+  const crmCards = [
+    ['Yeni', leadCounts.new || 0, crmPct(leadCounts.new || 0)],
+    ['Arandı', leadCounts.called || 0, crmPct(leadCounts.called || 0)],
+    ['İlgileniyor', leadCounts.interested || 0, crmPct(leadCounts.interested || 0)],
+    ['Kapandı', leadCounts.closed || 0, crmPct(leadCounts.closed || 0)],
+    ['Uygun değil', leadCounts.rejected || 0, crmPct(leadCounts.rejected || 0)]
+  ];
+
   el.innerHTML = `
+    <h3 style="margin:0 0 14px 0;">CRM Funnel</h3>
+    <div class="stat-grid">
+      ${crmCards.map(([label, value, sub]) => `
+        <div class="stat-card">
+          <div class="stat-label">${label}</div>
+          <div class="stat-value">${value}</div>
+          <div class="stat-sub">${sub}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="height:20px"></div>
+
+    <h3 style="margin:0 0 14px 0;">Acquisition Funnel</h3>
+
     <div class="stat-grid">
       ${analyticsCards.map(([key, label, value, sub]) => `
         <div class="stat-card">
