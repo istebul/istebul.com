@@ -6,7 +6,7 @@ const esbuild = require('esbuild');
 const root = process.cwd();
 const dist = path.join(root, 'dist');
 const staticRoots = ['assets', 'data'];
-const staticFiles = ['index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'favicon.ico'];
+const staticFiles = ['index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'favicon.ico', 'auto/index.html'];
 const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
 
 const runCheck = spawnSync(process.execPath, [path.join(root, 'scripts/check-syntax.cjs')], {
