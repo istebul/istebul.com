@@ -20,6 +20,25 @@ const getSupabaseAdmin = (env) => {
 const unixToIso = (value) =>
   value ? new Date(value * 1000).toISOString() : null;
 
+const markEventProcessed = async (supabase, event) => {
+  const { error } = await supabase
+    .from('stripe_webhook_events')
+    .insert({
+      event_id: event.id,
+      event_type: event.type
+    });
+
+  if (!error) {
+    return true;
+  }
+
+  if (error.code === '23505') {
+    return false;
+  }
+
+  throw error;
+};
+
 const upsertSubscription = async (supabase, subscription, fallbackUserId = null) => {
   const userId = subscription.metadata?.userId || fallbackUserId;
 
@@ -78,6 +97,12 @@ export async function onRequestPost(context) {
   const supabase = getSupabaseAdmin(context.env);
 
   try {
+    const shouldProcess = await markEventProcessed(supabase, event);
+
+    if (!shouldProcess) {
+      return json({ received: true, duplicate: true });
+    }
+
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
