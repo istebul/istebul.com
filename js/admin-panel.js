@@ -357,7 +357,7 @@ async function loadAutoAnalytics() {
   if (!el) return;
 
   if (error || leadsError) {
-    el.innerHTML = `<p class="empty">Hata: ${(error || leadsError).message}</p>`;
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml((error || leadsError).message)}</p>`;
     return;
   }
 
@@ -562,7 +562,7 @@ async function loadAutoLeads() {
   if (!el) return;
 
   if (error) {
-    el.innerHTML = `<p class="empty">Hata: ${error.message}</p>`;
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
     return;
   }
 
@@ -650,7 +650,7 @@ async function loadAutoLeads() {
                 type="text"
                 class="form-input"
                 placeholder="Not ekle..."
-                value="${lead.notes || ''}"
+                value="${safeAttr(lead.notes || '')}"
                 data-action="update-auto-notes"
                 data-id="${lead.id}"
               />
@@ -742,7 +742,7 @@ function openLeadDrawer(lead) {
         <div class="lead-detail-label">Yeni Not</div>
         <textarea id="new-lead-note" class="form-input" rows="3" placeholder="Yeni not ekle..."></textarea>
         <div style="height:8px"></div>
-        <button class="btn btn-ghost btn-sm" data-action="add-lead-note" data-id="${lead.id}" data-history='${JSON.stringify(notesHistory).replace(/'/g, "&apos;")}'>Not Ekle</button>
+        <button class="btn btn-ghost btn-sm" data-action="add-lead-note" data-id="${lead.id}" data-history='${safeAttr(JSON.stringify(notesHistory))}'>Not Ekle</button>
       </div>
       <div class="lead-detail-item">
         <div class="lead-detail-label">Not Geçmişi</div>
@@ -755,7 +755,7 @@ function openLeadDrawer(lead) {
           `).join('') : 'Henüz not geçmişi yok.'}
         </div>
       </div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Son Not</div><div class="lead-detail-value">${fmt(lead.notes)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Son Not</div><div class="lead-detail-value">${escapeHtml(fmt(lead.notes))}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Tarih</div><div class="lead-detail-value">${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</div></div>
     </div>
   `;
