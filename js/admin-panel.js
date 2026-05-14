@@ -427,7 +427,9 @@ async function loadAutoLeads() {
           <th>Kasa</th>
           <th>Yakıt</th>
           <th>Kredi</th>
-          <th>İlgi</th><th>Durum</th><th>Not</th><th>Durum</th>
+          <th>İlgi</th>
+          <th>Durum</th>
+          <th>Not</th>
           <th>Tarih</th>
           <th></th>
         </tr>
@@ -465,6 +467,16 @@ async function loadAutoLeads() {
                 <option value="closed" ${lead.status === 'closed' ? 'selected' : ''}>Kapandı</option>
                 <option value="rejected" ${lead.status === 'rejected' ? 'selected' : ''}>Uygun değil</option>
               </select>
+            </td>
+            <td>
+              <input
+                type="text"
+                class="form-input"
+                placeholder="Not ekle..."
+                value="${lead.notes || ''}"
+                data-action="update-auto-notes"
+                data-id="${lead.id}"
+              />
             </td>
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
