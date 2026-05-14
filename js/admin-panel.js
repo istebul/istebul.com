@@ -290,7 +290,7 @@ async function loadUsers() {
   const el = document.getElementById('users-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz kullanıcı yok.</p>'; return; }
   el.innerHTML = '<table class="table"><thead><tr><th>Ad</th><th>E-posta</th><th>Rol</th><th>Kayıt</th><th></th></tr></thead><tbody>' +
-    data.map(u => `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td class="text-muted">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td class="text-muted cell-nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="admin">Admin yap</button><button class="btn btn-warning btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="moderator">Moderator yap</button><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="user">Yetki kaldır</button><button class="btn btn-danger btn-sm" data-action="ban-user" data-id="${u.id}">Engelle</button></div></td></tr>`).join('') + '</tbody></table>';
+    data.map(u => `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td class="text-muted">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td class="text-muted cell-nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="admin">Admin yap</button><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="user">Yetki kaldır</button><button class="btn btn-danger btn-sm" data-action="ban-user" data-id="${u.id}">Engelle</button></div></td></tr>`).join('') + '</tbody></table>';
 }
 
 
@@ -359,7 +359,13 @@ async function loadAutoAnalytics() {
   ];
 
   const leadCounts = leadRows.reduce((acc, lead) => {
-    const status = lead.status || 'new';
+    let status = lead.status || 'new';
+
+    if (status === 'called') status = 'first_contact';
+    if (status === 'interested') status = 'proposal_sent';
+    if (status === 'closed') status = 'won';
+    if (status === 'rejected') status = 'lost';
+
     acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {});
@@ -925,7 +931,7 @@ async function deleteAutoLead(id) {
 
 async function setUserRole(id, role) {
   await adminAction({ action: 'update', table: 'profiles', id, values: { role } });
-  const labels = { admin: 'Admin yapıldı', moderator: 'Moderator yapıldı', user: 'Yetki kaldırıldı' };
+  const labels = { admin: 'Admin yapıldı', user: 'Yetki kaldırıldı' };
   toast(labels[role] || 'Rol güncellendi');
   loadUsers();
 }
