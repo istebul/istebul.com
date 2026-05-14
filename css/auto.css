@@ -82,3 +82,41 @@ h1{font-size:clamp(40px,6vw,72px);line-height:.96;margin:10px 0 22px}h2{font-siz
     flex-direction:column;
   }
 }
+
+.lead-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  padding:20px;
+}
+
+.lead-modal-card{
+  background:#fff;
+  border-radius:24px;
+  padding:32px;
+  max-width:520px;
+  width:100%;
+  box-shadow:0 20px 80px rgba(0,0,0,.25);
+}
+
+.lead-modal-card h3{
+  margin-top:0;
+}
+
+.lead-modal-card form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin:20px 0;
+}
+
+.lead-modal-card input{
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  font-size:16px;
+}

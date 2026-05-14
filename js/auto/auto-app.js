@@ -93,6 +93,76 @@ function renderEmailGate(results) {
   });
 }
 
+
+async function updateLeadInterest(phone, interestType) {
+  const supabaseUrl = window.__env?.SUPABASE_URL;
+  const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
+  const email = localStorage.getItem('istebul_auto_lead_email');
+
+  if (!supabaseUrl || !supabaseKey || !email) {
+    return;
+  }
+
+  await fetch(`${supabaseUrl}/rest/v1/auto_leads?email=eq.${encodeURIComponent(email)}`, {
+    method: 'PATCH',
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      phone,
+      interest_type: interestType
+    })
+  });
+}
+
+function openLeadModal(type) {
+  const existing = document.getElementById('lead-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'lead-modal';
+  modal.className = 'lead-modal';
+
+  modal.innerHTML = `
+    <div class="lead-modal-card">
+      <h3>Size uygun teklifleri paylaşalım</h3>
+      <p>Telefon numaranızı bırakın, uygun seçenekler için sizinle iletişime geçelim.</p>
+
+      <form id="phone-lead-form">
+        <input name="phone" type="tel" placeholder="Telefon numaranız" required>
+        <button class="btn primary" type="submit">Bilgi almak istiyorum</button>
+      </form>
+
+      <button class="btn secondary" id="close-lead-modal">Kapat</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById('close-lead-modal').onclick = () => modal.remove();
+
+  document.getElementById('phone-lead-form').addEventListener('submit', async event => {
+    event.preventDefault();
+
+    const phone = new FormData(event.currentTarget).get('phone');
+
+    try {
+      await updateLeadInterest(phone, type);
+    } catch (e) {
+      console.warn(e);
+    }
+
+    modal.innerHTML = `
+      <div class="lead-modal-card">
+        <h3>Teşekkürler</h3>
+        <p>Ekibimiz sizinle iletişime geçecek.</p>
+      </div>
+    `;
+  });
+}
+
 function renderResults(results) {
   const root = document.getElementById('auto-results');
 
@@ -128,9 +198,13 @@ function renderResults(results) {
         <p>Bakım: ${formatter.format(vehicle.costs.maintenance)} ₺</p>
       </div>
 
-      <button class="btn secondary" type="button">Finansman seçeneklerini gör</button>
+      <button class="btn secondary finance-btn" type="button">Finansman seçeneklerini gör</button>
     </article>
   `).join('');
+
+  document.querySelectorAll('.finance-btn').forEach(btn => {
+    btn.addEventListener('click', () => openLeadModal('finance'));
+  });
 }
 
 document.getElementById('year').textContent = new Date().getFullYear();
