@@ -3561,7 +3561,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Export for debugging
 export default App;
-\n
 // Mobile-safe cookie consent fallback
 document.addEventListener('click', (event) => {
     const accept = event.target.closest('[data-cookie-accept]');
