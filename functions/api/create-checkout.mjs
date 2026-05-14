@@ -1,14 +1,22 @@
 const getSiteUrl = (context) => (context.env.SITE_URL || 'https://istebul.com').replace(/\/$/, '');
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://istebul.com',
+const allowedOrigins = [
+  'https://istebul.com',
+  'https://www.istebul.com',
+  'https://istebul-com.pages.dev'
+];
+
+const corsHeaders = (origin = null) => ({
+  'Access-Control-Allow-Origin': allowedOrigins.includes(origin || '')
+    ? origin
+    : 'https://istebul.com',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'
-};
+});
 
-const json = (body, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: corsHeaders });
+const json = (body, status = 200, origin = null) =>
+  new Response(JSON.stringify(body), { status, headers: corsHeaders(origin) });
 
 const getBearerToken = (request) => {
   const authHeader = request.headers.get('Authorization') || '';
@@ -35,24 +43,24 @@ const getAuthenticatedUser = async (context, token) => {
 };
 
 export async function onRequestPost(context) {
-  try {
+  const origin = context.request.headers.get('Origin');\n\n  try {
     const STRIPE_SECRET_KEY = context.env.STRIPE_SECRET_KEY;
     const STRIPE_PRICE_ID = context.env.STRIPE_PRICE_ID;
 
     if (!STRIPE_SECRET_KEY || !STRIPE_PRICE_ID) {
-      return json({ error: 'Stripe not configured' }, 500);
+      return json({ error: 'Stripe not configured' }, 500, origin);
     }
 
     const token = getBearerToken(context.request);
 
     if (!token) {
-      return json({ error: 'Authorization required' }, 401);
+      return json({ error: 'Authorization required' }, 401, origin);
     }
 
     const user = await getAuthenticatedUser(context, token);
 
     if (!user?.id || !user?.email) {
-      return json({ error: 'Invalid token' }, 401);
+      return json({ error: 'Invalid token' }, 401, origin);
     }
 
     const params = new URLSearchParams({
@@ -79,19 +87,19 @@ export async function onRequestPost(context) {
 
     if (!res.ok) {
       console.error('Stripe error:', data);
-      return json({ error: 'Checkout could not be created' }, 502);
+      return json({ error: 'Checkout could not be created' }, 502, origin);
     }
 
-    return json({ url: data.url }, 200);
+    return json({ url: data.url }, 200, origin);
   } catch (err) {
     console.error('create-checkout error:', err);
-    return json({ error: 'Internal server error' }, 500);
+    return json({ error: 'Internal server error' }, 500, origin);
   }
 }
 
-export async function onRequestOptions() {
+export async function onRequestOptions(context) {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders
+    headers: corsHeaders(context.request.headers.get('Origin'))
   });
 }
