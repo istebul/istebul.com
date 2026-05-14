@@ -548,7 +548,14 @@ function openLeadDrawer(lead) {
   const loanLabels = { yes: 'Evet', no: 'Hayır' };
   const statusLabels = { new: 'Yeni', called: 'Arandı', interested: 'İlgileniyor', closed: 'Kapandı', rejected: 'Uygun değil' };
 
+  const whatsappUrl = lead.phone ? `https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}` : '';
+
   content.innerHTML = `
+    <div class="table-actions" style="margin-bottom:14px;">
+      ${lead.phone ? `<button class="btn btn-ghost btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="${whatsappUrl}">WhatsApp</button>` : ''}
+      ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
+      <button class="btn btn-ghost btn-sm" disabled>Follow-up yakında</button>
+    </div>
     <div class="lead-detail-grid">
       <div class="lead-detail-item"><div class="lead-detail-label">Email</div><div class="lead-detail-value">${fmt(lead.email)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Telefon</div><div class="lead-detail-value">${fmt(lead.phone)}</div></div>
