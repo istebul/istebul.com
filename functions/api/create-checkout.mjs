@@ -71,7 +71,8 @@ export async function onRequestPost(context) {
       success_url: `${getSiteUrl(context)}/profil?subscribed=true`,
       cancel_url: `${getSiteUrl(context)}/profil?cancelled=true`,
       customer_email: user.email,
-      'metadata[userId]': user.id
+      'metadata[userId]': user.id,
+      'subscription_data[metadata][userId]': user.id
     });
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
