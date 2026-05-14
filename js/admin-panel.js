@@ -427,7 +427,7 @@ async function loadAutoLeads() {
           <th>Kasa</th>
           <th>Yakıt</th>
           <th>Kredi</th>
-          <th>İlgi</th><th>Durum</th>
+          <th>İlgi</th><th>Durum</th><th>Not</th><th>Durum</th>
           <th>Tarih</th>
           <th></th>
         </tr>
@@ -496,6 +496,30 @@ async function updateAutoLeadStatus(id, status) {
   loadAutoAnalytics();
 }
 
+async function updateAutoLeadStatus(id, status) {
+  await adminAction({
+    action: 'update',
+    table: 'auto_leads',
+    id,
+    values: { status }
+  });
+
+  toast('Lead durumu güncellendi');
+  loadAutoLeads();
+}
+
+async function updateAutoLeadNotes(id, notes) {
+  await adminAction({
+    action: 'update',
+    table: 'auto_leads',
+    id,
+    values: { notes }
+  });
+
+  toast('Not kaydedildi');
+  loadAutoLeads();
+}
+
 async function deleteAutoLead(id) {
   if (!confirm('Bu lead silinsin mi?')) return;
 
@@ -555,6 +579,11 @@ function bindAdminPanelEvents() {
 
     if (action === 'update-auto-status') {
       updateAutoLeadStatus(id, el.value);
+      return;
+    }
+
+    if (action === 'update-auto-notes') {
+      updateAutoLeadNotes(id, el.value);
       return;
     }
 
