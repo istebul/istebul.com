@@ -147,8 +147,7 @@ async function loadSettings() {
 async function saveSettings() {
   const rows = KEYS.map(f => ({ key: f, value: document.getElementById('s-' + f)?.value || '', updated_at: new Date().toISOString() }));
   rows.push({ key: 'maintenance', value: document.getElementById('s-maintenance').checked ? 'true' : 'false', updated_at: new Date().toISOString() });
-  const { error } = await sb.from('site_settings').upsert(rows, { onConflict: 'key' });
-  if (error) { toast('Hata: ' + error.message, 'error'); return; }
+  await adminAction({ action: 'upsert_settings', table: 'site_settings', id: 'settings', values: rows });
   toast('Kaydedildi!');
 }
 
@@ -165,8 +164,7 @@ async function saveAnnouncement() {
   const content = document.getElementById('a-content').value.trim();
   const is_active = document.getElementById('a-active').checked;
   if (!title) { toast('Başlık zorunlu', 'error'); return; }
-  const { error } = await sb.from('announcements').insert({ title, content, is_active });
-  if (error) { toast('Hata: ' + error.message, 'error'); return; }
+  await adminAction({ action: 'insert', table: 'announcements', id: 'new', values: { title, content, is_active } });
   toast('Duyuru eklendi');
   document.getElementById('a-title').value = '';
   document.getElementById('a-content').value = '';
@@ -200,8 +198,7 @@ async function saveFaq() {
   const order_num = parseInt(document.getElementById('faq-order').value) || 0;
   const is_active = document.getElementById('faq-active').checked;
   if (!question) { toast('Soru zorunlu', 'error'); return; }
-  const { error } = await sb.from('faqs').insert({ question, answer, order_num, is_active });
-  if (error) { toast('Hata: ' + error.message, 'error'); return; }
+  await adminAction({ action: 'insert', table: 'faqs', id: 'new', values: { question, answer, order_num, is_active } });
   toast('SSS eklendi');
   document.getElementById('faq-question').value = '';
   document.getElementById('faq-answer').value = '';
@@ -242,8 +239,7 @@ async function savePost() {
   const content = document.getElementById('post-content').value.trim();
   const is_published = document.getElementById('post-published').checked;
   if (!title) { toast('Başlık zorunlu', 'error'); return; }
-  const { error } = await sb.from('posts').insert({ title, slug, content, is_published });
-  if (error) { toast('Hata: ' + error.message, 'error'); return; }
+  await adminAction({ action: 'insert', table: 'posts', id: 'new', values: { title, slug, content, is_published } });
   toast('Yazı eklendi');
   document.getElementById('post-title').value = '';
   document.getElementById('post-slug').value = '';
