@@ -3554,9 +3554,10 @@ JSON şeması:
 }
 
 // Initialize app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     loadCMS();
     window.app = new App();
+    await window.app.init();
 });
 
 // Export for debugging
