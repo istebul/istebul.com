@@ -333,7 +333,7 @@ async function loadAutoLeads() {
           <th>Kasa</th>
           <th>Yakıt</th>
           <th>Kredi</th>
-          <th>İlgi</th>
+          <th>İlgi</th><th>Durum</th>
           <th>Tarih</th>
           <th></th>
         </tr>
@@ -363,6 +363,15 @@ async function loadAutoLeads() {
             }[lead.fuel] || lead.fuel || '—')}</td>
             <td>${lead.loan === 'yes' ? 'Evet' : lead.loan === 'no' ? 'Hayır' : '—'}</td>
             <td>${lead.interest_type || '—'}</td>
+            <td>
+              <select class="status-select" data-action="update-auto-status" data-id="${lead.id}">
+                <option value="new" ${lead.status === 'new' ? 'selected' : ''}>Yeni</option>
+                <option value="called" ${lead.status === 'called' ? 'selected' : ''}>Arandı</option>
+                <option value="interested" ${lead.status === 'interested' ? 'selected' : ''}>İlgileniyor</option>
+                <option value="closed" ${lead.status === 'closed' ? 'selected' : ''}>Kapandı</option>
+                <option value="rejected" ${lead.status === 'rejected' ? 'selected' : ''}>Uygun değil</option>
+              </select>
+            </td>
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
               <div class="table-actions">
@@ -378,6 +387,18 @@ async function loadAutoLeads() {
       </tbody>
     </table>
   `;
+}
+
+async function updateAutoLeadStatus(id, status) {
+  await adminAction({
+    action: 'update',
+    table: 'auto_leads',
+    id,
+    values: { status }
+  });
+
+  toast('Lead durumu güncellendi');
+  loadAutoLeads();
 }
 
 async function deleteAutoLead(id) {
@@ -435,6 +456,11 @@ function bindAdminPanelEvents() {
 
     const { action, id, active, role } = el.dataset;
     const isActive = active === 'true';
+
+    if (action === 'update-auto-status') {
+      updateAutoLeadStatus(id, el.value);
+      return;
+    }
 
     if (action === 'toggle-ann') toggleAnn(id, isActive);
     if (action === 'delete-ann') deleteAnn(id);
