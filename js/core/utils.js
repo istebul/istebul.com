@@ -131,7 +131,8 @@ export class Utils {
             } else if (key === 'textContent') {
                 element.textContent = value;
             } else if (key === 'innerHTML') {
-                element.innerHTML = value;
+                console.warn('Unsafe innerHTML blocked in Utils.createElement; use textContent or explicit trusted rendering.');
+                element.textContent = String(value ?? '');
             } else if (key.startsWith('on') && typeof value === 'function') {
                 element.addEventListener(key.substring(2).toLowerCase(), value);
             } else {
