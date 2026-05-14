@@ -415,7 +415,7 @@ async function loadAutoAnalytics() {
         </thead>
         <tbody>
           ${events.slice(0, 100).map(event => `
-            <tr data-action="view-auto-lead" data-lead='${JSON.stringify(lead).replace(/'/g, "&apos;")}'>
+            <tr>
               <td><strong>${labels[event.event_name] || event.event_name}</strong></td>
               <td>${event.email || '—'}</td>
               <td>${event.phone || '—'}</td>
@@ -484,11 +484,6 @@ async function loadAutoLeads() {
           <th>Email</th>
           <th>Telefon</th>
           <th>Bütçe</th>
-          <th>Kullanım</th>
-          <th>Kasa</th>
-          <th>Yakıt</th>
-          <th>Kredi</th>
-          <th>İlgi</th>
           <th>Durum</th>
           <th>Not</th>
           <th>Tarih</th>
