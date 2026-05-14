@@ -66,9 +66,6 @@ Deno.serve(async (req) => {
     .eq("id", user.id)
     .single();
 
-    console.log("AUTH USER:", user.id);
-    console.log("PROFILE:", profile);
-    console.log("PROFILE ERROR:", profileError);
 
   if (profileError || !profile) {
     return json({ error: "Profile not found" }, 403);
