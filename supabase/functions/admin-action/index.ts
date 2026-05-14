@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
       if (
         table === "profiles" &&
         values.role &&
-        !["admin", "moderator", "user"].includes(values.role)
+        !["admin", "user"].includes(values.role)
      ) {
         return json({ error: "Invalid role value" }, 400);
       }
