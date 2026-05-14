@@ -430,6 +430,31 @@ async function loadAutoAnalytics() {
 
 
 
+
+function formatFollowUpLabel(lead) {
+  if (lead.follow_up_done) return 'Tamamlandı';
+  if (!lead.follow_up_at) return '—';
+
+  const date = new Date(lead.follow_up_at);
+  const now = new Date();
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const tomorrowStart = new Date(todayStart);
+  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+  const nextDayStart = new Date(todayStart);
+  nextDayStart.setDate(nextDayStart.getDate() + 2);
+
+  if (date < now) return 'Gecikti';
+  if (date >= todayStart && date < tomorrowStart) return 'Bugün';
+  if (date >= tomorrowStart && date < nextDayStart) return 'Yarın';
+
+  return date.toLocaleDateString('tr-TR');
+}
+
+
 async function loadAutoLeads() {
   const { data, error } = await sb
     .from('auto_leads')
@@ -499,6 +524,7 @@ async function loadAutoLeads() {
           <th>Bütçe</th>
           <th>Durum</th>
           <th>Not</th>
+          <th>Takip</th>
           <th>Tarih</th>
           <th></th>
         </tr>
@@ -529,6 +555,7 @@ async function loadAutoLeads() {
                 data-id="${lead.id}"
               />
             </td>
+            <td>${formatFollowUpLabel(lead)}</td>
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
               <div class="table-actions">
