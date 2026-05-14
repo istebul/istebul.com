@@ -300,7 +300,14 @@ document.addEventListener('click', async (event) => {
     trackUniqueAutoEvent('auto_whatsapp_click', { vehicle }, vehicle);
 
     const msg = encodeURIComponent('isteBul Auto üzerinden teklif almak istiyorum: ' + vehicle);
-    window.open('https://wa.me/905000000000?text=' + msg, '_blank');
+    const salesPhone = (window.__env?.AUTO_WHATSAPP_PHONE || window.__env?.WHATSAPP_PHONE || '').replace(/\D/g, '');
+
+    if (!salesPhone) {
+      alert('WhatsApp iletişim numarası henüz tanımlı değil.');
+      return;
+    }
+
+    window.open('https://wa.me/' + salesPhone + '?text=' + msg, '_blank');
   }
 
   const interestBtn = event.target.closest('.auto-interest-btn');
