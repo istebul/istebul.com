@@ -393,10 +393,15 @@ async function loadAutoAnalytics() {
   const crmCards = [
     ['Toplam Lead', totalLeads, '100%'],
     ['Yeni', leadCounts.new || 0, crmPct(leadCounts.new || 0)],
-    ['Arandı', leadCounts.called || 0, crmPct(leadCounts.called || 0)],
-    ['İlgileniyor', leadCounts.interested || 0, crmPct(leadCounts.interested || 0)],
-    ['Kapandı', leadCounts.closed || 0, crmPct(leadCounts.closed || 0)],
-    ['Uygun değil', leadCounts.rejected || 0, crmPct(leadCounts.rejected || 0)]
+    ['İlk temas', leadCounts.first_contact || 0, crmPct(leadCounts.first_contact || 0)],
+    ['Ulaşılamadı', leadCounts.unreachable || 0, crmPct(leadCounts.unreachable || 0)],
+    ['Tekrar ara', leadCounts.callback || 0, crmPct(leadCounts.callback || 0)],
+    ['Teklif gönderildi', leadCounts.proposal_sent || 0, crmPct(leadCounts.proposal_sent || 0)],
+    ['Finansman', leadCounts.financing || 0, crmPct(leadCounts.financing || 0)],
+    ['Sigorta', leadCounts.insurance || 0, crmPct(leadCounts.insurance || 0)],
+    ['Kazanıldı', leadCounts.won || 0, crmPct(leadCounts.won || 0)],
+    ['Kaybedildi', leadCounts.lost || 0, crmPct(leadCounts.lost || 0)],
+    ['Test/Spam', leadCounts.spam || 0, crmPct(leadCounts.spam || 0)]
   ];
 
   el.innerHTML = `
@@ -585,10 +590,15 @@ async function loadAutoLeads() {
             <td>
               <select class="status-select status-${lead.status || 'new'}" data-action="update-auto-status" data-id="${lead.id}">
                 <option value="new" ${lead.status === 'new' ? 'selected' : ''}>Yeni</option>
-                <option value="called" ${lead.status === 'called' ? 'selected' : ''}>Arandı</option>
-                <option value="interested" ${lead.status === 'interested' ? 'selected' : ''}>İlgileniyor</option>
-                <option value="closed" ${lead.status === 'closed' ? 'selected' : ''}>Kapandı</option>
-                <option value="rejected" ${lead.status === 'rejected' ? 'selected' : ''}>Uygun değil</option>
+                <option value="first_contact" ${lead.status === 'first_contact' || lead.status === 'called' ? 'selected' : ''}>İlk temas</option>
+                <option value="unreachable" ${lead.status === 'unreachable' ? 'selected' : ''}>Ulaşılamadı</option>
+                <option value="callback" ${lead.status === 'callback' ? 'selected' : ''}>Tekrar ara</option>
+                <option value="proposal_sent" ${lead.status === 'proposal_sent' || lead.status === 'interested' ? 'selected' : ''}>Teklif gönderildi</option>
+                <option value="financing" ${lead.status === 'financing' ? 'selected' : ''}>Finansman süreci</option>
+                <option value="insurance" ${lead.status === 'insurance' ? 'selected' : ''}>Sigorta süreci</option>
+                <option value="won" ${lead.status === 'won' || lead.status === 'closed' ? 'selected' : ''}>Kazanıldı</option>
+                <option value="lost" ${lead.status === 'lost' || lead.status === 'rejected' ? 'selected' : ''}>Kaybedildi</option>
+                <option value="spam" ${lead.status === 'spam' ? 'selected' : ''}>Test/Spam</option>
               </select>
             </td>
             <td>
@@ -640,7 +650,22 @@ function openLeadDrawer(lead) {
   const bodyLabels = { suv: 'SUV', sedan: 'Sedan', hatchback: 'Hatchback' };
   const fuelLabels = { any: 'Fark etmez', gasoline: 'Benzin', diesel: 'Dizel', hybrid: 'Hibrit', electric: 'Elektrikli' };
   const loanLabels = { yes: 'Evet', no: 'Hayır' };
-  const statusLabels = { new: 'Yeni', called: 'Arandı', interested: 'İlgileniyor', closed: 'Kapandı', rejected: 'Uygun değil' };
+  const statusLabels = {
+    new: 'Yeni',
+    called: 'İlk temas',
+    interested: 'Teklif gönderildi',
+    closed: 'Kazanıldı',
+    rejected: 'Kaybedildi',
+    first_contact: 'İlk temas',
+    unreachable: 'Ulaşılamadı',
+    callback: 'Tekrar ara',
+    proposal_sent: 'Teklif gönderildi',
+    financing: 'Finansman süreci',
+    insurance: 'Sigorta süreci',
+    won: 'Kazanıldı',
+    lost: 'Kaybedildi',
+    spam: 'Test/Spam'
+  };
 
   const whatsappUrl = lead.phone ? `https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}` : '';
   const notesHistory = Array.isArray(lead.notes_history) ? lead.notes_history : [];
@@ -783,17 +808,17 @@ async function updateAutoLeadStatus(id, status) {
 
   const values = { status };
 
-  if (status === 'called') {
+  if (status === 'first_contact' || status === 'called' || status === 'unreachable' || status === 'callback') {
     values.follow_up_at = tomorrow.toISOString();
     values.follow_up_done = false;
   }
 
-  if (status === 'interested') {
+  if (status === 'proposal_sent' || status === 'interested' || status === 'financing' || status === 'insurance') {
     values.follow_up_at = twoDaysLater.toISOString();
     values.follow_up_done = false;
   }
 
-  if (status === 'closed' || status === 'rejected') {
+  if (status === 'won' || status === 'lost' || status === 'spam' || status === 'closed' || status === 'rejected') {
     values.follow_up_done = true;
   }
 
