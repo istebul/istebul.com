@@ -469,7 +469,7 @@ async function loadAutoLeads() {
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
               <div class="table-actions">
-                ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}" target="_blank" rel="noopener" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}">WhatsApp</a>` : ''}
+                ${lead.phone ? `<button class="btn btn-ghost btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}">WhatsApp</button>` : ''}
                 ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
                 <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
                   Sil
@@ -570,10 +570,14 @@ function bindAdminPanelEvents() {
     if (action === 'ban-user') banUser(id);
     if (action === 'delete-auto-lead') deleteAutoLead(id);
     if (action === 'track-whatsapp-click') {
+      event.preventDefault();
       trackAdminAutoEvent('auto_whatsapp_click', {
         email: el.dataset.email,
         phone: el.dataset.phone
+      }).finally(() => {
+        window.open(el.dataset.whatsappUrl, '_blank', 'noopener');
       });
+      return;
     }
   });
 }
