@@ -63,6 +63,7 @@ async function showApp() {
   loadListings();
   loadUsers();
   loadAutoLeads();
+  loadAutoAnalytics();
 }
 
 function showPage(name, el) {
@@ -301,6 +302,78 @@ function normalizePhoneForWhatsapp(phone) {
   return `90${digits}`;
 }
 
+
+async function loadAutoAnalytics() {
+  const { data, error } = await sb
+    .from('auto_events')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(500);
+
+  const el = document.getElementById('auto-analytics-list');
+  if (!el) return;
+
+  if (error) {
+    el.innerHTML = `<p class="empty">Hata: ${error.message}</p>`;
+    return;
+  }
+
+  if (!data?.length) {
+    el.innerHTML = '<p class="empty">Henüz analytics event yok.</p>';
+    return;
+  }
+
+  const counts = data.reduce((acc, event) => {
+    acc[event.event_name] = (acc[event.event_name] || 0) + 1;
+    return acc;
+  }, {});
+
+  const labels = {
+    auto_page_view: 'Sayfa görüntüleme',
+    auto_quiz_submit: 'Quiz gönderimi',
+    auto_email_submit: 'Email/telefon submit',
+    auto_results_view: 'Sonuç görüntüleme',
+    auto_finance_click: 'Finansman tıklama',
+    auto_whatsapp_click: 'WhatsApp tıklama'
+  };
+
+  el.innerHTML = `
+    <div class="stat-grid">
+      ${Object.entries(labels).map(([key, label]) => `
+        <div class="stat-card">
+          <div class="stat-label">${label}</div>
+          <div class="stat-value">${counts[key] || 0}</div>
+          <div class="stat-sub">${key}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="height:20px"></div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Email</th>
+          <th>Telefon</th>
+          <th>Tarih</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.slice(0, 100).map(event => `
+          <tr>
+            <td><strong>${labels[event.event_name] || event.event_name}</strong></td>
+            <td>${event.email || '—'}</td>
+            <td>${event.phone || '—'}</td>
+            <td>${event.created_at ? new Date(event.created_at).toLocaleString('tr-TR') : '—'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+
 async function loadAutoLeads() {
   const { data, error } = await sb
     .from('auto_leads')
@@ -399,6 +472,7 @@ async function updateAutoLeadStatus(id, status) {
 
   toast('Lead durumu güncellendi');
   loadAutoLeads();
+  loadAutoAnalytics();
 }
 
 async function deleteAutoLead(id) {
@@ -412,6 +486,7 @@ async function deleteAutoLead(id) {
 
   toast('Lead silindi');
   loadAutoLeads();
+  loadAutoAnalytics();
 }
 
 async function setUserRole(id, role) {

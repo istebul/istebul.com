@@ -6,6 +6,36 @@ function readForm(form) {
   return Object.fromEntries(new FormData(form).entries());
 }
 
+async function trackAutoEvent(eventName, metadata = {}) {
+  const supabaseUrl = window.__env?.SUPABASE_URL;
+  const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) return;
+
+  const email = localStorage.getItem('istebul_auto_lead_email') || metadata.email || null;
+  const phone = metadata.phone || null;
+
+  try {
+    await fetch(`${supabaseUrl}/rest/v1/auto_events`, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        event_name: eventName,
+        email,
+        phone,
+        metadata
+      })
+    });
+  } catch (error) {
+    console.warn('Auto event tracking failed:', error);
+  }
+}
+
 function fuelLabel(fuel) {
   return {
     hybrid: 'Hibrit',
@@ -117,10 +147,12 @@ function renderEmailGate(results) {
 
     try {
       await saveLead(email, phone, readForm(form));
+      await trackAutoEvent('auto_email_submit', { email, phone, ...readForm(form) });
     } catch (error) {
       console.warn('Lead kaydı yapılamadı:', error);
     }
 
+    trackAutoEvent('auto_results_view', { email, phone });
     renderResults(results);
   });
 }
@@ -235,7 +267,10 @@ function renderResults(results) {
   `).join('');
 
   document.querySelectorAll('.finance-btn').forEach(btn => {
-    btn.addEventListener('click', () => openLeadModal('finance'));
+    btn.addEventListener('click', () => {
+      trackAutoEvent('auto_finance_click');
+      openLeadModal('finance');
+    });
   });
 }
 
@@ -243,10 +278,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
 const form = document.getElementById('auto-form');
 
+trackAutoEvent('auto_page_view');
+
 form.addEventListener('submit', event => {
   event.preventDefault();
 
-  const results = recommendVehicles(readForm(form));
+  const formData = readForm(form);
+  const results = recommendVehicles(formData);
+
+  trackAutoEvent('auto_quiz_submit', formData);
 
   renderLoading();
 
