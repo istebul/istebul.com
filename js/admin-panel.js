@@ -303,6 +303,15 @@ function normalizePhoneForWhatsapp(phone) {
 }
 
 
+async function trackAdminAutoEvent(eventName, metadata = {}) {
+  await sb.from('auto_events').insert({
+    event_name: eventName,
+    email: metadata.email || null,
+    phone: metadata.phone || null,
+    metadata
+  });
+}
+
 async function loadAutoAnalytics() {
   const { data, error } = await sb
     .from('auto_events')
@@ -337,13 +346,25 @@ async function loadAutoAnalytics() {
     auto_whatsapp_click: 'WhatsApp tıklama'
   };
 
+  const pageViews = counts.auto_page_view || 0;
+  const pct = (value, base) => base ? Math.round((value / base) * 100) + '%' : '—';
+
+  const analyticsCards = [
+    ['auto_page_view', labels.auto_page_view, counts.auto_page_view || 0, 'trafik'],
+    ['auto_quiz_submit', labels.auto_quiz_submit, counts.auto_quiz_submit || 0, pct(counts.auto_quiz_submit || 0, pageViews)],
+    ['auto_email_submit', labels.auto_email_submit, counts.auto_email_submit || 0, pct(counts.auto_email_submit || 0, counts.auto_quiz_submit || 0)],
+    ['auto_results_view', labels.auto_results_view, counts.auto_results_view || 0, pct(counts.auto_results_view || 0, counts.auto_email_submit || 0)],
+    ['auto_finance_click', labels.auto_finance_click, counts.auto_finance_click || 0, pct(counts.auto_finance_click || 0, counts.auto_results_view || 0)],
+    ['auto_whatsapp_click', labels.auto_whatsapp_click, counts.auto_whatsapp_click || 0, pct(counts.auto_whatsapp_click || 0, counts.auto_finance_click || 0)]
+  ];
+
   el.innerHTML = `
     <div class="stat-grid">
-      ${Object.entries(labels).map(([key, label]) => `
+      ${analyticsCards.map(([key, label, value, sub]) => `
         <div class="stat-card">
           <div class="stat-label">${label}</div>
-          <div class="stat-value">${counts[key] || 0}</div>
-          <div class="stat-sub">${key}</div>
+          <div class="stat-value">${value}</div>
+          <div class="stat-sub">${sub}</div>
         </div>
       `).join('')}
     </div>
@@ -448,7 +469,7 @@ async function loadAutoLeads() {
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
               <div class="table-actions">
-                ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}
+                ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}" target="_blank" rel="noopener" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}">WhatsApp</a>` : ''}
                 ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
                 <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
                   Sil
@@ -548,6 +569,12 @@ function bindAdminPanelEvents() {
     if (action === 'set-user-role') setUserRole(id, role);
     if (action === 'ban-user') banUser(id);
     if (action === 'delete-auto-lead') deleteAutoLead(id);
+    if (action === 'track-whatsapp-click') {
+      trackAdminAutoEvent('auto_whatsapp_click', {
+        email: el.dataset.email,
+        phone: el.dataset.phone
+      });
+    }
   });
 }
 
