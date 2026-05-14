@@ -180,52 +180,6 @@ Deno.serve(async (req) => {
       return json({ ok: true }, 200, origin);
     }
 
-    if (action === "insert") {
-      if (!values || typeof values !== "object") {
-        return json({ error: "Missing insert values" }, 400, origin);
-      }
-
-      const allowedInserts: Record<string, string[]> = {
-        announcements: ["title", "content", "is_active"],
-        faqs: ["question", "answer", "order_num", "is_active"],
-        posts: ["title", "slug", "content", "is_published"],
-      };
-
-      const allowedKeys = allowedInserts[table] || [];
-      const keys = Object.keys(values);
-      const invalidKey = keys.find((key) => !allowedKeys.includes(key));
-
-      if (!allowedKeys.length) {
-        return json({ error: "Insert not allowed for this table" }, 400, origin);
-      }
-
-      if (invalidKey) {
-        return json({ error: `Invalid insert field: ${invalidKey}` }, 400, origin);
-      }
-
-      const { error } = await adminClient
-        .from(table)
-        .insert(values);
-
-      if (error) throw error;
-
-      return json({ ok: true }, 200, origin);
-    }
-
-    if (action === "upsert_settings") {
-      if (!Array.isArray(values)) {
-        return json({ error: "Settings payload must be an array" }, 400, origin);
-      }
-
-      const { error } = await adminClient
-        .from("site_settings")
-        .upsert(values, { onConflict: "key" });
-
-      if (error) throw error;
-
-      return json({ ok: true }, 200, origin);
-    }
-
     if (action === "update") {
       if (!values || typeof values !== "object") {
         return json({ error: "Missing update values" }, 400, origin);
