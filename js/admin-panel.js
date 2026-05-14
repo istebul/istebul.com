@@ -496,18 +496,6 @@ async function updateAutoLeadStatus(id, status) {
   loadAutoAnalytics();
 }
 
-async function updateAutoLeadStatus(id, status) {
-  await adminAction({
-    action: 'update',
-    table: 'auto_leads',
-    id,
-    values: { status }
-  });
-
-  toast('Lead durumu güncellendi');
-  loadAutoLeads();
-}
-
 async function updateAutoLeadNotes(id, notes) {
   await adminAction({
     action: 'update',
