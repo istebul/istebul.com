@@ -406,7 +406,7 @@ async function loadAutoAnalytics() {
     ${events.length ? `
       <table class="table">
         <thead>
-          <tr data-action="view-auto-lead" data-lead='${JSON.stringify(lead).replace(/'/g, "&apos;")}'>
+          <tr>
             <th>Event</th>
             <th>Email</th>
             <th>Telefon</th>
@@ -540,18 +540,25 @@ function openLeadDrawer(lead) {
   if (!drawer || !overlay || !content) return;
 
   const fmt = (v) => v || '—';
+  const label = (map, value) => map[value] || value || '—';
+
+  const usageLabels = { family: 'Aile', city: 'Şehir', long: 'Uzun yol' };
+  const bodyLabels = { suv: 'SUV', sedan: 'Sedan', hatchback: 'Hatchback' };
+  const fuelLabels = { any: 'Fark etmez', gasoline: 'Benzin', diesel: 'Dizel', hybrid: 'Hibrit', electric: 'Elektrikli' };
+  const loanLabels = { yes: 'Evet', no: 'Hayır' };
+  const statusLabels = { new: 'Yeni', called: 'Arandı', interested: 'İlgileniyor', closed: 'Kapandı', rejected: 'Uygun değil' };
 
   content.innerHTML = `
     <div class="lead-detail-grid">
       <div class="lead-detail-item"><div class="lead-detail-label">Email</div><div class="lead-detail-value">${fmt(lead.email)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Telefon</div><div class="lead-detail-value">${fmt(lead.phone)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Bütçe</div><div class="lead-detail-value">${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Kullanım</div><div class="lead-detail-value">${fmt(lead.usage)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Kasa</div><div class="lead-detail-value">${fmt(lead.body)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Yakıt</div><div class="lead-detail-value">${fmt(lead.fuel)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Kredi</div><div class="lead-detail-value">${fmt(lead.loan)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Kullanım</div><div class="lead-detail-value">${label(usageLabels, lead.usage)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Kasa</div><div class="lead-detail-value">${label(bodyLabels, lead.body)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Yakıt</div><div class="lead-detail-value">${label(fuelLabels, lead.fuel)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Kredi</div><div class="lead-detail-value">${label(loanLabels, lead.loan)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">İlgi</div><div class="lead-detail-value">${fmt(lead.interest_type)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Durum</div><div class="lead-detail-value">${fmt(lead.status)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Durum</div><div class="lead-detail-value">${label(statusLabels, lead.status)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Not</div><div class="lead-detail-value">${fmt(lead.notes)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Tarih</div><div class="lead-detail-value">${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</div></div>
     </div>
