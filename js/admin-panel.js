@@ -156,23 +156,31 @@ async function loadAnnouncements() {
   const { data } = await sb.from('announcements').select('*').order('created_at', { ascending: false });
   const el = document.getElementById('announcements-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz duyuru yok.</p>'; return; }
+
   el.innerHTML = `<table class="table"><thead>
-      <tr>
-        <th>Email</th>
-        <th>Telefon</th>
-        <th>Bütçe</th>
-        <th>Kullanım</th>
-        <th>Kasa</th>
-        <th>Yakıt</th>
-        <th>Kredi</th>
-        <th>İlgi</th>
-        <th>Durum</th>
-        <th>Not</th>
-        <th>Tarih</th>
-        <th>Aksiyon</th>
-      </tr>
-    </thead><tbody>' +
-    data.map(a => `<tr><td><strong>${a.title||'—'}</strong></td><td class="cell-truncate">${a.content||'—'}</td><td><span class="badge ${a.is_active?'badge-green':'badge-red'}">${a.is_active?'Aktif':'Pasif'}</span></td><td class="text-muted cell-nowrap">${new Date(a.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-ann" data-id="${a.id}" data-active="${a.is_active}">${a.is_active?'Durdur':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-ann" data-id="${a.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>`;
+    <tr>
+      <th>Başlık</th>
+      <th>İçerik</th>
+      <th>Durum</th>
+      <th>Tarih</th>
+      <th>Aksiyon</th>
+    </tr>
+  </thead><tbody>${
+    data.map(a => `<tr>
+      <td><strong>${a.title || '—'}</strong></td>
+      <td class="cell-truncate">${a.content || '—'}</td>
+      <td><span class="badge ${a.is_active ? 'badge-green' : 'badge-red'}">${a.is_active ? 'Aktif' : 'Pasif'}</span></td>
+      <td class="text-muted cell-nowrap">${new Date(a.created_at).toLocaleDateString('tr-TR')}</td>
+      <td>
+        <div class="table-actions">
+          <button class="btn btn-ghost btn-sm" data-action="toggle-ann" data-id="${a.id}" data-active="${a.is_active}">
+            ${a.is_active ? 'Durdur' : 'Yayınla'}
+          </button>
+          <button class="btn btn-danger btn-sm" data-action="delete-ann" data-id="${a.id}">Sil</button>
+        </div>
+      </td>
+    </tr>`).join('')
+  }</tbody></table>`;
 }
 
 async function saveAnnouncement() {
@@ -205,23 +213,29 @@ async function loadFaqs() {
   const { data } = await sb.from('faqs').select('*').order('order_num').order('created_at', { ascending: false });
   const el = document.getElementById('faqs-list');
   if (!data?.length) { el.innerHTML = '<p class="empty">Henüz SSS yok.</p>'; return; }
+
   el.innerHTML = `<table class="table"><thead>
-      <tr>
-        <th>Email</th>
-        <th>Telefon</th>
-        <th>Bütçe</th>
-        <th>Kullanım</th>
-        <th>Kasa</th>
-        <th>Yakıt</th>
-        <th>Kredi</th>
-        <th>İlgi</th>
-        <th>Durum</th>
-        <th>Not</th>
-        <th>Tarih</th>
-        <th>Aksiyon</th>
-      </tr>
-    </thead><tbody>' +
-    data.map(f => `<tr><td class="text-muted">${f.order_num||0}</td><td>${f.question||'—'}</td><td><span class="badge ${f.is_active?'badge-green':'badge-red'}">${f.is_active?'Aktif':'Pasif'}</span></td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-faq" data-id="${f.id}" data-active="${f.is_active}">${f.is_active?'Gizle':'Göster'}</button><button class="btn btn-danger btn-sm" data-action="delete-faq" data-id="${f.id}">Sil</button></div></td></tr>`).join('') + '</tbody></table>`;
+    <tr>
+      <th>Sıra</th>
+      <th>Soru</th>
+      <th>Durum</th>
+      <th>Aksiyon</th>
+    </tr>
+  </thead><tbody>${
+    data.map(f => `<tr>
+      <td class="text-muted">${f.order_num || 0}</td>
+      <td>${f.question || '—'}</td>
+      <td><span class="badge ${f.is_active ? 'badge-green' : 'badge-red'}">${f.is_active ? 'Aktif' : 'Pasif'}</span></td>
+      <td>
+        <div class="table-actions">
+          <button class="btn btn-ghost btn-sm" data-action="toggle-faq" data-id="${f.id}" data-active="${f.is_active}">
+            ${f.is_active ? 'Gizle' : 'Göster'}
+          </button>
+          <button class="btn btn-danger btn-sm" data-action="delete-faq" data-id="${f.id}">Sil</button>
+        </div>
+      </td>
+    </tr>`).join('')
+  }</tbody></table>`;
 }
 
 async function saveFaq() {
