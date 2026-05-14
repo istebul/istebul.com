@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
 
   const { data: profile, error: profileError } = await adminClient
     .from("profiles")
-    .select("id, role")
+    .select("id, role, is_banned")
     .eq("id", user.id)
     .single();
 
@@ -85,8 +85,8 @@ Deno.serve(async (req) => {
     return json({ error: "Profile not found" }, 403, origin);
   }
 
-  if (profile.role !== "admin") {
-    return json({ error: "Forbidden: admin only" }, 403, origin);
+  if (profile.role !== "admin" || profile.is_banned === true) {
+    return json({ error: "Forbidden" }, 403, origin);
   }
 
   let body: any;
