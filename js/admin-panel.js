@@ -582,11 +582,6 @@ function bindAdminPanelEvents() {
       return;
     }
 
-    if (action === 'update-auto-notes') {
-      updateAutoLeadNotes(id, el.value);
-      return;
-    }
-
     if (action === 'toggle-ann') toggleAnn(id, isActive);
     if (action === 'delete-ann') deleteAnn(id);
     if (action === 'toggle-faq') toggleFaq(id, isActive);
@@ -610,5 +605,13 @@ function bindAdminPanelEvents() {
     }
   });
 }
+
+
+  document.addEventListener('change', (event) => {
+    const el = event.target.closest('[data-action="update-auto-notes"]');
+    if (!el) return;
+
+    updateAutoLeadNotes(el.dataset.id, el.value);
+  });
 
 bindAdminPanelEvents();
