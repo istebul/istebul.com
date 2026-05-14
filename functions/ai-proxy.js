@@ -1,21 +1,39 @@
-export async function onRequestOptions() {
+const ALLOWED_ORIGIN = 'https://istebul.com';
+
+export async function onRequestOptions({ request }) {
+  const origin = request.headers.get('Origin');
+
+  if (origin !== ALLOWED_ORIGIN) {
+    return new Response(null, { status: 403 });
+  }
+
   return new Response(null, {
     status: 204,
-    headers: corsHeaders()
+    headers: corsHeaders(origin)
   });
 }
 
 export async function onRequestPost({ request, env }) {
   try {
+    const origin = request.headers.get('Origin');
+
+    if (origin !== ALLOWED_ORIGIN) {
+      return json({ error: 'Forbidden origin' }, 403, origin);
+    }
+
     if (!env.GROQ_API_KEY) {
-      return json({ error: 'GROQ_API_KEY missing' }, 500);
+      return json({ error: 'GROQ_API_KEY missing' }, 500, origin);
     }
 
     const body = await request.json().catch(() => ({}));
     const prompt = body.prompt || body.message || body.input;
 
     if (!prompt) {
-      return json({ error: 'Prompt required' }, 400);
+      return json({ error: 'Prompt required' }, 400, origin);
+    }
+
+    if (typeof prompt !== 'string' || prompt.length > 3000) {
+      return json({ error: 'Invalid prompt' }, 400, origin);
     }
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -29,22 +47,7 @@ export async function onRequestPost({ request, env }) {
         messages: [
           {
             role: 'system',
-            content: `Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın.
-
-Eğer kullanıcı bir karar sonucu, araç/ev/tatil önerisi veya karşılaştırma istiyorsa SADECE geçerli JSON döndür. Markdown, açıklama, kod bloğu kullanma.
-
-JSON şeması:
-{
-  "title": "Kısa öneri başlığı",
-  "summary": "1-2 cümlelik kısa açıklama",
-  "score": 85,
-  "recommendation": "Net öneri",
-  "pros": ["Avantaj 1", "Avantaj 2", "Avantaj 3"],
-  "cons": ["Dezavantaj 1", "Dezavantaj 2"],
-  "nextSteps": ["Sonraki adım 1", "Sonraki adım 2"]
-}
-
-Eğer kullanıcı sadece sohbet/test mesajı yazarsa kısa Türkçe düz metin döndür.`
+            content: 'Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın.'
           },
           {
             role: 'user',
@@ -60,36 +63,29 @@ Eğer kullanıcı sadece sohbet/test mesajı yazarsa kısa Türkçe düz metin d
     const data = await response.json();
 
     if (!response.ok) {
-      return json({
-        error: 'Groq request failed',
-        status: response.status,
-        message: data?.error?.message || 'Unknown Groq error',
-        details: data
-      }, response.status);
+      return json({ error: 'Groq request failed' }, response.status, origin);
     }
 
-    const result = data?.choices?.[0]?.message?.content || '';
-
-    return json({ result });
-  } catch (error) {
     return json({
-      error: 'AI proxy error',
-      message: error.message
-    }, 500);
+      result: data?.choices?.[0]?.message?.content || ''
+    }, 200, origin);
+
+  } catch {
+    return json({ error: 'AI proxy error' }, 500);
   }
 }
 
-function json(data, status = 200) {
+function json(data, status = 200, origin = ALLOWED_ORIGIN) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: corsHeaders()
+    headers: corsHeaders(origin)
   });
 }
 
-function corsHeaders() {
+function corsHeaders(origin) {
   return {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json'
   };
