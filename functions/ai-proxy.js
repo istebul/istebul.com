@@ -56,7 +56,6 @@ export async function onRequestPost({ request, env }) {
         ],
         temperature: 0.4,
         max_tokens: 700,
-        response_format: { type: 'json_object' }
       })
     });
 
