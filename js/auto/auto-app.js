@@ -2,6 +2,22 @@ import { recommendVehicles } from './auto-ai.js';
 
 const formatter = new Intl.NumberFormat('tr-TR');
 
+function getSessionId() {
+  let id = sessionStorage.getItem('istebul_auto_session');
+  if (!id) {
+    id = crypto.randomUUID();
+    sessionStorage.setItem('istebul_auto_session', id);
+  }
+  return id;
+}
+
+function shouldTrackUnique(eventName, key = '') {
+  const token = `tracked:${eventName}:${key}`;
+  if (sessionStorage.getItem(token)) return false;
+  sessionStorage.setItem(token, '1');
+  return true;
+}
+
 function readForm(form) {
   return Object.fromEntries(new FormData(form).entries());
 }
@@ -28,7 +44,10 @@ async function trackAutoEvent(eventName, metadata = {}) {
         event_name: eventName,
         email,
         phone,
-        metadata
+        metadata: {
+          session_id: getSessionId(),
+          ...metadata
+        }
       })
     });
   } catch (error) {
@@ -119,45 +138,6 @@ async function saveLead(email, phone, formData) {
   }
 }
 
-function renderEmailGate(results) {
-  const root = document.getElementById('auto-results');
-
-  root.innerHTML = `
-    <div class="email-gate">
-      <p class="kicker">Analiz hazır</p>
-      <h3>Size uygun araç önerilerini görmek için e-posta adresinizi girin.</h3>
-      <p>Sonuçlarınız; uygunluk skoru, risk analizi ve tahmini yıllık maliyet ile birlikte gösterilecek.</p>
-
-      <form id="lead-form" class="lead-form">
-        <input name="email" type="email" placeholder="E-posta adresiniz" required>
-        <input name="phone" type="tel" placeholder="Telefon numaranız" required>
-        <button class="btn primary" type="submit">Sonuçları göster</button>
-      </form>
-
-      <small>Bilgilendirme amaçlıdır. Spam gönderilmez.</small>
-    </div>
-  `;
-
-  document.getElementById('lead-form').addEventListener('submit', async event => {
-    event.preventDefault();
-
-    const leadFormData = new FormData(event.currentTarget);
-    const email = leadFormData.get('email');
-    const phone = leadFormData.get('phone');
-
-    try {
-      await saveLead(email, phone, readForm(form));
-      await trackAutoEvent('auto_email_submit', { email, phone, ...readForm(form) });
-    } catch (error) {
-      console.warn('Lead kaydı yapılamadı:', error);
-    }
-
-    trackAutoEvent('auto_results_view', { email, phone });
-    renderResults(results);
-  });
-}
-
-
 async function updateLeadInterest(phone, interestType) {
   const supabaseUrl = window.__env?.SUPABASE_URL;
   const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
@@ -227,6 +207,12 @@ function openLeadModal(type) {
   });
 }
 
+
+function trackUniqueAutoEvent(eventName, metadata = {}, key = '') {
+  if (!shouldTrackUnique(eventName, key)) return;
+  trackAutoEvent(eventName, metadata);
+}
+
 function renderResults(results) {
   const root = document.getElementById('auto-results');
 
@@ -258,6 +244,16 @@ function renderResults(results) {
       <div class="cost">
         <p><strong>Tahmini yıllık maliyet:</strong><br>${formatter.format(vehicle.costs.total)} ₺</p>
         <p>Yakıt/enerji: ${formatter.format(vehicle.costs.fuel)} ₺</p>
+      </div>
+
+      <div class="cta-row">
+        <button class="btn primary auto-whatsapp-btn" data-vehicle="${vehicle.name}">
+          WhatsApp ile teklif al
+        </button>
+        <button class="btn secondary auto-interest-btn" data-interest="finance">
+          Finansman seçenekleri
+        </button>
+      </div>
         <p>Sigorta: ${formatter.format(vehicle.costs.insurance)} ₺</p>
         <p>Bakım: ${formatter.format(vehicle.costs.maintenance)} ₺</p>
       </div>
@@ -292,6 +288,25 @@ form.addEventListener('submit', event => {
 
   setTimeout(() => {
     document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
-    renderEmailGate(results);
+    trackUniqueAutoEvent('auto_results_view', readForm(form), 'results');
+renderResults(results);
   }, 2200);
 });
+
+document.addEventListener('click', async (event) => {
+  const whatsappBtn = event.target.closest('.auto-whatsapp-btn');
+  if (whatsappBtn) {
+    const vehicle = whatsappBtn.dataset.vehicle || 'vehicle';
+    trackUniqueAutoEvent('auto_whatsapp_click', { vehicle }, vehicle);
+
+    const msg = encodeURIComponent('isteBul Auto üzerinden teklif almak istiyorum: ' + vehicle);
+    window.open('https://wa.me/905000000000?text=' + msg, '_blank');
+  }
+
+  const interestBtn = event.target.closest('.auto-interest-btn');
+  if (interestBtn) {
+    openLeadModal(interestBtn.dataset.interest || 'finance');
+  }
+});
+
+
