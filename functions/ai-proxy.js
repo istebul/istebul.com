@@ -29,7 +29,22 @@ export async function onRequestPost({ request, env }) {
         messages: [
           {
             role: 'system',
-            content: 'Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın. Kullanıcıya kısa, uygulanabilir ve karşılaştırmalı öneriler ver.'
+            content: `Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın.
+
+Eğer kullanıcı bir karar sonucu, araç/ev/tatil önerisi veya karşılaştırma istiyorsa SADECE geçerli JSON döndür. Markdown, açıklama, kod bloğu kullanma.
+
+JSON şeması:
+{
+  "title": "Kısa öneri başlığı",
+  "summary": "1-2 cümlelik kısa açıklama",
+  "score": 85,
+  "recommendation": "Net öneri",
+  "pros": ["Avantaj 1", "Avantaj 2", "Avantaj 3"],
+  "cons": ["Dezavantaj 1", "Dezavantaj 2"],
+  "nextSteps": ["Sonraki adım 1", "Sonraki adım 2"]
+}
+
+Eğer kullanıcı sadece sohbet/test mesajı yazarsa kısa Türkçe düz metin döndür.`
           },
           {
             role: 'user',
@@ -37,7 +52,8 @@ export async function onRequestPost({ request, env }) {
           }
         ],
         temperature: 0.4,
-        max_tokens: 700
+        max_tokens: 700,
+        response_format: { type: 'json_object' }
       })
     });
 
