@@ -55,7 +55,14 @@ async function showApp() {
   const email = currentUser?.email || '';
   document.getElementById('user-email').textContent = email;
   document.getElementById('user-avatar').textContent = email[0]?.toUpperCase() || 'A';
-  loadDashboard(); loadSettings(); loadAnnouncements(); loadFaqs(); loadPosts(); loadListings(); loadUsers();
+  loadDashboard();
+  loadSettings();
+  loadAnnouncements();
+  loadFaqs();
+  loadPosts();
+  loadListings();
+  loadUsers();
+  loadAutoLeads();
 }
 
 function showPage(name, el) {
@@ -285,6 +292,81 @@ async function loadUsers() {
     data.map(u => `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td class="text-muted">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td class="text-muted cell-nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="admin">Admin yap</button><button class="btn btn-warning btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="moderator">Moderator yap</button><button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="user">Yetki kaldır</button><button class="btn btn-danger btn-sm" data-action="ban-user" data-id="${u.id}">Engelle</button></div></td></tr>`).join('') + '</tbody></table>';
 }
 
+
+async function loadAutoLeads() {
+  const { data, error } = await sb
+    .from('auto_leads')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  const el = document.getElementById('auto-leads-list');
+
+  if (!el) return;
+
+  if (error) {
+    el.innerHTML = `<p class="empty">Hata: ${error.message}</p>`;
+    return;
+  }
+
+  if (!data?.length) {
+    el.innerHTML = '<p class="empty">Henüz lead yok.</p>';
+    return;
+  }
+
+  el.innerHTML = `
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Telefon</th>
+          <th>Bütçe</th>
+          <th>Kullanım</th>
+          <th>Kasa</th>
+          <th>Yakıt</th>
+          <th>Kredi</th>
+          <th>İlgi</th>
+          <th>Tarih</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(lead => `
+          <tr>
+            <td><strong>${lead.email || '—'}</strong></td>
+            <td>${lead.phone || '—'}</td>
+            <td>${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</td>
+            <td>${lead.usage || '—'}</td>
+            <td>${lead.body || '—'}</td>
+            <td>${lead.fuel || '—'}</td>
+            <td>${lead.loan || '—'}</td>
+            <td>${lead.interest_type || '—'}</td>
+            <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
+            <td>
+              <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
+                Sil
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function deleteAutoLead(id) {
+  if (!confirm('Bu lead silinsin mi?')) return;
+
+  await adminAction({
+    action: 'delete',
+    table: 'auto_leads',
+    id
+  });
+
+  toast('Lead silindi');
+  loadAutoLeads();
+}
+
 async function setUserRole(id, role) {
   await adminAction({ action: 'update', table: 'profiles', id, values: { role } });
   const labels = { admin: 'Admin yapıldı', moderator: 'Moderator yapıldı', user: 'Yetki kaldırıldı' };
@@ -338,6 +420,7 @@ function bindAdminPanelEvents() {
     if (action === 'delete-listing') deleteListing(id);
     if (action === 'set-user-role') setUserRole(id, role);
     if (action === 'ban-user') banUser(id);
+    if (action === 'delete-auto-lead') deleteAutoLead(id);
   });
 }
 
