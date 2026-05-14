@@ -572,7 +572,7 @@ class App {
                 currency: 'TRY',
                 category: 'ev',
                 location: 'İstanbul/Kadıköy',
-                province: 'İzmir',
+                province: 'İstanbul',
                 district: 'Kadıköy',
                 propertyType: 'daire',
                 decisionHighlights: ['Daire', 'Düşük aidat', 'Yatırım'],
