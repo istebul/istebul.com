@@ -73,6 +73,19 @@ function showPage(name, el) {
   if (el) el.classList.add('active');
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function safeAttr(value) {
+  return escapeHtml(value).replaceAll('`', '&#096;');
+}
+
 function toast(msg, type = 'success') {
   const t = document.getElementById('toast');
   t.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
@@ -292,18 +305,23 @@ async function loadUsers() {
       const actions = [];
 
       if (!isAdmin) {
-        actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="admin">Admin yap</button>`);
+        actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${safeAttr(u.id)}" data-role="admin">Admin yap</button>`);
       }
 
       if (isAdmin && !isSelf) {
-        actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${u.id}" data-role="user">Yetki kaldır</button>`);
+        actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${safeAttr(u.id)}" data-role="user">Yetki kaldır</button>`);
       }
 
       if (!isSelf) {
-        actions.push(`<button class="btn btn-danger btn-sm" data-action="ban-user" data-id="${u.id}">Engelle</button>`);
+        actions.push(`<button class="btn btn-danger btn-sm" data-action="ban-user" data-id="${safeAttr(u.id)}">Engelle</button>`);
       }
 
-      return `<tr><td><strong>${u.full_name||u.name||'—'}</strong></td><td class="text-muted">${u.email||'—'}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${u.role||'kullanıcı'}</span></td><td class="text-muted cell-nowrap">${u.created_at?new Date(u.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions">${actions.join('')}</div></td></tr>`;
+      const displayName = escapeHtml(u.full_name || u.name || '—');
+      const email = escapeHtml(u.email || '—');
+      const role = escapeHtml(u.role || 'kullanıcı');
+      const createdAt = u.created_at ? new Date(u.created_at).toLocaleDateString('tr-TR') : '—';
+
+      return `<tr><td><strong>${displayName}</strong></td><td class="text-muted">${email}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${role}</span></td><td class="text-muted cell-nowrap">${createdAt}</td><td><div class="table-actions">${actions.join('')}</div></td></tr>`;
     }).join('') + '</tbody></table>';
 }
 
@@ -357,7 +375,10 @@ async function loadAutoAnalytics() {
     auto_email_submit: 'Email/telefon submit',
     auto_results_view: 'Sonuç görüntüleme',
     auto_finance_click: 'Finansman tıklama',
-    auto_whatsapp_click: 'WhatsApp tıklama'
+    auto_whatsapp_click: 'WhatsApp tıklama',
+    decision_feedback_helpful: 'Karar faydalı',
+    decision_feedback_unclear: 'Daha açıklama istiyor',
+    decision_feedback_contact: 'Uzman destek isteği'
   };
 
   const pageViews = counts.auto_page_view || 0;
@@ -369,7 +390,10 @@ async function loadAutoAnalytics() {
     ['auto_email_submit', labels.auto_email_submit, counts.auto_email_submit || 0, pct(counts.auto_email_submit || 0, counts.auto_quiz_submit || 0)],
     ['auto_results_view', labels.auto_results_view, counts.auto_results_view || 0, pct(counts.auto_results_view || 0, counts.auto_email_submit || 0)],
     ['auto_finance_click', labels.auto_finance_click, counts.auto_finance_click || 0, pct(counts.auto_finance_click || 0, counts.auto_results_view || 0)],
-    ['auto_whatsapp_click', labels.auto_whatsapp_click, counts.auto_whatsapp_click || 0, pct(counts.auto_whatsapp_click || 0, counts.auto_finance_click || 0)]
+    ['auto_whatsapp_click', labels.auto_whatsapp_click, counts.auto_whatsapp_click || 0, pct(counts.auto_whatsapp_click || 0, counts.auto_finance_click || 0)],
+    ['decision_feedback_helpful', labels.decision_feedback_helpful, counts.decision_feedback_helpful || 0, 'karar'],
+    ['decision_feedback_unclear', labels.decision_feedback_unclear, counts.decision_feedback_unclear || 0, 'iyileştirme'],
+    ['decision_feedback_contact', labels.decision_feedback_contact, counts.decision_feedback_contact || 0, 'sıcak lead']
   ];
 
   const leadCounts = leadRows.reduce((acc, lead) => {
