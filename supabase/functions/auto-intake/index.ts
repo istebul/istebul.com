@@ -33,6 +33,25 @@ function isValidEmail(value: unknown) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
 }
 
+
+const ALLOWED_EVENTS = new Set([
+  "auto_page_view",
+  "auto_quiz_submit",
+  "auto_results_view",
+  "auto_whatsapp_click",
+  "auto_finance_click"
+]);
+
+function clampString(value: unknown, max = 64) {
+  return String(value || "").trim().slice(0, max);
+}
+
+function clampNumber(value: unknown, min = 0, max = 100000000) {
+  const n = Number(value || 0);
+  if (!Number.isFinite(n)) return min;
+  return Math.min(Math.max(n, min), max);
+}
+
 function getClientIp(req: Request) {
   return req.headers.get("cf-connecting-ip")
     || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
@@ -102,7 +121,7 @@ Deno.serve(async (req) => {
   }
 
   const type = String(body.type || "");
-  const metadata = body.metadata && typeof body.metadata === "object" ? body.metadata : {};
+  const metadata = body.metadata && typeof body.metadata === "object" ? Object.fromEntries(Object.entries(body.metadata).slice(0, 20)) : {};
   const email = String(body.email || metadata.email || "").trim().toLowerCase();
   const phone = cleanPhone(body.phone || metadata.phone);
 
@@ -120,7 +139,7 @@ Deno.serve(async (req) => {
 
     const eventName = String(body.event_name || "").trim();
 
-    if (!eventName || eventName.length > 80) {
+    if (!ALLOWED_EVENTS.has(eventName)) {
       return json({ error: "Invalid event name" }, 400, origin);
     }
 
@@ -152,12 +171,12 @@ Deno.serve(async (req) => {
     const payload = {
       email,
       phone,
-      budget: Number(form.budget || 0),
-      usage: String(form.usage || ""),
-      body: String(form.body || ""),
-      fuel: String(form.fuel || ""),
-      km: Number(form.km || 0),
-      loan: String(form.loan || ""),
+      budget: clampNumber(form.budget, 0, 20000000),
+      usage: clampString(form.usage, 40),
+      body: clampString(form.body, 40),
+      fuel: clampString(form.fuel, 20),
+      km: clampNumber(form.km, 0, 2000000),
+      loan: clampString(form.loan, 20),
       source: "auto",
     };
 
