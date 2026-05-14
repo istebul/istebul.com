@@ -86,6 +86,29 @@ function safeAttr(value) {
   return escapeHtml(value).replaceAll('`', '&#096;');
 }
 
+function safeJsonParse(value, fallback = null) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(String(value || ''));
+    const allowed = ['https:', 'http:'];
+    if (!allowed.includes(url.protocol)) return null;
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
+function safeAttr(value) {
+  return escapeHtml(value).replaceAll('`', '&#096;');
+}
+
 function toast(msg, type = 'success') {
   const t = document.getElementById('toast');
   t.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
@@ -1030,15 +1053,20 @@ function bindAdminPanelEvents() {
     if (action === 'close-lead-drawer') closeLeadDrawer();
     if (action === 'complete-follow-up') completeFollowUp(id);
     if (action === 'save-follow-up') saveFollowUp(id);
-    if (action === 'add-lead-note') addLeadNote(id, JSON.parse(el.dataset.history.replace(/&apos;/g, "'")));
-    if (action === 'view-auto-lead') openLeadDrawer(JSON.parse(el.dataset.lead.replace(/&apos;/g, "'")));
+    if (action === 'add-lead-note') addLeadNote(id, safeJsonParse(el.dataset.history, []));
+    if (action === 'view-auto-lead') openLeadDrawer(safeJsonParse(el.dataset.lead));
     if (action === 'track-whatsapp-click') {
       event.preventDefault();
       trackAdminAutoEvent('auto_whatsapp_click', {
         email: el.dataset.email,
         phone: el.dataset.phone
       }).finally(() => {
-        window.open(el.dataset.whatsappUrl, '_blank', 'noopener');
+        const safeUrl = safeExternalUrl(el.dataset.whatsappUrl);
+        if (!safeUrl) {
+          toast('Geçersiz WhatsApp bağlantısı', 'error');
+          return;
+        }
+        window.open(safeUrl, '_blank', 'noopener');
       });
       return;
     }
