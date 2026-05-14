@@ -3561,3 +3561,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Export for debugging
 export default App;
+\n
+// Mobile-safe cookie consent fallback
+document.addEventListener('click', (event) => {
+    const accept = event.target.closest('[data-cookie-accept]');
+    const decline = event.target.closest('[data-cookie-decline]');
+
+    if (!accept && !decline) return;
+
+    try {
+        localStorage.setItem('istebu_cookie_consent', accept ? 'accepted' : 'declined');
+    } catch {}
+
+    const consent = document.getElementById('cookie-consent');
+    if (consent) {
+        consent.classList.add('hidden');
+        consent.style.display = 'none';
+    }
+});
