@@ -336,10 +336,24 @@ async function loadAutoLeads() {
             <td><strong>${lead.email || '—'}</strong></td>
             <td>${lead.phone || '—'}</td>
             <td>${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</td>
-            <td>${lead.usage || '—'}</td>
-            <td>${lead.body || '—'}</td>
-            <td>${lead.fuel || '—'}</td>
-            <td>${lead.loan || '—'}</td>
+            <td>${({
+              family:'Aile',
+              city:'Şehir',
+              long:'Uzun yol'
+            }[lead.usage] || lead.usage || '—')}</td>
+            <td>${({
+              suv:'SUV',
+              sedan:'Sedan',
+              hatchback:'Hatchback'
+            }[lead.body] || lead.body || '—')}</td>
+            <td>${({
+              any:'Fark etmez',
+              gasoline:'Benzin',
+              diesel:'Dizel',
+              hybrid:'Hibrit',
+              electric:'Elektrikli'
+            }[lead.fuel] || lead.fuel || '—')}</td>
+            <td>${lead.loan === 'yes' ? 'Evet' : lead.loan === 'no' ? 'Hayır' : '—'}</td>
             <td>${lead.interest_type || '—'}</td>
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
