@@ -699,3 +699,6 @@ export function installAssistantUI(UIManagerClass) {
         UIManagerClass.prototype[name] = AssistantUI.prototype[name];
     }
 }
+
+
+window.installAssistantUI = installAssistantUI;

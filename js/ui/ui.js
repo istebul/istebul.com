@@ -266,7 +266,12 @@ export class UIManager {
 
 
     async renderDecisionAssistant(...args) {
-        console.warn('Assistant UI renderer was not installed before render call.');
+        if (typeof window.installAssistantUI === 'function') {
+            window.installAssistantUI(this.constructor);
+            return this.renderDecisionAssistant(...args);
+        }
+
+        console.error('Assistant UI installer unavailable.');
         return undefined;
     }
 
