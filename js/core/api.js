@@ -141,6 +141,16 @@ export class API {
         return data;
     }
 
+    static async getCategories() {
+        const { data, error } = await supabase
+            .from('categories')
+            .select('*')
+            .order('name', { ascending: true });
+
+        if (error) throw error;
+        return data || [];
+    }
+
     // Listings API
     static async getListings(options = {}) {
         const {
