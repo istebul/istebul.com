@@ -7791,3 +7791,80 @@ main > section:not(.hero-section) {
   font-weight:700;
   color:#2563eb;
 }
+
+/* Premium polish layer — safe visual-only refinement */
+.navbar {
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.nav-container {
+  max-width: 1180px;
+}
+
+.nav-brand h1 {
+  letter-spacing: -0.04em;
+}
+
+.nav-link,
+.nav-dropdown-btn {
+  font-weight: 650;
+}
+
+.nav-link:hover,
+.nav-dropdown-btn:hover {
+  color: #2563eb;
+}
+
+.hero-content h1 {
+  letter-spacing: -0.055em;
+}
+
+.hero-content p {
+  color: #475569;
+}
+
+.hero-actions .btn {
+  border-radius: 999px;
+  min-height: 48px;
+  padding-inline: 1.35rem;
+}
+
+.hero-actions .btn-primary {
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.22);
+}
+
+.hero-proof {
+  margin-top: 1rem;
+}
+
+.hero-proof span {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.decision-preview {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 28px 90px rgba(15, 23, 42, 0.12);
+}
+
+.preview-score-card {
+  border-radius: 24px;
+}
+
+.preview-metrics div {
+  border-radius: 18px;
+}
+
+.trust-card,
+.how-step {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.06);
+}
+
+.trust-card:hover,
+.how-step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.09);
+}
