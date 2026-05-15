@@ -1,3 +1,4 @@
+import { installAssistantUI } from './assistant-ui.js';
 import { escapeHtml as escapeHtmlValue, safeImageUrl as sanitizeImageUrl, safeUrl } from '../core/security.js';
 // UI Manager
 import { state } from '../core/state.js';
@@ -266,7 +267,6 @@ export class UIManager {
 
 
     async renderDecisionAssistant(...args) {
-        const { installAssistantUI } = await import('./assistant-ui.js');
         installAssistantUI(this.constructor);
         return this.renderDecisionAssistant(...args);
     }
