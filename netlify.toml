@@ -69,3 +69,4 @@
   from = "/*"
   to = "/index.html"
   status = 200
+# force-rebuild: 2026-05-15T22:43:46.738636+00:00
