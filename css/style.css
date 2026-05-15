@@ -7887,3 +7887,59 @@ main > section:not(.hero-section) {
     max-width: 560px !important;
   }
 }
+
+/* Compact production hero layout */
+@media (min-width: 1024px) {
+  .hero-section {
+    padding: 2.25rem 0 3rem !important;
+  }
+
+  .hero-container {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    grid-template-columns: 0.9fr 0.8fr !important;
+    gap: 2rem !important;
+  }
+
+  .hero-content {
+    max-width: 620px !important;
+  }
+
+  .hero-content h1 {
+    font-size: 3.15rem !important;
+    line-height: 1.04 !important;
+    max-width: 620px !important;
+  }
+
+  .hero-content p {
+    font-size: 1rem !important;
+    max-width: 520px !important;
+  }
+
+  .hero-badges {
+    gap: 0.65rem !important;
+  }
+
+  .hero-badges span {
+    min-height: 32px !important;
+    padding: 0.55rem 0.85rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  .decision-preview {
+    max-width: 460px !important;
+    max-height: 520px !important;
+    overflow: hidden !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-content h1 {
+    font-size: 3.35rem !important;
+  }
+
+  .decision-preview {
+    max-width: 500px !important;
+  }
+}
