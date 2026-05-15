@@ -314,15 +314,14 @@ export class UIManager {
     }
 
     getListingQualityScore(listing = {}) {
-        const seed = String(listing.id || listing.title || '')
-            .split('')
-            .reduce((total, char) => total + char.charCodeAt(0), 0);
-        const base = 78 + (seed % 13);
-        const price = Number(listing.price || 0);
-        const freshnessBonus = listing.created_at && (Date.now() - new Date(listing.created_at).getTime()) < 4 * 86400000 ? 4 : 0;
-        const priceBonus = price > 0 && price < 1500000 ? 3 : price > 10000000 ? -2 : 1;
-        const sourceBonus = listing.external_url ? 2 : 0;
-        return Math.max(68, Math.min(97, base + freshnessBonus + priceBonus + sourceBonus));
+        const explicitScore =
+            Number(listing.score || listing.decisionScore || listing.matchScore || 0);
+
+        if (explicitScore > 0) {
+            return Math.max(0, Math.min(100, explicitScore));
+        }
+
+        return null;
     }
 
     getListingComparisonSignature(listing = {}) {
