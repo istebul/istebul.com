@@ -27,7 +27,7 @@ export const translations = {
         listings: {
             title: 'Seçenekler',
             addListing: 'İlan Ekle',
-            myListings: 'Seçeneklerım',
+            myListings: 'Seçeneklerim',
             favorites: 'Favorilerim',
             price: 'Fiyat',
             location: 'Konum',
