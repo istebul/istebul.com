@@ -7713,15 +7713,15 @@ main > section:not(.hero-section) {
 
 /* CLS FIX */
 .hero-section {
-  min-height: 760px;
+  min-height: auto;
 }
 
 .hero-container {
-  min-height: 680px;
+  min-height: auto;
 }
 
 .hero-content {
-  min-height: 620px;
+  min-height: auto;
 }
 
 .hero-categories {
@@ -7730,7 +7730,7 @@ main > section:not(.hero-section) {
 
 .hero-image,
 .decision-preview {
-  min-height: 560px;
+  min-height: 420px;
 }
 
 .preview-score-card,
