@@ -47,6 +47,7 @@ export class Router {
     handleRoute() {
         const rawPath = window.location.pathname;
         const path = rawPath === '/index.html' ? '/' : rawPath.replace(/\/$/, '') || '/';
+        this.currentRoute = path;
         const match = this.matchRoute(path);
         const route = match ? match.component : 'home';
 
