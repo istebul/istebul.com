@@ -3753,13 +3753,20 @@ function applyProductionRouteVisibility() {
     if (sectionId === 'home') {
         ['home', 'trust', 'how-it-works', 'categories'].forEach((id) => {
             const section = document.getElementById(id);
-            if (section) section.style.display = 'block';
+            if (section) {
+                section.classList.remove('hidden');
+                section.style.display = 'block';
+            }
         });
     } else {
         const section = document.getElementById(sectionId);
         if (section) {
             section.classList.remove('hidden');
             section.style.display = 'block';
+        }
+
+        if (sectionId === 'decision-assistant') {
+            window.app?.renderDecisionAssistant?.();
         }
     }
 }
