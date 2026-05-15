@@ -266,9 +266,8 @@ export class UIManager {
 
 
     async renderDecisionAssistant(...args) {
-        const { installAssistantUI } = await import('./assistant-ui.js');
-        installAssistantUI(this.constructor);
-        return this.renderDecisionAssistant(...args);
+        console.warn('Assistant UI renderer was not installed before render call.');
+        return undefined;
     }
 
     getListingLocationLabel(listing = {}) {

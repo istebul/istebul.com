@@ -29,6 +29,7 @@ import {
     getVacationPlaceOptions
 } from './data/catalog.js';
 import {
+import { installAssistantUI } from './ui/assistant-ui.js';
     getCostProfileForCategory,
     getFinanceProductsForCategory,
     getMarketData,
@@ -78,6 +79,7 @@ class App {
             errorBoundary.init();
 
             // Initialize UI
+            installAssistantUI(this.ui.constructor);
             this.ui.init();
 
             // Register service worker for PWA
