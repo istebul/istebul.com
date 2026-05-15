@@ -7791,3 +7791,22 @@ main > section:not(.hero-section) {
   font-weight:700;
   color:#2563eb;
 }
+
+/* Safe desktop scale adjustment */
+@media (min-width: 1024px) {
+  .hero-content h1 {
+    font-size: clamp(2.75rem, 4.2vw, 4.6rem);
+  }
+
+  .hero-content p {
+    font-size: clamp(0.98rem, 1.15vw, 1.08rem);
+  }
+
+  .decision-preview {
+    max-width: 540px;
+  }
+
+  .hero-container {
+    gap: clamp(1.5rem, 3vw, 3.5rem);
+  }
+}
