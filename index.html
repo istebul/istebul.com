@@ -21,7 +21,8 @@
     <link rel="apple-touch-icon" href="assets/icons/favicon-192.png">
     <link rel="icon" type="image/png" href="assets/icons/favicon-192.png">
     <script src="/env.js" defer></script>
-    <link rel="stylesheet" href="css/style.css?v=13">
+    <link rel="preload" href="css/style.css?v=20" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/style.css?v=20"></noscript>
 
 <style>
 .hidden{display:none!important;}
@@ -40,7 +41,7 @@
 
     <link rel="preconnect" href="https://hjfrcdstbyonmgatgwcc.supabase.co" crossorigin>
     <link rel="dns-prefetch" href="//hjfrcdstbyonmgatgwcc.supabase.co">
-</head>
+    </head>
 <body>
     <div class="top-bar" id="announcement-ticker">
         <p data-cms="announcement"><strong>Bugün:</strong> Kullanıcılar araç, ev ve tatil kararları için toplam maliyet ve kredi karşılaştırması yaptı.</p>
@@ -106,19 +107,19 @@
             <div class="hero-container">
                 <div class="hero-content">
                     <span class="hero-eyebrow"><i data-lucide="radar"></i> <span data-cms="hero-eyebrow">Türkiye için AI karar merkezi</span></span>
-                    <h1 data-cms="hero-title">Araç, ev ve tatil kararlarında gerçek toplam maliyeti görün</h1>
+                    <h1 data-cms="hero-title">Satın almadan önce doğru kararı görün</h1>
                     <p data-cms="hero-desc">Araç, ev ve tatil için birkaç soruya cevap verin; isteBul size en uygun seçenekleri, toplam maliyeti, kredi ihtimalini ve nereden alabileceğinizi tek sonuç ekranında sunsun.</p>
                     <div class="hero-badges">
-                        <span>Toplam maliyet analizi</span>
+                        <span>İhtiyaç analizi</span>
                         <span>Toplam maliyet hesabı</span>
                         <span>Kredi karşılaştırması</span>
                     </div>
                     <div class="hero-actions">
                         <a href="/karar-asistani" class="btn btn-primary">
-                            <i data-lucide="sparkles"></i> Kararını başlat
+                            <i data-lucide="sparkles"></i> Bana en uygununu bul
                         </a>
                         <a href="/ilanlar" class="btn btn-outline">
-                            <i data-lucide="compass"></i> Örnek sonucu gör
+                            <i data-lucide="compass"></i> Piyasayı keşfet
                         </a>
                     </div>
                     
@@ -145,7 +146,7 @@
                         <span><strong>148+</strong> model</span>
                     </div>
                     <div class="hero-categories" id="hero-categories">
-                        <a href="/auto" class="category-card category-card-arac">
+                        <button type="button" class="category-card category-card-arac" onclick="window.location.href='/auto'">
                             <span class="category-visual category-visual-arac" aria-hidden="true">
                                 <i data-lucide="car-front"></i>
                             </span>
