@@ -1001,6 +1001,11 @@ class App {
             profileLoginBtn.addEventListener('click', () => this.auth.showLoginModal());
         }
 
+        const premiumCheckoutBtn = document.getElementById('premium-checkout-btn');
+        if (premiumCheckoutBtn) {
+            premiumCheckoutBtn.addEventListener('click', () => this.handlePremiumCheckout());
+        }
+
         // Auth events
         document.addEventListener('userLoggedIn', (e) => this.handleUserLogin(e.detail));
         document.addEventListener('userLoggedOut', () => this.handleUserLogout());
@@ -2990,6 +2995,42 @@ JSON şeması:
         this.renderCategorySurfaces();
         await this.loadListings();
         this.ui.showSuccess('Filtreler temizlendi.');
+    }
+
+    async handlePremiumCheckout() {
+        if (!this.currentUser) {
+            this.auth.showLoginModal();
+            return;
+        }
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session?.access_token) {
+                this.auth.showLoginModal();
+                return;
+            }
+
+            const response = await fetch('/api/create-checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({})
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.url) {
+                throw new Error(data.error || 'Checkout başlatılamadı');
+            }
+
+            window.location.href = data.url;
+        } catch (error) {
+            console.error('Premium checkout failed:', error);
+            this.ui.showError('Ödeme sayfası başlatılamadı. Lütfen tekrar deneyin.');
+        }
     }
 
     async handleAddListing() {
