@@ -7833,3 +7833,57 @@ main > section:not(.hero-section) {
     transform: scale(0.86);
   }
 }
+
+/* Final desktop scale correction */
+@media (min-width: 1024px) {
+  .hero-section {
+    min-height: auto !important;
+    padding-top: 3.5rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+
+  .hero-container {
+    min-height: auto !important;
+    grid-template-columns: minmax(360px, 0.85fr) minmax(360px, 0.9fr) !important;
+    align-items: center !important;
+    gap: 2.25rem !important;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(2.8rem, 3.6vw, 4.25rem) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -0.045em !important;
+  }
+
+  .hero-content p {
+    font-size: 1.05rem !important;
+    line-height: 1.65 !important;
+    max-width: 560px !important;
+  }
+
+  .decision-preview {
+    max-width: 520px !important;
+    width: 100% !important;
+    transform: none !important;
+    justify-self: end !important;
+  }
+
+  .preview-score-card h3 {
+    font-size: 1.45rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .preview-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-content h1 {
+    font-size: clamp(3rem, 3.4vw, 4.5rem) !important;
+  }
+
+  .decision-preview {
+    max-width: 560px !important;
+  }
+}
