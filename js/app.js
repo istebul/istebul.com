@@ -3665,3 +3665,43 @@ document.addEventListener('click', (event) => {
         window.app?.auth?.showRegisterModal();
     }
 });
+
+// Production route visibility guard
+function applyProductionRouteVisibility() {
+    const path = window.location.pathname.replace(/\/$/, '') || '/';
+    const routeMap = {
+        '/': 'home',
+        '/ilanlar': 'ilanlar',
+        '/karsilastir': 'compare',
+        '/karar-asistani': 'decision-assistant',
+        '/favoriler': 'favoriler',
+        '/gecmis': 'history',
+        '/profil': 'profil',
+        '/admin': 'admin',
+        '/messages': 'messages',
+        '/ilan-ekle': 'add-listing'
+    };
+
+    const sectionId = routeMap[path] || (path.startsWith('/ilan/') ? 'listing-detail' : 'home');
+
+    document.querySelectorAll('main > section').forEach((section) => {
+        section.style.display = 'none';
+    });
+
+    if (sectionId === 'home') {
+        ['home', 'trust', 'how-it-works', 'categories'].forEach((id) => {
+            const section = document.getElementById(id);
+            if (section) section.style.display = 'block';
+        });
+    } else {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.classList.remove('hidden');
+            section.style.display = 'block';
+        }
+    }
+}
+
+window.addEventListener('app:ready', applyProductionRouteVisibility);
+window.addEventListener('popstate', applyProductionRouteVisibility);
+document.addEventListener('click', () => setTimeout(applyProductionRouteVisibility, 0));
