@@ -1101,7 +1101,7 @@ export class UIManager {
                         <img src="${imageUrl}"
                              alt="${this.escapeHtml(listing.title)}"
                              class="listing-image"
-                             onerror="this.src='/assets/images/placeholder.svg'">
+                            >
                         <div class="listing-badges">
                             <span class="listing-ai-score"><i data-lucide="sparkles"></i> AI ${this.escapeHtml(aiScore)}/100</span>
                             <span>${this.escapeHtml(categoryLabel || 'İlan')}</span>
@@ -1191,7 +1191,7 @@ export class UIManager {
                 </div>
                 <div class="listing-detail-body">
                     <div class="listing-detail-image">
-                        <img src="${imageUrl}" alt="${this.escapeHtml(listing.title)}" onerror="this.src='/assets/images/placeholder.svg'">
+                        <img src="${imageUrl}" alt="${this.escapeHtml(listing.title)}">
                     </div>
                     <div class="listing-detail-info">
                         ${this.getListingInsightsMarkup(listing, aiScore)}

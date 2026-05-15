@@ -234,10 +234,10 @@ class App {
                     <strong>Yeni sürüm mevcut!</strong>
                     <span>Uygulamayı güncellemek için sayfayı yenileyin.</span>
                 </div>
-                <button onclick="window.location.reload()" class="btn btn-primary btn-sm">
+                <button type="button" data-action="reload-page" class="btn btn-primary btn-sm">
                     Güncelle
                 </button>
-                <button onclick="this.parentElement.parentElement.remove()" class="btn-close">
+                <button type="button" data-action="dismiss-parent-card" class="btn-close">
                     <i data-lucide="x"></i>
                 </button>
             </div>
@@ -3554,6 +3554,9 @@ JSON şeması:
 
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
+    const yearEl = document.getElementById('current-year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
     loadCMS();
     window.app = new App();
     await window.app.init();
@@ -3561,6 +3564,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Export for debugging
 export default App;
+document.addEventListener('click', (event) => {
+    const reloadBtn = event.target.closest('[data-action="reload-page"]');
+    if (reloadBtn) {
+        window.location.reload();
+        return;
+    }
+
+    const dismissBtn = event.target.closest('[data-action="dismiss-parent-card"]');
+    if (dismissBtn) {
+        dismissBtn.closest('.notification, .toast, .alert, .error-card, .card')?.remove();
+    }
+});
+
 // Mobile-safe cookie consent fallback
 document.addEventListener('click', (event) => {
     const accept = event.target.closest('[data-cookie-accept]');
