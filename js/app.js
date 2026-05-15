@@ -1643,11 +1643,11 @@ class App {
                 id: 'arac',
                 title: 'Bütçeye Uygun Hibrit Aile Aracı',
                 note: 'Yakıt tüketimi, sigorta ve toplam sahip olma maliyetine göre dengeli aile seçeneği.',
-                score: 89,
+                score: 'Veri',
                 metrics: [
-                    { label: 'Yıllık maliyet', value: '128.400 ₺' },
-                    { label: 'Aylık kredi', value: '71.450 ₺' },
-                    { label: 'Eşleşme', value: '%89' }
+                    { label: 'Toplam maliyet', value: 'Model' },
+                    { label: 'Finansman', value: 'Simülasyon' },
+                    { label: 'Güven', value: 'Şeffaf' }
                 ],
                 bars: [
                     { label: 'Yakıt', value: 62 },
@@ -1664,11 +1664,11 @@ class App {
                 id: 'ev',
                 title: 'Lokasyon ve Kredi Dengeli 2+1 Daire',
                 note: 'Aidat, DASK, konut kredisi ve değer artışı dengesi güçlü seçenek.',
-                score: 89,
+                score: 'Veri',
                 metrics: [
                     { label: 'Yıllık gider', value: '69.400 ₺' },
-                    { label: 'Aylık kredi', value: '64.920 ₺' },
-                    { label: 'Eşleşme', value: '%89' }
+                    { label: 'Finansman', value: 'Simülasyon' },
+                    { label: 'Güven', value: 'Şeffaf' }
                 ],
                 bars: [
                     { label: 'Aidat', value: 46 },
@@ -1689,7 +1689,7 @@ class App {
                 metrics: [
                     { label: 'Toplam paket', value: '98.000 ₺' },
                     { label: 'Ek maliyet', value: '26.000 ₺' },
-                    { label: 'Eşleşme', value: '%91' }
+                    { label: 'Güven', value: 'Şeffaf' }
                 ],
                 bars: [
                     { label: 'Konaklama', value: 68 },
