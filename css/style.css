@@ -8240,3 +8240,59 @@ main > section:not(.hero-section) {
     padding: 1.25rem !important;
   }
 }
+
+/* ===== DESKTOP FINAL POLISH ===== */
+@media (min-width: 1024px) {
+  .navbar {
+    padding: 1rem 1.5rem;
+  }
+
+  .nav-container {
+    max-width: 1200px;
+  }
+
+  .nav-menu {
+    gap: 0.35rem;
+  }
+
+  .nav-link,
+  .nav-dropdown-btn {
+    padding: 0.72rem 0.95rem;
+    border-radius: 14px;
+  }
+
+  .hero-section {
+    padding-top: 5.25rem;
+    padding-bottom: 5.5rem;
+  }
+
+  .hero-container {
+    max-width: 1200px;
+    gap: 4.5rem;
+  }
+
+  .hero-content h1 {
+    max-width: 720px;
+  }
+
+  .decision-preview {
+    max-width: 520px;
+  }
+
+  .trust-grid,
+  .how-grid {
+    max-width: 1120px;
+    margin-inline: auto;
+  }
+
+  .trust-card,
+  .how-step {
+    border-radius: 26px;
+  }
+
+  .newsletter-card {
+    max-width: 1120px;
+    margin-inline: auto;
+    border-radius: 30px;
+  }
+}
