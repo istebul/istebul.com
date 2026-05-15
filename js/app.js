@@ -37,6 +37,7 @@ import {
     resetMarketData,
     saveMarketData
 } from './data/market-data.js';
+import { estimateListingPeriodicCost } from './engines/cost-engine.js';
 
 class App {
     constructor() {
@@ -3392,11 +3393,9 @@ Açıklama yok.
     }
 
     estimateListingPeriodicCost(listing = {}) {
-        const price = Number(listing.price || 0);
-        if (listing.category === 'arac') return Math.max(32000, Math.round(price * 0.065));
-        if (listing.category === 'ev') return Math.max(24000, Math.round(price * 0.012));
-        if (listing.category === 'tatil') return Math.max(8000, Math.round(price * 0.18));
-        return Math.round(price * 0.05);
+        const profile = this.getCostProfile(listing.category);
+        const result = estimateListingPeriodicCost(listing, profile);
+        return Number(result.total || 0);
     }
 
     createListingComparisonDetails(listing = {}) {
