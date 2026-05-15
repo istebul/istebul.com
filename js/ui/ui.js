@@ -1,3 +1,5 @@
+import { installListingsUI } from './listings-ui.js';
+import { installComparisonUI } from './comparison-ui.js';
 import { installAssistantUI } from './assistant-ui.js';
 import { escapeHtml as escapeHtmlValue, safeImageUrl as sanitizeImageUrl, safeUrl } from '../core/security.js';
 // UI Manager
@@ -382,7 +384,6 @@ export class UIManager {
 
 
     async renderListings(...args) {
-        const { installListingsUI } = await import('./listings-ui.js');
         installListingsUI(this.constructor);
         return this.renderListings(...args);
     }
@@ -565,7 +566,6 @@ export class UIManager {
 
 
     async renderComparison(...args) {
-        const { installComparisonUI } = await import('./comparison-ui.js');
         installComparisonUI(this.constructor);
         return this.renderComparison(...args);
     }
