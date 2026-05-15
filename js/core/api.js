@@ -85,10 +85,16 @@ export class API {
     }
 
     static async signIn(email, password) {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const timeout = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Giriş isteği zaman aşımına uğradı. Lütfen tekrar deneyin.')), 12000);
+        });
+
+        const request = supabase.auth.signInWithPassword({
             email,
             password
         });
+
+        const { data, error } = await Promise.race([request, timeout]);
 
         if (error) throw error;
         return data;
