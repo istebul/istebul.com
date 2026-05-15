@@ -3603,6 +3603,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.app = new App();
     try {
         await window.app.init();
+
+        // Ensure direct URL routes like /karsilastir and /karar-asistani
+        // are applied after all UI/listener initialization is complete.
+        window.app.router?.handleRoute?.();
+
         window.appReady = true;
         window.dispatchEvent(new CustomEvent('app:ready'));
     } catch (error) {
