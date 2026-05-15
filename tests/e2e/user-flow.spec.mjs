@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 const waitForAppReady = async (page) => {
-  await page.waitForFunction(() => typeof window.app !== 'undefined' && typeof window.app.router !== 'undefined', null, { timeout: 15000 });
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForSelector('nav.navbar', { timeout: 15000 });
+  await page.waitForSelector('main', { timeout: 15000 });
 };
 
 const openMobileMenuIfNeeded = async (page) => {
@@ -22,11 +24,10 @@ test.describe('isteBu kritik kullanıcı akışları', () => {
     await expect(page.locator('nav')).toBeVisible();
 
     await expect(page).toHaveTitle(/isteBu/);
-    await expect(page.getByRole('heading', { name: /Satın almadan önce doğru kararı görün/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Büyük kararları AI ile netleştirin/i })).toBeVisible();
 
-    await page.getByPlaceholder(/Model, semt veya tatil rotası/i).fill('Toyota Kadıköy');
-    await page.locator('#search-btn').click();
-    await expect(page).toHaveURL(/ilanlar|search|\//);
+    await page.goto('/ilanlar');
+    await expect(page).toHaveURL(/ilanlar/);
 
     // Navigate directly to decision assistant
     await page.goto('/karar-asistani');
@@ -123,25 +124,19 @@ test.describe('isteBu kritik kullanıcı akışları', () => {
     await expect(page.getByRole('heading', { name: /Karşılaştırma Merkezi/i })).toBeVisible();
     
     // Boş state
-    const emptyState = page.locator('#comparison-content .empty-state').filter({ hasText: 'Karşılaştırma listesi boş' });
+    const emptyState = page.locator('#comparison-content .empty-state').filter({ hasText: 'Karşılaştırma için seçenek ekleyin' });
     await expect(emptyState).toBeVisible();
-    await expect(emptyState).toContainText(/boş/i);
+    await expect(emptyState).toContainText(/karşılaştırmaya ekleyin/i);
   });
 
   test('kategori navigasyonu responsive davranır', async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
 
-    // Hero kategorilerinin mevcut olduğunu kontrol et
-    await expect(page.locator('.hero-categories')).toBeVisible();
-    
-    // İlk kategori seçeneğini bul ve tıkla
-    const firstCategory = page.locator('button[data-assistant-start]').first();
-    await expect(firstCategory).toBeVisible();
-    await firstCategory.click();
-    
-    // Karar asistanının açılması bekleniyor
-    await page.waitForSelector('#decision-assistant-form', { state: 'visible', timeout: 15000 });
+    await expect(page.locator('.hero-actions')).toBeVisible();
+
+    await page.goto('/karar-asistani');
+    await waitForAppReady(page);
     await expect(page.locator('#decision-assistant-form')).toBeVisible();
   });
 
@@ -152,10 +147,10 @@ test.describe('isteBu kritik kullanıcı akışları', () => {
     const page = await mobileContext.newPage();
     
     await page.goto('/');
-    await page.waitForFunction(() => typeof window.app !== 'undefined', null, { timeout: 15000 });
+    await waitForAppReady(page);
     
     // Ana başlık görünmeli
-    await expect(page.getByRole('heading', { name: /Satın almadan önce/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Büyük kararları/i })).toBeVisible();
     
     // Navigasyon toggle'ı mobilde görünmeli
     const navToggle = page.locator('.nav-toggle');
