@@ -3352,7 +3352,10 @@ Açıklama yok.
 
     createComparisonItemFromListing(listing) {
         const categoryId = listing.category || 'genel';
-        const periodicCost = this.estimateListingPeriodicCost(listing);
+        const profile = this.getCostProfile(listing.category);
+        const periodicEstimate = estimateListingPeriodicCost(listing, profile);
+        const periodicCost = Number(periodicEstimate.total || 0);
+        const costBreakdown = periodicEstimate.breakdown || {};
         const bestFinance = this.createFinanceComparisons(Number(listing.price || 0), categoryId)[0] || {};
         const score = this.getListingDecisionScore(listing);
         return {
@@ -3364,6 +3367,7 @@ Açıklama yok.
             title: listing.title || 'İlan',
             price: Number(listing.price || 0),
             periodicCost,
+            costBreakdown,
             monthlyPayment: Number(bestFinance.monthlyPayment || 0),
             totalPayment: Number(bestFinance.totalPayment || 0),
             score,

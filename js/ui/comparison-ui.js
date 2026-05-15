@@ -56,10 +56,45 @@ export class ComparisonUI {
                 '<div><span>Dönemsel maliyet</span><strong>' + this.formatPrice(item.periodicCost || 0) + ' ₺</strong></div>' +
                 '<div><span>Aylık ödeme</span><strong>' + this.formatPrice(item.monthlyPayment || 0) + ' ₺</strong></div>' +
             '</div>' +
+            this.getCostBreakdownMarkup(item) +
             this.getComparisonGraphMarkup(item, maxValues) +
             (tags.length ? '<div class="comparison-tags">' + tags.map((tag) => '<span>' + this.escapeHtml(tag) + '</span>').join('') + '</div>' : '') +
             '<p class="comparison-comment">' + this.escapeHtml(item.comment || 'Bu seçenek fiyat, yan maliyet ve finansman etkisiyle değerlendirildi.') + '</p>' +
         '</article>';
+    }
+
+
+    getCostBreakdownMarkup(item) {
+        const breakdown = item.costBreakdown || {};
+        const entries = Object.entries(breakdown)
+            .filter(([, value]) => Number(value || 0) > 0)
+            .slice(0, 6);
+
+        if (!entries.length) return '';
+
+        const labels = {
+            fuelCost: 'Yakıt / enerji',
+            kasko: 'Kasko',
+            traffic: 'Trafik sigortası',
+            maintenance: 'Bakım',
+            mtv: 'MTV',
+            depreciation: 'Değer kaybı',
+            insurance: 'Sigorta',
+            propertyTax: 'Emlak vergisi',
+            dues: 'Aidat',
+            renewal: 'Yenileme',
+            reserve: 'Bakım rezervi',
+            transport: 'Ulaşım',
+            activities: 'Aktiviteler',
+            foodExtras: 'Ek harcama'
+        };
+
+        return '<div class="comparison-breakdown">' +
+            entries.map(([key, value]) =>
+                '<div><span>' + this.escapeHtml(labels[key] || key) + '</span><strong>' +
+                this.formatPrice(value) + ' ₺</strong></div>'
+            ).join('') +
+        '</div>';
     }
 
     getComparisonGraphMarkup(item, maxValues) {
