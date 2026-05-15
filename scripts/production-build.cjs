@@ -76,10 +76,11 @@ const publicEnv = publicEnvKeys.reduce((env, key) => {
 }, {});
 writeFile('env.js', 'window.__env = Object.assign({}, window.__env || {}, ' + JSON.stringify(publicEnv) + ');\n');
 
+const pendingStaticFiles = [];
 staticFiles.forEach((file) => {
   const source = fs.readFileSync(path.join(root, file), 'utf8');
   if (file.endsWith('.html')) {
-    writeFile(file, minifyHtml(source));
+    pendingStaticFiles.push({ file, source });
   } else if (file.endsWith('.js')) {
     writeFile(file, esbuild.transformSync(source, { loader: 'js', minify: true, target: 'es2020' }).code);
   } else {
@@ -104,8 +105,20 @@ esbuild.buildSync({
   sourcemap: false,
   splitting: true,
   chunkNames: 'chunks/[name]-[hash]',
-  entryNames: 'app.bundle',
+  entryNames: 'app.bundle-[hash]',
   outdir: path.join(dist, 'js')
+});
+
+const appBundleFile = fs.readdirSync(path.join(dist, 'js')).find((name) => /^app\.bundle-[A-Z0-9]+\.js$/.test(name));
+if (!appBundleFile) {
+  throw new Error('App bundle file was not generated.');
+}
+
+pendingStaticFiles.forEach(({ file, source }) => {
+  const html = file === 'index.html'
+    ? source.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, 'js/' + appBundleFile)
+    : source;
+  writeFile(file, minifyHtml(html));
 });
 
 esbuild.buildSync({
