@@ -3644,3 +3644,19 @@ document.addEventListener('click', (event) => {
         consent.style.display = 'none';
     }
 });
+
+// Global auth button fallback
+document.addEventListener('click', (event) => {
+    const loginTrigger = event.target.closest('#login-btn, #profile-login-btn, [data-history-login]');
+    const registerTrigger = event.target.closest('#register-btn, [data-history-register]');
+
+    if (loginTrigger) {
+        event.preventDefault();
+        window.app?.auth?.showLoginModal();
+    }
+
+    if (registerTrigger) {
+        event.preventDefault();
+        window.app?.auth?.showRegisterModal();
+    }
+});
