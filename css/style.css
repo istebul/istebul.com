@@ -7968,3 +7968,103 @@ main > section:not(.hero-section) {
     padding-bottom: 4rem;
   }
 }
+
+/* Sprint 2 — typography & spacing refinement */
+.hero-content h1 {
+  font-size: clamp(3.2rem, 5vw, 5.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.065em;
+  max-width: 760px;
+}
+
+.hero-content p {
+  font-size: clamp(1.08rem, 1.3vw, 1.2rem);
+  line-height: 1.78;
+  max-width: 620px;
+}
+
+.hero-eyebrow {
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+}
+
+.hero-actions {
+  gap: 0.9rem;
+  margin-top: 1.2rem;
+}
+
+.hero-actions .btn {
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.hero-proof {
+  gap: 0.8rem;
+  margin-top: 1.35rem;
+}
+
+.hero-proof span {
+  padding: 0.8rem 1rem;
+  font-size: 0.92rem;
+}
+
+.hero-proof strong {
+  font-size: 1.08rem;
+}
+
+.section-header h2 {
+  font-size: clamp(2.2rem, 3.4vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+
+.section-header p {
+  font-size: 1.08rem;
+  line-height: 1.75;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.trust-section,
+.how-section {
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+}
+
+.trust-grid,
+.how-grid {
+  gap: 1.5rem;
+}
+
+.trust-card,
+.how-step {
+  padding: 2rem;
+}
+
+.trust-card h3,
+.how-step h3 {
+  font-size: 1.3rem;
+  letter-spacing: -0.03em;
+}
+
+.trust-card p,
+.how-step p {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 1023px) {
+  .hero-content h1 {
+    font-size: clamp(2.35rem, 9vw, 4rem);
+  }
+
+  .section-header h2 {
+    font-size: clamp(1.9rem, 8vw, 2.8rem);
+  }
+
+  .trust-section,
+  .how-section {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+}
