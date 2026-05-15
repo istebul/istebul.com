@@ -29,6 +29,7 @@ export class Router {
         document.addEventListener('click', (e) => {
             const link = e.target.closest('a[href^="/"]');
             if (link) {
+                if (link.hasAttribute('data-native-route')) return;
                 e.preventDefault();
                 const path = link.getAttribute('href');
                 this.navigate(path);
