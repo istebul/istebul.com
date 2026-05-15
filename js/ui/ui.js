@@ -496,6 +496,7 @@ export class UIManager {
                 '<div><span>Aylık ödeme</span><strong>' + this.formatPrice(profile.monthlyPayment || 0) + ' ₺</strong></div>' +
                 '<div><span>Toplam geri ödeme</span><strong>' + this.formatPrice(profile.totalPayment || 0) + ' ₺</strong></div>' +
             '</div>' +
+            this.getCostBreakdownMarkup(profile) +
             this.getComparisonGraphMarkup(profile, maxValues) +
             (profile.tags?.length ? '<div class="comparison-tags">' + profile.tags.map((tag) => '<span>' + this.escapeHtml(tag) + '</span>').join('') + '</div>' : '') +
             this.getListingDetailRowsMarkup(profile.calculationRows) +
