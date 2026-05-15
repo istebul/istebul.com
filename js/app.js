@@ -1810,18 +1810,13 @@ class App {
 
         this.assistantAnswers = answers;
 
-        let result;
-        if (this.assistantCategory === 'arac') {
-            try {
-                this.ui.showInfo?.('AI araç analizi hazırlanıyor...');
-                result = await this.buildAIVehicleDecision(categoryConfig, answers);
-            } catch (error) {
-                console.warn('AI vehicle decision failed, falling back to rule engine:', error);
-                result = this.buildDecisionResult(categoryConfig, answers);
-                result.insight = 'AI analizi şu anda alınamadı. Sonuç, mevcut karar motoruyla hazırlandı.';
-            }
-        } else {
-            result = this.buildDecisionResult(categoryConfig, answers);
+        let result = this.buildDecisionResult(categoryConfig, answers);
+
+        try {
+            this.ui.showInfo?.('AI karar analizi hazırlanıyor...');
+            result = await this.augmentDecisionWithAI(categoryConfig, answers, result);
+        } catch (error) {
+            console.warn('Decision AI skipped, using deterministic engine:', error);
         }
 
         this.lastDecisionResult = result;
@@ -1853,25 +1848,57 @@ class App {
         };
     }
 
-    async buildAIVehicleDecision(categoryConfig, answers) {
-        const fallback = this.buildDecisionResult(categoryConfig, answers);
+    parseAIJsonResponse(rawText = '') {
+        try {
+            const cleaned = String(rawText || '')
+                .replace(/```json/gi, '')
+                .replace(/```/g, '')
+                .trim();
+
+            const start = cleaned.indexOf('{');
+            const end = cleaned.lastIndexOf('}');
+
+            if (start === -1 || end === -1 || end <= start) {
+                return null;
+            }
+
+            return JSON.parse(cleaned.slice(start, end + 1));
+        } catch (error) {
+            console.warn('AI JSON parse failed:', error);
+            return null;
+        }
+    }
+
+    buildDecisionPrompt(categoryConfig, answers) {
+        const roles = {
+            arac: 'Türkiye otomotiv satın alma danışmanı',
+            ev: 'Türkiye gayrimenkul satın alma danışmanı',
+            tatil: 'Türkiye seyahat planlama danışmanı'
+        };
+
         const answerLines = categoryConfig.questions
             .map((question) => `- ${question.label}: ${this.getAnswerDisplayValue(question, answers[question.id]) || 'Belirtilmedi'}`)
             .join('\n');
 
-        const prompt = `Türkiye pazarı için araç karar danışmanısın.
+        return `${roles[this.assistantCategory] || 'Türkiye karar danışmanı'} olarak çalış.
 
-Kullanıcı araç seçmek istiyor. Kriterler:
+Kullanıcı kriterleri:
 ${answerLines}
 
-Sadece geçerli JSON döndür. Markdown kullanma.
+Kategori: ${categoryConfig.name}
 
-JSON şeması:
+Finansal uygunluk, toplam maliyet, risk, gerçekçi satın alma/rezervasyon adımları ve alternatifleri birlikte değerlendir.
+
+SADECE geçerli JSON döndür.
+Markdown yok.
+Kod bloğu yok.
+Açıklama yok.
+
 {
   "summary": "Kısa karar özeti",
   "insight": "Neden bu öneriyi verdiğini açıklayan Türkçe analiz",
   "best_match": {
-    "title": "Araç önerisi",
+    "title": "En uygun seçenek",
     "score": 0,
     "price": 0,
     "reason": "Kısa gerekçe",
@@ -1881,7 +1908,7 @@ JSON şeması:
   },
   "alternatives": [
     {
-      "title": "Alternatif araç",
+      "title": "Alternatif seçenek",
       "score": 0,
       "price": 0,
       "reason": "Kısa gerekçe",
@@ -1893,42 +1920,67 @@ JSON şeması:
   "risks": ["risk"],
   "next_steps": ["sonraki adım"]
 }`;
+    }
 
-        const aiResponse = await API.askAI(prompt, {
-            type: 'decision_vehicle',
-            category: 'arac'
-        });
+    normalizeAIRecommendations(parsed, fallback) {
+        const items = [
+            parsed?.best_match,
+            ...(Array.isArray(parsed?.alternatives) ? parsed.alternatives : [])
+        ].filter(Boolean);
 
-        const rawText = aiResponse?.response || '';
-        const jsonText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim();
-        const parsed = JSON.parse(jsonText);
+        if (!items.length) {
+            return fallback.recommendations;
+        }
 
-        const aiRecommendations = [parsed.best_match, ...(parsed.alternatives || [])]
-            .filter(Boolean)
-            .slice(0, 3)
-            .map((item, index) => ({
-                ...fallback.recommendations[index],
-                id: `ai-vehicle-${index + 1}`,
-                title: item.title || fallback.recommendations[index]?.title || 'Araç önerisi',
-                name: item.title || fallback.recommendations[index]?.name || 'Araç önerisi',
-                score: Number(item.score || fallback.recommendations[index]?.score || 80),
-                price: Number(item.price || fallback.recommendations[index]?.price || 0),
-                yearlyCost: Number(item.estimated_yearly_cost || fallback.recommendations[index]?.yearlyCost || 0),
-                reason: item.reason || fallback.recommendations[index]?.reason || '',
+        return items.slice(0, 3).map((item, index) => {
+            const base = fallback.recommendations[index] || fallback.recommendations[0] || {};
+
+            return {
+                ...base,
+                id: `ai-${this.assistantCategory}-${index + 1}`,
+                title: item.title || base.title,
+                name: item.title || base.name || 'Önerilen seçenek',
+                score: Number(item.score || base.score || 80),
+                price: Number(item.price || base.price || 0),
+                yearlyCost: Number(item.estimated_yearly_cost || base.yearlyCost || 0),
+                reason: item.reason || base.reason || '',
                 pros: Array.isArray(item.pros) ? item.pros : [],
                 cons: Array.isArray(item.cons) ? item.cons : [],
                 aiGenerated: true
-            }));
+            };
+        });
+    }
 
-        return {
-            ...fallback,
-            aiGenerated: true,
-            summary: parsed.summary || fallback.summary,
-            insight: parsed.insight || fallback.insight,
-            recommendations: aiRecommendations.length ? aiRecommendations : fallback.recommendations,
-            risks: Array.isArray(parsed.risks) ? parsed.risks : [],
-            nextSteps: Array.isArray(parsed.next_steps) ? parsed.next_steps : fallback.nextSteps
-        };
+    async augmentDecisionWithAI(categoryConfig, answers, fallback) {
+        try {
+            const prompt = this.buildDecisionPrompt(categoryConfig, answers);
+
+            const aiResponse = await API.askAI(prompt, {
+                type: `decision_${this.assistantCategory}`,
+                category: this.assistantCategory
+            });
+
+            const parsed = this.parseAIJsonResponse(aiResponse?.response);
+
+            if (!parsed) {
+                return fallback;
+            }
+
+            return {
+                ...fallback,
+                aiGenerated: true,
+                summary: parsed.summary || fallback.summary,
+                insight: parsed.insight || fallback.insight,
+                recommendations: this.normalizeAIRecommendations(parsed, fallback),
+                risks: Array.isArray(parsed.risks) ? parsed.risks : [],
+                nextSteps: Array.isArray(parsed.next_steps)
+                    ? parsed.next_steps
+                    : fallback.insight?.nextSteps || []
+            };
+        } catch (error) {
+            console.warn('AI augmentation failed:', error);
+            return fallback;
+        }
     }
 
 
