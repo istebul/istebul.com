@@ -530,7 +530,7 @@ class App {
         const listings = [
             {
                 id: 'demo-arac-1',
-                title: '2023 Toyota Corolla Cross Hybrid Flame X-Pack',
+                title: 'Bütçeye Uygun Hibrit Aile Aracı Flame X-Pack',
                 description: 'Düşük yakıt tüketimi, güçlü ikinci el değeri ve dengeli kasko maliyetiyle karar asistanı için örnek Toyota hibrit araç.',
                 price: 1650000,
                 currency: 'TRY',
@@ -566,7 +566,7 @@ class App {
             },
             {
                 id: 'demo-ev-1',
-                title: 'İstanbul Kadıköy 2+1 Yeni Daire',
+                title: 'Lokasyon ve Kredi Dengeli 2+1 Daire',
                 description: 'Ulaşımı güçlü lokasyonda, aidat ve bakım yükü düşük örnek daire seçeneği.',
                 price: 3200000,
                 currency: 'TRY',
@@ -600,7 +600,7 @@ class App {
             },
             {
                 id: 'demo-tatil-1',
-                title: 'Antalya Lara 5★ Aile Resort Tatili',
+                title: 'Aile İçin Toplam Bütçesi Hesaplanan Tatil',
                 description: 'Konaklama, transfer, ulaşım ve sigorta dahil toplam maliyetle örnek aile tatili.',
                 price: 98000,
                 currency: 'TRY',
@@ -1150,7 +1150,7 @@ class App {
                 ],
                 options: [
                     {
-                        name: 'Toyota Corolla Cross Hybrid',
+                        name: 'Hibrit Aile Aracı',
                         price: 1650000,
                         scoreNote: 'Şehir içi tüketim, aile kullanımı ve ikinci el dengesi güçlü.',
                         match: { usage: ['city', 'family'], budget: ['1800000', '2500000', '3500000'], fuel: 'hybrid', body: 'suv', priority: ['lowCost', 'resale', 'safety'] },
@@ -1281,7 +1281,7 @@ class App {
                 ],
                 options: [
                     {
-                        name: 'İstanbul Kadıköy 2+1 Daire',
+                        name: 'Lokasyon ve Kredi Dengeli 2+1 Daire',
                         price: 3200000,
                         scoreNote: 'Ulaşım, düşük aidat ve yatırım likiditesiyle dengeli başlangıç seçeneği.',
                         match: { propertyType: 'daire', purpose: ['live', 'investment'], budget: ['3500000', '6500000', '12000000', '25000000'], location: 'central', priority: ['lowMonthly', 'valueGrowth', 'maintenance'] },
@@ -1641,7 +1641,7 @@ class App {
         return {
             arac: {
                 id: 'arac',
-                title: '2023 Toyota Corolla Cross Hybrid',
+                title: 'Bütçeye Uygun Hibrit Aile Aracı',
                 note: 'Yakıt tüketimi, sigorta ve toplam sahip olma maliyetine göre dengeli aile seçeneği.',
                 score: 89,
                 metrics: [
@@ -1662,7 +1662,7 @@ class App {
             },
             ev: {
                 id: 'ev',
-                title: 'İstanbul Kadıköy 2+1 Yeni Daire',
+                title: 'Lokasyon ve Kredi Dengeli 2+1 Daire',
                 note: 'Aidat, DASK, konut kredisi ve değer artışı dengesi güçlü seçenek.',
                 score: 89,
                 metrics: [
@@ -1683,7 +1683,7 @@ class App {
             },
             tatil: {
                 id: 'tatil',
-                title: 'Antalya Lara 5★ Aile Resort Tatili',
+                title: 'Aile İçin Toplam Bütçesi Hesaplanan Tatil',
                 note: 'Konaklama, ulaşım, transfer ve sigorta kalemleri tek bütçede dengelenir.',
                 score: 91,
                 metrics: [

@@ -302,7 +302,7 @@ export class UIManager {
             base.push('Tatil analizi', 'Paket kontrolü', 'İptal koşulu');
         }
 
-        return [...base, 'AI ' + aiScore + '/100'].slice(0, 4);
+        return [...base, 'Karar skoru ' + aiScore + '/100'].slice(0, 4);
     }
 
     getListingInsightsMarkup(listing = {}, aiScore = 0) {
@@ -364,7 +364,7 @@ export class UIManager {
 
         if (options.ownedOnly || options.userId) return count ? 'Yayınladığınız ilanlar' : 'Henüz ilan yayınlamadınız';
         if (!count) return 'Henüz ilan yok. İlk ilan yayınlandığında burada görünecek.';
-        return parts.length ? parts.join(' · ') : 'Türkiye geneli · AI skoruna göre keşif';
+        return parts.length ? parts.join(' · ') : 'Türkiye geneli · karar skoruna göre keşif';
     }
 
     setListingView(view = 'grid') {
@@ -397,8 +397,15 @@ export class UIManager {
     }
 
     showListingDetail(listingId) {
-        // Navigate to listing detail page
-        window.location.href = `/ilan/${listingId}`;
+        const path = `/ilan/${listingId}`;
+        if (window.history?.pushState) {
+            window.history.pushState({}, '', path);
+            document.dispatchEvent(new CustomEvent('routeChanged', {
+                detail: { route: 'listing-detail', params: { id: listingId } }
+            }));
+            return;
+        }
+        window.location.href = path;
     }
 
     renderListingDetailLoading() {
@@ -434,7 +441,7 @@ export class UIManager {
                         <span class="assistant-kicker">${this.escapeHtml(categoryLabel || 'İlan')} detay analizi</span>
                         <h2>${this.escapeHtml(listing.title)}</h2>
                         <div class="listing-detail-badges">
-                            <span><i data-lucide="sparkles"></i> AI ${this.escapeHtml(aiScore)}/100</span>
+                            <span><i data-lucide="sparkles"></i> Karar skoru ${this.escapeHtml(aiScore)}/100</span>
                             <span><i data-lucide="map-pin"></i> ${this.escapeHtml(locationLabel)}</span>
                             <span><i data-lucide="clock-3"></i> ${this.formatDate(listing.created_at)}</span>
                         </div>

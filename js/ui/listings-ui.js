@@ -41,7 +41,7 @@ export class ListingsUI {
                              class="listing-image"
                             >
                         <div class="listing-badges">
-                            <span class="listing-ai-score"><i data-lucide="sparkles"></i> AI ${this.escapeHtml(aiScore)}/100</span>
+                            <span class="listing-ai-score"><i data-lucide="sparkles"></i> Karar skoru ${this.escapeHtml(aiScore)}/100</span>
                             <span>${this.escapeHtml(categoryLabel || 'İlan')}</span>
                         </div>
                     </div>

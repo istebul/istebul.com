@@ -102,7 +102,7 @@ export class ComparisonUI {
         const money = (value) => Number(value || 0) > 0 ? this.formatPrice(value) + ' ₺' : '-';
         const rows = [
             { label: 'Kaynak', get: (item) => item.sourceType || '-' },
-            { label: 'AI skoru', get: (item) => item.score ? item.score + '/100' : '-' },
+            { label: 'Karar skoru', get: (item) => item.score ? item.score + '/100' : '-' },
             { label: 'Risk', get: (item) => item.riskLevel || '-' },
             { label: 'Ana bedel', get: (item) => money(item.price) },
             { label: 'Dönemsel maliyet', get: (item) => money(item.periodicCost) },
