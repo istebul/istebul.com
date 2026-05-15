@@ -128,7 +128,8 @@ class App {
 
         } catch (error) {
             console.error('Failed to initialize app:', error);
-            this.ui.showError('Uygulama başlatılırken bir hata oluştu');
+            window.__initError = error;
+            throw error;
         }
     }
 
@@ -3559,7 +3560,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     loadCMS();
     window.app = new App();
-    await window.app.init();
+    try {
+        await window.app.init();
+        window.appReady = true;
+        window.dispatchEvent(new CustomEvent('app:ready'));
+    } catch (error) {
+        window.appInitError = error;
+        console.error('App initialization failed:', error);
+        throw error;
+    }
 });
 
 // Export for debugging

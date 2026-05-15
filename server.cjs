@@ -31,6 +31,20 @@ app.get('/env.js', (_req, res) => {
   res.send(`window.__env = Object.assign({}, window.__env || {}, ${JSON.stringify(publicEnv)});`);
 });
 
+
+app.get('/js/app.bundle.js', (_req, res, next) => {
+  const fs = require('fs');
+  const distJs = path.join(__dirname, 'dist', 'js');
+
+  if (!fs.existsSync(distJs)) return next();
+
+  const bundle = fs.readdirSync(distJs).find((name) => /^app\.bundle-[A-Z0-9]+\.js$/.test(name));
+  if (!bundle) return next();
+
+  res.type('application/javascript');
+  res.sendFile(path.join(distJs, bundle));
+});
+
 app.use(express.static(path.join(__dirname), {
   etag: true,
   maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0
@@ -54,9 +68,11 @@ app.use('/api', (req, res) => {
   });
 });
 
-// Serve index.html for all routes (SPA)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+// Serve dev index with unhashed bundle for SPA routes
+app.get('*', (_req, res) => {
+  let html = require('fs').readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+  html = html.replace(/js\/app\.bundle-[A-Z0-9]+\.js/g, 'js/app.bundle.js');
+  res.type('html').send(html);
 });
 
 const startServer = (port, attemptsLeft = MAX_PORT_ATTEMPTS) => {

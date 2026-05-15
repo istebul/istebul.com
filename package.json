@@ -4,8 +4,8 @@
   "description": "Modern Turkish marketplace platform - isteBu v2",
   "main": "js/app.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
+    "start": "node server.cjs",
+    "dev": "node server.cjs",
     "build": "node scripts/production-build.cjs",
     "deploy": "npx netlify-cli deploy --prod",
     "check": "node scripts/check-syntax.cjs && node scripts/check-console.cjs",
