@@ -424,6 +424,27 @@ export class UIManager {
         `;
     }
 
+    renderListingDetailEmpty(message = 'İlan detayları bulunamadı.') {
+        const section = document.getElementById('listing-detail-content');
+        if (!section) return;
+
+        section.innerHTML = `
+            <div class="listing-detail-card listing-detail-premium">
+                <div class="empty-state">
+                    <i data-lucide="search-x"></i>
+                    <h3>İlan bulunamadı</h3>
+                    <p>${this.escapeHtml(message)}</p>
+                    <div class="listing-actions">
+                        <a href="/" class="btn btn-outline" data-native-route>Ana sayfaya dön</a>
+                        <a href="/ilanlar" class="btn btn-primary" data-native-route>Seçenekleri incele</a>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.loadIcons();
+    }
+
     renderListingDetail(listing, favoriteIds = [], decisionProfile = null, comparisonSignatures = []) {
         const section = document.getElementById('listing-detail-content');
         if (!section) return;

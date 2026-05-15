@@ -3499,6 +3499,7 @@ Açıklama yok.
             const listing = await API.getListing(listingId);
             const fallbackListing = listing || this.getListingFallbackById(listingId);
             if (!fallbackListing) {
+                this.ui.renderListingDetailEmpty?.('Bu ilan canlı veri içinde bulunamadı veya yayından kaldırılmış olabilir.');
                 this.ui.showError('İlan detayları bulunamadı.');
                 return;
             }
@@ -3513,6 +3514,7 @@ Açıklama yok.
                 this.ui.showError(fallbackListing.source === 'local-fallback' ? 'Yerel kayıt gösteriliyor.' : 'Canlı ilan detayına ulaşılamadı, örnek veri gösteriliyor.');
                 return;
             }
+            this.ui.renderListingDetailEmpty?.('İlan detayları yüklenirken bir hata oluştu. Lütfen seçenekler listesinden tekrar deneyin.');
             this.ui.showError('İlan detayları yüklenirken bir hata oluştu.');
         }
     }
