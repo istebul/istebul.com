@@ -1007,7 +1007,10 @@ class App {
         }
 
         // Auth events
-        document.addEventListener('userLoggedIn', (e) => this.handleUserLogin(e.detail));
+        document.addEventListener('userLoggedIn', async (e) => {
+            this.currentUser = e.detail;
+            await this.handleUserLogin(e.detail);
+        });
         document.addEventListener('userLoggedOut', () => this.handleUserLogout());
     }
 
@@ -3603,6 +3606,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.app = new App();
     try {
         await window.app.init();
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+            window.app.currentUser = session.user;
+            document.dispatchEvent(new CustomEvent('userLoggedIn', { detail: session.user }));
+            window.app.auth?.hideAuthModal?.();
+        }
 
         // Ensure direct URL routes like /karsilastir and /karar-asistani
         // are applied after all UI/listener initialization is complete.
