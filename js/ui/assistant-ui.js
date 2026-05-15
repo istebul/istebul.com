@@ -701,4 +701,3 @@ export function installAssistantUI(UIManagerClass) {
 }
 
 
-window.installAssistantUI = installAssistantUI;

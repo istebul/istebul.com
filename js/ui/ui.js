@@ -266,13 +266,9 @@ export class UIManager {
 
 
     async renderDecisionAssistant(...args) {
-        if (typeof window.installAssistantUI === 'function') {
-            window.installAssistantUI(this.constructor);
-            return this.renderDecisionAssistant(...args);
-        }
-
-        console.error('Assistant UI installer unavailable.');
-        return undefined;
+        const { installAssistantUI } = await import('./assistant-ui.js');
+        installAssistantUI(this.constructor);
+        return this.renderDecisionAssistant(...args);
     }
 
     getListingLocationLabel(listing = {}) {
