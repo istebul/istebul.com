@@ -65,7 +65,6 @@ const relative = (filePath) => path.relative(root, filePath).split(path.sep).joi
 const minifyHtml = (source) => source
   .replace(/<!--[\s\S]*?-->/g, '')
   .replace(/>\s+</g, '><')
-  .replace(/\s{2,}/g, ' ')
   .trim();
 
 staticRoots.forEach(copyDir);
