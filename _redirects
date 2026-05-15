@@ -1,3 +1,4 @@
+/api/* /api/:splat 200
 /admin-panel.html /admin-panel.html 200
 /auto /auto/index.html 200
 /auto/ /auto/index.html 200
