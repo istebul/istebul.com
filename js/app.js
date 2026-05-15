@@ -3496,7 +3496,10 @@ Açıklama yok.
         }
 
         try {
-            const listing = await API.getListing(listingId);
+            const listing = await Promise.race([
+                API.getListing(listingId),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Listing detail timeout')), 6000))
+            ]);
             const fallbackListing = listing || this.getListingFallbackById(listingId);
             if (!fallbackListing) {
                 this.ui.renderListingDetailEmpty?.('Bu ilan canlı veri içinde bulunamadı veya yayından kaldırılmış olabilir.');
