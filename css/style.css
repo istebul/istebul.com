@@ -7810,3 +7810,30 @@ main > section:not(.hero-section) {
     gap: clamp(1.5rem, 3vw, 3.5rem);
   }
 }
+
+/* Final compact desktop hero */
+@media (min-width: 1024px) {
+  .hero-section {
+    padding-top: 2.5rem;
+    padding-bottom: 3rem;
+    min-height: auto;
+  }
+
+  .hero-container,
+  .hero-content {
+    min-height: auto !important;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(2.4rem, 3.2vw, 3.8rem) !important;
+    line-height: 1.05;
+  }
+
+  .decision-preview,
+  .hero-image {
+    min-height: 360px !important;
+    max-height: 460px;
+    max-width: 500px;
+    overflow: hidden;
+  }
+}
