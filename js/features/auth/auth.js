@@ -191,9 +191,19 @@ export class AuthManager {
             const email = form.email.value;
             const password = form.password.value;
 
-            await API.signIn(email, password);
+            const result = await API.signIn(email, password);
+            const user = result?.user || result?.session?.user;
 
-            // Success is handled by auth state change listener
+            if (user) {
+                this.currentUser = user;
+                state.setUser(user);
+
+                document.dispatchEvent(new CustomEvent('userLoggedIn', {
+                    detail: user
+                }));
+
+                this.hideAuthModal();
+            }
         } catch (error) {
             console.error('Login failed:', error);
             this.showAuthError(error.message || config.messages.error.login);
