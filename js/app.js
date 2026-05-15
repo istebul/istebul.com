@@ -3753,32 +3753,35 @@ function applyProductionRouteVisibility() {
     };
 
     const sectionId = routeMap[path] || (path.startsWith('/ilan/') ? 'listing-detail' : 'home');
+    const homeSections = new Set(['home', 'trust', 'how-it-works', 'categories']);
 
     document.querySelectorAll('main > section').forEach((section) => {
-        section.style.display = 'none';
+        const shouldShowHome = sectionId === 'home' && homeSections.has(section.id);
+        const shouldShowSection = section.id === sectionId;
+        const shouldShow = shouldShowHome || shouldShowSection;
+
+        section.classList.toggle('hidden', !shouldShow);
+        section.style.display = shouldShow ? 'block' : 'none';
     });
 
-    if (sectionId === 'home') {
-        ['home', 'trust', 'how-it-works', 'categories'].forEach((id) => {
-            const section = document.getElementById(id);
-            if (section) {
-                section.classList.remove('hidden');
-                section.style.display = 'block';
-            }
-        });
-    } else {
-        const section = document.getElementById(sectionId);
-        if (section) {
-            section.classList.remove('hidden');
-            section.style.display = 'block';
-        }
+    if (sectionId === 'decision-assistant') {
+        window.app?.renderDecisionAssistant?.();
+    }
 
-        if (sectionId === 'decision-assistant') {
-            window.app?.renderDecisionAssistant?.();
+    if (sectionId === 'compare') {
+        window.app?.ui?.renderComparison?.(window.app?.comparisonItems || []);
+    }
+
+    if (sectionId === 'listing-detail') {
+        const listingId = path.split('/').filter(Boolean)[1];
+        if (listingId) {
+            window.app?.ui?.renderListingDetailLoading?.();
+            window.app?.loadListingDetail?.(listingId);
         }
     }
 }
 
 window.addEventListener('app:ready', applyProductionRouteVisibility);
 window.addEventListener('popstate', applyProductionRouteVisibility);
+document.addEventListener('routeChanged', applyProductionRouteVisibility);
 document.addEventListener('click', () => setTimeout(applyProductionRouteVisibility, 0));
