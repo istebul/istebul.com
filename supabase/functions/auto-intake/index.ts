@@ -219,8 +219,10 @@ Deno.serve(async (req) => {
     const form = body.formData && typeof body.formData === "object" ? body.formData : metadata;
     const scoring = calculateLeadScore(form);
 
+    const normalizedEmail = isValidEmail(email) ? String(email).trim().toLowerCase() : null;
+
     const payload = {
-      email,
+      email: normalizedEmail,
       phone,
       budget: clampNumber(form.budget, 0, 20000000),
       usage: clampString(form.usage, 40),
@@ -238,33 +240,29 @@ Deno.serve(async (req) => {
       source: "auto",
     };
 
-    let updatedRows = null;
-let updateError = null;
-
-if (email) {
-    const res = await adminClient
-      .from("auto_leads")
-      .update(payload)
-      .eq("email", email)
-      .eq("phone", phone)
-      .select("id");
-
-    updatedRows = res.data;
-    updateError = res.error;
-} else {
-    const res = await adminClient
+    const phoneUpdate = await adminClient
       .from("auto_leads")
       .update(payload)
       .eq("phone", phone)
       .select("id");
 
-    updatedRows = res.data;
-    updateError = res.error;
-}
+    if (phoneUpdate.error) return json({ error: phoneUpdate.error.message }, 500, origin);
 
-if (updateError) return json({ error: updateError.message }, 500, origin);
+    if (!phoneUpdate.data?.length && normalizedEmail) {
+      const emailUpdate = await adminClient
+        .from("auto_leads")
+        .update(payload)
+        .eq("email", normalizedEmail)
+        .select("id");
 
-if (!updatedRows?.length) {
+      if (emailUpdate.error) return json({ error: emailUpdate.error.message }, 500, origin);
+
+      if (emailUpdate.data?.length) {
+        return json({ ok: true }, 200, origin);
+      }
+    }
+
+    if (!phoneUpdate.data?.length) {
       const { error: insertError } = await adminClient.from("auto_leads").insert(payload);
       if (insertError) return json({ error: insertError.message }, 500, origin);
     }
