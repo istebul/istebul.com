@@ -52,6 +52,36 @@ function clampNumber(value: unknown, min = 0, max = 100000000) {
   return Math.min(Math.max(n, min), max);
 }
 
+
+function calculateLeadScore(form: Record<string, unknown>) {
+  let score = 0;
+
+  const interest = String(form.interest_type || "");
+  const budget = Number(form.budget || 0);
+  const km = Number(form.km || 0);
+  const loan = String(form.loan || "");
+
+  if (interest === "vehicle_offer") score += 90;
+  else if (interest === "premium_report") score += 75;
+  else if (interest === "finance") score += 65;
+  else if (interest === "insurance") score += 55;
+
+  if (budget >= 2000000) score += 35;
+  else if (budget >= 1000000) score += 20;
+  else if (budget >= 500000) score += 10;
+
+  if (loan === "yes") score += 15;
+  if (km > 20000) score += 10;
+
+  const priority =
+    score >= 150 ? "very_hot" :
+    score >= 100 ? "hot" :
+    score >= 50 ? "warm" :
+    "cold";
+
+  return { score, priority };
+}
+
 function getClientIp(req: Request) {
   return req.headers.get("cf-connecting-ip") || "unknown";
 }
@@ -165,6 +195,7 @@ Deno.serve(async (req) => {
     }
 
     const form = body.formData && typeof body.formData === "object" ? body.formData : metadata;
+    const scoring = calculateLeadScore(form);
 
     const payload = {
       email,
@@ -175,6 +206,10 @@ Deno.serve(async (req) => {
       fuel: clampString(form.fuel, 20),
       km: clampNumber(form.km, 0, 2000000),
       loan: clampString(form.loan, 20),
+      interest_type: clampString(form.interest_type, 40),
+      vehicle: clampString(form.vehicle, 120),
+      lead_score: scoring.score,
+      priority: scoring.priority,
       source: "auto",
     };
 
