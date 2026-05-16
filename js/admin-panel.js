@@ -389,12 +389,15 @@ async function loadAutoAnalytics() {
   }, {});
 
   const labels = {
-    auto_page_view: 'Sayfa görüntüleme',
-    auto_quiz_submit: 'Quiz gönderimi',
-    auto_email_submit: 'Email/telefon submit',
-    auto_results_view: 'Sonuç görüntüleme',
+    auto_page_view: 'Auto sayfa ziyareti',
+    auto_analysis_started: 'Analiz başlatıldı',
+    auto_quiz_submit: 'Eski quiz gönderimi',
+    auto_email_submit: 'Eski email/telefon submit',
+    auto_results_view: 'Sonuç görüntülendi',
+    auto_modal_open: 'Lead formu açıldı',
+    auto_lead_submit: 'Lead bırakıldı',
     auto_finance_click: 'Finansman tıklama',
-    auto_whatsapp_click: 'WhatsApp tıklama',
+    auto_whatsapp_click: 'WhatsApp iletişimi',
     decision_feedback_helpful: 'Karar faydalı',
     decision_feedback_unclear: 'Daha açıklama istiyor',
     decision_feedback_contact: 'Uzman destek isteği'
@@ -405,11 +408,14 @@ async function loadAutoAnalytics() {
 
   const analyticsCards = [
     ['auto_page_view', labels.auto_page_view, counts.auto_page_view || 0, 'trafik'],
-    ['auto_quiz_submit', labels.auto_quiz_submit, counts.auto_quiz_submit || 0, pct(counts.auto_quiz_submit || 0, pageViews)],
-    ['auto_email_submit', labels.auto_email_submit, counts.auto_email_submit || 0, pct(counts.auto_email_submit || 0, counts.auto_quiz_submit || 0)],
-    ['auto_results_view', labels.auto_results_view, counts.auto_results_view || 0, pct(counts.auto_results_view || 0, counts.auto_email_submit || 0)],
-    ['auto_finance_click', labels.auto_finance_click, counts.auto_finance_click || 0, pct(counts.auto_finance_click || 0, counts.auto_results_view || 0)],
-    ['auto_whatsapp_click', labels.auto_whatsapp_click, counts.auto_whatsapp_click || 0, pct(counts.auto_whatsapp_click || 0, counts.auto_finance_click || 0)],
+    ['auto_analysis_started', labels.auto_analysis_started, counts.auto_analysis_started || 0, pct(counts.auto_analysis_started || 0, pageViews)],
+    ['auto_results_view', labels.auto_results_view, counts.auto_results_view || 0, pct(counts.auto_results_view || 0, counts.auto_analysis_started || 0)],
+    ['auto_modal_open', labels.auto_modal_open, counts.auto_modal_open || 0, pct(counts.auto_modal_open || 0, counts.auto_results_view || 0)],
+    ['auto_lead_submit', labels.auto_lead_submit, counts.auto_lead_submit || 0, pct(counts.auto_lead_submit || 0, counts.auto_modal_open || 0)],
+    ['auto_whatsapp_click', labels.auto_whatsapp_click, counts.auto_whatsapp_click || 0, pct(counts.auto_whatsapp_click || 0, counts.auto_results_view || 0)],
+    ['auto_quiz_submit', labels.auto_quiz_submit, counts.auto_quiz_submit || 0, 'legacy'],
+    ['auto_email_submit', labels.auto_email_submit, counts.auto_email_submit || 0, 'legacy'],
+    ['auto_finance_click', labels.auto_finance_click, counts.auto_finance_click || 0, 'legacy'],
     ['decision_feedback_helpful', labels.decision_feedback_helpful, counts.decision_feedback_helpful || 0, 'karar'],
     ['decision_feedback_unclear', labels.decision_feedback_unclear, counts.decision_feedback_unclear || 0, 'iyileştirme'],
     ['decision_feedback_contact', labels.decision_feedback_contact, counts.decision_feedback_contact || 0, 'sıcak lead']
