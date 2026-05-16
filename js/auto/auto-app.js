@@ -237,7 +237,7 @@ document.addEventListener('click', (event) => {
 
   if (whatsappBtn) {
     const vehicle = whatsappBtn.dataset.vehicle || 'vehicle';
-    const phone = (window.__env?.AUTO_WHATSAPP_PHONE || window.__env?.WHATSAPP_PHONE || '').replace(/\D/g, '');
+    const phone = (window.__env?.AUTO_WHATSAPP_PHONE || window.__env?.WHATSAPP_PHONE || '905456786420').replace(/\D/g, '');
 
     if (!phone) {
       alert('WhatsApp numarası tanımlı değil.');
