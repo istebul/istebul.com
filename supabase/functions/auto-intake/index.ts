@@ -82,6 +82,28 @@ function calculateLeadScore(form: Record<string, unknown>) {
   return { score, priority };
 }
 
+
+function getAutoFollowUp(priority: string) {
+  const now = new Date();
+
+  if (priority === "very_hot") {
+    now.setMinutes(now.getMinutes() + 15);
+    return now.toISOString();
+  }
+
+  if (priority === "hot") {
+    now.setHours(now.getHours() + 2);
+    return now.toISOString();
+  }
+
+  if (priority === "warm") {
+    now.setDate(now.getDate() + 1);
+    return now.toISOString();
+  }
+
+  return null;
+}
+
 function getClientIp(req: Request) {
   return req.headers.get("cf-connecting-ip") || "unknown";
 }
@@ -210,6 +232,9 @@ Deno.serve(async (req) => {
       vehicle: clampString(form.vehicle, 120),
       lead_score: scoring.score,
       priority: scoring.priority,
+      follow_up_at: getAutoFollowUp(scoring.priority),
+      follow_up_done: false,
+      status: "new",
       source: "auto",
     };
 
