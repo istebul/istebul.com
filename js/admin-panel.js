@@ -650,6 +650,8 @@ async function loadAutoLeads() {
           <th>Öncelik</th>
           <th>Partner</th>
           <th>Partner Durumu</th>
+          <th>Tahmini Gelir</th>
+          <th>Gerçek Gelir</th>
           <th>Durum</th>
           <th>Not</th>
           <th>Takip</th>
@@ -687,6 +689,12 @@ async function loadAutoLeads() {
   <option value="won" ${lead.partner_status === 'won' ? 'selected' : ''}>Won</option>
   <option value="lost" ${lead.partner_status === 'lost' ? 'selected' : ''}>Lost</option>
 </select>
+</td>
+<td>
+  <input class="form-input" data-action="update-estimated-revenue" data-id="${lead.id}" value="${lead.estimated_revenue || ''}" placeholder="₺">
+</td>
+<td>
+  <input class="form-input" data-action="update-actual-revenue" data-id="${lead.id}" value="${lead.actual_revenue || ''}" placeholder="₺">
 </td>
 
             <td>
@@ -1099,6 +1107,31 @@ function bindAdminPanelEvents() {
         loadAutoAnalytics();
       });
 
+      return;
+    }
+
+    
+    if (action === 'update-estimated-revenue') {
+      adminAction({
+        action: 'update',
+        table: 'auto_leads',
+        id,
+        values: {
+          estimated_revenue: Number(el.value || 0)
+        }
+      });
+      return;
+    }
+
+    if (action === 'update-actual-revenue') {
+      adminAction({
+        action: 'update',
+        table: 'auto_leads',
+        id,
+        values: {
+          actual_revenue: Number(el.value || 0)
+        }
+      });
       return;
     }
 
