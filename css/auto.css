@@ -142,3 +142,13 @@ h1{font-size:clamp(40px,6vw,72px);line-height:.96;margin:10px 0 22px}h2{font-siz
   margin: 8px 0;
   color: rgba(226, 232, 240, 0.86);
 }
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cta-row .btn {
+  white-space: normal;
+}
