@@ -119,6 +119,7 @@ async function updateLeadInterest(phone, interestType) {
 }
 
 function openLeadModal(type) {
+  trackAutoEvent('auto_modal_open', { interest_type: type });
   const existing = document.getElementById('lead-modal');
   if (existing) existing.remove();
 
@@ -128,10 +129,10 @@ function openLeadModal(type) {
 
   modal.innerHTML = `
     <div class="lead-modal-card">
-      <h3>Size uygun teklifleri paylaşalım</h3>
-      <p>Telefon numaranızı bırakın.</p>
+      <h3>Size özel teklif hazırlayalım</h3>
+      <p>En uygun kredi, sigorta ve satın alma seçenekleri için numaranızı bırakın.</p>
       <form id="phone-lead-form">
-        <input name="phone" type="tel" required>
+        <input name="phone" type="tel" required placeholder="05xx xxx xx xx">
         <button class="btn primary" type="submit">Gönder</button>
       </form>
       <button class="btn secondary" id="close-lead-modal">Kapat</button>
@@ -146,6 +147,8 @@ function openLeadModal(type) {
     event.preventDefault();
     const phone = new FormData(event.currentTarget).get('phone');
 
+    trackAutoEvent('auto_lead_submit', { phone, interest_type: type });
+
     try {
       await updateLeadInterest(phone, type);
     } catch {}
@@ -153,7 +156,7 @@ function openLeadModal(type) {
     modal.innerHTML = `
       <div class="lead-modal-card">
         <h3>Teşekkürler</h3>
-        <p>Ekibimiz sizinle iletişime geçecek.</p>
+        <p>Uzman ekibimiz kısa süre içinde dönüş yapacak.</p>
       </div>
     `;
   });
@@ -221,6 +224,8 @@ form.addEventListener('submit', (event) => {
   const formData = readForm(form);
   const results = recommendVehicles(formData);
 
+  trackAutoEvent('auto_analysis_started', formData);
+
   renderLoading();
 
   setTimeout(() => {
@@ -237,6 +242,20 @@ document.addEventListener('click', (event) => {
     const vehicle = whatsappBtn.dataset.vehicle || 'vehicle';
     const phone = '905456786420';
 
+    const formData = readForm(document.getElementById('auto-form'));
+
+    const message = `Merhaba, isteBul Auto analizimde şu araç ilgimi çekti:
+
+${vehicle}
+
+Bütçem: ${formData.budget || '-'} TL
+Kullanım: ${formData.usage || '-'}
+Yakıt: ${formData.fuel || '-'}
+Yıllık km: ${formData.km || '-'}
+Kredi: ${formData.loan || '-'}
+
+Destek almak istiyorum.`;
+
     if (!phone) {
       alert('WhatsApp numarası tanımlı değil.');
       return;
@@ -245,7 +264,7 @@ document.addEventListener('click', (event) => {
     trackAutoEvent('auto_whatsapp_click', { vehicle });
 
     window.open(
-      'https://wa.me/' + phone + '?text=' + encodeURIComponent(vehicle),
+      'https://wa.me/' + phone + '?text=' + encodeURIComponent(message),
       '_blank'
     );
   }
