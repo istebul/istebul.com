@@ -37,9 +37,14 @@ function isValidEmail(value: unknown) {
 const ALLOWED_EVENTS = new Set([
   "auto_page_view",
   "auto_quiz_submit",
+  "auto_analysis_started",
   "auto_results_view",
+  "auto_modal_open",
+  "auto_lead_submit",
   "auto_whatsapp_click",
-  "auto_finance_click"
+  "auto_finance_click",
+  "auto_insurance_click",
+  "auto_vehicle_offer_click"
 ]);
 
 function clampString(value: unknown, max = 64) {
