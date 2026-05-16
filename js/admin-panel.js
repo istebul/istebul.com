@@ -407,6 +407,37 @@ async function loadAutoAnalytics() {
   const analysisStarted = (counts.auto_analysis_started || 0) + (counts.auto_quiz_submit || 0);
   const pct = (value, base) => base ? Math.round((value / base) * 100) + '%' : '—';
 
+
+  const totalExpectedRevenue = leads.reduce(
+    (sum, lead) => sum + Number(lead.estimated_revenue || 0),
+    0
+  );
+
+  const totalActualRevenue = leads.reduce(
+    (sum, lead) => sum + Number(lead.actual_revenue || 0),
+    0
+  );
+
+  const wonPartners = leads.filter(
+    lead => lead.partner_status === 'won'
+  ).length;
+
+  const partnerTracked = leads.filter(
+    lead => lead.partner_status && lead.partner_status !== 'pending'
+  ).length;
+
+  const revenuePerLead = leads.length
+    ? Math.round(totalActualRevenue / leads.length)
+    : 0;
+
+  const revenuePerVisit = pageViews
+    ? Math.round(totalActualRevenue / pageViews)
+    : 0;
+
+  const partnerWinRate = partnerTracked
+    ? Math.round((wonPartners / partnerTracked) * 100)
+    : 0;
+
   const analyticsCards = [
     ['auto_page_view', labels.auto_page_view, counts.auto_page_view || 0, 'trafik'],
     ['auto_analysis_started', labels.auto_analysis_started, analysisStarted, pct(analysisStarted, pageViews)],
@@ -419,7 +450,12 @@ async function loadAutoAnalytics() {
     ['auto_finance_click', labels.auto_finance_click, counts.auto_finance_click || 0, 'legacy'],
     ['decision_feedback_helpful', labels.decision_feedback_helpful, counts.decision_feedback_helpful || 0, 'karar'],
     ['decision_feedback_unclear', labels.decision_feedback_unclear, counts.decision_feedback_unclear || 0, 'iyileştirme'],
-    ['decision_feedback_contact', labels.decision_feedback_contact, counts.decision_feedback_contact || 0, 'sıcak lead']
+    ['decision_feedback_contact', labels.decision_feedback_contact, counts.decision_feedback_contact || 0, 'sıcak lead'],
+    ['expected_revenue', 'Beklenen Gelir', totalExpectedRevenue.toLocaleString('tr-TR') + ' ₺', 'pipeline'],
+    ['actual_revenue', 'Gerçek Gelir', totalActualRevenue.toLocaleString('tr-TR') + ' ₺', 'cash'],
+    ['revenue_per_lead', 'Lead Başına Gelir', revenuePerLead.toLocaleString('tr-TR') + ' ₺', 'unit'],
+    ['revenue_per_visit', 'Ziyaret Başına Gelir', revenuePerVisit.toLocaleString('tr-TR') + ' ₺', 'traffic'],
+    ['partner_win_rate', 'Partner Win Rate', partnerWinRate + '%', 'conversion']
   ];
 
   const leadCounts = leadRows.reduce((acc, lead) => {
