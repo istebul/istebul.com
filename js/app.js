@@ -110,8 +110,10 @@ class App {
 
             // Defer non-critical data until after first render
             const deferLoad = () => {
-                this.loadCategories().catch(console.warn);
-                this.loadFavorites().catch(console.warn);
+                Promise.allSettled([
+                    this.loadCategories(),
+                    this.loadFavorites()
+                ]);
                 this.loadComparisonItems();
                 this.loadDecisionHistory();
                 this.loadComparisonHistory();
@@ -138,6 +140,7 @@ class App {
         const enableServiceWorker = window.ISTEBU_ENABLE_SW === true;
 
         if (!enableServiceWorker) {
+            this.setupInstallPrompt();
             return;
         }
 
@@ -159,9 +162,7 @@ class App {
                     // Setup install prompt
                     this.setupInstallPrompt();
                 })
-                .catch((error) => {
-                    console.error('Service Worker registration failed:', error);
-                });
+                .catch(() => undefined);
         }
     }
 
