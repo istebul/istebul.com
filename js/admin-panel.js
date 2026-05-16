@@ -579,6 +579,7 @@ async function loadAutoLeads() {
   const { data, error } = await sb
     .from('auto_leads')
     .select('*')
+    .order('lead_score', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(200);
 
@@ -615,7 +616,9 @@ async function loadAutoLeads() {
       lead.interest_type,
       lead.usage,
       lead.body,
-      lead.fuel
+      lead.fuel,
+      lead.vehicle,
+      lead.priority
     ].filter(Boolean).join(' ').toLowerCase();
 
     const followDate = lead.follow_up_at ? new Date(lead.follow_up_at) : null;
@@ -642,6 +645,8 @@ async function loadAutoLeads() {
           <th>Email</th>
           <th>Telefon</th>
           <th>Bütçe</th>
+          <th>Skor</th>
+          <th>Öncelik</th>
           <th>Durum</th>
           <th>Not</th>
           <th>Takip</th>
@@ -655,6 +660,13 @@ async function loadAutoLeads() {
             <td><strong>${lead.email || '—'}</strong></td>
             <td>${lead.phone || '—'}</td>
             <td>${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</td>
+            <td><strong>${lead.lead_score || 0}</strong></td>
+            <td><span class="badge ${
+              lead.priority === 'very_hot' ? 'badge-red' :
+              lead.priority === 'hot' ? 'badge-yellow' :
+              lead.priority === 'warm' ? 'badge-blue' :
+              'badge-green'
+            }">${lead.priority || 'cold'}</span></td>
 
             <td>
               <select class="status-select status-${lead.status || 'new'}" data-action="update-auto-status" data-id="${lead.id}">
@@ -762,6 +774,9 @@ function openLeadDrawer(lead) {
       <div class="lead-detail-item"><div class="lead-detail-label">Yakıt</div><div class="lead-detail-value">${label(fuelLabels, lead.fuel)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Kredi</div><div class="lead-detail-value">${label(loanLabels, lead.loan)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">İlgi</div><div class="lead-detail-value">${fmt(lead.interest_type)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Araç</div><div class="lead-detail-value">${fmt(lead.vehicle)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Lead Skoru</div><div class="lead-detail-value">${fmt(lead.lead_score)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Öncelik</div><div class="lead-detail-value">${fmt(lead.priority)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Durum</div><div class="lead-detail-value">${label(statusLabels, lead.status)}</div></div>
       <div class="lead-detail-item">
         <div class="lead-detail-label">Yeni Not</div>
@@ -925,6 +940,7 @@ async function exportAutoLeadsCsv() {
   const { data, error } = await sb
     .from('auto_leads')
     .select('*')
+    .order('lead_score', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -947,6 +963,9 @@ async function exportAutoLeadsCsv() {
     'fuel',
     'loan',
     'interest_type',
+    'vehicle',
+    'lead_score',
+    'priority',
     'status',
     'notes',
     'created_at'
