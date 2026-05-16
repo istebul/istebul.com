@@ -102,7 +102,7 @@ function renderLoading() {
   `;
 }
 
-async function updateLeadInterest(phone, interestType) {
+async function updateLeadInterest(phone, interestType, vehicle = '') {
   const email = localStorage.getItem('istebul_auto_lead_email');
   const storedPayload = safeJsonParse(localStorage.getItem('istebul_auto_lead_payload'), {});
 
@@ -113,13 +113,14 @@ async function updateLeadInterest(phone, interestType) {
     formData: {
       ...storedPayload,
       phone,
-      interest_type: interestType
+      interest_type: interestType,
+      vehicle
     }
   });
 }
 
-function openLeadModal(type) {
-  trackAutoEvent('auto_modal_open', { interest_type: type });
+function openLeadModal(type, vehicle = '') {
+  trackAutoEvent('auto_modal_open', { interest_type: type, vehicle });
   const existing = document.getElementById('lead-modal');
   if (existing) existing.remove();
 
@@ -132,6 +133,7 @@ function openLeadModal(type) {
       <h3>Size özel teklif hazırlayalım</h3>
       <p>En uygun kredi, sigorta ve satın alma seçenekleri için numaranızı bırakın.</p>
       <form id="phone-lead-form">
+        <input name="vehicle" type="hidden" value="${escapeHtml(vehicle)}">
         <input name="phone" type="tel" required placeholder="05xx xxx xx xx">
         <button class="btn primary" type="submit">Gönder</button>
       </form>
@@ -145,12 +147,14 @@ function openLeadModal(type) {
 
   document.getElementById('phone-lead-form').addEventListener('submit', async (event) => {
     event.preventDefault();
-    const phone = new FormData(event.currentTarget).get('phone');
+    const leadData = new FormData(event.currentTarget);
+    const phone = leadData.get('phone');
+    const selectedVehicle = leadData.get('vehicle') || vehicle;
 
-    trackAutoEvent('auto_lead_submit', { phone, interest_type: type });
+    trackAutoEvent('auto_lead_submit', { phone, interest_type: type, vehicle: selectedVehicle });
 
     try {
-      await updateLeadInterest(phone, type);
+      await updateLeadInterest(phone, type, selectedVehicle);
     } catch {}
 
     modal.innerHTML = `
@@ -198,8 +202,11 @@ function renderResults(results) {
         <button class="btn primary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
           WhatsApp
         </button>
-        <button class="btn secondary auto-interest-btn" data-interest="finance">
+        <button class="btn secondary auto-interest-btn" data-interest="finance" data-vehicle="${escapeHtml(vehicle.name)}">
           Finansman
+        </button>
+        <button class="btn secondary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
+          Bu araç için teklif iste
         </button>
       </div>
     </article>
@@ -272,6 +279,6 @@ Destek almak istiyorum.`;
   const interestBtn = event.target.closest('.auto-interest-btn');
 
   if (interestBtn) {
-    openLeadModal(interestBtn.dataset.interest || 'finance');
+    openLeadModal(interestBtn.dataset.interest || 'finance', interestBtn.dataset.vehicle || '');
   }
 });
