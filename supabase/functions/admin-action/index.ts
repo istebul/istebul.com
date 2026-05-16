@@ -99,6 +99,11 @@ Deno.serve(async (req) => {
 
   const { action, table, id, values } = body;
 
+  const sanitizeText = (value: unknown) =>
+    String(value ?? "")
+      .replace(/[<>]/g, "")
+      .slice(0, 5000);
+
   const allowedTables = [
     "announcements",
     "faqs",
@@ -112,7 +117,7 @@ Deno.serve(async (req) => {
     return json({ error: "Invalid action or table" }, 400, origin);
   }
 
-  if (!id) {
+  if (action !== "upsert_settings" && !id) {
     return json({ error: "Missing id" }, 400, origin);
   }
 
@@ -245,6 +250,10 @@ Deno.serve(async (req) => {
         }
       }
 
+
+      if (table === "auto_leads" && typeof values.notes === "string") {
+        values.notes = sanitizeText(values.notes);
+      }
 
       const { error } = await adminClient
         .from(table)
