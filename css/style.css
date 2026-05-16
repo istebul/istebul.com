@@ -8352,3 +8352,12 @@ main > section:not(.hero-section) {
     border-radius: 30px;
   }
 }
+
+/* Public surface hardening: private/app sections must not leak into first render */
+[data-private-section] {
+    display: none !important;
+}
+
+body.app-route-active [data-private-section].route-visible {
+    display: block !important;
+}

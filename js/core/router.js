@@ -114,6 +114,12 @@ export class Router {
     }
 
     showSection(routeId) {
+        document.body.classList.toggle('app-route-active', routeId !== 'home');
+
+        document.querySelectorAll('[data-private-section]').forEach(section => {
+            section.classList.remove('route-visible');
+        });
+
         // Hide all sections
         document.querySelectorAll('main > section').forEach(section => {
             section.style.display = 'none';
@@ -131,6 +137,11 @@ export class Router {
         const targetSection = document.getElementById(routeId);
         if (targetSection) {
             targetSection.classList.remove('hidden');
+
+            if (targetSection.hasAttribute('data-private-section')) {
+                targetSection.classList.add('route-visible');
+            }
+
             targetSection.style.display = 'block';
         } else {
             // Show home if section not found
