@@ -656,7 +656,10 @@ async function loadAutoLeads() {
       </thead>
       <tbody>
         ${filteredData.map(lead => `
-          <tr data-action="view-auto-lead" data-lead='${safeAttr(JSON.stringify(lead))}'>
+          <tr
+            class="${lead.follow_up_at && !lead.follow_up_done && new Date(lead.follow_up_at) < new Date() ? 'lead-overdue' : ''}"
+            data-action="view-auto-lead"
+            data-lead='${safeAttr(JSON.stringify(lead))}'>
             <td><strong>${lead.email || '—'}</strong></td>
             <td>${lead.phone || '—'}</td>
             <td>${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</td>
@@ -704,6 +707,7 @@ async function loadAutoLeads() {
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
               <div class="table-actions">
+                ${lead.phone ? `<a class="btn btn-success btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}?text=Merhaba%2C%20isteBul%20Auto%20talebinizi%20gördük.%20Size%20uygun%20teklifleri%20hazırlayabiliriz." target="_blank" rel="noopener">WhatsApp</a>` : ''}
                 <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
                   Sil
                 </button>
@@ -1111,3 +1115,12 @@ document.addEventListener('change', (event) => {
   });
 
 bindAdminPanelEvents();
+
+
+const overdueStyle = document.createElement('style');
+overdueStyle.textContent = `
+.lead-overdue {
+  background: rgba(220, 38, 38, 0.08);
+}
+`;
+document.head.appendChild(overdueStyle);
