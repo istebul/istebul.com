@@ -404,12 +404,13 @@ async function loadAutoAnalytics() {
   };
 
   const pageViews = counts.auto_page_view || 0;
+  const analysisStarted = (counts.auto_analysis_started || 0) + (counts.auto_quiz_submit || 0);
   const pct = (value, base) => base ? Math.round((value / base) * 100) + '%' : '—';
 
   const analyticsCards = [
     ['auto_page_view', labels.auto_page_view, counts.auto_page_view || 0, 'trafik'],
-    ['auto_analysis_started', labels.auto_analysis_started, counts.auto_analysis_started || 0, pct(counts.auto_analysis_started || 0, pageViews)],
-    ['auto_results_view', labels.auto_results_view, counts.auto_results_view || 0, pct(counts.auto_results_view || 0, counts.auto_analysis_started || 0)],
+    ['auto_analysis_started', labels.auto_analysis_started, analysisStarted, pct(analysisStarted, pageViews)],
+    ['auto_results_view', labels.auto_results_view, counts.auto_results_view || 0, pct(counts.auto_results_view || 0, analysisStarted)],
     ['auto_modal_open', labels.auto_modal_open, counts.auto_modal_open || 0, pct(counts.auto_modal_open || 0, counts.auto_results_view || 0)],
     ['auto_lead_submit', labels.auto_lead_submit, counts.auto_lead_submit || 0, pct(counts.auto_lead_submit || 0, counts.auto_modal_open || 0)],
     ['auto_whatsapp_click', labels.auto_whatsapp_click, counts.auto_whatsapp_click || 0, pct(counts.auto_whatsapp_click || 0, counts.auto_results_view || 0)],
