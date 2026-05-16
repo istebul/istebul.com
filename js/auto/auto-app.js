@@ -261,7 +261,7 @@ Destek almak istiyorum.`;
       return;
     }
 
-    trackAutoEvent('auto_whatsapp_click', { vehicle });
+    trackUniqueAutoEvent('auto_whatsapp_click', { vehicle }, vehicle);
 
     window.open(
       'https://wa.me/' + phone + '?text=' + encodeURIComponent(message),
