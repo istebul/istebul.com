@@ -647,6 +647,8 @@ async function loadAutoLeads() {
           <th>Bütçe</th>
           <th>Skor</th>
           <th>Öncelik</th>
+          <th>Partner</th>
+          <th>Partner Durumu</th>
           <th>Durum</th>
           <th>Not</th>
           <th>Takip</th>
@@ -670,6 +672,9 @@ async function loadAutoLeads() {
               lead.priority === 'warm' ? 'badge-blue' :
               'badge-green'
             }">${lead.priority || 'cold'}</span></td>
+
+            <td>${lead.partner_route || '—'}</td>
+            <td>${lead.partner_status || 'pending'}</td>
 
             <td>
               <select class="status-select status-${lead.status || 'new'}" data-action="update-auto-status" data-id="${lead.id}">
@@ -781,6 +786,8 @@ function openLeadDrawer(lead) {
       <div class="lead-detail-item"><div class="lead-detail-label">Araç</div><div class="lead-detail-value">${fmt(lead.vehicle)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Lead Skoru</div><div class="lead-detail-value">${fmt(lead.lead_score)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Öncelik</div><div class="lead-detail-value">${fmt(lead.priority)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Partner</div><div class="lead-detail-value">${fmt(lead.partner_route)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Partner Durumu</div><div class="lead-detail-value">${fmt(lead.partner_status)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Durum</div><div class="lead-detail-value">${label(statusLabels, lead.status)}</div></div>
       <div class="lead-detail-item">
         <div class="lead-detail-label">Yeni Not</div>
@@ -970,6 +977,8 @@ async function exportAutoLeadsCsv() {
     'vehicle',
     'lead_score',
     'priority',
+    'partner_route',
+    'partner_status',
     'status',
     'notes',
     'created_at'
