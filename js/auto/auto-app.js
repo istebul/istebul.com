@@ -10,6 +10,16 @@ function safeJsonParse(value, fallback = {}) {
   }
 }
 
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
 function getSessionId() {
   let id = sessionStorage.getItem('istebul_auto_session');
   if (!id) {
@@ -166,14 +176,14 @@ function renderResults(results) {
         <div class="confidence">AI güven: %${vehicle.confidence}</div>
       </div>
 
-      <h3>${vehicle.name}</h3>
+      <h3>${escapeHtml(vehicle.name)}</h3>
 
       <div class="analysis-box">
-        <ul>${vehicle.reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+        <ul>${vehicle.reasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       </div>
 
       <div class="risk-box">
-        <ul>${vehicle.risks.map(r => `<li>${r}</li>`).join('')}</ul>
+        <ul>${vehicle.risks.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       </div>
 
       <div class="cost">
@@ -184,7 +194,7 @@ function renderResults(results) {
       </div>
 
       <div class="cta-row">
-        <button class="btn primary auto-whatsapp-btn" data-vehicle="${vehicle.name}">
+        <button class="btn primary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
           WhatsApp
         </button>
         <button class="btn secondary auto-interest-btn" data-interest="finance">

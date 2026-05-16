@@ -29,7 +29,10 @@ export async function loadCMS() {
 
     if (annRes?.length > 0) {
       const text = annRes[0].content || annRes[0].title;
-      document.querySelectorAll('[data-cms="announcement"]').forEach(el => el.innerHTML = '<strong>Duyuru:</strong> ' + text);
+      document.querySelectorAll('[data-cms="announcement"]').forEach(el => {
+        el.innerHTML = '<strong>Duyuru:</strong> ';
+        el.appendChild(document.createTextNode(String(text || '')));
+      });
     }
 
     if (s.maintenance === 'true') {
