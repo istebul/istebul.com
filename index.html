@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>isteBul - AI Destekli Karar Asistanı</title>
-    <meta name="description" content="Araç, ev ve tatil kararlarınız için soru-cevap akışı, toplam maliyet hesabı, kredi karşılaştırması ve satın alma yönlendirmeleri.">
+    <title>isteBul - Araç Karar Asistanı</title>
+    <meta name="description" content="Araç satın almadan önce bütçenize, kullanımınıza, kredi planınıza ve toplam sahip olma maliyetine göre en doğru seçeneği bulun.">
     <meta name="theme-color" content="#2563eb" id="theme-color-meta">
-    <meta property="og:title" content="isteBul - AI Destekli Karar Asistanı">
-    <meta property="og:description" content="Araç, ev ve tatil için ihtiyacınızı anlayan, toplam maliyeti ve finansmanı gösteren karar destek platformu.">
+    <meta property="og:title" content="isteBul - Araç Karar Asistanı">
+    <meta property="og:description" content="Araç satın alma kararlarında toplam maliyet, kredi etkisi ve kullanım ihtiyacını birlikte değerlendiren karar destek platformu.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://istebul.com/">
     <meta property="og:image" content="https://istebul.com/assets/images/og-image.svg">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="isteBul - AI Destekli Karar Asistanı">
-    <meta name="twitter:description" content="Araç, ev ve tatil seçeneklerini maliyet, kredi ve satın alma kanallarıyla birlikte değerlendirin.">
+    <meta name="twitter:title" content="isteBul - Araç Karar Asistanı">
+    <meta name="twitter:description" content="Araç seçeneklerini toplam maliyet, kredi etkisi ve kullanım ihtiyacınıza göre değerlendirin.">
     <meta name="twitter:image" content="https://istebul.com/assets/images/og-image.svg">
     <link rel="canonical" href="https://istebul.com/">
     <link rel="sitemap" type="application/xml" href="/sitemap.xml">
@@ -56,18 +56,18 @@
       "@id": "https://istebul.com/#website",
       "url": "https://istebul.com/",
       "name": "isteBul",
-      "description": "Araç, ev ve tatil kararları için AI destekli karar verme platformu.",
+      "description": "Araç satın alma kararları için AI destekli karar verme platformu.",
       "publisher": {"@id": "https://istebul.com/#organization"},
       "inLanguage": "tr-TR"
     },
     {
       "@type": "WebApplication",
       "@id": "https://istebul.com/#webapp",
-      "name": "isteBul AI Karar Asistanı",
+      "name": "isteBul Araç Karar Asistanı",
       "url": "https://istebul.com/",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
-      "description": "Araç, ev ve tatil seçeneklerini toplam maliyet, kredi etkisi ve karar skoru ile karşılaştırmaya yardımcı olur.",
+      "description": "Araç seçeneklerini toplam maliyet, kredi etkisi ve karar skoru ile karşılaştırmaya yardımcı olur.",
       "offers": {"@type": "Offer", "price": "0", "priceCurrency": "TRY"},
       "inLanguage": "tr-TR"
     }
@@ -87,19 +87,12 @@
                 <span class="nav-subtitle" data-cms="site-subtitle">Yapay zeka destekli karar platformu</span>
             </a>
             <div class="nav-menu" id="nav-menu">
-                <a href="/karar-asistani" class="nav-link" data-native-route>AI Asistan</a>
-                <a href="/karsilastir" class="nav-link" data-native-route>Karşılaştır <span id="comparison-count" class="nav-count" hidden>0</span></a>
+                <a href="/auto" class="nav-link" data-native-route>AI Asistan</a>
+                
                 <a href="#how-it-works" class="nav-link">Nasıl Çalışır</a>
                 <div class="nav-dropdown">
-                    <button class="nav-dropdown-btn">Çözümler <i data-lucide="chevron-down"></i></button>
-                    <div class="nav-dropdown-content" id="category-menu">
-                        <a href="/auto">Auto</a>
-                        <a href="/ilanlar" data-category="arac">Araç Seçenekleri</a>
-                        <a href="/ilanlar" data-category="ev">Ev Seçenekleri</a>
-                        <a href="/ilanlar" data-category="tatil">Tatil Seçenekleri</a>
-                        <a href="/favoriler">Favoriler</a>
-                        <a href="/gecmis">Geçmiş</a>
-                    </div>
+                    <a href="/auto" class="nav-link" data-native-route>Auto</a>
+                    
                 </div>
                 <a href="/messages" class="nav-link hidden" id="nav-messages">Mesajlar</a>
             </div>
@@ -138,14 +131,14 @@
             <div class="hero-container">
                 <div class="hero-content">
                     <span class="hero-eyebrow"><i data-lucide="radar"></i> <span data-cms="hero-eyebrow">AI destekli karar platformu</span></span>
-                    <h1 data-cms="hero-title">Büyük kararları AI ile netleştirin</h1>
-                    <p data-cms="hero-desc">Araç, ev ve tatil seçimlerinde gerçek toplam maliyeti, kredi etkisini ve en iyi seçenekleri saniyeler içinde görün.</p>
+                    <h1 data-cms="hero-title">Araba almadan önce doğru kararı görün</h1>
+                    <p data-cms="hero-desc">Bütçenize, kullanımınıza ve kredi planınıza göre size en uygun araç tipini ve toplam maliyet etkisini saniyeler içinde görün.</p>
                     <div class="hero-actions">
-                        <a href="/karar-asistani" class="btn btn-primary">
-                            <i data-lucide="sparkles"></i> Ücretsiz Başla
+                        <a href="/auto" class="btn btn-primary">
+                            <i data-lucide="sparkles"></i> Aracımı Bul
                         </a>
                         <a href="/auto" class="btn btn-outline">
-                            <i data-lucide="car-front"></i> Örnek Analizi Gör
+                            <i data-lucide="car-front"></i> Auto Analizi Gör
                         </a>
                     </div>
 
@@ -264,8 +257,8 @@
             <div class="container">
                 <div class="section-header">
                     <div>
-                        <h2>Popüler Kategoriler</h2>
-                        <p>Araç, ev ve tatil kararları için aynı disiplinle çalışan, konum ve bütçe odaklı ana akışlar.</p>
+                        <h2>Araç Karar Akışı</h2>
+                        <p>Önce araç satın alma kararına odaklanan; bütçe, kullanım, kredi ve toplam maliyet etkisini birlikte değerlendiren akış.</p>
                     </div>
                 </div>
                 <div class="categories-grid" id="categories-grid">
@@ -574,7 +567,7 @@
             <div class="newsletter-card">
                 <div>
                     <h3>Karar fırsatlarını takip edin</h3>
-                    <p>Araç, ev ve tatil kararları için güncel fırsatları ve maliyet uyarılarını e-posta ile alın.</p>
+                    <p>Araç satın alma, kredi ve toplam maliyet uyarılarını e-posta ile alın.</p>
                 </div>
                 <form id="newsletter-form" class="newsletter-form">
                     <input type="email" id="newsletter-email" placeholder="E-posta adresinizi girin" required>
@@ -590,10 +583,10 @@
                     <h4>Hızlı Bağlantılar</h4>
                     <ul>
                         <li><a href="#home">Ana Sayfa</a></li>
-                        <li><a href="/karar-asistani">AI Asistan</a></li>
-                        <li><a href="/ilanlar">Seçenekler</a></li>
-                        <li><a href="/karsilastir">Karşılaştır</a></li>
-                        <li><a href="/gecmis">Geçmiş</a></li>
+                        <li><a href="/auto">AI Asistan</a></li>
+                        
+                        
+                        
                     </ul>
                 </div>
                 <div class="footer-section">
