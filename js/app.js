@@ -135,6 +135,12 @@ class App {
     }
 
     registerServiceWorker() {
+        const enableServiceWorker = window.ISTEBU_ENABLE_SW === true;
+
+        if (!enableServiceWorker) {
+            return;
+        }
+
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js')
                 .then((registration) => {
