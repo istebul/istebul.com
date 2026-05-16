@@ -12,7 +12,7 @@ export class ListingsUI {
                     <i data-lucide="badge-plus"></i>
                     <h3>Henüz ilanınız yok</h3>
                     <p>İlk ilanınızı eklediğinizde burada görünecek ve AI karşılaştırma akışına dahil olacak.</p>
-                    <a href="/ilan-ekle" class="btn btn-primary"><i data-lucide="plus"></i> Öneri Oluştur</a>
+                    <a href="/ilan-ekle" class="btn btn-primary"><i data-lucide="plus"></i> Seçenek Ekle</a>
                 </div>
             ` : `
                 <div class="empty-state marketplace-empty-state">

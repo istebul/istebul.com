@@ -67,7 +67,7 @@
       "url": "https://istebul.com/",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
-      "description": "Araç, ev ve tatil seçeneklerini toplam maliyet, kredi etkisi ve AI skoru ile karşılaştırmaya yardımcı olur.",
+      "description": "Araç, ev ve tatil seçeneklerini toplam maliyet, kredi etkisi ve karar skoru ile karşılaştırmaya yardımcı olur.",
       "offers": {"@type": "Offer", "price": "0", "priceCurrency": "TRY"},
       "inLanguage": "tr-TR"
     }
@@ -284,7 +284,7 @@
                             <i data-lucide="filter"></i> Filtrele
                         </button>
                         <button class="btn btn-primary" id="add-listing-btn">
-                            <i data-lucide="plus"></i> Öneri Oluştur
+                            <i data-lucide="plus"></i> Seçenek Ekle
                         </button>
                     </div>
                 </div>
@@ -355,12 +355,12 @@
                 <div id="marketplace-results-toolbar" class="marketplace-results-toolbar" aria-live="polite">
                     <div class="marketplace-result-copy">
                         <span id="listing-result-count">Size uygun seçenekler hazırlanıyor</span>
-                        <small id="listing-result-context">AI skoruna göre listeleniyor</small>
+                        <small id="listing-result-context">karar skoruna göre listeleniyor</small>
                     </div>
                     <div class="marketplace-result-controls">
                         <label for="listing-sort">Sırala</label>
                         <select id="listing-sort" name="listing_sort">
-                            <option value="aiScore">AI öneri skoru</option>
+                            <option value="aiScore">Karar uygunluğu</option>
                             <option value="newest">En yeni</option>
                             <option value="priceAsc">Fiyat artan</option>
                             <option value="priceDesc">Fiyat azalan</option>
@@ -398,7 +398,7 @@
                 <div class="section-header">
                     <div>
                         <h2>Karşılaştırma Merkezi</h2>
-                        <p>Seçtiğiniz araç, ev veya tatil seçeneklerini fiyat, toplam maliyet, kredi ve AI skoruyla yan yana inceleyin.</p>
+                        <p>Seçtiğiniz araç, ev veya tatil seçeneklerini fiyat, toplam maliyet, kredi ve karar skoruyla yan yana inceleyin.</p>
                     </div>
                 </div>
                 <div id="comparison-content" class="comparison-content">
@@ -573,8 +573,8 @@
         <div class="container">
             <div class="newsletter-card">
                 <div>
-                    <h3>Fiyat düştüğünde haber ver</h3>
-                    <p>En iyi seçenekleri ve AI karar önerilerini e-posta ile alın.</p>
+                    <h3>Karar fırsatlarını takip edin</h3>
+                    <p>Araç, ev ve tatil kararları için güncel fırsatları ve maliyet uyarılarını e-posta ile alın.</p>
                 </div>
                 <form id="newsletter-form" class="newsletter-form">
                     <input type="email" id="newsletter-email" placeholder="E-posta adresinizi girin" required>
