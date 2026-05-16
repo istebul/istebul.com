@@ -675,7 +675,19 @@ async function loadAutoLeads() {
             }">${lead.priority || 'cold'}</span></td>
 
             <td>${lead.partner_route || '—'}</td>
-            <td>${lead.partner_status || 'pending'}</td>
+            <td>
+<select
+  class="status-select"
+  data-action="update-partner-status"
+  data-id="${lead.id}"
+>
+  <option value="pending" ${lead.partner_status === 'pending' ? 'selected' : ''}>Pending</option>
+  <option value="contacted" ${lead.partner_status === 'contacted' ? 'selected' : ''}>Contacted</option>
+  <option value="quoted" ${lead.partner_status === 'quoted' ? 'selected' : ''}>Quoted</option>
+  <option value="won" ${lead.partner_status === 'won' ? 'selected' : ''}>Won</option>
+  <option value="lost" ${lead.partner_status === 'lost' ? 'selected' : ''}>Lost</option>
+</select>
+</td>
 
             <td>
               <select class="status-select status-${lead.status || 'new'}" data-action="update-auto-status" data-id="${lead.id}">
@@ -1070,6 +1082,23 @@ function bindAdminPanelEvents() {
 
     if (action === 'update-auto-status') {
       updateAutoLeadStatus(id, el.value);
+      return;
+    }
+
+    if (action === 'update-partner-status') {
+      adminAction({
+        action: 'update',
+        table: 'auto_leads',
+        id,
+        values: {
+          partner_status: el.value
+        }
+      }).then(() => {
+        toast('Partner durumu güncellendi', 'success');
+        loadAutoLeads();
+        loadAutoAnalytics();
+      });
+
       return;
     }
 
