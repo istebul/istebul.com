@@ -104,6 +104,18 @@ function getAutoFollowUp(priority: string) {
   return null;
 }
 
+
+function getPartnerRoute(form: Record<string, unknown>) {
+  const interest = String(form.interest_type || "");
+
+  if (interest === "finance") return "finance_partner";
+  if (interest === "insurance") return "insurance_partner";
+  if (interest === "vehicle_offer") return "dealer_partner";
+  if (interest === "premium_report") return "premium_report";
+
+  return "general_sales";
+}
+
 function getClientIp(req: Request) {
   return req.headers.get("cf-connecting-ip") || "unknown";
 }
@@ -234,6 +246,8 @@ Deno.serve(async (req) => {
       vehicle: clampString(form.vehicle, 120),
       lead_score: scoring.score,
       priority: scoring.priority,
+      partner_route: getPartnerRoute(form),
+      partner_status: "pending",
       follow_up_at: getAutoFollowUp(scoring.priority),
       follow_up_done: false,
       status: "new",
