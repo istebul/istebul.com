@@ -120,11 +120,11 @@
                         <span id="user-name"></span>
                     </button>
                     <div class="user-dropdown">
-                        <a href="/profil">Profilim</a>
+                        <a href="/profil" data-auth-only>Hesabım</a>
                         <a href="#" data-my-listings>Seçeneklerim</a>
                         
                         <hr>
-                        <a href="#" id="logout-btn">Çıkış Yap</a>
+                        <a href="#" id="logout-btn" data-auth-only>Oturumu kapat</a>
                     </div>
                 </div>
             </div>
@@ -397,7 +397,7 @@
             <div class="container">
                 <div class="section-header">
                     <div>
-                        <h2>Karşılaştırma Merkezi</h2>
+                        <h2 data-private-title>Karşılaştırma</h2>
                         <p>Seçtiğiniz araç, ev veya tatil seçeneklerini fiyat, toplam maliyet, kredi ve karar skoruyla yan yana inceleyin.</p>
                     </div>
                 </div>
@@ -430,7 +430,7 @@
         <section id="profil" data-private-section class="profile-section hidden">
             <div class="container">
                 <div class="section-header">
-                    <h2>Profilim</h2>
+                    <h2 data-private-title>Hesap</h2>
                     <p>Hesabınıza ait ilanlar, favoriler ve geçmiş kararlar burada tutulur.</p>
                 </div>
                 <div class="profile-card">
@@ -483,7 +483,7 @@
         <section id="admin" data-private-section class="admin-section section-surface hidden">
             <div class="container">
                 <div class="section-header">
-                    <h2>Admin Panel</h2>
+                    <h2 data-private-title>Yönetim</h2>
                     <p>Yönetici araçları ve sistem istatistikleri burada görünecek.</p>
                 </div>
                 <div class="admin-card">
@@ -495,7 +495,7 @@
         <section id="add-listing" data-private-section class="add-listing-section section-bg hidden">
             <div class="container">
                 <div class="section-header">
-                    <h2>İlan Ekle</h2>
+                    <h2 data-private-title>Yeni seçenek</h2>
                     <p>Kendi ilanınızı hızlıca ekleyin ve AI destekli karşılaştırmaya dahil edin.</p>
                 </div>
                 <form id="add-listing-form" class="add-listing-card listing-form">
