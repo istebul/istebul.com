@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
 
   if (type === "event") {
     const clientIp = getClientIp(req);
-    const allowed = await checkRateLimit(adminClient, `event:${clientIp}`, 120, 60 * 1000);
+    const allowed = await checkRateLimit(adminClient, `event:${clientIp}`, 30, 60 * 1000);
 
     if (!allowed) {
       return json({ error: "Too many requests" }, 429, origin);

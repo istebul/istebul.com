@@ -521,8 +521,8 @@ async function loadAutoAnalytics() {
           ${events.slice(0, 100).map(event => `
             <tr>
               <td><strong>${labels[event.event_name] || event.event_name}</strong></td>
-              <td>${event.email || '—'}</td>
-              <td>${event.phone || '—'}</td>
+              <td>${escapeHtml(event.email || '—')}</td>
+              <td>${escapeHtml(event.phone || '—')}</td>
               <td>${event.created_at ? new Date(event.created_at).toLocaleString('tr-TR') : '—'}</td>
             </tr>
           `).join('')}
@@ -645,7 +645,7 @@ async function loadAutoLeads() {
       </thead>
       <tbody>
         ${filteredData.map(lead => `
-          <tr data-action="view-auto-lead" data-lead='${JSON.stringify(lead).replace(/'/g, "&apos;")}'>
+          <tr data-action="view-auto-lead" data-lead='${safeAttr(JSON.stringify(lead))}'>
             <td><strong>${lead.email || '—'}</strong></td>
             <td>${lead.phone || '—'}</td>
             <td>${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</td>
@@ -706,7 +706,7 @@ function openLeadDrawer(lead) {
 
   if (!drawer || !overlay || !content) return;
 
-  const fmt = (v) => v || '—';
+  const fmt = (v) => escapeHtml(v || '—');
   const label = (map, value) => map[value] || value || '—';
 
   const usageLabels = { family: 'Aile', city: 'Şehir', long: 'Uzun yol' };
@@ -769,7 +769,7 @@ function openLeadDrawer(lead) {
           ${notesHistory.length ? notesHistory.slice().reverse().map((item) => `
             <div style="padding:8px 0;border-bottom:1px solid #2a3441;">
               <div style="font-size:12px;color:#94a3b8;">${item.at ? new Date(item.at).toLocaleString('tr-TR') : '—'}</div>
-              <div>${item.text || '—'}</div>
+              <div>${escapeHtml(item.text || '—')}</div>
             </div>
           `).join('') : 'Henüz not geçmişi yok.'}
         </div>
