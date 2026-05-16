@@ -205,6 +205,9 @@ function renderResults(results) {
         <button class="btn secondary auto-interest-btn" data-interest="finance" data-vehicle="${escapeHtml(vehicle.name)}">
           Finansman
         </button>
+        <button class="btn secondary auto-interest-btn" data-interest="insurance" data-vehicle="${escapeHtml(vehicle.name)}">
+          Sigorta teklifi al
+        </button>
         <button class="btn secondary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
           Bu araç için teklif iste
         </button>
