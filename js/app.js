@@ -372,7 +372,6 @@ class App {
 
             this.categories = normalizedCategories.length ? normalizedCategories : fallbackCategories;
         } catch (error) {
-            console.warn('Failed to load remote categories, using defaults:', error);
             this.categories = fallbackCategories;
         }
 
@@ -1824,7 +1823,6 @@ class App {
             this.ui.showInfo?.('AI karar analizi hazırlanıyor...');
             result = await this.augmentDecisionWithAI(categoryConfig, answers, result);
         } catch (error) {
-            console.warn('Decision AI skipped, using deterministic engine:', error);
         }
 
         this.lastDecisionResult = result;
@@ -1872,7 +1870,6 @@ class App {
 
             return JSON.parse(cleaned.slice(start, end + 1));
         } catch (error) {
-            console.warn('AI JSON parse failed:', error);
             return null;
         }
     }
@@ -1986,7 +1983,6 @@ Açıklama yok.
                     : fallback.insight?.nextSteps || []
             };
         } catch (error) {
-            console.warn('AI augmentation failed:', error);
             return fallback;
         }
     }
