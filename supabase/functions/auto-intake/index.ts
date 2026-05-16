@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
       return json({ error: "Too many requests" }, 429, origin);
     }
 
-    if (!isValidEmail(email) || phone.length < 10 || phone.length > 15) {
+    if ((email && !isValidEmail(email)) || phone.length < 10 || phone.length > 15) {
       return json({ error: "Invalid contact information" }, 400, origin);
     }
 
@@ -178,16 +178,33 @@ Deno.serve(async (req) => {
       source: "auto",
     };
 
-    const { data: updatedRows, error: updateError } = await adminClient
+    let updatedRows = null;
+let updateError = null;
+
+if (email) {
+    const res = await adminClient
       .from("auto_leads")
       .update(payload)
       .eq("email", email)
       .eq("phone", phone)
       .select("id");
 
-    if (updateError) return json({ error: updateError.message }, 500, origin);
+    updatedRows = res.data;
+    updateError = res.error;
+} else {
+    const res = await adminClient
+      .from("auto_leads")
+      .update(payload)
+      .eq("phone", phone)
+      .select("id");
 
-    if (!updatedRows?.length) {
+    updatedRows = res.data;
+    updateError = res.error;
+}
+
+if (updateError) return json({ error: updateError.message }, 500, origin);
+
+if (!updatedRows?.length) {
       const { error: insertError } = await adminClient.from("auto_leads").insert(payload);
       if (insertError) return json({ error: insertError.message }, 500, origin);
     }
