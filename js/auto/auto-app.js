@@ -106,11 +106,9 @@ async function updateLeadInterest(phone, interestType) {
   const email = localStorage.getItem('istebul_auto_lead_email');
   const storedPayload = safeJsonParse(localStorage.getItem('istebul_auto_lead_payload'), {});
 
-  if (!email) return;
-
   await callAutoIntake({
     type: 'lead',
-    email,
+    email: email || null,
     phone,
     formData: {
       ...storedPayload,
@@ -243,6 +241,8 @@ document.addEventListener('click', (event) => {
       alert('WhatsApp numarası tanımlı değil.');
       return;
     }
+
+    trackAutoEvent('auto_whatsapp_click', { vehicle });
 
     window.open(
       'https://wa.me/' + phone + '?text=' + encodeURIComponent(vehicle),
