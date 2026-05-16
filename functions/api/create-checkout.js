@@ -65,6 +65,29 @@ export async function onRequestPost(context) {
       return json({ error: 'Invalid token' }, 401, origin);
     }
 
+    const { SUPABASE_SERVICE_ROLE_KEY } = context.env;
+
+    if (!SUPABASE_SERVICE_ROLE_KEY) {
+      return json({ error: 'Subscription validation unavailable' }, 500, origin);
+    }
+
+    const subRes = await fetch(
+      `${context.env.SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${user.id}&status=in.(active,trialing,past_due)&select=id`,
+      {
+        headers: {
+          apikey: SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+
+    if (subRes.ok) {
+      const existing = await subRes.json();
+      if (Array.isArray(existing) && existing.length) {
+        return json({ error: 'Active subscription already exists' }, 409, origin);
+      }
+    }
+
     const params = new URLSearchParams({
       'payment_method_types[]': 'card',
       'line_items[0][price]': STRIPE_PRICE_ID,
