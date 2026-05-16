@@ -282,6 +282,20 @@ Destek almak istiyorum.`;
   const interestBtn = event.target.closest('.auto-interest-btn');
 
   if (interestBtn) {
-    openLeadModal(interestBtn.dataset.interest || 'finance', interestBtn.dataset.vehicle || '');
+    const interest = interestBtn.dataset.interest || 'finance';
+    const vehicle = interestBtn.dataset.vehicle || '';
+
+    const eventMap = {
+      finance: 'auto_finance_click',
+      insurance: 'auto_insurance_click',
+      vehicle_offer: 'auto_vehicle_offer_click',
+      premium_report: 'auto_premium_report_click'
+    };
+
+    if (eventMap[interest]) {
+      trackAutoEvent(eventMap[interest], { interest_type: interest, vehicle });
+    }
+
+    openLeadModal(interest, vehicle);
   }
 });
