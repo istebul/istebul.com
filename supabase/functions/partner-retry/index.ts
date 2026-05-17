@@ -16,6 +16,29 @@ function getNextRetryTime(retryCount: number) {
   return now.toISOString();
 }
 
+async function signPartnerPayload(body: string) {
+  const secret = Deno.env.get("PARTNER_WEBHOOK_SIGNING_SECRET");
+  if (!secret) return "";
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(body)
+  );
+
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 function getWebhook(route: string) {
   const map: Record<string, string | undefined> = {
     dealer_partner: Deno.env.get("DEALER_WEBHOOK_URL"),
@@ -52,12 +75,16 @@ Deno.serve(async (req) => {
       const url = getWebhook(lead.partner_route);
       if (!url) continue;
 
+      const body = JSON.stringify(lead);
+      const signature = await signPartnerPayload(body);
+
       const res = await fetch(url, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-istebul-signature": signature
         },
-        body: JSON.stringify(lead)
+        body
       });
 
       if (res.ok) {

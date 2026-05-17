@@ -164,6 +164,29 @@ function estimateCommission(partnerRoute: string, leadScore: number) {
 }
 
 
+async function signPartnerPayload(body: string) {
+  const secret = Deno.env.get("PARTNER_WEBHOOK_SIGNING_SECRET");
+  if (!secret) return "";
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(body)
+  );
+
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 async function dispatchPartnerLead(payload: Record<string, unknown>) {
   const route = String(payload.partner_route || "");
   const priority = String(payload.priority || "");
@@ -180,12 +203,16 @@ async function dispatchPartnerLead(payload: Record<string, unknown>) {
   const url = webhookMap[route];
   if (!url) return "skipped";
 
+  const body = JSON.stringify(payload);
+  const signature = await signPartnerPayload(body);
+
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "x-istebul-signature": signature
     },
-    body: JSON.stringify(payload)
+    body
   });
 
   return response.ok ? "dispatched" : "dispatch_failed";
