@@ -156,8 +156,8 @@ async function dispatchPartnerLead(payload: Record<string, unknown>) {
   const route = String(payload.partner_route || "");
   const priority = String(payload.priority || "");
 
-  if (isTestLead(payload.phone)) return;
-  if (priority !== "hot" && priority !== "very_hot") return;
+  if (isTestLead(payload.phone)) return "skipped";
+  if (priority !== "hot" && priority !== "very_hot") return "skipped";
 
   const webhookMap: Record<string, string | undefined> = {
     dealer_partner: Deno.env.get("DEALER_WEBHOOK_URL"),
@@ -166,15 +166,17 @@ async function dispatchPartnerLead(payload: Record<string, unknown>) {
   };
 
   const url = webhookMap[route];
-  if (!url) return;
+  if (!url) return "skipped";
 
-  await fetch(url, {
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify(payload)
   });
+
+  return response.ok ? "dispatched" : "dispatch_failed";
 }
 
 async function notifyTelegramLead(payload: Record<string, unknown>) {
@@ -382,9 +384,19 @@ Deno.serve(async (req) => {
 
     try {
       await notifyTelegramLead(payload);
-      await dispatchPartnerLead(payload);
+      const dispatchStatus = await dispatchPartnerLead(payload);
+
+      if (dispatchStatus === "dispatched" || dispatchStatus === "dispatch_failed") {
+        await adminClient
+          .from("auto_leads")
+          .update({ partner_status: dispatchStatus })
+          .eq("phone", phone);
+      }
     } catch {
-      // Notification failure must not block lead capture.
+      await adminClient
+        .from("auto_leads")
+        .update({ partner_status: "dispatch_failed" })
+        .eq("phone", phone);
     }
 
     return json({ ok: true }, 200, origin);

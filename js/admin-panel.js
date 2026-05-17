@@ -775,6 +775,8 @@ function getPartnerStatusOptions(route) {
   const workflows = {
     insurance_partner: [
       ['pending', 'Pending'],
+      ['dispatched', 'Dispatched'],
+      ['dispatch_failed', 'Dispatch Failed'],
       ['contacted', 'Contacted'],
       ['quote_sent', 'Quote Sent'],
       ['policy_issued', 'Policy Issued'],
@@ -783,6 +785,8 @@ function getPartnerStatusOptions(route) {
     ],
     dealer_partner: [
       ['pending', 'Pending'],
+      ['dispatched', 'Dispatched'],
+      ['dispatch_failed', 'Dispatch Failed'],
       ['contacted', 'Contacted'],
       ['offer_sent', 'Offer Sent'],
       ['test_drive', 'Test Drive'],
@@ -806,6 +810,8 @@ function getPartnerStatusOptions(route) {
     ],
     general_sales: [
       ['pending', 'Pending'],
+      ['dispatched', 'Dispatched'],
+      ['dispatch_failed', 'Dispatch Failed'],
       ['contacted', 'Contacted'],
       ['quoted', 'Quoted'],
       ['won', 'Won'],
