@@ -429,7 +429,13 @@ Deno.serve(async (req) => {
     } catch {
       await adminClient
         .from("auto_leads")
-        .update({ partner_status: "dispatch_failed" })
+        .update({
+          partner_status: "dispatch_failed",
+          dispatch_retry_count: 1,
+          last_dispatch_at: new Date().toISOString(),
+          next_retry_at: getNextRetryTime(1),
+          last_dispatch_error: "dispatch exception"
+        })
         .eq("phone", phone);
     }
 
