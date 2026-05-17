@@ -477,18 +477,20 @@ function advanceWizard() {
 if (wizard) {
   renderWizard();
 
-  wizard.addEventListener('click', (event) => {
+  wizard.addEventListener('input', (event) => {
     const customInput = event.target.closest('[data-wizard-custom]');
+    if (!customInput) return;
+
+    const step = wizardSteps[wizardIndex];
+    wizardState[`${step.key}_custom`] = customInput.value.trim();
+    syncWizardToForm();
+    renderWizard();
+  });
+
+  wizard.addEventListener('click', (event) => {
     const option = event.target.closest('.wizard-option');
     const back = event.target.closest('[data-wizard-back]');
     const next = event.target.closest('[data-wizard-next]');
-
-    if (customInput) {
-      const step = wizardSteps[wizardIndex];
-      wizardState[`${step.key}_custom`] = customInput.value;
-      syncWizardToForm();
-      return;
-    }
 
     if (option) {
       const step = wizardSteps[wizardIndex];
