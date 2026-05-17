@@ -816,6 +816,18 @@ function getPartnerStatusOptions(route) {
   return workflows[route] || workflows.general_sales;
 }
 
+function isRevenueRealizedPartnerStatus(route, status) {
+  const realizedByRoute = {
+    insurance_partner: ['paid', 'closed'],
+    dealer_partner: ['won', 'delivered'],
+    finance_partner: ['funded', 'closed'],
+    premium_report: ['purchased', 'delivered'],
+    general_sales: ['won', 'closed']
+  };
+
+  return (realizedByRoute[route] || realizedByRoute.general_sales).includes(status);
+}
+
 function renderPartnerStatusSelect(lead) {
   const options = getPartnerStatusOptions(lead.partner_route)
     .map(([value, label]) =>
@@ -1180,13 +1192,27 @@ function bindAdminPanelEvents() {
     }
 
     if (action === 'update-partner-status') {
+      let values = {
+        partner_status: el.value
+      };
+
+      try {
+        const row = el.closest('tr');
+        const lead = row?.dataset?.lead ? JSON.parse(row.dataset.lead) : null;
+
+        if (lead && isRevenueRealizedPartnerStatus(lead.partner_route, el.value)) {
+          values = {
+            ...values,
+            actual_revenue: Number(lead.actual_revenue || lead.estimated_revenue || 0)
+          };
+        }
+      } catch {}
+
       adminAction({
         action: 'update',
         table: 'auto_leads',
         id,
-        values: {
-          partner_status: el.value
-        }
+        values
       }).then(() => {
         toast('Partner durumu güncellendi', 'success');
         loadAutoLeads();
