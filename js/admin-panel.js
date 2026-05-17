@@ -900,10 +900,13 @@ function openLeadDrawer(lead) {
   const notesHistory = Array.isArray(lead.notes_history) ? lead.notes_history : [];
 
   content.innerHTML = `
-    <div class="table-actions" style="margin-bottom:14px;">
-      ${lead.phone ? `<button class="btn btn-ghost btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="${whatsappUrl}">WhatsApp</button>` : ''}
+    <div class="table-actions" style="margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      ${lead.phone ? `<button class="btn btn-success btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="${whatsappUrl}">WhatsApp</button>` : ''}
       ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
+      ${['dispatch_failed','dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Partner Tekrar Gönder</button>` : ''}
       <button class="btn btn-ghost btn-sm" data-action="complete-follow-up" data-id="${lead.id}">Takibi Tamamla</button>
+      <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">Lead Sil</button>
+
       <input
         type="datetime-local"
         class="form-input"
