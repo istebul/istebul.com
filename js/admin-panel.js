@@ -775,31 +775,31 @@ async function loadAutoLeads() {
 function getPartnerStatusOptions(route) {
   const workflows = {
     insurance_partner: [
-      ['pending', 'Pending'],
-      ['dispatched', 'Dispatched'],
-      ['dispatch_failed', 'Dispatch Failed'],
-      ['dispatch_dead', 'Dispatch Dead'],
-      ['contacted', 'Contacted'],
-      ['quote_sent', 'Quote Sent'],
-      ['policy_issued', 'Policy Issued'],
+      ['pending', 'Bekliyor'],
+      ['dispatched', 'Partnere Gönderildi'],
+      ['dispatch_failed', 'Gönderim Hatası'],
+      ['dispatch_dead', 'Gönderim Durduruldu'],
+      ['contacted', 'İletişime Geçildi'],
+      ['quote_sent', 'Teklif Gönderildi'],
+      ['policy_issued', 'Poliçe Kesildi'],
       ['paid', 'Paid'],
       ['closed', 'Closed']
     ],
     dealer_partner: [
-      ['pending', 'Pending'],
-      ['dispatched', 'Dispatched'],
-      ['dispatch_failed', 'Dispatch Failed'],
-      ['dispatch_dead', 'Dispatch Dead'],
-      ['contacted', 'Contacted'],
-      ['offer_sent', 'Offer Sent'],
-      ['test_drive', 'Test Drive'],
+      ['pending', 'Bekliyor'],
+      ['dispatched', 'Partnere Gönderildi'],
+      ['dispatch_failed', 'Gönderim Hatası'],
+      ['dispatch_dead', 'Gönderim Durduruldu'],
+      ['contacted', 'İletişime Geçildi'],
+      ['offer_sent', 'Teklif Gönderildi'],
+      ['test_drive', 'Test Sürüşü'],
       ['negotiation', 'Negotiation'],
-      ['won', 'Won'],
-      ['delivered', 'Delivered'],
-      ['lost', 'Lost']
+      ['won', 'Kazanıldı'],
+      ['delivered', 'Teslim Edildi'],
+      ['lost', 'Kaybedildi']
     ],
     finance_partner: [
-      ['pending', 'Pending'],
+      ['pending', 'Bekliyor'],
       ['docs_requested', 'Docs Requested'],
       ['preapproved', 'Preapproved'],
       ['approved', 'Approved'],
@@ -807,19 +807,19 @@ function getPartnerStatusOptions(route) {
       ['closed', 'Closed']
     ],
     premium_report: [
-      ['pending', 'Pending'],
+      ['pending', 'Bekliyor'],
       ['purchased', 'Purchased'],
-      ['delivered', 'Delivered']
+      ['delivered', 'Teslim Edildi']
     ],
     general_sales: [
-      ['pending', 'Pending'],
-      ['dispatched', 'Dispatched'],
-      ['dispatch_failed', 'Dispatch Failed'],
-      ['dispatch_dead', 'Dispatch Dead'],
-      ['contacted', 'Contacted'],
-      ['quoted', 'Quoted'],
-      ['won', 'Won'],
-      ['lost', 'Lost']
+      ['pending', 'Bekliyor'],
+      ['dispatched', 'Partnere Gönderildi'],
+      ['dispatch_failed', 'Gönderim Hatası'],
+      ['dispatch_dead', 'Gönderim Durduruldu'],
+      ['contacted', 'İletişime Geçildi'],
+      ['quoted', 'Teklif Verildi'],
+      ['won', 'Kazanıldı'],
+      ['lost', 'Kaybedildi']
     ]
   };
 
