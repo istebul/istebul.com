@@ -94,14 +94,17 @@ function fuelLabel(fuel) {
 
 function renderLoading() {
   document.getElementById('auto-results').innerHTML = `
-    <div class="ai-loading">
+    <div class="ai-loading premium-loading">
       <div class="spinner"></div>
-      <h3>AI araç profilinizi analiz ediyor...</h3>
+      <p class="kicker">AI karar motoru çalışıyor</p>
+      <h3>Araç profiliniz ve toplam maliyet etkisi analiz ediliyor...</h3>
+      <p class="loading-copy">Bütçe, kullanım, yakıt tercihi, yıllık kilometre ve finansman durumunuz birlikte değerlendiriliyor.</p>
       <ul class="ai-loading-steps">
-        <li>Bütçe aralığınız ve kredi yükünüz hesaplanıyor</li>
-        <li>Toplam sahip olma maliyeti karşılaştırılıyor</li>
-        <li>Yakıt, kullanım ve ikinci el riski analiz ediliyor</li>
-        <li>Size en uygun 3 seçenek sıralanıyor</li>
+        <li>✓ İhtiyaç profiliniz oluşturuluyor</li>
+        <li>✓ Uygun araç segmentleri taranıyor</li>
+        <li>✓ Toplam sahip olma maliyeti hesaplanıyor</li>
+        <li>✓ Finansman ve kullanım riski modelleniyor</li>
+        <li>✓ Size en uygun 3 seçenek hazırlanıyor</li>
       </ul>
     </div>
   `;
@@ -135,11 +138,11 @@ function openLeadModal(type, vehicle = '') {
 
   modal.innerHTML = `
     <div class="lead-modal-card">
-      <h3>Size özel teklif hazırlayalım</h3>
-      <p>Analizinize göre kredi, sigorta ve bayi tekliflerini netleştirmek için sizi arayalım.</p>
+      <h3>Kişisel satın alma danışmanınız sizi arasın</h3>
+      <p>AI analiz sonucunuza göre kredi, sigorta ve satın alma seçeneklerini sizin için netleştirelim.</p>
       <ul class="lead-modal-benefits">
         <li>✓ En uygun kredi seçenekleri</li>
-        <li>✓ Sigorta teklifleri</li>
+        <li>✓ Size uygun finansman seçenekleri</li>
         <li>✓ Bayi fiyat avantajı</li>
       </ul>
       <form id="phone-lead-form">
@@ -152,7 +155,7 @@ function openLeadModal(type, vehicle = '') {
           <option value="afternoon">Öğleden sonra</option>
           <option value="evening">Akşam</option>
         </select>
-        <button class="btn primary" type="submit">Beni Arayın</button>
+        <button class="btn primary" type="submit">Kişisel teklifimi hazırlayın</button>
       </form>
       <button class="btn secondary" id="close-lead-modal">Kapat</button>
     </div>
@@ -192,25 +195,35 @@ function renderResults(results) {
     return;
   }
 
-  root.innerHTML = results.map(vehicle => `
-    <article>
+  root.innerHTML = results.map((vehicle, index) => `
+    <article class="premium-result-card">
       <div class="top-row">
         <div class="score">${vehicle.score}/100</div>
         <div class="confidence">AI Karar Güveni: %${vehicle.confidence}</div>
       </div>
 
+      <div class="result-rank">#${index + 1} öneri</div>
+
       <h3>${escapeHtml(vehicle.name)}</h3>
 
-      <div class="analysis-box"><strong>Neden önerildi?</strong>
+      <p class="result-summary">
+        ${vehicle.score >= 85
+          ? 'Profiliniz için güçlü eşleşme. Toplam maliyet, kullanım uyumu ve finansman açısından öne çıkıyor.'
+          : 'Profilinize uygun güçlü alternatiflerden biri. Kullanım ve bütçe dengenize göre değerlendirildi.'}
+      </p>
+
+      <div class="analysis-box">
+        <strong>Neden önerildi?</strong>
         <ul>${vehicle.reasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       </div>
 
-      <div class="risk-box"><strong>Dikkat edilmesi gerekenler</strong>
+      <div class="risk-box">
+        <strong>Dikkat edilmesi gerekenler</strong>
         <ul>${vehicle.risks.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       </div>
 
       <div class="cost">
-        <p>${formatter.format(vehicle.costs.total)} ₺</p>
+        <p><strong>12 aylık tahmini maliyet:</strong> ${formatter.format(vehicle.costs.total)} ₺</p>
         <p>Yakıt: ${formatter.format(vehicle.costs.fuel)} ₺</p>
         <p>Sigorta: ${formatter.format(vehicle.costs.insurance)} ₺</p>
         <p>Bakım: ${formatter.format(vehicle.costs.maintenance)} ₺</p>
@@ -218,22 +231,21 @@ function renderResults(results) {
 
       ${vehicle.score >= 85 ? `
         <div class="auto-hot-banner">
-          🔥 Bu araç profiliniz için güçlü eşleşme. Bugün özel teklif alabilirsiniz.
+          🔥 Bugün profilinize uygun güçlü fırsat olabilir.
         </div>
       ` : ''}
 
       <div class="cta-row">
         <button class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
-          Uzmanla hemen görüş
+          Kişisel teklif al
         </button>
+
         <button class="btn secondary auto-interest-btn" data-interest="finance" data-vehicle="${escapeHtml(vehicle.name)}">
-          Finansman
+          Finansman planla
         </button>
-        <button class="btn secondary auto-interest-btn" data-interest="insurance" data-vehicle="${escapeHtml(vehicle.name)}">
-          Sigorta
-        </button>
+
         <button class="btn secondary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
-          WhatsApp
+          Uzmana sor
         </button>
       </div>
     </article>
