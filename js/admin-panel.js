@@ -659,7 +659,15 @@ async function loadAutoLeads() {
   todayEnd.setHours(23, 59, 59, 999);
 
   const filteredData = data.filter((lead) => {
-    const matchesStatus = !statusFilter || lead.status === statusFilter;
+    const matchesStatus =
+      !statusFilter ||
+      (statusFilter === 'hot_only' && ['hot', 'very_hot'].includes(lead.priority)) ||
+      (statusFilter === 'dispatch_failed' && lead.partner_status === 'dispatch_failed') ||
+      (statusFilter === 'dispatch_dead' && lead.partner_status === 'dispatch_dead') ||
+      (statusFilter === 'dispatched' && lead.partner_status === 'dispatched') ||
+      (statusFilter === 'won_only' && lead.partner_status === 'won') ||
+      (statusFilter === 'hide_test' && lead.status !== 'test_spam') ||
+      lead.status === statusFilter;
     const hasNotes = !!(lead.notes || '').trim();
     const matchesNotes = !notesOnly || hasNotes;
     const haystack = [
