@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
         posts: ["is_published"],
         listings: ["is_featured"],
         profiles: ["role", "is_banned"],
-        auto_leads: ["status", "notes", "follow_up_at", "follow_up_done", "partner_status", "estimated_revenue", "actual_revenue", "commission_notes"],
+        auto_leads: ["status", "notes", "follow_up_at", "follow_up_done", "partner_status", "estimated_revenue", "actual_revenue", "commission_notes", "dispatch_retry_count", "last_dispatch_at", "next_retry_at", "last_dispatch_error"],
       };
 
       const keys = Object.keys(values);

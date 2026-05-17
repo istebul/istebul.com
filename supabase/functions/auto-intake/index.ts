@@ -100,6 +100,18 @@ function isTestLead(phone?: unknown) {
   return TEST_PHONES.has(clean);
 }
 
+
+function getNextRetryTime(retryCount: number) {
+  const now = new Date();
+
+  if (retryCount <= 1) now.setMinutes(now.getMinutes() + 15);
+  else if (retryCount == 2) now.setHours(now.getHours() + 1);
+  else if (retryCount == 3) now.setHours(now.getHours() + 6);
+  else now.setDate(now.getDate() + 1);
+
+  return now.toISOString();
+}
+
 function getAutoFollowUp(priority: string) {
   const now = new Date();
 
@@ -348,6 +360,10 @@ Deno.serve(async (req) => {
       priority: scoring.priority,
       partner_route: getPartnerRoute(form),
       partner_status: "pending",
+      dispatch_retry_count: 0,
+      last_dispatch_at: null,
+      next_retry_at: null,
+      last_dispatch_error: null,
       estimated_revenue: estimateCommission(getPartnerRoute(form), scoring.score),
       follow_up_at: getAutoFollowUp(scoring.priority),
       follow_up_done: false,
@@ -386,10 +402,28 @@ Deno.serve(async (req) => {
       await notifyTelegramLead(payload);
       const dispatchStatus = await dispatchPartnerLead(payload);
 
-      if (dispatchStatus === "dispatched" || dispatchStatus === "dispatch_failed") {
+      if (dispatchStatus === "dispatched") {
         await adminClient
           .from("auto_leads")
-          .update({ partner_status: dispatchStatus })
+          .update({
+            partner_status: "dispatched",
+            last_dispatch_at: new Date().toISOString(),
+            next_retry_at: null,
+            last_dispatch_error: null
+          })
+          .eq("phone", phone);
+      }
+
+      if (dispatchStatus === "dispatch_failed") {
+        await adminClient
+          .from("auto_leads")
+          .update({
+            partner_status: "dispatch_failed",
+            dispatch_retry_count: 1,
+            last_dispatch_at: new Date().toISOString(),
+            next_retry_at: getNextRetryTime(1),
+            last_dispatch_error: "partner webhook failed"
+          })
           .eq("phone", phone);
       }
     } catch {
