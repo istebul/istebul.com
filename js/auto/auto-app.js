@@ -445,7 +445,13 @@ function advanceWizard() {
   }
 
   if (wizardState[step.key] === 'custom') {
-    const rawCustomValue = String(wizardState[`${step.key}_custom`] || '').replace(/\D/g, '');
+    const visibleCustomInput = wizard?.querySelector('[data-wizard-custom]');
+    const rawCustomValue = String(
+      visibleCustomInput?.value ||
+      wizardState[`${step.key}_custom`] ||
+      ''
+    ).replace(/\D/g, '');
+
     const numericValue = Number(rawCustomValue);
 
     if (!rawCustomValue || Number.isNaN(numericValue)) {
@@ -459,6 +465,8 @@ function advanceWizard() {
         return;
       }
     }
+
+    wizardState[`${step.key}_custom`] = rawCustomValue;
   }
 
   syncWizardToForm();
