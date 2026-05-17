@@ -713,19 +713,7 @@ async function loadAutoLeads() {
             }">${lead.priority || 'cold'}</span></td>
 
             <td>${lead.partner_route || '—'}</td>
-            <td>
-<select
-  class="status-select"
-  data-action="update-partner-status"
-  data-id="${lead.id}"
->
-  <option value="pending" ${lead.partner_status === 'pending' ? 'selected' : ''}>Pending</option>
-  <option value="contacted" ${lead.partner_status === 'contacted' ? 'selected' : ''}>Contacted</option>
-  <option value="quoted" ${lead.partner_status === 'quoted' ? 'selected' : ''}>Quoted</option>
-  <option value="won" ${lead.partner_status === 'won' ? 'selected' : ''}>Won</option>
-  <option value="lost" ${lead.partner_status === 'lost' ? 'selected' : ''}>Lost</option>
-</select>
-</td>
+            <td>${renderPartnerStatusSelect(lead)}</td>
 <td>
   <input class="form-input" data-action="update-estimated-revenue" data-id="${lead.id}" value="${lead.estimated_revenue || ''}" placeholder="₺">
 </td>
@@ -782,6 +770,68 @@ async function loadAutoLeads() {
   `;
 }
 
+
+function getPartnerStatusOptions(route) {
+  const workflows = {
+    insurance_partner: [
+      ['pending', 'Pending'],
+      ['contacted', 'Contacted'],
+      ['quote_sent', 'Quote Sent'],
+      ['policy_issued', 'Policy Issued'],
+      ['paid', 'Paid'],
+      ['closed', 'Closed']
+    ],
+    dealer_partner: [
+      ['pending', 'Pending'],
+      ['contacted', 'Contacted'],
+      ['offer_sent', 'Offer Sent'],
+      ['test_drive', 'Test Drive'],
+      ['negotiation', 'Negotiation'],
+      ['won', 'Won'],
+      ['delivered', 'Delivered'],
+      ['lost', 'Lost']
+    ],
+    finance_partner: [
+      ['pending', 'Pending'],
+      ['docs_requested', 'Docs Requested'],
+      ['preapproved', 'Preapproved'],
+      ['approved', 'Approved'],
+      ['funded', 'Funded'],
+      ['closed', 'Closed']
+    ],
+    premium_report: [
+      ['pending', 'Pending'],
+      ['purchased', 'Purchased'],
+      ['delivered', 'Delivered']
+    ],
+    general_sales: [
+      ['pending', 'Pending'],
+      ['contacted', 'Contacted'],
+      ['quoted', 'Quoted'],
+      ['won', 'Won'],
+      ['lost', 'Lost']
+    ]
+  };
+
+  return workflows[route] || workflows.general_sales;
+}
+
+function renderPartnerStatusSelect(lead) {
+  const options = getPartnerStatusOptions(lead.partner_route)
+    .map(([value, label]) =>
+      `<option value="${value}" ${lead.partner_status === value ? 'selected' : ''}>${label}</option>`
+    )
+    .join('');
+
+  return `
+<select
+  class="status-select"
+  data-action="update-partner-status"
+  data-id="${lead.id}"
+>
+  ${options}
+</select>`;
+}
 
 function openLeadDrawer(lead) {
   const drawer = document.getElementById('lead-drawer');
