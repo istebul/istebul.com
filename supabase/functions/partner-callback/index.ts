@@ -69,12 +69,28 @@ Deno.serve(async (req) => {
     values.status = "lost";
   }
 
-  let query = sb.from("auto_leads").update(values);
+  let targetId = leadId;
 
-  if (leadId) query = query.eq("id", leadId);
-  else query = query.eq("phone", phone);
+  if (!targetId && phone) {
+    const { data: latestLead, error: lookupError } = await sb
+      .from("auto_leads")
+      .select("id")
+      .eq("phone", phone)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  const { data, error } = await query.select("id, partner_status, status, actual_revenue");
+    if (lookupError) return json({ error: lookupError.message }, 500);
+    if (!latestLead?.id) return json({ error: "Lead not found" }, 404);
+
+    targetId = latestLead.id;
+  }
+
+  const { data, error } = await sb
+    .from("auto_leads")
+    .update(values)
+    .eq("id", targetId)
+    .select("id, partner_status, status, actual_revenue");
 
   if (error) return json({ error: error.message }, 500);
   if (!data?.length) return json({ error: "Lead not found" }, 404);
