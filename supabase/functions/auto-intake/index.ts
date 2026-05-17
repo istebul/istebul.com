@@ -89,6 +89,17 @@ function calculateLeadScore(form: Record<string, unknown>) {
 }
 
 
+const TEST_PHONES = new Set([
+  "905551112233",
+  "905551111111",
+  "905559998888"
+]);
+
+function isTestLead(phone?: unknown) {
+  const clean = String(phone || "").replace(/\D/g, "");
+  return TEST_PHONES.has(clean);
+}
+
 function getAutoFollowUp(priority: string) {
   const now = new Date();
 
@@ -150,6 +161,7 @@ async function notifyTelegramLead(payload: Record<string, unknown>) {
   const score = Number(payload.lead_score || 0);
   const priority = String(payload.priority || "");
 
+  if (isTestLead(payload.phone)) return;
   if (priority !== "hot" && score < 80) return;
 
   const text = `
@@ -312,7 +324,7 @@ Deno.serve(async (req) => {
       estimated_revenue: estimateCommission(getPartnerRoute(form), scoring.score),
       follow_up_at: getAutoFollowUp(scoring.priority),
       follow_up_done: false,
-      status: "new",
+      status: isTestLead(phone) ? "test_spam" : "new",
       source: "auto",
     };
 
