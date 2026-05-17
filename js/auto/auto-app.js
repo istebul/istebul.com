@@ -373,6 +373,13 @@ function renderWizard() {
   const progress = Math.round(((wizardIndex + 1) / wizardSteps.length) * 100);
   const selected = wizardState[step.key];
   const isCustom = selected === 'custom';
+  const canProceed = Boolean(
+    selected &&
+    (
+      selected !== 'custom' ||
+      (wizardState[`${step.key}_custom`] && String(wizardState[`${step.key}_custom`]).trim())
+    )
+  );
   const customValue = wizardState[`${step.key}_custom`] || '';
 
   wizard.innerHTML = `
@@ -420,7 +427,7 @@ function renderWizard() {
 
     <div class="wizard-actions">
       <button type="button" class="btn secondary" data-wizard-back ${wizardIndex === 0 ? 'disabled' : ''}>Geri</button>
-      <button type="button" class="btn primary" data-wizard-next ${selected ? '' : 'disabled'}>
+      <button type="button" class="btn primary" data-wizard-next ${canProceed ? '' : 'disabled'}>
         ${wizardIndex === wizardSteps.length - 1 ? 'AI analizimi başlat' : 'Devam et'}
       </button>
     </div>
