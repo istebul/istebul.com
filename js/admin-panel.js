@@ -703,22 +703,17 @@ async function loadAutoLeads() {
     <table class="table">
       <thead>
         <tr>
-          <th>Email</th>
           <th>Telefon</th>
           <th>Bütçe</th>
           <th>Skor</th>
           <th>Öncelik</th>
-          <th>Partner</th>
           <th>Partner Durumu</th>
           <th>Retry</th>
           <th>Son Hata</th>
-          <th>Sonraki Deneme</th>
           <th>Tahmini Gelir</th>
           <th>Gerçek Gelir</th>
           <th>Durum</th>
-          <th>Not</th>
           <th>Takip</th>
-          <th>Tarih</th>
           <th></th>
         </tr>
       </thead>
@@ -728,7 +723,6 @@ async function loadAutoLeads() {
             class="${lead.follow_up_at && !lead.follow_up_done && new Date(lead.follow_up_at) < new Date() ? 'lead-overdue' : ''}"
             data-action="view-auto-lead"
             data-lead='${safeAttr(JSON.stringify(lead))}'>
-            <td><strong>${lead.email || '—'}</strong></td>
             <td>${lead.phone || '—'}</td>
             <td>${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</td>
             <td><strong>${lead.lead_score || 0}</strong></td>
@@ -738,12 +732,9 @@ async function loadAutoLeads() {
               lead.priority === 'warm' ? 'badge-blue' :
               'badge-green'
             }">${lead.priority || 'cold'}</span></td>
-
-            <td>${lead.partner_route || '—'}</td>
             <td>${renderPartnerStatusSelect(lead)}</td>
 <td>${lead.dispatch_retry_count || 0}</td>
 <td title="${safeAttr(lead.last_dispatch_error || '')}">${escapeHtml(formatDispatchError(lead.last_dispatch_error))}</td>
-<td>${formatShortDate(lead.next_retry_at)}</td>
 <td>
   <input class="form-input" data-action="update-estimated-revenue" data-id="${lead.id}" value="${lead.estimated_revenue || ''}" placeholder="₺">
 </td>
@@ -766,16 +757,6 @@ async function loadAutoLeads() {
               </select>
             </td>
             <td>
-              <input
-                type="text"
-                class="form-input"
-                placeholder="Not ekle..."
-                value="${safeAttr(lead.notes || '')}"
-                data-action="update-auto-notes"
-                data-id="${lead.id}"
-              />
-            </td>
-            <td>
               ${(() => {
                 const followLabel = formatFollowUpLabel(lead);
                 const badgeClass = getFollowUpBadgeClass(followLabel);
@@ -784,11 +765,10 @@ async function loadAutoLeads() {
                   : followLabel;
               })()}
             </td>
-            <td>${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</td>
             <td>
               <div class="table-actions">
                 ${lead.phone ? `<a class="btn btn-success btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}?text=Merhaba%2C%20isteBul%20Auto%20talebinizi%20gördük.%20Size%20uygun%20teklifleri%20hazırlayabiliriz." target="_blank" rel="noopener">WhatsApp</a>` : ''}
-                ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Tekrar Gönder</button>` : ''}
+                ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Tekrar</button>` : ''}
                 <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
                   Sil
                 </button>
