@@ -168,6 +168,7 @@ function openLeadModal(type, vehicle = '') {
     const phone = leadData.get('phone');
     const selectedVehicle = leadData.get('vehicle') || vehicle;
 
+    trackAutoEvent('auto_modal_submitted', { phone, interest_type: type, vehicle: selectedVehicle });
     trackAutoEvent('auto_lead_submit', { phone, interest_type: type, vehicle: selectedVehicle });
 
     try {
@@ -215,6 +216,12 @@ function renderResults(results) {
         <p>Bakım: ${formatter.format(vehicle.costs.maintenance)} ₺</p>
       </div>
 
+      ${vehicle.score >= 85 ? `
+        <div class="auto-hot-banner">
+          🔥 Bu araç profiliniz için güçlü eşleşme. Bugün özel teklif alabilirsiniz.
+        </div>
+      ` : ''}
+
       <div class="cta-row">
         <button class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
           Uzmanla hemen görüş
@@ -244,8 +251,17 @@ document.querySelectorAll('#gelir .btn.secondary').forEach((btn, index) => {
 trackAutoEvent('auto_page_view');
 
 const form = document.getElementById('auto-form');
+let autoFormStarted = false;
+
+form.addEventListener('input', () => {
+  if (!autoFormStarted) {
+    autoFormStarted = true;
+    trackAutoEvent('auto_form_started');
+  }
+});
 
 form.addEventListener('submit', (event) => {
+  trackAutoEvent('auto_form_submitted');
   event.preventDefault();
 
   const formData = readForm(form);
@@ -257,6 +273,7 @@ form.addEventListener('submit', (event) => {
 
   setTimeout(() => {
     document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
+    trackAutoEvent('auto_results_rendered', { count: results.length });
     renderResults(results);
     trackUniqueAutoEvent('auto_results_view', formData, 'results');
   }, 2200);
