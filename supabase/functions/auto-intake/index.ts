@@ -96,6 +96,17 @@ const TEST_PHONES = new Set([
   "905559998888"
 ]);
 
+function isJunkPhone(phone?: unknown) {
+  const clean = String(phone || "").replace(/\D/g, "");
+
+  if (!clean) return true;
+  if (TEST_PHONES.has(clean)) return true;
+  if (/^(\d)\1{9,}$/.test(clean)) return true;
+  if (clean.includes("123456") || clean.includes("000000")) return true;
+
+  return false;
+}
+
 function isTestLead(phone?: unknown) {
   const clean = String(phone || "").replace(/\D/g, "");
   return TEST_PHONES.has(clean);
@@ -364,39 +375,63 @@ Deno.serve(async (req) => {
       return json({ error: "Too many requests" }, 429, origin);
     }
 
-    if ((email && !isValidEmail(email)) || phone.length < 10 || phone.length > 15) {
+    if ((email && !isValidEmail(email)) || phone.length < 10 || phone.length > 15 || isJunkPhone(phone)) {
       return json({ error: "Invalid contact information" }, 400, origin);
     }
 
+    const normalizedEmail = isValidEmail(email) ? String(email).trim().toLowerCase() : null;
+
     if (!isTestLead(phone)) {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const sessionId = String(metadata.session_id || "").trim();
 
-      const { data: recentLead, error: recentLeadError } = await adminClient
+      const { data: recentPhoneLead, error: recentPhoneLeadError } = await adminClient
         .from("auto_leads")
         .select("id, created_at")
         .eq("phone", phone)
         .gte("created_at", since)
         .maybeSingle();
 
-      if (recentLeadError) {
-        return json({ error: recentLeadError.message }, 500, origin);
+      if (recentPhoneLeadError) {
+        return json({ error: recentPhoneLeadError.message }, 500, origin);
       }
 
-      if (recentLead) {
-        return json({ ok: true, duplicate: true }, 200, origin);
+      if (recentPhoneLead) {
+        return json({ ok: true, duplicate: true, reason: "phone_24h" }, 200, origin);
+      }
+
+      if (normalizedEmail) {
+        const { data: recentEmailLead, error: recentEmailLeadError } = await adminClient
+          .from("auto_leads")
+          .select("id, created_at")
+          .eq("email", normalizedEmail)
+          .gte("created_at", since)
+          .maybeSingle();
+
+        if (recentEmailLeadError) {
+          return json({ error: recentEmailLeadError.message }, 500, origin);
+        }
+
+        if (recentEmailLead) {
+          return json({ ok: true, duplicate: true, reason: "email_24h" }, 200, origin);
+        }
+      }
+
+      if (sessionId) {
+        const allowedSession = await checkRateLimit(adminClient, `lead_session:${sessionId}`, 1, 10 * 60 * 1000);
+        if (!allowedSession) {
+          return json({ ok: true, duplicate: true, reason: "session_cooldown" }, 200, origin);
+        }
       }
     }
 
     const form = body.formData && typeof body.formData === "object" ? body.formData : metadata;
-
     const honeypot = String(form.website || form.company || form.url || "").trim();
     if (honeypot) {
       return json({ ok: true, spam: true }, 200, origin);
     }
 
     const scoring = calculateLeadScore(form);
-
-    const normalizedEmail = isValidEmail(email) ? String(email).trim().toLowerCase() : null;
 
     const payload = {
       email: normalizedEmail,
