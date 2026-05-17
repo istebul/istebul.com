@@ -578,6 +578,22 @@ async function loadAutoAnalytics() {
 
 
 
+function formatShortDate(value) {
+  if (!value) return '—';
+  return new Date(value).toLocaleString('tr-TR', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function formatDispatchError(value) {
+  if (!value) return '—';
+  const text = String(value);
+  return text.length > 34 ? text.slice(0, 34) + '…' : text;
+}
+
 function formatFollowUpLabel(lead) {
   if (lead.follow_up_done) return 'Tamamlandı';
   if (!lead.follow_up_at) return '—';
@@ -618,7 +634,7 @@ async function loadAutoLeads() {
     .select('*')
     .order('lead_score', { ascending: false })
     .order('created_at', { ascending: false })
-    .limit(200);
+    .limit(1000);
 
   const el = document.getElementById('auto-leads-list');
 
@@ -686,6 +702,9 @@ async function loadAutoLeads() {
           <th>Öncelik</th>
           <th>Partner</th>
           <th>Partner Durumu</th>
+          <th>Retry</th>
+          <th>Son Hata</th>
+          <th>Sonraki Deneme</th>
           <th>Tahmini Gelir</th>
           <th>Gerçek Gelir</th>
           <th>Durum</th>
@@ -714,6 +733,9 @@ async function loadAutoLeads() {
 
             <td>${lead.partner_route || '—'}</td>
             <td>${renderPartnerStatusSelect(lead)}</td>
+<td>${lead.dispatch_retry_count || 0}</td>
+<td title="${safeAttr(lead.last_dispatch_error || '')}">${escapeHtml(formatDispatchError(lead.last_dispatch_error))}</td>
+<td>${formatShortDate(lead.next_retry_at)}</td>
 <td>
   <input class="form-input" data-action="update-estimated-revenue" data-id="${lead.id}" value="${lead.estimated_revenue || ''}" placeholder="₺">
 </td>
