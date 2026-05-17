@@ -260,6 +260,186 @@ document.querySelectorAll('#gelir .btn.secondary').forEach((btn, index) => {
   btn.classList.add('auto-interest-btn');
 });
 
+
+const wizard = document.getElementById('auto-wizard');
+
+const wizardSteps = [
+  {
+    key: 'budget',
+    title: 'Toplam araç bütçeniz nedir?',
+    description: 'Satın alma ve finansman dengenizi doğru kurmak için yaklaşık bütçenizi seçin.',
+    options: [
+      { label: '500 bin TL altı', value: '500000', note: 'Ekonomik başlangıç seviyesi' },
+      { label: '500 bin – 1 milyon TL', value: '900000', note: 'Ulaşılabilir güçlü seçenekler' },
+      { label: '1 – 2 milyon TL', value: '1500000', note: 'Dengeli ve geniş pazar' },
+      { label: '2 milyon TL+', value: '2500000', note: 'Premium seçenekler' }
+    ]
+  },
+  {
+    key: 'usage',
+    title: 'Aracı en çok nasıl kullanacaksınız?',
+    description: 'AI karar motoru kullanım senaryonuza göre segment ve maliyet dengesini ayarlar.',
+    options: [
+      { label: 'Aile', value: 'family', note: 'Geniş iç hacim ve güvenlik' },
+      { label: 'Şehir içi', value: 'city', note: 'Yakıt ve park kolaylığı' },
+      { label: 'Uzun yol', value: 'long', note: 'Konfor ve düşük tüketim' },
+      { label: 'İş', value: 'business', note: 'Prestij ve kullanım verimliliği' }
+    ]
+  },
+  {
+    key: 'body',
+    title: 'Hangi araç tipi size daha yakın?',
+    description: 'Kararsızsanız SUV seçebilirsiniz; AI diğer sinyallerle denge kurar.',
+    options: [
+      { label: 'SUV', value: 'suv', note: 'Yüksek sürüş ve aile kullanımı' },
+      { label: 'Sedan', value: 'sedan', note: 'Konfor ve uzun yol dengesi' },
+      { label: 'Hatchback', value: 'hatchback', note: 'Şehir içi pratiklik' }
+    ]
+  },
+  {
+    key: 'fuel',
+    title: 'Yakıt tercihiniz nedir?',
+    description: 'Yakıt tercihi toplam sahip olma maliyetini ciddi şekilde etkiler.',
+    options: [
+      { label: 'Fark etmez', value: 'any', note: 'AI en dengeli seçeneği bulsun' },
+      { label: 'Hibrit', value: 'hybrid', note: 'Şehir içi tasarruf odağı' },
+      { label: 'Elektrikli', value: 'electric', note: 'Düşük kullanım maliyeti' },
+      { label: 'Benzinli', value: 'gasoline', note: 'Geniş seçenek ve servis ağı' },
+      { label: 'Dizel', value: 'diesel', note: 'Uzun yol ve yüksek kilometre' }
+    ]
+  },
+  {
+    key: 'km',
+    title: 'Yılda yaklaşık kaç km yaparsınız?',
+    description: 'Kilometre arttıkça yakıt, bakım ve değer kaybı daha kritik hale gelir.',
+    options: [
+      { label: '10.000 km altı', value: '8000', note: 'Düşük kullanım' },
+      { label: '10.000 – 20.000 km', value: '15000', note: 'Ortalama kullanım' },
+      { label: '20.000 – 35.000 km', value: '28000', note: 'Yoğun kullanım' },
+      { label: '35.000 km+', value: '40000', note: 'Profesyonel / yüksek kullanım' }
+    ]
+  },
+  {
+    key: 'loan',
+    title: 'Finansman kullanacak mısınız?',
+    description: 'Kredi tercihi aylık yük ve toplam maliyet analizini etkiler.',
+    options: [
+      { label: 'Evet', value: 'yes', note: 'Finansman etkisi dahil edilsin' },
+      { label: 'Hayır', value: 'no', note: 'Peşin alım dengesiyle analiz edilsin' }
+    ]
+  }
+];
+
+const wizardState = {};
+let wizardIndex = 0;
+
+function syncWizardToForm() {
+  Object.entries(wizardState).forEach(([key, value]) => {
+    const input = form.elements[key];
+    if (input) input.value = value;
+  });
+}
+
+function renderWizard() {
+  if (!wizard) return;
+
+  const step = wizardSteps[wizardIndex];
+  const progress = Math.round(((wizardIndex + 1) / wizardSteps.length) * 100);
+  const selected = wizardState[step.key];
+
+  wizard.innerHTML = `
+    <div class="wizard-progress">
+      <div class="wizard-progress-text">
+        <span>Adım ${wizardIndex + 1}/${wizardSteps.length}</span>
+        <span>%${progress} tamamlandı</span>
+      </div>
+      <div class="wizard-progress-bar">
+        <div class="wizard-progress-fill" style="width:${progress}%"></div>
+      </div>
+    </div>
+
+    <div class="wizard-question">
+      <p class="kicker">AI karar danışmanı</p>
+      <h3>${escapeHtml(step.title)}</h3>
+      <p>${escapeHtml(step.description)}</p>
+    </div>
+
+    <div class="wizard-options">
+      ${step.options.map(option => `
+        <button type="button" class="wizard-option ${selected === option.value ? 'is-selected' : ''}" data-wizard-value="${escapeHtml(option.value)}">
+          ${escapeHtml(option.label)}
+          <small>${escapeHtml(option.note)}</small>
+        </button>
+      `).join('')}
+    </div>
+
+    <div class="wizard-actions">
+      <button type="button" class="btn secondary" data-wizard-back ${wizardIndex === 0 ? 'disabled' : ''}>Geri</button>
+      <button type="button" class="btn primary" data-wizard-next>
+        ${wizardIndex === wizardSteps.length - 1 ? 'AI analizimi başlat' : 'Devam et'}
+      </button>
+    </div>
+  `;
+}
+
+function advanceWizard() {
+  const step = wizardSteps[wizardIndex];
+
+  if (!wizardState[step.key]) {
+    const firstOption = step.options[0];
+    wizardState[step.key] = firstOption.value;
+  }
+
+  syncWizardToForm();
+
+  if (wizardIndex < wizardSteps.length - 1) {
+    wizardIndex += 1;
+    renderWizard();
+    trackAutoEvent('auto_wizard_step', {
+      step: wizardIndex + 1,
+      key: wizardSteps[wizardIndex].key
+    });
+    return;
+  }
+
+  form.requestSubmit();
+}
+
+if (wizard) {
+  renderWizard();
+
+  wizard.addEventListener('click', (event) => {
+    const option = event.target.closest('.wizard-option');
+    const back = event.target.closest('[data-wizard-back]');
+    const next = event.target.closest('[data-wizard-next]');
+
+    if (option) {
+      const step = wizardSteps[wizardIndex];
+      wizardState[step.key] = option.dataset.wizardValue;
+      syncWizardToForm();
+      renderWizard();
+
+      if (!autoFormStarted) {
+        autoFormStarted = true;
+        trackAutoEvent('auto_form_started');
+      }
+
+      return;
+    }
+
+    if (back && wizardIndex > 0) {
+      wizardIndex -= 1;
+      renderWizard();
+      return;
+    }
+
+    if (next) {
+      advanceWizard();
+    }
+  });
+}
+
+
 trackAutoEvent('auto_page_view');
 
 const form = document.getElementById('auto-form');
