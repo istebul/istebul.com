@@ -340,6 +340,25 @@ Deno.serve(async (req) => {
       return json({ error: "Invalid contact information" }, 400, origin);
     }
 
+    if (!isTestLead(phone)) {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: recentLead, error: recentLeadError } = await adminClient
+        .from("auto_leads")
+        .select("id, created_at")
+        .eq("phone", phone)
+        .gte("created_at", since)
+        .maybeSingle();
+
+      if (recentLeadError) {
+        return json({ error: recentLeadError.message }, 500, origin);
+      }
+
+      if (recentLead) {
+        return json({ ok: true, duplicate: true }, 200, origin);
+      }
+    }
+
     const form = body.formData && typeof body.formData === "object" ? body.formData : metadata;
     const scoring = calculateLeadScore(form);
 
