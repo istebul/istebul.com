@@ -1,0 +1,18 @@
+name: Partner Retry
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Supabase partner retry
+        run: |
+          curl -fsS -X POST "$PARTNER_RETRY_URL" \
+            -H "x-retry-secret: $PARTNER_RETRY_SECRET"
+        env:
+          PARTNER_RETRY_URL: ${{ secrets.PARTNER_RETRY_URL }}
+          PARTNER_RETRY_SECRET: ${{ secrets.PARTNER_RETRY_SECRET }}
