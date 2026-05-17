@@ -912,6 +912,8 @@ function openLeadDrawer(lead) {
       ${lead.phone ? `<button class="btn btn-success btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="${whatsappUrl}">WhatsApp</button>` : ''}
       ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
       ${['dispatch_failed','dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Partner Tekrar Gönder</button>` : ''}
+      <button class="btn btn-success btn-sm" data-action="simulate-partner-won" data-id="${lead.id}" data-phone="${lead.phone || ''}">Partner Won Test</button>
+      <button class="btn btn-danger btn-sm" data-action="simulate-partner-lost" data-id="${lead.id}" data-phone="${lead.phone || ''}">Partner Lost Test</button>
       <button class="btn btn-ghost btn-sm" data-action="complete-follow-up" data-id="${lead.id}">Takibi Tamamla</button>
       <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">Lead Sil</button>
 
@@ -1257,6 +1259,48 @@ function bindAdminPanelEvents() {
     }
 
     
+
+    if (action === 'simulate-partner-won' || action === 'simulate-partner-lost') {
+      const ANON = window.__env?.SUPABASE_ANON_KEY;
+      const status = action === 'simulate-partner-won' ? 'won' : 'lost';
+      const revenue = action === 'simulate-partner-won' ? 5000 : 0;
+
+      const secret = prompt('Partner callback secret girin');
+      if (!secret || !ANON) {
+        toast('Secret veya env eksik', 'error');
+        return;
+      }
+
+      fetch('https://hjfrcdstbyonmgatgwcc.supabase.co/functions/v1/partner-callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: ANON,
+          Authorization: `Bearer ${ANON}`,
+          'x-partner-callback-secret': secret
+        },
+        body: JSON.stringify({
+          lead_id: id,
+          partner_status: status,
+          actual_revenue: revenue,
+          notes: 'admin callback simulation'
+        })
+      })
+      .then(r => r.json())
+      .then((res) => {
+        if (res?.ok) {
+          toast('Partner callback test başarılı', 'success');
+          loadAutoLeads();
+          loadAutoAnalytics();
+        } else {
+          toast(res?.error || 'Callback başarısız', 'error');
+        }
+      })
+      .catch(() => toast('Callback hatası', 'error'));
+
+      return;
+    }
+
     if (action === 'retry-dispatch') {
       adminAction({
         action: 'update',
