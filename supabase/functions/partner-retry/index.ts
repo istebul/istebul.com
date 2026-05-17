@@ -72,27 +72,31 @@ Deno.serve(async (req) => {
           .eq("id", lead.id);
       } else {
         const retry = (lead.dispatch_retry_count || 0) + 1;
+        const isDead = retry >= 5;
 
         await sb
           .from("auto_leads")
           .update({
+            partner_status: isDead ? "dispatch_dead" : "dispatch_failed",
             dispatch_retry_count: retry,
             last_dispatch_at: new Date().toISOString(),
-            next_retry_at: getNextRetryTime(retry),
-            last_dispatch_error: "webhook returned non-200"
+            next_retry_at: isDead ? null : getNextRetryTime(retry),
+            last_dispatch_error: isDead ? "max retry reached" : "webhook returned non-200"
           })
           .eq("id", lead.id);
       }
     } catch {
       const retry = (lead.dispatch_retry_count || 0) + 1;
+      const isDead = retry >= 5;
 
       await sb
         .from("auto_leads")
         .update({
+          partner_status: isDead ? "dispatch_dead" : "dispatch_failed",
           dispatch_retry_count: retry,
           last_dispatch_at: new Date().toISOString(),
-          next_retry_at: getNextRetryTime(retry),
-          last_dispatch_error: "network exception"
+          next_retry_at: isDead ? null : getNextRetryTime(retry),
+          last_dispatch_error: isDead ? "max retry reached" : "network exception"
         })
         .eq("id", lead.id);
     }
