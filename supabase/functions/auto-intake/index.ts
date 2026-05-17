@@ -122,6 +122,35 @@ function getPartnerRoute(form: Record<string, unknown>) {
   return "general_sales";
 }
 
+async function notifyTelegramLead(payload: Record<string, unknown>) {
+  const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
+  const chatId = Deno.env.get("TELEGRAM_CHAT_ID");
+
+  if (!token || !chatId) return;
+
+  const text = `
+🔥 Yeni Lead
+
+📞 ${payload.phone || "-"}
+📧 ${payload.email || "-"}
+🚗 ${payload.vehicle || "-"}
+💰 Bütçe: ${payload.budget || "-"} ₺
+🎯 Skor: ${payload.lead_score || 0}
+🔥 Öncelik: ${payload.priority || "-"}
+🤝 Partner: ${payload.partner_route || "-"}
+`.trim();
+
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text
+    })
+  });
+}
+
+
 function getClientIp(req: Request) {
   return req.headers.get("cf-connecting-ip") || "unknown";
 }
@@ -285,6 +314,12 @@ Deno.serve(async (req) => {
     if (!phoneUpdate.data?.length) {
       const { error: insertError } = await adminClient.from("auto_leads").insert(payload);
       if (insertError) return json({ error: insertError.message }, 500, origin);
+    }
+
+    try {
+      await notifyTelegramLead(payload);
+    } catch {
+      // Notification failure must not block lead capture.
     }
 
     return json({ ok: true }, 200, origin);
