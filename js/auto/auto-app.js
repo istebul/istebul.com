@@ -484,7 +484,11 @@ if (wizard) {
     const step = wizardSteps[wizardIndex];
     wizardState[`${step.key}_custom`] = customInput.value.trim();
     syncWizardToForm();
-    renderWizard();
+
+    const nextButton = wizard.querySelector('[data-wizard-next]');
+    if (nextButton) {
+      nextButton.disabled = !String(customInput.value || '').trim();
+    }
   });
 
   wizard.addEventListener('click', (event) => {
