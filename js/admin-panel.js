@@ -1201,9 +1201,12 @@ function bindAdminPanelEvents() {
         const lead = row?.dataset?.lead ? JSON.parse(row.dataset.lead) : null;
 
         if (lead && isRevenueRealizedPartnerStatus(lead.partner_route, el.value)) {
+          const estimatedInput = row?.querySelector('[data-action="update-estimated-revenue"]');
+          const estimatedRevenue = Number(estimatedInput?.value || lead.estimated_revenue || 0);
+
           values = {
             ...values,
-            actual_revenue: Number(lead.actual_revenue || lead.estimated_revenue || 0)
+            actual_revenue: estimatedRevenue
           };
         }
       } catch {}
