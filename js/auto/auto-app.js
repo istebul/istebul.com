@@ -504,6 +504,7 @@ if (wizard) {
     }
 
     if (next) {
+      if (next.disabled) return;
       advanceWizard();
     }
   });
