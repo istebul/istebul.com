@@ -390,7 +390,12 @@ async function loadAutoAnalytics() {
 
   const labels = {
     auto_page_view: 'Auto sayfa ziyareti',
+    auto_form_started: 'Form başladı',
+    auto_form_submitted: 'Form gönderildi',
     auto_analysis_started: 'Analiz başlatıldı',
+    auto_results_rendered: 'Sonuç render',
+    auto_modal_submitted: 'Modal gönderildi',
+    auto_hot_lead_detected: 'Hot lead tespit',
     auto_quiz_submit: 'Eski quiz gönderimi',
     auto_email_submit: 'Eski email/telefon submit',
     auto_results_view: 'Sonuç görüntülendi',
@@ -404,7 +409,13 @@ async function loadAutoAnalytics() {
   };
 
   const pageViews = counts.auto_page_view || 0;
+  const formStarted = counts.auto_form_started || 0;
+  const formSubmitted = counts.auto_form_submitted || 0;
   const analysisStarted = (counts.auto_analysis_started || 0) + (counts.auto_quiz_submit || 0);
+  const resultsRendered = counts.auto_results_rendered || counts.auto_results_view || 0;
+  const modalSubmitted = counts.auto_modal_submitted || 0;
+  const hotLeadDetected = counts.auto_hot_lead_detected || 0;
+
   const pct = (value, base) => base ? Math.round((value / base) * 100) + '%' : '—';
 
 
@@ -439,18 +450,15 @@ async function loadAutoAnalytics() {
     : 0;
 
   const analyticsCards = [
-    ['auto_page_view', labels.auto_page_view, counts.auto_page_view || 0, 'trafik'],
-    ['auto_analysis_started', labels.auto_analysis_started, analysisStarted, pct(analysisStarted, pageViews)],
-    ['auto_results_view', labels.auto_results_view, counts.auto_results_view || 0, pct(counts.auto_results_view || 0, analysisStarted)],
-    ['auto_modal_open', labels.auto_modal_open, counts.auto_modal_open || 0, pct(counts.auto_modal_open || 0, counts.auto_results_view || 0)],
-    ['auto_lead_submit', labels.auto_lead_submit, counts.auto_lead_submit || 0, pct(counts.auto_lead_submit || 0, counts.auto_modal_open || 0)],
-    ['auto_whatsapp_click', labels.auto_whatsapp_click, counts.auto_whatsapp_click || 0, pct(counts.auto_whatsapp_click || 0, counts.auto_results_view || 0)],
-    ['auto_quiz_submit', labels.auto_quiz_submit, counts.auto_quiz_submit || 0, 'legacy'],
-    ['auto_email_submit', labels.auto_email_submit, counts.auto_email_submit || 0, 'legacy'],
-    ['auto_finance_click', labels.auto_finance_click, counts.auto_finance_click || 0, 'legacy'],
-    ['decision_feedback_helpful', labels.decision_feedback_helpful, counts.decision_feedback_helpful || 0, 'karar'],
-    ['decision_feedback_unclear', labels.decision_feedback_unclear, counts.decision_feedback_unclear || 0, 'iyileştirme'],
-    ['decision_feedback_contact', labels.decision_feedback_contact, counts.decision_feedback_contact || 0, 'sıcak lead'],
+    ['auto_page_view', labels.auto_page_view, pageViews, 'trafik'],
+    ['auto_form_started', labels.auto_form_started, formStarted, pct(formStarted, pageViews)],
+    ['auto_form_submitted', labels.auto_form_submitted, formSubmitted, pct(formSubmitted, formStarted)],
+    ['auto_results_rendered', labels.auto_results_rendered, resultsRendered, pct(resultsRendered, formSubmitted)],
+    ['auto_modal_open', labels.auto_modal_open, counts.auto_modal_open || 0, pct(counts.auto_modal_open || 0, resultsRendered)],
+    ['auto_modal_submitted', labels.auto_modal_submitted, modalSubmitted, pct(modalSubmitted, counts.auto_modal_open || 0)],
+    ['auto_lead_submit', labels.auto_lead_submit, counts.auto_lead_submit || 0, pct(counts.auto_lead_submit || 0, modalSubmitted || 1)],
+    ['auto_hot_lead_detected', labels.auto_hot_lead_detected, hotLeadDetected, 'priority'],
+    ['auto_whatsapp_click', labels.auto_whatsapp_click, counts.auto_whatsapp_click || 0, pct(counts.auto_whatsapp_click || 0, resultsRendered)],
     ['expected_revenue', 'Beklenen Gelir', totalExpectedRevenue.toLocaleString('tr-TR') + ' ₺', 'pipeline'],
     ['actual_revenue', 'Gerçek Gelir', totalActualRevenue.toLocaleString('tr-TR') + ' ₺', 'cash'],
     ['revenue_per_lead', 'Lead Başına Gelir', revenuePerLead.toLocaleString('tr-TR') + ' ₺', 'unit'],
