@@ -276,7 +276,7 @@ const wizardSteps = [
       { label: 'Kendi bütçemi gireceğim', value: 'custom', note: 'Net bütçe ile daha hassas analiz' }
     ],
     custom: {
-      type: 'number',
+      type: 'text',
       placeholder: 'Örn. 1350000',
       min: 250000,
       max: 20000000,
@@ -328,7 +328,7 @@ const wizardSteps = [
       { label: 'Tam km gireceğim', value: 'custom', note: 'Net kilometre ile daha hassas maliyet' }
     ],
     custom: {
-      type: 'number',
+      type: 'text',
       placeholder: 'Örn. 22500',
       min: 1000,
       max: 100000,
@@ -414,6 +414,8 @@ function renderWizard() {
         <div>
           <input
             type="${step.custom.type}"
+            inputmode="numeric"
+            pattern="[0-9]*"
             min="${step.custom.min}"
             max="${step.custom.max}"
             placeholder="${escapeHtml(step.custom.placeholder)}"
@@ -443,7 +445,7 @@ function advanceWizard() {
   }
 
   if (wizardState[step.key] === 'custom') {
-    const rawCustomValue = wizardState[`${step.key}_custom`];
+    const rawCustomValue = String(wizardState[`${step.key}_custom`] || '').replace(/\D/g, '');
     const numericValue = Number(rawCustomValue);
 
     if (!rawCustomValue || Number.isNaN(numericValue)) {
@@ -482,12 +484,14 @@ if (wizard) {
     if (!customInput) return;
 
     const step = wizardSteps[wizardIndex];
-    wizardState[`${step.key}_custom`] = customInput.value.trim();
+    const cleanValue = String(customInput.value || '').replace(/\D/g, '');
+    wizardState[`${step.key}_custom`] = cleanValue;
+    customInput.value = cleanValue;
     syncWizardToForm();
 
     const nextButton = wizard.querySelector('[data-wizard-next]');
     if (nextButton) {
-      nextButton.disabled = !String(customInput.value || '').trim();
+      nextButton.disabled = !cleanValue;
     }
   });
 
