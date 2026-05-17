@@ -122,6 +122,25 @@ function getPartnerRoute(form: Record<string, unknown>) {
   return "general_sales";
 }
 
+
+function estimateCommission(partnerRoute: string, leadScore: number) {
+  const baseMap: Record<string, number> = {
+    insurance_partner: 1500,
+    finance_partner: 2000,
+    dealer_partner: 5000,
+    premium_report: 499,
+    general_sales: 1000
+  };
+
+  let revenue = baseMap[partnerRoute] || 0;
+
+  if (leadScore >= 90) revenue = Math.round(revenue * 1.5);
+  else if (leadScore >= 75) revenue = Math.round(revenue * 1.2);
+
+  return revenue;
+}
+
+
 async function notifyTelegramLead(payload: Record<string, unknown>) {
   const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
   const chatId = Deno.env.get("TELEGRAM_CHAT_ID");
@@ -290,6 +309,7 @@ Deno.serve(async (req) => {
       priority: scoring.priority,
       partner_route: getPartnerRoute(form),
       partner_status: "pending",
+      estimated_revenue: estimateCommission(getPartnerRoute(form), scoring.score),
       follow_up_at: getAutoFollowUp(scoring.priority),
       follow_up_done: false,
       status: "new",
