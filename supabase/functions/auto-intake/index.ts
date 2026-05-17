@@ -128,16 +128,23 @@ async function notifyTelegramLead(payload: Record<string, unknown>) {
 
   if (!token || !chatId) return;
 
+  const score = Number(payload.lead_score || 0);
+  const priority = String(payload.priority || "");
+
+  if (priority !== "hot" && score < 80) return;
+
   const text = `
-🔥 Yeni Lead
+🔥 SICAK LEAD
 
 📞 ${payload.phone || "-"}
 📧 ${payload.email || "-"}
 🚗 ${payload.vehicle || "-"}
 💰 Bütçe: ${payload.budget || "-"} ₺
-🎯 Skor: ${payload.lead_score || 0}
-🔥 Öncelik: ${payload.priority || "-"}
+🎯 Skor: ${score}
+🔥 Öncelik: ${priority}
 🤝 Partner: ${payload.partner_route || "-"}
+
+🔗 https://www.istebul.com/admin-panel.html
 `.trim();
 
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
