@@ -758,7 +758,7 @@ async function loadAutoLeads() {
             <td>
               <div class="table-actions">
                 ${lead.phone ? `<a class="btn btn-success btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}?text=Merhaba%2C%20isteBul%20Auto%20talebinizi%20gördük.%20Size%20uygun%20teklifleri%20hazırlayabiliriz." target="_blank" rel="noopener">WhatsApp</a>` : ''}
-                ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Retry Dispatch</button>` : ''}
+                ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Tekrar Gönder</button>` : ''}
                 <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
                   Sil
                 </button>
