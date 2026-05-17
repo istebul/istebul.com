@@ -549,7 +549,7 @@ form.addEventListener('submit', (event) => {
   }, 2200);
 });
 
-document.addEventListener('click', (event) => {
+document.addEventListener('click', async (event) => {
   const whatsappBtn = event.target.closest('.auto-whatsapp-btn');
 
   if (whatsappBtn) {
@@ -576,6 +576,19 @@ Destek almak istiyorum.`;
     }
 
     trackUniqueAutoEvent('auto_whatsapp_click', { vehicle }, vehicle);
+
+    try {
+      await callAutoIntake({
+        type: 'event',
+        event_name: 'auto_whatsapp_lead_intent',
+        metadata: {
+          ...formData,
+          interest_type: 'whatsapp',
+          vehicle,
+          session_id: getSessionId()
+        }
+      });
+    } catch {}
 
     window.open(
       'https://wa.me/' + phone + '?text=' + encodeURIComponent(message),
