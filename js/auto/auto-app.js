@@ -97,7 +97,12 @@ function renderLoading() {
     <div class="ai-loading">
       <div class="spinner"></div>
       <h3>AI araç profilinizi analiz ediyor...</h3>
-      <p>Analiz hazırlanıyor...</p>
+      <ul class="ai-loading-steps">
+        <li>Bütçe aralığınız ve kredi yükünüz hesaplanıyor</li>
+        <li>Toplam sahip olma maliyeti karşılaştırılıyor</li>
+        <li>Yakıt, kullanım ve ikinci el riski analiz ediliyor</li>
+        <li>Size en uygun 3 seçenek sıralanıyor</li>
+      </ul>
     </div>
   `;
 }
@@ -131,11 +136,16 @@ function openLeadModal(type, vehicle = '') {
   modal.innerHTML = `
     <div class="lead-modal-card">
       <h3>Size özel teklif hazırlayalım</h3>
-      <p>En uygun kredi, sigorta ve satın alma seçenekleri için numaranızı bırakın.</p>
+      <p>Analizinize göre kredi, sigorta ve bayi tekliflerini netleştirmek için sizi arayalım.</p>
+      <ul class="lead-modal-benefits">
+        <li>✓ En uygun kredi seçenekleri</li>
+        <li>✓ Sigorta teklifleri</li>
+        <li>✓ Bayi fiyat avantajı</li>
+      </ul>
       <form id="phone-lead-form">
         <input name="vehicle" type="hidden" value="${escapeHtml(vehicle)}">
         <input name="phone" type="tel" required placeholder="05xx xxx xx xx">
-        <button class="btn primary" type="submit">Gönder</button>
+        <button class="btn primary" type="submit">Beni Arayın</button>
       </form>
       <button class="btn secondary" id="close-lead-modal">Kapat</button>
     </div>
@@ -159,8 +169,8 @@ function openLeadModal(type, vehicle = '') {
 
     modal.innerHTML = `
       <div class="lead-modal-card">
-        <h3>Teşekkürler</h3>
-        <p>Uzman ekibimiz kısa süre içinde dönüş yapacak.</p>
+        <h3>Talebiniz alındı</h3>
+        <p>Uzman ekibimiz analiz sonucunuza göre en uygun seçenekleri hazırlayıp kısa süre içinde dönüş yapacak.</p>
       </div>
     `;
   });
@@ -199,17 +209,17 @@ function renderResults(results) {
       </div>
 
       <div class="cta-row">
-        <button class="btn primary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
-          WhatsApp
+        <button class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
+          Uzmanla hemen görüş
         </button>
         <button class="btn secondary auto-interest-btn" data-interest="finance" data-vehicle="${escapeHtml(vehicle.name)}">
           Finansman
         </button>
         <button class="btn secondary auto-interest-btn" data-interest="insurance" data-vehicle="${escapeHtml(vehicle.name)}">
-          Sigorta teklifi al
+          Sigorta
         </button>
-        <button class="btn secondary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
-          Bu araç için teklif iste
+        <button class="btn secondary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
+          WhatsApp
         </button>
       </div>
     </article>
