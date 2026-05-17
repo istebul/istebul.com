@@ -256,6 +256,22 @@ Deno.serve(async (req) => {
       }
 
       if (table === "auto_leads" && typeof values.partner_status === "string") {
+        const realizedStatuses = ["paid", "closed", "won", "delivered", "funded", "purchased"];
+
+        if (realizedStatuses.includes(values.partner_status) && values.actual_revenue === undefined) {
+          const { data: lead } = await adminClient
+            .from("auto_leads")
+            .select("estimated_revenue, actual_revenue")
+            .eq("id", id)
+            .single();
+
+          values.actual_revenue = Number(
+            lead?.actual_revenue || lead?.estimated_revenue || 0
+          );
+        }
+      }
+
+      if (table === "auto_leads" && typeof values.partner_status === "string") {
         const realized = ["paid", "closed", "won", "delivered", "funded", "purchased"].includes(values.partner_status);
 
         if (realized && values.actual_revenue === undefined) {
