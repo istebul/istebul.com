@@ -144,7 +144,14 @@ function openLeadModal(type, vehicle = '') {
       </ul>
       <form id="phone-lead-form">
         <input name="vehicle" type="hidden" value="${escapeHtml(vehicle)}">
+        <input name="name" type="text" placeholder="Adınız (opsiyonel)">
         <input name="phone" type="tel" required placeholder="05xx xxx xx xx">
+        <select name="best_time">
+          <option value="">En iyi aranma zamanı</option>
+          <option value="morning">Sabah</option>
+          <option value="afternoon">Öğleden sonra</option>
+          <option value="evening">Akşam</option>
+        </select>
         <button class="btn primary" type="submit">Beni Arayın</button>
       </form>
       <button class="btn secondary" id="close-lead-modal">Kapat</button>
@@ -188,16 +195,16 @@ function renderResults(results) {
     <article>
       <div class="top-row">
         <div class="score">${vehicle.score}/100</div>
-        <div class="confidence">AI güven: %${vehicle.confidence}</div>
+        <div class="confidence">AI Karar Güveni: %${vehicle.confidence}</div>
       </div>
 
       <h3>${escapeHtml(vehicle.name)}</h3>
 
-      <div class="analysis-box">
+      <div class="analysis-box"><strong>Neden önerildi?</strong>
         <ul>${vehicle.reasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       </div>
 
-      <div class="risk-box">
+      <div class="risk-box"><strong>Dikkat edilmesi gerekenler</strong>
         <ul>${vehicle.risks.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       </div>
 
