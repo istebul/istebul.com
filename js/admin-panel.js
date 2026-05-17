@@ -366,7 +366,7 @@ async function trackAdminAutoEvent(eventName, metadata = {}) {
 async function loadAutoAnalytics() {
   const [autoEventsRes, autoLeadsRes] = await Promise.all([
     sb.from('auto_events').select('*').order('created_at', { ascending: false }).limit(500),
-    sb.from('auto_leads').select('status, follow_up_at, follow_up_done')
+    sb.from('auto_leads').select('status, follow_up_at, follow_up_done, partner_status, estimated_revenue, actual_revenue')
   ]);
 
   const { data, error } = autoEventsRes;
