@@ -152,6 +152,31 @@ function estimateCommission(partnerRoute: string, leadScore: number) {
 }
 
 
+async function dispatchPartnerLead(payload: Record<string, unknown>) {
+  const route = String(payload.partner_route || "");
+  const priority = String(payload.priority || "");
+
+  if (isTestLead(payload.phone)) return;
+  if (priority !== "hot" && priority !== "very_hot") return;
+
+  const webhookMap: Record<string, string | undefined> = {
+    dealer_partner: Deno.env.get("DEALER_WEBHOOK_URL"),
+    insurance_partner: Deno.env.get("INSURANCE_WEBHOOK_URL"),
+    finance_partner: Deno.env.get("FINANCE_WEBHOOK_URL"),
+  };
+
+  const url = webhookMap[route];
+  if (!url) return;
+
+  await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+}
+
 async function notifyTelegramLead(payload: Record<string, unknown>) {
   const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
   const chatId = Deno.env.get("TELEGRAM_CHAT_ID");
@@ -357,6 +382,7 @@ Deno.serve(async (req) => {
 
     try {
       await notifyTelegramLead(payload);
+      await dispatchPartnerLead(payload);
     } catch {
       // Notification failure must not block lead capture.
     }
