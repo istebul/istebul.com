@@ -360,6 +360,12 @@ Deno.serve(async (req) => {
     }
 
     const form = body.formData && typeof body.formData === "object" ? body.formData : metadata;
+
+    const honeypot = String(form.website || form.company || form.url || "").trim();
+    if (honeypot) {
+      return json({ ok: true, spam: true }, 200, origin);
+    }
+
     const scoring = calculateLeadScore(form);
 
     const normalizedEmail = isValidEmail(email) ? String(email).trim().toLowerCase() : null;
