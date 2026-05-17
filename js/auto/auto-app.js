@@ -420,7 +420,7 @@ function renderWizard() {
 
     <div class="wizard-actions">
       <button type="button" class="btn secondary" data-wizard-back ${wizardIndex === 0 ? 'disabled' : ''}>Geri</button>
-      <button type="button" class="btn primary" data-wizard-next>
+      <button type="button" class="btn primary" data-wizard-next ${selected ? '' : 'disabled'}>
         ${wizardIndex === wizardSteps.length - 1 ? 'AI analizimi başlat' : 'Devam et'}
       </button>
     </div>
@@ -431,8 +431,8 @@ function advanceWizard() {
   const step = wizardSteps[wizardIndex];
 
   if (!wizardState[step.key]) {
-    const firstOption = step.options[0];
-    wizardState[step.key] = firstOption.value;
+    alert('Lütfen devam etmeden önce bir seçenek seçin.');
+    return;
   }
 
   if (wizardState[step.key] === 'custom') {
