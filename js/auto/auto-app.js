@@ -272,8 +272,16 @@ const wizardSteps = [
       { label: '500 bin TL altı', value: '500000', note: 'Ekonomik başlangıç seviyesi' },
       { label: '500 bin – 1 milyon TL', value: '900000', note: 'Ulaşılabilir güçlü seçenekler' },
       { label: '1 – 2 milyon TL', value: '1500000', note: 'Dengeli ve geniş pazar' },
-      { label: '2 milyon TL+', value: '2500000', note: 'Premium seçenekler' }
-    ]
+      { label: '2 milyon TL+', value: '2500000', note: 'Premium seçenekler' },
+      { label: 'Kendi bütçemi gireceğim', value: 'custom', note: 'Net bütçe ile daha hassas analiz' }
+    ],
+    custom: {
+      type: 'number',
+      placeholder: 'Örn. 1350000',
+      min: 250000,
+      max: 20000000,
+      suffix: 'TL'
+    }
   },
   {
     key: 'usage',
@@ -316,8 +324,16 @@ const wizardSteps = [
       { label: '10.000 km altı', value: '8000', note: 'Düşük kullanım' },
       { label: '10.000 – 20.000 km', value: '15000', note: 'Ortalama kullanım' },
       { label: '20.000 – 35.000 km', value: '28000', note: 'Yoğun kullanım' },
-      { label: '35.000 km+', value: '40000', note: 'Profesyonel / yüksek kullanım' }
-    ]
+      { label: '35.000 km+', value: '40000', note: 'Profesyonel / yüksek kullanım' },
+      { label: 'Tam km gireceğim', value: 'custom', note: 'Net kilometre ile daha hassas maliyet' }
+    ],
+    custom: {
+      type: 'number',
+      placeholder: 'Örn. 22500',
+      min: 1000,
+      max: 100000,
+      suffix: 'km'
+    }
   },
   {
     key: 'loan',
@@ -335,8 +351,18 @@ let wizardIndex = 0;
 
 function syncWizardToForm() {
   Object.entries(wizardState).forEach(([key, value]) => {
+    if (key.endsWith('_custom')) return;
+
     const input = form.elements[key];
-    if (input) input.value = value;
+    if (!input) return;
+
+    if (value === 'custom') {
+      const customValue = wizardState[`${key}_custom`];
+      if (customValue) input.value = customValue;
+      return;
+    }
+
+    input.value = value;
   });
 }
 
@@ -346,6 +372,8 @@ function renderWizard() {
   const step = wizardSteps[wizardIndex];
   const progress = Math.round(((wizardIndex + 1) / wizardSteps.length) * 100);
   const selected = wizardState[step.key];
+  const isCustom = selected === 'custom';
+  const customValue = wizardState[`${step.key}_custom`] || '';
 
   wizard.innerHTML = `
     <div class="wizard-progress">
@@ -373,6 +401,23 @@ function renderWizard() {
       `).join('')}
     </div>
 
+    ${step.custom && isCustom ? `
+      <label class="wizard-custom-input">
+        <span>${step.key === 'budget' ? 'Net bütçenizi girin' : 'Yıllık net kilometrenizi girin'}</span>
+        <div>
+          <input
+            type="${step.custom.type}"
+            min="${step.custom.min}"
+            max="${step.custom.max}"
+            placeholder="${escapeHtml(step.custom.placeholder)}"
+            value="${escapeHtml(customValue)}"
+            data-wizard-custom
+          >
+          <strong>${escapeHtml(step.custom.suffix)}</strong>
+        </div>
+      </label>
+    ` : ''}
+
     <div class="wizard-actions">
       <button type="button" class="btn secondary" data-wizard-back ${wizardIndex === 0 ? 'disabled' : ''}>Geri</button>
       <button type="button" class="btn primary" data-wizard-next>
@@ -388,6 +433,23 @@ function advanceWizard() {
   if (!wizardState[step.key]) {
     const firstOption = step.options[0];
     wizardState[step.key] = firstOption.value;
+  }
+
+  if (wizardState[step.key] === 'custom') {
+    const rawCustomValue = wizardState[`${step.key}_custom`];
+    const numericValue = Number(rawCustomValue);
+
+    if (!rawCustomValue || Number.isNaN(numericValue)) {
+      alert('Lütfen geçerli bir değer girin.');
+      return;
+    }
+
+    if (step.custom) {
+      if (numericValue < step.custom.min || numericValue > step.custom.max) {
+        alert(`Lütfen ${step.custom.min} - ${step.custom.max} aralığında bir değer girin.`);
+        return;
+      }
+    }
   }
 
   syncWizardToForm();
@@ -409,9 +471,17 @@ if (wizard) {
   renderWizard();
 
   wizard.addEventListener('click', (event) => {
+    const customInput = event.target.closest('[data-wizard-custom]');
     const option = event.target.closest('.wizard-option');
     const back = event.target.closest('[data-wizard-back]');
     const next = event.target.closest('[data-wizard-next]');
+
+    if (customInput) {
+      const step = wizardSteps[wizardIndex];
+      wizardState[`${step.key}_custom`] = customInput.value;
+      syncWizardToForm();
+      return;
+    }
 
     if (option) {
       const step = wizardSteps[wizardIndex];

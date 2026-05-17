@@ -424,3 +424,33 @@ h1{font-size:clamp(40px,6vw,72px);line-height:.96;margin:10px 0 22px}h2{font-siz
     font-size: 22px;
   }
 }
+
+.wizard-custom-input {
+  display: grid;
+  gap: 8px;
+  margin: -4px 0 20px;
+  font-weight: 850;
+  color: #0f172a;
+}
+
+.wizard-custom-input div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #dbe3ef;
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: #fff;
+}
+
+.wizard-custom-input input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.wizard-custom-input strong {
+  color: #2563eb;
+}
