@@ -10,13 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Supabase partner retry
+        env:
+          PARTNER_RETRY_URL: ${{ secrets.PARTNER_RETRY_URL }}
+          PARTNER_RETRY_SECRET: ${{ secrets.PARTNER_RETRY_SECRET }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-            -H curl -fsS -X POST "$PARTNER_RETRY_URL" \
+          curl -fsS -X POST "$PARTNER_RETRY_URL" \
             -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
-            -H "x-retry-secret: $PARTNER_RETRY_SECRET"    
-        env:
-          env:
-             PARTNER_RETRY_URL: ${{ secrets.PARTNER_RETRY_URL }}
-             PARTNER_RETRY_SECRET: ${{ secrets.PARTNER_RETRY_SECRET }}
-             SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+            -H "x-retry-secret: $PARTNER_RETRY_SECRET"
