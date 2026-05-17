@@ -113,6 +113,60 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
   white-space:nowrap;
 }
 
+
+.auto-leads-toolbar {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#auto-leads-list table {
+  font-size: 13px;
+}
+
+#auto-leads-list th,
+#auto-leads-list td {
+  padding: 8px 10px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+#auto-leads-list .form-input {
+  min-width: 88px;
+  max-width: 110px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+#auto-leads-list .status-select {
+  min-width: 120px;
+  max-width: 150px;
+  font-size: 12px;
+}
+
+#auto-leads-list td[title] {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#auto-leads-list .table-actions {
+  position: sticky;
+  right: 0;
+  background: var(--card);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+#auto-leads-list .btn-sm {
+  padding: 6px 8px;
+  font-size: 11px;
+}
+
+#auto-leads-list table {
+  min-width: 1500px;
+}
+
 </style>
 </head>
 <body>
