@@ -408,26 +408,26 @@ async function loadAutoAnalytics() {
   const pct = (value, base) => base ? Math.round((value / base) * 100) + '%' : '—';
 
 
-  const totalExpectedRevenue = leads.reduce(
+  const totalExpectedRevenue = leadRows.reduce(
     (sum, lead) => sum + Number(lead.estimated_revenue || 0),
     0
   );
 
-  const totalActualRevenue = leads.reduce(
+  const totalActualRevenue = leadRows.reduce(
     (sum, lead) => sum + Number(lead.actual_revenue || 0),
     0
   );
 
-  const wonPartners = leads.filter(
+  const wonPartners = leadRows.filter(
     lead => lead.partner_status === 'won'
   ).length;
 
-  const partnerTracked = leads.filter(
+  const partnerTracked = leadRows.filter(
     lead => lead.partner_status && lead.partner_status !== 'pending'
   ).length;
 
-  const revenuePerLead = leads.length
-    ? Math.round(totalActualRevenue / leads.length)
+  const revenuePerLead = leadRows.length
+    ? Math.round(totalActualRevenue / leadRows.length)
     : 0;
 
   const revenuePerVisit = pageViews
