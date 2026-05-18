@@ -39,7 +39,7 @@ async function signPartnerPayload(body: string) {
     .join("");
 }
 
-async function getPartnerEndpoint(route: string) {
+async function getPartnerEndpoints(route: string) {
   const { data, error } = await sb
     .from("partner_endpoints")
     .select("id, name, webhook_url, shared_secret, priority_weight, sent_today, daily_cap")
@@ -50,20 +50,28 @@ async function getPartnerEndpoint(route: string) {
   if (error) throw error;
 
   const endpoints = data || [];
-  if (!endpoints.length) return null;
+  const ordered = [];
 
-  const totalWeight = endpoints.reduce((sum, endpoint) => {
-    return sum + Math.max(Number(endpoint.priority_weight || 0), 1);
-  }, 0);
+  while (endpoints.length) {
+    const totalWeight = endpoints.reduce((sum, endpoint) => {
+      return sum + Math.max(Number(endpoint.priority_weight || 0), 1);
+    }, 0);
 
-  let random = Math.random() * totalWeight;
+    let random = Math.random() * totalWeight;
+    let selectedIndex = 0;
 
-  for (const endpoint of endpoints) {
-    random -= Math.max(Number(endpoint.priority_weight || 0), 1);
-    if (random <= 0) return endpoint;
+    for (let i = 0; i < endpoints.length; i += 1) {
+      random -= Math.max(Number(endpoints[i].priority_weight || 0), 1);
+      if (random <= 0) {
+        selectedIndex = i;
+        break;
+      }
+    }
+
+    ordered.push(endpoints.splice(selectedIndex, 1)[0]);
   }
 
-  return endpoints[0];
+  return ordered;
 }
 
 Deno.serve(async (req) => {
@@ -88,39 +96,57 @@ Deno.serve(async (req) => {
   }
 
   for (const lead of leads || []) {
+    let dispatched = false;
+    let lastError = "no active partner endpoint";
+
     try {
-      const endpoint = await getPartnerEndpoint(lead.partner_route);
-      if (!endpoint?.webhook_url) continue;
+      const endpoints = await getPartnerEndpoints(lead.partner_route);
 
-      const body = JSON.stringify({
-        ...lead,
-        partner_endpoint_id: endpoint.id,
-        partner_endpoint_name: endpoint.name
-      });
-      const signature = await signPartnerPayload(body);
+      for (const endpoint of endpoints) {
+        if (!endpoint?.webhook_url) continue;
 
-      const res = await fetch(endpoint.webhook_url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-istebul-signature": signature
-        },
-        body
-      });
+        const body = JSON.stringify({
+          ...lead,
+          partner_endpoint_id: endpoint.id,
+          partner_endpoint_name: endpoint.name
+        });
+        const signature = await signPartnerPayload(body);
 
-      if (res.ok) {
-        await sb
-          .from("auto_leads")
-          .update({
-            partner_status: "dispatched",
-            last_dispatch_at: new Date().toISOString(),
-            next_retry_at: null,
-            last_dispatch_error: null
-          })
-          .eq("id", lead.id);
+        try {
+          const res = await fetch(endpoint.webhook_url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-istebul-signature": signature
+            },
+            body
+          });
 
-        await sb.rpc("increment_partner_endpoint_success", { endpoint_id: endpoint.id });
-      } else {
+          if (res.ok) {
+            await sb
+              .from("auto_leads")
+              .update({
+                partner_status: "dispatched",
+                last_dispatch_at: new Date().toISOString(),
+                next_retry_at: null,
+                last_dispatch_error: null
+              })
+              .eq("id", lead.id);
+
+            await sb.rpc("increment_partner_endpoint_success", { endpoint_id: endpoint.id });
+            dispatched = true;
+            break;
+          }
+
+          lastError = `webhook returned non-200: ${res.status}`;
+          await sb.rpc("increment_partner_endpoint_fail", { endpoint_id: endpoint.id });
+        } catch {
+          lastError = "network exception";
+          await sb.rpc("increment_partner_endpoint_fail", { endpoint_id: endpoint.id });
+        }
+      }
+
+      if (!dispatched) {
         const retry = (lead.dispatch_retry_count || 0) + 1;
         const isDead = retry >= 5;
 
@@ -131,11 +157,9 @@ Deno.serve(async (req) => {
             dispatch_retry_count: retry,
             last_dispatch_at: new Date().toISOString(),
             next_retry_at: isDead ? null : getNextRetryTime(retry),
-            last_dispatch_error: isDead ? "max retry reached" : "webhook returned non-200"
+            last_dispatch_error: isDead ? "max retry reached" : lastError
           })
           .eq("id", lead.id);
-
-        await sb.rpc("increment_partner_endpoint_fail", { endpoint_id: endpoint.id });
       }
     } catch {
       const retry = (lead.dispatch_retry_count || 0) + 1;
@@ -148,7 +172,7 @@ Deno.serve(async (req) => {
           dispatch_retry_count: retry,
           last_dispatch_at: new Date().toISOString(),
           next_retry_at: isDead ? null : getNextRetryTime(retry),
-          last_dispatch_error: isDead ? "max retry reached" : "network exception"
+          last_dispatch_error: isDead ? "max retry reached" : "partner endpoint lookup exception"
         })
         .eq("id", lead.id);
     }
