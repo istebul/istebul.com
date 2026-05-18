@@ -6,6 +6,7 @@
   <title>Partner Olun | isteBul</title>
   <meta name="description" content="isteBul partner başvuru sayfası.">
   <link rel="stylesheet" href="/css/auto.css?v=3">
+  <script src="/env.js" defer></script>
 </head>
 <body>
   <header class="auto-header">
@@ -91,9 +92,16 @@ form?.addEventListener('submit', async (event) => {
   payload.webhook_ready = fd.get('webhook_ready') === 'on';
 
   try {
+    const env = window.__env || {};
+    const anonKey = env.SUPABASE_ANON_KEY || '';
+
     const res = await fetch('https://hjfrcdstbyonmgatgwcc.supabase.co/functions/v1/partner-application', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': anonKey,
+        'Authorization': `Bearer ${anonKey}`
+      },
       body: JSON.stringify(payload)
     });
 
