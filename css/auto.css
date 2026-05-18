@@ -1005,3 +1005,100 @@ body {
   }
 }
 
+
+/* Corporate density polish */
+.hero{
+  padding-top: 36px;
+  padding-bottom: 36px;
+}
+
+h1{
+  font-size: clamp(34px, 5vw, 58px);
+  letter-spacing: -0.03em;
+}
+
+h2{
+  font-size: clamp(24px, 3.2vw, 36px);
+}
+
+.lead{
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.hero-card,
+.quiz,
+.results article,
+.grid article{
+  padding: 22px;
+  border-radius: 22px;
+}
+
+.results{
+  gap: 14px;
+}
+
+.score{
+  font-size: 28px;
+}
+
+.confidence{
+  font-size: 12px;
+  padding: 7px 10px;
+}
+
+.result-summary{
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.analysis-box,
+.risk-box{
+  margin: 12px 0;
+  padding: 13px;
+  border-radius: 14px;
+}
+
+.premium-result-card .cost{
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.btn{
+  padding: 12px 16px;
+  border-radius: 13px;
+}
+
+.premium-ai-summary{
+  padding: 22px;
+  border-radius: 22px;
+}
+
+.premium-ai-summary h3{
+  font-size: 20px;
+}
+
+.premium-ai-summary p{
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.ai-chip{
+  padding: 8px 11px;
+  font-size: 13px;
+}
+
+@media(max-width:720px){
+  h1{
+    font-size: clamp(32px, 11vw, 42px);
+  }
+
+  .hero-card,
+  .quiz,
+  .results article,
+  .grid article{
+    padding: 18px;
+    border-radius: 18px;
+  }
+}
+
