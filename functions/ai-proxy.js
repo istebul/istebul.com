@@ -1,4 +1,4 @@
-const ALLOWED_ORIGIN = 'https://istebul-com.pages.dev';
+const ALLOWED_ORIGIN = 'https://istebul.com';
 
 export async function onRequestOptions({ request }) {
   const origin = request.headers.get('Origin');
