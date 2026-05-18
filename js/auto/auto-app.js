@@ -252,13 +252,13 @@ function renderResults(results) {
   const root = document.getElementById('auto-results');
 
   if (!Array.isArray(results) || !results.length) {
-    root.innerHTML = '<article><h3>Sonuç bulunamadı</h3></article>';
+    root.innerHTML = '<article class="premium-result-card"><h3>Uygun sonuç bulunamadı</h3><p>Seçimlerinizi değiştirerek yeniden analiz başlatabilirsiniz.</p></article>';
     return;
   }
 
   root.innerHTML = results.map((vehicle, index) => {
     const monthlyImpact = Math.round((Number(vehicle.costs.total || 0) / 12) / 100) * 100;
-    const rankLabel = index === 0 ? 'EN GÜÇLÜ EŞLEŞME' : `#${index + 1} GÜÇLÜ ALTERNATİF`;
+    const rankLabel = index === 0 ? 'En güçlü eşleşme' : `${index + 1}. güçlü alternatif`;
 
     return `
     <article class="premium-result-card conversion-result-card">
@@ -269,7 +269,7 @@ function renderResults(results) {
           <div class="score">${vehicle.score}/100</div>
           <small class="score-label">Karar skoru</small>
         </div>
-        <div class="confidence">AI Karar Güveni: %${vehicle.confidence}</div>
+        <div class="confidence">Analiz güveni: %${vehicle.confidence}</div>
       </div>
 
       <h3>${escapeHtml(vehicle.name)}</h3>
