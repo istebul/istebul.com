@@ -1200,3 +1200,76 @@ h2{
   color: #64748b;
 }
 
+
+/* Corporate wizard polish */
+.wizard-progress{
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.wizard-progress-text{
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.wizard-progress-bar{
+  height: 6px;
+  background: #edf2f7;
+}
+
+.wizard-progress-fill{
+  background: linear-gradient(90deg, #2563eb, #14b8a6);
+}
+
+.wizard-question{
+  gap: 8px;
+}
+
+.wizard-question h3{
+  font-size: 23px;
+  letter-spacing: -0.02em;
+}
+
+.wizard-question p{
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.wizard-options{
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.wizard-option{
+  padding: 14px;
+  border-radius: 15px;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.wizard-option small{
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.wizard-option:hover,
+.wizard-option.is-selected{
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(37,99,235,.10);
+}
+
+.wizard-actions .btn{
+  min-width: 132px;
+}
+
+@media(max-width:720px){
+  .wizard-question h3{
+    font-size: 20px;
+  }
+
+  .wizard-option{
+    padding: 13px;
+  }
+}
+
