@@ -45,14 +45,25 @@ async function getPartnerEndpoint(route: string) {
     .select("id, name, webhook_url, shared_secret, priority_weight, sent_today, daily_cap")
     .eq("route_type", route)
     .eq("is_active", true)
-    .or("daily_cap.is.null,sent_today.lt.daily_cap")
-    .order("priority_weight", { ascending: false })
-    .order("sent_today", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .or("daily_cap.is.null,sent_today.lt.daily_cap");
 
   if (error) throw error;
-  return data;
+
+  const endpoints = data || [];
+  if (!endpoints.length) return null;
+
+  const totalWeight = endpoints.reduce((sum, endpoint) => {
+    return sum + Math.max(Number(endpoint.priority_weight || 0), 1);
+  }, 0);
+
+  let random = Math.random() * totalWeight;
+
+  for (const endpoint of endpoints) {
+    random -= Math.max(Number(endpoint.priority_weight || 0), 1);
+    if (random <= 0) return endpoint;
+  }
+
+  return endpoints[0];
 }
 
 Deno.serve(async (req) => {
