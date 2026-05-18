@@ -271,7 +271,13 @@ async function getAiExplanation(results, formData = {}) {
         }))
       ),
       'Kullanıcı tercihleri: ' + JSON.stringify(formData),
-      'Görev: seçenekleri karşılaştırmalı yorumla, tekrar bilgi listeleme yapma.'
+      'Görev: 3 sonucu listeleme. Puanları ve maliyetleri tekrar yazma.',
+      'Bir seçeneği satmaya veya zorla öne çıkarmaya çalışma.',
+      'Tarafsız danışman gibi seçeneklerin karar trade-offlarını açıkla.',
+      'Kullanıcının en doğru kararı vermesine yardım et: hangi durumda hangi seçenek daha mantıklı olur?',
+      'Markdown kullanma. Yıldız, madde işareti, başlık, kalın yazı üretme.',
+      'En fazla 4 kısa cümle yaz.',
+      'Son cümlede net ama garanti vermeyen karar kriteri öner.'
     ].join('\\n');
 
     const res = await fetch('/ai-proxy', {
@@ -282,7 +288,11 @@ async function getAiExplanation(results, formData = {}) {
 
     if (!res.ok) return '';
     const data = await res.json();
-    return String(data.result || '').trim().slice(0, 900);
+    return String(data.result || '')
+      .replace(/\*\*/g, '')
+      .replace(/^[-•]\s*/gm, '')
+      .trim()
+      .slice(0, 900);
   } catch {
     return '';
   }
@@ -368,8 +378,8 @@ function renderResults(results) {
     </article>
   `}).join('') + `
     <section class="premium-ai-summary ai-explanation-box" data-ai-explanation>
-      <h3>Nihai uzman değerlendirmesi</h3>
-      <p>Karşılaştırmalı analiz hazırlanıyor...</p>
+      <h3>Karşılaştırmalı karar özeti</h3>
+      <p>Karar özeti hazırlanıyor...</p>
     </section>
   `;
 
