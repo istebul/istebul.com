@@ -332,13 +332,6 @@ function renderResults(results) {
         <ul>${vehicle.reasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       </div>
 
-      ${index === 0 ? `
-        <div class="analysis-box ai-explanation-box" data-ai-explanation>
-          <strong>Uzman AI değerlendirmesi</strong>
-          <p>Analiz yorumu hazırlanıyor...</p>
-        </div>
-      ` : ''}
-
       <div class="risk-box">
         <strong>Dikkat edilmesi gerekenler</strong>
         <ul>${vehicle.risks.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
@@ -373,7 +366,12 @@ function renderResults(results) {
 
       <p class="cta-microcopy">Ücretsiz ön değerlendirme • zorunlu satın alma yok • bilgileriniz güvenle işlenir</p>
     </article>
-  `}).join('');
+  `}).join('') + `
+    <section class="premium-ai-summary ai-explanation-box" data-ai-explanation>
+      <h3>Nihai uzman değerlendirmesi</h3>
+      <p>Karşılaştırmalı analiz hazırlanıyor...</p>
+    </section>
+  `;
 
   const aiBox = root.querySelector('[data-ai-explanation]');
   if (aiBox && results[0]) {
