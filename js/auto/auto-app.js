@@ -373,13 +373,7 @@ function renderWizard() {
   const progress = Math.round(((wizardIndex + 1) / wizardSteps.length) * 100);
   const selected = wizardState[step.key];
   const isCustom = selected === 'custom';
-  const canProceed = Boolean(
-    selected &&
-    (
-      selected !== 'custom' ||
-      (wizardState[`${step.key}_custom`] && String(wizardState[`${step.key}_custom`]).trim())
-    )
-  );
+  const canProceed = Boolean(selected);
   const customValue = wizardState[`${step.key}_custom`] || '';
 
   wizard.innerHTML = `
@@ -499,7 +493,7 @@ if (wizard) {
 
     const nextButton = wizard.querySelector('[data-wizard-next]');
     if (nextButton) {
-      nextButton.disabled = !cleanValue;
+      nextButton.disabled = false;
     }
   });
 
