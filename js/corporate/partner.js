@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('#partner-form');
+  const form = document.querySelector('#partner-application-form');
   if (!form) return;
 
   form.addEventListener('submit', async (event) => {
