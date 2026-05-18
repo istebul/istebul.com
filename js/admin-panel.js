@@ -64,6 +64,7 @@ async function showApp() {
   loadUsers();
   loadAutoLeads();
   loadAutoAnalytics();
+  loadPartnerEndpoints();
 }
 
 function showPage(name, el) {
@@ -586,6 +587,59 @@ async function loadAutoAnalytics() {
 
 
 
+
+
+async function loadPartnerEndpoints() {
+  const { data, error } = await sb
+    .from('partner_endpoints')
+    .select('*')
+    .order('priority_weight', { ascending: false });
+
+  const el = document.getElementById('partner-endpoints-list');
+  if (!el) return;
+
+  if (error) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  if (!data?.length) {
+    el.innerHTML = '<p class="empty">Partner endpoint yok.</p>';
+    return;
+  }
+
+  el.innerHTML = `
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Partner</th>
+          <th>Route</th>
+          <th>Aktif</th>
+          <th>Weight</th>
+          <th>Daily Cap</th>
+          <th>Sent</th>
+          <th>Success</th>
+          <th>Fail</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(row => `
+          <tr>
+            <td><strong>${escapeHtml(row.name)}</strong></td>
+            <td>${escapeHtml(row.route_type)}</td>
+            <td>${row.is_active ? '✅' : '❌'}</td>
+            <td>${row.priority_weight || 0}</td>
+            <td>${row.daily_cap || '∞'}</td>
+            <td>${row.sent_today || 0}</td>
+            <td>${row.success_count || 0}</td>
+            <td>${row.fail_count || 0}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
 function formatShortDate(value) {
   if (!value) return '—';
   return new Date(value).toLocaleString('tr-TR', {
@@ -1084,6 +1138,7 @@ async function updateAutoLeadStatus(id, status) {
   toast('Lead durumu güncellendi');
   loadAutoLeads();
   loadAutoAnalytics();
+  loadPartnerEndpoints();
 }
 
 async function updateAutoLeadNotes(id, notes) {
@@ -1174,6 +1229,7 @@ async function deleteAutoLead(id) {
   toast('Lead silindi');
   loadAutoLeads();
   loadAutoAnalytics();
+  loadPartnerEndpoints();
 }
 
 async function setUserRole(id, role) {
