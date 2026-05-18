@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>isteBul Auto | AI Araç Satın Alma Danışmanı</title>
   <meta name="description" content="Bütçenize, kullanımınıza ve toplam sahip olma maliyetine göre size en uygun aracı yapay zekayla bulun.">
-  <link rel="stylesheet" href="/css/auto.css?v=2">
+  <link rel="stylesheet" href="/css/auto.css?v=3">
   <script src="/env.js" defer></script>
 </head>
 <body>
@@ -19,20 +19,32 @@
   </header>
 
   <main>
-    <section class="hero">
-      <div>
-        <p class="kicker">AI araç satın alma danışmanı</p>
-        <h1>Araba almadan önce en doğru kararı verin.</h1>
-        <p class="lead">AI destekli analiz ile bütçenize, kullanım alışkanlığınıza ve finansman durumunuza göre size en uygun araçları, toplam sahip olma maliyetiyle birlikte 2 dakikada görün.</p>
-        
-      </div>
-      <div class="auto-social-proof">Bu ay 127+ kullanıcı araç karar analizini tamamladı</div>
+    <section class="hero auto-hero-premium">
+      <div class="hero-copy">
+        <p class="kicker">AI destekli araç satın alma danışmanı</p>
+        <h1>Araba almadan önce doğru kararı verin.</h1>
+        <p class="lead">Bütçenize, kullanım amacınıza, kredi tercihinize ve toplam sahip olma maliyetine göre size en uygun araçları birkaç dakika içinde görün.</p>
 
-<div class="auto-trust-strip" aria-label="Auto analiz avantajları">
-          <span>✓ Tarafsız AI analiz</span>
-          <span>✓ 2 dakikada sonuç</span>
-          <span>✓ Toplam maliyet görünürlüğü</span>
+        <div class="hero-cta-row">
+          <a class="btn primary" href="#auto-wizard">Ücretsiz analizimi başlat</a>
+          <a class="btn secondary" href="#nasil-calisir">Nasıl çalışır?</a>
         </div>
+
+        <div class="auto-social-proof">Bu ay 127+ kullanıcı araç karar analizini tamamladı</div>
+      </div>
+
+      <div class="hero-trust-panel" aria-label="isteBul Auto güven göstergeleri">
+        <div><strong>AI analiz</strong><span>Bütçe, kullanım ve maliyet sinyallerini birlikte değerlendirir.</span></div>
+        <div><strong>Tarafsız öneri</strong><span>Tek bir marka ya da bayi yerine ihtiyacınıza göre sıralama yapar.</span></div>
+        <div><strong>Toplam maliyet</strong><span>Yakıt, bakım, sigorta ve finansman etkisini görünür kılar.</span></div>
+      </div>
+
+      <div class="auto-trust-strip" aria-label="Auto analiz avantajları">
+        <span>✓ 2 dakikada analiz</span>
+        <span>✓ Toplam maliyet görünürlüğü</span>
+        <span>✓ Güvenli karar desteği</span>
+        <span>✓ Partner tekliflerine hazır akış</span>
+      </div>
 
       <div id="auto-wizard" class="auto-wizard" aria-label="AI araç karar sihirbazı"></div>
 
@@ -83,12 +95,16 @@
       </form>
     </section>
 
-    <section id="nasil-calisir" class="section">
-      <h2>Nasıl çalışır?</h2>
-      <div class="grid three">
-        <article><h3>1. İhtiyacınızı anlatın</h3><p>Kısa sorularla kullanım profilinizi ve bütçenizi anlayalım.</p></article>
-        <article><h3>2. AI karar motoru analiz etsin</h3><p>Toplam maliyet, kullanım uyumu ve riskleri birlikte değerlendirir.</p></article>
-        <article><h3>3. Güvenle ilerleyin</h3><p>Kredi, sigorta ve satın alma seçeneklerine daha bilinçli geçin.</p></article>
+    <section id="nasil-calisir" class="section premium-section">
+      <div class="section-head">
+        <p class="kicker">Karar süreci</p>
+        <h2>Sadece ilan bakmayın; doğru kararı analiz edin.</h2>
+        <p class="section-subtitle">isteBul Auto, araç seçimini bütçe, kullanım, finansman ve toplam maliyet perspektifiyle daha net hale getirir.</p>
+      </div>
+      <div class="grid three premium-steps">
+        <article><span>01</span><h3>İhtiyacınızı anlatın</h3><p>Bütçe, kullanım amacı, yakıt tercihi, yıllık kilometre ve kredi durumunuzu seçin.</p></article>
+        <article><span>02</span><h3>AI karar motoru analiz etsin</h3><p>Toplam sahip olma maliyeti, kullanım uyumu ve potansiyel riskler birlikte değerlendirilir.</p></article>
+        <article><span>03</span><h3>Güvenle ilerleyin</h3><p>Size uygun araç önerilerini görün; isterseniz teklif ve uzman desteğine geçin.</p></article>
       </div>
     </section>
 
@@ -105,8 +121,11 @@
 
 <div id="auto-results" class="results"></div>
 
-      <aside class="auto-methodology" aria-label="Hesaplama ve veri notu">
-        <h3>Bu analiz nasıl hesaplanır?</h3>
+      <aside class="auto-methodology premium-methodology" aria-label="Hesaplama ve veri notu">
+        <div>
+          <p class="kicker">Şeffaf analiz</p>
+          <h3>Bu analiz nasıl hesaplanır?</h3>
+        </div>
         <ul>
           <li>Öneriler bütçe, kullanım amacı, yakıt tercihi, yıllık kilometre ve kredi tercihinize göre oluşturulur.</li>
           <li>Toplam maliyet tahmini; satın alma bütçesi, finansman etkisi ve kullanım girdilerini birlikte değerlendirir.</li>
@@ -116,12 +135,16 @@
       </aside>
     </section>
 
-    <section id="gelir" class="section">
-      <h2>Sonraki adım</h2>
-      <div class="grid three">
-        <article><h3>Uzman yönlendirmesi</h3><p>Analiz sonucunuza göre kredi, sigorta ve satın alma adımlarını birlikte netleştirin.</p><a class="btn secondary" href="https://wa.me/905456786420?text=isteBul%20Auto%20analizim%20i%C3%A7in%20uzman%20deste%C4%9Fi%20istiyorum" target="_blank" rel="noopener">WhatsApp ile destek al</a></article>
-        <article><h3>Teklif hazırlığı</h3><p>Seçtiğiniz araç tipine göre finansman ve sigorta için hazırlanması gereken bilgileri görün.</p><a class="btn secondary" href="#analiz">Analize göre ilerle</a></article>
-        <article><h3>Detaylı karar raporu</h3><p>Toplam sahip olma maliyeti, riskler ve bütçe etkisini daha ayrıntılı inceleyin.</p><button class="btn secondary auto-interest-btn" type="button" data-premium-report data-interest="premium_report">Detaylı raporu aç</button></article>
+    <section id="gelir" class="section final-cta-section">
+      <div class="final-cta-card">
+        <p class="kicker">Sonraki adım</p>
+        <h2>Analizinizi teklif ve uzman desteğiyle tamamlayın.</h2>
+        <p>Uygun araç tipini belirledikten sonra finansman, sigorta ve satın alma seçeneklerini daha bilinçli değerlendirin.</p>
+        <div class="final-cta-actions">
+          <a class="btn primary" href="#auto-wizard">Yeni analiz başlat</a>
+          <a class="btn secondary" href="https://wa.me/905456786420?text=isteBul%20Auto%20analizim%20i%C3%A7in%20uzman%20deste%C4%9Fi%20istiyorum" target="_blank" rel="noopener">WhatsApp ile destek al</a>
+          <button class="btn secondary auto-interest-btn" type="button" data-premium-report data-interest="premium_report">Detaylı raporu aç</button>
+        </div>
       </div>
     </section>
   </main>
@@ -130,6 +153,6 @@
     <p>© <span id="year"></span> isteBul Auto. Bilgilendirme amaçlıdır; finansal tavsiye değildir.</p>
   </footer>
 
-  <script type="module" src="/js/auto/auto-app.js?v=15"></script>
+  <script type="module" src="/js/auto/auto-app.js?v=16"></script>
 </body>
 </html>
