@@ -249,7 +249,7 @@ function openLeadModal(type, vehicle = '') {
 }
 
 
-async function getAiExplanation(vehicle, formData = {}) {
+async function getAiExplanation(results, formData = {}) {
   try {
     const prompt = [
       'Sen isteBul Auto karar analiz motorusun.',
@@ -260,10 +260,18 @@ async function getAiExplanation(vehicle, formData = {}) {
       'Satış baskısı yapma.',
       'Kesin finansal vaat verme.',
       '3 kısa cümle yaz.',
-      'Araç: ' + (vehicle?.name || ''),
-      'Karar skoru: ' + (vehicle?.score || ''),
-      'Tahmini 12 aylık maliyet: ' + (vehicle?.costs?.total || ''),
-      'Form verisi: ' + JSON.stringify(formData)
+      'İlk 3 sonuç: ' + JSON.stringify(
+        (results || []).slice(0, 3).map(v => ({
+          name: v.name,
+          score: v.score,
+          confidence: v.confidence,
+          totalCost: v.costs?.total,
+          reasons: v.reasons,
+          risks: v.risks
+        }))
+      ),
+      'Kullanıcı tercihleri: ' + JSON.stringify(formData),
+      'Görev: seçenekleri karşılaştırmalı yorumla, tekrar bilgi listeleme yapma.'
     ].join('\\n');
 
     const res = await fetch('/ai-proxy', {
@@ -369,7 +377,7 @@ function renderResults(results) {
 
   const aiBox = root.querySelector('[data-ai-explanation]');
   if (aiBox && results[0]) {
-    getAiExplanation(results[0], formData).then((text) => {
+    getAiExplanation(results, formData).then((text) => {
       if (!text) {
         aiBox.remove();
         return;
