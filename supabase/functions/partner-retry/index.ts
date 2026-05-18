@@ -123,6 +123,8 @@ Deno.serve(async (req) => {
             last_dispatch_error: isDead ? "max retry reached" : "webhook returned non-200"
           })
           .eq("id", lead.id);
+
+        await sb.rpc("increment_partner_endpoint_fail", { endpoint_id: endpoint.id });
       }
     } catch {
       const retry = (lead.dispatch_retry_count || 0) + 1;
