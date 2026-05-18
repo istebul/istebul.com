@@ -39,14 +39,20 @@ async function signPartnerPayload(body: string) {
     .join("");
 }
 
-function getWebhook(route: string) {
-  const map: Record<string, string | undefined> = {
-    dealer_partner: Deno.env.get("DEALER_WEBHOOK_URL"),
-    insurance_partner: Deno.env.get("INSURANCE_WEBHOOK_URL"),
-    finance_partner: Deno.env.get("FINANCE_WEBHOOK_URL")
-  };
+async function getPartnerEndpoint(route: string) {
+  const { data, error } = await sb
+    .from("partner_endpoints")
+    .select("id, name, webhook_url, shared_secret, priority_weight, sent_today, daily_cap")
+    .eq("route_type", route)
+    .eq("is_active", true)
+    .or("daily_cap.is.null,sent_today.lt.daily_cap")
+    .order("priority_weight", { ascending: false })
+    .order("sent_today", { ascending: true })
+    .limit(1)
+    .maybeSingle();
 
-  return map[route];
+  if (error) throw error;
+  return data;
 }
 
 Deno.serve(async (req) => {
@@ -72,13 +78,17 @@ Deno.serve(async (req) => {
 
   for (const lead of leads || []) {
     try {
-      const url = getWebhook(lead.partner_route);
-      if (!url) continue;
+      const endpoint = await getPartnerEndpoint(lead.partner_route);
+      if (!endpoint?.webhook_url) continue;
 
-      const body = JSON.stringify(lead);
+      const body = JSON.stringify({
+        ...lead,
+        partner_endpoint_id: endpoint.id,
+        partner_endpoint_name: endpoint.name
+      });
       const signature = await signPartnerPayload(body);
 
-      const res = await fetch(url, {
+      const res = await fetch(endpoint.webhook_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,6 +107,8 @@ Deno.serve(async (req) => {
             last_dispatch_error: null
           })
           .eq("id", lead.id);
+
+        await sb.rpc("increment_partner_endpoint_success", { endpoint_id: endpoint.id });
       } else {
         const retry = (lead.dispatch_retry_count || 0) + 1;
         const isDead = retry >= 5;
