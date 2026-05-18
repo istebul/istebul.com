@@ -534,6 +534,8 @@ trackAutoEvent('auto_page_view');
 
 const form = document.getElementById('auto-form');
 let autoFormStarted = false;
+let autoAnalysisRunning = false;
+let autoAnalysisTimer = null;
 
 form.addEventListener('input', () => {
   if (!autoFormStarted) {
@@ -543,8 +545,12 @@ form.addEventListener('input', () => {
 });
 
 form.addEventListener('submit', (event) => {
-  trackAutoEvent('auto_form_submitted');
   event.preventDefault();
+
+  if (autoAnalysisRunning) return;
+  autoAnalysisRunning = true;
+
+  trackAutoEvent('auto_form_submitted');
 
   const formData = readForm(form);
   const results = recommendVehicles(formData);
@@ -553,11 +559,18 @@ form.addEventListener('submit', (event) => {
 
   renderLoading();
 
-  setTimeout(() => {
-    document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
-    trackAutoEvent('auto_results_rendered', { count: results.length });
-    renderResults(results);
-    trackUniqueAutoEvent('auto_results_view', formData, 'results');
+  if (autoAnalysisTimer) clearTimeout(autoAnalysisTimer);
+
+  autoAnalysisTimer = setTimeout(() => {
+    try {
+      document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
+      trackAutoEvent('auto_results_rendered', { count: results.length });
+      renderResults(results);
+      trackUniqueAutoEvent('auto_results_view', formData, 'results');
+    } finally {
+      autoAnalysisRunning = false;
+      autoAnalysisTimer = null;
+    }
   }, 2200);
 });
 
