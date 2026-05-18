@@ -1176,3 +1176,19 @@ h2{
   border-radius: 14px;
 }
 
+
+.ai-chip.is-active{
+  background: #eff6ff;
+  border-color: rgba(37,99,235,0.34);
+  color: #1e40af;
+}
+
+.ai-refinement-tools button:disabled{
+  opacity: 0.58;
+  cursor: wait;
+}
+
+.ai-refinement-input input:disabled{
+  opacity: 0.7;
+}
+

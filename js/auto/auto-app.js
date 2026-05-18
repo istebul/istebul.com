@@ -421,10 +421,25 @@ function renderResults(results) {
 
   const aiBox = root.querySelector('[data-ai-explanation]');
 
-  const updateAiSummary = async (refinement = '') => {
-    if (!aiBox || !results[0]) return;
+  let aiSummaryBusy = false;
+
+  const setAiBusy = (busy) => {
+    aiSummaryBusy = busy;
+    aiBox?.querySelectorAll('button').forEach((button) => {
+      button.disabled = busy;
+    });
+  };
+
+  const updateAiSummary = async (refinement = '', activeButton = null) => {
+    if (!aiBox || !results[0] || aiSummaryBusy) return;
 
     const paragraph = aiBox.querySelector('p');
+    aiBox.querySelectorAll('[data-ai-refine]').forEach((button) => {
+      button.classList.toggle('is-active', button === activeButton);
+    });
+
+    setAiBusy(true);
+
     if (paragraph) {
       paragraph.textContent = refinement
         ? 'Karar özeti rafine ediliyor...'
@@ -432,6 +447,8 @@ function renderResults(results) {
     }
 
     const text = await getAiExplanation(results, formData, refinement);
+
+    setAiBusy(false);
 
     if (!text) {
       if (!refinement) aiBox.remove();
@@ -446,15 +463,26 @@ function renderResults(results) {
 
   aiBox?.querySelectorAll('[data-ai-refine]').forEach((button) => {
     button.addEventListener('click', () => {
-      updateAiSummary(button.dataset.aiRefine || '');
+      updateAiSummary(button.dataset.aiRefine || '', button);
     });
   });
 
-  aiBox?.querySelector('#ai-refinement-submit')?.addEventListener('click', () => {
-    const input = aiBox.querySelector('#ai-refinement-input');
-    const value = String(input?.value || '').trim().slice(0, 240);
+  const refinementInput = aiBox?.querySelector('#ai-refinement-input');
+  const refinementSubmit = aiBox?.querySelector('#ai-refinement-submit');
+
+  const submitCustomRefinement = () => {
+    const value = String(refinementInput?.value || '').trim().slice(0, 240);
     if (!value) return;
     updateAiSummary(value);
+  };
+
+  refinementSubmit?.addEventListener('click', submitCustomRefinement);
+
+  refinementInput?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      submitCustomRefinement();
+    }
   });
 }
 
