@@ -464,8 +464,15 @@ body {
 }
 
 .auto-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
   padding-top: 14px;
   padding-bottom: 14px;
+  backdrop-filter: blur(16px);
+  background: rgba(255,255,255,.82);
+  border-bottom: 1px solid rgba(226,232,240,.75);
+  box-shadow: 0 8px 30px rgba(15,23,42,.04);
 }
 
 .auto-header .logo {
@@ -484,10 +491,11 @@ body {
 }
 
 .auto-hero-premium {
-  grid-template-columns: minmax(0, 1.04fr) minmax(340px, .76fr);
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, .72fr);
   align-items: start;
-  padding-top: 72px;
-  padding-bottom: 42px;
+  padding-top: 34px;
+  padding-bottom: 18px;
+  gap: 26px;
 }
 
 .hero-copy {
@@ -561,8 +569,8 @@ body {
 
 .auto-wizard {
   grid-column: 1 / -1;
-  margin-top: 26px;
-  max-width: 1080px;
+  margin-top: 8px;
+  max-width: 1180px;
   width: 100%;
   justify-self: center;
   border: 1px solid rgba(37,99,235,.12);
@@ -617,13 +625,16 @@ body {
 
 .premium-methodology {
   display: grid;
-  grid-template-columns: .8fr 1.2fr;
-  gap: 20px;
+  grid-template-columns: .9fr 1.1fr;
+  gap: 28px;
   align-items: start;
-  background: #fff;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.98), rgba(248,250,252,.98));
   color: #0f172a;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 18px 60px rgba(15,23,42,.08);
+  border: 1px solid rgba(148,163,184,.20);
+  box-shadow: 0 24px 80px rgba(15,23,42,.08);
+  border-radius: 28px;
+  padding: 34px;
 }
 
 .premium-methodology h3 {
@@ -676,7 +687,8 @@ body {
 @media (max-width: 850px) {
   .auto-hero-premium {
     grid-template-columns: 1fr;
-    padding-top: 42px;
+    padding-top: 20px;
+    gap: 18px;
   }
 
   .hero-copy h1 {
