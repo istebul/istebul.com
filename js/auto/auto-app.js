@@ -182,12 +182,12 @@ function openLeadModal(type, vehicle = '') {
   modal.innerHTML = `
     <div class="lead-modal-card">
       <div class="lead-modal-trust">
-        <p class="kicker">Uzman destek</p>
-        <h3>Size uygun teklifleri hazırlayalım.</h3>
-        <p>AI analiz sonucunuza göre kredi, sigorta ve satın alma seçeneklerini daha net değerlendirebilmeniz için uzman ekibimiz sizinle iletişime geçebilir.</p>
+        <p class="kicker">Uzman değerlendirme</p>
+        <h3>Size uygun seçenekleri birlikte değerlendirelim.</h3>
+        <p>Analiz sonucunuza göre finansman, sigorta ve satın alma seçeneklerini daha net değerlendirmeniz için uzman ekibimiz sizinle iletişime geçebilir.</p>
 
         <div class="lead-trust-points">
-          <span>✓ 15–30 dk içinde geri dönüş</span>
+          <span>✓ En kısa sürede geri dönüş</span>
           <span>✓ Bilgileriniz güvenle işlenir</span>
           <span>✓ Kredi, sigorta ve bayi yönlendirmesi</span>
         </div>
@@ -203,7 +203,7 @@ function openLeadModal(type, vehicle = '') {
           <option value="afternoon">Öğleden sonra</option>
           <option value="evening">Akşam</option>
         </select>
-        <button class="btn primary" type="submit">Kişisel teklifimi hazırlayın</button>
+        <button class="btn primary" type="submit">Uzman değerlendirmesi iste</button>
       </form>
       <button class="btn secondary" id="close-lead-modal">Kapat</button>
     </div>
@@ -241,7 +241,7 @@ function openLeadModal(type, vehicle = '') {
 
     modal.innerHTML = `
       <div class="lead-modal-card">
-        <h3>Talebiniz alındı</h3>
+        <h3>Uzman değerlendirme talebiniz alındı</h3>
         <p>Uzman ekibimiz analiz sonucunuza göre en uygun seçenekleri hazırlayıp kısa süre içinde dönüş yapacak.</p>
       </div>
     `;
