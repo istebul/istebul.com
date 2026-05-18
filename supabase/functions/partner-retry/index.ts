@@ -44,12 +44,14 @@ async function getPartnerEndpoints(route: string) {
     .from("partner_endpoints")
     .select("id, name, webhook_url, shared_secret, priority_weight, sent_today, daily_cap")
     .eq("route_type", route)
-    .eq("is_active", true)
-    .or("daily_cap.is.null,sent_today.lt.daily_cap");
+    .eq("is_active", true);
 
   if (error) throw error;
 
-  const endpoints = data || [];
+  const endpoints = (data || []).filter((endpoint) => {
+    if (endpoint.daily_cap == null) return true;
+    return Number(endpoint.sent_today || 0) < Number(endpoint.daily_cap);
+  });
   const ordered = [];
 
   while (endpoints.length) {
