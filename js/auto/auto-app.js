@@ -249,7 +249,7 @@ function openLeadModal(type, vehicle = '') {
 }
 
 
-async function getAiExplanation(results, formData = {}) {
+async function getAiExplanation(results, formData = {}, refinement = '') {
   try {
     const prompt = [
       'Sen isteBul Auto karar analiz motorusun.',
@@ -271,6 +271,7 @@ async function getAiExplanation(results, formData = {}) {
         }))
       ),
       'Kullanıcı tercihleri: ' + JSON.stringify(formData),
+      refinement ? 'Ek kullanıcı rafinesi: ' + refinement : '',
       'Görev: 3 sonucu listeleme. Puanları ve maliyetleri tekrar yazma.',
       'Bir seçeneği satmaya veya zorla öne çıkarmaya çalışma.',
       'Tarafsız otomotiv danışmanı gibi doğal Türkçe paragraf yaz.',
@@ -384,21 +385,77 @@ function renderResults(results) {
     <section class="premium-ai-summary ai-explanation-box" data-ai-explanation>
       <h3>Karşılaştırmalı karar özeti</h3>
       <p>Karar özeti hazırlanıyor...</p>
+
+      <div class="ai-refinement-tools">
+        <div class="ai-refinement-chips">
+          <button type="button" class="ai-chip" data-ai-refine="Daha ekonomik alternatifleri değerlendir.">
+            Daha ekonomik
+          </button>
+
+          <button type="button" class="ai-chip" data-ai-refine="SUV yerine sedan odaklı değerlendirme yap.">
+            Sedan odaklı
+          </button>
+
+          <button type="button" class="ai-chip" data-ai-refine="Hybrid seçenek önceliğiyle yeniden yorumla.">
+            Hybrid odaklı
+          </button>
+
+          <button type="button" class="ai-chip" data-ai-refine="Aylık bütçe etkisini düşürmeye odaklan.">
+            Daha düşük aylık bütçe
+          </button>
+        </div>
+
+        <div class="ai-refinement-input">
+          <input
+            type="text"
+            id="ai-refinement-input"
+            placeholder="Kararı rafine edin (örn: 2 çocuklu aile için yeniden değerlendir)"
+          />
+          <button type="button" class="btn primary" id="ai-refinement-submit">
+            Yorumu güncelle
+          </button>
+        </div>
+      </div>
     </section>
   `;
 
   const aiBox = root.querySelector('[data-ai-explanation]');
-  if (aiBox && results[0]) {
-    getAiExplanation(results, formData).then((text) => {
-      if (!text) {
-        aiBox.remove();
-        return;
-      }
 
-      const paragraph = aiBox.querySelector('p');
-      if (paragraph) paragraph.textContent = text;
+  const updateAiSummary = async (refinement = '') => {
+    if (!aiBox || !results[0]) return;
+
+    const paragraph = aiBox.querySelector('p');
+    if (paragraph) {
+      paragraph.textContent = refinement
+        ? 'Karar özeti rafine ediliyor...'
+        : 'Karar özeti hazırlanıyor...';
+    }
+
+    const text = await getAiExplanation(results, formData, refinement);
+
+    if (!text) {
+      if (!refinement) aiBox.remove();
+      else if (paragraph) paragraph.textContent = 'Yorum şu anda güncellenemedi. Mevcut karşılaştırmayı kullanarak devam edebilirsiniz.';
+      return;
+    }
+
+    if (paragraph) paragraph.textContent = text;
+  };
+
+  updateAiSummary();
+
+  aiBox?.querySelectorAll('[data-ai-refine]').forEach((button) => {
+    button.addEventListener('click', () => {
+      updateAiSummary(button.dataset.aiRefine || '');
     });
-  }
+  });
+
+  aiBox?.querySelector('#ai-refinement-submit')?.addEventListener('click', () => {
+    const input = aiBox.querySelector('#ai-refinement-input');
+    const value = String(input?.value || '').trim().slice(0, 240);
+    if (!value) return;
+    updateAiSummary(value);
+  });
 }
 
 const yearEl = document.getElementById('year');

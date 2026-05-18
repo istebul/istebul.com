@@ -952,3 +952,56 @@ body {
   }
 }
 
+
+.ai-refinement-tools{
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(15,23,42,0.08);
+}
+
+.ai-refinement-chips{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ai-chip{
+  border: 1px solid rgba(37,99,235,0.16);
+  background: #ffffff;
+  color: #1d4ed8;
+  border-radius: 999px;
+  padding: 9px 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ai-chip:hover{
+  background: #eff6ff;
+}
+
+.ai-refinement-input{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.ai-refinement-input input{
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 13px 14px;
+  font-size: 15px;
+  background: #fff;
+}
+
+@media (max-width: 720px){
+  .ai-refinement-input{
+    grid-template-columns: 1fr;
+  }
+
+  .ai-refinement-input .btn{
+    width: 100%;
+  }
+}
+
