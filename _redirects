@@ -1,3 +1,4 @@
 /admin-panel.html /admin-panel.html 200
 /auto /auto/index.html 200
+/js/* /js/:splat 200
 /* /index.html 200
