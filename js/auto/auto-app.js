@@ -252,8 +252,14 @@ function openLeadModal(type, vehicle = '') {
 async function getAiExplanation(vehicle, formData = {}) {
   try {
     const prompt = [
-      'isteBul Auto için Türkçe, kısa ve profesyonel bir uzman değerlendirmesi yaz.',
-      'Satış baskısı yapma. Kesin finansal vaat verme. 3-4 cümle olsun.',
+      'Sen isteBul Auto karar analiz motorusun.',
+      'SADECE araç önerisine dair Türkçe uzman değerlendirmesi üret.',
+      'Asla soru sorma.',
+      'Asla kullanıcıyla sohbet başlatma.',
+      'Asla test mesajı üretme.',
+      'Satış baskısı yapma.',
+      'Kesin finansal vaat verme.',
+      '3 kısa cümle yaz.',
       'Araç: ' + (vehicle?.name || ''),
       'Karar skoru: ' + (vehicle?.score || ''),
       'Tahmini 12 aylık maliyet: ' + (vehicle?.costs?.total || ''),
