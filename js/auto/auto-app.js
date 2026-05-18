@@ -248,6 +248,32 @@ function openLeadModal(type, vehicle = '') {
   });
 }
 
+
+async function getAiExplanation(vehicle, formData = {}) {
+  try {
+    const prompt = [
+      'isteBul Auto için Türkçe, kısa ve profesyonel bir uzman değerlendirmesi yaz.',
+      'Satış baskısı yapma. Kesin finansal vaat verme. 3-4 cümle olsun.',
+      'Araç: ' + (vehicle?.name || ''),
+      'Karar skoru: ' + (vehicle?.score || ''),
+      'Tahmini 12 aylık maliyet: ' + (vehicle?.costs?.total || ''),
+      'Form verisi: ' + JSON.stringify(formData)
+    ].join('\\n');
+
+    const res = await fetch('/ai-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    if (!res.ok) return '';
+    const data = await res.json();
+    return String(data.result || '').trim().slice(0, 900);
+  } catch {
+    return '';
+  }
+}
+
 function renderResults(results) {
   const root = document.getElementById('auto-results');
 
@@ -255,6 +281,8 @@ function renderResults(results) {
     root.innerHTML = '<article class="premium-result-card"><h3>Uygun sonuç bulunamadı</h3><p>Seçimlerinizi değiştirerek yeniden analiz başlatabilirsiniz.</p></article>';
     return;
   }
+
+  const formData = form ? readForm(form) : {};
 
   root.innerHTML = results.map((vehicle, index) => {
     const monthlyImpact = Math.round((Number(vehicle.costs.total || 0) / 12) / 100) * 100;
@@ -289,6 +317,13 @@ function renderResults(results) {
         <strong>Neden önerildi?</strong>
         <ul>${vehicle.reasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       </div>
+
+      ${index === 0 ? `
+        <div class="analysis-box ai-explanation-box" data-ai-explanation>
+          <strong>Uzman AI değerlendirmesi</strong>
+          <p>Analiz yorumu hazırlanıyor...</p>
+        </div>
+      ` : ''}
 
       <div class="risk-box">
         <strong>Dikkat edilmesi gerekenler</strong>
@@ -325,6 +360,19 @@ function renderResults(results) {
       <p class="cta-microcopy">Ücretsiz ön değerlendirme • zorunlu satın alma yok • bilgileriniz güvenle işlenir</p>
     </article>
   `}).join('');
+
+  const aiBox = root.querySelector('[data-ai-explanation]');
+  if (aiBox && results[0]) {
+    getAiExplanation(results[0], formData).then((text) => {
+      if (!text) {
+        aiBox.remove();
+        return;
+      }
+
+      const paragraph = aiBox.querySelector('p');
+      if (paragraph) paragraph.textContent = text;
+    });
+  }
 }
 
 const yearEl = document.getElementById('year');
