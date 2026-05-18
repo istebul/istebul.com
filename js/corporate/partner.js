@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
 
     const fd = new FormData(form);
+    const anonKey = window.__env?.SUPABASE_ANON_KEY || '';
 
     const payload = {
       company_name: fd.get('company_name'),
@@ -15,25 +16,20 @@ document.addEventListener('DOMContentLoaded', () => {
       city: fd.get('city'),
       category: fd.get('category'),
       lead_capacity: fd.get('lead_capacity'),
-      notes: fd.get('notes'),
-      webhook_ready: fd.get('webhook_ready') === 'on'
+      webhook_ready: fd.get('webhook_ready') === 'on',
+      notes: fd.get('notes') || ''
     };
 
     try {
-      const anonKey = window.__env?.SUPABASE_ANON_KEY || '';
-
-      const res = await fetch(
-        'https://hjfrcdstbyonmgatgwcc.supabase.co/functions/v1/partner-application',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: anonKey,
-            Authorization: `Bearer ${anonKey}`
-          },
-          body: JSON.stringify(payload)
-        }
-      );
+      const res = await fetch('https://hjfrcdstbyonmgatgwcc.supabase.co/functions/v1/partner-application', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: anonKey,
+          Authorization: `Bearer ${anonKey}`
+        },
+        body: JSON.stringify(payload)
+      });
 
       if (!res.ok) throw new Error();
 
