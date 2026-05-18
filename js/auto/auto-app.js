@@ -224,7 +224,7 @@ function openLeadModal(type, vehicle = '') {
     const submitButton = event.currentTarget.querySelector('button[type="submit"]');
     if (submitButton) {
       submitButton.disabled = true;
-      submitButton.textContent = 'Gönderiliyor...';
+      submitButton.textContent = 'Güvenli şekilde kaydediliyor...';
     }
 
     const leadData = new FormData(event.currentTarget);
@@ -242,7 +242,7 @@ function openLeadModal(type, vehicle = '') {
     modal.innerHTML = `
       <div class="lead-modal-card">
         <h3>Uzman değerlendirme talebiniz alındı</h3>
-        <p>Uzman ekibimiz analiz sonucunuza göre en uygun seçenekleri hazırlayıp kısa süre içinde dönüş yapacak.</p>
+        <p>Uzman ekibimiz analiz sonucunuza göre uygun seçenekleri değerlendirip sizinle iletişime geçecek.</p>
       </div>
     `;
   });
@@ -304,25 +304,25 @@ function renderResults(results) {
 
       ${vehicle.score >= 85 ? `
         <div class="auto-hot-banner">
-          🔥 Bugün bu profil için teklif almak fiyat ve finansman avantajı sağlayabilir.
+          🔥 Bu profil için güncel teklif ve finansman seçeneklerini değerlendirmek faydalı olabilir.
         </div>
       ` : ''}
 
       <div class="cta-row result-cta-row">
         <button class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
-          Bu araç için teklif al
+          Teklif seçeneklerini gör
         </button>
 
         <button class="btn secondary auto-interest-btn" data-interest="finance" data-vehicle="${escapeHtml(vehicle.name)}">
-          Finansman planla
+          Finansmanı değerlendir
         </button>
 
         <button class="btn secondary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
-          Uzmana sor
+          WhatsApp ile sor
         </button>
       </div>
 
-      <p class="cta-microcopy">Telefonla hızlı yönlendirme • ücretsiz ön analiz • zorunlu satın alma yok</p>
+      <p class="cta-microcopy">Ücretsiz ön değerlendirme • zorunlu satın alma yok • bilgileriniz güvenle işlenir</p>
     </article>
   `}).join('');
 }
