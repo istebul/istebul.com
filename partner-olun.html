@@ -75,50 +75,6 @@
   <div id="partner-form-result"></div>
 </div>
 
-<script>
-const form = document.getElementById('partner-application-form');
-
-form?.addEventListener('submit', async (event) => {
-  event.preventDefault();
-
-  const submit = form.querySelector('button[type="submit"]');
-  const result = document.getElementById('partner-form-result');
-
-  submit.disabled = true;
-  submit.textContent = 'Gönderiliyor...';
-
-  const fd = new FormData(form);
-  const payload = Object.fromEntries(fd.entries());
-  payload.webhook_ready = fd.get('webhook_ready') === 'on';
-
-  try {
-    const env = window.__env || {};
-    const anonKey = env.SUPABASE_ANON_KEY || '';
-
-    const res = await fetch('https://hjfrcdstbyonmgatgwcc.supabase.co/functions/v1/partner-application', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': anonKey,
-        'Authorization': `Bearer ${anonKey}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error || 'Başvuru başarısız');
-
-    form.reset();
-    result.innerHTML = '<p style="margin-top:16px;font-weight:800;color:#16a34a;">Başvurunuz alındı. Ekibimiz sizinle iletişime geçecek.</p>';
-  } catch (err) {
-    result.innerHTML = '<p style="margin-top:16px;font-weight:800;color:#dc2626;">Başvuru gönderilemedi. Lütfen tekrar deneyin.</p>';
-  } finally {
-    submit.disabled = false;
-    submit.textContent = 'Partner başvurusu gönder';
-  }
-});
-</script>
   </main>
 
   <footer class="corporate-footer">
@@ -135,5 +91,6 @@ form?.addEventListener('submit', async (event) => {
       <a href="/partner-olun.html">Partner olun</a>
     </nav>
   </footer>
+  <script src="/js/corporate/partner.js"></script>
 </body>
 </html>
