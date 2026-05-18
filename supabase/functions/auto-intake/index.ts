@@ -267,6 +267,35 @@ async function notifyTelegramLead(payload: Record<string, unknown>) {
 }
 
 
+async function verifyTurnstile(token: string, ip: string) {
+  const secret = Deno.env.get("TURNSTILE_SECRET");
+
+  if (!secret) {
+    return { ok: false, error: "Turnstile secret missing" };
+  }
+
+  if (!token) {
+    return { ok: false, error: "Turnstile token missing" };
+  }
+
+  const form = new FormData();
+  form.append("secret", secret);
+  form.append("response", token);
+  if (ip && ip !== "unknown") form.append("remoteip", ip);
+
+  const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    method: "POST",
+    body: form,
+  });
+
+  if (!res.ok) {
+    return { ok: false, error: "Turnstile verify failed" };
+  }
+
+  const data = await res.json();
+  return { ok: Boolean(data.success), error: data["error-codes"]?.join(",") || "" };
+}
+
 function getClientIp(req: Request) {
   return req.headers.get("cf-connecting-ip") || "unknown";
 }
@@ -377,6 +406,15 @@ Deno.serve(async (req) => {
 
     if ((email && !isValidEmail(email)) || phone.length < 10 || phone.length > 15 || isJunkPhone(phone)) {
       return json({ error: "Invalid contact information" }, 400, origin);
+    }
+
+    if (!isTestLead(phone)) {
+      const token = String(body.turnstile_token || metadata.turnstile_token || "").trim();
+      const turnstile = await verifyTurnstile(token, clientIp);
+
+      if (!turnstile.ok) {
+        return json({ error: "Bot verification failed" }, 403, origin);
+      }
     }
 
     const normalizedEmail = isValidEmail(email) ? String(email).trim().toLowerCase() : null;

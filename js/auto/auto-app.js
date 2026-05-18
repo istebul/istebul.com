@@ -110,7 +110,7 @@ function renderLoading() {
   `;
 }
 
-async function updateLeadInterest(phone, interestType, vehicle = '') {
+async function updateLeadInterest(phone, interestType, vehicle = '', options = {}) {
   const email = localStorage.getItem('istebul_auto_lead_email');
   const storedPayload = safeJsonParse(localStorage.getItem('istebul_auto_lead_payload'), {});
 
@@ -118,11 +118,54 @@ async function updateLeadInterest(phone, interestType, vehicle = '') {
     type: 'lead',
     email: email || null,
     phone,
+    turnstile_token: options.turnstileToken || '',
     formData: {
       ...storedPayload,
       phone,
       interest_type: interestType,
       vehicle
+    }
+  });
+}
+
+
+const TURNSTILE_SITE_KEY = '0x4AAAAAADRgIOMcaKMMBndc';
+
+async function getTurnstileToken() {
+  return new Promise((resolve) => {
+    if (!window.turnstile || !TURNSTILE_SITE_KEY) {
+      resolve('');
+      return;
+    }
+
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.left = '-9999px';
+    container.style.top = '-9999px';
+    document.body.appendChild(container);
+
+    try {
+      window.turnstile.render(container, {
+        sitekey: TURNSTILE_SITE_KEY,
+        size: 'invisible',
+        callback: (token) => {
+          container.remove();
+          resolve(token || '');
+        },
+        'error-callback': () => {
+          container.remove();
+          resolve('');
+        },
+        'timeout-callback': () => {
+          container.remove();
+          resolve('');
+        }
+      });
+
+      window.turnstile.execute(container);
+    } catch {
+      container.remove();
+      resolve('');
     }
   });
 }
@@ -187,12 +230,13 @@ function openLeadModal(type, vehicle = '') {
     const leadData = new FormData(event.currentTarget);
     const phone = leadData.get('phone');
     const selectedVehicle = leadData.get('vehicle') || vehicle;
+    const turnstileToken = await getTurnstileToken();
 
     trackAutoEvent('auto_modal_submitted', { phone, interest_type: type, vehicle: selectedVehicle });
     trackAutoEvent('auto_lead_submit', { phone, interest_type: type, vehicle: selectedVehicle });
 
     try {
-      await updateLeadInterest(phone, type, selectedVehicle);
+      await updateLeadInterest(phone, type, selectedVehicle, { turnstileToken });
     } catch {}
 
     modal.innerHTML = `
