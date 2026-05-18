@@ -212,22 +212,34 @@ function renderResults(results) {
     return;
   }
 
-  root.innerHTML = results.map((vehicle, index) => `
-    <article class="premium-result-card">
+  root.innerHTML = results.map((vehicle, index) => {
+    const monthlyImpact = Math.round((Number(vehicle.costs.total || 0) / 12) / 100) * 100;
+    const rankLabel = index === 0 ? 'EN GÜÇLÜ EŞLEŞME' : `#${index + 1} GÜÇLÜ ALTERNATİF`;
+
+    return `
+    <article class="premium-result-card conversion-result-card">
+      <div class="result-rank premium-rank">${rankLabel}</div>
+
       <div class="top-row">
-        <div class="score">${vehicle.score}/100</div>
+        <div>
+          <div class="score">${vehicle.score}/100</div>
+          <small class="score-label">Karar skoru</small>
+        </div>
         <div class="confidence">AI Karar Güveni: %${vehicle.confidence}</div>
       </div>
-
-      <div class="result-rank">#${index + 1} öneri</div>
 
       <h3>${escapeHtml(vehicle.name)}</h3>
 
       <p class="result-summary">
         ${vehicle.score >= 85
-          ? 'Profiliniz için güçlü eşleşme. Toplam maliyet, kullanım uyumu ve finansman açısından öne çıkıyor.'
+          ? 'Profiliniz için en güçlü eşleşmelerden biri. Toplam maliyet, kullanım uyumu ve finansman açısından öne çıkıyor.'
           : 'Profilinize uygun güçlü alternatiflerden biri. Kullanım ve bütçe dengenize göre değerlendirildi.'}
       </p>
+
+      <div class="monthly-impact">
+        <span>Tahmini aylık bütçe etkisi</span>
+        <strong>${formatter.format(monthlyImpact)} ₺</strong>
+      </div>
 
       <div class="analysis-box">
         <strong>Neden önerildi?</strong>
@@ -248,13 +260,13 @@ function renderResults(results) {
 
       ${vehicle.score >= 85 ? `
         <div class="auto-hot-banner">
-          🔥 Bugün profilinize uygun güçlü fırsat olabilir.
+          🔥 Bugün bu profil için teklif almak fiyat ve finansman avantajı sağlayabilir.
         </div>
       ` : ''}
 
-      <div class="cta-row">
+      <div class="cta-row result-cta-row">
         <button class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
-          Kişisel teklif al
+          Bu araç için teklif al
         </button>
 
         <button class="btn secondary auto-interest-btn" data-interest="finance" data-vehicle="${escapeHtml(vehicle.name)}">
@@ -265,8 +277,10 @@ function renderResults(results) {
           Uzmana sor
         </button>
       </div>
+
+      <p class="cta-microcopy">Telefonla hızlı yönlendirme • ücretsiz ön analiz • zorunlu satın alma yok</p>
     </article>
-  `).join('');
+  `}).join('');
 }
 
 document.getElementById('year').textContent = new Date().getFullYear();

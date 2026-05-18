@@ -839,3 +839,60 @@ body {
   font-weight: 700;
   color: #0f172a;
 }
+
+.conversion-result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.premium-rank {
+  align-self: flex-start;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: .04em;
+}
+
+.score-label {
+  display: block;
+  margin-top: -4px;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.monthly-impact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #eff6ff, #ecfeff);
+  border: 1px solid rgba(37,99,235,.14);
+}
+
+.monthly-impact span {
+  color: #475569;
+  font-weight: 800;
+}
+
+.monthly-impact strong {
+  font-size: 24px;
+  color: #0f172a;
+}
+
+.result-cta-row .primary {
+  flex: 1 1 100%;
+}
+
+.cta-microcopy {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
