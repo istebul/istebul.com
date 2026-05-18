@@ -273,11 +273,13 @@ async function getAiExplanation(results, formData = {}) {
       'Kullanıcı tercihleri: ' + JSON.stringify(formData),
       'Görev: 3 sonucu listeleme. Puanları ve maliyetleri tekrar yazma.',
       'Bir seçeneği satmaya veya zorla öne çıkarmaya çalışma.',
-      'Tarafsız danışman gibi seçeneklerin karar trade-offlarını açıkla.',
-      'Kullanıcının en doğru kararı vermesine yardım et: hangi durumda hangi seçenek daha mantıklı olur?',
-      'Markdown kullanma. Yıldız, madde işareti, başlık, kalın yazı üretme.',
-      'En fazla 4 kısa cümle yaz.',
-      'Son cümlede net ama garanti vermeyen karar kriteri öner.'
+      'Tarafsız otomotiv danışmanı gibi doğal Türkçe paragraf yaz.',
+      'Asla markdown, tablo, başlık, liste, pipe karakteri üretme.',
+      'Tek paragraf yaz.',
+      'Karttaki verileri tekrar listeleme.',
+      'Sadece karar yorumu üret.',
+      'Kullanıcının en doğru kararı vermesine yardım et: kullanım tipi, bütçe ve öncelik trade-offlarını açıkla.',
+      'En fazla 4 kısa cümle.'
     ].join('\\n');
 
     const res = await fetch('/ai-proxy', {
@@ -289,10 +291,12 @@ async function getAiExplanation(results, formData = {}) {
     if (!res.ok) return '';
     const data = await res.json();
     return String(data.result || '')
-      .replace(/\*\*/g, '')
+      .replace(/[#*_`|]/g, '')
       .replace(/^[-•]\s*/gm, '')
+      .replace(/\n+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
       .trim()
-      .slice(0, 900);
+      .slice(0, 600);
   } catch {
     return '';
   }
