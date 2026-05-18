@@ -617,21 +617,27 @@ async function loadPartnerEndpoints() {
       <thead>
         <tr>
           <th>Partner</th>
-          <th>Route</th>
-          <th>Aktif</th>
-          <th>Weight</th>
-          <th>Daily Cap</th>
-          <th>Sent</th>
-          <th>Success</th>
-          <th>Fail</th>
+          <th>Yönlendirme</th>
+          <th>Durum</th>
+          <th>Öncelik</th>
+          <th>Günlük Limit</th>
+          <th>Bugün Gönderilen</th>
+          <th>Başarılı</th>
+          <th>Başarısız</th>
         </tr>
       </thead>
       <tbody>
         ${data.map(row => `
           <tr>
             <td><strong>${escapeHtml(row.name)}</strong></td>
-            <td>${escapeHtml(row.route_type)}</td>
-            <td>${row.is_active ? '✅' : '❌'}</td>
+            <td>${escapeHtml({
+              dealer_partner: 'Bayi / Galeri',
+              finance_partner: 'Finansman',
+              insurance_partner: 'Sigorta',
+              premium_report: 'Premium Rapor',
+              general_sales: 'Genel Satış'
+            }[row.route_type] || row.route_type)}</td>
+            <td>${row.is_active ? 'Aktif' : 'Pasif'}</td>
             <td>${row.priority_weight || 0}</td>
             <td>${row.daily_cap || '∞'}</td>
             <td>${row.sent_today || 0}</td>
