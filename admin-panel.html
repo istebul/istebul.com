@@ -431,6 +431,29 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
           <p>Lead yönlendirme, webhook kapasitesi ve partner performansı</p>
         </div>
         <div class="card">
+          <div class="card-title">Yeni partner kanalı</div>
+          <div class="form-row">
+            <div class="form-group"><label>Partner adı</label><input id="partner-name" type="text" placeholder="Örn. Dealer Antalya"></div>
+            <div class="form-group"><label>Yönlendirme tipi</label>
+              <select id="partner-route-type">
+                <option value="dealer_partner">Bayi / Galeri</option>
+                <option value="finance_partner">Finansman</option>
+                <option value="insurance_partner">Sigorta</option>
+                <option value="premium_report">Premium Rapor</option>
+                <option value="general_sales">Genel Satış</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><label>Webhook URL</label><input id="partner-webhook-url" type="url" placeholder="https://partner-domain.com/api/istebul/leads"></div>
+          <div class="form-row">
+            <div class="form-group"><label>Öncelik</label><input id="partner-priority-weight" type="number" value="100"></div>
+            <div class="form-group"><label>Günlük limit</label><input id="partner-daily-cap" type="number" placeholder="Boş = limitsiz"></div>
+          </div>
+          <div class="form-group"><label>Not</label><textarea id="partner-notes"></textarea></div>
+          <div class="actions"><button class="btn btn-primary" data-action="create-partner-endpoint">Partner kanalı ekle</button></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Mevcut partner kanalları</div>
           <div id="partner-endpoints-list"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>

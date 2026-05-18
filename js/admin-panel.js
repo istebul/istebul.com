@@ -593,6 +593,58 @@ async function loadAutoAnalytics() {
 
 
 
+
+
+async function createPartnerEndpoint() {
+  const name = document.getElementById('partner-name')?.value?.trim();
+  const routeType = document.getElementById('partner-route-type')?.value;
+  const webhookUrl = document.getElementById('partner-webhook-url')?.value?.trim();
+  const priorityWeight = Number(document.getElementById('partner-priority-weight')?.value || 100);
+  const dailyCapRaw = document.getElementById('partner-daily-cap')?.value;
+  const notes = document.getElementById('partner-notes')?.value || '';
+
+  if (!name || !routeType || !webhookUrl) {
+    toast('Partner adı, yönlendirme tipi ve webhook URL zorunlu.', 'error');
+    return;
+  }
+
+  await adminAction({
+    action: 'insert',
+    table: 'partner_endpoints',
+    id: 'new',
+    values: {
+      name,
+      route_type: routeType,
+      webhook_url: webhookUrl,
+      is_active: true,
+      priority_weight: priorityWeight,
+      daily_cap: dailyCapRaw ? Number(dailyCapRaw) : null,
+      notes
+    }
+  });
+
+  toast('Partner kanalı eklendi');
+  ['partner-name', 'partner-webhook-url', 'partner-daily-cap', 'partner-notes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  loadPartnerEndpoints();
+}
+
+async function togglePartnerEndpoint(id, active) {
+  await adminAction({
+    action: 'update',
+    table: 'partner_endpoints',
+    id,
+    values: {
+      is_active: active === 'true'
+    }
+  });
+
+  toast('Partner kanalı güncellendi');
+  loadPartnerEndpoints();
+}
+
 async function loadPartnerEndpoints() {
   const { data, error } = await sb
     .from('partner_endpoints')
@@ -624,6 +676,7 @@ async function loadPartnerEndpoints() {
           <th>Bugün Gönderilen</th>
           <th>Başarılı</th>
           <th>Başarısız</th>
+          <th>İşlem</th>
         </tr>
       </thead>
       <tbody>
@@ -643,6 +696,11 @@ async function loadPartnerEndpoints() {
             <td>${row.sent_today || 0}</td>
             <td>${row.success_count || 0}</td>
             <td>${row.fail_count || 0}</td>
+            <td>
+              <button class="btn btn-ghost btn-sm" data-action="toggle-partner-endpoint" data-id="${safeAttr(row.id)}" data-active="${row.is_active ? 'false' : 'true'}">
+                ${row.is_active ? 'Pasif yap' : 'Aktif yap'}
+              </button>
+            </td>
           </tr>
         `).join('')}
       </tbody>
