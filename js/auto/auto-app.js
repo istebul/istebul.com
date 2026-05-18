@@ -327,7 +327,8 @@ function renderResults(results) {
   `}).join('');
 }
 
-document.getElementById('year').textContent = new Date().getFullYear();
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
 
 document.querySelectorAll('#gelir .btn.secondary').forEach((btn, index) => {
   const types = ['finance', 'insurance', 'report'];
