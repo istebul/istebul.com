@@ -32,12 +32,85 @@
 <div class="final-cta-card" style="margin-top:28px;">
   <p class="kicker">Partner başvurusu</p>
   <h2>Test lead akışıyla başlayalım.</h2>
-  <p>Galeri, sigorta, finansman veya hizmet partneriyseniz bizimle iletişime geçin.</p>
-  <div class="final-cta-actions">
-    <a class="btn primary" href="https://wa.me/905456786420?text=isteBul%20partner%20ba%C5%9Fvurusu%20hakk%C4%B1nda%20g%C3%B6r%C3%BC%C5%9Fmek%20istiyorum" target="_blank" rel="noopener">WhatsApp ile başvur</a>
-    <a class="btn secondary" href="/docs/partner-integration-pack.md">Entegrasyon dokümanı</a>
-  </div>
+  <p>Galeri, sigorta, finansman veya hizmet partneriyseniz başvurun; ekibimiz size dönüş yapsın.</p>
+
+  <form id="partner-application-form" class="partner-form">
+    <input name="company_name" required placeholder="Firma adı">
+    <input name="contact_name" required placeholder="Yetkili adı soyadı">
+    <input name="phone" required placeholder="Telefon">
+    <input name="email" type="email" required placeholder="E-posta">
+    <input name="city" placeholder="Şehir">
+
+    <select name="category" required>
+      <option value="">Kategori seçin</option>
+      <option value="dealer">Galeri / bayi</option>
+      <option value="finance">Finansman</option>
+      <option value="insurance">Sigorta</option>
+      <option value="service">Servis / ekspertiz</option>
+      <option value="other">Diğer</option>
+    </select>
+
+    <select name="lead_capacity">
+      <option value="">Aylık lead kapasitesi</option>
+      <option value="1-10">1–10</option>
+      <option value="10-50">10–50</option>
+      <option value="50-200">50–200</option>
+      <option value="200+">200+</option>
+    </select>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" name="webhook_ready">
+      Webhook / CRM entegrasyonuna hazırım
+    </label>
+
+    <input name="website" style="display:none" tabindex="-1" autocomplete="off">
+
+    <div class="final-cta-actions">
+      <button class="btn primary" type="submit">Partner başvurusu gönder</button>
+      <a class="btn secondary" href="/docs/partner-integration-pack.md">Entegrasyon dokümanı</a>
+    </div>
+  </form>
+
+  <div id="partner-form-result"></div>
 </div>
+
+<script>
+const form = document.getElementById('partner-application-form');
+
+form?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const submit = form.querySelector('button[type="submit"]');
+  const result = document.getElementById('partner-form-result');
+
+  submit.disabled = true;
+  submit.textContent = 'Gönderiliyor...';
+
+  const fd = new FormData(form);
+  const payload = Object.fromEntries(fd.entries());
+  payload.webhook_ready = fd.get('webhook_ready') === 'on';
+
+  try {
+    const res = await fetch('https://hjfrcdstbyonmgatgwcc.supabase.co/functions/v1/partner-application', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Başvuru başarısız');
+
+    form.reset();
+    result.innerHTML = '<p style="margin-top:16px;font-weight:800;color:#16a34a;">Başvurunuz alındı. Ekibimiz sizinle iletişime geçecek.</p>';
+  } catch (err) {
+    result.innerHTML = '<p style="margin-top:16px;font-weight:800;color:#dc2626;">Başvuru gönderilemedi. Lütfen tekrar deneyin.</p>';
+  } finally {
+    submit.disabled = false;
+    submit.textContent = 'Partner başvurusu gönder';
+  }
+});
+</script>
   </main>
 
   <footer class="corporate-footer">

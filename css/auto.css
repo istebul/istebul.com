@@ -896,3 +896,17 @@ body {
   font-size: 13px;
   font-weight: 700;
 }
+
+.partner-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.partner-form input,
+.partner-form select {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #dbe3ee;
+  font: inherit;
+}
