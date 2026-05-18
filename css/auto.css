@@ -1102,3 +1102,77 @@ h2{
   }
 }
 
+
+/* Premium corporate polish */
+.premium-result-card{
+  box-shadow: 0 8px 30px rgba(15,23,42,0.06);
+  border: 1px solid rgba(15,23,42,0.06);
+}
+
+.score{
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.score-label{
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.72;
+}
+
+.confidence{
+  background: rgba(15,23,42,0.04);
+  color: #334155;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.result-rank{
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auto-hot-banner{
+  font-size: 13px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  line-height: 1.45;
+}
+
+.premium-ai-summary{
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(15,23,42,0.06);
+  box-shadow: 0 8px 24px rgba(15,23,42,0.04);
+}
+
+.premium-ai-summary h3{
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.ai-chip{
+  transition: all 160ms ease;
+  font-weight: 700;
+}
+
+.ai-chip:hover{
+  transform: translateY(-1px);
+}
+
+.btn.primary{
+  font-weight: 800;
+}
+
+.btn.secondary{
+  background: #fff;
+  border: 1px solid rgba(15,23,42,0.08);
+}
+
+.monthly-impact{
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+
