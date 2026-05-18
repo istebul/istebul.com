@@ -1192,3 +1192,11 @@ h2{
   opacity: 0.7;
 }
 
+
+.ai-trust-note{
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #64748b;
+}
+

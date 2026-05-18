@@ -415,6 +415,10 @@ function renderResults(results) {
             Yorumu güncelle
           </button>
         </div>
+
+        <p class="ai-trust-note">
+          Bu değerlendirme tercihlerinize göre senaryo bazlı karar modelidir; canlı bayi fiyatı veya bağlayıcı finansman teklifi değildir.
+        </p>
       </div>
     </section>
   `;
