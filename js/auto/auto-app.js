@@ -165,8 +165,20 @@ function openLeadModal(type, vehicle = '') {
 
   document.getElementById('close-lead-modal').onclick = () => modal.remove();
 
+  let leadSubmitting = false;
+
   document.getElementById('phone-lead-form').addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    if (leadSubmitting) return;
+    leadSubmitting = true;
+
+    const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Gönderiliyor...';
+    }
+
     const leadData = new FormData(event.currentTarget);
     const phone = leadData.get('phone');
     const selectedVehicle = leadData.get('vehicle') || vehicle;
