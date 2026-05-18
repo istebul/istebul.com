@@ -464,7 +464,7 @@ function renderWizard() {
     </div>
 
     <div class="wizard-question">
-      <p class="kicker">AI karar danışmanı</p>
+      <p class="kicker">Karar danışmanı</p>
       <h3>${escapeHtml(step.title)}</h3>
       <p>${escapeHtml(step.description)}</p>
     </div>
@@ -500,7 +500,7 @@ function renderWizard() {
     <div class="wizard-actions">
       <button type="button" class="btn secondary" data-wizard-back ${wizardIndex === 0 ? 'disabled' : ''}>Geri</button>
       <button type="button" class="btn primary" data-wizard-next ${canProceed ? '' : 'disabled'}>
-        ${wizardIndex === wizardSteps.length - 1 ? 'AI analizimi başlat' : 'Devam et'}
+        ${wizardIndex === wizardSteps.length - 1 ? 'Analizi başlat' : 'Devam et'}
       </button>
     </div>
   `;
