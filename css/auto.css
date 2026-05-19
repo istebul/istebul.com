@@ -1642,3 +1642,75 @@ h2{
   }
 }
 
+
+/* FORCE marketplace layout override */
+.auto-market-card{
+  display: grid !important;
+  grid-template-columns: 220px minmax(0,1fr) 260px 190px !important;
+  gap: 20px !important;
+  align-items: start !important;
+  padding: 22px !important;
+  min-height: auto !important;
+}
+
+.auto-market-card > *{
+  min-width: 0;
+}
+
+.auto-market-card .top-row,
+.auto-market-card .score,
+.auto-market-card .score-label{
+  display: none !important;
+}
+
+.auto-market-main,
+.auto-market-decision,
+.auto-market-actions{
+  position: relative !important;
+  width: auto !important;
+  float: none !important;
+}
+
+.auto-market-main h3{
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  word-break: break-word;
+}
+
+.auto-market-insights .analysis-box,
+.auto-market-insights .risk-box{
+  margin: 0 !important;
+  width: auto !important;
+}
+
+.auto-market-actions .btn{
+  display: flex !important;
+  width: 100% !important;
+}
+
+@media (max-width:1100px){
+  .auto-market-card{
+    grid-template-columns: 180px 1fr !important;
+  }
+
+  .auto-market-decision,
+  .auto-market-actions{
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width:720px){
+  .auto-market-card{
+    grid-template-columns: 1fr !important;
+  }
+
+  .auto-market-actions{
+    grid-template-columns: 1fr !important;
+  }
+
+  .auto-market-insights{
+    grid-template-columns: 1fr !important;
+  }
+}
+
