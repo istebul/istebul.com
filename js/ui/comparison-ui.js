@@ -38,7 +38,10 @@ export class ComparisonUI {
 
     getComparisonCardMarkup(item, maxValues) {
         const tags = Array.isArray(item.tags) ? item.tags : [];
-        return '<article class="comparison-card">' +
+        const isLeader = item.score && Number(item.score) >= Math.max(...(window.app?.comparisonItems || []).map(i => Number(i.score || 0)), 0);
+
+        return '<article class="comparison-card ' + (item.sourceType === 'isteBul Auto' ? 'comparison-card-auto' : '') + '">' +
+            (isLeader ? '<div class="comparison-leader-badge">🏆 En güçlü eşleşme</div>' : '') +
             '<div class="comparison-card-head">' +
                 '<div>' +
                     '<span class="assistant-kicker">' + this.escapeHtml(item.sourceType || 'Seçenek') + '</span>' +
@@ -46,7 +49,7 @@ export class ComparisonUI {
                 '</div>' +
                 '<button type="button" class="icon-btn" title="Karşılaştırmadan çıkar" data-comparison-remove="' + this.escapeHtml(item.id) + '"><i data-lucide="x"></i></button>' +
             '</div>' +
-            '<div class="comparison-score-row">' +
+            '<div class="comparison-score-row premium-score-row">' +
                 '<strong>' + this.escapeHtml(item.score || '-') + '</strong>' +
                 '<span>AI karar skoru</span>' +
                 '<em>' + this.escapeHtml(item.riskLevel || 'Kontrol gerekli') + '</em>' +
