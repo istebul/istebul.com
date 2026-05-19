@@ -373,7 +373,7 @@ function renderResults(results) {
   root.innerHTML = `
     <section class="auto-filter-toolbar" aria-label="Auto sonuç filtreleri">
       <div>
-        <strong>${results.length} öneri</strong>
+        <strong>${results.length} / ${allResults.length || results.length} öneri gösteriliyor</strong>
         <span>Sonuçları kullanım önceliğinize göre düzenleyin.</span>
       </div>
 
