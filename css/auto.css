@@ -1282,13 +1282,13 @@ h2{
 
 .brand-logo-link img{
   display: block;
-  width: clamp(168px, 18vw, 232px);
+  width: clamp(142px, 15vw, 178px);
   height: auto;
 }
 
 @media(max-width:720px){
   .brand-logo-link img{
-    width: 158px;
+    width: 138px;
   }
 }
 
