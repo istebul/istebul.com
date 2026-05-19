@@ -371,15 +371,15 @@ function renderResults(results) {
 
       <div class="cta-row result-cta-row">
         <button class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
-          Teklif seçeneklerini gör
+          Teklif sürecini başlat
         </button>
 
         <button class="btn secondary auto-interest-btn" data-interest="finance" data-vehicle="${escapeHtml(vehicle.name)}">
-          Finansmanı değerlendir
+          Finansman etkisini değerlendir
         </button>
 
         <button class="btn secondary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
-          WhatsApp ile sor
+          Uzmanla görüş
         </button>
       </div>
 
