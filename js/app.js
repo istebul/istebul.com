@@ -3883,6 +3883,7 @@ function applyProductionRouteVisibility() {
 }
 
 window.addEventListener('app:ready', applyProductionRouteVisibility);
+window.addEventListener('DOMContentLoaded', applyProductionRouteVisibility);
 window.addEventListener('popstate', applyProductionRouteVisibility);
 document.addEventListener('routeChanged', applyProductionRouteVisibility);
 document.addEventListener('click', () => setTimeout(applyProductionRouteVisibility, 0));
