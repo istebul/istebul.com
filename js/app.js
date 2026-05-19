@@ -3870,6 +3870,11 @@ function applyProductionRouteVisibility() {
     }
 
     if (sectionId === 'compare') {
+        const compareSection = document.getElementById('compare');
+        if (compareSection) {
+            compareSection.classList.remove('hidden');
+            compareSection.style.display = 'block';
+        }
         window.app?.ui?.renderComparison?.(window.app?.comparisonItems || []);
     }
 
