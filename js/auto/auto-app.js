@@ -787,6 +787,7 @@ const form = document.getElementById('auto-form');
 let autoFormStarted = false;
 let autoAnalysisRunning = false;
 let autoAnalysisTimer = null;
+let lastResults = [];
 
 form.addEventListener('input', () => {
   if (!autoFormStarted) {
@@ -805,6 +806,7 @@ form.addEventListener('submit', (event) => {
 
   const formData = readForm(form);
   const results = recommendVehicles(formData);
+  lastResults = results;
 
   trackAutoEvent('auto_analysis_started', formData);
 
