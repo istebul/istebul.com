@@ -378,6 +378,10 @@ function renderResults(results) {
           Finansman etkisini değerlendir
         </button>
 
+        <button class="btn secondary auto-compare-btn" data-vehicle="${escapeHtml(vehicle.name)}">
+          Karşılaştır
+        </button>
+
         <button class="btn secondary auto-shortlist-btn" data-vehicle="${escapeHtml(vehicle.name)}">
           Shortlist'e ekle
         </button>
@@ -848,6 +852,19 @@ form.addEventListener('submit', (event) => {
 });
 
 document.addEventListener('click', async (event) => {
+  const compareBtn = event.target.closest('.auto-compare-btn');
+
+  if (compareBtn) {
+    const vehicleName = compareBtn.dataset.vehicle;
+    const vehicle = lastResults.find(v => v.name === vehicleName);
+
+    if (vehicle && window.app?.addAutoVehicleToComparison) {
+      window.app.addAutoVehicleToComparison(vehicle);
+    }
+
+    return;
+  }
+
   const shortlistBtn = event.target.closest('.auto-shortlist-btn');
 
   if (shortlistBtn) {

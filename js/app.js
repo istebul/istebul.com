@@ -3508,6 +3508,26 @@ Açıklama yok.
         return true;
     }
 
+    addAutoVehicleToComparison(vehicle) {
+        if (!vehicle) return;
+
+        this.addComparisonItem({
+            id: `auto-compare-${vehicle.name}`,
+            signature: `auto-${vehicle.name}`,
+            categoryId: 'arac',
+            title: vehicle.name,
+            score: Number(vehicle.score || 0),
+            price: Number(vehicle.price || vehicle.costs?.purchase || 0),
+            yearlyCost: Number(vehicle.costs?.annual || 0),
+            monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0),
+            tags: [
+                vehicle.fuel || 'Araç',
+                vehicle.segment || 'AI analiz'
+            ],
+            comment: vehicle.reasons?.[0] || 'AI araç karar analizi sonucu önerildi.'
+        });
+    }
+
     toggleFavorite(listingId) {
         const normalizedId = listingId.toString();
         if (!Array.isArray(this.favorites)) this.favorites = [];
