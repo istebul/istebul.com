@@ -134,9 +134,23 @@ async function adminAction(payload) {
   });
 
   if (error) {
+    let detail = error.message;
+
+    try {
+      const body = await error.context?.clone?.().json?.();
+      detail = body?.error || body?.message || detail;
+      console.error('admin-action error body:', body);
+    } catch (_) {
+      try {
+        const text = await error.context?.clone?.().text?.();
+        if (text) detail = text;
+        console.error('admin-action error text:', text);
+      } catch (_) {}
+    }
+
     console.error(error);
-    toast('Hata: ' + error.message, 'error');
-    throw error;
+    toast('Hata: ' + detail, 'error');
+    throw new Error(detail);
   }
 
   if (data?.error) {
