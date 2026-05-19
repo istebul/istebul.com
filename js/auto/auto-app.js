@@ -313,7 +313,15 @@ const vehicleImages = {
 };
 
 function getVehicleImage(name){
-  return vehicleImages[name] || '';
+  if (vehicleImages[name]) return vehicleImages[name];
+
+  if (name.includes('Toyota')) return '/assets/images/auto/toyota-corolla-cross-hybrid.svg';
+  if (name.includes('Honda')) return '/assets/images/auto/honda-civic-eco.svg';
+  if (name.includes('Hyundai')) return '/assets/images/auto/hyundai-tucson-tgdi.svg';
+  if (name.includes('Renault')) return '/assets/images/auto/renault-clio-icon.svg';
+  if (name.includes('Volkswagen')) return '/assets/images/auto/volkswagen-golf-tsi.svg';
+
+  return '';
 }
 
 function renderResults(results) {
