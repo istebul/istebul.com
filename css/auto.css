@@ -1449,3 +1449,20 @@ h2{
   }
 }
 
+
+/* Fix final CTA secondary button text visibility */
+.final-cta-actions .btn.secondary,
+.final-cta-actions button.btn.secondary,
+.final-cta-actions a.btn.secondary{
+  color: #0f172a !important;
+  background: #ffffff;
+  border: 1px solid rgba(255,255,255,0.9);
+}
+
+.final-cta-actions .btn.secondary:hover,
+.final-cta-actions button.btn.secondary:hover,
+.final-cta-actions a.btn.secondary:hover{
+  color: #0f172a !important;
+  background: #f8fafc;
+}
+
