@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#dc2626" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#0f172a" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="car" x1="0" x2="1">
+      <stop offset="0" stop-color="#dc2626"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" rx="32" fill="url(#bg)"/>
+  <rect x="70" y="218" width="500" height="58" rx="28" fill="url(#car)"/>
+  <path d="M160 218 L220 150 H410 L488 218 Z" fill="url(#car)" opacity="0.92"/>
+  <path d="M238 164 H322 V210 H198 Z" fill="#ffffff" opacity="0.72"/>
+  <path d="M336 164 H402 L456 210 H336 Z" fill="#ffffff" opacity="0.62"/>
+  <circle cx="190" cy="280" r="34" fill="#0f172a"/>
+  <circle cx="450" cy="280" r="34" fill="#0f172a"/>
+  <circle cx="190" cy="280" r="14" fill="#e2e8f0"/>
+  <circle cx="450" cy="280" r="14" fill="#e2e8f0"/>
+  <text x="70" y="74" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="900">Honda</text>
+  <text x="70" y="112" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800">Civic Eco</text>
+</svg>
