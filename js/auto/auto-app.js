@@ -378,6 +378,10 @@ function renderResults(results) {
           Finansman etkisini değerlendir
         </button>
 
+        <button class="btn secondary auto-shortlist-btn" data-vehicle="${escapeHtml(vehicle.name)}">
+          Shortlist'e ekle
+        </button>
+
         <button class="btn secondary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
           Uzmanla görüş
         </button>
@@ -844,6 +848,20 @@ form.addEventListener('submit', (event) => {
 });
 
 document.addEventListener('click', async (event) => {
+  const shortlistBtn = event.target.closest('.auto-shortlist-btn');
+
+  if (shortlistBtn) {
+    const vehicleName = shortlistBtn.dataset.vehicle;
+    const vehicle = lastResults.find(v => v.name === vehicleName);
+
+    if (vehicle && window.app?.toggleAutoFavorite) {
+      const added = window.app.toggleAutoFavorite(vehicle);
+      shortlistBtn.textContent = added ? 'Shortlist'te' : 'Shortlist'e ekle';
+    }
+
+    return;
+  }
+
   const whatsappBtn = event.target.closest('.auto-whatsapp-btn');
 
   if (whatsappBtn) {
