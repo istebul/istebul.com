@@ -8532,3 +8532,48 @@ body.app-route-active [data-private-section].route-visible {
   background: linear-gradient(90deg,#2563eb,#14b8a6);
 }
 
+
+/* Premium Auto comparison vehicle visuals */
+.comparison-vehicle-visual{
+  margin: -8px -8px 16px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #f8fafc;
+  border: 1px solid rgba(15,23,42,.06);
+}
+
+.comparison-vehicle-visual img{
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
+
+.comparison-card-auto .comparison-card-head h4{
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+
+.comparison-card-auto .premium-score-row{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.comparison-card-auto .premium-score-row strong{
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: linear-gradient(135deg,#2563eb,#14b8a6);
+  color: #fff;
+  font-size: 24px;
+}
+
+.comparison-card-auto .premium-score-row span,
+.comparison-card-auto .premium-score-row em{
+  grid-column: 2;
+}
+

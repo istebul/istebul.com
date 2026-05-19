@@ -41,6 +41,7 @@ export class ComparisonUI {
         const isLeader = item.score && Number(item.score) >= Math.max(...(window.app?.comparisonItems || []).map(i => Number(i.score || 0)), 0);
 
         return '<article class="comparison-card ' + (item.sourceType === 'isteBul Auto' ? 'comparison-card-auto' : '') + '">' +
+            (item.image ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(item.image) + '" alt="' + this.escapeHtml(item.title || 'Araç') + '" loading="lazy"></div>' : '') +
             (isLeader ? '<div class="comparison-leader-badge">🏆 En güçlü eşleşme</div>' : '') +
             '<div class="comparison-card-head">' +
                 '<div>' +
