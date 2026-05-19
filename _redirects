@@ -1,4 +1,12 @@
 /admin-panel.html /admin-panel.html 200
 /auto /auto/index.html 200
 /auto/ /auto/index.html 200
+/karsilastir /index.html 200
+/karar-asistani /index.html 200
+/favoriler /index.html 200
+/gecmis /index.html 200
+/profil /index.html 200
+/ilanlar /index.html 200
+/ilan-ekle /index.html 200
+/messages /index.html 200
 /js/* /js/:splat 200
