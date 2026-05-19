@@ -809,6 +809,32 @@ form.addEventListener('submit', (event) => {
       document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
       trackAutoEvent('auto_results_rendered', { count: results.length });
       renderResults(results);
+
+      try {
+        if (window.app?.currentUser?.id && typeof window.app.saveDecisionHistory === 'function' && results.length) {
+          window.app.saveDecisionHistory({
+            id: `auto-${Date.now()}`,
+            categoryId: 'auto',
+            categoryName: 'Araç Karar Analizi',
+            createdAt: new Date().toISOString(),
+            rawAnswers: formData,
+            answers: formData,
+            summary: `${results[0].name} kullanım ve bütçe profilinize göre en güçlü araç eşleşmesi olarak öne çıktı.`,
+            insight: 'isteBul Auto AI araç karar analizi',
+            dataHealth: 'estimated',
+            recommendations: results.map((vehicle) => ({
+              name: vehicle.name,
+              score: vehicle.score,
+              price: vehicle.price || vehicle.costs?.purchase || 0,
+              yearlyCost: vehicle.costs?.annual || 0,
+              financeComparisons: [{
+                monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0)
+              }]
+            }))
+          });
+        }
+      } catch (_) {}
+
       trackUniqueAutoEvent('auto_results_view', formData, 'results');
     } finally {
       autoAnalysisRunning = false;
