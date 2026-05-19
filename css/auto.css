@@ -1292,3 +1292,49 @@ h2{
   }
 }
 
+
+/* Premium Auto header navigation polish */
+.auto-header{
+  min-height: 72px;
+  padding: 0 5vw;
+  background: rgba(255,255,255,0.92);
+  border-bottom: 1px solid rgba(15,23,42,0.06);
+  backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.auto-header nav{
+  gap: clamp(16px, 2vw, 28px);
+}
+
+.auto-header nav a{
+  color: #475569;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+.auto-header nav a:hover{
+  color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.brand-logo-link{
+  padding: 4px 0;
+}
+
+@media(max-width:720px){
+  .auto-header{
+    min-height: 64px;
+    padding: 0 18px;
+  }
+
+  .auto-header nav{
+    gap: 12px;
+  }
+
+  .auto-header nav a{
+    font-size: 13px;
+  }
+}
+
