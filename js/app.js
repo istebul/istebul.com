@@ -2702,7 +2702,17 @@ Açıklama yok.
 
     repeatDecision(decisionId) {
         const record = this.decisionHistory.find((item) => item.id === decisionId);
-        if (!record || !this.decisionAssistant[record.categoryId]) {
+        if (!record) {
+            this.ui.showError('Kaydedilen karar bulunamadı.');
+            return;
+        }
+
+        if (record.categoryId === 'auto') {
+            window.location.href = '/auto/';
+            return;
+        }
+
+        if (!this.decisionAssistant[record.categoryId]) {
             this.ui.showError('Kaydedilen karar bulunamadı.');
             return;
         }
