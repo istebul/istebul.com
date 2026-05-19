@@ -378,11 +378,11 @@ function renderResults(results) {
           Finansman etkisini değerlendir
         </button>
 
-        <button class="btn secondary auto-compare-btn" data-vehicle="${escapeHtml(vehicle.name)}">
+        <button class="btn secondary auto-compare-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}">
           Karşılaştır
         </button>
 
-        <button class="btn secondary auto-shortlist-btn" data-vehicle="${escapeHtml(vehicle.name)}">
+        <button class="btn secondary auto-shortlist-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}">
           Shortlist'e ekle
         </button>
 
@@ -938,8 +938,9 @@ document.addEventListener('click', async (event) => {
   const compareBtn = event.target.closest('.auto-compare-btn');
 
   if (compareBtn) {
+    const vehicleIndex = Number(compareBtn.dataset.resultIndex);
     const vehicleName = compareBtn.dataset.vehicle;
-    const vehicle = lastResults.find(v => v.name === vehicleName);
+    const vehicle = lastResults[vehicleIndex] || lastResults.find(v => v.name === vehicleName);
 
     if (vehicle) {
       if (window.app?.addAutoVehicleToComparison) window.app.addAutoVehicleToComparison(vehicle);
@@ -952,8 +953,9 @@ document.addEventListener('click', async (event) => {
   const shortlistBtn = event.target.closest('.auto-shortlist-btn');
 
   if (shortlistBtn) {
+    const vehicleIndex = Number(shortlistBtn.dataset.resultIndex);
     const vehicleName = shortlistBtn.dataset.vehicle;
-    const vehicle = lastResults.find(v => v.name === vehicleName);
+    const vehicle = lastResults[vehicleIndex] || lastResults.find(v => v.name === vehicleName);
 
     if (vehicle) {
       const added = window.app?.toggleAutoFavorite
