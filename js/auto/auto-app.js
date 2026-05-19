@@ -322,60 +322,73 @@ function renderResults(results) {
         : 'Alternatif senaryo';
 
     return `
-    <article class="premium-result-card conversion-result-card">
-      <div class="result-rank premium-rank">${rankLabel}</div>
-
-      <div class="top-row">
-        <div>
-          <div class="score">${vehicle.score}/100</div>
-          <small class="score-label">Karar skoru</small>
+    <article class="auto-market-card premium-result-card conversion-result-card">
+      <div class="auto-market-media">
+        <div class="auto-market-rank">${rankLabel}</div>
+        <div class="auto-market-image" aria-hidden="true">
+          <span>${escapeHtml(vehicle.name.split(' ').slice(0, 2).join(' '))}</span>
         </div>
-        <div class="confidence">Analiz güveni: %${vehicle.confidence}</div>
       </div>
 
-      <h3>${escapeHtml(vehicle.name)}</h3>
-
-      <p class="result-summary">
-        ${vehicle.score >= 85
-          ? 'Profiliniz için en güçlü eşleşmelerden biri. Toplam maliyet, kullanım uyumu ve finansman açısından öne çıkıyor.'
-          : 'Profilinize uygun güçlü alternatiflerden biri. Kullanım ve bütçe dengenize göre değerlendirildi.'}
-      </p>
-
-      <div class="monthly-impact">
-        <span>Tahmini aylık bütçe etkisi</span>
-        <strong>${formatter.format(monthlyImpact)} ₺</strong>
-      </div>
-
-      <div class="analysis-box">
-        <strong>Güçlü taraflar</strong>
-        <ul>${vehicle.reasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
-      </div>
-
-      <div class="risk-box">
-        <strong>Dikkat noktaları</strong>
-        <ul>${vehicle.risks.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
-      </div>
-
-      <div class="cost">
-        <p><strong>12 aylık tahmini maliyet:</strong> ${formatter.format(vehicle.costs.total)} ₺</p>
-        <p>Yakıt: ${formatter.format(vehicle.costs.fuel)} ₺</p>
-        <p>Sigorta: ${formatter.format(vehicle.costs.insurance)} ₺</p>
-        <p>Bakım: ${formatter.format(vehicle.costs.maintenance)} ₺</p>
-      </div>
-
-      ${vehicle.score >= 85 ? `
-        <div class="auto-hot-banner">
-          🔥 Bu profil için güncel teklif ve finansman seçeneklerini değerlendirmek faydalı olabilir.
+      <div class="auto-market-main">
+        <div class="auto-market-title-row">
+          <div>
+            <h3>${escapeHtml(vehicle.name)}</h3>
+            <p class="result-summary">
+              ${vehicle.score >= 85
+                ? 'Profiliniz için güçlü eşleşme. Toplam maliyet, kullanım uyumu ve finansman açısından öne çıkıyor.'
+                : 'Profilinize uygun alternatif. Kullanım ve bütçe dengenize göre değerlendirildi.'}
+            </p>
+          </div>
+          <div class="confidence">Analiz güveni: %${vehicle.confidence}</div>
         </div>
-      ` : ''}
 
-      <div class="cta-row result-cta-row">
+        <div class="auto-market-tags">
+          <span>AI analiz</span>
+          <span>Toplam maliyet</span>
+          <span>Finansman etkisi</span>
+        </div>
+
+        <div class="auto-market-insights">
+          <div class="analysis-box">
+            <strong>Güçlü taraflar</strong>
+            <ul>${vehicle.reasons.slice(0, 3).map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
+          </div>
+
+          <div class="risk-box">
+            <strong>Dikkat noktaları</strong>
+            <ul>${vehicle.risks.slice(0, 2).map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
+          </div>
+        </div>
+      </div>
+
+      <aside class="auto-market-decision">
+        <div class="auto-market-score">
+          <strong>${vehicle.score}</strong>
+          <span>/100 karar skoru</span>
+        </div>
+
+        <div class="monthly-impact">
+          <span>Aylık bütçe etkisi</span>
+          <strong>${formatter.format(monthlyImpact)} ₺</strong>
+        </div>
+
+        <div class="cost auto-market-cost">
+          <p><strong>12 aylık tahmini maliyet</strong></p>
+          <p>${formatter.format(vehicle.costs.total)} ₺</p>
+          <small>Yakıt ${formatter.format(vehicle.costs.fuel)} ₺ • Sigorta ${formatter.format(vehicle.costs.insurance)} ₺ • Bakım ${formatter.format(vehicle.costs.maintenance)} ₺</small>
+        </div>
+
+        ${vehicle.score >= 85 ? `
+          <div class="auto-hot-banner">
+            Güncel teklif ve finansman seçenekleri değerlendirilebilir.
+          </div>
+        ` : ''}
+      </aside>
+
+      <div class="auto-market-actions">
         <button class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
           Teklif sürecini başlat
-        </button>
-
-        <button class="btn secondary auto-interest-btn" data-interest="finance" data-vehicle="${escapeHtml(vehicle.name)}">
-          Finansman etkisini değerlendir
         </button>
 
         <button class="btn secondary auto-compare-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}">
@@ -389,9 +402,13 @@ function renderResults(results) {
         <button class="btn secondary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
           Uzmanla görüş
         </button>
-      </div>
 
-      <p class="cta-microcopy">Ücretsiz ön değerlendirme • zorunlu satın alma yok • bilgileriniz güvenle işlenir</p>
+        <button class="btn secondary auto-interest-btn" data-interest="finance" data-vehicle="${escapeHtml(vehicle.name)}">
+          Finansman etkisi
+        </button>
+
+        <p class="cta-microcopy">Ücretsiz ön değerlendirme • zorunlu satın alma yok</p>
+      </div>
     </article>
   `}).join('') + `
     <section class="premium-ai-summary ai-explanation-box" data-ai-explanation>
