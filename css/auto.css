@@ -1273,3 +1273,22 @@ h2{
   }
 }
 
+
+.brand-logo-link{
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.brand-logo-link img{
+  display: block;
+  width: clamp(168px, 18vw, 232px);
+  height: auto;
+}
+
+@media(max-width:720px){
+  .brand-logo-link img{
+    width: 158px;
+  }
+}
+
