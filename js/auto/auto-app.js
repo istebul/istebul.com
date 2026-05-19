@@ -315,7 +315,11 @@ function renderResults(results) {
 
   root.innerHTML = results.map((vehicle, index) => {
     const monthlyImpact = Math.round((Number(vehicle.costs.total || 0) / 12) / 100) * 100;
-    const rankLabel = index === 0 ? 'En güçlü eşleşme' : `${index + 1}. güçlü alternatif`;
+    const rankLabel = index === 0
+      ? 'Genel uyum lideri'
+      : index === 1
+        ? 'Maliyet odaklı alternatif'
+        : 'Alternatif senaryo';
 
     return `
     <article class="premium-result-card conversion-result-card">
@@ -343,12 +347,12 @@ function renderResults(results) {
       </div>
 
       <div class="analysis-box">
-        <strong>Neden önerildi?</strong>
+        <strong>Güçlü taraflar</strong>
         <ul>${vehicle.reasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       </div>
 
       <div class="risk-box">
-        <strong>Dikkat edilmesi gerekenler</strong>
+        <strong>Dikkat noktaları</strong>
         <ul>${vehicle.risks.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
       </div>
 
