@@ -3856,7 +3856,7 @@ function applyProductionRouteVisibility() {
     const sectionId = routeMap[path] || (path.startsWith('/ilan/') ? 'listing-detail' : 'home');
     const homeSections = new Set(['home', 'trust', 'how-it-works', 'categories']);
 
-    document.querySelectorAll('main > section').forEach((section) => {
+    document.querySelectorAll('section[id]').forEach((section) => {
         const shouldShowHome = sectionId === 'home' && homeSections.has(section.id);
         const shouldShowSection = section.id === sectionId;
         const shouldShow = shouldShowHome || shouldShowSection;
