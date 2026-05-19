@@ -539,8 +539,14 @@ export class AssistantUI {
             return;
         }
 
-        container.innerHTML = history.map((item) => `
-            <article class="decision-history-card">
+        container.innerHTML = history.map((item) => {
+            const isAuto = item.categoryId === 'auto';
+            const answers = Array.isArray(item.answers)
+                ? item.answers
+                : Object.entries(item.answers || {}).map(([label, value]) => ({ label, value }));
+
+            return `
+            <article class="decision-history-card ${isAuto ? 'decision-history-card-auto' : ''}">
                 <div class="decision-history-main">
                     <div>
                         <span class="assistant-kicker">${this.escapeHtml(item.categoryName || 'Karar')}</span>
@@ -553,24 +559,24 @@ export class AssistantUI {
                     </div>
                 </div>
                 <div class="decision-history-metrics">
-                    <span><strong>Fiyat:</strong> ${this.formatPrice(item.topPick?.price || 0)} ₺</span>
-                    <span><strong>Dönemsel maliyet:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)} ₺</span>
-                    <span><strong>Aylık kredi:</strong> ${this.formatPrice(item.topPick?.monthlyPayment || 0)} ₺</span>
+                    <span><strong>${isAuto ? 'Tahmini fiyat' : 'Fiyat'}:</strong> ${this.formatPrice(item.topPick?.price || 0)} ₺</span>
+                    <span><strong>${isAuto ? '12 aylık maliyet' : 'Dönemsel maliyet'}:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)} ₺</span>
+                    <span><strong>${isAuto ? 'Aylık bütçe etkisi' : 'Aylık kredi'}:</strong> ${this.formatPrice(item.topPick?.monthlyPayment || 0)} ₺</span>
                     <span><strong>Tarih:</strong> ${this.formatDate(item.createdAt)}</span>
                 </div>
                 <div class="decision-history-answers">
-                    ${(item.answers || []).map((answer) => `<span>${this.escapeHtml(answer.label)}: ${this.escapeHtml(answer.value)}</span>`).join('')}
+                    ${answers.slice(0, 6).map((answer) => `<span>${this.escapeHtml(answer.label)}: ${this.escapeHtml(answer.value)}</span>`).join('')}
                 </div>
                 <div class="decision-history-actions">
                     <button type="button" class="btn btn-primary" data-decision-repeat="${this.escapeHtml(item.id)}">
-                        <i data-lucide="refresh-cw"></i> Tekrar aç
+                        <i data-lucide="refresh-cw"></i> ${isAuto ? 'Yeni Auto analizi' : 'Tekrar aç'}
                     </button>
                     <button type="button" class="btn btn-outline" data-decision-delete="${this.escapeHtml(item.id)}">
                         <i data-lucide="trash-2"></i> Sil
                     </button>
                 </div>
             </article>
-        `).join('');
+        `}).join('');
 
         this.loadIcons();
     }
