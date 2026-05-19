@@ -1028,13 +1028,37 @@ function toggleAutoFavoriteFallback(vehicle){
   return true;
 }
 
+
+function getAutoFallbackImage(name){
+  name = String(name || '');
+
+  if (name.includes('Toyota')) return '/assets/images/auto/toyota-corolla-cross-hybrid.svg';
+  if (name.includes('Honda')) return '/assets/images/auto/honda-civic-eco.svg';
+  if (name.includes('Hyundai')) return '/assets/images/auto/hyundai-tucson-tgdi.svg';
+  if (name.includes('Renault')) return '/assets/images/auto/renault-clio-icon.svg';
+  if (name.includes('Volkswagen')) return '/assets/images/auto/volkswagen-golf-tsi.svg';
+  if (name.includes('Togg')) return '/assets/images/auto/togg-t10x.svg';
+  if (name.includes('Tesla')) return '/assets/images/auto/tesla-model.svg';
+  if (name.includes('BYD')) return '/assets/images/auto/byd-electric.svg';
+  if (name.includes('Peugeot')) return '/assets/images/auto/peugeot-suv.svg';
+  if (name.includes('Skoda')) return '/assets/images/auto/skoda-family.svg';
+  if (name.includes('BMW')) return '/assets/images/auto/bmw-premium.svg';
+  if (name.includes('Mercedes')) return '/assets/images/auto/mercedes-premium.svg';
+
+  return '';
+}
+
+function goToComparisonPage(){
+  window.location.assign('/karsilastir');
+}
+
 function addAutoComparisonFallback(vehicle){
   const key = 'istebu_comparison_items';
   const items = readAutoStorage(key);
   const signature = `auto-${vehicle.name}`;
 
   if (items.some(item => item.signature === signature)) {
-    window.location.href = '/karsilastir';
+    goToComparisonPage();
     return;
   }
 
@@ -1052,6 +1076,7 @@ function addAutoComparisonFallback(vehicle){
     categoryName: 'Araç Karşılaştırma',
     sourceType: 'isteBul Auto',
     title: vehicle.name,
+    image: getAutoFallbackImage(vehicle.name),
     score,
     riskLevel: score >= 85 ? 'Düşük risk' : score >= 70 ? 'Dengeli' : 'Kontrol gerekli',
     price: Number(vehicle.price || vehicle.costs?.purchase || 0),
@@ -1064,7 +1089,7 @@ function addAutoComparisonFallback(vehicle){
     risks: vehicle.risks || []
   }]);
 
-  window.location.href = '/karsilastir';
+  goToComparisonPage();
 }
 
 document.addEventListener('click', async (event) => {
@@ -1076,8 +1101,7 @@ document.addEventListener('click', async (event) => {
     const vehicle = lastResults[vehicleIndex] || lastResults.find(v => v.name === vehicleName);
 
     if (vehicle) {
-      if (window.app?.addAutoVehicleToComparison) window.app.addAutoVehicleToComparison(vehicle);
-      else addAutoComparisonFallback(vehicle);
+      addAutoComparisonFallback(vehicle);
     }
 
     return;
