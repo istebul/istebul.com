@@ -1714,3 +1714,17 @@ h2{
   }
 }
 
+
+/* Force Auto results to single-column marketplace list */
+#auto-results,
+.results#auto-results{
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 18px !important;
+}
+
+#auto-results .auto-market-card{
+  width: 100% !important;
+  max-width: none !important;
+}
+
