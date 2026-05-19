@@ -856,7 +856,7 @@ document.addEventListener('click', async (event) => {
 
     if (vehicle && window.app?.toggleAutoFavorite) {
       const added = window.app.toggleAutoFavorite(vehicle);
-      shortlistBtn.textContent = added ? 'Shortlist'te' : 'Shortlist'e ekle';
+      shortlistBtn.textContent = added ? "Shortlist'te" : "Shortlist'e ekle";
     }
 
     return;
