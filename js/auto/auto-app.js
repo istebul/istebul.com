@@ -331,6 +331,35 @@ function getVehicleImage(name){
   return '';
 }
 
+
+function getFilteredAutoResults(){
+  let items = [...allResults];
+
+  if (resultFilters.fuel !== 'all') {
+    items = items.filter(vehicle => vehicle.fuel === resultFilters.fuel);
+  }
+
+  if (resultFilters.body !== 'all') {
+    items = items.filter(vehicle => vehicle.body === resultFilters.body);
+  }
+
+  items.sort((a, b) => {
+    if (resultFilters.sort === 'price_asc') return Number(a.price || 0) - Number(b.price || 0);
+    if (resultFilters.sort === 'family') return Number(b.family || 0) - Number(a.family || 0);
+    if (resultFilters.sort === 'city') return Number(b.city || 0) - Number(a.city || 0);
+    if (resultFilters.sort === 'long') return Number(b.long || 0) - Number(a.long || 0);
+    return Number(b.score || 0) - Number(a.score || 0);
+  });
+
+  return items;
+}
+
+function renderFilteredAutoResults(){
+  const filtered = getFilteredAutoResults();
+  lastResults = filtered;
+  renderResults(filtered);
+}
+
 function renderResults(results) {
   const root = document.getElementById('auto-results');
 
@@ -341,7 +370,46 @@ function renderResults(results) {
 
   const formData = form ? readForm(form) : {};
 
-  root.innerHTML = results.map((vehicle, index) => {
+  root.innerHTML = `
+    <section class="auto-filter-toolbar" aria-label="Auto sonuç filtreleri">
+      <div>
+        <strong>${results.length} öneri</strong>
+        <span>Sonuçları kullanım önceliğinize göre düzenleyin.</span>
+      </div>
+
+      <label>
+        Yakıt
+        <select data-auto-filter="fuel">
+          <option value="all" ${resultFilters.fuel === 'all' ? 'selected' : ''}>Tümü</option>
+          <option value="electric" ${resultFilters.fuel === 'electric' ? 'selected' : ''}>Elektrik</option>
+          <option value="hybrid" ${resultFilters.fuel === 'hybrid' ? 'selected' : ''}>Hibrit</option>
+          <option value="gasoline" ${resultFilters.fuel === 'gasoline' ? 'selected' : ''}>Benzin</option>
+          <option value="diesel" ${resultFilters.fuel === 'diesel' ? 'selected' : ''}>Dizel</option>
+        </select>
+      </label>
+
+      <label>
+        Kasa
+        <select data-auto-filter="body">
+          <option value="all" ${resultFilters.body === 'all' ? 'selected' : ''}>Tümü</option>
+          <option value="suv" ${resultFilters.body === 'suv' ? 'selected' : ''}>SUV</option>
+          <option value="sedan" ${resultFilters.body === 'sedan' ? 'selected' : ''}>Sedan</option>
+          <option value="hatchback" ${resultFilters.body === 'hatchback' ? 'selected' : ''}>Hatchback</option>
+        </select>
+      </label>
+
+      <label>
+        Sırala
+        <select data-auto-filter="sort">
+          <option value="score" ${resultFilters.sort === 'score' ? 'selected' : ''}>Karar skoruna göre</option>
+          <option value="price_asc" ${resultFilters.sort === 'price_asc' ? 'selected' : ''}>En düşük fiyat</option>
+          <option value="family" ${resultFilters.sort === 'family' ? 'selected' : ''}>Aile kullanımına göre</option>
+          <option value="city" ${resultFilters.sort === 'city' ? 'selected' : ''}>Şehir kullanımına göre</option>
+          <option value="long" ${resultFilters.sort === 'long' ? 'selected' : ''}>Uzun yola göre</option>
+        </select>
+      </label>
+    </section>
+  ` + results.map((vehicle, index) => {
     const monthlyImpact = Math.round((Number(vehicle.costs.total || 0) / 12) / 100) * 100;
     const rankLabel = index === 0
       ? 'Genel uyum lideri'
@@ -481,6 +549,15 @@ function renderResults(results) {
       </div>
     </section>
   `;
+
+  root.querySelectorAll('[data-auto-filter]').forEach((select) => {
+    select.addEventListener('change', (event) => {
+      const key = event.target.dataset.autoFilter;
+      if (!key) return;
+      resultFilters[key] = event.target.value;
+      renderFilteredAutoResults();
+    });
+  });
 
   const aiBox = root.querySelector('[data-ai-explanation]');
 
@@ -835,6 +912,12 @@ let autoFormStarted = false;
 let autoAnalysisRunning = false;
 let autoAnalysisTimer = null;
 let lastResults = [];
+let allResults = [];
+let resultFilters = {
+  fuel: 'all',
+  body: 'all',
+  sort: 'score'
+};
 
 form.addEventListener('input', () => {
   if (!autoFormStarted) {
@@ -854,6 +937,7 @@ form.addEventListener('submit', (event) => {
   const formData = readForm(form);
   const results = recommendVehicles(formData);
   lastResults = results;
+  allResults = [...results];
 
   trackAutoEvent('auto_analysis_started', formData);
 
