@@ -182,8 +182,8 @@ async function loadSettings() {
 }
 
 async function saveSettings() {
-  const rows = KEYS.map(f => ({ key: f, value: document.getElementById('s-' + f)?.value || '', updated_at: new Date().toISOString() }));
-  rows.push({ key: 'maintenance', value: document.getElementById('s-maintenance').checked ? 'true' : 'false', updated_at: new Date().toISOString() });
+  const rows = KEYS.map(f => ({ key: f, value: document.getElementById('s-' + f)?.value || '' }));
+  rows.push({ key: 'maintenance', value: document.getElementById('s-maintenance').checked ? 'true' : 'false' });
   await adminAction({ action: 'upsert_settings', table: 'site_settings', id: 'settings', values: rows });
   toast('Kaydedildi!');
 }
