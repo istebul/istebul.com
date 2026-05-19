@@ -59,6 +59,10 @@ export class ComparisonUI {
             this.getCostBreakdownMarkup(item) +
             this.getComparisonGraphMarkup(item, maxValues) +
             (tags.length ? '<div class="comparison-tags">' + tags.map((tag) => '<span>' + this.escapeHtml(tag) + '</span>').join('') + '</div>' : '') +
+            (Array.isArray(item.reasons) && item.reasons.length ? 
+              '<div class="comparison-breakdown"><div><span>Güçlü taraflar</span><strong>' + this.escapeHtml(item.reasons.slice(0,2).join(' • ')) + '</strong></div></div>' : '') +
+            (Array.isArray(item.risks) && item.risks.length ? 
+              '<div class="comparison-breakdown"><div><span>Dikkat</span><strong>' + this.escapeHtml(item.risks.slice(0,2).join(' • ')) + '</strong></div></div>' : '') +
             '<p class="comparison-comment">' + this.escapeHtml(item.comment || 'Bu seçenek fiyat, yan maliyet ve finansman etkisiyle değerlendirildi.') + '</p>' +
         '</article>';
     }
