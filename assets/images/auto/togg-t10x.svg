@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#14b8a6" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#0f172a" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="car" x1="0" x2="1">
+      <stop offset="0" stop-color="#14b8a6"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" rx="32" fill="url(#bg)"/>
+  <path d="M82 238c20-58 70-92 142-92h186c70 0 120 34 148 92v36H82z" fill="url(#car)"/>
+  <path d="M186 218l54-56h158l66 56z" fill="url(#car)" opacity=".92"/>
+  <path d="M252 174h72v42H212z" fill="#fff" opacity=".7"/>
+  <path d="M340 174h52l52 42H340z" fill="#fff" opacity=".62"/>
+  <circle cx="190" cy="276" r="36" fill="#0f172a"/>
+  <circle cx="456" cy="276" r="36" fill="#0f172a"/>
+  <circle cx="190" cy="276" r="14" fill="#e2e8f0"/>
+  <circle cx="456" cy="276" r="14" fill="#e2e8f0"/>
+  <text x="70" y="74" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="900">Togg</text>
+  <text x="70" y="112" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800">T10X</text>
+</svg>

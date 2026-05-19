@@ -320,6 +320,13 @@ function getVehicleImage(name){
   if (name.includes('Hyundai')) return '/assets/images/auto/hyundai-tucson-tgdi.svg';
   if (name.includes('Renault')) return '/assets/images/auto/renault-clio-icon.svg';
   if (name.includes('Volkswagen')) return '/assets/images/auto/volkswagen-golf-tsi.svg';
+  if (name.includes('Togg')) return '/assets/images/auto/togg-t10x.svg';
+  if (name.includes('Tesla')) return '/assets/images/auto/tesla-model.svg';
+  if (name.includes('BYD')) return '/assets/images/auto/byd-electric.svg';
+  if (name.includes('Peugeot')) return '/assets/images/auto/peugeot-suv.svg';
+  if (name.includes('Skoda')) return '/assets/images/auto/skoda-family.svg';
+  if (name.includes('BMW')) return '/assets/images/auto/bmw-premium.svg';
+  if (name.includes('Mercedes')) return '/assets/images/auto/mercedes-premium.svg';
 
   return '';
 }
