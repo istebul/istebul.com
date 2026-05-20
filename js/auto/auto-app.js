@@ -114,7 +114,7 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
   const email = localStorage.getItem('istebul_auto_lead_email');
   const storedPayload = safeJsonParse(localStorage.getItem('istebul_auto_lead_payload'), {});
 
-  await callAutoIntake({
+  return await callAutoIntake({
     type: 'lead',
     email: email || null,
     phone,
@@ -236,15 +236,46 @@ function openLeadModal(type, vehicle = '') {
     trackAutoEvent('auto_lead_submit', { phone, interest_type: type, vehicle: selectedVehicle });
 
     try {
-      await updateLeadInterest(phone, type, selectedVehicle, { turnstileToken });
-    } catch {}
+      const result = await updateLeadInterest(phone, type, selectedVehicle, { turnstileToken });
 
-    modal.innerHTML = `
-      <div class="lead-modal-card">
-        <h3>Uzman değerlendirme talebiniz alındı</h3>
-        <p>Uzman ekibimiz analiz sonucunuza göre uygun seçenekleri değerlendirip sizinle iletişime geçecek.</p>
-      </div>
-    `;
+      if (result?.duplicate) {
+        modal.innerHTML = `
+          <div class="lead-modal-card">
+            <h3>Talebiniz zaten alınmış görünüyor</h3>
+            <p>Ekibimiz yakın zamanda sizinle iletişime geçecek. Yeni kayıt oluşturulmadı.</p>
+          </div>
+        `;
+        return;
+      }
+
+      modal.innerHTML = `
+        <div class="lead-modal-card">
+          <h3>Uzman değerlendirme talebiniz alındı</h3>
+          <p>Uzman ekibimiz analiz sonucunuza göre uygun seçenekleri değerlendirip sizinle iletişime geçecek.</p>
+        </div>
+      `;
+      return;
+    } catch {
+      leadSubmitting = false;
+
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Uzman değerlendirmesi iste';
+      }
+
+      modal.innerHTML = `
+        <div class="lead-modal-card">
+          <h3>Bağlantı sorunu oluştu</h3>
+          <p>Talebiniz kaydedilemedi. Lütfen birkaç saniye sonra tekrar deneyin.</p>
+          <button class="btn primary" id="retry-lead-submit">Tekrar dene</button>
+        </div>
+      `;
+
+      document.getElementById('retry-lead-submit')?.addEventListener('click', () => {
+        modal.remove();
+        openLeadModal(type, vehicle);
+      });
+    }
   });
 }
 
