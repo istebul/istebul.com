@@ -199,35 +199,124 @@ async function signPartnerPayload(body: string) {
     .join("");
 }
 
-async function dispatchPartnerLead(payload: Record<string, unknown>) {
+
+async function getPartnerEndpoints(adminClient: any, route: string) {
+  const { data, error } = await adminClient
+    .from("partner_endpoints")
+    .select("id, name, webhook_url, priority_weight, sent_today, daily_cap")
+    .eq("route_type", route)
+    .eq("is_active", true);
+
+  if (error) throw error;
+
+  const endpoints = (data || []).filter((endpoint: any) => {
+    if (endpoint.daily_cap == null) return true;
+    return Number(endpoint.sent_today || 0) < Number(endpoint.daily_cap);
+  });
+
+  const ordered = [];
+
+  while (endpoints.length) {
+    const totalWeight = endpoints.reduce((sum: number, endpoint: any) => {
+      return sum + Math.max(Number(endpoint.priority_weight || 0), 1);
+    }, 0);
+
+    let random = Math.random() * totalWeight;
+    let selectedIndex = 0;
+
+    for (let i = 0; i < endpoints.length; i += 1) {
+      random -= Math.max(Number(endpoints[i].priority_weight || 0), 1);
+      if (random <= 0) {
+        selectedIndex = i;
+        break;
+      }
+    }
+
+    ordered.push(endpoints.splice(selectedIndex, 1)[0]);
+  }
+
+  return ordered;
+}
+
+async function dispatchPartnerLead(adminClient: any, payload: Record<string, unknown>) {
   const route = String(payload.partner_route || "");
   const priority = String(payload.priority || "");
 
-  if (isTestLead(payload.phone)) return "skipped";
-  if (priority !== "hot" && priority !== "very_hot") return "skipped";
+  if (isTestLead(payload.phone)) {
+    return { status: "skipped", reason: "test_lead" };
+  }
 
-  const webhookMap: Record<string, string | undefined> = {
-    dealer_partner: Deno.env.get("DEALER_WEBHOOK_URL"),
-    insurance_partner: Deno.env.get("INSURANCE_WEBHOOK_URL"),
-    finance_partner: Deno.env.get("FINANCE_WEBHOOK_URL"),
+  if (priority !== "hot" && priority !== "very_hot") {
+    return { status: "skipped", reason: "not_hot" };
+  }
+
+  const endpoints = await getPartnerEndpoints(adminClient, route);
+
+  if (!endpoints.length) {
+    return { status: "dispatch_failed", reason: "no_active_partner" };
+  }
+
+  for (const endpoint of endpoints) {
+    if (!endpoint?.webhook_url) continue;
+
+    const body = JSON.stringify({
+      ...payload,
+      partner_endpoint_id: endpoint.id,
+      partner_endpoint_name: endpoint.name
+    });
+
+    const signature = await signPartnerPayload(body);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    try {
+      const response = await fetch(endpoint.webhook_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-istebul-signature": signature
+        },
+        body,
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+
+      if (response.ok) {
+        try {
+          await adminClient.rpc("increment_partner_endpoint_success", {
+            endpoint_id: endpoint.id
+          });
+        } catch {}
+
+        return {
+          status: "dispatched",
+          endpoint: endpoint.name
+        };
+      }
+
+      try {
+        await adminClient.rpc("increment_partner_endpoint_fail", {
+          endpoint_id: endpoint.id
+        });
+      } catch {}
+
+    } catch {
+      clearTimeout(timeout);
+
+      try {
+        await adminClient.rpc("increment_partner_endpoint_fail", {
+          endpoint_id: endpoint.id
+        });
+      } catch {}
+    }
+  }
+
+  return {
+    status: "dispatch_failed",
+    reason: "all_endpoints_failed"
   };
-
-  const url = webhookMap[route];
-  if (!url) return "skipped";
-
-  const body = JSON.stringify(payload);
-  const signature = await signPartnerPayload(body);
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-istebul-signature": signature
-    },
-    body
-  });
-
-  return response.ok ? "dispatched" : "dispatch_failed";
 }
 
 async function notifyTelegramLead(payload: Record<string, unknown>) {
@@ -526,9 +615,9 @@ Deno.serve(async (req) => {
 
     try {
       await notifyTelegramLead(payload);
-      const dispatchStatus = await dispatchPartnerLead(payload);
+      const dispatchResult = await dispatchPartnerLead(adminClient, payload);
 
-      if (dispatchStatus === "dispatched") {
+      if (dispatchResult.status === "dispatched") {
         await adminClient
           .from("auto_leads")
           .update({
@@ -540,7 +629,7 @@ Deno.serve(async (req) => {
           .eq("phone", phone);
       }
 
-      if (dispatchStatus === "dispatch_failed") {
+      if (dispatchResult.status === "dispatch_failed") {
         await adminClient
           .from("auto_leads")
           .update({
@@ -548,7 +637,7 @@ Deno.serve(async (req) => {
             dispatch_retry_count: 1,
             last_dispatch_at: new Date().toISOString(),
             next_retry_at: getNextRetryTime(1),
-            last_dispatch_error: "partner webhook failed"
+            last_dispatch_error: dispatchResult.reason || "partner webhook failed"
           })
           .eq("phone", phone);
       }
