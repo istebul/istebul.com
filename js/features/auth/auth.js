@@ -194,16 +194,18 @@ export class AuthManager {
             const result = await API.signIn(email, password);
             const user = result?.user || result?.session?.user;
 
-            if (user) {
-                this.currentUser = user;
-                state.setUser(user);
-
-                document.dispatchEvent(new CustomEvent('userLoggedIn', {
-                    detail: user
-                }));
-
-                this.hideAuthModal();
+            if (!user) {
+                throw new Error('Giriş tamamlanamadı. E-posta ve şifrenizi kontrol edip tekrar deneyin.');
             }
+
+            this.currentUser = user;
+            state.setUser(user);
+
+            document.dispatchEvent(new CustomEvent('userLoggedIn', {
+                detail: user
+            }));
+
+            this.hideAuthModal();
         } catch (error) {
             console.error('Login failed:', error);
             this.showAuthError(error.message || config.messages.error.login);
