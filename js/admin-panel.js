@@ -374,12 +374,10 @@ function normalizePhoneForWhatsapp(phone) {
 
 
 async function trackAdminAutoEvent(eventName, metadata = {}) {
-  await sb.from('auto_events').insert({
-    event_name: eventName,
-    email: metadata.email || null,
-    phone: metadata.phone || null,
-    metadata
-  });
+  // Admin panel analytics should not write directly to auto_events.
+  // Auto funnel events are recorded through the auto-intake Edge Function.
+  void eventName;
+  void metadata;
 }
 
 async function loadAutoAnalytics() {
