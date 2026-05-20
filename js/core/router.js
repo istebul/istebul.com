@@ -121,7 +121,7 @@ export class Router {
         });
 
         // Hide all sections
-        document.querySelectorAll('main > section').forEach(section => {
+        document.querySelectorAll('section[id]').forEach(section => {
             section.style.display = 'none';
         });
 
