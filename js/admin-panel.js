@@ -911,9 +911,6 @@ async function loadAutoLeads() {
               <div class="table-actions">
                 ${lead.phone ? `<a class="btn btn-success btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}?text=Merhaba%2C%20isteBul%20Auto%20talebinizi%20gördük.%20Size%20uygun%20teklifleri%20hazırlayabiliriz." target="_blank" rel="noopener">WhatsApp</a>` : ''}
                 ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Tekrar</button>` : ''}
-                <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">
-                  Sil
-                </button>
               </div>
             </td>
           </tr>
@@ -1049,7 +1046,6 @@ function openLeadDrawer(lead) {
       <button class="btn btn-success btn-sm" data-action="simulate-partner-won" data-id="${lead.id}" data-phone="${lead.phone || ''}">Partner Won Test</button>
       <button class="btn btn-danger btn-sm" data-action="simulate-partner-lost" data-id="${lead.id}" data-phone="${lead.phone || ''}">Partner Lost Test</button>
       <button class="btn btn-ghost btn-sm" data-action="complete-follow-up" data-id="${lead.id}">Takibi Tamamla</button>
-      <button class="btn btn-danger btn-sm" data-action="delete-auto-lead" data-id="${lead.id}">Lead Sil</button>
 
       <input
         type="datetime-local"
@@ -1299,20 +1295,6 @@ async function exportAutoLeadsCsv() {
 }
 
 
-async function deleteAutoLead(id) {
-  if (!confirm('Bu lead silinsin mi?')) return;
-
-  await adminAction({
-    action: 'delete',
-    table: 'auto_leads',
-    id
-  });
-
-  toast('Lead silindi');
-  loadAutoLeads();
-  loadAutoAnalytics();
-  loadPartnerEndpoints();
-}
 
 async function setUserRole(id, role) {
   await adminAction({ action: 'update', table: 'profiles', id, values: { role } });
@@ -1493,7 +1475,6 @@ function bindAdminPanelEvents() {
     if (action === 'delete-listing') deleteListing(id);
     if (action === 'set-user-role') setUserRole(id, role);
     if (action === 'ban-user') banUser(id);
-    if (action === 'delete-auto-lead') deleteAutoLead(id);
     if (action === 'export-auto-leads') exportAutoLeadsCsv();
     if (action === 'close-lead-drawer') closeLeadDrawer();
     if (action === 'complete-follow-up') completeFollowUp(id);
