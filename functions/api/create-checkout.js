@@ -104,7 +104,8 @@ export async function onRequestPost(context) {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Idempotency-Key': `checkout-${user.id}`
       },
       body: params.toString()
     });
