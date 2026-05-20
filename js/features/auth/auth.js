@@ -12,32 +12,31 @@ export class AuthManager {
     }
 
     init() {
-        // Listen for auth state changes
-        supabase.auth.onAuthStateChange(async (event, session) => {
+        // Keep auth callback synchronous. Supabase calls inside this callback can delay sign-in resolution.
+        supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 this.currentUser = session.user;
                 state.setUser(session.user);
 
-                // Load user profile
-                try {
-                    const profile = await API.getProfile(session.user.id);
-                    this.currentUser.profile = profile;
-                    state.set('user.profile', profile);
-                } catch (error) {
-                    console.error('Failed to load profile:', error);
-                }
-
-                // Dispatch login event
                 document.dispatchEvent(new CustomEvent('userLoggedIn', {
                     detail: session.user
                 }));
 
                 this.hideAuthModal();
+
+                setTimeout(async () => {
+                    try {
+                        const profile = await API.getProfile(session.user.id);
+                        this.currentUser.profile = profile;
+                        state.set('user.profile', profile);
+                    } catch (error) {
+                        console.error('Failed to load profile:', error);
+                    }
+                }, 0);
             } else if (event === 'SIGNED_OUT') {
                 this.currentUser = null;
                 state.setUser(null);
 
-                // Dispatch logout event
                 document.dispatchEvent(new CustomEvent('userLoggedOut'));
 
                 this.hideAuthModal();
