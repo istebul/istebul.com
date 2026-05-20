@@ -167,10 +167,14 @@ export class UIManager {
         if (!navAuth || !navUser) return;
 
         if (user) {
+            navAuth.classList.add('hidden');
+            navUser.classList.remove('hidden');
             navAuth.style.display = 'none';
             navUser.style.display = 'flex';
             if (navMessages) navMessages.style.display = 'block';
         } else {
+            navAuth.classList.remove('hidden');
+            navUser.classList.add('hidden');
             navAuth.style.display = 'flex';
             navUser.style.display = 'none';
             if (navMessages) navMessages.style.display = 'none';
