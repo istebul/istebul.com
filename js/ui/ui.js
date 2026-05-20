@@ -164,6 +164,8 @@ export class UIManager {
         const navUser = document.getElementById('nav-user');
         const navMessages = document.getElementById('nav-messages');
 
+        if (!navAuth || !navUser) return;
+
         if (user) {
             navAuth.style.display = 'none';
             navUser.style.display = 'flex';

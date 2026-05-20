@@ -313,6 +313,9 @@ class App {
                 this.currentUser = user;
                 this.ui.updateAuthUI(user);
                 await this.loadUserProfile(user.id);
+            } else {
+                this.currentUser = null;
+                this.ui.updateAuthUI(null);
             }
         } catch (error) {
             console.error('Auth check failed:', error);
