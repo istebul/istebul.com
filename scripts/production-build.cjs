@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const esbuild = require('esbuild');
+const crypto = require('crypto');
 
 const root = process.cwd();
 const dist = path.join(root, 'dist');
@@ -61,6 +62,20 @@ const walk = (dir, callback) => {
   }
 };
 const relative = (filePath) => path.relative(root, filePath).split(path.sep).join('/');
+const assetRefs = new Map();
+const hashContent = (content) => crypto.createHash('sha256').update(content).digest('hex').slice(0, 10);
+const withHashName = (relativePath, hash) => {
+  const parsed = path.parse(relativePath);
+  return path.join(parsed.dir, `${parsed.name}.${hash}${parsed.ext}`).split(path.sep).join('/');
+};
+const rewriteAssetRefs = (html) => {
+  let output = html;
+  for (const [originalPath, hashedPath] of assetRefs.entries()) {
+    const escaped = originalPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    output = output.replace(new RegExp(`(["'])/?${escaped}(?:\\?v=\\d+)?`, 'g'), `$1${hashedPath}`);
+  }
+  return output;
+};
 
 const minifyHtml = (source) => source
   .replace(/<!--[\s\S]*?-->/g, '')
@@ -91,7 +106,13 @@ walk(path.join(root, 'css'), (file) => {
   if (!file.endsWith('.css')) return;
 
   const source = fs.readFileSync(file, 'utf8');
-  writeFile(relative(file), esbuild.transformSync(source, { loader: 'css', minify: true }).code);
+  const minified = esbuild.transformSync(source, { loader: 'css', minify: true }).code;
+  const originalPath = relative(file);
+  const hashedPath = withHashName(originalPath, hashContent(minified));
+
+  assetRefs.set(originalPath, hashedPath);
+  writeFile(originalPath, minified);
+  writeFile(hashedPath, minified);
 });
 
 esbuild.buildSync({
@@ -114,9 +135,10 @@ if (!appBundleFile) {
 }
 
 pendingStaticFiles.forEach(({ file, source }) => {
-  const html = file === 'index.html'
-    ? source.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, 'js/' + appBundleFile)
-    : source;
+  let html = rewriteAssetRefs(source);
+  if (file === 'index.html') {
+    html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, 'js/' + appBundleFile);
+  }
   writeFile(file, minifyHtml(html));
 });
 
