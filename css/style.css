@@ -8696,3 +8696,45 @@ body.app-route-active [data-private-section].route-visible {
         grid-template-columns: 1fr;
     }
 }
+
+/* Fix homepage dashboard preview spacing */
+.preview-dashboard-grid {
+    align-items: stretch;
+}
+
+.preview-breakdown-card {
+    min-width: 0;
+}
+
+.preview-cost-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) auto;
+    column-gap: 18px;
+    align-items: center;
+}
+
+.preview-cost-row span {
+    min-width: 0;
+}
+
+.preview-cost-row strong {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.preview-value-card strong {
+    font-size: 1rem;
+    line-height: 1.25;
+}
+
+@media (max-width: 520px) {
+    .preview-cost-row {
+        grid-template-columns: 1fr;
+        row-gap: 3px;
+    }
+
+    .preview-cost-row strong {
+        text-align: left;
+        white-space: normal;
+    }
+}
