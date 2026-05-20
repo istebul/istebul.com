@@ -195,11 +195,19 @@ Deno.serve(async (req) => {
         }
       }
 
+      const normalizedSettings = values.map((row: Record<string, unknown>) => ({
+        key: String(row.key || "").trim(),
+        value: String(row.value ?? ""),
+        updated_at: new Date().toISOString(),
+      }));
+
       const { error } = await adminClient
         .from("site_settings")
-        .upsert(values, { onConflict: "key" });
+        .upsert(normalizedSettings, { onConflict: "key" });
 
-      if (error) throw error;
+      if (error) {
+        return json({ error: error.message }, 500, origin);
+      }
 
       return json({ ok: true }, 200, origin);
     }
