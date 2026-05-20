@@ -3853,14 +3853,7 @@ function applyProductionRouteVisibility() {
         '/ilan-ekle': 'add-listing'
     };
 
-    const forceCompare = new URLSearchParams(window.location.search).get('view') === 'compare'
-        || sessionStorage.getItem('istebul_open_compare') === '1';
-
-    if (forceCompare) {
-        sessionStorage.removeItem('istebul_open_compare');
-    }
-
-    const sectionId = forceCompare ? 'compare' : (routeMap[path] || (path.startsWith('/ilan/') ? 'listing-detail' : 'home'));
+    const sectionId = routeMap[path] || (path.startsWith('/ilan/') ? 'listing-detail' : 'home');
     const homeSections = new Set(['home', 'trust', 'how-it-works', 'categories']);
 
     document.querySelectorAll('section[id]').forEach((section) => {
