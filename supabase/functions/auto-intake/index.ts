@@ -626,25 +626,38 @@ Deno.serve(async (req) => {
       if (insertError) return json({ error: insertError.message }, 500, origin);
     }
 
-    try {
-      await notifyTelegramLead(payload);
-      const dispatchResult = verificationFailed
-        ? { status: "skipped", reason: "verification_failed" }
-        : await dispatchPartnerLead(adminClient, payload);
+    EdgeRuntime.waitUntil((async () => {
+      try {
+        await notifyTelegramLead(payload);
+        const dispatchResult = verificationFailed
+          ? { status: "skipped", reason: "verification_failed" }
+          : await dispatchPartnerLead(adminClient, payload);
 
-      if (dispatchResult.status === "dispatched") {
-        await adminClient
-          .from("auto_leads")
-          .update({
-            partner_status: "dispatched",
-            last_dispatch_at: new Date().toISOString(),
-            next_retry_at: null,
-            last_dispatch_error: null
-          })
-          .eq("phone", phone);
-      }
+        if (dispatchResult.status === "dispatched") {
+          await adminClient
+            .from("auto_leads")
+            .update({
+              partner_status: "dispatched",
+              last_dispatch_at: new Date().toISOString(),
+              next_retry_at: null,
+              last_dispatch_error: null
+            })
+            .eq("phone", phone);
+        }
 
-      if (dispatchResult.status === "dispatch_failed") {
+        if (dispatchResult.status === "dispatch_failed") {
+          await adminClient
+            .from("auto_leads")
+            .update({
+              partner_status: "dispatch_failed",
+              dispatch_retry_count: 1,
+              last_dispatch_at: new Date().toISOString(),
+              next_retry_at: getNextRetryTime(1),
+              last_dispatch_error: dispatchResult.reason || "partner webhook failed"
+            })
+            .eq("phone", phone);
+        }
+      } catch {
         await adminClient
           .from("auto_leads")
           .update({
@@ -652,22 +665,11 @@ Deno.serve(async (req) => {
             dispatch_retry_count: 1,
             last_dispatch_at: new Date().toISOString(),
             next_retry_at: getNextRetryTime(1),
-            last_dispatch_error: dispatchResult.reason || "partner webhook failed"
+            last_dispatch_error: "dispatch exception"
           })
           .eq("phone", phone);
       }
-    } catch {
-      await adminClient
-        .from("auto_leads")
-        .update({
-          partner_status: "dispatch_failed",
-          dispatch_retry_count: 1,
-          last_dispatch_at: new Date().toISOString(),
-          next_retry_at: getNextRetryTime(1),
-          last_dispatch_error: "dispatch exception"
-        })
-        .eq("phone", phone);
-    }
+    })());
 
     return json({ ok: true }, 200, origin);
   }
