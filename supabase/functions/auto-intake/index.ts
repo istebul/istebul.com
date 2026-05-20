@@ -500,12 +500,14 @@ Deno.serve(async (req) => {
       return json({ error: "Invalid contact information" }, 400, origin);
     }
 
+    let verificationFailed = false;
+
     if (!isTestLead(phone)) {
       const token = String(body.turnstile_token || metadata.turnstile_token || "").trim();
       const turnstile = await verifyTurnstile(token, clientIp);
 
       if (!turnstile.ok) {
-        return json({ error: "Bot verification failed" }, 403, origin);
+        verificationFailed = true;
       }
     }
 
@@ -563,6 +565,11 @@ Deno.serve(async (req) => {
 
     const scoring = calculateLeadScore(form);
 
+    if (verificationFailed) {
+      scoring.score = Math.min(scoring.score, 49);
+      scoring.priority = "verification_failed";
+    }
+
     const payload = {
       email: normalizedEmail,
       phone,
@@ -587,8 +594,9 @@ Deno.serve(async (req) => {
       estimated_revenue: estimateCommission(getPartnerRoute(form), scoring.score),
       follow_up_at: getAutoFollowUp(scoring.priority),
       follow_up_done: false,
-      status: isTestLead(phone) ? "test_spam" : "new",
+      status: isTestLead(phone) ? "test_spam" : verificationFailed ? "verification_failed" : "new",
       source: "auto",
+      notes: verificationFailed ? "Turnstile doğrulaması başarısız oldu; manuel kontrol önerilir." : null,
     };
 
     const phoneUpdate = await adminClient
@@ -620,7 +628,9 @@ Deno.serve(async (req) => {
 
     try {
       await notifyTelegramLead(payload);
-      const dispatchResult = await dispatchPartnerLead(adminClient, payload);
+      const dispatchResult = verificationFailed
+        ? { status: "skipped", reason: "verification_failed" }
+        : await dispatchPartnerLead(adminClient, payload);
 
       if (dispatchResult.status === "dispatched") {
         await adminClient
