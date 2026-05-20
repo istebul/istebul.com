@@ -12,6 +12,9 @@
 /
   Cache-Control: no-cache, no-store, must-revalidate
 
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /admin-panel.html
   Cache-Control: no-cache, no-store, must-revalidate
 
