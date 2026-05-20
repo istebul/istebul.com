@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v47';
+const CACHE_VERSION = 'v48';
 const STATIC_CACHE = `istebu-static-${CACHE_VERSION}`;
 
 const OFFLINE_PAGE = '/offline.html';
