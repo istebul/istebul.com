@@ -12,6 +12,26 @@ function json(body: Record<string, unknown>, status = 200) {
   });
 }
 
+
+async function postPartnerWebhook(url: string, body: string, signature: string) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    return await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-istebul-signature": signature
+      },
+      body,
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function signPartnerPayload(body: string) {
   const secret = Deno.env.get("PARTNER_WEBHOOK_SIGNING_SECRET");
   if (!secret) return "";
@@ -116,14 +136,7 @@ Deno.serve(async (req) => {
   const signature = await signPartnerPayload(payload);
 
   try {
-    const res = await fetch(endpoint.webhook_url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-istebul-signature": signature
-      },
-      body: payload
-    });
+    const res = await postPartnerWebhook(endpoint.webhook_url, payload, signature);
 
     if (res.ok) {
       await sb.from("auto_leads").update({

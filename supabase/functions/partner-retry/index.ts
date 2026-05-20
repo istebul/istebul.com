@@ -16,6 +16,26 @@ function getNextRetryTime(retryCount: number) {
   return now.toISOString();
 }
 
+
+async function postPartnerWebhook(url: string, body: string, signature: string) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    return await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-istebul-signature": signature
+      },
+      body,
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function signPartnerPayload(body: string) {
   const secret = Deno.env.get("PARTNER_WEBHOOK_SIGNING_SECRET");
   if (!secret) return "";
@@ -115,14 +135,7 @@ Deno.serve(async (req) => {
         const signature = await signPartnerPayload(body);
 
         try {
-          const res = await fetch(endpoint.webhook_url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-istebul-signature": signature
-            },
-            body
-          });
+          const res = await postPartnerWebhook(endpoint.webhook_url, body, signature);
 
           if (res.ok) {
             await sb
