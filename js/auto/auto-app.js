@@ -122,6 +122,8 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
     formData: {
       ...storedPayload,
       phone,
+      contact_name: options.contactName || '',
+      preferred_contact_time: options.preferredContactTime || '',
       interest_type: interestType,
       vehicle
     }
@@ -229,6 +231,8 @@ function openLeadModal(type, vehicle = '') {
 
     const leadData = new FormData(event.currentTarget);
     const phone = leadData.get('phone');
+    const contactName = leadData.get('name') || '';
+    const preferredContactTime = leadData.get('best_time') || '';
     const selectedVehicle = leadData.get('vehicle') || vehicle;
     const turnstileToken = await getTurnstileToken();
 
@@ -236,7 +240,11 @@ function openLeadModal(type, vehicle = '') {
     trackAutoEvent('auto_lead_submit', { phone, interest_type: type, vehicle: selectedVehicle });
 
     try {
-      const result = await updateLeadInterest(phone, type, selectedVehicle, { turnstileToken });
+      const result = await updateLeadInterest(phone, type, selectedVehicle, {
+        turnstileToken,
+        contactName,
+        preferredContactTime
+      });
 
       if (result?.duplicate) {
         modal.innerHTML = `
