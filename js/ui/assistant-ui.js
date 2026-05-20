@@ -163,7 +163,7 @@ export class AssistantUI {
             '<section class="assistant-decision-panel">' +
                 '<div class="assistant-result-header assistant-decision-hero">' +
                     '<div>' +
-                        '<span class="assistant-kicker">AI karar paneli</span>' +
+                        '<span class="assistant-kicker">Karar değerlendirme paneli</span>' +
                         '<h3>' + this.escapeHtml(primary.name) + '</h3>' +
                         '<p>' + this.escapeHtml(result.summary) + '</p>' +
                         '<div class="assistant-result-badges">' +
@@ -484,7 +484,7 @@ export class AssistantUI {
         return `
             <article class="assistant-insight">
                 <div>
-                    <span class="assistant-kicker">AI açıklaması</span>
+                    <span class="assistant-kicker">Değerlendirme açıklaması</span>
                     <h4>${this.escapeHtml(insight.headline)}</h4>
                 </div>
                 <div class="assistant-insight-grid">

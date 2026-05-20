@@ -19,7 +19,7 @@ export class ListingsUI {
                     <i data-lucide="search"></i>
                     <h3>İlan bulunamadı</h3>
                     <p>Filtreleri genişletin veya karar asistanından gelen önerilere göre tekrar arayın.</p>
-                    <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> AI Asistanı Aç</a>
+                    <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Karar analizini aç</a>
                 </div>
             `;
         } else {

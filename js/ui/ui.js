@@ -246,7 +246,7 @@ export class UIManager {
         if (!container) return;
 
         container.innerHTML = categories.map(category => `
-            <a href="/ilanlar/" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçeneklerı</a>
+            <a href="/ilanlar/" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçenekleri</a>
         `).join('');
     }
 
@@ -505,7 +505,7 @@ export class UIManager {
         };
         return '<section class="listing-detail-decision">' +
             '<div class="listing-detail-decision-head">' +
-                '<div><span class="assistant-kicker">AI ilan yorumu</span><h3>' + this.escapeHtml(profile.riskLevel || 'Karar analizi') + '</h3><p>' + this.escapeHtml(profile.comment || '') + '</p></div>' +
+                '<div><span class="assistant-kicker">Karar değerlendirmesi</span><h3>' + this.escapeHtml(profile.riskLevel || 'Karar analizi') + '</h3><p>' + this.escapeHtml(profile.comment || '') + '</p></div>' +
                 '<div class="listing-detail-score"><strong>' + this.escapeHtml(profile.score || '-') + '</strong><span>/100</span></div>' +
             '</div>' +
             '<div class="comparison-metrics listing-detail-metrics">' +
