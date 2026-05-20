@@ -114,7 +114,15 @@ Deno.serve(async (req) => {
     "partner_endpoints",
   ];
 
-  if (!action || !allowedTables.includes(table)) {
+  if (!action) {
+    return json({ error: "Missing action" }, 400, origin);
+  }
+
+  if (action === "upsert_settings") {
+    if (table !== "site_settings") {
+      return json({ error: "Invalid settings table" }, 400, origin);
+    }
+  } else if (!allowedTables.includes(table)) {
     return json({ error: "Invalid action or table" }, 400, origin);
   }
 
