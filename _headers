@@ -5,6 +5,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   Content-Security-Policy: default-src 'self'; script-src 'self' https://plausible.io https://static.cloudflareinsights.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://plausible.io https://cloudflareinsights.com https://challenges.cloudflare.com https://*.sentry.io https://*.ingest.sentry.io https://api.groq.com https://api.stripe.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Cache-Control: no-cache, no-store, must-revalidate
 
 /*.html
   Cache-Control: no-cache, no-store, must-revalidate
