@@ -89,47 +89,35 @@ export class API {
             setTimeout(() => reject(new Error(message)), ms);
         });
 
-        try {
-            const request = supabase.auth.signInWithPassword({ email, password });
-            const { data, error } = await Promise.race([request, timeout(12000)]);
+        const response = await Promise.race([
+            fetch(`${config.supabase.url}/auth/v1/token?grant_type=password`, {
+                method: 'POST',
+                headers: {
+                    apikey: config.supabase.anonKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            }),
+            timeout(12000)
+        ]);
 
-            if (error) throw error;
-            return data;
-        } catch (error) {
-            if (!/zaman aşımına/i.test(error.message || '')) {
-                throw error;
-            }
+        const payload = await response.json().catch(() => ({}));
 
-            const response = await Promise.race([
-                fetch(`${config.supabase.url}/auth/v1/token?grant_type=password`, {
-                    method: 'POST',
-                    headers: {
-                        apikey: config.supabase.anonKey,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                }),
-                timeout(12000, 'Giriş servisine ulaşılamadı. Lütfen tekrar deneyin.')
-            ]);
-
-            const payload = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                throw new Error(payload.msg || payload.message || 'Giriş tamamlanamadı.');
-            }
-
-            if (payload.access_token && payload.refresh_token && supabase.auth.setSession) {
-                supabase.auth.setSession({
-                    access_token: payload.access_token,
-                    refresh_token: payload.refresh_token
-                }).catch(() => {});
-            }
-
-            return {
-                session: payload,
-                user: payload.user
-            };
+        if (!response.ok) {
+            throw new Error(payload.msg || payload.message || 'E-posta veya şifre hatalı.');
         }
+
+        if (payload.access_token && payload.refresh_token && supabase.auth.setSession) {
+            supabase.auth.setSession({
+                access_token: payload.access_token,
+                refresh_token: payload.refresh_token
+            }).catch(() => {});
+        }
+
+        return {
+            session: payload,
+            user: payload.user
+        };
     }
 
     static async signOut() {
