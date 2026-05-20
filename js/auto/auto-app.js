@@ -1049,7 +1049,10 @@ function getAutoFallbackImage(name){
 }
 
 function goToComparisonPage(){
-  window.location.assign('/karsilastir');
+  try {
+    sessionStorage.setItem('istebul_open_compare', '1');
+  } catch (_) {}
+  window.location.assign('/?view=compare');
 }
 
 function addAutoComparisonFallback(vehicle){
