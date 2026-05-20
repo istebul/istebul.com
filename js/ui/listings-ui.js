@@ -12,14 +12,14 @@ export class ListingsUI {
                     <i data-lucide="badge-plus"></i>
                     <h3>Henüz ilanınız yok</h3>
                     <p>İlk ilanınızı eklediğinizde burada görünecek ve AI karşılaştırma akışına dahil olacak.</p>
-                    <a href="/ilan-ekle" class="btn btn-primary"><i data-lucide="plus"></i> Seçenek Ekle</a>
+                    <a href="/ilan-ekle/" class="btn btn-primary"><i data-lucide="plus"></i> Seçenek Ekle</a>
                 </div>
             ` : `
                 <div class="empty-state marketplace-empty-state">
                     <i data-lucide="search"></i>
                     <h3>İlan bulunamadı</h3>
                     <p>Filtreleri genişletin veya karar asistanından gelen önerilere göre tekrar arayın.</p>
-                    <a href="/karar-asistani" class="btn btn-outline"><i data-lucide="sparkles"></i> AI Asistanı Aç</a>
+                    <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> AI Asistanı Aç</a>
                 </div>
             `;
         } else {

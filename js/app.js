@@ -695,7 +695,7 @@ class App {
                 return;
             }
 
-            const allListingsLink = e.target.closest('a[href="/ilanlar"]:not([data-category])');
+            const allListingsLink = e.target.closest('a[href="/ilanlar/"]:not([data-category])');
             if (allListingsLink) {
                 e.preventDefault();
                 this.clearCategoryFilter();

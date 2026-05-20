@@ -107,7 +107,7 @@ export class Router {
         });
 
         const activeLink = document.querySelector(`a[href="${activePath}"]`) ||
-            (activePath.startsWith('/ilan/') ? document.querySelector('a[href="/ilanlar"]') : null);
+            (activePath.startsWith('/ilan/') ? document.querySelector('a[href="/ilanlar/"]') : null);
         if (activeLink) {
             activeLink.classList.add('active');
         }

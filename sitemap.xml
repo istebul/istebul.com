@@ -5,19 +5,19 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.istebul.com/auto</loc>
+    <loc>https://www.istebul.com/auto/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.istebul.com/karar-asistani</loc>
+    <loc>https://www.istebul.com/karar-asistani/</loc>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.istebul.com/ilanlar</loc>
+    <loc>https://www.istebul.com/ilanlar/</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.istebul.com/karsilastir</loc>
+    <loc>https://www.istebul.com/karsilastir/</loc>
     <priority>0.6</priority>
   </url>
 </urlset>

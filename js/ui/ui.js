@@ -246,7 +246,7 @@ export class UIManager {
         if (!container) return;
 
         container.innerHTML = categories.map(category => `
-            <a href="/ilanlar" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçeneklerı</a>
+            <a href="/ilanlar/" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçeneklerı</a>
         `).join('');
     }
 
@@ -433,7 +433,7 @@ export class UIManager {
                     <p>${this.escapeHtml(message)}</p>
                     <div class="listing-actions">
                         <a href="/" class="btn btn-outline" data-native-route>Ana sayfaya dön</a>
-                        <a href="/ilanlar" class="btn btn-primary" data-native-route>Seçenekleri incele</a>
+                        <a href="/ilanlar/" class="btn btn-primary" data-native-route>Seçenekleri incele</a>
                     </div>
                 </div>
             </div>
@@ -480,7 +480,7 @@ export class UIManager {
                         <div class="listing-actions">
                             <button class="btn ${isFavorite ? 'btn-primary' : 'btn-outline'}" data-action="favorite" data-listing-id="${listingId}"><i data-lucide="heart"></i> ${isFavorite ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}</button>
                             <button class="btn ${isCompared ? 'btn-primary' : 'btn-outline'}" data-action="compare" data-listing-id="${listingId}"><i data-lucide="${isCompared ? 'check' : 'columns-3'}"></i> ${isCompared ? 'Karşılaştırmada' : 'Karşılaştır'}</button>
-                            <a href="/karar-asistani" class="btn btn-outline"><i data-lucide="sparkles"></i> Asistanda analiz et</a>
+                            <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Asistanda analiz et</a>
                             <a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> ${this.escapeHtml(actionLabel)}</a>
                         </div>
                     </div>
