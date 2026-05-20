@@ -143,6 +143,25 @@ walk(dist, (file) => {
 });
 writeFile('build-manifest.json', JSON.stringify(manifest, null, 2));
 
+
+// Create physical SPA route entrypoints to avoid Cloudflare Pages clean-url redirects.
+const spaRoutes = [
+  'karsilastir',
+  'karar-asistani',
+  'favoriler',
+  'gecmis',
+  'profil',
+  'ilanlar',
+  'ilan-ekle',
+  'messages'
+];
+
+spaRoutes.forEach((route) => {
+  const routeDir = path.join(dist, route);
+  fs.mkdirSync(routeDir, { recursive: true });
+  fs.copyFileSync(path.join(dist, 'index.html'), path.join(routeDir, 'index.html'));
+});
+
 fs.copyFileSync(path.join(root, '_redirects'), path.join(dist, '_redirects'));
 
 if (fs.existsSync(path.join(root, '_headers'))) {
