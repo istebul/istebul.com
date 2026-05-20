@@ -9,7 +9,7 @@ const allowedOrigins = [
 function corsHeaders(origin: string | null) {
   const allowedOrigin = allowedOrigins.includes(origin || "")
     ? origin
-    : "https://istebul.com";
+    : "https://www.istebul.com";
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
@@ -79,6 +79,9 @@ function calculateLeadScore(form: Record<string, unknown>) {
 
   if (loan === "yes") score += 15;
   if (km > 20000) score += 10;
+  if (String(form.vehicle || "").trim()) score += 10;
+  if (String(form.preferred_contact_time || "").trim()) score += 4;
+  if (String(form.contact_name || "").trim()) score += 3;
 
   const priority =
     score >= 150 ? "very_hot" :
@@ -563,6 +566,8 @@ Deno.serve(async (req) => {
     const payload = {
       email: normalizedEmail,
       phone,
+      contact_name: clampString(form.contact_name, 80),
+      preferred_contact_time: clampString(form.preferred_contact_time, 30),
       budget: clampNumber(form.budget, 0, 20000000),
       usage: clampString(form.usage, 40),
       body: clampString(form.body, 40),
