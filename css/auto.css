@@ -1790,3 +1790,61 @@ h2{
   }
 }
 
+
+.auto-results-trust-banner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding:22px;
+  margin:0 0 22px;
+  border:1px solid rgba(20,184,166,.24);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at top right, rgba(20,184,166,.16), transparent 34%),
+    linear-gradient(135deg, rgba(9,23,43,.96), rgba(15,36,64,.94));
+  color:#fff;
+  box-shadow:0 22px 60px rgba(2,12,27,.18);
+}
+
+.auto-results-trust-banner .kicker{
+  margin:0 0 8px;
+  color:#5eead4;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.auto-results-trust-banner h3{
+  margin:0 0 8px;
+  max-width:760px;
+  color:#fff;
+  font-size:20px;
+  line-height:1.25;
+}
+
+.auto-results-trust-banner p{
+  margin:0;
+  max-width:780px;
+  color:rgba(226,232,240,.86);
+  line-height:1.55;
+}
+
+.auto-results-trust-banner .btn{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+
+@media (max-width: 760px){
+  .auto-results-trust-banner{
+    align-items:flex-start;
+    flex-direction:column;
+    padding:18px;
+    border-radius:20px;
+  }
+
+  .auto-results-trust-banner .btn{
+    width:100%;
+  }
+}

@@ -410,6 +410,17 @@ function renderResults(results) {
   const formData = form ? readForm(form) : {};
 
   root.innerHTML = `
+    <section class="auto-results-trust-banner" aria-label="Sonuç açıklaması">
+      <div>
+        <p class="kicker">Model önerisi</p>
+        <h3>Bu sonuçlar canlı ilan değil, ihtiyaç profilinize göre hazırlanmış araç model önerileridir.</h3>
+        <p>Size uygun gerçek araç seçenekleri için talep bırakabilir, uygun satıcılarla eşleşme desteği alabilirsiniz.</p>
+      </div>
+      <button type="button" class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(results[0]?.name || 'Araç önerisi')}">
+        Uygun satıcı eşleşmesi iste
+      </button>
+    </section>
+
     <section class="auto-filter-toolbar" aria-label="Auto sonuç filtreleri">
       <div>
         <strong>${results.length} / ${allResults.length || results.length} öneri gösteriliyor</strong>
