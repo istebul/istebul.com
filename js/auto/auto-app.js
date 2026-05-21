@@ -300,8 +300,14 @@ function openLeadModal(type, vehicle = '') {
         <div class="lead-modal-card">
           <h3>Uzman değerlendirme talebiniz alındı</h3>
           <p>Uzman ekibimiz analiz sonucunuza göre uygun seçenekleri değerlendirip sizinle iletişime geçecek.</p>
+          <button class="btn primary" id="close-success-lead-modal">Tamam</button>
         </div>
       `;
+
+      document.getElementById('close-success-lead-modal')?.addEventListener('click', () => {
+        modal.remove();
+      });
+
       return;
     } catch {
       leadSubmitting = false;
