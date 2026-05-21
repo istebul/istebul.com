@@ -51,7 +51,11 @@ export function recommendVehicles(form) {
   const usage = form.usage || '';
   const isPremiumBudget = budget >= 2500000;
 
-  return vehicles
+  const candidateVehicles = isPremiumBudget && requestedFuel !== 'any'
+    ? vehicles.filter(vehicle => vehicle.fuel === requestedFuel)
+    : vehicles;
+
+  return candidateVehicles
     .map(vehicle => {
       let score = 42;
 
@@ -85,8 +89,10 @@ export function recommendVehicles(form) {
 
       if (isPremiumBudget && vehicle.price >= budget * 0.65) score += 10;
       if (isPremiumBudget && vehicle.price < budget * 0.55) score -= 18;
-      if (isPremiumBudget && isPremiumBrand(vehicle)) score += 24;
-      if (isPremiumBudget && !isPremiumBrand(vehicle) && vehicle.price < budget * 0.6) score -= 20;
+      if (isPremiumBudget && isPremiumBrand(vehicle)) score += 42;
+      if (isPremiumBudget && !isPremiumBrand(vehicle)) score -= 28;
+      if (isPremiumBudget && requestedBody && vehicle.body !== requestedBody) score -= 24;
+      if (isPremiumBudget && requestedFuel !== 'any' && vehicle.fuel !== requestedFuel) score -= 34;
 
       if (form.loan === 'yes') {
         if (vehicle.price > budget * 0.9) score -= 16;
