@@ -48,8 +48,8 @@ Deno.serve(async (req) => {
     return json({ error: "Invalid partner_status" }, 400);
   }
 
-  if (!leadId && !phone) {
-    return json({ error: "lead_id or phone is required" }, 400);
+  if (!leadId) {
+    return json({ error: "lead_id is required" }, 400);
   }
 
   const values: Record<string, unknown> = {
@@ -69,22 +69,7 @@ Deno.serve(async (req) => {
     values.status = "lost";
   }
 
-  let targetId = leadId;
-
-  if (!targetId && phone) {
-    const { data: latestLead, error: lookupError } = await sb
-      .from("auto_leads")
-      .select("id")
-      .eq("phone", phone)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (lookupError) return json({ error: lookupError.message }, 500);
-    if (!latestLead?.id) return json({ error: "Lead not found" }, 404);
-
-    targetId = latestLead.id;
-  }
+  const targetId = leadId;
 
   const { data, error } = await sb
     .from("auto_leads")
