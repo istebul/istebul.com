@@ -12,6 +12,17 @@ function json(body: Record<string, unknown>, status = 200) {
   });
 }
 
+function getNextRetryTime(retryCount: number) {
+  const now = new Date();
+
+  if (retryCount <= 1) now.setMinutes(now.getMinutes() + 15);
+  else if (retryCount === 2) now.setHours(now.getHours() + 1);
+  else if (retryCount === 3) now.setHours(now.getHours() + 6);
+  else now.setDate(now.getDate() + 1);
+
+  return now.toISOString();
+}
+
 
 async function postPartnerWebhook(url: string, body: string, signature: string) {
   const controller = new AbortController();
@@ -120,6 +131,7 @@ Deno.serve(async (req) => {
     await sb.from("auto_leads").update({
       partner_status: "dispatch_failed",
       last_dispatch_at: new Date().toISOString(),
+      next_retry_at: getNextRetryTime(Number(lead.dispatch_retry_count || 0) + 1),
       last_dispatch_error: "no active partner endpoint"
     }).eq("id", lead.id);
 
@@ -155,6 +167,7 @@ Deno.serve(async (req) => {
       partner_status: "dispatch_failed",
       dispatch_retry_count: Number(lead.dispatch_retry_count || 0) + 1,
       last_dispatch_at: new Date().toISOString(),
+      next_retry_at: getNextRetryTime(Number(lead.dispatch_retry_count || 0) + 1),
       last_dispatch_error: `manual dispatch non-200: ${res.status}`
     }).eq("id", lead.id);
 
@@ -166,6 +179,7 @@ Deno.serve(async (req) => {
       partner_status: "dispatch_failed",
       dispatch_retry_count: Number(lead.dispatch_retry_count || 0) + 1,
       last_dispatch_at: new Date().toISOString(),
+      next_retry_at: getNextRetryTime(Number(lead.dispatch_retry_count || 0) + 1),
       last_dispatch_error: "manual dispatch network exception"
     }).eq("id", lead.id);
 
