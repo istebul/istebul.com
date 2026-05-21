@@ -96,15 +96,15 @@ function renderLoading() {
   document.getElementById('auto-results').innerHTML = `
     <div class="ai-loading premium-loading">
       <div class="spinner"></div>
-      <p class="kicker">AI karar motoru çalışıyor</p>
-      <h3>Araç profiliniz ve toplam maliyet etkisi analiz ediliyor...</h3>
+      <p class="kicker">Karar analizi hazırlanıyor</p>
+      <h3>İhtiyaç profiliniz ve toplam maliyet etkisi değerlendiriliyor...</h3>
       <p class="loading-copy">Bütçe, kullanım, yakıt tercihi, yıllık kilometre ve finansman durumunuz birlikte değerlendiriliyor.</p>
       <ul class="ai-loading-steps">
         <li>✓ İhtiyaç profiliniz oluşturuluyor</li>
-        <li>✓ Uygun araç segmentleri taranıyor</li>
+        <li>✓ Uygun araç profili oluşturuluyor</li>
         <li>✓ Toplam sahip olma maliyeti hesaplanıyor</li>
         <li>✓ Finansman ve kullanım riski modelleniyor</li>
-        <li>✓ Size en uygun 3 seçenek hazırlanıyor</li>
+        <li>✓ Profilinize en yakın seçenekler hazırlanıyor</li>
       </ul>
     </div>
   `;
@@ -700,7 +700,7 @@ const wizardSteps = [
   {
     key: 'usage',
     title: 'Aracı en çok nasıl kullanacaksınız?',
-    description: 'AI karar motoru kullanım senaryonuza göre segment ve maliyet dengesini ayarlar.',
+    description: 'Karar analizi kullanım senaryonuza göre segment ve maliyet dengesini değerlendirir.',
     options: [
       { label: 'Aile', value: 'family', note: 'Geniş iç hacim ve güvenlik' },
       { label: 'Şehir içi', value: 'city', note: 'Yakıt ve park kolaylığı' },
@@ -1000,7 +1000,7 @@ form.addEventListener('submit', (event) => {
             rawAnswers: formData,
             answers: formData,
             summary: `${results[0].name} kullanım ve bütçe profilinize göre en güçlü araç eşleşmesi olarak öne çıktı.`,
-            insight: 'isteBul Auto AI araç karar analizi',
+            insight: 'isteBul Auto karar analizi',
             dataHealth: 'estimated',
             recommendations: results.map((vehicle) => ({
               name: vehicle.name,
@@ -1123,7 +1123,7 @@ function addAutoComparisonFallback(vehicle){
     yearlyCost: Number(vehicle.costs?.annual || 0),
     monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0),
     tags: [vehicle.fuel || 'Araç', vehicle.segment || 'AI analiz'],
-    comment: vehicle.reasons?.[0] || 'AI araç karar analizi sonucu önerildi.',
+    comment: vehicle.reasons?.[0] || 'Araç karar analizi sonucu önerildi.',
     reasons: vehicle.reasons || [],
     risks: vehicle.risks || []
   }]);
