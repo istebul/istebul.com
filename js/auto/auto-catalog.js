@@ -17,6 +17,7 @@ function mapVehicle(row) {
     resale: Number(row.resale_score || 5),
     maintenance: Number(row.maintenance_score || 5),
     costProfile: Array.isArray(row.vehicle_cost_profiles) ? row.vehicle_cost_profiles[0] : null,
+    image_url: row.image_url || null,
     source: 'supabase'
   };
 }

@@ -622,9 +622,11 @@ function renderResults(results) {
       <div class="auto-market-media">
         <div class="auto-market-rank">${rankLabel}</div>
         <div class="auto-market-image">
-          ${getVehicleImage(vehicle.name)
-            ? `<img src="${getVehicleImage(vehicle.name)}" alt="${escapeHtml(vehicle.name)}" loading="lazy">`
-            : `<span>${escapeHtml(vehicle.name.split(' ').slice(0, 2).join(' '))}</span>`}
+          ${vehicle.image_url
+            ? `<img src="${escapeHtml(vehicle.image_url)}" alt="${escapeHtml(vehicle.name)}" loading="lazy">`
+            : getVehicleImage(vehicle.name)
+              ? `<img src="${getVehicleImage(vehicle.name)}" alt="${escapeHtml(vehicle.name)}" loading="lazy">`
+              : `<span>${escapeHtml(vehicle.name.split(' ').slice(0, 2).join(' '))}</span>`}
         </div>
       </div>
 
