@@ -181,7 +181,7 @@ async function loadDashboard() {
 }
 
 const KEYS = ['phone','email','address','instagram','twitter','facebook','linkedin','youtube','tiktok',
-              'site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc','title','description'];
+              'site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc','title','description','auto_whatsapp_phone'];
 
 async function loadSettings() {
   const { data } = await sb.from('site_settings').select('*');
