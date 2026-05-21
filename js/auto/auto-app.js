@@ -469,12 +469,27 @@ function renderDealerOffers(offers, vehicle, formData) {
     return `
       <div class="dealer-offer-header">
         <div>
-          <strong>Yakındaki gerçek teklifler</strong>
-          <span>${city ? `${escapeHtml(city)} içinde` : 'Seçtiğiniz bölgede'} bu model için aktif teklif bulunamadı.</span>
+          <strong>isteBul Verified Network</strong>
+          <span>${city ? `${escapeHtml(city)} içinde` : 'Seçtiğiniz bölgede'} bu modele uygun doğrulanmış satıcı eşleşmesi hazırlanabilir.</span>
         </div>
         <button class="btn secondary auto-interest-btn" data-interest="dealer_match" data-vehicle="${escapeHtml(vehicle.name)}">
-          Satıcı eşleşmesi iste
+          Size özel teklif iste
         </button>
+      </div>
+      <div class="dealer-offer-list">
+        <article class="dealer-offer-card dealer-offer-placeholder">
+          <div>
+            <strong>Satıcı eşleşmesi pilot ağı</strong>
+            <span>${city ? escapeHtml(city) : 'Seçilen bölge'} ${formData.district ? ` / ${escapeHtml(formData.district)}` : ''}</span>
+            <small>Uygun satıcı, fiyat aralığı ve finansman seçenekleri talebiniz sonrası doğrulanır.</small>
+          </div>
+          <div class="dealer-offer-price">
+            <strong>Özel teklif</strong>
+            <button class="btn primary auto-interest-btn" data-interest="dealer_match" data-vehicle="${escapeHtml(vehicle.name)}">
+              Eşleşme iste
+            </button>
+          </div>
+        </article>
       </div>
     `;
   }
