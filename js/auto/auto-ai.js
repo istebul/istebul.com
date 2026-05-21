@@ -36,37 +36,66 @@ function buildRisks(vehicle, form, budget) {
 }
 
 function confidence(score) {
-  return Math.min(96, Math.max(68, score));
+  return Math.min(94, Math.max(62, score));
+}
+
+function isPremiumBrand(vehicle) {
+  const name = String(vehicle.name || '').toLowerCase();
+  return ['bmw', 'mercedes', 'tesla', 'audi', 'volvo', 'lexus'].some(brand => name.includes(brand));
 }
 
 export function recommendVehicles(form) {
   const budget = Number(form.budget || 0);
+  const requestedFuel = form.fuel || 'any';
+  const requestedBody = form.body || '';
+  const usage = form.usage || '';
+  const isPremiumBudget = budget >= 2500000;
 
   return vehicles
     .map(vehicle => {
-      let score = 40;
+      let score = 42;
 
-      if (vehicle.price <= budget) score += 25;
-      else score -= Math.min(18, Math.round((vehicle.price - budget) / 50000));
+      const overBudgetRatio = budget > 0 ? (vehicle.price - budget) / budget : 0;
+      const underBudgetRatio = budget > 0 ? (budget - vehicle.price) / budget : 0;
 
-      if (form.body === vehicle.body) score += 45;
-      else score -= 18;
+      if (vehicle.price <= budget) {
+        score += 18;
+        if (underBudgetRatio <= 0.18) score += 7;
+        if (underBudgetRatio > 0.45 && isPremiumBudget) score -= 12;
+      } else {
+        score -= Math.min(42, Math.round(overBudgetRatio * 100));
+      }
 
-      if (form.fuel === 'any' || form.fuel === vehicle.fuel) score += 15;
+      if (requestedBody && requestedBody === vehicle.body) score += 24;
+      else if (requestedBody) score -= 18;
 
-      if (form.usage === 'family') score += vehicle.family * 2;
-      if (form.usage === 'city') score += vehicle.city * 2;
-      if (form.usage === 'long') score += vehicle.long * 2;
+      if (requestedFuel === 'any') {
+        score += 6;
+      } else if (requestedFuel === vehicle.fuel) {
+        score += 24;
+      } else {
+        score -= requestedFuel === 'electric' ? 34 : 18;
+      }
 
-      score += vehicle.resale * 2;
+      if (usage === 'family') score += vehicle.family * 1.7;
+      if (usage === 'city') score += vehicle.city * 1.7;
+      if (usage === 'long') score += vehicle.long * 1.7;
 
-      if (form.loan === 'yes' && vehicle.price > budget * 0.8) {
-        score -= 15;
+      score += vehicle.resale * 1.4;
+
+      if (isPremiumBudget && vehicle.price >= budget * 0.65) score += 10;
+      if (isPremiumBudget && vehicle.price < budget * 0.55) score -= 18;
+      if (isPremiumBudget && isPremiumBrand(vehicle)) score += 24;
+      if (isPremiumBudget && !isPremiumBrand(vehicle) && vehicle.price < budget * 0.6) score -= 20;
+
+      if (form.loan === 'yes') {
+        if (vehicle.price > budget * 0.9) score -= 16;
+        if (vehicle.price <= budget * 0.75) score += 6;
       }
 
       const costs = estimateAnnualCost(vehicle, form);
 
-      score = Math.max(35, Math.min(96, score));
+      score = Math.round(Math.max(35, Math.min(94, score)));
 
       return {
         ...vehicle,
