@@ -4,6 +4,9 @@ let cachedVehicles = null;
 
 function mapVehicle(row) {
   return {
+    id: row.id,
+    brand: row.brand,
+    model: row.model,
     name: `${row.model_year || ''} ${row.brand} ${row.model}`.trim(),
     price: Number(row.price_reference || 0),
     body: row.body,

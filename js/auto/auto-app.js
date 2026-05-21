@@ -1,5 +1,6 @@
 import { recommendVehicles } from './auto-ai.js';
 import { getVehicleCatalog } from './auto-catalog.js';
+import { getDealerOffers } from './auto-offers.js';
 
 const formatter = new Intl.NumberFormat('tr-TR');
 
@@ -447,6 +448,73 @@ function renderFilteredAutoResults(){
 }
 
 
+
+function renderOfferSkeleton(vehicleName) {
+  return `
+    <section class="dealer-offer-strip" data-offers-for="${escapeHtml(vehicleName)}">
+      <div class="dealer-offer-header">
+        <div>
+          <strong>Yakındaki gerçek teklifler</strong>
+          <span>Uygun satıcı seçenekleri kontrol ediliyor...</span>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderDealerOffers(offers, vehicle, formData) {
+  const city = String(formData.city || '').trim();
+
+  if (!offers.length) {
+    return `
+      <div class="dealer-offer-header">
+        <div>
+          <strong>Yakındaki gerçek teklifler</strong>
+          <span>${city ? `${escapeHtml(city)} içinde` : 'Seçtiğiniz bölgede'} bu model için aktif teklif bulunamadı.</span>
+        </div>
+        <button class="btn secondary auto-interest-btn" data-interest="dealer_match" data-vehicle="${escapeHtml(vehicle.name)}">
+          Satıcı eşleşmesi iste
+        </button>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="dealer-offer-header">
+      <div>
+        <strong>Yakındaki gerçek teklifler</strong>
+        <span>${offers.length} aktif teklif bulundu${city ? ` • ${escapeHtml(city)}` : ''}</span>
+      </div>
+    </div>
+    <div class="dealer-offer-list">
+      ${offers.map((offer) => `
+        <article class="dealer-offer-card">
+          ${offer.image_url ? `<img src="${escapeHtml(offer.image_url)}" alt="${escapeHtml(offer.title)}" loading="lazy">` : ''}
+          <div>
+            <strong>${escapeHtml(offer.title || vehicle.name)}</strong>
+            <span>${escapeHtml(offer.dealer_name || 'Satıcı')} • ${escapeHtml([offer.dealer_city, offer.dealer_district].filter(Boolean).join(' / '))}</span>
+            <small>${offer.km ? `${formatter.format(offer.km)} km • ` : ''}${escapeHtml(offer.color || 'Renk bilgisi yok')}</small>
+          </div>
+          <div class="dealer-offer-price">
+            <strong>${offer.price ? `${formatter.format(offer.price)} ₺` : 'Fiyat sorunuz'}</strong>
+            ${offer.listing_url ? `<a href="${escapeHtml(offer.listing_url)}" target="_blank" rel="noopener">İlana git</a>` : ''}
+          </div>
+        </article>
+      `).join('')}
+    </div>
+  `;
+}
+
+async function hydrateDealerOffers(results, formData) {
+  await Promise.all(results.map(async (vehicle) => {
+    const container = document.querySelector(`[data-offers-for="${CSS.escape(vehicle.name)}"]`);
+    if (!container) return;
+
+    const offers = await getDealerOffers(vehicle, formData);
+    container.innerHTML = renderDealerOffers(offers, vehicle, formData);
+  }));
+}
+
 function buildEconomicVerdict(vehicle) {
   const total = Number(vehicle.costs?.total || 0);
   const depreciation = Number(vehicle.costs?.depreciation || 0);
@@ -614,6 +682,8 @@ function renderResults(results) {
         ` : ''}
       </aside>
 
+      ${renderOfferSkeleton(vehicle.name)}
+
       <div class="auto-market-actions">
         <button class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
           Teklif sürecini başlat
@@ -729,6 +799,7 @@ function renderResults(results) {
     if (paragraph) paragraph.textContent = text;
   };
 
+  hydrateDealerOffers(results, formData);
   updateAiSummary();
 
   aiBox?.querySelectorAll('[data-ai-refine]').forEach((button) => {
