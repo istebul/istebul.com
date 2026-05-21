@@ -1080,7 +1080,7 @@ function advanceWizard() {
       visibleCustomInput?.value ||
       wizardState[`${step.key}_custom`] ||
       ''
-    ).replace(/\D/g, '');
+    ).trim();
 
     if (step.key === 'location') {
       const cleanLocation = String(rawCustomValue || '').trim();
