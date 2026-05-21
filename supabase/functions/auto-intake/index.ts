@@ -436,8 +436,21 @@ async function checkRateLimit(adminClient: any, key: string, limit: number, wind
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
+  const allowedOrigins = new Set([
+    "https://www.istebul.com",
+    "https://istebul.com"
+  ]);
+  const isAllowedOrigin = !origin || allowedOrigins.has(origin);
 
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(req.headers.get("origin")) });
+  if (req.method === "OPTIONS") {
+    if (!isAllowedOrigin) return new Response(null, { status: 403 });
+    return new Response("ok", { headers: corsHeaders(origin) });
+  }
+
+  if (!isAllowedOrigin) {
+    return json({ error: "Forbidden origin" }, 403, "https://www.istebul.com");
+  }
+
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405, origin);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
