@@ -53,9 +53,26 @@ export function recommendVehicles(form, catalog = vehicles) {
 
   const sourceVehicles = Array.isArray(catalog) && catalog.length ? catalog : vehicles;
 
-  const candidateVehicles = isPremiumBudget && requestedFuel !== 'any'
-    ? sourceVehicles.filter(vehicle => vehicle.fuel === requestedFuel)
-    : sourceVehicles;
+  const strictMatches = sourceVehicles.filter(vehicle =>
+    (!requestedBody || vehicle.body === requestedBody) &&
+    (requestedFuel === 'any' || vehicle.fuel === requestedFuel)
+  );
+
+  const bodyMatches = sourceVehicles.filter(vehicle =>
+    !requestedBody || vehicle.body === requestedBody
+  );
+
+  const fuelMatches = sourceVehicles.filter(vehicle =>
+    requestedFuel === 'any' || vehicle.fuel === requestedFuel
+  );
+
+  const candidateVehicles = strictMatches.length >= 3
+    ? strictMatches
+    : bodyMatches.length >= 3
+      ? bodyMatches
+      : fuelMatches.length >= 3
+        ? fuelMatches
+        : sourceVehicles;
 
   return candidateVehicles
     .map(vehicle => {
