@@ -841,6 +841,26 @@ const wizardSteps = [
     }
   },
   {
+    key: 'location',
+    title: 'Aracı hangi şehirde arıyorsunuz?',
+    description: 'Gerçek teklif ve satıcı eşleşmesi için şehir bilgisi gereklidir. İlçe opsiyoneldir.',
+    options: [
+      { label: 'İzmir', value: 'İzmir', note: 'İzmir ve çevresindeki satıcılar' },
+      { label: 'İstanbul', value: 'İstanbul', note: 'İstanbul Avrupa / Anadolu' },
+      { label: 'Ankara', value: 'Ankara', note: 'Ankara ve çevresi' },
+      { label: 'Antalya', value: 'Antalya', note: 'Antalya ve çevresi' },
+      { label: 'Başka şehir', value: 'custom', note: 'Şehir adını kendim gireceğim' }
+    ],
+    custom: {
+      type: 'text',
+      placeholder: 'Örn. Bursa',
+      min: 2,
+      max: 40,
+      suffix: 'il'
+    },
+    optionalDistrict: true
+  },
+  {
     key: 'loan',
     title: 'Finansman kullanacak mısınız?',
     description: 'Kredi tercihi aylık yük ve toplam maliyet analizini etkiler.',
@@ -857,6 +877,15 @@ let wizardIndex = 0;
 function syncWizardToForm() {
   Object.entries(wizardState).forEach(([key, value]) => {
     if (key.endsWith('_custom')) return;
+
+    if (key === 'location') {
+      const cityInput = form.elements.city;
+      const districtInput = form.elements.district;
+      const cityValue = value === 'custom' ? wizardState.location_custom : value;
+      if (cityInput) cityInput.value = cityValue || '';
+      if (districtInput) districtInput.value = wizardState.district || '';
+      return;
+    }
 
     const input = form.elements[key];
     if (!input) return;
@@ -909,19 +938,33 @@ function renderWizard() {
 
     ${step.custom && isCustom ? `
       <label class="wizard-custom-input">
-        <span>${step.key === 'budget' ? 'Net bütçenizi girin' : 'Yıllık net kilometrenizi girin'}</span>
+        <span>${step.key === 'budget' ? 'Net bütçenizi girin' : step.key === 'km' ? 'Yıllık net kilometrenizi girin' : 'Şehir adını girin'}</span>
         <div>
           <input
             type="${step.custom.type}"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            min="${step.custom.min}"
-            max="${step.custom.max}"
+            ${step.key === 'location' ? '' : 'inputmode="numeric" pattern="[0-9]*"'}
+            ${step.key === 'location' ? `minlength="${step.custom.min}" maxlength="${step.custom.max}"` : `min="${step.custom.min}" max="${step.custom.max}"`}
             placeholder="${escapeHtml(step.custom.placeholder)}"
             value="${escapeHtml(customValue)}"
             data-wizard-custom
           >
           <strong>${escapeHtml(step.custom.suffix)}</strong>
+        </div>
+      </label>
+    ` : ''}
+
+    ${step.optionalDistrict ? `
+      <label class="wizard-custom-input">
+        <span>İlçe (opsiyonel)</span>
+        <div>
+          <input
+            type="text"
+            maxlength="60"
+            placeholder="Örn. Bornova"
+            value="${escapeHtml(wizardState.district || '')}"
+            data-wizard-district
+          >
+          <strong>ilçe</strong>
         </div>
       </label>
     ` : ''}
@@ -951,21 +994,30 @@ function advanceWizard() {
       ''
     ).replace(/\D/g, '');
 
-    const numericValue = Number(rawCustomValue);
-
-    if (!rawCustomValue || Number.isNaN(numericValue)) {
-      alert('Lütfen geçerli bir değer girin.');
-      return;
-    }
-
-    if (step.custom) {
-      if (numericValue < step.custom.min || numericValue > step.custom.max) {
-        alert(`Lütfen ${step.custom.min} - ${step.custom.max} aralığında bir değer girin.`);
+    if (step.key === 'location') {
+      const cleanLocation = String(rawCustomValue || '').trim();
+      if (cleanLocation.length < step.custom.min || cleanLocation.length > step.custom.max) {
+        alert('Lütfen geçerli bir şehir adı girin.');
         return;
       }
-    }
+      wizardState[`${step.key}_custom`] = cleanLocation;
+    } else {
+      const numericValue = Number(rawCustomValue);
 
-    wizardState[`${step.key}_custom`] = rawCustomValue;
+      if (!rawCustomValue || Number.isNaN(numericValue)) {
+        alert('Lütfen geçerli bir değer girin.');
+        return;
+      }
+
+      if (step.custom) {
+        if (numericValue < step.custom.min || numericValue > step.custom.max) {
+          alert(`Lütfen ${step.custom.min} - ${step.custom.max} aralığında bir değer girin.`);
+          return;
+        }
+      }
+
+      wizardState[`${step.key}_custom`] = rawCustomValue;
+    }
   }
 
   syncWizardToForm();
@@ -988,10 +1040,23 @@ if (wizard) {
 
   wizard.addEventListener('input', (event) => {
     const customInput = event.target.closest('[data-wizard-custom]');
-    if (!customInput) return;
+    const districtInput = event.target.closest('[data-wizard-district]');
 
     const step = wizardSteps[wizardIndex];
-    const cleanValue = String(customInput.value || '').replace(/\D/g, '');
+
+    if (districtInput) {
+      wizardState.district = String(districtInput.value || '').trim().slice(0, 60);
+      syncWizardToForm();
+      return;
+    }
+
+    if (!customInput) return;
+
+    const rawValue = String(customInput.value || '');
+    const cleanValue = step.key === 'location'
+      ? rawValue.trim().slice(0, step.custom?.max || 40)
+      : rawValue.replace(/\D/g, '');
+
     wizardState[`${step.key}_custom`] = cleanValue;
     customInput.value = cleanValue;
     syncWizardToForm();
