@@ -72,7 +72,7 @@ const rewriteAssetRefs = (html) => {
   let output = html;
   for (const [originalPath, hashedPath] of assetRefs.entries()) {
     const escaped = originalPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    output = output.replace(new RegExp(`(["'])/?${escaped}(?:\\?v=\\d+)?`, 'g'), `$1${hashedPath}`);
+    output = output.replace(new RegExp(`(["'])/?${escaped}(?:\\?v=\\d+)?`, 'g'), `$1/${hashedPath}`);
   }
   return output;
 };
