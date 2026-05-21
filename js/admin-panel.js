@@ -426,11 +426,11 @@ async function loadAutoAnalytics() {
   };
 
   const pageViews = counts.auto_page_view || 0;
-  const formStarted = counts.auto_form_started || 0;
-  const formSubmitted = counts.auto_form_submitted || 0;
+  const formStarted = counts.auto_form_started || counts.auto_analysis_started || counts.auto_quiz_submit || 0;
+  const formSubmitted = counts.auto_form_submitted || counts.auto_results_view || counts.auto_results_rendered || 0;
   const analysisStarted = (counts.auto_analysis_started || 0) + (counts.auto_quiz_submit || 0);
   const resultsRendered = counts.auto_results_rendered || counts.auto_results_view || 0;
-  const modalSubmitted = counts.auto_modal_submitted || 0;
+  const modalSubmitted = counts.auto_modal_submitted || counts.auto_lead_submit || 0;
   const hotLeadDetected = counts.auto_hot_lead_detected || 0;
 
   const pct = (value, base) => base ? Math.round((value / base) * 100) + '%' : '—';
