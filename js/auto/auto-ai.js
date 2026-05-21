@@ -44,16 +44,18 @@ function isPremiumBrand(vehicle) {
   return ['bmw', 'mercedes', 'tesla', 'audi', 'volvo', 'lexus'].some(brand => name.includes(brand));
 }
 
-export function recommendVehicles(form) {
+export function recommendVehicles(form, catalog = vehicles) {
   const budget = Number(form.budget || 0);
   const requestedFuel = form.fuel || 'any';
   const requestedBody = form.body || '';
   const usage = form.usage || '';
   const isPremiumBudget = budget >= 2500000;
 
+  const sourceVehicles = Array.isArray(catalog) && catalog.length ? catalog : vehicles;
+
   const candidateVehicles = isPremiumBudget && requestedFuel !== 'any'
-    ? vehicles.filter(vehicle => vehicle.fuel === requestedFuel)
-    : vehicles;
+    ? sourceVehicles.filter(vehicle => vehicle.fuel === requestedFuel)
+    : sourceVehicles;
 
   return candidateVehicles
     .map(vehicle => {

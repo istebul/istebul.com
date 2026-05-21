@@ -1,4 +1,5 @@
 import { recommendVehicles } from './auto-ai.js';
+import { getVehicleCatalog } from './auto-catalog.js';
 
 const formatter = new Intl.NumberFormat('tr-TR');
 
@@ -1023,7 +1024,7 @@ form.addEventListener('input', () => {
   }
 });
 
-form.addEventListener('submit', (event) => {
+form.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   if (autoAnalysisRunning) return;
@@ -1032,7 +1033,8 @@ form.addEventListener('submit', (event) => {
   trackAutoEvent('auto_form_submitted');
 
   const formData = readForm(form);
-  const results = recommendVehicles(formData);
+  const vehicleCatalog = await getVehicleCatalog();
+  const results = recommendVehicles(formData, vehicleCatalog);
   lastResults = results;
   allResults = [...results];
 
