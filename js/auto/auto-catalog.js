@@ -1,7 +1,5 @@
 import { vehicles as localVehicles } from './auto-data.js';
 
-let cachedVehicles = null;
-
 function mapVehicle(row) {
   return {
     id: row.id,
@@ -16,21 +14,20 @@ function mapVehicle(row) {
     long: Number(row.long_score || 5),
     resale: Number(row.resale_score || 5),
     maintenance: Number(row.maintenance_score || 5),
-    costProfile: Array.isArray(row.vehicle_cost_profiles) ? row.vehicle_cost_profiles[0] : null,
+    costProfile: Array.isArray(row.vehicle_cost_profiles)
+      ? row.vehicle_cost_profiles[0]
+      : null,
     image_url: row.image_url || null,
     source: 'supabase'
   };
 }
 
 export async function getVehicleCatalog() {
-  if (cachedVehicles) return cachedVehicles;
-
   const url = window.__env?.SUPABASE_URL;
   const key = window.__env?.SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    cachedVehicles = localVehicles;
-    return cachedVehicles;
+    return localVehicles;
   }
 
   try {
@@ -45,19 +42,18 @@ export async function getVehicleCatalog() {
       }
     );
 
-    if (!res.ok) throw new Error('catalog fetch failed');
+    if (!res.ok) {
+      return localVehicles;
+    }
 
     const rows = await res.json();
 
     if (!Array.isArray(rows) || !rows.length) {
-      cachedVehicles = localVehicles;
-      return cachedVehicles;
+      return localVehicles;
     }
 
-    cachedVehicles = rows.map(mapVehicle);
-    return cachedVehicles;
+    return rows.map(mapVehicle);
   } catch {
-    cachedVehicles = localVehicles;
-    return cachedVehicles;
+    return localVehicles;
   }
 }
