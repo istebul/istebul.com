@@ -2063,3 +2063,15 @@ h2{
     grid-template-columns:1fr;
   }
 }
+
+.vehicle-placeholder{
+  width:100%;
+  min-height:150px;
+  display:grid;
+  place-items:center;
+  border-radius:22px;
+  background:linear-gradient(135deg,#e0f2fe,#ccfbf1);
+  color:#0f172a;
+  font-weight:900;
+  letter-spacing:.04em;
+}

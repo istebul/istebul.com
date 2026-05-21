@@ -624,9 +624,7 @@ function renderResults(results) {
         <div class="auto-market-image">
           ${vehicle.image_url
             ? `<img src="${escapeHtml(vehicle.image_url)}" alt="${escapeHtml(vehicle.name)}" loading="lazy">`
-            : getVehicleImage(vehicle.name)
-              ? `<img src="${getVehicleImage(vehicle.name)}" alt="${escapeHtml(vehicle.name)}" loading="lazy">`
-              : `<span>${escapeHtml(vehicle.name.split(' ').slice(0, 2).join(' '))}</span>`}
+            : `<div class="vehicle-placeholder"><span>${escapeHtml(vehicle.brand || vehicle.name.split(' ')[1] || 'Araç')}</span></div>`}
         </div>
       </div>
 
