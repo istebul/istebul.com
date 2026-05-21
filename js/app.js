@@ -428,18 +428,20 @@ class App {
 
             const listings = await API.getListings(options);
             const localListings = this.getLocalListings(options);
-            const demoListings = listings?.length || options.userId || options.ownedOnly ? [] : this.getDemoListings(options);
-            this.currentListings = this.sortListings(this.mergeListings(localListings, listings || [], demoListings));
+            this.currentListings = this.sortListings(this.mergeListings(localListings, listings || []));
             this.renderCurrentListings();
             this.renderListingFilterSummary(options);
+
+            if (!this.currentListings.length && !options.userId && !options.ownedOnly) {
+                this.ui.showInfo?.('Şu an canlı ilan bulunmuyor. Size uygun araç profili için karar asistanını kullanabilirsiniz.');
+            }
         } catch (error) {
             console.error('Failed to load listings:', error);
             const localListings = this.getLocalListings(options);
-            const demoListings = options.userId || options.ownedOnly ? [] : this.getDemoListings(options);
-            this.currentListings = this.sortListings(this.mergeListings(localListings, demoListings));
+            this.currentListings = this.sortListings(this.mergeListings(localListings));
             this.renderCurrentListings();
             this.renderListingFilterSummary(options);
-            this.ui.showError('Canlı ilanlara ulaşılamadı, örnek ve yerel kayıtlar gösteriliyor.');
+            this.ui.showError('Canlı ilanlara şu anda ulaşılamadı. Lütfen kısa süre sonra tekrar deneyin.');
         } finally {
             this.ui.hideLoading('#listings-grid');
         }
@@ -532,7 +534,7 @@ class App {
     }
 
     getListingFallbackById(listingId) {
-        return this.getLocalListingById(listingId) || this.getDemoListingById(listingId);
+        return this.getLocalListingById(listingId);
     }
 
 
@@ -2946,19 +2948,22 @@ Açıklama yok.
             const searchOptions = { search: query, limit: 20 };
             this.lastListingOptions = searchOptions;
             const listings = await API.getListings(searchOptions);
-            const resolvedListings = listings?.length ? listings : this.getDemoListings(searchOptions);
-            this.currentListings = this.sortListings(resolvedListings);
+            this.currentListings = this.sortListings(listings || []);
             this.renderCurrentListings();
             this.renderListingFilterSummary(searchOptions);
             this.saveSearchHistory(query);
+
+            if (!this.currentListings.length) {
+                this.ui.showInfo?.('Bu arama için canlı ilan bulunamadı. İsterseniz karar asistanıyla size uygun araç profilini çıkarabiliriz.');
+            }
         } catch (error) {
             console.error('Search failed:', error);
             const searchOptions = { search: query, limit: 20 };
             this.lastListingOptions = searchOptions;
-            this.currentListings = this.sortListings(this.getDemoListings(searchOptions));
+            this.currentListings = [];
             this.renderCurrentListings();
             this.renderListingFilterSummary(searchOptions);
-            this.ui.showError('Canlı arama yapılamadı, örnek veriler filtrelendi.');
+            this.ui.showError('Canlı arama şu anda yapılamıyor. Lütfen tekrar deneyin.');
         } finally {
             this.ui.hideLoading('#listings-grid');
         }
@@ -3618,7 +3623,7 @@ Açıklama yok.
             if (fallbackListing) {
                 this.currentDetailListing = fallbackListing;
                 this.ui.renderListingDetail(fallbackListing, this.getFavoriteIds(), this.createComparisonItemFromListing(fallbackListing), this.getComparisonSignatures());
-                this.ui.showError(fallbackListing.source === 'local-fallback' ? 'Yerel kayıt gösteriliyor.' : 'Canlı ilan detayına ulaşılamadı, örnek veri gösteriliyor.');
+                this.ui.showError('Canlı ilan detayına ulaşılamadı.');
                 return;
             }
             this.ui.renderListingDetailEmpty?.('İlan detayları yüklenirken bir hata oluştu. Lütfen seçenekler listesinden tekrar deneyin.');
