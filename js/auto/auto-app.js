@@ -446,6 +446,26 @@ function renderFilteredAutoResults(){
   renderResults(filtered);
 }
 
+
+function buildEconomicVerdict(vehicle) {
+  const total = Number(vehicle.costs?.total || 0);
+  const depreciation = Number(vehicle.costs?.depreciation || 0);
+
+  if (vehicle.score >= 90 && depreciation < total * 0.18) {
+    return 'Ekonomik olarak güçlü karar. Kullanım uyumu ve toplam sahip olma maliyeti dengeli.';
+  }
+
+  if (depreciation > total * 0.22) {
+    return 'Toplam maliyette değer kaybı etkisi yüksek olabilir. Sahiplik süresi önemli.';
+  }
+
+  if (vehicle.costs?.fuel > vehicle.costs?.maintenance) {
+    return 'Operasyonel maliyet ağırlıklı bir profil. Kullanım yoğunluğunuz kritik.';
+  }
+
+  return 'Genel maliyet profili dengeli. Nihai karar için finansman ve teklif karşılaştırması önerilir.';
+}
+
 function renderResults(results) {
   const root = document.getElementById('auto-results');
 
@@ -555,6 +575,11 @@ function renderResults(results) {
             <ul>${vehicle.risks.slice(0, 2).map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
           </div>
         </div>
+
+        <div class="analysis-box">
+          <strong>AI uzman yorumu</strong>
+          <p>${escapeHtml(buildEconomicVerdict(vehicle))}</p>
+        </div>
       </div>
 
       <aside class="auto-market-decision">
@@ -571,7 +596,15 @@ function renderResults(results) {
         <div class="cost auto-market-cost">
           <p><strong>12 aylık tahmini maliyet</strong></p>
           <p>${formatter.format(vehicle.costs.total)} ₺</p>
-          <small>Yakıt ${formatter.format(vehicle.costs.fuel)} ₺ • Sigorta ${formatter.format(vehicle.costs.insurance)} ₺ • Bakım ${formatter.format(vehicle.costs.maintenance)} ₺</small>
+          <small>
+            Yakıt ${formatter.format(vehicle.costs.fuel)} ₺ •
+            Sigorta ${formatter.format(vehicle.costs.insurance)} ₺ •
+            Kasko ${formatter.format(vehicle.costs.kasko || 0)} ₺ •
+            Bakım ${formatter.format(vehicle.costs.maintenance)} ₺ •
+            Vergi ${formatter.format(vehicle.costs.tax || 0)} ₺ •
+            Lastik ${formatter.format(vehicle.costs.tires || 0)} ₺ •
+            Değer kaybı ${formatter.format(vehicle.costs.depreciation || 0)} ₺
+          </small>
         </div>
 
         ${vehicle.score >= 85 ? `
