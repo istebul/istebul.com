@@ -77,21 +77,29 @@ async function callAutoIntake(payload) {
 
   if (!supabaseUrl || !supabaseKey) return null;
 
-  const response = await fetch(`${supabaseUrl}/functions/v1/auto-intake`, {
-    method: 'POST',
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
 
-  if (!response.ok) {
-    throw new Error(`Auto intake failed: ${response.status}`);
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/auto-intake`, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Auto intake failed: ${response.status}`);
+    }
+
+    return response.json();
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return response.json();
 }
 
 async function trackAutoEvent(eventName, metadata = {}) {
@@ -177,28 +185,29 @@ async function getTurnstileToken() {
     container.style.top = '-9999px';
     document.body.appendChild(container);
 
+    let settled = false;
+    const finish = (token = '') => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      container.remove();
+      resolve(token || '');
+    };
+
+    const timeout = setTimeout(() => finish(''), 6000);
+
     try {
-      window.turnstile.render(container, {
+      const widgetId = window.turnstile.render(container, {
         sitekey: TURNSTILE_SITE_KEY,
         size: 'invisible',
-        callback: (token) => {
-          container.remove();
-          resolve(token || '');
-        },
-        'error-callback': () => {
-          container.remove();
-          resolve('');
-        },
-        'timeout-callback': () => {
-          container.remove();
-          resolve('');
-        }
+        callback: (token) => finish(token),
+        'error-callback': () => finish(''),
+        'timeout-callback': () => finish('')
       });
 
-      window.turnstile.execute(container);
+      window.turnstile.execute(widgetId);
     } catch {
-      container.remove();
-      resolve('');
+      finish('');
     }
   });
 }
