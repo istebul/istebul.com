@@ -2,6 +2,37 @@ import { recommendVehicles } from './auto-ai.js';
 
 const formatter = new Intl.NumberFormat('tr-TR');
 
+const autoRuntimeConfig = {
+  whatsappPhone: '905456786420'
+};
+
+async function loadAutoRuntimeConfig() {
+  const supabaseUrl = window.__env?.SUPABASE_URL;
+  const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) return;
+
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/site_settings?select=key,value&key=in.(auto_whatsapp_phone)`, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`
+      }
+    });
+
+    if (!response.ok) return;
+
+    const rows = await response.json();
+    const phoneSetting = rows.find(row => row.key === 'auto_whatsapp_phone')?.value;
+    const cleanPhone = String(phoneSetting || '').replace(/\D/g, '');
+
+    if (cleanPhone.length >= 10) {
+      autoRuntimeConfig.whatsappPhone = cleanPhone;
+    }
+  } catch {}
+}
+
+
 function safeJsonParse(value, fallback = {}) {
   try {
     return JSON.parse(value);
@@ -955,6 +986,7 @@ if (wizard) {
 }
 
 
+loadAutoRuntimeConfig();
 trackAutoEvent('auto_page_view');
 
 const form = document.getElementById('auto-form');
@@ -1178,7 +1210,7 @@ document.addEventListener('click', async (event) => {
 
   if (whatsappBtn) {
     const vehicle = whatsappBtn.dataset.vehicle || 'vehicle';
-    const phone = '905456786420';
+    const phone = autoRuntimeConfig.whatsappPhone;
 
     const formData = readForm(document.getElementById('auto-form'));
 
