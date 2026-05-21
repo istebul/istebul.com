@@ -139,6 +139,12 @@ pendingStaticFiles.forEach(({ file, source }) => {
   if (file === 'index.html') {
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, 'js/' + appBundleFile);
   }
+
+  if (file === 'auto/index.html') {
+    const autoVersion = Date.now();
+    html = html.replace(/auto-app\.js\?v=\d+/g, `auto-app.js?v=${autoVersion}`);
+  }
+
   writeFile(file, minifyHtml(html));
 });
 
