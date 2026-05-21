@@ -1,6 +1,6 @@
 import { vehicles as localVehicles } from './auto-data.js';
 
-function mapVehicle(row) {
+function mapVehicle(row, profilesMap = {}) {
   return {
     id: row.id,
     brand: row.brand,
@@ -14,10 +14,8 @@ function mapVehicle(row) {
     long: Number(row.long_score || 5),
     resale: Number(row.resale_score || 5),
     maintenance: Number(row.maintenance_score || 5),
-    costProfile: Array.isArray(row.vehicle_cost_profiles)
-      ? row.vehicle_cost_profiles[0]
-      : null,
     image_url: row.image_url || null,
+    costProfile: profilesMap[row.id] || null,
     source: 'supabase'
   };
 }
@@ -31,28 +29,36 @@ export async function getVehicleCatalog() {
   }
 
   try {
-    const res = await fetch(
-      `${url}/rest/v1/vehicle_catalog?select=*&is_active=eq.true&limit=500&_ts=${Date.now()}`,
-      {
-        cache: 'no-store',
-        headers: {
-          apikey: key,
-          Authorization: `Bearer ${key}`
-        }
-      }
-    );
+    const headers = {
+      apikey: key,
+      Authorization: `Bearer ${key}`
+    };
 
-    if (!res.ok) {
+    const [vehiclesRes, profilesRes] = await Promise.all([
+      fetch(
+        `${url}/rest/v1/vehicle_catalog?select=*&is_active=eq.true&limit=500&_ts=${Date.now()}`,
+        { cache: 'no-store', headers }
+      ),
+      fetch(
+        `${url}/rest/v1/vehicle_cost_profiles?select=*`,
+        { cache: 'no-store', headers }
+      )
+    ]);
+
+    if (!vehiclesRes.ok) {
       return localVehicles;
     }
 
-    const rows = await res.json();
+    const vehiclesRows = await vehiclesRes.json();
+    const profileRows = profilesRes.ok ? await profilesRes.json() : [];
 
-    if (!Array.isArray(rows) || !rows.length) {
-      return localVehicles;
-    }
+    const profilesMap = {};
 
-    return rows.map(mapVehicle);
+    profileRows.forEach(row => {
+      profilesMap[row.vehicle_id] = row;
+    });
+
+    return vehiclesRows.map(v => mapVehicle(v, profilesMap));
   } catch {
     return localVehicles;
   }
