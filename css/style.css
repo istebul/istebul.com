@@ -8775,3 +8775,25 @@ body.app-route-active [data-private-section].route-visible {
     background: #0f172ac2;
     border-color: #94a3b82e;
 }
+
+/* Signed-in header placement fix */
+@media (min-width: 1181px) {
+  .nav-container {
+    grid-template-columns: minmax(210px,300px) minmax(0,1fr) auto auto !important;
+  }
+
+  .nav-menu {
+    grid-column: 2 !important;
+  }
+
+  .nav-user {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    justify-self: end !important;
+    align-self: center !important;
+  }
+
+  .nav-controls {
+    grid-column: 4 !important;
+  }
+}
