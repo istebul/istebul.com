@@ -8797,3 +8797,68 @@ body.app-route-active [data-private-section].route-visible {
     grid-column: 4 !important;
   }
 }
+
+/* Partner landing page */
+.partner-section {
+  background: linear-gradient(180deg, rgba(18,179,168,.08), rgba(255,255,255,0));
+}
+
+.partner-hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+  gap: 1.5rem;
+  align-items: stretch;
+  padding: 1.5rem;
+  border: 1px solid rgba(102,124,153,.16);
+  border-radius: 24px;
+  background: var(--background-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.partner-hero-card h3 {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  margin-bottom: .75rem;
+}
+
+.partner-hero-card p {
+  color: var(--text-secondary);
+  max-width: 780px;
+}
+
+.partner-lead-preview {
+  padding: 1.25rem;
+  border-radius: 20px;
+  background: rgba(18,179,168,.1);
+  border: 1px solid rgba(18,179,168,.2);
+}
+
+.partner-lead-preview span {
+  display: block;
+  color: var(--text-secondary);
+  font-weight: 800;
+  margin-bottom: .35rem;
+}
+
+.partner-lead-preview strong {
+  display: block;
+  font-size: 1.05rem;
+  margin-bottom: .75rem;
+}
+
+.partner-lead-preview ul {
+  display: grid;
+  gap: .45rem;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.partner-steps {
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 860px) {
+  .partner-hero-card {
+    grid-template-columns: 1fr;
+  }
+}

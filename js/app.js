@@ -3853,6 +3853,7 @@ function applyProductionRouteVisibility() {
         '/profil': 'profil',
         '/admin': 'admin',
         '/messages': 'messages',
+        '/partner': 'partner',
         '/ilan-ekle': 'add-listing'
     };
 
