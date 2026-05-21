@@ -32,7 +32,7 @@ export async function getVehicleCatalog() {
 
   try {
     const res = await fetch(
-      `${url}/rest/v1/vehicle_catalog?select=*,vehicle_cost_profiles(*)&is_active=eq.true&limit=500&_ts=${Date.now()}`,
+      `${url}/rest/v1/vehicle_catalog?select=*&is_active=eq.true&limit=500&_ts=${Date.now()}`,
       {
         cache: 'no-store',
         headers: {
