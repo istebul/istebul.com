@@ -2723,3 +2723,71 @@ html body a.auto-floating-cta{
   }
 }
 
+
+/* Stable premium polish layer */
+
+#auto-results .conversion-result-card{
+  border-radius:28px !important;
+  border:1px solid rgba(15,23,42,.08) !important;
+  background:
+    radial-gradient(circle at top right, rgba(37,99,235,.05), transparent 28%),
+    linear-gradient(135deg,#ffffff,#f8fafc) !important;
+  box-shadow:0 24px 80px rgba(15,23,42,.08) !important;
+}
+
+#auto-results .auto-market-main h3{
+  font-size:30px !important;
+  line-height:1.08 !important;
+  letter-spacing:-.03em !important;
+  color:#0f172a !important;
+}
+
+#auto-results .auto-market-main p{
+  color:#475569 !important;
+  line-height:1.7 !important;
+}
+
+#auto-results .auto-market-decision{
+  border-radius:22px !important;
+  border:1px solid rgba(15,23,42,.08) !important;
+  background:#fff !important;
+  box-shadow:0 14px 40px rgba(15,23,42,.05) !important;
+}
+
+#auto-results .dealer-offer-strip{
+  border-radius:24px !important;
+  padding:24px !important;
+  border:1px solid rgba(37,99,235,.10) !important;
+  background:
+    radial-gradient(circle at top left, rgba(37,99,235,.05), transparent 32%),
+    linear-gradient(135deg,#f8fbff,#eefcf9) !important;
+}
+
+#auto-results .dealer-offer-card{
+  border-radius:20px !important;
+  border:1px solid rgba(15,23,42,.07) !important;
+  background:#fff !important;
+  box-shadow:0 10px 30px rgba(15,23,42,.04) !important;
+}
+
+#auto-results .auto-market-actions .btn{
+  min-height:54px !important;
+  border-radius:16px !important;
+  font-weight:800 !important;
+}
+
+#auto-results .auto-market-actions .btn.primary{
+  background:linear-gradient(135deg,#2563eb,#14b8a6) !important;
+  border:none !important;
+}
+
+@media (max-width:768px){
+  #auto-results .auto-market-main h3{
+    font-size:22px !important;
+  }
+
+  #auto-results .dealer-offer-strip{
+    padding:18px !important;
+  }
+}
+
