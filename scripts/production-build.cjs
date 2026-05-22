@@ -159,6 +159,31 @@ esbuild.buildSync({
   outfile: path.join(dist, 'js/admin-panel.js')
 });
 
+// Force Auto page to use isolated stable asset paths to bypass path-specific edge asset failures.
+const autoAssetDir = path.join(dist, 'auto-assets');
+fs.mkdirSync(autoAssetDir, { recursive: true });
+
+const autoCssSource = path.join(dist, 'css', 'auto.css');
+const autoJsSource = path.join(dist, 'js', 'auto', 'auto-app.js');
+
+if (fs.existsSync(autoCssSource)) {
+  fs.copyFileSync(autoCssSource, path.join(autoAssetDir, 'auto.css'));
+}
+
+if (fs.existsSync(autoJsSource)) {
+  fs.copyFileSync(autoJsSource, path.join(autoAssetDir, 'auto-app.js'));
+}
+
+const autoHtmlPath = path.join(dist, 'auto', 'index.html');
+if (fs.existsSync(autoHtmlPath)) {
+  let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
+  autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/auto-assets/auto.css');
+  autoHtml = autoHtml.replace(/\/css\/auto\.css/g, '/auto-assets/auto.css');
+  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/auto-assets/auto-app.js?v=stable-auto-assets');
+  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js/g, '/auto-assets/auto-app.js');
+  fs.writeFileSync(autoHtmlPath, autoHtml);
+}
+
 const manifest = {
   builtAt: new Date().toISOString(),
   files: []
@@ -194,31 +219,6 @@ fs.copyFileSync(path.join(root, '_redirects'), path.join(dist, '_redirects'));
 
 if (fs.existsSync(path.join(root, '_headers'))) {
   fs.copyFileSync(path.join(root, '_headers'), path.join(dist, '_headers'));
-}
-
-// Force Auto page to use isolated stable asset paths to bypass path-specific edge asset failures.
-const autoAssetDir = path.join(dist, 'auto-assets');
-fs.mkdirSync(autoAssetDir, { recursive: true });
-
-const autoCssSource = path.join(dist, 'css', 'auto.css');
-const autoJsSource = path.join(dist, 'js', 'auto', 'auto-app.js');
-
-if (fs.existsSync(autoCssSource)) {
-  fs.copyFileSync(autoCssSource, path.join(autoAssetDir, 'auto.css'));
-}
-
-if (fs.existsSync(autoJsSource)) {
-  fs.copyFileSync(autoJsSource, path.join(autoAssetDir, 'auto-app.js'));
-}
-
-const autoHtmlPath = path.join(dist, 'auto', 'index.html');
-if (fs.existsSync(autoHtmlPath)) {
-  let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
-  autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/auto-assets/auto.css');
-  autoHtml = autoHtml.replace(/\/css\/auto\.css/g, '/auto-assets/auto.css');
-  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/auto-assets/auto-app.js?v=stable-auto-assets');
-  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js/g, '/auto-assets/auto-app.js');
-  fs.writeFileSync(autoHtmlPath, autoHtml);
 }
 
 console.log('Production build complete: dist/');
