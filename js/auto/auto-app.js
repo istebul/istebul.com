@@ -292,7 +292,9 @@ function openFinanceCompareModal(vehicleName = '') {
   }
 
   function render(loanAmount = defaultLoan, selectedTerm = 48) {
-    const principal = Math.max(50000, Math.min(Number(loanAmount || 0), vehiclePrice || 2000000));
+    const rawLoan = String(loanAmount || '').replace(/[^0-9]/g, '');
+    const parsedLoan = Number(rawLoan || 0);
+    const principal = Math.max(50000, Math.min(parsedLoan, vehiclePrice || 2000000));
     const downPayment = Math.max(0, vehiclePrice - principal);
     const offers = buildOffers(principal, selectedTerm);
 
@@ -325,7 +327,13 @@ function openFinanceCompareModal(vehicleName = '') {
 
           <label>
             <span>Kredi tutarı</span>
-            <input id="finance-loan-amount" type="number" min="50000" max="${vehiclePrice || 2000000}" step="50000" value="${principal}">
+            <input
+              id="finance-loan-amount"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              value="${formatter.format(principal)}"
+            >
           </label>
 
           <label>
