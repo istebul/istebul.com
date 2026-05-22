@@ -3,22 +3,22 @@ import { estimateAnnualCost } from './auto-cost-engine.js';
 function buildReason(vehicle, form, budget) {
   const reasons = [];
 
-  if (vehicle.price <= budget) reasons.push('bütçenize uygun');
+  if (vehicle.price <= budget) reasons.push('bütçe disiplininize uyumlu');
 
   if (form.body === vehicle.body) {
-    reasons.push(`${vehicle.body} tercihinize uygun`);
+    reasons.push(`${vehicle.body} tercihinizle uyumlu`);
   }
 
   if (form.usage === 'family' && vehicle.family >= 7) {
-    reasons.push('aile kullanımı için uygun');
+    reasons.push('aile kullanımı için güçlü segment uyumu');
   }
 
   if (form.usage === 'city' && (vehicle.fuel === 'hybrid' || vehicle.fuel === 'electric')) {
-    reasons.push('şehir içi ekonomik kullanım');
+    reasons.push('şehir içi kullanımda düşük sahip olma maliyeti');
   }
 
   if (vehicle.resale >= 8) {
-    reasons.push('güçlü ikinci el değeri');
+    reasons.push('güçlü ikinci el likiditesi');
   }
 
   return reasons.slice(0, 3);
@@ -27,11 +27,11 @@ function buildReason(vehicle, form, budget) {
 function buildRisks(vehicle, form, budget) {
   const risks = [];
 
-  if (vehicle.price > budget) risks.push('bütçeyi aşıyor');
-  if (form.loan === 'yes' && vehicle.price > budget * 0.75) risks.push('yüksek kredi yükü');
-  if (vehicle.resale <= 6) risks.push('ikinci el likiditesi zayıf');
+  if (vehicle.price > budget) risks.push('bütçe üstü fiyat riski');
+  if (form.loan === 'yes' && vehicle.price > budget * 0.75) risks.push('finansman yükü dikkat gerektiriyor');
+  if (vehicle.resale <= 6) risks.push('ikinci el likiditesi sınırlı');
 
-  return risks.length ? risks : ['düşük risk profili'];
+  return risks.length ? risks : ['dengeli toplam sahip olma riski'];
 }
 
 function confidence(score) {
