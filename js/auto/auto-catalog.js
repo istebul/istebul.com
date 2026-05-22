@@ -36,11 +36,11 @@ export async function getVehicleCatalog() {
 
     const [vehiclesRes, profilesRes] = await Promise.all([
       fetch(
-        `${url}/rest/v1/vehicle_catalog?select=*&is_active=eq.true&limit=500&_ts=${Date.now()}`,
+        `${url}/rest/v1/vehicle_catalog?select=%2A&is_active=eq.true&limit=500&_ts=${Date.now()}`,
         { cache: 'no-store', headers }
       ),
       fetch(
-        `${url}/rest/v1/vehicle_cost_profiles?select=*`,
+        `${url}/rest/v1/vehicle_cost_profiles?select=%2A`,
         { cache: 'no-store', headers }
       )
     ]);
