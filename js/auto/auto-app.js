@@ -405,6 +405,8 @@ function openFinanceCompareModal(vehicleName = '') {
 }
 
 
+window.openFinanceCompareModal = openFinanceCompareModal;
+
 function openLeadModal(type, vehicle = '') {
   trackAutoEvent('auto_modal_open', { interest_type: type, vehicle });
 
@@ -1793,3 +1795,13 @@ Destek almak istiyorum.`;
     openLeadModal(interest, vehicle);
   }
 });
+
+document.addEventListener('click', (event) => {
+  const financeButton = event.target.closest('[data-interest="finance"], [data-interest="finance_review"], .finance-compare-trigger');
+  if (!financeButton) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  openFinanceCompareModal(financeButton.dataset.vehicle || '');
+}, true);
