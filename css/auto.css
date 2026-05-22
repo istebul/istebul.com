@@ -2231,3 +2231,177 @@ h2{
     min-height: auto !important;
   }
 }
+
+/* Final premium Auto decision card system */
+#auto-results .auto-market-card.conversion-result-card{
+  display:grid !important;
+  grid-template-columns: minmax(0,1fr) 320px !important;
+  grid-template-areas:
+    "main decision"
+    "offers decision"
+    "actions actions" !important;
+  gap:22px !important;
+  padding:28px !important;
+  border-radius:32px !important;
+  border:1px solid rgba(15,23,42,.08) !important;
+  background:
+    radial-gradient(circle at top left, rgba(37,99,235,.08), transparent 34%),
+    linear-gradient(135deg,#ffffff,#f8fafc) !important;
+  box-shadow:0 30px 90px rgba(15,23,42,.10) !important;
+}
+
+#auto-results .auto-market-media{
+  display:none !important;
+}
+
+#auto-results .auto-market-main{
+  grid-area:main !important;
+}
+
+#auto-results .auto-market-title-row{
+  padding-bottom:16px !important;
+  border-bottom:1px solid rgba(15,23,42,.08) !important;
+}
+
+#auto-results .auto-market-main h3{
+  font-size:28px !important;
+  line-height:1.15 !important;
+  letter-spacing:-.03em !important;
+  color:#0f172a !important;
+}
+
+#auto-results .auto-market-main p{
+  color:#475569 !important;
+  line-height:1.65 !important;
+}
+
+#auto-results .auto-market-decision{
+  grid-area:decision !important;
+  position:sticky !important;
+  top:96px !important;
+  padding:18px !important;
+  border-radius:24px !important;
+  background:#fff !important;
+  border:1px solid rgba(15,23,42,.08) !important;
+  box-shadow:0 18px 50px rgba(15,23,42,.07) !important;
+}
+
+#auto-results .auto-market-score{
+  background:linear-gradient(135deg,#0f172a,#1e293b) !important;
+  color:#fff !important;
+  border:0 !important;
+}
+
+#auto-results .auto-market-score span,
+#auto-results .auto-market-score small{
+  color:rgba(255,255,255,.72) !important;
+}
+
+#auto-results .auto-market-score strong{
+  color:#fff !important;
+  font-size:46px !important;
+}
+
+#auto-results .cost,
+#auto-results .monthly-impact,
+#auto-results .analysis-box,
+#auto-results .risk-box,
+#auto-results .auto-finance-note{
+  border-radius:20px !important;
+  border:1px solid rgba(15,23,42,.08) !important;
+  background:#fff !important;
+  box-shadow:0 12px 34px rgba(15,23,42,.045) !important;
+}
+
+#auto-results .cost small{
+  line-height:1.85 !important;
+  color:#475569 !important;
+}
+
+#auto-results .dealer-offer-strip{
+  grid-area:offers !important;
+  padding:20px !important;
+  border-radius:24px !important;
+  border:1px solid rgba(37,99,235,.14) !important;
+  background:linear-gradient(135deg,#eff6ff,#f0fdfa) !important;
+}
+
+#auto-results .dealer-offer-header strong{
+  font-size:18px !important;
+  color:#0f172a !important;
+}
+
+#auto-results .dealer-offer-header span{
+  color:#475569 !important;
+}
+
+#auto-results .dealer-offer-card{
+  display:grid !important;
+  grid-template-columns:1fr auto !important;
+  gap:18px !important;
+  align-items:center !important;
+  padding:20px !important;
+  border-radius:22px !important;
+  background:#fff !important;
+  border:1px solid rgba(15,23,42,.08) !important;
+  box-shadow:0 18px 44px rgba(15,23,42,.06) !important;
+}
+
+#auto-results .dealer-offer-price .btn{
+  white-space:nowrap !important;
+}
+
+#auto-results .auto-market-actions{
+  grid-area:actions !important;
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:12px !important;
+  padding-top:18px !important;
+  border-top:1px solid rgba(15,23,42,.08) !important;
+}
+
+#auto-results .auto-market-actions .btn{
+  min-height:46px !important;
+  border-radius:14px !important;
+}
+
+#auto-results .auto-market-actions .cta-microcopy{
+  grid-column:1/-1 !important;
+  font-size:13px !important;
+  color:#64748b !important;
+}
+
+@media(max-width:900px){
+  #auto-results .auto-market-card.conversion-result-card{
+    grid-template-columns:1fr !important;
+    grid-template-areas:
+      "main"
+      "decision"
+      "offers"
+      "actions" !important;
+    padding:18px !important;
+    border-radius:26px !important;
+  }
+
+  #auto-results .auto-market-decision{
+    position:static !important;
+    padding:16px !important;
+  }
+
+  #auto-results .auto-market-main h3{
+    font-size:22px !important;
+  }
+
+  #auto-results .dealer-offer-card{
+    grid-template-columns:1fr !important;
+  }
+
+  #auto-results .dealer-offer-price,
+  #auto-results .dealer-offer-price .btn{
+    width:100% !important;
+  }
+
+  #auto-results .auto-market-actions{
+    grid-template-columns:1fr !important;
+  }
+}
