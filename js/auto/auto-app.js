@@ -467,8 +467,8 @@ function renderOfferSkeleton(vehicleName) {
     <section class="dealer-offer-strip" data-offers-for="${escapeHtml(vehicleName)}">
       <div class="dealer-offer-header">
         <div>
-          <strong>Yakındaki gerçek teklifler</strong>
-          <span>Uygun satıcı seçenekleri kontrol ediliyor...</span>
+          <strong>isteBul Verified Dealer Network</strong>
+          <span>Bölgenizde uygun partner ve teklif seçenekleri kontrol ediliyor...</span>
         </div>
       </div>
     </section>
@@ -492,9 +492,9 @@ function renderDealerOffers(offers, vehicle, formData) {
       <div class="dealer-offer-list">
         <article class="dealer-offer-card dealer-offer-placeholder">
           <div>
-            <strong>Satıcı eşleşmesi pilot ağı</strong>
+            <strong>Ön doğrulanmış partner eşleşmesi</strong>
             <span>${city ? escapeHtml(city) : 'Seçilen bölge'} ${formData.district ? ` / ${escapeHtml(formData.district)}` : ''}</span>
-            <small>Size uygun bayi ve teklif eşleşmesi hazırlanır.</small>
+            <small>Uygun bayi, teklif aralığı ve finansman ön değerlendirmesi talebiniz sonrası hazırlanır.</small>
           </div>
           <div class="dealer-offer-price">
             <strong>Özel teklif</strong>
@@ -510,8 +510,8 @@ function renderDealerOffers(offers, vehicle, formData) {
   return `
     <div class="dealer-offer-header">
       <div>
-        <strong>Yakındaki gerçek teklifler</strong>
-        <span>${offers.length} aktif teklif bulundu${city ? ` • ${escapeHtml(city)}` : ''}</span>
+        <strong>isteBul Verified Dealer Network</strong>
+        <span>${offers.length} doğrulanmış teklif seçeneği bulundu${city ? ` • ${escapeHtml(city)}` : ''}</span>
       </div>
     </div>
     <div class="dealer-offer-list">
