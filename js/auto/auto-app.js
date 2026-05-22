@@ -260,7 +260,9 @@ function getStaticFinanceOffers(vehicle) {
 
 function openFinanceCompareModal(vehicleName = '') {
   const vehicle = (lastResults || []).find((item) => item.name === vehicleName) || lastResults?.[0] || {};
-  const offers = getStaticFinanceOffers(vehicle);
+  const vehiclePrice = Number(vehicle.price || 0);
+  const defaultLoan = Math.round(vehiclePrice * 0.6);
+  const terms = [12, 24, 36, 48];
 
   const existing = document.getElementById('finance-compare-modal');
   if (existing) existing.remove();
@@ -269,54 +271,120 @@ function openFinanceCompareModal(vehicleName = '') {
   modal.id = 'finance-compare-modal';
   modal.className = 'lead-modal finance-compare-modal';
 
-  modal.innerHTML = `
-    <div class="lead-modal-card finance-compare-card">
-      <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
+  function render(loanAmount = defaultLoan, selectedTerm = 48) {
+    const principal = Math.max(50000, Math.min(Number(loanAmount || 0), vehiclePrice || 2000000));
+    const downPayment = Math.max(0, vehiclePrice - principal);
 
-      <p class="kicker">Finansman karşılaştırması</p>
-      <h3>${escapeHtml(vehicle.name || vehicleName || 'Araç')} için tahmini kredi seçenekleri</h3>
-      <p class="lead-modal-muted">Oranlar karşılaştırma amaçlıdır. Nihai teklif banka politikası, kredi skoru ve gelir durumuna göre değişebilir.</p>
+    const offers = [
+      { provider: 'Garanti BBVA', rate: 3.19 },
+      { provider: 'Akbank', rate: 3.29 },
+      { provider: 'Yapı Kredi', rate: 3.35 },
+      { provider: 'TEB', rate: 3.39 },
+      { provider: 'QNB', rate: 3.45 }
+    ].map((offer) => {
+      const monthly = calculateLoanPayment(principal, offer.rate, selectedTerm);
+      return {
+        ...offer,
+        term: selectedTerm,
+        loanAmount: principal,
+        monthly,
+        total: monthly * selectedTerm
+      };
+    }).sort((a, b) => a.monthly - b.monthly);
 
-      <div class="finance-offer-table">
-        ${offers.map((offer, index) => `
-          <article class="finance-bank-row ${index === 0 ? 'best' : ''}">
-            <div>
-              <span class="bank-rank">${index === 0 ? 'En uygun' : 'Alternatif'}</span>
-              <strong>${escapeHtml(offer.provider)}</strong>
-              <small>%${offer.rate} aylık oran • ${offer.term} ay vade</small>
-            </div>
-            <div>
-              <b>${formatter.format(offer.monthly)} ₺</b>
-              <small>tahmini aylık ödeme</small>
-            </div>
-            <div>
-              <b>${formatter.format(offer.total)} ₺</b>
-              <small>toplam geri ödeme</small>
-            </div>
-            <button class="btn primary finance-prequal-btn" data-bank="${escapeHtml(offer.provider)}" data-vehicle="${escapeHtml(vehicle.name || vehicleName)}">
-              Ön değerlendir
+    modal.innerHTML = `
+      <div class="lead-modal-card finance-compare-card finance-configurator-card">
+        <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
+
+        <p class="kicker">Kredi karşılaştırması</p>
+        <h3>${escapeHtml(vehicle.name || vehicleName || 'Araç')} için kişisel finansman simülasyonu</h3>
+        <p class="lead-modal-muted">Kredi tutarını ve vadeyi siz seçin; bankaların tahmini ödeme etkisini karşılaştırın. Nihai koşullar banka değerlendirmesine göre değişebilir.</p>
+
+        <div class="finance-login-note">
+          <strong>Kişisel karşılaştırmayı kaydetmek için giriş yapın.</strong>
+          <span>Giriş yapmadan da tahmini simülasyonu görüntüleyebilirsiniz.</span>
+        </div>
+
+        <div class="finance-config-grid">
+          <label>
+            <span>Araç fiyatı</span>
+            <strong>${formatter.format(vehiclePrice || 0)} ₺</strong>
+          </label>
+
+          <label>
+            <span>Kredi tutarı</span>
+            <input id="finance-loan-amount" type="number" min="50000" max="${vehiclePrice || 2000000}" step="50000" value="${principal}">
+          </label>
+
+          <label>
+            <span>Peşinat</span>
+            <strong>${formatter.format(downPayment)} ₺</strong>
+          </label>
+        </div>
+
+        <div class="finance-term-selector">
+          ${terms.map((term) => `
+            <button type="button" class="term-btn ${term === selectedTerm ? 'active' : ''}" data-term="${term}">
+              ${term} ay
             </button>
-          </article>
-        `).join('')}
+          `).join('')}
+        </div>
+
+        <div class="finance-offer-table">
+          ${offers.map((offer, index) => `
+            <article class="finance-bank-row ${index === 0 ? 'best' : ''}">
+              <div>
+                <span class="bank-rank">${index === 0 ? 'En uygun' : 'Alternatif'}</span>
+                <strong>${escapeHtml(offer.provider)}</strong>
+                <small>%${offer.rate} aylık oran • ${offer.term} ay vade</small>
+              </div>
+              <div>
+                <b>${formatter.format(offer.monthly)} ₺</b>
+                <small>tahmini aylık ödeme</small>
+              </div>
+              <div>
+                <b>${formatter.format(offer.total)} ₺</b>
+                <small>toplam geri ödeme</small>
+              </div>
+              <button class="btn primary finance-prequal-btn" data-bank="${escapeHtml(offer.provider)}" data-vehicle="${escapeHtml(vehicle.name || vehicleName)}">
+                Ön değerlendir
+              </button>
+            </article>
+          `).join('')}
+        </div>
+
+        <p class="finance-disclaimer">Bu ekran kredi tavsiyesi değil, tahmini karşılaştırma simülasyonudur.</p>
       </div>
-    </div>
-  `;
+    `;
+
+    const closeModal = () => modal.remove();
+    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
+
+    modal.querySelector('#finance-loan-amount')?.addEventListener('change', (event) => {
+      render(event.target.value, selectedTerm);
+    });
+
+    modal.querySelectorAll('.term-btn').forEach((button) => {
+      button.addEventListener('click', () => {
+        render(principal, Number(button.dataset.term || selectedTerm));
+      });
+    });
+
+    modal.querySelectorAll('.finance-prequal-btn').forEach((button) => {
+      button.addEventListener('click', () => {
+        const selectedVehicle = button.getAttribute('data-vehicle') || vehicleName;
+        closeModal();
+        openLeadModal('finance_review', selectedVehicle);
+      });
+    });
+  }
+
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) modal.remove();
+  });
 
   document.body.appendChild(modal);
-
-  const closeModal = () => modal.remove();
-  modal.addEventListener('click', (event) => {
-    if (event.target === modal) closeModal();
-  });
-  modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
-
-  modal.querySelectorAll('.finance-prequal-btn').forEach((button) => {
-    button.addEventListener('click', () => {
-      const selectedVehicle = button.getAttribute('data-vehicle') || vehicleName;
-      closeModal();
-      openLeadModal('finance_review', selectedVehicle);
-    });
-  });
+  render();
 }
 
 
