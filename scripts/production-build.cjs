@@ -160,7 +160,7 @@ esbuild.buildSync({
 });
 
 // Force Auto page to use isolated stable asset paths to bypass path-specific edge asset failures.
-const autoAssetDir = path.join(dist, 'ib-assets');
+const autoAssetDir = path.join(dist, 'assets', 'auto-runtime');
 fs.mkdirSync(autoAssetDir, { recursive: true });
 
 const autoCssSource = path.join(dist, 'css', 'auto.css');
@@ -177,10 +177,10 @@ if (fs.existsSync(autoJsSource)) {
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
 if (fs.existsSync(autoHtmlPath)) {
   let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
-  autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/ib-assets/ib-car.css');
-  autoHtml = autoHtml.replace(/\/css\/auto\.css/g, '/ib-assets/ib-car.css');
-  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/ib-assets/ib-car-app.js?v=stable-ib-car');
-  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js/g, '/ib-assets/ib-car-app.js');
+  autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/assets/auto-runtime/ib-car.css');
+  autoHtml = autoHtml.replace(/\/css\/auto\.css/g, '/assets/auto-runtime/ib-car.css');
+  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/assets/auto-runtime/ib-car-app.js?v=stable-auto-runtime');
+  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js/g, '/assets/auto-runtime/ib-car-app.js');
   fs.writeFileSync(autoHtmlPath, autoHtml);
 }
 
