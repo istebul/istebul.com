@@ -1217,7 +1217,7 @@ form.addEventListener('submit', async (event) => {
   trackAutoEvent('auto_form_submitted');
 
   const formData = readForm(form);
-  const vehicleCatalog = await getVehicleCatalog();
+  const [vehicleCatalog, financeOffers] = await Promise.all([getVehicleCatalog(), getFinanceOffers()]);
   const results = recommendVehicles(formData, vehicleCatalog);
   lastResults = results;
   allResults = [...results];
@@ -1232,7 +1232,7 @@ form.addEventListener('submit', async (event) => {
     try {
       document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
       trackAutoEvent('auto_results_rendered', { count: results.length });
-      renderResults(results);
+      renderResults(results, financeOffers);
 
       try {
         if (window.app?.currentUser?.id && typeof window.app.saveDecisionHistory === 'function' && results.length) {
