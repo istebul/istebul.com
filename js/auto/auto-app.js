@@ -27,17 +27,6 @@ function getBestFinanceOffer(budget) {
 }
 
 
-function getBestFinanceOffer(financeOffers, budget) {
-  if (!Array.isArray(financeOffers) || !financeOffers.length) return null;
-
-  const eligible = financeOffers.filter((offer) => {
-    const min = Number(offer.min_amount || 0);
-    const max = Number(offer.max_amount || 999999999);
-    return budget >= min && budget <= max;
-  });
-
-  return (eligible.length ? eligible : financeOffers)[0];
-}
 
 
 const autoRuntimeConfig = {
