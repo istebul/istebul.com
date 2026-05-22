@@ -2855,3 +2855,44 @@ html body a.auto-floating-cta{
     grid-template-columns:1fr !important;
   }
 }
+
+#auto-results .verified-network-card{
+  grid-template-columns:1.35fr 1fr auto !important;
+  gap:20px !important;
+}
+
+#auto-results .verified-kicker{
+  display:inline-flex;
+  margin-bottom:8px;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.16em;
+  color:#2563eb;
+}
+
+#auto-results .verified-network-main strong{
+  display:block;
+  font-size:20px !important;
+}
+
+#auto-results .verified-network-points{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+#auto-results .verified-network-points span{
+  padding:9px 12px;
+  border-radius:999px;
+  background:#f8fafc;
+  color:#334155;
+  font-size:12px;
+  font-weight:800;
+}
+
+@media(max-width:900px){
+  #auto-results .verified-network-card{
+    grid-template-columns:1fr !important;
+  }
+}
+
