@@ -1774,8 +1774,13 @@ Destek almak istiyorum.`;
     const interest = interestBtn.dataset.interest || 'finance';
     const vehicle = interestBtn.dataset.vehicle || '';
 
+    if (interest === 'finance' || interest === 'finance_review') {
+      trackAutoEvent('auto_finance_click', { interest_type: interest, vehicle });
+      openFinanceCompareModal(vehicle);
+      return;
+    }
+
     const eventMap = {
-      finance: 'auto_finance_click',
       insurance: 'auto_insurance_click',
       vehicle_offer: 'auto_vehicle_offer_click',
       premium_report: 'auto_premium_report_click'
