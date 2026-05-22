@@ -4,6 +4,29 @@ import { getDealerOffers } from './auto-offers.js?v=offers2';
 
 const formatter = new Intl.NumberFormat('tr-TR');
 
+let cachedFinanceOffers = [];
+
+async function preloadFinanceOffers() {
+  try {
+    cachedFinanceOffers = await getFinanceOffers();
+  } catch {
+    cachedFinanceOffers = [];
+  }
+}
+
+function getBestFinanceOffer(budget) {
+  if (!Array.isArray(cachedFinanceOffers) || !cachedFinanceOffers.length) return null;
+
+  const eligible = cachedFinanceOffers.filter((offer) => {
+    const min = Number(offer.min_amount || 0);
+    const max = Number(offer.max_amount || 999999999);
+    return Number(budget || 0) >= min && Number(budget || 0) <= max;
+  });
+
+  return (eligible.length ? eligible : cachedFinanceOffers)[0];
+}
+
+
 function getBestFinanceOffer(financeOffers, budget) {
   if (!Array.isArray(financeOffers) || !financeOffers.length) return null;
 
@@ -704,8 +727,10 @@ function renderResults(results) {
         </div>
 
         ${vehicle.score >= 85 ? `
-          <div class="auto-hot-banner">
-            Size uygun premium finansman seçenekleri hazır
+          <div class="auto-hot-banner finance-live-card">
+            <span>Finansman eşleşmesi</span>
+            <strong>${bestFinance ? `${bestFinance.provider_name} • %${bestFinance.monthly_rate}` : 'Premium seçenekler hazır'}</strong>
+            <small>${bestFinance ? `${bestFinance.max_term || 48} aya kadar • Ön değerlendirme` : 'Size uygun oranlar analiz edilir'}</small>
           </div>
         ` : ''}
       </aside>
@@ -1200,6 +1225,7 @@ if (wizard) {
 
 
 loadAutoRuntimeConfig();
+preloadFinanceOffers();
 trackAutoEvent('auto_page_view');
 
 const form = document.getElementById('auto-form');
