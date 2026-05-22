@@ -2704,3 +2704,22 @@ body .auto-floating-cta{
   }
 }
 
+
+html body .auto-floating-cta,
+html body #auto-results .auto-floating-cta,
+html body a.auto-floating-cta{
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+
+@media (max-width:768px){
+  html body .auto-floating-cta{
+    display:flex !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    pointer-events:auto !important;
+  }
+}
+
