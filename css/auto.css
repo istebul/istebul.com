@@ -2075,3 +2075,76 @@ h2{
   font-weight:900;
   letter-spacing:.04em;
 }
+
+@media (max-width: 768px){
+  #auto-results .auto-market-card.conversion-result-card{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:18px !important;
+    padding:18px !important;
+    overflow:visible !important;
+  }
+
+  #auto-results .auto-market-media,
+  #auto-results .auto-market-main,
+  #auto-results .auto-market-decision,
+  #auto-results .dealer-offer-strip,
+  #auto-results .auto-market-actions{
+    width:100% !important;
+    max-width:100% !important;
+  }
+
+  #auto-results .auto-market-decision{
+    order:3 !important;
+    position:static !important;
+  }
+
+  #auto-results .dealer-offer-strip{
+    order:4 !important;
+    margin-top:0 !important;
+  }
+
+  #auto-results .auto-market-actions{
+    order:5 !important;
+    display:flex !important;
+    flex-direction:column !important;
+  }
+
+  #auto-results .dealer-offer-header{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    gap:12px !important;
+  }
+
+  #auto-results .dealer-offer-card{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    gap:14px !important;
+  }
+
+  #auto-results .dealer-offer-price{
+    width:100% !important;
+    text-align:left !important;
+  }
+
+  #auto-results .dealer-offer-price .btn{
+    width:100% !important;
+  }
+
+  #auto-results .cost,
+  #auto-results .monthly-impact,
+  #auto-results .auto-market-score,
+  #auto-results .auto-finance-note{
+    width:100% !important;
+  }
+
+  .floating-whatsapp,
+  .floating-expert,
+  .auto-floating-cta{
+    position:static !important;
+    width:100% !important;
+    margin:16px 0 !important;
+  }
+}
