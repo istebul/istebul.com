@@ -196,5 +196,14 @@ if (fs.existsSync(path.join(root, '_headers'))) {
   fs.copyFileSync(path.join(root, '_headers'), path.join(dist, '_headers'));
 }
 
+// Force Auto page to use stable asset paths to avoid corrupted hashed edge assets.
+const autoHtmlPath = path.join(dist, 'auto', 'index.html');
+if (fs.existsSync(autoHtmlPath)) {
+  let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
+  autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/css/auto.css');
+  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js\?v=[0-9]+/g, '/js/auto/auto-app.js?v=stable-auto');
+  fs.writeFileSync(autoHtmlPath, autoHtml);
+}
+
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');
