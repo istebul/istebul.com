@@ -2569,7 +2569,7 @@ body .auto-floating-cta{
 
 
 #auto-results .auto-market-actions{
-  grid-template-columns:repeat(4,1fr) !important;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr)) !important;
 }
 
 #auto-results .auto-market-actions .btn{
@@ -2580,5 +2580,42 @@ body .auto-floating-cta{
 #auto-results .auto-market-actions .btn-primary{
   color:#fff !important;
   background:linear-gradient(135deg,#2563eb,#14b8a6) !important;
+}
+
+
+@media (min-width: 769px){
+  .auto-floating-cta,
+  body .auto-floating-cta,
+  #auto-results .auto-floating-cta{
+    display:none !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+}
+
+
+#auto-results .auto-market-media{
+  display:block !important;
+  min-width:260px !important;
+  width:260px !important;
+}
+
+#auto-results .auto-market-image{
+  display:flex !important;
+  min-height:220px !important;
+  height:220px !important;
+  width:100% !important;
+}
+
+
+#auto-results .dealer-offer-card{
+  padding:28px !important;
+  border-radius:24px !important;
+  background:#fff !important;
+  box-shadow:0 12px 36px rgba(15,23,42,.06);
+}
+
+#auto-results .dealer-offer-card .btn{
+  min-width:160px !important;
 }
 
