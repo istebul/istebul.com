@@ -180,8 +180,8 @@ if (fs.existsSync(autoHtmlPath)) {
   let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
   autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/assets/auto-runtime/ib-car.css');
   autoHtml = autoHtml.replace(/\/css\/auto\.css/g, '/assets/auto-runtime/ib-car.css');
-  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/assets/auto-runtime/js/auto/auto-app.js?v=stable-auto-runtime');
-  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js/g, '/assets/auto-runtime/js/auto/auto-app.js');
+  autoHtml = autoHtml.replace(/(?:\/assets\/auto-runtime)*\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/assets/auto-runtime/js/auto/auto-app.js?v=stable-auto-runtime');
+  autoHtml = autoHtml.replace(/(?:\/assets\/auto-runtime)*\/js\/auto\/auto-app\.js/g, '/assets/auto-runtime/js/auto/auto-app.js');
   fs.writeFileSync(autoHtmlPath, autoHtml);
 }
 
