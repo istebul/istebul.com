@@ -3186,3 +3186,30 @@ html body a.auto-floating-cta{
     grid-template-columns:1fr;
   }
 }
+
+.finance-selected-summary{
+  margin:14px 0;
+  padding:14px 16px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#eff6ff,#f8fafc);
+  border:1px solid rgba(37,99,235,.14);
+}
+
+.finance-selected-summary strong,
+.finance-selected-summary span{
+  display:block;
+}
+
+.finance-selected-summary strong{
+  color:#1d4ed8;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:5px;
+}
+
+.finance-selected-summary span{
+  color:#0f172a;
+  font-weight:900;
+}
