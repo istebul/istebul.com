@@ -490,11 +490,17 @@ function renderDealerOffers(offers, vehicle, formData) {
         </button>
       </div>
       <div class="dealer-offer-list">
-        <article class="dealer-offer-card dealer-offer-placeholder">
-          <div>
+        <article class="dealer-offer-card dealer-offer-placeholder verified-network-card">
+          <div class="verified-network-main">
+            <span class="verified-kicker">PARTNER NETWORK</span>
             <strong>Ön doğrulanmış partner eşleşmesi</strong>
             <span>${city ? escapeHtml(city) : 'Seçilen bölge'} ${formData.district ? ` / ${escapeHtml(formData.district)}` : ''}</span>
             <small>Uygun bayi, teklif aralığı ve finansman ön değerlendirmesi talebiniz sonrası hazırlanır.</small>
+          </div>
+          <div class="verified-network-points">
+            <span>Doğrulanmış bayi ağı</span>
+            <span>Finansman ön değerlendirme</span>
+            <span>Hızlı geri dönüş</span>
           </div>
           <div class="dealer-offer-price">
             <strong>Özel teklif</strong>
