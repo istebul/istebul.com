@@ -1,5 +1,5 @@
 import { recommendVehicles } from './auto-ai.js';
-import { getVehicleCatalog } from './auto-catalog.js?v=truth2';
+import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
 
 const formatter = new Intl.NumberFormat('tr-TR');
