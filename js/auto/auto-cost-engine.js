@@ -22,13 +22,14 @@ export function estimateAnnualCost(vehicle, form) {
       ? annualEvCharging
       : Math.round((km / 100) * averageConsumption * fuelUnitCost);
 
-    const maintenance = Number(profile.annual_maintenance || 0);
-    const insurance = Number(profile.annual_insurance || 0);
-    const kasko = Number(profile.annual_kasko || 0);
-    const tax = Number(profile.annual_tax || 0);
-    const tires = Number(profile.annual_tires || 0);
-    const depreciation3y = Number(profile.depreciation_3y || 0);
-    const depreciationAnnual = Math.round((Number(vehicle.price || 0) * depreciation3y) / 3);
+    const price = Number(vehicle.price || 0);
+    const maintenance = Number(profile.annual_maintenance || 0) || Math.round(price * 0.022);
+    const insurance = Number(profile.annual_insurance || 0) || Math.round(price * 0.026);
+    const kasko = Number(profile.annual_kasko || 0) || Math.round(price * 0.032);
+    const tax = Number(profile.annual_tax || 0) || (price > 1500000 ? 18000 : 12000);
+    const tires = Number(profile.annual_tires || 0) || Math.round(price * 0.008);
+    const depreciation3y = Number(profile.depreciation_3y || 0) || 0.22;
+    const depreciationAnnual = Math.round((price * depreciation3y) / 3);
 
     const total = fuel + maintenance + insurance + kasko + tax + tires + depreciationAnnual;
 
@@ -50,7 +51,10 @@ export function estimateAnnualCost(vehicle, form) {
   const insurance = Math.round(vehicle.price * 0.028);
   const maintenance = Math.round(vehicle.price * (vehicle.maintenance >= 8 ? 0.018 : 0.026));
   const tax = vehicle.price > 1500000 ? 18000 : 12000;
-  const total = fuel + insurance + maintenance + tax;
+  const kasko = Math.round(vehicle.price * 0.032);
+  const tires = Math.round(vehicle.price * 0.008);
+  const depreciation = Math.round((vehicle.price * 0.22) / 3);
+  const total = fuel + insurance + kasko + maintenance + tax + tires + depreciation;
 
-  return { fuel, insurance, maintenance, tax, total, source: 'estimate' };
+  return { fuel, insurance, kasko, maintenance, tax, tires, depreciation, total, source: 'estimate' };
 }
