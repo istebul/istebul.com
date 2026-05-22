@@ -160,27 +160,27 @@ esbuild.buildSync({
 });
 
 // Force Auto page to use isolated stable asset paths to bypass path-specific edge asset failures.
-const autoAssetDir = path.join(dist, 'auto-assets');
+const autoAssetDir = path.join(dist, 'ib-assets');
 fs.mkdirSync(autoAssetDir, { recursive: true });
 
 const autoCssSource = path.join(dist, 'css', 'auto.css');
 const autoJsSource = path.join(dist, 'js', 'auto', 'auto-app.js');
 
 if (fs.existsSync(autoCssSource)) {
-  fs.copyFileSync(autoCssSource, path.join(autoAssetDir, 'auto.css'));
+  fs.copyFileSync(autoCssSource, path.join(autoAssetDir, 'ib-car.css'));
 }
 
 if (fs.existsSync(autoJsSource)) {
-  fs.copyFileSync(autoJsSource, path.join(autoAssetDir, 'auto-app.js'));
+  fs.copyFileSync(autoJsSource, path.join(autoAssetDir, 'ib-car-app.js'));
 }
 
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
 if (fs.existsSync(autoHtmlPath)) {
   let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
-  autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/auto-assets/auto.css');
-  autoHtml = autoHtml.replace(/\/css\/auto\.css/g, '/auto-assets/auto.css');
-  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/auto-assets/auto-app.js?v=stable-auto-assets');
-  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js/g, '/auto-assets/auto-app.js');
+  autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/ib-assets/ib-car.css');
+  autoHtml = autoHtml.replace(/\/css\/auto\.css/g, '/ib-assets/ib-car.css');
+  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/ib-assets/ib-car-app.js?v=stable-ib-car');
+  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js/g, '/ib-assets/ib-car-app.js');
   fs.writeFileSync(autoHtmlPath, autoHtml);
 }
 
