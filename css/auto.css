@@ -2405,3 +2405,64 @@ h2{
     grid-template-columns:1fr !important;
   }
 }
+
+/* Final precision polish */
+
+#auto-results .auto-market-actions{
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  align-items:stretch !important;
+}
+
+#auto-results .auto-market-actions .btn{
+  width:100% !important;
+}
+
+#auto-results .auto-market-main{
+  padding-top:0 !important;
+}
+
+#auto-results .auto-market-title-row{
+  margin-bottom:12px !important;
+}
+
+#auto-results .dealer-offer-strip{
+  background:
+    radial-gradient(circle at top right, rgba(37,99,235,.08), transparent 35%),
+    linear-gradient(135deg,#f8fbff,#eefcf9) !important;
+}
+
+#auto-results .dealer-offer-card{
+  padding:24px !important;
+  border-radius:24px !important;
+}
+
+#auto-results .dealer-offer-card strong{
+  font-size:18px !important;
+  line-height:1.2 !important;
+}
+
+#auto-results .dealer-offer-price{
+  text-align:right !important;
+}
+
+#auto-results .auto-finance-note{
+  font-weight:700 !important;
+  color:#0f172a !important;
+  background:linear-gradient(135deg,#fff7ed,#fff1f2) !important;
+}
+
+@media (min-width: 901px){
+  .auto-floating-cta{
+    display:none !important;
+  }
+}
+
+@media (max-width:900px){
+  #auto-results .auto-market-actions{
+    grid-template-columns:1fr !important;
+  }
+
+  .auto-floating-cta{
+    display:flex !important;
+  }
+}
