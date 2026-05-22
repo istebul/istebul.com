@@ -565,13 +565,28 @@ function openLeadModal(type, vehicle = '') {
   }
 
   function renderStep3() {
+    const financeContext = window.lastFinanceLeadContext || {};
+    const financeComparison = financeContext.comparison || {};
+    const financeMeta = financeContext.bank && financeComparison.loanAmount
+      ? `${financeContext.bank} • ${formatter.format(financeComparison.loanAmount)} ₺ • ${financeComparison.term} ay`
+      : '';
+
     modal.innerHTML = `
       <div class="lead-modal-card premium-lead-modal lead-success-modal">
         <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
 
         <p class="kicker">Talep alındı</p>
         <h3>${escapeHtml(flow.success)}</h3>
-        <p>Ekibimiz uygun teklif ve finansman seçenekleriyle sizinle iletişime geçecek.</p>
+        <p>${financeMeta
+          ? 'Seçtiğiniz finansman simülasyonu partner değerlendirmesine iletildi.'
+          : 'Ekibimiz uygun teklif ve finansman seçenekleriyle sizinle iletişime geçecek.'}</p>
+
+        ${financeMeta ? `
+          <div class="finance-selected-summary">
+            <strong>Seçilen simülasyon</strong>
+            <span>${escapeHtml(financeMeta)}</span>
+          </div>
+        ` : ''}
 
         <div class="premium-lead-points">
           <span>✓ Talep güvenli şekilde kaydedildi</span>
