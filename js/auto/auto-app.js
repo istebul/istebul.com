@@ -227,6 +227,99 @@ async function getTurnstileToken() {
   });
 }
 
+
+function calculateLoanPayment(amount, monthlyRate, term) {
+  const principal = Number(amount || 0);
+  const rate = Number(monthlyRate || 0) / 100;
+  const months = Number(term || 48);
+
+  if (!principal || !rate || !months) return 0;
+
+  return Math.round((principal * rate * Math.pow(1 + rate, months)) / (Math.pow(1 + rate, months) - 1));
+}
+
+function getStaticFinanceOffers(vehicle) {
+  const loanAmount = Math.round(Number(vehicle?.price || 0) * 0.7);
+  const term = 48;
+
+  return [
+    { provider: 'Garanti BBVA', rate: 3.19, term, loanAmount },
+    { provider: 'Akbank', rate: 3.29, term, loanAmount },
+    { provider: 'Yapı Kredi', rate: 3.35, term, loanAmount },
+    { provider: 'TEB', rate: 3.39, term: 36, loanAmount },
+    { provider: 'QNB', rate: 3.45, term: 36, loanAmount }
+  ].map((offer) => {
+    const monthly = calculateLoanPayment(offer.loanAmount, offer.rate, offer.term);
+    return {
+      ...offer,
+      monthly,
+      total: monthly * offer.term
+    };
+  }).sort((a, b) => a.monthly - b.monthly);
+}
+
+function openFinanceCompareModal(vehicleName = '') {
+  const vehicle = (lastResults || []).find((item) => item.name === vehicleName) || lastResults?.[0] || {};
+  const offers = getStaticFinanceOffers(vehicle);
+
+  const existing = document.getElementById('finance-compare-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'finance-compare-modal';
+  modal.className = 'lead-modal finance-compare-modal';
+
+  modal.innerHTML = `
+    <div class="lead-modal-card finance-compare-card">
+      <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
+
+      <p class="kicker">Finansman karşılaştırması</p>
+      <h3>${escapeHtml(vehicle.name || vehicleName || 'Araç')} için tahmini kredi seçenekleri</h3>
+      <p class="lead-modal-muted">Oranlar karşılaştırma amaçlıdır. Nihai teklif banka politikası, kredi skoru ve gelir durumuna göre değişebilir.</p>
+
+      <div class="finance-offer-table">
+        ${offers.map((offer, index) => `
+          <article class="finance-bank-row ${index === 0 ? 'best' : ''}">
+            <div>
+              <span class="bank-rank">${index === 0 ? 'En uygun' : 'Alternatif'}</span>
+              <strong>${escapeHtml(offer.provider)}</strong>
+              <small>%${offer.rate} aylık oran • ${offer.term} ay vade</small>
+            </div>
+            <div>
+              <b>${formatter.format(offer.monthly)} ₺</b>
+              <small>tahmini aylık ödeme</small>
+            </div>
+            <div>
+              <b>${formatter.format(offer.total)} ₺</b>
+              <small>toplam geri ödeme</small>
+            </div>
+            <button class="btn primary finance-prequal-btn" data-bank="${escapeHtml(offer.provider)}" data-vehicle="${escapeHtml(vehicle.name || vehicleName)}">
+              Ön değerlendir
+            </button>
+          </article>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) closeModal();
+  });
+  modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
+
+  modal.querySelectorAll('.finance-prequal-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      const selectedVehicle = button.getAttribute('data-vehicle') || vehicleName;
+      closeModal();
+      openLeadModal('finance_review', selectedVehicle);
+    });
+  });
+}
+
+
 function openLeadModal(type, vehicle = '') {
   trackAutoEvent('auto_modal_open', { interest_type: type, vehicle });
 
