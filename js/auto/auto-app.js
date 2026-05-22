@@ -263,6 +263,7 @@ function openFinanceCompareModal(vehicleName = '') {
   const vehiclePrice = Number(vehicle.price || 0);
   const defaultLoan = Math.round(vehiclePrice * 0.6);
   const terms = [12, 24, 36, 48];
+  const isLoggedIn = !!window.currentUser;
 
   const existing = document.getElementById('finance-compare-modal');
   if (existing) existing.remove();
@@ -271,11 +272,8 @@ function openFinanceCompareModal(vehicleName = '') {
   modal.id = 'finance-compare-modal';
   modal.className = 'lead-modal finance-compare-modal';
 
-  function render(loanAmount = defaultLoan, selectedTerm = 48) {
-    const principal = Math.max(50000, Math.min(Number(loanAmount || 0), vehiclePrice || 2000000));
-    const downPayment = Math.max(0, vehiclePrice - principal);
-
-    const offers = [
+  function buildOffers(principal, selectedTerm) {
+    return [
       { provider: 'Garanti BBVA', rate: 3.19 },
       { provider: 'Akbank', rate: 3.29 },
       { provider: 'Yapı Kredi', rate: 3.35 },
@@ -291,6 +289,20 @@ function openFinanceCompareModal(vehicleName = '') {
         total: monthly * selectedTerm
       };
     }).sort((a, b) => a.monthly - b.monthly);
+  }
+
+  function render(loanAmount = defaultLoan, selectedTerm = 48) {
+    const principal = Math.max(50000, Math.min(Number(loanAmount || 0), vehiclePrice || 2000000));
+    const downPayment = Math.max(0, vehiclePrice - principal);
+    const offers = buildOffers(principal, selectedTerm);
+
+    window.lastFinanceComparison = {
+      vehicle: vehicle.name || vehicleName,
+      vehiclePrice,
+      loanAmount: principal,
+      term: selectedTerm,
+      offers
+    };
 
     modal.innerHTML = `
       <div class="lead-modal-card finance-compare-card finance-configurator-card">
@@ -301,8 +313,8 @@ function openFinanceCompareModal(vehicleName = '') {
         <p class="lead-modal-muted">Kredi tutarını ve vadeyi siz seçin; bankaların tahmini ödeme etkisini karşılaştırın. Nihai koşullar banka değerlendirmesine göre değişebilir.</p>
 
         <div class="finance-login-note">
-          <strong>Kişisel karşılaştırmayı kaydetmek için giriş yapın.</strong>
-          <span>Giriş yapmadan da tahmini simülasyonu görüntüleyebilirsiniz.</span>
+          <strong>${isLoggedIn ? 'Karşılaştırmanız kaydedilmeye hazır.' : 'Kişisel karşılaştırmayı kaydetmek için giriş yapın.'}</strong>
+          <span>${isLoggedIn ? 'Seçimleriniz profilinizde saklanabilir.' : 'Giriş yapmadan da tahmini simülasyonu görüntüleyebilirsiniz.'}</span>
         </div>
 
         <div class="finance-config-grid">
@@ -360,7 +372,7 @@ function openFinanceCompareModal(vehicleName = '') {
     const closeModal = () => modal.remove();
     modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
 
-    modal.querySelector('#finance-loan-amount')?.addEventListener('change', (event) => {
+    modal.querySelector('#finance-loan-amount')?.addEventListener('input', (event) => {
       render(event.target.value, selectedTerm);
     });
 
@@ -374,6 +386,11 @@ function openFinanceCompareModal(vehicleName = '') {
       button.addEventListener('click', () => {
         const selectedVehicle = button.getAttribute('data-vehicle') || vehicleName;
         closeModal();
+        window.lastFinanceLeadContext = {
+          bank: button.dataset.bank,
+          vehicle: selectedVehicle,
+          comparison: window.lastFinanceComparison
+        };
         openLeadModal('finance_review', selectedVehicle);
       });
     });
