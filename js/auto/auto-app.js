@@ -710,8 +710,17 @@ function renderResults(results) {
         </div>
 
         ${vehicle.score >= 85 ? `
-          <div class="auto-hot-banner">
-            Finansman ön değerlendirme hazır
+          <div class="auto-hot-banner finance-comparison-widget">
+            <span class="finance-kicker">FİNANSMAN EŞLEŞMESİ</span>
+            <strong>Ön değerlendirme hazır</strong>
+            <div class="finance-widget-grid">
+              <span><b>%3.19+</b><small>aylık oran</small></span>
+              <span><b>48 aya</b><small>vade opsiyonu</small></span>
+              <span><b>5</b><small>partner kurum</small></span>
+            </div>
+            <button class="btn secondary auto-interest-btn" data-interest="finance_review" data-vehicle="${escapeHtml(vehicle.name)}">
+              Finansmanı karşılaştır
+            </button>
           </div>
         ` : ''}
       </aside>
