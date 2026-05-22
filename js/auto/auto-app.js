@@ -262,7 +262,7 @@ function openFinanceCompareModal(vehicleName = '') {
   const vehicle = (lastResults || []).find((item) => item.name === vehicleName) || lastResults?.[0] || {};
   const vehiclePrice = Number(vehicle.price || 0);
   const maxLoanAmount = Math.round(vehiclePrice * 0.8);
-  const defaultLoan = Math.round(vehiclePrice * 0.6);
+  const defaultLoan = '';
   const terms = [12, 24, 36, 48];
   const isLoggedIn = !!window.currentUser;
 
@@ -297,7 +297,7 @@ function openFinanceCompareModal(vehicleName = '') {
     const parsedLoan = Number(rawLoan || 0);
     const principal = Math.max(50000, Math.min(parsedLoan, vehiclePrice || 2000000));
     const downPayment = Math.max(0, vehiclePrice - principal);
-    const offers = buildOffers(principal, selectedTerm);
+    const offers = principal > 0 ? buildOffers(principal, selectedTerm) : [];
 
     window.lastFinanceComparison = {
       vehicle: vehicle.name || vehicleName,
@@ -353,11 +353,11 @@ function openFinanceCompareModal(vehicleName = '') {
             <button type="button" class="term-btn ${term === selectedTerm ? 'active' : ''}" data-term="${term}">
               ${term} ay
             </button>
-          `).join('')}
+          `).join('') : '<div class="finance-empty-state">Kredi tutarını girin; banka ödeme simülasyonu burada listelensin.</div>'}
         </div>
 
         <div class="finance-offer-table">
-          ${offers.map((offer, index) => `
+          ${offers.length ? offers.map((offer, index) => `
             <article class="finance-bank-row ${index === 0 ? 'best' : ''}">
               <div>
                 <span class="bank-rank">${index === 0 ? 'En uygun' : 'Alternatif'}</span>

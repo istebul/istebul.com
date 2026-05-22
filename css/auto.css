@@ -3282,3 +3282,13 @@ html body a.auto-floating-cta{
   font-size:12px;
   font-weight:800;
 }
+
+.finance-empty-state{
+  padding:18px;
+  border-radius:16px;
+  background:#f8fafc;
+  border:1px dashed rgba(15,23,42,.18);
+  color:#64748b;
+  font-weight:800;
+  text-align:center;
+}
