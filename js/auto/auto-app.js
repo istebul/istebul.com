@@ -4,6 +4,19 @@ import { getDealerOffers } from './auto-offers.js?v=offers2';
 
 const formatter = new Intl.NumberFormat('tr-TR');
 
+function getBestFinanceOffer(financeOffers, budget) {
+  if (!Array.isArray(financeOffers) || !financeOffers.length) return null;
+
+  const eligible = financeOffers.filter((offer) => {
+    const min = Number(offer.min_amount || 0);
+    const max = Number(offer.max_amount || 999999999);
+    return budget >= min && budget <= max;
+  });
+
+  return (eligible.length ? eligible : financeOffers)[0];
+}
+
+
 const autoRuntimeConfig = {
   whatsappPhone: '905456786420'
 };
@@ -549,7 +562,7 @@ function buildEconomicVerdict(vehicle) {
   return 'Genel maliyet profili dengeli. Nihai karar için finansman ve teklif karşılaştırması önerilir.';
 }
 
-function renderResults(results) {
+function renderResults(results, financeOffers = []) {
   const root = document.getElementById('auto-results');
 
   if (!Array.isArray(results) || !results.length) {
@@ -692,7 +705,7 @@ function renderResults(results) {
 
         ${vehicle.score >= 85 ? `
           <div class="auto-hot-banner">
-            Güncel teklif ve finansman seçenekleri değerlendirilebilir.
+            ${bestFinance ? `${bestFinance.provider_name} • %${bestFinance.monthly_rate} aylık oran` : 'Güncel teklif ve finansman seçenekleri değerlendirilebilir.'}
           </div>
         ` : ''}
       </aside>
