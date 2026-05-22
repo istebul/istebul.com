@@ -2723,31 +2723,3 @@ html body a.auto-floating-cta{
   }
 }
 
-
-#auto-results .finance-live-card{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:6px !important;
-  padding:18px !important;
-  border-radius:18px !important;
-  background:linear-gradient(135deg,#fff7ed,#eff6ff) !important;
-  border:1px solid rgba(249,115,22,.18) !important;
-}
-
-#auto-results .finance-live-card span{
-  font-size:12px !important;
-  font-weight:900 !important;
-  letter-spacing:.12em !important;
-  text-transform:uppercase !important;
-  color:#64748b !important;
-}
-
-#auto-results .finance-live-card strong{
-  font-size:17px !important;
-  color:#0f172a !important;
-}
-
-#auto-results .finance-live-card small{
-  color:#475569 !important;
-  font-weight:700 !important;
-}
