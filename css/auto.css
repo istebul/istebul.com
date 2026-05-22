@@ -2791,3 +2791,27 @@ html body a.auto-floating-cta{
   }
 }
 
+
+/* Premium finance readiness badge */
+#auto-results .auto-hot-banner{
+  margin:16px 0 0 !important;
+  padding:16px 18px !important;
+  border-radius:18px !important;
+  background:
+    linear-gradient(135deg, rgba(255,247,237,.95), rgba(239,246,255,.95)) !important;
+  border:1px solid rgba(249,115,22,.18) !important;
+  box-shadow:0 12px 32px rgba(15,23,42,.045) !important;
+  color:#0f172a !important;
+  font-weight:900 !important;
+  letter-spacing:-.01em !important;
+}
+
+#auto-results .auto-hot-banner::after{
+  content:"Partner bankalar • hızlı ön onay • oran karşılaştırması";
+  display:block;
+  margin-top:6px;
+  color:#64748b;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0;
+}

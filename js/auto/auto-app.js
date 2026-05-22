@@ -705,7 +705,7 @@ function renderResults(results) {
 
         ${vehicle.score >= 85 ? `
           <div class="auto-hot-banner">
-            Size uygun premium finansman seçenekleri hazır
+            Finansman ön değerlendirme hazır
           </div>
         ` : ''}
       </aside>
