@@ -2207,3 +2207,27 @@ h2{
     grid-template-columns:1fr !important;
   }
 }
+
+@media (max-width: 768px) {
+  .floating-whatsapp,
+  .floating-cta,
+  .sticky-cta {
+    bottom: 16px !important;
+    z-index: 20 !important;
+  }
+
+  .auto-market-grid,
+  .results-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .auto-side-panel {
+    order: -1;
+    width: 100%;
+  }
+
+  .dealer-match-card,
+  .finance-offer-card {
+    min-height: auto !important;
+  }
+}

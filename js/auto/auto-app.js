@@ -494,7 +494,7 @@ function renderDealerOffers(offers, vehicle, formData) {
           <div>
             <strong>Satıcı eşleşmesi pilot ağı</strong>
             <span>${city ? escapeHtml(city) : 'Seçilen bölge'} ${formData.district ? ` / ${escapeHtml(formData.district)}` : ''}</span>
-            <small>Uygun satıcı, fiyat aralığı ve finansman seçenekleri talebiniz sonrası doğrulanır.</small>
+            <small>Size uygun bayi ve teklif eşleşmesi hazırlanır.</small>
           </div>
           <div class="dealer-offer-price">
             <strong>Özel teklif</strong>
@@ -705,7 +705,9 @@ function renderResults(results, financeOffers = []) {
 
         ${vehicle.score >= 85 ? `
           <div class="auto-hot-banner">
-            ${bestFinance ? `${bestFinance.provider_name} • %${bestFinance.monthly_rate} aylık oran` : 'Güncel teklif ve finansman seçenekleri değerlendirilebilir.'}
+            ${bestFinance
+  ? `En iyi teklif: ${bestFinance.provider_name} • %${bestFinance.monthly_rate}`
+  : 'Güncel finansman teklifleri hazır'}
           </div>
         ` : ''}
       </aside>
