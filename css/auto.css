@@ -3274,3 +3274,11 @@ html body a.auto-floating-cta{
 .finance-configurator-card .finance-disclaimer{
   margin-bottom:0;
 }
+
+.finance-input-warning{
+  display:block;
+  margin-top:6px;
+  color:#b45309;
+  font-size:12px;
+  font-weight:800;
+}

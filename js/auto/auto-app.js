@@ -261,6 +261,7 @@ function getStaticFinanceOffers(vehicle) {
 function openFinanceCompareModal(vehicleName = '') {
   const vehicle = (lastResults || []).find((item) => item.name === vehicleName) || lastResults?.[0] || {};
   const vehiclePrice = Number(vehicle.price || 0);
+  const maxLoanAmount = Math.round(vehiclePrice * 0.8);
   const defaultLoan = Math.round(vehiclePrice * 0.6);
   const terms = [12, 24, 36, 48];
   const isLoggedIn = !!window.currentUser;
@@ -339,6 +340,11 @@ function openFinanceCompareModal(vehicleName = '') {
           <label>
             <span>Peşinat</span>
             <strong>${formatter.format(downPayment)} ₺</strong>
+          </label>
+
+          <label>
+            <span>Maksimum kredi limiti</span>
+            <strong>${formatter.format(maxLoanAmount || 0)} ₺</strong>
           </label>
         </div>
 
