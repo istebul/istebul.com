@@ -229,6 +229,7 @@ async function getTurnstileToken() {
 
 function openLeadModal(type, vehicle = '') {
   trackAutoEvent('auto_modal_open', { interest_type: type, vehicle });
+
   const existing = document.getElementById('lead-modal');
   if (existing) existing.remove();
 
@@ -236,116 +237,109 @@ function openLeadModal(type, vehicle = '') {
   modal.id = 'lead-modal';
   modal.className = 'lead-modal';
 
-  modal.innerHTML = `
-    <div class="lead-modal-card">
-      <div class="lead-modal-trust">
-        <p class="kicker">Uzman değerlendirme</p>
-        <h3>Size uygun seçenekleri birlikte değerlendirelim.</h3>
-        <p>Analiz sonucunuza göre finansman, sigorta ve satın alma seçeneklerini daha net değerlendirmeniz için uzman ekibimiz sizinle iletişime geçebilir.</p>
+  function renderStep1() {
+    modal.innerHTML = `
+      <div class="lead-modal-card premium-lead-modal">
+        <div class="premium-lead-hero">
+          <p class="kicker">isteBul Partner Network</p>
+          <h3>Size özel teklif hazırlayalım</h3>
+          <p>Analiz sonucunuza göre doğrulanmış partner ağı üzerinden teklif ve finansman ön değerlendirmesi oluşturulabilir.</p>
+        </div>
 
-        <div class="lead-trust-points">
-          <span>✓ En kısa sürede geri dönüş</span>
-          <span>✓ Bilgileriniz güvenle işlenir</span>
-          <span>✓ Kredi, sigorta ve bayi yönlendirmesi</span>
+        <div class="premium-lead-points">
+          <span>✓ Doğrulanmış partner ağı</span>
+          <span>✓ Finansman ön değerlendirme</span>
+          <span>✓ Hızlı geri dönüş</span>
+          <span>✓ Ücretsiz ön analiz</span>
+        </div>
+
+        <div class="premium-lead-actions">
+          <button class="btn primary" id="lead-step-next">Devam et</button>
+          <button class="btn secondary" id="close-lead-modal">Kapat</button>
         </div>
       </div>
+    `;
 
-      <form id="phone-lead-form">
-        <input name="vehicle" type="hidden" value="${escapeHtml(vehicle)}">
-        <input name="name" type="text" placeholder="Adınız (opsiyonel)">
-        <input name="phone" type="tel" required placeholder="05xx xxx xx xx">
-        <select name="best_time">
-          <option value="">En iyi aranma zamanı</option>
-          <option value="morning">Sabah</option>
-          <option value="afternoon">Öğleden sonra</option>
-          <option value="evening">Akşam</option>
-        </select>
-        <button class="btn primary" type="submit">Uzman değerlendirmesi iste</button>
-      </form>
-      <button class="btn secondary" id="close-lead-modal">Kapat</button>
-    </div>
-  `;
+    document.getElementById('lead-step-next')?.addEventListener('click', renderStep2);
+    document.getElementById('close-lead-modal')?.addEventListener('click', () => modal.remove());
+  }
 
-  document.body.appendChild(modal);
+  function renderStep2() {
+    modal.innerHTML = `
+      <div class="lead-modal-card premium-lead-modal">
+        <p class="kicker">Ön değerlendirme</p>
+        <h3>Bilgilerinizi paylaşın</h3>
 
-  document.getElementById('close-lead-modal').onclick = () => modal.remove();
+        <form id="phone-lead-form">
+          <input name="vehicle" type="hidden" value="${escapeHtml(vehicle)}">
+          <input name="name" type="text" required placeholder="Ad Soyad">
+          <input name="phone" type="tel" required placeholder="05xx xxx xx xx">
+          <input name="email" type="email" placeholder="E-posta (opsiyonel)">
+          <input name="city" type="text" placeholder="Şehir">
 
-  let leadSubmitting = false;
+          <select name="interest">
+            <option value="vehicle_offer">Araç teklifi</option>
+            <option value="finance_review">Finansman</option>
+            <option value="trade_in">Takas</option>
+            <option value="expert_consultation">Uzman görüşmesi</option>
+          </select>
 
-  document.getElementById('phone-lead-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
+          <button class="btn primary" type="submit">Ön değerlendirmeyi başlat</button>
+        </form>
+      </div>
+    `;
 
-    if (leadSubmitting) return;
-    leadSubmitting = true;
+    let leadSubmitting = false;
 
-    const submitButton = event.currentTarget.querySelector('button[type="submit"]');
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = 'Güvenli şekilde kaydediliyor...';
-    }
+    document.getElementById('phone-lead-form')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (leadSubmitting) return;
+      leadSubmitting = true;
 
-    const leadData = new FormData(event.currentTarget);
-    const phone = leadData.get('phone');
-    const contactName = leadData.get('name') || '';
-    const preferredContactTime = leadData.get('best_time') || '';
-    const selectedVehicle = leadData.get('vehicle') || vehicle;
-    const turnstileToken = await getTurnstileToken();
+      const form = new FormData(event.currentTarget);
+      const phone = form.get('phone');
+      const contactName = form.get('name') || '';
+      const selectedVehicle = form.get('vehicle') || vehicle;
+      const selectedInterest = form.get('interest') || type;
 
-    trackAutoEvent('auto_modal_submitted', { phone, interest_type: type, vehicle: selectedVehicle });
-    trackAutoEvent('auto_lead_submit', { phone, interest_type: type, vehicle: selectedVehicle });
-
-    try {
-      const result = await updateLeadInterest(phone, type, selectedVehicle, {
-        turnstileToken,
-        contactName,
-        preferredContactTime
-      });
-
-      if (result?.duplicate) {
-        modal.innerHTML = `
-          <div class="lead-modal-card">
-            <h3>Talebiniz zaten alınmış görünüyor</h3>
-            <p>Ekibimiz yakın zamanda sizinle iletişime geçecek. Yeni kayıt oluşturulmadı.</p>
-          </div>
-        `;
-        return;
+      if (form.get('email')) {
+        localStorage.setItem('istebul_auto_lead_email', form.get('email'));
       }
 
-      modal.innerHTML = `
-        <div class="lead-modal-card">
-          <h3>Uzman değerlendirme talebiniz alındı</h3>
-          <p>Uzman ekibimiz analiz sonucunuza göre uygun seçenekleri değerlendirip sizinle iletişime geçecek.</p>
+      const turnstileToken = await getTurnstileToken();
+
+      try {
+        await updateLeadInterest(phone, selectedInterest, selectedVehicle, {
+          turnstileToken,
+          contactName
+        });
+
+        renderStep3();
+      } catch {
+        leadSubmitting = false;
+        alert('Bağlantı sorunu oluştu. Lütfen tekrar deneyin.');
+      }
+    });
+  }
+
+  function renderStep3() {
+    modal.innerHTML = `
+      <div class="lead-modal-card premium-lead-modal">
+        <p class="kicker">Talep alındı</p>
+        <h3>Ön değerlendirmeniz partner ağına iletildi</h3>
+        <p>Ekibimiz uygun teklif ve finansman seçenekleriyle sizinle iletişime geçecek.</p>
+
+        <div class="premium-lead-actions">
           <button class="btn primary" id="close-success-lead-modal">Tamam</button>
         </div>
-      `;
+      </div>
+    `;
 
-      document.getElementById('close-success-lead-modal')?.addEventListener('click', () => {
-        modal.remove();
-      });
+    document.getElementById('close-success-lead-modal')?.addEventListener('click', () => modal.remove());
+  }
 
-      return;
-    } catch {
-      leadSubmitting = false;
-
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Uzman değerlendirmesi iste';
-      }
-
-      modal.innerHTML = `
-        <div class="lead-modal-card">
-          <h3>Bağlantı sorunu oluştu</h3>
-          <p>Talebiniz kaydedilemedi. Lütfen birkaç saniye sonra tekrar deneyin.</p>
-          <button class="btn primary" id="retry-lead-submit">Tekrar dene</button>
-        </div>
-      `;
-
-      document.getElementById('retry-lead-submit')?.addEventListener('click', () => {
-        modal.remove();
-        openLeadModal(type, vehicle);
-      });
-    }
-  });
+  document.body.appendChild(modal);
+  renderStep1();
 }
 
 
