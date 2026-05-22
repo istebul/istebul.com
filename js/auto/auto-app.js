@@ -395,6 +395,7 @@ function openFinanceCompareModal(vehicleName = '') {
           vehicle: selectedVehicle,
           comparison: window.lastFinanceComparison
         };
+        sessionStorage.setItem('istebul_last_finance_lead_context', JSON.stringify(window.lastFinanceLeadContext));
         openLeadModal('finance_review', selectedVehicle);
       });
     });
@@ -550,7 +551,8 @@ function openLeadModal(type, vehicle = '') {
       const turnstileToken = await getTurnstileToken();
 
       try {
-        const financeContext = window.lastFinanceLeadContext || {};
+        const financeContext = window.lastFinanceLeadContext
+          || safeJsonParse(sessionStorage.getItem('istebul_last_finance_lead_context'), {});
         const financeComparison = financeContext.comparison || {};
         const bestFinanceOffer = Array.isArray(financeComparison.offers)
           ? financeComparison.offers.find((offer) => offer.provider === financeContext.bank) || financeComparison.offers[0]
