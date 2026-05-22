@@ -322,7 +322,7 @@ function openFinanceCompareModal(vehicleName = '') {
 
           <label>
             <span>Kredi tutarı</span>
-            <input id="finance-loan-amount" type="number" min="0" max="${loanLimit}" step="10000" value="${principal || ''}" placeholder="Kredi tutarını girin">
+            <input id="finance-loan-amount" type="number" min="0" max="${loanLimit}" step="10000" value="${requestedLoan ? principal : ''}" placeholder="Kredi tutarını girin">
             ${loanWasCapped ? '<small class="finance-input-warning">Araç değerinin en fazla %80’i kadar kredi girilebilir. Tutar otomatik düzeltildi.</small>' : ''}
           </label>
 
