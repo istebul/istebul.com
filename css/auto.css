@@ -3292,3 +3292,20 @@ html body a.auto-floating-cta{
   font-weight:800;
   text-align:center;
 }
+
+.finance-input-warning{
+  display:block;
+  margin-top:8px;
+  color:#b45309;
+  font-size:12px;
+  font-weight:700;
+}
+
+.finance-empty-state{
+  padding:20px;
+  border:1px dashed rgba(15,23,42,.16);
+  border-radius:16px;
+  text-align:center;
+  color:#64748b;
+  font-weight:700;
+}

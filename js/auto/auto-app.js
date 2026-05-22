@@ -262,7 +262,6 @@ function openFinanceCompareModal(vehicleName = '') {
   const vehicle = (lastResults || []).find((item) => item.name === vehicleName) || lastResults?.[0] || {};
   const vehiclePrice = Number(vehicle.price || 0);
   const maxLoanAmount = Math.round(vehiclePrice * 0.8);
-  const defaultLoan = '';
   const terms = [12, 24, 36, 48];
   const isLoggedIn = !!window.currentUser;
 
@@ -282,21 +281,16 @@ function openFinanceCompareModal(vehicleName = '') {
       { provider: 'QNB', rate: 3.45 }
     ].map((offer) => {
       const monthly = calculateLoanPayment(principal, offer.rate, selectedTerm);
-      return {
-        ...offer,
-        term: selectedTerm,
-        loanAmount: principal,
-        monthly,
-        total: monthly * selectedTerm
-      };
+      return { ...offer, term: selectedTerm, loanAmount: principal, monthly, total: monthly * selectedTerm };
     }).sort((a, b) => a.monthly - b.monthly);
   }
 
-  function render(loanAmount = defaultLoan, selectedTerm = 48) {
-    const rawLoan = String(loanAmount || '').replace(/[^0-9]/g, '');
-    const parsedLoan = Number(rawLoan || 0);
-    const principal = Math.max(50000, Math.min(parsedLoan, vehiclePrice || 2000000));
-    const downPayment = Math.max(0, vehiclePrice - principal);
+  function render(loanAmount = '', selectedTerm = 48) {
+    const requestedLoan = Number(String(loanAmount || '').replace(/[^0-9]/g, '') || 0);
+    const loanLimit = maxLoanAmount || 1600000;
+    const principal = requestedLoan ? Math.min(requestedLoan, loanLimit) : 0;
+    const loanWasCapped = requestedLoan > loanLimit;
+    const downPayment = vehiclePrice && principal ? Math.max(0, vehiclePrice - principal) : 0;
     const offers = principal > 0 ? buildOffers(principal, selectedTerm) : [];
 
     window.lastFinanceComparison = {
@@ -313,7 +307,7 @@ function openFinanceCompareModal(vehicleName = '') {
 
         <p class="kicker">Kredi karşılaştırması</p>
         <h3>${escapeHtml(vehicle.name || vehicleName || 'Araç')} için kişisel finansman simülasyonu</h3>
-        <p class="lead-modal-muted">Kredi tutarını ve vadeyi siz seçin; bankaların tahmini ödeme etkisini karşılaştırın. Nihai koşullar banka değerlendirmesine göre değişebilir.</p>
+        <p class="lead-modal-muted">Kredi tutarını siz girin; vade seçimine göre bankaların tahmini ödeme etkisini karşılaştırın.</p>
 
         <div class="finance-login-note">
           <strong>${isLoggedIn ? 'Karşılaştırmanız kaydedilmeye hazır.' : 'Kişisel karşılaştırmayı kaydetmek için giriş yapın.'}</strong>
@@ -328,23 +322,13 @@ function openFinanceCompareModal(vehicleName = '') {
 
           <label>
             <span>Kredi tutarı</span>
-            <input
-              id="finance-loan-amount"
-              type="text"
-              inputmode="numeric"
-              autocomplete="off"
-              value="${formatter.format(principal)}"
-            >
+            <input id="finance-loan-amount" type="number" min="0" max="${loanLimit}" step="10000" value="${principal || ''}" placeholder="Kredi tutarını girin">
+            ${loanWasCapped ? '<small class="finance-input-warning">Araç değerinin en fazla %80’i kadar kredi girilebilir. Tutar otomatik düzeltildi.</small>' : ''}
           </label>
 
           <label>
             <span>Peşinat</span>
-            <strong>${formatter.format(downPayment)} ₺</strong>
-          </label>
-
-          <label>
-            <span>Maksimum kredi limiti</span>
-            <strong>${formatter.format(maxLoanAmount || 0)} ₺</strong>
+            <strong>${principal ? `${formatter.format(downPayment)} ₺` : 'Kredi tutarı girilince hesaplanır'}</strong>
           </label>
         </div>
 
@@ -353,7 +337,7 @@ function openFinanceCompareModal(vehicleName = '') {
             <button type="button" class="term-btn ${term === selectedTerm ? 'active' : ''}" data-term="${term}">
               ${term} ay
             </button>
-          `).join('') : '<div class="finance-empty-state">Kredi tutarını girin; banka ödeme simülasyonu burada listelensin.</div>'}
+          `).join('')}
         </div>
 
         <div class="finance-offer-table">
@@ -376,7 +360,7 @@ function openFinanceCompareModal(vehicleName = '') {
                 Ön değerlendir
               </button>
             </article>
-          `).join('')}
+          `).join('') : '<div class="finance-empty-state">Kredi tutarını girin; banka ödeme simülasyonu burada listelensin.</div>'}
         </div>
 
         <p class="finance-disclaimer">Bu ekran kredi tavsiyesi değil, tahmini karşılaştırma simülasyonudur.</p>
@@ -417,9 +401,6 @@ function openFinanceCompareModal(vehicleName = '') {
   document.body.appendChild(modal);
   render();
 }
-
-
-window.openFinanceCompareModal = openFinanceCompareModal;
 
 function openLeadModal(type, vehicle = '') {
   trackAutoEvent('auto_modal_open', { interest_type: type, vehicle });
