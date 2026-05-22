@@ -163,15 +163,16 @@ esbuild.buildSync({
 const autoAssetDir = path.join(dist, 'assets', 'auto-runtime');
 fs.mkdirSync(autoAssetDir, { recursive: true });
 
-const autoCssSource = path.join(dist, 'css', 'auto.css');
-const autoJsSource = path.join(dist, 'js', 'auto', 'auto-app.js');
+const autoCssSource = path.join(root, 'css', 'auto.css');
+const autoJsSourceDir = path.join(root, 'js', 'auto');
+const autoJsTargetDir = path.join(autoAssetDir, 'js', 'auto');
 
 if (fs.existsSync(autoCssSource)) {
   fs.copyFileSync(autoCssSource, path.join(autoAssetDir, 'ib-car.css'));
 }
 
-if (fs.existsSync(autoJsSource)) {
-  fs.copyFileSync(autoJsSource, path.join(autoAssetDir, 'ib-car-app.js'));
+if (fs.existsSync(autoJsSourceDir)) {
+  fs.cpSync(autoJsSourceDir, autoJsTargetDir, { recursive: true });
 }
 
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
@@ -179,8 +180,8 @@ if (fs.existsSync(autoHtmlPath)) {
   let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
   autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/assets/auto-runtime/ib-car.css');
   autoHtml = autoHtml.replace(/\/css\/auto\.css/g, '/assets/auto-runtime/ib-car.css');
-  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/assets/auto-runtime/ib-car-app.js?v=stable-auto-runtime');
-  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js/g, '/assets/auto-runtime/ib-car-app.js');
+  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/assets/auto-runtime/js/auto/auto-app.js?v=stable-auto-runtime');
+  autoHtml = autoHtml.replace(/\/js\/auto\/auto-app\.js/g, '/assets/auto-runtime/js/auto/auto-app.js');
   fs.writeFileSync(autoHtmlPath, autoHtml);
 }
 
