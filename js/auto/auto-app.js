@@ -1762,6 +1762,12 @@ Destek almak istiyorum.`;
     );
   }
 
+  const financeCompareBtn = event.target.closest('.finance-compare-trigger');
+  if (financeCompareBtn) {
+    openFinanceCompareModal(financeCompareBtn.dataset.vehicle || '');
+    return;
+  }
+
   const interestBtn = event.target.closest('.auto-interest-btn');
 
   if (interestBtn) {
