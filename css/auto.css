@@ -2148,3 +2148,62 @@ h2{
     margin:16px 0 !important;
   }
 }
+
+/* Emergency premium Auto result cleanup */
+#auto-results .auto-market-image{
+  display:none !important;
+}
+
+#auto-results .auto-market-media{
+  min-width:160px;
+}
+
+#auto-results .auto-market-rank{
+  padding:14px 16px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#eff6ff,#ecfeff);
+  border:1px solid rgba(37,99,235,.14);
+}
+
+#auto-results .dealer-offer-strip{
+  padding:20px !important;
+  border-radius:22px !important;
+  background:linear-gradient(135deg,#f8fbff,#eefcf9) !important;
+}
+
+#auto-results .dealer-offer-header strong{
+  font-size:17px !important;
+}
+
+#auto-results .dealer-offer-card{
+  display:grid !important;
+  grid-template-columns:1fr auto !important;
+  padding:20px !important;
+  border-radius:20px !important;
+  background:#fff !important;
+  border:1px solid rgba(15,23,42,.08) !important;
+}
+
+#auto-results .dealer-offer-card strong:first-child{
+  font-size:18px !important;
+}
+
+#auto-results .dealer-offer-card small{
+  max-width:520px;
+  line-height:1.6;
+}
+
+#auto-results .auto-finance-note{
+  margin-top:0 !important;
+  position:static !important;
+}
+
+@media(max-width:768px){
+  #auto-results .auto-market-media{
+    min-width:0 !important;
+  }
+
+  #auto-results .dealer-offer-card{
+    grid-template-columns:1fr !important;
+  }
+}
