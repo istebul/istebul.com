@@ -562,7 +562,7 @@ function buildEconomicVerdict(vehicle) {
   return 'Genel maliyet profili dengeli. Nihai karar için finansman ve teklif karşılaştırması önerilir.';
 }
 
-function renderResults(results, financeOffers = []) {
+function renderResults(results) {
   const root = document.getElementById('auto-results');
 
   if (!Array.isArray(results) || !results.length) {
@@ -705,9 +705,7 @@ function renderResults(results, financeOffers = []) {
 
         ${vehicle.score >= 85 ? `
           <div class="auto-hot-banner">
-            ${bestFinance
-  ? `En iyi teklif: ${bestFinance.provider_name} • %${bestFinance.monthly_rate}`
-  : 'Güncel finansman teklifleri hazır'}
+            Güncel finansman teklifleri hazır
           </div>
         ` : ''}
       </aside>
@@ -1232,7 +1230,7 @@ form.addEventListener('submit', async (event) => {
   trackAutoEvent('auto_form_submitted');
 
   const formData = readForm(form);
-  const [vehicleCatalog, financeOffers] = await Promise.all([getVehicleCatalog(), getFinanceOffers()]);
+  const vehicleCatalog = await getVehicleCatalog();
   const results = recommendVehicles(formData, vehicleCatalog);
   lastResults = results;
   allResults = [...results];
@@ -1247,7 +1245,7 @@ form.addEventListener('submit', async (event) => {
     try {
       document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
       trackAutoEvent('auto_results_rendered', { count: results.length });
-      renderResults(results, financeOffers);
+      renderResults(results);
 
       try {
         if (window.app?.currentUser?.id && typeof window.app.saveDecisionHistory === 'function' && results.length) {
