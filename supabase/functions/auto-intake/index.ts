@@ -583,6 +583,14 @@ Deno.serve(async (req) => {
       scoring.priority = "verification_failed";
     }
 
+    const financeNotes = [
+      form.finance_bank ? `Banka: ${clampString(form.finance_bank, 80)}` : "",
+      form.finance_loan_amount ? `Kredi tutarı: ${clampNumber(form.finance_loan_amount, 0, 20000000)} TL` : "",
+      form.finance_term ? `Vade: ${clampNumber(form.finance_term, 0, 120)} ay` : "",
+      form.finance_monthly_payment ? `Aylık ödeme: ${clampNumber(form.finance_monthly_payment, 0, 20000000)} TL` : "",
+      form.finance_total_payment ? `Toplam geri ödeme: ${clampNumber(form.finance_total_payment, 0, 200000000)} TL` : "",
+    ].filter(Boolean).join(" | ");
+
     const payload = {
       email: normalizedEmail,
       phone,
@@ -609,7 +617,9 @@ Deno.serve(async (req) => {
       follow_up_done: false,
       status: isTestLead(phone) ? "test_spam" : verificationFailed ? "verification_failed" : "new",
       source: "auto",
-      notes: verificationFailed ? "Turnstile doğrulaması başarısız oldu; manuel kontrol önerilir." : null,
+      notes: verificationFailed
+        ? `Turnstile doğrulaması başarısız oldu; manuel kontrol önerilir.${financeNotes ? " | " + financeNotes : ""}`
+        : financeNotes || null,
     };
 
     const phoneUpdate = await adminClient

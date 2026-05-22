@@ -179,7 +179,12 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
       contact_name: options.contactName || '',
       preferred_contact_time: options.preferredContactTime || '',
       interest_type: interestType,
-      vehicle
+      vehicle,
+      finance_bank: options.financeBank || '',
+      finance_loan_amount: options.financeLoanAmount || '',
+      finance_term: options.financeTerm || '',
+      finance_monthly_payment: options.financeMonthlyPayment || '',
+      finance_total_payment: options.financeTotalPayment || ''
     }
   });
 }
@@ -545,9 +550,20 @@ function openLeadModal(type, vehicle = '') {
       const turnstileToken = await getTurnstileToken();
 
       try {
+        const financeContext = window.lastFinanceLeadContext || {};
+        const financeComparison = financeContext.comparison || {};
+        const bestFinanceOffer = Array.isArray(financeComparison.offers)
+          ? financeComparison.offers.find((offer) => offer.provider === financeContext.bank) || financeComparison.offers[0]
+          : null;
+
         await updateLeadInterest(phone, selectedInterest, selectedVehicle, {
           turnstileToken,
-          contactName
+          contactName,
+          financeBank: financeContext.bank || '',
+          financeLoanAmount: financeComparison.loanAmount || '',
+          financeTerm: financeComparison.term || '',
+          financeMonthlyPayment: bestFinanceOffer?.monthly || '',
+          financeTotalPayment: bestFinanceOffer?.total || ''
         });
 
         renderStep3();
