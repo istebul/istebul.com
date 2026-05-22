@@ -1,4 +1,4 @@
-import { estimateAnnualCost } from './auto-cost-engine.js';
+import { estimateAnnualCost } from './auto-cost-engine.js?v=cost2';
 
 function buildReason(vehicle, form, budget) {
   const reasons = [];
