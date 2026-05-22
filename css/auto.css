@@ -3230,3 +3230,40 @@ html body a.auto-floating-cta{
   float:right;
   z-index:20;
 }
+
+.finance-compare-modal{
+  align-items:flex-start;
+  padding-top:48px;
+  overflow:auto;
+}
+
+.finance-compare-card{
+  max-height:none !important;
+  overflow:visible !important;
+}
+
+.finance-configurator-card{
+  padding-bottom:32px;
+}
+
+.finance-configurator-card .finance-offer-table{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  margin-top:12px;
+}
+
+.finance-configurator-card .finance-bank-row{
+  grid-template-columns:1.1fr .8fr .8fr auto;
+  padding:12px 14px;
+  border-radius:14px;
+}
+
+.finance-configurator-card .finance-bank-row strong,
+.finance-configurator-card .finance-bank-row b{
+  font-size:15px;
+}
+
+.finance-configurator-card .finance-disclaimer{
+  margin-bottom:0;
+}
