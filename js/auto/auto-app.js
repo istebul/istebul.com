@@ -1025,7 +1025,7 @@ function renderResults(results) {
           Uzmanla görüş
         </button>
 
-        <button class="btn secondary auto-interest-btn" data-interest="finance" data-vehicle="${escapeHtml(vehicle.name)}">
+        <button class="btn secondary finance-compare-trigger" data-vehicle="${escapeHtml(vehicle.name)}">
           Finansman etkisi
         </button>
 
