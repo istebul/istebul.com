@@ -3213,3 +3213,20 @@ html body a.auto-floating-cta{
   color:#0f172a;
   font-weight:900;
 }
+
+.finance-compare-card{
+  width:min(980px,92vw);
+  max-height:88vh;
+  overflow:auto;
+}
+
+.finance-offer-table{
+  margin-top:18px;
+}
+
+.finance-configurator-card .lead-modal-close{
+  position:sticky;
+  top:12px;
+  float:right;
+  z-index:20;
+}
