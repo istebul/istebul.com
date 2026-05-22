@@ -237,13 +237,58 @@ function openLeadModal(type, vehicle = '') {
   modal.id = 'lead-modal';
   modal.className = 'lead-modal';
 
+  const flow = {
+    finance_review: {
+      kicker: 'Finansman ön değerlendirme',
+      title: 'Finansman seçeneklerinizi karşılaştıralım',
+      description: 'Partner kurumlar üzerinden oran, vade ve ön onay seçenekleri için talebinizi alalım.',
+      submit: 'Finansman ön değerlendirmesini başlat',
+      success: 'Finansman ön değerlendirme talebiniz alındı'
+    },
+    finance: {
+      kicker: 'Finansman ön değerlendirme',
+      title: 'Finansman seçeneklerinizi karşılaştıralım',
+      description: 'Partner kurumlar üzerinden oran, vade ve ön onay seçenekleri için talebinizi alalım.',
+      submit: 'Finansman ön değerlendirmesini başlat',
+      success: 'Finansman ön değerlendirme talebiniz alındı'
+    },
+    dealer_match: {
+      kicker: 'Partner eşleşmesi',
+      title: 'Size uygun partner eşleşmesini hazırlayalım',
+      description: 'Bölgenizdeki doğrulanmış partner ağı üzerinden teklif hazırlığı başlatılabilir.',
+      submit: 'Partner eşleşmesini başlat',
+      success: 'Partner eşleşmesi talebiniz alındı'
+    },
+    vehicle_offer: {
+      kicker: 'Özel araç teklifi',
+      title: 'Size özel teklif hazırlayalım',
+      description: 'Araç profilinize göre teklif, bayi ve finansman seçenekleri birlikte değerlendirilebilir.',
+      submit: 'Teklif sürecini başlat',
+      success: 'Teklif talebiniz alındı'
+    }
+  }[type] || {
+    kicker: 'Uzman değerlendirme',
+    title: 'Uzman ekibimiz sizinle iletişime geçsin',
+    description: 'Analiz sonucunuza göre en uygun seçenekleri birlikte değerlendirelim.',
+    submit: 'Uzman değerlendirmesini başlat',
+    success: 'Uzman değerlendirme talebiniz alındı'
+  };
+
+  const closeModal = () => modal.remove();
+
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) closeModal();
+  });
+
   function renderStep1() {
     modal.innerHTML = `
       <div class="lead-modal-card premium-lead-modal">
+        <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
+
         <div class="premium-lead-hero">
-          <p class="kicker">isteBul Partner Network</p>
-          <h3>Size özel teklif hazırlayalım</h3>
-          <p>Analiz sonucunuza göre doğrulanmış partner ağı üzerinden teklif ve finansman ön değerlendirmesi oluşturulabilir.</p>
+          <p class="kicker">${escapeHtml(flow.kicker)}</p>
+          <h3>${escapeHtml(flow.title)}</h3>
+          <p>${escapeHtml(flow.description)}</p>
         </div>
 
         <div class="premium-lead-points">
@@ -260,15 +305,19 @@ function openLeadModal(type, vehicle = '') {
       </div>
     `;
 
+    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
     document.getElementById('lead-step-next')?.addEventListener('click', renderStep2);
-    document.getElementById('close-lead-modal')?.addEventListener('click', () => modal.remove());
+    document.getElementById('close-lead-modal')?.addEventListener('click', closeModal);
   }
 
   function renderStep2() {
     modal.innerHTML = `
       <div class="lead-modal-card premium-lead-modal">
-        <p class="kicker">Ön değerlendirme</p>
+        <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
+
+        <p class="kicker">${escapeHtml(flow.kicker)}</p>
         <h3>Bilgilerinizi paylaşın</h3>
+        <p class="lead-modal-muted">Talebiniz güvenli şekilde alınır. Zorunlu satın alma yoktur.</p>
 
         <form id="phone-lead-form">
           <input name="vehicle" type="hidden" value="${escapeHtml(vehicle)}">
@@ -278,16 +327,21 @@ function openLeadModal(type, vehicle = '') {
           <input name="city" type="text" placeholder="Şehir">
 
           <select name="interest">
+            <option value="${escapeHtml(type)}">${escapeHtml(flow.kicker)}</option>
             <option value="vehicle_offer">Araç teklifi</option>
             <option value="finance_review">Finansman</option>
-            <option value="trade_in">Takas</option>
+            <option value="dealer_match">Partner eşleşmesi</option>
             <option value="expert_consultation">Uzman görüşmesi</option>
           </select>
 
-          <button class="btn primary" type="submit">Ön değerlendirmeyi başlat</button>
+          <button class="btn primary" type="submit">${escapeHtml(flow.submit)}</button>
+          <button class="btn secondary" type="button" id="cancel-lead-modal">Vazgeç</button>
         </form>
       </div>
     `;
+
+    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
+    document.getElementById('cancel-lead-modal')?.addEventListener('click', closeModal);
 
     let leadSubmitting = false;
 
@@ -295,6 +349,12 @@ function openLeadModal(type, vehicle = '') {
       event.preventDefault();
       if (leadSubmitting) return;
       leadSubmitting = true;
+
+      const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Talebiniz güvenli şekilde gönderiliyor...';
+      }
 
       const form = new FormData(event.currentTarget);
       const phone = form.get('phone');
@@ -317,17 +377,29 @@ function openLeadModal(type, vehicle = '') {
         renderStep3();
       } catch {
         leadSubmitting = false;
-        alert('Bağlantı sorunu oluştu. Lütfen tekrar deneyin.');
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = flow.submit;
+        }
+        renderError();
       }
     });
   }
 
   function renderStep3() {
     modal.innerHTML = `
-      <div class="lead-modal-card premium-lead-modal">
+      <div class="lead-modal-card premium-lead-modal lead-success-modal">
+        <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
+
         <p class="kicker">Talep alındı</p>
-        <h3>Ön değerlendirmeniz partner ağına iletildi</h3>
+        <h3>${escapeHtml(flow.success)}</h3>
         <p>Ekibimiz uygun teklif ve finansman seçenekleriyle sizinle iletişime geçecek.</p>
+
+        <div class="premium-lead-points">
+          <span>✓ Talep güvenli şekilde kaydedildi</span>
+          <span>✓ Partner ağı kontrol edilecek</span>
+          <span>✓ En kısa sürede dönüş yapılacak</span>
+        </div>
 
         <div class="premium-lead-actions">
           <button class="btn primary" id="close-success-lead-modal">Tamam</button>
@@ -335,7 +407,29 @@ function openLeadModal(type, vehicle = '') {
       </div>
     `;
 
-    document.getElementById('close-success-lead-modal')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
+    document.getElementById('close-success-lead-modal')?.addEventListener('click', closeModal);
+  }
+
+  function renderError() {
+    modal.innerHTML = `
+      <div class="lead-modal-card premium-lead-modal">
+        <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
+
+        <p class="kicker">Bağlantı sorunu</p>
+        <h3>Talebiniz gönderilemedi</h3>
+        <p>Lütfen birkaç saniye sonra tekrar deneyin.</p>
+
+        <div class="premium-lead-actions">
+          <button class="btn primary" id="retry-lead-submit">Tekrar dene</button>
+          <button class="btn secondary" id="close-error-lead-modal">Kapat</button>
+        </div>
+      </div>
+    `;
+
+    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
+    document.getElementById('retry-lead-submit')?.addEventListener('click', renderStep2);
+    document.getElementById('close-error-lead-modal')?.addEventListener('click', closeModal);
   }
 
   document.body.appendChild(modal);

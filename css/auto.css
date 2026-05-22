@@ -3003,3 +3003,32 @@ html body a.auto-floating-cta{
     grid-template-columns:1fr !important;
   }
 }
+
+.lead-modal-close{
+  position:absolute;
+  top:18px;
+  right:18px;
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:999px;
+  background:#f8fafc;
+  color:#0f172a;
+  font-size:24px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.premium-lead-modal{
+  position:relative;
+}
+
+.lead-modal-muted{
+  margin:0 0 16px;
+  color:#64748b;
+  font-weight:700;
+}
+
+.lead-success-modal{
+  text-align:left;
+}
