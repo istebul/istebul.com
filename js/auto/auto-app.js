@@ -999,7 +999,7 @@ function renderResults(results) {
               <span><b>48 aya</b><small>vade opsiyonu</small></span>
               <span><b>5</b><small>partner kurum</small></span>
             </div>
-            <button class="btn secondary auto-interest-btn" data-interest="finance_review" data-vehicle="${escapeHtml(vehicle.name)}">
+            <button class="btn secondary finance-compare-trigger" data-vehicle="${escapeHtml(vehicle.name)}">
               Finansmanı karşılaştır
             </button>
           </div>
