@@ -1805,3 +1805,6 @@ document.addEventListener('click', (event) => {
 
   openFinanceCompareModal(financeButton.dataset.vehicle || '');
 }, true);
+
+// Expose finance comparison opener for delegated CTA handling and runtime diagnostics.
+window.openFinanceCompareModal = openFinanceCompareModal;
