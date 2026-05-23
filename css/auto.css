@@ -3309,3 +3309,140 @@ html body a.auto-floating-cta{
   color:#64748b;
   font-weight:700;
 }
+
+/* Conversion-maximized funnel */
+.auto-hot-lead-banner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:18px 20px;
+  margin-bottom:16px;
+  border-radius:18px;
+  border:1px solid rgba(234,88,12,.28);
+  background:linear-gradient(135deg,rgba(255,247,237,.98),rgba(255,255,255,.96));
+  box-shadow:0 18px 48px rgba(234,88,12,.12);
+}
+
+.auto-hot-lead-banner h3{
+  margin:.35rem 0;
+  font-size:1.15rem;
+}
+
+.auto-conversion-sticky{
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:12px;
+  z-index:90;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:16px;
+  border:1px solid rgba(31,111,235,.22);
+  background:rgba(255,255,255,.96);
+  box-shadow:0 18px 54px rgba(15,23,42,.18);
+  backdrop-filter:blur(10px);
+}
+
+.auto-conversion-sticky-copy{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+}
+
+.auto-conversion-sticky-copy strong{
+  font-size:.92rem;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.auto-conversion-sticky-copy span{
+  font-size:.78rem;
+  color:#64748b;
+}
+
+.lead-modal-conversion .lead-form-conversion{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.lead-form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.lead-honeypot{
+  position:absolute;
+  left:-9999px;
+  width:1px;
+  height:1px;
+  opacity:0;
+  pointer-events:none;
+}
+
+.lead-consent{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  font-size:.86rem;
+  color:#475569;
+  line-height:1.45;
+}
+
+.lead-consent input{
+  margin-top:.2rem;
+  flex:0 0 auto;
+}
+
+.lead-security-note{
+  font-size:.8rem;
+  color:#64748b;
+  margin:0;
+}
+
+.lead-trust-row{
+  flex-wrap:wrap;
+}
+
+@media (max-width: 768px){
+  .auto-hot-lead-banner,
+  .auto-results-trust-banner{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .auto-conversion-sticky{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .auto-conversion-sticky .btn{
+    width:100%;
+    justify-content:center;
+  }
+
+  .lead-form-row{
+    grid-template-columns:1fr;
+  }
+
+  body.has-auto-sticky{
+    padding-bottom:96px;
+  }
+
+  .auto-market-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  .auto-market-actions .btn.primary{
+    grid-column:1 / -1;
+  }
+}

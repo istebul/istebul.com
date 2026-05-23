@@ -56,6 +56,80 @@ function safeJsonParse(value, fallback = {}) {
   }
 }
 
+function getLeadPrefill() {
+  const payload = getCurrentLeadPayload();
+  const city = payload.city
+    || (typeof wizardState !== 'undefined' && wizardState.location === 'custom'
+      ? wizardState.location_custom
+      : wizardState?.location)
+    || '';
+  const district = payload.district || wizardState?.district || '';
+  const email = localStorage.getItem('istebul_auto_lead_email') || '';
+  return { city, district, email, payload };
+}
+
+function normalizeTrPhone(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  if (digits.length === 10 && digits.startsWith('5')) return `0${digits}`;
+  if (digits.length === 11 && digits.startsWith('05')) return digits;
+  if (digits.length === 12 && digits.startsWith('90')) return `0${digits.slice(2)}`;
+  return digits;
+}
+
+function isValidTrPhone(value) {
+  const normalized = normalizeTrPhone(value);
+  return /^05\d{9}$/.test(normalized);
+}
+
+function removeConversionStickyBar() {
+  document.getElementById('auto-conversion-sticky')?.remove();
+  document.body.classList.remove('has-auto-sticky');
+}
+
+function showConversionStickyBar(topVehicle) {
+  removeConversionStickyBar();
+  if (!topVehicle) return;
+
+  const bar = document.createElement('div');
+  bar.id = 'auto-conversion-sticky';
+  bar.className = 'auto-conversion-sticky';
+  bar.innerHTML = `
+    <div class="auto-conversion-sticky-copy">
+      <strong>${escapeHtml(topVehicle.name)}</strong>
+      <span>Skor ${topVehicle.score}/100 · ücretsiz teklif eşleşmesi</span>
+    </div>
+    <button type="button" class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(topVehicle.name)}">
+      Teklif al
+    </button>
+  `;
+  document.body.appendChild(bar);
+  document.body.classList.add('has-auto-sticky');
+  trackUniqueAutoEvent('auto_sticky_cta_shown', { vehicle: topVehicle.name }, topVehicle.name);
+}
+
+function setupFunnelAnalytics() {
+  if (window.__autoFunnelAnalyticsBound) return;
+  window.__autoFunnelAnalyticsBound = true;
+
+  window.addEventListener('beforeunload', () => {
+    if (typeof wizardIndex === 'undefined' || typeof wizardSteps === 'undefined') return;
+    if (wizardIndex < wizardSteps.length - 1 && Object.keys(wizardState || {}).length) {
+      trackAutoEvent('auto_wizard_abandon', {
+        step: wizardIndex + 1,
+        key: wizardSteps[wizardIndex]?.key
+      });
+    }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'hidden') return;
+    const modal = document.getElementById('lead-modal');
+    if (modal) {
+      trackAutoEvent('auto_modal_abandon');
+    }
+  });
+}
+
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -178,6 +252,10 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
       phone,
       contact_name: options.contactName || '',
       preferred_contact_time: options.preferredContactTime || '',
+      city: options.city || storedPayload.city || '',
+      district: options.district || storedPayload.district || '',
+      privacy_consent: options.privacyConsent ? 'accepted' : '',
+      website: options.honeypot || '',
       interest_type: interestType,
       vehicle,
       finance_bank: options.financeBank || '',
@@ -421,6 +499,8 @@ function openLeadModal(type, vehicle = '') {
   const modal = document.createElement('div');
   modal.id = 'lead-modal';
   modal.className = 'lead-modal';
+  const prefill = getLeadPrefill();
+  const requiresEmail = ['vehicle_offer', 'finance_review', 'finance', 'dealer_match'].includes(type);
 
   const flow = {
     finance_review: {
@@ -459,15 +539,20 @@ function openLeadModal(type, vehicle = '') {
     success: 'Uzman değerlendirme talebiniz alındı'
   };
 
-  const closeModal = () => modal.remove();
+  const closeModal = () => {
+    trackAutoEvent('auto_modal_close', { interest_type: type, vehicle });
+    modal.remove();
+  };
 
   modal.addEventListener('click', (event) => {
     if (event.target === modal) closeModal();
   });
 
-  function renderStep1() {
+  function renderLeadForm() {
+    trackAutoEvent('auto_modal_form_view', { interest_type: type, vehicle });
+
     modal.innerHTML = `
-      <div class="lead-modal-card premium-lead-modal">
+      <div class="lead-modal-card premium-lead-modal lead-modal-conversion">
         <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
 
         <div class="premium-lead-hero">
@@ -476,40 +561,31 @@ function openLeadModal(type, vehicle = '') {
           <p>${escapeHtml(flow.description)}</p>
         </div>
 
-        <div class="premium-lead-points">
+        <div class="premium-lead-points lead-trust-row">
+          <span>✓ 24 saat içinde geri dönüş hedefi</span>
           <span>✓ Doğrulanmış partner ağı</span>
-          <span>✓ Finansman ön değerlendirme</span>
-          <span>✓ Hızlı geri dönüş</span>
-          <span>✓ Ücretsiz ön analiz</span>
+          <span>✓ Zorunlu satın alma yok</span>
         </div>
 
-        <div class="premium-lead-actions">
-          <button class="btn primary" id="lead-step-next">Devam et</button>
-          <button class="btn secondary" id="close-lead-modal">Kapat</button>
-        </div>
-      </div>
-    `;
-
-    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
-    document.getElementById('lead-step-next')?.addEventListener('click', renderStep2);
-    document.getElementById('close-lead-modal')?.addEventListener('click', closeModal);
-  }
-
-  function renderStep2() {
-    modal.innerHTML = `
-      <div class="lead-modal-card premium-lead-modal">
-        <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
-
-        <p class="kicker">${escapeHtml(flow.kicker)}</p>
-        <h3>Bilgilerinizi paylaşın</h3>
-        <p class="lead-modal-muted">Talebiniz güvenli şekilde alınır. Zorunlu satın alma yoktur.</p>
-
-        <form id="phone-lead-form">
+        <form id="phone-lead-form" class="lead-form-conversion">
           <input name="vehicle" type="hidden" value="${escapeHtml(vehicle)}">
-          <input name="name" type="text" required placeholder="Ad Soyad">
-          <input name="phone" type="tel" required placeholder="05xx xxx xx xx">
-          <input name="email" type="email" placeholder="E-posta (opsiyonel)">
-          <input name="city" type="text" placeholder="Şehir">
+          <input type="text" name="website" class="lead-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+          <input name="name" type="text" required autocomplete="name" placeholder="Ad Soyad">
+          <input name="phone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="05xx xxx xx xx">
+          <input name="email" type="email" autocomplete="email" placeholder="E-posta${requiresEmail ? '' : ' (önerilir)'}" ${requiresEmail ? 'required' : ''} value="${escapeHtml(prefill.email)}">
+          <div class="lead-form-row">
+            <input name="city" type="text" required placeholder="Şehir" value="${escapeHtml(prefill.city)}">
+            <input name="district" type="text" placeholder="İlçe (opsiyonel)" value="${escapeHtml(prefill.district)}">
+          </div>
+
+          <select name="preferred_contact_time">
+            <option value="">Ne zaman arayalım?</option>
+            <option value="09-12">09:00 – 12:00</option>
+            <option value="12-17">12:00 – 17:00</option>
+            <option value="17-20">17:00 – 20:00</option>
+            <option value="anytime">Fark etmez</option>
+          </select>
 
           <select name="interest">
             <option value="${escapeHtml(type)}">${escapeHtml(flow.kicker)}</option>
@@ -518,6 +594,16 @@ function openLeadModal(type, vehicle = '') {
             <option value="dealer_match">Partner eşleşmesi</option>
             <option value="expert_consultation">Uzman görüşmesi</option>
           </select>
+
+          <label class="lead-consent">
+            <input name="privacy_consent" type="checkbox" value="accepted" required>
+            <span>
+              <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a>,
+              <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a> ve uygun partnerlerle paylaşım koşullarını kabul ediyorum.
+            </span>
+          </label>
+
+          <p class="lead-security-note">Güvenlik doğrulaması arka planda yapılır. Bilgileriniz yalnızca talep süreci için kullanılır.</p>
 
           <button class="btn primary" type="submit">${escapeHtml(flow.submit)}</button>
           <button class="btn secondary" type="button" id="cancel-lead-modal">Vazgeç</button>
@@ -533,7 +619,29 @@ function openLeadModal(type, vehicle = '') {
     document.getElementById('phone-lead-form')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       if (leadSubmitting) return;
+
+      const form = new FormData(event.currentTarget);
+      const honeypot = String(form.get('website') || '').trim();
+      if (honeypot) {
+        trackAutoEvent('auto_lead_spam_blocked', { interest_type: type });
+        closeModal();
+        return;
+      }
+
+      const phoneRaw = form.get('phone');
+      const phone = normalizeTrPhone(phoneRaw);
+      if (!isValidTrPhone(phone)) {
+        alert('Lütfen geçerli bir cep telefonu numarası girin (05xx xxx xx xx).');
+        return;
+      }
+
+      if (!form.get('privacy_consent')) {
+        alert('Devam etmek için KVKK ve gizlilik onayını işaretleyin.');
+        return;
+      }
+
       leadSubmitting = true;
+      trackAutoEvent('auto_lead_submit_attempt', { interest_type: type, vehicle });
 
       const submitButton = event.currentTarget.querySelector('button[type="submit"]');
       if (submitButton) {
@@ -541,11 +649,13 @@ function openLeadModal(type, vehicle = '') {
         submitButton.textContent = 'Talebiniz güvenli şekilde gönderiliyor...';
       }
 
-      const form = new FormData(event.currentTarget);
-      const phone = form.get('phone');
       const contactName = form.get('name') || '';
       const selectedVehicle = form.get('vehicle') || vehicle;
       const selectedInterest = form.get('interest') || type;
+      const city = String(form.get('city') || '').trim();
+      const district = String(form.get('district') || '').trim();
+      const preferredContactTime = form.get('preferred_contact_time') || '';
+      const privacyConsent = form.get('privacy_consent') === 'accepted';
 
       if (form.get('email')) {
         localStorage.setItem('istebul_auto_lead_email', form.get('email'));
@@ -564,6 +674,11 @@ function openLeadModal(type, vehicle = '') {
         await updateLeadInterest(phone, selectedInterest, selectedVehicle, {
           turnstileToken,
           contactName,
+          city,
+          district,
+          preferredContactTime,
+          privacyConsent,
+          honeypot,
           financeBank: financeContext.bank || '',
           financeLoanAmount: financeComparison.loanAmount || '',
           financeTerm: financeComparison.term || '',
@@ -571,9 +686,29 @@ function openLeadModal(type, vehicle = '') {
           financeTotalPayment: bestFinanceOffer?.total || ''
         });
 
+        const topScore = lastResults[0]?.score || 0;
+        trackAutoEvent('auto_lead_submit', {
+          interest_type: selectedInterest,
+          vehicle: selectedVehicle,
+          score: topScore
+        });
+
+        if (topScore >= 85) {
+          trackAutoEvent('auto_hot_lead_detected', {
+            vehicle: selectedVehicle,
+            score: topScore,
+            interest_type: selectedInterest
+          });
+        }
+
+        removeConversionStickyBar();
         renderStep3();
-      } catch {
+      } catch (error) {
         leadSubmitting = false;
+        trackAutoEvent('auto_lead_submit_failed', {
+          interest_type: type,
+          message: error?.message || 'unknown'
+        });
         if (submitButton) {
           submitButton.disabled = false;
           submitButton.textContent = flow.submit;
@@ -640,12 +775,12 @@ function openLeadModal(type, vehicle = '') {
     `;
 
     modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
-    document.getElementById('retry-lead-submit')?.addEventListener('click', renderStep2);
+    document.getElementById('retry-lead-submit')?.addEventListener('click', renderLeadForm);
     document.getElementById('close-error-lead-modal')?.addEventListener('click', closeModal);
   }
 
   document.body.appendChild(modal);
-  renderStep1();
+  renderLeadForm();
 }
 
 
@@ -878,7 +1013,23 @@ function renderResults(results) {
 
   const formData = form ? readForm(form) : {};
 
+  const topMatch = results[0];
+  const isHotProfile = topMatch && topMatch.score >= 85;
+
   root.innerHTML = `
+    ${isHotProfile ? `
+      <section class="auto-hot-lead-banner" aria-label="Sıcak eşleşme">
+        <div>
+          <p class="kicker">Yüksek uyum</p>
+          <h3>${escapeHtml(topMatch.name)} profiliniz için güçlü eşleşme (${topMatch.score}/100)</h3>
+          <p>Ücretsiz teklif ve finansman ön değerlendirmesi için 1 dakikada talep bırakın.</p>
+        </div>
+        <button type="button" class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(topMatch.name)}">
+          Sıcak lead — teklif iste
+        </button>
+      </section>
+    ` : ''}
+
     <section class="auto-results-trust-banner" aria-label="Sonuç açıklaması">
       <div>
         <p class="kicker">Model önerisi</p>
@@ -1144,6 +1295,14 @@ function renderResults(results) {
 
   hydrateDealerOffers(results, formData);
   updateAiSummary();
+  showConversionStickyBar(topMatch);
+
+  if (isHotProfile) {
+    trackAutoEvent('auto_hot_lead_surface', {
+      vehicle: topMatch.name,
+      score: topMatch.score
+    });
+  }
 
   aiBox?.querySelectorAll('[data-ai-refine]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -1328,7 +1487,7 @@ function renderWizard() {
     <div class="wizard-progress">
       <div class="wizard-progress-text">
         <span>Adım ${wizardIndex + 1}/${wizardSteps.length}</span>
-        <span>%${progress} tamamlandı</span>
+        <span>%${progress} · ${Math.max(0, wizardSteps.length - wizardIndex - 1)} adım kaldı</span>
       </div>
       <div class="wizard-progress-bar">
         <div class="wizard-progress-fill" style="width:${progress}%"></div>
@@ -1488,13 +1647,29 @@ if (wizard) {
 
     if (option) {
       const step = wizardSteps[wizardIndex];
-      wizardState[step.key] = option.dataset.wizardValue;
+      const selectedValue = option.dataset.wizardValue;
+      wizardState[step.key] = selectedValue;
       syncWizardToForm();
       renderWizard();
+
+      trackAutoEvent('auto_wizard_step_select', {
+        step: wizardIndex + 1,
+        key: step.key,
+        value: selectedValue
+      });
 
       if (!autoFormStarted) {
         autoFormStarted = true;
         trackAutoEvent('auto_form_started');
+      }
+
+      if (selectedValue !== 'custom') {
+        window.clearTimeout(window.__autoWizardAdvanceTimer);
+        window.__autoWizardAdvanceTimer = setTimeout(() => {
+          if (wizardState[step.key] === selectedValue) {
+            advanceWizard();
+          }
+        }, 450);
       }
 
       return;
@@ -1545,6 +1720,7 @@ form.addEventListener('submit', async (event) => {
   trackAutoEvent('auto_form_submitted');
 
   const formData = readForm(form);
+  localStorage.setItem('istebul_auto_lead_payload', JSON.stringify(formData));
   const vehicleCatalog = await getVehicleCatalog();
   const results = recommendVehicles(formData, vehicleCatalog);
   lastResults = results;
@@ -1592,8 +1768,10 @@ form.addEventListener('submit', async (event) => {
       autoAnalysisRunning = false;
       autoAnalysisTimer = null;
     }
-  }, 2200);
+  }, 1500);
 });
+
+setupFunnelAnalytics();
 
 
 function readAutoStorage(key){
