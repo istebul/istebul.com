@@ -2,6 +2,7 @@ import { recommendVehicles } from './auto-ai.js?v=ai2';
 import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
 import { FREE_LIMITS, PLANS } from '../features/monetization/plans.js';
+import { analytics } from '../core/analytics.js';
 
 document.documentElement.classList.add('ib-ready');
 
@@ -174,18 +175,21 @@ async function callAutoIntake(payload) {
 }
 
 async function trackAutoEvent(eventName, metadata = {}) {
-  try {
-    await callAutoIntake({
-      type: 'event',
-      event_name: eventName,
+  analytics.track(
+    eventName,
+    {
+      session_id: getSessionId(),
       email: localStorage.getItem('istebul_auto_lead_email') || metadata.email || null,
-      phone: metadata.phone || null,
-      metadata: {
-        session_id: getSessionId(),
-        ...metadata
-      }
-    });
-  } catch {}
+      ...metadata
+    },
+    {
+      category: 'auto',
+      funnel: 'auto',
+      funnel_step: String(eventName).replace(/^auto_/, ''),
+      email: metadata.email || localStorage.getItem('istebul_auto_lead_email') || null,
+      phone: metadata.phone || null
+    }
+  );
 }
 
 function trackUniqueAutoEvent(eventName, metadata = {}, key = '') {
@@ -323,6 +327,13 @@ function getStaticFinanceOffers(vehicle) {
 }
 
 function openFinanceCompareModal(vehicleName = '') {
+  analytics.track('finance_funnel_start', { vehicle: vehicleName || null }, {
+    category: 'finance',
+    funnel: 'finance',
+    funnel_step: 'compare_modal_open'
+  });
+  trackAutoEvent('auto_finance_click', { vehicle: vehicleName, interest_type: 'finance' });
+
   const vehicle = (lastResults || []).find((item) => item.name === vehicleName) || lastResults?.[0] || {};
   const vehiclePrice = Number(vehicle.price || 0);
   const maxLoanAmount = Math.round(vehiclePrice * 0.8);
@@ -1575,6 +1586,9 @@ if (wizard) {
 
 
 loadAutoRuntimeConfig();
+if (localStorage.getItem('istebu_cookie_consent') === 'accepted') {
+  analytics.init();
+}
 trackAutoEvent('auto_page_view');
 
 const form = document.getElementById('auto-form');

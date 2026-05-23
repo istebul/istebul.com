@@ -131,6 +131,10 @@ export async function onRequestPost(context) {
       }
     }
 
+    const attribution = payload.attribution && typeof payload.attribution === 'object'
+      ? payload.attribution
+      : {};
+
     const hadSubscriptionBefore = await userHasSubscriptionHistory(context, user.id);
     const trialDays = requestedTrial && TRIAL_DAYS > 0 && !hadSubscriptionBefore ? TRIAL_DAYS : 0;
 
@@ -158,6 +162,18 @@ export async function onRequestPost(context) {
 
     if (trialDays > 0) {
       params.set('subscription_data[trial_period_days]', String(trialDays));
+    }
+
+    if (attribution.utm_source) {
+      params.set('metadata[utm_source]', String(attribution.utm_source).slice(0, 120));
+      params.set('subscription_data[metadata][utm_source]', String(attribution.utm_source).slice(0, 120));
+    }
+    if (attribution.utm_medium) {
+      params.set('metadata[utm_medium]', String(attribution.utm_medium).slice(0, 120));
+    }
+    if (attribution.utm_campaign) {
+      params.set('metadata[utm_campaign]', String(attribution.utm_campaign).slice(0, 120));
+      params.set('subscription_data[metadata][utm_campaign]', String(attribution.utm_campaign).slice(0, 120));
     }
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {

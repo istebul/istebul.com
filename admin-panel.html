@@ -205,6 +205,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="nav-item" data-page-target="users">👥 Kullanıcılar</div>
         <div class="nav-item" data-page-target="auto-leads">🚗 Auto Leads</div>
         <div class="nav-item" data-page-target="auto-analytics">📈 Auto Analytics</div>
+        <div class="nav-item" data-page-target="platform-analytics">📊 Platform Analytics</div>
         <div class="nav-item" data-page-target="partner-endpoints">🤝 Partner Kanalları</div>
         <div class="nav-item" data-page-target="partner-applications">📋 Partner Başvuruları</div>
         <div class="nav-item" data-page-target="partner-dispatch-logs">📡 Teslimat Logları</div>
@@ -390,10 +391,20 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
       <div class="page" id="page-auto-analytics">
         <div class="page-header">
           <h2>Auto Analytics</h2>
-          <p>AI araç funnel performansı</p>
+          <p>AI araç funnel performansı (legacy + unified events)</p>
         </div>
         <div class="card">
           <div id="auto-analytics-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-platform-analytics">
+        <div class="page-header">
+          <h2>Platform Analytics</h2>
+          <p>Journey, funnel drop-off, conversion ve gelir attribution</p>
+        </div>
+        <div class="card">
+          <div id="platform-analytics-root"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
 

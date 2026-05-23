@@ -4,6 +4,7 @@ import {
   dispatchPartnerLead,
   isTestLead,
 } from "../_shared/partner-dispatch.ts";
+import { recordPlatformEvent } from "../_shared/platform-analytics.ts";
 
 const allowedOrigins = [
   "https://istebul.com",
@@ -340,14 +341,22 @@ Deno.serve(async (req) => {
       return json({ error: "Invalid event name" }, 400, origin);
     }
 
-    const { error } = await adminClient.from("auto_events").insert({
-      event_name: eventName,
-      email: email || null,
-      phone: phone || null,
-      metadata,
-    });
+    try {
+      await recordPlatformEvent(adminClient, {
+        event_name: eventName,
+        email: email || null,
+        phone: phone || null,
+        session_id: String(metadata.session_id || ""),
+        funnel: "auto",
+        funnel_step: eventName,
+        properties: metadata,
+        source: "auto_intake",
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "analytics_failed";
+      return json({ error: message }, 500, origin);
+    }
 
-    if (error) return json({ error: error.message }, 500, origin);
     return json({ ok: true }, 200, origin);
   }
 
@@ -514,6 +523,23 @@ Deno.serve(async (req) => {
 
     const dispatchPayload = { ...payload, id: leadId };
 
+    try {
+      await recordPlatformEvent(adminClient, {
+        event_name: "lead_submit",
+        email: normalizedEmail,
+        phone,
+        funnel: "auto",
+        funnel_step: "lead_submit",
+        properties: {
+          interest_type: payload.interest_type,
+          priority: payload.priority,
+          partner_route: payload.partner_route,
+        },
+        revenue_cents: Number(payload.estimated_revenue || 0) * 100,
+        source: "auto_intake",
+      });
+    } catch {}
+
     EdgeRuntime.waitUntil((async () => {
       try {
         await notifyTelegramLead(payload);
@@ -536,6 +562,42 @@ Deno.serve(async (req) => {
             dispatchResult,
             0
           );
+        }
+
+        if (dispatchResult.status === "dispatched") {
+          await recordPlatformEvent(adminClient, {
+            event_name: "partner_dispatch_success",
+            phone,
+            funnel: "partner",
+            funnel_step: "dispatched",
+            properties: {
+              partner_route: payload.partner_route,
+              endpoint: dispatchResult.endpoint || null,
+            },
+            revenue_cents: Number(payload.estimated_revenue || 0) * 100,
+            source: "auto_intake",
+          });
+        } else if (dispatchResult.status === "dispatch_failed") {
+          await recordPlatformEvent(adminClient, {
+            event_name: "partner_dispatch_failed",
+            phone,
+            funnel: "partner",
+            funnel_step: "dispatch_failed",
+            properties: {
+              partner_route: payload.partner_route,
+              reason: dispatchResult.reason || null,
+            },
+            source: "auto_intake",
+          });
+        } else if (dispatchResult.status === "skipped") {
+          await recordPlatformEvent(adminClient, {
+            event_name: "partner_dispatch_skipped",
+            phone,
+            funnel: "partner",
+            funnel_step: "skipped",
+            properties: { reason: dispatchResult.reason || null },
+            source: "auto_intake",
+          });
         }
       } catch {
         if (!leadId) return;

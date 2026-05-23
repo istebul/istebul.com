@@ -4,6 +4,7 @@ import { state } from '../../core/state.js';
 import API from '../../core/api.js';
 import config from '../../core/config.js';
 import { monitoring } from '../../core/monitoring.js';
+import { analytics } from '../../core/analytics.js';
 
 export class AuthManager {
     constructor() {
@@ -57,6 +58,12 @@ export class AuthManager {
         const modalBody = modal.querySelector('.modal-body');
 
         modalBody.innerHTML = type === 'login' ? this.getLoginForm() : this.getRegisterForm();
+
+        analytics.track('auth_modal_open', { mode: type }, {
+            category: 'auth',
+            funnel: 'auth',
+            funnel_step: type === 'login' ? 'login_modal' : 'register_modal'
+        });
 
         modal.classList.add('show');
         state.setModal('auth');
@@ -190,6 +197,12 @@ export class AuthManager {
             const email = form.email.value;
             const password = form.password.value;
 
+            analytics.track('auth_login_start', { email_domain: email.split('@')[1] || '' }, {
+                category: 'auth',
+                funnel: 'auth',
+                funnel_step: 'login_start'
+            });
+
             const result = await API.signIn(email, password);
             const user = result?.user || result?.session?.user;
 
@@ -204,9 +217,15 @@ export class AuthManager {
                 detail: user
             }));
 
+            analytics.track('auth_login_success', {}, { category: 'auth', funnel: 'auth', funnel_step: 'login_success' });
             this.hideAuthModal();
         } catch (error) {
             console.error('Login failed:', error);
+            analytics.track('auth_login_failed', { message: error.message || 'login_failed' }, {
+                category: 'auth',
+                funnel: 'auth',
+                funnel_step: 'login_failed'
+            });
             this.showAuthError(error.message || config.messages.error.login);
         } finally {
             submitBtn.disabled = false;
@@ -236,9 +255,21 @@ export class AuthManager {
                 throw new Error(`Şifre en az ${config.validation.password.minLength} karakter olmalıdır`);
             }
 
+            analytics.track('auth_register_start', {}, {
+                category: 'auth',
+                funnel: 'auth',
+                funnel_step: 'register_start'
+            });
+
             // Profile creation is handled by the Supabase on_auth_user_created trigger.
             await API.signUp(email, password, {
                 full_name: fullName
+            });
+
+            analytics.track('auth_register_success', {}, {
+                category: 'auth',
+                funnel: 'auth',
+                funnel_step: 'register_success'
             });
 
             this.showAuthSuccess('Hesabınız oluşturuldu! Lütfen e-posta adresinizi doğrulayın.');
@@ -247,6 +278,11 @@ export class AuthManager {
 
         } catch (error) {
             console.error('Registration failed:', error);
+            analytics.track('auth_register_failed', { message: error.message || 'register_failed' }, {
+                category: 'auth',
+                funnel: 'auth',
+                funnel_step: 'register_failed'
+            });
             this.showAuthError(error.message || config.messages.error.register);
         } finally {
             submitBtn.disabled = false;
