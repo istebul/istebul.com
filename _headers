@@ -25,6 +25,12 @@
 /auto/
   Cache-Control: no-cache, no-store, must-revalidate
 
+/build-manifest.json
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/env.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 

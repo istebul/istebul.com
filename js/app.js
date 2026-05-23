@@ -114,6 +114,7 @@ class App {
             await this.checkAuth();
             this.handleBillingReturnParams();
             this.handleCheckoutDeepLink();
+            this.checkForNewDeployment();
 
             if (this.currentUser) {
                 await revenueManager.refresh(this.currentUser.id);
@@ -3166,6 +3167,28 @@ Açıklama yok.
         if (params.has('subscribed') || params.has('cancelled')) {
             const next = `${window.location.pathname}${params.toString() ? `?${params}` : ''}`;
             window.history.replaceState(null, '', next);
+        }
+    }
+
+    async checkForNewDeployment() {
+        try {
+            const response = await fetch('/build-manifest.json', { cache: 'no-store' });
+            if (!response.ok) return;
+
+            const manifest = await response.json();
+            const buildId = manifest.builtAt || manifest.files?.length || '';
+            if (!buildId) return;
+
+            const storageKey = 'istebul_last_build_id';
+            const previous = localStorage.getItem(storageKey);
+
+            if (previous && previous !== buildId) {
+                this.showUpdateNotification();
+            }
+
+            localStorage.setItem(storageKey, buildId);
+        } catch {
+            // non-blocking
         }
     }
 
