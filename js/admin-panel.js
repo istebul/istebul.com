@@ -1,4 +1,5 @@
 import { getSupabaseClient } from './core/supabase.js';
+import { createCrm } from './admin/crm.js';
 
 const sb = getSupabaseClient();
 
@@ -14,6 +15,8 @@ if (!sb) {
   throw new Error('Supabase config missing');
 }
 let currentUser = null;
+let currentProfile = null;
+let crm = null;
 
 async function login() {
   const email = document.getElementById('login-email').value;
@@ -39,7 +42,9 @@ async function showApp() {
     .eq('id', currentUser.id)
     .single();
 
-  if (error || !profile || profile.role !== 'admin' || profile.is_banned === true) {
+  currentProfile = profile;
+
+  if (error || !profile || !['admin', 'moderator'].includes(profile.role) || profile.is_banned === true) {
     await sb.auth.signOut();
     currentUser = null;
     document.getElementById('app').style.display = 'none';
@@ -55,16 +60,36 @@ async function showApp() {
   const email = currentUser?.email || '';
   document.getElementById('user-email').textContent = email;
   document.getElementById('user-avatar').textContent = email[0]?.toUpperCase() || 'A';
+  if (!crm) {
+    crm = createCrm({
+      sb,
+      adminAction,
+      toast,
+      escapeHtml,
+      safeAttr,
+      safeJsonParse,
+      normalizePhoneForWhatsapp,
+      formatFollowUpLabel,
+      getFollowUpBadgeClass,
+      renderPartnerStatusSelect,
+      exportAutoLeadsCsv
+    });
+    crm.bindEvents();
+  }
+
   loadDashboard();
+  crm.loadCrmDashboard();
   loadSettings();
   loadAnnouncements();
   loadFaqs();
   loadPosts();
   loadListings();
   loadUsers();
-  loadAutoLeads();
+  crm.fetchLeadPage();
   loadAutoAnalytics();
   loadPartnerEndpoints();
+
+  applyRolePermissions();
 }
 
 function showPage(name, el) {
@@ -75,6 +100,18 @@ function showPage(name, el) {
 
   if (name === 'partner-endpoints') {
     loadPartnerEndpoints();
+  }
+
+  if (name === 'auto-leads' && crm) {
+    crm.fetchLeadPage();
+  }
+
+  if (name === 'crm-audit' && crm) {
+    crm.loadAuditLogs();
+  }
+
+  if (name === 'dashboard' && crm) {
+    crm.loadCrmDashboard();
   }
 }
 
@@ -342,12 +379,16 @@ async function loadUsers() {
       const isSelf = u.id === currentUser?.id;
       const actions = [];
 
-      if (!isAdmin) {
-        actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${safeAttr(u.id)}" data-role="admin">Admin yap</button>`);
-      }
-
-      if (isAdmin && !isSelf) {
-        actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${safeAttr(u.id)}" data-role="user">Yetki kaldır</button>`);
+      if (currentProfile?.role === 'admin') {
+        if (u.role !== 'admin') {
+          actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${safeAttr(u.id)}" data-role="admin">Admin</button>`);
+        }
+        if (u.role !== 'moderator') {
+          actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${safeAttr(u.id)}" data-role="moderator">Moderatör</button>`);
+        }
+        if ((isAdmin || u.role === 'moderator') && !isSelf) {
+          actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${safeAttr(u.id)}" data-role="user">Yetki kaldır</button>`);
+        }
       }
 
       if (!isSelf) {
@@ -356,10 +397,11 @@ async function loadUsers() {
 
       const displayName = escapeHtml(u.full_name || u.name || '—');
       const email = escapeHtml(u.email || '—');
-      const role = escapeHtml(u.role || 'kullanıcı');
+      const role = escapeHtml(u.role === 'moderator' ? 'moderatör' : (u.role || 'kullanıcı'));
       const createdAt = u.created_at ? new Date(u.created_at).toLocaleDateString('tr-TR') : '—';
 
-      return `<tr><td><strong>${displayName}</strong></td><td class="text-muted">${email}</td><td><span class="badge ${u.role==='admin'?'badge-blue':u.role==='moderator'?'badge-yellow':'badge-green'}">${role}</span></td><td class="text-muted cell-nowrap">${createdAt}</td><td><div class="table-actions">${actions.join('')}</div></td></tr>`;
+      const roleClass = u.role === 'admin' ? 'badge-blue' : u.role === 'moderator' ? 'badge-yellow' : 'badge-green';
+      return `<tr><td><strong>${displayName}</strong></td><td class="text-muted">${email}</td><td><span class="badge ${roleClass}">${role}</span></td><td class="text-muted cell-nowrap">${createdAt}</td><td><div class="table-actions">${actions.join('')}</div></td></tr>`;
     }).join('') + '</tbody></table>';
 }
 
@@ -771,153 +813,10 @@ function getFollowUpBadgeClass(label) {
 
 
 async function loadAutoLeads() {
-  const { data, error } = await sb
-    .from('auto_leads')
-    .select('*')
-    .order('lead_score', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(1000);
-
-  const el = document.getElementById('auto-leads-list');
-
-  if (!el) return;
-
-  if (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  if (crm) {
+    await crm.fetchLeadPage();
     return;
   }
-
-  if (!data?.length) {
-    el.innerHTML = '<p class="empty">Henüz lead yok.</p>';
-    return;
-  }
-
-  const searchValue = (document.getElementById('auto-leads-search')?.value || '').toLowerCase().trim();
-  const statusFilter = document.getElementById('auto-leads-status-filter')?.value || '';
-  const notesOnly = document.getElementById('auto-leads-notes-only')?.checked || false;
-  const followFilter = document.getElementById('auto-leads-follow-filter')?.value || '';
-  const now = new Date();
-  const todayEnd = new Date();
-  todayEnd.setHours(23, 59, 59, 999);
-
-  const filteredData = data.filter((lead) => {
-    const matchesStatus =
-      !statusFilter ||
-      (statusFilter === 'hot_only' && ['hot', 'very_hot'].includes(lead.priority)) ||
-      (statusFilter === 'dispatch_failed' && lead.partner_status === 'dispatch_failed') ||
-      (statusFilter === 'dispatch_dead' && lead.partner_status === 'dispatch_dead') ||
-      (statusFilter === 'dispatched' && lead.partner_status === 'dispatched') ||
-      (statusFilter === 'won_only' && lead.partner_status === 'won') ||
-      (statusFilter === 'hide_test' && lead.status !== 'test_spam') ||
-      lead.status === statusFilter;
-    const hasNotes = !!(lead.notes || '').trim();
-    const matchesNotes = !notesOnly || hasNotes;
-    const haystack = [
-      lead.email,
-      lead.phone,
-      lead.notes,
-      lead.interest_type,
-      lead.usage,
-      lead.body,
-      lead.fuel,
-      lead.vehicle,
-      lead.priority
-    ].filter(Boolean).join(' ').toLowerCase();
-
-    const followDate = lead.follow_up_at ? new Date(lead.follow_up_at) : null;
-    const isFollowDone = lead.follow_up_done === true;
-    const matchesFollow =
-      !followFilter ||
-      (followFilter === 'today' && followDate && followDate <= todayEnd && !isFollowDone) ||
-      (followFilter === 'overdue' && followDate && followDate < now && !isFollowDone) ||
-      (followFilter === 'open' && followDate && !isFollowDone) ||
-      (followFilter === 'done' && isFollowDone);
-
-    return matchesStatus && matchesNotes && matchesFollow && (!searchValue || haystack.includes(searchValue));
-  });
-
-  if (!filteredData.length) {
-    el.innerHTML = '<p class="empty">Filtreye uygun lead bulunamadı.</p>';
-    return;
-  }
-
-  el.innerHTML = `
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Telefon</th>
-          <th>Bütçe</th>
-          <th>Skor</th>
-          <th>Öncelik</th>
-          <th>Partner Durumu</th>
-          <th>Retry</th>
-          <th>Son Hata</th>
-          <th>Tahmini Gelir</th>
-          <th>Gerçek Gelir</th>
-          <th>Durum</th>
-          <th>Takip</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        ${filteredData.map(lead => `
-          <tr
-            class="${lead.follow_up_at && !lead.follow_up_done && new Date(lead.follow_up_at) < new Date() ? 'lead-overdue' : ''}"
-            data-action="view-auto-lead"
-            data-lead='${safeAttr(JSON.stringify(lead))}'>
-            <td>${lead.phone || '—'}</td>
-            <td>${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</td>
-            <td><strong>${lead.lead_score || 0}</strong></td>
-            <td><span class="badge ${
-              lead.priority === 'very_hot' ? 'badge-red' :
-              lead.priority === 'hot' ? 'badge-yellow' :
-              lead.priority === 'warm' ? 'badge-blue' :
-              'badge-green'
-            }">${lead.priority || 'cold'}</span></td>
-            <td>${renderPartnerStatusSelect(lead)}</td>
-<td>${lead.dispatch_retry_count || 0}</td>
-<td title="${safeAttr(lead.last_dispatch_error || '')}">${escapeHtml(formatDispatchError(lead.last_dispatch_error))}</td>
-<td>
-  <input class="form-input" data-action="update-estimated-revenue" data-id="${lead.id}" value="${lead.estimated_revenue || ''}" placeholder="₺">
-</td>
-<td>
-  <input class="form-input" data-action="update-actual-revenue" data-id="${lead.id}" value="${lead.actual_revenue || ''}" placeholder="₺">
-</td>
-
-            <td>
-              <select class="status-select status-${lead.status || 'new'}" data-action="update-auto-status" data-id="${lead.id}">
-                <option value="new" ${lead.status === 'new' ? 'selected' : ''}>Yeni</option>
-                <option value="first_contact" ${lead.status === 'first_contact' || lead.status === 'called' ? 'selected' : ''}>İlk temas</option>
-                <option value="unreachable" ${lead.status === 'unreachable' ? 'selected' : ''}>Ulaşılamadı</option>
-                <option value="callback" ${lead.status === 'callback' ? 'selected' : ''}>Tekrar ara</option>
-                <option value="proposal_sent" ${lead.status === 'proposal_sent' || lead.status === 'interested' ? 'selected' : ''}>Teklif gönderildi</option>
-                <option value="financing" ${lead.status === 'financing' ? 'selected' : ''}>Finansman süreci</option>
-                <option value="insurance" ${lead.status === 'insurance' ? 'selected' : ''}>Sigorta süreci</option>
-                <option value="won" ${lead.status === 'won' || lead.status === 'closed' ? 'selected' : ''}>Kazanıldı</option>
-                <option value="lost" ${lead.status === 'lost' || lead.status === 'rejected' ? 'selected' : ''}>Kaybedildi</option>
-                <option value="spam" ${lead.status === 'spam' ? 'selected' : ''}>Test/Spam</option>
-              </select>
-            </td>
-            <td>
-              ${(() => {
-                const followLabel = formatFollowUpLabel(lead);
-                const badgeClass = getFollowUpBadgeClass(followLabel);
-                return badgeClass
-                  ? `<span class="badge ${badgeClass}">${followLabel}</span>`
-                  : followLabel;
-              })()}
-            </td>
-            <td>
-              <div class="table-actions">
-                ${lead.phone ? `<a class="btn btn-success btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}?text=Merhaba%2C%20isteBul%20Auto%20talebinizi%20gördük.%20Size%20uygun%20teklifleri%20hazırlayabiliriz." target="_blank" rel="noopener">WhatsApp</a>` : ''}
-                ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Tekrar</button>` : ''}
-              </div>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
 }
 
 
@@ -1005,103 +904,22 @@ function renderPartnerStatusSelect(lead) {
 }
 
 function openLeadDrawer(lead) {
-  const drawer = document.getElementById('lead-drawer');
-  const overlay = document.getElementById('lead-drawer-overlay');
-  const content = document.getElementById('lead-drawer-content');
-
-  if (!drawer || !overlay || !content) return;
-
-  const fmt = (v) => escapeHtml(v || '—');
-  const label = (map, value) => map[value] || value || '—';
-
-  const usageLabels = { family: 'Aile', city: 'Şehir', long: 'Uzun yol' };
-  const bodyLabels = { suv: 'SUV', sedan: 'Sedan', hatchback: 'Hatchback' };
-  const fuelLabels = { any: 'Fark etmez', gasoline: 'Benzin', diesel: 'Dizel', hybrid: 'Hibrit', electric: 'Elektrikli' };
-  const loanLabels = { yes: 'Evet', no: 'Hayır' };
-  const statusLabels = {
-    new: 'Yeni',
-    called: 'İlk temas',
-    interested: 'Teklif gönderildi',
-    closed: 'Kazanıldı',
-    rejected: 'Kaybedildi',
-    first_contact: 'İlk temas',
-    unreachable: 'Ulaşılamadı',
-    callback: 'Tekrar ara',
-    proposal_sent: 'Teklif gönderildi',
-    financing: 'Finansman süreci',
-    insurance: 'Sigorta süreci',
-    won: 'Kazanıldı',
-    lost: 'Kaybedildi',
-    spam: 'Test/Spam'
-  };
-
-  const whatsappUrl = lead.phone ? `https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}` : '';
-  const notesHistory = Array.isArray(lead.notes_history) ? lead.notes_history : [];
-
-  content.innerHTML = `
-    <div class="table-actions" style="margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-      ${lead.phone ? `<button class="btn btn-success btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="${whatsappUrl}">WhatsApp</button>` : ''}
-      ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
-      ${['dispatch_failed','dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Partner Tekrar Gönder</button>` : ''}
-      <button class="btn btn-success btn-sm" data-action="simulate-partner-won" data-id="${lead.id}" data-phone="${lead.phone || ''}">Partner Won Test</button>
-      <button class="btn btn-danger btn-sm" data-action="simulate-partner-lost" data-id="${lead.id}" data-phone="${lead.phone || ''}">Partner Lost Test</button>
-      <button class="btn btn-ghost btn-sm" data-action="complete-follow-up" data-id="${lead.id}">Takibi Tamamla</button>
-
-      <input
-        type="datetime-local"
-        class="form-input"
-        id="follow-up-date"
-        value="${lead.follow_up_at ? new Date(lead.follow_up_at).toISOString().slice(0,16) : ''}"
-        style="max-width:220px;"
-      >
-      <button class="btn btn-ghost btn-sm" data-action="save-follow-up" data-id="${lead.id}">Takip Kaydet</button>
-    </div>
-    <div class="lead-detail-grid">
-      <div class="lead-detail-item"><div class="lead-detail-label">Email</div><div class="lead-detail-value">${fmt(lead.email)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Telefon</div><div class="lead-detail-value">${fmt(lead.phone)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Ad</div><div class="lead-detail-value">${fmt(lead.contact_name)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Aranma zamanı</div><div class="lead-detail-value">${fmt(lead.preferred_contact_time)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Bütçe</div><div class="lead-detail-value">${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Kullanım</div><div class="lead-detail-value">${label(usageLabels, lead.usage)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Kasa</div><div class="lead-detail-value">${label(bodyLabels, lead.body)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Yakıt</div><div class="lead-detail-value">${label(fuelLabels, lead.fuel)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Kredi</div><div class="lead-detail-value">${label(loanLabels, lead.loan)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">İlgi</div><div class="lead-detail-value">${fmt(lead.interest_type)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Araç</div><div class="lead-detail-value">${fmt(lead.vehicle)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Lead Skoru</div><div class="lead-detail-value">${fmt(lead.lead_score)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Öncelik</div><div class="lead-detail-value">${fmt(lead.priority)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Partner</div><div class="lead-detail-value">${fmt(lead.partner_route)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Partner Durumu</div><div class="lead-detail-value">${fmt(lead.partner_status)}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Durum</div><div class="lead-detail-value">${label(statusLabels, lead.status)}</div></div>
-      <div class="lead-detail-item">
-        <div class="lead-detail-label">Yeni Not</div>
-        <textarea id="new-lead-note" class="form-input" rows="3" placeholder="Yeni not ekle..."></textarea>
-        <div style="height:8px"></div>
-        <button class="btn btn-ghost btn-sm" data-action="add-lead-note" data-id="${lead.id}" data-history='${safeAttr(JSON.stringify(notesHistory))}'>Not Ekle</button>
-      </div>
-      <div class="lead-detail-item">
-        <div class="lead-detail-label">Not Geçmişi</div>
-        <div class="lead-detail-value">
-          ${notesHistory.length ? notesHistory.slice().reverse().map((item) => `
-            <div style="padding:8px 0;border-bottom:1px solid #2a3441;">
-              <div style="font-size:12px;color:#94a3b8;">${item.at ? new Date(item.at).toLocaleString('tr-TR') : '—'}</div>
-              <div>${escapeHtml(item.text || '—')}</div>
-            </div>
-          `).join('') : 'Henüz not geçmişi yok.'}
-        </div>
-      </div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Son Not</div><div class="lead-detail-value">${escapeHtml(fmt(lead.notes))}</div></div>
-      <div class="lead-detail-item"><div class="lead-detail-label">Tarih</div><div class="lead-detail-value">${lead.created_at ? new Date(lead.created_at).toLocaleString('tr-TR') : '—'}</div></div>
-    </div>
-  `;
-
-  drawer.classList.add('open');
-  overlay.classList.add('open');
+  crm?.openLeadDrawer(lead);
 }
 
 function closeLeadDrawer() {
-  document.getElementById('lead-drawer')?.classList.remove('open');
-  document.getElementById('lead-drawer-overlay')?.classList.remove('open');
+  crm?.closeLeadDrawer();
+}
+
+function applyRolePermissions() {
+  const isAdmin = currentProfile?.role === 'admin';
+  document.querySelectorAll('[data-admin-only]').forEach((node) => {
+    node.style.display = isAdmin ? '' : 'none';
+  });
+  const roleBadge = document.getElementById('admin-role-badge');
+  if (roleBadge) {
+    roleBadge.textContent = currentProfile?.role === 'moderator' ? 'Moderatör' : 'Admin';
+  }
 }
 
 
@@ -1121,7 +939,8 @@ async function addLeadNote(id, history) {
     ...notesHistory,
     {
       at: new Date().toISOString(),
-      text
+      text,
+      by: currentUser?.email || 'admin'
     }
   ];
 
@@ -1232,19 +1051,23 @@ async function updateAutoLeadNotes(id, notes) {
 }
 
 
-async function exportAutoLeadsCsv() {
-  const { data, error } = await sb
-    .from('auto_leads')
-    .select('*')
-    .order('lead_score', { ascending: false })
-    .order('created_at', { ascending: false });
+async function exportAutoLeadsCsv(prefetchedRows = null) {
+  let rows = prefetchedRows;
 
-  if (error) {
-    toast(`CSV hata: ${error.message}`);
-    return;
+  if (!rows) {
+    const { data, error } = await sb
+      .from('auto_leads')
+      .select('*')
+      .order('lead_score', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast(`CSV hata: ${error.message}`, 'error');
+      return;
+    }
+
+    rows = data || [];
   }
-
-  const rows = data || [];
   if (!rows.length) {
     toast('Dışa aktarılacak lead yok');
     return;
@@ -1298,7 +1121,7 @@ async function exportAutoLeadsCsv() {
 
 async function setUserRole(id, role) {
   await adminAction({ action: 'update', table: 'profiles', id, values: { role } });
-  const labels = { admin: 'Admin yapıldı', user: 'Yetki kaldırıldı' };
+  const labels = { admin: 'Admin yapıldı', moderator: 'Moderatör yapıldı', user: 'Yetki kaldırıldı' };
   toast(labels[role] || 'Rol güncellendi');
   loadUsers();
 }
@@ -1351,7 +1174,9 @@ function bindAdminPanelEvents() {
 
       try {
         const row = el.closest('tr');
-        const lead = row?.dataset?.lead ? JSON.parse(row.dataset.lead) : null;
+        const lead = row?.dataset?.lead
+          ? JSON.parse(row.dataset.lead)
+          : crm?.state?.rows?.find((item) => item.id === id) || null;
 
         if (lead && isRevenueRealizedPartnerStatus(lead.partner_route, el.value)) {
           const estimatedInput = row?.querySelector('[data-action="update-estimated-revenue"]');
@@ -1475,7 +1300,10 @@ function bindAdminPanelEvents() {
     if (action === 'delete-listing') deleteListing(id);
     if (action === 'set-user-role') setUserRole(id, role);
     if (action === 'ban-user') banUser(id);
-    if (action === 'export-auto-leads') exportAutoLeadsCsv();
+    if (action === 'export-auto-leads') {
+      if (crm) crm.exportFilteredCsv();
+      else exportAutoLeadsCsv();
+    }
     if (action === 'close-lead-drawer') closeLeadDrawer();
     if (action === 'complete-follow-up') completeFollowUp(id);
     if (action === 'save-follow-up') saveFollowUp(id);
@@ -1510,10 +1338,6 @@ document.addEventListener('change', (event) => {
   });
 
 
-  ['auto-leads-search', 'auto-leads-status-filter', 'auto-leads-notes-only'].forEach((id) => {
-    document.getElementById(id)?.addEventListener('input', loadAutoLeads);
-    document.getElementById(id)?.addEventListener('change', loadAutoLeads);
-  });
 
 bindAdminPanelEvents();
 

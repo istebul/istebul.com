@@ -85,9 +85,57 @@ Deno.serve(async (req) => {
     return json({ error: "Profile not found" }, 403, origin);
   }
 
-  if (profile.role !== "admin" || profile.is_banned === true) {
+  const isAdmin = profile.role === "admin";
+  const isModerator = profile.role === "moderator";
+
+  if ((!isAdmin && !isModerator) || profile.is_banned === true) {
     return json({ error: "Forbidden" }, 403, origin);
   }
+
+  const logAudit = async (
+    actionName: string,
+    entityTable: string,
+    entityId: string | null,
+    summary: string,
+    metadata: Record<string, unknown> = {}
+  ) => {
+    try {
+      await adminClient.from("admin_audit_logs").insert({
+        actor_id: user.id,
+        actor_email: user.email,
+        action: actionName,
+        entity_table: entityTable,
+        entity_id: entityId,
+        summary,
+        metadata,
+      });
+    } catch (auditError) {
+      console.error("audit log failed", auditError);
+    }
+  };
+
+  const appendLeadActivity = async (
+    leadId: string,
+    entry: Record<string, unknown>
+  ) => {
+    try {
+      const { data: lead } = await adminClient
+        .from("auto_leads")
+        .select("activity_log")
+        .eq("id", leadId)
+        .single();
+
+      const current = Array.isArray(lead?.activity_log) ? lead.activity_log : [];
+      const next = [...current, entry].slice(-200);
+
+      await adminClient
+        .from("auto_leads")
+        .update({ activity_log: next })
+        .eq("id", leadId);
+    } catch (activityError) {
+      console.error("activity log failed", activityError);
+    }
+  };
 
   let body: any;
 
@@ -231,7 +279,7 @@ Deno.serve(async (req) => {
         posts: ["is_published"],
         listings: ["is_featured"],
         profiles: ["role", "is_banned"],
-        auto_leads: ["status", "notes", "follow_up_at", "follow_up_done", "partner_status", "estimated_revenue", "actual_revenue", "commission_notes", "dispatch_retry_count", "last_dispatch_at", "next_retry_at", "last_dispatch_error"],
+        auto_leads: ["status", "notes", "notes_history", "follow_up_at", "follow_up_done", "partner_status", "estimated_revenue", "actual_revenue", "commission_notes", "dispatch_retry_count", "last_dispatch_at", "next_retry_at", "last_dispatch_error"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes"],
       };
 
@@ -246,7 +294,7 @@ Deno.serve(async (req) => {
       if (
         table === "profiles" &&
         values.role &&
-        !["admin", "user"].includes(values.role)
+        !["admin", "moderator", "user"].includes(values.role)
      ) {
         return json({ error: "Invalid role value" }, 400, origin);
       }
@@ -259,6 +307,10 @@ Deno.serve(async (req) => {
          return json({ error: "You cannot ban your own account" }, 400, origin);
       }
       if (table === "profiles" && (values.role === "user" || values.is_banned === true)) {
+        if (!isAdmin) {
+          return json({ error: "Only admins can change user permissions" }, 403, origin);
+        }
+
         const { count } = await adminClient
           .from("profiles")
           .select("*", { count: "exact", head: true })
@@ -269,9 +321,40 @@ Deno.serve(async (req) => {
         }
       }
 
+      if (table === "profiles" && !isAdmin) {
+        return json({ error: "Only admins can update profiles" }, 403, origin);
+      }
+
+      if (table === "auto_leads" && isModerator) {
+        const moderatorAllowed = [
+          "status",
+          "notes",
+          "notes_history",
+          "follow_up_at",
+          "follow_up_done",
+          "partner_status",
+          "estimated_revenue",
+          "actual_revenue",
+        ];
+        const blocked = keys.find((key) => !moderatorAllowed.includes(key));
+        if (blocked) {
+          return json({ error: `Moderators cannot update field: ${blocked}` }, 403, origin);
+        }
+      }
 
       if (table === "auto_leads" && typeof values.notes === "string") {
         values.notes = sanitizeText(values.notes);
+      }
+
+      if (table === "auto_leads" && values.notes_history !== undefined) {
+        if (!Array.isArray(values.notes_history)) {
+          return json({ error: "notes_history must be an array" }, 400, origin);
+        }
+        values.notes_history = values.notes_history.slice(-100).map((item: any) => ({
+          at: item?.at || new Date().toISOString(),
+          text: sanitizeText(item?.text),
+          by: sanitizeText(item?.by || user.email || "admin").slice(0, 120),
+        }));
       }
 
       if (table === "auto_leads" && typeof values.partner_status === "string") {
@@ -310,6 +393,19 @@ Deno.serve(async (req) => {
         .eq("id", id);
 
       if (error) throw error;
+
+      if (table === "auto_leads") {
+        const summary = `Lead updated: ${keys.join(", ")}`;
+        await logAudit("update", "auto_leads", id, summary, { values });
+        await appendLeadActivity(id, {
+          at: new Date().toISOString(),
+          type: "update",
+          actor: user.email,
+          fields: values,
+        });
+      } else if (table === "profiles") {
+        await logAudit("update", "profiles", id, `Profile updated: ${keys.join(", ")}`, { values });
+      }
 
       return json({ ok: true }, 200, origin);
     }

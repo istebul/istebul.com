@@ -47,6 +47,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 .user-email{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .main{flex:1;overflow-y:auto;}
 .page{display:none;padding:32px;max-width:960px;}
+.page.page-wide{max-width:1440px;}
 .page.active{display:block;}
 .page-header{margin-bottom:28px;}
 .page-header h2{font-size:22px;font-weight:600;}
@@ -165,7 +166,117 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 }
 
 #auto-leads-list table {
-  min-width: 1500px;
+  min-width: 900px;
+}
+
+.crm-toolbar{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:10px;
+  margin-bottom:14px;
+  align-items:center;
+}
+.crm-toolbar .form-input{min-width:0;}
+.crm-view-toggle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 12px;
+  flex-wrap:wrap;
+}
+.crm-view-toggle button{
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);
+  border-radius:999px;
+  padding:6px 12px;
+  font:inherit;
+  cursor:pointer;
+}
+.crm-view-toggle button.is-active{
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.crm-results-summary{
+  margin-left:auto;
+  color:var(--muted);
+  font-size:12px;
+}
+.crm-table-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px;}
+.crm-lead-link{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:2px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  cursor:pointer;
+  text-align:left;
+  font:inherit;
+  padding:0;
+}
+.crm-lead-link span{font-size:12px;color:var(--muted);}
+.crm-pagination{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:14px;
+}
+.crm-loading{text-align:center;padding:28px;color:var(--muted);}
+.crm-spinner{
+  width:28px;height:28px;margin:0 auto 10px;border-radius:50%;
+  border:3px solid rgba(0,229,160,.15);border-top-color:var(--accent);
+  animation:crmSpin .8s linear infinite;
+}
+@keyframes crmSpin{to{transform:rotate(360deg);}}
+.crm-pipeline{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+  margin-bottom:16px;
+}
+.crm-pipeline-col{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px;
+  min-height:180px;
+}
+.crm-pipeline-col-head{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:10px;
+}
+.crm-pipeline-cards{display:flex;flex-direction:column;gap:8px;}
+.crm-pipeline-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px;
+  cursor:pointer;
+}
+.crm-pipeline-card-top{display:flex;justify-content:space-between;gap:8px;}
+.crm-pipeline-meta{display:flex;gap:8px;font-size:12px;color:var(--muted);margin-top:6px;}
+.crm-drawer-tabs{display:flex;gap:8px;margin-bottom:12px;}
+.crm-drawer-tabs button{
+  border:1px solid var(--border);background:transparent;color:var(--muted);
+  border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit;
+}
+.crm-drawer-tabs button.is-active{border-color:var(--accent);color:var(--accent);}
+.crm-drawer-panel{display:none;}
+.crm-drawer-panel.is-active{display:block;}
+.crm-timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+.crm-timeline li{display:grid;grid-template-columns:12px 1fr;gap:10px;}
+.crm-timeline-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);margin-top:6px;}
+.crm-timeline-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--muted);margin-bottom:4px;}
+.crm-follow-presets{display:flex;gap:8px;margin:10px 0;}
+.crm-dashboard-grid .stat-value{font-size:22px;}
+@media (max-width:900px){
+  .main .page{padding:20px 16px;}
+  .sidebar{width:100%;height:auto;position:relative;}
+  .layout{flex-direction:column;}
+  .lead-drawer{width:100%;max-width:100%;}
 }
 
 </style>
@@ -194,6 +305,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
       <nav class="nav">
         <div class="nav-section">Genel</div>
         <div class="nav-item active" data-page-target="dashboard">📊 Genel Bakış</div>
+        <div class="nav-item" data-page-target="auto-leads">🎯 CRM Leads</div>
+        <div class="nav-item" data-page-target="crm-audit">🧾 Audit Log</div>
         <div class="nav-section">İçerik</div>
         <div class="nav-item" data-page-target="settings">⚙️ Site Bilgileri</div>
         <div class="nav-item" data-page-target="content">✏️ Sayfa İçerikleri</div>
@@ -203,14 +316,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="nav-section">Platform</div>
         <div class="nav-item" data-page-target="listings">🏷️ İlanlar</div>
         <div class="nav-item" data-page-target="users">👥 Kullanıcılar</div>
-        <div class="nav-item" data-page-target="auto-leads">🚗 Auto Leads</div>
         <div class="nav-item" data-page-target="auto-analytics">📈 Auto Analytics</div>
         <div class="nav-item" data-page-target="partner-endpoints">🤝 Partner Kanalları</div>
       </nav>
       <div class="sidebar-footer">
         <div class="user-info">
           <div class="user-avatar" id="user-avatar">A</div>
-          <div class="user-email" id="user-email">yükleniyor...</div>
+          <div>
+            <div class="user-email" id="user-email">yükleniyor...</div>
+            <small id="admin-role-badge" class="text-muted">Admin</small>
+          </div>
         </div>
         <button class="btn btn-ghost btn-sm btn-full" id="logout-btn">Çıkış yap</button>
       </div>
@@ -226,6 +341,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
           <div class="stat-card"><div class="stat-label">Duyuru</div><div class="stat-value" id="stat-ann">—</div><div class="stat-sub">aktif</div></div>
           <div class="stat-card"><div class="stat-label">SSS</div><div class="stat-value" id="stat-faqs">—</div><div class="stat-sub">soru</div></div>
           <div class="stat-card"><div class="stat-label">Blog</div><div class="stat-value" id="stat-posts">—</div><div class="stat-sub">yayında</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">CRM özeti</div>
+          <div id="crm-dashboard-metrics"><div class="empty">Yükleniyor…</div></div>
         </div>
         <div class="card">
           <div class="card-title">Hızlı işlemler</div>
@@ -395,42 +514,80 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         </div>
       </div>
 
-      <div class="page" id="page-auto-leads">
+      <div class="page page-wide" id="page-auto-leads">
         <div class="page-header">
-          <h2>Auto Leads</h2>
-          <p>AI araç danışmanından gelen müşteri adayları</p>
+          <h2>CRM — Auto Leads</h2>
+          <p>Operasyonel lead yönetimi, pipeline ve takip iş akışları</p>
         </div>
         <div class="card">
-          <div class="auto-leads-toolbar">
-            <input id="auto-leads-search" class="form-input" type="search" placeholder="Email, telefon, not ara...">
-            <select id="auto-leads-status-filter" class="status-select">
+          <div class="crm-toolbar">
+            <input id="crm-search" class="form-input" type="search" placeholder="Gelişmiş arama: ad, e-posta, telefon, araç, not…">
+            <select id="crm-status-filter" class="status-select">
               <option value="">Tüm durumlar</option>
               <option value="new">Yeni</option>
-              <option value="called">Arandı</option>
-              <option value="interested">İlgileniyor</option>
-              <option value="closed">Kapandı</option>
-              <option value="rejected">Uygun değil</option>
-              <option value="hot_only">Sıcak Lead</option>
-              <option value="dispatch_failed">Gönderim Hatası</option>
-              <option value="dispatch_dead">Gönderim Durduruldu</option>
-              <option value="dispatched">Gönderildi</option>
-              <option value="won_only">Kazanıldı</option>
-              <option value="hide_test">Test/Spam Gizle</option>
+              <option value="first_contact">İlk temas</option>
+              <option value="callback">Tekrar ara</option>
+              <option value="proposal_sent">Teklif</option>
+              <option value="financing">Finansman</option>
+              <option value="won">Kazanıldı</option>
+              <option value="lost">Kaybedildi</option>
+              <option value="hot_only">Sıcak lead</option>
+              <option value="dispatch_failed">Gönderim hatası</option>
+              <option value="hide_test">Test/Spam gizle</option>
             </select>
-            <select id="auto-leads-follow-filter" class="status-select">
+            <select id="crm-follow-filter" class="status-select">
               <option value="">Tüm takipler</option>
-              <option value="today">Bugün takip</option>
+              <option value="today">Bugün</option>
               <option value="overdue">Geciken</option>
-              <option value="open">Açık takipler</option>
-              <option value="done">Tamamlanan takipler</option>
+              <option value="open">Açık</option>
+              <option value="done">Tamamlanan</option>
             </select>
-            <label class="auto-leads-check">
-              <input id="auto-leads-notes-only" type="checkbox">
-              Sadece notu olanlar
-            </label>
-            <button class="btn btn-ghost btn-sm" data-action="export-auto-leads">CSV İndir</button>
+            <select id="crm-priority-filter" class="status-select">
+              <option value="">Öncelik</option>
+              <option value="very_hot">Very hot</option>
+              <option value="hot">Hot</option>
+              <option value="warm">Warm</option>
+              <option value="cold">Cold</option>
+            </select>
+            <select id="crm-partner-filter" class="status-select">
+              <option value="">Partner durumu</option>
+              <option value="pending">Bekliyor</option>
+              <option value="dispatched">Gönderildi</option>
+              <option value="dispatch_failed">Hata</option>
+              <option value="won">Kazanıldı</option>
+              <option value="lost">Kaybedildi</option>
+            </select>
+            <input id="crm-date-from" class="form-input" type="date" aria-label="Başlangıç tarihi">
+            <input id="crm-date-to" class="form-input" type="date" aria-label="Bitiş tarihi">
+            <input id="crm-min-score" class="form-input" type="number" min="0" max="100" placeholder="Min skor">
+            <label class="auto-leads-check"><input id="crm-notes-only" type="checkbox"> Notlu</label>
+            <select id="crm-page-size" class="status-select">
+              <option value="30">30 / sayfa</option>
+              <option value="50">50 / sayfa</option>
+              <option value="100">100 / sayfa</option>
+            </select>
+            <button class="btn btn-primary btn-sm" id="crm-apply-filters" type="button">Uygula</button>
+            <button class="btn btn-ghost btn-sm" id="crm-reset-filters" type="button">Sıfırla</button>
+            <button class="btn btn-ghost btn-sm" data-action="export-auto-leads" type="button">CSV</button>
           </div>
-          <div id="auto-leads-list"><div class="empty">Yükleniyor...</div></div>
+          <div class="crm-view-toggle">
+            <button type="button" class="is-active" id="crm-view-list">Liste</button>
+            <button type="button" id="crm-view-pipeline">Pipeline</button>
+            <span id="crm-results-summary" class="crm-results-summary"></span>
+          </div>
+          <div id="crm-pipeline-board"></div>
+          <div id="auto-leads-list"><div class="empty">Yükleniyor…</div></div>
+          <div class="crm-pagination" id="crm-pagination"></div>
+        </div>
+      </div>
+
+      <div class="page page-wide" id="page-crm-audit">
+        <div class="page-header">
+          <h2>Audit Log</h2>
+          <p>Admin işlemlerinin izlenebilir kaydı</p>
+        </div>
+        <div class="card">
+          <div id="crm-audit-list"><div class="empty">Yükleniyor…</div></div>
         </div>
       </div>
 
