@@ -20,7 +20,21 @@ const getSupabaseAdmin = (env) => {
 const unixToIso = (value) =>
   value ? new Date(value * 1000).toISOString() : null;
 
-const markEventProcessed = async (supabase, event) => {
+const hasEventProcessed = async (supabase, event) => {
+  const { data, error } = await supabase
+    .from('stripe_webhook_events')
+    .select('event_id')
+    .eq('event_id', event.id)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return Boolean(data);
+};
+
+const recordEventProcessed = async (supabase, event) => {
   const { error } = await supabase
     .from('stripe_webhook_events')
     .insert({
@@ -29,11 +43,11 @@ const markEventProcessed = async (supabase, event) => {
     });
 
   if (!error) {
-    return true;
+    return;
   }
 
   if (error.code === '23505') {
-    return false;
+    return;
   }
 
   throw error;
@@ -97,9 +111,7 @@ export async function onRequestPost(context) {
   const supabase = getSupabaseAdmin(context.env);
 
   try {
-    const shouldProcess = await markEventProcessed(supabase, event);
-
-    if (!shouldProcess) {
+    if (await hasEventProcessed(supabase, event)) {
       return json({ received: true, duplicate: true });
     }
 
@@ -141,6 +153,8 @@ export async function onRequestPost(context) {
       default:
         break;
     }
+
+    await recordEventProcessed(supabase, event);
 
     return json({ received: true });
   } catch (error) {

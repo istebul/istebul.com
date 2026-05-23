@@ -1,9 +1,54 @@
-const ALLOWED_ORIGIN = 'https://www.istebul.com';
+const ALLOWED_ORIGINS = new Set([
+  'https://istebul.com',
+  'https://www.istebul.com',
+  'https://istebul-com.pages.dev'
+]);
 
-export async function onRequestOptions({ request }) {
+const rateLimitStore = globalThis.__aiProxyRateLimit || (globalThis.__aiProxyRateLimit = new Map());
+
+function getClientIp(request) {
+  return (
+    request.headers.get('cf-connecting-ip') ||
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    'unknown'
+  );
+}
+
+function checkRateLimit(key, limit = 25, windowMs = 60_000) {
+  const now = Date.now();
+  const entry = rateLimitStore.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+
+  if (entry.count >= limit) {
+    return false;
+  }
+
+  entry.count += 1;
+  return true;
+}
+
+function isAllowedOrigin(origin) {
+  return origin && ALLOWED_ORIGINS.has(origin);
+}
+
+function corsHeaders(origin) {
+  const allowedOrigin = isAllowedOrigin(origin) ? origin : 'https://istebul.com';
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-ai-proxy-token',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json'
+  };
+}
+
+export async function onRequestOptions({ request, env }) {
   const origin = request.headers.get('Origin');
 
-  if (origin !== ALLOWED_ORIGIN) {
+  if (!isAllowedOrigin(origin)) {
     return new Response(null, { status: 403 });
   }
 
@@ -16,9 +61,17 @@ export async function onRequestOptions({ request }) {
 export async function onRequestPost({ request, env }) {
   try {
     const origin = request.headers.get('Origin');
+    const proxyToken = request.headers.get('x-ai-proxy-token');
+    const hasValidOrigin = isAllowedOrigin(origin);
+    const hasValidToken = Boolean(env.AI_PROXY_TOKEN && proxyToken === env.AI_PROXY_TOKEN);
 
-    if (origin !== ALLOWED_ORIGIN) {
-      return json({ error: 'Forbidden origin' }, 403, origin);
+    if (!hasValidOrigin && !hasValidToken) {
+      return json({ error: 'Forbidden' }, 403, origin);
+    }
+
+    const clientIp = getClientIp(request);
+    if (!checkRateLimit(clientIp, 25, 60_000)) {
+      return json({ error: 'Too many requests' }, 429, origin);
     }
 
     if (!env.GROQ_API_KEY) {
@@ -55,7 +108,7 @@ export async function onRequestPost({ request, env }) {
           }
         ],
         temperature: 0.4,
-        max_tokens: 700,
+        max_tokens: 700
       })
     });
 
@@ -68,24 +121,14 @@ export async function onRequestPost({ request, env }) {
     return json({
       result: data?.choices?.[0]?.message?.content || ''
     }, 200, origin);
-
   } catch {
     return json({ error: 'AI proxy error' }, 500);
   }
 }
 
-function json(data, status = 200, origin = ALLOWED_ORIGIN) {
+function json(data, status = 200, origin = null) {
   return new Response(JSON.stringify(data), {
     status,
     headers: corsHeaders(origin)
   });
-}
-
-function corsHeaders(origin) {
-  return {
-    'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json'
-  };
 }

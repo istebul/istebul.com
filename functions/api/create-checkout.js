@@ -45,6 +45,10 @@ const getAuthenticatedUser = async (context, token) => {
 export async function onRequestPost(context) {
   const origin = context.request.headers.get('Origin');
 
+  if (origin && !allowedOrigins.includes(origin)) {
+    return json({ error: 'Forbidden' }, 403, origin);
+  }
+
   try {
     const STRIPE_SECRET_KEY = context.env.STRIPE_SECRET_KEY;
     const STRIPE_PRICE_ID = context.env.STRIPE_PRICE_ID;
