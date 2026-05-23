@@ -174,16 +174,8 @@ if (fs.existsSync(autoCssSource)) {
 if (fs.existsSync(autoJsSourceDir)) {
   fs.cpSync(autoJsSourceDir, autoJsTargetDir, { recursive: true });
 
-  // Cloudflare Pages can return 500 for this source file when Turnstile runtime code is present.
-  // Keep production Auto available by serving a sanitized runtime copy.
-  const autoRuntimeAppPath = path.join(autoJsTargetDir, 'auto-app.js');
-  if (fs.existsSync(autoRuntimeAppPath)) {
-    let runtimeApp = fs.readFileSync(autoRuntimeAppPath, 'utf8');
-    runtimeApp = runtimeApp.replace(/const TURNSTILE_SITE_KEY = '[^']*';/, "const TURNSTILE_SITE_KEY = '';");
-    runtimeApp = runtimeApp.replace(/turnstile_token: options\.turnstileToken \|\| '',/g, "turnstile_token: '',");
-    runtimeApp = runtimeApp.replace(/const turnstileToken = await getTurnstileToken\(\);/g, "const turnstileToken = '';");
-    fs.writeFileSync(autoRuntimeAppPath, runtimeApp);
-  }
+  // Keep Auto runtime identical to source so security-sensitive flows
+  // such as Turnstile token generation remain active in production.
 }
 
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
