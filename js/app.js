@@ -1,5 +1,6 @@
 // isteBul v2 - Main Application
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
+import { revenueManager } from './features/monetization/revenue-manager.js';
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
@@ -93,10 +94,13 @@ class App {
 
             this.setupCookieConsent();
             this.renderHeroDecisionPreview();
+            this.renderPricingSection();
 
             await this.checkAuth();
+            this.handleBillingReturnParams();
 
             if (this.currentUser) {
+                await revenueManager.refresh(this.currentUser.id);
                 this.initMessaging(this.currentUser.id);
             }
 
@@ -328,8 +332,10 @@ class App {
                 this.currentUser = user;
                 this.ui.updateAuthUI(user);
                 await this.loadUserProfile(user.id);
+                await revenueManager.refresh(user.id);
                 await this.initMessaging(user.id);
             } else {
+                await revenueManager.refresh(null);
                 this.currentUser = null;
                 this.ui.updateAuthUI(null);
             }
@@ -947,6 +953,15 @@ class App {
                 }
                 this.renderAdminDashboard();
             }
+
+            if (route === 'profil') {
+                const upgrade = new URLSearchParams(window.location.search).get('upgrade');
+                if (upgrade === '1' && this.currentUser) {
+                    setTimeout(() => this.handlePremiumCheckout(), 400);
+                } else if (upgrade === '1') {
+                    this.auth.showLoginModal();
+                }
+            }
         });
 
         document.addEventListener('click', (e) => {
@@ -1029,10 +1044,13 @@ class App {
             profileLoginBtn.addEventListener('click', () => this.auth.showLoginModal());
         }
 
-        const premiumCheckoutBtn = document.getElementById('premium-checkout-btn');
-        if (premiumCheckoutBtn) {
-            premiumCheckoutBtn.addEventListener('click', () => this.handlePremiumCheckout());
-        }
+        document.addEventListener('click', (e) => {
+            const upgradeBtn = e.target.closest('[data-upgrade-checkout]');
+            if (upgradeBtn) {
+                e.preventDefault();
+                this.handlePremiumCheckout();
+            }
+        });
 
         // Auth events
         document.addEventListener('userLoggedIn', async (e) => {
@@ -3090,9 +3108,47 @@ Açıklama yok.
         this.ui.showSuccess('Filtreler temizlendi.');
     }
 
+    renderPricingSection() {
+        const root = document.getElementById('pricing-plans-root');
+        if (!root) return;
+        root.innerHTML = revenueManager.renderPricingCards();
+        this.ui.loadIcons?.();
+    }
+
+    handleBillingReturnParams() {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get('subscribed') === 'true') {
+            this.ui.showSuccess('Pro aboneliğiniz aktif. Tüm premium özellikler açıldı.');
+            if (this.currentUser?.id) {
+                revenueManager.refresh(this.currentUser.id);
+            }
+            params.delete('subscribed');
+        }
+
+        if (params.get('cancelled') === 'true') {
+            this.ui.showError('Ödeme iptal edildi. İstediğiniz zaman tekrar deneyebilirsiniz.');
+            params.delete('cancelled');
+        }
+
+        if (params.has('subscribed') || params.has('cancelled')) {
+            const next = `${window.location.pathname}${params.toString() ? `?${params}` : ''}`;
+            window.history.replaceState(null, '', next);
+        }
+    }
+
+    requestPremiumUpgrade(feature = 'default') {
+        if (!revenueManager.canAccess(feature === 'default' ? 'premium_report' : feature)) {
+            revenueManager.mountPaywall(feature);
+            return false;
+        }
+        return true;
+    }
+
     async handlePremiumCheckout() {
         if (!this.currentUser) {
             this.auth.showLoginModal();
+            this.ui.showError('Pro\'ya geçmek için önce giriş yapın veya ücretsiz hesap oluşturun.');
             return;
         }
 
@@ -3339,8 +3395,15 @@ Açıklama yok.
             return;
         }
 
-        if (this.comparisonItems.length >= 4) {
-            this.ui.showError('Karşılaştırma listesine en fazla 4 seçenek eklenebilir.');
+        const maxItems = revenueManager.getComparisonLimit();
+
+        if (this.comparisonItems.length >= maxItems) {
+            if (!revenueManager.isPremium) {
+                revenueManager.mountPaywall('comparison');
+                this.ui.showError(`Ücretsiz planda en fazla ${maxItems} seçenek karşılaştırabilirsiniz. Pro ile 4\'e kadar.`);
+            } else {
+                this.ui.showError('Karşılaştırma listesine en fazla 4 seçenek eklenebilir.');
+            }
             return;
         }
 
@@ -3680,6 +3743,7 @@ Açıklama yok.
         this.currentUser = user;
         this.ui.updateAuthUI(user);
         await this.loadUserProfile(user.id);
+        await revenueManager.refresh(user.id);
         await this.initMessaging(user.id);
         this.loadDecisionHistory();
         this.loadComparisonHistory();
@@ -3691,6 +3755,7 @@ Açıklama yok.
     async handleUserLogout() {
         this.currentUser = null;
         this.messagingModule = null;
+        await revenueManager.refresh(null);
         this.decisionHistory = [];
         this.localListings = [];
         this.ui.updateAuthUI(null);

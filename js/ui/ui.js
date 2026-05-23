@@ -3,6 +3,7 @@ import { installComparisonUI } from './comparison-ui.js';
 import { installAssistantUI } from './assistant-ui.js';
 import { escapeHtml as escapeHtmlValue, safeImageUrl as sanitizeImageUrl, safeUrl } from '../core/security.js';
 import { refreshLucideIcons, scheduleLucideIcons } from '../runtime/lucide-loader.js';
+import { revenueManager } from '../features/monetization/revenue-manager.js';
 
 if (typeof document !== 'undefined') {
     document.addEventListener('ib:refresh-icons', () => {
@@ -207,7 +208,8 @@ export class UIManager {
         if (profile && (profile.full_name || profile.email)) {
             profileCard.innerHTML = `
                 <h3>Merhaba, ${this.escapeHtml(profile.full_name || profile.email)}</h3>
-                <p>Hesabınız hazır. Profil bilgilerinizi güncelleyebilir, seçeneklerinızı yönetebilir ve favorilerinizi takip edebilirsiniz.</p>
+                <p>Hesabınız hazır. Profil bilgilerinizi güncelleyebilir, seçeneklerinizi yönetebilir ve favorilerinizi takip edebilirsiniz.</p>
+                ${revenueManager.renderProfileSubscriptionBlock()}
                 <div class="profile-summary">
                     <div><strong>Ad Soyad:</strong> ${this.escapeHtml(profile.full_name || 'Bilinmiyor')}</div>
                     <div><strong>E-posta:</strong> ${this.escapeHtml(profile.email || 'Bilinmiyor')}</div>
@@ -462,7 +464,10 @@ export class UIManager {
 
         const listingId = this.escapeHtml(listing.id);
         const imageUrl = this.safeImageUrl(listing.images?.[0]);
-        const externalUrl = this.safeExternalUrl(listing.external_url);
+        const externalUrl = this.safeExternalUrl(listing.external_url, {
+            content: listing.id || 'listing_detail',
+            campaign: listing.category || 'marketplace'
+        });
         const isFavorite = favoriteIds.includes(listing.id.toString());
         const isCompared = (Array.isArray(comparisonSignatures) ? comparisonSignatures : []).map(String).includes(this.getListingComparisonSignature(listing));
         const locationLabel = this.getListingLocationLabel(listing);
@@ -1023,8 +1028,8 @@ export class UIManager {
         return sanitizeImageUrl(url);
     }
 
-    safeExternalUrl(url) {
-        return safeUrl(url);
+    safeExternalUrl(url, tracking = {}) {
+        return revenueManager.buildAffiliateUrl(safeUrl(url), tracking);
     }
 
     formatPrice(price) {

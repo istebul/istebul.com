@@ -1,0 +1,59 @@
+/** Monetization plan definitions — copy & feature boundaries */
+
+export const PLANS = {
+  free: {
+    id: 'free',
+    name: 'Başlangıç',
+    priceLabel: 'Ücretsiz',
+    description: 'Temel karar analizi ve lead talebi',
+    highlights: [
+      'Auto karar analizi (özet)',
+      '3 araç karşılaştırma',
+      'Partner teklif talebi'
+    ]
+  },
+  pro: {
+    id: 'pro',
+    name: 'isteBul Pro',
+    priceLabel: 'Aylık abonelik',
+    priceHint: 'Stripe üzerinden güvenli ödeme',
+    description: 'Gelişmiş analiz, sınırsız karşılaştırma ve öncelikli partner yönlendirme',
+    highlights: [
+      'Sınırsız karşılaştırma',
+      'Detaylı premium karar raporu',
+      'Gelişmiş AI karar özeti',
+      'Öncelikli partner eşleşmesi',
+      'Karar geçmişi ve export'
+    ],
+    cta: 'Pro\'ya geç'
+  }
+};
+
+export const FREE_LIMITS = {
+  maxComparisons: 2,
+  maxAutoResultsPreview: 3,
+  premiumReport: false,
+  advancedAiSummary: false,
+  priorityPartner: false
+};
+
+export const PRO_FEATURES = {
+  comparison_unlimited: 'Sınırsız karşılaştırma',
+  premium_report: 'Detaylı premium karar raporu',
+  advanced_ai_summary: 'Gelişmiş AI karar özeti',
+  priority_partner: 'Öncelikli partner yönlendirme',
+  decision_export: 'Karar geçmişi export'
+};
+
+export const AFFILIATE_DEFAULTS = {
+  source: 'istebul',
+  medium: 'referral',
+  campaign: 'marketplace'
+};
+
+export const PARTNER_OFFERS = {
+  dealer: { label: 'Galeri lead', revenueHint: '₺5.000+ / sıcak lead' },
+  finance: { label: 'Finansman lead', revenueHint: '₺2.000+ / onaylı başvuru' },
+  insurance: { label: 'Sigorta lead', revenueHint: '₺1.500+ / poliçe' },
+  premium_report: { label: 'Premium rapor', revenueHint: '₺499+ / rapor' }
+};

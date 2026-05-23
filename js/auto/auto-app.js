@@ -1,8 +1,62 @@
 import { recommendVehicles } from './auto-ai.js?v=ai2';
 import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
+import { FREE_LIMITS, PLANS } from '../features/monetization/plans.js';
 
 document.documentElement.classList.add('ib-ready');
+
+function isProActive() {
+  return localStorage.getItem('istebul_pro_active') === '1';
+}
+
+function openAutoUpgradePaywall(feature = 'premium_report') {
+  const existing = document.getElementById('auto-revenue-paywall');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'auto-revenue-paywall';
+  overlay.className = 'revenue-paywall';
+  overlay.innerHTML = `
+    <div class="revenue-paywall-card" role="dialog">
+      <button type="button" class="revenue-paywall-close" data-auto-paywall-close aria-label="Kapat">×</button>
+      <span class="revenue-upgrade-kicker">isteBul Pro</span>
+      <h3>${feature === 'premium_report' ? 'Detaylı karar raporu' : 'Pro özellik'}</h3>
+      <p>${PLANS.pro.description}</p>
+      <ul class="revenue-paywall-list">
+        ${PLANS.pro.highlights.slice(0, 4).map((item) => `<li>${item}</li>`).join('')}
+      </ul>
+      <div class="revenue-upgrade-actions">
+        <a class="btn primary" href="/profil/?upgrade=1" data-native-route>Pro\'ya geç</a>
+        <button type="button" class="btn secondary" data-auto-paywall-close>Ücretsiz devam et</button>
+      </div>
+    </div>
+  `;
+
+  const close = () => overlay.remove();
+  overlay.querySelectorAll('[data-auto-paywall-close]').forEach((el) => el.addEventListener('click', close));
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) close();
+  });
+  document.body.appendChild(overlay);
+}
+
+function renderAutoUpgradeStrip() {
+  if (isProActive()) return '';
+
+  return `
+    <aside class="revenue-upgrade-banner revenue-upgrade-banner--compact">
+      <div class="revenue-upgrade-copy">
+        <span class="revenue-upgrade-kicker">isteBul Pro</span>
+        <strong>Tüm sonuçları ve premium raporu açın</strong>
+        <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma ve detaylı rapor.</p>
+      </div>
+      <div class="revenue-upgrade-actions">
+        <a class="btn btn-primary" href="/profil/?upgrade=1">Pro\'ya geç</a>
+        <a class="btn btn-outline" href="/#pricing">Planlar</a>
+      </div>
+    </aside>
+  `;
+}
 
 const formatter = new Intl.NumberFormat('tr-TR');
 
@@ -879,8 +933,11 @@ function renderResults(results) {
   }
 
   const formData = form ? readForm(form) : {};
+  const pro = isProActive();
+  const displayLimit = pro ? results.length : Math.min(FREE_LIMITS.maxAutoResultsPreview, results.length);
+  const displayResults = results.slice(0, displayLimit);
 
-  root.innerHTML = `
+  root.innerHTML = `${renderAutoUpgradeStrip()}
     <section class="auto-results-trust-banner" aria-label="Sonuç açıklaması">
       <div>
         <p class="kicker">Model önerisi</p>
@@ -894,7 +951,8 @@ function renderResults(results) {
 
     <section class="auto-filter-toolbar" aria-label="Auto sonuç filtreleri">
       <div>
-        <strong>${results.length} / ${allResults.length || results.length} öneri gösteriliyor</strong>
+        <strong>${displayResults.length} / ${allResults.length || results.length} öneri gösteriliyor</strong>
+        ${!pro && results.length > displayLimit ? '<span class="revenue-partner-strip"><strong>Pro</strong> ile +' + (results.length - displayLimit) + ' model daha</span>' : ''}
         <span>Sonuçları kullanım önceliğinize göre düzenleyin.</span>
       </div>
 
@@ -930,7 +988,7 @@ function renderResults(results) {
         </select>
       </label>
     </section>
-  ` + results.map((vehicle, index) => {
+  ` + displayResults.map((vehicle, index) => {
     const monthlyImpact = Math.round((Number(vehicle.costs.total || 0) / 12) / 100) * 100;
     const rankLabel = index === 0
       ? 'Genel uyum lideri'
@@ -1054,9 +1112,9 @@ function renderResults(results) {
       </div>
     </article>
   `}).join('') + `
-    <section class="premium-ai-summary ai-explanation-box" data-ai-explanation>
+    <section class="premium-ai-summary ai-explanation-box${pro ? '' : ' revenue-results-locked'}" data-ai-explanation>
       <h3>Karşılaştırmalı karar özeti</h3>
-      <p>Karar özeti hazırlanıyor...</p>
+      <p>${pro ? 'Karar özeti hazırlanıyor...' : 'Pro ile gelişmiş AI karar özetini açın.'}</p>
 
       <div class="ai-refinement-tools">
         <div class="ai-refinement-chips">
@@ -1794,6 +1852,12 @@ Destek almak istiyorum.`;
   if (interestBtn) {
     const interest = interestBtn.dataset.interest || 'finance';
     const vehicle = interestBtn.dataset.vehicle || '';
+
+    if (interest === 'premium_report' && !isProActive()) {
+      trackAutoEvent('auto_premium_paywall_view', { interest_type: interest, vehicle });
+      openAutoUpgradePaywall('premium_report');
+      return;
+    }
 
     if (interest === 'finance' || interest === 'finance_review') {
       trackAutoEvent('auto_finance_click', { interest_type: interest, vehicle });

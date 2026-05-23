@@ -126,7 +126,7 @@ export class Router {
         });
 
         if (routeId === 'home') {
-            ['home', 'trust', 'how-it-works', 'decision-sample', 'categories'].forEach((sectionId) => {
+            ['home', 'trust', 'how-it-works', 'pricing', 'decision-sample', 'categories'].forEach((sectionId) => {
                 const section = document.getElementById(sectionId);
                 if (section) section.style.display = 'block';
             });

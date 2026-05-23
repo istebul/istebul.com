@@ -50,7 +50,8 @@ const ALLOWED_EVENTS = new Set([
   "auto_finance_click",
   "auto_insurance_click",
   "auto_vehicle_offer_click",
-  "auto_premium_report_click"
+  "auto_premium_report_click",
+  "auto_premium_paywall_view"
 ]);
 
 function clampString(value: unknown, max = 64) {
