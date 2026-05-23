@@ -114,8 +114,9 @@
             </div>
             <div class="nav-controls">
                 <div class="nav-auth" id="nav-auth">
-                    <button id="login-btn" class="btn btn-outline">Giriş Yap</button>
-                    <button id="register-btn" class="btn btn-primary">Üye Ol</button>
+                    <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="nav_auto">Ücretsiz analiz</a>
+                    <button id="login-btn" class="btn btn-outline" type="button">Giriş</button>
+                    <button id="register-btn" class="btn btn-ghost btn-sm" type="button">Üye ol</button>
                 </div>
                 <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Koyu modu aç" aria-pressed="false" title="Tema değiştir">
                     <i data-lucide="moon"></i>
@@ -156,11 +157,11 @@
             <div class="hero-container">
                 <div class="hero-content">
                     <span class="hero-eyebrow"><i data-lucide="shield-check"></i> <span data-cms="hero-eyebrow">Veriye dayalı karar analizi</span></span>
-                    <h1 data-cms="hero-title">Araç satın alma kararınızı veriye dayalı şekilde netleştirin</h1>
-                    <p data-cms="hero-desc">Bütçenize, kullanım ihtiyaçlarınıza ve finansman planınıza göre toplam sahip olma maliyetini karşılaştırın; size en uygun araç seçeneklerini nedenleriyle birlikte değerlendirin.</p>
+                    <h1 data-cms="hero-title">2 dakikada bütçenize uygun araçları toplam maliyetle görün</h1>
+                    <p data-cms="hero-desc">Taşıt kredisi, yakıt, sigorta ve değer kaybını tek skorda birleştiren ücretsiz analiz — satın alma baskısı yok, KVKK uyumlu.</p>
                     <div class="hero-actions">
-                        <a href="/auto" class="btn btn-primary">
-                            <i data-lucide="sparkles"></i> Ücretsiz Karar Analizine Başla
+                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="hero_auto_start">
+                            <i data-lucide="sparkles"></i> Ücretsiz analizi başlat
                         </a>
                         <a href="#how-it-works" class="btn btn-outline">
                             <i data-lucide="car-front"></i> Nasıl Çalışır
@@ -169,9 +170,9 @@
                     </div>
 
                     <div class="hero-proof" aria-label="Platform kapsamı">
-                        <span><strong>₺</strong> toplam sahip olma maliyeti görünürlüğü</span>
-                        <span><strong>Finansman</strong> etkisi karşılaştırması</span>
-                        <span><strong>Şeffaf</strong> değerlendirme yaklaşımı</span>
+                        <span><strong>Ücretsiz</strong> başlangıç · kredi kartı gerekmez</span>
+                        <span><strong>2 dk</strong> rehberli analiz</span>
+                        <span><strong>KVKK</strong> uyumlu veri işleme</span>
                     </div>
                 </div>
                 <div class="hero-image decision-preview" aria-label="Karar sonucu önizlemesi">
@@ -180,11 +181,7 @@
                         <span></span>
                         <span></span>
                     </div>
-                    <div class="preview-tabs" role="tablist" aria-label="Önizleme kategorisi">
-                        <button type="button" class="active" role="tab" aria-selected="true" data-preview-category="arac">Araç</button>
-                        <button type="button" role="tab" aria-selected="false" data-preview-category="ev">Ev</button>
-                        <button type="button" role="tab" aria-selected="false" data-preview-category="tatil">Tatil</button>
-                    </div>
+                    <p class="preview-category-label" aria-hidden="true">Araç karar önizlemesi</p>
                     <div class="preview-score-card">
                         <div>
                             <span class="preview-kicker">Analiz sonucu</span>
@@ -324,6 +321,13 @@
                     <h2>İhtiyacınıza göre plan seçin</h2>
                     <p>Bireysel karar analizi ücretsiz başlar. Pro ile gelişmiş raporlar, sınırsız karşılaştırma ve öncelikli partner eşleşmesi açılır.</p>
                 </div>
+                <noscript>
+                    <div class="pricing-noscript-fallback">
+                        <p><strong>Başlangıç (ücretsiz):</strong> Auto karar analizi özeti, 2 araç karşılaştırma.</p>
+                        <p><strong>isteBul Pro:</strong> ₺299/ay veya ₺2.870/yıl (%20 tasarruf) — 7 gün ücretsiz deneme, Stripe ile güvenli ödeme.</p>
+                        <p><a href="/auto/">Önce ücretsiz analizi başlatın</a> · JavaScript etkinleştirildiğinde planları burada görebilirsiniz.</p>
+                    </div>
+                </noscript>
                 <div id="pricing-plans-root"></div>
                 <p class="revenue-plan-hint" style="text-align:center;margin-top:1.25rem;">Partner galeriler için lead başına ücretlendirme modeli ayrıca sunulur — <a href="/partner-olun.html">Partner olun</a>.</p>
             </div>
@@ -475,7 +479,7 @@
                 </div>
             </div>
             <div class="cookie-consent" id="cookie-consent" role="region" aria-label="Çerez ve analiz tercihi">
-                <p>Deneyimi iyileştirmek ve anonim kullanım metrikleri toplamak için çerez ve gizlilik dostu analytics kullanıyoruz.</p>
+                <p>Çerezleri yalnızca deneyimi iyileştirmek ve hangi adımların işe yaradığını anlamak için kullanıyoruz — kişisel veri satışı yok. Kabul ederseniz analiz akışını daha iyi optimize edebiliriz.</p>
                 <div>
                     <button type="button" class="btn btn-outline" data-cookie-decline>Reddet</button>
                     <button type="button" class="btn btn-primary" data-cookie-accept>Kabul Et</button>
@@ -504,6 +508,10 @@
 
             <div id="comparison-content"></div>
         </section>
+
+    <div class="cro-sticky-cta" role="region" aria-label="Hızlı başlangıç">
+        <a href="/auto/" class="btn btn-primary" data-analytics-cta="sticky_auto_start">Ücretsiz analiz — 2 dk</a>
+    </div>
 
     <!-- Scripts -->
     <script type="module" src="js/app.bundle.js"></script>

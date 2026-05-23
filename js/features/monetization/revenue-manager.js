@@ -255,6 +255,12 @@ export class RevenueManager {
           <p class="revenue-plan-hint">${PLANS.pro.priceHint}${this.trialEligible ? ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz` : ''}</p>
         </article>
       </div>
+      <p class="revenue-risk-reversal" role="note">
+        <span>7 gün ücretsiz deneme</span>
+        <span>Stripe ile güvenli ödeme</span>
+        <span>İstediğiniz zaman iptal</span>
+        <span>Ücretsiz planda analiz sınırsız başlar</span>
+      </p>
     `;
   }
 

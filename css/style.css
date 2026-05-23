@@ -9683,3 +9683,93 @@ button:focus-visible {
     align-items: stretch;
   }
 }
+
+/* CRO: pricing, auth, sticky CTA */
+.revenue-risk-reversal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1.5rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+  text-align: center;
+}
+
+.revenue-risk-reversal span::before {
+  content: "✓ ";
+  color: var(--primary-color, #2563eb);
+}
+
+.pricing-noscript-fallback {
+  max-width: 36rem;
+  margin: 0 auto 1.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  background: var(--surface-color, #fff);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.auth-intent-banner {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary-color, #2563eb);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.form-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+}
+
+.cro-sticky-cta {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom));
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.cro-sticky-cta .btn {
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .cro-sticky-cta {
+    display: flex;
+    justify-content: center;
+  }
+
+  body.ib-enterprise {
+    padding-bottom: 4.5rem;
+  }
+}
+
+.preview-category-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #94a3b8);
+  margin: 0 0 0.5rem;
+}
+
+.nav-cta-auto {
+  white-space: nowrap;
+}
