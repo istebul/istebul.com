@@ -126,8 +126,36 @@ export class API {
     }
 
     static async resetPassword(email) {
-        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        const redirectTo = typeof window !== 'undefined'
+            ? `${window.location.origin}/?auth=reset`
+            : undefined;
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo
+        });
         if (error) throw error;
+    }
+
+    static async resendSignupConfirmation(email) {
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email
+        });
+        if (error) throw error;
+    }
+
+    static async getSubscription(userId) {
+        const { data, error } = await supabase
+            .from('subscriptions')
+            .select('status, current_period_start, current_period_end, cancel_at_period_end, stripe_price_id, updated_at')
+            .eq('user_id', userId)
+            .in('status', ['active', 'trialing', 'past_due', 'canceled'])
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (error) throw error;
+        return data;
     }
 
     // Profile API

@@ -112,7 +112,7 @@
                         <span id="user-name"></span>
                     </button>
                     <div class="user-dropdown">
-                        <a href="/profil/" data-auth-only>Hesabım</a>
+                        <a href="/profil" data-auth-only>Hesabım</a>
                         <a href="#" data-my-listings>Seçeneklerim</a>
                         
                         <hr>
@@ -286,29 +286,31 @@
             </div>
         </section>
 
-        <!-- Private app sections are mounted lazily by JavaScript after route/auth checks. -->
-    <div id="auth-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-        <div class="modal-content">
+        <section id="profil" class="section hidden account-section" data-private-section aria-label="Hesabım">
+            <div class="container">
+                <div class="account-page-header">
+                    <a href="/" class="btn btn-ghost btn-sm" data-native-route>
+                        <i data-lucide="arrow-left"></i> Ana sayfa
+                    </a>
+                    <div>
+                        <h1>Hesabım</h1>
+                        <p>Profil, abonelik ve güvenlik ayarlarınızı tek yerden yönetin.</p>
+                    </div>
+                </div>
+                <div id="account-root" class="account-root profile-card"></div>
+            </div>
+        </section>
+
+    <div id="auth-modal" class="modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" aria-describedby="auth-modal-subtitle">
+        <div class="modal-content auth-modal-content">
             <div class="modal-header">
-                <h3 id="auth-modal-title">Giriş Yap</h3>
+                <div>
+                    <h3 id="auth-modal-title">Giriş yapın</h3>
+                    <p id="auth-modal-subtitle" class="auth-modal-subtitle">Karar geçmişinize ve hesap ayarlarınıza güvenle erişin.</p>
+                </div>
                 <button class="modal-close" type="button" aria-label="Kapat">&times;</button>
             </div>
-            <div class="modal-body">
-                <form id="login-form">
-                    <div class="form-group">
-                        <label for="email">E-posta</label>
-                        <input type="email" id="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Şifre</label>
-                        <input type="password" id="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary full-width">Giriş Yap</button>
-                </form>
-                <div class="modal-footer">
-                    <p>Hesabınız yok mu? <a href="#" id="switch-to-register">Üye olun</a></p>
-                </div>
-            </div>
+            <div class="modal-body"></div>
         </div>
     </div>
 

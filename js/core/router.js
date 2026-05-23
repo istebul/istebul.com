@@ -10,6 +10,9 @@ export class Router {
             { path: '/gecmis', component: 'history' },
             { path: '/quiz', component: 'quiz' },
             { path: '/profil', component: 'profil' },
+            { path: '/hesap', component: 'profil' },
+            { path: '/giris', component: 'auth-login' },
+            { path: '/kayit', component: 'auth-register' },
             { path: '/admin', component: 'admin' },
             { path: '/messages', component: 'messages' },
             { path: '/ilan-ekle', component: 'add-listing' },
@@ -133,6 +136,11 @@ export class Router {
             return;
         }
 
+        if (routeId === 'auth-login' || routeId === 'auth-register') {
+            document.getElementById('home')?.style && (document.getElementById('home').style.display = 'block');
+            return;
+        }
+
         // Show target section
         const targetSection = document.getElementById(routeId);
         if (targetSection) {
@@ -158,7 +166,9 @@ export class Router {
             'favoriler': 'Favoriler - isteBul',
             'history': 'Karar Geçmişi - isteBul',
             'quiz': 'Quiz - isteBul',
-            'profil': 'Profilim - isteBul',
+            'profil': 'Hesabım - isteBul',
+            'auth-login': 'Giriş - isteBul',
+            'auth-register': 'Üye Ol - isteBul',
             'admin': 'Admin Panel - isteBul',
             'messages': 'Mesajlar - isteBul',
             'add-listing': 'İlan Ekle - isteBul',

@@ -10,6 +10,7 @@ import { monitoring } from './core/monitoring.js';
 import { errorBoundary } from './core/error-boundary.js';
 import { ListingManager } from './features/ilan/ilan.js';
 import { ProfileManager } from './features/profil/profil.js';
+import { AccountManager } from './features/account/account.js';
 import { AdminManager } from './features/admin/admin.js';
 import { messaging } from './features/messaging.js';
 import './features/i18n/i18n.js';
@@ -46,6 +47,7 @@ class App {
         this.router = new Router();
         this.ilan = new ListingManager(this.ui, this.router);
         this.profil = new ProfileManager(this.ui);
+        this.account = new AccountManager(this.ui, this.auth);
         this.adminManager = new AdminManager(this.ui);
         this.currentUser = null;
         this.currentListings = [];
@@ -92,6 +94,9 @@ class App {
 
             // Initialize router
             this.router.init();
+
+            this.account.bindEvents(this);
+            this.auth.openFromQueryParams();
 
             // Initialize Messaging
             if (this.currentUser) {
@@ -311,6 +316,7 @@ class App {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 this.currentUser = user;
+                this.auth.currentUser = user;
                 this.ui.updateAuthUI(user);
                 await this.loadUserProfile(user.id);
             } else {
@@ -931,6 +937,19 @@ class App {
                 }
                 this.renderAdminDashboard();
             }
+
+            if (route === 'profil') {
+                this.account.handleQueryParams(new URLSearchParams(window.location.search));
+                this.account.refresh(this.currentUser);
+            }
+
+            if (route === 'auth-login') {
+                this.auth.showLoginModal();
+            }
+
+            if (route === 'auth-register') {
+                this.auth.showRegisterModal();
+            }
         });
 
         document.addEventListener('click', (e) => {
@@ -946,7 +965,7 @@ class App {
 
             if (e.target.matches('#edit-profile-btn')) {
                 e.preventDefault();
-                this.router.navigate('/profil');
+                this.router.navigate('/profil?tab=settings');
             }
         });
 
@@ -3661,24 +3680,39 @@ Açıklama yok.
 
 
     async handleUserLogin(user) {
+        if (!user?.id) return;
+
+        const sameSession = this.currentUser?.id === user.id && this.currentUser?.profile;
         this.currentUser = user;
+        this.auth.currentUser = user;
         this.ui.updateAuthUI(user);
+
+        if (sameSession) {
+            if (window.location.pathname.replace(/\/$/, '') === '/profil') {
+                await this.account.refresh(user);
+            }
+            return;
+        }
+
         await this.loadUserProfile(user.id);
         this.loadDecisionHistory();
         this.loadComparisonHistory();
-
-        // Reload listings to show user-specific content
         await this.loadListings();
+
+        if (window.location.pathname.replace(/\/$/, '') === '/profil') {
+            await this.account.refresh(user);
+        }
     }
 
     async handleUserLogout() {
         this.currentUser = null;
+        this.auth.currentUser = null;
         this.decisionHistory = [];
         this.localListings = [];
         this.ui.updateAuthUI(null);
         this.ui.renderHistoryAuthGate?.();
+        this.account.renderGuest();
 
-        // Reload listings
         await this.loadListings();
     }
 
@@ -3778,8 +3812,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-            window.app.currentUser = session.user;
-            document.dispatchEvent(new CustomEvent('userLoggedIn', { detail: session.user }));
+            window.app.auth.currentUser = session.user;
+            if (!window.app.currentUser?.profile) {
+                window.app.currentUser = session.user;
+                document.dispatchEvent(new CustomEvent('userLoggedIn', { detail: session.user }));
+            }
             window.app.auth?.hideAuthModal?.();
         }
 

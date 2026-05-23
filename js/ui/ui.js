@@ -193,35 +193,18 @@ export class UIManager {
     }
 
     renderProfile(profile) {
-        const profileSection = document.getElementById('profil');
-        if (!profileSection) return;
+        if (!document.getElementById('profil')) return;
+        const app = window.app;
+        if (!app?.account) return;
 
-        const profileCard = profileSection.querySelector('.profile-card');
-        if (!profileCard) return;
-
-        if (profile && (profile.full_name || profile.email)) {
-            profileCard.innerHTML = `
-                <h3>Merhaba, ${this.escapeHtml(profile.full_name || profile.email)}</h3>
-                <p>Hesabınız hazır. Profil bilgilerinizi güncelleyebilir, seçeneklerinızı yönetebilir ve favorilerinizi takip edebilirsiniz.</p>
-                <div class="profile-summary">
-                    <div><strong>Ad Soyad:</strong> ${this.escapeHtml(profile.full_name || 'Bilinmiyor')}</div>
-                    <div><strong>E-posta:</strong> ${this.escapeHtml(profile.email || 'Bilinmiyor')}</div>
-                    <div><strong>Rol:</strong> ${this.escapeHtml(profile.role || 'Kullanıcı')}</div>
-                </div>
-                <div class="profile-actions">
-                    <button class="btn btn-primary" id="edit-profile-btn">Profili Düzenle</button>
-                    <button class="btn btn-outline" id="profile-logout-btn">Çıkış Yap</button>
-                </div>
-            `;
-        } else {
-            profileCard.innerHTML = `
-                <h3>Profiliniz hazır değil</h3>
-                <p>Giriş yaparak profil bilgilerinizi görebilir ve ilan oluşturabilirsiniz.</p>
-                <button class="btn btn-primary" id="profile-login-btn">Giriş Yap veya Kayıt Ol</button>
-            `;
+        if (profile && app.currentUser) {
+            app.currentUser.profile = profile;
+            if (window.location.pathname.replace(/\/$/, '') === '/profil') {
+                app.account.refresh(app.currentUser);
+            }
+        } else if (!app.currentUser) {
+            app.account.renderGuest();
         }
-
-        this.loadIcons();
     }
 
     showAdminLink(user = null) {
