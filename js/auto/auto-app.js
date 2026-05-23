@@ -86,6 +86,31 @@ function readForm(form) {
   return Object.fromEntries(new FormData(form).entries());
 }
 
+function setupAutoMobileNav() {
+  const header = document.querySelector('.auto-header');
+  const toggle = document.querySelector('.auto-nav-toggle');
+  const nav = document.getElementById('auto-nav');
+
+  if (!header || !toggle || !nav) return;
+
+  header.classList.add('nav-enhanced');
+
+  const setOpen = (isOpen) => {
+    header.classList.toggle('is-nav-open', isOpen);
+    toggle.setAttribute('aria-expanded', String(isOpen));
+  };
+
+  toggle.addEventListener('click', () => {
+    setOpen(!header.classList.contains('is-nav-open'));
+  });
+
+  nav.addEventListener('click', (event) => {
+    if (event.target.closest('a')) {
+      setOpen(false);
+    }
+  });
+}
+
 function getCurrentLeadPayload() {
   const autoForm = document.getElementById('auto-form');
   const formPayload = autoForm ? readForm(autoForm) : {};
@@ -1539,6 +1564,7 @@ if (wizard) {
 }
 
 
+setupAutoMobileNav();
 loadAutoRuntimeConfig();
 trackAutoEvent('auto_page_view');
 
