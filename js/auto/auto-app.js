@@ -233,6 +233,9 @@ async function getTurnstileToken() {
 }
 
 
+window.__istebulGetTurnstileToken = getTurnstileToken;
+window.__istebulTurnstileSiteKey = TURNSTILE_SITE_KEY;
+
 function calculateLoanPayment(amount, monthlyRate, term) {
   const principal = Number(amount || 0);
   const rate = Number(monthlyRate || 0) / 100;
