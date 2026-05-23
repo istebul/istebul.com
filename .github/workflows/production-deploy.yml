@@ -1,0 +1,118 @@
+# Otomatik production deploy: main push → test → Cloudflare Pages → Supabase
+name: Production Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CF_PAGES_PROJECT: istebul
+  SUPABASE_PROJECT_REF: hjfrcdstbyonmgatgwcc
+
+jobs:
+  quality:
+    name: Test & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run test
+
+  deploy-cloudflare:
+    name: Cloudflare Pages
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Validate deploy secrets
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SB_URL: ${{ secrets.SUPABASE_URL }}
+          SB_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          missing=0
+          for name in CF_TOKEN CF_ACCOUNT SB_URL SB_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret for $name (see .github/SECRETS.example.md)"
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - run: npm ci
+
+      - name: Production build
+        run: npm run build
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          LOGROCKET_APP_ID: ${{ secrets.LOGROCKET_APP_ID }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ env.CF_PAGES_PROJECT }} --branch=main
+
+  deploy-supabase:
+    name: Supabase (migrations + edge)
+    needs: quality
+    runs-on: ubuntu-latest
+    if: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: ${{ env.SUPABASE_PROJECT_REF }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
+
+      - name: Push database migrations
+        if: ${{ secrets.SUPABASE_DB_PASSWORD != '' }}
+        run: supabase db push --yes
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+      - name: Deploy edge functions
+        run: |
+          FUNCTIONS=(
+            auto-intake
+            analytics-ingest
+            partner-retry
+            partner-dispatch
+            partner-callback
+            partner-application
+            lead-alert
+            admin-action
+            partner-daily-reset
+          )
+          for fn in "${FUNCTIONS[@]}"; do
+            echo "Deploying $fn..."
+            supabase functions deploy "$fn" --project-ref "$SUPABASE_PROJECT_REF"
+          done
