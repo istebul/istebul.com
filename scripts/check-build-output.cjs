@@ -11,7 +11,10 @@ const required = [
   'dist/sw.js',
   'dist/robots.txt',
   'dist/sitemap.xml',
-  'dist/build-manifest.json'
+  'dist/build-manifest.json',
+  'dist/rehber/arac-kredisi-hesaplama/index.html',
+  'dist/karar-asistani/index.html',
+  'dist/css/seo-landing.css'
 ];
 let failed = false;
 for (const file of required) {

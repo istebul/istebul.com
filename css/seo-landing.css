@@ -1,0 +1,220 @@
+/* SEO landing & hub pages — lightweight, crawl-friendly */
+:root {
+  --seo-bg: #f8fafc;
+  --seo-surface: #fff;
+  --seo-text: #0f172a;
+  --seo-muted: #475569;
+  --seo-accent: #2563eb;
+  --seo-border: #e2e8f0;
+  --seo-radius: 12px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.seo-page {
+  margin: 0;
+  background: var(--seo-bg);
+  color: var(--seo-text);
+  line-height: 1.6;
+}
+
+.seo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--seo-surface);
+  border-bottom: 1px solid var(--seo-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.seo-logo {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--seo-accent);
+  text-decoration: none;
+}
+
+.seo-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.seo-nav a {
+  color: var(--seo-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.seo-nav a:hover {
+  color: var(--seo-accent);
+}
+
+.seo-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.seo-breadcrumb {
+  font-size: 0.85rem;
+  color: var(--seo-muted);
+  margin-bottom: 1.5rem;
+}
+
+.seo-breadcrumb a {
+  color: var(--seo-accent);
+  text-decoration: none;
+}
+
+.seo-kicker {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--seo-accent);
+  margin: 0 0 0.5rem;
+}
+
+.seo-main h1 {
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  line-height: 1.2;
+  margin: 0 0 1rem;
+}
+
+.seo-lead {
+  font-size: 1.1rem;
+  color: var(--seo-muted);
+  margin: 0 0 1.5rem;
+}
+
+.seo-bullets {
+  background: var(--seo-surface);
+  border: 1px solid var(--seo-border);
+  border-radius: var(--seo-radius);
+  padding: 1rem 1.25rem 1rem 2rem;
+  margin: 0 0 2rem;
+}
+
+.seo-section {
+  margin-bottom: 2rem;
+}
+
+.seo-section h2 {
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+}
+
+.seo-faq details {
+  background: var(--seo-surface);
+  border: 1px solid var(--seo-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.seo-faq summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.seo-related ul {
+  padding-left: 1.25rem;
+}
+
+.seo-related a {
+  color: var(--seo-accent);
+}
+
+.seo-cta {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: #fff;
+  border-radius: var(--seo-radius);
+  padding: 1.5rem;
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+.seo-cta-btn {
+  display: inline-block;
+  background: #fff;
+  color: #1d4ed8;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.seo-cta-note {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.seo-footer {
+  background: #0f172a;
+  color: #cbd5e1;
+  padding: 2.5rem 1.5rem;
+  margin-top: 2rem;
+}
+
+.seo-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto 1.5rem;
+}
+
+.seo-footer h2 {
+  font-size: 0.9rem;
+  color: #fff;
+  margin: 0 0 0.5rem;
+}
+
+.seo-footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.seo-footer a {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.seo-footer a:hover {
+  color: #fff;
+}
+
+.seo-copy {
+  text-align: center;
+  font-size: 0.8rem;
+  margin: 0;
+  opacity: 0.7;
+}
+
+.seo-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  padding: 1rem;
+  border-top: 1px solid var(--seo-border);
+  margin-top: 1rem;
+}
+
+.seo-footer-links a {
+  color: var(--seo-accent);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 600px) {
+  .seo-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

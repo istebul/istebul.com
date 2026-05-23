@@ -1,0 +1,211 @@
+{
+  "prefix": "/rehber/",
+  "pages": [
+    {
+      "slug": "arac-kredisi-hesaplama",
+      "title": "Araç Kredisi Hesaplama Rehberi 2026 | isteBul",
+      "description": "Taşıt kredisi taksit, faiz ve toplam geri ödeme nasıl hesaplanır? Peşinat ve vade senaryolarını araç bütçenizle birlikte değerlendirin.",
+      "h1": "Araç kredisi hesaplama: taksit, faiz ve toplam maliyet",
+      "intro": "Türkiye'de araç alırken kredi kullanımı yaygındır; ancak aylık taksit kadar önemli olan toplam geri ödeme, sigorta ve kullanım maliyetleridir. Bu rehberde kredi hesabını araç bütçesiyle birlikte okumanızı sağlayacak çerçeveyi bulacaksınız.",
+      "sections": [
+        {
+          "heading": "Taşıt kredisinde nelere dikkat edilmeli?",
+          "body": "Bankalar ve finansman şirketleri farklı faiz, dosya masrafı ve vade seçenekleri sunar. Karar verirken yalnızca «aylık ne kadar öderim» sorusuna değil, «bu aracın 3–5 yıllık toplam maliyeti ne» sorusuna da cevap arayın."
+        },
+        {
+          "heading": "Peşinat oranı bütçeyi nasıl etkiler?",
+          "body": "Yüksek peşinat aylık yükü düşürür; düşük peşinat ise nakit akışını korur ama toplam faizi artırır. isteBul Auto analizi, peşinat ve vade kombinasyonlarını araç segmentinizle eşleştirir."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Araç kredisi faizi sabit mi değişken mi olmalı?",
+          "a": "Piyasa koşullarına göre değişir; sabit taksit öngörülebilirlik sağlar. Toplam maliyeti her iki senaryoda da hesaplayıp karşılaştırın."
+        },
+        {
+          "q": "Kredi onayı almadan araç seçmeli miyim?",
+          "a": "Önce bütçe bandınızı ve aylık taşıma kapasitenizi netleştirmek, yanlış modele bağlanmanızı önler."
+        }
+      ],
+      "related": ["arac-finansman-secenekleri", "aylik-arac-butcesi-hesaplama", "arac-toplam-sahiplik-maliyeti"]
+    },
+    {
+      "slug": "arac-toplam-sahiplik-maliyeti",
+      "title": "Araç Toplam Sahiplik Maliyeti (TCO) | isteBul",
+      "description": "TCO nedir? Yakıt, bakım, sigorta, vergi ve değer kaybını içeren araç sahiplik maliyetini Türkiye koşullarında nasıl hesaplarsınız?",
+      "h1": "Toplam sahip olma maliyeti (TCO) nedir?",
+      "intro": "Araç etiket fiyatı satın alma anındaki maliyetin yalnızca bir parçasıdır. TCO; yakıt veya şarj, periyodik bakım, kasko/trafik, MTV ve ikinci el değer kaybını kapsayan bütüncül göstergedir.",
+      "sections": [
+        {
+          "heading": "Neden TCO'ya bakmalısınız?",
+          "body": "Benzer fiyatlı iki araç, yıllık 40.000 km kullanımda farklı yakıt ve bakım profiline sahip olabilir. TCO karşılaştırması uzun vadede daha ucuz seçeneği ortaya çıkarır."
+        },
+        {
+          "heading": "isteBul TCO yaklaşımı",
+          "body": "Platformumuz bütçe, kullanım tipi ve finansman tercihinizi birleştirerek segment bazlı maliyet sinyalleri üretir; böylece «ucuz görünen» modelin gerçek yükünü görürsünüz."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Elektrikli araçta TCO nasıl değişir?",
+          "a": "Enerji birimi maliyeti, şarj altyapısı ve batarya garantisi TCO'yu etkiler; kullanım profilinize göre benzinli alternatifle kıyaslayın."
+        }
+      ],
+      "related": ["arac-kredisi-hesaplama", "elektrikli-arac-alirken", "arac-karsilastirma-rehberi"]
+    },
+    {
+      "slug": "ikinci-el-arac-alirken",
+      "title": "İkinci El Araç Alırken Dikkat Edilecekler | isteBul",
+      "description": "İkinci el araç alımında ekspertiz, km, hasar kaydı ve fiyat pazarlığı kontrol listesi. Güvenli ikinci el kararı için rehber.",
+      "h1": "İkinci el araç alırken kontrol listesi",
+      "intro": "Türkiye ikinci el pazarı geniş ve fiyat aralığı yüksektir. Doğru araç; sadece uygun fiyat değil, bakım geçmişi, hasar durumu ve gelecekteki satış değeriyle de ölçülür.",
+      "sections": [
+        {
+          "heading": "Ekspertiz ve belge kontrolü",
+          "body": "Tramer kaydı, motor-şanzıman testi ve boya-değişen parça raporu riski azaltır. Satıcıdan servis geçmişi ve faturalı bakım kayıtlarını isteyin."
+        },
+        {
+          "heading": "Fiyatı piyasa ile doğrulayın",
+          "body": "Aynı model-yıl-km bandında ilan ortalamasını görmeden pazarlık yapmayın. isteBul analizi bütçe bandınızda hangi segmentin mantıklı olduğunu önce netleştirir."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Garantili ikinci el mantıklı mı?",
+          "a": "Yetkili satıcı garantisi riski düşürür; maliyeti TCO'ya ekleyerek kıyaslayın."
+        }
+      ],
+      "related": ["sifir-arac-mi-ikinci-el-mi", "arac-alim-karar-asistani"]
+    },
+    {
+      "slug": "sifir-arac-mi-ikinci-el-mi",
+      "title": "Sıfır Araç mı İkinci El mi? | isteBul Karar Rehberi",
+      "description": "Sıfır ve ikinci el araç avantajları, değer kaybı ve finansman farkları. Hangisi size uygun — karar çerçevesi.",
+      "h1": "Sıfır araç mı, ikinci el mi?",
+      "intro": "Sıfır araç garanti ve özelleştirme sunar; ikinci el ise daha düşük giriş maliyeti ve daha yavaş ilk yıl değer kaybı sağlayabilir. Seçim kullanım sürenize ve nakit akışınıza bağlıdır.",
+      "sections": [
+        {
+          "heading": "Sıfır araç ne zaman mantıklı?",
+          "body": "Uzun süre kullanacaksanız, teknoloji ve güvenlik paketleri öncelikliyse veya kurumsal filo alımıysanız sıfır tercih edilebilir."
+        },
+        {
+          "heading": "İkinci el ne zaman öne çıkar?",
+          "body": "Bütçe sınırlıysa veya 2–3 yıl içinde model değiştirecekseniz, 1–3 yaşında bakımlı ikinci el genelde daha verimli TCO verir."
+        }
+      ],
+      "related": ["ikinci-el-arac-alirken", "arac-toplam-sahiplik-maliyeti"]
+    },
+    {
+      "slug": "arac-karsilastirma-rehberi",
+      "title": "Araç Karşılaştırma Nasıl Yapılır? | isteBul",
+      "description": "Model karşılaştırmasında fiyat dışında hangi kriterlere bakılır? Karar skoru, TCO ve kullanım uyumu rehberi.",
+      "h1": "Araç karşılaştırma rehberi",
+      "intro": "İki SUV veya sedan arasında seçim yaparken motor gücünden çok; yakıt, bagaj, güvenlik donanımı ve şehir içi manevra ihtiyacınız belirleyici olmalıdır.",
+      "sections": [
+        {
+          "heading": "Karşılaştırma matrisi oluşturun",
+          "body": "Satın alma fiyatı, yıllık yakıt, sigorta, bakım ve olası değer kaybını sütunlara yazın. isteBul /karsilastir/ akışı bu tabloyu otomatik özetler."
+        }
+      ],
+      "related": ["suv-mi-sedan-mi", "arac-toplam-sahiplik-maliyeti"]
+    },
+    {
+      "slug": "elektrikli-arac-alirken",
+      "title": "Elektrikli Araç Alırken Bilmeniz Gerekenler | isteBul",
+      "description": "Türkiye'de elektrikli araç: şarj altyapısı, menzil, batarya garantisi ve TCO. EV alım kararı rehberi.",
+      "h1": "Elektrikli araç alırken nelere bakmalı?",
+      "intro": "EV pazarı büyüyor; ancak şarj erişimi, kış menzili ve batarya garantisi gibi yerel faktörler kararı etkiler. Benzinli/hibrit alternatifle TCO kıyaslaması şarttır.",
+      "sections": [
+        {
+          "heading": "Şarj altyapısı planı",
+          "body": "Ev tipi wallbox, iş yeri şarjı ve halka açık istasyon haritası günlük kullanımınızı belirler. Sık şehirlerarası sürüşte menzil tamponu önemlidir."
+        }
+      ],
+      "related": ["arac-toplam-sahiplik-maliyeti", "arac-karsilastirma-rehberi"]
+    },
+    {
+      "slug": "suv-mi-sedan-mi",
+      "title": "SUV mu Sedan mı? Kullanımına Göre Seçim | isteBul",
+      "description": "Aile, şehir içi ve uzun yol için SUV ve sedan karşılaştırması. Segment seçimi rehberi.",
+      "h1": "SUV mu sedan mı — kullanımınıza göre",
+      "intro": "SUV yüksek oturma ve bagaj hacmi sunar; sedan ise genelde daha düşük tüketim ve daha iyi yol tutuşu sağlar. Çocuk sayısı, park alanı ve yıllık km kararınızı şekillendirir.",
+      "sections": [
+        {
+          "heading": "Şehir içi kullanım",
+          "body": "Dar sokaklar ve park için kompakt sedan veya B-SUV düşünün. Yüksek tavanlı büyük SUV'ler manevra ve tüketimde dezavantajlı olabilir."
+        }
+      ],
+      "related": ["arac-karsilastirma-rehberi", "ticari-arac-alimi-rehberi"]
+    },
+    {
+      "slug": "arac-finansman-secenekleri",
+      "title": "Araç Finansman Seçenekleri: Kredi, Leasing, Peşin | isteBul",
+      "description": "Taşıt kredisi, finansal kiralama ve peşin alım karşılaştırması. Türkiye'de araç finansman rehberi.",
+      "h1": "Araç finansman seçenekleri karşılaştırması",
+      "intro": "Peşin alım toplam faizi sıfırlar; kredi nakit akışını korur; operasyonel leasing kurumsal filolarda yaygındır. Vergi ve muhasebe etkisini mali müşavirinizle doğrulayın.",
+      "sections": [
+        {
+          "heading": "Hangi profil hangi aracı seçer?",
+          "body": "Bireysel kullanıcılar çoğunlukla taşıt kredisi kullanır; KOBİ'ler leasing ile filo yenilemesi yapabilir. Her durumda TCO hesabı zorunludur."
+        }
+      ],
+      "related": ["arac-kredisi-hesaplama", "aylik-arac-butcesi-hesaplama"]
+    },
+    {
+      "slug": "aylik-arac-butcesi-hesaplama",
+      "title": "Aylık Araç Bütçesi Nasıl Hesaplanır? | isteBul",
+      "description": "Taksit + yakıt + sigorta + bakım: gerçek aylık araç maliyetinizi hesaplayın. Bütçe planlama rehberi.",
+      "h1": "Aylık araç bütçesi hesaplama",
+      "intro": "Bankaların onayladığı taksit tavanı ile sürdürülebilir bütçe aynı şey değildir. Yakıt, otopark, köprü-otoyol ve beklenmedik bakım payını da ekleyin.",
+      "sections": [
+        {
+          "heading": "50/30/20 kuralı araç için",
+          "body": "Gelirinizin belirli bir yüzdesini ulaşıma ayırın; kredi + işletme gideri bu tavanı aşmamalı. isteBul analizi önerilen üst bütçe bandını çıkarır."
+        }
+      ],
+      "related": ["arac-kredisi-hesaplama", "arac-finansman-secenekleri"]
+    },
+    {
+      "slug": "arac-alim-karar-asistani",
+      "title": "Araç Alım Karar Asistanı — Ücretsiz Analiz | isteBul",
+      "description": "Yapay zeka destekli araç alım karar asistanı: bütçe, kullanım, kredi ve TCO ile Türkiye'ye özel araç önerisi.",
+      "h1": "Araç alım karar asistanı",
+      "intro": "Karar asistanı; onlarca ilan arasında kaybolmadan önce ihtiyacınızı yapılandırır. Sonuçlar tavsiye niteliğindedir; nihai ekspertiz ve sözleşme adımlarında profesyonel destek alın.",
+      "sections": [
+        {
+          "heading": "Nasıl çalışır?",
+          "body": "Kısa soru seti → skorlama → öncelikli segment listesi → isteğe bağlı partner teklif akışı. Veriler KVKK çerçevesinde işlenir."
+        }
+      ],
+      "related": ["karar-asistani", "arac-toplam-sahiplik-maliyeti"]
+    },
+    {
+      "slug": "ticari-arac-alimi-rehberi",
+      "title": "Ticari Araç Alımı Rehberi | isteBul",
+      "description": "Hafif ticari, panelvan ve pickup seçiminde yük kapasitesi, vergi ve işletme maliyeti rehberi.",
+      "h1": "Ticari araç alımı rehberi",
+      "intro": "KOBİ'ler için araç; taşıma kapasitesi, yakıt, amortisman ve sigorta primini birlikte etkiler. Binek araçtan farklı vergi ve trafik kuralları geçerli olabilir.",
+      "sections": [
+        {
+          "heading": "Kapasite ve kullanım",
+          "body": "Günlük rota, yük hacmi ve şehir içi/dışı oranı model seçimini belirler. Fazla kapasiteli araç gereksiz yakıt ve bakım demektir."
+        }
+      ],
+      "related": ["suv-mi-sedan-mi", "arac-finansman-secenekleri"]
+    },
+    {
+      "slug": "arac-sigortasi-karsilastirma",
+      "title": "Araç Sigortası Karşılaştırma | Kasko ve Trafik | isteBul",
+      "description": "Kasko ve trafik sigortasında teminat, muafiyet ve hasarsızlık indirimi nasıl kıyaslanır? Sigorta maliyetini TCO'ya ekleme rehberi.",
+      "h1": "Araç sigortası karşılaştırma rehberi",
+      "intro": "Sigorta primi marka, model, il ve sürücü profiline göre değişir. En düşük prim her zaman en iyi teminat anlamına gelmez.",
+      "sections": [
+        {
+          "heading": "Kasko seçerken",
+          "body": "Cam, doğal afet, mini onarım ve ikame araç teminatlarını madde madde karşılaştırın. TCO hesabına yıllık primi sabit gider olarak ekleyin."
+        }
+      ],
+      "related": ["arac-toplam-sahiplik-maliyeti", "aylik-arac-butcesi-hesaplama"]
+    }
+  ]
+}
