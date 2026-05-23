@@ -88,6 +88,17 @@ export async function onRequestPost(context) {
       }
     }
 
+    let body = {};
+    try {
+      body = await context.request.json();
+    } catch {
+      body = {};
+    }
+
+    const attribution = body.attribution && typeof body.attribution === 'object'
+      ? body.attribution
+      : {};
+
     const params = new URLSearchParams({
       'payment_method_types[]': 'card',
       'line_items[0][price]': STRIPE_PRICE_ID,
@@ -99,6 +110,18 @@ export async function onRequestPost(context) {
       'metadata[userId]': user.id,
       'subscription_data[metadata][userId]': user.id
     });
+
+    if (attribution.utm_source) {
+      params.set('metadata[utm_source]', String(attribution.utm_source).slice(0, 120));
+      params.set('subscription_data[metadata][utm_source]', String(attribution.utm_source).slice(0, 120));
+    }
+    if (attribution.utm_medium) {
+      params.set('metadata[utm_medium]', String(attribution.utm_medium).slice(0, 120));
+    }
+    if (attribution.utm_campaign) {
+      params.set('metadata[utm_campaign]', String(attribution.utm_campaign).slice(0, 120));
+      params.set('subscription_data[metadata][utm_campaign]', String(attribution.utm_campaign).slice(0, 120));
+    }
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',

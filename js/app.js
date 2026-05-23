@@ -7,6 +7,7 @@ import { loadCMS } from './core/cms.js';
 import { supabase } from './core/supabase.js';
 import API from './core/api.js';
 import { monitoring } from './core/monitoring.js';
+import { analytics } from './core/analytics.js';
 import { errorBoundary } from './core/error-boundary.js';
 import { ListingManager } from './features/ilan/ilan.js';
 import { ProfileManager } from './features/profil/profil.js';
@@ -92,6 +93,20 @@ class App {
 
             // Initialize router
             this.router.init();
+
+            document.addEventListener('routeChanged', (event) => {
+                if (localStorage.getItem('istebu_cookie_consent') !== 'accepted') return;
+                analytics.track('route_change', {
+                    route: event.detail?.route,
+                    path: event.detail?.path
+                }, {
+                    category: 'page',
+                    funnel: 'site',
+                    funnel_step: event.detail?.route || 'unknown',
+                    page_path: event.detail?.path
+                });
+                analytics.trackPageView(event.detail?.path || analytics.getPagePath());
+            });
 
             // Initialize Messaging
             if (this.currentUser) {
@@ -285,10 +300,15 @@ class App {
             localStorage.setItem('istebu_cookie_consent', value);
             if (value === 'accepted') {
                 this.loadAnalytics();
+                analytics.init();
                 monitoring.init(true);
             }
             banner.hidden = true;
         };
+
+        if (localStorage.getItem('istebu_cookie_consent') === 'accepted') {
+            analytics.init();
+        }
 
         banner.querySelector('[data-cookie-accept]')?.addEventListener('click', () => savePreference('accepted'));
         banner.querySelector('[data-cookie-decline]')?.addEventListener('click', () => savePreference('declined'));
@@ -3076,6 +3096,7 @@ Açıklama yok.
 
     async handlePremiumCheckout() {
         if (!this.currentUser) {
+            analytics.track('auth_modal_open', { reason: 'checkout' }, { category: 'auth', funnel: 'subscription' });
             this.auth.showLoginModal();
             return;
         }
@@ -3088,13 +3109,31 @@ Açıklama yok.
                 return;
             }
 
+            analytics.track('checkout_started', {
+                product: 'premium',
+                user_id: this.currentUser.id
+            }, {
+                category: 'subscription',
+                funnel: 'subscription',
+                funnel_step: 'checkout_started',
+                user_id: this.currentUser.id
+            });
+
+            const attribution = analytics.getAttribution();
+
             const response = await fetch('/api/create-checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${session.access_token}`
                 },
-                body: JSON.stringify({})
+                body: JSON.stringify({
+                    attribution: {
+                        utm_source: attribution.utm_source,
+                        utm_medium: attribution.utm_medium,
+                        utm_campaign: attribution.utm_campaign
+                    }
+                })
             });
 
             const data = await response.json();

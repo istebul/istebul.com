@@ -64,6 +64,7 @@ async function showApp() {
   loadUsers();
   loadAutoLeads();
   loadAutoAnalytics();
+  loadPlatformAnalytics();
   loadPartnerEndpoints();
 }
 
@@ -75,6 +76,9 @@ function showPage(name, el) {
 
   if (name === 'partner-endpoints') {
     loadPartnerEndpoints();
+  }
+  if (name === 'platform-analytics') {
+    loadPlatformAnalytics();
   }
 }
 
@@ -373,11 +377,21 @@ function normalizePhoneForWhatsapp(phone) {
 }
 
 
+async function trackAdminCrmEvent(eventName, metadata = {}) {
+  try {
+    const { analytics } = await import('./core/analytics.js');
+    analytics.track(eventName, metadata, {
+      category: 'admin',
+      funnel: 'crm',
+      funnel_step: eventName,
+      force: true
+    });
+    analytics.flush();
+  } catch {}
+}
+
 async function trackAdminAutoEvent(eventName, metadata = {}) {
-  // Admin panel analytics should not write directly to auto_events.
-  // Auto funnel events are recorded through the auto-intake Edge Function.
-  void eventName;
-  void metadata;
+  return trackAdminCrmEvent(eventName, metadata);
 }
 
 async function loadAutoAnalytics() {
@@ -606,6 +620,119 @@ async function loadAutoAnalytics() {
 
 
 
+
+function countEvents(rows, name) {
+  return rows.filter((row) => row.event_name === name).length;
+}
+
+function conversionPct(numerator, denominator) {
+  return denominator ? `${Math.round((numerator / denominator) * 100)}%` : '—';
+}
+
+async function loadPlatformAnalytics() {
+  const el = document.getElementById('platform-analytics-root');
+  if (!el) return;
+
+  const { data, error } = await sb
+    .from('analytics_events')
+    .select('event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id')
+    .order('created_at', { ascending: false })
+    .limit(2500);
+
+  if (error) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  const rows = data || [];
+  if (!rows.length) {
+    el.innerHTML = '<p class="empty">Henüz platform analytics event yok. Migration ve analytics-ingest deploy sonrası veri akışı başlar.</p>';
+    return;
+  }
+
+  const pageViews = countEvents(rows, 'page_view') + countEvents(rows, 'auto_page_view');
+  const authModal = countEvents(rows, 'auth_modal_open');
+  const authLoginOk = countEvents(rows, 'auth_login_success');
+  const authRegisterOk = countEvents(rows, 'auth_register_success');
+  const checkoutStarted = countEvents(rows, 'checkout_started');
+  const checkoutCompleted = countEvents(rows, 'checkout_completed');
+  const leadSubmit = countEvents(rows, 'lead_submit') + countEvents(rows, 'auto_lead_submit');
+  const partnerOk = countEvents(rows, 'partner_dispatch_success');
+  const partnerFail = countEvents(rows, 'partner_dispatch_failed');
+  const financeStart = countEvents(rows, 'finance_funnel_start');
+  const ctaClicks = countEvents(rows, 'cta_click');
+
+  const autoSteps = [
+    ['auto_page_view', 'Sayfa'],
+    ['auto_form_started', 'Form başladı'],
+    ['auto_form_submitted', 'Form gönderildi'],
+    ['auto_results_rendered', 'Sonuç'],
+    ['auto_modal_open', 'Lead modal'],
+    ['auto_lead_submit', 'Lead']
+  ];
+
+  const dropoffRows = autoSteps.map(([eventName, label], index) => {
+    const count = countEvents(rows, eventName);
+    const prev = index > 0 ? countEvents(rows, autoSteps[index - 1][0]) : count;
+    const drop = index > 0 && prev ? Math.max(0, prev - count) : 0;
+    return { label, count, drop, conv: index > 0 ? conversionPct(count, prev) : '100%' };
+  });
+
+  const attributionMap = rows
+    .filter((row) => row.event_name === 'revenue_attributed' || row.event_name === 'checkout_completed')
+    .reduce((acc, row) => {
+      const source = row.attribution?.utm_source || 'direct';
+      acc[source] = (acc[source] || 0) + Number(row.revenue_cents || 0);
+      return acc;
+    }, {});
+
+  const crmEvents = rows.filter((row) => row.event_name.startsWith('crm_'));
+
+  el.innerHTML = `
+    <h3 style="margin:0 0 14px 0;">Conversion özeti</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Page views</div><div class="stat-value">${pageViews}</div></div>
+      <div class="stat-card"><div class="stat-label">CTA clicks</div><div class="stat-value">${ctaClicks}</div><div class="stat-sub">${conversionPct(ctaClicks, pageViews)}</div></div>
+      <div class="stat-card"><div class="stat-label">Auth conversion</div><div class="stat-value">${authLoginOk + authRegisterOk}</div><div class="stat-sub">${conversionPct(authLoginOk + authRegisterOk, authModal)}</div></div>
+      <div class="stat-card"><div class="stat-label">Signup</div><div class="stat-value">${authRegisterOk}</div><div class="stat-sub">${conversionPct(authRegisterOk, authModal)}</div></div>
+      <div class="stat-card"><div class="stat-label">Checkout</div><div class="stat-value">${checkoutCompleted}</div><div class="stat-sub">${conversionPct(checkoutCompleted, checkoutStarted)}</div></div>
+      <div class="stat-card"><div class="stat-label">Lead conversion</div><div class="stat-value">${leadSubmit}</div><div class="stat-sub">${conversionPct(leadSubmit, pageViews)}</div></div>
+      <div class="stat-card"><div class="stat-label">Partner dispatch OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
+      <div class="stat-card"><div class="stat-label">Finance funnel</div><div class="stat-value">${financeStart}</div></div>
+    </div>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Auto funnel drop-off</h3>
+    <table class="table">
+      <thead><tr><th>Adım</th><th>Olay</th><th>Düşüş</th><th>Adım CR</th></tr></thead>
+      <tbody>
+        ${dropoffRows.map((row) => `
+          <tr>
+            <td>${escapeHtml(row.label)}</td>
+            <td>${row.count}</td>
+            <td>${row.drop || '—'}</td>
+            <td>${row.conv}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Revenue attribution (UTM)</h3>
+    <div class="stat-grid">
+      ${Object.entries(attributionMap).length ? Object.entries(attributionMap).map(([source, cents]) => `
+        <div class="stat-card">
+          <div class="stat-label">${escapeHtml(source)}</div>
+          <div class="stat-value">${(cents / 100).toLocaleString('tr-TR')} ₺</div>
+        </div>
+      `).join('') : '<p class="empty">Henüz revenue_attributed event yok.</p>'}
+    </div>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Admin CRM outcomes</h3>
+    <p class="text-muted">${crmEvents.length} CRM event (son 2500 kayıt içinde)</p>
+  `;
+}
 
 async function createPartnerEndpoint() {
   const name = document.getElementById('partner-name')?.value?.trim();
@@ -1179,6 +1306,7 @@ async function saveFollowUp(id) {
 
 
 async function updateAutoLeadStatus(id, status) {
+  trackAdminCrmEvent('crm_lead_status_change', { lead_id: id, status });
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -1370,9 +1498,14 @@ function bindAdminPanelEvents() {
         id,
         values
       }).then(() => {
+        trackAdminCrmEvent('crm_partner_status_change', {
+          lead_id: id,
+          partner_status: el.value
+        });
         toast('Partner durumu güncellendi', 'success');
         loadAutoLeads();
         loadAutoAnalytics();
+        loadPlatformAnalytics();
       });
 
       return;

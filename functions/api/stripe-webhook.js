@@ -39,6 +39,24 @@ const markEventProcessed = async (supabase, event) => {
   throw error;
 };
 
+const recordSubscriptionAnalytics = async (supabase, eventName, details = {}) => {
+  const { error } = await supabase.from('analytics_events').insert({
+    event_name: eventName,
+    event_category: 'subscription',
+    user_id: details.userId || null,
+    revenue_cents: details.revenueCents || 0,
+    currency: 'TRY',
+    properties: details.properties || {},
+    attribution: details.attribution || {},
+    source: 'stripe_webhook',
+    idempotency_key: details.idempotencyKey || null
+  });
+
+  if (error && error.code !== '23505') {
+    console.error('Analytics insert failed:', error.message);
+  }
+};
+
 const upsertSubscription = async (supabase, subscription, fallbackUserId = null) => {
   const userId = subscription.metadata?.userId || fallbackUserId;
 
@@ -113,13 +131,51 @@ export async function onRequestPost(context) {
 
         const subscription = await stripe.subscriptions.retrieve(session.subscription);
         await upsertSubscription(supabase, subscription, session.metadata?.userId);
+
+        await recordSubscriptionAnalytics(supabase, 'checkout_completed', {
+          userId: session.metadata?.userId || null,
+          revenueCents: Number(session.amount_total || 0),
+          idempotencyKey: `stripe:${event.id}:checkout_completed`,
+          properties: {
+            stripe_session_id: session.id,
+            billing_interval: session.metadata?.billingInterval || null
+          },
+          attribution: {
+            utm_source: session.metadata?.utm_source || null,
+            utm_campaign: session.metadata?.utm_campaign || null
+          }
+        });
+
+        if (subscription.trial_end && subscription.trial_end > Math.floor(Date.now() / 1000)) {
+          await recordSubscriptionAnalytics(supabase, 'trial_started', {
+            userId: session.metadata?.userId || null,
+            idempotencyKey: `stripe:${event.id}:trial_started`,
+            properties: { stripe_subscription_id: subscription.id }
+          });
+        }
         break;
       }
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
-        await upsertSubscription(supabase, event.data.object);
+        const subscription = event.data.object;
+        await upsertSubscription(supabase, subscription);
+
+        const eventName = event.type === 'customer.subscription.deleted'
+          ? 'subscription_canceled'
+          : event.type === 'customer.subscription.created'
+            ? 'subscription_created'
+            : 'subscription_updated';
+
+        await recordSubscriptionAnalytics(supabase, eventName, {
+          userId: subscription.metadata?.userId || null,
+          idempotencyKey: `stripe:${event.id}:${eventName}`,
+          properties: {
+            status: subscription.status,
+            stripe_subscription_id: subscription.id
+          }
+        });
         break;
       }
 
@@ -133,6 +189,36 @@ export async function onRequestPost(context) {
         if (subscriptionId) {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           await upsertSubscription(supabase, subscription);
+        }
+
+        await recordSubscriptionAnalytics(
+          supabase,
+          event.type === 'invoice.payment_succeeded' ? 'invoice_paid' : 'invoice_failed',
+          {
+            userId: invoice.metadata?.userId || subscriptionId || null,
+            revenueCents: Number(invoice.amount_paid || 0),
+            idempotencyKey: `stripe:${event.id}:${event.type}`,
+            properties: {
+              invoice_id: invoice.id,
+              subscription_id: subscriptionId || null
+            }
+          }
+        );
+
+        if (event.type === 'invoice.payment_succeeded') {
+          await recordSubscriptionAnalytics(supabase, 'revenue_attributed', {
+            userId: invoice.metadata?.userId || null,
+            revenueCents: Number(invoice.amount_paid || 0),
+            idempotencyKey: `stripe:${event.id}:revenue_attributed`,
+            properties: {
+              source: 'stripe_invoice',
+              invoice_id: invoice.id
+            },
+            attribution: {
+              utm_source: invoice.metadata?.utm_source || 'stripe',
+              utm_medium: 'subscription'
+            }
+          });
         }
 
         break;
