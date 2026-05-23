@@ -1811,6 +1811,10 @@ Destek almak istiyorum.`;
 });
 
 document.addEventListener('click', (event) => {
+  if (event.target.closest('.finance-prequal-btn')) {
+    return;
+  }
+
   const financeButton = event.target.closest('[data-interest="finance"], [data-interest="finance_review"], .finance-compare-trigger');
   if (!financeButton) return;
 
