@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin-panel.html
+Disallow: /api/
 
 Sitemap: https://www.istebul.com/sitemap.xml

@@ -1,7 +1,7 @@
 {
-  "name": "isteBu",
-  "short_name": "isteBu",
-  "description": "Araç, ev ve tatil için AI destekli karar asistanı",
+  "name": "isteBul",
+  "short_name": "isteBul",
+  "description": "Araç satın alma kararları için veriye dayalı karar destek platformu",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
