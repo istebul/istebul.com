@@ -45,19 +45,36 @@ export class AuthManager {
         });
     }
 
-    showLoginModal() {
-        this.showAuthModal('login');
+    showLoginModal(options = {}) {
+        this.showAuthModal('login', options);
     }
 
-    showRegisterModal() {
-        this.showAuthModal('register');
+    showRegisterModal(options = {}) {
+        this.showAuthModal('register', options);
     }
 
-    showAuthModal(type) {
+    showCheckoutAuthGate() {
+        this.showAuthModal('register', { intent: 'checkout' });
+    }
+
+    showAuthModal(type, options = {}) {
         const modal = document.getElementById('auth-modal');
+        const modalHeader = modal.querySelector('.modal-header h3');
         const modalBody = modal.querySelector('.modal-body');
 
-        modalBody.innerHTML = type === 'login' ? this.getLoginForm() : this.getRegisterForm();
+        if (modalHeader) {
+            if (options.intent === 'checkout') {
+                modalHeader.textContent = type === 'register' ? 'Pro için hesap oluşturun' : 'Pro için giriş yapın';
+            } else {
+                modalHeader.textContent = type === 'login' ? 'Giriş Yap' : 'Üye Ol';
+            }
+        }
+
+        const intentBanner = options.intent === 'checkout'
+            ? '<p class="auth-intent-banner">7 gün ücretsiz deneme · Stripe ile güvenli ödeme · İstediğiniz zaman iptal</p>'
+            : '';
+
+        modalBody.innerHTML = intentBanner + (type === 'login' ? this.getLoginForm() : this.getRegisterForm());
 
         analytics.track('auth_modal_open', { mode: type }, {
             category: 'auth',
@@ -111,7 +128,8 @@ export class AuthManager {
                 </div>
                 <div class="form-group">
                     <label for="password">Şifre</label>
-                    <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8">
+                    <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8" aria-describedby="password-hint">
+                    <small id="password-hint" class="form-hint">En az 8 karakter</small>
                 </div>
                 <div class="form-group">
                     <label for="confirm-password">Şifre Tekrar</label>
@@ -120,7 +138,7 @@ export class AuthManager {
                 <div class="form-group">
                     <label>
                         <input type="checkbox" id="terms" name="terms" required>
-                        <span>Kullanım koşullarını kabul ediyorum</span>
+                        <span><a href="/kullanim-sartlari.html" target="_blank" rel="noopener">Kullanım şartları</a> ve <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a> metnini kabul ediyorum</span>
                     </label>
                 </div>
                 <button type="submit" class="btn btn-primary full-width">Üye Ol</button>
@@ -272,9 +290,15 @@ export class AuthManager {
                 funnel_step: 'register_success'
             });
 
-            this.showAuthSuccess('Hesabınız oluşturuldu! Lütfen e-posta adresinizi doğrulayın.');
-            // Welcome email disabled until production email provider is configured.
-            setTimeout(() => this.showLoginModal(), 2000);
+            const pendingCheckout = typeof sessionStorage !== 'undefined'
+                && sessionStorage.getItem('istebul_checkout_intent');
+
+            if (pendingCheckout) {
+                this.showAuthSuccess('Hesabınız oluşturuldu. E-posta doğrulamasından sonra giriş yaparak ödemeye devam edebilirsiniz — ücretsiz analiz için /auto sayfasını kullanabilirsiniz.');
+            } else {
+                this.showAuthSuccess('Hesabınız oluşturuldu! Lütfen e-posta adresinizi doğrulayın.');
+            }
+            setTimeout(() => this.showLoginModal(pendingCheckout ? { intent: 'checkout' } : {}), 2800);
 
         } catch (error) {
             console.error('Registration failed:', error);

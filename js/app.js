@@ -113,6 +113,7 @@ class App {
 
             await this.checkAuth();
             this.handleBillingReturnParams();
+            this.handleCheckoutDeepLink();
 
             if (this.currentUser) {
                 await revenueManager.refresh(this.currentUser.id);
@@ -3168,6 +3169,29 @@ Açıklama yok.
         }
     }
 
+    handleCheckoutDeepLink() {
+        const params = new URLSearchParams(window.location.search);
+        const wantsCheckout = params.get('checkout') === 'pro';
+
+        if (window.location.hash === '#pricing' || wantsCheckout) {
+            document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (!wantsCheckout) return;
+
+        this.storeCheckoutIntent({
+            target: {
+                closest: () => ({
+                    dataset: { billing: 'monthly', trial: '1' }
+                })
+            }
+        });
+
+        if (this.currentUser) {
+            setTimeout(() => this.resumeCheckoutIfPending(), 800);
+        }
+    }
+
     requestPremiumUpgrade(feature = 'default') {
         if (!revenueManager.canAccess(feature === 'default' ? 'premium_report' : feature)) {
             revenueManager.mountPaywall(feature);
@@ -3193,11 +3217,54 @@ Açıklama yok.
         return billing === 'annual' ? 'annual' : 'monthly';
     }
 
+    storeCheckoutIntent(event) {
+        const billingInterval = this.resolveCheckoutBilling(event);
+        const trigger = event?.target?.closest?.('[data-upgrade-checkout]');
+        const useTrial = trigger?.dataset?.trial !== '0' && revenueManager.trialEligible;
+        try {
+            sessionStorage.setItem('istebul_checkout_intent', JSON.stringify({
+                billing: billingInterval,
+                useTrial
+            }));
+        } catch {
+            // ignore storage errors
+        }
+    }
+
+    consumeCheckoutIntent() {
+        try {
+            const raw = sessionStorage.getItem('istebul_checkout_intent');
+            if (!raw) return null;
+            sessionStorage.removeItem('istebul_checkout_intent');
+            return JSON.parse(raw);
+        } catch {
+            return null;
+        }
+    }
+
+    async resumeCheckoutIfPending() {
+        const intent = this.consumeCheckoutIntent();
+        if (!intent || !this.currentUser) return;
+
+        const fakeEvent = {
+            target: {
+                closest: () => ({
+                    dataset: {
+                        billing: intent.billing || 'monthly',
+                        trial: intent.useTrial === false ? '0' : '1'
+                    }
+                })
+            }
+        };
+
+        await this.handlePremiumCheckout(fakeEvent);
+    }
+
     async handlePremiumCheckout(event) {
         if (!this.currentUser) {
+            this.storeCheckoutIntent(event);
             analytics.track('auth_modal_open', { reason: 'checkout' }, { category: 'auth', funnel: 'subscription' });
-            this.auth.showLoginModal();
-            this.ui.showError('Pro\'ya geçmek için önce giriş yapın veya ücretsiz hesap oluşturun.');
+            this.auth.showCheckoutAuthGate();
             return;
         }
 
@@ -3823,6 +3890,8 @@ Açıklama yok.
 
         // Reload listings to show user-specific content
         await this.loadListings();
+
+        setTimeout(() => this.resumeCheckoutIfPending(), 600);
     }
 
     async handleUserLogout() {
@@ -3865,6 +3934,11 @@ Açıklama yok.
         }
 
         emailInput.value = '';
+        analytics.track('newsletter_subscribe', { email_domain: email.split('@')[1] || '' }, {
+            category: 'engagement',
+            funnel: 'newsletter',
+            funnel_step: 'subscribed'
+        });
         this.ui.showSuccess('Abonelik kaydınız alındı!');
     }
 

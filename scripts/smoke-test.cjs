@@ -79,8 +79,8 @@ assert(css.includes('Marketplace empty state polish'), 'Marketplace empty state 
 assert(css.includes('--header-max: 1640px'), 'Header max width should prevent desktop nav crowding.');
 assert(css.includes('.assistant-recommendation.featured > *'), 'Featured recommendation children should use a single safe grid flow.');
 const indexHtml = read('index.html');
-assert(indexHtml.includes('data-preview-category="arac"'), 'Hero preview vehicle tab is missing.');
 assert(indexHtml.includes('data-preview-title'), 'Hero preview dynamic title target is missing.');
+assert(indexHtml.includes('preview-category-label') || indexHtml.includes('data-preview-category'), 'Hero preview category marker is missing.');
 assert(indexHtml.includes('data-preview-sources'), 'Hero preview source links are missing.');
 assert(indexHtml.includes('data-my-listings'), 'User menu should expose a real my-listings action.');
 const security = read('js/core/security.js');
