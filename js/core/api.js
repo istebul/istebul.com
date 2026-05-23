@@ -446,20 +446,6 @@ export class API {
         return data;
     }
 
-    static async getSubscription(userId) {
-        if (!userId) return null;
-
-        const { data, error } = await supabase
-            .from('subscriptions')
-            .select('status, current_period_end, cancel_at_period_end, stripe_price_id, stripe_subscription_id')
-            .eq('user_id', userId)
-            .in('status', ['active', 'trialing', 'past_due'])
-            .maybeSingle();
-
-        if (error) throw error;
-        return data;
-    }
-
     static async isTrialEligible(userId) {
         if (!userId) return false;
 
