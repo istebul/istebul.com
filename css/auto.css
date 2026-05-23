@@ -3309,3 +3309,102 @@ html body a.auto-floating-cta{
   color:#64748b;
   font-weight:700;
 }
+
+/* Enterprise polish — Auto funnel */
+body.ib-enterprise.ib-auto{
+  font-feature-settings:"kern" 1,"liga" 1;
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+}
+
+body.ib-enterprise.ib-auto:not(.ib-ready) main{
+  opacity:0;
+  transform:translateY(8px);
+}
+
+body.ib-enterprise.ib-auto.ib-ready main,
+html.ib-ready body.ib-enterprise.ib-auto main{
+  opacity:1;
+  transform:none;
+  transition:opacity .45s cubic-bezier(.22,1,.36,1),transform .45s cubic-bezier(.22,1,.36,1);
+}
+
+.ib-trust-rail--auto{
+  background:linear-gradient(90deg,#0f172a,#1e3a5f);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  color:#e2e8f0;
+  font-size:.78rem;
+}
+
+.ib-trust-rail--auto .ib-trust-rail-inner{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:.5rem 1.25rem;
+  padding:.5rem clamp(18px,5vw,72px);
+  font-weight:700;
+}
+
+.ib-trust-rail--auto span{
+  opacity:.92;
+}
+
+body.ib-enterprise.ib-auto .auto-header{
+  box-shadow:0 1px 0 rgba(15,23,42,.06);
+}
+
+body.ib-enterprise.ib-auto .btn.primary,
+body.ib-enterprise.ib-auto .primary{
+  box-shadow:0 16px 36px rgba(37,99,235,.28);
+  transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;
+}
+
+body.ib-enterprise.ib-auto .btn.primary:hover,
+body.ib-enterprise.ib-auto .primary:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.03);
+}
+
+body.ib-enterprise.ib-auto .hero-card,
+body.ib-enterprise.ib-auto .quiz,
+body.ib-enterprise.ib-auto .results article,
+body.ib-enterprise.ib-auto .grid article,
+body.ib-enterprise.ib-auto .lead-modal-card{
+  transition:transform .28s ease,box-shadow .28s ease;
+}
+
+body.ib-enterprise.ib-auto .hero-card:hover,
+body.ib-enterprise.ib-auto .results article:hover{
+  transform:translateY(-3px);
+  box-shadow:0 22px 64px rgba(15,23,42,.12);
+}
+
+body.ib-enterprise.ib-auto .quiz input,
+body.ib-enterprise.ib-auto .quiz select,
+body.ib-enterprise.ib-auto .lead-modal-card input{
+  transition:border-color .2s ease,box-shadow .2s ease;
+}
+
+body.ib-enterprise.ib-auto .quiz input:focus,
+body.ib-enterprise.ib-auto .quiz select:focus,
+body.ib-enterprise.ib-auto .lead-modal-card input:focus{
+  outline:none;
+  border-color:#2563eb;
+  box-shadow:0 0 0 3px rgba(37,99,235,.2);
+}
+
+body.ib-enterprise.ib-auto .floating-whatsapp{
+  box-shadow:0 16px 40px rgba(15,23,42,.22);
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+
+body.ib-enterprise.ib-auto .floating-whatsapp:hover{
+  transform:translateY(-2px) scale(1.02);
+}
+
+@media (prefers-reduced-motion:reduce){
+  body.ib-enterprise.ib-auto *{
+    transition-duration:.01ms!important;
+    animation-duration:.01ms!important;
+  }
+}

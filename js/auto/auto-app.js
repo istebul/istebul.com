@@ -2,6 +2,8 @@ import { recommendVehicles } from './auto-ai.js?v=ai2';
 import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
 
+document.documentElement.classList.add('ib-ready');
+
 const formatter = new Intl.NumberFormat('tr-TR');
 
 function getBestFinanceOffer(financeOffers, budget) {

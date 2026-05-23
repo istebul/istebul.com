@@ -3,6 +3,12 @@ import { installComparisonUI } from './comparison-ui.js';
 import { installAssistantUI } from './assistant-ui.js';
 import { escapeHtml as escapeHtmlValue, safeImageUrl as sanitizeImageUrl, safeUrl } from '../core/security.js';
 import { refreshLucideIcons, scheduleLucideIcons } from '../runtime/lucide-loader.js';
+
+if (typeof document !== 'undefined') {
+    document.addEventListener('ib:refresh-icons', () => {
+        scheduleLucideIcons();
+    });
+}
 // UI Manager
 import { state } from '../core/state.js';
 

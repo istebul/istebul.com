@@ -1,4 +1,5 @@
 // isteBul v2 - Main Application
+import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
@@ -70,6 +71,8 @@ class App {
 
     async init() {
         try {
+            initEnterpriseUx();
+
             // Initialize monitoring first
             monitoring.init();
 
