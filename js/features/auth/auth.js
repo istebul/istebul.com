@@ -55,8 +55,12 @@ export class AuthManager {
     showAuthModal(type) {
         const modal = document.getElementById('auth-modal');
         const modalBody = modal.querySelector('.modal-body');
+        const modalTitle = modal.querySelector('#auth-modal-title');
 
         modalBody.innerHTML = type === 'login' ? this.getLoginForm() : this.getRegisterForm();
+        if (modalTitle) {
+            modalTitle.textContent = type === 'login' ? 'Giriş Yap' : 'Kurumsal Hesap Oluştur';
+        }
 
         modal.classList.add('show');
         state.setModal('auth');
@@ -111,9 +115,9 @@ export class AuthManager {
                     <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password" required>
                 </div>
                 <div class="form-group">
-                    <label>
+                    <label class="auth-consent">
                         <input type="checkbox" id="terms" name="terms" required>
-                        <span>Kullanım koşullarını kabul ediyorum</span>
+                        <span><a href="/kullanim-sartlari.html" target="_blank" rel="noopener">Kullanım koşullarını</a>, <a href="/kvkk.html" target="_blank" rel="noopener">KVKK metnini</a> ve <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikasını</a> kabul ediyorum.</span>
                     </label>
                 </div>
                 <button type="submit" class="btn btn-primary full-width">Üye Ol</button>

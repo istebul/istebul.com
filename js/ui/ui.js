@@ -163,6 +163,7 @@ export class UIManager {
         const navAuth = document.getElementById('nav-auth');
         const navUser = document.getElementById('nav-user');
         const navMessages = document.getElementById('nav-messages');
+        const mobileAuthActions = document.getElementById('mobile-auth-actions');
 
         if (!navAuth || !navUser) return;
 
@@ -171,12 +172,14 @@ export class UIManager {
             navUser.classList.remove('hidden');
             navAuth.style.display = 'none';
             navUser.style.display = 'flex';
+            if (mobileAuthActions) mobileAuthActions.classList.add('hidden');
             if (navMessages) navMessages.style.display = 'block';
         } else {
             navAuth.classList.remove('hidden');
             navUser.classList.add('hidden');
             navAuth.style.display = 'flex';
             navUser.style.display = 'none';
+            if (mobileAuthActions) mobileAuthActions.classList.remove('hidden');
             if (navMessages) navMessages.style.display = 'none';
         }
     }

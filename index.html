@@ -77,7 +77,7 @@
     </head>
 <body>
     <div class="top-bar" id="announcement-ticker">
-        <p data-cms="announcement"><strong>Bugün:</strong> Kullanıcılar araç, ev ve tatil kararları için toplam maliyet ve kredi karşılaştırması yaptı.</p>
+        <p data-cms="announcement"><strong>Bugün:</strong> Kullanıcılar araç satın alma kararlarında bütçe, finansman ve toplam maliyeti birlikte değerlendirdi.</p>
     </div>
     <!-- Navigation -->
     <nav id="main-nav" class="navbar">
@@ -90,13 +90,9 @@
                 </span>
             </a>
             <div class="nav-menu" id="nav-menu">
-                <a href="/auto" class="nav-link" data-native-route>Karar Analizi</a>
-                
+                <a href="/auto" class="nav-link nav-link-primary" data-native-route>Araç Analizi</a>
                 <a href="#how-it-works" class="nav-link">Nasıl Çalışır</a>
-                <div class="nav-dropdown">
-                    <a href="/auto" class="nav-link" data-native-route>Auto</a>
-                    
-                </div>
+                <a href="/partner" class="nav-link">Partner Programı</a>
                 <a href="/messages/" class="nav-link hidden" id="nav-messages">Mesajlar</a>
             </div>
             <div class="nav-controls">
@@ -291,11 +287,11 @@
         </section>
 
         <!-- Private app sections are mounted lazily by JavaScript after route/auth checks. -->
-    <div id="auth-modal" class="modal">
+    <div id="auth-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Giriş Yap</h3>
-                <button class="modal-close">&times;</button>
+                <h3 id="auth-modal-title">Giriş Yap</h3>
+                <button class="modal-close" type="button" aria-label="Kapat">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="login-form">

@@ -189,11 +189,11 @@ function renderLoading() {
       <h3>İhtiyaç profiliniz ve toplam maliyet etkisi değerlendiriliyor...</h3>
       <p class="loading-copy">Bütçe, kullanım, yakıt tercihi, yıllık kilometre ve finansman durumunuz birlikte değerlendiriliyor.</p>
       <ul class="ai-loading-steps">
-        <li>✓ İhtiyaç profiliniz oluşturuluyor</li>
-        <li>✓ Uygun araç profili oluşturuluyor</li>
-        <li>✓ Toplam sahip olma maliyeti hesaplanıyor</li>
-        <li>✓ Finansman ve kullanım riski modelleniyor</li>
-        <li>✓ Profilinize en yakın seçenekler hazırlanıyor</li>
+        <li class="is-done">İhtiyaç profiliniz oluşturuluyor</li>
+        <li class="is-active">Uygun araç profili hazırlanıyor</li>
+        <li>Toplam sahip olma maliyeti hesaplanıyor</li>
+        <li>Finansman ve kullanım riski modelleniyor</li>
+        <li>Profilinize en yakın seçenekler hazırlanıyor</li>
       </ul>
     </div>
   `;
@@ -922,7 +922,22 @@ function renderResults(results) {
   const root = document.getElementById('auto-results');
 
   if (!Array.isArray(results) || !results.length) {
-    root.innerHTML = '<article class="premium-result-card"><h3>Uygun sonuç bulunamadı</h3><p>Seçimlerinizi değiştirerek yeniden analiz başlatabilirsiniz.</p></article>';
+    root.innerHTML = `
+      <article class="premium-result-card auto-empty-state">
+        <span class="empty-state-icon" aria-hidden="true">iB</span>
+        <p class="kicker">Sonuç bulunamadı</p>
+        <h3>Bu kriterlerle güvenilir bir öneri oluşturamadık.</h3>
+        <p>Aralığı biraz genişletin veya bütçe/yakıt tercihlerini güncelleyerek daha güçlü eşleşmeler görün.</p>
+        <div class="empty-state-actions">
+          <a class="btn primary" href="#auto-wizard">Kriterleri güncelle</a>
+          <button class="btn secondary" type="button" data-reset-auto-filters>Filtreleri sıfırla</button>
+        </div>
+      </article>
+    `;
+    root.querySelector('[data-reset-auto-filters]')?.addEventListener('click', () => {
+      resultFilters = { fuel: 'all', body: 'all', sort: 'score' };
+      renderFilteredAutoResults();
+    });
     return;
   }
 

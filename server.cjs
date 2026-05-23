@@ -45,6 +45,13 @@ app.get('/js/app.bundle.js', (_req, res, next) => {
   res.sendFile(path.join(distJs, bundle));
 });
 
+app.use('/js/chunks', express.static(path.join(__dirname, 'dist', 'js', 'chunks'), {
+  fallthrough: false,
+  setHeaders: (res) => {
+    res.type('application/javascript');
+  }
+}));
+
 app.use(express.static(path.join(__dirname), {
   etag: true,
   maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0
