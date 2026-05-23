@@ -10,8 +10,6 @@ import { monitoring } from './core/monitoring.js';
 import { errorBoundary } from './core/error-boundary.js';
 import { ListingManager } from './features/ilan/ilan.js';
 import { ProfileManager } from './features/profil/profil.js';
-import { AdminManager } from './features/admin/admin.js';
-import { messaging } from './features/messaging.js';
 import './features/i18n/i18n.js';
 
 window.lucide = window.lucide || {
@@ -46,7 +44,7 @@ class App {
         this.router = new Router();
         this.ilan = new ListingManager(this.ui, this.router);
         this.profil = new ProfileManager(this.ui);
-        this.adminManager = new AdminManager(this.ui);
+        this.messagingModule = null;
         this.currentUser = null;
         this.currentListings = [];
         this.currentDetailListing = null;
@@ -84,55 +82,69 @@ class App {
             // Register service worker for PWA
             this.registerServiceWorker();
 
-            // Check authentication status
-            await this.checkAuth();
-
             // Setup event listeners before routing so initial route changes are handled
             this.setupEventListeners();
 
             // Initialize router
             this.router.init();
 
-            // Initialize Messaging
+            this.setupCookieConsent();
+            this.renderHeroDecisionPreview();
+
+            await this.checkAuth();
+
             if (this.currentUser) {
-                messaging.subscribeToMessages(this.currentUser.id, (msg) => {
-                    this.ui.showNotification(`Yeni mesaj: ${msg.content.substring(0, 30)}...`);
-                    if (state.getModal() === 'messaging') {
-                        messaging.loadMessages(this.currentUser.id).then(msgs => {
-                            this.ui.renderMessages(msgs, this.currentUser.id);
-                        });
-                    }
-                });
+                this.initMessaging(this.currentUser.id);
             }
 
-            // Load critical UI first
-            await this.loadListings();
+            const deferHeavyWork = () => {
+                this.loadListings().catch((error) => {
+                    console.error('Failed to load listings:', error);
+                });
 
-            // Defer non-critical data until after first render
-            const deferLoad = () => {
                 Promise.allSettled([
                     this.loadCategories(),
                     this.loadFavorites()
                 ]);
+
                 this.loadComparisonItems();
                 this.loadDecisionHistory();
                 this.loadComparisonHistory();
+                this.renderDecisionAssistant();
             };
 
             if ('requestIdleCallback' in window) {
-                requestIdleCallback(deferLoad, { timeout: 1500 });
+                requestIdleCallback(deferHeavyWork, { timeout: 1200 });
             } else {
-                setTimeout(deferLoad, 800);
+                setTimeout(deferHeavyWork, 300);
             }
-
-            this.setupCookieConsent();
-            this.renderDecisionAssistant();
-            this.renderHeroDecisionPreview();
 
         } catch (error) {
             console.error('Failed to initialize app:', error);
             window.__initError = error;
             throw error;
+        }
+    }
+
+    async initMessaging(userId) {
+        if (!userId || this.messagingModule) {
+            return;
+        }
+
+        try {
+            const { messaging } = await import('./features/messaging.js');
+            this.messagingModule = messaging;
+
+            messaging.subscribeToMessages(userId, (msg) => {
+                this.ui.showNotification(`Yeni mesaj: ${msg.content.substring(0, 30)}...`);
+                if (state.getModal() === 'messaging') {
+                    messaging.loadMessages(userId).then((msgs) => {
+                        this.ui.renderMessages(msgs, userId);
+                    });
+                }
+            });
+        } catch (error) {
+            console.error('Messaging init failed:', error);
         }
     }
 
@@ -313,6 +325,7 @@ class App {
                 this.currentUser = user;
                 this.ui.updateAuthUI(user);
                 await this.loadUserProfile(user.id);
+                await this.initMessaging(user.id);
             } else {
                 this.currentUser = null;
                 this.ui.updateAuthUI(null);
@@ -3664,6 +3677,7 @@ Açıklama yok.
         this.currentUser = user;
         this.ui.updateAuthUI(user);
         await this.loadUserProfile(user.id);
+        await this.initMessaging(user.id);
         this.loadDecisionHistory();
         this.loadComparisonHistory();
 
@@ -3673,6 +3687,7 @@ Açıklama yok.
 
     async handleUserLogout() {
         this.currentUser = null;
+        this.messagingModule = null;
         this.decisionHistory = [];
         this.localListings = [];
         this.ui.updateAuthUI(null);

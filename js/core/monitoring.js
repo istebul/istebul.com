@@ -31,17 +31,34 @@ export class MonitoringManager {
         }
     }
 
+    async loadSentryScript() {
+        if (window.Sentry) {
+            return window.Sentry;
+        }
+
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://browser.sentry-cdn.com/8.55.0/bundle.min.js';
+            script.crossOrigin = 'anonymous';
+            script.defer = true;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+
+        return window.Sentry;
+    }
+
     async initSentry() {
-        const Sentry = await import('@sentry/browser');
+        const Sentry = await this.loadSentryScript();
         this.sentry = Sentry;
 
         Sentry.init({
             dsn: this.sentryDSN,
             environment: this.getEnvironment(),
             release: config.app?.version || '2.0.0',
-            tracesSampleRate: this.getEnvironment() === 'production' ? 0.1 : 1.0,
-            attachStacktrace: true,
-            integrations: []
+            tracesSampleRate: this.getEnvironment() === 'production' ? 0.05 : 0.2,
+            attachStacktrace: true
         });
     }
 

@@ -6,7 +6,9 @@ const crypto = require('crypto');
 
 const root = process.cwd();
 const dist = path.join(root, 'dist');
-const staticRoots = ['js/auto', 'assets', 'data'];
+const staticRoots = ['assets', 'data'];
+const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/+esm';
+const bundleExternals = ['@supabase/supabase-js'];
 const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html'];
 const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
 
@@ -77,6 +79,32 @@ const rewriteAssetRefs = (html) => {
   return output;
 };
 
+const importMapTag = () => `<script type="importmap">${JSON.stringify({
+  imports: {
+    '@supabase/supabase-js': SUPABASE_CDN
+  }
+})}</script>`;
+
+const injectPerformanceHints = (html, appBundleFile) => {
+  let output = html;
+
+  output = output.replace(
+    '<!-- perf:importmap -->',
+    importMapTag()
+  );
+
+  if (appBundleFile) {
+    output = output.replace(
+      '<!-- perf:modulepreload -->',
+      `<link rel="modulepreload" href="/js/${appBundleFile}" crossorigin>`
+    );
+  } else {
+    output = output.replace('<!-- perf:modulepreload -->', '');
+  }
+
+  return output;
+};
+
 const minifyHtml = (source) => source
   .replace(/<!--[\s\S]*?-->/g, '')
   .replace(/>\s+</g, '><')
@@ -124,6 +152,7 @@ esbuild.buildSync({
   minify: true,
   sourcemap: false,
   splitting: true,
+  external: bundleExternals,
   chunkNames: 'chunks/[name]-[hash]',
   entryNames: 'app.bundle-[hash]',
   outdir: path.join(dist, 'js')
@@ -138,11 +167,7 @@ pendingStaticFiles.forEach(({ file, source }) => {
   let html = rewriteAssetRefs(source);
   if (file === 'index.html') {
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, 'js/' + appBundleFile);
-  }
-
-  if (file === 'auto/index.html') {
-    const autoVersion = Date.now();
-    html = html.replace(/auto-app\.js\?v=\d+/g, `auto-app.js?v=${autoVersion}`);
+    html = injectPerformanceHints(html, appBundleFile);
   }
 
   writeFile(file, minifyHtml(html));
@@ -156,36 +181,41 @@ esbuild.buildSync({
   target: 'es2020',
   minify: true,
   sourcemap: false,
+  external: bundleExternals,
   outfile: path.join(dist, 'js/admin-panel.js')
 });
 
-// Force Auto page to use isolated stable asset paths to bypass path-specific edge asset failures.
 const autoAssetDir = path.join(dist, 'assets', 'auto-runtime');
 fs.mkdirSync(autoAssetDir, { recursive: true });
 
 const autoCssSource = path.join(root, 'css', 'auto.css');
-const autoJsSourceDir = path.join(root, 'js', 'auto');
-const autoJsTargetDir = path.join(autoAssetDir, 'js', 'auto');
-
 if (fs.existsSync(autoCssSource)) {
-  fs.copyFileSync(autoCssSource, path.join(autoAssetDir, 'ib-car.css'));
+  const autoCss = esbuild.transformSync(fs.readFileSync(autoCssSource, 'utf8'), {
+    loader: 'css',
+    minify: true
+  }).code;
+  writeFile('assets/auto-runtime/ib-car.css', autoCss);
 }
 
-if (fs.existsSync(autoJsSourceDir)) {
-  fs.cpSync(autoJsSourceDir, autoJsTargetDir, { recursive: true });
-
-  // Keep Auto runtime identical to source so security-sensitive flows
-  // such as Turnstile token generation remain active in production.
-}
+const autoBundlePath = path.join(autoAssetDir, 'auto-app.js');
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/auto/auto-app.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: autoBundlePath
+});
 
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
 if (fs.existsSync(autoHtmlPath)) {
   let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
   autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/assets/auto-runtime/ib-car.css');
   autoHtml = autoHtml.replace(/\/css\/auto\.css/g, '/assets/auto-runtime/ib-car.css');
-  autoHtml = autoHtml.replace(/(?:\/assets\/auto-runtime)*\/js\/auto\/auto-app\.js\?v=[^"']+/g, '/assets/auto-runtime/js/auto/auto-app.js?v=stable-auto-runtime-v3');
-  autoHtml = autoHtml.replace(/(?:\/assets\/auto-runtime)*\/js\/auto\/auto-app\.js/g, '/assets/auto-runtime/js/auto/auto-app.js');
-  fs.writeFileSync(autoHtmlPath, autoHtml);
+  autoHtml = autoHtml.replace(/\/assets\/auto-runtime\/auto-app\.js(?:\?v=[^"']+)?/g, '/assets/auto-runtime/auto-app.js');
+  fs.writeFileSync(autoHtmlPath, minifyHtml(autoHtml));
 }
 
 const manifest = {

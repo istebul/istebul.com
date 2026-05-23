@@ -2,6 +2,7 @@ import { installListingsUI } from './listings-ui.js';
 import { installComparisonUI } from './comparison-ui.js';
 import { installAssistantUI } from './assistant-ui.js';
 import { escapeHtml as escapeHtmlValue, safeImageUrl as sanitizeImageUrl, safeUrl } from '../core/security.js';
+import { refreshLucideIcons, scheduleLucideIcons } from '../runtime/lucide-loader.js';
 // UI Manager
 import { state } from '../core/state.js';
 
@@ -138,10 +139,11 @@ export class UIManager {
     }
 
     loadIcons() {
-        // Load Lucide icons
-        if (typeof lucide !== 'undefined') {
-            window.lucide?.createIcons();
-        }
+        scheduleLucideIcons();
+    }
+
+    async refreshIcons() {
+        await refreshLucideIcons();
     }
 
     updateCollectionBadges({ favorites = 0, comparisons = 0 } = {}) {

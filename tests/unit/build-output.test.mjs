@@ -22,6 +22,7 @@ test('service worker pre-caches offline page but bypasses env.js cache', () => {
   assert.match(worker, /'\/offline\.html'/);
   assert.match(worker, /url\.pathname === '\/env\.js'/);
   assert.match(worker, /cache: 'no-store'/);
+  assert.match(worker, /IMMUTABLE_ASSET/);
 });
 
 test('offline page has no third-party runtime dependencies', () => {

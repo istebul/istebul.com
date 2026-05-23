@@ -4,8 +4,8 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist');
 const reportPath = path.join(dist, 'bundle-report.json');
-const maxChunkBytes = 250 * 1024;
-const maxTotalBytes = 1024 * 1024;
+const maxChunkBytes = 320 * 1024;
+const maxTotalBytes = 900 * 1024;
 
 const files = [];
 

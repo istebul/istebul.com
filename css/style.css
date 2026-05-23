@@ -36,6 +36,15 @@ img {
     height: auto;
 }
 
+.section:not(.hero-section),
+.guide-section,
+.section-bg,
+.section-surface,
+#compare {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 900px;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
