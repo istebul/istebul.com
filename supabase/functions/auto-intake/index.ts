@@ -442,6 +442,12 @@ Deno.serve(async (req) => {
       scoring.priority = "verification_failed";
     }
 
+    const contextNotes = [
+      form.city ? `Şehir: ${clampString(form.city, 60)}` : "",
+      form.district ? `İlçe: ${clampString(form.district, 60)}` : "",
+      form.privacy_consent === "accepted" ? "KVKK/partner paylaşım onayı: alındı" : "",
+    ].filter(Boolean).join(" | ");
+
     const financeNotes = [
       form.finance_bank ? `Banka: ${clampString(form.finance_bank, 80)}` : "",
       form.finance_loan_amount ? `Kredi tutarı: ${clampNumber(form.finance_loan_amount, 0, 20000000)} TL` : "",
@@ -449,6 +455,7 @@ Deno.serve(async (req) => {
       form.finance_monthly_payment ? `Aylık ödeme: ${clampNumber(form.finance_monthly_payment, 0, 20000000)} TL` : "",
       form.finance_total_payment ? `Toplam geri ödeme: ${clampNumber(form.finance_total_payment, 0, 200000000)} TL` : "",
     ].filter(Boolean).join(" | ");
+    const leadNotes = [contextNotes, financeNotes].filter(Boolean).join(" | ");
 
     const payload = {
       email: normalizedEmail,
@@ -477,8 +484,8 @@ Deno.serve(async (req) => {
       status: isTestLead(phone) ? "test_spam" : verificationFailed ? "verification_failed" : "new",
       source: "auto",
       notes: verificationFailed
-        ? `Turnstile doğrulaması başarısız oldu; manuel kontrol önerilir.${financeNotes ? " | " + financeNotes : ""}`
-        : financeNotes || null,
+        ? `Turnstile doğrulaması başarısız oldu; manuel kontrol önerilir.${leadNotes ? " | " + leadNotes : ""}`
+        : leadNotes || null,
     };
 
     let leadId: string | null = null;

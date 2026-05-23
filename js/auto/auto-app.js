@@ -143,6 +143,41 @@ function readForm(form) {
   return Object.fromEntries(new FormData(form).entries());
 }
 
+function setupAutoMobileNav() {
+  const header = document.querySelector('.auto-header');
+  const toggle = document.querySelector('.auto-nav-toggle');
+  const nav = document.getElementById('auto-nav');
+
+  if (!header || !toggle || !nav) return;
+
+  header.classList.add('nav-enhanced');
+
+  const setOpen = (isOpen) => {
+    header.classList.toggle('is-nav-open', isOpen);
+    toggle.setAttribute('aria-expanded', String(isOpen));
+  };
+
+  toggle.addEventListener('click', () => {
+    setOpen(!header.classList.contains('is-nav-open'));
+  });
+
+  nav.addEventListener('click', (event) => {
+    if (event.target.closest('a')) {
+      setOpen(false);
+    }
+  });
+}
+
+function getCurrentLeadPayload() {
+  const autoForm = document.getElementById('auto-form');
+  const formPayload = autoForm ? readForm(autoForm) : {};
+  const storedPayload = safeJsonParse(localStorage.getItem('istebul_auto_lead_payload'), {});
+  return {
+    ...storedPayload,
+    ...formPayload
+  };
+}
+
 async function callAutoIntake(payload) {
   const supabaseUrl = window.__env?.SUPABASE_URL;
   const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
@@ -214,11 +249,11 @@ function renderLoading() {
       <h3>İhtiyaç profiliniz ve toplam maliyet etkisi değerlendiriliyor...</h3>
       <p class="loading-copy">Bütçe, kullanım, yakıt tercihi, yıllık kilometre ve finansman durumunuz birlikte değerlendiriliyor.</p>
       <ul class="ai-loading-steps">
-        <li>✓ İhtiyaç profiliniz oluşturuluyor</li>
-        <li>✓ Uygun araç profili oluşturuluyor</li>
-        <li>✓ Toplam sahip olma maliyeti hesaplanıyor</li>
-        <li>✓ Finansman ve kullanım riski modelleniyor</li>
-        <li>✓ Profilinize en yakın seçenekler hazırlanıyor</li>
+        <li class="is-done">İhtiyaç profiliniz oluşturuluyor</li>
+        <li class="is-active">Uygun araç profili hazırlanıyor</li>
+        <li>Toplam sahip olma maliyeti hesaplanıyor</li>
+        <li>Finansman ve kullanım riski modelleniyor</li>
+        <li>Profilinize en yakın seçenekler hazırlanıyor</li>
       </ul>
     </div>
   `;
@@ -226,7 +261,7 @@ function renderLoading() {
 
 async function updateLeadInterest(phone, interestType, vehicle = '', options = {}) {
   const email = localStorage.getItem('istebul_auto_lead_email');
-  const storedPayload = safeJsonParse(localStorage.getItem('istebul_auto_lead_payload'), {});
+  const leadPayload = getCurrentLeadPayload();
 
   return await callAutoIntake({
     type: 'lead',
@@ -234,10 +269,13 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
     phone,
     turnstile_token: options.turnstileToken || '',
     formData: {
-      ...storedPayload,
+      ...leadPayload,
       phone,
       contact_name: options.contactName || '',
       preferred_contact_time: options.preferredContactTime || '',
+      city: options.city || leadPayload.city || '',
+      district: options.district || leadPayload.district || '',
+      privacy_consent: options.privacyConsent ? 'accepted' : '',
       interest_type: interestType,
       vehicle,
       finance_bank: options.financeBank || '',
@@ -586,6 +624,14 @@ function openLeadModal(type, vehicle = '') {
             <option value="expert_consultation">Uzman görüşmesi</option>
           </select>
 
+          <label class="lead-consent">
+            <input name="privacy_consent" type="checkbox" value="accepted" required>
+            <span>
+              <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a>,
+              <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a> ve uygun partnerlerle iletişim amacıyla paylaşım metnini kabul ediyorum.
+            </span>
+          </label>
+
           <button class="btn primary" type="submit">${escapeHtml(flow.submit)}</button>
           <button class="btn secondary" type="button" id="cancel-lead-modal">Vazgeç</button>
         </form>
@@ -613,6 +659,8 @@ function openLeadModal(type, vehicle = '') {
       const contactName = form.get('name') || '';
       const selectedVehicle = form.get('vehicle') || vehicle;
       const selectedInterest = form.get('interest') || type;
+      const city = String(form.get('city') || '').trim();
+      const privacyConsent = form.get('privacy_consent') === 'accepted';
 
       if (form.get('email')) {
         localStorage.setItem('istebul_auto_lead_email', form.get('email'));
@@ -631,6 +679,8 @@ function openLeadModal(type, vehicle = '') {
         await updateLeadInterest(phone, selectedInterest, selectedVehicle, {
           turnstileToken,
           contactName,
+          city,
+          privacyConsent,
           financeBank: financeContext.bank || '',
           financeLoanAmount: financeComparison.loanAmount || '',
           financeTerm: financeComparison.term || '',
@@ -939,7 +989,22 @@ function renderResults(results) {
   const root = document.getElementById('auto-results');
 
   if (!Array.isArray(results) || !results.length) {
-    root.innerHTML = '<article class="premium-result-card"><h3>Uygun sonuç bulunamadı</h3><p>Seçimlerinizi değiştirerek yeniden analiz başlatabilirsiniz.</p></article>';
+    root.innerHTML = `
+      <article class="premium-result-card auto-empty-state">
+        <span class="empty-state-icon" aria-hidden="true">iB</span>
+        <p class="kicker">Sonuç bulunamadı</p>
+        <h3>Bu kriterlerle güvenilir bir öneri oluşturamadık.</h3>
+        <p>Aralığı biraz genişletin veya bütçe/yakıt tercihlerini güncelleyerek daha güçlü eşleşmeler görün.</p>
+        <div class="empty-state-actions">
+          <a class="btn primary" href="#auto-wizard">Kriterleri güncelle</a>
+          <button class="btn secondary" type="button" data-reset-auto-filters>Filtreleri sıfırla</button>
+        </div>
+      </article>
+    `;
+    root.querySelector('[data-reset-auto-filters]')?.addEventListener('click', () => {
+      resultFilters = { fuel: 'all', body: 'all', sort: 'score' };
+      renderFilteredAutoResults();
+    });
     return;
   }
 
@@ -1585,6 +1650,7 @@ if (wizard) {
 }
 
 
+setupAutoMobileNav();
 loadAutoRuntimeConfig();
 if (localStorage.getItem('istebu_cookie_consent') === 'accepted') {
   analytics.init();
@@ -1619,6 +1685,7 @@ form.addEventListener('submit', async (event) => {
   trackAutoEvent('auto_form_submitted');
 
   const formData = readForm(form);
+  localStorage.setItem('istebul_auto_lead_payload', JSON.stringify(formData));
   const vehicleCatalog = await getVehicleCatalog();
   const results = recommendVehicles(formData, vehicleCatalog);
   lastResults = results;
