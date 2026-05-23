@@ -48,7 +48,7 @@ function renderAutoUpgradeStrip() {
       <div class="revenue-upgrade-copy">
         <span class="revenue-upgrade-kicker">isteBul Pro</span>
         <strong>Tüm sonuçları ve premium raporu açın</strong>
-        <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma ve detaylı rapor.</p>
+        <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma — ilk abonelikte 7 gün ücretsiz deneme.</p>
       </div>
       <div class="revenue-upgrade-actions">
         <a class="btn btn-primary" href="/profil/?upgrade=1">Pro\'ya geç</a>

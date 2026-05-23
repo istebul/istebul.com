@@ -432,6 +432,19 @@ export class API {
         return data;
     }
 
+    static async isTrialEligible(userId) {
+        if (!userId) return false;
+
+        const { data, error } = await supabase
+            .from('subscriptions')
+            .select('id')
+            .eq('user_id', userId)
+            .limit(1);
+
+        if (error) return false;
+        return !data?.length;
+    }
+
     // OpenAI proxy
     static async askAI(prompt, context = {}) {
         const { data: { session } } = await supabase.auth.getSession();

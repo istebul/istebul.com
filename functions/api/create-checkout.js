@@ -42,6 +42,29 @@ const getAuthenticatedUser = async (context, token) => {
   return res.json();
 };
 
+const userHasSubscriptionHistory = async (context, userId) => {
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = context.env;
+
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return false;
+  }
+
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${userId}&select=id&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+      }
+    }
+  );
+
+  if (!res.ok) return false;
+
+  const rows = await res.json();
+  return Array.isArray(rows) && rows.length > 0;
+};
+
 export async function onRequestPost(context) {
   const origin = context.request.headers.get('Origin');
 
@@ -52,6 +75,8 @@ export async function onRequestPost(context) {
   try {
     const STRIPE_SECRET_KEY = context.env.STRIPE_SECRET_KEY;
     const STRIPE_PRICE_ID = context.env.STRIPE_PRICE_ID;
+    const STRIPE_PRICE_ID_ANNUAL = context.env.STRIPE_PRICE_ID_ANNUAL;
+    const TRIAL_DAYS = Math.max(0, parseInt(context.env.STRIPE_TRIAL_DAYS || '7', 10) || 0);
 
     if (!STRIPE_SECRET_KEY || !STRIPE_PRICE_ID) {
       return json({ error: 'Stripe not configured' }, 500, origin);
@@ -68,6 +93,20 @@ export async function onRequestPost(context) {
     if (!user?.id || !user?.email) {
       return json({ error: 'Invalid token' }, 401, origin);
     }
+
+    let payload = {};
+
+    try {
+      payload = await context.request.json();
+    } catch {
+      payload = {};
+    }
+
+    const billingInterval = payload.billingInterval === 'annual' ? 'annual' : 'monthly';
+    const requestedTrial = payload.useTrial !== false;
+    const priceId = billingInterval === 'annual'
+      ? (STRIPE_PRICE_ID_ANNUAL || STRIPE_PRICE_ID)
+      : STRIPE_PRICE_ID;
 
     const { SUPABASE_SERVICE_ROLE_KEY } = context.env;
 
@@ -92,24 +131,41 @@ export async function onRequestPost(context) {
       }
     }
 
+    const hadSubscriptionBefore = await userHasSubscriptionHistory(context, user.id);
+    const trialDays = requestedTrial && TRIAL_DAYS > 0 && !hadSubscriptionBefore ? TRIAL_DAYS : 0;
+
+    const successParams = new URLSearchParams({ subscribed: 'true' });
+    if (trialDays > 0) {
+      successParams.set('trial', '1');
+    }
+    if (billingInterval === 'annual') {
+      successParams.set('plan', 'annual');
+    }
+
     const params = new URLSearchParams({
       'payment_method_types[]': 'card',
-      'line_items[0][price]': STRIPE_PRICE_ID,
+      'line_items[0][price]': priceId,
       'line_items[0][quantity]': '1',
       mode: 'subscription',
-      success_url: `${getSiteUrl(context)}/profil?subscribed=true`,
+      success_url: `${getSiteUrl(context)}/profil?${successParams.toString()}`,
       cancel_url: `${getSiteUrl(context)}/profil?cancelled=true`,
       customer_email: user.email,
       'metadata[userId]': user.id,
-      'subscription_data[metadata][userId]': user.id
+      'metadata[billingInterval]': billingInterval,
+      'subscription_data[metadata][userId]': user.id,
+      'subscription_data[metadata][billingInterval]': billingInterval
     });
+
+    if (trialDays > 0) {
+      params.set('subscription_data[trial_period_days]', String(trialDays));
+    }
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Idempotency-Key': `checkout-${user.id}-${crypto.randomUUID()}`
+        'Idempotency-Key': `checkout-${user.id}-${billingInterval}-${trialDays > 0 ? 'trial' : 'paid'}-${crypto.randomUUID()}`
       },
       body: params.toString()
     });
@@ -121,7 +177,11 @@ export async function onRequestPost(context) {
       return json({ error: 'Checkout could not be created' }, 502, origin);
     }
 
-    return json({ url: data.url }, 200, origin);
+    return json({
+      url: data.url,
+      trialApplied: trialDays > 0,
+      billingInterval
+    }, 200, origin);
   } catch (err) {
     console.error('create-checkout error:', err);
     return json({ error: 'Internal server error' }, 500, origin);

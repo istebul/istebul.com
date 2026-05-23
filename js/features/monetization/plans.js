@@ -16,8 +16,29 @@ export const PLANS = {
     id: 'pro',
     name: 'isteBul Pro',
     priceLabel: 'Aylık abonelik',
-    priceHint: 'Stripe üzerinden güvenli ödeme',
+    priceHint: 'Stripe üzerinden güvenli ödeme · istediğiniz zaman iptal',
     description: 'Gelişmiş analiz, sınırsız karşılaştırma ve öncelikli partner yönlendirme',
+    trialDays: 7,
+    trialLabel: '7 gün ücretsiz dene',
+    billing: {
+      monthly: {
+        id: 'monthly',
+        label: 'Aylık',
+        priceDisplay: '₺299',
+        periodLabel: '/ ay',
+        checkoutLabel: 'Aylık Pro\'ya geç'
+      },
+      annual: {
+        id: 'annual',
+        label: 'Yıllık',
+        priceDisplay: '₺2.870',
+        periodLabel: '/ yıl',
+        monthlyEquivalent: '₺239 / ay',
+        savingsLabel: '%20 tasarruf',
+        discountPercent: 20,
+        checkoutLabel: 'Yıllık Pro\'ya geç (indirimli)'
+      }
+    },
     highlights: [
       'Sınırsız karşılaştırma',
       'Detaylı premium karar raporu',

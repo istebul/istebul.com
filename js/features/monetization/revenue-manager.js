@@ -7,6 +7,8 @@ export class RevenueManager {
   constructor() {
     this.subscription = null;
     this.isPremium = false;
+    this.trialEligible = true;
+    this.selectedBilling = 'monthly';
     this.loading = false;
   }
 
@@ -14,15 +16,20 @@ export class RevenueManager {
     if (!userId) {
       this.subscription = null;
       this.isPremium = false;
+      this.trialEligible = true;
       return null;
     }
 
     this.loading = true;
 
     try {
-      const sub = await API.getSubscription(userId);
+      const [sub, trialEligible] = await Promise.all([
+        API.getSubscription(userId),
+        API.isTrialEligible(userId)
+      ]);
       this.subscription = sub;
       this.isPremium = Boolean(sub && ACTIVE_STATUSES.has(sub.status));
+      this.trialEligible = trialEligible && !this.isPremium;
 
       if (typeof localStorage !== 'undefined') {
         if (this.isPremium) {
@@ -113,7 +120,7 @@ export class RevenueManager {
           <p>${copy.body}</p>
         </div>
         <div class="revenue-upgrade-actions">
-          <button type="button" class="btn btn-primary" data-upgrade-checkout>${PLANS.pro.cta}</button>
+          <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1">${this.getCheckoutCtaLabel()}</button>
           <a href="/#pricing" class="btn btn-outline" data-native-route>Planları incele</a>
         </div>
       </aside>
@@ -134,7 +141,7 @@ export class RevenueManager {
             ${PLANS.pro.highlights.slice(0, 4).map((item) => `<li>${item}</li>`).join('')}
           </ul>
           <div class="revenue-upgrade-actions">
-            <button type="button" class="btn btn-primary" data-upgrade-checkout>${PLANS.pro.cta}</button>
+            <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1">${this.getCheckoutCtaLabel()}</button>
             <button type="button" class="btn btn-outline" data-revenue-paywall-close>Şimdilik ücretsiz devam et</button>
           </div>
           <p class="revenue-paywall-note">İstediğiniz zaman iptal edebilirsiniz. Ödeme Stripe ile güvenli şekilde alınır.</p>
@@ -192,8 +199,41 @@ export class RevenueManager {
     return map[reason] || map.default;
   }
 
+  getCheckoutCtaLabel(billing = this.selectedBilling) {
+    const plan = PLANS.pro.billing[billing] || PLANS.pro.billing.monthly;
+
+    if (this.trialEligible) {
+      return PLANS.pro.trialLabel;
+    }
+
+    return plan.checkoutLabel;
+  }
+
+  getSelectedBillingOption() {
+    return PLANS.pro.billing[this.selectedBilling] || PLANS.pro.billing.monthly;
+  }
+
   renderPricingCards() {
+    const monthly = PLANS.pro.billing.monthly;
+    const annual = PLANS.pro.billing.annual;
+    const trialBadge = this.trialEligible
+      ? `<span class="revenue-trial-badge">${PLANS.pro.trialLabel}</span>`
+      : '';
+
     return `
+      <div class="revenue-billing-toggle" role="radiogroup" aria-label="Faturalama dönemi">
+        <label class="revenue-billing-option">
+          <input type="radio" name="billing-interval" value="monthly" checked>
+          <span>${monthly.label}</span>
+          <strong>${monthly.priceDisplay}<small>${monthly.periodLabel}</small></strong>
+        </label>
+        <label class="revenue-billing-option revenue-billing-option--annual">
+          <input type="radio" name="billing-interval" value="annual">
+          <span>${annual.label} <em>${annual.savingsLabel}</em></span>
+          <strong>${annual.priceDisplay}<small>${annual.periodLabel}</small></strong>
+          <small class="revenue-billing-equiv">${annual.monthlyEquivalent}</small>
+        </label>
+      </div>
       <div class="revenue-pricing-grid">
         <article class="revenue-plan-card">
           <span class="revenue-plan-badge">Bireysel</span>
@@ -205,15 +245,57 @@ export class RevenueManager {
         </article>
         <article class="revenue-plan-card revenue-plan-card--featured">
           <span class="revenue-plan-badge revenue-plan-badge--pro">Önerilen</span>
+          ${trialBadge}
           <h3>${PLANS.pro.name}</h3>
-          <p class="revenue-plan-price">${PLANS.pro.priceLabel}</p>
+          <p class="revenue-plan-price" data-revenue-price-display>${monthly.priceDisplay}<small data-revenue-price-period>${monthly.periodLabel}</small></p>
+          <p class="revenue-plan-equiv" data-revenue-price-equiv hidden>${annual.monthlyEquivalent} · ${annual.savingsLabel}</p>
           <p class="revenue-plan-desc">${PLANS.pro.description}</p>
           <ul>${PLANS.pro.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
-          <button type="button" class="btn btn-primary" data-upgrade-checkout>${PLANS.pro.cta}</button>
-          <p class="revenue-plan-hint">${PLANS.pro.priceHint}</p>
+          <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1" data-revenue-checkout-cta>${this.getCheckoutCtaLabel('monthly')}</button>
+          <p class="revenue-plan-hint">${PLANS.pro.priceHint}${this.trialEligible ? ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz` : ''}</p>
         </article>
       </div>
     `;
+  }
+
+  initPricingControls(root = document.getElementById('pricing-plans-root')) {
+    if (!root) return;
+
+    const radios = root.querySelectorAll('input[name="billing-interval"]');
+    const priceDisplay = root.querySelector('[data-revenue-price-display]');
+    const pricePeriod = root.querySelector('[data-revenue-price-period]');
+    const priceEquiv = root.querySelector('[data-revenue-price-equiv]');
+    const checkoutCta = root.querySelector('[data-revenue-checkout-cta]');
+
+    const sync = () => {
+      const selected = root.querySelector('input[name="billing-interval"]:checked')?.value || 'monthly';
+      this.selectedBilling = selected;
+      const plan = this.getSelectedBillingOption();
+
+      if (priceDisplay) {
+        priceDisplay.innerHTML = `${plan.priceDisplay}<small data-revenue-price-period>${plan.periodLabel}</small>`;
+      }
+
+      if (priceEquiv) {
+        if (selected === 'annual') {
+          priceEquiv.textContent = `${PLANS.pro.billing.annual.monthlyEquivalent} · ${PLANS.pro.billing.annual.savingsLabel}`;
+          priceEquiv.hidden = false;
+        } else {
+          priceEquiv.hidden = true;
+        }
+      }
+
+      if (checkoutCta) {
+        checkoutCta.textContent = this.getCheckoutCtaLabel(selected);
+        checkoutCta.dataset.billing = selected;
+      }
+    };
+
+    radios.forEach((radio) => {
+      radio.addEventListener('change', sync);
+    });
+
+    sync();
   }
 
   renderProfileSubscriptionBlock() {
@@ -221,12 +303,15 @@ export class RevenueManager {
       const end = this.subscription?.current_period_end
         ? new Date(this.subscription.current_period_end).toLocaleDateString('tr-TR')
         : null;
+      const isTrialing = this.subscription?.status === 'trialing';
 
       return `
         <div class="revenue-subscription-card revenue-subscription-card--active">
-          <span class="revenue-upgrade-kicker">Aktif abonelik</span>
+          <span class="revenue-upgrade-kicker">${isTrialing ? 'Deneme süresi' : 'Aktif abonelik'}</span>
           <h3>isteBul Pro</h3>
-          <p>Tüm premium özellikler açık${end ? ` · Dönem sonu: ${end}` : ''}.</p>
+          <p>${isTrialing
+            ? `${PLANS.pro.trialDays} günlük ücretsiz deneme aktif. Deneme bitiminde seçtiğiniz plan üzerinden ücretlendirilirsiniz.`
+            : `Tüm premium özellikler açık${end ? ` · Dönem sonu: ${end}` : ''}.`}</p>
           <button type="button" class="btn btn-outline" id="premium-checkout-btn">Aboneliği yönet</button>
         </div>
       `;
@@ -236,11 +321,34 @@ export class RevenueManager {
       <div class="revenue-subscription-card">
         <span class="revenue-upgrade-kicker">Yükseltme</span>
         <h3>Pro ile daha hızlı karar verin</h3>
-        <p>Sınırsız karşılaştırma, premium rapor ve öncelikli partner yönlendirmesi.</p>
-        <button type="button" class="btn btn-primary" id="premium-checkout-btn" data-upgrade-checkout>${PLANS.pro.cta}</button>
+        <p>Sınırsız karşılaştırma, premium rapor ve öncelikli partner yönlendirmesi.${this.trialEligible ? ` İlk kez abone olanlara <strong>${PLANS.pro.trialDays} gün ücretsiz</strong>.` : ''}</p>
+        <div class="revenue-profile-billing">
+          <label><input type="radio" name="profile-billing-interval" value="monthly" checked> Aylık (${PLANS.pro.billing.monthly.priceDisplay})</label>
+          <label><input type="radio" name="profile-billing-interval" value="annual"> Yıllık (${PLANS.pro.billing.annual.savingsLabel})</label>
+        </div>
+        <button type="button" class="btn btn-primary" id="premium-checkout-btn" data-upgrade-checkout data-billing="monthly" data-trial="1">${this.getCheckoutCtaLabel('monthly')}</button>
         <a href="/#pricing" class="btn btn-ghost btn-sm" data-native-route>Plan detayları</a>
       </div>
     `;
+  }
+
+  initProfileBillingControls(root = document.getElementById('profil')) {
+    if (!root) return;
+
+    const checkoutBtn = root.querySelector('#premium-checkout-btn[data-upgrade-checkout]');
+    const radios = root.querySelectorAll('input[name="profile-billing-interval"]');
+
+    if (!checkoutBtn || !radios.length) return;
+
+    const sync = () => {
+      const selected = root.querySelector('input[name="profile-billing-interval"]:checked')?.value || 'monthly';
+      this.selectedBilling = selected;
+      checkoutBtn.dataset.billing = selected;
+      checkoutBtn.textContent = this.getCheckoutCtaLabel(selected);
+    };
+
+    radios.forEach((radio) => radio.addEventListener('change', sync));
+    sync();
   }
 }
 

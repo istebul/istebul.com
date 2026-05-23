@@ -229,6 +229,7 @@ export class UIManager {
         }
 
         this.loadIcons();
+        revenueManager.initProfileBillingControls(profileSection);
     }
 
     showAdminLink(user = null) {

@@ -1048,7 +1048,7 @@ class App {
             const upgradeBtn = e.target.closest('[data-upgrade-checkout]');
             if (upgradeBtn) {
                 e.preventDefault();
-                this.handlePremiumCheckout();
+                this.handlePremiumCheckout(e);
             }
         });
 
@@ -3112,6 +3112,7 @@ Açıklama yok.
         const root = document.getElementById('pricing-plans-root');
         if (!root) return;
         root.innerHTML = revenueManager.renderPricingCards();
+        revenueManager.initPricingControls(root);
         this.ui.loadIcons?.();
     }
 
@@ -3119,11 +3120,21 @@ Açıklama yok.
         const params = new URLSearchParams(window.location.search);
 
         if (params.get('subscribed') === 'true') {
-            this.ui.showSuccess('Pro aboneliğiniz aktif. Tüm premium özellikler açıldı.');
+            if (params.get('trial') === '1') {
+                this.ui.showSuccess('7 günlük Pro denemeniz başladı. Tüm premium özellikler şimdi açık.');
+            } else if (params.get('plan') === 'annual') {
+                this.ui.showSuccess('Yıllık Pro aboneliğiniz aktif. İndirimli planla tüm premium özellikler açıldı.');
+            } else {
+                this.ui.showSuccess('Pro aboneliğiniz aktif. Tüm premium özellikler açıldı.');
+            }
+
             if (this.currentUser?.id) {
                 revenueManager.refresh(this.currentUser.id);
             }
+
             params.delete('subscribed');
+            params.delete('trial');
+            params.delete('plan');
         }
 
         if (params.get('cancelled') === 'true') {
@@ -3145,12 +3156,33 @@ Açıklama yok.
         return true;
     }
 
-    async handlePremiumCheckout() {
+    resolveCheckoutBilling(event) {
+        const trigger = event?.target?.closest?.('[data-upgrade-checkout]');
+        let billing = trigger?.dataset?.billing;
+
+        const pricingRoot = document.getElementById('pricing-plans-root');
+        if (pricingRoot) {
+            billing = pricingRoot.querySelector('input[name="billing-interval"]:checked')?.value || billing;
+        }
+
+        const profileRoot = document.getElementById('profil');
+        if (profileRoot) {
+            billing = profileRoot.querySelector('input[name="profile-billing-interval"]:checked')?.value || billing;
+        }
+
+        return billing === 'annual' ? 'annual' : 'monthly';
+    }
+
+    async handlePremiumCheckout(event) {
         if (!this.currentUser) {
             this.auth.showLoginModal();
             this.ui.showError('Pro\'ya geçmek için önce giriş yapın veya ücretsiz hesap oluşturun.');
             return;
         }
+
+        const billingInterval = this.resolveCheckoutBilling(event);
+        const trigger = event?.target?.closest?.('[data-upgrade-checkout]');
+        const useTrial = trigger?.dataset?.trial !== '0' && revenueManager.trialEligible;
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -3166,7 +3198,10 @@ Açıklama yok.
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${session.access_token}`
                 },
-                body: JSON.stringify({})
+                body: JSON.stringify({
+                    billingInterval,
+                    useTrial
+                })
             });
 
             const data = await response.json();
