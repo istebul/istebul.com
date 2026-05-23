@@ -41,25 +41,32 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Validate deploy secrets
+      - run: npm ci
+
+      - name: Check Cloudflare deploy credentials
+        id: cf
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           SB_URL: ${{ secrets.SUPABASE_URL }}
           SB_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          missing=0
+          ready=1
           for name in CF_TOKEN CF_ACCOUNT SB_URL SB_KEY; do
             if [ -z "${!name}" ]; then
-              echo "::error::Missing GitHub secret for $name (see .github/SECRETS.example.md)"
-              missing=1
+              echo "::warning::Missing secret $name — see .github/SECRETS.example.md"
+              ready=0
             fi
           done
-          exit $missing
-
-      - run: npm ci
+          if [ "$ready" = "1" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping GitHub→Cloudflare deploy. Cloudflare Git bağlantısı varsa push yine de canlıya alınır."
+          fi
 
       - name: Production build
+        if: steps.cf.outputs.deploy == 'true'
         run: npm run build
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -68,6 +75,7 @@ jobs:
           LOGROCKET_APP_ID: ${{ secrets.LOGROCKET_APP_ID }}
 
       - name: Deploy to Cloudflare Pages
+        if: steps.cf.outputs.deploy == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
