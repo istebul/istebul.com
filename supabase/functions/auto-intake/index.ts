@@ -1,4 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  applyDispatchResult,
+  dispatchPartnerLead,
+  isTestLead,
+} from "../_shared/partner-dispatch.ts";
 
 const allowedOrigins = [
   "https://istebul.com",
@@ -115,23 +120,6 @@ function isJunkPhone(phone?: unknown) {
   return false;
 }
 
-function isTestLead(phone?: unknown) {
-  const clean = String(phone || "").replace(/\D/g, "");
-  return TEST_PHONES.has(clean);
-}
-
-
-function getNextRetryTime(retryCount: number) {
-  const now = new Date();
-
-  if (retryCount <= 1) now.setMinutes(now.getMinutes() + 15);
-  else if (retryCount == 2) now.setHours(now.getHours() + 1);
-  else if (retryCount == 3) now.setHours(now.getHours() + 6);
-  else now.setDate(now.getDate() + 1);
-
-  return now.toISOString();
-}
-
 function getAutoFollowUp(priority: string) {
   const now = new Date();
 
@@ -183,149 +171,6 @@ function estimateCommission(partnerRoute: string, leadScore: number) {
   return revenue;
 }
 
-
-async function signPartnerPayload(body: string) {
-  const secret = Deno.env.get("PARTNER_WEBHOOK_SIGNING_SECRET");
-  if (!secret) return "";
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(body)
-  );
-
-  return Array.from(new Uint8Array(signature))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-
-async function getPartnerEndpoints(adminClient: any, route: string) {
-  const { data, error } = await adminClient
-    .from("partner_endpoints")
-    .select("id, name, webhook_url, priority_weight, sent_today, daily_cap")
-    .eq("route_type", route)
-    .eq("is_active", true);
-
-  if (error) throw error;
-
-  const endpoints = (data || []).filter((endpoint: any) => {
-    if (endpoint.daily_cap == null) return true;
-    return Number(endpoint.sent_today || 0) < Number(endpoint.daily_cap);
-  });
-
-  const ordered = [];
-
-  while (endpoints.length) {
-    const totalWeight = endpoints.reduce((sum: number, endpoint: any) => {
-      return sum + Math.max(Number(endpoint.priority_weight || 0), 1);
-    }, 0);
-
-    let random = Math.random() * totalWeight;
-    let selectedIndex = 0;
-
-    for (let i = 0; i < endpoints.length; i += 1) {
-      random -= Math.max(Number(endpoints[i].priority_weight || 0), 1);
-      if (random <= 0) {
-        selectedIndex = i;
-        break;
-      }
-    }
-
-    ordered.push(endpoints.splice(selectedIndex, 1)[0]);
-  }
-
-  return ordered;
-}
-
-async function dispatchPartnerLead(adminClient: any, payload: Record<string, unknown>) {
-  const route = String(payload.partner_route || "");
-  const priority = String(payload.priority || "");
-
-  if (isTestLead(payload.phone)) {
-    return { status: "skipped", reason: "test_lead" };
-  }
-
-  if (priority !== "hot" && priority !== "very_hot") {
-    return { status: "skipped", reason: "not_hot" };
-  }
-
-  const endpoints = await getPartnerEndpoints(adminClient, route);
-
-  if (!endpoints.length) {
-    return { status: "dispatch_failed", reason: "no_active_partner" };
-  }
-
-  for (const endpoint of endpoints) {
-    if (!endpoint?.webhook_url) continue;
-
-    const body = JSON.stringify({
-      ...payload,
-      partner_endpoint_id: endpoint.id,
-      partner_endpoint_name: endpoint.name
-    });
-
-    const signature = await signPartnerPayload(body);
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-
-    try {
-      const response = await fetch(endpoint.webhook_url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-istebul-signature": signature
-        },
-        body,
-        signal: controller.signal
-      });
-
-      clearTimeout(timeout);
-
-      if (response.ok) {
-        try {
-          await adminClient.rpc("increment_partner_endpoint_success", {
-            endpoint_id: endpoint.id
-          });
-        } catch {}
-
-        return {
-          status: "dispatched",
-          endpoint: endpoint.name
-        };
-      }
-
-      try {
-        await adminClient.rpc("increment_partner_endpoint_fail", {
-          endpoint_id: endpoint.id
-        });
-      } catch {}
-
-    } catch {
-      clearTimeout(timeout);
-
-      try {
-        await adminClient.rpc("increment_partner_endpoint_fail", {
-          endpoint_id: endpoint.id
-        });
-      } catch {}
-    }
-  }
-
-  return {
-    status: "dispatch_failed",
-    reason: "all_endpoints_failed"
-  };
-}
 
 async function notifyTelegramLead(payload: Record<string, unknown>) {
   const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
@@ -627,6 +472,8 @@ Deno.serve(async (req) => {
         : financeNotes || null,
     };
 
+    let leadId: string | null = null;
+
     const phoneUpdate = await adminClient
       .from("auto_leads")
       .update(payload)
@@ -635,7 +482,11 @@ Deno.serve(async (req) => {
 
     if (phoneUpdate.error) return json({ error: phoneUpdate.error.message }, 500, origin);
 
-    if (!phoneUpdate.data?.length && normalizedEmail) {
+    if (phoneUpdate.data?.length) {
+      leadId = phoneUpdate.data[0].id;
+    }
+
+    if (!leadId && normalizedEmail) {
       const emailUpdate = await adminClient
         .from("auto_leads")
         .update(payload)
@@ -645,57 +496,56 @@ Deno.serve(async (req) => {
       if (emailUpdate.error) return json({ error: emailUpdate.error.message }, 500, origin);
 
       if (emailUpdate.data?.length) {
+        leadId = emailUpdate.data[0].id;
         return json({ ok: true }, 200, origin);
       }
     }
 
-    if (!phoneUpdate.data?.length) {
-      const { error: insertError } = await adminClient.from("auto_leads").insert(payload);
+    if (!leadId) {
+      const { data: inserted, error: insertError } = await adminClient
+        .from("auto_leads")
+        .insert(payload)
+        .select("id")
+        .single();
+
       if (insertError) return json({ error: insertError.message }, 500, origin);
+      leadId = inserted?.id || null;
     }
+
+    const dispatchPayload = { ...payload, id: leadId };
 
     EdgeRuntime.waitUntil((async () => {
       try {
         await notifyTelegramLead(payload);
+
+        if (!leadId) return;
+
         const dispatchResult = verificationFailed
-          ? { status: "skipped", reason: "verification_failed" }
-          : await dispatchPartnerLead(adminClient, payload);
+          ? { status: "skipped" as const, reason: "verification_failed" }
+          : await dispatchPartnerLead(adminClient, {
+            leadId,
+            payload: dispatchPayload,
+            trigger: "auto_intake",
+            attemptNumber: 1,
+          });
 
-        if (dispatchResult.status === "dispatched") {
-          await adminClient
-            .from("auto_leads")
-            .update({
-              partner_status: "dispatched",
-              last_dispatch_at: new Date().toISOString(),
-              next_retry_at: null,
-              last_dispatch_error: null
-            })
-            .eq("phone", phone);
-        }
-
-        if (dispatchResult.status === "dispatch_failed") {
-          await adminClient
-            .from("auto_leads")
-            .update({
-              partner_status: "dispatch_failed",
-              dispatch_retry_count: 1,
-              last_dispatch_at: new Date().toISOString(),
-              next_retry_at: getNextRetryTime(1),
-              last_dispatch_error: dispatchResult.reason || "partner webhook failed"
-            })
-            .eq("phone", phone);
+        if (dispatchResult.status === "dispatch_failed" || dispatchResult.status === "dispatched") {
+          await applyDispatchResult(
+            adminClient,
+            leadId,
+            dispatchResult,
+            0
+          );
         }
       } catch {
-        await adminClient
-          .from("auto_leads")
-          .update({
-            partner_status: "dispatch_failed",
-            dispatch_retry_count: 1,
-            last_dispatch_at: new Date().toISOString(),
-            next_retry_at: getNextRetryTime(1),
-            last_dispatch_error: "dispatch exception"
-          })
-          .eq("phone", phone);
+        if (!leadId) return;
+
+        await applyDispatchResult(
+          adminClient,
+          leadId,
+          { status: "dispatch_failed", reason: "dispatch exception" },
+          0
+        );
       }
     })());
 

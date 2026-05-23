@@ -82,6 +82,48 @@ Deno.serve(async (req) => {
 
   const sb = createClient(supabaseUrl, serviceKey);
 
+  const clientIp =
+    req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown";
+  const rateKey = `partner_app:${clientIp}`;
+  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
+  const { data: recent } = await sb
+    .from("partner_applications")
+    .select("id")
+    .eq("email", email)
+    .gte("created_at", since)
+    .limit(1);
+
+  if (recent?.length) {
+    return json({ ok: true, duplicate: true }, 200, origin);
+  }
+
+  const { data: rateRow } = await sb
+    .from("auto_rate_limits")
+    .select("count, window_start")
+    .eq("key", rateKey)
+    .maybeSingle();
+
+  const windowStart = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  if (rateRow && new Date(rateRow.window_start).getTime() >= new Date(windowStart).getTime()) {
+    if (rateRow.count >= 5) {
+      return json({ error: "Too many requests" }, 429, origin);
+    }
+    await sb.from("auto_rate_limits").update({
+      count: rateRow.count + 1,
+      updated_at: new Date().toISOString(),
+    }).eq("key", rateKey);
+  } else {
+    await sb.from("auto_rate_limits").upsert({
+      key: rateKey,
+      count: 1,
+      window_start: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "key" });
+  }
+
   const { data, error } = await sb
     .from("partner_applications")
     .insert({

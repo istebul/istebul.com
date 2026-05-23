@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Partner Olun | isteBul</title>
-  <meta name="description" content="isteBul partner başvuru sayfası.">
+  <meta name="description" content="isteBul partner başvuru sayfası — kurumsal lead teslimatı ve webhook entegrasyonu.">
   <link rel="stylesheet" href="/css/auto.css?v=3">
 </head>
 <body>
@@ -13,33 +13,66 @@
     <nav>
       <a href="/auto/">Auto</a>
       <a href="/hakkimizda.html">Hakkımızda</a>
-      <a href="/partner-olun.html">Partner olun</a>
+      <a href="/partner-olun.html" aria-current="page">Partner olun</a>
       <a href="/iletisim.html">İletişim</a>
     </nav>
   </header>
 
   <main class="section legal-page">
     <p class="kicker">Partner ekosistemi</p>
-<h1>Satın almaya hazır kullanıcılarla buluşun.</h1>
-<p class="lead">isteBul Auto, araç alım niyeti olan kullanıcıları bütçe, kullanım amacı, kredi tercihi ve araç ihtiyacına göre analiz ederek daha nitelikli müşteri adayları oluşturur.</p>
+    <h1>Satın almaya hazır kullanıcılarla buluşun.</h1>
+    <p class="lead">isteBul Auto, araç alım niyeti olan kullanıcıları bütçe, kullanım amacı, kredi tercihi ve araç ihtiyacına göre analiz ederek nitelikli müşteri adayları oluşturur. Kurumsal teslimat: imzalı webhook, retry, failover ve teslimat logları.</p>
 
-<div class="grid three premium-steps">
-  <article><span>01</span><h3>Nitelikli lead</h3><p>Yalnızca form dolduran değil; bütçesi, ihtiyacı ve satın alma niyeti daha net kullanıcılar.</p></article>
-  <article><span>02</span><h3>Hızlı yönlendirme</h3><p>Başlangıçta WhatsApp veya telefon ile; ilerleyen aşamada webhook/CRM entegrasyonu ile.</p></article>
-  <article><span>03</span><h3>Ölçülebilir gelir</h3><p>Lead durumu, partner sonucu ve gerçekleşen gelir CRM üzerinde takip edilebilir.</p></article>
-</div>
+    <div class="grid three premium-steps">
+      <article><span>01</span><h3>Nitelikli lead</h3><p>Skor ve öncelik (hot / very_hot) ile filtrelenmiş talepler; günlük kapasite ve sağlık izleme.</p></article>
+      <article><span>02</span><h3>Güvenli webhook</h3><p>HMAC imza, teslimat kimliği, otomatik retry ve yedek route (failover).</p></article>
+      <article><span>03</span><h3>Ölçülebilir gelir</h3><p>Callback ile kabul / kazanım / kayıp durumları ve gerçekleşen gelir takibi.</p></article>
+    </div>
 
-<div class="final-cta-card" style="margin-top:28px;">
-  <p class="kicker">Partner başvurusu</p>
-  <h2>Test lead akışıyla başlayalım.</h2>
-  <p>Galeri, sigorta, finansman veya hizmet partneriyseniz başvurun; ekibimiz size dönüş yapsın.</p>
+    <div class="final-cta-card" style="margin-top:28px;">
+      <p class="kicker">Partner başvurusu</p>
+      <h2>Webhook veya manuel süreçle başlayın.</h2>
+      <p>Galeri, sigorta, finansman veya hizmet partneriyseniz formu doldurun; entegrasyon dokümantasyonunu paylaşalım.</p>
 
-  <div class="final-cta-actions">
-    <a class="btn primary" href="https://wa.me/905456786420?text=isteBul%20partner%20ba%C5%9Fvurusu%20hakk%C4%B1nda%20g%C3%B6r%C3%BC%C5%9Fmek%20istiyorum" target="_blank" rel="noopener">WhatsApp ile başvur</a>
-    <a class="btn secondary" href="mailto:nadigurel.60@gmail.com?subject=isteBul%20Partner%20Başvurusu">E-posta gönder</a>
-  </div>
-</div>
+      <form id="partner-application-form" class="partner-form">
+        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;">
+        <div class="form-row">
+          <label>Firma adı<input name="company_name" required maxlength="120"></label>
+          <label>Yetkili<input name="contact_name" required maxlength="80"></label>
+        </div>
+        <div class="form-row">
+          <label>Telefon<input name="phone" type="tel" required placeholder="5xx xxx xx xx"></label>
+          <label>E-posta<input name="email" type="email" required></label>
+        </div>
+        <div class="form-row">
+          <label>Şehir<input name="city" maxlength="60"></label>
+          <label>Kategori
+            <select name="category" required>
+              <option value="">Seçin</option>
+              <option value="dealer_partner">Bayi / Galeri</option>
+              <option value="finance_partner">Finansman</option>
+              <option value="insurance_partner">Sigorta</option>
+              <option value="general_sales">Genel satış</option>
+            </select>
+          </label>
+        </div>
+        <label>Aylık lead kapasitesi<input name="lead_capacity" placeholder="Örn. 50-100"></label>
+        <label class="checkbox-row">
+          <input type="checkbox" name="webhook_ready"> HTTPS webhook endpoint'imiz hazır
+        </label>
+        <label>Not<textarea name="notes" rows="3" placeholder="CRM, entegrasyon tercihi…"></textarea></label>
+        <button type="submit" class="btn primary">Başvuruyu gönder</button>
+      </form>
 
+      <p style="margin-top:16px;font-size:0.9rem;opacity:0.85;">
+        Teknik dokümantasyon: <a href="/docs/partner-webhook-integration.md">Webhook entegrasyonu</a>
+      </p>
+
+      <div class="final-cta-actions" style="margin-top:20px;">
+        <a class="btn secondary" href="https://wa.me/905456786420?text=isteBul%20partner%20ba%C5%9Fvurusu" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn secondary" href="mailto:nadigurel.60@gmail.com?subject=isteBul%20Partner%20Ba%C5%9Fvurusu">E-posta</a>
+      </div>
+    </div>
   </main>
 
   <footer class="corporate-footer">
@@ -56,8 +89,8 @@
       <a href="/partner-olun.html">Partner olun</a>
     </nav>
   </footer>
-  
 
-
+  <script src="/js/env.js"></script>
+  <script type="module" src="/js/corporate/partner.js"></script>
 </body>
 </html>

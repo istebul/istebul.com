@@ -18,6 +18,7 @@ POST
 
 Content-Type: application/json
 x-istebul-signature: <hmac_sha256_signature>
+x-istebul-dispatch-id: <uuid per delivery attempt>
 
 ## Signature Validation
 
@@ -25,7 +26,11 @@ Signature algorithm:
 
 HMAC_SHA256(raw_request_body, shared_secret)
 
-Partner validates incoming requests using the shared secret.
+Partner validates incoming requests using the shared secret (global `PARTNER_WEBHOOK_SIGNING_SECRET` or per-endpoint `shared_secret` when configured).
+
+## Failover routing
+
+If all endpoints on the primary route fail or are unavailable (circuit open, daily cap), isteBul tries configured failover routes (e.g. `dealer_partner` → `general_sales`).
 
 ## Success Response
 
@@ -72,7 +77,9 @@ dispatch_dead
   "priority": "very_hot",
   "partner_route": "dealer_partner",
   "estimated_revenue": 7500,
-  "source": "auto"
+  "source": "auto",
+  "lead_id": "<uuid>",
+  "dispatch_attempt_id": "<uuid>"
 }
 
 ## Partner Routes

@@ -7,6 +7,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fd = new FormData(form);
     const anonKey = window.__env?.SUPABASE_ANON_KEY || '';
+    const baseUrl = (window.__env?.SUPABASE_URL || '').replace(/\/$/, '');
+    const endpoint = baseUrl ? `${baseUrl}/functions/v1/partner-application` : '';
+
+    if (!endpoint || !anonKey) {
+      alert('Başvuru servisi yapılandırılmamış.');
+      return;
+    }
 
     const payload = {
       company_name: fd.get('company_name'),
@@ -17,11 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
       category: fd.get('category'),
       lead_capacity: fd.get('lead_capacity'),
       webhook_ready: fd.get('webhook_ready') === 'on',
-      notes: fd.get('notes') || ''
+      notes: fd.get('notes') || '',
+      website: fd.get('website') || ''
     };
 
     try {
-      const res = await fetch('https://hjfrcdstbyonmgatgwcc.supabase.co/functions/v1/partner-application', {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,11 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'request_failed');
 
-      form.innerHTML = '<p><strong>Başvurunuz alındı. Ekibimiz sizinle iletişime geçecek.</strong></p>';
+      form.innerHTML = '<p><strong>Başvurunuz alındı.</strong> Ekibimiz webhook kurulumu ve test lead akışı için sizinle iletişime geçecek.</p>';
     } catch {
-      alert('Başvuru gönderilemedi.');
+      alert('Başvuru gönderilemedi. Lütfen tekrar deneyin veya WhatsApp ile ulaşın.');
     }
   });
 });

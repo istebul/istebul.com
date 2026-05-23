@@ -65,6 +65,8 @@ async function showApp() {
   loadAutoLeads();
   loadAutoAnalytics();
   loadPartnerEndpoints();
+  loadPartnerApplications();
+  loadPartnerDispatchLogs();
 }
 
 function showPage(name, el) {
@@ -76,6 +78,17 @@ function showPage(name, el) {
   if (name === 'partner-endpoints') {
     loadPartnerEndpoints();
   }
+  if (name === 'partner-applications') {
+    loadPartnerApplications();
+  }
+  if (name === 'partner-dispatch-logs') {
+    loadPartnerDispatchLogs();
+  }
+}
+
+function getFunctionsBaseUrl() {
+  const url = window.__env?.SUPABASE_URL || '';
+  return url ? `${url.replace(/\/$/, '')}/functions/v1` : '';
 }
 
 function escapeHtml(value) {
@@ -686,6 +699,7 @@ async function loadPartnerEndpoints() {
           <th>Öncelik</th>
           <th>Günlük Limit</th>
           <th>Bugün Gönderilen</th>
+          <th>Sağlık</th>
           <th>Başarılı</th>
           <th>Başarısız</th>
           <th>İşlem</th>
@@ -706,6 +720,7 @@ async function loadPartnerEndpoints() {
             <td>${row.priority_weight || 0}</td>
             <td>${row.daily_cap || '∞'}</td>
             <td>${row.sent_today || 0}</td>
+            <td><span class="badge ${row.health_status === 'healthy' ? 'badge-green' : row.health_status === 'degraded' ? 'badge-yellow' : 'badge-red'}">${escapeHtml(row.health_status || 'healthy')}</span></td>
             <td>${row.success_count || 0}</td>
             <td>${row.fail_count || 0}</td>
             <td>
@@ -718,6 +733,161 @@ async function loadPartnerEndpoints() {
       </tbody>
     </table>
   `;
+}
+
+async function loadPartnerApplications() {
+  const { data, error } = await sb
+    .from('partner_applications')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  const el = document.getElementById('partner-applications-list');
+  if (!el) return;
+
+  if (error) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  if (!data?.length) {
+    el.innerHTML = '<p class="empty">Başvuru yok.</p>';
+    return;
+  }
+
+  const statusLabels = {
+    new: 'Yeni',
+    contacted: 'İletişim',
+    qualified: 'Uygun',
+    integrating: 'Entegrasyon',
+    live: 'Canlı',
+    rejected: 'Red'
+  };
+
+  el.innerHTML = `
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Firma</th>
+          <th>İletişim</th>
+          <th>Kategori</th>
+          <th>Webhook</th>
+          <th>Durum</th>
+          <th>Tarih</th>
+          <th>Kapasite</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map((row) => `
+          <tr>
+            <td><strong>${escapeHtml(row.company_name)}</strong><br><small>${escapeHtml(row.contact_name)}</small></td>
+            <td>${escapeHtml(row.phone)}<br><small>${escapeHtml(row.email)}</small></td>
+            <td>${escapeHtml(row.category)}${row.city ? `<br><small>${escapeHtml(row.city)}</small>` : ''}</td>
+            <td>${row.webhook_ready ? 'Hazır' : 'Manuel'}</td>
+            <td>
+              <select class="status-select" data-action="update-partner-application-status" data-id="${safeAttr(row.id)}">
+                ${Object.entries(statusLabels).map(([value, label]) =>
+                  `<option value="${value}" ${row.status === value ? 'selected' : ''}>${label}</option>`
+                ).join('')}
+              </select>
+            </td>
+            <td>${formatShortDate(row.created_at)}</td>
+            <td><small>${escapeHtml(row.lead_capacity || '—')}</small></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadPartnerDispatchLogs() {
+  const leadFilter = document.getElementById('dispatch-log-lead-filter')?.value?.trim() || '';
+  const el = document.getElementById('partner-dispatch-logs-list');
+  if (!el) return;
+
+  let query = sb
+    .from('partner_lead_dispatch_logs')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(150);
+
+  if (leadFilter) {
+    query = query.eq('lead_id', leadFilter);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  if (!data?.length) {
+    el.innerHTML = '<p class="empty">Teslimat logu yok.</p>';
+    return;
+  }
+
+  el.innerHTML = `
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Zaman</th>
+          <th>Lead</th>
+          <th>Route</th>
+          <th>Endpoint</th>
+          <th>Kaynak</th>
+          <th>HTTP</th>
+          <th>Süre</th>
+          <th>Sonuç</th>
+          <th>Hata</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map((row) => `
+          <tr>
+            <td>${formatShortDate(row.created_at)}</td>
+            <td><code>${escapeHtml(String(row.lead_id || '').slice(0, 8))}…</code></td>
+            <td>${escapeHtml(row.partner_route)}</td>
+            <td>${escapeHtml(row.endpoint_name || '—')}</td>
+            <td>${escapeHtml(row.trigger_source)}</td>
+            <td>${row.http_status ?? '—'}</td>
+            <td>${row.duration_ms != null ? row.duration_ms + 'ms' : '—'}</td>
+            <td>${row.success ? '<span class="badge badge-green">OK</span>' : '<span class="badge badge-red">FAIL</span>'}</td>
+            <td title="${safeAttr(row.error_message || '')}">${escapeHtml(formatDispatchError(row.error_message))}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function manualDispatchLead(leadId, force = false) {
+  const { data: sessionData } = await sb.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if (!token) {
+    toast('Oturum bulunamadı', 'error');
+    return;
+  }
+
+  const { data, error } = await sb.functions.invoke('partner-dispatch', {
+    body: { lead_id: leadId, force },
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (error) {
+    toast(error.message || 'Dispatch başarısız', 'error');
+    return;
+  }
+
+  if (data?.ok) {
+    toast(`Partner teslimatı: ${data.endpoint || 'OK'}`, 'success');
+  } else {
+    toast(data?.error || data?.reason || 'Dispatch başarısız', 'error');
+  }
+
+  loadAutoLeads();
+  loadPartnerDispatchLogs();
+  loadPartnerEndpoints();
 }
 
 function formatShortDate(value) {
@@ -910,7 +1080,8 @@ async function loadAutoLeads() {
             <td>
               <div class="table-actions">
                 ${lead.phone ? `<a class="btn btn-success btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}?text=Merhaba%2C%20isteBul%20Auto%20talebinizi%20gördük.%20Size%20uygun%20teklifleri%20hazırlayabiliriz." target="_blank" rel="noopener">WhatsApp</a>` : ''}
-                ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Tekrar</button>` : ''}
+                ${['dispatch_failed', 'dispatch_dead', 'pending', 'dispatched'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="manual-dispatch" data-id="${lead.id}">Partner Gönder</button>` : ''}
+                ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-ghost btn-sm" data-action="view-lead-dispatch-logs" data-id="${lead.id}">Log</button>` : ''}
               </div>
             </td>
           </tr>
@@ -937,6 +1108,7 @@ function getPartnerStatusOptions(route) {
     dealer_partner: [
       ['pending', 'Bekliyor'],
       ['dispatched', 'Partnere Gönderildi'],
+      ['accepted', 'Partner Kabul'],
       ['dispatch_failed', 'Gönderim Hatası'],
       ['dispatch_dead', 'Gönderim Durduruldu'],
       ['contacted', 'İletişime Geçildi'],
@@ -1042,7 +1214,8 @@ function openLeadDrawer(lead) {
     <div class="table-actions" style="margin-bottom:14px;flex-wrap:wrap;gap:10px;">
       ${lead.phone ? `<button class="btn btn-success btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="${whatsappUrl}">WhatsApp</button>` : ''}
       ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
-      ${['dispatch_failed','dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Partner Tekrar Gönder</button>` : ''}
+      <button class="btn btn-warning btn-sm" data-action="manual-dispatch" data-id="${lead.id}">Partner Gönder</button>
+      ${['dispatch_failed','dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-ghost btn-sm" data-action="view-lead-dispatch-logs" data-id="${lead.id}">Teslimat Log</button>` : ''}
       <button class="btn btn-success btn-sm" data-action="simulate-partner-won" data-id="${lead.id}" data-phone="${lead.phone || ''}">Partner Won Test</button>
       <button class="btn btn-danger btn-sm" data-action="simulate-partner-lost" data-id="${lead.id}" data-phone="${lead.phone || ''}">Partner Lost Test</button>
       <button class="btn btn-ghost btn-sm" data-action="complete-follow-up" data-id="${lead.id}">Takibi Tamamla</button>
@@ -1391,7 +1564,13 @@ function bindAdminPanelEvents() {
         return;
       }
 
-      fetch('https://hjfrcdstbyonmgatgwcc.supabase.co/functions/v1/partner-callback', {
+      const callbackUrl = `${getFunctionsBaseUrl()}/partner-callback`;
+      if (!callbackUrl.startsWith('http')) {
+        toast('SUPABASE_URL eksik', 'error');
+        return;
+      }
+
+      fetch(callbackUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1421,23 +1600,34 @@ function bindAdminPanelEvents() {
       return;
     }
 
-    if (action === 'retry-dispatch') {
+    if (action === 'retry-dispatch' || action === 'manual-dispatch') {
+      manualDispatchLead(id, true);
+      return;
+    }
+
+    if (action === 'view-lead-dispatch-logs') {
+      const filter = document.getElementById('dispatch-log-lead-filter');
+      if (filter) filter.value = id;
+      showPage('partner-dispatch-logs', document.querySelector('[data-page-target="partner-dispatch-logs"]'));
+      loadPartnerDispatchLogs();
+      return;
+    }
+
+    if (action === 'reload-dispatch-logs') {
+      loadPartnerDispatchLogs();
+      return;
+    }
+
+    if (action === 'update-partner-application-status') {
       adminAction({
         action: 'update',
-        table: 'auto_leads',
+        table: 'partner_applications',
         id,
-        values: {
-          partner_status: 'dispatch_failed',
-          dispatch_retry_count: 0,
-          next_retry_at: new Date().toISOString(),
-          last_dispatch_error: null
-        }
+        values: { status: el.value }
       }).then(() => {
-        toast('Dispatch retry kuyruğa alındı', 'success');
-        loadAutoLeads();
-        loadAutoAnalytics();
+        toast('Başvuru durumu güncellendi', 'success');
+        loadPartnerApplications();
       });
-
       return;
     }
 

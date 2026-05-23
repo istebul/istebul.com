@@ -206,6 +206,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="nav-item" data-page-target="auto-leads">🚗 Auto Leads</div>
         <div class="nav-item" data-page-target="auto-analytics">📈 Auto Analytics</div>
         <div class="nav-item" data-page-target="partner-endpoints">🤝 Partner Kanalları</div>
+        <div class="nav-item" data-page-target="partner-applications">📋 Partner Başvuruları</div>
+        <div class="nav-item" data-page-target="partner-dispatch-logs">📡 Teslimat Logları</div>
       </nav>
       <div class="sidebar-footer">
         <div class="user-info">
@@ -465,6 +467,35 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="card">
           <div class="card-title">Mevcut partner kanalları</div>
           <div id="partner-endpoints-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-partner-applications">
+        <div class="page-header">
+          <h2>Partner Başvuruları</h2>
+          <p>Onboarding pipeline ve entegrasyon durumu</p>
+        </div>
+        <div class="card">
+          <div id="partner-applications-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-partner-dispatch-logs">
+        <div class="page-header">
+          <h2>Partner Teslimat Logları</h2>
+          <p>Webhook denemeleri, HTTP sonuçları ve failover izleri</p>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Lead ID</label>
+              <input id="dispatch-log-lead-filter" type="text" placeholder="UUID (opsiyonel)">
+            </div>
+            <div class="form-group actions" style="align-self:flex-end;">
+              <button class="btn btn-primary btn-sm" data-action="reload-dispatch-logs">Yenile</button>
+            </div>
+          </div>
+          <div id="partner-dispatch-logs-list"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
 
