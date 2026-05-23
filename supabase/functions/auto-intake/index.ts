@@ -70,7 +70,7 @@ function calculateLeadScore(form: Record<string, unknown>) {
 
   if (interest === "vehicle_offer") score += 90;
   else if (interest === "premium_report") score += 75;
-  else if (interest === "finance") score += 65;
+  else if (interest === "finance" || interest === "finance_review") score += 65;
   else if (interest === "insurance") score += 55;
 
   if (budget >= 2000000) score += 35;
@@ -152,7 +152,7 @@ function getAutoFollowUp(priority: string) {
 function getPartnerRoute(form: Record<string, unknown>) {
   const interest = String(form.interest_type || "");
 
-  if (interest === "finance") return "finance_partner";
+  if (interest === "finance" || interest === "finance_review") return "finance_partner";
   if (interest === "insurance") return "insurance_partner";
   if (interest === "vehicle_offer") return "dealer_partner";
   if (interest === "premium_report") return "premium_report";
