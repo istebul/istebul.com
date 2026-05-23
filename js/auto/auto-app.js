@@ -86,6 +86,16 @@ function readForm(form) {
   return Object.fromEntries(new FormData(form).entries());
 }
 
+function getCurrentLeadPayload() {
+  const autoForm = document.getElementById('auto-form');
+  const formPayload = autoForm ? readForm(autoForm) : {};
+  const storedPayload = safeJsonParse(localStorage.getItem('istebul_auto_lead_payload'), {});
+  return {
+    ...storedPayload,
+    ...formPayload
+  };
+}
+
 async function callAutoIntake(payload) {
   const supabaseUrl = window.__env?.SUPABASE_URL;
   const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
@@ -166,7 +176,7 @@ function renderLoading() {
 
 async function updateLeadInterest(phone, interestType, vehicle = '', options = {}) {
   const email = localStorage.getItem('istebul_auto_lead_email');
-  const storedPayload = safeJsonParse(localStorage.getItem('istebul_auto_lead_payload'), {});
+  const leadPayload = getCurrentLeadPayload();
 
   return await callAutoIntake({
     type: 'lead',
@@ -174,10 +184,13 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
     phone,
     turnstile_token: options.turnstileToken || '',
     formData: {
-      ...storedPayload,
+      ...leadPayload,
       phone,
       contact_name: options.contactName || '',
       preferred_contact_time: options.preferredContactTime || '',
+      city: options.city || leadPayload.city || '',
+      district: options.district || leadPayload.district || '',
+      privacy_consent: options.privacyConsent ? 'accepted' : '',
       interest_type: interestType,
       vehicle,
       finance_bank: options.financeBank || '',
@@ -519,6 +532,14 @@ function openLeadModal(type, vehicle = '') {
             <option value="expert_consultation">Uzman görüşmesi</option>
           </select>
 
+          <label class="lead-consent">
+            <input name="privacy_consent" type="checkbox" value="accepted" required>
+            <span>
+              <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a>,
+              <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a> ve uygun partnerlerle iletişim amacıyla paylaşım metnini kabul ediyorum.
+            </span>
+          </label>
+
           <button class="btn primary" type="submit">${escapeHtml(flow.submit)}</button>
           <button class="btn secondary" type="button" id="cancel-lead-modal">Vazgeç</button>
         </form>
@@ -546,6 +567,8 @@ function openLeadModal(type, vehicle = '') {
       const contactName = form.get('name') || '';
       const selectedVehicle = form.get('vehicle') || vehicle;
       const selectedInterest = form.get('interest') || type;
+      const city = String(form.get('city') || '').trim();
+      const privacyConsent = form.get('privacy_consent') === 'accepted';
 
       if (form.get('email')) {
         localStorage.setItem('istebul_auto_lead_email', form.get('email'));
@@ -564,6 +587,8 @@ function openLeadModal(type, vehicle = '') {
         await updateLeadInterest(phone, selectedInterest, selectedVehicle, {
           turnstileToken,
           contactName,
+          city,
+          privacyConsent,
           financeBank: financeContext.bank || '',
           financeLoanAmount: financeComparison.loanAmount || '',
           financeTerm: financeComparison.term || '',
@@ -1545,6 +1570,7 @@ form.addEventListener('submit', async (event) => {
   trackAutoEvent('auto_form_submitted');
 
   const formData = readForm(form);
+  localStorage.setItem('istebul_auto_lead_payload', JSON.stringify(formData));
   const vehicleCatalog = await getVehicleCatalog();
   const results = recommendVehicles(formData, vehicleCatalog);
   lastResults = results;

@@ -226,6 +226,31 @@ h1{font-size:clamp(40px,6vw,72px);line-height:.96;margin:10px 0 22px}h2{font-siz
   font-size:16px;
 }
 
+.lead-consent{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:12px;
+  border:1px solid rgba(37,99,235,.12);
+  border-radius:14px;
+  background:#f8fafc;
+  color:#475569;
+  font-size:13px;
+  line-height:1.45;
+}
+
+.lead-consent input{
+  width:18px;
+  height:18px;
+  flex:0 0 auto;
+  margin-top:2px;
+}
+
+.lead-consent a{
+  color:#1d4ed8;
+  font-weight:800;
+}
+
 .auto-hot-banner{
   margin:14px 0;
   padding:12px 14px;
