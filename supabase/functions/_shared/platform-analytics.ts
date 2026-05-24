@@ -9,6 +9,7 @@ export const ANALYTICS_CATEGORIES = new Set([
   "partner",
   "admin",
   "revenue",
+  "growth",
 ]);
 
 export const ALLOWED_ANALYTICS_EVENTS = new Set([
@@ -75,6 +76,16 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   // Revenue attribution
   "revenue_attributed",
   "affiliate_click",
+  // Growth engine
+  "growth_referral_land",
+  "growth_referral_share",
+  "growth_referral_convert",
+  "growth_lead_abandon",
+  "growth_lead_recovery_click",
+  "growth_email_click",
+  "growth_crm_touch",
+  "growth_viral_share",
+  "newsletter_subscribe",
 ]);
 
 const AUTO_EVENT_NAMES = new Set(
@@ -88,6 +99,7 @@ export function eventCategoryFor(name: string, fallback?: string) {
   if (name.startsWith("auth_")) return "auth";
   if (name.startsWith("partner_")) return "partner";
   if (name.startsWith("crm_")) return "admin";
+  if (name.startsWith("growth_") || name === "newsletter_subscribe") return "growth";
   if (name.startsWith("page_") || name === "route_change") return "page";
   if (name.startsWith("cta_")) return "cta";
   if (

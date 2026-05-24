@@ -8,6 +8,11 @@ Yapay zeka destekli karar platformu — yüksek tutarlı satın alma kararları 
 - **Readiness audit:** [docs/investor/INVESTOR_READINESS.md](docs/investor/INVESTOR_READINESS.md)
 - **One-pager:** [docs/investor/ONE_PAGER.md](docs/investor/ONE_PAGER.md)
 - **Pitch deck outline:** [docs/investor/PITCH_DECK_OUTLINE.md](docs/investor/PITCH_DECK_OUTLINE.md)
+
+## Growth engine
+
+- **Playbook:** [docs/GROWTH_ENGINE.md](docs/GROWTH_ENGINE.md)
+- **Weekly export:** `npm run metrics:growth` (requires Supabase service role)
 - **KPI export:** `SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/investor-metrics-snapshot.cjs`
 - **Admin:** Investor KPIs panel (admin girişi gerekir)
 

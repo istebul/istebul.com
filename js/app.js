@@ -1,5 +1,6 @@
 // isteBul v2 - Main Application
 import './runtime/locale-bootstrap.js';
+import './runtime/growth-bootstrap.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
 import { AuthManager } from './features/auth/auth.js';

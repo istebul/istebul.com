@@ -75,7 +75,11 @@ export class Analytics {
       utm_medium: params.get('utm_medium'),
       utm_campaign: params.get('utm_campaign'),
       utm_content: params.get('utm_content'),
-      utm_term: params.get('utm_term')
+      utm_term: params.get('utm_term'),
+      ref: params.get('ref') || params.get('referral'),
+      gclid: params.get('gclid'),
+      fbclid: params.get('fbclid'),
+      growth_campaign: params.get('growth_campaign') || params.get('utm_campaign')
     };
 
     writeJson(ATTRIBUTION_KEY, attribution);

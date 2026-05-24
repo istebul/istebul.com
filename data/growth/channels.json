@@ -1,0 +1,78 @@
+{
+  "northStar": "qualified_leads_per_week",
+  "secondaryMetrics": ["pro_trial_starts", "partner_dispatch_success", "organic_sessions"],
+  "channels": [
+    {
+      "id": "seo",
+      "name": "SEO / Organic",
+      "type": "acquisition",
+      "defaultUtm": { "utm_source": "google", "utm_medium": "organic" },
+      "primaryEvents": ["page_view", "auto_page_view", "auto_lead_submit"],
+      "kpi": "organic_leads"
+    },
+    {
+      "id": "paid",
+      "name": "Paid acquisition",
+      "type": "acquisition",
+      "defaultUtm": { "utm_source": "paid", "utm_medium": "cpc" },
+      "primaryEvents": ["page_view", "checkout_started", "auto_lead_submit"],
+      "kpi": "paid_cac"
+    },
+    {
+      "id": "referral",
+      "name": "Referral",
+      "type": "acquisition",
+      "defaultUtm": { "utm_source": "referral", "utm_medium": "invite" },
+      "primaryEvents": ["growth_referral_land", "growth_referral_convert", "auto_lead_submit"],
+      "kpi": "referral_leads"
+    },
+    {
+      "id": "partner",
+      "name": "Partner acquisition",
+      "type": "supply",
+      "defaultUtm": { "utm_source": "partner", "utm_medium": "co_marketing" },
+      "primaryEvents": ["partner_dispatch_success", "lead_submit"],
+      "kpi": "active_partners"
+    },
+    {
+      "id": "lifecycle_email",
+      "name": "Lifecycle email",
+      "type": "retention",
+      "defaultUtm": { "utm_source": "email", "utm_medium": "lifecycle" },
+      "primaryEvents": ["growth_email_click", "checkout_started", "auto_lead_submit"],
+      "kpi": "email_reactivated_sessions"
+    },
+    {
+      "id": "crm_reactivation",
+      "name": "CRM reactivation",
+      "type": "retention",
+      "defaultUtm": { "utm_source": "crm", "utm_medium": "reactivation" },
+      "primaryEvents": ["growth_crm_touch", "auto_lead_submit"],
+      "kpi": "stale_leads_reactivated"
+    },
+    {
+      "id": "abandoned_lead",
+      "name": "Abandoned lead recovery",
+      "type": "conversion",
+      "defaultUtm": { "utm_source": "recovery", "utm_medium": "abandon" },
+      "primaryEvents": ["growth_lead_abandon", "growth_lead_recovery_click", "auto_lead_submit"],
+      "kpi": "recovered_leads"
+    },
+    {
+      "id": "retargeting",
+      "name": "Retargeting",
+      "type": "acquisition",
+      "defaultUtm": { "utm_source": "retargeting", "utm_medium": "display" },
+      "primaryEvents": ["page_view", "auto_lead_submit"],
+      "kpi": "retargeting_roas"
+    },
+    {
+      "id": "viral",
+      "name": "Viral loops",
+      "type": "acquisition",
+      "defaultUtm": { "utm_source": "viral", "utm_medium": "share" },
+      "primaryEvents": ["growth_viral_share", "growth_referral_land"],
+      "kpi": "viral_coefficient"
+    }
+  ]
+}

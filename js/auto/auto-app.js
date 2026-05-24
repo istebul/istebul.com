@@ -1,4 +1,11 @@
 import '../runtime/locale-bootstrap.js';
+import '../runtime/growth-bootstrap.js';
+import {
+  enrichLeadMetadata,
+  trackGrowth,
+  getGrowthContext,
+  getStoredReferralCode
+} from '../features/growth/growth-engine.js';
 import { recommendVehicles, buildMethodologyPanel } from './auto-ai.js?v=ai3';
 import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
 import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
@@ -274,6 +281,10 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
     email: email || null,
     phone,
     turnstile_token: options.turnstileToken || '',
+    metadata: enrichLeadMetadata({
+      session_id: getSessionId(),
+      growth: getGrowthContext()
+    }),
     formData: {
       ...leadPayload,
       phone,
@@ -523,8 +534,22 @@ function openFinanceCompareModal(vehicleName = '') {
   render();
 }
 
+function markLeadAbandonPending(meta = {}) {
+  writeStorageRaw(
+    STORAGE_KEYS.LEAD_ABANDON_PENDING,
+    JSON.stringify({ at: Date.now(), ...meta })
+  );
+}
+
+function clearLeadAbandonPending() {
+  try {
+    localStorage.removeItem(STORAGE_KEYS.LEAD_ABANDON_PENDING);
+  } catch {}
+}
+
 function openLeadModal(type, vehicle = '') {
   trackAutoEvent('auto_modal_open', { interest_type: type, vehicle });
+  markLeadAbandonPending({ interest_type: type, vehicle });
 
   const existing = document.getElementById('lead-modal');
   if (existing) existing.remove();
@@ -686,6 +711,14 @@ function openLeadModal(type, vehicle = '') {
   }
 
   function renderStep3() {
+    clearLeadAbandonPending();
+    if (getStoredReferralCode()) {
+      trackGrowth('growth_referral_convert', { vehicle }, {
+        funnel: 'referral',
+        funnel_step: 'lead_success'
+      });
+    }
+
     const financeContext = window.lastFinanceLeadContext || {};
     const financeComparison = financeContext.comparison || {};
     const financeMeta = financeContext.bank && financeComparison.loanAmount
@@ -2039,3 +2072,18 @@ document.addEventListener('click', (event) => {
 
 // Expose finance comparison opener for delegated CTA handling and runtime diagnostics.
 window.openFinanceCompareModal = openFinanceCompareModal;
+
+window.addEventListener('pagehide', () => {
+  const raw = readStorageRaw(STORAGE_KEYS.LEAD_ABANDON_PENDING);
+  if (!raw) return;
+  try {
+    const pending = JSON.parse(raw);
+    trackGrowth('growth_lead_abandon', pending, {
+      funnel: 'abandoned_lead',
+      funnel_step: 'modal_exit'
+    });
+  } catch {
+    trackGrowth('growth_lead_abandon', {}, { funnel: 'abandoned_lead' });
+  }
+  clearLeadAbandonPending();
+});
