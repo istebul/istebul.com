@@ -118,6 +118,7 @@ async function showApp() {
   loadAutoAnalytics();
   loadPlatformAnalytics();
   loadInvestorMetrics();
+  loadExecutiveMetrics();
   loadOperationalHealth();
   loadPartnerEndpoints();
   loadPartnerApplications();
@@ -180,6 +181,9 @@ function showPage(name, el) {
   }
   if (name === 'investor-metrics') {
     loadInvestorMetrics();
+  }
+  if (name === 'executive-metrics') {
+    loadExecutiveMetrics();
   }
   if (name === 'observability') {
     loadOperationalHealth();
@@ -377,6 +381,157 @@ async function loadOperationalHealth() {
         </tbody>
       </table>
     ` : '<p class="empty">Audit kaydı yok.</p>'}
+  `;
+}
+
+function formatPct(value) {
+  return value == null ? '—' : `${value}%`;
+}
+
+function formatTry(value) {
+  if (value == null) return '—';
+  return `${Number(value).toLocaleString('tr-TR')} ₺`;
+}
+
+function renderExecutiveFunnel(stages) {
+  if (!stages?.length) return '<p class="empty">Funnel verisi yok.</p>';
+  return `
+    <div class="exec-funnel">
+      ${stages
+        .map(
+          (s) => `
+        <div class="exec-funnel-row">
+          <div class="exec-funnel-label">${escapeHtml(s.label)}</div>
+          <div class="exec-funnel-bar-wrap">
+            <div class="exec-funnel-bar" style="width:${Math.max(s.pctOfTop || 0, 2)}%"></div>
+          </div>
+          <div class="exec-funnel-meta">
+            <strong>${s.count.toLocaleString('tr-TR')}</strong>
+            <span>${s.pctOfTop ?? 0}% · step ${s.stepConversionPct ?? '—'}%</span>
+          </div>
+        </div>`
+        )
+        .join('')}
+    </div>
+  `;
+}
+
+async function loadExecutiveMetrics() {
+  const el = document.getElementById('executive-metrics-root');
+  if (!el) return;
+
+  const { buildExecutiveSnapshot } = await import('./features/metrics/executive-metrics.js');
+
+  let subscriptions = [];
+  let leads = [];
+  let events = [];
+  let sessions = [];
+
+  try {
+    [subscriptions, leads, events, sessions] = await Promise.all([
+      adminList(sb, {
+        table: 'subscriptions',
+        select: 'status, current_period_start, current_period_end, cancel_at_period_end',
+        limit: 2000
+      }).catch(() => []),
+      adminList(sb, {
+        table: 'auto_leads',
+        select:
+          'estimated_revenue, actual_revenue, partner_status, lead_score, priority, created_at',
+        limit: 5000
+      }),
+      adminList(sb, {
+        table: 'analytics_events',
+        select:
+          'event_name, created_at, user_id, anonymous_id, session_id, funnel, funnel_step',
+        order: { column: 'created_at', ascending: false },
+        limit: 4000
+      }),
+      adminList(sb, {
+        table: 'analytics_sessions',
+        select: 'user_id, created_at, updated_at',
+        order: { column: 'updated_at', ascending: false },
+        limit: 2000
+      }).catch(() => [])
+    ]);
+  } catch (error) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  const snapshot = buildExecutiveSnapshot({
+    subscriptions,
+    leads,
+    analyticsEvents: events,
+    analyticsSessions: sessions
+  });
+
+  const au = snapshot.activeUsers;
+  const ld = snapshot.leads;
+  const rev = snapshot.revenue;
+  const ue = snapshot.unitEconomics;
+  const ch = snapshot.churn;
+  const gr = snapshot.growth;
+
+  el.innerHTML = `
+    <p class="text-muted" style="margin:0 0 16px 0;">Son güncelleme: ${escapeHtml(snapshot.generatedAt)} · <code>docs/EXECUTIVE_METRICS.md</code></p>
+
+    <h3 style="margin:0 0 14px 0;">Engagement (DAU / WAU / MAU)</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">DAU</div><div class="stat-value">${au.dau}</div><div class="stat-sub">stickiness ${formatPct(au.stickinessPct)}</div></div>
+      <div class="stat-card"><div class="stat-label">WAU</div><div class="stat-value">${au.wau}</div></div>
+      <div class="stat-card"><div class="stat-label">MAU</div><div class="stat-value">${au.mau}</div><div class="stat-sub">Δ ${formatPct(au.mauGrowthPct)} vs önceki 30g</div></div>
+      <div class="stat-card"><div class="stat-label">Sample</div><div class="stat-value">${au.sampleEventRows}</div><div class="stat-sub">events + ${au.sampleSessionRows} sessions</div></div>
+    </div>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Lead pipeline</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Lead volume</div><div class="stat-value">${ld.leadVolume}</div><div class="stat-sub">30g: ${ld.leadVolume30d} · Δ ${formatPct(ld.leadVolumeGrowthPct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Qualified</div><div class="stat-value">${ld.qualifiedLeads}</div><div class="stat-sub">${formatPct(ld.qualifiedRatePct)} of total</div></div>
+      <div class="stat-card"><div class="stat-label">Close rate</div><div class="stat-value">${formatPct(ld.closeRatePct)}</div><div class="stat-sub">30g: ${formatPct(ld.closeRate30dPct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Wins</div><div class="stat-value">${ld.wins}</div><div class="stat-sub">win rate ${formatPct(ld.winRatePct)}</div></div>
+    </div>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Revenue</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Subscription MRR</div><div class="stat-value">${formatTry(rev.subscriptionMrrTry)}</div></div>
+      <div class="stat-card"><div class="stat-label">Subscription ARR</div><div class="stat-value">${formatTry(rev.subscriptionArrTry)}</div></div>
+      <div class="stat-card"><div class="stat-label">Partner revenue (CRM)</div><div class="stat-value">${formatTry(rev.partnerRevenueTry)}</div><div class="stat-sub">pipeline ${formatTry(rev.partnerPipelineTry)}</div></div>
+      <div class="stat-card"><div class="stat-label">Blended ARR signal</div><div class="stat-value">${formatTry(rev.blendedArrTry)}</div></div>
+    </div>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Unit economics</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">LTV (blended model)</div><div class="stat-value">${formatTry(ue.blendedLtvTry)}</div><div class="stat-sub">Pro ${formatTry(ue.subscriptionLtvTry)} · partner win ${formatTry(ue.partnerLtvTry)}</div></div>
+      <div class="stat-card"><div class="stat-label">CAC (30d)</div><div class="stat-value">${ue.cacTry != null ? formatTry(ue.cacTry) : '—'}</div><div class="stat-sub">Set EXECUTIVE_MARKETING_SPEND_TRY_30D on export</div></div>
+      <div class="stat-card"><div class="stat-label">LTV : CAC</div><div class="stat-value">${ue.ltvToCac ?? '—'}</div></div>
+      <div class="stat-card"><div class="stat-label">ARPU (monthly)</div><div class="stat-value">${formatTry(ue.arpuMonthlyTry)}</div></div>
+    </div>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Conversion funnel</h3>
+    ${renderExecutiveFunnel(snapshot.funnel.stages)}
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Churn & growth</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Logo churn signal</div><div class="stat-value">${formatPct(ch.logoChurnSignalPct)}</div><div class="stat-sub">${ch.cancelAtPeriodEnd} cancel at period end</div></div>
+      <div class="stat-card"><div class="stat-label">MAU growth</div><div class="stat-value">${formatPct(gr.mauGrowthPct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Lead volume growth</div><div class="stat-value">${formatPct(gr.leadVolumeGrowthPct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Billable subs</div><div class="stat-value">${rev.subscriptionBillable}</div></div>
+    </div>
+
+    <div style="height:20px"></div>
+    <details>
+      <summary>Snapshot JSON (executive export)</summary>
+      <pre style="white-space:pre-wrap;font-size:12px;max-height:360px;overflow:auto;">${escapeHtml(JSON.stringify(snapshot, null, 2))}</pre>
+    </details>
+    <ul class="text-muted" style="margin-top:12px;font-size:13px;">
+      ${snapshot.notes.map((n) => `<li>${escapeHtml(n)}</li>`).join('')}
+    </ul>
   `;
 }
 
