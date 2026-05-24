@@ -269,22 +269,58 @@ function fuelLabel(fuel) {
   }[fuel] || fuel;
 }
 
+let autoLoadingStepTimer = null;
+
 function renderLoading() {
-  document.getElementById('auto-results').innerHTML = `
-    <div class="ai-loading premium-loading">
-      <div class="spinner"></div>
+  const container = document.getElementById('auto-results');
+  if (!container) return;
+
+  const steps = [
+    'İhtiyaç profiliniz oluşturuluyor',
+    'Uygun araç segmenti eşleştiriliyor',
+    'Toplam sahip olma maliyeti hesaplanıyor',
+    'Finansman ve kullanım riski modelleniyor',
+    'Size en yakın seçenekler sıralanıyor'
+  ];
+
+  container.innerHTML = `
+    <div class="ai-loading premium-loading" role="status" aria-live="polite" aria-busy="true">
+      <div class="premium-loading-ring" aria-hidden="true">
+        <div class="spinner"></div>
+      </div>
       <p class="kicker">Karar analizi hazırlanıyor</p>
-      <h3>İhtiyaç profiliniz ve toplam maliyet etkisi değerlendiriliyor...</h3>
-      <p class="loading-copy">Bütçe, kullanım, yakıt tercihi, yıllık kilometre ve finansman durumunuz birlikte değerlendiriliyor.</p>
-      <ul class="ai-loading-steps">
-        <li class="is-done">İhtiyaç profiliniz oluşturuluyor</li>
-        <li class="is-active">Uygun araç profili hazırlanıyor</li>
-        <li>Toplam sahip olma maliyeti hesaplanıyor</li>
-        <li>Finansman ve kullanım riski modelleniyor</li>
-        <li>Profilinize en yakın seçenekler hazırlanıyor</li>
+      <h3>Toplam maliyet ve uyum skorunuz hesaplanıyor</h3>
+      <p class="loading-copy">Bütçe, kullanım, yakıt, kilometre ve finansman yanıtlarınız metodoloji modeline işleniyor — genelde birkaç saniye sürer.</p>
+      <ul class="ai-loading-steps premium-loading-steps">
+        ${steps.map((label, index) => `
+          <li class="${index === 0 ? 'is-active' : ''}" data-loading-step="${index}">${escapeHtml(label)}</li>
+        `).join('')}
       </ul>
+      <p class="premium-loading-footnote">Sonuçlar bilgilendirme amaçlıdır; canlı ilan veya bağlayıcı teklif değildir.</p>
     </div>
   `;
+
+  if (autoLoadingStepTimer) clearInterval(autoLoadingStepTimer);
+  const items = container.querySelectorAll('[data-loading-step]');
+  let activeIndex = 0;
+  autoLoadingStepTimer = window.setInterval(() => {
+    activeIndex += 1;
+    items.forEach((item, index) => {
+      item.classList.toggle('is-done', index < activeIndex);
+      item.classList.toggle('is-active', index === activeIndex);
+    });
+    if (activeIndex >= items.length - 1) {
+      clearInterval(autoLoadingStepTimer);
+      autoLoadingStepTimer = null;
+    }
+  }, 520);
+}
+
+function stopLoadingAnimation() {
+  if (autoLoadingStepTimer) {
+    clearInterval(autoLoadingStepTimer);
+    autoLoadingStepTimer = null;
+  }
 }
 
 async function updateLeadInterest(phone, interestType, vehicle = '', options = {}) {
@@ -1434,83 +1470,109 @@ const kmCustom = {
   suffix: 'km'
 };
 
+const WIZARD_MILESTONES = ['Bütçe', 'Araç', 'Bölge', 'Özet'];
+
+const WIZARD_FIELD_LABELS = {
+  budget: 'toplam bütçe',
+  usage: 'kullanım amacı',
+  body: 'araç tipi',
+  fuel: 'yakıt tercihi',
+  km: 'yıllık kilometre',
+  location: 'şehir',
+  loan: 'finansman tercihi'
+};
+
 const wizardSteps = [
   {
-    key: 'budget',
-    title: 'Toplam araç bütçeniz nedir?',
-    description: 'Satın alma ve finansman dengenizi doğru kurmak için yaklaşık bütçenizi seçin.',
-    options: [
-      { label: '500 bin TL altı', value: '500000', note: 'Ekonomik başlangıç seviyesi' },
-      { label: '500 bin – 1 milyon TL', value: '900000', note: 'Ulaşılabilir güçlü seçenekler' },
-      { label: '1 – 2 milyon TL', value: '1500000', note: 'Dengeli ve geniş pazar' },
-      { label: '2 milyon TL+', value: '2500000', note: 'Premium seçenekler' },
-      { label: 'Kendi bütçemi gireceğim', value: 'custom', note: 'Net bütçe ile daha hassas analiz' }
-    ],
-    custom: {
-      type: 'text',
-      placeholder: 'Örn. 1350000',
-      min: 250000,
-      max: 20000000,
-      suffix: 'TL'
-    }
-  },
-  {
-    title: 'Kullanım ve araç tipi',
-    description: 'İki kısa seçimle segment ve maliyet dengesini belirleyin.',
+    title: 'Bütçe ve kullanım',
+    description: 'İki hızlı seçimle size uygun segmenti ve maliyet bandını belirliyoruz.',
+    why: 'Bütçe TCO hesabının üst sınırıdır; kullanım amacı ise yakıt ve segment önerisini şekillendirir.',
     parts: [
+      {
+        key: 'budget',
+        title: 'Toplam araç bütçeniz (yaklaşık)',
+        why: 'Finansman ve toplam maliyet simülasyonunu gerçekçi tutmak için gereklidir.',
+        options: [
+          { label: '500 bin TL altı', value: '500000', note: 'Ekonomik başlangıç seviyesi' },
+          { label: '500 bin – 1 milyon TL', value: '900000', note: 'Ulaşılabilir güçlü seçenekler' },
+          { label: '1 – 2 milyon TL', value: '1500000', note: 'Dengeli ve geniş pazar' },
+          { label: '2 milyon TL+', value: '2500000', note: 'Premium seçenekler' },
+          { label: 'Kendi bütçemi gireceğim', value: 'custom', note: 'Net bütçe ile daha hassas analiz' }
+        ],
+        custom: {
+          type: 'text',
+          placeholder: 'Örn. 1350000',
+          min: 250000,
+          max: 20000000,
+          suffix: 'TL'
+        }
+      },
       {
         key: 'usage',
         title: 'Aracı en çok nasıl kullanacaksınız?',
+        why: 'Şehir içi, aile veya uzun yol kullanımı yakıt ve kasa tipini değiştirir.',
         options: usageOptions
-      },
+      }
+    ]
+  },
+  {
+    title: 'Araç tipi ve yakıt',
+    description: 'Kasa ve yakıt tercihi yıllık işletme maliyetini doğrudan etkiler.',
+    why: 'Bu iki sinyal, öneri listesindeki modelleri daraltır ve TCO’yu kişiselleştirir.',
+    parts: [
       {
         key: 'body',
         title: 'Hangi araç tipi size daha yakın?',
+        why: 'SUV, sedan veya hatchback farklı kullanım ve maliyet profilleri sunar.',
         options: bodyOptions
-      }
-    ]
-  },
-  {
-    title: 'Yakıt ve yıllık kilometre',
-    description: 'Toplam sahip olma maliyetini en çok etkileyen iki sinyal.',
-    parts: [
+      },
       {
         key: 'fuel',
         title: 'Yakıt tercihiniz',
+        why: 'Yakıt tipi yıllık enerji maliyetini ve ikinci el değerini etkiler.',
         options: fuelOptions
-      },
-      {
-        key: 'km',
-        title: 'Yılda yaklaşık kaç km?',
-        options: kmOptions,
-        custom: kmCustom
       }
     ]
   },
   {
-    key: 'location',
-    title: 'Aracı hangi şehirde arıyorsunuz?',
-    description: 'Gerçek teklif ve satıcı eşleşmesi için şehir bilgisi gereklidir. İlçe opsiyoneldir.',
-    options: [
-      { label: 'İzmir', value: 'İzmir', note: 'İzmir ve çevresindeki satıcılar' },
-      { label: 'İstanbul', value: 'İstanbul', note: 'İstanbul Avrupa / Anadolu' },
-      { label: 'Ankara', value: 'Ankara', note: 'Ankara ve çevresi' },
-      { label: 'Antalya', value: 'Antalya', note: 'Antalya ve çevresi' },
-      { label: 'Başka şehir', value: 'custom', note: 'Şehir adını kendim gireceğim' }
-    ],
-    custom: {
-      type: 'text',
-      placeholder: 'Örn. Bursa',
-      min: 2,
-      max: 40,
-      suffix: 'il'
-    },
-    optionalDistrict: true
+    title: 'Kilometre ve bölge',
+    description: 'Km ve şehir bilgisi işletme maliyeti ile partner eşleşmesi için kullanılır.',
+    why: 'Yıllık km bakım/yakıt tahminini belirler; şehir ise size yakın teklif yönlendirmesini iyileştirir.',
+    parts: [
+      {
+        key: 'km',
+        title: 'Yılda yaklaşık kaç km?',
+        why: 'Kilometre, amortisman ve yakıt giderlerinin en güçlü girdilerinden biridir.',
+        options: kmOptions,
+        custom: kmCustom
+      },
+      {
+        key: 'location',
+        title: 'Aracı hangi şehirde arıyorsunuz?',
+        why: 'Partner ve galeri yönlendirmesi bölgesel olarak yapılır; ilçe isteğe bağlıdır.',
+        options: [
+          { label: 'İzmir', value: 'İzmir', note: 'İzmir ve çevresindeki satıcılar' },
+          { label: 'İstanbul', value: 'İstanbul', note: 'İstanbul Avrupa / Anadolu' },
+          { label: 'Ankara', value: 'Ankara', note: 'Ankara ve çevresi' },
+          { label: 'Antalya', value: 'Antalya', note: 'Antalya ve çevresi' },
+          { label: 'Başka şehir', value: 'custom', note: 'Şehir adını kendim gireceğim' }
+        ],
+        custom: {
+          type: 'text',
+          placeholder: 'Örn. Bursa',
+          min: 2,
+          max: 40,
+          suffix: 'il'
+        },
+        optionalDistrict: true
+      }
+    ]
   },
   {
     key: 'loan',
     title: 'Finansman kullanacak mısınız?',
-    description: 'Kredi tercihi aylık yük ve toplam maliyet analizini etkiler.',
+    description: 'Son adım — kredi tercihi aylık yük ve toplam maliyet tablosunu günceller.',
+    why: 'Finansman seçimi, ödeme planı ve toplam sahip olma maliyeti görünümünü değiştirir.',
     options: [
       { label: 'Evet', value: 'yes', note: 'Finansman etkisi dahil edilsin' },
       { label: 'Hayır', value: 'no', note: 'Peşin alım dengesiyle analiz edilsin' }
@@ -1543,6 +1605,26 @@ function isSingleFieldWizardStep(step) {
   return Boolean(step.key) && !step.parts?.length;
 }
 
+function getWizardValidationMessage(step) {
+  const missing = getWizardStepKeys(step).filter((key) => !wizardState[key]);
+  if (!missing.length) {
+    return 'Lütfen devam etmeden önce tüm soruları yanıtlayın.';
+  }
+  const label = WIZARD_FIELD_LABELS[missing[0]] || 'bu alan';
+  return `Devam etmek için ${label} seçin${missing[0] === 'budget' || missing[0] === 'km' ? ' veya girin' : ''}.`;
+}
+
+function trackWizardStepView(stepIndex) {
+  const step = wizardSteps[stepIndex];
+  if (!step) return;
+  trackAutoEvent('auto_wizard_step', {
+    step: stepIndex + 1,
+    total_steps: wizardSteps.length,
+    key: getWizardStepKeys(step).join('+'),
+    action: 'view'
+  });
+}
+
 function syncWizardToForm() {
   Object.entries(wizardState).forEach(([key, value]) => {
     if (key.endsWith('_custom')) return;
@@ -1569,14 +1651,41 @@ function syncWizardToForm() {
   });
 }
 
+function renderWizardDistrictField() {
+  return `
+    <label class="wizard-custom-input wizard-district-input">
+      <span>İlçe (opsiyonel — partner eşleşmesini iyileştirir)</span>
+      <div>
+        <input
+          type="text"
+          maxlength="60"
+          placeholder="Örn. Bornova"
+          value="${escapeHtml(wizardState.district || '')}"
+          data-wizard-district
+          autocomplete="address-level2"
+        >
+        <strong>ilçe</strong>
+      </div>
+    </label>
+  `;
+}
+
 function renderWizardPartOptions(part) {
   const selected = wizardState[part.key];
   const isCustom = selected === 'custom';
   const customValue = wizardState[`${part.key}_custom`] || '';
+  const customLabel = part.key === 'budget'
+    ? 'Net bütçenizi girin'
+    : part.key === 'km'
+      ? 'Yıllık net kilometrenizi girin'
+      : part.key === 'location'
+        ? 'Şehir adını girin'
+        : 'Değer girin';
 
   return `
     <div class="wizard-part" data-wizard-part="${escapeHtml(part.key)}">
       <h4 class="wizard-part-title">${escapeHtml(part.title)}</h4>
+      ${part.why ? `<p class="wizard-part-why">${escapeHtml(part.why)}</p>` : ''}
       <div class="wizard-options">
         ${part.options.map((option) => `
           <button type="button" class="wizard-option ${selected === option.value ? 'is-selected' : ''}" data-wizard-value="${escapeHtml(option.value)}" data-wizard-key="${escapeHtml(part.key)}">
@@ -1587,23 +1696,25 @@ function renderWizardPartOptions(part) {
       </div>
       ${part.custom && isCustom ? `
         <label class="wizard-custom-input">
-          <span>${part.key === 'km' ? 'Yıllık net kilometrenizi girin' : 'Değer girin'}</span>
+          <span>${escapeHtml(customLabel)}</span>
           <div>
             <input
               type="${part.custom.type}"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              min="${part.custom.min}"
-              max="${part.custom.max}"
+              ${part.key === 'location' ? '' : 'inputmode="numeric" pattern="[0-9]*"'}
+              ${part.key === 'location'
+    ? `minlength="${part.custom.min}" maxlength="${part.custom.max}"`
+    : `min="${part.custom.min}" max="${part.custom.max}"`}
               placeholder="${escapeHtml(part.custom.placeholder)}"
               value="${escapeHtml(customValue)}"
               data-wizard-custom
               data-wizard-key="${escapeHtml(part.key)}"
+              ${part.key === 'location' ? 'autocomplete="address-level1"' : ''}
             >
             <strong>${escapeHtml(part.custom.suffix)}</strong>
           </div>
         </label>
       ` : ''}
+      ${part.optionalDistrict && (selected && selected !== 'custom' || isCustom) ? renderWizardDistrictField() : ''}
     </div>
   `;
 }
@@ -1615,6 +1726,10 @@ function renderWizard() {
   const progress = Math.round(((wizardIndex + 1) / wizardSteps.length) * 100);
   const canProceed = wizardStepCanProceed(step);
   const isMulti = Array.isArray(step.parts) && step.parts.length > 0;
+  const stepsRemaining = wizardSteps.length - wizardIndex - 1;
+  const motivationCopy = stepsRemaining === 0
+    ? 'Son adım — analiz sonuçları birazdan hazır'
+    : `Sonuca ${stepsRemaining} kısa adım kaldı`;
 
   let bodyHtml = '';
 
@@ -1672,18 +1787,25 @@ function renderWizard() {
   wizard.innerHTML = `
     <div class="wizard-progress">
       <div class="wizard-progress-text">
-        <span>Adım ${wizardIndex + 1}/${wizardSteps.length}</span>
-        <span>%${progress} tamamlandı</span>
+        <span>Adım ${wizardIndex + 1} / ${wizardSteps.length}</span>
+        <span class="wizard-progress-motivation">${motivationCopy}</span>
       </div>
-      <div class="wizard-progress-bar">
+      <div class="wizard-progress-milestones" aria-hidden="true">
+        ${WIZARD_MILESTONES.map((label, index) => `
+          <span class="wizard-milestone ${index < wizardIndex ? 'is-done' : ''} ${index === wizardIndex ? 'is-current' : ''}">${escapeHtml(label)}</span>
+        `).join('')}
+      </div>
+      <div class="wizard-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}" aria-label="Analiz ilerlemesi">
         <div class="wizard-progress-fill" style="width:${progress}%"></div>
       </div>
+      <p class="wizard-progress-percent">%${progress} tamamlandı — yaklaşık 1 dakikada biter</p>
     </div>
 
     <div class="wizard-question">
       <p class="kicker">Karar danışmanı</p>
       <h3>${escapeHtml(step.title)}</h3>
       <p>${escapeHtml(step.description)}</p>
+      ${step.why ? `<p class="wizard-step-why">${escapeHtml(step.why)}</p>` : ''}
     </div>
 
     ${bodyHtml}
@@ -1720,7 +1842,7 @@ function advanceWizard() {
   clearWizardInlineError();
 
   if (!wizardStepCanProceed(step)) {
-    showWizardInlineError('Lütfen devam etmeden önce tüm soruları yanıtlayın.');
+    showWizardInlineError(getWizardValidationMessage(step));
     return;
   }
 
@@ -1741,7 +1863,7 @@ function advanceWizard() {
     if (fieldKey === 'location') {
       const cleanLocation = String(rawCustomValue || '').trim();
       if (cleanLocation.length < fieldDef.custom.min || cleanLocation.length > fieldDef.custom.max) {
-        showWizardInlineError('Lütfen geçerli bir şehir adı girin.');
+        showWizardInlineError('Şehir adı en az 2, en fazla 40 karakter olmalıdır.');
         return;
       }
       wizardState[`${fieldKey}_custom`] = cleanLocation;
@@ -1749,12 +1871,22 @@ function advanceWizard() {
       const numericValue = Number(rawCustomValue);
 
       if (!rawCustomValue || Number.isNaN(numericValue)) {
-        showWizardInlineError('Lütfen geçerli bir değer girin.');
+        const hint = fieldKey === 'budget'
+          ? 'Bütçe için yalnızca rakam girin (ör. 1350000).'
+          : fieldKey === 'km'
+            ? 'Yıllık kilometre için yalnızca rakam girin (ör. 18000).'
+            : 'Lütfen geçerli bir sayı girin.';
+        showWizardInlineError(hint);
         return;
       }
 
       if (numericValue < fieldDef.custom.min || numericValue > fieldDef.custom.max) {
-        showWizardInlineError(`Lütfen ${fieldDef.custom.min} - ${fieldDef.custom.max} aralığında bir değer girin.`);
+        const rangeHint = fieldKey === 'budget'
+          ? `Bütçe ${fieldDef.custom.min.toLocaleString('tr-TR')} – ${fieldDef.custom.max.toLocaleString('tr-TR')} TL aralığında olmalıdır.`
+          : fieldKey === 'km'
+            ? `Yıllık km ${fieldDef.custom.min.toLocaleString('tr-TR')} – ${fieldDef.custom.max.toLocaleString('tr-TR')} arasında olmalıdır.`
+            : `Lütfen ${fieldDef.custom.min} – ${fieldDef.custom.max} aralığında bir değer girin.`;
+        showWizardInlineError(rangeHint);
         return;
       }
 
@@ -1767,18 +1899,22 @@ function advanceWizard() {
   if (wizardIndex < wizardSteps.length - 1) {
     wizardIndex += 1;
     renderWizard();
-    trackAutoEvent('auto_wizard_step', {
-      step: wizardIndex + 1,
-      key: getWizardStepKeys(wizardSteps[wizardIndex]).join('+')
-    });
+    trackWizardStepView(wizardIndex);
+    wizard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return;
   }
+
+  trackAutoEvent('auto_wizard_complete', {
+    total_steps: wizardSteps.length,
+    keys: wizardSteps.map((s) => getWizardStepKeys(s).join('+')).join('|')
+  });
 
   form.requestSubmit();
 }
 
 if (wizard) {
   renderWizard();
+  trackWizardStepView(0);
 
   wizard.addEventListener('input', (event) => {
     const customInput = event.target.closest('[data-wizard-custom]');
@@ -1844,6 +1980,7 @@ if (wizard) {
     if (back && wizardIndex > 0) {
       wizardIndex -= 1;
       renderWizard();
+      trackWizardStepView(wizardIndex);
       return;
     }
 
@@ -1900,6 +2037,8 @@ form.addEventListener('submit', async (event) => {
 
   trackAutoEvent('auto_form_submitted');
 
+  stopLoadingAnimation();
+
   const formData = readForm(form);
   writeStorageRaw(STORAGE_KEYS.AUTO_LEAD_PAYLOAD, JSON.stringify(formData));
   const vehicleCatalog = await getVehicleCatalog();
@@ -1915,6 +2054,7 @@ form.addEventListener('submit', async (event) => {
 
   autoAnalysisTimer = setTimeout(() => {
     try {
+      stopLoadingAnimation();
       document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
       trackAutoEvent('auto_results_rendered', { count: results.length });
       renderResults(results);
