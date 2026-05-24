@@ -16,6 +16,14 @@ import {
   enrollUpsellCampaign
 } from '../features/lifecycle/lifecycle-client.js';
 import { ensureServerReferralCode } from '../features/growth/referral-client.js';
+import {
+  bindContextualUpsell,
+  bindUpsellFeatureChips,
+  openUpsellCheckout,
+  renderContextualUpsellCard,
+  renderUpsellFeatureChips,
+  shouldShowUpsell
+} from '../features/monetization/upsell-engine.js';
 import { recommendVehicles, buildMethodologyPanel } from './auto-ai.js?v=ai3';
 import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
 import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
@@ -557,6 +565,7 @@ function openFinanceCompareModal(vehicleName = '') {
         </div>
 
         <p class="finance-disclaimer">Bu ekran kredi tavsiyesi değil, tahmini karşılaştırma simülasyonudur.</p>
+        ${!isProActive() ? renderContextualUpsellCard('premium_finance', 'auto_finance_modal') : ''}
       </div>
     `;
 
@@ -594,6 +603,7 @@ function openFinanceCompareModal(vehicleName = '') {
 
   document.body.appendChild(modal);
   render();
+  bindContextualUpsell(modal);
 }
 
 function markLeadAbandonPending(meta = {}) {
@@ -1367,10 +1377,14 @@ function renderResults(results) {
       </div>
     </section>
 
+    ${!pro ? renderContextualUpsellCard('advanced_ai_summary', 'auto_results') : ''}
+    ${!pro ? renderUpsellFeatureChips('auto_results') : ''}
     ${renderReferralSharePanel({ compact: true })}
   `;
 
   bindReferralShare(root);
+  bindContextualUpsell(root);
+  bindUpsellFeatureChips(root);
 
   root.querySelectorAll('[data-auto-filter]').forEach((select) => {
     select.addEventListener('change', (event) => {
@@ -1424,8 +1438,26 @@ function renderResults(results) {
   hydrateDealerOffers(results, formData);
   updateAiSummary();
 
+  const ensureAdvisorUpsell = () => {
+    if (isProActive() || !aiBox) return true;
+    if (!shouldShowUpsell('advisor_mode')) {
+      openUpsellCheckout('advisor_mode', 'auto_advisor_refine', { feature: 'ai_summary', modal: true });
+      return false;
+    }
+    if (aiBox.querySelector('[data-upsell-offer="advisor_mode"]')) return false;
+    const slot = document.createElement('div');
+    slot.innerHTML = renderContextualUpsellCard('advisor_mode', 'auto_advisor_refine');
+    const card = slot.firstElementChild;
+    if (card) {
+      aiBox.querySelector('.ai-refinement-tools')?.prepend(card);
+      bindContextualUpsell(aiBox);
+    }
+    return false;
+  };
+
   aiBox?.querySelectorAll('[data-ai-refine]').forEach((button) => {
     button.addEventListener('click', () => {
+      if (!ensureAdvisorUpsell()) return;
       updateAiSummary(button.dataset.aiRefine || '', button);
     });
   });
@@ -1436,6 +1468,7 @@ function renderResults(results) {
   const submitCustomRefinement = () => {
     const value = String(refinementInput?.value || '').trim().slice(0, 240);
     if (!value) return;
+    if (!ensureAdvisorUpsell()) return;
     updateAiSummary(value);
   };
 
@@ -2221,6 +2254,21 @@ function addAutoComparisonFallback(vehicle){
 
   if (items.some(item => item.signature === signature)) {
     goToComparisonPage();
+    return;
+  }
+
+  const compareLimit = revenueManager.getComparisonLimit();
+  if (items.length >= compareLimit && !isProActive()) {
+    const root = document.getElementById('auto-results');
+    if (root && shouldShowUpsell('comparison_unlimited')) {
+      const slot = document.createElement('div');
+      slot.innerHTML = renderContextualUpsellCard('comparison_unlimited', 'auto_compare_limit');
+      const card = slot.firstElementChild;
+      if (card) root.prepend(card);
+      bindContextualUpsell(root);
+    } else {
+      openUpsellCheckout('comparison_unlimited', 'auto_compare_limit', { feature: 'comparison', modal: true });
+    }
     return;
   }
 

@@ -166,6 +166,13 @@ export class RevenueManager {
   }
 
   mountPaywall(feature) {
+    import('./upsell-engine.js').then(({ trackUpsellClick, UPSELL_OFFERS }) => {
+      const match = Object.values(UPSELL_OFFERS).find((o) => o.paywallKey === feature);
+      if (match) {
+        trackUpsellClick(match.id, 'paywall_modal', { feature });
+      }
+    }).catch(() => {});
+
     const existing = document.getElementById('revenue-paywall-root');
     if (existing) existing.remove();
 

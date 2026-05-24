@@ -80,6 +80,9 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   // Revenue attribution
   "revenue_attributed",
   "affiliate_click",
+  "upsell_view",
+  "upsell_click",
+  "upsell_conversion",
   // Growth engine
   "growth_referral_land",
   "growth_referral_share",
@@ -129,7 +132,9 @@ export function eventCategoryFor(name: string, fallback?: string) {
     return "subscription";
   }
   if (name.startsWith("lead_")) return "lead";
-  if (name.startsWith("revenue_") || name === "affiliate_click") return "revenue";
+  if (name.startsWith("revenue_") || name.startsWith("upsell_") || name === "affiliate_click") {
+    return "revenue";
+  }
   return "page";
 }
 

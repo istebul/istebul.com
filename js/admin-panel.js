@@ -948,6 +948,9 @@ async function loadPlatformAnalytics() {
   const referralLinkClicked = countEvents(rows, 'referral_link_clicked');
   const referralSignup = countEvents(rows, 'referral_signup');
   const referralConversion = countEvents(rows, 'referral_conversion');
+  const upsellViews = countEvents(rows, 'upsell_view');
+  const upsellClicks = countEvents(rows, 'upsell_click');
+  const upsellConversions = countEvents(rows, 'upsell_conversion');
   const lifecycleEnroll = countEvents(rows, 'lifecycle_enroll_requested');
   const growthChannelRows = rows.filter((row) => row.event_category === 'growth');
   const growthByChannel = growthChannelRows.reduce((acc, row) => {
@@ -1024,6 +1027,8 @@ async function loadPlatformAnalytics() {
       <div class="stat-card"><div class="stat-label">Referral signup</div><div class="stat-value">${referralSignup}</div></div>
       <div class="stat-card"><div class="stat-label">Referral conversion</div><div class="stat-value">${referralConversion}</div><div class="stat-sub">${conversionPct(referralConversion, referralSignup)}</div></div>
       <div class="stat-card"><div class="stat-label">Lifecycle enroll</div><div class="stat-value">${lifecycleEnroll}</div></div>
+      <div class="stat-card"><div class="stat-label">Upsell views</div><div class="stat-value">${upsellViews}</div><div class="stat-sub">${conversionPct(upsellClicks, upsellViews)} click</div></div>
+      <div class="stat-card"><div class="stat-label">Upsell conversion</div><div class="stat-value">${upsellConversions}</div><div class="stat-sub">${conversionPct(upsellConversions, upsellClicks)}</div></div>
     </div>
     ${Object.keys(growthByChannel).length ? `
       <div style="height:12px"></div>

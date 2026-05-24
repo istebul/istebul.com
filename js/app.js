@@ -8,6 +8,14 @@ import {
     enrollCheckoutAbandonRecovery,
     enrollNewsletterWelcome
 } from './features/lifecycle/lifecycle-client.js';
+import {
+    bindContextualUpsell,
+    flushUpsellConversion,
+    openUpsellCheckout,
+    renderContextualUpsellCard,
+    shouldShowUpsell,
+    trackUpsellClick
+} from './features/monetization/upsell-engine.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
 import { premiumPages } from './ui/premium-pages.js';
@@ -1106,6 +1114,25 @@ class App {
         if (newsletterForm) {
             newsletterForm.addEventListener('submit', (e) => this.handleNewsletterSubscribe(e));
         }
+
+        document.addEventListener('click', (event) => {
+            const exportBtn = event.target.closest('[data-upsell-trigger="decision_export"]');
+            if (!exportBtn || revenueManager.isPremium) return;
+            event.preventDefault();
+            const placement = exportBtn.dataset.upsellPlacement || 'compare_export';
+            if (shouldShowUpsell('decision_export')) {
+                const container = document.getElementById('comparison-content') || exportBtn.parentElement;
+                const slot = document.createElement('div');
+                slot.innerHTML = renderContextualUpsellCard('decision_export', placement);
+                const card = slot.firstElementChild;
+                if (card && container) {
+                    container.prepend(card);
+                    bindContextualUpsell(container);
+                }
+            } else {
+                openUpsellCheckout('decision_export', placement, { feature: 'premium_report', modal: true });
+            }
+        });
 
         const profileLoginBtn = document.getElementById('profile-login-btn');
         if (profileLoginBtn) {
@@ -2782,6 +2809,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         this.decisionHistory = this.readStoredArray(storageKey);
         this.ui.renderDecisionHistory(this.decisionHistory);
+        this.injectDecisionHistoryUpsell();
     }
 
     saveDecisionHistory(result) {
@@ -2822,8 +2850,23 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.writeStoredValue(storageKey, filtered);
         this.decisionHistory = filtered;
         this.ui.renderDecisionHistory(this.decisionHistory);
+        this.injectDecisionHistoryUpsell();
         this.saveSearchHistory(`Karar Asistanı: ${result.categoryName} - ${topPick?.name || 'Sonuç'}`);
         return true;
+    }
+
+    injectDecisionHistoryUpsell() {
+        if (revenueManager.isPremium || !this.decisionHistory?.length) return;
+        const container = document.getElementById('history-list');
+        if (!container || !shouldShowUpsell('decision_history')) return;
+        if (container.querySelector('[data-upsell-offer="decision_history"]')) return;
+        const slot = document.createElement('div');
+        slot.innerHTML = renderContextualUpsellCard('decision_history', 'decision_history');
+        const card = slot.firstElementChild;
+        if (card) {
+            container.prepend(card);
+            bindContextualUpsell(container);
+        }
     }
 
     repeatDecision(decisionId) {
@@ -3229,7 +3272,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     handleBillingReturnParams() {
         const params = new URLSearchParams(window.location.search);
 
-        if (params.get('subscribed') === 'true') {
+            if (params.get('subscribed') === 'true') {
+            flushUpsellConversion({ source: 'checkout_return' });
             if (params.get('trial') === '1') {
                 this.ui.showSuccess('7 günlük Pro denemeniz başladı. Tüm premium özellikler şimdi açık.');
             } else if (params.get('plan') === 'annual') {
@@ -3790,7 +3834,19 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         if (this.comparisonItems.length >= maxItems) {
             if (!revenueManager.isPremium) {
-                revenueManager.mountPaywall('comparison');
+                if (shouldShowUpsell('comparison_unlimited')) {
+                    const container = document.getElementById('comparison-content');
+                    if (container) {
+                        const slot = document.createElement('div');
+                        slot.innerHTML = renderContextualUpsellCard('comparison_unlimited', 'compare_center_limit');
+                        const card = slot.firstElementChild;
+                        if (card) container.prepend(card);
+                        bindContextualUpsell(container);
+                    }
+                } else {
+                    trackUpsellClick('comparison_unlimited', 'compare_center_limit', { modal: true });
+                    revenueManager.mountPaywall('comparison');
+                }
                 this.ui.showError(`Ücretsiz planda en fazla ${maxItems} seçenek karşılaştırabilirsiniz. Pro ile 4\'e kadar.`);
             } else {
                 this.ui.showError('Karşılaştırma listesine en fazla 4 seçenek eklenebilir.');

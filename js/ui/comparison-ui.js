@@ -29,6 +29,7 @@ export class ComparisonUI {
                     '<p>Fiyat, dönemsel maliyet, kredi yükü, risk ve karar detayları aynı tabloda okunur.</p>' +
                 '</div>' +
                 '<button type="button" class="btn btn-outline" data-comparison-clear><i data-lucide="trash-2"></i> Temizle</button>' +
+                '<button type="button" class="btn btn-outline" data-upsell-trigger="decision_export" data-upsell-placement="compare_export"><i data-lucide="file-down"></i> PDF export</button>' +
             '</div>' +
             '<div class="comparison-grid">' + items.map((item) => this.getComparisonCardMarkup(item, maxValues, items)).join('') + '</div>' +
             this.getComparisonMatrixMarkup(items);
