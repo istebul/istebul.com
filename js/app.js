@@ -5,6 +5,7 @@ import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
 import { trackPricingView, getGrowthContext } from './features/growth/growth-engine.js';
 import { trackCheckoutComplete, trackCheckoutStart } from './features/growth/growth-funnel.js';
+import { trackPaidConversionSignal } from './features/growth/paid-growth.js';
 import {
     enrollCheckoutAbandonRecovery,
     enrollNewsletterWelcome
@@ -3309,6 +3310,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 trial: isTrial,
                 idempotency_key: returnKey
             });
+            trackPaidConversionSignal('checkout_complete', { billing_interval: billingPlan, trial: isTrial });
             if (params.get('trial') === '1') {
                 this.ui.showSuccess('7 günlük Pro denemeniz başladı. Tüm premium özellikler şimdi açık.');
             } else if (params.get('plan') === 'annual') {
@@ -3580,6 +3582,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 checkout_key: checkoutKey,
                 growth_channel: getGrowthContext().growth_channel
             });
+            trackPaidConversionSignal('checkout_start', { billing_interval: billingInterval });
             const growth = getGrowthContext();
 
             const response = await fetch('/api/create-checkout', {
@@ -3600,7 +3603,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                         referral_code: growth.referral_code,
                         growth_channel: growth.growth_channel,
                         growth_campaign: growth.growth_campaign,
-                        gclid: growth.gclid
+                        gclid: growth.gclid,
+                        fbclid: growth.fbclid,
+                        msclkid: growth.msclkid,
+                        ttclid: growth.ttclid
                     }
                 })
             });

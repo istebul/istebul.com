@@ -7,6 +7,16 @@ const crypto = require('crypto');
 const root = process.cwd();
 const dist = path.join(root, 'dist');
 const staticRoots = ['assets', 'data'];
+const copyGrowthDataDir = () => {
+  const src = path.join(root, 'data', 'growth');
+  const dest = path.join(dist, 'data', 'growth');
+  if (!fs.existsSync(src)) return;
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    fs.copyFileSync(path.join(src, entry.name), path.join(dest, entry.name));
+  }
+};
 const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'karar-moat.html', 'css/seo-landing.css', 'css/partner-platform.css', 'css/admin-partner-ops.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const { injectRouteBootstrap } = require('./lib/route-bootstrap.cjs');
@@ -115,6 +125,7 @@ const minifyHtml = (source) => source
   .trim();
 
 staticRoots.forEach(copyDir);
+copyGrowthDataDir();
 
 const lucideUmd = path.join(root, 'node_modules/lucide/dist/umd/lucide.min.js');
 if (!fs.existsSync(lucideUmd)) {

@@ -95,6 +95,28 @@ export function buildReferralUrl(code, path = '/auto/') {
   return url.toString();
 }
 
+/**
+ * Build tracked URL for a growth channel (paid, seo, referral, etc.).
+ * @param {string} channelId — key from channels.json
+ * @param {string} [targetPath]
+ */
+export function buildChannelCampaignUrl(channelId, targetPath = '/auto/') {
+  const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.istebul.com';
+  const url = new URL(targetPath, base);
+  const defaults = {
+    seo: { utm_source: 'google', utm_medium: 'organic' },
+    paid: { utm_source: 'google', utm_medium: 'cpc', utm_campaign: 'brand_auto' },
+    referral: { utm_source: 'referral', utm_medium: 'invite' },
+    lifecycle_email: { utm_source: 'email', utm_medium: 'lifecycle' },
+    retargeting: { utm_source: 'retargeting', utm_medium: 'display' },
+    viral: { utm_source: 'viral', utm_medium: 'share' }
+  };
+  const utm = defaults[channelId] || { utm_source: channelId, utm_medium: 'campaign' };
+  Object.entries(utm).forEach(([k, v]) => url.searchParams.set(k, v));
+  url.searchParams.set('growth_campaign', utm.utm_campaign || channelId);
+  return url.toString();
+}
+
 export function buildRecoveryUrl(campaign = 'abandon_lead') {
   const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.istebul.com';
   const url = new URL('/auto/', base);

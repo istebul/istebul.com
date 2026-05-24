@@ -1,0 +1,50 @@
+{
+  "experiments": [
+    {
+      "id": "hero_cta_copy_q2",
+      "status": "active",
+      "surfaces": ["/", "/index.html", "/auto/", "/auto/index.html"],
+      "primaryMetric": "hero_cta_click",
+      "variants": [
+        {
+          "id": "control",
+          "weight": 50,
+          "copy": {
+            "[data-hero-cta-primary]": "TCO analizini başlat",
+            "[data-auto-hero-cta]": "Ücretsiz maliyet analizi"
+          }
+        },
+        {
+          "id": "urgency",
+          "weight": 50,
+          "copy": {
+            "[data-hero-cta-primary]": "2 dk'da maliyet analizi — ücretsiz",
+            "[data-auto-hero-cta]": "Hemen maliyet analizi başlat"
+          }
+        }
+      ]
+    },
+    {
+      "id": "pricing_cta_q2",
+      "status": "active",
+      "surfaces": ["/", "/planlar"],
+      "primaryMetric": "checkout_start",
+      "variants": [
+        {
+          "id": "control",
+          "weight": 50,
+          "copy": {
+            "[data-pricing-cta-pro]": "Karar netliği için dene"
+          }
+        },
+        {
+          "id": "trial_first",
+          "weight": 50,
+          "copy": {
+            "[data-pricing-cta-pro]": "7 gün ücretsiz dene"
+          }
+        }
+      ]
+    }
+  ]
+}

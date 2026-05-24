@@ -4,6 +4,7 @@ import { initMobilePremiumUx } from './mobile-premium-ux.js';
 import { initConversionMicroUx } from './conversion-micro-ux.js';
 import { initPerceivedPerformance } from './perceived-performance.js';
 import { initBrandConsistency } from './brand-consistency.js';
+import { initGrowthOps } from './growth-ops.js';
 
 export function initEnterpriseUx() {
   if (typeof document === 'undefined') return;
@@ -14,6 +15,7 @@ export function initEnterpriseUx() {
   initConversionMicroUx();
   initPerceivedPerformance();
   initBrandConsistency();
+  initGrowthOps();
 
   const markReady = () => {
     document.documentElement.classList.add('ib-ready');

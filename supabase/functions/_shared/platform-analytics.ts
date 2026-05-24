@@ -141,6 +141,12 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "growth_email_click",
   "growth_crm_touch",
   "growth_viral_share",
+  "growth_experiment_exposure",
+  "growth_experiment_conversion",
+  "paid_click_capture",
+  "paid_conversion_signal",
+  "retention_engagement",
+  "retention_return_visit",
   "newsletter_subscribe",
   // Lifecycle CRM
   "lifecycle_enrolled",

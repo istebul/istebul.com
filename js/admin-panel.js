@@ -18,6 +18,11 @@ import {
   renderMoatArchitectureAdminStrip
 } from './features/moat/moat-architecture-ui.js';
 import { SCALE_LIMITS } from './core/scale-limits.js';
+import {
+  computeExecutiveFunnel,
+  computeChannelBreakdown,
+  computeRetentionSignals
+} from './features/growth/growth-kpis.js';
 
 const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
@@ -978,6 +983,49 @@ function conversionPct(numerator, denominator) {
   return denominator ? `${Math.round((numerator / denominator) * 100)}%` : '—';
 }
 
+function renderGrowthCommandCenter(rows) {
+  const funnel = computeExecutiveFunnel(rows);
+  const channels = computeChannelBreakdown(rows);
+  const retention = computeRetentionSignals(rows);
+  const ns = funnel.northStar;
+
+  const experimentExposures = rows.filter((r) => r.event_name === 'growth_experiment_exposure').length;
+  const experimentConversions = rows.filter((r) => r.event_name === 'growth_experiment_conversion').length;
+  const paidSignals = rows.filter((r) => r.event_name === 'paid_conversion_signal').length;
+  const paidClicks = rows.filter((r) => r.event_name === 'paid_click_capture').length;
+
+  return `
+    <div class="growth-command-center" style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border,#e5e7eb)">
+      <h3 style="margin:0 0 8px 0">Growth Command Center</h3>
+      <p class="text-muted" style="margin:0 0 14px;font-size:13px">North star: qualified leads → paid conversion. Export: <code>npm run metrics:growth</code> · <code>npm run metrics:growth:command</code></p>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">Leads (north star)</div><div class="stat-value">${ns.qualifiedLeads}</div><div class="stat-sub">${ns.landingToLeadPct ?? '—'}% landing→lead</div></div>
+        <div class="stat-card"><div class="stat-label">Paid conversions</div><div class="stat-value">${ns.paidConversions}</div><div class="stat-sub">${ns.landingToPaidPct ?? '—'}% landing→paid</div></div>
+        <div class="stat-card"><div class="stat-label">Checkout CR</div><div class="stat-value">${ns.checkoutCrPct ?? '—'}%</div><div class="stat-sub">${ns.checkoutComplete} / ${ns.checkoutStart} starts</div></div>
+        <div class="stat-card"><div class="stat-label">Retention returns</div><div class="stat-value">${retention.returnVisits}</div><div class="stat-sub">${retention.recoveryRatePct ?? '—'}% abandon recovery</div></div>
+        <div class="stat-card"><div class="stat-label">Paid click capture</div><div class="stat-value">${paidClicks}</div><div class="stat-sub">${paidSignals} conversion signals</div></div>
+        <div class="stat-card"><div class="stat-label">Experiments</div><div class="stat-value">${experimentExposures}</div><div class="stat-sub">${experimentConversions} conversions · ${experimentExposures ? conversionPct(experimentConversions, experimentExposures) : '—'}</div></div>
+      </div>
+      <div style="height:14px"></div>
+      <h4 style="margin:0 0 10px 0;font-size:14px">Acquisition channels (leads)</h4>
+      <table class="table">
+        <thead><tr><th>Channel</th><th>Leads</th><th>Checkouts</th><th>Paid</th><th>Revenue ₺</th></tr></thead>
+        <tbody>
+          ${channels.slice(0, 8).map((ch) => `
+            <tr>
+              <td>${escapeHtml(ch.channel)}</td>
+              <td>${ch.leads}</td>
+              <td>${ch.checkouts}</td>
+              <td>${ch.paid}</td>
+              <td>${(ch.revenueCents / 100).toLocaleString('tr-TR')}</td>
+            </tr>
+          `).join('') || '<tr><td colspan="5">Henüz kanal verisi yok</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 async function loadPlatformAnalytics() {
   const el = document.getElementById('platform-analytics-root');
   if (!el) return;
@@ -1108,6 +1156,7 @@ async function loadPlatformAnalytics() {
 
   el.innerHTML = `
     ${windowNote}
+    ${renderGrowthCommandCenter(rows)}
     <h3 style="margin:0 0 14px 0;">Executive growth funnel (kanal bazlı)</h3>
     <p class="text-muted" style="margin:0 0 12px;font-size:13px;">Tutarlı event isimleri; legacy alias’lar toplamda bir kez sayılır. Gelir: paid_conversion + checkout.</p>
     <table class="table">

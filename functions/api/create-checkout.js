@@ -202,6 +202,15 @@ export async function onRequestPost(context) {
     if (attribution.gclid) {
       params.set('metadata[gclid]', String(attribution.gclid).slice(0, 120));
     }
+    if (attribution.fbclid) {
+      params.set('metadata[fbclid]', String(attribution.fbclid).slice(0, 120));
+    }
+    if (attribution.msclkid) {
+      params.set('metadata[msclkid]', String(attribution.msclkid).slice(0, 120));
+    }
+    if (attribution.ttclid) {
+      params.set('metadata[ttclid]', String(attribution.ttclid).slice(0, 120));
+    }
     if (attribution.ref) {
       params.set('metadata[referral_code]', String(attribution.ref).slice(0, 32));
       params.set('subscription_data[metadata][referral_code]', String(attribution.ref).slice(0, 32));

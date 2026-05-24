@@ -86,6 +86,8 @@ export class Analytics {
       ref: params.get('ref') || params.get('referral'),
       gclid: params.get('gclid'),
       fbclid: params.get('fbclid'),
+      msclkid: params.get('msclkid'),
+      ttclid: params.get('ttclid'),
       growth_campaign: params.get('growth_campaign') || params.get('utm_campaign')
     };
 
