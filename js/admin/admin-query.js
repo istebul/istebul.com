@@ -16,11 +16,15 @@ export function isSchemaMissingError(error) {
   );
 }
 
-function isMissingColumnInSelect(error, select) {
-  if (!error || !select || select === '*') return false;
+function isMissingColumnInSelect(error) {
+  if (!error) return false;
   const msg = String(error.message || error.details || '').toLowerCase();
   return msg.includes('column') && msg.includes('does not exist');
 }
+
+/** Columns guaranteed by 20260518_partner_applications.sql */
+export const PARTNER_APPLICATIONS_BASE_SELECT =
+  'id, created_at, company_name, contact_name, phone, email, city, category, lead_capacity, webhook_ready, status, notes';
 
 /**
  * @param {import('@supabase/supabase-js').SupabaseClient} sb
@@ -31,9 +35,23 @@ export async function fetchAdminTable(sb, options) {
   let directError = null;
 
   if (typeof direct === 'function') {
-    let res = await direct(select && select !== '*' ? select : undefined);
-    if (res.error && isMissingColumnInSelect(res.error, select)) {
-      res = await direct('*');
+    const runDirect = (expr) => {
+      if (expr === undefined || expr === null) {
+        return direct();
+      }
+      return direct(expr);
+    };
+
+    let res =
+      select && select !== '*'
+        ? await runDirect(select)
+        : await runDirect();
+
+    if (res.error && isMissingColumnInSelect(res.error)) {
+      res = await runDirect('*');
+    }
+    if (res.error && isMissingColumnInSelect(res.error) && table === 'partner_applications') {
+      res = await runDirect(PARTNER_APPLICATIONS_BASE_SELECT);
     }
     if (!res.error) {
       return {

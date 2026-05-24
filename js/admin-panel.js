@@ -442,21 +442,25 @@ async function loadInvestorMetrics() {
       table: 'subscriptions',
       select: subSelect,
       limit: 2000,
-      direct: (expr = subSelect) => sb.from('subscriptions').select(expr).limit(2000)
+      direct: (expr) => sb.from('subscriptions').select(expr || subSelect).limit(2000)
     }),
     fetchAdminTable(sb, {
       table: 'auto_leads',
       select: leadSelect,
       limit: 5000,
-      direct: (expr = leadSelect) => sb.from('auto_leads').select(expr).limit(5000)
+      direct: (expr) => sb.from('auto_leads').select(expr || leadSelect).limit(5000)
     }),
     fetchAdminTable(sb, {
       table: 'analytics_events',
       select: 'event_name',
       limit: 2500,
       order: { column: 'created_at', ascending: false },
-      direct: (expr = 'event_name') =>
-        sb.from('analytics_events').select(expr).order('created_at', { ascending: false }).limit(2500)
+      direct: (expr) =>
+        sb
+          .from('analytics_events')
+          .select(expr || 'event_name')
+          .order('created_at', { ascending: false })
+          .limit(2500)
     })
   ]);
 
@@ -1647,22 +1651,26 @@ async function loadPartnerApplications() {
     select: '*',
     limit: 200,
     order: { column: 'created_at', ascending: false },
-    direct: (selectExpr = '*') =>
-      sb
+    direct: (selectExpr) => {
+      const cols = selectExpr || '*';
+      return sb
         .from('partner_applications')
-        .select(selectExpr)
+        .select(cols)
         .order('created_at', { ascending: false })
-        .limit(200)
+        .limit(200);
+    }
   });
 
+  const warnings = collectAdminWarnings([res]);
+
   if (res.error && !(res.data || []).length) {
-    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([res]))}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
+    el.innerHTML = `${renderAdminWarningBanner(warnings)}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p><p class="text-muted-sm">Migration: <code>supabase db push</code> (20260609_partner_applications_schema_repair.sql)</p>`;
     return;
   }
 
   const data = res.data || [];
   if (!data.length) {
-    el.innerHTML = '<p class="empty">Başvuru yok.</p>';
+    el.innerHTML = `${renderAdminWarningBanner(warnings)}<p class="empty">Başvuru yok.</p>`;
     return;
   }
 
@@ -1676,6 +1684,7 @@ async function loadPartnerApplications() {
   };
 
   el.innerHTML = `
+    ${renderAdminWarningBanner(warnings)}
     <table class="table">
       <thead>
         <tr>
@@ -1695,7 +1704,7 @@ async function loadPartnerApplications() {
             <td><strong>${escapeHtml(row.company_name)}</strong><br><small>${escapeHtml(row.contact_name)}</small></td>
             <td>${escapeHtml(row.phone)}<br><small>${escapeHtml(row.email)}</small></td>
             <td>${escapeHtml(row.category)}${row.city ? `<br><small>${escapeHtml(row.city)}</small>` : ''}</td>
-            <td>${row.webhook_ready ? 'Hazır' : 'Manuel'}${row.webhook_url_draft ? `<br><small title="${safeAttr(row.webhook_url_draft)}">Taslak URL</small>` : ''}</td>
+            <td>${row.webhook_ready ? 'Hazır' : 'Manuel'}${row.webhook_url_draft != null && row.webhook_url_draft !== '' ? `<br><small title="${safeAttr(row.webhook_url_draft)}">Taslak URL</small>` : ''}</td>
             <td>
               <select class="status-select" data-action="update-partner-application-status" data-id="${safeAttr(row.id)}">
                 ${Object.entries(statusLabels).map(([value, label]) =>
@@ -1704,10 +1713,10 @@ async function loadPartnerApplications() {
               </select>
             </td>
             <td>${formatShortDate(row.created_at)}</td>
-            <td><small>${escapeHtml(row.billing_plan || 'pilot')}</small>${row.utm_source ? `<br><small>utm:${escapeHtml(row.utm_source)}</small>` : ''}</td>
+            <td><small>${escapeHtml(row.billing_plan != null ? row.billing_plan : 'pilot')}</small>${row.utm_source ? `<br><small>utm:${escapeHtml(row.utm_source)}</small>` : ''}</td>
             <td class="table-actions">
               ${row.onboarding_token ? `<a class="btn btn-ghost btn-sm" href="/partner-basvuru.html?token=${encodeURIComponent(row.onboarding_token)}&step=2" target="_blank" rel="noopener">Onboarding</a>` : ''}
-              ${!row.partner_endpoint_id ? `<button type="button" class="btn btn-primary btn-sm" data-action="provision-partner-application" data-id="${safeAttr(row.id)}">Endpoint oluştur</button>` : '<span class="badge badge-green">Endpoint var</span>'}
+              ${row.partner_endpoint_id == null || row.partner_endpoint_id === '' ? `<button type="button" class="btn btn-primary btn-sm" data-action="provision-partner-application" data-id="${safeAttr(row.id)}">Endpoint oluştur</button>` : '<span class="badge badge-green">Endpoint var</span>'}
             </td>
           </tr>
         `).join('')}

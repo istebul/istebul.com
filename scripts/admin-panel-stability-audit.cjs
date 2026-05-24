@@ -35,8 +35,11 @@ if (!adminQuery.includes('fetchAdminTable')) {
 if (!adminQuery.includes('isSchemaMissingError')) {
   fail('admin-query must detect schema cache errors');
 }
-if (!adminQuery.includes('isMissingColumnInSelect')) {
-  fail('admin-query must retry with * when a selected column is missing');
+if (!adminQuery.includes('PARTNER_APPLICATIONS_BASE_SELECT')) {
+  fail('admin-query must define base partner_applications columns fallback');
+}
+if (!adminQuery.includes('runDirect')) {
+  fail('admin-query must not pass undefined into direct() (breaks default params)');
 }
 
 const repairSql = fs.readFileSync(
