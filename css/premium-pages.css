@@ -465,6 +465,30 @@ body.ib-premium-route-active .navbar {
   margin-left: 0.35rem;
 }
 
+.ib-sample-scenario-label {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ib-sample-scenario-label--block {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.ib-premium-note--tight {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
 .ib-confidence-panel {
   background: #fff;
   border-radius: 20px;

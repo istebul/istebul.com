@@ -3457,13 +3457,35 @@ body.ib-enterprise.ib-auto .floating-whatsapp:hover{
   display:flex;
   flex-direction:column;
   align-items:flex-end;
-  gap:2px;
-  padding:8px 12px;
+  gap:4px;
+  padding:10px 12px;
   border-radius:12px;
   font-size:12px;
   font-weight:700;
+  max-width:min(100%, 280px);
+  text-align:right;
 }
-.auto-confidence-badge strong{font-size:18px}
+.auto-confidence-kicker{
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  opacity:0.85;
+}
+.auto-confidence-badge strong{font-size:14px;line-height:1.3}
+.auto-confidence-disclaimer{
+  font-size:11px;
+  font-weight:500;
+  line-height:1.35;
+  opacity:0.92;
+}
+.auto-score-hint{
+  display:block;
+  margin-top:4px;
+  font-size:11px;
+  font-weight:500;
+  color:#64748b;
+}
 .confidence-tier-high{background:#ecfdf5;color:#047857}
 .confidence-tier-medium{background:#fffbeb;color:#b45309}
 .confidence-tier-review{background:#fef2f2;color:#b91c1c}

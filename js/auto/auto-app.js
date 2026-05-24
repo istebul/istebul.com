@@ -815,9 +815,10 @@ function renderAutoConfidenceBadge(meta) {
         : 'confidence-tier-review';
 
   return `
-    <div class="auto-confidence-badge ${tierClass}" title="${escapeHtml(meta.disclaimer || '')}">
-      <span>${escapeHtml(meta.label || 'Veri güveni')}</span>
-      <strong>%${meta.score}</strong>
+    <div class="auto-confidence-badge ${tierClass}" role="note" aria-label="Veri güven bandı açıklaması">
+      <span class="auto-confidence-kicker">Veri güven bandı</span>
+      <strong>${escapeHtml(meta.label || 'Değerlendiriliyor')}</strong>
+      <small class="auto-confidence-disclaimer">${escapeHtml(meta.disclaimer || 'Metodolojik destek; kesin sonuç değildir.')}</small>
     </div>`;
 }
 
@@ -1086,9 +1087,9 @@ function renderResults(results) {
   root.innerHTML = `${renderAutoUpgradeStrip()}
     <section class="auto-results-trust-banner" aria-label="Sonuç açıklaması">
       <div>
-        <p class="kicker">Model önerisi</p>
-        <h3>Bu sonuçlar canlı ilan değil, ihtiyaç profilinize göre hazırlanmış araç model önerileridir.</h3>
-        <p>Skorlar kural tabanlıdır; yapay zeka yalnızca özet yorum üretir. Nihai fiyat için teklif karşılaştırması önerilir.</p>
+        <p class="kicker">Model önerisi · metodolojik destek</p>
+        <h3>Bu sonuçlar canlı ilan değil; ihtiyaç profilinize göre hazırlanmış referans model önerileridir.</h3>
+        <p><strong>Uyum skoru</strong> satın alma önerisi değil, kriterlerinize göre sıralama içindir. <strong>Veri güven bandı</strong> girdi kalitesini gösterir. AI yalnızca gerekçe metni üretir — skor ve TCO kural tabanlıdır.</p>
         ${rankNote ? `<p class="auto-rank-explanation">${escapeHtml(rankNote)}</p>` : ''}
       </div>
       <button type="button" class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(results[0]?.name || 'Araç önerisi')}">
@@ -1129,7 +1130,7 @@ function renderResults(results) {
       <label>
         Sırala
         <select data-auto-filter="sort">
-          <option value="score" ${resultFilters.sort === 'score' ? 'selected' : ''}>Karar skoruna göre</option>
+          <option value="score" ${resultFilters.sort === 'score' ? 'selected' : ''}>Uyum skoruna göre</option>
           <option value="price_asc" ${resultFilters.sort === 'price_asc' ? 'selected' : ''}>En düşük fiyat</option>
           <option value="family" ${resultFilters.sort === 'family' ? 'selected' : ''}>Aile kullanımına göre</option>
           <option value="city" ${resultFilters.sort === 'city' ? 'selected' : ''}>Şehir kullanımına göre</option>
@@ -1199,7 +1200,8 @@ function renderResults(results) {
       <aside class="auto-market-decision">
         <div class="auto-market-score">
           <strong>${vehicle.score}</strong>
-          <span>/100 karar skoru</span>
+          <span>/100 uyum skoru</span>
+          <small class="auto-score-hint">Metodolojik sıralama; kesin sonuç değildir</small>
         </div>
 
         <div class="monthly-impact">

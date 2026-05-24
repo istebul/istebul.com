@@ -169,7 +169,7 @@ export class AssistantUI {
                         '<div class="assistant-result-badges">' +
                             '<span><i data-lucide="map-pin"></i>' + this.escapeHtml(result.categoryName) + '</span>' +
                             '<span><i data-lucide="shield-check"></i>Güven skoru ' + this.escapeHtml(primary.score) + '/100</span>' +
-                            (result.dataHealth ? '<span><i data-lucide="database-zap"></i>Veri güveni ' + this.escapeHtml(result.dataHealth.confidenceScore) + '/100</span>' : '') +
+                            (result.dataHealth ? '<span title="Girdi kalitesi; kesin sonuç değildir"><i data-lucide="database-zap"></i>Veri güven bandı ' + this.escapeHtml(result.dataHealth.confidenceLabel || '') + '</span>' : '') +
                             '<span><i data-lucide="clock-3"></i>' + this.escapeHtml(this.formatDate(result.createdAt)) + '</span>' +
                         '</div>' +
                     '</div>' +
@@ -313,7 +313,8 @@ export class AssistantUI {
             '<div class="assistant-data-health-head">' +
                 '<div>' +
                     '<span class="assistant-kicker">Veri güven merkezi</span>' +
-                    '<h4>' + this.escapeHtml(dataHealth.confidenceLabel || 'Veri güveni') + '</h4>' +
+                    '<h4>' + this.escapeHtml(dataHealth.confidenceLabel || 'Veri güven bandı') + '</h4>' +
+                    '<p class="assistant-trust-hint">Metodolojik destek; kesin sonuç veya finansal taahhüt değildir.</p>' +
                     '<p>' + this.escapeHtml(dataHealth.modeLabel || '') + ' · ' + this.escapeHtml(dataHealth.updatedAtLabel || '') + '</p>' +
                 '</div>' +
                 '<div class="assistant-data-confidence"><strong>' + this.escapeHtml(dataHealth.confidenceScore || '-') + '</strong><span>/100</span></div>' +

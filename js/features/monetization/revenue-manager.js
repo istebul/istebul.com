@@ -279,7 +279,11 @@ export class RevenueManager {
         <span>7 gün ücretsiz deneme</span>
         <span>Stripe ile güvenli ödeme</span>
         <span>İstediğiniz zaman iptal</span>
-        <span>Ücretsiz planda TCO analiziyle başlayın</span>
+        <span>Skorlar bilgilendirme amaçlıdır</span>
+      </p>
+      <p class="pricing-trust-note" role="note">
+        Analiz ve uyum skorları metodolojik destek sunar; kesin sonuç veya getiri taahhüdü değildir.
+        <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
       </p>
     `;
   }

@@ -117,12 +117,14 @@ export class PremiumPages {
           </div>
           <div class="ib-premium-hero-visual" aria-hidden="true">
             <div class="ib-score-card">
-              <span class="ib-score-kicker">Örnek karar skoru</span>
-              <div class="ib-score-ring" style="--score:78">
+              <span class="ib-sample-scenario-label">Örnek senaryo</span>
+              <span class="ib-score-kicker">Örnek uyum skoru</span>
+              <div class="ib-score-ring" style="--score:78" aria-hidden="true">
                 <strong>78</strong>
                 <small>/ 100</small>
               </div>
-              <p>Hybrid SUV · aile kullanımı · kredi senaryosu dahil</p>
+              <p class="ib-premium-note">Gösterim amaçlıdır; canlı analizde skor girdilerinize göre hesaplanır — kesin sonuç değildir.</p>
+              <p>Hybrid SUV · aile kullanımı · örnek kredi senaryosu</p>
               <div class="ib-score-bars">
                 <div><span>Maliyet</span><em style="width:72%"></em></div>
                 <div><span>Finansman</span><em style="width:64%"></em></div>
@@ -187,6 +189,7 @@ export class PremiumPages {
             <p>Pro ile 4 modele kadar detaylı karşılaştırma; ücretsiz planda 2 model.</p>
           </div>
           <div class="ib-compare-table-wrap">
+            <p class="ib-sample-scenario-label ib-sample-scenario-label--block">Örnek senaryo — canlı analizde değerler girdilerinize göre hesaplanır</p>
             <table class="ib-compare-table">
               <thead>
                 <tr>
@@ -199,8 +202,8 @@ export class PremiumPages {
               <tbody>
                 <tr><td>12 ay TCO</td><td>₺412.000</td><td>₺389.000</td><td class="ib-compare-win">−₺23.000</td></tr>
                 <tr><td>Aylık kredi yükü</td><td>₺18.400</td><td>₺17.100</td><td class="ib-compare-win">−₺1.300</td></tr>
-                <tr><td>Karar skoru</td><td>78</td><td>82</td><td class="ib-compare-win">+4</td></tr>
-                <tr><td>Güven aralığı</td><td>%72–%84</td><td>%76–%88</td><td>—</td></tr>
+                <tr><td>Uyum skoru (örnek)</td><td>78</td><td>82</td><td class="ib-compare-win">+4</td></tr>
+                <tr><td>Veri güven bandı (örnek)</td><td>Orta–yüksek</td><td>Orta–yüksek</td><td>—</td></tr>
               </tbody>
             </table>
           </div>
@@ -257,7 +260,7 @@ export class PremiumPages {
             </ul>
           </div>
           <div class="ib-framework-diagram" aria-label="Karar çerçevesi diyagramı">
-            <div class="ib-arch-node ib-arch-node--center">Karar skoru</div>
+            <div class="ib-arch-node ib-arch-node--center">Uyum skoru</div>
             <div class="ib-arch-row">
               <div class="ib-arch-node">İhtiyaç</div>
               <div class="ib-arch-node">TCO</div>
@@ -306,18 +309,17 @@ export class PremiumPages {
             </ul>
           </div>
           <div class="ib-confidence-panel">
-            <h3>Güven göstergeleri <span class="ib-illustrative-label">(örnek görselleştirme)</span></h3>
+            <h3>Veri güven bandı <span class="ib-illustrative-label">(örnek senaryo)</span></h3>
+            <p class="ib-premium-note ib-premium-note--tight">Güven bandı, girdi kalitesi ve belirsizlik seviyesini gösterir — satın alma garantisi veya kesin doğruluk iddiası değildir.</p>
             <div class="ib-confidence-row">
-              <span>Yüksek güven bandı</span>
-              <div class="ib-confidence-bar ib-confidence-bar--high"><em style="width:88%"></em></div>
-              <strong aria-hidden="true">Örnek</strong>
+              <span>Yüksek veri güven bandı (örnek)</span>
+              <div class="ib-confidence-bar ib-confidence-bar--high" aria-hidden="true"><em style="width:88%"></em></div>
             </div>
             <div class="ib-confidence-row">
-              <span>Orta güven bandı</span>
-              <div class="ib-confidence-bar"><em style="width:62%"></em></div>
-              <strong aria-hidden="true">Örnek</strong>
+              <span>Orta veri güven bandı (örnek)</span>
+              <div class="ib-confidence-bar" aria-hidden="true"><em style="width:62%"></em></div>
             </div>
-            <p class="ib-premium-note">Canlı analizde güven skoru; veri tamlığı, segment örneklemesi ve finansman belirsizliğine göre hesaplanır. Yukarıdaki çubuklar yalnızca arayüz örneğidir, gerçek skor değildir.</p>
+            <p class="ib-premium-note">Canlı analizde bant; veri tamlığı, segment örneklemesi ve finansman belirsizliğine göre hesaplanır. Yukarıdaki çubuklar yalnızca arayüz örneğidir.</p>
           </div>
         </div>
       </section>
@@ -389,9 +391,13 @@ export class PremiumPages {
       <section class="ib-premium-trust-panel ib-premium-trust-panel--compact">
         <div class="container ib-premium-trust-messages">
           <div><i data-lucide="shield"></i><p><strong>Stripe</strong> ile PCI uyumlu ödeme; kart bilgileri sunucularımızda tutulmaz.</p></div>
-          <div><i data-lucide="rotate-ccw"></i><p><strong>İptal garantisi</strong> — aboneliği panelden istediğiniz zaman sonlandırın.</p></div>
+          <div><i data-lucide="rotate-ccw"></i><p><strong>İptal</strong> — aboneliği panelden istediğiniz zaman sonlandırın.</p></div>
           <div><i data-lucide="gift"></i><p><strong>7 gün deneme</strong> — ilk Pro aboneliğinde ücretsiz deneme.</p></div>
         </div>
+        <p class="pricing-trust-note" role="note" style="text-align:center;margin-top:1rem;">
+          Uyum skoru ve veri güven bandı metodolojik destek sunar; kesin sonuç değildir.
+          <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
+        </p>
       </section>
 
       <section class="ib-premium-cta-band">

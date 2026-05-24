@@ -2510,10 +2510,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     getDataConfidenceLabel(score) {
-        if (score >= 88) return 'Çok yüksek güven';
-        if (score >= 78) return 'Yüksek güven';
-        if (score >= 66) return 'Orta-yüksek güven';
-        return 'Kontrol gerekli';
+        if (score >= 88) return 'Yüksek veri güven bandı';
+        if (score >= 78) return 'İyi veri güven bandı';
+        if (score >= 66) return 'Orta veri güven bandı';
+        return 'Sınırlı veri — kontrol önerilir';
     }
 
     getSourceTypeLabel(type) {

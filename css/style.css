@@ -2021,12 +2021,59 @@ body::selection {
 
 .preview-score-card {
     display: flex;
-    justify-content: space-between;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
     padding: 1.2rem;
     border-radius: 8px;
     background: #111827;
     color: white;
+    position: relative;
+}
+
+.preview-score-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.preview-score-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 78px;
+    padding: 0.35rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    text-align: center;
+}
+
+.preview-score-pill span {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.trust-compliance-note,
+.pricing-trust-note {
+    margin: 1.5rem auto 0;
+    max-width: 52rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-muted, #64748b);
+    line-height: 1.55;
+}
+
+.pricing-trust-note {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.preview-score-card .ib-sample-scenario-label {
+    align-self: flex-start;
 }
 
 .preview-score-card p {
@@ -2035,16 +2082,19 @@ body::selection {
     font-size: 0.95rem;
 }
 
-.preview-score-card strong {
+.preview-score-pill strong,
+.preview-score-card .preview-score-pill strong {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 78px;
-    height: 78px;
-    border-radius: 50%;
-    background: #ecfdf5;
-    color: #047857;
-    font-size: 2rem;
+    width: auto;
+    height: auto;
+    min-width: 2.5rem;
+    border-radius: 8px;
+    background: transparent;
+    color: #6ee7b7;
+    font-size: 1.75rem;
+    line-height: 1;
 }
 
 .preview-kicker {

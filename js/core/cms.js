@@ -30,7 +30,10 @@ export async function loadCMS() {
     if (annRes?.length > 0) {
       const text = String(annRes[0].content || annRes[0].title || '');
       const looksLikeLiveActivity = /Bugün:\s*Kullanıcılar/i.test(text)
-        || /araç,\s*ev ve tatil kararları/i.test(text);
+        || /araç,\s*ev ve tatil kararları/i.test(text)
+        || /\b\d{1,3}[.,]?\d*\s*(k\+|bin|milyon)?\s*(kullanıcı|ziyaret|analiz)/i.test(text)
+        || /%\d{2,}/.test(text)
+        || /(kesin|garanti)\s+(kazanç|tasarruf|kar)/i.test(text);
       if (!looksLikeLiveActivity) {
         document.querySelectorAll('[data-cms="announcement"]').forEach(el => {
           el.innerHTML = '<strong>Duyuru:</strong> ';

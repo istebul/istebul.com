@@ -77,9 +77,9 @@ export function computeConfidenceMeta({
       overall >= 62 ? 'medium' : 'review';
 
   const tierLabels = {
-    high: 'Yüksek güven',
-    medium: 'Orta güven — doğrulama önerilir',
-    review: 'Dikkatli değerlendirin'
+    high: 'Yüksek veri güven bandı',
+    medium: 'Orta veri güven bandı — teklif doğrulaması önerilir',
+    review: 'Sınırlı veri — manuel kontrol önerilir'
   };
 
   return {
@@ -95,8 +95,8 @@ export function computeConfidenceMeta({
     },
     disclaimer:
       costSource === 'truth'
-        ? 'Maliyetler katalog doğruluk katmanından; fiyat referansı piyasa bandı tahminidir.'
-        : 'Model fiyatı ve maliyetler tahmini referans değerlerdir — canlı ilan değildir.'
+        ? 'Veri güven bandı, girdi kalitesini gösterir; satın alma garantisi veya kesin sonuç değildir. Maliyetler katalog katmanından; canlı ilan fiyatı değildir.'
+        : 'Veri güven bandı, girdi kalitesini gösterir; kesin sonuç değildir. Model fiyatı ve maliyetler tahmini referans değerlerdir — canlı ilan değildir.'
   };
 }
 
@@ -262,13 +262,14 @@ export function buildMethodologyPanel() {
     title: 'Karar metodolojisi',
     steps: [
       'Kriterleriniz katalog referans modelleriyle eşleştirilir.',
-      'Her model için şeffaf ağırlıklı skor hesaplanır (bütçe, kasa, yakıt, kullanım, likidite).',
+      'Uyum skoru (0–100) şeffaf ağırlıklarla hesaplanır — nihai karar garantisi değildir.',
       '12 aylık toplam sahip olma maliyeti (TCO) ayrı hesaplanır.',
-      'Yapay zeka yalnızca yorum üretir; skor ve fiyatlar kural tabanlıdır.'
+      'Yapay zeka yalnızca gerekçe metni üretir; skor ve maliyet kural tabanlıdır.'
     ],
     limits: [
       'Canlı ilan fiyatı değildir — piyasa teklifleri değişebilir.',
-      'Finansman örnekleri simülasyondur; banka onayı ayrı değerlendirilir.'
+      'Finansman örnekleri simülasyondur; banka onayı ayrı değerlendirilir.',
+      'Karar skoru ve veri güven bandı metodolojik destek sunar; yatırım veya kredi taahhüdü içermez.'
     ]
   };
 }

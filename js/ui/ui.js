@@ -323,7 +323,7 @@ export class UIManager {
             base.push('Tatil analizi', 'Paket kontrolü', 'İptal koşulu');
         }
 
-        return [...base, 'Karar skoru ' + aiScore + '/100'].slice(0, 4);
+        return [...base, 'Uyum skoru ' + aiScore + '/100'].slice(0, 4);
     }
 
     getListingInsightsMarkup(listing = {}, aiScore = 0) {
@@ -484,7 +484,7 @@ export class UIManager {
                         <span class="assistant-kicker">${this.escapeHtml(categoryLabel || 'İlan')} detay analizi</span>
                         <h2>${this.escapeHtml(listing.title)}</h2>
                         <div class="listing-detail-badges">
-                            <span><i data-lucide="sparkles"></i> Karar skoru ${this.escapeHtml(aiScore)}/100</span>
+                            <span title="Metodolojik uyum skoru; kesin sonuç değildir"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScore)}/100</span>
                             <span><i data-lucide="map-pin"></i> ${this.escapeHtml(locationLabel)}</span>
                             <span><i data-lucide="clock-3"></i> ${this.formatDate(listing.created_at)}</span>
                         </div>
