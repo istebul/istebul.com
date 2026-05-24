@@ -73,7 +73,7 @@ export class AuthManager {
         }
 
         const intentBanner = options.intent === 'checkout'
-            ? '<p class="auth-intent-banner">7 gün ücretsiz deneme · Stripe ile güvenli ödeme · İstediğiniz zaman iptal</p>'
+            ? '<p class="auth-intent-banner">7 gün deneme süresi · Stripe ile güvenli ödeme · İstediğiniz zaman iptal</p>'
             : '';
 
         modalBody.innerHTML = intentBanner + (type === 'login' ? this.getLoginForm() : this.getRegisterForm());

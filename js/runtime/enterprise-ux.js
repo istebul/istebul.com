@@ -1,5 +1,9 @@
+import { initExecutivePolish } from './executive-polish.js';
+
 export function initEnterpriseUx() {
   if (typeof document === 'undefined') return;
+
+  initExecutivePolish();
 
   const markReady = () => {
     document.documentElement.classList.add('ib-ready');
