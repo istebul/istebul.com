@@ -74,8 +74,17 @@ export class AuthManager {
 
     showAuthModal(type, options = {}) {
         const modal = document.getElementById('auth-modal');
+        if (!modal) {
+            console.warn('[auth] auth-modal not found on this page');
+            return;
+        }
+
         const modalHeader = modal.querySelector('.modal-header h3');
         const modalBody = modal.querySelector('.modal-body');
+        if (!modalBody) {
+            console.warn('[auth] auth-modal body missing');
+            return;
+        }
 
         if (modalHeader) {
             if (options.intent === 'checkout') {
@@ -100,6 +109,7 @@ export class AuthManager {
         });
 
         modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
         state.setModal('auth');
 
         // Setup form handlers
@@ -108,8 +118,11 @@ export class AuthManager {
 
     hideAuthModal() {
         const modal = document.getElementById('auth-modal');
+        if (!modal) return;
+
         modal.classList.remove('show');
         modal.classList.remove('auth-modal');
+        modal.setAttribute('aria-hidden', 'true');
         document.body.classList.remove('modal-open');
         state.setModal(null);
     }
@@ -172,9 +185,15 @@ export class AuthManager {
         const form = document.getElementById(`${type}-form`);
         const modal = document.getElementById('auth-modal');
 
+        if (!form || !modal) {
+            console.warn('[auth] Could not bind auth form', type);
+            return;
+        }
+
         if (!modal.dataset.authCloseBound) {
             modal.dataset.authCloseBound = 'true';
-            modal.querySelector('.modal-close').addEventListener('click', () => {
+            const closeBtn = modal.querySelector('.modal-close');
+            closeBtn?.addEventListener('click', () => {
                 this.hideAuthModal();
             });
 

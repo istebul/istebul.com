@@ -113,8 +113,8 @@
             <div class="nav-controls">
                 <div class="nav-auth" id="nav-auth">
                     <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="nav_auto">Ücretsiz analiz</a>
-                    <button id="login-btn" class="btn btn-outline" type="button">Giriş</button>
-                    <button id="register-btn" class="btn btn-ghost btn-sm" type="button">Üye ol</button>
+                    <button id="login-btn" class="btn btn-outline" type="button" data-auth-open="login">Giriş</button>
+                    <button id="register-btn" class="btn btn-ghost btn-sm" type="button" data-auth-open="register">Üye ol</button>
                 </div>
                 <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Koyu modu aç" aria-pressed="false" title="Tema değiştir">
                     <i data-lucide="moon"></i>
@@ -333,10 +333,10 @@
     </main>
 
         <!-- Private app sections are mounted lazily by JavaScript after route/auth checks. -->
-    <div id="auth-modal" class="modal">
+    <div id="auth-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Giriş Yap</h3>
+                <h3 id="auth-modal-title">Giriş Yap</h3>
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
