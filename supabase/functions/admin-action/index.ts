@@ -266,7 +266,7 @@ Deno.serve(async (req) => {
         faqs: ["question", "answer", "order_num", "is_active"],
         posts: ["title", "slug", "content", "is_published"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority"],
-        partner_applications: ["status", "notes"],
+        partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan"],
       };
 
       const allowedKeys = allowedInserts[table] || [];
@@ -365,7 +365,7 @@ Deno.serve(async (req) => {
         profiles: ["role", "is_banned"],
         auto_leads: ["status", "notes", "follow_up_at", "follow_up_done", "partner_status", "estimated_revenue", "actual_revenue", "commission_notes", "dispatch_retry_count", "last_dispatch_at", "next_retry_at", "last_dispatch_error"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority", "health_status"],
-        partner_applications: ["status", "notes"],
+        partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan"],
       };
 
       const keys = Object.keys(values);

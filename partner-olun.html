@@ -8,13 +8,14 @@
   <link rel="stylesheet" href="/css/style.css?v=50">
   <link rel="stylesheet" href="/css/enterprise-polish.css?v=1">
   <link rel="stylesheet" href="/css/auto.css?v=3">
+  <link rel="stylesheet" href="/css/partner-platform.css?v=1">
 </head>
 <body class="ib-enterprise">
   <header class="auto-header ib-partner-header">
     <a class="logo" href="/">isteBul <span>Karar zekâsı</span></a>
     <nav>
       <a href="/auto/">Auto</a>
-      <a href="/hakkimizda.html">Hakkımızda</a>
+      <a href="/partner-docs.html">API dokümantasyonu</a>
       <a href="/partner-olun.html" aria-current="page">Partner olun</a>
       <a href="/iletisim.html">İletişim</a>
     </nav>
@@ -54,6 +55,27 @@
       </div>
     </div>
 
+    <h2 class="section-title">Partner acquisition funnel</h2>
+    <p class="lead">Başvuru → onboarding → webhook test → canlı lead — ölçülebilir B2B gelir hattı.</p>
+
+    <div class="ib-partner-acquisition-steps">
+      <article><span>01</span><h3>Keşfet</h3><p>Rate card ve güven varlıkları; şeffaf CPL / pilot modeli.</p></article>
+      <article><span>02</span><h3>Başvur</h3><p>Self-serve form; UTM ve kategori ile segmentasyon.</p></article>
+      <article><span>03</span><h3>Entegre ol</h3><p>Onboarding panelinde webhook taslağı; HMAC dokümantasyonu.</p></article>
+      <article><span>04</span><h3>Canlı lead</h3><p>Hot skorlu teslimat, callback ile kazanım bildirimi.</p></article>
+    </div>
+
+    <h2 class="section-title">B2B fiyatlandırma</h2>
+    <p class="lead">Pilot ile başlayın; hacim ve kategoriye göre CPL veya aylık kapasite. Sözleşme offline netleşir — ürün şeffaflığı sağlar.</p>
+    <div id="partner-rate-card-root"></div>
+
+    <h2 class="section-title">Enterprise güven</h2>
+    <div class="ib-partner-trust-grid">
+      <div class="ib-partner-trust-card"><strong>İmzalı webhook</strong><p>HMAC-SHA256, dispatch-id, SSRF-safe URL kaydı.</p></div>
+      <div class="ib-partner-trust-card"><strong>Operasyonel dayanıklılık</strong><p>Retry, failover, circuit breaker, günlük cap.</p></div>
+      <div class="ib-partner-trust-card"><strong>Uyumluluk</strong><p>KVKK, veri minimizasyonu, teslimat logları. <a href="/kvkk.html">KVKK</a></p></div>
+    </div>
+
     <h2 class="section-title">Kurumsal teslimat altyapısı</h2>
     <p class="lead">İmzalı webhook, retry, failover ve teslimat logları ile ölçülebilir partner operasyonu.</p>
 
@@ -91,6 +113,13 @@
           </label>
         </div>
         <label>Aylık lead kapasitesi<input name="lead_capacity" placeholder="Örn. 50-100"></label>
+        <fieldset class="ib-partner-billing-fieldset">
+          <legend>İlgilendiğiniz plan</legend>
+          <label class="checkbox-row"><input type="radio" name="billing_plan" value="pilot" checked> Pilot (ilk 5 sıcak lead ücretsiz)</label>
+          <label class="checkbox-row"><input type="radio" name="billing_plan" value="cpl"> CPL — sıcak lead başına</label>
+          <label class="checkbox-row"><input type="radio" name="billing_plan" value="subscription"> Aylık kapasite paketi</label>
+          <label class="checkbox-row"><input type="radio" name="billing_plan" value="enterprise"> Enterprise API</label>
+        </fieldset>
         <label class="checkbox-row">
           <input type="checkbox" name="webhook_ready"> HTTPS webhook endpoint'imiz hazır
         </label>
@@ -99,7 +128,7 @@
       </form>
 
       <p style="margin-top:16px;font-size:0.9rem;opacity:0.85;">
-        Teknik dokümantasyon: <a href="/docs/partner-webhook-integration.md">Webhook entegrasyonu</a>
+        Teknik dokümantasyon: <a href="/partner-docs.html">Partner API &amp; webhook</a> · Markdown: <a href="/docs/partner-webhook-integration.md">Webhook entegrasyonu</a>
       </p>
 
       <div class="final-cta-actions" style="margin-top:20px;">

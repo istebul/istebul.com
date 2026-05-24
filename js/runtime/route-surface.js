@@ -44,7 +44,9 @@ const MARKETING_ALIASES = Object.freeze({
 
 const EXTERNAL_REDIRECTS = Object.freeze({
     '/admin': '/admin-panel.html',
-    '/partner': '/partner-olun.html'
+    '/partner': '/partner-olun.html',
+    '/partner-hub': '/partner-onboarding.html',
+    '/partner-api': '/partner-docs.html'
 });
 
 export function stripPathname(pathname = '/') {

@@ -984,6 +984,10 @@ async function loadPlatformAnalytics() {
   const ctaClicks = countEvents(rows, 'cta_click');
   const pricingViews = countFunnelStep(rows, 'pricing_view');
   const checkoutAbandoned = countEvents(rows, 'checkout_abandoned');
+  const partnerLanding = countEvents(rows, 'partner_landing_view');
+  const partnerApply = countEvents(rows, 'partner_application_submit');
+  const partnerOnboarding = countEvents(rows, 'partner_onboarding_view');
+  const partnerWebhookDraft = countEvents(rows, 'partner_webhook_draft_saved');
   const referralLand = countEvents(rows, 'growth_referral_land');
   const referralShare = countEvents(rows, 'growth_referral_share');
   const referralConvert = countEvents(rows, 'growth_referral_convert');
@@ -1127,6 +1131,16 @@ async function loadPlatformAnalytics() {
     </table>
 
     <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Partner acquisition (P2)</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Partner landing</div><div class="stat-value">${partnerLanding}</div></div>
+      <div class="stat-card"><div class="stat-label">Applications</div><div class="stat-value">${partnerApply}</div><div class="stat-sub">${conversionPct(partnerApply, partnerLanding)}</div></div>
+      <div class="stat-card"><div class="stat-label">Onboarding views</div><div class="stat-value">${partnerOnboarding}</div><div class="stat-sub">${conversionPct(partnerOnboarding, partnerApply)}</div></div>
+      <div class="stat-card"><div class="stat-label">Webhook drafts</div><div class="stat-value">${partnerWebhookDraft}</div></div>
+      <div class="stat-card"><div class="stat-label">Dispatch OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
+    </div>
+
+    <div style="height:20px"></div>
     <h3 style="margin:0 0 14px 0;">Growth engine (P1)</h3>
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-label">Pricing views</div><div class="stat-value">${pricingViews}</div><div class="stat-sub">${conversionPct(checkoutStarted, pricingViews)} → checkout</div></div>
@@ -1207,6 +1221,90 @@ async function createPartnerEndpoint() {
   loadPartnerEndpoints();
 }
 
+async function provisionPartnerFromApplication(applicationId) {
+  const { data: app, error } = await sb
+    .from('partner_applications')
+    .select('*')
+    .eq('id', applicationId)
+    .maybeSingle();
+
+  if (error || !app) {
+    toast('Başvuru bulunamadı.', 'error');
+    return;
+  }
+
+  const webhookUrl = app.webhook_url_draft
+    || window.prompt('Webhook URL (HTTPS):', 'https://');
+  if (!webhookUrl) return;
+
+  const endpointName = app.company_name.slice(0, 80);
+
+  await adminAction({
+    action: 'insert',
+    table: 'partner_endpoints',
+    id: 'new',
+    values: {
+      name: endpointName,
+      route_type: app.category,
+      webhook_url: webhookUrl,
+      is_active: false,
+      priority_weight: 100,
+      daily_cap: null,
+      notes: `Provisioned from application ${app.id}`
+    }
+  });
+
+  const { data: endpointRow, error: lookupError } = await sb
+    .from('partner_endpoints')
+    .select('id')
+    .eq('webhook_url', webhookUrl)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lookupError || !endpointRow?.id) {
+    toast('Endpoint oluşturuldu ancak ID alınamadı — listeyi yenileyin.', 'error');
+    loadPartnerEndpoints();
+    return;
+  }
+
+  const endpointId = endpointRow.id;
+
+  await adminAction({
+    action: 'update',
+    table: 'partner_applications',
+    id: applicationId,
+    values: {
+      partner_endpoint_id: endpointId,
+      status: 'integrating'
+    }
+  });
+
+  toast('Partner endpoint oluşturuldu — test sonrası aktif edin.');
+  loadPartnerApplications();
+  loadPartnerEndpoints();
+}
+
+async function editPartnerEndpoint(id, currentName, currentWebhook) {
+  const name = window.prompt('Partner adı:', currentName || '');
+  if (!name) return;
+  const webhookUrl = window.prompt('Webhook URL:', currentWebhook || '');
+  if (!webhookUrl) return;
+
+  await adminAction({
+    action: 'update',
+    table: 'partner_endpoints',
+    id,
+    values: {
+      name: name.trim(),
+      webhook_url: webhookUrl.trim()
+    }
+  });
+
+  toast('Partner endpoint güncellendi');
+  loadPartnerEndpoints();
+}
+
 async function togglePartnerEndpoint(id, active) {
   await adminAction({
     action: 'update',
@@ -1274,7 +1372,8 @@ async function loadPartnerEndpoints() {
             <td><span class="badge ${row.health_status === 'healthy' ? 'badge-green' : row.health_status === 'degraded' ? 'badge-yellow' : 'badge-red'}">${escapeHtml(row.health_status || 'healthy')}</span></td>
             <td>${row.success_count || 0}</td>
             <td>${row.fail_count || 0}</td>
-            <td>
+            <td class="table-actions">
+              <button class="btn btn-ghost btn-sm" data-action="edit-partner-endpoint" data-id="${safeAttr(row.id)}" data-name="${safeAttr(row.name)}" data-webhook="${safeAttr(row.webhook_url)}">Düzenle</button>
               <button class="btn btn-ghost btn-sm" data-action="toggle-partner-endpoint" data-id="${safeAttr(row.id)}" data-active="${row.is_active ? 'false' : 'true'}">
                 ${row.is_active ? 'Pasif yap' : 'Aktif yap'}
               </button>
@@ -1289,7 +1388,7 @@ async function loadPartnerEndpoints() {
 async function loadPartnerApplications() {
   const { data, error } = await sb
     .from('partner_applications')
-    .select('*')
+    .select('*, partner_endpoint_id, onboarding_token, webhook_url_draft, billing_plan, utm_source')
     .order('created_at', { ascending: false })
     .limit(200);
 
@@ -1325,7 +1424,8 @@ async function loadPartnerApplications() {
           <th>Webhook</th>
           <th>Durum</th>
           <th>Tarih</th>
-          <th>Kapasite</th>
+          <th>Plan</th>
+          <th>İşlem</th>
         </tr>
       </thead>
       <tbody>
@@ -1334,7 +1434,7 @@ async function loadPartnerApplications() {
             <td><strong>${escapeHtml(row.company_name)}</strong><br><small>${escapeHtml(row.contact_name)}</small></td>
             <td>${escapeHtml(row.phone)}<br><small>${escapeHtml(row.email)}</small></td>
             <td>${escapeHtml(row.category)}${row.city ? `<br><small>${escapeHtml(row.city)}</small>` : ''}</td>
-            <td>${row.webhook_ready ? 'Hazır' : 'Manuel'}</td>
+            <td>${row.webhook_ready ? 'Hazır' : 'Manuel'}${row.webhook_url_draft ? `<br><small title="${safeAttr(row.webhook_url_draft)}">Taslak URL</small>` : ''}</td>
             <td>
               <select class="status-select" data-action="update-partner-application-status" data-id="${safeAttr(row.id)}">
                 ${Object.entries(statusLabels).map(([value, label]) =>
@@ -1343,7 +1443,11 @@ async function loadPartnerApplications() {
               </select>
             </td>
             <td>${formatShortDate(row.created_at)}</td>
-            <td><small>${escapeHtml(row.lead_capacity || '—')}</small></td>
+            <td><small>${escapeHtml(row.billing_plan || 'pilot')}</small>${row.utm_source ? `<br><small>utm:${escapeHtml(row.utm_source)}</small>` : ''}</td>
+            <td class="table-actions">
+              ${row.onboarding_token ? `<a class="btn btn-ghost btn-sm" href="/partner-onboarding.html?token=${encodeURIComponent(row.onboarding_token)}" target="_blank" rel="noopener">Onboarding</a>` : ''}
+              ${!row.partner_endpoint_id ? `<button type="button" class="btn btn-primary btn-sm" data-action="provision-partner-application" data-id="${safeAttr(row.id)}">Endpoint oluştur</button>` : '<span class="badge badge-green">Endpoint var</span>'}
+            </td>
           </tr>
         `).join('')}
       </tbody>
@@ -2187,6 +2291,16 @@ function bindAdminPanelEvents() {
 
     if (action === 'reload-dispatch-logs') {
       loadPartnerDispatchLogs();
+      return;
+    }
+
+    if (action === 'provision-partner-application') {
+      provisionPartnerFromApplication(id);
+      return;
+    }
+
+    if (action === 'edit-partner-endpoint') {
+      editPartnerEndpoint(id, el.dataset.name, el.dataset.webhook);
       return;
     }
 

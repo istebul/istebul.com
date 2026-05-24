@@ -72,6 +72,12 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "partner_dispatch_success",
   "partner_dispatch_failed",
   "partner_dispatch_skipped",
+  "partner_landing_view",
+  "partner_application_start",
+  "partner_application_submit",
+  "partner_docs_view",
+  "partner_onboarding_view",
+  "partner_webhook_draft_saved",
   // Admin CRM
   "crm_lead_status_change",
   "crm_follow_up_complete",

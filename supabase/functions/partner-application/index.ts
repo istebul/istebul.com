@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { recordPlatformEvent } from "../_shared/platform-analytics.ts";
 
 function corsHeaders(origin: string | null) {
   const allowed = new Set([
@@ -66,6 +67,10 @@ Deno.serve(async (req) => {
   const lead_capacity = clean(body.lead_capacity);
   const webhook_ready = Boolean(body.webhook_ready);
   const notes = clean(body.notes);
+  const utm_source = clean(body.utm_source);
+  const utm_medium = clean(body.utm_medium);
+  const utm_campaign = clean(body.utm_campaign);
+  const billing_plan = clean(body.billing_plan) || "pilot";
 
   const honeypot = clean(body.website);
   if (honeypot) return json({ ok: true }, 200, origin);
@@ -124,6 +129,8 @@ Deno.serve(async (req) => {
     }, { onConflict: "key" });
   }
 
+  const onboarding_token = crypto.randomUUID().replace(/-/g, "");
+
   const { data, error } = await sb
     .from("partner_applications")
     .insert({
@@ -136,12 +143,51 @@ Deno.serve(async (req) => {
       lead_capacity,
       webhook_ready,
       notes,
-      status: "new"
+      status: "new",
+      onboarding_token,
+      utm_source: utm_source || null,
+      utm_medium: utm_medium || null,
+      utm_campaign: utm_campaign || null,
+      billing_plan: ["pilot", "cpl", "subscription", "enterprise"].includes(billing_plan)
+        ? billing_plan
+        : "pilot",
     })
-    .select("id")
+    .select("id, onboarding_token")
     .single();
 
   if (error) return json({ error: error.message }, 500, origin);
 
-  return json({ ok: true, id: data.id }, 200, origin);
+  try {
+    await recordPlatformEvent(sb, {
+      event_name: "partner_application_submit",
+      email,
+      funnel: "partner_acquisition",
+      funnel_step: "application_submit",
+      properties: {
+        application_id: data.id,
+        category,
+        webhook_ready,
+        billing_plan,
+        utm_source: utm_source || null,
+        utm_medium: utm_medium || null,
+        utm_campaign: utm_campaign || null,
+      },
+      source: "partner_application",
+    });
+  } catch {
+    /* non-blocking */
+  }
+
+  const onboarding_path = `/partner-onboarding.html?token=${data.onboarding_token}`;
+
+  return json(
+    {
+      ok: true,
+      id: data.id,
+      onboarding_token: data.onboarding_token,
+      onboarding_path,
+    },
+    200,
+    origin
+  );
 });

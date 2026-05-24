@@ -62,7 +62,7 @@ export function computeLeadPipelineMetrics(leads = []) {
     ['paid', 'closed', 'won', 'delivered', 'funded', 'purchased'].includes(l.partner_status)
   ).length;
   const dispatched = rows.filter((l) =>
-    ['sent', 'delivered', 'accepted'].includes(l.partner_status)
+    ['dispatched', 'sent', 'delivered', 'accepted'].includes(l.partner_status)
   ).length;
 
   return {

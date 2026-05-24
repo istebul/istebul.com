@@ -11,6 +11,10 @@
     "title": "Bayi ve Galeri Partneri | isteBul Auto Lead",
     "description": "Satın almaya hazır araç müşteri adayları: imzalı webhook, retry, failover ve teslimat logları ile kurumsal lead dağıtımı. Partner başvurusu."
   },
+  "partner-docs.html": {
+    "title": "Partner API & Webhook | isteBul",
+    "description": "isteBul partner webhook entegrasyonu: HMAC imza, retry, failover, örnek payload ve güvenlik gereksinimleri."
+  },
   "gizlilik.html": {
     "title": "Gizlilik Politikası | isteBul",
     "description": "isteBul gizlilik politikası: veri işleme, çerezler ve kullanıcı hakları hakkında bilgi."
