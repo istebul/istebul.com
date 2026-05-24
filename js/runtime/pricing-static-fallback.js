@@ -8,7 +8,7 @@ export function renderStaticPricingFallback() {
           <span class="revenue-plan-badge">Bireysel</span>
           <h3>Başlangıç</h3>
           <p class="revenue-plan-price">Ücretsiz</p>
-          <p class="revenue-plan-desc">TCO özeti ve 2 model karşılaştırma — yanlış seçim riskini azaltın</p>
+          <p class="revenue-plan-desc">Karar altyapısı girişi: TCO özeti ve 2 model karşılaştırma</p>
           <ul>
             <li>5 adımlı maliyet analizi</li>
             <li>2 araç TCO karşılaştırma</li>
@@ -21,7 +21,7 @@ export function renderStaticPricingFallback() {
           <span class="revenue-trial-badge">7 gün risk almadan dene</span>
           <h3>isteBul Pro</h3>
           <p class="revenue-plan-price">₺299<small>/ ay</small></p>
-          <p class="revenue-plan-desc">Derin maliyet raporu, sınırsız karşılaştırma ve öncelikli yönlendirme</p>
+          <p class="revenue-plan-desc">Tam karar altyapısı: sınırsız TCO, premium rapor, öncelikli eşleşme</p>
           <ul>
             <li>Sınırsız karşılaştırma</li>
             <li>Detaylı premium karar raporu</li>

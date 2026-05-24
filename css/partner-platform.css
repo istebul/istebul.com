@@ -96,6 +96,69 @@
   padding: 2rem 1.25rem 4rem;
 }
 
+.ib-partner-positioning {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #f8fafc, #eff6ff);
+}
+
+.ib-partner-positioning-list {
+  margin: 1rem 0 0;
+  padding-left: 1.25rem;
+  color: #475569;
+}
+
+.ib-category-onboarding {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.auto-wizard-onboarding-tagline {
+  margin: 0.35rem 0;
+  font-size: 1.05rem;
+}
+
+.ib-category-alternatives {
+  display: grid;
+  gap: 1rem;
+}
+
+.ib-category-alt-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  background: #fff;
+}
+
+.ib-category-alt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  font-size: 0.92rem;
+}
+
+.ib-category-alt-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+@media (max-width: 720px) {
+  .ib-category-alt-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .ib-partner-pricing-compare {
   margin: 2.5rem 0;
 }

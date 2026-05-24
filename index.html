@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>isteBul | Araç Alım Karar Asistanı — Kredi, TCO ve Karşılaştırma</title>
-    <meta name="description" id="meta-description" content="Türkiye'de araç alırken bütçe, taşıt kredisi, toplam sahip olma maliyeti (TCO) ve model karşılaştırmasını tek platformda değerlendirin. Ücretsiz karar analizi.">
+    <title>isteBul | Karar Altyapısı — TCO, Skor ve Finansman</title>
+    <meta name="description" id="meta-description" content="isteBul bir ilan sitesi değil — karar altyapısıdır. Toplam sahip olma maliyetine göre karar verin; skor kural tabanlı, AI yalnızca gerekçe anlatır.">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="keywords" content="araç alım karar asistanı, araç kredisi hesaplama, toplam sahip olma maliyeti, araç karşılaştırma, ikinci el araç rehberi, isteBul">
     <meta name="theme-color" content="#2563eb" id="theme-color-meta">
@@ -52,12 +52,14 @@ html.ib-route-pending [data-private-section]{display:none!important}
 html:not([data-ib-route]) #home,
 html:not([data-ib-route]) #trust,
 html:not([data-ib-route]) #how-it-works,
+html:not([data-ib-route]) #category-ownership,
 html:not([data-ib-route]) #pricing,
 html:not([data-ib-route]) #categories{display:block!important}
 html:not([data-ib-route]) [data-private-section]{display:none!important}
 html[data-ib-route="home"] #home,
 html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #how-it-works,
+html[data-ib-route="home"] #category-ownership,
 html[data-ib-route="home"] #pricing,
 html[data-ib-route="home"] #categories{display:block!important}
 html[data-ib-route="ilanlar"] #ilanlar,
@@ -76,7 +78,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
 </style>
 <script>
 /* ROUTE_BOOTSTRAP_START */
-(function(){var O="https://www.istebul.com",M={"home":{"title":"isteBul | Araç Alım Karar Asistanı — Kredi, TCO ve Karşılaştırma","description":"Türkiye'de araç alırken bütçe, taşıt kredisi, toplam sahip olma maliyeti (TCO) ve model karşılaştırmasını tek platformda değerlendirin. Ücretsiz karar analizi.","path":"/"},"page-karar-analizi":{"title":"Karar Analizi | isteBul","description":"Araç satın alma kararını toplam maliyet, finansman etkisi ve karar skoru ile analiz edin. Ücretsiz başlayın.","path":"/karar-analizi"},"page-metodoloji":{"title":"Metodoloji | isteBul","description":"Şeffaf, denetlenebilir araç karar modeli: TCO, finansman ve risk sinyalleri nasıl birleştirilir.","path":"/metodoloji"},"page-planlar":{"title":"Planlar ve Fiyatlandırma | isteBul","description":"Ücretsiz başlangıç, isteBul Pro (₺299/ay) ve kurumsal planlar. 7 gün ücretsiz deneme.","path":"/planlar"},"ilanlar":{"title":"Araç Seçenekleri | isteBul","description":"Karar skoruna göre sıralanmış araç seçeneklerini keşfedin ve karşılaştırın.","path":"/ilanlar"},"listing-detail":{"title":"Seçenek Detayı | isteBul","description":"Seçtiğiniz aracın karar skoru, maliyet kırılımı ve finansman etkisi.","path":"/ilanlar"},"compare":{"title":"Karşılaştırma Merkezi | isteBul","description":"Araç seçeneklerini karar skoru, maliyet ve risk sinyalleriyle yan yana değerlendirin.","path":"/karsilastir"},"favoriler":{"title":"Favoriler | isteBul","description":"Kaydettiğiniz araç seçeneklerini tek yerden yönetin.","path":"/favoriler"},"history":{"title":"Karar Geçmişi | isteBul","description":"Geçmiş karar analizlerinizi ve aramalarınızı görüntüleyin.","path":"/gecmis"},"quiz":{"title":"Karar Değerlendirmesi | isteBul","description":"Araç alım önceliklerinize göre hızlı değerlendirme.","path":"/quiz"},"profil":{"title":"Hesabım | isteBul","description":"Profil, abonelik ve hesap ayarlarınızı yönetin.","path":"/profil"},"messages":{"title":"Mesajlar | isteBul","description":"İlan ve karar süreci mesajlarınız.","path":"/messages"},"add-listing":{"title":"Seçenek Ekle | isteBul","description":"Kendi araç seçeneğinizi ekleyin ve karar analizine dahil edin.","path":"/ilan-ekle"}},p=(location.pathname||'/').replace(/\/$/,'')||'/',m=p.match(/^\/(en|de)(\/|$)/);if(m)p=p.slice(m[1].length+1)||'/';p=p.replace(/\/$/,'')||'/';if(p==='/admin'||p==='/partner'){location.replace(p==='/admin'?'/admin-panel.html':'/partner-olun.html');return}var prem={'/karar-analizi':'page-karar-analizi','/metodoloji':'page-metodoloji','/planlar':'page-planlar','/karar-asistani':'page-karar-analizi'};var app={'/ilanlar':'ilanlar','/karsilastir':'compare','/favoriler':'favoriler','/gecmis':'history','/quiz':'quiz','/profil':'profil','/hesap':'profil','/messages':'messages','/ilan-ekle':'add-listing'};var r=prem[p]||app[p]||(p.indexOf('/ilan/')===0?'listing-detail':'home');var d=document.documentElement;d.setAttribute('data-ib-route',r);d.classList.remove('ib-route-pending');var meta=M[r]||M.home;var path=meta.path||'/';var url=O+(path==='/'?'/':path);document.title=meta.title;var desc=document.getElementById('meta-description');if(desc)desc.setAttribute('content',meta.description);var can=document.getElementById('meta-canonical');if(can)can.setAttribute('href',url);var ogt=document.getElementById('meta-og-title');if(ogt)ogt.setAttribute('content',meta.title);var ogd=document.getElementById('meta-og-description');if(ogd)ogd.setAttribute('content',meta.description);var ogu=document.getElementById('meta-og-url');if(ogu)ogu.setAttribute('content',url);var twt=document.getElementById('meta-twitter-title');if(twt)twt.setAttribute('content',meta.title);var twd=document.getElementById('meta-twitter-description');if(twd)twd.setAttribute('content',meta.description);})();
+(function(){var O="https://www.istebul.com",M={"home":{"title":"isteBul | Karar Altyapısı — TCO, Skor ve Finansman","description":"Karar altyapısı: toplam sahip olma maliyetine göre araç kararı. İlan sitesi veya sohbet botu değil — deterministik skor + şeffaf TCO.","path":"/"},"page-karar-analizi":{"title":"Karar Analizi | isteBul","description":"Araç satın alma kararını toplam maliyet, finansman etkisi ve karar skoru ile analiz edin. Ücretsiz başlayın.","path":"/karar-analizi"},"page-metodoloji":{"title":"Metodoloji | isteBul","description":"Şeffaf, denetlenebilir araç karar modeli: TCO, finansman ve risk sinyalleri nasıl birleştirilir.","path":"/metodoloji"},"page-planlar":{"title":"Planlar ve Fiyatlandırma | isteBul","description":"Ücretsiz başlangıç, isteBul Pro (₺299/ay) ve kurumsal planlar. 7 gün ücretsiz deneme.","path":"/planlar"},"ilanlar":{"title":"Araç Seçenekleri | isteBul","description":"Karar skoruna göre sıralanmış araç seçeneklerini keşfedin ve karşılaştırın.","path":"/ilanlar"},"listing-detail":{"title":"Seçenek Detayı | isteBul","description":"Seçtiğiniz aracın karar skoru, maliyet kırılımı ve finansman etkisi.","path":"/ilanlar"},"compare":{"title":"Karşılaştırma Merkezi | isteBul","description":"Araç seçeneklerini karar skoru, maliyet ve risk sinyalleriyle yan yana değerlendirin.","path":"/karsilastir"},"favoriler":{"title":"Favoriler | isteBul","description":"Kaydettiğiniz araç seçeneklerini tek yerden yönetin.","path":"/favoriler"},"history":{"title":"Karar Geçmişi | isteBul","description":"Geçmiş karar analizlerinizi ve aramalarınızı görüntüleyin.","path":"/gecmis"},"quiz":{"title":"Karar Değerlendirmesi | isteBul","description":"Araç alım önceliklerinize göre hızlı değerlendirme.","path":"/quiz"},"profil":{"title":"Hesabım | isteBul","description":"Profil, abonelik ve hesap ayarlarınızı yönetin.","path":"/profil"},"messages":{"title":"Mesajlar | isteBul","description":"İlan ve karar süreci mesajlarınız.","path":"/messages"},"add-listing":{"title":"Seçenek Ekle | isteBul","description":"Kendi araç seçeneğinizi ekleyin ve karar analizine dahil edin.","path":"/ilan-ekle"}},p=(location.pathname||'/').replace(/\/$/,'')||'/',m=p.match(/^\/(en|de)(\/|$)/);if(m)p=p.slice(m[1].length+1)||'/';p=p.replace(/\/$/,'')||'/';if(p==='/admin'||p==='/partner'){location.replace(p==='/admin'?'/admin-panel.html':'/partner-olun.html');return}var prem={'/karar-analizi':'page-karar-analizi','/metodoloji':'page-metodoloji','/planlar':'page-planlar','/karar-asistani':'page-karar-analizi'};var app={'/ilanlar':'ilanlar','/karsilastir':'compare','/favoriler':'favoriler','/gecmis':'history','/quiz':'quiz','/profil':'profil','/hesap':'profil','/messages':'messages','/ilan-ekle':'add-listing'};var r=prem[p]||app[p]||(p.indexOf('/ilan/')===0?'listing-detail':'home');var d=document.documentElement;d.setAttribute('data-ib-route',r);d.classList.remove('ib-route-pending');var meta=M[r]||M.home;var path=meta.path||'/';var url=O+(path==='/'?'/':path);document.title=meta.title;var desc=document.getElementById('meta-description');if(desc)desc.setAttribute('content',meta.description);var can=document.getElementById('meta-canonical');if(can)can.setAttribute('href',url);var ogt=document.getElementById('meta-og-title');if(ogt)ogt.setAttribute('content',meta.title);var ogd=document.getElementById('meta-og-description');if(ogd)ogd.setAttribute('content',meta.description);var ogu=document.getElementById('meta-og-url');if(ogu)ogu.setAttribute('content',url);var twt=document.getElementById('meta-twitter-title');if(twt)twt.setAttribute('content',meta.title);var twd=document.getElementById('meta-twitter-description');if(twd)twd.setAttribute('content',meta.description);})();
 /* ROUTE_BOOTSTRAP_END */
 </script>
 
@@ -194,9 +196,9 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
         <section id="home" class="hero-section">
             <div class="hero-container">
                 <div class="hero-content">
-                    <span class="hero-eyebrow"><i data-lucide="shield-check"></i> <span data-cms="hero-eyebrow">Araç alım karar altyapısı</span></span>
-                    <h1 data-cms="hero-title">2 dakikada toplam maliyetle size uygun aracı görün</h1>
-                    <p data-cms="hero-desc">Fiyat, kredi, kullanım ve toplam sahip olma maliyetini tek ekranda karşılaştırın. Yanlış araç seçme riskini azaltın; bütçenize uygun seçenekleri tarafsız ve KVKK uyumlu şekilde değerlendirin.</p>
+                    <span class="hero-eyebrow"><i data-lucide="shield-check"></i> <span data-cms="hero-eyebrow">Karar altyapısı · decision infrastructure</span></span>
+                    <h1 data-cms="hero-title">İlan bulmak başka, doğru karar vermek başka</h1>
+                    <p data-cms="hero-desc">Toplam sahip olma maliyetine göre karar verin. isteBul bir ilan sitesi, sohbet botu veya yalnızca oran karşılaştırması değil — bütçe, kredi, kullanım ve TCO’yu tek deterministik modelde birleştirir.</p>
                     <div class="hero-actions">
                         <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="hero">
                             <i data-lucide="sparkles"></i> Ücretsiz maliyet analizi
@@ -208,9 +210,9 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                     </div>
 
                     <div class="hero-proof" aria-label="Platform kapsamı">
-                        <span><strong>~2 dk</strong> sonuç özeti</span>
-                        <span><strong>TCO + kredi</strong> tek ekranda</span>
-                        <span><strong>Tarafsız</strong> · satıcı baskısı yok</span>
+                        <span><strong>Karar altyapısı</strong> · ilan sitesi değil</span>
+                        <span><strong>Skor + TCO</strong> kural tabanlı</span>
+                        <span><strong>AI</strong> yalnızca gerekçe</span>
                     </div>
                 </div>
                 <div class="hero-image decision-preview" aria-label="Karar sonucu önizlemesi">
@@ -268,8 +270,8 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             <div class="container">
                 <span class="section-kicker">Güven ve şeffaflık</span>
                 <div class="section-header">
-                    <h2>Karar altyapısı: şeffaf, denetlenebilir, tarafsız</h2>
-                    <p>isteBul bir ilan sitesi değildir. Maliyet, finansman ve kullanım sinyallerini açık kurallarla birleştirir; tek bayiye bağlı kalmadan karşılaştırma yaparsınız.</p>
+                    <h2>Generic AI fikir verir. isteBul karar altyapısı sunar.</h2>
+                    <p>Skor, TCO ve güven bandı deterministik kurallarla hesaplanır. İlan siteleri envanter arar; kredi siteleri oran listeler — biz toplam maliyete göre karar çerçevesi üretiriz.</p>
                 </div>
             <div class="trust-grid">
                 <div class="trust-card">
@@ -295,12 +297,32 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
         </section>
 
+        <section id="category-ownership" class="category-ownership-section section-bg">
+            <div class="container">
+                <span class="section-kicker">Kategori sahipliği</span>
+                <h2>isteBul = karar altyapısı</h2>
+                <p class="section-lead">İlan sitesi değil · Sohbet botu değil · Sadece karşılaştırma sitesi değil</p>
+                <ul class="ib-category-not" aria-label="isteBul ne değildir">
+                    <li><strong>İlan sitesi değil</strong><span>Envanter aramak yerine fit, TCO ve finansman yükü</span></li>
+                    <li><strong>Sohbet botu değil</strong><span>Skor ve güven bandı deterministik; AI anlatım katmanı</span></li>
+                    <li><strong>Sadece oran tablosu değil</strong><span>Bu araç + bu bütçe için aylık yük ve karar skoru</span></li>
+                </ul>
+                <div class="ib-category-alt-grid-home">
+                    <article><h3>İlan siteleri</h3><p class="text-muted-sm">Sahibinden, Arabam — arama ve envanter</p><p><strong>isteBul:</strong> Toplam sahip olma maliyetine göre sıralama</p></article>
+                    <article><h3>Generic AI</h3><p class="text-muted-sm">Serbest metin öneri</p><p><strong>isteBul:</strong> Sayıları motor verir; şeffaf metodoloji</p></article>
+                    <article><h3>Kredi karşılaştırma</h3><p class="text-muted-sm">Faiz ve ürün listesi</p><p><strong>isteBul:</strong> Varlık bağlamında finansman etkisi + TCO</p></article>
+                    <article><h3>Klasik lead gen</h3><p class="text-muted-sm">Form ve hacim</p><p><strong>isteBul:</strong> Skorlu lead ve outcome döngüsü (partner)</p></article>
+                </div>
+                <p class="category-ownership-foot"><a href="/karar-moat.html">Savunulabilir moat ve rekabet çerçevesi</a> · <a href="/metodoloji">Metodoloji</a></p>
+            </div>
+        </section>
+
         <section id="how-it-works" class="how-section">
             <div class="container">
                 <div class="section-header">
                     <span class="section-kicker">Süreç</span>
-                    <h2>Beş adımda net bir karar çerçevesi</h2>
-                    <p>İhtiyacınızı tanımlayın, toplam maliyeti görün, alternatifleri karşılaştırın — gerekçeli ve sakin bir karar için.</p>
+                    <h2>Karar altyapısı akışı</h2>
+                    <p>İhtiyacı tanımlayın → TCO ve skor modeli çalışsın → alternatifleri gerekçeyle karşılaştırın. İlan taraması değil, karar çıktısı.</p>
                 </div>
                 <div class="how-grid">
                     <div class="how-step">
@@ -572,8 +594,8 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             <div class="container">
                 <div class="section-header">
                     <span class="section-kicker">Fiyatlandırma</span>
-                    <h2>Yanlış araç kararının maliyetini küçültün</h2>
-                    <p>Önce ücretsiz TCO görünürlüğü. Pro, karşılaştırma ve raporla seçim riskini netleştirir — abonelik satın almak değil, yanlış karar maliyetini azaltmak için.</p>
+                    <h2>Karar altyapısı için planlar</h2>
+                    <p>Ücretsiz TCO ile başlayın — toplam sahip olma maliyetine göre karar verin. Pro, derin karşılaştırma ve raporla seçim riskini netleştirir; ilan listesi veya chat aboneliği değil.</p>
                 </div>
                 <noscript>
                     <div class="pricing-noscript-fallback">
@@ -588,7 +610,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                             <span class="revenue-plan-badge">Bireysel</span>
                             <h3>Başlangıç</h3>
                             <p class="revenue-plan-price">Ücretsiz</p>
-                            <p class="revenue-plan-desc">TCO özeti ve 2 model karşılaştırma — satın alma öncesi riski azaltın</p>
+                            <p class="revenue-plan-desc">Karar altyapısı girişi: TCO özeti ve 2 model karşılaştırma</p>
                             <ul><li>5 adımlı maliyet analizi</li><li>2 araç karşılaştırma</li><li>Şeffaf metodoloji özeti</li></ul>
                             <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_free">Ücretsiz maliyet analizi</a>
                         </article>
@@ -597,7 +619,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                             <span class="revenue-trial-badge">7 gün risk almadan dene</span>
                             <h3>isteBul Pro</h3>
                             <p class="revenue-plan-price">₺299<small>/ ay</small></p>
-                            <p class="revenue-plan-desc">Daha derin maliyet raporu, sınırsız karşılaştırma ve öncelikli uzman/partner yönlendirmesi</p>
+                            <p class="revenue-plan-desc">Tam karar altyapısı: sınırsız TCO karşılaştırma, premium rapor, öncelikli partner eşleşmesi</p>
                             <ul><li>Sınırsız TCO karşılaştırma</li><li>Premium karar raporu</li><li>Öncelikli partner eşleşmesi</li></ul>
                             <p class="revenue-plan-hint">Yıllık ₺2.870 (%20 tasarruf) · Stripe ile güvenli ödeme</p>
                             <a href="/planlar?checkout=pro" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_pro">Karar netliği için dene</a>

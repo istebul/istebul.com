@@ -10,9 +10,9 @@ function mountPricingPage() {
   if (!root) return;
 
   root.innerHTML = `
-    <p class="kicker">B2B monetization</p>
-    <h1>Partner planları</h1>
-    <p class="lead">Ürünleştirilmiş paketler: lead hacmi, SLA, routing, CRM erişimi, retry, entegrasyon ve raporlama. Fiyatlar teklif ile netleşir — sayfa şeffaflık sağlar, sahte indirim veya bağlayıcı fiyat içermez.</p>
+    <p class="kicker">Partner · Karar altyapısı</p>
+    <h1>Skorlu talep — klasik lead gen değil</h1>
+    <p class="lead">Tüketici tarafında karar altyapısı; partner tarafında ürünleştirilmiş paketler: lead hacmi, SLA, routing, outcome geri beslemesi. Fiyatlar teklif ile netleşir — şeffaflık amacıyla, bağlayıcı fiyat iddiası yok.</p>
 
     <section aria-labelledby="partner-tiers-heading">
       <h2 id="partner-tiers-heading" class="section-title">Starter · Growth · Enterprise</h2>

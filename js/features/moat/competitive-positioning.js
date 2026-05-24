@@ -1,40 +1,57 @@
 /**
- * Competitive positioning copy — defensible differentiation (P3).
+ * Competitive positioning — re-exports P3.1 category ownership + legacy moat pillars.
  */
+import {
+  CATEGORY_DEFINITION,
+  CATEGORY_TAGLINES,
+  COMPETITOR_ALTERNATIVES,
+  renderCategoryNotStripHtml,
+  renderCompetitorAlternativesHtml,
+  renderCategoryOwnershipSectionHtml
+} from './category-positioning.js';
+
+export {
+  CATEGORY_DEFINITION,
+  CATEGORY_TAGLINES,
+  COMPETITOR_ALTERNATIVES,
+  renderCategoryNotStripHtml,
+  renderCompetitorAlternativesHtml,
+  renderCategoryOwnershipSectionHtml
+};
 
 export const MOAT_PILLARS = Object.freeze([
   {
     id: 'deterministic',
     title: 'Sayılar motordan, AI anlatır',
-    summary:
-      'Uyum skoru, TCO ve lead skoru kural tabanlıdır. LLM fiyat veya skoru değiştiremez — anti-hallucination sözleşmesi.'
+    summary: CATEGORY_TAGLINES.aiContrast
   },
   {
     id: 'closed_loop',
-    title: 'Kapalı döngü partner OS',
+    title: 'Kapalı döngü partner ekonomisi',
     summary:
-      'Skorlu lead → imzalı webhook → retry → partner callback → outcome graph. Listeleyici formu değil, operasyonel teslimat.'
+      'Skorlu lead → imzalı webhook → outcome graph. Klasik lead formu değil, operasyonel teslimat.'
   },
   {
     id: 'data_moat',
     title: 'Anonim outcome graph',
     summary:
-      'Segment bazında kapanış sinyalleri skor kalibrasyonuna girer. UI kopyalanır; biriken outcome verisi kopyalanmaz.'
+      'Segment kapanış sinyalleri skor kalibrasyonuna girer. Arayüz kopyalanır; biriken outcome verisi kopyalanmaz.'
   },
   {
     id: 'neutral',
-    title: 'Tarafsız karar katmanı',
-    summary:
-      'Sahibinden envanter değil, banka ürün satışı değil — yüksek düşünme maliyetli kararlar için nötr altyapı.'
+    title: CATEGORY_DEFINITION.label,
+    summary: CATEGORY_DEFINITION.oneLiner
   }
 ]);
 
-export const COMPETITOR_FRAMES = Object.freeze([
-  { id: 'classifieds', name: 'İlan marketplaces', counter: 'Fit + TCO + finansman yükü — arama değil karar' },
-  { id: 'fintech', name: 'Oran karşılaştırma', counter: 'Varlık bağlamında aylık yük — sadece faiz tablosu değil' },
-  { id: 'generic_ai', name: 'Genel AI sohbet', counter: 'Şeffaf metodoloji + güven bandı — karanlık öneri değil' },
-  { id: 'ota', name: 'OTA / rezervasyon', counter: 'Bütçe + finansman fit — anlık bilet değil' }
-]);
+/** @deprecated Use COMPETITOR_ALTERNATIVES — kept for karar-moat page */
+export const COMPETITOR_FRAMES = Object.freeze(
+  COMPETITOR_ALTERNATIVES.map((row) => ({
+    id: row.id,
+    name: row.category,
+    counter: row.istebul
+  }))
+);
 
 export function renderMoatPillarsHtml() {
   return `
@@ -50,14 +67,5 @@ export function renderMoatPillarsHtml() {
 }
 
 export function renderCompetitorFramesHtml() {
-  return `
-    <ul class="ib-moat-competitor-list">
-      ${COMPETITOR_FRAMES.map(
-        (c) => `
-        <li>
-          <strong>${c.name}</strong>
-          <span>${c.counter}</span>
-        </li>`
-      ).join('')}
-    </ul>`;
+  return renderCompetitorAlternativesHtml();
 }

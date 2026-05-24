@@ -47,6 +47,7 @@ import {
 import { mountDecisionFeedback } from '../features/moat/decision-feedback.js';
 import { mountOutcomeIntelligence } from '../features/moat/outcome-intelligence.js';
 import { buildSegmentKey } from '../features/moat/scoring-intelligence.js';
+import { WIZARD_ONBOARDING } from '../features/moat/category-positioning.js';
 
 const formatAmount = (value) => formatMoney(value);
 const formatCount = (value) => formatNumber(value);
@@ -1881,7 +1882,18 @@ function renderWizard() {
     `;
   }
 
+  const onboardingIntro = wizardIndex === 0
+    ? `
+    <div class="auto-wizard-onboarding ib-category-onboarding" aria-label="Karar altyapısı girişi">
+      <p class="kicker">${escapeHtml(WIZARD_ONBOARDING.kicker)}</p>
+      <p class="auto-wizard-onboarding-tagline"><strong>${escapeHtml(WIZARD_ONBOARDING.title)}</strong></p>
+      <p class="auto-wizard-onboarding-lead">${escapeHtml(WIZARD_ONBOARDING.lead)}</p>
+      <p class="auto-wizard-onboarding-foot text-muted-sm">${escapeHtml(WIZARD_ONBOARDING.footnote)}</p>
+    </div>`
+    : '';
+
   wizard.innerHTML = `
+    ${onboardingIntro}
     <div class="wizard-progress">
       <div class="wizard-progress-text">
         <span>Adım ${wizardIndex + 1} / ${wizardSteps.length}</span>
@@ -1899,7 +1911,7 @@ function renderWizard() {
     </div>
 
     <div class="wizard-question">
-      <p class="kicker">Karar danışmanı</p>
+      <p class="kicker">Karar altyapısı</p>
       <h3>${escapeHtml(step.title)}</h3>
       <p>${escapeHtml(step.description)}</p>
       ${step.why ? `<p class="wizard-step-why">${escapeHtml(step.why)}</p>` : ''}

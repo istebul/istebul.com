@@ -98,9 +98,9 @@ export class PremiumPages {
       <header class="ib-premium-hero ib-premium-hero--analysis">
         <div class="container ib-premium-hero-grid">
           <div class="ib-premium-hero-copy">
-            <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> Karar analizi</span>
-            <h1>2 dakikada toplam maliyetle en uygun seçeneği görün</h1>
-            <p class="ib-premium-lead">Fiyat, kredi, kullanım ve TCO tek akışta. Yanlış araç seçme riskini azaltın; canlı analiz için Auto’ya geçin — bu sayfa eğitim ve önizleme içindir.</p>
+            <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> Karar altyapısı</span>
+            <h1>İlan bulmak başka, doğru karar vermek başka</h1>
+            <p class="ib-premium-lead">Toplam sahip olma maliyetine göre karar verin. Generic AI fikir verir; isteBul deterministik skor, TCO ve güven bandı sunar. Canlı analiz için Auto’ya geçin.</p>
             <div class="ib-premium-hero-actions">
               <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_hero">
                 <i data-lucide="car-front"></i> Ücretsiz maliyet analizi
@@ -242,8 +242,8 @@ export class PremiumPages {
       <header class="ib-premium-hero ib-premium-hero--method">
         <div class="container">
           <span class="ib-premium-eyebrow"><i data-lucide="microscope"></i> Metodoloji</span>
-          <h1>Denetlenebilir karar çerçevesi</h1>
-          <p class="ib-premium-lead">isteBul bir ilan sitesi değil, karar altyapısıdır. Maliyet, finansman, kullanım ve risk sinyalleri açık kurallarla birleşir; her skorun gerekçesi görünür kalır.</p>
+          <h1>Karar altyapısı metodolojisi</h1>
+          <p class="ib-premium-lead">isteBul ilan sitesi, sohbet botu veya yalnızca oran karşılaştırması değildir. Maliyet, finansman, kullanım ve risk sinyalleri açık kurallarla birleşir; AI skoru değiştirmez — gerekçeyi anlatır.</p>
         </div>
       </header>
 
@@ -375,8 +375,8 @@ export class PremiumPages {
       <header class="ib-premium-hero ib-premium-hero--pricing">
         <div class="container">
           <span class="ib-premium-eyebrow"><i data-lucide="credit-card"></i> Planlar</span>
-          <h1>Yanlış seçim maliyetini görünür kılın</h1>
-          <p class="ib-premium-lead">Ücretsiz TCO ile başlayın. Pro, karşılaştırma ve raporla karar riskini azaltır — manipülatif indirim yok, listelenen fiyatlar ve şeffaf iptal.</p>
+          <h1>Karar altyapısı erişimi</h1>
+          <p class="ib-premium-lead">Ücretsiz TCO ile başlayın — toplam sahip olma maliyetine göre karar verin. Pro, derin karşılaştırma ve rapor; chat veya ilan aboneliği değil, şeffaf fiyatlandırma.</p>
         </div>
       </header>
 

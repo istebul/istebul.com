@@ -3696,6 +3696,8 @@ body.ib-enterprise.ib-auto .floating-whatsapp:hover{
 .comparison-score-factors li.positive{color:#047857}
 .comparison-score-factors li.negative{color:#b91c1c}
 
+.auto-wizard-onboarding-lead{margin:0.5rem 0;font-size:0.95rem;color:var(--muted)}
+.auto-wizard-onboarding-foot{margin:0.5rem 0 0;font-size:0.82rem}
 .auto-moat-mount{margin:20px 0}
 .ib-outcome-insight,.ib-decision-feedback{
   background:#fff;

@@ -259,14 +259,15 @@ export function explainRankGap(winner, runnerUp) {
 
 export function buildMethodologyPanel() {
   return {
-    title: 'Karar metodolojisi',
+    title: 'Karar altyapısı metodolojisi',
     steps: [
-      'Kriterleriniz katalog referans modelleriyle eşleştirilir.',
-      'Uyum skoru (0–100) şeffaf ağırlıklarla hesaplanır — nihai karar garantisi değildir.',
-      '12 aylık toplam sahip olma maliyeti (TCO) ayrı hesaplanır.',
+      'İlan bulmak başka, doğru karar vermek başka — kriterleriniz referans modellerle eşleştirilir.',
+      'Uyum skoru (0–100) şeffaf ağırlıklarla hesaplanır; generic AI skoru üretmez.',
+      '12 aylık toplam sahip olma maliyeti (TCO) ayrı hesaplanır — yalnızca oran tablosu değil.',
       'Yapay zeka yalnızca gerekçe metni üretir; skor ve maliyet kural tabanlıdır.'
     ],
     limits: [
+      'isteBul ilan sitesi veya sohbet botu değildir — karar altyapısıdır.',
       'Canlı ilan fiyatı değildir — piyasa teklifleri değişebilir.',
       'Finansman örnekleri simülasyondur; banka onayı ayrı değerlendirilir.',
       'Karar skoru ve veri güven bandı metodolojik destek sunar; yatırım veya kredi taahhüdü içermez.'

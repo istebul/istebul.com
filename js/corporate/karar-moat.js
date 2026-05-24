@@ -12,13 +12,12 @@ function mountMoatPage() {
   if (!root) return;
 
   root.innerHTML = `
-    <p class="kicker">P3 · Defensibility</p>
-    <h1>Savunulabilir karar avantajı</h1>
+    <p class="kicker">Kategori sahipliği</p>
+    <h1>isteBul = karar altyapısı</h1>
     <p class="lead">
-      isteBul'un moat'ı tek bir özellik değil: <strong>deterministik skor motoru</strong>,
-      <strong>outcome graph</strong>, <strong>feedback loop</strong> ve
-      <strong>kapalı döngü partner ekonomisi</strong> birlikte çalışır.
-      Rakipler arayüz kopyalayabilir; biriken kapanış verisi ve operasyon disiplini kopyalanmaz.
+      <strong>İlan bulmak başka, doğru karar vermek başka.</strong>
+      isteBul ilan sitesi, generic AI sohbet veya yalnızca kredi karşılaştırması değil —
+      toplam sahip olma maliyetine göre karar veren <em>decision infrastructure</em>.
     </p>
 
     <section aria-labelledby="moat-pillars-heading">
