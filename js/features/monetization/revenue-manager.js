@@ -122,7 +122,7 @@ export class RevenueManager {
         </div>
         <div class="revenue-upgrade-actions">
           <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1">${this.getCheckoutCtaLabel()}</button>
-          <a href="/#pricing" class="btn btn-outline" data-native-route>Planları incele</a>
+          <a href="/planlar" class="btn btn-outline" data-native-route>Planları incele</a>
         </div>
       </aside>
     `;
@@ -260,7 +260,7 @@ export class RevenueManager {
           <p class="revenue-plan-price">${PLANS.free.priceLabel}</p>
           <p class="revenue-plan-desc">${PLANS.free.description}</p>
           <ul>${PLANS.free.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
-          <a href="/karar-analizi" class="btn btn-outline">Analize başla</a>
+          <a href="/auto/" class="btn btn-outline">Ücretsiz analizi başlat</a>
         </article>
         <article class="revenue-plan-card revenue-plan-card--featured">
           <span class="revenue-plan-badge revenue-plan-badge--pro">Önerilen</span>
@@ -338,7 +338,7 @@ export class RevenueManager {
           <p>${isTrialing
             ? `${PLANS.pro.trialDays} günlük ücretsiz deneme aktif. Deneme bitiminde seçtiğiniz plan üzerinden ücretlendirilirsiniz.`
             : `Tüm premium özellikler açık${end ? ` · Dönem sonu: ${end}` : ''}.`}</p>
-          <button type="button" class="btn btn-outline" id="premium-checkout-btn">Aboneliği yönet</button>
+          <button type="button" class="btn btn-outline" id="premium-checkout-btn" data-billing-portal>Aboneliği yönet</button>
         </div>
       `;
     }
@@ -353,7 +353,7 @@ export class RevenueManager {
           <label><input type="radio" name="profile-billing-interval" value="annual"> Yıllık (${PLANS.pro.billing.annual.savingsLabel})</label>
         </div>
         <button type="button" class="btn btn-primary" id="premium-checkout-btn" data-upgrade-checkout data-billing="monthly" data-trial="1">${this.getCheckoutCtaLabel('monthly')}</button>
-        <a href="/#pricing" class="btn btn-ghost btn-sm" data-native-route>Plan detayları</a>
+        <a href="/planlar" class="btn btn-ghost btn-sm" data-native-route>Plan detayları</a>
       </div>
     `;
   }

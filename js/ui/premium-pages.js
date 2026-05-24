@@ -102,11 +102,11 @@ export class PremiumPages {
             <h1>Araç alım kararınızı dakikalar içinde netleştirin</h1>
             <p class="ib-premium-lead">Bütçe, finansman, toplam sahip olma maliyeti ve alternatif senaryoları tek akışta değerlendirin — tarafsız, denetlenebilir, KVKK uyumlu.</p>
             <div class="ib-premium-hero-actions">
-              <a href="#premium-assistant" class="btn btn-primary btn-lg">
-                <i data-lucide="play"></i> Analizi başlat
+              <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="premium_karar_auto">
+                <i data-lucide="car-front"></i> Ücretsiz analizi başlat
               </a>
-              <a href="/auto/" class="btn btn-outline btn-lg" data-native-route>
-                <i data-lucide="car-front"></i> Gelişmiş Auto analizi
+              <a href="/metodoloji" class="btn btn-outline btn-lg" data-native-route>
+                <i data-lucide="microscope"></i> Metodoloji
               </a>
             </div>
             <ul class="ib-premium-hero-stats" aria-label="Platform metrikleri">
@@ -306,18 +306,18 @@ export class PremiumPages {
             </ul>
           </div>
           <div class="ib-confidence-panel">
-            <h3>Güven göstergeleri</h3>
+            <h3>Güven göstergeleri <span class="ib-illustrative-label">(örnek görselleştirme)</span></h3>
             <div class="ib-confidence-row">
-              <span>Yüksek güven</span>
+              <span>Yüksek güven bandı</span>
               <div class="ib-confidence-bar ib-confidence-bar--high"><em style="width:88%"></em></div>
-              <strong>%88</strong>
+              <strong aria-hidden="true">Örnek</strong>
             </div>
             <div class="ib-confidence-row">
-              <span>Orta güven</span>
+              <span>Orta güven bandı</span>
               <div class="ib-confidence-bar"><em style="width:62%"></em></div>
-              <strong>%62</strong>
+              <strong aria-hidden="true">Örnek</strong>
             </div>
-            <p class="ib-premium-note">Güven; veri tamlığı, segment örneklemesi ve finansman belirsizliğine göre hesaplanır.</p>
+            <p class="ib-premium-note">Canlı analizde güven skoru; veri tamlığı, segment örneklemesi ve finansman belirsizliğine göre hesaplanır. Yukarıdaki çubuklar yalnızca arayüz örneğidir, gerçek skor değildir.</p>
           </div>
         </div>
       </section>
@@ -361,7 +361,7 @@ export class PremiumPages {
             <div><i data-lucide="user-check"></i><strong>Kullanıcı kontrolü</strong><p>Veri minimizasyonu</p></div>
             <div><i data-lucide="badge-check"></i><strong>Kurumsal hazır</strong><p>Enterprise SLA</p></div>
           </div>
-          <a href="/karar-analizi" class="btn btn-primary">Karar analizini dene</a>
+          <a href="/auto/" class="btn btn-primary" data-native-route>Ücretsiz analizi başlat</a>
         </div>
       </section>
     </div>`;
@@ -400,7 +400,7 @@ export class PremiumPages {
             <h2>Hâlâ kararsız mısınız?</h2>
             <p>Ücretsiz karar analizi ile başlayın; ihtiyaç duyduğunuzda Pro\'ya geçin.</p>
           </div>
-          <a href="/karar-analizi" class="btn btn-primary btn-lg">Ücretsiz analiz</a>
+          <a href="/auto/" class="btn btn-primary btn-lg" data-native-route>Ücretsiz analizi başlat</a>
         </div>
       </section>
     </div>`;

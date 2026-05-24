@@ -458,6 +458,13 @@ body.ib-premium-route-active .navbar {
   margin-bottom: 0.5rem;
 }
 
+.ib-illustrative-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted, #64748b);
+  margin-left: 0.35rem;
+}
+
 .ib-confidence-panel {
   background: #fff;
   border-radius: 20px;

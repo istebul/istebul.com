@@ -71,7 +71,7 @@ function openAutoUpgradePaywall(feature = 'premium_report') {
         ${PLANS.pro.highlights.slice(0, 4).map((item) => `<li>${item}</li>`).join('')}
       </ul>
       <div class="revenue-upgrade-actions">
-        <a class="btn primary" href="/#pricing?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
         <button type="button" class="btn secondary" data-auto-paywall-close>Ücretsiz devam et</button>
       </div>
     </div>
@@ -96,8 +96,8 @@ function renderAutoUpgradeStrip() {
         <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma — ilk abonelikte 7 gün ücretsiz deneme.</p>
       </div>
       <div class="revenue-upgrade-actions">
-        <a class="btn btn-primary" href="/#pricing?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
-        <a class="btn btn-outline" href="/#pricing">Planları incele</a>
+        <a class="btn btn-primary" href="/planlar?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
+        <a class="btn btn-outline" href="/planlar">Planları incele</a>
       </div>
     </aside>
   `;
@@ -1395,6 +1395,43 @@ document.querySelectorAll('#gelir .btn.secondary').forEach((btn, index) => {
 
 const wizard = document.getElementById('auto-wizard');
 
+const usageOptions = [
+  { label: 'Aile', value: 'family', note: 'Geniş iç hacim ve güvenlik' },
+  { label: 'Şehir içi', value: 'city', note: 'Yakıt ve park kolaylığı' },
+  { label: 'Uzun yol', value: 'long', note: 'Konfor ve düşük tüketim' },
+  { label: 'İş', value: 'business', note: 'Prestij ve kullanım verimliliği' }
+];
+
+const bodyOptions = [
+  { label: 'SUV', value: 'suv', note: 'Yüksek sürüş ve aile kullanımı' },
+  { label: 'Sedan', value: 'sedan', note: 'Konfor ve uzun yol dengesi' },
+  { label: 'Hatchback', value: 'hatchback', note: 'Şehir içi pratiklik' }
+];
+
+const fuelOptions = [
+  { label: 'Fark etmez', value: 'any', note: 'En dengeli seçenek' },
+  { label: 'Hibrit', value: 'hybrid', note: 'Şehir içi tasarruf' },
+  { label: 'Elektrikli', value: 'electric', note: 'Düşük kullanım maliyeti' },
+  { label: 'Benzinli', value: 'gasoline', note: 'Geniş servis ağı' },
+  { label: 'Dizel', value: 'diesel', note: 'Uzun yol / yüksek km' }
+];
+
+const kmOptions = [
+  { label: '10.000 km altı', value: '8000', note: 'Düşük kullanım' },
+  { label: '10.000 – 20.000 km', value: '15000', note: 'Ortalama kullanım' },
+  { label: '20.000 – 35.000 km', value: '28000', note: 'Yoğun kullanım' },
+  { label: '35.000 km+', value: '40000', note: 'Profesyonel kullanım' },
+  { label: 'Tam km gireceğim', value: 'custom', note: 'Net kilometre' }
+];
+
+const kmCustom = {
+  type: 'text',
+  placeholder: 'Örn. 22500',
+  min: 1000,
+  max: 100000,
+  suffix: 'km'
+};
+
 const wizardSteps = [
   {
     key: 'budget',
@@ -1416,56 +1453,37 @@ const wizardSteps = [
     }
   },
   {
-    key: 'usage',
-    title: 'Aracı en çok nasıl kullanacaksınız?',
-    description: 'Karar analizi kullanım senaryonuza göre segment ve maliyet dengesini değerlendirir.',
-    options: [
-      { label: 'Aile', value: 'family', note: 'Geniş iç hacim ve güvenlik' },
-      { label: 'Şehir içi', value: 'city', note: 'Yakıt ve park kolaylığı' },
-      { label: 'Uzun yol', value: 'long', note: 'Konfor ve düşük tüketim' },
-      { label: 'İş', value: 'business', note: 'Prestij ve kullanım verimliliği' }
+    title: 'Kullanım ve araç tipi',
+    description: 'İki kısa seçimle segment ve maliyet dengesini belirleyin.',
+    parts: [
+      {
+        key: 'usage',
+        title: 'Aracı en çok nasıl kullanacaksınız?',
+        options: usageOptions
+      },
+      {
+        key: 'body',
+        title: 'Hangi araç tipi size daha yakın?',
+        options: bodyOptions
+      }
     ]
   },
   {
-    key: 'body',
-    title: 'Hangi araç tipi size daha yakın?',
-    description: 'Kararsızsanız SUV seçebilirsiniz; AI diğer sinyallerle denge kurar.',
-    options: [
-      { label: 'SUV', value: 'suv', note: 'Yüksek sürüş ve aile kullanımı' },
-      { label: 'Sedan', value: 'sedan', note: 'Konfor ve uzun yol dengesi' },
-      { label: 'Hatchback', value: 'hatchback', note: 'Şehir içi pratiklik' }
+    title: 'Yakıt ve yıllık kilometre',
+    description: 'Toplam sahip olma maliyetini en çok etkileyen iki sinyal.',
+    parts: [
+      {
+        key: 'fuel',
+        title: 'Yakıt tercihiniz',
+        options: fuelOptions
+      },
+      {
+        key: 'km',
+        title: 'Yılda yaklaşık kaç km?',
+        options: kmOptions,
+        custom: kmCustom
+      }
     ]
-  },
-  {
-    key: 'fuel',
-    title: 'Yakıt tercihiniz nedir?',
-    description: 'Yakıt tercihi toplam sahip olma maliyetini ciddi şekilde etkiler.',
-    options: [
-      { label: 'Fark etmez', value: 'any', note: 'AI en dengeli seçeneği bulsun' },
-      { label: 'Hibrit', value: 'hybrid', note: 'Şehir içi tasarruf odağı' },
-      { label: 'Elektrikli', value: 'electric', note: 'Düşük kullanım maliyeti' },
-      { label: 'Benzinli', value: 'gasoline', note: 'Geniş seçenek ve servis ağı' },
-      { label: 'Dizel', value: 'diesel', note: 'Uzun yol ve yüksek kilometre' }
-    ]
-  },
-  {
-    key: 'km',
-    title: 'Yılda yaklaşık kaç km yaparsınız?',
-    description: 'Kilometre arttıkça yakıt, bakım ve değer kaybı daha kritik hale gelir.',
-    options: [
-      { label: '10.000 km altı', value: '8000', note: 'Düşük kullanım' },
-      { label: '10.000 – 20.000 km', value: '15000', note: 'Ortalama kullanım' },
-      { label: '20.000 – 35.000 km', value: '28000', note: 'Yoğun kullanım' },
-      { label: '35.000 km+', value: '40000', note: 'Profesyonel / yüksek kullanım' },
-      { label: 'Tam km gireceğim', value: 'custom', note: 'Net kilometre ile daha hassas maliyet' }
-    ],
-    custom: {
-      type: 'text',
-      placeholder: 'Örn. 22500',
-      min: 1000,
-      max: 100000,
-      suffix: 'km'
-    }
   },
   {
     key: 'location',
@@ -1501,6 +1519,28 @@ const wizardSteps = [
 const wizardState = {};
 let wizardIndex = 0;
 
+function getWizardStepKeys(step) {
+  if (Array.isArray(step.parts) && step.parts.length) {
+    return step.parts.map((part) => part.key);
+  }
+  return step.key ? [step.key] : [];
+}
+
+function getWizardFieldDef(step, fieldKey) {
+  if (Array.isArray(step.parts)) {
+    return step.parts.find((part) => part.key === fieldKey) || null;
+  }
+  return step.key === fieldKey ? step : null;
+}
+
+function wizardStepCanProceed(step) {
+  return getWizardStepKeys(step).every((key) => Boolean(wizardState[key]));
+}
+
+function isSingleFieldWizardStep(step) {
+  return Boolean(step.key) && !step.parts?.length;
+}
+
 function syncWizardToForm() {
   Object.entries(wizardState).forEach(([key, value]) => {
     if (key.endsWith('_custom')) return;
@@ -1527,15 +1567,105 @@ function syncWizardToForm() {
   });
 }
 
+function renderWizardPartOptions(part) {
+  const selected = wizardState[part.key];
+  const isCustom = selected === 'custom';
+  const customValue = wizardState[`${part.key}_custom`] || '';
+
+  return `
+    <div class="wizard-part" data-wizard-part="${escapeHtml(part.key)}">
+      <h4 class="wizard-part-title">${escapeHtml(part.title)}</h4>
+      <div class="wizard-options">
+        ${part.options.map((option) => `
+          <button type="button" class="wizard-option ${selected === option.value ? 'is-selected' : ''}" data-wizard-value="${escapeHtml(option.value)}" data-wizard-key="${escapeHtml(part.key)}">
+            ${escapeHtml(option.label)}
+            <small>${escapeHtml(option.note)}</small>
+          </button>
+        `).join('')}
+      </div>
+      ${part.custom && isCustom ? `
+        <label class="wizard-custom-input">
+          <span>${part.key === 'km' ? 'Yıllık net kilometrenizi girin' : 'Değer girin'}</span>
+          <div>
+            <input
+              type="${part.custom.type}"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              min="${part.custom.min}"
+              max="${part.custom.max}"
+              placeholder="${escapeHtml(part.custom.placeholder)}"
+              value="${escapeHtml(customValue)}"
+              data-wizard-custom
+              data-wizard-key="${escapeHtml(part.key)}"
+            >
+            <strong>${escapeHtml(part.custom.suffix)}</strong>
+          </div>
+        </label>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderWizard() {
   if (!wizard) return;
 
   const step = wizardSteps[wizardIndex];
   const progress = Math.round(((wizardIndex + 1) / wizardSteps.length) * 100);
-  const selected = wizardState[step.key];
-  const isCustom = selected === 'custom';
-  const canProceed = Boolean(selected);
-  const customValue = wizardState[`${step.key}_custom`] || '';
+  const canProceed = wizardStepCanProceed(step);
+  const isMulti = Array.isArray(step.parts) && step.parts.length > 0;
+
+  let bodyHtml = '';
+
+  if (isMulti) {
+    bodyHtml = step.parts.map((part) => renderWizardPartOptions(part)).join('');
+  } else {
+    const selected = wizardState[step.key];
+    const isCustom = selected === 'custom';
+    const customValue = wizardState[`${step.key}_custom`] || '';
+
+    bodyHtml = `
+      <div class="wizard-options">
+        ${step.options.map((option) => `
+          <button type="button" class="wizard-option ${selected === option.value ? 'is-selected' : ''}" data-wizard-value="${escapeHtml(option.value)}" data-wizard-key="${escapeHtml(step.key)}">
+            ${escapeHtml(option.label)}
+            <small>${escapeHtml(option.note)}</small>
+          </button>
+        `).join('')}
+      </div>
+      ${step.custom && isCustom ? `
+        <label class="wizard-custom-input">
+          <span>${step.key === 'budget' ? 'Net bütçenizi girin' : step.key === 'km' ? 'Yıllık net kilometrenizi girin' : 'Şehir adını girin'}</span>
+          <div>
+            <input
+              type="${step.custom.type}"
+              ${step.key === 'location' ? '' : 'inputmode="numeric" pattern="[0-9]*"'}
+              ${step.key === 'location' ? `minlength="${step.custom.min}" maxlength="${step.custom.max}"` : `min="${step.custom.min}" max="${step.custom.max}"`}
+              placeholder="${escapeHtml(step.custom.placeholder)}"
+              value="${escapeHtml(customValue)}"
+              data-wizard-custom
+              data-wizard-key="${escapeHtml(step.key)}"
+            >
+            <strong>${escapeHtml(step.custom.suffix)}</strong>
+          </div>
+        </label>
+      ` : ''}
+      ${step.optionalDistrict ? `
+        <label class="wizard-custom-input">
+          <span>İlçe (opsiyonel)</span>
+          <div>
+            <input
+              type="text"
+              maxlength="60"
+              placeholder="Örn. Bornova"
+              value="${escapeHtml(wizardState.district || '')}"
+              data-wizard-district
+            >
+            <strong>ilçe</strong>
+          </div>
+        </label>
+      ` : ''}
+    `;
+  }
 
   wizard.innerHTML = `
     <div class="wizard-progress">
@@ -1554,47 +1684,7 @@ function renderWizard() {
       <p>${escapeHtml(step.description)}</p>
     </div>
 
-    <div class="wizard-options">
-      ${step.options.map(option => `
-        <button type="button" class="wizard-option ${selected === option.value ? 'is-selected' : ''}" data-wizard-value="${escapeHtml(option.value)}">
-          ${escapeHtml(option.label)}
-          <small>${escapeHtml(option.note)}</small>
-        </button>
-      `).join('')}
-    </div>
-
-    ${step.custom && isCustom ? `
-      <label class="wizard-custom-input">
-        <span>${step.key === 'budget' ? 'Net bütçenizi girin' : step.key === 'km' ? 'Yıllık net kilometrenizi girin' : 'Şehir adını girin'}</span>
-        <div>
-          <input
-            type="${step.custom.type}"
-            ${step.key === 'location' ? '' : 'inputmode="numeric" pattern="[0-9]*"'}
-            ${step.key === 'location' ? `minlength="${step.custom.min}" maxlength="${step.custom.max}"` : `min="${step.custom.min}" max="${step.custom.max}"`}
-            placeholder="${escapeHtml(step.custom.placeholder)}"
-            value="${escapeHtml(customValue)}"
-            data-wizard-custom
-          >
-          <strong>${escapeHtml(step.custom.suffix)}</strong>
-        </div>
-      </label>
-    ` : ''}
-
-    ${step.optionalDistrict ? `
-      <label class="wizard-custom-input">
-        <span>İlçe (opsiyonel)</span>
-        <div>
-          <input
-            type="text"
-            maxlength="60"
-            placeholder="Örn. Bornova"
-            value="${escapeHtml(wizardState.district || '')}"
-            data-wizard-district
-          >
-          <strong>ilçe</strong>
-        </div>
-      </label>
-    ` : ''}
+    ${bodyHtml}
 
     <div class="wizard-actions">
       <button type="button" class="btn secondary" data-wizard-back ${wizardIndex === 0 ? 'disabled' : ''}>Geri</button>
@@ -1627,26 +1717,32 @@ function advanceWizard() {
   const step = wizardSteps[wizardIndex];
   clearWizardInlineError();
 
-  if (!wizardState[step.key]) {
-    showWizardInlineError('Lütfen devam etmeden önce bir seçenek seçin.');
+  if (!wizardStepCanProceed(step)) {
+    showWizardInlineError('Lütfen devam etmeden önce tüm soruları yanıtlayın.');
     return;
   }
 
-  if (wizardState[step.key] === 'custom') {
-    const visibleCustomInput = wizard?.querySelector('[data-wizard-custom]');
+  for (const fieldKey of getWizardStepKeys(step)) {
+    if (wizardState[fieldKey] !== 'custom') continue;
+
+    const fieldDef = getWizardFieldDef(step, fieldKey);
+    if (!fieldDef?.custom) continue;
+
+    const visibleCustomInput = wizard?.querySelector(`[data-wizard-custom][data-wizard-key="${fieldKey}"]`)
+      || wizard?.querySelector('[data-wizard-custom]');
     const rawCustomValue = String(
       visibleCustomInput?.value ||
-      wizardState[`${step.key}_custom`] ||
+      wizardState[`${fieldKey}_custom`] ||
       ''
     ).trim();
 
-    if (step.key === 'location') {
+    if (fieldKey === 'location') {
       const cleanLocation = String(rawCustomValue || '').trim();
-      if (cleanLocation.length < step.custom.min || cleanLocation.length > step.custom.max) {
+      if (cleanLocation.length < fieldDef.custom.min || cleanLocation.length > fieldDef.custom.max) {
         showWizardInlineError('Lütfen geçerli bir şehir adı girin.');
         return;
       }
-      wizardState[`${step.key}_custom`] = cleanLocation;
+      wizardState[`${fieldKey}_custom`] = cleanLocation;
     } else {
       const numericValue = Number(rawCustomValue);
 
@@ -1655,14 +1751,12 @@ function advanceWizard() {
         return;
       }
 
-      if (step.custom) {
-        if (numericValue < step.custom.min || numericValue > step.custom.max) {
-          showWizardInlineError(`Lütfen ${step.custom.min} - ${step.custom.max} aralığında bir değer girin.`);
-          return;
-        }
+      if (numericValue < fieldDef.custom.min || numericValue > fieldDef.custom.max) {
+        showWizardInlineError(`Lütfen ${fieldDef.custom.min} - ${fieldDef.custom.max} aralığında bir değer girin.`);
+        return;
       }
 
-      wizardState[`${step.key}_custom`] = rawCustomValue;
+      wizardState[`${fieldKey}_custom`] = rawCustomValue;
     }
   }
 
@@ -1673,7 +1767,7 @@ function advanceWizard() {
     renderWizard();
     trackAutoEvent('auto_wizard_step', {
       step: wizardIndex + 1,
-      key: wizardSteps[wizardIndex].key
+      key: getWizardStepKeys(wizardSteps[wizardIndex]).join('+')
     });
     return;
   }
@@ -1698,18 +1792,20 @@ if (wizard) {
 
     if (!customInput) return;
 
+    const fieldKey = customInput.dataset.wizardKey || step.key;
+    const fieldDef = getWizardFieldDef(step, fieldKey) || step;
     const rawValue = String(customInput.value || '');
-    const cleanValue = step.key === 'location'
-      ? rawValue.trim().slice(0, step.custom?.max || 40)
+    const cleanValue = fieldKey === 'location'
+      ? rawValue.trim().slice(0, fieldDef.custom?.max || 40)
       : rawValue.replace(/\D/g, '');
 
-    wizardState[`${step.key}_custom`] = cleanValue;
+    wizardState[`${fieldKey}_custom`] = cleanValue;
     customInput.value = cleanValue;
     syncWizardToForm();
 
     const nextButton = wizard.querySelector('[data-wizard-next]');
     if (nextButton) {
-      nextButton.disabled = false;
+      nextButton.disabled = !wizardStepCanProceed(step);
     }
   });
 
@@ -1720,7 +1816,8 @@ if (wizard) {
 
     if (option) {
       const step = wizardSteps[wizardIndex];
-      wizardState[step.key] = option.dataset.wizardValue;
+      const fieldKey = option.dataset.wizardKey || step.key;
+      wizardState[fieldKey] = option.dataset.wizardValue;
       syncWizardToForm();
       renderWizard();
 
@@ -1732,6 +1829,11 @@ if (wizard) {
         } catch {
           /* ignore */
         }
+      }
+
+      const selectedValue = option.dataset.wizardValue;
+      if (isSingleFieldWizardStep(step) && selectedValue !== 'custom') {
+        window.setTimeout(() => advanceWizard(), 420);
       }
 
       return;

@@ -1086,6 +1086,12 @@ class App {
                 e.preventDefault();
                 this.handlePremiumCheckout(e);
             }
+
+            const portalBtn = e.target.closest('[data-billing-portal]');
+            if (portalBtn) {
+                e.preventDefault();
+                this.openBillingPortal();
+            }
         });
 
         // Auth events
@@ -3235,8 +3241,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const params = new URLSearchParams(window.location.search);
         const wantsCheckout = params.get('checkout') === 'pro';
 
-        if (window.location.hash === '#pricing' || wantsCheckout) {
+        if (window.location.hash === '#pricing') {
             document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (wantsCheckout && document.getElementById('premium-pricing-plans-root')) {
+            document.getElementById('premium-pricing-plans-root')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         if (!wantsCheckout) return;
@@ -3322,6 +3330,56 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         await this.handlePremiumCheckout(fakeEvent);
     }
 
+    async openBillingPortal() {
+        if (!this.currentUser) {
+            this.auth.showLoginModal();
+            return;
+        }
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session?.access_token) {
+                this.auth.showLoginModal();
+                return;
+            }
+
+            analytics.track('billing_portal_open', {}, {
+                category: 'subscription',
+                funnel: 'subscription',
+                funnel_step: 'billing_portal_open',
+                user_id: this.currentUser.id
+            });
+
+            const response = await fetch('/api/create-billing-portal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.url) {
+                const message = data.message || data.error || 'Abonelik yönetimi açılamadı';
+                if (response.status === 404 && data.error === 'no_billing_customer') {
+                    this.ui.showError('Henüz faturalandırılmış bir abonelik yok. Pro planına abone olduktan sonra buradan yönetebilirsiniz.');
+                    return;
+                }
+                throw new Error(message);
+            }
+
+            window.location.href = data.url;
+        } catch (error) {
+            console.error('Billing portal failed:', error);
+            trackOpsEvent('billing_portal_failed', {
+                message: String(error.message || 'portal_failed').slice(0, 120)
+            }, { category: 'payment', severity: 'warning' });
+            this.ui.showError('Abonelik paneli açılamadı. Lütfen tekrar deneyin veya destek ile iletişime geçin.');
+        }
+    }
+
     async handlePremiumCheckout(event) {
         if (!this.currentUser) {
             this.storeCheckoutIntent(event);
@@ -3338,7 +3396,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             const { data: { session } } = await supabase.auth.getSession();
 
             if (!session?.access_token) {
-                this.auth.showLoginModal();
+                this.storeCheckoutIntent(event);
+                this.auth.showLoginModal({ intent: 'checkout' });
                 return;
             }
 

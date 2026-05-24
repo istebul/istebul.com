@@ -220,17 +220,25 @@ export class AuthManager {
         const switchToLogin = document.getElementById('switch-to-login');
         const forgotPassword = document.getElementById('forgot-password');
 
+        const checkoutIntentActive = () => {
+            try {
+                return Boolean(sessionStorage.getItem(STORAGE_KEYS.CHECKOUT_INTENT));
+            } catch {
+                return false;
+            }
+        };
+
         if (switchToRegister) {
             switchToRegister.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.showRegisterModal();
+                this.showRegisterModal(checkoutIntentActive() ? { intent: 'checkout' } : {});
             });
         }
 
         if (switchToLogin) {
             switchToLogin.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.showLoginModal();
+                this.showLoginModal(checkoutIntentActive() ? { intent: 'checkout' } : {});
             });
         }
 
@@ -274,6 +282,13 @@ export class AuthManager {
             }));
 
             analytics.track('auth_login_success', {}, { category: 'auth', funnel: 'auth', funnel_step: 'login_success' });
+
+            const pendingCheckout = typeof sessionStorage !== 'undefined'
+                && sessionStorage.getItem(STORAGE_KEYS.CHECKOUT_INTENT);
+            if (pendingCheckout) {
+                this.showAuthSuccess('Giriş başarılı. Ödeme adımına geçiliyor…');
+            }
+
             this.hideAuthModal();
         } catch (error) {
             console.error('Login failed:', error);
@@ -320,8 +335,10 @@ export class AuthManager {
                 funnel_step: 'register_start'
             });
 
-            // Profile creation is handled by the Supabase on_auth_user_created trigger.
-            await API.signUp(email, password, {
+            const pendingCheckout = typeof sessionStorage !== 'undefined'
+                && sessionStorage.getItem(STORAGE_KEYS.CHECKOUT_INTENT);
+
+            const signUpResult = await API.signUp(email, password, {
                 full_name: fullName
             });
 
@@ -331,15 +348,30 @@ export class AuthManager {
                 funnel_step: 'register_success'
             });
 
-            const pendingCheckout = typeof sessionStorage !== 'undefined'
-                && sessionStorage.getItem(STORAGE_KEYS.CHECKOUT_INTENT);
+            const session = signUpResult?.session;
+            const signedUpUser = session?.user || signUpResult?.user;
+
+            if (session && signedUpUser) {
+                this.currentUser = signedUpUser;
+                state.setUser(signedUpUser);
+                document.dispatchEvent(new CustomEvent('userLoggedIn', { detail: signedUpUser }));
+                this.hideAuthModal();
+
+                if (pendingCheckout) {
+                    this.showAuthSuccess('Hesabınız hazır. Ödeme sayfasına yönlendiriliyorsunuz…');
+                } else {
+                    this.showAuthSuccess('Hesabınız oluşturuldu. Hoş geldiniz!');
+                }
+                return;
+            }
 
             if (pendingCheckout) {
-                this.showAuthSuccess('Hesabınız oluşturuldu. E-posta doğrulamasından sonra giriş yaparak ödemeye devam edebilirsiniz — ücretsiz analiz için /auto sayfasını kullanabilirsiniz.');
+                this.showAuthSuccess('Hesabınız oluşturuldu. Giriş yaparak ödemeye devam edebilirsiniz — e-posta doğrulama gerekebilir.');
+                setTimeout(() => this.showLoginModal({ intent: 'checkout' }), 1200);
             } else {
                 this.showAuthSuccess('Hesabınız oluşturuldu! Lütfen e-posta adresinizi doğrulayın.');
+                setTimeout(() => this.showLoginModal(), 2800);
             }
-            setTimeout(() => this.showLoginModal(pendingCheckout ? { intent: 'checkout' } : {}), 2800);
 
         } catch (error) {
             console.error('Registration failed:', error);

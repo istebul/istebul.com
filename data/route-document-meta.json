@@ -2,8 +2,8 @@
   "siteOrigin": "https://www.istebul.com",
   "surfaces": {
     "home": {
-      "title": "isteBul | Araç Alım Karar Asistanı — Kredi, TCO ve Karşılaştırma",
-      "description": "Türkiye'de araç alırken bütçe, taşıt kredisi, toplam sahip olma maliyeti (TCO) ve model karşılaştırmasını tek platformda değerlendirin. Ücretsiz karar analizi.",
+      "title": "isteBul | 2 Dakikada Araç Alım Kararı — TCO, Kredi ve Karşılaştırma",
+      "description": "Bütçenize uygun araçları toplam maliyet ve taşıt kredisi etkisiyle karşılaştırın. Ücretsiz rehberli analiz — tarafsız, KVKK uyumlu.",
       "path": "/"
     },
     "page-karar-analizi": {
