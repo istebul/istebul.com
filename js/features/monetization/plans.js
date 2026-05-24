@@ -5,11 +5,11 @@ export const PLANS = {
     id: 'free',
     name: 'Başlangıç',
     priceLabel: 'Ücretsiz',
-    description: 'Temel karar analizi ve partner teklif talebi',
+    description: 'TCO özeti ve 2 model karşılaştırma — satın alma öncesi maliyet görünürlüğü',
     highlights: [
-      'Auto karar analizi (özet)',
-      '2 araç karşılaştırma',
-      'Partner teklif talebi',
+      '5 adımlı maliyet analizi (Auto)',
+      '2 araç TCO karşılaştırma',
+      'İsteğe bağlı partner teklif talebi',
       'Şeffaf metodoloji özeti'
     ]
   },
@@ -18,7 +18,7 @@ export const PLANS = {
     name: 'isteBul Pro',
     priceLabel: 'Aylık abonelik',
     priceHint: 'Stripe ile güvenli ödeme · dilediğiniz zaman iptal',
-    description: 'Gelişmiş analiz, sınırsız karşılaştırma ve öncelikli partner eşleşmesi',
+    description: 'Derin maliyet raporu, sınırsız TCO karşılaştırma ve öncelikli partner yönlendirmesi',
     trialDays: 7,
     trialLabel: '7 gün ücretsiz deneme',
     billing: {
@@ -43,7 +43,7 @@ export const PLANS = {
     highlights: [
       'Sınırsız karşılaştırma',
       'Detaylı premium karar raporu',
-      'Gelişmiş AI karar özeti',
+      'Şeffaf AI gerekçe özeti (skoru değiştirmez)',
       'Öncelikli partner eşleşmesi',
       'Karar geçmişi ve export'
     ],
@@ -77,7 +77,7 @@ export const FREE_LIMITS = {
 export const PRO_FEATURES = {
   comparison_unlimited: 'Sınırsız karşılaştırma',
   premium_report: 'Detaylı premium karar raporu',
-  advanced_ai_summary: 'Gelişmiş AI karar özeti',
+  advanced_ai_summary: 'Şeffaf AI gerekçe özeti',
   priority_partner: 'Öncelikli partner yönlendirme',
   decision_export: 'Karar geçmişi export'
 };

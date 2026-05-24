@@ -8,20 +8,20 @@ export function renderStaticPricingFallback() {
           <span class="revenue-plan-badge">Bireysel</span>
           <h3>Başlangıç</h3>
           <p class="revenue-plan-price">Ücretsiz</p>
-          <p class="revenue-plan-desc">Araç karar analizi özeti ve temel karşılaştırma</p>
+          <p class="revenue-plan-desc">TCO özeti ve 2 model karşılaştırma — yanlış seçim riskini azaltın</p>
           <ul>
-            <li>Auto karar analizi (özet)</li>
-            <li>2 araç karşılaştırma</li>
+            <li>5 adımlı maliyet analizi</li>
+            <li>2 araç TCO karşılaştırma</li>
             <li>Şeffaf metodoloji özeti</li>
           </ul>
-          <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_static_free">Ücretsiz analizi başlat</a>
+          <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_static_free">Ücretsiz maliyet analizi</a>
         </article>
         <article class="revenue-plan-card revenue-plan-card--featured">
           <span class="revenue-plan-badge revenue-plan-badge--pro">Önerilen</span>
           <span class="revenue-trial-badge">7 gün ücretsiz deneme</span>
           <h3>isteBul Pro</h3>
           <p class="revenue-plan-price">₺299<small>/ ay</small></p>
-          <p class="revenue-plan-desc">Gelişmiş raporlar, sınırsız karşılaştırma ve öncelikli partner eşleşmesi</p>
+          <p class="revenue-plan-desc">Derin maliyet raporu, sınırsız karşılaştırma ve öncelikli yönlendirme</p>
           <ul>
             <li>Sınırsız karşılaştırma</li>
             <li>Detaylı premium karar raporu</li>

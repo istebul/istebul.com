@@ -188,12 +188,12 @@ export class RevenueManager {
         body: `Ücretsiz planda ${FREE_LIMITS.maxComparisons} araç karşılaştırabilirsiniz. Pro ile 4\'e kadar detaylı analiz.`
       },
       ai_summary: {
-        title: 'Gelişmiş AI karar özetini görün',
-        body: 'Pro, karşılaştırmalı senaryo yorumu ve aksiyon önerilerini tam metin sunar.'
+        title: 'Maliyet gerekçesini tam metin görün',
+        body: 'Pro, TCO ve skor kartlarına dayalı şeffaf AI özeti sunar — sıralamayı değiştirmez, kararınızı netleştirir.'
       },
       default: {
-        title: 'Karar sürecinizi Pro ile hızlandırın',
-        body: 'Sınırsız karşılaştırma, premium rapor ve öncelikli partner eşleşmesi tek abonelikte.'
+        title: 'Toplam maliyeti Pro ile derinleştirin',
+        body: 'Sınırsız TCO karşılaştırma, premium rapor ve öncelikli partner yönlendirmesi tek abonelikte.'
       }
     };
 
@@ -260,7 +260,7 @@ export class RevenueManager {
           <p class="revenue-plan-price">${PLANS.free.priceLabel}</p>
           <p class="revenue-plan-desc">${PLANS.free.description}</p>
           <ul>${PLANS.free.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
-          <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">Ücretsiz analizi başlat</a>
+          <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">Ücretsiz maliyet analizi</a>
         </article>
         <article class="revenue-plan-card revenue-plan-card--featured">
           <span class="revenue-plan-badge revenue-plan-badge--pro">Önerilen</span>
@@ -279,7 +279,7 @@ export class RevenueManager {
         <span>7 gün ücretsiz deneme</span>
         <span>Stripe ile güvenli ödeme</span>
         <span>İstediğiniz zaman iptal</span>
-        <span>Ücretsiz planda analiz sınırsız başlar</span>
+        <span>Ücretsiz planda TCO analiziyle başlayın</span>
       </p>
     `;
   }

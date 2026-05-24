@@ -99,20 +99,20 @@ export class PremiumPages {
         <div class="container ib-premium-hero-grid">
           <div class="ib-premium-hero-copy">
             <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> Karar analizi</span>
-            <h1>Araç alım kararınızı dakikalar içinde netleştirin</h1>
-            <p class="ib-premium-lead">Bütçe, finansman, toplam sahip olma maliyeti ve alternatif senaryoları tek akışta değerlendirin — tarafsız, denetlenebilir, KVKK uyumlu.</p>
+            <h1>2 dakikada toplam maliyetle en uygun seçeneği görün</h1>
+            <p class="ib-premium-lead">Fiyat, kredi, kullanım ve TCO tek akışta. Yanlış araç seçme riskini azaltın; canlı analiz için Auto’ya geçin — bu sayfa eğitim ve önizleme içindir.</p>
             <div class="ib-premium-hero-actions">
               <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_hero">
-                <i data-lucide="car-front"></i> Ücretsiz analizi başlat
+                <i data-lucide="car-front"></i> Ücretsiz maliyet analizi
               </a>
               <a href="/metodoloji" class="btn btn-outline btn-lg" data-native-route>
                 <i data-lucide="microscope"></i> Metodoloji
               </a>
             </div>
             <ul class="ib-premium-hero-stats" aria-label="Platform metrikleri">
-              <li><strong>3 adım</strong><span>Rehberli akış</span></li>
+              <li><strong>~2 dk</strong><span>Auto analizi</span></li>
               <li><strong>12 ay</strong><span>TCO görünümü</span></li>
-              <li><strong>%100</strong><span>Şeffaf metodoloji</span></li>
+              <li><strong>5 adım</strong><span>Rehberli akış</span></li>
             </ul>
           </div>
           <div class="ib-premium-hero-visual" aria-hidden="true">
@@ -146,8 +146,8 @@ export class PremiumPages {
         <div class="container">
           <div class="ib-premium-block-head">
             <span class="section-kicker">Canlı deneyim</span>
-            <h2>Karar asistanı</h2>
-            <p>Kategori seçin, soruları yanıtlayın; toplam maliyet ve öneri özeti anında oluşur.</p>
+            <h2>Karar önizlemesi</h2>
+            <p>Kısa sorularla maliyet sinyallerini görün. Tam TCO analizi ve sıralama için Auto akışını kullanın.</p>
           </div>
           <div class="assistant-section ib-premium-assistant-shell">
             <div class="assistant-shell">
@@ -221,11 +221,11 @@ export class PremiumPages {
       <section class="ib-premium-cta-band" aria-label="Sonraki adım">
         <div class="container ib-premium-cta-band-inner">
           <div>
-            <h2>Kararınızı veriye dayalı verin</h2>
-            <p>Ücretsiz başlayın; taahhüt yok. İstediğiniz zaman Pro ile genişletin.</p>
+            <h2>Yanlış araç seçme riskini azaltın</h2>
+            <p>Önce ücretsiz maliyet analizi; ihtiyaç duyduğunuzda Pro ile derin rapor ve karşılaştırma. Taahhüt yok.</p>
           </div>
           <div class="ib-premium-hero-actions">
-            <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_footer">Ücretsiz analizi başlat</a>
+            <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_footer">Ücretsiz maliyet analizi</a>
             <a href="/planlar" class="btn btn-outline btn-lg" data-native-route data-analytics-cta="cta_secondary_plans" data-analytics-placement="premium_footer">Planları incele</a>
           </div>
         </div>
@@ -240,7 +240,7 @@ export class PremiumPages {
         <div class="container">
           <span class="ib-premium-eyebrow"><i data-lucide="microscope"></i> Metodoloji</span>
           <h1>Denetlenebilir karar çerçevesi</h1>
-          <p class="ib-premium-lead">isteBul; maliyet, finansman, kullanım ve güven sinyallerini açık kurallarla birleştirir. Her skorun arkasındaki mantık görünür kalır.</p>
+          <p class="ib-premium-lead">isteBul bir ilan sitesi değil, karar altyapısıdır. Maliyet, finansman, kullanım ve risk sinyalleri açık kurallarla birleşir; her skorun gerekçesi görünür kalır.</p>
         </div>
       </header>
 
@@ -297,12 +297,12 @@ export class PremiumPages {
         <div class="container ib-premium-split">
           <div>
             <span class="section-kicker">AI şeffaflığı</span>
-            <h2>AI öneri şeffaflığı</h2>
-            <p>Özet metinler, skor kartlarındaki sayısal girdilerden türetilir. Model yalnızca yorum katmanıdır; nihai sıralama deterministik motora bağlıdır.</p>
+            <h2>AI yorum katmanı (şeffaf)</h2>
+            <p>Özet metinler, hesaplanmış skor ve maliyet kartlarından türetilir. AI fiyatı veya sıralamayı değiştirmez; yalnızca gerekçeyi okunur kılar.</p>
             <ul class="ib-check-list">
-              <li>Hangi kriterlerin öne çıktığı listelenir</li>
+              <li>Öne çıkan maliyet ve uyum kriterleri listelenir</li>
               <li>Güçlü / zayıf yönler ayrı gösterilir</li>
-              <li>İnsan onayı gerektiren uyarılar işaretlenir</li>
+              <li>Belirsizlik ve uyarılar işaretlenir — bağlayıcı teklif değildir</li>
             </ul>
           </div>
           <div class="ib-confidence-panel">
@@ -361,7 +361,7 @@ export class PremiumPages {
             <div><i data-lucide="user-check"></i><strong>Kullanıcı kontrolü</strong><p>Veri minimizasyonu</p></div>
             <div><i data-lucide="badge-check"></i><strong>Kurumsal hazır</strong><p>Enterprise SLA</p></div>
           </div>
-          <a href="/auto/" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="metodoloji_trust">Ücretsiz analizi başlat</a>
+          <a href="/auto/" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="metodoloji_trust">Ücretsiz maliyet analizi</a>
         </div>
       </section>
     </div>`;
@@ -373,8 +373,8 @@ export class PremiumPages {
       <header class="ib-premium-hero ib-premium-hero--pricing">
         <div class="container">
           <span class="ib-premium-eyebrow"><i data-lucide="credit-card"></i> Planlar</span>
-          <h1>Net fiyatlandırma, kurumsal güven</h1>
-          <p class="ib-premium-lead">Ücretsiz başlayın. Pro ile sınırsız karşılaştırma ve premium raporlar. Enterprise ile özel entegrasyon ve SLA.</p>
+          <h1>Net fiyatlandırma, ölçülebilir değer</h1>
+          <p class="ib-premium-lead">Ücretsiz TCO analizi ile başlayın. Pro, daha derin maliyet raporu ve sınırsız karşılaştırma sunar. Enterprise: galeri ağları ve API.</p>
         </div>
       </header>
 
@@ -398,9 +398,9 @@ export class PremiumPages {
         <div class="container ib-premium-cta-band-inner">
           <div>
             <h2>Hâlâ kararsız mısınız?</h2>
-            <p>Ücretsiz karar analizi ile başlayın; ihtiyaç duyduğunuzda Pro\'ya geçin.</p>
+            <p>Önce toplam maliyeti görün; Pro ile karşılaştırmayı derinleştirin.</p>
           </div>
-          <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="planlar_footer">Ücretsiz analizi başlat</a>
+          <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="planlar_footer">Ücretsiz maliyet analizi</a>
         </div>
       </section>
     </div>`;

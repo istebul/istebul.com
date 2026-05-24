@@ -1300,7 +1300,7 @@ function renderResults(results) {
         </div>
 
         <p class="ai-trust-note">
-          Yorum katmanı yapay zeka ile üretilir; skor, fiyat ve TCO kural motorundan gelir. Canlı ilan veya bağlayıcı finansman teklifi değildir.
+          AI yalnızca gerekçe metnini üretir; skor, fiyat ve toplam maliyet kural motorundan gelir. İlan listesi veya bağlayıcı kredi taahhüdü değildir — bilgilendirme amaçlıdır.
         </p>
       </div>
     </section>

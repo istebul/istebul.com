@@ -2,23 +2,23 @@
   "siteOrigin": "https://www.istebul.com",
   "surfaces": {
     "home": {
-      "title": "isteBul | 2 Dakikada Araç Alım Kararı — TCO, Kredi ve Karşılaştırma",
-      "description": "Bütçenize uygun araçları toplam maliyet ve taşıt kredisi etkisiyle karşılaştırın. Ücretsiz rehberli analiz — tarafsız, KVKK uyumlu.",
+      "title": "isteBul | 2 Dakikada TCO ile Araç Alım Kararı",
+      "description": "Toplam maliyet, kredi ve kullanımı tek ekranda karşılaştırın. Yanlış araç seçme riskini azaltın — ücretsiz, tarafsız karar altyapısı.",
       "path": "/"
     },
     "page-karar-analizi": {
-      "title": "Karar Analizi | isteBul",
-      "description": "Araç satın alma kararını toplam maliyet, finansman etkisi ve karar skoru ile analiz edin. Ücretsiz başlayın.",
+      "title": "Karar Analizi | isteBul — TCO ve Finansman",
+      "description": "Araç alımında fiyat, kredi ve toplam maliyeti birlikte görün. Eğitim ve önizleme sayfası; analiz için Auto akışına geçin.",
       "path": "/karar-analizi"
     },
     "page-metodoloji": {
       "title": "Metodoloji | isteBul",
-      "description": "Şeffaf, denetlenebilir araç karar modeli: TCO, finansman ve risk sinyalleri nasıl birleştirilir.",
+      "description": "Skorlar nasıl hesaplanır? TCO, finansman ve risk sinyallerinin şeffaf birleşimi — ilan sitesi değil, karar altyapısı.",
       "path": "/metodoloji"
     },
     "page-planlar": {
       "title": "Planlar ve Fiyatlandırma | isteBul",
-      "description": "Ücretsiz başlangıç, isteBul Pro (₺299/ay) ve kurumsal planlar. 7 gün ücretsiz deneme.",
+      "description": "Ücretsiz TCO analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, Stripe ile güvenli ödeme.",
       "path": "/planlar"
     },
     "ilanlar": {
