@@ -1,5 +1,6 @@
 /**
- * Enterprise CRM module for admin panel (leads, pipeline, dashboards, audit).
+ * @deprecated Unused — canonical admin CRM is `admin-panel.html` + `js/admin-panel.js`.
+ * Kept for reference; do not extend. See `js/admin/README.md`.
  */
 
 const PIPELINE_STAGES = [

@@ -30,15 +30,16 @@ export class ComparisonUI {
                 '</div>' +
                 '<button type="button" class="btn btn-outline" data-comparison-clear><i data-lucide="trash-2"></i> Temizle</button>' +
             '</div>' +
-            '<div class="comparison-grid">' + items.map((item) => this.getComparisonCardMarkup(item, maxValues)).join('') + '</div>' +
+            '<div class="comparison-grid">' + items.map((item) => this.getComparisonCardMarkup(item, maxValues, items)).join('') + '</div>' +
             this.getComparisonMatrixMarkup(items);
 
         this.loadIcons();
     }
 
-    getComparisonCardMarkup(item, maxValues) {
+    getComparisonCardMarkup(item, maxValues, allItems = []) {
         const tags = Array.isArray(item.tags) ? item.tags : [];
-        const isLeader = item.score && Number(item.score) >= Math.max(...(window.app?.comparisonItems || []).map(i => Number(i.score || 0)), 0);
+        const maxScore = Math.max(...allItems.map((i) => Number(i.score || 0)), 0);
+        const isLeader = item.score && Number(item.score) >= maxScore && maxScore > 0;
 
         return '<article class="comparison-card ' + (item.sourceType === 'isteBul Auto' ? 'comparison-card-auto' : '') + '">' +
             (item.image ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(item.image) + '" alt="' + this.escapeHtml(item.title || 'Araç') + '" loading="lazy"></div>' : '') +

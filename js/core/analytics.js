@@ -2,10 +2,12 @@
  * Platform analytics SDK — consent-gated product telemetry via analytics-ingest.
  */
 
-const SESSION_KEY = 'istebul_analytics_session';
-const ANON_KEY = 'istebul_analytics_anon';
-const ATTRIBUTION_KEY = 'istebul_attribution';
-const LAST_FUNNEL_KEY = 'istebul_last_funnel_step';
+import { STORAGE_KEYS, readStorageRaw } from './storage-keys.js';
+
+const SESSION_KEY = STORAGE_KEYS.ANALYTICS_SESSION;
+const ANON_KEY = STORAGE_KEYS.ANALYTICS_ANON;
+const ATTRIBUTION_KEY = STORAGE_KEYS.ATTRIBUTION;
+const LAST_FUNNEL_KEY = STORAGE_KEYS.LAST_FUNNEL_STEP;
 
 function randomId() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -39,7 +41,7 @@ export class Analytics {
   }
 
   hasConsent() {
-    return localStorage.getItem('istebu_cookie_consent') === 'accepted';
+    return readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted';
   }
 
   getSessionId() {

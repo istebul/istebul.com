@@ -5,6 +5,8 @@ import API from '../../core/api.js';
 import config from '../../core/config.js';
 import { monitoring } from '../../core/monitoring.js';
 import { analytics } from '../../core/analytics.js';
+import { mapAuthError } from './auth-errors.js';
+import { STORAGE_KEYS } from '../../core/storage-keys.js';
 
 export class AuthManager {
     constructor() {
@@ -244,7 +246,7 @@ export class AuthManager {
                 funnel: 'auth',
                 funnel_step: 'login_failed'
             });
-            this.showAuthError(error.message || config.messages.error.login);
+            this.showAuthError(mapAuthError(error, config.messages.error.login));
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
@@ -291,7 +293,7 @@ export class AuthManager {
             });
 
             const pendingCheckout = typeof sessionStorage !== 'undefined'
-                && sessionStorage.getItem('istebul_checkout_intent');
+                && sessionStorage.getItem(STORAGE_KEYS.CHECKOUT_INTENT);
 
             if (pendingCheckout) {
                 this.showAuthSuccess('Hesabınız oluşturuldu. E-posta doğrulamasından sonra giriş yaparak ödemeye devam edebilirsiniz — ücretsiz analiz için /auto sayfasını kullanabilirsiniz.');
@@ -307,7 +309,7 @@ export class AuthManager {
                 funnel: 'auth',
                 funnel_step: 'register_failed'
             });
-            this.showAuthError(error.message || config.messages.error.register);
+            this.showAuthError(mapAuthError(error, config.messages.error.register));
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
@@ -365,7 +367,7 @@ export class AuthManager {
             this.showAuthSuccess('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
         } catch (error) {
             console.error('Password reset failed:', error);
-            this.showAuthError(error.message || 'Şifre sıfırlama sırasında bir hata oluştu.');
+            this.showAuthError(mapAuthError(error, 'Şifre sıfırlama sırasında bir hata oluştu.'));
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;

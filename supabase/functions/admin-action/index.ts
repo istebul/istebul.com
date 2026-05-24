@@ -119,19 +119,91 @@ Deno.serve(async (req) => {
     return json({ error: "Missing action" }, 400, origin);
   }
 
+  const listTables = [
+    "announcements",
+    "faqs",
+    "posts",
+    "listings",
+    "profiles",
+    "auto_leads",
+    "auto_events",
+    "analytics_events",
+    "partner_endpoints",
+    "partner_applications",
+    "partner_dispatch_logs",
+    "site_settings",
+  ];
+
   if (action === "upsert_settings") {
     if (table !== "site_settings") {
       return json({ error: "Invalid settings table" }, 400, origin);
+    }
+  } else if (action === "list") {
+    if (!table || !listTables.includes(table)) {
+      return json({ error: "Invalid action or table" }, 400, origin);
     }
   } else if (!allowedTables.includes(table)) {
     return json({ error: "Invalid action or table" }, 400, origin);
   }
 
-  if (action !== "upsert_settings" && !id) {
+  if (action !== "upsert_settings" && action !== "list" && !id) {
     return json({ error: "Missing id" }, 400, origin);
   }
 
   try {
+    if (action === "list") {
+      const selectColumns: Record<string, string> = {
+        auto_leads: "*",
+        auto_events: "*",
+        analytics_events: "*",
+        announcements: "*",
+        faqs: "*",
+        posts: "*",
+        listings: "*",
+        profiles: "*",
+        partner_endpoints: "*",
+        partner_applications: "*",
+        partner_dispatch_logs: "*",
+        site_settings: "*",
+      };
+
+      const allowedOrderColumns: Record<string, string[]> = {
+        auto_leads: ["created_at", "lead_score", "follow_up_at"],
+        auto_events: ["created_at"],
+        analytics_events: ["created_at"],
+        announcements: ["created_at"],
+        faqs: ["order_num", "created_at"],
+        posts: ["created_at"],
+        listings: ["created_at"],
+        profiles: ["created_at"],
+        partner_endpoints: ["created_at"],
+        partner_applications: ["created_at"],
+        partner_dispatch_logs: ["created_at"],
+        site_settings: ["key"],
+      };
+
+      const orderColumn = body.order?.column || "created_at";
+      const orderAscending = body.order?.ascending === true;
+      const limit = Math.min(Math.max(Number(body.limit) || 100, 1), 1000);
+      const selectExpr = String(body.select || selectColumns[table] || "*").slice(0, 500);
+
+      if (!allowedOrderColumns[table]?.includes(orderColumn)) {
+        return json({ error: "Invalid order column" }, 400, origin);
+      }
+
+      let query = adminClient
+        .from(table)
+        .select(selectExpr)
+        .order(orderColumn, { ascending: orderAscending })
+        .limit(limit);
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      return json({ ok: true, data: data ?? [] }, 200, origin);
+    }
+
     if (action === "delete") {
       const deletableTables = ["announcements", "faqs", "posts", "listings"];
 
@@ -290,20 +362,6 @@ Deno.serve(async (req) => {
           values.actual_revenue = Number(
             lead?.actual_revenue || lead?.estimated_revenue || 0
           );
-        }
-      }
-
-      if (table === "auto_leads" && typeof values.partner_status === "string") {
-        const realized = ["paid", "closed", "won", "delivered", "funded", "purchased"].includes(values.partner_status);
-
-        if (realized && values.actual_revenue === undefined) {
-          const { data: lead } = await adminClient
-            .from("auto_leads")
-            .select("estimated_revenue, actual_revenue")
-            .eq("id", id)
-            .single();
-
-          values.actual_revenue = Number(lead?.actual_revenue || lead?.estimated_revenue || 0);
         }
       }
 

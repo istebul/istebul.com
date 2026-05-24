@@ -1,4 +1,6 @@
-export const MARKET_DATA_STORAGE_KEY = 'istebu_market_data';
+import { STORAGE_KEYS } from '../core/storage-keys.js';
+
+export const MARKET_DATA_STORAGE_KEY = STORAGE_KEYS.MARKET_DATA;
 
 export const DEFAULT_FINANCE_PRODUCTS = {
     arac: [

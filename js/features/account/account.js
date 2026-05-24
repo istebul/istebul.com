@@ -2,7 +2,9 @@ import API from '../../core/api.js';
 import { escapeHtml } from '../../core/security.js';
 import config from '../../core/config.js';
 
-const ONBOARDING_KEY = 'istebul_account_onboarding_done';
+import { STORAGE_KEYS } from '../../core/storage-keys.js';
+
+const ONBOARDING_KEY = STORAGE_KEYS.ACCOUNT_ONBOARDING_DONE;
 
 const SUBSCRIPTION_LABELS = {
     active: { label: 'Aktif', tone: 'success' },

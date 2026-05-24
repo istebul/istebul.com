@@ -3,11 +3,15 @@ import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
 import { FREE_LIMITS, PLANS } from '../features/monetization/plans.js';
 import { analytics } from '../core/analytics.js';
+import { escapeHtml } from '../core/security.js';
+import { safeJsonParse } from '../core/dom-safe.js';
+import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-keys.js';
+import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
 
 document.documentElement.classList.add('ib-ready');
 
 function isProActive() {
-  return localStorage.getItem('istebul_pro_active') === '1';
+  return readStorageRaw(STORAGE_KEYS.PRO_ACTIVE) === '1';
 }
 
 function openAutoUpgradePaywall(feature = 'premium_report') {
@@ -105,29 +109,11 @@ async function loadAutoRuntimeConfig() {
 }
 
 
-function safeJsonParse(value, fallback = {}) {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return fallback;
-  }
-}
-
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
-
 function getSessionId() {
-  let id = sessionStorage.getItem('istebul_auto_session');
+  let id = sessionStorage.getItem(STORAGE_KEYS.AUTO_SESSION);
   if (!id) {
     id = crypto.randomUUID();
-    sessionStorage.setItem('istebul_auto_session', id);
+    sessionStorage.setItem(STORAGE_KEYS.AUTO_SESSION, id);
   }
   return id;
 }
@@ -171,7 +157,7 @@ function setupAutoMobileNav() {
 function getCurrentLeadPayload() {
   const autoForm = document.getElementById('auto-form');
   const formPayload = autoForm ? readForm(autoForm) : {};
-  const storedPayload = safeJsonParse(localStorage.getItem('istebul_auto_lead_payload'), {});
+  const storedPayload = safeJsonParse(readStorageRaw(STORAGE_KEYS.AUTO_LEAD_PAYLOAD), {});
   return {
     ...storedPayload,
     ...formPayload
@@ -214,14 +200,14 @@ async function trackAutoEvent(eventName, metadata = {}) {
     eventName,
     {
       session_id: getSessionId(),
-      email: localStorage.getItem('istebul_auto_lead_email') || metadata.email || null,
+      email: readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL) || metadata.email || null,
       ...metadata
     },
     {
       category: 'auto',
       funnel: 'auto',
       funnel_step: String(eventName).replace(/^auto_/, ''),
-      email: metadata.email || localStorage.getItem('istebul_auto_lead_email') || null,
+      email: metadata.email || readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL) || null,
       phone: metadata.phone || null
     }
   );
@@ -260,7 +246,7 @@ function renderLoading() {
 }
 
 async function updateLeadInterest(phone, interestType, vehicle = '', options = {}) {
-  const email = localStorage.getItem('istebul_auto_lead_email');
+  const email = readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL);
   const leadPayload = getCurrentLeadPayload();
 
   return await callAutoIntake({
@@ -503,7 +489,7 @@ function openFinanceCompareModal(vehicleName = '') {
           vehicle: selectedVehicle,
           comparison: window.lastFinanceComparison
         };
-        sessionStorage.setItem('istebul_last_finance_lead_context', JSON.stringify(window.lastFinanceLeadContext));
+        sessionStorage.setItem(STORAGE_KEYS.AUTO_FINANCE_LEAD_CONTEXT, JSON.stringify(window.lastFinanceLeadContext));
         openLeadModal('finance_review', selectedVehicle);
       });
     });
@@ -642,14 +628,14 @@ function openLeadModal(type, vehicle = '') {
       const privacyConsent = form.get('privacy_consent') === 'accepted';
 
       if (form.get('email')) {
-        localStorage.setItem('istebul_auto_lead_email', form.get('email'));
+        writeStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL, form.get('email'));
       }
 
       const turnstileToken = await getTurnstileToken();
 
       try {
         const financeContext = window.lastFinanceLeadContext
-          || safeJsonParse(sessionStorage.getItem('istebul_last_finance_lead_context'), {});
+          || safeJsonParse(sessionStorage.getItem(STORAGE_KEYS.AUTO_FINANCE_LEAD_CONTEXT), {});
         const financeComparison = financeContext.comparison || {};
         const bestFinanceOffer = Array.isArray(financeComparison.offers)
           ? financeComparison.offers.find((offer) => offer.provider === financeContext.bank) || financeComparison.offers[0]
@@ -1650,7 +1636,7 @@ if (wizard) {
 
 setupAutoMobileNav();
 loadAutoRuntimeConfig();
-if (localStorage.getItem('istebu_cookie_consent') === 'accepted') {
+if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted') {
   analytics.init();
 }
 trackAutoEvent('auto_page_view');
@@ -1659,7 +1645,7 @@ document.addEventListener('click', (event) => {
   const checkoutLink = event.target.closest('[data-auto-checkout-intent]');
   if (!checkoutLink) return;
   try {
-    sessionStorage.setItem('istebul_checkout_intent', JSON.stringify({ billing: 'monthly', useTrial: true }));
+    sessionStorage.setItem(STORAGE_KEYS.CHECKOUT_INTENT, JSON.stringify({ billing: 'monthly', useTrial: true }));
   } catch {
     // ignore
   }
@@ -1693,7 +1679,7 @@ form.addEventListener('submit', async (event) => {
   trackAutoEvent('auto_form_submitted');
 
   const formData = readForm(form);
-  localStorage.setItem('istebul_auto_lead_payload', JSON.stringify(formData));
+  writeStorageRaw(STORAGE_KEYS.AUTO_LEAD_PAYLOAD, JSON.stringify(formData));
   const vehicleCatalog = await getVehicleCatalog();
   const results = recommendVehicles(formData, vehicleCatalog);
   lastResults = results;
@@ -1712,8 +1698,8 @@ form.addEventListener('submit', async (event) => {
       renderResults(results);
 
       try {
-        if (window.app?.currentUser?.id && typeof window.app.saveDecisionHistory === 'function' && results.length) {
-          window.app.saveDecisionHistory({
+        if (getAppInstance()?.currentUser?.id && results.length) {
+          saveDecisionHistory({
             id: `auto-${Date.now()}`,
             categoryId: 'auto',
             categoryName: 'Araç Karar Analizi',
@@ -1772,7 +1758,7 @@ function toAutoFavorite(vehicle){
 }
 
 function toggleAutoFavoriteFallback(vehicle){
-  const key = 'istebu_favorites';
+  const key = STORAGE_KEYS.FAVORITES;
   const items = readAutoStorage(key);
   const id = `auto-${vehicle.name}`;
   const exists = items.some(item => String(item.id) === id);
@@ -1813,7 +1799,7 @@ function goToComparisonPage(){
 }
 
 function addAutoComparisonFallback(vehicle){
-  const key = 'istebu_comparison_items';
+  const key = STORAGE_KEYS.COMPARISON_ITEMS;
   const items = readAutoStorage(key);
   const signature = `auto-${vehicle.name}`;
 
@@ -1875,8 +1861,8 @@ document.addEventListener('click', async (event) => {
     const vehicle = lastResults[vehicleIndex] || lastResults.find(v => v.name === vehicleName);
 
     if (vehicle) {
-      const added = window.app?.toggleAutoFavorite
-        ? window.app.toggleAutoFavorite(vehicle)
+      const added = getAppInstance()?.toggleAutoFavorite
+        ? getAppInstance().toggleAutoFavorite(vehicle)
         : toggleAutoFavoriteFallback(vehicle);
       shortlistBtn.textContent = added ? "Shortlist'te" : "Shortlist'e ekle";
     }

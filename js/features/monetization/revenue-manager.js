@@ -1,4 +1,5 @@
 import API from '../../core/api.js';
+import { STORAGE_KEYS } from '../../core/storage-keys.js';
 import { AFFILIATE_DEFAULTS, FREE_LIMITS, PLANS, PRO_FEATURES } from './plans.js';
 
 const ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due']);
@@ -33,9 +34,9 @@ export class RevenueManager {
 
       if (typeof localStorage !== 'undefined') {
         if (this.isPremium) {
-          localStorage.setItem('istebul_pro_active', '1');
+          localStorage.setItem(STORAGE_KEYS.PRO_ACTIVE, '1');
         } else {
-          localStorage.removeItem('istebul_pro_active');
+          localStorage.removeItem(STORAGE_KEYS.PRO_ACTIVE);
         }
       }
 

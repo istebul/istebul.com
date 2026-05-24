@@ -12,6 +12,7 @@ if (typeof document !== 'undefined') {
 }
 // UI Manager
 import { state } from '../core/state.js';
+import { readStorageRaw, writeStorageRaw, STORAGE_KEYS } from '../core/storage-keys.js';
 
 export class UIManager {
     constructor() {
@@ -27,7 +28,7 @@ export class UIManager {
 
 
     setupTheme() {
-        const savedTheme = localStorage.getItem('istebu_theme');
+        const savedTheme = readStorageRaw(STORAGE_KEYS.THEME);
         const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
         const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
         this.applyTheme(initialTheme);
@@ -36,7 +37,7 @@ export class UIManager {
         if (themeToggle) {
             themeToggle.addEventListener('click', () => {
                 const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-                localStorage.setItem('istebu_theme', nextTheme);
+                writeStorageRaw(STORAGE_KEYS.THEME, nextTheme);
                 this.applyTheme(nextTheme);
             });
         }

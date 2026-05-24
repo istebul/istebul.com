@@ -85,38 +85,22 @@ export class API {
     }
 
     static async signIn(email, password) {
-        const timeout = (ms, message = 'Giriş isteği zaman aşımına uğradı. Lütfen tekrar deneyin.') => new Promise((_, reject) => {
-            setTimeout(() => reject(new Error(message)), ms);
+        const timeoutMs = 12000;
+        const signInPromise = supabase.auth.signInWithPassword({ email, password });
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(
+                () => reject(new Error('Giriş isteği zaman aşımına uğradı. Lütfen tekrar deneyin.')),
+                timeoutMs
+            );
         });
 
-        const response = await Promise.race([
-            fetch(`${config.supabase.url}/auth/v1/token?grant_type=password`, {
-                method: 'POST',
-                headers: {
-                    apikey: config.supabase.anonKey,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            }),
-            timeout(12000)
-        ]);
+        const { data, error } = await Promise.race([signInPromise, timeoutPromise]);
 
-        const payload = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-            throw new Error(payload.msg || payload.message || 'E-posta veya şifre hatalı.');
-        }
-
-        if (payload.access_token && payload.refresh_token && supabase.auth.setSession) {
-            supabase.auth.setSession({
-                access_token: payload.access_token,
-                refresh_token: payload.refresh_token
-            }).catch(() => {});
-        }
+        if (error) throw error;
 
         return {
-            session: payload,
-            user: payload.user
+            session: data.session,
+            user: data.user
         };
     }
 

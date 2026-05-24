@@ -1,3 +1,7 @@
+/**
+ * Marketplace listing ownership estimate (simplified).
+ * For Auto funnel vehicle-specific costs see `js/auto/auto-cost-engine.js` (truth layer).
+ */
 export function estimateVehicleOwnershipCost(price, profile = {}) {
     const purchasePrice = Number(price || 0);
 

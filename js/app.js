@@ -39,13 +39,16 @@ import {
     saveMarketData
 } from './data/market-data.js';
 import { estimateListingPeriodicCost } from './engines/cost-engine.js';
+import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from './core/storage-keys.js';
 
 class App {
     constructor() {
         this.auth = new AuthManager();
         this.ui = new UIManager();
         this.router = new Router();
+        /** @deprecated ListingManager not wired — listings live in App methods until extracted. */
         this.ilan = new ListingManager(this.ui, this.router);
+        /** @deprecated ProfileManager not wired — profile UI via App + UIManager. */
         this.profil = new ProfileManager(this.ui);
         this.messagingModule = null;
         this.currentUser = null;
@@ -69,6 +72,7 @@ class App {
         this.assistantAnswers = {};
         this.assistantStep = 0;
         this.lastDecisionResult = null;
+        this._sessionBootstrapDone = false;
     }
 
     async init() {
@@ -98,7 +102,7 @@ class App {
             this.renderPricingSection();
 
             document.addEventListener('routeChanged', (event) => {
-                if (localStorage.getItem('istebu_cookie_consent') !== 'accepted') return;
+                if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) !== 'accepted') return;
                 analytics.track('route_change', {
                     route: event.detail?.route,
                     path: event.detail?.path
@@ -307,7 +311,7 @@ class App {
         const banner = document.getElementById('cookie-consent');
         if (!banner) return;
 
-        const preference = localStorage.getItem('istebu_cookie_consent');
+        const preference = readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT);
         if (preference) {
             if (preference === 'accepted') {
                 this.loadAnalytics();
@@ -318,7 +322,7 @@ class App {
         }
 
         const savePreference = (value) => {
-            localStorage.setItem('istebu_cookie_consent', value);
+            writeStorageRaw(STORAGE_KEYS.COOKIE_CONSENT, value);
             if (value === 'accepted') {
                 this.loadAnalytics();
                 analytics.init();
@@ -327,7 +331,7 @@ class App {
             banner.hidden = true;
         };
 
-        if (localStorage.getItem('istebu_cookie_consent') === 'accepted') {
+        if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted') {
             analytics.init();
         }
 
@@ -352,6 +356,7 @@ class App {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 this.currentUser = user;
+                state.setUser(user);
                 this.ui.updateAuthUI(user);
                 await this.loadUserProfile(user.id);
                 await revenueManager.refresh(user.id);
@@ -534,7 +539,7 @@ class App {
     }
 
     getLocalListingsStorageKey() {
-        return this.currentUser?.id ? 'istebu_local_listings:' + this.currentUser.id : null;
+        return this.currentUser?.id ? `${STORAGE_KEYS.LOCAL_LISTINGS_PREFIX}${this.currentUser.id}` : null;
     }
 
     getLocalListings(options = {}) {
@@ -1100,7 +1105,7 @@ class App {
 
     readStoredArray(key) {
         try {
-            const parsed = JSON.parse(localStorage.getItem(key) || '[]');
+            const parsed = JSON.parse(readStorageRaw(key) || '[]');
             return Array.isArray(parsed) ? parsed : [];
         } catch (error) {
             console.warn('Stored array could not be parsed:', key, error);
@@ -1115,7 +1120,7 @@ class App {
 
     writeStoredValue(key, value) {
         try {
-            localStorage.setItem(key, JSON.stringify(value));
+            writeStorageRaw(key, JSON.stringify(value));
             return true;
         } catch (error) {
             console.warn('Stored value could not be written:', key, error);
@@ -2708,7 +2713,7 @@ Açıklama yok.
     }
 
     loadDecisionHistory() {
-        const storageKey = this.getUserHistoryStorageKey('istebu_decision_history');
+        const storageKey = this.getUserHistoryStorageKey(STORAGE_KEYS.DECISION_HISTORY);
         if (!storageKey) {
             this.decisionHistory = [];
             this.ui.renderHistoryAuthGate?.();
@@ -2720,7 +2725,7 @@ Açıklama yok.
     }
 
     saveDecisionHistory(result) {
-        const storageKey = this.getUserHistoryStorageKey('istebu_decision_history');
+        const storageKey = this.getUserHistoryStorageKey(STORAGE_KEYS.DECISION_HISTORY);
         if (!storageKey) {
             this.decisionHistory = [];
             return false;
@@ -2789,7 +2794,7 @@ Açıklama yok.
     }
 
     deleteDecision(decisionId) {
-        const storageKey = this.getUserHistoryStorageKey('istebu_decision_history');
+        const storageKey = this.getUserHistoryStorageKey(STORAGE_KEYS.DECISION_HISTORY);
         if (!storageKey) {
             this.ui.showError('Geçmişi düzenlemek için giriş yapın.');
             return;
@@ -2805,7 +2810,7 @@ Açıklama yok.
     renderAdminDashboard() {
         this.marketData = this.createMarketData();
         const financeProducts = this.getDefaultFinanceProducts();
-        const decisionHistoryKey = this.getUserHistoryStorageKey('istebu_decision_history');
+        const decisionHistoryKey = this.getUserHistoryStorageKey(STORAGE_KEYS.DECISION_HISTORY);
         const decisionCount = decisionHistoryKey ? this.readStoredArray(decisionHistoryKey).length : 0;
         const districtCount = getProvinceOptions().reduce((total, province) => total + getDistrictOptions(province.value).length, 0);
         const stats = getMarketStats(this.marketData, this.catalog, this.decisionAssistant, decisionCount, districtCount);
@@ -3179,7 +3184,7 @@ Açıklama yok.
             const buildId = manifest.builtAt || manifest.files?.length || '';
             if (!buildId) return;
 
-            const storageKey = 'istebul_last_build_id';
+            const storageKey = STORAGE_KEYS.LAST_BUILD_ID;
             const previous = localStorage.getItem(storageKey);
 
             if (previous && previous !== buildId) {
@@ -3245,7 +3250,7 @@ Açıklama yok.
         const trigger = event?.target?.closest?.('[data-upgrade-checkout]');
         const useTrial = trigger?.dataset?.trial !== '0' && revenueManager.trialEligible;
         try {
-            sessionStorage.setItem('istebul_checkout_intent', JSON.stringify({
+            sessionStorage.setItem(STORAGE_KEYS.CHECKOUT_INTENT, JSON.stringify({
                 billing: billingInterval,
                 useTrial
             }));
@@ -3256,9 +3261,9 @@ Açıklama yok.
 
     consumeCheckoutIntent() {
         try {
-            const raw = sessionStorage.getItem('istebul_checkout_intent');
+            const raw = sessionStorage.getItem(STORAGE_KEYS.CHECKOUT_INTENT);
             if (!raw) return null;
-            sessionStorage.removeItem('istebul_checkout_intent');
+            sessionStorage.removeItem(STORAGE_KEYS.CHECKOUT_INTENT);
             return JSON.parse(raw);
         } catch {
             return null;
@@ -3431,14 +3436,14 @@ Açıklama yok.
     }
 
     async loadFavorites() {
-        const favorites = this.readStoredArray('istebu_favorites');
+        const favorites = this.readStoredArray(STORAGE_KEYS.FAVORITES);
         this.favorites = favorites;
         this.ui.renderFavorites?.(this.favorites);
         this.updateCollectionBadges();
     }
 
     saveFavorites() {
-        this.writeStoredValue('istebu_favorites', this.favorites);
+        this.writeStoredValue(STORAGE_KEYS.FAVORITES, this.favorites);
         this.ui.renderFavorites?.(this.favorites);
         this.updateCollectionBadges();
         this.renderCurrentListings();
@@ -3447,14 +3452,14 @@ Açıklama yok.
 
 
     loadComparisonItems() {
-        this.comparisonItems = this.readStoredArray('istebu_comparison_items');
+        this.comparisonItems = this.readStoredArray(STORAGE_KEYS.COMPARISON_ITEMS);
         this.ui.renderComparison?.(this.comparisonItems);
         this.updateCollectionBadges();
         this.renderCurrentListings();
     }
 
     saveComparisonItems() {
-        this.writeStoredValue('istebu_comparison_items', this.comparisonItems);
+        this.writeStoredValue(STORAGE_KEYS.COMPARISON_ITEMS, this.comparisonItems);
         this.ui.renderComparison?.(this.comparisonItems);
         this.updateCollectionBadges();
         this.renderCurrentListings();
@@ -3904,20 +3909,29 @@ Açıklama yok.
 
     async handleUserLogin(user) {
         this.currentUser = user;
+        state.setUser(user);
         this.ui.updateAuthUI(user);
         await this.loadUserProfile(user.id);
         await revenueManager.refresh(user.id);
         await this.initMessaging(user.id);
+        await this.completeSessionBootstrap();
+        this._sessionBootstrapDone = true;
+    }
+
+    /**
+     * Post-auth data loads (page refresh path via checkAuth, or after interactive login).
+     */
+    async completeSessionBootstrap() {
+        if (!this.currentUser) return;
+
         this.loadDecisionHistory();
         this.loadComparisonHistory();
-
-        // Reload listings to show user-specific content
         await this.loadListings();
-
         setTimeout(() => this.resumeCheckoutIfPending(), 600);
     }
 
     async handleUserLogout() {
+        this._sessionBootstrapDone = false;
         this.currentUser = null;
         this.messagingModule = null;
         await revenueManager.refresh(null);
@@ -3950,10 +3964,10 @@ Açıklama yok.
             return;
         }
 
-        const existing = this.readStoredArray('istebu_newsletter');
+        const existing = this.readStoredArray(STORAGE_KEYS.NEWSLETTER);
         if (!existing.includes(email)) {
             existing.push(email);
-            this.writeStoredValue('istebu_newsletter', existing);
+            this.writeStoredValue(STORAGE_KEYS.NEWSLETTER, existing);
         }
 
         emailInput.value = '';
@@ -3966,7 +3980,7 @@ Açıklama yok.
     }
 
     saveSearchHistory(query) {
-        const storageKey = this.getUserHistoryStorageKey('istebu_search_history');
+        const storageKey = this.getUserHistoryStorageKey(STORAGE_KEYS.SEARCH_HISTORY);
         if (!storageKey) return;
 
         const history = this.readStoredArray(storageKey);
@@ -3982,7 +3996,7 @@ Açıklama yok.
     }
 
     loadComparisonHistory() {
-        const storageKey = this.getUserHistoryStorageKey('istebu_search_history');
+        const storageKey = this.getUserHistoryStorageKey(STORAGE_KEYS.SEARCH_HISTORY);
         if (!storageKey) return;
 
         const history = this.readStoredArray(storageKey);
@@ -4030,9 +4044,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         await window.app.init();
 
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-            window.app.currentUser = session.user;
-            document.dispatchEvent(new CustomEvent('userLoggedIn', { detail: session.user }));
+        if (session?.user && !window.app._sessionBootstrapDone) {
+            await window.app.completeSessionBootstrap();
+            window.app._sessionBootstrapDone = true;
             window.app.auth?.hideAuthModal?.();
         }
 
@@ -4072,7 +4086,7 @@ document.addEventListener('click', (event) => {
     if (!accept && !decline) return;
 
     try {
-        localStorage.setItem('istebu_cookie_consent', accept ? 'accepted' : 'declined');
+        writeStorageRaw(STORAGE_KEYS.COOKIE_CONSENT, accept ? 'accepted' : 'declined');
     } catch {}
 
     const consent = document.getElementById('cookie-consent');

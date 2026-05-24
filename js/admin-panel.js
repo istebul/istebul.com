@@ -1,4 +1,9 @@
 import { getSupabaseClient } from './core/supabase.js';
+import { invokeAdminFunction, adminList } from './core/admin-client.js';
+import { escapeHtml, safeAttr, safeJsonParse, safeExternalUrl } from './core/dom-safe.js';
+import { normalizePhoneForWhatsapp } from './core/phone.js';
+import { countLeadsByNormalizedStatus } from './core/lead-status.js';
+import { mapAuthError } from './features/auth/auth-errors.js';
 
 const sb = getSupabaseClient();
 
@@ -21,7 +26,11 @@ async function login() {
   const err = document.getElementById('login-error');
   err.style.display = 'none';
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) { err.textContent = 'Hata: ' + error.message; err.style.display = 'block'; return; }
+  if (error) {
+    err.textContent = mapAuthError(error, 'Giriş yapılamadı.');
+    err.style.display = 'block';
+    return;
+  }
   currentUser = data.user;
   showApp();
 }
@@ -95,38 +104,6 @@ function getFunctionsBaseUrl() {
   return url ? `${url.replace(/\/$/, '')}/functions/v1` : '';
 }
 
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
-
-function safeAttr(value) {
-  return escapeHtml(value).replaceAll('`', '&#096;');
-}
-
-function safeJsonParse(value, fallback = null) {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return fallback;
-  }
-}
-
-function safeExternalUrl(value) {
-  try {
-    const url = new URL(String(value || ''));
-    const allowed = ['https:', 'http:'];
-    if (!allowed.includes(url.protocol)) return null;
-    return url.href;
-  } catch {
-    return null;
-  }
-}
-
 function toast(msg, type = 'success') {
   const t = document.getElementById('toast');
   t.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
@@ -135,48 +112,14 @@ function toast(msg, type = 'success') {
 }
 
 async function adminAction(payload) {
-  const { data: sessionData } = await sb.auth.getSession();
-  const token = sessionData?.session?.access_token;
-
-  if (!token) {
-    toast('Oturum bulunamadı. Tekrar giriş yapın.', 'error');
-    throw new Error('No session token');
-  }
-
-  const { data, error } = await sb.functions.invoke('admin-action', {
-    body: payload,
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (error) {
-    let detail = error.message;
-
-    try {
-      const body = await error.context?.clone?.().json?.();
-      detail = body?.error || body?.message || detail;
-      console.error('admin-action error body:', body);
-    } catch (_) {
-      try {
-        const text = await error.context?.clone?.().text?.();
-        if (text) detail = text;
-        console.error('admin-action error text:', text);
-      } catch (_) {}
-    }
-
-    console.error(error);
+  try {
+    return await invokeAdminFunction(sb, payload);
+  } catch (error) {
+    const detail = error?.message || 'İşlem başarısız';
+    console.error('admin-action failed:', detail);
     toast('Hata: ' + detail, 'error');
-    throw new Error(detail);
+    throw error;
   }
-
-  if (data?.error) {
-    console.error(data.error);
-    toast('Hata: ' + data.error, 'error');
-    throw new Error(data.error);
-  }
-
-  return data;
 }
 
 
@@ -381,15 +324,6 @@ async function loadUsers() {
 }
 
 
-function normalizePhoneForWhatsapp(phone) {
-  if (!phone) return '';
-  const digits = String(phone).replace(/\D/g, '');
-  if (digits.startsWith('90')) return digits;
-  if (digits.startsWith('0')) return `90${digits.slice(1)}`;
-  return `90${digits}`;
-}
-
-
 async function trackAdminCrmEvent(eventName, metadata = {}) {
   try {
     const { analytics } = await import('./core/analytics.js');
@@ -408,24 +342,29 @@ async function trackAdminAutoEvent(eventName, metadata = {}) {
 }
 
 async function loadAutoAnalytics() {
-  const [autoEventsRes, autoLeadsRes] = await Promise.all([
-    sb.from('auto_events').select('*').order('created_at', { ascending: false }).limit(500),
-    sb.from('auto_leads').select('status, follow_up_at, follow_up_done, partner_status, estimated_revenue, actual_revenue')
-  ]);
-
-  const { data, error } = autoEventsRes;
-  const { data: leads, error: leadsError } = autoLeadsRes;
   const el = document.getElementById('auto-analytics-list');
-
   if (!el) return;
 
-  if (error || leadsError) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml((error || leadsError).message)}</p>`;
+  let events = [];
+  let leadRows = [];
+
+  try {
+    [events, leadRows] = await Promise.all([
+      adminList(sb, {
+        table: 'auto_events',
+        order: { column: 'created_at', ascending: false },
+        limit: 500
+      }),
+      adminList(sb, {
+        table: 'auto_leads',
+        select: 'status, follow_up_at, follow_up_done, partner_status, estimated_revenue, actual_revenue',
+        limit: 1000
+      })
+    ]);
+  } catch (error) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
     return;
   }
-
-  const events = data || [];
-  const leadRows = leads || [];
 
   const counts = events.reduce((acc, event) => {
     acc[event.event_name] = (acc[event.event_name] || 0) + 1;
@@ -510,17 +449,7 @@ async function loadAutoAnalytics() {
     ['partner_win_rate', 'Partner Win Rate', partnerWinRate + '%', 'conversion']
   ];
 
-  const leadCounts = leadRows.reduce((acc, lead) => {
-    let status = lead.status || 'new';
-
-    if (status === 'called') status = 'first_contact';
-    if (status === 'interested') status = 'proposal_sent';
-    if (status === 'closed') status = 'won';
-    if (status === 'rejected') status = 'lost';
-
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {});
+  const leadCounts = countLeadsByNormalizedStatus(leadRows);
 
   const totalLeads = leadRows.length;
   const crmPct = (value) => totalLeads ? Math.round((value / totalLeads) * 100) + '%' : '—';
@@ -1068,18 +997,23 @@ function getFollowUpBadgeClass(label) {
 
 
 async function loadAutoLeads() {
-  const { data, error } = await sb
-    .from('auto_leads')
-    .select('*')
-    .order('lead_score', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(1000);
-
   const el = document.getElementById('auto-leads-list');
-
   if (!el) return;
 
-  if (error) {
+  let data = [];
+
+  try {
+    data = await adminList(sb, {
+      table: 'auto_leads',
+      order: { column: 'created_at', ascending: false },
+      limit: 1000
+    });
+    data.sort((a, b) => {
+      const scoreDiff = (Number(b.lead_score) || 0) - (Number(a.lead_score) || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    });
+  } catch (error) {
     el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
     return;
   }
