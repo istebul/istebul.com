@@ -184,7 +184,9 @@ Deno.serve(async (req) => {
     "analytics_events",
     "partner_endpoints",
     "partner_applications",
-    "partner_dispatch_logs",
+    "partner_lead_dispatch_logs",
+    "operational_events",
+    "admin_audit_logs",
     "site_settings",
     "subscriptions",
   ];
@@ -218,8 +220,11 @@ Deno.serve(async (req) => {
         profiles: "*",
         partner_endpoints: "*",
         partner_applications: "*",
-        partner_dispatch_logs: "*",
+        partner_lead_dispatch_logs: "*",
+        operational_events: "created_at, severity, category, event_name, source, fingerprint, properties, http_status, duration_ms",
+        admin_audit_logs: "created_at, actor_email, action, entity_table, summary",
         site_settings: "*",
+        subscriptions: "*",
       };
 
       const allowedOrderColumns: Record<string, string[]> = {
@@ -233,8 +238,11 @@ Deno.serve(async (req) => {
         profiles: ["created_at"],
         partner_endpoints: ["created_at"],
         partner_applications: ["created_at"],
-        partner_dispatch_logs: ["created_at"],
+        partner_lead_dispatch_logs: ["created_at"],
+        operational_events: ["created_at", "severity"],
+        admin_audit_logs: ["created_at"],
         site_settings: ["key"],
+        subscriptions: ["created_at"],
       };
 
       const orderColumn = body.order?.column || "created_at";

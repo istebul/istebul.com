@@ -1,0 +1,85 @@
+#!/usr/bin/env node
+/**
+ * Admin panel stability — resilient reads + admin-action list tables.
+ */
+const fs = require('fs');
+const path = require('path');
+
+const root = path.join(__dirname, '..');
+let failed = false;
+
+const fail = (msg) => {
+  console.error(msg);
+  failed = true;
+};
+
+const mustExist = [
+  'js/admin/admin-query.js',
+  'js/features/ops/ops-health.js',
+  'supabase/migrations/20260530_operational_observability.sql',
+  'supabase/migrations/20260525_partner_delivery_enterprise.sql'
+];
+
+for (const rel of mustExist) {
+  if (!fs.existsSync(path.join(root, rel))) {
+    fail(`MISSING: ${rel}`);
+  }
+}
+
+const adminQuery = fs.readFileSync(path.join(root, 'js/admin/admin-query.js'), 'utf8');
+if (!adminQuery.includes('fetchAdminTable')) {
+  fail('admin-query must export fetchAdminTable');
+}
+if (!adminQuery.includes('isSchemaMissingError')) {
+  fail('admin-query must detect schema cache errors');
+}
+
+const adminPanel = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
+const requiredPatterns = [
+  'fetchAdminTable',
+  'loadOperationalHealth',
+  'partner_lead_dispatch_logs',
+  'operational_events',
+  'rollupSeverity24h',
+  'renderAdminWarningBanner'
+];
+
+for (const pattern of requiredPatterns) {
+  if (!adminPanel.includes(pattern)) {
+    fail(`admin-panel.js missing: ${pattern}`);
+  }
+}
+
+if (adminPanel.includes('partner_dispatch_logs')) {
+  fail('admin-panel must not reference wrong table partner_dispatch_logs');
+}
+
+const opsHealth = fs.readFileSync(path.join(root, 'js/features/ops/ops-health.js'), 'utf8');
+if (!opsHealth.includes('rollupSeverity24h') || !opsHealth.includes('rollupHealth24h')) {
+  fail('ops-health must provide client-side rollups');
+}
+
+const adminAction = fs.readFileSync(
+  path.join(root, 'supabase/functions/admin-action/index.ts'),
+  'utf8'
+);
+
+if (adminAction.includes('"partner_dispatch_logs"')) {
+  fail('admin-action listTables must use partner_lead_dispatch_logs');
+}
+for (const table of [
+  'operational_events',
+  'admin_audit_logs',
+  'partner_lead_dispatch_logs',
+  'analytics_events'
+]) {
+  if (!adminAction.includes(`"${table}"`)) {
+    fail(`admin-action must allow list for ${table}`);
+  }
+}
+
+if (failed) {
+  process.exit(1);
+}
+
+console.log('admin-panel-stability-audit: OK');

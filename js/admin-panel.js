@@ -19,6 +19,11 @@ import {
 } from './features/moat/moat-architecture-ui.js';
 import { SCALE_LIMITS } from './core/scale-limits.js';
 import {
+  fetchAdminTable,
+  collectAdminWarnings,
+  renderAdminWarningBanner
+} from './admin/admin-query.js';
+import {
   computeExecutiveFunnel,
   computeChannelBreakdown,
   computeRetentionSignals,
@@ -198,63 +203,100 @@ async function loadOperationalHealth() {
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  const [
-    severityRes,
-    healthRes,
-    eventsRes,
-    dispatchRes,
-    auditRes,
-    failedLeadsRes
-  ] = await Promise.all([
-    sb.from('ops_severity_24h').select('*'),
-    sb.from('ops_health_24h').select('*').order('errors', { ascending: false }).limit(40),
-    sb.from('operational_events')
-      .select('created_at, severity, category, event_name, source, fingerprint, properties, http_status, duration_ms')
-      .gte('created_at', since)
-      .in('severity', ['critical', 'error'])
-      .order('created_at', { ascending: false })
-      .limit(80),
-    sb.from('partner_lead_dispatch_logs')
-      .select('created_at, lead_id, partner_route, endpoint_name, http_status, success, error_message')
-      .eq('success', false)
-      .gte('created_at', since)
-      .order('created_at', { ascending: false })
-      .limit(30),
-    sb.from('admin_audit_logs')
-      .select('created_at, actor_email, action, entity_table, summary')
-      .order('created_at', { ascending: false })
-      .limit(40),
-    sb.from('auto_leads')
-      .select('id, created_at, email, partner_status, last_dispatch_error')
-      .eq('partner_status', 'dispatch_failed')
-      .gte('created_at', since)
-      .order('created_at', { ascending: false })
-      .limit(20)
+  const opsModule = await import('./features/ops/ops-health.js');
+  const {
+    summarizeByCategory,
+    countEventsWithPrefix,
+    rollupSeverity24h,
+    rollupHealth24h
+  } = opsModule;
+
+  const [opsEventsRes, dispatchRes, auditRes, leadsRes] = await Promise.all([
+    fetchAdminTable(sb, {
+      table: 'operational_events',
+      select: 'created_at, severity, category, event_name, source, fingerprint, properties, http_status, duration_ms',
+      limit: 2000,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb
+          .from('operational_events')
+          .select('created_at, severity, category, event_name, source, fingerprint, properties, http_status, duration_ms')
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(2000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'partner_lead_dispatch_logs',
+      limit: 300,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb
+          .from('partner_lead_dispatch_logs')
+          .select('created_at, lead_id, partner_route, endpoint_name, http_status, success, error_message')
+          .order('created_at', { ascending: false })
+          .limit(300)
+    }),
+    fetchAdminTable(sb, {
+      table: 'admin_audit_logs',
+      select: 'created_at, actor_email, action, entity_table, summary',
+      limit: 80,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb
+          .from('admin_audit_logs')
+          .select('created_at, actor_email, action, entity_table, summary')
+          .order('created_at', { ascending: false })
+          .limit(80)
+    }),
+    fetchAdminTable(sb, {
+      table: 'auto_leads',
+      select: 'id, created_at, email, partner_status, last_dispatch_error',
+      limit: 500,
+      order: { column: 'created_at', ascending: false },
+      direct: () => sb.from('auto_leads').select('id, created_at, email, partner_status, last_dispatch_error').limit(500)
+    })
   ]);
 
-  const { summarizeBySeverity, summarizeByCategory, countEventsWithPrefix } =
-    await import('./features/ops/ops-health.js');
-
-  const severityRows = severityRes.data || [];
-  const bySeverity = summarizeBySeverity([]);
+  const warnings = collectAdminWarnings([opsEventsRes, dispatchRes, auditRes, leadsRes]);
+  const allOpsEvents = opsEventsRes.data || [];
+  const severityRows = rollupSeverity24h(allOpsEvents);
+  const bySeverity = { critical: 0, error: 0, warning: 0, info: 0 };
   for (const row of severityRows) {
     bySeverity[row.severity] = Number(row.events) || 0;
   }
 
-  const recentEvents = eventsRes.data || [];
+  const recentEvents = allOpsEvents.filter((row) => {
+    const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
+    return (
+      ts >= sinceMs &&
+      ['critical', 'error'].includes(String(row.severity || '').toLowerCase())
+    );
+  });
+  const sinceMs = new Date(since).getTime();
+  const failedDispatchLogs = (dispatchRes.data || []).filter(
+    (row) => row.success === false && new Date(row.created_at).getTime() >= sinceMs
+  );
+  const failedLeads = (leadsRes.data || [])
+    .filter(
+      (row) =>
+        row.partner_status === 'dispatch_failed' &&
+        new Date(row.created_at).getTime() >= sinceMs
+    )
+    .slice(0, 20);
   const byCategory = summarizeByCategory(recentEvents);
 
-  const webhookFails = countEventsWithPrefix(recentEvents, 'webhook_') +
-    (dispatchRes.data?.length || 0);
+  const webhookFails =
+    countEventsWithPrefix(recentEvents, 'webhook_') + failedDispatchLogs.length;
   const authFails = countEventsWithPrefix(recentEvents, 'auth_');
   const paymentFails = countEventsWithPrefix(recentEvents, 'payment_') +
     countEventsWithPrefix(recentEvents, 'webhook_stripe');
   const perfWarns = countEventsWithPrefix(recentEvents, 'performance_');
   const abuseHits = countEventsWithPrefix(recentEvents, 'abuse_');
 
-  const healthTable = (healthRes.data || []).slice(0, 15);
+  const healthTable = rollupHealth24h(allOpsEvents).slice(0, 15);
 
   el.innerHTML = `
+    ${renderAdminWarningBanner(warnings)}
     <div class="stat-grid">
       <div class="stat-card">
         <div class="stat-label">Critical (24h)</div>
@@ -292,7 +334,7 @@ async function loadOperationalHealth() {
 
     <p class="text-muted-sm mb-12">Sentry (client) + <code>operational_events</code> + partner dispatch logs + admin audit. Export: <code>npm run metrics:ops</code></p>
 
-    ${eventsRes.error ? `<p class="empty">Ops events: ${escapeHtml(eventsRes.error.message)} (migration deploy?)</p>` : ''}
+    ${opsEventsRes.error && !allOpsEvents.length ? `<p class="empty">Ops events yüklenemedi: ${escapeHtml(opsEventsRes.error.message)} — <code>supabase/migrations/20260530_operational_observability.sql</code> deploy edin.</p>` : ''}
 
     <h3 style="margin:16px 0 10px">Top signals (24h rollup)</h3>
     ${healthTable.length ? `
@@ -332,11 +374,11 @@ async function loadOperationalHealth() {
     ` : '<p class="empty">Son 24 saatte critical/error yok.</p>'}
 
     <h3 style="margin:20px 0 10px">Lead delivery failures</h3>
-    ${(failedLeadsRes.data || []).length ? `
+    ${failedLeads.length ? `
       <table class="table">
         <thead><tr><th>Lead</th><th>Zaman</th><th>Status</th><th>Hata</th></tr></thead>
         <tbody>
-          ${failedLeadsRes.data.map((row) => `
+          ${failedLeads.map((row) => `
             <tr>
               <td><code>${escapeHtml(String(row.id).slice(0, 8))}…</code></td>
               <td>${formatShortDate(row.created_at)}</td>
@@ -349,11 +391,11 @@ async function loadOperationalHealth() {
     ` : '<p class="empty">dispatch_failed lead yok.</p>'}
 
     <h3 style="margin:20px 0 10px">Partner webhook failures (log)</h3>
-    ${(dispatchRes.data || []).length ? `
+    ${failedDispatchLogs.length ? `
       <table class="table">
         <thead><tr><th>Zaman</th><th>Route</th><th>Endpoint</th><th>HTTP</th><th>Hata</th></tr></thead>
         <tbody>
-          ${dispatchRes.data.map((row) => `
+          ${failedDispatchLogs.map((row) => `
             <tr>
               <td>${formatShortDate(row.created_at)}</td>
               <td>${escapeHtml(row.partner_route)}</td>
@@ -534,9 +576,20 @@ async function saveSettings() {
 }
 
 async function loadAnnouncements() {
-  const { data } = await sb.from('announcements').select('*').order('created_at', { ascending: false });
   const el = document.getElementById('announcements-list');
-  if (!data?.length) { el.innerHTML = '<p class="empty">Henüz duyuru yok.</p>'; return; }
+  const res = await fetchAdminTable(sb, {
+    table: 'announcements',
+    limit: 200,
+    order: { column: 'created_at', ascending: false },
+    direct: () => sb.from('announcements').select('*').order('created_at', { ascending: false })
+  });
+  const data = res.data || [];
+  if (!data.length) {
+    el.innerHTML = res.error
+      ? `<p class="empty">Duyurular yüklenemedi: ${escapeHtml(res.error.message)}</p>`
+      : '<p class="empty">Henüz duyuru yok.</p>';
+    return;
+  }
   el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>İçerik</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
     data.map(a => `<tr><td><strong>${escapeHtml(a.title||'—')}</strong></td><td class="cell-truncate">${escapeHtml(a.content||'—')}</td><td><span class="badge ${a.is_active?'badge-green':'badge-red'}">${a.is_active?'Aktif':'Pasif'}</span></td><td class="text-muted cell-nowrap">${new Date(a.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-ann" data-id="${safeAttr(a.id)}" data-active="${a.is_active}">${a.is_active?'Durdur':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-ann" data-id="${safeAttr(a.id)}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
 }
@@ -567,9 +620,21 @@ async function deleteAnn(id) {
 }
 
 async function loadFaqs() {
-  const { data } = await sb.from('faqs').select('*').order('order_num').order('created_at', { ascending: false });
   const el = document.getElementById('faqs-list');
-  if (!data?.length) { el.innerHTML = '<p class="empty">Henüz SSS yok.</p>'; return; }
+  const res = await fetchAdminTable(sb, {
+    table: 'faqs',
+    limit: 300,
+    order: { column: 'order_num', ascending: true },
+    direct: () =>
+      sb.from('faqs').select('*').order('order_num').order('created_at', { ascending: false })
+  });
+  const data = res.data || [];
+  if (!data.length) {
+    el.innerHTML = res.error
+      ? `<p class="empty">SSS yüklenemedi: ${escapeHtml(res.error.message)}</p>`
+      : '<p class="empty">Henüz SSS yok.</p>';
+    return;
+  }
   el.innerHTML = '<table class="table"><thead><tr><th>#</th><th>Soru</th><th>Durum</th><th></th></tr></thead><tbody>' +
     data.map(f => `<tr><td class="text-muted">${f.order_num||0}</td><td>${escapeHtml(f.question||'—')}</td><td><span class="badge ${f.is_active?'badge-green':'badge-red'}">${f.is_active?'Aktif':'Pasif'}</span></td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-faq" data-id="${safeAttr(f.id)}" data-active="${f.is_active}">${f.is_active?'Gizle':'Göster'}</button><button class="btn btn-danger btn-sm" data-action="delete-faq" data-id="${safeAttr(f.id)}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
 }
@@ -608,9 +673,20 @@ function autoSlug() {
 }
 
 async function loadPosts() {
-  const { data } = await sb.from('posts').select('*').order('created_at', { ascending: false });
   const el = document.getElementById('posts-list');
-  if (!data?.length) { el.innerHTML = '<p class="empty">Henüz yazı yok.</p>'; return; }
+  const res = await fetchAdminTable(sb, {
+    table: 'posts',
+    limit: 200,
+    order: { column: 'created_at', ascending: false },
+    direct: () => sb.from('posts').select('*').order('created_at', { ascending: false })
+  });
+  const data = res.data || [];
+  if (!data.length) {
+    el.innerHTML = res.error
+      ? `<p class="empty">Yazılar yüklenemedi: ${escapeHtml(res.error.message)}</p>`
+      : '<p class="empty">Henüz yazı yok.</p>';
+    return;
+  }
   el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Slug</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
     data.map(p => `<tr><td><strong>${escapeHtml(p.title||'—')}</strong></td><td class="text-muted text-xs">/${escapeHtml(p.slug||'—')}</td><td><span class="badge ${p.is_published?'badge-green':'badge-yellow'}">${p.is_published?'Yayında':'Taslak'}</span></td><td class="text-muted cell-nowrap">${new Date(p.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-post" data-id="${safeAttr(p.id)}" data-active="${p.is_published}">${p.is_published?'Taslağa al':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-post" data-id="${safeAttr(p.id)}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
 }
@@ -643,9 +719,21 @@ async function deletePost(id) {
 }
 
 async function loadListings() {
-  const { data } = await sb.from('listings').select('*').order('created_at', { ascending: false }).limit(100);
   const el = document.getElementById('listings-list');
-  if (!data?.length) { el.innerHTML = '<p class="empty">Henüz ilan yok.</p>'; return; }
+  const res = await fetchAdminTable(sb, {
+    table: 'listings',
+    limit: 100,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb.from('listings').select('*').order('created_at', { ascending: false }).limit(100)
+  });
+  const data = res.data || [];
+  if (!data.length) {
+    el.innerHTML = res.error
+      ? `<p class="empty">İlanlar yüklenemedi: ${escapeHtml(res.error.message)}</p>`
+      : '<p class="empty">Henüz ilan yok.</p>';
+    return;
+  }
   el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Kategori</th><th>Fiyat</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
     data.map(l => `<tr><td><strong>${escapeHtml(l.title||l.name||'—')}</strong></td><td><span class="badge badge-blue">${escapeHtml(l.category||l.type||'—')}</span></td><td class="cell-nowrap">${l.price?Number(l.price).toLocaleString('tr-TR')+' ₺':'—'}</td><td><span class="badge ${!l.status||l.status==='active'?'badge-green':'badge-red'}">${l.status||'aktif'}</span></td><td class="text-muted cell-nowrap">${l.created_at?new Date(l.created_at).toLocaleDateString('tr-TR'):'—'}</td><td><div class="table-actions"><button class="btn btn-warning btn-sm" data-action="feature-listing" data-id="${safeAttr(l.id)}" data-active="${!!l.is_featured}">${l.is_featured?'Öne çıkarmayı kaldır':'Öne çıkar'}</button><button class="btn btn-danger btn-sm" data-action="delete-listing" data-id="${safeAttr(l.id)}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
 }
@@ -664,9 +752,21 @@ async function deleteListing(id) {
 }
 
 async function loadUsers() {
-  const { data } = await sb.from('profiles').select('*').order('created_at', { ascending: false }).limit(100);
   const el = document.getElementById('users-list');
-  if (!data?.length) { el.innerHTML = '<p class="empty">Henüz kullanıcı yok.</p>'; return; }
+  const res = await fetchAdminTable(sb, {
+    table: 'profiles',
+    limit: 100,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb.from('profiles').select('*').order('created_at', { ascending: false }).limit(100)
+  });
+  const data = res.data || [];
+  if (!data.length) {
+    el.innerHTML = res.error
+      ? `<p class="empty">Kullanıcılar yüklenemedi: ${escapeHtml(res.error.message)}</p>`
+      : '<p class="empty">Henüz kullanıcı yok.</p>';
+    return;
+  }
   el.innerHTML = '<table class="table"><thead><tr><th>Ad</th><th>E-posta</th><th>Rol</th><th>Kayıt</th><th></th></tr></thead><tbody>' +
     data.map(u => {
       const isAdmin = u.role === 'admin';
@@ -1052,20 +1152,37 @@ async function loadPlatformAnalytics() {
   const since = new Date(
     Date.now() - SCALE_LIMITS.admin.analyticsWindowDays * 24 * 60 * 60 * 1000
   ).toISOString();
+  const sinceMs = new Date(since).getTime();
+  const selectExpr =
+    'event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id, properties';
 
-  const { data, error } = await sb
-    .from('analytics_events')
-    .select('event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id')
-    .gte('created_at', since)
-    .order('created_at', { ascending: false })
-    .limit(SCALE_LIMITS.admin.analyticsRowLimit);
+  const analyticsRes = await fetchAdminTable(sb, {
+    table: 'analytics_events',
+    select: selectExpr,
+    limit: SCALE_LIMITS.admin.analyticsRowLimit,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb
+        .from('analytics_events')
+        .select(selectExpr)
+        .gte('created_at', since)
+        .order('created_at', { ascending: false })
+        .limit(SCALE_LIMITS.admin.analyticsRowLimit)
+  });
 
-  if (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  if (analyticsRes.error && !(analyticsRes.data || []).length) {
+    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([analyticsRes]))}<p class="empty">Hata: ${escapeHtml(analyticsRes.error.message)}</p>`;
     return;
   }
 
-  const rows = data || [];
+  const rows = (analyticsRes.data || []).filter((row) => {
+    const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
+    return ts >= sinceMs;
+  });
+  const analyticsBanner =
+    analyticsRes.source === 'admin-action'
+      ? renderAdminWarningBanner(collectAdminWarnings([analyticsRes]))
+      : '';
   if (!rows.length) {
     el.innerHTML = '<p class="empty">Henüz platform analytics event yok. Migration ve analytics-ingest deploy sonrası veri akışı başlar.</p>';
     return;
@@ -1174,6 +1291,7 @@ async function loadPlatformAnalytics() {
     }, {});
 
   el.innerHTML = `
+    ${analyticsBanner}
     ${windowNote}
     ${renderGrowthCommandCenter(rows)}
     <h3 style="margin:0 0 14px 0;">Executive growth funnel (kanal bazlı)</h3>
@@ -1425,20 +1543,24 @@ async function togglePartnerEndpoint(id, active) {
 }
 
 async function loadPartnerEndpoints() {
-  const { data, error } = await sb
-    .from('partner_endpoints')
-    .select('*')
-    .order('priority_weight', { ascending: false });
-
   const el = document.getElementById('partner-endpoints-list');
   if (!el) return;
 
-  if (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  const res = await fetchAdminTable(sb, {
+    table: 'partner_endpoints',
+    limit: 200,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb.from('partner_endpoints').select('*').order('priority_weight', { ascending: false })
+  });
+
+  if (res.error && !(res.data || []).length) {
+    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([res]))}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
     return;
   }
 
-  if (!data?.length) {
+  const data = res.data || [];
+  if (!data.length) {
     el.innerHTML = '<p class="empty">Partner endpoint yok.</p>';
     return;
   }
@@ -1491,21 +1613,31 @@ async function loadPartnerEndpoints() {
 }
 
 async function loadPartnerApplications() {
-  const { data, error } = await sb
-    .from('partner_applications')
-    .select('*, partner_endpoint_id, onboarding_token, webhook_url_draft, billing_plan, utm_source')
-    .order('created_at', { ascending: false })
-    .limit(200);
-
   const el = document.getElementById('partner-applications-list');
   if (!el) return;
 
-  if (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  const select =
+    '*, partner_endpoint_id, onboarding_token, webhook_url_draft, billing_plan, utm_source';
+  const res = await fetchAdminTable(sb, {
+    table: 'partner_applications',
+    select,
+    limit: 200,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb
+        .from('partner_applications')
+        .select(select)
+        .order('created_at', { ascending: false })
+        .limit(200)
+  });
+
+  if (res.error && !(res.data || []).length) {
+    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([res]))}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
     return;
   }
 
-  if (!data?.length) {
+  const data = res.data || [];
+  if (!data.length) {
     el.innerHTML = '<p class="empty">Başvuru yok.</p>';
     return;
   }
@@ -1565,24 +1697,34 @@ async function loadPartnerDispatchLogs() {
   const el = document.getElementById('partner-dispatch-logs-list');
   if (!el) return;
 
-  let query = sb
-    .from('partner_lead_dispatch_logs')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(150);
+  const res = await fetchAdminTable(sb, {
+    table: 'partner_lead_dispatch_logs',
+    limit: 150,
+    order: { column: 'created_at', ascending: false },
+    direct: () => {
+      let query = sb
+        .from('partner_lead_dispatch_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(150);
+      if (leadFilter) {
+        query = query.eq('lead_id', leadFilter);
+      }
+      return query;
+    }
+  });
 
-  if (leadFilter) {
-    query = query.eq('lead_id', leadFilter);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  if (res.error && !(res.data || []).length) {
+    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([res]))}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
     return;
   }
 
-  if (!data?.length) {
+  let data = res.data || [];
+  if (leadFilter && res.source === 'admin-action') {
+    data = data.filter((row) => String(row.lead_id) === leadFilter);
+  }
+
+  if (!data.length) {
     el.innerHTML = '<p class="empty">Teslimat logu yok.</p>';
     return;
   }
