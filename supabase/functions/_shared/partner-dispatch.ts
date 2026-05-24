@@ -1,3 +1,5 @@
+import { assertSafePartnerWebhookUrl } from "./webhook-url.ts";
+
 export const FAILOVER_ROUTES: Record<string, string[]> = {
   dealer_partner: ["general_sales"],
   finance_partner: ["general_sales"],
@@ -61,7 +63,13 @@ export async function signPartnerPayload(
     Deno.env.get("PARTNER_WEBHOOK_SIGNING_SECRET") ||
     "";
 
-  if (!secret) return "";
+  const requireSecret = Deno.env.get("PARTNER_WEBHOOK_REQUIRE_SECRET") !== "false";
+  if (!secret) {
+    if (requireSecret) {
+      throw new Error("Partner endpoint shared_secret is required");
+    }
+    return "";
+  }
 
   const key = await crypto.subtle.importKey(
     "raw",
@@ -178,12 +186,13 @@ async function postPartnerWebhook(
   dispatchAttemptId: string,
   timeoutMs = 8000
 ) {
+  const safeUrl = assertSafePartnerWebhookUrl(url);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const started = Date.now();
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(safeUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

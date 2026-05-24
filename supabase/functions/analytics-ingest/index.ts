@@ -89,6 +89,10 @@ Deno.serve(async (req) => {
     return json({ error: "Method not allowed" }, 405, origin);
   }
 
+  if (origin && !allowedOrigins.has(origin)) {
+    return json({ error: "Forbidden" }, 403, origin);
+  }
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -134,6 +138,8 @@ Deno.serve(async (req) => {
   const sessionMeta = body.session && typeof body.session === "object"
     ? (body.session as Record<string, unknown>)
     : null;
+
+  const consentAnalytics = sessionMeta?.consent_analytics === true;
 
   if (sessionMeta?.session_id) {
     await upsertAnalyticsSession(adminClient, {
@@ -184,8 +190,8 @@ Deno.serve(async (req) => {
         step_index: event.step_index != null ? Number(event.step_index) : null,
         cta_id: event.cta_id ? String(event.cta_id) : null,
         element_id: event.element_id ? String(event.element_id) : null,
-        email: event.email ? String(event.email) : null,
-        phone: event.phone ? String(event.phone) : null,
+        email: consentAnalytics && event.email ? String(event.email) : null,
+        phone: consentAnalytics && event.phone ? String(event.phone) : null,
         revenue_cents: event.revenue_cents != null
           ? Number(event.revenue_cents)
           : null,

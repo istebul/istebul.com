@@ -7,11 +7,27 @@ import { escapeHtml } from '../core/security.js';
 import { safeJsonParse } from '../core/dom-safe.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-keys.js';
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
+import { revenueManager } from '../features/monetization/revenue-manager.js';
+import { getSupabaseClient } from '../core/supabase.js';
 
 document.documentElement.classList.add('ib-ready');
 
 function isProActive() {
-  return readStorageRaw(STORAGE_KEYS.PRO_ACTIVE) === '1';
+  return Boolean(revenueManager.isPremium);
+}
+
+async function initAutoEntitlements() {
+  const sb = getSupabaseClient();
+  if (!sb) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    await revenueManager.refresh(session?.user?.id || null);
+    sb.auth.onAuthStateChange((_event, session) => {
+      revenueManager.refresh(session?.user?.id || null).catch(() => {});
+    });
+  } catch {
+    await revenueManager.refresh(null);
+  }
 }
 
 function openAutoUpgradePaywall(feature = 'premium_report') {
@@ -1635,6 +1651,7 @@ if (wizard) {
 
 
 setupAutoMobileNav();
+initAutoEntitlements();
 loadAutoRuntimeConfig();
 if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted') {
   analytics.init();

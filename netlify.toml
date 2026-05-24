@@ -57,13 +57,7 @@
   [headers.values]
     Cache-Control = "public, max-age=604800"
 
-[[headers]]
-  for = "/.netlify/functions/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "https://istebul.com"
-    Vary = "Origin"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+# API CORS is set per-function (e.g. create-checkout allowlist) — do not override here.
 
 [[redirects]]
   from = "/*"

@@ -1,4 +1,31 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { assertSafePartnerWebhookUrl } from "../_shared/webhook-url.ts";
+
+async function writeAdminAudit(
+  adminClient: ReturnType<typeof createClient>,
+  actor: { id: string; email?: string | null },
+  entry: {
+    action: string;
+    entity_table: string;
+    entity_id?: string | null;
+    summary?: string;
+    metadata?: Record<string, unknown>;
+  }
+) {
+  try {
+    await adminClient.from("admin_audit_logs").insert({
+      actor_id: actor.id,
+      actor_email: actor.email || null,
+      action: entry.action,
+      entity_table: entry.entity_table,
+      entity_id: entry.entity_id || null,
+      summary: entry.summary || null,
+      metadata: entry.metadata || {},
+    });
+  } catch (err) {
+    console.error("admin audit log failed", err);
+  }
+}
 
 const allowedOrigins = [
   "https://istebul.com",
@@ -218,6 +245,13 @@ Deno.serve(async (req) => {
 
       if (error) throw error;
 
+      await writeAdminAudit(adminClient, user, {
+        action: "delete",
+        entity_table: table,
+        entity_id: id,
+        summary: `Deleted ${table} record`,
+      });
+
       return json({ ok: true }, 200, origin);
     }
 
@@ -246,11 +280,28 @@ Deno.serve(async (req) => {
         return json({ error: `Invalid insert field: ${invalidKey}` }, 400, origin);
       }
 
+      if (table === "partner_endpoints" && typeof values.webhook_url === "string") {
+        try {
+          values.webhook_url = assertSafePartnerWebhookUrl(values.webhook_url);
+        } catch (urlError) {
+          return json({
+            error: urlError instanceof Error ? urlError.message : "Invalid webhook URL",
+          }, 400, origin);
+        }
+      }
+
       const { error } = await adminClient
         .from(table)
         .insert(values);
 
       if (error) throw error;
+
+      await writeAdminAudit(adminClient, user, {
+        action: "insert",
+        entity_table: table,
+        summary: `Inserted ${table} record`,
+        metadata: { keys: Object.keys(values) },
+      });
 
       return json({ ok: true }, 200, origin);
     }
@@ -288,8 +339,14 @@ Deno.serve(async (req) => {
         .upsert(normalizedSettings, { onConflict: "key" });
 
       if (error) {
-        return json({ error: error.message }, 500, origin);
+        return json({ error: "Settings update failed" }, 500, origin);
       }
+
+      await writeAdminAudit(adminClient, user, {
+        action: "upsert_settings",
+        entity_table: "site_settings",
+        summary: `Updated ${normalizedSettings.length} settings`,
+      });
 
       return json({ ok: true }, 200, origin);
     }
@@ -365,6 +422,16 @@ Deno.serve(async (req) => {
         }
       }
 
+      if (table === "partner_endpoints" && typeof values.webhook_url === "string") {
+        try {
+          values.webhook_url = assertSafePartnerWebhookUrl(values.webhook_url);
+        } catch (urlError) {
+          return json({
+            error: urlError instanceof Error ? urlError.message : "Invalid webhook URL",
+          }, 400, origin);
+        }
+      }
+
       const { error } = await adminClient
         .from(table)
         .update(values)
@@ -372,12 +439,20 @@ Deno.serve(async (req) => {
 
       if (error) throw error;
 
+      await writeAdminAudit(adminClient, user, {
+        action: "update",
+        entity_table: table,
+        entity_id: id,
+        summary: `Updated ${table}`,
+        metadata: { fields: Object.keys(values) },
+      });
+
       return json({ ok: true }, 200, origin);
     }
 
     return json({ error: "Unsupported action" }, 400, origin);
   } catch (err) {
     console.error(err);
-    return json({ error: err?.message || "Server error" }, 500, origin);
+    return json({ error: "Server error" }, 500, origin);
   }
 });
