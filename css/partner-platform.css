@@ -22,11 +22,107 @@
   margin-bottom: 0.35rem;
 }
 
-.ib-partner-rate-grid {
+.ib-partner-rate-grid,
+.ib-partner-offer-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   margin: 1.5rem 0 2rem;
+}
+
+.ib-partner-offer-card {
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.ib-partner-offer-card--featured {
+  border-color: rgba(37, 99, 235, 0.4);
+  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.12);
+}
+
+.ib-partner-offer-tagline {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.ib-partner-offer-price {
+  font-size: 1.15rem;
+  margin: 0 0 0.35rem;
+}
+
+.ib-partner-offer-price-note {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0 0 0.75rem;
+}
+
+.ib-partner-offer-highlights {
+  margin: 0 0 1rem;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: #475569;
+  flex: 1;
+}
+
+.ib-partner-offer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ib-partner-pilot-banner {
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(37, 99, 235, 0.35);
+  background: #f8fbff;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.ib-partner-pilot-banner p {
+  margin: 0.35rem 0 0.75rem;
+  color: #475569;
+}
+
+.ib-partner-pricing {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.ib-partner-pricing-compare {
+  margin: 2.5rem 0;
+}
+
+.ib-partner-comparison-table th[scope='row'] {
+  font-weight: 600;
+  background: #f8fafc;
+  min-width: 10rem;
+}
+
+.ib-partner-pricing-faq details {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  margin-bottom: 0.5rem;
+  background: #fff;
+}
+
+.ib-partner-pricing-faq summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ib-partner-pricing-faq p {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: #475569;
 }
 
 .ib-partner-rate-card {
@@ -472,6 +568,7 @@
 @media (max-width: 900px) {
   .ib-partner-acquisition-steps,
   .ib-partner-rate-grid,
+  .ib-partner-offer-grid,
   .ib-partner-trust-grid {
     grid-template-columns: 1fr;
   }

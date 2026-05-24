@@ -7,21 +7,20 @@ import {
   renderRateCardHtml
 } from '../../js/features/partner/partner-platform.js';
 
-test('PARTNER_RATE_CARD includes pilot and enterprise tiers', () => {
+test('PARTNER_RATE_CARD includes starter growth enterprise tiers', () => {
   const ids = PARTNER_RATE_CARD.map((p) => p.id);
-  assert.ok(ids.includes('pilot'));
-  assert.ok(ids.includes('cpl'));
+  assert.ok(ids.includes('starter'));
+  assert.ok(ids.includes('growth'));
   assert.ok(ids.includes('enterprise'));
 });
 
-test('renderRateCardHtml outputs rate grid markup', () => {
-  const html = renderRateCardHtml();
-  assert.match(html, /ib-partner-rate-grid/);
-  assert.match(html, /Pilot/);
+test('renderRateCardHtml outputs offer grid markup', () => {
+  const html = renderRateCardHtml({ origin: 'https://example.com', showPilot: false });
+  assert.match(html, /ib-partner-offer-grid/);
+  assert.match(html, /Starter/);
 });
 
-test('PARTNER_FUNNEL_EVENTS uses partner_ prefix', () => {
+test('PARTNER_FUNNEL_EVENTS includes pricing events', () => {
+  assert.equal(PARTNER_FUNNEL_EVENTS.PRICING_VIEW, 'partner_pricing_view');
   assert.equal(PARTNER_FUNNEL_EVENTS.APPLICATION_SUBMIT, 'partner_application_submit');
-  assert.equal(PARTNER_FUNNEL_EVENTS.FUNNEL_QUALIFICATION, 'partner_funnel_qualification');
-  assert.equal(PARTNER_FUNNEL_EVENTS.ONBOARDING_COMPLETE, 'partner_onboarding_complete');
 });

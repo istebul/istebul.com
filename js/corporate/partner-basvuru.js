@@ -64,12 +64,13 @@ function renderStep1() {
         </label>
       </div>
       <label>Aylık lead kapasitesi<input name="lead_capacity" placeholder="Örn. 50–100"></label>
-      <fieldset class="ib-partner-billing-fieldset">
+      <fieldset class="ib-partner-billing-fieldset" id="partner-billing-plan-fieldset">
         <legend>İlgilendiğiniz plan</legend>
-        <label class="checkbox-row"><input type="radio" name="billing_plan" value="pilot" checked> Pilot (ilk 5 sıcak lead ücretsiz)</label>
-        <label class="checkbox-row"><input type="radio" name="billing_plan" value="cpl"> CPL — sıcak lead başına</label>
-        <label class="checkbox-row"><input type="radio" name="billing_plan" value="subscription"> Aylık kapasite paketi</label>
-        <label class="checkbox-row"><input type="radio" name="billing_plan" value="enterprise"> Enterprise API</label>
+        <p class="text-muted-sm">Fiyat teklif ile netleşir. <a href="/partner-planlar.html">Plan karşılaştırması</a></p>
+        <label class="checkbox-row"><input type="radio" name="billing_plan" value="pilot"> Entegrasyon pilotu (ilk 5 sıcak lead ücretsiz)</label>
+        <label class="checkbox-row"><input type="radio" name="billing_plan" value="starter" checked> Starter — CPL / düşük hacim</label>
+        <label class="checkbox-row"><input type="radio" name="billing_plan" value="growth"> Growth — aylık kapasite</label>
+        <label class="checkbox-row"><input type="radio" name="billing_plan" value="enterprise"> Enterprise — kurumsal platform</label>
       </fieldset>
       <label class="checkbox-row">
         <input type="checkbox" name="webhook_ready"> HTTPS webhook endpoint'imiz hazır veya hazırlanıyor
@@ -214,9 +215,25 @@ function renderStep6(app) {
   `);
 }
 
+function applyPlanFromUrl(form) {
+  const params = new URLSearchParams(window.location.search);
+  const plan = params.get('plan');
+  const allowed = new Set(['pilot', 'starter', 'growth', 'enterprise']);
+  if (!plan || !allowed.has(plan)) return;
+  const input = form.querySelector(`[name="billing_plan"][value="${plan}"]`);
+  if (input) input.checked = true;
+  const intent = params.get('intent');
+  const notes = form.querySelector('[name="notes"]');
+  if (intent === 'quote' && notes && !notes.value) {
+    notes.value = `Teklif talebi — ${plan} planı.`;
+  }
+}
+
 function bindStep1(root) {
   const form = root.querySelector('#partner-funnel-application');
   if (!form) return;
+
+  applyPlanFromUrl(form);
 
   form.addEventListener('focusin', () => {
     trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.APPLICATION_START, {}, { oncePerSession: true });

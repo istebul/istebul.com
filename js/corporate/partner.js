@@ -6,7 +6,9 @@ import {
 
 function mountRateCard() {
   const root = document.getElementById('partner-rate-card-root');
-  if (root) root.innerHTML = renderRateCardHtml();
+  if (root) {
+    root.innerHTML = renderRateCardHtml({ origin: window.location.origin });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

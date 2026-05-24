@@ -2,6 +2,7 @@
  * B2B partner platform — acquisition funnel, rate card, analytics helpers.
  */
 import { analytics } from '../../core/analytics.js';
+import { renderProductTierCards } from './partner-offers.js';
 
 export const PARTNER_ROUTE_LABELS = Object.freeze({
   dealer_partner: 'Bayi / Galeri',
@@ -11,41 +12,8 @@ export const PARTNER_ROUTE_LABELS = Object.freeze({
   general_sales: 'Genel satış'
 });
 
-/** Transparent CPL bands (TRY) — contracts finalize offline. */
-export const PARTNER_RATE_CARD = Object.freeze([
-  {
-    id: 'pilot',
-    name: 'Pilot',
-    priceLabel: 'İlk 5 sıcak lead ücretsiz',
-    description: 'Entegrasyon doğrulama; sonrası CPL veya aylık paket.',
-    cplHint: null,
-    features: ['Skorlanmış hot lead', 'Webhook veya manuel teslim', 'Teslimat logları']
-  },
-  {
-    id: 'cpl',
-    name: 'CPL — sıcak lead',
-    priceLabel: '₺5.000+ / sıcak lead',
-    description: 'Kategori ve bölgeye göre netleşir; callback ile kazanım bildirimi.',
-    cplHint: 5000,
-    features: ['Hot / very_hot öncelik', 'HMAC webhook', 'Retry & failover', 'SLA hedefi 15 dk']
-  },
-  {
-    id: 'subscription',
-    name: 'Aylık kapasite',
-    priceLabel: 'Özel teklif',
-    description: 'Günlük lead kotası + öncelik ağırlığı; yüksek hacimli galeri ağları.',
-    cplHint: null,
-    features: ['Günlük cap yönetimi', 'Dedicated route', 'Öncelikli destek']
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise API',
-    priceLabel: 'Platform + entegrasyon',
-    description: 'API, webhook, çoklu endpoint, özel SLA ve raporlama.',
-    cplHint: null,
-    features: ['Çoklu endpoint', 'Özel failover', 'Güvenlik incelemesi', 'Beyaz etiket opsiyonu']
-  }
-]);
+/** @deprecated Use PARTNER_PRODUCT_TIERS — kept for tests and legacy imports. */
+export { PARTNER_PRODUCT_TIERS as PARTNER_RATE_CARD } from './partner-offers.js';
 
 export const PARTNER_FUNNEL_EVENTS = Object.freeze({
   LANDING_VIEW: 'partner_landing_view',
@@ -58,7 +26,9 @@ export const PARTNER_FUNNEL_EVENTS = Object.freeze({
   FUNNEL_LEAD_NEEDS: 'partner_funnel_lead_needs',
   FUNNEL_WEBHOOK: 'partner_funnel_webhook',
   FUNNEL_TEST_PAYLOAD: 'partner_funnel_test_payload',
-  ONBOARDING_COMPLETE: 'partner_onboarding_complete'
+  ONBOARDING_COMPLETE: 'partner_onboarding_complete',
+  PRICING_VIEW: 'partner_pricing_view',
+  PRICING_CTA: 'partner_pricing_cta'
 });
 
 function sessionKey(step) {
@@ -102,24 +72,11 @@ export function buildOnboardingUrl(token, step = 2) {
   return `${base}/partner-basvuru.html?${params}`;
 }
 
-export function renderRateCardHtml() {
-  return `
-    <div class="ib-partner-rate-grid" role="list">
-      ${PARTNER_RATE_CARD.map((plan) => `
-        <article class="ib-partner-rate-card${plan.id === 'pilot' ? ' ib-partner-rate-card--featured' : ''}" role="listitem">
-          <span class="ib-partner-rate-kicker">${escapeHtml(plan.name)}</span>
-          <h3>${escapeHtml(plan.priceLabel)}</h3>
-          <p>${escapeHtml(plan.description)}</p>
-          <ul>${plan.features.map((f) => `<li>${escapeHtml(f)}</li>`).join('')}</ul>
-        </article>
-      `).join('')}
-    </div>`;
-}
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+export function renderRateCardHtml(options = {}) {
+  const origin = options.origin
+    ?? (typeof window !== 'undefined' ? window.location.origin : undefined);
+  return renderProductTierCards({
+    origin,
+    showPilot: options.showPilot !== false
+  });
 }
