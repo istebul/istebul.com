@@ -146,7 +146,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
             <div class="nav-controls">
                 <div class="nav-auth" id="nav-auth">
-                    <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="nav_auto">Ücretsiz analiz</a>
+                    <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav">Ücretsiz analiz</a>
                     <button id="login-btn" class="btn btn-outline" type="button" data-auth-open="login">Giriş</button>
                     <button id="register-btn" class="btn btn-ghost btn-sm" type="button" data-auth-open="register">Üye ol</button>
                 </div>
@@ -198,7 +198,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                     <h1 data-cms="hero-title">2 dakikada araç alım kararınızı netleştirin</h1>
                     <p data-cms="hero-desc">Bütçenize uygun modelleri toplam maliyet (TCO), taşıt kredisi etkisi ve karar skoruyla karşılaştırın — ücretsiz başlayın, tarafsız ve KVKK uyumlu.</p>
                     <div class="hero-actions">
-                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="hero_auto_start">
+                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="hero">
                             <i data-lucide="sparkles"></i> Ücretsiz analizi başlat
                         </a>
                         <a href="/metodoloji" class="btn btn-outline">
@@ -580,7 +580,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                             <p class="revenue-plan-price">Ücretsiz</p>
                             <p class="revenue-plan-desc">Araç karar analizi özeti ve temel karşılaştırma</p>
                             <ul><li>Auto karar analizi (özet)</li><li>2 araç karşılaştırma</li><li>Şeffaf metodoloji özeti</li></ul>
-                            <a href="/auto/" class="btn btn-outline">Ücretsiz analiz</a>
+                            <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_free">Ücretsiz analizi başlat</a>
                         </article>
                         <article class="revenue-plan-card revenue-plan-card--featured">
                             <span class="revenue-plan-badge revenue-plan-badge--pro">Önerilen</span>
@@ -590,7 +590,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                             <p class="revenue-plan-desc">Gelişmiş raporlar, sınırsız karşılaştırma ve öncelikli partner eşleşmesi</p>
                             <ul><li>Sınırsız karşılaştırma</li><li>Detaylı premium karar raporu</li><li>Öncelikli partner eşleşmesi</li></ul>
                             <p class="revenue-plan-hint">Yıllık ₺2.870 (%20 tasarruf) · Stripe ile güvenli ödeme</p>
-                            <a href="/planlar" class="btn btn-primary">Planları gör</a>
+                            <a href="/planlar?checkout=pro" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_pro">7 gün ücretsiz dene</a>
                         </article>
                         <article class="revenue-plan-card revenue-plan-card--enterprise">
                             <span class="revenue-plan-badge">Kurumsal</span>
@@ -731,7 +731,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
         </section>
 
     <div class="cro-sticky-cta" role="region" aria-label="Hızlı başlangıç">
-        <a href="/auto/" class="btn btn-primary" data-analytics-cta="sticky_auto_start">Karar analizini başlat</a>
+        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="sticky">Ücretsiz analizi başlat</a>
     </div>
 
     <!-- Scripts -->

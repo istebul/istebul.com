@@ -102,7 +102,7 @@ export class PremiumPages {
             <h1>Araç alım kararınızı dakikalar içinde netleştirin</h1>
             <p class="ib-premium-lead">Bütçe, finansman, toplam sahip olma maliyeti ve alternatif senaryoları tek akışta değerlendirin — tarafsız, denetlenebilir, KVKK uyumlu.</p>
             <div class="ib-premium-hero-actions">
-              <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="premium_karar_auto">
+              <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_hero">
                 <i data-lucide="car-front"></i> Ücretsiz analizi başlat
               </a>
               <a href="/metodoloji" class="btn btn-outline btn-lg" data-native-route>
@@ -225,8 +225,8 @@ export class PremiumPages {
             <p>Ücretsiz başlayın; taahhüt yok. İstediğiniz zaman Pro ile genişletin.</p>
           </div>
           <div class="ib-premium-hero-actions">
-            <a href="#premium-assistant" class="btn btn-primary btn-lg">Ücretsiz analiz başlat</a>
-            <a href="/planlar" class="btn btn-outline btn-lg">Planları incele</a>
+            <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_footer">Ücretsiz analizi başlat</a>
+            <a href="/planlar" class="btn btn-outline btn-lg" data-native-route data-analytics-cta="cta_secondary_plans" data-analytics-placement="premium_footer">Planları incele</a>
           </div>
         </div>
       </section>
@@ -361,7 +361,7 @@ export class PremiumPages {
             <div><i data-lucide="user-check"></i><strong>Kullanıcı kontrolü</strong><p>Veri minimizasyonu</p></div>
             <div><i data-lucide="badge-check"></i><strong>Kurumsal hazır</strong><p>Enterprise SLA</p></div>
           </div>
-          <a href="/auto/" class="btn btn-primary" data-native-route>Ücretsiz analizi başlat</a>
+          <a href="/auto/" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="metodoloji_trust">Ücretsiz analizi başlat</a>
         </div>
       </section>
     </div>`;
@@ -400,7 +400,7 @@ export class PremiumPages {
             <h2>Hâlâ kararsız mısınız?</h2>
             <p>Ücretsiz karar analizi ile başlayın; ihtiyaç duyduğunuzda Pro\'ya geçin.</p>
           </div>
-          <a href="/auto/" class="btn btn-primary btn-lg" data-native-route>Ücretsiz analizi başlat</a>
+          <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="planlar_footer">Ücretsiz analizi başlat</a>
         </div>
       </section>
     </div>`;

@@ -121,8 +121,8 @@ export class RevenueManager {
           <p>${copy.body}</p>
         </div>
         <div class="revenue-upgrade-actions">
-          <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1">${this.getCheckoutCtaLabel()}</button>
-          <a href="/planlar" class="btn btn-outline" data-native-route>Planları incele</a>
+          <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_banner">${this.getCheckoutCtaLabel()}</button>
+          <a href="/planlar" class="btn btn-outline" data-native-route data-analytics-cta="cta_secondary_plans" data-analytics-placement="paywall_banner">Planları incele</a>
         </div>
       </aside>
     `;
@@ -142,7 +142,7 @@ export class RevenueManager {
             ${PLANS.pro.highlights.slice(0, 4).map((item) => `<li>${item}</li>`).join('')}
           </ul>
           <div class="revenue-upgrade-actions">
-            <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1">${this.getCheckoutCtaLabel()}</button>
+            <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_compact">${this.getCheckoutCtaLabel()}</button>
             <button type="button" class="btn btn-outline" data-revenue-paywall-close>Şimdilik ücretsiz devam et</button>
           </div>
           <p class="revenue-paywall-note">İstediğiniz zaman iptal edebilirsiniz. Ödeme Stripe ile güvenli şekilde alınır.</p>
@@ -260,7 +260,7 @@ export class RevenueManager {
           <p class="revenue-plan-price">${PLANS.free.priceLabel}</p>
           <p class="revenue-plan-desc">${PLANS.free.description}</p>
           <ul>${PLANS.free.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
-          <a href="/auto/" class="btn btn-outline">Ücretsiz analizi başlat</a>
+          <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">Ücretsiz analizi başlat</a>
         </article>
         <article class="revenue-plan-card revenue-plan-card--featured">
           <span class="revenue-plan-badge revenue-plan-badge--pro">Önerilen</span>
@@ -270,7 +270,7 @@ export class RevenueManager {
           <p class="revenue-plan-equiv" data-revenue-price-equiv hidden>${annual.monthlyEquivalent} · ${annual.savingsLabel}</p>
           <p class="revenue-plan-desc">${PLANS.pro.description}</p>
           <ul>${PLANS.pro.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
-          <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1" data-revenue-checkout-cta>${this.getCheckoutCtaLabel('monthly')}</button>
+          <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">${this.getCheckoutCtaLabel('monthly')}</button>
           <p class="revenue-plan-hint">${PLANS.pro.priceHint}${this.trialEligible ? ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz` : ''}</p>
         </article>
         ${enterpriseCard}
@@ -352,7 +352,7 @@ export class RevenueManager {
           <label><input type="radio" name="profile-billing-interval" value="monthly" checked> Aylık (${PLANS.pro.billing.monthly.priceDisplay})</label>
           <label><input type="radio" name="profile-billing-interval" value="annual"> Yıllık (${PLANS.pro.billing.annual.savingsLabel})</label>
         </div>
-        <button type="button" class="btn btn-primary" id="premium-checkout-btn" data-upgrade-checkout data-billing="monthly" data-trial="1">${this.getCheckoutCtaLabel('monthly')}</button>
+        <button type="button" class="btn btn-primary" id="premium-checkout-btn" data-upgrade-checkout data-billing="monthly" data-trial="1" data-analytics-cta="cta_primary_checkout" data-analytics-placement="profile_upgrade">${this.getCheckoutCtaLabel('monthly')}</button>
         <a href="/planlar" class="btn btn-ghost btn-sm" data-native-route>Plan detayları</a>
       </div>
     `;
