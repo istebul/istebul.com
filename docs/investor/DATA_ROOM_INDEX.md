@@ -11,11 +11,12 @@
 | Document | Path | Status |
 |----------|------|--------|
 | One-pager (executive) | `docs/investor/ONE_PAGER.md` | Ready |
+| **Pitch deck outline** | `docs/investor/PITCH_DECK_OUTLINE.md` | Ready (fill brackets before meetings) |
 | Investor readiness audit | `docs/investor/INVESTOR_READINESS.md` | Ready |
 | Risk register | `docs/investor/RISK_REGISTER.md` | Ready |
 | Unit economics framework | `docs/investor/UNIT_ECONOMICS.md` | Ready (assumptions explicit) |
 
-**Gap:** Pitch deck PDF, cap table, financial model spreadsheet — prepare offline.
+**Gap:** Pitch deck **PDF** (export from outline), cap table, financial model spreadsheet — prepare offline.
 
 ---
 

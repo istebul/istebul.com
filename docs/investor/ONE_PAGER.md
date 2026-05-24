@@ -49,6 +49,10 @@ Consumers make ₺500K–₺3M decisions (vehicle, home, finance) with fragmente
 
 *[Founder fills: team, round size, use of funds, milestones]*
 
+## Pitch deck
+
+Slide-by-slide outline: `docs/investor/PITCH_DECK_OUTLINE.md`
+
 ## Contact
 
 - Product: https://www.istebul.com  
