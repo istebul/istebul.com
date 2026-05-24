@@ -1,3 +1,4 @@
+import { initCorporateUx } from '../runtime/corporate-ux.js';
 import { PARTNER_ROUTE_LABELS, PARTNER_FUNNEL_EVENTS, trackPartnerFunnel } from '../features/partner/partner-platform.js';
 import {
   FUNNEL_STEPS,
@@ -471,6 +472,7 @@ async function load() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initCorporateUx();
   trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.ONBOARDING_VIEW, { surface: 'partner_basvuru_load' }, { oncePerSession: true });
   load();
 });

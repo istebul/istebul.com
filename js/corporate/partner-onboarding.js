@@ -1,3 +1,4 @@
+import { initCorporateUx } from '../runtime/corporate-ux.js';
 import { PARTNER_FUNNEL_EVENTS, PARTNER_ROUTE_LABELS, trackPartnerFunnel } from '../features/partner/partner-platform.js';
 
 const STATUS_LABELS = {
@@ -120,4 +121,7 @@ async function load() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', load);
+document.addEventListener('DOMContentLoaded', () => {
+  initCorporateUx();
+  load();
+});

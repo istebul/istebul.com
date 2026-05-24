@@ -1,8 +1,10 @@
 import { initExecutivePolish } from './executive-polish.js';
+import { initP4ProductPolish } from './p4-product-polish.js';
 
 export function initEnterpriseUx() {
   if (typeof document === 'undefined') return;
 
+  initP4ProductPolish();
   initExecutivePolish();
 
   const markReady = () => {

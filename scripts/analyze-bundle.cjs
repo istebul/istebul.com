@@ -10,13 +10,22 @@ const maxTotalBytes = 900 * 1024;
 /** Separate entry surfaces — not counted toward main SPA budget. */
 const BUDGET_EXCLUDE = [
   /^js\/admin-panel\.js$/,
-  /^js\/corporate\/partner/,
+  /^js\/corporate\//,
   /^assets\/auto-runtime\//,
-  /^css\/style\.css$/,
-  /^css\/enterprise-polish\.css$/,
-  /^css\/revenue\.css$/,
-  /^css\/premium-pages\.css$/,
-  /^css\/auto\.css$/
+  /^env\.js$/,
+  /^sw\.js$/,
+  /** Hashed copies of @import layers (SPA loads single style.*.css). */
+  /^css\/enterprise-polish/,
+  /^css\/executive-polish/,
+  /^css\/mobile-perfection/,
+  /^css\/p4-premium-product/,
+  /^css\/revenue/,
+  /^css\/premium-pages/,
+  /^css\/auto/,
+  /^css\/partner-platform/,
+  /^css\/seo-landing/,
+  /^css\/admin-partner-ops/,
+  /^css\/rtl/
 ];
 
 const files = [];

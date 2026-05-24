@@ -1,3 +1,4 @@
+import { initCorporateUx } from '../runtime/corporate-ux.js';
 import {
   PARTNER_FUNNEL_EVENTS,
   renderRateCardHtml,
@@ -13,6 +14,7 @@ function mountRateCard() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initCorporateUx();
   trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.LANDING_VIEW, {
     path: window.location.pathname
   });

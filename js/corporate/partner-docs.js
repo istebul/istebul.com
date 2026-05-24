@@ -1,3 +1,4 @@
+import { initCorporateUx } from '../runtime/corporate-ux.js';
 import { PARTNER_FUNNEL_EVENTS, trackPartnerFunnel } from '../features/partner/partner-platform.js';
 import {
   PARTNER_WEBHOOK_HEADERS,
@@ -323,6 +324,7 @@ function mountDocsPage() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initCorporateUx();
   trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.DOCS_VIEW, { path: '/partner-docs.html', version: 'p2.2' });
   mountDocsPage();
 });

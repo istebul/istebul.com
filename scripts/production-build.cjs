@@ -206,9 +206,13 @@ partnerCorporateEntries.forEach((entry) => {
 const autoAssetDir = path.join(dist, 'assets', 'auto-runtime');
 fs.mkdirSync(autoAssetDir, { recursive: true });
 
-const autoCssSource = path.join(root, 'css', 'auto.css');
-if (fs.existsSync(autoCssSource)) {
-  const autoCss = esbuild.transformSync(fs.readFileSync(autoCssSource, 'utf8'), {
+const autoCssParts = ['css/auto.css', 'css/p4-premium-product.css'];
+const autoCssCombined = autoCssParts
+  .filter((rel) => fs.existsSync(path.join(root, rel)))
+  .map((rel) => fs.readFileSync(path.join(root, rel), 'utf8'))
+  .join('\n');
+if (autoCssCombined) {
+  const autoCss = esbuild.transformSync(autoCssCombined, {
     loader: 'css',
     minify: true
   }).code;

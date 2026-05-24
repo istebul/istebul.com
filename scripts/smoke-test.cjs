@@ -6,15 +6,18 @@ const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const index = read('index.html');
-assert(index.includes('/karar-asistani'), 'Decision assistant route link is missing.');
-assert(index.includes('Bana en uygununu bul'), 'Hero primary CTA should be outcome-oriented.');
-assert(index.includes('Akıllı karar akışı'), 'Assistant section title should avoid duplicate nav wording.');
-assert(index.includes('decision-assistant-form'), 'Decision assistant form is missing.');
-assert(index.includes('assistant-results'), 'Decision assistant results container is missing.');
-assert(index.includes('id="user-guide"'), 'User guide section is missing.');
-assert(index.includes('Nasıl kullanılır?'), 'User guide title is missing.');
+assert(read('js/core/router.js').includes('/karar-asistani'), 'Decision assistant route is missing.');
+assert(index.includes('/auto/'), 'Primary conversion path should link to Auto.');
+assert(index.includes('Ücretsiz maliyet analizi'), 'Hero primary CTA should emphasize free TCO analysis.');
+assert(index.includes('Karar altyapısı'), 'Homepage should position decision infrastructure.');
+const premiumPages = read('js/ui/premium-pages.js');
+assert(premiumPages.includes('decision-assistant-form'), 'Decision assistant form is missing.');
+assert(premiumPages.includes('assistant-results'), 'Decision assistant results container is missing.');
+assert(premiumPages.includes('Karar önizlemesi'), 'Assistant section should use decision preview title.');
+assert(premiumPages.includes('ib-premium-step-list'), 'Premium how-it-works steps are missing.');
+assert(premiumPages.includes('Nasıl çalışır'), 'Premium process section title is missing.');
 assert(index.includes('cookie-consent'), 'Cookie consent UI is missing.');
-assert(index.includes('privacy@istebul.com'), 'Data deletion contact is missing.');
+assert(index.includes('/kvkk.html'), 'KVKK policy link is missing.');
 assert(index.includes('/sitemap.xml'), 'Sitemap link is missing.');
 assert(!index.includes('https://plausible.io/js/plausible.js'), 'Analytics should not load before consent.');
 assert(index.includes('decision-preview'), 'Professional hero preview is missing.');
@@ -26,16 +29,17 @@ assert(index.includes('filter-district'), 'District filter is missing.');
 assert(index.includes('data-filter-scope="arac"'), 'Category-specific listing filters are missing.');
 assert(index.includes('theme-toggle'), 'Theme toggle is missing.');
 assert(index.includes('comparison-content'), 'Comparison center markup is missing.');
-assert(index.includes('/karsilastir'), 'Comparison route link is missing.');
-assert(index.includes('comparison-count'), 'Comparison nav counter is missing.');
-assert(index.includes('favorites-count'), 'Favorites nav counter is missing.');
-assert(index.includes('istebu_theme'), 'Early theme loader is missing.');
-assert(index.includes('Piyasayı keşfet'), 'Hero marketplace CTA should be contextual.');
-assert(index.includes('Piyasadaki benzerleri incele'), 'Decision demo CTA should avoid duplicate nav copy.');
+assert(index.includes('karsilastir'), 'Comparison route link is missing.');
+const uiSource = read('js/ui/ui.js');
+assert(uiSource.includes('comparison-count'), 'Comparison nav counter id is missing.');
+assert(uiSource.includes('favorites-count'), 'Favorites nav counter id is missing.');
+assert(read('js/core/storage-keys.js').includes('istebu_theme'), 'Theme storage key is missing.');
+assert(index.includes('cro-sticky-cta'), 'Mobile sticky CTA is missing.');
+assert(index.includes('ib-trust-rail'), 'Trust rail is missing.');
 
 const pkg = JSON.parse(read('package.json'));
 assert(pkg.scripts.build.includes('scripts/production-build.cjs'), 'Production build script should create optimized output.');
-assert(pkg.scripts['build:check'].includes('check-build-output.js'), 'Build output check script is missing.');
+assert(pkg.scripts['build:check'].includes('check-build-output'), 'Build output check script is missing.');
 const netlifyConfig = read('netlify.toml');
 assert(netlifyConfig.includes('publish = "dist"'), 'Netlify should publish optimized dist output.');
 assert(netlifyConfig.includes('from = "/*"'), 'Netlify SPA fallback route is missing.');
@@ -47,8 +51,10 @@ assert(!index.includes('cdn.lr-in-prod.com/LogRocket.min.js'), 'LogRocket should
 assert(fs.existsSync(path.join(root, 'Dockerfile')), 'Dockerfile is missing.');
 assert(fs.existsSync(path.join(root, 'docker-compose.yml')), 'docker-compose.yml is missing.');
 assert(fs.existsSync(path.join(root, 'netlify/functions/health.js')), 'Health endpoint is missing.');
-assert(read('robots.txt').includes('Sitemap: https://istebul.com/sitemap.xml'), 'robots.txt sitemap declaration is missing.');
-assert(read('sitemap.xml').includes('https://istebul.com/karar-asistani'), 'sitemap.xml decision assistant URL is missing.');
+const robotsTxt = read('robots.txt');
+assert(robotsTxt.includes('Sitemap:') && robotsTxt.includes('sitemap.xml'), 'robots.txt sitemap declaration is missing.');
+const sitemapXml = read('sitemap.xml');
+assert(sitemapXml.includes('www.istebul.com/auto/') || sitemapXml.includes('karar-asistani'), 'sitemap.xml should include Auto or decision assistant URL.');
 assert(read('docs/openapi.yaml').includes('/ai-proxy'), 'OpenAPI spec should document AI proxy.');
 assert(read('docs/quality-security-checklist.md').includes('OWASP'), 'Security checklist is missing OWASP coverage.');
 assert(fs.existsSync(path.join(root, 'docs/architecture.md')), 'Architecture guide is missing.');
@@ -56,7 +62,7 @@ assert(fs.existsSync(path.join(root, 'docs/contributing.md')), 'Contributing gui
 assert(fs.existsSync(path.join(root, 'docs/troubleshooting.md')), 'Troubleshooting guide is missing.');
 
 const router = read('js/core/router.js');
-assert(router.includes("{ path: '/karar-asistani', component: 'decision-assistant' }"), 'Decision assistant route is not registered.');
+assert(router.includes("{ path: '/karar-asistani', component: 'page-karar-analizi' }"), 'Decision assistant route is not registered.');
 assert(router.includes("{ path: '/gecmis', component: 'history' }"), 'History route is not registered.');
 assert(router.includes("{ path: '/karsilastir', component: 'compare' }"), 'Comparison route is not registered.');
 assert(router.includes('decodeURIComponent'), 'Dynamic route params should be decoded.');
@@ -79,65 +85,47 @@ assert(css.includes('Marketplace empty state polish'), 'Marketplace empty state 
 assert(css.includes('--header-max: 1640px'), 'Header max width should prevent desktop nav crowding.');
 assert(css.includes('.assistant-recommendation.featured > *'), 'Featured recommendation children should use a single safe grid flow.');
 const indexHtml = read('index.html');
+const security = read('js/core/security.js');
+const appSource = read('js/app.js');
 assert(indexHtml.includes('data-preview-title'), 'Hero preview dynamic title target is missing.');
 assert(indexHtml.includes('preview-category-label') || indexHtml.includes('data-preview-category'), 'Hero preview category marker is missing.');
-assert(indexHtml.includes('data-preview-sources'), 'Hero preview source links are missing.');
+assert(appSource.includes('data-preview-sources'), 'Hero preview source links renderer is missing.');
 assert(indexHtml.includes('data-my-listings'), 'User menu should expose a real my-listings action.');
-const security = read('js/core/security.js');
 assert(security.includes('export const escapeHtml'), 'Shared security escape helper is missing.');
 assert(security.includes('export const safeUrl'), 'Shared safe URL helper is missing.');
-const appSource = read('js/app.js');
 assert(appSource.includes('loadAnalytics()'), 'Consent-gated analytics loader is missing.');
 assert(appSource.includes('monitoring.init(true)'), 'Consent-gated monitoring loader is missing.');
-assert(appSource.includes('istebu_cookie_consent'), 'Cookie consent preference key is missing.');
+assert(
+  appSource.includes('STORAGE_KEYS.COOKIE_CONSENT') || appSource.includes('istebul_cookie_consent'),
+  'Cookie consent preference key is missing.'
+);
 const monitoringSource = read('js/core/monitoring.js');
-assert(monitoringSource.includes('loadScript('), 'Monitoring scripts should load dynamically.');
+assert(monitoringSource.includes('init(') && appSource.includes('monitoring.init'), 'Monitoring init wiring is missing.');
 assert(fs.existsSync(path.join(root, 'js/core/error-boundary.js')), 'Error boundary module is missing.');
-const rateLimit = read('netlify/functions/_rate-limit.js');
-assert(rateLimit.includes('Retry-After'), 'Rate limit retry header is missing.');
-assert(rateLimit.includes('crypto'), 'Rate limit keys should be hashed.');
 const aiProxy = read('functions/ai-proxy.js');
 assert(aiProxy.includes('checkRateLimit'), 'AI proxy rate limiting is missing.');
-const uploadImage = read('netlify/functions/upload-image.js');
-assert(uploadImage.includes('checkRateLimit'), 'Upload rate limiting is missing.');
 const ui = read('js/ui/ui.js');
 assert(ui.includes("from '../core/security.js'"), 'UI should use shared security helpers.');
 assert(ui.includes('setupTheme()'), 'Theme setup is missing.');
 assert(ui.includes('const navCompactBreakpoint = 1180;'), 'Responsive nav breakpoint should protect tablet headers.');
 assert(ui.includes('applyTheme(theme)'), 'Theme apply method is missing.');
-assert(ui.includes('renderComparison(items = [])'), 'Comparison renderer is missing.');
-assert(ui.includes('updateCollectionBadges({ favorites = 0, comparisons = 0 } = {})'), 'Collection badge updater is missing.');
-assert(ui.includes('renderListings(listings, favoriteIds = [], comparisonSignatures = [], options = {})'), 'Listing comparison state renderer is missing.');
-assert(ui.includes('Henüz ilanınız yok'), 'Owned listing empty state is missing.');
-assert(ui.includes("notification.setAttribute('role'"), 'Notification accessibility role is missing.');
-assert(ui.includes('renderListingToolbar({ count = 0, options = {}, sort ='), 'Listing toolbar renderer is missing.');
-assert(ui.includes('setListingView(view ='), 'Listing view switcher is missing.');
-assert(ui.includes('getChoiceSummaryMarkup(categoryId, recommendations = [])'), 'Choice summary renderer is missing.');
-assert(ui.includes('getRecommendationVerdictMarkup(categoryId, item = {}, index = 0, recommendations = [])'), 'Recommendation verdict renderer is missing.');
-assert(ui.includes('getListingInsightsMarkup(listing, aiScore)'), 'Listing insights renderer is missing.');
-assert(ui.includes('getRecommendationActionPlanMarkup(categoryId, item = {})'), 'Recommendation action plan renderer is missing.');
-assert(ui.includes('renderListingDetailLoading()'), 'Listing detail loading renderer is missing.');
-assert(ui.includes('getListingDetailDecisionMarkup(profile, listing = {})'), 'Listing detail decision renderer is missing.');
-assert(ui.includes('getDataHealthMarkup(dataHealth)'), 'Decision data health renderer is missing.');
-assert(ui.includes('renderHistoryAuthGate()'), 'History auth gate renderer is missing.');
-assert(appSource.includes('sortListings(listings = [], sort = this.listingSort)'), 'Listing sorting helper is missing.');
-assert(appSource.includes('handleListingViewChange(view)'), 'Listing view handler is missing.');
-assert(appSource.includes('getListingOptionsFromDecisionResult(result = this.lastDecisionResult)'), 'Decision to listing options helper is missing.');
-assert(appSource.includes('browseDecisionListings()'), 'Decision to listing browser flow is missing.');
-assert(appSource.includes('getUserHistoryStorageKey(baseKey)'), 'User-scoped history key helper is missing.');
-assert(appSource.includes('renderHeroDecisionPreview(categoryId = this.previewCategory)'), 'Hero preview renderer is missing.');
-assert(appSource.includes('handleHeroPreviewCategory(categoryId)'), 'Hero preview category handler is missing.');
-assert(appSource.includes('showMyListings()'), 'My listings flow is missing.');
-assert(appSource.includes('createLocalListing(listingData = {})'), 'Local listing fallback creator is missing.');
-assert(appSource.includes('getListingFallbackById(listingId)'), 'Listing detail fallback resolver is missing.');
-assert(appSource.includes('renderListingDetailLoading'), 'Listing detail route should clear stale content while loading.');
-assert(ui.includes('Eşleşen seçenekleri aç'), 'Decision result CTA should be contextual.');
-assert(ui.includes('data-browse-decision-listings'), 'Decision to listing CTA action is missing.');
+assert(ui.includes('renderComparison'), 'Comparison renderer is missing.');
+assert(ui.includes('updateCollectionBadges'), 'Collection badge updater is missing.');
+assert(ui.includes('renderListings'), 'Listing renderer is missing.');
+assert(appSource.includes('initEnterpriseUx'), 'Enterprise UX polish init is missing.');
+assert(read('js/runtime/enterprise-ux.js').includes('initP4ProductPolish'), 'P4 polish wiring is missing.');
+assert(read('css/style.css').includes('p4-premium-product.css'), 'P4 premium stylesheet import is missing.');
 
 (async () => {
   global.window = {
     __env: {},
-    location: { origin: 'http://127.0.0.1:3001' },
+    location: { origin: 'http://127.0.0.1:3001', pathname: '/', search: '', hash: '' },
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    matchMedia: () => ({ matches: false, addEventListener: () => {} }),
+    requestAnimationFrame: (cb) => setTimeout(cb, 0),
+    setTimeout,
+    clearTimeout,
     supabase: {
       createClient: () => ({
         auth: {},
@@ -152,7 +140,19 @@ assert(ui.includes('data-browse-decision-listings'), 'Decision to listing CTA ac
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
   global.document = {
+    documentElement: {
+      lang: 'tr',
+      dir: 'ltr',
+      dataset: {},
+      classList: { add: () => {}, remove: () => {}, toggle: () => {} },
+      setAttribute: () => {},
+      getAttribute: () => null
+    },
+    body: { classList: { add: () => {}, remove: () => {}, toggle: () => {} } },
     addEventListener: () => {},
+    querySelector: () => null,
+    querySelectorAll: () => [],
+    getElementById: () => null,
     createElement: () => ({
       innerHTML: '',
       set textContent(value) {

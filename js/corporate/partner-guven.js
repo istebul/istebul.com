@@ -1,3 +1,4 @@
+import { initCorporateUx } from '../runtime/corporate-ux.js';
 import { PARTNER_FUNNEL_EVENTS, trackPartnerFunnel } from '../features/partner/partner-platform.js';
 import {
   PARTNER_TRUST_NAV,
@@ -19,6 +20,7 @@ function mountContent() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initCorporateUx();
   trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.TRUST_VIEW, { path: '/partner-guven.html' });
   mountNav();
   mountContent();

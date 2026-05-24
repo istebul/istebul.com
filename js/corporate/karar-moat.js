@@ -1,4 +1,5 @@
 import { analytics } from '../core/analytics.js';
+import { initCorporateUx } from '../runtime/corporate-ux.js';
 import {
   MOAT_PILLARS,
   COMPETITOR_FRAMES,
@@ -119,4 +120,7 @@ async function hydrateMoatHealthFromApi(archRoot) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', mountMoatPage);
+document.addEventListener('DOMContentLoaded', () => {
+  initCorporateUx();
+  mountMoatPage();
+});
