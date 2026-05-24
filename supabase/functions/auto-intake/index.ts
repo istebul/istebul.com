@@ -79,6 +79,7 @@ const ALLOWED_EVENTS = new Set([
   "auto_modal_open",
   "auto_lead_submit",
   "auto_wizard_step",
+  "auto_wizard_complete",
   "auto_whatsapp_click",
   "auto_whatsapp_lead_intent",
   "auto_finance_click",
