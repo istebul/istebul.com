@@ -17,6 +17,7 @@ import {
   buildMoatMetricsFromAdminData,
   renderMoatArchitectureAdminStrip
 } from './features/moat/moat-architecture-ui.js';
+import { SCALE_LIMITS } from './core/scale-limits.js';
 
 const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
@@ -985,11 +986,16 @@ async function loadPlatformAnalytics() {
   const el = document.getElementById('platform-analytics-root');
   if (!el) return;
 
+  const since = new Date(
+    Date.now() - SCALE_LIMITS.admin.analyticsWindowDays * 24 * 60 * 60 * 1000
+  ).toISOString();
+
   const { data, error } = await sb
     .from('analytics_events')
     .select('event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id')
+    .gte('created_at', since)
     .order('created_at', { ascending: false })
-    .limit(2500);
+    .limit(SCALE_LIMITS.admin.analyticsRowLimit);
 
   if (error) {
     el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
@@ -1001,6 +1007,8 @@ async function loadPlatformAnalytics() {
     el.innerHTML = '<p class="empty">Henüz platform analytics event yok. Migration ve analytics-ingest deploy sonrası veri akışı başlar.</p>';
     return;
   }
+
+  const windowNote = `<p class="text-muted-sm" style="margin:0 0 12px">Son ${SCALE_LIMITS.admin.analyticsWindowDays} gün · en fazla ${SCALE_LIMITS.admin.analyticsRowLimit} event (P4.7 scale guard).</p>`;
 
   const pageViews = countEvents(rows, 'page_view') + countEvents(rows, 'auto_page_view');
   const authModal = countEvents(rows, 'auth_modal_open');
@@ -1103,6 +1111,7 @@ async function loadPlatformAnalytics() {
     }, {});
 
   el.innerHTML = `
+    ${windowNote}
     <h3 style="margin:0 0 14px 0;">Executive growth funnel (kanal bazlı)</h3>
     <p class="text-muted" style="margin:0 0 12px;font-size:13px;">Tutarlı event isimleri; legacy alias’lar toplamda bir kez sayılır. Gelir: paid_conversion + checkout.</p>
     <table class="table">
@@ -1633,7 +1642,7 @@ async function loadPartnerOpsFunnel() {
       'partner_dispatch_success',
       'partner_dispatch_failed'
     ])
-    .limit(3000);
+    .limit(SCALE_LIMITS.admin.partnerFunnelRowLimit);
 
   if (error || !data?.length) {
     root.hidden = true;

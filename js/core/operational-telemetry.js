@@ -3,6 +3,7 @@
  * Errors may fire without marketing consent; no raw email/phone in payloads.
  */
 import { analytics } from './analytics.js';
+import { SCALE_LIMITS } from './scale-limits.js';
 
 const queue = [];
 let flushTimer = null;
@@ -28,6 +29,10 @@ function scheduleFlush() {
  * @param {{ category?: string, severity?: string, http_status?: number, duration_ms?: number }} [meta]
  */
 export function trackOpsEvent(eventName, properties = {}, meta = {}) {
+  while (queue.length >= SCALE_LIMITS.opsTelemetry.maxQueue) {
+    queue.shift();
+  }
+
   queue.push({
     event_name: eventName,
     category: meta.category || inferCategory(eventName),
@@ -41,7 +46,7 @@ export function trackOpsEvent(eventName, properties = {}, meta = {}) {
     idempotency_key: properties.idempotency_key || null
   });
 
-  if (queue.length >= 10) {
+  if (queue.length >= Math.min(10, SCALE_LIMITS.opsTelemetry.flushBatch)) {
     flushOpsEvents();
     return;
   }
@@ -80,7 +85,7 @@ export async function flushOpsEvents(options = {}) {
   const config = getConfig();
   if (!config) return;
 
-  const batch = queue.splice(0, 20);
+  const batch = queue.splice(0, SCALE_LIMITS.opsTelemetry.flushBatch);
   const body = JSON.stringify({ events: batch });
   const url = `${config.url.replace(/\/$/, '')}/functions/v1/ops-ingest`;
 

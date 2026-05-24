@@ -14,8 +14,19 @@ function getClientIp(request) {
   );
 }
 
+const RATE_LIMIT_MAX_KEYS = 5000;
+
+function pruneRateLimitStore(now) {
+  if (rateLimitStore.size <= RATE_LIMIT_MAX_KEYS) return;
+  for (const [key, entry] of rateLimitStore) {
+    if (now > entry.resetAt) rateLimitStore.delete(key);
+    if (rateLimitStore.size <= RATE_LIMIT_MAX_KEYS * 0.8) break;
+  }
+}
+
 function checkRateLimit(key, limit = 25, windowMs = 60_000) {
   const now = Date.now();
+  pruneRateLimitStore(now);
   const entry = rateLimitStore.get(key);
 
   if (!entry || now > entry.resetAt) {
@@ -108,7 +119,7 @@ export async function onRequestPost({ request, env }) {
           }
         ],
         temperature: 0.4,
-        max_tokens: 700
+        max_tokens: 520
       })
     });
 

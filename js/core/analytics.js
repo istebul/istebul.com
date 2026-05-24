@@ -9,6 +9,7 @@ import {
   trackLandingVisit
 } from '../features/growth/growth-funnel.js';
 import { STORAGE_KEYS, readStorageRaw } from './storage-keys.js';
+import { SCALE_LIMITS, dedupeAnalyticsQueue } from './scale-limits.js';
 
 const SESSION_KEY = STORAGE_KEYS.ANALYTICS_SESSION;
 const ANON_KEY = STORAGE_KEYS.ANALYTICS_ANON;
@@ -212,12 +213,21 @@ export class Analytics {
       idempotency_key: meta.idempotency_key || null
     };
 
-    if (!this.enabled) {
-      this.queue.push(payload);
-      return;
+    this.enqueue(payload);
+  }
+
+  enqueue(payload) {
+    const sessionId = payload.session_id || this.getSessionId();
+    this.queue = dedupeAnalyticsQueue(this.queue, payload.event_name, sessionId);
+
+    while (this.queue.length >= SCALE_LIMITS.analytics.maxQueue) {
+      this.queue.shift();
     }
 
     this.queue.push(payload);
+
+    if (!this.enabled) return;
+
     this.scheduleFlush();
   }
 
@@ -295,7 +305,7 @@ export class Analytics {
     this.flushTimer = setTimeout(() => {
       this.flushTimer = null;
       this.flush();
-    }, 1200);
+    }, SCALE_LIMITS.analytics.flushDebounceMs);
   }
 
   flushQueue() {
@@ -311,7 +321,7 @@ export class Analytics {
     const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
     if (!supabaseUrl || !supabaseKey) return;
 
-    const batch = this.queue.splice(0, 25);
+    const batch = this.queue.splice(0, SCALE_LIMITS.analytics.flushBatch);
     const attribution = this.getAttribution();
     const body = JSON.stringify({
       session: {

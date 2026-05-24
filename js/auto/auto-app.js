@@ -72,6 +72,7 @@ import { initConversionMicroUx } from '../runtime/conversion-micro-ux.js';
 import { initPerceivedPerformance } from '../runtime/perceived-performance.js';
 import { initBrandConsistency } from '../runtime/brand-consistency.js';
 import { CONVERSION_COPY } from '../core/conversion-copy.js';
+import { canCallAiNarration } from '../core/scale-limits.js';
 
 const formatAmount = (value) => formatMoney(value);
 const formatCount = (value) => formatNumber(value);
@@ -995,6 +996,10 @@ function renderAutoMethodologyStrip() {
 }
 
 async function getAiExplanation(results, formData = {}, refinement = '') {
+  if (!canCallAiNarration()) {
+    return '';
+  }
+
   try {
     const bundle = buildExplanationBundle(results, formData);
     const prompt = [
