@@ -46,7 +46,8 @@ Domain alındı ve aktif; **otomatik deploy** için aşağıdaki zincirin tamam�
 
 ### Adım 3 — Cloudflare Pages proje ayarı (10 dk)
 
-1. **Workers & Pages → istebul** (proje adı `istebul`)
+1. **Workers & Pages** → projenizi açın (muhtemelen **`istebul-com`** — adres `istebul-com.pages.dev` ise isim budur)
+   - GitHub Actions’taki proje adı `CF_PAGES_PROJECT` ile aynı olmalı (repo’da varsayılan: `istebul-com`)
 2. **Custom domains**: `istebul.com` ve `www.istebul.com` **Active** olmalı (sizde tamam).
 3. **Settings → Builds & deployments**
    - **Önerilen (tek kanal):** GitHub Actions kullanın → Cloudflare’de **Connected Git** build’i **Pause** veya disconnect edin (çift deploy önlenir).

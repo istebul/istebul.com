@@ -8,6 +8,8 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 |--------|----------------|
 | `CLOUDFLARE_API_TOKEN` | Cloudflare Dashboard → My Profile → API Tokens → Create → Template **Edit Cloudflare Workers** + **Cloudflare Pages:Edit** |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Dashboard → sağ sütun Account ID |
+
+**Not:** Pages proje adı dashboard’daki isimle aynı olmalı (ör. `istebul-com`). Farklıysa workflow’daki `CF_PAGES_PROJECT` env’ini güncelleyin veya repo secret `CLOUDFLARE_PAGES_PROJECT` ekleyin.
 | `SUPABASE_URL` | `https://hjfrcdstbyonmgatgwcc.supabase.co` |
 | `SUPABASE_ANON_KEY` | Supabase → Settings → API → anon public |
 
