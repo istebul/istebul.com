@@ -27,6 +27,9 @@
     <script src="/env.js" defer></script>
     <link rel="preload" href="css/style.css?v=49" as="style">
     <link rel="stylesheet" href="css/style.css?v=50">
+    <link rel="stylesheet" href="css/enterprise-polish.css?v=1">
+    <link rel="stylesheet" href="css/revenue.css?v=1">
+    <link rel="stylesheet" href="css/premium-pages.css?v=1">
 
 <style>
 .hidden{display:none!important;}
@@ -102,9 +105,9 @@
                 </span>
             </a>
             <div class="nav-menu" id="nav-menu">
-                <a href="/auto/" class="nav-link" data-native-route>Karar analizi</a>
-                <a href="#how-it-works" class="nav-link">Metodoloji</a>
-                <a href="#pricing" class="nav-link">Planlar</a>
+                <a href="/karar-analizi" class="nav-link">Karar analizi</a>
+                <a href="/metodoloji" class="nav-link">Metodoloji</a>
+                <a href="/planlar" class="nav-link">Planlar</a>
                 <a href="/messages/" class="nav-link hidden" id="nav-messages">Mesajlar</a>
             </div>
             <div class="nav-controls">
@@ -155,13 +158,13 @@
                     <h1 data-cms="hero-title">Araç satın alma kararınızı veriye dayalı netleştirin</h1>
                     <p data-cms="hero-desc">Taşıt kredisi, toplam sahip olma maliyeti ve alternatif senaryoları tek karar modelinde birleştirin — tarafsız, KVKK uyumlu, satın alma baskısı olmadan.</p>
                     <div class="hero-actions">
-                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="hero_auto_start">
+                        <a href="/karar-analizi" class="btn btn-primary" data-analytics-cta="hero_auto_start">
                             <i data-lucide="sparkles"></i> Karar analizini başlat
                         </a>
-                        <a href="#how-it-works" class="btn btn-outline">
-                            <i data-lucide="car-front"></i> Nasıl Çalışır
+                        <a href="/metodoloji" class="btn btn-outline">
+                            <i data-lucide="microscope"></i> Metodoloji
                         </a>
-                        <a href="#pricing" class="btn btn-ghost btn-sm">Pro planları</a>
+                        <a href="/planlar" class="btn btn-ghost btn-sm">Planlar</a>
                     </div>
 
                     <div class="hero-proof" aria-label="Platform kapsamı">
@@ -269,36 +272,16 @@
             </div>
         </section>
 
-        <section id="decision-assistant" data-private-section class="assistant-section hidden">
-            <div class="container">
-                <div class="section-header assistant-header">
-                    <div>
-                        <a href="/" class="btn btn-ghost btn-sm" data-native-route>
-                            <i data-lucide="arrow-left"></i> Ana sayfaya dön
-                        </a>
-                        <h2>Akıllı karar akışı</h2>
-                        <p>Satın almak veya rezervasyon yapmak istediğiniz alanı seçin. Cevaplarınıza göre öneri, toplam maliyet, kredi karşılaştırması ve satın alma kanalları hazırlanır.</p>
-                    </div>
-                </div>
-                <div class="assistant-shell">
-                    <aside class="assistant-category-rail" id="assistant-category-rail" aria-label="Karar kategorileri"></aside>
-                    <div class="assistant-workspace">
-                        <div class="assistant-progress" id="assistant-progress"></div>
-                        <form id="decision-assistant-form" class="assistant-form">
-                            <div id="assistant-questions"></div>
-                            <div class="assistant-actions">
-                                <button type="submit" class="btn btn-primary">
-                                    <i data-lucide="sparkles"></i> Sonucu hesapla
-                                </button>
-                                <button type="button" class="btn btn-outline" data-assistant-reset>
-                                    <i data-lucide="rotate-ccw"></i> Temizle
-                                </button>
-                            </div>
-                        </form>
-                        <div id="assistant-results" class="assistant-results" aria-live="polite"></div>
-                    </div>
-                </div>
-            </div>
+        <section id="page-karar-analizi" class="hidden" data-private-section aria-label="Karar analizi">
+            <div id="premium-karar-analizi-root"></div>
+        </section>
+
+        <section id="page-metodoloji" class="hidden" data-private-section aria-label="Metodoloji">
+            <div id="premium-metodoloji-root"></div>
+        </section>
+
+        <section id="page-planlar" class="hidden" data-private-section aria-label="Planlar">
+            <div id="premium-planlar-root"></div>
         </section>
 
         <section id="profil" class="section hidden" data-private-section>

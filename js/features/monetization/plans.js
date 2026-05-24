@@ -9,7 +9,8 @@ export const PLANS = {
     highlights: [
       'Auto karar analizi (özet)',
       '2 araç karşılaştırma',
-      'Partner teklif talebi'
+      'Partner teklif talebi',
+      'Şeffaf metodoloji özeti'
     ]
   },
   pro: {
@@ -19,7 +20,7 @@ export const PLANS = {
     priceHint: 'Stripe ile güvenli ödeme · dilediğiniz zaman iptal',
     description: 'Gelişmiş analiz, sınırsız karşılaştırma ve öncelikli partner eşleşmesi',
     trialDays: 7,
-    trialLabel: '7 gün deneme süresi',
+    trialLabel: '7 gün ücretsiz deneme',
     billing: {
       monthly: {
         id: 'monthly',
@@ -47,6 +48,21 @@ export const PLANS = {
       'Karar geçmişi ve export'
     ],
     cta: 'Pro\'ya geç'
+  },
+  enterprise: {
+    id: 'enterprise',
+    name: 'Enterprise',
+    priceLabel: 'Özel teklif',
+    description: 'Kurumsal ekipler, galeri ağları ve yüksek hacimli partner operasyonları',
+    highlights: [
+      'Özel SLA ve destek hattı',
+      'API / webhook entegrasyonu',
+      'Çoklu kullanıcı ve rol yönetimi',
+      'Özel metodoloji ve raporlama',
+      'Beyaz etiket seçenekleri'
+    ],
+    cta: 'Kurumsal teklif al',
+    contactHref: '/iletisim.html?konu=enterprise'
   }
 };
 

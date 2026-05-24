@@ -3,6 +3,7 @@ import './runtime/locale-bootstrap.js';
 import './runtime/growth-bootstrap.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
+import { premiumPages } from './ui/premium-pages.js';
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
@@ -104,6 +105,7 @@ class App {
             this.setupCookieConsent();
             this.renderHeroDecisionPreview();
             this.renderPricingSection();
+            premiumPages.mount('planlar', this);
 
             document.addEventListener('routeChanged', (event) => {
                 if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) !== 'accepted') return;
@@ -117,6 +119,7 @@ class App {
                     page_path: event.detail?.path
                 });
                 analytics.trackPageView(event.detail?.path || analytics.getPagePath());
+                this.handlePremiumRoute(event.detail?.route);
             });
 
             await this.checkAuth();
@@ -951,8 +954,18 @@ class App {
                 return;
             }
 
-            if (route === 'decision-assistant') {
+            if (route === 'decision-assistant' || route === 'page-karar-analizi') {
+                premiumPages.mount('karar-analizi', this);
                 this.renderDecisionAssistant();
+            }
+
+            if (route === 'page-metodoloji') {
+                premiumPages.mount('metodoloji', this);
+            }
+
+            if (route === 'page-planlar') {
+                premiumPages.mount('planlar', this);
+                this.renderPricingSection();
             }
 
             if (route === 'history') {
@@ -3131,10 +3144,25 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.ui.showSuccess('Filtreler temizlendi.');
     }
 
+    handlePremiumRoute(route) {
+        const map = {
+            'page-karar-analizi': 'karar-analizi',
+            'page-metodoloji': 'metodoloji',
+            'page-planlar': 'planlar'
+        };
+        const pageId = map[route];
+        if (pageId) {
+            premiumPages.mount(pageId, this);
+        }
+    }
+
     renderPricingSection() {
         const root = document.getElementById('pricing-plans-root');
         if (!root) return;
-        root.innerHTML = revenueManager.renderPricingCards();
+        const isPremiumPage = root.closest('#page-planlar');
+        root.innerHTML = revenueManager.renderPricingCards({
+            layout: isPremiumPage ? 'premium' : 'default'
+        });
         revenueManager.initPricingControls(root);
         this.ui.loadIcons?.();
     }
@@ -4135,7 +4163,7 @@ document.addEventListener('click', (event) => {
 
 // Production route visibility guard (kept in sync with js/core/router.js marketing IDs)
 const MARKETING_SECTION_IDS = new Set(['home', 'trust', 'how-it-works', 'pricing', 'categories']);
-const MARKETING_PATH_ALIASES = new Set(['/metodoloji', '/planlar', '/karar-analizi']);
+const MARKETING_PATH_ALIASES = new Set(['/metodoloji-ozet', '/planlar-ozet']);
 
 function applyProductionRouteVisibility() {
     const path = window.location.pathname.replace(/\/$/, '') || '/';
@@ -4166,6 +4194,26 @@ function applyProductionRouteVisibility() {
         '/ilan-ekle': 'add-listing'
     };
 
+    const premiumRouteMap = {
+        '/karar-analizi': 'page-karar-analizi',
+        '/metodoloji': 'page-metodoloji',
+        '/planlar': 'page-planlar',
+        '/karar-asistani': 'page-karar-analizi'
+    };
+
+    if (premiumRouteMap[path]) {
+        const pageId = premiumRouteMap[path];
+        document.body.classList.add('ib-premium-route-active');
+        document.querySelectorAll('section[id]').forEach((section) => {
+            const shouldShow = section.id === pageId;
+            section.classList.toggle('hidden', !shouldShow);
+            section.style.display = shouldShow ? 'block' : 'none';
+        });
+        return;
+    }
+
+    document.body.classList.remove('ib-premium-route-active');
+
     const sectionId = routeMap[path] || (path.startsWith('/ilan/') ? 'listing-detail' : 'home');
     const homeSections = MARKETING_SECTION_IDS;
 
@@ -4178,8 +4226,12 @@ function applyProductionRouteVisibility() {
         section.style.display = shouldShow ? 'block' : 'none';
     });
 
-    if (sectionId === 'decision-assistant') {
-        window.app?.renderDecisionAssistant?.();
+    if (sectionId === 'page-karar-analizi' || sectionId === 'decision-assistant') {
+        window.app?.handlePremiumRoute?.('page-karar-analizi');
+    }
+
+    if (sectionId === 'page-planlar') {
+        window.app?.handlePremiumRoute?.('page-planlar');
     }
 
     if (sectionId === 'compare') {

@@ -214,14 +214,15 @@ export class RevenueManager {
     return PLANS.pro.billing[this.selectedBilling] || PLANS.pro.billing.monthly;
   }
 
-  renderPricingCards() {
+  renderPricingCards({ layout = 'default' } = {}) {
     const monthly = PLANS.pro.billing.monthly;
     const annual = PLANS.pro.billing.annual;
     const trialBadge = this.trialEligible
       ? `<span class="revenue-trial-badge">${PLANS.pro.trialLabel}</span>`
       : '';
+    const enterprise = PLANS.enterprise;
 
-    return `
+    const billingToggle = `
       <div class="revenue-billing-toggle" role="radiogroup" aria-label="Faturalama dönemi">
         <label class="revenue-billing-option">
           <input type="radio" name="billing-interval" value="monthly" checked>
@@ -234,15 +235,32 @@ export class RevenueManager {
           <strong>${annual.priceDisplay}<small>${annual.periodLabel}</small></strong>
           <small class="revenue-billing-equiv">${annual.monthlyEquivalent}</small>
         </label>
-      </div>
-      <div class="revenue-pricing-grid">
+      </div>`;
+
+    const enterpriseCard = enterprise ? `
+        <article class="revenue-plan-card revenue-plan-card--enterprise">
+          <span class="revenue-plan-badge">Kurumsal</span>
+          <h3>${enterprise.name}</h3>
+          <p class="revenue-plan-price">${enterprise.priceLabel}</p>
+          <p class="revenue-plan-desc">${enterprise.description}</p>
+          <ul>${enterprise.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
+          <a href="${enterprise.contactHref}" class="btn btn-outline">${enterprise.cta}</a>
+        </article>` : '';
+
+    const gridClass = layout === 'premium'
+      ? 'revenue-pricing-grid revenue-pricing-grid--triple'
+      : 'revenue-pricing-grid';
+
+    return `
+      ${billingToggle}
+      <div class="${gridClass}">
         <article class="revenue-plan-card">
           <span class="revenue-plan-badge">Bireysel</span>
           <h3>${PLANS.free.name}</h3>
           <p class="revenue-plan-price">${PLANS.free.priceLabel}</p>
           <p class="revenue-plan-desc">${PLANS.free.description}</p>
           <ul>${PLANS.free.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
-          <a href="/auto" class="btn btn-outline" data-native-route>Analize başla</a>
+          <a href="/karar-analizi" class="btn btn-outline">Analize başla</a>
         </article>
         <article class="revenue-plan-card revenue-plan-card--featured">
           <span class="revenue-plan-badge revenue-plan-badge--pro">Önerilen</span>
@@ -255,6 +273,7 @@ export class RevenueManager {
           <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1" data-revenue-checkout-cta>${this.getCheckoutCtaLabel('monthly')}</button>
           <p class="revenue-plan-hint">${PLANS.pro.priceHint}${this.trialEligible ? ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz` : ''}</p>
         </article>
+        ${enterpriseCard}
       </div>
       <p class="revenue-risk-reversal" role="note">
         <span>7 gün ücretsiz deneme</span>

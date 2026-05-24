@@ -19,11 +19,17 @@ export const MARKETING_HASH_IDS = Object.freeze([
     'categories'
 ]);
 
-/** Legacy / SEO paths → scroll target on homepage. */
+/** Legacy hash shortcuts on homepage (long-scroll). */
 const MARKETING_PATH_ALIASES = Object.freeze({
-    '/metodoloji': 'how-it-works',
-    '/planlar': 'pricing',
-    '/karar-analizi': 'home'
+    '/metodoloji-ozet': 'how-it-works',
+    '/planlar-ozet': 'pricing'
+});
+
+/** Premium full-page routes (dedicated sections). */
+export const PREMIUM_PAGE_ROUTES = Object.freeze({
+    '/karar-analizi': 'page-karar-analizi',
+    '/metodoloji': 'page-metodoloji',
+    '/planlar': 'page-planlar'
 });
 
 export class Router {
@@ -32,7 +38,10 @@ export class Router {
             { path: '/', component: 'home' },
             { path: '/ilanlar', component: 'ilanlar' },
             { path: '/karsilastir', component: 'compare' },
-            { path: '/karar-asistani', component: 'decision-assistant' },
+            { path: '/karar-analizi', component: 'page-karar-analizi' },
+            { path: '/metodoloji', component: 'page-metodoloji' },
+            { path: '/planlar', component: 'page-planlar' },
+            { path: '/karar-asistani', component: 'page-karar-analizi' },
             { path: '/favoriler', component: 'favoriler' },
             { path: '/gecmis', component: 'history' },
             { path: '/quiz', component: 'quiz' },
@@ -171,6 +180,15 @@ export class Router {
         const path = stripped.replace(/\/$/, '') || '/';
         this.currentRoute = path;
 
+        const premiumPage = PREMIUM_PAGE_ROUTES[path];
+        if (premiumPage) {
+            this.showPremiumPage(premiumPage);
+            this.updateNavLinks(path);
+            this.updateTitle(premiumPage);
+            this.dispatchRoute(premiumPage, {}, path);
+            return;
+        }
+
         const aliasScrollId = MARKETING_PATH_ALIASES[path];
         if (aliasScrollId) {
             this._pendingScrollId = aliasScrollId;
@@ -280,9 +298,42 @@ export class Router {
         }
     }
 
+    showPremiumPage(pageId) {
+        document.body.classList.add('app-route-active', 'ib-premium-route-active');
+
+        document.querySelectorAll('[data-private-section]').forEach((section) => {
+            section.classList.remove('route-visible');
+        });
+
+        document.querySelectorAll('section[id]').forEach((section) => {
+            section.style.display = 'none';
+            if (section.hasAttribute('data-private-section')) {
+                section.classList.add('hidden');
+            }
+        });
+
+        const target = document.getElementById(pageId);
+        if (!target) {
+            this.showHomeSections();
+            return;
+        }
+
+        target.classList.remove('hidden');
+        target.classList.add('route-visible');
+        target.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
     showSection(routeId) {
+        document.body.classList.remove('ib-premium-route-active');
+
         if (routeId === 'home') {
             this.showHomeSections();
+            return;
+        }
+
+        if (routeId.startsWith('page-')) {
+            this.showPremiumPage(routeId);
             return;
         }
 
@@ -335,8 +386,21 @@ export class Router {
             admin: 'Admin Panel - isteBul',
             messages: 'Mesajlar - isteBul',
             'add-listing': 'İlan Ekle - isteBul',
-            'listing-detail': 'İlan Detayı - isteBul'
+            'listing-detail': 'İlan Detayı - isteBul',
+            'page-karar-analizi': 'Karar Analizi - isteBul',
+            'page-metodoloji': 'Metodoloji - isteBul',
+            'page-planlar': 'Planlar ve Fiyatlandırma - isteBul'
         };
+
+        if (route.startsWith('page-')) {
+            const pageTitles = {
+                'page-karar-analizi': titles['page-karar-analizi'],
+                'page-metodoloji': titles['page-metodoloji'],
+                'page-planlar': titles['page-planlar']
+            };
+            document.title = pageTitles[route] || titles.home;
+            return;
+        }
 
         document.title = titles[route] || titles.home;
     }

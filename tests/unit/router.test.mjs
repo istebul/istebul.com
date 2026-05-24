@@ -61,6 +61,7 @@ global.document = {
 };
 
 global.requestAnimationFrame = (fn) => fn();
+global.window.scrollTo = () => {};
 
 global.CustomEvent = class CustomEvent {
     constructor(type, options = {}) {
@@ -113,24 +114,14 @@ test('goToMarketingHash resets pathname from SPA route and shows landing section
     assert.equal(sections.get('pricing').style.display, 'block');
 });
 
-test('handleRoute maps /planlar alias to pricing scroll', () => {
+test('handleRoute maps /planlar to premium planlar page', () => {
     const router = new Router();
+    sections.set('page-planlar', sectionStub('page-planlar'));
     global.window.location.pathname = '/planlar';
     global.window.location.hash = '';
-    let scrolled = false;
-    global.document.getElementById = (id) => {
-        if (id === 'pricing') {
-            return {
-                scrollIntoView() {
-                    scrolled = true;
-                }
-            };
-        }
-        return makeSection(id);
-    };
 
     router.handleRoute();
 
-    assert.equal(sections.get('pricing').style.display, 'block');
-    assert.ok(scrolled);
+    assert.equal(sections.get('page-planlar').style.display, 'block');
+    assert.equal(sections.get('pricing').style.display, 'none');
 });

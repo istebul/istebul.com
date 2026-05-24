@@ -144,6 +144,15 @@
   cursor: pointer;
 }
 
+.revenue-pricing-grid--triple {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.revenue-plan-card--enterprise {
+  border-color: rgba(15, 23, 42, 0.12);
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+}
+
 .revenue-pricing-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -327,7 +336,8 @@ body.revenue-paywall-open {
     grid-template-columns: 1fr;
   }
 
-  .revenue-pricing-grid {
+  .revenue-pricing-grid,
+  .revenue-pricing-grid--triple {
     grid-template-columns: 1fr;
   }
 }
