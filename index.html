@@ -284,6 +284,269 @@
             <div id="premium-planlar-root"></div>
         </section>
 
+        <section id="ilanlar" data-private-section class="listings-section hidden">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-kicker">Piyasa</span>
+                    <h2 id="active-category-label">Öne çıkan seçenekler</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-outline" id="filter-btn">
+                            <i data-lucide="filter"></i> Filtrele
+                        </button>
+                        <button class="btn btn-primary" id="add-listing-btn">
+                            <i data-lucide="plus"></i> Seçenek Ekle
+                        </button>
+                    </div>
+                </div>
+                <form id="listing-filter-form" class="filter-panel" hidden>
+                    <div class="form-grid marketplace-filter-grid">
+                        <div class="form-group">
+                            <label for="filter-category">Kategori</label>
+                            <select id="filter-category" name="category">
+                                <option value="">Tümü</option>
+                                <option value="arac">Araç</option>
+                                <option value="ev">Ev</option>
+                                <option value="tatil">Tatil</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-province">İl</label>
+                            <select id="filter-province" name="province">
+                                <option value="">Türkiye geneli</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-district">İlçe <span>opsiyonel</span></label>
+                            <select id="filter-district" name="district" disabled>
+                                <option value="">Tüm ilçeler</option>
+                            </select>
+                        </div>
+                        <div class="form-group" data-filter-scope="arac" hidden>
+                            <label for="filter-vehicle-brand">Araç markası</label>
+                            <select id="filter-vehicle-brand" name="vehicle_brand">
+                                <option value="">Tüm markalar</option>
+                            </select>
+                        </div>
+                        <div class="form-group" data-filter-scope="ev" hidden>
+                            <label for="filter-property-type">Emlak tipi</label>
+                            <select id="filter-property-type" name="property_type">
+                                <option value="">Tüm ev tipleri</option>
+                            </select>
+                        </div>
+                        <div class="form-group" data-filter-scope="tatil" hidden>
+                            <label for="filter-vacation-type">Tatil profili</label>
+                            <select id="filter-vacation-type" name="vacation_type">
+                                <option value="">Tüm tatil profilleri</option>
+                                <option value="familyResort">Aile / her şey dahil</option>
+                                <option value="luxury">Lüks / premium</option>
+                                <option value="nature">Doğa / sakinlik</option>
+                                <option value="culture">Kültür / deneyim</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-min-price">Minimum fiyat</label>
+                            <input type="number" id="filter-min-price" name="min_price" min="0" step="1000" placeholder="Alt sınır yok">
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-max-price">Maksimum fiyat</label>
+                            <input type="number" id="filter-max-price" name="max_price" min="0" step="1000" placeholder="Üst sınır yok">
+                        </div>
+                        <div class="form-group full-span">
+                            <label for="filter-search">Anahtar kelime</label>
+                            <input type="text" id="filter-search" name="search" placeholder="Toyota, Kadıköy, villa, Karadeniz, her şey dahil">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary"><i data-lucide="sliders-horizontal"></i> Uygula</button>
+                        <button type="button" class="btn btn-outline" id="clear-filter-btn"><i data-lucide="x"></i> Temizle</button>
+                    </div>
+                </form>
+                <div id="active-filter-summary" class="active-filter-summary" hidden></div>
+                <div id="marketplace-results-toolbar" class="marketplace-results-toolbar" aria-live="polite">
+                    <div class="marketplace-result-copy">
+                        <span id="listing-result-count">Size uygun seçenekler hazırlanıyor</span>
+                        <small id="listing-result-context">Karar skoruna göre listeleniyor</small>
+                    </div>
+                    <div class="marketplace-result-controls">
+                        <label for="listing-sort">Sırala</label>
+                        <select id="listing-sort" name="listing_sort">
+                            <option value="aiScore">Karar uygunluğu</option>
+                            <option value="newest">En yeni</option>
+                            <option value="priceAsc">Fiyat artan</option>
+                            <option value="priceDesc">Fiyat azalan</option>
+                        </select>
+                        <div class="listing-view-toggle" aria-label="İlan görünümü">
+                            <button type="button" class="active" data-listing-view="grid" aria-pressed="true" title="Kart görünümü"><i data-lucide="layout-grid"></i></button>
+                            <button type="button" data-listing-view="compact" aria-pressed="false" title="Kompakt görünüm"><i data-lucide="rows-3"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="listings-grid" id="listings-grid">
+                    <!-- Listings will be loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <section id="listing-detail" data-private-section class="listing-detail-section section-bg hidden">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-kicker">Detay</span>
+                    <h2>Seçenek detayı</h2>
+                    <p>Seçtiğiniz ilanın karar skoru, maliyet kırılımı ve aksiyon önerileri.</p>
+                </div>
+                <div id="listing-detail-content">
+                    <div class="empty-state">
+                        <i data-lucide="info"></i>
+                        <h3>Seçenek seçilmedi</h3>
+                        <p>Bir seçeneği listeden açarak detaylarını inceleyebilirsiniz.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="compare" data-private-section class="compare-section section-surface hidden">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <span class="section-kicker">Karşılaştırma merkezi</span>
+                        <h2>Seçenekleri yan yana değerlendirin</h2>
+                        <p>Karar skoru, maliyet, risk ve öne çıkan farkları tek tabloda görün.</p>
+                    </div>
+                </div>
+                <div id="comparison-content" class="comparison-content">
+                    <div class="empty-state">
+                        <i data-lucide="columns-3"></i>
+                        <h3>Seçenek ekleyin</h3>
+                        <p>Karar sonucu veya ilan kartlarından seçenekleri karşılaştırmaya ekleyin.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="favoriler" data-private-section class="favorites-section hidden">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Favorileriniz</h2>
+                    <p>Beğendiğiniz seçenekleri tek yerde saklayın. Henüz giriş yapmadıysanız kaydederek sonra bakabilirsiniz.</p>
+                </div>
+                <div class="favorites-grid" id="favorites-grid">
+                    <div class="empty-state">
+                        <i data-lucide="heart"></i>
+                        <h3>Henüz favori ilan yok</h3>
+                        <p>Bir ilana göz atın ve kalp ikonuna basarak favorilerinize ekleyin.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="history" data-private-section class="history-section hidden">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Karar geçmişi</h2>
+                    <p>Karar ve arama geçmişiniz hesabınıza bağlı saklanır. Giriş yaptıktan sonra sonuçları tekrar açabilir veya silebilirsiniz.</p>
+                </div>
+                <div class="history-list" id="history-list">
+                    <div class="empty-state history-auth-gate">
+                        <i data-lucide="lock-keyhole"></i>
+                        <h3>Hesabınıza giriş yapın</h3>
+                        <p>Kayıtlı veriler yalnızca hesabınıza bağlı görüntülenir.</p>
+                        <div class="history-auth-actions">
+                            <button type="button" class="btn btn-primary" data-history-login><i data-lucide="log-in"></i> Giriş Yap</button>
+                            <button type="button" class="btn btn-outline" data-history-register><i data-lucide="user-plus"></i> Üye Ol</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="quiz" data-private-section class="quiz-section section-bg hidden">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Quiz</h2>
+                    <p>AI destekli ilan seçimini kolaylaştıracak hızlı quiz.</p>
+                </div>
+                <div class="quiz-card" id="quiz-content">
+                    <div class="empty-state">
+                        <i data-lucide="help-circle"></i>
+                        <h3>Karar analizi hazırlanıyor</h3>
+                        <p>Size en uygun önerileri oluşturmak için analiz akışı hazırlanıyor.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin" data-private-section class="admin-section section-surface hidden">
+            <div class="container">
+                <div class="section-header">
+                    <h2 data-private-title>Yönetim</h2>
+                    <p>Yönetici araçları ve sistem istatistikleri burada görünecek.</p>
+                </div>
+                <div class="admin-card">
+                    <p>Bu alan sadece yönetici kullanıcılar için ayrılmıştır.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="add-listing" data-private-section class="add-listing-section section-bg hidden">
+            <div class="container">
+                <div class="section-header">
+                    <h2 data-private-title>Yeni seçenek</h2>
+                    <p>Kendi ilanınızı hızlıca ekleyin ve AI destekli karşılaştırmaya dahil edin.</p>
+                </div>
+                <form id="add-listing-form" class="add-listing-card listing-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="listing-title">Başlık</label>
+                            <input type="text" id="listing-title" name="title" minlength="5" maxlength="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="listing-category">Kategori</label>
+                            <select id="listing-category" name="category" required>
+                                <option value="arac">Araç</option>
+                                <option value="ev">Ev</option>
+                                <option value="tatil">Tatil</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="listing-price">Fiyat</label>
+                            <input type="number" id="listing-price" name="price" min="0" max="50000000" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="listing-location">Konum</label>
+                            <input type="text" id="listing-location" name="location" maxlength="120" required>
+                        </div>
+                        <div class="form-group full-span">
+                            <label for="listing-description">Açıklama</label>
+                            <textarea id="listing-description" name="description" minlength="20" maxlength="2000" rows="6" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="listing-image-url">Görsel URL</label>
+                            <input type="url" id="listing-image-url" name="image_url" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label for="listing-external-url">Dış ilan URL</label>
+                            <input type="url" id="listing-external-url" name="external_url" placeholder="https://...">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">İlanı Yayınla</button>
+                        <button type="reset" class="btn btn-outline">Temizle</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section id="messages" data-private-section class="messages-section section-bg hidden">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-kicker">İletişim</span>
+                    <h2>Mesajlar</h2>
+                    <p>İlan ve karar süreciyle ilgili mesajlarınız hesabınıza bağlı görüntülenir.</p>
+                </div>
+                <div id="messages-list" class="messages-list" role="log" aria-live="polite"></div>
+            </div>
+        </section>
+
         <section id="profil" class="section hidden" data-private-section>
             <div class="container">
                 <div class="section-header">
@@ -330,37 +593,8 @@
             </div>
         </section>
 
-    </main>
 
-        <!-- Private app sections are mounted lazily by JavaScript after route/auth checks. -->
-    <div id="auth-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="auth-modal-title">Giriş Yap</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="login-form">
-                    <div class="form-group">
-                        <label for="email">E-posta</label>
-                        <input type="email" id="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Şifre</label>
-                        <input type="password" id="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary full-width">Giriş Yap</button>
-                </form>
-                <div class="modal-footer">
-                    <p>Hesabınız yok mu? <a href="#" id="switch-to-register">Üye olun</a></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-
-        <section id="partner" class="section hidden partner-section">
+        <section id="partner" class="section hidden partner-section" data-private-section aria-label="Partner programı">
             <div class="container">
                 <div class="section-header">
                     <div>
@@ -411,6 +645,37 @@
             </div>
         </section>
 
+    </main>
+
+        <!-- Private app sections are mounted lazily by JavaScript after route/auth checks. -->
+    <div id="auth-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="auth-modal-title">Giriş Yap</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">E-posta</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Şifre</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary full-width">Giriş Yap</button>
+                </form>
+                <div class="modal-footer">
+                    <p>Hesabınız yok mu? <a href="#" id="switch-to-register">Üye olun</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+
+
     <footer class="footer">
         <div class="container">
             <div class="newsletter-card">
@@ -435,11 +700,13 @@
                 <div class="footer-section">
                     <h4>Platform</h4>
                     <ul>
-                        <li><a href="#home">Ana sayfa</a></li>
-                        <li><a href="/auto/">Araç analizi</a></li>
-                        <li><a href="/karar-asistani/">Karar asistanı</a></li>
-                        <li><a href="/ilanlar/">İlanlar</a></li>
-                        <li><a href="/karsilastir/">Karşılaştır</a></li>
+                        <li><a href="/">Ana sayfa</a></li>
+                        <li><a href="/karar-analizi">Karar analizi</a></li>
+                        <li><a href="/metodoloji">Metodoloji</a></li>
+                        <li><a href="/planlar">Planlar</a></li>
+                        <li><a href="/auto/">Ücretsiz araç analizi</a></li>
+                        <li><a href="/ilanlar/">Seçenekler</a></li>
+                        <li><a href="/karsilastir/">Karşılaştırma merkezi</a></li>
                         <li><a href="#how-it-works">Nasıl çalışır?</a></li>
                         <li><a href="/partner-olun.html">Partner olun</a></li>
                     </ul>
@@ -484,18 +751,6 @@
             </div>
         </div>
     </footer>
-
-
-        <section id="compare" class="section hidden" data-private-section>
-            <div class="section-header">
-                <div>
-                    <span class="section-kicker">Karşılaştırma Merkezi</span>
-                    <h2>Seçenekleri yan yana değerlendirin</h2>
-                    <p>Karar skoru, maliyet, risk ve öne çıkan farkları tek tabloda görün.</p>
-                </div>
-            </div>
-
-            <div id="comparison-content"></div>
         </section>
 
     <div class="cro-sticky-cta" role="region" aria-label="Hızlı başlangıç">

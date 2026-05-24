@@ -57,6 +57,7 @@ export class Router {
             { path: '/kayit', component: 'auth-register' },
             { path: '/admin', component: 'admin' },
             { path: '/messages', component: 'messages' },
+            { path: '/partner', component: 'partner' },
             { path: '/ilan-ekle', component: 'add-listing' },
             { path: '/ilan/:id', component: 'listing-detail' }
         ];
@@ -392,6 +393,7 @@ export class Router {
             'auth-register': 'Üye Ol - isteBul',
             admin: 'Admin Panel - isteBul',
             messages: 'Mesajlar - isteBul',
+            partner: 'Partner Programı - isteBul',
             'add-listing': 'İlan Ekle - isteBul',
             'listing-detail': 'İlan Detayı - isteBul',
             'page-karar-analizi': 'Karar Analizi - isteBul',

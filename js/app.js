@@ -4230,7 +4230,7 @@ function applyProductionRouteVisibility() {
         '/': 'home',
         '/ilanlar': 'ilanlar',
         '/karsilastir': 'compare',
-        '/karar-asistani': 'decision-assistant',
+        '/karar-asistani': 'page-karar-analizi',
         '/favoriler': 'favoriler',
         '/gecmis': 'history',
         '/profil': 'profil',
