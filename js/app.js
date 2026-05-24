@@ -1964,28 +1964,23 @@ SADECE geçerli JSON döndür.
 Markdown yok.
 Kod bloğu yok.
 Açıklama yok.
+Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanır.
 
 {
   "summary": "Kısa karar özeti",
   "insight": "Neden bu öneriyi verdiğini açıklayan Türkçe analiz",
   "best_match": {
     "title": "En uygun seçenek",
-    "score": 0,
-    "price": 0,
     "reason": "Kısa gerekçe",
     "pros": ["artı"],
-    "cons": ["eksi"],
-    "estimated_yearly_cost": 0
+    "cons": ["eksi"]
   },
   "alternatives": [
     {
       "title": "Alternatif seçenek",
-      "score": 0,
-      "price": 0,
       "reason": "Kısa gerekçe",
       "pros": ["artı"],
-      "cons": ["eksi"],
-      "estimated_yearly_cost": 0
+      "cons": ["eksi"]
     }
   ],
   "risks": ["risk"],
@@ -2011,12 +2006,12 @@ Açıklama yok.
                 id: `ai-${this.assistantCategory}-${index + 1}`,
                 title: item.title || base.title,
                 name: item.title || base.name || 'Önerilen seçenek',
-                score: Number(item.score || base.score || 80),
-                price: Number(item.price || base.price || 0),
-                yearlyCost: Number(item.estimated_yearly_cost || base.yearlyCost || 0),
+                score: Number(base.score || 80),
+                price: Number(base.price || 0),
+                yearlyCost: Number(base.yearlyCost || 0),
                 reason: item.reason || base.reason || '',
-                pros: Array.isArray(item.pros) ? item.pros : [],
-                cons: Array.isArray(item.cons) ? item.cons : [],
+                pros: Array.isArray(item.pros) ? item.pros : (base.pros || []),
+                cons: Array.isArray(item.cons) ? item.cons : (base.cons || []),
                 aiGenerated: true
             };
         });
@@ -2031,7 +2026,8 @@ Açıklama yok.
                 category: this.assistantCategory
             });
 
-            const parsed = this.parseAIJsonResponse(aiResponse?.response);
+            const rawAiText = aiResponse?.result ?? aiResponse?.response ?? '';
+            const parsed = this.parseAIJsonResponse(rawAiText);
 
             if (!parsed) {
                 return fallback;
@@ -2041,7 +2037,9 @@ Açıklama yok.
                 ...fallback,
                 aiGenerated: true,
                 summary: parsed.summary || fallback.summary,
-                insight: parsed.insight || fallback.insight,
+                insight: typeof parsed.insight === 'string'
+                    ? parsed.insight
+                    : (fallback.insight?.headline || fallback.summary),
                 recommendations: this.normalizeAIRecommendations(parsed, fallback),
                 risks: Array.isArray(parsed.risks) ? parsed.risks : [],
                 nextSteps: Array.isArray(parsed.next_steps)
@@ -2442,12 +2440,18 @@ Açıklama yok.
         const sourceVolumeScore = Math.min(18, readySources.length * 6);
         const financeScore = Math.min(22, financeProducts.length * 6 + readySources.filter((source) => source.type === 'finance').length * 4);
         const calculationScore = recommendations.length ? 18 : 6;
-        const liveScore = liveProvidersEnabled ? 14 : 6;
-        const confidenceScore = Math.max(48, Math.min(98, sourceScore + sourceVolumeScore + financeScore + calculationScore + liveScore));
+        const liveScore = liveProvidersEnabled ? 14 : 4;
+        let confidenceScore = sourceScore + sourceVolumeScore + financeScore + calculationScore + liveScore;
+        if (!liveProvidersEnabled) {
+            confidenceScore = Math.min(confidenceScore, 68);
+        }
+        confidenceScore = Math.max(42, Math.min(liveProvidersEnabled ? 92 : 72, confidenceScore));
 
         return {
             confidenceScore,
-            confidenceLabel: this.getDataConfidenceLabel(confidenceScore),
+            confidenceLabel: liveProvidersEnabled
+                ? this.getDataConfidenceLabel(confidenceScore)
+                : 'Referans simülasyonu — canlı ilan doğrulaması önerilir',
             modeLabel: liveProvidersEnabled ? 'Canlı sağlayıcı modu' : 'Simülasyon + doğrulama modu',
             updatedAt: this.marketData.updatedAt,
             updatedAtLabel: this.formatDataFreshness(this.marketData.updatedAt),

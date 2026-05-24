@@ -5244,6 +5244,16 @@ main > section:not(.hero-section) {
     color: var(--text-primary);
 }
 
+.assistant-ai-disclaimer {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(37, 99, 235, 0.06);
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
 .assistant-score-breakdown {
     display: grid;
     gap: 0.75rem;
