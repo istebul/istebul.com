@@ -1,0 +1,26 @@
+{
+  "hakkimizda.html": {
+    "title": "Hakkımızda | isteBul — Araç Alım Karar Platformu",
+    "description": "isteBul; Türkiye'de araç satın alma kararlarını toplam maliyet, kredi etkisi ve kullanım ihtiyacına göre şeffaf biçimde değerlendiren karar destek platformudur."
+  },
+  "iletisim.html": {
+    "title": "İletişim | isteBul",
+    "description": "isteBul kurumsal destek ve iş birliği talepleri için iletişim kanalları. Araç karar platformu hakkında bize ulaşın."
+  },
+  "partner-olun.html": {
+    "title": "Bayi ve Galeri Partneri | isteBul Auto Lead",
+    "description": "Satın almaya hazır araç müşteri adayları: imzalı webhook, retry, failover ve teslimat logları ile kurumsal lead dağıtımı. Partner başvurusu."
+  },
+  "gizlilik.html": {
+    "title": "Gizlilik Politikası | isteBul",
+    "description": "isteBul gizlilik politikası: veri işleme, çerezler ve kullanıcı hakları hakkında bilgi."
+  },
+  "kvkk.html": {
+    "title": "KVKK Aydınlatma Metni | isteBul",
+    "description": "6698 sayılı KVKK kapsamında isteBul veri sorumlusu aydınlatma metni ve başvuru hakları."
+  },
+  "kullanim-sartlari.html": {
+    "title": "Kullanım Şartları | isteBul",
+    "description": "isteBul platformu kullanım şartları ve hizmet koşulları."
+  }
+}

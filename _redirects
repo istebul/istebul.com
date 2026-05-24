@@ -1,3 +1,9 @@
 /admin-panel.html /admin-panel.html 200
 /auto /auto/index.html 200
+/auto/ /auto/index.html 200
+/profil/* /profil/index.html 200
+/favoriler/* /favoriler/index.html 200
+/gecmis/* /gecmis/index.html 200
+/messages/* /messages/index.html 200
+/ilan-ekle/* /ilan-ekle/index.html 200
 /* /index.html 200

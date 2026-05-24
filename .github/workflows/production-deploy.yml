@@ -139,3 +139,25 @@ jobs:
             echo "Deploying $fn..."
             supabase functions deploy "$fn" --project-ref "$SUPABASE_PROJECT_REF"
           done
+
+  deploy-report:
+    name: Deploy summary
+    needs: [quality, deploy-cloudflare, deploy-supabase]
+    runs-on: ubuntu-latest
+    if: always() && github.ref == 'refs/heads/main'
+    steps:
+      - name: Summary
+        run: |
+          {
+            echo "## Production Deploy özeti"
+            echo ""
+            echo "| Job | Sonuç |"
+            echo "|-----|--------|"
+            echo "| Test & Build | ${{ needs.quality.result }} |"
+            echo "| Cloudflare Pages | ${{ needs.deploy-cloudflare.result }} |"
+            echo "| Supabase | ${{ needs.deploy-supabase.result }} |"
+            echo ""
+            echo "Cloudflare **skipped** ise: repo **Secrets** → \`CLOUDFLARE_API_TOKEN\`, \`CLOUDFLARE_ACCOUNT_ID\`, \`SUPABASE_URL\`, \`SUPABASE_ANON_KEY\`"
+            echo ""
+            echo "Rehber: [docs/CANLIYA_ALMA_REHBERI.md](https://github.com/${{ github.repository }}/blob/main/docs/CANLIYA_ALMA_REHBERI.md)"
+          } >> "$GITHUB_STEP_SUMMARY"

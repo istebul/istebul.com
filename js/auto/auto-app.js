@@ -27,7 +27,7 @@ function openAutoUpgradePaywall(feature = 'premium_report') {
         ${PLANS.pro.highlights.slice(0, 4).map((item) => `<li>${item}</li>`).join('')}
       </ul>
       <div class="revenue-upgrade-actions">
-        <a class="btn primary" href="/profil/?upgrade=1" data-native-route>Pro\'ya geç</a>
+        <a class="btn primary" href="/#pricing?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
         <button type="button" class="btn secondary" data-auto-paywall-close>Ücretsiz devam et</button>
       </div>
     </div>
@@ -52,8 +52,8 @@ function renderAutoUpgradeStrip() {
         <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma — ilk abonelikte 7 gün ücretsiz deneme.</p>
       </div>
       <div class="revenue-upgrade-actions">
-        <a class="btn btn-primary" href="/profil/?upgrade=1">Pro\'ya geç</a>
-        <a class="btn btn-outline" href="/#pricing">Planlar</a>
+        <a class="btn btn-primary" href="/#pricing?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
+        <a class="btn btn-outline" href="/#pricing">Planları incele</a>
       </div>
     </aside>
   `;
@@ -570,7 +570,7 @@ function openLeadModal(type, vehicle = '') {
     if (event.target === modal) closeModal();
   });
 
-  function renderStep1() {
+  function renderLeadForm() {
     modal.innerHTML = `
       <div class="lead-modal-card premium-lead-modal">
         <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
@@ -580,34 +580,13 @@ function openLeadModal(type, vehicle = '') {
           <h3>${escapeHtml(flow.title)}</h3>
           <p>${escapeHtml(flow.description)}</p>
         </div>
-
         <div class="premium-lead-points">
           <span>✓ Doğrulanmış partner ağı</span>
           <span>✓ Finansman ön değerlendirme</span>
           <span>✓ Hızlı geri dönüş</span>
-          <span>✓ Ücretsiz ön analiz</span>
+          <span>✓ Zorunlu satın alma yok</span>
         </div>
-
-        <div class="premium-lead-actions">
-          <button class="btn primary" id="lead-step-next">Devam et</button>
-          <button class="btn secondary" id="close-lead-modal">Kapat</button>
-        </div>
-      </div>
-    `;
-
-    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
-    document.getElementById('lead-step-next')?.addEventListener('click', renderStep2);
-    document.getElementById('close-lead-modal')?.addEventListener('click', closeModal);
-  }
-
-  function renderStep2() {
-    modal.innerHTML = `
-      <div class="lead-modal-card premium-lead-modal">
-        <button type="button" class="lead-modal-close" aria-label="Kapat">×</button>
-
-        <p class="kicker">${escapeHtml(flow.kicker)}</p>
-        <h3>Bilgilerinizi paylaşın</h3>
-        <p class="lead-modal-muted">Talebiniz güvenli şekilde alınır. Zorunlu satın alma yoktur.</p>
+        <p class="lead-modal-muted">Bilgileriniz KVKK kapsamında işlenir.</p>
 
         <form id="phone-lead-form">
           <input name="vehicle" type="hidden" value="${escapeHtml(vehicle)}">
@@ -757,12 +736,12 @@ function openLeadModal(type, vehicle = '') {
     `;
 
     modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
-    document.getElementById('retry-lead-submit')?.addEventListener('click', renderStep2);
+    document.getElementById('retry-lead-submit')?.addEventListener('click', renderLeadForm);
     document.getElementById('close-error-lead-modal')?.addEventListener('click', closeModal);
   }
 
   document.body.appendChild(modal);
-  renderStep1();
+  renderLeadForm();
 }
 
 
@@ -1528,11 +1507,30 @@ function renderWizard() {
   `;
 }
 
+function showWizardInlineError(message) {
+  if (!wizard) return;
+  let banner = wizard.querySelector('.wizard-inline-error');
+  if (!banner) {
+    banner = document.createElement('p');
+    banner.className = 'wizard-inline-error';
+    banner.setAttribute('role', 'alert');
+    wizard.querySelector('.wizard-actions')?.before(banner);
+  }
+  banner.textContent = message;
+  banner.hidden = false;
+}
+
+function clearWizardInlineError() {
+  const banner = wizard?.querySelector('.wizard-inline-error');
+  if (banner) banner.hidden = true;
+}
+
 function advanceWizard() {
   const step = wizardSteps[wizardIndex];
+  clearWizardInlineError();
 
   if (!wizardState[step.key]) {
-    alert('Lütfen devam etmeden önce bir seçenek seçin.');
+    showWizardInlineError('Lütfen devam etmeden önce bir seçenek seçin.');
     return;
   }
 
@@ -1547,7 +1545,7 @@ function advanceWizard() {
     if (step.key === 'location') {
       const cleanLocation = String(rawCustomValue || '').trim();
       if (cleanLocation.length < step.custom.min || cleanLocation.length > step.custom.max) {
-        alert('Lütfen geçerli bir şehir adı girin.');
+        showWizardInlineError('Lütfen geçerli bir şehir adı girin.');
         return;
       }
       wizardState[`${step.key}_custom`] = cleanLocation;
@@ -1555,13 +1553,13 @@ function advanceWizard() {
       const numericValue = Number(rawCustomValue);
 
       if (!rawCustomValue || Number.isNaN(numericValue)) {
-        alert('Lütfen geçerli bir değer girin.');
+        showWizardInlineError('Lütfen geçerli bir değer girin.');
         return;
       }
 
       if (step.custom) {
         if (numericValue < step.custom.min || numericValue > step.custom.max) {
-          alert(`Lütfen ${step.custom.min} - ${step.custom.max} aralığında bir değer girin.`);
+          showWizardInlineError(`Lütfen ${step.custom.min} - ${step.custom.max} aralığında bir değer girin.`);
           return;
         }
       }
@@ -1656,6 +1654,16 @@ if (localStorage.getItem('istebu_cookie_consent') === 'accepted') {
   analytics.init();
 }
 trackAutoEvent('auto_page_view');
+
+document.addEventListener('click', (event) => {
+  const checkoutLink = event.target.closest('[data-auto-checkout-intent]');
+  if (!checkoutLink) return;
+  try {
+    sessionStorage.setItem('istebul_checkout_intent', JSON.stringify({ billing: 'monthly', useTrial: true }));
+  } catch {
+    // ignore
+  }
+});
 
 const form = document.getElementById('auto-form');
 let autoFormStarted = false;

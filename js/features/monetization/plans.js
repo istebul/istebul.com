@@ -8,7 +8,7 @@ export const PLANS = {
     description: 'Temel karar analizi ve lead talebi',
     highlights: [
       'Auto karar analizi (özet)',
-      '3 araç karşılaştırma',
+      '2 araç karşılaştırma',
       'Partner teklif talebi'
     ]
   },

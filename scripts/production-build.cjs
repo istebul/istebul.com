@@ -9,7 +9,8 @@ const dist = path.join(root, 'dist');
 const staticRoots = ['assets', 'data'];
 const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/+esm';
 const bundleExternals = ['@supabase/supabase-js'];
-const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html'];
+const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html', 'css/seo-landing.css'];
+const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
 
 const runCheck = spawnSync(process.execPath, [path.join(root, 'scripts/check-syntax.cjs')], {
@@ -232,22 +233,18 @@ writeFile('build-manifest.json', JSON.stringify(manifest, null, 2));
 
 
 // Create physical SPA route entrypoints to avoid Cloudflare Pages clean-url redirects.
-const spaRoutes = [
-  'karsilastir',
-  'karar-asistani',
-  'favoriler',
-  'gecmis',
-  'profil',
-  'ilanlar',
-  'ilan-ekle',
-  'messages'
-];
+// App-only SPA shells (SEO hubs /rehber/, /ilanlar/, /karsilastir/ are static HTML from buildSeoPages)
+const spaRoutes = ['favoriler', 'gecmis', 'profil', 'ilan-ekle', 'messages'];
 
 spaRoutes.forEach((route) => {
   const routeDir = path.join(dist, route);
   fs.mkdirSync(routeDir, { recursive: true });
   fs.copyFileSync(path.join(dist, 'index.html'), path.join(routeDir, 'index.html'));
 });
+
+const seoResult = buildSeoPages(dist);
+generateSitemap(dist, seoResult);
+generateRobots(dist, seoResult.site);
 
 fs.copyFileSync(path.join(root, '_redirects'), path.join(dist, '_redirects'));
 

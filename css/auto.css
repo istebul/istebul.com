@@ -399,6 +399,15 @@ h1{font-size:clamp(40px,6vw,72px);line-height:.96;margin:10px 0 22px}h2{font-siz
   box-shadow: 0 14px 34px rgba(37,99,235,.14);
 }
 
+.wizard-inline-error {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
 .wizard-actions {
   display: flex;
   gap: 12px;

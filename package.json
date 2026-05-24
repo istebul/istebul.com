@@ -23,7 +23,8 @@
     "test:e2e:install": "playwright install",
     "lhci": "lhci autorun",
     "analyze:bundle": "node scripts/production-build.cjs && node scripts/analyze-bundle.cjs",
-    "build:check": "node scripts/check-build-output.cjs"
+    "build:check": "node scripts/check-build-output.cjs",
+    "verify:deploy": "node scripts/verify-deploy-setup.cjs"
   },
   "keywords": [
     "marketplace",
