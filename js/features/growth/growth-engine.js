@@ -94,6 +94,112 @@ export function buildRecoveryUrl(campaign = 'abandon_lead') {
   return url.toString();
 }
 
+/**
+ * Stable invite code for sharing (derived from email, stored locally).
+ * @param {string} email
+ */
+export function generateReferralCodeFromEmail(email) {
+  const local = String(email || '')
+    .split('@')[0]
+    .replace(/[^a-z0-9]/gi, '')
+    .toLowerCase()
+    .slice(0, 10);
+  const hash = [...String(email || 'ib')].reduce(
+    (acc, char) => ((acc << 5) - acc) + char.charCodeAt(0),
+    0
+  );
+  const suffix = Math.abs(hash).toString(36).slice(0, 4);
+  return `${local || 'ib'}${suffix}`.slice(0, 16);
+}
+
+export function getMyReferralCode(email = '') {
+  const stored = readStorageRaw(STORAGE_KEYS.MY_REFERRAL_CODE);
+  if (stored) return stored;
+
+  const resolvedEmail = email || readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL) || '';
+  if (!resolvedEmail) return '';
+
+  const code = generateReferralCodeFromEmail(resolvedEmail);
+  writeStorageRaw(STORAGE_KEYS.MY_REFERRAL_CODE, code);
+  return code;
+}
+
+export function trackPricingView(placement = 'pricing') {
+  trackGrowth('pricing_view', { placement }, {
+    funnel: 'subscription',
+    funnel_step: 'pricing_view'
+  });
+}
+
+/**
+ * @param {{ email?: string, title?: string, compact?: boolean }} [options]
+ */
+export function renderReferralSharePanel(options = {}) {
+  const email = options.email || readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL) || '';
+  const code = getMyReferralCode(email);
+  if (!code) return '';
+
+  const shareUrl = buildReferralUrl(code);
+  const title = options.title || 'Arkadaşınıza önerin';
+  const intro = options.compact
+    ? 'Davet linkinizle ücretsiz analiz başlatabilirler.'
+    : 'Paylaştığınız her davet, isteBul Auto analizine yönlendirilir — referral kodunuz otomatik işlenir.';
+
+  return `
+    <section class="growth-referral-card" data-referral-share data-referral-code="${code}" aria-label="Davet linki">
+      <div>
+        <p class="kicker">Büyüme · davet</p>
+        <h4>${title}</h4>
+        <p class="growth-referral-copy">${intro}</p>
+        <p class="growth-referral-url"><code>${shareUrl}</code></p>
+      </div>
+      <div class="growth-referral-actions">
+        <button type="button" class="btn btn-outline btn-sm" data-referral-copy>Kopyala</button>
+        <a class="btn btn-primary btn-sm" href="https://wa.me/?text=${encodeURIComponent(`Araç alımında toplam maliyeti gör: ${shareUrl}`)}"
+          target="_blank" rel="noopener noreferrer" data-referral-whatsapp>WhatsApp ile paylaş</a>
+      </div>
+    </section>
+  `;
+}
+
+/**
+ * Wire copy / WhatsApp share buttons inside a container.
+ * @param {ParentNode} root
+ */
+export function bindReferralShare(root) {
+  if (!root) return;
+
+  root.querySelectorAll('[data-referral-share]').forEach((card) => {
+    const code = card.dataset.referralCode || getMyReferralCode();
+    if (!code) return;
+
+    const url = buildReferralUrl(code);
+
+    card.querySelector('[data-referral-copy]')?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        /* fallback: select code element */
+      }
+      trackGrowth('growth_referral_share', { code, method: 'copy' }, {
+        funnel: 'referral',
+        funnel_step: 'copy_link'
+      });
+    });
+
+    card.querySelector('[data-referral-whatsapp]')?.addEventListener('click', () => {
+      trackGrowth('growth_referral_share', { code, method: 'whatsapp' }, {
+        funnel: 'referral',
+        funnel_step: 'whatsapp'
+      });
+      trackGrowth('growth_viral_share', { code, channel: 'whatsapp' }, {
+        funnel: 'viral',
+        funnel_step: 'whatsapp'
+      });
+    });
+  });
+}
+
 export const GROWTH_LOOPS = Object.freeze([
   {
     id: 'content_to_lead',

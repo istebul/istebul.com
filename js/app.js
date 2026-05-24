@@ -3,6 +3,7 @@ import './runtime/locale-bootstrap.js';
 import { stripLocalePrefix } from './platform/locale-registry.js';
 import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
+import { trackPricingView, getGrowthContext } from './features/growth/growth-engine.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
 import { premiumPages } from './ui/premium-pages.js';
@@ -3217,6 +3218,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
 
         this.ui.loadIcons?.();
+
+        trackPricingView(premiumRoot ? 'planlar' : 'home_pricing');
     }
 
     handleBillingReturnParams() {
@@ -3491,7 +3494,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 user_id: this.currentUser.id
             });
 
-            const attribution = analytics.getAttribution();
+            const growth = getGrowthContext();
 
             const response = await fetch('/api/create-checkout', {
                 method: 'POST',
@@ -3503,9 +3506,14 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                     billingInterval,
                     useTrial,
                     attribution: {
-                        utm_source: attribution.utm_source,
-                        utm_medium: attribution.utm_medium,
-                        utm_campaign: attribution.utm_campaign
+                        utm_source: growth.utm_source,
+                        utm_medium: growth.utm_medium,
+                        utm_campaign: growth.utm_campaign,
+                        utm_content: growth.utm_content,
+                        ref: growth.referral_code,
+                        growth_channel: growth.growth_channel,
+                        growth_campaign: growth.growth_campaign,
+                        gclid: growth.gclid
                     }
                 })
             });
@@ -3521,6 +3529,18 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             window.location.href = data.url;
         } catch (error) {
             console.error('Premium checkout failed:', error);
+            const growth = getGrowthContext();
+            analytics.track('checkout_abandoned', {
+                product: 'premium',
+                billing_interval: billingInterval,
+                growth_channel: growth.growth_channel,
+                reason: String(error.message || 'checkout_failed').slice(0, 80)
+            }, {
+                category: 'subscription',
+                funnel: 'subscription',
+                funnel_step: 'checkout_abandoned',
+                user_id: this.currentUser?.id
+            });
             trackOpsEvent('payment_checkout_failed', {
                 message: String(error.message || 'checkout_failed').slice(0, 120),
                 billing_interval: billingInterval,

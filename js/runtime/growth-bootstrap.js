@@ -10,6 +10,7 @@ function captureGrowthParams() {
   const params = new URLSearchParams(window.location.search);
   const ref = params.get('ref') || params.get('referral');
   const recovery = params.get('recover');
+  const utmMedium = params.get('utm_medium');
 
   if (ref) {
     storeReferralCode(ref);
@@ -30,6 +31,18 @@ function captureGrowthParams() {
         funnel_step: 'recovery_land'
       });
     }
+  }
+
+  if (utmMedium === 'lifecycle' && analytics.hasConsent()) {
+    analytics.track('growth_email_click', {
+      utm_source: params.get('utm_source'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content')
+    }, {
+      category: 'growth',
+      funnel: 'lifecycle_email',
+      funnel_step: 'email_click'
+    });
   }
 }
 

@@ -486,6 +486,18 @@ Deno.serve(async (req) => {
 
     const scoring = calculateLeadScore(form);
 
+    const growthMeta =
+      metadata.growth && typeof metadata.growth === "object"
+        ? (metadata.growth as Record<string, unknown>)
+        : {};
+    const growthAttribution = {
+      referral_code: clampString(growthMeta.referral_code || growthMeta.ref || metadata.ref, 32) || null,
+      growth_channel: clampString(growthMeta.growth_channel, 40) || null,
+      utm_source: clampString(growthMeta.utm_source, 120) || null,
+      utm_medium: clampString(growthMeta.utm_medium, 120) || null,
+      utm_campaign: clampString(growthMeta.utm_campaign || growthMeta.growth_campaign, 120) || null,
+    };
+
     const contextNotes = [
       form.city ? `Şehir: ${clampString(form.city, 60)}` : "",
       form.district ? `İlçe: ${clampString(form.district, 60)}` : "",
@@ -528,6 +540,11 @@ Deno.serve(async (req) => {
       status: isTestLead(phone) ? "test_spam" : "new",
       source: "auto",
       notes: leadNotes || null,
+      referral_code: growthAttribution.referral_code,
+      growth_channel: growthAttribution.growth_channel,
+      utm_source: growthAttribution.utm_source,
+      utm_medium: growthAttribution.utm_medium,
+      utm_campaign: growthAttribution.utm_campaign,
     };
 
     const { data: inserted, error: insertError } = await adminClient
@@ -560,6 +577,16 @@ Deno.serve(async (req) => {
           interest_type: payload.interest_type,
           priority: payload.priority,
           partner_route: payload.partner_route,
+          growth_channel: payload.growth_channel,
+          referral_code: payload.referral_code,
+          utm_source: payload.utm_source,
+          utm_medium: payload.utm_medium,
+          utm_campaign: payload.utm_campaign,
+        },
+        attribution: {
+          utm_source: payload.utm_source,
+          utm_medium: payload.utm_medium,
+          utm_campaign: payload.utm_campaign,
         },
         revenue_cents: Number(payload.estimated_revenue || 0) * 100,
         source: "auto_intake",

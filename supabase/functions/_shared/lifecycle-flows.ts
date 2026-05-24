@@ -100,6 +100,7 @@ export const PUBLIC_ENROLL_FLOWS = new Set([
   "abandoned_onboarding",
   "abandoned_lead",
   "finance_follow_up",
+  "upsell_campaigns",
 ]);
 
 export function getFlow(flowId: string): LifecycleFlow | undefined {

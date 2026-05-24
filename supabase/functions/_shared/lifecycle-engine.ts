@@ -484,6 +484,73 @@ export async function enrollAbandonedLeadsFromAnalytics(sb: SupabaseClient, limi
   return { enrolled, scanned: events?.length || 0 };
 }
 
+/** Pro upsell for engaged free users (3+ result views, last 14d) */
+export async function enrollUpsellFromAnalytics(sb: SupabaseClient, limit = 20) {
+  const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: events } = await sb
+    .from("analytics_events")
+    .select("email, created_at")
+    .eq("event_name", "auto_results_view")
+    .gte("created_at", since)
+    .not("email", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(800);
+
+  const counts = new Map<string, number>();
+  for (const ev of events || []) {
+    const email = normalizeEmail(ev.email);
+    if (!email) continue;
+    counts.set(email, (counts.get(email) || 0) + 1);
+  }
+
+  let enrolled = 0;
+  let scanned = 0;
+
+  for (const [email, count] of counts) {
+    if (count < 3) continue;
+    scanned += 1;
+    if (enrolled >= limit) break;
+
+    const { data: profile } = await sb
+      .from("profiles")
+      .select("id, email")
+      .ilike("email", email)
+      .maybeSingle();
+
+    if (profile?.id) {
+      const { data: activeSub } = await sb
+        .from("subscriptions")
+        .select("id")
+        .eq("user_id", profile.id)
+        .in("status", ["active", "trialing"])
+        .limit(1);
+
+      if (activeSub?.length) continue;
+    }
+
+    const { data: existing } = await sb
+      .from("lifecycle_enrollments")
+      .select("id")
+      .eq("flow_id", "upsell_campaigns")
+      .eq("status", "active")
+      .limit(1);
+
+    if (existing?.length) continue;
+
+    const result = await enrollInFlow(sb, {
+      flowId: "upsell_campaigns",
+      email,
+      userId: profile?.id,
+      context: { results_views: count, source: "cron_upsell" },
+      triggerSource: "cron_upsell_analytics",
+    });
+    if (result.ok && !result.duplicate) enrolled += 1;
+  }
+
+  return { enrolled, scanned: counts.size };
+}
+
 export async function cancelFlowsForContact(
   sb: SupabaseClient,
   contactId: string,

@@ -5,6 +5,7 @@ const {
   resolveGrowthChannel,
   buildReferralUrl,
   buildRecoveryUrl,
+  generateReferralCodeFromEmail,
   GROWTH_CHANNELS
 } = await import('../../js/features/growth/growth-engine.js');
 
@@ -29,5 +30,18 @@ test('buildReferralUrl includes ref and utm', () => {
 test('buildRecoveryUrl uses recovery utm', () => {
   const url = buildRecoveryUrl('abandon_24h');
   assert.match(url, /utm_source=recovery/);
-  assert.match(url, /recover/);
+  assert.match(url, /utm_medium=abandon/);
+  assert.match(url, /growth_campaign=abandon_24h/);
+});
+
+test('generateReferralCodeFromEmail is stable and bounded', () => {
+  const a = generateReferralCodeFromEmail('ali@example.com');
+  const b = generateReferralCodeFromEmail('ali@example.com');
+  assert.equal(a, b);
+  assert.ok(a.length <= 16);
+  assert.ok(a.length >= 4);
+});
+
+test('resolveGrowthChannel detects lifecycle email', () => {
+  assert.equal(resolveGrowthChannel({ utm_medium: 'lifecycle' }), GROWTH_CHANNELS.LIFECYCLE_EMAIL);
 });

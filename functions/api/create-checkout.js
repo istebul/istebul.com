@@ -185,6 +185,23 @@ export async function onRequestPost(context) {
       params.set('metadata[utm_campaign]', String(attribution.utm_campaign).slice(0, 120));
       params.set('subscription_data[metadata][utm_campaign]', String(attribution.utm_campaign).slice(0, 120));
     }
+    if (attribution.utm_content) {
+      params.set('metadata[utm_content]', String(attribution.utm_content).slice(0, 120));
+    }
+    if (attribution.ref) {
+      params.set('metadata[referral_code]', String(attribution.ref).slice(0, 32));
+      params.set('subscription_data[metadata][referral_code]', String(attribution.ref).slice(0, 32));
+    }
+    if (attribution.growth_channel) {
+      params.set('metadata[growth_channel]', String(attribution.growth_channel).slice(0, 40));
+      params.set('subscription_data[metadata][growth_channel]', String(attribution.growth_channel).slice(0, 40));
+    }
+    if (attribution.growth_campaign) {
+      params.set('metadata[growth_campaign]', String(attribution.growth_campaign).slice(0, 120));
+    }
+    if (attribution.gclid) {
+      params.set('metadata[gclid]', String(attribution.gclid).slice(0, 120));
+    }
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',

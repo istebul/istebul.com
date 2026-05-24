@@ -939,6 +939,18 @@ async function loadPlatformAnalytics() {
   const partnerFail = countEvents(rows, 'partner_dispatch_failed');
   const financeStart = countEvents(rows, 'finance_funnel_start');
   const ctaClicks = countEvents(rows, 'cta_click');
+  const pricingViews = countEvents(rows, 'pricing_view');
+  const checkoutAbandoned = countEvents(rows, 'checkout_abandoned');
+  const referralLand = countEvents(rows, 'growth_referral_land');
+  const referralShare = countEvents(rows, 'growth_referral_share');
+  const referralConvert = countEvents(rows, 'growth_referral_convert');
+  const lifecycleEnroll = countEvents(rows, 'lifecycle_enroll_requested');
+  const growthChannelRows = rows.filter((row) => row.event_category === 'growth');
+  const growthByChannel = growthChannelRows.reduce((acc, row) => {
+    const channel = row.funnel || row.attribution?.growth_channel || 'growth';
+    acc[channel] = (acc[channel] || 0) + 1;
+    return acc;
+  }, {});
 
   const autoSteps = [
     ['auto_page_view', 'Sayfa'],
@@ -994,6 +1006,28 @@ async function loadPlatformAnalytics() {
         `).join('')}
       </tbody>
     </table>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Growth engine (P1)</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Pricing views</div><div class="stat-value">${pricingViews}</div><div class="stat-sub">${conversionPct(checkoutStarted, pricingViews)} → checkout</div></div>
+      <div class="stat-card"><div class="stat-label">Checkout abandoned</div><div class="stat-value">${checkoutAbandoned}</div><div class="stat-sub">${conversionPct(checkoutAbandoned, checkoutStarted)}</div></div>
+      <div class="stat-card"><div class="stat-label">Referral land</div><div class="stat-value">${referralLand}</div></div>
+      <div class="stat-card"><div class="stat-label">Referral share</div><div class="stat-value">${referralShare}</div></div>
+      <div class="stat-card"><div class="stat-label">Referral convert</div><div class="stat-value">${referralConvert}</div><div class="stat-sub">${conversionPct(referralConvert, referralLand)}</div></div>
+      <div class="stat-card"><div class="stat-label">Lifecycle enroll</div><div class="stat-value">${lifecycleEnroll}</div></div>
+    </div>
+    ${Object.keys(growthByChannel).length ? `
+      <div style="height:12px"></div>
+      <div class="stat-grid">
+        ${Object.entries(growthByChannel).map(([channel, count]) => `
+          <div class="stat-card">
+            <div class="stat-label">${escapeHtml(channel)}</div>
+            <div class="stat-value">${count}</div>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
 
     <div style="height:20px"></div>
     <h3 style="margin:0 0 14px 0;">Revenue attribution (UTM)</h3>
@@ -1432,7 +1466,10 @@ async function loadAutoLeads() {
             class="${lead.follow_up_at && !lead.follow_up_done && new Date(lead.follow_up_at) < new Date() ? 'lead-overdue' : ''}"
             data-action="view-auto-lead"
             data-lead='${safeAttr(JSON.stringify(lead))}'>
-            <td>${lead.phone || '—'}</td>
+            <td>
+              ${lead.phone || '—'}
+              ${lead.growth_channel ? `<div class="text-muted" style="font-size:11px;margin-top:4px">${escapeHtml(lead.growth_channel)}${lead.referral_code ? ` · ref:${escapeHtml(lead.referral_code)}` : ''}</div>` : ''}
+            </td>
             <td>${lead.budget ? Number(lead.budget).toLocaleString('tr-TR') + ' ₺' : '—'}</td>
             <td><strong>${lead.lead_score || 0}</strong></td>
             <td><span class="badge ${

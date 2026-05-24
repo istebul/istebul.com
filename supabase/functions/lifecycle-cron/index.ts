@@ -4,6 +4,7 @@ import {
   enrollInactiveUsers,
   enrollPartnerFollowUps,
   enrollRetentionFromSubscriptions,
+  enrollUpsellFromAnalytics,
   processDueMessages,
 } from "../_shared/lifecycle-engine.ts";
 
@@ -29,6 +30,7 @@ Deno.serve(async (req) => {
   const inactiveResult = await enrollInactiveUsers(sb, 40);
   const retentionResult = await enrollRetentionFromSubscriptions(sb, 20);
   const abandonResult = await enrollAbandonedLeadsFromAnalytics(sb, 25);
+  const upsellResult = await enrollUpsellFromAnalytics(sb, 20);
 
   return new Response(
     JSON.stringify({
@@ -40,6 +42,7 @@ Deno.serve(async (req) => {
         inactive_users: inactiveResult,
         retention_campaigns: retentionResult,
         abandoned_lead: abandonResult,
+        upsell_campaigns: upsellResult,
       },
     }),
     { headers: { "Content-Type": "application/json" } }

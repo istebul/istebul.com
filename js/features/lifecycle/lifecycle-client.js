@@ -91,6 +91,13 @@ export async function enrollLifecycle(flowId, payload = {}) {
     }
 
     markEnrolledSession(flowId);
+    if (flowId === 'upsell_campaigns') {
+      analytics.track('lifecycle_enrolled', { flow_id: flowId }, {
+        category: 'lifecycle',
+        funnel: 'upsell',
+        funnel_step: 'upsell_campaigns'
+      });
+    }
     return { ok: true, ...data };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'enroll_failed' };

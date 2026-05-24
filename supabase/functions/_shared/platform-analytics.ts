@@ -31,6 +31,8 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "auth_logout",
   // Subscription
   "checkout_started",
+  "checkout_abandoned",
+  "pricing_view",
   "checkout_completed",
   "subscription_created",
   "subscription_updated",

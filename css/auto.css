@@ -3181,6 +3181,45 @@ html body a.auto-floating-cta{
   text-align:left;
 }
 
+.growth-referral-card{
+  margin:20px 0 0;
+  padding:18px 20px;
+  border-radius:18px;
+  border:1px solid rgba(37,99,235,.18);
+  background:linear-gradient(135deg,#f8fbff,#f0fdf9);
+  display:grid;
+  gap:14px;
+}
+
+.growth-referral-card h4{
+  margin:4px 0 8px;
+  font-size:18px;
+}
+
+.growth-referral-copy{
+  margin:0;
+  color:#475569;
+  line-height:1.5;
+  font-size:14px;
+}
+
+.growth-referral-url code{
+  display:block;
+  margin-top:8px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid rgba(15,23,42,.08);
+  font-size:12px;
+  word-break:break-all;
+}
+
+.growth-referral-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
 .finance-compare-card{
   max-width:960px !important;
   width:min(960px, calc(100vw - 32px)) !important;

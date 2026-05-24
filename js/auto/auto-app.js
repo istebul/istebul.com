@@ -4,7 +4,9 @@ import {
   enrichLeadMetadata,
   trackGrowth,
   getGrowthContext,
-  getStoredReferralCode
+  getStoredReferralCode,
+  renderReferralSharePanel,
+  bindReferralShare
 } from '../features/growth/growth-engine.js';
 import { trackOpsEvent } from '../core/operational-telemetry.js';
 import {
@@ -806,12 +808,19 @@ function openLeadModal(type, vehicle = '') {
           <span>✓ En kısa sürede dönüş yapılacak</span>
         </div>
 
+        ${renderReferralSharePanel({
+          email: readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL) || '',
+          title: 'Arkadaşınıza önerin',
+          compact: false
+        })}
+
         <div class="premium-lead-actions">
           <button class="btn primary" id="close-success-lead-modal">Tamam</button>
         </div>
       </div>
     `;
 
+    bindReferralShare(modal);
     modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
     document.getElementById('close-success-lead-modal')?.addEventListener('click', closeModal);
   }
@@ -1343,7 +1352,11 @@ function renderResults(results) {
         </p>
       </div>
     </section>
+
+    ${renderReferralSharePanel({ compact: true })}
   `;
+
+  bindReferralShare(root);
 
   root.querySelectorAll('[data-auto-filter]').forEach((select) => {
     select.addEventListener('change', (event) => {
