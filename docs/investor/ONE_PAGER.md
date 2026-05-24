@@ -39,6 +39,8 @@ Consumers make ₺500K–₺3M decisions (vehicle, home, finance) with fragmente
 3. **Operational moat** — partner dispatch, circuit breaker, audit logs
 4. **Expansion platform** — locale registry, vertical roadmap (8 categories)
 
+Full competitive moat strategy: `docs/COMPETITIVE_MOAT_STRATEGY.md`
+
 ## Market & expansion
 
 - **Now:** Turkey automotive decision + lead gen

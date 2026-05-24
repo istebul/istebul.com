@@ -137,7 +137,7 @@ Revenue = Pro_MRR + Σ(partner_actual_revenue)
 - Live market data feeds
 - Outcome data (“models that closed in X days”)
 
-**Detail:** `docs/investor/MOAT_AND_DEFENSIBILITY.md`
+**Detail:** `docs/investor/MOAT_AND_DEFENSIBILITY.md` · `docs/COMPETITIVE_MOAT_STRATEGY.md` (Sahibinden, Arabam, Hepsiemlak, Booking, fintech, marketplaces)
 
 ---
 

@@ -1,5 +1,7 @@
 # Moat & Defensibility
 
+**Strategic playbook (TR, competitor-by-competitor):** `docs/COMPETITIVE_MOAT_STRATEGY.md`
+
 ## Core thesis
 
 isteBul competes on **decision quality and trust**, not inventory size. Listings marketplaces optimize for supply; banks optimize for origination. isteBul optimizes for **aligned recommendations** with explainable economics.

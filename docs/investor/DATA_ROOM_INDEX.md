@@ -27,6 +27,7 @@
 | Architecture | `docs/ARCHITECTURE.md` |
 | AI decision engine (moat) | `docs/AI_DECISION_ENGINE.md` |
 | Moat summary | `docs/investor/MOAT_AND_DEFENSIBILITY.md` |
+| **Competitive moat strategy** | `docs/COMPETITIVE_MOAT_STRATEGY.md` |
 | Platform expansion | `docs/PLATFORM_EXPANSION_ROADMAP.md` |
 | Global readiness | `docs/GLOBAL_EXPANSION_READINESS.md` |
 
