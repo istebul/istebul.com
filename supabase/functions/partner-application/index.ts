@@ -38,6 +38,18 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+const BILLING_ALIASES: Record<string, string> = {
+  cpl: "starter",
+  subscription: "growth",
+};
+
+function normalizePartnerBillingPlan(raw: string) {
+  const plan = String(raw || "pilot").trim().toLowerCase();
+  const mapped = BILLING_ALIASES[plan] || plan;
+  const allowed = new Set(["pilot", "starter", "growth", "enterprise"]);
+  return allowed.has(mapped) ? mapped : "pilot";
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
 
@@ -148,9 +160,7 @@ Deno.serve(async (req) => {
       utm_source: utm_source || null,
       utm_medium: utm_medium || null,
       utm_campaign: utm_campaign || null,
-      billing_plan: ["pilot", "cpl", "subscription", "enterprise"].includes(billing_plan)
-        ? billing_plan
-        : "pilot",
+      billing_plan: normalizePartnerBillingPlan(billing_plan),
     })
     .select("id, onboarding_token")
     .single();

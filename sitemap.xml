@@ -26,6 +26,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://www.istebul.com/partner-planlar.html</loc>
+    <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://www.istebul.com/partner-docs.html</loc>
     <priority>0.55</priority>
     <changefreq>monthly</changefreq>

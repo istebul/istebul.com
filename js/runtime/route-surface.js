@@ -45,6 +45,7 @@ const MARKETING_ALIASES = Object.freeze({
 const EXTERNAL_REDIRECTS = Object.freeze({
     '/admin': '/admin-panel.html',
     '/partner': '/partner-olun.html',
+    '/partner-planlar': '/partner-planlar.html',
     '/partner-hub': '/partner-basvuru.html',
     '/partner-basvuru': '/partner-basvuru.html',
     '/partner-api': '/partner-docs.html',

@@ -15,6 +15,7 @@
     { "loc": "/hakkimizda.html", "priority": "0.5", "changefreq": "monthly" },
     { "loc": "/iletisim.html", "priority": "0.5", "changefreq": "monthly" },
     { "loc": "/partner-olun.html", "priority": "0.65", "changefreq": "monthly" },
+    { "loc": "/partner-planlar.html", "priority": "0.6", "changefreq": "monthly" },
     { "loc": "/partner-docs.html", "priority": "0.55", "changefreq": "monthly" },
     { "loc": "/partner-guven.html", "priority": "0.55", "changefreq": "monthly" },
     { "loc": "/gizlilik.html", "priority": "0.3", "changefreq": "yearly" },

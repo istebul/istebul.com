@@ -11,6 +11,10 @@
     "title": "Bayi ve Galeri Partneri | isteBul Auto Lead",
     "description": "Satın almaya hazır araç müşteri adayları: imzalı webhook, retry, failover ve teslimat logları ile kurumsal lead dağıtımı. Partner başvurusu."
   },
+  "partner-planlar.html": {
+    "title": "Partner Planları — Starter, Growth, Enterprise | isteBul",
+    "description": "B2B partner paketleri: lead hacmi, SLA, routing önceliği, CRM, retry, entegrasyon ve raporlama. Self-serve teklif ve başvuru."
+  },
   "partner-docs.html": {
     "title": "Partner API & Webhook | isteBul",
     "description": "Partner API referansı: lead payload şeması, HMAC imza, retry ve failover, callback API, test workflow ve yerel imza konsolu."

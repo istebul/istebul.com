@@ -84,6 +84,8 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "partner_funnel_test_payload",
   "partner_onboarding_complete",
   "partner_trust_view",
+  "partner_pricing_view",
+  "partner_pricing_cta",
   // Admin CRM
   "crm_lead_status_change",
   "crm_follow_up_complete",
