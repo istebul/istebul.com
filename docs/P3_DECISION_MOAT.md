@@ -9,6 +9,7 @@
 | Data moat | `moat_segment_benchmarks` view + `decision-intelligence` API |
 | Feedback loop | `decision_feedback` table + Auto UI + analytics events |
 | **P3.2 Outcome data moat** | `outcome_signal_events` + `outcome-capture` edge + unified ingest |
+| **P3.3 Product feedback intelligence** | `product_feedback` + lightweight UX loop + intelligence events |
 | Scoring intelligence | `calibrateLeadScore()` in `auto-intake` from segment win rates |
 | Outcome intelligence | Auto results strip + admin segment table |
 | Competitive positioning | `karar-moat.html` + `category-positioning.js` |
@@ -62,6 +63,28 @@ moat_segment_benchmarks + calibrateLeadScore()
 1. Apply migrations on Supabase production.
 2. Deploy edge functions: `decision-intelligence`, `outcome-capture`.
 3. Partner outcomes (`partner-callback`) and CRM updates feed signals — without volume, calibration stays in `insufficient_outcome_data` mode (honest).
+
+## P3.3 — Product feedback intelligence loop
+
+Surfaces (collapsed by default, no spam):
+
+| Surface | Mount point |
+|---------|-------------|
+| Sonuç ekranı | Auto results `#auto-moat-feedback-root` |
+| E-posta | Lifecycle CTA `?product_feedback=email` → auto expand |
+| Geçmiş | `/gecmis` history list prepend |
+| Partner sonrası | Lead success modal `#auto-partner-feedback-root` |
+
+Questions: faydalı mı, sonunda ne yaptınız, satın alma, alternatif seçim.
+
+Events: `feedback_requested`, `feedback_submitted`, `recommendation_success`, `recommendation_rejected`.
+
+Paths:
+
+- `js/features/moat/product-feedback.js` + `product-feedback-shared.js`
+- `supabase/functions/_shared/product-feedback.ts`
+- `supabase/migrations/20260606_p3_3_product_feedback_intelligence.sql`
+- `decision-intelligence` action `product_feedback`
 
 ## Honest limits
 

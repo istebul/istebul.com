@@ -734,7 +734,11 @@ async function loadAutoAnalytics() {
     auto_whatsapp_click: 'WhatsApp iletişimi',
     decision_feedback_helpful: 'Karar faydalı',
     decision_feedback_unclear: 'Daha açıklama istiyor',
-    decision_feedback_contact: 'Uzman destek isteği'
+    decision_feedback_contact: 'Uzman destek isteği',
+    feedback_requested: 'Ürün geri bildirimi istendi',
+    feedback_submitted: 'Ürün geri bildirimi gönderildi',
+    recommendation_success: 'Öneri başarı (kullanıcı)',
+    recommendation_rejected: 'Öneri red (kullanıcı)'
   };
 
   const pageViews = counts.auto_page_view || 0;

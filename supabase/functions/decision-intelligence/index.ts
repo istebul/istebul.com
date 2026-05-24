@@ -8,6 +8,12 @@ import {
   mapDecisionFeedbackToSignals,
   recordOutcomeSignals,
 } from "../_shared/outcome-capture.ts";
+import {
+  deriveProductIntelligenceEvents,
+  hasMinimumProductFeedback,
+  mapProductFeedbackToSignals,
+  normalizeProductFeedbackAnswers,
+} from "../_shared/product-feedback.ts";
 
 const allowedOrigins = [
   "https://istebul.com",
@@ -159,6 +165,76 @@ Deno.serve(async (req) => {
       if (action === "segment_key") {
         const form = body.form && typeof body.form === "object" ? body.form : {};
         return json({ ok: true, segment_key: buildSegmentKey(form) }, 200, origin);
+      }
+
+      if (action === "product_feedback") {
+        const answers = normalizeProductFeedbackAnswers({
+          useful_rating: body.useful_rating,
+          outcome_action: body.outcome_action,
+          bought_vehicle: body.bought_vehicle,
+          chose_alternative: body.chose_alternative,
+        });
+
+        if (!hasMinimumProductFeedback(answers)) {
+          return json({ error: "insufficient_answers" }, 400, origin);
+        }
+
+        const segmentKey =
+          String(body.segment_key || "") ||
+          buildSegmentKey(body.form && typeof body.form === "object" ? body.form : {});
+        const sessionId = String(body.decision_session_id || "").slice(0, 64) || null;
+        const surface = String(body.surface || "auto_results").slice(0, 32);
+
+        await admin.from("product_feedback").insert({
+          decision_session_id: sessionId,
+          surface,
+          useful_rating: answers.useful_rating,
+          outcome_action: answers.outcome_action,
+          bought_vehicle: answers.bought_vehicle,
+          chose_alternative: answers.chose_alternative,
+          segment_key: segmentKey || null,
+          match_score: Number(body.match_score || 0) || null,
+          confidence_tier: String(body.confidence_tier || "").slice(0, 24) || null,
+          page_path: String(body.page_path || "").slice(0, 200) || null,
+          anonymous_id: String(body.anonymous_id || "").slice(0, 64) || null,
+          lead_id: body.lead_id || null,
+          properties:
+            body.properties && typeof body.properties === "object" ? body.properties : {},
+        });
+
+        const pfSignals = mapProductFeedbackToSignals(answers);
+        if (pfSignals.length) {
+          try {
+            await recordOutcomeSignals(admin, pfSignals, {
+              decision_session_id: sessionId,
+              segment_key: segmentKey || null,
+              lead_id: body.lead_id || null,
+              idempotency_prefix: `pf:${sessionId || "anon"}:${surface}:${Date.now().toString(36).slice(-6)}`,
+            });
+          } catch {
+            /* non-blocking */
+          }
+        }
+
+        for (const eventName of deriveProductIntelligenceEvents(answers)) {
+          try {
+            await recordPlatformEvent(admin, {
+              event_name: eventName,
+              funnel: "product_intelligence",
+              funnel_step: surface,
+              properties: {
+                segment_key: segmentKey,
+                decision_session_id: sessionId,
+                useful_rating: answers.useful_rating,
+                outcome_action: answers.outcome_action,
+              },
+            });
+          } catch {
+            /* non-blocking */
+          }
+        }
+
+        return json({ ok: true }, 200, origin);
       }
 
       if (action !== "feedback") {

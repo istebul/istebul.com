@@ -2812,6 +2812,23 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.decisionHistory = this.readStoredArray(storageKey);
         this.ui.renderDecisionHistory(this.decisionHistory);
         this.injectDecisionHistoryUpsell();
+        this.injectDecisionHistoryProductFeedback();
+    }
+
+    async injectDecisionHistoryProductFeedback() {
+        const container = document.getElementById('history-list');
+        if (!container || !this.decisionHistory?.length) return;
+        try {
+            const { mountHistoryProductFeedback } = await import('./features/moat/product-feedback.js');
+            if (container.querySelector('[data-product-feedback]')) return;
+            const latestAuto = this.decisionHistory.find((item) => item.categoryId === 'auto');
+            mountHistoryProductFeedback(container, {
+                form: latestAuto?.rawAnswers || {},
+                matchScore: latestAuto?.topPick?.score ?? null
+            });
+        } catch {
+            /* optional module */
+        }
     }
 
     saveDecisionHistory(result) {

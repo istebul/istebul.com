@@ -44,7 +44,10 @@ import {
   updateDecisionSession,
   readDecisionSession
 } from '../features/moat/moat-session.js';
-import { mountDecisionFeedback } from '../features/moat/decision-feedback.js';
+import {
+  mountProductFeedback,
+  maybeMountEmailProductFeedback
+} from '../features/moat/product-feedback.js';
 import { mountOutcomeIntelligence } from '../features/moat/outcome-intelligence.js';
 import {
   captureFinancingAccepted,
@@ -865,11 +868,20 @@ function openLeadModal(type, vehicle = '') {
           compact: false
         })}
 
+        <div id="auto-partner-feedback-root" class="auto-moat-mount"></div>
+
         <div class="premium-lead-actions">
           <button class="btn primary" id="close-success-lead-modal">Tamam</button>
         </div>
       </div>
     `;
+
+    mountProductFeedback(document.getElementById('auto-partner-feedback-root'), {
+      surface: 'partner_post',
+      form: readForm(document.getElementById('auto-form')),
+      matchScore: readDecisionSession().topMatchScore,
+      confidenceTier: readDecisionSession().confidenceTier
+    });
 
     bindReferralShare(modal);
     modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
@@ -1424,11 +1436,19 @@ function renderResults(results) {
   });
 
   mountOutcomeIntelligence(document.getElementById('auto-moat-outcome-root'), formData);
-  mountDecisionFeedback(document.getElementById('auto-moat-feedback-root'), {
+  const feedbackRoot = document.getElementById('auto-moat-feedback-root');
+  if (!maybeMountEmailProductFeedback(feedbackRoot, {
     form: formData,
     matchScore: topResult?.score,
     confidenceTier: topResult?.confidence?.tier
-  });
+  })) {
+    mountProductFeedback(feedbackRoot, {
+      surface: 'auto_results',
+      form: formData,
+      matchScore: topResult?.score,
+      confidenceTier: topResult?.confidence?.tier
+    });
+  }
 
   root.querySelectorAll('[data-auto-filter]').forEach((select) => {
     select.addEventListener('change', (event) => {

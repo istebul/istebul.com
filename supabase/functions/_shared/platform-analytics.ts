@@ -91,6 +91,10 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "decision_feedback_helpful",
   "decision_feedback_unclear",
   "decision_feedback_contact",
+  "feedback_requested",
+  "feedback_submitted",
+  "recommendation_success",
+  "recommendation_rejected",
   "outcome_insight_view",
   "moat_differentiation_view",
   "outcome_signal_vehicle_recommended_selected",
@@ -155,7 +159,14 @@ export function eventCategoryFor(name: string, fallback?: string) {
   if (name.startsWith("finance_")) return "finance";
   if (name.startsWith("auth_")) return "auth";
   if (name.startsWith("partner_")) return "partner";
-  if (name.startsWith("decision_") || name === "outcome_insight_view" || name === "moat_differentiation_view") {
+  if (
+    name.startsWith("decision_") ||
+    name === "outcome_insight_view" ||
+    name === "moat_differentiation_view" ||
+    name.startsWith("feedback_") ||
+    name === "recommendation_success" ||
+    name === "recommendation_rejected"
+  ) {
     return "decision";
   }
   if (name.startsWith("crm_")) return "admin";

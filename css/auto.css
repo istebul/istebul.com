@@ -3699,7 +3699,7 @@ body.ib-enterprise.ib-auto .floating-whatsapp:hover{
 .auto-wizard-onboarding-lead{margin:0.5rem 0;font-size:0.95rem;color:var(--muted)}
 .auto-wizard-onboarding-foot{margin:0.5rem 0 0;font-size:0.82rem}
 .auto-moat-mount{margin:20px 0}
-.ib-outcome-insight,.ib-decision-feedback{
+.ib-outcome-insight,.ib-decision-feedback,.ib-product-feedback{
   background:#fff;
   border:1px solid var(--line);
   border-radius:22px;
@@ -3732,6 +3732,39 @@ body.ib-enterprise.ib-auto .floating-whatsapp:hover{
 .ib-outcome-metric strong{font-size:26px;color:var(--blue)}
 .ib-outcome-disclaimer{font-size:12px;color:var(--muted);margin:0}
 .ib-decision-feedback-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.ib-product-feedback--compact{padding:16px 18px}
+.ib-product-feedback--done{display:none}
+.ib-product-feedback-collapsed{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+.ib-product-feedback-teaser{display:flex;align-items:flex-start;gap:12px;flex:1;min-width:200px}
+.ib-product-feedback-icon{
+  width:36px;height:36px;border-radius:12px;
+  background:linear-gradient(135deg,#eff6ff,#e0e7ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--blue);flex-shrink:0;
+}
+.ib-product-feedback-collapsed-actions{display:flex;flex-wrap:wrap;gap:8px}
+.ib-product-feedback-panel{margin-top:4px}
+.ib-pf-group{border:0;margin:16px 0 0;padding:0}
+.ib-pf-group legend{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.ib-pf-chips{display:flex;flex-wrap:wrap;gap:8px}
+.ib-pf-chip{
+  border:1px solid var(--line);
+  background:#f8fafc;
+  border-radius:999px;
+  padding:8px 14px;
+  font-size:13px;
+  cursor:pointer;
+  transition:border-color .15s,background .15s;
+}
+.ib-pf-chip:hover{border-color:#93c5fd}
+.ib-pf-chip.is-selected{
+  border-color:var(--blue);
+  background:#eff6ff;
+  color:var(--blue);
+  font-weight:600;
+}
+.ib-product-feedback-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.history-product-feedback-slot{margin-bottom:20px}
 .ib-moat-pillars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .ib-moat-pillar{
   background:#fff;

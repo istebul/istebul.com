@@ -6,6 +6,7 @@ export type TemplateVars = {
   step_id: string;
   vehicle?: string;
   cta_url: string;
+  feedback_url?: string;
   pricing_url: string;
   account_url: string;
   unsubscribe_url?: string;
@@ -35,11 +36,13 @@ const TEMPLATES: Record<string, (v: TemplateVars) => string> = {
     <h1>Sonuçlarınız hazır</h1>
     <p>Araç karar analiziniz tamamlandı. Önerilerinizi ve toplam maliyet senaryolarını görüntüleyin.</p>
     <p><a href="${esc(v.cta_url)}" style="background:#0d6efd;color:#fff;padding:12px 20px;text-decoration:none;border-radius:8px;display:inline-block">Sonuçları gör</a></p>
+    <p style="font-size:14px;color:#444;margin-top:20px">30 sn isteğe bağlı geri bildirim: <a href="${esc(v.feedback_url || v.cta_url)}">Ürünü iyileştirin</a> — spam değil, tek seferlik.</p>
   `, v.unsubscribe_url),
   results_no_lead: (v) => layout(`
     <h1>Teklif sürecini başlatın</h1>
     <p>Auto analiz sonuçlarınızı incelediniz — bir sonraki adım uygun satıcı ve finansman eşleşmesi.</p>
     <p><a href="${esc(v.cta_url)}">Ücretsiz ön değerlendirme →</a></p>
+    <p style="font-size:14px;color:#444;margin-top:20px">Öneriler faydalı mıydı? <a href="${esc(v.feedback_url || v.cta_url)}">Kısa geri bildirim</a></p>
   `, v.unsubscribe_url),
   checkout_abandon: (v) => layout(`
     <h1>Pro ödemeniz tamamlanmadı</h1>
@@ -143,6 +146,12 @@ export function renderTemplate(
     cta_url: buildUtmLink(ctaPath, flowId, stepId, {
       growth_campaign: String(context.campaign || flowId),
     }),
+    feedback_url: buildUtmLink(
+      `${ctaPath}${ctaPath.includes("?") ? "&" : "?"}product_feedback=email`,
+      flowId,
+      stepId,
+      { growth_campaign: String(context.campaign || flowId), growth_channel: "email_feedback" }
+    ),
     pricing_url: buildUtmLink("/planlar?checkout=pro", flowId, stepId),
     account_url: buildUtmLink("/account.html", flowId, stepId),
     unsubscribe_url: recipientEmail ? buildUnsubscribeUrl(recipientEmail) : undefined,
