@@ -3522,6 +3522,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                         utm_campaign: growth.utm_campaign,
                         utm_content: growth.utm_content,
                         ref: growth.referral_code,
+                        referral_code: growth.referral_code,
                         growth_channel: growth.growth_channel,
                         growth_campaign: growth.growth_campaign,
                         gclid: growth.gclid

@@ -84,6 +84,10 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "growth_referral_land",
   "growth_referral_share",
   "growth_referral_convert",
+  "referral_link_created",
+  "referral_link_clicked",
+  "referral_signup",
+  "referral_conversion",
   "growth_lead_abandon",
   "growth_lead_recovery_click",
   "growth_email_click",
@@ -110,7 +114,9 @@ export function eventCategoryFor(name: string, fallback?: string) {
   if (name.startsWith("auth_")) return "auth";
   if (name.startsWith("partner_")) return "partner";
   if (name.startsWith("crm_")) return "admin";
-  if (name.startsWith("growth_") || name === "newsletter_subscribe") return "growth";
+  if (name.startsWith("growth_") || name.startsWith("referral_") || name === "newsletter_subscribe") {
+    return "growth";
+  }
   if (name.startsWith("lifecycle_")) return "lifecycle";
   if (name.startsWith("page_") || name === "route_change") return "page";
   if (name.startsWith("cta_")) return "cta";

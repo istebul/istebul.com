@@ -9,6 +9,7 @@ import {
   cancelRecoveryFlowsByEmail,
   enrollInFlow,
 } from "../_shared/lifecycle-engine.ts";
+import { processReferralConversion } from "../_shared/referral-engine.ts";
 import { recordOperationalEvent } from "../_shared/operational-observability.ts";
 
 async function logOps(
@@ -602,6 +603,19 @@ Deno.serve(async (req) => {
 
         if (normalizedEmail) {
           await cancelRecoveryFlowsByEmail(adminClient, normalizedEmail, "lead_converted");
+        }
+
+        if (payload.referral_code) {
+          try {
+            await processReferralConversion(adminClient, {
+              referralCode: String(payload.referral_code),
+              conversionType: "lead",
+              refereeEmail: normalizedEmail,
+              sessionId: String(metadata.session_id || "").slice(0, 64) || null,
+            });
+          } catch {
+            /* non-blocking */
+          }
         }
 
         if (normalizedEmail) {

@@ -4,9 +4,16 @@ import { AFFILIATE_DEFAULTS, FREE_LIMITS, PLANS, PRO_FEATURES } from './plans.js
 
 const ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due']);
 
+function hasActiveReferralPro(entitlements = {}) {
+  const until = entitlements?.pro_until;
+  if (!until) return false;
+  return new Date(until).getTime() > Date.now();
+}
+
 export class RevenueManager {
   constructor() {
     this.subscription = null;
+    this.referralEntitlements = {};
     this.isPremium = false;
     this.trialEligible = true;
     this.selectedBilling = 'monthly';
@@ -16,6 +23,7 @@ export class RevenueManager {
   async refresh(userId) {
     if (!userId) {
       this.subscription = null;
+      this.referralEntitlements = {};
       this.isPremium = false;
       this.trialEligible = true;
       return null;
@@ -24,13 +32,17 @@ export class RevenueManager {
     this.loading = true;
 
     try {
-      const [sub, trialEligible] = await Promise.all([
+      const [sub, trialEligible, profile] = await Promise.all([
         API.getSubscription(userId),
-        API.isTrialEligible(userId)
+        API.isTrialEligible(userId),
+        API.getProfile(userId).catch(() => null)
       ]);
       this.subscription = sub;
-      this.isPremium = Boolean(sub && ACTIVE_STATUSES.has(sub.status));
-      this.trialEligible = trialEligible && !this.isPremium;
+      this.referralEntitlements = profile?.referral_entitlements || {};
+      const subPremium = Boolean(sub && ACTIVE_STATUSES.has(sub.status));
+      const referralPremium = hasActiveReferralPro(this.referralEntitlements);
+      this.isPremium = subPremium || referralPremium;
+      this.trialEligible = trialEligible && !subPremium;
 
       if (typeof localStorage !== 'undefined') {
         if (this.isPremium) {
@@ -61,6 +73,7 @@ export class RevenueManager {
         return false;
       case 'premium_report':
       case 'advanced_ai_summary':
+        return Boolean(this.referralEntitlements?.premium_explanation_unlock);
       case 'priority_partner':
       case 'decision_export':
         return false;
@@ -74,7 +87,8 @@ export class RevenueManager {
   }
 
   getAutoResultsLimit() {
-    return this.isPremium ? 999 : FREE_LIMITS.maxAutoResultsPreview;
+    const bonus = Number(this.referralEntitlements?.extra_auto_analyses || 0);
+    return this.isPremium ? 999 : FREE_LIMITS.maxAutoResultsPreview + bonus;
   }
 
   getFeatureLabel(feature) {

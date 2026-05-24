@@ -6,6 +6,7 @@ const {
   buildReferralUrl,
   buildRecoveryUrl,
   generateReferralCodeFromEmail,
+  normalizeReferralCode,
   GROWTH_CHANNELS
 } = await import('../../js/features/growth/growth-engine.js');
 
@@ -44,4 +45,8 @@ test('generateReferralCodeFromEmail is stable and bounded', () => {
 
 test('resolveGrowthChannel detects lifecycle email', () => {
   assert.equal(resolveGrowthChannel({ utm_medium: 'lifecycle' }), GROWTH_CHANNELS.LIFECYCLE_EMAIL);
+});
+
+test('normalizeReferralCode strips invalid characters', () => {
+  assert.equal(normalizeReferralCode('IB-2026'), 'ib2026');
 });

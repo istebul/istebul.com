@@ -202,6 +202,10 @@ export async function onRequestPost(context) {
     if (attribution.gclid) {
       params.set('metadata[gclid]', String(attribution.gclid).slice(0, 120));
     }
+    if (attribution.ref) {
+      params.set('metadata[referral_code]', String(attribution.ref).slice(0, 32));
+      params.set('subscription_data[metadata][referral_code]', String(attribution.ref).slice(0, 32));
+    }
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',

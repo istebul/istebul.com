@@ -944,6 +944,10 @@ async function loadPlatformAnalytics() {
   const referralLand = countEvents(rows, 'growth_referral_land');
   const referralShare = countEvents(rows, 'growth_referral_share');
   const referralConvert = countEvents(rows, 'growth_referral_convert');
+  const referralLinkCreated = countEvents(rows, 'referral_link_created');
+  const referralLinkClicked = countEvents(rows, 'referral_link_clicked');
+  const referralSignup = countEvents(rows, 'referral_signup');
+  const referralConversion = countEvents(rows, 'referral_conversion');
   const lifecycleEnroll = countEvents(rows, 'lifecycle_enroll_requested');
   const growthChannelRows = rows.filter((row) => row.event_category === 'growth');
   const growthByChannel = growthChannelRows.reduce((acc, row) => {
@@ -1015,6 +1019,10 @@ async function loadPlatformAnalytics() {
       <div class="stat-card"><div class="stat-label">Referral land</div><div class="stat-value">${referralLand}</div></div>
       <div class="stat-card"><div class="stat-label">Referral share</div><div class="stat-value">${referralShare}</div></div>
       <div class="stat-card"><div class="stat-label">Referral convert</div><div class="stat-value">${referralConvert}</div><div class="stat-sub">${conversionPct(referralConvert, referralLand)}</div></div>
+      <div class="stat-card"><div class="stat-label">Link created</div><div class="stat-value">${referralLinkCreated}</div></div>
+      <div class="stat-card"><div class="stat-label">Link clicked</div><div class="stat-value">${referralLinkClicked}</div><div class="stat-sub">${conversionPct(referralSignup, referralLinkClicked)} → signup</div></div>
+      <div class="stat-card"><div class="stat-label">Referral signup</div><div class="stat-value">${referralSignup}</div></div>
+      <div class="stat-card"><div class="stat-label">Referral conversion</div><div class="stat-value">${referralConversion}</div><div class="stat-sub">${conversionPct(referralConversion, referralSignup)}</div></div>
       <div class="stat-card"><div class="stat-label">Lifecycle enroll</div><div class="stat-value">${lifecycleEnroll}</div></div>
     </div>
     ${Object.keys(growthByChannel).length ? `

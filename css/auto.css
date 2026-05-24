@@ -3220,6 +3220,21 @@ html body a.auto-floating-cta{
   gap:10px;
 }
 
+.growth-referral-rewards{
+  margin:10px 0 0;
+  padding-left:18px;
+  color:#334155;
+  font-size:13px;
+  line-height:1.5;
+}
+
+.growth-referral-fineprint{
+  margin:12px 0 0;
+  font-size:11px;
+  color:#64748b;
+  line-height:1.45;
+}
+
 .finance-compare-card{
   max-width:960px !important;
   width:min(960px, calc(100vw - 32px)) !important;

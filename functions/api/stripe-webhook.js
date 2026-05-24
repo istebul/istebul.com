@@ -54,6 +54,35 @@ const recordEventProcessed = async (supabase, event) => {
   throw error;
 };
 
+const processReferralSubscriptionConversion = async (env, details = {}) => {
+  const referralCode = details.referralCode;
+  if (!referralCode || !env.SUPABASE_URL) return;
+
+  const secret = env.REFERRAL_WEBHOOK_SECRET || env.LIFECYCLE_WEBHOOK_SECRET;
+  const token = secret || env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!token) return;
+
+  try {
+    await fetch(`${env.SUPABASE_URL}/functions/v1/referral-hub`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        ...(secret ? { 'x-referral-secret': secret } : {})
+      },
+      body: JSON.stringify({
+        action: 'process_conversion',
+        referral_code: referralCode,
+        conversion_type: 'subscription',
+        referee_user_id: details.userId || null,
+        referee_email: details.email || null
+      })
+    });
+  } catch (error) {
+    console.error('Referral conversion hook failed:', error.message);
+  }
+};
+
 const recordSubscriptionAnalytics = async (supabase, eventName, details = {}) => {
   const { error } = await supabase.from('analytics_events').insert({
     event_name: eventName,
@@ -184,6 +213,16 @@ export async function onRequestPost(context) {
             userId: session.metadata?.userId || null,
             idempotencyKey: `stripe:${event.id}:trial_started`,
             properties: { stripe_subscription_id: subscription.id }
+          });
+        }
+
+        const referralCode =
+          session.metadata?.referral_code || subscription.metadata?.referral_code;
+        if (referralCode) {
+          await processReferralSubscriptionConversion(context.env, {
+            referralCode,
+            userId: session.metadata?.userId || null,
+            email: session.customer_email || null
           });
         }
         break;

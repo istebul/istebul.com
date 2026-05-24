@@ -41,8 +41,17 @@ export function getStoredReferralCode() {
   return readStorageRaw(STORAGE_KEYS.REFERRAL_CODE) || '';
 }
 
+export function normalizeReferralCode(raw) {
+  const code = String(raw || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .slice(0, 16);
+  return code.length >= 4 ? code : '';
+}
+
 export function storeReferralCode(code) {
-  const normalized = String(code || '').trim().slice(0, 32);
+  const normalized = normalizeReferralCode(code);
   if (!normalized) return;
   writeStorageRaw(STORAGE_KEYS.REFERRAL_CODE, normalized);
 }
@@ -140,24 +149,31 @@ export function renderReferralSharePanel(options = {}) {
   if (!code) return '';
 
   const shareUrl = buildReferralUrl(code);
-  const title = options.title || 'Arkadaşınıza önerin';
+  const title = options.title || 'Arkadaşınıza önerin, ödül kazanın';
   const intro = options.compact
-    ? 'Davet linkinizle ücretsiz analiz başlatabilirler.'
-    : 'Paylaştığınız her davet, isteBul Auto analizine yönlendirilir — referral kodunuz otomatik işlenir.';
+    ? 'Davet linkinizle ücretsiz Auto analizi başlatırlar. Başarılı davetlerde siz kazanırsınız.'
+    : 'Her başarılı davet için: 7 gün Pro erişimi, +2 ekstra analiz hakkı ve premium açıklama kilidi açılır. Davet kodunuz otomatik işlenir.';
 
   return `
     <section class="growth-referral-card" data-referral-share data-referral-code="${code}" aria-label="Davet linki">
       <div>
-        <p class="kicker">Büyüme · davet</p>
+        <p class="kicker">Davet programı</p>
         <h4>${title}</h4>
         <p class="growth-referral-copy">${intro}</p>
+        <ul class="growth-referral-rewards" aria-label="Davet ödülleri">
+          <li>7 gün Pro erişimi</li>
+          <li>+2 ekstra Auto analiz</li>
+          <li>Premium açıklama kilidi</li>
+        </ul>
         <p class="growth-referral-url"><code>${shareUrl}</code></p>
       </div>
       <div class="growth-referral-actions">
-        <button type="button" class="btn btn-outline btn-sm" data-referral-copy>Kopyala</button>
-        <a class="btn btn-primary btn-sm" href="https://wa.me/?text=${encodeURIComponent(`Araç alımında toplam maliyeti gör: ${shareUrl}`)}"
-          target="_blank" rel="noopener noreferrer" data-referral-whatsapp>WhatsApp ile paylaş</a>
+        <button type="button" class="btn btn-outline btn-sm" data-referral-copy>Linki kopyala</button>
+        <button type="button" class="btn btn-outline btn-sm" data-referral-native-share hidden>Paylaş</button>
+        <a class="btn btn-primary btn-sm" href="https://wa.me/?text=${encodeURIComponent(`Araç alırken toplam maliyeti birlikte görün: ${shareUrl}`)}"
+          target="_blank" rel="noopener noreferrer" data-referral-whatsapp>WhatsApp</a>
       </div>
+      <p class="growth-referral-fineprint">Ödüller aylık kotayla sınırlıdır; kendi hesabınızı davet edemezsiniz.</p>
     </section>
   `;
 }
@@ -174,6 +190,26 @@ export function bindReferralShare(root) {
     if (!code) return;
 
     const url = buildReferralUrl(code);
+
+    const nativeBtn = card.querySelector('[data-referral-native-share]');
+    if (nativeBtn && typeof navigator.share === 'function') {
+      nativeBtn.hidden = false;
+      nativeBtn.addEventListener('click', async () => {
+        try {
+          await navigator.share({
+            title: 'isteBul Auto',
+            text: 'Araç alımında toplam maliyeti gör',
+            url
+          });
+          trackGrowth('growth_referral_share', { code, method: 'native' }, {
+            funnel: 'referral',
+            funnel_step: 'native_share'
+          });
+        } catch {
+          /* user cancelled */
+        }
+      });
+    }
 
     card.querySelector('[data-referral-copy]')?.addEventListener('click', async () => {
       try {

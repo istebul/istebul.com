@@ -2,6 +2,7 @@
  * Growth bootstrap — capture ref, paid click ids, persist referral.
  */
 import { storeReferralCode } from '../features/growth/growth-engine.js';
+import { trackReferralLinkClick } from '../features/growth/referral-client.js';
 import { analytics } from '../core/analytics.js';
 
 function captureGrowthParams() {
@@ -20,6 +21,7 @@ function captureGrowthParams() {
         funnel: 'referral',
         funnel_step: 'land'
       });
+      trackReferralLinkClick(ref).catch(() => {});
     }
   }
 

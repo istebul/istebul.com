@@ -15,6 +15,7 @@ import {
   enrollLifecycleKeepalive,
   enrollUpsellCampaign
 } from '../features/lifecycle/lifecycle-client.js';
+import { ensureServerReferralCode } from '../features/growth/referral-client.js';
 import { recommendVehicles, buildMethodologyPanel } from './auto-ai.js?v=ai3';
 import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
 import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
@@ -48,8 +49,14 @@ async function initAutoEntitlements() {
   try {
     const { data: { session } } = await sb.auth.getSession();
     await revenueManager.refresh(session?.user?.id || null);
+    if (session?.user) {
+      ensureServerReferralCode().catch(() => {});
+    }
     sb.auth.onAuthStateChange((_event, session) => {
       revenueManager.refresh(session?.user?.id || null).catch(() => {});
+      if (session?.user) {
+        ensureServerReferralCode().catch(() => {});
+      }
     });
   } catch {
     await revenueManager.refresh(null);

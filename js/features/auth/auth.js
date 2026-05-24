@@ -8,6 +8,11 @@ import { analytics } from '../../core/analytics.js';
 import { mapAuthError, mapAuthErrorForCheckout } from './auth-errors.js';
 import { peekCheckoutIntent } from '../../core/checkout-intent.js';
 import { enrollSignupNurture } from '../lifecycle/lifecycle-client.js';
+import {
+    attributeReferralSignupFromStorage,
+    ensureServerReferralCode
+} from '../growth/referral-client.js';
+import { getStoredReferralCode } from '../growth/growth-engine.js';
 import { trackOpsEvent } from '../../core/operational-telemetry.js';
 
 export class AuthManager {
@@ -36,6 +41,11 @@ export class AuthManager {
                     }
                 } catch {
                     /* ignore */
+                }
+
+                ensureServerReferralCode().catch(() => {});
+                if (getStoredReferralCode()) {
+                    attributeReferralSignupFromStorage().catch(() => {});
                 }
 
                 this.hideAuthModal();
