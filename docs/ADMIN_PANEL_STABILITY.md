@@ -14,10 +14,12 @@ Production Observability and some platform sections failed when PostgREST schema
 ## Deploy checklist
 
 ```bash
-supabase db push   # applies 20260530_operational_observability.sql, partner logs, etc.
+supabase db push   # includes 20260609_partner_applications_schema_repair.sql, operational_events, etc.
 supabase functions deploy admin-action
 npm run build && npm run deploy:cf
 ```
+
+Partner Başvuruları lists with `select *` when optional columns (e.g. `partner_endpoint_id`) are not yet migrated; repair migration adds them idempotently.
 
 ## CI
 

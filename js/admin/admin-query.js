@@ -8,10 +8,18 @@ export function isSchemaMissingError(error) {
   const msg = String(error.message || error.details || '').toLowerCase();
   return (
     msg.includes('schema cache') ||
-    msg.includes('does not exist') ||
     msg.includes('could not find the table') ||
-    msg.includes('relation') && msg.includes('does not exist')
+    (msg.includes('does not exist') &&
+      (msg.includes('relation') ||
+        msg.includes('table') ||
+        msg.includes('column')))
   );
+}
+
+function isMissingColumnInSelect(error, select) {
+  if (!error || !select || select === '*') return false;
+  const msg = String(error.message || error.details || '').toLowerCase();
+  return msg.includes('column') && msg.includes('does not exist');
 }
 
 /**
@@ -23,7 +31,10 @@ export async function fetchAdminTable(sb, options) {
   let directError = null;
 
   if (typeof direct === 'function') {
-    const res = await direct();
+    let res = await direct();
+    if (res.error && isMissingColumnInSelect(res.error, select)) {
+      res = await direct('*');
+    }
     if (!res.error) {
       return {
         data: res.data || [],
@@ -38,8 +49,10 @@ export async function fetchAdminTable(sb, options) {
     }
   }
 
+  const fallbackSelect = select && select !== '*' ? '*' : select;
+
   try {
-    const data = await adminList(sb, { table, select, limit, order });
+    const data = await adminList(sb, { table, select: fallbackSelect, limit, order });
     return {
       data,
       error: null,

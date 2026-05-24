@@ -17,7 +17,8 @@ const mustExist = [
   'js/admin/admin-query.js',
   'js/features/ops/ops-health.js',
   'supabase/migrations/20260530_operational_observability.sql',
-  'supabase/migrations/20260525_partner_delivery_enterprise.sql'
+  'supabase/migrations/20260525_partner_delivery_enterprise.sql',
+  'supabase/migrations/20260609_partner_applications_schema_repair.sql'
 ];
 
 for (const rel of mustExist) {
@@ -32,6 +33,17 @@ if (!adminQuery.includes('fetchAdminTable')) {
 }
 if (!adminQuery.includes('isSchemaMissingError')) {
   fail('admin-query must detect schema cache errors');
+}
+if (!adminQuery.includes('isMissingColumnInSelect')) {
+  fail('admin-query must retry with * when a selected column is missing');
+}
+
+const repairSql = fs.readFileSync(
+  path.join(root, 'supabase/migrations/20260609_partner_applications_schema_repair.sql'),
+  'utf8'
+);
+if (!repairSql.includes('partner_endpoint_id')) {
+  fail('partner applications repair migration must add partner_endpoint_id');
 }
 
 const adminPanel = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
@@ -52,6 +64,9 @@ for (const pattern of requiredPatterns) {
 
 if (adminPanel.includes('partner_dispatch_logs')) {
   fail('admin-panel must not reference wrong table partner_dispatch_logs');
+}
+if (adminPanel.includes('partner_endpoint_id, onboarding_token')) {
+  fail('partner_applications load must not enumerate optional columns in select');
 }
 
 const opsHealth = fs.readFileSync(path.join(root, 'js/features/ops/ops-health.js'), 'utf8');

@@ -1616,17 +1616,15 @@ async function loadPartnerApplications() {
   const el = document.getElementById('partner-applications-list');
   if (!el) return;
 
-  const select =
-    '*, partner_endpoint_id, onboarding_token, webhook_url_draft, billing_plan, utm_source';
   const res = await fetchAdminTable(sb, {
     table: 'partner_applications',
-    select,
+    select: '*',
     limit: 200,
     order: { column: 'created_at', ascending: false },
-    direct: () =>
+    direct: (selectExpr = '*') =>
       sb
         .from('partner_applications')
-        .select(select)
+        .select(selectExpr)
         .order('created_at', { ascending: false })
         .limit(200)
   });
