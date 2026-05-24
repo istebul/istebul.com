@@ -1,4 +1,5 @@
 import config from './config.js';
+import { trackOpsEvent, flushOpsEvents, initPerformanceObservability } from './operational-telemetry.js';
 
 export class MonitoringManager {
     constructor() {
@@ -16,6 +17,8 @@ export class MonitoringManager {
                 this.setupGlobalErrorHandlers();
                 this.handlersAttached = true;
             }
+
+            initPerformanceObservability();
 
             if (!consentGranted || this.initialized) {
                 return;
@@ -64,15 +67,34 @@ export class MonitoringManager {
 
     setupGlobalErrorHandlers() {
         window.addEventListener('unhandledrejection', (event) => {
+            trackOpsEvent('client_unhandled_rejection', {
+                message: String(event.reason?.message || event.reason || '').slice(0, 200),
+                path: window.location.pathname
+            }, { category: 'error', severity: 'error' });
             this.captureException(event.reason);
         });
 
         window.addEventListener('error', (event) => {
+            trackOpsEvent('client_unhandled_error', {
+                message: String(event.message || '').slice(0, 200),
+                path: window.location.pathname
+            }, { category: 'error', severity: 'error' });
             this.captureException(event.error);
+        });
+
+        window.addEventListener('pagehide', () => {
+            flushOpsEvents({ beacon: true });
         });
     }
 
     captureException(error, context = {}) {
+        const message = error instanceof Error ? error.message : String(error || 'unknown');
+        trackOpsEvent('client_unhandled_error', {
+            message: message.slice(0, 200),
+            context: context.context || 'app',
+            path: typeof window !== 'undefined' ? window.location.pathname : ''
+        }, { category: 'error', severity: 'error' });
+
         if (!this.initialized) return;
 
         try {

@@ -75,6 +75,7 @@ async function showApp() {
   loadAutoAnalytics();
   loadPlatformAnalytics();
   loadInvestorMetrics();
+  loadOperationalHealth();
   loadPartnerEndpoints();
   loadPartnerApplications();
   loadPartnerDispatchLogs();
@@ -137,6 +138,203 @@ function showPage(name, el) {
   if (name === 'investor-metrics') {
     loadInvestorMetrics();
   }
+  if (name === 'observability') {
+    loadOperationalHealth();
+  }
+}
+
+async function loadOperationalHealth() {
+  const el = document.getElementById('observability-root');
+  if (!el) return;
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  const [
+    severityRes,
+    healthRes,
+    eventsRes,
+    dispatchRes,
+    auditRes,
+    failedLeadsRes
+  ] = await Promise.all([
+    sb.from('ops_severity_24h').select('*'),
+    sb.from('ops_health_24h').select('*').order('errors', { ascending: false }).limit(40),
+    sb.from('operational_events')
+      .select('created_at, severity, category, event_name, source, fingerprint, properties, http_status, duration_ms')
+      .gte('created_at', since)
+      .in('severity', ['critical', 'error'])
+      .order('created_at', { ascending: false })
+      .limit(80),
+    sb.from('partner_lead_dispatch_logs')
+      .select('created_at, lead_id, partner_route, endpoint_name, http_status, success, error_message')
+      .eq('success', false)
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(30),
+    sb.from('admin_audit_logs')
+      .select('created_at, actor_email, action, entity_table, summary')
+      .order('created_at', { ascending: false })
+      .limit(40),
+    sb.from('auto_leads')
+      .select('id, created_at, email, partner_status, last_dispatch_error')
+      .eq('partner_status', 'dispatch_failed')
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(20)
+  ]);
+
+  const { summarizeBySeverity, summarizeByCategory, countEventsWithPrefix } =
+    await import('./features/ops/ops-health.js');
+
+  const severityRows = severityRes.data || [];
+  const bySeverity = summarizeBySeverity([]);
+  for (const row of severityRows) {
+    bySeverity[row.severity] = Number(row.events) || 0;
+  }
+
+  const recentEvents = eventsRes.data || [];
+  const byCategory = summarizeByCategory(recentEvents);
+
+  const webhookFails = countEventsWithPrefix(recentEvents, 'webhook_') +
+    (dispatchRes.data?.length || 0);
+  const authFails = countEventsWithPrefix(recentEvents, 'auth_');
+  const paymentFails = countEventsWithPrefix(recentEvents, 'payment_') +
+    countEventsWithPrefix(recentEvents, 'webhook_stripe');
+  const perfWarns = countEventsWithPrefix(recentEvents, 'performance_');
+  const abuseHits = countEventsWithPrefix(recentEvents, 'abuse_');
+
+  const healthTable = (healthRes.data || []).slice(0, 15);
+
+  el.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Critical (24h)</div>
+        <div class="stat-value" style="color:var(--danger)">${bySeverity.critical || 0}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Errors (24h)</div>
+        <div class="stat-value" style="color:var(--danger)">${bySeverity.error || 0}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Warnings (24h)</div>
+        <div class="stat-value">${bySeverity.warning || 0}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Webhook / dispatch fails</div>
+        <div class="stat-value">${webhookFails}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Auth failures</div>
+        <div class="stat-value">${authFails}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Payment failures</div>
+        <div class="stat-value">${paymentFails}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Performance regressions</div>
+        <div class="stat-value">${perfWarns}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Abuse signals</div>
+        <div class="stat-value">${abuseHits}</div>
+      </div>
+    </div>
+
+    <p class="text-muted-sm mb-12">Sentry (client) + <code>operational_events</code> + partner dispatch logs + admin audit. Export: <code>npm run metrics:ops</code></p>
+
+    ${eventsRes.error ? `<p class="empty">Ops events: ${escapeHtml(eventsRes.error.message)} (migration deploy?)</p>` : ''}
+
+    <h3 style="margin:16px 0 10px">Top signals (24h rollup)</h3>
+    ${healthTable.length ? `
+      <table class="table">
+        <thead><tr><th>Category</th><th>Event</th><th>Severity</th><th>Count</th><th>Errors</th><th>Last</th></tr></thead>
+        <tbody>
+          ${healthTable.map((row) => `
+            <tr>
+              <td>${escapeHtml(row.category)}</td>
+              <td><code>${escapeHtml(row.event_name)}</code></td>
+              <td>${escapeHtml(row.severity)}</td>
+              <td>${row.events}</td>
+              <td>${row.errors}</td>
+              <td>${row.last_seen ? formatShortDate(row.last_seen) : '—'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    ` : '<p class="empty">Henüz operational event yok.</p>'}
+
+    <h3 style="margin:20px 0 10px">Recent critical / error events</h3>
+    ${recentEvents.length ? `
+      <table class="table">
+        <thead><tr><th>Zaman</th><th>Severity</th><th>Event</th><th>Source</th><th>Detail</th></tr></thead>
+        <tbody>
+          ${recentEvents.slice(0, 40).map((row) => `
+            <tr>
+              <td>${formatShortDate(row.created_at)}</td>
+              <td><span class="badge ${row.severity === 'critical' ? 'badge-red' : 'badge-yellow'}">${escapeHtml(row.severity)}</span></td>
+              <td><code>${escapeHtml(row.event_name)}</code></td>
+              <td>${escapeHtml(row.source)}</td>
+              <td title="${safeAttr(JSON.stringify(row.properties || {}))}">${escapeHtml(formatDispatchError(row.properties?.error_message || row.properties?.message || row.fingerprint || '—'))}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    ` : '<p class="empty">Son 24 saatte critical/error yok.</p>'}
+
+    <h3 style="margin:20px 0 10px">Lead delivery failures</h3>
+    ${(failedLeadsRes.data || []).length ? `
+      <table class="table">
+        <thead><tr><th>Lead</th><th>Zaman</th><th>Status</th><th>Hata</th></tr></thead>
+        <tbody>
+          ${failedLeadsRes.data.map((row) => `
+            <tr>
+              <td><code>${escapeHtml(String(row.id).slice(0, 8))}…</code></td>
+              <td>${formatShortDate(row.created_at)}</td>
+              <td>${escapeHtml(row.partner_status)}</td>
+              <td>${escapeHtml(formatDispatchError(row.last_dispatch_error))}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    ` : '<p class="empty">dispatch_failed lead yok.</p>'}
+
+    <h3 style="margin:20px 0 10px">Partner webhook failures (log)</h3>
+    ${(dispatchRes.data || []).length ? `
+      <table class="table">
+        <thead><tr><th>Zaman</th><th>Route</th><th>Endpoint</th><th>HTTP</th><th>Hata</th></tr></thead>
+        <tbody>
+          ${dispatchRes.data.map((row) => `
+            <tr>
+              <td>${formatShortDate(row.created_at)}</td>
+              <td>${escapeHtml(row.partner_route)}</td>
+              <td>${escapeHtml(row.endpoint_name || '—')}</td>
+              <td>${row.http_status ?? '—'}</td>
+              <td>${escapeHtml(formatDispatchError(row.error_message))}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    ` : '<p class="empty">Webhook fail log yok.</p>'}
+
+    <h3 style="margin:20px 0 10px">Admin audit (son 40)</h3>
+    ${(auditRes.data || []).length ? `
+      <table class="table">
+        <thead><tr><th>Zaman</th><th>Actor</th><th>Action</th><th>Entity</th><th>Summary</th></tr></thead>
+        <tbody>
+          ${auditRes.data.map((row) => `
+            <tr>
+              <td>${formatShortDate(row.created_at)}</td>
+              <td>${escapeHtml(row.actor_email || '—')}</td>
+              <td>${escapeHtml(row.action)}</td>
+              <td>${escapeHtml(row.entity_table)}</td>
+              <td>${escapeHtml(row.summary || '—')}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    ` : '<p class="empty">Audit kaydı yok.</p>'}
+  `;
 }
 
 async function loadInvestorMetrics() {

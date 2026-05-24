@@ -11,6 +11,7 @@ import { loadCMS } from './core/cms.js';
 import { supabase } from './core/supabase.js';
 import API from './core/api.js';
 import { monitoring } from './core/monitoring.js';
+import { trackOpsEvent } from './core/operational-telemetry.js';
 import { analytics } from './core/analytics.js';
 import { errorBoundary } from './core/error-boundary.js';
 import { ListingManager } from './features/ilan/ilan.js';
@@ -3353,6 +3354,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             window.location.href = data.url;
         } catch (error) {
             console.error('Premium checkout failed:', error);
+            trackOpsEvent('payment_checkout_failed', {
+                message: String(error.message || 'checkout_failed').slice(0, 120),
+                billing_interval: billingInterval
+            }, { category: 'payment', severity: 'error' });
             this.ui.showError('Ödeme sayfası başlatılamadı. Lütfen tekrar deneyin.');
         }
     }

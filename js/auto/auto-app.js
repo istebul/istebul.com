@@ -6,6 +6,7 @@ import {
   getGrowthContext,
   getStoredReferralCode
 } from '../features/growth/growth-engine.js';
+import { trackOpsEvent } from '../core/operational-telemetry.js';
 import {
   enrollAbandonedLead,
   enrollAbandonedOnboarding,
@@ -223,6 +224,10 @@ async function callAutoIntake(payload) {
     });
 
     if (!response.ok) {
+      trackOpsEvent('client_api_failure', {
+        endpoint: 'auto-intake',
+        status: response.status
+      }, { category: 'api', severity: 'error', http_status: response.status });
       throw new Error(`Auto intake failed: ${response.status}`);
     }
 

@@ -1,4 +1,5 @@
 import { assertSafePartnerWebhookUrl } from "./webhook-url.ts";
+import { recordOperationalEvent } from "./operational-observability.ts";
 
 export const FAILOVER_ROUTES: Record<string, string[]> = {
   dealer_partner: ["general_sales"],
@@ -179,6 +180,45 @@ async function writeDispatchLog(
   }
 }
 
+async function logDispatchOps(
+  adminClient: { from: (table: string) => any },
+  input: {
+    event_name: string;
+    lead_id?: string | null;
+    route?: string;
+    endpoint?: string;
+    http_status?: number;
+    duration_ms?: number;
+    error_message?: string;
+    attempt_number?: number;
+    trigger?: string;
+  }
+) {
+  try {
+    await recordOperationalEvent(adminClient, {
+      event_name: input.event_name,
+      category: "webhook",
+      severity: "error",
+      source: "partner_dispatch",
+      idempotency_key: input.lead_id
+        ? `${input.event_name}:${input.lead_id}:${input.endpoint || ""}:${input.http_status || ""}`
+        : null,
+      properties: {
+        lead_id: input.lead_id,
+        partner_route: input.route,
+        endpoint_name: input.endpoint,
+        error_message: input.error_message,
+        attempt_number: input.attempt_number,
+        trigger: input.trigger,
+      },
+      http_status: input.http_status ?? null,
+      duration_ms: input.duration_ms ?? null,
+    });
+  } catch {
+    /* non-blocking */
+  }
+}
+
 async function postPartnerWebhook(
   url: string,
   body: string,
@@ -285,12 +325,35 @@ async function tryDispatchToEndpoints(
         };
       }
 
+      await logDispatchOps(adminClient, {
+        event_name: "webhook_partner_dispatch_failed",
+        lead_id: options.leadId,
+        route: options.route,
+        endpoint: endpoint.name,
+        http_status: response.status,
+        duration_ms: durationMs,
+        error_message: `HTTP ${response.status}`,
+        attempt_number: options.attemptNumber,
+        trigger: options.trigger,
+      });
+
       try {
         await adminClient.rpc("increment_partner_endpoint_fail", {
           endpoint_id: endpoint.id,
         });
       } catch {}
     } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "network_or_timeout";
+      await logDispatchOps(adminClient, {
+        event_name: "webhook_partner_dispatch_failed",
+        lead_id: options.leadId,
+        route: options.route,
+        endpoint: endpoint.name,
+        error_message: errMsg,
+        attempt_number: options.attemptNumber,
+        trigger: options.trigger,
+      });
+
       await writeDispatchLog(adminClient, {
         lead_id: options.leadId || null,
         partner_route: options.route,
@@ -311,6 +374,15 @@ async function tryDispatchToEndpoints(
       } catch {}
     }
   }
+
+  await logDispatchOps(adminClient, {
+    event_name: "webhook_partner_dispatch_exhausted",
+    lead_id: options.leadId,
+    route: options.route,
+    error_message: "all_endpoints_failed",
+    attempt_number: options.attemptNumber,
+    trigger: options.trigger,
+  });
 
   return {
     status: "dispatch_failed",

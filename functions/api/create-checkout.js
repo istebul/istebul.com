@@ -15,8 +15,18 @@ const corsHeaders = (origin = null) => ({
   'Content-Type': 'application/json'
 });
 
+import { recordOpsEvent } from './_shared/record-ops-event.js';
+import { createClient } from '@supabase/supabase-js';
+
 const json = (body, status = 200, origin = null) =>
   new Response(JSON.stringify(body), { status, headers: corsHeaders(origin) });
+
+const getSupabaseAdmin = (env) => {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return null;
+  return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false }
+  });
+};
 
 const getBearerToken = (request) => {
   const authHeader = request.headers.get('Authorization') || '';
@@ -190,6 +200,18 @@ export async function onRequestPost(context) {
 
     if (!res.ok) {
       console.error('Stripe error:', data);
+      const supabase = getSupabaseAdmin(context.env);
+      await recordOpsEvent(supabase, {
+        category: 'payment',
+        event_name: 'payment_checkout_failed',
+        severity: 'error',
+        source: 'create_checkout',
+        http_status: res.status,
+        properties: {
+          stripe_error: data?.error?.type || 'stripe_error',
+          billing_interval: billingInterval
+        }
+      });
       return json({ error: 'Checkout could not be created' }, 502, origin);
     }
 
@@ -200,6 +222,14 @@ export async function onRequestPost(context) {
     }, 200, origin);
   } catch (err) {
     console.error('create-checkout error:', err);
+    const supabase = getSupabaseAdmin(context.env);
+    await recordOpsEvent(supabase, {
+      category: 'payment',
+      event_name: 'payment_checkout_failed',
+      severity: 'critical',
+      source: 'create_checkout',
+      properties: { message: err.message || 'internal_error' }
+    });
     return json({ error: 'Internal server error' }, 500, origin);
   }
 }

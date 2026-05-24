@@ -8,6 +8,7 @@ import { analytics } from '../../core/analytics.js';
 import { mapAuthError } from './auth-errors.js';
 import { STORAGE_KEYS } from '../../core/storage-keys.js';
 import { enrollSignupNurture } from '../lifecycle/lifecycle-client.js';
+import { trackOpsEvent } from '../../core/operational-telemetry.js';
 
 export class AuthManager {
     constructor() {
@@ -262,6 +263,9 @@ export class AuthManager {
                 funnel: 'auth',
                 funnel_step: 'login_failed'
             });
+            trackOpsEvent('auth_login_failed', {
+                error_code: error.code || 'login_failed'
+            }, { category: 'auth', severity: 'warning' });
             this.showAuthError(mapAuthError(error, config.messages.error.login));
         } finally {
             submitBtn.disabled = false;
@@ -325,6 +329,9 @@ export class AuthManager {
                 funnel: 'auth',
                 funnel_step: 'register_failed'
             });
+            trackOpsEvent('auth_register_failed', {
+                error_code: error.code || 'register_failed'
+            }, { category: 'auth', severity: 'warning' });
             this.showAuthError(mapAuthError(error, config.messages.error.register));
         } finally {
             submitBtn.disabled = false;

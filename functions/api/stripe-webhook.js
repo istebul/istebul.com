@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { recordOpsEvent } from './_shared/record-ops-event.js';
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -123,6 +124,18 @@ export async function onRequestPost(context) {
     event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
   } catch (error) {
     console.error('Stripe webhook signature verification failed:', error.message);
+    try {
+      const supabase = getSupabaseAdmin(context.env);
+      await recordOpsEvent(supabase, {
+        category: 'webhook',
+        event_name: 'webhook_stripe_signature_invalid',
+        severity: 'critical',
+        source: 'stripe_webhook',
+        properties: { message: error.message }
+      });
+    } catch {
+      /* ignore */
+    }
     return json({ error: 'Invalid signature' }, 400);
   }
 
@@ -211,6 +224,20 @@ export async function onRequestPost(context) {
           await upsertSubscription(supabase, subscription);
         }
 
+        if (event.type === 'invoice.payment_failed') {
+          await recordOpsEvent(supabase, {
+            category: 'payment',
+            event_name: 'webhook_stripe_processing_failed',
+            severity: 'error',
+            source: 'stripe_webhook',
+            idempotency_key: `stripe:ops:${event.id}:invoice_failed`,
+            properties: {
+              stripe_event: event.type,
+              invoice_id: invoice.id
+            }
+          });
+        }
+
         await recordSubscriptionAnalytics(
           supabase,
           event.type === 'invoice.payment_succeeded' ? 'invoice_paid' : 'invoice_failed',
@@ -251,6 +278,19 @@ export async function onRequestPost(context) {
     return json({ received: true });
   } catch (error) {
     console.error('Stripe webhook handler failed:', error);
+    try {
+      await recordOpsEvent(supabase, {
+        category: 'payment',
+        event_name: 'webhook_stripe_processing_failed',
+        severity: 'critical',
+        source: 'stripe_webhook',
+        properties: {
+          message: error.message || 'handler_failed'
+        }
+      });
+    } catch {
+      /* ignore */
+    }
     return json({ error: 'Webhook handler failed' }, 500);
   }
 }

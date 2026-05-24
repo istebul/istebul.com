@@ -41,6 +41,7 @@
 | Live export script | `scripts/investor-metrics-snapshot.cjs` |
 | Admin dashboard | Admin → **Investor KPIs** |
 | Analytics audit | `docs/PLATFORM_ANALYTICS_AUDIT.md` |
+| Production observability | `docs/PRODUCTION_OBSERVABILITY.md` |
 | SQL views (optional) | `supabase/migrations/20260528_investor_metrics_views.sql` |
 
 **Export command:**

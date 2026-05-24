@@ -9,6 +9,30 @@ import {
   cancelRecoveryFlowsByEmail,
   enrollInFlow,
 } from "../_shared/lifecycle-engine.ts";
+import { recordOperationalEvent } from "../_shared/operational-observability.ts";
+
+async function logOps(
+  adminClient: ReturnType<typeof createClient>,
+  eventName: string,
+  properties: Record<string, unknown> = {},
+  severity = "warning"
+) {
+  try {
+    await recordOperationalEvent(adminClient, {
+      event_name: eventName,
+      category: eventName.startsWith("abuse_")
+        ? "abuse"
+        : eventName.startsWith("lead_")
+          ? "lead"
+          : "api",
+      severity,
+      source: "auto_intake",
+      properties,
+    });
+  } catch {
+    /* non-blocking */
+  }
+}
 
 const allowedOrigins = [
   "https://istebul.com",
@@ -336,6 +360,10 @@ Deno.serve(async (req) => {
     const allowed = await checkRateLimit(adminClient, `event:${clientIp}`, 30, 60 * 1000);
 
     if (!allowed) {
+      await logOps(adminClient, "abuse_rate_limit_exceeded", {
+        scope: "event",
+        ip: clientIp,
+      });
       return json({ error: "Too many requests" }, 429, origin);
     }
 
@@ -369,6 +397,10 @@ Deno.serve(async (req) => {
     const allowed = await checkRateLimit(adminClient, `lead:${clientIp}`, 5, 10 * 60 * 1000);
 
     if (!allowed) {
+      await logOps(adminClient, "abuse_rate_limit_exceeded", {
+        scope: "lead",
+        ip: clientIp,
+      });
       return json({ error: "Too many requests" }, 429, origin);
     }
 
@@ -381,6 +413,9 @@ Deno.serve(async (req) => {
       const turnstile = await verifyTurnstile(token, clientIp);
 
       if (!turnstile.ok) {
+        await logOps(adminClient, "abuse_turnstile_failed", {
+          error: turnstile.error || "failed",
+        });
         return json({ error: "Verification failed" }, 403, origin);
       }
     }
@@ -434,6 +469,7 @@ Deno.serve(async (req) => {
     const form = body.formData && typeof body.formData === "object" ? body.formData : metadata;
     const honeypot = String(form.website || form.company || form.url || "").trim();
     if (honeypot) {
+      await logOps(adminClient, "abuse_spam_honeypot", { scope: "lead" });
       return json({ ok: true, spam: true }, 200, origin);
     }
 
@@ -489,7 +525,15 @@ Deno.serve(async (req) => {
       .select("id")
       .single();
 
-    if (insertError) return json({ error: insertError.message }, 500, origin);
+    if (insertError) {
+      await logOps(
+        adminClient,
+        "lead_delivery_failed",
+        { stage: "insert", message: insertError.message },
+        "error"
+      );
+      return json({ error: insertError.message }, 500, origin);
+    }
     const leadId = inserted?.id || null;
 
     const dispatchPayload = { ...payload, id: leadId };
