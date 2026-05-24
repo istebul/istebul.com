@@ -26,7 +26,8 @@
     "build:check": "node scripts/check-build-output.cjs",
     "verify:deploy": "node scripts/verify-deploy-setup.cjs",
     "metrics:investor": "node scripts/investor-metrics-snapshot.cjs",
-    "metrics:growth": "node scripts/growth-weekly-report.cjs"
+    "metrics:growth": "node scripts/growth-weekly-report.cjs",
+    "metrics:lifecycle": "node scripts/lifecycle-metrics-snapshot.cjs"
   },
   "keywords": [
     "marketplace",

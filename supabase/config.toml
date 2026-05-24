@@ -407,6 +407,16 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
 
+[functions.lifecycle-enroll]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/lifecycle-enroll/index.ts"
+
+[functions.lifecycle-cron]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/lifecycle-cron/index.ts"
+
 [functions.admin-action]
 enabled = true
 verify_jwt = true

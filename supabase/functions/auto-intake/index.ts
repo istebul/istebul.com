@@ -5,6 +5,10 @@ import {
   isTestLead,
 } from "../_shared/partner-dispatch.ts";
 import { recordPlatformEvent } from "../_shared/platform-analytics.ts";
+import {
+  cancelRecoveryFlowsByEmail,
+  enrollInFlow,
+} from "../_shared/lifecycle-engine.ts";
 
 const allowedOrigins = [
   "https://istebul.com",
@@ -510,6 +514,36 @@ Deno.serve(async (req) => {
     EdgeRuntime.waitUntil((async () => {
       try {
         await notifyTelegramLead(payload);
+
+        if (normalizedEmail) {
+          await cancelRecoveryFlowsByEmail(adminClient, normalizedEmail, "lead_converted");
+        }
+
+        if (normalizedEmail) {
+          const interest = String(payload.interest_type || "");
+          if (interest === "finance" || interest === "finance_review") {
+            await enrollInFlow(adminClient, {
+              flowId: "finance_follow_up",
+              email: normalizedEmail,
+              phone,
+              leadId: leadId || undefined,
+              displayName: payload.contact_name,
+              context: { vehicle: payload.vehicle, interest_type: interest },
+              triggerSource: "auto_intake_lead",
+              restart: true,
+            });
+          } else if (interest === "vehicle_offer" || interest === "premium_report") {
+            await enrollInFlow(adminClient, {
+              flowId: "partner_follow_up",
+              email: normalizedEmail,
+              phone,
+              leadId: leadId || undefined,
+              displayName: payload.contact_name,
+              context: { vehicle: payload.vehicle, priority: payload.priority },
+              triggerSource: "auto_intake_lead",
+            });
+          }
+        }
 
         if (!leadId) return;
 

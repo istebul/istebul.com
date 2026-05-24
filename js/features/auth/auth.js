@@ -7,6 +7,7 @@ import { monitoring } from '../../core/monitoring.js';
 import { analytics } from '../../core/analytics.js';
 import { mapAuthError } from './auth-errors.js';
 import { STORAGE_KEYS } from '../../core/storage-keys.js';
+import { enrollSignupNurture } from '../lifecycle/lifecycle-client.js';
 
 export class AuthManager {
     constructor() {
@@ -24,6 +25,17 @@ export class AuthManager {
                 document.dispatchEvent(new CustomEvent('userLoggedIn', {
                     detail: session.user
                 }));
+
+                const nurtureKey = `istebul_lifecycle_signup:${session.user.id}`;
+                try {
+                    if (!localStorage.getItem(nurtureKey)) {
+                        enrollSignupNurture(session.user).then((result) => {
+                            if (result?.ok) localStorage.setItem(nurtureKey, '1');
+                        });
+                    }
+                } catch {
+                    /* ignore */
+                }
 
                 this.hideAuthModal();
 

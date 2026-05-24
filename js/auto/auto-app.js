@@ -6,6 +6,13 @@ import {
   getGrowthContext,
   getStoredReferralCode
 } from '../features/growth/growth-engine.js';
+import {
+  enrollAbandonedLead,
+  enrollAbandonedOnboarding,
+  enrollFinanceFollowUp,
+  enrollLifecycleKeepalive,
+  enrollUpsellCampaign
+} from '../features/lifecycle/lifecycle-client.js';
 import { recommendVehicles, buildMethodologyPanel } from './auto-ai.js?v=ai3';
 import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
 import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
@@ -22,6 +29,9 @@ import { formatMoney, formatNumber } from '../core/format.js';
 
 const formatAmount = (value) => formatMoney(value);
 const formatCount = (value) => formatNumber(value);
+
+const ONBOARDING_STARTED_KEY = 'istebul_auto_onboarding_started';
+const UPSELL_RESULTS_KEY = 'istebul_auto_results_count';
 
 document.documentElement.classList.add('ib-ready');
 
@@ -388,6 +398,7 @@ function openFinanceCompareModal(vehicleName = '') {
     funnel_step: 'compare_modal_open'
   });
   trackAutoEvent('auto_finance_click', { vehicle: vehicleName, interest_type: 'finance' });
+  enrollFinanceFollowUp({ vehicle: vehicleName, interest_type: 'finance' });
 
   const vehicle = (lastResults || []).find((item) => item.name === vehicleName) || lastResults?.[0] || {};
   const vehiclePrice = Number(vehicle.price || 0);
@@ -712,6 +723,11 @@ function openLeadModal(type, vehicle = '') {
 
   function renderStep3() {
     clearLeadAbandonPending();
+    try {
+      sessionStorage.removeItem(ONBOARDING_STARTED_KEY);
+    } catch {
+      /* ignore */
+    }
     if (getStoredReferralCode()) {
       trackGrowth('growth_referral_convert', { vehicle }, {
         funnel: 'referral',
@@ -1706,6 +1722,11 @@ if (wizard) {
       if (!autoFormStarted) {
         autoFormStarted = true;
         trackAutoEvent('auto_form_started');
+        try {
+          sessionStorage.setItem(ONBOARDING_STARTED_KEY, '1');
+        } catch {
+          /* ignore */
+        }
       }
 
       return;
@@ -1788,6 +1809,17 @@ form.addEventListener('submit', async (event) => {
       document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
       trackAutoEvent('auto_results_rendered', { count: results.length });
       renderResults(results);
+
+      try {
+        const prev = Number(sessionStorage.getItem(UPSELL_RESULTS_KEY) || 0);
+        const next = prev + 1;
+        sessionStorage.setItem(UPSELL_RESULTS_KEY, String(next));
+        if (next >= 3 && !isProActive() && readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL)) {
+          enrollUpsellCampaign({ results_sessions: next });
+        }
+      } catch {
+        /* ignore */
+      }
 
       try {
         if (getAppInstance()?.currentUser?.id && results.length) {
@@ -2075,15 +2107,32 @@ window.openFinanceCompareModal = openFinanceCompareModal;
 
 window.addEventListener('pagehide', () => {
   const raw = readStorageRaw(STORAGE_KEYS.LEAD_ABANDON_PENDING);
-  if (!raw) return;
-  try {
-    const pending = JSON.parse(raw);
-    trackGrowth('growth_lead_abandon', pending, {
-      funnel: 'abandoned_lead',
-      funnel_step: 'modal_exit'
-    });
-  } catch {
-    trackGrowth('growth_lead_abandon', {}, { funnel: 'abandoned_lead' });
+  if (raw) {
+    try {
+      const pending = JSON.parse(raw);
+      trackGrowth('growth_lead_abandon', pending, {
+        funnel: 'abandoned_lead',
+        funnel_step: 'modal_exit'
+      });
+      enrollLifecycleKeepalive('abandoned_lead', {
+        context: pending,
+        trigger_source: 'pagehide_abandon'
+      });
+    } catch {
+      trackGrowth('growth_lead_abandon', {}, { funnel: 'abandoned_lead' });
+      enrollLifecycleKeepalive('abandoned_lead', { trigger_source: 'pagehide_abandon' });
+    }
+    clearLeadAbandonPending();
+    return;
   }
-  clearLeadAbandonPending();
+
+  try {
+    if (sessionStorage.getItem(ONBOARDING_STARTED_KEY) === '1') {
+      enrollLifecycleKeepalive('abandoned_onboarding', {
+        trigger_source: 'pagehide_onboarding'
+      });
+    }
+  } catch {
+    /* ignore */
+  }
 });

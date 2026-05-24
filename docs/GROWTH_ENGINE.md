@@ -130,7 +130,7 @@ flowchart TB
 | Element | Status |
 |---------|--------|
 | Newsletter | Homepage form → `newsletter_subscribe` |
-| Transactional | **Not automated** (Supabase/Resend TBD) |
+| Transactional | **Automated** — `docs/LIFECYCLE_CRM.md` (8 flows, Resend, hourly cron) |
 | Event | `growth_email_click` (wire on campaign links) |
 
 **Sequences (build)**

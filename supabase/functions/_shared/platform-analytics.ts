@@ -10,6 +10,7 @@ export const ANALYTICS_CATEGORIES = new Set([
   "admin",
   "revenue",
   "growth",
+  "lifecycle",
 ]);
 
 export const ALLOWED_ANALYTICS_EVENTS = new Set([
@@ -86,6 +87,13 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "growth_crm_touch",
   "growth_viral_share",
   "newsletter_subscribe",
+  // Lifecycle CRM
+  "lifecycle_enrolled",
+  "lifecycle_message_sent",
+  "lifecycle_message_failed",
+  "lifecycle_enroll_requested",
+  "lifecycle_unsubscribe",
+  "lifecycle_enroll_requested",
 ]);
 
 const AUTO_EVENT_NAMES = new Set(
@@ -100,6 +108,7 @@ export function eventCategoryFor(name: string, fallback?: string) {
   if (name.startsWith("partner_")) return "partner";
   if (name.startsWith("crm_")) return "admin";
   if (name.startsWith("growth_") || name === "newsletter_subscribe") return "growth";
+  if (name.startsWith("lifecycle_")) return "lifecycle";
   if (name.startsWith("page_") || name === "route_change") return "page";
   if (name.startsWith("cta_")) return "cta";
   if (
