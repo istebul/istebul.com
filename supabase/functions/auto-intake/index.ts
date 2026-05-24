@@ -16,6 +16,7 @@ import {
   calibrateLeadScore,
   priorityFromScore,
 } from "../_shared/scoring-intelligence.ts";
+import { recordOutcomeSignal } from "../_shared/outcome-capture.ts";
 
 async function logOps(
   adminClient: ReturnType<typeof createClient>,
@@ -612,6 +613,44 @@ Deno.serve(async (req) => {
     const leadId = inserted?.id || null;
 
     const dispatchPayload = { ...payload, id: leadId };
+
+    try {
+      await recordOutcomeSignal(adminClient, {
+        signal_type: "lead_submitted",
+        signal_source: "user",
+        lead_id: leadId,
+        decision_session_id: payload.decision_session_id,
+        segment_key: segmentKey,
+        idempotency_key: leadId ? `lead_submitted:${leadId}` : null,
+        properties: {
+          interest_type: payload.interest_type,
+          priority: payload.priority,
+          top_match_score: payload.top_match_score,
+          confidence_tier: payload.confidence_tier,
+        },
+      });
+    } catch {
+      /* non-blocking */
+    }
+
+    if (payload.vehicle && leadId) {
+      try {
+        await recordOutcomeSignal(adminClient, {
+          signal_type: "vehicle_recommended_selected",
+          signal_source: "user",
+          lead_id: leadId,
+          decision_session_id: payload.decision_session_id,
+          segment_key: segmentKey,
+          idempotency_key: `vehicle_selected:${leadId}`,
+          properties: {
+            vehicle_slug: String(payload.vehicle).slice(0, 80),
+            via: "lead_submit",
+          },
+        });
+      } catch {
+        /* non-blocking */
+      }
+    }
 
     try {
       await recordPlatformEvent(adminClient, {

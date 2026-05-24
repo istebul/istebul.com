@@ -136,6 +136,7 @@ jobs:
             partner-application
             partner-onboarding
             decision-intelligence
+            outcome-capture
             lead-alert
             admin-action
             partner-daily-reset

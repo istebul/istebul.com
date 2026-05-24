@@ -14,7 +14,7 @@ export function renderDecisionFeedbackHtml() {
     <section class="ib-decision-feedback" aria-label="Karar geri bildirimi">
       <p class="kicker">Feedback loop</p>
       <h3>Bu karar özeti size ne kadar net geldi?</h3>
-      <p class="lead">Yanıtınız outcome graph ve metodoloji iyileştirmesine girer — kişisel veri paylaşmanız gerekmez.</p>
+      <p class="lead">Yanıtınız anonim outcome sinyallerine girer; segment kalibrasyonu kural tabanlıdır — kişisel veri gerekmez.</p>
       <div class="ib-decision-feedback-actions" role="group" aria-label="Geri bildirim seçenekleri">
         <button type="button" class="btn secondary" data-decision-feedback="helpful">Net ve faydalı</button>
         <button type="button" class="btn secondary" data-decision-feedback="unclear">Daha fazla açıklama</button>

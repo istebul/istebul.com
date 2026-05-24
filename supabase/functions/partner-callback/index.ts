@@ -1,4 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
+import {
+  mapPartnerStatusToSignals,
+  recordOutcomeSignals,
+} from "../_shared/outcome-capture.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -152,5 +156,26 @@ Deno.serve(async (req) => {
     payload: body,
   });
 
-  return json({ ok: true, updated: data.length, lead: data[0] });
+  const lead = data[0] as Record<string, unknown>;
+  const partnerSignals = mapPartnerStatusToSignals(partnerStatus);
+  if (partnerSignals.length) {
+    try {
+      const { data: leadMeta } = await sb
+        .from("auto_leads")
+        .select("decision_session_id, segment_key")
+        .eq("id", leadId)
+        .maybeSingle();
+
+      await recordOutcomeSignals(sb, partnerSignals, {
+        lead_id: leadId,
+        decision_session_id: leadMeta?.decision_session_id ?? null,
+        segment_key: leadMeta?.segment_key ?? null,
+        idempotency_prefix: idempotencyKey,
+      });
+    } catch {
+      /* non-blocking moat ingest */
+    }
+  }
+
+  return json({ ok: true, updated: data.length, lead });
 });

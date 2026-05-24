@@ -1,5 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { assertSafePartnerWebhookUrl } from "../_shared/webhook-url.ts";
+import {
+  mapCrmLeadUpdateSignals,
+  recordOutcomeSignals,
+} from "../_shared/outcome-capture.ts";
 
 async function writeAdminAudit(
   adminClient: ReturnType<typeof createClient>,
@@ -439,6 +443,28 @@ Deno.serve(async (req) => {
         .eq("id", id);
 
       if (error) throw error;
+
+      if (table === "auto_leads") {
+        const crmSignals = mapCrmLeadUpdateSignals(values);
+        if (crmSignals.length) {
+          try {
+            const { data: leadMeta } = await adminClient
+              .from("auto_leads")
+              .select("decision_session_id, segment_key")
+              .eq("id", id)
+              .maybeSingle();
+
+            await recordOutcomeSignals(adminClient, crmSignals, {
+              lead_id: id,
+              decision_session_id: leadMeta?.decision_session_id ?? null,
+              segment_key: leadMeta?.segment_key ?? null,
+              idempotency_prefix: `crm:${id}:${Object.keys(values).sort().join(",")}`,
+            });
+          } catch {
+            /* non-blocking */
+          }
+        }
+      }
 
       await writeAdminAudit(adminClient, user, {
         action: "update",

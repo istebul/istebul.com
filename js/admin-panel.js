@@ -1715,6 +1715,7 @@ async function renderMoatIntelligenceStrip(leads = []) {
   if (!root) return;
 
   let feedback = [];
+  let signals = [];
   try {
     feedback = await adminList(sb, {
       table: 'decision_feedback',
@@ -1725,7 +1726,17 @@ async function renderMoatIntelligenceStrip(leads = []) {
     /* migration may be pending */
   }
 
-  const dash = computeMoatDashboard(leads, feedback);
+  try {
+    signals = await adminList(sb, {
+      table: 'outcome_signal_events',
+      order: { column: 'created_at', ascending: false },
+      limit: 2000
+    });
+  } catch {
+    /* migration may be pending */
+  }
+
+  const dash = computeMoatDashboard(leads, feedback, signals);
   const helpful = dash.feedbackCounts.helpful || 0;
   const unclear = dash.feedbackCounts.unclear || 0;
   const contact = dash.feedbackCounts.contact || 0;
@@ -1765,6 +1776,30 @@ async function renderMoatIntelligenceStrip(leads = []) {
       <div class="partner-ops-stat-value">${dash.feedbackTotal}</div>
       <div class="partner-ops-stat-sub">faydalı ${helpful} · belirsiz ${unclear} · destek ${contact}</div>
     </div>
+    <div class="partner-ops-stat">
+      <div class="partner-ops-stat-label">Outcome signals</div>
+      <div class="partner-ops-stat-value">${dash.outcomeSignalTotal || 0}</div>
+      <div class="partner-ops-stat-sub">kural tabanlı kalibrasyon girdisi</div>
+    </div>
+    <details class="moat-segment-details" style="grid-column:1/-1;margin-top:8px;">
+      <summary>Outcome signal dağılımı (90g)</summary>
+      <table class="table" style="margin-top:10px;">
+        <thead><tr><th>Sinyal</th><th>Adet</th></tr></thead>
+        <tbody>${
+          Object.keys(dash.outcomeSignalByType || {}).length
+            ? Object.entries(dash.outcomeSignalByType)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8)
+                .map(
+                  ([type, count]) =>
+                    `<tr><td><code>${escapeHtml(type)}</code></td><td>${count}</td></tr>`
+                )
+                .join('')
+            : '<tr><td colspan="2" class="text-muted">Henüz outcome signal yok</td></tr>'
+        }</tbody>
+      </table>
+      <p class="text-muted-sm" style="margin-top:8px;">KVKK: kişisel veri saklanmaz; skor kalibrasyonu deterministik kurallarla uygulanır (ML eğitimi iddiası yok).</p>
+    </details>
     <details class="moat-segment-details" style="grid-column:1/-1;margin-top:12px;">
       <summary>Segment benchmark (anonim, k≥3)</summary>
       <table class="table" style="margin-top:10px;">

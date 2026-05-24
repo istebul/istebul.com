@@ -4,6 +4,10 @@ import {
   buildSegmentKey,
 } from "../_shared/scoring-intelligence.ts";
 import { recordPlatformEvent } from "../_shared/platform-analytics.ts";
+import {
+  mapDecisionFeedbackToSignals,
+  recordOutcomeSignals,
+} from "../_shared/outcome-capture.ts";
 
 const allowedOrigins = [
   "https://istebul.com",
@@ -182,6 +186,37 @@ Deno.serve(async (req) => {
         anonymous_id: String(body.anonymous_id || "").slice(0, 64) || null,
         properties: body.properties && typeof body.properties === "object" ? body.properties : {},
       });
+
+      const feedbackSignals = mapDecisionFeedbackToSignals(feedbackType);
+      if (feedbackSignals.length) {
+        const sessionId = String(body.decision_session_id || "").slice(0, 64) || null;
+        try {
+          await recordOutcomeSignals(admin, feedbackSignals, {
+            decision_session_id: sessionId,
+            segment_key: segmentKey || null,
+            idempotency_prefix: `feedback:${sessionId || "anon"}:${feedbackType}:${Date.now().toString(36).slice(-6)}`,
+          });
+          if (Number(body.match_score || 0) > 0) {
+            await recordOutcomeSignals(admin, [
+              {
+                signal_type: "confidence_accuracy",
+                signal_source: "feedback",
+                properties: {
+                  match_score: Number(body.match_score || 0),
+                  confidence_tier: String(body.confidence_tier || "").slice(0, 24) || null,
+                  feedback_type: feedbackType,
+                },
+              },
+            ], {
+              decision_session_id: sessionId,
+              segment_key: segmentKey || null,
+              idempotency_prefix: `confidence:${sessionId || "anon"}:${feedbackType}`,
+            });
+          }
+        } catch {
+          /* non-blocking */
+        }
+      }
 
       try {
         await recordPlatformEvent(admin, {

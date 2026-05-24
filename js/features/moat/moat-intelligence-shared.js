@@ -36,9 +36,10 @@ export function aggregateSegmentBenchmarksFromLeads(leads = []) {
   return rows.sort((a, b) => b.sample_size - a.sample_size);
 }
 
-export function computeMoatDashboard(leads = [], feedbackRows = []) {
+export function computeMoatDashboard(leads = [], feedbackRows = [], signalRows = []) {
   const rows = Array.isArray(leads) ? leads : [];
   const feedback = Array.isArray(feedbackRows) ? feedbackRows : [];
+  const signals = Array.isArray(signalRows) ? signalRows : [];
 
   const outcomeCount = rows.filter((l) => WIN_STATUSES.has(String(l.partner_status || ''))).length;
   const calibratedLeadCount = rows.filter((l) => Number(l.scoring_calibration_delta || 0) !== 0).length;
@@ -51,6 +52,18 @@ export function computeMoatDashboard(leads = [], feedbackRows = []) {
     return acc;
   }, {});
 
+  const outcomeSignalByType = signals.reduce((acc, row) => {
+    const t = String(row.signal_type || 'unknown');
+    acc[t] = (acc[t] || 0) + 1;
+    return acc;
+  }, {});
+
+  const outcomeSignalBySource = signals.reduce((acc, row) => {
+    const s = String(row.signal_source || 'unknown');
+    acc[s] = (acc[s] || 0) + 1;
+    return acc;
+  }, {});
+
   return {
     leadCount: rows.length,
     outcomeCount,
@@ -59,6 +72,9 @@ export function computeMoatDashboard(leads = [], feedbackRows = []) {
     segmentCount: topSegments.length,
     topSegments,
     feedbackCounts,
-    feedbackTotal: feedback.length
+    feedbackTotal: feedback.length,
+    outcomeSignalTotal: signals.length,
+    outcomeSignalByType,
+    outcomeSignalBySource
   };
 }

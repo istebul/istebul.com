@@ -46,6 +46,10 @@ import {
 } from '../features/moat/moat-session.js';
 import { mountDecisionFeedback } from '../features/moat/decision-feedback.js';
 import { mountOutcomeIntelligence } from '../features/moat/outcome-intelligence.js';
+import {
+  captureFinancingAccepted,
+  captureVehicleRecommendedSelected
+} from '../features/moat/outcome-capture.js';
 import { buildSegmentKey } from '../features/moat/scoring-intelligence.js';
 import { WIZARD_ONBOARDING } from '../features/moat/category-positioning.js';
 
@@ -609,6 +613,12 @@ function openFinanceCompareModal(vehicleName = '') {
           comparison: window.lastFinanceComparison
         };
         sessionStorage.setItem(STORAGE_KEYS.AUTO_FINANCE_LEAD_CONTEXT, JSON.stringify(window.lastFinanceLeadContext));
+        captureFinancingAccepted({
+          vehicle: selectedVehicle,
+          stage: 'prequal_click',
+          form: readForm(document.getElementById('auto-form')),
+          properties: { bank: button.dataset.bank || null }
+        });
         openLeadModal('finance_review', selectedVehicle);
       });
     });
@@ -2388,6 +2398,13 @@ document.addEventListener('click', async (event) => {
         ? getAppInstance().toggleAutoFavorite(vehicle)
         : toggleAutoFavoriteFallback(vehicle);
       shortlistBtn.textContent = added ? "Shortlist'te" : "Shortlist'e ekle";
+      if (added) {
+        captureVehicleRecommendedSelected({
+          vehicle: vehicle.name || vehicleName,
+          form: readForm(document.getElementById('auto-form')),
+          matchScore: vehicle.matchScore ?? vehicle.score
+        });
+      }
     }
 
     return;
@@ -2471,6 +2488,14 @@ Destek almak istiyorum.`;
 
     if (eventMap[interest]) {
       trackAutoEvent(eventMap[interest], { interest_type: interest, vehicle });
+    }
+
+    if (interest === 'vehicle_offer') {
+      captureVehicleRecommendedSelected({
+        vehicle,
+        interestType: interest,
+        form: readForm(document.getElementById('auto-form'))
+      });
     }
 
     openLeadModal(interest, vehicle);
