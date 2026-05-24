@@ -375,8 +375,8 @@ export class PremiumPages {
       <header class="ib-premium-hero ib-premium-hero--pricing">
         <div class="container">
           <span class="ib-premium-eyebrow"><i data-lucide="credit-card"></i> Planlar</span>
-          <h1>Net fiyatlandırma, ölçülebilir değer</h1>
-          <p class="ib-premium-lead">Ücretsiz TCO analizi ile başlayın. Pro, daha derin maliyet raporu ve sınırsız karşılaştırma sunar. Enterprise: galeri ağları ve API.</p>
+          <h1>Yanlış seçim maliyetini görünür kılın</h1>
+          <p class="ib-premium-lead">Ücretsiz TCO ile başlayın. Pro, karşılaştırma ve raporla karar riskini azaltır — manipülatif indirim yok, listelenen fiyatlar ve şeffaf iptal.</p>
         </div>
       </header>
 

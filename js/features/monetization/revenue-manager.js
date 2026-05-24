@@ -1,6 +1,14 @@
 import API from '../../core/api.js';
 import { STORAGE_KEYS } from '../../core/storage-keys.js';
-import { AFFILIATE_DEFAULTS, FREE_LIMITS, PLANS, PRO_FEATURES } from './plans.js';
+import { renderFeatureComparisonTable } from './pricing-comparison.js';
+import {
+  buildRoiSummaryCopy,
+  calculatePricingRoi,
+  formatTry,
+  getAnnualSavingsFacts,
+  PRICING_ROI_DEFAULTS
+} from './pricing-roi.js';
+import { AFFILIATE_DEFAULTS, FREE_LIMITS, PLANS, PRICING_MESSAGING, PRO_FEATURES } from './plans.js';
 
 const ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due']);
 
@@ -225,10 +233,74 @@ export class RevenueManager {
     const plan = PLANS.pro.billing[billing] || PLANS.pro.billing.monthly;
 
     if (this.trialEligible) {
-      return PLANS.pro.trialLabel;
+      return `${PLANS.pro.trialLabel} — karar netliği`;
     }
 
     return plan.checkoutLabel;
+  }
+
+  renderPricingRoiCalculator(billing = this.selectedBilling) {
+    const result = calculatePricingRoi({
+      purchaseBudget: PRICING_ROI_DEFAULTS.purchaseBudget,
+      costDriftPercent: PRICING_ROI_DEFAULTS.costDriftPercent,
+      billing
+    });
+    const summary = buildRoiSummaryCopy(result);
+    const savings = getAnnualSavingsFacts();
+
+    return `
+      <section class="revenue-roi-panel" data-pricing-roi-panel aria-labelledby="pricing-roi-title">
+        <div class="revenue-roi-panel-head">
+          <h3 id="pricing-roi-title">${PRICING_MESSAGING.roiTitle}</h3>
+          <p class="revenue-roi-panel-lead">Bütçeniz ve makul bir TCO sapması varsayımıyla Pro maliyetini yanlış seçim riskiyle kıyaslayın.</p>
+        </div>
+        <div class="revenue-roi-controls">
+          <label class="revenue-roi-field">
+            <span>Araç bütçesi (örnek)</span>
+            <input type="range" min="${PRICING_ROI_DEFAULTS.budgetMin}" max="${PRICING_ROI_DEFAULTS.budgetMax}" step="${PRICING_ROI_DEFAULTS.budgetStep}" value="${PRICING_ROI_DEFAULTS.purchaseBudget}" data-roi-budget>
+            <output data-roi-budget-display>${formatTry(PRICING_ROI_DEFAULTS.purchaseBudget)}</output>
+          </label>
+          <label class="revenue-roi-field">
+            <span>TCO sapması varsayımı</span>
+            <input type="range" min="${PRICING_ROI_DEFAULTS.minPercent}" max="${PRICING_ROI_DEFAULTS.maxPercent}" step="0.5" value="${PRICING_ROI_DEFAULTS.costDriftPercent}" data-roi-drift>
+            <output data-roi-drift-display>%${PRICING_ROI_DEFAULTS.costDriftPercent}</output>
+          </label>
+        </div>
+        <div class="revenue-roi-results" data-roi-results>
+          <div class="revenue-roi-stat">
+            <span class="revenue-roi-stat-label">Örnek sapma maliyeti</span>
+            <strong data-roi-drift-cost>${formatTry(result.driftCost)}</strong>
+          </div>
+          <div class="revenue-roi-stat">
+            <span class="revenue-roi-stat-label">Pro (yıllık, seçili dönem)</span>
+            <strong data-roi-pro-cost>${formatTry(result.proYearlyCost)}</strong>
+            <small data-roi-pro-monthly>≈ ${formatTry(result.proMonthlyCost)} / ay</small>
+          </div>
+        </div>
+        <p class="revenue-roi-summary" data-roi-summary>${summary}</p>
+        <p class="revenue-roi-savings" data-roi-savings hidden>
+          Yıllık faturalama: 12× aylık listeye göre ${formatTry(savings.savingsAmount)} daha az (${savings.savingsPercent}% — listelenen fiyatlar).
+        </p>
+        <p class="revenue-roi-disclaimer">${PRICING_MESSAGING.roiDisclaimer}</p>
+      </section>`;
+  }
+
+  renderPricingReassurance() {
+    return `
+      <div class="revenue-pricing-reassurance" role="region" aria-label="Ödeme ve iptal güvencesi">
+        <div class="revenue-pricing-reassurance-item">
+          <strong>Stripe · PCI</strong>
+          <p>Ödeme Stripe üzerinden; kart bilgileri sunucularımızda saklanmaz.</p>
+        </div>
+        <div class="revenue-pricing-reassurance-item">
+          <strong>İptal</strong>
+          <p>Aboneliği Stripe müşteri panelinden veya hesabınızdan istediğiniz zaman sonlandırın. <a href="/abonelik-iptal.html">İptal rehberi</a></p>
+        </div>
+        <div class="revenue-pricing-reassurance-item">
+          <strong>Deneme</strong>
+          <p>İlk Pro aboneliğinde ${PLANS.pro.trialDays} gün ücretsiz; deneme bitiminde seçtiğiniz dönem ücretlendirilir — sürpriz yok.</p>
+        </div>
+      </div>`;
   }
 
   getSelectedBillingOption() {
@@ -238,10 +310,14 @@ export class RevenueManager {
   renderPricingCards({ layout = 'default' } = {}) {
     const monthly = PLANS.pro.billing.monthly;
     const annual = PLANS.pro.billing.annual;
+    const savingsFacts = getAnnualSavingsFacts();
     const trialBadge = this.trialEligible
       ? `<span class="revenue-trial-badge">${PLANS.pro.trialLabel}</span>`
       : '';
     const enterprise = PLANS.enterprise;
+    const roiBlock = this.renderPricingRoiCalculator(this.selectedBilling);
+    const compareBlock = renderFeatureComparisonTable();
+    const reassuranceBlock = this.renderPricingReassurance();
 
     const billingToggle = `
       <div class="revenue-billing-toggle" role="radiogroup" aria-label="Faturalama dönemi">
@@ -254,7 +330,7 @@ export class RevenueManager {
           <input type="radio" name="billing-interval" value="annual">
           <span>${annual.label} <em>${annual.savingsLabel}</em></span>
           <strong>${annual.priceDisplay}<small>${annual.periodLabel}</small></strong>
-          <small class="revenue-billing-equiv">${annual.monthlyEquivalent}</small>
+          <small class="revenue-billing-equiv">${annual.monthlyEquivalent} · 12 ay ${formatTry(savingsFacts.twelveMonthly)} yerine ${formatTry(savingsFacts.annual)}</small>
         </label>
       </div>`;
 
@@ -273,6 +349,8 @@ export class RevenueManager {
       : 'revenue-pricing-grid';
 
     return `
+      <p class="revenue-pricing-value-prop">${PRICING_MESSAGING.subhead}</p>
+      ${roiBlock}
       ${billingToggle}
       <div class="${gridClass}">
         <article class="revenue-plan-card">
@@ -283,23 +361,29 @@ export class RevenueManager {
           <ul>${PLANS.free.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
           <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">Ücretsiz maliyet analizi</a>
         </article>
-        <article class="revenue-plan-card revenue-plan-card--featured">
-          <span class="revenue-plan-badge revenue-plan-badge--pro">Önerilen</span>
+        <article class="revenue-plan-card revenue-plan-card--featured" data-revenue-plan-pro>
+          <span class="revenue-plan-badge revenue-plan-badge--popular">${PRICING_MESSAGING.popularBadge}</span>
           ${trialBadge}
           <h3>${PLANS.pro.name}</h3>
           <p class="revenue-plan-price" data-revenue-price-display>${monthly.priceDisplay}<small data-revenue-price-period>${monthly.periodLabel}</small></p>
           <p class="revenue-plan-equiv" data-revenue-price-equiv hidden>${annual.monthlyEquivalent} · ${annual.savingsLabel}</p>
+          <p class="revenue-plan-savings-fact" data-revenue-savings-fact hidden>12 aylık aylık ödemeye göre ${formatTry(savingsFacts.savingsAmount)} daha az (listelenen fiyat)</p>
           <p class="revenue-plan-desc">${PLANS.pro.description}</p>
           <ul>${PLANS.pro.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
-          <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">${this.getCheckoutCtaLabel('monthly')}</button>
+          <div class="revenue-plan-cta-stack">
+            <button type="button" class="btn btn-primary btn-lg" data-upgrade-checkout data-billing="monthly" data-trial="1" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">${this.getCheckoutCtaLabel('monthly')}</button>
+            <a href="/auto/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_pro_secondary">Önce ücretsiz TCO analizi</a>
+          </div>
           <p class="revenue-plan-hint">${PLANS.pro.priceHint}${this.trialEligible ? ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz` : ''}</p>
         </article>
         ${enterpriseCard}
       </div>
+      ${compareBlock}
+      ${reassuranceBlock}
       <p class="revenue-risk-reversal" role="note">
-        <span>7 gün ücretsiz deneme</span>
+        <span>${PLANS.pro.trialDays} gün ücretsiz deneme (ilk abonelik)</span>
         <span>Stripe ile güvenli ödeme</span>
-        <span>İstediğiniz zaman iptal</span>
+        <span>Panelden iptal — taahhütsüz</span>
         <span>Skorlar bilgilendirme amaçlıdır</span>
       </p>
       <p class="pricing-trust-note" role="note">
@@ -314,9 +398,42 @@ export class RevenueManager {
 
     const radios = root.querySelectorAll('input[name="billing-interval"]');
     const priceDisplay = root.querySelector('[data-revenue-price-display]');
-    const pricePeriod = root.querySelector('[data-revenue-price-period]');
     const priceEquiv = root.querySelector('[data-revenue-price-equiv]');
+    const savingsFact = root.querySelector('[data-revenue-savings-fact]');
     const checkoutCta = root.querySelector('[data-revenue-checkout-cta]');
+    const roiPanel = root.querySelector('[data-pricing-roi-panel]');
+
+    const syncRoi = (billing) => {
+      if (!roiPanel) return;
+
+      const budgetInput = roiPanel.querySelector('[data-roi-budget]');
+      const driftInput = roiPanel.querySelector('[data-roi-drift]');
+      const purchaseBudget = Number(budgetInput?.value) || PRICING_ROI_DEFAULTS.purchaseBudget;
+      const costDriftPercent = Number(driftInput?.value) || PRICING_ROI_DEFAULTS.costDriftPercent;
+      const result = calculatePricingRoi({ purchaseBudget, costDriftPercent, billing });
+      const savings = getAnnualSavingsFacts();
+
+      const budgetOut = roiPanel.querySelector('[data-roi-budget-display]');
+      const driftOut = roiPanel.querySelector('[data-roi-drift-display]');
+      const driftCostEl = roiPanel.querySelector('[data-roi-drift-cost]');
+      const proCostEl = roiPanel.querySelector('[data-roi-pro-cost]');
+      const proMonthlyEl = roiPanel.querySelector('[data-roi-pro-monthly]');
+      const summaryEl = roiPanel.querySelector('[data-roi-summary]');
+      const savingsEl = roiPanel.querySelector('[data-roi-savings]');
+
+      if (budgetOut) budgetOut.textContent = formatTry(purchaseBudget);
+      if (driftOut) driftOut.textContent = `%${costDriftPercent}`;
+      if (driftCostEl) driftCostEl.textContent = formatTry(result.driftCost);
+      if (proCostEl) proCostEl.textContent = formatTry(result.proYearlyCost);
+      if (proMonthlyEl) proMonthlyEl.textContent = `≈ ${formatTry(result.proMonthlyCost)} / ay`;
+      if (summaryEl) summaryEl.textContent = buildRoiSummaryCopy(result);
+      if (savingsEl) {
+        savingsEl.hidden = billing !== 'annual';
+        if (billing === 'annual') {
+          savingsEl.textContent = `Yıllık faturalama: 12× aylık listeye göre ${formatTry(savings.savingsAmount)} daha az (${savings.savingsPercent}% — listelenen fiyatlar).`;
+        }
+      }
+    };
 
     const sync = () => {
       const selected = root.querySelector('input[name="billing-interval"]:checked')?.value || 'monthly';
@@ -336,15 +453,33 @@ export class RevenueManager {
         }
       }
 
+      if (savingsFact) {
+        const savings = getAnnualSavingsFacts();
+        savingsFact.textContent = `12 aylık aylık ödemeye göre ${formatTry(savings.savingsAmount)} daha az (listelenen fiyat)`;
+        savingsFact.hidden = selected !== 'annual';
+      }
+
       if (checkoutCta) {
         checkoutCta.textContent = this.getCheckoutCtaLabel(selected);
         checkoutCta.dataset.billing = selected;
       }
+
+      syncRoi(selected);
     };
 
     radios.forEach((radio) => {
       radio.addEventListener('change', sync);
     });
+
+    if (roiPanel) {
+      const budgetInput = roiPanel.querySelector('[data-roi-budget]');
+      const driftInput = roiPanel.querySelector('[data-roi-drift]');
+      const onRoiInput = () => syncRoi(
+        root.querySelector('input[name="billing-interval"]:checked')?.value || 'monthly'
+      );
+      budgetInput?.addEventListener('input', onRoiInput);
+      driftInput?.addEventListener('input', onRoiInput);
+    }
 
     sync();
   }

@@ -1,11 +1,21 @@
 /** Monetization plan definitions — copy & feature boundaries */
 
+export const PRICING_MESSAGING = Object.freeze({
+  headline: 'Yanlış araç kararının maliyetini küçültün',
+  subhead:
+    'Pro bir “abonelik kutusu” değil — TCO, karşılaştırma ve raporla seçim riskini görünür kılar. Ücretsiz başlayın; ihtiyaç halinde derinleştirin.',
+  popularBadge: 'En popüler',
+  roiTitle: 'Karar maliyeti hesabı',
+  roiDisclaimer:
+    'Örnek senaryo; gerçek TCO sapması bütçe, kullanım ve piyasa koşullarına göre değişir. Getiri veya tasarruf garantisi verilmez.'
+});
+
 export const PLANS = {
   free: {
     id: 'free',
     name: 'Başlangıç',
     priceLabel: 'Ücretsiz',
-    description: 'TCO özeti ve 2 model karşılaştırma — satın alma öncesi maliyet görünürlüğü',
+    description: 'TCO özeti ve 2 model karşılaştırma — satın alma öncesi yanlış seçim riskini görün',
     highlights: [
       '5 adımlı maliyet analizi (Auto)',
       '2 araç TCO karşılaştırma',
@@ -18,16 +28,16 @@ export const PLANS = {
     name: 'isteBul Pro',
     priceLabel: 'Aylık abonelik',
     priceHint: 'Stripe ile güvenli ödeme · dilediğiniz zaman iptal',
-    description: 'Derin maliyet raporu, sınırsız TCO karşılaştırma ve öncelikli partner yönlendirmesi',
+    description: 'Derin TCO raporu, sınırsız karşılaştırma ve öncelikli yönlendirme — tek yanlış seçim maliyetine göre düşük risk',
     trialDays: 7,
-    trialLabel: '7 gün ücretsiz deneme',
+    trialLabel: '7 gün risk almadan dene',
     billing: {
       monthly: {
         id: 'monthly',
         label: 'Aylık',
         priceDisplay: '₺299',
         periodLabel: '/ ay',
-        checkoutLabel: 'Aylık Pro\'ya geç'
+        checkoutLabel: 'Aylık — karar netliğini aç'
       },
       annual: {
         id: 'annual',
@@ -35,9 +45,9 @@ export const PLANS = {
         priceDisplay: '₺2.870',
         periodLabel: '/ yıl',
         monthlyEquivalent: '₺239 / ay',
-        savingsLabel: '%20 tasarruf',
+        savingsLabel: '12 aylık ödemeye göre daha az',
         discountPercent: 20,
-        checkoutLabel: 'Yıllık Pro\'ya geç (indirimli)'
+        checkoutLabel: 'Yıllık faturalama — aylık ₺239'
       }
     },
     highlights: [
@@ -47,7 +57,7 @@ export const PLANS = {
       'Öncelikli partner eşleşmesi',
       'Karar geçmişi ve export'
     ],
-    cta: 'Pro\'ya geç'
+    cta: 'Karar riskini azalt'
   },
   enterprise: {
     id: 'enterprise',

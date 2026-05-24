@@ -17,8 +17,8 @@ export function renderStaticPricingFallback() {
           <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_static_free">Ücretsiz maliyet analizi</a>
         </article>
         <article class="revenue-plan-card revenue-plan-card--featured">
-          <span class="revenue-plan-badge revenue-plan-badge--pro">Önerilen</span>
-          <span class="revenue-trial-badge">7 gün ücretsiz deneme</span>
+          <span class="revenue-plan-badge revenue-plan-badge--popular">En popüler</span>
+          <span class="revenue-trial-badge">7 gün risk almadan dene</span>
           <h3>isteBul Pro</h3>
           <p class="revenue-plan-price">₺299<small>/ ay</small></p>
           <p class="revenue-plan-desc">Derin maliyet raporu, sınırsız karşılaştırma ve öncelikli yönlendirme</p>
@@ -28,7 +28,7 @@ export function renderStaticPricingFallback() {
             <li>Öncelikli partner eşleşmesi</li>
           </ul>
           <p class="revenue-plan-hint">Yıllık ₺2.870 (%20 tasarruf) · Stripe ile güvenli ödeme</p>
-          <a href="/planlar?checkout=pro" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_static_pro">7 gün ücretsiz dene</a>
+          <a href="/planlar?checkout=pro" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_static_pro">Karar netliği için dene</a>
           <p class="revenue-plan-hint revenue-plan-hint--checkout">7 gün deneme · Stripe · istediğiniz zaman iptal</p>
         </article>
         <article class="revenue-plan-card revenue-plan-card--enterprise">
