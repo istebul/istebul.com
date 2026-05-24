@@ -2,9 +2,8 @@ name = "istebul"
 compatibility_date = "2026-05-15"
 pages_build_output_dir = "dist"
 
-# Cloudflare Pages (Git bağlantısı varsa) — build ayarları
-[build]
-command = "npm run build"
+# Build: GitHub Actions (npm run build) veya Cloudflare Dashboard → Builds → "npm run build"
+# Not: [build] burada OLMAMALI — wrangler pages deploy önceden üretilmiş dist kullanır.
 
 # Pages Functions: /functions (stripe-webhook, create-checkout, ai-proxy)
 # Otomatik deploy: .github/workflows/production-deploy.yml (main push)
