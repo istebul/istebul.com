@@ -4,86 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Partner API &amp; Webhook | isteBul</title>
-  <meta name="description" content="isteBul partner webhook entegrasyonu — HMAC imza, retry, failover ve callback.">
+  <meta name="description" content="isteBul partner API — HMAC webhook, lead payload şeması, retry, failover, callback ve test konsolu.">
   <link rel="stylesheet" href="/css/style.css?v=50">
   <link rel="stylesheet" href="/css/enterprise-polish.css?v=1">
-  <link rel="stylesheet" href="/css/partner-platform.css?v=1">
+  <link rel="stylesheet" href="/css/partner-platform.css?v=3">
 </head>
-<body class="ib-enterprise">
+<body class="ib-enterprise ib-partner-docs-page">
   <header class="auto-header ib-partner-header">
     <a class="logo" href="/">isteBul <span>Karar zekâsı</span></a>
     <nav>
-      <a href="/partner-olun.html">Partner olun</a>
-      <a href="/partner-docs.html" aria-current="page">Dokümantasyon</a>
+      <a href="/partner-olun.html">Partner programı</a>
+      <a href="/partner-basvuru.html">Başvuru</a>
+      <a href="/partner-docs.html" aria-current="page">API dokümantasyonu</a>
       <a href="/auto/">Auto</a>
     </nav>
   </header>
 
-  <main class="ib-partner-docs">
-    <p class="kicker">Partner platform</p>
-    <h1>Webhook &amp; API entegrasyonu</h1>
-    <p class="lead">Hot lead teslimatı HTTPS JSON POST ile yapılır. 2xx yanıt başarı sayılır; aksi halde otomatik retry ve failover devreye girer.</p>
-
-    <section>
-      <h2>Endpoint gereksinimleri</h2>
-      <ul>
-        <li>HTTPS zorunlu (TLS 1.2+)</li>
-        <li>POST, <code>Content-Type: application/json</code></li>
-        <li>15 saniye içinde yanıt</li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>İmza doğrulama</h2>
-      <p>Her istekte:</p>
-      <ul>
-        <li><code>x-istebul-signature</code> — HMAC-SHA256(raw body, shared_secret)</li>
-        <li><code>x-istebul-dispatch-id</code> — teslimat denemesi UUID (idempotency)</li>
-      </ul>
-      <pre><code>// Örnek (Node.js)
-const crypto = require('crypto');
-function verify(body, signature, secret) {
-  const expected = crypto.createHmac('sha256', secret).update(body).digest('hex');
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
-}</code></pre>
-    </section>
-
-    <section>
-      <h2>Örnek payload</h2>
-      <pre><code>{
-  "email": "customer@example.com",
-  "phone": "905551112233",
-  "budget": 2500000,
-  "interest_type": "vehicle_offer",
-  "vehicle": "BMW X5",
-  "lead_score": 150,
-  "priority": "very_hot",
-  "partner_route": "dealer_partner",
-  "estimated_revenue": 7500,
-  "source": "auto"
-}</code></pre>
-    </section>
-
-    <section>
-      <h2>Retry &amp; failover</h2>
-      <p>Başarısız teslimatlar: 15 dk → 1 sa → 6 sa → 24 sa (max 5 deneme). Route failover: örn. <code>dealer_partner</code> → <code>general_sales</code>.</p>
-    </section>
-
-    <section>
-      <h2>Callback (kazanım bildirimi)</h2>
-      <p>Lead sonucunu bildirmek için <code>partner-callback</code> endpoint’ine <code>lead_id</code> ve <code>partner_status</code> (won/lost) gönderin. Detay: entegrasyon paketi (admin tarafından paylaşılır).</p>
-    </section>
-
-    <section>
-      <h2>Güvenlik &amp; uyumluluk</h2>
-      <div class="ib-partner-trust-grid">
-        <div class="ib-partner-trust-card"><strong>KVKK</strong><p>Lead verisi minimizasyonu; iş ortağı sözleşmesi ile paylaşım.</p></div>
-        <div class="ib-partner-trust-card"><strong>SSRF koruması</strong><p>Webhook URL’leri kayıt sırasında doğrulanır.</p></div>
-        <div class="ib-partner-trust-card"><strong>Denetim</strong><p><code>partner_lead_dispatch_logs</code> ile teslimat izi.</p></div>
-      </div>
-    </section>
-
-    <p><a class="btn primary" href="/partner-basvuru.html">Self-serve başvuru</a> <a class="btn secondary" href="/partner-olun.html">Program özeti</a></p>
+  <main class="ib-partner-docs" id="partner-docs-shell">
+    <p>Yükleniyor…</p>
   </main>
 
   <script src="/env.js" defer></script>

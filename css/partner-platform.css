@@ -89,9 +89,212 @@
 }
 
 .ib-partner-docs {
-  max-width: 48rem;
+  max-width: 72rem;
   margin: 0 auto;
   padding: 2rem 1.25rem 4rem;
+}
+
+.ib-partner-docs-page .ib-partner-docs {
+  padding-top: 1.5rem;
+}
+
+.ib-partner-docs-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.ib-partner-docs-nav {
+  position: sticky;
+  top: 1.25rem;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #f8fafc;
+}
+
+.ib-partner-docs-nav-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  color: #64748b;
+  margin: 0 0 0.75rem;
+}
+
+.ib-partner-docs-nav ol {
+  margin: 0;
+  padding: 0 0 0 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.ib-partner-docs-nav a {
+  color: #1e40af;
+  text-decoration: none;
+}
+
+.ib-partner-docs-nav a:hover {
+  text-decoration: underline;
+}
+
+.ib-partner-docs-nav-cta {
+  margin: 1rem 0 0;
+}
+
+.ib-partner-docs-hero h1 {
+  font-size: clamp(1.65rem, 3vw, 2.1rem);
+  margin-bottom: 0.5rem;
+}
+
+.ib-partner-docs-section {
+  margin: 2.5rem 0;
+  scroll-margin-top: 1.25rem;
+}
+
+.ib-partner-docs-section h2 {
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.ib-partner-docs-section h3 {
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.ib-partner-docs-steps {
+  padding-left: 1.25rem;
+  line-height: 1.55;
+}
+
+.ib-partner-docs-code {
+  overflow-x: auto;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  margin: 1rem 0;
+}
+
+.ib-partner-docs-code code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+}
+
+.ib-partner-docs-table-wrap {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.ib-partner-docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.ib-partner-docs-table th,
+.ib-partner-docs-table td {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.ib-partner-docs-table th {
+  background: #f1f5f9;
+  font-weight: 700;
+}
+
+.ib-partner-docs-callout {
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.ib-partner-docs-callout--warn {
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  background: #fffbeb;
+}
+
+.ib-partner-docs-callout ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.ib-partner-docs-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.ib-partner-console {
+  padding: 1.25rem;
+  border-radius: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: linear-gradient(180deg, #f8fbff, #fff);
+}
+
+.ib-partner-console-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.ib-partner-console textarea,
+.ib-partner-console input[type="text"],
+.ib-partner-console input[type="password"] {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+}
+
+.ib-partner-console textarea {
+  font-family: ui-monospace, monospace;
+  resize: vertical;
+  min-height: 12rem;
+}
+
+.ib-partner-console-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.ib-partner-console-result {
+  font-weight: 600;
+  margin: 0.75rem 0 0;
+}
+
+.ib-partner-console-result.is-ok {
+  color: #059669;
+}
+
+.ib-partner-console-result.is-error {
+  color: #dc2626;
+}
+
+@media (max-width: 900px) {
+  .ib-partner-docs-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ib-partner-docs-nav {
+    position: static;
+  }
 }
 
 .ib-partner-docs pre {

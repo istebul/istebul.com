@@ -1,70 +1,78 @@
 # isteBul Partner Webhook Integration
 
-isteBul Auto sends qualified hot leads to partner webhook endpoints via HTTPS JSON POST.
+Enterprise reference for B2B lead delivery. Interactive docs: `/partner-docs.html` (includes local signature test console).
 
 ## Endpoint
 
-Partner must provide an HTTPS webhook URL.
+Partner provides an HTTPS webhook URL (registered during onboarding; SSRF-safe validation).
 
-Example:
-
-https://partner-domain.com/api/istebul/leads
+Example: `https://partner-domain.com/api/istebul/leads`
 
 ## Method
 
-POST
+`POST`
 
 ## Headers
 
-Content-Type: application/json
-x-istebul-signature: <hmac_sha256_signature>
-x-istebul-dispatch-id: <uuid per delivery attempt>
+| Header | Value | Required |
+|--------|-------|----------|
+| Content-Type | application/json | Yes |
+| x-istebul-signature | HMAC-SHA256 hex of **raw body** | Yes |
+| x-istebul-dispatch-id | UUID per delivery attempt | Yes |
 
-## Signature Validation
+## Signature validation
 
-Signature algorithm:
+```
+HMAC_SHA256(raw_request_body, shared_secret) → lowercase hex
+```
 
-HMAC_SHA256(raw_request_body, shared_secret)
+**Secret precedence:** per-endpoint `shared_secret` on `partner_endpoints`, else platform `PARTNER_WEBHOOK_SIGNING_SECRET`.
 
-Partner validates incoming requests using the shared secret (global `PARTNER_WEBHOOK_SIGNING_SECRET` or per-endpoint `shared_secret` when configured).
+**Critical:** Verify using the exact raw bytes received. Re-serializing JSON after parse will break signatures.
+
+Use constant-time comparison (`timingSafeEqual`).
+
+## Success response
+
+Any HTTP **2xx** within the client timeout (8s) is success.
+
+Example body:
+
+```json
+{ "ok": true }
+```
+
+## Error handling
+
+| Condition | isteBul behavior |
+|-----------|------------------|
+| Non-2xx | Retry scheduled |
+| Timeout / network | `network_or_timeout`, retry |
+| All endpoints on route fail | Failover route if configured |
+| 5 failed attempts | `partner_status = dispatch_dead` |
+
+## Retry schedule
+
+| After attempt # | Next retry |
+|-----------------|------------|
+| 1 | +15 minutes |
+| 2 | +1 hour |
+| 3 | +6 hours |
+| 4–5 | +24 hours |
+
+Maximum retries: **5**, then `dispatch_dead`.
 
 ## Failover routing
 
-If all endpoints on the primary route fail or are unavailable (circuit open, daily cap), isteBul tries configured failover routes (e.g. `dealer_partner` → `general_sales`).
+If primary route endpoints are unavailable (circuit open, daily cap, or all failed), isteBul tries configured failover routes (e.g. `dealer_partner` → `general_sales`).
 
-## Success Response
+## Example payload (production dispatch)
 
-Any HTTP 2xx response is treated as successful delivery.
-
-Example:
-
-{
-  "ok": true
-}
-
-Non-2xx responses are treated as failed deliveries and retried automatically.
-
-## Retry Policy
-
-Failed deliveries retry:
-
-- 15 minutes
-- 1 hour
-- 6 hours
-- 24 hours
-
-Maximum retry count:
-5
-
-Then lead becomes:
-
-dispatch_dead
-
-## Example Payload
-
+```json
 {
   "email": "customer@example.com",
   "phone": "905551112233",
+  "contact_name": "Ayşe Yılmaz",
   "budget": 2500000,
   "usage": "family",
   "body": "suv",
@@ -78,23 +86,52 @@ dispatch_dead
   "partner_route": "dealer_partner",
   "estimated_revenue": 7500,
   "source": "auto",
-  "lead_id": "<uuid>",
-  "dispatch_attempt_id": "<uuid>"
+  "lead_id": "550e8400-e29b-41d4-a716-446655440000",
+  "partner_endpoint_id": "660e8400-e29b-41d4-a716-446655440001",
+  "partner_endpoint_name": "Example Dealer",
+  "dispatch_attempt_id": "770e8400-e29b-41d4-a716-446655440002",
+  "manual_dispatch": false
 }
+```
 
-## Partner Routes
+`dispatch_attempt_id` matches header `x-istebul-dispatch-id`.
 
-dealer_partner
-finance_partner
-insurance_partner
-premium_report
-general_sales
+## Partner routes
 
-## Test Flow
+- dealer_partner
+- finance_partner
+- insurance_partner
+- premium_report
+- general_sales
 
-1. Partner provides test webhook URL
-2. isteBul sends test lead
-3. Partner validates payload + signature
-4. Partner returns 2xx
-5. isteBul verifies dispatched status
-6. Production webhook goes live
+## Test workflow
+
+1. Complete self-serve onboarding at `/partner-basvuru.html` (webhook URL + HMAC self-test; secret not stored server-side).
+2. Operations assigns `shared_secret` on the live endpoint.
+3. Return 2xx on first hot lead; confirm `partner_status = dispatched` in logs.
+4. Optional: report outcome via `partner-callback` (separate secret).
+
+Test phones (`905551112233`, etc.) are skipped for production dispatch metrics.
+
+## Partner callback (separate secret)
+
+```
+POST {SUPABASE_URL}/functions/v1/partner-callback
+x-partner-callback-secret: <PARTNER_CALLBACK_SECRET>
+```
+
+Body:
+
+```json
+{
+  "lead_id": "uuid",
+  "partner_status": "won",
+  "actual_revenue": 5000,
+  "notes": "optional",
+  "event_id": "optional-idempotency"
+}
+```
+
+Allowed `partner_status`: accepted, won, lost, paid, closed, funded, delivered, rejected.
+
+Do not use the webhook signing secret for callbacks.

@@ -13,7 +13,7 @@
   },
   "partner-docs.html": {
     "title": "Partner API & Webhook | isteBul",
-    "description": "isteBul partner webhook entegrasyonu: HMAC imza, retry, failover, örnek payload ve güvenlik gereksinimleri."
+    "description": "Partner API referansı: lead payload şeması, HMAC imza, retry ve failover, callback API, test workflow ve yerel imza konsolu."
   },
   "gizlilik.html": {
     "title": "Gizlilik Politikası | isteBul",
