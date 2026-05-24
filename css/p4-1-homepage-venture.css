@@ -1,0 +1,363 @@
+/**
+ * P4.1 — Homepage venture-grade (trust + clarity + premium rhythm)
+ * isteBul identity; inspired by clarity of Stripe/Linear/Ramp — not visual copycat.
+ */
+
+body.ib-enterprise.ib-home-landing main {
+  --ib-section-y: clamp(4.5rem, 9vw, 6.5rem);
+  --ib-prose: 58ch;
+  --ib-hero-ink: #0b1220;
+  --ib-hero-muted: #475569;
+  --ib-surface: #ffffff;
+  --ib-surface-muted: #f8fafc;
+  --ib-line: rgba(148, 163, 184, 0.2);
+}
+
+/* —— Hero —— */
+body.ib-enterprise .hero-section.ib-hero-venture {
+  min-height: auto;
+  padding: clamp(3.5rem, 8vw, 5.5rem) 0 clamp(3rem, 6vw, 4.5rem);
+  background:
+    radial-gradient(120% 80% at 0% 0%, rgba(37, 99, 235, 0.06), transparent 55%),
+    radial-gradient(90% 70% at 100% 20%, rgba(15, 118, 110, 0.05), transparent 50%),
+    linear-gradient(180deg, #f8fafc 0%, #ffffff 72%);
+}
+
+body.ib-enterprise .hero-section.ib-hero-venture::before {
+  opacity: 0.35;
+}
+
+body.ib-enterprise .ib-hero-venture .hero-container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.95fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 clamp(1.25rem, 4vw, 2rem);
+}
+
+body.ib-enterprise .ib-hero-venture .hero-eyebrow {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0f766e;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+body.ib-enterprise .ib-hero-venture .hero-content h1 {
+  font-size: clamp(2.35rem, 4.8vw, 3.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  max-width: 14ch;
+  color: var(--ib-hero-ink);
+  font-weight: 800;
+}
+
+body.ib-enterprise .ib-hero-venture .hero-content h1::after {
+  display: none;
+}
+
+body.ib-enterprise .ib-hero-venture .ib-hero-emphasis {
+  color: #1d4ed8;
+  font-weight: 800;
+}
+
+body.ib-enterprise .ib-hero-venture .hero-lead {
+  margin-top: 1.25rem;
+  max-width: var(--ib-prose);
+  font-size: clamp(1.05rem, 1.35vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--ib-hero-muted);
+  font-weight: 500;
+}
+
+body.ib-enterprise .ib-hero-venture .ib-hero-cta-stack {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+body.ib-enterprise .ib-hero-venture .ib-hero-cta-primary-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  width: 100%;
+  max-width: 22rem;
+}
+
+body.ib-enterprise .ib-hero-venture .btn-lg {
+  width: 100%;
+  min-height: 52px;
+  font-size: 1.02rem;
+  border-radius: 12px;
+  justify-content: center;
+}
+
+body.ib-enterprise .ib-hero-venture .ib-hero-cta-hint {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ib-venture-muted, #64748b);
+  line-height: 1.45;
+}
+
+body.ib-enterprise .ib-hero-venture .ib-hero-cta-secondary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+body.ib-enterprise .ib-hero-venture .ib-social-proof {
+  list-style: none;
+  margin: 2.25rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  max-width: 36rem;
+}
+
+body.ib-enterprise .ib-hero-venture .ib-social-proof li {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--ib-line);
+  background: var(--ib-surface);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+body.ib-enterprise .ib-hero-venture .ib-social-proof strong {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--ib-hero-ink);
+  letter-spacing: -0.02em;
+}
+
+body.ib-enterprise .ib-hero-venture .ib-social-proof span {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ib-hero-muted);
+}
+
+body.ib-enterprise .ib-hero-venture .decision-preview {
+  border-radius: 20px;
+  border: 1px solid var(--ib-line);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 24px 64px rgba(15, 23, 42, 0.08);
+  background: var(--ib-surface);
+}
+
+/* —— Section rhythm —— */
+body.ib-enterprise .ib-section-venture {
+  padding: var(--ib-section-y) 0;
+}
+
+body.ib-enterprise .ib-section-intro {
+  max-width: var(--ib-prose);
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+body.ib-enterprise .ib-section-intro h2 {
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  color: var(--ib-hero-ink);
+  margin-top: 0.5rem;
+}
+
+body.ib-enterprise .ib-section-intro p {
+  margin-top: 0.85rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--ib-hero-muted);
+}
+
+body.ib-enterprise .trust-section.ib-section-venture {
+  background: var(--ib-surface-muted);
+  border-top: 1px solid var(--ib-line);
+  border-bottom: 1px solid var(--ib-line);
+}
+
+body.ib-enterprise .trust-section .trust-grid {
+  gap: 1.25rem;
+}
+
+body.ib-enterprise .trust-section .trust-card {
+  padding: 1.5rem 1.35rem;
+  border-radius: 16px;
+}
+
+body.ib-enterprise .trust-section .trust-card h3 {
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+/* —— Methodology teaser —— */
+body.ib-enterprise .ib-methodology-teaser {
+  background: #fff;
+}
+
+body.ib-enterprise .ib-methodology-teaser-panel {
+  border: 1px solid var(--ib-line);
+  border-radius: 20px;
+  padding: clamp(1.75rem, 4vw, 2.5rem);
+  background: linear-gradient(165deg, #f8fafc 0%, #fff 48%);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+}
+
+body.ib-enterprise .ib-methodology-teaser-panel header {
+  max-width: var(--ib-prose);
+}
+
+body.ib-enterprise .ib-methodology-lead {
+  margin-top: 0.75rem;
+  color: var(--ib-hero-muted);
+  line-height: 1.6;
+}
+
+body.ib-enterprise .ib-methodology-steps {
+  list-style: none;
+  margin: 2rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+body.ib-enterprise .ib-methodology-steps li {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid var(--ib-line);
+  background: #fff;
+}
+
+body.ib-enterprise .ib-methodology-steps li > span {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1d4ed8;
+  letter-spacing: 0.04em;
+}
+
+body.ib-enterprise .ib-methodology-steps strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--ib-hero-ink);
+}
+
+body.ib-enterprise .ib-methodology-steps p {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ib-hero-muted);
+  line-height: 1.45;
+}
+
+body.ib-enterprise .ib-methodology-teaser-actions {
+  margin-top: 1.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* —— How it works —— */
+body.ib-enterprise .how-section.ib-section-venture .how-grid {
+  gap: 1.25rem;
+}
+
+body.ib-enterprise .how-section.ib-section-venture .how-step {
+  padding: 1.65rem 1.4rem;
+  border-radius: 16px;
+}
+
+body.ib-enterprise .how-section.ib-section-venture .step-number {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+/* —— Category ownership —— */
+body.ib-enterprise .category-ownership-section.ib-section-venture .section-lead {
+  font-size: 1.05rem;
+  color: var(--ib-hero-muted);
+}
+
+body.ib-enterprise .category-ownership-section .ib-category-alt-grid-home article {
+  border-radius: 14px;
+}
+
+/* —— Pricing block on home —— */
+body.ib-enterprise .pricing-section.ib-section-venture .revenue-pricing-grid {
+  margin-top: 0.5rem;
+}
+
+/* —— Trust rail — calmer —— */
+body.ib-enterprise .ib-trust-rail {
+  border-bottom: 1px solid var(--ib-line);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+body.ib-enterprise .ib-trust-rail-inner {
+  gap: 1.25rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Hide duplicate JS-injected trust line when static hint exists */
+body.ib-enterprise .ib-hero-venture .hero-actions .ib-cta-trust-line {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  body.ib-enterprise .ib-hero-venture .hero-container {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-enterprise .ib-hero-venture .hero-content h1 {
+    max-width: none;
+  }
+
+  body.ib-enterprise .ib-hero-venture .ib-social-proof {
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
+
+  body.ib-enterprise .ib-methodology-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  body.ib-enterprise .ib-hero-venture .ib-hero-cta-secondary-row {
+    width: 100%;
+  }
+
+  body.ib-enterprise .ib-hero-venture .ib-hero-cta-secondary-row .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ib-enterprise .ib-reveal-pending {
+    opacity: 1;
+    transform: none;
+  }
+}

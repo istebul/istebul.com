@@ -2,6 +2,12 @@
 
 isteBul’u yatırım yapılabilir, güven veren dijital ürün hissi için eklenen katman (P3 moat üzerine).
 
+## P4.1 — Homepage venture-grade
+
+- `css/p4-1-homepage-venture.css` — hero hierarchy, CTA stack, social proof, methodology teaser, section rhythm
+- `index.html` — `ib-hero-venture`, `methodology-teaser`, refined copy
+- Router: `methodology-teaser` + `category-ownership` on marketing home
+
 ## Kapsam
 
 | Alan | Uygulama |

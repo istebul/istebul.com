@@ -17,7 +17,9 @@ import {
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
     'home',
     'trust',
+    'methodology-teaser',
     'how-it-works',
+    'category-ownership',
     'pricing',
     'categories'
 ]);
@@ -26,7 +28,9 @@ export const HOMEPAGE_SECTION_IDS = Object.freeze([
 export const MARKETING_HASH_IDS = Object.freeze([
     'home',
     'trust',
+    'methodology-teaser',
     'how-it-works',
+    'category-ownership',
     'pricing',
     'categories'
 ]);

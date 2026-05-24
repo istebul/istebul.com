@@ -25,8 +25,8 @@
     <link rel="apple-touch-icon" href="assets/icons/favicon-192.png">
     <link rel="icon" type="image/png" href="assets/icons/favicon-192.png">
     <script src="/env.js" defer></script>
-    <link rel="preload" href="css/style.css?v=50" as="style">
-    <link rel="stylesheet" href="css/style.css?v=51">
+    <link rel="preload" href="css/style.css?v=51" as="style">
+    <link rel="stylesheet" href="css/style.css?v=52">
     <link rel="stylesheet" href="css/enterprise-polish.css?v=1">
     <link rel="stylesheet" href="css/revenue.css?v=1">
     <link rel="stylesheet" href="css/premium-pages.css?v=1">
@@ -193,27 +193,32 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
         </noscript>
         <!-- Home Section -->
-        <section id="home" class="hero-section">
-            <div class="hero-container">
+        <section id="home" class="hero-section ib-hero-venture">
+            <div class="hero-container container">
                 <div class="hero-content">
-                    <span class="hero-eyebrow"><i data-lucide="shield-check"></i> <span data-cms="hero-eyebrow">Karar altyapısı · decision infrastructure</span></span>
-                    <h1 data-cms="hero-title">İlan bulmak başka, doğru karar vermek başka</h1>
-                    <p data-cms="hero-desc">Toplam sahip olma maliyetine göre karar verin. isteBul bir ilan sitesi, sohbet botu veya yalnızca oran karşılaştırması değil — bütçe, kredi, kullanım ve TCO’yu tek deterministik modelde birleştirir.</p>
-                    <div class="hero-actions">
-                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="hero">
-                            <i data-lucide="sparkles"></i> Ücretsiz maliyet analizi
-                        </a>
-                        <a href="/metodoloji" class="btn btn-outline">
-                            <i data-lucide="microscope"></i> Metodoloji
-                        </a>
-                        <a href="/planlar" class="btn btn-ghost btn-sm">Planlar</a>
+                    <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="shield-check" aria-hidden="true"></i> Karar altyapısı</p>
+                    <h1 data-cms="hero-title">İlan bulmak başka,<br><span class="ib-hero-emphasis">doğru karar vermek başka</span></h1>
+                    <p class="hero-lead" data-cms="hero-desc">Toplam sahip olma maliyetine göre karar verin — bütçe, kredi, kullanım ve TCO tek deterministik modelde. İlan listesi veya sohbet botu değil.</p>
+                    <div class="hero-actions ib-hero-cta-stack">
+                        <div class="ib-hero-cta-primary-row">
+                            <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="hero">
+                                <i data-lucide="sparkles" aria-hidden="true"></i> Ücretsiz maliyet analizi
+                            </a>
+                            <span class="ib-hero-cta-hint">~2 dk · KVKK uyumlu · bağlayıcı teklif değil</span>
+                        </div>
+                        <div class="ib-hero-cta-secondary-row">
+                            <a href="/metodoloji" class="btn btn-outline" data-native-route>
+                                <i data-lucide="microscope" aria-hidden="true"></i> Metodolojiyi gör
+                            </a>
+                            <a href="/planlar" class="btn btn-ghost" data-native-route>Planlar</a>
+                        </div>
                     </div>
 
-                    <div class="hero-proof" aria-label="Platform kapsamı">
-                        <span><strong>Karar altyapısı</strong> · ilan sitesi değil</span>
-                        <span><strong>Skor + TCO</strong> kural tabanlı</span>
-                        <span><strong>AI</strong> yalnızca gerekçe</span>
-                    </div>
+                    <ul class="ib-social-proof" aria-label="Platform güven sinyalleri">
+                        <li><strong>Kural tabanlı</strong><span>Skor ve TCO motoru</span></li>
+                        <li><strong>Şeffaf</strong><span>Denetlenebilir metodoloji</span></li>
+                        <li><strong>Tarafsız</strong><span>AI yalnızca gerekçe</span></li>
+                    </ul>
                 </div>
                 <div class="hero-image decision-preview" aria-label="Karar sonucu önizlemesi">
                     <div class="preview-toolbar">
@@ -266,13 +271,13 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
         </section>
 
-        <section id="trust" class="trust-section">
+        <section id="trust" class="trust-section ib-section-venture">
             <div class="container">
-                <span class="section-kicker">Güven ve şeffaflık</span>
-                <div class="section-header">
-                    <h2>Generic AI fikir verir. isteBul karar altyapısı sunar.</h2>
-                    <p>Skor, TCO ve güven bandı deterministik kurallarla hesaplanır. İlan siteleri envanter arar; kredi siteleri oran listeler — biz toplam maliyete göre karar çerçevesi üretiriz.</p>
-                </div>
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">Güven</span>
+                    <h2>Karar için netlik — pazarlama söylemi değil</h2>
+                    <p>Skor, TCO ve güven bandı deterministik kurallarla hesaplanır. İlan siteleri envanter arar; kredi siteleri oran listeler — isteBul toplam maliyete göre karar çerçevesi üretir.</p>
+                </header>
             <div class="trust-grid">
                 <div class="trust-card">
                     <div class="trust-card-icon" aria-hidden="true"><i data-lucide="calculator"></i></div>
@@ -297,7 +302,28 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
         </section>
 
-        <section id="category-ownership" class="category-ownership-section section-bg">
+        <section id="methodology-teaser" class="ib-methodology-teaser ib-section-venture" aria-labelledby="methodology-teaser-title">
+            <div class="container">
+                <div class="ib-methodology-teaser-panel">
+                    <header>
+                        <span class="section-kicker">Metodoloji</span>
+                        <h2 id="methodology-teaser-title">Sayılar kural motorundan gelir</h2>
+                        <p class="ib-methodology-lead">Skor sırası ve TCO kırılımı önce hesaplanır; yapay zeka yalnızca gerekçe metnini sentezler — skoru değiştirmez.</p>
+                    </header>
+                    <ol class="ib-methodology-steps">
+                        <li><span>01</span><div><strong>Girdi</strong><p>Bütçe, kullanım, finansman tercihi</p></div></li>
+                        <li><span>02</span><div><strong>Model</strong><p>TCO + uyum skoru + güven bandı</p></div></li>
+                        <li><span>03</span><div><strong>Çıktı</strong><p>Sıralama, alternatifler, açık gerekçe</p></div></li>
+                    </ol>
+                    <div class="ib-methodology-teaser-actions">
+                        <a href="/metodoloji" class="btn btn-outline" data-native-route>Metodoloji detayı</a>
+                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="methodology_teaser">Analizi başlat</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="category-ownership" class="category-ownership-section section-bg ib-section-venture">
             <div class="container">
                 <span class="section-kicker">Kategori sahipliği</span>
                 <h2>isteBul = karar altyapısı</h2>
@@ -317,13 +343,13 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
         </section>
 
-        <section id="how-it-works" class="how-section">
+        <section id="how-it-works" class="how-section ib-section-venture">
             <div class="container">
-                <div class="section-header">
+                <header class="section-header ib-section-intro">
                     <span class="section-kicker">Süreç</span>
-                    <h2>Karar altyapısı akışı</h2>
-                    <p>İhtiyacı tanımlayın → TCO ve skor modeli çalışsın → alternatifleri gerekçeyle karşılaştırın. İlan taraması değil, karar çıktısı.</p>
-                </div>
+                    <h2>Üç adımda karar çıktısı</h2>
+                    <p>İhtiyacı tanımlayın, modeli çalıştırın, alternatifleri gerekçeyle karşılaştırın — ilan taraması değil.</p>
+                </header>
                 <div class="how-grid">
                     <div class="how-step">
                         <span class="step-number">01</span>
@@ -590,13 +616,13 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
         </section>
 
-        <section id="pricing" class="pricing-section section-bg">
+        <section id="pricing" class="pricing-section section-bg ib-section-venture">
             <div class="container">
-                <div class="section-header">
-                    <span class="section-kicker">Fiyatlandırma</span>
-                    <h2>Karar altyapısı için planlar</h2>
-                    <p>Ücretsiz TCO ile başlayın — toplam sahip olma maliyetine göre karar verin. Pro, derin karşılaştırma ve raporla seçim riskini netleştirir; ilan listesi veya chat aboneliği değil.</p>
-                </div>
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">Planlar</span>
+                    <h2>Ücretsiz başlayın, ihtiyaçta derinleşin</h2>
+                    <p>TCO özeti ücretsiz. Pro, sınırsız karşılaştırma ve premium raporla riski netleştirir — chat aboneliği veya ilan listesi değil.</p>
+                </header>
                 <noscript>
                     <div class="pricing-noscript-fallback">
                         <p><strong>Başlangıç (ücretsiz):</strong> Auto karar analizi özeti, 2 araç karşılaştırma.</p>
@@ -649,15 +675,13 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
         </section>
 
         <!-- Categories Section -->
-        <section id="categories" class="categories-section">
+        <section id="categories" class="categories-section ib-section-venture">
             <div class="container">
-                <div class="section-header">
-                    <div>
-                        <span class="section-kicker">Ürün</span>
-                        <h2>Araç alımında karar altyapısı</h2>
-                        <p>İlan taramak yerine bütçe, kredi ve toplam maliyeti birlikte değerlendiren rehberli analiz — Auto ile başlayın.</p>
-                    </div>
-                </div>
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">Ürün</span>
+                    <h2>Araç alımında karar altyapısı</h2>
+                    <p>Bütçe, kredi ve toplam maliyeti birlikte değerlendiren rehberli analiz — Auto ile başlayın.</p>
+                </header>
                 <div class="categories-grid" id="categories-grid">
                     <!-- Categories will be loaded dynamically -->
                 </div>

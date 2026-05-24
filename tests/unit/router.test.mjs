@@ -15,7 +15,9 @@ function sectionStub(id) {
 const sections = new Map([
     ['home', sectionStub('home')],
     ['trust', sectionStub('trust')],
+    ['methodology-teaser', sectionStub('methodology-teaser')],
     ['how-it-works', sectionStub('how-it-works')],
+    ['category-ownership', sectionStub('category-ownership')],
     ['pricing', sectionStub('pricing')],
     ['categories', sectionStub('categories')],
     ['ilanlar', sectionStub('ilanlar')]

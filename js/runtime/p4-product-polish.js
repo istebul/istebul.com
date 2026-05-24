@@ -10,6 +10,9 @@ export function initP4ProductPolish() {
   if (typeof document === 'undefined') return;
 
   document.body.classList.add('ib-enterprise');
+  if (document.getElementById('home')) {
+    document.body.classList.add('ib-home-landing');
+  }
   requestAnimationFrame(() => {
     document.body.classList.add('ib-page-ready');
   });
@@ -21,16 +24,23 @@ export function initP4ProductPolish() {
 }
 
 function injectHeroCtaMicrocopy() {
+  if (document.querySelector('.ib-hero-cta-hint')) return;
+
   const heroPrimary = document.querySelector(
     '.hero-actions .btn-primary[data-analytics-placement="hero"]'
   );
-  if (!heroPrimary || heroPrimary.querySelector('.ib-cta-trust-line')) return;
+  if (!heroPrimary || heroPrimary.closest('.ib-hero-venture')?.querySelector('.ib-cta-trust-line')) {
+    return;
+  }
+
+  const stack = heroPrimary.closest('.hero-actions, .ib-hero-cta-stack');
+  if (!stack || stack.querySelector('.ib-cta-trust-line')) return;
 
   const line = document.createElement('span');
   line.className = 'ib-cta-trust-line';
   line.textContent =
     'Ücretsiz · ~2 dk · KVKK uyumlu · bağlayıcı teklif değil — metodolojik destek';
-  heroPrimary.insertAdjacentElement('afterend', line);
+  stack.appendChild(line);
 }
 
 function enhanceStickyCta() {
@@ -64,7 +74,7 @@ function bindLazySectionReveal() {
   if (REDUCED_MOTION() || !('IntersectionObserver' in window)) return;
 
   const targets = document.querySelectorAll(
-    '.trust-card, .how-step, .pricing-card, .premium-steps article, .ib-moat-layer-card, .hero-trust-panel > div, .ib-premium-step-list li, .partner-rate-card'
+    '.trust-card, .how-step, .pricing-card, .premium-steps article, .ib-moat-layer-card, .hero-trust-panel > div, .ib-premium-step-list li, .partner-rate-card, .ib-methodology-steps li, .ib-social-proof li'
   );
 
   const io = new IntersectionObserver(
