@@ -17,6 +17,11 @@ export const SCORE_FACTORS = Object.freeze({
   SEGMENT_FIT: 'Segment uyumu'
 });
 
+/** Deterministic score floor before normalization (documented for transparency). */
+export const SCORE_BASE = 42;
+export const SCORE_MIN = 35;
+export const SCORE_MAX = 94;
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -82,6 +87,39 @@ export function computeConfidenceMeta({
     review: 'Sınırlı veri — manuel kontrol önerilir'
   };
 
+  const signalExplanations = [
+    {
+      key: 'matchStrength',
+      label: 'Profil uyum gücü',
+      value: matchStrength,
+      hint: 'Pozitif/negatif kriter eşleşmelerinin yoğunluğu — uyum skorundan bağımsız.'
+    },
+    {
+      key: 'dataQuality',
+      label: 'Maliyet veri kalitesi',
+      value: dataQuality,
+      hint: costSource === 'truth' ? 'Katalog doğrulanmış maliyet katmanı.' : 'Tahmini maliyet — teklifte doğrulama önerilir.'
+    },
+    {
+      key: 'catalogCoverage',
+      label: 'Katalog kapsamı',
+      value: catalogCoverage,
+      hint: 'Referans model havuzu genişliği; dar havuzda güven bandı düşer.'
+    },
+    {
+      key: 'budgetClarity',
+      label: 'Bütçe netliği',
+      value: budgetClarity,
+      hint: budget > 0 ? 'Bütçe girdisi mevcut.' : 'Bütçe belirtilmedi — senaryo daha belirsiz.'
+    },
+    {
+      key: 'priceInBand',
+      label: 'Fiyat bandı uyumu',
+      value: priceInBand,
+      hint: 'Model fiyatının bütçe bandındaki konumu (satın alma önerisi değil).'
+    }
+  ];
+
   return {
     score: clamp(overall, 35, 92),
     tier,
@@ -93,6 +131,9 @@ export function computeConfidenceMeta({
       budgetClarity,
       priceInBand
     },
+    signalExplanations,
+    isMatchScore: false,
+    semanticVersion: 'p3.4',
     disclaimer:
       costSource === 'truth'
         ? 'Veri güven bandı, girdi kalitesini gösterir; satın alma garantisi veya kesin sonuç değildir. Maliyetler katalog katmanından; canlı ilan fiyatı değildir.'
@@ -110,7 +151,7 @@ export function scoreVehicleMatch(vehicle, form, options = {}) {
   const usage = form.usage || '';
   const isPremiumBudget = budget >= 2500000;
   const breakdown = [];
-  let score = 42;
+  let score = SCORE_BASE;
 
   const overBudgetRatio = budget > 0 ? (vehicle.price - budget) / budget : 0;
   const underBudgetRatio = budget > 0 ? (budget - vehicle.price) / budget : 0;
@@ -201,11 +242,169 @@ export function scoreVehicleMatch(vehicle, form, options = {}) {
     }
   }
 
-  const normalizedScore = Math.round(clamp(score, 35, 94));
+  const normalizedScore = Math.round(clamp(score, SCORE_MIN, SCORE_MAX));
 
   return {
     score: normalizedScore,
-    scoreBreakdown: breakdown.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+    scoreBreakdown: breakdown.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)),
+    scoreRaw: score
+  };
+}
+
+function factorMap(breakdown = []) {
+  const map = {};
+  for (const row of breakdown) {
+    if (row?.factor) map[row.factor] = row;
+  }
+  return map;
+}
+
+function diffFactorAdvantages(leaderBd = [], runnerBd = []) {
+  const leader = factorMap(leaderBd);
+  const runner = factorMap(runnerBd);
+  const advantages = [];
+
+  for (const key of Object.keys(leader)) {
+    const l = Number(leader[key]?.delta || 0);
+    const r = Number(runner[key]?.delta || 0);
+    if (l > r + 4) {
+      advantages.push({
+        factor: key,
+        label: leader[key].label || SCORE_FACTORS[key] || key,
+        deltaGap: l - r,
+        status: leader[key].status
+      });
+    }
+  }
+
+  return advantages.sort((a, b) => b.deltaGap - a.deltaGap);
+}
+
+export function buildScoringTransparency(matchScore, scoreBreakdown = []) {
+  const factors = Array.isArray(scoreBreakdown) ? scoreBreakdown : [];
+  const totalImpact = factors.reduce((sum, f) => sum + Math.abs(Number(f.delta || 0)), 0) || 1;
+
+  return {
+    baseScore: SCORE_BASE,
+    matchScore: Number(matchScore || 0),
+    capNote: `${SCORE_MIN}–${SCORE_MAX} normalize`,
+    methodology:
+      'Uyum skoru deterministik kural motorundan gelir. Yapay zeka yalnızca açıklama metni üretir; skoru veya sırayı değiştiremez.',
+    factors: factors.map((f) => ({
+      ...f,
+      sharePct: Math.round((Math.abs(f.delta) / totalImpact) * 100)
+    }))
+  };
+}
+
+export function buildWhyNumberOne(leader, runnerUp, form = {}) {
+  if (!leader) return null;
+  const gap = runnerUp ? Number(leader.score || 0) - Number(runnerUp.score || 0) : 0;
+  const advantages = runnerUp
+    ? diffFactorAdvantages(leader.scoreBreakdown, runnerUp.scoreBreakdown)
+    : (leader.scoreBreakdown || []).filter((f) => f.positive && f.delta >= 8).slice(0, 3);
+
+  const bullets = advantages.slice(0, 3).map((a) => `${a.label}: ${a.status} (+${a.deltaGap} puan avantaj)`);
+
+  let headline = 'Genel uyum lideri';
+  if (gap >= 15) headline = 'Belirgin profil uyumu — #1';
+  else if (gap >= 6) headline = 'Dengeli lider — #1';
+  else if (runnerUp) headline = 'Yakın skor — #1 (ince ayar gerekir)';
+
+  const summary =
+    gap > 0 && runnerUp
+      ? `${leader.name}, ${runnerUp.name} karşısında ${gap} puan önde${bullets.length ? ` — özellikle ${advantages[0]?.label?.toLowerCase() || 'profil uyumu'}.` : '.'}`
+      : `${leader.name} profilinize göre en yüksek uyum skoruna sahip referans model.`;
+
+  return { headline, summary, advantages: bullets, gap };
+}
+
+export function buildWhyNotRanked(vehicle, rank, leader, form = {}) {
+  if (!vehicle || !leader || rank < 2) return null;
+
+  const scoreGap = Number(leader.score || 0) - Number(vehicle.score || 0);
+  const leaderWins = diffFactorAdvantages(leader.scoreBreakdown, vehicle.scoreBreakdown);
+  const runnerWins = diffFactorAdvantages(vehicle.scoreBreakdown, leader.scoreBreakdown);
+
+  const gaps = leaderWins.slice(0, 2).map((a) => `${a.label} liderde ${a.deltaGap} puan daha güçlü`);
+
+  let summary = '';
+  if (scoreGap >= 12) {
+    summary = `#${rank} ${vehicle.name}, toplam uyumda ${scoreGap} puan geride — ${gaps[0] || 'birkaç kriterde fark'}.`;
+  } else if (scoreGap >= 4) {
+    summary = `#${rank} yakın alternatif (${scoreGap} puan fark) — test sürüşü ve TCO karşılaştırması belirleyici olabilir.`;
+  } else {
+    summary = `#${rank} neredeyse eşdeğer — sıralama küçük kriter farklarına dayanır.`;
+  }
+
+  const strengths = runnerWins.slice(0, 1).map((a) => `${a.label}: ${a.status}`);
+
+  if (vehicle.costs?.total && leader.costs?.total && vehicle.costs.total < leader.costs.total) {
+    strengths.push('12 aylık TCO liderden daha düşük — maliyet odaklı senaryo');
+  }
+
+  return {
+    rank,
+    summary,
+    gaps,
+    strengths,
+    scoreGap
+  };
+}
+
+export function buildTradeoffExplanations(results = []) {
+  const top = results.slice(0, 3);
+  if (top.length < 2) return [];
+
+  const leader = top[0];
+  const alt = top[1];
+  const tradeoffs = [];
+
+  const scoreGap = Number(leader.score || 0) - Number(alt.score || 0);
+  tradeoffs.push({
+    title: 'Uyum vs alternatif',
+    summary:
+      scoreGap >= 10
+        ? `${leader.name} profil uyumunda önde; ${alt.name} farklı önceliklerde değerlendirilebilir.`
+        : `${leader.name} ve ${alt.name} yakın — bütçe, TCO ve finansman yükü birlikte okunmalı.`
+  });
+
+  const leaderTco = Number(leader.costs?.total || 0);
+  const altTco = Number(alt.costs?.total || 0);
+  if (leaderTco > 0 && altTco > 0 && Math.abs(leaderTco - altTco) > leaderTco * 0.06) {
+    const cheaper = altTco < leaderTco ? alt.name : leader.name;
+    tradeoffs.push({
+      title: 'TCO trade-off',
+      summary: `${cheaper} 12 aylık toplam maliyette daha düşük senaryo sunar — uyum skoru tek başına yeterli değil.`
+    });
+  }
+
+  if (top[2]) {
+    const third = top[2];
+    const tco3 = Number(third.costs?.total || 0);
+    if (tco3 > 0 && tco3 < altTco * 0.92) {
+      tradeoffs.push({
+        title: 'Üçüncü seçenek',
+        summary: `${third.name} maliyet odaklı üçüncü senaryo — #1/#2 arasında denge arayanlar için.`
+      });
+    }
+  }
+
+  return tradeoffs.slice(0, 3);
+}
+
+export function buildRankIntelligence(results = [], form = {}) {
+  const list = Array.isArray(results) ? results : [];
+  if (!list.length) return null;
+
+  const leader = list[0];
+  const runnerUp = list[1] || null;
+
+  return {
+    leader: buildWhyNumberOne(leader, runnerUp, form),
+    runners: list.slice(1).map((v, idx) => buildWhyNotRanked(v, idx + 2, leader, form)),
+    tradeoffs: buildTradeoffExplanations(list),
+    transparency: buildScoringTransparency(leader.score, leader.scoreBreakdown)
   };
 }
 
@@ -242,18 +441,17 @@ export function buildExpertRisks(vehicle, form, budget, scoreBreakdown = []) {
 
 export function explainRankGap(winner, runnerUp) {
   if (!winner || !runnerUp) return null;
-  const gap = Number(winner.score || 0) - Number(runnerUp.score || 0);
-  if (gap <= 0) return null;
+  const why = buildWhyNumberOne(winner, runnerUp);
+  if (!why) return null;
 
-  const winnerPos = (winner.scoreBreakdown || []).filter((f) => f.positive).map((f) => f.factor);
-  const runnerPos = (runnerUp.scoreBreakdown || []).filter((f) => f.positive).map((f) => f.factor);
-  const unique = winnerPos.filter((f) => !runnerPos.includes(f)).slice(0, 2);
+  const advantages = diffFactorAdvantages(winner.scoreBreakdown, runnerUp.scoreBreakdown);
+  const factorLabels = advantages.slice(0, 2).map((a) => a.label);
 
   return {
-    gap,
-    summary: gap >= 12
-      ? `${winner.name}, özellikle ${unique.join(' ve ') || 'genel profil uyumu'} ile ${gap} puan önde.`
-      : `${winner.name} ile ${runnerUp.name} yakın — ${gap} puan fark; test sürüşü ve teklif karşılaştırması belirleyici olabilir.`
+    gap: why.gap,
+    summary: why.summary,
+    factorLabels,
+    advantages: why.advantages
   };
 }
 

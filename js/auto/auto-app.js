@@ -54,6 +54,12 @@ import {
   captureVehicleRecommendedSelected
 } from '../features/moat/outcome-capture.js';
 import { buildSegmentKey } from '../features/moat/scoring-intelligence.js';
+import {
+  renderConfidenceSemanticsPanel,
+  renderScoringTransparencyPanel,
+  renderLeaderRankPanel,
+  renderRunnerRankContrast
+} from '../features/moat/scoring-explainability.js';
 import { WIZARD_ONBOARDING } from '../features/moat/category-positioning.js';
 
 const formatAmount = (value) => formatMoney(value);
@@ -925,14 +931,21 @@ function renderAutoConfidenceBadge(meta) {
 
   return `
     <div class="auto-confidence-badge ${tierClass}" role="note" aria-label="Veri güven bandı açıklaması">
-      <span class="auto-confidence-kicker">Veri güven bandı</span>
+      <span class="auto-confidence-kicker">Veri güven bandı · skor değil</span>
       <strong>${escapeHtml(meta.label || 'Değerlendiriliyor')}</strong>
+      ${renderConfidenceSemanticsPanel(meta)}
       <small class="auto-confidence-disclaimer">${escapeHtml(meta.disclaimer || 'Metodolojik destek; kesin sonuç değildir.')}</small>
     </div>`;
 }
 
-function renderAutoScoreBreakdown(breakdown = []) {
-  if (!Array.isArray(breakdown) || !breakdown.length) return '';
+function renderAutoScoreBreakdown(vehicle) {
+  const transparency = vehicle?.scoringTransparency;
+  if (transparency?.factors?.length) {
+    return renderScoringTransparencyPanel(transparency);
+  }
+
+  const breakdown = Array.isArray(vehicle) ? vehicle : vehicle?.scoreBreakdown || [];
+  if (!breakdown.length) return '';
 
   return `
     <details class="auto-score-breakdown">
@@ -977,9 +990,12 @@ async function getAiExplanation(results, formData = {}, refinement = '') {
           name: v.name,
           reasons: v.reasons,
           risks: v.risks,
-          rankNote: v.rankExplanation?.summary
+          rankNote: v.rankExplanation?.summary,
+          runnerNote: v.runnerContrast?.summary,
+          tradeoffs: v.rankIntelligence?.tradeoffs?.map((t) => t.summary) || []
         }))
       ),
+      'KURAL: Skor, sıra veya güven bandı değiştirme; yalnızca yorumla.',
       refinement ? 'Kullanıcı rafinesi: ' + refinement : '',
       'Trade-off ve dikkat noktalarını açıkla; liste veya markdown kullanma.'
     ].join('\n');
@@ -1192,6 +1208,7 @@ function renderResults(results) {
   const displayResults = results.slice(0, displayLimit);
 
   const rankNote = results[0]?.rankExplanation?.summary;
+  const rankIntelPanel = renderLeaderRankPanel(results[0]?.rankIntelligence);
 
   root.innerHTML = `${renderAutoUpgradeStrip()}
     <section class="auto-results-trust-banner" aria-label="Sonuç açıklaması">
@@ -1205,6 +1222,8 @@ function renderResults(results) {
         Uygun satıcı eşleşmesi iste
       </button>
     </section>
+
+    ${rankIntelPanel}
 
     ${renderAutoMethodologyStrip()}
 
@@ -1306,7 +1325,8 @@ function renderResults(results) {
           <small>Kural tabanlı özet; bağlayıcı teklif veya kredi onayı değildir.</small>
         </div>
 
-        ${renderAutoScoreBreakdown(vehicle.scoreBreakdown)}
+        ${renderAutoScoreBreakdown(vehicle)}
+        ${index > 0 && vehicle.runnerContrast ? renderRunnerRankContrast(vehicle.runnerContrast) : ''}
       </div>
 
       <aside class="auto-market-decision">

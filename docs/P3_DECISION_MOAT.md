@@ -10,6 +10,7 @@
 | Feedback loop | `decision_feedback` table + Auto UI + analytics events |
 | **P3.2 Outcome data moat** | `outcome_signal_events` + `outcome-capture` edge + unified ingest |
 | **P3.3 Product feedback intelligence** | `product_feedback` + lightweight UX loop + intelligence events |
+| **P3.4 Scoring explainability** | Rank intelligence, transparency panel, confidence semantics |
 | Scoring intelligence | `calibrateLeadScore()` in `auto-intake` from segment win rates |
 | Outcome intelligence | Auto results strip + admin segment table |
 | Competitive positioning | `karar-moat.html` + `category-positioning.js` |
@@ -85,6 +86,19 @@ Paths:
 - `supabase/functions/_shared/product-feedback.ts`
 - `supabase/migrations/20260606_p3_3_product_feedback_intelligence.sql`
 - `decision-intelligence` action `product_feedback`
+
+## P3.4 — Decision scoring intelligence
+
+Deterministic-only ranking (`decision-consultant.js`):
+
+- `buildScoringTransparency` — base score, factor deltas, % impact share
+- `buildWhyNumberOne` / `buildWhyNotRanked` — #1 vs #2/#3 clarity
+- `buildTradeoffExplanations` — TCO vs uyum trade-offs
+- `computeConfidenceMeta.signalExplanations` — confidence ≠ match score
+
+UI: `js/features/moat/scoring-explainability.js` on Auto results cards.
+
+Rules: LLM narrates only; cannot override scores or order.
 
 ## Honest limits
 

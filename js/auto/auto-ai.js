@@ -5,10 +5,12 @@ import {
   buildExpertReasons,
   buildExpertRisks,
   explainRankGap,
-  buildMethodologyPanel
+  buildMethodologyPanel,
+  buildRankIntelligence,
+  buildScoringTransparency
 } from '../engines/decision-consultant.js';
 
-export { buildMethodologyPanel, explainRankGap };
+export { buildMethodologyPanel, explainRankGap, buildRankIntelligence };
 
 function filterCandidates(sourceVehicles, form) {
   const requestedFuel = form.fuel || 'any';
@@ -72,8 +74,24 @@ export function recommendVehicles(form, catalog = []) {
 
   const top = scored.slice(0, 3);
 
+  const rankIntelligence = buildRankIntelligence(top, form);
+  if (rankIntelligence) {
+    top[0].rankIntelligence = rankIntelligence;
+    top[0].scoringTransparency = rankIntelligence.transparency;
+    top.forEach((vehicle, idx) => {
+      if (idx > 0 && rankIntelligence.runners?.[idx - 1]) {
+        vehicle.runnerContrast = rankIntelligence.runners[idx - 1];
+      }
+    });
+  }
+
   if (top.length >= 2) {
     top[0].rankExplanation = explainRankGap(top[0], top[1]);
+  }
+
+  for (const vehicle of top) {
+    vehicle.scoringTransparency =
+      vehicle.scoringTransparency || buildScoringTransparency(vehicle.score, vehicle.scoreBreakdown);
   }
 
   return top;
