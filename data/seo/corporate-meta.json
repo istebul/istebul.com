@@ -15,6 +15,10 @@
     "title": "Partner API & Webhook | isteBul",
     "description": "Partner API referansı: lead payload şeması, HMAC imza, retry ve failover, callback API, test workflow ve yerel imza konsolu."
   },
+  "partner-guven.html": {
+    "title": "Partner Güven & Uyumluluk | isteBul",
+    "description": "Bayi ve finans partnerleri için güvenlik, KVKK, SLA, webhook güvenilirliği ve destek modeli — şeffaf kurumsal çerçeve."
+  },
   "gizlilik.html": {
     "title": "Gizlilik Politikası | isteBul",
     "description": "isteBul gizlilik politikası: veri işleme, çerezler ve kullanıcı hakları hakkında bilgi."

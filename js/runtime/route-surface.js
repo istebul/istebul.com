@@ -47,7 +47,9 @@ const EXTERNAL_REDIRECTS = Object.freeze({
     '/partner': '/partner-olun.html',
     '/partner-hub': '/partner-basvuru.html',
     '/partner-basvuru': '/partner-basvuru.html',
-    '/partner-api': '/partner-docs.html'
+    '/partner-api': '/partner-docs.html',
+    '/partner-guven': '/partner-guven.html',
+    '/partner-trust': '/partner-guven.html'
 });
 
 export function stripPathname(pathname = '/') {

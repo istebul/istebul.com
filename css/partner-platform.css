@@ -469,7 +469,84 @@
   left: -9999px;
 }
 
+/* P2.4 — Enterprise trust center */
+
+.ib-partner-trust-main {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.ib-partner-trust-layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.ib-partner-trust-disclaimer {
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: #fffbeb;
+  font-size: 0.9rem;
+  color: #78350f;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+}
+
+.ib-partner-trust-pillar {
+  margin-bottom: 2.5rem;
+  scroll-margin-top: 1.25rem;
+}
+
+.ib-partner-trust-pillar h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.ib-partner-trust-pillar-summary {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.ib-partner-trust-pillar ul {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+  line-height: 1.55;
+  font-size: 0.92rem;
+}
+
+.ib-partner-trust-not-claimed {
+  font-size: 0.82rem;
+  color: #64748b;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: #f1f5f9;
+  margin: 0;
+}
+
+.ib-partner-trust-card--link {
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ib-partner-trust-card--link:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+}
+
+.ib-partner-trust-grid--summary .ib-partner-trust-card {
+  display: block;
+}
+
 @media (max-width: 900px) {
+  .ib-partner-trust-layout {
+    grid-template-columns: 1fr;
+  }
+
   .ib-partner-acquisition-steps,
   .ib-partner-rate-grid,
   .ib-partner-trust-grid {

@@ -117,6 +117,7 @@ ${productionJson}</code></pre>
       ${renderSecretCards()}
       <h3>İstek başlıkları</h3>
       ${renderHeadersList()}
+      <p>Kurumsal güven çerçevesi: <a href="/partner-guven.html">Partner güven merkezi</a> (KVKK, SLA, destek — dürüst iddialar).</p>
       <div class="ib-partner-docs-callout ib-partner-docs-callout--warn">
         <strong>Güvenlik kuralları</strong>
         <ul>

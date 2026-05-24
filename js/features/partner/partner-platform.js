@@ -58,7 +58,8 @@ export const PARTNER_FUNNEL_EVENTS = Object.freeze({
   FUNNEL_LEAD_NEEDS: 'partner_funnel_lead_needs',
   FUNNEL_WEBHOOK: 'partner_funnel_webhook',
   FUNNEL_TEST_PAYLOAD: 'partner_funnel_test_payload',
-  ONBOARDING_COMPLETE: 'partner_onboarding_complete'
+  ONBOARDING_COMPLETE: 'partner_onboarding_complete',
+  TRUST_VIEW: 'partner_trust_view'
 });
 
 function sessionKey(step) {

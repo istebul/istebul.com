@@ -3,6 +3,7 @@ import {
   renderRateCardHtml,
   trackPartnerFunnel
 } from '../features/partner/partner-platform.js';
+import { renderTrustSummaryGrid } from '../features/partner/partner-trust.js';
 
 function mountRateCard() {
   const root = document.getElementById('partner-rate-card-root');
@@ -15,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   mountRateCard();
+
+  const trustRoot = document.getElementById('partner-trust-summary-root');
+  if (trustRoot) trustRoot.innerHTML = renderTrustSummaryGrid();
 
   document.querySelectorAll('a[href="/partner-basvuru.html"]').forEach((link) => {
     link.addEventListener('click', () => {
