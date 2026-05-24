@@ -1160,7 +1160,7 @@ class App {
             arac: {
                 name: 'Araç',
                 icon: 'car',
-                description: 'Yakıt, kasko, sigorta ve bakım maliyetiyle en mantıklı aracı seçin.',
+                description: 'Kredi, yakıt ve 12 aylık toplam maliyetle en mantıklı aracı görün.',
                 questions: [
                     ...this.createLocationQuestions(),
                     {

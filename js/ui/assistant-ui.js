@@ -27,14 +27,14 @@ export class AssistantUI {
             '<button type="button" class="assistant-category ' + (categoryId === activeCategory ? 'active' : '') + '" data-assistant-category="' + this.escapeHtml(categoryId) + '">' +
                 '<i data-lucide="' + this.escapeHtml(category.icon) + '"></i>' +
                 '<span>' + this.escapeHtml(category.name) + '</span>' +
-                '<small>' + this.escapeHtml(category.description || 'Karar akışı') + '</small>' +
+                '<small>' + this.escapeHtml(category.description || 'Maliyet özeti') + '</small>' +
             '</button>'
         ).join('');
 
         progress.innerHTML =
             '<div class="assistant-progress-head">' +
                 '<div>' +
-                    '<span class="assistant-kicker">' + this.escapeHtml(activeConfig.name) + ' karar asistanı</span>' +
+                    '<span class="assistant-kicker">' + this.escapeHtml(activeConfig.name) + ' · maliyet özeti</span>' +
                     '<h3>' + this.escapeHtml(activeStep.label) + '</h3>' +
                     '<p>' + this.escapeHtml(activeStep.description || activeConfig.description) + '</p>' +
                 '</div>' +
@@ -112,7 +112,7 @@ export class AssistantUI {
         return (isFirst ? '' : '<button type="button" class="btn btn-outline" data-assistant-prev><i data-lucide="arrow-left"></i> Önceki</button>') +
             '<button type="button" class="btn btn-outline" data-assistant-reset><i data-lucide="rotate-ccw"></i> Temizle</button>' +
             (isLast
-                ? '<button type="submit" class="btn btn-primary"><i data-lucide="sparkles"></i> Sonucu hesapla</button>'
+                ? '<button type="submit" class="btn btn-primary"><i data-lucide="sparkles"></i> Özeti hesapla</button>'
                 : '<button type="button" class="btn btn-primary" data-assistant-next>Devam et <i data-lucide="arrow-right"></i></button>');
     }
 
