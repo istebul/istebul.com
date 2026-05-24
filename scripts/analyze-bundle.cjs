@@ -21,6 +21,7 @@ const BUDGET_EXCLUDE = [
   /^css\/p4-premium-product/,
   /^css\/p4-1-homepage-venture/,
   /^css\/enterprise-ux-system/,
+  /^css\/p4-3-mobile-premium/,
   /^css\/revenue/,
   /^css\/premium-pages/,
   /^css\/auto/,

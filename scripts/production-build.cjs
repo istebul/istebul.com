@@ -206,7 +206,7 @@ partnerCorporateEntries.forEach((entry) => {
 const autoAssetDir = path.join(dist, 'assets', 'auto-runtime');
 fs.mkdirSync(autoAssetDir, { recursive: true });
 
-const autoCssParts = ['css/auto.css', 'css/p4-premium-product.css'];
+const autoCssParts = ['css/auto.css', 'css/p4-premium-product.css', 'css/p4-3-mobile-premium.css'];
 const autoCssCombined = autoCssParts
   .filter((rel) => fs.existsSync(path.join(root, rel)))
   .map((rel) => fs.readFileSync(path.join(root, rel), 'utf8'))

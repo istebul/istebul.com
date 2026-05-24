@@ -67,6 +67,7 @@ import {
 } from '../features/moat/ai-explanation-experience.js';
 import { WIZARD_ONBOARDING } from '../features/moat/category-positioning.js';
 import { initP4ProductPolish } from '../runtime/p4-product-polish.js';
+import { initMobilePremiumUx } from '../runtime/mobile-premium-ux.js';
 
 const formatAmount = (value) => formatMoney(value);
 const formatCount = (value) => formatNumber(value);
@@ -2114,6 +2115,7 @@ if (wizard) {
 
 setupAutoMobileNav();
 initP4ProductPolish();
+initMobilePremiumUx();
 initAutoEntitlements();
 loadAutoRuntimeConfig();
 if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted') {
