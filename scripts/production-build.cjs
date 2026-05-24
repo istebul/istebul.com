@@ -7,9 +7,7 @@ const crypto = require('crypto');
 const root = process.cwd();
 const dist = path.join(root, 'dist');
 const staticRoots = ['assets', 'data'];
-const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/+esm';
-const bundleExternals = ['@supabase/supabase-js'];
-const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html', 'css/seo-landing.css'];
+const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html', 'css/seo-landing.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
 
@@ -80,18 +78,12 @@ const rewriteAssetRefs = (html) => {
   return output;
 };
 
-const importMapTag = () => `<script type="importmap">${JSON.stringify({
-  imports: {
-    '@supabase/supabase-js': SUPABASE_CDN
-  }
-})}</script>`;
-
 const injectPerformanceHints = (html, appBundleFile) => {
   let output = html;
 
   output = output.replace(
     '<!-- perf:importmap -->',
-    importMapTag()
+    ''
   );
 
   if (appBundleFile) {
@@ -153,7 +145,6 @@ esbuild.buildSync({
   minify: true,
   sourcemap: false,
   splitting: true,
-  external: bundleExternals,
   chunkNames: 'chunks/[name]-[hash]',
   entryNames: 'app.bundle-[hash]',
   outdir: path.join(dist, 'js')
@@ -182,7 +173,6 @@ esbuild.buildSync({
   target: 'es2020',
   minify: true,
   sourcemap: false,
-  external: bundleExternals,
   outfile: path.join(dist, 'js/admin-panel.js')
 });
 

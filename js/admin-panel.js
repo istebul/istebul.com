@@ -20,15 +20,31 @@ if (!sb) {
 }
 let currentUser = null;
 
-async function login() {
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
+function showLoginError(message) {
   const err = document.getElementById('login-error');
+  if (!err) return;
+  err.textContent = message;
+  err.style.display = 'block';
+}
+
+function clearLoginError() {
+  const err = document.getElementById('login-error');
+  if (!err) return;
+  err.textContent = '';
   err.style.display = 'none';
+}
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  clearLoginError();
+  if (!email || !password) {
+    showLoginError('E-posta ve şifre alanlarını doldurun.');
+    return;
+  }
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if (error) {
-    err.textContent = mapAuthError(error, 'Giriş yapılamadı.');
-    err.style.display = 'block';
+    showLoginError(mapAuthError(error, 'Giriş yapılamadı.'));
     return;
   }
   currentUser = data.user;
@@ -53,9 +69,7 @@ async function showApp() {
     currentUser = null;
     document.getElementById('app').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
-    const err = document.getElementById('login-error');
-    err.textContent = 'Bu panele erişim yetkiniz yok.';
-    err.style.display = 'block';
+    showLoginError('Bu panele erişim yetkiniz yok.');
     return;
   }
 
