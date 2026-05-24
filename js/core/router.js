@@ -6,6 +6,11 @@ import {
     buildLocalizedPath,
     getActiveLocale
 } from '../platform/locale-registry.js';
+import {
+    resolveRouteSurface,
+    syncHtmlRouteSurface,
+    tryExternalRouteRedirect
+} from '../runtime/route-surface.js';
 
 /** Marketing sections on index.html (long-scroll landing). */
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
@@ -55,9 +60,7 @@ export class Router {
             { path: '/hesap', component: 'profil' },
             { path: '/giris', component: 'auth-login' },
             { path: '/kayit', component: 'auth-register' },
-            { path: '/admin', component: 'admin' },
             { path: '/messages', component: 'messages' },
-            { path: '/partner', component: 'partner' },
             { path: '/ilan-ekle', component: 'add-listing' },
             { path: '/ilan/:id', component: 'listing-detail' }
         ];
@@ -180,6 +183,10 @@ export class Router {
 
     handleRoute() {
         const rawPath = window.location.pathname;
+        if (tryExternalRouteRedirect(rawPath)) {
+            return;
+        }
+
         const { pathname: stripped, localeId } = stripLocalePrefix(
             rawPath === '/index.html' ? '/' : rawPath
         );
@@ -187,6 +194,7 @@ export class Router {
         applyDocumentLocale(localeId);
         const path = stripped.replace(/\/$/, '') || '/';
         this.currentRoute = path;
+        syncHtmlRouteSurface(resolveRouteSurface(path));
 
         const premiumPage = PREMIUM_PAGE_ROUTES[path];
         if (premiumPage) {
@@ -391,9 +399,7 @@ export class Router {
             profil: 'Hesabım - isteBul',
             'auth-login': 'Giriş - isteBul',
             'auth-register': 'Üye Ol - isteBul',
-            admin: 'Admin Panel - isteBul',
             messages: 'Mesajlar - isteBul',
-            partner: 'Partner Programı - isteBul',
             'add-listing': 'İlan Ekle - isteBul',
             'listing-detail': 'İlan Detayı - isteBul',
             'page-karar-analizi': 'Karar Analizi - isteBul',

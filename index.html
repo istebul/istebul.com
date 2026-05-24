@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="ib-route-pending">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -44,7 +44,33 @@
   padding:4rem 0;
   background:var(--surface-color);
 }
+/* Route surface: only active section visible (SSR/crawler-safe) */
+html.ib-route-pending #main-content > section[id],
+html.ib-route-pending #auth-modal{display:none!important}
+#main-content > section[id]{display:none!important}
+#auth-modal:not(.show){display:none!important;visibility:hidden}
+html[data-ib-route="home"] #home,
+html[data-ib-route="home"] #trust,
+html[data-ib-route="home"] #how-it-works,
+html[data-ib-route="home"] #pricing,
+html[data-ib-route="home"] #categories{display:block!important}
+html[data-ib-route="ilanlar"] #ilanlar,
+html[data-ib-route="listing-detail"] #listing-detail,
+html[data-ib-route="compare"] #compare,
+html[data-ib-route="favoriler"] #favoriler,
+html[data-ib-route="history"] #history,
+html[data-ib-route="quiz"] #quiz,
+html[data-ib-route="profil"] #profil,
+html[data-ib-route="messages"] #messages,
+html[data-ib-route="add-listing"] #add-listing,
+html[data-ib-route="page-karar-analizi"] #page-karar-analizi,
+html[data-ib-route="page-metodoloji"] #page-metodoloji,
+html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
+.category-card.is-coming-soon{opacity:0.55;pointer-events:none}
 </style>
+<script>
+(function(){var p=(location.pathname||'/').replace(/\/$/,'')||'/';var m=p.match(/^\/(en|de)(\/|$)/);if(m)p=p.slice(m[1].length+1)||'/';p=p.replace(/\/$/,'')||'/';if(p==='/admin'||p==='/partner'){location.replace(p==='/admin'?'/admin-panel.html':'/partner-olun.html');return}var prem={'/karar-analizi':'page-karar-analizi','/metodoloji':'page-metodoloji','/planlar':'page-planlar','/karar-asistani':'page-karar-analizi'};var app={'/ilanlar':'ilanlar','/karsilastir':'compare','/favoriler':'favoriler','/gecmis':'history','/quiz':'quiz','/profil':'profil','/hesap':'profil','/messages':'messages','/ilan-ekle':'add-listing'};var r=prem[p]||app[p]||(p.indexOf('/ilan/')===0?'listing-detail':'home');document.documentElement.setAttribute('data-ib-route',r);document.documentElement.classList.remove('ib-route-pending');})();
+</script>
 
     <link rel="preconnect" href="https://hjfrcdstbyonmgatgwcc.supabase.co" crossorigin>
     <link rel="dns-prefetch" href="//hjfrcdstbyonmgatgwcc.supabase.co">
@@ -272,15 +298,24 @@
             </div>
         </section>
 
-        <section id="page-karar-analizi" class="hidden" data-private-section aria-label="Karar analizi">
+        <section id="page-karar-analizi" class="hidden" data-private-section aria-label="Karar analizi" hidden>
+            <noscript><div class="container ib-premium-noscript"><h1>Karar analizi</h1><p>Toplam maliyet, finansman etkisi ve karar skoru — <a href="/auto/">ücretsiz analiz</a>.</p></div></noscript>
             <div id="premium-karar-analizi-root"></div>
         </section>
 
-        <section id="page-metodoloji" class="hidden" data-private-section aria-label="Metodoloji">
+        <section id="page-metodoloji" class="hidden" data-private-section aria-label="Metodoloji" hidden>
+            <noscript><div class="container ib-premium-noscript"><h1>Metodoloji</h1><p>Şeffaf, denetlenebilir karar modeli — <a href="/metodoloji">detaylar</a>.</p></div></noscript>
             <div id="premium-metodoloji-root"></div>
         </section>
 
-        <section id="page-planlar" class="hidden" data-private-section aria-label="Planlar">
+        <section id="page-planlar" class="hidden" data-private-section aria-label="Planlar" hidden>
+            <noscript>
+                <div class="container ib-premium-noscript">
+                    <h1>Planlar</h1>
+                    <p>Başlangıç ücretsiz · Pro ₺299/ay veya ₺2.870/yıl · 7 gün deneme.</p>
+                    <p><a href="/auto/">Ücretsiz analiz</a></p>
+                </div>
+            </noscript>
             <div id="premium-planlar-root"></div>
         </section>
 
@@ -303,10 +338,8 @@
                         <div class="form-group">
                             <label for="filter-category">Kategori</label>
                             <select id="filter-category" name="category">
-                                <option value="">Tümü</option>
+                                <option value="">Araç — tümü</option>
                                 <option value="arac">Araç</option>
-                                <option value="ev">Ev</option>
-                                <option value="tatil">Tatil</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -394,13 +427,7 @@
                     <h2>Seçenek detayı</h2>
                     <p>Seçtiğiniz ilanın karar skoru, maliyet kırılımı ve aksiyon önerileri.</p>
                 </div>
-                <div id="listing-detail-content">
-                    <div class="empty-state">
-                        <i data-lucide="info"></i>
-                        <h3>Seçenek seçilmedi</h3>
-                        <p>Bir seçeneği listeden açarak detaylarını inceleyebilirsiniz.</p>
-                    </div>
-                </div>
+                <div id="listing-detail-content" data-route-mount aria-live="polite"></div>
             </div>
         </section>
 
@@ -413,13 +440,7 @@
                         <p>Karar skoru, maliyet, risk ve öne çıkan farkları tek tabloda görün.</p>
                     </div>
                 </div>
-                <div id="comparison-content" class="comparison-content">
-                    <div class="empty-state">
-                        <i data-lucide="columns-3"></i>
-                        <h3>Seçenek ekleyin</h3>
-                        <p>Karar sonucu veya ilan kartlarından seçenekleri karşılaştırmaya ekleyin.</p>
-                    </div>
-                </div>
+                <div id="comparison-content" class="comparison-content" data-route-mount aria-live="polite"></div>
             </div>
         </section>
 
@@ -429,13 +450,7 @@
                     <h2>Favorileriniz</h2>
                     <p>Beğendiğiniz seçenekleri tek yerde saklayın. Henüz giriş yapmadıysanız kaydederek sonra bakabilirsiniz.</p>
                 </div>
-                <div class="favorites-grid" id="favorites-grid">
-                    <div class="empty-state">
-                        <i data-lucide="heart"></i>
-                        <h3>Henüz favori ilan yok</h3>
-                        <p>Bir ilana göz atın ve kalp ikonuna basarak favorilerinize ekleyin.</p>
-                    </div>
-                </div>
+                <div class="favorites-grid" id="favorites-grid" data-route-mount aria-live="polite"></div>
             </div>
         </section>
 
@@ -445,45 +460,18 @@
                     <h2>Karar geçmişi</h2>
                     <p>Karar ve arama geçmişiniz hesabınıza bağlı saklanır. Giriş yaptıktan sonra sonuçları tekrar açabilir veya silebilirsiniz.</p>
                 </div>
-                <div class="history-list" id="history-list">
-                    <div class="empty-state history-auth-gate">
-                        <i data-lucide="lock-keyhole"></i>
-                        <h3>Hesabınıza giriş yapın</h3>
-                        <p>Kayıtlı veriler yalnızca hesabınıza bağlı görüntülenir.</p>
-                        <div class="history-auth-actions">
-                            <button type="button" class="btn btn-primary" data-history-login><i data-lucide="log-in"></i> Giriş Yap</button>
-                            <button type="button" class="btn btn-outline" data-history-register><i data-lucide="user-plus"></i> Üye Ol</button>
-                        </div>
-                    </div>
-                </div>
+                <div class="history-list" id="history-list" data-route-mount aria-live="polite"></div>
             </div>
         </section>
 
         <section id="quiz" data-private-section class="quiz-section section-bg hidden">
             <div class="container">
                 <div class="section-header">
-                    <h2>Quiz</h2>
-                    <p>AI destekli ilan seçimini kolaylaştıracak hızlı quiz.</p>
+                    <span class="section-kicker">Değerlendirme</span>
+                    <h2>Karar değerlendirmesi</h2>
+                    <p>Araç alım önceliklerinize göre hızlı değerlendirme soruları.</p>
                 </div>
-                <div class="quiz-card" id="quiz-content">
-                    <div class="empty-state">
-                        <i data-lucide="help-circle"></i>
-                        <h3>Karar analizi hazırlanıyor</h3>
-                        <p>Size en uygun önerileri oluşturmak için analiz akışı hazırlanıyor.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="admin" data-private-section class="admin-section section-surface hidden">
-            <div class="container">
-                <div class="section-header">
-                    <h2 data-private-title>Yönetim</h2>
-                    <p>Yönetici araçları ve sistem istatistikleri burada görünecek.</p>
-                </div>
-                <div class="admin-card">
-                    <p>Bu alan sadece yönetici kullanıcılar için ayrılmıştır.</p>
-                </div>
+                <div class="quiz-card" id="quiz-content" data-route-mount aria-live="polite"></div>
             </div>
         </section>
 
@@ -503,8 +491,6 @@
                             <label for="listing-category">Kategori</label>
                             <select id="listing-category" name="category" required>
                                 <option value="arac">Araç</option>
-                                <option value="ev">Ev</option>
-                                <option value="tatil">Tatil</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -572,7 +558,36 @@
                         <p><a href="/auto/">Önce ücretsiz analizi başlatın</a> · JavaScript etkinleştirildiğinde planları burada görebilirsiniz.</p>
                     </div>
                 </noscript>
-                <div id="pricing-plans-root"></div>
+                <div id="pricing-plans-root">
+                    <div class="revenue-pricing-grid revenue-pricing-grid--static" data-pricing-static-fallback>
+                        <article class="revenue-plan-card">
+                            <span class="revenue-plan-badge">Bireysel</span>
+                            <h3>Başlangıç</h3>
+                            <p class="revenue-plan-price">Ücretsiz</p>
+                            <p class="revenue-plan-desc">Araç karar analizi özeti ve temel karşılaştırma</p>
+                            <ul><li>Auto karar analizi (özet)</li><li>2 araç karşılaştırma</li><li>Şeffaf metodoloji özeti</li></ul>
+                            <a href="/auto/" class="btn btn-outline">Ücretsiz analiz</a>
+                        </article>
+                        <article class="revenue-plan-card revenue-plan-card--featured">
+                            <span class="revenue-plan-badge revenue-plan-badge--pro">Önerilen</span>
+                            <span class="revenue-trial-badge">7 gün ücretsiz deneme</span>
+                            <h3>isteBul Pro</h3>
+                            <p class="revenue-plan-price">₺299<small>/ ay</small></p>
+                            <p class="revenue-plan-desc">Gelişmiş raporlar, sınırsız karşılaştırma ve öncelikli partner eşleşmesi</p>
+                            <ul><li>Sınırsız karşılaştırma</li><li>Detaylı premium karar raporu</li><li>Öncelikli partner eşleşmesi</li></ul>
+                            <p class="revenue-plan-hint">Yıllık ₺2.870 (%20 tasarruf) · Stripe ile güvenli ödeme</p>
+                            <a href="/planlar" class="btn btn-primary">Planları gör</a>
+                        </article>
+                        <article class="revenue-plan-card revenue-plan-card--enterprise">
+                            <span class="revenue-plan-badge">Kurumsal</span>
+                            <h3>Enterprise</h3>
+                            <p class="revenue-plan-price">Özel teklif</p>
+                            <p class="revenue-plan-desc">Galeri ağları ve yüksek hacimli partner operasyonları</p>
+                            <ul><li>Özel SLA ve destek</li><li>API / webhook entegrasyonu</li></ul>
+                            <a href="/iletisim.html?konu=enterprise" class="btn btn-outline">Kurumsal teklif al</a>
+                        </article>
+                    </div>
+                </div>
                 <p class="revenue-plan-hint" style="text-align:center;margin-top:1.25rem;">Partner galeriler için lead başına ücretlendirme modeli ayrıca sunulur — <a href="/partner-olun.html">Partner olun</a>.</p>
             </div>
         </section>
@@ -589,58 +604,6 @@
                 </div>
                 <div class="categories-grid" id="categories-grid">
                     <!-- Categories will be loaded dynamically -->
-                </div>
-            </div>
-        </section>
-
-
-        <section id="partner" class="section hidden partner-section" data-private-section aria-label="Partner programı">
-            <div class="container">
-                <div class="section-header">
-                    <div>
-                        <span class="section-kicker">isteBul Partner Programı</span>
-                        <h2>İzmir’de sıcak araç müşteri adayları alın</h2>
-                        <p>isteBul Auto, araç satın alma niyeti yüksek kullanıcıları filtreler; bütçe, kullanım ihtiyacı, araç tipi ve finansman niyetine göre kaliteli lead’leri partner galerilere yönlendirir.</p>
-                    </div>
-                </div>
-
-                <div class="partner-hero-card">
-                    <div>
-                        <h3>İlk 5 sıcak lead ücretsiz pilot</h3>
-                        <p>Entegrasyon zorunlu değil. Skorlanmış lead başına ₺1.500–₺7.500+ gelir potansiyeli (finansman, galeri, sigorta). Kaliteyi gördükten sonra ücretli modele geçebilirsiniz.</p>
-                        <div class="hero-actions">
-                            <a class="btn btn-primary" href="https://wa.me/905456786420?text=Merhaba%2C%20isteBul%20Partner%20Program%C4%B1%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener">WhatsApp ile iletişime geç</a>
-                            <a class="btn btn-outline" href="/auto">Auto deneyimini gör</a>
-                        </div>
-                    </div>
-                    <div class="partner-lead-preview">
-                        <span>Örnek lead</span>
-                        <strong>SUV / Hybrid / 1.750.000 TL bütçe</strong>
-                        <ul>
-                            <li>Kullanım: aile</li>
-                            <li>Finansman: kredi düşünüyor</li>
-                            <li>Öncelik: sıcak lead</li>
-                            <li>İletişim: telefon + e-posta</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="steps-grid partner-steps">
-                    <article class="step-card">
-                        <span>1</span>
-                        <h3>Kullanıcı ihtiyacını girer</h3>
-                        <p>Bütçe, araç tipi, kullanım amacı, yakıt tercihi ve kredi niyeti toplanır.</p>
-                    </article>
-                    <article class="step-card">
-                        <span>2</span>
-                        <h3>isteBul lead’i skorlar</h3>
-                        <p>Kalite, niyet ve uygunluk değerlendirilir; düşük kaliteli talepler elenir.</p>
-                    </article>
-                    <article class="step-card">
-                        <span>3</span>
-                        <h3>Partner galeriye yönlenir</h3>
-                        <p>Sıcak müşteri adayı size manuel veya webhook entegrasyonu ile iletilir.</p>
-                    </article>
                 </div>
             </div>
         </section>
@@ -708,7 +671,7 @@
                         <li><a href="/ilanlar/">Seçenekler</a></li>
                         <li><a href="/karsilastir/">Karşılaştırma merkezi</a></li>
                         <li><a href="#how-it-works">Nasıl çalışır?</a></li>
-                        <li><a href="/partner-olun.html">Partner olun</a></li>
+                        <li><a href="/partner-olun.html">Partner programı</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">

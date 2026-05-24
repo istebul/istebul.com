@@ -1,6 +1,7 @@
 /**
  * Premium marketing pages — Karar analizi, Metodoloji, Planlar
  */
+import { renderStaticPricingFallback } from '../runtime/pricing-static-fallback.js';
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -281,7 +282,7 @@ export class PremiumPages {
             <article class="ib-method-card">
               <i data-lucide="layers"></i>
               <h3>Ağırlıklandırma</h3>
-              <p>Araç / konut / tatil kategorilerinde farklı ağırlık vektörleri.</p>
+              <p>Araç segmentinde özelleştirilmiş ağırlık vektörleri (konut/tatil yakında).</p>
             </article>
             <article class="ib-method-card">
               <i data-lucide="git-compare"></i>
@@ -379,7 +380,9 @@ export class PremiumPages {
 
       <section class="ib-premium-block">
         <div class="container">
-          <div id="premium-pricing-plans-root" class="ib-premium-pricing-root"></div>
+          <div id="premium-pricing-plans-root" class="ib-premium-pricing-root">
+            ${renderStaticPricingFallback()}
+          </div>
         </div>
       </section>
 

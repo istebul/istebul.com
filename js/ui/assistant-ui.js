@@ -672,13 +672,24 @@ export class AssistantUI {
     }
 
     getCategoryCardMarkup(category, activeCategory = null) {
+        if (category.comingSoon) {
+            return `
+            <div class="category-card category-card-${this.escapeHtml(category.id)} is-coming-soon" aria-disabled="true">
+                <span class="category-visual category-visual-${this.escapeHtml(category.id)}" aria-hidden="true">
+                    <i data-lucide="${this.escapeHtml(this.getCategoryVisualIcon(category.id, category.icon))}"></i>
+                </span>
+                <h3>${this.escapeHtml(category.name)}</h3>
+                <span class="category-count">Yakında</span>
+            </div>`;
+        }
+
         return `
             <button type="button" class="category-card category-card-${this.escapeHtml(category.id)} ${category.id === activeCategory ? "active" : ""}" data-assistant-start="${this.escapeHtml(category.id)}">
                 <span class="category-visual category-visual-${this.escapeHtml(category.id)}" aria-hidden="true">
                     <i data-lucide="${this.escapeHtml(this.getCategoryVisualIcon(category.id, category.icon))}"></i>
                 </span>
                 <h3>${this.escapeHtml(category.name)}</h3>
-                <span class="category-count">${this.escapeHtml(category.count || 0)} ilan</span>
+                <span class="category-count">${category.id === 'arac' ? 'Karar analizi' : this.escapeHtml(category.count || 0) + ' ilan'}</span>
             </button>
         `;
     }

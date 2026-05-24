@@ -28,11 +28,15 @@ export async function loadCMS() {
     if (s.title) document.title = s.title;
 
     if (annRes?.length > 0) {
-      const text = annRes[0].content || annRes[0].title;
-      document.querySelectorAll('[data-cms="announcement"]').forEach(el => {
-        el.innerHTML = '<strong>Duyuru:</strong> ';
-        el.appendChild(document.createTextNode(String(text || '')));
-      });
+      const text = String(annRes[0].content || annRes[0].title || '');
+      const looksLikeLiveActivity = /Bugün:\s*Kullanıcılar/i.test(text)
+        || /araç,\s*ev ve tatil kararları/i.test(text);
+      if (!looksLikeLiveActivity) {
+        document.querySelectorAll('[data-cms="announcement"]').forEach(el => {
+          el.innerHTML = '<strong>Duyuru:</strong> ';
+          el.appendChild(document.createTextNode(text));
+        });
+      }
     }
 
     if (s.maintenance === 'true') {

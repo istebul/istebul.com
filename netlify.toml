@@ -23,8 +23,23 @@
 
 [[redirects]]
   from = "/admin"
-  to = "/index.html"
-  status = 200
+  to = "/admin-panel.html"
+  status = 302
+
+[[redirects]]
+  from = "/admin/"
+  to = "/admin-panel.html"
+  status = 302
+
+[[redirects]]
+  from = "/partner"
+  to = "/partner-olun.html"
+  status = 302
+
+[[redirects]]
+  from = "/partner/"
+  to = "/partner-olun.html"
+  status = 302
 
 [[redirects]]
   from = "/quiz"

@@ -21,6 +21,11 @@ import { ListingManager } from './features/ilan/ilan.js';
 import { ProfileManager } from './features/profil/profil.js';
 import './features/i18n/i18n.js';
 import { formatMoney } from './core/format.js';
+import {
+    resolveRouteSurface,
+    syncHtmlRouteSurface,
+    tryExternalRouteRedirect
+} from './runtime/route-surface.js';
 
 window.lucide = window.lucide || {
     createIcons() {},
@@ -69,6 +74,7 @@ class App {
         this.quizQuestions = [];
         this.favorites = [];
         this.comparisonItems = [];
+        this.comingSoonCategories = [];
         this.decisionHistory = [];
         this.localListings = [];
         this.previewCategory = 'arac';
@@ -407,11 +413,13 @@ class App {
     }
 
     async loadCategories() {
-        const supportedCategoryIds = ['arac', 'ev', 'tatil'];
+        const supportedCategoryIds = ['arac'];
         const fallbackCategories = [
-            { id: 'arac', name: 'Araç', icon: 'car', count: 0 },
-            { id: 'ev', name: 'Ev', icon: 'home', count: 0 },
-            { id: 'tatil', name: 'Tatil', icon: 'plane', count: 0 }
+            { id: 'arac', name: 'Araç', icon: 'car', count: 0 }
+        ];
+        this.comingSoonCategories = [
+            { id: 'ev', name: 'Konut', icon: 'home', comingSoon: true },
+            { id: 'tatil', name: 'Tatil', icon: 'plane', comingSoon: true }
         ];
 
         try {
@@ -439,7 +447,11 @@ class App {
     }
 
     renderCategorySurfaces() {
-        this.ui.renderCategories(this.categories, this.activeCategory);
+        const displayCategories = [
+            ...this.categories,
+            ...(this.comingSoonCategories || [])
+        ];
+        this.ui.renderCategories(displayCategories, this.activeCategory);
         this.ui.renderHeroCategories(this.categories, this.activeCategory);
         this.ui.renderCategoryMenu(this.categories, this.activeCategory);
         this.ui.renderCategorySelect(this.categories);
@@ -976,15 +988,6 @@ class App {
 
             if (route === 'compare') {
                 this.ui.renderComparison(this.comparisonItems);
-            }
-
-            if (route === 'admin') {
-                if (this.currentUser?.profile?.role !== 'admin') {
-                    this.router.navigate('/');
-                    this.ui.showError('Admin paneli için yönetici hesabıyla giriş yapın.');
-                    return;
-                }
-                this.renderAdminDashboard();
             }
 
             if (route === 'profil') {
@@ -4200,6 +4203,10 @@ function showPremiumPageFallback(pageId) {
 }
 
 function applyProductionRouteVisibility() {
+    if (tryExternalRouteRedirect(window.location.pathname)) {
+        return;
+    }
+
     if (window.app?.router?.handleRoute) {
         window.app.router.handleRoute();
         return;
@@ -4210,6 +4217,8 @@ function applyProductionRouteVisibility() {
     const path = stripped.replace(/\/$/, '') || '/';
     const hashId = (window.location.hash || '').slice(1);
     const marketingHash = MARKETING_SECTION_IDS.has(hashId);
+
+    syncHtmlRouteSurface(resolveRouteSurface(path));
 
     if (path === '/' && !marketingHash) {
         applyHomeMarketingVisibility();
@@ -4234,9 +4243,7 @@ function applyProductionRouteVisibility() {
         '/favoriler': 'favoriler',
         '/gecmis': 'history',
         '/profil': 'profil',
-        '/admin': 'admin',
         '/messages': 'messages',
-        '/partner': 'partner',
         '/ilan-ekle': 'add-listing'
     };
 
