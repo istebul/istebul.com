@@ -52,6 +52,13 @@ import {
 } from './data/market-data.js';
 import { estimateListingPeriodicCost } from './engines/cost-engine.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from './core/storage-keys.js';
+import {
+    buildCheckoutTriggerEvent,
+    clearCheckoutIntent,
+    mapCheckoutApiError,
+    peekCheckoutIntent,
+    storeCheckoutIntentPayload
+} from './core/checkout-intent.js';
 
 class App {
     constructor() {
@@ -992,10 +999,15 @@ class App {
 
             if (route === 'profil') {
                 const upgrade = new URLSearchParams(window.location.search).get('upgrade');
-                if (upgrade === '1' && this.currentUser) {
-                    setTimeout(() => this.handlePremiumCheckout(), 400);
-                } else if (upgrade === '1') {
-                    this.auth.showLoginModal();
+                if (upgrade === '1') {
+                    if (!peekCheckoutIntent()) {
+                        storeCheckoutIntentPayload({ billing: 'monthly', useTrial: true });
+                    }
+                    if (this.currentUser) {
+                        this.scheduleCheckoutResume(400);
+                    } else {
+                        this.auth.showCheckoutAuthGate();
+                    }
                 }
             }
         });
@@ -1081,6 +1093,13 @@ class App {
         }
 
         document.addEventListener('click', (e) => {
+            const checkoutLink = e.target.closest('a[href*="checkout=pro"]');
+            if (checkoutLink) {
+                const billing = checkoutLink.dataset?.billing === 'annual' ? 'annual' : 'monthly';
+                const useTrial = checkoutLink.dataset?.trial !== '0';
+                storeCheckoutIntentPayload({ billing, useTrial });
+            }
+
             const upgradeBtn = e.target.closest('[data-upgrade-checkout]');
             if (upgradeBtn) {
                 e.preventDefault();
@@ -3249,16 +3268,12 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         if (!wantsCheckout) return;
 
-        this.storeCheckoutIntent({
-            target: {
-                closest: () => ({
-                    dataset: { billing: 'monthly', trial: '1' }
-                })
-            }
-        });
+        if (!peekCheckoutIntent()) {
+            storeCheckoutIntentPayload({ billing: 'monthly', useTrial: true });
+        }
 
         if (this.currentUser) {
-            setTimeout(() => this.resumeCheckoutIfPending(), 800);
+            this.scheduleCheckoutResume(800);
         }
     }
 
@@ -3291,43 +3306,59 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const billingInterval = this.resolveCheckoutBilling(event);
         const trigger = event?.target?.closest?.('[data-upgrade-checkout]');
         const useTrial = trigger?.dataset?.trial !== '0' && revenueManager.trialEligible;
-        try {
-            sessionStorage.setItem(STORAGE_KEYS.CHECKOUT_INTENT, JSON.stringify({
-                billing: billingInterval,
-                useTrial
-            }));
-        } catch {
-            // ignore storage errors
-        }
+        storeCheckoutIntentPayload({ billing: billingInterval, useTrial });
     }
 
-    consumeCheckoutIntent() {
-        try {
-            const raw = sessionStorage.getItem(STORAGE_KEYS.CHECKOUT_INTENT);
-            if (!raw) return null;
-            sessionStorage.removeItem(STORAGE_KEYS.CHECKOUT_INTENT);
-            return JSON.parse(raw);
-        } catch {
-            return null;
+    scheduleCheckoutResume(delayMs = 600) {
+        if (this._checkoutResumeTimer) {
+            clearTimeout(this._checkoutResumeTimer);
         }
+        this._checkoutResumeTimer = setTimeout(() => {
+            this._checkoutResumeTimer = null;
+            this.resumeCheckoutIfPending();
+        }, delayMs);
     }
 
     async resumeCheckoutIfPending() {
-        const intent = this.consumeCheckoutIntent();
+        if (this._checkoutInFlight || this._checkoutResumeLock) return;
+
+        const intent = peekCheckoutIntent();
         if (!intent || !this.currentUser) return;
 
-        const fakeEvent = {
-            target: {
-                closest: () => ({
-                    dataset: {
-                        billing: intent.billing || 'monthly',
-                        trial: intent.useTrial === false ? '0' : '1'
-                    }
-                })
-            }
-        };
+        this._checkoutResumeLock = true;
+        try {
+            await this.handlePremiumCheckout(buildCheckoutTriggerEvent(intent), { fromResume: true });
+        } finally {
+            setTimeout(() => {
+                this._checkoutResumeLock = false;
+            }, 1200);
+        }
+    }
 
-        await this.handlePremiumCheckout(fakeEvent);
+    setCheckoutButtonsLoading(loading, sourceEvent) {
+        const triggers = new Set();
+        const fromClick = sourceEvent?.target?.closest?.('[data-upgrade-checkout]');
+        if (fromClick) triggers.add(fromClick);
+
+        document.querySelectorAll('[data-upgrade-checkout]').forEach((el) => triggers.add(el));
+
+        triggers.forEach((btn) => {
+            if (!btn || btn.tagName !== 'BUTTON') return;
+            if (loading) {
+                if (!btn.dataset.checkoutLabel) {
+                    btn.dataset.checkoutLabel = btn.textContent.trim();
+                }
+                btn.disabled = true;
+                btn.setAttribute('aria-busy', 'true');
+                btn.textContent = 'Ödeme sayfası hazırlanıyor…';
+            } else {
+                btn.disabled = false;
+                btn.removeAttribute('aria-busy');
+                if (btn.dataset.checkoutLabel) {
+                    btn.textContent = btn.dataset.checkoutLabel;
+                }
+            }
+        });
     }
 
     async openBillingPortal() {
@@ -3380,30 +3411,54 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
     }
 
-    async handlePremiumCheckout(event) {
-        if (!this.currentUser) {
+    async handlePremiumCheckout(event, options = {}) {
+        const storedIntent = peekCheckoutIntent();
+
+        if (event) {
             this.storeCheckoutIntent(event);
+        } else if (storedIntent && options.fromResume) {
+            // billing/trial resolved below from stored intent
+        } else if (storedIntent) {
+            event = buildCheckoutTriggerEvent(storedIntent);
+        }
+
+        if (!this.currentUser) {
+            if (event) this.storeCheckoutIntent(event);
             analytics.track('auth_modal_open', { reason: 'checkout' }, { category: 'auth', funnel: 'subscription' });
             this.auth.showCheckoutAuthGate();
             return;
         }
 
-        const billingInterval = this.resolveCheckoutBilling(event);
+        if (this._checkoutInFlight) return;
+
+        const billingInterval = this.resolveCheckoutBilling(event)
+            || storedIntent?.billing
+            || 'monthly';
         const trigger = event?.target?.closest?.('[data-upgrade-checkout]');
-        const useTrial = trigger?.dataset?.trial !== '0' && revenueManager.trialEligible;
+        const useTrialFromTrigger = trigger?.dataset?.trial !== '0';
+        const useTrial = storedIntent && options.fromResume
+            ? storedIntent.useTrial !== false && revenueManager.trialEligible
+            : useTrialFromTrigger && revenueManager.trialEligible;
+
+        storeCheckoutIntentPayload({ billing: billingInterval, useTrial });
+
+        this._checkoutInFlight = true;
+        this.setCheckoutButtonsLoading(true, event);
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
 
             if (!session?.access_token) {
-                this.storeCheckoutIntent(event);
                 this.auth.showLoginModal({ intent: 'checkout' });
+                this.ui.showError('Ödeme için oturum gerekli. Giriş yaptıktan sonra kaldığınız yerden devam edeceksiniz.');
                 return;
             }
 
             analytics.track('checkout_started', {
                 product: 'premium',
-                user_id: this.currentUser.id
+                user_id: this.currentUser.id,
+                billing_interval: billingInterval,
+                from_resume: Boolean(options.fromResume)
             }, {
                 category: 'subscription',
                 funnel: 'subscription',
@@ -3430,20 +3485,26 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 })
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok || !data.url) {
-                throw new Error(data.error || 'Checkout başlatılamadı');
+                const message = mapCheckoutApiError(response.status, data);
+                throw Object.assign(new Error(message), { status: response.status });
             }
 
+            clearCheckoutIntent();
             window.location.href = data.url;
         } catch (error) {
             console.error('Premium checkout failed:', error);
             trackOpsEvent('payment_checkout_failed', {
                 message: String(error.message || 'checkout_failed').slice(0, 120),
-                billing_interval: billingInterval
+                billing_interval: billingInterval,
+                http_status: error.status || null
             }, { category: 'payment', severity: 'error' });
-            this.ui.showError('Ödeme sayfası başlatılamadı. Lütfen tekrar deneyin.');
+            this.ui.showError(error.message || 'Ödeme sayfası başlatılamadı. Lütfen tekrar deneyin.');
+        } finally {
+            this._checkoutInFlight = false;
+            this.setCheckoutButtonsLoading(false, event);
         }
     }
 
@@ -4024,7 +4085,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.loadDecisionHistory();
         this.loadComparisonHistory();
         await this.loadListings();
-        setTimeout(() => this.resumeCheckoutIfPending(), 600);
+        this.scheduleCheckoutResume(600);
     }
 
     async handleUserLogout() {

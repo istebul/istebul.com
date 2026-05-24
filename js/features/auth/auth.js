@@ -5,8 +5,8 @@ import API from '../../core/api.js';
 import config from '../../core/config.js';
 import { monitoring } from '../../core/monitoring.js';
 import { analytics } from '../../core/analytics.js';
-import { mapAuthError } from './auth-errors.js';
-import { STORAGE_KEYS } from '../../core/storage-keys.js';
+import { mapAuthError, mapAuthErrorForCheckout } from './auth-errors.js';
+import { peekCheckoutIntent } from '../../core/checkout-intent.js';
 import { enrollSignupNurture } from '../lifecycle/lifecycle-client.js';
 import { trackOpsEvent } from '../../core/operational-telemetry.js';
 
@@ -95,7 +95,10 @@ export class AuthManager {
         }
 
         const intentBanner = options.intent === 'checkout'
-            ? '<p class="auth-intent-banner">7 gün deneme süresi · Stripe ile güvenli ödeme · İstediğiniz zaman iptal</p>'
+            ? `<p class="auth-intent-banner" role="note">
+                <strong>Pro ödeme adımı</strong> — 7 gün ücretsiz deneme · Stripe ile güvenli ödeme · İstediğiniz zaman iptal.
+                Kart bilgileri sunucularımızda tutulmaz. <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a>
+              </p>`
             : '';
 
         modalBody.innerHTML = intentBanner + (type === 'login' ? this.getLoginForm() : this.getRegisterForm());
@@ -220,13 +223,7 @@ export class AuthManager {
         const switchToLogin = document.getElementById('switch-to-login');
         const forgotPassword = document.getElementById('forgot-password');
 
-        const checkoutIntentActive = () => {
-            try {
-                return Boolean(sessionStorage.getItem(STORAGE_KEYS.CHECKOUT_INTENT));
-            } catch {
-                return false;
-            }
-        };
+        const checkoutIntentActive = () => Boolean(peekCheckoutIntent());
 
         if (switchToRegister) {
             switchToRegister.addEventListener('click', (e) => {
@@ -283,10 +280,9 @@ export class AuthManager {
 
             analytics.track('auth_login_success', {}, { category: 'auth', funnel: 'auth', funnel_step: 'login_success' });
 
-            const pendingCheckout = typeof sessionStorage !== 'undefined'
-                && sessionStorage.getItem(STORAGE_KEYS.CHECKOUT_INTENT);
+            const pendingCheckout = Boolean(peekCheckoutIntent());
             if (pendingCheckout) {
-                this.showAuthSuccess('Giriş başarılı. Ödeme adımına geçiliyor…');
+                this.showAuthSuccess('Giriş başarılı. Stripe ödeme sayfasına yönlendiriliyorsunuz…');
             }
 
             this.hideAuthModal();
@@ -300,7 +296,9 @@ export class AuthManager {
             trackOpsEvent('auth_login_failed', {
                 error_code: error.code || 'login_failed'
             }, { category: 'auth', severity: 'warning' });
-            this.showAuthError(mapAuthError(error, config.messages.error.login));
+            const pendingCheckout = Boolean(peekCheckoutIntent());
+            const mapFn = pendingCheckout ? mapAuthErrorForCheckout : mapAuthError;
+            this.showAuthError(mapFn(error, config.messages.error.login));
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
@@ -335,8 +333,7 @@ export class AuthManager {
                 funnel_step: 'register_start'
             });
 
-            const pendingCheckout = typeof sessionStorage !== 'undefined'
-                && sessionStorage.getItem(STORAGE_KEYS.CHECKOUT_INTENT);
+            const pendingCheckout = Boolean(peekCheckoutIntent());
 
             const signUpResult = await API.signUp(email, password, {
                 full_name: fullName
@@ -366,8 +363,10 @@ export class AuthManager {
             }
 
             if (pendingCheckout) {
-                this.showAuthSuccess('Hesabınız oluşturuldu. Giriş yaparak ödemeye devam edebilirsiniz — e-posta doğrulama gerekebilir.');
-                setTimeout(() => this.showLoginModal({ intent: 'checkout' }), 1200);
+                this.showAuthSuccess(
+                    'Hesabınız oluşturuldu. E-posta doğrulaması gerekiyorsa gelen kutunuzu kontrol edin; ardından giriş yapın — Pro ödeme adımınız kayıtlı kalır.'
+                );
+                setTimeout(() => this.showLoginModal({ intent: 'checkout' }), 1400);
             } else {
                 this.showAuthSuccess('Hesabınız oluşturuldu! Lütfen e-posta adresinizi doğrulayın.');
                 setTimeout(() => this.showLoginModal(), 2800);
@@ -383,7 +382,9 @@ export class AuthManager {
             trackOpsEvent('auth_register_failed', {
                 error_code: error.code || 'register_failed'
             }, { category: 'auth', severity: 'warning' });
-            this.showAuthError(mapAuthError(error, config.messages.error.register));
+            const pendingCheckout = Boolean(peekCheckoutIntent());
+            const mapFn = pendingCheckout ? mapAuthErrorForCheckout : mapAuthError;
+            this.showAuthError(mapFn(error, config.messages.error.register));
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;

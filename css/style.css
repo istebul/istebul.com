@@ -9781,9 +9781,30 @@ button:focus-visible {
   padding: 0.65rem 0.85rem;
   border-radius: 8px;
   background: rgba(37, 99, 235, 0.08);
-  color: var(--primary-color, #2563eb);
+  color: var(--text-color, #0f172a);
   font-size: 0.88rem;
-  line-height: 1.4;
+  line-height: 1.45;
+}
+
+.auth-intent-banner strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--primary-color, #2563eb);
+}
+
+.auth-intent-banner a {
+  color: var(--primary-color, #2563eb);
+}
+
+.revenue-plan-hint--checkout {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+[data-upgrade-checkout][aria-busy="true"] {
+  opacity: 0.85;
+  cursor: wait;
 }
 
 .form-hint {

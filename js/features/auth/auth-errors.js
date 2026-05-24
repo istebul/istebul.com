@@ -17,6 +17,19 @@ export function mapAuthError(error, fallback = 'İşlem tamamlanamadı. Lütfen 
     return hit?.message || raw;
 }
 
+/**
+ * Auth errors when user is mid–Pro checkout (intent preserved in sessionStorage).
+ */
+export function mapAuthErrorForCheckout(error, fallback = 'İşlem tamamlanamadı. Lütfen tekrar deneyin.') {
+    const raw = (error?.message || error?.msg || error || '').toString();
+    const base = mapAuthError(error, fallback);
+
+    if (/email not confirmed/i.test(raw)) {
+        return `${base} Pro ödeme adımınız kayıtlı — e-postanızı doğruladıktan sonra giriş yaparak Stripe ile devam edebilirsiniz.`;
+    }
+    return base;
+}
+
 export function validatePassword(password, rules = {}) {
     const minLength = rules.minLength || 8;
     const issues = [];

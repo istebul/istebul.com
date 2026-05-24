@@ -23,6 +23,7 @@ import { analytics } from '../core/analytics.js';
 import { escapeHtml } from '../core/security.js';
 import { safeJsonParse } from '../core/dom-safe.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-keys.js';
+import { storeCheckoutIntentPayload } from '../core/checkout-intent.js';
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
 import { getSupabaseClient } from '../core/supabase.js';
@@ -1867,7 +1868,7 @@ document.addEventListener('click', (event) => {
   const checkoutLink = event.target.closest('[data-auto-checkout-intent]');
   if (!checkoutLink) return;
   try {
-    sessionStorage.setItem(STORAGE_KEYS.CHECKOUT_INTENT, JSON.stringify({ billing: 'monthly', useTrial: true }));
+    storeCheckoutIntentPayload({ billing: 'monthly', useTrial: true });
   } catch {
     // ignore
   }

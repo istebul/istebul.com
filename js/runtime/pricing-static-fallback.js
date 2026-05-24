@@ -29,6 +29,7 @@ export function renderStaticPricingFallback() {
           </ul>
           <p class="revenue-plan-hint">Yıllık ₺2.870 (%20 tasarruf) · Stripe ile güvenli ödeme</p>
           <a href="/planlar?checkout=pro" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_static_pro">7 gün ücretsiz dene</a>
+          <p class="revenue-plan-hint revenue-plan-hint--checkout">7 gün deneme · Stripe · istediğiniz zaman iptal</p>
         </article>
         <article class="revenue-plan-card revenue-plan-card--enterprise">
           <span class="revenue-plan-badge">Kurumsal</span>
@@ -42,5 +43,10 @@ export function renderStaticPricingFallback() {
           </ul>
           <a href="/iletisim.html?konu=enterprise" class="btn btn-outline">Kurumsal teklif al</a>
         </article>
-      </div>`;
+      </div>
+      <p class="revenue-risk-reversal" role="note">
+        <span>7 gün ücretsiz deneme</span>
+        <span>Stripe ile güvenli ödeme</span>
+        <span>İstediğiniz zaman iptal</span>
+      </p>`;
 }
