@@ -116,6 +116,12 @@ const minifyHtml = (source) => source
 
 staticRoots.forEach(copyDir);
 
+const lucideUmd = path.join(root, 'node_modules/lucide/dist/umd/lucide.min.js');
+if (!fs.existsSync(lucideUmd)) {
+  throw new Error('Missing lucide UMD — run npm install');
+}
+writeFile('assets/lucide.min.js', fs.readFileSync(lucideUmd));
+
 const publicEnv = publicEnvKeys.reduce((env, key) => {
   env[key] = process.env[key] || '';
   return env;

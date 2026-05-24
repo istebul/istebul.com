@@ -1,4 +1,4 @@
-const LUCIDE_SRC = 'https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js';
+const LUCIDE_SRC = '/assets/lucide.min.js';
 let lucidePromise = null;
 
 function loadLucideScript() {

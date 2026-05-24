@@ -37,6 +37,25 @@ const allowedOrigins = [
   "https://istebul-com.pages.dev"
 ];
 
+const adminRateLimit = new Map<string, { count: number; resetAt: number }>();
+
+function checkAdminActorRateLimit(actorId: string, limit = 120, windowMs = 60_000) {
+  const now = Date.now();
+  const entry = adminRateLimit.get(actorId);
+
+  if (!entry || now > entry.resetAt) {
+    adminRateLimit.set(actorId, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+
+  if (entry.count >= limit) {
+    return false;
+  }
+
+  entry.count += 1;
+  return true;
+}
+
 function corsHeaders(origin: string | null) {
   const allowedOrigin = allowedOrigins.includes(origin || "")
     ? origin
@@ -118,6 +137,10 @@ Deno.serve(async (req) => {
 
   if (profile.role !== "admin" || profile.is_banned === true) {
     return json({ error: "Forbidden" }, 403, origin);
+  }
+
+  if (!checkAdminActorRateLimit(user.id)) {
+    return json({ error: "Too many requests" }, 429, origin);
   }
 
   let body: any;
@@ -386,6 +409,12 @@ Deno.serve(async (req) => {
         !["admin", "user"].includes(values.role)
      ) {
         return json({ error: "Invalid role value" }, 400, origin);
+      }
+
+      if (table === "profiles" && values.role === "admin") {
+        return json({
+          error: "Admin role cannot be granted via the panel; use Supabase dashboard or a controlled bootstrap process",
+        }, 403, origin);
       }
 
       if (table === "profiles" && id === user.id && values.role === "user") {

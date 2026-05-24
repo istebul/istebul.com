@@ -59,16 +59,18 @@ const processReferralSubscriptionConversion = async (env, details = {}) => {
   if (!referralCode || !env.SUPABASE_URL) return;
 
   const secret = env.REFERRAL_WEBHOOK_SECRET || env.LIFECYCLE_WEBHOOK_SECRET;
-  const token = secret || env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!token) return;
+  if (!secret) {
+    console.warn('Referral conversion skipped: REFERRAL_WEBHOOK_SECRET or LIFECYCLE_WEBHOOK_SECRET required');
+    return;
+  }
 
   try {
     await fetch(`${env.SUPABASE_URL}/functions/v1/referral-hub`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-        ...(secret ? { 'x-referral-secret': secret } : {})
+        Authorization: `Bearer ${secret}`,
+        'x-referral-secret': secret
       },
       body: JSON.stringify({
         action: 'process_conversion',

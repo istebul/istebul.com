@@ -667,10 +667,6 @@ async function loadUsers() {
       const isSelf = u.id === currentUser?.id;
       const actions = [];
 
-      if (!isAdmin) {
-        actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${safeAttr(u.id)}" data-role="admin">Admin yap</button>`);
-      }
-
       if (isAdmin && !isSelf) {
         actions.push(`<button class="btn btn-ghost btn-sm" data-action="set-user-role" data-id="${safeAttr(u.id)}" data-role="user">Yetki kaldır</button>`);
       }
@@ -2476,9 +2472,12 @@ async function exportAutoLeadsCsv() {
 
 
 async function setUserRole(id, role) {
+  if (role === 'admin') {
+    toast('Admin yetkisi panelden verilemez. Supabase üzerinden yönetin.', 'error');
+    return;
+  }
   await adminAction({ action: 'update', table: 'profiles', id, values: { role } });
-  const labels = { admin: 'Admin yapıldı', user: 'Yetki kaldırıldı' };
-  toast(labels[role] || 'Rol güncellendi');
+  toast(role === 'user' ? 'Yetki kaldırıldı' : 'Rol güncellendi');
   loadUsers();
 }
 

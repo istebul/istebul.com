@@ -12,6 +12,7 @@ const BUDGET_EXCLUDE = [
   /^js\/admin-panel\.js$/,
   /^js\/corporate\//,
   /^assets\/auto-runtime\//,
+  /^assets\/lucide\.min\.js$/,
   /^env\.js$/,
   /^sw\.js$/,
   /** Hashed copies of @import layers (SPA loads single style.*.css). */
