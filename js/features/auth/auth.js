@@ -77,6 +77,8 @@ export class AuthManager {
             : '';
 
         modalBody.innerHTML = intentBanner + (type === 'login' ? this.getLoginForm() : this.getRegisterForm());
+        modal.classList.add('auth-modal');
+        document.body.classList.add('modal-open');
 
         analytics.track('auth_modal_open', { mode: type }, {
             category: 'auth',
@@ -94,6 +96,8 @@ export class AuthManager {
     hideAuthModal() {
         const modal = document.getElementById('auth-modal');
         modal.classList.remove('show');
+        modal.classList.remove('auth-modal');
+        document.body.classList.remove('modal-open');
         state.setModal(null);
     }
 

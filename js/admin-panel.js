@@ -79,11 +79,47 @@ async function showApp() {
   loadPartnerDispatchLogs();
 }
 
+function closeAdminSidebar() {
+  document.body.classList.remove('admin-sidebar-open');
+  const btn = document.getElementById('admin-menu-btn');
+  const overlay = document.getElementById('admin-sidebar-overlay');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+  if (overlay) overlay.setAttribute('aria-hidden', 'true');
+}
+
+function initAdminMobileNav() {
+  const btn = document.getElementById('admin-menu-btn');
+  const overlay = document.getElementById('admin-sidebar-overlay');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    const open = !document.body.classList.contains('admin-sidebar-open');
+    document.body.classList.toggle('admin-sidebar-open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (overlay) overlay.setAttribute('aria-hidden', open ? 'false' : 'true');
+  });
+
+  overlay?.addEventListener('click', closeAdminSidebar);
+
+  document.querySelectorAll('.nav-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      if (window.matchMedia('(max-width: 900px)').matches) {
+        closeAdminSidebar();
+      }
+    });
+  });
+}
+
 function showPage(name, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   if (el) el.classList.add('active');
+
+  const titleEl = document.getElementById('admin-mobile-title');
+  if (titleEl && el?.textContent) {
+    titleEl.textContent = el.textContent.replace(/^\s*\S+\s*/, '').trim() || 'Admin';
+  }
 
   if (name === 'partner-endpoints') {
     loadPartnerEndpoints();
@@ -1556,8 +1592,15 @@ function bindAdminPanelEvents() {
   document.getElementById('logout-btn')?.addEventListener('click', logout);
 
   document.querySelectorAll('[data-page-target]').forEach((el) => {
-    el.addEventListener('click', () => showPage(el.dataset.pageTarget, el));
+    el.addEventListener('click', () => {
+      showPage(el.dataset.pageTarget, el);
+      if (window.matchMedia('(max-width: 900px)').matches) {
+        closeAdminSidebar();
+      }
+    });
   });
+
+  initAdminMobileNav();
 
   document.querySelectorAll('[data-action="save-settings"]').forEach((el) => {
     el.addEventListener('click', saveSettings);
