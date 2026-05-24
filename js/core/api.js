@@ -355,16 +355,10 @@ export class API {
         return data;
     }
 
-    static async updateUserRole(userId, role) {
-        const { data, error } = await supabase
-            .from('profiles')
-            .update({ role })
-            .eq('id', userId)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+    static async updateUserRole() {
+        throw new Error(
+            'Profile role changes must use the admin panel (admin-action edge function).'
+        );
     }
 
     static async getAdminStats() {

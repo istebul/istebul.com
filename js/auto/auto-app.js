@@ -3,11 +3,27 @@ import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
 import { FREE_LIMITS, PLANS } from '../features/monetization/plans.js';
 import { analytics } from '../core/analytics.js';
+import { revenueManager } from '../features/monetization/revenue-manager.js';
+import { getSupabaseClient } from '../core/supabase.js';
 
 document.documentElement.classList.add('ib-ready');
 
 function isProActive() {
-  return localStorage.getItem('istebul_pro_active') === '1';
+  return Boolean(revenueManager.isPremium);
+}
+
+async function initAutoEntitlements() {
+  const sb = getSupabaseClient();
+  if (!sb) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    await revenueManager.refresh(session?.user?.id || null);
+    sb.auth.onAuthStateChange((_event, session) => {
+      revenueManager.refresh(session?.user?.id || null).catch(() => {});
+    });
+  } catch {
+    await revenueManager.refresh(null);
+  }
 }
 
 function openAutoUpgradePaywall(feature = 'premium_report') {
@@ -1649,6 +1665,7 @@ if (wizard) {
 
 
 setupAutoMobileNav();
+initAutoEntitlements();
 loadAutoRuntimeConfig();
 if (localStorage.getItem('istebu_cookie_consent') === 'accepted') {
   analytics.init();

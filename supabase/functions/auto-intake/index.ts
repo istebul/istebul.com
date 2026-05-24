@@ -372,14 +372,12 @@ Deno.serve(async (req) => {
       return json({ error: "Invalid contact information" }, 400, origin);
     }
 
-    let verificationFailed = false;
-
     if (!isTestLead(phone)) {
       const token = String(body.turnstile_token || metadata.turnstile_token || "").trim();
       const turnstile = await verifyTurnstile(token, clientIp);
 
       if (!turnstile.ok) {
-        verificationFailed = true;
+        return json({ error: "Verification failed" }, 403, origin);
       }
     }
 
@@ -437,11 +435,6 @@ Deno.serve(async (req) => {
 
     const scoring = calculateLeadScore(form);
 
-    if (verificationFailed) {
-      scoring.score = Math.min(scoring.score, 49);
-      scoring.priority = "verification_failed";
-    }
-
     const contextNotes = [
       form.city ? `Şehir: ${clampString(form.city, 60)}` : "",
       form.district ? `İlçe: ${clampString(form.district, 60)}` : "",
@@ -481,52 +474,19 @@ Deno.serve(async (req) => {
       estimated_revenue: estimateCommission(getPartnerRoute(form), scoring.score),
       follow_up_at: getAutoFollowUp(scoring.priority),
       follow_up_done: false,
-      status: isTestLead(phone) ? "test_spam" : verificationFailed ? "verification_failed" : "new",
+      status: isTestLead(phone) ? "test_spam" : "new",
       source: "auto",
-      notes: verificationFailed
-        ? `Turnstile doğrulaması başarısız oldu; manuel kontrol önerilir.${leadNotes ? " | " + leadNotes : ""}`
-        : leadNotes || null,
+      notes: leadNotes || null,
     };
 
-    let leadId: string | null = null;
-
-    const phoneUpdate = await adminClient
+    const { data: inserted, error: insertError } = await adminClient
       .from("auto_leads")
-      .update(payload)
-      .eq("phone", phone)
-      .select("id");
+      .insert(payload)
+      .select("id")
+      .single();
 
-    if (phoneUpdate.error) return json({ error: phoneUpdate.error.message }, 500, origin);
-
-    if (phoneUpdate.data?.length) {
-      leadId = phoneUpdate.data[0].id;
-    }
-
-    if (!leadId && normalizedEmail) {
-      const emailUpdate = await adminClient
-        .from("auto_leads")
-        .update(payload)
-        .eq("email", normalizedEmail)
-        .select("id");
-
-      if (emailUpdate.error) return json({ error: emailUpdate.error.message }, 500, origin);
-
-      if (emailUpdate.data?.length) {
-        leadId = emailUpdate.data[0].id;
-        return json({ ok: true }, 200, origin);
-      }
-    }
-
-    if (!leadId) {
-      const { data: inserted, error: insertError } = await adminClient
-        .from("auto_leads")
-        .insert(payload)
-        .select("id")
-        .single();
-
-      if (insertError) return json({ error: insertError.message }, 500, origin);
-      leadId = inserted?.id || null;
-    }
+    if (insertError) return json({ error: insertError.message }, 500, origin);
+    const leadId = inserted?.id || null;
 
     const dispatchPayload = { ...payload, id: leadId };
 
@@ -553,9 +513,7 @@ Deno.serve(async (req) => {
 
         if (!leadId) return;
 
-        const dispatchResult = verificationFailed
-          ? { status: "skipped" as const, reason: "verification_failed" }
-          : await dispatchPartnerLead(adminClient, {
+        const dispatchResult = await dispatchPartnerLead(adminClient, {
             leadId,
             payload: dispatchPayload,
             trigger: "auto_intake",

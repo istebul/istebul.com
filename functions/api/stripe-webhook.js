@@ -129,8 +129,16 @@ export async function onRequestPost(context) {
   const supabase = getSupabaseAdmin(context.env);
 
   try {
-    if (await hasEventProcessed(supabase, event)) {
-      return json({ received: true, duplicate: true });
+    const { error: claimError } = await supabase.from('stripe_webhook_events').insert({
+      event_id: event.id,
+      event_type: event.type
+    });
+
+    if (claimError) {
+      if (claimError.code === '23505') {
+        return json({ received: true, duplicate: true });
+      }
+      throw claimError;
     }
 
     switch (event.type) {
@@ -239,8 +247,6 @@ export async function onRequestPost(context) {
       default:
         break;
     }
-
-    await recordEventProcessed(supabase, event);
 
     return json({ received: true });
   } catch (error) {
