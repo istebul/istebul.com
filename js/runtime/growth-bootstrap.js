@@ -4,7 +4,7 @@
 import { storeReferralCode } from '../features/growth/growth-engine.js';
 import { trackReferralLinkClick } from '../features/growth/referral-client.js';
 import { trackLandingVisit } from '../features/growth/growth-funnel.js';
-import { capturePaidClickIds } from '../features/growth/paid-growth.js';
+import { capturePaidAttribution } from '../features/growth/paid-acquisition.js';
 import { analytics } from '../core/analytics.js';
 
 function captureGrowthParams() {
@@ -51,7 +51,7 @@ function captureGrowthParams() {
 }
 
 captureGrowthParams();
-capturePaidClickIds();
+capturePaidAttribution();
 
 if (typeof document !== 'undefined') {
   document.addEventListener('cookieConsentAccepted', () => {

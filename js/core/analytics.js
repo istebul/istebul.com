@@ -85,9 +85,13 @@ export class Analytics {
       utm_term: params.get('utm_term'),
       ref: params.get('ref') || params.get('referral'),
       gclid: params.get('gclid'),
+      gbraid: params.get('gbraid'),
+      wbraid: params.get('wbraid'),
       fbclid: params.get('fbclid'),
       msclkid: params.get('msclkid'),
       ttclid: params.get('ttclid'),
+      twclid: params.get('twclid'),
+      paid_platform: params.get('paid_platform') || params.get('utm_platform'),
       growth_campaign: params.get('growth_campaign') || params.get('utm_campaign')
     };
 

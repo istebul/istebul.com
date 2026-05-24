@@ -5,7 +5,8 @@ import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
 import { trackPricingView, getGrowthContext } from './features/growth/growth-engine.js';
 import { trackCheckoutComplete, trackCheckoutStart } from './features/growth/growth-funnel.js';
-import { trackPaidConversionSignal } from './features/growth/paid-growth.js';
+import { trackPaidFunnelStep } from './features/growth/paid-acquisition.js';
+import { sendServerPaidConversion } from './features/growth/paid-capi-bridge.js';
 import {
     enrollCheckoutAbandonRecovery,
     enrollNewsletterWelcome
@@ -3310,7 +3311,12 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 trial: isTrial,
                 idempotency_key: returnKey
             });
-            trackPaidConversionSignal('checkout_complete', { billing_interval: billingPlan, trial: isTrial });
+            trackPaidFunnelStep('checkout_complete', { billing_interval: billingPlan, trial: isTrial });
+            sendServerPaidConversion('checkout_complete', {
+              billing_interval: billingPlan,
+              trial: isTrial,
+              email: this.currentUser?.email || null
+            });
             if (params.get('trial') === '1') {
                 this.ui.showSuccess('7 günlük Pro denemeniz başladı. Tüm premium özellikler şimdi açık.');
             } else if (params.get('plan') === 'annual') {
@@ -3582,7 +3588,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 checkout_key: checkoutKey,
                 growth_channel: getGrowthContext().growth_channel
             });
-            trackPaidConversionSignal('checkout_start', { billing_interval: billingInterval });
+            trackPaidFunnelStep('checkout_start', { billing_interval: billingInterval });
+            sendServerPaidConversion('checkout_start', { billing_interval: billingInterval });
             const growth = getGrowthContext();
 
             const response = await fetch('/api/create-checkout', {
@@ -3606,7 +3613,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                         gclid: growth.gclid,
                         fbclid: growth.fbclid,
                         msclkid: growth.msclkid,
-                        ttclid: growth.ttclid
+                        ttclid: growth.ttclid,
+                        paid_platform: growth.paid_platform || null,
+                        gbraid: growth.gbraid || null,
+                        wbraid: growth.wbraid || null
                     }
                 })
             });

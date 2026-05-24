@@ -17,6 +17,21 @@ export const GROWTH_CHANNELS = Object.freeze({
   VIRAL: 'viral'
 });
 
+function inferPaidPlatform(attribution = {}) {
+  const source = String(attribution.utm_source || '').toLowerCase();
+  const medium = String(attribution.utm_medium || '').toLowerCase();
+  if (medium === 'display' || source === 'retargeting') return 'retargeting';
+  if (source === 'tiktok' || attribution.ttclid) return 'tiktok';
+  if (source === 'youtube' || medium === 'video') return 'youtube';
+  if (source === 'facebook' || source === 'meta' || source === 'instagram' || attribution.fbclid) {
+    return 'meta';
+  }
+  if (attribution.gclid || attribution.gbraid || source === 'google' || medium === 'cpc') {
+    return 'google_search';
+  }
+  return attribution.paid_platform || null;
+}
+
 /** Map utm_medium / ref to growth channel id */
 export function resolveGrowthChannel(attribution = {}) {
   const ref = attribution.ref || attribution.referral_code;
@@ -66,7 +81,8 @@ export function getGrowthContext() {
     ...attribution,
     referral_code: getStoredReferralCode() || attribution.ref || null,
     growth_channel: resolveGrowthChannel(attribution),
-    growth_campaign: attribution.growth_campaign || attribution.utm_campaign || null
+    growth_campaign: attribution.growth_campaign || attribution.utm_campaign || null,
+    paid_platform: attribution.paid_platform || inferPaidPlatform(attribution)
   };
 }
 

@@ -1,0 +1,13 @@
+{
+  "_comment": "Copy to paid-spend.json and update weekly. Amounts in TRY.",
+  "period_start": "2026-05-01",
+  "period_end": "2026-05-07",
+  "currency": "TRY",
+  "platforms": {
+    "google_search": 0,
+    "meta": 0,
+    "tiktok": 0,
+    "youtube": 0,
+    "retargeting": 0
+  }
+}

@@ -2,14 +2,18 @@
  * Growth ops bootstrap — experiments, paid capture, retention, CRO hooks.
  */
 import { initGrowthExperiments, trackExperimentConversion } from '../features/growth/growth-experiments.js';
-import { capturePaidClickIds } from '../features/growth/paid-growth.js';
+import {
+  capturePaidAttribution,
+  trackPaidLandingView
+} from '../features/growth/paid-acquisition.js';
 import { initRetentionEngine } from '../features/growth/retention-engine.js';
 import { analytics } from '../core/analytics.js';
 
 export function initGrowthOps() {
   if (typeof window === 'undefined') return;
 
-  capturePaidClickIds();
+  capturePaidAttribution();
+  trackPaidLandingView();
   initRetentionEngine();
 
   const runExperiments = () => {
@@ -23,7 +27,8 @@ export function initGrowthOps() {
   }
 
   document.addEventListener('cookieConsentAccepted', () => {
-    capturePaidClickIds();
+    capturePaidAttribution();
+    trackPaidLandingView();
     runExperiments();
   });
 

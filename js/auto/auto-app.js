@@ -30,7 +30,9 @@ import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
 import { FREE_LIMITS, PLANS } from '../features/monetization/plans.js';
 import { analytics } from '../core/analytics.js';
-import { mirrorLegacyAutoFunnel, trackAutoStart } from '../features/growth/growth-funnel.js';
+import { mirrorLegacyAutoFunnel, trackAutoStart, trackGrowthFunnel, GROWTH_FUNNEL_EVENTS } from '../features/growth/growth-funnel.js';
+import { trackPaidFunnelStep } from '../features/growth/paid-acquisition.js';
+import { sendServerPaidConversion } from '../features/growth/paid-capi-bridge.js';
 import { escapeHtml } from '../core/security.js';
 import { safeJsonParse } from '../core/dom-safe.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-keys.js';
@@ -851,6 +853,16 @@ function openLeadModal(type, vehicle = '') {
 
   function renderStep3() {
     clearLeadAbandonPending();
+    trackGrowthFunnel(GROWTH_FUNNEL_EVENTS.LEAD_SUBMIT, { vehicle, interest: type }, {
+      dedupeKey: 'lead_success',
+      funnel: 'auto'
+    });
+    trackPaidFunnelStep('lead_submit', { vehicle, interest: type });
+    sendServerPaidConversion('lead_submit', {
+      vehicle,
+      interest: type,
+      email: readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL) || null
+    });
     try {
       sessionStorage.removeItem(ONBOARDING_STARTED_KEY);
     } catch {

@@ -211,6 +211,15 @@ export async function onRequestPost(context) {
     if (attribution.ttclid) {
       params.set('metadata[ttclid]', String(attribution.ttclid).slice(0, 120));
     }
+    if (attribution.paid_platform) {
+      params.set('metadata[paid_platform]', String(attribution.paid_platform).slice(0, 40));
+    }
+    if (attribution.gbraid) {
+      params.set('metadata[gbraid]', String(attribution.gbraid).slice(0, 120));
+    }
+    if (attribution.wbraid) {
+      params.set('metadata[wbraid]', String(attribution.wbraid).slice(0, 120));
+    }
     if (attribution.ref) {
       params.set('metadata[referral_code]', String(attribution.ref).slice(0, 32));
       params.set('subscription_data[metadata][referral_code]', String(attribution.ref).slice(0, 32));

@@ -128,6 +128,43 @@ export function computeChannelBreakdown(rows) {
 /**
  * Retention proxy from analytics rows (7d return, lifecycle enroll).
  */
+const PAID_PLATFORM_IDS = ['google_search', 'meta', 'tiktok', 'youtube', 'retargeting'];
+
+function paidPlatformFromRow(row) {
+  const props = row.properties || {};
+  return props.paid_platform || row.attribution?.paid_platform || null;
+}
+
+/**
+ * Per paid ads platform metrics (P5.1).
+ * @param {Array<object>} rows
+ */
+export function computePaidPlatformBreakdown(rows) {
+  return PAID_PLATFORM_IDS.map((platformId) => {
+    const platformRows = rows.filter((row) => paidPlatformFromRow(row) === platformId);
+    const leads = platformRows.filter((r) =>
+      r.event_name === 'auto_lead_submit' || r.event_name === 'lead_submit'
+    ).length;
+    const clicks = platformRows.filter((r) => r.event_name === 'paid_click_capture').length;
+    const landings = platformRows.filter((r) => r.event_name === 'paid_landing_view').length;
+    const checkouts = platformRows.filter((r) =>
+      r.event_name === 'checkout_start' || r.event_name === 'checkout_started'
+    ).length;
+    const paid = platformRows.filter((r) => r.event_name === 'paid_conversion').length;
+
+    return {
+      platform: platformId,
+      clicks,
+      landings,
+      leads,
+      checkouts,
+      paid,
+      leadCrPct: conversionRate(leads, landings || clicks || 1),
+      paidCrPct: conversionRate(paid, checkouts || leads || 1)
+    };
+  }).filter((row) => row.clicks || row.landings || row.leads || row.checkouts || row.paid);
+}
+
 export function computeRetentionSignals(rows) {
   const returns = countEvents(rows, 'retention_return_visit');
   const engagement = countEvents(rows, 'retention_engagement');

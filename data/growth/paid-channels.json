@@ -1,0 +1,62 @@
+{
+  "version": "p5.1",
+  "primaryLanding": "/auto/",
+  "conversionEvents": {
+    "landing": "paid_landing_view",
+    "lead": "lead_submit",
+    "checkout_start": "checkout_start",
+    "purchase": "paid_conversion"
+  },
+  "platforms": [
+    {
+      "id": "google_search",
+      "name": "Google Search",
+      "utm": { "utm_source": "google", "utm_medium": "cpc" },
+      "clickIds": ["gclid", "gbraid", "wbraid"],
+      "landingPaths": ["/auto/", "/"],
+      "capi": "google_ads",
+      "funnelGoal": "lead_submit",
+      "remarketingAudiences": ["auto_results_no_lead_7d", "checkout_abandon_7d"]
+    },
+    {
+      "id": "meta",
+      "name": "Meta (Facebook / Instagram)",
+      "utm": { "utm_source": "meta", "utm_medium": "paid_social" },
+      "clickIds": ["fbclid"],
+      "landingPaths": ["/auto/", "/"],
+      "capi": "meta",
+      "funnelGoal": "lead_submit",
+      "remarketingAudiences": ["auto_results_no_lead_7d", "pricing_view_no_checkout_3d"]
+    },
+    {
+      "id": "tiktok",
+      "name": "TikTok Ads",
+      "utm": { "utm_source": "tiktok", "utm_medium": "paid_social" },
+      "clickIds": ["ttclid"],
+      "landingPaths": ["/auto/"],
+      "capi": "tiktok",
+      "funnelGoal": "lead_submit",
+      "remarketingAudiences": ["auto_start_no_complete_3d"]
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "utm": { "utm_source": "youtube", "utm_medium": "video" },
+      "clickIds": ["gclid", "gbraid"],
+      "landingPaths": ["/auto/", "/karar-analizi"],
+      "capi": "google_ads",
+      "funnelGoal": "lead_submit",
+      "remarketingAudiences": ["auto_results_no_lead_14d"]
+    },
+    {
+      "id": "retargeting",
+      "name": "Retargeting (Display / RM)",
+      "utm": { "utm_source": "retargeting", "utm_medium": "display" },
+      "clickIds": ["gclid", "fbclid", "msclkid"],
+      "landingPaths": ["/auto/", "/planlar"],
+      "capi": "multi",
+      "funnelGoal": "checkout_start",
+      "remarketingAudiences": ["checkout_abandon_7d", "pricing_view_no_checkout_7d", "lead_no_purchase_30d"]
+    }
+  ]
+}

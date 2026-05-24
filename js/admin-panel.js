@@ -21,7 +21,8 @@ import { SCALE_LIMITS } from './core/scale-limits.js';
 import {
   computeExecutiveFunnel,
   computeChannelBreakdown,
-  computeRetentionSignals
+  computeRetentionSignals,
+  computePaidPlatformBreakdown
 } from './features/growth/growth-kpis.js';
 
 const sb = getSupabaseClient();
@@ -989,6 +990,7 @@ function renderGrowthCommandCenter(rows) {
   const retention = computeRetentionSignals(rows);
   const ns = funnel.northStar;
 
+  const paidPlatforms = computePaidPlatformBreakdown(rows);
   const experimentExposures = rows.filter((r) => r.event_name === 'growth_experiment_exposure').length;
   const experimentConversions = rows.filter((r) => r.event_name === 'growth_experiment_conversion').length;
   const paidSignals = rows.filter((r) => r.event_name === 'paid_conversion_signal').length;
@@ -1007,6 +1009,23 @@ function renderGrowthCommandCenter(rows) {
         <div class="stat-card"><div class="stat-label">Experiments</div><div class="stat-value">${experimentExposures}</div><div class="stat-sub">${experimentConversions} conversions · ${experimentExposures ? conversionPct(experimentConversions, experimentExposures) : '—'}</div></div>
       </div>
       <div style="height:14px"></div>
+      <h4 style="margin:0 0 10px 0;font-size:14px">Paid platforms (P5.1)</h4>
+      <table class="table" style="margin-bottom:16px">
+        <thead><tr><th>Platform</th><th>Clicks</th><th>Landings</th><th>Leads</th><th>Checkout</th><th>Paid</th><th>Lead CR</th></tr></thead>
+        <tbody>
+          ${paidPlatforms.length ? paidPlatforms.map((p) => `
+            <tr>
+              <td>${escapeHtml(p.platform)}</td>
+              <td>${p.clicks}</td>
+              <td>${p.landings}</td>
+              <td>${p.leads}</td>
+              <td>${p.checkouts}</td>
+              <td>${p.paid}</td>
+              <td>${p.leadCrPct ?? '—'}%</td>
+            </tr>
+          `).join('') : '<tr><td colspan="7">Henüz paid platform verisi yok — UTM + click ID ile trafik bekleniyor.</td></tr>'}
+        </tbody>
+      </table>
       <h4 style="margin:0 0 10px 0;font-size:14px">Acquisition channels (leads)</h4>
       <table class="table">
         <thead><tr><th>Channel</th><th>Leads</th><th>Checkouts</th><th>Paid</th><th>Revenue ₺</th></tr></thead>
