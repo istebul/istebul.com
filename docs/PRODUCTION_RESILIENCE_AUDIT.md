@@ -365,6 +365,7 @@ Detay adımlar: **`docs/RESILIENCE_RUNBOOK.md`**
 
 | Doküman | Konu |
 |---------|------|
+| `docs/SCALE_ARCHITECTURE_ROADMAP.md` | 10k / 100k / 1M büyüme mimarisi |
 | `docs/RESILIENCE_RUNBOOK.md` | Operasyon adımları |
 | `docs/PRODUCTION_OBSERVABILITY.md` | İzleme |
 | `docs/PARTNER_DELIVERY_AUDIT.md` | Webhook mimarisi |

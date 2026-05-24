@@ -25,7 +25,8 @@ const requiredEdgeFunctions = [
   'partner-retry',
   'partner-dispatch',
   'lifecycle-enroll',
-  'lifecycle-cron'
+  'lifecycle-cron',
+  'data-retention-cron'
 ];
 
 let failed = false;

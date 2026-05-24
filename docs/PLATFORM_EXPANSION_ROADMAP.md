@@ -484,6 +484,7 @@ Yeni bir dikey (ör. `elektronik`) eklerken:
 
 ## 14. İlgili dokümanlar
 
+- `docs/SCALE_ARCHITECTURE_ROADMAP.md` — 10k / 100k / 1M ölçek (DB, cache, edge, API)
 - `docs/AI_DECISION_ENGINE.md` — skor / güven / LLM katmanı
 - `docs/PARTNER_DELIVERY_AUDIT.md` — partner dispatch
 - `docs/PLATFORM_ANALYTICS_AUDIT.md` — event model

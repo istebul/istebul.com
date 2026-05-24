@@ -29,6 +29,7 @@
 | Moat summary | `docs/investor/MOAT_AND_DEFENSIBILITY.md` |
 | **Competitive moat strategy** | `docs/COMPETITIVE_MOAT_STRATEGY.md` |
 | Platform expansion | `docs/PLATFORM_EXPANSION_ROADMAP.md` |
+| **Scale architecture (10k→1M)** | `docs/SCALE_ARCHITECTURE_ROADMAP.md` |
 | Global readiness | `docs/GLOBAL_EXPANSION_READINESS.md` |
 
 ---

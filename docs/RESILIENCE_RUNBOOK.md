@@ -16,6 +16,8 @@
 
 **Admin:** https://www.istebul.com/admin-panel.html → Observability · Auto Leads · Partner dispatch logs
 
+**Scale Phase A:** `docs/SCALE_PHASE_A_RUNBOOK.md` · SLO check: `npm run metrics:slo` · Weekly data retention: Actions → Data Retention
+
 ---
 
 ## 1. Partner webhook failures
