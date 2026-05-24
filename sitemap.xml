@@ -36,6 +36,16 @@
     <changefreq>yearly</changefreq>
   </url>
   <url>
+    <loc>https://www.istebul.com/cerez-politikasi.html</loc>
+    <priority>0.3</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/abonelik-iptal.html</loc>
+    <priority>0.2</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
     <loc>https://www.istebul.com/kullanim-sartlari.html</loc>
     <priority>0.3</priority>
     <changefreq>yearly</changefreq>
