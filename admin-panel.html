@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>isteBu — Admin</title>
+<link rel="stylesheet" href="/css/admin-partner-ops.css">
 <style>
 :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#242424;--border:#2e2e2e;--accent:#00e5a0;--accent2:#0099ff;--text:#f0f0f0;--muted:#888;--danger:#ff4757;--warning:#ffa502;--radius:8px;}
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
@@ -634,7 +635,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
       <div class="page" id="page-auto-leads">
         <div class="page-header">
           <h2>Auto Leads</h2>
-          <p>AI araç danışmanından gelen müşteri adayları</p>
+          <p>CRM pipeline, partner teslimatı ve takip — satıra tıklayarak detay</p>
+        </div>
+        <div class="card" style="margin-bottom:14px;">
+          <div id="partner-ops-kpi-root" class="partner-ops-strip" aria-live="polite"></div>
+          <div id="partner-ops-funnel-root" class="partner-ops-funnel" hidden></div>
         </div>
         <div class="card">
           <div class="auto-leads-toolbar">
@@ -659,6 +664,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
               <option value="overdue">Geciken</option>
               <option value="open">Açık takipler</option>
               <option value="done">Tamamlanan takipler</option>
+            </select>
+            <select id="auto-leads-partner-filter" class="status-select" title="Partner teslimat durumu">
+              <option value="">Tüm partner durumları</option>
+              <option value="pending">Bekliyor</option>
+              <option value="dispatched">Teslim edildi</option>
+              <option value="dispatch_failed">Gönderim hatası</option>
+              <option value="dispatch_dead">Retry tükendi</option>
+              <option value="won">Kazanıldı (partner)</option>
             </select>
             <label class="auto-leads-check">
               <input id="auto-leads-notes-only" type="checkbox">
@@ -746,7 +759,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 <div class="lead-drawer-overlay" id="lead-drawer-overlay"></div>
 <div class="lead-drawer" id="lead-drawer">
   <div class="lead-drawer-header">
-    <h3>Lead Detayı</h3>
+    <div>
+      <h3 id="lead-drawer-title">Lead detayı</h3>
+      <p class="text-muted-sm" id="lead-drawer-subtitle"></p>
+    </div>
     <button class="btn btn-danger btn-sm" data-action="close-lead-drawer">Kapat</button>
   </div>
   <div id="lead-drawer-content"></div>
@@ -757,7 +773,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 
 <script type="importmap" src="/importmap.json"></script>
 <script src="/env.js"></script>
-<script type="module" src="/js/admin-panel.js?v=2"></script>
+<script type="module" src="/js/admin-panel.js?v=3"></script>
 
 <style>
 .auto-leads-toolbar{

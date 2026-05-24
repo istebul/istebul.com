@@ -1,0 +1,171 @@
+/* P2.5 — Admin partner operations CRM polish */
+
+.partner-ops-strip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.partner-ops-stat {
+  background: var(--surface2, #1e293b);
+  border: 1px solid var(--border, #334155);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.partner-ops-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted, #94a3b8);
+  margin-bottom: 4px;
+}
+
+.partner-ops-stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.partner-ops-stat-sub {
+  font-size: 11px;
+  color: var(--muted, #94a3b8);
+  margin-top: 4px;
+}
+
+.partner-ops-funnel {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #334155);
+  background: linear-gradient(180deg, rgba(0, 229, 160, 0.06), transparent);
+}
+
+.partner-ops-funnel h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.partner-ops-funnel-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.partner-ops-funnel-step {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--surface2, #1e293b);
+  border: 1px solid var(--border, #334155);
+}
+
+.partner-ops-funnel-arrow {
+  color: var(--muted, #64748b);
+  font-size: 12px;
+}
+
+.partner-retry-cell strong {
+  display: block;
+  font-size: 12px;
+}
+
+.partner-retry-cell span {
+  font-size: 11px;
+  color: var(--muted, #94a3b8);
+}
+
+.lead-drawer {
+  width: 560px;
+  max-width: 96vw;
+  right: -580px;
+}
+
+.lead-drawer.open {
+  right: 0;
+}
+
+.lead-drawer-section {
+  margin: 18px 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #2a3441;
+  background: #111827;
+}
+
+.lead-drawer-section h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.lead-drawer-retry--success {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.lead-drawer-retry--warning {
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.lead-drawer-retry--danger {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.lead-pipeline-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.lead-pipeline-chip {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid #334155;
+  background: #1e293b;
+  cursor: pointer;
+  color: #e2e8f0;
+}
+
+.lead-pipeline-chip:hover {
+  border-color: #00e5a0;
+}
+
+.lead-pipeline-chip.is-active {
+  background: rgba(0, 229, 160, 0.15);
+  border-color: #00e5a0;
+}
+
+.dispatch-log-mini {
+  width: 100%;
+  font-size: 11px;
+  border-collapse: collapse;
+}
+
+.dispatch-log-mini th,
+.dispatch-log-mini td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #2a3441;
+  text-align: left;
+}
+
+.dispatch-log-mini th {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+@media (max-width: 1100px) {
+  .partner-ops-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .partner-ops-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

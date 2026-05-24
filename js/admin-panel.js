@@ -4,8 +4,17 @@ import { escapeHtml, safeAttr, safeJsonParse, safeExternalUrl } from './core/dom
 import { normalizePhoneForWhatsapp } from './core/phone.js';
 import { countLeadsByNormalizedStatus } from './core/lead-status.js';
 import { mapAuthError } from './features/auth/auth-errors.js';
+import {
+  describeRetryState,
+  computePartnerOpsKpis,
+  aggregatePartnerFunnelEvents,
+  partnerStatusBadge,
+  CRM_PIPELINE_QUICK,
+  funnelConversionPct
+} from './features/admin/partner-ops.js';
 
 const sb = getSupabaseClient();
+let activeDrawerLeadId = null;
 
 if (!sb) {
   document.body.innerHTML = `
@@ -1543,6 +1552,7 @@ async function manualDispatchLead(leadId, force = false) {
   loadAutoLeads();
   loadPartnerDispatchLogs();
   loadPartnerEndpoints();
+  if (activeDrawerLeadId) refreshOpenLeadDrawer();
 }
 
 function formatShortDate(value) {
@@ -1558,7 +1568,111 @@ function formatShortDate(value) {
 function formatDispatchError(value) {
   if (!value) return '—';
   const text = String(value);
-  return text.length > 34 ? text.slice(0, 34) + '…' : text;
+  return text.length > 48 ? text.slice(0, 48) + '…' : text;
+}
+
+function renderPartnerOpsKpiStrip(leads) {
+  const root = document.getElementById('partner-ops-kpi-root');
+  if (!root) return;
+  const kpi = computePartnerOpsKpis(leads);
+  const cards = [
+    ['Sıcak lead', kpi.hot, 'hot / very_hot'],
+    ['Bekliyor', kpi.pending, 'partner pending'],
+    ['Teslim', kpi.dispatched, 'webhook OK'],
+    ['Hata', kpi.dispatch_failed, 'retry kuyruğu'],
+    ['Dead', kpi.dispatch_dead, '5/5 retry'],
+    ['Geciken takip', kpi.overdueFollowUp, 'follow-up']
+  ];
+  root.innerHTML = cards.map(([label, value, sub]) => `
+    <div class="partner-ops-stat">
+      <div class="partner-ops-stat-label">${escapeHtml(label)}</div>
+      <div class="partner-ops-stat-value">${value}</div>
+      <div class="partner-ops-stat-sub">${escapeHtml(sub)}</div>
+    </div>
+  `).join('');
+}
+
+async function loadPartnerOpsFunnel() {
+  const root = document.getElementById('partner-ops-funnel-root');
+  if (!root) return;
+
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await sb
+    .from('analytics_events')
+    .select('event_name')
+    .gte('created_at', since)
+    .in('event_name', [
+      'partner_landing_view',
+      'partner_application_submit',
+      'partner_onboarding_view',
+      'partner_webhook_draft_saved',
+      'partner_onboarding_complete',
+      'partner_dispatch_success',
+      'partner_dispatch_failed'
+    ])
+    .limit(3000);
+
+  if (error || !data?.length) {
+    root.hidden = true;
+    return;
+  }
+
+  const c = aggregatePartnerFunnelEvents(data);
+  const steps = [
+    ['Landing', c.partner_landing_view],
+    ['Başvuru', c.partner_application_submit],
+    ['Onboarding', c.partner_onboarding_view],
+    ['Webhook', c.partner_webhook_draft_saved],
+    ['Tamam', c.partner_onboarding_complete],
+    ['Dispatch OK', c.partner_dispatch_success]
+  ];
+
+  root.hidden = false;
+  root.innerHTML = `
+    <h4>Partner acquisition funnel (son 30 gün)</h4>
+    <div class="partner-ops-funnel-steps">
+      ${steps.map(([label, count], i) => {
+        const prev = i > 0 ? steps[i - 1][1] : 0;
+        const conv = i > 0 ? ` · ${funnelConversionPct(count, prev)}` : '';
+        return `${i > 0 ? '<span class="partner-ops-funnel-arrow">→</span>' : ''}
+          <span class="partner-ops-funnel-step">${escapeHtml(label)}: <strong>${count}</strong>${escapeHtml(conv)}</span>`;
+      }).join('')}
+      <span class="partner-ops-funnel-step">Dispatch fail: <strong>${c.partner_dispatch_failed}</strong></span>
+    </div>
+    <p class="text-muted-sm" style="margin-top:8px;">Platform analytics; RLS ile yalnızca yetkili admin görür.</p>
+  `;
+}
+
+function renderRetryCell(lead) {
+  const retry = describeRetryState(lead);
+  return `
+    <div class="partner-retry-cell" title="${safeAttr(lead.last_dispatch_error || '')}">
+      <strong>${escapeHtml(retry.headline)}</strong>
+      <span>${escapeHtml(retry.detail)}</span>
+    </div>`;
+}
+
+function renderPartnerStatusBadgeHtml(status) {
+  const meta = partnerStatusBadge(status);
+  return `<span class="badge ${meta.badge}">${escapeHtml(meta.label)}</span>`;
+}
+
+async function fetchLeadDispatchLogs(leadId) {
+  if (!leadId) return [];
+  const { data, error } = await sb
+    .from('partner_lead_dispatch_logs')
+    .select('*')
+    .eq('lead_id', leadId)
+    .order('created_at', { ascending: false })
+    .limit(10);
+  if (error) return [];
+  return data || [];
+}
+
+async function refreshOpenLeadDrawer() {
+  if (!activeDrawerLeadId) return;
+  const { data, error } = await sb.from('auto_leads').select('*').eq('id', activeDrawerLeadId).maybeSingle();
+  if (!error && data) await openLeadDrawer(data);
 }
 
 function formatFollowUpLabel(lead) {
@@ -1622,8 +1736,12 @@ async function loadAutoLeads() {
     return;
   }
 
+  renderPartnerOpsKpiStrip(data);
+  loadPartnerOpsFunnel();
+
   const searchValue = (document.getElementById('auto-leads-search')?.value || '').toLowerCase().trim();
   const statusFilter = document.getElementById('auto-leads-status-filter')?.value || '';
+  const partnerFilter = document.getElementById('auto-leads-partner-filter')?.value || '';
   const notesOnly = document.getElementById('auto-leads-notes-only')?.checked || false;
   const followFilter = document.getElementById('auto-leads-follow-filter')?.value || '';
   const now = new Date();
@@ -1663,7 +1781,9 @@ async function loadAutoLeads() {
       (followFilter === 'open' && followDate && !isFollowDone) ||
       (followFilter === 'done' && isFollowDone);
 
-    return matchesStatus && matchesNotes && matchesFollow && (!searchValue || haystack.includes(searchValue));
+    const matchesPartner = !partnerFilter || lead.partner_status === partnerFilter;
+
+    return matchesStatus && matchesPartner && matchesNotes && matchesFollow && (!searchValue || haystack.includes(searchValue));
   });
 
   if (!filteredData.length) {
@@ -1679,9 +1799,9 @@ async function loadAutoLeads() {
           <th>Bütçe</th>
           <th>Skor</th>
           <th>Öncelik</th>
-          <th>Partner Durumu</th>
-          <th>Retry</th>
-          <th>Son Hata</th>
+          <th>Partner</th>
+          <th>Retry / teslimat</th>
+          <th>Son hata</th>
           <th>Tahmini Gelir</th>
           <th>Gerçek Gelir</th>
           <th>Durum</th>
@@ -1707,9 +1827,12 @@ async function loadAutoLeads() {
               lead.priority === 'warm' ? 'badge-blue' :
               'badge-green'
             }">${lead.priority || 'cold'}</span></td>
-            <td>${renderPartnerStatusSelect(lead)}</td>
-<td>${lead.dispatch_retry_count || 0}</td>
-<td title="${safeAttr(lead.last_dispatch_error || '')}">${escapeHtml(formatDispatchError(lead.last_dispatch_error))}</td>
+            <td>
+              <div style="margin-bottom:6px;">${renderPartnerStatusBadgeHtml(lead.partner_status)}</div>
+              ${renderPartnerStatusSelect(lead)}
+            </td>
+            <td>${renderRetryCell(lead)}</td>
+            <td title="${safeAttr(lead.last_dispatch_error || '')}">${escapeHtml(formatDispatchError(lead.last_dispatch_error))}</td>
 <td>
   <input class="form-input" data-action="update-estimated-revenue" data-id="${lead.id}" value="${lead.estimated_revenue || ''}" placeholder="₺">
 </td>
@@ -1744,7 +1867,8 @@ async function loadAutoLeads() {
               <div class="table-actions">
                 ${lead.phone ? `<a class="btn btn-success btn-sm" href="https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}?text=Merhaba%2C%20isteBul%20Auto%20talebinizi%20gördük.%20Size%20uygun%20teklifleri%20hazırlayabiliriz." target="_blank" rel="noopener">WhatsApp</a>` : ''}
                 ${['dispatch_failed', 'dispatch_dead', 'pending', 'dispatched'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="manual-dispatch" data-id="${lead.id}">Partner Gönder</button>` : ''}
-                ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-ghost btn-sm" data-action="view-lead-dispatch-logs" data-id="${lead.id}">Log</button>` : ''}
+                ${['dispatch_failed', 'dispatch_dead', 'dispatched', 'pending'].includes(lead.partner_status) ? `<button class="btn btn-ghost btn-sm" data-action="view-lead-dispatch-logs" data-id="${lead.id}">Log</button>` : ''}
+                ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-warning btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Retry</button>` : ''}
               </div>
             </td>
           </tr>
@@ -1839,12 +1963,56 @@ function renderPartnerStatusSelect(lead) {
 </select>`;
 }
 
-function openLeadDrawer(lead) {
+function renderDispatchPanelHtml(lead, logs) {
+  const retry = describeRetryState(lead);
+  const toneClass = `lead-drawer-retry--${retry.tone === 'success' ? 'success' : retry.tone === 'danger' ? 'danger' : retry.tone === 'warning' ? 'warning' : ''}`;
+
+  const logsHtml = logs.length ? `
+    <table class="dispatch-log-mini">
+      <thead><tr><th>Zaman</th><th>Endpoint</th><th>HTTP</th><th>Sonuç</th></tr></thead>
+      <tbody>
+        ${logs.map((row) => `
+          <tr>
+            <td>${formatShortDate(row.created_at)}</td>
+            <td>${escapeHtml(row.endpoint_name || '—')}</td>
+            <td>${row.http_status ?? '—'}</td>
+            <td>${row.success ? '<span class="badge badge-green">OK</span>' : `<span class="badge badge-red" title="${safeAttr(row.error_message || '')}">FAIL</span>`}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  ` : '<p class="text-muted-sm">Henüz teslimat denemesi yok.</p>';
+
+  return `
+    <section class="lead-drawer-section ${toneClass}">
+      <h4>Partner teslimat</h4>
+      <p><strong>${escapeHtml(retry.headline)}</strong></p>
+      <p class="text-muted-sm">${escapeHtml(retry.detail)}</p>
+      ${lead.last_dispatch_error ? `<p class="text-muted-sm" style="margin-top:8px;">Son hata: <code>${escapeHtml(lead.last_dispatch_error)}</code></p>` : ''}
+      ${lead.next_retry_at ? `<p class="text-muted-sm">next_retry_at: ${formatShortDate(lead.next_retry_at)}</p>` : ''}
+      <div class="table-actions" style="margin-top:12px;flex-wrap:wrap;">
+        <button class="btn btn-warning btn-sm" data-action="manual-dispatch" data-id="${lead.id}">Manuel gönder</button>
+        ${['dispatch_failed', 'dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-ghost btn-sm" data-action="retry-dispatch" data-id="${lead.id}">Retry (force)</button>` : ''}
+        <button class="btn btn-ghost btn-sm" data-action="view-lead-dispatch-logs" data-id="${lead.id}">Tam log sayfası</button>
+      </div>
+      <div style="margin-top:12px;">${logsHtml}</div>
+    </section>`;
+}
+
+async function openLeadDrawer(lead) {
   const drawer = document.getElementById('lead-drawer');
   const overlay = document.getElementById('lead-drawer-overlay');
   const content = document.getElementById('lead-drawer-content');
+  const titleEl = document.getElementById('lead-drawer-title');
+  const subtitleEl = document.getElementById('lead-drawer-subtitle');
 
   if (!drawer || !overlay || !content) return;
+
+  activeDrawerLeadId = lead.id;
+  if (titleEl) titleEl.textContent = lead.contact_name || lead.phone || 'Lead detayı';
+  if (subtitleEl) {
+    subtitleEl.textContent = `Skor ${lead.lead_score || 0} · ${lead.priority || '—'} · ${lead.partner_route || '—'}`;
+  }
 
   const fmt = (v) => escapeHtml(v || '—');
   const label = (map, value) => map[value] || value || '—';
@@ -1872,25 +2040,36 @@ function openLeadDrawer(lead) {
 
   const whatsappUrl = lead.phone ? `https://wa.me/${normalizePhoneForWhatsapp(lead.phone)}` : '';
   const notesHistory = Array.isArray(lead.notes_history) ? lead.notes_history : [];
+  const normalizedStatus = lead.status === 'called' ? 'first_contact' : lead.status;
+
+  const pipelineChips = CRM_PIPELINE_QUICK.map(([value, chipLabel]) => `
+    <button type="button" class="lead-pipeline-chip${normalizedStatus === value || lead.status === value ? ' is-active' : ''}"
+      data-action="drawer-set-status" data-id="${lead.id}" data-status="${value}">${escapeHtml(chipLabel)}</button>
+  `).join('');
+
+  const logs = await fetchLeadDispatchLogs(lead.id);
 
   content.innerHTML = `
+    ${renderDispatchPanelHtml(lead, logs)}
+    <section class="lead-drawer-section">
+      <h4>CRM durumu</h4>
+      <div class="lead-pipeline-chips">${pipelineChips}</div>
+      <select class="status-select status-${lead.status || 'new'}" data-action="update-auto-status" data-id="${lead.id}" style="width:100%;margin-bottom:10px;">
+        <option value="new" ${lead.status === 'new' ? 'selected' : ''}>Yeni</option>
+        <option value="first_contact" ${lead.status === 'first_contact' || lead.status === 'called' ? 'selected' : ''}>İlk temas</option>
+        <option value="callback" ${lead.status === 'callback' ? 'selected' : ''}>Tekrar ara</option>
+        <option value="proposal_sent" ${lead.status === 'proposal_sent' || lead.status === 'interested' ? 'selected' : ''}>Teklif</option>
+        <option value="won" ${lead.status === 'won' || lead.status === 'closed' ? 'selected' : ''}>Kazanıldı</option>
+        <option value="lost" ${lead.status === 'lost' || lead.status === 'rejected' ? 'selected' : ''}>Kaybedildi</option>
+      </select>
+      <div>${renderPartnerStatusBadgeHtml(lead.partner_status)} ${renderPartnerStatusSelect(lead)}</div>
+    </section>
     <div class="table-actions" style="margin-bottom:14px;flex-wrap:wrap;gap:10px;">
       ${lead.phone ? `<button class="btn btn-success btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="${whatsappUrl}">WhatsApp</button>` : ''}
       ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
-      <button class="btn btn-warning btn-sm" data-action="manual-dispatch" data-id="${lead.id}">Partner Gönder</button>
-      ${['dispatch_failed','dispatch_dead'].includes(lead.partner_status) ? `<button class="btn btn-ghost btn-sm" data-action="view-lead-dispatch-logs" data-id="${lead.id}">Teslimat Log</button>` : ''}
-      <button class="btn btn-success btn-sm" data-action="simulate-partner-won" data-id="${lead.id}" data-phone="${lead.phone || ''}">Partner Won Test</button>
-      <button class="btn btn-danger btn-sm" data-action="simulate-partner-lost" data-id="${lead.id}" data-phone="${lead.phone || ''}">Partner Lost Test</button>
-      <button class="btn btn-ghost btn-sm" data-action="complete-follow-up" data-id="${lead.id}">Takibi Tamamla</button>
-
-      <input
-        type="datetime-local"
-        class="form-input"
-        id="follow-up-date"
-        value="${lead.follow_up_at ? new Date(lead.follow_up_at).toISOString().slice(0,16) : ''}"
-        style="max-width:220px;"
-      >
-      <button class="btn btn-ghost btn-sm" data-action="save-follow-up" data-id="${lead.id}">Takip Kaydet</button>
+      <button class="btn btn-ghost btn-sm" data-action="complete-follow-up" data-id="${lead.id}">Takibi tamamla</button>
+      <input type="datetime-local" class="form-input" id="follow-up-date" value="${lead.follow_up_at ? new Date(lead.follow_up_at).toISOString().slice(0, 16) : ''}" style="max-width:220px;">
+      <button class="btn btn-ghost btn-sm" data-action="save-follow-up" data-id="${lead.id}">Takip kaydet</button>
     </div>
     <div class="lead-detail-grid">
       <div class="lead-detail-item"><div class="lead-detail-label">Email</div><div class="lead-detail-value">${fmt(lead.email)}</div></div>
@@ -1936,6 +2115,7 @@ function openLeadDrawer(lead) {
 }
 
 function closeLeadDrawer() {
+  activeDrawerLeadId = null;
   document.getElementById('lead-drawer')?.classList.remove('open');
   document.getElementById('lead-drawer-overlay')?.classList.remove('open');
 }
@@ -2054,6 +2234,7 @@ async function updateAutoLeadStatus(id, status) {
   loadAutoLeads();
   loadAutoAnalytics();
   loadPartnerEndpoints();
+  if (activeDrawerLeadId === id) refreshOpenLeadDrawer();
 }
 
 async function updateAutoLeadNotes(id, notes) {
@@ -2276,8 +2457,13 @@ function bindAdminPanelEvents() {
       return;
     }
 
+    if (action === 'drawer-set-status') {
+      updateAutoLeadStatus(id, el.dataset.status);
+      return;
+    }
+
     if (action === 'retry-dispatch' || action === 'manual-dispatch') {
-      manualDispatchLead(id, true);
+      manualDispatchLead(id, action === 'retry-dispatch');
       return;
     }
 
@@ -2386,7 +2572,7 @@ document.addEventListener('change', (event) => {
   });
 
 
-  ['auto-leads-search', 'auto-leads-status-filter', 'auto-leads-notes-only'].forEach((id) => {
+  ['auto-leads-search', 'auto-leads-status-filter', 'auto-leads-follow-filter', 'auto-leads-partner-filter', 'auto-leads-notes-only'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', loadAutoLeads);
     document.getElementById(id)?.addEventListener('change', loadAutoLeads);
   });
