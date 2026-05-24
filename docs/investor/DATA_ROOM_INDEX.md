@@ -24,6 +24,8 @@
 
 | Document | Path |
 |----------|------|
+| **Enterprise brand system** | `docs/BRAND_SYSTEM.md` |
+| Brand consistency checklist | `docs/BRAND_CONSISTENCY_CHECKLIST.md` |
 | Architecture | `docs/ARCHITECTURE.md` |
 | AI decision engine (moat) | `docs/AI_DECISION_ENGINE.md` |
 | Moat summary | `docs/investor/MOAT_AND_DEFENSIBILITY.md` |
@@ -38,8 +40,10 @@
 | Asset | Path |
 |-------|------|
 | KPI definitions | `js/features/metrics/investor-kpis.js` |
+| **Executive metrics (CEO)** | `docs/EXECUTIVE_METRICS.md` · `js/features/metrics/executive-metrics.js` |
 | Live export script | `scripts/investor-metrics-snapshot.cjs` |
-| Admin dashboard | Admin → **Investor KPIs** |
+| Executive export | `npm run metrics:executive` → `dist/executive-metrics-snapshot.json` |
+| Admin dashboard | Admin → **Investor KPIs** · **Executive metrics** |
 | Analytics audit | `docs/PLATFORM_ANALYTICS_AUDIT.md` |
 | Production observability | `docs/PRODUCTION_OBSERVABILITY.md` |
 | **Production resilience / BCP** | `docs/PRODUCTION_RESILIENCE_AUDIT.md` |

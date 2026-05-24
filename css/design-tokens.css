@@ -1,0 +1,150 @@
+/**
+ * isteBul — Enterprise brand design tokens (single source of truth)
+ * Load before enterprise-polish / executive-polish.
+ * @see docs/BRAND_SYSTEM.md
+ */
+
+:root {
+  /* —— Brand identity —— */
+  --ib-brand-name: "isteBul";
+  --ib-brand-descriptor: "Karar zekâsı platformu";
+  --ib-brand-promise: "Yüksek tutarlı satın alma kararlarını veriye dayalı netleştirir";
+
+  /* —— Color: primary (trust blue) —— */
+  --ib-color-primary-50: #eff6ff;
+  --ib-color-primary-100: #dbeafe;
+  --ib-color-primary-500: #3b82f6;
+  --ib-color-primary-600: #2563eb;
+  --ib-color-primary-700: #1d4ed8;
+  --ib-color-primary-800: #1e40af;
+  --ib-color-primary-900: #1e3a8a;
+
+  /* —— Color: accent (precision teal) —— */
+  --ib-color-accent-500: #14b8a6;
+  --ib-color-accent-600: #0d9488;
+  --ib-color-accent-700: #0f766e;
+
+  /* —— Color: ink (typography & UI) —— */
+  --ib-color-ink: #0f172a;
+  --ib-color-ink-secondary: #334155;
+  --ib-color-ink-muted: #64748b;
+  --ib-color-ink-subtle: #94a3b8;
+
+  /* —— Color: surfaces —— */
+  --ib-color-surface: #ffffff;
+  --ib-color-surface-muted: #f8fafc;
+  --ib-color-surface-elevated: #ffffff;
+  --ib-color-border: #e2e8f0;
+  --ib-color-border-subtle: rgba(148, 163, 184, 0.22);
+
+  /* —— Semantic —— */
+  --ib-color-success: #10b981;
+  --ib-color-warning: #f59e0b;
+  --ib-color-error: #ef4444;
+
+  /* —— Gradients —— */
+  --ib-gradient-brand: linear-gradient(135deg, var(--ib-color-primary-700) 0%, var(--ib-color-accent-700) 100%);
+  --ib-gradient-brand-hover: linear-gradient(135deg, var(--ib-color-primary-800) 0%, var(--ib-color-accent-600) 100%);
+  --ib-gradient-surface: linear-gradient(180deg, #f8fbff 0%, #ffffff 42%, #f6f8fb 100%);
+  --ib-gradient-trust-bar: linear-gradient(90deg, #0f172a 0%, #1e293b 48%, #0f2942 100%);
+
+  /* —— Typography —— */
+  --ib-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ib-font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", monospace;
+
+  --ib-text-xs: 0.75rem;
+  --ib-text-sm: 0.8125rem;
+  --ib-text-base: 1rem;
+  --ib-text-lg: 1.125rem;
+  --ib-text-xl: 1.25rem;
+  --ib-text-2xl: 1.5rem;
+  --ib-text-3xl: clamp(1.75rem, 4vw, 2.5rem);
+  --ib-text-4xl: clamp(2rem, 5vw, 3.25rem);
+
+  --ib-weight-regular: 400;
+  --ib-weight-medium: 500;
+  --ib-weight-semibold: 600;
+  --ib-weight-bold: 700;
+  --ib-weight-extrabold: 800;
+
+  --ib-leading-tight: 1.2;
+  --ib-leading-normal: 1.5;
+  --ib-leading-relaxed: 1.65;
+
+  --ib-tracking-tight: -0.03em;
+  --ib-tracking-kicker: 0.1em;
+
+  /* —— Spacing (4px base) —— */
+  --ib-space-1: 0.25rem;
+  --ib-space-2: 0.5rem;
+  --ib-space-3: 0.75rem;
+  --ib-space-4: 1rem;
+  --ib-space-5: 1.25rem;
+  --ib-space-6: 1.5rem;
+  --ib-space-8: 2rem;
+  --ib-space-10: 2.5rem;
+  --ib-space-12: 3rem;
+  --ib-space-16: 4rem;
+
+  /* —— Radius —— */
+  --ib-radius-sm: 10px;
+  --ib-radius-md: 14px;
+  --ib-radius-lg: 20px;
+  --ib-radius-xl: 28px;
+  --ib-radius-pill: 999px;
+
+  /* —— Elevation —— */
+  --ib-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --ib-shadow-md: 0 12px 40px rgba(15, 23, 42, 0.08);
+  --ib-shadow-lg: 0 24px 64px rgba(15, 23, 42, 0.12);
+  --ib-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.28);
+
+  /* —— Motion —— */
+  --ib-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ib-duration-fast: 150ms;
+  --ib-duration-normal: 250ms;
+  --ib-duration-slow: 450ms;
+
+  /* —— Layout —— */
+  --ib-container-max: 72rem;
+  --ib-content-max: 42rem;
+
+  /* —— Legacy aliases (style.css compatibility) —— */
+  --primary-color: var(--ib-color-primary-600);
+  --primary-dark: var(--ib-color-primary-700);
+  --secondary-color: var(--ib-color-ink-muted);
+  --success-color: var(--ib-color-success);
+  --warning-color: var(--ib-color-warning);
+  --error-color: var(--ib-color-error);
+  --background-color: var(--ib-color-surface);
+  --surface-color: var(--ib-color-surface-muted);
+  --text-primary: var(--ib-color-ink);
+  --text-secondary: var(--ib-color-ink-muted);
+  --border-color: var(--ib-color-border);
+  --ib-font: var(--ib-font-sans);
+  --ib-ink: var(--ib-color-ink);
+  --ib-ink-muted: var(--ib-color-ink-muted);
+  --ib-brand-deep: var(--ib-color-primary-900);
+  --ib-accent-teal: var(--ib-color-accent-600);
+  --ib-shadow-soft: var(--ib-shadow-md);
+  --ib-shadow-elevated: var(--ib-shadow-lg);
+  --ib-focus: var(--ib-focus-ring);
+  --ib-border-subtle: var(--ib-color-border-subtle);
+  --ib-surface-elevated: var(--ib-color-surface-elevated);
+}
+
+:root[data-theme="dark"] {
+  --ib-color-ink: #f1f5f9;
+  --ib-color-ink-secondary: #cbd5e1;
+  --ib-color-ink-muted: #94a3b8;
+  --ib-color-surface: #0f172a;
+  --ib-color-surface-muted: #1e293b;
+  --ib-color-surface-elevated: #1e293b;
+  --ib-color-border: #334155;
+  --ib-gradient-surface: linear-gradient(180deg, #0f172a 0%, #1e293b 38%, #0f172a 100%);
+  --background-color: var(--ib-color-surface);
+  --surface-color: var(--ib-color-surface-muted);
+  --text-primary: var(--ib-color-ink);
+  --text-secondary: var(--ib-color-ink-muted);
+  --border-color: var(--ib-color-border);
+}

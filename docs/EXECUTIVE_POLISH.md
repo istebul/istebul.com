@@ -2,11 +2,14 @@
 
 Premium global product layer — visual refinement, trust, messaging precision.
 
+**Canonical brand system:** `docs/BRAND_SYSTEM.md` · tokens: `css/design-tokens.css` · copy: `js/core/brand-voice.js`
+
 ## Layers (CSS cascade)
 
-1. `style.css` — base
-2. `enterprise-polish.css` — typography, cards, modals
-3. `executive-polish.css` — announcement bar, glass nav, footer, forms, Auto harmonization
+1. `design-tokens.css` — brand colors, type, spacing (single source)
+2. `style.css` — base
+3. `enterprise-polish.css` — typography, cards, modals
+4. `executive-polish.css` — announcement bar, glass nav, footer, forms, Auto harmonization
 
 ## JS
 
