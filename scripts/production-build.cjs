@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const root = process.cwd();
 const dist = path.join(root, 'dist');
 const staticRoots = ['assets', 'data'];
-const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'css/seo-landing.css', 'css/partner-platform.css', 'css/admin-partner-ops.css'];
+const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'karar-moat.html', 'css/seo-landing.css', 'css/partner-platform.css', 'css/admin-partner-ops.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const { injectRouteBootstrap } = require('./lib/route-bootstrap.cjs');
 const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
@@ -184,7 +184,8 @@ const partnerCorporateEntries = [
   'js/corporate/partner-guven.js',
   'js/corporate/partner-docs.js',
   'js/corporate/partner-onboarding.js',
-  'js/corporate/partner-onboarding-redirect.js'
+  'js/corporate/partner-onboarding-redirect.js',
+  'js/corporate/karar-moat.js'
 ];
 
 partnerCorporateEntries.forEach((entry) => {

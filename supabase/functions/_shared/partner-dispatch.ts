@@ -1,5 +1,6 @@
 import { assertSafePartnerWebhookUrl } from "./webhook-url.ts";
 import { recordOperationalEvent } from "./operational-observability.ts";
+import { leadMeetsPartnerScoreFloor } from "./scoring-intelligence.ts";
 
 export const FAILOVER_ROUTES: Record<string, string[]> = {
   dealer_partner: ["general_sales"],
@@ -102,6 +103,7 @@ type PartnerEndpoint = {
   health_status?: string | null;
   circuit_open_until?: string | null;
   min_lead_priority?: string | null;
+  min_lead_score?: number | null;
   failover_route?: string | null;
 };
 
@@ -117,7 +119,7 @@ export async function getPartnerEndpoints(
   const { data, error } = await adminClient
     .from("partner_endpoints")
     .select(
-      "id, name, webhook_url, shared_secret, priority_weight, sent_today, daily_cap, health_status, circuit_open_until, min_lead_priority, failover_route"
+      "id, name, webhook_url, shared_secret, priority_weight, sent_today, daily_cap, health_status, circuit_open_until, min_lead_priority, min_lead_score, failover_route"
     )
     .eq("route_type", route)
     .eq("is_active", true);
@@ -271,6 +273,11 @@ async function tryDispatchToEndpoints(
     if (!endpoint?.webhook_url) continue;
 
     if (!priorityMeetsMinimum(priority, endpoint.min_lead_priority)) {
+      continue;
+    }
+
+    const leadScore = Number(options.payload.lead_score || 0);
+    if (!leadMeetsPartnerScoreFloor(leadScore, endpoint.min_lead_score)) {
       continue;
     }
 

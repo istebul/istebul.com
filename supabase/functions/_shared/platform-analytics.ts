@@ -7,6 +7,7 @@ export const ANALYTICS_CATEGORIES = new Set([
   "auto",
   "finance",
   "partner",
+  "decision",
   "admin",
   "revenue",
   "growth",
@@ -86,6 +87,12 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "partner_trust_view",
   "partner_pricing_view",
   "partner_pricing_cta",
+  // Decision moat (P3)
+  "decision_feedback_helpful",
+  "decision_feedback_unclear",
+  "decision_feedback_contact",
+  "outcome_insight_view",
+  "moat_differentiation_view",
   // Admin CRM
   "crm_lead_status_change",
   "crm_follow_up_complete",
@@ -140,6 +147,9 @@ export function eventCategoryFor(name: string, fallback?: string) {
   if (name.startsWith("finance_")) return "finance";
   if (name.startsWith("auth_")) return "auth";
   if (name.startsWith("partner_")) return "partner";
+  if (name.startsWith("decision_") || name === "outcome_insight_view" || name === "moat_differentiation_view") {
+    return "decision";
+  }
   if (name.startsWith("crm_")) return "admin";
   if (
     name.startsWith("growth_") ||

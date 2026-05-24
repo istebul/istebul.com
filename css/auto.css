@@ -3695,3 +3695,58 @@ body.ib-enterprise.ib-auto .floating-whatsapp:hover{
 .comparison-score-factors li{display:flex;justify-content:space-between;font-size:12px}
 .comparison-score-factors li.positive{color:#047857}
 .comparison-score-factors li.negative{color:#b91c1c}
+
+.auto-moat-mount{margin:20px 0}
+.ib-outcome-insight,.ib-decision-feedback{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:22px 24px;
+  box-shadow:0 12px 40px rgba(15,23,42,.06);
+}
+.ib-outcome-insight--loading,.ib-outcome-insight--sparse{
+  background:linear-gradient(135deg,#f8fafc,#eff6ff);
+}
+.ib-outcome-metrics{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin:16px 0;
+}
+.ib-outcome-metric{
+  background:#f8fafc;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px 14px;
+}
+.ib-outcome-metric-label{
+  display:block;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--muted);
+  font-weight:700;
+}
+.ib-outcome-metric strong{font-size:26px;color:var(--blue)}
+.ib-outcome-disclaimer{font-size:12px;color:var(--muted);margin:0}
+.ib-decision-feedback-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.ib-moat-pillars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ib-moat-pillar{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:18px;
+}
+.ib-moat-competitor-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.ib-moat-competitor-list li{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:12px 14px;
+  border-radius:12px;
+  background:#f8fafc;
+  border:1px solid var(--line);
+}
+@media(max-width:720px){
+  .ib-outcome-metrics,.ib-moat-pillars{grid-template-columns:1fr}
+}

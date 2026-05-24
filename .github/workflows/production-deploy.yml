@@ -134,6 +134,8 @@ jobs:
             partner-dispatch
             partner-callback
             partner-application
+            partner-onboarding
+            decision-intelligence
             lead-alert
             admin-action
             partner-daily-reset

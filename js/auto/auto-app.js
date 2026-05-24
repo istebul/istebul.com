@@ -39,6 +39,14 @@ import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
 import { getSupabaseClient } from '../core/supabase.js';
 import { formatMoney, formatNumber } from '../core/format.js';
+import {
+  getOrCreateDecisionSession,
+  updateDecisionSession,
+  readDecisionSession
+} from '../features/moat/moat-session.js';
+import { mountDecisionFeedback } from '../features/moat/decision-feedback.js';
+import { mountOutcomeIntelligence } from '../features/moat/outcome-intelligence.js';
+import { buildSegmentKey } from '../features/moat/scoring-intelligence.js';
 
 const formatAmount = (value) => formatMoney(value);
 const formatCount = (value) => formatNumber(value);
@@ -353,7 +361,13 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
     turnstile_token: options.turnstileToken || '',
     metadata: enrichLeadMetadata({
       session_id: getSessionId(),
-      growth: getGrowthContext()
+      growth: getGrowthContext(),
+      decision: {
+        session_id: readDecisionSession().id,
+        top_match_score: readDecisionSession().topMatchScore ?? null,
+        confidence_tier: readDecisionSession().confidenceTier ?? null,
+        segment_key: buildSegmentKey(leadPayload)
+      }
     }),
     formData: {
       ...leadPayload,
@@ -1171,6 +1185,9 @@ function renderResults(results) {
 
     ${renderAutoMethodologyStrip()}
 
+    <div id="auto-moat-outcome-root" class="auto-moat-mount"></div>
+    <div id="auto-moat-feedback-root" class="auto-moat-mount"></div>
+
     <section class="auto-filter-toolbar" aria-label="Auto sonuç filtreleri">
       <div>
         <strong>${displayResults.length} / ${allResults.length || results.length} öneri gösteriliyor</strong>
@@ -1387,6 +1404,20 @@ function renderResults(results) {
   bindReferralShare(root);
   bindContextualUpsell(root);
   bindUpsellFeatureChips(root);
+
+  const topResult = results[0];
+  updateDecisionSession({
+    topMatchScore: topResult?.score ?? null,
+    confidenceTier: topResult?.confidence?.tier ?? null,
+    segmentKey: buildSegmentKey(formData)
+  });
+
+  mountOutcomeIntelligence(document.getElementById('auto-moat-outcome-root'), formData);
+  mountDecisionFeedback(document.getElementById('auto-moat-feedback-root'), {
+    form: formData,
+    matchScore: topResult?.score,
+    confidenceTier: topResult?.confidence?.tier
+  });
 
   root.querySelectorAll('[data-auto-filter]').forEach((select) => {
     select.addEventListener('change', (event) => {
@@ -2106,6 +2137,7 @@ form.addEventListener('submit', async (event) => {
   stopLoadingAnimation();
 
   const formData = readForm(form);
+  getOrCreateDecisionSession();
   writeStorageRaw(STORAGE_KEYS.AUTO_LEAD_PAYLOAD, JSON.stringify(formData));
   const vehicleCatalog = await getVehicleCatalog();
   const results = recommendVehicles(formData, vehicleCatalog);

@@ -11,6 +11,11 @@ import {
 } from "../_shared/lifecycle-engine.ts";
 import { processReferralConversion } from "../_shared/referral-engine.ts";
 import { recordOperationalEvent } from "../_shared/operational-observability.ts";
+import {
+  buildSegmentKey,
+  calibrateLeadScore,
+  priorityFromScore,
+} from "../_shared/scoring-intelligence.ts";
 
 async function logOps(
   adminClient: ReturnType<typeof createClient>,
@@ -488,7 +493,40 @@ Deno.serve(async (req) => {
       return json({ error: "Privacy consent required" }, 400, origin);
     }
 
-    const scoring = calculateLeadScore(form);
+    const segmentKey = buildSegmentKey(form);
+    const baseScoring = calculateLeadScore(form);
+
+    let calibrationDelta = 0;
+    let calibrationReason = "insufficient_outcome_data";
+    let finalScore = baseScoring.score;
+
+    try {
+      const { data: bench } = await adminClient
+        .from("moat_segment_benchmarks")
+        .select("sample_size, win_rate_pct")
+        .eq("segment_key", segmentKey)
+        .maybeSingle();
+
+      const calibrated = calibrateLeadScore(baseScoring.score, bench || undefined);
+      finalScore = calibrated.score;
+      calibrationDelta = calibrated.delta;
+      calibrationReason = calibrated.reason;
+    } catch {
+      /* benchmark view may not exist yet */
+    }
+
+    const scoring = {
+      score: finalScore,
+      priority: priorityFromScore(finalScore),
+      base_score: baseScoring.score,
+      calibration_delta: calibrationDelta,
+      calibration_reason: calibrationReason,
+    };
+
+    const decisionMeta =
+      metadata.decision && typeof metadata.decision === "object"
+        ? (metadata.decision as Record<string, unknown>)
+        : {};
 
     const growthMeta =
       metadata.growth && typeof metadata.growth === "object"
@@ -532,6 +570,11 @@ Deno.serve(async (req) => {
       vehicle: clampString(form.vehicle, 120),
       lead_score: scoring.score,
       priority: scoring.priority,
+      segment_key: segmentKey,
+      decision_session_id: clampString(decisionMeta.session_id, 64) || null,
+      top_match_score: clampNumber(decisionMeta.top_match_score, 0, 100),
+      confidence_tier: clampString(decisionMeta.confidence_tier, 24) || null,
+      scoring_calibration_delta: calibrationDelta,
       partner_route: getPartnerRoute(form),
       partner_status: "pending",
       dispatch_retry_count: 0,

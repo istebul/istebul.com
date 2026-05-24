@@ -175,6 +175,16 @@ Deno.serve(async (req) => {
     const { error: updateError } = await sb.from("partner_applications").update(patch).eq("id", app.id);
     if (updateError) return json({ error: updateError.message }, 500, origin);
 
+    if (step === 3 && app.partner_endpoint_id && patch.lead_needs_data) {
+      const minScore = Number(
+        (patch.lead_needs_data as { min_lead_score?: number }).min_lead_score || 120
+      );
+      await sb
+        .from("partner_endpoints")
+        .update({ min_lead_score: minScore })
+        .eq("id", app.partner_endpoint_id);
+    }
+
     const eventName = step === 2 ? "partner_funnel_qualification" : "partner_funnel_lead_needs";
     await trackFunnel(eventName, step === 2 ? "qualification" : "lead_needs");
 

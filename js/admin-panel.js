@@ -12,6 +12,7 @@ import {
   CRM_PIPELINE_QUICK,
   funnelConversionPct
 } from './features/admin/partner-ops.js';
+import { computeMoatDashboard } from './features/admin/moat-intelligence.js';
 
 const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
@@ -1709,6 +1710,71 @@ function getFollowUpBadgeClass(label) {
 }
 
 
+async function renderMoatIntelligenceStrip(leads = []) {
+  const root = document.getElementById('moat-intelligence-root');
+  if (!root) return;
+
+  let feedback = [];
+  try {
+    feedback = await adminList(sb, {
+      table: 'decision_feedback',
+      order: { column: 'created_at', ascending: false },
+      limit: 500
+    });
+  } catch {
+    /* migration may be pending */
+  }
+
+  const dash = computeMoatDashboard(leads, feedback);
+  const helpful = dash.feedbackCounts.helpful || 0;
+  const unclear = dash.feedbackCounts.unclear || 0;
+  const contact = dash.feedbackCounts.contact || 0;
+
+  const segmentRows = dash.topSegments.length
+    ? dash.topSegments
+        .map(
+          (s) => `
+        <tr>
+          <td><code>${escapeHtml(s.segment_key)}</code></td>
+          <td>${s.sample_size}</td>
+          <td>${s.win_rate_pct != null ? `${s.win_rate_pct}%` : '—'}</td>
+          <td>${s.avg_match_score ?? '—'}</td>
+        </tr>`
+        )
+        .join('')
+    : '<tr><td colspan="4" class="text-muted">Henüz ≥3 lead içeren segment yok</td></tr>';
+
+  root.innerHTML = `
+    <div class="partner-ops-stat">
+      <div class="partner-ops-stat-label">Outcome graph</div>
+      <div class="partner-ops-stat-value">${dash.outcomeCount}</div>
+      <div class="partner-ops-stat-sub">partner kapanış</div>
+    </div>
+    <div class="partner-ops-stat">
+      <div class="partner-ops-stat-label">Skor kalibrasyonu</div>
+      <div class="partner-ops-stat-value">${dash.calibratedLeadCount}</div>
+      <div class="partner-ops-stat-sub">outcome-informed</div>
+    </div>
+    <div class="partner-ops-stat">
+      <div class="partner-ops-stat-label">Decision session</div>
+      <div class="partner-ops-stat-value">${dash.decisionLinkedCount}</div>
+      <div class="partner-ops-stat-sub">lead bağlantısı</div>
+    </div>
+    <div class="partner-ops-stat">
+      <div class="partner-ops-stat-label">Feedback loop</div>
+      <div class="partner-ops-stat-value">${dash.feedbackTotal}</div>
+      <div class="partner-ops-stat-sub">faydalı ${helpful} · belirsiz ${unclear} · destek ${contact}</div>
+    </div>
+    <details class="moat-segment-details" style="grid-column:1/-1;margin-top:12px;">
+      <summary>Segment benchmark (anonim, k≥3)</summary>
+      <table class="table" style="margin-top:10px;">
+        <thead><tr><th>Segment</th><th>n</th><th>Win %</th><th>Ort. uyum</th></tr></thead>
+        <tbody>${segmentRows}</tbody>
+      </table>
+    </details>
+  `;
+}
+
 async function loadAutoLeads() {
   const el = document.getElementById('auto-leads-list');
   if (!el) return;
@@ -1733,9 +1799,11 @@ async function loadAutoLeads() {
 
   if (!data?.length) {
     el.innerHTML = '<p class="empty">Henüz lead yok.</p>';
+    await renderMoatIntelligenceStrip([]);
     return;
   }
 
+  await renderMoatIntelligenceStrip(data);
   renderPartnerOpsKpiStrip(data);
   loadPartnerOpsFunnel();
 
