@@ -3,6 +3,7 @@ export function initEnterpriseUx() {
 
   const markReady = () => {
     document.documentElement.classList.add('ib-ready');
+    document.body?.classList.add('ib-ready');
   };
 
   if (document.readyState === 'loading') {

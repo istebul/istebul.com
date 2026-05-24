@@ -4116,7 +4116,7 @@ function applyProductionRouteVisibility() {
     };
 
     const sectionId = routeMap[path] || (path.startsWith('/ilan/') ? 'listing-detail' : 'home');
-    const homeSections = new Set(['home', 'trust', 'how-it-works', 'categories']);
+    const homeSections = new Set(['home', 'trust', 'how-it-works', 'pricing', 'categories']);
 
     document.querySelectorAll('section[id]').forEach((section) => {
         const shouldShowHome = sectionId === 'home' && homeSections.has(section.id);
