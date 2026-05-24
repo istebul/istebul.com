@@ -50,6 +50,12 @@ Shared infrastructure — import from here instead of duplicating:
 
 `npm run build` → `scripts/production-build.cjs` → `dist/` → Cloudflare Pages (`istebul-com`).
 
+## Scale & growth
+
+See **`docs/SCALE_ARCHITECTURE_ROADMAP.md`** for tiered capacity planning (10k / 100k / 1M users): frontend, backend, database, caching, API, and edge compute.
+
+Machine-readable thresholds: `data/scale/thresholds.json`.
+
 ## Technical debt (tracked)
 
 See `docs/MAINTAINABILITY_AUDIT.md` for prioritized backlog (e.g. split `app.js`, merge cost engines, UI composition refactor).

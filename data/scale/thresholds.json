@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "tiers": {
+    "10k": {
+      "registeredUsers": 10000,
+      "mauLow": 3000,
+      "mauHigh": 5000,
+      "peakRpsLow": 5,
+      "peakRpsHigh": 15,
+      "leadsPerMonthLow": 500,
+      "leadsPerMonthHigh": 2000
+    },
+    "100k": {
+      "registeredUsers": 100000,
+      "mauLow": 25000,
+      "mauHigh": 40000,
+      "peakRpsLow": 50,
+      "peakRpsHigh": 150,
+      "leadsPerMonthLow": 5000,
+      "leadsPerMonthHigh": 20000
+    },
+    "1M": {
+      "registeredUsers": 1000000,
+      "mauLow": 200000,
+      "mauHigh": 350000,
+      "peakRpsLow": 500,
+      "peakRpsHigh": 2000,
+      "leadsPerMonthLow": 50000,
+      "leadsPerMonthHigh": 200000
+    }
+  },
+  "slo": {
+    "10k": { "availabilityPct": 99.5, "intakeP95Ms": 800, "analyticsP95Ms": 300 },
+    "100k": { "availabilityPct": 99.9, "intakeP95Ms": 500, "analyticsP95Ms": 200 },
+    "1M": { "availabilityPct": 99.95, "intakeP95Ms": 400, "analyticsP95Ms": 150 }
+  },
+  "phases": {
+    "A": "10k readiness",
+    "B": "100k readiness",
+    "C": "1M readiness"
+  }
+}
