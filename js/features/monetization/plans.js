@@ -1,9 +1,10 @@
 /** Monetization plan definitions — copy & feature boundaries */
+import { BRAND_VOICE } from '../../core/brand-voice.js';
 
 export const PRICING_MESSAGING = Object.freeze({
   headline: 'Yanlış araç kararının maliyetini küçültün',
   subhead:
-    'Pro bir “abonelik kutusu” değil — TCO, karşılaştırma ve raporla seçim riskini görünür kılar. Ücretsiz başlayın; ihtiyaç halinde derinleştirin.',
+    'Pro, karar altyapısının derin katmanıdır — TCO, karşılaştırma ve raporla seçim riskini görünür kılar. Başlangıç ücretsiz; ihtiyaç halinde derinleştirin.',
   popularBadge: 'En popüler',
   roiTitle: 'Karar maliyeti hesabı',
   roiDisclaimer:
@@ -63,7 +64,7 @@ export const PLANS = {
     id: 'enterprise',
     name: 'Enterprise',
     priceLabel: 'Özel teklif',
-    description: 'Kurumsal ekipler, galeri ağları ve yüksek hacimli partner operasyonları',
+    description: 'Kurumsal karar ekipleri ve yüksek hacimli partner operasyonları için özel metodoloji ve SLA',
     highlights: [
       'Özel SLA ve destek hattı',
       'API / webhook entegrasyonu',

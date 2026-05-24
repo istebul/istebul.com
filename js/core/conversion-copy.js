@@ -1,13 +1,14 @@
 /**
  * P4.4 — Conversion micro-UX copy (single source for CTA, loading, trust, errors).
  */
+import { BRAND_VOICE } from './brand-voice.js';
 
 export const CONVERSION_COPY = Object.freeze({
   nav: {
-    login: 'Hesabına gir',
-    register: 'Analizini kaydet',
-    registerTitle: 'Analizini kaydet ve devam et',
-    autoCta: 'Ücretsiz maliyet analizi'
+    login: BRAND_VOICE.cta.accountLogin,
+    register: BRAND_VOICE.cta.accountRegister,
+    registerTitle: BRAND_VOICE.cta.saveAnalysis,
+    autoCta: BRAND_VOICE.cta.primaryAuto
   },
   mobileNav: {
     login: 'Hesabına gir',
@@ -51,11 +52,9 @@ export const CONVERSION_COPY = Object.freeze({
     register: 'Analizini kaydet'
   },
   trust: {
-    hero:
-      'Ücretsiz · ~2 dk · KVKK uyumlu · bağlayıcı teklif değil — metodolojik destek',
-    sticky: 'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · ödeme Stripe ile',
-    pricing:
-      '7 gün deneme · iptal tek tık · fatura ve abonelik Stripe müşteri panelinden'
+    hero: `${BRAND_VOICE.trust.heroHint} — metodolojik destek`,
+    sticky: BRAND_VOICE.trust.stickyLine,
+    pricing: BRAND_VOICE.trust.pricingLine
   },
   auto: {
     loadingKicker: 'Karar analizi hazırlanıyor',

@@ -1,0 +1,53 @@
+/**
+ * P4.6 — Brand typography & kicker consistency
+ */
+
+body.ib-enterprise .hero-eyebrow,
+body.ib-enterprise .section-kicker,
+body.ib-enterprise .ib-premium-eyebrow,
+body.ib-auto .kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+body.ib-enterprise .section-header h2,
+body.ib-enterprise .ib-section-intro h2 {
+  letter-spacing: -0.02em;
+  color: var(--ib-venture-ink, #0f172a);
+}
+
+body.ib-enterprise .hero-lead,
+body.ib-enterprise .section-header p,
+body.ib-enterprise .ib-premium-lead {
+  color: #475569;
+  line-height: 1.55;
+  max-width: 62ch;
+}
+
+body.ib-enterprise .trust-card-icon [data-lucide],
+body.ib-enterprise .ib-premium-trust-strip [data-lucide] {
+  width: 1.05rem;
+  height: 1.05rem;
+  stroke-width: 2px;
+}
+
+body.ib-enterprise .btn-primary .lucide,
+body.ib-enterprise .btn-primary [data-lucide] {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.marketplace-results-toolbar,
+.marketplace-result-copy {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.marketplace-result-copy strong,
+#listing-result-count {
+  font-weight: 700;
+  color: #0f172a;
+}

@@ -70,6 +70,7 @@ import { initP4ProductPolish } from '../runtime/p4-product-polish.js';
 import { initMobilePremiumUx } from '../runtime/mobile-premium-ux.js';
 import { initConversionMicroUx } from '../runtime/conversion-micro-ux.js';
 import { initPerceivedPerformance } from '../runtime/perceived-performance.js';
+import { initBrandConsistency } from '../runtime/brand-consistency.js';
 import { CONVERSION_COPY } from '../core/conversion-copy.js';
 
 const formatAmount = (value) => formatMoney(value);
@@ -122,7 +123,7 @@ function openAutoUpgradePaywall(feature = 'premium_report') {
       </ul>
       <div class="revenue-upgrade-actions">
         <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
-        <button type="button" class="btn secondary" data-auto-paywall-close>Ücretsiz devam et</button>
+        <button type="button" class="btn secondary" data-auto-paywall-close>Ücretsiz önizlemeyle devam et</button>
       </div>
     </div>
   `;
@@ -1151,7 +1152,7 @@ function renderDealerOffers(offers, vehicle, formData) {
           </div>
           <div class="dealer-offer-price">
             <strong>${offer.price ? `${formatAmount(offer.price)}` : 'Fiyat sorunuz'}</strong>
-            ${offer.listing_url ? `<a href="${escapeHtml(offer.listing_url)}" target="_blank" rel="noopener">İlana git</a>` : ''}
+            ${offer.listing_url ? `<a href="${escapeHtml(offer.listing_url)}" target="_blank" rel="noopener">Kaynağı görüntüle</a>` : ''}
           </div>
         </article>
       `).join('')}
@@ -2121,6 +2122,7 @@ initP4ProductPolish();
 initMobilePremiumUx();
 initConversionMicroUx();
 initPerceivedPerformance();
+initBrandConsistency();
 initAutoEntitlements();
 loadAutoRuntimeConfig();
 if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted') {

@@ -17,7 +17,7 @@ export const CATEGORY_TAGLINES = Object.freeze({
   aiContrast: 'Generic AI fikir verir. isteBul karar altyapısı sunar.',
   tco: 'Toplam sahip olma maliyetine göre karar verin.',
   partner:
-    'Klasik lead formu değil — skorlu talep, imzalı teslimat ve outcome geri beslemeli partner OS.'
+    'Klasik lead formu değil — skorlu talep, imzalı teslimat ve outcome geri beslemeli partner operasyonu.'
 });
 
 export const CATEGORY_NOT = Object.freeze([

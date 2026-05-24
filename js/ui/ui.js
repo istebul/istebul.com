@@ -230,7 +230,7 @@ export class UIManager {
         } else {
             profileCard.innerHTML = `
                 <h3>Profiliniz hazır değil</h3>
-                <p>Giriş yaparak profil bilgilerinizi görebilir ve ilan oluşturabilirsiniz.</p>
+                <p>Giriş yaparak profil bilgilerinizi görebilir ve seçenek ekleyebilirsiniz.</p>
                 <button class="btn btn-primary" id="profile-login-btn">Hesabına gir veya analizini kaydet</button>
             `;
         }

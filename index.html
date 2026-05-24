@@ -26,7 +26,7 @@
     <link rel="icon" type="image/png" href="assets/icons/favicon-192.png">
     <script src="/env.js" defer></script>
     <!-- perf:preload-style -->
-    <link rel="stylesheet" href="css/style.css?v=56">
+    <link rel="stylesheet" href="css/style.css?v=57">
 
 <style>
 .hidden{display:none!important;}
@@ -145,7 +145,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
             <div class="nav-controls">
                 <div class="nav-auth" id="nav-auth">
-                    <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav">Ücretsiz maliyet analizi</a>
+                    <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav" title="Ücretsiz TCO analizi başlat" aria-label="Ücretsiz TCO analizi başlat">TCO analizini başlat</a>
                     <button id="login-btn" class="btn btn-outline" type="button" data-auth-open="login" aria-label="Hesabına gir">Hesabına gir</button>
                     <button id="register-btn" class="btn btn-ghost btn-sm" type="button" data-auth-open="register" title="Analizini kaydet ve devam et" aria-label="Analizini kaydet ve devam et">Analizini kaydet</button>
                 </div>
@@ -199,15 +199,15 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                     <div class="hero-actions ib-hero-cta-stack">
                         <div class="ib-hero-cta-primary-row">
                             <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="hero">
-                                <i data-lucide="sparkles" aria-hidden="true"></i> Ücretsiz maliyet analizi
+                                <i data-lucide="sparkles" aria-hidden="true"></i> TCO analizini başlat
                             </a>
                             <span class="ib-hero-cta-hint">~2 dk · KVKK uyumlu · bağlayıcı teklif değil</span>
                         </div>
                         <div class="ib-hero-cta-secondary-row">
                             <a href="/metodoloji" class="btn btn-outline" data-native-route>
-                                <i data-lucide="microscope" aria-hidden="true"></i> Metodolojiyi gör
+                                <i data-lucide="microscope" aria-hidden="true"></i> Metodolojiyi incele
                             </a>
-                            <a href="/planlar" class="btn btn-ghost" data-native-route>Planlar</a>
+                            <a href="/planlar" class="btn btn-ghost" data-native-route>Planları incele</a>
                         </div>
                     </div>
 
@@ -271,7 +271,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
         <section id="trust" class="trust-section ib-section-venture">
             <div class="container">
                 <header class="section-header ib-section-intro">
-                    <span class="section-kicker">Güven</span>
+                    <span class="section-kicker">Güvenilirlik</span>
                     <h2>Karar için netlik — pazarlama söylemi değil</h2>
                     <p>Skor, TCO ve güven bandı deterministik kurallarla hesaplanır. İlan siteleri envanter arar; kredi siteleri oran listeler — isteBul toplam maliyete göre karar çerçevesi üretir.</p>
                 </header>
@@ -391,7 +391,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
         <section id="ilanlar" data-private-section class="listings-section hidden">
             <div class="container">
                 <div class="section-header">
-                    <span class="section-kicker">Piyasa</span>
+                    <span class="section-kicker">Seçenekler</span>
                     <h2 id="active-category-label">Öne çıkan seçenekler</h2>
                     <div class="section-actions">
                         <button class="btn btn-outline" id="filter-btn">
@@ -494,7 +494,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                 <div class="section-header">
                     <span class="section-kicker">Detay</span>
                     <h2>Seçenek detayı</h2>
-                    <p>Seçtiğiniz ilanın karar skoru, maliyet kırılımı ve aksiyon önerileri.</p>
+                    <p>Seçtiğiniz seçeneğin uyum skoru, maliyet kırılımı ve aksiyon önerileri.</p>
                 </div>
                 <div id="listing-detail-content" data-route-mount aria-live="polite"></div>
             </div>
@@ -584,7 +584,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                         </div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">İlanı Yayınla</button>
+                        <button type="submit" class="btn btn-primary">Seçeneği kaydet</button>
                         <button type="reset" class="btn btn-outline">Temizle</button>
                     </div>
                 </form>
@@ -794,7 +794,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
         </section>
 
     <div class="cro-sticky-cta" role="region" aria-label="Hızlı başlangıç">
-        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="sticky">Ücretsiz maliyet analizi</a>
+        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="sticky" title="Ücretsiz TCO analizi başlat">TCO analizini başlat</a>
     </div>
 
     <!-- Scripts -->

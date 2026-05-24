@@ -10,15 +10,15 @@ export class ListingsUI {
             container.innerHTML = ownedOnly ? `
                 <div class="empty-state marketplace-empty-state">
                     <i data-lucide="badge-plus"></i>
-                    <h3>Henüz ilanınız yok</h3>
-                    <p>İlk ilanınızı eklediğinizde burada görünecek ve AI karşılaştırma akışına dahil olacak.</p>
-                    <a href="/ilan-ekle/" class="btn btn-primary"><i data-lucide="plus"></i> Seçenek Ekle</a>
+                    <h3>Henüz kayıtlı seçeneğiniz yok</h3>
+                    <p>İlk seçeneğinizi eklediğinizde burada görünür ve karşılaştırma akışına dahil olur.</p>
+                    <a href="/ilan-ekle/" class="btn btn-primary"><i data-lucide="plus"></i> Seçenek ekle</a>
                 </div>
             ` : `
                 <div class="empty-state marketplace-empty-state">
                     <i data-lucide="search"></i>
-                    <h3>İlan bulunamadı</h3>
-                    <p>Filtreleri genişletin veya karar asistanından gelen önerilere göre tekrar arayın.</p>
+                    <h3>Eşleşen seçenek bulunamadı</h3>
+                    <p>Filtreleri genişletin veya TCO analiziyle size uygun profili yeniden oluşturun.</p>
                     <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Karar analizini aç</a>
                 </div>
             `;

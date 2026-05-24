@@ -3,6 +3,7 @@ import { initP4ProductPolish } from './p4-product-polish.js';
 import { initMobilePremiumUx } from './mobile-premium-ux.js';
 import { initConversionMicroUx } from './conversion-micro-ux.js';
 import { initPerceivedPerformance } from './perceived-performance.js';
+import { initBrandConsistency } from './brand-consistency.js';
 
 export function initEnterpriseUx() {
   if (typeof document === 'undefined') return;
@@ -12,6 +13,7 @@ export function initEnterpriseUx() {
   initMobilePremiumUx();
   initConversionMicroUx();
   initPerceivedPerformance();
+  initBrandConsistency();
 
   const markReady = () => {
     document.documentElement.classList.add('ib-ready');

@@ -2,6 +2,7 @@
  * Premium marketing pages — Karar analizi, Metodoloji, Planlar
  */
 import { renderStaticPricingFallback } from '../runtime/pricing-static-fallback.js';
+import { BRAND_VOICE } from '../core/brand-voice.js';
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -98,15 +99,15 @@ export class PremiumPages {
       <header class="ib-premium-hero ib-premium-hero--analysis">
         <div class="container ib-premium-hero-grid">
           <div class="ib-premium-hero-copy">
-            <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> Karar altyapısı</span>
-            <h1>İlan bulmak başka, doğru karar vermek başka</h1>
-            <p class="ib-premium-lead">Toplam sahip olma maliyetine göre karar verin. Generic AI fikir verir; isteBul deterministik skor, TCO ve güven bandı sunar. Canlı analiz için Auto’ya geçin.</p>
+            <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> ${BRAND_VOICE.categoryLabel}</span>
+            <h1>${BRAND_VOICE.positioningLine}</h1>
+            <p class="ib-premium-lead">${BRAND_VOICE.leadLine} Canlı analiz için Auto akışına geçin.</p>
             <div class="ib-premium-hero-actions">
-              <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_hero">
-                <i data-lucide="car-front"></i> Ücretsiz maliyet analizi
+              <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_hero" title="${BRAND_VOICE.cta.primaryAutoLong}">
+                <i data-lucide="car-front"></i> ${BRAND_VOICE.cta.primaryAuto}
               </a>
               <a href="/metodoloji" class="btn btn-outline btn-lg" data-native-route>
-                <i data-lucide="microscope"></i> Metodoloji
+                <i data-lucide="microscope"></i> ${BRAND_VOICE.cta.methodology}
               </a>
             </div>
             <ul class="ib-premium-hero-stats" aria-label="Platform metrikleri">
@@ -147,7 +148,7 @@ export class PremiumPages {
       <section id="premium-assistant" class="ib-premium-block ib-premium-assistant" aria-label="Karar asistanı">
         <div class="container">
           <div class="ib-premium-block-head">
-            <span class="section-kicker">Canlı deneyim</span>
+            <span class="section-kicker">${BRAND_VOICE.kickers.preview}</span>
             <h2>Karar önizlemesi</h2>
             <p>Kısa sorularla maliyet sinyallerini görün. Tam TCO analizi ve sıralama için Auto akışını kullanın.</p>
           </div>
@@ -225,11 +226,11 @@ export class PremiumPages {
         <div class="container ib-premium-cta-band-inner">
           <div>
             <h2>Yanlış araç seçme riskini azaltın</h2>
-            <p>Önce ücretsiz maliyet analizi; ihtiyaç duyduğunuzda Pro ile derin rapor ve karşılaştırma. Taahhüt yok.</p>
+            <p>Önce ücretsiz TCO analizi; ihtiyaç duyduğunuzda Pro ile derin rapor ve karşılaştırma. Taahhüt yok.</p>
           </div>
           <div class="ib-premium-hero-actions">
-            <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_footer">Ücretsiz maliyet analizi</a>
-            <a href="/planlar" class="btn btn-outline btn-lg" data-native-route data-analytics-cta="cta_secondary_plans" data-analytics-placement="premium_footer">Planları incele</a>
+            <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_footer" title="${BRAND_VOICE.cta.primaryAutoLong}">${BRAND_VOICE.cta.primaryAuto}</a>
+            <a href="/planlar" class="btn btn-outline btn-lg" data-native-route data-analytics-cta="cta_secondary_plans" data-analytics-placement="premium_footer">${BRAND_VOICE.cta.plans}</a>
           </div>
         </div>
       </section>

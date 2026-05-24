@@ -130,7 +130,7 @@ export function renderMoatArchitectureProductSection(metrics = {}) {
       <p class="lead">
         Tek özellik değil, <strong>sekiz katmanlı flywheel</strong>.
         Chat arayüzü veya ilan listesi haftalar içinde kopyalanır;
-        skor + partner OS + anonim outcome graph <strong>12–24 ay operasyonel borç</strong> gerektirir.
+        skor + partner operasyonu + anonim outcome graph <strong>12–24 ay operasyonel borç</strong> gerektirir.
       </p>
 
       <div class="ib-moat-defensibility-hero">

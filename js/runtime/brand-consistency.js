@@ -1,0 +1,50 @@
+/**
+ * P4.6 — Runtime brand alignment (CTA labels, trust microcopy).
+ */
+import { BRAND_VOICE } from '../core/brand-voice.js';
+
+const PRIMARY_AUTO_SELECTORS =
+  '.nav-cta-auto, [data-analytics-placement="hero"] .btn-primary, [data-analytics-placement="sticky"], [data-analytics-placement="methodology_teaser"], [data-analytics-placement="premium_hero"], [data-analytics-placement="premium_footer"]';
+
+export function initBrandConsistency() {
+  if (typeof document === 'undefined') return;
+
+  applyPrimaryAutoCtas();
+  normalizeSectionKickers();
+
+  document.addEventListener('routeChanged', () => {
+    applyPrimaryAutoCtas();
+    normalizeSectionKickers();
+  });
+}
+
+function applyPrimaryAutoCtas() {
+  document.querySelectorAll(PRIMARY_AUTO_SELECTORS).forEach((el) => {
+    if (!(el instanceof HTMLAnchorElement) && !(el instanceof HTMLButtonElement)) return;
+    const label = el.getAttribute('data-brand-cta') || BRAND_VOICE.cta.primaryAuto;
+    if (el.textContent.includes('maliyet analizi') || el.textContent.includes('Ücretsiz')) {
+      el.textContent = label;
+    }
+    el.setAttribute('title', BRAND_VOICE.cta.primaryAutoLong);
+    el.setAttribute('aria-label', BRAND_VOICE.cta.primaryAutoLong);
+  });
+
+  const sticky = document.querySelector('.cro-sticky-cta .btn-primary');
+  if (sticky instanceof HTMLElement && !sticky.dataset.brandApplied) {
+    sticky.textContent = BRAND_VOICE.cta.primaryAuto;
+    sticky.dataset.brandApplied = '1';
+  }
+}
+
+function normalizeSectionKickers() {
+  const map = {
+    Piyasa: BRAND_VOICE.kickers.options,
+    'Canlı deneyim': BRAND_VOICE.kickers.preview,
+    Güven: BRAND_VOICE.kickers.trust
+  };
+
+  document.querySelectorAll('.section-kicker').forEach((el) => {
+    const text = el.textContent.trim();
+    if (map[text]) el.textContent = map[text];
+  });
+}

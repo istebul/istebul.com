@@ -218,7 +218,7 @@ export function assessCompetitorCopyBundle(layerHealth = []) {
     highResistanceCount: highResistance.length,
     weakestLayers: weakest.map((r) => r.id),
     estimatedCopyEffort:
-      'UI + generic AI: 3–6 ay · Tam flywheel (partner OS + outcome + CRM): 12–24 ay',
+      'UI + generic AI: 3–6 ay · Tam flywheel (partner operasyonu + outcome + CRM): 12–24 ay',
     layers: rows.map((r) => ({
       id: r.id,
       copyResistance: r.copyResistance,
