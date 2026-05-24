@@ -125,3 +125,45 @@ test('handleRoute maps /planlar to premium planlar page', () => {
     assert.equal(sections.get('page-planlar').style.display, 'block');
     assert.equal(sections.get('pricing').style.display, 'none');
 });
+
+test('handleRoute maps locale-prefixed premium paths to distinct pages', () => {
+    const router = new Router();
+    const karar = sectionStub('page-karar-analizi');
+    const metodoloji = sectionStub('page-metodoloji');
+    karar.hasAttribute = () => true;
+    metodoloji.hasAttribute = () => true;
+    sections.set('page-karar-analizi', karar);
+    sections.set('page-metodoloji', metodoloji);
+
+    global.window.location.pathname = '/en/metodoloji';
+    global.window.location.hash = '';
+    router.handleRoute();
+
+    assert.equal(metodoloji.style.display, 'block');
+    assert.equal(karar.style.display, 'none');
+
+    global.window.location.pathname = '/en/karar-analizi';
+    router.handleRoute();
+
+    assert.equal(karar.style.display, 'block');
+    assert.equal(metodoloji.style.display, 'none');
+});
+
+test('navigate switches between premium routes and updates pathname', () => {
+    const router = new Router();
+    sections.set('page-karar-analizi', sectionStub('page-karar-analizi'));
+    sections.set('page-metodoloji', sectionStub('page-metodoloji'));
+    sections.set('page-planlar', sectionStub('page-planlar'));
+
+    global.window.location.pathname = '/karar-analizi';
+    router.handleRoute();
+    router.navigate('/metodoloji');
+
+    assert.equal(global.window.location.pathname, '/metodoloji');
+    assert.equal(sections.get('page-metodoloji').style.display, 'block');
+    assert.equal(sections.get('page-karar-analizi').style.display, 'none');
+
+    router.navigate('/planlar');
+    assert.equal(global.window.location.pathname, '/planlar');
+    assert.equal(sections.get('page-planlar').style.display, 'block');
+});

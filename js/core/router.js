@@ -1,5 +1,11 @@
 // Router - Simple client-side routing
-import { stripLocalePrefix, setActiveLocale, applyDocumentLocale } from '../platform/locale-registry.js';
+import {
+    stripLocalePrefix,
+    setActiveLocale,
+    applyDocumentLocale,
+    buildLocalizedPath,
+    getActiveLocale
+} from '../platform/locale-registry.js';
 
 /** Marketing sections on index.html (long-scroll landing). */
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
@@ -140,9 +146,10 @@ export class Router {
     navigate(path, { force = false } = {}) {
         const hashPart = path.includes('#') ? path.slice(path.indexOf('#')) : '';
         const normalized = this.normalizePath(path);
+        const displayPath = buildLocalizedPath(normalized, getActiveLocale());
 
         if (force || normalized !== this.currentRoute) {
-            window.history.pushState(null, '', normalized + hashPart);
+            window.history.pushState(null, '', displayPath + hashPart);
             this.currentRoute = normalized;
             this.handleRoute();
             return;

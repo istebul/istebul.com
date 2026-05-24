@@ -1,5 +1,6 @@
 // isteBul v2 - Main Application
 import './runtime/locale-bootstrap.js';
+import { stripLocalePrefix } from './platform/locale-registry.js';
 import './runtime/growth-bootstrap.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
@@ -4192,9 +4193,36 @@ function applyHomeMarketingVisibility() {
     document.body.classList.remove('app-route-active', 'ib-premium-route-active');
 }
 
+function showPremiumPageFallback(pageId) {
+    document.body.classList.add('app-route-active', 'ib-premium-route-active');
+
+    document.querySelectorAll('[data-private-section]').forEach((section) => {
+        section.classList.remove('route-visible');
+    });
+
+    document.querySelectorAll('section[id]').forEach((section) => {
+        const shouldShow = section.id === pageId;
+        section.classList.toggle('hidden', !shouldShow);
+        section.style.display = shouldShow ? 'block' : 'none';
+    });
+
+    const target = document.getElementById(pageId);
+    if (target) {
+        target.classList.remove('hidden');
+        target.classList.add('route-visible');
+        target.style.display = 'block';
+    }
+}
+
 function applyProductionRouteVisibility() {
+    if (window.app?.router?.handleRoute) {
+        window.app.router.handleRoute();
+        return;
+    }
+
     const rawPath = window.location.pathname;
-    const path = (rawPath === '/index.html' ? '/' : rawPath.replace(/\/$/, '')) || '/';
+    const { pathname: stripped } = stripLocalePrefix(rawPath === '/index.html' ? '/' : rawPath);
+    const path = stripped.replace(/\/$/, '') || '/';
     const hashId = (window.location.hash || '').slice(1);
     const marketingHash = MARKETING_SECTION_IDS.has(hashId);
 
@@ -4209,7 +4237,7 @@ function applyProductionRouteVisibility() {
             section.classList.toggle('hidden', !shouldShow);
             section.style.display = shouldShow ? 'block' : 'none';
         });
-        document.body.classList.remove('app-route-active');
+        document.body.classList.remove('app-route-active', 'ib-premium-route-active');
         return;
     }
 
@@ -4235,13 +4263,7 @@ function applyProductionRouteVisibility() {
     };
 
     if (premiumRouteMap[path]) {
-        const pageId = premiumRouteMap[path];
-        document.body.classList.add('ib-premium-route-active');
-        document.querySelectorAll('section[id]').forEach((section) => {
-            const shouldShow = section.id === pageId;
-            section.classList.toggle('hidden', !shouldShow);
-            section.style.display = shouldShow ? 'block' : 'none';
-        });
+        showPremiumPageFallback(premiumRouteMap[path]);
         return;
     }
 
@@ -4258,14 +4280,6 @@ function applyProductionRouteVisibility() {
         section.classList.toggle('hidden', !shouldShow);
         section.style.display = shouldShow ? 'block' : 'none';
     });
-
-    if (sectionId === 'page-karar-analizi' || sectionId === 'decision-assistant') {
-        window.app?.handlePremiumRoute?.('page-karar-analizi');
-    }
-
-    if (sectionId === 'page-planlar') {
-        window.app?.handlePremiumRoute?.('page-planlar');
-    }
 
     if (sectionId === 'compare') {
         const compareSection = document.getElementById('compare');
@@ -4285,8 +4299,4 @@ function applyProductionRouteVisibility() {
     }
 }
 
-window.addEventListener('app:ready', applyProductionRouteVisibility);
 window.addEventListener('DOMContentLoaded', applyProductionRouteVisibility);
-window.addEventListener('popstate', applyProductionRouteVisibility);
-window.addEventListener('hashchange', applyProductionRouteVisibility);
-document.addEventListener('routeChanged', applyProductionRouteVisibility);
