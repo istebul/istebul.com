@@ -2006,9 +2006,9 @@ Açıklama yok.
                 id: `ai-${this.assistantCategory}-${index + 1}`,
                 title: item.title || base.title,
                 name: item.title || base.name || 'Önerilen seçenek',
-                score: Number(item.score || base.score || 80),
-                price: Number(item.price || base.price || 0),
-                yearlyCost: Number(item.estimated_yearly_cost || base.yearlyCost || 0),
+                score: Number(base.score || 80),
+                price: Number(base.price || 0),
+                yearlyCost: Number(base.yearlyCost || 0),
                 reason: item.reason || base.reason || '',
                 pros: Array.isArray(item.pros) ? item.pros : [],
                 cons: Array.isArray(item.cons) ? item.cons : [],
@@ -2026,7 +2026,8 @@ Açıklama yok.
                 category: this.assistantCategory
             });
 
-            const parsed = this.parseAIJsonResponse(aiResponse?.response);
+            const rawAiText = aiResponse?.result ?? aiResponse?.response ?? '';
+            const parsed = this.parseAIJsonResponse(rawAiText);
 
             if (!parsed) {
                 return fallback;
