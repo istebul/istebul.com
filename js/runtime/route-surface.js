@@ -1,7 +1,12 @@
 /**
  * SSR/crawler-safe route surface — keeps only the active section visible in HTML.
- * Synced with the inline bootstrap in index.html (keep maps aligned).
+ * Document meta: data/route-document-meta.json (also used by scripts/lib/route-bootstrap.cjs).
  */
+
+import routeMeta from '../../data/route-document-meta.json' with { type: 'json' };
+
+export const SITE_ORIGIN = routeMeta.siteOrigin;
+export const ROUTE_DOCUMENT_META = Object.freeze(routeMeta.surfaces);
 
 export const MARKETING_SURFACE_IDS = Object.freeze([
     'home',
@@ -76,32 +81,61 @@ export function resolveRouteSurface(pathname = '/') {
     }
 
     if (path === '/') {
-        const hashId = typeof window !== 'undefined' ? window.location.hash?.slice(1) : '';
-        if (hashId && MARKETING_SURFACE_IDS.includes(hashId)) {
-            return 'home';
-        }
         return 'home';
     }
 
     return 'home';
 }
 
-export function syncHtmlRouteSurface(surfaceId) {
+function setMetaContent(id, attribute, value) {
+    const el = document.getElementById(id);
+    if (el && value) {
+        el.setAttribute(attribute, value);
+    }
+}
+
+/**
+ * Update title, description, canonical and Open Graph tags for the active route.
+ */
+export function syncRouteDocumentMeta(surfaceId, pathname = '/') {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const meta = ROUTE_DOCUMENT_META[surfaceId] || ROUTE_DOCUMENT_META.home;
+    const path = meta.path || '/';
+    const canonicalUrl = `${SITE_ORIGIN}${path === '/' ? '/' : path}`;
+
+    document.title = meta.title;
+    setMetaContent('meta-description', 'content', meta.description);
+    setMetaContent('meta-canonical', 'href', canonicalUrl);
+    setMetaContent('meta-og-title', 'content', meta.title);
+    setMetaContent('meta-og-description', 'content', meta.description);
+    setMetaContent('meta-og-url', 'content', canonicalUrl);
+    setMetaContent('meta-twitter-title', 'content', meta.title);
+    setMetaContent('meta-twitter-description', 'content', meta.description);
+}
+
+export function syncHtmlRouteSurface(surfaceId, pathname = '/') {
     const root = document.documentElement;
     if (!root?.setAttribute) {
         return;
     }
-    root.setAttribute('data-ib-route', surfaceId || 'home');
+
+    const normalized = surfaceId || 'home';
+    root.setAttribute('data-ib-route', normalized);
     root.classList?.remove?.('ib-route-pending');
 
-    if (surfaceId === 'home') {
+    if (normalized === 'home') {
         document.body.classList.remove('app-route-active', 'ib-premium-route-active');
-    } else if (String(surfaceId).startsWith('page-')) {
+    } else if (String(normalized).startsWith('page-')) {
         document.body.classList.add('app-route-active', 'ib-premium-route-active');
     } else {
         document.body.classList.add('app-route-active');
         document.body.classList.remove('ib-premium-route-active');
     }
+
+    syncRouteDocumentMeta(normalized, pathname);
 }
 
 export function tryExternalRouteRedirect(pathname = '/') {

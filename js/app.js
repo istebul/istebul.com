@@ -4218,7 +4218,7 @@ function applyProductionRouteVisibility() {
     const hashId = (window.location.hash || '').slice(1);
     const marketingHash = MARKETING_SECTION_IDS.has(hashId);
 
-    syncHtmlRouteSurface(resolveRouteSurface(path));
+    syncHtmlRouteSurface(resolveRouteSurface(path), path);
 
     if (path === '/' && !marketingHash) {
         applyHomeMarketingVisibility();

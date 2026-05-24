@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 test('production env script only contains browser-safe keys', () => {
-  const script = fs.readFileSync(path.join(root, 'scripts/production-build.js'), 'utf8');
+  const script = fs.readFileSync(path.join(root, 'scripts/production-build.cjs'), 'utf8');
 
   assert.match(script, /SUPABASE_URL/);
   assert.match(script, /SUPABASE_ANON_KEY/);
@@ -20,7 +20,7 @@ test('service worker pre-caches offline page but bypasses env.js cache', () => {
   const worker = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 
   assert.match(worker, /'\/offline\.html'/);
-  assert.match(worker, /url\.pathname === '\/env\.js'/);
+  assert.match(worker, /pathname === '\/env\.js'/);
   assert.match(worker, /cache: 'no-store'/);
   assert.match(worker, /IMMUTABLE_ASSET/);
 });

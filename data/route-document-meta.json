@@ -1,0 +1,70 @@
+{
+  "siteOrigin": "https://www.istebul.com",
+  "surfaces": {
+    "home": {
+      "title": "isteBul | Araç Alım Karar Asistanı — Kredi, TCO ve Karşılaştırma",
+      "description": "Türkiye'de araç alırken bütçe, taşıt kredisi, toplam sahip olma maliyeti (TCO) ve model karşılaştırmasını tek platformda değerlendirin. Ücretsiz karar analizi.",
+      "path": "/"
+    },
+    "page-karar-analizi": {
+      "title": "Karar Analizi | isteBul",
+      "description": "Araç satın alma kararını toplam maliyet, finansman etkisi ve karar skoru ile analiz edin. Ücretsiz başlayın.",
+      "path": "/karar-analizi"
+    },
+    "page-metodoloji": {
+      "title": "Metodoloji | isteBul",
+      "description": "Şeffaf, denetlenebilir araç karar modeli: TCO, finansman ve risk sinyalleri nasıl birleştirilir.",
+      "path": "/metodoloji"
+    },
+    "page-planlar": {
+      "title": "Planlar ve Fiyatlandırma | isteBul",
+      "description": "Ücretsiz başlangıç, isteBul Pro (₺299/ay) ve kurumsal planlar. 7 gün ücretsiz deneme.",
+      "path": "/planlar"
+    },
+    "ilanlar": {
+      "title": "Araç Seçenekleri | isteBul",
+      "description": "Karar skoruna göre sıralanmış araç seçeneklerini keşfedin ve karşılaştırın.",
+      "path": "/ilanlar"
+    },
+    "listing-detail": {
+      "title": "Seçenek Detayı | isteBul",
+      "description": "Seçtiğiniz aracın karar skoru, maliyet kırılımı ve finansman etkisi.",
+      "path": "/ilanlar"
+    },
+    "compare": {
+      "title": "Karşılaştırma Merkezi | isteBul",
+      "description": "Araç seçeneklerini karar skoru, maliyet ve risk sinyalleriyle yan yana değerlendirin.",
+      "path": "/karsilastir"
+    },
+    "favoriler": {
+      "title": "Favoriler | isteBul",
+      "description": "Kaydettiğiniz araç seçeneklerini tek yerden yönetin.",
+      "path": "/favoriler"
+    },
+    "history": {
+      "title": "Karar Geçmişi | isteBul",
+      "description": "Geçmiş karar analizlerinizi ve aramalarınızı görüntüleyin.",
+      "path": "/gecmis"
+    },
+    "quiz": {
+      "title": "Karar Değerlendirmesi | isteBul",
+      "description": "Araç alım önceliklerinize göre hızlı değerlendirme.",
+      "path": "/quiz"
+    },
+    "profil": {
+      "title": "Hesabım | isteBul",
+      "description": "Profil, abonelik ve hesap ayarlarınızı yönetin.",
+      "path": "/profil"
+    },
+    "messages": {
+      "title": "Mesajlar | isteBul",
+      "description": "İlan ve karar süreci mesajlarınız.",
+      "path": "/messages"
+    },
+    "add-listing": {
+      "title": "Seçenek Ekle | isteBul",
+      "description": "Kendi araç seçeneğinizi ekleyin ve karar analizine dahil edin.",
+      "path": "/ilan-ekle"
+    }
+  }
+}

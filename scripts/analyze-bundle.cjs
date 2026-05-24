@@ -7,6 +7,17 @@ const reportPath = path.join(dist, 'bundle-report.json');
 const maxChunkBytes = 320 * 1024;
 const maxTotalBytes = 900 * 1024;
 
+/** Separate entry surfaces — not counted toward main SPA budget. */
+const BUDGET_EXCLUDE = [
+  /^js\/admin-panel\.js$/,
+  /^assets\/auto-runtime\//,
+  /^css\/style\.css$/,
+  /^css\/enterprise-polish\.css$/,
+  /^css\/revenue\.css$/,
+  /^css\/premium-pages\.css$/,
+  /^css\/auto\.css$/
+];
+
 const files = [];
 
 const walk = (dir) => {
@@ -31,7 +42,9 @@ walk(dist);
 
 const scriptAndStyleFiles = files
   .filter((file) => /\.(js|css)$/.test(file.path))
+  .filter((file) => !BUDGET_EXCLUDE.some((pattern) => pattern.test(file.path)))
   .sort((a, b) => b.bytes - a.bytes);
+
 const totalBytes = scriptAndStyleFiles.reduce((sum, file) => sum + file.bytes, 0);
 const oversized = scriptAndStyleFiles.filter((file) => file.bytes > maxChunkBytes);
 const report = {
@@ -39,6 +52,7 @@ const report = {
   maxChunkBytes,
   maxTotalBytes,
   totalBytes,
+  excludedPatterns: BUDGET_EXCLUDE.map((pattern) => String(pattern)),
   oversized,
   files: scriptAndStyleFiles
 };
@@ -46,7 +60,7 @@ const report = {
 fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
 
 console.log('Bundle report written to dist/bundle-report.json');
-console.log('JS/CSS total: ' + totalBytes + ' bytes');
+console.log('Main SPA JS/CSS total: ' + totalBytes + ' bytes');
 
 if (oversized.length > 0) {
   console.warn('Large chunks detected:');

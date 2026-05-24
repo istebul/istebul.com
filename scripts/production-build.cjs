@@ -9,6 +9,7 @@ const dist = path.join(root, 'dist');
 const staticRoots = ['assets', 'data'];
 const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html', 'css/seo-landing.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
+const { injectRouteBootstrap } = require('./lib/route-bootstrap.cjs');
 const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
 
 const runCheck = spawnSync(process.execPath, [path.join(root, 'scripts/check-syntax.cjs')], {
@@ -132,7 +133,6 @@ walk(path.join(root, 'css'), (file) => {
   const hashedPath = withHashName(originalPath, hashContent(minified));
 
   assetRefs.set(originalPath, hashedPath);
-  writeFile(originalPath, minified);
   writeFile(hashedPath, minified);
 });
 
@@ -158,6 +158,7 @@ if (!appBundleFile) {
 pendingStaticFiles.forEach(({ file, source }) => {
   let html = rewriteAssetRefs(source);
   if (file === 'index.html') {
+    html = injectRouteBootstrap(html);
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, '/js/' + appBundleFile);
     html = injectPerformanceHints(html, appBundleFile);
   }

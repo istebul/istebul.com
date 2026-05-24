@@ -4,22 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>isteBul | Araç Alım Karar Asistanı — Kredi, TCO ve Karşılaştırma</title>
-    <meta name="description" content="Türkiye'de araç alırken bütçe, taşıt kredisi, toplam sahip olma maliyeti (TCO) ve model karşılaştırmasını tek platformda değerlendirin. Ücretsiz karar analizi.">
+    <meta name="description" id="meta-description" content="Türkiye'de araç alırken bütçe, taşıt kredisi, toplam sahip olma maliyeti (TCO) ve model karşılaştırmasını tek platformda değerlendirin. Ücretsiz karar analizi.">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="keywords" content="araç alım karar asistanı, araç kredisi hesaplama, toplam sahip olma maliyeti, araç karşılaştırma, ikinci el araç rehberi, isteBul">
     <meta name="theme-color" content="#2563eb" id="theme-color-meta">
     <meta property="og:locale" content="tr_TR">
     <meta property="og:site_name" content="isteBul">
-    <meta property="og:title" content="isteBul | Araç Alım Karar Asistanı">
-    <meta property="og:description" content="Türkiye pazarı için araç alım karar desteği: TCO, kredi senaryoları ve karşılaştırma.">
+    <meta property="og:title" id="meta-og-title" content="isteBul | Araç Alım Karar Asistanı">
+    <meta property="og:description" id="meta-og-description" content="Türkiye pazarı için araç alım karar desteği: TCO, kredi senaryoları ve karşılaştırma.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.istebul.com/">
+    <meta property="og:url" id="meta-og-url" content="https://www.istebul.com/">
     <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.svg">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="isteBul - Araç Karar Asistanı">
-    <meta name="twitter:description" content="Araç seçeneklerini toplam maliyet, kredi etkisi ve kullanım ihtiyacınıza göre değerlendirin.">
+    <meta name="twitter:title" id="meta-twitter-title" content="isteBul - Araç Karar Asistanı">
+    <meta name="twitter:description" id="meta-twitter-description" content="Araç seçeneklerini toplam maliyet, kredi etkisi ve kullanım ihtiyacınıza göre değerlendirin.">
     <meta name="twitter:image" content="https://www.istebul.com/assets/images/og-image.svg">
-    <link rel="canonical" href="https://www.istebul.com/">
+    <link rel="canonical" id="meta-canonical" href="https://www.istebul.com/">
     <link rel="sitemap" type="application/xml" href="/sitemap.xml">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="assets/icons/favicon-192.png">
@@ -45,10 +45,16 @@
   background:var(--surface-color);
 }
 /* Route surface: only active section visible (SSR/crawler-safe) */
-html.ib-route-pending #main-content > section[id],
-html.ib-route-pending #auth-modal{display:none!important}
+html.ib-route-pending [data-private-section]{display:none!important}
 #main-content > section[id]{display:none!important}
 #auth-modal:not(.show){display:none!important;visibility:hidden}
+/* No-JS / pre-bootstrap: marketing home only */
+html:not([data-ib-route]) #home,
+html:not([data-ib-route]) #trust,
+html:not([data-ib-route]) #how-it-works,
+html:not([data-ib-route]) #pricing,
+html:not([data-ib-route]) #categories{display:block!important}
+html:not([data-ib-route]) [data-private-section]{display:none!important}
 html[data-ib-route="home"] #home,
 html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #how-it-works,
@@ -69,7 +75,9 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
 .category-card.is-coming-soon{opacity:0.55;pointer-events:none}
 </style>
 <script>
-(function(){var p=(location.pathname||'/').replace(/\/$/,'')||'/';var m=p.match(/^\/(en|de)(\/|$)/);if(m)p=p.slice(m[1].length+1)||'/';p=p.replace(/\/$/,'')||'/';if(p==='/admin'||p==='/partner'){location.replace(p==='/admin'?'/admin-panel.html':'/partner-olun.html');return}var prem={'/karar-analizi':'page-karar-analizi','/metodoloji':'page-metodoloji','/planlar':'page-planlar','/karar-asistani':'page-karar-analizi'};var app={'/ilanlar':'ilanlar','/karsilastir':'compare','/favoriler':'favoriler','/gecmis':'history','/quiz':'quiz','/profil':'profil','/hesap':'profil','/messages':'messages','/ilan-ekle':'add-listing'};var r=prem[p]||app[p]||(p.indexOf('/ilan/')===0?'listing-detail':'home');document.documentElement.setAttribute('data-ib-route',r);document.documentElement.classList.remove('ib-route-pending');})();
+/* ROUTE_BOOTSTRAP_START */
+(function(){var O="https://www.istebul.com",M={"home":{"title":"isteBul | Araç Alım Karar Asistanı — Kredi, TCO ve Karşılaştırma","description":"Türkiye'de araç alırken bütçe, taşıt kredisi, toplam sahip olma maliyeti (TCO) ve model karşılaştırmasını tek platformda değerlendirin. Ücretsiz karar analizi.","path":"/"},"page-karar-analizi":{"title":"Karar Analizi | isteBul","description":"Araç satın alma kararını toplam maliyet, finansman etkisi ve karar skoru ile analiz edin. Ücretsiz başlayın.","path":"/karar-analizi"},"page-metodoloji":{"title":"Metodoloji | isteBul","description":"Şeffaf, denetlenebilir araç karar modeli: TCO, finansman ve risk sinyalleri nasıl birleştirilir.","path":"/metodoloji"},"page-planlar":{"title":"Planlar ve Fiyatlandırma | isteBul","description":"Ücretsiz başlangıç, isteBul Pro (₺299/ay) ve kurumsal planlar. 7 gün ücretsiz deneme.","path":"/planlar"},"ilanlar":{"title":"Araç Seçenekleri | isteBul","description":"Karar skoruna göre sıralanmış araç seçeneklerini keşfedin ve karşılaştırın.","path":"/ilanlar"},"listing-detail":{"title":"Seçenek Detayı | isteBul","description":"Seçtiğiniz aracın karar skoru, maliyet kırılımı ve finansman etkisi.","path":"/ilanlar"},"compare":{"title":"Karşılaştırma Merkezi | isteBul","description":"Araç seçeneklerini karar skoru, maliyet ve risk sinyalleriyle yan yana değerlendirin.","path":"/karsilastir"},"favoriler":{"title":"Favoriler | isteBul","description":"Kaydettiğiniz araç seçeneklerini tek yerden yönetin.","path":"/favoriler"},"history":{"title":"Karar Geçmişi | isteBul","description":"Geçmiş karar analizlerinizi ve aramalarınızı görüntüleyin.","path":"/gecmis"},"quiz":{"title":"Karar Değerlendirmesi | isteBul","description":"Araç alım önceliklerinize göre hızlı değerlendirme.","path":"/quiz"},"profil":{"title":"Hesabım | isteBul","description":"Profil, abonelik ve hesap ayarlarınızı yönetin.","path":"/profil"},"messages":{"title":"Mesajlar | isteBul","description":"İlan ve karar süreci mesajlarınız.","path":"/messages"},"add-listing":{"title":"Seçenek Ekle | isteBul","description":"Kendi araç seçeneğinizi ekleyin ve karar analizine dahil edin.","path":"/ilan-ekle"}},p=(location.pathname||'/').replace(/\/$/,'')||'/',m=p.match(/^\/(en|de)(\/|$)/);if(m)p=p.slice(m[1].length+1)||'/';p=p.replace(/\/$/,'')||'/';if(p==='/admin'||p==='/partner'){location.replace(p==='/admin'?'/admin-panel.html':'/partner-olun.html');return}var prem={'/karar-analizi':'page-karar-analizi','/metodoloji':'page-metodoloji','/planlar':'page-planlar','/karar-asistani':'page-karar-analizi'};var app={'/ilanlar':'ilanlar','/karsilastir':'compare','/favoriler':'favoriler','/gecmis':'history','/quiz':'quiz','/profil':'profil','/hesap':'profil','/messages':'messages','/ilan-ekle':'add-listing'};var r=prem[p]||app[p]||(p.indexOf('/ilan/')===0?'listing-detail':'home');var d=document.documentElement;d.setAttribute('data-ib-route',r);d.classList.remove('ib-route-pending');var meta=M[r]||M.home;var path=meta.path||'/';var url=O+(path==='/'?'/':path);document.title=meta.title;var desc=document.getElementById('meta-description');if(desc)desc.setAttribute('content',meta.description);var can=document.getElementById('meta-canonical');if(can)can.setAttribute('href',url);var ogt=document.getElementById('meta-og-title');if(ogt)ogt.setAttribute('content',meta.title);var ogd=document.getElementById('meta-og-description');if(ogd)ogd.setAttribute('content',meta.description);var ogu=document.getElementById('meta-og-url');if(ogu)ogu.setAttribute('content',url);var twt=document.getElementById('meta-twitter-title');if(twt)twt.setAttribute('content',meta.title);var twd=document.getElementById('meta-twitter-description');if(twd)twd.setAttribute('content',meta.description);})();
+/* ROUTE_BOOTSTRAP_END */
 </script>
 
     <link rel="preconnect" href="https://hjfrcdstbyonmgatgwcc.supabase.co" crossorigin>
@@ -176,6 +184,12 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
 
     <!-- Main Content -->
     <main id="main-content">
+        <noscript>
+            <div class="container" style="padding:2rem 1rem">
+                <h1>isteBul — Araç karar zekâsı platformu</h1>
+                <p>Tam deneyim için JavaScript gerekir. <a href="/auto/">Ücretsiz araç analizini başlatın</a> veya <a href="/planlar">planları görün</a>.</p>
+            </div>
+        </noscript>
         <!-- Home Section -->
         <section id="home" class="hero-section">
             <div class="hero-container">

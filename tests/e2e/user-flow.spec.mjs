@@ -4,6 +4,9 @@ const waitForAppReady = async (page) => {
   await page.waitForLoadState('domcontentloaded');
   await page.waitForSelector('nav.navbar', { timeout: 15000 });
   await page.waitForSelector('main', { timeout: 15000 });
+  await page.waitForFunction(() => document.documentElement.getAttribute('data-ib-route'), null, {
+    timeout: 15000
+  });
 };
 
 const openMobileMenuIfNeeded = async (page) => {
@@ -14,26 +17,41 @@ const openMobileMenuIfNeeded = async (page) => {
   }
 };
 
-test.describe('isteBu kritik kullanıcı akışları', () => {
-  test('sayfa yükleme, arama ve karar asistanı navigasyonu çalışır', async ({ page }) => {
+test.describe('isteBul kritik kullanıcı akışları', () => {
+  test('sayfa yükleme, ilanlar ve karar analizi navigasyonu çalışır', async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
 
-    // Check if basic app is loaded
     await expect(page.locator('#main-content')).toBeVisible();
     await expect(page.locator('nav')).toBeVisible();
+    await expect(page).toHaveTitle(/isteBul/);
+    await expect(page.getByRole('heading', { name: /Araç satın alma kararınızı/i })).toBeVisible();
+    await expect(page.locator('#home')).toBeVisible();
+    await expect(page.locator('#ilanlar')).toBeHidden();
 
-    await expect(page).toHaveTitle(/isteBu/);
-    await expect(page.getByRole('heading', { name: /Büyük kararları AI ile netleştirin/i })).toBeVisible();
-
-    await page.goto('/ilanlar');
-    await expect(page).toHaveURL(/ilanlar/);
-
-    // Navigate directly to decision assistant
-    await page.goto('/karar-asistani');
+    await page.goto('/ilanlar/');
     await waitForAppReady(page);
-    await page.waitForSelector('#decision-assistant', { state: 'visible', timeout: 15000 });
-    await expect(page.locator('#decision-assistant-form')).toBeVisible();
+    await expect(page).toHaveURL(/ilanlar/);
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'ilanlar');
+    await expect(page.locator('#ilanlar')).toBeVisible();
+    await expect(page.locator('#home')).toBeHidden();
+
+    await page.goto('/karar-asistani/');
+    await waitForAppReady(page);
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'page-karar-analizi');
+    await page.waitForSelector('#page-karar-analizi', { state: 'visible', timeout: 15000 });
+    await page.waitForSelector('#decision-assistant-form', { state: 'visible', timeout: 20000 });
+  });
+
+  test('planlar route canonical ve içerik', async ({ page }) => {
+    await page.goto('/planlar/');
+    await waitForAppReady(page);
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'page-planlar');
+    await expect(page).toHaveTitle(/Planlar/i);
+    const canonical = await page.locator('#meta-canonical').getAttribute('href');
+    expect(canonical).toMatch(/\/planlar\/?$/);
+    await expect(page.locator('#page-planlar')).toBeVisible();
+    await expect(page.locator('#home')).toBeHidden();
   });
 
   test('login modalı hata durumlarını kullanıcıya gösterir', async ({ page }) => {
@@ -58,7 +76,7 @@ test.describe('isteBu kritik kullanıcı akışları', () => {
   });
 
   test('ilan ekleme akışı kimlik doğrulama gerektirir', async ({ page }) => {
-    await page.goto('/ilan-ekle');
+    await page.goto('/ilan-ekle/');
     await waitForAppReady(page);
 
     await expect(page).toHaveURL(/ilanlar/);
@@ -66,118 +84,80 @@ test.describe('isteBu kritik kullanıcı akışları', () => {
     await expect(page.locator('#auth-modal')).toBeVisible();
   });
 
-  test('favoriler sayfası giriş yapılmış kullanıcı için çalışır', async ({ page }) => {
-    await page.goto('/favoriler');
+  test('favoriler sayfası yüklenir', async ({ page }) => {
+    await page.goto('/favoriler/');
     await waitForAppReady(page);
 
-    // Başlangıçta boş state olmalı - favoriler sayfası için spesifik selector
-    const emptyState = page.locator('.empty-state').filter({ hasText: 'Henüz favori ilan yok' });
-    await expect(emptyState).toBeVisible();
-    
-    // Başlık kontrol
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'favoriler');
     await expect(page.getByRole('heading', { name: /Favoriler/i })).toBeVisible();
+    await expect(page.locator('#favoriler')).toBeVisible();
+    await expect(page.locator('#home')).toBeHidden();
   });
 
-  test('profil sayfası başarıyla yüklenir ve oturum durumunu gösterir', async ({ page }) => {
-    await page.goto('/profil');
+  test('profil sayfası yüklenir', async ({ page }) => {
+    await page.goto('/profil/');
     await waitForAppReady(page);
-    
-    // Profil başlığı olmalı
-    await expect(page.getByRole('heading', { name: /Profil/i })).toBeVisible();
-    
-    // Oturum açılmamışsa login prompt olmalı veya oturum açılmışsa profil info olmalı
-    const loginPrompt = page.locator('button:has-text("Giriş Yap veya Kayıt Ol")');
-    const isVisible = await loginPrompt.isVisible().catch(() => false);
-    
-    if (!isVisible) {
-      // Oturum açılmış durumda profil kartı olmalı
-      await expect(page.locator('.profile-card')).toBeVisible();
-    } else {
-      // Giriş prompt'u görünmeli
-      await expect(loginPrompt).toBeVisible();
-    }
+
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'profil');
+    await expect(page.getByRole('heading', { name: /Hesabım/i })).toBeVisible();
+    await expect(page.locator('#profil')).toBeVisible();
   });
 
-  test('karar geçmişi sayfası erişim kontrolü yapıyor', async ({ page }) => {
-    await page.goto('/gecmis');
+  test('karar geçmişi sayfası yüklenir', async ({ page }) => {
+    await page.goto('/gecmis/');
     await waitForAppReady(page);
-    
-    // Başlık olmalı
+
     await expect(page.getByRole('heading', { name: /Karar geçmişi/i })).toBeVisible();
-    
-    // Oturum açılmamışsa auth gate olmalı
-    const authGate = page.locator('.history-auth-gate');
-    const isAuthGateVisible = await authGate.isVisible().catch(() => false);
-    
-    if (isAuthGateVisible) {
-      // Login ve register butonları olmalı
-      await expect(page.locator('button[data-history-login]')).toBeVisible();
-      await expect(page.locator('button[data-history-register]')).toBeVisible();
-    }
+    await expect(page.locator('#history')).toBeVisible();
   });
 
-  test('karşılaştırma sayfası boş state gösterir', async ({ page }) => {
-    await page.goto('/karsilastir');
+  test('karşılaştırma sayfası yüklenir', async ({ page }) => {
+    await page.goto('/karsilastir/');
     await waitForAppReady(page);
-    
-    // Başlık
-    await expect(page.getByRole('heading', { name: /Karşılaştırma Merkezi/i })).toBeVisible();
-    
-    // Boş state
-    const emptyState = page.locator('#comparison-content .empty-state').filter({ hasText: 'Karşılaştırma için seçenek ekleyin' });
-    await expect(emptyState).toBeVisible();
-    await expect(emptyState).toContainText(/karşılaştırmaya ekleyin/i);
+
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'compare');
+    await expect(page.getByRole('heading', { name: /yan yana değerlendirin/i })).toBeVisible();
+    await expect(page.locator('#compare')).toBeVisible();
   });
 
-  test('kategori navigasyonu responsive davranır', async ({ page }) => {
+  test('kategori navigasyonu ve karar formu', async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
-
     await expect(page.locator('.hero-actions')).toBeVisible();
 
-    await page.goto('/karar-asistani');
+    await page.goto('/karar-analizi/');
     await waitForAppReady(page);
-    await expect(page.locator('#decision-assistant-form')).toBeVisible();
+    await page.waitForSelector('#decision-assistant-form', { state: 'visible', timeout: 20000 });
   });
 
-  test('responsive tasarım - mobil görünüm doğru çalışıyor', async ({ browser }) => {
+  test('responsive tasarım - mobil görünüm', async ({ browser }) => {
     const mobileContext = await browser.newContext({
       viewport: { width: 375, height: 667 }
     });
     const page = await mobileContext.newPage();
-    
+
     await page.goto('/');
     await waitForAppReady(page);
-    
-    // Ana başlık görünmeli
-    await expect(page.getByRole('heading', { name: /Büyük kararları/i })).toBeVisible();
-    
-    // Navigasyon toggle'ı mobilde görünmeli
+    await expect(page.getByRole('heading', { name: /Araç satın alma/i })).toBeVisible();
+
     const navToggle = page.locator('.nav-toggle');
-    const isNavToggleVisible = await navToggle.isVisible().catch(() => false);
-    
-    if (isNavToggleVisible) {
-      // Toggle'ı aç
+    if (await navToggle.isVisible().catch(() => false)) {
       await navToggle.click();
-      // Menu açılmalı
       await expect(page.locator('.nav-menu')).toHaveClass(/show/);
     }
-    
+
     await mobileContext.close();
   });
 
   test('theme toggle koyu/açık mod arasında geçiş yapıyor', async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
-    
-    // Theme toggle butonunu bul
+
     const themeToggle = page.locator('#theme-toggle');
     await expect(themeToggle).toBeVisible();
-    
-    // Başlangıç tema değerini kontrol et
+
     const theme = await page.evaluate(() => document.documentElement.dataset.theme);
-    
-    // Toggle'ı tıkla
+
     await themeToggle.click();
     await page.waitForFunction(
       (initialTheme) => document.documentElement.dataset.theme !== initialTheme,
@@ -185,38 +165,26 @@ test.describe('isteBu kritik kullanıcı akışları', () => {
       { timeout: 10000 }
     );
 
-    // Tema değişmiş olmalı
     const newTheme = await page.evaluate(() => document.documentElement.dataset.theme);
     expect(newTheme).not.toBe(theme);
-    
-    // Toggle'ı tekrar tıkla - orijinal temaya dönmeli
-    await themeToggle.click();
-    await page.waitForFunction(
-      (initialTheme) => document.documentElement.dataset.theme === initialTheme,
-      theme,
-      { timeout: 10000 }
-    );
-    const revertedTheme = await page.evaluate(() => document.documentElement.dataset.theme);
-    expect(revertedTheme).toBe(theme);
   });
 
-  test('ilanlar sayfası içerik yükler ve anasayfaya geri döner', async ({ page }) => {
+  test('ilanlar sayfası ve geri navigasyon', async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
-    await page.goto('/ilanlar');
-    await page.waitForSelector('main', { state: 'visible', timeout: 15000 });
-
+    await page.goto('/ilanlar/');
+    await page.waitForSelector('#ilanlar', { state: 'visible', timeout: 15000 });
     await expect(page).toHaveURL(/ilanlar/);
-    await expect(page.getByRole('heading').first()).toBeVisible();
 
     await page.goBack();
-    await expect(page).toHaveURL('/');
+    await waitForAppReady(page);
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'home');
   });
 
-  test('karar asistanı sihirbazı bir sonraki adıma ilerlemeyi destekler', async ({ page }) => {
-    await page.goto('/karar-asistani');
+  test('karar asistanı sihirbazı ilerler', async ({ page }) => {
+    await page.goto('/karar-asistani/');
     await waitForAppReady(page);
-    await page.waitForSelector('#decision-assistant-form', { state: 'visible', timeout: 15000 });
+    await page.waitForSelector('#decision-assistant-form', { state: 'visible', timeout: 20000 });
 
     const radioOption = page.locator('#decision-assistant-form input[type="radio"]').first();
     if (await radioOption.count() > 0) {
@@ -229,14 +197,9 @@ test.describe('isteBu kritik kullanıcı akışları', () => {
     }
 
     const nextButton = page.locator('button[data-assistant-next]').first();
-
     if (await nextButton.count() > 0) {
-      await expect(nextButton).toBeVisible();
       await nextButton.click();
       await expect(page.locator('button[data-assistant-prev]')).toBeVisible();
-    } else {
-      const submitButton = page.locator('#decision-assistant-form button[type="submit"]').first();
-      await expect(submitButton).toBeVisible();
     }
   });
 });

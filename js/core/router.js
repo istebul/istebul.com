@@ -9,6 +9,7 @@ import {
 import {
     resolveRouteSurface,
     syncHtmlRouteSurface,
+    syncRouteDocumentMeta,
     tryExternalRouteRedirect
 } from '../runtime/route-surface.js';
 
@@ -194,7 +195,7 @@ export class Router {
         applyDocumentLocale(localeId);
         const path = stripped.replace(/\/$/, '') || '/';
         this.currentRoute = path;
-        syncHtmlRouteSurface(resolveRouteSurface(path));
+        syncHtmlRouteSurface(resolveRouteSurface(path), path);
 
         const premiumPage = PREMIUM_PAGE_ROUTES[path];
         if (premiumPage) {
@@ -387,36 +388,17 @@ export class Router {
         this.showHomeSections();
     }
 
-    updateTitle(route) {
-        const titles = {
-            home: 'isteBul - Yapay Zeka Destekli Karar Platformu',
-            ilanlar: 'Seçenekler - isteBul',
-            compare: 'Karşılaştırma Merkezi - isteBul',
-            'decision-assistant': 'Karar Asistanı - isteBul',
-            favoriler: 'Favoriler - isteBul',
-            history: 'Karar Geçmişi - isteBul',
-            quiz: 'Quiz - isteBul',
-            profil: 'Hesabım - isteBul',
-            'auth-login': 'Giriş - isteBul',
-            'auth-register': 'Üye Ol - isteBul',
-            messages: 'Mesajlar - isteBul',
-            'add-listing': 'İlan Ekle - isteBul',
-            'listing-detail': 'İlan Detayı - isteBul',
-            'page-karar-analizi': 'Karar Analizi - isteBul',
-            'page-metodoloji': 'Metodoloji - isteBul',
-            'page-planlar': 'Planlar ve Fiyatlandırma - isteBul'
-        };
-
-        if (route.startsWith('page-')) {
-            const pageTitles = {
-                'page-karar-analizi': titles['page-karar-analizi'],
-                'page-metodoloji': titles['page-metodoloji'],
-                'page-planlar': titles['page-planlar']
-            };
-            document.title = pageTitles[route] || titles.home;
-            return;
+    routeToDocumentSurface(route) {
+        if (route === 'auth-login' || route === 'auth-register') {
+            return 'home';
         }
+        if (route === 'decision-assistant') {
+            return 'page-karar-analizi';
+        }
+        return route;
+    }
 
-        document.title = titles[route] || titles.home;
+    updateTitle(route) {
+        syncRouteDocumentMeta(this.routeToDocumentSurface(route), this.currentRoute);
     }
 }
