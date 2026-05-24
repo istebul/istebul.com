@@ -16,6 +16,7 @@ const corsHeaders = (origin = null) => ({
 });
 
 import { recordOpsEvent } from './_shared/record-ops-event.js';
+import { fetchStripeCustomerIdForUser } from './_shared/stripe-customer.js';
 import { createClient } from '@supabase/supabase-js';
 
 const json = (body, status = 200, origin = null) =>
@@ -52,30 +53,6 @@ const getAuthenticatedUser = async (context, token) => {
   return res.json();
 };
 
-const getStripeCustomerId = async (context, userId) => {
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = context.env;
-
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    return null;
-  }
-
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${userId}&select=stripe_customer_id&order=updated_at.desc&limit=1`,
-    {
-      headers: {
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-      }
-    }
-  );
-
-  if (!res.ok) return null;
-
-  const rows = await res.json();
-  const row = Array.isArray(rows) ? rows[0] : null;
-  return row?.stripe_customer_id || null;
-};
-
 export async function onRequestPost(context) {
   const origin = context.request.headers.get('Origin');
 
@@ -102,7 +79,7 @@ export async function onRequestPost(context) {
       return json({ error: 'Invalid token' }, 401, origin);
     }
 
-    const customerId = await getStripeCustomerId(context, user.id);
+    const customerId = await fetchStripeCustomerIdForUser(user.id, context.env);
 
     if (!customerId) {
       return json({

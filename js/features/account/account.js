@@ -1,6 +1,7 @@
 import API from '../../core/api.js';
 import { escapeHtml } from '../../core/security.js';
 import config from '../../core/config.js';
+import { canOpenBillingPortal } from '../../core/billing-portal.js';
 
 import { STORAGE_KEYS } from '../../core/storage-keys.js';
 
@@ -39,6 +40,7 @@ export class AccountManager {
     handleQueryParams(params = new URLSearchParams()) {
         const subscribed = params.get('subscribed') === 'true';
         const cancelled = params.get('cancelled') === 'true';
+        const billingManaged = params.get('billing') === 'managed';
         const tab = params.get('tab');
 
         if (tab && ['overview', 'settings', 'subscription', 'security'].includes(tab)) {
@@ -51,9 +53,12 @@ export class AccountManager {
         } else if (cancelled) {
             this.ui?.showError?.('Ödeme işlemi iptal edildi. İstediğiniz zaman tekrar deneyebilirsiniz.');
             this.setTab('subscription');
+        } else if (billingManaged) {
+            this.ui?.showSuccess?.('Stripe abonelik panelinden döndünüz. Kart, fatura veya plan değişiklikleri kısa süre içinde yansır.');
+            this.setTab('subscription');
         }
 
-        if (subscribed || cancelled || tab) {
+        if (subscribed || cancelled || billingManaged || tab) {
             const cleanUrl = `${window.location.pathname}`;
             window.history.replaceState(null, '', cleanUrl);
         }
@@ -298,6 +303,8 @@ export class AccountManager {
         const sub = this.subscription;
         const subMeta = SUBSCRIPTION_LABELS[sub?.status] || { label: 'Ücretsiz', tone: 'muted' };
         const hasPremium = ['active', 'trialing'].includes(sub?.status);
+        const canManageBilling = canOpenBillingPortal(sub);
+        const isPastDue = sub?.status === 'past_due';
 
         root.innerHTML = `
             <div class="account-shell">
@@ -400,19 +407,41 @@ export class AccountManager {
                             <h2>Abonelik</h2>
                             <p>Premium özellikler Stripe üzerinden güvenle yönetilir.</p>
                         </header>
-                        <div class="account-subscription-card ${hasPremium ? 'is-premium' : ''}">
+                        <div class="account-subscription-card ${hasPremium || isPastDue ? 'is-premium' : ''}">
                             <div>
                                 <span class="account-eyebrow">Mevcut plan</span>
-                                <h3>${hasPremium ? 'Premium' : 'Ücretsiz'}</h3>
+                                <h3>${hasPremium || isPastDue ? 'isteBul Pro' : 'Ücretsiz'}</h3>
                                 <p>${hasPremium
             ? `Dönem sonu: ${formatDate(sub?.current_period_end)}${sub?.cancel_at_period_end ? ' · Dönem sonunda iptal edilecek' : ''}`
-            : 'Gelişmiş karşılaştırma, öncelikli analiz ve kayıtlı karar geçmişi için Premium\'a geçin.'}</p>
+            : isPastDue
+                ? 'Son ödeme başarısız oldu. Kart bilginizi güncelleyerek aboneliğinizi sürdürebilirsiniz.'
+                : canManageBilling
+                    ? `Abonelik durumu: ${escapeHtml(subMeta.label)}. Faturalarınızı ve planınızı Stripe panelinden yönetin.`
+                    : 'Gelişmiş karşılaştırma, öncelikli analiz ve kayıtlı karar geçmişi için Pro\'ya geçin.'}</p>
                             </div>
-                            ${hasPremium
+                            ${canManageBilling
             ? `<span class="account-plan-badge tone-${subMeta.tone}">${escapeHtml(subMeta.label)}</span>`
-            : `<button type="button" class="btn btn-primary" id="account-upgrade-btn">Premium\'a geç</button>`}
+            : `<button type="button" class="btn btn-primary" id="account-upgrade-btn">7 gün ücretsiz dene</button>`}
                         </div>
-                        <p class="account-trust-note"><i data-lucide="shield"></i> Ödeme bilgileriniz isteBul sunucularında saklanmaz; işlemler Stripe tarafından işlenir.</p>
+                        ${canManageBilling ? `
+                        <div class="account-billing-panel">
+                            <button type="button" class="btn btn-primary" id="account-billing-portal-btn" data-billing-portal>Aboneliği yönet</button>
+                            <p class="account-billing-hint">Stripe müşteri panelinde:</p>
+                            <ul class="account-billing-features">
+                                <li>Kart bilgisi güncelle</li>
+                                <li>Faturaları görüntüle ve indir</li>
+                                <li>Plan değiştir veya iptal et</li>
+                            </ul>
+                        </div>
+                        ` : ''}
+                        ${!canManageBilling ? `
+                        <p class="revenue-risk-reversal account-billing-reassurance" role="note">
+                            <span>7 gün ücretsiz deneme</span>
+                            <span>Stripe ile güvenli ödeme</span>
+                            <span>İstediğiniz zaman iptal</span>
+                        </p>
+                        ` : ''}
+                        <p class="account-trust-note"><i data-lucide="shield"></i> Ödeme bilgileriniz isteBul sunucularında saklanmaz; kart ve fatura işlemleri Stripe üzerinden yönetilir.</p>
                     </section>
 
                     <section class="account-panel ${this.activeTab === 'security' ? 'is-active' : ''}" data-account-panel="security" ${this.activeTab === 'security' ? '' : 'hidden'}>
