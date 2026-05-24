@@ -8,7 +8,7 @@
 | R4 | **Partner revenue** — estimated vs contracted | High | LOIs, actual_revenue discipline, audits | Open |
 | R5 | **AI hallucination** — trust loss | Medium | Rule engine + `sanitizeAiNarrative` | Mitigated |
 | R6 | **Single-market concentration** (Turkey) | Medium | Global i18n foundation, EN/DE/AR routes | In progress |
-| R7 | **Supabase/CF vendor lock-in** | Low | Standard Postgres; export paths | Accepted |
+| R7 | **Supabase/CF vendor lock-in** | Medium | `PRODUCTION_RESILIENCE_AUDIT.md`; backup/PITR; runbook | Partial |
 | R8 | **Analytics undercount** — consent gate | Medium | Server-side events; optional analytics-free mode doc | Open |
 | R9 | **Key person / founder dependency** | High | Document ops runbooks; hire GTM + eng | Founder |
 | R10 | **Competition** — incumbents add AI | Medium | Moat on workflow + partners + data | Ongoing |

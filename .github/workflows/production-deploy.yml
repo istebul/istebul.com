@@ -127,6 +127,9 @@ jobs:
           FUNCTIONS=(
             auto-intake
             analytics-ingest
+            ops-ingest
+            lifecycle-enroll
+            lifecycle-cron
             partner-retry
             partner-dispatch
             partner-callback

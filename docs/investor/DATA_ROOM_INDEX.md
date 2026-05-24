@@ -42,6 +42,8 @@
 | Admin dashboard | Admin → **Investor KPIs** |
 | Analytics audit | `docs/PLATFORM_ANALYTICS_AUDIT.md` |
 | Production observability | `docs/PRODUCTION_OBSERVABILITY.md` |
+| **Production resilience / BCP** | `docs/PRODUCTION_RESILIENCE_AUDIT.md` |
+| Resilience runbook (ops) | `docs/RESILIENCE_RUNBOOK.md` |
 | SQL views (optional) | `supabase/migrations/20260528_investor_metrics_views.sql` |
 
 **Export command:**
