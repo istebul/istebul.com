@@ -26,7 +26,7 @@
     <link rel="icon" type="image/png" href="assets/icons/favicon-192.png">
     <script src="/env.js" defer></script>
     <link rel="preload" href="css/style.css?v=49" as="style">
-    <link rel="stylesheet" href="css/style.css?v=49">
+    <link rel="stylesheet" href="css/style.css?v=50">
 
 <style>
 .hidden{display:none!important;}
@@ -89,7 +89,7 @@
     </head>
 <body class="ib-enterprise">
     <div class="top-bar" id="announcement-ticker">
-        <p data-cms="announcement"><strong>Kurumsal karar platformu:</strong> Araç satın alma sürecinde toplam maliyet, finansman ve güvenilirlik sinyalleri tek akışta değerlendirilir.</p>
+        <p data-cms="announcement"><strong>Kurumsal karar altyapısı:</strong> Araç satın alma sürecinde toplam maliyet, finansman ve güvenilirlik sinyalleri tek platformda, şeffaf metodoloji ile değerlendirilir.</p>
     </div>
     <!-- Navigation -->
     <nav id="main-nav" class="navbar">
@@ -97,19 +97,14 @@
             <a class="nav-brand" href="/" data-native-route aria-label="Ana sayfaya dön">
                 <span class="brand-mark" aria-hidden="true">iB</span>
                 <span class="brand-copy">
-                    <span class="brand-title" data-cms="site-name">isteBul.com</span>
-                    <span class="nav-subtitle" data-cms="site-subtitle">Veriye dayalı karar destek platformu</span>
+                    <span class="brand-title" data-cms="site-name">isteBul</span>
+                    <span class="nav-subtitle" data-cms="site-subtitle">Karar zekâsı platformu</span>
                 </span>
             </a>
             <div class="nav-menu" id="nav-menu">
-                <a href="/auto" class="nav-link" data-native-route>Karar Analizi</a>
-                
+                <a href="/auto/" class="nav-link" data-native-route>Karar analizi</a>
+                <a href="#how-it-works" class="nav-link">Metodoloji</a>
                 <a href="#pricing" class="nav-link">Planlar</a>
-                <a href="#how-it-works" class="nav-link">Nasıl Çalışır</a>
-                <div class="nav-dropdown">
-                    <a href="/auto" class="nav-link" data-native-route>Auto</a>
-                    
-                </div>
                 <a href="/messages/" class="nav-link hidden" id="nav-messages">Mesajlar</a>
             </div>
             <div class="nav-controls">
@@ -144,9 +139,9 @@
     <div class="ib-trust-rail" role="complementary" aria-label="Platform güvenilirliği">
         <div class="container ib-trust-rail-inner">
             <span><i data-lucide="shield-check"></i> KVKK uyumlu veri işleme</span>
-            <span><i data-lucide="lock"></i> Şifreli bağlantı (TLS)</span>
+            <span><i data-lucide="lock"></i> Uçtan uca şifreleme (TLS)</span>
             <span><i data-lucide="building-2"></i> Kurumsal karar altyapısı</span>
-            <span><i data-lucide="badge-check"></i> Şeffaf metodoloji</span>
+            <span><i data-lucide="badge-check"></i> Denetlenebilir metodoloji</span>
         </div>
     </div>
 
@@ -156,12 +151,12 @@
         <section id="home" class="hero-section">
             <div class="hero-container">
                 <div class="hero-content">
-                    <span class="hero-eyebrow"><i data-lucide="shield-check"></i> <span data-cms="hero-eyebrow">Veriye dayalı karar analizi</span></span>
-                    <h1 data-cms="hero-title">2 dakikada bütçenize uygun araçları toplam maliyetle görün</h1>
-                    <p data-cms="hero-desc">Taşıt kredisi, yakıt, sigorta ve değer kaybını tek skorda birleştiren ücretsiz analiz — satın alma baskısı yok, KVKK uyumlu.</p>
+                    <span class="hero-eyebrow"><i data-lucide="shield-check"></i> <span data-cms="hero-eyebrow">Kurumsal karar analizi</span></span>
+                    <h1 data-cms="hero-title">Araç satın alma kararınızı veriye dayalı netleştirin</h1>
+                    <p data-cms="hero-desc">Taşıt kredisi, toplam sahip olma maliyeti ve alternatif senaryoları tek karar modelinde birleştirin — tarafsız, KVKK uyumlu, satın alma baskısı olmadan.</p>
                     <div class="hero-actions">
                         <a href="/auto/" class="btn btn-primary" data-analytics-cta="hero_auto_start">
-                            <i data-lucide="sparkles"></i> Ücretsiz analizi başlat
+                            <i data-lucide="sparkles"></i> Karar analizini başlat
                         </a>
                         <a href="#how-it-works" class="btn btn-outline">
                             <i data-lucide="car-front"></i> Nasıl Çalışır
@@ -170,9 +165,9 @@
                     </div>
 
                     <div class="hero-proof" aria-label="Platform kapsamı">
-                        <span><strong>Ücretsiz</strong> başlangıç · kredi kartı gerekmez</span>
-                        <span><strong>2 dk</strong> rehberli analiz</span>
-                        <span><strong>KVKK</strong> uyumlu veri işleme</span>
+                        <span><strong>Ücretsiz</strong> başlangıç · taahhüt yok</span>
+                        <span><strong>Rehberli</strong> karar akışı</span>
+                        <span><strong>KVKK</strong> uyumlu işleme</span>
                     </div>
                 </div>
                 <div class="hero-image decision-preview" aria-label="Karar sonucu önizlemesi">
@@ -224,21 +219,24 @@
             <div class="container">
                 <span class="section-kicker">Güven ve şeffaflık</span>
                 <div class="section-header">
-                    <h2>Karar sürecinizde kurumsal düzeyde netlik</h2>
-                    <p>isteBul; veri, maliyet ve finansman sinyallerini tek bir güvenilir karar modelinde birleştirir.</p>
+                    <h2>Kurumsal düzeyde şeffaflık ve güven</h2>
+                    <p>isteBul; maliyet, finansman ve kullanım sinyallerini denetlenebilir bir karar modelinde birleştirir — tek satıcıya bağlı kalmadan.</p>
                 </div>
             <div class="trust-grid">
                 <div class="trust-card">
-                    <h3>Gerçek maliyet modeli</h3>
-                    <p>Fiyatın ötesindeki kredi, sigorta, bakım ve kullanım maliyetlerini birlikte değerlendirir.</p>
+                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="calculator"></i></div>
+                    <h3>Bütüncül maliyet modeli</h3>
+                    <p>Listeleme fiyatının ötesinde kredi, sigorta, bakım ve kullanım maliyetlerini standart bir çerçevede değerlendirir.</p>
                 </div>
                 <div class="trust-card">
-                    <h3>Veriye dayalı değerlendirme</h3>
-                    <p>İhtiyaç, bütçe ve kullanım verilerine göre seçenekleri sistematik ve anlaşılır şekilde değerlendirir.</p>
+                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="line-chart"></i></div>
+                    <h3>Veri odaklı skorlama</h3>
+                    <p>Bütçe, kullanım profili ve önceliklerinize göre seçenekleri sistematik ve karşılaştırılabilir şekilde sıralar.</p>
                 </div>
                 <div class="trust-card">
-                    <h3>Şeffaf karşılaştırma</h3>
-                    <p>Her önerinin arkasındaki kriterleri ve güçlü-zayıf yönleri anlaşılır şekilde gösterir.</p>
+                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="scale"></i></div>
+                    <h3>Tarafsız karşılaştırma</h3>
+                    <p>Her önerinin dayandığı kriterleri, güçlü yönleri ve riskleri açık metodoloji ile sunar.</p>
                 </div>
             </div>
             </div>
@@ -318,8 +316,8 @@
             <div class="container">
                 <div class="section-header">
                     <span class="section-kicker">Fiyatlandırma</span>
-                    <h2>İhtiyacınıza göre plan seçin</h2>
-                    <p>Bireysel karar analizi ücretsiz başlar. Pro ile gelişmiş raporlar, sınırsız karşılaştırma ve öncelikli partner eşleşmesi açılır.</p>
+                    <h2>Kurumsal yetenekler, net fiyatlandırma</h2>
+                    <p>Karar analizi ücretsiz başlar. Pro plan; gelişmiş raporlar, sınırsız karşılaştırma ve öncelikli partner eşleşmesini açar.</p>
                 </div>
                 <noscript>
                     <div class="pricing-noscript-fallback">
@@ -432,8 +430,8 @@
         <div class="container">
             <div class="newsletter-card">
                 <div>
-                    <h3>Karar fırsatlarını takip edin</h3>
-                    <p>Araç satın alma, kredi ve toplam maliyet uyarılarını e-posta ile alın.</p>
+                    <h3>Piyasa ve karar içgörüleri</h3>
+                    <p>Araç piyasası, finansman ve toplam maliyet trendlerine dair seçilmiş güncellemeler — yalnızca onayladığınızda.</p>
                 </div>
                 <form id="newsletter-form" class="newsletter-form">
                     <input type="email" id="newsletter-email" placeholder="E-posta adresinizi girin" required>
@@ -443,7 +441,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h4>isteBul</h4>
-                    <p>Veriye dayalı karar analizi, toplam maliyet ve finansman etkisini birlikte değerlendiren karar destek platformu.</p>
+                    <p>Türkiye odaklı karar zekâsı platformu — araç satın alma sürecinde maliyet, finansman ve güvenilirlik sinyallerini birleştirir.</p>
                 </div>
                 <div class="footer-section">
                     <h4>Platform</h4>
@@ -479,7 +477,7 @@
                 </div>
             </div>
             <div class="cookie-consent" id="cookie-consent" role="region" aria-label="Çerez ve analiz tercihi">
-                <p>Çerezleri yalnızca deneyimi iyileştirmek ve hangi adımların işe yaradığını anlamak için kullanıyoruz — kişisel veri satışı yok. Kabul ederseniz analiz akışını daha iyi optimize edebiliriz.</p>
+                <p>Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz. Tercihinizi istediğiniz zaman güncelleyebilirsiniz.</p>
                 <div>
                     <button type="button" class="btn btn-outline" data-cookie-decline>Reddet</button>
                     <button type="button" class="btn btn-primary" data-cookie-accept>Kabul Et</button>
@@ -510,7 +508,7 @@
         </section>
 
     <div class="cro-sticky-cta" role="region" aria-label="Hızlı başlangıç">
-        <a href="/auto/" class="btn btn-primary" data-analytics-cta="sticky_auto_start">Ücretsiz analiz — 2 dk</a>
+        <a href="/auto/" class="btn btn-primary" data-analytics-cta="sticky_auto_start">Karar analizini başlat</a>
     </div>
 
     <!-- Scripts -->

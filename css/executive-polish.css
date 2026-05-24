@@ -1,0 +1,309 @@
+/**
+ * Executive polish — premium global product layer (final cascade)
+ */
+
+:root {
+  --ib-ink: #0f172a;
+  --ib-ink-muted: #475569;
+  --ib-surface-elevated: #ffffff;
+  --ib-border-subtle: rgba(148, 163, 184, 0.22);
+  --ib-brand-deep: #1e3a8a;
+  --ib-accent-teal: #0d9488;
+}
+
+/* —— Global surface —— */
+body.ib-enterprise {
+  background: var(--ib-gradient-surface, linear-gradient(180deg, #f8fbff 0%, #fff 38%, #f6f8fb 100%));
+  color: var(--ib-ink);
+}
+
+body.ib-enterprise ::selection {
+  background: rgba(37, 99, 235, 0.18);
+  color: var(--ib-ink);
+}
+
+/* —— Announcement bar —— */
+body.ib-enterprise .top-bar {
+  background: linear-gradient(90deg, #0f172a 0%, #1e293b 48%, #0f2942 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.5rem 0;
+}
+
+body.ib-enterprise .top-bar p {
+  color: #cbd5e1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+body.ib-enterprise .top-bar strong {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+/* —— Navigation (glass on scroll via .nav-scrolled) —— */
+body.ib-enterprise .navbar {
+  transition:
+    background 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease;
+}
+
+body.ib-enterprise .navbar.nav-scrolled {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow: 0 1px 0 var(--ib-border-subtle), 0 12px 40px rgba(15, 23, 42, 0.06);
+}
+
+:root[data-theme="dark"] body.ib-enterprise .navbar.nav-scrolled {
+  background: rgba(15, 23, 42, 0.9);
+}
+
+body.ib-enterprise .brand-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+body.ib-enterprise .nav-subtitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ib-ink-muted);
+}
+
+body.ib-enterprise .brand-mark {
+  font-size: 0.78rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+/* —— Trust cards with icons —— */
+.trust-card-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 14px;
+  display: inline-grid;
+  place-items: center;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(20, 184, 166, 0.12));
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  color: var(--ib-brand-deep);
+}
+
+.trust-card-icon [data-lucide] {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 2.1;
+}
+
+body.ib-enterprise .trust-card h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+}
+
+body.ib-enterprise .trust-card p {
+  color: var(--ib-ink-muted);
+  font-size: 0.94rem;
+}
+
+/* —— How steps —— */
+body.ib-enterprise .how-step .step-number {
+  font-size: 0.72rem;
+  color: var(--ib-accent-teal);
+  background: rgba(13, 148, 136, 0.1);
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  display: inline-block;
+  margin-bottom: 0.75rem;
+}
+
+/* —— Hero proof chips —— */
+body.ib-enterprise .hero-proof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1.35rem;
+}
+
+body.ib-enterprise .hero-proof span {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--ib-border-subtle);
+  font-size: 0.8rem;
+  color: var(--ib-ink-muted);
+}
+
+body.ib-enterprise .hero-proof strong {
+  color: var(--ib-ink);
+  font-weight: 700;
+}
+
+/* —— Preview card executive detail —— */
+body.ib-enterprise .preview-score-card strong[data-preview-score],
+body.ib-enterprise .preview-score-card > strong {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ib-accent-teal);
+  background: rgba(13, 148, 136, 0.1);
+  padding: 0.4rem 0.65rem;
+  border-radius: 8px;
+}
+
+/* —— Pricing section —— */
+body.ib-enterprise .pricing-section .section-header p {
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.ib-enterprise .revenue-plan-hint {
+  font-size: 0.88rem;
+  color: var(--ib-ink-muted) !important;
+}
+
+body.ib-enterprise .revenue-plan-hint a {
+  font-weight: 700;
+  color: var(--ib-brand-deep);
+}
+
+/* —— Footer & newsletter —— */
+body.ib-enterprise .newsletter-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  border: none;
+  color: #e2e8f0;
+}
+
+body.ib-enterprise .newsletter-card h3 {
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+}
+
+body.ib-enterprise .newsletter-card p {
+  color: #94a3b8;
+}
+
+body.ib-enterprise .newsletter-form input {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  min-height: 48px;
+}
+
+body.ib-enterprise .footer-section h4 {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ib-ink-muted);
+}
+
+body.ib-enterprise .footer-bottom p {
+  font-size: 0.82rem;
+  color: var(--ib-ink-muted);
+}
+
+/* —— Cookie consent —— */
+body.ib-enterprise .cookie-consent {
+  border: 1px solid var(--ib-border-subtle);
+  background: var(--ib-surface-elevated);
+}
+
+body.ib-enterprise .cookie-consent p {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ib-ink-muted);
+  max-width: 52ch;
+}
+
+/* —— Sticky CTA —— */
+body.ib-enterprise .cro-sticky-cta {
+  background: linear-gradient(180deg, transparent, rgba(248, 250, 252, 0.92) 24%);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--ib-border-subtle);
+}
+
+body.ib-enterprise .cro-sticky-cta .btn {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow: 0 14px 36px rgba(29, 78, 216, 0.32);
+}
+
+/* —— Forms (auth, global) —— */
+body.ib-enterprise .form-group label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ib-ink-muted);
+}
+
+body.ib-enterprise .form-group input,
+body.ib-enterprise .modal input {
+  border-radius: 12px;
+  border: 1.5px solid var(--ib-border-subtle);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.ib-enterprise .form-group input:focus,
+body.ib-enterprise .modal input:focus {
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: var(--ib-focus);
+}
+
+body.ib-enterprise .auth-intent-banner {
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.06), rgba(20, 184, 166, 0.08));
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  padding: 0.75rem 1rem;
+  font-size: 0.86rem;
+  color: var(--ib-ink-muted);
+}
+
+/* —— Auto page harmonization —— */
+body.ib-auto .auto-social-proof {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.01em;
+}
+
+body.ib-auto .auto-social-proof::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #14b8a6;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.25);
+}
+
+body.ib-auto .hero-trust-panel > div {
+  border-radius: 16px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.ib-auto .hero-trust-panel > div:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+/* —— Empty states —— */
+body.ib-enterprise .empty-state {
+  border-radius: var(--ib-radius-lg, 20px);
+  border: 1px dashed var(--ib-border-subtle);
+  background: rgba(248, 250, 252, 0.8);
+}
+
+/* —— Loading skeleton polish —— */
+body.ib-enterprise .skeleton,
+body.ib-enterprise [aria-busy="true"] {
+  border-radius: 12px;
+}

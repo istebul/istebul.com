@@ -5,7 +5,7 @@ export const PLANS = {
     id: 'free',
     name: 'Başlangıç',
     priceLabel: 'Ücretsiz',
-    description: 'Temel karar analizi ve lead talebi',
+    description: 'Temel karar analizi ve partner teklif talebi',
     highlights: [
       'Auto karar analizi (özet)',
       '2 araç karşılaştırma',
@@ -16,10 +16,10 @@ export const PLANS = {
     id: 'pro',
     name: 'isteBul Pro',
     priceLabel: 'Aylık abonelik',
-    priceHint: 'Stripe üzerinden güvenli ödeme · istediğiniz zaman iptal',
-    description: 'Gelişmiş analiz, sınırsız karşılaştırma ve öncelikli partner yönlendirme',
+    priceHint: 'Stripe ile güvenli ödeme · dilediğiniz zaman iptal',
+    description: 'Gelişmiş analiz, sınırsız karşılaştırma ve öncelikli partner eşleşmesi',
     trialDays: 7,
-    trialLabel: '7 gün ücretsiz dene',
+    trialLabel: '7 gün deneme süresi',
     billing: {
       monthly: {
         id: 'monthly',
