@@ -55,5 +55,16 @@ if (!platform.includes('paid_landing_view') || !platform.includes('paid_capi_dis
 const admin = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
 if (!admin.includes('Paid platforms (P5.1)')) fail('admin needs paid platform table');
 
+const capiPayloads = fs.readFileSync(
+  path.join(root, 'functions/api/_shared/paid-capi-payloads.js'),
+  'utf8'
+);
+if (capiPayloads.includes('node:crypto')) {
+  fail('paid-capi-payloads must not use node:crypto (Cloudflare Pages)');
+}
+if (!capiPayloads.includes('crypto.subtle')) {
+  fail('paid-capi-payloads must use Web Crypto crypto.subtle');
+}
+
 if (failed) process.exit(1);
 console.log('P5.1 paid acquisition audit passed.');

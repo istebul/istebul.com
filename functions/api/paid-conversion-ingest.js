@@ -119,7 +119,7 @@ export async function onRequestPost({ request, env }) {
     const capiResults = [];
 
     if (paidPlatform === 'meta' || attribution.fbclid) {
-      const metaPayload = buildMetaCapiPayload({
+      const metaPayload = await buildMetaCapiPayload({
         pixelId: env.META_PIXEL_ID,
         eventName,
         eventTime,
@@ -140,7 +140,7 @@ export async function onRequestPost({ request, env }) {
       attribution.gclid ||
       attribution.gbraid
     ) {
-      const googlePayload = buildGoogleAdsConversionPayload({
+      const googlePayload = await buildGoogleAdsConversionPayload({
         conversionActionId: env.GOOGLE_ADS_CONVERSION_ACTION_ID || 'pending',
         eventName,
         eventTime,
