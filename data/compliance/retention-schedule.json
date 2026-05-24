@@ -24,7 +24,9 @@
       "tables": ["analytics_events"],
       "retention_days": 730,
       "action": "delete_or_aggregate",
-      "legal_basis_hint": "consent_legitimate_interest"
+      "legal_basis_hint": "consent_legitimate_interest",
+      "ops_hot_purge_days": 90,
+      "ops_note": "Automated hot purge via data-retention-cron; counsel may require aggregates before delete"
     },
     {
       "data_category": "operational_events",

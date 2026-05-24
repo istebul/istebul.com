@@ -349,14 +349,16 @@ Replica (EU) → read-only dashboards (optional)
 
 ### Phase A — **10k readiness** (0–8 weeks)
 
-| # | Work item | Owner |
-|---|-----------|-------|
-| A1 | k6 smoke: intake, analytics-ingest, checkout | Eng |
-| A2 | Supabase PITR + pooler enabled | Eng/Ops |
-| A3 | Slow query dashboard + `operational_events` SLO alerts | Eng |
-| A4 | Bundle analyze (`npm run analyze:bundle`) — budget in CI | Eng |
-| A5 | Document all edge functions in deploy workflow | Eng |
-| A6 | Retention job sketch for `analytics_events` (90d) | Eng |
+**Runbook:** `docs/SCALE_PHASE_A_RUNBOOK.md` · **CI:** `phase-a-check.cjs`, `load:smoke`, `analyze-bundle`, `deploy-manifest-check`
+
+| # | Work item | Status |
+|---|-----------|--------|
+| A1 | k6 + HTTP smoke (`scripts/load/k6-smoke.js`, `load:smoke`) | Implemented |
+| A2 | Supabase PITR + pooler enabled | Ops checklist in runbook |
+| A3 | SLO thresholds + `npm run metrics:slo` | Implemented |
+| A4 | Bundle budget in `npm run test` | Implemented |
+| A5 | `data/deploy/edge-functions.json` + deploy manifest check | Implemented |
+| A6 | `data-retention-cron` + 90d hot purge migration | Implemented |
 
 ### Phase B — **100k readiness** (2–6 months)
 

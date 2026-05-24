@@ -1,0 +1,25 @@
+name: Data Retention
+
+on:
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Supabase data retention cron
+        env:
+          DATA_RETENTION_URL: ${{ secrets.DATA_RETENTION_URL }}
+          DATA_RETENTION_SECRET: ${{ secrets.DATA_RETENTION_CRON_SECRET }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$DATA_RETENTION_URL" ] || [ -z "$DATA_RETENTION_SECRET" ]; then
+            echo "::notice::DATA_RETENTION_URL or DATA_RETENTION_CRON_SECRET not set — skipping"
+            exit 0
+          fi
+          curl -fsS -X POST "$DATA_RETENTION_URL" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "x-data-retention-secret: $DATA_RETENTION_SECRET"

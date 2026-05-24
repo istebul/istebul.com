@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0",
+  "description": "Supabase Edge Functions deployed on production. Keep in sync with .github/workflows/production-deploy.yml",
+  "functions": [
+    "auto-intake",
+    "analytics-ingest",
+    "ops-ingest",
+    "lifecycle-enroll",
+    "lifecycle-cron",
+    "partner-retry",
+    "partner-dispatch",
+    "partner-callback",
+    "partner-application",
+    "lead-alert",
+    "admin-action",
+    "partner-daily-reset",
+    "data-retention-cron"
+  ],
+  "pagesFunctions": [
+    "functions/api/stripe-webhook.js",
+    "functions/api/create-checkout.js",
+    "functions/ai-proxy.js"
+  ]
+}

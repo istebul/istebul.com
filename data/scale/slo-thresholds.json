@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "window": "24h",
+  "alerts": {
+    "critical_events_max": 25,
+    "error_events_max": 200,
+    "partner_webhook_fails_max": 50,
+    "api_auto_intake_rate_limited_max": 100
+  },
+  "notes": [
+    "Run: SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/slo-check.cjs",
+    "Wire to PagerDuty/Slack when ops channel is ready.",
+    "Tune thresholds after 2 weeks of baseline metrics:ops snapshot."
+  ]
+}

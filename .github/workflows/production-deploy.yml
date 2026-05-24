@@ -137,6 +137,7 @@ jobs:
             lead-alert
             admin-action
             partner-daily-reset
+            data-retention-cron
           )
           for fn in "${FUNCTIONS[@]}"; do
             echo "Deploying $fn..."
