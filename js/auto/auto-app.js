@@ -60,6 +60,11 @@ import {
   renderLeaderRankPanel,
   renderRunnerRankContrast
 } from '../features/moat/scoring-explainability.js';
+import {
+  buildExplanationBundle,
+  renderAiExplanationExperience,
+  updateExplanationSynthesis
+} from '../features/moat/ai-explanation-experience.js';
 import { WIZARD_ONBOARDING } from '../features/moat/category-positioning.js';
 
 const formatAmount = (value) => formatMoney(value);
@@ -973,31 +978,18 @@ function renderAutoMethodologyStrip() {
 
 async function getAiExplanation(results, formData = {}, refinement = '') {
   try {
+    const bundle = buildExplanationBundle(results, formData);
     const prompt = [
-      'Sen isteBul Auto karar danışmanısın — yalnızca yorum katmanısın.',
-      'Skor, fiyat, faiz oranı veya ₺ tutarı YAZMA; kartlarda zaten var.',
-      'SADECE Türkçe, tarafsız, 3–4 kısa cümlelik tek paragraf.',
-      'Satış baskısı yok; kesin finansal vaat yok.',
-      'Profil özeti: ' + JSON.stringify({
-        budget: formData.budget,
-        fuel: formData.fuel,
-        body: formData.body,
-        usage: formData.usage,
-        loan: formData.loan
-      }),
-      'Öne çıkan modeller (isim + gerekçe/risk özeti): ' + JSON.stringify(
-        (results || []).slice(0, 3).map((v) => ({
-          name: v.name,
-          reasons: v.reasons,
-          risks: v.risks,
-          rankNote: v.rankExplanation?.summary,
-          runnerNote: v.runnerContrast?.summary,
-          tradeoffs: v.rankIntelligence?.tradeoffs?.map((t) => t.summary) || []
-        }))
-      ),
-      'KURAL: Skor, sıra veya güven bandı değiştirme; yalnızca yorumla.',
-      refinement ? 'Kullanıcı rafinesi: ' + refinement : '',
-      'Trade-off ve dikkat noktalarını açıkla; liste veya markdown kullanma.'
+      'Rol: isteBul karar asistanı (AI decision assistant). Generic ChatGPT tonu KULLANMA.',
+      'Görev: Yalnızca 2–3 cümlelik danışman sentezi yaz. Kullanıcıya zaten gösterilen yapılandırılmış kartları tekrarlama.',
+      'YASAK: skor, fiyat, faiz, %, ₺, "kesinlikle", "garanti", "tahmin", satın alma vaadi.',
+      'Olumlu: belirsizlikleri kabul et, trade-off vurgula, metodolojik destek dilini kullan.',
+      'Profil: ' + bundle.profileSummary,
+      'Lider: ' + (bundle.leaderName || '—'),
+      'Trade-off: ' + (bundle.tradeoffs || []).map((t) => t.summary).join(' | '),
+      'Belirsizlik: ' + (bundle.uncertainty?.bullets || []).slice(0, 2).join(' '),
+      refinement ? 'Rafine istek: ' + refinement : '',
+      'Çıktı: düz metin paragraf, liste yok.'
     ].join('\n');
 
     const res = await fetch('/ai-proxy', {
@@ -1008,7 +1000,7 @@ async function getAiExplanation(results, formData = {}, refinement = '') {
 
     if (!res.ok) return '';
     const data = await res.json();
-    return sanitizeAiNarrative(data.result || '', 520);
+    return sanitizeAiNarrative(data.result || '', 380);
   } catch {
     return '';
   }
@@ -1399,45 +1391,7 @@ function renderResults(results) {
       </div>
     </article>
   `}).join('') + `
-    <section class="premium-ai-summary ai-explanation-box${pro ? '' : ' revenue-results-locked'}" data-ai-explanation>
-      <h3>Danışman özeti</h3>
-      <p class="ai-explanation-lead">${pro ? 'Tercihlerinize göre yorum hazırlanıyor…' : 'Pro ile danışman özeti ve rafine yorumları açın.'}</p>
-
-      <div class="ai-refinement-tools">
-        <div class="ai-refinement-chips">
-          <button type="button" class="ai-chip" data-ai-refine="Daha ekonomik alternatifleri değerlendir.">
-            Daha ekonomik
-          </button>
-
-          <button type="button" class="ai-chip" data-ai-refine="SUV yerine sedan odaklı değerlendirme yap.">
-            Sedan odaklı
-          </button>
-
-          <button type="button" class="ai-chip" data-ai-refine="Hybrid seçenek önceliğiyle yeniden yorumla.">
-            Hybrid odaklı
-          </button>
-
-          <button type="button" class="ai-chip" data-ai-refine="Aylık bütçe etkisini düşürmeye odaklan.">
-            Daha düşük aylık bütçe
-          </button>
-        </div>
-
-        <div class="ai-refinement-input">
-          <input
-            type="text"
-            id="ai-refinement-input"
-            placeholder="Kararı rafine edin (örn: 2 çocuklu aile için yeniden değerlendir)"
-          />
-          <button type="button" class="btn primary" id="ai-refinement-submit">
-            Yorumu güncelle
-          </button>
-        </div>
-
-        <p class="ai-trust-note">
-          AI yalnızca gerekçe metnini üretir; skor, fiyat ve toplam maliyet kural motorundan gelir. İlan listesi veya bağlayıcı kredi taahhüdü değildir — bilgilendirme amaçlıdır.
-        </p>
-      </div>
-    </section>
+    ${renderAiExplanationExperience(buildExplanationBundle(results, formData), { pro })}
 
     ${!pro ? renderContextualUpsellCard('advanced_ai_summary', 'auto_results') : ''}
     ${!pro ? renderUpsellFeatureChips('auto_results') : ''}
@@ -1492,35 +1446,29 @@ function renderResults(results) {
 
   const updateAiSummary = async (refinement = '', activeButton = null) => {
     if (!aiBox || !results[0] || aiSummaryBusy) return;
+    if (!isProActive()) return;
 
-    const paragraph = aiBox.querySelector('.ai-explanation-lead') || aiBox.querySelector('p');
     aiBox.querySelectorAll('[data-ai-refine]').forEach((button) => {
       button.classList.toggle('is-active', button === activeButton);
     });
 
     setAiBusy(true);
-
-    if (paragraph) {
-      paragraph.textContent = refinement
-        ? 'Karar özeti rafine ediliyor...'
-        : 'Karar özeti hazırlanıyor...';
-    }
+    updateExplanationSynthesis(aiBox, refinement ? 'Sentez rafine ediliyor…' : 'Sentez hazırlanıyor…');
 
     const text = await getAiExplanation(results, formData, refinement);
 
     setAiBusy(false);
 
-    if (!text) {
-      if (!refinement) aiBox.remove();
-      else if (paragraph) paragraph.textContent = 'Yorum şu anda güncellenemedi. Mevcut karşılaştırmayı kullanarak devam edebilirsiniz.';
-      return;
-    }
-
-    if (paragraph) paragraph.textContent = text;
+    updateExplanationSynthesis(aiBox, text, {
+      fallback:
+        'Sentez üretilemedi. Üstteki yapılandırılmış akıl yürütme, finansal tablo ve gerekçe kartları kural motorundan gelir — geçerlidir.'
+    });
   };
 
   hydrateDealerOffers(results, formData);
-  updateAiSummary();
+  if (isProActive()) {
+    updateAiSummary();
+  }
 
   const ensureAdvisorUpsell = () => {
     if (isProActive() || !aiBox) return true;

@@ -11,6 +11,7 @@
 | **P3.2 Outcome data moat** | `outcome_signal_events` + `outcome-capture` edge + unified ingest |
 | **P3.3 Product feedback intelligence** | `product_feedback` + lightweight UX loop + intelligence events |
 | **P3.4 Scoring explainability** | Rank intelligence, transparency panel, confidence semantics |
+| **P3.5 AI explanation experience** | Structured decision assistant UI + bounded LLM synthesis |
 | Scoring intelligence | `calibrateLeadScore()` in `auto-intake` from segment win rates |
 | Outcome intelligence | Auto results strip + admin segment table |
 | Competitive positioning | `karar-moat.html` + `category-positioning.js` |
@@ -99,6 +100,13 @@ Deterministic-only ranking (`decision-consultant.js`):
 UI: `js/features/moat/scoring-explainability.js` on Auto results cards.
 
 Rules: LLM narrates only; cannot override scores or order.
+
+## P3.5 — AI explanation experience (premium)
+
+- **Message:** Karar asistanı — tahmin makinesi değil.
+- **Layout:** `js/features/moat/ai-explanation-experience.js` — reasoning steps, TCO table, trade-off cards, rationale grid, uncertainty panel.
+- **LLM:** Yalnızca `data-ai-synthesis` paragrafı (Pro); `sanitizeAiNarrative` false certainty strip.
+- **Free tier:** Deterministik sentez + tam yapılandırılmış kartlar (moat görünürlüğü).
 
 ## Honest limits
 

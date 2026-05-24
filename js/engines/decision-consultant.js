@@ -476,6 +476,7 @@ export function buildMethodologyPanel() {
 export function sanitizeAiNarrative(text, maxLen = 600) {
   return String(text || '')
     .replace(/[#*_`|]/g, '')
+    .replace(/\b(kesinlikle|mutlaka|garanti(ediyor|dir)?|tahmin(ediyor| eder)?|kesin sonuç|yatırım tavsiyesi)\b/gi, '')
     .replace(/\d+(?:[.,]\d+)?\s*%\s*(faiz|oran)/gi, 'örnek oran')
     .replace(/%\s*\d+(?:[.,]\d+)?/g, 'örnek oran')
     .replace(/₺\s*[\d.,]+/g, '')

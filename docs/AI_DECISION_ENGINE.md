@@ -23,7 +23,7 @@ Tiers: `high` | `medium` | `review` with explicit disclaimers.
 
 ## Explanation UX
 
-- **Auto**: methodology strip, rank gap note, expandable score breakdown, confidence badge, economic verdict (rule-based), AI “danışman özeti” (narration only).
+- **Auto**: methodology strip, rank intelligence, expandable score breakdown, confidence semantics, **P3.5 karar asistanı paneli** (structured reasoning + TCO + trade-offs + uncertainty), Pro LLM synthesis only.
 - **Assistant**: score breakdown per recommendation; AI extras show disclaimer that numbers are rule-based.
 - **Comparison**: score factors + cost breakdown when added from Auto.
 
