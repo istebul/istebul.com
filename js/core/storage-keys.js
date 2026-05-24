@@ -24,7 +24,8 @@ export const STORAGE_KEYS = Object.freeze({
   ANALYTICS_ANON: 'istebul_analytics_anon',
   ATTRIBUTION: 'istebul_attribution',
   LAST_FUNNEL_STEP: 'istebul_last_funnel_step',
-  ACCOUNT_ONBOARDING_DONE: 'istebul_account_onboarding_done'
+  ACCOUNT_ONBOARDING_DONE: 'istebul_account_onboarding_done',
+  LOCALE: 'istebul_locale'
 });
 
 /** @type {Record<string, string[]>} */

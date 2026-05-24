@@ -1,0 +1,46 @@
+{
+  "defaultLocale": "tr",
+  "locales": [
+    {
+      "id": "tr",
+      "bcp47": "tr-TR",
+      "label": "Türkçe",
+      "pathPrefix": "",
+      "dir": "ltr",
+      "currency": "TRY",
+      "ogLocale": "tr_TR",
+      "hreflang": "tr",
+      "default": true
+    },
+    {
+      "id": "en",
+      "bcp47": "en-US",
+      "label": "English",
+      "pathPrefix": "/en",
+      "dir": "ltr",
+      "currency": "USD",
+      "ogLocale": "en_US",
+      "hreflang": "en"
+    },
+    {
+      "id": "de",
+      "bcp47": "de-DE",
+      "label": "Deutsch",
+      "pathPrefix": "/de",
+      "dir": "ltr",
+      "currency": "EUR",
+      "ogLocale": "de_DE",
+      "hreflang": "de"
+    },
+    {
+      "id": "ar",
+      "bcp47": "ar-SA",
+      "label": "العربية",
+      "pathPrefix": "/ar",
+      "dir": "rtl",
+      "currency": "SAR",
+      "ogLocale": "ar_SA",
+      "hreflang": "ar"
+    }
+  ]
+}

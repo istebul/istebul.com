@@ -1,0 +1,54 @@
+/* RTL readiness — activated via html.ib-rtl (locale-bootstrap) */
+
+html.ib-rtl {
+  direction: rtl;
+}
+
+html.ib-rtl .navbar,
+html.ib-rtl .footer-content,
+html.ib-rtl .assistant-recommendation-top,
+html.ib-rtl .comparison-card-head,
+html.ib-rtl .auto-market-title-row {
+  flex-direction: row-reverse;
+}
+
+html.ib-rtl .assistant-score-breakdown li,
+html.ib-rtl .auto-score-breakdown li,
+html.ib-rtl .comparison-score-factors li {
+  flex-direction: row-reverse;
+}
+
+html.ib-rtl .locale-switcher {
+  direction: ltr;
+}
+
+html.ib-rtl input,
+html.ib-rtl textarea,
+html.ib-rtl select {
+  text-align: start;
+}
+
+.locale-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.locale-switcher-btn {
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(255, 255, 255, 0.9);
+  color: #334155;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.locale-switcher-btn.is-active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}

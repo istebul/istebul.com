@@ -1,4 +1,6 @@
 // Router - Simple client-side routing
+import { stripLocalePrefix, setActiveLocale, applyDocumentLocale } from '../platform/locale-registry.js';
+
 export class Router {
     constructor() {
         this.routes = [
@@ -50,7 +52,12 @@ export class Router {
 
     handleRoute() {
         const rawPath = window.location.pathname;
-        const path = rawPath === '/index.html' ? '/' : rawPath.replace(/\/$/, '') || '/';
+        const { pathname: stripped, localeId } = stripLocalePrefix(
+            rawPath === '/index.html' ? '/' : rawPath
+        );
+        setActiveLocale(localeId);
+        applyDocumentLocale(localeId);
+        const path = stripped.replace(/\/$/, '') || '/';
         this.currentRoute = path;
         const match = this.matchRoute(path);
         const route = match ? match.component : 'home';

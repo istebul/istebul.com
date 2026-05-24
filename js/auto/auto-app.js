@@ -1,3 +1,4 @@
+import '../runtime/locale-bootstrap.js';
 import { recommendVehicles, buildMethodologyPanel } from './auto-ai.js?v=ai3';
 import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
 import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
@@ -10,6 +11,10 @@ import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-k
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
 import { getSupabaseClient } from '../core/supabase.js';
+import { formatMoney, formatNumber } from '../core/format.js';
+
+const formatAmount = (value) => formatMoney(value);
+const formatCount = (value) => formatNumber(value);
 
 document.documentElement.classList.add('ib-ready');
 
@@ -79,8 +84,6 @@ function renderAutoUpgradeStrip() {
     </aside>
   `;
 }
-
-const formatter = new Intl.NumberFormat('tr-TR');
 
 function getBestFinanceOffer(financeOffers, budget) {
   if (!Array.isArray(financeOffers) || !financeOffers.length) return null;
@@ -434,7 +437,7 @@ function openFinanceCompareModal(vehicleName = '') {
         <div class="finance-config-grid">
           <label>
             <span>Araç fiyatı</span>
-            <strong>${formatter.format(vehiclePrice || 0)} ₺</strong>
+            <strong>${formatAmount(vehiclePrice || 0)}</strong>
           </label>
 
           <label>
@@ -445,7 +448,7 @@ function openFinanceCompareModal(vehicleName = '') {
 
           <label>
             <span>Peşinat</span>
-            <strong>${formatter.format(downPayment)} ₺</strong>
+            <strong>${formatAmount(downPayment)}</strong>
           </label>
         </div>
 
@@ -466,11 +469,11 @@ function openFinanceCompareModal(vehicleName = '') {
                 <small>%${offer.rate} aylık oran • ${offer.term} ay vade</small>
               </div>
               <div>
-                <b>${formatter.format(offer.monthly)} ₺</b>
+                <b>${formatAmount(offer.monthly)}</b>
                 <small>tahmini aylık ödeme</small>
               </div>
               <div>
-                <b>${formatter.format(offer.total)} ₺</b>
+                <b>${formatAmount(offer.total)}</b>
                 <small>toplam geri ödeme</small>
               </div>
               <button class="btn primary finance-prequal-btn" data-bank="${escapeHtml(offer.provider)}" data-vehicle="${escapeHtml(vehicle.name || vehicleName)}">
@@ -686,7 +689,7 @@ function openLeadModal(type, vehicle = '') {
     const financeContext = window.lastFinanceLeadContext || {};
     const financeComparison = financeContext.comparison || {};
     const financeMeta = financeContext.bank && financeComparison.loanAmount
-      ? `${financeContext.bank} • ${formatter.format(financeComparison.loanAmount)} ₺ • ${financeComparison.term} ay`
+      ? `${financeContext.bank} • ${formatAmount(financeComparison.loanAmount)} • ${financeComparison.term} ay`
       : '';
 
     modal.innerHTML = `
@@ -955,10 +958,10 @@ function renderDealerOffers(offers, vehicle, formData) {
           <div>
             <strong>${escapeHtml(offer.title || vehicle.name)}</strong>
             <span>${escapeHtml(offer.dealer_name || 'Satıcı')} • ${escapeHtml([offer.dealer_city, offer.dealer_district].filter(Boolean).join(' / '))}</span>
-            <small>${offer.km ? `${formatter.format(offer.km)} km • ` : ''}${escapeHtml(offer.color || 'Renk bilgisi yok')}</small>
+            <small>${offer.km ? `${formatCount(offer.km)} km • ` : ''}${escapeHtml(offer.color || 'Renk bilgisi yok')}</small>
           </div>
           <div class="dealer-offer-price">
-            <strong>${offer.price ? `${formatter.format(offer.price)} ₺` : 'Fiyat sorunuz'}</strong>
+            <strong>${offer.price ? `${formatAmount(offer.price)}` : 'Fiyat sorunuz'}</strong>
             ${offer.listing_url ? `<a href="${escapeHtml(offer.listing_url)}" target="_blank" rel="noopener">İlana git</a>` : ''}
           </div>
         </article>
@@ -1147,20 +1150,20 @@ function renderResults(results) {
 
         <div class="monthly-impact">
           <span>Aylık bütçe etkisi</span>
-          <strong>${formatter.format(monthlyImpact)} ₺</strong>
+          <strong>${formatAmount(monthlyImpact)}</strong>
         </div>
 
         <div class="cost auto-market-cost">
           <p><strong>12 aylık tahmini maliyet</strong></p>
-          <p>${formatter.format(vehicle.costs.total)} ₺</p>
+          <p>${formatAmount(vehicle.costs.total)}</p>
           <small>
-            Yakıt ${formatter.format(vehicle.costs.fuel)} ₺ •
-            Sigorta ${formatter.format(vehicle.costs.insurance)} ₺ •
-            Kasko ${formatter.format(vehicle.costs.kasko || 0)} ₺ •
-            Bakım ${formatter.format(vehicle.costs.maintenance)} ₺ •
-            Vergi ${formatter.format(vehicle.costs.tax || 0)} ₺ •
-            Lastik ${formatter.format(vehicle.costs.tires || 0)} ₺ •
-            Değer kaybı ${formatter.format(vehicle.costs.depreciation || 0)} ₺
+            Yakıt ${formatAmount(vehicle.costs.fuel)} •
+            Sigorta ${formatAmount(vehicle.costs.insurance)} •
+            Kasko ${formatAmount(vehicle.costs.kasko || 0)} •
+            Bakım ${formatAmount(vehicle.costs.maintenance)} •
+            Vergi ${formatAmount(vehicle.costs.tax || 0)} •
+            Lastik ${formatAmount(vehicle.costs.tires || 0)} •
+            Değer kaybı ${formatAmount(vehicle.costs.depreciation || 0)}
           </small>
         </div>
 

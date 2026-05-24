@@ -58,9 +58,9 @@ export class ComparisonUI {
             '</div>' +
             this.getComparisonScoreBreakdownMarkup(item.scoreBreakdown) +
             '<div class="comparison-metrics">' +
-                '<div><span>Ana bedel</span><strong>' + this.formatPrice(item.price || 0) + ' ₺</strong></div>' +
-                '<div><span>Dönemsel maliyet</span><strong>' + this.formatPrice(item.periodicCost || 0) + ' ₺</strong></div>' +
-                '<div><span>Aylık ödeme</span><strong>' + this.formatPrice(item.monthlyPayment || 0) + ' ₺</strong></div>' +
+                '<div><span>Ana bedel</span><strong>' + this.formatPrice(item.price || 0) + '</strong></div>' +
+                '<div><span>Dönemsel maliyet</span><strong>' + this.formatPrice(item.periodicCost || 0) + '</strong></div>' +
+                '<div><span>Aylık ödeme</span><strong>' + this.formatPrice(item.monthlyPayment || 0) + '</strong></div>' +
             '</div>' +
             this.getCostBreakdownMarkup(item) +
             this.getComparisonGraphMarkup(item, maxValues) +
@@ -117,7 +117,7 @@ export class ComparisonUI {
         return '<div class="comparison-breakdown">' +
             entries.map(([key, value]) =>
                 '<div><span>' + this.escapeHtml(labels[key] || key) + '</span><strong>' +
-                this.formatPrice(value) + ' ₺</strong></div>'
+                this.formatPrice(value) + '</strong></div>'
             ).join('') +
         '</div>';
     }
@@ -134,7 +134,7 @@ export class ComparisonUI {
             return '<div class="comparison-graph-row">' +
                 '<span>' + this.escapeHtml(metric.label) + '</span>' +
                 '<i><b style="width:' + this.escapeHtml(percent) + '%"></b></i>' +
-                '<strong>' + this.formatPrice(metric.value) + ' ₺</strong>' +
+                '<strong>' + this.formatPrice(metric.value) + '</strong>' +
             '</div>';
         }).join('') + '</div>';
     }
@@ -159,7 +159,7 @@ export class ComparisonUI {
     }
 
     getComparisonMatrixRows(items = []) {
-        const money = (value) => Number(value || 0) > 0 ? this.formatPrice(value) + ' ₺' : '-';
+        const money = (value) => Number(value || 0) > 0 ? this.formatPrice(value) : '-';
         const rows = [
             { label: 'Kaynak', get: (item) => item.sourceType || '-' },
             { label: 'Karar skoru', get: (item) => item.score ? item.score + '/100' : '-' },

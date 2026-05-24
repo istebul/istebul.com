@@ -13,6 +13,7 @@ if (typeof document !== 'undefined') {
 // UI Manager
 import { state } from '../core/state.js';
 import { readStorageRaw, writeStorageRaw, STORAGE_KEYS } from '../core/storage-keys.js';
+import { formatMoney, formatNumber, formatRelativeTime } from '../core/format.js';
 
 export class UIManager {
     constructor() {
@@ -354,7 +355,7 @@ export class UIManager {
 
         toolbar.hidden = false;
         if (countLabel) {
-            countLabel.textContent = count === 0 ? 'Size uygun seçenekler hazırlanıyor' : (count === 1 ? '1 sonuç' : this.formatPrice(count) + ' sonuç');
+            countLabel.textContent = count === 0 ? 'Size uygun seçenekler hazırlanıyor' : (count === 1 ? '1 sonuç' : this.formatNumberPlain(count) + ' sonuç');
         }
         if (contextLabel) {
             contextLabel.textContent = this.getListingToolbarContext(options, count);
@@ -488,7 +489,7 @@ export class UIManager {
                             <span><i data-lucide="clock-3"></i> ${this.formatDate(listing.created_at)}</span>
                         </div>
                     </div>
-                    <p class="listing-price">${this.formatPrice(listing.price)} ₺</p>
+                    <p class="listing-price">${this.formatPrice(listing.price)}</p>
                 </div>
                 <div class="listing-detail-body">
                     <div class="listing-detail-image">
@@ -530,10 +531,10 @@ export class UIManager {
                 '<div class="listing-detail-score"><strong>' + this.escapeHtml(profile.score || '-') + '</strong><span>/100</span></div>' +
             '</div>' +
             '<div class="comparison-metrics listing-detail-metrics">' +
-                '<div><span>Ana bedel</span><strong>' + this.formatPrice(profile.price || 0) + ' ₺</strong></div>' +
-                '<div><span>Dönemsel maliyet</span><strong>' + this.formatPrice(profile.periodicCost || 0) + ' ₺</strong></div>' +
-                '<div><span>Aylık ödeme</span><strong>' + this.formatPrice(profile.monthlyPayment || 0) + ' ₺</strong></div>' +
-                '<div><span>Toplam geri ödeme</span><strong>' + this.formatPrice(profile.totalPayment || 0) + ' ₺</strong></div>' +
+                '<div><span>Ana bedel</span><strong>' + this.formatPrice(profile.price || 0) + '</strong></div>' +
+                '<div><span>Dönemsel maliyet</span><strong>' + this.formatPrice(profile.periodicCost || 0) + '</strong></div>' +
+                '<div><span>Aylık ödeme</span><strong>' + this.formatPrice(profile.monthlyPayment || 0) + '</strong></div>' +
+                '<div><span>Toplam geri ödeme</span><strong>' + this.formatPrice(profile.totalPayment || 0) + '</strong></div>' +
             '</div>' +
             this.getCostBreakdownMarkup(profile) +
             this.getComparisonGraphMarkup(profile, maxValues) +
@@ -546,7 +547,7 @@ export class UIManager {
     getListingDetailRowsMarkup(rows = []) {
         if (!Array.isArray(rows) || !rows.length) return '';
         return '<div class="listing-detail-rows">' + rows.slice(0, 6).map((row) =>
-            '<div><span>' + this.escapeHtml(row.label) + '</span><strong>' + this.formatPrice(row.value || 0) + ' ₺</strong><small>' + this.escapeHtml(row.note || '') + '</small></div>'
+            '<div><span>' + this.escapeHtml(row.label) + '</span><strong>' + this.formatPrice(row.value || 0) + '</strong><small>' + this.escapeHtml(row.note || '') + '</small></div>'
         ).join('') + '</div>';
     }
 
@@ -570,7 +571,7 @@ export class UIManager {
                 <div class="favorite-card-body">
                     <h4>${this.escapeHtml(listing.title)}</h4>
                     <p>${this.escapeHtml(listing.location || 'Konum belirtilmemiş')}</p>
-                    <p class="listing-price">${this.formatPrice(listing.price)} ₺</p>
+                    <p class="listing-price">${this.formatPrice(listing.price)}</p>
                     <div class="listing-actions">
                         <button class="btn btn-outline" data-favorite-id="${this.escapeHtml(listing.id)}"><i data-lucide="heart-off"></i> Kaldır</button>
                         <button class="btn btn-outline" data-action="detail" data-listing-id="${this.escapeHtml(listing.id)}"><i data-lucide="eye"></i> Detay</button>
@@ -1035,24 +1036,15 @@ export class UIManager {
     }
 
     formatPrice(price) {
-        return new Intl.NumberFormat('tr-TR').format(price);
+        return formatMoney(price);
+    }
+
+    formatNumberPlain(value) {
+        return formatNumber(value);
     }
 
     formatDate(dateString) {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diff = now - date;
-
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(diff / 3600000);
-        const days = Math.floor(diff / 86400000);
-
-        if (minutes < 1) return 'Şimdi';
-        if (minutes < 60) return `${minutes} dakika önce`;
-        if (hours < 24) return `${hours} saat önce`;
-        if (days < 7) return `${days} gün önce`;
-
-        return date.toLocaleDateString('tr-TR');
+        return formatRelativeTime(dateString);
     }
 
     // Scroll to element

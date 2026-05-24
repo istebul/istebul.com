@@ -47,7 +47,7 @@ export class ListingsUI {
                     </div>
                     <div class="listing-content">
                         <h3 class="listing-title">${this.escapeHtml(listing.title)}</h3>
-                        <p class="listing-price">${this.formatPrice(listing.price)} ₺</p>
+                        <p class="listing-price">${this.formatPrice(listing.price)}</p>
                         <div class="listing-meta">
                             <span>${this.escapeHtml(locationLabel)}</span>
                             <span>${this.formatDate(listing.created_at)}</span>

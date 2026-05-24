@@ -9,6 +9,39 @@ function loadJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
 }
 
+function loadSeoLocales() {
+  try {
+    return loadJson('data/seo/locales.json');
+  } catch {
+    return null;
+  }
+}
+
+function stripLocalePrefixPath(pathname = '/') {
+  const p = pathname.startsWith('/') ? pathname : `/${pathname}`;
+  return p.replace(/^\/(en|de|ar)(?=\/|$)/, '') || '/';
+}
+
+function renderHreflangAlternates(site, canonicalPath) {
+  const locales = loadSeoLocales();
+  if (!locales?.alternates) return '';
+
+  const base = site.baseUrl.replace(/\/$/, '');
+  const bare = stripLocalePrefixPath(canonicalPath);
+  const tags = [];
+
+  for (const [id, alt] of Object.entries(locales.alternates)) {
+    const prefix = alt.pathPrefix || '';
+    const localized = prefix ? `${prefix}${bare === '/' ? '/' : bare}` : bare;
+    const href = absoluteUrl(base, localized);
+    tags.push(`<link rel="alternate" hreflang="${escapeHtml(alt.hreflang || id)}" href="${escapeHtml(href)}">`);
+  }
+
+  tags.push(`<link rel="alternate" hreflang="x-default" href="${escapeHtml(absoluteUrl(base, bare))}">`);
+
+  return tags.join('\n  ');
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -55,6 +88,7 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra }) {
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="googlebot" content="index, follow">
   <link rel="canonical" href="${escapeHtml(canonical)}">
+  ${renderHreflangAlternates(site, canonicalPath)}
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
   <meta property="og:locale" content="${escapeHtml(site.locale)}">
   <meta property="og:site_name" content="${escapeHtml(site.siteName)}">

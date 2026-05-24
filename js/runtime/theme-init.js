@@ -1,3 +1,4 @@
+import './locale-bootstrap.js';
 import { readStorageRaw, STORAGE_KEYS } from '../core/storage-keys.js';
 
 try {

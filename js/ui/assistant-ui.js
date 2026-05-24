@@ -199,7 +199,7 @@ export class AssistantUI {
                                 '<h4>' + this.escapeHtml(item.name) + '</h4>' +
                                 '<p>' + this.escapeHtml(item.scoreNote) + '</p>' +
                             '</div>' +
-                            '<strong class="assistant-price">' + this.formatPrice(item.price) + ' ₺</strong>' +
+                            '<strong class="assistant-price">' + this.formatPrice(item.price) + '</strong>' +
                         '</div>' +
                         this.getRecommendationHighlightsMarkup(item) +
                         '<div class="assistant-recommendation-actions"><button type="button" class="btn btn-outline" data-compare-recommendation="' + this.escapeHtml(index) + '"><i data-lucide="columns-3"></i> Karşılaştırmaya ekle</button></div>' +
@@ -211,7 +211,7 @@ export class AssistantUI {
                         this.getCostChartMarkup(item.costChart) +
                         '<div class="assistant-cost-grid">' +
                             this.getCostMarkup(item.costs) +
-                            '<div class="assistant-cost total"><span>' + this.escapeHtml(item.calculationTable?.totalLabel || 'Toplam dönemsel maliyet') + '</span><strong>' + this.formatPrice(item.yearlyCost) + ' ₺</strong></div>' +
+                            '<div class="assistant-cost total"><span>' + this.escapeHtml(item.calculationTable?.totalLabel || 'Toplam dönemsel maliyet') + '</span><strong>' + this.formatPrice(item.yearlyCost) + '</strong></div>' +
                         '</div>' +
                         '<div class="assistant-finance"><h5>Banka kredi karşılaştırması</h5>' + this.getFinanceMarkup(item.financeComparisons) + '</div>' +
                         this.getRecommendationActionPlanMarkup(result.categoryId, item) +
@@ -280,10 +280,10 @@ export class AssistantUI {
         };
         const labels = labelSets[categoryId] || labelSets.arac;
         return '<div class="assistant-executive-metrics">' +
-            this.getDecisionMetricMarkup(labels.price, this.formatPrice(primary.price) + ' ₺', 'Seçilen kategoriye özel tahmini ana bedel', 'wallet') +
-            this.getDecisionMetricMarkup(labels.period, this.formatPrice(primary.yearlyCost) + ' ₺', labels.periodNote, 'calculator') +
-            this.getDecisionMetricMarkup(labels.monthly, this.formatPrice(monthlyPayment) + ' ₺', bestFinance ? bestFinance.bank + ' simülasyonu' : 'Banka verisi yok', 'landmark') +
-            this.getDecisionMetricMarkup(labels.total, this.formatPrice(totalPayment) + ' ₺', bestFinance ? bestFinance.term + ' ay vade' : 'Simülasyon bekliyor', 'receipt') +
+            this.getDecisionMetricMarkup(labels.price, this.formatPrice(primary.price), 'Seçilen kategoriye özel tahmini ana bedel', 'wallet') +
+            this.getDecisionMetricMarkup(labels.period, this.formatPrice(primary.yearlyCost), labels.periodNote, 'calculator') +
+            this.getDecisionMetricMarkup(labels.monthly, this.formatPrice(monthlyPayment), bestFinance ? bestFinance.bank + ' simülasyonu' : 'Banka verisi yok', 'landmark') +
+            this.getDecisionMetricMarkup(labels.total, this.formatPrice(totalPayment), bestFinance ? bestFinance.term + ' ay vade' : 'Simülasyon bekliyor', 'receipt') +
         '</div>';
     }
 
@@ -355,12 +355,12 @@ export class AssistantUI {
         return '<section class="assistant-calculation-table">' +
             '<div class="assistant-calculation-head">' +
                 '<div><h5>' + this.escapeHtml(table.title || 'Hesaplama tablosu') + '</h5><p>' + this.escapeHtml(table.note || '') + '</p></div>' +
-                '<strong>' + this.formatPrice(table.totalValue || 0) + ' ₺</strong>' +
+                '<strong>' + this.formatPrice(table.totalValue || 0) + '</strong>' +
             '</div>' +
             '<div class="assistant-calculation-rows">' + table.rows.map((row) =>
                 '<div class="assistant-calculation-row">' +
                     '<div><span>' + this.escapeHtml(row.label) + '</span><small>' + this.escapeHtml(row.note || '') + '</small></div>' +
-                    '<strong>' + this.formatPrice(row.value || 0) + ' ₺</strong>' +
+                    '<strong>' + this.formatPrice(row.value || 0) + '</strong>' +
                 '</div>'
             ).join('') + '</div>' +
         '</section>';
@@ -372,7 +372,7 @@ export class AssistantUI {
             '<div class="assistant-chart-head"><h5>Grafikli maliyet dağılımı</h5><span>Kalemlerin toplam içindeki payı</span></div>' +
             '<div class="assistant-chart-bars">' + chart.map((item) =>
                 '<div class="assistant-chart-row">' +
-                    '<div><span>' + this.escapeHtml(item.label) + '</span><strong>' + this.formatPrice(item.value || 0) + ' ₺</strong></div>' +
+                    '<div><span>' + this.escapeHtml(item.label) + '</span><strong>' + this.formatPrice(item.value || 0) + '</strong></div>' +
                     '<i><b style="width: ' + this.escapeHtml(item.percent || 0) + '%"></b></i>' +
                     '<small>%' + this.escapeHtml(item.percent || 0) + '</small>' +
                 '</div>'
@@ -401,7 +401,7 @@ export class AssistantUI {
                 '<strong>' + this.escapeHtml(verdict.label) + '</strong>' +
                 '<p>' + this.escapeHtml(item.name || 'Seçenek') + '</p>' +
             '</div>' +
-            '<small>' + this.escapeHtml(item.score || '-') + '/100 · ' + this.formatPrice(item.price || 0) + ' ₺</small>' +
+            '<small>' + this.escapeHtml(item.score || '-') + '/100 · ' + this.formatPrice(item.price || 0) + '</small>' +
         '</article>';
     }
 
@@ -457,8 +457,8 @@ export class AssistantUI {
         return '<div class="assistant-recommendation-highlights">' +
             '<span><strong>' + this.escapeHtml(item.score) + '/100</strong> uygunluk</span>' +
             '<span><strong>' + this.escapeHtml(item.riskLevel || 'Kontrol gerekli') + '</strong> risk</span>' +
-            '<span><strong>' + this.formatPrice(item.yearlyCost) + ' ₺</strong> dönemsel maliyet</span>' +
-            '<span><strong>' + (bestFinance ? this.formatPrice(bestFinance.monthlyPayment) + ' ₺/ay' : 'Yok') + '</strong> en iyi kredi</span>' +
+            '<span><strong>' + this.formatPrice(item.yearlyCost) + '</strong> dönemsel maliyet</span>' +
+            '<span><strong>' + (bestFinance ? this.formatPrice(bestFinance.monthlyPayment) + '/ay' : 'Yok') + '</strong> en iyi kredi</span>' +
         '</div>';
     }
 
@@ -561,9 +561,9 @@ export class AssistantUI {
                     </div>
                 </div>
                 <div class="decision-history-metrics">
-                    <span><strong>${isAuto ? 'Tahmini fiyat' : 'Fiyat'}:</strong> ${this.formatPrice(item.topPick?.price || 0)} ₺</span>
-                    <span><strong>${isAuto ? '12 aylık maliyet' : 'Dönemsel maliyet'}:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)} ₺</span>
-                    <span><strong>${isAuto ? 'Aylık bütçe etkisi' : 'Aylık kredi'}:</strong> ${this.formatPrice(item.topPick?.monthlyPayment || 0)} ₺</span>
+                    <span><strong>${isAuto ? 'Tahmini fiyat' : 'Fiyat'}:</strong> ${this.formatPrice(item.topPick?.price || 0)}</span>
+                    <span><strong>${isAuto ? '12 aylık maliyet' : 'Dönemsel maliyet'}:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)}</span>
+                    <span><strong>${isAuto ? 'Aylık bütçe etkisi' : 'Aylık kredi'}:</strong> ${this.formatPrice(item.topPick?.monthlyPayment || 0)}</span>
                     <span><strong>Tarih:</strong> ${this.formatDate(item.createdAt)}</span>
                 </div>
                 <div class="decision-history-answers">
@@ -587,7 +587,7 @@ export class AssistantUI {
         return costs.map((cost) => `
             <div class="assistant-cost">
                 <span>${this.escapeHtml(cost.label)}</span>
-                <strong>${this.formatPrice(cost.value)} ₺</strong>
+                <strong>${this.formatPrice(cost.value)}</strong>
             </div>
         `).join('');
     }
@@ -598,8 +598,8 @@ export class AssistantUI {
                 ${financeComparisons.map((finance) => `
                     <div class="assistant-finance-row">
                         <span>${this.escapeHtml(finance.bank)}</span>
-                        <strong>${this.formatPrice(finance.monthlyPayment)} ₺/ay</strong>
-                        <small>${this.escapeHtml(finance.term)} ay, %${this.escapeHtml(finance.rate)} aylık, kredi ${this.formatPrice(finance.principal)} ₺</small>
+                        <strong>${this.formatPrice(finance.monthlyPayment)}/ay</strong>
+                        <small>${this.escapeHtml(finance.term)} ay, %${this.escapeHtml(finance.rate)} aylık, kredi ${this.formatPrice(finance.principal)}</small>
                     </div>
                 `).join('')}
             </div>

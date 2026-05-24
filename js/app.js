@@ -1,4 +1,5 @@
 // isteBul v2 - Main Application
+import './runtime/locale-bootstrap.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
 import { AuthManager } from './features/auth/auth.js';
@@ -14,6 +15,7 @@ import { errorBoundary } from './core/error-boundary.js';
 import { ListingManager } from './features/ilan/ilan.js';
 import { ProfileManager } from './features/profil/profil.js';
 import './features/i18n/i18n.js';
+import { formatMoney } from './core/format.js';
 
 window.lucide = window.lucide || {
     createIcons() {},
@@ -2146,7 +2148,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     formatCurrency(value) {
-        return `${new Intl.NumberFormat('tr-TR').format(Math.round(Number(value) || 0))} ₺`;
+        return formatMoney(Math.round(Number(value) || 0));
     }
 
 

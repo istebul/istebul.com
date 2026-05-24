@@ -1,0 +1,10 @@
+{
+  "defaultLocale": "tr",
+  "alternates": {
+    "tr": { "pathPrefix": "", "hreflang": "tr" },
+    "en": { "pathPrefix": "/en", "hreflang": "en" },
+    "de": { "pathPrefix": "/de", "hreflang": "de" },
+    "ar": { "pathPrefix": "/ar", "hreflang": "ar" }
+  },
+  "xDefault": "tr"
+}

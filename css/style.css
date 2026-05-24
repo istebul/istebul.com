@@ -2,6 +2,7 @@
 @import './executive-polish.css';
 @import './revenue.css';
 @import './mobile-perfection.css';
+@import './rtl.css';
 
 /* Reset and Base Styles */
 * {
