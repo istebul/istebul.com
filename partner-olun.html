@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Partner Olun | isteBul</title>
-  <meta name="description" content="isteBul Auto partner programı — İzmir pilot: sıcak araç müşteri adayları, skorlanmış lead ve webhook teslimatı.">
+  <meta name="description" content="isteBul Auto B2B partner programı — skorlanmış sıcak lead, imzalı webhook teslimatı ve self-serve onboarding. İzmir pilot.">
   <link rel="stylesheet" href="/css/style.css?v=50">
   <link rel="stylesheet" href="/css/enterprise-polish.css?v=1">
   <link rel="stylesheet" href="/css/auto.css?v=3">
-  <link rel="stylesheet" href="/css/partner-platform.css?v=1">
+  <link rel="stylesheet" href="/css/partner-platform.css?v=2">
 </head>
 <body class="ib-enterprise">
   <header class="auto-header ib-partner-header">
@@ -31,109 +31,115 @@
   </div>
 
   <main class="section legal-page ib-partner-landing">
-    <p class="kicker">isteBul Auto · Partner programı</p>
-    <h1>İzmir’de sıcak araç müşteri adayları alın</h1>
-    <p class="lead">isteBul Auto, araç satın alma niyeti yüksek kullanıcıları bütçe, kullanım, araç tipi ve finansman niyetine göre skorlar; kaliteli lead’leri galeri, finansman ve sigorta partnerlerine yönlendirir.</p>
+    <p class="kicker">isteBul Auto · B2B partner platformu</p>
+    <h1>Nitelikli araç lead’lerini ölçeklenebilir şekilde alın</h1>
+    <p class="lead">isteBul Auto, satın alma niyeti yüksek kullanıcıları bütçe, kullanım, araç tipi ve finansman sinyallerine göre skorlar; sıcak lead’leri bayi, finansman ve sigorta partnerlerine imzalı webhook ile teslim eder. Manuel WhatsApp süreçleri yerine kurumsal self-serve onboarding.</p>
 
-    <div class="partner-hero-card ib-partner-pilot" style="margin:1.5rem 0 2rem;">
+    <div class="final-cta-actions ib-partner-hero-cta">
+      <a class="btn primary" href="/partner-basvuru.html">Self-serve başvuru başlat</a>
+      <a class="btn secondary" href="/partner-docs.html">Teknik dokümantasyon</a>
+    </div>
+
+    <section class="ib-partner-value-grid" aria-labelledby="partner-value-heading">
+      <h2 id="partner-value-heading" class="section-title">Partner değer önerisi</h2>
+      <div class="grid three premium-steps">
+        <article>
+          <span>01</span>
+          <h3>Skorlanmış talep</h3>
+          <p>Hot ve very_hot öncelikli lead’ler; bütçe ve kullanım profili ile ön nitelendirilmiş müşteri adayları.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>Operasyonel teslimat</h3>
+          <p>HMAC imzalı webhook, dispatch-id, otomatik retry ve failover route — CRM’inize doğrudan akış.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Ölçülebilir kazanım</h3>
+          <p>Callback ile kabul / kazanım / kayıp bildirimi; teslimat logları ve partner operasyon paneli.</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="partner-how-heading">
+      <h2 id="partner-how-heading" class="section-title">Nasıl çalışır</h2>
+      <p class="lead">Altı adımlı self-serve funnel: başvurudan test payload doğrulamasına kadar tek akış.</p>
+      <div class="ib-partner-funnel-overview">
+        <ol>
+          <li><strong>Başvuru</strong> — Firma, kategori ve plan seçimi</li>
+          <li><strong>Uygunluk</strong> — CRM, ekip ve KVKK hazırlığı</li>
+          <li><strong>Lead ihtiyaçları</strong> — Skor eşiği, kapasite, coğrafya</li>
+          <li><strong>Webhook</strong> — HTTPS endpoint kaydı</li>
+          <li><strong>Test doğrulama</strong> — Örnek payload HMAC imzası</li>
+          <li><strong>Tamamlandı</strong> — Operasyon onayı ve canlı teslimat</li>
+        </ol>
+      </div>
+    </section>
+
+    <section aria-labelledby="partner-quality-heading">
+      <h2 id="partner-quality-heading" class="section-title">Lead kalitesi nasıl oluşuyor</h2>
+      <p class="lead">isteBul Auto karar motoru; kullanıcı girdilerini lead skoru ve öncelik bandına dönüştürür. Partner’e yalnızca eşik üstü talepler yönlendirilir.</p>
+      <div class="partner-hero-card ib-partner-pilot">
+        <div>
+          <h3>Skorlama mantığı (özet)</h3>
+          <ul class="ib-partner-bullet-list">
+            <li>Bütçe, kullanım (aile / iş), kasa ve yakıt tercihi</li>
+            <li>Finansman niyeti ve ilgi türü (araç, kredi, sigorta)</li>
+            <li>Lead skoru ve hot / very_hot öncelik etiketi</li>
+            <li>Günlük kapasite ve route sağlığına göre dispatch</li>
+          </ul>
+        </div>
+        <div class="partner-lead-preview">
+          <span class="ib-sample-scenario-label">Örnek senaryo — gösterim amaçlı</span>
+          <strong>SUV / Hybrid / 1.750.000 TL bütçe</strong>
+          <ul>
+            <li>Kullanım: aile</li>
+            <li>Finansman: kredi düşünüyor</li>
+            <li>Öncelik: sıcak lead</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="partner-integration-heading">
+      <h2 id="partner-integration-heading" class="section-title">Entegrasyon kolaylığı</h2>
+      <div class="ib-partner-trust-grid">
+        <div class="ib-partner-trust-card"><strong>Standart webhook</strong><p>JSON POST, HMAC-SHA256, örnek payload ve self-serve imza testi.</p></div>
+        <div class="ib-partner-trust-card"><strong>Dokümantasyon</strong><p><a href="/partner-docs.html">Partner API</a> ve <a href="/docs/partner-webhook-integration.md">webhook rehberi</a>.</p></div>
+        <div class="ib-partner-trust-card"><strong>Operasyonel dayanıklılık</strong><p>Retry, failover, circuit breaker ve günlük cap — production hazır.</p></div>
+      </div>
+    </section>
+
+    <div class="partner-hero-card ib-partner-pilot ib-partner-pilot-offer">
       <div>
         <h2>İlk 5 sıcak lead — ücretsiz pilot</h2>
-        <p>Entegrasyon zorunlu değil. Skorlanmış lead teslimi; ücretlendirme modeli hacim ve kategoriye göre ayrıca paylaşılır. Pilot sonrası kaliteyi ölçerek ücretli modele geçebilirsiniz.</p>
+        <p>Entegrasyonu self-serve panelde tamamlayın; operasyon ekibi endpoint onayı sonrası canlı akışı açar. Ücretlendirme hacim ve kategoriye göre şeffaf CPL veya kapasite paketi olarak netleşir — sözleşme offline imzalanır.</p>
         <div class="final-cta-actions">
-          <a class="btn primary" href="https://wa.me/905456786420?text=Merhaba%2C%20isteBul%20Partner%20Program%C4%B1%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener">WhatsApp ile iletişim</a>
+          <a class="btn primary" href="/partner-basvuru.html">Pilot başvurusu</a>
           <a class="btn secondary" href="/auto/">Auto deneyimini gör</a>
         </div>
       </div>
-      <div class="partner-lead-preview">
-        <span class="ib-sample-scenario-label">Örnek senaryo — gösterim amaçlı</span>
-        <strong>SUV / Hybrid / 1.750.000 TL bütçe</strong>
-        <ul>
-          <li>Kullanım: aile</li>
-          <li>Finansman: kredi düşünüyor</li>
-          <li>Öncelik: sıcak lead</li>
-        </ul>
-      </div>
-    </div>
-
-    <h2 class="section-title">Partner acquisition funnel</h2>
-    <p class="lead">Başvuru → onboarding → webhook test → canlı lead — ölçülebilir B2B gelir hattı.</p>
-
-    <div class="ib-partner-acquisition-steps">
-      <article><span>01</span><h3>Keşfet</h3><p>Rate card ve güven varlıkları; şeffaf CPL / pilot modeli.</p></article>
-      <article><span>02</span><h3>Başvur</h3><p>Self-serve form; UTM ve kategori ile segmentasyon.</p></article>
-      <article><span>03</span><h3>Entegre ol</h3><p>Onboarding panelinde webhook taslağı; HMAC dokümantasyonu.</p></article>
-      <article><span>04</span><h3>Canlı lead</h3><p>Hot skorlu teslimat, callback ile kazanım bildirimi.</p></article>
     </div>
 
     <h2 class="section-title">B2B fiyatlandırma</h2>
-    <p class="lead">Pilot ile başlayın; hacim ve kategoriye göre CPL veya aylık kapasite. Sözleşme offline netleşir — ürün şeffaflığı sağlar.</p>
+    <p class="lead">Pilot ile başlayın; hacim ve kategoriye göre CPL veya aylık kapasite. Ürün şeffaflığı sağlar — taahhütler sözleşmede netleşir.</p>
     <div id="partner-rate-card-root"></div>
 
     <h2 class="section-title">Enterprise güven</h2>
     <div class="ib-partner-trust-grid">
       <div class="ib-partner-trust-card"><strong>İmzalı webhook</strong><p>HMAC-SHA256, dispatch-id, SSRF-safe URL kaydı.</p></div>
-      <div class="ib-partner-trust-card"><strong>Operasyonel dayanıklılık</strong><p>Retry, failover, circuit breaker, günlük cap.</p></div>
       <div class="ib-partner-trust-card"><strong>Uyumluluk</strong><p>KVKK, veri minimizasyonu, teslimat logları. <a href="/kvkk.html">KVKK</a></p></div>
+      <div class="ib-partner-trust-card"><strong>Destek</strong><p>Self-serve onboarding + iş günü içinde operasyon yanıtı.</p></div>
     </div>
 
-    <h2 class="section-title">Kurumsal teslimat altyapısı</h2>
-    <p class="lead">İmzalı webhook, retry, failover ve teslimat logları ile ölçülebilir partner operasyonu.</p>
-
-    <div class="grid three premium-steps">
-      <article><span>01</span><h3>Nitelikli lead</h3><p>Skor ve öncelik (hot / very_hot) ile filtrelenmiş talepler; günlük kapasite ve sağlık izleme.</p></article>
-      <article><span>02</span><h3>Güvenli webhook</h3><p>HMAC imza, teslimat kimliği, otomatik retry ve yedek route (failover).</p></article>
-      <article><span>03</span><h3>Ölçülebilir operasyon</h3><p>Callback ile kabul / kazanım / kayıp durumları ve teslimat metrikleri — şeffaf raporlama.</p></article>
-    </div>
-
-    <div class="final-cta-card" style="margin-top:28px;">
-      <p class="kicker">Partner başvurusu</p>
-      <h2>Webhook veya manuel süreçle başlayın.</h2>
-      <p>Galeri, sigorta, finansman veya hizmet partneriyseniz formu doldurun; entegrasyon dokümantasyonunu paylaşalım.</p>
-
-      <form id="partner-application-form" class="partner-form">
-        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;">
-        <div class="form-row">
-          <label>Firma adı<input name="company_name" required maxlength="120"></label>
-          <label>Yetkili<input name="contact_name" required maxlength="80"></label>
-        </div>
-        <div class="form-row">
-          <label>Telefon<input name="phone" type="tel" required placeholder="5xx xxx xx xx"></label>
-          <label>E-posta<input name="email" type="email" required></label>
-        </div>
-        <div class="form-row">
-          <label>Şehir<input name="city" maxlength="60"></label>
-          <label>Kategori
-            <select name="category" required>
-              <option value="">Seçin</option>
-              <option value="dealer_partner">Bayi / Galeri</option>
-              <option value="finance_partner">Finansman</option>
-              <option value="insurance_partner">Sigorta</option>
-              <option value="general_sales">Genel satış</option>
-            </select>
-          </label>
-        </div>
-        <label>Aylık lead kapasitesi<input name="lead_capacity" placeholder="Örn. 50-100"></label>
-        <fieldset class="ib-partner-billing-fieldset">
-          <legend>İlgilendiğiniz plan</legend>
-          <label class="checkbox-row"><input type="radio" name="billing_plan" value="pilot" checked> Pilot (ilk 5 sıcak lead ücretsiz)</label>
-          <label class="checkbox-row"><input type="radio" name="billing_plan" value="cpl"> CPL — sıcak lead başına</label>
-          <label class="checkbox-row"><input type="radio" name="billing_plan" value="subscription"> Aylık kapasite paketi</label>
-          <label class="checkbox-row"><input type="radio" name="billing_plan" value="enterprise"> Enterprise API</label>
-        </fieldset>
-        <label class="checkbox-row">
-          <input type="checkbox" name="webhook_ready"> HTTPS webhook endpoint'imiz hazır
-        </label>
-        <label>Not<textarea name="notes" rows="3" placeholder="CRM, entegrasyon tercihi…"></textarea></label>
-        <button type="submit" class="btn primary">Başvuruyu gönder</button>
-      </form>
-
-      <p style="margin-top:16px;font-size:0.9rem;opacity:0.85;">
-        Teknik dokümantasyon: <a href="/partner-docs.html">Partner API &amp; webhook</a> · Markdown: <a href="/docs/partner-webhook-integration.md">Webhook entegrasyonu</a>
-      </p>
-
-      <div class="final-cta-actions" style="margin-top:20px;">
-        <a class="btn secondary" href="https://wa.me/905456786420?text=isteBul%20partner%20ba%C5%9Fvurusu" target="_blank" rel="noopener">WhatsApp</a>
-        <a class="btn secondary" href="/iletisim.html">Kurumsal iletişim</a>
+    <div class="final-cta-card ib-partner-final-cta">
+      <p class="kicker">Partner acquisition</p>
+      <h2>Manuel süreç yerine ölçeklenebilir onboarding</h2>
+      <p>Altı adımlı başvuru akışı ile uygunluk, lead profili ve webhook doğrulamasını tamamlayın.</p>
+      <div class="final-cta-actions">
+        <a class="btn primary" href="/partner-basvuru.html">Başvuruya başla</a>
+        <a class="btn secondary" href="https://wa.me/905456786420?text=isteBul%20kurumsal%20partner%20sorusu" target="_blank" rel="noopener">Kurumsal WhatsApp (opsiyonel)</a>
+        <a class="btn secondary" href="/iletisim.html">İletişim formu</a>
       </div>
     </div>
   </main>

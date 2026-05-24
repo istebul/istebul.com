@@ -53,7 +53,12 @@ export const PARTNER_FUNNEL_EVENTS = Object.freeze({
   APPLICATION_SUBMIT: 'partner_application_submit',
   DOCS_VIEW: 'partner_docs_view',
   ONBOARDING_VIEW: 'partner_onboarding_view',
-  WEBHOOK_DRAFT_SAVED: 'partner_webhook_draft_saved'
+  WEBHOOK_DRAFT_SAVED: 'partner_webhook_draft_saved',
+  FUNNEL_QUALIFICATION: 'partner_funnel_qualification',
+  FUNNEL_LEAD_NEEDS: 'partner_funnel_lead_needs',
+  FUNNEL_WEBHOOK: 'partner_funnel_webhook',
+  FUNNEL_TEST_PAYLOAD: 'partner_funnel_test_payload',
+  ONBOARDING_COMPLETE: 'partner_onboarding_complete'
 });
 
 function sessionKey(step) {
@@ -91,9 +96,10 @@ export function capturePartnerAttribution() {
   };
 }
 
-export function buildOnboardingUrl(token) {
+export function buildOnboardingUrl(token, step = 2) {
   const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.istebul.com';
-  return `${base}/partner-onboarding.html?token=${encodeURIComponent(token)}`;
+  const params = new URLSearchParams({ token, step: String(step) });
+  return `${base}/partner-basvuru.html?${params}`;
 }
 
 export function renderRateCardHtml() {

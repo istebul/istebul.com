@@ -78,6 +78,11 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "partner_docs_view",
   "partner_onboarding_view",
   "partner_webhook_draft_saved",
+  "partner_funnel_qualification",
+  "partner_funnel_lead_needs",
+  "partner_funnel_webhook",
+  "partner_funnel_test_payload",
+  "partner_onboarding_complete",
   // Admin CRM
   "crm_lead_status_change",
   "crm_follow_up_complete",

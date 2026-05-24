@@ -139,10 +139,141 @@
   font-weight: 700;
 }
 
+/* P2.1 — Self-serve funnel */
+
+.ib-partner-landing .ib-partner-hero-cta {
+  margin: 1.5rem 0 2.5rem;
+}
+
+.ib-partner-value-grid {
+  margin: 2.5rem 0;
+}
+
+.ib-partner-funnel-overview {
+  margin: 1.25rem 0 2rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #f8fafc;
+}
+
+.ib-partner-funnel-overview ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ib-partner-bullet-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  color: #475569;
+  font-size: 0.92rem;
+}
+
+.ib-partner-pilot-offer {
+  margin: 2rem 0;
+}
+
+.ib-partner-final-cta {
+  margin-top: 2.5rem;
+}
+
+.ib-partner-funnel {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.ib-partner-funnel-stepper ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0 0 1.75rem;
+  padding: 0;
+}
+
+.ib-partner-funnel-stepper li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.ib-partner-funnel-stepper li.is-done {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.ib-partner-funnel-stepper li.is-current {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.ib-partner-funnel-step-num {
+  font-weight: 800;
+}
+
+.ib-partner-funnel-panel h1 {
+  font-size: 1.65rem;
+  margin-bottom: 0.5rem;
+}
+
+.ib-partner-funnel-sample {
+  overflow-x: auto;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  margin: 1rem 0;
+}
+
+.ib-partner-funnel-help {
+  margin-top: 1.25rem;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.ib-partner-funnel-summary {
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #f8fafc;
+  margin-bottom: 1.25rem;
+  font-size: 0.92rem;
+}
+
+.ib-partner-funnel-summary code {
+  word-break: break-all;
+  font-size: 0.82rem;
+}
+
+.ib-partner-funnel-success-inline {
+  color: #059669;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.ib-honeypot {
+  position: absolute;
+  left: -9999px;
+}
+
 @media (max-width: 900px) {
   .ib-partner-acquisition-steps,
   .ib-partner-rate-grid,
   .ib-partner-trust-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ib-partner-funnel-stepper li .ib-partner-funnel-step-label {
+    display: none;
   }
 }

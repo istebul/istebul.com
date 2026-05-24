@@ -22,4 +22,6 @@ test('renderRateCardHtml outputs rate grid markup', () => {
 
 test('PARTNER_FUNNEL_EVENTS uses partner_ prefix', () => {
   assert.equal(PARTNER_FUNNEL_EVENTS.APPLICATION_SUBMIT, 'partner_application_submit');
+  assert.equal(PARTNER_FUNNEL_EVENTS.FUNNEL_QUALIFICATION, 'partner_funnel_qualification');
+  assert.equal(PARTNER_FUNNEL_EVENTS.ONBOARDING_COMPLETE, 'partner_onboarding_complete');
 });

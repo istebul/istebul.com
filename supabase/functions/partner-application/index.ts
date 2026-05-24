@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
     /* non-blocking */
   }
 
-  const onboarding_path = `/partner-onboarding.html?token=${data.onboarding_token}`;
+  const onboarding_path = `/partner-basvuru.html?token=${data.onboarding_token}&step=2`;
 
   return json(
     {

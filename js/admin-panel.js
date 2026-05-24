@@ -1445,7 +1445,7 @@ async function loadPartnerApplications() {
             <td>${formatShortDate(row.created_at)}</td>
             <td><small>${escapeHtml(row.billing_plan || 'pilot')}</small>${row.utm_source ? `<br><small>utm:${escapeHtml(row.utm_source)}</small>` : ''}</td>
             <td class="table-actions">
-              ${row.onboarding_token ? `<a class="btn btn-ghost btn-sm" href="/partner-onboarding.html?token=${encodeURIComponent(row.onboarding_token)}" target="_blank" rel="noopener">Onboarding</a>` : ''}
+              ${row.onboarding_token ? `<a class="btn btn-ghost btn-sm" href="/partner-basvuru.html?token=${encodeURIComponent(row.onboarding_token)}&step=2" target="_blank" rel="noopener">Onboarding</a>` : ''}
               ${!row.partner_endpoint_id ? `<button type="button" class="btn btn-primary btn-sm" data-action="provision-partner-application" data-id="${safeAttr(row.id)}">Endpoint oluştur</button>` : '<span class="badge badge-green">Endpoint var</span>'}
             </td>
           </tr>
