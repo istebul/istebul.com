@@ -69,6 +69,7 @@ import { WIZARD_ONBOARDING } from '../features/moat/category-positioning.js';
 import { initP4ProductPolish } from '../runtime/p4-product-polish.js';
 import { initMobilePremiumUx } from '../runtime/mobile-premium-ux.js';
 import { initConversionMicroUx } from '../runtime/conversion-micro-ux.js';
+import { initPerceivedPerformance } from '../runtime/perceived-performance.js';
 import { CONVERSION_COPY } from '../core/conversion-copy.js';
 
 const formatAmount = (value) => formatMoney(value);
@@ -363,7 +364,7 @@ function renderLoading() {
       clearInterval(autoLoadingStepTimer);
       autoLoadingStepTimer = null;
     }
-  }, 520);
+  }, 400);
 }
 
 function stopLoadingAnimation() {
@@ -1142,7 +1143,7 @@ function renderDealerOffers(offers, vehicle, formData) {
     <div class="dealer-offer-list">
       ${offers.map((offer) => `
         <article class="dealer-offer-card">
-          ${offer.image_url ? `<img src="${escapeHtml(offer.image_url)}" alt="${escapeHtml(offer.title)}" loading="lazy">` : ''}
+          ${offer.image_url ? `<img src="${escapeHtml(offer.image_url)}" alt="${escapeHtml(offer.title)}" loading="lazy" decoding="async">` : ''}
           <div>
             <strong>${escapeHtml(offer.title || vehicle.name)}</strong>
             <span>${escapeHtml(offer.dealer_name || 'Satıcı')} • ${escapeHtml([offer.dealer_city, offer.dealer_district].filter(Boolean).join(' / '))}</span>
@@ -1291,7 +1292,7 @@ function renderResults(results) {
         <div class="auto-market-rank">${rankLabel}</div>
         <div class="auto-market-image">
           ${vehicle.image_url
-            ? `<img src="${escapeHtml(vehicle.image_url)}" alt="${escapeHtml(vehicle.name)}" loading="lazy">`
+            ? `<img src="${escapeHtml(vehicle.image_url)}" alt="${escapeHtml(vehicle.name)}" loading="lazy" decoding="async">`
             : `<div class="vehicle-placeholder"><span>${escapeHtml(vehicle.brand || vehicle.name.split(' ')[1] || 'Araç')}</span></div>`}
         </div>
       </div>
@@ -2119,6 +2120,7 @@ setupAutoMobileNav();
 initP4ProductPolish();
 initMobilePremiumUx();
 initConversionMicroUx();
+initPerceivedPerformance();
 initAutoEntitlements();
 loadAutoRuntimeConfig();
 if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted') {

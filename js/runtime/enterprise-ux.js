@@ -2,6 +2,7 @@ import { initExecutivePolish } from './executive-polish.js';
 import { initP4ProductPolish } from './p4-product-polish.js';
 import { initMobilePremiumUx } from './mobile-premium-ux.js';
 import { initConversionMicroUx } from './conversion-micro-ux.js';
+import { initPerceivedPerformance } from './perceived-performance.js';
 
 export function initEnterpriseUx() {
   if (typeof document === 'undefined') return;
@@ -10,6 +11,7 @@ export function initEnterpriseUx() {
   initExecutivePolish();
   initMobilePremiumUx();
   initConversionMicroUx();
+  initPerceivedPerformance();
 
   const markReady = () => {
     document.documentElement.classList.add('ib-ready');
@@ -23,7 +25,7 @@ export function initEnterpriseUx() {
   }
 
   // Failsafe: never leave main at opacity 0 if init stalls
-  setTimeout(markReady, 2500);
+  setTimeout(markReady, 1800);
 
   document.addEventListener('routeChanged', () => {
     document.dispatchEvent(new CustomEvent('ib:refresh-icons'));

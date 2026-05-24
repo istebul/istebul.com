@@ -39,7 +39,10 @@ export class ListingsUI {
                         <img src="${imageUrl}"
                              alt="${this.escapeHtml(listing.title)}"
                              class="listing-image"
-                            >
+                             loading="lazy"
+                             decoding="async"
+                             width="400"
+                             height="250">
                         <div class="listing-badges">
                             <span class="listing-ai-score" title="Metodolojik uyum skoru"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScore)}/100</span>
                             <span>${this.escapeHtml(categoryLabel || 'İlan')}</span>

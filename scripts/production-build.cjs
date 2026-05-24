@@ -87,6 +87,16 @@ const injectPerformanceHints = (html, appBundleFile) => {
     ''
   );
 
+  const styleHashed = assetRefs.get('css/style.css');
+  if (styleHashed) {
+    output = output.replace(
+      '<!-- perf:preload-style -->',
+      `<link rel="preload" href="/${styleHashed}" as="style">`
+    );
+  } else {
+    output = output.replace('<!-- perf:preload-style -->', '');
+  }
+
   if (appBundleFile) {
     output = output.replace(
       '<!-- perf:modulepreload -->',
@@ -210,7 +220,8 @@ const autoCssParts = [
   'css/auto.css',
   'css/p4-premium-product.css',
   'css/p4-3-mobile-premium.css',
-  'css/conversion-micro-ux.css'
+  'css/conversion-micro-ux.css',
+  'css/p4-5-perceived-performance.css'
 ];
 const autoCssCombined = autoCssParts
   .filter((rel) => fs.existsSync(path.join(root, rel)))

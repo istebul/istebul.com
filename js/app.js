@@ -185,9 +185,9 @@ class App {
             };
 
             if ('requestIdleCallback' in window) {
-                requestIdleCallback(deferHeavyWork, { timeout: 1200 });
+                requestIdleCallback(deferHeavyWork, { timeout: 800 });
             } else {
-                setTimeout(deferHeavyWork, 300);
+                setTimeout(deferHeavyWork, 200);
             }
 
         } catch (error) {

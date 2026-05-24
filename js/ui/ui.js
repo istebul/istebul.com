@@ -14,6 +14,10 @@ if (typeof document !== 'undefined') {
 import { state } from '../core/state.js';
 import { readStorageRaw, writeStorageRaw, STORAGE_KEYS } from '../core/storage-keys.js';
 import { formatMoney, formatNumber, formatRelativeTime } from '../core/format.js';
+import {
+    renderListingSkeletonGrid,
+    renderInlineSkeletonPanel
+} from '../core/loading-skeleton.js';
 
 export class UIManager {
     constructor() {
@@ -494,7 +498,7 @@ export class UIManager {
                 </div>
                 <div class="listing-detail-body">
                     <div class="listing-detail-image">
-                        <img src="${imageUrl}" alt="${this.escapeHtml(listing.title)}">
+                        <img src="${imageUrl}" alt="${this.escapeHtml(listing.title)}" decoding="async" fetchpriority="high">
                     </div>
                     <div class="listing-detail-info">
                         ${this.getListingInsightsMarkup(listing, aiScore)}
@@ -926,18 +930,21 @@ export class UIManager {
 
     showLoading(container) {
         const element = document.querySelector(container);
-        if (element) {
-            element.innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Yükleniyor...</p>
-                </div>
-            `;
+        if (!element) return;
+
+        element.setAttribute('aria-busy', 'true');
+
+        if (container === '#listings-grid' || element.id === 'listings-grid') {
+            element.innerHTML = renderListingSkeletonGrid(6);
+            return;
         }
+
+        element.innerHTML = `<div class="loading ib-loading-legacy">${renderInlineSkeletonPanel(4)}</div>`;
     }
 
-    hideLoading(_container) {
-        // Loading is hidden when content is rendered
+    hideLoading(container) {
+        const element = typeof container === 'string' ? document.querySelector(container) : container;
+        element?.removeAttribute('aria-busy');
     }
 
     showError(message) {

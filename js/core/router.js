@@ -12,6 +12,7 @@ import {
     syncRouteDocumentMeta,
     tryExternalRouteRedirect
 } from '../runtime/route-surface.js';
+import { pulseRouteSection } from '../runtime/perceived-performance.js';
 
 /** Marketing sections on index.html (long-scroll landing). */
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
@@ -342,6 +343,7 @@ export class Router {
         target.classList.remove('hidden');
         target.classList.add('route-visible');
         target.style.display = 'block';
+        pulseRouteSection(target);
         window.scrollTo({ top: 0, behavior: 'auto' });
     }
 
@@ -386,6 +388,7 @@ export class Router {
             }
 
             targetSection.style.display = 'block';
+            pulseRouteSection(targetSection);
             return;
         }
 

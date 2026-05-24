@@ -1,0 +1,107 @@
+/**
+ * P4.5 — Perceived performance (route paint, skeletons, snappy transitions)
+ */
+
+/* Faster first paint after bootstrap */
+body.ib-enterprise.ib-page-ready main,
+body.ib-auto.ib-page-ready main {
+  transition: opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* SPA route transition — subtle, fast */
+body.ib-enterprise.app-route-active.ib-route-painting #main-content {
+  opacity: 0.94;
+  transition: opacity 0.1s ease-out;
+}
+
+body.ib-enterprise.app-route-active:not(.ib-route-painting) #main-content {
+  opacity: 1;
+  transition: opacity 0.16s ease-in;
+}
+
+section.ib-route-enter {
+  animation: ib-route-enter 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes ib-route-enter {
+  from {
+    opacity: 0.55;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ib-enterprise.app-route-active.ib-route-painting #main-content,
+  body.ib-enterprise.app-route-active:not(.ib-route-painting) #main-content {
+    transition: none;
+    opacity: 1;
+  }
+
+  section.ib-route-enter {
+    animation: none;
+  }
+}
+
+/* Listing skeleton grid */
+.ib-listings-skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.ib-skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: var(--surface-color, #fff);
+}
+
+.ib-skeleton-media {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+}
+
+.ib-skeleton-line {
+  height: 0.85rem;
+  width: 88%;
+  border-radius: 6px;
+}
+
+.ib-skeleton-line--short {
+  width: 52%;
+}
+
+.ib-skeleton-line--btn {
+  width: 40%;
+  height: 2rem;
+  margin-top: 0.25rem;
+}
+
+.ib-panel-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1rem 0;
+}
+
+/* Legacy spinner → skeleton-friendly */
+.loading.ib-loading-legacy {
+  min-height: 120px;
+}
+
+.listing-image {
+  content-visibility: auto;
+}
+
+.listing-media img[loading="lazy"] {
+  background: #f1f5f9;
+}

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v49';
+const CACHE_VERSION = 'v50';
 const STATIC_CACHE = `istebu-static-${CACHE_VERSION}`;
 const OFFLINE_PAGE = '/offline.html';
 
@@ -94,11 +94,21 @@ self.addEventListener('fetch', (event) => {
 
   if (isImageRequest(event.request)) {
     event.respondWith(
-      fetch(event.request).catch(async () => {
-        const cache = await caches.open(STATIC_CACHE);
-        return cache.match('/assets/images/placeholder.svg');
+      caches.open(STATIC_CACHE).then(async (cache) => {
+        const cached = await cache.match(event.request);
+        const network = fetch(event.request)
+          .then((response) => {
+            if (response.ok) {
+              cache.put(event.request, response.clone());
+            }
+            return response;
+          })
+          .catch(async () => cache.match('/assets/images/placeholder.svg'));
+
+        return cached || network;
       })
     );
+    return;
   }
 });
 
