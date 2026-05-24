@@ -98,8 +98,8 @@ export class UIManager {
             mobileAuthActions.id = 'mobile-auth-actions';
             mobileAuthActions.className = 'mobile-auth-actions';
             mobileAuthActions.innerHTML = `
-                <button type="button" class="btn btn-outline" data-auth-open="login" data-mobile-login>Giriş Yap</button>
-                <button type="button" class="btn btn-primary" data-auth-open="register" data-mobile-register>Üye Ol</button>
+                <button type="button" class="btn btn-outline" data-auth-open="login" data-mobile-login>Hesabına gir</button>
+                <button type="button" class="btn btn-primary" data-auth-open="register" data-mobile-register aria-label="Analizini kaydet ve devam et">Analizini kaydet ve devam et</button>
             `;
             navMenu.append(mobileAuthActions);
         }
@@ -227,7 +227,7 @@ export class UIManager {
             profileCard.innerHTML = `
                 <h3>Profiliniz hazır değil</h3>
                 <p>Giriş yaparak profil bilgilerinizi görebilir ve ilan oluşturabilirsiniz.</p>
-                <button class="btn btn-primary" id="profile-login-btn">Giriş Yap veya Kayıt Ol</button>
+                <button class="btn btn-primary" id="profile-login-btn">Hesabına gir veya analizini kaydet</button>
             `;
         }
 

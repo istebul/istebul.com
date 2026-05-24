@@ -1,6 +1,7 @@
 /**
  * P4 product polish — runtime UX (all ib-enterprise surfaces).
  */
+import { CONVERSION_COPY } from '../core/conversion-copy.js';
 
 const REDUCED_MOTION = () =>
   typeof window !== 'undefined' &&
@@ -38,8 +39,7 @@ function injectHeroCtaMicrocopy() {
 
   const line = document.createElement('span');
   line.className = 'ib-cta-trust-line';
-  line.textContent =
-    'Ücretsiz · ~2 dk · KVKK uyumlu · bağlayıcı teklif değil — metodolojik destek';
+  line.textContent = CONVERSION_COPY.trust.hero;
   stack.appendChild(line);
 }
 
@@ -49,7 +49,7 @@ function enhanceStickyCta() {
 
   const line = document.createElement('span');
   line.className = 'ib-cta-trust-line';
-  line.textContent = 'Skor ve TCO kural tabanlı · AI yalnızca gerekçe';
+  line.textContent = CONVERSION_COPY.trust.sticky;
   sticky.appendChild(line);
 }
 

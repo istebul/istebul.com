@@ -21,6 +21,7 @@ import {
     showInlineFormBanner,
     clearInlineFormBanner
 } from '../../runtime/enterprise-form-ux.js';
+import { CONVERSION_COPY, getAuthModalTitle } from '../../core/conversion-copy.js';
 
 export class AuthManager {
     constructor() {
@@ -104,17 +105,13 @@ export class AuthManager {
         }
 
         if (modalHeader) {
-            if (options.intent === 'checkout') {
-                modalHeader.textContent = type === 'register' ? 'Pro için hesap oluşturun' : 'Pro için giriş yapın';
-            } else {
-                modalHeader.textContent = type === 'login' ? 'Giriş Yap' : 'Üye Ol';
-            }
+            modalHeader.textContent = getAuthModalTitle(type, options.intent === 'checkout');
         }
 
         const intentBanner = options.intent === 'checkout'
             ? `<p class="auth-intent-banner" role="note">
-                <strong>Pro ödeme adımı</strong> — 7 gün ücretsiz deneme · Stripe ile güvenli ödeme · İstediğiniz zaman iptal.
-                Kart bilgileri sunucularımızda tutulmaz. <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a>
+                <strong>Pro ödeme adımı</strong> — ${CONVERSION_COPY.auth.checkoutIntentBanner}
+                <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a>
               </p>`
             : '';
 
@@ -163,11 +160,11 @@ export class AuthManager {
                     <label for="password">Şifre</label>
                     <input type="password" id="password" name="password" autocomplete="current-password" required>
                 </div>
-                <button type="submit" class="btn btn-primary full-width auth-submit">Giriş Yap</button>
+                <button type="submit" class="btn btn-primary full-width auth-submit">${CONVERSION_COPY.auth.loginSubmit}</button>
             </form>
             <div class="modal-footer">
                 <p>Şifrenizi mi unuttunuz? <a href="#" id="forgot-password">Sıfırlayın</a></p>
-                <p>Hesabınız yok mu? <a href="#" id="switch-to-register">Üye olun</a></p>
+                <p>Hesabınız yok mu? <a href="#" id="switch-to-register">${CONVERSION_COPY.auth.switchToRegister}</a></p>
             </div>
         `;
     }
@@ -198,10 +195,10 @@ export class AuthManager {
                         <span><a href="/kullanim-sartlari.html" target="_blank" rel="noopener">Kullanım şartları</a> ve <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a> metnini kabul ediyorum</span>
                     </label>
                 </div>
-                <button type="submit" class="btn btn-primary full-width auth-submit" data-enterprise-form>Üye Ol</button>
+                <button type="submit" class="btn btn-primary full-width auth-submit" data-enterprise-form>${CONVERSION_COPY.auth.registerSubmit}</button>
             </form>
             <div class="modal-footer">
-                <p>Zaten hesabınız var mı? <a href="#" id="switch-to-login">Giriş yapın</a></p>
+                <p>Zaten hesabınız var mı? <a href="#" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</a></p>
             </div>
         `;
     }
@@ -273,7 +270,7 @@ export class AuthManager {
         const submitBtn = form.querySelector('button[type="submit"]');
 
         try {
-            setSubmitLoading(submitBtn, true, { busyLabel: 'Giriş yapılıyor…' });
+            setSubmitLoading(submitBtn, true, { busyLabel: CONVERSION_COPY.auth.loginBusy });
 
             const email = form.email.value;
             const password = form.password.value;
@@ -288,7 +285,7 @@ export class AuthManager {
             const user = result?.user || result?.session?.user;
 
             if (!user) {
-                throw new Error('Giriş tamamlanamadı. E-posta ve şifrenizi kontrol edip tekrar deneyin.');
+                throw new Error(CONVERSION_COPY.auth.loginFailed);
             }
 
             this.currentUser = user;
@@ -302,7 +299,7 @@ export class AuthManager {
 
             const pendingCheckout = Boolean(peekCheckoutIntent());
             if (pendingCheckout) {
-                this.showAuthSuccess('Giriş başarılı. Stripe ödeme sayfasına yönlendiriliyorsunuz…');
+                this.showAuthSuccess(CONVERSION_COPY.auth.successCheckoutLogin);
                 setTimeout(() => this.hideAuthModal(), 1200);
             } else {
                 this.hideAuthModal();
@@ -329,7 +326,7 @@ export class AuthManager {
         const submitBtn = form.querySelector('button[type="submit"]');
 
         try {
-            setSubmitLoading(submitBtn, true, { busyLabel: 'Hesap oluşturuluyor…' });
+            setSubmitLoading(submitBtn, true, { busyLabel: CONVERSION_COPY.auth.registerBusy });
 
             const fullName = form['full-name'].value;
             const email = form.email.value;
@@ -373,20 +370,18 @@ export class AuthManager {
                 this.hideAuthModal();
 
                 if (pendingCheckout) {
-                    this.showAuthSuccess('Hesabınız hazır. Ödeme sayfasına yönlendiriliyorsunuz…');
+                    this.showAuthSuccess(CONVERSION_COPY.auth.successCheckoutRegister);
                 } else {
-                    this.showAuthSuccess('Hesabınız oluşturuldu. Hoş geldiniz!');
+                    this.showAuthSuccess(CONVERSION_COPY.auth.successRegister);
                 }
                 return;
             }
 
             if (pendingCheckout) {
-                this.showAuthSuccess(
-                    'Hesabınız oluşturuldu. E-posta doğrulaması gerekiyorsa gelen kutunuzu kontrol edin; ardından giriş yapın — Pro ödeme adımınız kayıtlı kalır.'
-                );
+                this.showAuthSuccess(CONVERSION_COPY.auth.successRegisterVerifyCheckout);
                 setTimeout(() => this.showLoginModal({ intent: 'checkout' }), 1400);
             } else {
-                this.showAuthSuccess('Hesabınız oluşturuldu! Lütfen e-posta adresinizi doğrulayın.');
+                this.showAuthSuccess(CONVERSION_COPY.auth.successRegisterVerify);
                 setTimeout(() => this.showLoginModal(), 2800);
             }
 
@@ -440,7 +435,7 @@ export class AuthManager {
                 <button type="submit" class="btn btn-primary full-width auth-submit">Sıfırlama bağlantısı gönder</button>
             </form>
             <div class="modal-footer">
-                <p>Şifrenizi hatırladınız mı? <a href="#" id="switch-to-login">Giriş yapın</a></p>
+                <p>Şifrenizi hatırladınız mı? <a href="#" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</a></p>
             </div>
         `;
     }
@@ -467,9 +462,9 @@ export class AuthManager {
         if (!email) return;
 
         try {
-            setSubmitLoading(submitBtn, true, { busyLabel: 'Gönderiliyor…' });
+            setSubmitLoading(submitBtn, true, { busyLabel: CONVERSION_COPY.auth.resetBusy });
             await API.resetPassword(email);
-            this.showAuthSuccess('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
+            this.showAuthSuccess(CONVERSION_COPY.auth.successReset);
         } catch (error) {
             console.error('Password reset failed:', error);
             this.showAuthError(mapAuthError(error, 'Şifre sıfırlama sırasında bir hata oluştu.'));

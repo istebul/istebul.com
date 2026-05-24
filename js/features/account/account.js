@@ -257,8 +257,8 @@ export class AccountManager {
                         <li><i data-lucide="credit-card"></i> Stripe ile güvenli ödeme</li>
                     </ul>
                     <div class="account-guest-actions">
-                        <button type="button" class="btn btn-primary" id="account-login-btn" data-auth-open="login">Giriş yap</button>
-                        <button type="button" class="btn btn-outline" data-auth-open="register" data-account-register>Üye ol</button>
+                        <button type="button" class="btn btn-primary" id="account-login-btn" data-auth-open="login">Hesabına gir</button>
+                        <button type="button" class="btn btn-outline" data-auth-open="register" data-account-register title="Analizini kaydet ve devam et">Analizini kaydet</button>
                     </div>
                 </div>
             </div>

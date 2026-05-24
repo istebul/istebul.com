@@ -18,6 +18,7 @@ import {
     trackUpsellClick
 } from './features/monetization/upsell-engine.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
+import { CONVERSION_COPY } from './core/conversion-copy.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
 import { premiumPages } from './ui/premium-pages.js';
 import { AuthManager } from './features/auth/auth.js';
@@ -3459,7 +3460,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 }
                 btn.disabled = true;
                 btn.setAttribute('aria-busy', 'true');
-                btn.textContent = 'Ödeme sayfası hazırlanıyor…';
+                btn.textContent = CONVERSION_COPY.checkout.buttonLoading;
             } else {
                 btn.disabled = false;
                 btn.removeAttribute('aria-busy');
@@ -3486,7 +3487,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
             if (!session?.access_token) {
                 this.auth.showLoginModal();
-                this.ui.showError('Abonelik paneli için giriş yapmanız gerekiyor.');
+                this.ui.showError(CONVERSION_COPY.checkout.billingPortalRequired);
                 return;
             }
 
@@ -3567,7 +3568,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
             if (!session?.access_token) {
                 this.auth.showLoginModal({ intent: 'checkout' });
-                this.ui.showError('Ödeme için oturum gerekli. Giriş yaptıktan sonra kaldığınız yerden devam edeceksiniz.');
+                this.ui.showError(CONVERSION_COPY.checkout.sessionRequired);
                 return;
             }
 
@@ -3640,7 +3641,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 billing_interval: billingInterval,
                 http_status: error.status || null
             }, { category: 'payment', severity: 'error' });
-            this.ui.showError(error.message || 'Ödeme sayfası başlatılamadı. Lütfen tekrar deneyin.');
+            this.ui.showError(error.message || CONVERSION_COPY.checkout.failed);
         } finally {
             this._checkoutInFlight = false;
             this.setCheckoutButtonsLoading(false, event);

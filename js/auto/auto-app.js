@@ -68,6 +68,8 @@ import {
 import { WIZARD_ONBOARDING } from '../features/moat/category-positioning.js';
 import { initP4ProductPolish } from '../runtime/p4-product-polish.js';
 import { initMobilePremiumUx } from '../runtime/mobile-premium-ux.js';
+import { initConversionMicroUx } from '../runtime/conversion-micro-ux.js';
+import { CONVERSION_COPY } from '../core/conversion-copy.js';
 
 const formatAmount = (value) => formatMoney(value);
 const formatCount = (value) => formatNumber(value);
@@ -336,15 +338,15 @@ function renderLoading() {
       <div class="premium-loading-ring" aria-hidden="true">
         <div class="spinner"></div>
       </div>
-      <p class="kicker">Karar analizi hazırlanıyor</p>
-      <h3>Toplam maliyet ve uyum skorunuz hesaplanıyor</h3>
-      <p class="loading-copy">Bütçe, kullanım, yakıt, kilometre ve finansman yanıtlarınız metodoloji modeline işleniyor — genelde birkaç saniye sürer.</p>
+      <p class="kicker">${escapeHtml(CONVERSION_COPY.auto.loadingKicker)}</p>
+      <h3>${escapeHtml(CONVERSION_COPY.auto.loadingTitle)}</h3>
+      <p class="loading-copy">${escapeHtml(CONVERSION_COPY.auto.loadingBody)}</p>
       <ul class="ai-loading-steps premium-loading-steps">
         ${steps.map((label, index) => `
           <li class="${index === 0 ? 'is-active' : ''}" data-loading-step="${index}">${escapeHtml(label)}</li>
         `).join('')}
       </ul>
-      <p class="premium-loading-footnote">Sonuçlar bilgilendirme amaçlıdır; canlı ilan veya bağlayıcı teklif değildir.</p>
+      <p class="premium-loading-footnote">${escapeHtml(CONVERSION_COPY.auto.loadingFootnote)}</p>
     </div>
   `;
 
@@ -1838,8 +1840,8 @@ function renderWizard() {
   const isMulti = Array.isArray(step.parts) && step.parts.length > 0;
   const stepsRemaining = wizardSteps.length - wizardIndex - 1;
   const motivationCopy = stepsRemaining === 0
-    ? 'Son adım — analiz sonuçları birazdan hazır'
-    : `Sonuca ${stepsRemaining} kısa adım kaldı`;
+    ? CONVERSION_COPY.auto.wizardLastStep
+    : CONVERSION_COPY.auto.wizardRemaining(stepsRemaining);
 
   let bodyHtml = '';
 
@@ -1919,7 +1921,7 @@ function renderWizard() {
       <div class="wizard-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}" aria-label="Analiz ilerlemesi">
         <div class="wizard-progress-fill" style="width:${progress}%"></div>
       </div>
-      <p class="wizard-progress-percent">%${progress} tamamlandı — yaklaşık 1 dakikada biter</p>
+      <p class="wizard-progress-percent">${CONVERSION_COPY.auto.wizardProgress(progress)}</p>
     </div>
 
     <div class="wizard-question">
@@ -1934,7 +1936,7 @@ function renderWizard() {
     <div class="wizard-actions">
       <button type="button" class="btn secondary" data-wizard-back ${wizardIndex === 0 ? 'disabled' : ''}>Geri</button>
       <button type="button" class="btn primary" data-wizard-next ${canProceed ? '' : 'disabled'}>
-        ${wizardIndex === wizardSteps.length - 1 ? 'Analizi başlat' : 'Devam et'}
+        ${wizardIndex === wizardSteps.length - 1 ? CONVERSION_COPY.auto.wizardFinish : CONVERSION_COPY.auto.wizardNext}
       </button>
     </div>
   `;
@@ -2116,6 +2118,7 @@ if (wizard) {
 setupAutoMobileNav();
 initP4ProductPolish();
 initMobilePremiumUx();
+initConversionMicroUx();
 initAutoEntitlements();
 loadAutoRuntimeConfig();
 if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted') {

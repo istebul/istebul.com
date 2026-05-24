@@ -1,6 +1,7 @@
 import { initExecutivePolish } from './executive-polish.js';
 import { initP4ProductPolish } from './p4-product-polish.js';
 import { initMobilePremiumUx } from './mobile-premium-ux.js';
+import { initConversionMicroUx } from './conversion-micro-ux.js';
 
 export function initEnterpriseUx() {
   if (typeof document === 'undefined') return;
@@ -8,6 +9,7 @@ export function initEnterpriseUx() {
   initP4ProductPolish();
   initExecutivePolish();
   initMobilePremiumUx();
+  initConversionMicroUx();
 
   const markReady = () => {
     document.documentElement.classList.add('ib-ready');

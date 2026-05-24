@@ -30,14 +30,14 @@ export const PLANS = {
     priceHint: 'Stripe ile güvenli ödeme · dilediğiniz zaman iptal',
     description: 'Derin TCO raporu, sınırsız karşılaştırma ve öncelikli yönlendirme — tek yanlış seçim maliyetine göre düşük risk',
     trialDays: 7,
-    trialLabel: '7 gün risk almadan dene',
+    trialLabel: '7 gün ücretsiz dene',
     billing: {
       monthly: {
         id: 'monthly',
         label: 'Aylık',
         priceDisplay: '₺299',
         periodLabel: '/ ay',
-        checkoutLabel: 'Aylık — karar netliğini aç'
+        checkoutLabel: 'Aylık Pro — karar netliğini aç'
       },
       annual: {
         id: 'annual',
@@ -47,7 +47,7 @@ export const PLANS = {
         monthlyEquivalent: '₺239 / ay',
         savingsLabel: '12 aylık ödemeye göre daha az',
         discountPercent: 20,
-        checkoutLabel: 'Yıllık faturalama — aylık ₺239'
+        checkoutLabel: 'Yıllık Pro — aylık ₺239 ile devam et'
       }
     },
     highlights: [

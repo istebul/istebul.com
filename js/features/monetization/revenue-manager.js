@@ -233,7 +233,7 @@ export class RevenueManager {
     const plan = PLANS.pro.billing[billing] || PLANS.pro.billing.monthly;
 
     if (this.trialEligible) {
-      return `${PLANS.pro.trialLabel} — karar netliği`;
+      return `${PLANS.pro.trialLabel} — risk almadan başla`;
     }
 
     return plan.checkoutLabel;
