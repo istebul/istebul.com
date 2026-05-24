@@ -24,6 +24,8 @@
 
 | Document | Path |
 |----------|------|
+| **Enterprise brand system** | `docs/BRAND_SYSTEM.md` |
+| Brand consistency checklist | `docs/BRAND_CONSISTENCY_CHECKLIST.md` |
 | Architecture | `docs/ARCHITECTURE.md` |
 | AI decision engine (moat) | `docs/AI_DECISION_ENGINE.md` |
 | Moat summary | `docs/investor/MOAT_AND_DEFENSIBILITY.md` |
