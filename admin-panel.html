@@ -77,6 +77,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 .toast.error{border-color:var(--danger);}
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.exec-funnel{display:flex;flex-direction:column;gap:10px;margin-bottom:8px;}
+.exec-funnel-row{display:grid;grid-template-columns:88px 1fr minmax(120px,auto);gap:10px;align-items:center;}
+.exec-funnel-label{font-size:13px;font-weight:600;color:var(--text-muted);}
+.exec-funnel-bar-wrap{height:10px;background:var(--border);border-radius:999px;overflow:hidden;}
+.exec-funnel-bar{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:999px;}
+.exec-funnel-meta{font-size:12px;text-align:right;color:var(--text-muted);}
+.exec-funnel-meta strong{display:block;color:var(--text);font-size:14px;}
 .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
 .stat-value{font-size:26px;font-weight:600;}
 .stat-sub{font-size:12px;color:var(--muted);margin-top:4px;}
@@ -399,6 +406,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="nav-item" data-page-target="auto-analytics">📈 Auto Analytics</div>
         <div class="nav-item" data-page-target="platform-analytics">📊 Platform Analytics</div>
         <div class="nav-item" data-page-target="investor-metrics">💼 Investor KPIs</div>
+        <div class="nav-item" data-page-target="executive-metrics">📈 Executive metrics</div>
         <div class="nav-item" data-page-target="observability">🛡️ Observability</div>
         <div class="nav-item" data-page-target="partner-endpoints">🤝 Partner Kanalları</div>
         <div class="nav-item" data-page-target="partner-applications">📋 Partner Başvuruları</div>
@@ -618,6 +626,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         </div>
         <div class="card">
           <div id="investor-metrics-root"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-executive-metrics">
+        <div class="page-header">
+          <h2>Executive metrics</h2>
+          <p>CEO görünürlüğü — DAU/WAU/MAU, pipeline, unit economics, funnel, churn, büyüme (<code>npm run metrics:executive</code>)</p>
+        </div>
+        <div class="card">
+          <div id="executive-metrics-root"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
 
