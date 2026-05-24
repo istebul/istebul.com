@@ -4,6 +4,7 @@ import { stripLocalePrefix } from './platform/locale-registry.js';
 import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
 import { trackPricingView, getGrowthContext } from './features/growth/growth-engine.js';
+import { trackCheckoutComplete, trackCheckoutStart } from './features/growth/growth-funnel.js';
 import {
     enrollCheckoutAbandonRecovery,
     enrollNewsletterWelcome
@@ -368,6 +369,7 @@ class App {
                 this.loadAnalytics();
                 analytics.init();
                 monitoring.init(true);
+                document.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
             }
             banner.hidden = true;
         };
@@ -3274,6 +3276,14 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
             if (params.get('subscribed') === 'true') {
             flushUpsellConversion({ source: 'checkout_return' });
+            const billingPlan = params.get('plan') || 'monthly';
+            const isTrial = params.get('trial') === '1';
+            const returnKey = `return:${this.currentUser?.id || analytics.getSessionId()}:${billingPlan}`;
+            trackCheckoutComplete({
+                billing_interval: billingPlan,
+                trial: isTrial,
+                idempotency_key: returnKey
+            });
             if (params.get('trial') === '1') {
                 this.ui.showSuccess('7 günlük Pro denemeniz başladı. Tüm premium özellikler şimdi açık.');
             } else if (params.get('plan') === 'annual') {
@@ -3537,18 +3547,14 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 return;
             }
 
-            analytics.track('checkout_started', {
+            const checkoutKey = `${this.currentUser.id}:${billingInterval}:${useTrial ? 'trial' : 'paid'}`;
+            trackCheckoutStart({
                 product: 'premium',
-                user_id: this.currentUser.id,
                 billing_interval: billingInterval,
-                from_resume: Boolean(options.fromResume)
-            }, {
-                category: 'subscription',
-                funnel: 'subscription',
-                funnel_step: 'checkout_started',
-                user_id: this.currentUser.id
+                from_resume: Boolean(options.fromResume),
+                checkout_key: checkoutKey,
+                growth_channel: getGrowthContext().growth_channel
             });
-
             const growth = getGrowthContext();
 
             const response = await fetch('/api/create-checkout', {
@@ -4406,6 +4412,12 @@ document.addEventListener('click', (event) => {
     try {
         writeStorageRaw(STORAGE_KEYS.COOKIE_CONSENT, accept ? 'accepted' : 'declined');
     } catch {}
+
+    if (accept) {
+        window.app?.loadAnalytics?.();
+        analytics.init();
+        document.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
+    }
 
     const consent = document.getElementById('cookie-consent');
     if (consent) {

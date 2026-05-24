@@ -734,7 +734,7 @@ export async function enrollCheckoutAbandonFromAnalytics(sb: SupabaseClient, lim
   const { data: started } = await sb
     .from("analytics_events")
     .select("email, user_id, created_at, properties")
-    .eq("event_name", "checkout_started")
+    .in("event_name", ["checkout_start", "checkout_started"])
     .gte("created_at", since)
     .lte("created_at", minAge)
     .not("email", "is", null)

@@ -83,6 +83,16 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "upsell_view",
   "upsell_click",
   "upsell_conversion",
+  // Canonical growth funnel (P1.5)
+  "landing_visit",
+  "hero_cta_click",
+  "auto_start",
+  "wizard_step",
+  "wizard_complete",
+  "results_view",
+  "checkout_start",
+  "checkout_complete",
+  "paid_conversion",
   // Growth engine
   "growth_referral_land",
   "growth_referral_share",
@@ -117,7 +127,21 @@ export function eventCategoryFor(name: string, fallback?: string) {
   if (name.startsWith("auth_")) return "auth";
   if (name.startsWith("partner_")) return "partner";
   if (name.startsWith("crm_")) return "admin";
-  if (name.startsWith("growth_") || name.startsWith("referral_") || name === "newsletter_subscribe") {
+  if (
+    name.startsWith("growth_") ||
+    name.startsWith("referral_") ||
+    name === "newsletter_subscribe" ||
+    name === "landing_visit" ||
+    name === "hero_cta_click" ||
+    name === "auto_start" ||
+    name === "wizard_step" ||
+    name === "wizard_complete" ||
+    name === "results_view" ||
+    name === "checkout_start" ||
+    name === "checkout_complete" ||
+    name === "paid_conversion" ||
+    name === "pricing_view"
+  ) {
     return "growth";
   }
   if (name.startsWith("lifecycle_")) return "lifecycle";

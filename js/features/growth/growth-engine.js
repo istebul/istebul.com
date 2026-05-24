@@ -3,6 +3,7 @@
  */
 import { analytics } from '../../core/analytics.js';
 import { readStorageRaw, writeStorageRaw, STORAGE_KEYS } from '../../core/storage-keys.js';
+import { trackPricingViewFunnel } from './growth-funnel.js';
 
 export const GROWTH_CHANNELS = Object.freeze({
   SEO: 'seo',
@@ -134,10 +135,7 @@ export function getMyReferralCode(email = '') {
 }
 
 export function trackPricingView(placement = 'pricing') {
-  trackGrowth('pricing_view', { placement }, {
-    funnel: 'subscription',
-    funnel_step: 'pricing_view'
-  });
+  trackPricingViewFunnel(placement);
 }
 
 /**

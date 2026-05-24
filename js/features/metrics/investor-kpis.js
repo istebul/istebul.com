@@ -81,8 +81,9 @@ export function computeProductFunnelMetrics(events = []) {
   const count = (name) => rows.filter((r) => r.event_name === name).length;
 
   const pageViews = count('page_view') + count('auto_page_view');
-  const checkoutStarted = count('checkout_started');
-  const checkoutCompleted = count('checkout_completed');
+  const checkoutStarted = count('checkout_start') + count('checkout_started');
+  const checkoutCompleted = count('checkout_complete') + count('checkout_completed');
+  const paidConversion = count('paid_conversion');
   const leads = count('lead_submit') + count('auto_lead_submit');
 
   return {
@@ -90,6 +91,7 @@ export function computeProductFunnelMetrics(events = []) {
     pageViews,
     checkoutStarted,
     checkoutCompleted,
+    paidConversion,
     leads,
     checkoutConversionPct: checkoutStarted
       ? Math.round((checkoutCompleted / checkoutStarted) * 100)

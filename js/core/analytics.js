@@ -2,6 +2,12 @@
  * Platform analytics SDK — consent-gated product telemetry via analytics-ingest.
  */
 
+import {
+  isAutoPath,
+  isLandingPath,
+  trackHeroCtaClick,
+  trackLandingVisit
+} from '../features/growth/growth-funnel.js';
 import { STORAGE_KEYS, readStorageRaw } from './storage-keys.js';
 
 const SESSION_KEY = STORAGE_KEYS.ANALYTICS_SESSION;
@@ -110,6 +116,9 @@ export class Analytics {
     this.enabled = true;
     this.captureAttribution();
     this.trackPageView();
+    if (isLandingPath()) {
+      trackLandingVisit();
+    }
     this.bindGlobalListeners();
     this.scheduleFlush();
     this.flushQueue();
@@ -123,6 +132,7 @@ export class Analytics {
       const cta = event.target.closest('[data-analytics-cta], [data-upgrade-checkout], a[href^="#"]');
       if (!cta || !this.enabled) return;
 
+      const placement = cta.dataset.analyticsPlacement || '';
       const ctaId =
         cta.dataset.analyticsCta ||
         cta.dataset.upgradeCheckout ||
@@ -132,8 +142,20 @@ export class Analytics {
 
       this.trackCta(ctaId, {
         label: (cta.textContent || '').trim().slice(0, 80),
-        section: cta.closest('section')?.id || null
+        section: cta.closest('section')?.id || null,
+        placement
       });
+
+      if (
+        placement === 'hero' ||
+        cta.closest('#home') ||
+        cta.closest('.hero-section')
+      ) {
+        trackHeroCtaClick(ctaId, {
+          placement: placement || 'hero',
+          section: cta.closest('section')?.id || null
+        });
+      }
     });
 
     window.addEventListener('hashchange', () => {

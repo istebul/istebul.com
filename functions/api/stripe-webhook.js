@@ -194,18 +194,42 @@ export async function onRequestPost(context) {
         const subscription = await stripe.subscriptions.retrieve(session.subscription);
         await upsertSubscription(supabase, subscription, session.metadata?.userId);
 
+        const revenueCents = Number(session.amount_total || 0);
+        const stripeAttribution = {
+          utm_source: session.metadata?.utm_source || null,
+          utm_medium: session.metadata?.utm_medium || null,
+          utm_campaign: session.metadata?.utm_campaign || null,
+          growth_channel: session.metadata?.growth_channel || null,
+          referral_code: session.metadata?.referral_code || null
+        };
+        const stripeProps = {
+          stripe_session_id: session.id,
+          billing_interval: session.metadata?.billingInterval || null
+        };
+        const userId = session.metadata?.userId || null;
+
         await recordSubscriptionAnalytics(supabase, 'checkout_completed', {
-          userId: session.metadata?.userId || null,
-          revenueCents: Number(session.amount_total || 0),
+          userId,
+          revenueCents,
           idempotencyKey: `stripe:${event.id}:checkout_completed`,
-          properties: {
-            stripe_session_id: session.id,
-            billing_interval: session.metadata?.billingInterval || null
-          },
-          attribution: {
-            utm_source: session.metadata?.utm_source || null,
-            utm_campaign: session.metadata?.utm_campaign || null
-          }
+          properties: stripeProps,
+          attribution: stripeAttribution
+        });
+
+        await recordSubscriptionAnalytics(supabase, 'checkout_complete', {
+          userId,
+          revenueCents,
+          idempotencyKey: `stripe:${event.id}:checkout_complete`,
+          properties: stripeProps,
+          attribution: stripeAttribution
+        });
+
+        await recordSubscriptionAnalytics(supabase, 'paid_conversion', {
+          userId,
+          revenueCents,
+          idempotencyKey: `stripe:${event.id}:paid_conversion`,
+          properties: { ...stripeProps, conversion_type: 'subscription' },
+          attribution: stripeAttribution
         });
 
         if (subscription.trial_end && subscription.trial_end > Math.floor(Date.now() / 1000)) {

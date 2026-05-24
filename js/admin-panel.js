@@ -903,6 +903,48 @@ function countEvents(rows, name) {
   return rows.filter((row) => row.event_name === name).length;
 }
 
+function countEventsAny(rows, names) {
+  const allowed = new Set(names);
+  return rows.filter((row) => allowed.has(row.event_name)).length;
+}
+
+/** Canonical funnel step + legacy aliases for migration dashboards. */
+const GROWTH_FUNNEL_ALIASES = {
+  landing_visit: ['page_view'],
+  hero_cta_click: [],
+  auto_start: ['auto_form_started', 'auto_page_view'],
+  wizard_step: ['auto_wizard_step'],
+  wizard_complete: ['auto_wizard_complete'],
+  results_view: ['auto_results_view', 'auto_results_rendered'],
+  lead_submit: ['auto_lead_submit'],
+  pricing_view: [],
+  checkout_start: ['checkout_started'],
+  checkout_complete: ['checkout_completed'],
+  paid_conversion: []
+};
+
+function countFunnelStep(rows, canonical) {
+  const names = [canonical, ...(GROWTH_FUNNEL_ALIASES[canonical] || [])];
+  return countEventsAny(rows, names);
+}
+
+function sumRevenueCentsByChannel(rows, eventNames) {
+  const allowed = new Set(eventNames);
+  return rows
+    .filter((row) => allowed.has(row.event_name))
+    .reduce((acc, row) => {
+      const props = row.properties || row.attribution || {};
+      const channel =
+        props.growth_channel ||
+        row.attribution?.growth_channel ||
+        row.attribution?.utm_source ||
+        row.funnel ||
+        'direct';
+      acc[channel] = (acc[channel] || 0) + Number(row.revenue_cents || 0);
+      return acc;
+    }, {});
+}
+
 function conversionPct(numerator, denominator) {
   return denominator ? `${Math.round((numerator / denominator) * 100)}%` : '—';
 }
@@ -932,14 +974,15 @@ async function loadPlatformAnalytics() {
   const authModal = countEvents(rows, 'auth_modal_open');
   const authLoginOk = countEvents(rows, 'auth_login_success');
   const authRegisterOk = countEvents(rows, 'auth_register_success');
-  const checkoutStarted = countEvents(rows, 'checkout_started');
-  const checkoutCompleted = countEvents(rows, 'checkout_completed');
+  const checkoutStarted = countFunnelStep(rows, 'checkout_start');
+  const checkoutCompleted = countFunnelStep(rows, 'checkout_complete');
+  const paidConversions = countFunnelStep(rows, 'paid_conversion');
   const leadSubmit = countEvents(rows, 'lead_submit') + countEvents(rows, 'auto_lead_submit');
   const partnerOk = countEvents(rows, 'partner_dispatch_success');
   const partnerFail = countEvents(rows, 'partner_dispatch_failed');
   const financeStart = countEvents(rows, 'finance_funnel_start');
   const ctaClicks = countEvents(rows, 'cta_click');
-  const pricingViews = countEvents(rows, 'pricing_view');
+  const pricingViews = countFunnelStep(rows, 'pricing_view');
   const checkoutAbandoned = countEvents(rows, 'checkout_abandoned');
   const referralLand = countEvents(rows, 'growth_referral_land');
   const referralShare = countEvents(rows, 'growth_referral_share');
@@ -985,7 +1028,75 @@ async function loadPlatformAnalytics() {
 
   const crmEvents = rows.filter((row) => row.event_name.startsWith('crm_'));
 
+  const executiveFunnel = [
+    ['landing_visit', 'Landing ziyaret'],
+    ['hero_cta_click', 'Hero CTA'],
+    ['auto_start', 'Auto başlangıç'],
+    ['wizard_step', 'Wizard adım'],
+    ['wizard_complete', 'Wizard tamam'],
+    ['results_view', 'Sonuç görüntüleme'],
+    ['lead_submit', 'Lead gönderimi'],
+    ['pricing_view', 'Pricing görüntüleme'],
+    ['checkout_start', 'Checkout başlangıç'],
+    ['checkout_complete', 'Checkout tamam'],
+    ['paid_conversion', 'Ücretli dönüşüm']
+  ];
+
+  const executiveRows = executiveFunnel.map(([key, label], index) => {
+    const count = countFunnelStep(rows, key);
+    const prevKey = index > 0 ? executiveFunnel[index - 1][0] : null;
+    const prev = prevKey ? countFunnelStep(rows, prevKey) : count;
+    return { label, count, conv: index > 0 ? conversionPct(count, prev) : '—' };
+  });
+
+  const channelRevenue = sumRevenueCentsByChannel(
+    rows,
+    ['paid_conversion', 'checkout_completed', 'checkout_complete', 'revenue_attributed']
+  );
+  const channelLeads = rows
+    .filter((row) => row.event_name === 'lead_submit' || row.event_name === 'auto_lead_submit')
+    .reduce((acc, row) => {
+      const props = row.properties || {};
+      const channel =
+        props.growth_channel ||
+        row.attribution?.growth_channel ||
+        row.attribution?.utm_source ||
+        'direct';
+      acc[channel] = (acc[channel] || 0) + 1;
+      return acc;
+    }, {});
+
   el.innerHTML = `
+    <h3 style="margin:0 0 14px 0;">Executive growth funnel (kanal bazlı)</h3>
+    <p class="text-muted" style="margin:0 0 12px;font-size:13px;">Tutarlı event isimleri; legacy alias’lar toplamda bir kez sayılır. Gelir: paid_conversion + checkout.</p>
+    <table class="table">
+      <thead><tr><th>Adım</th><th>Olay</th><th>Önceki adıma CR</th></tr></thead>
+      <tbody>
+        ${executiveRows.map((row) => `
+          <tr>
+            <td>${escapeHtml(row.label)}</td>
+            <td><strong>${row.count}</strong></td>
+            <td>${row.conv}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Kanal → gelir (₺, revenue_cents)</h3>
+    <div class="stat-grid">
+      ${Object.entries(channelRevenue).length ? Object.entries(channelRevenue)
+    .sort((a, b) => b[1] - a[1])
+    .map(([channel, cents]) => `
+        <div class="stat-card">
+          <div class="stat-label">${escapeHtml(channel)}</div>
+          <div class="stat-value">${(cents / 100).toLocaleString('tr-TR')} ₺</div>
+          <div class="stat-sub">${channelLeads[channel] || 0} lead</div>
+        </div>
+      `).join('') : '<p class="empty">Henüz ücretli dönüşüm yok.</p>'}
+    </div>
+
+    <div style="height:20px"></div>
     <h3 style="margin:0 0 14px 0;">Conversion özeti</h3>
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-label">Page views</div><div class="stat-value">${pageViews}</div></div>
@@ -993,6 +1104,7 @@ async function loadPlatformAnalytics() {
       <div class="stat-card"><div class="stat-label">Auth conversion</div><div class="stat-value">${authLoginOk + authRegisterOk}</div><div class="stat-sub">${conversionPct(authLoginOk + authRegisterOk, authModal)}</div></div>
       <div class="stat-card"><div class="stat-label">Signup</div><div class="stat-value">${authRegisterOk}</div><div class="stat-sub">${conversionPct(authRegisterOk, authModal)}</div></div>
       <div class="stat-card"><div class="stat-label">Checkout</div><div class="stat-value">${checkoutCompleted}</div><div class="stat-sub">${conversionPct(checkoutCompleted, checkoutStarted)}</div></div>
+      <div class="stat-card"><div class="stat-label">Paid conversion</div><div class="stat-value">${paidConversions}</div><div class="stat-sub">${conversionPct(paidConversions, checkoutStarted)}</div></div>
       <div class="stat-card"><div class="stat-label">Lead conversion</div><div class="stat-value">${leadSubmit}</div><div class="stat-sub">${conversionPct(leadSubmit, pageViews)}</div></div>
       <div class="stat-card"><div class="stat-label">Partner dispatch OK</div><div class="stat-value">${partnerOk}</div><div class="stat-sub">${conversionPct(partnerOk, partnerOk + partnerFail)}</div></div>
       <div class="stat-card"><div class="stat-label">Finance funnel</div><div class="stat-value">${financeStart}</div></div>

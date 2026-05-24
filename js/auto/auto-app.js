@@ -30,6 +30,7 @@ import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
 import { FREE_LIMITS, PLANS } from '../features/monetization/plans.js';
 import { analytics } from '../core/analytics.js';
+import { mirrorLegacyAutoFunnel, trackAutoStart } from '../features/growth/growth-funnel.js';
 import { escapeHtml } from '../core/security.js';
 import { safeJsonParse } from '../core/dom-safe.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-keys.js';
@@ -270,6 +271,7 @@ async function trackAutoEvent(eventName, metadata = {}) {
       phone: metadata.phone || null
     }
   );
+  mirrorLegacyAutoFunnel(eventName, metadata);
 }
 
 function trackUniqueAutoEvent(eventName, metadata = {}, key = '') {
@@ -1678,6 +1680,9 @@ function getWizardValidationMessage(step) {
 function trackWizardStepView(stepIndex) {
   const step = wizardSteps[stepIndex];
   if (!step) return;
+  if (stepIndex === 0) {
+    trackAutoStart('wizard');
+  }
   trackAutoEvent('auto_wizard_step', {
     step: stepIndex + 1,
     total_steps: wizardSteps.length,
