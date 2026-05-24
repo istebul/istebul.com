@@ -262,7 +262,18 @@ Deno.serve(async (req) => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        const msg = String(error.message || "");
+        const code = String((error as { code?: string }).code || "");
+        if (
+          code === "42P01" ||
+          msg.includes("does not exist") ||
+          msg.includes("schema cache")
+        ) {
+          return json({ ok: true, data: [] }, 200, origin);
+        }
+        throw error;
+      }
 
       return json({ ok: true, data: data ?? [] }, 200, origin);
     }
@@ -517,6 +528,8 @@ Deno.serve(async (req) => {
     return json({ error: "Unsupported action" }, 400, origin);
   } catch (err) {
     console.error(err);
-    return json({ error: "Server error" }, 500, origin);
+    const message =
+      err instanceof Error && err.message ? err.message : "Server error";
+    return json({ error: message }, 500, origin);
   }
 });

@@ -18,7 +18,8 @@ const mustExist = [
   'js/features/ops/ops-health.js',
   'supabase/migrations/20260530_operational_observability.sql',
   'supabase/migrations/20260525_partner_delivery_enterprise.sql',
-  'supabase/migrations/20260609_partner_applications_schema_repair.sql'
+  'supabase/migrations/20260609_partner_applications_schema_repair.sql',
+  'supabase/migrations/20260610_subscriptions_bootstrap.sql'
 ];
 
 for (const rel of mustExist) {
@@ -67,6 +68,9 @@ if (adminPanel.includes('partner_dispatch_logs')) {
 }
 if (adminPanel.includes('partner_endpoint_id, onboarding_token')) {
   fail('partner_applications load must not enumerate optional columns in select');
+}
+if (!adminPanel.includes("table: 'subscriptions'") || !adminPanel.includes('loadInvestorMetrics')) {
+  fail('investor KPIs must use fetchAdminTable for subscriptions');
 }
 
 const opsHealth = fs.readFileSync(path.join(root, 'js/features/ops/ops-health.js'), 'utf8');

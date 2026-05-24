@@ -31,7 +31,7 @@ export async function fetchAdminTable(sb, options) {
   let directError = null;
 
   if (typeof direct === 'function') {
-    let res = await direct();
+    let res = await direct(select && select !== '*' ? select : undefined);
     if (res.error && isMissingColumnInSelect(res.error, select)) {
       res = await direct('*');
     }

@@ -434,31 +434,50 @@ async function loadInvestorMetrics() {
 
   const { buildInvestorSnapshot } = await import('./features/metrics/investor-kpis.js');
 
-  let subscriptions = [];
-  let leads = [];
-  let events = [];
+  const subSelect = 'status, current_period_start, current_period_end, cancel_at_period_end';
+  const leadSelect = 'estimated_revenue, actual_revenue, partner_status';
 
-  try {
-    [subscriptions, leads, events] = await Promise.all([
-      adminList(sb, {
-        table: 'subscriptions',
-        select: 'status, current_period_start, current_period_end, cancel_at_period_end',
-        limit: 2000
-      }).catch(() => []),
-      adminList(sb, {
-        table: 'auto_leads',
-        select: 'estimated_revenue, actual_revenue, partner_status',
-        limit: 5000
-      }),
-      adminList(sb, {
-        table: 'analytics_events',
-        select: 'event_name',
-        order: { column: 'created_at', ascending: false },
-        limit: 2500
-      })
-    ]);
-  } catch (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  const [subsRes, leadsRes, eventsRes] = await Promise.all([
+    fetchAdminTable(sb, {
+      table: 'subscriptions',
+      select: subSelect,
+      limit: 2000,
+      direct: (expr = subSelect) => sb.from('subscriptions').select(expr).limit(2000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'auto_leads',
+      select: leadSelect,
+      limit: 5000,
+      direct: (expr = leadSelect) => sb.from('auto_leads').select(expr).limit(5000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'analytics_events',
+      select: 'event_name',
+      limit: 2500,
+      order: { column: 'created_at', ascending: false },
+      direct: (expr = 'event_name') =>
+        sb.from('analytics_events').select(expr).order('created_at', { ascending: false }).limit(2500)
+    })
+  ]);
+
+  const warnings = collectAdminWarnings([subsRes, leadsRes, eventsRes]);
+  const subscriptions = subsRes.data || [];
+  const leads = leadsRes.data || [];
+  const events = eventsRes.data || [];
+
+  const allFailed =
+    !subscriptions.length &&
+    !leads.length &&
+    !events.length &&
+    [subsRes, leadsRes, eventsRes].every((r) => r.source === 'failed');
+
+  if (allFailed) {
+    const msg =
+      subsRes.error?.message ||
+      leadsRes.error?.message ||
+      eventsRes.error?.message ||
+      'Veri yüklenemedi';
+    el.innerHTML = `${renderAdminWarningBanner(warnings)}<p class="empty">Hata: ${escapeHtml(msg)}</p>`;
     return;
   }
 
@@ -468,12 +487,19 @@ async function loadInvestorMetrics() {
     analyticsEvents: events
   });
 
+  if (!subscriptions.length && (subsRes.error || subsRes.source === 'failed')) {
+    snapshot.notes.push(
+      'Subscriptions tablosu boş veya migrate edilmedi — MRR/ARR şimdilik 0 (20260610_subscriptions_bootstrap.sql).'
+    );
+  }
+
   const sub = snapshot.subscription;
   const pipe = snapshot.pipeline;
   const funnel = snapshot.funnel;
 
   el.innerHTML = `
-    <p class="text-muted" style="margin:0 0 16px 0;">Son güncelleme: ${escapeHtml(snapshot.generatedAt)} · Data room: <code>docs/investor/DATA_ROOM_INDEX.md</code></p>
+    ${renderAdminWarningBanner(warnings)}
+    <p class="text-muted" style="margin:0 0 16px 0;">Son güncelleme: ${escapeHtml(snapshot.generatedAt)} · Data room: <code>docs/investor/DATA_ROOM_INDEX.md</code> · Export: <code>npm run metrics:investor</code></p>
     <h3 style="margin:0 0 14px 0;">Pro subscription (MRR)</h3>
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-label">MRR (TRY, normalized)</div><div class="stat-value">${sub.mrrTry.toLocaleString('tr-TR')} ₺</div></div>
