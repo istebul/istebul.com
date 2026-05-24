@@ -398,6 +398,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="nav-item" data-page-target="auto-leads">🚗 Auto Leads</div>
         <div class="nav-item" data-page-target="auto-analytics">📈 Auto Analytics</div>
         <div class="nav-item" data-page-target="platform-analytics">📊 Platform Analytics</div>
+        <div class="nav-item" data-page-target="investor-metrics">💼 Investor KPIs</div>
         <div class="nav-item" data-page-target="partner-endpoints">🤝 Partner Kanalları</div>
         <div class="nav-item" data-page-target="partner-applications">📋 Partner Başvuruları</div>
         <div class="nav-item" data-page-target="partner-dispatch-logs">📡 Teslimat Logları</div>
@@ -606,6 +607,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         </div>
         <div class="card">
           <div id="platform-analytics-root"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-investor-metrics">
+        <div class="page-header">
+          <h2>Investor KPIs</h2>
+          <p>MRR, lead pipeline, funnel — due diligence snapshot (export via <code>scripts/investor-metrics-snapshot.cjs</code>)</p>
+        </div>
+        <div class="card">
+          <div id="investor-metrics-root"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
 

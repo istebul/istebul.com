@@ -159,6 +159,7 @@ Deno.serve(async (req) => {
     "partner_applications",
     "partner_dispatch_logs",
     "site_settings",
+    "subscriptions",
   ];
 
   if (action === "upsert_settings") {

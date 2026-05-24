@@ -1,6 +1,14 @@
 # istebul.com
 
-yapay zeka ile karar verme platformu
+Yapay zeka destekli karar platformu — yüksek tutarlı satın alma kararları (Auto canlı; çok dikey yol haritası).
+
+## Investor / due diligence
+
+- **Data room index:** [docs/investor/DATA_ROOM_INDEX.md](docs/investor/DATA_ROOM_INDEX.md)
+- **Readiness audit:** [docs/investor/INVESTOR_READINESS.md](docs/investor/INVESTOR_READINESS.md)
+- **One-pager:** [docs/investor/ONE_PAGER.md](docs/investor/ONE_PAGER.md)
+- **KPI export:** `SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/investor-metrics-snapshot.cjs`
+- **Admin:** Investor KPIs panel (admin girişi gerekir)
 
 ## Otomatik deploy
 

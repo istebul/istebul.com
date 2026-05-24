@@ -74,6 +74,7 @@ async function showApp() {
   loadAutoLeads();
   loadAutoAnalytics();
   loadPlatformAnalytics();
+  loadInvestorMetrics();
   loadPartnerEndpoints();
   loadPartnerApplications();
   loadPartnerDispatchLogs();
@@ -133,6 +134,93 @@ function showPage(name, el) {
   if (name === 'platform-analytics') {
     loadPlatformAnalytics();
   }
+  if (name === 'investor-metrics') {
+    loadInvestorMetrics();
+  }
+}
+
+async function loadInvestorMetrics() {
+  const el = document.getElementById('investor-metrics-root');
+  if (!el) return;
+
+  const { buildInvestorSnapshot } = await import('./features/metrics/investor-kpis.js');
+
+  let subscriptions = [];
+  let leads = [];
+  let events = [];
+
+  try {
+    [subscriptions, leads, events] = await Promise.all([
+      adminList(sb, {
+        table: 'subscriptions',
+        select: 'status, current_period_start, current_period_end, cancel_at_period_end',
+        limit: 2000
+      }).catch(() => []),
+      adminList(sb, {
+        table: 'auto_leads',
+        select: 'estimated_revenue, actual_revenue, partner_status',
+        limit: 5000
+      }),
+      adminList(sb, {
+        table: 'analytics_events',
+        select: 'event_name',
+        order: { column: 'created_at', ascending: false },
+        limit: 2500
+      })
+    ]);
+  } catch (error) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  const snapshot = buildInvestorSnapshot({
+    subscriptions,
+    leads,
+    analyticsEvents: events
+  });
+
+  const sub = snapshot.subscription;
+  const pipe = snapshot.pipeline;
+  const funnel = snapshot.funnel;
+
+  el.innerHTML = `
+    <p class="text-muted" style="margin:0 0 16px 0;">Son güncelleme: ${escapeHtml(snapshot.generatedAt)} · Data room: <code>docs/investor/DATA_ROOM_INDEX.md</code></p>
+    <h3 style="margin:0 0 14px 0;">Pro subscription (MRR)</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">MRR (TRY, normalized)</div><div class="stat-value">${sub.mrrTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">ARR (TRY)</div><div class="stat-value">${sub.arrTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">Active subs</div><div class="stat-value">${sub.activeSubscriptions}</div></div>
+      <div class="stat-card"><div class="stat-label">Trialing</div><div class="stat-value">${sub.trialingSubscriptions}</div></div>
+      <div class="stat-card"><div class="stat-label">Cancel at period end</div><div class="stat-value">${sub.cancelAtPeriodEnd}</div><div class="stat-sub">${sub.grossChurnSignal}% of billable</div></div>
+    </div>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Partner lead pipeline</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Leads</div><div class="stat-value">${pipe.leadCount}</div></div>
+      <div class="stat-card"><div class="stat-label">Pipeline (estimated)</div><div class="stat-value">${pipe.pipelineEstimatedTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">Realized (CRM)</div><div class="stat-value">${pipe.pipelineActualTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">Partner wins</div><div class="stat-value">${pipe.partnerWinCount}</div><div class="stat-sub">Win rate ${pipe.winRate ?? '—'}%</div></div>
+      <div class="stat-card"><div class="stat-label">Blended ARR signal</div><div class="stat-value">${snapshot.blendedArrTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">Pro ARR + realized pipeline</div></div>
+    </div>
+
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Product funnel (sample n=${funnel.sampleSize})</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Page views</div><div class="stat-value">${funnel.pageViews}</div></div>
+      <div class="stat-card"><div class="stat-label">Checkout completed</div><div class="stat-value">${funnel.checkoutCompleted}</div><div class="stat-sub">${funnel.checkoutConversionPct ?? '—'}% of started</div></div>
+      <div class="stat-card"><div class="stat-label">Leads</div><div class="stat-value">${funnel.leads}</div><div class="stat-sub">${funnel.leadConversionPct ?? '—'}% of views</div></div>
+    </div>
+
+    <div style="height:20px"></div>
+    <details>
+      <summary>Snapshot JSON (investor export)</summary>
+      <pre style="white-space:pre-wrap;font-size:12px;max-height:320px;overflow:auto;">${escapeHtml(JSON.stringify(snapshot, null, 2))}</pre>
+    </details>
+    <ul class="text-muted" style="margin-top:12px;font-size:13px;">
+      ${snapshot.notes.map((n) => `<li>${escapeHtml(n)}</li>`).join('')}
+    </ul>
+  `;
 }
 
 function getFunctionsBaseUrl() {
