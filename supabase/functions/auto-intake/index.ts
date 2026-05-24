@@ -477,6 +477,9 @@ Deno.serve(async (req) => {
     const privacyAccepted =
       String(form.privacy_consent || metadata.privacy_consent || "").toLowerCase() ===
       "accepted";
+    const marketingConsent =
+      String(form.marketing_consent || metadata.marketing_consent || "").toLowerCase() ===
+      "accepted";
     if (!privacyAccepted) {
       await logOps(adminClient, "api_auto_intake_consent_required", {
         scope: "lead",
@@ -610,6 +613,7 @@ Deno.serve(async (req) => {
               phone,
               leadId: leadId || undefined,
               displayName: payload.contact_name,
+              service_opt_in: true,
               context: { vehicle: payload.vehicle, interest_type: interest },
               triggerSource: "auto_intake_lead",
               restart: true,
@@ -621,7 +625,26 @@ Deno.serve(async (req) => {
               phone,
               leadId: leadId || undefined,
               displayName: payload.contact_name,
+              service_opt_in: true,
               context: { vehicle: payload.vehicle, priority: payload.priority },
+              triggerSource: "auto_intake_lead",
+            });
+          }
+
+          if (marketingConsent) {
+            await enrollInFlow(adminClient, {
+              flowId: "lead_upgrade_d3",
+              email: normalizedEmail,
+              phone,
+              leadId: leadId || undefined,
+              displayName: payload.contact_name,
+              marketing_consent: true,
+              service_opt_in: true,
+              context: {
+                vehicle: payload.vehicle,
+                lead_id: leadId,
+                marketing_consent: true,
+              },
               triggerSource: "auto_intake_lead",
             });
           }

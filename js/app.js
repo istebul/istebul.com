@@ -4,6 +4,10 @@ import { stripLocalePrefix } from './platform/locale-registry.js';
 import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
 import { trackPricingView, getGrowthContext } from './features/growth/growth-engine.js';
+import {
+    enrollCheckoutAbandonRecovery,
+    enrollNewsletterWelcome
+} from './features/lifecycle/lifecycle-client.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
 import { premiumPages } from './ui/premium-pages.js';
@@ -3245,6 +3249,13 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         if (params.get('cancelled') === 'true') {
             this.ui.showError('Ödeme iptal edildi. İstediğiniz zaman tekrar deneyebilirsiniz.');
+            if (this.currentUser?.email) {
+                enrollCheckoutAbandonRecovery({
+                    email: this.currentUser.email,
+                    user_id: this.currentUser.id,
+                    reason: 'stripe_cancel_return'
+                });
+            }
             params.delete('cancelled');
         }
 
@@ -3541,6 +3552,14 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 funnel_step: 'checkout_abandoned',
                 user_id: this.currentUser?.id
             });
+            if (this.currentUser?.email) {
+                enrollCheckoutAbandonRecovery({
+                    email: this.currentUser.email,
+                    user_id: this.currentUser.id,
+                    billing_interval: billingInterval,
+                    reason: String(error.message || 'checkout_failed').slice(0, 80)
+                });
+            }
             trackOpsEvent('payment_checkout_failed', {
                 message: String(error.message || 'checkout_failed').slice(0, 120),
                 billing_interval: billingInterval,
@@ -4176,13 +4195,14 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         const existing = this.readStoredArray(STORAGE_KEYS.NEWSLETTER);
         const entry = {
+            email: email.toLowerCase(),
             email_domain: email.split('@')[1] || '',
             marketing_consent: 'accepted',
             consented_at: new Date().toISOString()
         };
         const already = existing.some((item) =>
-            (typeof item === 'string' ? item : item?.email_domain) === entry.email_domain &&
-            (typeof item === 'string' || item?.marketing_consent === 'accepted')
+            (typeof item === 'object' && item?.email === entry.email) ||
+            (typeof item === 'string' && item === entry.email)
         );
         if (!already) {
             existing.push(entry);
@@ -4199,9 +4219,18 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 funnel_step: 'subscribed'
             });
         }
-        this.ui.showSuccess(
-            'Tercihiniz kaydedildi. E-posta listesi altyapısı bağlandığında size haber vereceğiz.'
-        );
+
+        enrollNewsletterWelcome(email).then((result) => {
+            if (result?.ok) {
+                this.ui.showSuccess('Abonelik kaydınız alındı. Hoş geldiniz e-postası kısa süre içinde gönderilecek.');
+            } else if (result?.error === 'marketing_consent_required' || result?.error === 'consent_required') {
+                this.ui.showError('E-posta gönderimi için onay gerekli.');
+            } else {
+                this.ui.showSuccess('Tercihiniz kaydedildi. E-posta gönderiminde gecikme olabilir.');
+            }
+        }).catch(() => {
+            this.ui.showSuccess('Tercihiniz kaydedildi.');
+        });
     }
 
     saveSearchHistory(query) {

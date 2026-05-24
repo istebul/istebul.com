@@ -163,6 +163,10 @@ Deno.serve(async (req) => {
     return json({ ok: true, contactId: touch.contact?.id }, 200, origin);
   }
 
+  const context = (body.context as Record<string, unknown>) || {};
+  const marketingConsent = body.marketing_consent === true || context.marketing_consent === true;
+  const serviceOptIn = body.service_opt_in === true || context.service_opt_in === true;
+
   const result = await enrollInFlow(sb, {
     flowId,
     email: body.email as string,
@@ -170,13 +174,22 @@ Deno.serve(async (req) => {
     userId: body.user_id as string,
     leadId: body.lead_id as string,
     displayName: body.display_name as string,
-    context: (body.context as Record<string, unknown>) || {},
+    context: {
+      ...context,
+      ...(marketingConsent ? { marketing_consent: true } : {}),
+      ...(serviceOptIn ? { service_opt_in: true } : {}),
+    },
+    marketing_consent: marketingConsent,
+    service_opt_in: serviceOptIn,
     triggerSource: String(body.trigger_source || (serviceAuth ? "webhook" : "web")),
     restart: Boolean(body.restart),
   });
 
   if ("error" in result && result.error) {
-    const status = result.error === "email_required_for_lifecycle" ? 400 : 500;
+    const status =
+      result.error === "email_required_for_lifecycle" || result.error === "consent_required"
+        ? 400
+        : 500;
     return json({ error: result.error }, status, origin);
   }
 

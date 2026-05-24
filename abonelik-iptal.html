@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-posta aboneliğinden çık | isteBul</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="legal-page">
+  <main class="container" style="max-width:520px;margin:48px auto;padding:24px">
+    <h1>E-posta tercihleri</h1>
+    <p>Pazarlama ve hatırlatma e-postalarından çıkmak için e-posta adresinizi girin.</p>
+    <form id="unsubscribe-form">
+      <label for="unsub-email">E-posta</label>
+      <input id="unsub-email" name="email" type="email" required autocomplete="email" style="width:100%;margin:8px 0 16px;padding:12px">
+      <button type="submit" class="btn primary">Abonelikten çık</button>
+    </form>
+    <p id="unsub-status" role="status" style="margin-top:16px"></p>
+    <p style="margin-top:24px;font-size:14px;color:#64748b">
+      İşlem sonrası aktif lifecycle akışlarınız iptal edilir. Yasal bildirimler ve sözleşme e-postaları bu kapsam dışındadır.
+    </p>
+    <p><a href="/">Ana sayfaya dön</a></p>
+  </main>
+  <script src="/dist/env.js"></script>
+  <script type="module">
+    const params = new URLSearchParams(window.location.search);
+    const emailInput = document.getElementById('unsub-email');
+    const status = document.getElementById('unsub-status');
+    const preset = params.get('email');
+    if (preset && emailInput) emailInput.value = preset;
+
+    document.getElementById('unsubscribe-form')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const email = emailInput?.value?.trim();
+      if (!email) return;
+
+      const url = window.__env?.SUPABASE_URL;
+      const key = window.__env?.SUPABASE_ANON_KEY;
+      if (!url || !key) {
+        status.textContent = 'Sistem yapılandırması eksik. Lütfen destek ile iletişime geçin.';
+        return;
+      }
+
+      status.textContent = 'İşleniyor…';
+      try {
+        const res = await fetch(`${url}/functions/v1/lifecycle-enroll`, {
+          method: 'POST',
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${key}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ action: 'unsubscribe', email })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          status.textContent = data.error || 'İşlem tamamlanamadı.';
+          return;
+        }
+        status.textContent = 'Talebiniz alındı. Pazarlama e-postaları durduruldu.';
+        emailInput.value = '';
+      } catch {
+        status.textContent = 'Bağlantı hatası. Lütfen tekrar deneyin.';
+      }
+    });
+  </script>
+</body>
+</html>

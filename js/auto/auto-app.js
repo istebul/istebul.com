@@ -10,8 +10,7 @@ import {
 } from '../features/growth/growth-engine.js';
 import { trackOpsEvent } from '../core/operational-telemetry.js';
 import {
-  enrollAbandonedLead,
-  enrollAbandonedOnboarding,
+  enrollAutoResultsReady,
   enrollFinanceFollowUp,
   enrollLifecycleKeepalive,
   enrollUpsellCampaign
@@ -347,6 +346,7 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
       city: options.city || leadPayload.city || '',
       district: options.district || leadPayload.district || '',
       privacy_consent: options.privacyConsent ? 'accepted' : '',
+      marketing_consent: options.marketingConsent ? 'accepted' : '',
       interest_type: interestType,
       vehicle,
       finance_bank: options.financeBank || '',
@@ -697,6 +697,11 @@ function openLeadModal(type, vehicle = '') {
             </span>
           </label>
 
+          <label class="lead-consent lead-consent-optional">
+            <input name="marketing_consent" type="checkbox" value="accepted">
+            <span>Kampanya ve ürün güncellemelerini e-posta ile almak istiyorum (isteğe bağlı).</span>
+          </label>
+
           <button class="btn primary" type="submit">${escapeHtml(flow.submit)}</button>
           <button class="btn secondary" type="button" id="cancel-lead-modal">Vazgeç</button>
         </form>
@@ -726,6 +731,7 @@ function openLeadModal(type, vehicle = '') {
       const selectedInterest = form.get('interest') || type;
       const city = String(form.get('city') || '').trim();
       const privacyConsent = form.get('privacy_consent') === 'accepted';
+      const marketingConsent = form.get('marketing_consent') === 'accepted';
 
       if (form.get('email')) {
         writeStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL, form.get('email'));
@@ -746,6 +752,7 @@ function openLeadModal(type, vehicle = '') {
           contactName,
           city,
           privacyConsent,
+          marketingConsent,
           financeBank: financeContext.bank || '',
           financeLoanAmount: financeComparison.loanAmount || '',
           financeTerm: financeComparison.term || '',
@@ -2072,6 +2079,21 @@ form.addEventListener('submit', async (event) => {
       document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
       trackAutoEvent('auto_results_rendered', { count: results.length });
       renderResults(results);
+
+      try {
+        const userEmail = getAppInstance()?.currentUser?.email;
+        const leadEmail = readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL) || userEmail;
+        if (leadEmail && results.length) {
+          enrollAutoResultsReady({
+            email: leadEmail,
+            user_id: getAppInstance()?.currentUser?.id,
+            results_count: results.length,
+            top_vehicle: results[0]?.name
+          });
+        }
+      } catch {
+        /* ignore */
+      }
 
       try {
         const prev = Number(sessionStorage.getItem(UPSELL_RESULTS_KEY) || 0);

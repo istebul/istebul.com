@@ -1,7 +1,7 @@
 /**
  * Lifecycle CRM client — enroll contacts in automated revenue flows.
  */
-import { readStorageRaw, STORAGE_KEYS } from '../../core/storage-keys.js';
+import { readStorageRaw, writeStorageRaw, STORAGE_KEYS } from '../../core/storage-keys.js';
 import { analytics } from '../../core/analytics.js';
 
 const ENROLLED_KEY = 'istebul_lifecycle_enrolled';
@@ -34,6 +34,65 @@ function markEnrolledSession(flowId) {
 }
 
 /**
+ * @returns {boolean}
+ */
+export function hasStoredMarketingConsent(email = '') {
+  try {
+    const raw = readStorageRaw(STORAGE_KEYS.NEWSLETTER);
+    const list = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(list)) return false;
+    const normalized = String(email || '').trim().toLowerCase();
+    return list.some((item) => {
+      if (typeof item === 'string') return item === 'accepted';
+      if (item?.marketing_consent !== 'accepted') return false;
+      if (!normalized) return true;
+      return item.email === normalized || item.email_domain === normalized.split('@')[1];
+    });
+  } catch {
+    return false;
+  }
+}
+
+function resolveLifecycleEmail(payload = {}) {
+  return (
+    payload.email ||
+    readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL) ||
+    null
+  );
+}
+
+function buildEnrollBody(flowId, payload = {}) {
+  const email = resolveLifecycleEmail(payload);
+  const marketing =
+    payload.marketing_consent === true || hasStoredMarketingConsent(email || '');
+  const service =
+    payload.service_opt_in === true ||
+    Boolean(payload.user_id) ||
+    flowId === 'auto_results_ready' ||
+    flowId === 'checkout_abandon_recovery' ||
+    flowId === 'abandoned_onboarding' ||
+    flowId === 'abandoned_lead';
+
+  return {
+    flow_id: flowId,
+    email,
+    phone: payload.phone || null,
+    user_id: payload.user_id || null,
+    lead_id: payload.lead_id || null,
+    display_name: payload.display_name || null,
+    context: {
+      ...(payload.context || {}),
+      ...(marketing ? { marketing_consent: true } : {}),
+      ...(service ? { service_opt_in: true } : {})
+    },
+    marketing_consent: marketing,
+    service_opt_in: service,
+    trigger_source: payload.trigger_source || 'web',
+    restart: Boolean(payload.restart)
+  };
+}
+
+/**
  * @param {string} flowId
  * @param {Record<string, unknown>} [payload]
  */
@@ -41,11 +100,7 @@ export async function enrollLifecycle(flowId, payload = {}) {
   const config = getSupabaseConfig();
   if (!config) return { ok: false, error: 'no_supabase' };
 
-  const email =
-    payload.email ||
-    readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL) ||
-    null;
-
+  const email = resolveLifecycleEmail(payload);
   if (!email && !payload.user_id) {
     return { ok: false, error: 'no_contact' };
   }
@@ -72,17 +127,7 @@ export async function enrollLifecycle(flowId, payload = {}) {
         Authorization: `Bearer ${config.key}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        flow_id: flowId,
-        email,
-        phone: payload.phone || null,
-        user_id: payload.user_id || null,
-        lead_id: payload.lead_id || null,
-        display_name: payload.display_name || null,
-        context: payload.context || {},
-        trigger_source: payload.trigger_source || 'web',
-        restart: Boolean(payload.restart)
-      })
+      body: JSON.stringify(buildEnrollBody(flowId, payload))
     });
 
     const data = await response.json().catch(() => ({}));
@@ -91,13 +136,6 @@ export async function enrollLifecycle(flowId, payload = {}) {
     }
 
     markEnrolledSession(flowId);
-    if (flowId === 'upsell_campaigns') {
-      analytics.track('lifecycle_enrolled', { flow_id: flowId }, {
-        category: 'lifecycle',
-        funnel: 'upsell',
-        funnel_step: 'upsell_campaigns'
-      });
-    }
     return { ok: true, ...data };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'enroll_failed' };
@@ -112,13 +150,45 @@ export function enrollSignupNurture(user) {
     email: user.email,
     user_id: user.id,
     display_name: user.user_metadata?.full_name || user.email?.split('@')[0],
+    service_opt_in: true,
+    marketing_consent: hasStoredMarketingConsent(user.email),
     trigger_source: 'auth_signed_in'
+  });
+}
+
+export function enrollAutoResultsReady(meta = {}) {
+  const email = resolveLifecycleEmail(meta);
+  if (!email) return Promise.resolve({ ok: false, error: 'no_email' });
+  return enrollLifecycle('auto_results_ready', {
+    email,
+    user_id: meta.user_id,
+    service_opt_in: true,
+    context: {
+      results_count: meta.results_count,
+      top_vehicle: meta.top_vehicle
+    },
+    trigger_source: 'auto_results_rendered'
+  });
+}
+
+export function enrollCheckoutAbandonRecovery(meta = {}) {
+  return enrollLifecycle('checkout_abandon_recovery', {
+    email: meta.email,
+    user_id: meta.user_id,
+    service_opt_in: true,
+    context: {
+      billing_interval: meta.billing_interval,
+      reason: meta.reason
+    },
+    trigger_source: 'checkout_abandoned',
+    restart: true
   });
 }
 
 export function enrollAbandonedOnboarding(meta = {}) {
   return enrollLifecycle('abandoned_onboarding', {
-    email: readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL),
+    email: resolveLifecycleEmail(meta),
+    service_opt_in: true,
     context: meta,
     trigger_source: 'auto_onboarding_drop'
   });
@@ -126,7 +196,8 @@ export function enrollAbandonedOnboarding(meta = {}) {
 
 export function enrollAbandonedLead(meta = {}) {
   return enrollLifecycle('abandoned_lead', {
-    email: readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL),
+    email: resolveLifecycleEmail(meta),
+    service_opt_in: true,
     context: {
       vehicle: meta.vehicle,
       interest_type: meta.interest_type,
@@ -138,43 +209,51 @@ export function enrollAbandonedLead(meta = {}) {
 
 export function enrollFinanceFollowUp(meta = {}) {
   return enrollLifecycle('finance_follow_up', {
-    email: readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL),
+    email: resolveLifecycleEmail(meta),
+    service_opt_in: true,
     context: meta,
     trigger_source: 'auto_finance'
   });
 }
 
 export function enrollUpsellCampaign(meta = {}) {
+  const email = resolveLifecycleEmail(meta);
+  if (!hasStoredMarketingConsent(email || '')) {
+    return Promise.resolve({ ok: false, error: 'marketing_consent_required' });
+  }
   return enrollLifecycle('upsell_campaigns', {
-    email: readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL),
+    email,
     user_id: meta.user_id,
     context: meta,
+    marketing_consent: true,
     trigger_source: 'auto_upsell'
+  });
+}
+
+/**
+ * Newsletter / explicit marketing opt-in.
+ * @param {string} email
+ */
+export function enrollNewsletterWelcome(email) {
+  return enrollLifecycle('signup_nurture', {
+    email,
+    marketing_consent: true,
+    trigger_source: 'newsletter',
+    restart: true
   });
 }
 
 /**
  * Best-effort enroll during page unload (keepalive).
  * @param {string} flowId
- * @param {Record<string, unknown>} payload
+ * @param {Record<string, unknown>} [payload]
  */
 export function enrollLifecycleKeepalive(flowId, payload = {}) {
   const config = getSupabaseConfig();
   if (!config) return;
 
-  const email =
-    payload.email ||
-    readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL) ||
-    null;
+  const email = resolveLifecycleEmail(payload);
   if (!email) return;
-
-  const body = JSON.stringify({
-    flow_id: flowId,
-    email,
-    phone: payload.phone || null,
-    context: payload.context || {},
-    trigger_source: payload.trigger_source || 'web_keepalive'
-  });
 
   try {
     fetch(`${config.url}/functions/v1/lifecycle-enroll`, {
@@ -185,7 +264,7 @@ export function enrollLifecycleKeepalive(flowId, payload = {}) {
         Authorization: `Bearer ${config.key}`,
         'Content-Type': 'application/json'
       },
-      body
+      body: JSON.stringify(buildEnrollBody(flowId, payload))
     }).catch(() => {});
   } catch {
     /* ignore */

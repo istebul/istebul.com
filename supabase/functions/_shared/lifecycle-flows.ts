@@ -93,6 +93,82 @@ export const LIFECYCLE_FLOWS: LifecycleFlow[] = [
       { id: "retain_14d", delayHours: 336, templateId: "retention_winback", subject: "Geri dönün, özel teklif" },
     ],
   },
+  {
+    id: "auto_results_ready",
+    name: "Auto results D0",
+    category: "recovery",
+    steps: [
+      {
+        id: "results_d0",
+        delayHours: 0,
+        templateId: "auto_results_ready",
+        subject: "Sonuçlarınız hazır",
+      },
+    ],
+  },
+  {
+    id: "results_no_lead_d1",
+    name: "Results without lead D1",
+    category: "recovery",
+    steps: [
+      {
+        id: "no_lead_24h",
+        delayHours: 24,
+        templateId: "results_no_lead",
+        subject: "Araç önerileriniz sizi bekliyor",
+      },
+      {
+        id: "no_lead_72h",
+        delayHours: 72,
+        templateId: "results_no_lead",
+        subject: "Ücretsiz teklif sürecini başlatın",
+      },
+    ],
+  },
+  {
+    id: "lead_upgrade_d3",
+    name: "Lead upgrade D3",
+    category: "revenue",
+    steps: [
+      {
+        id: "upgrade_72h",
+        delayHours: 72,
+        templateId: "upsell_pro",
+        subject: "Pro ile kararınızı hızlandırın",
+      },
+      {
+        id: "upgrade_168h",
+        delayHours: 168,
+        templateId: "upsell_pro",
+        subject: "Detaylı rapor ve karşılaştırma",
+      },
+    ],
+  },
+  {
+    id: "checkout_abandon_recovery",
+    name: "Checkout abandon recovery",
+    category: "recovery",
+    steps: [
+      {
+        id: "checkout_2h",
+        delayHours: 2,
+        templateId: "checkout_abandon",
+        subject: "Pro ödemenizi tamamlayın",
+      },
+      {
+        id: "checkout_24h",
+        delayHours: 24,
+        templateId: "checkout_abandon",
+        subject: "7 günlük Pro denemeniz bekliyor",
+      },
+      {
+        id: "checkout_72h",
+        delayHours: 72,
+        templateId: "checkout_abandon_last",
+        subject: "Son hatırlatma: Pro planınız",
+      },
+    ],
+  },
 ];
 
 export const PUBLIC_ENROLL_FLOWS = new Set([
@@ -101,7 +177,15 @@ export const PUBLIC_ENROLL_FLOWS = new Set([
   "abandoned_lead",
   "finance_follow_up",
   "upsell_campaigns",
+  "auto_results_ready",
+  "checkout_abandon_recovery",
 ]);
+
+export function buildUnsubscribeUrl(email: string) {
+  const url = new URL("/abonelik-iptal.html", LIFECYCLE_BASE_URL);
+  url.searchParams.set("email", email);
+  return url.toString();
+}
 
 export function getFlow(flowId: string): LifecycleFlow | undefined {
   return LIFECYCLE_FLOWS.find((f) => f.id === flowId);

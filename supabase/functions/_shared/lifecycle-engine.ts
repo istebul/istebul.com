@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendLifecycleEmail } from "./lifecycle-email.ts";
 import {
+  contactAllowsFlow,
+  mergeConsentMetadata,
+} from "./lifecycle-consent.ts";
+import {
   getFlow,
   scheduleStepAt,
   type LifecycleFlow,
@@ -17,6 +21,8 @@ export type EnrollInput = {
   displayName?: string | null;
   context?: Record<string, unknown>;
   triggerSource?: string;
+  marketing_consent?: boolean;
+  service_opt_in?: boolean;
   /** Replace active enrollment and reschedule */
   restart?: boolean;
 };
@@ -67,6 +73,7 @@ export async function upsertLifecycleContact(
     existing = data;
   }
 
+  const ctx = input.context || {};
   const patch = {
     user_id: userId || existing?.user_id || null,
     email: email || existing?.email || null,
@@ -75,10 +82,18 @@ export async function upsertLifecycleContact(
     display_name: input.displayName || existing?.display_name || null,
     last_active_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    metadata: {
-      ...(existing?.metadata || {}),
-      ...(input.context || {}),
-    },
+    metadata: mergeConsentMetadata(
+      {
+        ...(existing?.metadata || {}),
+        ...ctx,
+      },
+      {
+        marketing_consent:
+          input.marketing_consent === true || ctx.marketing_consent === true,
+        service_opt_in:
+          input.service_opt_in === true || ctx.service_opt_in === true,
+      }
+    ),
   };
 
   if (existing?.id) {
@@ -136,6 +151,10 @@ export async function enrollInFlow(sb: SupabaseClient, input: EnrollInput) {
   const contact = contactResult.contact!;
   if (!contact.email) {
     return { error: "email_required_for_lifecycle" as const };
+  }
+
+  if (!contactAllowsFlow(contact.metadata as Record<string, unknown>, input.flowId)) {
+    return { error: "consent_required" as const };
   }
 
   const { data: active } = await sb
@@ -262,6 +281,15 @@ export async function processDueMessages(sb: SupabaseClient, limit = 50) {
       continue;
     }
 
+    if (!contactAllowsFlow(contact.metadata as Record<string, unknown>, msg.flow_id)) {
+      await sb
+        .from("lifecycle_messages")
+        .update({ status: "skipped", error: "consent_required" })
+        .eq("id", msg.id);
+      skipped += 1;
+      continue;
+    }
+
     const email = contact?.email;
     if (!email) {
       await sb.from("lifecycle_messages").update({ status: "skipped", error: "no_email" }).eq("id", msg.id);
@@ -275,7 +303,7 @@ export async function processDueMessages(sb: SupabaseClient, limit = 50) {
       display_name: contact.display_name,
     };
 
-    const html = renderTemplate(msg.template_id, msg.flow_id, msg.step_id, ctx);
+    const html = renderTemplate(msg.template_id, msg.flow_id, msg.step_id, ctx, email);
     const result = await sendLifecycleEmail({
       to: email,
       subject: msg.subject,
@@ -551,6 +579,206 @@ export async function enrollUpsellFromAnalytics(sb: SupabaseClient, limit = 20) 
   return { enrolled, scanned: counts.size };
 }
 
+/** D0: results rendered with email (analytics backup, last 12h) */
+export async function enrollAutoResultsReadyFromAnalytics(sb: SupabaseClient, limit = 30) {
+  const since = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+
+  const { data: events } = await sb
+    .from("analytics_events")
+    .select("email, properties, created_at")
+    .in("event_name", ["auto_results_rendered", "auto_results_view"])
+    .gte("created_at", since)
+    .not("email", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  let enrolled = 0;
+  const seen = new Set<string>();
+
+  for (const ev of events || []) {
+    const email = normalizeEmail(ev.email);
+    if (!email || seen.has(email)) continue;
+    seen.add(email);
+    if (enrolled >= limit) break;
+
+    const result = await enrollInFlow(sb, {
+      flowId: "auto_results_ready",
+      email,
+      service_opt_in: true,
+      context: {
+        service_opt_in: true,
+        results_count: (ev.properties as Record<string, unknown>)?.count,
+      },
+      triggerSource: "cron_results_d0",
+    });
+    if (result.ok && !result.duplicate) enrolled += 1;
+  }
+
+  return { enrolled, scanned: events?.length || 0 };
+}
+
+/** D1: saw results 24–48h ago, no lead submit */
+export async function enrollNoLeadReminderFromAnalytics(sb: SupabaseClient, limit = 25) {
+  const windowEnd = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const windowStart = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+  const { data: views } = await sb
+    .from("analytics_events")
+    .select("email, created_at")
+    .in("event_name", ["auto_results_view", "auto_results_rendered"])
+    .gte("created_at", windowStart)
+    .lte("created_at", windowEnd)
+    .not("email", "is", null)
+    .limit(400);
+
+  const { data: leads } = await sb
+    .from("analytics_events")
+    .select("email")
+    .in("event_name", ["auto_lead_submit", "lead_submit"])
+    .gte("created_at", windowStart)
+    .not("email", "is", null)
+    .limit(400);
+
+  const leadEmails = new Set(
+    (leads || []).map((row) => normalizeEmail(row.email)).filter(Boolean) as string[]
+  );
+
+  let enrolled = 0;
+  const seen = new Set<string>();
+
+  for (const ev of views || []) {
+    const email = normalizeEmail(ev.email);
+    if (!email || seen.has(email) || leadEmails.has(email)) continue;
+    seen.add(email);
+    if (enrolled >= limit) break;
+
+    const result = await enrollInFlow(sb, {
+      flowId: "results_no_lead_d1",
+      email,
+      context: { campaign: "no_lead_d1" },
+      triggerSource: "cron_no_lead_d1",
+    });
+    if (result.ok && !result.duplicate) enrolled += 1;
+  }
+
+  return { enrolled, scanned: views?.length || 0 };
+}
+
+/** D3: lead in CRM 72h+, no active subscription */
+export async function enrollLeadUpgradeFromLeads(sb: SupabaseClient, limit = 25) {
+  const cutoff = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+
+  const { data: leads } = await sb
+    .from("auto_leads")
+    .select("id, email, contact_name, vehicle, created_at, status")
+    .not("email", "is", null)
+    .lte("created_at", cutoff)
+    .in("status", [
+      "new",
+      "first_contact",
+      "called",
+      "callback",
+      "unreachable",
+      "proposal_sent",
+      "interested",
+      "financing",
+      "insurance",
+      "contacted",
+      "qualified",
+    ])
+    .order("created_at", { ascending: true })
+    .limit(limit * 2);
+
+  let enrolled = 0;
+
+  for (const lead of leads || []) {
+    if (enrolled >= limit) break;
+    const email = normalizeEmail(lead.email);
+    if (!email) continue;
+
+    const { data: profile } = await sb
+      .from("profiles")
+      .select("id")
+      .ilike("email", email)
+      .maybeSingle();
+
+    if (profile?.id) {
+      const { data: activeSub } = await sb
+        .from("subscriptions")
+        .select("id")
+        .eq("user_id", profile.id)
+        .in("status", ["active", "trialing"])
+        .limit(1);
+      if (activeSub?.length) continue;
+    }
+
+    const result = await enrollInFlow(sb, {
+      flowId: "lead_upgrade_d3",
+      email,
+      leadId: lead.id,
+      displayName: lead.contact_name,
+      context: { vehicle: lead.vehicle, lead_id: lead.id },
+      triggerSource: "cron_lead_upgrade_d3",
+    });
+    if (result.ok && !result.duplicate) enrolled += 1;
+  }
+
+  return { enrolled, scanned: leads?.length || 0 };
+}
+
+/** Checkout started without completion (2h+ ago) */
+export async function enrollCheckoutAbandonFromAnalytics(sb: SupabaseClient, limit = 20) {
+  const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  const minAge = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+
+  const { data: started } = await sb
+    .from("analytics_events")
+    .select("email, user_id, created_at, properties")
+    .eq("event_name", "checkout_started")
+    .gte("created_at", since)
+    .lte("created_at", minAge)
+    .not("email", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  const { data: completed } = await sb
+    .from("analytics_events")
+    .select("email")
+    .eq("event_name", "checkout_completed")
+    .gte("created_at", since)
+    .not("email", "is", null)
+    .limit(400);
+
+  const completedSet = new Set(
+    (completed || []).map((row) => normalizeEmail(row.email)).filter(Boolean) as string[]
+  );
+
+  let enrolled = 0;
+  const seen = new Set<string>();
+
+  for (const ev of started || []) {
+    const email = normalizeEmail(ev.email);
+    if (!email || seen.has(email) || completedSet.has(email)) continue;
+    seen.add(email);
+    if (enrolled >= limit) break;
+
+    const result = await enrollInFlow(sb, {
+      flowId: "checkout_abandon_recovery",
+      email,
+      userId: ev.user_id || undefined,
+      service_opt_in: true,
+      context: {
+        service_opt_in: true,
+        billing_interval: (ev.properties as Record<string, unknown>)?.billing_interval,
+      },
+      triggerSource: "cron_checkout_abandon",
+    });
+    if (result.ok && !result.duplicate) enrolled += 1;
+  }
+
+  return { enrolled, scanned: started?.length || 0 };
+}
+
 export async function cancelFlowsForContact(
   sb: SupabaseClient,
   contactId: string,
@@ -574,6 +802,11 @@ const RECOVERY_CANCEL_FLOWS = [
   "abandoned_onboarding",
   "finance_follow_up",
   "partner_follow_up",
+  "auto_results_ready",
+  "results_no_lead_d1",
+  "checkout_abandon_recovery",
+  "lead_upgrade_d3",
+  "upsell_campaigns",
 ];
 
 export async function cancelRecoveryFlowsByEmail(

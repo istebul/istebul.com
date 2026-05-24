@@ -26,8 +26,10 @@ describe('lifecycle-schedule', () => {
     assert.equal(schedule[1].scheduledAt, '2026-05-23T02:00:00.000Z');
   });
 
-  it('exposes eight flow ids', () => {
-    assert.equal(LIFECYCLE_FLOW_IDS.length, 8);
+  it('exposes P1.1 lifecycle flow ids', () => {
+    assert.equal(LIFECYCLE_FLOW_IDS.length, 12);
+    assert.ok(LIFECYCLE_FLOW_IDS.includes('auto_results_ready'));
+    assert.ok(LIFECYCLE_FLOW_IDS.includes('checkout_abandon_recovery'));
   });
 
   it('marks public enroll flows', () => {

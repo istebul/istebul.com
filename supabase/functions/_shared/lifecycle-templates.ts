@@ -1,4 +1,4 @@
-import { buildUtmLink, LIFECYCLE_BASE_URL } from "./lifecycle-flows.ts";
+import { buildUtmLink, buildUnsubscribeUrl, LIFECYCLE_BASE_URL } from "./lifecycle-flows.ts";
 
 export type TemplateVars = {
   display_name?: string;
@@ -8,6 +8,7 @@ export type TemplateVars = {
   cta_url: string;
   pricing_url: string;
   account_url: string;
+  unsubscribe_url?: string;
 };
 
 function esc(value: unknown) {
@@ -18,14 +19,38 @@ function esc(value: unknown) {
     .replace(/"/g, "&quot;");
 }
 
-function layout(body: string) {
+function layout(body: string, unsubscribeUrl?: string) {
+  const footer = unsubscribeUrl
+    ? `<p style="color:#666;font-size:12px;margin-top:24px"><a href="${unsubscribeUrl}">E-posta listesinden çık</a></p>`
+    : "";
   return `<!DOCTYPE html><html lang="tr"><body style="font-family:system-ui,sans-serif;color:#111;max-width:560px;margin:0 auto;padding:24px">
 ${body}
+${footer}
 <p style="color:#666;font-size:12px;margin-top:32px">isteBul · <a href="${LIFECYCLE_BASE_URL}">istebul.com</a></p>
 </body></html>`;
 }
 
 const TEMPLATES: Record<string, (v: TemplateVars) => string> = {
+  auto_results_ready: (v) => layout(`
+    <h1>Sonuçlarınız hazır</h1>
+    <p>Araç karar analiziniz tamamlandı. Önerilerinizi ve toplam maliyet senaryolarını görüntüleyin.</p>
+    <p><a href="${esc(v.cta_url)}" style="background:#0d6efd;color:#fff;padding:12px 20px;text-decoration:none;border-radius:8px;display:inline-block">Sonuçları gör</a></p>
+  `, v.unsubscribe_url),
+  results_no_lead: (v) => layout(`
+    <h1>Teklif sürecini başlatın</h1>
+    <p>Auto analiz sonuçlarınızı incelediniz — bir sonraki adım uygun satıcı ve finansman eşleşmesi.</p>
+    <p><a href="${esc(v.cta_url)}">Ücretsiz ön değerlendirme →</a></p>
+  `, v.unsubscribe_url),
+  checkout_abandon: (v) => layout(`
+    <h1>Pro ödemeniz tamamlanmadı</h1>
+    <p>Kaldığınız yerden devam edin — deneme süreniz veya plan seçiminiz bir tık uzağınızda.</p>
+    <p><a href="${esc(v.pricing_url)}">Ödemeye devam et →</a></p>
+  `, v.unsubscribe_url),
+  checkout_abandon_last: (v) => layout(`
+    <h1>Son hatırlatma: Pro plan</h1>
+    <p>Detaylı rapor, karşılaştırma ve öncelikli yönlendirme için Pro'yu tamamlayın.</p>
+    <p><a href="${esc(v.pricing_url)}">Planları gör →</a></p>
+  `, v.unsubscribe_url),
   signup_welcome: (v) => layout(`
     <h1>Hoş geldiniz${v.display_name ? `, ${esc(v.display_name)}` : ""}!</h1>
     <p>Karar asistanınız hazır. İlk adım: aracınız için ücretsiz analiz.</p>
@@ -98,14 +123,17 @@ export function renderTemplate(
   templateId: string,
   flowId: string,
   stepId: string,
-  context: Record<string, unknown> = {}
+  context: Record<string, unknown> = {},
+  recipientEmail?: string
 ) {
   const ctaPath =
     flowId === "finance_follow_up"
       ? "/auto/?interest=finance"
-      : flowId === "abandoned_lead"
-        ? "/auto/?recover=email"
-        : "/auto/";
+      : flowId === "checkout_abandon_recovery"
+        ? "/planlar?checkout=pro"
+        : flowId === "abandoned_lead" || flowId === "results_no_lead_d1"
+          ? "/auto/?recover=email"
+          : "/auto/";
 
   const vars: TemplateVars = {
     display_name: String(context.display_name || context.contact_name || "").trim() || undefined,
@@ -115,8 +143,9 @@ export function renderTemplate(
     cta_url: buildUtmLink(ctaPath, flowId, stepId, {
       growth_campaign: String(context.campaign || flowId),
     }),
-    pricing_url: buildUtmLink("/#pricing", flowId, stepId),
+    pricing_url: buildUtmLink("/planlar?checkout=pro", flowId, stepId),
     account_url: buildUtmLink("/account.html", flowId, stepId),
+    unsubscribe_url: recipientEmail ? buildUnsubscribeUrl(recipientEmail) : undefined,
   };
 
   const render = TEMPLATES[templateId] || TEMPLATES.signup_welcome;

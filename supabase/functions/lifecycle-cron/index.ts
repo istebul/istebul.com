@@ -1,7 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   enrollAbandonedLeadsFromAnalytics,
+  enrollAutoResultsReadyFromAnalytics,
+  enrollCheckoutAbandonFromAnalytics,
   enrollInactiveUsers,
+  enrollLeadUpgradeFromLeads,
+  enrollNoLeadReminderFromAnalytics,
   enrollPartnerFollowUps,
   enrollRetentionFromSubscriptions,
   enrollUpsellFromAnalytics,
@@ -31,6 +35,10 @@ Deno.serve(async (req) => {
   const retentionResult = await enrollRetentionFromSubscriptions(sb, 20);
   const abandonResult = await enrollAbandonedLeadsFromAnalytics(sb, 25);
   const upsellResult = await enrollUpsellFromAnalytics(sb, 20);
+  const resultsD0 = await enrollAutoResultsReadyFromAnalytics(sb, 30);
+  const noLeadD1 = await enrollNoLeadReminderFromAnalytics(sb, 25);
+  const leadUpgradeD3 = await enrollLeadUpgradeFromLeads(sb, 25);
+  const checkoutAbandon = await enrollCheckoutAbandonFromAnalytics(sb, 20);
 
   return new Response(
     JSON.stringify({
@@ -43,6 +51,10 @@ Deno.serve(async (req) => {
         retention_campaigns: retentionResult,
         abandoned_lead: abandonResult,
         upsell_campaigns: upsellResult,
+        auto_results_ready: resultsD0,
+        results_no_lead_d1: noLeadD1,
+        lead_upgrade_d3: leadUpgradeD3,
+        checkout_abandon_recovery: checkoutAbandon,
       },
     }),
     { headers: { "Content-Type": "application/json" } }
