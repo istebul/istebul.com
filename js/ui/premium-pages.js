@@ -379,7 +379,7 @@ export class PremiumPages {
 
       <section class="ib-premium-block">
         <div class="container">
-          <div id="pricing-plans-root" class="ib-premium-pricing-root"></div>
+          <div id="premium-pricing-plans-root" class="ib-premium-pricing-root"></div>
         </div>
       </section>
 

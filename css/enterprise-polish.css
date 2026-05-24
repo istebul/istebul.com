@@ -22,8 +22,8 @@ body.ib-enterprise {
 }
 
 body.ib-enterprise:not(.ib-ready) main {
-  opacity: 0;
-  transform: translateY(8px);
+  opacity: 1;
+  transform: none;
 }
 
 body.ib-enterprise.ib-ready main {

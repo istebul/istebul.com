@@ -105,7 +105,6 @@ class App {
             this.setupCookieConsent();
             this.renderHeroDecisionPreview();
             this.renderPricingSection();
-            premiumPages.mount('planlar', this);
 
             document.addEventListener('routeChanged', (event) => {
                 if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) !== 'accepted') return;
@@ -3157,13 +3156,19 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     renderPricingSection() {
-        const root = document.getElementById('pricing-plans-root');
-        if (!root) return;
-        const isPremiumPage = root.closest('#page-planlar');
-        root.innerHTML = revenueManager.renderPricingCards({
-            layout: isPremiumPage ? 'premium' : 'default'
-        });
-        revenueManager.initPricingControls(root);
+        const premiumRoot = document.getElementById('premium-pricing-plans-root');
+        const homeRoot = document.querySelector('#pricing #pricing-plans-root');
+
+        if (premiumRoot) {
+            premiumRoot.innerHTML = revenueManager.renderPricingCards({ layout: 'premium' });
+            revenueManager.initPricingControls(premiumRoot);
+        }
+
+        if (homeRoot && homeRoot !== premiumRoot) {
+            homeRoot.innerHTML = revenueManager.renderPricingCards({ layout: 'default' });
+            revenueManager.initPricingControls(homeRoot);
+        }
+
         this.ui.loadIcons?.();
     }
 
@@ -4103,6 +4108,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // are applied after all UI/listener initialization is complete.
         window.app.router?.handleRoute?.();
 
+        const bootPath = window.location.pathname === '/index.html'
+            ? '/'
+            : (window.location.pathname.replace(/\/$/, '') || '/');
+        if (bootPath === '/' && !MARKETING_SECTION_IDS.has(window.location.hash.slice(1))) {
+            applyHomeMarketingVisibility();
+        }
+
         window.appReady = true;
         window.dispatchEvent(new CustomEvent('app:ready'));
     } catch (error) {
@@ -4165,10 +4177,31 @@ document.addEventListener('click', (event) => {
 const MARKETING_SECTION_IDS = new Set(['home', 'trust', 'how-it-works', 'pricing', 'categories']);
 const MARKETING_PATH_ALIASES = new Set(['/metodoloji-ozet', '/planlar-ozet']);
 
+function applyHomeMarketingVisibility() {
+    if (window.app?.router?.showHomeSections) {
+        window.app.router.showHomeSections();
+        document.body.classList.remove('app-route-active', 'ib-premium-route-active');
+        return;
+    }
+
+    document.querySelectorAll('section[id]').forEach((section) => {
+        const shouldShow = MARKETING_SECTION_IDS.has(section.id);
+        section.classList.toggle('hidden', !shouldShow);
+        section.style.display = shouldShow ? 'block' : 'none';
+    });
+    document.body.classList.remove('app-route-active', 'ib-premium-route-active');
+}
+
 function applyProductionRouteVisibility() {
-    const path = window.location.pathname.replace(/\/$/, '') || '/';
+    const rawPath = window.location.pathname;
+    const path = (rawPath === '/index.html' ? '/' : rawPath.replace(/\/$/, '')) || '/';
     const hashId = (window.location.hash || '').slice(1);
     const marketingHash = MARKETING_SECTION_IDS.has(hashId);
+
+    if (path === '/' && !marketingHash) {
+        applyHomeMarketingVisibility();
+        return;
+    }
 
     if (marketingHash || MARKETING_PATH_ALIASES.has(path)) {
         document.querySelectorAll('section[id]').forEach((section) => {

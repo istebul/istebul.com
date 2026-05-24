@@ -13,8 +13,11 @@ export function initEnterpriseUx() {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', markReady, { once: true });
   } else {
-    requestAnimationFrame(markReady);
+    markReady();
   }
+
+  // Failsafe: never leave main at opacity 0 if init stalls
+  setTimeout(markReady, 2500);
 
   document.addEventListener('routeChanged', () => {
     document.dispatchEvent(new CustomEvent('ib:refresh-icons'));
