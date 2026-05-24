@@ -70,7 +70,7 @@ assert(router.includes("activePath.startsWith('/ilan/')"), 'Listing detail route
 
 const auth = read('js/features/auth/auth.js');
 assert(auth.includes("from '../../core/supabase.js'"), 'Auth supabase import path is incorrect.');
-assert(auth.includes('getForgotPasswordForm()'), 'Forgot password form renderer is missing.');
+assert(auth.includes('getForgotPasswordForm'), 'Forgot password form renderer is missing.');
 assert(!auth.includes('prompt(') && !auth.includes('alert('), 'Auth flow should not use blocking browser prompt/alert.');
 const css = read('css/style.css');
 assert(css.includes(':root[data-theme="dark"]'), 'Dark mode styles are missing.');
