@@ -1,6 +1,31 @@
 // Router - Simple client-side routing
 import { stripLocalePrefix, setActiveLocale, applyDocumentLocale } from '../platform/locale-registry.js';
 
+/** Marketing sections on index.html (long-scroll landing). */
+export const HOMEPAGE_SECTION_IDS = Object.freeze([
+    'home',
+    'trust',
+    'how-it-works',
+    'pricing',
+    'categories'
+]);
+
+/** Hash targets on the marketing page. */
+export const MARKETING_HASH_IDS = Object.freeze([
+    'home',
+    'trust',
+    'how-it-works',
+    'pricing',
+    'categories'
+]);
+
+/** Legacy / SEO paths → scroll target on homepage. */
+const MARKETING_PATH_ALIASES = Object.freeze({
+    '/metodoloji': 'how-it-works',
+    '/planlar': 'pricing',
+    '/karar-analizi': 'home'
+});
+
 export class Router {
     constructor() {
         this.routes = [
@@ -21,32 +46,118 @@ export class Router {
             { path: '/ilan/:id', component: 'listing-detail' }
         ];
         this.currentRoute = '/';
+        this._pendingScrollId = null;
     }
 
     init() {
-        // Handle initial load
         this.handleRoute();
-
-        // Handle browser back/forward
         window.addEventListener('popstate', () => this.handleRoute());
+        window.addEventListener('hashchange', () => this.handleRoute());
 
-        // Handle link clicks
         document.addEventListener('click', (e) => {
-            const link = e.target.closest('a[href^="/"]');
-            if (link) {
-                if (link.hasAttribute('data-native-route')) return;
+            const hashLink = e.target.closest('a[href^="#"]');
+            if (hashLink) {
+                const targetId = hashLink.getAttribute('href').slice(1);
+                if (!targetId || !document.getElementById(targetId)) return;
                 e.preventDefault();
-                const path = link.getAttribute('href');
-                this.navigate(path);
+                this.goToMarketingHash(targetId);
+                return;
+            }
+
+            const link = e.target.closest('a[href^="/"]');
+            if (!link) return;
+            if (link.hasAttribute('data-native-route')) return;
+
+            const rawHref = link.getAttribute('href') || '/';
+            if (rawHref.startsWith('/#')) {
+                e.preventDefault();
+                const targetId = rawHref.slice(2).split('?')[0];
+                if (targetId && document.getElementById(targetId)) {
+                    this.goToMarketingHash(targetId);
+                }
+                return;
+            }
+
+            e.preventDefault();
+            this.navigate(rawHref);
+        });
+    }
+
+    /**
+     * Show full marketing landing sections (fixes blank body after SPA routes).
+     */
+    showHomeSections() {
+        document.body.classList.remove('app-route-active');
+
+        document.querySelectorAll('[data-private-section]').forEach((section) => {
+            section.classList.remove('route-visible');
+        });
+
+        document.querySelectorAll('section[id]').forEach((section) => {
+            const isMarketing = HOMEPAGE_SECTION_IDS.includes(section.id);
+            if (isMarketing) {
+                section.classList.remove('hidden');
+                section.style.display = 'block';
+                return;
+            }
+
+            section.style.display = 'none';
+            if (section.hasAttribute('data-private-section')) {
+                section.classList.add('hidden');
             }
         });
     }
 
-    navigate(path) {
-        if (path !== this.currentRoute) {
-            window.history.pushState(null, null, path);
-            this.currentRoute = path;
+    goToMarketingHash(targetId) {
+        const { pathname: stripped } = stripLocalePrefix(
+            window.location.pathname === '/index.html' ? '/' : window.location.pathname
+        );
+        const path = stripped.replace(/\/$/, '') || '/';
+
+        if (path !== '/') {
+            window.history.pushState(null, '', `/#${targetId}`);
+            this.currentRoute = '/';
+        } else {
+            const hash = window.location.hash?.slice(1);
+            if (hash !== targetId) {
+                window.history.pushState(null, '', `/#${targetId}`);
+            }
+        }
+
+        this._pendingScrollId = targetId;
+        this.handleRoute();
+    }
+
+    navigate(path, { force = false } = {}) {
+        const hashPart = path.includes('#') ? path.slice(path.indexOf('#')) : '';
+        const normalized = this.normalizePath(path);
+
+        if (force || normalized !== this.currentRoute) {
+            window.history.pushState(null, '', normalized + hashPart);
+            this.currentRoute = normalized;
             this.handleRoute();
+            return;
+        }
+
+        if (hashPart) {
+            this._pendingScrollId = hashPart.slice(1);
+            this.applyHashTarget();
+        }
+    }
+
+    normalizePath(path = '/') {
+        try {
+            const url = new URL(path, window.location.origin);
+            const { pathname: stripped } = stripLocalePrefix(
+                url.pathname === '/index.html' ? '/' : url.pathname
+            );
+            return stripped.replace(/\/$/, '') || '/';
+        } catch {
+            const clean = String(path).split('#')[0];
+            const { pathname: stripped } = stripLocalePrefix(
+                clean === '/index.html' ? '/' : clean
+            );
+            return stripped.replace(/\/$/, '') || '/';
         }
     }
 
@@ -59,29 +170,61 @@ export class Router {
         applyDocumentLocale(localeId);
         const path = stripped.replace(/\/$/, '') || '/';
         this.currentRoute = path;
+
+        const aliasScrollId = MARKETING_PATH_ALIASES[path];
+        if (aliasScrollId) {
+            this._pendingScrollId = aliasScrollId;
+            this.showHomeSections();
+            this.updateNavLinks(path, aliasScrollId === 'home' ? '' : aliasScrollId);
+            this.updateTitle('home');
+            this.dispatchRoute('home', {}, path);
+            this.applyHashTarget();
+            return;
+        }
+
+        const hashId = window.location.hash?.slice(1);
+        if (path === '/' && hashId && MARKETING_HASH_IDS.includes(hashId)) {
+            this.showHomeSections();
+            this.updateNavLinks(path, hashId);
+            this.updateTitle('home');
+            this.dispatchRoute('home', {}, path);
+            this.applyHashTarget();
+            return;
+        }
+
         const match = this.matchRoute(path);
         const route = match ? match.component : 'home';
 
-        // Update active nav link
         this.updateNavLinks(path);
-
-        // Show/hide sections
         this.showSection(route);
-
-        // Update page title
         this.updateTitle(route, match?.params);
+        this.dispatchRoute(route, match?.params || {}, path);
+        this.applyHashTarget();
+    }
 
-        document.dispatchEvent(new CustomEvent('routeChanged', {
-            detail: {
-                route,
-                params: match?.params || {},
-                path
-            }
-        }));
+    dispatchRoute(route, params, path) {
+        document.dispatchEvent(
+            new CustomEvent('routeChanged', {
+                detail: { route, params, path }
+            })
+        );
+    }
+
+    applyHashTarget() {
+        const hashId = this._pendingScrollId || window.location.hash?.slice(1);
+        this._pendingScrollId = null;
+        if (!hashId || !MARKETING_HASH_IDS.includes(hashId)) return;
+
+        const target = document.getElementById(hashId);
+        if (!target) return;
+
+        requestAnimationFrame(() => {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
     }
 
     matchRoute(path) {
-        const exact = this.routes.find(route => route.path === path);
+        const exact = this.routes.find((route) => route.path === path);
         if (exact) {
             return { component: exact.component, params: {} };
         }
@@ -111,44 +254,57 @@ export class Router {
         return null;
     }
 
-    updateNavLinks(activePath) {
-        document.querySelectorAll('.nav-link').forEach(link => {
+    updateNavLinks(activePath, hashId = '') {
+        document.querySelectorAll('.nav-link').forEach((link) => {
             link.classList.remove('active');
         });
 
-        const activeLink = document.querySelector(`a[href="${activePath}"]`) ||
-            (activePath.startsWith('/ilan/') ? document.querySelector('a[href="/ilanlar/"]') : null);
+        const hash = hashId ? `#${hashId}` : window.location.hash;
+        if (hash) {
+            const hashLink = document.querySelector(`a[href="${hash}"]`);
+            if (hashLink) {
+                hashLink.classList.add('active');
+                return;
+            }
+        }
+
+        const activeLink =
+            document.querySelector(`a[href="${activePath}"]`) ||
+            document.querySelector(`a[href="${activePath}/"]`) ||
+            (activePath.startsWith('/ilan/')
+                ? document.querySelector('a[href="/ilanlar/"]')
+                : null);
+
         if (activeLink) {
             activeLink.classList.add('active');
         }
     }
 
     showSection(routeId) {
-        document.body.classList.toggle('app-route-active', routeId !== 'home');
+        if (routeId === 'home') {
+            this.showHomeSections();
+            return;
+        }
 
-        document.querySelectorAll('[data-private-section]').forEach(section => {
+        document.body.classList.add('app-route-active');
+
+        document.querySelectorAll('[data-private-section]').forEach((section) => {
             section.classList.remove('route-visible');
         });
 
-        // Hide all sections
-        document.querySelectorAll('section[id]').forEach(section => {
+        document.querySelectorAll('section[id]').forEach((section) => {
             section.style.display = 'none';
         });
 
-        if (routeId === 'home') {
-            ['home', 'trust', 'how-it-works', 'pricing', 'decision-sample', 'categories'].forEach((sectionId) => {
-                const section = document.getElementById(sectionId);
-                if (section) section.style.display = 'block';
-            });
-            return;
-        }
-
         if (routeId === 'auth-login' || routeId === 'auth-register') {
-            document.getElementById('home')?.style && (document.getElementById('home').style.display = 'block');
+            const home = document.getElementById('home');
+            if (home) {
+                home.classList.remove('hidden');
+                home.style.display = 'block';
+            }
             return;
         }
 
-        // Show target section
         const targetSection = document.getElementById(routeId);
         if (targetSection) {
             targetSection.classList.remove('hidden');
@@ -158,30 +314,30 @@ export class Router {
             }
 
             targetSection.style.display = 'block';
-        } else {
-            // Show home if section not found
-            document.getElementById('home').style.display = 'block';
+            return;
         }
+
+        this.showHomeSections();
     }
 
     updateTitle(route) {
         const titles = {
-            'home': 'isteBul - Yapay Zeka Destekli Karar Platformu',
-            'ilanlar': 'Seçenekler - isteBul',
-            'compare': 'Karşılaştırma Merkezi - isteBul',
+            home: 'isteBul - Yapay Zeka Destekli Karar Platformu',
+            ilanlar: 'Seçenekler - isteBul',
+            compare: 'Karşılaştırma Merkezi - isteBul',
             'decision-assistant': 'Karar Asistanı - isteBul',
-            'favoriler': 'Favoriler - isteBul',
-            'history': 'Karar Geçmişi - isteBul',
-            'quiz': 'Quiz - isteBul',
-            'profil': 'Hesabım - isteBul',
+            favoriler: 'Favoriler - isteBul',
+            history: 'Karar Geçmişi - isteBul',
+            quiz: 'Quiz - isteBul',
+            profil: 'Hesabım - isteBul',
             'auth-login': 'Giriş - isteBul',
             'auth-register': 'Üye Ol - isteBul',
-            'admin': 'Admin Panel - isteBul',
-            'messages': 'Mesajlar - isteBul',
+            admin: 'Admin Panel - isteBul',
+            messages: 'Mesajlar - isteBul',
             'add-listing': 'İlan Ekle - isteBul',
             'listing-detail': 'İlan Detayı - isteBul'
         };
 
-        document.title = titles[route] || 'isteBul - Yapay Zeka Destekli Karar Platformu';
+        document.title = titles[route] || titles.home;
     }
 }

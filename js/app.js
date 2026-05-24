@@ -760,19 +760,7 @@ class App {
                 return;
             }
 
-            const hashLink = e.target.closest('a[href^="#"]');
-            if (hashLink) {
-                const targetId = hashLink.getAttribute('href').slice(1);
-                const target = document.getElementById(targetId);
-                if (target) {
-                    e.preventDefault();
-                    if (window.location.pathname !== '/') {
-                        this.router.navigate('/');
-                    }
-                    requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth' }));
-                }
-                return;
-            }
+            // Hash nav: Router.goToMarketingHash (resets pathname + showHomeSections)
 
             if (e.target.matches('[data-route]')) {
                 e.preventDefault();
@@ -4145,9 +4133,25 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// Production route visibility guard
+// Production route visibility guard (kept in sync with js/core/router.js marketing IDs)
+const MARKETING_SECTION_IDS = new Set(['home', 'trust', 'how-it-works', 'pricing', 'categories']);
+const MARKETING_PATH_ALIASES = new Set(['/metodoloji', '/planlar', '/karar-analizi']);
+
 function applyProductionRouteVisibility() {
     const path = window.location.pathname.replace(/\/$/, '') || '/';
+    const hashId = (window.location.hash || '').slice(1);
+    const marketingHash = MARKETING_SECTION_IDS.has(hashId);
+
+    if (marketingHash || MARKETING_PATH_ALIASES.has(path)) {
+        document.querySelectorAll('section[id]').forEach((section) => {
+            const shouldShow = MARKETING_SECTION_IDS.has(section.id);
+            section.classList.toggle('hidden', !shouldShow);
+            section.style.display = shouldShow ? 'block' : 'none';
+        });
+        document.body.classList.remove('app-route-active');
+        return;
+    }
+
     const routeMap = {
         '/': 'home',
         '/ilanlar': 'ilanlar',
@@ -4163,7 +4167,7 @@ function applyProductionRouteVisibility() {
     };
 
     const sectionId = routeMap[path] || (path.startsWith('/ilan/') ? 'listing-detail' : 'home');
-    const homeSections = new Set(['home', 'trust', 'how-it-works', 'pricing', 'categories']);
+    const homeSections = MARKETING_SECTION_IDS;
 
     document.querySelectorAll('section[id]').forEach((section) => {
         const shouldShowHome = sectionId === 'home' && homeSections.has(section.id);
@@ -4199,5 +4203,5 @@ function applyProductionRouteVisibility() {
 window.addEventListener('app:ready', applyProductionRouteVisibility);
 window.addEventListener('DOMContentLoaded', applyProductionRouteVisibility);
 window.addEventListener('popstate', applyProductionRouteVisibility);
+window.addEventListener('hashchange', applyProductionRouteVisibility);
 document.addEventListener('routeChanged', applyProductionRouteVisibility);
-document.addEventListener('click', () => setTimeout(applyProductionRouteVisibility, 0));
