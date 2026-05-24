@@ -7,8 +7,8 @@ export class ComparisonUI {
             container.innerHTML =
                 '<div class="empty-state">' +
                     '<i data-lucide="columns-3"></i>' +
-                    '<h3>Karşılaştırma için seçenek ekleyin</h3>' +
-                    '<p>Karar sonucu veya ilan kartlarından seçenekleri karşılaştırmaya ekleyin.</p>' +
+                    '<h3>Karşılaştırmaya model ekleyin</h3>' +
+                    '<p>Özet sonucundan veya ilan kartından «Karşılaştır» ile iki üç seçeneği yan yana koyun.</p>' +
                 '</div>';
             this.loadIcons();
             return;
@@ -26,7 +26,7 @@ export class ComparisonUI {
                 '<div>' +
                     '<span class="assistant-kicker">' + this.escapeHtml(categoryName) + '</span>' +
                     '<h3>' + this.escapeHtml(items.length) + ' seçenek yan yana</h3>' +
-                    '<p>Fiyat, dönemsel maliyet, kredi yükü, risk ve karar detayları aynı tabloda okunur.</p>' +
+                    '<p>Fiyat, aylık yük ve maliyet farkları aynı tabloda — hangisi cebinize uyuyor, net görün.</p>' +
                 '</div>' +
                 '<button type="button" class="btn btn-outline" data-comparison-clear><i data-lucide="trash-2"></i> Temizle</button>' +
             '</div>' +
@@ -43,7 +43,7 @@ export class ComparisonUI {
 
         return '<article class="comparison-card ' + (item.sourceType === 'isteBul Auto' ? 'comparison-card-auto' : '') + '">' +
             (item.image ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(item.image) + '" alt="' + this.escapeHtml(item.title || 'Araç') + '" loading="lazy"></div>' : '') +
-            (isLeader ? '<div class="comparison-leader-badge">🏆 En güçlü eşleşme</div>' : '') +
+            (isLeader ? '<div class="comparison-leader-badge">En uygun eşleşme</div>' : '') +
             '<div class="comparison-card-head">' +
                 '<div>' +
                     '<span class="assistant-kicker">' + this.escapeHtml(item.sourceType || 'Seçenek') + '</span>' +
@@ -53,7 +53,7 @@ export class ComparisonUI {
             '</div>' +
             '<div class="comparison-score-row premium-score-row">' +
                 '<strong>' + this.escapeHtml(item.score || '-') + '</strong>' +
-                '<span>Kural tabanlı skor</span>' +
+                '<span>Uyum skoru</span>' +
                 '<em>' + this.escapeHtml(item.confidenceLabel || item.riskLevel || 'Kontrol gerekli') + '</em>' +
             '</div>' +
             this.getComparisonScoreBreakdownMarkup(item.scoreBreakdown) +
@@ -145,9 +145,9 @@ export class ComparisonUI {
             '<div class="comparison-matrix-head">' +
                 '<div>' +
                     '<span class="assistant-kicker">Detay matrisi</span>' +
-                    '<h3>Kategoriye özel karar tablosu</h3>' +
+                    '<h3>Maliyet ve kriter tablosu</h3>' +
                 '</div>' +
-                '<p>Her sütun seçilen bir seçenek, her satır karar kalemidir.</p>' +
+                '<p>Her sütun bir model; her satır ödediğiniz veya taşıdığınız kalemdir.</p>' +
             '</div>' +
             '<div class="comparison-table-wrap">' +
                 '<table class="comparison-table">' +
