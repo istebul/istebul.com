@@ -14,7 +14,7 @@
     "lint": "eslint . --ext .js",
     "coverage": "SUPABASE_URL=http://localhost SUPABASE_ANON_KEY=test node --no-warnings --test --experimental-test-coverage tests/unit/*.test.mjs tests/integration/*.test.mjs",
     "test": "npm run lint && npm run check && npm run build && npm run build:check && npm run analyze:bundle && npm run test:router && node scripts/launch-audit-check.cjs && node scripts/resilience-audit-check.cjs && node scripts/compliance-audit-check.cjs",
-    "test:router": "SUPABASE_URL=http://localhost SUPABASE_ANON_KEY=test node --no-warnings --test tests/unit/router.test.mjs tests/unit/route-meta.test.mjs tests/unit/build-output.test.mjs tests/unit/checkout-intent.test.mjs",
+    "test:router": "SUPABASE_URL=http://localhost SUPABASE_ANON_KEY=test node --no-warnings --test tests/unit/router.test.mjs tests/unit/route-meta.test.mjs tests/unit/build-output.test.mjs tests/unit/checkout-intent.test.mjs tests/unit/billing-portal.test.mjs tests/unit/stripe-customer.test.mjs",
     "test:unit": "SUPABASE_URL=http://localhost SUPABASE_ANON_KEY=test node --no-warnings --test tests/unit/*.test.mjs",
     "setup:hooks": "node scripts/setup-git-hooks.cjs",
     "prepare": "node scripts/setup-git-hooks.cjs",

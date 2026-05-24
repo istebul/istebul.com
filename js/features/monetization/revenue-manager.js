@@ -329,20 +329,29 @@ export class RevenueManager {
   }
 
   renderProfileSubscriptionBlock() {
-    if (this.isPremium) {
+    const status = this.subscription?.status;
+    const canManage = ['active', 'trialing', 'past_due', 'canceled'].includes(status);
+
+    if (this.isPremium || status === 'past_due') {
       const end = this.subscription?.current_period_end
         ? new Date(this.subscription.current_period_end).toLocaleDateString('tr-TR')
         : null;
-      const isTrialing = this.subscription?.status === 'trialing';
+      const isTrialing = status === 'trialing';
+      const isPastDue = status === 'past_due';
 
       return `
-        <div class="revenue-subscription-card revenue-subscription-card--active">
-          <span class="revenue-upgrade-kicker">${isTrialing ? 'Deneme süresi' : 'Aktif abonelik'}</span>
+        <div class="revenue-subscription-card revenue-subscription-card--active${isPastDue ? ' revenue-subscription-card--past-due' : ''}">
+          <span class="revenue-upgrade-kicker">${isPastDue ? 'Ödeme gerekli' : isTrialing ? 'Deneme süresi' : 'Aktif abonelik'}</span>
           <h3>isteBul Pro</h3>
-          <p>${isTrialing
-            ? `${PLANS.pro.trialDays} günlük ücretsiz deneme aktif. Deneme bitiminde seçtiğiniz plan üzerinden ücretlendirilirsiniz.`
-            : `Tüm premium özellikler açık${end ? ` · Dönem sonu: ${end}` : ''}.`}</p>
-          <button type="button" class="btn btn-outline" id="premium-checkout-btn" data-billing-portal>Aboneliği yönet</button>
+          <p>${isPastDue
+            ? 'Son ödeme alınamadı. Stripe panelinden kartınızı güncelleyin veya planınızı yönetin.'
+            : isTrialing
+              ? `${PLANS.pro.trialDays} günlük ücretsiz deneme aktif. Deneme bitiminde seçtiğiniz plan üzerinden ücretlendirilirsiniz.`
+              : `Tüm premium özellikler açık${end ? ` · Dönem sonu: ${end}` : ''}.`}</p>
+          ${canManage ? `
+          <button type="button" class="btn btn-primary" data-billing-portal>Aboneliği yönet</button>
+          <p class="revenue-plan-hint">Kart güncelle · faturalar · plan değiştir · iptal — Stripe panelinde</p>
+          ` : ''}
         </div>
       `;
     }

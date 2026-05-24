@@ -9605,6 +9605,42 @@ button:focus-visible {
   background: rgba(31, 111, 235, .12);
 }
 
+.account-billing-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(31, 111, 235, .16);
+  background: rgba(31, 111, 235, .04);
+}
+
+.account-billing-hint {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.85rem;
+  color: var(--brand-muted);
+}
+
+.account-billing-features {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--brand-muted);
+}
+
+.account-billing-reassurance {
+  margin-top: 1rem;
+}
+
+.revenue-subscription-card--past-due {
+  border-color: rgba(234, 179, 8, 0.45);
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.5), rgba(255, 255, 255, 0.95));
+}
+
+[data-billing-portal][aria-busy="true"] {
+  opacity: 0.88;
+  cursor: wait;
+}
+
 .account-trust-note {
   display: flex;
   align-items: center;

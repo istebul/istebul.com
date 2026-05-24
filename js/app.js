@@ -19,6 +19,11 @@ import { analytics } from './core/analytics.js';
 import { errorBoundary } from './core/error-boundary.js';
 import { ListingManager } from './features/ilan/ilan.js';
 import { ProfileManager } from './features/profil/profil.js';
+import AccountManager from './features/account/account.js';
+import {
+    mapBillingPortalError,
+    setBillingPortalButtonsLoading
+} from './core/billing-portal.js';
 import './features/i18n/i18n.js';
 import { formatMoney } from './core/format.js';
 import {
@@ -69,7 +74,9 @@ class App {
         this.ilan = new ListingManager(this.ui, this.router);
         /** @deprecated ProfileManager not wired — profile UI via App + UIManager. */
         this.profil = new ProfileManager(this.ui);
+        this.account = new AccountManager(this.ui, this.auth);
         this.messagingModule = null;
+        this._billingPortalInFlight = false;
         this.currentUser = null;
         this.currentListings = [];
         this.currentDetailListing = null;
@@ -399,7 +406,7 @@ class App {
             if (profile) {
                 this.currentUser.profile = profile;
                 this.ui.updateUserUI(profile);
-                this.ui.renderProfile(profile);
+                await this.account?.refresh?.(this.currentUser);
                 
                 // Set user in monitoring
                 monitoring.setUser({
@@ -998,7 +1005,15 @@ class App {
             }
 
             if (route === 'profil') {
-                const upgrade = new URLSearchParams(window.location.search).get('upgrade');
+                const params = new URLSearchParams(window.location.search);
+                this.account?.handleQueryParams?.(params);
+                if (this.currentUser) {
+                    this.account?.refresh?.(this.currentUser);
+                } else {
+                    this.account?.renderGuest?.();
+                }
+
+                const upgrade = params.get('upgrade');
                 if (upgrade === '1') {
                     if (!peekCheckoutIntent()) {
                         storeCheckoutIntentPayload({ billing: 'monthly', useTrial: true });
@@ -1109,7 +1124,7 @@ class App {
             const portalBtn = e.target.closest('[data-billing-portal]');
             if (portalBtn) {
                 e.preventDefault();
-                this.openBillingPortal();
+                this.openBillingPortal(e);
             }
         });
 
@@ -1119,6 +1134,8 @@ class App {
             await this.handleUserLogin(e.detail);
         });
         document.addEventListener('userLoggedOut', () => this.handleUserLogout());
+
+        this.account?.bindEvents?.(this);
     }
 
 
@@ -3361,17 +3378,23 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         });
     }
 
-    async openBillingPortal() {
+    async openBillingPortal(sourceEvent) {
         if (!this.currentUser) {
             this.auth.showLoginModal();
             return;
         }
+
+        if (this._billingPortalInFlight) return;
+
+        this._billingPortalInFlight = true;
+        setBillingPortalButtonsLoading(true, sourceEvent);
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
 
             if (!session?.access_token) {
                 this.auth.showLoginModal();
+                this.ui.showError('Abonelik paneli için giriş yapmanız gerekiyor.');
                 return;
             }
 
@@ -3390,24 +3413,26 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 }
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok || !data.url) {
-                const message = data.message || data.error || 'Abonelik yönetimi açılamadı';
-                if (response.status === 404 && data.error === 'no_billing_customer') {
-                    this.ui.showError('Henüz faturalandırılmış bir abonelik yok. Pro planına abone olduktan sonra buradan yönetebilirsiniz.');
-                    return;
-                }
-                throw new Error(message);
+                throw Object.assign(
+                    new Error(mapBillingPortalError(response.status, data)),
+                    { status: response.status }
+                );
             }
 
             window.location.href = data.url;
         } catch (error) {
             console.error('Billing portal failed:', error);
             trackOpsEvent('billing_portal_failed', {
-                message: String(error.message || 'portal_failed').slice(0, 120)
+                message: String(error.message || 'portal_failed').slice(0, 120),
+                http_status: error.status || null
             }, { category: 'payment', severity: 'warning' });
-            this.ui.showError('Abonelik paneli açılamadı. Lütfen tekrar deneyin veya destek ile iletişime geçin.');
+            this.ui.showError(error.message || mapBillingPortalError(500));
+        } finally {
+            this._billingPortalInFlight = false;
+            setBillingPortalButtonsLoading(false, sourceEvent);
         }
     }
 
@@ -4097,6 +4122,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.localListings = [];
         this.ui.updateAuthUI(null);
         this.ui.renderHistoryAuthGate?.();
+        this.account?.renderGuest?.();
 
         // Reload listings
         await this.loadListings();

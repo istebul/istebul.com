@@ -197,14 +197,15 @@ export class UIManager {
         if (userName && profile) {
             userName.textContent = profile.full_name || profile.email;
         }
-        this.renderProfile(profile);
     }
 
+    /** @deprecated Profile shell is rendered by AccountManager (#account-root). */
     renderProfile(profile) {
         const profileSection = document.getElementById('profil');
         if (!profileSection) return;
 
-        const profileCard = profileSection.querySelector('.profile-card');
+        const profileCard = profileSection.querySelector('.profile-card')
+            || profileSection.querySelector('#account-root');
         if (!profileCard) return;
 
         if (profile && (profile.full_name || profile.email)) {
