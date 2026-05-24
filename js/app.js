@@ -1,6 +1,7 @@
 // isteBul v2 - Main Application
 import './runtime/locale-bootstrap.js';
 import { stripLocalePrefix } from './platform/locale-registry.js';
+import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
@@ -4155,22 +4156,6 @@ document.addEventListener('click', (event) => {
     if (consent) {
         consent.classList.add('hidden');
         consent.style.display = 'none';
-    }
-});
-
-// Global auth button fallback
-document.addEventListener('click', (event) => {
-    const loginTrigger = event.target.closest('#login-btn, #profile-login-btn, [data-history-login]');
-    const registerTrigger = event.target.closest('#register-btn, [data-history-register]');
-
-    if (loginTrigger) {
-        event.preventDefault();
-        window.app?.auth?.showLoginModal();
-    }
-
-    if (registerTrigger) {
-        event.preventDefault();
-        window.app?.auth?.showRegisterModal();
     }
 });
 

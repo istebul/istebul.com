@@ -98,8 +98,8 @@ export class UIManager {
             mobileAuthActions.id = 'mobile-auth-actions';
             mobileAuthActions.className = 'mobile-auth-actions';
             mobileAuthActions.innerHTML = `
-                <button type="button" class="btn btn-outline" data-mobile-login>Giriş Yap</button>
-                <button type="button" class="btn btn-primary" data-mobile-register>Üye Ol</button>
+                <button type="button" class="btn btn-outline" data-auth-open="login" data-mobile-login>Giriş Yap</button>
+                <button type="button" class="btn btn-primary" data-auth-open="register" data-mobile-register>Üye Ol</button>
             `;
             navMenu.append(mobileAuthActions);
         }

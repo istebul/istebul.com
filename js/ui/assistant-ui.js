@@ -517,8 +517,8 @@ export class AssistantUI {
                 <h3>Geçmiş için giriş yapın</h3>
                 <p>Karar, bütçe, konum ve arama geçmişiniz yalnızca hesabınıza bağlı olarak saklanır.</p>
                 <div class="history-auth-actions">
-                    <button type="button" class="btn btn-primary" data-history-login><i data-lucide="log-in"></i> Giriş Yap</button>
-                    <button type="button" class="btn btn-outline" data-history-register><i data-lucide="user-plus"></i> Üye Ol</button>
+                    <button type="button" class="btn btn-primary" data-auth-open="login" data-history-login><i data-lucide="log-in"></i> Giriş Yap</button>
+                    <button type="button" class="btn btn-outline" data-auth-open="register" data-history-register><i data-lucide="user-plus"></i> Üye Ol</button>
                 </div>
             </div>
         `;
