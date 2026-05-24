@@ -388,6 +388,11 @@ export class AccountManager {
                             </div>
                             <button type="submit" class="btn btn-primary">Değişiklikleri kaydet</button>
                         </form>
+                        <div class="account-privacy-block">
+                            <h3>Veri ve gizlilik</h3>
+                            <p>Kişisel verilerinize ilişkin haklarınız (erişim, düzeltme, silme) için <a href="/kvkk.html">KVKK metni</a> ve <a href="/gizlilik.html">gizlilik politikası</a> geçerlidir.</p>
+                            <p><a href="/iletisim.html">İletişim</a> üzerinden &quot;KVKK Başvurusu&quot; konulu talep oluşturabilirsiniz. Hesap silme işlemi manuel olarak yürütülür; yanıt süresi en geç 30 gündür.</p>
+                        </div>
                     </section>
 
                     <section class="account-panel ${this.activeTab === 'subscription' ? 'is-active' : ''}" data-account-panel="subscription" ${this.activeTab === 'subscription' ? '' : 'hidden'}>

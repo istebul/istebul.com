@@ -3968,6 +3968,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     handleNewsletterSubscribe(event) {
         event.preventDefault();
         const emailInput = document.getElementById('newsletter-email');
+        const consentInput = document.getElementById('newsletter-marketing-consent');
         if (!emailInput) return;
 
         const email = emailInput.value.trim();
@@ -3976,19 +3977,39 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             return;
         }
 
+        if (!consentInput?.checked) {
+            this.ui.showError('Devam etmek için pazarlama onayını işaretleyin.');
+            return;
+        }
+
         const existing = this.readStoredArray(STORAGE_KEYS.NEWSLETTER);
-        if (!existing.includes(email)) {
-            existing.push(email);
+        const entry = {
+            email_domain: email.split('@')[1] || '',
+            marketing_consent: 'accepted',
+            consented_at: new Date().toISOString()
+        };
+        const already = existing.some((item) =>
+            (typeof item === 'string' ? item : item?.email_domain) === entry.email_domain &&
+            (typeof item === 'string' || item?.marketing_consent === 'accepted')
+        );
+        if (!already) {
+            existing.push(entry);
             this.writeStoredValue(STORAGE_KEYS.NEWSLETTER, existing);
         }
 
         emailInput.value = '';
-        analytics.track('newsletter_subscribe', { email_domain: email.split('@')[1] || '' }, {
-            category: 'engagement',
-            funnel: 'newsletter',
-            funnel_step: 'subscribed'
-        });
-        this.ui.showSuccess('Abonelik kaydınız alındı!');
+        if (consentInput) consentInput.checked = false;
+
+        if (analytics.hasConsent()) {
+            analytics.track('newsletter_subscribe', { email_domain: entry.email_domain }, {
+                category: 'growth',
+                funnel: 'newsletter',
+                funnel_step: 'subscribed'
+            });
+        }
+        this.ui.showSuccess(
+            'Tercihiniz kaydedildi. E-posta listesi altyapısı bağlandığında size haber vereceğiz.'
+        );
     }
 
     saveSearchHistory(query) {

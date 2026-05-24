@@ -4,7 +4,7 @@
 |----|------|----------|------------|--------|
 | R1 | **Simulated pricing** — not live market feeds | High | Truth layer + provider roadmap; disclose in product | Open |
 | R2 | **Financial advice regulation** — decision outputs perceived as advice | Medium | Disclaimers, no binding offers, “simulation” labels | Partial |
-| R3 | **KVKK / GDPR** — thin legal pages | Medium | Legal counsel; cookie policy; DPA | Open |
+| R3 | **KVKK / GDPR** — thin legal pages | Medium | `COMPLIANCE_READINESS_AUDIT.md`; counsel; DPA | Partial |
 | R4 | **Partner revenue** — estimated vs contracted | High | LOIs, actual_revenue discipline, audits | Open |
 | R5 | **AI hallucination** — trust loss | Medium | Rule engine + `sanitizeAiNarrative` | Mitigated |
 | R6 | **Single-market concentration** (Turkey) | Medium | Global i18n foundation, EN/DE/AR routes | In progress |

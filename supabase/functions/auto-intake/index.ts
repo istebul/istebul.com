@@ -473,6 +473,16 @@ Deno.serve(async (req) => {
       return json({ ok: true, spam: true }, 200, origin);
     }
 
+    const privacyAccepted =
+      String(form.privacy_consent || metadata.privacy_consent || "").toLowerCase() ===
+      "accepted";
+    if (!privacyAccepted) {
+      await logOps(adminClient, "api_auto_intake_consent_required", {
+        scope: "lead",
+      }, "warning");
+      return json({ error: "Privacy consent required" }, 400, origin);
+    }
+
     const scoring = calculateLeadScore(form);
 
     const contextNotes = [

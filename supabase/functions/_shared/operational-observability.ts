@@ -15,6 +15,7 @@ export const OPS_CATEGORIES = new Set([
 /** Server-side operational events (ingest validates client subset separately). */
 export const SERVER_OPS_EVENTS = new Set([
   "api_auto_intake_error",
+  "api_auto_intake_consent_required",
   "api_auto_intake_rate_limited",
   "api_analytics_ingest_error",
   "api_lifecycle_enroll_error",

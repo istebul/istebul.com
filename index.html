@@ -434,7 +434,11 @@
                     <p>Araç piyasası, finansman ve toplam maliyet trendlerine dair seçilmiş güncellemeler — yalnızca onayladığınızda.</p>
                 </div>
                 <form id="newsletter-form" class="newsletter-form">
-                    <input type="email" id="newsletter-email" placeholder="E-posta adresinizi girin" required>
+                    <input type="email" id="newsletter-email" placeholder="E-posta adresinizi girin" required autocomplete="email">
+                    <label class="newsletter-consent">
+                        <input type="checkbox" id="newsletter-marketing-consent" name="marketing_consent" value="accepted" required>
+                        <span>Pazarlama e-postası almayı kabul ediyorum. İstediğim zaman vazgeçebilirim. <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik</a></span>
+                    </label>
                     <button type="submit" class="btn btn-primary">Abone Ol</button>
                 </form>
             </div>
@@ -472,12 +476,13 @@
                         <li><a href="/iletisim.html">İletişim</a></li>
                         <li><a href="/gizlilik.html">Gizlilik</a></li>
                         <li><a href="/kvkk.html">KVKK</a></li>
+                        <li><a href="/cerez-politikasi.html">Çerez politikası</a></li>
                         <li><a href="/kullanim-sartlari.html">Kullanım şartları</a></li>
                     </ul>
                 </div>
             </div>
             <div class="cookie-consent" id="cookie-consent" role="region" aria-label="Çerez ve analiz tercihi">
-                <p>Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz. Tercihinizi istediğiniz zaman güncelleyebilirsiniz.</p>
+                <p>Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz. <a href="/cerez-politikasi.html">Çerez politikası</a></p>
                 <div>
                     <button type="button" class="btn btn-outline" data-cookie-decline>Reddet</button>
                     <button type="button" class="btn btn-primary" data-cookie-accept>Kabul Et</button>

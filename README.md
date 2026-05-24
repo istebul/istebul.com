@@ -15,6 +15,7 @@ Yapay zeka destekli karar platformu — yüksek tutarlı satın alma kararları 
 - **Lifecycle CRM:** [docs/LIFECYCLE_CRM.md](docs/LIFECYCLE_CRM.md)
 - **Observability:** [docs/PRODUCTION_OBSERVABILITY.md](docs/PRODUCTION_OBSERVABILITY.md)
 - **Resilience / BCP:** [docs/PRODUCTION_RESILIENCE_AUDIT.md](docs/PRODUCTION_RESILIENCE_AUDIT.md)
+- **Compliance:** [docs/COMPLIANCE_READINESS_AUDIT.md](docs/COMPLIANCE_READINESS_AUDIT.md)
 - **Weekly export:** `npm run metrics:growth` (requires Supabase service role)
 - **KPI export:** `SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/investor-metrics-snapshot.cjs`
 - **Admin:** Investor KPIs panel (admin girişi gerekir)

@@ -72,7 +72,11 @@ SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/investor-metrics-sna
 |-------|------|
 | Privacy | `gizlilik.html` |
 | KVKK | `kvkk.html` |
+| Cookie policy | `cerez-politikasi.html` |
 | Terms | `kullanim-sartlari.html` |
+| **Compliance readiness audit** | `docs/COMPLIANCE_READINESS_AUDIT.md` |
+| Compliance runbook | `docs/COMPLIANCE_RUNBOOK.md` |
+| Data retention schedule | `data/compliance/retention-schedule.json` |
 | Subprocessors | `docs/investor/SUBPROCESSORS.md` |
 
 **Gap:** Cookie policy, GDPR EN, DPA template, subscription terms — legal counsel.
