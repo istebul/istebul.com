@@ -1,4 +1,5 @@
-import { recommendVehicles } from './auto-ai.js?v=ai2';
+import { recommendVehicles, buildMethodologyPanel } from './auto-ai.js?v=ai3';
+import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
 import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
 import { FREE_LIMITS, PLANS } from '../features/monetization/plans.js';
@@ -745,39 +746,74 @@ function openLeadModal(type, vehicle = '') {
 }
 
 
+function renderAutoConfidenceBadge(meta) {
+  if (!meta) return '';
+  const tierClass =
+    meta.tier === 'high'
+      ? 'confidence-tier-high'
+      : meta.tier === 'medium'
+        ? 'confidence-tier-medium'
+        : 'confidence-tier-review';
+
+  return `
+    <div class="auto-confidence-badge ${tierClass}" title="${escapeHtml(meta.disclaimer || '')}">
+      <span>${escapeHtml(meta.label || 'Veri güveni')}</span>
+      <strong>%${meta.score}</strong>
+    </div>`;
+}
+
+function renderAutoScoreBreakdown(breakdown = []) {
+  if (!Array.isArray(breakdown) || !breakdown.length) return '';
+
+  return `
+    <details class="auto-score-breakdown">
+      <summary>Skor nasıl hesaplandı?</summary>
+      <ul>
+        ${breakdown.slice(0, 6).map((factor) => `
+          <li class="${factor.positive ? 'positive' : 'negative'}">
+            <span>${escapeHtml(factor.label)}</span>
+            <strong>${escapeHtml(factor.status)} ${factor.delta > 0 ? '+' : ''}${factor.delta}</strong>
+          </li>
+        `).join('')}
+      </ul>
+    </details>`;
+}
+
+function renderAutoMethodologyStrip() {
+  const panel = buildMethodologyPanel();
+  return `
+    <section class="auto-methodology-strip" aria-label="Karar metodolojisi">
+      <h4>${escapeHtml(panel.title)}</h4>
+      <ol>${panel.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>
+      <p class="auto-methodology-limits">${escapeHtml(panel.limits.join(' '))}</p>
+    </section>`;
+}
+
 async function getAiExplanation(results, formData = {}, refinement = '') {
   try {
     const prompt = [
-      'Sen isteBul Auto karar analiz motorusun.',
-      'SADECE araç önerisine dair Türkçe uzman değerlendirmesi üret.',
-      'Asla soru sorma.',
-      'Asla kullanıcıyla sohbet başlatma.',
-      'Asla test mesajı üretme.',
-      'Satış baskısı yapma.',
-      'Kesin finansal vaat verme.',
-      '3 kısa cümle yaz.',
-      'İlk 3 sonuç: ' + JSON.stringify(
-        (results || []).slice(0, 3).map(v => ({
+      'Sen isteBul Auto karar danışmanısın — yalnızca yorum katmanısın.',
+      'Skor, fiyat, faiz oranı veya ₺ tutarı YAZMA; kartlarda zaten var.',
+      'SADECE Türkçe, tarafsız, 3–4 kısa cümlelik tek paragraf.',
+      'Satış baskısı yok; kesin finansal vaat yok.',
+      'Profil özeti: ' + JSON.stringify({
+        budget: formData.budget,
+        fuel: formData.fuel,
+        body: formData.body,
+        usage: formData.usage,
+        loan: formData.loan
+      }),
+      'Öne çıkan modeller (isim + gerekçe/risk özeti): ' + JSON.stringify(
+        (results || []).slice(0, 3).map((v) => ({
           name: v.name,
-          score: v.score,
-          confidence: v.confidence,
-          totalCost: v.costs?.total,
           reasons: v.reasons,
-          risks: v.risks
+          risks: v.risks,
+          rankNote: v.rankExplanation?.summary
         }))
       ),
-      'Kullanıcı tercihleri: ' + JSON.stringify(formData),
-      refinement ? 'Ek kullanıcı rafinesi: ' + refinement : '',
-      'Görev: 3 sonucu listeleme. Puanları ve maliyetleri tekrar yazma.',
-      'Bir seçeneği satmaya veya zorla öne çıkarmaya çalışma.',
-      'Tarafsız otomotiv danışmanı gibi doğal Türkçe paragraf yaz.',
-      'Asla markdown, tablo, başlık, liste, pipe karakteri üretme.',
-      'Tek paragraf yaz.',
-      'Karttaki verileri tekrar listeleme.',
-      'Sadece karar yorumu üret.',
-      'Kullanıcının en doğru kararı vermesine yardım et: kullanım tipi, bütçe ve öncelik trade-offlarını açıkla.',
-      'En fazla 4 kısa cümle.'
-    ].join('\\n');
+      refinement ? 'Kullanıcı rafinesi: ' + refinement : '',
+      'Trade-off ve dikkat noktalarını açıkla; liste veya markdown kullanma.'
+    ].join('\n');
 
     const res = await fetch('/ai-proxy', {
       method: 'POST',
@@ -787,13 +823,7 @@ async function getAiExplanation(results, formData = {}, refinement = '') {
 
     if (!res.ok) return '';
     const data = await res.json();
-    return String(data.result || '')
-      .replace(/[#*_`|]/g, '')
-      .replace(/^[-•]\s*/gm, '')
-      .replace(/\n+/g, ' ')
-      .replace(/\s{2,}/g, ' ')
-      .trim()
-      .slice(0, 600);
+    return sanitizeAiNarrative(data.result || '', 520);
   } catch {
     return '';
   }
@@ -992,17 +1022,22 @@ function renderResults(results) {
   const displayLimit = pro ? results.length : Math.min(FREE_LIMITS.maxAutoResultsPreview, results.length);
   const displayResults = results.slice(0, displayLimit);
 
+  const rankNote = results[0]?.rankExplanation?.summary;
+
   root.innerHTML = `${renderAutoUpgradeStrip()}
     <section class="auto-results-trust-banner" aria-label="Sonuç açıklaması">
       <div>
         <p class="kicker">Model önerisi</p>
         <h3>Bu sonuçlar canlı ilan değil, ihtiyaç profilinize göre hazırlanmış araç model önerileridir.</h3>
-        <p>Size uygun gerçek araç seçenekleri için talep bırakabilir, uygun satıcılarla eşleşme desteği alabilirsiniz.</p>
+        <p>Skorlar kural tabanlıdır; yapay zeka yalnızca özet yorum üretir. Nihai fiyat için teklif karşılaştırması önerilir.</p>
+        ${rankNote ? `<p class="auto-rank-explanation">${escapeHtml(rankNote)}</p>` : ''}
       </div>
       <button type="button" class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(results[0]?.name || 'Araç önerisi')}">
         Uygun satıcı eşleşmesi iste
       </button>
     </section>
+
+    ${renderAutoMethodologyStrip()}
 
     <section class="auto-filter-toolbar" aria-label="Auto sonuç filtreleri">
       <div>
@@ -1072,13 +1107,13 @@ function renderResults(results) {
                 : 'Profilinize uygun alternatif. Kullanım ve bütçe dengenize göre değerlendirildi.'}
             </p>
           </div>
-          <div class="confidence">Analiz güveni: %${vehicle.confidence}</div>
+          ${renderAutoConfidenceBadge(vehicle.confidenceMeta)}
         </div>
 
         <div class="auto-market-tags">
-          <span>AI analiz</span>
-          <span>Toplam maliyet</span>
-          <span>Finansman etkisi</span>
+          <span>Kural tabanlı skor</span>
+          <span>12 ay TCO</span>
+          <span>${vehicle.costs?.source === 'truth' ? 'Doğrulanmış maliyet' : 'Tahmini maliyet'}</span>
         </div>
 
         <div class="auto-market-insights">
@@ -1093,10 +1128,13 @@ function renderResults(results) {
           </div>
         </div>
 
-        <div class="analysis-box">
-          <strong>AI uzman yorumu</strong>
+        <div class="analysis-box auto-economic-verdict">
+          <strong>Ekonomik değerlendirme</strong>
           <p>${escapeHtml(buildEconomicVerdict(vehicle))}</p>
+          <small>Kural tabanlı özet; bağlayıcı teklif veya kredi onayı değildir.</small>
         </div>
+
+        ${renderAutoScoreBreakdown(vehicle.scoreBreakdown)}
       </div>
 
       <aside class="auto-market-decision">
@@ -1126,13 +1164,14 @@ function renderResults(results) {
 
         ${vehicle.score >= 85 ? `
           <div class="auto-hot-banner finance-comparison-widget">
-            <span class="finance-kicker">FİNANSMAN EŞLEŞMESİ</span>
-            <strong>Ön değerlendirme hazır</strong>
+            <span class="finance-kicker">FİNANSMAN SİMÜLASYONU</span>
+            <strong>Örnek senaryo — banka onayı ayrıdır</strong>
             <div class="finance-widget-grid">
-              <span><b>%3.19+</b><small>aylık oran</small></span>
-              <span><b>48 aya</b><small>vade opsiyonu</small></span>
-              <span><b>5</b><small>partner kurum</small></span>
+              <span><b>Örnek</b><small>oran bandı</small></span>
+              <span><b>36–48 ay</b><small>vade aralığı</small></span>
+              <span><b>Partner</b><small>kurum eşleşmesi</small></span>
             </div>
+            <p class="finance-widget-disclaimer">Gösterilen oranlar örnektir; gerçek teklif kredi notu ve bankaya göre değişir.</p>
             <button class="btn secondary finance-compare-trigger" data-vehicle="${escapeHtml(vehicle.name)}">
               Finansmanı karşılaştır
             </button>
@@ -1168,8 +1207,8 @@ function renderResults(results) {
     </article>
   `}).join('') + `
     <section class="premium-ai-summary ai-explanation-box${pro ? '' : ' revenue-results-locked'}" data-ai-explanation>
-      <h3>Karşılaştırmalı karar özeti</h3>
-      <p>${pro ? 'Karar özeti hazırlanıyor...' : 'Pro ile gelişmiş AI karar özetini açın.'}</p>
+      <h3>Danışman özeti</h3>
+      <p class="ai-explanation-lead">${pro ? 'Tercihlerinize göre yorum hazırlanıyor…' : 'Pro ile danışman özeti ve rafine yorumları açın.'}</p>
 
       <div class="ai-refinement-tools">
         <div class="ai-refinement-chips">
@@ -1202,7 +1241,7 @@ function renderResults(results) {
         </div>
 
         <p class="ai-trust-note">
-          Bu değerlendirme tercihlerinize göre senaryo bazlı karar modelidir; canlı bayi fiyatı veya bağlayıcı finansman teklifi değildir.
+          Yorum katmanı yapay zeka ile üretilir; skor, fiyat ve TCO kural motorundan gelir. Canlı ilan veya bağlayıcı finansman teklifi değildir.
         </p>
       </div>
     </section>
@@ -1231,7 +1270,7 @@ function renderResults(results) {
   const updateAiSummary = async (refinement = '', activeButton = null) => {
     if (!aiBox || !results[0] || aiSummaryBusy) return;
 
-    const paragraph = aiBox.querySelector('p');
+    const paragraph = aiBox.querySelector('.ai-explanation-lead') || aiBox.querySelector('p');
     aiBox.querySelectorAll('[data-ai-refine]').forEach((button) => {
       button.classList.toggle('is-active', button === activeButton);
     });
@@ -1838,12 +1877,22 @@ function addAutoComparisonFallback(vehicle){
     title: vehicle.name,
     image: getAutoFallbackImage(vehicle.name),
     score,
-    riskLevel: score >= 85 ? 'Düşük risk' : score >= 70 ? 'Dengeli' : 'Kontrol gerekli',
+    confidenceLabel: vehicle.confidenceMeta?.label || '',
+    riskLevel: vehicle.confidenceMeta?.label || (score >= 85 ? 'Dengeli profil' : 'Doğrulama önerilir'),
     price: Number(vehicle.price || vehicle.costs?.purchase || 0),
-    periodicCost: Number(vehicle.costs?.annual || 0),
-    yearlyCost: Number(vehicle.costs?.annual || 0),
+    periodicCost: Number(vehicle.costs?.total || 0),
+    yearlyCost: Number(vehicle.costs?.total || 0),
     monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0),
-    tags: [vehicle.fuel || 'Araç', vehicle.segment || 'AI analiz'],
+    costBreakdown: {
+      fuelCost: vehicle.costs?.fuel,
+      insurance: vehicle.costs?.insurance,
+      kasko: vehicle.costs?.kasko,
+      maintenance: vehicle.costs?.maintenance,
+      mtv: vehicle.costs?.tax,
+      depreciation: vehicle.costs?.depreciation
+    },
+    scoreBreakdown: vehicle.scoreBreakdown || [],
+    tags: [vehicle.fuel || 'Araç', vehicle.body || 'model', 'Kural tabanlı'],
     comment: vehicle.reasons?.[0] || 'Araç karar analizi sonucu önerildi.',
     reasons: vehicle.reasons || [],
     risks: vehicle.risks || []

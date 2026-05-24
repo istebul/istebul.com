@@ -227,13 +227,15 @@ export class AssistantUI {
     getAIDecisionExtrasMarkup(result) {
         if (!result.aiGenerated) return '';
 
+        const disclaimer = '<p class="assistant-ai-disclaimer">Yapay zeka yorumu; skor ve fiyatlar kural motorundan gelir ve LLM tarafından değiştirilmez.</p>';
+
         const primary = result.recommendations?.[0];
         const pros = primary?.pros || [];
         const cons = primary?.cons || [];
         const risks = result.risks || [];
         const nextSteps = result.nextSteps || [];
 
-        return '<div class="assistant-ai-extras">' +
+        return '<div class="assistant-ai-extras">' + disclaimer +
             (pros.length ? '<div class="assistant-ai-box"><h5>Avantajlar</h5><ul>' + pros.map(item => '<li>' + this.escapeHtml(item) + '</li>').join('') + '</ul></div>' : '') +
             (cons.length ? '<div class="assistant-ai-box"><h5>Dikkat edilmesi gerekenler</h5><ul>' + cons.map(item => '<li>' + this.escapeHtml(item) + '</li>').join('') + '</ul></div>' : '') +
             (risks.length ? '<div class="assistant-ai-box"><h5>Riskler</h5><ul>' + risks.map(item => '<li>' + this.escapeHtml(item) + '</li>').join('') + '</ul></div>' : '') +

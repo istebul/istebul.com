@@ -52,9 +52,10 @@ export class ComparisonUI {
             '</div>' +
             '<div class="comparison-score-row premium-score-row">' +
                 '<strong>' + this.escapeHtml(item.score || '-') + '</strong>' +
-                '<span>AI karar skoru</span>' +
-                '<em>' + this.escapeHtml(item.riskLevel || 'Kontrol gerekli') + '</em>' +
+                '<span>Kural tabanlı skor</span>' +
+                '<em>' + this.escapeHtml(item.confidenceLabel || item.riskLevel || 'Kontrol gerekli') + '</em>' +
             '</div>' +
+            this.getComparisonScoreBreakdownMarkup(item.scoreBreakdown) +
             '<div class="comparison-metrics">' +
                 '<div><span>Ana bedel</span><strong>' + this.formatPrice(item.price || 0) + ' ₺</strong></div>' +
                 '<div><span>Dönemsel maliyet</span><strong>' + this.formatPrice(item.periodicCost || 0) + ' ₺</strong></div>' +
@@ -71,6 +72,21 @@ export class ComparisonUI {
         '</article>';
     }
 
+
+    getComparisonScoreBreakdownMarkup(scoreBreakdown = []) {
+        const breakdown = Array.isArray(scoreBreakdown) ? scoreBreakdown : [];
+        if (!breakdown.length) return '';
+
+        return '<div class="comparison-score-factors">' +
+            '<span class="assistant-kicker">Skor faktörleri</span>' +
+            '<ul>' + breakdown.slice(0, 4).map((factor) =>
+                '<li class="' + (factor.positive ? 'positive' : 'negative') + '">' +
+                    '<span>' + this.escapeHtml(factor.label) + '</span>' +
+                    '<strong>' + this.escapeHtml(factor.status) + '</strong>' +
+                '</li>'
+            ).join('') + '</ul>' +
+        '</div>';
+    }
 
     getCostBreakdownMarkup(item) {
         const breakdown = item.costBreakdown || {};

@@ -2816,7 +2816,7 @@ html body a.auto-floating-cta{
 }
 
 #auto-results .auto-hot-banner::after{
-  content:"Partner bankalar • hızlı ön onay • oran karşılaştırması";
+  content:"Örnek senaryo — gerçek teklif için karşılaştırma";
   display:block;
   margin-top:6px;
   color:#64748b;
@@ -3417,3 +3417,66 @@ body.ib-enterprise.ib-auto .floating-whatsapp:hover{
     animation-duration:.01ms!important;
   }
 }
+
+/* Decision consultant UX */
+.auto-methodology-strip{
+  margin:16px 0;
+  padding:16px 18px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#f8fafc,#eff6ff);
+  border:1px solid rgba(148,163,184,.35);
+}
+.auto-methodology-strip h4{margin:0 0 8px;font-size:15px}
+.auto-methodology-strip ol{margin:0;padding-left:1.2rem;font-size:13px;color:#334155}
+.auto-methodology-limits{margin:10px 0 0;font-size:12px;color:#64748b}
+.auto-rank-explanation{margin-top:8px;font-size:14px;color:#0f766e;font-weight:600}
+.auto-confidence-badge{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:2px;
+  padding:8px 12px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:700;
+}
+.auto-confidence-badge strong{font-size:18px}
+.confidence-tier-high{background:#ecfdf5;color:#047857}
+.confidence-tier-medium{background:#fffbeb;color:#b45309}
+.confidence-tier-review{background:#fef2f2;color:#b91c1c}
+.auto-score-breakdown{
+  margin-top:12px;
+  border:1px solid rgba(148,163,184,.25);
+  border-radius:12px;
+  padding:8px 12px;
+  background:#fff;
+}
+.auto-score-breakdown summary{
+  cursor:pointer;
+  font-weight:700;
+  font-size:13px;
+  color:#334155;
+}
+.auto-score-breakdown ul{
+  list-style:none;
+  margin:10px 0 0;
+  padding:0;
+  display:grid;
+  gap:6px;
+}
+.auto-score-breakdown li{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  padding:6px 8px;
+  border-radius:8px;
+}
+.auto-score-breakdown li.positive{background:#ecfdf5}
+.auto-score-breakdown li.negative{background:#fef2f2}
+.auto-economic-verdict small{display:block;margin-top:6px;color:#64748b;font-size:11px}
+.finance-widget-disclaimer{margin:8px 0 0;font-size:11px;color:#64748b;font-weight:600}
+.comparison-score-factors{margin-top:12px;padding-top:12px;border-top:1px solid rgba(148,163,184,.2)}
+.comparison-score-factors ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.comparison-score-factors li{display:flex;justify-content:space-between;font-size:12px}
+.comparison-score-factors li.positive{color:#047857}
+.comparison-score-factors li.negative{color:#b91c1c}
