@@ -5,19 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Yönlendiriliyor… | isteBul Partner</title>
   <meta name="robots" content="noindex,nofollow">
-  <script>
-    (function () {
-      var params = new URLSearchParams(location.search || '');
-      var token = params.get('token');
-      if (!token) {
-        location.replace('/partner-basvuru.html');
-        return;
-      }
-      var step = params.get('step') || '2';
-      var next = new URLSearchParams({ token: token, step: step });
-      location.replace('/partner-basvuru.html?' + next.toString());
-    })();
-  </script>
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/corporate/partner-onboarding-redirect.js"></script>
 </head>
 <body>
   <p><a href="/partner-basvuru.html">Partner onboarding</a> sayfasına yönlendiriliyorsunuz…</p>

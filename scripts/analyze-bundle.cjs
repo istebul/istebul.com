@@ -10,6 +10,7 @@ const maxTotalBytes = 900 * 1024;
 /** Separate entry surfaces — not counted toward main SPA budget. */
 const BUDGET_EXCLUDE = [
   /^js\/admin-panel\.js$/,
+  /^js\/corporate\/partner/,
   /^assets\/auto-runtime\//,
   /^css\/style\.css$/,
   /^css\/enterprise-polish\.css$/,

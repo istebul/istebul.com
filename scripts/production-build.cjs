@@ -177,6 +177,31 @@ esbuild.buildSync({
   outfile: path.join(dist, 'js/admin-panel.js')
 });
 
+const partnerCorporateEntries = [
+  'js/corporate/partner.js',
+  'js/corporate/partner-planlar.js',
+  'js/corporate/partner-basvuru.js',
+  'js/corporate/partner-guven.js',
+  'js/corporate/partner-docs.js',
+  'js/corporate/partner-onboarding.js',
+  'js/corporate/partner-onboarding-redirect.js'
+];
+
+partnerCorporateEntries.forEach((entry) => {
+  const outfile = path.join(dist, entry);
+  ensureDir(outfile);
+  esbuild.buildSync({
+    entryPoints: [path.join(root, entry)],
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2020',
+    minify: true,
+    sourcemap: false,
+    outfile
+  });
+});
+
 const autoAssetDir = path.join(dist, 'assets', 'auto-runtime');
 fs.mkdirSync(autoAssetDir, { recursive: true });
 

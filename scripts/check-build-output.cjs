@@ -26,6 +26,14 @@ for (const file of required) {
 }
 
 const distJs = path.join(root, 'dist/js');
+const requiredPartnerBundles = [
+  'dist/js/corporate/partner.js',
+  'dist/js/corporate/partner-planlar.js',
+  'dist/js/corporate/partner-basvuru.js',
+  'dist/js/corporate/partner-guven.js',
+  'dist/js/corporate/partner-docs.js'
+];
+
 if (fs.existsSync(distJs)) {
   const bundle = fs.readdirSync(distJs).find((name) => /^app\.bundle-[A-Z0-9]+\.js$/.test(name));
   if (!bundle) {
@@ -36,6 +44,14 @@ if (fs.existsSync(distJs)) {
   failed = true;
   console.error('Missing build output: dist/js/');
 }
+
+requiredPartnerBundles.forEach((file) => {
+  const fullPath = path.join(root, file);
+  if (!fs.existsSync(fullPath) || fs.statSync(fullPath).size === 0) {
+    failed = true;
+    console.error('Missing build output: ' + file);
+  }
+});
 
 const distCss = path.join(root, 'dist/css');
 if (fs.existsSync(distCss)) {

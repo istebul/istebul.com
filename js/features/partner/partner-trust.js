@@ -98,7 +98,7 @@ export const PARTNER_TRUST_NAV = Object.freeze(
   PARTNER_TRUST_PILLARS.map((p) => ({ id: p.id, label: p.title }))
 );
 
-function escapeHtml(value) {
+export function escapeHtml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
