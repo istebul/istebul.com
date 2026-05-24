@@ -12,6 +12,7 @@
 | **P3.3 Product feedback intelligence** | `product_feedback` + lightweight UX loop + intelligence events |
 | **P3.4 Scoring explainability** | Rank intelligence, transparency panel, confidence semantics |
 | **P3.5 AI explanation experience** | Structured decision assistant UI + bounded LLM synthesis |
+| **P3.6 Moat architecture** | 8-layer defensibility index + flywheel + moat-health API |
 | Scoring intelligence | `calibrateLeadScore()` in `auto-intake` from segment win rates |
 | Outcome intelligence | Auto results strip + admin segment table |
 | Competitive positioning | `karar-moat.html` + `category-positioning.js` |
@@ -107,6 +108,10 @@ Rules: LLM narrates only; cannot override scores or order.
 - **Layout:** `js/features/moat/ai-explanation-experience.js` — reasoning steps, TCO table, trade-off cards, rationale grid, uncertainty panel.
 - **LLM:** Yalnızca `data-ai-synthesis` paragrafı (Pro); `sanitizeAiNarrative` false certainty strip.
 - **Free tier:** Deterministik sentez + tam yapılandırılmış kartlar (moat görünürlüğü).
+
+## P3.6 — Long-term moat architecture
+
+See **`docs/P3_MOAT_ARCHITECTURE.md`** — competitor copy paths, eight layers, `moat-health` edge, admin + karar-moat UI.
 
 ## Honest limits
 

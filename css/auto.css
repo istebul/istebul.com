@@ -3752,6 +3752,34 @@ body.ib-enterprise.ib-auto .floating-whatsapp:hover{
   .ib-tradeoff-grid{grid-template-columns:1fr}
   .auto-confidence-badge{align-items:flex-start;max-width:100%}
 }
+.ib-moat-architecture{margin:2rem 0;padding:28px;border-radius:24px;border:1px solid rgba(148,163,184,.35);background:linear-gradient(160deg,#f8fafc,#fff)}
+.ib-moat-defensibility-hero{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin:20px 0;padding:18px 20px;border-radius:16px;background:#eff6ff;border:1px solid rgba(37,99,235,.15)}
+.ib-moat-index-label{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#64748b}
+.ib-moat-index-value{font-size:42px;font-weight:800;color:#1d4ed8;line-height:1}
+.ib-moat-layer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+.ib-moat-layer-card{padding:16px 18px;border-radius:16px;border:1px solid rgba(148,163,184,.3);background:#fff;font-size:13px}
+.ib-moat-layer-card header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.ib-moat-layer-card h3{margin:0;font-size:14px}
+.ib-moat-layer-score{font-size:20px;font-weight:800;color:#1d4ed8}
+.ib-moat-layer-card footer{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.ib-moat-resistance{font-size:10px;font-weight:800;text-transform:uppercase;padding:4px 8px;border-radius:999px}
+.ib-moat-resistance--high{background:#ecfdf5;color:#047857}
+.ib-moat-resistance--medium{background:#fffbeb;color:#b45309}
+.ib-moat-layer-card--compounding{border-color:rgba(5,150,105,.35)}
+.ib-moat-flywheel-diagram{margin-top:16px}
+.ib-moat-ascii{font-size:12px;line-height:1.5;background:#f8fafc;padding:14px;border-radius:12px;overflow:auto}
+.moat-architecture-strip{display:contents}
+.moat-architecture-details summary{font-weight:700;cursor:pointer}
+.moat-maturity{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
+.moat-maturity--nascent{background:#f1f5f9;color:#64748b}
+.moat-maturity--building{background:#eff6ff;color:#1d4ed8}
+.moat-maturity--active{background:#ecfdf5;color:#047857}
+.moat-maturity--compounding{background:#d1fae5;color:#065f46}
+.moat-copy-path-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.moat-copy-path-card{padding:12px;border-radius:12px;background:#f8fafc;border:1px dashed rgba(148,163,184,.4);font-size:12px}
+@media(max-width:800px){
+  .ib-moat-layer-grid,.moat-copy-path-grid{grid-template-columns:1fr}
+}
 .auto-confidence-badge{
   display:flex;
   flex-direction:column;

@@ -97,6 +97,8 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "recommendation_rejected",
   "outcome_insight_view",
   "moat_differentiation_view",
+  "moat_architecture_view",
+  "moat_defensibility_snapshot",
   "outcome_signal_vehicle_recommended_selected",
   "outcome_signal_financing_accepted",
   "outcome_signal_user_satisfaction",
@@ -163,6 +165,8 @@ export function eventCategoryFor(name: string, fallback?: string) {
     name.startsWith("decision_") ||
     name === "outcome_insight_view" ||
     name === "moat_differentiation_view" ||
+    name === "moat_architecture_view" ||
+    name === "moat_defensibility_snapshot" ||
     name.startsWith("feedback_") ||
     name === "recommendation_success" ||
     name === "recommendation_rejected"

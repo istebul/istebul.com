@@ -13,6 +13,10 @@ import {
   funnelConversionPct
 } from './features/admin/partner-ops.js';
 import { computeMoatDashboard } from './features/admin/moat-intelligence.js';
+import {
+  buildMoatMetricsFromAdminData,
+  renderMoatArchitectureAdminStrip
+} from './features/moat/moat-architecture-ui.js';
 
 const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
@@ -1714,6 +1718,30 @@ function getFollowUpBadgeClass(label) {
 }
 
 
+async function renderMoatArchitectureStrip(leads = [], feedback = [], signals = []) {
+  const root = document.getElementById('moat-architecture-root');
+  if (!root) return;
+
+  let productFeedback = [];
+  try {
+    productFeedback = await adminList(sb, {
+      table: 'product_feedback',
+      order: { column: 'created_at', ascending: false },
+      limit: 500
+    });
+  } catch {
+    /* migration pending */
+  }
+
+  const useful = productFeedback.filter((r) => r.useful_rating === 'yes').length;
+  const metrics = buildMoatMetricsFromAdminData(leads, feedback, signals, {
+    productFeedbackTotal: productFeedback.length,
+    productFeedbackUseful: useful
+  });
+
+  root.innerHTML = renderMoatArchitectureAdminStrip(metrics);
+}
+
 async function renderMoatIntelligenceStrip(leads = []) {
   const root = document.getElementById('moat-intelligence-root');
   if (!root) return;
@@ -1812,6 +1840,8 @@ async function renderMoatIntelligenceStrip(leads = []) {
       </table>
     </details>
   `;
+
+  await renderMoatArchitectureStrip(leads, feedback, signals);
 }
 
 async function loadAutoLeads() {
@@ -1839,6 +1869,7 @@ async function loadAutoLeads() {
   if (!data?.length) {
     el.innerHTML = '<p class="empty">Henüz lead yok.</p>';
     await renderMoatIntelligenceStrip([]);
+    await renderMoatArchitectureStrip([], [], []);
     return;
   }
 
