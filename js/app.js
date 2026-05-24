@@ -752,6 +752,13 @@ class App {
     }
 
     setupEventListeners() {
+        document.addEventListener('ib:auth-toast', (event) => {
+            const { message, type } = event.detail || {};
+            if (!message) return;
+            if (type === 'success') this.ui.showSuccess(message);
+            else this.ui.showError(message);
+        });
+
         // Navigation
         document.addEventListener('click', (e) => {
             const previewCategoryBtn = e.target.closest('[data-preview-category]');

@@ -733,12 +733,24 @@ function openLeadModal(type, vehicle = '') {
         </div>
         <p class="lead-modal-muted">Bilgileriniz KVKK kapsamında işlenir.</p>
 
-        <form id="phone-lead-form">
+        <form id="phone-lead-form" data-enterprise-form>
           <input name="vehicle" type="hidden" value="${escapeHtml(vehicle)}">
-          <input name="name" type="text" required placeholder="Ad Soyad">
-          <input name="phone" type="tel" required placeholder="05xx xxx xx xx">
-          <input name="email" type="email" placeholder="E-posta (opsiyonel)">
-          <input name="city" type="text" placeholder="Şehir">
+          <div class="ib-lead-field">
+            <label for="lead-name">Ad Soyad</label>
+            <input id="lead-name" name="name" type="text" required autocomplete="name" placeholder="Adınız Soyadınız">
+          </div>
+          <div class="ib-lead-field">
+            <label for="lead-phone">Telefon</label>
+            <input id="lead-phone" name="phone" type="tel" required autocomplete="tel" placeholder="05xx xxx xx xx">
+          </div>
+          <div class="ib-lead-field">
+            <label for="lead-email">E-posta <span class="text-muted-sm">(opsiyonel)</span></label>
+            <input id="lead-email" name="email" type="email" autocomplete="email" placeholder="ornek@mail.com">
+          </div>
+          <div class="ib-lead-field">
+            <label for="lead-city">Şehir</label>
+            <input id="lead-city" name="city" type="text" autocomplete="address-level2" placeholder="İl">
+          </div>
 
           <select name="interest">
             <option value="${escapeHtml(type)}">${escapeHtml(flow.kicker)}</option>
@@ -1178,7 +1190,7 @@ function renderResults(results) {
   if (!Array.isArray(results) || !results.length) {
     root.innerHTML = `
       <article class="premium-result-card auto-empty-state">
-        <span class="empty-state-icon" aria-hidden="true">iB</span>
+        <i data-lucide="search-x" class="empty-state-icon" aria-hidden="true"></i>
         <p class="kicker">Sonuç bulunamadı</p>
         <h3>Bu kriterlerle güvenilir bir öneri oluşturamadık.</h3>
         <p>Aralığı biraz genişletin veya bütçe/yakıt tercihlerini güncelleyerek daha güçlü eşleşmeler görün.</p>

@@ -1,4 +1,5 @@
 import { initCorporateUx } from '../runtime/corporate-ux.js';
+import { showInlineFormBanner } from '../runtime/enterprise-form-ux.js';
 import { PARTNER_ROUTE_LABELS, PARTNER_FUNNEL_EVENTS, trackPartnerFunnel } from '../features/partner/partner-platform.js';
 import {
   FUNNEL_STEPS,
@@ -19,6 +20,13 @@ function escapeHtml(value) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function partnerFunnelError(root, message) {
+  const panel = root?.querySelector('.ib-partner-funnel-panel') || root;
+  if (!panel) return;
+  showInlineFormBanner(panel, message, 'error');
+  panel.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
 }
 
 function effectiveStep(app, urlStep) {
@@ -276,7 +284,7 @@ function bindStep1(root) {
         btn.disabled = false;
         btn.textContent = 'Başvuruyu gönder ve devam et';
       }
-      alert('Başvuru gönderilemedi. Lütfen bilgileri kontrol edin.');
+      partnerFunnelError(root, 'Başvuru gönderilemedi. Bilgileri kontrol edip tekrar deneyin.');
     }
   });
 }
@@ -299,7 +307,7 @@ function bindStep2(root, token) {
       setFunnelUrl(token, 3);
       await load();
     } catch {
-      alert('Kaydedilemedi.');
+      partnerFunnelError(root, 'Kaydedilemedi. Bağlantınızı kontrol edip tekrar deneyin.');
     }
   });
 }
@@ -323,7 +331,7 @@ function bindStep3(root, token) {
       setFunnelUrl(token, 4);
       await load();
     } catch {
-      alert('Kaydedilemedi.');
+      partnerFunnelError(root, 'Kaydedilemedi. Bağlantınızı kontrol edip tekrar deneyin.');
     }
   });
 }
@@ -343,7 +351,10 @@ function bindStep4(root, token) {
       setFunnelUrl(token, 5);
       await load();
     } catch (err) {
-      alert(err.message === 'invalid_webhook_url' ? 'Geçersiz webhook URL.' : 'Kaydedilemedi.');
+      partnerFunnelError(
+        root,
+        err.message === 'invalid_webhook_url' ? 'Geçersiz webhook URL. HTTPS adresi girin.' : 'Kaydedilemedi.'
+      );
     }
   });
 }
@@ -354,7 +365,7 @@ function bindStep5(root, token, app) {
   computeBtn?.addEventListener('click', async () => {
     const secret = form?.querySelector('[name="webhook_secret"]')?.value;
     if (!secret || secret.length < 8) {
-      alert('En az 8 karakterlik secret girin.');
+      partnerFunnelError(root, 'En az 8 karakterlik secret girin.');
       return;
     }
     const sig = await verifySamplePayloadSignature(secret);
@@ -379,7 +390,7 @@ function bindStep5(root, token, app) {
       const msg = err?.data?.error === 'signature_mismatch'
         ? 'İmza eşleşmedi. Secret ve JSON gövdesini kontrol edin.'
         : 'Doğrulama başarısız.';
-      alert(msg);
+      partnerFunnelError(root, msg);
     }
   });
 
@@ -403,9 +414,10 @@ function bindStep6(root, token) {
       await load();
     } catch (err) {
       const code = err?.data?.error;
-      if (code === 'webhook_required') alert('Önce webhook URL kaydedin.');
-      else if (code === 'test_payload_not_verified') alert('Önce test payload doğrulamasını tamamlayın.');
-      else alert('Tamamlanamadı.');
+      if (code === 'webhook_required') partnerFunnelError(root, 'Önce webhook URL kaydedin.');
+      else if (code === 'test_payload_not_verified') {
+        partnerFunnelError(root, 'Önce test payload doğrulamasını tamamlayın.');
+      } else partnerFunnelError(root, 'Tamamlanamadı. Destek ile iletişime geçin.');
     }
   });
 }

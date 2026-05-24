@@ -113,6 +113,8 @@ export class AccountManager {
             const isActive = panel.dataset.accountPanel === tabId;
             panel.hidden = !isActive;
             panel.classList.toggle('is-active', isActive);
+            if (isActive) panel.removeAttribute('tabindex');
+            else panel.setAttribute('tabindex', '-1');
         });
     }
 
@@ -316,11 +318,11 @@ export class AccountManager {
                             <span>${escapeHtml(user.email)}</span>
                         </div>
                     </div>
-                    <nav class="account-nav" role="tablist">
-                        <button type="button" role="tab" class="account-nav-btn ${this.activeTab === 'overview' ? 'is-active' : ''}" data-account-tab="overview" aria-selected="${this.activeTab === 'overview'}">Genel bakış</button>
-                        <button type="button" role="tab" class="account-nav-btn ${this.activeTab === 'settings' ? 'is-active' : ''}" data-account-tab="settings" aria-selected="${this.activeTab === 'settings'}">Profil ve ayarlar</button>
-                        <button type="button" role="tab" class="account-nav-btn ${this.activeTab === 'subscription' ? 'is-active' : ''}" data-account-tab="subscription" aria-selected="${this.activeTab === 'subscription'}">Abonelik</button>
-                        <button type="button" role="tab" class="account-nav-btn ${this.activeTab === 'security' ? 'is-active' : ''}" data-account-tab="security" aria-selected="${this.activeTab === 'security'}">Güvenlik</button>
+                    <nav class="account-nav" role="tablist" aria-label="Hesap sekmeleri">
+                        <button type="button" role="tab" id="account-tab-overview" class="account-nav-btn ${this.activeTab === 'overview' ? 'is-active' : ''}" data-account-tab="overview" aria-controls="account-panel-overview" aria-selected="${this.activeTab === 'overview'}">Genel bakış</button>
+                        <button type="button" role="tab" id="account-tab-settings" class="account-nav-btn ${this.activeTab === 'settings' ? 'is-active' : ''}" data-account-tab="settings" aria-controls="account-panel-settings" aria-selected="${this.activeTab === 'settings'}">Profil ve ayarlar</button>
+                        <button type="button" role="tab" id="account-tab-subscription" class="account-nav-btn ${this.activeTab === 'subscription' ? 'is-active' : ''}" data-account-tab="subscription" aria-controls="account-panel-subscription" aria-selected="${this.activeTab === 'subscription'}">Abonelik</button>
+                        <button type="button" role="tab" id="account-tab-security" class="account-nav-btn ${this.activeTab === 'security' ? 'is-active' : ''}" data-account-tab="security" aria-controls="account-panel-security" aria-selected="${this.activeTab === 'security'}">Güvenlik</button>
                     </nav>
                     <button type="button" class="btn btn-ghost account-logout" id="account-logout-btn">Oturumu kapat</button>
                 </aside>
@@ -344,7 +346,7 @@ export class AccountManager {
                         </div>
                     ` : ''}
 
-                    <section class="account-panel ${this.activeTab === 'overview' ? 'is-active' : ''}" data-account-panel="overview" ${this.activeTab === 'overview' ? '' : 'hidden'}>
+                    <section id="account-panel-overview" role="tabpanel" aria-labelledby="account-tab-overview" class="account-panel ${this.activeTab === 'overview' ? 'is-active' : ''}" data-account-panel="overview" ${this.activeTab === 'overview' ? '' : 'hidden'}>
                         <header class="account-panel-head">
                             <h2>Genel bakış</h2>
                             <p>Karar platformu hesabınızın özeti</p>
@@ -369,12 +371,12 @@ export class AccountManager {
                         </div>
                     </section>
 
-                    <section class="account-panel ${this.activeTab === 'settings' ? 'is-active' : ''}" data-account-panel="settings" ${this.activeTab === 'settings' ? '' : 'hidden'}>
+                    <section id="account-panel-settings" role="tabpanel" aria-labelledby="account-tab-settings" class="account-panel ${this.activeTab === 'settings' ? 'is-active' : ''}" data-account-panel="settings" ${this.activeTab === 'settings' ? '' : 'hidden'}>
                         <header class="account-panel-head">
                             <h2>Profil ve ayarlar</h2>
                             <p>Bilgileriniz yalnızca hesabınızda görünür.</p>
                         </header>
-                        <form id="account-settings-form" class="account-settings-form">
+                        <form id="account-settings-form" class="account-settings-form" data-enterprise-form>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="account-full-name">Ad Soyad</label>
@@ -398,11 +400,11 @@ export class AccountManager {
                         <div class="account-privacy-block">
                             <h3>Veri ve gizlilik</h3>
                             <p>Kişisel verilerinize ilişkin haklarınız (erişim, düzeltme, silme) için <a href="/kvkk.html">KVKK metni</a> ve <a href="/gizlilik.html">gizlilik politikası</a> geçerlidir.</p>
-                            <p><a href="/iletisim.html">İletişim</a> üzerinden &quot;KVKK Başvurusu&quot; konulu talep oluşturabilirsiniz. Hesap silme işlemi manuel olarak yürütülür; yanıt süresi en geç 30 gündür.</p>
+                            <p><a href="/iletisim.html">İletişim</a> üzerinden KVKK başvurusu oluşturabilirsiniz. Hesap silme talepleri güvenlik doğrulaması sonrası işlenir; yasal süreler içinde yanıtlanır.</p>
                         </div>
                     </section>
 
-                    <section class="account-panel ${this.activeTab === 'subscription' ? 'is-active' : ''}" data-account-panel="subscription" ${this.activeTab === 'subscription' ? '' : 'hidden'}>
+                    <section id="account-panel-subscription" role="tabpanel" aria-labelledby="account-tab-subscription" class="account-panel ${this.activeTab === 'subscription' ? 'is-active' : ''}" data-account-panel="subscription" ${this.activeTab === 'subscription' ? '' : 'hidden'}>
                         <header class="account-panel-head">
                             <h2>Abonelik</h2>
                             <p>Premium özellikler Stripe üzerinden güvenle yönetilir.</p>
@@ -444,7 +446,7 @@ export class AccountManager {
                         <p class="account-trust-note"><i data-lucide="shield"></i> Ödeme bilgileriniz isteBul sunucularında saklanmaz; kart ve fatura işlemleri Stripe üzerinden yönetilir.</p>
                     </section>
 
-                    <section class="account-panel ${this.activeTab === 'security' ? 'is-active' : ''}" data-account-panel="security" ${this.activeTab === 'security' ? '' : 'hidden'}>
+                    <section id="account-panel-security" role="tabpanel" aria-labelledby="account-tab-security" class="account-panel ${this.activeTab === 'security' ? 'is-active' : ''}" data-account-panel="security" ${this.activeTab === 'security' ? '' : 'hidden'}>
                         <header class="account-panel-head">
                             <h2>Güvenlik</h2>
                             <p>Hesap güvenliğinizi koruyun.</p>

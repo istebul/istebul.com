@@ -51,12 +51,26 @@ function clearLoginError() {
 async function login() {
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
   clearLoginError();
   if (!email || !password) {
     showLoginError('E-posta ve şifre alanlarını doldurun.');
     return;
   }
+  const idleLabel = btn?.textContent || 'Giriş yap';
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('is-loading');
+    btn.setAttribute('aria-busy', 'true');
+    btn.textContent = 'Giriş yapılıyor…';
+  }
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (btn) {
+    btn.disabled = false;
+    btn.classList.remove('is-loading');
+    btn.removeAttribute('aria-busy');
+    btn.textContent = idleLabel;
+  }
   if (error) {
     showLoginError(mapAuthError(error, 'Giriş yapılamadı.'));
     return;

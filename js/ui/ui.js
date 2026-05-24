@@ -560,8 +560,12 @@ export class UIManager {
             container.innerHTML = `
                 <div class="empty-state">
                     <i data-lucide="heart"></i>
-                    <h3>Henüz favori ilan yok</h3>
-                    <p>Bir ilana göz atın ve kalp ikonuna basarak favorilerinize ekleyin.</p>
+                    <h3>Henüz favori seçenek yok</h3>
+                    <p>Karar skoruna göre seçenekleri keşfedin; beğendiklerinizi favorilere ekleyin.</p>
+                    <div class="empty-state-actions">
+                        <a href="/auto/" class="btn btn-primary">Ücretsiz maliyet analizi</a>
+                        <a href="/ilanlar" class="btn btn-outline" data-native-route>Seçenekleri gör</a>
+                    </div>
                 </div>
             `;
             return;
@@ -1097,6 +1101,17 @@ export class UIManager {
     renderMessages(messages, currentUserId) {
         const list = document.getElementById('messages-list');
         if (!list) return;
+        if (!messages.length) {
+            list.innerHTML = `
+                <div class="empty-state messages-empty-state">
+                    <i data-lucide="message-square"></i>
+                    <h3>Henüz mesaj yok</h3>
+                    <p>İlan veya karar süreciyle ilgili mesajlarınız burada görünür.</p>
+                </div>
+            `;
+            this.loadIcons?.();
+            return;
+        }
         list.innerHTML = messages.map(msg => `
             <div class="message ${msg.sender_id === currentUserId ? 'sent' : 'received'}">
                 <div class="message-content">${this.escapeHtmlValue(msg.content)}</div>

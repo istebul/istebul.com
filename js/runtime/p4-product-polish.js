@@ -59,6 +59,7 @@ function bindButtonBusyState() {
     (event) => {
       const form = event.target;
       if (!(form instanceof HTMLFormElement)) return;
+      if (form.hasAttribute('data-enterprise-form')) return;
 
       const submit = form.querySelector('[type="submit"]');
       if (submit instanceof HTMLButtonElement) {

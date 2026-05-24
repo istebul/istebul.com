@@ -14,6 +14,13 @@ import {
 } from '../growth/referral-client.js';
 import { getStoredReferralCode } from '../growth/growth-engine.js';
 import { trackOpsEvent } from '../../core/operational-telemetry.js';
+import {
+    bindAuthModalA11y,
+    focusFirstField,
+    setSubmitLoading,
+    showInlineFormBanner,
+    clearInlineFormBanner
+} from '../../runtime/enterprise-form-ux.js';
 
 export class AuthManager {
     constructor() {
@@ -125,8 +132,13 @@ export class AuthManager {
         modal.setAttribute('aria-hidden', 'false');
         state.setModal('auth');
 
+        bindAuthModalA11y(modal, () => this.hideAuthModal());
+        clearInlineFormBanner(modalBody);
+
         // Setup form handlers
         this.setupAuthForm(type);
+
+        requestAnimationFrame(() => focusFirstField(modalBody));
     }
 
     hideAuthModal() {
@@ -142,7 +154,7 @@ export class AuthManager {
 
     getLoginForm() {
         return `
-            <form id="login-form">
+            <form id="login-form" data-enterprise-form novalidate>
                 <div class="form-group">
                     <label for="email">E-posta</label>
                     <input type="email" id="email" name="email" autocomplete="email" required>
@@ -151,7 +163,7 @@ export class AuthManager {
                     <label for="password">Şifre</label>
                     <input type="password" id="password" name="password" autocomplete="current-password" required>
                 </div>
-                <button type="submit" class="btn btn-primary full-width">Giriş Yap</button>
+                <button type="submit" class="btn btn-primary full-width auth-submit">Giriş Yap</button>
             </form>
             <div class="modal-footer">
                 <p>Şifrenizi mi unuttunuz? <a href="#" id="forgot-password">Sıfırlayın</a></p>
@@ -162,7 +174,7 @@ export class AuthManager {
 
     getRegisterForm() {
         return `
-            <form id="register-form">
+            <form id="register-form" data-enterprise-form>
                 <div class="form-group">
                     <label for="full-name">Ad Soyad</label>
                     <input type="text" id="full-name" name="full-name" autocomplete="name" required>
@@ -174,7 +186,7 @@ export class AuthManager {
                 <div class="form-group">
                     <label for="password">Şifre</label>
                     <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8" aria-describedby="password-hint">
-                    <small id="password-hint" class="form-hint">En az 8 karakter</small>
+                    <small id="password-hint" class="form-hint">En az 8 karakter; büyük harf, küçük harf ve rakam önerilir</small>
                 </div>
                 <div class="form-group">
                     <label for="confirm-password">Şifre Tekrar</label>
@@ -186,7 +198,7 @@ export class AuthManager {
                         <span><a href="/kullanim-sartlari.html" target="_blank" rel="noopener">Kullanım şartları</a> ve <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a> metnini kabul ediyorum</span>
                     </label>
                 </div>
-                <button type="submit" class="btn btn-primary full-width">Üye Ol</button>
+                <button type="submit" class="btn btn-primary full-width auth-submit" data-enterprise-form>Üye Ol</button>
             </form>
             <div class="modal-footer">
                 <p>Zaten hesabınız var mı? <a href="#" id="switch-to-login">Giriş yapın</a></p>
@@ -259,11 +271,9 @@ export class AuthManager {
 
     async handleLogin(form) {
         const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
 
         try {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Giriş yapılıyor...';
+            setSubmitLoading(submitBtn, true, { busyLabel: 'Giriş yapılıyor…' });
 
             const email = form.email.value;
             const password = form.password.value;
@@ -293,9 +303,10 @@ export class AuthManager {
             const pendingCheckout = Boolean(peekCheckoutIntent());
             if (pendingCheckout) {
                 this.showAuthSuccess('Giriş başarılı. Stripe ödeme sayfasına yönlendiriliyorsunuz…');
+                setTimeout(() => this.hideAuthModal(), 1200);
+            } else {
+                this.hideAuthModal();
             }
-
-            this.hideAuthModal();
         } catch (error) {
             console.error('Login failed:', error);
             analytics.track('auth_login_failed', { message: error.message || 'login_failed' }, {
@@ -310,18 +321,15 @@ export class AuthManager {
             const mapFn = pendingCheckout ? mapAuthErrorForCheckout : mapAuthError;
             this.showAuthError(mapFn(error, config.messages.error.login));
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            setSubmitLoading(submitBtn, false);
         }
     }
 
     async handleRegister(form) {
         const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
 
         try {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Hesap oluşturuluyor...';
+            setSubmitLoading(submitBtn, true, { busyLabel: 'Hesap oluşturuluyor…' });
 
             const fullName = form['full-name'].value;
             const email = form.email.value;
@@ -396,26 +404,40 @@ export class AuthManager {
             const mapFn = pendingCheckout ? mapAuthErrorForCheckout : mapAuthError;
             this.showAuthError(mapFn(error, config.messages.error.register));
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            setSubmitLoading(submitBtn, false);
         }
     }
 
-    showForgotPasswordForm() {
+    showForgotPasswordForm(prefillEmail = '') {
         const modal = document.getElementById('auth-modal');
+        if (!modal) return;
+
+        const modalHeader = modal.querySelector('.modal-header h3');
         const modalBody = modal.querySelector('.modal-body');
-        modalBody.innerHTML = this.getForgotPasswordForm();
+        if (!modalBody) return;
+
+        if (modalHeader) modalHeader.textContent = 'Şifre sıfırlama';
+        modalBody.innerHTML = this.getForgotPasswordForm(prefillEmail);
+        modal.classList.add('show', 'auth-modal');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+        state.setModal('auth');
+
+        bindAuthModalA11y(modal, () => this.hideAuthModal());
         this.setupForgotPasswordForm();
+        requestAnimationFrame(() => focusFirstField(modalBody));
     }
 
-    getForgotPasswordForm() {
+    getForgotPasswordForm(prefillEmail = '') {
+        const safeEmail = String(prefillEmail || '').replace(/"/g, '&quot;');
         return `
-            <form id="forgot-password-form">
+            <form id="forgot-password-form" data-enterprise-form>
+                <p class="form-hint" style="margin-bottom:1rem;">Kayıtlı e-posta adresinize güvenli sıfırlama bağlantısı gönderilir. Bağlantı kısa süre geçerlidir.</p>
                 <div class="form-group">
                     <label for="reset-email">E-posta</label>
-                    <input type="email" id="reset-email" name="email" autocomplete="email" required>
+                    <input type="email" id="reset-email" name="email" autocomplete="email" required value="${safeEmail}">
                 </div>
-                <button type="submit" class="btn btn-primary full-width">Sıfırlama Bağlantısı Gönder</button>
+                <button type="submit" class="btn btn-primary full-width auth-submit">Sıfırlama bağlantısı gönder</button>
             </form>
             <div class="modal-footer">
                 <p>Şifrenizi hatırladınız mı? <a href="#" id="switch-to-login">Giriş yapın</a></p>
@@ -441,21 +463,18 @@ export class AuthManager {
         event.preventDefault();
         const form = event.currentTarget;
         const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
         const email = form.email.value.trim();
         if (!email) return;
 
         try {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Gönderiliyor...';
+            setSubmitLoading(submitBtn, true, { busyLabel: 'Gönderiliyor…' });
             await API.resetPassword(email);
             this.showAuthSuccess('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
         } catch (error) {
             console.error('Password reset failed:', error);
             this.showAuthError(mapAuthError(error, 'Şifre sıfırlama sırasında bir hata oluştu.'));
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            setSubmitLoading(submitBtn, false);
         }
     }
 
@@ -479,25 +498,28 @@ export class AuthManager {
     }
 
     showAuthMessage(message, type) {
-        const modalBody = document.querySelector('#auth-modal .modal-body');
-        const existingMessage = modalBody.querySelector('.auth-message');
+        const modal = document.getElementById('auth-modal');
+        const modalBody = modal?.querySelector('.modal-body');
+        if (!modalBody) return;
 
-        if (existingMessage) {
-            existingMessage.remove();
+        if (type === 'success' && !modal.classList.contains('show')) {
+            document.dispatchEvent(
+                new CustomEvent('ib:auth-toast', { detail: { message, type } })
+            );
+            return;
         }
 
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `auth-message ${type}`;
-        messageDiv.textContent = message;
+        const banner = showInlineFormBanner(modalBody, message, type);
+        if (banner) banner.classList.add('auth-message', type);
 
-        modalBody.insertBefore(messageDiv, modalBody.firstChild);
+        if (type === 'error') {
+            modalBody.querySelector('.ib-form-banner, .auth-message')?.focus?.();
+        }
 
-        // Auto remove after 5 seconds
         setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.remove();
-            }
-        }, 5000);
+            const banner = modalBody.querySelector('.ib-form-banner, .auth-message');
+            if (banner && banner.textContent === message) banner.remove();
+        }, type === 'error' ? 8000 : 6000);
     }
 
     isAuthenticated() {
