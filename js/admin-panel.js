@@ -455,19 +455,30 @@ async function loadOpsCommandCenter() {
 
   const { buildOpsCommandCenter } = await import('./features/ops/ops-command-center.js');
   const { buildPartnerOpsSnapshot } = await import('./features/partner/partner-ops-monitor.js');
+  const { buildCeoAlertSnapshot } = await import('./features/ops/ceo-alert-engine.js');
   const windowDays = SCALE_LIMITS.admin.executiveWindowDays || 30;
   const since = new Date(Date.now() - windowDays * 86400000).toISOString();
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const since48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
   const since7d = new Date(Date.now() - 7 * 86400000).toISOString();
 
   let alertRules = [];
+  let ceoAlertRules = [];
   let partnerOpsConfig = { sla: { dispatchLatencyP95Ms: 900000 } };
+  let ceoAlertConfig = { thresholds: {} };
   try {
     const rulesRes = await fetch('/data/ops/alert-rules.json');
     if (rulesRes.ok) {
       const rulesJson = await rulesRes.json();
       alertRules = rulesJson.rules || [];
     }
+    const ceoRulesRes = await fetch('/data/ops/ceo-alert-rules.json');
+    if (ceoRulesRes.ok) {
+      const ceoJson = await ceoRulesRes.json();
+      ceoAlertRules = ceoJson.rules || [];
+    }
+    const ceoCfgRes = await fetch('/data/ops/ceo-alerts.json');
+    if (ceoCfgRes.ok) ceoAlertConfig = await ceoCfgRes.json();
     const partnerCfgRes = await fetch('/data/partner/partner-ops.json');
     if (partnerCfgRes.ok) partnerOpsConfig = await partnerCfgRes.json();
   } catch {
@@ -489,7 +500,8 @@ async function loadOpsCommandCenter() {
     enrollRes,
     msgRes,
     endpointsRes,
-    retryLeadsRes
+    retryLeadsRes,
+    ceoLeadsRes
   ] = await Promise.all([
     fetchAdminTable(sb, {
       table: 'subscriptions',
@@ -513,7 +525,7 @@ async function loadOpsCommandCenter() {
         sb
           .from('analytics_events')
           .select(expr || analyticsSelect)
-          .gte('created_at', since)
+          .gte('created_at', since48h)
           .order('created_at', { ascending: false })
           .limit(SCALE_LIMITS.admin.executiveRowLimit || 2500)
     }),
@@ -526,7 +538,7 @@ async function loadOpsCommandCenter() {
         sb
           .from('operational_events')
           .select('severity, category, event_name, created_at, source')
-          .gte('created_at', since24h)
+          .gte('created_at', since48h)
           .order('created_at', { ascending: false })
           .limit(2000)
     }),
@@ -540,6 +552,28 @@ async function loadOpsCommandCenter() {
           .select('success, created_at, duration_ms')
           .gte('created_at', since24h)
           .limit(500)
+    }),
+    fetchAdminTable(sb, {
+      table: 'lifecycle_enrollments',
+      select: 'flow_id, status, enrolled_at',
+      limit: 3000,
+      direct: () =>
+        sb
+          .from('lifecycle_enrollments')
+          .select('flow_id, status, enrolled_at')
+          .gte('enrolled_at', since7d)
+          .limit(3000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'lifecycle_messages',
+      select: 'status, created_at',
+      limit: 3000,
+      direct: () =>
+        sb
+          .from('lifecycle_messages')
+          .select('status, created_at')
+          .gte('created_at', since7d)
+          .limit(3000)
     }),
     fetchAdminTable(sb, {
       table: 'partner_endpoints',
@@ -564,26 +598,15 @@ async function loadOpsCommandCenter() {
           .limit(1500)
     }),
     fetchAdminTable(sb, {
-      table: 'lifecycle_enrollments',
-      select: 'flow_id, status, enrolled_at',
-      limit: 3000,
+      table: 'auto_leads',
+      select: 'id, created_at, partner_status',
+      limit: 2000,
       direct: () =>
         sb
-          .from('lifecycle_enrollments')
-          .select('flow_id, status, enrolled_at')
-          .gte('enrolled_at', since7d)
-          .limit(3000)
-    }),
-    fetchAdminTable(sb, {
-      table: 'lifecycle_messages',
-      select: 'status, created_at',
-      limit: 3000,
-      direct: () =>
-        sb
-          .from('lifecycle_messages')
-          .select('status, created_at')
-          .gte('created_at', since7d)
-          .limit(3000)
+          .from('auto_leads')
+          .select('id, created_at, partner_status')
+          .gte('created_at', since48h)
+          .limit(2000)
     })
   ]);
 
@@ -596,7 +619,8 @@ async function loadOpsCommandCenter() {
     enrollRes,
     msgRes,
     endpointsRes,
-    retryLeadsRes
+    retryLeadsRes,
+    ceoLeadsRes
   ]);
 
   const sinceMs = new Date(since).getTime();
@@ -634,6 +658,16 @@ async function loadOpsCommandCenter() {
 
   const p12 = center.partnerOps || partnerOpsSnapshot;
 
+  const ceoSnap = buildCeoAlertSnapshot({
+    config: ceoAlertConfig,
+    analyticsEvents: events,
+    autoLeads: ceoLeadsRes.data || [],
+    operationalEvents: opsRes.data || [],
+    subscriptions: subsRes.data || [],
+    dispatchLogs24h: dispatchRes.data || [],
+    alertRules: ceoAlertRules
+  });
+
   const healthColor =
     center.overallHealth === 'healthy' || center.overallHealth === 'ok'
       ? 'var(--success)'
@@ -644,7 +678,7 @@ async function loadOpsCommandCenter() {
   el.innerHTML = `
     ${renderAdminWarningBanner(warnings)}
     <p class="text-muted-sm" style="margin:0 0 16px">
-      P9 Ops Command Center + P12 Partner Ops · Son ${windowDays} gün · <code>npm run metrics:ops:center</code> · <code>npm run partner:ops:run</code>
+      P9 Ops + P12 Partner + P13 CEO alerts · <code>npm run metrics:ops:center</code> · <code>npm run ceo:alerts:run</code>
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid ${healthColor}">
@@ -670,6 +704,42 @@ async function loadOpsCommandCenter() {
         )
         .join('')}
     </div>
+
+    <div style="height:18px"></div>
+    <h3 style="margin:0 0 12px">P13 CEO alerts (early intervention)</h3>
+    <div class="stat-card" style="margin-bottom:12px;padding:12px 14px;border-left:4px solid ${ceoSnap.overallHealth === 'critical' ? 'var(--danger)' : ceoSnap.overallHealth === 'healthy' ? 'var(--success)' : 'var(--warning)'}">
+      <strong>CEO health: ${escapeHtml(ceoSnap.overallHealth)}</strong>
+      <span class="text-muted-sm"> · ${ceoSnap.alerts.triggeredCount} rule(s) · hourly <code>ceo-alerts.yml</code></span>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Funnel CR</div>
+        <div class="stat-value">${ceoSnap.metrics.conversion.funnelCrPct24h ?? '—'}%</div>
+        <div class="text-muted-sm">Δ prior ${ceoSnap.metrics.conversion.funnelDropPct ?? 0}%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Checkout</div>
+        <div class="stat-value">${ceoSnap.metrics.checkout.failureCount24h ?? 0} issues</div>
+        <div class="text-muted-sm">Stripe WH fails ${ceoSnap.metrics.stripe.webhookFailCount24h ?? 0}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Leads 24h</div>
+        <div class="stat-value">${ceoSnap.metrics.leads.leads24h ?? 0}</div>
+        <div class="text-muted-sm">prior ${ceoSnap.metrics.leads.leadsPrior24h ?? 0}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Analytics vol</div>
+        <div class="stat-value">${ceoSnap.metrics.analytics.events24h ?? 0}</div>
+        <div class="text-muted-sm">drop ${ceoSnap.metrics.analytics.volumeDropPct ?? 0}%</div>
+      </div>
+    </div>
+    ${
+      ceoSnap.alerts.triggered.length
+        ? `<ul style="margin:12px 0 0;padding-left:18px;font-size:13px">${ceoSnap.alerts.triggered
+            .map((a) => `<li><strong>${escapeHtml(a.severity)}</strong> — ${escapeHtml(a.message)}</li>`)
+            .join('')}</ul>`
+        : '<p class="text-muted-sm" style="margin:12px 0 0">No CEO threshold alerts in current window.</p>'
+    }
 
     <div style="height:18px"></div>
     <h3 style="margin:0 0 12px">P12 Partner delivery ops (24h)</h3>

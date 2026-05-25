@@ -8,6 +8,7 @@
       "Auto intake → score → lifecycle enroll → partner dispatch",
       "Lifecycle cron (hourly) — enroll + send",
       "Partner retry cron (15m)",
+      "CEO alerting cron (hourly)",
       "Telegram hot-lead alerts",
       "Deterministic scoring + bounded AI narration",
       "Executive / investor / growth snapshot scripts",
@@ -119,7 +120,10 @@
         { "id": "ops_alert_digest", "status": "live_p9", "path": "supabase/functions/ops-alert-digest" },
         { "id": "ops_automation_workflow", "status": "live_p9", "workflow": ".github/workflows/ops-automation.yml" }
       ],
-      "phase_p9": ["Daily Telegram digest for triggered alert rules"]
+      "phase_p9": ["Daily Telegram digest for triggered alert rules"],
+      "phase_p13": [
+        "CEO hourly Telegram — conversion, checkout, Stripe, partner, churn, leads, analytics"
+      ]
     },
     {
       "id": "ai",

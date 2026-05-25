@@ -63,13 +63,24 @@ Deno.serve(async (req) => {
       });
     }
 
+    const channel = String(body.channel || body.source || "").toLowerCase();
+    const isCeo = channel.includes("ceo");
+
     const lines = alerts.map(
-      (a: { severity?: string; domain?: string; message?: string }) =>
-        `[${a.severity || "warn"}] ${a.domain || "ops"}: ${a.message || "alert"}`
+      (a: { severity?: string; domain?: string; message?: string; id?: string }) =>
+        `[${a.severity || "warn"}] ${a.domain || "ops"}: ${a.message || a.id || "alert"}`
     );
-    const text = `📊 isteBul Ops Digest\n\n${lines.join("\n")}\n\n— P9 automation`;
+
+    const header = isCeo
+      ? "🚨 isteBul CEO Alert — early intervention"
+      : "📊 isteBul Ops Digest";
+    const footer = isCeo ? "— P13 CEO alerting" : "— P9 automation";
+    const text = `${header}\n\n${lines.join("\n")}\n\n${footer}`;
     await sendTelegram(text.slice(0, 4000));
-    await recordOpsEvent("ops_alert_digest_sent", { count: alerts.length });
+    await recordOpsEvent(isCeo ? "ceo_alert_digest_sent" : "ops_alert_digest_sent", {
+      count: alerts.length,
+      channel: isCeo ? "ceo" : "ops",
+    });
 
     return new Response(JSON.stringify({ ok: true, sent: true, count: alerts.length }), {
       headers: { "Content-Type": "application/json" },

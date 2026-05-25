@@ -25,6 +25,13 @@
       "domains": ["partner", "operations"]
     },
     {
+      "id": "ceo_alerts",
+      "cadence": "hourly",
+      "workflow": ".github/workflows/ceo-alerts.yml",
+      "script": "scripts/ceo-alert-run.cjs",
+      "domains": ["revenue", "conversion", "partner", "analytics", "growth"]
+    },
+    {
       "id": "ops_automation",
       "cadence": "daily_06_utc",
       "workflow": ".github/workflows/ops-automation.yml",
@@ -48,7 +55,9 @@
     { "npm": "metrics:ops:center", "script": "scripts/ops-command-center.cjs", "output": "dist/ops-command-center.json" },
     { "npm": "ops:automation:run", "script": "scripts/ops-automation-run.cjs", "output": "dist/ops-automation-report.json" },
     { "npm": "metrics:partner:ops", "script": "scripts/partner-ops-snapshot.cjs", "output": "dist/partner-ops-snapshot.json" },
-    { "npm": "partner:ops:run", "script": "scripts/partner-ops-automation-run.cjs", "output": "dist/partner-ops-automation-report.json" }
+    { "npm": "partner:ops:run", "script": "scripts/partner-ops-automation-run.cjs", "output": "dist/partner-ops-automation-report.json" },
+    { "npm": "metrics:ceo:alerts", "script": "scripts/ceo-alert-snapshot.cjs", "output": "dist/ceo-alerts-snapshot.json" },
+    { "npm": "ceo:alerts:run", "script": "scripts/ceo-alert-run.cjs", "output": "dist/ceo-alerts-report.json" }
   ],
   "realtimeAutomations": [
     { "id": "stripe_webhook", "path": "functions/api/stripe-webhook.js", "domain": "revenue" },

@@ -1,0 +1,33 @@
+{
+  "version": "p13.0",
+  "updatedAt": "2026-05-24",
+  "mission": "CEO early-intervention alerting — conversion, revenue, partner, and data health.",
+  "channel": "telegram",
+  "digestFunction": "supabase/functions/ops-alert-digest",
+  "cadence": "hourly",
+  "workflow": ".github/workflows/ceo-alerts.yml",
+  "alerts": [
+    "conversion_crash",
+    "checkout_failures",
+    "stripe_webhook_failures",
+    "partner_dispatch_failures",
+    "unusual_churn",
+    "lead_drop_anomalies",
+    "analytics_anomalies"
+  ],
+  "thresholds": {
+    "conversionDropPctMin": 35,
+    "conversionPriorMinPct": 3,
+    "conversionMinLanding24h": 20,
+    "checkoutFailureCount24h": 4,
+    "checkoutFailureRatePct": 45,
+    "stripeWebhookFails24h": 1,
+    "partnerDispatchFails24h": 4,
+    "churnCancelAtPeriodEnd7d": 3,
+    "churnSpikeMultiplier": 2,
+    "leadDropPctMin": 45,
+    "leadPriorMin24h": 5,
+    "analyticsVolumeDropPctMin": 40,
+    "analyticsPriorMinEvents24h": 40
+  }
+}

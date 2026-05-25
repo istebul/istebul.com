@@ -75,6 +75,21 @@ async function main() {
         report.digest = { ok: false, error: String(err.message || err) };
       }
     }
+
+    const ceo = spawnSync('node', [path.join(root, 'scripts/ceo-alert-run.cjs')], {
+      cwd: root,
+      env: process.env,
+      encoding: 'utf8'
+    });
+    report.steps.push({
+      id: 'ceo_alerts',
+      ok: ceo.status === 0,
+      stderr: ceo.stderr?.slice(0, 500) || null
+    });
+    const ceoReportPath = path.join(root, 'dist', 'ceo-alerts-report.json');
+    if (fs.existsSync(ceoReportPath)) {
+      report.ceoAlerts = JSON.parse(fs.readFileSync(ceoReportPath, 'utf8'));
+    }
   } else {
     report.steps.push({
       id: 'ops_command_center',
