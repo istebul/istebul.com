@@ -9,6 +9,7 @@ export type TemplateVars = {
   feedback_url?: string;
   pricing_url: string;
   account_url: string;
+  billing_url?: string;
   unsubscribe_url?: string;
 };
 
@@ -120,6 +121,61 @@ const TEMPLATES: Record<string, (v: TemplateVars) => string> = {
     <p>Özel teklifle Pro'ya yeniden başlayın.</p>
     <p><a href="${esc(v.pricing_url)}">Teklifi gör →</a></p>
   `),
+  payment_failed: (v) => layout(`
+    <h1>Ödeme başarısız</h1>
+    <p>Pro üyeliğiniz için son ödeme alınamadı. Kartınızı veya fatura bilgilerinizi güncelleyerek kesintisiz erişimi koruyun.</p>
+    <p><a href="${esc(v.billing_url || v.account_url)}" style="background:#dc3545;color:#fff;padding:12px 20px;text-decoration:none;border-radius:8px;display:inline-block">Ödeme yöntemini güncelle</a></p>
+  `, v.unsubscribe_url),
+  payment_failed_reminder: (v) => layout(`
+    <h1>Pro erişiminiz risk altında</h1>
+    <p>Ödeme hâlâ tamamlanmadı. Stripe müşteri panelinden tek tıkla güncelleyebilirsiniz.</p>
+    <p><a href="${esc(v.billing_url || v.account_url)}">Faturalandırmayı yönet →</a></p>
+  `, v.unsubscribe_url),
+  payment_failed_last: (v) => layout(`
+    <h1>Son hatırlatma</h1>
+    <p>Ödeme yapılmazsa Pro özellikleri askıya alınabilir. Hemen güncelleyin.</p>
+    <p><a href="${esc(v.billing_url || v.account_url)}">Ödemeyi tamamla →</a></p>
+  `, v.unsubscribe_url),
+  dunning_urgent: (v) => layout(`
+    <h1>Acil: gecikmiş ödeme</h1>
+    <p>Aboneliğiniz <strong>gecikmiş</strong> durumda. Bugün ödeme yaparak hesabınızı aktif tutun.</p>
+    <p><a href="${esc(v.billing_url || v.account_url)}">Şimdi öde →</a></p>
+  `, v.unsubscribe_url),
+  invoice_upcoming: (v) => layout(`
+    <h1>Yenileme yaklaşıyor</h1>
+    <p>Pro planınız otomatik yenilenecek. Fatura ve ödeme yönteminizi önceden kontrol edin.</p>
+    <p><a href="${esc(v.billing_url || v.account_url)}">Fatura ayarları →</a></p>
+  `, v.unsubscribe_url),
+  renewal_nudge: (v) => layout(`
+    <h1>Pro yenilemeniz</h1>
+    <p>Yenileme tarihiniz yaklaşıyor. Karar geçmişiniz ve raporlarınız kesintisiz kalsın.</p>
+    <p><a href="${esc(v.account_url)}">Hesabım →</a></p>
+  `, v.unsubscribe_url),
+  churn_rescue: (v) => layout(`
+    <h1>Gitmeden önce</h1>
+    <p>İptal talebiniz alındı. Dönem sonuna kadar Pro aktif — fikrinizi değiştirirseniz tek tıkla geri alın.</p>
+    <p><a href="${esc(v.billing_url || v.account_url)}">İptali geri al →</a></p>
+  `, v.unsubscribe_url),
+  churn_rescue_offer: (v) => layout(`
+    <h1>Size özel destek</h1>
+    <p>Pro'dan ayrılmadan önce ekibimiz yardımcı olabilir. Faturalandırma veya özellik sorularınız için yanıtlayın.</p>
+    <p><a href="${esc(v.billing_url || v.account_url)}">Üyeliği koru →</a></p>
+  `, v.unsubscribe_url),
+  downgrade_save: (v) => layout(`
+    <h1>Plan değişikliği</h1>
+    <p>Daha düşük plana geçmek üzeresiniz. Karşılaştırma, PDF ve öncelikli lead özelliklerini kaybetmemek için Pro'da kalın.</p>
+    <p><a href="${esc(v.pricing_url)}">Pro avantajlarını gör →</a></p>
+  `, v.unsubscribe_url),
+  upgrade_prompt: (v) => layout(`
+    <h1>Pro'ya yükseltin</h1>
+    <p>Tam skor dökümü, sınırsız karşılaştırma ve öncelikli yönlendirme.</p>
+    <p><a href="${esc(v.pricing_url)}">Pro planları →</a></p>
+  `, v.unsubscribe_url),
+  trial_ending: (v) => layout(`
+    <h1>Deneme süreniz bitiyor</h1>
+    <p>7 günlük Pro denemeniz sona eriyor. Kesintisiz erişim için planınızı seçin.</p>
+    <p><a href="${esc(v.pricing_url)}">Ödemeye devam et →</a></p>
+  `, v.unsubscribe_url),
 };
 
 export function renderTemplate(
@@ -129,14 +185,27 @@ export function renderTemplate(
   context: Record<string, unknown> = {},
   recipientEmail?: string
 ) {
+  const revopsBillingFlows = new Set([
+    "failed_payment_recovery",
+    "dunning_past_due",
+    "invoice_reminder",
+    "renewal_nudge",
+    "churn_rescue",
+    "downgrade_save",
+  ]);
+
   const ctaPath =
-    flowId === "finance_follow_up"
-      ? "/auto/?interest=finance"
-      : flowId === "checkout_abandon_recovery"
-        ? "/planlar?checkout=pro"
-        : flowId === "abandoned_lead" || flowId === "results_no_lead_d1"
-          ? "/auto/?recover=email"
-          : "/auto/";
+    revopsBillingFlows.has(flowId)
+      ? "/account.html?billing=portal"
+      : flowId === "finance_follow_up"
+        ? "/auto/?interest=finance"
+        : flowId === "checkout_abandon_recovery" ||
+            flowId === "upgrade_prompt" ||
+            flowId === "trial_ending_upgrade"
+          ? "/planlar?checkout=pro"
+          : flowId === "abandoned_lead" || flowId === "results_no_lead_d1"
+            ? "/auto/?recover=email"
+            : "/auto/";
 
   const vars: TemplateVars = {
     display_name: String(context.display_name || context.contact_name || "").trim() || undefined,
@@ -154,6 +223,9 @@ export function renderTemplate(
     ),
     pricing_url: buildUtmLink("/planlar?checkout=pro", flowId, stepId),
     account_url: buildUtmLink("/account.html", flowId, stepId),
+    billing_url: buildUtmLink("/account.html?billing=portal", flowId, stepId, {
+      revops: "1",
+    }),
     unsubscribe_url: recipientEmail ? buildUnsubscribeUrl(recipientEmail) : undefined,
   };
 

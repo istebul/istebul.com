@@ -2,6 +2,7 @@
  * Contextual upsell engine — placement-aware Pro offers without modal spam.
  */
 import { analytics } from '../../core/analytics.js';
+import { trackProUpsellImpression } from '../revenue/revenue-ops-client.js';
 import { revenueManager } from './revenue-manager.js';
 import { FREE_LIMITS, PLANS } from './plans.js';
 
@@ -109,6 +110,7 @@ export function trackUpsellView(offerId, placement, properties = {}) {
       force: false
     }
   );
+  trackProUpsellImpression({ placement, offer_id: offerId });
 }
 
 export function rememberUpsellClick(offerId, placement) {

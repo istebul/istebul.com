@@ -30,6 +30,13 @@
       "automations": [
         { "id": "stripe_mrr_sync", "status": "live", "path": "functions/api/stripe-webhook.js" },
         { "id": "checkout_recovery_lifecycle", "status": "live", "flow": "checkout_abandon_recovery" },
+        { "id": "failed_payment_recovery", "status": "live_p10", "flow": "failed_payment_recovery" },
+        { "id": "dunning_past_due", "status": "live_p10", "flow": "dunning_past_due" },
+        { "id": "invoice_reminder", "status": "live_p10", "flow": "invoice_reminder" },
+        { "id": "renewal_nudge", "status": "live_p10", "flow": "renewal_nudge" },
+        { "id": "churn_rescue", "status": "live_p10", "flow": "churn_rescue" },
+        { "id": "downgrade_save", "status": "live_p10", "flow": "downgrade_save" },
+        { "id": "upgrade_prompt", "status": "live_p10", "flow": "upgrade_prompt" },
         { "id": "executive_mrr_snapshot", "status": "live", "npm": "metrics:executive" },
         { "id": "stripe_dashboard_reconcile", "status": "manual", "doc": "docs/investor/STRIPE_MRR_EVIDENCE.md" }
       ],

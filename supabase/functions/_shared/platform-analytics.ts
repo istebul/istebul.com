@@ -41,6 +41,9 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "invoice_paid",
   "invoice_failed",
   "trial_started",
+  "trial_ending_soon",
+  "revops_upgrade_prompt_requested",
+  "pro_upsell_impression",
   // Lead
   "lead_submit",
   "lead_duplicate",

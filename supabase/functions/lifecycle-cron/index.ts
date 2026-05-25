@@ -11,6 +11,13 @@ import {
   enrollUpsellFromAnalytics,
   processDueMessages,
 } from "../_shared/lifecycle-engine.ts";
+import {
+  enrollChurnRescueFromSubscriptions,
+  enrollInvoiceRemindersFromSubscriptions,
+  enrollRenewalNudgesFromSubscriptions,
+  enrollTrialEndingUpgrade,
+  enrollUpgradePromptFromAnalytics,
+} from "../_shared/revenue-ops.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -39,6 +46,11 @@ Deno.serve(async (req) => {
   const noLeadD1 = await enrollNoLeadReminderFromAnalytics(sb, 25);
   const leadUpgradeD3 = await enrollLeadUpgradeFromLeads(sb, 25);
   const checkoutAbandon = await enrollCheckoutAbandonFromAnalytics(sb, 20);
+  const renewalNudge = await enrollRenewalNudgesFromSubscriptions(sb, 25);
+  const invoiceReminder = await enrollInvoiceRemindersFromSubscriptions(sb, 25);
+  const churnRescue = await enrollChurnRescueFromSubscriptions(sb, 20);
+  const trialEnding = await enrollTrialEndingUpgrade(sb, 20);
+  const upgradePrompt = await enrollUpgradePromptFromAnalytics(sb, 15);
 
   return new Response(
     JSON.stringify({
@@ -55,6 +67,11 @@ Deno.serve(async (req) => {
         results_no_lead_d1: noLeadD1,
         lead_upgrade_d3: leadUpgradeD3,
         checkout_abandon_recovery: checkoutAbandon,
+        renewal_nudge: renewalNudge,
+        invoice_reminder: invoiceReminder,
+        churn_rescue: churnRescue,
+        trial_ending_upgrade: trialEnding,
+        upgrade_prompt: upgradePrompt,
       },
     }),
     { headers: { "Content-Type": "application/json" } }

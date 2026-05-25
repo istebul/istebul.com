@@ -1,6 +1,10 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { recordOpsEvent } from './_shared/record-ops-event.js';
+import {
+  enrollRevenueLifecycleFlow,
+  resolveUserContact
+} from './_shared/revenue-ops-enroll.js';
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -266,13 +270,89 @@ export async function onRequestPost(context) {
             ? 'subscription_created'
             : 'subscription_updated';
 
+        const userId = subscription.metadata?.userId || null;
+
         await recordSubscriptionAnalytics(supabase, eventName, {
-          userId: subscription.metadata?.userId || null,
+          userId,
           idempotencyKey: `stripe:${event.id}:${eventName}`,
           properties: {
             status: subscription.status,
-            stripe_subscription_id: subscription.id
+            stripe_subscription_id: subscription.id,
+            cancel_at_period_end: subscription.cancel_at_period_end
           }
+        });
+
+        if (userId) {
+          const contact = await resolveUserContact(supabase, userId);
+          if (event.type === 'customer.subscription.deleted') {
+            await enrollRevenueLifecycleFlow(context.env, {
+              flow_id: 'churn_rescue',
+              user_id: userId,
+              email: contact?.email,
+              display_name: contact?.displayName,
+              context: { status: 'canceled', stripe_subscription_id: subscription.id },
+              trigger_source: 'stripe_subscription_deleted',
+              restart: true
+            });
+          } else if (
+            event.type === 'customer.subscription.updated' &&
+            subscription.cancel_at_period_end
+          ) {
+            await enrollRevenueLifecycleFlow(context.env, {
+              flow_id: 'churn_rescue',
+              user_id: userId,
+              email: contact?.email,
+              display_name: contact?.displayName,
+              context: {
+                cancel_at_period_end: true,
+                status: subscription.status
+              },
+              trigger_source: 'stripe_cancel_scheduled',
+              restart: true
+            });
+            await enrollRevenueLifecycleFlow(context.env, {
+              flow_id: 'downgrade_save',
+              user_id: userId,
+              email: contact?.email,
+              display_name: contact?.displayName,
+              context: { reason: 'cancel_scheduled' },
+              trigger_source: 'stripe_downgrade_save'
+            });
+          } else if (
+            event.type === 'customer.subscription.updated' &&
+            subscription.status === 'past_due'
+          ) {
+            await enrollRevenueLifecycleFlow(context.env, {
+              flow_id: 'dunning_past_due',
+              user_id: userId,
+              email: contact?.email,
+              display_name: contact?.displayName,
+              trigger_source: 'stripe_past_due',
+              restart: true
+            });
+          }
+        }
+        break;
+      }
+
+      case 'customer.subscription.trial_will_end': {
+        const subscription = event.data.object;
+        const userId = subscription.metadata?.userId || null;
+        const contact = userId ? await resolveUserContact(supabase, userId) : null;
+        if (userId) {
+          await enrollRevenueLifecycleFlow(context.env, {
+            flow_id: 'trial_ending_upgrade',
+            user_id: userId,
+            email: contact?.email,
+            display_name: contact?.displayName,
+            trigger_source: 'stripe_trial_will_end',
+            restart: true
+          });
+        }
+        await recordSubscriptionAnalytics(supabase, 'trial_ending_soon', {
+          userId,
+          idempotencyKey: `stripe:${event.id}:trial_ending`,
+          properties: { stripe_subscription_id: subscription.id }
         });
         break;
       }
@@ -284,15 +364,16 @@ export async function onRequestPost(context) {
           ? invoice.subscription
           : invoice.subscription?.id;
 
+        let subscriptionRecord = null;
         if (subscriptionId) {
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-          await upsertSubscription(supabase, subscription);
+          subscriptionRecord = await stripe.subscriptions.retrieve(subscriptionId);
+          await upsertSubscription(supabase, subscriptionRecord);
         }
 
         if (event.type === 'invoice.payment_failed') {
           await recordOpsEvent(supabase, {
             category: 'payment',
-            event_name: 'webhook_stripe_processing_failed',
+            event_name: 'payment_invoice_failed',
             severity: 'error',
             source: 'stripe_webhook',
             idempotency_key: `stripe:ops:${event.id}:invoice_failed`,
@@ -301,6 +382,30 @@ export async function onRequestPost(context) {
               invoice_id: invoice.id
             }
           });
+
+          const failedUserId =
+            invoice.metadata?.userId || subscriptionRecord?.metadata?.userId || null;
+          const failedContact = failedUserId
+            ? await resolveUserContact(supabase, failedUserId)
+            : null;
+          const failedStatus = subscriptionRecord?.status || null;
+
+          if (failedUserId) {
+            const flowId =
+              failedStatus === 'past_due' ? 'dunning_past_due' : 'failed_payment_recovery';
+            await enrollRevenueLifecycleFlow(context.env, {
+              flow_id: flowId,
+              user_id: failedUserId,
+              email: failedContact?.email,
+              display_name: failedContact?.displayName,
+              context: {
+                invoice_id: invoice.id,
+                subscription_status: failedStatus
+              },
+              trigger_source: 'stripe_invoice_failed',
+              restart: true
+            });
+          }
         }
 
         await recordSubscriptionAnalytics(

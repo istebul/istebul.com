@@ -257,6 +257,86 @@ export const LIFECYCLE_FLOWS: LifecycleFlow[] = [
       },
     ],
   },
+  {
+    id: "failed_payment_recovery",
+    name: "Failed payment recovery",
+    category: "revenue",
+    cancelOn: ["unsubscribe"],
+    steps: [
+      { id: "fp_0h", delayHours: 0, templateId: "payment_failed", subject: "Ödemeniz alınamadı — hemen güncelleyin" },
+      { id: "fp_24h", delayHours: 24, templateId: "payment_failed_reminder", subject: "Pro erişiminiz risk altında" },
+      { id: "fp_72h", delayHours: 72, templateId: "payment_failed_last", subject: "Son hatırlatma: ödeme yöntemi" },
+    ],
+  },
+  {
+    id: "dunning_past_due",
+    name: "Dunning past due",
+    category: "revenue",
+    cancelOn: ["unsubscribe"],
+    steps: [
+      { id: "dun_0", delayHours: 0, templateId: "dunning_urgent", subject: "Acil: Pro ödemeniz gecikti" },
+      { id: "dun_48h", delayHours: 48, templateId: "dunning_urgent", subject: "Hesabınız askıya alınabilir" },
+      { id: "dun_120h", delayHours: 120, templateId: "payment_failed_last", subject: "Son şans: ödemeyi tamamlayın" },
+    ],
+  },
+  {
+    id: "invoice_reminder",
+    name: "Invoice reminder",
+    category: "revenue",
+    steps: [
+      { id: "inv_7d", delayHours: 0, templateId: "invoice_upcoming", subject: "Yenileme faturanız 7 gün içinde" },
+      { id: "inv_3d", delayHours: 96, templateId: "invoice_upcoming", subject: "3 gün sonra Pro yenilemesi" },
+      { id: "inv_1d", delayHours: 144, templateId: "invoice_upcoming", subject: "Yarın Pro yenilemeniz" },
+    ],
+  },
+  {
+    id: "renewal_nudge",
+    name: "Renewal nudge",
+    category: "revenue",
+    steps: [
+      { id: "ren_14d", delayHours: 0, templateId: "renewal_nudge", subject: "Pro yenilemeniz 14 gün sonra" },
+      { id: "ren_7d", delayHours: 168, templateId: "renewal_nudge", subject: "Bir hafta sonra yenileniyor" },
+    ],
+  },
+  {
+    id: "churn_rescue",
+    name: "Churn rescue",
+    category: "revenue",
+    cancelOn: ["unsubscribe"],
+    steps: [
+      { id: "churn_0", delayHours: 0, templateId: "churn_rescue", subject: "Gitmeden önce Pro avantajlarınız" },
+      { id: "churn_48h", delayHours: 48, templateId: "churn_rescue_offer", subject: "İptali geri alın — özel destek" },
+      { id: "churn_120h", delayHours: 120, templateId: "retention_winback", subject: "Son gün: üyeliğinizi koruyun" },
+    ],
+  },
+  {
+    id: "downgrade_save",
+    name: "Downgrade save",
+    category: "revenue",
+    cancelOn: ["unsubscribe"],
+    steps: [
+      { id: "save_0", delayHours: 0, templateId: "downgrade_save", subject: "Plan değişikliği — size özel seçenekler" },
+      { id: "save_72h", delayHours: 72, templateId: "churn_rescue_offer", subject: "Pro'yu koruyun, özellik kaybetmeyin" },
+    ],
+  },
+  {
+    id: "upgrade_prompt",
+    name: "Upgrade prompt",
+    category: "revenue",
+    steps: [
+      { id: "up_0", delayHours: 0, templateId: "upgrade_prompt", subject: "Pro ile tam karar raporu" },
+      { id: "up_72h", delayHours: 72, templateId: "upsell_pro", subject: "Karşılaştırma ve PDF — Pro'ya geçin" },
+    ],
+  },
+  {
+    id: "trial_ending_upgrade",
+    name: "Trial ending upgrade",
+    category: "revenue",
+    steps: [
+      { id: "trial_0", delayHours: 0, templateId: "trial_ending", subject: "Denemeniz bitiyor — Pro'yu seçin" },
+      { id: "trial_48h", delayHours: 48, templateId: "upgrade_prompt", subject: "Kesintisiz Pro erişimi için ödeme" },
+    ],
+  },
 ];
 
 export const PUBLIC_ENROLL_FLOWS = new Set([
@@ -271,6 +351,7 @@ export const PUBLIC_ENROLL_FLOWS = new Set([
   "habit_loop_reminder",
   "saved_decision_revisit",
   "partner_sales_cadence",
+  "upgrade_prompt",
 ]);
 
 export function buildUnsubscribeUrl(email: string) {

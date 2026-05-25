@@ -439,14 +439,14 @@ export async function enrollInactiveUsers(sb: SupabaseClient, limit = 40) {
   return { enrolled, scanned: profiles?.length || 0 };
 }
 
-/** Subscription canceled → retention */
+/** Subscription canceled / past_due → retention winback */
 export async function enrollRetentionFromSubscriptions(sb: SupabaseClient, limit = 20) {
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const { data: subs } = await sb
     .from("subscriptions")
-    .select("user_id, status, canceled_at, updated_at")
-    .in("status", ["canceled", "past_due"])
+    .select("user_id, status, updated_at")
+    .in("status", ["canceled", "past_due", "unpaid"])
     .gte("updated_at", since)
     .limit(limit);
 

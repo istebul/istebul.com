@@ -11,6 +11,7 @@ import {
     enrollCheckoutAbandonRecovery,
     enrollNewsletterWelcome
 } from './features/lifecycle/lifecycle-client.js';
+import { trackPricingViewForUpgrade } from './features/revenue/revenue-ops-client.js';
 import {
     bindContextualUpsell,
     flushUpsellConversion,
@@ -3296,6 +3297,15 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.ui.loadIcons?.();
 
         trackPricingView(premiumRoot ? 'planlar' : 'home_pricing');
+
+        if (this.currentUser?.email && !revenueManager.isPremium) {
+            trackPricingViewForUpgrade({
+                email: this.currentUser.email,
+                user_id: this.currentUser.id,
+                source: premiumRoot ? 'planlar' : 'home_pricing',
+                trigger_source: 'pricing_mount'
+            }).catch(() => {});
+        }
     }
 
     handleBillingReturnParams() {

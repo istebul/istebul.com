@@ -1,0 +1,82 @@
+{
+  "version": "p10.0",
+  "updatedAt": "2026-05-24",
+  "goal": "Reduce MRR leakage via automated recovery, dunning, renewal, churn rescue, and upgrade prompts.",
+  "flows": [
+    {
+      "id": "failed_payment_recovery",
+      "trigger": "stripe:invoice.payment_failed",
+      "steps": 3,
+      "cta": "billing_portal"
+    },
+    {
+      "id": "dunning_past_due",
+      "trigger": "stripe:subscription.past_due | invoice.payment_failed",
+      "steps": 3,
+      "cta": "billing_portal"
+    },
+    {
+      "id": "invoice_reminder",
+      "trigger": "cron:period_end_minus_7d",
+      "steps": 3,
+      "cta": "billing_portal"
+    },
+    {
+      "id": "renewal_nudge",
+      "trigger": "cron:period_end_minus_14d",
+      "steps": 2,
+      "cta": "account"
+    },
+    {
+      "id": "churn_rescue",
+      "trigger": "stripe:cancel_at_period_end | subscription.deleted",
+      "steps": 3,
+      "cta": "billing_portal"
+    },
+    {
+      "id": "downgrade_save",
+      "trigger": "stripe:cancel_at_period_end",
+      "steps": 2,
+      "cta": "pricing"
+    },
+    {
+      "id": "upgrade_prompt",
+      "trigger": "cron:pricing_view | client:pricing_mount",
+      "steps": 2,
+      "cta": "checkout"
+    },
+    {
+      "id": "trial_ending_upgrade",
+      "trigger": "stripe:trial_will_end | cron:trial_ending",
+      "steps": 2,
+      "cta": "checkout"
+    },
+    {
+      "id": "checkout_abandon_recovery",
+      "trigger": "analytics:checkout_abandoned",
+      "status": "existing",
+      "steps": 3
+    }
+  ],
+  "webhookEvents": [
+    "invoice.payment_failed",
+    "customer.subscription.updated",
+    "customer.subscription.deleted",
+    "customer.subscription.trial_will_end"
+  ],
+  "cronAudiences": [
+    "renewal_nudge",
+    "invoice_reminder",
+    "churn_rescue",
+    "trial_ending_upgrade",
+    "upgrade_prompt"
+  ],
+  "codeAnchors": [
+    "functions/api/stripe-webhook.js",
+    "functions/api/_shared/revenue-ops-enroll.js",
+    "supabase/functions/_shared/revenue-ops.ts",
+    "supabase/functions/lifecycle-cron/index.ts",
+    "js/features/revenue/revenue-ops-client.js",
+    "data/lifecycle/flows.json"
+  ]
+}
