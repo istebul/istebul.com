@@ -60,12 +60,13 @@ test('buildPackFromAssets includes projections and resolved metrics', () => {
       growthStory: load('growth-story.json'),
       gtmNarrative: load('gtm-narrative.json'),
       deckReadiness: load('deck-readiness.json'),
-      fundraisingReadiness: load('fundraising-readiness.json')
+      fundraisingReadiness: load('fundraising-readiness.json'),
+      marketResearch: load('market-research.json')
     },
     snapshot
   );
 
-  assert.equal(pack.version, 'p7.1');
+  assert.equal(pack.version, 'p7.2');
   assert.ok(pack.investorNarrative.headline);
   assert.ok(pack.marketSizing.som.illustrativeSomTry > 0);
   assert.ok(pack.financialModel.projections.base.y1.blendedArrTry);
@@ -88,7 +89,8 @@ test('scoreInvestorReadiness returns verdict for full pack', () => {
     growthStory: load('growth-story.json'),
     gtmNarrative: load('gtm-narrative.json'),
     deckReadiness: load('deck-readiness.json'),
-    fundraisingReadiness: load('fundraising-readiness.json')
+    fundraisingReadiness: load('fundraising-readiness.json'),
+    marketResearch: load('market-research.json')
   });
   const score = scoreInvestorReadiness(pack);
   assert.ok(score.overallPct >= 70);
@@ -100,8 +102,9 @@ test('summarizeFundraisingGaps lists offline gaps', () => {
     fundraisingReadiness: load('fundraising-readiness.json')
   });
   const gaps = summarizeFundraisingGaps(pack);
-  assert.ok(gaps.gapCount >= 3);
-  assert.ok(gaps.gaps.some((g) => g.id === 'cap_table'));
+  assert.ok(gaps.gapCount >= 2);
+  assert.ok(gaps.gaps.some((g) => g.id === 'signed_loi' || g.id === 'stripe_screenshots'));
+  assert.ok(gaps.readyCount >= 10);
 });
 
 test('summarizeDeckGaps flags traction snapshot blocker', () => {

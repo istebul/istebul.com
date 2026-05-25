@@ -15,7 +15,8 @@ const ASSET_KEYS = [
   'growthStory',
   'gtmNarrative',
   'deckReadiness',
-  'fundraisingReadiness'
+  'fundraisingReadiness',
+  'marketResearch'
 ];
 
 /**
@@ -138,6 +139,7 @@ export function composeInvestorReadinessPack({
   gtmNarrative = {},
   deckReadiness = {},
   fundraisingReadiness = {},
+  marketResearch = {},
   snapshot = null
 } = {}) {
   const liveSnapshot =
@@ -189,6 +191,7 @@ export function composeInvestorReadinessPack({
     gtmNarrative,
     deckReadiness,
     fundraisingReadiness,
+    marketResearch,
     narrativeDocs: manifest.narrativeDocs || {},
     exports: manifest.exports || {},
     commands: manifest.commands || {}
@@ -226,6 +229,7 @@ export function buildPackFromAssets(assets, snapshot = null) {
     gtmNarrative: assets.gtmNarrative || {},
     deckReadiness: assets.deckReadiness || {},
     fundraisingReadiness: assets.fundraisingReadiness || {},
+    marketResearch: assets.marketResearch || {},
     snapshot
   });
 }

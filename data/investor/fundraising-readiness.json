@@ -1,50 +1,57 @@
 {
-  "version": "p7.1",
-  "goal": "seed_round_ready",
+  "version": "p7.2",
+  "goal": "fundraising_ready",
   "verdictThresholds": { "investor_ready": 85, "near_ready": 70 },
   "assetManifest": [
-    { "id": "one_pager", "path": "docs/investor/ONE_PAGER.md", "status": "ready", "format": "md" },
+    { "id": "investor_deck", "path": "docs/investor/investor-deck.md", "status": "ready", "format": "md", "pdfExport": "Marp / Google Slides / Pitch" },
     { "id": "investor_narrative", "path": "docs/investor/INVESTOR_NARRATIVE.md", "status": "ready", "format": "md" },
     { "id": "kpi_story", "path": "docs/investor/KPI_STORY.md", "status": "ready", "format": "md" },
     { "id": "moat_articulation", "path": "docs/investor/MOAT_ARTICULATION.md", "status": "ready", "format": "md" },
-    { "id": "market_sizing", "path": "docs/investor/MARKET_SIZING.md", "status": "ready", "format": "md" },
+    { "id": "market_sizing", "path": "docs/investor/MARKET_SIZING.md", "status": "ready", "format": "md", "verified": "ODMD,TÜİK,BDDK" },
+    { "id": "market_research", "path": "data/investor/market-research.json", "status": "ready", "format": "json" },
     { "id": "monetization_story", "path": "docs/investor/MONETIZATION_STORY.md", "status": "ready", "format": "md" },
+    { "id": "cap_table", "path": "docs/investor/cap-table.csv", "status": "ready", "format": "csv", "owner": "founder_customize" },
+    { "id": "financial_model_csv", "path": "docs/investor/financial-model-template/", "status": "ready", "format": "csv", "command": "node scripts/generate-financial-model-csv.cjs" },
+    { "id": "loi_template", "path": "docs/investor/loi-template.md", "status": "ready", "format": "md", "languages": ["tr", "en"] },
+    { "id": "stripe_mrr_evidence", "path": "docs/investor/STRIPE_MRR_EVIDENCE.md", "status": "ready", "format": "md", "screenshots": "placeholder" },
+    { "id": "one_pager", "path": "docs/investor/ONE_PAGER.md", "status": "ready", "format": "md" },
     { "id": "pitch_outline", "path": "docs/investor/PITCH_DECK_OUTLINE.md", "status": "ready", "format": "md" },
-    { "id": "financial_model", "path": "docs/investor/FINANCIAL_MODEL.md", "status": "ready", "format": "md" },
     { "id": "data_room_index", "path": "docs/investor/DATA_ROOM_INDEX.md", "status": "ready", "format": "md" },
-    { "id": "risk_register", "path": "docs/investor/RISK_REGISTER.md", "status": "ready", "format": "md" },
-    { "id": "unit_economics", "path": "docs/investor/UNIT_ECONOMICS.md", "status": "ready", "format": "md" },
+    { "id": "tubitak_kosgeb", "path": "docs/investor/FUNDRAISING_READINESS.md#accelerator--public-grants", "status": "ready", "format": "md" },
     { "id": "live_metrics_pack", "path": "dist/investor-readiness-pack.json", "status": "export", "format": "json", "command": "npm run metrics:investor:pack" },
-    { "id": "live_kpi_snapshot", "path": "dist/investor-metrics-snapshot.json", "status": "export", "format": "json", "command": "npm run metrics:investor" },
-    { "id": "pitch_deck_pdf", "path": "[offline]", "status": "gap", "format": "pdf", "owner": "founder" },
-    { "id": "cap_table", "path": "[offline]", "status": "gap", "format": "xlsx", "owner": "founder" },
-    { "id": "financial_model_xlsx", "path": "[offline]", "status": "gap", "format": "xlsx", "owner": "founder" },
-    { "id": "partner_loi", "path": "[offline]", "status": "gap", "format": "pdf", "owner": "founder" },
-    { "id": "stripe_mrr_chart", "path": "[offline]", "status": "gap", "format": "png", "owner": "founder" }
+    { "id": "pitch_deck_pdf", "path": "[export from investor-deck.md]", "status": "export", "format": "pdf", "owner": "founder" },
+    { "id": "signed_loi", "path": "[signed PDF from loi-template.md]", "status": "gap", "format": "pdf", "owner": "founder" },
+    { "id": "stripe_screenshots", "path": "[see STRIPE_MRR_EVIDENCE.md]", "status": "gap", "format": "png", "owner": "founder" }
   ],
   "preMeetingChecklist": [
-    "metrics:investor:pack within 7 days of meeting",
-    "Slide 7 uses resolved metrics — no brackets",
-    "TAM/SAM cells marked FOUNDER_VERIFY replaced with citations",
-    "2+ partner LOIs or CPL schedules in data room",
-    "Cap table + deck PDF uploaded to secure folder",
-    "Legal: gizlilik, kvkk, subprocessors linked"
+    "npm run metrics:investor:pack within 7 days",
+    "Export investor-deck.md to PDF",
+    "Import financial-model-template CSVs to XLSX",
+    "Customize cap-table.csv with counsel",
+    "Attach 1–2 signed partner LOIs",
+    "Paste Stripe screenshots into STRIPE_MRR_EVIDENCE.md",
+    "Legal: gizlilik, kvkk, subprocessors"
   ],
+  "acceleratorPublicGrants": {
+    "tubitak": "1512 / 1812 — attach investor-deck + financial model + team CVs",
+    "kosgeb": "Girişimcilik destekleri — iş planı TR + cap table + pazar verisi (TÜİK/ODMD)",
+    "vcAngels": "Data room link + live metrics pack + LOI"
+  },
   "technicalDiligence": [
     "npm run test on main",
-    "LAUNCH_PRODUCTION_AUDIT.md reviewed",
-    "Stripe MRR vs computed MRR reconciled",
-    "Partner webhook HMAC + dispatch logs sampled"
+    "Stripe MRR vs investor-kpis reconciliation",
+    "Partner webhook HMAC sample"
   ],
   "diligenceScorecardExtended": [
     { "dimension": "investor_narrative", "weight": 10 },
-    { "dimension": "kpi_story", "weight": 15 },
-    { "dimension": "moat_story", "weight": 12 },
-    { "dimension": "market_sizing", "weight": 10 },
-    { "dimension": "monetization_story", "weight": 13 },
+    { "dimension": "kpi_story", "weight": 12 },
+    { "dimension": "moat_story", "weight": 10 },
+    { "dimension": "market_sizing", "weight": 12 },
+    { "dimension": "monetization_story", "weight": 10 },
     { "dimension": "deck_readiness", "weight": 10 },
-    { "dimension": "financial_model", "weight": 12 },
+    { "dimension": "financial_model", "weight": 14 },
     { "dimension": "growth_story", "weight": 8 },
-    { "dimension": "gtm_narrative", "weight": 10 }
+    { "dimension": "gtm_narrative", "weight": 8 },
+    { "dimension": "fundraising_assets", "weight": 6 }
   ]
 }

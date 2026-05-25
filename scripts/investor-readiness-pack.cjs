@@ -63,7 +63,8 @@ async function main() {
     growthStory: readJson('growth-story.json'),
     gtmNarrative: readJson('gtm-narrative.json'),
     deckReadiness: readJson('deck-readiness.json'),
-    fundraisingReadiness: readJson('fundraising-readiness.json')
+    fundraisingReadiness: readJson('fundraising-readiness.json'),
+    marketResearch: readJson('market-research.json')
   };
 
   const snapshot = await loadLiveSnapshot();

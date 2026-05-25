@@ -1,0 +1,34 @@
+{
+  "version": "p7.2",
+  "currency": "TRY",
+  "scenario": "base",
+  "months": 36,
+  "assumptions": {
+    "proPriceMonthly": 299,
+    "proPriceAnnualMonthlyEquiv": 239.17,
+    "partnerRevenuePerLead": { "y1": 960, "y2": 1100, "y3": 1200 },
+    "monthlyLeads": { "y1": 120, "y2": 350, "y3": 800 },
+    "proSubscribersEnd": { "y1": 400, "y2": 1200, "y3": 2800 },
+    "proSubscriberGrowthCurve": "linear_ramp_within_year",
+    "monthlyBurn": 450000,
+    "cacPro": 1200,
+    "cacPaidShare": 0.4,
+    "ltvMonths": 14,
+    "stripeFeePct": 3.5,
+    "grossMarginPct": 72,
+    "headcount": { "m1": 5, "m12": 8, "m24": 14, "m36": 22 },
+    "avgSalaryTry": 85000
+  },
+  "opexCategories": [
+    { "id": "payroll", "pct": 55 },
+    { "id": "cloud_ai", "pct": 12 },
+    { "id": "marketing", "pct": 18 },
+    { "id": "legal_admin", "pct": 8 },
+    { "id": "other", "pct": 7 }
+  ],
+  "seedRound": {
+    "amountTry": 15000000,
+    "closeMonth": 1,
+    "preMoneyTry": 300000000
+  }
+}

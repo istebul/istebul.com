@@ -1,5 +1,5 @@
 {
-  "version": "p7.1",
+  "version": "p7.2",
   "goal": "fundraising_ready",
   "company": {
     "name": "isteBul",
@@ -19,7 +19,9 @@
     "growthStory": "growth-story.json",
     "gtmNarrative": "gtm-narrative.json",
     "deckReadiness": "deck-readiness.json",
-    "fundraisingReadiness": "fundraising-readiness.json"
+    "fundraisingReadiness": "fundraising-readiness.json",
+    "marketResearch": "market-research.json",
+    "financialModel36m": "financial-model-36m.json"
   },
   "narrativeDocs": {
     "investorNarrative": "docs/investor/INVESTOR_NARRATIVE.md",

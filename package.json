@@ -30,6 +30,7 @@
     "verify:deploy": "node scripts/verify-deploy-setup.cjs",
     "metrics:investor": "node scripts/investor-metrics-snapshot.cjs",
     "metrics:investor:pack": "node scripts/investor-readiness-pack.cjs",
+    "investor:financial-model": "node scripts/generate-financial-model-csv.cjs",
     "metrics:executive": "node scripts/executive-kpi-snapshot.cjs",
     "metrics:growth": "node scripts/growth-weekly-report.cjs",
     "metrics:growth:command": "node scripts/growth-command-center.cjs",

@@ -1,0 +1,10 @@
+Parameter,Value,Unit,Notes
+Pro monthly price,299,TRY,plans.js
+Pro subscribers Y1/Y2/Y3,400/1200/2800,count,base scenario
+Monthly leads Y1/Y2/Y3,120/350/800,count,CRM
+Partner rev/lead Y3,1200,TRY,actual_revenue trend
+Monthly burn,450000,TRY,opex
+CAC Pro,1200,TRY,paid+organic blend
+LTV months,14,months,target
+Gross margin,72,%,after Stripe+AI
+Seed round,15000000,TRY,month 1

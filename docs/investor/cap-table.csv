@@ -1,0 +1,24 @@
+Stakeholder,Security Type,Shares,Investment (TRY),Price per Share (TRY),Fully Diluted %,Vesting,Notes
+Founder CEO,Common,4500000,0,0.01,45.00%,4y/1y cliff,Founding CEO — replace with actual cap table
+Founder CTO,Common,3500000,0,0.01,35.00%,4y/1y cliff,Founding CTO — replace with actual cap table
+ESOP Pool (unallocated),Options,1500000,0,0.01,15.00%,n/a,Seed-stage option pool; standard 10-20% pre-Series A
+Seed Investor (illustrative),Series Seed Preferred,500000,15000000,30.00,5.00%,n/a,Illustrative: ₺15M on ₺300M pre-money — customize round
+TOTAL,,10000000,15000000,,100.00%,,
+
+Scenario,Pre-Money (TRY),Investment (TRY),Post-Money (TRY),New Investor FD %
+Seed Base,300000000,15000000,315000000,4.76%
+Seed + ESOP refresh (15%),285000000,15000000,300000000,5.00%
+Series A (illustrative),900000000,60000000,960000000,6.25%
+
+ESOP Planning (post-seed target)
+Role,Options from pool,Strike (TRY),Standard vesting
+Engineer #1,80000,0.01,4y monthly after 1y cliff
+Head of Partnerships,120000,0.01,4y monthly after 1y cliff
+Growth Lead,60000,0.01,4y monthly after 1y cliff
+
+Investor Rights (template — legal counsel)
+Right,Seed typical,Notes
+Liquidation preference,1x non-participating,Customize in SHA
+Pro-rata,Yes,Follow-on in next round
+Board seat,Observer or 1 seat if lead,Founder control early stage
+Information rights,Quarterly financials + annual budget,Standard

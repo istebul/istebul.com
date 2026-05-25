@@ -22,7 +22,14 @@
 | Risk register | `docs/investor/RISK_REGISTER.md` | Ready |
 | Unit economics framework | `docs/investor/UNIT_ECONOMICS.md` | Ready (assumptions explicit) |
 
-**Gap:** Pitch deck **PDF**, cap table, financial model **XLSX**, partner LOIs — see `FUNDRAISING_READINESS.md#assetManifest`.
+| **Investor deck (PDF-ready)** | `docs/investor/investor-deck.md` |
+| **Cap table template** | `docs/investor/cap-table.csv` |
+| **Financial model (36 mo CSV)** | `docs/investor/financial-model-template/` |
+| **LOI template (TR+EN)** | `docs/investor/loi-template.md` |
+| **Stripe MRR evidence** | `docs/investor/STRIPE_MRR_EVIDENCE.md` |
+| **Market research (cited)** | `data/investor/market-research.json` |
+
+**Gap:** Signed LOI PDFs, Stripe PNG screenshots, deck PDF export — see `FUNDRAISING_READINESS.md`.
 
 ---
 
