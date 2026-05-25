@@ -1,0 +1,34 @@
+{
+  "version": "p12.0",
+  "updatedAt": "2026-05-24",
+  "mission": "Partner delivery ops reliability — dispatch monitoring, retry queue, SLA, webhook health, inactivity.",
+  "sla": {
+    "dispatchLatencyP95Ms": 900000,
+    "dispatchSuccessRatePctMin": 85,
+    "label": "Dispatch SLA < 15m p95 (growth-story)"
+  },
+  "inactivity": {
+    "endpointStaleDays": 7,
+    "minSuccessfulDispatchesInWindow": 1
+  },
+  "retry": {
+    "maxAttempts": 5,
+    "cadenceWorkflow": ".github/workflows/partner-retry.yml",
+    "handler": "supabase/functions/partner-retry"
+  },
+  "monitoring": {
+    "window24h": true,
+    "snapshotOutput": "dist/partner-ops-snapshot.json",
+    "workflow": ".github/workflows/partner-ops-monitor.yml",
+    "npmSnapshot": "metrics:partner:ops",
+    "npmAutomation": "partner:ops:run"
+  },
+  "automations": [
+    "lead_dispatch_monitoring",
+    "retry_automation",
+    "failure_alerting",
+    "partner_sla_monitoring",
+    "partner_inactivity_alerts",
+    "webhook_health_monitoring"
+  ]
+}

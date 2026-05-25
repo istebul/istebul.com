@@ -1,0 +1,33 @@
+name: Partner Ops Monitor (P12)
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  partner-ops-monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - name: Run partner ops monitoring + alerts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPS_ALERT_DIGEST_URL: ${{ secrets.OPS_ALERT_DIGEST_URL }}
+          OPS_ALERT_WEBHOOK_SECRET: ${{ secrets.OPS_ALERT_WEBHOOK_SECRET }}
+        run: npm run partner:ops:run
+      - name: Upload partner ops artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: partner-ops-${{ github.run_id }}
+          path: |
+            dist/partner-ops-snapshot.json
+            dist/partner-ops-automation-report.json
+          if-no-files-found: ignore

@@ -1,5 +1,5 @@
 {
-  "version": "p9.0",
+  "version": "p12.0",
   "window": "24h",
   "rules": [
     {
@@ -37,6 +37,60 @@
       "op": "lt",
       "threshold": 70,
       "message": "Lead dispatch success rate below 70% — check partner endpoints and HMAC secrets."
+    },
+    {
+      "id": "partner_sla_p95_breach",
+      "domain": "partner",
+      "severity": "warning",
+      "metric": "partner.dispatchP95Ms",
+      "op": "gt",
+      "threshold": 900000,
+      "message": "Partner dispatch p95 latency exceeds 15m SLA — review endpoint latency and circuit breakers."
+    },
+    {
+      "id": "partner_retry_backlog",
+      "domain": "partner",
+      "severity": "warning",
+      "metric": "partner.retryDueNow",
+      "op": "gte",
+      "threshold": 8,
+      "message": "Large dispatch_failed retry backlog — confirm partner-retry workflow is running."
+    },
+    {
+      "id": "partner_webhook_unhealthy",
+      "domain": "partner",
+      "severity": "error",
+      "metric": "partner.unhealthyEndpointCount",
+      "op": "gte",
+      "threshold": 1,
+      "message": "Partner endpoint marked unhealthy — verify webhook URL and HMAC secret."
+    },
+    {
+      "id": "partner_circuit_open",
+      "domain": "partner",
+      "severity": "warning",
+      "metric": "partner.circuitOpenCount",
+      "op": "gte",
+      "threshold": 1,
+      "message": "Partner circuit breaker open — failover or manual endpoint reset required."
+    },
+    {
+      "id": "partner_inactive_endpoints",
+      "domain": "partner",
+      "severity": "info",
+      "metric": "partner.inactiveEndpointCount",
+      "op": "gte",
+      "threshold": 1,
+      "message": "Active partner endpoint(s) with no successful dispatch in 7d — partner inactivity."
+    },
+    {
+      "id": "partner_dispatch_dead",
+      "domain": "partner",
+      "severity": "error",
+      "metric": "partner.dispatchDeadCount",
+      "op": "gte",
+      "threshold": 3,
+      "message": "Multiple leads reached dispatch_dead after max retries — manual partner ops required."
     },
     {
       "id": "revenue_churn_signal",

@@ -18,6 +18,13 @@
       "domains": ["partner"]
     },
     {
+      "id": "partner_ops_monitor",
+      "cadence": "every_15m",
+      "workflow": ".github/workflows/partner-ops-monitor.yml",
+      "script": "scripts/partner-ops-automation-run.cjs",
+      "domains": ["partner", "operations"]
+    },
+    {
       "id": "ops_automation",
       "cadence": "daily_06_utc",
       "workflow": ".github/workflows/ops-automation.yml",
@@ -39,7 +46,9 @@
     { "npm": "metrics:lifecycle", "script": "scripts/lifecycle-metrics-snapshot.cjs", "output": "dist/lifecycle-metrics-snapshot.json" },
     { "npm": "metrics:ops", "script": "scripts/operational-health-snapshot.cjs", "output": "dist/operational-health-snapshot.json" },
     { "npm": "metrics:ops:center", "script": "scripts/ops-command-center.cjs", "output": "dist/ops-command-center.json" },
-    { "npm": "ops:automation:run", "script": "scripts/ops-automation-run.cjs", "output": "dist/ops-automation-report.json" }
+    { "npm": "ops:automation:run", "script": "scripts/ops-automation-run.cjs", "output": "dist/ops-automation-report.json" },
+    { "npm": "metrics:partner:ops", "script": "scripts/partner-ops-snapshot.cjs", "output": "dist/partner-ops-snapshot.json" },
+    { "npm": "partner:ops:run", "script": "scripts/partner-ops-automation-run.cjs", "output": "dist/partner-ops-automation-report.json" }
   ],
   "realtimeAutomations": [
     { "id": "stripe_webhook", "path": "functions/api/stripe-webhook.js", "domain": "revenue" },

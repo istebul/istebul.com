@@ -68,7 +68,14 @@
         { "id": "b2b_crm_pipeline", "status": "live", "path": "js/features/sales/partner-crm-pipeline.js" },
         { "id": "lead_telegram", "status": "live", "path": "supabase/functions/lead-alert" }
       ],
-      "phase_p9": ["Dispatch fail alerts", "Daily partner quality in command center"]
+      "phase_p9": ["Dispatch fail alerts", "Daily partner quality in command center"],
+      "phase_p12": [
+        "Lead dispatch monitoring (24h p95)",
+        "Retry backlog alerts",
+        "SLA breach + webhook health",
+        "Partner inactivity (7d)",
+        "partner-ops-monitor.yml every 15m"
+      ]
     },
     {
       "id": "analytics",

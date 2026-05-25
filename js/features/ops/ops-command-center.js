@@ -1,5 +1,6 @@
 /**
  * P9 — Unified ops command center rollup (revenue, customer, partner, analytics, lifecycle, ops, AI).
+ * P12 — Enriched partner ops metrics when `partnerOps` snapshot is provided.
  */
 import { buildExecutiveDashboard, EXECUTIVE_WINDOW_DAYS } from '../metrics/executive-dashboard.js';
 import {
@@ -7,6 +8,7 @@ import {
   rollupSeverity24h
 } from './ops-health.js';
 import { evaluateAlertRules } from './ops-alert-engine.js';
+import { buildPartnerOpsSnapshot } from '../partner/partner-ops-monitor.js';
 
 /**
  * @param {object} input
@@ -16,6 +18,7 @@ import { evaluateAlertRules } from './ops-alert-engine.js';
  * @param {Array} [input.operationalEvents]
  * @param {object} [input.lifecycle]
  * @param {number} [input.partnerWebhookFails]
+ * @param {object} [input.partnerOps] pre-built P12 snapshot or raw inputs for buildPartnerOpsSnapshot
  * @param {Array} [input.alertRules]
  * @param {number} [input.windowDays]
  */
@@ -43,6 +46,22 @@ export function buildOpsCommandCenter(input = {}) {
     (input.partnerWebhookFails ?? 0) +
     countEventsWithPrefix(recentOps, 'webhook_');
 
+  let partnerOpsSnapshot = null;
+  if (input.partnerOps?.version === 'p12.0') {
+    partnerOpsSnapshot = input.partnerOps;
+  } else if (
+    input.partnerOps?.dispatchLogs24h ||
+    input.partnerOps?.endpoints ||
+    input.partnerOps?.leads
+  ) {
+    partnerOpsSnapshot = buildPartnerOpsSnapshot({
+      ...input.partnerOps,
+      alertRules: []
+    });
+  }
+
+  const p12 = partnerOpsSnapshot?.metrics?.partner || {};
+
   const checkoutAbandon = (input.analyticsEvents || []).filter(
     (r) => r.event_name === 'checkout_abandoned'
   ).length;
@@ -65,9 +84,19 @@ export function buildOpsCommandCenter(input = {}) {
       warningCount: bySeverity.warning
     },
     partner: {
-      webhookFailCount,
-      dispatchRatePct: executive.partnerLeadQuality?.dispatchRatePct ?? 100,
-      totalLeads: executive.partnerLeadQuality?.totalLeads ?? 0
+      webhookFailCount: Math.max(webhookFailCount, p12.webhookFailCount ?? 0),
+      dispatchRatePct:
+        p12.dispatchRatePct ??
+        executive.partnerLeadQuality?.dispatchRatePct ??
+        100,
+      totalLeads: executive.partnerLeadQuality?.totalLeads ?? 0,
+      dispatchP95Ms: p12.dispatchP95Ms ?? 0,
+      retryDueNow: p12.retryDueNow ?? 0,
+      dispatchDeadCount: p12.dispatchDeadCount ?? 0,
+      unhealthyEndpointCount: p12.unhealthyEndpointCount ?? 0,
+      circuitOpenCount: p12.circuitOpenCount ?? 0,
+      inactiveEndpointCount: p12.inactiveEndpointCount ?? 0,
+      dispatchFailedLeads: p12.dispatchFailedLeads ?? 0
     },
     revenue: {
       cancelAtPeriodEnd: executive.churn?.cancelAtPeriodEnd ?? 0,
@@ -138,11 +167,17 @@ export function buildOpsCommandCenter(input = {}) {
             : 'ok'
       ),
       highlights: [
-        `Dispatch ${executive.partnerLeadQuality?.dispatchRatePct ?? 0}%`,
-        `Win rate ${executive.partnerLeadQuality?.partnerWinRatePct ?? 0}%`,
-        `Webhook fails ${webhookFailCount}`
+        `Dispatch ${alertMetrics.partner.dispatchRatePct ?? 0}% (24h)`,
+        `p95 ${Math.round((alertMetrics.partner.dispatchP95Ms ?? 0) / 1000)}s`,
+        `Retry due ${alertMetrics.partner.retryDueNow ?? 0}`,
+        `Unhealthy EP ${alertMetrics.partner.unhealthyEndpointCount ?? 0}`
       ],
-      automations: ['auto_intake_dispatch', 'partner_retry', 'lead_alert_telegram']
+      automations: [
+        'auto_intake_dispatch',
+        'partner_retry',
+        'partner_ops_monitor',
+        'lead_alert_telegram'
+      ]
     },
     {
       id: 'analytics',
@@ -200,6 +235,15 @@ export function buildOpsCommandCenter(input = {}) {
 
   return {
     version: 'p9.0',
+    partnerOps: partnerOpsSnapshot
+      ? {
+          overallHealth: partnerOpsSnapshot.overallHealth,
+          sla: partnerOpsSnapshot.sla,
+          dispatchMonitoring: partnerOpsSnapshot.dispatchMonitoring,
+          retryAutomation: partnerOpsSnapshot.retryAutomation,
+          webhookHealth: partnerOpsSnapshot.webhookHealth
+        }
+      : null,
     generatedAt: new Date().toISOString(),
     windowDays,
     overallHealth: alerts.overallSeverity === 'ok' ? 'healthy' : alerts.overallSeverity,

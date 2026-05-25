@@ -454,18 +454,22 @@ async function loadOpsCommandCenter() {
   if (!el) return;
 
   const { buildOpsCommandCenter } = await import('./features/ops/ops-command-center.js');
+  const { buildPartnerOpsSnapshot } = await import('./features/partner/partner-ops-monitor.js');
   const windowDays = SCALE_LIMITS.admin.executiveWindowDays || 30;
   const since = new Date(Date.now() - windowDays * 86400000).toISOString();
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const since7d = new Date(Date.now() - 7 * 86400000).toISOString();
 
   let alertRules = [];
+  let partnerOpsConfig = { sla: { dispatchLatencyP95Ms: 900000 } };
   try {
     const rulesRes = await fetch('/data/ops/alert-rules.json');
     if (rulesRes.ok) {
       const rulesJson = await rulesRes.json();
       alertRules = rulesJson.rules || [];
     }
+    const partnerCfgRes = await fetch('/data/partner/partner-ops.json');
+    if (partnerCfgRes.ok) partnerOpsConfig = await partnerCfgRes.json();
   } catch {
     /* optional */
   }
@@ -483,7 +487,9 @@ async function loadOpsCommandCenter() {
     opsRes,
     dispatchRes,
     enrollRes,
-    msgRes
+    msgRes,
+    endpointsRes,
+    retryLeadsRes
   ] = await Promise.all([
     fetchAdminTable(sb, {
       table: 'subscriptions',
@@ -531,9 +537,31 @@ async function loadOpsCommandCenter() {
       direct: () =>
         sb
           .from('partner_lead_dispatch_logs')
-          .select('success, created_at')
+          .select('success, created_at, duration_ms')
           .gte('created_at', since24h)
           .limit(500)
+    }),
+    fetchAdminTable(sb, {
+      table: 'partner_endpoints',
+      limit: 200,
+      direct: () =>
+        sb
+          .from('partner_endpoints')
+          .select(
+            'id, name, route_type, is_active, health_status, circuit_open_until, last_success_at'
+          )
+          .limit(200)
+    }),
+    fetchAdminTable(sb, {
+      table: 'auto_leads',
+      select: 'id, partner_status, next_retry_at, dispatch_retry_count',
+      limit: 1500,
+      direct: () =>
+        sb
+          .from('auto_leads')
+          .select('id, partner_status, next_retry_at, dispatch_retry_count')
+          .in('partner_status', ['dispatch_failed', 'dispatch_dead', 'pending'])
+          .limit(1500)
     }),
     fetchAdminTable(sb, {
       table: 'lifecycle_enrollments',
@@ -566,7 +594,9 @@ async function loadOpsCommandCenter() {
     opsRes,
     dispatchRes,
     enrollRes,
-    msgRes
+    msgRes,
+    endpointsRes,
+    retryLeadsRes
   ]);
 
   const sinceMs = new Date(since).getTime();
@@ -578,12 +608,21 @@ async function loadOpsCommandCenter() {
   const failedDispatch = (dispatchRes.data || []).filter((r) => r.success === false).length;
   const failedMessages = (msgRes.data || []).filter((r) => r.status === 'failed').length;
 
+  const partnerOpsSnapshot = buildPartnerOpsSnapshot({
+    config: partnerOpsConfig,
+    dispatchLogs24h: dispatchRes.data || [],
+    endpoints: endpointsRes.data || [],
+    leads: retryLeadsRes.data || [],
+    alertRules: alertRules.filter((r) => r.domain === 'partner')
+  });
+
   const center = buildOpsCommandCenter({
     analyticsEvents: events,
     subscriptions: subsRes.data || [],
     autoLeads: leadsRes.data || [],
     operationalEvents: opsRes.data || [],
     partnerWebhookFails: failedDispatch,
+    partnerOps: partnerOpsSnapshot,
     lifecycle: {
       enrollments7d: enrollRes.data?.length || 0,
       failedMessages
@@ -592,6 +631,8 @@ async function loadOpsCommandCenter() {
     windowDays,
     analyticsRowCap: SCALE_LIMITS.admin.executiveRowLimit || 2500
   });
+
+  const p12 = center.partnerOps || partnerOpsSnapshot;
 
   const healthColor =
     center.overallHealth === 'healthy' || center.overallHealth === 'ok'
@@ -603,7 +644,7 @@ async function loadOpsCommandCenter() {
   el.innerHTML = `
     ${renderAdminWarningBanner(warnings)}
     <p class="text-muted-sm" style="margin:0 0 16px">
-      P9 Ops Command Center · Son ${windowDays} gün · Export: <code>npm run metrics:ops:center</code> · Daily: <code>npm run ops:automation:run</code>
+      P9 Ops Command Center + P12 Partner Ops · Son ${windowDays} gün · <code>npm run metrics:ops:center</code> · <code>npm run partner:ops:run</code>
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid ${healthColor}">
@@ -628,6 +669,31 @@ async function loadOpsCommandCenter() {
         </div>`
         )
         .join('')}
+    </div>
+
+    <div style="height:18px"></div>
+    <h3 style="margin:0 0 12px">P12 Partner delivery ops (24h)</h3>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Dispatch success</div>
+        <div class="stat-value">${escapeHtml(String(p12.dispatchMonitoring?.successRatePct24h ?? '—'))}%</div>
+        <div class="text-muted-sm">${p12.dispatchMonitoring?.attempts24h ?? 0} attempts · p95 ${Math.round((p12.dispatchMonitoring?.p95DurationMs ?? 0) / 1000)}s</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">SLA (&lt;15m p95)</div>
+        <div class="stat-value">${p12.sla?.breached ? '⚠️ Breach' : '✓ OK'}</div>
+        <div class="text-muted-sm">target ${Math.round((p12.sla?.targetP95Ms ?? 900000) / 60000)}m</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Retry queue</div>
+        <div class="stat-value">${p12.retryAutomation?.retryDueNow ?? 0} due</div>
+        <div class="text-muted-sm">failed ${p12.retryAutomation?.dispatch_failed ?? 0} · dead ${p12.retryAutomation?.dispatch_dead ?? 0}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Webhook health</div>
+        <div class="stat-value">${p12.webhookHealth?.unhealthyCount ?? 0} unhealthy</div>
+        <div class="text-muted-sm">circuit ${p12.webhookHealth?.circuitOpenCount ?? 0} · inactive ${p12.webhookHealth?.inactiveEndpointCount ?? 0}</div>
+      </div>
     </div>
 
     <div style="height:18px"></div>
