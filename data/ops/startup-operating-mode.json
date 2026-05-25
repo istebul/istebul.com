@@ -15,7 +15,8 @@
     { "id": "daily_ops", "owner": "coo", "cadence": "daily_06_utc", "artifact": "dist/ops-automation-report.json", "npm": "ops:automation:run" },
     { "id": "hourly_ceo", "owner": "ceo", "cadence": "hourly", "artifact": "dist/ceo-alerts-report.json", "npm": "ceo:alerts:run" },
     { "id": "weekly_growth", "owner": "vp_growth", "cadence": "weekly", "artifact": "dist/growth-weekly-report.json", "npm": "metrics:growth" },
-    { "id": "weekly_operating", "owner": "ceo", "cadence": "weekly_mon_07_utc", "artifact": "dist/startup-operating-snapshot.json", "npm": "metrics:startup:operating" },
+      { "id": "weekly_operating", "owner": "ceo", "cadence": "weekly_mon_07_utc", "artifact": "dist/startup-operating-snapshot.json", "npm": "metrics:startup:operating" },
+      { "id": "weekly_company_os", "owner": "ceo", "cadence": "weekly_monday_kpi", "artifact": "dist/company-operating-snapshot.json", "npm": "metrics:company:operating" },
     { "id": "monthly_investor", "owner": "ceo", "cadence": "monthly", "artifact": "dist/investor-metrics-snapshot.json", "npm": "metrics:investor" },
     { "id": "monthly_unit_economics", "owner": "vp_revenue", "cadence": "monthly", "artifact": "dist/unit-economics-snapshot.json", "npm": "metrics:unit-economics" }
   ],

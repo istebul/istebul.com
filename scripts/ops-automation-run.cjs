@@ -76,6 +76,17 @@ async function main() {
       }
     }
 
+    const companyOs = spawnSync('node', [path.join(root, 'scripts/company-operating-snapshot.cjs')], {
+      cwd: root,
+      env: process.env,
+      encoding: 'utf8'
+    });
+    report.steps.push({
+      id: 'company_operating_snapshot',
+      ok: companyOs.status === 0,
+      stderr: companyOs.stderr?.slice(0, 500) || null
+    });
+
     const scaleArch = spawnSync('node', [path.join(root, 'scripts/scale-architecture-snapshot.cjs')], {
       cwd: root,
       env: process.env,

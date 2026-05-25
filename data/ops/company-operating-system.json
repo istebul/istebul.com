@@ -1,0 +1,227 @@
+{
+  "version": "p20.0",
+  "updatedAt": "2026-05-24",
+  "vision": "isteBul runs on a documented company operating system — not founder memory. Reviews, priorities, and decisions are repeatable artifacts.",
+  "principles": [
+    "Metrics before opinions — open dist/ snapshots and admin dashboards first",
+    "Write decisions down — no silent pivots; every bet gets a decision record",
+    "Automate the routine — humans handle exceptions and cross-functional tradeoffs",
+    "One owner per metric — RACI from startup operating mode applies",
+    "Blameless incidents — fix systems, document in decision log + runbook"
+  ],
+  "weeklyKpiReview": {
+    "id": "weekly_kpi",
+    "title": "Weekly KPI review",
+    "owner": "ceo",
+    "facilitator": "coo",
+    "cadence": "weekly_monday_09_local",
+    "durationMinutes": 45,
+    "requiredAttendees": ["ceo", "coo", "vp_growth", "vp_product", "vp_revenue"],
+    "optionalAttendees": ["scale_architect"],
+    "preReadArtifacts": [
+      { "label": "Ops automation report", "path": "dist/ops-automation-report.json", "npm": "ops:automation:run" },
+      { "label": "Executive KPI snapshot", "path": "dist/executive-kpi-snapshot.json", "npm": "metrics:executive" },
+      { "label": "Growth weekly report", "path": "dist/growth-weekly-report.json", "npm": "metrics:growth" },
+      { "label": "Unit economics snapshot", "path": "dist/unit-economics-snapshot.json", "npm": "metrics:unit-economics" },
+      { "label": "Company OS snapshot", "path": "dist/company-operating-snapshot.json", "npm": "metrics:company:operating" }
+    ],
+    "agenda": [
+      { "order": 1, "topic": "Red metrics & CEO alerts", "owner": "coo", "minutes": 8 },
+      { "order": 2, "topic": "Revenue & unit economics", "owner": "vp_revenue", "minutes": 10 },
+      { "order": 3, "topic": "Growth & conversion", "owner": "vp_growth", "minutes": 10 },
+      { "order": 4, "topic": "Product & roadmap bets", "owner": "vp_product", "minutes": 10 },
+      { "order": 5, "topic": "Partner & sales pipeline", "owner": "vp_revenue", "minutes": 5 },
+      { "order": 6, "topic": "Decisions & blockers", "owner": "ceo", "minutes": 7 }
+    ],
+    "kpiScorecard": [
+      { "id": "mrr_try", "label": "MRR (TRY)", "owner": "vp_revenue", "source": "metrics:executive", "targetDirection": "up" },
+      { "id": "funnel_cr", "label": "Funnel conversion %", "owner": "vp_growth", "source": "metrics:growth", "targetDirection": "up" },
+      { "id": "ltv_cac", "label": "LTV:CAC", "owner": "vp_revenue", "source": "metrics:unit-economics", "target": 3, "targetDirection": "gte" },
+      { "id": "dispatch_success", "label": "Partner dispatch success %", "owner": "coo", "source": "metrics:ops:center", "target": 85, "targetDirection": "gte" },
+      { "id": "lifecycle_success", "label": "Lifecycle message success %", "owner": "vp_growth", "source": "metrics:lifecycle", "target": 95, "targetDirection": "gte" },
+      { "id": "churn_signal", "label": "Cancel-at-period-end count", "owner": "vp_revenue", "source": "metrics:executive", "targetDirection": "down" },
+      { "id": "ops_health", "label": "Ops overall health", "owner": "coo", "source": "metrics:ops:center", "targetDirection": "healthy" }
+    ],
+    "outputs": [
+      "Updated decision-log entries for the week",
+      "Top 3 priorities for next sprint (roadmap queue)",
+      "Escalations assigned with owner + due date"
+    ]
+  },
+  "productReviewCadence": {
+    "id": "product_review",
+    "title": "Product review",
+    "owner": "vp_product",
+    "cadence": "biweekly_wednesday_14_local",
+    "durationMinutes": 60,
+    "requiredAttendees": ["vp_product", "vp_growth", "scale_architect"],
+    "preReadArtifacts": [
+      { "label": "Platform expansion roadmap", "path": "data/platform/expansion-roadmap.json" },
+      { "label": "CRO experiments", "path": "data/growth/experiments.json" },
+      { "label": "Product feedback themes", "path": "data/product/feedback-themes.json" }
+    ],
+    "agenda": [
+      { "order": 1, "topic": "Shipped vs planned (last 2 weeks)", "minutes": 15 },
+      { "order": 2, "topic": "Decision engine & AI guardrails", "minutes": 15 },
+      { "order": 3, "topic": "Category / vertical bets (P8)", "minutes": 15 },
+      { "order": 4, "topic": "UX & conversion debt", "minutes": 10 },
+      { "order": 5, "topic": "Prioritization queue — RICE top 5", "minutes": 15 }
+    ],
+    "outputs": [
+      "RICE scores updated in roadmap queue",
+      "Go / no-go on experiments",
+      "Decision records for scope changes"
+    ]
+  },
+  "growthReviewCadence": {
+    "id": "growth_review",
+    "title": "Growth review",
+    "owner": "vp_growth",
+    "cadence": "weekly_tuesday_10_local",
+    "durationMinutes": 45,
+    "requiredAttendees": ["vp_growth", "vp_product"],
+    "preReadArtifacts": [
+      { "label": "Growth weekly report", "path": "dist/growth-weekly-report.json", "npm": "metrics:growth" },
+      { "label": "Growth command center", "path": "dist/growth-command-center.json", "npm": "metrics:growth:command" },
+      { "label": "Paid CAC report", "path": "dist/paid-cac-report.json", "npm": "metrics:paid-cac" },
+      { "label": "Lifecycle metrics", "path": "dist/lifecycle-metrics-snapshot.json", "npm": "metrics:lifecycle" }
+    ],
+    "agenda": [
+      { "order": 1, "topic": "Acquisition & CAC", "minutes": 12 },
+      { "order": 2, "topic": "Funnel & CRO experiments", "minutes": 12 },
+      { "order": 3, "topic": "Lifecycle & retention", "minutes": 12 },
+      { "order": 4, "topic": "SEO / organic (if applicable)", "minutes": 5 },
+      { "order": 5, "topic": "Next week experiments", "minutes": 9 }
+    ],
+    "outputs": [
+      "Experiment start/stop decisions logged",
+      "Budget reallocation note (if paid)",
+      "Lifecycle flow tweaks with owner"
+    ]
+  },
+  "salesReviewCadence": {
+    "id": "sales_review",
+    "title": "Sales & partner review",
+    "owner": "vp_revenue",
+    "cadence": "weekly_thursday_11_local",
+    "durationMinutes": 45,
+    "requiredAttendees": ["vp_revenue", "coo"],
+    "preReadArtifacts": [
+      { "label": "Partner ops snapshot", "path": "dist/partner-ops-snapshot.json", "npm": "metrics:partner:ops" },
+      { "label": "Auto leads CRM", "adminPage": "auto-leads" },
+      { "label": "B2B pipeline", "path": "js/features/sales/partner-crm-pipeline.js" }
+    ],
+    "agenda": [
+      { "order": 1, "topic": "Pipeline & won/lost", "minutes": 12 },
+      { "order": 2, "topic": "Partner dispatch & SLA", "minutes": 12 },
+      { "order": 3, "topic": "Stripe & RevOps flows", "minutes": 10 },
+      { "order": 4, "topic": "Partner applications & onboarding", "minutes": 8 },
+      { "order": 5, "topic": "Settlement & commission (manual gaps)", "minutes": 8 }
+    ],
+    "outputs": [
+      "Partner tier actions",
+      "Sales follow-ups assigned",
+      "RevOps automation gaps → ops backlog"
+    ]
+  },
+  "incidentReview": {
+    "id": "incident_review",
+    "title": "Incident review (postmortem)",
+    "owner": "coo",
+    "trigger": "severity_critical_or_error_within_24h",
+    "cadence": "ad_hoc_within_48h_of_close",
+    "durationMinutes": 30,
+    "severityLevels": [
+      { "id": "sev1", "label": "SEV1", "definition": "Revenue down, checkout broken, data loss, security breach" },
+      { "id": "sev2", "label": "SEV2", "definition": "Major feature degraded, partner dispatch mass fail" },
+      { "id": "sev3", "label": "SEV3", "definition": "Isolated errors, non-critical regressions" }
+    ],
+    "preReadArtifacts": [
+      { "label": "Ops command center", "path": "dist/ops-command-center.json", "npm": "metrics:ops:center" },
+      { "label": "Operational events", "adminPage": "observability" },
+      { "label": "Alert rules triggered", "path": "data/ops/alert-rules.json" }
+    ],
+    "postmortemTemplate": {
+      "sections": [
+        "summary",
+        "timeline",
+        "root_cause",
+        "customer_impact",
+        "what_went_well",
+        "what_went_wrong",
+        "action_items",
+        "decision_record_id"
+      ]
+    },
+    "outputs": [
+      "Decision log entry type=incident",
+      "Runbook or alert rule update PR",
+      "Owner + due date per action item"
+    ]
+  },
+  "roadmapPrioritizationFramework": {
+    "id": "rice",
+    "name": "RICE (Reach × Impact × Confidence / Effort)",
+    "owner": "vp_product",
+    "reviewCadence": "weekly_kpi + biweekly_product",
+    "formula": "score = (reach * impact * confidence) / effort",
+    "scale": {
+      "reach": { "min": 1, "max": 10, "definition": "Users or leads affected per quarter" },
+      "impact": { "min": 0.25, "max": 3, "definition": "0.25 minimal … 3 massive on north-star metric" },
+      "confidence": { "min": 0.5, "max": 1, "definition": "Evidence strength 50–100%" },
+      "effort": { "min": 0.5, "max": 10, "definition": "Person-weeks" }
+    },
+    "queues": [
+      { "id": "now", "label": "Now (this sprint)", "maxItems": 3 },
+      { "id": "next", "label": "Next", "maxItems": 7 },
+      { "id": "later", "label": "Later", "maxItems": 20 }
+    ],
+    "linkedRoadmaps": [
+      "data/platform/expansion-roadmap.json",
+      "data/ops/automation-roadmap.json",
+      "data/ops/startup-operating-mode.json"
+    ],
+    "northStarMetrics": ["qualified_leads", "pro_subscriptions", "partner_dispatch_success_pct"]
+  },
+  "decisionDocumentation": {
+    "id": "decision_records",
+    "title": "Decision documentation",
+    "owner": "ceo",
+    "storagePath": "data/ops/decision-log.json",
+    "templatePath": "docs/templates/DECISION_RECORD_TEMPLATE.md",
+    "requiredFields": [
+      "id",
+      "title",
+      "status",
+      "owner",
+      "decidedAt",
+      "context",
+      "options",
+      "decision",
+      "consequences",
+      "reviewBy"
+    ],
+    "statuses": ["proposed", "approved", "superseded", "incident_closed"],
+    "types": ["strategy", "product", "growth", "revenue", "ops", "incident"],
+    "rules": [
+      "Any change affecting MRR, pricing, or partner economics requires a record before ship",
+      "Experiments > 2 weeks require approved record or linked CRO ticket",
+      "Incidents SEV1/2 require incident-type record within 48h"
+    ]
+  },
+  "operatingCalendar": [
+    { "day": "monday", "reviews": ["weekly_kpi"] },
+    { "day": "tuesday", "reviews": ["growth_review"] },
+    { "day": "wednesday", "reviews": ["product_review"], "note": "biweekly" },
+    { "day": "thursday", "reviews": ["sales_review"] },
+    { "day": "daily", "reviews": ["daily_ops"], "npm": "ops:automation:run" },
+    { "day": "ad_hoc", "reviews": ["incident_review"] }
+  ],
+  "founderIndependenceChecks": [
+    { "id": "snapshots_automated", "check": "Daily ops + weekly growth snapshots in CI", "owner": "coo" },
+    { "id": "decision_log_current", "check": "≥1 decision record in last 14 days or explicit 'no decisions'", "owner": "ceo" },
+    { "id": "runbooks_linked", "check": "Incidents link to docs/ and data/ops/alert-rules", "owner": "coo" },
+    { "id": "roadmap_scored", "check": "Top 3 'now' items have RICE scores", "owner": "vp_product" },
+    { "id": "roles_documented", "check": "Executive RACI in startup-operating-mode.json", "owner": "ceo" }
+  ]
+}

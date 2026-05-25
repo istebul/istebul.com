@@ -32,4 +32,5 @@ jobs:
             dist/ops-automation-report.json
             dist/startup-operating-snapshot.json
             dist/scale-architecture-report.json
+            dist/company-operating-snapshot.json
           if-no-files-found: ignore

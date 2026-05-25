@@ -222,6 +222,9 @@ function showPage(name, el) {
   if (name === 'scale-architecture') {
     loadScaleArchitectureCenter();
   }
+  if (name === 'company-operating-system') {
+    loadCompanyOperatingSystem();
+  }
   if (name === 'dashboard-ceo') {
     loadCompanyDashboard('ceo', 'dashboard-ceo-root');
   }
@@ -1020,6 +1023,38 @@ async function loadScaleArchitectureCenter() {
 
   const report = buildScaleArchitectureReport({ config, liveSignals });
   el.innerHTML = renderScaleArchitectureCenter(report, escapeHtml);
+}
+
+async function loadCompanyOperatingSystem() {
+  const el = document.getElementById('company-operating-system-root');
+  if (!el) return;
+
+  const { buildCompanyOperatingSnapshot } = await import(
+    './features/ops/company-operating-system.js'
+  );
+  const { renderCompanyOperatingSystem } = await import(
+    './features/ops/company-operating-views.js'
+  );
+
+  let config = { version: 'p20.0' };
+  let decisionLog = { records: [], roadmapQueue: [] };
+  try {
+    const [cfgRes, logRes] = await Promise.all([
+      fetch('/data/ops/company-operating-system.json'),
+      fetch('/data/ops/decision-log.json')
+    ]);
+    if (cfgRes.ok) config = await cfgRes.json();
+    if (logRes.ok) decisionLog = await logRes.json();
+  } catch {
+    /* optional */
+  }
+
+  const snapshot = buildCompanyOperatingSnapshot({
+    config,
+    decisionLog,
+    artifactStatus: { opsAutomation: true }
+  });
+  el.innerHTML = renderCompanyOperatingSystem(snapshot, escapeHtml);
 }
 
 async function loadExecutiveKpis() {

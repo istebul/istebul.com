@@ -114,6 +114,7 @@ Live rollup: **Admin → Startup Operating Center** or `npm run metrics:startup:
 
 ## Related docs
 
+- [COMPANY_OPERATING_SYSTEM.md](./COMPANY_OPERATING_SYSTEM.md) — P20 founder-independent reviews & decisions
 - [OPS_AUTOMATION_ROADMAP.md](./OPS_AUTOMATION_ROADMAP.md)
 - [PLATFORM_EXPANSION_ROADMAP.md](./PLATFORM_EXPANSION_ROADMAP.md)
 - [GLOBAL_EXPANSION_READINESS.md](./GLOBAL_EXPANSION_READINESS.md)
