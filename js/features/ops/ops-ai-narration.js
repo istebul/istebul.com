@@ -1,7 +1,6 @@
 /**
  * P15 — Bounded LLM narration for ops decision brief (admin only).
  */
-import { canCallAiNarration } from '../../core/scale-limits.js';
 import { buildSanitizedOpsBriefForAi } from './ops-decision-assistant.js';
 
 const OPS_AI_BUDGET_KEY = 'istebul_ops_ai_narration_budget';

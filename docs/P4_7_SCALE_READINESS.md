@@ -148,7 +148,7 @@ Checkout via Netlify `create-checkout.js`; billing portal; webhooks to Supabase 
 
 | Path | Cost driver |
 |------|-------------|
-| `/ai-proxy` (Groq llama-3.1-8b) | Optional Auto narration; 700 max tokens; 25 req/min/IP |
+| `/ai-proxy` (Groq llama-3.1-8b) | Optional Auto narration; 400 max tokens; 20 req/min/IP; prompt cache 10m |
 | Decision intelligence | Mostly deterministic; no LLM on hot path |
 
 **Risk model (illustrative):**

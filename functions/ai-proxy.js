@@ -35,7 +35,8 @@ function promptCacheKey(prompt) {
   for (let i = 0; i < prompt.length; i += 1) {
     hash = (hash * 31 + prompt.charCodeAt(i)) | 0;
   }
-  return `${hash}:${prompt.length}`;
+  const prefix = prompt.slice(0, 64);
+  return `${hash}:${prompt.length}:${prefix}`;
 }
 
 function readPromptCache(prompt) {
@@ -115,15 +116,6 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'Forbidden' }, 403, origin);
     }
 
-    const clientIp = getClientIp(request);
-    if (!checkRateLimit(clientIp, AI_RATE_LIMIT_PER_MIN, 60_000)) {
-      return json({ error: 'Too many requests' }, 429, origin);
-    }
-
-    if (!env.GROQ_API_KEY) {
-      return json({ error: 'GROQ_API_KEY missing' }, 500, origin);
-    }
-
     const body = await request.json().catch(() => ({}));
     const prompt = body.prompt || body.message || body.input;
 
@@ -137,7 +129,16 @@ export async function onRequestPost({ request, env }) {
 
     const cached = readPromptCache(prompt);
     if (cached) {
-      return json({ result: cached, cached: true }, 200, origin);
+      return json({ result: cached }, 200, origin);
+    }
+
+    const clientIp = getClientIp(request);
+    if (!checkRateLimit(clientIp, AI_RATE_LIMIT_PER_MIN, 60_000)) {
+      return json({ error: 'Too many requests' }, 429, origin);
+    }
+
+    if (!env.GROQ_API_KEY) {
+      return json({ error: 'GROQ_API_KEY missing' }, 500, origin);
     }
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {

@@ -45,24 +45,43 @@ export function dedupeAnalyticsQueue(queue, eventName, sessionId) {
 
 const AI_SESSION_KEY = 'istebul_ai_narration_budget';
 
+function readAiNarrationBudget(now = Date.now()) {
+  const hourMs = 60 * 60 * 1000;
+  const max = SCALE_LIMITS.aiProxy.sessionCallsPerHour;
+  const raw = sessionStorage.getItem(AI_SESSION_KEY);
+  let budget = raw ? JSON.parse(raw) : { count: 0, windowStart: now };
+
+  if (now - budget.windowStart > hourMs) {
+    budget = { count: 0, windowStart: now };
+  }
+
+  return { budget, max, hourMs };
+}
+
+/**
+ * Check narration budget without consuming a slot (UI / gating).
+ */
+export function hasAiNarrationBudget() {
+  if (typeof sessionStorage === 'undefined') return true;
+
+  try {
+    const { budget, max } = readAiNarrationBudget();
+    return budget.count < max;
+  } catch {
+    return true;
+  }
+}
+
 /**
  * Client-side Groq narration budget (per tab session / hour).
  */
 export function canCallAiNarration() {
   if (typeof sessionStorage === 'undefined') return true;
 
-  const hourMs = 60 * 60 * 1000;
-  const max = SCALE_LIMITS.aiProxy.sessionCallsPerHour;
   const now = Date.now();
 
   try {
-    const raw = sessionStorage.getItem(AI_SESSION_KEY);
-    let budget = raw ? JSON.parse(raw) : { count: 0, windowStart: now };
-
-    if (now - budget.windowStart > hourMs) {
-      budget = { count: 0, windowStart: now };
-    }
-
+    const { budget, max } = readAiNarrationBudget(now);
     if (budget.count >= max) return false;
 
     budget.count += 1;
