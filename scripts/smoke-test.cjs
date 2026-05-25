@@ -104,6 +104,14 @@ assert(monitoringSource.includes('init(') && appSource.includes('monitoring.init
 assert(fs.existsSync(path.join(root, 'js/core/error-boundary.js')), 'Error boundary module is missing.');
 const aiProxy = read('functions/ai-proxy.js');
 assert(aiProxy.includes('checkRateLimit'), 'AI proxy rate limiting is missing.');
+assert(
+  aiProxy.includes("'https://istebul.com'") && aiProxy.includes('ALLOWED_ORIGINS'),
+  'AI proxy CORS must allowlist https://istebul.com (functions/ai-proxy.js).'
+);
+assert(
+  !/Access-Control-Allow-Origin['"]\s*:\s*['"]\*['"]/.test(aiProxy),
+  'AI proxy must not use wildcard CORS.'
+);
 const ui = read('js/ui/ui.js');
 assert(ui.includes("from '../core/security.js'"), 'UI should use shared security helpers.');
 assert(ui.includes('setupTheme()'), 'Theme setup is missing.');
