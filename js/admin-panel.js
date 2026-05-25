@@ -213,6 +213,9 @@ function showPage(name, el) {
   if (name === 'observability') {
     loadOperationalHealth();
   }
+  if (name === 'ops-command-center') {
+    loadOpsCommandCenter();
+  }
 }
 
 async function loadOperationalHealth() {
@@ -277,6 +280,7 @@ async function loadOperationalHealth() {
 
   const warnings = collectAdminWarnings([opsEventsRes, dispatchRes, auditRes, leadsRes]);
   const allOpsEvents = opsEventsRes.data || [];
+  const sinceMs = new Date(since).getTime();
   const severityRows = rollupSeverity24h(allOpsEvents);
   const bySeverity = { critical: 0, error: 0, warning: 0, info: 0 };
   for (const row of severityRows) {
@@ -290,7 +294,6 @@ async function loadOperationalHealth() {
       ['critical', 'error'].includes(String(row.severity || '').toLowerCase())
     );
   });
-  const sinceMs = new Date(since).getTime();
   const failedDispatchLogs = (dispatchRes.data || []).filter(
     (row) => row.success === false && new Date(row.created_at).getTime() >= sinceMs
   );
@@ -443,6 +446,221 @@ async function loadOperationalHealth() {
         </tbody>
       </table>
     ` : '<p class="empty">Audit kaydı yok.</p>'}
+  `;
+}
+
+async function loadOpsCommandCenter() {
+  const el = document.getElementById('ops-command-center-root');
+  if (!el) return;
+
+  const { buildOpsCommandCenter } = await import('./features/ops/ops-command-center.js');
+  const windowDays = SCALE_LIMITS.admin.executiveWindowDays || 30;
+  const since = new Date(Date.now() - windowDays * 86400000).toISOString();
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const since7d = new Date(Date.now() - 7 * 86400000).toISOString();
+
+  let alertRules = [];
+  try {
+    const rulesRes = await fetch('/data/ops/alert-rules.json');
+    if (rulesRes.ok) {
+      const rulesJson = await rulesRes.json();
+      alertRules = rulesJson.rules || [];
+    }
+  } catch {
+    /* optional */
+  }
+
+  const analyticsSelect =
+    'event_name, session_id, attribution, properties, revenue_cents, funnel, created_at';
+  const subSelect = 'status, current_period_start, current_period_end, cancel_at_period_end';
+  const leadSelect =
+    'lead_score, partner_status, estimated_revenue, actual_revenue, created_at';
+
+  const [
+    subsRes,
+    leadsRes,
+    eventsRes,
+    opsRes,
+    dispatchRes,
+    enrollRes,
+    msgRes
+  ] = await Promise.all([
+    fetchAdminTable(sb, {
+      table: 'subscriptions',
+      select: subSelect,
+      limit: 2000,
+      direct: (expr) => sb.from('subscriptions').select(expr || subSelect).limit(2000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'auto_leads',
+      select: leadSelect,
+      limit: 5000,
+      direct: (expr) =>
+        sb.from('auto_leads').select(expr || leadSelect).gte('created_at', since).limit(5000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'analytics_events',
+      select: analyticsSelect,
+      limit: SCALE_LIMITS.admin.executiveRowLimit || 2500,
+      order: { column: 'created_at', ascending: false },
+      direct: (expr) =>
+        sb
+          .from('analytics_events')
+          .select(expr || analyticsSelect)
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(SCALE_LIMITS.admin.executiveRowLimit || 2500)
+    }),
+    fetchAdminTable(sb, {
+      table: 'operational_events',
+      select: 'severity, category, event_name, created_at, source',
+      limit: 2000,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb
+          .from('operational_events')
+          .select('severity, category, event_name, created_at, source')
+          .gte('created_at', since24h)
+          .order('created_at', { ascending: false })
+          .limit(2000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'partner_lead_dispatch_logs',
+      limit: 500,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb
+          .from('partner_lead_dispatch_logs')
+          .select('success, created_at')
+          .gte('created_at', since24h)
+          .limit(500)
+    }),
+    fetchAdminTable(sb, {
+      table: 'lifecycle_enrollments',
+      select: 'flow_id, status, enrolled_at',
+      limit: 3000,
+      direct: () =>
+        sb
+          .from('lifecycle_enrollments')
+          .select('flow_id, status, enrolled_at')
+          .gte('enrolled_at', since7d)
+          .limit(3000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'lifecycle_messages',
+      select: 'status, created_at',
+      limit: 3000,
+      direct: () =>
+        sb
+          .from('lifecycle_messages')
+          .select('status, created_at')
+          .gte('created_at', since7d)
+          .limit(3000)
+    })
+  ]);
+
+  const warnings = collectAdminWarnings([
+    subsRes,
+    leadsRes,
+    eventsRes,
+    opsRes,
+    dispatchRes,
+    enrollRes,
+    msgRes
+  ]);
+
+  const sinceMs = new Date(since).getTime();
+  const events = (eventsRes.data || []).filter((row) => {
+    const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
+    return ts >= sinceMs;
+  });
+
+  const failedDispatch = (dispatchRes.data || []).filter((r) => r.success === false).length;
+  const failedMessages = (msgRes.data || []).filter((r) => r.status === 'failed').length;
+
+  const center = buildOpsCommandCenter({
+    analyticsEvents: events,
+    subscriptions: subsRes.data || [],
+    autoLeads: leadsRes.data || [],
+    operationalEvents: opsRes.data || [],
+    partnerWebhookFails: failedDispatch,
+    lifecycle: {
+      enrollments7d: enrollRes.data?.length || 0,
+      failedMessages
+    },
+    alertRules,
+    windowDays,
+    analyticsRowCap: SCALE_LIMITS.admin.executiveRowLimit || 2500
+  });
+
+  const healthColor =
+    center.overallHealth === 'healthy' || center.overallHealth === 'ok'
+      ? 'var(--success)'
+      : center.overallHealth === 'critical'
+        ? 'var(--danger)'
+        : 'var(--warning)';
+
+  el.innerHTML = `
+    ${renderAdminWarningBanner(warnings)}
+    <p class="text-muted-sm" style="margin:0 0 16px">
+      P9 Ops Command Center · Son ${windowDays} gün · Export: <code>npm run metrics:ops:center</code> · Daily: <code>npm run ops:automation:run</code>
+    </p>
+
+    <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid ${healthColor}">
+      <strong>Overall: ${escapeHtml(center.overallHealth)}</strong>
+      <span class="text-muted-sm"> · ${center.alerts.triggeredCount} alert rule(s) triggered</span>
+      <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
+        ${(center.executiveSummary || []).slice(0, 5).map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
+      </ul>
+    </div>
+
+    <h3 style="margin:0 0 12px">Automation domains</h3>
+    <div class="stat-grid">
+      ${center.domains
+        .map(
+          (d) => `
+        <div class="stat-card">
+          <div class="stat-label">${escapeHtml(d.label)}</div>
+          <div class="stat-value" style="font-size:14px">${escapeHtml(d.status)}</div>
+          <ul class="text-muted-sm" style="margin:8px 0 0;padding-left:16px;font-size:12px">
+            ${d.highlights.map((h) => `<li>${escapeHtml(h)}</li>`).join('')}
+          </ul>
+        </div>`
+        )
+        .join('')}
+    </div>
+
+    <div style="height:18px"></div>
+    <h3 style="margin:0 0 12px">Triggered alerts</h3>
+    ${
+      center.alerts.triggered.length
+        ? `<table class="table">
+        <thead><tr><th>Severity</th><th>Domain</th><th>Message</th><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          ${center.alerts.triggered
+            .map(
+              (a) => `
+            <tr>
+              <td><span class="badge ${a.severity === 'critical' ? 'badge-red' : 'badge-yellow'}">${escapeHtml(a.severity)}</span></td>
+              <td>${escapeHtml(a.domain)}</td>
+              <td>${escapeHtml(a.message)}</td>
+              <td><code>${escapeHtml(a.metric)}</code></td>
+              <td>${escapeHtml(String(a.value))}</td>
+            </tr>`
+            )
+            .join('')}
+        </tbody>
+      </table>`
+        : '<p class="empty">No threshold alerts in current window.</p>'
+    }
+
+    <div style="height:18px"></div>
+    <h3 style="margin:0 0 12px">Runbooks</h3>
+    <ul style="font-size:13px;line-height:1.6">
+      ${center.runbooks
+        .map((r) => `<li><code>${escapeHtml(r.path)}</code> — ${escapeHtml(r.label)}</li>`)
+        .join('')}
+    </ul>
   `;
 }
 

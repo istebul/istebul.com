@@ -35,25 +35,27 @@ async function main() {
       .gte('created_at', since)
   ]);
 
-  console.log(
-    JSON.stringify(
-      {
-        generated_at: new Date().toISOString(),
-        window: '24h',
-        severity: severity.data,
-        health_rollup: health.data,
-        recent_critical_errors: recent.data,
-        partner_webhook_fails: dispatchFails.data?.length || 0,
-        errors: {
-          severity: severity.error?.message,
-          health: health.error?.message,
-          recent: recent.error?.message
-        }
-      },
-      null,
-      2
-    )
-  );
+  const payload = {
+    generated_at: new Date().toISOString(),
+    window: '24h',
+    severity: severity.data,
+    health_rollup: health.data,
+    recent_critical_errors: recent.data,
+    partner_webhook_fails: dispatchFails.data?.length || 0,
+    errors: {
+      severity: severity.error?.message,
+      health: health.error?.message,
+      recent: recent.error?.message
+    }
+  };
+
+  const fs = require('fs');
+  const path = require('path');
+  const out = path.join(__dirname, '..', 'dist', 'operational-health-snapshot.json');
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, JSON.stringify(payload, null, 2));
+
+  console.log(JSON.stringify(payload, null, 2));
 }
 
 main().catch((err) => {

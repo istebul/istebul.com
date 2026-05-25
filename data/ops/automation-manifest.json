@@ -1,0 +1,60 @@
+{
+  "version": "p9.0",
+  "updatedAt": "2026-05-24",
+  "mission": "Run isteBul as an automation-first digital company with scheduled rollups, threshold alerts, and a single ops command center.",
+  "scheduledJobs": [
+    {
+      "id": "lifecycle_cron",
+      "cadence": "hourly",
+      "workflow": ".github/workflows/lifecycle-cron.yml",
+      "handler": "supabase/functions/lifecycle-cron",
+      "domains": ["customer", "lifecycle", "revenue"]
+    },
+    {
+      "id": "partner_retry",
+      "cadence": "every_15m",
+      "workflow": ".github/workflows/partner-retry.yml",
+      "handler": "supabase/functions/partner-retry",
+      "domains": ["partner"]
+    },
+    {
+      "id": "ops_automation",
+      "cadence": "daily_06_utc",
+      "workflow": ".github/workflows/ops-automation.yml",
+      "script": "scripts/ops-automation-run.cjs",
+      "domains": ["operations", "analytics", "revenue", "partner", "lifecycle"]
+    },
+    {
+      "id": "production_deploy",
+      "cadence": "on_push_main",
+      "workflow": ".github/workflows/production-deploy.yml",
+      "domains": ["operations"]
+    }
+  ],
+  "snapshotScripts": [
+    { "npm": "metrics:executive", "script": "scripts/executive-kpi-snapshot.cjs", "output": "dist/executive-kpi-snapshot.json" },
+    { "npm": "metrics:investor", "script": "scripts/investor-metrics-snapshot.cjs", "output": "dist/investor-metrics-snapshot.json" },
+    { "npm": "metrics:growth", "script": "scripts/growth-weekly-report.cjs", "output": "dist/growth-weekly-report.json" },
+    { "npm": "metrics:growth:command", "script": "scripts/growth-command-center.cjs", "output": "dist/growth-command-center.json" },
+    { "npm": "metrics:lifecycle", "script": "scripts/lifecycle-metrics-snapshot.cjs", "output": "dist/lifecycle-metrics-snapshot.json" },
+    { "npm": "metrics:ops", "script": "scripts/operational-health-snapshot.cjs", "output": "dist/operational-health-snapshot.json" },
+    { "npm": "metrics:ops:center", "script": "scripts/ops-command-center.cjs", "output": "dist/ops-command-center.json" },
+    { "npm": "ops:automation:run", "script": "scripts/ops-automation-run.cjs", "output": "dist/ops-automation-report.json" }
+  ],
+  "realtimeAutomations": [
+    { "id": "stripe_webhook", "path": "functions/api/stripe-webhook.js", "domain": "revenue" },
+    { "id": "auto_intake_dispatch", "path": "supabase/functions/auto-intake", "domain": "partner" },
+    { "id": "lead_alert_telegram", "path": "supabase/functions/lead-alert", "domain": "partner" },
+    { "id": "ops_alert_digest", "path": "supabase/functions/ops-alert-digest", "domain": "operations" },
+    { "id": "analytics_ingest", "path": "supabase/functions/analytics-ingest", "domain": "analytics" },
+    { "id": "ops_ingest", "path": "supabase/functions/ops-ingest", "domain": "operations" },
+    { "id": "ai_proxy", "path": "functions/ai-proxy.js", "domain": "ai" }
+  ],
+  "adminSurfaces": [
+    { "page": "investor-metrics", "label": "Executive KPIs" },
+    { "page": "observability", "label": "Observability" },
+    { "page": "ops-command-center", "label": "Ops Command Center" },
+    { "page": "platform-analytics", "label": "Platform Analytics" },
+    { "page": "partner-dispatch-logs", "label": "Dispatch Logs" }
+  ]
+}

@@ -1,0 +1,33 @@
+name: Ops Automation (P9)
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  ops-automation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - name: Run daily ops automation
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPS_ALERT_DIGEST_URL: ${{ secrets.OPS_ALERT_DIGEST_URL }}
+          OPS_ALERT_WEBHOOK_SECRET: ${{ secrets.OPS_ALERT_WEBHOOK_SECRET }}
+        run: npm run ops:automation:run
+      - name: Upload ops artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-automation-${{ github.run_id }}
+          path: |
+            dist/ops-command-center.json
+            dist/ops-automation-report.json
+          if-no-files-found: ignore

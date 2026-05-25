@@ -47,16 +47,25 @@ async function main() {
     msgStats[key] = (msgStats[key] || 0) + 1;
   }
 
-  console.log(JSON.stringify({
+  const payload = {
     period: '7d',
     since,
     enrollments_by_flow: byFlow,
     messages: msgStats,
     totals: {
       enrollments: enrollments?.length || 0,
-      messages: messages?.length || 0
+      messages: messages?.length || 0,
+      failed_messages: (messages || []).filter((m) => m.status === 'failed').length
     }
-  }, null, 2));
+  };
+
+  const fs = require('fs');
+  const path = require('path');
+  const out = path.join(__dirname, '..', 'dist', 'lifecycle-metrics-snapshot.json');
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, JSON.stringify(payload, null, 2));
+
+  console.log(JSON.stringify(payload, null, 2));
 }
 
 main().catch((err) => {

@@ -1,0 +1,87 @@
+{
+  "version": "p9.0",
+  "window": "24h",
+  "rules": [
+    {
+      "id": "ops_critical_events",
+      "domain": "operations",
+      "severity": "critical",
+      "metric": "ops.criticalCount",
+      "op": "gte",
+      "threshold": 1,
+      "message": "Critical operational events in last 24h — check Observability and Stripe/partner webhooks."
+    },
+    {
+      "id": "ops_error_spike",
+      "domain": "operations",
+      "severity": "error",
+      "metric": "ops.errorCount",
+      "op": "gte",
+      "threshold": 10,
+      "message": "Error event spike (≥10/24h) — review ops_health rollup."
+    },
+    {
+      "id": "partner_dispatch_fails",
+      "domain": "partner",
+      "severity": "warning",
+      "metric": "partner.webhookFailCount",
+      "op": "gte",
+      "threshold": 5,
+      "message": "Partner webhook/dispatch failures elevated — run partner-retry workflow."
+    },
+    {
+      "id": "partner_dispatch_rate_low",
+      "domain": "partner",
+      "severity": "warning",
+      "metric": "partner.dispatchRatePct",
+      "op": "lt",
+      "threshold": 70,
+      "message": "Lead dispatch success rate below 70% — check partner endpoints and HMAC secrets."
+    },
+    {
+      "id": "revenue_churn_signal",
+      "domain": "revenue",
+      "severity": "warning",
+      "metric": "revenue.cancelAtPeriodEnd",
+      "op": "gte",
+      "threshold": 3,
+      "message": "Multiple subscriptions set to cancel at period end — retention outreach."
+    },
+    {
+      "id": "revenue_checkout_abandon",
+      "domain": "revenue",
+      "severity": "info",
+      "metric": "revenue.checkoutAbandonEvents",
+      "op": "gte",
+      "threshold": 20,
+      "message": "Checkout abandon volume high — confirm lifecycle checkout_abandon_recovery enrollments."
+    },
+    {
+      "id": "lifecycle_stalled",
+      "domain": "lifecycle",
+      "severity": "warning",
+      "metric": "lifecycle.failedMessages",
+      "op": "gte",
+      "threshold": 5,
+      "message": "Lifecycle message failures — verify email provider and lifecycle-cron."
+    },
+    {
+      "id": "analytics_sample_cap",
+      "domain": "analytics",
+      "severity": "info",
+      "metric": "analytics.eventsAtCap",
+      "op": "eq",
+      "threshold": 1,
+      "message": "Analytics export hit row cap — warehouse upgrade recommended for Series A diligence."
+    },
+    {
+      "id": "ai_rate_limit_pressure",
+      "domain": "ai",
+      "severity": "info",
+      "metric": "ai.proxyRateLimitHits",
+      "op": "gte",
+      "threshold": 15,
+      "message": "AI proxy rate-limit pressure — review Groq quota and session caps."
+    }
+  ]
+}
