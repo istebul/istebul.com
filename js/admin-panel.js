@@ -1234,6 +1234,29 @@ async function loadStrategicPartnerships() {
   el.innerHTML = renderStrategicPartnershipCenter(snapshot, escapeHtml);
 }
 
+async function loadAcquisitionExit() {
+  const el = document.getElementById('acquisition-exit-root');
+  if (!el) return;
+
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
+  const { buildAcquisitionExitSnapshot } = await import(
+    './features/ops/acquisition-exit-optionality.js'
+  );
+  const { renderAcquisitionExitCenter } = await import('./features/ops/acquisition-exit-views.js');
+
+  let config = { version: 'p11-exit.0', scenarios: [], strategicBuyers: [] };
+  try {
+    const res = await fetch('/data/ops/acquisition-exit-optionality.json');
+    if (res.ok) config = await res.json();
+  } catch {
+    /* optional */
+  }
+
+  const snapshot = buildAcquisitionExitSnapshot({ config });
+  el.innerHTML = renderAcquisitionExitCenter(snapshot, escapeHtml);
+}
+
 async function loadExecutiveKpis() {
   const el = document.getElementById('investor-metrics-root');
   if (!el) return;
@@ -3693,6 +3716,7 @@ registerAdminPageHandlers({
   'competitor-attack': () => loadCompetitorAttack(),
   'expansion-prioritization': () => loadExpansionPrioritization(),
   'strategic-partnerships': () => loadStrategicPartnerships(),
+  'acquisition-exit': () => loadAcquisitionExit(),
   'partner-endpoints': () => loadPartnerEndpoints(),
   'partner-applications': async () => {
     await initPartnerSalesMachineAdmin().catch(() => {});

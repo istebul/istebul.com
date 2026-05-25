@@ -131,6 +131,17 @@ async function main() {
       stderr: partnerships.stderr?.slice(0, 500) || null
     });
 
+    const exitOpt = spawnSync(
+      'node',
+      [path.join(root, 'scripts/acquisition-exit-snapshot.cjs')],
+      { cwd: root, env: process.env, encoding: 'utf8' }
+    );
+    report.steps.push({
+      id: 'acquisition_exit_snapshot',
+      ok: exitOpt.status === 0,
+      stderr: exitOpt.stderr?.slice(0, 500) || null
+    });
+
     const hiring = spawnSync('node', [path.join(root, 'scripts/hiring-architecture-snapshot.cjs')], {
       cwd: root,
       env: process.env,

@@ -60,6 +60,7 @@
       { "label": "Category dominance strategy (P23)", "path": "data/ops/category-dominance-strategy.json" },
       { "label": "Expansion prioritization (P25)", "path": "data/ops/expansion-roadmap-prioritization.json" },
       { "label": "Strategic partnership roadmap (P26)", "path": "data/ops/strategic-partnership-roadmap.json" },
+      { "label": "Exit / M&A optionality (P11)", "path": "data/ops/acquisition-exit-optionality.json" },
       { "label": "CRO experiments", "path": "data/growth/experiments.json" },
       { "label": "Product feedback themes", "path": "data/product/feedback-themes.json" }
     ],

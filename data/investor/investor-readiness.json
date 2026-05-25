@@ -20,6 +20,7 @@
     "gtmNarrative": "gtm-narrative.json",
     "deckReadiness": "deck-readiness.json",
     "fundraisingReadiness": "fundraising-readiness.json",
+    "exitOptionality": "../ops/acquisition-exit-optionality.json",
     "marketResearch": "market-research.json",
     "financialModel36m": "financial-model-36m.json"
   },
@@ -29,7 +30,9 @@
     "moatArticulation": "docs/investor/MOAT_ARTICULATION.md",
     "marketSizing": "docs/investor/MARKET_SIZING.md",
     "monetizationStory": "docs/investor/MONETIZATION_STORY.md",
-    "fundraisingReadiness": "docs/investor/FUNDRAISING_READINESS.md"
+    "fundraisingReadiness": "docs/investor/FUNDRAISING_READINESS.md",
+    "exitOptionality": "docs/investor/EXIT_OPTIONALITY_REPORT.md",
+    "exitPlaybook": "docs/ACQUISITION_EXIT_OPTIONALITY.md"
   },
   "exports": {
     "metricsSnapshot": "dist/investor-metrics-snapshot.json",

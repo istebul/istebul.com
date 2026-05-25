@@ -21,6 +21,8 @@
 | **LOI template (TR + EN)** | `loi-template.md` | MD |
 | **Stripe MRR evidence** | `STRIPE_MRR_EVIDENCE.md` | MD + screenshot slots |
 | Data room index | `DATA_ROOM_INDEX.md` | MD |
+| **Exit / M&A optionality (P11)** | `EXIT_OPTIONALITY_REPORT.md` · `../ACQUISITION_EXIT_OPTIONALITY.md` | MD |
+| Exit config | `data/ops/acquisition-exit-optionality.json` | JSON |
 
 ---
 

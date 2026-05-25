@@ -39,4 +39,5 @@ jobs:
             dist/competitor-attack-snapshot.json
             dist/expansion-roadmap-prioritization-snapshot.json
             dist/strategic-partnership-snapshot.json
+            dist/acquisition-exit-snapshot.json
           if-no-files-found: ignore

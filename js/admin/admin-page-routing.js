@@ -36,6 +36,7 @@ export const ADMIN_PAGE_IDS = [
   'competitor-attack',
   'expansion-prioritization',
   'strategic-partnerships',
+  'acquisition-exit',
   'partner-endpoints',
   'partner-applications',
   'partner-dispatch-logs'

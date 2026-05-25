@@ -98,7 +98,19 @@ npm run metrics:investor:pack
 
 ---
 
-## 05 — Legal & compliance
+## 05 — Exit & optionality (P11)
+
+| Asset | Path |
+|-------|------|
+| **Exit / M&A playbook** | `docs/ACQUISITION_EXIT_OPTIONALITY.md` |
+| **Investor exit report** | `docs/investor/EXIT_OPTIONALITY_REPORT.md` |
+| Config | `data/ops/acquisition-exit-optionality.json` |
+| Snapshot export | `npm run metrics:exit:optionality` → `dist/acquisition-exit-snapshot.json` |
+| Admin | Admin → **Exit / M&A (P11)** |
+
+---
+
+## 06 — Legal & compliance
 
 | Asset | Path |
 |-------|------|
@@ -115,7 +127,7 @@ npm run metrics:investor:pack
 
 ---
 
-## 06 — Security & ops
+## 07 — Security & ops
 
 | Asset | Path |
 |-------|------|
