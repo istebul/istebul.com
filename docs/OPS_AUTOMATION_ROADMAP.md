@@ -31,6 +31,7 @@
 | HMAC webhook + retry | ✅ | `partner-dispatch`, `partner-retry.yml` |
 | Partner ops monitor (P12) | ✅ | `partner-ops-monitor.yml`, `partner:ops:run`, `docs/PARTNER_OPS_AUTOMATION.md` |
 | CEO alerting (P13) | ✅ | `ceo-alerts.yml`, `ceo:alerts:run`, `docs/CEO_ALERTING.md` |
+| AI ops decision assistant (P15) | ✅ | `ops-ai-assistant`, `docs/OPS_AI_DECISION_ASSISTANT.md` |
 | Hot lead Telegram | ✅ | `lead-alert` |
 | B2B AE pipeline | ✅ Admin embed | `partner-crm-pipeline.js` |
 

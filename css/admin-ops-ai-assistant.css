@@ -1,0 +1,75 @@
+/**
+ * P15 — Ops AI decision assistant (admin).
+ */
+.page.page--ops-ai {
+  max-width: 1200px;
+}
+
+.ib-ops-ai-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 20px;
+}
+
+.ib-ops-insight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.ib-ops-insight-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.ib-ops-insight-card.ib-ops-insight--critical {
+  border-left: 4px solid var(--danger);
+}
+
+.ib-ops-insight-card.ib-ops-insight--warning {
+  border-left: 4px solid var(--warning);
+}
+
+.ib-ops-insight-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ib-ops-insight-card h4 {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+
+.ib-ops-insight-summary {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0 0 10px;
+}
+
+.ib-ops-insight-recs {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.ib-ops-ai-narration {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 229, 160, 0.35);
+  background: rgba(0, 229, 160, 0.08);
+}
+
+.ib-ops-ai-text {
+  font-size: 13px;
+  line-height: 1.55;
+  margin-top: 8px;
+}

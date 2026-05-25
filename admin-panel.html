@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/css/admin-partner-ops.css">
 <link rel="stylesheet" href="/css/sales-partner.css">
 <link rel="stylesheet" href="/css/admin-internal-dashboards.css">
+<link rel="stylesheet" href="/css/admin-ops-ai-assistant.css">
 <style>
 :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#242424;--border:#2e2e2e;--accent:#00e5a0;--accent2:#0099ff;--text:#f0f0f0;--muted:#888;--danger:#ff4757;--warning:#ffa502;--radius:8px;}
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
@@ -407,6 +408,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="nav-item" data-page-target="dashboard-revenue">💳 Revenue Dashboard</div>
         <div class="nav-item" data-page-target="dashboard-partner-ops">🤝 Partner Ops Dashboard</div>
         <div class="nav-item" data-page-target="dashboard-support">🎧 Support Dashboard</div>
+        <div class="nav-item" data-page-target="ops-ai-assistant">🤖 AI Ops Assistant</div>
         <div class="nav-section">Gelişmiş metrikler</div>
         <div class="nav-item" data-page-target="investor-metrics">📈 Executive KPIs</div>
         <div class="nav-item" data-page-target="observability">🛡️ Observability</div>
@@ -482,6 +484,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
       <div class="page page--dashboard" id="page-dashboard-support">
         <div class="page-header"><h2>Support Dashboard</h2><p>FAQ, lifecycle, support workflows, deflection metrics</p></div>
         <div class="card"><div id="dashboard-support-root"><div class="empty">Yükleniyor…</div></div></div>
+      </div>
+
+      <div class="page page--ops-ai" id="page-ops-ai-assistant">
+        <div class="page-header">
+          <h2>AI Ops Decision Assistant</h2>
+          <p>Growth · funnel anomalies · churn · partner quality · pricing · conversion — deterministic + optional Groq summary</p>
+        </div>
+        <div class="card"><div id="ops-ai-assistant-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page" id="page-settings">

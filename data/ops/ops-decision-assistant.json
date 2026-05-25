@@ -1,0 +1,29 @@
+{
+  "version": "p15.0",
+  "updatedAt": "2026-05-24",
+  "mission": "AI-assisted company operations — deterministic insights + optional bounded LLM narration.",
+  "capabilities": [
+    "growth_recommendations",
+    "funnel_anomaly_detection",
+    "churn_analysis",
+    "partner_quality_analysis",
+    "pricing_insights",
+    "conversion_insights"
+  ],
+  "adminPage": "ops-ai-assistant",
+  "modules": {
+    "deterministic": "js/features/ops/ops-decision-assistant.js",
+    "narration": "js/features/ops/ops-ai-narration.js",
+    "loader": "js/admin/ops-ai-assistant.js"
+  },
+  "aiProxy": {
+    "path": "/ai-proxy",
+    "maxPromptChars": 2800,
+    "sessionBudgetKey": "istebul_ops_ai_narration_budget"
+  },
+  "pricingReference": {
+    "proMonthlyTry": 299,
+    "proAnnualTry": 2870,
+    "trialDays": 7
+  }
+}

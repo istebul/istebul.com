@@ -226,7 +226,12 @@ export async function fetchInternalDashboardContext(deps) {
     analyticsRowCap: SCALE_LIMITS.admin.executiveRowLimit || 2500
   });
 
-  cachedContext = { ctx, warnings, fetchWarnings: [subsRes, leadsRes, eventsRes] };
+  cachedContext = {
+    ctx,
+    warnings,
+    fetchWarnings: [subsRes, leadsRes, eventsRes],
+    analyticsEvents48h: eventsRes.data || []
+  };
   cachedAt = now;
   return cachedContext;
 }

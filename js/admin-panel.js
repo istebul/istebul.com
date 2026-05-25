@@ -231,6 +231,18 @@ function showPage(name, el) {
   if (name === 'dashboard-support') {
     loadCompanyDashboard('support', 'dashboard-support-root');
   }
+  if (name === 'ops-ai-assistant') {
+    loadOpsAiAssistantPage();
+  }
+}
+
+async function loadOpsAiAssistantPage() {
+  const { loadOpsAiAssistant } = await import('./admin/ops-ai-assistant.js');
+  await loadOpsAiAssistant(
+    internalDashboardDeps(),
+    escapeHtml,
+    renderAdminWarningBanner
+  );
 }
 
 const internalDashboardDeps = () => ({

@@ -218,7 +218,7 @@ export function buildOpsCommandCenter(input = {}) {
         `Deterministic scoring live`,
         `AI proxy pressure signals ${aiProxyHits}`
       ],
-      automations: ['ai_proxy', 'decision_intelligence', 'narration_budget']
+      automations: ['ai_proxy', 'decision_intelligence', 'ops_ai_assistant', 'narration_budget']
     },
     {
       id: 'dashboards',

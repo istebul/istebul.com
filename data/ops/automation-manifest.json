@@ -74,6 +74,7 @@
     { "page": "dashboard-revenue", "label": "Revenue Dashboard" },
     { "page": "dashboard-partner-ops", "label": "Partner Ops Dashboard" },
     { "page": "dashboard-support", "label": "Support Dashboard" },
+    { "page": "ops-ai-assistant", "label": "AI Ops Decision Assistant" },
     { "page": "investor-metrics", "label": "Executive KPIs" },
     { "page": "observability", "label": "Observability" },
     { "page": "ops-command-center", "label": "Ops Command Center" },
