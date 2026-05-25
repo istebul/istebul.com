@@ -1209,6 +1209,31 @@ async function loadExpansionPrioritization() {
   el.innerHTML = renderExpansionPrioritizationCenter(snapshot, escapeHtml);
 }
 
+async function loadStrategicPartnerships() {
+  const el = document.getElementById('strategic-partnerships-root');
+  if (!el) return;
+
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
+  const { buildStrategicPartnershipSnapshot } = await import(
+    './features/ops/strategic-partnership-roadmap.js'
+  );
+  const { renderStrategicPartnershipCenter } = await import(
+    './features/ops/strategic-partnership-views.js'
+  );
+
+  let config = { version: 'p26.0', partnerTypes: [], scoringDimensions: [] };
+  try {
+    const res = await fetch('/data/ops/strategic-partnership-roadmap.json');
+    if (res.ok) config = await res.json();
+  } catch {
+    /* optional */
+  }
+
+  const snapshot = buildStrategicPartnershipSnapshot({ config });
+  el.innerHTML = renderStrategicPartnershipCenter(snapshot, escapeHtml);
+}
+
 async function loadExecutiveKpis() {
   const el = document.getElementById('investor-metrics-root');
   if (!el) return;
@@ -3667,6 +3692,7 @@ registerAdminPageHandlers({
   'category-dominance': () => loadCategoryDominance(),
   'competitor-attack': () => loadCompetitorAttack(),
   'expansion-prioritization': () => loadExpansionPrioritization(),
+  'strategic-partnerships': () => loadStrategicPartnerships(),
   'partner-endpoints': () => loadPartnerEndpoints(),
   'partner-applications': async () => {
     await initPartnerSalesMachineAdmin().catch(() => {});

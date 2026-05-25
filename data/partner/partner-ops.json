@@ -23,6 +23,8 @@
     "npmSnapshot": "metrics:partner:ops",
     "npmAutomation": "partner:ops:run"
   },
+  "roadmapRef": "docs/STRATEGIC_PARTNERSHIP_ROADMAP.md",
+  "roadmapData": "data/ops/strategic-partnership-roadmap.json",
   "automations": [
     "lead_dispatch_monitoring",
     "retry_automation",

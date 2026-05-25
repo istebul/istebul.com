@@ -38,4 +38,5 @@ jobs:
             dist/category-dominance-snapshot.json
             dist/competitor-attack-snapshot.json
             dist/expansion-roadmap-prioritization-snapshot.json
+            dist/strategic-partnership-snapshot.json
           if-no-files-found: ignore

@@ -120,6 +120,17 @@ async function main() {
       stderr: expansionP.stderr?.slice(0, 500) || null
     });
 
+    const partnerships = spawnSync(
+      'node',
+      [path.join(root, 'scripts/strategic-partnership-snapshot.cjs')],
+      { cwd: root, env: process.env, encoding: 'utf8' }
+    );
+    report.steps.push({
+      id: 'strategic_partnership_snapshot',
+      ok: partnerships.status === 0,
+      stderr: partnerships.stderr?.slice(0, 500) || null
+    });
+
     const hiring = spawnSync('node', [path.join(root, 'scripts/hiring-architecture-snapshot.cjs')], {
       cwd: root,
       env: process.env,
