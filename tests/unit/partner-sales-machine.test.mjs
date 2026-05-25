@@ -17,17 +17,17 @@ import { interpolateOutboundTemplate } from '../../js/features/sales/partner-sal
 
 describe('P6 B2B sales machine', () => {
   it('scores enterprise applications higher', () => {
-    const low = scorePartnerApplication({ billing_plan: 'pilot', status: 'new' });
+    const low = scorePartnerApplication({ billing_plan: 'pilot', status: 'lead' });
     const high = scorePartnerApplication({
       billing_plan: 'enterprise',
-      status: 'qualified',
+      status: 'negotiation',
       webhook_ready: true
     });
     assert.ok(high > low);
   });
 
-  it('recommendNextSalesAction for integrating without webhook', () => {
-    const next = recommendNextSalesAction({ status: 'integrating', webhook_ready: false });
+  it('recommendNextSalesAction for pilot without webhook', () => {
+    const next = recommendNextSalesAction({ status: 'pilot', webhook_ready: false });
     assert.match(next.action, /webhook/i);
     assert.equal(next.priority, 'high');
   });
@@ -58,11 +58,11 @@ describe('P6 B2B sales machine', () => {
     assert.equal(out, 'Hello Test');
   });
 
-  it('sales data files are p6.1', () => {
+  it('sales data files are p6.2', () => {
     const machine = JSON.parse(
       fs.readFileSync(path.join(process.cwd(), 'data/sales/sales-machine.json'), 'utf8')
     );
-    assert.equal(machine.version, 'p6.1');
+    assert.equal(machine.version, 'p6.2');
     assert.ok(SALES_TOUCH_TYPES.length >= 5);
   });
 

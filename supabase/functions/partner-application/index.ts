@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
       lead_capacity,
       webhook_ready,
       notes,
-      status: "new",
+      status: "lead",
       onboarding_token,
       utm_source: utm_source || null,
       utm_medium: utm_medium || null,

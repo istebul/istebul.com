@@ -5,10 +5,12 @@ import { renderObjectionPlaybookHtml } from './partner-objections.js';
 import { renderOutboundSequenceHtml } from './partner-sales-assets.js';
 import {
   logPartnerSalesTouch,
+  logPartnerCrmStageChange,
   logOutboundSent,
   recommendNextSalesAction,
   scorePartnerApplication,
-  SALES_TOUCH_TYPES
+  SALES_TOUCH_TYPES,
+  computePartnerPipelineForecast
 } from './partner-sales-crm.js';
 import { getPricingTalkTrack, recommendPartnerTier } from './partner-pricing-strategy.js';
 import { computeOnboardingVelocity, velocityBadgeClass } from './partner-onboarding-velocity.js';
@@ -55,7 +57,7 @@ export async function renderPartnerSalesEnablementPanel() {
 
   return `
     <section class="ib-sales-enablement card" aria-labelledby="sales-enablement-heading">
-      <h3 id="sales-enablement-heading">B2B satış makinesi (P6.1 Closing)</h3>
+      <h3 id="sales-enablement-heading">B2B satış makinesi (P6.2 CRM)</h3>
       <p class="text-muted">Outbound, itiraz, AE pipeline — tam closing kiti ayrı sayfada.</p>
       ${closingSummary}
       <div class="ib-sales-enablement-grid">
@@ -79,15 +81,18 @@ export {
   renderObjectionPlaybookHtml,
   renderOutboundSequenceHtml,
   logPartnerSalesTouch,
+  logPartnerCrmStageChange,
   logOutboundSent,
   recommendNextSalesAction,
   scorePartnerApplication,
   SALES_TOUCH_TYPES,
+  computePartnerPipelineForecast,
   getPricingTalkTrack,
   recommendPartnerTier,
   computeOnboardingVelocity,
   velocityBadgeClass
 };
+export { renderPartnerPipelineBoardHtml } from './partner-crm-pipeline.js';
 
 export async function initPartnerSalesMachineAdmin() {
   if (typeof document === 'undefined') return;

@@ -2,12 +2,18 @@ import { initCorporateUx } from '../runtime/corporate-ux.js';
 import { PARTNER_FUNNEL_EVENTS, PARTNER_ROUTE_LABELS, trackPartnerFunnel } from '../features/partner/partner-platform.js';
 
 const STATUS_LABELS = {
-  new: 'Başvuru alındı',
-  contacted: 'İletişim kuruldu',
-  qualified: 'Uygunluk onaylandı',
-  integrating: 'Webhook entegrasyonu',
-  live: 'Canlı — lead alıyorsunuz',
-  rejected: 'Sonlandırıldı'
+  lead: 'Lead',
+  qualified: 'Qualified',
+  demo: 'Demo / ihtiyaç',
+  pilot: 'Pilot entegrasyon',
+  negotiation: 'Müzakere',
+  won: 'Won — canlı',
+  lost: 'Lost',
+  new: 'Lead',
+  contacted: 'Lead',
+  integrating: 'Pilot',
+  live: 'Won',
+  rejected: 'Lost'
 };
 
 function getToken() {
@@ -34,13 +40,25 @@ async function hubRequest(body) {
   return data;
 }
 
+function normalizeStatus(status) {
+  const map = {
+    new: 'lead',
+    contacted: 'lead',
+    integrating: 'pilot',
+    live: 'won',
+    rejected: 'lost'
+  };
+  return map[status] || status || 'lead';
+}
+
 function renderSteps(status) {
-  const order = ['new', 'contacted', 'qualified', 'integrating', 'live'];
-  const idx = order.indexOf(status);
+  const order = ['lead', 'qualified', 'demo', 'pilot', 'negotiation', 'won'];
+  const normalized = normalizeStatus(status);
+  const idx = order.indexOf(normalized);
   return order.map((step, i) => {
     let cls = '';
-    if (status === 'rejected') cls = i <= 0 ? 'is-done' : '';
-    else if (i < idx) cls = 'is-done';
+    if (normalized === 'lost') cls = i <= 0 ? 'is-done' : '';
+    else if (idx >= 0 && i < idx) cls = 'is-done';
     else if (i === idx) cls = 'is-current';
     return `<span class="${cls}">${STATUS_LABELS[step] || step}</span>`;
   }).join('');

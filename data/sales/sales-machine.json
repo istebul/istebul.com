@@ -1,14 +1,16 @@
 {
-  "version": "p6.1",
+  "version": "p6.2",
   "goal": "b2b_partner_revenue",
   "closingKit": "/partner-closing-kit.html",
+  "partnerCrmPipeline": "/data/sales/partner-crm-pipeline.json",
   "partnerAePipeline": [
-    { "id": "new", "label": "Yeni", "slaHours": 4, "nextAction": "İlk outbound (e-posta + LinkedIn)" },
-    { "id": "contacted", "label": "İletişim", "slaHours": 48, "nextAction": "Keşif görüşmesi / demo" },
-    { "id": "qualified", "label": "Uygun", "slaHours": 72, "nextAction": "Teklif + pilot planı" },
-    { "id": "integrating", "label": "Entegrasyon", "slaHours": 120, "nextAction": "Onboarding hızlandır — webhook test" },
-    { "id": "live", "label": "Canlı", "slaHours": null, "nextAction": "Kapasite genişletme / upsell" },
-    { "id": "rejected", "label": "Red", "slaHours": null, "nextAction": "Nurture 90g veya kapat" }
+    { "id": "lead", "label": "Lead", "slaHours": 24, "nextAction": "Outbound + ICP" },
+    { "id": "qualified", "label": "Qualified", "slaHours": 48, "nextAction": "BANT — demo planla" },
+    { "id": "demo", "label": "Demo", "slaHours": 72, "nextAction": "Deck + dispatch demo" },
+    { "id": "pilot", "label": "Pilot", "slaHours": 168, "nextAction": "5 lead + webhook" },
+    { "id": "negotiation", "label": "Negotiation", "slaHours": 120, "nextAction": "Teklif / SOW" },
+    { "id": "won", "label": "Won", "slaHours": null, "nextAction": "Canlı + upsell" },
+    { "id": "lost", "label": "Lost", "slaHours": null, "nextAction": "Nurture veya kapat" }
   ],
   "leadCrmStages": [
     "new",

@@ -5,12 +5,12 @@ import path from 'node:path';
 import { interpolateOutboundTemplate } from '../../js/features/sales/partner-sales-assets.js';
 
 describe('P6.1 closing machine', () => {
-  it('closing-machine.json is p6.1', () => {
+  it('closing-machine.json is p6.x', () => {
     const raw = fs.readFileSync(
       path.join(process.cwd(), 'data/sales/closing-machine.json'),
       'utf8'
     );
-    assert.equal(JSON.parse(raw).version, 'p6.1');
+    assert.ok(String(JSON.parse(raw).version).startsWith('p6.'));
   });
 
   it('sales deck has cover and close slides', () => {
@@ -39,12 +39,12 @@ describe('P6.1 closing machine', () => {
     assert.ok(ids.includes('close_contract'));
   });
 
-  it('follow-up flow matches qualified status', () => {
+  it('follow-up flow matches demo stage', () => {
     const flows = JSON.parse(
       fs.readFileSync(path.join(process.cwd(), 'data/sales/follow-up-flows.json'), 'utf8')
     );
-    const flow = (flows.flows || []).find((f) => f.trigger?.applicationStatus === 'qualified');
-    assert.equal(flow?.id, 'ae_qualified_close');
+    const flow = (flows.flows || []).find((f) => f.trigger?.applicationStatus === 'demo');
+    assert.equal(flow?.id, 'ae_pilot_close');
   });
 
   it('onboarding docs include kickoff', () => {

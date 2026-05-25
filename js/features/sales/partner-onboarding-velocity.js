@@ -20,8 +20,9 @@ export function computeOnboardingVelocity(app = {}, sla = DEFAULT_SLA) {
   const progressPct = stepsTotal ? Math.round((step / stepsTotal) * 100) : 0;
 
   let health = 'on_track';
-  if (app.status === 'live') health = 'live';
-  else if (app.status === 'rejected') health = 'closed';
+  const stage = String(app.status || '').toLowerCase();
+  if (stage === 'won' || stage === 'live') health = 'live';
+  else if (stage === 'lost' || stage === 'rejected') health = 'closed';
   else if (daysSinceApply >= (sla.targetDaysToLive || 14)) health = 'overdue';
   else if (daysSinceApply >= (sla.warnDaysStuck || 5) && step < 4) health = 'stuck';
 

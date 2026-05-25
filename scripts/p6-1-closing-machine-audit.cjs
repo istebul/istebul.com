@@ -33,7 +33,7 @@ for (const rel of mustExist) {
 const closing = JSON.parse(
   fs.readFileSync(path.join(root, 'data/sales/closing-machine.json'), 'utf8')
 );
-if (closing.version !== 'p6.1') fail('closing-machine.json must be p6.1');
+if (!String(closing.version || '').startsWith('p6.')) fail('closing-machine.json must be p6.x');
 
 const deck = JSON.parse(
   fs.readFileSync(path.join(root, 'data/sales/partner-sales-deck.json'), 'utf8')
@@ -51,9 +51,10 @@ for (const s of ['discover', 'proposal', 'close']) {
 const flows = JSON.parse(
   fs.readFileSync(path.join(root, 'data/sales/follow-up-flows.json'), 'utf8')
 );
-if (!(flows.flows || []).some((f) => f.id === 'ae_qualified_close')) {
-  fail('follow-up-flows missing ae_qualified_close');
+if (!(flows.flows || []).some((f) => f.id === 'ae_pilot_close')) {
+  fail('follow-up-flows missing ae_pilot_close');
 }
+if (!String(flows.version).startsWith('p6.')) fail('follow-up-flows version must be p6.x');
 
 const objections = JSON.parse(
   fs.readFileSync(path.join(root, 'data/sales/objections.json'), 'utf8')

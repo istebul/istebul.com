@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
         pilot_timeline: String(data.pilot_timeline || "").slice(0, 60),
         integration_owner: String(data.integration_owner || "").slice(0, 80),
       };
-      if (app.status === "new") patch.status = "contacted";
+      if (["new", "lead", "contacted"].includes(String(app.status))) patch.status = "qualified";
     }
 
     if (step === 3) {
@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
           : [],
         notes: String(data.notes || "").slice(0, 500),
       };
-      if (["new", "contacted"].includes(String(app.status))) patch.status = "qualified";
+      if (["new", "contacted", "lead", "qualified"].includes(String(app.status))) patch.status = "demo";
     }
 
     const { error: updateError } = await sb.from("partner_applications").update(patch).eq("id", app.id);
@@ -218,7 +218,9 @@ Deno.serve(async (req) => {
         webhook_ready: true,
         integration_notes: notes || app.integration_notes,
         onboarding_step: Math.max(Number(app.onboarding_step) || 1, 5),
-        status: app.status === "new" ? "integrating" : app.status,
+        status: ["new", "lead", "contacted", "qualified", "demo"].includes(String(app.status))
+          ? "pilot"
+          : app.status,
       })
       .eq("id", app.id);
 
@@ -258,7 +260,9 @@ Deno.serve(async (req) => {
       .update({
         test_payload_verified: true,
         onboarding_step: Math.max(Number(app.onboarding_step) || 1, 6),
-        status: ["new", "contacted", "qualified"].includes(String(app.status)) ? "integrating" : app.status,
+        status: ["new", "contacted", "lead", "qualified", "demo"].includes(String(app.status))
+          ? "pilot"
+          : app.status,
       })
       .eq("id", app.id);
 
@@ -291,7 +295,7 @@ Deno.serve(async (req) => {
       .update({
         onboarding_step: 6,
         onboarding_completed_at: completedAt,
-        status: app.status === "rejected" ? app.status : "integrating",
+        status: app.status === "lost" || app.status === "rejected" ? app.status : "pilot",
       })
       .eq("id", app.id);
 

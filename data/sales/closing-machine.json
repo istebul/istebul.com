@@ -1,5 +1,5 @@
 {
-  "version": "p6.1",
+  "version": "p6.2",
   "goal": "partner_closing",
   "assets": {
     "salesDeck": "partner-sales-deck.json",

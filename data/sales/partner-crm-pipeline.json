@@ -1,0 +1,77 @@
+{
+  "version": "p6.2",
+  "goal": "sales_predictability",
+  "stages": [
+    {
+      "id": "lead",
+      "label": "Lead",
+      "order": 1,
+      "slaHours": 24,
+      "winProbability": 0.05,
+      "nextAction": "İlk outbound + ICP doğrulama",
+      "terminal": false
+    },
+    {
+      "id": "qualified",
+      "label": "Qualified",
+      "order": 2,
+      "slaHours": 48,
+      "winProbability": 0.15,
+      "nextAction": "BANT / hacim teyidi — demo planla",
+      "terminal": false
+    },
+    {
+      "id": "demo",
+      "label": "Demo",
+      "order": 3,
+      "slaHours": 72,
+      "winProbability": 0.35,
+      "nextAction": "Deck + dispatch demo — teklif öncesi",
+      "terminal": false
+    },
+    {
+      "id": "pilot",
+      "label": "Pilot",
+      "order": 4,
+      "slaHours": 168,
+      "winProbability": 0.55,
+      "nextAction": "5 lead pilot + webhook doğrulama",
+      "terminal": false
+    },
+    {
+      "id": "negotiation",
+      "label": "Negotiation",
+      "order": 5,
+      "slaHours": 120,
+      "winProbability": 0.75,
+      "nextAction": "Teklif / SOW — kapasite kilidi",
+      "terminal": false
+    },
+    {
+      "id": "won",
+      "label": "Won",
+      "order": 6,
+      "winProbability": 1,
+      "nextAction": "Canlı endpoint + upsell",
+      "terminal": true,
+      "won": true
+    },
+    {
+      "id": "lost",
+      "label": "Lost",
+      "order": 7,
+      "winProbability": 0,
+      "nextAction": "Nurture 90g veya kapat",
+      "terminal": true,
+      "lost": true
+    }
+  ],
+  "legacyStatusMap": {
+    "new": "lead",
+    "contacted": "lead",
+    "qualified": "qualified",
+    "integrating": "pilot",
+    "live": "won",
+    "rejected": "lost"
+  }
+}

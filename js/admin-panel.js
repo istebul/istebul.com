@@ -36,8 +36,16 @@ import {
   scorePartnerApplication,
   recommendNextSalesAction,
   logPartnerSalesTouch,
+  logPartnerCrmStageChange,
+  computePartnerPipelineForecast,
   SALES_TOUCH_TYPES
 } from './features/sales/partner-sales-machine.js';
+import {
+  normalizePartnerCrmStatus,
+  partnerCrmStatusOptions,
+  getPartnerCrmWinProbability,
+  renderPartnerPipelineBoardHtml
+} from './features/sales/partner-crm-pipeline.js';
 
 const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
@@ -1594,7 +1602,7 @@ async function provisionPartnerFromApplication(applicationId) {
     id: applicationId,
     values: {
       partner_endpoint_id: endpointId,
-      status: 'integrating'
+      status: 'negotiation'
     }
   });
 
@@ -1739,17 +1747,14 @@ async function loadPartnerApplications() {
     return;
   }
 
-  const statusLabels = {
-    new: 'Yeni',
-    contacted: 'İletişim',
-    qualified: 'Uygun',
-    integrating: 'Entegrasyon',
-    live: 'Canlı',
-    rejected: 'Red'
-  };
+  const crmOptions = partnerCrmStatusOptions();
+  const pipelineBoard = renderPartnerPipelineBoardHtml(
+    data.map((row) => ({ ...row, status: normalizePartnerCrmStatus(row.status) }))
+  );
 
   el.innerHTML = `
     ${renderAdminWarningBanner(warnings)}
+    ${pipelineBoard}
     <table class="table">
       <thead>
         <tr>
@@ -1777,11 +1782,14 @@ async function loadPartnerApplications() {
             <td>${escapeHtml(row.category)}${row.city ? `<br><small>${escapeHtml(row.city)}</small>` : ''}</td>
             <td>${row.webhook_ready ? 'Hazır' : 'Manuel'}${row.webhook_url_draft != null && row.webhook_url_draft !== '' ? `<br><small title="${safeAttr(row.webhook_url_draft)}">Taslak URL</small>` : ''}</td>
             <td>
-              <select class="status-select" data-action="update-partner-application-status" data-id="${safeAttr(row.id)}">
-                ${Object.entries(statusLabels).map(([value, label]) =>
-                  `<option value="${value}" ${row.status === value ? 'selected' : ''}>${label}</option>`
-                ).join('')}
+              <select class="status-select" data-action="update-partner-application-status" data-id="${safeAttr(row.id)}"
+                data-previous-status="${safeAttr(normalizePartnerCrmStatus(row.status))}">
+                ${crmOptions.map(({ value, label }) => {
+                  const current = normalizePartnerCrmStatus(row.status);
+                  return `<option value="${value}" ${current === value ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+                }).join('')}
               </select>
+              <small class="text-muted">P(win) ${Math.round(getPartnerCrmWinProbability(row.status) * 100)}%</small>
             </td>
             <td>${formatShortDate(row.created_at)}</td>
             <td><small>${escapeHtml(row.billing_plan != null ? row.billing_plan : 'pilot')}</small>${row.utm_source ? `<br><small>utm:${escapeHtml(row.utm_source)}</small>` : ''}</td>
@@ -2982,13 +2990,16 @@ function bindAdminPanelEvents() {
     }
 
     if (action === 'update-partner-application-status') {
+      const prev = el.dataset.previousStatus || '';
+      const next = el.value;
       adminAction({
         action: 'update',
         table: 'partner_applications',
         id,
-        values: { status: el.value }
+        values: { status: next }
       }).then(() => {
-        toast('Başvuru durumu güncellendi', 'success');
+        logPartnerCrmStageChange(prev, next, { application_id: id, force: true });
+        toast('CRM aşaması güncellendi', 'success');
         loadPartnerApplications();
       });
       return;
