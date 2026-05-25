@@ -232,6 +232,31 @@ export const LIFECYCLE_FLOWS: LifecycleFlow[] = [
       },
     ],
   },
+  {
+    id: "partner_sales_cadence",
+    name: "Partner sales cadence",
+    category: "revenue",
+    steps: [
+      {
+        id: "ae_d0",
+        delayHours: 0,
+        templateId: "partner_followup",
+        subject: "Partner başvurunuz — sonraki adım",
+      },
+      {
+        id: "ae_d2",
+        delayHours: 48,
+        templateId: "partner_followup",
+        subject: "Teklif ve pilot entegrasyon",
+      },
+      {
+        id: "ae_d5",
+        delayHours: 120,
+        templateId: "onboarding_nudge",
+        subject: "Onboarding tamamlama hatırlatması",
+      },
+    ],
+  },
 ];
 
 export const PUBLIC_ENROLL_FLOWS = new Set([
@@ -245,6 +270,7 @@ export const PUBLIC_ENROLL_FLOWS = new Set([
   "reactivation_ltv",
   "habit_loop_reminder",
   "saved_decision_revisit",
+  "partner_sales_cadence",
 ]);
 
 export function buildUnsubscribeUrl(email: string) {

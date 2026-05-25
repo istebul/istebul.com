@@ -1,0 +1,60 @@
+{
+  "version": "p6.0",
+  "sequences": [
+    {
+      "id": "partner_cold_outbound",
+      "name": "Partner cold outbound",
+      "channel": "email",
+      "steps": [
+        {
+          "id": "d0_intro",
+          "delayDays": 0,
+          "subject": "{{company}} — skorlu araç talebi (karar altyapısı)",
+          "body": "Merhaba {{contact_name}},\n\nisteBul tüketici tarafında TCO ve skorlu karar üretir; partner tarafında hot lead’i webhook ile teslim ederiz — klasik ilan trafiği değil.\n\n{{tier}} paketi için 15 dk keşif: {{booking_link}}\nBaşvuru (self-serve): {{apply_link}}\n\n{{signature}}"
+        },
+        {
+          "id": "d3_followup",
+          "delayDays": 3,
+          "subject": "Pilot: 5 sıcak lead + webhook doğrulama",
+          "body": "Merhaba,\n\nEntegrasyon pilotu ücretsiz (5 lead). Teknik özet: {{docs_link}}\n\nOnboarding devam ediyorsa: {{onboarding_link}}\n\n{{signature}}"
+        },
+        {
+          "id": "d7_close",
+          "delayDays": 7,
+          "subject": "Teklif penceresi — {{tier}} kapasite",
+          "body": "Merhaba,\n\nBu hafta {{tier}} için kapasite teklifi hazırlıyoruz. Teklif iste: {{quote_link}}\n\n{{signature}}"
+        }
+      ]
+    },
+    {
+      "id": "partner_linkedin_touch",
+      "name": "LinkedIn connection note",
+      "channel": "linkedin",
+      "steps": [
+        {
+          "id": "connect",
+          "delayDays": 0,
+          "subject": null,
+          "body": "{{contact_name}} — isteBul’da bayi/finansman partnerleri için skorlu talep + webhook teslimatı kuruyoruz. 15 dk keşif uygun mu? {{apply_link}}"
+        }
+      ]
+    },
+    {
+      "id": "stalled_onboarding",
+      "name": "Stalled onboarding nudge",
+      "channel": "email",
+      "steps": [
+        {
+          "id": "nudge",
+          "delayDays": 0,
+          "subject": "Onboarding adımınız bekliyor",
+          "body": "Merhaba {{contact_name}},\n\n{{company}} başvurunuzda adım {{onboarding_step}}/6. Devam: {{onboarding_link}}\n\nSorunuz varsa bu e-postayı yanıtlayın.\n\n{{signature}}"
+        }
+      ]
+    }
+  ],
+  "defaults": {
+    "signature": "— isteBul Partner Ekibi\nhttps://www.istebul.com/partner-olun.html",
+    "booking_link": "https://www.istebul.com/iletisim.html?utm_source=sales&utm_medium=outbound&utm_campaign=partner_demo"
+  }
+}

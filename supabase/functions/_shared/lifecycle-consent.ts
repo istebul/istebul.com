@@ -16,6 +16,7 @@ export const FLOW_CONSENT_TIER: Record<string, ConsentTier> = {
   reactivation_ltv: "marketing",
   habit_loop_reminder: "service",
   saved_decision_revisit: "service",
+  partner_sales_cadence: "marketing",
   finance_follow_up: "transactional",
   partner_follow_up: "transactional",
 };

@@ -29,6 +29,15 @@ import {
   computeRetentionSignals,
   computePaidPlatformBreakdown
 } from './features/growth/growth-kpis.js';
+import {
+  initPartnerSalesMachineAdmin,
+  computeOnboardingVelocity,
+  velocityBadgeClass,
+  scorePartnerApplication,
+  recommendNextSalesAction,
+  logPartnerSalesTouch,
+  SALES_TOUCH_TYPES
+} from './features/sales/partner-sales-machine.js';
 
 const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
@@ -181,6 +190,7 @@ function showPage(name, el) {
     loadPartnerEndpoints();
   }
   if (name === 'partner-applications') {
+    initPartnerSalesMachineAdmin().catch(() => {});
     loadPartnerApplications();
   }
   if (name === 'partner-dispatch-logs') {
@@ -1750,13 +1760,19 @@ async function loadPartnerApplications() {
           <th>Durum</th>
           <th>Tarih</th>
           <th>Plan</th>
+          <th>Skor</th>
+          <th>Hız</th>
           <th>İşlem</th>
         </tr>
       </thead>
       <tbody>
-        ${data.map((row) => `
+        ${data.map((row) => {
+          const velocity = computeOnboardingVelocity(row);
+          const dealScore = scorePartnerApplication(row);
+          const nextAction = recommendNextSalesAction(row);
+          return `
           <tr>
-            <td><strong>${escapeHtml(row.company_name)}</strong><br><small>${escapeHtml(row.contact_name)}</small></td>
+            <td><strong>${escapeHtml(row.company_name)}</strong><br><small>${escapeHtml(row.contact_name)}</small><br><small class="text-muted">${escapeHtml(nextAction.action)}</small></td>
             <td>${escapeHtml(row.phone)}<br><small>${escapeHtml(row.email)}</small></td>
             <td>${escapeHtml(row.category)}${row.city ? `<br><small>${escapeHtml(row.city)}</small>` : ''}</td>
             <td>${row.webhook_ready ? 'Hazır' : 'Manuel'}${row.webhook_url_draft != null && row.webhook_url_draft !== '' ? `<br><small title="${safeAttr(row.webhook_url_draft)}">Taslak URL</small>` : ''}</td>
@@ -1769,12 +1785,19 @@ async function loadPartnerApplications() {
             </td>
             <td>${formatShortDate(row.created_at)}</td>
             <td><small>${escapeHtml(row.billing_plan != null ? row.billing_plan : 'pilot')}</small>${row.utm_source ? `<br><small>utm:${escapeHtml(row.utm_source)}</small>` : ''}</td>
+            <td><span class="badge badge-blue">${dealScore}</span></td>
+            <td><span class="badge ${velocityBadgeClass(velocity)} ib-sales-velocity-badge">${escapeHtml(velocity.label)}</span><br><small>${velocity.daysSinceApply}g · %${velocity.progressPct}</small></td>
             <td class="table-actions">
+              <select class="ib-sales-touch-select" data-action="log-partner-sales-touch" data-id="${safeAttr(row.id)}" data-stage="${safeAttr(row.status || '')}" data-tier="${safeAttr(row.billing_plan || '')}">
+                <option value="">Satış dokunuşu</option>
+                ${SALES_TOUCH_TYPES.map((t) => `<option value="${t.id}">${escapeHtml(t.label)}</option>`).join('')}
+              </select>
               ${row.onboarding_token ? `<a class="btn btn-ghost btn-sm" href="/partner-basvuru.html?token=${encodeURIComponent(row.onboarding_token)}&step=2" target="_blank" rel="noopener">Onboarding</a>` : ''}
               ${row.partner_endpoint_id == null || row.partner_endpoint_id === '' ? `<button type="button" class="btn btn-primary btn-sm" data-action="provision-partner-application" data-id="${safeAttr(row.id)}">Endpoint oluştur</button>` : '<span class="badge badge-green">Endpoint var</span>'}
             </td>
           </tr>
-        `).join('')}
+        `;
+        }).join('')}
       </tbody>
     </table>
   `;
@@ -2522,6 +2545,7 @@ async function openLeadDrawer(lead) {
     <div class="table-actions" style="margin-bottom:14px;flex-wrap:wrap;gap:10px;">
       ${lead.phone ? `<button class="btn btn-success btn-sm" data-action="track-whatsapp-click" data-email="${lead.email || ''}" data-phone="${lead.phone || ''}" data-whatsapp-url="${whatsappUrl}">WhatsApp</button>` : ''}
       ${lead.phone ? `<a class="btn btn-ghost btn-sm" href="tel:${lead.phone}">Ara</a>` : ''}
+      <button class="btn btn-ghost btn-sm" data-action="log-lead-sales-touch" data-id="${lead.id}" data-touch="follow_up">Satış takibi</button>
       <button class="btn btn-ghost btn-sm" data-action="complete-follow-up" data-id="${lead.id}">Takibi tamamla</button>
       <input type="datetime-local" class="form-input" id="follow-up-date" value="${lead.follow_up_at ? new Date(lead.follow_up_at).toISOString().slice(0, 16) : ''}" style="max-width:220px;">
       <button class="btn btn-ghost btn-sm" data-action="save-follow-up" data-id="${lead.id}">Takip kaydet</button>
@@ -2915,6 +2939,15 @@ function bindAdminPanelEvents() {
       return;
     }
 
+    if (action === 'log-lead-sales-touch') {
+      logPartnerSalesTouch(el.dataset.touch || 'follow_up', {
+        lead_id: id,
+        force: true
+      });
+      toast('CRM satış dokunuşu kaydedildi', 'success');
+      return;
+    }
+
     if (action === 'drawer-set-status') {
       updateAutoLeadStatus(id, el.dataset.status);
       return;
@@ -2958,6 +2991,20 @@ function bindAdminPanelEvents() {
         toast('Başvuru durumu güncellendi', 'success');
         loadPartnerApplications();
       });
+      return;
+    }
+
+    if (action === 'log-partner-sales-touch') {
+      const touchType = el.value;
+      if (!touchType) return;
+      logPartnerSalesTouch(touchType, {
+        application_id: id,
+        stage: el.dataset.stage,
+        tier: el.dataset.tier,
+        force: true
+      });
+      toast('Satış dokunuşu kaydedildi', 'success');
+      el.value = '';
       return;
     }
 

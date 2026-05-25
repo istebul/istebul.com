@@ -7,9 +7,9 @@ const crypto = require('crypto');
 const root = process.cwd();
 const dist = path.join(root, 'dist');
 const staticRoots = ['assets', 'data'];
-const copyGrowthDataDir = () => {
-  const src = path.join(root, 'data', 'growth');
-  const dest = path.join(dist, 'data', 'growth');
+const copyDataSubdir = (subdir) => {
+  const src = path.join(root, 'data', subdir);
+  const dest = path.join(dist, 'data', subdir);
   if (!fs.existsSync(src)) return;
   fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
@@ -17,7 +17,9 @@ const copyGrowthDataDir = () => {
     fs.copyFileSync(path.join(src, entry.name), path.join(dest, entry.name));
   }
 };
-const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'karar-moat.html', 'css/seo-landing.css', 'css/partner-platform.css', 'css/admin-partner-ops.css', 'css/growth-cro.css', 'css/growth-retention.css'];
+const copyGrowthDataDir = () => copyDataSubdir('growth');
+const copySalesDataDir = () => copyDataSubdir('sales');
+const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'hakkimizda.html', 'iletisim.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'karar-moat.html', 'css/seo-landing.css', 'css/partner-platform.css', 'css/admin-partner-ops.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/sales-partner.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const { injectRouteBootstrap } = require('./lib/route-bootstrap.cjs');
 const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
@@ -126,6 +128,7 @@ const minifyHtml = (source) => source
 
 staticRoots.forEach(copyDir);
 copyGrowthDataDir();
+copySalesDataDir();
 
 const lucideUmd = path.join(root, 'node_modules/lucide/dist/umd/lucide.min.js');
 if (!fs.existsSync(lucideUmd)) {

@@ -74,7 +74,8 @@ function buildEnrollBody(flowId, payload = {}) {
     flowId === 'abandoned_lead' ||
     flowId === 'reactivation_ltv' ||
     flowId === 'habit_loop_reminder' ||
-    flowId === 'saved_decision_revisit';
+    flowId === 'saved_decision_revisit' ||
+    flowId === 'partner_sales_cadence';
 
   return {
     flow_id: flowId,
@@ -272,6 +273,21 @@ export function enrollHabitLoopReminder(meta = {}) {
     },
     trigger_source: 'retention_habit',
     restart: Boolean(meta.restart)
+  });
+}
+
+export function enrollPartnerSalesCadence(meta = {}) {
+  return enrollLifecycle('partner_sales_cadence', {
+    email: resolveLifecycleEmail(meta),
+    marketing_consent: meta.marketing_consent ?? hasStoredMarketingConsent(resolveLifecycleEmail(meta) || ''),
+    context: {
+      application_id: meta.application_id,
+      company_name: meta.company_name,
+      billing_plan: meta.billing_plan,
+      status: meta.status
+    },
+    trigger_source: 'partner_ae_pipeline',
+    restart: true
   });
 }
 

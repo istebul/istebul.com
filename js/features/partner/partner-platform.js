@@ -29,7 +29,10 @@ export const PARTNER_FUNNEL_EVENTS = Object.freeze({
   ONBOARDING_COMPLETE: 'partner_onboarding_complete',
   TRUST_VIEW: 'partner_trust_view',
   PRICING_VIEW: 'partner_pricing_view',
-  PRICING_CTA: 'partner_pricing_cta'
+  PRICING_CTA: 'partner_pricing_cta',
+  SALES_TOUCH: 'partner_sales_touch',
+  OUTBOUND_SENT: 'partner_outbound_sent',
+  OBJECTION_VIEW: 'partner_objection_view'
 });
 
 function sessionKey(step) {

@@ -136,6 +136,16 @@
       ]
     },
     {
+      "id": "partner_sales_cadence",
+      "name": "Partner sales cadence",
+      "category": "revenue",
+      "steps": [
+        { "id": "ae_d0", "delayHours": 0, "templateId": "partner_followup", "subject": "Partner başvurunuz — sonraki adım" },
+        { "id": "ae_d2", "delayHours": 48, "templateId": "partner_followup", "subject": "Teklif ve pilot entegrasyon" },
+        { "id": "ae_d5", "delayHours": 120, "templateId": "onboarding_nudge", "subject": "Onboarding tamamlama hatırlatması" }
+      ]
+    },
+    {
       "id": "saved_decision_revisit",
       "name": "Saved decision revisit",
       "category": "retention",

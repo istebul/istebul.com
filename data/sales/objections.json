@@ -1,0 +1,53 @@
+{
+  "version": "p6.0",
+  "objections": [
+    {
+      "id": "price_transparency",
+      "category": "pricing",
+      "objection": "Fiyat neden sitede yok?",
+      "response": "CPL ve aylık kapasite kategori, coğrafya ve lead hacmine göre değişir. Starter referans bandı sıcak lead başına ₺5.000+; bağlayıcı teklif sözleşmede. Şeffaflık için bant paylaşıyoruz, sahte sabit fiyat listesi yok.",
+      "proof": "/partner-planlar.html",
+      "close": "Pilot 5 lead ile entegrasyonu doğrulayalım; ardından Starter veya Growth teklifi."
+    },
+    {
+      "id": "vs_classifieds",
+      "category": "competitive",
+      "objection": "Sahibinden / ilan siteleri zaten lead veriyor.",
+      "response": "isteBul ilan değil — karar altyapısı. Lead skorlu, TCO ve finansman bağlamıyla gelir; soğuk form trafiği değil. Partner webhook’una hot/very_hot öncelik ve outcome geri beslemesi.",
+      "proof": "/karar-moat.html",
+      "close": "İlk 5 sıcak lead pilotu ücretsiz — webhook imza testi ile kaliteyi ölçün."
+    },
+    {
+      "id": "kvkk_compliance",
+      "category": "trust",
+      "objection": "KVKK ve veri paylaşımı riskli.",
+      "response": "Teslimat KVKK uyumlu payload ile; marketing ayrı consent katmanı. Güven merkezinde iddia etmediğimiz sertifikaları açıkça belirtiyoruz — SOC2 iddiası yok.",
+      "proof": "/partner-guven.html",
+      "close": "Güvenlik incelemesi Enterprise pakette; Starter’da standart webhook + DPA süreci."
+    },
+    {
+      "id": "integration_effort",
+      "category": "technical",
+      "objection": "Entegrasyon uzun sürer.",
+      "response": "Self-serve onboarding 6 adım: uygunluk → webhook → HMAC test → canlı. Ortalama hedef 14 gün; admin onboarding linki ile adım atlama.",
+      "proof": "/partner-docs.html",
+      "close": "Bugün pilot başvurusu + teknik kickoff 30 dk."
+    },
+    {
+      "id": "sla_dispatch",
+      "category": "operations",
+      "objection": "Lead geç gelirse satış ekibim boşa çalışır.",
+      "response": "Dispatch hedefi Starter ≤15 dk, Growth ≤10 dk; retry 5× ve failover route. Admin’de teslimat logları ve manuel retry.",
+      "proof": "/partner-planlar.html",
+      "close": "Growth’ta yükseltilmiş priority_weight ve haftalık ops özeti."
+    },
+    {
+      "id": "roi_uncertain",
+      "category": "pricing",
+      "objection": "ROI kanıtlayamıyorsunuz.",
+      "response": "Outcome geri beslemesi (won/lost, actual_revenue) ile CPL gerçekleşen kazanıma bağlanır. Pilot sonrası kategori bazlı dönüşüm raporu talep edin.",
+      "proof": "/docs/investor/UNIT_ECONOMICS.md",
+      "close": "Pilot + 30 günlük kapasite teklifi — dönüşüm eşiğine göre tier yükseltme."
+    }
+  ]
+}

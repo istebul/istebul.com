@@ -1,10 +1,12 @@
 import { initCorporateUx } from '../runtime/corporate-ux.js';
-import { PARTNER_FUNNEL_EVENTS, trackPartnerFunnel } from '../features/partner/partner-platform.js';
 import {
   renderProductTierCards,
   renderComparisonTable,
   renderPricingFaq
 } from '../features/partner/partner-offers.js';
+import { renderObjectionPlaybookHtml } from '../features/sales/partner-objections.js';
+import { getPricingTalkTrack } from '../features/sales/partner-pricing-strategy.js';
+import { PARTNER_FUNNEL_EVENTS, trackPartnerFunnel } from '../features/partner/partner-platform.js';
 
 function mountPricingPage() {
   const root = document.getElementById('partner-pricing-root');
@@ -30,6 +32,13 @@ function mountPricingPage() {
       <div id="partner-pricing-faq-root"></div>
     </section>
 
+    <section class="ib-partner-pricing-sales" aria-labelledby="partner-sales-heading">
+      <h2 id="partner-sales-heading" class="section-title">Satış ekibi için: itirazlar ve kapanış</h2>
+      <p class="text-muted">Şeffaf fiyatlandırma ve karar altyapısı konumlandırması — bağlayıcı liste fiyatı iddiası olmadan.</p>
+      <div id="partner-sales-objections-root"></div>
+      <div id="partner-sales-talktrack-root"></div>
+    </section>
+
     <div class="final-cta-card ib-partner-final-cta">
       <p class="kicker">Self-serve</p>
       <h2>Teklif veya başvuru — aynı onboarding akışı</h2>
@@ -48,6 +57,33 @@ function mountPricingPage() {
   if (cardsRoot) cardsRoot.innerHTML = renderProductTierCards({ origin: window.location.origin });
   if (compareRoot) compareRoot.innerHTML = renderComparisonTable();
   if (faqRoot) faqRoot.innerHTML = renderPricingFaq();
+
+  const objectionsRoot = document.getElementById('partner-sales-objections-root');
+  const talkRoot = document.getElementById('partner-sales-talktrack-root');
+  if (objectionsRoot) {
+    renderObjectionPlaybookHtml({ compact: true }).then((html) => {
+      objectionsRoot.innerHTML = html;
+      trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.OBJECTION_VIEW, { path: '/partner-planlar.html' });
+      objectionsRoot.querySelectorAll('details').forEach((el) => {
+        el.addEventListener('toggle', () => {
+          if (el.open) {
+            trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.OBJECTION_VIEW, {
+              objection_id: el.dataset.objectionId
+            }, { oncePerSession: false });
+          }
+        });
+      });
+    });
+  }
+  if (talkRoot) {
+    const growth = getPricingTalkTrack('growth');
+    talkRoot.innerHTML = `
+      <aside class="ib-partner-pilot-banner">
+        <strong>${growth.headline}</strong>
+        <p>${growth.bandLine}</p>
+        <p class="text-muted">${growth.objectionHook}</p>
+      </aside>`;
+  }
 
   root.querySelectorAll('a[href*="partner-basvuru"]').forEach((link) => {
     link.addEventListener('click', () => {

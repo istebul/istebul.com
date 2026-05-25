@@ -27,7 +27,7 @@ describe('lifecycle-schedule', () => {
   });
 
   it('exposes P1.1 lifecycle flow ids', () => {
-    assert.equal(LIFECYCLE_FLOW_IDS.length, 15);
+    assert.equal(LIFECYCLE_FLOW_IDS.length, 16);
     assert.ok(LIFECYCLE_FLOW_IDS.includes('auto_results_ready'));
     assert.ok(LIFECYCLE_FLOW_IDS.includes('checkout_abandon_recovery'));
   });
@@ -37,5 +37,6 @@ describe('lifecycle-schedule', () => {
     assert.equal(isPublicEnrollFlow('retention_campaigns'), false);
     assert.equal(isPublicEnrollFlow('reactivation_ltv'), true);
     assert.equal(isPublicEnrollFlow('saved_decision_revisit'), true);
+    assert.equal(isPublicEnrollFlow('partner_sales_cadence'), true);
   });
 });

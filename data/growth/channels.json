@@ -35,6 +35,14 @@
       "kpi": "active_partners"
     },
     {
+      "id": "partner_outbound",
+      "name": "Partner outbound sales",
+      "type": "supply",
+      "defaultUtm": { "utm_source": "sales", "utm_medium": "outbound", "utm_campaign": "partner_ae" },
+      "primaryEvents": ["partner_outbound_sent", "partner_sales_touch", "partner_application_submit"],
+      "kpi": "qualified_partner_applications"
+    },
+    {
       "id": "lifecycle_email",
       "name": "Lifecycle email",
       "type": "retention",

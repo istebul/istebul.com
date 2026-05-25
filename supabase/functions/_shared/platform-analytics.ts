@@ -158,6 +158,10 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "retention_habit_action",
   "retention_habit_weekly_visit",
   "retention_habit_milestone",
+  "partner_sales_touch",
+  "partner_outbound_sent",
+  "partner_objection_view",
+  "partner_deal_scored",
   "newsletter_subscribe",
   // Lifecycle CRM
   "lifecycle_enrolled",
