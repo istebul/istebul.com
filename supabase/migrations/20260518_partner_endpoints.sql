@@ -29,6 +29,7 @@ create table if not exists public.partner_endpoints (
 
 alter table public.partner_endpoints enable row level security;
 
+drop policy if exists "admin full access partner endpoints" on public.partner_endpoints;
 create policy "admin full access partner endpoints"
 on public.partner_endpoints
 for all
