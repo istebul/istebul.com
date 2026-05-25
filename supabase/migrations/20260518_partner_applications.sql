@@ -27,6 +27,7 @@ create table if not exists public.partner_applications (
 
 alter table public.partner_applications enable row level security;
 
+drop policy if exists "admin full access partner applications" on public.partner_applications;
 create policy "admin full access partner applications"
 on public.partner_applications
 for all
