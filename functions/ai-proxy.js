@@ -1,5 +1,9 @@
+/** Canonical production origin (CORS fallback + smoke/audit checks). */
+const PRIMARY_ORIGIN = 'https://istebul.com';
+
+/** Browser origins allowed to call POST/OPTIONS /ai-proxy (no wildcard). */
 const ALLOWED_ORIGINS = new Set([
-  'https://istebul.com',
+  PRIMARY_ORIGIN,
   'https://www.istebul.com',
   'https://istebul-com.pages.dev'
 ]);
@@ -47,11 +51,13 @@ function isAllowedOrigin(origin) {
 }
 
 function corsHeaders(origin) {
-  const allowedOrigin = isAllowedOrigin(origin) ? origin : 'https://istebul.com';
+  const allowedOrigin = isAllowedOrigin(origin) ? origin : PRIMARY_ORIGIN;
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-ai-proxy-token',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Credentials': 'false',
+    Vary: 'Origin',
     'Content-Type': 'application/json'
   };
 }
