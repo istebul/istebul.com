@@ -921,6 +921,48 @@ async function loadExecutiveKpis() {
     windowDays
   });
 
+  const supportTickets = events.filter((e) =>
+    ['support_ticket_submitted', 'support_escalation', 'support_intent_routed'].includes(
+      e.event_name
+    )
+  ).length;
+
+  const { buildInvestorSnapshot } = await import('./features/metrics/investor-kpis.js');
+  const { buildUnitEconomicsModel, mergeAssumptions } = await import(
+    './features/investor/unit-economics-model.js'
+  );
+  const { renderUnitEconomicsPanel } = await import('./features/investor/unit-economics-views.js');
+
+  let assumptionsRaw = null;
+  let paidSpend = null;
+  try {
+    const [aRes, pRes] = await Promise.all([
+      fetch('/data/investor/unit-economics-model.json'),
+      fetch('/data/growth/paid-spend.json')
+    ]);
+    if (aRes.ok) assumptionsRaw = await aRes.json();
+    if (pRes.ok) paidSpend = await pRes.json();
+  } catch {
+    /* planning defaults */
+  }
+
+  const investor = buildInvestorSnapshot({
+    subscriptions: subsRes.data || [],
+    leads: leadsRes.data || [],
+    analyticsEvents: events
+  });
+
+  const unitModel = buildUnitEconomicsModel({
+    windowDays,
+    assumptions: assumptionsRaw ? mergeAssumptions(assumptionsRaw) : undefined,
+    executive: dash,
+    investor,
+    paidSpend,
+    supportTicketsInWindow: supportTickets
+  });
+
+  const unitEconomicsHtml = renderUnitEconomicsPanel(unitModel, escapeHtml);
+
   const fmtPct = (v) => (v == null ? '—' : `${v}%`);
   const c = dash.conversions.counts;
 
@@ -1007,9 +1049,11 @@ async function loadExecutiveKpis() {
       </tbody>
     </table>
 
+    ${unitEconomicsHtml}
+
     <details style="margin-top:16px">
       <summary>Snapshot JSON (board export)</summary>
-      <pre style="white-space:pre-wrap;font-size:12px;max-height:360px;overflow:auto;">${escapeHtml(JSON.stringify(dash, null, 2))}</pre>
+      <pre style="white-space:pre-wrap;font-size:12px;max-height:360px;overflow:auto;">${escapeHtml(JSON.stringify({ executive: dash, unitEconomics: unitModel }, null, 2))}</pre>
     </details>
   `;
 }

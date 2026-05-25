@@ -1,107 +1,104 @@
-# Unit Economics Framework
+# Unit Economics Model (P17)
 
-**Disclaimer:** Placeholder structure for investor models. Replace assumptions with live exports from `scripts/investor-metrics-snapshot.cjs` and Stripe dashboard.
+Investor-grade financial visibility: **CAC**, **LTV**, **ARPU**, **payback**, **gross margin**, **partner margin**, **AI cost per user**, **support cost**, and **conversion economics**.
 
----
-
-## Pro subscription (B2C SaaS)
-
-| Input | Source | Default assumption |
-|-------|--------|-------------------|
-| Monthly price | `plans.js` | ₺299 / month |
-| Annual price | `plans.js` | ₺2,870 / year (≈ ₺239 MRR equiv.) |
-| Trial | Stripe checkout | 7 days |
-| Active subs | `subscriptions` table | **Live export** |
-
-**Formulas:**
-
-```
-MRR_TRY = Σ normalized_monthly_revenue_per_active_subscription
-ARR_TRY = MRR_TRY × 12
-```
-
-Implementation: `js/features/metrics/investor-kpis.js` → `computeSubscriptionMetrics()`
-
-**Infra cost per Pro user (P16):**
-
-| Component | Guardrail | Doc |
-|-----------|-----------|-----|
-| Groq `/ai-proxy` | 400 max tokens, 20 req/min/IP, 3 calls/tab/hr | `docs/INFRA_UNIT_ECONOMICS.md` |
-| Resend lifecycle | 50 sends/cron run | same |
-| Supabase events | 90d retention purge, 50% sample on `page_exit`/`route_change` | `scripts/analytics-retention-purge.cjs` |
-| Cloudflare | Pages + immutable assets; no KV/R2 | `_headers`, `wrangler.toml` |
-
-```
-infra_usd_per_pro_mau ≈ (groq + resend + supabase_variable) / pro_mau
-gross_margin_pct ≈ (pro_arpu - stripe_fees - infra_usd_per_pro_mau) / pro_arpu
-```
-
-Snapshot: `node scripts/infra-unit-economics-snapshot.cjs`
-
-**Missing for full SaaS economics:**
-
-- Live Stripe fee % in margin formula
-- Churn % (need 3+ months cohort data)
-- Trial → paid %
+**Code:** `js/features/investor/unit-economics-model.js`  
+**Assumptions:** `data/investor/unit-economics-model.json`  
+**Admin:** Executive KPIs → Unit economics panel  
+**Export:** `npm run metrics:unit-economics` → `dist/unit-economics-snapshot.json`
 
 ---
 
-## Partner leads (marketplace / CPL)
+## Metrics map
 
-| Input | Source |
-|-------|--------|
-| Estimated commission | `auto-intake` → `estimateCommission()` |
-| Actual revenue | CRM `actual_revenue` |
-| Win rate | `partner_status` in `won` states |
+| Metric | Formula (TRY unless noted) | Live source |
+|--------|--------------------------|-------------|
+| **ARPU** | MRR ÷ billable subs | `executive-dashboard` / Stripe |
+| **CAC** | Marketing spend ÷ new paid conversions | `paid-spend.json` + `paid_conversion` events |
+| **LTV** | ARPU × gross_margin% × lifetime_months | Model + churn proxy |
+| **Payback** | CAC ÷ (ARPU × gross_margin%) | Derived |
+| **Gross margin** | (ARPU − Stripe − variable costs) ÷ ARPU | Stripe % + AI + support |
+| **Partner margin** | (Actual − partner share − dispatch) ÷ actual | `auto_leads` CRM |
+| **AI cost / user** | Groq calls/mo × $/call × FX | P16 infra guardrails |
+| **Support cost / user** | Tickets/MAU × cost/ticket | Support analytics events |
+| **Conversion economics** | Cost/lead, cost/paid, rev/paid, funnel CR% | Executive funnel |
 
-**Placeholder ranges** (`plans.js` `PARTNER_OFFERS` — validate with contracts):
+---
 
-| Partner type | Hint |
-|--------------|------|
-| Dealer lead | ₺5,000+ hot lead |
-| Finance approval | ₺2,000+ |
-| Insurance policy | ₺1,500+ |
-| Premium report | ₺499+ |
-
-**Formulas:**
+## Formulas
 
 ```
-Pipeline_VALUE = Σ estimated_revenue
-Realized_VALUE = Σ actual_revenue
-Blended_ARR_signal = Pro_ARR + Realized_VALUE (annualized if recurring)
+monthly_churn_proxy = cancel_at_period_end / active_billable  (capped 0.5%–25%)
+lifetime_months = 1 / monthly_churn_proxy  (cap 60, else target 14)
+gross_margin_pct = (ARPU - stripe_fees - variable_cost_per_user) / ARPU
+LTV = ARPU × gross_margin_pct × lifetime_months
+CAC = Σ paid_spend / new_paid_users_in_window
+payback_months = CAC / (ARPU × gross_margin_pct)
+LTV_CAC_ratio = LTV / CAC
+
+partner_net = actual_revenue - take_rate% - (leads × dispatch_cost)
+partner_margin_pct = partner_net / actual_revenue
+
+ai_cost_per_pro = ai_calls_per_month × est_usd_per_call × usd_try
+support_cost_per_user = (tickets / MAU) × cost_per_ticket (or modeled default)
 ```
 
 ---
 
-## LTV / CAC (model placeholders)
+## Planning assumptions (default)
 
-Investors should receive a spreadsheet with:
+| Driver | Value |
+|--------|-------|
+| Pro ARPU | ₺299/mo |
+| Target CAC | ₺1.200 |
+| Target gross margin | 72% |
+| Target LTV months | 14 |
+| Target payback | ≤ 6 months |
+| LTV/CAC minimum | 3× |
+| Stripe fee | 3.2% + ₺2.5 |
+| AI calls / Pro / month | 4 |
+| Support | 12 tickets / 1k MAU · ₺85/ticket |
 
-```
-LTV_pro = ARPU_monthly × gross_margin × (1 / churn_monthly)
-LTV_lead = avg_actual_revenue_per_won_lead × leads_per_user × retention_factor
-
-CAC = marketing_spend / new_paid_users
-Payback_months = CAC / (ARPU_monthly × gross_margin)
-```
-
-**Not auto-computed in product** — requires ad spend import (Meta/Google) and finance model.
-
----
-
-## Sensitivity (deck slide)
-
-| Scenario | Driver |
-|----------|--------|
-| Bull | Pro conversion 5%+ · 3 partner LOIs · live data |
-| Base | Current funnel · modeled CPL |
-| Bear | Simulation-only · partner delays · churn >10% |
+Edit `data/investor/unit-economics-model.json` for board scenarios.
 
 ---
 
-## Data sources for quarterly investor updates
+## Live data imports
 
-1. `node scripts/investor-metrics-snapshot.cjs`
-2. Stripe Dashboard → MRR chart
-3. Admin → Investor KPIs
-4. CRM export `auto_leads` CSV
+1. **Paid spend (CAC):** Copy `data/growth/paid-spend.template.json` → `paid-spend.json` weekly (Meta, Google, etc.).
+2. **Subscriptions (ARPU/MRR):** Supabase `subscriptions` + `investor-kpis.js`.
+3. **Funnel (conversion economics):** `analytics_events` via executive dashboard (30d window).
+4. **Partner margin:** `auto_leads.estimated_revenue` vs `actual_revenue`.
+
+---
+
+## CLI exports
+
+```bash
+# Live (requires Supabase service role)
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run metrics:unit-economics
+
+# Planning-only (assumptions + formulas, no DB)
+node scripts/unit-economics-snapshot.cjs --planning
+
+# Related
+npm run metrics:investor
+node scripts/infra-unit-economics-snapshot.cjs
+```
+
+---
+
+## Investor workflow
+
+1. Weekly: `metrics:unit-economics` + `metrics:investor` → attach JSON to data room.
+2. Reconcile MRR with Stripe (`docs/investor/STRIPE_MRR_EVIDENCE.md`).
+3. Present **LTV/CAC** and **payback** with explicit spend import status (`model.health`).
+4. Show **partner margin** separately from Pro SaaS (hybrid revenue story).
+
+---
+
+## Related docs
+
+- `docs/INFRA_UNIT_ECONOMICS.md` — AI/email/Supabase cost guardrails (P16)
+- `data/investor/financial-model.json` — 36m scenario model
+- `docs/investor/INVESTOR_METRICS_STORY.md` — narrative slides

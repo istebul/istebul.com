@@ -33,6 +33,7 @@
   },
   "exports": {
     "metricsSnapshot": "dist/investor-metrics-snapshot.json",
+    "unitEconomicsSnapshot": "dist/unit-economics-snapshot.json",
     "readinessPack": "dist/investor-readiness-pack.json"
   },
   "commands": {
