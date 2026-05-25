@@ -3,14 +3,16 @@
  */
 import { readStorageRaw, writeStorageRaw, STORAGE_KEYS } from '../../core/storage-keys.js';
 import { analytics } from '../../core/analytics.js';
+import { requireSupabasePublicEnv } from '../../runtime/env-config.js';
 
 const ENROLLED_KEY = 'istebul_lifecycle_enrolled';
 
 function getSupabaseConfig() {
-  const url = window.__env?.SUPABASE_URL;
-  const key = window.__env?.SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  return { url, key };
+  try {
+    return requireSupabasePublicEnv();
+  } catch {
+    return null;
+  }
 }
 
 function sessionEnrollKey(flowId) {

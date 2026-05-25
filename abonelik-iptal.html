@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>E-posta aboneliğinden çık | isteBul</title>
-  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/style.css?v=58">
+  <link rel="stylesheet" href="/css/enterprise-polish.css?v=1">
+  <script src="/env.js" defer></script>
 </head>
 <body class="legal-page">
   <main class="container" style="max-width:520px;margin:48px auto;padding:24px">
@@ -12,17 +14,20 @@
     <p>Pazarlama ve hatırlatma e-postalarından çıkmak için e-posta adresinizi girin.</p>
     <form id="unsubscribe-form">
       <label for="unsub-email">E-posta</label>
-      <input id="unsub-email" name="email" type="email" required autocomplete="email" style="width:100%;margin:8px 0 16px;padding:12px">
-      <button type="submit" class="btn primary">Abonelikten çık</button>
+      <input id="unsub-email" name="email" type="email" required autocomplete="email" class="form-control" style="width:100%;margin:8px 0 16px;padding:12px">
+      <button type="submit" class="btn btn-primary">Abonelikten çık</button>
     </form>
     <p id="unsub-status" role="status" style="margin-top:16px"></p>
-    <p style="margin-top:24px;font-size:14px;color:#64748b">
+    <p style="margin-top:24px;font-size:14px;color:var(--text-secondary)">
       İşlem sonrası aktif lifecycle akışlarınız iptal edilir. Yasal bildirimler ve sözleşme e-postaları bu kapsam dışındadır.
     </p>
     <p><a href="/">Ana sayfaya dön</a></p>
   </main>
-  <script src="/dist/env.js"></script>
   <script type="module">
+    import { showToast, initGlobalToastStyles } from '/js/runtime/ui-toast.js';
+
+    initGlobalToastStyles();
+
     const params = new URLSearchParams(window.location.search);
     const emailInput = document.getElementById('unsub-email');
     const status = document.getElementById('unsub-status');
@@ -37,13 +42,15 @@
       const url = window.__env?.SUPABASE_URL;
       const key = window.__env?.SUPABASE_ANON_KEY;
       if (!url || !key) {
-        status.textContent = 'Sistem yapılandırması eksik. Lütfen destek ile iletişime geçin.';
+        const msg = 'Sistem yapılandırması eksik. Lütfen destek ile iletişime geçin.';
+        status.textContent = msg;
+        showToast(msg, 'error');
         return;
       }
 
       status.textContent = 'İşleniyor…';
       try {
-        const res = await fetch(`${url}/functions/v1/lifecycle-enroll`, {
+        const res = await fetch(`${url.replace(/\/$/, '')}/functions/v1/lifecycle-enroll`, {
           method: 'POST',
           headers: {
             apikey: key,
@@ -54,13 +61,19 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          status.textContent = data.error || 'İşlem tamamlanamadı.';
+          const msg = data.error || 'İşlem tamamlanamadı.';
+          status.textContent = msg;
+          showToast(msg, 'error');
           return;
         }
-        status.textContent = 'Talebiniz alındı. Pazarlama e-postaları durduruldu.';
+        const ok = 'Talebiniz alındı. Pazarlama e-postaları durduruldu.';
+        status.textContent = ok;
+        showToast(ok, 'success');
         emailInput.value = '';
       } catch {
-        status.textContent = 'Bağlantı hatası. Lütfen tekrar deneyin.';
+        const msg = 'Bağlantı hatası. Lütfen tekrar deneyin.';
+        status.textContent = msg;
+        showToast(msg, 'error');
       }
     });
   </script>

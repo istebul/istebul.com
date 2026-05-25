@@ -5,12 +5,14 @@ import { analytics } from '../../core/analytics.js';
 import { enrollLifecycle } from '../lifecycle/lifecycle-client.js';
 import { buildFaqCorpus, searchFaqArticles } from './faq-automation.js';
 import { routeSupportRequest } from './support-router.js';
+import { requireSupabasePublicEnv } from '../../runtime/env-config.js';
 
 function getSupabaseConfig() {
-  const url = window.__env?.SUPABASE_URL;
-  const key = window.__env?.SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  return { url, key };
+  try {
+    return requireSupabasePublicEnv();
+  } catch {
+    return null;
+  }
 }
 
 export async function enrollOnboardingHelp(meta = {}) {

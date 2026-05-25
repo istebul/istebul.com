@@ -1,0 +1,66 @@
+/**
+ * Layout guard — prevent horizontal scroll & z-index clashes (1280–1920 desktop, 375–430 mobile).
+ */
+html {
+  overflow-x: clip;
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+img,
+video,
+iframe,
+table {
+  max-width: 100%;
+}
+
+.container,
+.nav-container,
+.hero-container {
+  width: 100%;
+  max-width: min(var(--layout-max, 1180px), calc(100vw - var(--spacing-md, 1rem) * 2));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.navbar {
+  z-index: var(--z-nav, 1000);
+}
+
+.nav-dropdown-content {
+  z-index: var(--z-dropdown, 1100);
+}
+
+.modal {
+  z-index: var(--z-modal, 2000);
+}
+
+@media (min-width: 1280px) {
+  .hero-section,
+  .section,
+  .guide-section {
+    overflow-x: clip;
+  }
+}
+
+@media (max-width: 430px) {
+  .nav-menu.show {
+    max-height: min(80vh, calc(100dvh - 4rem));
+    overflow-y: auto;
+  }
+
+  .hero-actions,
+  .form-actions {
+    flex-wrap: wrap;
+  }
+
+  .hero-actions .btn,
+  .form-actions .btn {
+    width: 100%;
+    max-width: 100%;
+  }
+}
