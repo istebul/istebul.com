@@ -18,6 +18,8 @@ const mustExist = [
   'data/growth/channels.json',
   'js/features/growth/growth-kpis.js',
   'js/features/growth/growth-experiments.js',
+  'js/features/growth/cro-experiment-framework.js',
+  'data/growth/cro-framework.json',
   'js/features/growth/paid-growth.js',
   'js/features/growth/retention-engine.js',
   'js/runtime/growth-ops.js',

@@ -27,6 +27,7 @@
     <script src="/env.js" defer></script>
     <!-- perf:preload-style -->
     <link rel="stylesheet" href="css/style.css?v=57">
+    <link rel="stylesheet" href="css/growth-cro.css?v=1">
 
 <style>
 .hidden{display:none!important;}
@@ -177,7 +178,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             <span><i data-lucide="shield-check"></i> KVKK uyumlu veri işleme</span>
             <span><i data-lucide="lock"></i> Uçtan uca şifreleme (TLS)</span>
             <span><i data-lucide="building-2"></i> Kurumsal karar altyapısı</span>
-            <span><i data-lucide="badge-check"></i> Denetlenebilir metodoloji</span>
+            <span data-cro-trust-rail-item="methodology"><i data-lucide="badge-check"></i> Denetlenebilir metodoloji</span>
         </div>
     </div>
 
@@ -272,7 +273,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             <div class="container">
                 <header class="section-header ib-section-intro">
                     <span class="section-kicker">Güvenilirlik</span>
-                    <h2>Karar için netlik — pazarlama söylemi değil</h2>
+                    <h2 data-cro-trust-headline>Karar için netlik — pazarlama söylemi değil</h2>
                     <p>Skor, TCO ve güven bandı deterministik kurallarla hesaplanır. İlan siteleri envanter arar; kredi siteleri oran listeler — isteBul toplam maliyete göre karar çerçevesi üretir.</p>
                 </header>
             <div class="trust-grid">
@@ -314,7 +315,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                     </ol>
                     <div class="ib-methodology-teaser-actions">
                         <a href="/metodoloji" class="btn btn-outline" data-native-route>Metodoloji detayı</a>
-                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="methodology_teaser">Analizi başlat</a>
+                        <a href="/auto/" class="btn btn-primary" data-cro-cta-methodology data-analytics-cta="cta_primary_auto" data-analytics-placement="methodology_teaser"><span class="growth-exp-label">Analizi başlat</span></a>
                     </div>
                 </div>
             </div>
@@ -794,7 +795,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
         </section>
 
     <div class="cro-sticky-cta" role="region" aria-label="Hızlı başlangıç">
-        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="sticky" title="Ücretsiz TCO analizi başlat">TCO analizini başlat</a>
+        <a href="/auto/" class="btn btn-primary" data-cro-cta-sticky data-analytics-cta="cta_primary_auto" data-analytics-placement="sticky" title="Ücretsiz TCO analizi başlat"><span class="growth-exp-label">TCO analizini başlat</span></a>
     </div>
 
     <!-- Scripts -->

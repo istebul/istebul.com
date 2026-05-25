@@ -1,7 +1,11 @@
 /**
  * Growth ops bootstrap — experiments, paid capture, retention, CRO hooks.
  */
-import { initGrowthExperiments, trackExperimentConversion } from '../features/growth/growth-experiments.js';
+import {
+  initGrowthExperiments,
+  refreshGrowthExperiments,
+  trackExperimentConversion
+} from '../features/growth/growth-experiments.js';
 import {
   capturePaidAttribution,
   trackPaidLandingView
@@ -32,12 +36,45 @@ export function initGrowthOps() {
     runExperiments();
   });
 
+  document.addEventListener('ib:pricing-rendered', () => {
+    refreshGrowthExperiments().catch(() => {});
+  });
+
+  document.addEventListener('ib:wizard-rendered', () => {
+    refreshGrowthExperiments().catch(() => {});
+  });
+
   document.addEventListener('click', (event) => {
+    if (!analytics.hasConsent()) return;
+
     const cta = event.target.closest('[data-analytics-cta]');
-    if (!cta || !analytics.hasConsent()) return;
-    const ctaId = cta.getAttribute('data-analytics-cta') || '';
-    if (ctaId.includes('cta_primary') || ctaId.includes('checkout')) {
+    if (cta) {
+      const ctaId = cta.getAttribute('data-analytics-cta') || '';
       trackExperimentConversion(ctaId);
+      if (ctaId.includes('cta_primary_auto')) trackExperimentConversion('hero_cta_click');
+      if (ctaId.includes('checkout')) trackExperimentConversion('checkout_start');
+    }
+
+    if (event.target.closest('[data-wizard-next]')) {
+      trackExperimentConversion('wizard_step_advance');
+    }
+
+    if (event.target.closest('#trust .trust-card, [data-cro-trust-headline]')) {
+      trackExperimentConversion('trust_block_view');
     }
   }, { capture: true });
+
+  const trustSection = document.getElementById('trust');
+  if (trustSection && 'IntersectionObserver' in window) {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          trackExperimentConversion('trust_block_view');
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+    obs.observe(trustSection);
+  }
 }

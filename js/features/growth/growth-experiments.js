@@ -1,24 +1,48 @@
 /**
- * Growth experimentation — deterministic variant assignment + exposure tracking.
+ * Growth experimentation — P5.2 CRO framework integration.
  */
 import { analytics } from '../../core/analytics.js';
 import { readStorageRaw, writeStorageRaw, STORAGE_KEYS } from '../../core/storage-keys.js';
 import { trackGrowth } from './growth-engine.js';
+import {
+  pickVariant,
+  surfaceMatches,
+  applyCroVariant,
+  metricMatchesExperiment,
+  validateExperimentWeights,
+  CRO_FRAMEWORK_VERSION
+} from './cro-experiment-framework.js';
 
 const VARIANT_KEY = 'istebul_growth_experiment_variants';
 
 let experimentRegistry = null;
+let metricAliases = {};
+
+async function loadMetricAliases() {
+  try {
+    const res = await fetch('/data/growth/cro-framework.json');
+    if (!res.ok) return {};
+    const data = await res.json();
+    return data.metricAliases || {};
+  } catch {
+    return {};
+  }
+}
 
 async function loadExperiments() {
   if (experimentRegistry) return experimentRegistry;
 
   try {
-    const res = await fetch('/data/growth/experiments.json');
-    if (!res.ok) return { experiments: [] };
-    experimentRegistry = await res.json();
+    const [expRes, aliasMap] = await Promise.all([
+      fetch('/data/growth/experiments.json'),
+      loadMetricAliases()
+    ]);
+    metricAliases = aliasMap;
+    if (!expRes.ok) return { experiments: [], frameworkVersion: CRO_FRAMEWORK_VERSION };
+    experimentRegistry = await expRes.json();
     return experimentRegistry;
   } catch {
-    return { experiments: [] };
+    return { experiments: [], frameworkVersion: CRO_FRAMEWORK_VERSION };
   }
 }
 
@@ -39,59 +63,14 @@ function writeAssignments(map) {
   }
 }
 
-function hashToBucket(seed) {
-  let h = 0;
-  for (let i = 0; i < seed.length; i += 1) {
-    h = ((h << 5) - h) + seed.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h) % 100;
-}
-
-function pickVariant(experiment, anonId) {
-  const bucket = hashToBucket(`${experiment.id}:${anonId}`);
-  let cursor = 0;
-  for (const variant of experiment.variants || []) {
-    cursor += Number(variant.weight) || 0;
-    if (bucket < cursor) return variant;
-  }
-  return experiment.variants?.[0] || null;
-}
-
-function surfaceMatches(pathname, surfaces = []) {
-  const path = pathname || '';
-  return surfaces.some((s) => {
-    if (s === path) return true;
-    if (s.endsWith('/') && path.startsWith(s)) return true;
-    return path === s.replace(/\/index\.html$/, '/') || path === s;
-  });
-}
-
-function applyCopyVariant(copyMap = {}) {
-  Object.entries(copyMap).forEach(([selector, text]) => {
-    document.querySelectorAll(selector).forEach((el) => {
-      let label = el.querySelector('.growth-exp-label');
-      if (!label) {
-        label = document.createElement('span');
-        label.className = 'growth-exp-label';
-        el.appendChild(label);
-      }
-      label.textContent = text;
-    });
-  });
-}
-
-export async function initGrowthExperiments() {
-  if (typeof document === 'undefined' || typeof window === 'undefined') return;
-
-  const registry = await loadExperiments();
-  const pathname = window.location.pathname;
-  const anonId = analytics.getAnonymousId();
+function assignVariants(registry, pathname, anonId) {
   const assignments = readAssignments();
+  const applied = [];
 
   for (const experiment of registry.experiments || []) {
     if (experiment.status !== 'active') continue;
     if (!surfaceMatches(pathname, experiment.surfaces)) continue;
+    if (!validateExperimentWeights(experiment)) continue;
 
     let variantId = assignments[experiment.id];
     if (!variantId) {
@@ -106,37 +85,89 @@ export async function initGrowthExperiments() {
     if (!variant) continue;
 
     document.documentElement.dataset[`exp_${experiment.id}`] = variantId;
-    applyCopyVariant(variant.copy);
+    if (experiment.zone) {
+      document.documentElement.dataset[`cro_zone_${experiment.zone}`] = variantId;
+    }
 
-    if (analytics.hasConsent()) {
-      trackGrowth('growth_experiment_exposure', {
+    applyCroVariant(variant);
+    applied.push({ experiment, variantId });
+  }
+
+  return applied;
+}
+
+function trackExposures(applied) {
+  if (!analytics.hasConsent()) return;
+
+  for (const { experiment, variantId } of applied) {
+    trackGrowth(
+      'growth_experiment_exposure',
+      {
         experiment_id: experiment.id,
         variant_id: variantId,
-        primary_metric: experiment.primaryMetric
-      }, {
+        zone: experiment.zone || 'unknown',
+        primary_metric: experiment.primaryMetric,
+        framework: experimentRegistry?.frameworkVersion || CRO_FRAMEWORK_VERSION
+      },
+      {
         funnel: 'experimentation',
         funnel_step: 'exposure',
         idempotency_key: `exp:${experiment.id}:${variantId}:${analytics.getSessionId()}`
-      });
-    }
+      }
+    );
   }
 }
 
+export async function initGrowthExperiments() {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
+  const registry = await loadExperiments();
+  const pathname = window.location.pathname;
+  const anonId = analytics.getAnonymousId();
+  const applied = assignVariants(registry, pathname, anonId);
+  trackExposures(applied);
+}
+
+/** Re-apply assigned variants after dynamic DOM (pricing/checkout). */
+export async function refreshGrowthExperiments() {
+  if (typeof document === 'undefined') return;
+  const registry = await loadExperiments();
+  assignVariants(registry, window.location.pathname, analytics.getAnonymousId());
+}
+
 /**
- * Call when primary metric fires (e.g. hero CTA click).
+ * Call when a primary metric fires — only attributes matching experiments.
+ * @param {string} metricEvent
  */
 export function trackExperimentConversion(metricEvent) {
-  if (!analytics.hasConsent()) return;
+  if (!analytics.hasConsent() || !metricEvent) return;
 
   const assignments = readAssignments();
-  Object.entries(assignments).forEach(([experimentId, variantId]) => {
-    trackGrowth('growth_experiment_conversion', {
-      experiment_id: experimentId,
-      variant_id: variantId,
-      metric_event: metricEvent
-    }, {
-      funnel: 'experimentation',
-      funnel_step: 'conversion'
-    });
-  });
+  const registry = experimentRegistry || { experiments: [] };
+
+  for (const experiment of registry.experiments || []) {
+    const variantId = assignments[experiment.id];
+    if (!variantId) continue;
+    if (!metricMatchesExperiment(experiment, metricEvent, metricAliases)) continue;
+
+    trackGrowth(
+      'growth_experiment_conversion',
+      {
+        experiment_id: experiment.id,
+        variant_id: variantId,
+        zone: experiment.zone || 'unknown',
+        metric_event: metricEvent,
+        primary_metric: experiment.primaryMetric
+      },
+      {
+        funnel: 'experimentation',
+        funnel_step: 'conversion',
+        idempotency_key: `exp_conv:${experiment.id}:${variantId}:${metricEvent}:${analytics.getSessionId()}`
+      }
+    );
+  }
+}
+
+export function getActiveExperimentAssignments() {
+  return { ...readAssignments() };
 }

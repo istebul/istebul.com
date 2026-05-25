@@ -1952,13 +1952,20 @@ function renderWizard() {
 
     ${bodyHtml}
 
+    <p class="wizard-cro-hint text-muted-sm" data-cro-wizard-hint>Sonraki adım</p>
     <div class="wizard-actions">
       <button type="button" class="btn secondary" data-wizard-back ${wizardIndex === 0 ? 'disabled' : ''}>Geri</button>
       <button type="button" class="btn primary" data-wizard-next ${canProceed ? '' : 'disabled'}>
-        ${wizardIndex === wizardSteps.length - 1 ? CONVERSION_COPY.auto.wizardFinish : CONVERSION_COPY.auto.wizardNext}
+        <span class="growth-exp-label">${wizardIndex === wizardSteps.length - 1 ? CONVERSION_COPY.auto.wizardFinish : CONVERSION_COPY.auto.wizardNext}</span>
       </button>
     </div>
   `;
+
+  try {
+    document.dispatchEvent(new CustomEvent('ib:wizard-rendered', { bubbles: true }));
+  } catch {
+    /* ignore */
+  }
 }
 
 function showWizardInlineError(message) {

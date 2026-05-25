@@ -396,6 +396,10 @@ export class RevenueManager {
   initPricingControls(root = document.getElementById('pricing-plans-root')) {
     if (!root) return;
 
+    if (typeof document !== 'undefined') {
+      document.dispatchEvent(new CustomEvent('ib:pricing-rendered', { bubbles: true }));
+    }
+
     const radios = root.querySelectorAll('input[name="billing-interval"]');
     const priceDisplay = root.querySelector('[data-revenue-price-display]');
     const priceEquiv = root.querySelector('[data-revenue-price-equiv]');
