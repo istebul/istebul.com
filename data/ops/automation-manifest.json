@@ -54,6 +54,7 @@
     { "npm": "metrics:ops", "script": "scripts/operational-health-snapshot.cjs", "output": "dist/operational-health-snapshot.json" },
     { "npm": "metrics:ops:center", "script": "scripts/ops-command-center.cjs", "output": "dist/ops-command-center.json" },
     { "npm": "metrics:startup:operating", "script": "scripts/startup-operating-snapshot.cjs", "output": "dist/startup-operating-snapshot.json" },
+    { "npm": "metrics:scale:architecture", "script": "scripts/scale-architecture-snapshot.cjs", "output": "dist/scale-architecture-report.json" },
     { "npm": "ops:automation:run", "script": "scripts/ops-automation-run.cjs", "output": "dist/ops-automation-report.json" },
     { "npm": "metrics:partner:ops", "script": "scripts/partner-ops-snapshot.cjs", "output": "dist/partner-ops-snapshot.json" },
     { "npm": "partner:ops:run", "script": "scripts/partner-ops-automation-run.cjs", "output": "dist/partner-ops-automation-report.json" },
@@ -80,6 +81,7 @@
     { "page": "observability", "label": "Observability" },
     { "page": "ops-command-center", "label": "Ops Command Center" },
     { "page": "startup-operating-center", "label": "Startup Operating Center" },
+    { "page": "scale-architecture", "label": "Scale Architecture" },
     { "page": "platform-analytics", "label": "Platform Analytics" },
     { "page": "partner-dispatch-logs", "label": "Dispatch Logs" }
   ]

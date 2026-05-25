@@ -50,7 +50,12 @@
       "owner": "scale_architect",
       "targetState": "Analytics retention + caps; AI cost bounded; warehouse export path",
       "roadmapRef": "docs/INFRA_UNIT_ECONOMICS.md",
-      "linkedData": ["data/ops/infra-unit-economics.json", "js/core/scale-limits.js"]
+      "linkedData": [
+        "data/ops/infra-unit-economics.json",
+        "data/ops/scale-architecture-scenarios.json",
+        "js/core/scale-limits.js",
+        "docs/SCALE_ARCHITECTURE_EXECUTION.md"
+      ]
     },
     {
       "id": "workflows",

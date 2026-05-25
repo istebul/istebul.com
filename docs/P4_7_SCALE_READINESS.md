@@ -1,5 +1,7 @@
 # P4.7 — Venture scale readiness audit
 
+> **Full execution matrix (P19):** [`SCALE_ARCHITECTURE_EXECUTION.md`](./SCALE_ARCHITECTURE_EXECUTION.md) · Admin: Scale Architecture · `npm run metrics:scale:architecture`
+
 Scenarios: **10K MAU**, **100K MAU**, **1M MAU** (order-of-magnitude planning; not capacity guarantees).
 
 ## Executive summary

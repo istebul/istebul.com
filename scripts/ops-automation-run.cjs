@@ -76,6 +76,17 @@ async function main() {
       }
     }
 
+    const scaleArch = spawnSync('node', [path.join(root, 'scripts/scale-architecture-snapshot.cjs')], {
+      cwd: root,
+      env: process.env,
+      encoding: 'utf8'
+    });
+    report.steps.push({
+      id: 'scale_architecture_snapshot',
+      ok: scaleArch.status === 0,
+      stderr: scaleArch.stderr?.slice(0, 500) || null
+    });
+
     const startup = spawnSync('node', [path.join(root, 'scripts/startup-operating-snapshot.cjs')], {
       cwd: root,
       env: process.env,

@@ -31,4 +31,5 @@ jobs:
             dist/ops-command-center.json
             dist/ops-automation-report.json
             dist/startup-operating-snapshot.json
+            dist/scale-architecture-report.json
           if-no-files-found: ignore
