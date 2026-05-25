@@ -4,6 +4,8 @@
 
 **Kapsam (8 dikey):** konut · kredi · sigorta · tatil · elektronik · eğitim · sağlık · yatırım
 
+**P8 odak (5 kategori):** ev · tatil · finans · sigorta · education — ayrıntılı strategist planı: [`EXPANSION_STRATEGY_ROADMAP.md`](./EXPANSION_STRATEGY_ROADMAP.md), veri: `data/platform/expansion-roadmap.json`, özet: [`P8_CATEGORY_EXPANSION.md`](./P8_CATEGORY_EXPANSION.md).
+
 **Referans implementasyon:** `isteBul Auto` (`/auto/`) — truth layer, intake, CRM, Pro monetization.
 
 ---
@@ -491,4 +493,4 @@ Yeni bir dikey (ör. `elektronik`) eklerken:
 
 ---
 
-*Son güncelleme: platform expansion planning — branch `cursor/platform-expansion-roadmap-0bbd`.*
+*Son güncelleme: 2026-05-24 — P8 five-category strategy on `main`; audit: `scripts/p8-category-expansion-audit.cjs`.*

@@ -1,0 +1,257 @@
+{
+  "version": "p8.0",
+  "updatedAt": "2026-05-24",
+  "scope": ["ev", "tatil", "finans", "sigorta", "education"],
+  "strategicThesis": "Auto golden path → platform registry → 5-category decision graph with shared leads, cross-sell, and partner CPL.",
+  "foundationPhase": {
+    "id": "faz_0",
+    "name": "Platform foundation",
+    "blocking": true,
+    "deliverables": [
+      "js/platform/category-registry.js",
+      "decision_leads + decision-intake edge function",
+      "CRM vertical filter on unified leads",
+      "market_data Supabase publish",
+      "analytics vertical_id dimension"
+    ],
+    "successCriterion": "tatil kararı Supabase lead oluşturur; admin CRM'de vertical_id ile görünür"
+  },
+  "categories": [
+    {
+      "id": "ev",
+      "slug": "konut",
+      "displayName": "Ev / Konut",
+      "type": "asset_purchase",
+      "maturityPercent": 70,
+      "codeAnchors": [
+        "js/app.js:createDecisionAssistantConfig.ev",
+        "estimateHomeOwnershipCost",
+        "hero preview tab ev"
+      ],
+      "liveSurfaces": ["Karar Asistanı (ev)", "Hero preview", "Demo listings"],
+      "gaps": ["property_catalog", "/konut/ dedicated app", "decision_leads intake", "live listing index"],
+      "monetization": {
+        "b2c": ["Pro bölge raporu", "Tapu checklist"],
+        "b2b": ["Mortgage broker CPL", "Emlak ofisi lead"],
+        "priority": "high"
+      },
+      "gtm": {
+        "icp": "İlk ev / taşınma / yatırım amaçlı alıcı (İstanbul, Ankara, İzmir)",
+        "partners": ["emlak_ofisi", "mortgage_broker"],
+        "seo": ["konut karar", "aidat kredi hesaplama", "DASK maliyet"]
+      },
+      "crossSell": ["finans", "sigorta"],
+      "regulation": ["Tapu uyarıları", "Örnek oran etiketi (kredi embed)"]
+    },
+    {
+      "id": "tatil",
+      "slug": "tatil",
+      "displayName": "Tatil",
+      "type": "service_package",
+      "maturityPercent": 75,
+      "codeAnchors": [
+        "js/app.js:createDecisionAssistantConfig.tatil",
+        "42 destinasyon catalog",
+        "calculateAssistantScores tatil"
+      ],
+      "liveSurfaces": ["Karar Asistanı (tatil)", "Hero preview", "Demo vacation search"],
+      "gaps": ["/tatil/ app route", "travel_packages DB", "OTA partner intake", "decision_leads"],
+      "monetization": {
+        "b2c": ["Tam paket AI özet (Pro)"],
+        "b2b": ["OTA / tur operatörü CPL"],
+        "priority": "medium-high"
+      },
+      "gtm": {
+        "icp": "Aile / çift tatil planlayıcı; sezon öncesi peak",
+        "partners": ["ota", "tur_operatoru"],
+        "seo": ["tatil bütçe hesaplama", "paket tatil karşılaştırma"]
+      },
+      "crossSell": ["finans", "sigorta"],
+      "regulation": ["Seyahat sigortası bilgilendirme"]
+    },
+    {
+      "id": "finans",
+      "slug": "finans",
+      "displayName": "Finans / Kredi",
+      "type": "financial_product",
+      "maturityPercent": 55,
+      "codeAnchors": [
+        "js/app.js:createFinanceComparisons",
+        "getFinanceProductsForCategory",
+        "finance_offers migration",
+        "PARTNER_OFFERS.finance"
+      ],
+      "liveSurfaces": ["Embedded in arac/ev/tatil results", "Admin finance products editor"],
+      "gaps": ["Standalone /finans wizard", "loan_products catalog", "Başvuru takibi", "BDDK disclaimer hub"],
+      "monetization": {
+        "b2c": ["Oran alarmı (Pro)"],
+        "b2b": ["Banka / broker CPL — en yüksek B2B potansiyel"],
+        "priority": "high"
+      },
+      "gtm": {
+        "icp": "Yüksek tutarlı alım sonrası finansman arayan tüketici",
+        "partners": ["banka", "kredi_broker"],
+        "seo": ["konut kredisi hesaplama", "taşıt kredisi karşılaştırma"]
+      },
+      "crossSell": ["ev", "tatil", "arac"],
+      "regulation": ["BDDK örnek oran", "Finansal tüketici uyarısı", "Reklam sınırı"]
+    },
+    {
+      "id": "sigorta",
+      "slug": "sigorta",
+      "displayName": "Sigorta",
+      "type": "financial_product",
+      "maturityPercent": 35,
+      "codeAnchors": [
+        "cost lines (kasko, DASK, seyahat)",
+        "CRM status insurance",
+        "PARTNER_OFFERS.insurance",
+        "insurance_partner dispatch"
+      ],
+      "liveSurfaces": ["Maliyet kalemleri", "Affiliate links (sigortam.net stubs)", "CRM insurance stage"],
+      "gaps": ["insurance_products catalog", "Teminat karşılaştırma motoru", "Prim truth layer", "Branş wizard"],
+      "monetization": {
+        "b2c": ["Kapsam karşılaştırma (Pro)"],
+        "b2b": ["Poliçe satış affiliate / CPL"],
+        "priority": "medium-high"
+      },
+      "gtm": {
+        "icp": "Araç/konut/tatil kararı sonrası risk kapatma",
+        "partners": ["insurance_partner"],
+        "seo": ["kasko karşılaştırma", "DASK hesaplama", "seyahat sigortası"]
+      },
+      "crossSell": ["ev", "tatil", "arac", "finans"],
+      "regulation": ["SEDDK bilgilendirme", "Poliçe teklif disclaimer"]
+    },
+    {
+      "id": "education",
+      "slug": "education",
+      "displayName": "Education / Eğitim",
+      "type": "service_package",
+      "maturityPercent": 0,
+      "codeAnchors": [],
+      "liveSurfaces": [],
+      "gaps": [
+        "category-registry entry",
+        "program_catalog",
+        "Wizard + scorer + cost estimator",
+        "Kurum partner intake",
+        "SEO hub",
+        "Legal (eğitim sözleşmesi uyarısı)"
+      ],
+      "monetization": {
+        "b2c": ["Program eşleştirme raporu (Pro)"],
+        "b2b": ["Kurum lead", "Burs affiliate"],
+        "priority": "medium"
+      },
+      "gtm": {
+        "icp": "Lise mezunu / yüksek lisans / sertifika arayan öğrenci ve ebeveyn",
+        "partners": ["universite", "bootcamp", "dil_okulu"],
+        "seo": ["üniversite program karşılaştırma", "bootcamp maliyet"]
+      },
+      "crossSell": ["finans"],
+      "regulation": ["KVKK (öğrenci verisi)", "Kurum onaylı içerik gate"]
+    }
+  ],
+  "phases": [
+    {
+      "id": "p8_f0",
+      "order": 0,
+      "name": "Platform foundation",
+      "categories": ["ev", "tatil", "finans", "sigorta", "education"],
+      "workItems": [
+        "category-registry.js — 5 vertical definitions",
+        "decision_leads migration + decision-intake",
+        "CRM vertical_id filter",
+        "vertical_id on analytics_events"
+      ],
+      "exitMetrics": ["decision_leads_created >= 1 per ev/tatil smoke", "admin_crm_vertical_filter: true"]
+    },
+    {
+      "id": "p8_f1",
+      "order": 1,
+      "name": "Production parity — ev & tatil",
+      "categories": ["ev", "tatil"],
+      "workItems": [
+        "/konut/ and /tatil/ lazy routes",
+        "property_catalog + travel_packages seeds",
+        "Partner intake rules (emlak, OTA)",
+        "SEO hubs (2 landing each)"
+      ],
+      "exitMetrics": ["lead_capture_rate_ev", "lead_capture_rate_tatil", "partner_accept_rate"]
+    },
+    {
+      "id": "p8_f2",
+      "order": 2,
+      "name": "Financial verticals — finans & sigorta",
+      "categories": ["finans", "sigorta"],
+      "workItems": [
+        "/finans/ standalone wizard",
+        "Sigorta branş wizard (kasko, DASK, seyahat, konut)",
+        "Cross-sell engine from ev/tatil/arac",
+        "Legal review gate (BDDK + SEDDK disclaimers)"
+      ],
+      "exitMetrics": ["finance_lead_cpl", "insurance_click_to_lead", "cross_sell_attach_rate"]
+    },
+    {
+      "id": "p8_f3",
+      "order": 3,
+      "name": "Education launch",
+      "categories": ["education"],
+      "workItems": [
+        "program_catalog migration",
+        "/education/ wizard (3-step pattern)",
+        "estimateEducationCost in cost-engine",
+        "Kurum partner LOI template",
+        "Pro limit: education preview cap"
+      ],
+      "exitMetrics": ["education_decisions_completed", "education_partner_leads"]
+    },
+    {
+      "id": "p8_f4",
+      "order": 4,
+      "name": "Intelligence & Pro bundle",
+      "categories": ["ev", "tatil", "finans", "sigorta", "education"],
+      "workItems": [
+        "pro_verticals all five",
+        "Multi-vertical portfolio view in history",
+        "AI narration templates per verticalId",
+        "Executive expansion KPI dashboard slice"
+      ],
+      "exitMetrics": ["pro_conversion_by_vertical", "blended_arr_cross_vertical"]
+    }
+  ],
+  "priorityRanking": [
+    { "rank": 1, "id": "faz_0", "rationale": "Blocks all five categories from revenue-grade CRM" },
+    { "rank": 2, "id": "ev", "rationale": "70% ready, highest GMV adjacency to mortgage" },
+    { "rank": 3, "id": "tatil", "rationale": "75% ready, fastest seasonal GTM win" },
+    { "rank": 4, "id": "finans", "rationale": "Cross-sell hub; partner infra exists" },
+    { "rank": 5, "id": "sigorta", "rationale": "CRM + partner stub; needs product engine" },
+    { "rank": 6, "id": "education", "rationale": "Greenfield; data partnership required first" }
+  ],
+  "kpis": [
+    { "key": "decisions_completed", "dimension": "vertical_id" },
+    { "key": "lead_capture_rate", "formula": "leads / decisions_completed" },
+    { "key": "partner_accept_rate", "formula": "partner_won / partner_dispatched" },
+    { "key": "cross_sell_attach", "formula": "secondary_leads / primary_leads" },
+    { "key": "pro_conversion", "dimension": "vertical_at_signup" },
+    { "key": "confidence_tier_distribution", "dimension": "vertical_id" }
+  ],
+  "investorAlignment": {
+    "growthStoryPhase": "phase_2",
+    "narrative": "Konut/tatil production parity + standalone finans/sigorta + education as TAM expansion wedge",
+    "docs": [
+      "docs/EXPANSION_STRATEGY_ROADMAP.md",
+      "docs/PLATFORM_EXPANSION_ROADMAP.md",
+      "docs/P8_CATEGORY_EXPANSION.md",
+      "data/investor/growth-story.json"
+    ]
+  },
+  "risks": [
+    { "id": "registry_debt", "impact": "high", "mitigation": "Faz 0 mandatory before education" },
+    { "id": "crm_auto_only", "impact": "high", "mitigation": "decision_leads Faz 0" },
+    { "id": "regulation_finance_insurance", "impact": "medium", "mitigation": "Legal gate per vertical before live CPL" },
+    { "id": "education_data", "impact": "medium", "mitigation": "Pilot 50 programs + 3 kurum LOI" },
+    { "id": "simulation_trust", "impact": "medium", "mitigation": "Truth layer + source refs per vertical" }
+  ]
+}
