@@ -1184,6 +1184,31 @@ async function loadCompetitorAttack() {
   el.innerHTML = renderCompetitorAttackCenter(snapshot, escapeHtml);
 }
 
+async function loadExpansionPrioritization() {
+  const el = document.getElementById('expansion-prioritization-root');
+  if (!el) return;
+
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
+  const { buildExpansionPrioritizationSnapshot } = await import(
+    './features/ops/expansion-roadmap-prioritization.js'
+  );
+  const { renderExpansionPrioritizationCenter } = await import(
+    './features/ops/expansion-roadmap-prioritization-views.js'
+  );
+
+  let config = { version: 'p25.0', categories: [], prioritizationCriteria: [] };
+  try {
+    const res = await fetch('/data/ops/expansion-roadmap-prioritization.json');
+    if (res.ok) config = await res.json();
+  } catch {
+    /* optional */
+  }
+
+  const snapshot = buildExpansionPrioritizationSnapshot({ config });
+  el.innerHTML = renderExpansionPrioritizationCenter(snapshot, escapeHtml);
+}
+
 async function loadExecutiveKpis() {
   const el = document.getElementById('investor-metrics-root');
   if (!el) return;
@@ -3641,6 +3666,7 @@ registerAdminPageHandlers({
   'international-expansion': () => loadInternationalExpansion(),
   'category-dominance': () => loadCategoryDominance(),
   'competitor-attack': () => loadCompetitorAttack(),
+  'expansion-prioritization': () => loadExpansionPrioritization(),
   'partner-endpoints': () => loadPartnerEndpoints(),
   'partner-applications': async () => {
     await initPartnerSalesMachineAdmin().catch(() => {});

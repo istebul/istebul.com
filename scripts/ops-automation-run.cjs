@@ -109,6 +109,17 @@ async function main() {
       stderr: attack.stderr?.slice(0, 500) || null
     });
 
+    const expansionP = spawnSync(
+      'node',
+      [path.join(root, 'scripts/expansion-roadmap-prioritization-snapshot.cjs')],
+      { cwd: root, env: process.env, encoding: 'utf8' }
+    );
+    report.steps.push({
+      id: 'expansion_prioritization_snapshot',
+      ok: expansionP.status === 0,
+      stderr: expansionP.stderr?.slice(0, 500) || null
+    });
+
     const hiring = spawnSync('node', [path.join(root, 'scripts/hiring-architecture-snapshot.cjs')], {
       cwd: root,
       env: process.env,

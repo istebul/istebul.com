@@ -37,4 +37,5 @@ jobs:
             dist/international-expansion-snapshot.json
             dist/category-dominance-snapshot.json
             dist/competitor-attack-snapshot.json
+            dist/expansion-roadmap-prioritization-snapshot.json
           if-no-files-found: ignore

@@ -242,8 +242,10 @@
     "narrative": "Konut/tatil production parity + standalone finans/sigorta + education as TAM expansion wedge",
     "docs": [
       "docs/EXPANSION_STRATEGY_ROADMAP.md",
+      "docs/EXPANSION_ROADMAP_PRIORITIZATION.md",
       "docs/PLATFORM_EXPANSION_ROADMAP.md",
       "docs/P8_CATEGORY_EXPANSION.md",
+      "data/ops/expansion-roadmap-prioritization.json",
       "data/investor/growth-story.json"
     ]
   },

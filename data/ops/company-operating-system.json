@@ -58,6 +58,7 @@
     "preReadArtifacts": [
       { "label": "Platform expansion roadmap", "path": "data/platform/expansion-roadmap.json" },
       { "label": "Category dominance strategy (P23)", "path": "data/ops/category-dominance-strategy.json" },
+      { "label": "Expansion prioritization (P25)", "path": "data/ops/expansion-roadmap-prioritization.json" },
       { "label": "CRO experiments", "path": "data/growth/experiments.json" },
       { "label": "Product feedback themes", "path": "data/product/feedback-themes.json" }
     ],

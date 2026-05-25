@@ -1,0 +1,294 @@
+{
+  "version": "p25.0",
+  "updatedAt": "2026-05-24",
+  "beachhead": {
+    "id": "arac",
+    "name": "Otomotiv (Auto)",
+    "status": "live",
+    "note": "All new categories attach to Auto golden path unless registry (Faz 0) ships first."
+  },
+  "prioritizationCriteria": [
+    {
+      "id": "monetization",
+      "name": "Monetization",
+      "weight": 0.2,
+      "description": "B2C Pro + B2B CPL/affiliate revenue potential per decision"
+    },
+    {
+      "id": "data_availability",
+      "name": "Data availability",
+      "weight": 0.15,
+      "description": "Catalog/truth layer readiness — live vs simulation"
+    },
+    {
+      "id": "user_pain",
+      "name": "User pain",
+      "weight": 0.2,
+      "description": "Consideration cost, regret risk, information asymmetry"
+    },
+    {
+      "id": "repeat_usage",
+      "name": "Repeat usage",
+      "weight": 0.1,
+      "description": "Return frequency and habit — Pro retention driver"
+    },
+    {
+      "id": "ai_differentiation",
+      "name": "AI differentiation",
+      "weight": 0.2,
+      "description": "Deterministic engine + TCO/fit vs generic chat or tables"
+    },
+    {
+      "id": "partner_economics",
+      "name": "Partner economics",
+      "weight": 0.15,
+      "description": "Signed CPL, dispatch fit, exclusivity potential"
+    }
+  ],
+  "verdict": {
+    "firstCategory": "ev",
+    "firstCategoryDisplay": "Ev / Konut",
+    "secondCategory": "tatil",
+    "thirdWave": ["finans", "mortgage"],
+    "fourthWave": ["sigorta"],
+    "defer": ["education", "elektronik"],
+    "foundationFirst": "category_registry",
+    "compositeScoreLeader": "ev",
+    "summaryWhyFirst": "Highest weighted score with 70% product maturity; unlocks mortgage+finans+sigorta cross-sell in one household decision; emlak/mortgage CPL proven in TR."
+  },
+  "categories": [
+    {
+      "id": "ev",
+      "displayName": "Ev / Konut",
+      "slug": "konut",
+      "wave": 1,
+      "rank": 1,
+      "maturityPercent": 70,
+      "scores": {
+        "monetization": 88,
+        "data_availability": 58,
+        "user_pain": 92,
+        "repeat_usage": 38,
+        "ai_differentiation": 86,
+        "partner_economics": 82
+      },
+      "compositeScore": 79,
+      "whyNow": [
+        "Wizard + home TCO already in app.js; fastest path to production parity",
+        "Highest GMV-adjacent pain — aidat + kredi + DASK in one decision",
+        "Natural cross-sell to mortgage, finans, sigorta without new traffic"
+      ],
+      "blockers": ["property_catalog", "decision_leads intake", "/konut/ route"],
+      "partnerPaths": ["emlak_ofisi", "mortgage_broker"],
+      "p8Ref": "data/platform/expansion-roadmap.json#ev"
+    },
+    {
+      "id": "mortgage",
+      "displayName": "Mortgage / Konut kredisi",
+      "slug": "mortgage",
+      "wave": 1,
+      "rank": 2,
+      "attachTo": "ev",
+      "maturityPercent": 50,
+      "scores": {
+        "monetization": 92,
+        "data_availability": 62,
+        "user_pain": 88,
+        "repeat_usage": 32,
+        "ai_differentiation": 72,
+        "partner_economics": 90
+      },
+      "compositeScore": 76,
+      "whyNow": [
+        "Do not launch standalone first — ship as ev decision step (payment load)",
+        "finance_offers + BDDK disclaimers partially exist",
+        "Bank/broker CPL highest B2B yield per lead"
+      ],
+      "blockers": ["Standalone /mortgage SEO only after ev live", "Rate truth daily sync"],
+      "partnerPaths": ["banka", "mortgage_broker"],
+      "p8Ref": "cross-sell from ev + finans"
+    },
+    {
+      "id": "tatil",
+      "displayName": "Tatil",
+      "slug": "tatil",
+      "wave": 2,
+      "rank": 3,
+      "maturityPercent": 75,
+      "scores": {
+        "monetization": 74,
+        "data_availability": 72,
+        "user_pain": 78,
+        "repeat_usage": 62,
+        "ai_differentiation": 80,
+        "partner_economics": 64
+      },
+      "compositeScore": 73,
+      "whyNow": [
+        "Highest code maturity after ev — 42-destination catalog live",
+        "Seasonal GTM spike; repeat usage better than ev",
+        "No inventory — decision-only fits OTA CPL model"
+      ],
+      "blockers": ["/tatil/ route", "travel_packages DB", "OTA partner intake"],
+      "partnerPaths": ["ota", "tur_operatoru"],
+      "p8Ref": "data/platform/expansion-roadmap.json#tatil"
+    },
+    {
+      "id": "finans",
+      "displayName": "Finans / Kredi",
+      "slug": "finans",
+      "wave": 2,
+      "rank": 4,
+      "maturityPercent": 55,
+      "scores": {
+        "monetization": 90,
+        "data_availability": 55,
+        "user_pain": 80,
+        "repeat_usage": 58,
+        "ai_differentiation": 84,
+        "partner_economics": 88
+      },
+      "compositeScore": 77,
+      "whyNow": [
+        "Highest monetization+partner scores — but discovery is cross-sell not cold SEO",
+        "Ship as hub after ev+tatil produce primary decisions",
+        "Differentiator: asset-context payment load vs rate tables"
+      ],
+      "blockers": ["Standalone /finans wizard", "BDDK hub", "Başvuru tracking"],
+      "partnerPaths": ["banka", "kredi_broker"],
+      "p8Ref": "data/platform/expansion-roadmap.json#finans"
+    },
+    {
+      "id": "sigorta",
+      "displayName": "Sigorta",
+      "slug": "sigorta",
+      "wave": 3,
+      "rank": 5,
+      "maturityPercent": 35,
+      "scores": {
+        "monetization": 72,
+        "data_availability": 42,
+        "user_pain": 70,
+        "repeat_usage": 68,
+        "ai_differentiation": 62,
+        "partner_economics": 58
+      },
+      "compositeScore": 63,
+      "whyNow": [
+        "Best as attach after ev/arac/tatil — kasko, DASK, seyahat lines exist",
+        "Repeat annual renewal helps retention",
+        "Needs insurance_products engine — not a first-wave vertical"
+      ],
+      "blockers": ["Prim truth layer", "Branş wizard", "SEDDK pack"],
+      "partnerPaths": ["insurance_partner", "sigorta_affiliate"],
+      "p8Ref": "data/platform/expansion-roadmap.json#sigorta"
+    },
+    {
+      "id": "education",
+      "displayName": "Eğitim",
+      "slug": "education",
+      "wave": 4,
+      "rank": 6,
+      "maturityPercent": 0,
+      "scores": {
+        "monetization": 58,
+        "data_availability": 22,
+        "user_pain": 86,
+        "repeat_usage": 42,
+        "ai_differentiation": 78,
+        "partner_economics": 48
+      },
+      "compositeScore": 58,
+      "whyNow": [
+        "High pain for parents/students but zero catalog — data partnership first",
+        "AI fit (program match) is real; monetization slower than CPL verticals",
+        "Launch after registry + one production vertical proves intake CRM"
+      ],
+      "blockers": ["program_catalog", "Kurum LOI", "Legal student KVKK"],
+      "partnerPaths": ["universite", "bootcamp", "dil_okulu"],
+      "p8Ref": "data/platform/expansion-roadmap.json#education"
+    },
+    {
+      "id": "elektronik",
+      "displayName": "Elektronik",
+      "slug": "elektronik",
+      "wave": 5,
+      "rank": 7,
+      "maturityPercent": 5,
+      "scores": {
+        "monetization": 38,
+        "data_availability": 78,
+        "user_pain": 32,
+        "repeat_usage": 70,
+        "ai_differentiation": 28,
+        "partner_economics": 35
+      },
+      "compositeScore": 46,
+      "whyNow": [
+        "Explicitly defer — low consideration vs regulated verticals",
+        "Commodity specs abundant but AI moat thin; Trendyol-class competition",
+        "Only revisit for Pro bundle breadth, not beachhead expansion"
+      ],
+      "blockers": ["Low CPL", "No partner dispatch story", "Cannibalize focus"],
+      "partnerPaths": ["affiliate_retail"],
+      "p8Ref": "docs/COMPETITIVE_MOAT_STRATEGY.md — low priority"
+    }
+  ],
+  "recommendedSequence": [
+    {
+      "order": 0,
+      "id": "faz_0_registry",
+      "name": "Category registry + decision_leads",
+      "categories": [],
+      "rationale": "Blocks revenue-grade CRM for all seven categories"
+    },
+    {
+      "order": 1,
+      "id": "wave_1_ev",
+      "name": "Wave 1 — Ev (+ mortgage step)",
+      "categories": ["ev", "mortgage"],
+      "rationale": "First full vertical after Auto; mortgage embedded not standalone",
+      "exitMetrics": ["lead_capture_rate_ev >= 8%", "mortgage_attach_rate >= 40% of ev leads"]
+    },
+    {
+      "order": 2,
+      "id": "wave_2_tatil_finans",
+      "name": "Wave 2 — Tatil + Finans hub",
+      "categories": ["tatil", "finans"],
+      "rationale": "Tatil highest maturity; finans monetizes cross-sell from ev+tatile"
+    },
+    {
+      "order": 3,
+      "id": "wave_3_sigorta",
+      "name": "Wave 3 — Sigorta attach",
+      "categories": ["sigorta"],
+      "rationale": "Risk closure on existing decisions; annual repeat"
+    },
+    {
+      "order": 4,
+      "id": "wave_4_education",
+      "name": "Wave 4 — Eğitim",
+      "categories": ["education"],
+      "rationale": "Greenfield TAM after ops playbook proven"
+    },
+    {
+      "order": 5,
+      "id": "wave_defer_elektronik",
+      "name": "Defer — Elektronik",
+      "categories": ["elektronik"],
+      "rationale": "Does not meet AI differentiation or partner economics bar"
+    }
+  ],
+  "kpis": [
+    { "key": "composite_score_gap_vs_auto", "target": "ev within 15pts of auto PMF", "owner": "vp_product" },
+    { "key": "first_vertical_lead_capture", "target": ">=8% ev decisions → lead", "owner": "vp_growth" },
+    { "key": "cross_sell_attach_finans", "target": ">=25% post-ev", "owner": "vp_revenue" },
+    { "key": "categories_in_registry", "target": 7, "owner": "vp_product" }
+  ],
+  "linkedDocs": [
+    "docs/EXPANSION_ROADMAP_PRIORITIZATION.md",
+    "docs/EXPANSION_STRATEGY_ROADMAP.md",
+    "docs/PLATFORM_EXPANSION_ROADMAP.md",
+    "data/platform/expansion-roadmap.json"
+  ]
+}
