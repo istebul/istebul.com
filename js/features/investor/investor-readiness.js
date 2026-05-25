@@ -3,6 +3,50 @@
  */
 
 const DIMENSION_CHECKS = {
+  investor_narrative: (pack) => {
+    const n = pack.investorNarrative || {};
+    let score = 0;
+    if ((n.elevator || []).length >= 2) score += 25;
+    if (n.problem?.painPoints?.length >= 2) score += 25;
+    if ((n.solution?.pillars || []).length >= 3) score += 25;
+    if ((n.whyNow || []).length >= 2) score += 25;
+    return { score: Math.min(100, score), max: 100, notes: [] };
+  },
+  kpi_story: (pack) => {
+    const k = pack.kpiStory || {};
+    const chapters = k.chapters || [];
+    const board = k.boardCadence || {};
+    let score = chapters.length >= 3 ? 50 : chapters.length * 15;
+    if (k.northStar?.primary) score += 25;
+    if (board.weekly?.length >= 2) score += 25;
+    return {
+      score: Math.min(100, score),
+      max: 100,
+      notes: pack.metricsStory?.slides?.length ? [] : ['metrics-story bindings required']
+    };
+  },
+  market_sizing: (pack) => {
+    const m = pack.marketSizing || {};
+    let score = 0;
+    if (m.tam?.segments?.length >= 2) score += 35;
+    if (m.sam?.illustrativeSamTry > 0) score += 35;
+    if (m.som?.illustrativeSomTry > 0) score += 20;
+    if (m.disclaimer) score += 10;
+    const needsVerify = JSON.stringify(m).includes('FOUNDER_VERIFY');
+    return {
+      score: Math.min(100, score),
+      max: 100,
+      notes: needsVerify ? ['Replace FOUNDER_VERIFY cells before term sheet'] : []
+    };
+  },
+  monetization_story: (pack) => {
+    const ms = pack.monetizationStory || {};
+    const live = (ms.streams || []).filter((s) => s.status === 'live');
+    let score = Math.min(50, live.length * 20);
+    if (ms.blendedFormula) score += 25;
+    if ((ms.diligenceProof || []).length >= 2) score += 25;
+    return { score: Math.min(100, score), max: 100, notes: [] };
+  },
   metrics_story: (pack) => {
     const ms = pack.metricsStory || {};
     const slides = ms.slides || [];
@@ -71,7 +115,9 @@ const DIMENSION_CHECKS = {
  * @param {object} pack — output of composeInvestorReadinessPack
  */
 export function scoreInvestorReadiness(pack) {
-  const weights = pack.deckReadiness?.diligenceScorecard || [
+  const weights =
+    pack.fundraisingReadiness?.diligenceScorecardExtended ||
+    pack.deckReadiness?.diligenceScorecard || [
     { dimension: 'metrics_story', weight: 20 },
     { dimension: 'moat_story', weight: 15 },
     { dimension: 'deck_readiness', weight: 15 },
@@ -96,10 +142,14 @@ export function scoreInvestorReadiness(pack) {
     if (result.notes?.length) allNotes.push(...result.notes.map((n) => `${id}: ${n}`));
   }
 
+  const thresholds = pack.fundraisingReadiness?.verdictThresholds || {
+    investor_ready: 85,
+    near_ready: 70
+  };
   const overallPct = weightTotal ? Math.round((weightedSum / weightTotal) * 100) : 0;
   let verdict = 'needs_work';
-  if (overallPct >= 85) verdict = 'investor_ready';
-  else if (overallPct >= 70) verdict = 'near_ready';
+  if (overallPct >= thresholds.investor_ready) verdict = 'investor_ready';
+  else if (overallPct >= thresholds.near_ready) verdict = 'near_ready';
 
   return {
     overallPct,
@@ -113,6 +163,23 @@ export function scoreInvestorReadiness(pack) {
 /**
  * @param {object} pack
  */
+/**
+ * @param {object} pack
+ */
+export function summarizeFundraisingGaps(pack) {
+  const manifest = pack.fundraisingReadiness?.assetManifest || [];
+  const ready = manifest.filter((a) => a.status === 'ready');
+  const gaps = manifest.filter((a) => a.status === 'gap');
+  const exportsNeeded = manifest.filter((a) => a.status === 'export');
+  return {
+    readyCount: ready.length,
+    gapCount: gaps.length,
+    exportCount: exportsNeeded.length,
+    gaps: gaps.map((g) => ({ id: g.id, path: g.path, owner: g.owner })),
+    exportCommands: exportsNeeded.map((e) => e.command).filter(Boolean)
+  };
+}
+
 export function summarizeDeckGaps(pack) {
   const slides = pack.deckReadiness?.slides || [];
   const blockers = slides

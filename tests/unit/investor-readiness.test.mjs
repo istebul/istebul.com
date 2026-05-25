@@ -18,7 +18,7 @@ const {
   resolveMetricsForSlide
 } = await import('../../js/features/investor/investor-narrative.js');
 
-const { scoreInvestorReadiness, summarizeDeckGaps } = await import(
+const { scoreInvestorReadiness, summarizeDeckGaps, summarizeFundraisingGaps } = await import(
   '../../js/features/investor/investor-readiness.js'
 );
 
@@ -50,17 +50,24 @@ test('buildPackFromAssets includes projections and resolved metrics', () => {
   const pack = buildPackFromAssets(
     {
       manifest: load('investor-readiness.json'),
+      investorNarrative: load('investor-narrative.json'),
+      kpiStory: load('kpi-story.json'),
       metricsStory: load('metrics-story.json'),
       moatStory: load('moat-story.json'),
+      marketSizing: load('market-sizing.json'),
+      monetizationStory: load('monetization-story.json'),
       financialModel: load('financial-model.json'),
       growthStory: load('growth-story.json'),
       gtmNarrative: load('gtm-narrative.json'),
-      deckReadiness: load('deck-readiness.json')
+      deckReadiness: load('deck-readiness.json'),
+      fundraisingReadiness: load('fundraising-readiness.json')
     },
     snapshot
   );
 
-  assert.equal(pack.version, 'p7.0');
+  assert.equal(pack.version, 'p7.1');
+  assert.ok(pack.investorNarrative.headline);
+  assert.ok(pack.marketSizing.som.illustrativeSomTry > 0);
   assert.ok(pack.financialModel.projections.base.y1.blendedArrTry);
   const hero = pack.metricsStory.slides.find((s) => s.id === 'traction_hero');
   const mrr = hero.resolvedMetrics.find((m) => m.key === 'subscription.mrrTry');
@@ -71,16 +78,30 @@ test('buildPackFromAssets includes projections and resolved metrics', () => {
 test('scoreInvestorReadiness returns verdict for full pack', () => {
   const pack = buildPackFromAssets({
     manifest: load('investor-readiness.json'),
+    investorNarrative: load('investor-narrative.json'),
+    kpiStory: load('kpi-story.json'),
     metricsStory: load('metrics-story.json'),
     moatStory: load('moat-story.json'),
+    marketSizing: load('market-sizing.json'),
+    monetizationStory: load('monetization-story.json'),
     financialModel: load('financial-model.json'),
     growthStory: load('growth-story.json'),
     gtmNarrative: load('gtm-narrative.json'),
-    deckReadiness: load('deck-readiness.json')
+    deckReadiness: load('deck-readiness.json'),
+    fundraisingReadiness: load('fundraising-readiness.json')
   });
   const score = scoreInvestorReadiness(pack);
   assert.ok(score.overallPct >= 70);
   assert.ok(['near_ready', 'investor_ready', 'needs_work'].includes(score.verdict));
+});
+
+test('summarizeFundraisingGaps lists offline gaps', () => {
+  const pack = buildPackFromAssets({
+    fundraisingReadiness: load('fundraising-readiness.json')
+  });
+  const gaps = summarizeFundraisingGaps(pack);
+  assert.ok(gaps.gapCount >= 3);
+  assert.ok(gaps.gaps.some((g) => g.id === 'cap_table'));
 });
 
 test('summarizeDeckGaps flags traction snapshot blocker', () => {

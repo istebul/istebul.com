@@ -10,13 +10,19 @@
 
 | Document | Path | Status |
 |----------|------|--------|
+| **Investor narrative** | `docs/investor/INVESTOR_NARRATIVE.md` | Ready |
+| **KPI story** | `docs/investor/KPI_STORY.md` | Ready |
+| **Moat articulation** | `docs/investor/MOAT_ARTICULATION.md` | Ready |
+| **Market sizing** | `docs/investor/MARKET_SIZING.md` | Ready (verify `[FOUNDER_VERIFY]` cells) |
+| **Monetization story** | `docs/investor/MONETIZATION_STORY.md` | Ready |
+| **Fundraising readiness** | `docs/investor/FUNDRAISING_READINESS.md` | Ready |
 | One-pager (executive) | `docs/investor/ONE_PAGER.md` | Ready |
 | **Pitch deck outline** | `docs/investor/PITCH_DECK_OUTLINE.md` | Ready (fill brackets before meetings) |
 | Investor readiness audit | `docs/investor/INVESTOR_READINESS.md` | Ready |
 | Risk register | `docs/investor/RISK_REGISTER.md` | Ready |
 | Unit economics framework | `docs/investor/UNIT_ECONOMICS.md` | Ready (assumptions explicit) |
 
-**Gap:** Pitch deck **PDF** (export from outline), cap table, financial model spreadsheet — prepare offline.
+**Gap:** Pitch deck **PDF**, cap table, financial model **XLSX**, partner LOIs — see `FUNDRAISING_READINESS.md#assetManifest`.
 
 ---
 
@@ -37,8 +43,13 @@
 
 | Asset | Path |
 |-------|------|
-| **P7 investor pack (manifest)** | `data/investor/investor-readiness.json` |
+| **P7.1 investor pack (manifest)** | `data/investor/investor-readiness.json` |
+| Investor narrative | `data/investor/investor-narrative.json` |
+| KPI story | `data/investor/kpi-story.json` |
 | Metrics story | `data/investor/metrics-story.json` · `docs/investor/INVESTOR_METRICS_STORY.md` |
+| Market sizing | `data/investor/market-sizing.json` |
+| Monetization story | `data/investor/monetization-story.json` |
+| Fundraising manifest | `data/investor/fundraising-readiness.json` |
 | Moat story | `data/investor/moat-story.json` |
 | Financial model | `data/investor/financial-model.json` · `docs/investor/FINANCIAL_MODEL.md` |
 | Growth & GTM | `data/investor/growth-story.json` · `gtm-narrative.json` · `GROWTH_AND_GTM_NARRATIVE.md` |
@@ -119,4 +130,4 @@ npm run metrics:investor:pack
 
 ---
 
-*Last updated with P7 investor-readiness (`p7.0`) on `main`.*
+*Last updated with P7.1 fundraising readiness (`p7.1`) on `main`.*

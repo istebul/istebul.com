@@ -5,12 +5,17 @@
 import { buildInvestorSnapshot } from '../metrics/investor-kpis.js';
 
 const ASSET_KEYS = [
+  'investorNarrative',
+  'kpiStory',
   'metricsStory',
   'moatStory',
+  'marketSizing',
+  'monetizationStory',
   'financialModel',
   'growthStory',
   'gtmNarrative',
-  'deckReadiness'
+  'deckReadiness',
+  'fundraisingReadiness'
 ];
 
 /**
@@ -122,12 +127,17 @@ export function projectAllFinancialScenarios(financialModel) {
  */
 export function composeInvestorReadinessPack({
   manifest = {},
+  investorNarrative = {},
+  kpiStory = {},
   metricsStory = {},
   moatStory = {},
+  marketSizing = {},
+  monetizationStory = {},
   financialModel = {},
   growthStory = {},
   gtmNarrative = {},
   deckReadiness = {},
+  fundraisingReadiness = {},
   snapshot = null
 } = {}) {
   const liveSnapshot =
@@ -143,10 +153,19 @@ export function composeInvestorReadinessPack({
     resolvedMetrics: resolveMetricsForSlide(liveSnapshot, slide.metrics || [])
   }));
 
+  const somRef = marketSizing?.som?.sourceRef;
+  let somIllustrativeTry = marketSizing?.som?.illustrativeSomTry;
+  if (financialModel?.scenarios?.base?.y3 && somRef?.includes('financial-model')) {
+    const y3 = projectFinancialYear(financialModel, 'base', 'y3');
+    if (y3.blendedArrTry) somIllustrativeTry = y3.blendedArrTry;
+  }
+
   return {
-    version: manifest.version || metricsStory.version || 'p7.0',
+    version: manifest.version || metricsStory.version || 'p7.1',
     generatedAt: new Date().toISOString(),
     company: manifest.company || {},
+    investorNarrative,
+    kpiStory,
     metricsStory: {
       ...metricsStory,
       slides: tractionSlides,
@@ -157,6 +176,11 @@ export function composeInvestorReadinessPack({
       }
     },
     moatStory,
+    marketSizing: {
+      ...marketSizing,
+      som: { ...marketSizing.som, illustrativeSomTry: somIllustrativeTry }
+    },
+    monetizationStory,
     financialModel: {
       ...financialModel,
       projections: projectAllFinancialScenarios(financialModel)
@@ -164,6 +188,8 @@ export function composeInvestorReadinessPack({
     growthStory,
     gtmNarrative,
     deckReadiness,
+    fundraisingReadiness,
+    narrativeDocs: manifest.narrativeDocs || {},
     exports: manifest.exports || {},
     commands: manifest.commands || {}
   };
@@ -189,12 +215,17 @@ export function buildPackFromAssets(assets, snapshot = null) {
   const manifest = assets.manifest || assets.investorReadiness || {};
   return composeInvestorReadinessPack({
     manifest,
+    investorNarrative: assets.investorNarrative || {},
+    kpiStory: assets.kpiStory || {},
     metricsStory: assets.metricsStory || {},
     moatStory: assets.moatStory || {},
+    marketSizing: assets.marketSizing || {},
+    monetizationStory: assets.monetizationStory || {},
     financialModel: assets.financialModel || {},
     growthStory: assets.growthStory || {},
     gtmNarrative: assets.gtmNarrative || {},
     deckReadiness: assets.deckReadiness || {},
+    fundraisingReadiness: assets.fundraisingReadiness || {},
     snapshot
   });
 }

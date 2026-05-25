@@ -2,7 +2,7 @@
 
 **Goal:** Package isteBul for VC / angel diligence across six pillars: metrics story, moat story, deck readiness, financial model, growth story, GTM narrative.
 
-**Version:** `p7.0`
+**Version:** `p7.1`
 
 ---
 
@@ -10,8 +10,14 @@
 
 | Pillar | Data | Narrative doc |
 |--------|------|----------------|
+| Investor narrative | `data/investor/investor-narrative.json` | `docs/investor/INVESTOR_NARRATIVE.md` |
+| KPI story | `data/investor/kpi-story.json` | `docs/investor/KPI_STORY.md` |
 | Metrics story | `data/investor/metrics-story.json` | `docs/investor/INVESTOR_METRICS_STORY.md` |
-| Moat story | `data/investor/moat-story.json` | `docs/investor/MOAT_AND_DEFENSIBILITY.md` |
+| Moat articulation | `data/investor/moat-story.json` | `docs/investor/MOAT_ARTICULATION.md` |
+| Market sizing | `data/investor/market-sizing.json` | `docs/investor/MARKET_SIZING.md` |
+| Monetization story | `data/investor/monetization-story.json` | `docs/investor/MONETIZATION_STORY.md` |
+| Fundraising assets | `data/investor/fundraising-readiness.json` | `docs/investor/FUNDRAISING_READINESS.md` |
+| Moat (deep) | — | `docs/investor/MOAT_AND_DEFENSIBILITY.md` |
 | Financial model | `data/investor/financial-model.json` | `docs/investor/FINANCIAL_MODEL.md` |
 | Growth story | `data/investor/growth-story.json` | `docs/investor/GROWTH_AND_GTM_NARRATIVE.md` |
 | GTM narrative | `data/investor/gtm-narrative.json` | `docs/investor/GROWTH_AND_GTM_NARRATIVE.md` |

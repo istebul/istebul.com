@@ -53,29 +53,36 @@ async function main() {
   const manifest = readJson('investor-readiness.json');
   const assets = {
     manifest,
+    investorNarrative: readJson('investor-narrative.json'),
+    kpiStory: readJson('kpi-story.json'),
     metricsStory: readJson('metrics-story.json'),
     moatStory: readJson('moat-story.json'),
+    marketSizing: readJson('market-sizing.json'),
+    monetizationStory: readJson('monetization-story.json'),
     financialModel: readJson('financial-model.json'),
     growthStory: readJson('growth-story.json'),
     gtmNarrative: readJson('gtm-narrative.json'),
-    deckReadiness: readJson('deck-readiness.json')
+    deckReadiness: readJson('deck-readiness.json'),
+    fundraisingReadiness: readJson('fundraising-readiness.json')
   };
 
   const snapshot = await loadLiveSnapshot();
 
   const { buildPackFromAssets } = await import('../js/features/investor/investor-narrative.js');
-  const { scoreInvestorReadiness, summarizeDeckGaps } = await import(
+  const { scoreInvestorReadiness, summarizeDeckGaps, summarizeFundraisingGaps } = await import(
     '../js/features/investor/investor-readiness.js'
   );
 
   const pack = buildPackFromAssets(assets, snapshot);
   const readiness = scoreInvestorReadiness(pack);
   const deckGaps = summarizeDeckGaps(pack);
+  const fundraisingGaps = summarizeFundraisingGaps(pack);
 
   const output = {
     ...pack,
     readiness,
     deckGaps,
+    fundraisingGaps,
     snapshotSource: snapshot
       ? fs.existsSync(snapshotPath)
         ? 'dist/investor-metrics-snapshot.json'

@@ -1,0 +1,53 @@
+{
+  "version": "p7.1",
+  "headline": "Decision infrastructure for high-consideration purchases in Turkey",
+  "elevator": [
+    "Consumers make ₺500K–₺3M decisions with fragmented listings and biased sellers.",
+    "isteBul unifies fit, TCO, finance load, and partner execution in one transparent workflow.",
+    "Revenue is hybrid: Pro subscription + partner lead economics — both instrumented in production."
+  ],
+  "problem": {
+    "summary": "High-consideration buyers lack a neutral decision layer between classifieds and single-product banks.",
+    "painPoints": [
+      "Listings optimize for inventory, not total cost of ownership",
+      "Finance calculators are product-biased, not multi-offer neutral",
+      "AI chat tools invent prices — no CRM or partner closure loop"
+    ],
+    "buyerQuote": "I need to know if this car fits my budget and life — not just the monthly payment the dealer quoted."
+  },
+  "solution": {
+    "summary": "Rule-based decision engine + explainable scores + partner dispatch for execution.",
+    "pillars": [
+      { "id": "decide", "title": "Decide", "detail": "Multi-factor match, confidence tiers, TCO profiles" },
+      { "id": "explain", "title": "Explain", "detail": "LLM narrates deterministic numbers — cannot override scores" },
+      { "id": "close", "title": "Close", "detail": "Qualified leads → HMAC webhooks → CRM → outcome feedback" }
+    ],
+    "demoHook": "Live auto wizard on istebul.com/auto — scores update as inputs change."
+  },
+  "vision": {
+    "threeYear": "Category leader for decision intelligence in TR; 3+ verticals at production parity; outcome graph from closed deals.",
+    "category": "Decision infrastructure — not classifieds, not a generic AI wrapper."
+  },
+  "whyNow": [
+    "AI trust crisis — buyers demand explainable numbers",
+    "Finance margin pressure — partners need scored intent, not form spam",
+    "Product is live and instrumented — weekly investor exports, not slideware"
+  ],
+  "whyUs": [
+    "Deterministic scoring IP in production (decision-consultant, scoring-explainability)",
+    "Partner flywheel: dispatch → win data → calibration",
+    "Platform roadmap: 8 verticals on shared engine + locale registry"
+  ],
+  "ask": {
+    "round": "[Founder: e.g. seed ₺X]",
+    "runwayMonths": 18,
+    "milestones": [
+      "2+ signed partner LOIs with CPL bands",
+      "Pro MRR growth with trial→paid instrumentation",
+      "Live market data feed for auto catalog (1 exclusive source)",
+      "Konut vertical production parity"
+    ],
+    "useOfFundsRef": "financial-model.json#useOfFunds"
+  },
+  "docs": ["docs/investor/INVESTOR_NARRATIVE.md", "docs/investor/ONE_PAGER.md"]
+}

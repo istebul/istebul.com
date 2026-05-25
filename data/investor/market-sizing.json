@@ -1,0 +1,66 @@
+{
+  "version": "p7.1",
+  "currency": "TRY",
+  "disclaimer": "Bottom-up illustrative sizing for investor narrative. Replace [FOUNDER_VERIFY] cells with third-party sources (ODMD, TÜİK, bank reports) before term sheet.",
+  "methodology": "SAM = addressable high-consideration decision sessions × monetizable events; SOM = 36-month capture at current GTM capacity.",
+  "tam": {
+    "label": "TAM — Turkey high-consideration decision economy",
+    "definition": "Annual economic value of auto + housing + major finance/insurance decisions where a neutral decision layer could sit between discovery and transaction.",
+    "segments": [
+      {
+        "vertical": "Automotive",
+        "logic": "~900K annual vehicle transactions (new+used, TR) × avg ticket ₺800K × 0.15% platform take rate equivalent",
+        "illustrativeTry": 1080000000000,
+        "founderVerify": "[FOUNDER_VERIFY: ODMD / sector reports]"
+      },
+      {
+        "vertical": "Housing & mortgage",
+        "logic": "Annual mortgage origination volume × decision-tool attach rate",
+        "illustrativeTry": 450000000000,
+        "founderVerify": "[FOUNDER_VERIFY: BDDK mortgage stats]"
+      },
+      {
+        "vertical": "Finance & insurance",
+        "logic": "Consumer finance + motor insurance origination funnels",
+        "illustrativeTry": 120000000000,
+        "founderVerify": "[FOUNDER_VERIFY: sector CPL benchmarks]"
+      }
+    ],
+    "illustrativeTamTry": 1650000000000,
+    "notes": "TAM is market value pool, not isteBul revenue ceiling."
+  },
+  "sam": {
+    "label": "SAM — Decision + lead monetization addressable",
+    "definition": "Users completing isteBul-class wizards annually × blended ARPU (Pro + partner).",
+    "assumptions": {
+      "annualDecisionSessions": 1200000,
+      "proConversionPct": 0.8,
+      "partnerLeadAttachPct": 12,
+      "blendedArpuAnnualTry": 4200
+    },
+    "formula": "sessions × (pro_conv × pro_arpu + lead_attach × cpl)",
+    "illustrativeSamTry": 5040000000,
+    "beachheadSam": {
+      "vertical": "Auto TR",
+      "annualAutoWizardSessions": 400000,
+      "illustrativeSamTry": 1680000000
+    }
+  },
+  "som": {
+    "label": "SOM — 36-month obtainable",
+    "definition": "Base case Y3 blended ARR from financial-model × execution confidence.",
+    "sourceRef": "financial-model.json#scenarios.base.y3",
+    "illustrativeSomTry": 45000000,
+    "capturePctOfSam": 0.9,
+    "notes": "SOM should be reconciled with live exports each quarter."
+  },
+  "expansion": [
+    { "market": "TR konut/tatil", "timing": "12–24 mo", "samMultiplier": 1.4 },
+    { "market": "en/de locale test", "timing": "24–36 mo", "samMultiplier": 2.5 }
+  ],
+  "slideBullets": [
+    "Beachhead SAM ~₺1.7B auto decision monetization (illustrative)",
+    "Platform SAM ~₺5B with 8-vertical roadmap on shared engine",
+    "SOM tied to base financial model Y3 — not fantasy TAM %"
+  ]
+}
