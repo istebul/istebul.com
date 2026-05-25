@@ -323,6 +323,11 @@
 
 .revenue-plan-cta-stack .btn-lg {
   width: 100%;
+  white-space: normal;
+  line-height: 1.35;
+  min-height: 3rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
 .revenue-feature-compare {

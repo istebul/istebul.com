@@ -233,7 +233,7 @@ export class RevenueManager {
     const plan = PLANS.pro.billing[billing] || PLANS.pro.billing.monthly;
 
     if (this.trialEligible) {
-      return `${PLANS.pro.trialLabel} — risk almadan başla`;
+      return PLANS.pro.trialLabel;
     }
 
     return plan.checkoutLabel;
@@ -345,13 +345,10 @@ export class RevenueManager {
         </article>` : '';
 
     const gridClass = layout === 'premium'
-      ? 'revenue-pricing-grid revenue-pricing-grid--triple'
+      ? 'revenue-pricing-grid revenue-pricing-grid--triple revenue-pricing-grid--planlar'
       : 'revenue-pricing-grid';
 
-    return `
-      <p class="revenue-pricing-value-prop">${PRICING_MESSAGING.subhead}</p>
-      ${roiBlock}
-      ${billingToggle}
+    const planCards = `
       <div class="${gridClass}">
         <article class="revenue-plan-card">
           <span class="revenue-plan-badge">Bireysel</span>
@@ -377,9 +374,9 @@ export class RevenueManager {
           <p class="revenue-plan-hint">${PLANS.pro.priceHint}${this.trialEligible ? ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz` : ''}</p>
         </article>
         ${enterpriseCard}
-      </div>
-      ${compareBlock}
-      ${reassuranceBlock}
+      </div>`;
+
+    const trustFooter = `
       <p class="revenue-risk-reversal" role="note">
         <span>${PLANS.pro.trialDays} gün ücretsiz deneme (ilk abonelik)</span>
         <span>Stripe ile güvenli ödeme</span>
@@ -389,8 +386,33 @@ export class RevenueManager {
       <p class="pricing-trust-note" role="note">
         Analiz ve uyum skorları metodolojik destek sunar; kesin sonuç veya getiri taahhüdü değildir.
         <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
-      </p>
-    `;
+      </p>`;
+
+    if (layout === 'premium') {
+      return `
+      <div class="ib-pricing-shell" data-pricing-layout="premium">
+        <header class="ib-pricing-intro">
+          <p class="revenue-pricing-value-prop">${PRICING_MESSAGING.subhead}</p>
+        </header>
+        ${billingToggle}
+        ${planCards}
+        ${roiBlock}
+        ${compareBlock}
+        <p class="ib-pricing-compliance" role="note">
+          Skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü değildir.
+          <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
+        </p>
+      </div>`;
+    }
+
+    return `
+      <p class="revenue-pricing-value-prop">${PRICING_MESSAGING.subhead}</p>
+      ${roiBlock}
+      ${billingToggle}
+      ${planCards}
+      ${compareBlock}
+      ${reassuranceBlock}
+      ${trustFooter}`;
   }
 
   initPricingControls(root = document.getElementById('pricing-plans-root')) {

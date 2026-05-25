@@ -68,6 +68,17 @@ export function validateExperimentWeights(experiment) {
 }
 
 function setElementLabel(el, text) {
+  const existing = el.querySelector(':scope > .growth-exp-label');
+  if (existing) {
+    existing.textContent = text;
+    return;
+  }
+
+  if (el.matches('button, a.btn, [data-upgrade-checkout], [data-revenue-checkout-cta]')) {
+    el.textContent = text;
+    return;
+  }
+
   let label = el.querySelector('.growth-exp-label');
   if (!label) {
     label = document.createElement('span');

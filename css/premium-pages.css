@@ -622,6 +622,193 @@ body.ib-premium-route-active .navbar {
   margin-bottom: 2rem;
 }
 
+/* —— Planlar (/planlar) kurumsal fiyatlandırma düzeni —— */
+.container--pricing {
+  max-width: 1120px;
+}
+
+.ib-premium-block--pricing {
+  padding: clamp(2rem, 5vw, 3.5rem) 0;
+}
+
+.ib-pricing-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.ib-pricing-intro {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.ib-pricing-shell .revenue-pricing-value-prop {
+  max-width: 46rem;
+  margin: 0 auto;
+  font-size: 1.02rem;
+}
+
+.ib-pricing-shell .revenue-billing-toggle {
+  max-width: 640px;
+  margin: 0 auto 2rem;
+}
+
+.ib-pricing-shell .revenue-pricing-grid--planlar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.35rem;
+  align-items: stretch;
+  margin-top: 0;
+}
+
+.ib-pricing-shell .revenue-plan-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.ib-pricing-shell .revenue-plan-card ul {
+  flex: 1;
+}
+
+.ib-pricing-shell .revenue-plan-card--featured {
+  position: relative;
+  border-width: 2px;
+  box-shadow: 0 24px 56px rgba(37, 99, 235, 0.14);
+}
+
+.ib-pricing-shell .revenue-plan-card--featured::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 22px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.08), transparent 45%);
+  z-index: 0;
+}
+
+.ib-pricing-shell .revenue-plan-card--featured > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ib-pricing-shell .revenue-roi-panel {
+  max-width: 720px;
+  margin: 2.5rem auto 0;
+}
+
+.ib-pricing-shell .revenue-feature-compare {
+  margin-top: 2.75rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.ib-pricing-shell .revenue-feature-compare-title {
+  text-align: center;
+  font-size: 1.35rem;
+}
+
+.ib-pricing-shell .revenue-feature-compare-lead {
+  text-align: center;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ib-pricing-shell .revenue-feature-compare-scroll {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.ib-pricing-shell .revenue-feature-compare-table thead th {
+  background: #f8fafc;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+.ib-pricing-shell .revenue-feature-compare-table th:nth-child(3),
+.ib-pricing-shell .revenue-feature-compare-table td:nth-child(3) {
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.ib-pricing-shell .revenue-feature-compare-table tbody tr:last-child th,
+.ib-pricing-shell .revenue-feature-compare-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ib-pricing-compliance {
+  margin: 2rem 0 0;
+  text-align: center;
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.ib-pricing-compliance a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.ib-pricing-compliance a:hover {
+  text-decoration: underline;
+}
+
+.ib-premium-trust-panel--pricing {
+  padding: 2rem 0 2.5rem;
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.ib-pricing-trust-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ib-pricing-trust-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #fff;
+  font-size: 0.88rem;
+  color: #475569;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.ib-pricing-trust-chips i {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.ib-pricing-trust-chips strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+@media (max-width: 960px) {
+  .ib-pricing-shell .revenue-pricing-grid--planlar {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .ib-pricing-shell .revenue-plan-card--featured {
+    order: -1;
+  }
+}
+
 @media (max-width: 900px) {
   .ib-premium-hero-grid,
   .ib-premium-split,

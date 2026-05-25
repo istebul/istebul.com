@@ -381,24 +381,22 @@ export class PremiumPages {
         </div>
       </header>
 
-      <section class="ib-premium-block">
-        <div class="container">
+      <section class="ib-premium-block ib-premium-block--pricing">
+        <div class="container container--pricing">
           <div id="premium-pricing-plans-root" class="ib-premium-pricing-root">
             ${renderStaticPricingFallback()}
           </div>
         </div>
       </section>
 
-      <section class="ib-premium-trust-panel ib-premium-trust-panel--compact">
-        <div class="container ib-premium-trust-messages">
-          <div><i data-lucide="shield"></i><p><strong>Stripe</strong> ile PCI uyumlu ödeme; kart bilgileri sunucularımızda tutulmaz.</p></div>
-          <div><i data-lucide="rotate-ccw"></i><p><strong>İptal</strong> — aboneliği panelden istediğiniz zaman sonlandırın.</p></div>
-          <div><i data-lucide="gift"></i><p><strong>7 gün deneme</strong> — ilk Pro aboneliğinde ücretsiz deneme.</p></div>
+      <section class="ib-premium-trust-panel ib-premium-trust-panel--pricing" aria-label="Ödeme güvencesi">
+        <div class="container">
+          <ul class="ib-pricing-trust-chips">
+            <li><i data-lucide="shield"></i><span><strong>Stripe · PCI</strong> — kart bilgileri sunucularımızda tutulmaz</span></li>
+            <li><i data-lucide="rotate-ccw"></i><span><strong>İptal</strong> — panelden istediğiniz zaman</span></li>
+            <li><i data-lucide="gift"></i><span><strong>7 gün deneme</strong> — ilk Pro aboneliğinde</span></li>
+          </ul>
         </div>
-        <p class="pricing-trust-note" role="note" style="text-align:center;margin-top:1rem;">
-          Uyum skoru ve veri güven bandı metodolojik destek sunar; kesin sonuç değildir.
-          <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
-        </p>
       </section>
 
       <section class="ib-premium-cta-band">
