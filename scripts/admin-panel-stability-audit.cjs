@@ -72,8 +72,8 @@ if (adminPanel.includes('partner_dispatch_logs')) {
 if (adminPanel.includes('partner_endpoint_id, onboarding_token')) {
   fail('partner_applications load must not enumerate optional columns in select');
 }
-if (!adminPanel.includes("table: 'subscriptions'") || !adminPanel.includes('loadInvestorMetrics')) {
-  fail('investor KPIs must use fetchAdminTable for subscriptions');
+if (!adminPanel.includes("table: 'subscriptions'") || !adminPanel.includes('loadExecutiveKpis')) {
+  fail('executive KPIs must use fetchAdminTable for subscriptions');
 }
 
 const opsHealth = fs.readFileSync(path.join(root, 'js/features/ops/ops-health.js'), 'utf8');

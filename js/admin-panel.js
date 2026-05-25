@@ -128,7 +128,7 @@ async function showApp() {
   loadAutoLeads();
   loadAutoAnalytics();
   loadPlatformAnalytics();
-  loadInvestorMetrics();
+  loadExecutiveKpis();
   loadOperationalHealth();
   loadPartnerEndpoints();
   loadPartnerApplications();
@@ -190,7 +190,7 @@ function showPage(name, el) {
     loadPlatformAnalytics();
   }
   if (name === 'investor-metrics') {
-    loadInvestorMetrics();
+    loadExecutiveKpis();
   }
   if (name === 'observability') {
     loadOperationalHealth();
@@ -428,14 +428,18 @@ async function loadOperationalHealth() {
   `;
 }
 
-async function loadInvestorMetrics() {
+async function loadExecutiveKpis() {
   const el = document.getElementById('investor-metrics-root');
   if (!el) return;
 
-  const { buildInvestorSnapshot } = await import('./features/metrics/investor-kpis.js');
-
+  const { buildExecutiveDashboard } = await import('./features/metrics/executive-dashboard.js');
+  const windowDays = SCALE_LIMITS.admin.executiveWindowDays || 30;
+  const since = new Date(Date.now() - windowDays * 86400000).toISOString();
+  const analyticsSelect =
+    'event_name, session_id, attribution, properties, revenue_cents, funnel, created_at';
   const subSelect = 'status, current_period_start, current_period_end, cancel_at_period_end';
-  const leadSelect = 'estimated_revenue, actual_revenue, partner_status';
+  const leadSelect =
+    'lead_score, partner_status, estimated_revenue, actual_revenue, created_at';
 
   const [subsRes, leadsRes, eventsRes] = await Promise.all([
     fetchAdminTable(sb, {
@@ -448,97 +452,148 @@ async function loadInvestorMetrics() {
       table: 'auto_leads',
       select: leadSelect,
       limit: 5000,
-      direct: (expr) => sb.from('auto_leads').select(expr || leadSelect).limit(5000)
+      direct: (expr) =>
+        sb
+          .from('auto_leads')
+          .select(expr || leadSelect)
+          .gte('created_at', since)
+          .limit(5000)
     }),
     fetchAdminTable(sb, {
       table: 'analytics_events',
-      select: 'event_name',
-      limit: 2500,
+      select: analyticsSelect,
+      limit: SCALE_LIMITS.admin.executiveRowLimit || 2500,
       order: { column: 'created_at', ascending: false },
       direct: (expr) =>
         sb
           .from('analytics_events')
-          .select(expr || 'event_name')
+          .select(expr || analyticsSelect)
+          .gte('created_at', since)
           .order('created_at', { ascending: false })
-          .limit(2500)
+          .limit(SCALE_LIMITS.admin.executiveRowLimit || 2500)
     })
   ]);
 
   const warnings = collectAdminWarnings([subsRes, leadsRes, eventsRes]);
-  const subscriptions = subsRes.data || [];
-  const leads = leadsRes.data || [];
-  const events = eventsRes.data || [];
+  const sinceMs = new Date(since).getTime();
+  const events = (eventsRes.data || []).filter((row) => {
+    const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
+    return ts >= sinceMs;
+  });
 
   const allFailed =
-    !subscriptions.length &&
-    !leads.length &&
     !events.length &&
+    !(leadsRes.data || []).length &&
+    !(subsRes.data || []).length &&
     [subsRes, leadsRes, eventsRes].every((r) => r.source === 'failed');
 
   if (allFailed) {
     const msg =
-      subsRes.error?.message ||
-      leadsRes.error?.message ||
       eventsRes.error?.message ||
+      leadsRes.error?.message ||
+      subsRes.error?.message ||
       'Veri yüklenemedi';
     el.innerHTML = `${renderAdminWarningBanner(warnings)}<p class="empty">Hata: ${escapeHtml(msg)}</p>`;
     return;
   }
 
-  const snapshot = buildInvestorSnapshot({
-    subscriptions,
-    leads,
-    analyticsEvents: events
+  const dash = buildExecutiveDashboard({
+    analyticsEvents: events,
+    subscriptions: subsRes.data || [],
+    autoLeads: leadsRes.data || [],
+    windowDays
   });
 
-  if (!subscriptions.length && (subsRes.error || subsRes.source === 'failed')) {
-    snapshot.notes.push(
-      'Subscriptions tablosu boş veya migrate edilmedi — MRR/ARR şimdilik 0 (20260610_subscriptions_bootstrap.sql).'
-    );
-  }
-
-  const sub = snapshot.subscription;
-  const pipe = snapshot.pipeline;
-  const funnel = snapshot.funnel;
+  const fmtPct = (v) => (v == null ? '—' : `${v}%`);
+  const c = dash.conversions.counts;
 
   el.innerHTML = `
     ${renderAdminWarningBanner(warnings)}
-    <p class="text-muted" style="margin:0 0 16px 0;">Son güncelleme: ${escapeHtml(snapshot.generatedAt)} · Data room: <code>docs/investor/DATA_ROOM_INDEX.md</code> · Export: <code>npm run metrics:investor</code></p>
-    <h3 style="margin:0 0 14px 0;">Pro subscription (MRR)</h3>
-    <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">MRR (TRY, normalized)</div><div class="stat-value">${sub.mrrTry.toLocaleString('tr-TR')} ₺</div></div>
-      <div class="stat-card"><div class="stat-label">ARR (TRY)</div><div class="stat-value">${sub.arrTry.toLocaleString('tr-TR')} ₺</div></div>
-      <div class="stat-card"><div class="stat-label">Active subs</div><div class="stat-value">${sub.activeSubscriptions}</div></div>
-      <div class="stat-card"><div class="stat-label">Trialing</div><div class="stat-value">${sub.trialingSubscriptions}</div></div>
-      <div class="stat-card"><div class="stat-label">Cancel at period end</div><div class="stat-value">${sub.cancelAtPeriodEnd}</div><div class="stat-sub">${sub.grossChurnSignal}% of billable</div></div>
+    <p class="text-muted-sm" style="margin:0 0 16px">CEO decision dashboard · Son ${windowDays} gün · ${dash.sampleSize.analyticsEvents} analytics event · Export: <code>npm run metrics:executive</code></p>
+
+    <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;background:rgba(37,99,235,0.08);border-radius:10px">
+      <strong>Executive summary</strong>
+      <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
+        ${dash.ceoSummary.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
+      </ul>
     </div>
 
-    <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Partner lead pipeline</h3>
+    <h3 style="margin:0 0 12px">Traffic &amp; revenue</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Leads</div><div class="stat-value">${pipe.leadCount}</div></div>
-      <div class="stat-card"><div class="stat-label">Pipeline (estimated)</div><div class="stat-value">${pipe.pipelineEstimatedTry.toLocaleString('tr-TR')} ₺</div></div>
-      <div class="stat-card"><div class="stat-label">Realized (CRM)</div><div class="stat-value">${pipe.pipelineActualTry.toLocaleString('tr-TR')} ₺</div></div>
-      <div class="stat-card"><div class="stat-label">Partner wins</div><div class="stat-value">${pipe.partnerWinCount}</div><div class="stat-sub">Win rate ${pipe.winRate ?? '—'}%</div></div>
-      <div class="stat-card"><div class="stat-label">Blended ARR signal</div><div class="stat-value">${snapshot.blendedArrTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">Pro ARR + realized pipeline</div></div>
+      <div class="stat-card"><div class="stat-label">Page views</div><div class="stat-value">${dash.traffic.pageViews}</div><div class="stat-sub">${dash.traffic.uniqueSessions ?? '—'} sessions</div></div>
+      <div class="stat-card"><div class="stat-label">Auto starts</div><div class="stat-value">${dash.traffic.autoStarts}</div></div>
+      <div class="stat-card"><div class="stat-label">MRR</div><div class="stat-value">${dash.revenue.mrrTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">ARPU</div><div class="stat-value">${dash.revenue.arpuTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">${dash.churn.activeSubscriptions} active · ${dash.churn.trialingSubscriptions} trial</div></div>
+      <div class="stat-card"><div class="stat-label">Attributed revenue</div><div class="stat-value">${dash.revenue.attributedRevenueTry.toLocaleString('tr-TR')} ₺</div></div>
+      <div class="stat-card"><div class="stat-label">Churn signal</div><div class="stat-value">${dash.churn.cancelAtPeriodEnd}</div><div class="stat-sub">${dash.churn.grossChurnSignalPct}% cancel at period end</div></div>
     </div>
 
-    <div style="height:20px"></div>
-    <h3 style="margin:0 0 14px 0;">Product funnel (sample n=${funnel.sampleSize})</h3>
+    <div style="height:18px"></div>
+    <h3 style="margin:0 0 12px">Conversion rates</h3>
     <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Page views</div><div class="stat-value">${funnel.pageViews}</div></div>
-      <div class="stat-card"><div class="stat-label">Checkout completed</div><div class="stat-value">${funnel.checkoutCompleted}</div><div class="stat-sub">${funnel.checkoutConversionPct ?? '—'}% of started</div></div>
-      <div class="stat-card"><div class="stat-label">Leads</div><div class="stat-value">${funnel.leads}</div><div class="stat-sub">${funnel.leadConversionPct ?? '—'}% of views</div></div>
+      <div class="stat-card"><div class="stat-label">Funnel (landing→lead)</div><div class="stat-value">${fmtPct(dash.conversions.funnelConversionPct)}</div><div class="stat-sub">${c.leads} / ${c.landing}</div></div>
+      <div class="stat-card"><div class="stat-label">Wizard completion</div><div class="stat-value">${fmtPct(dash.conversions.wizardCompletionPct)}</div><div class="stat-sub">${c.wizardComplete} / ${c.autoStarts}</div></div>
+      <div class="stat-card"><div class="stat-label">Lead conversion</div><div class="stat-value">${fmtPct(dash.conversions.leadConversionPct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Checkout conversion</div><div class="stat-value">${fmtPct(dash.conversions.checkoutConversionPct)}</div><div class="stat-sub">${c.checkoutComplete} / ${c.checkoutStart}</div></div>
+      <div class="stat-card"><div class="stat-label">Paid conversion</div><div class="stat-value">${fmtPct(dash.conversions.paidConversionPct)}</div><div class="stat-sub">${c.paid} paid</div></div>
+      <div class="stat-card"><div class="stat-label">Referral conversion</div><div class="stat-value">${fmtPct(dash.conversions.referralConversionPct)}</div><div class="stat-sub">${c.referralConvert} / ${c.referralLand}</div></div>
     </div>
 
-    <div style="height:20px"></div>
-    <details>
-      <summary>Snapshot JSON (investor export)</summary>
-      <pre style="white-space:pre-wrap;font-size:12px;max-height:320px;overflow:auto;">${escapeHtml(JSON.stringify(snapshot, null, 2))}</pre>
+    <div style="height:18px"></div>
+    <h3 style="margin:0 0 12px">Retention</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Return visits</div><div class="stat-value">${dash.retention.returnVisits}</div></div>
+      <div class="stat-card"><div class="stat-label">Engagement events</div><div class="stat-value">${dash.retention.engagementEvents}</div></div>
+      <div class="stat-card"><div class="stat-label">Lifecycle enrolls</div><div class="stat-value">${dash.retention.lifecycleEnrolls}</div></div>
+      <div class="stat-card"><div class="stat-label">Abandon recovery</div><div class="stat-value">${fmtPct(dash.retention.recoveryRatePct)}</div></div>
+    </div>
+
+    <div style="height:18px"></div>
+    <h3 style="margin:0 0 12px">Partner lead quality</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Leads (CRM)</div><div class="stat-value">${dash.partnerLeadQuality.totalLeads}</div></div>
+      <div class="stat-card"><div class="stat-label">Avg lead score</div><div class="stat-value">${dash.partnerLeadQuality.avgLeadScore ?? '—'}</div><div class="stat-sub">${dash.partnerLeadQuality.highIntentLeads} high intent (≥70)</div></div>
+      <div class="stat-card"><div class="stat-label">Dispatch success</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.dispatchRatePct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Partner win rate</div><div class="stat-value">${fmtPct(dash.partnerLeadQuality.partnerWinRatePct)}</div></div>
+      <div class="stat-card"><div class="stat-label">Pipeline realized</div><div class="stat-value">${dash.pipeline.actualTry.toLocaleString('tr-TR')} ₺</div><div class="stat-sub">est. ${dash.pipeline.estimatedTry.toLocaleString('tr-TR')} ₺</div></div>
+    </div>
+
+    <div style="height:18px"></div>
+    <h3 style="margin:0 0 12px">Executive funnel (step CR)</h3>
+    <table class="table">
+      <thead><tr><th>Step</th><th>Events</th><th>Step CR</th><th>From landing</th></tr></thead>
+      <tbody>
+        ${dash.funnel.map((row) => `
+          <tr>
+            <td>${escapeHtml(row.label)}</td>
+            <td><strong>${row.count}</strong></td>
+            <td>${row.stepCrPct == null ? '—' : `${row.stepCrPct}%`}</td>
+            <td>${row.overallCrPct == null ? '—' : `${row.overallCrPct}%`}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <div style="height:18px"></div>
+    <h3 style="margin:0 0 12px">Top acquisition channels</h3>
+    <table class="table">
+      <thead><tr><th>Channel</th><th>Leads</th><th>Paid</th><th>Revenue ₺</th></tr></thead>
+      <tbody>
+        ${dash.topChannels.length ? dash.topChannels.map((ch) => `
+          <tr>
+            <td>${escapeHtml(ch.channel)}</td>
+            <td>${ch.leads}</td>
+            <td>${ch.paid}</td>
+            <td>${(ch.revenueCents / 100).toLocaleString('tr-TR')}</td>
+          </tr>
+        `).join('') : '<tr><td colspan="4">Henüz kanal verisi yok</td></tr>'}
+      </tbody>
+    </table>
+
+    <details style="margin-top:16px">
+      <summary>Snapshot JSON (board export)</summary>
+      <pre style="white-space:pre-wrap;font-size:12px;max-height:360px;overflow:auto;">${escapeHtml(JSON.stringify(dash, null, 2))}</pre>
     </details>
-    <ul class="text-muted" style="margin-top:12px;font-size:13px;">
-      ${snapshot.notes.map((n) => `<li>${escapeHtml(n)}</li>`).join('')}
-    </ul>
   `;
 }
 

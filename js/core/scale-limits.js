@@ -18,6 +18,8 @@ export const SCALE_LIMITS = Object.freeze({
   admin: {
     analyticsWindowDays: 14,
     analyticsRowLimit: 1200,
+    executiveWindowDays: 30,
+    executiveRowLimit: 2500,
     partnerFunnelWindowDays: 30,
     partnerFunnelRowLimit: 1500
   },
