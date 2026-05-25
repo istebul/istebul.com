@@ -44,6 +44,13 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "trial_ending_soon",
   "revops_upgrade_prompt_requested",
   "pro_upsell_impression",
+  "support_help_opened",
+  "support_intent_routed",
+  "support_faq_resolved",
+  "support_escalation",
+  "support_ticket_submitted",
+  "support_onboarding_help_enroll",
+  "support_billing_help_enroll",
   // Lead
   "lead_submit",
   "lead_duplicate",

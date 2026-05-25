@@ -2,6 +2,7 @@ import { analytics } from '../../core/analytics.js';
 import { escapeHtml } from '../../core/security.js';
 import { readDecisionSession } from './moat-session.js';
 import { buildSegmentKey } from './scoring-intelligence.js';
+import { handleSupportQuery, submitSupportTicket } from '../customer/customer-ops-client.js';
 
 export const DECISION_FEEDBACK_EVENTS = Object.freeze({
   HELPFUL: 'decision_feedback_helpful',
@@ -68,8 +69,8 @@ async function postFeedback(type, context = {}) {
 
 const FEEDBACK_MESSAGES = {
   helpful: 'Teşekkürler — bu segment için metodoloji netliği kaydedildi.',
-  unclear: 'Not alındı — açıklama derinliğini artıracağız.',
-  contact: 'Talebiniz kaydedildi — operasyon ekibi önceliklendirebilir.'
+  unclear: 'Yardım merkezinde «skor» ve «metodoloji» için öneriler açıldı.',
+  contact: 'Destek yönlendirmesi yapıldı — WhatsApp veya SSS önerileri aşağıda.'
 };
 
 export function bindDecisionFeedback(root, context = {}) {
@@ -90,6 +91,25 @@ export function bindDecisionFeedback(root, context = {}) {
       if (status) {
         status.hidden = false;
         status.textContent = FEEDBACK_MESSAGES[type] || 'Geri bildiriminiz kaydedildi.';
+      }
+
+      if (type === 'unclear' || type === 'contact') {
+        const query =
+          type === 'contact'
+            ? 'uzman destek araç analizi'
+            : 'skor açıklama metodoloji';
+        const route = await handleSupportQuery({ message: query, context });
+        if (type === 'contact') {
+          await submitSupportTicket({
+            message: query,
+            intent: route.intent,
+            context: { surface: context.surface || 'decision_feedback' }
+          });
+        }
+        if (status && route.topArticle) {
+          status.textContent += ` ${route.topArticle.question}: ${route.topArticle.answer.slice(0, 120)}…`;
+        }
+        document.querySelector('[data-help-toggle]')?.click();
       }
     });
   });

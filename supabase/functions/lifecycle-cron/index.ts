@@ -18,6 +18,10 @@ import {
   enrollTrialEndingUpgrade,
   enrollUpgradePromptFromAnalytics,
 } from "../_shared/revenue-ops.ts";
+import {
+  enrollOnboardingHelpFromNewUsers,
+  enrollSupportFollowUpFromAnalytics,
+} from "../_shared/customer-ops.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -51,6 +55,8 @@ Deno.serve(async (req) => {
   const churnRescue = await enrollChurnRescueFromSubscriptions(sb, 20);
   const trialEnding = await enrollTrialEndingUpgrade(sb, 20);
   const upgradePrompt = await enrollUpgradePromptFromAnalytics(sb, 15);
+  const onboardingHelp = await enrollOnboardingHelpFromNewUsers(sb, 25);
+  const supportFollowUp = await enrollSupportFollowUpFromAnalytics(sb, 20);
 
   return new Response(
     JSON.stringify({
@@ -72,6 +78,8 @@ Deno.serve(async (req) => {
         churn_rescue: churnRescue,
         trial_ending_upgrade: trialEnding,
         upgrade_prompt: upgradePrompt,
+        onboarding_help: onboardingHelp,
+        support_follow_up: supportFollowUp,
       },
     }),
     { headers: { "Content-Type": "application/json" } }

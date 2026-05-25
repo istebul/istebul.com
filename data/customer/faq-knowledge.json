@@ -1,0 +1,71 @@
+{
+  "version": "p11.0",
+  "updatedAt": "2026-05-24",
+  "categories": ["billing", "onboarding", "auto", "account", "pro", "privacy"],
+  "articles": [
+    {
+      "id": "billing-portal",
+      "category": "billing",
+      "keywords": ["fatura", "kart", "ödeme", "stripe", "abonelik", "iptal", "yenileme", "past_due"],
+      "question": "Aboneliğimi ve faturamı nasıl yönetirim?",
+      "answer": "Hesabım → Abonelik → «Aboneliği yönet» ile Stripe müşteri paneline gidin. Kart güncelleme, fatura indirme ve iptal buradan yapılır.",
+      "action": { "type": "link", "href": "/account.html?tab=subscription&billing=portal", "label": "Faturalandırmayı aç" }
+    },
+    {
+      "id": "billing-failed",
+      "category": "billing",
+      "keywords": ["başarısız", "reddedildi", "ödeme hatası", "past due", "gecikmiş"],
+      "question": "Ödemem neden başarısız oldu?",
+      "answer": "Kart limiti, 3D Secure veya banka reddi olabilir. Stripe panelinden kartı güncelleyin; sistem otomatik yeniden dener.",
+      "action": { "type": "link", "href": "/account.html?tab=subscription&billing=portal", "label": "Kartı güncelle" }
+    },
+    {
+      "id": "onboarding-auto-start",
+      "category": "onboarding",
+      "keywords": ["başla", "nasıl", "ilk", "kurulum", "kayıt", "analiz"],
+      "question": "Araç analizine nasıl başlarım?",
+      "answer": "Ana sayfadan veya /auto/ üzerinden 3–5 dakikalık sihirbazı tamamlayın. Bütçe ve kullanım tercihleriniz skoru belirler.",
+      "action": { "type": "link", "href": "/auto/", "label": "Auto analizine git" }
+    },
+    {
+      "id": "onboarding-verify-email",
+      "category": "onboarding",
+      "keywords": ["doğrulama", "e-posta", "onay", "spam"],
+      "question": "Doğrulama e-postası gelmedi",
+      "answer": "Spam klasörünü kontrol edin. Hesabım → Ayarlar’dan «Doğrulama e-postasını yeniden gönder» kullanın.",
+      "action": { "type": "link", "href": "/account.html?tab=settings", "label": "Hesap ayarları" }
+    },
+    {
+      "id": "pro-benefits",
+      "category": "pro",
+      "keywords": ["pro", "premium", "ücret", "plan", "deneme", "fiyat"],
+      "question": "Pro plan ne sağlar?",
+      "answer": "Tam skor dökümü, gelişmiş karşılaştırma, kayıtlı karar geçmişi ve öncelikli yönlendirme. 7 gün deneme mevcuttur.",
+      "action": { "type": "link", "href": "/planlar?checkout=pro", "label": "Planları gör" }
+    },
+    {
+      "id": "auto-trust",
+      "category": "auto",
+      "keywords": ["güven", "skor", "doğru", "yanlış", "kaynak", "metodoloji"],
+      "question": "Skorlar nasıl hesaplanır?",
+      "answer": "Kurallı motor: fiyat, TCO, finansman ve risk faktörleri. LLM yalnızca yorum üretir; skoru değiştirmez. Metodoloji sayfasında detay var.",
+      "action": { "type": "link", "href": "/metodoloji", "label": "Metodoloji" }
+    },
+    {
+      "id": "privacy-kvkk",
+      "category": "privacy",
+      "keywords": ["kvkk", "gizlilik", "veri", "silme", "hesap"],
+      "question": "Verilerimi nasıl yönetirim?",
+      "answer": "KVKK ve gizlilik politikalarımıza uygun erişim/düzeltme/silme talepleri için iletişim formunu kullanın.",
+      "action": { "type": "link", "href": "/iletisim.html", "label": "İletişim" }
+    },
+    {
+      "id": "support-human",
+      "category": "account",
+      "keywords": ["insan", "destek", "whatsapp", "telefon", "uzman", "iletişim"],
+      "question": "Canlı destek var mı?",
+      "answer": "Önce bu yardım merkezindeki önerileri deneyin. Gerekirse WhatsApp veya e-posta ile operasyon ekibine ulaşın (yanıt süresi iş günü içi).",
+      "action": { "type": "whatsapp", "href": "https://wa.me/905456786420", "label": "WhatsApp destek" }
+    }
+  ]
+}

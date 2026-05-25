@@ -8,6 +8,7 @@ import { analytics } from '../../core/analytics.js';
 import { mapAuthError, mapAuthErrorForCheckout } from './auth-errors.js';
 import { peekCheckoutIntent } from '../../core/checkout-intent.js';
 import { enrollSignupNurture } from '../lifecycle/lifecycle-client.js';
+import { enrollOnboardingHelp } from '../customer/customer-ops-client.js';
 import {
     attributeReferralSignupFromStorage,
     ensureServerReferralCode
@@ -46,6 +47,11 @@ export class AuthManager {
                         enrollSignupNurture(session.user).then((result) => {
                             if (result?.ok) localStorage.setItem(nurtureKey, '1');
                         });
+                        enrollOnboardingHelp({
+                            email: session.user.email,
+                            user_id: session.user.id,
+                            trigger_source: 'auth_signed_in'
+                        }).catch(() => {});
                     }
                 } catch {
                     /* ignore */

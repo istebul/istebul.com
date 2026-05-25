@@ -2,6 +2,7 @@ import API from '../../core/api.js';
 import { escapeHtml } from '../../core/security.js';
 import config from '../../core/config.js';
 import { canOpenBillingPortal } from '../../core/billing-portal.js';
+import { enrollBillingHelp } from '../customer/customer-ops-client.js';
 
 import { STORAGE_KEYS } from '../../core/storage-keys.js';
 
@@ -56,6 +57,15 @@ export class AccountManager {
         } else if (billingManaged) {
             this.ui?.showSuccess?.('Stripe abonelik panelinden döndünüz. Kart, fatura veya plan değişiklikleri kısa süre içinde yansır.');
             this.setTab('subscription');
+            const user = this.auth?.getCurrentUser?.();
+            if (user?.email) {
+                enrollBillingHelp({
+                    email: user.email,
+                    user_id: user.id,
+                    reason: 'billing_portal_return',
+                    trigger_source: 'account_billing_return'
+                }).catch(() => {});
+            }
         }
 
         if (subscribed || cancelled || billingManaged || tab) {
@@ -90,6 +100,14 @@ export class AccountManager {
 
             this.renderAccount(currentUser, profile);
             this.maybeShowOnboarding(profile);
+            if (this.subscription?.status === 'past_due') {
+                enrollBillingHelp({
+                    email: currentUser.email,
+                    user_id: currentUser.id,
+                    reason: 'past_due',
+                    trigger_source: 'account_past_due'
+                }).catch(() => {});
+            }
         } catch (error) {
             console.error('Account refresh failed:', error);
             this.renderError();
@@ -425,6 +443,11 @@ export class AccountManager {
             ? `<span class="account-plan-badge tone-${subMeta.tone}">${escapeHtml(subMeta.label)}</span>`
             : `<button type="button" class="btn btn-primary" id="account-upgrade-btn">7 gün ücretsiz dene</button>`}
                         </div>
+                        ${isPastDue ? `
+                        <div class="account-billing-panel" style="margin-bottom:12px;padding:12px;background:rgba(220,53,69,0.06);border-radius:8px">
+                            <p style="margin:0 0 8px;font-size:14px"><strong>Ödeme sorunu?</strong> Kartınızı güncelleyin veya <button type="button" class="btn btn-ghost btn-sm" data-help-open>Yardım merkezi</button> üzerinden «ödeme» arayın.</p>
+                        </div>
+                        ` : ''}
                         ${canManageBilling ? `
                         <div class="account-billing-panel">
                             <button type="button" class="btn btn-primary" id="account-billing-portal-btn" data-billing-portal>Aboneliği yönet</button>
@@ -478,6 +501,10 @@ export class AccountManager {
 
         root.querySelector('#account-logout-secondary')?.addEventListener('click', () => {
             document.getElementById('account-logout-btn')?.click();
+        });
+
+        root.querySelector('[data-help-open]')?.addEventListener('click', () => {
+            document.querySelector('[data-help-toggle]')?.click();
         });
 
         root.querySelectorAll('[data-account-tab]').forEach((btn) => {

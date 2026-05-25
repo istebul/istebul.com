@@ -45,13 +45,18 @@
     {
       "id": "customer",
       "name": "Customer Ops Automation",
-      "owner": "CX / Growth",
+      "owner": "CX",
       "automations": [
+        { "id": "help_center_widget", "status": "live_p11", "path": "js/ui/help-center-widget.js" },
+        { "id": "faq_automation", "status": "live_p11", "data": "data/customer/faq-knowledge.json" },
+        { "id": "support_intake", "status": "live_p11", "path": "supabase/functions/support-intake" },
+        { "id": "onboarding_help_flow", "status": "live_p11", "flow": "onboarding_help" },
+        { "id": "billing_help_flow", "status": "live_p11", "flow": "billing_help" },
         { "id": "signup_nurture", "status": "live", "flow": "signup_nurture" },
         { "id": "retention_habits", "status": "live", "path": "js/features/growth/retention-habits.js" },
         { "id": "auth_checkout_resume", "status": "live", "path": "js/features/auth/auth.js" }
       ],
-      "phase_p9": ["Command center surfaces lifecycle + funnel", "Checkout abandon alert rule"]
+      "phase_p11": ["AI intent routing", "FAQ deflection metrics", "Support follow-up cron"]
     },
     {
       "id": "partner",

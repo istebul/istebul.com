@@ -12,6 +12,7 @@ import {
     enrollNewsletterWelcome
 } from './features/lifecycle/lifecycle-client.js';
 import { trackPricingViewForUpgrade } from './features/revenue/revenue-ops-client.js';
+import { mountHelpCenterWidget } from './ui/help-center-widget.js';
 import {
     bindContextualUpsell,
     flushUpsellConversion,
@@ -123,6 +124,13 @@ class App {
     async init() {
         try {
             initEnterpriseUx();
+
+            mountHelpCenterWidget({
+                getUserContext: () => ({
+                    email: this.currentUser?.email,
+                    user_id: this.currentUser?.id
+                })
+            });
 
             // Initialize monitoring first
             monitoring.init();

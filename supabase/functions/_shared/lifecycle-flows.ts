@@ -337,6 +337,35 @@ export const LIFECYCLE_FLOWS: LifecycleFlow[] = [
       { id: "trial_48h", delayHours: 48, templateId: "upgrade_prompt", subject: "Kesintisiz Pro erişimi için ödeme" },
     ],
   },
+  {
+    id: "onboarding_help",
+    name: "Onboarding help",
+    category: "support",
+    steps: [
+      { id: "oh_0", delayHours: 0, templateId: "onboarding_help_welcome", subject: "isteBul'a hoş geldiniz — hızlı başlangıç" },
+      { id: "oh_24h", delayHours: 24, templateId: "onboarding_help_tips", subject: "İlk analiziniz için 3 ipucu" },
+      { id: "oh_72h", delayHours: 72, templateId: "onboarding_help_checklist", subject: "Kontrol listesi: hesap ve analiz" },
+    ],
+  },
+  {
+    id: "billing_help",
+    name: "Billing help",
+    category: "support",
+    cancelOn: ["unsubscribe"],
+    steps: [
+      { id: "bh_0", delayHours: 0, templateId: "billing_help_portal", subject: "Fatura ve abonelik yardımı" },
+      { id: "bh_48h", delayHours: 48, templateId: "billing_help_reminder", subject: "Ödeme veya fatura sorunu mu var?" },
+    ],
+  },
+  {
+    id: "support_follow_up",
+    name: "Support follow-up",
+    category: "support",
+    steps: [
+      { id: "sf_2h", delayHours: 2, templateId: "support_follow_up", subject: "Destek talebiniz alındı" },
+      { id: "sf_48h", delayHours: 48, templateId: "support_follow_up", subject: "Yardım merkezi önerileri" },
+    ],
+  },
 ];
 
 export const PUBLIC_ENROLL_FLOWS = new Set([
@@ -352,6 +381,7 @@ export const PUBLIC_ENROLL_FLOWS = new Set([
   "saved_decision_revisit",
   "partner_sales_cadence",
   "upgrade_prompt",
+  "onboarding_help",
 ]);
 
 export function buildUnsubscribeUrl(email: string) {

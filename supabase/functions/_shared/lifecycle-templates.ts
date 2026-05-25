@@ -176,6 +176,41 @@ const TEMPLATES: Record<string, (v: TemplateVars) => string> = {
     <p>7 günlük Pro denemeniz sona eriyor. Kesintisiz erişim için planınızı seçin.</p>
     <p><a href="${esc(v.pricing_url)}">Ödemeye devam et →</a></p>
   `, v.unsubscribe_url),
+  onboarding_help_welcome: (v) => layout(`
+    <h1>Hızlı başlangıç</h1>
+    <p>Hesabınız hazır. İlk adım: ücretsiz Auto analizi (3–5 dk).</p>
+    <p><a href="${esc(v.cta_url)}">Analize başla →</a></p>
+    <p style="font-size:14px"><a href="${esc(buildUtmLink("/account.html", v.flow_id, v.step_id))}">Hesap ayarları</a></p>
+  `),
+  onboarding_help_tips: (v) => layout(`
+    <h1>3 ipucu</h1>
+    <ul style="padding-left:18px;line-height:1.5">
+      <li>Bütçe aralığınızı net girin — skor daha doğru olur.</li>
+      <li>Sonuç ekranında TCO ve kredi senaryolarını karşılaştırın.</li>
+      <li>Sorularınız için sitedeki <strong>Yardım</strong> düğmesini kullanın.</li>
+    </ul>
+    <p><a href="${esc(v.cta_url)}">Devam et →</a></p>
+  `),
+  onboarding_help_checklist: (v) => layout(`
+    <h1>Kontrol listesi</h1>
+    <p>E-posta doğrulandı mı? İlk analiz tamamlandı mı? Pro denemek isterseniz planlar sayfasına göz atın.</p>
+    <p><a href="${esc(v.cta_url)}">Auto →</a> · <a href="${esc(v.pricing_url)}">Planlar</a></p>
+  `),
+  billing_help_portal: (v) => layout(`
+    <h1>Fatura yardımı</h1>
+    <p>Abonelik, kart ve faturalar Stripe müşteri panelinden yönetilir — ödeme bilgisi isteBul'da saklanmaz.</p>
+    <p><a href="${esc(v.billing_url || v.account_url)}" style="background:#0d6efd;color:#fff;padding:12px 20px;text-decoration:none;border-radius:8px;display:inline-block">Stripe paneli</a></p>
+  `, v.unsubscribe_url),
+  billing_help_reminder: (v) => layout(`
+    <h1>Ödeme hatırlatması</h1>
+    <p>Sorun devam ediyorsa kart limiti veya banka onayını kontrol edin. Yardım merkezinde «ödeme» araması yapabilirsiniz.</p>
+    <p><a href="${esc(v.billing_url || v.account_url)}">Faturalandırma →</a></p>
+  `, v.unsubscribe_url),
+  support_follow_up: (v) => layout(`
+    <h1>Destek talebiniz</h1>
+    <p>Talebiniz kayıt altında. Çoğu soru <a href="${esc(buildUtmLink("/", v.flow_id, v.step_id, { help: "1" }))}">yardım merkezi</a> SSS ile çözülür; acil durumda WhatsApp kullanın.</p>
+    <p><a href="https://wa.me/905456786420">WhatsApp</a></p>
+  `, v.unsubscribe_url),
 };
 
 export function renderTemplate(
@@ -185,6 +220,8 @@ export function renderTemplate(
   context: Record<string, unknown> = {},
   recipientEmail?: string
 ) {
+  const supportBillingFlows = new Set(["billing_help", "support_follow_up"]);
+
   const revopsBillingFlows = new Set([
     "failed_payment_recovery",
     "dunning_past_due",
@@ -195,7 +232,7 @@ export function renderTemplate(
   ]);
 
   const ctaPath =
-    revopsBillingFlows.has(flowId)
+    revopsBillingFlows.has(flowId) || supportBillingFlows.has(flowId)
       ? "/account.html?billing=portal"
       : flowId === "finance_follow_up"
         ? "/auto/?interest=finance"

@@ -76,7 +76,8 @@ function buildEnrollBody(flowId, payload = {}) {
     flowId === 'habit_loop_reminder' ||
     flowId === 'saved_decision_revisit' ||
     flowId === 'partner_sales_cadence' ||
-    flowId === 'upgrade_prompt';
+    flowId === 'upgrade_prompt' ||
+    flowId === 'onboarding_help';
 
   return {
     flow_id: flowId,
