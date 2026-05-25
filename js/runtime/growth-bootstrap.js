@@ -48,6 +48,28 @@ function captureGrowthParams() {
       funnel_step: 'email_click'
     });
   }
+
+  const campaign = params.get('utm_campaign') || '';
+  const isReactivation =
+    campaign.includes('reactivation') ||
+    campaign === 'reactivation_ltv' ||
+    campaign === 'habit_loop_reminder' ||
+    campaign === 'saved_decision_revisit' ||
+    campaign === 'inactive_users' ||
+    campaign === 'retention_campaigns' ||
+    params.get('utm_medium') === 'reactivation';
+
+  if (isReactivation && analytics.hasConsent()) {
+    analytics.track('retention_reactivation_land', {
+      campaign,
+      utm_content: params.get('utm_content'),
+      decision_id: params.get('decision_id') || params.get('saved_decision')
+    }, {
+      category: 'growth',
+      funnel: 'retention',
+      funnel_step: 'reactivation_bootstrap'
+    });
+  }
 }
 
 captureGrowthParams();

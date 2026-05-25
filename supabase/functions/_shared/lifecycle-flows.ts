@@ -169,6 +169,69 @@ export const LIFECYCLE_FLOWS: LifecycleFlow[] = [
       },
     ],
   },
+  {
+    id: "reactivation_ltv",
+    name: "Reactivation LTV",
+    category: "retention",
+    steps: [
+      {
+        id: "reactivate_0",
+        delayHours: 0,
+        templateId: "inactive_winback",
+        subject: "Kayıtlı kararınıza dönün",
+      },
+      {
+        id: "reactivate_3d",
+        delayHours: 72,
+        templateId: "inactive_winback",
+        subject: "TCO analizinizi güncelleyin",
+      },
+      {
+        id: "reactivate_7d",
+        delayHours: 168,
+        templateId: "retention_winback",
+        subject: "Yeni araç maliyeti özeti",
+      },
+    ],
+  },
+  {
+    id: "habit_loop_reminder",
+    name: "Habit loop reminder",
+    category: "retention",
+    steps: [
+      {
+        id: "habit_0",
+        delayHours: 0,
+        templateId: "signup_auto_cta",
+        subject: "Haftalık araç maliyeti kontrolü",
+      },
+      {
+        id: "habit_3d",
+        delayHours: 72,
+        templateId: "onboarding_nudge",
+        subject: "Alışkanlığınızı sürdürün — 2 dakikalık TCO",
+      },
+    ],
+  },
+  {
+    id: "saved_decision_revisit",
+    name: "Saved decision revisit",
+    category: "retention",
+    steps: [
+      {
+        id: "saved_0",
+        delayHours: 0,
+        templateId: "auto_results_ready",
+        subject: "Kayıtlı kararınızı yeniden açın",
+      },
+      {
+        id: "saved_2d",
+        delayHours: 48,
+        templateId: "results_no_lead",
+        subject: "Son analiziniz güncellensin mi?",
+      },
+    ],
+  },
 ];
 
 export const PUBLIC_ENROLL_FLOWS = new Set([
@@ -179,6 +242,9 @@ export const PUBLIC_ENROLL_FLOWS = new Set([
   "upsell_campaigns",
   "auto_results_ready",
   "checkout_abandon_recovery",
+  "reactivation_ltv",
+  "habit_loop_reminder",
+  "saved_decision_revisit",
 ]);
 
 export function buildUnsubscribeUrl(email: string) {

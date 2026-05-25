@@ -71,7 +71,10 @@ function buildEnrollBody(flowId, payload = {}) {
     flowId === 'auto_results_ready' ||
     flowId === 'checkout_abandon_recovery' ||
     flowId === 'abandoned_onboarding' ||
-    flowId === 'abandoned_lead';
+    flowId === 'abandoned_lead' ||
+    flowId === 'reactivation_ltv' ||
+    flowId === 'habit_loop_reminder' ||
+    flowId === 'saved_decision_revisit';
 
   return {
     flow_id: flowId,
@@ -239,6 +242,49 @@ export function enrollNewsletterWelcome(email) {
     email,
     marketing_consent: true,
     trigger_source: 'newsletter',
+    restart: true
+  });
+}
+
+export function enrollReactivationLtv(meta = {}) {
+  return enrollLifecycle('reactivation_ltv', {
+    email: resolveLifecycleEmail(meta),
+    user_id: meta.user_id,
+    service_opt_in: true,
+    marketing_consent: meta.marketing_consent,
+    context: {
+      days_inactive: meta.days_inactive,
+      engagement_score: meta.engagement_score,
+      saved_decisions: meta.saved_decisions_count
+    },
+    trigger_source: meta.trigger_source || 'retention_reactivation',
+    restart: true
+  });
+}
+
+export function enrollHabitLoopReminder(meta = {}) {
+  return enrollLifecycle('habit_loop_reminder', {
+    email: resolveLifecycleEmail(meta),
+    service_opt_in: true,
+    context: {
+      streak_weeks: meta.streak_weeks,
+      engagement_score: meta.engagement_score
+    },
+    trigger_source: 'retention_habit',
+    restart: Boolean(meta.restart)
+  });
+}
+
+export function enrollSavedDecisionRevisit(meta = {}) {
+  return enrollLifecycle('saved_decision_revisit', {
+    email: resolveLifecycleEmail(meta),
+    user_id: meta.user_id,
+    service_opt_in: true,
+    context: {
+      decision_id: meta.decision_id,
+      saved_count: meta.saved_count
+    },
+    trigger_source: 'retention_saved_decision',
     restart: true
   });
 }

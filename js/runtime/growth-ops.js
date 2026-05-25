@@ -10,7 +10,7 @@ import {
   capturePaidAttribution,
   trackPaidLandingView
 } from '../features/growth/paid-acquisition.js';
-import { initRetentionEngine } from '../features/growth/retention-engine.js';
+import { initRetentionLtvEngine } from '../features/growth/retention-ltv.js';
 import { analytics } from '../core/analytics.js';
 
 export function initGrowthOps() {
@@ -18,7 +18,7 @@ export function initGrowthOps() {
 
   capturePaidAttribution();
   trackPaidLandingView();
-  initRetentionEngine();
+  initRetentionLtvEngine().catch(() => {});
 
   const runExperiments = () => {
     initGrowthExperiments().catch(() => {});

@@ -13,6 +13,9 @@ export const FLOW_CONSENT_TIER: Record<string, ConsentTier> = {
   upsell_campaigns: "marketing",
   inactive_users: "marketing",
   retention_campaigns: "marketing",
+  reactivation_ltv: "marketing",
+  habit_loop_reminder: "service",
+  saved_decision_revisit: "service",
   finance_follow_up: "transactional",
   partner_follow_up: "transactional",
 };

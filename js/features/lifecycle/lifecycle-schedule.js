@@ -34,7 +34,10 @@ export const PUBLIC_ENROLL_FLOWS = Object.freeze([
   'finance_follow_up',
   'upsell_campaigns',
   'auto_results_ready',
-  'checkout_abandon_recovery'
+  'checkout_abandon_recovery',
+  'reactivation_ltv',
+  'habit_loop_reminder',
+  'saved_decision_revisit'
 ]);
 
 export const LIFECYCLE_FLOW_IDS = Object.freeze([
@@ -49,5 +52,8 @@ export const LIFECYCLE_FLOW_IDS = Object.freeze([
   'auto_results_ready',
   'results_no_lead_d1',
   'lead_upgrade_d3',
-  'checkout_abandon_recovery'
+  'checkout_abandon_recovery',
+  'reactivation_ltv',
+  'habit_loop_reminder',
+  'saved_decision_revisit'
 ]);

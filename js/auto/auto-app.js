@@ -13,8 +13,11 @@ import {
   enrollAutoResultsReady,
   enrollFinanceFollowUp,
   enrollLifecycleKeepalive,
+  enrollSavedDecisionRevisit,
   enrollUpsellCampaign
 } from '../features/lifecycle/lifecycle-client.js';
+import { notifyDecisionSaved } from '../features/growth/retention-ltv.js';
+import { recordHabitAction } from '../features/growth/retention-habits.js';
 import { ensureServerReferralCode } from '../features/growth/referral-client.js';
 import {
   bindContextualUpsell,
@@ -2266,6 +2269,32 @@ form.addEventListener('submit', async (event) => {
       } catch (_) {}
 
       trackUniqueAutoEvent('auto_results_view', formData, 'results');
+
+      if (results.length) {
+        const top = results[0];
+        const decisionId = `auto-${Date.now()}`;
+        notifyDecisionSaved({
+          id: decisionId,
+          categoryId: 'auto',
+          topVehicle: top.name,
+          score: top.score,
+          summary: `${top.name} — TCO ve kullanım profiline göre öne çıkan eşleşme`,
+          revisitPath: '/auto/#analiz',
+          source: 'auto_results',
+          userId: getAppInstance()?.currentUser?.id || null
+        });
+        recordHabitAction('results_view');
+        recordHabitAction('wizard_complete');
+        const leadEmail = readStorageRaw(STORAGE_KEYS.AUTO_LEAD_EMAIL);
+        if (leadEmail) {
+          enrollSavedDecisionRevisit({
+            email: leadEmail,
+            user_id: getAppInstance()?.currentUser?.id,
+            decision_id: decisionId,
+            saved_count: 1
+          }).catch(() => {});
+        }
+      }
     } finally {
       autoAnalysisRunning = false;
       autoAnalysisTimer = null;
