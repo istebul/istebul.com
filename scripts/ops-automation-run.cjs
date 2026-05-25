@@ -76,6 +76,17 @@ async function main() {
       }
     }
 
+    const intl = spawnSync('node', [path.join(root, 'scripts/international-expansion-snapshot.cjs')], {
+      cwd: root,
+      env: process.env,
+      encoding: 'utf8'
+    });
+    report.steps.push({
+      id: 'international_expansion_snapshot',
+      ok: intl.status === 0,
+      stderr: intl.stderr?.slice(0, 500) || null
+    });
+
     const hiring = spawnSync('node', [path.join(root, 'scripts/hiring-architecture-snapshot.cjs')], {
       cwd: root,
       env: process.env,

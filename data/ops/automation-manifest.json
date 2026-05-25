@@ -57,6 +57,7 @@
     { "npm": "metrics:scale:architecture", "script": "scripts/scale-architecture-snapshot.cjs", "output": "dist/scale-architecture-report.json" },
     { "npm": "metrics:company:operating", "script": "scripts/company-operating-snapshot.cjs", "output": "dist/company-operating-snapshot.json" },
     { "npm": "metrics:hiring:architecture", "script": "scripts/hiring-architecture-snapshot.cjs", "output": "dist/hiring-architecture-snapshot.json" },
+    { "npm": "metrics:international:audit", "script": "scripts/international-expansion-snapshot.cjs", "output": "dist/international-expansion-snapshot.json" },
     { "npm": "ops:automation:run", "script": "scripts/ops-automation-run.cjs", "output": "dist/ops-automation-report.json" },
     { "npm": "metrics:partner:ops", "script": "scripts/partner-ops-snapshot.cjs", "output": "dist/partner-ops-snapshot.json" },
     { "npm": "partner:ops:run", "script": "scripts/partner-ops-automation-run.cjs", "output": "dist/partner-ops-automation-report.json" },
@@ -86,6 +87,7 @@
     { "page": "scale-architecture", "label": "Scale Architecture" },
     { "page": "company-operating-system", "label": "Company Operating System" },
     { "page": "hiring-architecture", "label": "Hiring Architecture" },
+    { "page": "international-expansion", "label": "International Expansion" },
     { "page": "platform-analytics", "label": "Platform Analytics" },
     { "page": "partner-dispatch-logs", "label": "Dispatch Logs" }
   ]

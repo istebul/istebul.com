@@ -34,4 +34,5 @@ jobs:
             dist/scale-architecture-report.json
             dist/company-operating-snapshot.json
             dist/hiring-architecture-snapshot.json
+            dist/international-expansion-snapshot.json
           if-no-files-found: ignore

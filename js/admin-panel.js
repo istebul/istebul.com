@@ -228,6 +228,9 @@ function showPage(name, el) {
   if (name === 'hiring-architecture') {
     loadHiringArchitecture();
   }
+  if (name === 'international-expansion') {
+    loadInternationalExpansion();
+  }
   if (name === 'dashboard-ceo') {
     loadCompanyDashboard('ceo', 'dashboard-ceo-root');
   }
@@ -1129,6 +1132,29 @@ async function loadHiringArchitecture() {
 
   const snapshot = buildHiringArchitectureSnapshot({ config, liveSignals });
   el.innerHTML = renderHiringArchitectureCenter(snapshot, escapeHtml);
+}
+
+async function loadInternationalExpansion() {
+  const el = document.getElementById('international-expansion-root');
+  if (!el) return;
+
+  const { buildInternationalExpansionSnapshot } = await import(
+    './features/ops/international-expansion-audit.js'
+  );
+  const { renderInternationalExpansionCenter } = await import(
+    './features/ops/international-expansion-views.js'
+  );
+
+  let config = { version: 'p22.0', dimensions: [], priorityMarkets: [] };
+  try {
+    const res = await fetch('/data/ops/international-expansion-audit.json');
+    if (res.ok) config = await res.json();
+  } catch {
+    /* optional */
+  }
+
+  const snapshot = buildInternationalExpansionSnapshot({ config });
+  el.innerHTML = renderInternationalExpansionCenter(snapshot, escapeHtml);
 }
 
 async function loadExecutiveKpis() {

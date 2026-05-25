@@ -1,5 +1,7 @@
 # Global Expansion Readiness
 
+> **Full audit & priority markets (P22):** [INTERNATIONAL_EXPANSION_AUDIT.md](./INTERNATIONAL_EXPANSION_AUDIT.md) · Admin: International Expansion · `npm run metrics:international:audit`
+
 Audit and foundation for isteBul as a **global SaaS** decision platform.
 
 ## Current state (after foundation PR)

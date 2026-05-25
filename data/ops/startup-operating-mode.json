@@ -54,8 +54,10 @@
       "linkedData": [
         "data/ops/infra-unit-economics.json",
         "data/ops/scale-architecture-scenarios.json",
+        "data/ops/international-expansion-audit.json",
         "js/core/scale-limits.js",
-        "docs/SCALE_ARCHITECTURE_EXECUTION.md"
+        "docs/SCALE_ARCHITECTURE_EXECUTION.md",
+        "docs/INTERNATIONAL_EXPANSION_AUDIT.md"
       ]
     },
     {
