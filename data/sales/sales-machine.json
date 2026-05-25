@@ -1,6 +1,7 @@
 {
-  "version": "p6.0",
+  "version": "p6.1",
   "goal": "b2b_partner_revenue",
+  "closingKit": "/partner-closing-kit.html",
   "partnerAePipeline": [
     { "id": "new", "label": "Yeni", "slaHours": 4, "nextAction": "İlk outbound (e-posta + LinkedIn)" },
     { "id": "contacted", "label": "İletişim", "slaHours": 48, "nextAction": "Keşif görüşmesi / demo" },

@@ -1,0 +1,77 @@
+{
+  "version": "p6.1",
+  "title": "isteBul Partner — Satış Destesi",
+  "subtitle": "Karar altyapısı · Skorlu talep · Closing",
+  "slides": [
+    {
+      "id": "cover",
+      "headline": "isteBul Partner OS",
+      "bullets": [
+        "Tüketici: TCO + skorlu karar (ilan sitesi değil)",
+        "Partner: hot/very_hot lead webhook teslimatı",
+        "Outcome geri beslemesi → CPL optimizasyonu"
+      ],
+      "speakerNote": "Açılış: classifieds veya form lead ile karşılaştırmayın — karar altyapısı."
+    },
+    {
+      "id": "problem",
+      "headline": "Sorun: Soğuk lead, ölçülemeyen CPL",
+      "bullets": [
+        "Form dolduran ≠ satın alma niyeti",
+        "Satış ekibi düşük dönüşüm, yüksek CPA",
+        "Entegrasyon ve KVKK riski belirsiz"
+      ],
+      "speakerNote": "Acı noktası: hacim değil niyet ve kapanış."
+    },
+    {
+      "id": "solution",
+      "headline": "Çözüm: Skorlu talep + imzalı dispatch",
+      "bullets": [
+        "isteBul Auto wizard → lead_score, priority",
+        "Webhook HMAC + retry 5× + failover route",
+        "Partner callback: won/lost + actual_revenue"
+      ],
+      "speakerNote": "Demo: admin dispatch log + örnek JSON payload."
+    },
+    {
+      "id": "moat",
+      "headline": "Neden biz?",
+      "bullets": [
+        "Kural tabanlı skor — AI yalnızca gerekçe",
+        "KVKK şeffaflığı (iddia etmediğimiz sertifikalar açık)",
+        "Self-serve onboarding 6 adım — 14 gün hedef canlı"
+      ],
+      "speakerNote": "Karar-moat ve güven sayfasına yönlendirin."
+    },
+    {
+      "id": "tiers",
+      "headline": "Ürün paketleri",
+      "bullets": [
+        "Starter: CPL, ≤50 lead/ay, dispatch ≤15 dk",
+        "Growth: aylık kapasite, öncelik routing, ops özeti",
+        "Enterprise: çoklu endpoint, SOW, dedicated AE"
+      ],
+      "speakerNote": "Fiyat teklif ile — referans bant pricing sheet'te."
+    },
+    {
+      "id": "pilot",
+      "headline": "Pilot → kapanış",
+      "bullets": [
+        "5 sıcak lead ücretsiz — webhook doğrulama",
+        "Teknik kickoff 30 dk + dokümantasyon",
+        "Pilot sonrası Starter/Growth sözleşme"
+      ],
+      "speakerNote": "CTA: bu hafta pilot slotu + başvuru linki."
+    },
+    {
+      "id": "close",
+      "headline": "Sonraki adım",
+      "bullets": [
+        "Keşif 15 dk (bugün/yarın)",
+        "Başvuru + plan seçimi (self-serve)",
+        "Teklif: intent=quote ile form"
+      ],
+      "speakerNote": "Takvim linki + WhatsApp opsiyonel; dokunuşu CRM'e işleyin."
+    }
+  ]
+}

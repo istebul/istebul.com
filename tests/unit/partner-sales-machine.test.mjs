@@ -58,11 +58,11 @@ describe('P6 B2B sales machine', () => {
     assert.equal(out, 'Hello Test');
   });
 
-  it('sales data files are p6.0', () => {
+  it('sales data files are p6.1', () => {
     const machine = JSON.parse(
       fs.readFileSync(path.join(process.cwd(), 'data/sales/sales-machine.json'), 'utf8')
     );
-    assert.equal(machine.version, 'p6.0');
+    assert.equal(machine.version, 'p6.1');
     assert.ok(SALES_TOUCH_TYPES.length >= 5);
   });
 

@@ -13,6 +13,10 @@ import {
 import { getPricingTalkTrack, recommendPartnerTier } from './partner-pricing-strategy.js';
 import { computeOnboardingVelocity, velocityBadgeClass } from './partner-onboarding-velocity.js';
 import { escapeHtml } from '../../core/dom-safe.js';
+import {
+  renderClosingKitSummaryHtml,
+  renderFollowUpFlowsHtml
+} from './partner-closing-machine.js';
 
 let frameworkCache = null;
 
@@ -46,10 +50,14 @@ export async function renderPartnerSalesEnablementPanel() {
     )
     .join('');
 
+  const closingSummary = await renderClosingKitSummaryHtml();
+  const followUps = await renderFollowUpFlowsHtml();
+
   return `
     <section class="ib-sales-enablement card" aria-labelledby="sales-enablement-heading">
-      <h3 id="sales-enablement-heading">B2B satış makinesi (P6)</h3>
-      <p class="text-muted">Outbound şablonları, itiraz playbook, AE pipeline ve onboarding SLA — tek panel.</p>
+      <h3 id="sales-enablement-heading">B2B satış makinesi (P6.1 Closing)</h3>
+      <p class="text-muted">Outbound, itiraz, AE pipeline — tam closing kiti ayrı sayfada.</p>
+      ${closingSummary}
       <div class="ib-sales-enablement-grid">
         <div>
           <h4>AE pipeline</h4>
@@ -60,6 +68,8 @@ export async function renderPartnerSalesEnablementPanel() {
           ${outbound}
         </div>
       </div>
+      <h4 style="margin-top:1.25rem">Takip akışları (özet)</h4>
+      <div class="ib-closing-flows-compact">${followUps}</div>
       <h4 style="margin-top:1.25rem">İtiraz playbook</h4>
       ${objections}
     </section>`;

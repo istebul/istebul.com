@@ -1,5 +1,5 @@
 {
-  "version": "p6.0",
+  "version": "p6.1",
   "objections": [
     {
       "id": "price_transparency",
@@ -48,6 +48,22 @@
       "response": "Outcome geri beslemesi (won/lost, actual_revenue) ile CPL gerçekleşen kazanıma bağlanır. Pilot sonrası kategori bazlı dönüşüm raporu talep edin.",
       "proof": "/docs/investor/UNIT_ECONOMICS.md",
       "close": "Pilot + 30 günlük kapasite teklifi — dönüşüm eşiğine göre tier yükseltme."
+    },
+    {
+      "id": "need_to_think",
+      "category": "closing",
+      "objection": "İçeride değerlendireceğiz / düşünelim.",
+      "response": "Tabii — bu hafta pilot slotu ve teklif geçerlilik tarihini netleştirelim. 5 lead pilotu riski sıfıra yakın; karar için ölçülebilir veri üretir.",
+      "proof": "/partner-closing-kit.html",
+      "close": "Yarın 10 dk sync + quote linki — plan formda işlensin."
+    },
+    {
+      "id": "competitor_incumbent",
+      "category": "closing",
+      "objection": "Zaten bir lead sağlayıcımız var.",
+      "response": "Paralel pilot öneriyoruz: aynı dönemde 5 lead ile teslim süresi, skor dağılımı ve kapanış oranını kıyaslayın. Failover route ile tek kanala bağımlı kalmazsınız.",
+      "proof": "/partner-planlar.html",
+      "close": "İkinci endpoint olarak Starter — 30 gün sonra hacim kararı."
     }
   ]
 }

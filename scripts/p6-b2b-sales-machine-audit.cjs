@@ -35,7 +35,7 @@ for (const rel of mustExist) {
 const machine = JSON.parse(
   fs.readFileSync(path.join(root, 'data/sales/sales-machine.json'), 'utf8')
 );
-if (machine.version !== 'p6.0') fail('sales-machine.json must be p6.0');
+if (!String(machine.version || '').startsWith('p6.')) fail('sales-machine.json must be p6.x');
 if (!(machine.partnerAePipeline || []).length) fail('partnerAePipeline required');
 
 const objections = JSON.parse(

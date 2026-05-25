@@ -1,0 +1,52 @@
+{
+  "version": "p6.1",
+  "title": "Partner onboarding — AE gönderim paketi",
+  "docs": [
+    {
+      "id": "kickoff",
+      "title": "Teknik kickoff (30 dk)",
+      "audience": "CTO / entegrasyon",
+      "sections": [
+        { "heading": "Gündem", "body": "Webhook URL, HMAC secret, test lead, callback URL, KVKK süreç özeti." },
+        { "heading": "Çıktılar", "body": "Onboarding token, adım 4 webhook doğrulama, adım 5 test payload." },
+        { "heading": "Linkler", "body": "{{docs_link}} · {{onboarding_link}}" }
+      ]
+    },
+    {
+      "id": "integration",
+      "title": "Entegrasyon checklist",
+      "audience": "Geliştirici",
+      "sections": [
+        { "heading": "Ön koşullar", "body": "HTTPS webhook, 2xx yanıt < 10s, idempotent lead_id." },
+        { "heading": "Doğrulama", "body": "İmza header, örnek payload, partner-callback won/lost." },
+        { "heading": "Canlı", "body": "Admin endpoint aktif → dispatch kuyruğu → günlük cap." }
+      ]
+    },
+    {
+      "id": "commercial",
+      "title": "Ticari onboarding",
+      "audience": "Satın alma / genel müdür",
+      "sections": [
+        { "heading": "Pilot", "body": "5 lead ücretsiz; kalite metrikleri: teslim süresi, HTTP başarı, kapanış oranı." },
+        { "heading": "Sözleşme", "body": "Seçilen tier (Starter/Growth/Enterprise); CPL veya aylık kapasite." },
+        { "heading": "Faturalama", "body": "Offline teklif; self-serve ödeme yok — AE kapalı döngü." }
+      ]
+    },
+    {
+      "id": "ops",
+      "title": "Operasyon runbook",
+      "audience": "Satış ops",
+      "sections": [
+        { "heading": "SLA", "body": "Hedef canlı 14 gün; 5+ gün takılı → stalled onboarding e-postası." },
+        { "heading": "Eskalasyon", "body": "dispatch_dead → manuel retry; endpoint sağlık degraded." },
+        { "heading": "Raporlama", "body": "Haftalık teslimat özeti (Growth+); outcome CRM geri beslemesi zorunlu." }
+      ]
+    }
+  ],
+  "quickLinks": [
+    { "label": "API dokümantasyonu", "path": "/partner-docs.html" },
+    { "label": "Webhook rehberi", "path": "/docs/partner-webhook-integration.md" },
+    { "label": "Başvuru / onboarding", "path": "/partner-basvuru.html" },
+    { "label": "Güven merkezi", "path": "/partner-guven.html" }
+  ]
+}

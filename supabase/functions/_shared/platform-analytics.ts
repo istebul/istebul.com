@@ -162,6 +162,7 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "partner_outbound_sent",
   "partner_objection_view",
   "partner_deal_scored",
+  "partner_closing_kit_view",
   "newsletter_subscribe",
   // Lifecycle CRM
   "lifecycle_enrolled",

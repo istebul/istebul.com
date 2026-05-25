@@ -1,0 +1,52 @@
+{
+  "version": "p6.1",
+  "defaults": {
+    "signature": "— {{ae_name}}\nisteBul Partner · {{ae_email}}\nhttps://www.istebul.com/partner-olun.html",
+    "ae_name": "isteBul Partner Ekibi",
+    "ae_email": "partner@istebul.com"
+  },
+  "templates": [
+    {
+      "id": "discover_intro",
+      "stage": "discover",
+      "channel": "email",
+      "subject": "{{company}} × isteBul — skorlu araç talebi",
+      "body": "Merhaba {{contact_name}},\n\n{{company}} için bayi/finansman hattında skorlu talep ve webhook teslimatı konuşuyoruz — ilan formu değil, karar altyapısı.\n\n15 dk keşif: {{booking_link}}\nÖzet deck: {{closing_kit_link}}\n\n{{signature}}"
+    },
+    {
+      "id": "demo_confirm",
+      "stage": "demo",
+      "channel": "email",
+      "subject": "Demo onayı — {{company}}",
+      "body": "Merhaba {{contact_name}},\n\n{{demo_date}} için demo/teklif oturumunu onayladık.\n\nGündem: skor modeli, örnek webhook payload, pilot (5 lead).\nBağlantı: {{booking_link}}\n\n{{signature}}"
+    },
+    {
+      "id": "proposal_send",
+      "stage": "proposal",
+      "channel": "email",
+      "subject": "{{tier}} teklif özeti — {{company}}",
+      "body": "Merhaba {{contact_name}},\n\nEkte özet:\n• Paket: {{tier}}\n• Referans bant: {{price_band}}\n• Pilot: 5 lead ücretsiz\n\nTeklif iste (plan işlenir): {{quote_link}}\nFiyat sayfası: {{pricing_link}}\n\n{{signature}}"
+    },
+    {
+      "id": "negotiate_objection",
+      "stage": "negotiate",
+      "channel": "email",
+      "subject": "Sorularınıza yanıt — {{company}}",
+      "body": "Merhaba {{contact_name}},\n\n{{objection_summary}}\n\nKısa yanıt: {{objection_response}}\n\nKapanış önerisi: {{close_line}}\n\n{{signature}}"
+    },
+    {
+      "id": "close_contract",
+      "stage": "close",
+      "channel": "email",
+      "subject": "Sözleşme adımları — pilot başlangıç",
+      "body": "Merhaba {{contact_name}},\n\nPilot başvurunuzu onaylıyoruz. Sonraki adımlar:\n1) {{apply_link}}\n2) Teknik kickoff dokümanı: {{onboarding_link}}\n3) Hedef canlı: 14 gün\n\n{{signature}}"
+    },
+    {
+      "id": "live_welcome",
+      "stage": "live",
+      "channel": "email",
+      "subject": "Canlı lead akışı — {{company}}",
+      "body": "Merhaba {{contact_name}},\n\nEndpoint aktif. Hot lead'ler kuyruğa alındı.\n\nCallback ile won/lost bildirmeniz CPL optimizasyonu için kritik.\nOps: {{docs_link}}\n\n{{signature}}"
+    }
+  ]
+}
