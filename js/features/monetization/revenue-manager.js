@@ -307,6 +307,15 @@ export class RevenueManager {
     return PLANS.pro.billing[this.selectedBilling] || PLANS.pro.billing.monthly;
   }
 
+  renderPlanFeatureList(highlights = []) {
+    return highlights
+      .map(
+        (h) =>
+          `<li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>${h}</span></li>`
+      )
+      .join('');
+  }
+
   renderPricingCards({ layout = 'default' } = {}) {
     const monthly = PLANS.pro.billing.monthly;
     const annual = PLANS.pro.billing.annual;
@@ -316,7 +325,7 @@ export class RevenueManager {
       : '';
     const enterprise = PLANS.enterprise;
     const roiBlock = this.renderPricingRoiCalculator(this.selectedBilling);
-    const compareBlock = renderFeatureComparisonTable();
+    const compareBlock = layout === 'premium' ? renderFeatureComparisonTable() : '';
     const reassuranceBlock = this.renderPricingReassurance();
 
     const billingToggle = `
@@ -334,44 +343,56 @@ export class RevenueManager {
         </label>
       </div>`;
 
-    const enterpriseCard = enterprise ? `
-        <article class="revenue-plan-card revenue-plan-card--enterprise">
-          <span class="revenue-plan-badge">Kurumsal</span>
-          <h3>${enterprise.name}</h3>
-          <p class="revenue-plan-price">${enterprise.priceLabel}</p>
+    const enterpriseCard = enterprise
+      ? `
+        <article class="revenue-plan-card revenue-plan-card--enterprise" role="listitem">
+          <div class="revenue-plan-card-head">
+            <span class="revenue-plan-badge">Kurumsal</span>
+            <h3 class="revenue-plan-title">${enterprise.name}</h3>
+            <p class="revenue-plan-price">${enterprise.priceLabel}</p>
+          </div>
           <p class="revenue-plan-desc">${enterprise.description}</p>
-          <ul>${enterprise.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
-          <a href="${enterprise.contactHref}" class="btn btn-outline">${enterprise.cta}</a>
-        </article>` : '';
+          <ul class="revenue-plan-features">${this.renderPlanFeatureList(enterprise.highlights)}</ul>
+          <div class="revenue-plan-card-foot">
+            <a href="${enterprise.contactHref}" class="btn btn-outline btn-block">${enterprise.cta}</a>
+          </div>
+        </article>`
+      : '';
 
-    const gridClass = layout === 'premium'
-      ? 'revenue-pricing-grid revenue-pricing-grid--triple revenue-pricing-grid--planlar'
-      : 'revenue-pricing-grid';
+    const gridClass = 'revenue-pricing-grid revenue-pricing-grid--triple revenue-pricing-grid--cards';
 
     const planCards = `
-      <div class="${gridClass}">
-        <article class="revenue-plan-card">
-          <span class="revenue-plan-badge">Bireysel</span>
-          <h3>${PLANS.free.name}</h3>
-          <p class="revenue-plan-price">${PLANS.free.priceLabel}</p>
-          <p class="revenue-plan-desc">${PLANS.free.description}</p>
-          <ul>${PLANS.free.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
-          <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">Ücretsiz maliyet analizi</a>
-        </article>
-        <article class="revenue-plan-card revenue-plan-card--featured" data-revenue-plan-pro>
-          <span class="revenue-plan-badge revenue-plan-badge--popular">${PRICING_MESSAGING.popularBadge}</span>
-          ${trialBadge}
-          <h3>${PLANS.pro.name}</h3>
-          <p class="revenue-plan-price" data-revenue-price-display>${monthly.priceDisplay}<small data-revenue-price-period>${monthly.periodLabel}</small></p>
-          <p class="revenue-plan-equiv" data-revenue-price-equiv hidden>${annual.monthlyEquivalent} · ${annual.savingsLabel}</p>
-          <p class="revenue-plan-savings-fact" data-revenue-savings-fact hidden>12 aylık aylık ödemeye göre ${formatTry(savingsFacts.savingsAmount)} daha az (listelenen fiyat)</p>
-          <p class="revenue-plan-desc">${PLANS.pro.description}</p>
-          <ul>${PLANS.pro.highlights.map((h) => `<li>${h}</li>`).join('')}</ul>
-          <div class="revenue-plan-cta-stack">
-            <button type="button" class="btn btn-primary btn-lg" data-upgrade-checkout data-billing="monthly" data-trial="1" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">${this.getCheckoutCtaLabel('monthly')}</button>
-            <a href="/auto/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_pro_secondary">Önce ücretsiz TCO analizi</a>
+      <div class="${gridClass}" role="list" aria-label="Plan seçenekleri">
+        <article class="revenue-plan-card" role="listitem">
+          <div class="revenue-plan-card-head">
+            <span class="revenue-plan-badge">Bireysel</span>
+            <h3 class="revenue-plan-title">${PLANS.free.name}</h3>
+            <p class="revenue-plan-price">${PLANS.free.priceLabel}</p>
           </div>
-          <p class="revenue-plan-hint">${PLANS.pro.priceHint}${this.trialEligible ? ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz` : ''}</p>
+          <p class="revenue-plan-desc">${PLANS.free.description}</p>
+          <ul class="revenue-plan-features">${this.renderPlanFeatureList(PLANS.free.highlights)}</ul>
+          <div class="revenue-plan-card-foot">
+            <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">Ücretsiz maliyet analizi</a>
+          </div>
+        </article>
+        <article class="revenue-plan-card revenue-plan-card--featured" data-revenue-plan-pro role="listitem">
+          <div class="revenue-plan-card-head">
+            <span class="revenue-plan-badge revenue-plan-badge--popular">${PRICING_MESSAGING.popularBadge}</span>
+            ${trialBadge}
+            <h3 class="revenue-plan-title">${PLANS.pro.name}</h3>
+            <p class="revenue-plan-price" data-revenue-price-display>${monthly.priceDisplay}<small data-revenue-price-period>${monthly.periodLabel}</small></p>
+            <p class="revenue-plan-equiv" data-revenue-price-equiv hidden>${annual.monthlyEquivalent} · ${annual.savingsLabel}</p>
+            <p class="revenue-plan-savings-fact" data-revenue-savings-fact hidden>12 aylık aylık ödemeye göre ${formatTry(savingsFacts.savingsAmount)} daha az (listelenen fiyat)</p>
+          </div>
+          <p class="revenue-plan-desc">${PLANS.pro.description}</p>
+          <ul class="revenue-plan-features">${this.renderPlanFeatureList(PLANS.pro.highlights)}</ul>
+          <div class="revenue-plan-card-foot">
+            <div class="revenue-plan-cta-stack">
+              <button type="button" class="btn btn-primary btn-lg btn-block" data-upgrade-checkout data-billing="monthly" data-trial="1" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">${this.getCheckoutCtaLabel('monthly')}</button>
+              <a href="/auto/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_pro_secondary">Önce ücretsiz TCO analizi</a>
+            </div>
+            <p class="revenue-plan-hint">${PLANS.pro.priceHint}${this.trialEligible ? ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz` : ''}</p>
+          </div>
         </article>
         ${enterpriseCard}
       </div>`;
@@ -388,31 +409,35 @@ export class RevenueManager {
         <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
       </p>`;
 
-    if (layout === 'premium') {
-      return `
-      <div class="ib-pricing-shell" data-pricing-layout="premium">
-        <header class="ib-pricing-intro">
-          <p class="revenue-pricing-value-prop">${PRICING_MESSAGING.subhead}</p>
-        </header>
-        ${billingToggle}
-        ${planCards}
-        ${roiBlock}
-        ${compareBlock}
-        <p class="ib-pricing-compliance" role="note">
-          Skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü değildir.
-          <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
-        </p>
-      </div>`;
-    }
+    const shellModifier = layout === 'premium' ? 'ib-pricing-shell--page' : 'ib-pricing-shell--home';
 
     return `
-      <p class="revenue-pricing-value-prop">${PRICING_MESSAGING.subhead}</p>
-      ${roiBlock}
-      ${billingToggle}
-      ${planCards}
-      ${compareBlock}
-      ${reassuranceBlock}
-      ${trustFooter}`;
+      <div class="ib-pricing-shell ${shellModifier}" data-pricing-layout="${layout}">
+        ${
+          layout === 'premium'
+            ? `<header class="ib-pricing-intro">
+          <p class="revenue-pricing-value-prop">${PRICING_MESSAGING.subhead}</p>
+        </header>`
+            : ''
+        }
+        <div class="ib-pricing-cards-stage">
+          ${billingToggle}
+          ${planCards}
+        </div>
+        <div class="ib-pricing-roi-stage">
+          ${roiBlock}
+        </div>
+        ${compareBlock}
+        ${layout === 'premium' ? '' : reassuranceBlock}
+        ${
+          layout === 'premium'
+            ? `<p class="ib-pricing-compliance" role="note">
+          Skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü değildir.
+          <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
+        </p>`
+            : trustFooter
+        }
+      </div>`;
   }
 
   initPricingControls(root = document.getElementById('pricing-plans-root')) {

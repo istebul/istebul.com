@@ -652,23 +652,13 @@ body.ib-premium-route-active .navbar {
   margin: 0 auto 2rem;
 }
 
-.ib-pricing-shell .revenue-pricing-grid--planlar {
+.ib-pricing-shell .revenue-pricing-grid--planlar,
+.ib-pricing-shell .revenue-pricing-grid--cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.35rem;
   align-items: stretch;
   margin-top: 0;
-}
-
-.ib-pricing-shell .revenue-plan-card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-
-.ib-pricing-shell .revenue-plan-card ul {
-  flex: 1;
 }
 
 .ib-pricing-shell .revenue-plan-card--featured {

@@ -161,17 +161,100 @@
 }
 
 .revenue-plan-card {
-  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
   border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.4);
   background: #fff;
-  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  min-height: 100%;
+}
+
+.revenue-plan-card-head {
+  padding: 1.35rem 1.35rem 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+}
+
+.revenue-plan-card .revenue-plan-desc,
+.revenue-plan-card .revenue-plan-features {
+  padding-left: 1.35rem;
+  padding-right: 1.35rem;
+}
+
+.revenue-plan-card .revenue-plan-desc {
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.revenue-plan-card-foot {
+  margin-top: auto;
+  padding: 0 1.35rem 1.35rem;
+}
+
+.revenue-plan-title {
+  margin: 0.35rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
 }
 
 .revenue-plan-card--featured {
-  border-color: rgba(37, 99, 235, 0.35);
-  background: linear-gradient(180deg, #f8fbff 0%, #fff 100%);
-  box-shadow: 0 20px 50px rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.45);
+  background: #fff;
+  box-shadow: 0 24px 56px rgba(37, 99, 235, 0.16);
+  transform: translateY(-4px);
+}
+
+.revenue-plan-card--featured .revenue-plan-card-head {
+  background: linear-gradient(180deg, #eff6ff 0%, #fff 100%);
+  border-bottom-color: rgba(37, 99, 235, 0.15);
+}
+
+.revenue-plan-features {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0 1.35rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.revenue-plan-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.revenue-plan-feature-icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.revenue-plan-card--featured .revenue-plan-feature-icon {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+}
+
+.btn-block {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  text-align: center;
 }
 
 .revenue-plan-badge {
@@ -457,7 +540,7 @@
   margin-bottom: 1rem;
 }
 
-.revenue-plan-card ul {
+.revenue-plan-card ul:not(.revenue-plan-features) {
   margin: 0 0 1.25rem;
   padding-left: 1.1rem;
   color: #334155;
@@ -669,7 +752,61 @@ body.revenue-paywall-open {
 
 #pricing.pricing-section {
   padding: 4rem 0;
-  background: var(--surface-color, #f8fafc);
+  background: linear-gradient(180deg, #f1f5f9 0%, #f8fafc 45%, #fff 100%);
+}
+
+#pricing .ib-pricing-shell--home {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+#pricing .ib-pricing-cards-stage {
+  margin-bottom: 1.5rem;
+}
+
+#pricing .revenue-pricing-grid--cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+  margin-top: 1.25rem;
+}
+
+#pricing .revenue-billing-toggle {
+  max-width: 640px;
+  margin: 0 auto 0.5rem;
+}
+
+#pricing .ib-pricing-roi-stage .revenue-roi-panel {
+  max-width: 720px;
+  margin: 0 auto;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.ib-pricing-shell .ib-pricing-cards-stage {
+  margin-bottom: 1.75rem;
+}
+
+.ib-pricing-shell .revenue-pricing-grid--cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.35rem;
+  align-items: stretch;
+}
+
+.ib-pricing-shell--home .revenue-pricing-value-prop {
+  display: none;
+}
+
+.revenue-trial-badge {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
 @media (max-width: 768px) {
@@ -678,7 +815,18 @@ body.revenue-paywall-open {
   }
 
   .revenue-pricing-grid,
-  .revenue-pricing-grid--triple {
+  .revenue-pricing-grid--triple,
+  .revenue-pricing-grid--cards,
+  #pricing .revenue-pricing-grid--cards,
+  .ib-pricing-shell .revenue-pricing-grid--cards {
     grid-template-columns: 1fr;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .revenue-plan-card--featured {
+    transform: none;
+    order: -1;
   }
 }

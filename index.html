@@ -630,35 +630,62 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                         <p><a href="/auto/">Önce ücretsiz analizi başlatın</a> · JavaScript etkinleştirildiğinde planları burada görebilirsiniz.</p>
                     </div>
                 </noscript>
-                <div id="pricing-plans-root">
-                    <div class="revenue-pricing-grid revenue-pricing-grid--static" data-pricing-static-fallback>
-                        <article class="revenue-plan-card">
-                            <span class="revenue-plan-badge">Bireysel</span>
-                            <h3>Başlangıç</h3>
-                            <p class="revenue-plan-price">Ücretsiz</p>
-                            <p class="revenue-plan-desc">Karar altyapısı girişi: TCO özeti ve 2 model karşılaştırma</p>
-                            <ul><li>5 adımlı maliyet analizi</li><li>2 araç karşılaştırma</li><li>Şeffaf metodoloji özeti</li></ul>
-                            <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_free">Ücretsiz maliyet analizi</a>
-                        </article>
-                        <article class="revenue-plan-card revenue-plan-card--featured">
-                            <span class="revenue-plan-badge revenue-plan-badge--popular">En popüler</span>
-                            <span class="revenue-trial-badge">7 gün risk almadan dene</span>
-                            <h3>isteBul Pro</h3>
-                            <p class="revenue-plan-price">₺299<small>/ ay</small></p>
-                            <p class="revenue-plan-desc">Tam karar altyapısı: sınırsız TCO karşılaştırma, premium rapor, öncelikli partner eşleşmesi</p>
-                            <ul><li>Sınırsız TCO karşılaştırma</li><li>Premium karar raporu</li><li>Öncelikli partner eşleşmesi</li></ul>
-                            <p class="revenue-plan-hint">Yıllık ₺2.870 (%20 tasarruf) · Stripe ile güvenli ödeme</p>
-                            <a href="/planlar?checkout=pro" class="btn btn-primary" data-pricing-cta-pro data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_pro"><span class="growth-exp-label">Karar netliği için dene</span></a>
-                            <p class="revenue-plan-hint revenue-plan-hint--checkout">7 gün deneme · Stripe · istediğiniz zaman iptal</p>
-                        </article>
-                        <article class="revenue-plan-card revenue-plan-card--enterprise">
-                            <span class="revenue-plan-badge">Kurumsal</span>
-                            <h3>Enterprise</h3>
-                            <p class="revenue-plan-price">Özel teklif</p>
-                            <p class="revenue-plan-desc">Galeri ağları ve yüksek hacimli partner operasyonları</p>
-                            <ul><li>Özel SLA ve destek</li><li>API / webhook entegrasyonu</li></ul>
-                            <a href="/iletisim.html?konu=enterprise" class="btn btn-outline">Kurumsal teklif al</a>
-                        </article>
+                <div id="pricing-plans-root" class="ib-premium-pricing-root">
+                    <div class="ib-pricing-shell ib-pricing-shell--home" data-pricing-static-fallback>
+                        <div class="ib-pricing-cards-stage">
+                            <div class="revenue-pricing-grid revenue-pricing-grid--triple revenue-pricing-grid--cards">
+                                <article class="revenue-plan-card">
+                                    <div class="revenue-plan-card-head">
+                                        <span class="revenue-plan-badge">Bireysel</span>
+                                        <h3 class="revenue-plan-title">Başlangıç</h3>
+                                        <p class="revenue-plan-price">Ücretsiz</p>
+                                    </div>
+                                    <p class="revenue-plan-desc">TCO özeti ve 2 model karşılaştırma — satın alma öncesi yanlış seçim riskini görün</p>
+                                    <ul class="revenue-plan-features">
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>5 adımlı maliyet analizi (Auto)</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>2 araç TCO karşılaştırma</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>İsteğe bağlı partner teklif talebi</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Şeffaf metodoloji özeti</span></li>
+                                    </ul>
+                                    <div class="revenue-plan-card-foot">
+                                        <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_free">Ücretsiz maliyet analizi</a>
+                                    </div>
+                                </article>
+                                <article class="revenue-plan-card revenue-plan-card--featured">
+                                    <div class="revenue-plan-card-head">
+                                        <span class="revenue-plan-badge revenue-plan-badge--popular">En popüler</span>
+                                        <span class="revenue-trial-badge">7 gün ücretsiz dene</span>
+                                        <h3 class="revenue-plan-title">isteBul Pro</h3>
+                                        <p class="revenue-plan-price">₺299<small>/ ay</small></p>
+                                    </div>
+                                    <p class="revenue-plan-desc">Sınırsız karşılaştırma, premium rapor ve öncelikli partner eşleşmesi</p>
+                                    <ul class="revenue-plan-features">
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Sınırsız TCO karşılaştırma</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Detaylı premium karar raporu</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Öncelikli partner eşleşmesi</span></li>
+                                    </ul>
+                                    <div class="revenue-plan-card-foot">
+                                        <a href="/planlar?checkout=pro" class="btn btn-primary btn-block" data-pricing-cta-pro data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_pro"><span class="growth-exp-label">Karar netliği için dene</span></a>
+                                        <p class="revenue-plan-hint">Yıllık ₺2.870 (%20 tasarruf) · Stripe ile güvenli ödeme</p>
+                                    </div>
+                                </article>
+                                <article class="revenue-plan-card revenue-plan-card--enterprise">
+                                    <div class="revenue-plan-card-head">
+                                        <span class="revenue-plan-badge">Kurumsal</span>
+                                        <h3 class="revenue-plan-title">Enterprise</h3>
+                                        <p class="revenue-plan-price">Özel teklif</p>
+                                    </div>
+                                    <p class="revenue-plan-desc">Galeri ağları ve yüksek hacimli partner operasyonları</p>
+                                    <ul class="revenue-plan-features">
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Özel SLA ve destek</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>API / webhook entegrasyonu</span></li>
+                                    </ul>
+                                    <div class="revenue-plan-card-foot">
+                                        <a href="/iletisim.html?konu=enterprise" class="btn btn-outline btn-block">Kurumsal teklif al</a>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <p class="revenue-plan-hint" style="text-align:center;margin-top:1.25rem;">Partner galeriler için lead başına ücretlendirme modeli ayrıca sunulur — <a href="/partner-olun.html">Partner olun</a>.</p>
