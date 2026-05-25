@@ -56,6 +56,8 @@ See `docs/investor/MOAT_AND_DEFENSIBILITY.md`.
 
 ## 5. Metrics readiness
 
+**P7 pack:** `npm run metrics:investor:pack` → `dist/investor-readiness-pack.json` with weighted `readiness.verdict`. See `docs/P7_INVESTOR_READINESS.md`.
+
 | Metric | Status |
 |--------|--------|
 | MRR / ARR (Pro) | Computed in admin + export script |

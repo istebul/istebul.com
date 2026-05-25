@@ -1,0 +1,28 @@
+{
+  "version": "p7.0",
+  "goal": "investor_ready",
+  "company": {
+    "name": "isteBul",
+    "tagline": "AI decision platform for high-consideration purchases",
+    "stage": "seed",
+    "market": "Turkey",
+    "beachhead": "Automotive decision + partner lead supply"
+  },
+  "assets": {
+    "metricsStory": "metrics-story.json",
+    "moatStory": "moat-story.json",
+    "financialModel": "financial-model.json",
+    "growthStory": "growth-story.json",
+    "gtmNarrative": "gtm-narrative.json",
+    "deckReadiness": "deck-readiness.json"
+  },
+  "exports": {
+    "metricsSnapshot": "dist/investor-metrics-snapshot.json",
+    "readinessPack": "dist/investor-readiness-pack.json"
+  },
+  "commands": {
+    "liveMetrics": "npm run metrics:investor",
+    "readinessPack": "npm run metrics:investor:pack",
+    "executive": "npm run metrics:executive"
+  }
+}

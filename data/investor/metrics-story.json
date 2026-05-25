@@ -1,0 +1,60 @@
+{
+  "version": "p7.0",
+  "headline": "Instrumented hybrid revenue — every slide ties to a query",
+  "northStar": {
+    "primary": "qualified_leads_per_week",
+    "secondary": ["pro_mrr_try", "partner_actual_revenue_try", "blended_arr_try"]
+  },
+  "formula": "Blended ARR ≈ Pro ARR + realized partner pipeline (CRM actual_revenue)",
+  "slides": [
+    {
+      "id": "traction_hero",
+      "title": "Traction (live export)",
+      "metrics": [
+        { "key": "subscription.mrrTry", "label": "Pro MRR (TRY)", "format": "currency_try" },
+        { "key": "subscription.arrTry", "label": "Pro ARR (TRY)", "format": "currency_try" },
+        { "key": "subscription.activeSubscriptions", "label": "Active Pro subs", "format": "integer" },
+        { "key": "pipeline.leadCount", "label": "Leads in CRM", "format": "integer" },
+        { "key": "pipeline.pipelineActualTry", "label": "Partner actual revenue (TRY)", "format": "currency_try" },
+        { "key": "blendedArrTry", "label": "Blended ARR signal", "format": "currency_try" }
+      ],
+      "talkTrack": "We do not quote static deck numbers — attach weekly investor-metrics-snapshot.json from production."
+    },
+    {
+      "id": "funnel",
+      "title": "Product funnel",
+      "metrics": [
+        { "key": "funnel.pageViews", "label": "Page views (sample)", "format": "integer" },
+        { "key": "funnel.leads", "label": "Lead submits", "format": "integer" },
+        { "key": "funnel.checkoutStarted", "label": "Checkout starts", "format": "integer" },
+        { "key": "funnel.checkoutConversionPct", "label": "Checkout completion %", "format": "percent" },
+        { "key": "funnel.leadConversionPct", "label": "View → lead %", "format": "percent" }
+      ],
+      "caveats": [
+        "Analytics sample capped at 5,000 events in admin export",
+        "Consent gating undercounts EU-style opt-in traffic"
+      ]
+    },
+    {
+      "id": "partner_supply",
+      "title": "Partner supply quality",
+      "metrics": [
+        { "key": "pipeline.partnerDispatchCount", "label": "Dispatched leads", "format": "integer" },
+        { "key": "pipeline.partnerWinCount", "label": "Partner wins", "format": "integer" },
+        { "key": "pipeline.winRate", "label": "Win rate %", "format": "percent" },
+        { "key": "pipeline.realizationRate", "label": "Actual / estimated %", "format": "percent" }
+      ]
+    }
+  ],
+  "maturity": {
+    "stage": "seed_instrumented",
+    "seriesA_gaps": ["cohort retention warehouse", "automated partner settlement", "live market data feeds"]
+  },
+  "dataSources": [
+    "subscriptions (Stripe)",
+    "auto_leads (CRM)",
+    "analytics_events",
+    "js/features/metrics/investor-kpis.js",
+    "Admin → Investor KPIs / Executive KPIs"
+  ]
+}

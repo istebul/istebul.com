@@ -37,8 +37,18 @@
 
 | Asset | Path |
 |-------|------|
+| **P7 investor pack (manifest)** | `data/investor/investor-readiness.json` |
+| Metrics story | `data/investor/metrics-story.json` · `docs/investor/INVESTOR_METRICS_STORY.md` |
+| Moat story | `data/investor/moat-story.json` |
+| Financial model | `data/investor/financial-model.json` · `docs/investor/FINANCIAL_MODEL.md` |
+| Growth & GTM | `data/investor/growth-story.json` · `gtm-narrative.json` · `GROWTH_AND_GTM_NARRATIVE.md` |
+| Deck readiness | `data/investor/deck-readiness.json` |
+| P7 implementation guide | `docs/P7_INVESTOR_READINESS.md` |
 | KPI definitions | `js/features/metrics/investor-kpis.js` |
+| Narrative composer | `js/features/investor/investor-narrative.js` |
+| Readiness scoring | `js/features/investor/investor-readiness.js` |
 | Live export script | `scripts/investor-metrics-snapshot.cjs` |
+| **Readiness pack export** | `scripts/investor-readiness-pack.cjs` → `dist/investor-readiness-pack.json` |
 | Admin dashboard | Admin → **Investor KPIs** |
 | Analytics audit | `docs/PLATFORM_ANALYTICS_AUDIT.md` |
 | Production observability | `docs/PRODUCTION_OBSERVABILITY.md` |
@@ -46,10 +56,14 @@
 | Resilience runbook (ops) | `docs/RESILIENCE_RUNBOOK.md` |
 | SQL views (optional) | `supabase/migrations/20260528_investor_metrics_views.sql` |
 
-**Export command:**
+**Export commands:**
 
 ```bash
-SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/investor-metrics-snapshot.cjs
+# Live KPIs only
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run metrics:investor
+
+# Full P7 pack (narrative + diligence score + live metrics if snapshot/env set)
+npm run metrics:investor:pack
 ```
 
 ---
@@ -98,11 +112,11 @@ SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/investor-metrics-sna
 ## 07 — Technical diligence checklist
 
 - [ ] Run `npm run test` on `main`
-- [ ] Export `investor-metrics-snapshot.json`
+- [ ] Export `npm run metrics:investor:pack` → `investor-readiness-pack.json`
 - [ ] Confirm Stripe dashboard MRR vs computed MRR
 - [ ] Review `LAUNCH_PRODUCTION_AUDIT.md` verdict
 - [ ] Partner LOIs / rate cards (offline)
 
 ---
 
-*Last updated with investor-readiness release on `main`.*
+*Last updated with P7 investor-readiness (`p7.0`) on `main`.*

@@ -1,0 +1,59 @@
+{
+  "version": "p7.0",
+  "positioning": "Decision infrastructure — not a classifieds marketplace.",
+  "icp": {
+    "consumer": {
+      "segment": "High-consideration buyers (auto first)",
+      "trigger": "TCO + finance uncertainty before purchase",
+      "geo": "Turkey urban"
+    },
+    "partner": {
+      "segment": "Dealer groups, finance, insurance",
+      "trigger": "Need scored hot leads, not form spam",
+      "dealSize": "CPL ₺5k–12k or monthly capacity (Starter/Growth/Enterprise)"
+    }
+  },
+  "gtmMotions": [
+    {
+      "id": "plg_seo",
+      "name": "PLG + SEO",
+      "channels": ["organic", "rehber", "auto hub"],
+      "owner": "Growth",
+      "metric": "organic_leads_per_1k_sessions"
+    },
+    {
+      "id": "paid_test",
+      "name": "Paid acquisition tests",
+      "channels": ["google_cpc", "meta"],
+      "owner": "Growth",
+      "metric": "paid_cac_vs_ltv"
+    },
+    {
+      "id": "partner_ae",
+      "name": "Partner AE (B2B)",
+      "channels": ["outbound", "partner_olun", "closing_kit"],
+      "owner": "Sales",
+      "metric": "partner_application_to_won_days"
+    },
+    {
+      "id": "lifecycle",
+      "name": "Lifecycle & CRM",
+      "channels": ["email", "crm_reactivation"],
+      "owner": "Ops",
+      "metric": "stale_leads_reactivated"
+    }
+  ],
+  "narrativeArc": {
+    "problem": "₺500K–₺3M decisions made with fragmented listings and biased sellers.",
+    "solution": "Transparent scoring + TCO + neutral partner execution.",
+    "whyUs": "Numbers are deterministic; AI explains — does not invent price.",
+    "whyNow": "AI trust crisis + finance margin pressure + instrumented product live.",
+    "ask": "[Founder: round size, 18mo milestones, hiring plan]"
+  },
+  "partnershipProof": [
+    "Self-serve onboarding 6 steps + webhook HMAC",
+    "Admin partner ops + dispatch logs",
+    "P6 B2B sales + closing machine"
+  ],
+  "expansionSequence": ["auto_TR", "konut_tatil", "finance_insurance", "locales_en_de"]
+}

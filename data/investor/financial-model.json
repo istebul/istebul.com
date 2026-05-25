@@ -1,0 +1,64 @@
+{
+  "version": "p7.0",
+  "currency": "TRY",
+  "disclaimer": "Illustrative model for investor conversations. Replace assumptions with live exports and signed partner contracts.",
+  "assumptions": {
+    "proPriceMonthly": 299,
+    "proPriceAnnual": 2870,
+    "partnerCplHotLead": 8000,
+    "partnerCloseRateOnDispatched": 0.12,
+    "monthlyOperatingBurn": 450000,
+    "teamFteEndY1": 8
+  },
+  "scenarios": {
+    "base": {
+      "label": "Base",
+      "y1": {
+        "months": 12,
+        "proSubscribersEnd": 400,
+        "monthlyLeads": 120,
+        "partnerRevenuePerLead": 960,
+        "notes": "Conservative Pro conversion; partner revenue from CRM actuals trend"
+      },
+      "y2": {
+        "proSubscribersEnd": 1200,
+        "monthlyLeads": 350,
+        "partnerRevenuePerLead": 1100
+      },
+      "y3": {
+        "proSubscribersEnd": 2800,
+        "monthlyLeads": 800,
+        "partnerRevenuePerLead": 1200
+      }
+    },
+    "bull": {
+      "label": "Bull",
+      "y1": { "proSubscribersEnd": 650, "monthlyLeads": 200, "partnerRevenuePerLead": 11000 },
+      "y2": { "proSubscribersEnd": 2200, "monthlyLeads": 600, "partnerRevenuePerLead": 12500 },
+      "y3": { "proSubscribersEnd": 5000, "monthlyLeads": 1400, "partnerRevenuePerLead": 14000 }
+    },
+    "bear": {
+      "label": "Bear",
+      "y1": { "proSubscribersEnd": 180, "monthlyLeads": 60, "partnerRevenuePerLead": 5000 },
+      "y2": { "proSubscribersEnd": 450, "monthlyLeads": 140, "partnerRevenuePerLead": 6500 },
+      "y3": { "proSubscribersEnd": 900, "monthlyLeads": 280, "partnerRevenuePerLead": 7500 }
+    }
+  },
+  "revenueBuild": {
+    "proMrr": "subscribers_end * pro_price_monthly_equivalent",
+    "partner": "monthly_leads * dispatch_rate * close_rate * cpl",
+    "blendedArr": "(pro_mrr + partner_monthly) * 12"
+  },
+  "useOfFunds": [
+    { "bucket": "Engineering & data", "pct": 45, "detail": "Live feeds, vertical 2 (konut), warehouse" },
+    { "bucket": "GTM & partnerships", "pct": 30, "detail": "Dealer/finance LOIs, paid tests, AE" },
+    { "bucket": "Legal & compliance", "pct": 10, "detail": "KVKK, DPA, subscription terms" },
+    { "bucket": "Ops & buffer", "pct": 15, "detail": "CRM scale, support, 6mo runway extension" }
+  ],
+  "unitEconomics": {
+    "proArpuMonthly": 299,
+    "targetLtvMonths": 14,
+    "targetCacPro": 1200,
+    "partnerGrossMarginPct": 70
+  }
+}

@@ -264,7 +264,7 @@ Revenue = Pro_MRR + Σ(partner_actual_revenue)
 
 ## Pre-meeting checklist (founder)
 
-- [ ] Export `npm run metrics:investor` → paste key numbers into slide 7
+- [ ] Export `npm run metrics:investor:pack` → paste `metricsStory.slides` resolved metrics into slide 7 (or `metrics:investor` snapshot only)
 - [ ] Stripe dashboard screenshot (MRR chart)
 - [ ] Replace all `[brackets]` with real names/numbers
 - [ ] Remove or update any pre-consolidation branch claims — only `main` shipped features
