@@ -1,5 +1,7 @@
 # isteBul — Competitive Moat Stratejisi
 
+**P23 ops config:** [`data/ops/category-dominance-strategy.json`](../data/ops/category-dominance-strategy.json) · [`CATEGORY_DOMINANCE_STRATEGY.md`](./CATEGORY_DOMINANCE_STRATEGY.md)
+
 **Amaç:** Kopyalanması zor iş modeli — envanter veya trafik yarışı değil; **karar kalitesi + güven + kapalı döngü gelir** üzerine kurulu savunulabilir platform.
 
 **Tez:** Rakipler **listeleme / rezervasyon / tek ürün satışı** optimize eder. isteBul **yüksek düşünme maliyetli kararları** (araç, konut, kredi, sigorta, tatil) tek akışta birleştirir: fit + TCO + finansman + risk + partner yönlendirme — **sayılar deterministik, anlatım LLM, para partner ve Pro’dan**.

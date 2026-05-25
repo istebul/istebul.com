@@ -1,0 +1,268 @@
+{
+  "version": "p23.0",
+  "updatedAt": "2026-05-24",
+  "categoryThesis": "isteBul owns the Decision Platform category in Turkey (then EU/GCC): neutral, deterministic purchase decisions above listings, OTAs, and single-product fintech — not another marketplace.",
+  "categoryDefinition": {
+    "name": "Decision Platform",
+    "tagline": "Karar önce — liste sonra",
+    "notThis": ["classifieds", "generic chatbot", "rate comparison only", "inventory marketplace"],
+    "ownershipSignal": "When users say 'karar için isteBul' before opening Sahibinden or a bank site"
+  },
+  "ownershipVerdict": {
+    "currentPosition": "emerging_leader_auto",
+    "categoryOwnershipPct": 42,
+    "primaryBeachhead": "auto_tr",
+    "biggestThreat": "classifieds_add_ai_layer",
+    "fastestMoat": "partner_os",
+    "slowestMoat": "brand"
+  },
+  "competitorLandscape": [
+    {
+      "id": "sahibinden",
+      "name": "Sahibinden",
+      "archetype": "classifieds_incumbent",
+      "wedge": "Inventory depth, brand trust, MAU",
+      "threatLevel": "high",
+      "theirMoat": "Listing network effects + dealer relationships",
+      "isteBulCounter": "Decision + TCO + finance fit — 'search there, decide here'",
+      "winCondition": "Qualified lead + completion rate beats raw listing CTR",
+      "coexistStrategy": "Affiliate/embed CTAs; SEO hub captures consideration queries"
+    },
+    {
+      "id": "arabam",
+      "name": "Arabam",
+      "archetype": "auto_vertical_classifieds",
+      "wedge": "Auto-specific inventory and dealer tools",
+      "threatLevel": "high",
+      "theirMoat": "Auto dealer CRM + listing UX",
+      "isteBulCounter": "Total cost of ownership + scoring + partner dispatch",
+      "winCondition": "Users complete wizard before browsing 20 listings",
+      "coexistStrategy": "Comparison landing 'Arabam vs isteBul' — methodology SEO"
+    },
+    {
+      "id": "marketplaces",
+      "name": "Marketplaces (Hepsiemlak, Booking, Trendyol-style)",
+      "archetype": "transaction_marketplace",
+      "wedge": "Checkout, inventory, supply contracts",
+      "threatLevel": "medium",
+      "theirMoat": "Supply + payment + logistics",
+      "isteBulCounter": "High-consideration decision layer — budget, finance, risk before transaction",
+      "winCondition": "Own 'how much / how to pay' before they own 'where to book/buy'",
+      "coexistStrategy": "No inventory build; deep links + Pro retention on decision history"
+    },
+    {
+      "id": "fintech_comparison",
+      "name": "Fintech comparison (bank rate sites, KOBİ kredi)",
+      "archetype": "rate_table",
+      "wedge": "Sponsored lowest APR tables",
+      "threatLevel": "medium",
+      "theirMoat": "Bank partnerships + SEO on rate keywords",
+      "isteBulCounter": "Asset-context financing (vehicle price → payment load → offer fit)",
+      "winCondition": "Lead includes vehicle + score + partner route, not form-only",
+      "coexistStrategy": "finance_offers truth layer; neutral rank in Auto funnel"
+    },
+    {
+      "id": "generic_ai",
+      "name": "Generic AI tools (ChatGPT, Gemini, copilots)",
+      "archetype": "llm_wrapper",
+      "wedge": "Free, fast, conversational answers",
+      "threatLevel": "medium_high",
+      "theirMoat": "Model brand + distribution",
+      "isteBulCounter": "Deterministic scores; LLM cannot change price/score; CRM + dispatch closure",
+      "winCondition": "Repeat sessions with saved decisions + partner outcomes",
+      "coexistStrategy": "Anti-hallucination narrative; export PDF Pro; methodology E-E-A-T"
+    },
+    {
+      "id": "niche_decision",
+      "name": "Niche decision tools (Edmunds-style, car configurators, credit simulators)",
+      "archetype": "point_solution",
+      "wedge": "Deep single-use calculator or US/EU data",
+      "threatLevel": "low_medium",
+      "theirMoat": "Regional data depth",
+      "isteBulCounter": "Unified consultant + partner economics across TR verticals",
+      "winCondition": "Cross-vertical habit (auto → finance → insurance) on one account",
+      "coexistStrategy": "Benchmark UX; localize TR cost truth; registry for 8 verticals"
+    }
+  ],
+  "moatPlans": [
+    {
+      "id": "positioning_moat",
+      "name": "Positioning moat",
+      "score": 55,
+      "status": "forming",
+      "current": "Decision Platform narrative in investor docs; index compares vs ilan sites",
+      "plays": [
+        "Own category name 'Decision Platform' in TR PR + SEO",
+        "Message matrix: classifieds=list, banks=product, isteBul=decision",
+        "Category landing pages per competitor archetype"
+      ],
+      "metrics": [
+        { "key": "branded_search_share", "target": "top3 auto decision queries" },
+        { "key": "positioning_survey", "target": ">60% recall 'karar platformu'" }
+      ],
+      "blockers": ["Messaging still mixed with marketplace language in UI"]
+    },
+    {
+      "id": "acquisition_moat",
+      "name": "Acquisition moat",
+      "score": 48,
+      "status": "building",
+      "current": "SEO guides + Auto funnel; growth experiments.json; lifecycle flows",
+      "plays": [
+        "Consideration SEO: TCO, 'hangi araç', finance load keywords",
+        "Paid loops with CAC payback gate; wizard-first landing",
+        "Partner co-marketing (dealer sends traffic to decision, not listings)"
+      ],
+      "metrics": [
+        { "key": "organic_decision_sessions", "target": "WoW up 8+ weeks" },
+        { "key": "cac_payback_months", "target": "<=6" },
+        { "key": "wizard_completion_rate", "target": ">=35%" }
+      ],
+      "blockers": ["Thin EN/DE landings", "No exclusive feed co-marketing"]
+    },
+    {
+      "id": "data_moat",
+      "name": "Data moat",
+      "score": 38,
+      "status": "early",
+      "current": "vehicle_cost_profiles, finance_offers, market-data simulation",
+      "plays": [
+        "Outcome graph: lead → dispatch → actual_revenue → scoring weights",
+        "Live catalog feeds (exclusive TR auto)",
+        "Anonymized benchmark: 'models that closed in 14d' content"
+      ],
+      "metrics": [
+        { "key": "outcome_coverage_pct", "target": ">=70% closed leads with revenue" },
+        { "key": "live_providers_enabled", "target": true },
+        { "key": "scoring_calibration_runs", "target": "monthly" }
+      ],
+      "blockers": ["liveProvidersEnabled false", "localStorage-heavy market data"]
+    },
+    {
+      "id": "partner_moat",
+      "name": "Partner moat",
+      "score": 62,
+      "status": "strongest_today",
+      "current": "HMAC dispatch, partner_endpoints, SLA monitor, auto-intake scoring",
+      "plays": [
+        "Regional exclusivity 6–12mo per vertical",
+        "Outcome-weighted lead score; win-rate reports per partner",
+        "Partner kit EN + API docs + dispatch logs transparency"
+      ],
+      "metrics": [
+        { "key": "dispatch_success_rate", "target": ">=90%" },
+        { "key": "active_partner_endpoints", "target": ">=10" },
+        { "key": "partner_retention_90d", "target": ">=80%" }
+      ],
+      "blockers": ["Manual settlement", "TRY-only partner economics"]
+    },
+    {
+      "id": "brand_moat",
+      "name": "Brand moat",
+      "score": 35,
+      "status": "early",
+      "current": "Methodology UI, KVKK, simulation honesty",
+      "plays": [
+        "Trust campaign: 'sayılar motor, AI anlatır'",
+        "E-E-A-T SEO + press on decision methodology",
+        "Pro social proof: decision PDF + history"
+      ],
+      "metrics": [
+        { "key": "nps_decision_flow", "target": ">=40" },
+        { "key": "returning_users_90d", "target": ">=25%" },
+        { "key": "press_mentions_category", "target": "2+ per quarter" }
+      ],
+      "blockers": ["Low national brand spend", "Category term not owned in media"]
+    },
+    {
+      "id": "product_moat",
+      "name": "Product moat",
+      "score": 58,
+      "status": "core_strength",
+      "current": "decision-consultant, TCO, confidence tiers, comparison-store, Pro",
+      "plays": [
+        "Category registry + decision_leads across verticals",
+        "Mobile-first wizard; Planlar conversion shell",
+        "AI guardrails: narration-only layer documented + tested"
+      ],
+      "metrics": [
+        { "key": "decision_sessions_per_mau", "target": ">=1.2" },
+        { "key": "pro_conversion_from_wizard", "target": "up_qoq" },
+        { "key": "verticals_live", "target": ">=3 with registry" }
+      ],
+      "blockers": ["Category registry MVP not shipped", "90% UI TR-hardcoded"]
+    }
+  ],
+  "dominancePhases": [
+    {
+      "id": "p23_0",
+      "name": "Category audit & moat map (shipped)",
+      "deliverables": [
+        "category-dominance-strategy.json",
+        "CATEGORY_DOMINANCE_STRATEGY.md",
+        "Admin Category Dominance page",
+        "metrics:category:dominance snapshot"
+      ]
+    },
+    {
+      "id": "p23_1",
+      "name": "Auto beachhead ownership (TR)",
+      "deliverables": [
+        "Outcome CRM discipline on all auto_leads",
+        "Competitor comparison SEO (Sahibinden, Arabam)",
+        "Partner exclusivity pilots (2 regions)",
+        "Category registry MVP"
+      ],
+      "gate": "dispatch_success >=85% for 4 weeks"
+    },
+    {
+      "id": "p23_2",
+      "name": "Multi-vertical decision company",
+      "deliverables": [
+        "Ev + finance decision flows on shared engine",
+        "Live feed v1 for auto catalog",
+        "Branded 'Decision Platform' campaign"
+      ],
+      "gate": "export-ready positioning doc + 2 verticals live"
+    },
+    {
+      "id": "p23_3",
+      "name": "Category leader narrative (Series A)",
+      "deliverables": [
+        "Anonymized outcome benchmarks public",
+        "10+ partner endpoints with SLA",
+        "International wave 1 with same category thesis"
+      ]
+    }
+  ],
+  "flywheel": {
+    "steps": [
+      "SEO/paid consideration traffic",
+      "Wizard → deterministic score + confidence",
+      "Qualified lead → partner dispatch",
+      "Outcome → scoring calibration",
+      "Trust + content → more traffic",
+      "Partner retention → exclusivity"
+    ],
+    "codeProof": [
+      "js/features/partner/partner-dispatch.js",
+      "supabase/functions/auto-intake",
+      "js/features/decision/decision-consultant.js",
+      "data/investor/moat-story.json"
+    ]
+  },
+  "kpis": [
+    { "key": "category_ownership_score", "target": ">=60 by end of p23_2", "owner": "ceo" },
+    { "key": "decision_sessions_mau_ratio", "target": ">=1.2", "owner": "vp_product" },
+    { "key": "partner_dispatch_success", "target": ">=90%", "owner": "coo" },
+    { "key": "outcome_revenue_capture_pct", "target": ">=70%", "owner": "vp_revenue" },
+    { "key": "competitor_comparison_organic_share", "target": "top5 for 3 keywords", "owner": "vp_growth" }
+  ],
+  "linkedDocs": [
+    "docs/CATEGORY_DOMINANCE_STRATEGY.md",
+    "docs/COMPETITIVE_MOAT_STRATEGY.md",
+    "docs/investor/MOAT_ARTICULATION.md",
+    "data/investor/moat-story.json",
+    "data/platform/expansion-roadmap.json"
+  ]
+}

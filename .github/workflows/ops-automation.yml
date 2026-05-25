@@ -35,4 +35,5 @@ jobs:
             dist/company-operating-snapshot.json
             dist/hiring-architecture-snapshot.json
             dist/international-expansion-snapshot.json
+            dist/category-dominance-snapshot.json
           if-no-files-found: ignore

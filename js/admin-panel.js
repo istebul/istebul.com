@@ -231,6 +231,9 @@ function showPage(name, el) {
   if (name === 'international-expansion') {
     loadInternationalExpansion();
   }
+  if (name === 'category-dominance') {
+    loadCategoryDominance();
+  }
   if (name === 'dashboard-ceo') {
     loadCompanyDashboard('ceo', 'dashboard-ceo-root');
   }
@@ -1155,6 +1158,29 @@ async function loadInternationalExpansion() {
 
   const snapshot = buildInternationalExpansionSnapshot({ config });
   el.innerHTML = renderInternationalExpansionCenter(snapshot, escapeHtml);
+}
+
+async function loadCategoryDominance() {
+  const el = document.getElementById('category-dominance-root');
+  if (!el) return;
+
+  const { buildCategoryDominanceSnapshot } = await import(
+    './features/ops/category-dominance-strategy.js'
+  );
+  const { renderCategoryDominanceCenter } = await import(
+    './features/ops/category-dominance-views.js'
+  );
+
+  let config = { version: 'p23.0', competitorLandscape: [], moatPlans: [] };
+  try {
+    const res = await fetch('/data/ops/category-dominance-strategy.json');
+    if (res.ok) config = await res.json();
+  } catch {
+    /* optional */
+  }
+
+  const snapshot = buildCategoryDominanceSnapshot({ config });
+  el.innerHTML = renderCategoryDominanceCenter(snapshot, escapeHtml);
 }
 
 async function loadExecutiveKpis() {

@@ -85,6 +85,18 @@
       "linkedData": ["data/i18n/locales.json", "js/features/monetization/pricing-localization.js"]
     },
     {
+      "id": "category_dominance",
+      "name": "Category dominance",
+      "owner": "ceo",
+      "targetState": "Decision Platform ownership ≥60%; partner moat ≥90% dispatch; outcome graph ≥70%",
+      "roadmapRef": "docs/CATEGORY_DOMINANCE_STRATEGY.md",
+      "linkedData": [
+        "data/ops/category-dominance-strategy.json",
+        "data/investor/moat-story.json",
+        "docs/COMPETITIVE_MOAT_STRATEGY.md"
+      ]
+    },
+    {
       "id": "resilience",
       "name": "Operational resilience",
       "owner": "scale_architect",

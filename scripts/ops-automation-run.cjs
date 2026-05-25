@@ -87,6 +87,17 @@ async function main() {
       stderr: intl.stderr?.slice(0, 500) || null
     });
 
+    const categoryDom = spawnSync(
+      'node',
+      [path.join(root, 'scripts/category-dominance-snapshot.cjs')],
+      { cwd: root, env: process.env, encoding: 'utf8' }
+    );
+    report.steps.push({
+      id: 'category_dominance_snapshot',
+      ok: categoryDom.status === 0,
+      stderr: categoryDom.stderr?.slice(0, 500) || null
+    });
+
     const hiring = spawnSync('node', [path.join(root, 'scripts/hiring-architecture-snapshot.cjs')], {
       cwd: root,
       env: process.env,
