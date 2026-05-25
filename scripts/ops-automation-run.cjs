@@ -76,6 +76,33 @@ async function main() {
       }
     }
 
+    const startup = spawnSync('node', [path.join(root, 'scripts/startup-operating-snapshot.cjs')], {
+      cwd: root,
+      env: process.env,
+      encoding: 'utf8'
+    });
+    report.steps.push({
+      id: 'startup_operating_snapshot',
+      ok: startup.status === 0,
+      stderr: startup.stderr?.slice(0, 500) || null
+    });
+    const startupPath = path.join(root, 'dist', 'startup-operating-snapshot.json');
+    if (fs.existsSync(startupPath)) {
+      report.startupOperating = JSON.parse(fs.readFileSync(startupPath, 'utf8'));
+    }
+
+    const retention = spawnSync(
+      'node',
+      [path.join(root, 'scripts/analytics-retention-purge.cjs'), '--dry-run'],
+      { cwd: root, env: process.env, encoding: 'utf8' }
+    );
+    report.steps.push({
+      id: 'analytics_retention_purge_dry_run',
+      ok: retention.status === 0,
+      skipped: retention.status !== 0,
+      stderr: retention.stderr?.slice(0, 500) || null
+    });
+
     const ceo = spawnSync('node', [path.join(root, 'scripts/ceo-alert-run.cjs')], {
       cwd: root,
       env: process.env,

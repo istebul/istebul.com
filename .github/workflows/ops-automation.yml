@@ -30,4 +30,5 @@ jobs:
           path: |
             dist/ops-command-center.json
             dist/ops-automation-report.json
+            dist/startup-operating-snapshot.json
           if-no-files-found: ignore

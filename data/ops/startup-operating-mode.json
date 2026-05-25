@@ -1,0 +1,251 @@
+{
+  "version": "p18.0",
+  "updatedAt": "2026-05-24",
+  "mode": "startup_operating",
+  "vision": "Scale isteBul from automation-first product to a scale-ready category company: repeatable org cadence, growth loops, revenue ops, resilient infra, international optionality.",
+  "executiveRoles": [
+    { "id": "ceo", "title": "CEO", "accountability": "Vision, capital, category narrative, board/investor cadence" },
+    { "id": "coo", "title": "COO", "accountability": "Ops command center, incident response, partner SLA, automation coverage" },
+    { "id": "vp_growth", "title": "VP Growth", "accountability": "Acquisition, CRO experiments, lifecycle, retention habits" },
+    { "id": "vp_product", "title": "VP Product", "accountability": "Decision engine, vertical expansion, i18n/content, AI guardrails" },
+    { "id": "vp_revenue", "title": "VP Revenue", "accountability": "Stripe MRR, RevOps flows, unit economics, pricing" },
+    { "id": "scale_architect", "title": "Scale Architect", "accountability": "Infra unit economics, analytics caps, multi-region readiness" }
+  ],
+  "decisionCadence": [
+    { "id": "daily_ops", "owner": "coo", "cadence": "daily_06_utc", "artifact": "dist/ops-automation-report.json", "npm": "ops:automation:run" },
+    { "id": "hourly_ceo", "owner": "ceo", "cadence": "hourly", "artifact": "dist/ceo-alerts-report.json", "npm": "ceo:alerts:run" },
+    { "id": "weekly_growth", "owner": "vp_growth", "cadence": "weekly", "artifact": "dist/growth-weekly-report.json", "npm": "metrics:growth" },
+    { "id": "weekly_operating", "owner": "ceo", "cadence": "weekly_mon_07_utc", "artifact": "dist/startup-operating-snapshot.json", "npm": "metrics:startup:operating" },
+    { "id": "monthly_investor", "owner": "ceo", "cadence": "monthly", "artifact": "dist/investor-metrics-snapshot.json", "npm": "metrics:investor" },
+    { "id": "monthly_unit_economics", "owner": "vp_revenue", "cadence": "monthly", "artifact": "dist/unit-economics-snapshot.json", "npm": "metrics:unit-economics" }
+  ],
+  "scalePillars": [
+    {
+      "id": "organizational",
+      "name": "Organizational scaling",
+      "owner": "coo",
+      "targetState": "RACI on 6 exec roles; weekly operating review; exception-only human ops",
+      "roadmapRef": "docs/STARTUP_OPERATING_MODE.md#organizational-scaling",
+      "linkedData": ["data/ops/automation-roadmap.json", "data/ops/automation-manifest.json"]
+    },
+    {
+      "id": "growth",
+      "name": "Growth scaling",
+      "owner": "vp_growth",
+      "targetState": "Paid + organic loops measured; CRO experiments shipped weekly; lifecycle success >95%",
+      "roadmapRef": "docs/OPS_AUTOMATION_ROADMAP.md",
+      "linkedData": ["data/growth/experiments.json", "dist/growth-command-center.json"]
+    },
+    {
+      "id": "revenue",
+      "name": "Revenue scaling",
+      "owner": "vp_revenue",
+      "targetState": "RevOps automated dunning/recovery; live MRR evidence; LTV:CAC > 3",
+      "roadmapRef": "docs/investor/UNIT_ECONOMICS.md",
+      "linkedData": ["data/investor/unit-economics-model.json", "data/ops/infra-unit-economics.json"]
+    },
+    {
+      "id": "infrastructure",
+      "name": "Infrastructure scaling",
+      "owner": "scale_architect",
+      "targetState": "Analytics retention + caps; AI cost bounded; warehouse export path",
+      "roadmapRef": "docs/INFRA_UNIT_ECONOMICS.md",
+      "linkedData": ["data/ops/infra-unit-economics.json", "js/core/scale-limits.js"]
+    },
+    {
+      "id": "workflows",
+      "name": "Team workflows",
+      "owner": "coo",
+      "targetState": "Single admin pane per function; snapshots <26h fresh",
+      "roadmapRef": "docs/INTERNAL_DASHBOARDS.md",
+      "linkedData": ["data/dashboards/internal-dashboards.json"]
+    },
+    {
+      "id": "cadence",
+      "name": "Decision cadence",
+      "owner": "ceo",
+      "targetState": "Hourly CEO alerts + daily ops + weekly growth + monthly investor pack",
+      "roadmapRef": "docs/STARTUP_OPERATING_MODE.md#decision-cadence",
+      "linkedData": ["data/ops/startup-operating-mode.json"]
+    },
+    {
+      "id": "international",
+      "name": "International readiness",
+      "owner": "vp_product",
+      "targetState": "4 locales live; Stripe per market; top-50 strings extracted",
+      "roadmapRef": "docs/GLOBAL_EXPANSION_READINESS.md",
+      "linkedData": ["data/i18n/locales.json", "js/features/monetization/pricing-localization.js"]
+    },
+    {
+      "id": "resilience",
+      "name": "Operational resilience",
+      "owner": "scale_architect",
+      "targetState": "Cron SPOF mitigated; purge jobs scheduled; multi-vendor playbook",
+      "roadmapRef": "docs/P9_DIGITAL_COMPANY_OPS.md",
+      "linkedData": ["data/ops/alert-rules.json", ".github/workflows/ops-automation.yml"]
+    }
+  ],
+  "bottlenecks": [
+    {
+      "id": "analytics_write_volume",
+      "severity": "high",
+      "pillar": "infrastructure",
+      "owner": "scale_architect",
+      "signal": "analytics_events row growth; admin query cap hits",
+      "mitigation": "Retention purge cron; sample low-priority events; warehouse export (P9.2)",
+      "status": "mitigating",
+      "quickWinIds": ["retention_purge_cron", "analytics_sample_rate"]
+    },
+    {
+      "id": "no_warehouse_bi",
+      "severity": "high",
+      "pillar": "growth",
+      "owner": "vp_growth",
+      "signal": "Executive dashboards capped at 20k rows",
+      "mitigation": "BigQuery/ClickHouse export; cohort automation",
+      "status": "planned",
+      "quickWinIds": ["startup_operating_center"]
+    },
+    {
+      "id": "github_cron_spof",
+      "severity": "medium",
+      "pillar": "resilience",
+      "owner": "coo",
+      "signal": "lifecycle/partner/ops depend on GitHub Actions schedules",
+      "mitigation": "Supabase pg_cron or external scheduler mirror; health checks",
+      "status": "accepted_risk",
+      "quickWinIds": ["ops_automation_daily"]
+    },
+    {
+      "id": "i18n_content_gap",
+      "severity": "medium",
+      "pillar": "international",
+      "owner": "vp_product",
+      "signal": "Locale plumbing live; most copy TR-hardcoded",
+      "mitigation": "Extract top-50 strings; per-locale SEO landing",
+      "status": "in_progress",
+      "quickWinIds": []
+    },
+    {
+      "id": "partner_settlement_manual",
+      "severity": "medium",
+      "pillar": "revenue",
+      "owner": "vp_revenue",
+      "signal": "Stripe reconcile manual per docs",
+      "mitigation": "Partner settlement automation + ledger",
+      "status": "planned",
+      "quickWinIds": []
+    },
+    {
+      "id": "multi_vertical_crm",
+      "severity": "high",
+      "pillar": "organizational",
+      "owner": "vp_product",
+      "signal": "CRM unified only on auto_leads; ev/tatil decisions local",
+      "mitigation": "Category registry + decision_leads table",
+      "status": "planned",
+      "quickWinIds": []
+    },
+    {
+      "id": "single_region_vendors",
+      "severity": "low",
+      "pillar": "resilience",
+      "owner": "scale_architect",
+      "signal": "Supabase + Cloudflare + Groq single-region",
+      "mitigation": "Failover runbook; R2/KV when needed",
+      "status": "accepted_risk",
+      "quickWinIds": []
+    }
+  ],
+  "quickWins": [
+    {
+      "id": "startup_operating_center",
+      "title": "Startup Operating Center (admin + snapshot)",
+      "owner": "ceo",
+      "status": "live",
+      "paths": [
+        "js/features/ops/startup-operating-center.js",
+        "js/features/ops/startup-operating-views.js",
+        "scripts/startup-operating-snapshot.cjs",
+        "admin page startup-operating-center"
+      ]
+    },
+    {
+      "id": "retention_purge_cron",
+      "title": "Analytics retention purge in daily ops",
+      "owner": "scale_architect",
+      "status": "live",
+      "paths": ["scripts/analytics-retention-purge.cjs", "scripts/ops-automation-run.cjs"]
+    },
+    {
+      "id": "analytics_sample_rate",
+      "title": "Low-priority analytics sample rate",
+      "owner": "scale_architect",
+      "status": "live",
+      "paths": ["data/ops/infra-unit-economics.json", "js/core/analytics.js"]
+    },
+    {
+      "id": "ops_automation_daily",
+      "title": "Daily ops rollup + alert digest",
+      "owner": "coo",
+      "status": "live",
+      "paths": [".github/workflows/ops-automation.yml", "scripts/ops-automation-run.cjs"]
+    },
+    {
+      "id": "weekly_operating_snapshot",
+      "title": "Weekly startup operating snapshot in ops automation",
+      "owner": "ceo",
+      "status": "live",
+      "paths": ["scripts/startup-operating-snapshot.cjs", "scripts/ops-automation-run.cjs"]
+    },
+    {
+      "id": "unit_economics_investor",
+      "title": "P17 unit economics in Executive KPIs",
+      "owner": "vp_revenue",
+      "status": "live",
+      "paths": ["js/features/investor/unit-economics-model.js", "js/admin-panel.js"]
+    }
+  ],
+  "implementationPhases": [
+    {
+      "id": "p18_0",
+      "name": "Operating mode foundation (shipped)",
+      "deliverables": [
+        "data/ops/startup-operating-mode.json",
+        "docs/STARTUP_OPERATING_MODE.md",
+        "js/features/ops/startup-operating-center.js",
+        "admin Startup Operating Center",
+        "metrics:startup:operating snapshot",
+        "p18 audit + tests"
+      ]
+    },
+    {
+      "id": "p18_1",
+      "name": "Close scale gaps",
+      "deliverables": [
+        "Warehouse export job",
+        "Analytics retention GitHub cron",
+        "Category registry MVP",
+        "Partner settlement ledger"
+      ]
+    },
+    {
+      "id": "p18_2",
+      "name": "Category company",
+      "deliverables": [
+        "8-vertical decision hub",
+        "Unified decision_leads CRM",
+        "Multi-market Stripe price IDs",
+        "Second-region failover drill"
+      ]
+    }
+  ],
+  "kpis": [
+    { "key": "automation_coverage_pct", "target": "> 80", "owner": "coo" },
+    { "key": "snapshot_freshness_hours", "target": "< 26", "owner": "coo" },
+    { "key": "ltv_cac_ratio", "target": "> 3", "owner": "vp_revenue" },
+    { "key": "lifecycle_message_success_pct", "target": "> 95", "owner": "vp_growth" },
+    { "key": "locales_content_ready", "target": ">= 2 full locales", "owner": "vp_product" },
+    { "key": "mean_time_to_detect_hours", "target": "< 4", "owner": "scale_architect" }
+  ]
+}

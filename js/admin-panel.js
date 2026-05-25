@@ -216,6 +216,9 @@ function showPage(name, el) {
   if (name === 'ops-command-center') {
     loadOpsCommandCenter();
   }
+  if (name === 'startup-operating-center') {
+    loadStartupOperatingCenter();
+  }
   if (name === 'dashboard-ceo') {
     loadCompanyDashboard('ceo', 'dashboard-ceo-root');
   }
@@ -843,6 +846,93 @@ async function loadOpsCommandCenter() {
         .join('')}
     </ul>
   `;
+}
+
+async function loadStartupOperatingCenter() {
+  const el = document.getElementById('startup-operating-center-root');
+  if (!el) return;
+
+  const { buildStartupOperatingSnapshot } = await import(
+    './features/ops/startup-operating-center.js'
+  );
+  const { renderStartupOperatingCenter } = await import(
+    './features/ops/startup-operating-views.js'
+  );
+  const { buildOpsCommandCenter } = await import('./features/ops/ops-command-center.js');
+
+  let config = { version: 'p18.0', scalePillars: [], bottlenecks: [], quickWins: [] };
+  let alertRules = [];
+  try {
+    const res = await fetch('/data/ops/startup-operating-mode.json');
+    if (res.ok) config = await res.json();
+    const rulesRes = await fetch('/data/ops/alert-rules.json');
+    if (rulesRes.ok) alertRules = (await rulesRes.json()).rules || [];
+  } catch {
+    /* optional */
+  }
+
+  const since48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const analyticsSelect =
+    'event_name, session_id, attribution, properties, revenue_cents, funnel, created_at';
+
+  let opsCenter = null;
+  try {
+    const [eventsRes, subsRes, opsRes] = await Promise.all([
+      fetchAdminTable(sb, {
+        table: 'analytics_events',
+        select: analyticsSelect,
+        limit: SCALE_LIMITS.admin.executiveRowLimit || 2500,
+        order: { column: 'created_at', ascending: false },
+        direct: () =>
+          sb
+            .from('analytics_events')
+            .select(analyticsSelect)
+            .gte('created_at', since48h)
+            .order('created_at', { ascending: false })
+            .limit(SCALE_LIMITS.admin.executiveRowLimit || 2500)
+      }),
+      fetchAdminTable(sb, {
+        table: 'subscriptions',
+        select: 'status, cancel_at_period_end',
+        limit: 2000,
+        direct: (expr) => sb.from('subscriptions').select(expr || 'status, cancel_at_period_end').limit(2000)
+      }),
+      fetchAdminTable(sb, {
+        table: 'operational_events',
+        select: 'severity, category, event_name, created_at, source',
+        limit: 1500,
+        direct: () =>
+          sb
+            .from('operational_events')
+            .select('severity, category, event_name, created_at, source')
+            .gte('created_at', since24h)
+            .order('created_at', { ascending: false })
+            .limit(1500)
+      })
+    ]);
+
+    const warnings = collectAdminWarnings([eventsRes, subsRes, opsRes]);
+    opsCenter = buildOpsCommandCenter({
+      analyticsEvents: eventsRes.data || [],
+      subscriptions: subsRes.data || [],
+      autoLeads: [],
+      operationalEvents: opsRes.data || [],
+      alertRules,
+      windowDays: SCALE_LIMITS.admin.executiveWindowDays || 30,
+      analyticsRowCap: SCALE_LIMITS.admin.executiveRowLimit || 2500
+    });
+
+    const snapshot = buildStartupOperatingSnapshot({ config, opsCenter });
+    el.innerHTML =
+      renderAdminWarningBanner(warnings) + renderStartupOperatingCenter(snapshot, escapeHtml);
+    return;
+  } catch {
+    /* static config only */
+  }
+
+  const snapshot = buildStartupOperatingSnapshot({ config, opsCenter });
+  el.innerHTML = renderStartupOperatingCenter(snapshot, escapeHtml);
 }
 
 async function loadExecutiveKpis() {
