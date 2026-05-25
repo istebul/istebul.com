@@ -14,6 +14,7 @@ const fail = (msg) => {
 };
 
 const mustExist = [
+  'js/admin/admin-page-routing.js',
   'js/admin/admin-query.js',
   'js/features/ops/ops-health.js',
   'supabase/migrations/20260530_operational_observability.sql',
@@ -52,6 +53,8 @@ if (!repairSql.includes('partner_endpoint_id')) {
 
 const adminPanel = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
 const requiredPatterns = [
+  'registerAdminPageHandlers',
+  'showAdminPage',
   'fetchAdminTable',
   'loadOperationalHealth',
   'partner_lead_dispatch_logs',

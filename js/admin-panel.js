@@ -46,6 +46,7 @@ import {
   getPartnerCrmWinProbability,
   renderPartnerPipelineBoardHtml
 } from './features/sales/partner-crm-pipeline.js';
+import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
 
 const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
@@ -184,74 +185,22 @@ function initAdminMobileNav() {
 }
 
 function showPage(name, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  if (el) el.classList.add('active');
+  showAdminPage(name, el);
+}
 
-  const titleEl = document.getElementById('admin-mobile-title');
-  if (titleEl && el?.textContent) {
-    titleEl.textContent = el.textContent.replace(/^\s*\S+\s*/, '').trim() || 'Admin';
-  }
+async function invalidateDashboardCache() {
+  const { invalidateInternalDashboardCache } = await import('./admin/internal-dashboards.js');
+  invalidateInternalDashboardCache();
+}
 
-  if (name === 'partner-endpoints') {
-    loadPartnerEndpoints();
-  }
-  if (name === 'partner-applications') {
-    initPartnerSalesMachineAdmin().catch(() => {});
-    loadPartnerApplications();
-  }
-  if (name === 'partner-dispatch-logs') {
-    loadPartnerDispatchLogs();
-  }
-  if (name === 'platform-analytics') {
-    loadPlatformAnalytics();
-  }
-  if (name === 'investor-metrics') {
-    loadExecutiveKpis();
-  }
-  if (name === 'observability') {
-    loadOperationalHealth();
-  }
-  if (name === 'ops-command-center') {
-    loadOpsCommandCenter();
-  }
-  if (name === 'startup-operating-center') {
-    loadStartupOperatingCenter();
-  }
-  if (name === 'scale-architecture') {
-    loadScaleArchitectureCenter();
-  }
-  if (name === 'company-operating-system') {
-    loadCompanyOperatingSystem();
-  }
-  if (name === 'hiring-architecture') {
-    loadHiringArchitecture();
-  }
-  if (name === 'international-expansion') {
-    loadInternationalExpansion();
-  }
-  if (name === 'category-dominance') {
-    loadCategoryDominance();
-  }
-  if (name === 'dashboard-ceo') {
-    loadCompanyDashboard('ceo', 'dashboard-ceo-root');
-  }
-  if (name === 'dashboard-growth') {
-    loadCompanyDashboard('growth', 'dashboard-growth-root');
-  }
-  if (name === 'dashboard-revenue') {
-    loadCompanyDashboard('revenue', 'dashboard-revenue-root');
-  }
-  if (name === 'dashboard-partner-ops') {
-    loadCompanyDashboard('partner_ops', 'dashboard-partner-ops-root');
-  }
-  if (name === 'dashboard-support') {
-    loadCompanyDashboard('support', 'dashboard-support-root');
-  }
-  if (name === 'ops-ai-assistant') {
-    loadOpsAiAssistantPage();
-  }
+async function refreshInternalDashboard(kind, rootId) {
+  await invalidateDashboardCache();
+  await loadCompanyDashboard(kind, rootId);
+}
+
+async function refreshOpsAiAssistant() {
+  await invalidateDashboardCache();
+  await loadOpsAiAssistantPage();
 }
 
 async function loadOpsAiAssistantPage() {
@@ -263,11 +212,22 @@ async function loadOpsAiAssistantPage() {
   );
 }
 
+function internalDashboardDepsBase() {
+  return {
+    sb,
+    fetchAdminTable,
+    SCALE_LIMITS,
+    collectAdminWarnings
+  };
+}
+
 const internalDashboardDeps = () => ({
-  sb,
-  fetchAdminTable,
-  SCALE_LIMITS,
-  collectAdminWarnings
+  ...internalDashboardDepsBase(),
+  async getAnalyticsEvents48h() {
+    const { fetchInternalDashboardContext } = await import('./admin/internal-dashboards.js');
+    const packed = await fetchInternalDashboardContext(internalDashboardDepsBase());
+    return packed.analyticsEvents48h || [];
+  }
 });
 
 async function loadCompanyDashboard(kind, rootId) {
@@ -284,6 +244,8 @@ async function loadCompanyDashboard(kind, rootId) {
 async function loadOperationalHealth() {
   const el = document.getElementById('observability-root');
   if (!el) return;
+
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
@@ -515,6 +477,8 @@ async function loadOperationalHealth() {
 async function loadOpsCommandCenter() {
   const el = document.getElementById('ops-command-center-root');
   if (!el) return;
+
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
   const { buildOpsCommandCenter } = await import('./features/ops/ops-command-center.js');
   const { buildPartnerOpsSnapshot } = await import('./features/partner/partner-ops-monitor.js');
@@ -867,6 +831,8 @@ async function loadStartupOperatingCenter() {
   const el = document.getElementById('startup-operating-center-root');
   if (!el) return;
 
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
   const { buildStartupOperatingSnapshot } = await import(
     './features/ops/startup-operating-center.js'
   );
@@ -954,6 +920,8 @@ async function loadScaleArchitectureCenter() {
   const el = document.getElementById('scale-architecture-root');
   if (!el) return;
 
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
   const { buildScaleArchitectureReport } = await import(
     './features/ops/scale-architecture-matrix.js'
   );
@@ -1038,6 +1006,8 @@ async function loadCompanyOperatingSystem() {
   const el = document.getElementById('company-operating-system-root');
   if (!el) return;
 
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
   const { buildCompanyOperatingSnapshot } = await import(
     './features/ops/company-operating-system.js'
   );
@@ -1069,6 +1039,8 @@ async function loadCompanyOperatingSystem() {
 async function loadHiringArchitecture() {
   const el = document.getElementById('hiring-architecture-root');
   if (!el) return;
+
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
   const { buildHiringArchitectureSnapshot } = await import(
     './features/ops/hiring-architecture.js'
@@ -1141,6 +1113,8 @@ async function loadInternationalExpansion() {
   const el = document.getElementById('international-expansion-root');
   if (!el) return;
 
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
   const { buildInternationalExpansionSnapshot } = await import(
     './features/ops/international-expansion-audit.js'
   );
@@ -1164,6 +1138,8 @@ async function loadCategoryDominance() {
   const el = document.getElementById('category-dominance-root');
   if (!el) return;
 
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
   const { buildCategoryDominanceSnapshot } = await import(
     './features/ops/category-dominance-strategy.js'
   );
@@ -1186,6 +1162,8 @@ async function loadCategoryDominance() {
 async function loadExecutiveKpis() {
   const el = document.getElementById('investor-metrics-root');
   if (!el) return;
+
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
   const { buildExecutiveDashboard } = await import('./features/metrics/executive-dashboard.js');
   const windowDays = SCALE_LIMITS.admin.executiveWindowDays || 30;
@@ -1637,6 +1615,10 @@ async function deleteListing(id) {
 
 async function loadUsers() {
   const el = document.getElementById('users-list');
+  if (!el) return;
+
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
   const res = await fetchAdminTable(sb, {
     table: 'profiles',
     limit: 100,
@@ -2032,6 +2014,8 @@ function renderGrowthCommandCenter(rows) {
 async function loadPlatformAnalytics() {
   const el = document.getElementById('platform-analytics-root');
   if (!el) return;
+
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
   const since = new Date(
     Date.now() - SCALE_LIMITS.admin.analyticsWindowDays * 24 * 60 * 60 * 1000
@@ -3602,6 +3586,43 @@ async function banUser(id) {
 sb.auth.getSession().then(({ data }) => {
   if (data.session) { currentUser = data.session.user; showApp(); }
 });
+
+registerAdminPageHandlers({
+  dashboard: () => loadDashboard(),
+  settings: () => loadSettings(),
+  content: () => loadSettings(),
+  announcements: () => loadAnnouncements(),
+  faqs: () => loadFaqs(),
+  blog: () => loadPosts(),
+  listings: () => loadListings(),
+  users: () => loadUsers(),
+  'auto-leads': () => loadAutoLeads(),
+  'auto-analytics': () => loadAutoAnalytics(),
+  'platform-analytics': () => loadPlatformAnalytics(),
+  'dashboard-ceo': () => refreshInternalDashboard('ceo', 'dashboard-ceo-root'),
+  'dashboard-growth': () => refreshInternalDashboard('growth', 'dashboard-growth-root'),
+  'dashboard-revenue': () => refreshInternalDashboard('revenue', 'dashboard-revenue-root'),
+  'dashboard-partner-ops': () =>
+    refreshInternalDashboard('partner_ops', 'dashboard-partner-ops-root'),
+  'dashboard-support': () => refreshInternalDashboard('support', 'dashboard-support-root'),
+  'ops-ai-assistant': () => refreshOpsAiAssistant(),
+  'investor-metrics': () => loadExecutiveKpis(),
+  observability: () => loadOperationalHealth(),
+  'ops-command-center': () => loadOpsCommandCenter(),
+  'startup-operating-center': () => loadStartupOperatingCenter(),
+  'scale-architecture': () => loadScaleArchitectureCenter(),
+  'company-operating-system': () => loadCompanyOperatingSystem(),
+  'hiring-architecture': () => loadHiringArchitecture(),
+  'international-expansion': () => loadInternationalExpansion(),
+  'category-dominance': () => loadCategoryDominance(),
+  'partner-endpoints': () => loadPartnerEndpoints(),
+  'partner-applications': async () => {
+    await initPartnerSalesMachineAdmin().catch(() => {});
+    await loadPartnerApplications();
+  },
+  'partner-dispatch-logs': () => loadPartnerDispatchLogs()
+});
+
 function bindAdminPanelEvents() {
   document.getElementById('login-btn')?.addEventListener('click', login);
   document.getElementById('login-password')?.addEventListener('keydown', (event) => {

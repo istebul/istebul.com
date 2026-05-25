@@ -76,7 +76,7 @@ export function renderStartupOperatingCenter(snapshot, escapeHtml) {
   return `
     <p class="text-muted-sm" style="margin:0 0 16px">
       P18 Startup Operating Mode · <code>npm run metrics:startup:operating</code> ·
-      <a href="/docs/STARTUP_OPERATING_MODE.md" target="_blank" rel="noopener">Playbook</a>
+      Playbook: <code>docs/STARTUP_OPERATING_MODE.md</code>
     </p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;border-left:4px solid ${stageColor}">

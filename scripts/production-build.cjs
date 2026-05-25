@@ -6,7 +6,7 @@ const crypto = require('crypto');
 
 const root = process.cwd();
 const dist = path.join(root, 'dist');
-const staticRoots = ['assets', 'data'];
+const staticRoots = ['assets', 'data', 'docs'];
 const copyDataSubdir = (subdir) => {
   const src = path.join(root, 'data', subdir);
   const dest = path.join(dist, 'data', subdir);
