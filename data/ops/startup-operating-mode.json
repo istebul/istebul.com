@@ -97,6 +97,17 @@
       ]
     },
     {
+      "id": "competitor_defense",
+      "name": "Competitor attack defense",
+      "owner": "ceo",
+      "targetState": "Defense readiness ≥65%; quarterly war-game; outcome capture ≥70%",
+      "roadmapRef": "docs/COMPETITOR_ATTACK_SCENARIO.md",
+      "linkedData": [
+        "data/ops/competitor-attack-scenario.json",
+        "data/ops/category-dominance-strategy.json"
+      ]
+    },
+    {
       "id": "resilience",
       "name": "Operational resilience",
       "owner": "scale_architect",

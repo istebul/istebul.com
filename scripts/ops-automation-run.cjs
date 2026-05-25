@@ -98,6 +98,17 @@ async function main() {
       stderr: categoryDom.stderr?.slice(0, 500) || null
     });
 
+    const attack = spawnSync(
+      'node',
+      [path.join(root, 'scripts/competitor-attack-snapshot.cjs')],
+      { cwd: root, env: process.env, encoding: 'utf8' }
+    );
+    report.steps.push({
+      id: 'competitor_attack_snapshot',
+      ok: attack.status === 0,
+      stderr: attack.stderr?.slice(0, 500) || null
+    });
+
     const hiring = spawnSync('node', [path.join(root, 'scripts/hiring-architecture-snapshot.cjs')], {
       cwd: root,
       env: process.env,

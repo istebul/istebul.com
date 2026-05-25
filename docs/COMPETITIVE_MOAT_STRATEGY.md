@@ -1,6 +1,7 @@
 # isteBul — Competitive Moat Stratejisi
 
-**P23 ops config:** [`data/ops/category-dominance-strategy.json`](../data/ops/category-dominance-strategy.json) · [`CATEGORY_DOMINANCE_STRATEGY.md`](./CATEGORY_DOMINANCE_STRATEGY.md)
+**P23 ops config:** [`data/ops/category-dominance-strategy.json`](../data/ops/category-dominance-strategy.json) · [`CATEGORY_DOMINANCE_STRATEGY.md`](./CATEGORY_DOMINANCE_STRATEGY.md)  
+**P24 attack playbook:** [`data/ops/competitor-attack-scenario.json`](../data/ops/competitor-attack-scenario.json) · [`COMPETITOR_ATTACK_SCENARIO.md`](./COMPETITOR_ATTACK_SCENARIO.md)
 
 **Amaç:** Kopyalanması zor iş modeli — envanter veya trafik yarışı değil; **karar kalitesi + güven + kapalı döngü gelir** üzerine kurulu savunulabilir platform.
 

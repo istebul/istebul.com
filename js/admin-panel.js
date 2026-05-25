@@ -1159,6 +1159,31 @@ async function loadCategoryDominance() {
   el.innerHTML = renderCategoryDominanceCenter(snapshot, escapeHtml);
 }
 
+async function loadCompetitorAttack() {
+  const el = document.getElementById('competitor-attack-root');
+  if (!el) return;
+
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
+  const { buildCompetitorAttackSnapshot } = await import(
+    './features/ops/competitor-attack-scenario.js'
+  );
+  const { renderCompetitorAttackCenter } = await import(
+    './features/ops/competitor-attack-views.js'
+  );
+
+  let config = { version: 'p24.0', attackScenarios: [], defensePlans: [] };
+  try {
+    const res = await fetch('/data/ops/competitor-attack-scenario.json');
+    if (res.ok) config = await res.json();
+  } catch {
+    /* optional */
+  }
+
+  const snapshot = buildCompetitorAttackSnapshot({ config });
+  el.innerHTML = renderCompetitorAttackCenter(snapshot, escapeHtml);
+}
+
 async function loadExecutiveKpis() {
   const el = document.getElementById('investor-metrics-root');
   if (!el) return;
@@ -3615,6 +3640,7 @@ registerAdminPageHandlers({
   'hiring-architecture': () => loadHiringArchitecture(),
   'international-expansion': () => loadInternationalExpansion(),
   'category-dominance': () => loadCategoryDominance(),
+  'competitor-attack': () => loadCompetitorAttack(),
   'partner-endpoints': () => loadPartnerEndpoints(),
   'partner-applications': async () => {
     await initPartnerSalesMachineAdmin().catch(() => {});

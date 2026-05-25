@@ -33,6 +33,7 @@ export const ADMIN_PAGE_IDS = [
   'hiring-architecture',
   'international-expansion',
   'category-dominance',
+  'competitor-attack',
   'partner-endpoints',
   'partner-applications',
   'partner-dispatch-logs'
