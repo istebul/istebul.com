@@ -69,6 +69,11 @@
     { "id": "ai_proxy", "path": "functions/ai-proxy.js", "domain": "ai" }
   ],
   "adminSurfaces": [
+    { "page": "dashboard-ceo", "label": "CEO Dashboard" },
+    { "page": "dashboard-growth", "label": "Growth Dashboard" },
+    { "page": "dashboard-revenue", "label": "Revenue Dashboard" },
+    { "page": "dashboard-partner-ops", "label": "Partner Ops Dashboard" },
+    { "page": "dashboard-support", "label": "Support Dashboard" },
     { "page": "investor-metrics", "label": "Executive KPIs" },
     { "page": "observability", "label": "Observability" },
     { "page": "ops-command-center", "label": "Ops Command Center" },

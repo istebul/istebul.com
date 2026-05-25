@@ -1,0 +1,84 @@
+/**
+ * P14 — Internal company dashboards (admin panel).
+ */
+.page.page--dashboard {
+  max-width: 1280px;
+}
+
+.ib-dash-kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+.ib-dash-health {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.ib-dash-health--ok {
+  border-left: 4px solid var(--accent);
+}
+
+.ib-dash-health--warn {
+  border-left: 4px solid var(--warning);
+}
+
+.ib-dash-health--crit {
+  border-left: 4px solid var(--danger);
+}
+
+.ib-dash-section {
+  margin-bottom: 28px;
+}
+
+.ib-dash-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: var(--text);
+}
+
+.ib-dash-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ib-dash-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.ib-dash-funnel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ib-dash-funnel strong {
+  color: var(--text);
+}
+
+.ib-dash-alert-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ib-dash-muted {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 12px;
+}

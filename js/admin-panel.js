@@ -216,6 +216,39 @@ function showPage(name, el) {
   if (name === 'ops-command-center') {
     loadOpsCommandCenter();
   }
+  if (name === 'dashboard-ceo') {
+    loadCompanyDashboard('ceo', 'dashboard-ceo-root');
+  }
+  if (name === 'dashboard-growth') {
+    loadCompanyDashboard('growth', 'dashboard-growth-root');
+  }
+  if (name === 'dashboard-revenue') {
+    loadCompanyDashboard('revenue', 'dashboard-revenue-root');
+  }
+  if (name === 'dashboard-partner-ops') {
+    loadCompanyDashboard('partner_ops', 'dashboard-partner-ops-root');
+  }
+  if (name === 'dashboard-support') {
+    loadCompanyDashboard('support', 'dashboard-support-root');
+  }
+}
+
+const internalDashboardDeps = () => ({
+  sb,
+  fetchAdminTable,
+  SCALE_LIMITS,
+  collectAdminWarnings
+});
+
+async function loadCompanyDashboard(kind, rootId) {
+  const { loadInternalDashboard } = await import('./admin/internal-dashboards.js');
+  await loadInternalDashboard(
+    internalDashboardDeps(),
+    kind,
+    rootId,
+    escapeHtml,
+    renderAdminWarningBanner
+  );
 }
 
 async function loadOperationalHealth() {

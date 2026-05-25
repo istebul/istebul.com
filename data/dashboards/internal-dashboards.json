@@ -1,0 +1,46 @@
+{
+  "version": "p14.0",
+  "updatedAt": "2026-05-24",
+  "mission": "Company visibility — unified internal dashboards in admin panel.",
+  "dashboards": [
+    {
+      "id": "ceo",
+      "page": "dashboard-ceo",
+      "label": "CEO Dashboard",
+      "owner": "CEO",
+      "sources": ["executive-dashboard", "ceo-alert-engine", "ops-command-center"]
+    },
+    {
+      "id": "growth",
+      "page": "dashboard-growth",
+      "label": "Growth Dashboard",
+      "owner": "Growth",
+      "sources": ["growth-kpis", "analytics_events", "experiments"]
+    },
+    {
+      "id": "revenue",
+      "page": "dashboard-revenue",
+      "label": "Revenue Dashboard",
+      "owner": "RevOps",
+      "sources": ["subscriptions", "stripe_webhook", "revenue-ops", "checkout_funnel"]
+    },
+    {
+      "id": "partner_ops",
+      "page": "dashboard-partner-ops",
+      "label": "Partner Ops Dashboard",
+      "owner": "Partnerships",
+      "sources": ["partner-ops-monitor", "partner_lead_dispatch_logs", "partner_endpoints"]
+    },
+    {
+      "id": "support",
+      "page": "dashboard-support",
+      "label": "Support Dashboard",
+      "owner": "Customer Ops",
+      "sources": ["lifecycle_messages", "faqs", "support-workflows", "customer-ops"]
+    }
+  ],
+  "exports": {
+    "snapshot": "dist/internal-dashboards-snapshot.json",
+    "npm": "metrics:dashboards:internal"
+  }
+}

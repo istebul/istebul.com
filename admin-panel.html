@@ -7,6 +7,7 @@
 <title>isteBu — Admin</title>
 <link rel="stylesheet" href="/css/admin-partner-ops.css">
 <link rel="stylesheet" href="/css/sales-partner.css">
+<link rel="stylesheet" href="/css/admin-internal-dashboards.css">
 <style>
 :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#242424;--border:#2e2e2e;--accent:#00e5a0;--accent2:#0099ff;--text:#f0f0f0;--muted:#888;--danger:#ff4757;--warning:#ffa502;--radius:8px;}
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
@@ -400,6 +401,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="nav-item" data-page-target="auto-leads">🚗 Auto Leads</div>
         <div class="nav-item" data-page-target="auto-analytics">📈 Auto Analytics</div>
         <div class="nav-item" data-page-target="platform-analytics">📊 Platform Analytics</div>
+        <div class="nav-section">Şirket görünürlüğü</div>
+        <div class="nav-item" data-page-target="dashboard-ceo">👔 CEO Dashboard</div>
+        <div class="nav-item" data-page-target="dashboard-growth">📈 Growth Dashboard</div>
+        <div class="nav-item" data-page-target="dashboard-revenue">💳 Revenue Dashboard</div>
+        <div class="nav-item" data-page-target="dashboard-partner-ops">🤝 Partner Ops Dashboard</div>
+        <div class="nav-item" data-page-target="dashboard-support">🎧 Support Dashboard</div>
+        <div class="nav-section">Gelişmiş metrikler</div>
         <div class="nav-item" data-page-target="investor-metrics">📈 Executive KPIs</div>
         <div class="nav-item" data-page-target="observability">🛡️ Observability</div>
         <div class="nav-item" data-page-target="ops-command-center">⚙️ Ops Command Center</div>
@@ -444,8 +452,36 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
             <button class="btn btn-ghost btn-sm" data-page-target="blog">+ Blog yazısı</button>
             <button class="btn btn-ghost btn-sm" data-page-target="content">İçerik düzenle</button>
             <button class="btn btn-ghost btn-sm" data-page-target="settings">Site bilgileri</button>
+            <button class="btn btn-ghost btn-sm" data-page-target="dashboard-ceo">CEO Dashboard</button>
+            <button class="btn btn-ghost btn-sm" data-page-target="dashboard-growth">Growth</button>
+            <button class="btn btn-ghost btn-sm" data-page-target="dashboard-revenue">Revenue</button>
           </div>
         </div>
+      </div>
+
+      <div class="page page--dashboard" id="page-dashboard-ceo">
+        <div class="page-header"><h2>CEO Dashboard</h2><p>Executive summary, MRR, funnel, partner quality, early-intervention alerts</p></div>
+        <div class="card"><div id="dashboard-ceo-root"><div class="empty">Yükleniyor…</div></div></div>
+      </div>
+
+      <div class="page page--dashboard" id="page-dashboard-growth">
+        <div class="page-header"><h2>Growth Dashboard</h2><p>Funnel, channels, experiments, paid acquisition, retention</p></div>
+        <div class="card"><div id="dashboard-growth-root"><div class="empty">Yükleniyor…</div></div></div>
+      </div>
+
+      <div class="page page--dashboard" id="page-dashboard-revenue">
+        <div class="page-header"><h2>Revenue Dashboard</h2><p>MRR, churn, checkout, RevOps signals, pipeline</p></div>
+        <div class="card"><div id="dashboard-revenue-root"><div class="empty">Yükleniyor…</div></div></div>
+      </div>
+
+      <div class="page page--dashboard" id="page-dashboard-partner-ops">
+        <div class="page-header"><h2>Partner Ops Dashboard</h2><p>Dispatch health, SLA, retry queue, webhook endpoints</p></div>
+        <div class="card"><div id="dashboard-partner-ops-root"><div class="empty">Yükleniyor…</div></div></div>
+      </div>
+
+      <div class="page page--dashboard" id="page-dashboard-support">
+        <div class="page-header"><h2>Support Dashboard</h2><p>FAQ, lifecycle, support workflows, deflection metrics</p></div>
+        <div class="card"><div id="dashboard-support-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page" id="page-settings">
