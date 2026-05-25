@@ -5,13 +5,14 @@
 
 export const SCALE_LIMITS = Object.freeze({
   analytics: {
-    maxQueue: 48,
+    maxQueue: 40,
     flushBatch: 25,
-    flushDebounceMs: 1200,
-    maxRetries: 2
+    flushDebounceMs: 1500,
+    maxRetries: 2,
+    lowPrioritySampleRate: 0.5
   },
   opsTelemetry: {
-    maxQueue: 36,
+    maxQueue: 30,
     flushBatch: 20,
     flushDebounceMs: 1500
   },
@@ -26,6 +27,7 @@ export const SCALE_LIMITS = Object.freeze({
   aiProxy: {
     maxPromptChars: 3000,
     maxNarrativeChars: 380,
+    maxOutputTokens: 400,
     sessionCallsPerHour: 3
   }
 });
@@ -33,8 +35,10 @@ export const SCALE_LIMITS = Object.freeze({
 /**
  * Drop duplicate low-priority events already queued (reduces ingest write amplification).
  */
+const DEDUPE_EVENT_NAMES = new Set(['page_view', 'route_change', 'page_exit']);
+
 export function dedupeAnalyticsQueue(queue, eventName, sessionId) {
-  if (eventName !== 'page_view' && eventName !== 'route_change') return queue;
+  if (!DEDUPE_EVENT_NAMES.has(eventName)) return queue;
   const key = `${eventName}:${sessionId || ''}`;
   return queue.filter((item) => `${item.event_name}:${item.session_id || ''}` !== key);
 }

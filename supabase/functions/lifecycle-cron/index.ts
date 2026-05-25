@@ -40,9 +40,9 @@ Deno.serve(async (req) => {
 
   const sb = createClient(SUPABASE_URL, SERVICE_ROLE);
 
-  const sendResult = await processDueMessages(sb, 80);
-  const partnerResult = await enrollPartnerFollowUps(sb, 30);
-  const inactiveResult = await enrollInactiveUsers(sb, 40);
+  const sendResult = await processDueMessages(sb, 50);
+  const partnerResult = await enrollPartnerFollowUps(sb, 25);
+  const inactiveResult = await enrollInactiveUsers(sb, 30);
   const retentionResult = await enrollRetentionFromSubscriptions(sb, 20);
   const abandonResult = await enrollAbandonedLeadsFromAnalytics(sb, 25);
   const upsellResult = await enrollUpsellFromAnalytics(sb, 20);

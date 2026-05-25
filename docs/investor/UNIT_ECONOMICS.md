@@ -22,9 +22,25 @@ ARR_TRY = MRR_TRY × 12
 
 Implementation: `js/features/metrics/investor-kpis.js` → `computeSubscriptionMetrics()`
 
+**Infra cost per Pro user (P16):**
+
+| Component | Guardrail | Doc |
+|-----------|-----------|-----|
+| Groq `/ai-proxy` | 400 max tokens, 20 req/min/IP, 3 calls/tab/hr | `docs/INFRA_UNIT_ECONOMICS.md` |
+| Resend lifecycle | 50 sends/cron run | same |
+| Supabase events | 90d retention purge, 50% sample on `page_exit`/`route_change` | `scripts/analytics-retention-purge.cjs` |
+| Cloudflare | Pages + immutable assets; no KV/R2 | `_headers`, `wrangler.toml` |
+
+```
+infra_usd_per_pro_mau ≈ (groq + resend + supabase_variable) / pro_mau
+gross_margin_pct ≈ (pro_arpu - stripe_fees - infra_usd_per_pro_mau) / pro_arpu
+```
+
+Snapshot: `node scripts/infra-unit-economics-snapshot.cjs`
+
 **Missing for full SaaS economics:**
 
-- Gross margin (Stripe fees, AI API, Supabase)
+- Live Stripe fee % in margin formula
 - Churn % (need 3+ months cohort data)
 - Trial → paid %
 

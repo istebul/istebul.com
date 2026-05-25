@@ -35,6 +35,7 @@ import API from './core/api.js';
 import { monitoring } from './core/monitoring.js';
 import { trackOpsEvent } from './core/operational-telemetry.js';
 import { analytics } from './core/analytics.js';
+import { canCallAiNarration } from './core/scale-limits.js';
 import { errorBoundary } from './core/error-boundary.js';
 import { ListingManager } from './features/ilan/ilan.js';
 import { ProfileManager } from './features/profil/profil.js';
@@ -1989,10 +1990,12 @@ class App {
 
         let result = this.buildDecisionResult(categoryConfig, answers);
 
-        try {
-            this.ui.showInfo?.('AI karar analizi hazırlanıyor...');
-            result = await this.augmentDecisionWithAI(categoryConfig, answers, result);
-        } catch (error) {
+        if (canCallAiNarration()) {
+            try {
+                this.ui.showInfo?.('AI karar analizi hazırlanıyor...');
+                result = await this.augmentDecisionWithAI(categoryConfig, answers, result);
+            } catch (error) {
+            }
         }
 
         this.lastDecisionResult = result;

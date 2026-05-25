@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
   const allowed = await checkRateLimit(
     adminClient,
     `analytics_ingest:${clientIp}`,
-    120,
+    100,
     60 * 1000
   );
 

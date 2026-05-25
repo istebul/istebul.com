@@ -10,6 +10,7 @@ import {
 } from '../features/growth/growth-funnel.js';
 import { STORAGE_KEYS, readStorageRaw } from './storage-keys.js';
 import { SCALE_LIMITS, dedupeAnalyticsQueue } from './scale-limits.js';
+import { shouldSampleAnalyticsEvent } from './unit-economics.js';
 
 const SESSION_KEY = STORAGE_KEYS.ANALYTICS_SESSION;
 const ANON_KEY = STORAGE_KEYS.ANALYTICS_ANON;
@@ -196,6 +197,7 @@ export class Analytics {
 
   track(eventName, properties = {}, meta = {}) {
     if (!this.hasConsent() && !meta.force) return;
+    if (!shouldSampleAnalyticsEvent(eventName)) return;
 
     const attribution = this.getAttribution();
     const payload = {

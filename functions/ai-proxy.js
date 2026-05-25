@@ -5,6 +5,12 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const rateLimitStore = globalThis.__aiProxyRateLimit || (globalThis.__aiProxyRateLimit = new Map());
+const promptCache = globalThis.__aiProxyPromptCache || (globalThis.__aiProxyPromptCache = new Map());
+
+const AI_RATE_LIMIT_PER_MIN = 20;
+const AI_MAX_OUTPUT_TOKENS = 400;
+const PROMPT_CACHE_TTL_MS = 600_000;
+const PROMPT_CACHE_MAX_ENTRIES = 48;
 
 function getClientIp(request) {
   return (
@@ -24,7 +30,36 @@ function pruneRateLimitStore(now) {
   }
 }
 
-function checkRateLimit(key, limit = 25, windowMs = 60_000) {
+function promptCacheKey(prompt) {
+  let hash = 0;
+  for (let i = 0; i < prompt.length; i += 1) {
+    hash = (hash * 31 + prompt.charCodeAt(i)) | 0;
+  }
+  return `${hash}:${prompt.length}`;
+}
+
+function readPromptCache(prompt) {
+  const entry = promptCache.get(promptCacheKey(prompt));
+  if (!entry || Date.now() > entry.expiresAt) {
+    if (entry) promptCache.delete(promptCacheKey(prompt));
+    return null;
+  }
+  return entry.result;
+}
+
+function writePromptCache(prompt, result) {
+  if (!result) return;
+  if (promptCache.size >= PROMPT_CACHE_MAX_ENTRIES) {
+    const oldest = promptCache.keys().next().value;
+    if (oldest) promptCache.delete(oldest);
+  }
+  promptCache.set(promptCacheKey(prompt), {
+    result,
+    expiresAt: Date.now() + PROMPT_CACHE_TTL_MS
+  });
+}
+
+function checkRateLimit(key, limit = AI_RATE_LIMIT_PER_MIN, windowMs = 60_000) {
   const now = Date.now();
   pruneRateLimitStore(now);
   const entry = rateLimitStore.get(key);
@@ -81,7 +116,7 @@ export async function onRequestPost({ request, env }) {
     }
 
     const clientIp = getClientIp(request);
-    if (!checkRateLimit(clientIp, 25, 60_000)) {
+    if (!checkRateLimit(clientIp, AI_RATE_LIMIT_PER_MIN, 60_000)) {
       return json({ error: 'Too many requests' }, 429, origin);
     }
 
@@ -98,6 +133,11 @@ export async function onRequestPost({ request, env }) {
 
     if (typeof prompt !== 'string' || prompt.length > 3000) {
       return json({ error: 'Invalid prompt' }, 400, origin);
+    }
+
+    const cached = readPromptCache(prompt);
+    if (cached) {
+      return json({ result: cached, cached: true }, 200, origin);
     }
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -119,7 +159,7 @@ export async function onRequestPost({ request, env }) {
           }
         ],
         temperature: 0.4,
-        max_tokens: 520
+        max_tokens: AI_MAX_OUTPUT_TOKENS
       })
     });
 
@@ -129,9 +169,10 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'Groq request failed' }, response.status, origin);
     }
 
-    return json({
-      result: data?.choices?.[0]?.message?.content || ''
-    }, 200, origin);
+    const result = data?.choices?.[0]?.message?.content || '';
+    writePromptCache(prompt, result);
+
+    return json({ result }, 200, origin);
   } catch {
     return json({ error: 'AI proxy error' }, 500);
   }
