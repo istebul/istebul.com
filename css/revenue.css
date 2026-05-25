@@ -417,15 +417,178 @@
   margin: 2rem 0 1.5rem;
 }
 
+.revenue-feature-compare--cards {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.revenue-feature-compare-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
 .revenue-feature-compare-title {
   margin: 0 0 0.35rem;
-  font-size: 1.15rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
 }
 
 .revenue-feature-compare-lead {
-  margin: 0 0 1rem;
-  font-size: 0.88rem;
+  margin: 0 auto;
+  max-width: 40rem;
+  font-size: 0.92rem;
   color: #64748b;
+  line-height: 1.55;
+}
+
+.revenue-feature-compare-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.revenue-compare-plan-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: #fff;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.07);
+  overflow: hidden;
+}
+
+.revenue-compare-plan-card--featured {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 22px 52px rgba(37, 99, 235, 0.14);
+  transform: translateY(-4px);
+}
+
+.revenue-compare-plan-card-head {
+  padding: 1.25rem 1.25rem 1rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+}
+
+.revenue-compare-plan-card--featured .revenue-compare-plan-card-head {
+  background: linear-gradient(180deg, #eff6ff 0%, #fff 100%);
+  border-bottom-color: rgba(37, 99, 235, 0.12);
+}
+
+.revenue-compare-plan-title {
+  margin: 0.5rem 0 0.15rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.revenue-compare-plan-price {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.revenue-compare-feature-list {
+  list-style: none;
+  margin: 0;
+  padding: 1rem 1.15rem;
+  flex: 1;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.revenue-compare-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.revenue-compare-feature--yes {
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.revenue-compare-feature--partial {
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.revenue-compare-feature--no {
+  background: #f8fafc;
+  opacity: 0.72;
+}
+
+.revenue-compare-feature-icon {
+  flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.14);
+  color: #059669;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.revenue-compare-plan-card--featured .revenue-compare-feature--yes .revenue-compare-feature-icon {
+  background: rgba(37, 99, 235, 0.14);
+  color: #2563eb;
+}
+
+.revenue-compare-feature-icon--no {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+
+.revenue-compare-feature-text {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.revenue-compare-feature-text strong {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.revenue-compare-feature-text small {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.revenue-compare-feature-value {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #1d4ed8;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.revenue-compare-feature--partial .revenue-compare-feature-icon {
+  display: none;
+}
+
+.revenue-compare-feature--partial {
+  align-items: center;
+}
+
+.revenue-compare-plan-card-foot {
+  padding: 0 1.15rem 1.15rem;
+  margin-top: auto;
 }
 
 .revenue-feature-compare-scroll {
@@ -818,14 +981,16 @@ body.revenue-paywall-open {
   .revenue-pricing-grid--triple,
   .revenue-pricing-grid--cards,
   #pricing .revenue-pricing-grid--cards,
-  .ib-pricing-shell .revenue-pricing-grid--cards {
+  .ib-pricing-shell .revenue-pricing-grid--cards,
+  .revenue-feature-compare-cards {
     grid-template-columns: 1fr;
     max-width: 420px;
     margin-left: auto;
     margin-right: auto;
   }
 
-  .revenue-plan-card--featured {
+  .revenue-plan-card--featured,
+  .revenue-compare-plan-card--featured {
     transform: none;
     order: -1;
   }

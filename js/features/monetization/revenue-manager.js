@@ -1,6 +1,6 @@
 import API from '../../core/api.js';
 import { STORAGE_KEYS } from '../../core/storage-keys.js';
-import { renderFeatureComparisonTable } from './pricing-comparison.js';
+import { renderFeatureComparisonCards } from './pricing-comparison.js';
 import {
   buildRoiSummaryCopy,
   calculatePricingRoi,
@@ -325,7 +325,7 @@ export class RevenueManager {
       : '';
     const enterprise = PLANS.enterprise;
     const roiBlock = this.renderPricingRoiCalculator(this.selectedBilling);
-    const compareBlock = layout === 'premium' ? renderFeatureComparisonTable() : '';
+    const compareBlock = layout === 'premium' ? renderFeatureComparisonCards() : '';
     const reassuranceBlock = this.renderPricingReassurance();
 
     const billingToggle = `
