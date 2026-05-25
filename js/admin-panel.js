@@ -225,6 +225,9 @@ function showPage(name, el) {
   if (name === 'company-operating-system') {
     loadCompanyOperatingSystem();
   }
+  if (name === 'hiring-architecture') {
+    loadHiringArchitecture();
+  }
   if (name === 'dashboard-ceo') {
     loadCompanyDashboard('ceo', 'dashboard-ceo-root');
   }
@@ -1055,6 +1058,77 @@ async function loadCompanyOperatingSystem() {
     artifactStatus: { opsAutomation: true }
   });
   el.innerHTML = renderCompanyOperatingSystem(snapshot, escapeHtml);
+}
+
+async function loadHiringArchitecture() {
+  const el = document.getElementById('hiring-architecture-root');
+  if (!el) return;
+
+  const { buildHiringArchitectureSnapshot } = await import(
+    './features/ops/hiring-architecture.js'
+  );
+  const { renderHiringArchitectureCenter } = await import(
+    './features/ops/hiring-architecture-views.js'
+  );
+
+  let config = { version: 'p21.0', roles: [] };
+  try {
+    const res = await fetch('/data/ops/hiring-architecture.json');
+    if (res.ok) config = await res.json();
+  } catch {
+    /* optional */
+  }
+
+  let liveSignals = {};
+  try {
+    const { buildOpsCommandCenter } = await import('./features/ops/ops-command-center.js');
+    const since48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    const [eventsRes, dispatchRes] = await Promise.all([
+      fetchAdminTable(sb, {
+        table: 'analytics_events',
+        select: 'event_name, created_at',
+        limit: SCALE_LIMITS.admin.executiveRowLimit || 2500,
+        direct: () =>
+          sb
+            .from('analytics_events')
+            .select('event_name, created_at')
+            .gte('created_at', since48h)
+            .limit(SCALE_LIMITS.admin.executiveRowLimit || 2500)
+      }),
+      fetchAdminTable(sb, {
+        table: 'partner_lead_dispatch_logs',
+        limit: 300,
+        direct: () =>
+          sb
+            .from('partner_lead_dispatch_logs')
+            .select('success, created_at')
+            .gte('created_at', since48h)
+            .limit(300)
+      })
+    ]);
+    const failed = (dispatchRes.data || []).filter((r) => r.success === false).length;
+    const total = (dispatchRes.data || []).length;
+    const center = buildOpsCommandCenter({
+      analyticsEvents: eventsRes.data || [],
+      subscriptions: [],
+      autoLeads: [],
+      operationalEvents: [],
+      partnerWebhookFails: failed,
+      windowDays: 30,
+      analyticsRowCap: SCALE_LIMITS.admin.executiveRowLimit || 2500
+    });
+    liveSignals = {
+      opsHealth: center.overallHealth,
+      analyticsAtCap: Boolean(center.metrics?.analytics?.eventsAtCap),
+      dispatchRatePct: total ? Math.round(((total - failed) / total) * 100) : 100,
+      partnerLeads30d: 0
+    };
+  } catch {
+    /* static */
+  }
+
+  const snapshot = buildHiringArchitectureSnapshot({ config, liveSignals });
+  el.innerHTML = renderHiringArchitectureCenter(snapshot, escapeHtml);
 }
 
 async function loadExecutiveKpis() {

@@ -33,4 +33,5 @@ jobs:
             dist/startup-operating-snapshot.json
             dist/scale-architecture-report.json
             dist/company-operating-snapshot.json
+            dist/hiring-architecture-snapshot.json
           if-no-files-found: ignore

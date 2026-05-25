@@ -1,0 +1,289 @@
+{
+  "version": "p21.0",
+  "updatedAt": "2026-05-24",
+  "vision": "Scalable team design: hire against metrics and operating system gaps — not founder bandwidth. Each role has a trigger, KPIs, and a 90-day outcome.",
+  "teamModel": {
+    "currentState": "founder_led_with_automation",
+    "targetState": "function_leads_plus_specialists",
+    "maxConcurrentHires": 2,
+    "hirePrinciple": "Automate first, hire when a weekly review metric is red for 2+ weeks or queue blocks revenue."
+  },
+  "hireSequence": [
+    { "order": 1, "roleId": "ops_manager", "trigger": "ops_health yellow 2w OR founder >6h/week on incidents" },
+    { "order": 2, "roleId": "growth_marketer", "trigger": "CAC payback >6mo OR funnel CR down 20% QoQ" },
+    { "order": 3, "roleId": "b2b_sales_lead", "trigger": "partner pipeline >50 active OR MRR growth stalls" },
+    { "order": 4, "roleId": "frontend_engineer", "trigger": "CRO backlog >3 shipped experiments blocked" },
+    { "order": 5, "roleId": "partner_success_manager", "trigger": "dispatch success <85% OR >5 active partners" },
+    { "order": 6, "roleId": "backend_platform_engineer", "trigger": "100K MAU path OR analytics cap hits weekly" },
+    { "order": 7, "roleId": "product_designer", "trigger": "checkout/planlar redesign OR 2+ vertical launches" },
+    { "order": 8, "roleId": "ai_product_analyst", "trigger": "AI cost >8% gross margin OR narration adoption >15% MAU" }
+  ],
+  "roles": [
+    {
+      "id": "growth_marketer",
+      "title": "Growth Marketer",
+      "function": "growth",
+      "reportsTo": "vp_growth",
+      "employmentType": "full_time",
+      "why": "Founder cannot run paid + organic loops, CRO experiment velocity, and lifecycle copy at scale. Growth review needs a dedicated owner for acquisition and funnel iteration.",
+      "when": {
+        "hireTrigger": "Blended CAC payback >6 months for 2 consecutive weekly KPI reviews OR paid spend >₺50K/mo without stable funnel CR.",
+        "earliestPhase": "phase_1_growth",
+        "deferIf": ["ops_health critical", "no metrics:growth snapshot in CI"]
+      },
+      "kpis": [
+        { "id": "cac_payback", "label": "CAC payback (months)", "target": "<=6", "source": "metrics:paid-cac" },
+        { "id": "funnel_cr", "label": "Landing → lead funnel CR %", "target": "up_qoq", "source": "metrics:growth" },
+        { "id": "experiment_velocity", "label": "CRO experiments started / month", "target": ">=2", "source": "data/growth/experiments.json" },
+        { "id": "organic_sessions", "label": "Organic sessions WoW", "target": "up", "source": "metrics:growth" }
+      ],
+      "first90Days": [
+        { "day": 30, "goal": "Baseline CAC/LTV report; own growth weekly pre-read; ship 1 CRO experiment" },
+        { "day": 60, "goal": "2 live acquisition channels with weekly spend cap; lifecycle copy audit for top 3 flows" },
+        { "day": 90, "goal": "Funnel CR +10% vs baseline OR CAC payback ≤6mo; growth review runs without founder" }
+      ],
+      "interfaces": ["vp_product", "growth_review", "metrics:growth", "metrics:paid-cac"]
+    },
+    {
+      "id": "product_designer",
+      "title": "Product Designer",
+      "function": "product",
+      "reportsTo": "vp_product",
+      "employmentType": "full_time_or_contract",
+      "why": "Conversion and trust live in Planlar, checkout, and decision UX. P4 enterprise polish needs a single design owner for component system and mobile-first flows.",
+      "when": {
+        "hireTrigger": "Planlar/checkout redesign in roadmap now queue OR NPS/qual feedback on UX blocks 2+ RICE items.",
+        "earliestPhase": "phase_2_product_scale",
+        "deferIf": ["no design system doc in repo", "frontend engineer not hired or contracted"]
+      },
+      "kpis": [
+        { "id": "checkout_cr", "label": "Checkout start → paid CR %", "target": "up", "source": "metrics:growth" },
+        { "id": "mobile_lighthouse", "label": "Mobile UX audit pass", "target": "pass", "source": "scripts/p4-mobile-ux-audit.cjs" },
+        { "id": "design_debt", "label": "Open P4 UX audit failures", "target": "0_critical", "source": "npm test" },
+        { "id": "experiment_win_rate", "label": "CRO tests with design hypothesis won", "target": ">=1_per_quarter", "source": "data/growth/experiments.json" }
+      ],
+      "first90Days": [
+        { "day": 30, "goal": "Audit Planlar + checkout; Figma/system aligned to css/premium-pages" },
+        { "day": 60, "goal": "Ship redesigned pricing shell A/B with growth marketer; mobile pass on top 5 routes" },
+        { "day": 90, "goal": "Checkout CR lift measurable; design checklist in product review gate" }
+      ],
+      "interfaces": ["vp_growth", "product_review", "frontend_engineer"]
+    },
+    {
+      "id": "frontend_engineer",
+      "title": "Frontend Engineer",
+      "function": "engineering",
+      "reportsTo": "vp_product",
+      "dottedLine": "scale_architect",
+      "employmentType": "full_time",
+      "why": "SPA, admin panel, and Auto bundle need sustained velocity. CRO and i18n block on frontend capacity; founder cannot ship experiments weekly.",
+      "when": {
+        "hireTrigger": "≥3 items in roadmap now queue tagged frontend OR bundle budget failures block release.",
+        "earliestPhase": "phase_1_engineering",
+        "deferIf": ["no CI green on main", "ops_manager not stabilizing releases"]
+      },
+      "kpis": [
+        { "id": "experiment_ship", "label": "Product/CRO PRs merged / month", "target": ">=4", "source": "github" },
+        { "id": "bundle_budget", "label": "SPA bundle within analyze-bundle budget", "target": "pass", "source": "npm run analyze:bundle" },
+        { "id": "admin_stability", "label": "admin-panel-stability audit", "target": "pass", "source": "npm test" },
+        { "id": "p95_lcp", "label": "LCP on landing (lab)", "target": "<2.5s", "source": "lhci" }
+      ],
+      "first90Days": [
+        { "day": 30, "goal": "Own router/admin patterns; fix top 3 admin-panel stability items; 1 CRO ship" },
+        { "day": 60, "goal": "Lazy-load admin chunks; i18n top-20 strings extracted; 2 experiments live" },
+        { "day": 90, "goal": "Release train without founder review; zero critical UX regressions in CI" }
+      ],
+      "interfaces": ["product_designer", "scale_architect", "growth_marketer"]
+    },
+    {
+      "id": "backend_platform_engineer",
+      "title": "Backend / Platform Engineer",
+      "function": "platform",
+      "reportsTo": "scale_architect",
+      "employmentType": "full_time",
+      "why": "Supabase, edge functions, analytics volume, and 100K MAU path need dedicated platform ownership. Founder cannot own retention purge, warehouse export, and partner dispatch queue.",
+      "when": {
+        "hireTrigger": "analytics_sample_cap alert 2 weeks OR scale readiness 100K confidence <70% with infra items in now queue.",
+        "earliestPhase": "phase_2_platform",
+        "deferIf": ["ops_manager not hired", "no weekly analytics-retention cron green"]
+      },
+      "kpis": [
+        { "id": "analytics_cap", "label": "Weeks without analytics cap alert", "target": ">=4", "source": "metrics:ops:center" },
+        { "id": "retention_job", "label": "Retention purge job success", "target": "100%", "source": "analytics-retention.yml" },
+        { "id": "edge_sla", "label": "Edge function error rate", "target": "<0.5%", "source": "observability" },
+        { "id": "dispatch_p95", "label": "Partner dispatch p95", "target": "<15m", "source": "metrics:partner:ops" }
+      ],
+      "first90Days": [
+        { "day": 30, "goal": "Own supabase/functions + migrations; funnel_daily MV or rollup PR; on-call runbook" },
+        { "day": 60, "goal": "Warehouse export spike; pooler enabled; halve admin live analytics scans" },
+        { "day": 90, "goal": "100K scale checklist 80% complete; incident MTTD <4h without founder" }
+      ],
+      "interfaces": ["ops_manager", "scale_architecture", "partner_success_manager"]
+    },
+    {
+      "id": "ai_product_analyst",
+      "title": "AI / Product Analyst",
+      "function": "product",
+      "reportsTo": "vp_product",
+      "employmentType": "full_time",
+      "why": "Decision engine, scoring explainability, and AI unit economics need an owner who blends product and data. Prevents uncontrolled Groq spend and improves narration quality.",
+      "when": {
+        "hireTrigger": "AI proxy rate-limit ops events up 2 weeks OR narration used by >10% MAU with flat conversion.",
+        "earliestPhase": "phase_2_ai",
+        "deferIf": ["P17 unit economics not in weekly KPI review", "no decision-feedback pipeline"]
+      },
+      "kpis": [
+        { "id": "ai_cost_per_mau", "label": "AI infra cost / MAU (USD)", "target": "<=config_cap", "source": "metrics:unit-economics" },
+        { "id": "narration_csat", "label": "Narration helpful rate", "target": ">=70%", "source": "decision-feedback" },
+        { "id": "score_explain", "label": "Scoring explainability audit", "target": "pass", "source": "npm test" },
+        { "id": "llm_incidents", "label": "AI-related ops incidents / month", "target": "<=2", "source": "metrics:ops:center" }
+      ],
+      "first90Days": [
+        { "day": 30, "goal": "Dashboard for AI cost/user; map narration budget to Pro tiers; baseline feedback" },
+        { "day": 60, "goal": "Ship quota table or feature flag; A/B deterministic-only vs narration" },
+        { "day": 90, "goal": "AI gross margin within target; product review owns AI roadmap slice" }
+      ],
+      "interfaces": ["vp_product", "backend_platform_engineer", "scale_architect"]
+    },
+    {
+      "id": "b2b_sales_lead",
+      "title": "B2B Sales Lead",
+      "function": "revenue",
+      "reportsTo": "vp_revenue",
+      "employmentType": "full_time",
+      "why": "Partner and Pro B2B motion needs pipeline discipline beyond automation. CRM auto_leads and partner applications require human close for high-LTV deals.",
+      "when": {
+        "hireTrigger": ">30 qualified partner or fleet leads/month OR sales review shows pipeline coverage <2× quota.",
+        "earliestPhase": "phase_1_revenue",
+        "deferIf": ["partner dispatch success <70%", "no partner CRM playbook"]
+      },
+      "kpis": [
+        { "id": "pipeline_coverage", "label": "Pipeline / quota ratio", "target": ">=3", "source": "partner-crm-pipeline" },
+        { "id": "win_rate", "label": "Qualified → won %", "target": ">=25%", "source": "auto_leads" },
+        { "id": "sales_cycle", "label": "Median days to won", "target": "down", "source": "auto_leads" },
+        { "id": "pro_b2b_mrr", "label": "B2B-sourced MRR TRY", "target": "up_mom", "source": "metrics:executive" }
+      ],
+      "first90Days": [
+        { "day": 30, "goal": "CRM hygiene; daily sales review agenda; first 10 qualified conversations" },
+        { "day": 60, "goal": "Partner offer playbook; co-own dispatch SLA with partner success" },
+        { "day": 90, "goal": "Quota model live; ≥3 won deals; sales review runs without founder on calls" }
+      ],
+      "interfaces": ["vp_revenue", "sales_review", "partner_success_manager"]
+    },
+    {
+      "id": "partner_success_manager",
+      "title": "Partner Success Manager",
+      "function": "partnerships",
+      "reportsTo": "vp_revenue",
+      "dottedLine": "coo",
+      "employmentType": "full_time",
+      "why": "Dispatch SLA, endpoint health, and partner onboarding are operational revenue levers. Automation handles retry; partners need a human owner for activation and churn.",
+      "when": {
+        "hireTrigger": ">=5 active partner endpoints OR dispatch success <85% for 2 weeks.",
+        "earliestPhase": "phase_1_partners",
+        "deferIf": ["partner-ops-monitor not green", "webhook docs incomplete"]
+      },
+      "kpis": [
+        { "id": "dispatch_success", "label": "Dispatch success % (24h)", "target": ">=85", "source": "metrics:partner:ops" },
+        { "id": "partner_activation", "label": "Partners active in 30d", "target": "up", "source": "partner_endpoints" },
+        { "id": "sla_breach", "label": "SLA breaches / week", "target": "<=1", "source": "partner-ops-monitor" },
+        { "id": "partner_nps", "label": "Partner satisfaction score", "target": ">=40", "source": "manual_quarterly" }
+      ],
+      "first90Days": [
+        { "day": 30, "goal": "Own partner health dashboard; top 5 partner QBRs; reduce dead dispatches 50%" },
+        { "day": 60, "goal": "Onboarding checklist <7d; circuit-breaker playbooks per tier" },
+        { "day": 90, "goal": "Dispatch ≥90%; settlement gaps doc → decision log; partner review without founder" }
+      ],
+      "interfaces": ["b2b_sales_lead", "ops_manager", "sales_review"]
+    },
+    {
+      "id": "ops_manager",
+      "title": "Ops Manager",
+      "function": "operations",
+      "reportsTo": "coo",
+      "employmentType": "full_time",
+      "why": "Company OS and P9 automation need a human COO-delegate for incidents, cron health, and weekly KPI facilitation — so founder exits daily firefighting.",
+      "when": {
+        "hireTrigger": "First hire recommended: ops_health not green 2 weeks OR founder incident time >6h/week.",
+        "earliestPhase": "phase_0_first_hire",
+        "deferIf": []
+      },
+      "kpis": [
+        { "id": "ops_health", "label": "Ops overall health green weeks", "target": ">=3_of_4", "source": "metrics:ops:center" },
+        { "id": "mttd", "label": "Mean time to detect (hours)", "target": "<4", "source": "incident_review" },
+        { "id": "snapshot_fresh", "label": "Snapshot freshness <26h", "target": "100%", "source": "automation-manifest" },
+        { "id": "kpi_review", "label": "Weekly KPI review held", "target": "weekly", "source": "company-operating-snapshot" }
+      ],
+      "first90Days": [
+        { "day": 30, "goal": "Run daily ops + weekly KPI; document on-call; zero missed CEO alert digests" },
+        { "day": 60, "goal": "Incident postmortem process live; all crons monitored; independence score ≥80%" },
+        { "day": 90, "goal": "Founder <2h/week on ops; hire roadmap RICE inputs for next role" }
+      ],
+      "interfaces": ["ceo", "scale_architect", "company_operating_system", "ops:automation:run"]
+    }
+  ],
+  "phases": [
+    {
+      "id": "phase_0_first_hire",
+      "label": "First hire",
+      "roles": ["ops_manager"],
+      "teamSize": "founder_plus_1"
+    },
+    {
+      "id": "phase_1_growth",
+      "label": "Growth + revenue motion",
+      "roles": ["growth_marketer", "b2b_sales_lead", "partner_success_manager"],
+      "teamSize": "3-5"
+    },
+    {
+      "id": "phase_1_engineering",
+      "label": "Product delivery",
+      "roles": ["frontend_engineer"],
+      "teamSize": "4-6"
+    },
+    {
+      "id": "phase_1_partners",
+      "label": "Partner scale",
+      "roles": ["partner_success_manager"],
+      "teamSize": "5-7"
+    },
+    {
+      "id": "phase_1_revenue",
+      "label": "B2B close",
+      "roles": ["b2b_sales_lead"],
+      "teamSize": "5-8"
+    },
+    {
+      "id": "phase_2_platform",
+      "label": "100K MAU path",
+      "roles": ["backend_platform_engineer"],
+      "teamSize": "6-10"
+    },
+    {
+      "id": "phase_2_product_scale",
+      "label": "UX at scale",
+      "roles": ["product_designer"],
+      "teamSize": "7-11"
+    },
+    {
+      "id": "phase_2_ai",
+      "label": "AI economics",
+      "roles": ["ai_product_analyst"],
+      "teamSize": "8-12"
+    }
+  ],
+  "scalableTeamDesign": {
+    "squads": [
+      { "id": "growth", "lead": "vp_growth", "members": ["growth_marketer"], "metric": "funnel_cr" },
+      { "id": "product", "lead": "vp_product", "members": ["product_designer", "frontend_engineer", "ai_product_analyst"], "metric": "pro_subscriptions" },
+      { "id": "platform", "lead": "scale_architect", "members": ["backend_platform_engineer", "ops_manager"], "metric": "ops_health" },
+      { "id": "revenue", "lead": "vp_revenue", "members": ["b2b_sales_lead", "partner_success_manager"], "metric": "mrr_try" }
+    ],
+    "rules": [
+      "Max 2 open reqs at once",
+      "Every hire linked to a decision record DR-* before offer",
+      "90-day plan in decision-log or onboarding doc before day 1",
+      "Founder only interim owner until ops_manager + one function lead hired"
+    ]
+  }
+}

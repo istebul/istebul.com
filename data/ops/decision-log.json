@@ -39,6 +39,24 @@
       "rice": { "reach": 8, "impact": 2, "confidence": 0.8, "effort": 6, "score": 2.13 }
     },
     {
+      "id": "DR-2026-004",
+      "type": "strategy",
+      "status": "approved",
+      "title": "Adopt P21 hiring architecture — metric-triggered sequence, max 2 reqs",
+      "owner": "ceo",
+      "decidedAt": "2026-05-24",
+      "context": "Scale team without founder-dependent hiring; align squads to Company OS.",
+      "options": [
+        "Hire ad hoc by founder network",
+        "Document 8 roles with triggers and 90-day plans",
+        "Delay all hires until profitability"
+      ],
+      "decision": "Document hiring architecture; first hire ops_manager when ops trigger fires.",
+      "consequences": "Weekly KPI reviews use hiring snapshot for next role; DR required before offer.",
+      "reviewBy": "2026-08-24",
+      "linkedArtifacts": ["data/ops/hiring-architecture.json", "docs/HIRING_ARCHITECTURE.md"]
+    },
+    {
       "id": "DR-2026-003",
       "type": "growth",
       "status": "proposed",

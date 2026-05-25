@@ -76,6 +76,17 @@ async function main() {
       }
     }
 
+    const hiring = spawnSync('node', [path.join(root, 'scripts/hiring-architecture-snapshot.cjs')], {
+      cwd: root,
+      env: process.env,
+      encoding: 'utf8'
+    });
+    report.steps.push({
+      id: 'hiring_architecture_snapshot',
+      ok: hiring.status === 0,
+      stderr: hiring.stderr?.slice(0, 500) || null
+    });
+
     const companyOs = spawnSync('node', [path.join(root, 'scripts/company-operating-snapshot.cjs')], {
       cwd: root,
       env: process.env,
