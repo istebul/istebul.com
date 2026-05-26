@@ -53,7 +53,10 @@
     "targetList": "docs/investor/INVESTOR_TARGET_LIST_100.csv",
     "outreachPlaybook": "docs/investor/OUTREACH_PLAYBOOK.md",
     "meetingFlow": "docs/investor/MEETING_FLOW_AND_DD.md",
-    "followUpDiscipline": "docs/investor/FOLLOW_UP_DISCIPLINE.md"
+    "followUpDiscipline": "docs/investor/FOLLOW_UP_DISCIPLINE.md",
+    "founderMasterGuide": "docs/investor/FOUNDER_FUNDRAISING_MASTER_GUIDE.md",
+    "pdfExportPack": "docs/investor/export/",
+    "exportCommand": "npm run investor:export:pdf"
   },
   "docs": [
     "docs/investor/INVESTOR_NARRATIVE.md",

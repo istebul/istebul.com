@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Investor One-Pager</title>
+  <style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    color: #0f172a;
+    line-height: 1.5;
+    font-size: 11pt;
+    margin: 0;
+  }
+  h1 { font-size: 22pt; margin: 0 0 8px; color: #0F172A; }
+  h2 { font-size: 14pt; margin: 20px 0 8px; color: #2563EB; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; }
+  h3 { font-size: 12pt; margin: 14px 0 6px; }
+  p { margin: 0 0 10px; }
+  ul { margin: 0 0 12px 18px; padding: 0; }
+  li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 10pt; }
+  th, td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; }
+  blockquote { margin: 12px 0; padding: 10px 14px; background: #f8fafc; border-left: 4px solid #2563EB; color: #334155; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 9pt; overflow: hidden; white-space: pre-wrap; }
+  code { font-family: ui-monospace, monospace; font-size: 9pt; }
+  .cover {
+    background: linear-gradient(135deg, #0F172A 0%, #1e3a5f 100%);
+    color: #F8FAFC;
+    min-height: 240mm;
+    padding: 48px 40px;
+    page-break-after: always;
+  }
+  .cover h1 { color: #fff; font-size: 32pt; }
+  .cover .tag { color: #94A3B8; font-size: 12pt; margin-top: 24px; }
+  .cover .meta { margin-top: 48px; font-size: 11pt; color: #94A3B8; }
+  .footer-note { margin-top: 24px; font-size: 9pt; color: #64748b; }
+  .section { padding: 0 4px; }
+  
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="brand">isteBul · Investor</div>
+    <h1>Investor One-Pager</h1>
+    <p class="tag">isteBul — Karar altyapısı · Pre-seed / Seed</p>
+    <p class="meta">www.istebul.com · 2026-05-26 · Gizli — yalnızca yatırımcı paylaşımı</p>
+  </section>
+  <div class="section"><h1>isteBul — Investor One-Pager (Final)</h1>
+<h2>One-line thesis</h2>
+<p><strong>isteBul, yüksek tutarlı satın alma kararları için şeffaf karar altyapısıdır</strong>: otomotivde canlı, konut/finans/sigorta ve seyahate genişleyen hibrit SaaS + marketplace modeli.</p>
+<h2>Problem</h2>
+<p>Kullanıcılar ₺500K–₺3M arası kararları ilan siteleri, banka hesaplayıcıları ve satıcı yönlendirmeleri arasında parçalı şekilde veriyor. Mevcut akışlarda tek bir yerde <strong>uygunluk, toplam maliyet (TCO), finansman yükü ve risk</strong> birlikte gösterilmiyor.</p>
+<h2>Çözüm</h2>
+<ul>
+<li><strong>Kural tabanlı, açıklanabilir skor motoru</strong> (black-box tahmin değil)</li>
+<li><strong>LLM anlatım katmanı</strong> sadece yorum üretir; deterministik hesapları değiştiremez</li>
+<li><strong>Lead → partner dispatch</strong> ile gelir üretimi (bayi, finans, sigorta)</li>
+<li><strong>isteBul Pro</strong> ile premium analiz ve sınırsız karşılaştırma</li>
+</ul>
+<h2>İş modeli (hibrit SaaS + marketplace)</h2>
+<table><thead><tr><th>Gelir kalemi</th><th>Mekanizma</th><th>Durum</th></tr></thead>
+<tbody><tr><td><strong>Pro abonelik</strong></td><td>Stripe · ₺299/ay · ₺2,870/yıl</td><td>Canlı</td></tr><tr><td><strong>Partner lead geliri</strong></td><td>Auto intake → webhook dispatch → CRM</td><td>Canlı</td></tr><tr><td><strong>Premium raporlar</strong></td><td>Pro-gated export</td><td>Kısmi</td></tr><tr><td><strong>Affiliate / finans</strong></td><td>Attribution + CPL</td><td>Erken</td></tr></tbody>
+</table>
+<h2>Traction ve doğrulanabilir metrikler</h2>
+<ul>
+<li>1P analytics: auth, checkout, auto funnel, partner dispatch (<code>analytics_events</code>)</li>
+<li>CRM: <code>auto_leads</code> (estimated/actual revenue, stage progression)</li>
+<li>Admin panel: <strong>Investor KPIs</strong> + canlı JSON export (<code>npm run metrics:investor:pack</code>)</li>
+</ul>
+<blockquote>Bu doküman statik sayı taşımaz. Her toplantı öncesi güncel snapshot paylaşılır.</blockquote>
+<h2>Defensibility</h2>
+<p>1. <strong>Skorlama IP’si:</strong> multi-factor match + confidence model (<code>decision-consultant.js</code>) 2. <strong>Truth layer:</strong> araç maliyet profilleri + finansman teklif altyapısı (Supabase) 3. <strong>Operasyonel moat:</strong> retry/circuit-breaker/audit log destekli partner dispatch 4. <strong>Platform etkisi:</strong> 8 kategoriye genişleyebilen ortak karar altyapısı</p>
+<h2>Pazar ve genişleme</h2>
+<ul>
+<li><strong>Bugün:</strong> Türkiye otomotiv karar + lead üretimi</li>
+<li><strong>Sonraki faz:</strong> Konut/tatil parity, kredi/sigorta standalone akışları</li>
+<li><strong>Uluslararası hazırlık:</strong> tr/en/de/ar locale altyapısı</li>
+</ul>
+<h2>Yatırım turu ask (toplantı sürümü)</h2>
+<ul>
+<li><strong>Tur tipi:</strong> Pre-seed / Seed</li>
+<li><strong>Hedef kullanım alanları:</strong> ürünleşme, partner onboarding, GTM hızlandırma</li>
+<li><strong>Çıktı hedefi (18 ay):</strong> Pro MRR büyümesi, partner realization rate artışı, en az 1 yeni dikeyin production parity’si</li>
+</ul>
+<h2>Bağlantılı final dokümanlar</h2>
+<ul>
+<li>Pitch deck iskeleti: <code>docs/investor/PITCH_DECK_OUTLINE.md</code></li>
+<li>Data room index: <code>docs/investor/DATA_ROOM_INDEX.md</code></li>
+<li>100 yatırımcı hedef listesi: <code>docs/investor/INVESTOR_TARGET_LIST_100.csv</code></li>
+<li>Outreach playbook: <code>docs/investor/OUTREACH_PLAYBOOK.md</code></li>
+<li>Toplantı akışı + DD: <code>docs/investor/MEETING_FLOW_AND_DD.md</code></li>
+<li>Takip disiplini: <code>docs/investor/FOLLOW_UP_DISCIPLINE.md</code></li>
+<li>PDF paketi: <code>docs/investor/export/</code> · <code>npm run investor:export:pdf</code></li>
+<li>Kurucu rehberi: <code>docs/investor/FOUNDER_FUNDRAISING_MASTER_GUIDE.md</code></li>
+</ul>
+<h2>İletişim</h2>
+<ul>
+<li>Ürün: https://www.istebul.com</li>
+<li>Data room: <code>docs/investor/DATA_ROOM_INDEX.md</code></li>
+</ul></div>
+  <p class="footer-note">Canlı metrikler için: npm run metrics:investor:pack · Bu rapor statik özet içerir; toplantı öncesi snapshot güncellenmelidir.</p>
+</body>
+</html>

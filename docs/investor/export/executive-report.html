@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Investor Executive Report</title>
+  <style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    color: #0f172a;
+    line-height: 1.5;
+    font-size: 11pt;
+    margin: 0;
+  }
+  h1 { font-size: 22pt; margin: 0 0 8px; color: #0F172A; }
+  h2 { font-size: 14pt; margin: 20px 0 8px; color: #2563EB; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; }
+  h3 { font-size: 12pt; margin: 14px 0 6px; }
+  p { margin: 0 0 10px; }
+  ul { margin: 0 0 12px 18px; padding: 0; }
+  li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 10pt; }
+  th, td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; }
+  blockquote { margin: 12px 0; padding: 10px 14px; background: #f8fafc; border-left: 4px solid #2563EB; color: #334155; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 9pt; overflow: hidden; white-space: pre-wrap; }
+  code { font-family: ui-monospace, monospace; font-size: 9pt; }
+  .cover {
+    background: linear-gradient(135deg, #0F172A 0%, #1e3a5f 100%);
+    color: #F8FAFC;
+    min-height: 240mm;
+    padding: 48px 40px;
+    page-break-after: always;
+  }
+  .cover h1 { color: #fff; font-size: 32pt; }
+  .cover .tag { color: #94A3B8; font-size: 12pt; margin-top: 24px; }
+  .cover .meta { margin-top: 48px; font-size: 11pt; color: #94A3B8; }
+  .footer-note { margin-top: 24px; font-size: 9pt; color: #64748b; }
+  .section { padding: 0 4px; }
+  
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="brand">isteBul · Investor</div>
+    <h1>Investor Executive Report</h1>
+    <p class="tag">Due diligence özet paketi — narrative, KPI, pazar, moat, risk</p>
+    <p class="meta">www.istebul.com · 2026-05-26 · Gizli — yalnızca yatırımcı paylaşımı</p>
+  </section>
+  <div class="section"><h2>Yatırımcı anlatısı</h2><h1>Investor Narrative</h1>
+<p><strong>Company:</strong> isteBul · <strong>Stage:</strong> Seed · <strong>Market:</strong> Turkey · <strong>Config:</strong> <code>data/investor/investor-narrative.json</code></p>
+<hr>
+<h2>One line</h2>
+<p><strong>Decision infrastructure for high-consideration purchases</strong> — starting with automotive in Turkey, expanding across housing, finance, insurance, and travel on a shared engine.</p>
+<hr>
+<h2>Problem</h2>
+<p>Consumers make <strong>₺500K–₺3M</strong> decisions with fragmented tools: classifieds show inventory, banks show a single product, and generic AI invents prices. Nobody unifies <strong>fit, total cost of ownership, finance load, and neutral execution</strong> in one auditable workflow.</p>
+<p><strong>Buyer truth:</strong> <em>&quot;I need to know if this car fits my budget and life — not just the monthly payment the dealer quoted.&quot;</em></p>
+<hr>
+<h2>Solution</h2>
+<table><thead><tr><th>Pillar</th><th>What we ship</th></tr></thead>
+<tbody><tr><td><strong>Decide</strong></td><td>Multi-factor match, confidence tiers, TCO profiles</td></tr><tr><td><strong>Explain</strong></td><td>LLM narrates deterministic numbers — cannot override scores</td></tr><tr><td><strong>Close</strong></td><td>Qualified leads → HMAC webhooks → CRM → outcome feedback</td></tr></tbody>
+</table>
+<p><strong>Demo:</strong> https://www.istebul.com/auto — scores update as inputs change.</p>
+<hr>
+<h2>Why now</h2>
+<p>1. <strong>AI trust crisis</strong> — explainable numbers beat black-box chat.   2. <strong>Finance margin pressure</strong> — partners need scored intent, not form spam.   3. <strong>Product is live</strong> — weekly <code>metrics:investor:pack</code>, not slideware.</p>
+<hr>
+<h2>Why us</h2>
+<ul>
+<li><strong>Decision IP in production</strong> — <code>decision-consultant</code>, scoring explainability, anti-hallucination architecture.  </li>
+<li><strong>Partner flywheel</strong> — dispatch → win data → scoring calibration.  </li>
+<li><strong>Platform optionality</strong> — 8 verticals + locale registry on one engine.</li>
+</ul>
+<hr>
+<h2>Vision (36 months)</h2>
+<p>Category leader for decision intelligence in Turkey; <strong>3+ verticals</strong> at production parity; <strong>outcome graph</strong> built from closed deals (<code>actual_revenue</code>, partner callbacks).</p>
+<hr>
+<h2>The ask (founder completes)</h2>
+<table><thead><tr><th>Field</th><th>Template</th></tr></thead>
+<tbody><tr><td>Round</td><td>[e.g. seed ₺X]</td></tr><tr><td>Runway</td><td>18 months</td></tr><tr><td>Milestones</td><td>2+ partner LOIs · Pro MRR growth · live data feed · konut parity</td></tr><tr><td>Use of funds</td><td>See <code>FINANCIAL_MODEL.md</code> / <code>financial-model.json#useOfFunds</code></td></tr></tbody>
+</table>
+<hr>
+<h2>Related assets</h2>
+<ul>
+<li>One-pager: <code>ONE_PAGER.md</code>  </li>
+<li>GTM arc: <code>GROWTH_AND_GTM_NARRATIVE.md</code>  </li>
+<li>Full pack: <code>npm run metrics:investor:pack</code></li>
+</ul>
+<hr>
+<h2>KPI hikâyesi</h2><h1>KPI Story</h1>
+<p><strong>Headline:</strong> Every traction number in the deck maps to a production query or export — no static placeholders in slide 7.</p>
+<p><strong>Config:</strong> <code>data/investor/kpi-story.json</code> · <strong>Bindings:</strong> <code>data/investor/metrics-story.json</code></p>
+<hr>
+<h2>North star</h2>
+<table><thead><tr><th>Priority</th><th>Metric</th><th>Owner</th></tr></thead>
+<tbody><tr><td><strong>Primary</strong></td><td>Qualified leads / week</td><td>Growth</td></tr><tr><td>Secondary</td><td>Pro MRR (TRY)</td><td>Revenue</td></tr><tr><td>Secondary</td><td>Partner realized revenue (TRY)</td><td>Partnerships</td></tr><tr><td>Secondary</td><td>Blended ARR signal</td><td>CEO</td></tr></tbody>
+</table>
+<p><strong>Formula:</strong> Blended ARR ≈ Pro ARR + realized partner pipeline (<code>auto_leads.actual_revenue</code>).</p>
+<hr>
+<h2>Chapter 1 — Revenue quality</h2>
+<p><strong>Talk track:</strong> We report Pro MRR from Stripe normalization and partner <strong>actuals</strong> from CRM — not estimates alone.</p>
+<table><thead><tr><th>Metric</th><th>Export key</th></tr></thead>
+<tbody><tr><td>Pro MRR</td><td><code>subscription.mrrTry</code></td></tr><tr><td>Pro ARR</td><td><code>subscription.arrTry</code></td></tr><tr><td>Active Pro subs</td><td><code>subscription.activeSubscriptions</code></td></tr><tr><td>Partner actuals</td><td><code>pipeline.pipelineActualTry</code></td></tr><tr><td>Blended ARR</td><td><code>blendedArrTry</code></td></tr></tbody>
+</table>
+<hr>
+<h2>Chapter 2 — Partner supply</h2>
+<p><strong>Talk track:</strong> Dispatch and win rate prove monetization is operational.</p>
+<table><thead><tr><th>Metric</th><th>Export key</th></tr></thead>
+<tbody><tr><td>Leads in CRM</td><td><code>pipeline.leadCount</code></td></tr><tr><td>Dispatched</td><td><code>pipeline.partnerDispatchCount</code></td></tr><tr><td>Wins</td><td><code>pipeline.partnerWinCount</code></td></tr><tr><td>Win rate</td><td><code>pipeline.winRate</code></td></tr><tr><td>Actual / estimated</td><td><code>pipeline.realizationRate</code></td></tr></tbody>
+</table>
+<hr>
+<h2>Chapter 3 — Product demand</h2>
+<p><strong>Talk track:</strong> Funnel metrics are sample-capped (5k events) — disclose in diligence; Series A needs a warehouse.</p>
+<table><thead><tr><th>Metric</th><th>Export key</th></tr></thead>
+<tbody><tr><td>Page views</td><td><code>funnel.pageViews</code></td></tr><tr><td>Lead submits</td><td><code>funnel.leads</code></td></tr><tr><td>Checkout completion %</td><td><code>funnel.checkoutConversionPct</code></td></tr><tr><td>View → lead %</td><td><code>funnel.leadConversionPct</code></td></tr></tbody>
+</table>
+<hr>
+<h2>Board cadence</h2>
+<table><thead><tr><th>Cadence</th><th>KPIs</th></tr></thead>
+<tbody><tr><td>Weekly</td><td>Qualified leads/wk, Pro MRR, partner actuals</td></tr><tr><td>Monthly</td><td>Checkout CR%, partner win rate, churn signal</td></tr><tr><td>Quarterly</td><td>Blended ARR, LOI count (offline), vertical roadmap %</td></tr></tbody>
+</table>
+<hr>
+<h2>Export before every meeting</h2>
+<pre><code class="lang-bash">npm run metrics:investor:pack</code></pre>
+<p>Use <code>dist/investor-readiness-pack.json</code> → <code>metricsStory.slides[].resolvedMetrics</code>.</p>
+<p><strong>Implementation:</strong> <code>js/features/metrics/investor-kpis.js</code> · Admin → <strong>Investor KPIs</strong></p>
+<hr>
+<h2>Monetizasyon</h2><h1>Monetization Story</h1>
+<p><strong>Headline:</strong> Hybrid SaaS + marketplace — we monetize trust in the <strong>decision moment</strong>, not page views.</p>
+<p><strong>Config:</strong> <code>data/investor/monetization-story.json</code> · <strong>Unit economics:</strong> <code>UNIT_ECONOMICS.md</code></p>
+<hr>
+<h2>Revenue engines</h2>
+<table><thead><tr><th>Stream</th><th>Type</th><th>Status</th><th>Investor line</th></tr></thead>
+<tbody><tr><td><strong>isteBul Pro</strong></td><td>Recurring</td><td>Live</td><td>Predictable ARR; ₺299/mo · ₺2,870/yr · 7-day trial</td></tr><tr><td><strong>Partner leads (CPL)</strong></td><td>Transactional</td><td>Live</td><td>Scales with partner density; CRM tracks actuals</td></tr><tr><td><strong>Premium reports</strong></td><td>Add-on</td><td>Partial</td><td>ARPU uplift when merchandised on results</td></tr><tr><td><strong>Finance / insurance affiliate</strong></td><td>Affiliate</td><td>Early</td><td>Neutral comparison → bank/insurer CPL</td></tr><tr><td><strong>B2B API</strong></td><td>Platform</td><td>Roadmap</td><td>Dealer groups license decision engine (phase 3)</td></tr></tbody>
+</table>
+<hr>
+<h2>How money moves (live today)</h2>
+<h3>Pro</h3>
+<pre><code>Visitor → checkout → Stripe → subscriptions → investor-kpis MRR</code></pre>
+<h3>Partner</h3>
+<pre><code>Wizard → auto-intake → dispatch → webhook → CRM actual_revenue</code></pre>
+<p><strong>Blended signal:</strong> <code>Blended ARR ≈ Pro ARR + Σ partner actual_revenue</code></p>
+<hr>
+<h2>Pricing bands (partner — validate with contracts)</h2>
+<table><thead><tr><th>Tier</th><th>CPL band (TRY)</th></tr></thead>
+<tbody><tr><td>Starter</td><td>₺5,000–8,000</td></tr><tr><td>Growth</td><td>₺8,000–12,000</td></tr><tr><td>Enterprise</td><td>Custom capacity</td></tr></tbody>
+</table>
+<hr>
+<h2>Revenue quality at scale (targets)</h2>
+<table><thead><tr><th>Mix</th><th>Target %</th></tr></thead>
+<tbody><tr><td>Recurring (Pro)</td><td>40%</td></tr><tr><td>Partner</td><td>55%</td></tr><tr><td>Other</td><td>5%</td></tr></tbody>
+</table>
+<p>Early stage may be <strong>partner-heavy</strong> — disclose mix from live exports.</p>
+<hr>
+<h2>Diligence proof</h2>
+<p>1. <code>npm run metrics:investor</code>   2. Admin → <strong>Investor KPIs</strong>   3. Offline: partner LOI / CPL term sheets   4. Stripe dashboard MRR vs computed MRR reconciliation</p>
+<hr>
+<h2>Pazar büyüklüğü</h2><h1>Market Sizing (Verified)</h1>
+<p><strong>Version:</strong> p7.2 · <strong>As of:</strong> 2026-05-24   <strong>Data:</strong> <code>data/investor/market-sizing.json</code> · <strong>Research:</strong> <code>data/investor/market-research.json</code></p>
+<p>All <code>[FOUNDER_VERIFY]</code> placeholders replaced with <strong>ODMD</strong>, <strong>TÜİK</strong>, and <strong>BDDK / industry</strong> citations.</p>
+<hr>
+<h2>Researched sub-markets (Turkey)</h2>
+<table><thead><tr><th>Market</th><th>Volume / size</th><th>GMV or SAM (TRY)</th><th>Source</th></tr></thead>
+<tbody><tr><td><strong>Sıfır otomotiv (ODMD)</strong></td><td>1.238.509 adet (2024)</td><td>~₺1,67T GMV</td><td>ODMD via GCM yatırım özeti</td></tr><tr><td><strong>İkinci el binek (TÜİK noter)</strong></td><td>7.103.550 devir (2024)</td><td>~₺5,33T GMV</td><td>TÜİK Motorlu Kara Taşıtları</td></tr><tr><td><strong>Çevrim içi 2. el (Indicata)</strong></td><td>2.091.918 satış (2024)</td><td>~₺1,36T channel GMV</td><td>Indicata / CNBCe</td></tr><tr><td><strong>Otomotiv marketplace SAM</strong></td><td>500K karar oturumu</td><td>~₺2,6B</td><td>isteBul model</td></tr><tr><td><strong>Bayi yazılım (DMS)</strong></td><td>~3.500 outlet</td><td>~₺630M/yıl SAM</td><td>Otosoft / Hitsoft segment</td></tr><tr><td><strong>AI otomotiv retail (TR)</strong></td><td>Global $8,6B (2025)</td><td>~₺450M TR SAM</td><td>DataIntelo + TR pay</td></tr></tbody>
+</table>
+<hr>
+<h2>TAM · SAM · SOM</h2>
+<table><thead><tr><th>Layer</th><th>TRY</th><th>Definition</th></tr></thead>
+<tbody><tr><td><strong>TAM (GMV pool)</strong></td><td>~7,57T</td><td>Sıfır + 2.el auto GMV + konut/finans havuzu</td></tr><tr><td><strong>Platform revenue TAM</strong></td><td>~76B</td><td>~%1 of pool — CPL + SaaS + affiliate</td></tr><tr><td><strong>SAM</strong></td><td>~7,1B</td><td>Decision sessions × ARPU (4 sub-markets)</td></tr><tr><td><strong>Beachhead SAM (auto)</strong></td><td>~1,76B</td><td>TR auto decision + lead</td></tr><tr><td><strong>SOM (36 mo, base)</strong></td><td>~21,6M ARR</td><td><code>financial-model-template</code> Y3 run-rate</td></tr></tbody>
+</table>
+<p><strong>SOM live override:</strong> <code>npm run metrics:investor:pack</code> → <code>marketSizing.som.illustrativeSomTry</code></p>
+<hr>
+<h2>Housing &amp; credit (BDDK + TÜİK)</h2>
+<table><thead><tr><th>Metric</th><th>2024 value</th><th>Source</th></tr></thead>
+<tbody><tr><td>Konut satışı</td><td>1.478.025</td><td>TÜİK / AA</td></tr><tr><td>İpotekli satış</td><td>158.486 (%10,7)</td><td>TÜİK</td></tr><tr><td>Konut kredi <strong>stoku</strong></td><td>₺551,7B</td><td>BDDK (nisan 2025 bandı)</td></tr><tr><td>Bireysel kredi toplamı</td><td>~₺3,6T</td><td>BDDK / Matriks Ekim 2024</td></tr><tr><td>Taşıt kredileri</td><td>~₺12,8B (pay)</td><td>BDDK bireysel kırılım</td></tr></tbody>
+</table>
+<hr>
+<h2>Deck bullets (copy-paste)</h2>
+<p>1. Türkiye <strong>7,1M</strong> ikinci el binek devir (TÜİK 2024) — karar katmanı için dev hacim.   2. <strong>1,24M</strong> sıfır araç (ODMD 2024) — beachhead doğrulandı.   3. Platform SAM <strong>~₺7,1B</strong> — SaaS + CPL + AI retail wedge.   4. SOM <strong>~₺21,6M ARR</strong> Y3 (base model) — canlı export ile güncellenir.</p>
+<hr>
+<h2>Citations (URLs)</h2>
+<ul>
+<li>ODMD 2024: https://www.gcmyatirim.com.tr/arastirma-analiz/ozel-raporlar/2025-01-07-2024-otomotiv-satislari-rekor-tazelendi  </li>
+<li>TÜİK 2.el: https://bigpara.hurriyet.com.tr/haberler/ekonomi-haberleri/2024-yilinda-2-el-otomobil-satislari-ilk-kez-7-milyon-adedin-uzerine-cikti-bir-rekor-da-ikinci-elden_ID1606590/  </li>
+<li>Konut/ipotek: https://www.aa.com.tr/tr/ekonomi/ipotekli-konut-satislari-2024te-dip-yapti/3464168  </li>
+<li>Konut kredi stoku: https://istanbulticaretgazetesi.com/konut-kredi-hacmi-rekor-kirdi-5517-milyar-lirayi-asti  </li>
+<li>AI automotive retail: https://dataintelo.com/report/ai-in-automotive-retail-market  </li>
+</ul>
+<hr>
+<h2>Moat</h2><h1>Moat Articulation</h1>
+<p><strong>Thesis:</strong> We own the <strong>decision layer</strong> above listings and bank calculators — not inventory.</p>
+<p><strong>Config:</strong> <code>data/investor/moat-story.json</code> · <strong>Deep dive:</strong> <code>MOAT_AND_DEFENSIBILITY.md</code> · <code>COMPETITIVE_MOAT_STRATEGY.md</code></p>
+<hr>
+<h2>Elevator</h2>
+<p>Rule-based scores + TCO + explainability; LLM only narrates. Partner dispatch closes the loop.</p>
+<hr>
+<h2>Four pillars (investor lines)</h2>
+<table><thead><tr><th>Pillar</th><th>Strength</th><th>Investor line</th></tr></thead>
+<tbody><tr><td><strong>Decision IP</strong></td><td>High</td><td>Tested scoring, confidence tiers, AI cannot override price/score</td></tr><tr><td><strong>Data &amp; truth layer</strong></td><td>Medium</td><td>Path to strong moat via live feeds + outcome graph (&quot;models that closed in 14d&quot;)</td></tr><tr><td><strong>Partner network</strong></td><td>Medium–high</td><td>Qualified intent → SLA → win data → better scoring</td></tr><tr><td><strong>Platform optionality</strong></td><td>Medium</td><td>Auto beachhead funds konut, finance, insurance on shared engine</td></tr></tbody>
+</table>
+<p><strong>Honest gap (disclose):</strong> <code>liveProvidersEnabled</code> false until exclusive feeds — do not overclaim data moat today.</p>
+<hr>
+<h2>What is NOT a moat</h2>
+<ul>
+<li>Generic LLM wrapper  </li>
+<li>SEO without retention  </li>
+<li><code>estimated_revenue</code> without signed CPL contracts  </li>
+</ul>
+<hr>
+<h2>Competitive frame</h2>
+<table><thead><tr><th>Competitor type</th><th>Their wedge</th><th>Our counter</th></tr></thead>
+<tbody><tr><td>Classifieds</td><td>Inventory</td><td>Decision + TCO + finance fit</td></tr><tr><td>Banks</td><td>Single-product origination</td><td>Neutral multi-offer comparison</td></tr><tr><td>OEM</td><td>Brand bias</td><td>Neutral rank + alternatives</td></tr><tr><td>ChatGPT</td><td>Generic advice</td><td>Deterministic numbers + CRM</td></tr></tbody>
+</table>
+<hr>
+<h2>Flywheel (operational moat)</h2>
+<pre><code>SEO/paid → wizard → qualified lead → dispatch → outcome → calibration → trust → more leads</code></pre>
+<p><strong>Code proof:</strong> <code>partner-dispatch</code>, HMAC webhooks, <code>outcome-capture</code>, P6.2 CRM pipeline.</p>
+<hr>
+<h2>Path to strong moat (Series A narrative)</h2>
+<p>1. Exclusive live catalog feeds   2. Anonymized outcome graph across verticals   3. Partner network density (10+ endpoints, SLA &amp;lt; 15m p95)</p>
+<hr>
+<h2>Birim ekonomi</h2><h1>Unit Economics Model (P17)</h1>
+<p>Investor-grade financial visibility: <strong>CAC</strong>, <strong>LTV</strong>, <strong>ARPU</strong>, <strong>payback</strong>, <strong>gross margin</strong>, <strong>partner margin</strong>, <strong>AI cost per user</strong>, <strong>support cost</strong>, and <strong>conversion economics</strong>.</p>
+<p><strong>Code:</strong> <code>js/features/investor/unit-economics-model.js</code>   <strong>Assumptions:</strong> <code>data/investor/unit-economics-model.json</code>   <strong>Admin:</strong> Executive KPIs → Unit economics panel   <strong>Export:</strong> <code>npm run metrics:unit-economics</code> → <code>dist/unit-economics-snapshot.json</code></p>
+<hr>
+<h2>Metrics map</h2>
+<table><thead><tr><th>Metric</th><th>Formula (TRY unless noted)</th><th>Live source</th></tr></thead>
+<tbody><tr><td><strong>ARPU</strong></td><td>MRR ÷ billable subs</td><td><code>executive-dashboard</code> / Stripe</td></tr><tr><td><strong>CAC</strong></td><td>Marketing spend ÷ new paid conversions</td><td><code>paid-spend.json</code> + <code>paid_conversion</code> events</td></tr><tr><td><strong>LTV</strong></td><td>ARPU × gross_margin% × lifetime_months</td><td>Model + churn proxy</td></tr><tr><td><strong>Payback</strong></td><td>CAC ÷ (ARPU × gross_margin%)</td><td>Derived</td></tr><tr><td><strong>Gross margin</strong></td><td>(ARPU − Stripe − variable costs) ÷ ARPU</td><td>Stripe % + AI + support</td></tr><tr><td><strong>Partner margin</strong></td><td>(Actual − partner share − dispatch) ÷ actual</td><td><code>auto_leads</code> CRM</td></tr><tr><td><strong>AI cost / user</strong></td><td>Groq calls/mo × $/call × FX</td><td>P16 infra guardrails</td></tr><tr><td><strong>Support cost / user</strong></td><td>Tickets/MAU × cost/ticket</td><td>Support analytics events</td></tr><tr><td><strong>Conversion economics</strong></td><td>Cost/lead, cost/paid, rev/paid, funnel CR%</td><td>Executive funnel</td></tr></tbody>
+</table>
+<hr>
+<h2>Formulas</h2>
+<pre><code>monthly_churn_proxy = cancel_at_period_end / active_billable  (capped 0.5%–25%)
+lifetime_months = 1 / monthly_churn_proxy  (cap 60, else target 14)
+gross_margin_pct = (ARPU - stripe_fees - variable_cost_per_user) / ARPU
+LTV = ARPU × gross_margin_pct × lifetime_months
+CAC = Σ paid_spend / new_paid_users_in_window
+payback_months = CAC / (ARPU × gross_margin_pct)
+LTV_CAC_ratio = LTV / CAC
+
+partner_net = actual_revenue - take_rate% - (leads × dispatch_cost)
+partner_margin_pct = partner_net / actual_revenue
+
+ai_cost_per_pro = ai_calls_per_month × est_usd_per_call × usd_try
+support_cost_per_user = (tickets / MAU) × cost_per_ticket (or modeled default)</code></pre>
+<hr>
+<h2>Planning assumptions (default)</h2>
+<table><thead><tr><th>Driver</th><th>Value</th></tr></thead>
+<tbody><tr><td>Pro ARPU</td><td>₺299/mo</td></tr><tr><td>Target CAC</td><td>₺1.200</td></tr><tr><td>Target gross margin</td><td>72%</td></tr><tr><td>Target LTV months</td><td>14</td></tr><tr><td>Target payback</td><td>≤ 6 months</td></tr><tr><td>LTV/CAC minimum</td><td>3×</td></tr><tr><td>Stripe fee</td><td>3.2% + ₺2.5</td></tr><tr><td>AI calls / Pro / month</td><td>4</td></tr><tr><td>Support</td><td>12 tickets / 1k MAU · ₺85/ticket</td></tr></tbody>
+</table>
+<p>Edit <code>data/investor/unit-economics-model.json</code> for board scenarios.</p>
+<hr>
+<h2>Live data imports</h2>
+<p>1. <strong>Paid spend (CAC):</strong> Copy <code>data/growth/paid-spend.template.json</code> → <code>paid-spend.json</code> weekly (Meta, Google, etc.). 2. <strong>Subscriptions (ARPU/MRR):</strong> Supabase <code>subscriptions</code> + <code>investor-kpis.js</code>. 3. <strong>Funnel (conversion economics):</strong> <code>analytics_events</code> via executive dashboard (30d window). 4. <strong>Partner margin:</strong> <code>auto_leads.estimated_revenue</code> vs <code>actual_revenue</code>.</p>
+<hr>
+<h2>CLI exports</h2>
+<pre><code class="lang-bash"># Live (requires Supabase service role)
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run metrics:unit-economics
+
+# Planning-only (assumptions + formulas, no DB)
+node scripts/unit-economics-snapshot.cjs --planning
+
+# Related
+npm run metrics:investor
+node scripts/infra-unit-economics-snapshot.cjs</code></pre>
+<hr>
+<h2>Investor workflow</h2>
+<p>1. Weekly: <code>metrics:unit-economics</code> + <code>metrics:investor</code> → attach JSON to data room. 2. Reconcile MRR with Stripe (<code>docs/investor/STRIPE_MRR_EVIDENCE.md</code>). 3. Present <strong>LTV/CAC</strong> and <strong>payback</strong> with explicit spend import status (<code>model.health</code>). 4. Show <strong>partner margin</strong> separately from Pro SaaS (hybrid revenue story).</p>
+<hr>
+<h2>Related docs</h2>
+<ul>
+<li><code>docs/INFRA_UNIT_ECONOMICS.md</code> — AI/email/Supabase cost guardrails (P16)</li>
+<li><code>data/investor/financial-model.json</code> — 36m scenario model</li>
+<li><code>docs/investor/INVESTOR_METRICS_STORY.md</code> — narrative slides</li>
+</ul>
+<hr>
+<h2>Riskler</h2><h1>Risk Register (Investor Due Diligence)</h1>
+<table><thead><tr><th>ID</th><th>Risk</th><th>Severity</th><th>Mitigation</th><th>Status</th></tr></thead>
+<tbody><tr><td>R1</td><td><strong>Simulated pricing</strong> — not live market feeds</td><td>High</td><td>Truth layer + provider roadmap; disclose in product</td><td>Open</td></tr><tr><td>R2</td><td><strong>Financial advice regulation</strong> — decision outputs perceived as advice</td><td>Medium</td><td>Disclaimers, no binding offers, “simulation” labels</td><td>Partial</td></tr><tr><td>R3</td><td><strong>KVKK / GDPR</strong> — thin legal pages</td><td>Medium</td><td><code>COMPLIANCE_READINESS_AUDIT.md</code>; counsel; DPA</td><td>Partial</td></tr><tr><td>R4</td><td><strong>Partner revenue</strong> — estimated vs contracted</td><td>High</td><td>LOIs, actual_revenue discipline, audits</td><td>Open</td></tr><tr><td>R5</td><td><strong>AI hallucination</strong> — trust loss</td><td>Medium</td><td>Rule engine + <code>sanitizeAiNarrative</code></td><td>Mitigated</td></tr><tr><td>R6</td><td><strong>Single-market concentration</strong> (Turkey)</td><td>Medium</td><td>Global i18n foundation, EN/DE/AR routes</td><td>In progress</td></tr><tr><td>R7</td><td><strong>Supabase/CF vendor lock-in</strong></td><td>Medium</td><td><code>PRODUCTION_RESILIENCE_AUDIT.md</code>; backup/PITR; runbook</td><td>Partial</td></tr><tr><td>R8</td><td><strong>Analytics undercount</strong> — consent gate</td><td>Medium</td><td>Server-side events; optional analytics-free mode doc</td><td>Open</td></tr><tr><td>R9</td><td><strong>Key person / founder dependency</strong></td><td>High</td><td>Document ops runbooks; hire GTM + eng</td><td>Founder</td></tr><tr><td>R10</td><td><strong>Competition</strong> — incumbents add AI</td><td>Medium</td><td>Moat on workflow + partners + data</td><td>Ongoing</td></tr><tr><td>R11</td><td><strong>Churn unknown</strong> — limited subscription history</td><td>Medium</td><td>Stripe cohort reporting</td><td>Open</td></tr><tr><td>R12</td><td><strong>Security incident</strong></td><td>Medium</td><td>Launch audit, RLS, webhooks; no pen test yet</td><td>Partial</td></tr><tr><td>R13</td><td><strong>Doc drift</strong> (Netlify vs Cloudflare)</td><td>Low</td><td><code>DATA_ROOM_INDEX</code> + Cloudflare deploy docs</td><td>Mitigated</td></tr><tr><td>R14</td><td><strong>Monolith <code>app.js</code></strong> — velocity risk</td><td>Medium</td><td><code>MAINTAINABILITY_AUDIT</code> roadmap</td><td>Open</td></tr></tbody>
+</table>
+<h2>Regulatory subprocessors</h2>
+<p>See <code>SUBPROCESSORS.md</code>. Investors should confirm DPAs with Supabase, Stripe, Groq, Cloudflare.</p>
+<h2>Insurance / liability</h2>
+<p>Terms of use are minimal — <strong>not investor-grade</strong>. Counsel should add limitation of liability and arbitration before scale.</p></div>
+  <p class="footer-note">Canlı metrikler için: npm run metrics:investor:pack · Bu rapor statik özet içerir; toplantı öncesi snapshot güncellenmelidir.</p>
+</body>
+</html>

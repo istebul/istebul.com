@@ -59,6 +59,8 @@ Kullanıcılar ₺500K–₺3M arası kararları ilan siteleri, banka hesaplayı
 - Outreach playbook: `docs/investor/OUTREACH_PLAYBOOK.md`
 - Toplantı akışı + DD: `docs/investor/MEETING_FLOW_AND_DD.md`
 - Takip disiplini: `docs/investor/FOLLOW_UP_DISCIPLINE.md`
+- PDF paketi: `docs/investor/export/` · `npm run investor:export:pdf`
+- Kurucu rehberi: `docs/investor/FOUNDER_FUNDRAISING_MASTER_GUIDE.md`
 
 ## İletişim
 

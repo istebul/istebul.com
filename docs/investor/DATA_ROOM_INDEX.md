@@ -32,8 +32,11 @@
 | **Outreach playbook** | `docs/investor/OUTREACH_PLAYBOOK.md` |
 | **Meeting flow + DD plan** | `docs/investor/MEETING_FLOW_AND_DD.md` |
 | **Follow-up discipline** | `docs/investor/FOLLOW_UP_DISCIPLINE.md` |
+| **Founder master guide** | `docs/investor/FOUNDER_FUNDRAISING_MASTER_GUIDE.md` |
+| **Deliverables index** | `docs/investor/INVESTOR_DELIVERABLES.md` |
+| **PDF + slide export pack** | `docs/investor/export/` · `npm run investor:export:pdf` |
 
-**Gap:** Signed LOI PDFs, Stripe PNG screenshots, deck PDF export — see `FUNDRAISING_READINESS.md`.
+**Gap:** Signed LOI PDFs, Stripe PNG screenshots — see `FUNDRAISING_READINESS.md`. Deck PDF: `npm run investor:export:pdf`.
 
 ---
 
