@@ -12,7 +12,9 @@ const REQUIRED_COLUMNS = [
   'financing_intent',
   'trade_in',
   'urgency',
-  'contact_preference'
+  'contact_preference',
+  'ai_summary',
+  'ai_confidence'
 ];
 
 let failed = false;

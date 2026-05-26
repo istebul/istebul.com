@@ -99,7 +99,13 @@ const ALLOWED_EVENTS = new Set([
   "auto_financing_cta_clicked",
   "auto_insurance_cta_clicked",
   "auto_advisor_cta_clicked",
-  "auto_dealer_cta_clicked"
+  "auto_dealer_cta_clicked",
+  "ai_commentary_requested",
+  "ai_commentary_success",
+  "ai_commentary_failed",
+  "ai_commentary_fallback_shown",
+  "ai_commentary_expanded",
+  "ai_next_action_clicked"
 ]);
 
 function clampString(value: unknown, max = 64) {
@@ -613,6 +619,8 @@ Deno.serve(async (req) => {
       trade_in: clampString(form.trade_in, 10) || null,
       urgency: clampString(form.urgency, 12) || null,
       contact_preference: clampString(form.contact_preference, 20) || null,
+      ai_summary: clampString(form.ai_summary, 480) || null,
+      ai_confidence: clampString(form.ai_confidence, 24) || null,
     };
 
     const { data: inserted, error: insertError } = await adminClient

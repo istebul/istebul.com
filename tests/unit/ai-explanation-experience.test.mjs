@@ -56,6 +56,7 @@ test('renderAiExplanationExperience uses decision assistant framing', () => {
   assert.match(html, /Tahmin makinesi değil/);
   assert.match(html, /Yapılandırılmış akıl yürütme/);
   assert.match(html, /data-ai-synthesis/);
+  assert.match(html, /data-ai-commentary-mount|data-ai-commentary-root/);
 });
 
 test('renderAiExplanationExperience shows full panels for free users', () => {

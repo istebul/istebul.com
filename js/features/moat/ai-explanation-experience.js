@@ -222,6 +222,7 @@ export function buildDeterministicSynthesis(bundle) {
 export function renderAiExplanationExperience(bundle, options = {}) {
   const b = bundle || buildExplanationBundle();
   const pro = Boolean(options.pro);
+  const structuredCommentaryHtml = options.structuredCommentaryHtml || '';
   const synthesisText = pro
     ? 'Yorum katmanı hazırlanıyor — sayılar kartlardan gelir.'
     : buildDeterministicSynthesis(b);
@@ -249,11 +250,13 @@ export function renderAiExplanationExperience(bundle, options = {}) {
         ${refineNote}
       </div>
 
-      <section class="ib-ai-expert-commentary" aria-label="AI uzman yorumu">
-        <h4>AI uzman yorumu</h4>
+      ${structuredCommentaryHtml || '<div data-ai-commentary-mount></div>'}
+
+      <section class="ib-ai-expert-commentary ib-ai-expert-commentary--compact" aria-label="Hızlı motor özeti">
+        <h4>Motor özeti (kural + tahmin)</h4>
         <div class="ib-ai-expert-lanes">
           <article class="ib-ai-expert-lane ib-ai-expert-lane--fact">
-            <span class="ib-ai-lane-label">Gerçek (motor)</span>
+            <span class="ib-ai-lane-label">Kural skoru</span>
             <p>${escapeHtml(b.expertCommentary?.facts || '')}</p>
           </article>
           <article class="ib-ai-expert-lane ib-ai-expert-lane--estimate">
@@ -261,7 +264,7 @@ export function renderAiExplanationExperience(bundle, options = {}) {
             <p>${escapeHtml(b.expertCommentary?.estimates || '')}</p>
           </article>
           <article class="ib-ai-expert-lane ib-ai-expert-lane--ai">
-            <span class="ib-ai-lane-label">AI yorum</span>
+            <span class="ib-ai-lane-label">Deterministik özet</span>
             <p>${escapeHtml(b.expertCommentary?.interpretation || '')}</p>
           </article>
         </div>

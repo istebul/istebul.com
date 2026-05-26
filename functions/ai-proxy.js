@@ -118,12 +118,13 @@ export async function onRequestPost({ request, env }) {
 
     const body = await request.json().catch(() => ({}));
     const prompt = body.prompt || body.message || body.input;
+    const structured = body.format === 'structured_commentary';
 
     if (!prompt) {
       return json({ error: 'Prompt required' }, 400, origin);
     }
 
-    if (typeof prompt !== 'string' || prompt.length > 4000) {
+    if (typeof prompt !== 'string' || prompt.length > (structured ? 6000 : 4000)) {
       return json({ error: 'Invalid prompt' }, 400, origin);
     }
 
@@ -141,27 +142,31 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'GROQ_API_KEY missing' }, 500, origin);
     }
 
+    const systemContent = structured
+      ? 'Sen isteBul.com otomotiv karar analistisin. Yalnızca geçerli JSON döndür. Skor üretmezsin; fiyat, faiz, banka, sigorta teklifi veya kampanya uydurmazsın. Türkçe, profesyonel, temkinli dil.'
+      : 'Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın.';
+
+    const payload = {
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: systemContent },
+        { role: 'user', content: prompt }
+      ],
+      temperature: structured ? 0.25 : 0.4,
+      max_tokens: structured ? 1200 : AI_MAX_OUTPUT_TOKENS
+    };
+
+    if (structured) {
+      payload.response_format = { type: 'json_object' };
+    }
+
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${env.GROQ_API_KEY}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          {
-            role: 'system',
-            content: 'Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.4,
-        max_tokens: AI_MAX_OUTPUT_TOKENS
-      })
+      body: JSON.stringify(payload)
     });
 
     const data = await response.json();

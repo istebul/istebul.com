@@ -72,6 +72,16 @@ import {
   updateExplanationSynthesis
 } from '../features/moat/ai-explanation-experience.js';
 import {
+  AI_COMMENTARY_STORAGE_KEY,
+  AI_COMMENTARY_TIMEOUT_MS,
+  buildCommentaryPrompt,
+  buildDeterministicDecisionCommentary,
+  hydrateStructuredCommentary,
+  mergeCommentary,
+  parseStructuredCommentary,
+  renderStructuredCommentaryPanel
+} from './ai-decision-commentary.js';
+import {
   renderDecisionInsightPanels,
   renderTrustLayerCompact
 } from '../features/moat/decision-insight-panels.js';
@@ -542,7 +552,8 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
       financing_intent: options.financingIntent || leadPayload.financing_intent || leadPayload.loan || '',
       trade_in: options.tradeIn || leadPayload.trade_in || '',
       urgency: options.urgency || leadPayload.urgency || '',
-      contact_preference: options.contactPreference || leadPayload.contact_preference || ''
+      contact_preference: options.contactPreference || leadPayload.contact_preference || '',
+      ...readAiCommentaryForLead()
     }
   });
 }
@@ -1180,44 +1191,95 @@ function renderAutoMethodologyStrip() {
     </section>`;
 }
 
-async function getAiExplanation(results, formData = {}, refinement = '', options = {}) {
+async function fetchAiStructuredCommentary(results, formData = {}, refinement = '', options = {}) {
   const pro = Boolean(options.pro);
+  const deterministic = buildDeterministicDecisionCommentary(results, formData);
+
   if (!hasAiNarrationBudget({ pro })) {
-    return getAiNarrationBudgetMessage({ pro });
+    return {
+      commentary: deterministic,
+      synthesis: getAiNarrationBudgetMessage({ pro }) || buildDeterministicSynthesis(buildExplanationBundle(results, formData)),
+      source: 'rules',
+      usedAi: false
+    };
   }
   if (!canCallAiNarration({ pro })) {
-    return getAiNarrationBudgetMessage({ pro });
+    return {
+      commentary: deterministic,
+      synthesis: getAiNarrationBudgetMessage({ pro }) || buildDeterministicSynthesis(buildExplanationBundle(results, formData)),
+      source: 'rules',
+      usedAi: false
+    };
   }
 
-  try {
-    const bundle = buildExplanationBundle(results, formData);
-    const prompt = [
-      'Rol: isteBul karar asistanı (AI decision assistant). Generic ChatGPT tonu KULLANMA.',
-      'Görev: Yalnızca 2–3 cümlelik danışman sentezi yaz. Kullanıcıya zaten gösterilen yapılandırılmış kartları tekrarlama.',
-      'YASAK: skor, fiyat, faiz, %, ₺, "kesinlikle", "garanti", "tahmin", satın alma vaadi.',
-      'Olumlu: belirsizlikleri kabul et, trade-off vurgula, metodolojik destek dilini kullan.',
-      'Profil: ' + bundle.profileSummary,
-      'Lider: ' + (bundle.leaderName || '—'),
-      'Trade-off: ' + (bundle.tradeoffs || []).map((t) => t.summary).join(' | '),
-      'Belirsizlik: ' + (bundle.uncertainty?.bullets || []).slice(0, 2).join(' '),
-      refinement ? 'Rafine istek: ' + refinement : '',
-      'Çıktı: düz metin paragraf, liste yok.'
-    ].join('\n');
+  const bundle = buildExplanationBundle(results, formData);
+  const prompt = buildCommentaryPrompt(results, formData, bundle, refinement);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), AI_COMMENTARY_TIMEOUT_MS);
 
+  try {
     const res = await fetch('/ai-proxy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ prompt, format: 'structured_commentary' }),
+      signal: controller.signal
     });
 
-    if (!res.ok) return '';
+    if (!res.ok) {
+      return { commentary: deterministic, synthesis: deterministic.executive_summary, source: 'rules', usedAi: false };
+    }
+
     const data = await res.json();
-    return sanitizeAiNarrative(
-      data.result || '',
+    const parsed = parseStructuredCommentary(data.result || '');
+    const { data: merged, source } = mergeCommentary(parsed, deterministic);
+    const synthesis = sanitizeAiNarrative(
+      merged.executive_summary || '',
       SCALE_LIMITS.aiProxy.maxNarrativeChars
     );
+
+    return {
+      commentary: merged,
+      synthesis: synthesis || deterministic.executive_summary,
+      source,
+      usedAi: source === 'ai'
+    };
   } catch {
-    return '';
+    return {
+      commentary: deterministic,
+      synthesis: deterministic.executive_summary,
+      source: 'rules',
+      usedAi: false
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function persistAiCommentaryForLead(commentary) {
+  if (!commentary?.executive_summary) return;
+  try {
+    const summary = String(commentary.executive_summary).slice(0, 480);
+    const confidence = String(commentary.confidence_level || '').slice(0, 24);
+    sessionStorage.setItem(
+      AI_COMMENTARY_STORAGE_KEY,
+      JSON.stringify({ summary, confidence, at: Date.now() })
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+function readAiCommentaryForLead() {
+  try {
+    const raw = sessionStorage.getItem(AI_COMMENTARY_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return {
+      ai_summary: parsed.summary ? String(parsed.summary).slice(0, 480) : null,
+      ai_confidence: parsed.confidence ? String(parsed.confidence).slice(0, 24) : null
+    };
+  } catch {
+    return {};
   }
 }
 
@@ -1622,7 +1684,13 @@ function renderResults(results) {
       ${renderProviderCtaStrip({ vehicleName: vehicle.name, formData }, escapeHtml)}
     </article>
   `}).join('') + `
-    ${renderAiExplanationExperience(buildExplanationBundle(results, formData), { pro })}
+    ${renderAiExplanationExperience(buildExplanationBundle(results, formData), {
+      pro,
+      structuredCommentaryHtml: renderStructuredCommentaryPanel(
+        buildDeterministicDecisionCommentary(results, formData),
+        { state: 'loading', source: 'rules' }
+      )
+    })}
 
     ${!pro ? renderContextualUpsellCard('advanced_ai_summary', 'auto_results') : ''}
     ${!pro ? renderUpsellFeatureChips('auto_results') : ''}
@@ -1680,36 +1748,53 @@ function renderResults(results) {
 
     const pro = isProActive();
     const bundle = buildExplanationBundle(results, formData);
-    const deterministic = buildDeterministicSynthesis(bundle);
+    const deterministicSynthesis = buildDeterministicSynthesis(bundle);
+    const ruleCommentary = buildDeterministicDecisionCommentary(results, formData);
 
     aiBox.querySelectorAll('[data-ai-refine]').forEach((button) => {
       button.classList.toggle('is-active', button === activeButton);
     });
 
     if (!refinement) {
-      updateExplanationSynthesis(aiBox, deterministic);
+      updateExplanationSynthesis(aiBox, ruleCommentary.executive_summary || deterministicSynthesis);
+      hydrateStructuredCommentary(aiBox, ruleCommentary, { state: 'loading', source: 'rules' });
     }
 
-    const mayCallAi = hasAiNarrationBudget({ pro });
-    if (!mayCallAi) {
-      const msg = getAiNarrationBudgetMessage({ pro });
-      updateExplanationSynthesis(aiBox, msg || deterministic, { fallback: deterministic });
-      return;
-    }
+    trackAutoEvent('ai_commentary_requested', { refinement: Boolean(refinement) });
 
     setAiBusy(true);
     updateExplanationSynthesis(
       aiBox,
       refinement ? 'Sentez rafine ediliyor…' : 'Danışman sentezi hazırlanıyor…'
     );
+    hydrateStructuredCommentary(aiBox, ruleCommentary, { state: 'loading', source: 'rules' });
 
-    const text = await getAiExplanation(results, formData, refinement, { pro });
+    const outcome = await fetchAiStructuredCommentary(results, formData, refinement, { pro });
 
     setAiBusy(false);
 
-    updateExplanationSynthesis(aiBox, text || deterministic, {
+    const usedFallback = !outcome.usedAi;
+    if (usedFallback) {
+      trackAutoEvent('ai_commentary_fallback_shown', { reason: refinement ? 'refine' : 'initial' });
+      if (!hasAiNarrationBudget({ pro })) {
+        trackAutoEvent('ai_commentary_failed', { reason: 'budget' });
+      } else {
+        trackAutoEvent('ai_commentary_failed', { reason: 'proxy_or_parse' });
+      }
+    } else {
+      trackAutoEvent('ai_commentary_success', { source: outcome.source });
+    }
+
+    hydrateStructuredCommentary(aiBox, outcome.commentary, {
+      state: usedFallback ? 'fallback' : 'ready',
+      source: outcome.source
+    });
+
+    persistAiCommentaryForLead(outcome.commentary);
+
+    updateExplanationSynthesis(aiBox, outcome.synthesis || deterministicSynthesis, {
       fallback:
-        'Sentez üretilemedi. Üstteki yapılandırılmış akıl yürütme, finansal tablo ve gerekçe kartları kural motorundan gelir — geçerlidir.'
+        'AI yorumu şu anda üretilemedi; aşağıdaki yapılandırılmış analiz kural motoru ve tahmin kalemlerinden gelir — geçerlidir.'
     });
   };
 
@@ -1723,6 +1808,18 @@ function renderResults(results) {
         panel: el.dataset.ownershipBreakdown !== undefined ? 'ownership' : 'how_calculated'
       });
     });
+  });
+
+  aiBox?.querySelectorAll('[data-commentary-section]').forEach((el) => {
+    el.addEventListener('toggle', () => {
+      if (!el.open) return;
+      trackAutoEvent('ai_commentary_expanded', { section: el.dataset.commentarySection || '' });
+    });
+  });
+
+  aiBox?.querySelector('[data-ai-commentary-retry]')?.addEventListener('click', () => {
+    trackAutoEvent('ai_next_action_clicked', { action: 'commentary_retry' });
+    void updateAiSummary('', null);
   });
 
   if (root.querySelector('.ib-auto-compare-matrix')) {
