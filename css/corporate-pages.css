@@ -1,0 +1,18 @@
+.corporate-header .logo span{display:none}
+.corporate-nav{flex-wrap:wrap;gap:12px 16px;max-width:72vw;justify-content:flex-end}
+.corporate-nav a.is-active{color:var(--blue);font-weight:800}
+.corporate-page{max-width:920px;margin:0 auto}
+.corporate-vm{margin:28px 0;padding:24px;background:var(--card);border:1px solid var(--line);border-radius:20px}
+.corporate-vm h2{margin:0 0 12px;font-size:1.35rem}
+.corporate-vm p{margin:0;color:var(--muted);line-height:1.65}
+.corporate-actions{margin-top:32px}
+.corporate-disclaimer,.corporate-note{margin-top:24px;color:var(--muted);font-size:0.95rem;line-height:1.55}
+.corporate-pilot-badge{display:inline-block;margin:12px 0 20px;padding:8px 14px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-weight:700;font-size:0.85rem}
+.corporate-table{width:100%;border-collapse:collapse;font-size:0.9rem}
+.corporate-table th,.corporate-table td{border:1px solid var(--line);padding:10px 12px;text-align:left}
+.corporate-table th{background:#f8fafc}
+.text-muted-sm{color:var(--muted);font-size:0.9rem}
+@media(max-width:850px){
+  .corporate-nav{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .corporate-header{flex-wrap:wrap;gap:12px}
+}

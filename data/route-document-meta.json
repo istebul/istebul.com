@@ -11,11 +11,6 @@
       "description": "Büyük satın alma kararlarını toplam maliyet, risk ve finansman etkisiyle analiz edin. Ücretsiz başlayın, Auto ile araç kararını derinleştirin.",
       "path": "/karar-asistani"
     },
-    "page-metodoloji": {
-      "title": "Metodoloji | isteBul",
-      "description": "Skorlar nasıl hesaplanır? TCO, finansman ve risk sinyallerinin şeffaf birleşimi — ilan sitesi değil, karar altyapısı.",
-      "path": "/metodoloji"
-    },
     "page-planlar": {
       "title": "Planlar ve Fiyatlandırma | isteBul",
       "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, Stripe ile güvenli ödeme.",

@@ -1,0 +1,103 @@
+{
+  "about": {
+    "filename": "hakkimizda.html",
+    "canonicalPath": "/hakkimizda.html",
+    "title": "Hakkımızda | isteBul — Karar Zekâsı Platformu",
+    "description": "isteBul vizyonu, misyonu ve karar altyapısı yaklaşımı. Büyük satın alma kararlarında şeffaf TCO ve AI destekli gerekçe.",
+    "kicker": "Kurumsal",
+    "h1": "Karar vermeyi daha net, hızlı ve güvenilir hale getiriyoruz.",
+    "lead": "isteBul, kullanıcıların büyük satın alma kararlarında yapay zeka destekli analizle daha bilinçli seçimler yapmasına yardımcı olan bir karar destek platformudur.",
+    "visionTitle": "Vizyonumuz",
+    "vision": "Türkiye'de yüksek tutarlı satın alma kararlarında karar zekâsı kategorisinin lider altyapısı olmak; ilan, sohbet botu veya tek ürünlü finans araçlarının ötesinde fit, toplam sahip olma maliyeti (TCO), finansman yükü ve riski tek şeffaf iş akışında birleştirmek; zamanla konut, kredi, sigorta ve seyahat dahil çok dikeyli bir karar grafiği kurmak.",
+    "missionTitle": "Misyonumuz",
+    "mission": "Tüketicilerin ₺500 bin – ₺3 milyon bandındaki kararlarında parçalı ve önyargılı araçlar yerine kural tabanlı, denetlenebilir skor ve TCO ile seçenekleri netleştirmek; yapay zekayı yalnızca açıklanabilir gerekçe katmanı olarak kullanmak; hazır kullanıcıyı nitelikli partner ekosistemine ölçülebilir lead modeliyle bağlamak.",
+    "pillars": [
+      { "n": "01", "title": "Karar desteği", "text": "Kullanıcının ihtiyacını, bütçesini ve tercihlerini anlayarak seçenekleri daha anlaşılır hale getiririz." },
+      { "n": "02", "title": "Şeffaf analiz", "text": "Toplam maliyet, kullanım uyumu ve riskleri birlikte değerlendirerek karar sürecini sadeleştiririz." },
+      { "n": "03", "title": "Partner ekosistemi", "text": "Kullanıcı hazır olduğunda kredi, sigorta, bayi veya hizmet partnerlerine skorlu ve bağlamlı yönlendirme yapılabilir." }
+    ]
+  },
+  "methodology": {
+    "path": "/metodoloji/",
+    "title": "Metodoloji | isteBul — Şeffaf Karar Altyapısı",
+    "description": "isteBul skor ve TCO metodolojisi: kural tabanlı motor, deterministik uyum skoru, AI yalnızca gerekçe. Finansal tavsiye değildir.",
+    "kicker": "Metodoloji",
+    "h1": "Karar altyapısı metodolojisi",
+    "lead": "isteBul bir ilan sitesi veya sohbet botu değil. Skor ve toplam maliyet deterministik motorla hesaplanır; yapay zeka yalnızca gerekçe ve özet üretir — skoru değiştirmez.",
+    "sections": [
+      {
+        "title": "1. Profil ve girdi",
+        "text": "Bütçe, kullanım senaryosu, süre, finansman tercihi ve risk toleransı standart bir profil şemasında toplanır. Eksik veya tutarsız girdiler güven bandını düşürür."
+      },
+      {
+        "title": "2. Deterministik motor",
+        "text": "TCO kalemleri (satın alma, amortisman, yakıt/enerji, bakım, sigorta, finansman), kredi etkisi ve uyum skoru kural tabanlı motorla hesaplanır. Aynı girdi aynı skoru üretir."
+      },
+      {
+        "title": "3. AI gerekçe katmanı",
+        "text": "Yapay zeka motor çıktısını yorumlar ve özetler; fiyat veya skor uydurmaz. Generic sohbet botlarından fark: sayılar önce motor, metin sonra."
+      },
+      {
+        "title": "4. Karşılaştırma ve kapanış",
+        "text": "Alternatifler matris ve karşılaştırma merkezinde yan yana sunulur. Kullanıcı hazırsa skorlu lead partner webhook ile iletilir; outcome geri bildirimi kalibrasyon için kullanılır."
+      }
+    ],
+    "principles": [
+      "Tarafsız skor — gizli pazar yeri önceliği yok",
+      "Bilgilendirme amaçlı — bağlayıcı teklif veya getiri taahhüdü değil",
+      "KVKK uyumlu veri işleme ve Stripe ile güvenli ödeme"
+    ],
+    "ctaPrimary": { "href": "/auto/", "label": "Auto analizini dene" },
+    "ctaSecondary": { "href": "/planlar", "label": "Planları incele" }
+  },
+  "verticals": {
+    "konut": {
+      "slug": "konut",
+      "productName": "isteBul Konut",
+      "title": "Konut Karar Analizi | isteBul — Pilot",
+      "description": "Ev ve konut alımında toplam sahip olma maliyeti, ipotek yükü ve risk dengesi. Karar altyapısı pilotu — erken erişim.",
+      "kicker": "Konut · Pilot",
+      "h1": "Konut kararını toplam maliyete göre verin",
+      "lead": "Liste fiyatının ötesinde ipotek, vergi, aidat, bakım ve nakit akışı yükünü tek çerçevede görün — ilan sitesi değil, karar motoru.",
+      "vision": "Türkiye'de konut alım kararlarında şeffaf TCO ve finansman yükü sunan karar altyapısının öncü platformu olmak.",
+      "mission": "Alıcıların ev seçiminde yalnızca m² fiyatına değil; toplam sahip olma maliyeti, kredi yükü ve yaşam tarzı uyumuna göre bilinçli karar vermesini sağlamak.",
+      "steps": [
+        { "n": "01", "title": "Profil", "text": "Bütçe, bölge, kullanım (oturum/yatırım), peşinat ve vade tercihleri." },
+        { "n": "02", "title": "Motor", "text": "İpotek taksiti, vergi, aidat, bakım ve 12 ay nakit akışı senaryosu." },
+        { "n": "03", "title": "Karar", "text": "Uyum skoru, alternatifler ve AI destekli gerekçe — skor motor tarafından belirlenir." }
+      ]
+    },
+    "tatil": {
+      "slug": "tatil",
+      "productName": "isteBul Tatil",
+      "title": "Tatil Karar Analizi | isteBul — Pilot",
+      "description": "Tatil bütçesi, risk ve toplam seyahat maliyeti dengesi. Karar altyapısı pilotu — erken erişim.",
+      "kicker": "Tatil · Pilot",
+      "h1": "Tatil bütçenizi risk ve toplam maliyetle planlayın",
+      "lead": "Paket fiyatının ötesinde ulaşım, konaklama, sigorta ve beklenmedik kalemleri şeffaf modelde değerlendirin.",
+      "vision": "Türkiye'de tatil ve deneyim satın almalarında bütçe–risk dengesini gösteren karar altyapısı olmak.",
+      "mission": "Gezginlerin tatil harcamasında gizli maliyetleri erken görmesini ve bütçeye uygun seçenekleri karşılaştırmasını sağlamak.",
+      "steps": [
+        { "n": "01", "title": "Profil", "text": "Bütçe, tarih, grup büyüklüğü, öncelik (konfor / deneyim / tasarruf)." },
+        { "n": "02", "title": "Motor", "text": "Toplam seyahat maliyeti, iptal riski ve kur/döviz etkisi senaryoları." },
+        { "n": "03", "title": "Karar", "text": "Alternatif paketler, uyum skoru ve açıklanabilir AI özeti." }
+      ]
+    },
+    "finans": {
+      "slug": "finans",
+      "productName": "isteBul Finans",
+      "title": "Finans Karar Analizi | isteBul — Pilot",
+      "description": "Kredi, nakit akışı ve finansman yükü kararları. Karar altyapısı pilotu — erken erişim.",
+      "kicker": "Finans · Pilot",
+      "h1": "Finansman kararını nakit akışına göre verin",
+      "lead": "Yalnızca en düşük faiz değil; seçtiğiniz varlık bağlamında aylık yük, erken ödeme ve toplam maliyet birlikte.",
+      "vision": "Türkiye'de tüketici finansman kararlarında tarafsız, varlık bağlamlı karar altyapısı olmak.",
+      "mission": "Kullanıcıların kredi ve nakit akışı tercihlerini tek ürün tablosu yerine gerçek yaşam bütçesiyle eşleştirmesini sağlamak.",
+      "steps": [
+        { "n": "01", "title": "Profil", "text": "Gelir, mevcut yükümlülükler, hedef varlık ve risk toleransı." },
+        { "n": "02", "title": "Motor", "text": "Aylık ödeme, toplam faiz, erken kapama ve TCO etkisi." },
+        { "n": "03", "title": "Karar", "text": "Teklif karşılaştırması, uyum skoru ve şeffaf gerekçe metni." }
+      ]
+    }
+  }
+}

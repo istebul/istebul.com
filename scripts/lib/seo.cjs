@@ -472,6 +472,7 @@ Sitemap: ${absoluteUrl(site.baseUrl, '/sitemap.xml')}
 module.exports = {
   loadJson,
   escapeHtml,
+  absoluteUrl,
   buildSeoPages,
   generateSitemap,
   generateRobots

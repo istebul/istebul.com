@@ -1,15 +1,4 @@
 {
-  "page-metodoloji": {
-    "title": "Metodoloji",
-    "h1": "Karar altyapısı metodolojisi",
-    "lead": "isteBul ilan sitesi veya sohbet botu değil. TCO, finansman ve risk sinyalleri açık kurallarla birleşir; yapay zeka skoru değiştirmez, yalnızca gerekçeyi açıklar.",
-    "bullets": [
-      "Kural tabanlı TCO ve uyum skoru",
-      "12 aylık maliyet ve kredi senaryoları",
-      "Tarafsız sıralama — tek satıcıya bağlı değil",
-      "Veri güven bandı ve şeffaf uyarılar"
-    ]
-  },
   "page-planlar": {
     "title": "Planlar",
     "h1": "Planlar ve fiyatlandırma",

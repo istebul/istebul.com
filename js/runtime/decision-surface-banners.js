@@ -8,7 +8,7 @@ const SURFACE_COPY = Object.freeze({
     title: 'Skorlu seçenekler — klasik ilan listesi değil',
     body: 'Bu alan, TCO ve uyum skoruna göre sıralanmış referans seçenekleri gösterir. Canlı envanter yoğunluğu bölgeye göre değişebilir; ana karar akışı Auto analizidir.',
     primary: { href: '/auto/', label: 'TCO analizini başlat' },
-    secondary: { href: '/metodoloji', label: 'Metodoloji', native: true }
+    secondary: { href: '/metodoloji/', label: 'Metodoloji', native: false }
   },
   compare: {
     kicker: 'Karşılaştırma merkezi',

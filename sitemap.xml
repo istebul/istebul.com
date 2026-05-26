@@ -11,9 +11,24 @@
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://www.istebul.com/metodoloji</loc>
+    <loc>https://www.istebul.com/metodoloji/</loc>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/konut/</loc>
+    <priority>0.75</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/tatil/</loc>
+    <priority>0.75</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/finans/</loc>
+    <priority>0.75</priority>
+    <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://www.istebul.com/planlar</loc>

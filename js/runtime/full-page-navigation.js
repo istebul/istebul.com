@@ -13,7 +13,11 @@ const STATIC_ALIASES = Object.freeze({
   '/partner-planlar': '/partner-planlar.html',
   '/partner-guven': '/partner-guven.html',
   '/hakkimizda': '/hakkimizda.html',
-  '/iletisim': '/iletisim.html'
+  '/iletisim': '/iletisim.html',
+  '/metodoloji': '/metodoloji/',
+  '/konut': '/konut/',
+  '/tatil': '/tatil/',
+  '/finans': '/finans/'
 });
 
 /**

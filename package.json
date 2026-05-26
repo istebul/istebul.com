@@ -8,6 +8,7 @@
     "dev": "node server.cjs",
     "preview:ux": "node scripts/preview-ux-server.cjs",
     "build": "node scripts/production-build.cjs",
+    "build:corporate": "node scripts/build-corporate-static.cjs",
     "deploy": "npm run build && wrangler pages deploy dist --project-name=istebul-com",
     "deploy:cf": "npm run build && wrangler pages deploy dist --project-name=istebul-com",
     "check": "node scripts/check-syntax.cjs && node scripts/check-console.cjs",

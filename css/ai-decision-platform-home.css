@@ -245,6 +245,16 @@
   background: #f8fafc;
 }
 
+.ib-use-case-card.is-pilot:hover {
+  border-color: rgba(20, 184, 166, 0.45);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.ib-use-case-card.is-pilot .ib-use-case-badge {
+  background: #ecfdf5;
+  color: #0f766e;
+}
+
 .ib-use-case-badge {
   align-self: flex-start;
   font-size: 0.68rem;

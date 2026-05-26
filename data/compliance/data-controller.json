@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "last_reviewed": "2026-05-26",
+  "controller": {
+    "tradeName": "isteBul",
+    "legalForm": "Bireysel girişim / ticari faaliyet",
+    "contactPerson": "Nadi Gürel",
+    "email": "nadigurel.60@gmail.com",
+    "phone": "+90 545 678 6420",
+    "address": "İzmir, Türkiye",
+    "web": "https://www.istebul.com"
+  },
+  "kvkk": {
+    "applicationSubject": "KVKK Başvurusu",
+    "responseDays": 30,
+    "authority": "Kişisel Verileri Koruma Kurumu (KVKK)"
+  }
+}

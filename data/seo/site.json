@@ -12,7 +12,10 @@
   "staticUrls": [
     { "loc": "/", "priority": "1.0", "changefreq": "weekly" },
     { "loc": "/auto/", "priority": "1.0", "changefreq": "weekly" },
-    { "loc": "/metodoloji", "priority": "0.9", "changefreq": "monthly" },
+    { "loc": "/metodoloji/", "priority": "0.9", "changefreq": "monthly" },
+    { "loc": "/konut/", "priority": "0.75", "changefreq": "weekly" },
+    { "loc": "/tatil/", "priority": "0.75", "changefreq": "weekly" },
+    { "loc": "/finans/", "priority": "0.75", "changefreq": "weekly" },
     { "loc": "/planlar", "priority": "0.9", "changefreq": "weekly" },
     { "loc": "/karar-analizi", "priority": "0.85", "changefreq": "weekly" },
     { "loc": "/hakkimizda.html", "priority": "0.5", "changefreq": "monthly" },

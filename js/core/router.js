@@ -66,7 +66,6 @@ export class Router {
             { path: '/ilanlar', component: 'ilanlar' },
             { path: '/karsilastir', component: 'compare' },
             { path: '/karar-analizi', component: 'page-karar-analizi' },
-            { path: '/metodoloji', component: 'page-metodoloji' },
             { path: '/planlar', component: 'page-planlar' },
             { path: '/karar-asistani', component: 'page-karar-analizi' },
             { path: '/favoriler', component: 'favoriler' },

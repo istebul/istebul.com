@@ -25,7 +25,6 @@ export const MARKETING_SURFACE_IDS = Object.freeze([
 
 const PREMIUM_PATHS = Object.freeze({
     '/karar-analizi': 'page-karar-analizi',
-    '/metodoloji': 'page-metodoloji',
     '/planlar': 'page-planlar',
     '/karar-asistani': 'page-karar-analizi'
 });

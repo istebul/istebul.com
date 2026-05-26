@@ -10,7 +10,8 @@ test('isFullPageNavigation detects Auto and partner HTML', () => {
   assert.equal(isFullPageNavigation('/auto/'), true);
   assert.equal(isFullPageNavigation('/partner-olun.html'), true);
   assert.equal(isFullPageNavigation('/ilanlar'), false);
-  assert.equal(isFullPageNavigation('/metodoloji'), false);
+  assert.equal(isFullPageNavigation('/metodoloji'), true);
+  assert.equal(isFullPageNavigation('/konut'), true);
 });
 
 test('resolveFullPageNavigation normalizes Auto trailing slash', () => {
