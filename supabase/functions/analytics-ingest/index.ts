@@ -3,19 +3,12 @@ import {
   recordPlatformEvent,
   upsertAnalyticsSession,
 } from "../_shared/platform-analytics.ts";
-
-const allowedOrigins = new Set([
-  "https://istebul.com",
-  "https://www.istebul.com",
-  "https://istebul-com.pages.dev",
-  "http://localhost:3000",
-  "http://localhost:5173",
-]);
+import { isAllowedOrigin, resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 function corsHeaders(origin: string | null) {
-  const allowedOrigin = origin && allowedOrigins.has(origin)
-    ? origin
-    : "https://www.istebul.com";
+  const allowedOrigin = resolveCorsOrigin(origin, "https://www.istebul.com", {
+    allowLocalDev: true,
+  });
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
@@ -89,7 +82,7 @@ Deno.serve(async (req) => {
     return json({ error: "Method not allowed" }, 405, origin);
   }
 
-  if (origin && !allowedOrigins.has(origin)) {
+  if (origin && !isAllowedOrigin(origin, { allowLocalDev: true })) {
     return json({ error: "Forbidden" }, 403, origin);
   }
 

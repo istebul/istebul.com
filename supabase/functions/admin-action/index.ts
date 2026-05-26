@@ -4,6 +4,7 @@ import {
   mapCrmLeadUpdateSignals,
   recordOutcomeSignals,
 } from "../_shared/outcome-capture.ts";
+import { resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 async function writeAdminAudit(
   adminClient: ReturnType<typeof createClient>,
@@ -31,12 +32,6 @@ async function writeAdminAudit(
   }
 }
 
-const allowedOrigins = [
-  "https://istebul.com",
-  "https://www.istebul.com",
-  "https://istebul-com.pages.dev"
-];
-
 const adminRateLimit = new Map<string, { count: number; resetAt: number }>();
 
 function checkAdminActorRateLimit(actorId: string, limit = 120, windowMs = 60_000) {
@@ -57,9 +52,7 @@ function checkAdminActorRateLimit(actorId: string, limit = 120, windowMs = 60_00
 }
 
 function corsHeaders(origin: string | null) {
-  const allowedOrigin = allowedOrigins.includes(origin || "")
-    ? origin
-    : "https://istebul.com";
+  const allowedOrigin = resolveCorsOrigin(origin, "https://istebul.com");
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,

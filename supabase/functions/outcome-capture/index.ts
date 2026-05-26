@@ -7,16 +7,10 @@ import {
 import { buildSegmentKey } from "../_shared/scoring-intelligence.ts";
 import { recordPlatformEvent } from "../_shared/platform-analytics.ts";
 
-const allowedOrigins = [
-  "https://istebul.com",
-  "https://www.istebul.com",
-  "https://istebul-com.pages.dev",
-];
+import { resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 function corsHeaders(origin: string | null) {
-  const allowedOrigin = allowedOrigins.includes(origin || "")
-    ? origin
-    : "https://www.istebul.com";
+  const allowedOrigin = resolveCorsOrigin(origin);
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,

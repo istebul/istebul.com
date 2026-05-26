@@ -3,19 +3,12 @@ import {
   CLIENT_OPS_EVENTS,
   recordOperationalEvent,
 } from "../_shared/operational-observability.ts";
-
-const allowedOrigins = new Set([
-  "https://istebul.com",
-  "https://www.istebul.com",
-  "https://istebul-com.pages.dev",
-  "http://localhost:3000",
-  "http://localhost:5173",
-]);
+import { resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 function corsHeaders(origin: string | null) {
-  const allowedOrigin = origin && allowedOrigins.has(origin)
-    ? origin
-    : "https://www.istebul.com";
+  const allowedOrigin = resolveCorsOrigin(origin, "https://www.istebul.com", {
+    allowLocalDev: true,
+  });
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Headers":

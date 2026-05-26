@@ -1,15 +1,9 @@
 const getSiteUrl = (context) => (context.env.SITE_URL || 'https://istebul.com').replace(/\/$/, '');
 
-const allowedOrigins = [
-  'https://istebul.com',
-  'https://www.istebul.com',
-  'https://istebul-com.pages.dev'
-];
+import { isAllowedOrigin, resolveCorsOrigin } from '../_shared/cors-origins.js';
 
 const corsHeaders = (origin = null) => ({
-  'Access-Control-Allow-Origin': allowedOrigins.includes(origin || '')
-    ? origin
-    : 'https://istebul.com',
+  'Access-Control-Allow-Origin': resolveCorsOrigin(origin, 'https://istebul.com'),
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'
@@ -78,7 +72,7 @@ const userHasSubscriptionHistory = async (context, userId) => {
 export async function onRequestPost(context) {
   const origin = context.request.headers.get('Origin');
 
-  if (origin && !allowedOrigins.includes(origin)) {
+  if (origin && !isAllowedOrigin(origin)) {
     return json({ error: 'Forbidden' }, 403, origin);
   }
 

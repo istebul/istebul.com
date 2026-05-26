@@ -36,6 +36,12 @@ Dashboard’da ayrıca “Git connected” build varsa, **ya** GitHub Actions **
 
 Öneri: GitHub Actions’ı kullanın; Cloudflare’de **Builds** kapatılabilir veya build command boş bırakılır.
 
+## Pages önizleme URL’leri
+
+`git push origin main` sonrası Cloudflare her deploy için hash’li bir önizleme adresi üretir (ör. `https://8fe0aca7.istebul-com.pages.dev`). Bu adresler **aynı `dist` çıktısını** sunar; API ve Supabase edge fonksiyonları `*.istebul-com.pages.dev` kökenlerini CORS’ta kabul eder (`functions/_shared/cors-origins.js`, `supabase/functions/_shared/cors-origins.ts`).
+
+Canlı doğrulama için: `https://www.istebul.com` veya `https://istebul-com.pages.dev` (son production deploy).
+
 ## Manuel deploy
 
 ```bash

@@ -2,16 +2,10 @@ import { createClient } from '@supabase/supabase-js';
 import { buildGoogleAdsConversionPayload, buildMetaCapiPayload } from './_shared/paid-capi-payloads.js';
 import { recordOpsEvent } from './_shared/record-ops-event.js';
 
-const allowedOrigins = [
-  'https://istebul.com',
-  'https://www.istebul.com',
-  'https://istebul-com.pages.dev'
-];
+import { isAllowedOrigin, resolveCorsOrigin } from '../_shared/cors-origins.js';
 
 const corsHeaders = (origin = null) => ({
-  'Access-Control-Allow-Origin': allowedOrigins.includes(origin || '')
-    ? origin
-    : 'https://istebul.com',
+  'Access-Control-Allow-Origin': resolveCorsOrigin(origin, 'https://istebul.com'),
   'Access-Control-Allow-Headers': 'Content-Type, x-paid-conversion-secret',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'

@@ -3,16 +3,10 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-const allowedOrigins = [
-  'https://istebul.com',
-  'https://www.istebul.com',
-  'https://istebul-com.pages.dev'
-];
+import { resolveCorsOrigin } from '../_shared/cors-origins.js';
 
 const corsHeaders = (origin = null) => ({
-  'Access-Control-Allow-Origin': allowedOrigins.includes(origin || '')
-    ? origin
-    : 'https://www.istebul.com',
+  'Access-Control-Allow-Origin': resolveCorsOrigin(origin),
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Content-Type': 'application/json',
   'Cache-Control': 'public, max-age=300, stale-while-revalidate=600'

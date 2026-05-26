@@ -17,6 +17,7 @@ import {
   priorityFromScore,
 } from "../_shared/scoring-intelligence.ts";
 import { recordOutcomeSignal } from "../_shared/outcome-capture.ts";
+import { isAllowedOrigin, resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 async function logOps(
   adminClient: ReturnType<typeof createClient>,
@@ -41,16 +42,8 @@ async function logOps(
   }
 }
 
-const allowedOrigins = [
-  "https://istebul.com",
-  "https://www.istebul.com",
-  "https://istebul-com.pages.dev"
-];
-
 function corsHeaders(origin: string | null) {
-  const allowedOrigin = allowedOrigins.includes(origin || "")
-    ? origin
-    : "https://www.istebul.com";
+  const allowedOrigin = resolveCorsOrigin(origin);
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
@@ -335,18 +328,14 @@ async function checkRateLimit(adminClient: any, key: string, limit: number, wind
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
-  const allowedOrigins = new Set([
-    "https://www.istebul.com",
-    "https://istebul.com"
-  ]);
-  const isAllowedOrigin = !origin || allowedOrigins.has(origin);
+  const isAllowedRequestOrigin = !origin || isAllowedOrigin(origin);
 
   if (req.method === "OPTIONS") {
-    if (!isAllowedOrigin) return new Response(null, { status: 403 });
+    if (!isAllowedRequestOrigin) return new Response(null, { status: 403 });
     return new Response("ok", { headers: corsHeaders(origin) });
   }
 
-  if (!isAllowedOrigin) {
+  if (!isAllowedRequestOrigin) {
     return json({ error: "Forbidden origin" }, 403, "https://www.istebul.com");
   }
 

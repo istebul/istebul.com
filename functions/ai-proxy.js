@@ -1,8 +1,4 @@
-const ALLOWED_ORIGINS = new Set([
-  'https://istebul.com',
-  'https://www.istebul.com',
-  'https://istebul-com.pages.dev'
-]);
+import { isAllowedOrigin } from './_shared/cors-origins.js';
 
 const rateLimitStore = globalThis.__aiProxyRateLimit || (globalThis.__aiProxyRateLimit = new Map());
 const promptCache = globalThis.__aiProxyPromptCache || (globalThis.__aiProxyPromptCache = new Map());
@@ -78,9 +74,6 @@ function checkRateLimit(key, limit = AI_RATE_LIMIT_PER_MIN, windowMs = 60_000) {
   return true;
 }
 
-function isAllowedOrigin(origin) {
-  return origin && ALLOWED_ORIGINS.has(origin);
-}
 
 function corsHeaders(origin) {
   const allowedOrigin = isAllowedOrigin(origin) ? origin : 'https://istebul.com';
