@@ -32,7 +32,7 @@
     <link rel="stylesheet" href="css/help-center.css?v=1">
     <link rel="stylesheet" href="css/listing-gallery.css?v=1">
     <link rel="stylesheet" href="css/platform-excellence.css?v=1">
-    <link rel="stylesheet" href="css/enterprise-remediation.css?v=2">
+    <link rel="stylesheet" href="css/enterprise-remediation.css?v=3">
 
 <style>
 .hidden{display:none!important;}
@@ -51,19 +51,9 @@
 html.ib-route-pending [data-private-section]{display:none!important}
 #main-content > section[id]{display:none!important}
 #auth-modal:not(.show){display:none!important;visibility:hidden}
-/* No-JS / pre-bootstrap: marketing home only */
-html:not([data-ib-route]) #home,
-html:not([data-ib-route]) #trust,
-html:not([data-ib-route]) #methodology-teaser,
-html:not([data-ib-route]) #sample-preview,
-html:not([data-ib-route]) #how-it-works,
-html:not([data-ib-route]) #pricing,
-html:not([data-ib-route]) #partner-enterprise,
-html:not([data-ib-route]) #landing-faq{display:block!important}
-html:not([data-ib-route]) #platform-excellence,
-html:not([data-ib-route]) #category-ownership,
-html:not([data-ib-route]) #categories{display:none!important}
-html:not([data-ib-route]) [data-private-section]{display:none!important}
+/* Pre-bootstrap: hide until route script runs */
+html.ib-route-pending #main-content > section[id]{display:none!important}
+html.ib-route-pending .ib-prerender-seo{display:none!important}
 html[data-ib-route="home"] #home,
 html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #methodology-teaser,
@@ -88,6 +78,8 @@ html[data-ib-route="add-listing"] #add-listing,
 html[data-ib-route="page-karar-analizi"] #page-karar-analizi,
 html[data-ib-route="page-metodoloji"] #page-metodoloji,
 html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
+html[data-ib-route^="page-"] .ib-prerender-seo{display:block!important}
+body.ib-premium-mounted .ib-prerender-seo{display:none!important}
 .category-card.is-coming-soon{opacity:0.55;pointer-events:none}
 </style>
 <script>
@@ -222,7 +214,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             <div class="hero-container container">
                 <div class="hero-content">
                     <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="shield-check" aria-hidden="true"></i> Araç alım karar desteği</p>
-                    <h1 data-cms="hero-title">Pahalı bir araç hatasından<br><span class="ib-hero-emphasis">kaçının</span></h1>
+                    <h1 data-cms="hero-title">Pahalı bir araç hatasından <span class="ib-hero-emphasis">kaçının</span></h1>
                     <p class="hero-lead ib-hero-outcome-lead" data-cms="hero-desc">Gerçek sahip olma maliyetini görün, seçenekleri güvenle karşılaştırın ve gizli maliyet riskini satın almadan önce fark edin.</p>
                     <div class="hero-actions ib-hero-cta-stack">
                         <div class="ib-hero-cta-primary-row">
@@ -492,16 +484,64 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
         </section>
 
         <section id="page-karar-analizi" class="hidden" data-private-section aria-label="Karar analizi" hidden>
+            <div class="ib-prerender-seo" data-prerender-for="page-karar-analizi">
+                <div class="container ib-premium-noscript">
+                    <p class="section-kicker">Karar analizi</p>
+                    <h1>Araç alım karar analizi</h1>
+                    <p class="ib-premium-lead">Bütçe, kullanım ve finansman tercihinize göre toplam sahip olma maliyetini görün. Tam analiz için Auto akışına geçin.</p>
+                    <ul class="ib-check-list"><li>~2 dakikada rehberli analiz</li>
+                <li>Karar skoru ve TCO özeti</li>
+                <li>Karşılaştırma merkezi entegrasyonu</li>
+                <li>Bilgilendirme amaçlı — bağlayıcı teklif değil</li></ul>
+                    <p class="ib-prerender-actions">
+                        <a href="/auto/" class="btn btn-primary">TCO analizini başlat</a>
+                        <a href="/metodoloji" class="btn btn-outline">Metodolojiyi incele</a>
+                    </p>
+                </div>
+            </div>
+
             <noscript><div class="container ib-premium-noscript"><h1>Karar analizi</h1><p>Toplam maliyet, finansman etkisi ve karar skoru — <a href="/auto/">ücretsiz analiz</a>.</p></div></noscript>
             <div id="premium-karar-analizi-root"></div>
         </section>
 
         <section id="page-metodoloji" class="hidden" data-private-section aria-label="Metodoloji" hidden>
+            <div class="ib-prerender-seo" data-prerender-for="page-metodoloji">
+                <div class="container ib-premium-noscript">
+                    <p class="section-kicker">Metodoloji</p>
+                    <h1>Karar altyapısı metodolojisi</h1>
+                    <p class="ib-premium-lead">isteBul ilan sitesi veya sohbet botu değil. TCO, finansman ve risk sinyalleri açık kurallarla birleşir; yapay zeka skoru değiştirmez, yalnızca gerekçeyi açıklar.</p>
+                    <ul class="ib-check-list"><li>Kural tabanlı TCO ve uyum skoru</li>
+                <li>12 aylık maliyet ve kredi senaryoları</li>
+                <li>Tarafsız sıralama — tek satıcıya bağlı değil</li>
+                <li>Veri güven bandı ve şeffaf uyarılar</li></ul>
+                    <p class="ib-prerender-actions">
+                        <a href="/auto/" class="btn btn-primary">TCO analizini başlat</a>
+                        <a href="/metodoloji" class="btn btn-outline">Metodolojiyi incele</a>
+                    </p>
+                </div>
+            </div>
+
             <noscript><div class="container ib-premium-noscript"><h1>Metodoloji</h1><p>Şeffaf, denetlenebilir karar modeli — <a href="/metodoloji">detaylar</a>.</p></div></noscript>
             <div id="premium-metodoloji-root"></div>
         </section>
 
         <section id="page-planlar" class="hidden" data-private-section aria-label="Planlar" hidden>
+            <div class="ib-prerender-seo" data-prerender-for="page-planlar">
+                <div class="container ib-premium-noscript">
+                    <p class="section-kicker">Planlar</p>
+                    <h1>Planlar ve fiyatlandırma</h1>
+                    <p class="ib-premium-lead">Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — 7 gün deneme, Stripe ile güvenli ödeme.</p>
+                    <ul class="ib-check-list"><li>Başlangıç: sınırlı analiz ve 2 karşılaştırma</li>
+                <li>Pro: derin TCO, AI karar notu, premium export</li>
+                <li>Enterprise: API, webhook, SLA</li>
+                <li>İstediğiniz zaman iptal</li></ul>
+                    <p class="ib-prerender-actions">
+                        <a href="/auto/" class="btn btn-primary">TCO analizini başlat</a>
+                        <a href="/metodoloji" class="btn btn-outline">Metodolojiyi incele</a>
+                    </p>
+                </div>
+            </div>
+
             <noscript>
                 <div class="container ib-premium-noscript">
                     <h1>Planlar</h1>

@@ -28,6 +28,9 @@ const getSupabaseAdmin = (env) => {
   });
 };
 
+/** Below this count, API returns example mode so hero metrics stay credible. */
+const MIN_LIVE_ANALYSES = 50;
+
 const formatDisplay = (n) => {
   const value = Math.max(0, Number(n) || 0);
   if (value >= 10000) return `${Math.floor(value / 1000)}K+`;
@@ -61,7 +64,7 @@ export async function onRequestGet(context) {
     const users = profilesRes.count ?? 0;
     const reports = analyses > 0 ? Math.max(1, Math.round(analyses * 0.35)) : 0;
 
-    const hasLive = analyses > 0 || partners > 0;
+    const hasLive = analyses >= MIN_LIVE_ANALYSES;
 
     return json(
       {

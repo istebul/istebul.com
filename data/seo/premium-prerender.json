@@ -1,0 +1,35 @@
+{
+  "page-metodoloji": {
+    "title": "Metodoloji",
+    "h1": "Karar altyapısı metodolojisi",
+    "lead": "isteBul ilan sitesi veya sohbet botu değil. TCO, finansman ve risk sinyalleri açık kurallarla birleşir; yapay zeka skoru değiştirmez, yalnızca gerekçeyi açıklar.",
+    "bullets": [
+      "Kural tabanlı TCO ve uyum skoru",
+      "12 aylık maliyet ve kredi senaryoları",
+      "Tarafsız sıralama — tek satıcıya bağlı değil",
+      "Veri güven bandı ve şeffaf uyarılar"
+    ]
+  },
+  "page-planlar": {
+    "title": "Planlar",
+    "h1": "Planlar ve fiyatlandırma",
+    "lead": "Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — 7 gün deneme, Stripe ile güvenli ödeme.",
+    "bullets": [
+      "Başlangıç: sınırlı analiz ve 2 karşılaştırma",
+      "Pro: derin TCO, AI karar notu, premium export",
+      "Enterprise: API, webhook, SLA",
+      "İstediğiniz zaman iptal"
+    ]
+  },
+  "page-karar-analizi": {
+    "title": "Karar analizi",
+    "h1": "Araç alım karar analizi",
+    "lead": "Bütçe, kullanım ve finansman tercihinize göre toplam sahip olma maliyetini görün. Tam analiz için Auto akışına geçin.",
+    "bullets": [
+      "~2 dakikada rehberli analiz",
+      "Karar skoru ve TCO özeti",
+      "Karşılaştırma merkezi entegrasyonu",
+      "Bilgilendirme amaçlı — bağlayıcı teklif değil"
+    ]
+  }
+}

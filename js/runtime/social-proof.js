@@ -27,7 +27,11 @@ export async function initSocialProofMetrics() {
     if (!res.ok) throw new Error(`stats ${res.status}`);
     const data = await res.json();
 
-    if (data.mode === 'live' && data.metrics) {
+    const rawAnalyses = Number(data.raw?.analyses ?? 0);
+    const useLive =
+      data.mode === 'live' && data.metrics && rawAnalyses >= 50;
+
+    if (useLive) {
       applyMetrics(root, data.metrics);
       root.dataset.socialProofMode = 'live';
       if (disclaimer) {

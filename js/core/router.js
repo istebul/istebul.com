@@ -114,7 +114,7 @@ export class Router {
      * Show full marketing landing sections (fixes blank body after SPA routes).
      */
     showHomeSections() {
-        document.body.classList.remove('app-route-active');
+        document.body.classList.remove('app-route-active', 'ib-premium-mounted');
 
         document.querySelectorAll('[data-private-section]').forEach((section) => {
             section.classList.remove('route-visible');
@@ -124,11 +124,15 @@ export class Router {
             const isMarketing = HOMEPAGE_SECTION_IDS.includes(section.id);
             if (isMarketing) {
                 section.classList.remove('hidden');
+                section.removeAttribute('hidden');
+                section.removeAttribute('aria-hidden');
                 section.style.display = 'block';
                 return;
             }
 
             section.style.display = 'none';
+            section.setAttribute('hidden', '');
+            section.setAttribute('aria-hidden', 'true');
             if (section.hasAttribute('data-private-section')) {
                 section.classList.add('hidden');
             }
@@ -343,14 +347,17 @@ export class Router {
         }
 
         target.classList.remove('hidden');
+        target.removeAttribute('hidden');
+        target.removeAttribute('aria-hidden');
         target.classList.add('route-visible');
         target.style.display = 'block';
         pulseRouteSection(target);
         window.scrollTo({ top: 0, behavior: 'auto' });
+        document.body.classList.add('ib-premium-mounted');
     }
 
     showSection(routeId) {
-        document.body.classList.remove('ib-premium-route-active');
+        document.body.classList.remove('ib-premium-route-active', 'ib-premium-mounted');
 
         if (routeId === 'home') {
             this.showHomeSections();
@@ -384,6 +391,8 @@ export class Router {
         const targetSection = document.getElementById(routeId);
         if (targetSection) {
             targetSection.classList.remove('hidden');
+            targetSection.removeAttribute('hidden');
+            targetSection.removeAttribute('aria-hidden');
 
             if (targetSection.hasAttribute('data-private-section')) {
                 targetSection.classList.add('route-visible');

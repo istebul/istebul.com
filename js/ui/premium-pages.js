@@ -55,6 +55,7 @@ export class PremiumPages {
 
     this._bindFaq(root);
     this._mounted.add(pageId);
+    document.body.classList.add('ib-premium-mounted');
     this._afterMount(pageId, app);
     app?.ui?.loadIcons?.();
   }

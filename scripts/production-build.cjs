@@ -24,6 +24,7 @@ const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'ma
     'css/admin-ops-ai-assistant.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const { injectRouteBootstrap } = require('./lib/route-bootstrap.cjs');
+const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
 const publicEnvKeys = [
   'SUPABASE_URL',
   'SUPABASE_ANON_KEY',
@@ -203,6 +204,7 @@ pendingStaticFiles.forEach(({ file, source }) => {
   let html = rewriteAssetRefs(source);
   if (file === 'index.html') {
     html = injectRouteBootstrap(html);
+    html = injectPremiumPrerender(html);
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, '/js/' + appBundleFile);
     html = injectPerformanceHints(html, appBundleFile);
   }

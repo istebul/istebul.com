@@ -2,12 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const listeners = new Map();
-function sectionStub(id) {
+function sectionStub(id, { privateSection = false } = {}) {
+    const attrs = new Set(privateSection ? ['data-private-section'] : []);
     return {
         id,
         style: {},
         classList: { add() {}, remove() {} },
-        hasAttribute: () => false,
+        hasAttribute(name) {
+            return attrs.has(name);
+        },
+        setAttribute(name) {
+            attrs.add(name);
+        },
+        removeAttribute(name) {
+            attrs.delete(name);
+        },
         scrollIntoView() {}
     };
 }
@@ -122,7 +131,7 @@ test('goToMarketingHash resets pathname from SPA route and shows landing section
 
 test('handleRoute maps /planlar to premium planlar page', () => {
     const router = new Router();
-    sections.set('page-planlar', sectionStub('page-planlar'));
+    sections.set('page-planlar', sectionStub('page-planlar', { privateSection: true }));
     global.window.location.pathname = '/planlar';
     global.window.location.hash = '';
 
@@ -134,10 +143,8 @@ test('handleRoute maps /planlar to premium planlar page', () => {
 
 test('handleRoute maps locale-prefixed premium paths to distinct pages', () => {
     const router = new Router();
-    const karar = sectionStub('page-karar-analizi');
-    const metodoloji = sectionStub('page-metodoloji');
-    karar.hasAttribute = () => true;
-    metodoloji.hasAttribute = () => true;
+    const karar = sectionStub('page-karar-analizi', { privateSection: true });
+    const metodoloji = sectionStub('page-metodoloji', { privateSection: true });
     sections.set('page-karar-analizi', karar);
     sections.set('page-metodoloji', metodoloji);
 
@@ -157,9 +164,9 @@ test('handleRoute maps locale-prefixed premium paths to distinct pages', () => {
 
 test('navigate switches between premium routes and updates pathname', () => {
     const router = new Router();
-    sections.set('page-karar-analizi', sectionStub('page-karar-analizi'));
-    sections.set('page-metodoloji', sectionStub('page-metodoloji'));
-    sections.set('page-planlar', sectionStub('page-planlar'));
+    sections.set('page-karar-analizi', sectionStub('page-karar-analizi', { privateSection: true }));
+    sections.set('page-metodoloji', sectionStub('page-metodoloji', { privateSection: true }));
+    sections.set('page-planlar', sectionStub('page-planlar', { privateSection: true }));
 
     global.window.location.pathname = '/karar-analizi';
     router.handleRoute();
