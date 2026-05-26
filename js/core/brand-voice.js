@@ -11,8 +11,8 @@ export const BRAND_VOICE = Object.freeze({
     'Gerçek sahip olma maliyetini görün, seçenekleri güvenle karşılaştırın ve gizli maliyet riskini erken fark edin — ilan listesi değil, karar desteği.',
 
   cta: {
-    primaryAuto: 'TCO analizini başlat',
-    primaryAutoLong: 'Ücretsiz TCO analizi başlat',
+    primaryAuto: 'Analiz başlat',
+    primaryAutoLong: 'Ücretsiz analiz başlat',
     methodology: 'Metodolojiyi incele',
     plans: 'Planları incele',
     analysisStart: 'Analizi başlat',

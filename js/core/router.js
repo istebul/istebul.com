@@ -13,6 +13,7 @@ import {
     tryExternalRouteRedirect
 } from '../runtime/route-surface.js';
 import { pulseRouteSection } from '../runtime/perceived-performance.js';
+import { isFullPageNavigation, resolveFullPageNavigation } from '../runtime/full-page-navigation.js';
 
 /** Marketing sections on index.html (long-scroll landing). */
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
@@ -103,6 +104,25 @@ export class Router {
                 const targetId = rawHref.slice(2).split('?')[0];
                 if (targetId && document.getElementById(targetId)) {
                     this.goToMarketingHash(targetId);
+                }
+                return;
+            }
+
+            if (isFullPageNavigation(rawHref)) {
+                const target = resolveFullPageNavigation(rawHref);
+                if (target) {
+                    const dest = new URL(target, window.location.origin);
+                    const source = new URL(rawHref, window.location.origin);
+                    dest.search = source.search;
+                    dest.hash = source.hash;
+                    if (
+                        dest.pathname !== window.location.pathname ||
+                        dest.search !== window.location.search ||
+                        dest.hash !== window.location.hash
+                    ) {
+                        window.location.assign(dest.href);
+                    }
+                    e.preventDefault();
                 }
                 return;
             }
@@ -207,6 +227,13 @@ export class Router {
         setActiveLocale(localeId);
         applyDocumentLocale(localeId);
         const path = stripped.replace(/\/$/, '') || '/';
+
+        const fullPageTarget = resolveFullPageNavigation(path);
+        if (fullPageTarget && fullPageTarget !== rawPath) {
+            window.location.replace(fullPageTarget);
+            return;
+        }
+
         this.currentRoute = path;
         syncHtmlRouteSurface(resolveRouteSurface(path), path);
 
