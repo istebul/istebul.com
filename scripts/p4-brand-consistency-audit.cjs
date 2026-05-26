@@ -18,9 +18,9 @@ const mustExist = [
 const mustContain = [
   ['css/style.css', 'p4-6-brand-consistency.css'],
   ['js/runtime/enterprise-ux.js', 'initBrandConsistency'],
-  ['js/core/brand-voice.js', 'Analiz başlat'],
+  ['js/core/brand-voice.js', 'Ücretsiz analiz başlat'],
   ['js/core/conversion-copy.js', 'brand-voice.js'],
-  ['index.html', 'Analiz başlat'],
+  ['index.html', 'Ücretsiz analiz başlat'],
   ['!index.html', 'section-kicker">Piyasa'],
   ['js/ui/premium-pages.js', 'BRAND_VOICE'],
   ['js/features/monetization/plans.js', 'karar altyapısı'],

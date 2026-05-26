@@ -32,6 +32,7 @@ import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
 import { renderHomePricingTeaser } from './features/monetization/pricing-home-teaser.js';
+import { renderTrustLayerCompact } from './features/moat/decision-insight-panels.js';
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
@@ -162,6 +163,11 @@ class App {
 
             this.setupCookieConsent();
             this.renderHeroDecisionPreview();
+            const trustMount = document.getElementById('home-trust-layer-mount');
+            if (trustMount) {
+                trustMount.innerHTML = renderTrustLayerCompact('home');
+                this.ui.loadIcons?.();
+            }
             this.renderPricingSection();
 
             document.addEventListener('routeChanged', (event) => {

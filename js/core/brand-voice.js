@@ -1,42 +1,51 @@
 /**
  * P4.6 — Single brand voice: premium, güvenilir, akıllı, net, profesyonel.
- * Karar altyapısı tonu; ilan pazarı veya startup jargonu değil.
+ * AI destekli karar zekası platformu tonu.
  */
 
 export const BRAND_VOICE = Object.freeze({
   productName: 'isteBul',
-  categoryLabel: 'Karar altyapısı',
-  positioningLine: 'Pahalı bir araç hatasından kaçının.',
+  categoryLabel: 'AI destekli karar zekası',
+  positioningLine:
+    'Yanlış araç kararını vermeden önce yapay zeka ile gerçek maliyeti görün',
   leadLine:
-    'Gerçek sahip olma maliyetini görün, seçenekleri güvenle karşılaştırın ve gizli maliyet riskini erken fark edin — ilan listesi değil, karar desteği.',
+    'isteBul; bütçe, kullanım ihtiyacı, kredi, sigorta, bakım ve toplam sahip olma maliyetini birlikte analiz ederek daha güvenli karar vermenizi sağlar.',
 
   cta: {
-    primaryAuto: 'Analiz başlat',
+    primaryAuto: 'Ücretsiz analiz başlat',
     primaryAutoLong: 'Ücretsiz analiz başlat',
-    methodology: 'Metodolojiyi incele',
+    methodology: 'Metodolojiyi gör',
     plans: 'Planları incele',
-    analysisStart: 'Analizi başlat',
+    analysisStart: 'Ücretsiz analiz başlat',
     saveAnalysis: 'Analizini kaydet ve devam et',
     accountLogin: 'Giriş Yap',
     accountRegister: 'Analizini kaydet',
     addOption: 'Seçenek ekle',
     publishOption: 'Seçeneği kaydet',
-    continueFree: 'Ücretsiz önizlemeyle devam et',
+    continueFree: 'Önizlemeyle devam et',
+    detailReport: 'Detaylı raporu aç',
+    partnerOffer: 'Partner teklifine yönlen',
     externalSource: 'Kaynağı görüntüle'
   },
 
   trust: {
-    heroHint: '~2 dk · KVKK uyumlu · bağlayıcı teklif değil',
+    heroHint: 'Pilot aşama · ~2 dk · KVKK uyumlu',
     railLine:
-      'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · metodolojik destek',
+      'Skor metodolojisi açık · AI skoru tek başına değiştirmez · şeffaf TCO',
     stickyLine:
       'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · ödeme Stripe ile',
     pricingLine:
-      '7 gün deneme · iptal tek tık · fatura Stripe müşteri panelinden',
+      'Yanlış seçim maliyeti · 7 gün deneme · iptal tek tık',
     compliance:
-      'Skorlar ve bantlar metodolojik destek sunar; kesin sonuç veya finansal taahhüt değildir.',
+      'Finansal tavsiye değildir. Skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü yoktur.',
     sampleNote:
-      'Gösterim amaçlıdır; canlı analizde değerler girdilerinize göre hesaplanır.'
+      'Gösterim amaçlıdır; canlı analizde değerler girdilerinize göre hesaplanır.',
+    pilotMetrics: {
+      stage: 'Pilot aşama',
+      region: 'İzmir odaklı ilk partner ağı',
+      access: 'Erken erişim',
+      infra: 'Gerçek veri entegrasyonları için hazırlanan altyapı'
+    }
   },
 
   kickers: {
@@ -48,14 +57,17 @@ export const BRAND_VOICE = Object.freeze({
     compare: 'Karşılaştırma',
     preview: 'Karar önizlemesi',
     faq: 'SSS',
-    category: 'Kategori çerçevesi'
+    category: 'Kategori çerçevesi',
+    problem: 'Problem',
+    aiEngine: 'Karar motoru',
+    tco: 'Maliyet merceği'
   },
 
   headings: {
-    trust: 'Karar için netlik — pazarlama söylemi değil',
+    trust: 'Güven katmanı — şeffaf karar desteği',
     options: 'Öne çıkan seçenekler',
     compare: 'Seçenekleri yan yana değerlendirin',
-    howItWorks: 'Üç adımda karar çıktısı'
+    howItWorks: 'isteBul nasıl karar verir?'
   },
 
   labels: {

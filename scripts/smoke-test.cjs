@@ -8,7 +8,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const index = read('index.html');
 assert(read('js/core/router.js').includes('/karar-asistani'), 'Decision assistant route is missing.');
 assert(index.includes('/auto/'), 'Primary conversion path should link to Auto.');
-assert(index.includes('Analiz başlat'), 'Hero primary CTA should emphasize analysis start.');
+assert(index.includes('Ücretsiz analiz başlat'), 'Hero primary CTA should emphasize free analysis start.');
 assert(index.includes('Karar altyapısı'), 'Homepage should position decision infrastructure.');
 const premiumPages = read('js/ui/premium-pages.js');
 assert(premiumPages.includes('decision-assistant-form'), 'Decision assistant form is missing.');

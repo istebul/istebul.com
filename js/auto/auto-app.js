@@ -71,6 +71,10 @@ import {
   renderAiExplanationExperience,
   updateExplanationSynthesis
 } from '../features/moat/ai-explanation-experience.js';
+import {
+  renderDecisionInsightPanels,
+  renderTrustLayerCompact
+} from '../features/moat/decision-insight-panels.js';
 import { WIZARD_ONBOARDING } from '../features/moat/category-positioning.js';
 import { initP4ProductPolish } from '../runtime/p4-product-polish.js';
 import { initMobilePremiumUx } from '../runtime/mobile-premium-ux.js';
@@ -134,8 +138,8 @@ function openAutoSoftAuthGate() {
     <div class="revenue-paywall-card auto-soft-auth-card" role="dialog" aria-labelledby="auto-soft-auth-title" aria-modal="true">
       <button type="button" class="revenue-paywall-close" data-auto-soft-gate-close aria-label="Kapat">×</button>
       <p class="kicker">Sonuçlarınız hazır</p>
-      <h3 id="auto-soft-auth-title">Analizi kaydedin, sonra kaldığınız yerden devam edin</h3>
-      <p>Ücretsiz hesap ile karar geçmişinizi saklayın; Pro ile derin rapor ve sınırsız karşılaştırma açılır.</p>
+      <h3 id="auto-soft-auth-title">Önizlemeyi gördünüz — detaylı raporu açın</h3>
+      <p>Kaydetmek ve geçmişe erişmek için ücretsiz hesap; Pro ile tam rapor, senaryo karşılaştırma ve gelişmiş AI açıklaması.</p>
       <ul class="revenue-paywall-list">
         <li>Karar geçmişi ve favoriler</li>
         <li>Karşılaştırma merkezi</li>
@@ -144,7 +148,7 @@ function openAutoSoftAuthGate() {
       <div class="auto-soft-auth-actions">
         <a class="btn primary" href="/kayit?return=/auto/" data-auto-soft-gate-register>Ücretsiz hesap oluştur</a>
         <a class="btn secondary" href="/giris?return=/auto/" data-auto-soft-gate-login>Giriş yap</a>
-        <button type="button" class="btn secondary" data-auto-soft-gate-close>Önizlemeyle devam et</button>
+        <button type="button" class="btn secondary" data-auto-soft-gate-close>Ücretsiz önizlemeyle devam et</button>
       </div>
       <p class="text-muted-sm auto-soft-auth-foot">Bağlayıcı teklif veya satın alma zorunluluğu yok.</p>
     </div>
@@ -193,7 +197,7 @@ function maybeShowAutoSoftAuthGate() {
       return;
     }
     openAutoSoftAuthGate();
-  }, 1400);
+  }, 8000);
 }
 
 function openAutoUpgradePaywall(feature = 'premium_report') {
@@ -1370,6 +1374,8 @@ function renderResults(results) {
 
     ${renderAutoResultsInterpretationGuide(results[0], formData)}
 
+    ${renderTrustLayerCompact('auto')}
+
     ${rankIntelPanel}
 
     ${renderAutoMethodologyStrip()}
@@ -1465,6 +1471,8 @@ function renderResults(results) {
             <ul>${vehicle.risks.slice(0, 2).map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
           </div>
         </div>
+
+        ${renderDecisionInsightPanels(vehicle, formData, { alternatives: displayResults, rank: index }, escapeHtml)}
 
         <div class="analysis-box auto-economic-verdict">
           <strong>Ekonomik değerlendirme</strong>

@@ -2,9 +2,9 @@
 import { BRAND_VOICE } from '../../core/brand-voice.js';
 
 export const PRICING_MESSAGING = Object.freeze({
-  headline: 'Yanlış araç seçiminin maliyetini görün',
+  headline: 'Yanlış araç seçimi yıllık maliyette çok daha pahalıya patlar',
   subhead:
-    'Karar altyapısı: ücretsiz özetle başlayın; Pro ile sınırsız karşılaştırma, premium rapor ve derin TCO kırılımı — 7 gün deneme, Stripe ile güvenli ödeme.',
+    'Bakım, yakıt, kredi, sigorta ve değer kaybı birlikte düşünülmezse “ucuz araç” pahalıya çıkar. isteBul karar altyapısı: ücretsiz temel analiz; Pro ile senaryo karşılaştırma ve gelişmiş AI açıklaması.',
   popularBadge: 'En popüler',
   roiTitle: 'Karar maliyeti hesabı',
   roiDisclaimer:
@@ -16,12 +16,12 @@ export const PLANS = {
     id: 'free',
     name: 'Başlangıç',
     priceLabel: 'Ücretsiz',
-    description: 'Sınırlı analiz ve özet çıktılar — karar öncesi maliyet riskini görün',
+    description: 'Temel analiz — TCO özeti ve önizleme; üyelik zorunlu değil',
     highlights: [
-      'Sınırlı TCO analizi',
+      'Temel TCO ve uyum skoru',
       '2 araç karşılaştırma',
-      'Özet karar çıktıları',
-      'Şeffaf metodoloji özeti'
+      'Karar önizlemesi',
+      'Saatlik AI gerekçe kotası'
     ]
   },
   pro: {
@@ -29,7 +29,7 @@ export const PLANS = {
     name: 'isteBul Pro',
     priceLabel: 'Aylık abonelik',
     priceHint: 'Stripe ile güvenli ödeme · dilediğiniz zaman iptal',
-    description: 'Tam karar altyapısı: sınırsız karşılaştırma, premium rapor ve partner eşleşmesi',
+    description: 'Detaylı TCO, senaryo karşılaştırma, gelişmiş AI açıklama ve premium rapor',
     trialDays: 7,
     trialLabel: '7 gün ücretsiz dene',
     billing: {
@@ -66,13 +66,13 @@ export const PLANS = {
     id: 'enterprise',
     name: 'Enterprise',
     priceLabel: 'Özel teklif',
-    description: 'Kurumsal karar ekipleri ve yüksek hacimli partner operasyonları için özel metodoloji ve SLA',
+    description: 'Sıcak lead, CRM, webhook/API ve pilot partner operasyonları',
     highlights: [
-      'Özel SLA ve destek hattı',
-      'API / webhook entegrasyonu',
-      'Çoklu kullanıcı ve rol yönetimi',
-      'Özel metodoloji ve raporlama',
-      'Beyaz etiket seçenekleri'
+      'Skorlu sıcak lead',
+      'CRM ve webhook/API',
+      'Pilot çalışma ve SLA',
+      'Özel metodoloji',
+      'Kurumsal destek'
     ],
     cta: 'Kurumsal teklif al',
     contactHref: '/iletisim.html?konu=enterprise'

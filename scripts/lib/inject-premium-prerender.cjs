@@ -25,7 +25,7 @@ function renderPrerenderBlock(sectionId, data) {
                     <p class="ib-premium-lead">${escapeHtml(data.lead)}</p>
                     <ul class="ib-check-list">${bullets}</ul>
                     <p class="ib-prerender-actions">
-                        <a href="/auto/" class="btn btn-primary">Analiz başlat</a>
+                        <a href="/auto/" class="btn btn-primary">Ücretsiz analiz başlat</a>
                         <a href="/metodoloji" class="btn btn-outline">Metodolojiyi incele</a>
                     </p>
                 </div>

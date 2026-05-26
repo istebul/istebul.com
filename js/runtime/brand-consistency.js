@@ -24,7 +24,10 @@ function applyPrimaryAutoCtas() {
   document.querySelectorAll(PRIMARY_AUTO_SELECTORS).forEach((el) => {
     if (!(el instanceof HTMLAnchorElement) && !(el instanceof HTMLButtonElement)) return;
     const label = el.getAttribute('data-brand-cta') || BRAND_VOICE.cta.primaryAuto;
-    if (el.textContent.includes('maliyet analizi') || el.textContent.includes('Ücretsiz')) {
+    const labelEl = el.querySelector('.growth-exp-label');
+    if (labelEl) {
+      labelEl.textContent = label;
+    } else {
       el.textContent = label;
     }
     el.setAttribute('title', BRAND_VOICE.cta.primaryAutoLong);

@@ -23,6 +23,10 @@ function sectionStub(id, { privateSection = false } = {}) {
 
 const sections = new Map([
     ['home', sectionStub('home')],
+    ['home-vertical-focus', sectionStub('home-vertical-focus')],
+    ['home-problem', sectionStub('home-problem')],
+    ['home-ai-engine', sectionStub('home-ai-engine')],
+    ['home-tco-lens', sectionStub('home-tco-lens')],
     ['trust', sectionStub('trust')],
     ['methodology-teaser', sectionStub('methodology-teaser')],
     ['sample-preview', sectionStub('sample-preview')],

@@ -4017,3 +4017,58 @@ body.ib-enterprise.ib-auto .floating-whatsapp:hover{
 @media(max-width:720px){
   .ib-outcome-metrics,.ib-moat-pillars{grid-template-columns:1fr}
 }
+
+.ib-decision-insight-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin:12px 0;
+}
+.ib-decision-insight-card{
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:#f8fafc;
+}
+.ib-decision-insight-card header{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:6px;
+}
+.ib-decision-insight-card h4{
+  margin:0;
+  font-size:12px;
+  font-weight:800;
+}
+.ib-decision-insight-card p{
+  margin:0;
+  font-size:12px;
+  line-height:1.45;
+  color:#475569;
+}
+.ib-trust-layer{
+  margin:16px 0;
+  padding:14px;
+  border-radius:14px;
+  background:#f8fafc;
+  border:1px solid var(--line);
+}
+.ib-trust-layer-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px 12px;
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+.ib-trust-layer-grid li{
+  display:flex;
+  gap:6px;
+  font-size:12px;
+  line-height:1.4;
+  color:#334155;
+}
+@media(max-width:720px){
+  .ib-decision-insight-grid,.ib-trust-layer-grid{grid-template-columns:1fr}
+}

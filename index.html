@@ -55,11 +55,13 @@ html.ib-route-pending [data-private-section]{display:none!important}
 html.ib-route-pending #main-content > section[id]{display:none!important}
 html.ib-route-pending .ib-prerender-seo{display:none!important}
 html[data-ib-route="home"] #home,
+html[data-ib-route="home"] #home-vertical-focus,
+html[data-ib-route="home"] #home-problem,
+html[data-ib-route="home"] #home-ai-engine,
+html[data-ib-route="home"] #home-tco-lens,
 html[data-ib-route="home"] #trust,
-html[data-ib-route="home"] #methodology-teaser,
 html[data-ib-route="home"] #sample-preview,
-html[data-ib-route="home"] #home-auto-bridge,
-html[data-ib-route="home"] #how-it-works,
+html[data-ib-route="home"] #how-it-works{display:none!important}
 html[data-ib-route="home"] #pricing,
 html[data-ib-route="home"] #partner-enterprise,
 html[data-ib-route="home"] #landing-faq{display:block!important}
@@ -167,7 +169,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
             <div class="nav-controls">
                 <div class="nav-auth" id="nav-auth">
-                    <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav" title="Analiz başlat" aria-label="Analiz başlat">Analiz başlat</a>
+                    <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav" title="Ücretsiz analiz başlat" aria-label="Ücretsiz analiz başlat">Ücretsiz analiz başlat</a>
                     <button id="login-btn" class="btn btn-outline" type="button" data-auth-open="login" aria-label="Giriş Yap">Giriş Yap</button>
                 </div>
                 <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Koyu modu aç" aria-pressed="false" title="Tema değiştir">
@@ -214,29 +216,29 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
         <section id="home" class="hero-section ib-hero-venture">
             <div class="hero-container container">
                 <div class="hero-content">
-                    <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="shield-check" aria-hidden="true"></i> Araç alım karar desteği</p>
-                    <h1 data-cms="hero-title">Pahalı bir araç hatasından <span class="ib-hero-emphasis">kaçının</span></h1>
-                    <p class="hero-lead ib-hero-outcome-lead" data-cms="hero-desc">Gerçek sahip olma maliyetini görün, seçenekleri güvenle karşılaştırın ve gizli maliyet riskini satın almadan önce fark edin.</p>
+                    <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="brain" aria-hidden="true"></i> AI destekli karar zekası · Araç</p>
+                    <h1 data-cms="hero-title">Yanlış araç kararını vermeden önce <span class="ib-hero-emphasis">yapay zeka ile gerçek maliyeti</span> görün</h1>
+                    <p class="hero-lead ib-hero-outcome-lead" data-cms="hero-desc">isteBul; bütçe, kullanım ihtiyacı, kredi, sigorta, bakım ve toplam sahip olma maliyetini birlikte analiz ederek daha güvenli karar vermenizi sağlar.</p>
                     <div class="hero-actions ib-hero-cta-stack">
                         <div class="ib-hero-cta-primary-row">
                             <a href="/auto/" class="btn btn-primary btn-lg" data-hero-cta-primary data-analytics-cta="cta_primary_auto" data-analytics-placement="hero">
-                                <i data-lucide="sparkles" aria-hidden="true"></i><span class="growth-exp-label">Analiz başlat</span>
+                                <i data-lucide="sparkles" aria-hidden="true"></i><span class="growth-exp-label">Ücretsiz analiz başlat</span>
                             </a>
-                            <span class="ib-hero-cta-hint">~2 dk · KVKK uyumlu · bağlayıcı teklif değil</span>
+                            <span class="ib-hero-cta-hint">Pilot aşama · ~2 dk · üyelik zorunlu değil</span>
                         </div>
                         <div class="ib-hero-cta-secondary-row">
-                            <a href="/metodoloji" class="btn btn-outline" data-native-route>
-                                <i data-lucide="microscope" aria-hidden="true"></i> Metodolojiyi incele
+                            <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary>
+                                <i data-lucide="microscope" aria-hidden="true"></i> Metodolojiyi gör
                             </a>
                         </div>
                     </div>
 
-                    <p class="ib-social-proof-disclaimer" data-social-proof-disclaimer>Örnek gösterim — canlı platform özeti yüklenince güncellenir; bağlayıcı performans iddiası değildir.</p>
-                    <div class="ib-social-proof-metrics" aria-label="Platform metrikleri (örnek gösterim)" data-social-proof data-social-proof-mode="example">
-                        <div><strong data-metric="analyses">Örnek</strong><span>tamamlanan analiz</span></div>
-                        <div><strong data-metric="reports">Örnek</strong><span>karar raporu</span></div>
-                        <div><strong data-metric="users">—</strong><span>kullanıcı tabanı</span></div>
-                        <div><strong data-metric="partners">Pilot</strong><span>partner programı</span></div>
+                    <p class="ib-social-proof-disclaimer" data-social-proof-disclaimer>Pilot aşama — şişirilmiş kullanıcı sayısı gösterilmez; erken erişim programı.</p>
+                    <div class="ib-social-proof-metrics" aria-label="Platform durumu" data-social-proof data-social-proof-mode="pilot">
+                        <div><strong>Pilot</strong><span>aşama</span></div>
+                        <div><strong>İzmir</strong><span>odaklı partner ağı</span></div>
+                        <div><strong>Erken</strong><span>erişim</span></div>
+                        <div><strong>Altyapı</strong><span>canlı veri entegrasyonu hazır</span></div>
                     </div>
 
                     <ul class="ib-social-proof" aria-label="Platform güven sinyalleri">
@@ -278,45 +280,59 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
-        <section id="trust" class="trust-section ib-section-venture">
+        <section id="home-vertical-focus" class="ib-vertical-focus ib-section-venture" aria-label="Ürün odağı">
+            <div class="container ib-vertical-focus-inner">
+                <p><strong>İlk dikey: Araç kararları.</strong> Sonraki dikeyler: konut, tatil ve finans — şu an aktif ürün yalnızca Auto analiz akışıdır.</p>
+                <ul class="ib-vertical-pills">
+                    <li class="is-active">Araç · canlı</li>
+                    <li class="is-soon">Konut · yakında</li>
+                    <li class="is-soon">Tatil · yakında</li>
+                    <li class="is-soon">Finans · yakında</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="home-problem" class="ib-home-problem ib-section-venture" aria-labelledby="home-problem-title">
             <div class="container">
                 <header class="section-header ib-section-intro">
-                    <span class="section-kicker">Güvenilirlik</span>
-                    <h2 data-cro-trust-headline>Güvenilir karar desteği — gizli maliyet sürprizi yok</h2>
-                    <p>Ödeme Stripe ile güvenli; veriler KVKK çerçevesinde işlenir. Skorlar şeffaf metodolojiyle hesaplanır — ilan sitesi veya gizli komisyon modeli değiliz.</p>
+                    <span class="section-kicker">Problem</span>
+                    <h2 id="home-problem-title">Araç almak neden riskli?</h2>
+                    <p>Listeleme fiyatı tek başına gerçek yükü göstermez. Kredi, sigorta, bakım, yakıt ve değer kaybı birlikte düşünülmezse pahalı sürprizler oluşur.</p>
                 </header>
-            <div class="trust-grid">
-                <div class="trust-card">
-                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="calculator"></i></div>
-                    <h3>Bütüncül maliyet modeli</h3>
-                    <p>Listeleme fiyatının ötesinde kredi, sigorta, bakım ve kullanım maliyetlerini standart bir çerçevede değerlendirir.</p>
-                </div>
-                <div class="trust-card">
-                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="line-chart"></i></div>
-                    <h3>Maliyet odaklı sıralama</h3>
-                    <p>Bütçe, kullanım ve kredi tercihinize göre modelleri toplam maliyet ve uyum skoruyla yan yana sıralar.</p>
-                </div>
-                <div class="trust-card">
-                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="scale"></i></div>
-                    <h3>Tarafsız karşılaştırma</h3>
-                    <p>Her önerinin dayandığı kriterleri, güçlü yönleri ve riskleri açık metodoloji ile sunar.</p>
-                </div>
-                <div class="trust-card">
-                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="brain"></i></div>
-                    <h3>Açıklanabilir AI katmanı</h3>
-                    <p>Skor ve TCO deterministiktir; yapay zeka yalnızca gerekçe ve özet üretir — skoru değiştirmez.</p>
-                </div>
             </div>
-            <div class="ib-trust-proof-strip" role="list" aria-label="Güven göstergeleri">
-                <span role="listitem"><i data-lucide="credit-card"></i> Stripe güvenli ödeme</span>
-                <span role="listitem"><i data-lucide="shield"></i> KVKK uyumlu veri</span>
-                <span role="listitem"><i data-lucide="eye"></i> Şeffaf metodoloji</span>
-                <span role="listitem"><i data-lucide="scale"></i> Tarafsız skor — gizli pazar yeri önceliği yok</span>
+        </section>
+
+        <section id="home-ai-engine" class="ib-home-ai-engine ib-section-venture" aria-labelledby="home-ai-engine-title">
+            <div class="container">
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">AI karar motoru</span>
+                    <h2 id="home-ai-engine-title">isteBul nasıl karar verir?</h2>
+                    <p>Önce kural tabanlı TCO ve uyum skoru hesaplanır; yapay zeka yalnızca gerekçe ve sentez üretir — skoru değiştirmez.</p>
+                </header>
+                <div class="ib-engine-steps">
+                    <article class="ib-engine-step"><span>01</span><h3>Profil</h3><p>Bütçe, kullanım, finansman ve risk tercihleri.</p></article>
+                    <article class="ib-engine-step"><span>02</span><h3>Motor</h3><p>TCO, kredi etkisi, sigorta ve bakım kırılımı.</p></article>
+                    <article class="ib-engine-step"><span>03</span><h3>Karar</h3><p>Sıralama, alternatifler ve AI destekli açıklama.</p></article>
+                </div>
+                <p style="margin-top:1.25rem;text-align:center">
+                    <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="ai_engine">Ücretsiz analiz başlat</a>
+                </p>
             </div>
-            <p class="trust-compliance-note">
-                Analiz ve skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü değildir.
-                <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
-            </p>
+        </section>
+
+        <section id="home-tco-lens" class="ib-home-tco-lens ib-section-venture" aria-labelledby="home-tco-lens-title">
+            <div class="container">
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">Maliyet merceği</span>
+                    <h2 id="home-tco-lens-title">TCO · kredi · sigorta · bakım birlikte</h2>
+                    <p>Tek tabloda toplam sahip olma maliyeti; finansman simülasyonu bilgilendirme amaçlıdır.</p>
+                </header>
+                <div class="ib-tco-lens-grid">
+                    <div class="ib-tco-lens-card"><strong>Toplam maliyet</strong><span>12 ay TCO ve aylık bütçe etkisi</span></div>
+                    <div class="ib-tco-lens-card"><strong>Kredi</strong><span>Tutarı siz belirlersiniz; simülasyon</span></div>
+                    <div class="ib-tco-lens-card"><strong>Sigorta &amp; kasko</strong><span>Şeffaf kalem kırılımı</span></div>
+                    <div class="ib-tco-lens-card"><strong>Bakım &amp; yakıt</strong><span>Kullanım profiline göre</span></div>
+                </div>
             </div>
         </section>
 
@@ -355,7 +371,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
-        <section id="methodology-teaser" class="ib-methodology-teaser ib-section-venture" aria-labelledby="methodology-teaser-title">
+        <section id="methodology-teaser" class="ib-methodology-teaser ib-section-venture hidden" aria-labelledby="methodology-teaser-title" hidden data-landing-excluded>
             <div class="container">
                 <div class="ib-methodology-teaser-panel">
                     <header>
@@ -366,7 +382,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <div class="ib-methodology-teaser-actions">
                         <a href="#how-it-works" class="btn btn-outline">Üç adımlı süreç</a>
                         <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary>Metodolojiyi incele</a>
-                        <a href="/auto/" class="btn btn-primary" data-cro-cta-methodology data-analytics-cta="cta_primary_auto" data-analytics-placement="methodology_teaser"><span class="growth-exp-label">Analiz başlat</span></a>
+                        <a href="/auto/" class="btn btn-primary" data-cro-cta-methodology data-analytics-cta="cta_primary_auto" data-analytics-placement="methodology_teaser"><span class="growth-exp-label">Ücretsiz analiz başlat</span></a>
                     </div>
                 </div>
             </div>
@@ -403,14 +419,61 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <strong>Öneri gerekçesi:</strong> Bütçe ve şehir içi kullanım profiline göre düşük yakıt ve dengeli finansman yükü; skor kural tabanlıdır, AI yalnızca gerekçe metnini açıklar.
                     </p>
                     <div class="sample-preview-cta">
-                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="sample_preview">TCO analizini başlat</a>
-                        <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary>Metodolojiyi incele</a>
+                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="sample_preview">Ücretsiz analiz başlat</a>
+                        <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary>Metodolojiyi gör</a>
                     </div>
                 </article>
             </div>
         </section>
 
-        <section id="home-auto-bridge" class="ib-home-auto-bridge ib-section-venture" aria-labelledby="home-auto-bridge-title">
+        <section id="trust" class="trust-section ib-section-venture">
+            <div class="container">
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">Güven ve metodoloji</span>
+                    <h2 data-cro-trust-headline>Güvenilir karar desteği — gizli maliyet sürprizi yok</h2>
+                    <p>Ödeme Stripe ile güvenli; veriler KVKK çerçevesinde işlenir. Skorlar şeffaf metodolojiyle hesaplanır — ilan sitesi veya gizli komisyon modeli değiliz.</p>
+                </header>
+            <div class="trust-grid">
+                <div class="trust-card">
+                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="calculator"></i></div>
+                    <h3>Bütüncül maliyet modeli</h3>
+                    <p>Listeleme fiyatının ötesinde kredi, sigorta, bakım ve kullanım maliyetlerini standart bir çerçevede değerlendirir.</p>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="line-chart"></i></div>
+                    <h3>Maliyet odaklı sıralama</h3>
+                    <p>Bütçe, kullanım ve kredi tercihinize göre modelleri toplam maliyet ve uyum skoruyla yan yana sıralar.</p>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="scale"></i></div>
+                    <h3>Tarafsız karşılaştırma</h3>
+                    <p>Her önerinin dayandığı kriterleri, güçlü yönleri ve riskleri açık metodoloji ile sunar.</p>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-card-icon" aria-hidden="true"><i data-lucide="brain"></i></div>
+                    <h3>Açıklanabilir AI katmanı</h3>
+                    <p>Skor ve TCO deterministiktir; yapay zeka yalnızca gerekçe ve özet üretir — skoru değiştirmez.</p>
+                </div>
+            </div>
+            <div id="home-trust-layer-mount" class="ib-trust-layer-mount" aria-live="polite"></div>
+            <div class="ib-trust-proof-strip" role="list" aria-label="Güven göstergeleri">
+                <span role="listitem"><i data-lucide="credit-card"></i> Stripe güvenli ödeme</span>
+                <span role="listitem"><i data-lucide="shield"></i> KVKK uyumlu veri</span>
+                <span role="listitem"><i data-lucide="eye"></i> Şeffaf metodoloji</span>
+                <span role="listitem"><i data-lucide="scale"></i> Tarafsız skor — gizli pazar yeri önceliği yok</span>
+            </div>
+            <p class="trust-compliance-note">
+                Analiz ve skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü değildir.
+                <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
+            </p>
+            <p class="how-section-cta" style="margin-top:1.5rem;text-align:center">
+                <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="trust">Ücretsiz analiz başlat</a>
+                <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary style="margin-left:0.5rem">Metodolojiyi gör</a>
+            </p>
+            </div>
+        </section>
+
+        <section id="home-auto-bridge" class="ib-home-auto-bridge ib-section-venture hidden" aria-labelledby="home-auto-bridge-title" hidden data-landing-excluded>
             <div class="container">
                 <div class="ib-home-auto-bridge-panel">
                     <div class="ib-home-auto-bridge-copy">
@@ -425,7 +488,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     </div>
                     <div class="ib-home-auto-bridge-actions">
                         <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="home_auto_bridge">
-                            <i data-lucide="sparkles" aria-hidden="true"></i><span class="growth-exp-label">Analiz başlat</span>
+                            <i data-lucide="sparkles" aria-hidden="true"></i><span class="growth-exp-label">Ücretsiz analiz başlat</span>
                         </a>
                         <a href="/auto/#auto-wizard" class="btn btn-outline">Sihirbazı aç</a>
                         <p class="ib-home-auto-bridge-hint text-muted-sm">Bağlayıcı teklif yok · KVKK uyumlu · anonim önizleme mümkün</p>
@@ -479,7 +542,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     </div>
                 </div>
                 <p class="how-section-cta">
-                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="how_it_works">TCO analizini başlat</a>
+                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="how_it_works">Ücretsiz analiz başlat</a>
                 </p>
             </div>
         </section>
@@ -495,7 +558,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <li>Karşılaştırma merkezi entegrasyonu</li>
                 <li>Bilgilendirme amaçlı — bağlayıcı teklif değil</li></ul>
                     <p class="ib-prerender-actions">
-                        <a href="/auto/" class="btn btn-primary">TCO analizini başlat</a>
+                        <a href="/auto/" class="btn btn-primary">Ücretsiz analiz başlat</a>
                         <a href="/metodoloji" class="btn btn-outline">Metodolojiyi incele</a>
                     </p>
                 </div>
@@ -516,7 +579,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <li>Tarafsız sıralama — tek satıcıya bağlı değil</li>
                 <li>Veri güven bandı ve şeffaf uyarılar</li></ul>
                     <p class="ib-prerender-actions">
-                        <a href="/auto/" class="btn btn-primary">TCO analizini başlat</a>
+                        <a href="/auto/" class="btn btn-primary">Ücretsiz analiz başlat</a>
                         <a href="/metodoloji" class="btn btn-outline">Metodolojiyi incele</a>
                     </p>
                 </div>
@@ -537,7 +600,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <li>Enterprise: API, webhook, SLA</li>
                 <li>İstediğiniz zaman iptal</li></ul>
                     <p class="ib-prerender-actions">
-                        <a href="/auto/" class="btn btn-primary">TCO analizini başlat</a>
+                        <a href="/auto/" class="btn btn-primary">Ücretsiz analiz başlat</a>
                         <a href="/metodoloji" class="btn btn-outline">Metodolojiyi incele</a>
                     </p>
                 </div>
@@ -783,8 +846,8 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <div class="container">
                 <header class="section-header ib-section-intro">
                     <span class="section-kicker">Planlar</span>
-                    <h2>Ücretsiz başlayın, ihtiyaçta derinleşin</h2>
-                    <p>TCO özeti ücretsiz. Pro, sınırsız karşılaştırma ve premium raporla riski netleştirir — chat aboneliği veya ilan listesi değil.</p>
+                    <h2>Yanlış seçim, doğru analizden pahalı</h2>
+                    <p>Yıllık bakım, yakıt, kredi ve değer kaybı bir arada düşünülmezse maliyet şişer. isteBul ile önce riski görün, sonra derinleşin.</p>
                 </header>
                 <noscript>
                     <div class="pricing-noscript-fallback">
@@ -820,7 +883,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     </div>
                 </div>
                 <p class="pricing-mid-cta">
-                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_mid">TCO analizini başlat</a>
+                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_mid">Ücretsiz analiz başlat</a>
                     <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary>Metodolojiyi incele</a>
                 </p>
                 <p class="revenue-plan-hint" style="text-align:center;margin-top:1.25rem;">Partner galeriler için lead başına ücretlendirme modeli ayrıca sunulur — <a href="/partner-olun.html">Partner olun</a>.</p>
@@ -863,7 +926,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     </article>
                 </div>
                 <p class="partner-enterprise-cta">
-                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="partner_enterprise">TCO analizini başlat</a>
+                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="partner_enterprise">Ücretsiz analiz başlat</a>
                     <a href="/metodoloji" class="btn btn-outline" data-cro-cta-secondary>Metodolojiyi incele</a>
                 </p>
             </div>
@@ -961,7 +1024,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <li><a href="/#sample-preview">Örnek analiz</a></li>
                         <li><a href="/metodoloji">Metodoloji</a></li>
                         <li><a href="/#pricing">Fiyatlandırma</a></li>
-                        <li><a href="/auto/">TCO analizini başlat</a></li>
+                        <li><a href="/auto/">Ücretsiz analiz başlat</a></li>
                         <li><a href="/#landing-faq">SSS</a></li>
                     </ul>
                 </div>
@@ -1014,7 +1077,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
             <div class="footer-cta-row">
                 <p class="text-muted-sm">Araç alımında maliyetli hatalardan kaçının — güvenilir karar desteği.</p>
-                <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="footer">TCO analizini başlat</a>
+                <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="footer">Ücretsiz analiz başlat</a>
             </div>
             <div class="cookie-consent" id="cookie-consent" role="region" aria-label="Çerez ve analiz tercihi">
                 <p>Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz. <a href="/cerez-politikasi.html">Çerez politikası</a></p>
@@ -1036,7 +1099,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     </footer>
 
     <div class="cro-sticky-cta" role="region" aria-label="Hızlı başlangıç">
-        <a href="/auto/" class="btn btn-primary" data-cro-cta-sticky data-analytics-cta="cta_primary_auto" data-analytics-placement="sticky" title="Ücretsiz analiz başlat"><span class="growth-exp-label">Analiz başlat</span></a>
+        <a href="/auto/" class="btn btn-primary" data-cro-cta-sticky data-analytics-cta="cta_primary_auto" data-analytics-placement="sticky" title="Ücretsiz analiz başlat"><span class="growth-exp-label">Ücretsiz analiz başlat</span></a>
     </div>
 
     <!-- Scripts -->
