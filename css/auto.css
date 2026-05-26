@@ -2965,8 +2965,10 @@ body .auto-floating-cta{
 }
 
 
-#auto-results .auto-market-actions{
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr)) !important;
+@media (min-width: 769px){
+  #auto-results .auto-market-actions{
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr)) !important;
+  }
 }
 
 #auto-results .auto-market-actions .btn{
@@ -2991,10 +2993,12 @@ body .auto-floating-cta{
 }
 
 
-#auto-results .auto-market-media{
-  display:block !important;
-  min-width:260px !important;
-  width:260px !important;
+@media (min-width: 769px){
+  #auto-results .auto-market-media{
+    display:block !important;
+    min-width:260px !important;
+    width:260px !important;
+  }
 }
 
 #auto-results .auto-market-image{
@@ -3017,85 +3021,67 @@ body .auto-floating-cta{
 }
 
 
-/* ENTERPRISE AUTO RESULTS CLEAN */
+/* ENTERPRISE AUTO RESULTS CLEAN (desktop) */
 
-#auto-results .conversion-result-card{
-  display:grid !important;
-  grid-template-columns: minmax(620px,1fr) 340px !important;
-  gap:32px !important;
-  align-items:start !important;
-}
-
-#auto-results .auto-market-media{
-  display:none !important;
-}
-
-#auto-results .auto-market-main{
-  width:100% !important;
-}
-
-#auto-results .auto-market-decision{
-  position:sticky !important;
-  top:100px !important;
-  display:flex !important;
-  flex-direction:column !important;
-  gap:16px !important;
-}
-
-#auto-results .dealer-offer-strip{
-  margin-top:28px !important;
-  padding:28px !important;
-  border-radius:28px !important;
-  background:linear-gradient(135deg,#f8fbff,#eefcf9) !important;
-  border:1px solid rgba(37,99,235,.08) !important;
-}
-
-#auto-results .dealer-offer-card{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:space-between !important;
-  gap:24px !important;
-  padding:26px !important;
-  border-radius:24px !important;
-  background:#fff !important;
-}
-
-#auto-results .auto-market-actions{
-  display:grid !important;
-  grid-template-columns:repeat(4,minmax(160px,1fr)) !important;
-  gap:16px !important;
-  margin-top:28px !important;
-}
-
-#auto-results .auto-market-actions .btn:first-child{
-  display:none !important;
-}
-
-.auto-floating-cta{
-  display:none !important;
-}
-
-@media (max-width:768px){
-
+@media (min-width: 769px){
   #auto-results .conversion-result-card{
-    display:flex !important;
-    flex-direction:column !important;
+    display:grid !important;
+    grid-template-columns: minmax(620px,1fr) 340px !important;
+    gap:32px !important;
+    align-items:start !important;
   }
 
-  #auto-results .auto-market-decision{
-    position:static !important;
+  #auto-results .auto-market-media{
+    display:none !important;
+  }
+
+  #auto-results .auto-market-main{
     width:100% !important;
   }
 
-  #auto-results .dealer-offer-card{
+  #auto-results .auto-market-decision{
+    position:sticky !important;
+    top:100px !important;
+    display:flex !important;
     flex-direction:column !important;
-    align-items:flex-start !important;
+    gap:16px !important;
+  }
+
+  #auto-results .dealer-offer-strip{
+    margin-top:28px !important;
+    padding:28px !important;
+    border-radius:28px !important;
+    background:linear-gradient(135deg,#f8fbff,#eefcf9) !important;
+    border:1px solid rgba(37,99,235,.08) !important;
+  }
+
+  #auto-results .dealer-offer-card{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:24px !important;
+    padding:26px !important;
+    border-radius:24px !important;
+    background:#fff !important;
   }
 
   #auto-results .auto-market-actions{
-    grid-template-columns:1fr !important;
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(160px,1fr)) !important;
+    gap:16px !important;
+    margin-top:28px !important;
   }
 
+  #auto-results .auto-market-actions .btn:first-child{
+    display:none !important;
+  }
+
+  .auto-floating-cta{
+    display:none !important;
+  }
+}
+
+@media (max-width:768px){
   .auto-floating-cta{
     display:flex !important;
   }
@@ -4165,6 +4151,15 @@ body.ib-enterprise.ib-auto .floating-whatsapp:hover{
   font-size:12px;
   line-height:1.45;
   color:#475569;
+  overflow-wrap:anywhere;
+  word-wrap:break-word;
+}
+.ib-decision-insight-foot{
+  grid-column:1 / -1;
+  margin:0;
+  font-size:12px;
+  line-height:1.45;
+  color:#64748b;
 }
 .ib-trust-layer{
   margin:16px 0;

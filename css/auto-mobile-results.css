@@ -1,0 +1,273 @@
+/**
+ * Auto /auto/ results — mobile-only layout containment (max-width 768px).
+ * Loaded last in the Auto CSS bundle; does not affect desktop.
+ */
+
+@media (max-width: 768px) {
+  body.ib-auto {
+    overflow-x: clip;
+  }
+
+  body.ib-auto main,
+  body.ib-auto #analiz.section {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body.ib-auto #auto-results {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    box-sizing: border-box;
+  }
+
+  body.ib-auto #auto-results > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Pro upsell (revenue.css is not in Auto bundle) */
+  body.ib-auto #auto-results .revenue-upgrade-banner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    margin: 0 0 1rem;
+    border-radius: 16px;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(20, 184, 166, 0.08));
+  }
+
+  body.ib-auto #auto-results .revenue-upgrade-copy strong {
+    display: block;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  body.ib-auto #auto-results .revenue-upgrade-copy p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #475569;
+    max-width: none;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  body.ib-auto #auto-results .revenue-upgrade-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+  }
+
+  body.ib-auto #auto-results .revenue-upgrade-actions .btn {
+    width: 100%;
+    min-height: var(--ib-touch-lg, 48px);
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* Dark trust / methodology banner */
+  body.ib-auto #auto-results .auto-results-trust-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem;
+    max-width: 100%;
+  }
+
+  body.ib-auto #auto-results .auto-results-trust-banner h3,
+  body.ib-auto #auto-results .auto-results-trust-banner p,
+  body.ib-auto #auto-results .auto-results-trust-banner .auto-rank-explanation {
+    max-width: none;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  body.ib-auto #auto-results .auto-results-trust-banner .btn {
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* Result cards — override late desktop grid locks */
+  body.ib-auto #auto-results .auto-market-card.conversion-result-card,
+  body.ib-auto #auto-results .conversion-result-card {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    grid-template-areas: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden;
+  }
+
+  body.ib-auto #auto-results .auto-market-media {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  body.ib-auto #auto-results .auto-market-main,
+  body.ib-auto #auto-results .auto-market-decision,
+  body.ib-auto #auto-results .dealer-offer-strip,
+  body.ib-auto #auto-results .auto-market-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.ib-auto #auto-results .auto-market-decision {
+    position: static !important;
+  }
+
+  body.ib-auto #auto-results .auto-market-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.65rem !important;
+  }
+
+  body.ib-auto #auto-results .auto-market-actions .btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    text-align: center;
+  }
+
+  body.ib-auto #auto-results .dealer-offer-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1rem !important;
+  }
+
+  body.ib-auto #auto-results .dealer-offer-price,
+  body.ib-auto #auto-results .dealer-offer-price .btn {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  body.ib-auto #auto-results .dealer-offer-price .btn {
+    white-space: normal !important;
+  }
+
+  body.ib-auto #auto-results .auto-market-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  body.ib-auto #auto-results .auto-market-main h3 {
+    font-size: 1.2rem !important;
+    line-height: 1.3 !important;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  body.ib-auto #auto-results .auto-market-main p,
+  body.ib-auto #auto-results .result-summary,
+  body.ib-auto #auto-results .analysis-box,
+  body.ib-auto #auto-results .risk-box,
+  body.ib-auto #auto-results .analysis-box li,
+  body.ib-auto #auto-results .risk-box li {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  body.ib-auto #auto-results .auto-market-insights {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.ib-auto #auto-results .auto-market-tags {
+    flex-wrap: wrap;
+  }
+
+  body.ib-auto #auto-results .auto-market-tags span {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* Comparison matrix — scroll inside card, not whole page */
+  body.ib-auto #auto-results .ib-auto-compare-matrix {
+    padding: 0.85rem;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  body.ib-auto #auto-results .ib-auto-compare-matrix-scroll {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.25rem;
+    padding: 0 0.25rem 0.35rem;
+  }
+
+  body.ib-auto #auto-results .ib-auto-compare-table {
+    min-width: 480px;
+  }
+
+  /* Decision insight + trust grids */
+  body.ib-auto #auto-results .ib-decision-insight-grid,
+  body.ib-auto #auto-results .ib-trust-layer-grid,
+  body.ib-auto #auto-results .ib-auto-results-meta-grid,
+  body.ib-auto #auto-results .ib-ownership-breakdown-grid,
+  body.ib-auto #auto-results .ib-how-calculated-grid,
+  body.ib-auto #auto-results .ib-auto-provider-grid,
+  body.ib-auto #auto-results .ib-ai-expert-lanes,
+  body.ib-auto #auto-results .ib-ai-grid,
+  body.ib-auto #auto-results .ib-ai-tradeoff-cards,
+  body.ib-auto #auto-results .ib-ai-rationale-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.ib-auto #auto-results .ib-decision-insight-card p,
+  body.ib-auto #auto-results .ib-decision-insight-foot,
+  body.ib-auto #auto-results .ib-rank-intelligence p,
+  body.ib-auto #auto-results .ib-rec-intel-panel,
+  body.ib-auto #auto-results .ib-auto-results-meta-grid li {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  body.ib-auto #auto-results .ib-decision-insight-foot {
+    grid-column: 1 / -1;
+  }
+
+  body.ib-auto #auto-results .ib-product-feedback-teaser {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  body.ib-auto #auto-results .ib-product-feedback-collapsed {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.ib-auto #auto-results .auto-filter-toolbar {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.ib-auto #auto-results .auto-results-guide {
+    padding: 1rem;
+  }
+
+  body.ib-auto #auto-results .auto-results-guide-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.ib-auto #auto-results .auto-results-guide-actions .btn {
+    width: 100%;
+  }
+}
