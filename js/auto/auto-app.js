@@ -78,6 +78,7 @@ import { initPerceivedPerformance } from '../runtime/perceived-performance.js';
 import { initBrandConsistency } from '../runtime/brand-consistency.js';
 import { CONVERSION_COPY } from '../core/conversion-copy.js';
 import { canCallAiNarration } from '../core/scale-limits.js';
+import { completeOAuthIfPresent } from '../runtime/auth-oauth-callback.js';
 
 const formatAmount = (value) => formatMoney(value);
 const formatCount = (value) => formatNumber(value);
@@ -86,6 +87,8 @@ const ONBOARDING_STARTED_KEY = 'istebul_auto_onboarding_started';
 const UPSELL_RESULTS_KEY = 'istebul_auto_results_count';
 
 document.documentElement.classList.add('ib-ready');
+
+completeOAuthIfPresent().catch(() => {});
 
 function isProActive() {
   return Boolean(revenueManager.isPremium);
@@ -140,6 +143,29 @@ function openAutoUpgradePaywall(feature = 'premium_report') {
     if (event.target === overlay) close();
   });
   document.body.appendChild(overlay);
+}
+
+function renderAutoResultsInterpretationGuide(topResult, formData = {}) {
+  const score = topResult?.score ?? '—';
+  const monthly = topResult?.costs?.total
+    ? formatAmount(Math.round(Number(topResult.costs.total) / 12))
+  : '—';
+
+  return `
+    <section class="auto-results-guide" aria-label="Sonuçları nasıl okursunuz">
+      <h3>Sonuçlarınızı nasıl yorumlarsınız?</h3>
+      <ol class="auto-results-guide-steps">
+        <li><strong>Uyum skoru ${escapeHtml(String(score))}/100</strong> — Bütçe ve kullanımınıza göre sıralama; satın alma garantisi değildir.</li>
+        <li><strong>Yaklaşık aylık yük ${escapeHtml(monthly)}</strong> — 12 aylık TCO’nun parçası; finansman tercihinize göre değişir.</li>
+        <li><strong>Sonraki adım</strong> — Modelleri karşılaştırın; derin rapor için Pro’yu değerlendirin.</li>
+      </ol>
+      <div class="auto-results-guide-actions">
+        <a class="btn secondary" href="/karsilastir/">Karşılaştırma merkezi</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>TCO analizini derinleştir (Pro)</a>
+      </div>
+      <p class="auto-results-guide-foot text-muted-sm">Bilgilendirme amaçlıdır. Canlı ilan veya bağlayıcı teklif değildir.</p>
+    </section>
+  `;
 }
 
 function renderAutoUpgradeStrip() {
@@ -1253,6 +1279,8 @@ function renderResults(results) {
       </button>
     </section>
 
+    ${renderAutoResultsInterpretationGuide(results[0], formData)}
+
     ${rankIntelPanel}
 
     ${renderAutoMethodologyStrip()}
@@ -1934,6 +1962,7 @@ function renderWizard() {
       <div class="wizard-progress-text">
         <span>Adım ${wizardIndex + 1} / ${wizardSteps.length}</span>
         <span class="wizard-progress-motivation">${motivationCopy}</span>
+        <span class="wizard-progress-eta">~2 dk · 4 kısa adım</span>
       </div>
       <div class="wizard-progress-milestones" aria-hidden="true">
         ${WIZARD_MILESTONES.map((label, index) => `

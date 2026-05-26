@@ -53,7 +53,13 @@ export const getSupabaseClient = () => {
         return createFallbackSupabaseClient();
     }
 
-    return createClient(supabaseUrl, supabaseKey);
+    return createClient(supabaseUrl, supabaseKey, {
+        auth: {
+            detectSessionInUrl: true,
+            persistSession: true,
+            autoRefreshToken: true
+        }
+    });
 };
 
 export const supabase = getSupabaseClient();
