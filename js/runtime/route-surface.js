@@ -14,7 +14,8 @@ export const MARKETING_SURFACE_IDS = Object.freeze([
     'methodology-teaser',
     'how-it-works',
     'pricing',
-    'partner-enterprise'
+    'partner-enterprise',
+    'landing-faq'
 ]);
 
 const PREMIUM_PATHS = Object.freeze({
@@ -133,13 +134,31 @@ export function syncHtmlRouteSurface(surfaceId, pathname = '/') {
     root.setAttribute('data-ib-route', normalized);
     root.classList?.remove?.('ib-route-pending');
 
+    const appSurfaces = new Set([
+        'ilanlar',
+        'listing-detail',
+        'compare',
+        'favoriler',
+        'history',
+        'quiz',
+        'profil',
+        'messages',
+        'add-listing'
+    ]);
+
     if (normalized === 'home') {
         document.body.classList.remove('app-route-active', 'ib-premium-route-active');
+        document.body.classList.add('marketing-shell');
+        document.body.classList.remove('app-shell');
     } else if (String(normalized).startsWith('page-')) {
-        document.body.classList.add('app-route-active', 'ib-premium-route-active');
+        document.body.classList.add('app-route-active', 'ib-premium-route-active', 'marketing-shell');
+        document.body.classList.remove('app-shell');
+    } else if (appSurfaces.has(normalized)) {
+        document.body.classList.add('app-route-active', 'app-shell');
+        document.body.classList.remove('marketing-shell', 'ib-premium-route-active');
     } else {
         document.body.classList.add('app-route-active');
-        document.body.classList.remove('ib-premium-route-active');
+        document.body.classList.remove('ib-premium-route-active', 'marketing-shell', 'app-shell');
     }
 
     syncRouteDocumentMeta(normalized, pathname);

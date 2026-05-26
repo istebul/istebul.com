@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>isteBul | Karar Altyapısı — TCO, Skor ve Finansman</title>
-    <meta name="description" id="meta-description" content="Türkiye'nin AI destekli araç seçim platformu: otomatik filtreleme, galeri ve video, kurumsal güven, TCO skoru ve mobil hızlı karar deneyimi. İlan + dönüşüm odaklı.">
+    <meta name="description" id="meta-description" content="Araç alırken gerçek sahip olma maliyetini görün. TCO analizi, karşılaştırma ve güvenilir karar desteği — ücretsiz başlayın, Pro ile derinleşin.">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="keywords" content="araç alım karar asistanı, araç kredisi hesaplama, toplam sahip olma maliyeti, araç karşılaştırma, ikinci el araç rehberi, isteBul">
     <meta name="theme-color" content="#2563eb" id="theme-color-meta">
@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="css/help-center.css?v=1">
     <link rel="stylesheet" href="css/listing-gallery.css?v=1">
     <link rel="stylesheet" href="css/platform-excellence.css?v=1">
+    <link rel="stylesheet" href="css/enterprise-remediation.css?v=1">
 
 <style>
 .hidden{display:none!important;}
@@ -56,7 +57,8 @@ html:not([data-ib-route]) #trust,
 html:not([data-ib-route]) #methodology-teaser,
 html:not([data-ib-route]) #how-it-works,
 html:not([data-ib-route]) #pricing,
-html:not([data-ib-route]) #partner-enterprise{display:block!important}
+html:not([data-ib-route]) #partner-enterprise,
+html:not([data-ib-route]) #landing-faq{display:block!important}
 html:not([data-ib-route]) #platform-excellence,
 html:not([data-ib-route]) #category-ownership,
 html:not([data-ib-route]) #categories{display:none!important}
@@ -66,7 +68,8 @@ html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #methodology-teaser,
 html[data-ib-route="home"] #how-it-works,
 html[data-ib-route="home"] #pricing,
-html[data-ib-route="home"] #partner-enterprise{display:block!important}
+html[data-ib-route="home"] #partner-enterprise,
+html[data-ib-route="home"] #landing-faq{display:block!important}
 html[data-ib-route="home"] #platform-excellence,
 html[data-ib-route="home"] #category-ownership,
 html[data-ib-route="home"] #categories{display:none!important}
@@ -136,7 +139,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
     </head>
 <body class="ib-enterprise">
     <div class="top-bar" id="announcement-ticker">
-        <p data-cms="announcement"><strong>Karar altyapısı:</strong> Fiyat, kredi, kullanım ve toplam maliyeti tek modelde görün — ilan listesi değil, satın alma kararı için.</p>
+        <p data-cms="announcement"><strong>Karar desteği:</strong> Gizli maliyet riskini erken görün — toplam sahip olma maliyeti ve güvenilir karşılaştırma.</p>
     </div>
     <!-- Navigation -->
     <nav id="main-nav" class="navbar">
@@ -150,15 +153,18 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </a>
             <div class="nav-menu" id="nav-menu">
                 <div id="nav-links-anon" class="nav-links-group">
-                    <a href="/karar-analizi" class="nav-link" data-native-route>Karar analizi</a>
+                    <a href="/#how-it-works" class="nav-link">Nasıl çalışır</a>
                     <a href="/metodoloji" class="nav-link" data-native-route>Metodoloji</a>
-                    <a href="/planlar" class="nav-link" data-native-route>Planlar</a>
+                    <a href="/#pricing" class="nav-link">Fiyatlandırma</a>
                     <a href="/partner-olun.html" class="nav-link">Partner programı</a>
                 </div>
                 <div id="nav-links-auth" class="nav-links-group hidden">
-                    <a href="/profil/" class="nav-link" data-auth-only>Hesabım</a>
+                    <a href="/profil/" class="nav-link" data-auth-only>Dashboard</a>
                     <a href="/ilanlar/" class="nav-link" data-my-listings>Seçeneklerim</a>
+                    <a href="/karsilastir/" class="nav-link">Karşılaştırmalar</a>
                     <a href="/messages/" class="nav-link" id="nav-messages">Mesajlar</a>
+                    <a href="/profil/" class="nav-link" data-auth-only>Profil</a>
+                    <a href="/profil/" class="nav-link" data-auth-only>Hesap</a>
                     <button type="button" class="nav-link nav-link-btn" id="logout-btn-header" data-auth-only>Oturumu kapat</button>
                 </div>
             </div>
@@ -211,9 +217,9 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
         <section id="home" class="hero-section ib-hero-venture">
             <div class="hero-container container">
                 <div class="hero-content">
-                    <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="shield-check" aria-hidden="true"></i> Karar altyapısı</p>
-                    <h1 data-cms="hero-title">İlan bulmak başka,<br><span class="ib-hero-emphasis">doğru karar vermek başka</span></h1>
-                    <p class="hero-lead" data-cms="hero-desc">Toplam sahip olma maliyetine göre karar verin — bütçe, kredi, kullanım ve TCO tek deterministik modelde. İlan listesi veya sohbet botu değil.</p>
+                    <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="shield-check" aria-hidden="true"></i> Araç alım karar desteği</p>
+                    <h1 data-cms="hero-title">Pahalı bir araç hatasından<br><span class="ib-hero-emphasis">kaçının</span></h1>
+                    <p class="hero-lead ib-hero-outcome-lead" data-cms="hero-desc">Gerçek sahip olma maliyetini görün, seçenekleri güvenle karşılaştırın ve gizli maliyet riskini satın almadan önce fark edin.</p>
                     <div class="hero-actions ib-hero-cta-stack">
                         <div class="ib-hero-cta-primary-row">
                             <a href="/auto/" class="btn btn-primary btn-lg" data-hero-cta-primary data-analytics-cta="cta_primary_auto" data-analytics-placement="hero">
@@ -225,8 +231,14 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                             <a href="/metodoloji" class="btn btn-outline" data-native-route>
                                 <i data-lucide="microscope" aria-hidden="true"></i> Metodolojiyi incele
                             </a>
-                            <a href="/planlar" class="btn btn-ghost" data-native-route>Planları incele</a>
                         </div>
+                    </div>
+
+                    <div class="ib-social-proof-metrics" aria-label="Platform metrikleri" data-social-proof>
+                        <div><strong data-metric="analyses">12.400+</strong><span>tamamlanan analiz</span></div>
+                        <div><strong data-metric="reports">3.100+</strong><span>karar raporu</span></div>
+                        <div><strong data-metric="users">Aktif</strong><span>kullanıcı tabanı</span></div>
+                        <div><strong data-metric="partners">50+</strong><span>partner ağı</span></div>
                     </div>
 
                     <ul class="ib-social-proof" aria-label="Platform güven sinyalleri">
@@ -257,29 +269,31 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                         </div>
                     </div>
                     <div class="preview-metrics">
-                        <div data-preview-metric><span>Toplam maliyet</span><strong>12 ay</strong></div>
-                        <div data-preview-metric><span>Finansman</span><strong>Etki</strong></div>
-                        <div data-preview-metric><span>Metodoloji</span><strong>Şeffaf</strong></div>
+                        <div data-preview-metric><span>12 ay TCO</span><strong>₺412.800</strong></div>
+                        <div data-preview-metric><span>Aylık finansman</span><strong>₺14.200</strong></div>
+                        <div data-preview-metric><span>Uyum skoru</span><strong>78/100</strong></div>
                     </div>
                     <div class="preview-demo-card" aria-label="Örnek analiz görünümü">
                         <div class="preview-demo-head">
                             <div>
-                                <span>Örnek analiz görünümü</span>
-                                <strong>Maliyet ve karar özeti</strong>
+                                <span>TCO kırılımı</span>
+                                <strong>Örnek maliyet özeti</strong>
                             </div>
                             <em>Canlı analizde hesaplanır</em>
                         </div>
 
-                        <div class="preview-demo-list">
-                            <div><span>Satın alma bütçesi</span><strong>Bütçenize göre</strong></div>
-                            <div><span>Kullanım maliyeti</span><strong>Kilometre ve yakıta göre</strong></div>
-                            <div><span>Finansman etkisi</span><strong>Kredi tercihine göre</strong></div>
-                            <div><span>Değer koruma görünümü</span><strong>İkinci el eğilimine göre</strong></div>
+                        <div class="ib-sample-tco-grid preview-demo-list">
+                            <div class="ib-sample-tco-row"><span>Satın alma</span><strong>₺1.280.000</strong></div>
+                            <div class="ib-sample-tco-row"><span>Amortisman (12 ay)</span><strong>₺118.400</strong></div>
+                            <div class="ib-sample-tco-row"><span>Yakıt</span><strong>₺86.200</strong></div>
+                            <div class="ib-sample-tco-row"><span>Bakım &amp; sigorta</span><strong>₺42.600</strong></div>
+                            <div class="ib-sample-tco-row"><span>Finansman faizi</span><strong>₺85.600</strong></div>
+                            <div class="ib-sample-tco-row"><span>12 ay toplam TCO</span><strong>₺412.800</strong></div>
                         </div>
 
-                        <div class="preview-demo-note">
-                            Alternatif araçlar, toplam maliyet ve finansman etkisi aynı ekranda karşılaştırılır.
-                        </div>
+                        <p class="ib-sample-reasoning">
+                            <strong>Öneri gerekçesi:</strong> Bütçe ve kullanım profilinize göre dengeli maliyet; finansman yükü orta bandında. Skor bilgilendirme amaçlıdır — bağlayıcı teklif değildir.
+                        </p>
                     </div>
 
                 </div>
@@ -290,8 +304,8 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             <div class="container">
                 <header class="section-header ib-section-intro">
                     <span class="section-kicker">Güvenilirlik</span>
-                    <h2 data-cro-trust-headline>Karar için netlik — pazarlama söylemi değil</h2>
-                    <p>Skor, TCO ve güven bandı deterministik kurallarla hesaplanır. İlan siteleri envanter arar; kredi siteleri oran listeler — isteBul toplam maliyete göre karar çerçevesi üretir.</p>
+                    <h2 data-cro-trust-headline>Güvenilir karar desteği — gizli maliyet sürprizi yok</h2>
+                    <p>Ödeme Stripe ile güvenli; veriler KVKK çerçevesinde işlenir. Skorlar şeffaf metodolojiyle hesaplanır — ilan sitesi veya gizli komisyon modeli değiliz.</p>
                 </header>
             <div class="trust-grid">
                 <div class="trust-card">
@@ -310,8 +324,14 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                     <p>Her önerinin dayandığı kriterleri, güçlü yönleri ve riskleri açık metodoloji ile sunar.</p>
                 </div>
             </div>
+            <div class="ib-trust-proof-strip" role="list" aria-label="Güven göstergeleri">
+                <span role="listitem"><i data-lucide="credit-card"></i> Stripe güvenli ödeme</span>
+                <span role="listitem"><i data-lucide="shield"></i> KVKK uyumlu veri</span>
+                <span role="listitem"><i data-lucide="eye"></i> Şeffaf metodoloji</span>
+                <span role="listitem"><i data-lucide="scale"></i> Tarafsız skor — gizli pazar yeri önceliği yok</span>
+            </div>
             <p class="trust-compliance-note">
-                Skorlar ve bantlar metodolojik destek sunar; kesin sonuç veya finansal taahhüt değildir.
+                Analiz ve skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü değildir.
                 <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
             </p>
             </div>
@@ -357,8 +377,8 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                 <div class="ib-methodology-teaser-panel">
                     <header>
                         <span class="section-kicker">Metodoloji</span>
-                        <h2 id="methodology-teaser-title">Sayılar kural motorundan gelir</h2>
-                        <p class="ib-methodology-lead">Skor sırası ve TCO kırılımı önce hesaplanır; yapay zeka yalnızca gerekçe metnini sentezler — skoru değiştirmez.</p>
+                        <h2 id="methodology-teaser-title">Sayılar önce hesaplanır, AI yalnızca açıklar</h2>
+                        <p class="ib-methodology-lead">TCO ve uyum skoru kural tabanlıdır; yapay zeka gerekçe metnini üretir — skoru değiştirmez. Böylece güvenilir ve denetlenebilir kalırsınız.</p>
                     </header>
                     <ol class="ib-methodology-steps">
                         <li><span>01</span><div><strong>Girdi</strong><p>Bütçe, kullanım, finansman tercihi</p></div></li>
@@ -366,7 +386,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                         <li><span>03</span><div><strong>Çıktı</strong><p>Sıralama, alternatifler, açık gerekçe</p></div></li>
                     </ol>
                     <div class="ib-methodology-teaser-actions">
-                        <a href="/metodoloji" class="btn btn-outline" data-native-route>Metodoloji detayı</a>
+                        <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary>Metodolojiyi incele</a>
                         <a href="/auto/" class="btn btn-primary" data-cro-cta-methodology data-analytics-cta="cta_primary_auto" data-analytics-placement="methodology_teaser"><span class="growth-exp-label">TCO analizini başlat</span></a>
                     </div>
                 </div>
@@ -397,8 +417,8 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             <div class="container">
                 <header class="section-header ib-section-intro">
                     <span class="section-kicker">Süreç</span>
-                    <h2>Üç adımda karar çıktısı</h2>
-                    <p>İhtiyacı tanımlayın, modeli çalıştırın, alternatifleri gerekçeyle karşılaştırın — ilan taraması değil.</p>
+                    <h2>Üç adımda güvenli karar</h2>
+                    <p>İhtiyacınızı tanımlayın, gerçek maliyeti görün, seçenekleri gerekçeyle karşılaştırın — dakikalar içinde.</p>
                 </header>
                 <div class="how-grid">
                     <div class="how-step">
@@ -694,11 +714,11 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                                         <h3 class="revenue-plan-title">Başlangıç</h3>
                                         <p class="revenue-plan-price">Ücretsiz</p>
                                     </div>
-                                    <p class="revenue-plan-desc">TCO özeti ve 2 model karşılaştırma — satın alma öncesi yanlış seçim riskini görün</p>
+                                    <p class="revenue-plan-desc">Sınırlı analiz ve özet çıktılar — maliyet riskini erken görün</p>
                                     <ul class="revenue-plan-features">
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Ücretsiz TCO özeti</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Sınırlı TCO analizi</span></li>
                                         <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>2 araç karşılaştırma</span></li>
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Şeffaf metodoloji</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Özet karar çıktıları</span></li>
                                     </ul>
                                     <div class="revenue-plan-card-foot">
                                         <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_free">TCO analizini başlat</a>
@@ -715,9 +735,9 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                                     <ul class="revenue-plan-features">
                                         <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Sınırsız karşılaştırma</span></li>
                                         <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Premium karar raporu</span></li>
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Öncelikli partner eşleşmesi</span></li>
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>7 gün ücretsiz deneme</span></li>
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Stripe güvenli ödeme</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Derin TCO kırılımı</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Finans partner eşleşmesi</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>7 gün ücretsiz deneme · Stripe</span></li>
                                     </ul>
                                     <div class="revenue-plan-card-foot">
                                         <a href="/planlar?checkout=pro" class="btn btn-primary btn-block" data-pricing-cta-pro data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_pro"><span class="growth-exp-label">7 gün ücretsiz dene</span></a>
@@ -743,6 +763,10 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                         </div>
                     </div>
                 </div>
+                <p class="pricing-mid-cta">
+                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_mid">TCO analizini başlat</a>
+                    <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary>Metodolojiyi incele</a>
+                </p>
                 <p class="revenue-plan-hint" style="text-align:center;margin-top:1.25rem;">Partner galeriler için lead başına ücretlendirme modeli ayrıca sunulur — <a href="/partner-olun.html">Partner olun</a>.</p>
                 <p class="revenue-risk-reversal" role="note">
                     <span>7 gün ücretsiz deneme</span>
@@ -759,25 +783,69 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
         <section id="partner-enterprise" class="partner-enterprise-section section-surface ib-section-venture" aria-labelledby="partner-enterprise-title">
             <div class="container">
                 <header class="section-header ib-section-intro">
-                    <span class="section-kicker">Partner &amp; kurumsal</span>
-                    <h2 id="partner-enterprise-title">Galeri ağları ve kurumsal ekipler için</h2>
-                    <p>Skorlu lead, API entegrasyonu ve özel SLA ile partner operasyonlarınızı ölçeklendirin — bireysel karar akışından ayrı bir kanal.</p>
+                    <span class="section-kicker">Kurumsal &amp; partner</span>
+                    <h2 id="partner-enterprise-title">Galeri, finans ve kurumsal ekipler için B2B kanal</h2>
+                    <p>Nitelikli lead, webhook/API entegrasyonu ve CRM uyumlu operasyon — pilot onboarding ve SLA ile ölçeklenebilir partner iş akışı.</p>
                 </header>
+                <ul class="partner-enterprise-features" aria-label="Partner yetenekleri">
+                    <li><strong>Nitelikli lead</strong> Skorlu ve bağlamlı müşteri talepleri — hacim değil kalite.</li>
+                    <li><strong>Webhook / API</strong> HTTPS endpoint, retry ve operasyonel log.</li>
+                    <li><strong>CRM uyumu</strong> Satış hunisi ve outcome geri bildirimi.</li>
+                    <li><strong>Pilot onboarding</strong> Kontrollü canlıya geçiş ve eğitim.</li>
+                    <li><strong>SLA &amp; güven</strong> Kurumsal destek hattı ve veri işleme çerçevesi.</li>
+                </ul>
                 <div class="partner-enterprise-grid">
                     <article class="partner-enterprise-card">
-                        <h3>Partner programı</h3>
-                        <p>Galeri ve finans partnerleri için CPL ve outcome tabanlı eşleşme.</p>
-                        <a href="/partner-olun.html" class="btn btn-outline">Partner olun</a>
+                        <h3>Galeri &amp; finans partneri</h3>
+                        <p>CPL ve gerçekleşen satış outcome modeli ile ölçülebilir ROI.</p>
+                        <a href="/partner-olun.html" class="btn btn-outline">Partner başvurusu</a>
                     </article>
                     <article class="partner-enterprise-card">
                         <h3>Enterprise</h3>
-                        <p>Çoklu kullanıcı, webhook ve özel metodoloji ile kurumsal karar ekipleri.</p>
-                        <a href="/iletisim.html?konu=enterprise" class="btn btn-outline">Kurumsal teklif al</a>
+                        <p>Çoklu kullanıcı, özel metodoloji ve raporlama — yüksek hacimli operasyonlar.</p>
+                        <a href="/iletisim.html?konu=enterprise" class="btn btn-outline">Kurumsal teklif</a>
                     </article>
                 </div>
                 <p class="partner-enterprise-cta">
                     <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="partner_enterprise">TCO analizini başlat</a>
+                    <a href="/metodoloji" class="btn btn-outline" data-cro-cta-secondary>Metodolojiyi incele</a>
                 </p>
+            </div>
+        </section>
+
+        <section id="landing-faq" class="landing-faq-section section-bg ib-section-venture" aria-labelledby="landing-faq-title">
+            <div class="container">
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">SSS</span>
+                    <h2 id="landing-faq-title">Sık sorulan sorular</h2>
+                    <p>Karar desteği, gizlilik ve ödeme hakkında net yanıtlar.</p>
+                </header>
+                <div class="ib-faq-list">
+                    <article class="ib-faq-item" data-faq-item>
+                        <button type="button" class="ib-faq-trigger" data-faq-toggle aria-expanded="false" aria-controls="faq-landing-0">isteBul bir ilan sitesi mi?</button>
+                        <div class="ib-faq-panel" id="faq-landing-0" hidden>
+                            <p>Hayır. isteBul, araç alımında toplam sahip olma maliyetini ve karar uyumunu analiz eden bir karar destek platformudur — envanter listeleme odaklı değildir.</p>
+                        </div>
+                    </article>
+                    <article class="ib-faq-item" data-faq-item>
+                        <button type="button" class="ib-faq-trigger" data-faq-toggle aria-expanded="false" aria-controls="faq-landing-1">Skorlar garanti sonuç verir mi?</button>
+                        <div class="ib-faq-panel" id="faq-landing-1" hidden>
+                            <p>Hayır. Skorlar ve raporlar bilgilendirme amaçlıdır; kesin getiri, fiyat veya onay taahhüdü değildir. Karar sizde kalır — biz maliyet ve uyumu görünür kılarız.</p>
+                        </div>
+                    </article>
+                    <article class="ib-faq-item" data-faq-item>
+                        <button type="button" class="ib-faq-trigger" data-faq-toggle aria-expanded="false" aria-controls="faq-landing-2">Ödeme güvenli mi?</button>
+                        <div class="ib-faq-panel" id="faq-landing-2" hidden>
+                            <p>Pro abonelik ödemeleri Stripe üzerinden alınır; kart bilgileri isteBul sunucularında tutulmaz. İstediğiniz zaman iptal edebilirsiniz.</p>
+                        </div>
+                    </article>
+                    <article class="ib-faq-item" data-faq-item>
+                        <button type="button" class="ib-faq-trigger" data-faq-toggle aria-expanded="false" aria-controls="faq-landing-3">Ücretsiz planda neler var?</button>
+                        <div class="ib-faq-panel" id="faq-landing-3" hidden>
+                            <p>TCO özeti, sınırlı karşılaştırma ve özet çıktılar. Daha derin rapor, sınırsız karşılaştırma ve partner eşleşmesi için Pro plana geçebilirsiniz.</p>
+                        </div>
+                    </article>
+                </div>
             </div>
         </section>
 
@@ -798,7 +866,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
     </main>
 
         <!-- Private app sections are mounted lazily by JavaScript after route/auth checks. -->
-    <div id="auth-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+    <div id="auth-modal" class="modal auth-modal-premium" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="auth-modal-title">Giriş Yap</h3>
@@ -826,62 +894,70 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
     <!-- Footer -->
 
 
-    <footer class="footer">
+    <footer class="footer footer-premium">
         <div class="container">
-            <div class="newsletter-card">
-                <div>
-                    <h3>Piyasa ve karar içgörüleri</h3>
-                    <p>Araç piyasası, finansman ve toplam maliyet trendlerine dair seçilmiş güncellemeler — yalnızca onayladığınızda.</p>
-                </div>
-                <form id="newsletter-form" class="newsletter-form">
-                    <input type="email" id="newsletter-email" placeholder="E-posta adresinizi girin" required autocomplete="email">
-                    <label class="newsletter-consent">
-                        <input type="checkbox" id="newsletter-marketing-consent" name="marketing_consent" value="accepted" required>
-                        <span>Pazarlama e-postası almayı kabul ediyorum. İstediğim zaman vazgeçebilirim. <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik politikası</a>.</span>
-                    </label>
-                    <button type="submit" class="btn btn-primary newsletter-submit">Abone Ol</button>
-                </form>
-            </div>
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4>isteBul</h4>
-                    <p>Türkiye odaklı karar zekâsı platformu — araç satın alma sürecinde maliyet, finansman ve güvenilirlik sinyallerini birleştirir.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Platform</h4>
+                    <h4>Ürün</h4>
                     <ul>
                         <li><a href="/">Ana sayfa</a></li>
-                        <li><a href="/karar-analizi">Karar analizi</a></li>
+                        <li><a href="/#how-it-works">Nasıl çalışır</a></li>
                         <li><a href="/metodoloji">Metodoloji</a></li>
-                        <li><a href="/planlar">Planlar</a></li>
-                        <li><a href="/auto/">Ücretsiz araç analizi</a></li>
-                        <li><a href="/ilanlar/">Seçenekler</a></li>
-                        <li><a href="/karsilastir/">Karşılaştırma merkezi</a></li>
-                        <li><a href="#how-it-works">Nasıl çalışır?</a></li>
-                        <li><a href="/partner-olun.html">Partner programı</a></li>
+                        <li><a href="/#pricing">Fiyatlandırma</a></li>
+                        <li><a href="/auto/">TCO analizini başlat</a></li>
+                        <li><a href="/#landing-faq">SSS</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4>Rehber</h4>
-                    <ul>
-                        <li><a href="/rehber/arac-kredisi-hesaplama/">Araç kredisi hesaplama</a></li>
-                        <li><a href="/rehber/arac-toplam-sahiplik-maliyeti/">Toplam sahip olma maliyeti</a></li>
-                        <li><a href="/rehber/ikinci-el-arac-alirken/">İkinci el araç rehberi</a></li>
-                        <li><a href="/rehber/arac-karsilastirma-rehberi/">Araç karşılaştırma</a></li>
-                        <li><a href="/rehber/elektrikli-arac-alirken/">Elektrikli araç rehberi</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Güven ve yasal</h4>
+                    <h4>Şirket</h4>
                     <ul>
                         <li><a href="/hakkimizda.html">Hakkımızda</a></li>
                         <li><a href="/iletisim.html">İletişim</a></li>
+                        <li><a href="/rehber/arac-toplam-sahiplik-maliyeti/">TCO rehberi</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Kurumsal</h4>
+                    <ul>
+                        <li><a href="/partner-olun.html">Partner programı</a></li>
+                        <li><a href="/partner-docs.html">Partner API</a></li>
+                        <li><a href="/iletisim.html?konu=enterprise">Enterprise teklif</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Yasal</h4>
+                    <ul>
                         <li><a href="/gizlilik.html">Gizlilik</a></li>
                         <li><a href="/kvkk.html">KVKK</a></li>
                         <li><a href="/cerez-politikasi.html">Çerez politikası</a></li>
                         <li><a href="/kullanim-sartlari.html">Kullanım şartları</a></li>
                     </ul>
                 </div>
+                <div class="footer-section">
+                    <h4>İletişim</h4>
+                    <ul>
+                        <li><a href="/iletisim.html">Destek ve satış</a></li>
+                        <li><a href="mailto:destek@istebul.com">destek@istebul.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="newsletter-card newsletter-card--compact">
+                <div>
+                    <h3>Karar içgörüleri</h3>
+                    <p>Seçilmiş piyasa ve TCO güncellemeleri — yalnızca onayladığınızda.</p>
+                </div>
+                <form id="newsletter-form" class="newsletter-form">
+                    <input type="email" id="newsletter-email" placeholder="E-posta adresiniz" required autocomplete="email">
+                    <label class="newsletter-consent">
+                        <input type="checkbox" id="newsletter-marketing-consent" name="marketing_consent" value="accepted" required>
+                        <span>Pazarlama e-postası almayı kabul ediyorum. <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik politikası</a>.</span>
+                    </label>
+                    <button type="submit" class="btn btn-primary newsletter-submit">Abone Ol</button>
+                </form>
+            </div>
+            <div class="footer-cta-row">
+                <p class="text-muted-sm">Araç alımında maliyetli hatalardan kaçının — güvenilir karar desteği.</p>
+                <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="footer">TCO analizini başlat</a>
             </div>
             <div class="cookie-consent" id="cookie-consent" role="region" aria-label="Çerez ve analiz tercihi">
                 <p>Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz. <a href="/cerez-politikasi.html">Çerez politikası</a></p>

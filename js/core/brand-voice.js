@@ -6,9 +6,9 @@
 export const BRAND_VOICE = Object.freeze({
   productName: 'isteBul',
   categoryLabel: 'Karar altyapısı',
-  positioningLine: 'İlan bulmak başka, doğru karar vermek başka.',
+  positioningLine: 'Pahalı bir araç hatasından kaçının.',
   leadLine:
-    'Toplam sahip olma maliyetine göre karar verin — bütçe, finansman ve TCO tek deterministik modelde. İlan listesi veya sohbet botu değil.',
+    'Gerçek sahip olma maliyetini görün, seçenekleri güvenle karşılaştırın ve gizli maliyet riskini erken fark edin — ilan listesi değil, karar desteği.',
 
   cta: {
     primaryAuto: 'TCO analizini başlat',

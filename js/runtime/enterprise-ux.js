@@ -5,10 +5,12 @@ import { initConversionMicroUx } from './conversion-micro-ux.js';
 import { initPerceivedPerformance } from './perceived-performance.js';
 import { initBrandConsistency } from './brand-consistency.js';
 import { initGrowthOps } from './growth-ops.js';
+import { initMarketingShell } from './marketing-shell.js';
 
 export function initEnterpriseUx() {
   if (typeof document === 'undefined') return;
 
+  initMarketingShell();
   initP4ProductPolish();
   initExecutivePolish();
   initMobilePremiumUx();

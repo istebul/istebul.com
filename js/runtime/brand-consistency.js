@@ -10,10 +10,12 @@ export function initBrandConsistency() {
   if (typeof document === 'undefined') return;
 
   applyPrimaryAutoCtas();
+  applySecondaryCtas();
   normalizeSectionKickers();
 
   document.addEventListener('routeChanged', () => {
     applyPrimaryAutoCtas();
+    applySecondaryCtas();
     normalizeSectionKickers();
   });
 }
@@ -34,6 +36,18 @@ function applyPrimaryAutoCtas() {
     sticky.textContent = BRAND_VOICE.cta.primaryAuto;
     sticky.dataset.brandApplied = '1';
   }
+}
+
+function applySecondaryCtas() {
+  document.querySelectorAll('[data-cro-cta-secondary]').forEach((el) => {
+    if (el instanceof HTMLElement && !el.dataset.brandSecondary) {
+      const label = el.getAttribute('data-brand-cta-secondary') || BRAND_VOICE.cta.methodology;
+      if (!el.textContent.includes('Metodoloji')) {
+        el.textContent = label;
+      }
+      el.dataset.brandSecondary = '1';
+    }
+  });
 }
 
 function normalizeSectionKickers() {

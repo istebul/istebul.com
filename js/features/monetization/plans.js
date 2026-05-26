@@ -2,9 +2,9 @@
 import { BRAND_VOICE } from '../../core/brand-voice.js';
 
 export const PRICING_MESSAGING = Object.freeze({
-  headline: 'Yanlış araç kararının maliyetini küçültün',
+  headline: 'Yanlış araç seçiminin maliyetini görün',
   subhead:
-    'Pro, karar altyapısının derin katmanıdır — TCO, karşılaştırma ve raporla seçim riskini görünür kılar. Başlangıç ücretsiz; ihtiyaç halinde derinleştirin.',
+    'Karar altyapısı: ücretsiz özetle başlayın; Pro ile sınırsız karşılaştırma, premium rapor ve derin TCO kırılımı — 7 gün deneme, Stripe ile güvenli ödeme.',
   popularBadge: 'En popüler',
   roiTitle: 'Karar maliyeti hesabı',
   roiDisclaimer:
@@ -16,11 +16,12 @@ export const PLANS = {
     id: 'free',
     name: 'Başlangıç',
     priceLabel: 'Ücretsiz',
-    description: 'TCO özeti ve 2 model karşılaştırma — satın alma öncesi yanlış seçim riskini görün',
+    description: 'Sınırlı analiz ve özet çıktılar — karar öncesi maliyet riskini görün',
     highlights: [
-      'Ücretsiz TCO özeti',
+      'Sınırlı TCO analizi',
       '2 araç karşılaştırma',
-      'Şeffaf metodoloji'
+      'Özet karar çıktıları',
+      'Şeffaf metodoloji özeti'
     ]
   },
   pro: {
@@ -28,7 +29,7 @@ export const PLANS = {
     name: 'isteBul Pro',
     priceLabel: 'Aylık abonelik',
     priceHint: 'Stripe ile güvenli ödeme · dilediğiniz zaman iptal',
-    description: 'Derin TCO raporu, sınırsız karşılaştırma ve öncelikli yönlendirme — tek yanlış seçim maliyetine göre düşük risk',
+    description: 'Tam karar altyapısı: sınırsız karşılaştırma, premium rapor ve partner eşleşmesi',
     trialDays: 7,
     trialLabel: '7 gün ücretsiz dene',
     billing: {
@@ -53,9 +54,11 @@ export const PLANS = {
     highlights: [
       'Sınırsız karşılaştırma',
       'Premium karar raporu',
-      'Öncelikli partner eşleşmesi',
-      '7 gün ücretsiz deneme',
-      'Stripe güvenli ödeme'
+      'Derin TCO kırılımı',
+      'AI karar özeti (skoru değiştirmez)',
+      'Finans partner eşleşmesi',
+      'Öncelikli destek ve müzakere içgörüleri',
+      'Premium export / raporlama'
     ],
     cta: 'Karar riskini azalt'
   },

@@ -17,6 +17,7 @@ import { getStoredReferralCode } from '../growth/growth-engine.js';
 import { trackOpsEvent } from '../../core/operational-telemetry.js';
 import {
     bindAuthModalA11y,
+    bindPasswordToggles,
     focusFirstField,
     setSubmitLoading,
     showInlineFormBanner,
@@ -122,7 +123,7 @@ export class AuthManager {
             : '';
 
         modalBody.innerHTML = intentBanner + (type === 'login' ? this.getLoginForm() : this.getRegisterForm());
-        modal.classList.add('auth-modal');
+        modal.classList.add('auth-modal', 'auth-modal-premium');
         document.body.classList.add('modal-open');
 
         analytics.track('auth_modal_open', { mode: type }, {
@@ -137,6 +138,7 @@ export class AuthManager {
 
         bindAuthModalA11y(modal, () => this.hideAuthModal());
         clearInlineFormBanner(modalBody);
+        bindPasswordToggles(modalBody);
 
         // Setup form handlers
         this.setupAuthForm(type);
@@ -157,6 +159,7 @@ export class AuthManager {
 
     getLoginForm() {
         return `
+            <p class="auth-trust-line">Oturum bilgileriniz şifreli bağlantı (TLS) ile iletilir. Kart bilgisi bu ekranda istenmez.</p>
             <form id="login-form" data-enterprise-form novalidate>
                 <div class="form-group">
                     <label for="email">E-posta</label>
@@ -164,10 +167,14 @@ export class AuthManager {
                 </div>
                 <div class="form-group">
                     <label for="password">Şifre</label>
-                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                    <div class="password-field">
+                        <input type="password" id="password" name="password" autocomplete="current-password" required>
+                        <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary full-width auth-submit">${CONVERSION_COPY.auth.loginSubmit}</button>
             </form>
+            <p class="auth-oauth-placeholder" role="note">Google ile giriş — yakında (altyapı hazır)</p>
             <div class="modal-footer">
                 <p>Şifrenizi mi unuttunuz? <a href="#" id="forgot-password">Sıfırlayın</a></p>
                 <p>Hesabınız yok mu? <a href="#" id="switch-to-register">${CONVERSION_COPY.auth.switchToRegister}</a></p>
@@ -188,12 +195,18 @@ export class AuthManager {
                 </div>
                 <div class="form-group">
                     <label for="password">Şifre</label>
-                    <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8" aria-describedby="password-hint">
+                    <div class="password-field">
+                        <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8" aria-describedby="password-hint">
+                        <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
+                    </div>
                     <small id="password-hint" class="form-hint">En az 8 karakter; büyük harf, küçük harf ve rakam önerilir</small>
                 </div>
                 <div class="form-group">
                     <label for="confirm-password">Şifre Tekrar</label>
-                    <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password" required>
+                    <div class="password-field">
+                        <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password" required>
+                        <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>

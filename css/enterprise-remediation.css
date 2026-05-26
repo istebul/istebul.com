@@ -1,0 +1,307 @@
+/**
+ * Enterprise product remediation — marketing shell polish, trust, FAQ, auth, footer.
+ */
+
+/* —— Shell separation —— */
+body.app-shell .ib-trust-rail,
+body.app-shell .cro-sticky-cta,
+body.app-shell #announcement-ticker {
+    display: none !important;
+}
+
+body.app-shell #main-nav {
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.marketing-shell #main-nav.is-stuck {
+    position: sticky;
+    top: 0;
+    z-index: 1200;
+    background: color-mix(in srgb, var(--surface-color) 92%, transparent);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+}
+
+body.marketing-shell .nav-links-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+}
+
+body.marketing-shell .nav-link-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    color: var(--text-secondary);
+    padding: 0.35rem 0;
+}
+
+body.marketing-shell .nav-link-btn:hover {
+    color: var(--primary-color);
+}
+
+/* —— Hero & sample preview —— */
+.ib-hero-outcome-lead {
+    font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+    line-height: 1.55;
+    color: var(--text-secondary);
+    max-width: 38rem;
+}
+
+.ib-social-proof-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+    padding: 1.25rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+    background: color-mix(in srgb, var(--surface-color) 88%, var(--primary-color) 4%);
+}
+
+.ib-social-proof-metrics > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.ib-social-proof-metrics strong {
+    font-size: clamp(1.35rem, 2vw, 1.65rem);
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+}
+
+.ib-social-proof-metrics span {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+}
+
+.ib-sample-tco-grid {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 0.85rem;
+}
+
+.ib-sample-tco-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px dashed color-mix(in srgb, var(--border-color) 70%, transparent);
+    font-size: 0.9rem;
+}
+
+.ib-sample-tco-row:last-child {
+    border-bottom: none;
+    font-weight: 700;
+    padding-top: 0.65rem;
+}
+
+.ib-sample-reasoning {
+    margin-top: 0.85rem;
+    padding: 0.85rem 1rem;
+    border-radius: var(--border-radius);
+    background: color-mix(in srgb, var(--primary-color) 8%, var(--surface-color));
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.ib-trust-proof-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1.25rem;
+    justify-content: center;
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+}
+
+.ib-trust-proof-strip span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* —— FAQ —— */
+.landing-faq-section .ib-faq-list {
+    display: grid;
+    gap: 0.65rem;
+    max-width: 48rem;
+    margin: 0 auto;
+}
+
+.ib-faq-item {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--surface-color);
+    overflow: hidden;
+}
+
+.ib-faq-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    color: var(--text-primary);
+}
+
+.ib-faq-panel {
+    padding: 0 1.15rem 1rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    font-size: 0.95rem;
+}
+
+.ib-faq-item.is-open .ib-faq-trigger {
+    color: var(--primary-color);
+}
+
+/* —— Partner B2B —— */
+.partner-enterprise-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.partner-enterprise-features li {
+    list-style: none;
+    padding: 0.85rem 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.partner-enterprise-features li strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+
+/* —— Footer premium —— */
+.footer-premium .footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 2rem 2.5rem;
+}
+
+.footer-premium .footer-section h4 {
+    margin-bottom: 0.75rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.footer-premium .footer-section ul {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.footer-premium .footer-cta-row {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* —— Auth modal premium —— */
+.auth-modal-premium .modal-content {
+    max-width: 420px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
+}
+
+.auth-modal-premium .auth-trust-line {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0 0 1rem;
+    line-height: 1.45;
+}
+
+.password-field {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
+.password-field input {
+    flex: 1;
+    padding-right: 2.75rem;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.35rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.35rem;
+    border-radius: var(--border-radius);
+}
+
+.password-toggle:hover {
+    color: var(--primary-color);
+}
+
+.auth-oauth-placeholder {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* —— CTA consistency —— */
+.ib-hero-cta-secondary-row .btn-ghost[href="/planlar"] {
+    display: none;
+}
+
+.how-section-cta,
+.partner-enterprise-cta,
+.pricing-mid-cta {
+    margin-top: 2rem;
+    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    body.marketing-shell .nav-controls .nav-cta-auto {
+        font-size: 0.82rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .ib-social-proof-metrics {
+        grid-template-columns: 1fr 1fr;
+    }
+}

@@ -1842,13 +1842,13 @@ class App {
         return {
             arac: {
                 id: 'arac',
-                title: 'Bütçeye Uygun Hibrit Aile Aracı',
-                note: 'Yakıt tüketimi, sigorta ve toplam sahip olma maliyetine göre dengeli aile seçeneği.',
-                score: 'Veri',
+                title: '2023 Toyota Corolla Cross Hybrid',
+                note: 'Yıllık 18.000 km, %36 peşinat — örnek senaryo; canlı analizde girdilerinize göre hesaplanır.',
+                score: '78',
                 metrics: [
-                    { label: 'Toplam maliyet', value: 'Model' },
-                    { label: 'Finansman', value: 'Simülasyon' },
-                    { label: 'Güven', value: 'Şeffaf' }
+                    { label: '12 ay TCO', value: '₺412.800' },
+                    { label: 'Aylık finansman', value: '₺14.200' },
+                    { label: 'Gizli risk', value: 'Düşük' }
                 ],
                 bars: [
                     { label: 'Yakıt', value: 62 },
@@ -4547,7 +4547,8 @@ const MARKETING_SECTION_IDS = new Set([
     'methodology-teaser',
     'how-it-works',
     'pricing',
-    'partner-enterprise'
+    'partner-enterprise',
+    'landing-faq'
 ]);
 const MARKETING_PATH_ALIASES = new Set(['/metodoloji-ozet', '/planlar-ozet']);
 
