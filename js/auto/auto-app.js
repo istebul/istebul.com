@@ -647,7 +647,6 @@ function openFinanceCompareModal(vehicleName = '') {
   const vehicle = (lastResults || []).find((item) => item.name === vehicleName) || lastResults?.[0] || {};
   const vehiclePrice = Number(vehicle.price || 0);
   const maxLoanAmount = Math.round(vehiclePrice * 0.8);
-  const defaultLoan = Math.round(vehiclePrice * 0.6);
   const terms = [12, 24, 36, 48];
   const isLoggedIn = !!window.currentUser;
 
@@ -671,13 +670,16 @@ function openFinanceCompareModal(vehicleName = '') {
     }).sort((a, b) => a.monthly - b.monthly);
   }
 
-  function render(loanAmount = defaultLoan, selectedTerm = 48) {
-    const requestedLoan = Number(String(loanAmount || '').replace(/[^0-9]/g, '') || 0);
+  function render(loanAmount = '', selectedTerm = 48) {
+    const requestedLoan = Number(String(loanAmount ?? '').replace(/[^0-9]/g, '') || 0);
     const loanLimit = maxLoanAmount || vehiclePrice || 1600000;
-    const principal = Math.max(50000, Math.min(requestedLoan || defaultLoan, loanLimit));
+    const principal = requestedLoan > 0
+      ? Math.max(50000, Math.min(requestedLoan, loanLimit))
+      : 0;
     const loanWasCapped = requestedLoan > loanLimit;
-    const downPayment = Math.max(0, vehiclePrice - principal);
-    const offers = buildOffers(principal, selectedTerm);
+    const downPayment = principal > 0 ? Math.max(0, vehiclePrice - principal) : vehiclePrice;
+    const offers = principal > 0 ? buildOffers(principal, selectedTerm) : [];
+    const hasLoanInput = principal > 0;
 
     window.lastFinanceComparison = {
       vehicle: vehicle.name || vehicleName,
@@ -693,7 +695,7 @@ function openFinanceCompareModal(vehicleName = '') {
 
         <p class="kicker">Kredi karşılaştırması</p>
         <h3>${escapeHtml(vehicle.name || vehicleName || 'Araç')} için kişisel finansman simülasyonu</h3>
-        <p class="lead-modal-muted">Önerilen kredi tutarı araç değerinin yaklaşık %60’ıdır. Dilerseniz değiştirebilirsiniz; maksimum limit araç değerinin %80’idir.</p>
+        <p class="lead-modal-muted">Kredi tutarını siz girersiniz. Minimum 50.000 TL; maksimum araç değerinin %80’i (${formatAmount(loanLimit)}).</p>
 
         <div class="finance-login-note">
           <strong>${isLoggedIn ? 'Karşılaştırmanız kaydedilmeye hazır.' : 'Kişisel karşılaştırmayı kaydetmek için giriş yapın.'}</strong>
@@ -708,13 +710,24 @@ function openFinanceCompareModal(vehicleName = '') {
 
           <label>
             <span>Kredi tutarı</span>
-            <input id="finance-loan-amount" type="number" min="50000" max="${loanLimit}" step="10000" value="${principal}">
+            <input
+              id="finance-loan-amount"
+              type="number"
+              inputmode="numeric"
+              min="50000"
+              max="${loanLimit}"
+              step="10000"
+              value="${hasLoanInput ? principal : ''}"
+              placeholder="Örn. ${loanLimit >= 500000 ? '500000' : '50000'}"
+              aria-required="true"
+            >
             ${loanWasCapped ? '<small class="finance-input-warning">Maksimum kredi limiti araç değerinin %80’i olarak uygulandı.</small>' : ''}
+            ${!hasLoanInput ? '<small class="finance-input-hint">Banka karşılaştırması için tutarı girin.</small>' : ''}
           </label>
 
           <label>
             <span>Peşinat</span>
-            <strong>${formatAmount(downPayment)}</strong>
+            <strong>${hasLoanInput ? formatAmount(downPayment) : 'Kredi tutarına göre hesaplanır'}</strong>
           </label>
         </div>
 
@@ -726,8 +739,8 @@ function openFinanceCompareModal(vehicleName = '') {
           `).join('')}
         </div>
 
-        <div class="finance-offer-table">
-          ${offers.map((offer, index) => `
+        <div class="finance-offer-table${hasLoanInput ? '' : ' finance-offer-table--empty'}">
+          ${hasLoanInput ? offers.map((offer, index) => `
             <article class="finance-bank-row ${index === 0 ? 'best' : ''}">
               <div>
                 <span class="bank-rank">${index === 0 ? 'En uygun' : 'Alternatif'}</span>
@@ -746,7 +759,9 @@ function openFinanceCompareModal(vehicleName = '') {
                 Ön değerlendir
               </button>
             </article>
-          `).join('')}
+          `).join('') : `
+            <p class="finance-offer-empty">Kredi tutarını girdikten sonra banka karşılaştırması ve tahmini ödemeler burada listelenir.</p>
+          `}
         </div>
 
         <p class="finance-disclaimer">Bu ekran kredi tavsiyesi değil, tahmini karşılaştırma simülasyonudur.</p>
@@ -757,13 +772,15 @@ function openFinanceCompareModal(vehicleName = '') {
     const closeModal = () => modal.remove();
     modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
 
-    modal.querySelector('#finance-loan-amount')?.addEventListener('input', (event) => {
+    const loanInput = modal.querySelector('#finance-loan-amount');
+    loanInput?.addEventListener('input', (event) => {
       render(event.target.value, selectedTerm);
     });
 
     modal.querySelectorAll('.term-btn').forEach((button) => {
       button.addEventListener('click', () => {
-        render(principal, Number(button.dataset.term || selectedTerm));
+        const currentLoan = loanInput?.value ?? '';
+        render(currentLoan, Number(button.dataset.term || selectedTerm));
       });
     });
 

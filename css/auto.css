@@ -3564,6 +3564,34 @@ html body a.auto-floating-cta{
   color:#0f172a;
 }
 
+.finance-config-grid input::placeholder{
+  color:#94a3b8;
+  font-weight:600;
+}
+
+.finance-input-hint{
+  display:block;
+  margin-top:6px;
+  color:#64748b;
+  font-size:12px;
+  font-weight:600;
+}
+
+.finance-offer-table--empty{
+  padding:20px 16px;
+  border-radius:12px;
+  background:rgba(15,23,42,.03);
+  border:1px dashed rgba(15,23,42,.12);
+}
+
+.finance-offer-empty{
+  margin:0;
+  text-align:center;
+  color:#64748b;
+  font-size:14px;
+  line-height:1.5;
+}
+
 .finance-term-selector{
   display:flex;
   gap:10px;
