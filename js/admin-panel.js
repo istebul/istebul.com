@@ -1254,6 +1254,7 @@ async function loadAcquisitionExit() {
       './features/ops/acquisition-exit-optionality.js'
     );
     const { renderAcquisitionExitCenter } = await import('./features/ops/acquisition-exit-views.js');
+    const { computeExitOptionalityMetrics } = await import('../metrics/exit-optionality.js');
 
     const config = await fetchOpsJson(
       '/data/ops/acquisition-exit-optionality.json',
@@ -1261,7 +1262,58 @@ async function loadAcquisitionExit() {
       { version: 'p11-exit.0', scenarios: [], strategicBuyers: [] }
     );
     const snapshot = buildAcquisitionExitSnapshot({ config });
-    el.innerHTML = renderAcquisitionExitCenter(snapshot, escapeHtml);
+
+    const windowDays = SCALE_LIMITS.admin.executiveWindowDays || 30;
+    const since = new Date(Date.now() - windowDays * 86400000).toISOString();
+    const leadSelect =
+      'id, lead_score, partner_status, partner_endpoint_id, estimated_revenue, actual_revenue, decision_session_id, created_at, phone, user_id';
+    const subSelect = 'status, current_period_start, current_period_end, cancel_at_period_end';
+    const eventSelect = 'event_name, session_id, created_at';
+
+    const [subsRes, leadsRes, eventsRes] = await Promise.all([
+      fetchAdminTable(sb, {
+        table: 'subscriptions',
+        select: subSelect,
+        limit: 2000,
+        direct: (expr) => sb.from('subscriptions').select(expr || subSelect).limit(2000)
+      }),
+      fetchAdminTable(sb, {
+        table: 'auto_leads',
+        select: leadSelect,
+        limit: 5000,
+        direct: (expr) => sb.from('auto_leads').select(expr || leadSelect).limit(5000)
+      }),
+      fetchAdminTable(sb, {
+        table: 'analytics_events',
+        select: eventSelect,
+        limit: SCALE_LIMITS.admin.executiveRowLimit || 2500,
+        order: { column: 'created_at', ascending: false },
+        direct: (expr) =>
+          sb
+            .from('analytics_events')
+            .select(expr || eventSelect)
+            .gte('created_at', since)
+            .order('created_at', { ascending: false })
+            .limit(SCALE_LIMITS.admin.executiveRowLimit || 2500)
+      })
+    ]);
+
+    const warnings = collectAdminWarnings([subsRes, leadsRes, eventsRes]);
+    const founderMetrics = computeExitOptionalityMetrics({
+      leads: leadsRes.data || [],
+      subscriptions: subsRes.data || [],
+      analyticsEvents: eventsRes.data || [],
+      moatFlywheel: null,
+      dataSource: 'admin_live',
+      errors: [subsRes, leadsRes, eventsRes]
+        .filter((r) => r.error)
+        .map((r) => r.error?.message)
+        .filter(Boolean)
+    });
+
+    el.innerHTML =
+      renderAdminWarningBanner(warnings) +
+      renderAcquisitionExitCenter(snapshot, escapeHtml, founderMetrics);
   } catch (err) {
     console.error('[admin] acquisition-exit', err);
     el.innerHTML = `<div class="empty" style="color:#f87171">Veri yüklenemedi: ${escapeHtml(err.message || String(err))}</div>`;

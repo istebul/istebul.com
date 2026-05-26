@@ -17,6 +17,8 @@ const mustExist = [
   'data/ops/acquisition-exit-optionality.json',
   'docs/ACQUISITION_EXIT_OPTIONALITY.md',
   'docs/investor/EXIT_OPTIONALITY_REPORT.md',
+  'docs/exit-optionality-report.md',
+  'metrics/exit-optionality.js',
   'js/features/ops/acquisition-exit-optionality.js',
   'js/features/ops/acquisition-exit-views.js',
   'scripts/acquisition-exit-snapshot.cjs',
@@ -56,6 +58,9 @@ if (!adminHtml.includes('acquisition-exit')) fail('admin needs acquisition-exit 
 
 const adminJs = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
 if (!adminJs.includes('loadAcquisitionExit')) fail('admin needs loadAcquisitionExit');
+if (!adminJs.includes('computeExitOptionalityMetrics')) fail('admin needs founder exit metrics');
+const views = fs.readFileSync(path.join(root, 'js/features/ops/acquisition-exit-views.js'), 'utf8');
+if (!views.includes('renderFounderExitMetrics')) fail('acquisition-exit-views needs founder metrics');
 
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 if (!pkg.scripts['metrics:exit:optionality']) fail('need metrics:exit:optionality');

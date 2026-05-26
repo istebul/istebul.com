@@ -2,11 +2,75 @@
  * P11-exit — Admin views for acquisition / exit optionality.
  */
 
+function formatTryAdmin(n) {
+  if (n == null || Number.isNaN(Number(n))) return '—';
+  return `₺${Number(n).toLocaleString('tr-TR')}`;
+}
+
+/**
+ * Live Supabase founder metrics (P11).
+ * @param {object} metrics from computeExitOptionalityMetrics
+ * @param {(s: string) => string} escapeHtml
+ */
+export function renderFounderExitMetrics(metrics, escapeHtml) {
+  const esc = escapeHtml || ((s) => String(s ?? ''));
+  const m = metrics || {};
+  const att = m.acquisitionAttractiveness || {};
+
+  if (!m.totalLeads && m.dataSource === 'config_only') {
+    return `
+    <div class="stat-card" style="margin-bottom:16px;padding:12px 14px;border-left:4px solid var(--muted)">
+      <strong>Founder metrics</strong>
+      <p class="text-muted-sm" style="margin:8px 0 0">Canlı lead verisi admin oturumunda yüklenir. CLI: <code>npm run metrics:exit:optionality</code></p>
+    </div>`;
+  }
+
+  const rows = [
+    ['Acquisition attractiveness', `${att.score ?? '—'}/100 · ${esc(att.band || '—')}`],
+    ['Estimated ARR (blended)', formatTryAdmin(m.estimatedArrTry)],
+    ['Total leads', m.totalLeads ?? 0],
+    ['Qualified leads', m.qualifiedLeads ?? 0],
+    ['Closed deals', m.closedDeals ?? 0],
+    ['Conversion %', m.conversionPct != null ? `${m.conversionPct}%` : '—'],
+    ['Partner concentration risk', `${m.partnerConcentration?.riskScore ?? '—'}/100`],
+    ['Funnel efficiency', `${m.funnelEfficiency?.efficiencyPct ?? '—'}%`],
+    ['Repeat usage proxy', `${m.repeatUsage?.repeatActorPct ?? '—'}%`],
+    ['AI moat signal', `${m.aiMoat?.score ?? '—'}/100`],
+    ['Data moat depth', `${m.dataMoat?.depthScore ?? '—'}/100`]
+  ];
+
+  return `
+    <h3 style="margin:24px 0 12px">Founder metrics (live)</h3>
+    <p class="text-muted-sm" style="margin:0 0 12px">Source: <code>${esc(m.dataSource || 'admin')}</code> ·
+      <a href="/docs/exit-optionality-report.md" target="_blank" rel="noopener">exit-optionality-report.md</a>
+    </p>
+    <div class="table-wrap" style="margin-bottom:18px;overflow-x:auto">
+      <table class="admin-table">
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          ${rows
+            .map(
+              ([label, val]) => `
+            <tr><td>${esc(label)}</td><td><strong>${esc(String(val))}</strong></td></tr>`
+            )
+            .join('')}
+        </tbody>
+      </table>
+    </div>
+    ${
+      (m.fetchErrors || []).length
+        ? `<p class="text-muted-sm" style="color:var(--warning)">Warnings: ${esc(m.fetchErrors.join('; '))}</p>`
+        : ''
+    }
+  `;
+}
+
 /**
  * @param {object} snapshot
  * @param {(s: string) => string} escapeHtml
+ * @param {object} [founderMetrics]
  */
-export function renderAcquisitionExitCenter(snapshot, escapeHtml) {
+export function renderAcquisitionExitCenter(snapshot, escapeHtml, founderMetrics = null) {
   const esc = escapeHtml || ((s) => String(s ?? ''));
   const v = snapshot.executiveVerdict || {};
 
@@ -85,5 +149,7 @@ export function renderAcquisitionExitCenter(snapshot, escapeHtml) {
 
     <h3 style="margin:0 0 12px">90-day roadmap</h3>
     <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.55">${roadmap}</ul>
+
+    ${renderFounderExitMetrics(founderMetrics, esc)}
   `;
 }
