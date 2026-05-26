@@ -174,12 +174,42 @@ export class AuthManager {
                 </div>
                 <button type="submit" class="btn btn-primary full-width auth-submit">${CONVERSION_COPY.auth.loginSubmit}</button>
             </form>
-            <p class="auth-oauth-placeholder" role="note">Google ile giriş — yakında (altyapı hazır)</p>
+            ${this.getGoogleOAuthBlock()}
             <div class="modal-footer">
                 <p>Şifrenizi mi unuttunuz? <a href="#" id="forgot-password">Sıfırlayın</a></p>
                 <p>Hesabınız yok mu? <a href="#" id="switch-to-register">${CONVERSION_COPY.auth.switchToRegister}</a></p>
             </div>
         `;
+    }
+
+    isGoogleOAuthEnabled() {
+        const flag = typeof window !== 'undefined' && window.__env?.GOOGLE_OAUTH_ENABLED;
+        return flag === true || flag === 'true' || flag === '1';
+    }
+
+    getGoogleOAuthBlock() {
+        if (this.isGoogleOAuthEnabled()) {
+            return `
+            <div class="auth-oauth-divider" role="separator"><span>veya</span></div>
+            <button type="button" class="btn btn-outline full-width" id="google-oauth-btn">Google ile devam et</button>`;
+        }
+        return `<p class="auth-oauth-placeholder" role="note">Google ile giriş — Supabase ve Google Console yapılandırması sonrası etkinleşir.</p>`;
+    }
+
+    async signInWithGoogle() {
+        const redirectTo = `${window.location.origin}${window.location.pathname || '/'}`;
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo }
+        });
+        if (error) {
+            const modalBody = document.querySelector('#auth-modal .modal-body');
+            showInlineFormBanner(
+                modalBody,
+                error.message || 'Google ile giriş başlatılamadı. Lütfen e-posta ile deneyin.',
+                'error'
+            );
+        }
     }
 
     getRegisterForm() {
@@ -216,6 +246,7 @@ export class AuthManager {
                 </div>
                 <button type="submit" class="btn btn-primary full-width auth-submit" data-enterprise-form>${CONVERSION_COPY.auth.registerSubmit}</button>
             </form>
+            ${this.getGoogleOAuthBlock()}
             <div class="modal-footer">
                 <p>Zaten hesabınız var mı? <a href="#" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</a></p>
             </div>
@@ -281,6 +312,14 @@ export class AuthManager {
             forgotPassword.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.showForgotPasswordForm();
+            });
+        }
+
+        const googleBtn = document.getElementById('google-oauth-btn');
+        if (googleBtn) {
+            googleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.signInWithGoogle();
             });
         }
     }

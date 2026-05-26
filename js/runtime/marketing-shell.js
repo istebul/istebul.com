@@ -2,6 +2,7 @@
  * Marketing vs app shell — FAQ, sticky nav, route-aware chrome.
  */
 import { resolveRouteSurface } from './route-surface.js';
+import { initSocialProofMetrics } from './social-proof.js';
 
 const APP_SURFACES = new Set([
     'ilanlar',
@@ -68,8 +69,15 @@ export function initMarketingShell() {
     initLandingFaq();
     initStickyNav();
 
+    if (isMarketingSurface()) {
+        initSocialProofMetrics();
+    }
+
     document.addEventListener('routeChanged', (event) => {
         syncMarketingShellClasses(event.detail?.path || window.location.pathname);
         initLandingFaq();
+        if (isMarketingSurface(event.detail?.path || window.location.pathname)) {
+            initSocialProofMetrics();
+        }
     });
 }

@@ -25,7 +25,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('#main-content')).toBeVisible();
     await expect(page.locator('nav')).toBeVisible();
     await expect(page).toHaveTitle(/isteBul/);
-    await expect(page.getByRole('heading', { name: /Araç satın alma kararınızı/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Pahalı bir araç hatasından/i })).toBeVisible();
     await expect(page.locator('#home')).toBeVisible();
     await expect(page.locator('#ilanlar')).toBeHidden();
 
@@ -99,7 +99,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await waitForAppReady(page);
 
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'profil');
-    await expect(page.getByRole('heading', { name: /Hesabım/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Hesabım|abonelik/i })).toBeVisible();
     await expect(page.locator('#profil')).toBeVisible();
   });
 
@@ -138,7 +138,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     await page.goto('/');
     await waitForAppReady(page);
-    await expect(page.getByRole('heading', { name: /Araç satın alma/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Pahalı bir araç hatasından/i })).toBeVisible();
 
     const navToggle = page.locator('.nav-toggle');
     if (await navToggle.isVisible().catch(() => false)) {

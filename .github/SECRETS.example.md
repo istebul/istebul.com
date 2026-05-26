@@ -26,6 +26,7 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 |--------|----------|
 | `SENTRY_DSN` | Build-time monitoring |
 | `LOGROCKET_APP_ID` | Build-time session replay |
+| `GOOGLE_OAUTH_ENABLED` | `true` — Google OAuth butonunu gösterir (Supabase + Google Console gerekli) |
 
 ## Tek seferlik CLI (repo admin)
 

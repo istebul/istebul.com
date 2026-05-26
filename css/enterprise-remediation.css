@@ -43,6 +43,18 @@ body.marketing-shell .nav-link-btn:hover {
 }
 
 /* —— Hero & sample preview —— */
+.ib-social-proof-disclaimer {
+    margin: 1.25rem 0 0.5rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--text-secondary);
+    max-width: 42rem;
+}
+
+.ib-social-proof-metrics[data-social-proof-mode='example'] {
+    opacity: 0.92;
+}
+
 .ib-hero-outcome-lead {
     font-size: clamp(1.05rem, 1.5vw, 1.2rem);
     line-height: 1.55;
@@ -276,6 +288,23 @@ body.marketing-shell .nav-link-btn:hover {
     font-size: 0.82rem;
     color: var(--text-secondary);
     text-align: center;
+}
+
+.auth-oauth-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1rem 0;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+}
+
+.auth-oauth-divider::before,
+.auth-oauth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
 }
 
 /* —— CTA consistency —— */

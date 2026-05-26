@@ -24,7 +24,13 @@ const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'ma
     'css/admin-ops-ai-assistant.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const { injectRouteBootstrap } = require('./lib/route-bootstrap.cjs');
-const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
+const publicEnvKeys = [
+  'SUPABASE_URL',
+  'SUPABASE_ANON_KEY',
+  'SENTRY_DSN',
+  'LOGROCKET_APP_ID',
+  'GOOGLE_OAUTH_ENABLED'
+];
 
 const runOpsEmbed = spawnSync(process.execPath, [path.join(root, 'scripts/generate-admin-ops-embed.cjs')], {
   cwd: root,
