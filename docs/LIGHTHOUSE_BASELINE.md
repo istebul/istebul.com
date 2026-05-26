@@ -21,7 +21,7 @@ npm run analyze:bundle
 
 ## Öncelikli 3 iyileştirme
 
-1. **Ana bundle küçültme** — Premium sayfa modüllerini route bazlı dynamic `import()` ile geciktir; ilk ziyaret JS yükünü düşürür (LCP / TTI).
+1. **Ana bundle küçültme** — Premium sayfa modülleri `import('./ui/premium-pages.js')` ile route’ta yükleniyor ✅; sırada: decision assistant / listing manager lazy chunk.
 2. **Üçüncü taraf bağlantı maliyeti** — Ana sayfada `loadListings` zaten kapalı; Lighthouse’ta statik sunumda Supabase/env çağrılarını marketing route’ta tamamen ertelemek veya mock (lab için).
 3. **Kritik CSS yolu** — `enterprise-remediation.css` ve hero stillerini tek kritik blokta tut; gereksiz senkron stylesheet sayısını azalt (mevcut build hash + preload korunur).
 

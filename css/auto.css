@@ -203,6 +203,28 @@ h1{font-size:clamp(40px,6vw,72px);line-height:.96;margin:10px 0 22px}h2{font-siz
   opacity:.82;
 }
 
+.auto-soft-auth-gate .auto-soft-auth-card {
+  max-width: 440px;
+}
+
+.auto-soft-auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.auto-soft-auth-actions .btn {
+  min-height: 48px;
+  justify-content: center;
+  text-align: center;
+}
+
+.auto-soft-auth-foot {
+  margin-top: 0.85rem;
+  text-align: center;
+}
+
 .ai-loading-steps{
   margin:16px 0 0;
   padding-left:18px;

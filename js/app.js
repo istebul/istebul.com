@@ -25,7 +25,6 @@ import {
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
-import { premiumPages } from './ui/premium-pages.js';
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
@@ -169,7 +168,7 @@ class App {
                     page_path: event.detail?.path
                 });
                 analytics.trackPageView(event.detail?.path || analytics.getPagePath());
-                this.handlePremiumRoute(event.detail?.route);
+                void this.handlePremiumRoute(event.detail?.route);
             });
 
             await this.checkAuth();
@@ -1036,17 +1035,19 @@ class App {
             }
 
             if (route === 'decision-assistant' || route === 'page-karar-analizi') {
-                premiumPages.mount('karar-analizi', this);
-                this.renderDecisionAssistant();
+                void this.mountPremiumPage('karar-analizi').then(() => {
+                    this.renderDecisionAssistant();
+                });
             }
 
             if (route === 'page-metodoloji') {
-                premiumPages.mount('metodoloji', this);
+                void this.mountPremiumPage('metodoloji');
             }
 
             if (route === 'page-planlar') {
-                premiumPages.mount('planlar', this);
-                this.renderPricingSection();
+                void this.mountPremiumPage('planlar').then(() => {
+                    this.renderPricingSection();
+                });
             }
 
             if (route === 'history') {
@@ -3332,7 +3333,12 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.ui.showSuccess('Filtreler temizlendi.');
     }
 
-    handlePremiumRoute(route) {
+    async mountPremiumPage(pageId) {
+        const { premiumPages } = await import('./ui/premium-pages.js');
+        premiumPages.mount(pageId, this);
+    }
+
+    async handlePremiumRoute(route) {
         const map = {
             'page-karar-analizi': 'karar-analizi',
             'page-metodoloji': 'metodoloji',
@@ -3340,7 +3346,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         };
         const pageId = map[route];
         if (pageId) {
-            premiumPages.mount(pageId, this);
+            await this.mountPremiumPage(pageId);
         }
     }
 

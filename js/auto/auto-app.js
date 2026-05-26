@@ -114,6 +114,82 @@ async function initAutoEntitlements() {
   }
 }
 
+const AUTO_SOFT_GATE_KEY = 'istebul_auto_soft_gate_dismissed';
+
+const WIZARD_ETA_BY_STEP = ['~45 sn kaldı', '~30 sn kaldı', '~15 sn kaldı', 'Son adım'];
+
+function openAutoSoftAuthGate() {
+  if (document.getElementById('auto-soft-auth-gate')) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'auto-soft-auth-gate';
+  overlay.className = 'auto-soft-auth-gate revenue-paywall';
+  overlay.innerHTML = `
+    <div class="revenue-paywall-card auto-soft-auth-card" role="dialog" aria-labelledby="auto-soft-auth-title" aria-modal="true">
+      <button type="button" class="revenue-paywall-close" data-auto-soft-gate-close aria-label="Kapat">×</button>
+      <p class="kicker">Sonuçlarınız hazır</p>
+      <h3 id="auto-soft-auth-title">Analizi kaydedin, sonra kaldığınız yerden devam edin</h3>
+      <p>Ücretsiz hesap ile karar geçmişinizi saklayın; Pro ile derin rapor ve sınırsız karşılaştırma açılır.</p>
+      <ul class="revenue-paywall-list">
+        <li>Karar geçmişi ve favoriler</li>
+        <li>Karşılaştırma merkezi</li>
+        <li>KVKK uyumlu veri işleme</li>
+      </ul>
+      <div class="auto-soft-auth-actions">
+        <a class="btn primary" href="/kayit?return=/auto/" data-auto-soft-gate-register>Ücretsiz hesap oluştur</a>
+        <a class="btn secondary" href="/giris?return=/auto/" data-auto-soft-gate-login>Giriş yap</a>
+        <button type="button" class="btn secondary" data-auto-soft-gate-close>Önizlemeyle devam et</button>
+      </div>
+      <p class="text-muted-sm auto-soft-auth-foot">Bağlayıcı teklif veya satın alma zorunluluğu yok.</p>
+    </div>
+  `;
+
+  const close = () => {
+    try {
+      sessionStorage.setItem(AUTO_SOFT_GATE_KEY, '1');
+    } catch {
+      /* ignore */
+    }
+    overlay.remove();
+    trackAutoEvent('auto_soft_gate_dismiss');
+  };
+
+  overlay.querySelectorAll('[data-auto-soft-gate-close]').forEach((el) => {
+    el.addEventListener('click', close);
+  });
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) close();
+  });
+  overlay.querySelector('[data-auto-soft-gate-register]')?.addEventListener('click', () => {
+    trackAutoEvent('auto_soft_gate_register_click');
+  });
+  overlay.querySelector('[data-auto-soft-gate-login]')?.addEventListener('click', () => {
+    trackAutoEvent('auto_soft_gate_login_click');
+  });
+
+  document.body.appendChild(overlay);
+  trackAutoEvent('auto_soft_gate_view');
+}
+
+function maybeShowAutoSoftAuthGate() {
+  if (getAppInstance()?.currentUser) return;
+  try {
+    if (sessionStorage.getItem(AUTO_SOFT_GATE_KEY)) return;
+  } catch {
+    return;
+  }
+
+  window.setTimeout(() => {
+    if (getAppInstance()?.currentUser) return;
+    try {
+      if (sessionStorage.getItem(AUTO_SOFT_GATE_KEY)) return;
+    } catch {
+      return;
+    }
+    openAutoSoftAuthGate();
+  }, 1400);
+}
+
 function openAutoUpgradePaywall(feature = 'premium_report') {
   const existing = document.getElementById('auto-revenue-paywall');
   if (existing) existing.remove();
@@ -1578,6 +1654,8 @@ function renderResults(results) {
       submitCustomRefinement();
     }
   });
+
+  maybeShowAutoSoftAuthGate();
 }
 
 const yearEl = document.getElementById('year');
@@ -1962,7 +2040,7 @@ function renderWizard() {
       <div class="wizard-progress-text">
         <span>Adım ${wizardIndex + 1} / ${wizardSteps.length}</span>
         <span class="wizard-progress-motivation">${motivationCopy}</span>
-        <span class="wizard-progress-eta">~2 dk · 4 kısa adım</span>
+        <span class="wizard-progress-eta">${escapeHtml(WIZARD_ETA_BY_STEP[wizardIndex] || '~2 dk · 4 kısa adım')}</span>
       </div>
       <div class="wizard-progress-milestones" aria-hidden="true">
         ${WIZARD_MILESTONES.map((label, index) => `

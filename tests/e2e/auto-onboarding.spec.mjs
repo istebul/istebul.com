@@ -21,7 +21,7 @@ test.describe('Auto onboarding', () => {
     await waitForAutoReady(page);
 
     await expect(page.locator('.wizard-progress')).toBeVisible();
-    await expect(page.locator('.wizard-progress-eta')).toContainText(/4 kısa adım/i);
+    await expect(page.locator('.wizard-progress-eta')).toContainText(/kaldı|Son adım/i);
     await expect(page.locator('.wizard-progress-milestones .wizard-milestone')).toHaveCount(4);
     await expect(page.locator('.wizard-question h3')).toBeVisible();
   });
