@@ -1,6 +1,6 @@
-# isteBul — Investor Data Room Index
+# isteBul — Investor Data Room Index (Final)
 
-**Purpose:** VC / angel due diligence navigation.  
+**Purpose:** VC / angel due diligence navigation + outreach operations.  
 **Product:** AI decision platform for high-consideration purchases (Auto live; konut/tatil/finance expansion).  
 **Production:** https://www.istebul.com · Cloudflare Pages + Supabase.
 
@@ -28,6 +28,10 @@
 | **LOI template (TR+EN)** | `docs/investor/loi-template.md` |
 | **Stripe MRR evidence** | `docs/investor/STRIPE_MRR_EVIDENCE.md` |
 | **Market research (cited)** | `data/investor/market-research.json` |
+| **100 investor target list** | `docs/investor/INVESTOR_TARGET_LIST_100.csv` |
+| **Outreach playbook** | `docs/investor/OUTREACH_PLAYBOOK.md` |
+| **Meeting flow + DD plan** | `docs/investor/MEETING_FLOW_AND_DD.md` |
+| **Follow-up discipline** | `docs/investor/FOLLOW_UP_DISCIPLINE.md` |
 
 **Gap:** Signed LOI PDFs, Stripe PNG screenshots, deck PDF export — see `FUNDRAISING_READINESS.md`.
 
@@ -149,4 +153,14 @@ npm run metrics:investor:pack
 
 ---
 
-*Last updated with P7.1 fundraising readiness (`p7.1`) on `main`.*
+## 08 — Fundraising execution cadence
+
+- [ ] Intro-first outreach sent to Tier-1 targets each week
+- [ ] Cold outreach batch includes 60 sn demo + one-pager link
+- [ ] Each investor receives 48-hour follow-up after interaction
+- [ ] Weekly investor update mail sent (single source of truth)
+- [ ] Every open thread has a visible **next milestone date**
+
+---
+
+*Last updated for final fundraising operating pack on `main`.*
