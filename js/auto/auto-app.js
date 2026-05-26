@@ -1822,6 +1822,15 @@ function renderResults(results) {
     void updateAiSummary('', null);
   });
 
+  aiBox?.querySelector('[data-ai-next-action]')?.addEventListener('click', () => {
+    trackAutoEvent('ai_next_action_clicked', { action: 'vehicle_offer_cta' });
+    const firstOffer = root.querySelector('.auto-interest-btn[data-interest="vehicle_offer"]');
+    if (firstOffer instanceof HTMLElement) {
+      firstOffer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstOffer.click();
+    }
+  });
+
   if (root.querySelector('.ib-auto-compare-matrix')) {
     trackUniqueAutoEvent('auto_comparison_opened', { count: displayResults.length }, 'compare_matrix');
   }

@@ -272,9 +272,11 @@ export function renderStructuredCommentaryPanel(commentary, options = {}) {
       ? 'AI yorumu hazırlanıyor…'
       : state === 'error'
         ? 'AI yorumu üretilemedi — kural tabanlı analiz gösteriliyor'
-        : source === 'ai'
-          ? 'AI destekli karar yorumu'
-          : 'Kural tabanlı karar yorumu';
+        : state === 'fallback'
+          ? 'AI yorumu geçici olarak sınırlı — temel analiz gösteriliyor'
+          : source === 'ai'
+            ? 'AI destekli karar yorumu'
+            : 'Kural tabanlı karar yorumu';
 
   const sectionsHtml = SECTION_UI.map((section, idx) => {
     const value = data[section.key];
@@ -314,6 +316,11 @@ export function renderStructuredCommentaryPanel(commentary, options = {}) {
       <div class="ib-ai-commentary-sections" data-commentary-sections>
         ${sectionsHtml}
       </div>
+      <div class="ib-ai-commentary-actions">
+        <button type="button" class="btn primary btn-sm" data-ai-next-action>
+          Teklif sürecini başlat
+        </button>
+      </div>
       <p class="ib-ai-commentary-disclaimer text-muted-sm">${escapeHtml(data.disclaimer || '')}</p>
       <button type="button" class="btn btn-ghost btn-sm ib-ai-commentary-retry hidden" data-ai-commentary-retry>Yorumu yeniden dene</button>
     </section>`;
@@ -335,6 +342,8 @@ export function hydrateStructuredCommentary(root, commentary, options = {}) {
         ? 'AI yorumu hazırlanıyor…'
         : options.state === 'error'
           ? 'AI yorumu üretilemedi — kural tabanlı analiz'
+          : options.state === 'fallback'
+            ? 'AI yorumu geçici olarak sınırlı — temel analiz'
           : options.source === 'ai'
             ? 'AI destekli karar yorumu'
             : 'Kural tabanlı karar yorumu';
@@ -360,7 +369,7 @@ export function hydrateStructuredCommentary(root, commentary, options = {}) {
     }).join('');
   }
 
-  retry?.classList.toggle('hidden', options.state !== 'error');
+  retry?.classList.toggle('hidden', !['error', 'fallback'].includes(options.state || 'ready'));
 }
 
 export const AI_COMMENTARY_TIMEOUT_MS = 10_000;
