@@ -1,4 +1,4 @@
-import { initCorporateUx } from '../runtime/corporate-ux.js';
+import { mountCorporatePage } from '../runtime/corporate-page-mount.js';
 import { PARTNER_FUNNEL_EVENTS, trackPartnerFunnel } from '../features/partner/partner-platform.js';
 import {
   PARTNER_WEBHOOK_HEADERS,
@@ -323,8 +323,8 @@ function mountDocsPage() {
   mountTestConsole(document.getElementById('partner-docs-console-root'));
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  initCorporateUx();
+mountCorporatePage(() => {
   trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.DOCS_VIEW, { path: '/partner-docs.html', version: 'p2.2' });
   mountDocsPage();
-});
+  document.querySelector('[data-partner-prerender]')?.remove();
+}, { label: 'Partner API dokümantasyonu' });

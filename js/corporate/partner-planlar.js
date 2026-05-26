@@ -1,4 +1,4 @@
-import { initCorporateUx } from '../runtime/corporate-ux.js';
+import { mountCorporatePage } from '../runtime/corporate-page-mount.js';
 import {
   renderProductTierCards,
   renderComparisonTable,
@@ -97,8 +97,8 @@ function mountPricingPage() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  initCorporateUx();
+mountCorporatePage(() => {
   trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.PRICING_VIEW, { path: '/partner-planlar.html' });
   mountPricingPage();
-});
+  document.querySelector('[data-partner-prerender]')?.remove();
+}, { label: 'Partner planları' });

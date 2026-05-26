@@ -273,6 +273,76 @@
   background: #f8fafc;
 }
 
+.ib-partner-prerender {
+  padding: 0 0 2rem;
+}
+
+.ib-partner-prerender-hero {
+  margin-bottom: 1.5rem;
+}
+
+.ib-partner-prerender-section {
+  margin: 1.25rem 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  background: var(--surface-color, #fff);
+}
+
+.ib-partner-prerender-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.ib-partner-prerender-note {
+  margin-top: 1rem;
+}
+
+body.ib-corporate-mounted .ib-partner-prerender-note {
+  display: none;
+}
+
+.ib-corporate-mount-error {
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  background: #fef2f2;
+}
+
+.ib-decision-surface-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--primary-color, #2563eb) 18%, #e2e8f0);
+  background: color-mix(in srgb, var(--primary-color, #2563eb) 6%, #fff);
+}
+
+.ib-decision-surface-banner h3 {
+  margin: 0.35rem 0;
+  font-size: 1.05rem;
+}
+
+.ib-decision-surface-banner p {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 0.92rem;
+  color: var(--text-secondary, #475569);
+}
+
+.ib-decision-surface-banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .ib-partner-docs-nav-title {
   font-size: 0.72rem;
   text-transform: uppercase;

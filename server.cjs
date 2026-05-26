@@ -75,9 +75,35 @@ app.use('/api', (req, res) => {
   });
 });
 
-// Serve dev index with unhashed bundle for SPA routes
-app.get('*', (_req, res) => {
-  let html = require('fs').readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+// Static HTML / Auto — do not SPA-fallback over standalone pages
+app.get('*', (req, res, next) => {
+  const fs = require('fs');
+  const raw = req.path.split('?')[0];
+  const rel = raw.replace(/^\//, '');
+
+  if (rel.endsWith('.html')) {
+    const file = path.join(__dirname, rel);
+    if (fs.existsSync(file) && fs.statSync(file).isFile()) {
+      return res.sendFile(file);
+    }
+    return next();
+  }
+
+  if (raw === '/auto' || raw === '/auto/') {
+    const autoIndex = path.join(__dirname, 'auto', 'index.html');
+    if (fs.existsSync(autoIndex)) {
+      return res.sendFile(autoIndex);
+    }
+  }
+
+  if (raw.startsWith('/auto/') && !path.extname(raw)) {
+    const autoIndex = path.join(__dirname, 'auto', 'index.html');
+    if (fs.existsSync(autoIndex)) {
+      return res.sendFile(autoIndex);
+    }
+  }
+
+  let html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
   html = html.replace(/js\/app\.bundle-[A-Z0-9]+\.js/g, 'js/app.bundle.js');
   res.type('html').send(html);
 });

@@ -25,6 +25,7 @@ const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'ma
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const { injectRouteBootstrap } = require('./lib/route-bootstrap.cjs');
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
+const { injectPartnerHtmlFiles } = require('./lib/inject-partner-prerender.cjs');
 const publicEnvKeys = [
   'SUPABASE_URL',
   'SUPABASE_ANON_KEY',
@@ -325,6 +326,8 @@ fs.copyFileSync(path.join(root, '_redirects'), path.join(dist, '_redirects'));
 if (fs.existsSync(path.join(root, '_headers'))) {
   fs.copyFileSync(path.join(root, '_headers'), path.join(dist, '_headers'));
 }
+
+injectPartnerHtmlFiles(dist);
 
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');

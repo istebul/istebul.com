@@ -5,6 +5,7 @@ import {
   captureAuthReturnFromUrl,
   handleAuthRouteEntry
 } from './runtime/auth-return.js';
+import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
 import { stripLocalePrefix } from './platform/locale-registry.js';
 import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
@@ -155,6 +156,7 @@ class App {
 
             // Initialize router
             this.router.init();
+            initDecisionSurfaceBanners();
 
             this.setupCookieConsent();
             this.renderHeroDecisionPreview();

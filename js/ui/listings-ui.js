@@ -19,9 +19,12 @@ export class ListingsUI {
             ` : `
                 <div class="empty-state marketplace-empty-state">
                     <i data-lucide="search"></i>
-                    <h3>Eşleşen seçenek bulunamadı</h3>
-                    <p>Filtreleri genişletin veya TCO analiziyle size uygun profili yeniden oluşturun.</p>
-                    <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Karar analizini aç</a>
+                    <h3>Canlı seçenek bulunamadı veya filtre dar</h3>
+                    <p>Bu alan karar skoruna göre keşif içindir — klasik ilan sitesi değildir. Ana karar akışı Auto TCO analizidir; ardından sonuçları burada veya karşılaştırmada sürdürebilirsiniz.</p>
+                    <div class="empty-state-actions">
+                      <a href="/auto/" class="btn btn-primary"><i data-lucide="sparkles"></i> TCO analizini başlat</a>
+                      <a href="/karsilastir" class="btn btn-outline">Karşılaştırma merkezi</a>
+                    </div>
                 </div>
             `;
         } else {

@@ -1,4 +1,4 @@
-import { initCorporateUx } from '../runtime/corporate-ux.js';
+import { mountCorporatePage } from '../runtime/corporate-page-mount.js';
 import { PARTNER_FUNNEL_EVENTS, trackPartnerFunnel } from '../features/partner/partner-platform.js';
 import {
   PARTNER_TRUST_NAV,
@@ -19,9 +19,9 @@ function mountContent() {
   if (root) root.innerHTML = renderTrustCenterHtml();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  initCorporateUx();
+mountCorporatePage(() => {
   trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.TRUST_VIEW, { path: '/partner-guven.html' });
   mountNav();
   mountContent();
-});
+  document.querySelector('[data-partner-prerender]')?.remove();
+}, { label: 'Partner güven merkezi' });

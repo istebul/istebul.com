@@ -3,10 +3,10 @@
  */
 
 const EXAMPLE_METRICS = Object.freeze({
-  analyses: '12.400+',
-  reports: '3.100+',
-  users: 'Aktif',
-  partners: '50+'
+  analyses: 'Örnek',
+  reports: 'Örnek',
+  users: '—',
+  partners: 'Pilot'
 });
 
 export function formatMetricLabel(value, fallback = '—') {

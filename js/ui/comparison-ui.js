@@ -7,8 +7,12 @@ export class ComparisonUI {
             container.innerHTML =
                 '<div class="empty-state">' +
                     '<i data-lucide="columns-3"></i>' +
-                    '<h3>Karşılaştırma için seçenek ekleyin</h3>' +
-                    '<p>Karar sonucu veya ilan kartlarından seçenekleri karşılaştırmaya ekleyin.</p>' +
+                    '<h3>Karşılaştırma listeniz boş</h3>' +
+                    '<p>Auto analiz sonuçlarından veya seçenek kartlarından &quot;Karşılaştır&quot; ile ekleyin. Skor, maliyet ve riskler yan yana okunur.</p>' +
+                    '<div class="empty-state-actions">' +
+                      '<a href="/auto/" class="btn btn-primary">TCO analizini başlat</a>' +
+                      '<a href="/ilanlar/" class="btn btn-outline">Seçeneklere git</a>' +
+                    '</div>' +
                 '</div>';
             this.loadIcons();
             return;
