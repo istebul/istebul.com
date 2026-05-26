@@ -628,8 +628,55 @@ img {
 
 .newsletter-form {
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     flex-wrap: wrap;
     gap: 0.75rem;
+}
+
+.newsletter-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    max-width: 42rem;
+    line-height: 1.45;
+}
+
+.newsletter-consent span {
+    flex: 1;
+}
+
+.newsletter-submit {
+    margin-top: 0.15rem;
+}
+
+.how-section-cta,
+.partner-enterprise-cta {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.partner-enterprise-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+}
+
+.partner-enterprise-card {
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+    background: var(--surface-color);
+}
+
+.nav-link-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    padding: 0;
 }
 
 .newsletter-form input {
@@ -7223,6 +7270,7 @@ main > section:not(.hero-section) {
 }
 
 .marketplace-result-copy span {
+    display: block;
     color: var(--text-primary);
     font-size: clamp(1rem, 1.4vw, 1.22rem);
     font-weight: 900;
@@ -7230,6 +7278,7 @@ main > section:not(.hero-section) {
 }
 
 .marketplace-result-copy small {
+    display: block;
     color: var(--text-secondary);
     font-weight: 740;
     overflow-wrap: anywhere;

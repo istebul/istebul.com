@@ -17,7 +17,7 @@ export const BRAND_VOICE = Object.freeze({
     plans: 'Planları incele',
     analysisStart: 'Analizi başlat',
     saveAnalysis: 'Analizini kaydet ve devam et',
-    accountLogin: 'Hesabına gir',
+    accountLogin: 'Giriş Yap',
     accountRegister: 'Analizini kaydet',
     addOption: 'Seçenek ekle',
     publishOption: 'Seçeneği kaydet',

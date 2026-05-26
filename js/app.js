@@ -182,6 +182,23 @@ class App {
             }
 
             const deferHeavyWork = () => {
+                const surface = resolveRouteSurface(window.location.pathname);
+                const appSurfaces = new Set([
+                    'ilanlar',
+                    'listing-detail',
+                    'compare',
+                    'favoriler',
+                    'history',
+                    'quiz',
+                    'profil',
+                    'messages',
+                    'add-listing'
+                ]);
+
+                if (!appSurfaces.has(surface)) {
+                    return;
+                }
+
                 this.loadListings().catch((error) => {
                     console.error('Failed to load listings:', error);
                 });
@@ -1084,10 +1101,12 @@ class App {
         const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
         const logoutBtn = document.getElementById('logout-btn');
+        const logoutHeaderBtn = document.getElementById('logout-btn-header');
 
         if (loginBtn) loginBtn.addEventListener('click', () => this.auth.showLoginModal());
         if (registerBtn) registerBtn.addEventListener('click', () => this.auth.showRegisterModal());
         if (logoutBtn) logoutBtn.addEventListener('click', () => this.handleLogout());
+        if (logoutHeaderBtn) logoutHeaderBtn.addEventListener('click', () => this.handleLogout());
 
         // Add listing button
         const addListingBtn = document.getElementById('add-listing-btn');
@@ -4522,7 +4541,14 @@ document.addEventListener('click', (event) => {
 });
 
 // Production route visibility guard (kept in sync with js/core/router.js marketing IDs)
-const MARKETING_SECTION_IDS = new Set(['home', 'trust', 'how-it-works', 'pricing', 'categories']);
+const MARKETING_SECTION_IDS = new Set([
+    'home',
+    'trust',
+    'methodology-teaser',
+    'how-it-works',
+    'pricing',
+    'partner-enterprise'
+]);
 const MARKETING_PATH_ALIASES = new Set(['/metodoloji-ozet', '/planlar-ozet']);
 
 function applyHomeMarketingVisibility() {

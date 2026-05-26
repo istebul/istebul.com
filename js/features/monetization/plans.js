@@ -18,10 +18,9 @@ export const PLANS = {
     priceLabel: 'Ücretsiz',
     description: 'TCO özeti ve 2 model karşılaştırma — satın alma öncesi yanlış seçim riskini görün',
     highlights: [
-      '5 adımlı maliyet analizi (Auto)',
-      '2 araç TCO karşılaştırma',
-      'İsteğe bağlı partner teklif talebi',
-      'Şeffaf metodoloji özeti'
+      'Ücretsiz TCO özeti',
+      '2 araç karşılaştırma',
+      'Şeffaf metodoloji'
     ]
   },
   pro: {
@@ -53,10 +52,10 @@ export const PLANS = {
     },
     highlights: [
       'Sınırsız karşılaştırma',
-      'Detaylı premium karar raporu',
-      'Şeffaf AI gerekçe özeti (skoru değiştirmez)',
+      'Premium karar raporu',
       'Öncelikli partner eşleşmesi',
-      'Karar geçmişi ve export'
+      '7 gün ücretsiz deneme',
+      'Stripe güvenli ödeme'
     ],
     cta: 'Karar riskini azalt'
   },

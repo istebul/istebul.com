@@ -364,7 +364,7 @@ export class PremiumPages {
             <div><i data-lucide="user-check"></i><strong>Kullanıcı kontrolü</strong><p>Veri minimizasyonu</p></div>
             <div><i data-lucide="badge-check"></i><strong>Kurumsal hazır</strong><p>Enterprise SLA</p></div>
           </div>
-          <a href="/auto/" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="metodoloji_trust">Ücretsiz maliyet analizi</a>
+          <a href="/auto/" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="metodoloji_trust">TCO analizini başlat</a>
         </div>
       </section>
     </div>`;
@@ -405,7 +405,7 @@ export class PremiumPages {
             <h2>Hâlâ kararsız mısınız?</h2>
             <p>Önce toplam maliyeti görün; Pro ile karşılaştırmayı derinleştirin.</p>
           </div>
-          <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="planlar_footer">Ücretsiz maliyet analizi</a>
+          <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="planlar_footer">TCO analizini başlat</a>
         </div>
       </section>
     </div>`;

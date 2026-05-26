@@ -102,8 +102,8 @@ export class UIManager {
             mobileAuthActions.id = 'mobile-auth-actions';
             mobileAuthActions.className = 'mobile-auth-actions';
             mobileAuthActions.innerHTML = `
-                <button type="button" class="btn btn-outline" data-auth-open="login" data-mobile-login>Hesabına gir</button>
-                <button type="button" class="btn btn-primary" data-auth-open="register" data-mobile-register aria-label="Analizini kaydet ve devam et">Analizini kaydet ve devam et</button>
+                <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav_mobile">TCO analizini başlat</a>
+                <button type="button" class="btn btn-outline" data-auth-open="login" data-mobile-login>Giriş Yap</button>
             `;
             navMenu.append(mobileAuthActions);
         }
@@ -177,22 +177,25 @@ export class UIManager {
     updateAuthUI(user) {
         const navAuth = document.getElementById('nav-auth');
         const navUser = document.getElementById('nav-user');
-        const navMessages = document.getElementById('nav-messages');
+        const navLinksAnon = document.getElementById('nav-links-anon');
+        const navLinksAuth = document.getElementById('nav-links-auth');
 
         if (!navAuth || !navUser) return;
 
         if (user) {
             navAuth.classList.add('hidden');
-            navUser.classList.remove('hidden');
+            navUser.classList.add('hidden');
             navAuth.style.display = 'none';
-            navUser.style.display = 'flex';
-            if (navMessages) navMessages.style.display = 'block';
+            navUser.style.display = 'none';
+            navLinksAnon?.classList.add('hidden');
+            navLinksAuth?.classList.remove('hidden');
         } else {
             navAuth.classList.remove('hidden');
             navUser.classList.add('hidden');
             navAuth.style.display = 'flex';
             navUser.style.display = 'none';
-            if (navMessages) navMessages.style.display = 'none';
+            navLinksAnon?.classList.remove('hidden');
+            navLinksAuth?.classList.add('hidden');
         }
     }
 
@@ -360,10 +363,17 @@ export class UIManager {
 
         toolbar.hidden = false;
         if (countLabel) {
-            countLabel.textContent = count === 0 ? 'Size uygun seçenekler hazırlanıyor' : (count === 1 ? '1 sonuç' : this.formatNumberPlain(count) + ' sonuç');
+            countLabel.textContent =
+                count === 0
+                    ? 'Size uygun seçenekler hazırlanıyor'
+                    : count === 1
+                      ? '1 sonuç'
+                      : `${this.formatNumberPlain(count)} sonuç`;
         }
         if (contextLabel) {
-            contextLabel.textContent = this.getListingToolbarContext(options, count);
+            contextLabel.textContent =
+                count === 0 ? 'Karar skoruna göre listeleniyor' : this.getListingToolbarContext(options, count);
+            contextLabel.hidden = false;
         }
         if (sortSelect && sortSelect.value !== sort) {
             sortSelect.value = sort;

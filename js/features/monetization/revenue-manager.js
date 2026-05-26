@@ -372,7 +372,7 @@ export class RevenueManager {
           <p class="revenue-plan-desc">${PLANS.free.description}</p>
           <ul class="revenue-plan-features">${this.renderPlanFeatureList(PLANS.free.highlights)}</ul>
           <div class="revenue-plan-card-foot">
-            <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">Ücretsiz maliyet analizi</a>
+            <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">TCO analizini başlat</a>
           </div>
         </article>
         <article class="revenue-plan-card revenue-plan-card--featured" data-revenue-plan-pro role="listitem">

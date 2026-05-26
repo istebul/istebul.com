@@ -4,7 +4,7 @@
 import { BRAND_VOICE } from '../core/brand-voice.js';
 
 const PRIMARY_AUTO_SELECTORS =
-  '.nav-cta-auto, [data-analytics-placement="hero"] .btn-primary, [data-analytics-placement="sticky"], [data-analytics-placement="methodology_teaser"], [data-analytics-placement="premium_hero"], [data-analytics-placement="premium_footer"]';
+  '.nav-cta-auto, [data-analytics-placement="hero"] .btn-primary, [data-analytics-placement="sticky"], [data-analytics-placement="methodology_teaser"], [data-analytics-placement="how_it_works"], [data-analytics-placement="partner_enterprise"], [data-analytics-placement="pricing_free"], [data-analytics-placement="premium_hero"], [data-analytics-placement="premium_footer"]';
 
 export function initBrandConsistency() {
   if (typeof document === 'undefined') return;

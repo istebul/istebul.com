@@ -53,17 +53,23 @@ html.ib-route-pending [data-private-section]{display:none!important}
 /* No-JS / pre-bootstrap: marketing home only */
 html:not([data-ib-route]) #home,
 html:not([data-ib-route]) #trust,
+html:not([data-ib-route]) #methodology-teaser,
 html:not([data-ib-route]) #how-it-works,
-html:not([data-ib-route]) #category-ownership,
 html:not([data-ib-route]) #pricing,
-html:not([data-ib-route]) #categories{display:block!important}
+html:not([data-ib-route]) #partner-enterprise{display:block!important}
+html:not([data-ib-route]) #platform-excellence,
+html:not([data-ib-route]) #category-ownership,
+html:not([data-ib-route]) #categories{display:none!important}
 html:not([data-ib-route]) [data-private-section]{display:none!important}
 html[data-ib-route="home"] #home,
 html[data-ib-route="home"] #trust,
+html[data-ib-route="home"] #methodology-teaser,
 html[data-ib-route="home"] #how-it-works,
-html[data-ib-route="home"] #category-ownership,
 html[data-ib-route="home"] #pricing,
-html[data-ib-route="home"] #categories{display:block!important}
+html[data-ib-route="home"] #partner-enterprise{display:block!important}
+html[data-ib-route="home"] #platform-excellence,
+html[data-ib-route="home"] #category-ownership,
+html[data-ib-route="home"] #categories{display:none!important}
 html[data-ib-route="ilanlar"] #ilanlar,
 html[data-ib-route="listing-detail"] #listing-detail,
 html[data-ib-route="compare"] #compare,
@@ -143,16 +149,23 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                 </span>
             </a>
             <div class="nav-menu" id="nav-menu">
-                <a href="/karar-analizi" class="nav-link">Karar analizi</a>
-                <a href="/metodoloji" class="nav-link">Metodoloji</a>
-                <a href="/planlar" class="nav-link">Planlar</a>
-                <a href="/messages/" class="nav-link hidden" id="nav-messages">Mesajlar</a>
+                <div id="nav-links-anon" class="nav-links-group">
+                    <a href="/karar-analizi" class="nav-link" data-native-route>Karar analizi</a>
+                    <a href="/metodoloji" class="nav-link" data-native-route>Metodoloji</a>
+                    <a href="/planlar" class="nav-link" data-native-route>Planlar</a>
+                    <a href="/partner-olun.html" class="nav-link">Partner programı</a>
+                </div>
+                <div id="nav-links-auth" class="nav-links-group hidden">
+                    <a href="/profil/" class="nav-link" data-auth-only>Hesabım</a>
+                    <a href="/ilanlar/" class="nav-link" data-my-listings>Seçeneklerim</a>
+                    <a href="/messages/" class="nav-link" id="nav-messages">Mesajlar</a>
+                    <button type="button" class="nav-link nav-link-btn" id="logout-btn-header" data-auth-only>Oturumu kapat</button>
+                </div>
             </div>
             <div class="nav-controls">
                 <div class="nav-auth" id="nav-auth">
-                    <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav" title="Ücretsiz TCO analizi başlat" aria-label="Ücretsiz TCO analizi başlat">TCO analizini başlat</a>
-                    <button id="login-btn" class="btn btn-outline" type="button" data-auth-open="login" aria-label="Hesabına gir">Hesabına gir</button>
-                    <button id="register-btn" class="btn btn-ghost btn-sm" type="button" data-auth-open="register" title="Analizini kaydet ve devam et" aria-label="Analizini kaydet ve devam et">Analizini kaydet</button>
+                    <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav" title="TCO analizini başlat" aria-label="TCO analizini başlat">TCO analizini başlat</a>
+                    <button id="login-btn" class="btn btn-outline" type="button" data-auth-open="login" aria-label="Giriş Yap">Giriş Yap</button>
                 </div>
                 <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Koyu modu aç" aria-pressed="false" title="Tema değiştir">
                     <i data-lucide="moon"></i>
@@ -304,7 +317,7 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
         </section>
 
-        <section id="platform-excellence" class="ib-platform-excellence" aria-labelledby="platform-excellence-title">
+        <section id="platform-excellence" class="ib-platform-excellence hidden" data-landing-excluded aria-labelledby="platform-excellence-title" hidden>
             <div class="container">
                 <span class="section-kicker">Platform mükemmelliği</span>
                 <h2 id="platform-excellence-title">Marka gücü, gelir, teknoloji ve kullanıcı etkisi — tek karar yüzeyinde</h2>
@@ -354,13 +367,13 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                     </ol>
                     <div class="ib-methodology-teaser-actions">
                         <a href="/metodoloji" class="btn btn-outline" data-native-route>Metodoloji detayı</a>
-                        <a href="/auto/" class="btn btn-primary" data-cro-cta-methodology data-analytics-cta="cta_primary_auto" data-analytics-placement="methodology_teaser"><span class="growth-exp-label">Analizi başlat</span></a>
+                        <a href="/auto/" class="btn btn-primary" data-cro-cta-methodology data-analytics-cta="cta_primary_auto" data-analytics-placement="methodology_teaser"><span class="growth-exp-label">TCO analizini başlat</span></a>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="category-ownership" class="category-ownership-section section-bg ib-section-venture">
+        <section id="category-ownership" class="category-ownership-section section-bg ib-section-venture hidden" data-landing-excluded hidden>
             <div class="container">
                 <span class="section-kicker">Kategori sahipliği</span>
                 <h2>isteBul = karar altyapısı</h2>
@@ -404,6 +417,9 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                         <p>En uygun seçenekleri güçlü-zayıf yönleri ve aksiyon adımlarıyla görün.</p>
                     </div>
                 </div>
+                <p class="how-section-cta">
+                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="how_it_works">TCO analizini başlat</a>
+                </p>
             </div>
         </section>
 
@@ -680,13 +696,12 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                                     </div>
                                     <p class="revenue-plan-desc">TCO özeti ve 2 model karşılaştırma — satın alma öncesi yanlış seçim riskini görün</p>
                                     <ul class="revenue-plan-features">
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>5 adımlı maliyet analizi (Auto)</span></li>
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>2 araç TCO karşılaştırma</span></li>
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>İsteğe bağlı partner teklif talebi</span></li>
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Şeffaf metodoloji özeti</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Ücretsiz TCO özeti</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>2 araç karşılaştırma</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Şeffaf metodoloji</span></li>
                                     </ul>
                                     <div class="revenue-plan-card-foot">
-                                        <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_free">Ücretsiz maliyet analizi</a>
+                                        <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_free">TCO analizini başlat</a>
                                     </div>
                                 </article>
                                 <article class="revenue-plan-card revenue-plan-card--featured">
@@ -698,12 +713,14 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                                     </div>
                                     <p class="revenue-plan-desc">Sınırsız karşılaştırma, premium rapor ve öncelikli partner eşleşmesi</p>
                                     <ul class="revenue-plan-features">
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Sınırsız TCO karşılaştırma</span></li>
-                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Detaylı premium karar raporu</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Sınırsız karşılaştırma</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Premium karar raporu</span></li>
                                         <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Öncelikli partner eşleşmesi</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>7 gün ücretsiz deneme</span></li>
+                                        <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Stripe güvenli ödeme</span></li>
                                     </ul>
                                     <div class="revenue-plan-card-foot">
-                                        <a href="/planlar?checkout=pro" class="btn btn-primary btn-block" data-pricing-cta-pro data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_pro"><span class="growth-exp-label">Karar netliği için dene</span></a>
+                                        <a href="/planlar?checkout=pro" class="btn btn-primary btn-block" data-pricing-cta-pro data-native-route data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_pro"><span class="growth-exp-label">7 gün ücretsiz dene</span></a>
                                         <p class="revenue-plan-hint">Yıllık ₺2.870 (%20 tasarruf) · Stripe ile güvenli ödeme</p>
                                     </div>
                                 </article>
@@ -739,8 +756,33 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
         </section>
 
-        <!-- Categories Section -->
-        <section id="categories" class="categories-section ib-section-venture">
+        <section id="partner-enterprise" class="partner-enterprise-section section-surface ib-section-venture" aria-labelledby="partner-enterprise-title">
+            <div class="container">
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">Partner &amp; kurumsal</span>
+                    <h2 id="partner-enterprise-title">Galeri ağları ve kurumsal ekipler için</h2>
+                    <p>Skorlu lead, API entegrasyonu ve özel SLA ile partner operasyonlarınızı ölçeklendirin — bireysel karar akışından ayrı bir kanal.</p>
+                </header>
+                <div class="partner-enterprise-grid">
+                    <article class="partner-enterprise-card">
+                        <h3>Partner programı</h3>
+                        <p>Galeri ve finans partnerleri için CPL ve outcome tabanlı eşleşme.</p>
+                        <a href="/partner-olun.html" class="btn btn-outline">Partner olun</a>
+                    </article>
+                    <article class="partner-enterprise-card">
+                        <h3>Enterprise</h3>
+                        <p>Çoklu kullanıcı, webhook ve özel metodoloji ile kurumsal karar ekipleri.</p>
+                        <a href="/iletisim.html?konu=enterprise" class="btn btn-outline">Kurumsal teklif al</a>
+                    </article>
+                </div>
+                <p class="partner-enterprise-cta">
+                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="partner_enterprise">TCO analizini başlat</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- Categories Section (app shell — not on marketing home) -->
+        <section id="categories" class="categories-section ib-section-venture hidden" data-landing-excluded hidden>
             <div class="container">
                 <header class="section-header ib-section-intro">
                     <span class="section-kicker">Ürün</span>
@@ -795,9 +837,9 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
                     <input type="email" id="newsletter-email" placeholder="E-posta adresinizi girin" required autocomplete="email">
                     <label class="newsletter-consent">
                         <input type="checkbox" id="newsletter-marketing-consent" name="marketing_consent" value="accepted" required>
-                        <span>Pazarlama e-postası almayı kabul ediyorum. İstediğim zaman vazgeçebilirim. <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik</a></span>
+                        <span>Pazarlama e-postası almayı kabul ediyorum. İstediğim zaman vazgeçebilirim. <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik politikası</a>.</span>
                     </label>
-                    <button type="submit" class="btn btn-primary">Abone Ol</button>
+                    <button type="submit" class="btn btn-primary newsletter-submit">Abone Ol</button>
                 </form>
             </div>
             <div class="footer-content">
@@ -855,11 +897,10 @@ html[data-ib-route="page-planlar"] #page-planlar{display:block!important}
             </div>
             <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi" data-i18n-aria="meta.language"></div>
             <div class="footer-bottom">
-                <p>&copy; <span id="current-year"></span> isteBul. Tüm hakları saklıdır.</p>
+                <p>&copy; <span id="current-year">2026</span> isteBul. Tüm hakları saklıdır.</p>
             </div>
         </div>
     </footer>
-        </section>
 
     <div class="cro-sticky-cta" role="region" aria-label="Hızlı başlangıç">
         <a href="/auto/" class="btn btn-primary" data-cro-cta-sticky data-analytics-cta="cta_primary_auto" data-analytics-placement="sticky" title="Ücretsiz TCO analizi başlat"><span class="growth-exp-label">TCO analizini başlat</span></a>

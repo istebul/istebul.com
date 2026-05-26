@@ -20,9 +20,8 @@ export const HOMEPAGE_SECTION_IDS = Object.freeze([
     'trust',
     'methodology-teaser',
     'how-it-works',
-    'category-ownership',
     'pricing',
-    'categories'
+    'partner-enterprise'
 ]);
 
 /** Hash targets on the marketing page. */
@@ -31,9 +30,8 @@ export const MARKETING_HASH_IDS = Object.freeze([
     'trust',
     'methodology-teaser',
     'how-it-works',
-    'category-ownership',
     'pricing',
-    'categories'
+    'partner-enterprise'
 ]);
 
 /** Legacy hash shortcuts on homepage (long-scroll). */

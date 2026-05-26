@@ -20,7 +20,7 @@ const mustContain = [
   ['js/runtime/enterprise-ux.js', 'initP4ProductPolish'],
   ['js/auto/auto-app.js', 'initP4ProductPolish'],
   ['scripts/production-build.cjs', 'p4-premium-product.css'],
-  ['index.html', 'Ücretsiz maliyet analizi'],
+  ['index.html', 'TCO analizini başlat'],
   ['index.html', 'ib-hero-venture'],
   ['index.html', 'methodology-teaser'],
   ['index.html', 'class="ib-enterprise"'],

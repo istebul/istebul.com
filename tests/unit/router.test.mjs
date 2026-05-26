@@ -17,8 +17,9 @@ const sections = new Map([
     ['trust', sectionStub('trust')],
     ['methodology-teaser', sectionStub('methodology-teaser')],
     ['how-it-works', sectionStub('how-it-works')],
-    ['category-ownership', sectionStub('category-ownership')],
     ['pricing', sectionStub('pricing')],
+    ['partner-enterprise', sectionStub('partner-enterprise')],
+    ['category-ownership', sectionStub('category-ownership')],
     ['categories', sectionStub('categories')],
     ['ilanlar', sectionStub('ilanlar')]
 ]);

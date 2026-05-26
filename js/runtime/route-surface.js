@@ -11,9 +11,10 @@ export const ROUTE_DOCUMENT_META = Object.freeze(routeMeta.surfaces);
 export const MARKETING_SURFACE_IDS = Object.freeze([
     'home',
     'trust',
+    'methodology-teaser',
     'how-it-works',
     'pricing',
-    'categories'
+    'partner-enterprise'
 ]);
 
 const PREMIUM_PATHS = Object.freeze({

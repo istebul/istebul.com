@@ -11,7 +11,7 @@ export const CONVERSION_COPY = Object.freeze({
     autoCta: BRAND_VOICE.cta.primaryAuto
   },
   mobileNav: {
-    login: 'Hesabına gir',
+    login: 'Giriş Yap',
     register: 'Analizini kaydet ve devam et'
   },
   auth: {

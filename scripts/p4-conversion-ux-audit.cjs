@@ -22,7 +22,7 @@ const mustContain = [
   ['js/app.js', 'CONVERSION_COPY'],
   ['js/core/conversion-copy.js', 'Analizini kaydet ve devam et'],
   ['js/runtime/conversion-micro-ux.js', 'ib-conversion-trust-line'],
-  ['index.html', 'Analizini kaydet'],
+  ['index.html', 'Giriş Yap'],
   ['js/auto/auto-app.js', 'initConversionMicroUx'],
   ['js/runtime/corporate-ux.js', 'initConversionMicroUx'],
   ['scripts/production-build.cjs', 'conversion-micro-ux.css']
