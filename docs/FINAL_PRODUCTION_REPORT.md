@@ -60,9 +60,23 @@ Site mevcut mimari korunarak canlı kullanıcıya hazır seviyeye yükseltildi: 
 - Arama haystack’ine yeni alanlar eklendi
 - Şema: `20260525_auto_lead_qualification.sql` (backward compatible)
 
-## 10–13. Test / build / commit / deploy
+## 10. npm test
 
-Bu rapor commit sonrası `npm test`, `npm run build`, `git log -1` ve canlı `curl` çıktılarıyla güncellenir.
+**PASS** — tam zincir (lint, build, build:check, router unit, `audit-site-links`, `audit-seo`, `audit-routes`, mevcut launch/P4 audit’leri).
+
+## 11. build
+
+**PASS** — `npm run build` (~324 dist dosyası); `dist/auto/index.html`, `dist/karar-asistani/index.html`, `sitemap.xml`, `robots.txt`, `_headers` doğrulandı.
+
+## 12. commit hash
+
+`35a333d` — `Finalize production-ready AI decision platform experience`
+
+## 13. deploy / push
+
+`git push origin main` başarılı (`e36d278..35a333d`). Cloudflare Pages otomatik deploy beklenir.
+
+Canlı `curl` (agent ortamı): ana sayfa/auto Cloudflare 403 (bot koruması); `robots.txt` **200**.
 
 ## 14. Kalan riskler
 
