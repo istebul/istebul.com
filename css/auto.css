@@ -396,6 +396,56 @@ h1{font-size:clamp(40px,6vw,72px);line-height:.96;margin:10px 0 22px}h2{font-siz
   font-weight: 700;
 }
 
+.wizard-progress-eta {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f766e;
+  white-space: nowrap;
+}
+
+.wizard-progress-text {
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.auto-results-guide {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding: 22px 24px;
+  border-radius: 22px;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+}
+
+.auto-results-guide h3 {
+  margin: 0 0 14px;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.auto-results-guide-steps {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  color: #334155;
+  line-height: 1.55;
+}
+
+.auto-results-guide-steps li {
+  margin-bottom: 10px;
+}
+
+.auto-results-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.auto-results-guide-foot {
+  margin: 0;
+  font-size: 13px;
+}
+
 .wizard-progress-milestones {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

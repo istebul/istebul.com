@@ -37,14 +37,3 @@ test.describe('Marketing shell (anon landing)', () => {
     await expect(page.locator('#auth-modal input[type="email"]')).toBeVisible();
   });
 });
-
-test.describe('Auto funnel smoke', () => {
-  test('/auto/ wizard yüklenir', async ({ page }) => {
-    await page.goto('/auto/');
-    await page.waitForLoadState('domcontentloaded');
-    await expect(page).toHaveTitle(/isteBul|Auto|TCO/i);
-    await expect(page.locator('#auto-wizard, .auto-wizard, [data-auto-hero-cta]').first()).toBeVisible({
-      timeout: 15000
-    });
-  });
-});

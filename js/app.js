@@ -1,5 +1,6 @@
 // isteBul v2 - Main Application
 import './runtime/locale-bootstrap.js';
+import { completeOAuthIfPresent } from './runtime/auth-oauth-callback.js';
 import { stripLocalePrefix } from './platform/locale-registry.js';
 import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
@@ -4468,6 +4469,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 document.addEventListener('DOMContentLoaded', async () => {
     const yearEl = document.getElementById('current-year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    await completeOAuthIfPresent();
 
     loadCMS();
     window.app = new App();
