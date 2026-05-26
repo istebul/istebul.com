@@ -26,6 +26,9 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 |--------|----------|
 | `SENTRY_DSN` | Build-time monitoring |
 | `LOGROCKET_APP_ID` | Build-time session replay |
+| `GOOGLE_SITE_VERIFICATION` | Search Console HTML doğrulama `content` değeri (build’e meta olarak gömülür) |
+| `ADSENSE_PUBLISHER_ID` | `ca-pub-…` — `ads.txt` + rehber sayfa reklamları |
+| `ADSENSE_AD_SLOT` | İsteğe bağlı reklam birimi ID |
 
 ## Tek seferlik CLI (repo admin)
 

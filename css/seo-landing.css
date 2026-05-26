@@ -147,6 +147,19 @@
   text-decoration: none;
 }
 
+.seo-ad-slot {
+  margin: 2rem 0;
+  padding: 1rem;
+  background: var(--seo-surface);
+  border: 1px dashed var(--seo-border);
+  border-radius: var(--seo-radius);
+  text-align: center;
+}
+
+.seo-ad-slot:empty {
+  display: none;
+}
+
 .seo-cta-note {
   margin: 0.75rem 0 0;
   font-size: 0.85rem;
