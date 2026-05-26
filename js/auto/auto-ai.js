@@ -1,4 +1,5 @@
-import { estimateAnnualCost } from './auto-cost-engine.js?v=cost2';
+import { buildOwnershipCosts } from './cost-engine.js';
+import { buildRecommendationIntelligence } from './recommendation-intelligence.js';
 import {
   scoreVehicleMatch,
   computeConfidenceMeta,
@@ -44,7 +45,7 @@ export function recommendVehicles(form, catalog = []) {
   const scored = pool
     .map((vehicle) => {
       const { score, scoreBreakdown } = scoreVehicleMatch(vehicle, form);
-      const costs = estimateAnnualCost(vehicle, form);
+      const costs = buildOwnershipCosts(vehicle, form);
       const costSource = costs.source === 'truth' ? 'truth' : 'estimate';
 
       const confidenceMeta = computeConfidenceMeta({
@@ -73,6 +74,14 @@ export function recommendVehicles(form, catalog = []) {
     .sort((a, b) => b.score - a.score);
 
   const top = scored.slice(0, 3);
+
+  top.forEach((vehicle, idx) => {
+    vehicle.recommendationIntelligence = buildRecommendationIntelligence(vehicle, form, {
+      alternatives: top,
+      rank: idx,
+      leader: top[0]
+    });
+  });
 
   const rankIntelligence = buildRankIntelligence(top, form);
   if (rankIntelligence) {

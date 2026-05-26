@@ -38,6 +38,8 @@ test('buildExplanationBundle includes structured sections', () => {
   assert.ok(bundle.reasoning.length >= 4);
   assert.equal(bundle.financial.rows.length, 2);
   assert.equal(bundle.rationales.length, 2);
+  assert.ok(bundle.expertCommentary?.facts);
+  assert.ok(bundle.expertCommentary?.interpretation);
   assert.ok(bundle.uncertainty.bullets.length >= 2);
 });
 

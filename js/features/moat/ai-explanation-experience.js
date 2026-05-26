@@ -39,6 +39,8 @@ export function buildExplanationBundle(results = [], formData = {}) {
   const rationales = buildRecommendationRationales(list);
   const uncertainty = buildUncertaintyPanel(leader, formData, list);
 
+  const expertCommentary = buildExpertCommentary(list, formData, leader);
+
   return {
     identity: {
       title: 'Karar asistanı',
@@ -51,7 +53,28 @@ export function buildExplanationBundle(results = [], formData = {}) {
     rationales,
     tradeoffs,
     uncertainty,
+    expertCommentary,
     leaderName: leader?.name || null
+  };
+}
+
+function buildExpertCommentary(results = [], formData = {}, leader = null) {
+  if (!leader) {
+    return {
+      facts: 'Skor ve TCO kural motorundan gelir.',
+      estimates: 'Finansman ve sigorta kalemleri simülasyondur.',
+      interpretation:
+        'Profil girdileri sınırlıysa sonuçları teklif aşamasında doğrulayın — bağlayıcı öneri değildir.'
+    };
+  }
+  const tco = Number(leader.costs?.ownership?.totals?.months12 || leader.costs?.total || 0);
+  const monthly = tco > 0 ? Math.round(tco / 12) : 0;
+  const dep = leader.costs?.ownership?.depreciation;
+
+  return {
+    facts: `${leader.name} için uyum skoru ${leader.score}/100; veri güven bandı ${leader.confidenceMeta?.label || 'hesaplanıyor'}.`,
+    estimates: `12 ay toplam yük yaklaşık ${formatMoney(tco)} (aylık ~${formatMoney(monthly)}). ${dep ? `Likidite skoru ${dep.liquidityScore}/100.` : ''}`,
+    interpretation: `Premium danışman özeti: ${leader.rankExplanation?.summary || 'Lider model profilinize göre öne çıkıyor; alternatifleri matris ve TCO ile birlikte okuyun.'} Yapay zeka bu metni destekler; skoru değiştirmez.`
   };
 }
 
@@ -225,6 +248,24 @@ export function renderAiExplanationExperience(bundle, options = {}) {
         <p class="ib-ai-synthesis-hint text-muted-sm">Bu paragraf tek AI çıktısıdır; skor ve TCO değiştirilmez.</p>
         ${refineNote}
       </div>
+
+      <section class="ib-ai-expert-commentary" aria-label="AI uzman yorumu">
+        <h4>AI uzman yorumu</h4>
+        <div class="ib-ai-expert-lanes">
+          <article class="ib-ai-expert-lane ib-ai-expert-lane--fact">
+            <span class="ib-ai-lane-label">Gerçek (motor)</span>
+            <p>${escapeHtml(b.expertCommentary?.facts || '')}</p>
+          </article>
+          <article class="ib-ai-expert-lane ib-ai-expert-lane--estimate">
+            <span class="ib-ai-lane-label">Tahmin</span>
+            <p>${escapeHtml(b.expertCommentary?.estimates || '')}</p>
+          </article>
+          <article class="ib-ai-expert-lane ib-ai-expert-lane--ai">
+            <span class="ib-ai-lane-label">AI yorum</span>
+            <p>${escapeHtml(b.expertCommentary?.interpretation || '')}</p>
+          </article>
+        </div>
+      </section>
 
       <div class="ib-ai-grid">
         <section class="ib-ai-panel" aria-label="Yapılandırılmış akıl yürütme">

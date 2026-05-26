@@ -75,6 +75,16 @@ import {
   renderDecisionInsightPanels,
   renderTrustLayerCompact
 } from '../features/moat/decision-insight-panels.js';
+import {
+  renderComparisonMatrix,
+  renderRecommendationIntelligencePanel
+} from './recommendation-intelligence.js';
+import {
+  renderResultsMetadataPanel,
+  renderOwnershipBreakdown,
+  renderHowCalculatedPanel
+} from './ownership-transparency.js';
+import { renderProviderCtaStrip } from './providers/index.js';
 import { WIZARD_ONBOARDING } from '../features/moat/category-positioning.js';
 import { initP4ProductPolish } from '../runtime/p4-product-polish.js';
 import { initMobilePremiumUx } from '../runtime/mobile-premium-ux.js';
@@ -527,7 +537,12 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
       finance_loan_amount: options.financeLoanAmount || '',
       finance_term: options.financeTerm || '',
       finance_monthly_payment: options.financeMonthlyPayment || '',
-      finance_total_payment: options.financeTotalPayment || ''
+      finance_total_payment: options.financeTotalPayment || '',
+      purchase_timeline: options.purchaseTimeline || leadPayload.purchase_timeline || '',
+      financing_intent: options.financingIntent || leadPayload.financing_intent || leadPayload.loan || '',
+      trade_in: options.tradeIn || leadPayload.trade_in || '',
+      urgency: options.urgency || leadPayload.urgency || '',
+      contact_preference: options.contactPreference || leadPayload.contact_preference || ''
     }
   });
 }
@@ -883,6 +898,43 @@ function openLeadModal(type, vehicle = '') {
             <option value="expert_consultation">Uzman görüşmesi</option>
           </select>
 
+          <div class="ib-lead-qualification-grid">
+            <div class="ib-lead-field">
+              <label for="lead-timeline">Satın alma zamanı</label>
+              <select id="lead-timeline" name="purchase_timeline">
+                <option value="">Seçiniz</option>
+                <option value="0-30">0–30 gün</option>
+                <option value="1-3">1–3 ay</option>
+                <option value="3-6">3–6 ay</option>
+                <option value="6+">6 ay+</option>
+              </select>
+            </div>
+            <div class="ib-lead-field">
+              <label for="lead-trade-in">Takas var mı?</label>
+              <select id="lead-trade-in" name="trade_in">
+                <option value="">Belirtmek istemiyorum</option>
+                <option value="yes">Evet</option>
+                <option value="no">Hayır</option>
+              </select>
+            </div>
+            <div class="ib-lead-field">
+              <label for="lead-urgency">Aciliyet</label>
+              <select id="lead-urgency" name="urgency">
+                <option value="medium">Orta</option>
+                <option value="high">Yüksek</option>
+                <option value="low">Düşük</option>
+              </select>
+            </div>
+            <div class="ib-lead-field">
+              <label for="lead-contact-pref">İletişim tercihi</label>
+              <select id="lead-contact-pref" name="contact_preference">
+                <option value="phone">Telefon</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="email">E-posta</option>
+              </select>
+            </div>
+          </div>
+
           <label class="lead-consent">
             <input name="privacy_consent" type="checkbox" value="accepted" required>
             <span>
@@ -941,12 +993,18 @@ function openLeadModal(type, vehicle = '') {
           ? financeComparison.offers.find((offer) => offer.provider === financeContext.bank) || financeComparison.offers[0]
           : null;
 
+        const leadForm = readForm(event.currentTarget);
         await updateLeadInterest(phone, selectedInterest, selectedVehicle, {
           turnstileToken,
           contactName,
           city,
           privacyConsent,
           marketingConsent,
+          purchaseTimeline: leadForm.purchase_timeline || '',
+          financingIntent: leadForm.financing_intent || getCurrentLeadPayload().loan || '',
+          tradeIn: leadForm.trade_in || '',
+          urgency: leadForm.urgency || '',
+          contactPreference: leadForm.contact_preference || '',
           financeBank: financeContext.bank || '',
           financeLoanAmount: financeComparison.loanAmount || '',
           financeTerm: financeComparison.term || '',
@@ -1376,6 +1434,10 @@ function renderResults(results) {
 
     ${renderTrustLayerCompact('auto')}
 
+    ${renderResultsMetadataPanel(results, formData, escapeHtml)}
+
+    ${renderComparisonMatrix(displayResults, formData, escapeHtml)}
+
     ${rankIntelPanel}
 
     ${renderAutoMethodologyStrip()}
@@ -1474,6 +1536,11 @@ function renderResults(results) {
 
         ${renderDecisionInsightPanels(vehicle, formData, { alternatives: displayResults, rank: index }, escapeHtml)}
 
+        ${vehicle.recommendationIntelligence ? renderRecommendationIntelligencePanel(vehicle.recommendationIntelligence, escapeHtml) : ''}
+
+        ${renderOwnershipBreakdown(vehicle, formData, escapeHtml)}
+        ${renderHowCalculatedPanel(vehicle, escapeHtml)}
+
         <div class="analysis-box auto-economic-verdict">
           <strong>Ekonomik değerlendirme</strong>
           <p>${escapeHtml(buildEconomicVerdict(vehicle))}</p>
@@ -1497,15 +1564,14 @@ function renderResults(results) {
         </div>
 
         <div class="cost auto-market-cost">
-          <p><strong>12 aylık tahmini maliyet</strong></p>
-          <p>${formatAmount(vehicle.costs.total)}</p>
+          <p><strong>12 aylık işletme + finansman</strong></p>
+          <p>${formatAmount(vehicle.costs?.ownership?.totals?.months12 || vehicle.costs.total)}</p>
           <small>
             Yakıt ${formatAmount(vehicle.costs.fuel)} •
             Sigorta ${formatAmount(vehicle.costs.insurance)} •
             Kasko ${formatAmount(vehicle.costs.kasko || 0)} •
             Bakım ${formatAmount(vehicle.costs.maintenance)} •
-            Vergi ${formatAmount(vehicle.costs.tax || 0)} •
-            Lastik ${formatAmount(vehicle.costs.tires || 0)} •
+            MTV ${formatAmount(vehicle.costs.tax || 0)} •
             Değer kaybı ${formatAmount(vehicle.costs.depreciation || 0)}
           </small>
         </div>
@@ -1534,7 +1600,7 @@ function renderResults(results) {
           Teklif sürecini başlat
         </button>
 
-        <button class="btn secondary auto-compare-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}">
+        <button class="btn secondary auto-compare-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}" data-track-compare="1">
           Karşılaştır
         </button>
 
@@ -1552,6 +1618,8 @@ function renderResults(results) {
 
         <p class="cta-microcopy">Ücretsiz ön değerlendirme • zorunlu satın alma yok</p>
       </div>
+
+      ${renderProviderCtaStrip({ vehicleName: vehicle.name, formData }, escapeHtml)}
     </article>
   `}).join('') + `
     ${renderAiExplanationExperience(buildExplanationBundle(results, formData), { pro })}
@@ -1647,6 +1715,19 @@ function renderResults(results) {
 
   hydrateDealerOffers(results, formData);
   void updateAiSummary();
+
+  root.querySelectorAll('[data-ownership-breakdown], [data-how-calculated]').forEach((el) => {
+    el.addEventListener('toggle', () => {
+      if (!el.open) return;
+      trackAutoEvent('auto_explanation_expanded', {
+        panel: el.dataset.ownershipBreakdown !== undefined ? 'ownership' : 'how_calculated'
+      });
+    });
+  });
+
+  if (root.querySelector('.ib-auto-compare-matrix')) {
+    trackUniqueAutoEvent('auto_comparison_opened', { count: displayResults.length }, 'compare_matrix');
+  }
 
   const ensureAdvisorUpsell = () => {
     if (isProActive() || !aiBox) return true;
@@ -1818,6 +1899,27 @@ const wizardSteps = [
         why: 'Kilometre, amortisman ve yakıt giderlerinin en güçlü girdilerinden biridir.',
         options: kmOptions,
         custom: kmCustom
+      },
+      {
+        key: 'city_ratio',
+        title: 'Kullanım dengesi',
+        why: 'Şehir içi / otoyol payı yakıt ve amortisman tahminini kişiselleştirir.',
+        options: [
+          { label: 'Ağırlıklı şehir içi', value: '0.85', note: 'Düşük ortalama hız' },
+          { label: 'Dengeli', value: '0.6', note: 'Karma kullanım' },
+          { label: 'Ağırlıklı otoyol', value: '0.25', note: 'Uzun yol' }
+        ]
+      },
+      {
+        key: 'ownership_months',
+        title: 'Sahiplik süresi hedefi',
+        why: 'Toplam maliyet ve değer kaybı görünümü bu süreye göre hesaplanır.',
+        options: [
+          { label: '12 ay', value: '12', note: 'Kısa dönem' },
+          { label: '24 ay', value: '24', note: 'Orta dönem' },
+          { label: '36 ay', value: '36', note: 'Önerilen varsayılan' },
+          { label: '48 ay', value: '48', note: 'Uzun dönem' }
+        ]
       },
       {
         key: 'location',
@@ -2586,6 +2688,11 @@ document.addEventListener('click', async (event) => {
     const vehicleName = compareBtn.dataset.vehicle;
     const vehicle = lastResults[vehicleIndex] || lastResults.find(v => v.name === vehicleName);
 
+    trackAutoEvent('auto_comparison_opened', {
+      source: 'compare_button',
+      vehicle: vehicleName || ''
+    });
+
     if (vehicle) {
       addAutoComparisonFallback(vehicle);
     }
@@ -2687,10 +2794,28 @@ Destek almak istiyorum.`;
       return;
     }
 
+    const providerId = interestBtn.dataset.providerId || '';
+    const providerEventMap = {
+      finance: 'auto_financing_cta_clicked',
+      insurance: 'auto_insurance_cta_clicked',
+      advisor: 'auto_advisor_cta_clicked',
+      dealer: 'auto_dealer_cta_clicked'
+    };
+    if (providerId && providerEventMap[providerId]) {
+      trackAutoEvent(providerEventMap[providerId], {
+        interest_type: interest,
+        vehicle,
+        provider_id: providerId,
+        placeholder: interestBtn.dataset.providerPlaceholder === '1'
+      });
+    }
+
     const eventMap = {
       insurance: 'auto_insurance_click',
       vehicle_offer: 'auto_vehicle_offer_click',
-      premium_report: 'auto_premium_report_click'
+      premium_report: 'auto_premium_report_click',
+      expert_consultation: 'auto_advisor_cta_clicked',
+      dealer_match: 'auto_dealer_cta_clicked'
     };
 
     if (eventMap[interest]) {

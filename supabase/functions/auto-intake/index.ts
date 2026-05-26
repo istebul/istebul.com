@@ -93,7 +93,13 @@ const ALLOWED_EVENTS = new Set([
   "auto_insurance_click",
   "auto_vehicle_offer_click",
   "auto_premium_report_click",
-  "auto_premium_paywall_view"
+  "auto_premium_paywall_view",
+  "auto_comparison_opened",
+  "auto_explanation_expanded",
+  "auto_financing_cta_clicked",
+  "auto_insurance_cta_clicked",
+  "auto_advisor_cta_clicked",
+  "auto_dealer_cta_clicked"
 ]);
 
 function clampString(value: unknown, max = 64) {
@@ -541,10 +547,19 @@ Deno.serve(async (req) => {
       utm_campaign: clampString(growthMeta.utm_campaign || growthMeta.growth_campaign, 120) || null,
     };
 
+    const qualNotes = [
+      form.purchase_timeline ? `Satın alma: ${clampString(form.purchase_timeline, 20)}` : "",
+      form.financing_intent ? `Finansman niyeti: ${clampString(form.financing_intent, 20)}` : "",
+      form.trade_in ? `Takas: ${clampString(form.trade_in, 10)}` : "",
+      form.urgency ? `Aciliyet: ${clampString(form.urgency, 12)}` : "",
+      form.contact_preference ? `İletişim: ${clampString(form.contact_preference, 20)}` : "",
+    ].filter(Boolean).join(" | ");
+
     const contextNotes = [
       form.city ? `Şehir: ${clampString(form.city, 60)}` : "",
       form.district ? `İlçe: ${clampString(form.district, 60)}` : "",
       form.privacy_consent === "accepted" ? "KVKK/partner paylaşım onayı: alındı" : "",
+      qualNotes,
     ].filter(Boolean).join(" | ");
 
     const financeNotes = [
@@ -593,6 +608,11 @@ Deno.serve(async (req) => {
       utm_source: growthAttribution.utm_source,
       utm_medium: growthAttribution.utm_medium,
       utm_campaign: growthAttribution.utm_campaign,
+      purchase_timeline: clampString(form.purchase_timeline, 20) || null,
+      financing_intent: clampString(form.financing_intent, 20) || null,
+      trade_in: clampString(form.trade_in, 10) || null,
+      urgency: clampString(form.urgency, 12) || null,
+      contact_preference: clampString(form.contact_preference, 20) || null,
     };
 
     const { data: inserted, error: insertError } = await adminClient
