@@ -55,16 +55,18 @@ html.ib-route-pending [data-private-section]{display:none!important}
 html.ib-route-pending #main-content > section[id]{display:none!important}
 html.ib-route-pending .ib-prerender-seo{display:none!important}
 html[data-ib-route="home"] #home,
-html[data-ib-route="home"] #home-vertical-focus,
 html[data-ib-route="home"] #home-problem,
+html[data-ib-route="home"] #how-it-works,
+html[data-ib-route="home"] #home-vertical-focus,
 html[data-ib-route="home"] #home-ai-engine,
-html[data-ib-route="home"] #home-tco-lens,
-html[data-ib-route="home"] #trust,
+html[data-ib-route="home"] #home-ai-diff,
 html[data-ib-route="home"] #sample-preview,
-html[data-ib-route="home"] #how-it-works{display:none!important}
+html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #pricing,
 html[data-ib-route="home"] #partner-enterprise,
-html[data-ib-route="home"] #landing-faq{display:block!important}
+html[data-ib-route="home"] #landing-faq,
+html[data-ib-route="home"] #home-final-cta{display:block!important}
+html[data-ib-route="home"] #home-tco-lens{display:none!important}
 html[data-ib-route="home"] #platform-excellence,
 html[data-ib-route="home"] #category-ownership,
 html[data-ib-route="home"] #categories,
@@ -146,16 +148,15 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <span class="brand-mark" aria-hidden="true">iB</span>
                 <span class="brand-copy">
                     <span class="brand-title" data-cms="site-name">isteBul</span>
-                    <span class="nav-subtitle" data-cms="site-subtitle">Araç alım karar altyapısı</span>
+                    <span class="nav-subtitle" data-cms="site-subtitle">AI destekli karar zekası platformu</span>
                 </span>
             </a>
             <div class="nav-menu" id="nav-menu">
                 <div id="nav-links-anon" class="nav-links-group">
-                    <a href="/#how-it-works" class="nav-link">Nasıl çalışır</a>
+                    <a href="/#how-it-works" class="nav-link" data-home-anchor="how-it-works">Nasıl çalışır</a>
+                    <a href="/#sample-preview" class="nav-link" data-home-anchor="sample-preview">Örnek analiz</a>
+                    <a href="/#pricing" class="nav-link" data-home-anchor="pricing">Planlar</a>
                     <a href="/metodoloji" class="nav-link" data-native-route>Metodoloji</a>
-                    <a href="/#pricing" class="nav-link">Fiyatlandırma</a>
-                    <a href="/#sample-preview" class="nav-link">Örnek analiz</a>
-                    <a href="/partner-olun.html" class="nav-link">Partner programı</a>
                 </div>
                 <div id="nav-links-auth" class="nav-links-group hidden">
                     <a href="/profil/" class="nav-link" data-auth-only>Dashboard</a>
@@ -169,8 +170,9 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
             <div class="nav-controls">
                 <div class="nav-auth" id="nav-auth">
-                    <a href="/auto/" class="btn btn-primary nav-cta-auto" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav" title="Ücretsiz analiz başlat" aria-label="Ücretsiz analiz başlat">Ücretsiz analiz başlat</a>
+                    <a href="/karar-asistani" class="btn btn-primary nav-cta-decision" data-native-route data-analytics-cta="cta_decision_nav" data-analytics-placement="nav">Karar analizini başlat</a>
                     <button id="login-btn" class="btn btn-outline" type="button" data-auth-open="login" aria-label="Giriş Yap">Giriş Yap</button>
+                    <button id="register-btn" class="btn btn-outline" type="button" data-auth-open="register" aria-label="Üye ol">Üye ol</button>
                 </div>
                 <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Koyu modu aç" aria-pressed="false" title="Tema değiştir">
                     <i data-lucide="moon"></i>
@@ -216,21 +218,19 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
         <section id="home" class="hero-section ib-hero-venture">
             <div class="hero-container container">
                 <div class="hero-content">
-                    <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="brain" aria-hidden="true"></i> AI destekli karar zekası · Araç</p>
-                    <h1 data-cms="hero-title">Yanlış araç kararını vermeden önce <span class="ib-hero-emphasis">yapay zeka ile gerçek maliyeti</span> görün</h1>
-                    <p class="hero-lead ib-hero-outcome-lead" data-cms="hero-desc">isteBul; bütçe, kullanım ihtiyacı, kredi, sigorta, bakım ve toplam sahip olma maliyetini birlikte analiz ederek daha güvenli karar vermenizi sağlar.</p>
-                    <div class="hero-actions ib-hero-cta-stack">
+                    <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="brain" aria-hidden="true"></i> AI destekli karar zekası platformu</p>
+                    <h1 data-cms="hero-title">AI ile büyük satın alma kararlarını <span class="ib-hero-emphasis">daha doğru</span> ver</h1>
+                    <p class="hero-lead ib-hero-outcome-lead" data-cms="hero-desc">Araba, ev, tatil ve finans kararlarında toplam maliyeti, riskleri ve size en uygun seçenekleri analiz edin — ilan sitesi değil, karar motoru.</p>
+                    <div class="hero-actions ib-hero-cta-stack ib-hero-cta-dual">
                         <div class="ib-hero-cta-primary-row">
-                            <a href="/auto/" class="btn btn-primary btn-lg" data-hero-cta-primary data-analytics-cta="cta_primary_auto" data-analytics-placement="hero">
-                                <i data-lucide="sparkles" aria-hidden="true"></i><span class="growth-exp-label">Ücretsiz analiz başlat</span>
+                            <a href="/karar-asistani" class="btn btn-primary btn-lg" data-hero-cta-primary data-native-route data-analytics-cta="cta_decision_hero" data-analytics-placement="hero">
+                                <i data-lucide="sparkles" aria-hidden="true"></i> Karar analizini başlat
                             </a>
-                            <span class="ib-hero-cta-hint">Pilot aşama · ~2 dk · üyelik zorunlu değil</span>
-                        </div>
-                        <div class="ib-hero-cta-secondary-row">
-                            <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary>
-                                <i data-lucide="microscope" aria-hidden="true"></i> Metodolojiyi gör
+                            <a href="/auto/" class="btn btn-outline btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="hero_auto">
+                                <i data-lucide="car" aria-hidden="true"></i> Auto analizini dene
                             </a>
                         </div>
+                        <span class="ib-hero-cta-hint">Pilot aşama · kural tabanlı skor + AI gerekçe · finansal tavsiye değildir</span>
                     </div>
 
                     <p class="ib-social-proof-disclaimer" data-social-proof-disclaimer>Pilot aşama — şişirilmiş kullanıcı sayısı gösterilmez; erken erişim programı.</p>
@@ -274,21 +274,9 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <div data-preview-metric><span>Uyum skoru</span><strong>78/100</strong></div>
                     </div>
                     <p class="ib-hero-preview-cta text-muted-sm" style="margin-top:0.75rem">
-                        <a href="#sample-preview">Tam örnek TCO kırılımı</a> · skor bilgilendirme amaçlıdır
+                        <a href="/#sample-preview" data-home-anchor="sample-preview">Tam örnek analiz önizlemesi</a> · gösterim amaçlıdır
                     </p>
                 </div>
-            </div>
-        </section>
-
-        <section id="home-vertical-focus" class="ib-vertical-focus ib-section-venture" aria-label="Ürün odağı">
-            <div class="container ib-vertical-focus-inner">
-                <p><strong>İlk dikey: Araç kararları.</strong> Sonraki dikeyler: konut, tatil ve finans — şu an aktif ürün yalnızca Auto analiz akışıdır.</p>
-                <ul class="ib-vertical-pills">
-                    <li class="is-active">Araç · canlı</li>
-                    <li class="is-soon">Konut · yakında</li>
-                    <li class="is-soon">Tatil · yakında</li>
-                    <li class="is-soon">Finans · yakında</li>
-                </ul>
             </div>
         </section>
 
@@ -296,9 +284,72 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <div class="container">
                 <header class="section-header ib-section-intro">
                     <span class="section-kicker">Problem</span>
-                    <h2 id="home-problem-title">Araç almak neden riskli?</h2>
-                    <p>Listeleme fiyatı tek başına gerçek yükü göstermez. Kredi, sigorta, bakım, yakıt ve değer kaybı birlikte düşünülmezse pahalı sürprizler oluşur.</p>
+                    <h2 id="home-problem-title">Büyük satın alma kararları neden riskli?</h2>
+                    <p>Liste fiyatı veya tek bir kredi oranı gerçek yükü göstermez. Toplam maliyet, riskler ve alternatifler birlikte okunmazsa pahalı sürprizler kaçınılmaz olur.</p>
                 </header>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="how-section ib-section-venture" aria-labelledby="how-it-works-title">
+            <div class="container">
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">Nasıl çalışır</span>
+                    <h2 id="how-it-works-title">Üç adımda şeffaf karar</h2>
+                    <p>Profilinizi girin, kural tabanlı motor maliyet ve skoru hesaplasın, AI yalnızca gerekçeyi açıklasın.</p>
+                </header>
+                <div class="how-grid">
+                    <div class="how-step">
+                        <span class="step-number">01</span>
+                        <h3>Profil ve hedef</h3>
+                        <p>Bütçe, kullanım, süre ve finansman tercihlerinizi netleştirin.</p>
+                    </div>
+                    <div class="how-step">
+                        <span class="step-number">02</span>
+                        <h3>Maliyet ve skor</h3>
+                        <p>TCO, risk sinyalleri ve uyum skoru deterministik motorla hesaplanır.</p>
+                    </div>
+                    <div class="how-step">
+                        <span class="step-number">03</span>
+                        <h3>Karşılaştır ve ilerle</h3>
+                        <p>Alternatifleri yan yana görün; detaylı rapor veya partner yönlendirmesi için devam edin.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="home-vertical-focus" class="ib-use-cases ib-section-venture" aria-labelledby="home-use-cases-title">
+            <div class="container">
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">Kullanım alanları</span>
+                    <h2 id="home-use-cases-title">Hangi kararlar için?</h2>
+                    <p>İlk canlı dikey araç; konut, tatil ve finans yol haritasında — şimdilik Auto akışı tam ürün deneyimidir.</p>
+                </header>
+                <div class="ib-use-case-grid">
+                    <a href="/auto/" class="ib-use-case-card is-live">
+                        <span class="ib-use-case-badge">Canlı</span>
+                        <h3><i data-lucide="car" aria-hidden="true"></i> Araç</h3>
+                        <p>TCO, finansman, skor ve AI gerekçe — tam analiz akışı.</p>
+                        <span class="ib-use-case-cta">Auto analizini dene →</span>
+                    </a>
+                    <div class="ib-use-case-card is-soon" aria-disabled="true">
+                        <span class="ib-use-case-badge">Yakında</span>
+                        <h3><i data-lucide="home" aria-hidden="true"></i> Konut</h3>
+                        <p>Toplam sahip olma ve finansman yükü — pilot hazırlığında.</p>
+                    </div>
+                    <div class="ib-use-case-card is-soon" aria-disabled="true">
+                        <span class="ib-use-case-badge">Yakında</span>
+                        <h3><i data-lucide="palmtree" aria-hidden="true"></i> Tatil</h3>
+                        <p>Bütçe ve risk dengesi — yol haritasında.</p>
+                    </div>
+                    <div class="ib-use-case-card is-soon" aria-disabled="true">
+                        <span class="ib-use-case-badge">Yakında</span>
+                        <h3><i data-lucide="landmark" aria-hidden="true"></i> Finans</h3>
+                        <p>Kredi ve nakit akışı kararları — yol haritasında.</p>
+                    </div>
+                </div>
+                <p class="ib-use-case-foot text-muted-sm">
+                    <a href="/karar-asistani" data-native-route>Karar asistanı</a> tüm dikeyler için giriş noktasıdır; araç için doğrudan <a href="/auto/">Auto</a> önerilir.
+                </p>
             </div>
         </section>
 
@@ -314,13 +365,32 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <article class="ib-engine-step"><span>02</span><h3>Motor</h3><p>TCO, kredi etkisi, sigorta ve bakım kırılımı.</p></article>
                     <article class="ib-engine-step"><span>03</span><h3>Karar</h3><p>Sıralama, alternatifler ve AI destekli açıklama.</p></article>
                 </div>
-                <p style="margin-top:1.25rem;text-align:center">
-                    <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="ai_engine">Ücretsiz analiz başlat</a>
+                <p class="ib-section-cta-row">
+                    <a href="/karar-asistani" class="btn btn-primary" data-native-route data-analytics-cta="cta_decision_engine">Karar analizini başlat</a>
+                    <a href="/auto/" class="btn btn-outline" data-analytics-cta="cta_primary_auto" data-analytics-placement="ai_engine">Auto analizini dene</a>
                 </p>
             </div>
         </section>
 
-        <section id="home-tco-lens" class="ib-home-tco-lens ib-section-venture" aria-labelledby="home-tco-lens-title">
+        <section id="home-ai-diff" class="ib-home-ai-diff ib-section-venture section-bg" aria-labelledby="home-ai-diff-title">
+            <div class="container">
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">Fark</span>
+                    <h2 id="home-ai-diff-title">İlan sitesi değil — akıllı karar motoru</h2>
+                    <p>isteBul envanter aramak yerine maliyet, risk ve uyumu birlikte hesaplar; yapay zeka skoru değiştirmez, gerekçeyi açıklar.</p>
+                </header>
+                <div class="ib-ai-diff-grid">
+                    <article class="ib-ai-diff-card"><i data-lucide="gauge" aria-hidden="true"></i><h3>Karar skoru</h3><p>Profilinize göre deterministik uyum sıralaması.</p></article>
+                    <article class="ib-ai-diff-card"><i data-lucide="wallet" aria-hidden="true"></i><h3>Toplam maliyet</h3><p>TCO, finansman ve işletme kalemleri şeffaf.</p></article>
+                    <article class="ib-ai-diff-card"><i data-lucide="alert-triangle" aria-hidden="true"></i><h3>Risk analizi</h3><p>Dikkat noktaları ve bütçe baskısı görünür.</p></article>
+                    <article class="ib-ai-diff-card"><i data-lucide="git-compare" aria-hidden="true"></i><h3>Karşılaştırma</h3><p>Alternatifler matris ve <a href="/karsilastir/">karşılaştırma merkezi</a> ile.</p></article>
+                    <article class="ib-ai-diff-card"><i data-lucide="message-square" aria-hidden="true"></i><h3>Gerekçe</h3><p>Neden bu öneri — kural + sınırlı AI yorumu.</p></article>
+                    <article class="ib-ai-diff-card"><i data-lucide="brain" aria-hidden="true"></i><h3>AI katmanı</h3><p>Yorum ve sentez; tahmin makinesi değil.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <section id="home-tco-lens" class="ib-home-tco-lens ib-section-venture hidden" data-landing-excluded hidden aria-labelledby="home-tco-lens-title">
             <div class="container">
                 <header class="section-header ib-section-intro">
                     <span class="section-kicker">Maliyet merceği</span>
@@ -415,12 +485,16 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <div class="ib-sample-tco-row"><span>Finansman tahmini</span><strong>₺85.600</strong></div>
                         <div class="ib-sample-tco-row"><span>12 ay toplam TCO</span><strong>₺412.800</strong></div>
                     </div>
+                    <div class="ib-sample-risk-row">
+                        <div><span>Risk özeti</span><strong>Orta bant — finansman teklif doğrulaması önerilir</strong></div>
+                        <div><span>Örnek profil</span><strong>Aile · ₺1,5M bütçe · 15.000 km/yıl</strong></div>
+                    </div>
                     <p class="ib-sample-reasoning">
-                        <strong>Öneri gerekçesi:</strong> Bütçe ve şehir içi kullanım profiline göre düşük yakıt ve dengeli finansman yükü; skor kural tabanlıdır, AI yalnızca gerekçe metnini açıklar.
+                        <strong>Öneri gerekçesi:</strong> Bütçe ve şehir içi kullanım profiline göre dengeli TCO; skor kural tabanlıdır, AI yalnızca gerekçe metnini açıklar.
                     </p>
                     <div class="sample-preview-cta">
-                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="sample_preview">Ücretsiz analiz başlat</a>
-                        <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary>Metodolojiyi gör</a>
+                        <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="sample_preview">Analizi dene</a>
+                        <a href="/karar-asistani" class="btn btn-outline" data-native-route>Karar asistanına git</a>
                     </div>
                 </article>
             </div>
@@ -466,9 +540,8 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 Analiz ve skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü değildir.
                 <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
             </p>
-            <p class="how-section-cta" style="margin-top:1.5rem;text-align:center">
-                <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="trust">Ücretsiz analiz başlat</a>
-                <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary style="margin-left:0.5rem">Metodolojiyi gör</a>
+            <p class="trust-section-cta">
+                <a href="/metodoloji" class="btn btn-outline" data-native-route data-cro-cta-secondary>Metodoloji detayı</a>
             </p>
             </div>
         </section>
@@ -514,36 +587,6 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <article><h3>Klasik lead gen</h3><p class="text-muted-sm">Form ve hacim</p><p><strong>isteBul:</strong> Skorlu lead ve outcome döngüsü (partner)</p></article>
                 </div>
                 <p class="category-ownership-foot"><a href="/karar-moat.html">Savunulabilir moat ve rekabet çerçevesi</a> · <a href="/metodoloji">Metodoloji</a></p>
-            </div>
-        </section>
-
-        <section id="how-it-works" class="how-section ib-section-venture">
-            <div class="container">
-                <header class="section-header ib-section-intro">
-                    <span class="section-kicker">Süreç</span>
-                    <h2>Üç adımda güvenli karar</h2>
-                    <p>İhtiyacınızı tanımlayın, gerçek maliyeti görün, seçenekleri gerekçeyle karşılaştırın — dakikalar içinde.</p>
-                </header>
-                <div class="how-grid">
-                    <div class="how-step">
-                        <span class="step-number">01</span>
-                        <h3>İhtiyacınızı tanımlayın</h3>
-                        <p>Bütçe, kullanım senaryosu ve önceliklerinizi birkaç adımda belirtin.</p>
-                    </div>
-                    <div class="how-step">
-                        <span class="step-number">02</span>
-                        <h3>Seçenekleri sistematik analiz edin</h3>
-                        <p>Toplam maliyet, finansman etkisi ve alternatifleri tek karar modeli içinde karşılaştırın.</p>
-                    </div>
-                    <div class="how-step">
-                        <span class="step-number">03</span>
-                        <h3>Güvenle karar verin</h3>
-                        <p>En uygun seçenekleri güçlü-zayıf yönleri ve aksiyon adımlarıyla görün.</p>
-                    </div>
-                </div>
-                <p class="how-section-cta">
-                    <a href="/auto/" class="btn btn-primary btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="how_it_works">Ücretsiz analiz başlat</a>
-                </p>
             </div>
         </section>
 
@@ -968,6 +1011,20 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
+        <section id="home-final-cta" class="ib-home-final-cta ib-section-venture" aria-labelledby="home-final-cta-title">
+            <div class="container ib-home-final-cta-inner">
+                <div>
+                    <span class="section-kicker">Sonraki adım</span>
+                    <h2 id="home-final-cta-title">Kararınızı veriye dayandırın</h2>
+                    <p class="text-muted-sm">Önizleme ücretsiz; detaylı rapor ve kayıt isteğe bağlı. Finansal tavsiye değildir.</p>
+                </div>
+                <div class="ib-home-final-cta-actions">
+                    <a href="/karar-asistani" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_decision_final">Karar analizini başlat</a>
+                    <a href="/auto/" class="btn btn-outline btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="final_cta">Auto analizini dene</a>
+                </div>
+            </div>
+        </section>
+
         <!-- Categories Section (app shell — not on marketing home) -->
         <section id="categories" class="categories-section ib-section-venture hidden" data-landing-excluded hidden>
             <div class="container">
@@ -1004,7 +1061,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <button type="submit" class="btn btn-primary full-width">Giriş Yap</button>
                 </form>
                 <div class="modal-footer">
-                    <p>Hesabınız yok mu? <a href="#" id="switch-to-register">Üye olun</a></p>
+                    <p>Hesabınız yok mu? <button type="button" class="ib-inline-link-btn" id="switch-to-register" data-auth-open="register">Üye olun</button></p>
                 </div>
             </div>
         </div>
@@ -1099,7 +1156,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     </footer>
 
     <div class="cro-sticky-cta" role="region" aria-label="Hızlı başlangıç">
-        <a href="/auto/" class="btn btn-primary" data-cro-cta-sticky data-analytics-cta="cta_primary_auto" data-analytics-placement="sticky" title="Ücretsiz analiz başlat"><span class="growth-exp-label">Ücretsiz analiz başlat</span></a>
+        <a href="/karar-asistani" class="btn btn-primary" data-cro-cta-sticky data-native-route data-analytics-cta="cta_decision_sticky" data-analytics-placement="sticky" title="Karar analizini başlat">Karar analizini başlat</a>
     </div>
 
     <!-- Scripts -->

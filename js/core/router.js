@@ -18,15 +18,17 @@ import { isFullPageNavigation, resolveFullPageNavigation } from '../runtime/full
 /** Marketing sections on index.html (long-scroll landing). */
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
     'home',
-    'home-vertical-focus',
     'home-problem',
+    'how-it-works',
+    'home-vertical-focus',
     'home-ai-engine',
-    'home-tco-lens',
+    'home-ai-diff',
     'sample-preview',
     'trust',
     'pricing',
     'partner-enterprise',
-    'landing-faq'
+    'landing-faq',
+    'home-final-cta'
 ]);
 
 /** Hash targets on the marketing page. */
@@ -151,7 +153,7 @@ export class Router {
                 section.classList.remove('hidden');
                 section.removeAttribute('hidden');
                 section.removeAttribute('aria-hidden');
-                section.style.display = 'block';
+                section.style.setProperty('display', 'block', 'important');
                 return;
             }
 

@@ -62,12 +62,34 @@ export function initStickyNav() {
     onScroll();
 }
 
+function initHomeAnchorLinks() {
+    document.querySelectorAll('[data-home-anchor]').forEach((el) => {
+        if (el.dataset.homeAnchorBound) return;
+        el.dataset.homeAnchorBound = '1';
+        el.addEventListener('click', (event) => {
+            const targetId = el.getAttribute('data-home-anchor') || el.getAttribute('href')?.replace(/^\/#/, '');
+            if (!targetId) return;
+            if (resolveRouteSurface(window.location.pathname) !== 'home') {
+                return;
+            }
+            event.preventDefault();
+            const section = document.getElementById(targetId);
+            if (!section) return;
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (window.history?.replaceState) {
+                window.history.replaceState(null, '', `/#${targetId}`);
+            }
+        });
+    });
+}
+
 export function initMarketingShell() {
     if (typeof document === 'undefined') return;
 
     syncMarketingShellClasses();
     initLandingFaq();
     initStickyNav();
+    initHomeAnchorLinks();
 
     if (isMarketingSurface()) {
         initSocialProofMetrics();
@@ -76,6 +98,7 @@ export function initMarketingShell() {
     document.addEventListener('routeChanged', (event) => {
         syncMarketingShellClasses(event.detail?.path || window.location.pathname);
         initLandingFaq();
+        initHomeAnchorLinks();
         if (isMarketingSurface(event.detail?.path || window.location.pathname)) {
             initSocialProofMetrics();
         }

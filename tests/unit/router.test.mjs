@@ -6,7 +6,12 @@ function sectionStub(id, { privateSection = false } = {}) {
     const attrs = new Set(privateSection ? ['data-private-section'] : []);
     return {
         id,
-        style: {},
+        style: {
+            display: '',
+            setProperty(prop, value) {
+                this[prop] = value;
+            }
+        },
         classList: { add() {}, remove() {} },
         hasAttribute(name) {
             return attrs.has(name);
@@ -23,10 +28,11 @@ function sectionStub(id, { privateSection = false } = {}) {
 
 const sections = new Map([
     ['home', sectionStub('home')],
-    ['home-vertical-focus', sectionStub('home-vertical-focus')],
     ['home-problem', sectionStub('home-problem')],
+    ['how-it-works', sectionStub('how-it-works')],
+    ['home-vertical-focus', sectionStub('home-vertical-focus')],
     ['home-ai-engine', sectionStub('home-ai-engine')],
-    ['home-tco-lens', sectionStub('home-tco-lens')],
+    ['home-ai-diff', sectionStub('home-ai-diff')],
     ['trust', sectionStub('trust')],
     ['methodology-teaser', sectionStub('methodology-teaser')],
     ['sample-preview', sectionStub('sample-preview')],
@@ -35,6 +41,7 @@ const sections = new Map([
     ['pricing', sectionStub('pricing')],
     ['partner-enterprise', sectionStub('partner-enterprise')],
     ['landing-faq', sectionStub('landing-faq')],
+    ['home-final-cta', sectionStub('home-final-cta')],
     ['category-ownership', sectionStub('category-ownership')],
     ['categories', sectionStub('categories')],
     ['ilanlar', sectionStub('ilanlar')]

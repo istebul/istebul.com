@@ -6,13 +6,14 @@
 export const BRAND_VOICE = Object.freeze({
   productName: 'isteBul',
   categoryLabel: 'AI destekli karar zekası',
-  positioningLine:
-    'Yanlış araç kararını vermeden önce yapay zeka ile gerçek maliyeti görün',
+  positioningLine: 'AI ile büyük satın alma kararlarını daha doğru ver',
   leadLine:
-    'isteBul; bütçe, kullanım ihtiyacı, kredi, sigorta, bakım ve toplam sahip olma maliyetini birlikte analiz ederek daha güvenli karar vermenizi sağlar.',
+    'Araba, ev, tatil ve finans kararlarında toplam maliyeti, riskleri ve size en uygun seçenekleri analiz edin.',
 
   cta: {
-    primaryAuto: 'Ücretsiz analiz başlat',
+    primaryDecision: 'Karar analizini başlat',
+    primaryAuto: 'Auto analizini dene',
+    primaryAutoLegacy: 'Ücretsiz analiz başlat',
     primaryAutoLong: 'Ücretsiz analiz başlat',
     methodology: 'Metodolojiyi gör',
     plans: 'Planları incele',
