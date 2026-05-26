@@ -18,4 +18,5 @@
 /gecmis/* /gecmis/index.html 200
 /messages/* /messages/index.html 200
 /ilan-ekle/* /ilan-ekle/index.html 200
+/data/* /data/:splat 200
 /* /index.html 200

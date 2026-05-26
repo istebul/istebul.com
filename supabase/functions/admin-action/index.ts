@@ -362,7 +362,7 @@ Deno.serve(async (req) => {
         "phone","email","address","instagram","twitter","facebook",
         "linkedin","youtube","tiktok","site-name","site-subtitle",
         "hero-eyebrow","hero-title","hero-desc","title","description",
-        "maintenance"
+        "auto_whatsapp_phone","maintenance"
       ];
 
       for (const row of values) {

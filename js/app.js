@@ -37,6 +37,7 @@ import { trackOpsEvent } from './core/operational-telemetry.js';
 import { analytics } from './core/analytics.js';
 import { canCallAiNarration, hasAiNarrationBudget } from './core/scale-limits.js';
 import { errorBoundary } from './core/error-boundary.js';
+import { wireAutoListingFilters } from './features/listings/auto-listing-filters.js';
 import { ListingManager } from './features/ilan/ilan.js';
 import { ProfileManager } from './features/profil/profil.js';
 import AccountManager from './features/account/account.js';
@@ -1112,6 +1113,9 @@ class App {
                 }
             });
             filterForm.addEventListener('submit', (e) => this.handleListingFilter(e));
+            this._teardownAutoListingFilters = wireAutoListingFilters(filterForm, () =>
+                this.applyListingFiltersFromForm({ silent: true })
+            );
         }
         if (clearFilterBtn && filterForm) {
             clearFilterBtn.addEventListener('click', () => this.clearListingFilter(filterForm));
@@ -3245,9 +3249,9 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
 
-    async handleListingFilter(event) {
-        event.preventDefault();
-        const formData = new FormData(event.currentTarget);
+    getListingFilterOptionsFromForm(form = document.getElementById('listing-filter-form')) {
+        if (!form) return { limit: 20 };
+        const formData = new FormData(form);
         const category = formData.get('category')?.toString() || undefined;
         const province = formData.get('province')?.toString() || undefined;
         const district = formData.get('district')?.toString() || undefined;
@@ -3264,12 +3268,39 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             vacationType: category === 'tatil' ? formData.get('vacation_type')?.toString() || undefined : undefined,
             limit: 20
         };
+        Object.keys(options).forEach((key) => {
+            if (options[key] === '' || options[key] === undefined || Number.isNaN(options[key])) {
+                delete options[key];
+            }
+        });
+        return options;
+    }
 
+    async applyListingFiltersFromForm({ silent = false } = {}) {
+        const options = this.getListingFilterOptionsFromForm();
         this.activeCategory = options.category || null;
         this.renderCategorySurfaces();
-        this.router.navigate('/ilanlar');
+        if (!String(this.router?.currentRoute || '').includes('/ilanlar')) {
+            this.router.navigate('/ilanlar');
+        }
+        const filterForm = document.getElementById('listing-filter-form');
+        const filterHint = document.getElementById('listing-filter-auto-hint');
+        if (filterForm) {
+            filterForm.hidden = false;
+            this.syncListingFilterControls(filterForm);
+        }
+        if (filterHint) filterHint.hidden = false;
         await this.loadListings(options);
-        this.saveSearchHistory(`Filtre: ${this.getListingFilterChips(options).slice(0, 4).join(' / ') || 'Tüm ilanlar'}`);
+        if (!silent) {
+            this.saveSearchHistory(
+                `Filtre: ${this.getListingFilterChips(options).slice(0, 4).join(' / ') || 'Tüm ilanlar'}`
+            );
+        }
+    }
+
+    async handleListingFilter(event) {
+        event.preventDefault();
+        await this.applyListingFiltersFromForm({ silent: false });
     }
 
     async clearListingFilter(form) {

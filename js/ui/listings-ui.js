@@ -1,3 +1,5 @@
+import { listingMediaCount } from './listing-gallery-ui.js';
+
 export class ListingsUI {
     renderListings(listings, favoriteIds = [], comparisonSignatures = [], options = {}) {
         const container = document.getElementById('listings-grid');
@@ -33,6 +35,7 @@ export class ListingsUI {
                 const categoryLabel = this.getCategoryLabel(listing.category || '');
                 const locationLabel = this.getListingLocationLabel(listing);
                 const actionLabel = this.getListingPrimaryActionLabel(listing.category || '');
+                const mediaCount = listingMediaCount(listing);
                 return `
                 <div class="listing-card" data-listing-id="${listingId}">
                     <div class="listing-media">
@@ -47,6 +50,7 @@ export class ListingsUI {
                             <span class="listing-ai-score" title="Metodolojik uyum skoru"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScore)}/100</span>
                             <span>${this.escapeHtml(categoryLabel || 'İlan')}</span>
                         </div>
+                        ${mediaCount > 1 ? `<span class="listing-media-count"><i data-lucide="images"></i> ${mediaCount}</span>` : ''}
                     </div>
                     <div class="listing-content">
                         <h3 class="listing-title">${this.escapeHtml(listing.title)}</h3>

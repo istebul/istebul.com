@@ -466,12 +466,13 @@ export class UIManager {
         this.loadIcons();
     }
 
-    renderListingDetail(listing, favoriteIds = [], decisionProfile = null, comparisonSignatures = []) {
+    async renderListingDetail(listing, favoriteIds = [], decisionProfile = null, comparisonSignatures = []) {
         const section = document.getElementById('listing-detail-content');
         if (!section) return;
 
+        const { renderListingGalleryHtml, bindListingGallery } = await import('./listing-gallery-ui.js');
         const listingId = this.escapeHtml(listing.id);
-        const imageUrl = this.safeImageUrl(listing.images?.[0]);
+        const galleryHtml = renderListingGalleryHtml(listing, (s) => this.escapeHtml(s), (u) => this.safeImageUrl(u));
         const externalUrl = this.safeExternalUrl(listing.external_url, {
             content: listing.id || 'listing_detail',
             campaign: listing.category || 'marketplace'
@@ -496,10 +497,8 @@ export class UIManager {
                     </div>
                     <p class="listing-price">${this.formatPrice(listing.price)}</p>
                 </div>
-                <div class="listing-detail-body">
-                    <div class="listing-detail-image">
-                        <img src="${imageUrl}" alt="${this.escapeHtml(listing.title)}" decoding="async" fetchpriority="high">
-                    </div>
+                <div class="listing-detail-body listing-detail-body-gallery">
+                    ${galleryHtml}
                     <div class="listing-detail-info">
                         ${this.getListingInsightsMarkup(listing, aiScore)}
                         <p><strong>Açıklama:</strong></p>
@@ -516,6 +515,7 @@ export class UIManager {
             </div>
         `;
 
+        bindListingGallery(section);
         this.loadIcons();
     }
 

@@ -26,6 +26,12 @@ const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cj
 const { injectRouteBootstrap } = require('./lib/route-bootstrap.cjs');
 const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
 
+const runOpsEmbed = spawnSync(process.execPath, [path.join(root, 'scripts/generate-admin-ops-embed.cjs')], {
+  cwd: root,
+  stdio: 'inherit'
+});
+if (runOpsEmbed.status !== 0) process.exit(runOpsEmbed.status || 1);
+
 const runCheck = spawnSync(process.execPath, [path.join(root, 'scripts/check-syntax.cjs')], {
   cwd: root,
   stdio: 'inherit'

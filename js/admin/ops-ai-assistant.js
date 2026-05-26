@@ -2,6 +2,7 @@
  * P15 — Admin loader for AI operational decision assistant.
  */
 import { fetchInternalDashboardContext, invalidateInternalDashboardCache } from './internal-dashboards.js';
+import { fetchOpsJson } from './fetch-ops-json.js';
 import { buildOpsDecisionBrief } from '../features/ops/ops-decision-assistant.js';
 import { renderOpsAiAssistantPage } from '../features/ops/ops-ai-assistant-views.js';
 import { requestOpsAiNarration } from '../features/ops/ops-ai-narration.js';
@@ -21,11 +22,12 @@ export async function loadOpsAiAssistant(deps, escapeHtml, renderAdminWarningBan
 
   let pricingReference = { proMonthlyTry: 299, proAnnualTry: 2870, trialDays: 7 };
   try {
-    const cfgRes = await fetch('/data/ops/ops-decision-assistant.json');
-    if (cfgRes.ok) {
-      const cfg = await cfgRes.json();
-      pricingReference = cfg.pricingReference || pricingReference;
-    }
+    const cfg = await fetchOpsJson(
+      '/data/ops/ops-decision-assistant.json',
+      'ops-decision-assistant',
+      {}
+    );
+    pricingReference = cfg.pricingReference || pricingReference;
   } catch {
     /* optional */
   }
