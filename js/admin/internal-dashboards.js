@@ -3,6 +3,7 @@
  */
 import { buildInternalDashboardContext } from '../features/dashboards/internal-dashboard-context.js';
 import { renderInternalDashboard } from '../features/dashboards/internal-dashboard-views.js';
+import { fetchOpsJson } from './fetch-ops-json.js';
 
 const CACHE_TTL_MS = 120000;
 let cachedContext = null;
@@ -41,17 +42,17 @@ export async function fetchInternalDashboardContext(deps) {
   let supportFlows = [];
 
   try {
-    const [rulesRes, ceoRulesRes, partnerCfgRes, ceoCfgRes, supportRes] = await Promise.all([
-      fetch('/data/ops/alert-rules.json'),
-      fetch('/data/ops/ceo-alert-rules.json'),
+    const [rulesJson, ceoJson, ceoCfg, partnerCfgRes, supportRes] = await Promise.all([
+      fetchOpsJson('/data/ops/alert-rules.json', 'alert-rules', { rules: [] }),
+      fetchOpsJson('/data/ops/ceo-alert-rules.json', 'ceo-alert-rules', { rules: [] }),
+      fetchOpsJson('/data/ops/ceo-alerts.json', 'ceo-alerts', {}),
       fetch('/data/partner/partner-ops.json'),
-      fetch('/data/ops/ceo-alerts.json'),
       fetch('/data/customer/support-workflows.json')
     ]);
-    if (rulesRes.ok) alertRules = (await rulesRes.json()).rules || [];
-    if (ceoRulesRes.ok) ceoAlertRules = (await ceoRulesRes.json()).rules || [];
+    alertRules = rulesJson.rules || [];
+    ceoAlertRules = ceoJson.rules || [];
+    ceoAlertConfig = ceoCfg;
     if (partnerCfgRes.ok) partnerOpsConfig = await partnerCfgRes.json();
-    if (ceoCfgRes.ok) ceoAlertConfig = await ceoCfgRes.json();
     if (supportRes.ok) supportFlows = (await supportRes.json()).workflows || [];
   } catch {
     /* optional manifests */

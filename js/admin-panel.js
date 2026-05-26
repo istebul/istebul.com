@@ -47,6 +47,7 @@ import {
   renderPartnerPipelineBoardHtml
 } from './features/sales/partner-crm-pipeline.js';
 import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
+import { fetchOpsJson } from './admin/fetch-ops-json.js';
 
 const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
@@ -494,18 +495,13 @@ async function loadOpsCommandCenter() {
   let partnerOpsConfig = { sla: { dispatchLatencyP95Ms: 900000 } };
   let ceoAlertConfig = { thresholds: {} };
   try {
-    const rulesRes = await fetch('/data/ops/alert-rules.json');
-    if (rulesRes.ok) {
-      const rulesJson = await rulesRes.json();
-      alertRules = rulesJson.rules || [];
-    }
-    const ceoRulesRes = await fetch('/data/ops/ceo-alert-rules.json');
-    if (ceoRulesRes.ok) {
-      const ceoJson = await ceoRulesRes.json();
-      ceoAlertRules = ceoJson.rules || [];
-    }
-    const ceoCfgRes = await fetch('/data/ops/ceo-alerts.json');
-    if (ceoCfgRes.ok) ceoAlertConfig = await ceoCfgRes.json();
+    const rulesJson = await fetchOpsJson('/data/ops/alert-rules.json', 'alert-rules', { rules: [] });
+    alertRules = rulesJson.rules || [];
+    const ceoJson = await fetchOpsJson('/data/ops/ceo-alert-rules.json', 'ceo-alert-rules', {
+      rules: []
+    });
+    ceoAlertRules = ceoJson.rules || [];
+    ceoAlertConfig = await fetchOpsJson('/data/ops/ceo-alerts.json', 'ceo-alerts', { thresholds: {} });
     const partnerCfgRes = await fetch('/data/partner/partner-ops.json');
     if (partnerCfgRes.ok) partnerOpsConfig = await partnerCfgRes.json();
   } catch {
@@ -844,10 +840,13 @@ async function loadStartupOperatingCenter() {
   let config = { version: 'p18.0', scalePillars: [], bottlenecks: [], quickWins: [] };
   let alertRules = [];
   try {
-    const res = await fetch('/data/ops/startup-operating-mode.json');
-    if (res.ok) config = await res.json();
-    const rulesRes = await fetch('/data/ops/alert-rules.json');
-    if (rulesRes.ok) alertRules = (await rulesRes.json()).rules || [];
+    config = await fetchOpsJson(
+      '/data/ops/startup-operating-mode.json',
+      'startup-operating-mode',
+      config
+    );
+    const rulesJson = await fetchOpsJson('/data/ops/alert-rules.json', 'alert-rules', { rules: [] });
+    alertRules = rulesJson.rules || [];
   } catch {
     /* optional */
   }
@@ -933,10 +932,13 @@ async function loadScaleArchitectureCenter() {
   let config = { version: 'p19.0', dimensions: [] };
   let alertRules = [];
   try {
-    const res = await fetch('/data/ops/scale-architecture-scenarios.json');
-    if (res.ok) config = await res.json();
-    const rulesRes = await fetch('/data/ops/alert-rules.json');
-    if (rulesRes.ok) alertRules = (await rulesRes.json()).rules || [];
+    config = await fetchOpsJson(
+      '/data/ops/scale-architecture-scenarios.json',
+      'scale-architecture-scenarios',
+      config
+    );
+    const rulesJson = await fetchOpsJson('/data/ops/alert-rules.json', 'alert-rules', { rules: [] });
+    alertRules = rulesJson.rules || [];
   } catch {
     /* optional */
   }
@@ -1018,12 +1020,10 @@ async function loadCompanyOperatingSystem() {
   let config = { version: 'p20.0' };
   let decisionLog = { records: [], roadmapQueue: [] };
   try {
-    const [cfgRes, logRes] = await Promise.all([
-      fetch('/data/ops/company-operating-system.json'),
-      fetch('/data/ops/decision-log.json')
+    [config, decisionLog] = await Promise.all([
+      fetchOpsJson('/data/ops/company-operating-system.json', 'company-operating-system', config),
+      fetchOpsJson('/data/ops/decision-log.json', 'decision-log', decisionLog)
     ]);
-    if (cfgRes.ok) config = await cfgRes.json();
-    if (logRes.ok) decisionLog = await logRes.json();
   } catch {
     /* optional */
   }
@@ -1051,8 +1051,7 @@ async function loadHiringArchitecture() {
 
   let config = { version: 'p21.0', roles: [] };
   try {
-    const res = await fetch('/data/ops/hiring-architecture.json');
-    if (res.ok) config = await res.json();
+    config = await fetchOpsJson('/data/ops/hiring-architecture.json', 'hiring-architecture', config);
   } catch {
     /* optional */
   }
@@ -1115,23 +1114,25 @@ async function loadInternationalExpansion() {
 
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
-  const { buildInternationalExpansionSnapshot } = await import(
-    './features/ops/international-expansion-audit.js'
-  );
-  const { renderInternationalExpansionCenter } = await import(
-    './features/ops/international-expansion-views.js'
-  );
-
-  let config = { version: 'p22.0', dimensions: [], priorityMarkets: [] };
   try {
-    const res = await fetch('/data/ops/international-expansion-audit.json');
-    if (res.ok) config = await res.json();
-  } catch {
-    /* optional */
-  }
+    const { buildInternationalExpansionSnapshot } = await import(
+      './features/ops/international-expansion-audit.js'
+    );
+    const { renderInternationalExpansionCenter } = await import(
+      './features/ops/international-expansion-views.js'
+    );
 
-  const snapshot = buildInternationalExpansionSnapshot({ config });
-  el.innerHTML = renderInternationalExpansionCenter(snapshot, escapeHtml);
+    const config = await fetchOpsJson(
+      '/data/ops/international-expansion-audit.json',
+      'international-expansion-audit',
+      { version: 'p22.0', dimensions: [], priorityMarkets: [] }
+    );
+    const snapshot = buildInternationalExpansionSnapshot({ config });
+    el.innerHTML = renderInternationalExpansionCenter(snapshot, escapeHtml);
+  } catch (err) {
+    console.error('[admin] international-expansion', err);
+    el.innerHTML = `<div class="empty" style="color:#f87171">Veri yüklenemedi: ${escapeHtml(err.message || String(err))}</div>`;
+  }
 }
 
 async function loadCategoryDominance() {
@@ -1140,23 +1141,25 @@ async function loadCategoryDominance() {
 
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
-  const { buildCategoryDominanceSnapshot } = await import(
-    './features/ops/category-dominance-strategy.js'
-  );
-  const { renderCategoryDominanceCenter } = await import(
-    './features/ops/category-dominance-views.js'
-  );
-
-  let config = { version: 'p23.0', competitorLandscape: [], moatPlans: [] };
   try {
-    const res = await fetch('/data/ops/category-dominance-strategy.json');
-    if (res.ok) config = await res.json();
-  } catch {
-    /* optional */
-  }
+    const { buildCategoryDominanceSnapshot } = await import(
+      './features/ops/category-dominance-strategy.js'
+    );
+    const { renderCategoryDominanceCenter } = await import(
+      './features/ops/category-dominance-views.js'
+    );
 
-  const snapshot = buildCategoryDominanceSnapshot({ config });
-  el.innerHTML = renderCategoryDominanceCenter(snapshot, escapeHtml);
+    const config = await fetchOpsJson(
+      '/data/ops/category-dominance-strategy.json',
+      'category-dominance-strategy',
+      { version: 'p23.0', competitorLandscape: [], moatPlans: [] }
+    );
+    const snapshot = buildCategoryDominanceSnapshot({ config });
+    el.innerHTML = renderCategoryDominanceCenter(snapshot, escapeHtml);
+  } catch (err) {
+    console.error('[admin] category-dominance', err);
+    el.innerHTML = `<div class="empty" style="color:#f87171">Veri yüklenemedi: ${escapeHtml(err.message || String(err))}</div>`;
+  }
 }
 
 async function loadCompetitorAttack() {
@@ -1165,23 +1168,25 @@ async function loadCompetitorAttack() {
 
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
-  const { buildCompetitorAttackSnapshot } = await import(
-    './features/ops/competitor-attack-scenario.js'
-  );
-  const { renderCompetitorAttackCenter } = await import(
-    './features/ops/competitor-attack-views.js'
-  );
-
-  let config = { version: 'p24.0', attackScenarios: [], defensePlans: [] };
   try {
-    const res = await fetch('/data/ops/competitor-attack-scenario.json');
-    if (res.ok) config = await res.json();
-  } catch {
-    /* optional */
-  }
+    const { buildCompetitorAttackSnapshot } = await import(
+      './features/ops/competitor-attack-scenario.js'
+    );
+    const { renderCompetitorAttackCenter } = await import(
+      './features/ops/competitor-attack-views.js'
+    );
 
-  const snapshot = buildCompetitorAttackSnapshot({ config });
-  el.innerHTML = renderCompetitorAttackCenter(snapshot, escapeHtml);
+    const config = await fetchOpsJson(
+      '/data/ops/competitor-attack-scenario.json',
+      'competitor-attack-scenario',
+      { version: 'p24.0', attackScenarios: [], defensePlans: [] }
+    );
+    const snapshot = buildCompetitorAttackSnapshot({ config });
+    el.innerHTML = renderCompetitorAttackCenter(snapshot, escapeHtml);
+  } catch (err) {
+    console.error('[admin] competitor-attack', err);
+    el.innerHTML = `<div class="empty" style="color:#f87171">Veri yüklenemedi: ${escapeHtml(err.message || String(err))}</div>`;
+  }
 }
 
 async function loadExpansionPrioritization() {
@@ -1190,23 +1195,25 @@ async function loadExpansionPrioritization() {
 
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
-  const { buildExpansionPrioritizationSnapshot } = await import(
-    './features/ops/expansion-roadmap-prioritization.js'
-  );
-  const { renderExpansionPrioritizationCenter } = await import(
-    './features/ops/expansion-roadmap-prioritization-views.js'
-  );
-
-  let config = { version: 'p25.0', categories: [], prioritizationCriteria: [] };
   try {
-    const res = await fetch('/data/ops/expansion-roadmap-prioritization.json');
-    if (res.ok) config = await res.json();
-  } catch {
-    /* optional */
-  }
+    const { buildExpansionPrioritizationSnapshot } = await import(
+      './features/ops/expansion-roadmap-prioritization.js'
+    );
+    const { renderExpansionPrioritizationCenter } = await import(
+      './features/ops/expansion-roadmap-prioritization-views.js'
+    );
 
-  const snapshot = buildExpansionPrioritizationSnapshot({ config });
-  el.innerHTML = renderExpansionPrioritizationCenter(snapshot, escapeHtml);
+    const config = await fetchOpsJson(
+      '/data/ops/expansion-roadmap-prioritization.json',
+      'expansion-roadmap-prioritization',
+      { version: 'p25.0', categories: [], prioritizationCriteria: [] }
+    );
+    const snapshot = buildExpansionPrioritizationSnapshot({ config });
+    el.innerHTML = renderExpansionPrioritizationCenter(snapshot, escapeHtml);
+  } catch (err) {
+    console.error('[admin] expansion-prioritization', err);
+    el.innerHTML = `<div class="empty" style="color:#f87171">Veri yüklenemedi: ${escapeHtml(err.message || String(err))}</div>`;
+  }
 }
 
 async function loadStrategicPartnerships() {
@@ -1215,23 +1222,25 @@ async function loadStrategicPartnerships() {
 
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
-  const { buildStrategicPartnershipSnapshot } = await import(
-    './features/ops/strategic-partnership-roadmap.js'
-  );
-  const { renderStrategicPartnershipCenter } = await import(
-    './features/ops/strategic-partnership-views.js'
-  );
-
-  let config = { version: 'p26.0', partnerTypes: [], scoringDimensions: [] };
   try {
-    const res = await fetch('/data/ops/strategic-partnership-roadmap.json');
-    if (res.ok) config = await res.json();
-  } catch {
-    /* optional */
-  }
+    const { buildStrategicPartnershipSnapshot } = await import(
+      './features/ops/strategic-partnership-roadmap.js'
+    );
+    const { renderStrategicPartnershipCenter } = await import(
+      './features/ops/strategic-partnership-views.js'
+    );
 
-  const snapshot = buildStrategicPartnershipSnapshot({ config });
-  el.innerHTML = renderStrategicPartnershipCenter(snapshot, escapeHtml);
+    const config = await fetchOpsJson(
+      '/data/ops/strategic-partnership-roadmap.json',
+      'strategic-partnership-roadmap',
+      { version: 'p26.0', partnerTypes: [], scoringDimensions: [] }
+    );
+    const snapshot = buildStrategicPartnershipSnapshot({ config });
+    el.innerHTML = renderStrategicPartnershipCenter(snapshot, escapeHtml);
+  } catch (err) {
+    console.error('[admin] strategic-partnerships', err);
+    el.innerHTML = `<div class="empty" style="color:#f87171">Veri yüklenemedi: ${escapeHtml(err.message || String(err))}</div>`;
+  }
 }
 
 async function loadAcquisitionExit() {
@@ -1240,21 +1249,23 @@ async function loadAcquisitionExit() {
 
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
-  const { buildAcquisitionExitSnapshot } = await import(
-    './features/ops/acquisition-exit-optionality.js'
-  );
-  const { renderAcquisitionExitCenter } = await import('./features/ops/acquisition-exit-views.js');
-
-  let config = { version: 'p11-exit.0', scenarios: [], strategicBuyers: [] };
   try {
-    const res = await fetch('/data/ops/acquisition-exit-optionality.json');
-    if (res.ok) config = await res.json();
-  } catch {
-    /* optional */
-  }
+    const { buildAcquisitionExitSnapshot } = await import(
+      './features/ops/acquisition-exit-optionality.js'
+    );
+    const { renderAcquisitionExitCenter } = await import('./features/ops/acquisition-exit-views.js');
 
-  const snapshot = buildAcquisitionExitSnapshot({ config });
-  el.innerHTML = renderAcquisitionExitCenter(snapshot, escapeHtml);
+    const config = await fetchOpsJson(
+      '/data/ops/acquisition-exit-optionality.json',
+      'acquisition-exit-optionality',
+      { version: 'p11-exit.0', scenarios: [], strategicBuyers: [] }
+    );
+    const snapshot = buildAcquisitionExitSnapshot({ config });
+    el.innerHTML = renderAcquisitionExitCenter(snapshot, escapeHtml);
+  } catch (err) {
+    console.error('[admin] acquisition-exit', err);
+    el.innerHTML = `<div class="empty" style="color:#f87171">Veri yüklenemedi: ${escapeHtml(err.message || String(err))}</div>`;
+  }
 }
 
 async function loadExecutiveKpis() {
