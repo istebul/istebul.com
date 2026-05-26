@@ -4,6 +4,11 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '../..');
+const {
+  monetizationEnv,
+  renderGoogleSiteVerificationMeta,
+  renderRehberEnvScript
+} = require('./site-monetization.cjs');
 
 function loadJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
@@ -60,13 +65,17 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra }) {
   const base = site.baseUrl;
   const canonical = absoluteUrl(base, canonicalPath);
   const ogImage = absoluteUrl(base, site.defaultOgImage);
+  const { verification, publisherId, adSlot } = monetizationEnv();
+  const verificationMeta = renderGoogleSiteVerificationMeta(verification);
+  const sameAs = (site.organization?.sameAs || []).filter(Boolean);
   const graph = [
     {
       '@type': 'Organization',
       '@id': `${base}/#organization`,
       name: site.organization.name,
       url: `${base}/`,
-      logo: site.organization.logo
+      logo: site.organization.logo,
+      ...(sameAs.length ? { sameAs } : {})
     },
     {
       '@type': 'WebSite',
@@ -83,7 +92,7 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra }) {
 
   return `<meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(title)}</title>
+  ${verificationMeta ? `${verificationMeta}\n  ` : ''}<title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="googlebot" content="index, follow">
@@ -207,6 +216,7 @@ function renderSeoFooter({ site, guideLinks }) {
 }
 
 function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta }) {
+  const { publisherId, adSlot } = monetizationEnv();
   const base = site.baseUrl;
   const jsonLd = [
     breadcrumbSchema(base, breadcrumbs),
@@ -268,15 +278,31 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta })
       ${sections}
       ${faqHtml}
       ${related}
+      ${renderRehberAdSlot(publisherId, adSlot)}
       <div class="seo-cta">
         <a class="seo-cta-btn" href="${escapeHtml(cta.href)}">${escapeHtml(cta.label)}</a>
         <p class="seo-cta-note">Ücretsiz · KVKK uyumlu · Birkaç dakikada sonuç</p>
       </div>
     </article>
   </main>
+  ${renderRehberEnvScript({ publisherId, adSlot })}
+  <script type="module" src="/js/seo/rehber-ads.js"></script>
   ${renderSeoFooter({ site, guideLinks: relatedLinks })}
 </body>
 </html>`;
+}
+
+function renderRehberAdSlot(publisherId, adSlot) {
+  if (!publisherId) return '';
+  const client = escapeHtml(publisherId);
+  const slotAttr = adSlot ? ` data-ad-slot="${escapeHtml(adSlot)}"` : '';
+  return `<aside class="seo-ad-slot" aria-label="Reklam alanı">
+        <ins class="adsbygoogle"
+          style="display:block;min-height:90px"
+          data-ad-client="${client}"${slotAttr}
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+      </aside>`;
 }
 
 function injectCorporateMeta(distDir) {

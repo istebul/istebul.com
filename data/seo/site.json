@@ -1,13 +1,16 @@
 {
   "baseUrl": "https://www.istebul.com",
   "siteName": "isteBul",
-  "defaultOgImage": "/assets/images/og-image.svg",
+  "defaultOgImage": "/assets/icons/favicon-512.png",
   "locale": "tr_TR",
   "language": "tr-TR",
   "organization": {
     "name": "isteBul",
     "logo": "https://www.istebul.com/assets/icons/favicon-512.png",
-    "sameAs": []
+    "sameAs": [
+      "https://www.linkedin.com/company/istebul",
+      "https://x.com/istebul"
+    ]
   },
   "staticUrls": [
     { "loc": "/", "priority": "1.0", "changefreq": "weekly" },

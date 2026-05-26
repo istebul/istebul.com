@@ -9,6 +9,8 @@ const required = [
   'dist/sw.js',
   'dist/robots.txt',
   'dist/sitemap.xml',
+  'dist/ads.txt',
+  'dist/js/seo/rehber-ads.js',
   'dist/build-manifest.json',
   'dist/rehber/arac-kredisi-hesaplama/index.html',
   'dist/karar-asistani/index.html',

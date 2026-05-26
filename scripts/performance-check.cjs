@@ -22,7 +22,7 @@ assert(buildScript.includes('minify: true'), 'Production build should minify JS/
 assert(netlifyConfig.includes('max-age=31536000'), 'Long-lived asset caching is missing.');
 assert(index.includes('rel="preconnect"') || index.includes('rel="dns-prefetch"'), 'Third-party delivery strategy should be explicit.');
 assert(index.includes('perf:importmap'), 'index.html should reserve an import map injection slot.');
-assert(buildScript.includes('external: bundleExternals'), 'Production build should externalize heavy vendors.');
+assert(buildScript.includes('splitting: true'), 'Production build should enable code splitting.');
 assert(buildScript.includes('auto-app.js'), 'Auto runtime should ship as a single minified bundle.');
 
 if (distIndex) {

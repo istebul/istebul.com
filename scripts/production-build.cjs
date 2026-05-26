@@ -23,8 +23,17 @@ const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'ma
     'css/admin-internal-dashboards.css',
     'css/admin-ops-ai-assistant.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
+const { monetizationEnv, injectVerificationIntoHtml, writeAdsTxt } = require('./lib/site-monetization.cjs');
 const { injectRouteBootstrap } = require('./lib/route-bootstrap.cjs');
-const publicEnvKeys = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SENTRY_DSN', 'LOGROCKET_APP_ID'];
+const publicEnvKeys = [
+  'SUPABASE_URL',
+  'SUPABASE_ANON_KEY',
+  'SENTRY_DSN',
+  'LOGROCKET_APP_ID',
+  'GOOGLE_SITE_VERIFICATION',
+  'ADSENSE_PUBLISHER_ID',
+  'ADSENSE_AD_SLOT'
+];
 
 const runCheck = spawnSync(process.execPath, [path.join(root, 'scripts/check-syntax.cjs')], {
   cwd: root,
@@ -191,8 +200,11 @@ pendingStaticFiles.forEach(({ file, source }) => {
   let html = rewriteAssetRefs(source);
   if (file === 'index.html') {
     html = injectRouteBootstrap(html);
+    html = injectVerificationIntoHtml(html, monetizationEnv().verification);
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, '/js/' + appBundleFile);
     html = injectPerformanceHints(html, appBundleFile);
+  } else if (file.endsWith('.html')) {
+    html = injectVerificationIntoHtml(html, monetizationEnv().verification);
   }
 
   writeFile(file, minifyHtml(html));
@@ -305,6 +317,20 @@ spaRoutes.forEach((route) => {
 const seoResult = buildSeoPages(dist);
 generateSitemap(dist, seoResult);
 generateRobots(dist, seoResult.site);
+writeAdsTxt(dist, monetizationEnv().publisherId);
+
+const rehberAdsOut = path.join(dist, 'js/seo/rehber-ads.js');
+ensureDir(rehberAdsOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/seo/rehber-ads.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: rehberAdsOut
+});
 
 fs.copyFileSync(path.join(root, '_redirects'), path.join(dist, '_redirects'));
 

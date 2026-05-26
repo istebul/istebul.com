@@ -53,6 +53,14 @@ assert(fs.existsSync(path.join(root, 'docker-compose.yml')), 'docker-compose.yml
 assert(fs.existsSync(path.join(root, 'netlify/functions/health.js')), 'Health endpoint is missing.');
 const robotsTxt = read('robots.txt');
 assert(robotsTxt.includes('Sitemap:') && robotsTxt.includes('sitemap.xml'), 'robots.txt sitemap declaration is missing.');
+assert(fs.existsSync(path.join(root, 'ads.txt')), 'ads.txt is missing — run npm run build.');
+const adsTxt = read('ads.txt');
+assert(!adsTxt.includes('<!DOCTYPE'), 'ads.txt must be plain text, not HTML.');
+const distAds = path.join(root, 'dist', 'ads.txt');
+if (fs.existsSync(distAds)) {
+  const distAdsBody = fs.readFileSync(distAds, 'utf8');
+  assert(!distAdsBody.includes('<!DOCTYPE'), 'dist/ads.txt must not be SPA HTML.');
+}
 const sitemapXml = read('sitemap.xml');
 assert(sitemapXml.includes('www.istebul.com/auto/') || sitemapXml.includes('karar-asistani'), 'sitemap.xml should include Auto or decision assistant URL.');
 assert(read('docs/openapi.yaml').includes('/ai-proxy'), 'OpenAPI spec should document AI proxy.');
