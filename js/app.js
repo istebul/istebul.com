@@ -28,6 +28,7 @@ import {
     trackUpsellClick
 } from './features/monetization/upsell-engine.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
+import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
 import { AuthManager } from './features/auth/auth.js';
@@ -3374,6 +3375,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             homeRoot.innerHTML = revenueManager.renderPricingCards({ layout: 'default' });
             revenueManager.initPricingControls(homeRoot);
         }
+
+        initPricingCardsMotion(document);
 
         this.ui.loadIcons?.();
 
