@@ -289,6 +289,7 @@ const autoBundleResult = esbuild.buildSync({
 const autoBundleCode = autoBundleResult.outputFiles[0].text;
 const autoAppFile = `auto-app.${hashContent(autoBundleCode)}.js`;
 writeFile(`assets/auto-runtime/${autoAppFile}`, autoBundleCode);
+writeFile('assets/auto-runtime/auto-app.js', autoBundleCode);
 
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
 if (fs.existsSync(autoHtmlPath)) {

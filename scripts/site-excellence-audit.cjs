@@ -38,18 +38,29 @@ if (!build.includes("'css/award-polish.css'")) {
   ok('Auto build includes award-polish');
 }
 
-const stack = path.join(root, 'css/enterprise-stack.css');
-if (!fs.existsSync(stack)) {
-  fail('enterprise-stack.css missing');
+const shell = path.join(root, 'css/corporate-shell.css');
+if (!fs.existsSync(shell)) {
+  fail('corporate-shell.css missing');
 } else {
-  ok('enterprise-stack.css for partner pages');
+  ok('corporate-shell.css for partner pages');
 }
 
-for (const html of ['partner-olun.html', 'karar-moat.html']) {
+for (const html of ['partner-olun.html', 'partner-planlar.html']) {
   const src = fs.readFileSync(path.join(root, html), 'utf8');
-  if (!src.includes('enterprise-stack.css')) {
-    fail(`${html} should use enterprise-stack.css`);
+  if (src.includes('/css/auto.css')) {
+    fail(`${html} must not load full auto.css on partner pages`);
   }
+  if (!src.includes('corporate-shell.css')) {
+    fail(`${html} should load corporate-shell.css`);
+  }
+}
+
+const autoCss = fs.readFileSync(path.join(root, 'css/auto.css'), 'utf8');
+if (/^a\{text-decoration:none/.test(autoCss.replace(/\s+/g, ''))) {
+  fail('auto.css must not use global unscoped anchor reset');
+}
+if (/body\.ib-enterprise\.ib-auto:not\(\.ib-ready\) main\{opacity:0/.test(autoCss.replace(/\s+/g, ''))) {
+  fail('auto.css must not hide main until JS loads');
 }
 
 if (failed) process.exit(1);

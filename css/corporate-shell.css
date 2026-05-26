@@ -1,0 +1,140 @@
+/**
+ * Kurumsal / partner sayfalar — yalnızca header, trust rail, legal layout.
+ * Tam auto.css yüklenmez (global reset ve nav{display:none} partner’ı bozmasın).
+ */
+
+.corporate-header,
+.ib-partner-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav, 1000);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 72px;
+  padding: 12px clamp(16px, 4vw, 48px);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.corporate-header .logo,
+.ib-partner-header .logo {
+  font-weight: 800;
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  letter-spacing: -0.03em;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.corporate-header .logo span,
+.ib-partner-header .logo span {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.corporate-header nav,
+.ib-partner-header nav,
+nav.corporate-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(10px, 2vw, 22px);
+}
+
+.corporate-header nav a,
+.ib-partner-header nav a,
+nav.corporate-nav a {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #475569;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.corporate-header nav a:hover,
+.ib-partner-header nav a:hover,
+nav.corporate-nav a[aria-current="page"] {
+  color: #1d4ed8;
+}
+
+nav.corporate-nav a[aria-current="page"] {
+  font-weight: 800;
+}
+
+.ib-trust-rail {
+  background: linear-gradient(90deg, #0f172a, #1e3a5f);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font-size: 0.78rem;
+}
+
+.ib-trust-rail-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.25rem;
+  padding: 0.5rem clamp(16px, 4vw, 48px);
+  font-weight: 600;
+  max-width: 100%;
+}
+
+.legal-page.ib-partner-landing,
+.legal-page {
+  max-width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 4rem) clamp(16px, 4vw, 48px);
+  overflow-x: clip;
+}
+
+body.ib-partner-page {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+body.ib-partner-page .ib-partner-landing h1 {
+  font-size: clamp(1.65rem, 4.5vw, 2.35rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  max-width: 22ch;
+}
+
+body.ib-partner-page .ib-partner-landing .lead {
+  font-size: clamp(1rem, 2.2vw, 1.125rem);
+  line-height: 1.65;
+  max-width: 65ch;
+}
+
+body.ib-partner-page .final-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+body.ib-partner-page .grid.three {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 720px) {
+  .corporate-header,
+  .ib-partner-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  nav.corporate-nav {
+    width: 100%;
+    gap: 8px 14px;
+  }
+
+  body.ib-partner-page .ib-partner-acquisition-steps,
+  body.ib-partner-page .ib-partner-rate-grid,
+  body.ib-partner-page .ib-partner-offer-grid,
+  body.ib-partner-page .ib-partner-trust-grid {
+    grid-template-columns: 1fr;
+  }
+}

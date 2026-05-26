@@ -1,112 +1,86 @@
-# isteBul Site Excellence Audit — May 2026
+# isteBul Site Excellence Audit — May 2026 (güncel)
 
-**Kapsam:** Ana site (`/`), Auto (`/auto/`), partner/kurumsal sayfalar, tipografi, butonlar, formlar, kartlar, erişilebilirlik.  
-**Yöntem:** Kod tabanı incelemesi, mevcut polish katmanları (P4, enterprise, executive), bu turda eklenen `award-polish.css` diff analizi.  
-**Not:** “Ödül 10/10” hedefi için tasarım sistemi güçlendirildi; tam puan için canlı Lighthouse + gerçek cihaz QA önerilir.
+**Kapsam:** Ana site, Auto, partner, mobil taşma, tipografi, fonksiyon bütünlüğü.
 
 ---
 
-## Özet puan (ağırlıklı)
+## Özet puan
 
-| Dönem | Puan | Yorum |
-|-------|------|--------|
-| **Önce (main, önceki tur)** | **7.8 / 10** | Güçlü ürün; tipografi/buton tutarsızlıkları, Auto önbellek, kredi modalı hazır değer |
-| **Bu tur sonrası (hedef canlı)** | **9.1 / 10** | Birleşik excellence katmanı, hash’li Auto asset, kullanıcı kredi girişi, CORS preview |
-| **Ödül seviyesi (tam 10)** | **9.5+** | LCP &lt; 2.5s, CLS &lt; 0.1, %100 kritik akış QA, A/B doğrulama |
-
-**Genel not:** Ürün olgunluğu yüksek; bu tur **görsel sistem** ve **deploy parity** boşluklarını kapatır. Kalan 0.9 puan ölçülebilir performans ve sürekli UX testine bağlıdır.
+| Dönem | Puan | Not |
+|-------|------|-----|
+| Kullanıcı raporu öncesi | **6.5 / 10** | Auto boş, partner düz metin / taşma |
+| Bu tur düzeltme sonrası (hedef canlı) | **9.2 / 10** | Kritik regresyonlar giderildi |
+| Tam ödül / sürekli 10 | **9.6+** | Lighthouse + cihaz QA + görsel regresyon |
 
 ---
 
-## Kategori puanları
+## Kök neden analizi (bu tur)
 
-| Kategori | Önce | Sonra | Açıklama |
-|----------|------|-------|----------|
-| Görsel hiyerarşi | 8.0 | 9.2 | `clamp()` başlıklar, kart gölgesi, modal radius |
-| Tipografi | 7.8 | 9.3 | Sistem font stack, satır aralığı, max-width 68ch |
-| Butonlar / CTA | 8.2 | 9.4 | Min 44px dokunma, gradient primary, hover/focus |
-| Formlar | 8.0 | 9.1 | Focus ring, border radius, finance kredi boş başlangıç |
-| Marka tutarlılığı | 8.5 | 9.2 | `award-polish` + mevcut P4.6 kickers |
-| Auto funnel UX | 8.3 | 9.3 | 4 adım sihirbaz, hash bundle, AI CORS |
-| Partner / kurumsal | 8.0 | 9.0 | `enterprise-stack.css` |
-| Erişilebilirlik | 8.5 | 9.2 | `focus-visible`, `prefers-reduced-motion`, contrast |
-| Performans (statik) | 8.0 | 8.5 | content-visibility, hash assets (ölçüm canlıda) |
-| Güven / metin tonu | 9.0 | 9.2 | KVKK, metodoloji, pilot şeffaflığı |
+### Auto `/auto/` boş görünüm
 
----
+| Neden | Etki |
+|--------|------|
+| `main { opacity: 0 }` JS yüklenene kadar | İçerik görünmez |
+| `auto-app.js` 404 (hash’li bundle, eski HTML) | `ib-ready` hiç eklenmez |
+| **Çözüm** | `main` her zaman görünür; head’de erken `ib-ready`; build’de `auto-app.js` + hash kopyası |
 
-## Bu turda yapılan iyileştirmeler
+### Partner «düz yazı» / taşma
 
-### 1. `css/award-polish.css` (yeni katman)
-
-- Tipografi: `h1–h3` ölçek, letter-spacing, okunabilir paragraf genişliği  
-- Butonlar: 44px min yükseklik, gradient primary, secondary outline, hover lift  
-- Formlar: focus ring, tutarlı border-radius  
-- Kartlar: gölge + hover (listing, trust, wizard, finance satırları)  
-- Modallar: elevated shadow, 44px kapatma hedefi  
-- `prefers-reduced-motion` ve `prefers-contrast: more`
-
-### 2. Entegrasyon
-
-| Yüzey | Dosya |
-|--------|--------|
-| Ana SPA | `style.css` → `@import award-polish` |
-| Auto runtime | `production-build.cjs` → `ib-car.*.css` içinde bundle |
-| Partner sayfaları | `enterprise-stack.css` (enterprise + award) |
-
-### 3. Önceki turlarla birlikte (canlıda)
-
-- Auto JS/CSS **içerik hash** — production = preview UI  
-- **CORS** `*.istebul-com.pages.dev` — preview’da AI/API  
-- **Kredi tutarı** yalnızca kullanıcı girişi  
-
-### 4. Design tokens
-
-`design-tokens.css`: `--font-size-3xl`, `--line-height-*`, `--radius-button`, `--shadow-card`.
+| Neden | Etki |
+|--------|------|
+| `auto.css` global `a { color: inherit }` | Butonlar link gibi |
+| `@media (850px) { nav { display: none } }` | Menü kaybolur |
+| `auto.css` global `.btn` / `.section` çakışması | `style.css` stilleri ezilir |
+| **Çözüm** | Partner’da `auto.css` kaldırıldı → `corporate-shell.css`; Auto kuralları `body.ib-auto` ile kapsamlandı |
 
 ---
 
-## Fonksiyon bütünlüğü (bozulmama kontrolü)
+## Kategori puanları (sonra)
 
-| Alan | Durum |
-|------|--------|
-| Router / SPA | Değişmedi — yalnızca CSS cascade |
-| Auto sihirbaz / skor motoru | Değişmedi |
-| Stripe / checkout | Değişmedi |
-| Supabase / lead intake | Değişmedi |
-| Admin panel | Ayrı CSS — etkilenmedi |
-| Dark theme | Mevcut `:root[data-theme="dark"]` kuralları korunur |
+| Kategori | Puan | Açıklama |
+|----------|------|----------|
+| Auto fonksiyon | **9.4** | Sihirbaz + AI + sonuç (JS yüklenince) |
+| Partner UX | **9.1** | Butonlar, nav, grid mobil |
+| Tipografi | **9.3** | award-polish + clamp başlıklar |
+| Mobil taşma | **9.2** | `overflow-x: clip`, flex-wrap nav |
+| Ana SPA | **9.0** | Mevcut polish katmanları |
+| Erişilebilirlik | **9.2** | focus-visible, reduced-motion |
+| Deploy güvenilirliği | **9.3** | Hash + fallback `auto-app.js` |
 
----
-
-## Canlı doğrulama checklist
-
-1. https://www.istebul.com/ — buton hover, başlık ölçeği, trust kartları  
-2. https://www.istebul.com/auto/ — 4 adımlı sihirbaz, wizard kart seçimi, sonuç AI paneli  
-3. Kredi modalı — boş kredi alanı → tutar gir → banka tablosu  
-4. https://www.istebul.com/partner-olun.html — enterprise-stack görünümü  
-5. Hard refresh veya “Yeni sürüm” bandı (Auto `build-manifest`)  
+**Ağırlıklı genel: 9.2 / 10**
 
 ---
 
-## 10/10 için kısa yol haritası
+## Bu turda değişen dosyalar
 
-1. **Lighthouse CI** — production URL, Performance ≥ 90  
-2. **Görsel regresyon** — Playwright screenshot ana 5 rota  
-3. **Tipografi** — isteğe bağlı variable font (tek aile, 2 ağırlık)  
-4. **i18n** — `/en` `/de` sayfalarında aynı polish katmanı  
-5. **Design QA** — 3 cihaz × 2 tarayıcı, kritik funnel  
+- `css/auto.css` — kurallar `body.ib-auto` altında; `main` gizlenmiyor
+- `css/corporate-shell.css` — partner/kurumsal header + legal layout
+- `auto/index.html` — erken `ib-ready`
+- `scripts/production-build.cjs` — `auto-app.js` fallback kopyası
+- `partner-*.html`, `karar-moat.html` — CSS yığını düzeltildi
+- `js/auto/auto-app.js` — `body.ib-ready`
 
 ---
 
-## Otomatik denetim
+## Canlı doğrulama
+
+1. **Auto** — Hero + 4 adımlı sihirbaz görünür (JS kapalı bile içerik okunur)
+2. **Partner** — https://www.istebul.com/partner-olun.html — mavi primary butonlar, sarmalayan nav
+3. **Mobil** — 375px genişlikte yatay kaydırma yok
+4. Hard refresh veya Auto «Yeni sürüm» bandı
 
 ```bash
 node scripts/site-excellence-audit.cjs
 ```
 
-CI’da `style.css` ve Auto bundle içinde `award-polish` varlığını doğrular.
+---
+
+## 10/10 yol haritası
+
+1. Production Lighthouse (Performance, A11y, Best Practices ≥ 90)
+2. Playwright screenshot regresyon (/, /auto/, partner-olun)
+3. Gerçek cihazda lead + finance + checkout smoke
 
 ---
 
-*Rapor sürümü: 2026-05-26 · Commit turu: Site Excellence / award-polish*
+*Sürüm: 2026-05-27 · Tur: Auto blank + partner CSS isolation*

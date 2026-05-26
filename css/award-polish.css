@@ -18,7 +18,8 @@
 
 /* —— Typography —— */
 body.ib-enterprise,
-body.ib-auto {
+body.ib-auto,
+body.ib-partner-page {
   font-family: var(--ib-font-body);
   font-size: 1rem;
   line-height: var(--ib-leading-body);

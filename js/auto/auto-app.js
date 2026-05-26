@@ -117,6 +117,7 @@ const ONBOARDING_STARTED_KEY = 'istebul_auto_onboarding_started';
 const UPSELL_RESULTS_KEY = 'istebul_auto_results_count';
 
 document.documentElement.classList.add('ib-ready');
+document.body?.classList.add('ib-ready');
 
 completeOAuthIfPresent().catch(() => {});
 
