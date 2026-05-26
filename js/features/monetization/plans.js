@@ -83,7 +83,7 @@ export const FREE_LIMITS = {
   maxComparisons: 2,
   maxAutoResultsPreview: 3,
   premiumReport: false,
-  advancedAiSummary: false,
+  advancedAiSummary: true,
   priorityPartner: false
 };
 

@@ -923,6 +923,31 @@ body.revenue-paywall-open {
   margin: 0 auto;
 }
 
+.ib-pricing-home-teaser {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  max-width: 720px;
+  margin: 0 auto 1rem;
+  align-items: stretch;
+}
+
+.ib-pricing-teaser-card .revenue-plan-desc {
+  padding: 0 1.35rem;
+  margin: 0.75rem 0;
+}
+
+@media (max-width: 768px) {
+  .ib-pricing-home-teaser {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+  }
+
+  .ib-pricing-home-teaser .revenue-plan-card--featured {
+    order: -1;
+  }
+}
+
 #pricing .ib-pricing-cards-stage {
   margin-bottom: 1.5rem;
 }

@@ -8,7 +8,7 @@ const rateLimitStore = globalThis.__aiProxyRateLimit || (globalThis.__aiProxyRat
 const promptCache = globalThis.__aiProxyPromptCache || (globalThis.__aiProxyPromptCache = new Map());
 
 const AI_RATE_LIMIT_PER_MIN = 20;
-const AI_MAX_OUTPUT_TOKENS = 400;
+const AI_MAX_OUTPUT_TOKENS = 800;
 const PROMPT_CACHE_TTL_MS = 600_000;
 const PROMPT_CACHE_MAX_ENTRIES = 48;
 
@@ -123,7 +123,7 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'Prompt required' }, 400, origin);
     }
 
-    if (typeof prompt !== 'string' || prompt.length > 3000) {
+    if (typeof prompt !== 'string' || prompt.length > 4000) {
       return json({ error: 'Invalid prompt' }, 400, origin);
     }
 

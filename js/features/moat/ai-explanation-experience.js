@@ -204,7 +204,7 @@ export function renderAiExplanationExperience(bundle, options = {}) {
     : buildDeterministicSynthesis(b);
   const refineNote = pro
     ? ''
-    : `<p class="ib-ai-refine-upsell text-muted-sm" data-ai-refine-upsell>Pro ile sentezi rafine edebilirsiniz; skor ve TCO değişmez.</p>`;
+    : `<p class="ib-ai-refine-upsell text-muted-sm" data-ai-refine-upsell>Ücretsiz planda saatlik AI kotası geçerlidir; Pro ile sınırsız rafine. Skor ve TCO değişmez.</p>`;
 
   return `
     <section class="ib-ai-experience premium-ai-summary ai-explanation-box" data-ai-explanation>
@@ -328,7 +328,7 @@ export function renderAiExplanationExperience(bundle, options = {}) {
         }
       </aside>
 
-      <div class="ai-refinement-tools" ${pro ? '' : 'hidden'}>
+      <div class="ai-refinement-tools ib-ai-refinement-tools--visible">
         <div class="ai-refinement-chips">
           <button type="button" class="ai-chip" data-ai-refine="Daha ekonomik alternatifleri yorumla; sayı ekleme.">
             Daha ekonomik

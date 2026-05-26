@@ -78,7 +78,12 @@ import { initConversionMicroUx } from '../runtime/conversion-micro-ux.js';
 import { initPerceivedPerformance } from '../runtime/perceived-performance.js';
 import { initBrandConsistency } from '../runtime/brand-consistency.js';
 import { CONVERSION_COPY } from '../core/conversion-copy.js';
-import { canCallAiNarration } from '../core/scale-limits.js';
+import {
+  canCallAiNarration,
+  getAiNarrationBudgetMessage,
+  hasAiNarrationBudget,
+  SCALE_LIMITS
+} from '../core/scale-limits.js';
 import { completeOAuthIfPresent } from '../runtime/auth-oauth-callback.js';
 
 const formatAmount = (value) => formatMoney(value);
@@ -1113,9 +1118,13 @@ function renderAutoMethodologyStrip() {
     </section>`;
 }
 
-async function getAiExplanation(results, formData = {}, refinement = '') {
-  if (!canCallAiNarration()) {
-    return '';
+async function getAiExplanation(results, formData = {}, refinement = '', options = {}) {
+  const pro = Boolean(options.pro);
+  if (!hasAiNarrationBudget({ pro })) {
+    return getAiNarrationBudgetMessage({ pro });
+  }
+  if (!canCallAiNarration({ pro })) {
+    return getAiNarrationBudgetMessage({ pro });
   }
 
   try {
@@ -1141,7 +1150,10 @@ async function getAiExplanation(results, formData = {}, refinement = '') {
 
     if (!res.ok) return '';
     const data = await res.json();
-    return sanitizeAiNarrative(data.result || '', 380);
+    return sanitizeAiNarrative(
+      data.result || '',
+      SCALE_LIMITS.aiProxy.maxNarrativeChars
+    );
   } catch {
     return '';
   }
@@ -1591,21 +1603,23 @@ function renderResults(results) {
     if (!aiBox || !results[0] || aiSummaryBusy) return;
 
     const pro = isProActive();
-    if (refinement && !pro) return;
-
     const bundle = buildExplanationBundle(results, formData);
     const deterministic = buildDeterministicSynthesis(bundle);
 
     aiBox.querySelectorAll('[data-ai-refine]').forEach((button) => {
-      button.classList.toggle('is-active', pro && button === activeButton);
+      button.classList.toggle('is-active', button === activeButton);
     });
 
     if (!refinement) {
       updateExplanationSynthesis(aiBox, deterministic);
     }
 
-    const mayCallAi = pro || (!refinement && canCallAiNarration());
-    if (!mayCallAi) return;
+    const mayCallAi = hasAiNarrationBudget({ pro });
+    if (!mayCallAi) {
+      const msg = getAiNarrationBudgetMessage({ pro });
+      updateExplanationSynthesis(aiBox, msg || deterministic, { fallback: deterministic });
+      return;
+    }
 
     setAiBusy(true);
     updateExplanationSynthesis(
@@ -1613,7 +1627,7 @@ function renderResults(results) {
       refinement ? 'Sentez rafine ediliyor…' : 'Danışman sentezi hazırlanıyor…'
     );
 
-    const text = await getAiExplanation(results, formData, refinement);
+    const text = await getAiExplanation(results, formData, refinement, { pro });
 
     setAiBusy(false);
 
@@ -1645,7 +1659,7 @@ function renderResults(results) {
 
   aiBox?.querySelectorAll('[data-ai-refine]').forEach((button) => {
     button.addEventListener('click', () => {
-      if (!ensureAdvisorUpsell()) return;
+      if (!isProActive() && !hasAiNarrationBudget({ pro: false }) && !ensureAdvisorUpsell()) return;
       updateAiSummary(button.dataset.aiRefine || '', button);
     });
   });

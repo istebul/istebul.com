@@ -54,6 +54,7 @@ export class PremiumPages {
     }
 
     this._bindFaq(root);
+    this._stripPrerender(pageId);
     this._mounted.add(pageId);
     document.body.classList.add('ib-premium-mounted');
     this._afterMount(pageId, app);
@@ -67,6 +68,11 @@ export class PremiumPages {
     if (pageId === 'planlar') {
       app?.renderPricingSection?.();
     }
+  }
+
+  _stripPrerender(pageId) {
+    const section = document.getElementById(`page-${pageId}`);
+    section?.querySelectorAll('.ib-prerender-seo').forEach((node) => node.remove());
   }
 
   _bindFaq(root) {
@@ -169,17 +175,9 @@ export class PremiumPages {
         </div>
       </section>
 
-      <section class="ib-premium-block ib-premium-steps" aria-label="Nasıl çalışır">
+      <section class="ib-premium-block ib-premium-steps ib-premium-steps--compact" aria-label="Süreç">
         <div class="container">
-          <div class="ib-premium-block-head">
-            <span class="section-kicker">Süreç</span>
-            <h2>Nasıl çalışır</h2>
-          </div>
-          <ol class="ib-premium-step-list">
-            <li><span>01</span><h3>İhtiyacı tanımlayın</h3><p>Bütçe, kullanım ve finansman tercihlerinizi girin.</p></li>
-            <li><span>02</span><h3>Modeli çalıştırın</h3><p>TCO, kredi etkisi ve skorlama tek motorla hesaplanır.</p></li>
-            <li><span>03</span><h3>Karşılaştırın ve karar verin</h3><p>Alternatifleri yan yana görün; güven skorunu takip edin.</p></li>
-          </ol>
+          <p class="text-muted-sm" style="margin:0">Detaylı süreç anasayfada ve <a href="/metodoloji" data-native-route>metodoloji</a> sayfasında. Burada canlı analize geçin.</p>
         </div>
       </section>
 

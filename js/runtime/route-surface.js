@@ -13,6 +13,7 @@ export const MARKETING_SURFACE_IDS = Object.freeze([
     'trust',
     'methodology-teaser',
     'sample-preview',
+    'home-auto-bridge',
     'how-it-works',
     'pricing',
     'partner-enterprise',

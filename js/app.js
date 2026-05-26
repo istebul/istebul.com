@@ -31,6 +31,7 @@ import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
+import { renderHomePricingTeaser } from './features/monetization/pricing-home-teaser.js';
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
@@ -2027,14 +2028,20 @@ class App {
 
         let result = this.buildDecisionResult(categoryConfig, answers);
 
-        if (hasAiNarrationBudget()) {
+        const aiPro = revenueManager.isPremium;
+        if (hasAiNarrationBudget({ pro: aiPro })) {
             try {
                 this.ui.showInfo?.('AI karar analizi hazırlanıyor...');
-                if (canCallAiNarration()) {
+                if (canCallAiNarration({ pro: aiPro })) {
                     result = await this.augmentDecisionWithAI(categoryConfig, answers, result);
                 }
             } catch (error) {
+                // deterministic result already shown
             }
+        } else {
+            this.ui.showInfo?.(
+                'Saatlik AI kotası doldu; kural tabanlı skor ve öneriler geçerlidir.'
+            );
         }
 
         this.lastDecisionResult = result;
@@ -3372,8 +3379,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
 
         if (homeRoot && homeRoot !== premiumRoot) {
-            homeRoot.innerHTML = revenueManager.renderPricingCards({ layout: 'default' });
-            revenueManager.initPricingControls(homeRoot);
+            homeRoot.innerHTML = renderHomePricingTeaser();
         }
 
         initPricingCardsMotion(document);

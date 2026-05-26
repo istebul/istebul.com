@@ -9,8 +9,9 @@ import {
 test('SCALE_LIMITS defines analytics and admin caps', () => {
   assert.equal(SCALE_LIMITS.analytics.maxQueue, 40);
   assert.ok(SCALE_LIMITS.admin.analyticsRowLimit >= 500);
-  assert.equal(SCALE_LIMITS.aiProxy.sessionCallsPerHour, 3);
-  assert.equal(SCALE_LIMITS.aiProxy.maxOutputTokens, 400);
+  assert.equal(SCALE_LIMITS.aiProxy.sessionCallsPerHour, 12);
+  assert.equal(SCALE_LIMITS.aiProxy.proSessionCallsPerHour, 40);
+  assert.equal(SCALE_LIMITS.aiProxy.maxOutputTokens, 800);
 });
 
 test('dedupeAnalyticsQueue drops prior page_exit for same session', () => {
