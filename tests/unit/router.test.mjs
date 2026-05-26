@@ -16,6 +16,7 @@ const sections = new Map([
     ['home', sectionStub('home')],
     ['trust', sectionStub('trust')],
     ['methodology-teaser', sectionStub('methodology-teaser')],
+    ['sample-preview', sectionStub('sample-preview')],
     ['how-it-works', sectionStub('how-it-works')],
     ['pricing', sectionStub('pricing')],
     ['partner-enterprise', sectionStub('partner-enterprise')],
@@ -76,8 +77,9 @@ global.CustomEvent = class CustomEvent {
 
 const { Router, HOMEPAGE_SECTION_IDS, MARKETING_HASH_IDS } = await import('../../js/core/router.js');
 
-test('marketing section constants include pricing', () => {
+test('marketing section constants include pricing and sample preview', () => {
     assert.ok(HOMEPAGE_SECTION_IDS.includes('pricing'));
+    assert.ok(HOMEPAGE_SECTION_IDS.includes('sample-preview'));
     assert.ok(MARKETING_HASH_IDS.includes('how-it-works'));
 });
 

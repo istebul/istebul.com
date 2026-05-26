@@ -32,8 +32,10 @@ export function renderStaticPricingFallback() {
               <p class="revenue-plan-desc">Tam karar altyapısı: sınırsız TCO, premium rapor, öncelikli eşleşme</p>
               <ul class="revenue-plan-features">
                 <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Sınırsız karşılaştırma</span></li>
-                <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Premium karar raporu</span></li>
+                <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Premium karar raporu &amp; derin TCO</span></li>
+                <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>AI karar notu (skoru değiştirmez)</span></li>
                 <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Öncelikli partner eşleşmesi</span></li>
+                <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Pazarlık içgörüleri &amp; premium export</span></li>
                 <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>7 gün ücretsiz deneme</span></li>
                 <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Stripe güvenli ödeme</span></li>
               </ul>

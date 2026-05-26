@@ -17,6 +17,7 @@ test.describe('Marketing shell (anon landing)', () => {
     await expect(page.getByRole('heading', { name: /Pahalı bir araç hatasından/i })).toBeVisible();
     await expect(page.locator('#ilanlar')).toBeHidden();
     await expect(page.locator('#pricing')).toBeVisible();
+    await expect(page.locator('#sample-preview')).toBeVisible();
     await expect(page.locator('#landing-faq')).toBeVisible();
     await expect(page.getByRole('link', { name: /TCO analizini başlat/i }).first()).toBeVisible();
   });
