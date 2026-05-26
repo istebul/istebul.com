@@ -44,7 +44,7 @@ test.describe('Auto onboarding', () => {
 
     await expect(page.getByRole('heading', { name: /Pahalı bir araç hatasından/i })).toBeVisible();
     await expect(
-      page.getByRole('link', { name: /TCO analizini başlat/i }).first()
+      page.getByRole('link', { name: /Analiz başlat|TCO analizini başlat/i }).first()
     ).toBeVisible();
     await expect(page.locator('.auto-social-proof')).toContainText(/~2 dk/i);
   });

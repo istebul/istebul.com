@@ -20,7 +20,7 @@ test.describe('Marketing shell (anon landing)', () => {
     await expect(page.locator('#sample-preview')).toBeVisible();
     await expect(page.locator('#home-auto-bridge')).toBeVisible();
     await expect(page.locator('#landing-faq')).toBeVisible();
-    await expect(page.getByRole('link', { name: /TCO analizini başlat/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Analiz başlat/i }).first()).toBeVisible();
   });
 
   test('/giris?return= auth modalı ve return yakalama', async ({ page }) => {
