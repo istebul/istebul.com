@@ -199,13 +199,15 @@ export function buildDeterministicSynthesis(bundle) {
 export function renderAiExplanationExperience(bundle, options = {}) {
   const b = bundle || buildExplanationBundle();
   const pro = Boolean(options.pro);
-  const lockedClass = pro ? '' : ' ib-ai-experience--locked';
   const synthesisText = pro
     ? 'Yorum katmanı hazırlanıyor — sayılar kartlardan gelir.'
     : buildDeterministicSynthesis(b);
+  const refineNote = pro
+    ? ''
+    : `<p class="ib-ai-refine-upsell text-muted-sm" data-ai-refine-upsell>Pro ile sentezi rafine edebilirsiniz; skor ve TCO değişmez.</p>`;
 
   return `
-    <section class="ib-ai-experience premium-ai-summary ai-explanation-box${lockedClass}" data-ai-explanation>
+    <section class="ib-ai-experience premium-ai-summary ai-explanation-box" data-ai-explanation>
       <header class="ib-ai-experience-header">
         <div>
           <p class="kicker">${escapeHtml(b.identity.badge)}</p>
@@ -221,6 +223,7 @@ export function renderAiExplanationExperience(bundle, options = {}) {
         <h4>Danışman sentezi</h4>
         <p class="ai-explanation-lead" data-ai-synthesis>${escapeHtml(synthesisText)}</p>
         <p class="ib-ai-synthesis-hint text-muted-sm">Bu paragraf tek AI çıktısıdır; skor ve TCO değiştirilmez.</p>
+        ${refineNote}
       </div>
 
       <div class="ib-ai-grid">

@@ -252,6 +252,76 @@ body.marketing-shell #nav-links-anon:not(.hidden) {
     align-items: center;
 }
 
+/* —— Home → Auto handoff —— */
+.ib-home-auto-bridge {
+    padding: clamp(2rem, 4vw, 3rem) 0;
+}
+
+.ib-home-auto-bridge-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: center;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid color-mix(in srgb, var(--primary-color) 22%, var(--border-color));
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary-color) 6%, var(--surface-color)),
+        var(--surface-color)
+    );
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+}
+
+.ib-home-auto-bridge-lead {
+    margin: 0.5rem 0 1rem;
+    max-width: 42ch;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+
+.ib-home-auto-bridge-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.45rem;
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+}
+
+.ib-home-auto-bridge-steps strong {
+    color: var(--primary-color);
+    margin-right: 0.35rem;
+}
+
+.ib-home-auto-bridge-actions {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+}
+
+.ib-home-auto-bridge-hint {
+    margin: 0;
+    max-width: 22rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 768px) {
+    .ib-home-auto-bridge-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .ib-home-auto-bridge-actions {
+        width: 100%;
+    }
+
+    .ib-home-auto-bridge-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 /* Text merge / toolbar polish */
 .marketplace-result-copy {
     display: flex !important;

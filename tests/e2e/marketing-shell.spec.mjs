@@ -18,8 +18,17 @@ test.describe('Marketing shell (anon landing)', () => {
     await expect(page.locator('#ilanlar')).toBeHidden();
     await expect(page.locator('#pricing')).toBeVisible();
     await expect(page.locator('#sample-preview')).toBeVisible();
+    await expect(page.locator('#home-auto-bridge')).toBeVisible();
     await expect(page.locator('#landing-faq')).toBeVisible();
     await expect(page.getByRole('link', { name: /TCO analizini başlat/i }).first()).toBeVisible();
+  });
+
+  test('/giris?return= auth modalı ve return yakalama', async ({ page }) => {
+    await page.goto('/giris?return=%2Fauto%2F');
+    await waitForAppReady(page);
+
+    await expect(page.locator('#auth-modal.show')).toBeVisible();
+    await expect(page.locator('#auth-modal input[type="email"]')).toBeVisible();
   });
 
   test('giriş modalı açılır', async ({ page }) => {

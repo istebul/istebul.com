@@ -67,6 +67,7 @@ import {
 } from '../features/moat/scoring-explainability.js';
 import {
   buildExplanationBundle,
+  buildDeterministicSynthesis,
   renderAiExplanationExperience,
   updateExplanationSynthesis
 } from '../features/moat/ai-explanation-experience.js';
@@ -1588,29 +1589,42 @@ function renderResults(results) {
 
   const updateAiSummary = async (refinement = '', activeButton = null) => {
     if (!aiBox || !results[0] || aiSummaryBusy) return;
-    if (!isProActive()) return;
+
+    const pro = isProActive();
+    if (refinement && !pro) return;
+
+    const bundle = buildExplanationBundle(results, formData);
+    const deterministic = buildDeterministicSynthesis(bundle);
 
     aiBox.querySelectorAll('[data-ai-refine]').forEach((button) => {
-      button.classList.toggle('is-active', button === activeButton);
+      button.classList.toggle('is-active', pro && button === activeButton);
     });
 
+    if (!refinement) {
+      updateExplanationSynthesis(aiBox, deterministic);
+    }
+
+    const mayCallAi = pro || (!refinement && canCallAiNarration());
+    if (!mayCallAi) return;
+
     setAiBusy(true);
-    updateExplanationSynthesis(aiBox, refinement ? 'Sentez rafine ediliyor…' : 'Sentez hazırlanıyor…');
+    updateExplanationSynthesis(
+      aiBox,
+      refinement ? 'Sentez rafine ediliyor…' : 'Danışman sentezi hazırlanıyor…'
+    );
 
     const text = await getAiExplanation(results, formData, refinement);
 
     setAiBusy(false);
 
-    updateExplanationSynthesis(aiBox, text, {
+    updateExplanationSynthesis(aiBox, text || deterministic, {
       fallback:
         'Sentez üretilemedi. Üstteki yapılandırılmış akıl yürütme, finansal tablo ve gerekçe kartları kural motorundan gelir — geçerlidir.'
     });
   };
 
   hydrateDealerOffers(results, formData);
-  if (isProActive()) {
-    updateAiSummary();
-  }
+  void updateAiSummary();
 
   const ensureAdvisorUpsell = () => {
     if (isProActive() || !aiBox) return true;

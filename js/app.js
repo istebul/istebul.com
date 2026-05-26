@@ -1,6 +1,10 @@
 // isteBul v2 - Main Application
 import './runtime/locale-bootstrap.js';
 import { completeOAuthIfPresent } from './runtime/auth-oauth-callback.js';
+import {
+  captureAuthReturnFromUrl,
+  handleAuthRouteEntry
+} from './runtime/auth-return.js';
 import { stripLocalePrefix } from './platform/locale-registry.js';
 import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
@@ -172,6 +176,7 @@ class App {
             });
 
             await this.checkAuth();
+            captureAuthReturnFromUrl();
             this.handleBillingReturnParams();
             this.handleCheckoutDeepLink();
             this.checkForNewDeployment();
@@ -1032,6 +1037,10 @@ class App {
                 this.auth.showLoginModal();
                 this.ui.showError('İlan vermek için giriş yapın veya üye olun.');
                 return;
+            }
+
+            if (route === 'auth-login' || route === 'auth-register') {
+                handleAuthRouteEntry(route, this.auth);
             }
 
             if (route === 'decision-assistant' || route === 'page-karar-analizi') {
@@ -4554,6 +4563,8 @@ const MARKETING_SECTION_IDS = new Set([
     'home',
     'trust',
     'methodology-teaser',
+    'sample-preview',
+    'home-auto-bridge',
     'how-it-works',
     'pricing',
     'partner-enterprise',

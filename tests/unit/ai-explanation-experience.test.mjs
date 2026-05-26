@@ -56,6 +56,14 @@ test('renderAiExplanationExperience uses decision assistant framing', () => {
   assert.match(html, /data-ai-synthesis/);
 });
 
+test('renderAiExplanationExperience shows full panels for free users', () => {
+  const html = renderAiExplanationExperience(buildExplanationBundle(sampleResults, {}), { pro: false });
+  assert.doesNotMatch(html, /ib-ai-experience--locked/);
+  assert.match(html, /Finansal bağlam/);
+  assert.match(html, /Öneri gerekçeleri/);
+  assert.match(html, /data-ai-refine-upsell/);
+});
+
 test('sanitizeAiNarrative strips false certainty claims', () => {
   const clean = sanitizeAiNarrative('Kesinlikle garanti ediyoruz %3.19 faiz ile ₺5000.');
   assert.ok(!/kesinlikle|garanti/i.test(clean));

@@ -7,6 +7,7 @@ import { monitoring } from '../../core/monitoring.js';
 import { analytics } from '../../core/analytics.js';
 import { mapAuthError, mapAuthErrorForCheckout } from './auth-errors.js';
 import { peekCheckoutIntent } from '../../core/checkout-intent.js';
+import { captureAuthReturnFromUrl, completeAuthReturn } from '../../runtime/auth-return.js';
 import { enrollSignupNurture } from '../lifecycle/lifecycle-client.js';
 import { enrollOnboardingHelp } from '../customer/customer-ops-client.js';
 import {
@@ -197,7 +198,8 @@ export class AuthManager {
     }
 
     async signInWithGoogle() {
-        const redirectTo = `${window.location.origin}${window.location.pathname || '/'}`;
+        captureAuthReturnFromUrl();
+        const redirectTo = `${window.location.origin}${window.location.pathname || '/'}${window.location.search || ''}`;
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: { redirectTo }
@@ -359,6 +361,8 @@ export class AuthManager {
             if (pendingCheckout) {
                 this.showAuthSuccess(CONVERSION_COPY.auth.successCheckoutLogin);
                 setTimeout(() => this.hideAuthModal(), 1200);
+            } else if (completeAuthReturn({ router: window.app?.router })) {
+                this.hideAuthModal();
             } else {
                 this.hideAuthModal();
             }
@@ -425,11 +429,14 @@ export class AuthManager {
                 this.currentUser = signedUpUser;
                 state.setUser(signedUpUser);
                 document.dispatchEvent(new CustomEvent('userLoggedIn', { detail: signedUpUser }));
-                this.hideAuthModal();
 
                 if (pendingCheckout) {
                     this.showAuthSuccess(CONVERSION_COPY.auth.successCheckoutRegister);
+                    setTimeout(() => this.hideAuthModal(), 1200);
+                } else if (completeAuthReturn({ router: window.app?.router })) {
+                    this.hideAuthModal();
                 } else {
+                    this.hideAuthModal();
                     this.showAuthSuccess(CONVERSION_COPY.auth.successRegister);
                 }
                 return;

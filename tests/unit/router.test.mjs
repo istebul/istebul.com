@@ -26,6 +26,7 @@ const sections = new Map([
     ['trust', sectionStub('trust')],
     ['methodology-teaser', sectionStub('methodology-teaser')],
     ['sample-preview', sectionStub('sample-preview')],
+    ['home-auto-bridge', sectionStub('home-auto-bridge')],
     ['how-it-works', sectionStub('how-it-works')],
     ['pricing', sectionStub('pricing')],
     ['partner-enterprise', sectionStub('partner-enterprise')],

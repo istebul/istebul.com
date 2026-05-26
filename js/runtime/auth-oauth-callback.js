@@ -3,6 +3,7 @@
  * Requires createClient({ auth: { detectSessionInUrl: true } }).
  */
 import { supabase } from '../core/supabase.js';
+import { captureAuthReturnFromUrl, completeAuthReturn } from './auth-return.js';
 
 function hasOAuthCallbackParams() {
   const hash = window.location.hash || '';
@@ -35,10 +36,14 @@ export async function completeOAuthIfPresent() {
     }
 
     if (data?.session) {
+      captureAuthReturnFromUrl();
       cleanOAuthUrl();
       document.dispatchEvent(
         new CustomEvent('userLoggedIn', { detail: data.session.user })
       );
+      queueMicrotask(() => {
+        completeAuthReturn({ router: window.app?.router });
+      });
       return data.session;
     }
 
