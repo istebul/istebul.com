@@ -177,8 +177,8 @@ export class AuthManager {
             </form>
             ${this.getGoogleOAuthBlock()}
             <div class="modal-footer">
-                <p>Şifrenizi mi unuttunuz? <a href="#" id="forgot-password">Sıfırlayın</a></p>
-                <p>Hesabınız yok mu? <a href="#" id="switch-to-register">${CONVERSION_COPY.auth.switchToRegister}</a></p>
+                <p>Şifrenizi mi unuttunuz? <button type="button" class="auth-inline-link" id="forgot-password">Sıfırlayın</button></p>
+                <p>Hesabınız yok mu? <button type="button" class="auth-inline-link" id="switch-to-register">${CONVERSION_COPY.auth.switchToRegister}</button></p>
             </div>
         `;
     }
@@ -250,7 +250,7 @@ export class AuthManager {
             </form>
             ${this.getGoogleOAuthBlock()}
             <div class="modal-footer">
-                <p>Zaten hesabınız var mı? <a href="#" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</a></p>
+                <p>Zaten hesabınız var mı? <button type="button" class="auth-inline-link" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</button></p>
             </div>
         `;
     }
@@ -500,7 +500,7 @@ export class AuthManager {
                 <button type="submit" class="btn btn-primary full-width auth-submit">Sıfırlama bağlantısı gönder</button>
             </form>
             <div class="modal-footer">
-                <p>Şifrenizi hatırladınız mı? <a href="#" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</a></p>
+                <p>Şifrenizi hatırladınız mı? <button type="button" class="auth-inline-link" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</button></p>
             </div>
         `;
     }

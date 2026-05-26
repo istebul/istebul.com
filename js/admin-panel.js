@@ -3181,7 +3181,12 @@ async function loadAutoLeads() {
       lead.body,
       lead.fuel,
       lead.vehicle,
-      lead.priority
+      lead.priority,
+      lead.purchase_timeline,
+      lead.financing_intent,
+      lead.trade_in,
+      lead.urgency,
+      lead.contact_preference
     ].filter(Boolean).join(' ').toLowerCase();
 
     const followDate = lead.follow_up_at ? new Date(lead.follow_up_at) : null;
@@ -3433,6 +3438,15 @@ async function openLeadDrawer(lead) {
   const bodyLabels = { suv: 'SUV', sedan: 'Sedan', hatchback: 'Hatchback' };
   const fuelLabels = { any: 'Fark etmez', gasoline: 'Benzin', diesel: 'Dizel', hybrid: 'Hibrit', electric: 'Elektrikli' };
   const loanLabels = { yes: 'Evet', no: 'Hayır' };
+  const timelineLabels = {
+    '0-30': '0–30 gün',
+    '1-3': '1–3 ay',
+    '3-6': '3–6 ay',
+    '6+': '6+ ay'
+  };
+  const tradeInLabels = { yes: 'Evet', no: 'Hayır' };
+  const urgencyLabels = { low: 'Düşük', medium: 'Orta', high: 'Yüksek' };
+  const contactPrefLabels = { phone: 'Telefon', whatsapp: 'WhatsApp', email: 'E-posta' };
   const statusLabels = {
     new: 'Yeni',
     called: 'İlk temas',
@@ -3494,6 +3508,11 @@ async function openLeadDrawer(lead) {
       <div class="lead-detail-item"><div class="lead-detail-label">Kasa</div><div class="lead-detail-value">${label(bodyLabels, lead.body)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Yakıt</div><div class="lead-detail-value">${label(fuelLabels, lead.fuel)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Kredi</div><div class="lead-detail-value">${label(loanLabels, lead.loan)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Satın alma zamanı</div><div class="lead-detail-value">${label(timelineLabels, lead.purchase_timeline)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Finansman niyeti</div><div class="lead-detail-value">${label(loanLabels, lead.financing_intent)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Takas</div><div class="lead-detail-value">${label(tradeInLabels, lead.trade_in)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">Aciliyet</div><div class="lead-detail-value">${label(urgencyLabels, lead.urgency)}</div></div>
+      <div class="lead-detail-item"><div class="lead-detail-label">İletişim tercihi</div><div class="lead-detail-value">${label(contactPrefLabels, lead.contact_preference)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">İlgi</div><div class="lead-detail-value">${fmt(lead.interest_type)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Araç</div><div class="lead-detail-value">${fmt(lead.vehicle)}</div></div>
       <div class="lead-detail-item"><div class="lead-detail-label">Lead Skoru</div><div class="lead-detail-value">${fmt(lead.lead_score)}</div></div>

@@ -2,14 +2,14 @@
   "siteOrigin": "https://www.istebul.com",
   "surfaces": {
     "home": {
-      "title": "isteBul | 2 Dakikada TCO ile Araç Alım Kararı",
-      "description": "Toplam maliyet, kredi ve kullanımı tek ekranda karşılaştırın. Yanlış araç seçme riskini azaltın — ücretsiz, tarafsız karar altyapısı.",
+      "title": "isteBul | AI ile Büyük Satın Alma Kararları",
+      "description": "Araba, ev, tatil ve finans kararlarında toplam maliyeti, riskleri ve size en uygun seçenekleri analiz edin. AI destekli karar zekası platformu.",
       "path": "/"
     },
     "page-karar-analizi": {
-      "title": "Karar Analizi | isteBul — TCO ve Finansman",
-      "description": "Araç alımında fiyat, kredi ve toplam maliyeti birlikte görün. Eğitim ve önizleme sayfası; analiz için Auto akışına geçin.",
-      "path": "/karar-analizi"
+      "title": "Karar Asistanı | isteBul — AI Karar Analizi",
+      "description": "Büyük satın alma kararlarını toplam maliyet, risk ve finansman etkisiyle analiz edin. Ücretsiz başlayın, Auto ile araç kararını derinleştirin.",
+      "path": "/karar-asistani"
     },
     "page-metodoloji": {
       "title": "Metodoloji | isteBul",
@@ -18,7 +18,7 @@
     },
     "page-planlar": {
       "title": "Planlar ve Fiyatlandırma | isteBul",
-      "description": "Ücretsiz TCO analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, Stripe ile güvenli ödeme.",
+      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, Stripe ile güvenli ödeme.",
       "path": "/planlar"
     },
     "ilanlar": {
