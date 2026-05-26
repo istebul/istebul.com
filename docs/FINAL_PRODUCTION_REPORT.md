@@ -80,6 +80,8 @@ Canlı `curl` (agent ortamı): ana sayfa/auto Cloudflare 403 (bot koruması); `r
 
 ## 14. Kalan riskler
 
-- Canlı Supabase migration henüz uygulanmadıysa yeni lead kolonları admin’de boş görünebilir
-- E2E Playwright tam suite CI’da ayrı koşulabilir
-- Partner funnel test skip linki (`partner-basvuru.js`) yalnızca internal test için
+Güncelleme: `docs/PRODUCTION_RISK_CLEANUP.md` — migration idempotent, admin notes fallback, partner skip link temizlendi, `smoke-live.cjs` eklendi.
+
+- **Supabase:** `supabase db push` production’da manuel uygulanmalı (agent ortamında project ref yok)
+- **Canlı smoke:** Cloudflare bot challenge CI/agent’tan 403 verebilir; `npm run smoke:live` warn modunda geçer
+- **E2E:** Bazı spec’ler `nav.navbar` bekliyor — ayrı PR ile selector güncellemesi önerilir

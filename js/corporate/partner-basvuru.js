@@ -178,12 +178,12 @@ function renderStep4(app) {
 function renderStep5(app) {
   const sampleJson = escapeHtml(JSON.stringify(SAMPLE_WEBHOOK_PAYLOAD, null, 2));
   return renderShell(5, app, `
-    <p class="kicker">Adım 5 / 6 · Test doğrulama</p>
+    <p class="kicker">Adım 5 / 6 · Webhook doğrulama</p>
     <h1>Örnek payload imzası</h1>
     <p class="lead">Paylaşılan gizli anahtarınızla aşağıdaki gövdeyi HMAC-SHA256 ile imzalayın. Bu adım, canlıya geçmeden önce entegrasyonunuzun doğru çalıştığını doğrular.</p>
     <pre class="ib-partner-funnel-sample">${sampleJson}</pre>
     <form id="partner-funnel-test" class="partner-form">
-      <label>Webhook signing secret (test)
+      <label>Webhook signing secret
         <input name="webhook_secret" type="password" required minlength="8" autocomplete="off" placeholder="Üretim secret ile aynı mantık">
       </label>
       <p class="text-muted-sm">Secret tarayıcıda kalır; yalnızca imza doğrulaması için kullanılır ve sunucuda saklanmaz.</p>
@@ -205,7 +205,7 @@ function renderStep6(app) {
       <p><strong>Firma:</strong> ${escapeHtml(app.company_name)}</p>
       <p><strong>Plan:</strong> ${escapeHtml(app.billing_plan || 'pilot')}</p>
       <p><strong>Webhook:</strong> <code>${escapeHtml(app.webhook_url_draft || '—')}</code></p>
-      <p><strong>Test payload:</strong> ${app.test_payload_verified ? 'Doğrulandı' : 'Bekliyor'}</p>
+      <p><strong>Webhook doğrulama:</strong> ${app.test_payload_verified ? 'Doğrulandı' : 'Bekliyor'}</p>
       <p><strong>Durum:</strong> ${escapeHtml(app.status)}</p>
     </div>
     ${app.onboarding_completed_at ? `
@@ -396,13 +396,18 @@ function bindStep5(root, token, app) {
 
   if (app.test_payload_verified) {
     const skip = document.createElement('p');
-    skip.innerHTML = '<a href="#" id="partner-funnel-skip-test">Test tamam — 6. adıma geç</a>';
-    form?.appendChild(skip);
-    root.querySelector('#partner-funnel-skip-test')?.addEventListener('click', (e) => {
-      e.preventDefault();
+    skip.className = 'ib-partner-funnel-skip';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-ghost btn-sm';
+    btn.id = 'partner-funnel-continue-step6';
+    btn.textContent = 'Doğrulama tamam — 6. adıma geç';
+    btn.addEventListener('click', () => {
       setFunnelUrl(token, 6);
       load();
     });
+    skip.appendChild(btn);
+    form?.appendChild(skip);
   }
 }
 

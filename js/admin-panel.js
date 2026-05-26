@@ -48,6 +48,7 @@ import {
 } from './features/sales/partner-crm-pipeline.js';
 import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
+import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
 
 const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
@@ -3417,6 +3418,7 @@ function renderDispatchPanelHtml(lead, logs) {
 }
 
 async function openLeadDrawer(lead) {
+  lead = enrichLeadQualFields(lead);
   const drawer = document.getElementById('lead-drawer');
   const overlay = document.getElementById('lead-drawer-overlay');
   const content = document.getElementById('lead-drawer-content');

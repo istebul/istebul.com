@@ -19,8 +19,7 @@ const htmlFiles = [
 ];
 
 const allowHashInFile = {
-  'js/features/auth/auth.js': false,
-  'js/corporate/partner-basvuru.js': ['partner-funnel-skip-test']
+  'js/features/auth/auth.js': false
 };
 
 let failed = false;
