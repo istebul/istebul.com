@@ -60,10 +60,19 @@ if (indexHtml.match(/data-metric="analyses"[^>]*>12\.400/)) {
 
 const requiredDist = [
   'auto/index.html',
-  'assets/auto-runtime/auto-app.js',
   'env.js',
   'admin-panel.html'
 ];
+
+const autoRuntimeDir = path.join(root, 'dist/assets/auto-runtime');
+if (!fs.existsSync(autoRuntimeDir)) {
+  fail('dist/assets/auto-runtime missing');
+} else {
+  const autoFiles = fs.readdirSync(autoRuntimeDir);
+  if (!autoFiles.some((name) => /^auto-app\.[a-f0-9]+\.js$/.test(name))) {
+    fail('dist/assets/auto-runtime/auto-app.[hash].js missing');
+  }
+}
 
 const requiredSource = ['functions/api/public-stats.js'];
 requiredSource.forEach((rel) => {

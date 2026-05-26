@@ -42,7 +42,6 @@ function bindAutoRuntimePrefetch() {
   const warm = () => {
     if (window[AUTO_PREFETCH_KEY]) return;
     window[AUTO_PREFETCH_KEY] = true;
-    prefetchOnce('/assets/auto-runtime/ib-car.css', 'style');
     prefetchOnce('/auto/', 'document');
   };
 

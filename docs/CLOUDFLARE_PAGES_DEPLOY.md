@@ -42,6 +42,8 @@ Dashboard’da ayrıca “Git connected” build varsa, **ya** GitHub Actions **
 
 Canlı doğrulama için: `https://www.istebul.com` veya `https://istebul-com.pages.dev` (son production deploy).
 
+**Auto `/auto/`:** `auto-app.js` ve `ib-car.css` artık içerik hash’li dosya adlarıyla yayınlanır (`auto-app.<hash>.js`). Böylece `www` üzerinde eski immutable önbellek, yeni sihirbaz + AI akışını engellemez.
+
 ## Manuel deploy
 
 ```bash

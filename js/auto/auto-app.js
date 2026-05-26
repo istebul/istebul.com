@@ -2495,7 +2495,40 @@ if (wizard) {
 }
 
 
+async function checkForNewAutoDeployment() {
+  try {
+    const response = await fetch('/build-manifest.json', { cache: 'no-store' });
+    if (!response.ok) return;
+
+    const manifest = await response.json();
+    const buildId = manifest.builtAt || '';
+    if (!buildId) return;
+
+    const storageKey = STORAGE_KEYS.LAST_BUILD_ID;
+    const previous = readStorageRaw(storageKey);
+
+    if (previous && previous !== buildId) {
+      const banner = document.createElement('div');
+      banner.className = 'auto-update-banner ib-update-banner';
+      banner.setAttribute('role', 'status');
+      banner.innerHTML = `
+        <span>Yeni Auto sürümü yayında.</span>
+        <button type="button" class="btn primary btn-sm">Güncelle</button>
+      `;
+      banner.querySelector('button')?.addEventListener('click', () => {
+        window.location.reload();
+      });
+      document.body.prepend(banner);
+    }
+
+    writeStorageRaw(storageKey, buildId);
+  } catch {
+    /* non-blocking */
+  }
+}
+
 setupAutoMobileNav();
+checkForNewAutoDeployment();
 initP4ProductPolish();
 initMobilePremiumUx();
 initConversionMicroUx();

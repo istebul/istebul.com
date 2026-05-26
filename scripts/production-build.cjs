@@ -265,16 +265,17 @@ const autoCssCombined = autoCssParts
   .filter((rel) => fs.existsSync(path.join(root, rel)))
   .map((rel) => fs.readFileSync(path.join(root, rel), 'utf8'))
   .join('\n');
+let autoCssFile = null;
 if (autoCssCombined) {
   const autoCss = esbuild.transformSync(autoCssCombined, {
     loader: 'css',
     minify: true
   }).code;
-  writeFile('assets/auto-runtime/ib-car.css', autoCss);
+  autoCssFile = `ib-car.${hashContent(autoCss)}.css`;
+  writeFile(`assets/auto-runtime/${autoCssFile}`, autoCss);
 }
 
-const autoBundlePath = path.join(autoAssetDir, 'auto-app.js');
-esbuild.buildSync({
+const autoBundleResult = esbuild.buildSync({
   entryPoints: [path.join(root, 'js/auto/auto-app.js')],
   bundle: true,
   format: 'esm',
@@ -282,15 +283,27 @@ esbuild.buildSync({
   target: 'es2020',
   minify: true,
   sourcemap: false,
-  outfile: autoBundlePath
+  write: false
 });
+const autoBundleCode = autoBundleResult.outputFiles[0].text;
+const autoAppFile = `auto-app.${hashContent(autoBundleCode)}.js`;
+writeFile(`assets/auto-runtime/${autoAppFile}`, autoBundleCode);
 
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
 if (fs.existsSync(autoHtmlPath)) {
   let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
-  autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, '/assets/auto-runtime/ib-car.css');
-  autoHtml = autoHtml.replace(/\/css\/auto\.css/g, '/assets/auto-runtime/ib-car.css');
-  autoHtml = autoHtml.replace(/\/assets\/auto-runtime\/auto-app\.js(?:\?v=[^"']+)?/g, '/assets/auto-runtime/auto-app.js');
+  if (autoCssFile) {
+    autoHtml = autoHtml.replace(
+      /\/assets\/auto-runtime\/ib-car(?:\.[a-f0-9]+)?\.css/g,
+      `/assets/auto-runtime/${autoCssFile}`
+    );
+    autoHtml = autoHtml.replace(/\/css\/auto\.[a-f0-9]+\.css/g, `/assets/auto-runtime/${autoCssFile}`);
+    autoHtml = autoHtml.replace(/\/css\/auto\.css/g, `/assets/auto-runtime/${autoCssFile}`);
+  }
+  autoHtml = autoHtml.replace(
+    /\/assets\/auto-runtime\/auto-app(?:\.[a-f0-9]+)?\.js(?:\?v=[^"']+)?/g,
+    `/assets/auto-runtime/${autoAppFile}`
+  );
   fs.writeFileSync(autoHtmlPath, minifyHtml(autoHtml));
 }
 

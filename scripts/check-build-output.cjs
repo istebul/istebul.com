@@ -65,6 +65,40 @@ if (fs.existsSync(distCss)) {
   console.error('Missing build output: dist/css/');
 }
 
+const autoRuntimeDir = path.join(root, 'dist/assets/auto-runtime');
+if (fs.existsSync(autoRuntimeDir)) {
+  const hashedAutoJs = fs.readdirSync(autoRuntimeDir).some((name) => /^auto-app\.[a-f0-9]+\.js$/.test(name));
+  const hashedAutoCss = fs.readdirSync(autoRuntimeDir).some((name) => /^ib-car\.[a-f0-9]+\.css$/.test(name));
+  if (!hashedAutoJs) {
+    failed = true;
+    console.error('Missing hashed Auto bundle: dist/assets/auto-runtime/auto-app.[hash].js');
+  }
+  if (!hashedAutoCss) {
+    failed = true;
+    console.error('Missing hashed Auto CSS: dist/assets/auto-runtime/ib-car.[hash].css');
+  }
+} else {
+  failed = true;
+  console.error('Missing build output: dist/assets/auto-runtime/');
+}
+
+const autoHtmlPath = path.join(root, 'dist/auto/index.html');
+if (fs.existsSync(autoHtmlPath)) {
+  const autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
+  if (!/\/assets\/auto-runtime\/auto-app\.[a-f0-9]+\.js/.test(autoHtml)) {
+    failed = true;
+    console.error('dist/auto/index.html must reference hashed auto-app bundle');
+  }
+  if (!/\/assets\/auto-runtime\/ib-car\.[a-f0-9]+\.css/.test(autoHtml)) {
+    failed = true;
+    console.error('dist/auto/index.html must reference hashed ib-car stylesheet');
+  }
+  if (!autoHtml.includes('Karar altyapısı') && !autoHtml.includes('auto-wizard')) {
+    failed = true;
+    console.error('dist/auto/index.html missing auto wizard shell');
+  }
+}
+
 const envPath = path.join(root, 'dist/env.js');
 if (fs.existsSync(envPath)) {
   const envSource = fs.readFileSync(envPath, 'utf8');

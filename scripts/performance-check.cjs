@@ -23,7 +23,7 @@ assert(netlifyConfig.includes('max-age=31536000'), 'Long-lived asset caching is 
 assert(index.includes('rel="preconnect"') || index.includes('rel="dns-prefetch"'), 'Third-party delivery strategy should be explicit.');
 assert(index.includes('perf:importmap'), 'index.html should reserve an import map injection slot.');
 assert(buildScript.includes('external: bundleExternals'), 'Production build should externalize heavy vendors.');
-assert(buildScript.includes('auto-app.js'), 'Auto runtime should ship as a single minified bundle.');
+assert(buildScript.includes('hashContent(autoBundleCode)'), 'Auto runtime should ship as a content-hashed bundle.');
 
 if (distIndex) {
   assert(distIndex.includes('type="importmap"'), 'Built index.html should include an import map.');
