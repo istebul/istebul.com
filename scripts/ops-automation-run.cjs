@@ -14,6 +14,15 @@ const { spawnSync } = require('child_process');
 const root = path.resolve(__dirname, '..');
 const reportPath = path.join(root, 'dist', 'ops-automation-report.json');
 const manifestPath = path.join(root, 'data/ops/automation-manifest.json');
+const nodePreload = path.join(root, 'scripts/lib/node20-websocket-shim.cjs');
+
+function runNodeTask(scriptPath, args = []) {
+  return spawnSync('node', ['-r', nodePreload, scriptPath, ...args], {
+    cwd: root,
+    env: process.env,
+    encoding: 'utf8'
+  });
+}
 
 async function postAlertDigest(triggered) {
   const url = process.env.OPS_ALERT_DIGEST_URL;
@@ -48,11 +57,7 @@ async function main() {
   };
 
   if (hasDb) {
-    const center = spawnSync('node', [path.join(root, 'scripts/ops-command-center.cjs')], {
-      cwd: root,
-      env: process.env,
-      encoding: 'utf8'
-    });
+    const center = runNodeTask(path.join(root, 'scripts/ops-command-center.cjs'));
     report.steps.push({
       id: 'ops_command_center',
       ok: center.status === 0,
@@ -76,43 +81,29 @@ async function main() {
       }
     }
 
-    const intl = spawnSync('node', [path.join(root, 'scripts/international-expansion-snapshot.cjs')], {
-      cwd: root,
-      env: process.env,
-      encoding: 'utf8'
-    });
+    const intl = runNodeTask(path.join(root, 'scripts/international-expansion-snapshot.cjs'));
     report.steps.push({
       id: 'international_expansion_snapshot',
       ok: intl.status === 0,
       stderr: intl.stderr?.slice(0, 500) || null
     });
 
-    const categoryDom = spawnSync(
-      'node',
-      [path.join(root, 'scripts/category-dominance-snapshot.cjs')],
-      { cwd: root, env: process.env, encoding: 'utf8' }
-    );
+    const categoryDom = runNodeTask(path.join(root, 'scripts/category-dominance-snapshot.cjs'));
     report.steps.push({
       id: 'category_dominance_snapshot',
       ok: categoryDom.status === 0,
       stderr: categoryDom.stderr?.slice(0, 500) || null
     });
 
-    const attack = spawnSync(
-      'node',
-      [path.join(root, 'scripts/competitor-attack-snapshot.cjs')],
-      { cwd: root, env: process.env, encoding: 'utf8' }
-    );
+    const attack = runNodeTask(path.join(root, 'scripts/competitor-attack-snapshot.cjs'));
     report.steps.push({
       id: 'competitor_attack_snapshot',
       ok: attack.status === 0,
       stderr: attack.stderr?.slice(0, 500) || null
     });
 
-    const expansionP = spawnSync(
-      'node',
-      [path.join(root, 'scripts/expansion-roadmap-prioritization-snapshot.cjs')],
-      { cwd: root, env: process.env, encoding: 'utf8' }
+    const expansionP = runNodeTask(
+      path.join(root, 'scripts/expansion-roadmap-prioritization-snapshot.cjs')
     );
     report.steps.push({
       id: 'expansion_prioritization_snapshot',
@@ -120,66 +111,42 @@ async function main() {
       stderr: expansionP.stderr?.slice(0, 500) || null
     });
 
-    const partnerships = spawnSync(
-      'node',
-      [path.join(root, 'scripts/strategic-partnership-snapshot.cjs')],
-      { cwd: root, env: process.env, encoding: 'utf8' }
-    );
+    const partnerships = runNodeTask(path.join(root, 'scripts/strategic-partnership-snapshot.cjs'));
     report.steps.push({
       id: 'strategic_partnership_snapshot',
       ok: partnerships.status === 0,
       stderr: partnerships.stderr?.slice(0, 500) || null
     });
 
-    const exitOpt = spawnSync(
-      'node',
-      [path.join(root, 'scripts/acquisition-exit-snapshot.cjs')],
-      { cwd: root, env: process.env, encoding: 'utf8' }
-    );
+    const exitOpt = runNodeTask(path.join(root, 'scripts/acquisition-exit-snapshot.cjs'));
     report.steps.push({
       id: 'acquisition_exit_snapshot',
       ok: exitOpt.status === 0,
       stderr: exitOpt.stderr?.slice(0, 500) || null
     });
 
-    const hiring = spawnSync('node', [path.join(root, 'scripts/hiring-architecture-snapshot.cjs')], {
-      cwd: root,
-      env: process.env,
-      encoding: 'utf8'
-    });
+    const hiring = runNodeTask(path.join(root, 'scripts/hiring-architecture-snapshot.cjs'));
     report.steps.push({
       id: 'hiring_architecture_snapshot',
       ok: hiring.status === 0,
       stderr: hiring.stderr?.slice(0, 500) || null
     });
 
-    const companyOs = spawnSync('node', [path.join(root, 'scripts/company-operating-snapshot.cjs')], {
-      cwd: root,
-      env: process.env,
-      encoding: 'utf8'
-    });
+    const companyOs = runNodeTask(path.join(root, 'scripts/company-operating-snapshot.cjs'));
     report.steps.push({
       id: 'company_operating_snapshot',
       ok: companyOs.status === 0,
       stderr: companyOs.stderr?.slice(0, 500) || null
     });
 
-    const scaleArch = spawnSync('node', [path.join(root, 'scripts/scale-architecture-snapshot.cjs')], {
-      cwd: root,
-      env: process.env,
-      encoding: 'utf8'
-    });
+    const scaleArch = runNodeTask(path.join(root, 'scripts/scale-architecture-snapshot.cjs'));
     report.steps.push({
       id: 'scale_architecture_snapshot',
       ok: scaleArch.status === 0,
       stderr: scaleArch.stderr?.slice(0, 500) || null
     });
 
-    const startup = spawnSync('node', [path.join(root, 'scripts/startup-operating-snapshot.cjs')], {
-      cwd: root,
-      env: process.env,
-      encoding: 'utf8'
-    });
+    const startup = runNodeTask(path.join(root, 'scripts/startup-operating-snapshot.cjs'));
     report.steps.push({
       id: 'startup_operating_snapshot',
       ok: startup.status === 0,
@@ -190,11 +157,9 @@ async function main() {
       report.startupOperating = JSON.parse(fs.readFileSync(startupPath, 'utf8'));
     }
 
-    const retention = spawnSync(
-      'node',
-      [path.join(root, 'scripts/analytics-retention-purge.cjs'), '--dry-run'],
-      { cwd: root, env: process.env, encoding: 'utf8' }
-    );
+    const retention = runNodeTask(path.join(root, 'scripts/analytics-retention-purge.cjs'), [
+      '--dry-run'
+    ]);
     report.steps.push({
       id: 'analytics_retention_purge_dry_run',
       ok: retention.status === 0,
@@ -202,11 +167,7 @@ async function main() {
       stderr: retention.stderr?.slice(0, 500) || null
     });
 
-    const ceo = spawnSync('node', [path.join(root, 'scripts/ceo-alert-run.cjs')], {
-      cwd: root,
-      env: process.env,
-      encoding: 'utf8'
-    });
+    const ceo = runNodeTask(path.join(root, 'scripts/ceo-alert-run.cjs'));
     report.steps.push({
       id: 'ceo_alerts',
       ok: ceo.status === 0,
