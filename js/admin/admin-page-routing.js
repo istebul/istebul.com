@@ -2,6 +2,8 @@
  * Admin panel navigation — every sidebar page maps to a refresh handler.
  */
 
+import { syncAdminHeaderTitle } from './admin-shell.js';
+
 /** @type {Record<string, () => void | Promise<void>>} */
 let pageHandlers = {};
 
@@ -73,6 +75,7 @@ export function showAdminPage(name, navEl) {
   document.querySelectorAll('.page').forEach((p) => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach((n) => n.classList.remove('active'));
   pageEl.classList.add('active');
+  syncAdminHeaderTitle(name);
 
   if (navEl?.classList?.contains('nav-item')) {
     navEl.classList.add('active');
