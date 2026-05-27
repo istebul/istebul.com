@@ -162,10 +162,33 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <a href="/#how-it-works" class="nav-link" data-home-anchor="how-it-works">Nasıl çalışır</a>
                     <a href="/#sample-preview" class="nav-link" data-home-anchor="sample-preview">Örnek analiz</a>
                     <a href="/#pricing" class="nav-link" data-home-anchor="pricing">Planlar</a>
-                    <a href="/metodoloji/" class="nav-link" data-native-route>Metodoloji</a>
-                    <a href="/duyurular" class="nav-link" data-native-route>Duyurular</a>
-                    <a href="/kampanyalar" class="nav-link" data-native-route>Kampanyalar</a>
                     <a href="/blog" class="nav-link" data-native-route>Blog</a>
+                    <div class="nav-dropdown nav-more-menu" id="nav-more-menu">
+                        <button
+                            type="button"
+                            id="nav-more-btn"
+                            class="nav-link nav-dropdown-btn"
+                            aria-expanded="false"
+                            aria-controls="nav-more-list"
+                        >
+                            Daha fazla
+                            <i data-lucide="chevron-down" aria-hidden="true"></i>
+                        </button>
+                        <div id="nav-more-list" class="nav-dropdown-content nav-more-list" role="menu" hidden>
+                            <a href="/metodoloji/" class="nav-dropdown-link" data-native-route role="menuitem">Metodoloji</a>
+                            <a href="/duyurular" class="nav-dropdown-link" data-native-route role="menuitem">Duyurular</a>
+                            <a href="/kampanyalar" class="nav-dropdown-link" data-native-route role="menuitem">Kampanyalar</a>
+                            <a href="/kvkk.html" class="nav-dropdown-link" data-native-route role="menuitem">Güvenlik / KVKK</a>
+                            <a href="/#landing-faq" class="nav-dropdown-link" data-home-anchor="landing-faq" role="menuitem">SSS</a>
+                        </div>
+                    </div>
+                    <div class="nav-more-mobile-links" aria-label="Ek bağlantılar">
+                        <a href="/metodoloji/" class="nav-link" data-native-route>Metodoloji</a>
+                        <a href="/duyurular" class="nav-link" data-native-route>Duyurular</a>
+                        <a href="/kampanyalar" class="nav-link" data-native-route>Kampanyalar</a>
+                        <a href="/kvkk.html" class="nav-link" data-native-route>Güvenlik / KVKK</a>
+                        <a href="/#landing-faq" class="nav-link" data-home-anchor="landing-faq">SSS</a>
+                    </div>
                 </div>
                 <div id="nav-links-auth" class="nav-links-group hidden">
                     <a href="/profil/" class="nav-link" data-auth-only>Dashboard</a>
@@ -181,12 +204,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <div class="nav-auth" id="nav-auth">
                     <a href="/karar-asistani" class="btn btn-primary nav-cta-decision" data-native-route data-analytics-cta="cta_decision_nav" data-analytics-placement="nav">Karar analizini başlat</a>
                     <button id="login-btn" class="btn btn-outline" type="button" data-auth-open="login" aria-label="Giriş Yap">Giriş Yap</button>
-                    <button id="register-btn" class="btn btn-ghost nav-tertiary-action" type="button" data-auth-open="register" aria-label="Analizini kaydet">Analizini kaydet</button>
                 </div>
-                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Koyu modu aç" aria-pressed="false" title="Tema değiştir">
-                    <i data-lucide="moon"></i>
-                    <span class="sr-only">Koyu modu aç</span>
-                </button>
             </div>
             <div class="nav-user hidden" id="nav-user">
                 <div class="user-menu">

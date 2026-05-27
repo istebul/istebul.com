@@ -87,6 +87,22 @@ export class UIManager {
     setupResponsiveNav() {
         const navMenu = document.getElementById('nav-menu');
         const navAuth = document.getElementById('nav-auth');
+        const navMoreMenu = document.getElementById('nav-more-menu');
+        const navMoreButton = document.getElementById('nav-more-btn');
+        const navMoreList = document.getElementById('nav-more-list');
+        const closeMoreMenu = () => {
+            if (!navMoreButton || !navMoreList) return;
+            navMoreButton.setAttribute('aria-expanded', 'false');
+            navMoreList.classList.remove('is-open');
+            navMoreList.hidden = true;
+        };
+        const toggleMoreMenu = () => {
+            if (!navMoreButton || !navMoreList) return;
+            const isOpen = navMoreButton.getAttribute('aria-expanded') === 'true';
+            navMoreButton.setAttribute('aria-expanded', String(!isOpen));
+            navMoreList.classList.toggle('is-open', !isOpen);
+            navMoreList.hidden = isOpen;
+        };
         const navToggle = document.createElement('button');
         navToggle.className = 'nav-toggle';
         navToggle.type = 'button';
@@ -112,7 +128,25 @@ export class UIManager {
             const isOpen = navMenu.classList.toggle('show');
             navToggle.setAttribute('aria-expanded', String(isOpen));
             navToggle.setAttribute('aria-label', isOpen ? 'Menüyü kapat' : 'Menüyü aç');
+            if (!isOpen) closeMoreMenu();
         });
+
+        if (navMoreButton && navMoreList && navMoreMenu) {
+            navMoreButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                toggleMoreMenu();
+            });
+            document.addEventListener('click', (event) => {
+                if (!navMoreMenu.contains(event.target)) {
+                    closeMoreMenu();
+                }
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeMoreMenu();
+                }
+            });
+        }
 
         // Show/hide toggle based on screen size
         const navCompactBreakpoint = 1280;
@@ -122,6 +156,7 @@ export class UIManager {
                 navToggle.setAttribute('aria-expanded', 'false');
                 navToggle.setAttribute('aria-label', 'Menüyü aç');
                 navMenu.classList.remove('show');
+                closeMoreMenu();
             } else {
                 navToggle.style.display = 'none';
                 navMenu.classList.add('show');

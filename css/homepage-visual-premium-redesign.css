@@ -12,9 +12,13 @@ body.ib-enterprise .top-bar {
 }
 
 body.ib-enterprise .top-bar p {
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   letter-spacing: 0.012em;
   color: #dbe7f7;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 body.ib-enterprise .navbar {
@@ -25,14 +29,14 @@ body.ib-enterprise .navbar {
 }
 
 body.ib-enterprise .nav-container {
-  min-height: 92px;
+  min-height: 72px;
   gap: clamp(0.7rem, 1.2vw, 1.2rem);
 }
 
 body.ib-enterprise .brand-mark {
-  width: 42px;
-  height: 42px;
-  box-shadow: 0 10px 26px rgba(25, 105, 235, 0.28);
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 8px 18px rgba(25, 105, 235, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.52);
 }
 
@@ -50,19 +54,20 @@ body.ib-enterprise .nav-subtitle {
 }
 
 body.ib-enterprise .nav-menu {
-  border-radius: var(--hp-nav-radius);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(243, 247, 252, 0.84));
-  border: 1px solid var(--hp-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), var(--hp-soft-shadow);
-  padding: 0.4rem;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
 }
 
 body.ib-enterprise .nav-link,
 body.ib-enterprise .nav-dropdown-btn {
-  border-radius: 12px;
-  min-height: 44px;
-  padding: 0 0.9rem;
+  border-radius: 10px;
+  min-height: 38px;
+  padding: 0 0.72rem;
   color: #2b3b51;
+  font-size: 0.84rem;
   transition: transform 170ms ease, background 170ms ease, color 170ms ease, box-shadow 170ms ease;
 }
 
@@ -79,14 +84,15 @@ body.ib-enterprise .nav-controls {
 }
 
 body.ib-enterprise .btn {
-  border-radius: 12px;
-  min-height: 44px;
-  box-shadow: 0 9px 24px rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
+  min-height: 38px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
 }
 
 body.ib-enterprise .nav-auth .btn {
-  font-size: 0.84rem;
+  font-size: 0.8rem;
   font-weight: 780;
+  padding-inline: 0.8rem;
 }
 
 body.ib-enterprise .nav-auth .nav-cta-decision {
@@ -102,9 +108,11 @@ body.ib-enterprise #login-btn {
 }
 
 body.ib-enterprise #register-btn.nav-tertiary-action {
-  background: transparent;
-  border: 1px solid transparent;
-  color: #75879e;
+  min-height: 34px;
+  padding-inline: 0.64rem;
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(114, 132, 155, 0.22);
+  color: #5f738a;
   box-shadow: none;
 }
 
@@ -114,13 +122,55 @@ body.ib-enterprise #register-btn.nav-tertiary-action:hover {
 }
 
 body.ib-enterprise .theme-toggle {
-  border-radius: 14px;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   border: 1px solid var(--hp-border);
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.09);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+body.ib-enterprise .nav-dropdown {
+  position: relative;
+}
+
+body.ib-enterprise .nav-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+
+body.ib-enterprise .nav-dropdown-btn[aria-expanded="true"] [data-lucide="chevron-down"] {
+  transform: rotate(180deg);
+}
+
+body.ib-enterprise .nav-more-list {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  min-width: 210px;
+  z-index: 50;
+  padding: 0.38rem;
+  display: none;
+}
+
+body.ib-enterprise .nav-more-list.is-open {
+  display: block !important;
+}
+
+body.ib-enterprise .nav-more-list .nav-dropdown-link {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0.42rem 0.58rem;
+  font-size: 0.82rem;
+  color: #2b3b51;
+  text-decoration: none;
+}
+
+body.ib-enterprise .nav-more-mobile-links {
+  display: none;
 }
 
 body.ib-enterprise .nav-dropdown-content,
@@ -285,7 +335,7 @@ body.ib-enterprise #home .preview-metrics > div {
 
 @media (max-width: 1280px) {
   body.ib-enterprise .nav-container {
-    min-height: 80px;
+    min-height: 66px;
   }
 
   body.ib-enterprise .brand-mark {
@@ -306,6 +356,10 @@ body.ib-enterprise #home .preview-metrics > div {
   }
 
   body.ib-enterprise .ib-trust-rail-inner > span::after {
+    display: none;
+  }
+
+  body.ib-enterprise .nav-subtitle {
     display: none;
   }
 }
@@ -348,7 +402,7 @@ body.ib-enterprise #home .preview-metrics > div {
     flex-wrap: nowrap !important;
     align-items: center;
     gap: 0.06rem;
-    overflow-x: auto;
+    overflow: visible;
     scrollbar-width: none;
   }
 
@@ -359,7 +413,7 @@ body.ib-enterprise #home .preview-metrics > div {
   body.ib-enterprise .nav-link,
   body.ib-enterprise .nav-dropdown-btn {
     width: auto !important;
-    min-height: 42px;
+    min-height: 36px;
     padding: 0 0.68rem;
     font-size: 0.8rem;
     justify-content: center !important;
@@ -375,5 +429,44 @@ body.ib-enterprise #home .preview-metrics > div {
   body.ib-enterprise .nav-dropdown-btn {
     padding: 0 0.82rem;
     font-size: 0.86rem;
+  }
+}
+
+@media (max-width: 1180px) {
+  body.ib-enterprise .nav-toggle {
+    display: inline-flex !important;
+  }
+
+  body.ib-enterprise .nav-more-menu {
+    display: none !important;
+  }
+
+  body.ib-enterprise .nav-more-mobile-links {
+    display: contents;
+  }
+
+  body.ib-enterprise .nav-menu {
+    max-height: min(68vh, 520px);
+    overflow-y: auto;
+  }
+
+  body.ib-enterprise .nav-auth {
+    gap: 0.4rem;
+  }
+
+  body.ib-enterprise .nav-auth .btn {
+    min-height: 34px;
+    padding-inline: 0.62rem;
+    font-size: 0.76rem;
+  }
+
+  body.ib-enterprise #register-btn.nav-tertiary-action {
+    display: none;
+  }
+}
+
+@media (min-width: 1181px) {
+  body.ib-enterprise .nav-toggle {
+    display: none !important;
   }
 }
