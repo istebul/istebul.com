@@ -274,6 +274,7 @@ if (autoCssCombined) {
     loader: 'css',
     minify: true
   }).code;
+  // ib-car.css — hashed auto runtime stylesheet (see p4-scale-readiness-check)
   autoCssFile = `ib-car.${hashContent(autoCss)}.css`;
   writeFile(`assets/auto-runtime/${autoCssFile}`, autoCss);
 }
