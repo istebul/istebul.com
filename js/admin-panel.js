@@ -49,6 +49,7 @@ import {
 import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
+import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
 
 const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
@@ -141,6 +142,7 @@ async function showApp() {
   loadDashboard();
   loadSettings();
   loadAnnouncements();
+  loadCampaigns();
   loadFaqs();
   loadPosts();
   loadListings();
@@ -1562,18 +1564,34 @@ async function adminAction(payload) {
 
 async function loadDashboard() {
   try {
-    const [u, l, a, f, p] = await Promise.all([
+    const [u, l, a, f, p, campaignRow] = await Promise.all([
       sb.from('profiles').select('*', { count: 'exact', head: true }),
       sb.from('listings').select('*', { count: 'exact', head: true }),
       sb.from('announcements').select('*', { count: 'exact', head: true }).eq('is_active', true),
       sb.from('faqs').select('*', { count: 'exact', head: true }),
-      sb.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', true)
+      sb.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', true),
+      sb.from('site_settings').select('value').eq('key', 'public_campaigns').maybeSingle()
     ]);
     document.getElementById('stat-users').textContent = u.count ?? '—';
     document.getElementById('stat-listings').textContent = l.count ?? '—';
     document.getElementById('stat-ann').textContent = a.count ?? '—';
     document.getElementById('stat-faqs').textContent = f.count ?? '—';
     document.getElementById('stat-posts').textContent = p.count ?? '—';
+    const statCampaigns = document.getElementById('stat-campaigns');
+    if (statCampaigns) {
+      let activeCampaigns = DEFAULT_CAMPAIGNS.length;
+      if (campaignRow.data?.value) {
+        try {
+          const parsed = JSON.parse(campaignRow.data.value);
+          activeCampaigns = Array.isArray(parsed)
+            ? parsed.filter((c) => c?.is_active !== false).length
+            : 0;
+        } catch {
+          activeCampaigns = 0;
+        }
+      }
+      statCampaigns.textContent = String(activeCampaigns);
+    }
   } catch(e) {}
 }
 
@@ -1740,6 +1758,241 @@ async function deletePost(id) {
   await adminAction({ action: 'delete', table: 'posts', id });
   toast('Silindi');
   loadPosts(); loadDashboard();
+}
+
+const CAMPAIGNS_SETTING_KEY = 'public_campaigns';
+let adminCampaigns = [];
+let adminCampaignsHasKey = false;
+
+async function readCampaignsFromSettings() {
+  const { data, error } = await sb
+    .from('site_settings')
+    .select('key,value')
+    .eq('key', CAMPAIGNS_SETTING_KEY)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data?.value) {
+    return { hasKey: false, list: [] };
+  }
+  try {
+    const parsed = JSON.parse(data.value);
+    const list = Array.isArray(parsed)
+      ? parsed.map((c, i) => normalizePublicCampaign(c, i))
+      : [];
+    return { hasKey: true, list };
+  } catch {
+    return { hasKey: true, list: [] };
+  }
+}
+
+async function persistCampaigns(list) {
+  const payload = list.map((c) => ({
+    id: c.id,
+    title: c.title,
+    summary: c.summary,
+    cta_label: c.cta_label,
+    cta_href: c.cta_href,
+    badge: c.badge,
+    ends_at: c.ends_at,
+    is_active: c.is_active,
+    sort_order: c.sort_order
+  }));
+  await adminAction({
+    action: 'upsert_settings',
+    table: 'site_settings',
+    id: 'settings',
+    values: [{ key: CAMPAIGNS_SETTING_KEY, value: JSON.stringify(payload) }]
+  });
+  adminCampaigns = list;
+  adminCampaignsHasKey = true;
+}
+
+function campaignIdFromTitle(title) {
+  const slug = String(title || '')
+    .toLowerCase()
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+  return slug || `campaign-${Date.now()}`;
+}
+
+function resetCampaignForm() {
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.value = value;
+  };
+  set('c-id', '');
+  const titleEl = document.getElementById('campaign-form-title');
+  if (titleEl) titleEl.textContent = 'Yeni kampanya';
+  set('c-title', '');
+  set('c-badge', '');
+  set('c-summary', '');
+  set('c-cta-label', 'Detay');
+  set('c-cta-href', '');
+  set('c-ends', '');
+  set('c-sort', '0');
+  const active = document.getElementById('c-active');
+  if (active) active.checked = true;
+}
+
+function formatCampaignEnds(value) {
+  if (!value) return '—';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return escapeHtml(String(value));
+  return d.toLocaleDateString('tr-TR');
+}
+
+async function loadCampaigns() {
+  const el = document.getElementById('campaigns-list');
+  const hint = document.getElementById('campaigns-source-hint');
+  if (!el) return;
+
+  try {
+    const { hasKey, list } = await readCampaignsFromSettings();
+    adminCampaigns = list;
+    adminCampaignsHasKey = hasKey;
+
+    if (hint) {
+      hint.textContent = hasKey
+        ? 'Kaynak: site_settings (public_campaigns). Aktif kampanyalar /kampanyalar sayfasında listelenir.'
+        : 'Henüz admin kaydı yok — sitede varsayılan kampanyalar gösteriliyor. İlk kayıt bu listeyi devralır.';
+    }
+
+    if (!list.length) {
+      el.innerHTML = hasKey
+        ? '<p class="empty">Kayıtlı kampanya yok. Yeni ekleyin veya varsayılanları yükleyin.</p>'
+        : '<p class="empty">Varsayılan kampanyalar sitede aktif. Kalıcı yönetim için kaydedin veya varsayılanları yükleyin.</p>';
+      return;
+    }
+
+    const sorted = [...list].sort(
+      (a, b) => a.sort_order - b.sort_order || a.title.localeCompare(b.title, 'tr')
+    );
+    el.innerHTML =
+      '<table class="table"><thead><tr><th>Sıra</th><th>Başlık</th><th>Rozet</th><th>CTA</th><th>Bitiş</th><th>Durum</th><th></th></tr></thead><tbody>' +
+      sorted
+        .map(
+          (c) => `<tr>
+        <td class="text-muted">${c.sort_order}</td>
+        <td><strong>${escapeHtml(c.title)}</strong><div class="text-muted text-xs cell-truncate">${escapeHtml(c.summary)}</div></td>
+        <td>${escapeHtml(c.badge)}</td>
+        <td class="text-xs"><span class="text-muted">${escapeHtml(c.cta_label)}</span> → ${escapeHtml(c.cta_href)}</td>
+        <td class="text-muted cell-nowrap">${formatCampaignEnds(c.ends_at)}</td>
+        <td><span class="badge ${c.is_active ? 'badge-green' : 'badge-red'}">${c.is_active ? 'Aktif' : 'Pasif'}</span></td>
+        <td><div class="table-actions">
+          <button class="btn btn-ghost btn-sm" data-action="edit-campaign" data-id="${safeAttr(c.id)}">Düzenle</button>
+          <button class="btn btn-ghost btn-sm" data-action="toggle-campaign" data-id="${safeAttr(c.id)}" data-active="${c.is_active}">${c.is_active ? 'Durdur' : 'Yayınla'}</button>
+          <button class="btn btn-danger btn-sm" data-action="delete-campaign" data-id="${safeAttr(c.id)}">Sil</button>
+        </div></td>
+      </tr>`
+        )
+        .join('') +
+      '</tbody></table>';
+  } catch (err) {
+    el.innerHTML = `<p class="empty">Kampanyalar yüklenemedi: ${escapeHtml(err?.message || 'bilinmeyen hata')}</p>`;
+  }
+}
+
+async function saveCampaign() {
+  const editId = document.getElementById('c-id')?.value?.trim();
+  const title = document.getElementById('c-title')?.value?.trim();
+  const summary = document.getElementById('c-summary')?.value?.trim();
+  const cta_label = document.getElementById('c-cta-label')?.value?.trim() || 'Detay';
+  const cta_href = document.getElementById('c-cta-href')?.value?.trim() || '/auto/';
+  const badge = document.getElementById('c-badge')?.value?.trim() || 'Kampanya';
+  const endsRaw = document.getElementById('c-ends')?.value?.trim();
+  const sort_order = parseInt(document.getElementById('c-sort')?.value, 10) || 0;
+  const is_active = document.getElementById('c-active')?.checked !== false;
+  const ends_at = endsRaw || null;
+
+  if (!title) {
+    toast('Başlık zorunlu', 'error');
+    return;
+  }
+
+  let list = [...adminCampaigns];
+  if (!adminCampaignsHasKey && !list.length) {
+    list = DEFAULT_CAMPAIGNS.map((c, i) => normalizePublicCampaign(c, i));
+  }
+
+  const id = editId || campaignIdFromTitle(title);
+  const next = normalizePublicCampaign(
+    { id, title, summary, cta_label, cta_href, badge, ends_at, is_active, sort_order },
+    list.length
+  );
+
+  const idx = list.findIndex((c) => c.id === id);
+  if (idx >= 0) list[idx] = next;
+  else list.push(next);
+
+  await persistCampaigns(list);
+  toast(editId ? 'Kampanya güncellendi' : 'Kampanya eklendi');
+  resetCampaignForm();
+  loadCampaigns();
+  loadDashboard();
+}
+
+function editCampaign(id) {
+  const c = adminCampaigns.find((row) => row.id === id);
+  if (!c) {
+    toast('Kampanya bulunamadı', 'error');
+    return;
+  }
+  document.getElementById('c-id').value = c.id;
+  const titleEl = document.getElementById('campaign-form-title');
+  if (titleEl) titleEl.textContent = 'Kampanyayı düzenle';
+  document.getElementById('c-title').value = c.title;
+  document.getElementById('c-badge').value = c.badge;
+  document.getElementById('c-summary').value = c.summary;
+  document.getElementById('c-cta-label').value = c.cta_label;
+  document.getElementById('c-cta-href').value = c.cta_href;
+  document.getElementById('c-ends').value = c.ends_at ? String(c.ends_at).slice(0, 10) : '';
+  document.getElementById('c-sort').value = String(c.sort_order);
+  document.getElementById('c-active').checked = c.is_active;
+  document.getElementById('page-campaigns')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function toggleCampaign(id) {
+  const list = adminCampaigns.map((c) =>
+    c.id === id ? { ...c, is_active: !c.is_active } : c
+  );
+  await persistCampaigns(list);
+  toast('Kampanya durumu güncellendi');
+  loadCampaigns();
+  loadDashboard();
+}
+
+async function deleteCampaign(id) {
+  if (!confirm('Bu kampanyayı silmek istediğinize emin misiniz?')) return;
+  const list = adminCampaigns.filter((c) => c.id !== id);
+  await persistCampaigns(list);
+  toast('Kampanya silindi');
+  if (document.getElementById('c-id')?.value === id) resetCampaignForm();
+  loadCampaigns();
+  loadDashboard();
+}
+
+async function seedDefaultCampaigns() {
+  if (
+    !confirm(
+      'Varsayılan kampanyalar site ayarlarına yazılacak. Mevcut public_campaigns kaydı varsa üzerine yazılır. Devam?'
+    )
+  ) {
+    return;
+  }
+  const list = DEFAULT_CAMPAIGNS.map((c, i) => normalizePublicCampaign(c, i));
+  await persistCampaigns(list);
+  toast('Varsayılan kampanyalar yüklendi');
+  resetCampaignForm();
+  loadCampaigns();
+  loadDashboard();
 }
 
 async function loadListings() {
@@ -3775,6 +4028,7 @@ registerAdminPageHandlers({
   settings: () => loadSettings(),
   content: () => loadSettings(),
   announcements: () => loadAnnouncements(),
+  campaigns: () => loadCampaigns(),
   faqs: () => loadFaqs(),
   blog: () => loadPosts(),
   listings: () => loadListings(),
@@ -3835,6 +4089,9 @@ function bindAdminPanelEvents() {
   document.querySelector('[data-action="save-announcement"]')?.addEventListener('click', saveAnnouncement);
   document.querySelector('[data-action="save-faq"]')?.addEventListener('click', saveFaq);
   document.querySelector('[data-action="save-post"]')?.addEventListener('click', savePost);
+  document.querySelector('[data-action="save-campaign"]')?.addEventListener('click', saveCampaign);
+  document.querySelector('[data-action="reset-campaign-form"]')?.addEventListener('click', resetCampaignForm);
+  document.querySelector('[data-action="seed-default-campaigns"]')?.addEventListener('click', seedDefaultCampaigns);
 
   document.addEventListener('click', (event) => {
     const el = event.target.closest('[data-action]');
@@ -4038,6 +4295,9 @@ function bindAdminPanelEvents() {
     if (action === 'delete-faq') deleteFaq(id);
     if (action === 'toggle-post') togglePost(id, isActive);
     if (action === 'delete-post') deletePost(id);
+    if (action === 'edit-campaign') editCampaign(id);
+    if (action === 'toggle-campaign') toggleCampaign(id);
+    if (action === 'delete-campaign') deleteCampaign(id);
     if (action === 'feature-listing') featureListing(id, isActive);
     if (action === 'delete-listing') deleteListing(id);
     if (action === 'set-user-role') setUserRole(id, role);

@@ -394,6 +394,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="nav-item" data-page-target="settings">⚙️ Site Bilgileri</div>
         <div class="nav-item" data-page-target="content">✏️ Sayfa İçerikleri</div>
         <div class="nav-item" data-page-target="announcements">📢 Duyurular</div>
+        <div class="nav-item" data-page-target="campaigns">🎯 Kampanyalar</div>
         <div class="nav-item" data-page-target="faqs">❓ SSS</div>
         <div class="nav-item" data-page-target="blog">📝 Blog / Haberler</div>
         <div class="nav-section">Platform</div>
@@ -455,11 +456,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
           <div class="stat-card"><div class="stat-label">Duyuru</div><div class="stat-value" id="stat-ann">—</div><div class="stat-sub">aktif</div></div>
           <div class="stat-card"><div class="stat-label">SSS</div><div class="stat-value" id="stat-faqs">—</div><div class="stat-sub">soru</div></div>
           <div class="stat-card"><div class="stat-label">Blog</div><div class="stat-value" id="stat-posts">—</div><div class="stat-sub">yayında</div></div>
+          <div class="stat-card"><div class="stat-label">Kampanya</div><div class="stat-value" id="stat-campaigns">—</div><div class="stat-sub">aktif</div></div>
         </div>
         <div class="card">
           <div class="card-title">Hızlı işlemler</div>
           <div class="quick-actions">
             <button class="btn btn-ghost btn-sm" data-page-target="announcements">+ Duyuru</button>
+            <button class="btn btn-ghost btn-sm" data-page-target="campaigns">+ Kampanya</button>
             <button class="btn btn-ghost btn-sm" data-page-target="faqs">+ SSS</button>
             <button class="btn btn-ghost btn-sm" data-page-target="blog">+ Blog yazısı</button>
             <button class="btn btn-ghost btn-sm" data-page-target="content">İçerik düzenle</button>
@@ -592,6 +595,47 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
         <div class="card">
           <div class="card-title">Mevcut duyurular</div>
           <div id="announcements-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-campaigns">
+        <div class="page-header">
+          <h2>Kampanyalar</h2>
+          <p><a href="/kampanyalar" target="_blank" rel="noopener">/kampanyalar</a> sayfasında gösterilir. Kayıt yoksa site varsayılan kampanyaları kullanır.</p>
+        </div>
+        <div class="card">
+          <div class="card-title" id="campaign-form-title">Yeni kampanya</div>
+          <input type="hidden" id="c-id" />
+          <div class="form-row">
+            <div class="form-group"><label>Başlık</label><input type="text" id="c-title" placeholder="ör. isteBul Pro — 7 gün deneme" /></div>
+            <div class="form-group"><label>Rozet metni</label><input type="text" id="c-badge" placeholder="Aktif kampanya" /></div>
+          </div>
+          <div class="form-group"><label>Özet</label><textarea id="c-summary" class="textarea-md" placeholder="Kısa açıklama (kartta görünür)"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label>CTA buton metni</label><input type="text" id="c-cta-label" value="Detay" /></div>
+            <div class="form-group"><label>CTA link</label><input type="text" id="c-cta-href" placeholder="/planlar?checkout=pro" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Bitiş tarihi (opsiyonel)</label><input type="date" id="c-ends" /></div>
+            <div class="form-group"><label>Sıra</label><input type="number" id="c-sort" value="0" min="0" step="1" /></div>
+          </div>
+          <div class="form-group">
+            <label class="toggle">
+              <input type="checkbox" id="c-active" checked />
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span class="text-muted-sm">Sitede yayınla (aktif)</span>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" data-action="save-campaign">Kaydet</button>
+            <button class="btn btn-ghost" type="button" data-action="reset-campaign-form">Formu temizle</button>
+            <button class="btn btn-ghost" type="button" data-action="seed-default-campaigns">Varsayılanları yükle</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Yayında / taslak kampanyalar</div>
+          <p class="text-muted-sm" id="campaigns-source-hint" style="margin:0 0 12px"></p>
+          <div id="campaigns-list"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
 

@@ -5,7 +5,7 @@
 
 import { escapeHtml } from '../../core/security.js';
 
-const DEFAULT_CAMPAIGNS = Object.freeze([
+export const DEFAULT_CAMPAIGNS = Object.freeze([
   {
     id: 'pro-trial',
     title: 'isteBul Pro — 7 gün ücretsiz deneme',
@@ -121,21 +121,37 @@ export async function fetchPostBySlug(slug) {
     : null;
 }
 
+export function normalizePublicCampaign(raw, index = 0) {
+  return {
+    id: String(raw?.id || `campaign-${index}`).trim() || `campaign-${index}`,
+    title: String(raw?.title || 'Kampanya').trim(),
+    summary: String(raw?.summary || raw?.content || '').trim(),
+    cta_label: String(raw?.cta_label || 'Detay').trim(),
+    cta_href: String(raw?.cta_href || '/auto/').trim(),
+    badge: String(raw?.badge || 'Kampanya').trim(),
+    ends_at: raw?.ends_at ? String(raw.ends_at) : null,
+    is_active: raw?.is_active !== false,
+    sort_order: Number.isFinite(Number(raw?.sort_order)) ? Number(raw.sort_order) : index
+  };
+}
+
 export async function fetchPublicCampaigns() {
   const settings = await restGet('site_settings?select=key,value');
+  const hasKey = Array.isArray(settings) && settings.some((row) => row.key === 'public_campaigns');
   const fromSettings = parseJsonSetting(settings, 'public_campaigns', null);
-  if (fromSettings?.length) {
-    return fromSettings.map((c, i) => ({
-      id: c.id || `campaign-${i}`,
-      title: c.title || 'Kampanya',
-      summary: c.summary || c.content || '',
-      cta_label: c.cta_label || 'Detay',
-      cta_href: c.cta_href || '/auto/',
-      badge: c.badge || 'Kampanya',
-      ends_at: c.ends_at || null
-    }));
+
+  if (hasKey && Array.isArray(fromSettings)) {
+    return fromSettings
+      .map((c, i) => normalizePublicCampaign(c, i))
+      .filter((c) => c.is_active)
+      .sort((a, b) => a.sort_order - b.sort_order || a.title.localeCompare(b.title, 'tr'));
   }
-  return [...DEFAULT_CAMPAIGNS];
+
+  if (hasKey) {
+    return [];
+  }
+
+  return DEFAULT_CAMPAIGNS.map((c, i) => normalizePublicCampaign(c, i));
 }
 
 export function renderContentEmpty(message) {

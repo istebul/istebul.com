@@ -355,7 +355,7 @@ Deno.serve(async (req) => {
         "phone","email","address","instagram","twitter","facebook",
         "linkedin","youtube","tiktok","site-name","site-subtitle",
         "hero-eyebrow","hero-title","hero-desc","title","description",
-        "auto_whatsapp_phone","maintenance"
+        "auto_whatsapp_phone","maintenance","public_campaigns"
       ];
 
       for (const row of values) {

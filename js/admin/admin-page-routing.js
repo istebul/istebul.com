@@ -11,6 +11,7 @@ export const ADMIN_PAGE_IDS = [
   'settings',
   'content',
   'announcements',
+  'campaigns',
   'faqs',
   'blog',
   'listings',
