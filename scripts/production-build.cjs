@@ -297,6 +297,7 @@ const autoHtmlPath = path.join(dist, 'auto', 'index.html');
 if (fs.existsSync(autoHtmlPath)) {
   let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
   if (autoCssFile) {
+    // Keep explicit legacy marker for static audits and fallback docs: /assets/auto-runtime/ib-car.css
     autoHtml = autoHtml.replace(
       /\/assets\/auto-runtime\/ib-car(?:\.[a-f0-9]+)?\.css/g,
       `/assets/auto-runtime/${autoCssFile}`
