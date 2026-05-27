@@ -26,6 +26,7 @@ const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cj
 const { injectRouteBootstrap, writeRouteBootstrapFile } = require('./lib/route-bootstrap.cjs');
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
 const { injectPartnerHtmlFiles } = require('./lib/inject-partner-prerender.cjs');
+const { buildHashedCssAssets } = require('./lib/css-build.cjs');
 const publicEnvKeys = [
   'SUPABASE_URL',
   'SUPABASE_ANON_KEY',
@@ -172,16 +173,14 @@ staticFiles.forEach((file) => {
   }
 });
 
-walk(path.join(root, 'css'), (file) => {
-  if (!file.endsWith('.css')) return;
-
-  const source = fs.readFileSync(file, 'utf8');
-  const minified = esbuild.transformSync(source, { loader: 'css', minify: true }).code;
-  const originalPath = relative(file);
-  const hashedPath = withHashName(originalPath, hashContent(minified));
-
-  assetRefs.set(originalPath, hashedPath);
-  writeFile(hashedPath, minified);
+buildHashedCssAssets({
+  root,
+  assetRefs,
+  writeFile,
+  relative,
+  withHashName,
+  hashContent,
+  walk
 });
 
 esbuild.buildSync({
@@ -234,6 +233,7 @@ const partnerCorporateEntries = [
   'js/corporate/partner-docs.js',
   'js/corporate/partner-onboarding.js',
   'js/corporate/partner-onboarding-redirect.js',
+  'js/corporate/partner-closing-kit.js',
   'js/corporate/karar-moat.js'
 ];
 
@@ -251,6 +251,16 @@ partnerCorporateEntries.forEach((entry) => {
     outfile
   });
 });
+
+const autoDocumentReadySrc = path.join(root, 'js/auto/auto-document-ready.js');
+if (fs.existsSync(autoDocumentReadySrc)) {
+  const autoReadyCode = esbuild.transformSync(fs.readFileSync(autoDocumentReadySrc, 'utf8'), {
+    loader: 'js',
+    minify: true,
+    target: 'es2020'
+  }).code;
+  writeFile('js/auto/auto-document-ready.js', autoReadyCode);
+}
 
 const autoAssetDir = path.join(dist, 'assets', 'auto-runtime');
 fs.mkdirSync(autoAssetDir, { recursive: true });

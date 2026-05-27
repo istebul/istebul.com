@@ -1,6 +1,53 @@
+# Cloudflare Pages routing — static assets BEFORE SPA fallback.
+# CF applies redirects before static lookup; passthrough rules preserve real MIME types.
+
+# --- Static asset passthrough (do not rewrite to index.html) ---
+/css/*       /css/:splat       200
+/js/*        /js/:splat        200
+/assets/*    /assets/:splat    200
+/images/*    /images/:splat    200
+/fonts/*     /fonts/:splat     200
+/data/*      /data/:splat      200
+/docs/*      /docs/:splat      200
+/env.js      /env.js           200
+/sw.js       /sw.js            200
+/manifest.json /manifest.json  200
+/importmap.json /importmap.json 200
+/robots.txt  /robots.txt       200
+/sitemap.xml /sitemap.xml      200
+/build-manifest.json /build-manifest.json 200
+/offline.html /offline.html   200
+/favicon.ico /favicon.ico     200
+
+# --- Standalone HTML (not SPA shell) ---
 /admin-panel.html /admin-panel.html 200
+/hakkimizda.html /hakkimizda.html 200
+/iletisim.html /iletisim.html 200
+/gizlilik.html /gizlilik.html 200
+/kvkk.html /kvkk.html 200
+/kullanim-sartlari.html /kullanim-sartlari.html 200
+/partner-olun.html /partner-olun.html 200
+/partner-planlar.html /partner-planlar.html 200
+/partner-guven.html /partner-guven.html 200
+/partner-docs.html /partner-docs.html 200
+/partner-onboarding.html /partner-onboarding.html 200
+/partner-basvuru.html /partner-basvuru.html 200
+/partner-closing-kit.html /partner-closing-kit.html 200
+/karar-moat.html /karar-moat.html 200
+
+# --- Section entry HTML ---
 /auto /auto/index.html 200
 /auto/ /auto/index.html 200
+/metodoloji /metodoloji/index.html 200
+/metodoloji/ /metodoloji/index.html 200
+/konut /konut/index.html 200
+/konut/ /konut/index.html 200
+/tatil /tatil/index.html 200
+/tatil/ /tatil/index.html 200
+/finans /finans/index.html 200
+/finans/ /finans/index.html 200
+
+# --- Locale shells (marketing SPA) ---
 /en /index.html 200
 /en/* /index.html 200
 /de /index.html 200
@@ -13,18 +60,13 @@
 /de/auto/ /auto/index.html 200
 /ar/auto /auto/index.html 200
 /ar/auto/ /auto/index.html 200
-/metodoloji /metodoloji/index.html 200
-/metodoloji/ /metodoloji/index.html 200
-/konut /konut/index.html 200
-/konut/ /konut/index.html 200
-/tatil /tatil/index.html 200
-/tatil/ /tatil/index.html 200
-/finans /finans/index.html 200
-/finans/ /finans/index.html 200
+
+# --- App deep-link shells (physical index.html per route) ---
 /profil/* /profil/index.html 200
 /favoriler/* /favoriler/index.html 200
 /gecmis/* /gecmis/index.html 200
 /messages/* /messages/index.html 200
 /ilan-ekle/* /ilan-ekle/index.html 200
-/data/* /data/:splat 200
+
+# --- SPA fallback (MUST be last) ---
 /* /index.html 200
