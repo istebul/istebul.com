@@ -28,6 +28,8 @@ jobs:
 
       - run: npm ci
       - run: npm run test
+      - name: Verify ops automation bootstrap (Node 20)
+        run: npm run ops:automation:run
 
   deploy-cloudflare:
     name: Cloudflare Pages
