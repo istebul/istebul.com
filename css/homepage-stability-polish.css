@@ -18,6 +18,25 @@ body.ib-enterprise #main-nav {
   z-index: 1201;
 }
 
+@media (min-width: 1181px) {
+  body.ib-enterprise #nav-menu,
+  body.ib-enterprise #nav-menu.show {
+    display: flex !important;
+    position: static !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
+}
+
+@media (min-width: 1281px) {
+  body.ib-enterprise .nav-links-group {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+  }
+}
+
 body.ib-enterprise .nav-links-group {
   display: flex;
   align-items: center;
@@ -33,6 +52,14 @@ body.ib-enterprise .nav-links-group::-webkit-scrollbar {
 
 body.ib-enterprise .nav-links-group .nav-link {
   flex: 0 0 auto;
+}
+
+body.ib-enterprise .nav-link,
+body.ib-enterprise .nav-dropdown-btn,
+body.ib-enterprise .nav-link:hover,
+body.ib-enterprise .nav-link.active,
+body.ib-enterprise .nav-dropdown-btn:hover {
+  font-weight: 850;
 }
 
 body.ib-enterprise .ib-trust-rail {
@@ -68,7 +95,7 @@ body.ib-enterprise #home.hero-section {
   padding-top: clamp(3.2rem, 5vw, 5rem);
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1280px) {
   body.ib-enterprise .nav-links-group {
     flex-wrap: wrap;
     overflow-x: visible;
