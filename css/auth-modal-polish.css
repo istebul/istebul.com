@@ -1,0 +1,197 @@
+/**
+ * Auth modal (giriş / üye ol) — light surface, readable labels, premium OAuth placeholder.
+ * Scoped to #auth-modal only; does not affect other modals or form hooks.
+ */
+
+body.ib-enterprise #auth-modal .modal-content,
+:root[data-theme="dark"] body.ib-enterprise #auth-modal .modal-content {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(148, 163, 184, 0.28) !important;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.22) !important;
+}
+
+body.ib-enterprise #auth-modal .modal-header,
+:root[data-theme="dark"] body.ib-enterprise #auth-modal .modal-header {
+  background: #ffffff;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  padding: 1.15rem 1.35rem;
+}
+
+body.ib-enterprise #auth-modal .modal-header h3,
+:root[data-theme="dark"] body.ib-enterprise #auth-modal .modal-header h3 {
+  color: #0b1528 !important;
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+body.ib-enterprise #auth-modal .modal-close,
+:root[data-theme="dark"] body.ib-enterprise #auth-modal .modal-close {
+  color: #475569;
+  background: rgba(148, 163, 184, 0.14);
+  border-radius: 10px;
+}
+
+body.ib-enterprise #auth-modal .modal-close:hover {
+  color: #0f172a;
+  background: rgba(148, 163, 184, 0.22);
+}
+
+body.ib-enterprise #auth-modal .modal-body {
+  padding: 1.15rem 1.35rem 1.25rem;
+}
+
+body.ib-enterprise #auth-modal .auth-trust-line {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  background: #f1f5f9;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #475569 !important;
+}
+
+body.ib-enterprise #auth-modal .form-group label {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 0.875rem !important;
+  font-weight: 650 !important;
+  color: #334155 !important;
+  margin-bottom: 0.4rem;
+}
+
+body.ib-enterprise #auth-modal .form-group input,
+body.ib-enterprise #auth-modal .modal input,
+:root[data-theme="dark"] body.ib-enterprise #auth-modal .form-group input,
+:root[data-theme="dark"] body.ib-enterprise #auth-modal .modal input {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(100, 116, 139, 0.38) !important;
+  min-height: 46px;
+}
+
+body.ib-enterprise #auth-modal .form-hint {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+body.ib-enterprise #auth-modal .password-field {
+  position: relative;
+}
+
+body.ib-enterprise #auth-modal .password-toggle {
+  color: #475569;
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+body.ib-enterprise #auth-modal .password-toggle:hover {
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+body.ib-enterprise #auth-modal .auth-submit.btn-primary {
+  min-height: 48px;
+  font-weight: 750;
+  margin-top: 0.25rem;
+}
+
+body.ib-enterprise #auth-modal .auth-oauth-divider {
+  margin: 1.1rem 0 0.85rem;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+body.ib-enterprise #auth-modal .auth-oauth-divider::before,
+body.ib-enterprise #auth-modal .auth-oauth-divider::after {
+  background: rgba(148, 163, 184, 0.35);
+}
+
+body.ib-enterprise #auth-modal .auth-oauth-coming-soon {
+  margin-top: 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: #f8fafc;
+  text-align: center;
+}
+
+body.ib-enterprise #auth-modal .auth-oauth-coming-soon-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+body.ib-enterprise #auth-modal .auth-oauth-coming-soon-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+body.ib-enterprise #auth-modal .auth-oauth-placeholder {
+  margin-top: 1rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+body.ib-enterprise #auth-modal #google-oauth-btn {
+  min-height: 46px;
+  font-weight: 650;
+  color: #334155;
+  background: #ffffff;
+  border: 1px solid rgba(100, 116, 139, 0.38);
+}
+
+body.ib-enterprise #auth-modal .modal-footer {
+  margin-top: 0.25rem;
+  padding: 1rem 0 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  background: transparent;
+  text-align: center;
+}
+
+body.ib-enterprise #auth-modal .modal-footer p {
+  margin: 0.35rem 0;
+  font-size: 0.875rem;
+  color: #475569 !important;
+  max-width: none;
+}
+
+body.ib-enterprise #auth-modal .auth-inline-link {
+  color: #1d4ed8;
+  font-weight: 700;
+  text-underline-offset: 2px;
+}
+
+body.ib-enterprise #auth-modal .auth-intent-banner {
+  color: #334155;
+  margin-bottom: 1rem;
+}
+
+body.ib-enterprise #auth-modal .form-group label span,
+body.ib-enterprise #auth-modal .form-group label a {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+body.ib-enterprise #auth-modal .form-group label a {
+  color: #1d4ed8;
+  font-weight: 650;
+}
+
+@media (max-width: 640px) {
+  body.ib-enterprise #auth-modal .modal-header {
+    background: #ffffff;
+  }
+}

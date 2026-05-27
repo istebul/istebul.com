@@ -194,7 +194,13 @@ export class AuthManager {
             <div class="auth-oauth-divider" role="separator"><span>veya</span></div>
             <button type="button" class="btn btn-outline full-width" id="google-oauth-btn">Google ile devam et</button>`;
         }
-        return `<p class="auth-oauth-placeholder" role="note">Google ile giriş — Supabase ve Google Console yapılandırması sonrası etkinleşir.</p>`;
+        return `
+            <div class="auth-oauth-placeholder" role="note">
+                <div class="auth-oauth-coming-soon">
+                    <span class="auth-oauth-coming-soon-label">Google ile giriş</span>
+                    <span class="auth-oauth-coming-soon-hint">Yakında — Supabase ve Google Console yapılandırması sonrası etkinleşir.</span>
+                </div>
+            </div>`;
     }
 
     async signInWithGoogle() {
@@ -216,6 +222,7 @@ export class AuthManager {
 
     getRegisterForm() {
         return `
+            <p class="auth-trust-line">Kayıt bilgileriniz şifreli bağlantı (TLS) ile iletilir. Kart bilgisi bu ekranda istenmez.</p>
             <form id="register-form" data-enterprise-form>
                 <div class="form-group">
                     <label for="full-name">Ad Soyad</label>
