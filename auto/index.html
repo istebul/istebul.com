@@ -61,11 +61,9 @@
       <span class="auto-nav-toggle-lines" aria-hidden="true"></span>
     </button>
     <nav id="auto-nav" aria-label="Auto navigasyonu">
-      <a href="#nasil-calisir">Nasıl çalışır?</a>
-      <a href="#analiz">Karar Analizi</a>
+      <a href="#nasil-calisir">Nasıl çalışır</a>
+      <a href="#analiz">Analiz sonuçları</a>
       <a href="#gelir">Teklifler</a>
-      <a href="/partner-olun.html">Partner olun</a>
-      <a href="/iletisim.html">İletişim</a>
     </nav>
   </header>
 
@@ -78,35 +76,30 @@
   </div>
 
   <main>
-    <section class="hero auto-hero-premium">
+    <section class="hero auto-hero-premium auto-hero-decision">
       <div class="hero-copy">
-        <p class="kicker">isteBul Auto · AI karar zekası</p>
-        <h1>Yanlış araç kararını vermeden önce gerçek maliyeti görün</h1>
-        <p class="lead">Bütçe, kredi, sigorta, bakım ve TCO birlikte — üyelik zorunlu değil; sonuç önizlemesi ücretsiz.</p>
+        <p class="kicker">isteBul Auto · AI karar motoru</p>
+        <h1>Araç almadan önce gerçek maliyeti ve en doğru seçeneği görün.</h1>
+        <p class="lead">isteBul Auto; bütçe, kullanım amacı, yakıt, kredi, sigorta, bakım ve ikinci el değerini birlikte analiz ederek size karar skoru sunar.</p>
 
-        <div class="hero-cta-row">
-          <a class="btn primary" href="#auto-wizard" data-auto-hero-cta data-analytics-cta="cta_primary_auto" data-analytics-placement="auto_hero"><span class="growth-exp-label">Ücretsiz analiz başlat</span></a>
-          <a class="btn secondary" href="#nasil-calisir">Nasıl çalışır?</a>
+        <div class="hero-cta-row auto-hero-cta-row">
+          <a class="btn primary" href="#auto-wizard" data-auto-hero-cta data-analytics-cta="cta_primary_auto" data-analytics-placement="auto_hero">Aracımı Analiz Et</a>
+          <a class="btn secondary" href="#auto-wizard" data-analytics-cta="cta_primary_auto" data-analytics-placement="auto_hero_secondary">Bana En Uygun Aracı Bul</a>
         </div>
-        <p class="auto-hero-route-hint text-muted-sm">4 kısa adım · sonuçlar sayfada <a href="#analiz">Karar analizi sonuçları</a> bölümünde listelenir</p>
-
-        <div class="auto-social-proof">Pilot aşama · ~2 dk · AI gerekçe skoru değiştirmez · finansal tavsiye değildir</div>
+        <p class="auto-hero-route-hint text-muted-sm">~2 dk · sonuçlar <a href="#analiz">analiz bölümünde</a> · bilgilendirme amaçlıdır</p>
+        <p class="auto-sample-note">Skor ve maliyetler kural tabanlıdır; AI yalnızca gerekçe metnini açıklar.</p>
       </div>
 
-      <div class="hero-trust-panel" aria-label="isteBul Auto güven göstergeleri">
-        <div><strong>Toplam maliyet</strong><span>12 aylık TCO, kredi yükü ve kullanım maliyetini bir arada görün.</span></div>
-        <div><strong>Karar çıktısı</strong><span>İlan taraması değil; toplam maliyete göre model önerileri.</span></div>
-        <div><strong>Risk azaltma</strong><span>Güçlü ve zayıf yönler açık metodoloji ile sunulur.</span></div>
+      <div class="auto-hero-visual" aria-hidden="true">
+        <div class="auto-hero-float-stat auto-hero-float-stat--tl"><strong>TCO</strong>12 ay + finansman</div>
+        <div class="auto-hero-float-stat auto-hero-float-stat--tr"><strong>Skor</strong>Uyum /100</div>
+        <div class="auto-hero-float-stat auto-hero-float-stat--bl"><strong>Risk</strong>Şeffaf bant</div>
       </div>
 
-      <div class="auto-trust-strip" aria-label="Auto analiz avantajları">
-        <span>✓ ~2 dakikada özet</span>
-        <span>✓ Fiyat + kredi + TCO</span>
-        <span>✓ KVKK uyumlu</span>
-        <span>✓ İsteğe bağlı uzman desteği</span>
+      <div class="auto-hero-wizard-col">
+        <div id="auto-decision-stepper-mount" class="auto-decision-stepper" aria-label="Karar akışı özeti" hidden></div>
+        <div id="auto-wizard" class="auto-wizard" aria-label="Araç karar analizi"></div>
       </div>
-
-      <div id="auto-wizard" class="auto-wizard" aria-label="Araç karar analizi"></div>
 
       <form id="auto-form" class="quiz hero-quiz auto-engine-form" aria-hidden="true">
         <input type="hidden" name="city" value="">
@@ -176,17 +169,20 @@
     <section id="analiz" class="section analysis">
       <div class="section-head">
         <p class="kicker">Karar analizi sonuçları</p>
-        <h2>Size uygun araç önerileri</h2>
+        <h2>AI destekli araç önerileri</h2>
+        <p class="section-subtitle">En uygun üç seçenek — toplam maliyet ve uyum skoruna göre sıralanır (örnek / hesaplanmış çıktı).</p>
       </div>
 
       <div class="auto-urgency-banner" role="note">
-        <strong>Sonuçlar metodolojik destek sunar.</strong>
+        <strong>Örnek / hesaplanmış analiz çıktısıdır.</strong>
         <span>Canlı ilan veya bağlayıcı teklif değildir; finansman ve sigorta koşulları kuruma göre değişir.</span>
       </div>
 
-<div id="auto-results" class="results" aria-live="polite">
-        <p class="auto-results-placeholder text-muted-sm">Analizi tamamladığınızda size uygun model önerileri burada görünür.</p>
+      <div id="auto-results" class="results auto-results-root" aria-live="polite">
+        <p class="auto-results-placeholder text-muted-sm">Analizi tamamladığınızda karar skoru, maliyet özeti ve araç önerileri burada görünür.</p>
       </div>
+
+      <div id="auto-partner-next-mount" class="auto-partner-next-wrap" hidden></div>
 
       <aside class="auto-methodology premium-methodology" aria-label="Hesaplama ve veri notu">
         <div>
@@ -202,6 +198,20 @@
           <li>Kredi, sigorta ve satın alma koşulları banka, bayi ve partner kurumlarda değişebilir. <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a></li>
         </ul>
       </aside>
+    </section>
+
+    <section class="section auto-trust-section" aria-labelledby="auto-trust-title">
+      <div class="section-head">
+        <p class="kicker">Güven</p>
+        <h2 id="auto-trust-title">Neden isteBul Auto?</h2>
+      </div>
+      <div class="auto-trust-benefits">
+        <article><h3>Tarafsız AI analizi</h3><p>Skor kural tabanlı; AI gerekçeyi açıklar.</p></article>
+        <article><h3>Zaman tasarrufu</h3><p>Kriterlerinizi tek akışta toplayın.</p></article>
+        <article><h3>Toplam maliyet</h3><p>TCO, finansman ve işletme birlikte.</p></article>
+        <article><h3>Güvenli süreç</h3><p>KVKK · Turnstile korumalı form.</p></article>
+        <article><h3>Uygun teklifler</h3><p>İsteğe bağlı partner yönlendirme.</p></article>
+      </div>
     </section>
 
     <section id="gelir" class="section final-cta-section">
