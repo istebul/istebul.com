@@ -23,3 +23,5 @@ create policy "Public can read active finance offers"
 on public.finance_offers
 for select
 using (is_active = true);
+alter table public.vehicle_catalog
+add column if not exists image_url text;
