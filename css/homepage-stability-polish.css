@@ -14,8 +14,18 @@ body.ib-enterprise #announcement-ticker p {
 }
 
 body.ib-enterprise #main-nav {
-  position: relative;
   z-index: 1201;
+}
+
+body.ib-enterprise .ib-trust-rail {
+  position: relative;
+  z-index: 1200;
+  margin-top: 0;
+}
+
+body.ib-enterprise #home.hero-section {
+  margin-top: 0;
+  padding-top: clamp(2.4rem, 4.5vw, 4.2rem);
 }
 
 @media (min-width: 1181px) {

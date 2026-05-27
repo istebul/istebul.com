@@ -160,7 +160,6 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <a href="/#how-it-works" class="nav-link" data-home-anchor="how-it-works">Nasıl çalışır</a>
                     <a href="/#sample-preview" class="nav-link" data-home-anchor="sample-preview">Örnek analiz</a>
                     <a href="/#pricing" class="nav-link" data-home-anchor="pricing">Planlar</a>
-                    <a href="/blog" class="nav-link" data-native-route>Blog</a>
                     <div class="nav-dropdown nav-more-menu" id="nav-more-menu">
                         <button
                             type="button"
@@ -168,20 +167,25 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             class="nav-link nav-dropdown-btn"
                             aria-expanded="false"
                             aria-controls="nav-more-list"
+                            aria-haspopup="menu"
+                            aria-label="Kaynaklar menüsü"
                         >
-                            Daha fazla
+                            Kaynaklar
                             <i data-lucide="chevron-down" aria-hidden="true"></i>
                         </button>
                         <div id="nav-more-list" class="nav-dropdown-content nav-more-list" role="menu" hidden>
                             <a href="/metodoloji/" class="nav-dropdown-link" data-native-route role="menuitem">Metodoloji</a>
+                            <a href="/blog" class="nav-dropdown-link" data-native-route role="menuitem">Blog</a>
                             <a href="/duyurular" class="nav-dropdown-link" data-native-route role="menuitem">Duyurular</a>
                             <a href="/kampanyalar" class="nav-dropdown-link" data-native-route role="menuitem">Kampanyalar</a>
                             <a href="/kvkk.html" class="nav-dropdown-link" data-native-route role="menuitem">Güvenlik / KVKK</a>
                             <a href="/#landing-faq" class="nav-dropdown-link" data-home-anchor="landing-faq" role="menuitem">SSS</a>
                         </div>
                     </div>
-                    <div class="nav-more-mobile-links" aria-label="Ek bağlantılar">
+                    <div class="nav-more-mobile-links" aria-label="Kaynaklar">
+                        <span class="nav-more-mobile-label">Kaynaklar</span>
                         <a href="/metodoloji/" class="nav-link" data-native-route>Metodoloji</a>
+                        <a href="/blog" class="nav-link" data-native-route>Blog</a>
                         <a href="/duyurular" class="nav-link" data-native-route>Duyurular</a>
                         <a href="/kampanyalar" class="nav-link" data-native-route>Kampanyalar</a>
                         <a href="/kvkk.html" class="nav-link" data-native-route>Güvenlik / KVKK</a>
@@ -243,63 +247,61 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
         <section id="home" class="hero-section ib-hero-venture">
             <div class="hero-container container">
                 <div class="hero-content">
-                    <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="brain" aria-hidden="true"></i> AI destekli karar zekası platformu</p>
-                    <h1 data-cms="hero-title">AI ile büyük satın alma kararlarını <span class="ib-hero-emphasis">daha doğru</span> ver</h1>
-                    <p class="hero-lead ib-hero-outcome-lead" data-cms="hero-desc">Araba, ev, tatil ve finans kararlarında toplam maliyeti, riskleri ve size en uygun seçenekleri analiz edin — ilan sitesi değil, karar motoru.</p>
+                    <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="brain" aria-hidden="true"></i> AI karar zekası</p>
+                    <h1 data-cms="hero-title">Büyük satın alma kararları için <span class="ib-hero-emphasis">yapay zekâ destekli</span> karar altyapısı</h1>
+                    <p class="hero-lead ib-hero-outcome-lead" data-cms="hero-desc">Araç, konut, tatil ve finansman kararlarında toplam maliyeti, riskleri ve en uygun seçeneği karar öncesi görün.</p>
                     <div class="hero-actions ib-hero-cta-stack ib-hero-cta-dual">
                         <div class="ib-hero-cta-primary-row">
                             <a href="/karar-asistani" class="btn btn-primary btn-lg" data-hero-cta-primary data-native-route data-analytics-cta="cta_decision_hero" data-analytics-placement="hero">
                                 <i data-lucide="sparkles" aria-hidden="true"></i> Karar analizini başlat
                             </a>
                             <a href="/auto/" class="btn btn-outline btn-lg" data-analytics-cta="cta_primary_auto" data-analytics-placement="hero_auto">
-                                <i data-lucide="car" aria-hidden="true"></i> Auto analizini dene
+                                <i data-lucide="car" aria-hidden="true"></i> Araç analizini dene
                             </a>
                         </div>
-                        <span class="ib-hero-cta-hint">Pilot aşama · kural tabanlı skor + AI gerekçe · finansal tavsiye değildir</span>
+                        <span class="ib-hero-cta-hint">Pilot · kural tabanlı skor + AI gerekçe · finansal tavsiye değildir</span>
                     </div>
 
                     <p class="ib-social-proof-disclaimer" data-social-proof-disclaimer>Pilot aşama — şişirilmiş kullanıcı sayısı gösterilmez; erken erişim programı.</p>
-                    <div class="ib-social-proof-metrics" aria-label="Platform durumu" data-social-proof data-social-proof-mode="pilot">
+                    <div class="ib-social-proof-metrics ib-hero-metrics-compact" aria-label="Platform durumu" data-social-proof data-social-proof-mode="pilot">
                         <div><strong>Pilot</strong><span>aşama</span></div>
                         <div><strong>İzmir</strong><span>odaklı partner ağı</span></div>
                         <div><strong>Erken</strong><span>erişim</span></div>
-                        <div><strong>Altyapı</strong><span>canlı veri entegrasyonu hazır</span></div>
                     </div>
 
-                    <ul class="ib-social-proof" aria-label="Platform güven sinyalleri">
-                        <li><strong>Kural tabanlı</strong><span>Skor ve TCO motoru</span></li>
-                        <li><strong>Şeffaf</strong><span>Denetlenebilir metodoloji</span></li>
-                        <li><strong>Tarafsız</strong><span>AI yalnızca gerekçe</span></li>
+                    <ul class="ib-social-proof ib-hero-trust-chips" aria-label="Platform güven sinyalleri">
+                        <li><strong>Kural tabanlı</strong><span>Skor ve TCO</span></li>
+                        <li><strong>Şeffaf</strong><span>Metodoloji</span></li>
+                        <li><strong>Tarafsız</strong><span>AI gerekçe</span></li>
                     </ul>
                 </div>
-                <div class="hero-image decision-preview" aria-label="Karar sonucu önizlemesi">
-                    <div class="preview-toolbar">
+                <div class="hero-image decision-preview ib-ai-dashboard" aria-label="AI karar özeti önizlemesi">
+                    <div class="preview-toolbar" aria-hidden="true">
                         <span></span>
                         <span></span>
                         <span></span>
                     </div>
-                    <p class="preview-category-label" aria-hidden="true">Araç karar önizlemesi</p>
-                    <div class="preview-score-card">
-                        <span class="ib-sample-scenario-label">Örnek senaryo</span>
+                    <p class="preview-category-label">AI karar paneli · örnek</p>
+                    <div class="preview-score-card ib-dash-hero-card">
                         <div class="preview-score-row">
                             <div>
-                                <span class="preview-kicker">Örnek analiz görünümü</span>
+                                <span class="preview-kicker">Karar skoru</span>
                                 <h3 data-preview-title>2023 Toyota Corolla Cross Hybrid</h3>
-                                <p data-preview-note>Canlı analizde bütçe, TCO ve uyum skoru girdilerinize göre hesaplanır — gösterim amaçlıdır.</p>
                             </div>
-                            <div class="preview-score-pill" aria-hidden="true">
+                            <div class="preview-score-pill" aria-label="Uyum skoru">
                                 <strong data-preview-score>78</strong>
-                                <span>uyum skoru /100</span>
+                                <span>/100</span>
                             </div>
                         </div>
                     </div>
-                    <div class="preview-metrics">
-                        <div data-preview-metric><span>12 ay TCO</span><strong>₺412.800</strong></div>
-                        <div data-preview-metric><span>Aylık finansman</span><strong>₺14.200</strong></div>
-                        <div data-preview-metric><span>Uyum skoru</span><strong>78/100</strong></div>
+                    <div class="preview-metrics ib-dash-metrics">
+                        <div data-preview-metric><span>Toplam maliyet (12 ay)</span><strong>₺412.800</strong></div>
+                        <div data-preview-metric><span>Risk analizi</span><strong>Orta · kontrollü</strong></div>
+                        <div data-preview-metric><span>Finansman etkisi</span><strong>₺14.200/ay</strong></div>
                     </div>
-                    <p class="ib-hero-preview-cta text-muted-sm" style="margin-top:0.75rem">
-                        <a href="/#sample-preview" data-home-anchor="sample-preview">Tam örnek analiz önizlemesi</a> · gösterim amaçlıdır
+                    <p class="ib-dash-ai-note" data-preview-note>AI yorumu: Bütçe bandında kalıyorsunuz; finansman ve sigorta kalemleri toplam yükü belirliyor — canlı analizde girdilerinize göre güncellenir.</p>
+                    <p class="ib-hero-preview-cta text-muted-sm">
+                        <a href="/#sample-preview" data-home-anchor="sample-preview">Örnek analizi incele</a> · gösterim amaçlıdır
                     </p>
                 </div>
             </div>
