@@ -1,0 +1,112 @@
+/* Homepage top-surface stability polish (non-invasive, marketing-shell scoped). */
+body.ib-enterprise #announcement-ticker {
+  position: relative;
+  z-index: 1202;
+}
+
+body.ib-enterprise #announcement-ticker p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  text-wrap: balance;
+}
+
+body.ib-enterprise #main-nav {
+  position: relative;
+  z-index: 1201;
+}
+
+@media (min-width: 1181px) {
+  body.ib-enterprise #nav-menu,
+  body.ib-enterprise #nav-menu.show {
+    display: flex !important;
+    position: static !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
+}
+
+@media (min-width: 1281px) {
+  body.ib-enterprise .nav-links-group {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+  }
+}
+
+body.ib-enterprise .nav-links-group {
+  display: flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+body.ib-enterprise .nav-links-group::-webkit-scrollbar {
+  display: none;
+}
+
+body.ib-enterprise .nav-links-group .nav-link {
+  flex: 0 0 auto;
+}
+
+body.ib-enterprise .nav-link,
+body.ib-enterprise .nav-dropdown-btn,
+body.ib-enterprise .nav-link:hover,
+body.ib-enterprise .nav-link.active,
+body.ib-enterprise .nav-dropdown-btn:hover {
+  font-weight: 850;
+}
+
+body.ib-enterprise .ib-trust-rail {
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(248, 250, 252, 0.9);
+}
+
+body.ib-enterprise .ib-trust-rail-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  min-height: 44px;
+  flex-wrap: wrap;
+  padding: 0.45rem 0;
+}
+
+body.ib-enterprise .ib-trust-rail-inner > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+body.ib-enterprise .ib-trust-rail-inner > span:not(:last-child)::after {
+  content: "•";
+  margin-left: 0.45rem;
+  color: rgba(100, 116, 139, 0.55);
+}
+
+body.ib-enterprise #home.hero-section {
+  padding-top: clamp(3.2rem, 5vw, 5rem);
+}
+
+@media (max-width: 1280px) {
+  body.ib-enterprise .nav-links-group {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  body.ib-enterprise .ib-trust-rail-inner {
+    justify-content: flex-start;
+    padding-inline: 1rem;
+  }
+
+  body.ib-enterprise .ib-trust-rail-inner > span:not(:last-child)::after {
+    display: none;
+  }
+}
