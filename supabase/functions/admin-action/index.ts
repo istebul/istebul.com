@@ -158,6 +158,8 @@ Deno.serve(async (req) => {
     "listings",
     "profiles",
     "auto_leads",
+    "vacation_leads",
+    "vacation_scenarios",
     "partner_endpoints",
     "partner_applications",
   ];
@@ -182,6 +184,9 @@ Deno.serve(async (req) => {
     "admin_audit_logs",
     "site_settings",
     "subscriptions",
+    "vacation_events",
+    "vacation_leads",
+    "vacation_scenarios",
   ];
 
   if (action === "upsert_settings") {
@@ -218,10 +223,16 @@ Deno.serve(async (req) => {
         admin_audit_logs: "created_at, actor_email, action, entity_table, summary",
         site_settings: "*",
         subscriptions: "*",
+        vacation_events: "*",
+        vacation_leads: "*",
+        vacation_scenarios: "*",
       };
 
       const allowedOrderColumns: Record<string, string[]> = {
         auto_leads: ["created_at", "lead_score", "follow_up_at"],
+        vacation_events: ["created_at", "event_type"],
+        vacation_leads: ["created_at", "decision_score", "follow_up_at", "status"],
+        vacation_scenarios: ["sort_order", "created_at", "title"],
         auto_events: ["created_at"],
         analytics_events: ["created_at"],
         announcements: ["created_at"],
@@ -306,6 +317,15 @@ Deno.serve(async (req) => {
         posts: ["title", "slug", "content", "is_published"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority"],
         partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan"],
+        vacation_scenarios: [
+          "title",
+          "slug",
+          "description",
+          "image_url",
+          "is_active",
+          "sort_order",
+          "config",
+        ],
       };
 
       const allowedKeys = allowedInserts[table] || [];
@@ -355,7 +375,9 @@ Deno.serve(async (req) => {
         "phone","email","address","instagram","twitter","facebook",
         "linkedin","youtube","tiktok","site-name","site-subtitle",
         "hero-eyebrow","hero-title","hero-desc","title","description",
-        "auto_whatsapp_phone","maintenance","public_campaigns"
+        "auto_whatsapp_phone","maintenance","public_campaigns",
+        "vacation_enabled","vacation_ai_enabled","vacation_partner_cta_enabled",
+        "vacation_default_budget_note","vacation_disclaimer_text"
       ];
 
       for (const row of values) {
@@ -403,6 +425,16 @@ Deno.serve(async (req) => {
         listings: ["is_featured"],
         profiles: ["role", "is_banned"],
         auto_leads: ["status", "notes", "follow_up_at", "follow_up_done", "partner_status", "estimated_revenue", "actual_revenue", "commission_notes", "dispatch_retry_count", "last_dispatch_at", "next_retry_at", "last_dispatch_error"],
+        vacation_leads: ["status", "notes", "follow_up_at", "follow_up_done"],
+        vacation_scenarios: [
+          "title",
+          "slug",
+          "description",
+          "image_url",
+          "is_active",
+          "sort_order",
+          "config",
+        ],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority", "health_status"],
         partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan"],
       };

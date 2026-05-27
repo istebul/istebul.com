@@ -48,6 +48,7 @@ import {
 } from './features/sales/partner-crm-pipeline.js';
 import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
 import { initAdminShell } from './admin/admin-shell.js';
+import { initVacationAdmin } from './admin/vacation-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
@@ -1566,6 +1567,7 @@ async function adminAction(payload) {
   }
 }
 
+const vacationAdmin = initVacationAdmin({ sb, adminAction, toast });
 
 async function loadDashboard() {
   const setStat = (id, value) => {
@@ -4066,6 +4068,10 @@ registerAdminPageHandlers({
   listings: () => loadListings(),
   users: () => loadUsers(),
   'auto-leads': () => loadAutoLeads(),
+  'vacation-analytics': () => vacationAdmin.loadVacationAnalytics(),
+  'vacation-leads': () => vacationAdmin.loadVacationLeads(),
+  'vacation-scenarios': () => vacationAdmin.loadVacationScenarios(),
+  'vacation-settings': () => vacationAdmin.loadVacationSettings(),
   'auto-analytics': () => loadAutoAnalytics(),
   'platform-analytics': () => loadPlatformAnalytics(),
   'dashboard-ceo': () => refreshInternalDashboard('ceo', 'dashboard-ceo-root'),
@@ -4126,9 +4132,11 @@ function bindAdminPanelEvents() {
   document.querySelector('[data-action="reset-campaign-form"]')?.addEventListener('click', resetCampaignForm);
   document.querySelector('[data-action="seed-default-campaigns"]')?.addEventListener('click', seedDefaultCampaigns);
 
-  document.addEventListener('click', (event) => {
+  document.addEventListener('click', async (event) => {
     const el = event.target.closest('[data-action]');
     if (!el) return;
+
+    if (await vacationAdmin.handleVacationAction(event, el)) return;
 
     const { action, id, active, role } = el.dataset;
     const isActive = active === 'true';
@@ -4373,6 +4381,11 @@ document.addEventListener('change', (event) => {
   ['auto-leads-search', 'auto-leads-status-filter', 'auto-leads-follow-filter', 'auto-leads-partner-filter', 'auto-leads-notes-only'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', loadAutoLeads);
     document.getElementById(id)?.addEventListener('change', loadAutoLeads);
+  });
+
+  ['vacation-leads-search', 'vacation-leads-status-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => vacationAdmin.loadVacationLeads());
+    document.getElementById(id)?.addEventListener('change', () => vacationAdmin.loadVacationLeads());
   });
 
 bindAdminPanelEvents();

@@ -401,6 +401,15 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
         <div class="nav-item" data-page-target="users"><span class="nav-icon" aria-hidden="true">◎</span><span class="nav-label">Kullanıcılar</span></div>
         <div class="nav-item" data-page-target="auto-leads"><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">Lead CRM</span></div>
         <div class="nav-group">
+          <button type="button" class="nav-group-toggle" aria-expanded="true">Tatil</button>
+          <div class="nav-group-items">
+            <div class="nav-item" data-page-target="vacation-analytics"><span class="nav-label">Tatil Analytics</span></div>
+            <div class="nav-item" data-page-target="vacation-leads"><span class="nav-label">Tatil Leadleri</span></div>
+            <div class="nav-item" data-page-target="vacation-scenarios"><span class="nav-label">Tatil Senaryoları</span></div>
+            <div class="nav-item" data-page-target="vacation-settings"><span class="nav-label">Tatil Ayarları</span></div>
+          </div>
+        </div>
+        <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">Partnerler</button>
           <div class="nav-group-items">
             <div class="nav-item" data-page-target="partner-endpoints"><span class="nav-label">Partner kanalları</span></div>
@@ -785,6 +794,113 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
       </div>
 
 
+
+      <div class="page" id="page-vacation-analytics">
+        <div class="page-header">
+          <h2>Tatil Analytics</h2>
+          <p>vacation_events ve vacation_leads özetleri</p>
+        </div>
+        <div class="card">
+          <div id="vacation-analytics-root"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-vacation-leads">
+        <div class="page-header">
+          <h2>Tatil Leadleri</h2>
+          <p>Tatil karar asistanı lead yönetimi</p>
+        </div>
+        <div class="card">
+          <div class="auto-leads-toolbar">
+            <input id="vacation-leads-search" class="form-input" type="search" placeholder="Ad, e-posta, telefon ara...">
+            <select id="vacation-leads-status-filter" class="status-select">
+              <option value="">Tüm durumlar</option>
+              <option value="new">new</option>
+              <option value="called">called</option>
+              <option value="interested">interested</option>
+              <option value="closed">closed</option>
+              <option value="rejected">rejected</option>
+            </select>
+          </div>
+          <div id="vacation-leads-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-vacation-scenarios">
+        <div class="page-header">
+          <h2>Tatil Senaryoları</h2>
+          <p>Sonuç önerilerinde kullanılacak senaryo kartları</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Yeni / düzenle</div>
+          <input type="hidden" id="vacation-scenario-form-id" value="new">
+          <div class="form-row">
+            <div class="form-group"><label>Başlık</label><input type="text" id="vacation-scenario-title"></div>
+            <div class="form-group"><label>Slug</label><input type="text" id="vacation-scenario-slug"></div>
+          </div>
+          <div class="form-group"><label>Açıklama</label><textarea id="vacation-scenario-description" class="textarea-md"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label>Görsel URL</label><input type="text" id="vacation-scenario-image"></div>
+            <div class="form-group"><label>Sıra</label><input type="number" id="vacation-scenario-sort" value="0"></div>
+          </div>
+          <div class="form-group"><label>Config (JSON)</label><textarea id="vacation-scenario-config" class="textarea-md">{}</textarea></div>
+          <div class="form-group">
+            <label class="toggle">
+              <input type="checkbox" id="vacation-scenario-active" checked>
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span class="text-muted-sm">Aktif</span>
+            </label>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn btn-primary" data-action="vacation-save-scenario" data-id="new">Kaydet</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Senaryolar</div>
+          <div id="vacation-scenarios-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-vacation-settings">
+        <div class="page-header">
+          <h2>Tatil Ayarları</h2>
+          <p>site_settings üzerinden tatil modülü yapılandırması</p>
+        </div>
+        <div class="card">
+          <div class="form-group">
+            <label class="toggle">
+              <input type="checkbox" id="vs-vacation_enabled">
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span class="text-muted-sm">Tatil modülü aktif</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="toggle">
+              <input type="checkbox" id="vs-vacation_ai_enabled">
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span class="text-muted-sm">AI yorumu aktif</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="toggle">
+              <input type="checkbox" id="vs-vacation_partner_cta_enabled">
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span class="text-muted-sm">Partner CTA aktif</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label>Varsayılan bütçe notu</label>
+            <input type="text" id="vs-vacation_default_budget_note">
+          </div>
+          <div class="form-group">
+            <label>Sorumluluk metni</label>
+            <textarea id="vs-vacation_disclaimer_text" class="textarea-md"></textarea>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn btn-primary" data-action="save-vacation-settings">Kaydet</button>
+          </div>
+        </div>
+      </div>
 
       <div class="page" id="page-auto-analytics">
         <div class="page-header">

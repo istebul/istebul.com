@@ -308,6 +308,40 @@ const autoAppFile = `auto-app.${hashContent(autoBundleCode)}.js`;
 writeFile(`assets/auto-runtime/${autoAppFile}`, autoBundleCode);
 writeFile('assets/auto-runtime/auto-app.js', autoBundleCode);
 
+const tatilAppSrc = path.join(root, 'js/tatil/tatil-app.js');
+if (fs.existsSync(tatilAppSrc)) {
+  const tatilAssetDir = path.join(dist, 'assets', 'tatil-runtime');
+  fs.mkdirSync(tatilAssetDir, { recursive: true });
+  const tatilBundleResult = esbuild.buildSync({
+    entryPoints: [tatilAppSrc],
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2020',
+    minify: true,
+    sourcemap: false,
+    write: false
+  });
+  const tatilBundleCode = tatilBundleResult.outputFiles[0].text;
+  const tatilAppFile = `tatil-app.${hashContent(tatilBundleCode)}.js`;
+  writeFile(`assets/tatil-runtime/${tatilAppFile}`, tatilBundleCode);
+  writeFile('assets/tatil-runtime/tatil-app.js', tatilBundleCode);
+
+  const tatilHtmlPath = path.join(dist, 'tatil', 'index.html');
+  if (fs.existsSync(tatilHtmlPath)) {
+    let tatilHtml = fs.readFileSync(tatilHtmlPath, 'utf8');
+    tatilHtml = tatilHtml.replace(
+      /\/js\/tatil\/tatil-app\.js/g,
+      `/assets/tatil-runtime/${tatilAppFile}`
+    );
+    const tatilCssHashed = assetRefs.get('css/tatil.css');
+    if (tatilCssHashed) {
+      tatilHtml = tatilHtml.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
+    }
+    fs.writeFileSync(tatilHtmlPath, minifyHtml(tatilHtml));
+  }
+}
+
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
 if (fs.existsSync(autoHtmlPath)) {
   let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');
