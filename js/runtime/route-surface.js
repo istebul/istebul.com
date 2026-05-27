@@ -26,8 +26,26 @@ export const MARKETING_SURFACE_IDS = Object.freeze([
 const PREMIUM_PATHS = Object.freeze({
     '/karar-analizi': 'page-karar-analizi',
     '/planlar': 'page-planlar',
-    '/karar-asistani': 'page-karar-analizi'
+    '/karar-asistani': 'page-karar-analizi',
+    '/duyurular': 'page-duyurular',
+    '/kampanyalar': 'page-kampanyalar',
+    '/blog': 'page-blog'
 });
+
+export function blogSlugFromPath(pathname = '/') {
+    const path = stripPathname(pathname);
+    if (!path.startsWith('/blog/')) return '';
+    return decodeURIComponent(path.slice('/blog/'.length)).replace(/\/$/, '');
+}
+
+export function resolveContentRouteSurface(pathname = '/') {
+    const path = stripPathname(pathname);
+    if (path === '/duyurular') return 'page-duyurular';
+    if (path === '/kampanyalar') return 'page-kampanyalar';
+    if (path === '/blog') return 'page-blog';
+    if (path.startsWith('/blog/') && path.length > '/blog/'.length) return 'page-blog-post';
+    return null;
+}
 
 const APP_PATHS = Object.freeze({
     '/ilanlar': 'ilanlar',
@@ -75,6 +93,11 @@ export function getExternalRedirect(path) {
  */
 export function resolveRouteSurface(pathname = '/') {
     const path = stripPathname(pathname);
+
+    const contentSurface = resolveContentRouteSurface(pathname);
+    if (contentSurface) {
+        return contentSurface;
+    }
 
     if (PREMIUM_PATHS[path]) {
         return PREMIUM_PATHS[path];

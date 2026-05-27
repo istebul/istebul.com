@@ -38,6 +38,7 @@ import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
 import { state } from './core/state.js';
 import { loadCMS } from './core/cms.js';
+import { initPublicContentHub } from './runtime/init-public-content.js';
 import { supabase } from './core/supabase.js';
 import API from './core/api.js';
 import { monitoring } from './core/monitoring.js';
@@ -4505,6 +4506,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await completeOAuthIfPresent();
 
     loadCMS();
+    initPublicContentHub();
     window.app = new App();
     try {
         await window.app.init();
@@ -4583,6 +4585,7 @@ const MARKETING_SECTION_IDS = new Set([
     'sample-preview',
     'home-auto-bridge',
     'how-it-works',
+    'home-content-hub',
     'pricing',
     'partner-enterprise',
     'landing-faq'
@@ -4674,8 +4677,16 @@ function applyProductionRouteVisibility() {
         '/karar-analizi': 'page-karar-analizi',
         '/metodoloji': 'page-metodoloji',
         '/planlar': 'page-planlar',
-        '/karar-asistani': 'page-karar-analizi'
+        '/karar-asistani': 'page-karar-analizi',
+        '/duyurular': 'page-duyurular',
+        '/kampanyalar': 'page-kampanyalar',
+        '/blog': 'page-blog'
     };
+
+    if (path.startsWith('/blog/') && path.length > '/blog/'.length) {
+        showPremiumPageFallback('page-blog-post');
+        return;
+    }
 
     if (premiumRouteMap[path]) {
         showPremiumPageFallback(premiumRouteMap[path]);

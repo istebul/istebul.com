@@ -65,7 +65,13 @@ html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #pricing,
 html[data-ib-route="home"] #partner-enterprise,
 html[data-ib-route="home"] #landing-faq,
-html[data-ib-route="home"] #home-final-cta{display:block!important}
+html[data-ib-route="home"] #home-final-cta,
+html[data-ib-route="home"] #home-content-hub{display:block!important}
+html[data-ib-route="page-duyurular"] #page-duyurular,
+html[data-ib-route="page-kampanyalar"] #page-kampanyalar,
+html[data-ib-route="page-blog"] #page-blog,
+html[data-ib-route="page-blog-post"] #page-blog-post{display:block!important}
+html[data-ib-route^="page-"] .ib-prerender-seo{display:block!important}
 html[data-ib-route="home"] #home-tco-lens{display:none!important}
 html[data-ib-route="home"] #platform-excellence,
 html[data-ib-route="home"] #category-ownership,
@@ -139,7 +145,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     </head>
 <body class="ib-enterprise">
     <div class="top-bar" id="announcement-ticker">
-        <p data-cms="announcement"><strong>Karar desteği:</strong> Gizli maliyet riskini erken görün — toplam sahip olma maliyeti ve güvenilir karşılaştırma.</p>
+        <p data-cms="announcement"><strong>Karar desteği:</strong> Gizli maliyet riskini erken görün — <a href="/duyurular" data-native-route>tüm duyurular</a> ve kampanyalar.</p>
     </div>
     <!-- Navigation -->
     <nav id="main-nav" class="navbar">
@@ -157,6 +163,9 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <a href="/#sample-preview" class="nav-link" data-home-anchor="sample-preview">Örnek analiz</a>
                     <a href="/#pricing" class="nav-link" data-home-anchor="pricing">Planlar</a>
                     <a href="/metodoloji/" class="nav-link" data-native-route>Metodoloji</a>
+                    <a href="/duyurular" class="nav-link" data-native-route>Duyurular</a>
+                    <a href="/kampanyalar" class="nav-link" data-native-route>Kampanyalar</a>
+                    <a href="/blog" class="nav-link" data-native-route>Blog</a>
                 </div>
                 <div id="nav-links-auth" class="nav-links-group hidden">
                     <a href="/profil/" class="nav-link" data-auth-only>Dashboard</a>
@@ -312,6 +321,50 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <span class="step-number">03</span>
                         <h3>Karşılaştır ve ilerle</h3>
                         <p>Alternatifleri yan yana görün; detaylı rapor veya partner yönlendirmesi için devam edin.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="home-content-hub" class="ib-content-hub ib-section-venture section-surface" aria-labelledby="home-content-hub-title">
+            <div class="container">
+                <header class="section-header ib-section-intro">
+                    <span class="section-kicker">Güncel</span>
+                    <h2 id="home-content-hub-title">Duyurular, kampanyalar ve blog</h2>
+                    <p>Platform güncellemeleri, aktif teklifler ve karar rehberi yazıları — tek merkezden.</p>
+                </header>
+                <div class="ib-content-hub-nav" role="navigation" aria-label="İçerik merkezi">
+                    <a class="ib-content-hub-nav-card" href="/duyurular" data-native-route>
+                        <i data-lucide="megaphone" aria-hidden="true"></i>
+                        <strong>Duyurular</strong>
+                        <span>Ürün ve operasyon güncellemeleri</span>
+                    </a>
+                    <a class="ib-content-hub-nav-card" href="/kampanyalar" data-native-route>
+                        <i data-lucide="badge-percent" aria-hidden="true"></i>
+                        <strong>Kampanyalar</strong>
+                        <span>Pro deneme ve pilot fırsatlar</span>
+                    </a>
+                    <a class="ib-content-hub-nav-card" href="/blog" data-native-route>
+                        <i data-lucide="newspaper" aria-hidden="true"></i>
+                        <strong>Blog</strong>
+                        <span>TCO, finansman ve karar rehberleri</span>
+                    </a>
+                </div>
+                <div class="ib-content-hub-preview-grid" data-content-hub-preview>
+                    <div class="ib-content-hub-preview-col" data-preview="announcements">
+                        <h3 class="ib-content-hub-preview-title">Son duyurular</h3>
+                        <div class="ib-content-hub-preview-list" data-preview-list="announcements">Yükleniyor…</div>
+                        <a class="btn btn-outline btn-sm" href="/duyurular" data-native-route>Tüm duyurular</a>
+                    </div>
+                    <div class="ib-content-hub-preview-col" data-preview="campaigns">
+                        <h3 class="ib-content-hub-preview-title">Aktif kampanyalar</h3>
+                        <div class="ib-content-hub-preview-list" data-preview-list="campaigns">Yükleniyor…</div>
+                        <a class="btn btn-outline btn-sm" href="/kampanyalar" data-native-route>Tüm kampanyalar</a>
+                    </div>
+                    <div class="ib-content-hub-preview-col" data-preview="blog">
+                        <h3 class="ib-content-hub-preview-title">Blogdan</h3>
+                        <div class="ib-content-hub-preview-list" data-preview-list="blog">Yükleniyor…</div>
+                        <a class="btn btn-outline btn-sm" href="/blog" data-native-route>Tüm yazılar</a>
                     </div>
                 </div>
             </div>
@@ -630,6 +683,72 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
 
             <noscript><div class="container ib-premium-noscript"><h1>Metodoloji</h1><p>Şeffaf, denetlenebilir karar modeli — <a href="/metodoloji/">detaylar</a>.</p></div></noscript>
             <div id="premium-metodoloji-root"></div>
+        </section>
+
+        <section id="page-duyurular" class="hidden" data-private-section aria-label="Duyurular" hidden>
+            <div class="ib-prerender-seo" data-prerender-for="page-duyurular">
+                <div class="container ib-premium-noscript">
+                    <p class="section-kicker">Duyurular</p>
+                    <h1>isteBul duyuruları</h1>
+                    <p class="ib-premium-lead">Ürün güncellemeleri ve operasyonel bilgilendirmeler.</p>
+                </div>
+            </div>
+            <noscript><div class="container ib-premium-noscript"><h1>Duyurular</h1><p><a href="/">Ana sayfa</a></p></div></noscript>
+            <div class="container ib-content-page">
+                <header class="ib-content-page-header">
+                    <p class="section-kicker">Duyurular</p>
+                    <h1>isteBul duyuruları</h1>
+                    <p class="ib-premium-lead">Ürün güncellemeleri, metodoloji notları ve operasyonel bilgilendirmeler — bağlayıcı teklif değildir.</p>
+                </header>
+                <div data-content-list="announcements"><p class="text-muted-sm">Yükleniyor…</p></div>
+                <p class="ib-content-page-back"><a href="/" data-native-route>← Ana sayfa</a> · <a href="/auto/">Ücretsiz analiz</a></p>
+            </div>
+        </section>
+
+        <section id="page-kampanyalar" class="hidden" data-private-section aria-label="Kampanyalar" hidden>
+            <div class="ib-prerender-seo" data-prerender-for="page-kampanyalar">
+                <div class="container ib-premium-noscript">
+                    <p class="section-kicker">Kampanyalar</p>
+                    <h1>Aktif kampanyalar</h1>
+                    <p class="ib-premium-lead">Pro deneme, ücretsiz analiz ve pilot partner fırsatları.</p>
+                </div>
+            </div>
+            <noscript><div class="container ib-premium-noscript"><h1>Kampanyalar</h1><p><a href="/auto/">Ücretsiz analiz</a></p></div></noscript>
+            <div class="container ib-content-page">
+                <header class="ib-content-page-header">
+                    <p class="section-kicker">Kampanyalar</p>
+                    <h1>Aktif kampanyalar</h1>
+                    <p class="ib-premium-lead">Pro deneme, ücretsiz Auto analizi ve pilot partner fırsatları. Koşullar değişebilir; finansal taahhüt içermez.</p>
+                </header>
+                <div data-content-list="campaigns"><p class="text-muted-sm">Yükleniyor…</p></div>
+                <p class="ib-content-page-back"><a href="/" data-native-route>← Ana sayfa</a> · <a href="/planlar">Planlar</a></p>
+            </div>
+        </section>
+
+        <section id="page-blog" class="hidden" data-private-section aria-label="Blog" hidden>
+            <div class="ib-prerender-seo" data-prerender-for="page-blog">
+                <div class="container ib-premium-noscript">
+                    <p class="section-kicker">Blog</p>
+                    <h1>Karar rehberleri</h1>
+                    <p class="ib-premium-lead">TCO, finansman ve araç alım kararı üzerine yazılar.</p>
+                </div>
+            </div>
+            <noscript><div class="container ib-premium-noscript"><h1>Blog</h1><p><a href="/auto/">Analiz başlat</a></p></div></noscript>
+            <div class="container ib-content-page">
+                <header class="ib-content-page-header">
+                    <p class="section-kicker">Blog</p>
+                    <h1>Karar rehberleri</h1>
+                    <p class="ib-premium-lead">TCO, finansman ve araç alım kararı — bilgilendirme amaçlı; yatırım veya kredi tavsiyesi değildir.</p>
+                </header>
+                <div data-content-list="blog"><p class="text-muted-sm">Yükleniyor…</p></div>
+                <p class="ib-content-page-back"><a href="/" data-native-route>← Ana sayfa</a> · <a href="/rehber/arac-toplam-sahiplik-maliyeti/">TCO rehberi</a></p>
+            </div>
+        </section>
+
+        <section id="page-blog-post" class="hidden" data-private-section aria-label="Blog yazısı" hidden>
+            <div class="container ib-content-page">
+                <div data-blog-post-root><p class="text-muted-sm">Yükleniyor…</p></div>
+            </div>
         </section>
 
         <section id="page-planlar" class="hidden" data-private-section aria-label="Planlar" hidden>
@@ -1082,6 +1201,9 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <li><a href="/metodoloji/">Metodoloji</a></li>
                         <li><a href="/#pricing">Fiyatlandırma</a></li>
                         <li><a href="/auto/">Ücretsiz analiz başlat</a></li>
+                        <li><a href="/duyurular" data-native-route>Duyurular</a></li>
+                        <li><a href="/kampanyalar" data-native-route>Kampanyalar</a></li>
+                        <li><a href="/blog" data-native-route>Blog</a></li>
                         <li><a href="/#landing-faq">SSS</a></li>
                     </ul>
                 </div>

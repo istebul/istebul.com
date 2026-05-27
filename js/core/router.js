@@ -28,7 +28,8 @@ export const HOMEPAGE_SECTION_IDS = Object.freeze([
     'pricing',
     'partner-enterprise',
     'landing-faq',
-    'home-final-cta'
+    'home-final-cta',
+    'home-content-hub'
 ]);
 
 /** Hash targets on the marketing page. */
@@ -56,7 +57,10 @@ const MARKETING_PATH_ALIASES = Object.freeze({
 export const PREMIUM_PAGE_ROUTES = Object.freeze({
     '/karar-analizi': 'page-karar-analizi',
     '/metodoloji': 'page-metodoloji',
-    '/planlar': 'page-planlar'
+    '/planlar': 'page-planlar',
+    '/duyurular': 'page-duyurular',
+    '/kampanyalar': 'page-kampanyalar',
+    '/blog': 'page-blog'
 });
 
 export class Router {
@@ -67,6 +71,9 @@ export class Router {
             { path: '/karsilastir', component: 'compare' },
             { path: '/karar-analizi', component: 'page-karar-analizi' },
             { path: '/planlar', component: 'page-planlar' },
+            { path: '/duyurular', component: 'page-duyurular' },
+            { path: '/kampanyalar', component: 'page-kampanyalar' },
+            { path: '/blog', component: 'page-blog' },
             { path: '/karar-asistani', component: 'page-karar-analizi' },
             { path: '/favoriler', component: 'favoriler' },
             { path: '/gecmis', component: 'history' },
@@ -241,12 +248,12 @@ export class Router {
         this.currentRoute = path;
         syncHtmlRouteSurface(resolveRouteSurface(path), path);
 
-        const premiumPage = PREMIUM_PAGE_ROUTES[path];
-        if (premiumPage) {
-            this.showPremiumPage(premiumPage);
+        const surfaceId = resolveRouteSurface(path);
+        if (String(surfaceId).startsWith('page-')) {
+            this.showPremiumPage(surfaceId);
             this.updateNavLinks(path);
-            this.updateTitle(premiumPage);
-            this.dispatchRoute(premiumPage, {}, path);
+            this.updateTitle(surfaceId);
+            this.dispatchRoute(surfaceId, {}, path);
             return;
         }
 
@@ -387,6 +394,9 @@ export class Router {
         pulseRouteSection(target);
         window.scrollTo({ top: 0, behavior: 'auto' });
         document.body.classList.add('ib-premium-mounted');
+        import('../runtime/init-public-content.js')
+            .then((m) => m.refreshPublicContentSurface(pageId))
+            .catch(() => {});
     }
 
     showSection(routeId) {

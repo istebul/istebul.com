@@ -1,0 +1,223 @@
+/* Duyuru · kampanya · blog — ana sayfa hub ve liste sayfaları */
+
+.ib-content-hub {
+  padding: 3.5rem 0;
+}
+
+.ib-content-hub-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.ib-content-hub-nav-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.15rem 1.2rem;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: linear-gradient(180deg, #fff, #f8fafc);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.ib-content-hub-nav-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37, 99, 235, 0.28);
+  box-shadow: 0 18px 44px rgba(37, 99, 235, 0.12);
+}
+
+.ib-content-hub-nav-card i {
+  width: 22px;
+  height: 22px;
+  color: #2563eb;
+}
+
+.ib-content-hub-nav-card strong {
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.ib-content-hub-nav-card span:last-child {
+  font-size: 0.86rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.ib-content-hub-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+.ib-content-hub-preview-col {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+}
+
+.ib-content-hub-preview-title {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.ib-content-hub-preview-list {
+  display: grid;
+  gap: 0.65rem;
+  min-height: 4.5rem;
+}
+
+.ib-content-card {
+  padding: 0.85rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  background: #f8fafc;
+}
+
+.ib-content-card-kicker {
+  display: inline-block;
+  margin-bottom: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.ib-content-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.ib-content-card h3 a {
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.ib-content-card h3 a:hover {
+  color: #2563eb;
+}
+
+.ib-content-card p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #475569;
+}
+
+.ib-content-card-meta {
+  margin-top: 0.35rem !important;
+  font-size: 0.75rem !important;
+}
+
+.ib-content-card-link {
+  display: inline-block;
+  margin-top: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.ib-content-page {
+  padding: 2.5rem 0 3.5rem;
+}
+
+.ib-content-page-header {
+  margin-bottom: 1.5rem;
+  max-width: 52rem;
+}
+
+.ib-content-page-back {
+  margin-top: 2rem;
+  font-size: 0.9rem;
+}
+
+.ib-content-page-back a {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ib-content-list-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.ib-content-detail-card {
+  padding: 1.25rem 1.35rem;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+}
+
+.ib-content-detail-card--campaign {
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(240, 253, 250, 0.92));
+}
+
+.ib-content-detail-card h2 {
+  margin: 0.35rem 0 0.65rem;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.ib-content-prose {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #334155;
+}
+
+.ib-content-article {
+  max-width: 46rem;
+  padding: 1rem 0 2rem;
+}
+
+.ib-content-article h1 {
+  margin: 0.35rem 0 1rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  letter-spacing: -0.03em;
+}
+
+.ib-content-empty {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+}
+
+.top-bar a {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .ib-content-hub-nav,
+  .ib-content-hub-preview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .ib-content-hub {
+    padding: 2.5rem 0;
+  }
+
+  .ib-content-hub-nav-card {
+    padding: 1rem;
+  }
+}
