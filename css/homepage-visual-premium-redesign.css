@@ -321,3 +321,59 @@ body.ib-enterprise #home .preview-metrics > div {
     line-height: 1.62;
   }
 }
+
+/* Desktop: inline nav (no floating 2-row card) */
+@media (min-width: 1181px) {
+  body.ib-enterprise .nav-menu,
+  body.ib-enterprise .nav-menu.show {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    grid-template-columns: unset !important;
+    position: static !important;
+    width: auto !important;
+    max-width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  body.ib-enterprise .nav-links-group {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 0.06rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  body.ib-enterprise .nav-links-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.ib-enterprise .nav-link,
+  body.ib-enterprise .nav-dropdown-btn {
+    width: auto !important;
+    min-height: 42px;
+    padding: 0 0.68rem;
+    font-size: 0.8rem;
+    justify-content: center !important;
+  }
+
+  body.ib-enterprise .nav-container {
+    grid-template-columns: minmax(190px, 240px) minmax(0, 1fr) auto;
+  }
+}
+
+@media (min-width: 1320px) {
+  body.ib-enterprise .nav-link,
+  body.ib-enterprise .nav-dropdown-btn {
+    padding: 0 0.82rem;
+    font-size: 0.86rem;
+  }
+}

@@ -68,6 +68,19 @@ export function validateExperimentWeights(experiment) {
 }
 
 function setElementLabel(el, text) {
+  if (el.hasAttribute('data-cro-trust-rail-item')) {
+    el.querySelector('.growth-exp-label')?.remove();
+    const icon = el.querySelector('[data-lucide], svg, i');
+    if (icon) {
+      el.innerHTML = '';
+      el.append(icon.cloneNode(true));
+      el.append(document.createTextNode(` ${text}`));
+    } else {
+      el.textContent = text;
+    }
+    return;
+  }
+
   const existing = el.querySelector(':scope > .growth-exp-label');
   if (existing) {
     existing.textContent = text;
