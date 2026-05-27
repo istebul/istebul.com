@@ -1,0 +1,383 @@
+/**
+ * isteBul — Premium design system (visual only).
+ * Scopes: marketing SPA, premium routes, content hub, shared components.
+ * Do not change ids, data-* hooks, or layout grid contracts.
+ */
+
+:root {
+  --ib-ds-radius-btn: 12px;
+  --ib-ds-radius-card: 18px;
+  --ib-ds-shadow-card: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 14px 40px rgba(15, 23, 42, 0.08);
+  --ib-ds-shadow-card-hover: 0 22px 56px rgba(15, 23, 42, 0.12);
+  --ib-ds-border: rgba(114, 132, 155, 0.22);
+  --ib-ds-muted: #5b6c82;
+  --ib-ds-ink: #0b1528;
+  --ib-ds-prose-width: 62ch;
+}
+
+body.ib-enterprise,
+body.ib-premium-route-active {
+  color: var(--ib-ds-ink);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+/* —— Typography —— */
+body.ib-enterprise h1,
+body.ib-premium-route-active h1,
+body.ib-enterprise .ib-premium-hero h1 {
+  font-size: clamp(1.85rem, 4.2vw, 3.15rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  font-weight: 850;
+  text-wrap: balance;
+}
+
+body.ib-enterprise h2,
+body.ib-premium-route-active h2,
+body.ib-enterprise .section-header h2 {
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+
+body.ib-enterprise h3,
+body.ib-premium-route-active h3 {
+  font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  font-weight: 750;
+}
+
+body.ib-enterprise p,
+body.ib-premium-route-active p,
+body.ib-enterprise .section-header p,
+body.ib-enterprise .ib-premium-lead {
+  font-size: clamp(0.95rem, 1.1vw, 1.06rem);
+  line-height: var(--line-height-body, 1.65);
+  color: var(--ib-ds-muted);
+  max-width: var(--ib-ds-prose-width);
+}
+
+body.ib-enterprise .section-kicker,
+body.ib-premium-route-active .ib-premium-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+body.ib-enterprise .section-header {
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  text-align: center;
+}
+
+body.ib-enterprise .section-header p {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* —— Buttons —— */
+body.ib-enterprise .btn,
+body.ib-premium-route-active .btn {
+  min-height: 44px;
+  padding: 0.62rem 1.15rem;
+  border-radius: var(--ib-ds-radius-btn);
+  font-weight: 780;
+  letter-spacing: -0.01em;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+
+body.ib-enterprise .btn:focus-visible,
+body.ib-premium-route-active .btn:focus-visible,
+body.ib-enterprise .nav-link:focus-visible,
+body.ib-enterprise input:focus-visible,
+body.ib-enterprise select:focus-visible,
+body.ib-enterprise textarea:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.35);
+  outline-offset: 2px;
+}
+
+body.ib-enterprise .btn-primary,
+body.ib-premium-route-active .btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #0d9488 100%) !important;
+  border: 1px solid rgba(37, 99, 235, 0.2) !important;
+  color: #f8fbff !important;
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.28);
+}
+
+body.ib-enterprise .btn-outline,
+body.ib-premium-route-active .btn-outline {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--ib-ds-border);
+  color: #1e3a5f;
+}
+
+body.ib-enterprise .btn-ghost,
+body.ib-premium-route-active .btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ib-ds-muted);
+  box-shadow: none;
+}
+
+body.ib-enterprise .btn:hover:not(:disabled),
+body.ib-premium-route-active .btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+body.ib-enterprise .btn-lg {
+  min-height: 48px;
+  padding: 0.72rem 1.35rem;
+  font-size: 1rem;
+}
+
+body.ib-enterprise .btn-sm {
+  min-height: 38px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.84rem;
+}
+
+/* —— Premium cards (shared surfaces) —— */
+body.ib-enterprise .trust-card,
+body.ib-enterprise .how-step,
+body.ib-enterprise .category-card,
+body.ib-enterprise .step-card,
+body.ib-enterprise .ib-use-case-card,
+body.ib-enterprise .ib-content-hub-nav-card,
+body.ib-enterprise .ib-content-hub-preview-col,
+body.ib-enterprise .ib-content-detail-card,
+body.ib-enterprise .ib-sample-preview-panel,
+body.ib-enterprise .ib-home-auto-bridge-panel,
+body.ib-enterprise .listing-card,
+body.ib-enterprise .add-listing-card,
+body.ib-enterprise .ib-faq-item,
+body.ib-enterprise .partner-enterprise-features li,
+body.ib-premium-route-active .ib-premium-step-list li,
+body.ib-premium-route-active .revenue-pricing-grid article,
+body.ib-premium-route-active .ib-methodology-steps li {
+  border: 1px solid var(--ib-ds-border) !important;
+  border-radius: var(--ib-ds-radius-card) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.9)) !important;
+  box-shadow: var(--ib-ds-shadow-card) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.ib-enterprise .trust-card:hover,
+body.ib-enterprise .how-step:hover,
+body.ib-enterprise .category-card:hover:not(.is-coming-soon),
+body.ib-enterprise .ib-use-case-card:hover,
+body.ib-enterprise .ib-content-hub-nav-card:hover,
+body.ib-enterprise .listing-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ib-ds-shadow-card-hover) !important;
+  border-color: rgba(37, 99, 235, 0.24) !important;
+}
+
+body.ib-enterprise .ib-content-card {
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #f8fafc;
+  padding: 0.9rem 1rem;
+}
+
+body.ib-enterprise .ib-content-card-kicker,
+body.ib-enterprise .ib-use-case-badge,
+body.ib-enterprise .badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+body.ib-enterprise .badge-green {
+  background: rgba(5, 150, 105, 0.12);
+  color: #047857;
+}
+
+body.ib-enterprise .badge-red {
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+}
+
+/* —— Grids —— */
+body.ib-enterprise .how-grid,
+body.ib-enterprise .trust-grid,
+body.ib-enterprise .ib-use-case-grid,
+body.ib-enterprise .ib-content-hub-nav,
+body.ib-enterprise .ib-content-hub-preview-grid,
+body.ib-enterprise .partner-enterprise-features,
+body.ib-premium-route-active .ib-premium-step-list,
+body.ib-premium-route-active .revenue-pricing-grid {
+  gap: clamp(0.85rem, 2vw, 1.25rem);
+}
+
+@media (min-width: 768px) {
+  body.ib-enterprise .how-grid,
+  body.ib-enterprise .trust-grid,
+  body.ib-enterprise .ib-use-case-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  body.ib-enterprise .how-grid,
+  body.ib-enterprise .trust-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.ib-enterprise .ib-content-hub-nav,
+  body.ib-enterprise .ib-content-hub-preview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* —— Forms —— */
+body.ib-enterprise input:not([type='checkbox']):not([type='radio']),
+body.ib-enterprise select,
+body.ib-enterprise textarea,
+body.ib-premium-route-active input:not([type='checkbox']):not([type='radio']),
+body.ib-premium-route-active select,
+body.ib-premium-route-active textarea {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--ib-ds-border);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.65rem 0.85rem;
+  font-size: 1rem;
+  color: var(--ib-ds-ink);
+}
+
+body.ib-enterprise textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* —— Modals —— */
+body.ib-enterprise .modal-content {
+  border-radius: 20px !important;
+  border: 1px solid var(--ib-ds-border) !important;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.2) !important;
+  max-height: min(92vh, 900px);
+  overflow: auto;
+}
+
+/* —— Empty / loading —— */
+body.ib-enterprise .ib-content-empty,
+body.ib-enterprise .empty,
+body.ib-enterprise .ib-content-hub-preview-list:empty::after {
+  display: block;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  background: rgba(248, 250, 252, 0.9);
+  color: var(--ib-ds-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+body.ib-enterprise .ib-content-hub-preview-list:empty::after {
+  content: 'İçerik yükleniyor…';
+}
+
+/* —— Footer —— */
+body.ib-enterprise .footer {
+  border-top: 1px solid var(--ib-ds-border);
+  background: linear-gradient(180deg, #f8fafc, #f1f5f9);
+}
+
+body.ib-enterprise .footer-premium .footer-section h4 {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--ib-ds-muted);
+}
+
+/* —— Compare / listings toolbars —— */
+body.ib-enterprise .marketplace-results-toolbar,
+body.ib-enterprise .comparison-toolbar {
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--ib-ds-border);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+body.ib-enterprise .comparison-table-wrap {
+  border-radius: 14px;
+  border: 1px solid var(--ib-ds-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* —— Section rhythm —— */
+body.ib-enterprise .ib-section-venture,
+body.ib-enterprise .section-bg,
+body.ib-enterprise .section-surface,
+body.ib-premium-route-active .ib-premium-section {
+  padding: clamp(2.5rem, 5vw, 4.5rem) 0;
+}
+
+/* —— Corporate static pages (partner shell) —— */
+body.ib-enterprise.ib-partner-page .corporate-header,
+body.ib-enterprise .corporate-header {
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06);
+}
+
+body.ib-enterprise .corporate-main,
+body.ib-partner-page main {
+  padding: clamp(2rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+  max-width: var(--layout-max, 1180px);
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  body.ib-premium-route-active .ib-premium-hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  body.ib-enterprise .hero-actions .btn,
+  body.ib-enterprise .ib-premium-hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  body.ib-enterprise .ib-social-proof-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.ib-enterprise .nav-auth .btn {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 430px) {
+  body.ib-enterprise h1,
+  body.ib-premium-route-active h1 {
+    font-size: clamp(1.65rem, 9vw, 2.15rem);
+  }
+
+  body.ib-enterprise .container {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ib-enterprise .btn,
+  body.ib-enterprise .trust-card,
+  body.ib-enterprise .how-step,
+  body.ib-enterprise .ib-content-hub-nav-card {
+    transition: none !important;
+    transform: none !important;
+  }
+}

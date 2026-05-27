@@ -1,0 +1,66 @@
+/**
+ * Admin panel — visual polish only (class names unchanged).
+ */
+
+#app .card,
+#app .stat-card {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+#app .btn {
+  border-radius: 10px;
+  min-height: 38px;
+  transition: opacity 0.15s ease, transform 0.12s ease;
+}
+
+#app .btn:focus-visible,
+#app .field input:focus-visible,
+#app .nav-item:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 2px;
+}
+
+#app .table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+#app .table th,
+#app .table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+#app .table-wrap,
+#app .page {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#app .empty {
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  text-align: center;
+}
+
+#app .toast.show {
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 900px) {
+  #app .layout {
+    flex-direction: column;
+  }
+
+  #app .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+}

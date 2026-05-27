@@ -255,6 +255,7 @@ fs.mkdirSync(autoAssetDir, { recursive: true });
 
 const autoCssParts = [
   'css/auto.css',
+  'css/auto-premium-design-system.css',
   'css/p4-premium-product.css',
   'css/p4-3-mobile-premium.css',
   'css/conversion-micro-ux.css',
