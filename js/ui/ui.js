@@ -242,23 +242,39 @@ export class UIManager {
         const navUser = document.getElementById('nav-user');
         const navLinksAnon = document.getElementById('nav-links-anon');
         const navLinksAuth = document.getElementById('nav-links-auth');
+        const mainNav = document.getElementById('main-nav');
+        const dashboardQuick = document.getElementById('nav-dashboard-quick');
 
         if (!navAuth || !navUser) return;
 
         if (user) {
+            document.body.classList.add('nav-signed-in');
+            mainNav?.classList.add('is-authenticated');
+
             navAuth.classList.add('hidden');
-            navUser.classList.add('hidden');
             navAuth.style.display = 'none';
-            navUser.style.display = 'none';
-            navLinksAnon?.classList.add('hidden');
-            navLinksAuth?.classList.remove('hidden');
-        } else {
-            navAuth.classList.remove('hidden');
-            navUser.classList.add('hidden');
-            navAuth.style.display = 'flex';
-            navUser.style.display = 'none';
+
+            navUser.classList.remove('hidden');
+            navUser.style.display = 'flex';
+
             navLinksAnon?.classList.remove('hidden');
             navLinksAuth?.classList.add('hidden');
+
+            dashboardQuick?.classList.remove('hidden');
+        } else {
+            document.body.classList.remove('nav-signed-in');
+            mainNav?.classList.remove('is-authenticated');
+
+            navAuth.classList.remove('hidden');
+            navAuth.style.display = 'flex';
+
+            navUser.classList.add('hidden');
+            navUser.style.display = 'none';
+
+            navLinksAnon?.classList.remove('hidden');
+            navLinksAuth?.classList.add('hidden');
+
+            dashboardQuick?.classList.add('hidden');
         }
     }
 
