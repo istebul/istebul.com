@@ -211,17 +211,12 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <a href="/#landing-faq" class="nav-link" data-home-anchor="landing-faq">SSS</a>
                     </div>
                 </div>
-                <div id="nav-links-auth" class="nav-links-group hidden">
-                    <a href="/profil/" class="nav-link" data-auth-only>Dashboard</a>
-                    <a href="/ilanlar/" class="nav-link" data-my-listings>Seçeneklerim</a>
-                    <a href="/karsilastir/" class="nav-link">Karşılaştırmalar</a>
-                    <a href="/messages/" class="nav-link" id="nav-messages">Mesajlar</a>
-                    <a href="/profil/" class="nav-link" data-auth-only>Profil</a>
-                    <a href="/profil/" class="nav-link" data-auth-only>Hesap</a>
-                    <button type="button" class="nav-link nav-link-btn" id="logout-btn-header" data-auth-only>Oturumu kapat</button>
+                <div id="nav-links-auth" class="nav-links-group hidden" aria-hidden="true" hidden>
+                    <!-- Auth links live in #nav-user dropdown — keep out of inline nav to avoid header overflow -->
                 </div>
             </div>
             <div class="nav-controls">
+                <a href="/profil/" class="btn btn-outline btn-sm nav-dashboard-quick hidden" id="nav-dashboard-quick" data-native-route data-auth-only>Dashboard</a>
                 <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Tema değiştir" title="Tema değiştir"></button>
                 <div class="nav-auth" id="nav-auth">
                     <a href="/karar-asistani" class="btn btn-primary nav-cta-decision" data-native-route data-analytics-cta="cta_decision_nav" data-analytics-placement="nav">Başlat</a>
@@ -234,12 +229,14 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <i data-lucide="user"></i>
                         <span id="user-name"></span>
                     </button>
-                    <div class="user-dropdown">
-                        <a href="/profil/" data-auth-only>Hesabım</a>
-                        <a href="/ilanlar/" data-my-listings>Seçeneklerim</a>
-                        
+                    <div class="user-dropdown" role="menu">
+                        <a href="/profil/" data-auth-only role="menuitem">Hesabım</a>
+                        <a href="/profil/" data-auth-only role="menuitem">Dashboard</a>
+                        <a href="/ilanlar/" data-my-listings role="menuitem">Seçeneklerim</a>
+                        <a href="/karsilastir/" data-native-route role="menuitem">Karşılaştırmalar</a>
+                        <a href="/messages/" id="nav-messages-menu" role="menuitem">Mesajlar</a>
                         <hr>
-                        <button type="button" class="nav-dropdown-link" id="logout-btn" data-auth-only>Oturumu kapat</button>
+                        <button type="button" class="nav-dropdown-link" id="logout-btn" data-auth-only role="menuitem">Oturumu kapat</button>
                     </div>
                 </div>
             </div>
