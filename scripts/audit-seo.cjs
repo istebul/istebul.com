@@ -77,6 +77,12 @@ checkPage('auto/index.html', {
 const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 if (!indexHtml.includes('application/ld+json')) fail('index.html missing JSON-LD');
 if (!indexHtml.includes('ROUTE_BOOTSTRAP_START')) fail('index.html missing route bootstrap');
+if (!indexHtml.includes('route-bootstrap-head.js')) {
+  fail('index.html must load external route-bootstrap-head.js (CSP-safe)');
+}
+if (/<script>\s*\/\* ROUTE_BOOTSTRAP_START/i.test(indexHtml)) {
+  fail('index.html must not inline route bootstrap script');
+}
 
 if (failed) process.exit(1);
 console.log('seo-audit: OK');

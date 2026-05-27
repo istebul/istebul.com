@@ -23,7 +23,7 @@ const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'ma
     'css/admin-internal-dashboards.css',
     'css/admin-ops-ai-assistant.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
-const { injectRouteBootstrap } = require('./lib/route-bootstrap.cjs');
+const { injectRouteBootstrap, writeRouteBootstrapFile } = require('./lib/route-bootstrap.cjs');
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
 const { injectPartnerHtmlFiles } = require('./lib/inject-partner-prerender.cjs');
 const publicEnvKeys = [
@@ -45,6 +45,8 @@ const runCheck = spawnSync(process.execPath, [path.join(root, 'scripts/check-syn
   stdio: 'inherit'
 });
 if (runCheck.status !== 0) process.exit(runCheck.status || 1);
+
+writeRouteBootstrapFile();
 
 fs.rmSync(dist, { recursive: true, force: true });
 fs.mkdirSync(dist, { recursive: true });

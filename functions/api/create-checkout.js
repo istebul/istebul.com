@@ -1,19 +1,11 @@
 const getSiteUrl = (context) => (context.env.SITE_URL || 'https://istebul.com').replace(/\/$/, '');
 
-import { isAllowedOrigin, resolveCorsOrigin } from '../_shared/cors-origins.js';
-
-const corsHeaders = (origin = null) => ({
-  'Access-Control-Allow-Origin': resolveCorsOrigin(origin, 'https://istebul.com'),
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json'
-});
+import { isAllowedOrigin } from '../_shared/cors-origins.js';
+import { API_ERROR_CODES } from '../_shared/api-response.js';
+import { buildCorsJsonHeaders, corsJson, corsJsonError } from '../_shared/cors-json.js';
 
 import { recordOpsEvent } from './_shared/record-ops-event.js';
 import { createClient } from '@supabase/supabase-js';
-
-const json = (body, status = 200, origin = null) =>
-  new Response(JSON.stringify(body), { status, headers: corsHeaders(origin) });
 
 const getSupabaseAdmin = (env) => {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -73,7 +65,7 @@ export async function onRequestPost(context) {
   const origin = context.request.headers.get('Origin');
 
   if (origin && !isAllowedOrigin(origin)) {
-    return json({ error: 'Forbidden' }, 403, origin);
+    return corsJsonError(403, API_ERROR_CODES.FORBIDDEN, 'Forbidden', origin);
   }
 
   try {
@@ -83,19 +75,19 @@ export async function onRequestPost(context) {
     const TRIAL_DAYS = Math.max(0, parseInt(context.env.STRIPE_TRIAL_DAYS || '7', 10) || 0);
 
     if (!STRIPE_SECRET_KEY || !STRIPE_PRICE_ID) {
-      return json({ error: 'Stripe not configured' }, 500, origin);
+      return corsJsonError(500, API_ERROR_CODES.SERVER_MISCONFIGURED, 'Stripe not configured', origin);
     }
 
     const token = getBearerToken(context.request);
 
     if (!token) {
-      return json({ error: 'Authorization required' }, 401, origin);
+      return corsJsonError(401, API_ERROR_CODES.UNAUTHORIZED, 'Authorization required', origin);
     }
 
     const user = await getAuthenticatedUser(context, token);
 
     if (!user?.id || !user?.email) {
-      return json({ error: 'Invalid token' }, 401, origin);
+      return corsJsonError(401, API_ERROR_CODES.UNAUTHORIZED, 'Invalid token', origin);
     }
 
     let payload = {};
@@ -115,7 +107,12 @@ export async function onRequestPost(context) {
     const { SUPABASE_SERVICE_ROLE_KEY } = context.env;
 
     if (!SUPABASE_SERVICE_ROLE_KEY) {
-      return json({ error: 'Subscription validation unavailable' }, 500, origin);
+      return corsJsonError(
+        500,
+        API_ERROR_CODES.SERVER_MISCONFIGURED,
+        'Subscription validation unavailable',
+        origin
+      );
     }
 
     const subRes = await fetch(
@@ -131,7 +128,12 @@ export async function onRequestPost(context) {
     if (subRes.ok) {
       const existing = await subRes.json();
       if (Array.isArray(existing) && existing.length) {
-        return json({ error: 'Active subscription already exists' }, 409, origin);
+        return corsJsonError(
+          409,
+          API_ERROR_CODES.CONFLICT,
+          'Active subscription already exists',
+          origin
+        );
       }
     }
 
@@ -245,14 +247,24 @@ export async function onRequestPost(context) {
           billing_interval: billingInterval
         }
       });
-      return json({ error: 'Checkout could not be created' }, 502, origin);
+      return corsJsonError(
+        502,
+        API_ERROR_CODES.UPSTREAM_ERROR,
+        'Checkout could not be created',
+        origin
+      );
     }
 
-    return json({
-      url: data.url,
-      trialApplied: trialDays > 0,
-      billingInterval
-    }, 200, origin);
+    return corsJson(
+      {
+        ok: true,
+        url: data.url,
+        trialApplied: trialDays > 0,
+        billingInterval
+      },
+      200,
+      origin
+    );
   } catch (err) {
     console.error('create-checkout error:', err);
     const supabase = getSupabaseAdmin(context.env);
@@ -263,13 +275,13 @@ export async function onRequestPost(context) {
       source: 'create_checkout',
       properties: { message: err.message || 'internal_error' }
     });
-    return json({ error: 'Internal server error' }, 500, origin);
+    return corsJsonError(500, API_ERROR_CODES.INTERNAL_ERROR, 'Internal server error', origin);
   }
 }
 
 export async function onRequestOptions(context) {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders(context.request.headers.get('Origin'))
+    headers: buildCorsJsonHeaders(context.request.headers.get('Origin'))
   });
 }

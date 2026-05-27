@@ -20,6 +20,27 @@ function mapVehicle(row, profilesMap = {}) {
   };
 }
 
+function buildRestHeaders(key) {
+  return {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    Accept: 'application/json'
+  };
+}
+
+/**
+ * PostgREST rejects unknown query params (e.g. cache-bust `_ts`) with HTTP 400.
+ */
+export function buildVehicleCatalogUrl(baseUrl) {
+  const root = String(baseUrl || '').replace(/\/$/, '');
+  return `${root}/rest/v1/vehicle_catalog?select=*&is_active=eq.true&limit=500`;
+}
+
+export function buildVehicleCostProfilesUrl(baseUrl) {
+  const root = String(baseUrl || '').replace(/\/$/, '');
+  return `${root}/rest/v1/vehicle_cost_profiles?select=*`;
+}
+
 export async function getVehicleCatalog() {
   const url = window.__env?.SUPABASE_URL;
   const key = window.__env?.SUPABASE_ANON_KEY;
@@ -29,23 +50,19 @@ export async function getVehicleCatalog() {
   }
 
   try {
-    const headers = {
-      apikey: key,
-      Authorization: `Bearer ${key}`
-    };
+    const headers = buildRestHeaders(key);
 
     const [vehiclesRes, profilesRes] = await Promise.all([
-      fetch(
-        `${url}/rest/v1/vehicle_catalog?select=%2A&is_active=eq.true&limit=500&_ts=${Date.now()}`,
-        { cache: 'no-store', headers }
-      ),
-      fetch(
-        `${url}/rest/v1/vehicle_cost_profiles?select=%2A`,
-        { cache: 'no-store', headers }
-      )
+      fetch(buildVehicleCatalogUrl(url), { cache: 'no-store', headers }),
+      fetch(buildVehicleCostProfilesUrl(url), { cache: 'no-store', headers })
     ]);
 
     if (!vehiclesRes.ok) {
+      console.warn(
+        '[auto-catalog] vehicle_catalog request failed',
+        vehiclesRes.status,
+        await vehiclesRes.text().catch(() => '')
+      );
       return localVehicles;
     }
 
@@ -54,12 +71,13 @@ export async function getVehicleCatalog() {
 
     const profilesMap = {};
 
-    profileRows.forEach(row => {
+    profileRows.forEach((row) => {
       profilesMap[row.vehicle_id] = row;
     });
 
-    return vehiclesRows.map(v => mapVehicle(v, profilesMap));
-  } catch {
+    return vehiclesRows.map((v) => mapVehicle(v, profilesMap));
+  } catch (err) {
+    console.warn('[auto-catalog] vehicle_catalog fetch error', err);
     return localVehicles;
   }
 }

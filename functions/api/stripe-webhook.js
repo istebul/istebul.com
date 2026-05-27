@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { apiErrorBody } from '../_shared/api-response.js';
 import { recordOpsEvent } from './_shared/record-ops-event.js';
 import {
   enrollRevenueLifecycleFlow,
@@ -142,14 +143,14 @@ export async function onRequestPost(context) {
   const { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } = context.env;
 
   if (!STRIPE_SECRET_KEY || !STRIPE_WEBHOOK_SECRET) {
-    return json({ error: 'Stripe webhook is not configured' }, 500);
+    return json(apiErrorBody('server_misconfigured', 'Stripe webhook is not configured'), 500);
   }
 
   const stripe = new Stripe(STRIPE_SECRET_KEY);
   const signature = context.request.headers.get('stripe-signature');
 
   if (!signature) {
-    return json({ error: 'Missing Stripe signature' }, 400);
+    return json(apiErrorBody('bad_request', 'Missing Stripe signature'), 400);
   }
 
   let event;
@@ -171,7 +172,7 @@ export async function onRequestPost(context) {
     } catch {
       /* ignore */
     }
-    return json({ error: 'Invalid signature' }, 400);
+    return json(apiErrorBody('bad_request', 'Invalid signature'), 400);
   }
 
   const supabase = getSupabaseAdmin(context.env);
@@ -461,7 +462,7 @@ export async function onRequestPost(context) {
     } catch {
       /* ignore */
     }
-    return json({ error: 'Webhook handler failed' }, 500);
+    return json(apiErrorBody('internal_error', 'Webhook handler failed'), 500);
   }
 }
 

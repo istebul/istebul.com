@@ -72,7 +72,12 @@ export function buildCheckoutTriggerEvent(intent) {
  * @returns {string}
  */
 export function mapCheckoutApiError(status, data = {}) {
-  const code = (data.error || data.message || '').toString();
+  const errField = data.error;
+  const code = (
+    typeof errField === 'object' && errField !== null
+      ? errField.message || errField.code
+      : errField || data.message || ''
+  ).toString();
 
   if (status === 401 || /invalid token|authorization/i.test(code)) {
     return 'Oturumunuz sona ermiş olabilir. Lütfen tekrar giriş yapıp ödemeye devam edin.';

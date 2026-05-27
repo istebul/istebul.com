@@ -61,17 +61,16 @@ for (const marker of routeSections) {
   if (!indexHtml.includes(marker)) fail(`index.html missing section ${marker}`);
 }
 
-const bootstrapPaths = ['/karar-asistani', '/ilanlar', '/karsilastir', '/profil'];
-const bootstrap = indexHtml.match(/ROUTE_BOOTSTRAP_START[\s\S]*?ROUTE_BOOTSTRAP_END/);
-if (bootstrap) {
-  for (const p of bootstrapPaths) {
-    if (!bootstrap[0].includes(p.replace('/', '')) && !bootstrap[0].includes(p)) {
-      /* paths encoded in prem/app maps */
-    }
-  }
-  if (!bootstrap[0].includes('karar-asistani')) {
-    fail('route bootstrap missing /karar-asistani alias');
-  }
+const bootstrapFile = path.join(root, 'js/runtime/route-bootstrap-head.js');
+if (!fs.existsSync(bootstrapFile)) {
+  fail('js/runtime/route-bootstrap-head.js missing — run npm run generate:route-bootstrap');
+}
+const bootstrapSource = fs.readFileSync(bootstrapFile, 'utf8');
+if (!bootstrapSource.includes('karar-asistani')) {
+  fail('route bootstrap missing /karar-asistani alias');
+}
+if (!indexHtml.includes('route-bootstrap-head.js')) {
+  fail('index.html must reference route-bootstrap-head.js');
 }
 
 if (failed) process.exit(1);

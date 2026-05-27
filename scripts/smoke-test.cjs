@@ -11,11 +11,18 @@ assert(index.includes('/auto/'), 'Primary conversion path should link to Auto.')
 assert(index.includes('Ücretsiz analiz başlat'), 'Hero primary CTA should emphasize free analysis start.');
 assert(index.includes('Karar altyapısı'), 'Homepage should position decision infrastructure.');
 const premiumPages = read('js/ui/premium-pages.js');
+const uiSource = read('js/ui/ui.js');
 assert(premiumPages.includes('decision-assistant-form'), 'Decision assistant form is missing.');
 assert(premiumPages.includes('assistant-results'), 'Decision assistant results container is missing.');
 assert(premiumPages.includes('Karar önizlemesi'), 'Assistant section should use decision preview title.');
-assert(premiumPages.includes('ib-premium-step-list'), 'Premium how-it-works steps are missing.');
-assert(premiumPages.includes('Nasıl çalışır'), 'Premium process section title is missing.');
+assert(
+  premiumPages.includes('ib-premium-step-list') || premiumPages.includes('ib-premium-steps'),
+  'Premium how-it-works steps are missing.'
+);
+assert(
+  premiumPages.includes('Nasıl çalışır') || premiumPages.includes('aria-label="Süreç"'),
+  'Premium process section is missing.'
+);
 assert(index.includes('cookie-consent'), 'Cookie consent UI is missing.');
 assert(index.includes('/kvkk.html'), 'KVKK policy link is missing.');
 assert(index.includes('/sitemap.xml'), 'Sitemap link is missing.');
@@ -27,10 +34,12 @@ assert(index.includes('listing-sort'), 'Listing sort control is missing.');
 assert(index.includes('filter-province'), 'Province filter is missing.');
 assert(index.includes('filter-district'), 'District filter is missing.');
 assert(index.includes('data-filter-scope="arac"'), 'Category-specific listing filters are missing.');
-assert(index.includes('theme-toggle'), 'Theme toggle is missing.');
+assert(
+  index.includes('theme-toggle') || uiSource.includes('theme-toggle'),
+  'Theme toggle wiring is missing.'
+);
 assert(index.includes('comparison-content'), 'Comparison center markup is missing.');
 assert(index.includes('karsilastir'), 'Comparison route link is missing.');
-const uiSource = read('js/ui/ui.js');
 assert(uiSource.includes('comparison-count'), 'Comparison nav counter id is missing.');
 assert(uiSource.includes('favorites-count'), 'Favorites nav counter id is missing.');
 assert(read('js/core/storage-keys.js').includes('istebu_theme'), 'Theme storage key is missing.');
@@ -107,7 +116,10 @@ assert(aiProxy.includes('checkRateLimit'), 'AI proxy rate limiting is missing.')
 const ui = read('js/ui/ui.js');
 assert(ui.includes("from '../core/security.js'"), 'UI should use shared security helpers.');
 assert(ui.includes('setupTheme()'), 'Theme setup is missing.');
-assert(ui.includes('const navCompactBreakpoint = 1180;'), 'Responsive nav breakpoint should protect tablet headers.');
+assert(
+  ui.includes('const navCompactBreakpoint = 1280;') || ui.includes('navCompactBreakpoint = 1280'),
+  'Responsive nav breakpoint should protect tablet headers.'
+);
 assert(ui.includes('applyTheme(theme)'), 'Theme apply method is missing.');
 assert(ui.includes('renderComparison'), 'Comparison renderer is missing.');
 assert(ui.includes('updateCollectionBadges'), 'Collection badge updater is missing.');

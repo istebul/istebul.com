@@ -48,18 +48,28 @@ const createFallbackSupabaseClient = () => {
     };
 };
 
+/** @type {ReturnType<typeof createClient> | ReturnType<typeof createFallbackSupabaseClient> | null} */
+let supabaseSingleton = null;
+
 export const getSupabaseClient = () => {
-    if (!supabaseUrl || !supabaseKey) {
-        return createFallbackSupabaseClient();
+    if (supabaseSingleton) {
+        return supabaseSingleton;
     }
 
-    return createClient(supabaseUrl, supabaseKey, {
+    if (!supabaseUrl || !supabaseKey) {
+        supabaseSingleton = createFallbackSupabaseClient();
+        return supabaseSingleton;
+    }
+
+    supabaseSingleton = createClient(supabaseUrl, supabaseKey, {
         auth: {
             detectSessionInUrl: true,
             persistSession: true,
             autoRefreshToken: true
         }
     });
+
+    return supabaseSingleton;
 };
 
 export const supabase = getSupabaseClient();
