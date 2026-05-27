@@ -115,7 +115,7 @@ export class UIManager {
         });
 
         // Show/hide toggle based on screen size
-        const navCompactBreakpoint = 1180;
+        const navCompactBreakpoint = 1280;
         const checkScreenSize = () => {
             if (window.innerWidth < navCompactBreakpoint) {
                 navToggle.style.display = 'inline-flex';

@@ -136,18 +136,26 @@ class App {
         try {
             initEnterpriseUx();
 
-            mountHelpCenterWidget({
-                getUserContext: () => ({
-                    email: this.currentUser?.email,
-                    user_id: this.currentUser?.id
-                })
+            const deferNonCritical = (work, timeout = 1200) => {
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(work, { timeout });
+                    return;
+                }
+                setTimeout(work, 220);
+            };
+
+            deferNonCritical(() => {
+                mountHelpCenterWidget({
+                    getUserContext: () => ({
+                        email: this.currentUser?.email,
+                        user_id: this.currentUser?.id
+                    })
+                });
             });
 
-            // Initialize monitoring first
-            monitoring.init();
-
-            // Initialize error boundary
-            errorBoundary.init();
+            // Keep initial route paint responsive; monitor/error handlers can initialize shortly after.
+            deferNonCritical(() => monitoring.init());
+            deferNonCritical(() => errorBoundary.init());
 
             // Initialize UI
             this.ui.init();
