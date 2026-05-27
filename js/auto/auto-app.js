@@ -275,11 +275,13 @@ function renderAutoResultsInterpretationGuide(topResult, formData = {}) {
   `;
 }
 
-function renderAutoUpgradeStrip() {
+function renderAutoUpgradeStrip(className = '') {
   if (isProActive()) return '';
 
+  const extraClass = className ? ` ${className}` : '';
+
   return `
-    <aside class="revenue-upgrade-banner revenue-upgrade-banner--compact">
+    <aside class="revenue-upgrade-banner revenue-upgrade-banner--compact${extraClass}">
       <div class="revenue-upgrade-copy">
         <span class="revenue-upgrade-kicker">isteBul Pro</span>
         <strong>Tüm sonuçları ve premium raporu açın</strong>
@@ -291,6 +293,130 @@ function renderAutoUpgradeStrip() {
       </div>
     </aside>
   `;
+}
+
+function renderResultsLeaderSummary(topResult, { displayCount, totalCount }) {
+  if (!topResult) return '';
+
+  const monthlyImpact = Math.round((Number(topResult.costs?.total || 0) / 12) / 100) * 100;
+  const totalLabel = totalCount > displayCount
+    ? `${displayCount} / ${totalCount} model önerisi`
+    : `${displayCount} model önerisi`;
+
+  return `
+    <section id="auto-results-leader" class="auto-results-leader" tabindex="-1" aria-live="polite">
+      <p class="kicker">Karar analizi tamamlandı</p>
+      <h3 class="auto-results-leader-title">${escapeHtml(totalLabel)} hazır</h3>
+      <div class="auto-results-leader-highlight">
+        <span class="auto-results-leader-badge">#1 · Genel uyum lideri</span>
+        <p class="auto-results-leader-name">${escapeHtml(topResult.name)}</p>
+        <dl class="auto-results-leader-metrics">
+          <div>
+            <dt>Uyum skoru</dt>
+            <dd><strong>${escapeHtml(String(topResult.score))}</strong>/100</dd>
+          </div>
+          <div>
+            <dt>Yaklaşık aylık yük</dt>
+            <dd><strong>${escapeHtml(formatAmount(monthlyImpact))}</strong></dd>
+          </div>
+        </dl>
+        <div class="auto-results-leader-cta">
+          <button type="button" class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(topResult.name || 'Araç önerisi')}">
+            Teklif sürecini başlat
+          </button>
+          <a class="btn secondary" href="#auto-results-cards">Tüm önerilere in</a>
+        </div>
+      </div>
+      <p class="auto-results-trust-line text-muted-sm">
+        Canlı ilan veya bağlayıcı teklif değildir; metodolojik model önerisidir.
+        <a href="#auto-results-deep-dive">Güven ve metodoloji</a>
+      </p>
+    </section>
+  `;
+}
+
+function renderAutoFilterToolbar(displayResults, results, pro) {
+  return `
+    <section class="auto-filter-toolbar" aria-label="Auto sonuç filtreleri">
+      <div>
+        <strong>${displayResults.length} / ${allResults.length || results.length} öneri gösteriliyor</strong>
+        ${!pro && results.length > displayResults.length ? '<span class="revenue-partner-strip"><strong>Pro</strong> ile +' + (results.length - displayResults.length) + ' model daha</span>' : ''}
+        <span>Sonuçları kullanım önceliğinize göre düzenleyin.</span>
+      </div>
+
+      <label>
+        Yakıt
+        <select data-auto-filter="fuel">
+          <option value="all" ${resultFilters.fuel === 'all' ? 'selected' : ''}>Tümü</option>
+          <option value="electric" ${resultFilters.fuel === 'electric' ? 'selected' : ''}>Elektrik</option>
+          <option value="hybrid" ${resultFilters.fuel === 'hybrid' ? 'selected' : ''}>Hibrit</option>
+          <option value="gasoline" ${resultFilters.fuel === 'gasoline' ? 'selected' : ''}>Benzin</option>
+          <option value="diesel" ${resultFilters.fuel === 'diesel' ? 'selected' : ''}>Dizel</option>
+        </select>
+      </label>
+
+      <label>
+        Kasa
+        <select data-auto-filter="body">
+          <option value="all" ${resultFilters.body === 'all' ? 'selected' : ''}>Tümü</option>
+          <option value="suv" ${resultFilters.body === 'suv' ? 'selected' : ''}>SUV</option>
+          <option value="sedan" ${resultFilters.body === 'sedan' ? 'selected' : ''}>Sedan</option>
+          <option value="hatchback" ${resultFilters.body === 'hatchback' ? 'selected' : ''}>Hatchback</option>
+        </select>
+      </label>
+
+      <label>
+        Sırala
+        <select data-auto-filter="sort">
+          <option value="score" ${resultFilters.sort === 'score' ? 'selected' : ''}>Uyum skoruna göre</option>
+          <option value="price_asc" ${resultFilters.sort === 'price_asc' ? 'selected' : ''}>En düşük fiyat</option>
+          <option value="family" ${resultFilters.sort === 'family' ? 'selected' : ''}>Aile kullanımına göre</option>
+          <option value="city" ${resultFilters.sort === 'city' ? 'selected' : ''}>Şehir kullanımına göre</option>
+          <option value="long" ${resultFilters.sort === 'long' ? 'selected' : ''}>Uzun yola göre</option>
+        </select>
+      </label>
+    </section>
+  `;
+}
+
+function renderResultsDeepDive({ results, topResult, formData, rankNote, rankIntelPanel }) {
+  return `
+    <details class="auto-results-deep-dive" id="auto-results-deep-dive">
+      <summary>Güven, metodoloji ve sonuçları nasıl okursunuz</summary>
+      <div class="auto-results-deep-dive-body">
+        <section class="auto-results-trust-banner auto-results-trust-banner--inset" aria-label="Sonuç açıklaması">
+          <div>
+            <p class="kicker">Model önerisi · metodolojik destek</p>
+            <h3>Bu sonuçlar canlı ilan değil; ihtiyaç profilinize göre hazırlanmış referans model önerileridir.</h3>
+            <p><strong>Uyum skoru</strong> satın alma önerisi değil, kriterlerinize göre sıralama içindir. <strong>Veri güven bandı</strong> girdi kalitesini gösterir. AI yalnızca gerekçe metni üretir — skor ve TCO kural tabanlıdır.</p>
+            ${rankNote ? `<p class="auto-rank-explanation">${escapeHtml(rankNote)}</p>` : ''}
+          </div>
+          <button type="button" class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(topResult?.name || 'Araç önerisi')}">
+            Uygun satıcı eşleşmesi iste
+          </button>
+        </section>
+
+        ${renderAutoResultsInterpretationGuide(topResult, formData)}
+
+        ${renderTrustLayerCompact('auto')}
+
+        ${renderResultsMetadataPanel(results, formData, escapeHtml)}
+
+        ${renderAutoMethodologyStrip()}
+
+        ${rankIntelPanel || ''}
+      </div>
+    </details>
+  `;
+}
+
+function scrollToAutoResultsLeader() {
+  const leader = document.getElementById('auto-results-leader');
+  if (leader) {
+    leader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  document.getElementById('analiz')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function getBestFinanceOffer(financeOffers, budget) {
@@ -1496,74 +1622,18 @@ function renderResults(results) {
 
   const rankNote = results[0]?.rankExplanation?.summary;
   const rankIntelPanel = renderLeaderRankPanel(results[0]?.rankIntelligence);
+  const totalCount = allResults.length || results.length;
 
-  root.innerHTML = `${renderAutoUpgradeStrip()}
-    <section class="auto-results-trust-banner" aria-label="Sonuç açıklaması">
-      <div>
-        <p class="kicker">Model önerisi · metodolojik destek</p>
-        <h3>Bu sonuçlar canlı ilan değil; ihtiyaç profilinize göre hazırlanmış referans model önerileridir.</h3>
-        <p><strong>Uyum skoru</strong> satın alma önerisi değil, kriterlerinize göre sıralama içindir. <strong>Veri güven bandı</strong> girdi kalitesini gösterir. AI yalnızca gerekçe metni üretir — skor ve TCO kural tabanlıdır.</p>
-        ${rankNote ? `<p class="auto-rank-explanation">${escapeHtml(rankNote)}</p>` : ''}
-      </div>
-      <button type="button" class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(results[0]?.name || 'Araç önerisi')}">
-        Uygun satıcı eşleşmesi iste
-      </button>
-    </section>
+  root.innerHTML = `
+    ${renderResultsLeaderSummary(results[0], { displayCount: displayResults.length, totalCount })}
 
-    ${renderAutoResultsInterpretationGuide(results[0], formData)}
-
-    ${renderTrustLayerCompact('auto')}
-
-    ${renderResultsMetadataPanel(results, formData, escapeHtml)}
+    ${renderAutoFilterToolbar(displayResults, results, pro)}
 
     ${renderComparisonMatrix(displayResults, formData, escapeHtml)}
 
-    ${rankIntelPanel}
+    ${rankIntelPanel || ''}
 
-    ${renderAutoMethodologyStrip()}
-
-    <div id="auto-moat-outcome-root" class="auto-moat-mount"></div>
-    <div id="auto-moat-feedback-root" class="auto-moat-mount"></div>
-
-    <section class="auto-filter-toolbar" aria-label="Auto sonuç filtreleri">
-      <div>
-        <strong>${displayResults.length} / ${allResults.length || results.length} öneri gösteriliyor</strong>
-        ${!pro && results.length > displayLimit ? '<span class="revenue-partner-strip"><strong>Pro</strong> ile +' + (results.length - displayLimit) + ' model daha</span>' : ''}
-        <span>Sonuçları kullanım önceliğinize göre düzenleyin.</span>
-      </div>
-
-      <label>
-        Yakıt
-        <select data-auto-filter="fuel">
-          <option value="all" ${resultFilters.fuel === 'all' ? 'selected' : ''}>Tümü</option>
-          <option value="electric" ${resultFilters.fuel === 'electric' ? 'selected' : ''}>Elektrik</option>
-          <option value="hybrid" ${resultFilters.fuel === 'hybrid' ? 'selected' : ''}>Hibrit</option>
-          <option value="gasoline" ${resultFilters.fuel === 'gasoline' ? 'selected' : ''}>Benzin</option>
-          <option value="diesel" ${resultFilters.fuel === 'diesel' ? 'selected' : ''}>Dizel</option>
-        </select>
-      </label>
-
-      <label>
-        Kasa
-        <select data-auto-filter="body">
-          <option value="all" ${resultFilters.body === 'all' ? 'selected' : ''}>Tümü</option>
-          <option value="suv" ${resultFilters.body === 'suv' ? 'selected' : ''}>SUV</option>
-          <option value="sedan" ${resultFilters.body === 'sedan' ? 'selected' : ''}>Sedan</option>
-          <option value="hatchback" ${resultFilters.body === 'hatchback' ? 'selected' : ''}>Hatchback</option>
-        </select>
-      </label>
-
-      <label>
-        Sırala
-        <select data-auto-filter="sort">
-          <option value="score" ${resultFilters.sort === 'score' ? 'selected' : ''}>Uyum skoruna göre</option>
-          <option value="price_asc" ${resultFilters.sort === 'price_asc' ? 'selected' : ''}>En düşük fiyat</option>
-          <option value="family" ${resultFilters.sort === 'family' ? 'selected' : ''}>Aile kullanımına göre</option>
-          <option value="city" ${resultFilters.sort === 'city' ? 'selected' : ''}>Şehir kullanımına göre</option>
-          <option value="long" ${resultFilters.sort === 'long' ? 'selected' : ''}>Uzun yola göre</option>
-        </select>
-      </label>
-    </section>
+    <div id="auto-results-cards" class="auto-results-cards">
   ` + displayResults.map((vehicle, index) => {
     const monthlyImpact = Math.round((Number(vehicle.costs.total || 0) / 12) / 100) * 100;
     const rankLabel = index === 0
@@ -1572,8 +1642,8 @@ function renderResults(results) {
         ? 'Maliyet odaklı alternatif'
         : 'Alternatif senaryo';
 
-    return `
-    <article class="auto-market-card premium-result-card conversion-result-card">
+    const cardHtml = `
+    <article class="auto-market-card premium-result-card conversion-result-card"${index === 0 ? ' id="auto-results-leader-card"' : ''}>
       <div class="auto-market-media">
         <div class="auto-market-rank">${rankLabel}</div>
         <div class="auto-market-image">
@@ -1614,7 +1684,7 @@ function renderResults(results) {
           </div>
         </div>
 
-        ${renderDecisionInsightPanels(vehicle, formData, { alternatives: displayResults, rank: index }, escapeHtml)}
+        ${renderDecisionInsightPanels(vehicle, formData, { alternatives: displayResults, rank: index }, escapeHtml, { compact: true })}
 
         ${vehicle.recommendationIntelligence ? renderRecommendationIntelligencePanel(vehicle.recommendationIntelligence, escapeHtml) : ''}
 
@@ -1675,33 +1745,54 @@ function renderResults(results) {
 
       ${renderOfferSkeleton(vehicle.name)}
 
-      <div class="auto-market-actions">
-        <button class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
-          Teklif sürecini başlat
-        </button>
-
-        <button class="btn secondary auto-compare-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}" data-track-compare="1">
-          Karşılaştır
-        </button>
-
-        <button class="btn secondary auto-shortlist-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}">
-          Shortlist'e ekle
-        </button>
-
-        <button class="btn secondary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
-          Uzmanla görüş
-        </button>
-
-        <button class="btn secondary finance-compare-trigger" data-vehicle="${escapeHtml(vehicle.name)}">
-          Finansman etkisi
-        </button>
-
+      <div class="auto-market-actions auto-market-actions--tiered">
+        <div class="auto-market-actions-core">
+          <button class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(vehicle.name)}">
+            Teklif sürecini başlat
+          </button>
+          <button class="btn secondary auto-compare-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}" data-track-compare="1">
+            Karşılaştır
+          </button>
+        </div>
+        <details class="auto-market-more-actions">
+          <summary>Diğer işlemler</summary>
+          <div class="auto-market-more-actions-grid">
+            <button class="btn secondary auto-shortlist-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}">
+              Shortlist'e ekle
+            </button>
+            <button class="btn secondary auto-whatsapp-btn" data-vehicle="${escapeHtml(vehicle.name)}">
+              Uzmanla görüş
+            </button>
+            <button class="btn secondary finance-compare-trigger" data-vehicle="${escapeHtml(vehicle.name)}">
+              Finansman etkisi
+            </button>
+          </div>
+        </details>
         <p class="cta-microcopy">Ücretsiz ön değerlendirme • zorunlu satın alma yok</p>
       </div>
 
       ${renderProviderCtaStrip({ vehicleName: vehicle.name, formData }, escapeHtml)}
     </article>
-  `}).join('') + `
+  `;
+
+    if (index === 0 && !pro) {
+      return cardHtml + renderAutoUpgradeStrip('revenue-upgrade-banner--after-leader');
+    }
+    return cardHtml;
+  }).join('') + `
+    </div>
+
+    ${renderResultsDeepDive({
+      results,
+      topResult: results[0],
+      formData,
+      rankNote,
+      rankIntelPanel: ''
+    })}
+
+    <div id="auto-moat-outcome-root" class="auto-moat-mount"></div>
+    <div id="auto-moat-feedback-root" class="auto-moat-mount"></div>
+
     ${renderAiExplanationExperience(buildExplanationBundle(results, formData), {
       pro,
       structuredCommentaryHtml: renderStructuredCommentaryPanel(
@@ -2615,9 +2706,9 @@ form.addEventListener('submit', async (event) => {
   autoAnalysisTimer = setTimeout(() => {
     try {
       stopLoadingAnimation();
-      document.getElementById('analiz').scrollIntoView({ behavior: 'smooth' });
       trackAutoEvent('auto_results_rendered', { count: results.length });
       renderResults(results);
+      requestAnimationFrame(() => scrollToAutoResultsLeader());
 
       try {
         const userEmail = getAppInstance()?.currentUser?.email;

@@ -270,4 +270,20 @@
   body.ib-auto #auto-results .auto-results-guide-actions .btn {
     width: 100%;
   }
+
+  body.ib-auto #auto-results .auto-market-actions--tiered .auto-market-actions-core,
+  body.ib-auto #auto-results .auto-market-more-actions-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  body.ib-auto #auto-results .auto-market-actions--tiered .btn {
+    width: 100%;
+  }
+
+  body.ib-auto #auto-results .auto-results-deep-dive > summary {
+    font-size: 0.88rem;
+    padding: 0.85rem 0.95rem;
+  }
 }

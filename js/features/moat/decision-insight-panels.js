@@ -97,9 +97,28 @@ export function buildDecisionInsightPanels(vehicle = {}, formData = {}, context 
  * @param {object} context
  * @param {(s: string) => string} escapeHtml
  */
-export function renderDecisionInsightPanels(vehicle, formData, context, escapeHtml) {
+function renderInsightCard(item, esc) {
+  return `
+        <article class="ib-decision-insight-card" data-insight="${item.id}">
+          <header>
+            <i data-lucide="${item.icon}" aria-hidden="true"></i>
+            <h4>${esc(item.title)}</h4>
+          </header>
+          <p>${esc(item.body)}</p>
+        </article>`;
+}
+
+/**
+ * @param {object} vehicle
+ * @param {object} formData
+ * @param {object} context
+ * @param {(s: string) => string} escapeHtml
+ * @param {{ compact?: boolean }} [options]
+ */
+export function renderDecisionInsightPanels(vehicle, formData, context, escapeHtml, options = {}) {
   const esc = escapeHtml || ((s) => String(s ?? ''));
   const panels = buildDecisionInsightPanels(vehicle, formData, context);
+  const compact = Boolean(options.compact ?? context?.compact);
 
   const items = [
     { id: 'why', title: 'Neden bu öneri?', body: panels.whyThisRecommendation, icon: 'sparkles' },
@@ -110,20 +129,26 @@ export function renderDecisionInsightPanels(vehicle, formData, context, escapeHt
     { id: 'fit', title: 'Kimler için uygun değil?', body: panels.notSuitableFor, icon: 'user-x' }
   ];
 
-  return `
+  if (!compact) {
+    return `
     <section class="ib-decision-insight-grid" aria-label="Karar zekası özeti">
-      ${items
-        .map(
-          (item) => `
-        <article class="ib-decision-insight-card" data-insight="${item.id}">
-          <header>
-            <i data-lucide="${item.icon}" aria-hidden="true"></i>
-            <h4>${esc(item.title)}</h4>
-          </header>
-          <p>${esc(item.body)}</p>
-        </article>`
-        )
-        .join('')}
+      ${items.map((item) => renderInsightCard(item, esc)).join('')}
+      <p class="ib-decision-insight-foot text-muted-sm">Kural tabanlı özet; yapay zeka sentezi skoru ve TCO değiştirmez.</p>
+    </section>`;
+  }
+
+  const primary = items.filter((item) => item.id === 'why' || item.id === 'budget');
+  const extra = items.filter((item) => item.id !== 'why' && item.id !== 'budget' && item.id !== 'risks');
+
+  return `
+    <section class="ib-decision-insight-grid ib-decision-insight-grid--compact" aria-label="Karar zekası özeti">
+      ${primary.map((item) => renderInsightCard(item, esc)).join('')}
+      <details class="ib-decision-insight-more">
+        <summary>Daha fazla karar detayı (${extra.length})</summary>
+        <div class="ib-decision-insight-more-grid">
+          ${extra.map((item) => renderInsightCard(item, esc)).join('')}
+        </div>
+      </details>
       <p class="ib-decision-insight-foot text-muted-sm">Kural tabanlı özet; yapay zeka sentezi skoru ve TCO değiştirmez.</p>
     </section>`;
 }
