@@ -47,6 +47,7 @@ import {
   renderPartnerPipelineBoardHtml
 } from './features/sales/partner-crm-pipeline.js';
 import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
+import { initAdminShell } from './admin/admin-shell.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
@@ -139,6 +140,10 @@ async function showApp() {
   const email = currentUser?.email || '';
   document.getElementById('user-email').textContent = email;
   document.getElementById('user-avatar').textContent = email[0]?.toUpperCase() || 'A';
+  const topEmail = document.getElementById('admin-topbar-email');
+  const topAvatar = document.getElementById('admin-topbar-avatar');
+  if (topEmail) topEmail.textContent = email;
+  if (topAvatar) topAvatar.textContent = email[0]?.toUpperCase() || 'A';
   loadDashboard();
   loadSettings();
   loadAnnouncements();
@@ -1563,20 +1568,28 @@ async function adminAction(payload) {
 
 
 async function loadDashboard() {
+  const setStat = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
   try {
-    const [u, l, a, f, p, campaignRow] = await Promise.all([
+    const [u, l, a, f, p, campaignRow, leadsRes] = await Promise.all([
       sb.from('profiles').select('*', { count: 'exact', head: true }),
       sb.from('listings').select('*', { count: 'exact', head: true }),
       sb.from('announcements').select('*', { count: 'exact', head: true }).eq('is_active', true),
       sb.from('faqs').select('*', { count: 'exact', head: true }),
       sb.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', true),
-      sb.from('site_settings').select('value').eq('key', 'public_campaigns').maybeSingle()
+      sb.from('site_settings').select('value').eq('key', 'public_campaigns').maybeSingle(),
+      sb.from('auto_leads').select('status, created_at').limit(800)
     ]);
-    document.getElementById('stat-users').textContent = u.count ?? '—';
-    document.getElementById('stat-listings').textContent = l.count ?? '—';
-    document.getElementById('stat-ann').textContent = a.count ?? '—';
-    document.getElementById('stat-faqs').textContent = f.count ?? '—';
-    document.getElementById('stat-posts').textContent = p.count ?? '—';
+
+    setStat('stat-users', u.count ?? '—');
+    setStat('stat-listings', l.count ?? '—');
+    setStat('stat-ann', a.count ?? '—');
+    setStat('stat-faqs', f.count ?? '—');
+    setStat('stat-posts', p.count ?? '—');
+
     const statCampaigns = document.getElementById('stat-campaigns');
     if (statCampaigns) {
       let activeCampaigns = DEFAULT_CAMPAIGNS.length;
@@ -1592,7 +1605,26 @@ async function loadDashboard() {
       }
       statCampaigns.textContent = String(activeCampaigns);
     }
-  } catch(e) {}
+
+    const leads = leadsRes.data || [];
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayLeads = leads.filter((row) => row.created_at && new Date(row.created_at) >= todayStart);
+    const newLeads = leads.filter((row) => !row.status || row.status === 'new');
+    const wonLeads = leads.filter((row) => ['won', 'closed'].includes(row.status));
+    const completedForms = leads.filter((row) => row.status && row.status !== 'new');
+
+    setStat('stat-analyses-today', String(todayLeads.length || 0));
+    setStat('stat-forms-done', String(completedForms.length || 0));
+    setStat('stat-new-leads', String(newLeads.length || 0));
+    setStat('dash-pill-new', String(newLeads.length || 0));
+    const convPct =
+      leads.length > 0 ? Math.round((wonLeads.length / leads.length) * 1000) / 10 : 0;
+    setStat('stat-conversion', leads.length ? `%${convPct}` : '—');
+    setStat('stat-system-alerts', '0');
+  } catch {
+    /* dashboard stats are best-effort */
+  }
 }
 
 const KEYS = ['phone','email','address','instagram','twitter','facebook','linkedin','youtube','tiktok',
@@ -4081,6 +4113,7 @@ function bindAdminPanelEvents() {
   });
 
   initAdminMobileNav();
+  initAdminShell();
 
   document.querySelectorAll('[data-action="save-settings"]').forEach((el) => {
     el.addEventListener('click', saveSettings);
