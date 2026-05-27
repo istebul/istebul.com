@@ -21,6 +21,7 @@
 @import './homepage-visual-premium-redesign.css';
 @import './ib-premium-design-system.css';
 @import './rtl.css';
+@import './homepage-layout-fixes.css';
 
 /* Reset and Base Styles */
 * {

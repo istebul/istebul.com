@@ -293,8 +293,8 @@ body.ib-enterprise #home .hero-eyebrow {
 body.ib-enterprise #home .hero-content h1 {
   font-size: clamp(2.15rem, 3.8vw, 3.55rem);
   letter-spacing: -0.045em;
-  line-height: 1.05;
-  max-width: 20ch;
+  line-height: 1.08;
+  max-width: min(100%, 26ch);
   color: #071528;
   font-weight: 800;
 }

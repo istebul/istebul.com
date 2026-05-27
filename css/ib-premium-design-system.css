@@ -70,12 +70,12 @@ body.ib-premium-route-active .ib-premium-eyebrow {
   color: #0f766e;
 }
 
-body.ib-enterprise .section-header {
+body.ib-enterprise .section-header:not(.ib-section-intro) {
   margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
   text-align: center;
 }
 
-body.ib-enterprise .section-header p {
+body.ib-enterprise .section-header:not(.ib-section-intro) p {
   margin-left: auto;
   margin-right: auto;
 }
