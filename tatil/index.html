@@ -31,9 +31,11 @@
     </nav>
   </header>
 
-  <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
-    <a href="/">Ana Sayfa</a> › <a href="/auto/">Ürünler</a> › <span>Tatil Karar Asistanı</span>
-  </nav>
+  <div class="vacation-container vacation-container--breadcrumb">
+    <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana Sayfa</a> › <a href="/auto/">Ürünler</a> › <span>Tatil Karar Asistanı</span>
+    </nav>
+  </div>
 
   <section class="vacation-hero" aria-labelledby="vacation-hero-title">
     <div class="vacation-hero-media" aria-hidden="true">
@@ -48,7 +50,7 @@
       </picture>
     </div>
     <div class="vacation-hero-overlay" aria-hidden="true"></div>
-    <div class="vacation-hero-inner">
+    <div class="vacation-container vacation-hero-inner">
       <span class="vacation-hero-badge">🏖️ Tatil Karar Asistanı</span>
       <h1 id="vacation-hero-title">En doğru tatil kararı sizinle başlar.</h1>
       <p class="vacation-hero-lead">Bütçenize, beklentilerinize ve seyahat tercihlerinize göre en uygun tatil seçeneklerini analiz edin.</p>
@@ -60,7 +62,7 @@
   </section>
 
   <main class="vacation-main">
-    <div class="vacation-layout" id="vacation-flow">
+    <div class="vacation-container vacation-layout" id="vacation-flow">
       <div class="vacation-flow-main">
         <div class="vacation-progress" id="vacation-step-progress" aria-hidden="true"></div>
         <div id="vacation-wizard"></div>
