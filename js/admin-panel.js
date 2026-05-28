@@ -1635,6 +1635,7 @@ async function loadDashboard() {
 
 const KEYS = ['phone','email','address','instagram','twitter','facebook','linkedin','youtube','tiktok',
               'site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc','title','description','auto_whatsapp_phone'];
+const BOOLEAN_SETTING_KEYS = ['maintenance','home_category_auto_enabled','home_category_konut_enabled','home_category_tatil_enabled','home_category_finans_enabled'];
 
 async function loadSettings() {
   const { data } = await sb.from('site_settings').select('*');
@@ -1645,12 +1646,21 @@ async function loadSettings() {
     const el = document.getElementById('s-' + f);
     if (el && map[f] !== undefined) el.value = map[f];
   });
-  if (map['maintenance'] === 'true') document.getElementById('s-maintenance').checked = true;
+  BOOLEAN_SETTING_KEYS.forEach((key) => {
+    const el = document.getElementById('s-' + key);
+    if (!el) return;
+    const value = map[key];
+    el.checked = value == null ? true : String(value).toLowerCase() === 'true';
+  });
 }
 
 async function saveSettings() {
   const rows = KEYS.map(f => ({ key: f, value: document.getElementById('s-' + f)?.value || '' }));
-  rows.push({ key: 'maintenance', value: document.getElementById('s-maintenance').checked ? 'true' : 'false' });
+  BOOLEAN_SETTING_KEYS.forEach((key) => {
+    const el = document.getElementById('s-' + key);
+    if (!el) return;
+    rows.push({ key, value: el.checked ? 'true' : 'false' });
+  });
   await adminAction({ action: 'upsert_settings', table: 'site_settings', id: 'settings', values: rows });
   toast('Kaydedildi!');
 }

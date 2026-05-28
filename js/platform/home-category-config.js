@@ -5,27 +5,45 @@
 export const HOME_DECISION_CATEGORIES = [
   {
     id: 'otomobil',
-    name: 'Otomobil',
-    description: 'TCO, finansman, risk ve AI gerekçe — tam araç karar analizi.',
+    name: 'Araç Karar Asistanı',
+    description: 'Kredi, yakıt, sigorta ve bakım dahil toplam sahip olma maliyetini analiz edin.',
     status: 'active',
     href: '/auto/',
     icon: 'car',
     sampleScore: 89,
-    ctaLabel: 'Analiz Et',
-    insight: 'Toplam maliyet + uygunluk + risk analizi',
-    theme: 'auto'
+    ctaLabel: 'Aracını Analiz Et',
+    insight: 'Kredi & finansman + yakıt + sigorta + bakım + ikinci el değeri',
+    theme: 'auto',
+    settingKey: 'home_category_auto_enabled',
+    highlights: [
+      'Kredi & finansman',
+      'Yakıt tüketimi',
+      'Sigorta & vergiler',
+      'Bakım & onarım',
+      'İkinci el değeri',
+      'Toplam sahip olma maliyeti'
+    ]
   },
   {
     id: 'tatil',
-    name: 'Tatil',
-    description: 'Travel Decision Intelligence: bütçe, tarih ve aile yapısına göre karar analizi.',
+    name: 'Tatil Karar Asistanı',
+    description: 'Bütçe, sezon yoğunluğu ve tatil uyum skorunu birlikte değerlendirin.',
     status: 'active',
     href: '/tatil/',
     icon: 'palmtree',
-    sampleScore: 86,
-    ctaLabel: 'Planlamaya başla',
-    insight: 'Toplam maliyet + uygunluk + risk analizi',
-    theme: 'tatil'
+    sampleScore: 81,
+    ctaLabel: 'Tatilini Planla',
+    insight: 'Bütçe + sezon + deneyim skoru + toplam maliyet',
+    theme: 'tatil',
+    settingKey: 'home_category_tatil_enabled',
+    highlights: [
+      'Bütçe planlama',
+      'Sezon yoğunluğu',
+      'Aile & çocuk uyumu',
+      'Uçuş + otel toplam maliyeti',
+      'Tatil tipi analizi',
+      'Deneyim skoru'
+    ]
   },
   {
     id: 'konut',
@@ -34,10 +52,19 @@ export const HOME_DECISION_CATEGORIES = [
     status: 'active',
     href: '/konut/',
     icon: 'home',
-    sampleScore: 89,
-    ctaLabel: 'Konut kararımı analiz et',
-    insight: 'Toplam sahip olma maliyeti + risk + yaşam kalitesi',
-    theme: 'konut'
+    sampleScore: 92,
+    ctaLabel: 'Konut Analizi Başlat',
+    insight: 'Mortgage + lokasyon + risk + yatırım + yaşam maliyeti',
+    theme: 'konut',
+    settingKey: 'home_category_konut_enabled',
+    highlights: [
+      'Mortgage hesaplama',
+      'Aidat & ek giderler',
+      'Lokasyon riski',
+      'Yatırım potansiyeli',
+      'Kira getirisi',
+      'Toplam yaşam maliyeti'
+    ]
   },
   {
     id: 'finans',
@@ -47,9 +74,18 @@ export const HOME_DECISION_CATEGORIES = [
     href: '/finans/',
     icon: 'landmark',
     sampleScore: 88,
-    ctaLabel: 'Finansmanımı analiz et',
-    insight: 'Toplam maliyet + ödeme konforu + nakit akışı',
-    theme: 'finans'
+    ctaLabel: 'Finansını Analiz Et',
+    insight: 'Aylık ödeme + nakit akışı + risk + borç/gelir oranı',
+    theme: 'finans',
+    settingKey: 'home_category_finans_enabled',
+    highlights: [
+      'Kredi & faiz oranları',
+      'Aylık ödeme yükü',
+      'Nakit akışı etkisi',
+      'Risk skoru',
+      'Borç/gelir oranı',
+      'Finansal sağlık analizi'
+    ]
   },
   {
     id: 'sigorta',

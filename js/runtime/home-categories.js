@@ -3,6 +3,8 @@ import {
   isHomeCategoryActive
 } from '../platform/home-category-config.js';
 
+const FEATURED_CATEGORY_IDS = new Set(['otomobil', 'konut', 'tatil', 'finans']);
+
 function escapeHtml(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;')
@@ -12,6 +14,7 @@ function escapeHtml(str) {
 }
 
 function renderActiveCard(category) {
+  const highlights = Array.isArray(category.highlights) ? category.highlights : [];
   return `
     <a
       href="${escapeHtml(category.href)}"
@@ -22,7 +25,9 @@ function renderActiveCard(category) {
       <span class="ib-category-showcase-badge">AI destekli</span>
       <h3><i data-lucide="${escapeHtml(category.icon)}" aria-hidden="true"></i> ${escapeHtml(category.name)}</h3>
       <p>${escapeHtml(category.description)}</p>
-      <span class="ib-category-showcase-insight">${escapeHtml(category.insight || '')}</span>
+      <ul class="ib-category-showcase-points">
+        ${highlights.map((point) => `<li>${escapeHtml(point)}</li>`).join('')}
+      </ul>
       <span class="ib-category-showcase-cta">${escapeHtml(category.ctaLabel || 'Analiz Et')} →</span>
       ${
         category.sampleScore != null
@@ -33,29 +38,48 @@ function renderActiveCard(category) {
   `;
 }
 
-function renderComingSoonCard(category) {
-  return `
-    <div
-      class="ib-category-showcase is-soon ib-category-showcase--${escapeHtml(category.theme)}"
-      role="group"
-      aria-disabled="true"
-      data-category-id="${escapeHtml(category.id)}"
-    >
-      <span class="ib-category-showcase-badge">Yakında</span>
-      <h3><i data-lucide="${escapeHtml(category.icon)}" aria-hidden="true"></i> ${escapeHtml(category.name)}</h3>
-      <p>${escapeHtml(category.description)}</p>
-      <span class="ib-category-showcase-cta is-disabled" aria-hidden="true">Yakında</span>
-    </div>
-  `;
+async function fetchVisibilitySettings() {
+  try {
+    const supabaseUrl = window.__env?.SUPABASE_URL;
+    const supabaseAnonKey = window.__env?.SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseAnonKey) return {};
+    const keys = HOME_DECISION_CATEGORIES
+      .filter((category) => FEATURED_CATEGORY_IDS.has(category.id) && category.settingKey)
+      .map((category) => category.settingKey);
+    if (!keys.length) return {};
+    const query = encodeURIComponent(`(${keys.join(',')})`);
+    const endpoint = `${supabaseUrl}/rest/v1/site_settings?select=key,value&key=in.${query}`;
+    const response = await fetch(endpoint, {
+      headers: {
+        apikey: supabaseAnonKey,
+        authorization: `Bearer ${supabaseAnonKey}`
+      }
+    });
+    if (!response.ok) return {};
+    const rows = await response.json();
+    return Array.isArray(rows)
+      ? rows.reduce((acc, row) => {
+          if (row?.key) acc[row.key] = String(row.value).toLowerCase() !== 'false';
+          return acc;
+        }, {})
+      : {};
+  } catch {
+    return {};
+  }
 }
 
-export function mountHomeCategoryGrid() {
+export async function mountHomeCategoryGrid() {
   const grid = document.getElementById('home-category-grid');
   if (!grid) return;
+  const visibilitySettings = await fetchVisibilitySettings();
+  const categories = HOME_DECISION_CATEGORIES.filter((category) => {
+    if (!FEATURED_CATEGORY_IDS.has(category.id)) return false;
+    if (!isHomeCategoryActive(category)) return false;
+    if (!category.settingKey) return true;
+    return visibilitySettings[category.settingKey] ?? true;
+  });
 
-  grid.innerHTML = HOME_DECISION_CATEGORIES.map((category) =>
-    isHomeCategoryActive(category) ? renderActiveCard(category) : renderComingSoonCard(category)
-  ).join('');
+  grid.innerHTML = categories.map((category) => renderActiveCard(category)).join('');
 
   document.dispatchEvent(new CustomEvent('ib:refresh-icons'));
 }
