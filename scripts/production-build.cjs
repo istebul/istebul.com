@@ -370,11 +370,15 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
   html = html.replace(scriptPattern, `/assets/${runtimeFolder}/${appFile}`);
   const tatilCssHashed = assetRefs.get('css/tatil.css');
   const themesCssHashed = assetRefs.get('css/vertical-themes.css');
+  const finansHeroCssHashed = assetRefs.get('css/finans-hero.css');
   if (tatilCssHashed) {
     html = html.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
   }
   if (themesCssHashed) {
     html = html.replace(/\/css\/vertical-themes(?:\.[a-f0-9]+)?\.css/g, `/${themesCssHashed}`);
+  }
+  if (finansHeroCssHashed) {
+    html = html.replace(/\/css\/finans-hero(?:\.[a-f0-9]+)?\.css/g, `/${finansHeroCssHashed}`);
   }
   fs.writeFileSync(htmlPath, minifyHtml(html));
 }

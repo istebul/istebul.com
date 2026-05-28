@@ -13,6 +13,7 @@
   <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.svg">
   <link rel="stylesheet" href="/css/tatil.css">
   <link rel="stylesheet" href="/css/vertical-themes.css">
+  <link rel="stylesheet" href="/css/finans-hero.css">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/finans/finans-app.js"></script>
 </head>
@@ -37,25 +38,150 @@
     </nav>
   </div>
 
-  <section class="vacation-hero" aria-labelledby="finans-hero-title">
-    <div class="vacation-hero-overlay" aria-hidden="true"></div>
-    <div class="vacation-container vacation-hero-inner">
-      <div class="vacation-hero-copy">
-        <span class="vacation-hero-badge">Finance Decision Intelligence</span>
-        <h1 id="finans-hero-title">Finansman kararını nakit akışına göre verin</h1>
-        <p class="vacation-hero-lead">Yalnızca en düşük faiz değil; aylık yük, toplam geri ödeme ve risk toleransınız birlikte modellenir.</p>
-        <div class="vacation-hero-actions">
-          <button type="button" class="btn btn-primary" id="vacation-hero-cta">Finansman analizine başla</button>
-          <button type="button" class="btn btn-ghost" id="vacation-hero-cta-secondary">Akışa git</button>
+  <section class="vacation-hero finans-hero" aria-labelledby="finans-hero-title">
+    <div class="finans-hero-bg" aria-hidden="true"></div>
+    <div class="vacation-hero-overlay finans-hero-overlay" aria-hidden="true"></div>
+    <div class="vacation-container">
+      <div class="vacation-hero-inner finans-hero-grid">
+        <div class="vacation-hero-copy finans-hero-copy">
+          <span class="vacation-hero-badge finans-hero-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" fill="currentColor"/>
+            </svg>
+            AI Destekli Finansal Karar Platformu
+          </span>
+          <h1 id="finans-hero-title">Finansman kararını nakit akışına göre verin</h1>
+          <p class="vacation-hero-lead finans-hero-lead">Yalnızca en düşük faiz değil; aylık yük, toplam geri ödeme ve risk toleransınız birlikte modellenir.</p>
+          <div class="vacation-hero-actions finans-hero-actions">
+            <button type="button" class="btn btn-primary" id="vacation-hero-cta">
+              Finansman analizine başla
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button type="button" class="btn btn-ghost" id="vacation-hero-cta-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3" y="12" width="4" height="8" rx="1" fill="currentColor" opacity="0.7"/>
+                <rect x="10" y="8" width="4" height="12" rx="1" fill="currentColor" opacity="0.85"/>
+                <rect x="17" y="4" width="4" height="16" rx="1" fill="currentColor"/>
+              </svg>
+              Akışa git
+            </button>
+          </div>
+          <p class="finans-hero-disclaimer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Bilgilendirme amaçlıdır · finansal tavsiye değildir
+          </p>
         </div>
-        <p class="vacation-ai-eta" style="margin-top:12px;opacity:0.85">Bilgilendirme amaçlıdır · finansal tavsiye değildir</p>
+        <div class="finans-hero-visual">
+          <aside class="vacation-hero-dashboard finans-hero-dashboard" aria-label="Örnek karar paneli">
+            <article class="finans-dash-card finans-dash-card--score">
+              <div>
+                <span>Karar skoru</span>
+                <strong>82/100</strong>
+                <small>Kapasite uyumu</small>
+              </div>
+              <div class="finans-score-gauge" aria-hidden="true">
+                <svg viewBox="0 0 88 52" fill="none">
+                  <path d="M8 44 A36 36 0 0 1 80 44" stroke="rgba(255,255,255,0.12)" stroke-width="6" stroke-linecap="round"/>
+                  <path d="M8 44 A36 36 0 0 1 80 44" stroke="url(#finansGaugeGrad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="82 113"/>
+                  <polyline points="44,44 58,22 72,18" stroke="#00f2fe" stroke-width="1.5" fill="none" opacity="0.8"/>
+                  <defs>
+                    <linearGradient id="finansGaugeGrad" x1="8" y1="44" x2="80" y2="44" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#22c55e"/>
+                      <stop offset="1" stop-color="#0066ff"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </article>
+            <article class="finans-dash-card">
+              <span>Aylık ödeme</span>
+              <strong>₺28.400</strong>
+              <small>Tahmini</small>
+            </article>
+            <article class="finans-dash-card">
+              <span>Toplam geri ödeme</span>
+              <strong>₺1.02M</strong>
+              <small>36 ay senaryo</small>
+            </article>
+            <article class="finans-dash-card">
+              <span>Risk</span>
+              <strong>Orta</strong>
+              <small>Profil bazlı</small>
+            </article>
+          </aside>
+          <div class="finans-hero-holo" aria-hidden="true">
+            <div class="finans-holo-base"></div>
+            <div class="finans-holo-beam"></div>
+            <div class="finans-holo-screen">
+              <div class="finans-holo-chart-line"></div>
+              <div class="finans-holo-chart-row">
+                <div class="finans-holo-bars">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="finans-holo-pie"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <aside class="vacation-hero-dashboard" aria-label="Örnek skor paneli">
-        <article class="vh-card vh-card-score"><span>Karar skoru</span><strong>82/100</strong><small>Kapasite uyumu</small></article>
-        <article class="vh-card"><span>Aylık ödeme</span><strong>₺28.400</strong><small>Tahmini</small></article>
-        <article class="vh-card"><span>Toplam geri ödeme</span><strong>₺1.02M</strong><small>36 ay senaryo</small></article>
-        <article class="vh-card"><span>Risk</span><strong>Orta</strong><small>Profil bazlı</small></article>
-      </aside>
+      <div class="finans-value-band" aria-label="Platform özellikleri">
+        <div class="finans-value-grid">
+          <article class="finans-value-card">
+            <div class="finans-value-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l7 4v6c0 5-3.5 9.5-7 10-3.5-.5-7-5-7-10V6l7-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Nakit akışına uygun öneriler</h3>
+              <p>Aylık yükünüzü ve ödeme kapasitenizi analiz eder.</p>
+            </div>
+          </article>
+          <article class="finans-value-card">
+            <div class="finans-value-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M8.5 12h7M12 8.5v7" stroke="currentColor" stroke-width="0" fill="none"/>
+                <text x="12" y="16" text-anchor="middle" fill="currentColor" font-size="10" font-weight="700">%</text>
+              </svg>
+            </div>
+            <div>
+              <h3>Toplam maliyeti görün</h3>
+              <p>Faiz, masraf ve tüm maliyetleri tek yerde karşılaştırın.</p>
+            </div>
+          </article>
+          <article class="finans-value-card">
+            <div class="finans-value-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M12 12V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M12 12l5 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Senaryo karşılaştırması</h3>
+              <p>Farklı vade ve oranlarla en iyi seçeneği bulun.</p>
+            </div>
+          </article>
+          <article class="finans-value-card">
+            <div class="finans-value-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l7 4v6c0 5-3.5 9.5-7 10-3.5-.5-7-5-7-10V6l7-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Riskinizi yönetin</h3>
+              <p>Risk toleransınıza göre en doğru finansman planını görün.</p>
+            </div>
+          </article>
+        </div>
+      </div>
     </div>
   </section>
 
