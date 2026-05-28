@@ -840,7 +840,19 @@ function bindHeroCtas() {
   });
 }
 
+function bindHousingNav() {
+  const toggle = document.querySelector('.housing-nav-toggle');
+  const nav = document.getElementById('housing-nav');
+  if (!toggle || !nav) return;
+
+  toggle.addEventListener('click', () => {
+    const open = nav.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+}
+
 async function init() {
+  bindHousingNav();
   bindHeroCtas();
   renderStep();
   trackEvent('home_analysis_start', {});

@@ -12,7 +12,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.istebul.com/konut/">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="/css/real-estate.css">
+  <link rel="stylesheet" href="/css/real-estate.css?v=2">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/real-estate/real-estate-app.js"></script>
 </head>
@@ -20,12 +20,20 @@
   <header class="housing-header">
     <div class="housing-container housing-nav">
       <a class="housing-brand" href="/">isteBul</a>
-      <nav aria-label="Ana navigasyon">
+      <button
+        type="button"
+        class="housing-nav-toggle"
+        aria-controls="housing-nav"
+        aria-expanded="false"
+      >
+        Menü
+      </button>
+      <nav id="housing-nav" aria-label="Ana navigasyon">
         <a href="/">Ana sayfa</a>
         <a href="/auto/">Auto</a>
         <a href="/tatil/">Tatil</a>
         <a href="/finans/">Finansman</a>
-        <a href="/konut/" aria-current="page">Konut</a>
+        <a href="/konut/" class="is-active" aria-current="page">Konut</a>
       </nav>
     </div>
   </header>
