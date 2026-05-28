@@ -513,7 +513,7 @@ Deno.serve(async (req) => {
         ],
         vacation_partners: ["name", "partner_type", "affiliate_link", "notes", "is_active"],
         vacation_scoring_configs: ["risk_factor", "cost_factor", "family_weight", "prompt_template"],
-        housing_leads: ["status", "notes"],
+        housing_leads: ["status", "notes", "follow_up_at"],
         housing_locations: ["city", "district", "avg_price_level", "transport_score", "life_quality_score", "investment_score", "risk_score", "is_active", "notes"],
         housing_partners: ["partner_name", "partner_type", "city", "district", "contact_link", "commission_note", "is_active", "notes"],
         housing_settings: ["value"],

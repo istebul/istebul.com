@@ -6,6 +6,11 @@ const ALLOWED_EVENTS = new Set([
   "housing_step_completed",
   "housing_results_view",
   "housing_scenario_selected",
+  "home_analysis_start",
+  "home_analysis_step_completed",
+  "home_results_view",
+  "home_lead_submit",
+  "home_report_save",
 ]);
 
 function corsHeaders(origin: string | null) {
@@ -86,8 +91,11 @@ Deno.serve(async (req) => {
       priorities: clean(form.priorities, 1000) || null,
       ai_summary: clean(form.ai_summary, 4000) || null,
       decision_score: cleanNumber(form.decision_score, 0, 100),
+      risk_level: clean(form.risk_level, 40) || null,
+      monthly_capacity: cleanNumber(form.monthly_capacity),
+      financing_needed: Boolean(form.financing_needed),
       status: "new",
-      notes: null
+      notes: clean(form.notes, 4000) || null
     };
     const { data, error } = await adminClient.from("housing_leads").insert(row).select("id").single();
     if (error) return json({ error: "Lead recording failed" }, 500, origin);

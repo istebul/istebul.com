@@ -36,21 +36,61 @@ export function initHousingAdmin(ctx) {
   };
 }
 
+function renderHousingLeadStats(rows = [], eventRows = []) {
+  const statsEl = document.getElementById('housing-leads-stats');
+  if (!statsEl) return;
+  const totalLeads = rows.length;
+  const withContact = rows.filter((r) => r.full_name || r.email || r.phone).length;
+  const analysisEvents = (eventRows || []).filter((e) => {
+    const type = String(e.event_type || '');
+    return type === 'home_results_view' || type === 'housing_results_view' || type === 'home_analysis_start';
+  }).length;
+  const scores = rows.map((r) => Number(r.decision_score)).filter((n) => Number.isFinite(n) && n > 0);
+  const budgets = rows.map((r) => Number(r.total_budget)).filter((n) => Number.isFinite(n) && n > 0);
+  const avgScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+  const avgBudget = budgets.length ? Math.round(budgets.reduce((a, b) => a + b, 0) / budgets.length) : 0;
+  const highRisk = rows.filter((r) => String(r.risk_level || '').toLowerCase().includes('yüksek')).length;
+  const purposeCount = (label) => rows.filter((r) => String(r.housing_purpose || '').includes(label)).length;
+  statsEl.innerHTML = `
+    <div class="card-title">Konut özeti</div>
+    <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
+      <div><strong>${analysisEvents || '—'}</strong><br><span class="text-muted-sm">Toplam analiz (olay)</span></div>
+      <div><strong>${withContact}</strong><br><span class="text-muted-sm">Toplam lead</span></div>
+      <div><strong>${totalLeads}</strong><br><span class="text-muted-sm">Tüm kayıtlar</span></div>
+      <div><strong>${avgScore || '—'}</strong><br><span class="text-muted-sm">Ort. karar skoru</span></div>
+      <div><strong>${avgBudget ? avgBudget.toLocaleString('tr-TR') : '—'}</strong><br><span class="text-muted-sm">Ort. bütçe (TL)</span></div>
+      <div><strong>${highRisk}</strong><br><span class="text-muted-sm">Yüksek riskli</span></div>
+      <div><strong>${purposeCount('Satın')}</strong><br><span class="text-muted-sm">Satın alma</span></div>
+      <div><strong>${purposeCount('Kira')}</strong><br><span class="text-muted-sm">Kiralama</span></div>
+      <div><strong>${purposeCount('Yatırım')}</strong><br><span class="text-muted-sm">Yatırım</span></div>
+    </div>`;
+}
+
 async function loadHousingLeads(sb, adminAction, toast) {
   const el = document.getElementById('housing-leads-list');
   if (!el) return;
   setAdminRootLoading('housing-leads-list');
-  const res = await fetchAdminTable(sb, {
-    table: 'housing_leads',
-    limit: 1200,
-    order: { column: 'created_at', ascending: false },
-    direct: () => sb.from('housing_leads').select('*').order('created_at', { ascending: false }).limit(1200)
-  });
+  const [res, eventsRes] = await Promise.all([
+    fetchAdminTable(sb, {
+      table: 'housing_leads',
+      limit: 1200,
+      order: { column: 'created_at', ascending: false },
+      direct: () => sb.from('housing_leads').select('*').order('created_at', { ascending: false }).limit(1200)
+    }),
+    fetchAdminTable(sb, {
+      table: 'housing_events',
+      limit: 5000,
+      order: { column: 'created_at', ascending: false },
+      direct: () => sb.from('housing_events').select('event_type,created_at').order('created_at', { ascending: false }).limit(5000)
+    })
+  ]);
   if (res.error && !res.data?.length) return renderLoadError(el, res, 'Konut leadleri');
+  const allRows = res.data || [];
+  renderHousingLeadStats(allRows, eventsRes.data || []);
   const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
   const search = (document.getElementById('housing-leads-search')?.value || '').toLowerCase().trim();
   const status = document.getElementById('housing-leads-status-filter')?.value || '';
-  const rows = (res.data || []).filter((row) => {
+  const rows = allRows.filter((row) => {
     if (status && row.status !== status) return false;
     if (!search) return true;
     return [row.full_name, row.email, row.phone, row.location_text, row.housing_purpose, row.housing_type]
@@ -62,9 +102,9 @@ async function loadHousingLeads(sb, adminAction, toast) {
   }
   el.innerHTML = `${banner}<table class="table"><thead><tr>
     <th>Tarih</th><th>Ad</th><th>Telefon</th><th>E-posta</th><th>Amaç</th><th>Tip</th><th>Bütçe</th>
-    <th>Peşinat</th><th>Kredi</th><th>Gelir</th><th>Vade</th><th>Lokasyon</th><th>Öncelikler</th><th>AI sonucu</th><th>Skor</th><th>Durum</th>
+    <th>Skor</th><th>Risk</th><th>Lokasyon</th><th>Durum</th><th>Not</th><th>Takip</th>
   </tr></thead><tbody>${
-    rows.map((row) => `<tr>
+    rows.map((row) => `<tr data-housing-lead-id="${safeAttr(row.id)}">
       <td class="cell-nowrap">${new Date(row.created_at).toLocaleString('tr-TR')}</td>
       <td>${escapeHtml(row.full_name || '—')}</td>
       <td>${escapeHtml(row.phone || '—')}</td>
@@ -72,23 +112,33 @@ async function loadHousingLeads(sb, adminAction, toast) {
       <td>${escapeHtml(row.housing_purpose || '—')}</td>
       <td>${escapeHtml(row.housing_type || '—')}</td>
       <td>${escapeHtml(String(row.total_budget || '—'))}</td>
-      <td>${escapeHtml(String(row.down_payment || '—'))}</td>
-      <td>${escapeHtml(String(row.loan_amount || '—'))}</td>
-      <td>${escapeHtml(String(row.monthly_income || '—'))}</td>
-      <td>${escapeHtml(String(row.term_months || '—'))}</td>
-      <td>${escapeHtml(row.location_text || '—')}</td>
-      <td>${escapeHtml(row.priorities || '—')}</td>
-      <td>${escapeHtml((row.ai_summary || '—').slice(0, 120))}</td>
       <td><strong>${escapeHtml(String(row.decision_score || '—'))}</strong></td>
+      <td>${escapeHtml(row.risk_level || '—')}</td>
+      <td>${escapeHtml(row.location_text || '—')}</td>
       <td><select class="status-select" data-action="housing-update-status" data-id="${safeAttr(row.id)}">
         ${['new', 'incelendi', 'arandi', 'uygun', 'partnere_yonlendirildi', 'kapandi', 'reddedildi'].map((opt) => `<option value="${opt}" ${row.status === opt ? 'selected' : ''}>${opt}</option>`).join('')}
       </select></td>
+      <td><input type="text" class="form-input" data-action="housing-update-notes" data-id="${safeAttr(row.id)}" value="${safeAttr(row.notes || '')}" placeholder="Not"></td>
+      <td><input type="datetime-local" class="form-input" data-action="housing-update-follow" data-id="${safeAttr(row.id)}" value="${row.follow_up_at ? new Date(row.follow_up_at).toISOString().slice(0, 16) : ''}"></td>
     </tr>`).join('')
   }</tbody></table>`;
   el.querySelectorAll('[data-action="housing-update-status"]').forEach((select) => {
     select.addEventListener('change', async () => {
       await adminAction({ action: 'update', table: 'housing_leads', id: select.dataset.id, values: { status: select.value } });
       toast('Konut lead durumu güncellendi');
+    });
+  });
+  el.querySelectorAll('[data-action="housing-update-notes"]').forEach((input) => {
+    input.addEventListener('change', async () => {
+      await adminAction({ action: 'update', table: 'housing_leads', id: input.dataset.id, values: { notes: input.value.trim() } });
+      toast('Konut notu kaydedildi');
+    });
+  });
+  el.querySelectorAll('[data-action="housing-update-follow"]').forEach((input) => {
+    input.addEventListener('change', async () => {
+      const value = input.value ? new Date(input.value).toISOString() : null;
+      await adminAction({ action: 'update', table: 'housing_leads', id: input.dataset.id, values: { follow_up_at: value } });
+      toast('Takip tarihi güncellendi');
     });
   });
 }

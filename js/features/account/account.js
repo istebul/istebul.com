@@ -484,6 +484,10 @@ export class AccountManager {
         const comparisons = this.readComparisons();
         const ongoingCards = this.buildOngoingCards(history);
         const resultCards = history.slice(0, 8).map((record) => mapHistoryRecordToResult(record));
+        const housingAnalyses = history
+            .filter((record) => record?.categoryId === 'konut' || record?.categoryId === 'housing')
+            .slice(0, 12)
+            .map((record) => mapHistoryRecordToResult(record));
         const groupedFavorites = this.groupFavoritesByCategory(favorites);
         const recommendations = this.buildRecommendations(resultCards, emailVerified);
         const initials = this.getInitials(profile);
@@ -501,6 +505,7 @@ export class AccountManager {
             ],
             ongoingCards,
             resultCards,
+            housingAnalyses,
             favorites: groupedFavorites,
             recommendations,
             notificationCount: recommendations.length,

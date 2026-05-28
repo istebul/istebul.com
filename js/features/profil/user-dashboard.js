@@ -52,7 +52,25 @@ function renderFavoritesList(favorites) {
   `;
 }
 
-function renderSectionPanels({ activeTab, ongoingCards, resultCards, favorites, activeFavoritesTab }) {
+function renderHousingAnalysesPanel(housingAnalyses = []) {
+  if (!housingAnalyses.length) {
+    return `
+      <div class="ud-block ud-housing-block">
+        <header><h2>Konut Analizlerim</h2><a href="/konut/">Yeni analiz</a></header>
+        <p class="ud-empty-note">Henüz kayıtlı konut analizi yok. Konut karar asistanında analiz oluşturup raporu kaydedebilirsiniz.</p>
+        <a href="/konut/" class="btn btn-primary btn-sm">Konut analizini başlat</a>
+      </div>`;
+  }
+  return `
+    <div class="ud-block ud-housing-block">
+      <header><h2>Konut Analizlerim</h2><a href="/konut/">Yeni analiz</a></header>
+      <div class="ud-results-grid">
+        ${housingAnalyses.map((result) => renderUserResultCard(result)).join('')}
+      </div>
+    </div>`;
+}
+
+function renderSectionPanels({ activeTab, ongoingCards, resultCards, housingAnalyses, favorites, activeFavoritesTab }) {
   const activeFavorites = favorites[activeFavoritesTab] || [];
   return `
     <section class="ud-panel ${activeTab === 'overview' ? 'is-active' : ''}" data-dashboard-panel="overview" ${activeTab === 'overview' ? '' : 'hidden'}>
@@ -76,8 +94,9 @@ function renderSectionPanels({ activeTab, ongoingCards, resultCards, favorites, 
     </section>
 
     <section class="ud-panel ${activeTab === 'analyses' ? 'is-active' : ''}" data-dashboard-panel="analyses" ${activeTab === 'analyses' ? '' : 'hidden'}>
+      ${renderHousingAnalysesPanel(housingAnalyses)}
       <div class="ud-block">
-        <header><h2>Analizlerim</h2><a href="/gecmis">Geçmişi Aç</a></header>
+        <header><h2>Tüm Analizlerim</h2><a href="/gecmis">Geçmişi Aç</a></header>
         <div class="ud-results-grid">
           ${resultCards.length ? resultCards.map((result) => renderUserResultCard(result)).join('') : '<p class="ud-empty-note">Henüz analiz geçmişi bulunamadı.</p>'}
         </div>
@@ -104,6 +123,7 @@ export function renderUserDashboard(payload) {
     metrics,
     ongoingCards,
     resultCards,
+    housingAnalyses = [],
     favorites,
     recommendations,
     quickActions,
@@ -138,7 +158,7 @@ export function renderUserDashboard(payload) {
           ${metrics.map((metric) => renderUserSummaryCard(metric)).join('')}
         </section>
         <div class="ud-content-grid">
-          ${renderSectionPanels({ activeTab, ongoingCards, resultCards, favorites, activeFavoritesTab })}
+          ${renderSectionPanels({ activeTab, ongoingCards, resultCards, housingAnalyses, favorites, activeFavoritesTab })}
           ${renderUserAiRecommendationsPanel({
             recommendations,
             quickActions,

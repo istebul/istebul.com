@@ -24,6 +24,7 @@
         <a href="/">Ana sayfa</a>
         <a href="/auto/">Auto</a>
         <a href="/tatil/">Tatil</a>
+        <a href="/finans/">Finansman</a>
         <a href="/konut/" aria-current="page">Konut</a>
       </nav>
     </div>
@@ -61,12 +62,15 @@
         <div id="housing-wizard"></div>
         <section id="housing-results" hidden aria-live="polite"></section>
       </section>
-      <aside class="glass-card housing-side-panel">
-        <h3>Konut karar simülasyonu</h3>
-        <ul>
-          <li>Toplam sahip olma maliyeti + kredi yükü + lokasyon uyumu birlikte hesaplanır.</li>
-          <li>AI yorumu başarısız olursa deterministic fallback otomatik devreye girer.</li>
-          <li>Bu ekran gerçek başvuru / ekspertiz öncesi ön değerlendirme içindir.</li>
+      <aside class="glass-card housing-side-panel" aria-label="Canlı analiz özeti">
+        <div id="housing-live-preview">
+          <h3>Canlı özet</h3>
+          <p>Form adımlarını tamamladıkça skor ve maliyet önizlemesi burada güncellenir.</p>
+        </div>
+        <ul class="housing-side-notes">
+          <li>Toplam maliyet, kredi yükü ve lokasyon uyumu birlikte hesaplanır.</li>
+          <li>AI yorumu başarısız olursa güvenli fallback devreye girer.</li>
+          <li>Bilgilendirme amaçlıdır; bağlayıcı teklif değildir.</li>
         </ul>
       </aside>
     </div>

@@ -30,14 +30,16 @@ export function calculateDebtToIncome(monthlyDebt, monthlyIncome) {
 
 export function calculateLocationFitScore(state) {
   const weights = {
+    merkezeYakin: 8,
+    ulasim: 9,
+    okul: 7,
+    hastane: 6,
+    is: 9,
+    sessiz: 7,
+    merkezi: 8,
     iseYakinlik: 9,
     okulaYakinlik: 7,
-    hastane: 6,
     topluTasima: 8,
-    otopark: 5,
-    guvenlik: 9,
-    sosyalAlan: 6,
-    sessizlik: 6,
     merkeziLokasyon: 7,
     dogayaYakinlik: 5
   };
