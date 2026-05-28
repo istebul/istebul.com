@@ -6,8 +6,13 @@ export async function loadCMS() {
 
     const headers = { 'apikey': key, 'Authorization': 'Bearer ' + key };
 
+    const cmsKeys = [
+      'site-name', 'site-subtitle', 'hero-eyebrow', 'hero-title', 'hero-desc',
+      'title', 'description', 'phone', 'email', 'address', 'maintenance'
+    ];
+    const settingsFilter = cmsKeys.map((k) => `key.eq.${k}`).join(',');
     const [settingsRes, annRes] = await Promise.all([
-      fetch(url + '/rest/v1/site_settings?select=*', { headers }).then(r => r.json()),
+      fetch(`${url}/rest/v1/site_settings?select=key,value&or=(${settingsFilter})`, { headers }).then(r => r.json()),
       fetch(url + '/rest/v1/announcements?select=*&is_active=eq.true&order=created_at.desc&limit=1', { headers }).then(r => r.json())
     ]);
 
