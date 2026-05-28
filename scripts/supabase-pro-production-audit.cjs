@@ -48,6 +48,23 @@ for (const { table, need } of rlsTargets) {
   }
 }
 
+const launchMigration = fs.readFileSync(
+  path.join(root, 'supabase/migrations/20260527_launch_security_hardening.sql'),
+  'utf8'
+);
+if (launchMigration.includes('DROP POLICY')) {
+  fail('launch_security_hardening must not DROP existing RLS policies');
+}
+if (launchMigration.includes('DROP TABLE')) {
+  fail('launch_security_hardening must not DROP TABLE');
+}
+if (!launchMigration.includes('enforce_minimum_admin_count')) {
+  fail('launch_security_hardening must include last-admin guard');
+}
+if (!launchMigration.includes('site_settings')) {
+  fail('launch_security_hardening must cover site_settings');
+}
+
 const proMigration = fs.readFileSync(
   path.join(root, 'supabase/migrations/20260616_supabase_pro_production_hardening.sql'),
   'utf8'
