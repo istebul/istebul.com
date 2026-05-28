@@ -49,6 +49,18 @@ function vacationScenariosDirect(sb, limit = 500) {
     .limit(limit);
 }
 
+function vacationDestinationsDirect(sb, limit = 500) {
+  return sb.from('vacation_destinations').select('*').order('created_at', { ascending: false }).limit(limit);
+}
+
+function vacationPartnersDirect(sb, limit = 500) {
+  return sb.from('vacation_partners').select('*').order('created_at', { ascending: false }).limit(limit);
+}
+
+function vacationScoringDirect(sb, limit = 50) {
+  return sb.from('vacation_scoring_configs').select('*').order('created_at', { ascending: false }).limit(limit);
+}
+
 function renderVacationLoadError(el, res, label) {
   const msg = res?.error?.message || res?.error || 'Veri yüklenemedi';
   el.innerHTML = `
@@ -64,10 +76,109 @@ export function initVacationAdmin(ctx) {
     loadVacationLeads: () => loadVacationLeads(sb, adminAction, toast),
     loadVacationScenarios: () => loadVacationScenarios(sb, adminAction, toast),
     loadVacationSettings: () => loadVacationSettings(sb, toast),
+    loadVacationDestinations: () => loadVacationDestinations(sb),
+    loadVacationPartners: () => loadVacationPartners(sb),
+    loadVacationScoring: () => loadVacationScoring(sb),
     saveVacationSettings: () => saveVacationSettings(sb, adminAction, toast),
     handleVacationAction: (event, el) =>
       handleVacationAction(event, el, { adminAction, toast, sb, adminList })
   };
+}
+
+async function loadVacationDestinations(sb) {
+  const el = document.getElementById('vacation-destinations-list');
+  if (!el) return;
+  setAdminRootLoading('vacation-destinations-list');
+  const res = await fetchAdminTable(sb, {
+    table: 'vacation_destinations',
+    limit: 500,
+    order: { column: 'created_at', ascending: false },
+    direct: () => vacationDestinationsDirect(sb, 500)
+  });
+  if (res.error && !res.data?.length) {
+    renderVacationLoadError(el, res, 'Destinasyonlar');
+    return;
+  }
+  const rows = res.data || [];
+  el.innerHTML = `
+    ${renderAdminWarningBanner(collectAdminWarnings([res]))}
+    <table class="table"><thead><tr><th>Şehir</th><th>Ülke</th><th>Tip</th><th>Sezon</th><th>Risk</th><th>Maliyet</th><th>Aile</th><th>Çocuk</th><th>Durum</th></tr></thead>
+    <tbody>
+      ${rows.map((r) => `<tr>
+        <td>${escapeHtml(r.city || '—')}</td>
+        <td>${escapeHtml(r.country || '—')}</td>
+        <td>${escapeHtml(r.vacation_type || '—')}</td>
+        <td>${escapeHtml(String(r.season_score ?? '—'))}</td>
+        <td>${escapeHtml(String(r.risk_score ?? '—'))}</td>
+        <td>${escapeHtml(String(r.avg_cost ?? '—'))}</td>
+        <td>${escapeHtml(String(r.family_fit_score ?? '—'))}</td>
+        <td>${r.child_friendly ? 'Evet' : 'Hayır'}</td>
+        <td>${r.is_active ? 'Aktif' : 'Pasif'}</td>
+      </tr>`).join('')}
+    </tbody></table>
+  `;
+}
+
+async function loadVacationPartners(sb) {
+  const el = document.getElementById('vacation-partners-list');
+  if (!el) return;
+  setAdminRootLoading('vacation-partners-list');
+  const res = await fetchAdminTable(sb, {
+    table: 'vacation_partners',
+    limit: 500,
+    order: { column: 'created_at', ascending: false },
+    direct: () => vacationPartnersDirect(sb, 500)
+  });
+  if (res.error && !res.data?.length) {
+    renderVacationLoadError(el, res, 'Partnerler');
+    return;
+  }
+  const rows = res.data || [];
+  el.innerHTML = `
+    ${renderAdminWarningBanner(collectAdminWarnings([res]))}
+    <table class="table"><thead><tr><th>Ad</th><th>Tip</th><th>Link</th><th>Not</th><th>Durum</th></tr></thead>
+    <tbody>
+      ${rows.map((r) => `<tr>
+        <td>${escapeHtml(r.name || '—')}</td>
+        <td>${escapeHtml(r.partner_type || '—')}</td>
+        <td>${r.affiliate_link ? `<a href="${safeAttr(r.affiliate_link)}" target="_blank" rel="noopener">link</a>` : '—'}</td>
+        <td>${escapeHtml(r.notes || '—')}</td>
+        <td>${r.is_active ? 'Aktif' : 'Pasif'}</td>
+      </tr>`).join('')}
+    </tbody></table>
+  `;
+}
+
+async function loadVacationScoring(sb) {
+  const el = document.getElementById('vacation-scoring-list');
+  if (!el) return;
+  setAdminRootLoading('vacation-scoring-list');
+  const res = await fetchAdminTable(sb, {
+    table: 'vacation_scoring_configs',
+    limit: 50,
+    order: { column: 'created_at', ascending: false },
+    direct: () => vacationScoringDirect(sb, 50)
+  });
+  if (res.error && !res.data?.length) {
+    renderVacationLoadError(el, res, 'Scoring');
+    return;
+  }
+  const rows = res.data || [];
+  const top = rows[0];
+  if (top) {
+    const setVal = (id, val) => {
+      const input = document.getElementById(id);
+      if (input) input.value = val ?? '';
+    };
+    setVal('vacation-scoring-risk-factor', top.risk_factor);
+    setVal('vacation-scoring-cost-factor', top.cost_factor);
+    setVal('vacation-scoring-family-weight', top.family_weight);
+    setVal('vacation-scoring-prompt-template', top.prompt_template || '');
+  }
+  el.innerHTML = `
+    ${renderAdminWarningBanner(collectAdminWarnings([res]))}
+    <div class="text-muted-sm">Son kayıt: ${top ? new Date(top.created_at).toLocaleString('tr-TR') : '—'}</div>
+  `;
 }
 
 async function loadVacationAnalytics(sb) {
@@ -205,10 +316,15 @@ async function loadVacationLeads(sb, adminAction, toast) {
           <th>Telefon</th>
           <th>E-posta</th>
           <th>Tatil amacı</th>
+          <th>Kişi</th>
+          <th>Çocuk yaşları</th>
           <th>Bütçe</th>
           <th>Tatil tipi</th>
+          <th>Tarih</th>
+          <th>Beklentiler</th>
           <th>Seçilen seçenek</th>
           <th>Skor</th>
+          <th>AI özeti</th>
           <th>Durum</th>
           <th>Takip</th>
           <th>Aksiyonlar</th>
@@ -224,13 +340,18 @@ async function loadVacationLeads(sb, adminAction, toast) {
             <td>${escapeHtml(lead.phone || '—')}</td>
             <td>${lead.email ? `<a href="mailto:${safeAttr(lead.email)}">${escapeHtml(lead.email)}</a>` : '—'}</td>
             <td>${escapeHtml(lead.vacation_goal || '—')}</td>
+            <td>${escapeHtml(String(lead.travelers_count || '—'))}</td>
+            <td>${escapeHtml(lead.children_ages || '—')}</td>
             <td>${escapeHtml(lead.budget_range || '—')}</td>
             <td>${escapeHtml(lead.vacation_type || '—')}</td>
+            <td>${escapeHtml(lead.date_range || '—')}</td>
+            <td>${escapeHtml(lead.expectations || '—')}</td>
             <td>${escapeHtml(lead.selected_option || '—')}</td>
             <td><strong>${lead.decision_score ?? '—'}</strong></td>
+            <td>${escapeHtml((lead.ai_summary || '—').slice(0, 120))}</td>
             <td>
               <select class="status-select" data-action="vacation-update-status" data-id="${safeAttr(lead.id)}">
-                ${['new', 'called', 'interested', 'closed', 'rejected']
+                ${['new', 'incelendi', 'arandi', 'ilgileniyor', 'kapandi', 'reddedildi']
                   .map(
                     (s) =>
                       `<option value="${s}" ${lead.status === s ? 'selected' : ''}>${s}</option>`
@@ -508,6 +629,51 @@ async function handleVacationAction(event, el, ctx) {
 
   if (action === 'save-vacation-settings') {
     await saveVacationSettings(sb, adminAction, toast);
+    return true;
+  }
+
+  if (action === 'vacation-save-destination') {
+    const values = {
+      city: document.getElementById('vacation-destination-city')?.value?.trim() || '',
+      country: document.getElementById('vacation-destination-country')?.value?.trim() || '',
+      vacation_type: document.getElementById('vacation-destination-type')?.value?.trim() || '',
+      season_score: Number(document.getElementById('vacation-destination-season')?.value) || 0,
+      risk_score: Number(document.getElementById('vacation-destination-risk')?.value) || 0,
+      avg_cost: Number(document.getElementById('vacation-destination-cost')?.value) || 0,
+      family_fit_score: Number(document.getElementById('vacation-destination-family')?.value) || 0,
+      child_friendly: document.getElementById('vacation-destination-child-friendly')?.checked || false,
+      is_active: document.getElementById('vacation-destination-active')?.checked ?? true
+    };
+    await adminAction({ action: 'insert', table: 'vacation_destinations', id: 'new', values });
+    toast('Destinasyon kaydedildi');
+    loadVacationDestinations(sb);
+    return true;
+  }
+
+  if (action === 'vacation-save-partner') {
+    const values = {
+      name: document.getElementById('vacation-partner-name')?.value?.trim() || '',
+      partner_type: document.getElementById('vacation-partner-type')?.value?.trim() || '',
+      affiliate_link: document.getElementById('vacation-partner-link')?.value?.trim() || '',
+      notes: document.getElementById('vacation-partner-notes')?.value?.trim() || '',
+      is_active: document.getElementById('vacation-partner-active')?.checked ?? true
+    };
+    await adminAction({ action: 'insert', table: 'vacation_partners', id: 'new', values });
+    toast('Partner kaydedildi');
+    loadVacationPartners(sb);
+    return true;
+  }
+
+  if (action === 'vacation-save-scoring') {
+    const values = {
+      risk_factor: Number(document.getElementById('vacation-scoring-risk-factor')?.value) || 1,
+      cost_factor: Number(document.getElementById('vacation-scoring-cost-factor')?.value) || 1,
+      family_weight: Number(document.getElementById('vacation-scoring-family-weight')?.value) || 1,
+      prompt_template: document.getElementById('vacation-scoring-prompt-template')?.value?.trim() || ''
+    };
+    await adminAction({ action: 'insert', table: 'vacation_scoring_configs', id: 'new', values });
+    toast('Scoring ayarları kaydedildi');
+    loadVacationScoring(sb);
     return true;
   }
 

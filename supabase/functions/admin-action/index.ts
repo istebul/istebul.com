@@ -160,6 +160,9 @@ Deno.serve(async (req) => {
     "auto_leads",
     "vacation_leads",
     "vacation_scenarios",
+    "vacation_destinations",
+    "vacation_partners",
+    "vacation_scoring_configs",
     "partner_endpoints",
     "partner_applications",
   ];
@@ -187,6 +190,9 @@ Deno.serve(async (req) => {
     "vacation_events",
     "vacation_leads",
     "vacation_scenarios",
+    "vacation_destinations",
+    "vacation_partners",
+    "vacation_scoring_configs",
   ];
 
   if (action === "upsert_settings") {
@@ -226,6 +232,9 @@ Deno.serve(async (req) => {
         vacation_events: "*",
         vacation_leads: "*",
         vacation_scenarios: "*",
+        vacation_destinations: "*",
+        vacation_partners: "*",
+        vacation_scoring_configs: "*",
       };
 
       const allowedOrderColumns: Record<string, string[]> = {
@@ -233,6 +242,9 @@ Deno.serve(async (req) => {
         vacation_events: ["created_at", "event_type"],
         vacation_leads: ["created_at", "decision_score", "follow_up_at", "status"],
         vacation_scenarios: ["sort_order", "created_at", "title"],
+        vacation_destinations: ["created_at", "season_score", "risk_score"],
+        vacation_partners: ["created_at", "name"],
+        vacation_scoring_configs: ["created_at"],
         auto_events: ["created_at"],
         analytics_events: ["created_at"],
         announcements: ["created_at"],
@@ -326,6 +338,19 @@ Deno.serve(async (req) => {
           "sort_order",
           "config",
         ],
+        vacation_destinations: [
+          "city",
+          "country",
+          "vacation_type",
+          "season_score",
+          "risk_score",
+          "avg_cost",
+          "family_fit_score",
+          "child_friendly",
+          "is_active",
+        ],
+        vacation_partners: ["name", "partner_type", "affiliate_link", "notes", "is_active"],
+        vacation_scoring_configs: ["risk_factor", "cost_factor", "family_weight", "prompt_template"],
       };
 
       const allowedKeys = allowedInserts[table] || [];
@@ -435,6 +460,19 @@ Deno.serve(async (req) => {
           "sort_order",
           "config",
         ],
+        vacation_destinations: [
+          "city",
+          "country",
+          "vacation_type",
+          "season_score",
+          "risk_score",
+          "avg_cost",
+          "family_fit_score",
+          "child_friendly",
+          "is_active",
+        ],
+        vacation_partners: ["name", "partner_type", "affiliate_link", "notes", "is_active"],
+        vacation_scoring_configs: ["risk_factor", "cost_factor", "family_weight", "prompt_template"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority", "health_status"],
         partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan"],
       };

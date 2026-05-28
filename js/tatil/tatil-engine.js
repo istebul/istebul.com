@@ -32,8 +32,10 @@ const FALLBACK_SCENARIOS = [
 ];
 
 const PLAN_COST = {
-  ekonomik: { min: 12000, max: 48000, label: '18.000 – 45.000 ₺' },
-  dengeli: { min: 45000, max: 115000, label: '52.000 – 108.000 ₺' }
+  ekonomik: { min: 20000, max: 60000, label: '₺20.000 – ₺60.000' },
+  dengeli: { min: 60000, max: 140000, label: '₺60.000 – ₺140.000' },
+  premium: { min: 140000, max: 260000, label: '₺140.000 – ₺260.000' },
+  ultra: { min: 260000, max: 520000, label: '₺260.000+' }
 };
 
 function labelForGoal(value) {
@@ -49,8 +51,8 @@ function labelForType(value) {
 }
 
 function estimateCostRange(state) {
-  if (state.budget_range === 'manuel' && state.budget_manual) {
-    const t = Number(state.budget_manual);
+  if (state.budget_range === 'manuel' && (state.budget_total || state.budget_manual)) {
+    const t = Number(state.budget_total || state.budget_manual);
     const low = Math.round(t * 0.88);
     const high = Math.round(t * 1.12);
     return {
@@ -76,16 +78,102 @@ function baseScore(state) {
   let score = 64;
   if (state.budget_range === 'dengeli') score += 5;
   if (state.budget_range === 'ekonomik') score += 2;
+  if (state.budget_range === 'premium') score += 7;
+  if (state.budget_range === 'ultra') score += 9;
   if (state.budget_range === 'manuel' && state.budget_manual) {
     if (state.budget_manual >= 80000) score += 8;
     else if (state.budget_manual >= 40000) score += 5;
   }
-  if (state.vacation_goal === 'luks' || state.vacation_goal === 'balayi') score += 5;
+  if (state.vacation_goal === 'luks-resort' || state.vacation_goal === 'balayi') score += 5;
   if (state.people_type === 'cocuklu-aile') score += 4;
   if (state.people_type === 'yasli-aile') score += 3;
   if (['deniz-resort', 'cocuk-dostu'].includes(state.vacation_type)) score += 4;
   if (state.trip_nights && state.trip_nights >= 7) score += 3;
+  score += Math.min((state.expectations?.length || 0) * 2, 8);
   return Math.min(score, 90);
+}
+
+function buildCostBreakdown(state, score) {
+  const estimated = estimateCostRange(state);
+  const travelers = Math.max(Number(state.travelers_count) || 1, 1);
+  const nights = Math.max(Number(state.trip_nights) || 5, 3);
+  const target = Number(estimated.target || 90000);
+  const seasonFactor = state.date_flexibility === 'undecided' ? 1.08 : state.date_flexibility === 'net' ? 1.02 : 1;
+  const comfortFactor = state.budget_range === 'ultra' ? 1.45 : state.budget_range === 'premium' ? 1.25 : 1;
+  const base = target * seasonFactor * comfortFactor;
+  const childrenCount = Number(state.children_count) || 0;
+
+  const breakdown = {
+    accommodation: Math.round(base * 0.38),
+    transport: Math.round(base * 0.21),
+    transfer: Math.round(base * 0.06),
+    food: Math.round(base * 0.14),
+    extras: Math.round(base * 0.1),
+    children: Math.round(childrenCount * 3200),
+    visaDocs: state.vacation_goal === 'yurtdisi' || state.vacation_goal === 'vizesiz-yurtdisi' ? 4200 : 0,
+    carRental: state.vacation_type === 'doga' || state.vacation_type === 'villa-butik' ? 8500 : 3000
+  };
+
+  const visiblePrice = Math.round((breakdown.accommodation + breakdown.transport) * 0.82);
+  const realTotal = Object.values(breakdown).reduce((sum, n) => sum + n, 0);
+  const hidden = Math.max(realTotal - visiblePrice, 0);
+
+  return {
+    nights,
+    travelers,
+    visiblePrice,
+    realTotal,
+    hidden,
+    perPerson: Math.round(realTotal / travelers),
+    visiblePriceLabel: formatTry(visiblePrice),
+    realTotalLabel: formatTry(realTotal),
+    perPersonLabel: formatTry(Math.round(realTotal / travelers)),
+    hiddenLabel: formatTry(hidden),
+    lines: Object.entries(breakdown).map(([key, value]) => ({ key, value, label: formatTry(value) })),
+    seasonRisk: score > 88 ? 'Düşük' : score > 78 ? 'Orta' : 'Yüksek'
+  };
+}
+
+function buildScorePanel(state, score, budgetFit) {
+  const family = state.people_type === 'cocuklu-aile' ? 95 : state.people_type === 'cift' ? 88 : 84;
+  const comfort = state.budget_range === 'ultra' ? 96 : state.budget_range === 'premium' ? 91 : 84;
+  const budgetEfficiency = budgetFit === 'high' ? 90 : budgetFit === 'medium' ? 82 : 74;
+  const risk = state.date_flexibility === 'undecided' ? 'Orta' : score >= 88 ? 'Düşük' : 'Orta';
+  return {
+    general: score,
+    family: Math.min(100, family),
+    budgetEfficiency: Math.min(100, budgetEfficiency),
+    comfort: Math.min(100, comfort),
+    risk
+  };
+}
+
+function buildAlternatives(primaryTitle, costs, state) {
+  const set = [
+    {
+      title: 'Kaş (Antalya) alternatifi',
+      reason: `${primaryTitle} yerine daha düşük yoğunluk ve benzer deniz kalitesi`,
+      delta: 'Maliyet ~%11 daha düşük, risk bir kademe daha düşük',
+      score: 86
+    },
+    {
+      title: 'Datça (Muğla) alternatifi',
+      reason: 'Bodrum benzeri deneyim, daha sakin rota',
+      delta: 'Maliyet ~%14 daha düşük, deneyim kalitesi benzer',
+      score: 84
+    },
+    {
+      title: state.vacation_goal === 'sehir' ? 'Kültür rotası: Selanik + Kavala' : 'Yunan adası kısa rota',
+      reason: 'Yurt dışı hissi için vize/ege geçiş alternatifleri',
+      delta: `Maliyet ~%${state.budget_range === 'ekonomik' ? '9' : '16'} farklı, risk mevsime bağlı`,
+      score: 82
+    }
+  ];
+  return set.map((item) => ({
+    ...item,
+    cost: formatTry(Math.round(costs.realTotal * (item.score >= 85 ? 0.9 : 1.05))),
+    risk: item.score > 85 ? 'Düşük-Orta' : 'Orta'
+  }));
 }
 
 function buildTags(state, budgetFit) {
@@ -170,6 +258,8 @@ function mapScenarioToResult(scenario, badgeKey, state, scoreOffset) {
         ? 'Konfor ve hizmet beklentisi yüksek profiller'
         : 'Dengeli beklenti ve risk profili';
 
+  const scorePanel = buildScorePanel(state, score, budgetFit);
+  const costs = buildCostBreakdown(state, score);
   return {
     id: scenario.slug,
     title: scenario.title,
@@ -184,7 +274,10 @@ function mapScenarioToResult(scenario, badgeKey, state, scoreOffset) {
     cautions,
     why: why[0] || 'Profilinizdeki amaç, bütçe ve seyahat tipi birlikte skorlandı.',
     tags: buildTags(state, budgetFit),
-    region: scenario.config?.region || ''
+    region: scenario.config?.region || '',
+    scores: scorePanel,
+    costs,
+    alternatives: buildAlternatives(scenario.title, costs, state)
   };
 }
 
@@ -226,10 +319,11 @@ export function buildResultsSummary(state, results = []) {
     seasonRisk = `Dönem notu: ${state.date_period_note.slice(0, 48)}`;
   }
 
+  const totalCostLabel = top?.costs?.realTotalLabel || cost.label;
   return {
-    totalCostLabel: cost.label,
+    totalCostLabel,
     fitScore,
-    seasonRisk,
+    seasonRisk: top?.costs?.seasonRisk ? `${seasonRisk} · ${top.costs.seasonRisk}` : seasonRisk,
     familyFit,
     topTitle: top?.title || 'Önerilen profil'
   };
@@ -334,9 +428,16 @@ export function getProgressSummary(state) {
   return [
     { key: 'Amaç', value: state.vacation_goal ? labelForGoal(state.vacation_goal) : null },
     { key: 'Bütçe', value: budgetVal },
-    { key: 'Seyahat grubu', value: peopleVal },
+    {
+      key: 'Seyahat grubu',
+      value:
+        [peopleVal, state.travelers_count ? `${state.travelers_count} kişi` : null]
+          .filter(Boolean)
+          .join(' · ') || null
+    },
     { key: 'Deneyim', value: state.vacation_type ? labelForType(state.vacation_type) : null },
     { key: 'Tarih', value: dateVal || null },
+    { key: 'Beklentiler', value: state.expectations?.length ? state.expectations.slice(0, 3).join(', ') : null },
     { key: 'Beklenti', value: state.user_note ? 'Eklendi' : null }
   ];
 }

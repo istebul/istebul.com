@@ -17,11 +17,13 @@ function renderActiveCard(category) {
       href="${escapeHtml(category.href)}"
       class="ib-category-showcase is-active ib-category-showcase--${escapeHtml(category.theme)}"
       data-category-id="${escapeHtml(category.id)}"
+      data-native-route
     >
       <span class="ib-category-showcase-badge">AI destekli</span>
       <h3><i data-lucide="${escapeHtml(category.icon)}" aria-hidden="true"></i> ${escapeHtml(category.name)}</h3>
       <p>${escapeHtml(category.description)}</p>
-      <span class="ib-category-showcase-cta">Analiz Et →</span>
+      <span class="ib-category-showcase-insight">${escapeHtml(category.insight || '')}</span>
+      <span class="ib-category-showcase-cta">${escapeHtml(category.ctaLabel || 'Analiz Et')} →</span>
       ${
         category.sampleScore != null
           ? `<span class="ib-category-showcase-score" aria-label="Örnek karar skoru">${category.sampleScore}<span>/100</span></span>`

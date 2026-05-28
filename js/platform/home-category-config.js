@@ -11,16 +11,20 @@ export const HOME_DECISION_CATEGORIES = [
     href: '/auto/',
     icon: 'car',
     sampleScore: 89,
+    ctaLabel: 'Analiz Et',
+    insight: 'Toplam maliyet + uygunluk + risk analizi',
     theme: 'auto'
   },
   {
     id: 'tatil',
     name: 'Tatil',
-    description: 'Bütçe, tarih ve seyahat profiline göre tatil uygunluk analizi.',
+    description: 'Travel Decision Intelligence: bütçe, tarih ve aile yapısına göre karar analizi.',
     status: 'active',
     href: '/tatil/',
     icon: 'palmtree',
     sampleScore: 86,
+    ctaLabel: 'Planlamaya başla',
+    insight: 'Toplam maliyet + uygunluk + risk analizi',
     theme: 'tatil'
   },
   {

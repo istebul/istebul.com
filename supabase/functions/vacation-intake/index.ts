@@ -202,6 +202,12 @@ Deno.serve(async (req) => {
       vacation_goal: clampString(form.vacation_goal, 80) || null,
       budget_range: clampString(form.budget_range, 40) || null,
       people_type: clampString(form.people_type, 40) || null,
+      travelers_count:
+        form.travelers_count != null
+          ? Math.min(Math.max(Number(form.travelers_count) || 0, 0), 20)
+          : null,
+      children_ages: clampString(form.children_ages, 200) || null,
+      expectations: clampString(form.expectations, 1000) || null,
       vacation_type: clampString(form.vacation_type, 40) || null,
       date_range: clampString(form.date_range, 80) || null,
       duration: clampString(form.duration, 40) || null,

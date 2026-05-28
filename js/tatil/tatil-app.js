@@ -19,9 +19,13 @@ const state = {
   vacation_goal: '',
   budget_range: '',
   budget_manual: null,
+  budget_total: null,
+  budget_per_person: null,
   people_type: '',
+  travelers_count: '',
   children_count: '',
   children_ages: '',
+  expectations: [],
   vacation_type: '',
   date_start: '',
   date_end: '',
@@ -59,17 +63,17 @@ function canAdvance() {
   if (step.id === 'goal') return Boolean(state.vacation_goal);
   if (step.id === 'budget') {
     if (!state.budget_range) return false;
-    if (state.budget_range === 'manuel') return Boolean(state.budget_manual);
+    if (state.budget_range === 'manuel') return Boolean(state.budget_total || state.budget_per_person || state.budget_manual);
     return true;
   }
   if (step.id === 'people') {
-    if (!state.people_type) return false;
+    if (!state.people_type || !state.travelers_count) return false;
     if (state.people_type === 'cocuklu-aile') {
       return Boolean(state.children_count || state.children_ages?.trim());
     }
     return true;
   }
-  if (step.id === 'type') return Boolean(state.vacation_type);
+  if (step.id === 'expectations') return state.expectations.length > 0;
   if (step.id === 'date') {
     if (!state.date_flexibility) return false;
     const hasDates = state.date_start && state.date_end;
@@ -125,6 +129,7 @@ function renderGoalCards() {
             data-field="vacation_goal" data-value="${escapeHtml(opt.value)}">
             ${opt.icon ? `<span class="vacation-option-icon">${opt.icon}</span>` : ''}
             <span class="vacation-option-card-title">${escapeHtml(opt.label)}</span>
+            <span class="vacation-option-card-desc">${escapeHtml(opt.fit || '')}</span>
           </button>
         `;
         })
@@ -150,10 +155,17 @@ function renderBudgetStep() {
       }).join('')}
     </div>
     <label class="vacation-manual-budget ${state.budget_range === 'manuel' ? '' : 'hidden'}">
-      <span>Hedef bütçeniz</span>
+      <span>Toplam bütçe</span>
       <input type="text" inputmode="numeric" id="vacation-budget-manual"
         placeholder="Örn: 85.000 TL"
-        value="${state.budget_manual ? formatTry(state.budget_manual) : ''}"
+        value="${state.budget_total ? formatTry(state.budget_total) : ''}"
+        autocomplete="off">
+    </label>
+    <label class="vacation-manual-budget ${state.budget_range === 'manuel' ? '' : 'hidden'}">
+      <span>Kişi başı bütçe (opsiyonel)</span>
+      <input type="text" inputmode="numeric" id="vacation-budget-per-person"
+        placeholder="Örn: 18.000 TL"
+        value="${state.budget_per_person ? formatTry(state.budget_per_person) : ''}"
         autocomplete="off">
     </label>
   `;
@@ -194,7 +206,33 @@ function renderPeopleStep() {
         })
         .join('')}
     </div>
+    <label class="vacation-field">
+      <span>Toplam kişi sayısı</span>
+      <input type="number" id="vacation-travelers-count" min="1" max="20" inputmode="numeric"
+        value="${escapeHtml(state.travelers_count)}" placeholder="Örn: 4">
+    </label>
     ${childFields}
+  `;
+}
+
+function renderExpectationsStep() {
+  return `
+    <div class="vacation-chip-grid">
+      ${STEP_OPTIONS.expectations
+        .map((item) => {
+          const selected = state.expectations.includes(item);
+          return `
+            <button
+              type="button"
+              class="vacation-chip ${selected ? 'is-selected' : ''}"
+              data-action="toggle-expectation"
+              data-value="${escapeHtml(item)}"
+            >${escapeHtml(item)}</button>
+          `;
+        })
+        .join('')}
+    </div>
+    <p class="vacation-field-hint">En az 1, en fazla 5 beklenti seçin.</p>
   `;
 }
 
@@ -276,6 +314,7 @@ function renderWizard() {
   else if (step.id === 'people') body = renderPeopleStep();
   else if (step.id === 'type') body = renderTypeStep();
   else if (step.id === 'date') body = renderDateStep();
+  else if (step.id === 'expectations') body = renderExpectationsStep();
   else if (step.id === 'note') {
     body = `
       <textarea id="vacation-user-note" class="vacation-note-input" rows="4"
@@ -339,8 +378,13 @@ function bindWizardEvents() {
       const field = btn.dataset.field;
       const value = btn.dataset.value;
       state[field] = value;
+      if (field === 'vacation_goal') {
+        state.vacation_type = value;
+      }
       if (field === 'budget_range' && value !== 'manuel') {
         state.budget_manual = null;
+        state.budget_total = null;
+        state.budget_per_person = null;
       }
       if (field === 'people_type' && value !== 'cocuklu-aile') {
         state.children_count = '';
@@ -352,8 +396,16 @@ function bindWizardEvents() {
 
   const manualInput = $('#vacation-budget-manual');
   manualInput?.addEventListener('input', (e) => {
-    state.budget_manual = parseManualBudget(e.target.value);
-    e.target.value = state.budget_manual ? formatTry(state.budget_manual) : e.target.value;
+    state.budget_total = parseManualBudget(e.target.value);
+    state.budget_manual = state.budget_total;
+    e.target.value = state.budget_total ? formatTry(state.budget_total) : '';
+    refreshNextButton();
+    renderAiPanel();
+  });
+
+  $('#vacation-budget-per-person')?.addEventListener('input', (e) => {
+    state.budget_per_person = parseManualBudget(e.target.value);
+    e.target.value = state.budget_per_person ? formatTry(state.budget_per_person) : '';
     refreshNextButton();
     renderAiPanel();
   });
@@ -368,6 +420,26 @@ function bindWizardEvents() {
     state.children_ages = e.target.value;
     refreshNextButton();
     renderAiPanel();
+  });
+
+  $('#vacation-travelers-count')?.addEventListener('input', (e) => {
+    state.travelers_count = e.target.value;
+    refreshNextButton();
+    renderAiPanel();
+  });
+
+  document.querySelectorAll('[data-action="toggle-expectation"]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const value = chip.dataset.value;
+      if (!value) return;
+      const index = state.expectations.indexOf(value);
+      if (index >= 0) {
+        state.expectations.splice(index, 1);
+      } else if (state.expectations.length < 5) {
+        state.expectations.push(value);
+      }
+      renderWizard();
+    });
   });
 
   $('#vacation-date-start')?.addEventListener('change', (e) => {
@@ -456,6 +528,17 @@ function renderResults() {
 
   const commentary = buildAiCommentary(state, state.results);
   const summary = buildResultsSummary(state, state.results);
+  const primary = state.results[0];
+  const costLabelMap = {
+    accommodation: 'Konaklama',
+    transport: 'Ulaşım / uçuş',
+    transfer: 'Transfer',
+    food: 'Yemek',
+    extras: 'Ekstra harcama',
+    children: 'Çocuk maliyeti',
+    visaDocs: 'Vize / evrak',
+    carRental: 'Araç kiralama'
+  };
   const disclaimer =
     state.settings.vacation_disclaimer_text || DEFAULT_SETTINGS.vacation_disclaimer_text;
   const partnerEnabled = state.settings.vacation_partner_cta_enabled === 'true';
@@ -484,6 +567,13 @@ function renderResults() {
       </article>
     </div>
     <p class="vacation-results-top-pick">Öne çıkan: <strong>${escapeHtml(summary.topTitle)}</strong></p>
+    <section class="vacation-score-panel" aria-label="AI karar skoru">
+      <article><span>Genel Uygunluk</span><strong>${escapeHtml(String(primary?.scores?.general ?? '—'))}/100</strong></article>
+      <article><span>Aile Uyumu</span><strong>${escapeHtml(String(primary?.scores?.family ?? '—'))}/100</strong></article>
+      <article><span>Bütçe Verimliliği</span><strong>${escapeHtml(String(primary?.scores?.budgetEfficiency ?? '—'))}/100</strong></article>
+      <article><span>Konfor Skoru</span><strong>${escapeHtml(String(primary?.scores?.comfort ?? '—'))}/100</strong></article>
+      <article><span>Risk Seviyesi</span><strong>${escapeHtml(primary?.scores?.risk || '—')}</strong></article>
+    </section>
     <div class="vacation-result-cards">
       ${state.results
         .map(
@@ -531,6 +621,46 @@ function renderResults() {
       <ul>${commentary.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
       <p class="vacation-ai-caution">⚠ ${escapeHtml(commentary.caution)}</p>
     </div>
+
+    <section class="vacation-cost-panel" aria-label="Toplam maliyet görünümü">
+      <div class="vacation-cost-head">
+        <h3>Toplam maliyet görünümü</h3>
+        <p>Görünen fiyat ile tahmini gerçek maliyeti birlikte gösterir.</p>
+      </div>
+      <div class="vacation-cost-kpis">
+        <article><span>Görünen fiyat</span><strong>${escapeHtml(primary?.costs?.visiblePriceLabel || '—')}</strong></article>
+        <article><span>Tahmini gerçek maliyet</span><strong>${escapeHtml(primary?.costs?.realTotalLabel || '—')}</strong></article>
+        <article><span>Kişi başı maliyet</span><strong>${escapeHtml(primary?.costs?.perPersonLabel || '—')}</strong></article>
+        <article><span>Gizli giderler</span><strong>${escapeHtml(primary?.costs?.hiddenLabel || '—')}</strong></article>
+      </div>
+      <ul class="vacation-cost-lines">
+        ${(primary?.costs?.lines || [])
+          .map((line) => `<li><span>${escapeHtml(costLabelMap[line.key] || line.key)}</span><strong>${escapeHtml(line.label)}</strong></li>`)
+          .join('')}
+      </ul>
+    </section>
+
+    <section class="vacation-alternative-panel" aria-label="Alternatif öneriler">
+      <h3>Bunları da değerlendirebilirsiniz</h3>
+      <div class="vacation-alternative-grid">
+        ${(primary?.alternatives || [])
+          .map(
+            (alt) => `
+          <article class="vacation-alt-card">
+            <h4>${escapeHtml(alt.title)}</h4>
+            <p>${escapeHtml(alt.reason)}</p>
+            <ul>
+              <li><strong>Neden:</strong> ${escapeHtml(alt.delta)}</li>
+              <li><strong>Maliyet:</strong> ${escapeHtml(alt.cost)}</li>
+              <li><strong>Risk:</strong> ${escapeHtml(alt.risk)}</li>
+              <li><strong>Uygunluk skoru:</strong> ${escapeHtml(String(alt.score))}/100</li>
+            </ul>
+          </article>
+        `
+          )
+          .join('')}
+      </div>
+    </section>
 
     <div class="vacation-final-cta">
       <h3>Nihai kararınızı verin</h3>
@@ -629,13 +759,16 @@ async function submitLead(source, commentary) {
     vacation_goal: state.vacation_goal,
     budget_range: budgetPayload,
     people_type: state.people_type,
+    travelers_count: Number(state.travelers_count) || null,
+    children_ages: state.children_ages || null,
     vacation_type: state.vacation_type,
+    expectations: state.expectations.join(', '),
     date_range: state.date_range,
     duration: state.duration,
     user_note: buildLeadNote(),
     selected_option: selected,
     decision_score: state.results[0]?.score || null,
-    estimated_cost_range: state.results[0]?.estimatedCost || '',
+    estimated_cost_range: state.results[0]?.costs?.realTotalLabel || state.results[0]?.estimatedCost || '',
     ai_summary: commentary.summary
   };
 

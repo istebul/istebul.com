@@ -27,11 +27,20 @@ export function computeTripNights(start, end) {
 
 /** @param {Record<string, unknown>} state */
 export function getBudgetDisplay(state) {
-  if (state.budget_range === 'manuel' && state.budget_manual) {
-    return `Manuel hedef: ${formatTry(state.budget_manual)}`;
+  if (state.budget_range === 'manuel') {
+    const parts = [];
+    if (state.budget_total || state.budget_manual) {
+      parts.push(`Toplam ${formatTry(state.budget_total || state.budget_manual)}`);
+    }
+    if (state.budget_per_person) {
+      parts.push(`Kişi başı ${formatTry(state.budget_per_person)}`);
+    }
+    return parts.length ? `Manuel hedef: ${parts.join(' · ')}` : 'Manuel bütçe';
   }
-  if (state.budget_range === 'ekonomik') return 'Ekonomik plan (0 – 50.000 ₺)';
-  if (state.budget_range === 'dengeli') return 'Dengeli plan (50.000 – 120.000 ₺)';
+  if (state.budget_range === 'ekonomik') return 'Ekonomik plan (₺20.000 – ₺60.000)';
+  if (state.budget_range === 'dengeli') return 'Dengeli plan (₺60.000 – ₺140.000)';
+  if (state.budget_range === 'premium') return 'Premium plan (₺140.000 – ₺260.000)';
+  if (state.budget_range === 'ultra') return 'Ultra Luxury plan (₺260.000+)';
   return '';
 }
 

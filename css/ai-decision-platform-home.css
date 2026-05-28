@@ -1133,6 +1133,12 @@ body.ib-enterprise #home .ib-dash-pick-link {
   color: #cbd5e1;
 }
 
+.ib-category-showcase-insight {
+  font-size: 0.72rem;
+  color: #bfdbfe;
+  opacity: 0.9;
+}
+
 .ib-category-showcase-cta {
   margin-top: auto;
   font-size: 0.82rem;

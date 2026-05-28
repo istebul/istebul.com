@@ -1,6 +1,10 @@
 export const VACATION_STEPS = [
-  { id: 'goal', label: 'Amaç', title: 'Tatil amacınız nedir?' },
-  { id: 'budget', label: 'Bütçe', title: 'Tatil bütçenizi nasıl planlıyorsunuz?' },
+  {
+    id: 'goal',
+    label: 'Tatil tipi',
+    title: 'Nasıl bir tatil deneyimi arıyorsunuz?',
+    subtitle: 'Seçiminize göre deneyim kalitesi, maliyet ve risk modeli uyarlanır.'
+  },
   {
     id: 'people',
     label: 'Kişi',
@@ -8,38 +12,56 @@ export const VACATION_STEPS = [
     subtitle: 'Grup yapınıza göre konaklama ve ulaşım önerileri özelleştirilir.'
   },
   {
-    id: 'type',
-    label: 'Deneyim',
-    title: 'Nasıl bir tatil deneyimi arıyorsunuz?',
-    subtitle:
-      'Konaklama, aktivite yoğunluğu ve beklentinize göre en uygun tatil modelini seçin.'
+    id: 'budget',
+    label: 'Bütçe',
+    title: 'Bütçe modelinizi seçin',
+    subtitle: 'Toplam maliyet, kişi başı maliyet ve gizli giderler bu modelle hesaplanır.'
   },
   {
     id: 'date',
     label: 'Tarih',
-    title: 'Seyahat tarihlerinizi belirleyin',
-    subtitle: 'Net tarih girebilir veya yaklaşık dönem ile esneklik belirtebilirsiniz.'
+    title: 'Seyahat tarihlerini planlayın',
+    subtitle: 'Yoğun sezon, hava ve fiyat avantajı analizi tarih verisiyle hesaplanır.'
+  },
+  {
+    id: 'expectations',
+    label: 'Beklentiler',
+    title: 'Önceliklerinizi işaretleyin',
+    subtitle: 'AI skoru için en fazla 5 beklenti seçebilirsiniz.'
   },
   {
     id: 'note',
-    label: 'Beklenti',
-    title: 'Özel beklentileriniz',
-    subtitle: 'Sağlık, tempo, erişilebilirlik veya bütçe hassasiyetlerinizi paylaşın.'
+    label: 'Profil notu',
+    title: 'Ek not eklemek ister misiniz?',
+    subtitle:
+      'Sağlık, tempo, özel ihtiyaç veya rota beklentinizi ekleyebilirsiniz.'
   }
 ];
 
 export const BUDGET_PLANS = [
   {
     value: 'ekonomik',
-    label: 'Ekonomik Plan',
-    description: 'Temel ihtiyaçları karşılayan, maliyet odaklı tatil.',
-    range: '0 – 50.000 TL'
+    label: 'Ekonomik',
+    description: 'Maliyet odaklı, temel konfor seviyesinde plan.',
+    range: '₺20.000 – ₺60.000'
   },
   {
     value: 'dengeli',
-    label: 'Dengeli Plan',
-    description: 'Konfor ve bütçe dengesini koruyan tatil.',
-    range: '50.000 – 120.000 TL'
+    label: 'Dengeli',
+    description: 'Bütçe, kalite ve deneyim dengesini koruyan plan.',
+    range: '₺60.000 – ₺140.000'
+  },
+  {
+    value: 'premium',
+    label: 'Premium',
+    description: 'Yüksek konfor, daha iyi konaklama ve deneyim odaklı.',
+    range: '₺140.000 – ₺260.000'
+  },
+  {
+    value: 'ultra',
+    label: 'Ultra Luxury',
+    description: 'Özel transfer, premium lokasyon ve üst segment hizmet.',
+    range: '₺260.000+'
   },
   {
     value: 'manuel',
@@ -52,12 +74,14 @@ export const BUDGET_PLANS = [
 
 export const STEP_OPTIONS = {
   goal: [
-    { value: 'aile', label: 'Aile Tatili', icon: '👨‍👩‍👧' },
-    { value: 'balayi', label: 'Balayı', icon: '💑' },
-    { value: 'ekonomik', label: 'Ekonomik Tatil', icon: '💰' },
-    { value: 'luks', label: 'Lüks Tatil', icon: '✨' },
-    { value: 'yurtdisi', label: 'Yurt Dışı', icon: '✈️' },
-    { value: 'kacamak', label: 'Kısa Kaçamak', icon: '⏱️' }
+    { value: 'deniz', label: 'Deniz tatili', icon: '🏖️', fit: 'Aileler ve dinlenme odaklı profiller' },
+    { value: 'sehir', label: 'Şehir gezisi', icon: '🌆', fit: 'Kültür ve gastronomi sevenler' },
+    { value: 'doga', label: 'Doğa kaçamağı', icon: '🌲', fit: 'Sakinlik ve doğa deneyimi arayanlar' },
+    { value: 'luks-resort', label: 'Lüks resort', icon: '✨', fit: 'Konfor ve servis kalitesine odaklananlar' },
+    { value: 'balayi', label: 'Balayı', icon: '💍', fit: 'Özel deneyim isteyen çiftler' },
+    { value: 'cocuklu-aile', label: 'Çocuklu aile tatili', icon: '👨‍👩‍👧‍👦', fit: 'Çocuk güvenliği ve aktivite arayanlar' },
+    { value: 'wellness', label: 'Wellness / spa', icon: '🧖', fit: 'Rahatlama ve bakım odaklı gezginler' },
+    { value: 'kultur', label: 'Kültür turu', icon: '🏛️', fit: 'Tarihi rota ve keşif severler' }
   ],
   people: [
     {
@@ -72,8 +96,8 @@ export const STEP_OPTIONS = {
     },
     {
       value: 'aile',
-      label: 'Aile ile',
-      description: 'Yetişkin aile üyeleri; çocuksuz veya çocuklar ayrı planlanmış.'
+      label: 'Geniş aile',
+      description: 'Çok kişili konaklama ve ortak plan odaklı seyahat.'
     },
     {
       value: 'arkadas',
@@ -86,9 +110,9 @@ export const STEP_OPTIONS = {
       description: 'Çocuk güvenliği, aktivite ve oda düzeni öncelikli.'
     },
     {
-      value: 'yasli-aile',
-      label: 'Yaşlı aile bireyiyle',
-      description: 'Erişilebilirlik, sağlık ve düşük tempo öncelikli.'
+      value: 'is-tatil',
+      label: 'İş + tatil',
+      description: 'Workation uyumu, internet kalitesi ve erişim öncelikli.'
     }
   ],
   type: [
@@ -132,6 +156,19 @@ export const STEP_OPTIONS = {
       label: 'Villa / butik konaklama',
       description: 'Mahremiyet ve özel alan; grup veya çift için.'
     }
+  ],
+  expectations: [
+    'Sessizlik',
+    'Çocuk dostu',
+    'Gece hayatı',
+    'Doğa',
+    'Instagramlık yerler',
+    'Gastronomi',
+    'Güvenlik',
+    'Uygun fiyat',
+    'Lüks deneyim',
+    'Spa',
+    'Macera'
   ],
   dateFlexibility: [
     { value: 'net', label: 'Net tarihlerim var' },
