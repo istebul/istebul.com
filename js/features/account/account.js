@@ -349,7 +349,7 @@ export class AccountManager {
         const dashboardData = this.buildDashboardData(user, profile, subMeta, hasPremium, emailVerified);
         root.innerHTML = `
             ${renderUserDashboard(dashboardData)}
-            <section class="ud-panel-extra ${this.activeTab === 'comparisons' ? 'is-active' : ''}" data-dashboard-panel="comparisons" ${this.activeTab === 'comparisons' ? '' : 'hidden'}>
+            <section class="ud-panel-extra ${this.activeTab === 'comparisons' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="comparisons" ${this.activeTab === 'comparisons' ? '' : 'hidden'}>
                 <header class="account-panel-head">
                     <h2>Karşılaştırmalarım</h2>
                     <p>Kaydettiğiniz karşılaştırmaları tek merkezde yönetin.</p>
@@ -360,7 +360,7 @@ export class AccountManager {
                     <a href="/auto/" class="btn btn-outline">Yeni analiz başlat</a>
                 </div>
             </section>
-            <section class="ud-panel-extra ${this.activeTab === 'recommendations' ? 'is-active' : ''}" data-dashboard-panel="recommendations" ${this.activeTab === 'recommendations' ? '' : 'hidden'}>
+            <section class="ud-panel-extra ${this.activeTab === 'recommendations' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="recommendations" ${this.activeTab === 'recommendations' ? '' : 'hidden'}>
                 <header class="account-panel-head">
                     <h2>AI Önerilerim</h2>
                     <p>Kayıtlı analizlerinize göre bilgilendirme amaçlı öneriler.</p>
@@ -369,14 +369,14 @@ export class AccountManager {
                   ? `<div class="ud-side-stack">${dashboardData.recommendations.map((item) => `<article class="ud-rec-item"><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.description)}</p></article>`).join('')}</div>`
                   : '<p class="ud-empty-note">Henüz AI önerisi oluşturacak yeterli veri yok.</p>'}
             </section>
-            <section class="ud-panel-extra ${this.activeTab === 'notifications' ? 'is-active' : ''}" data-dashboard-panel="notifications" ${this.activeTab === 'notifications' ? '' : 'hidden'}>
+            <section class="ud-panel-extra ${this.activeTab === 'notifications' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="notifications" ${this.activeTab === 'notifications' ? '' : 'hidden'}>
                 <header class="account-panel-head">
                     <h2>Bildirimler</h2>
                     <p>Karar durum güncellemeleri ve sistem bildirimleri.</p>
                 </header>
                 <p class="ud-empty-note">Yeni bildirim yok. Analiz tamamlandığında veya favori durumu değiştiğinde burada listelenir.</p>
             </section>
-            <section class="ud-panel-extra ${this.activeTab === 'settings' ? 'is-active' : ''}" data-dashboard-panel="settings" ${this.activeTab === 'settings' ? '' : 'hidden'}>
+            <section class="ud-panel-extra ${this.activeTab === 'settings' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="settings" ${this.activeTab === 'settings' ? '' : 'hidden'}>
                 <header class="account-panel-head">
                     <h2>Profil Ayarları</h2>
                     <p>Profil bilgileriniz ve bildirim tercihleriniz.</p>
@@ -416,7 +416,7 @@ export class AccountManager {
                     </div>
                 </form>
             </section>
-            <section class="ud-panel-extra ${this.activeTab === 'security' ? 'is-active' : ''}" data-dashboard-panel="security" ${this.activeTab === 'security' ? '' : 'hidden'}>
+            <section class="ud-panel-extra ${this.activeTab === 'security' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="security" ${this.activeTab === 'security' ? '' : 'hidden'}>
                 <header class="account-panel-head">
                     <h2>Hesap Güvenliği</h2>
                     <p>Şifre ve oturum güvenliği kontrolleri.</p>
@@ -438,7 +438,7 @@ export class AccountManager {
                     </li>
                 </ul>
             </section>
-            <section class="ud-panel-extra ${this.activeTab === 'help' ? 'is-active' : ''}" data-dashboard-panel="help" ${this.activeTab === 'help' ? '' : 'hidden'}>
+            <section class="ud-panel-extra ${this.activeTab === 'help' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="help" ${this.activeTab === 'help' ? '' : 'hidden'}>
                 <header class="account-panel-head">
                     <h2>Yardım & Destek</h2>
                     <p>Sık sorulan sorular ve destek kanalları.</p>

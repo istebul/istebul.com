@@ -27,7 +27,6 @@ import {
     shouldShowUpsell,
     trackUpsellClick
 } from './features/monetization/upsell-engine.js';
-import { initEnterpriseUx } from './runtime/enterprise-ux.js';
 import { initHomeCategories } from './runtime/home-categories.js';
 import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
@@ -135,6 +134,7 @@ class App {
 
     async init() {
         try {
+            const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
             initEnterpriseUx();
             initHomeCategories();
 
