@@ -342,6 +342,56 @@ if (fs.existsSync(tatilAppSrc)) {
   }
 }
 
+function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
+  const entrySrc = path.join(root, entryRel);
+  if (!fs.existsSync(entrySrc)) return;
+
+  const assetDir = path.join(dist, 'assets', runtimeFolder);
+  fs.mkdirSync(assetDir, { recursive: true });
+  const bundleResult = esbuild.buildSync({
+    entryPoints: [entrySrc],
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2020',
+    minify: true,
+    sourcemap: false,
+    write: false
+  });
+  const bundleCode = bundleResult.outputFiles[0].text;
+  const appFile = `${runtimeFolder.replace('-runtime', '')}-app.${hashContent(bundleCode)}.js`;
+  writeFile(`assets/${runtimeFolder}/${appFile}`, bundleCode);
+  writeFile(`assets/${runtimeFolder}/${runtimeFolder.replace('-runtime', '')}-app.js`, bundleCode);
+
+  const htmlPath = path.join(dist, htmlRel);
+  if (!fs.existsSync(htmlPath)) return;
+
+  let html = fs.readFileSync(htmlPath, 'utf8');
+  html = html.replace(scriptPattern, `/assets/${runtimeFolder}/${appFile}`);
+  const tatilCssHashed = assetRefs.get('css/tatil.css');
+  const themesCssHashed = assetRefs.get('css/vertical-themes.css');
+  if (tatilCssHashed) {
+    html = html.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
+  }
+  if (themesCssHashed) {
+    html = html.replace(/\/css\/vertical-themes(?:\.[a-f0-9]+)?\.css/g, `/${themesCssHashed}`);
+  }
+  fs.writeFileSync(htmlPath, minifyHtml(html));
+}
+
+bundleVerticalPage(
+  'js/konut/konut-app.js',
+  'konut/index.html',
+  'konut-runtime',
+  /\/js\/konut\/konut-app\.js/g
+);
+bundleVerticalPage(
+  'js/finans/finans-app.js',
+  'finans/index.html',
+  'finans-runtime',
+  /\/js\/finans\/finans-app\.js/g
+);
+
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
 if (fs.existsSync(autoHtmlPath)) {
   let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');

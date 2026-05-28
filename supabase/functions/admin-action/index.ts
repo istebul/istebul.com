@@ -193,6 +193,8 @@ Deno.serve(async (req) => {
     "vacation_destinations",
     "vacation_partners",
     "vacation_scoring_configs",
+    "vertical_events",
+    "vertical_leads",
   ];
 
   if (action === "upsert_settings") {
@@ -235,6 +237,8 @@ Deno.serve(async (req) => {
         vacation_destinations: "*",
         vacation_partners: "*",
         vacation_scoring_configs: "*",
+        vertical_events: "*",
+        vertical_leads: "*",
       };
 
       const allowedOrderColumns: Record<string, string[]> = {
@@ -245,6 +249,8 @@ Deno.serve(async (req) => {
         vacation_destinations: ["created_at", "season_score", "risk_score"],
         vacation_partners: ["created_at", "name"],
         vacation_scoring_configs: ["created_at"],
+        vertical_events: ["created_at", "event_type"],
+        vertical_leads: ["created_at", "decision_score", "status"],
         auto_events: ["created_at"],
         analytics_events: ["created_at"],
         announcements: ["created_at"],

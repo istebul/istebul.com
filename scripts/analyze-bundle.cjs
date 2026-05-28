@@ -14,6 +14,8 @@ const BUDGET_EXCLUDE = [
   /^js\/corporate\//,
   /^assets\/auto-runtime\//,
   /^assets\/tatil-runtime\//,
+  /^assets\/konut-runtime\//,
+  /^assets\/finans-runtime\//,
   /^assets\/lucide\.min\.js$/,
   /^env\.js$/,
   /^sw\.js$/,

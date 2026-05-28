@@ -413,6 +413,12 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           </div>
         </div>
         <div class="nav-group">
+          <button type="button" class="nav-group-toggle" aria-expanded="true">Konut &amp; Finans</button>
+          <div class="nav-group-items">
+            <div class="nav-item" data-page-target="vertical-leads"><span class="nav-label">Dikey leadler</span></div>
+          </div>
+        </div>
+        <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">Partnerler</button>
           <div class="nav-group-items">
             <div class="nav-item" data-page-target="partner-endpoints"><span class="nav-label">Partner kanalları</span></div>
@@ -827,6 +833,24 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             </select>
           </div>
           <div id="vacation-leads-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-vertical-leads">
+        <div class="page-header">
+          <h2>Konut &amp; Finans leadleri</h2>
+          <p>Dikey karar motoru lead kayıtları (vertical_leads)</p>
+        </div>
+        <div class="card">
+          <div class="auto-leads-toolbar">
+            <input id="vertical-leads-search" class="form-input" type="search" placeholder="Ad, e-posta, telefon ara...">
+            <select id="vertical-leads-vertical-filter" class="status-select">
+              <option value="">Tüm dikeyler</option>
+              <option value="konut">Konut</option>
+              <option value="finans">Finans</option>
+            </select>
+          </div>
+          <div id="vertical-leads-list"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
 

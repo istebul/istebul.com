@@ -1,0 +1,49 @@
+/* Konut & Finans — premium dark vertical (extends tatil.css) */
+body.konut-page.vacation-page {
+  background:
+    radial-gradient(900px 520px at 80% -5%, rgba(99, 102, 241, 0.28), transparent 60%),
+    radial-gradient(700px 420px at 0% 40%, rgba(59, 130, 246, 0.16), transparent 55%),
+    linear-gradient(180deg, #060f23 0%, #0b1730 42%, #0a1222 100%);
+}
+
+body.finans-page.vacation-page {
+  background:
+    radial-gradient(900px 520px at 75% -5%, rgba(16, 185, 129, 0.22), transparent 60%),
+    radial-gradient(700px 420px at 0% 40%, rgba(37, 99, 235, 0.14), transparent 55%),
+    linear-gradient(180deg, #061410 0%, #0b1f1a 42%, #0a1218 100%);
+}
+
+body.konut-page .vacation-hero-badge,
+body.finans-page .vacation-hero-badge {
+  background: rgba(99, 102, 241, 0.35);
+  color: #e0e7ff;
+}
+
+body.finans-page .vacation-hero-badge {
+  background: rgba(16, 185, 129, 0.3);
+  color: #d1fae5;
+}
+
+body.konut-page .vacation-result-card.is-selected,
+body.finans-page .vacation-result-card.is-selected {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35), var(--vacation-shadow);
+}
+
+body.finans-page .vacation-result-card.is-selected {
+  border-color: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.3), var(--vacation-shadow);
+}
+
+body.konut-page .vacation-selected-recap,
+body.finans-page .vacation-selected-recap {
+  background: rgba(30, 41, 59, 0.55);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+body.konut-page .vacation-selected-recap h3,
+body.finans-page .vacation-selected-recap h3,
+body.konut-page .vacation-selected-recap p,
+body.finans-page .vacation-selected-recap p {
+  color: var(--vacation-on-surface);
+}

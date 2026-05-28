@@ -49,6 +49,7 @@ import {
 import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
 import { initAdminShell } from './admin/admin-shell.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
+import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
@@ -1568,6 +1569,7 @@ async function adminAction(payload) {
 }
 
 const vacationAdmin = initVacationAdmin({ sb, adminAction, toast });
+const verticalAdmin = initVerticalAdmin({ sb, adminAction, toast });
 
 async function loadDashboard() {
   const setStat = (id, value) => {
@@ -4070,6 +4072,7 @@ registerAdminPageHandlers({
   'auto-leads': () => loadAutoLeads(),
   'vacation-analytics': () => vacationAdmin.loadVacationAnalytics(),
   'vacation-leads': () => vacationAdmin.loadVacationLeads(),
+  'vertical-leads': () => verticalAdmin.loadVerticalLeads(),
   'vacation-scenarios': () => vacationAdmin.loadVacationScenarios(),
   'vacation-settings': () => vacationAdmin.loadVacationSettings(),
   'vacation-destinations': () => vacationAdmin.loadVacationDestinations(),
