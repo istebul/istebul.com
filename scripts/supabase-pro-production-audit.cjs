@@ -52,17 +52,20 @@ const launchMigration = fs.readFileSync(
   path.join(root, 'supabase/migrations/20260527_launch_security_hardening.sql'),
   'utf8'
 );
-if (launchMigration.includes('DROP POLICY')) {
+if (/\bDROP\s+POLICY\b/i.test(launchMigration)) {
   fail('launch_security_hardening must not DROP existing RLS policies');
 }
-if (launchMigration.includes('DROP TABLE')) {
+if (/\bDROP\s+TABLE\b/i.test(launchMigration)) {
   fail('launch_security_hardening must not DROP TABLE');
 }
 if (!launchMigration.includes('enforce_minimum_admin_count')) {
   fail('launch_security_hardening must include last-admin guard');
 }
-if (!launchMigration.includes('site_settings')) {
-  fail('launch_security_hardening must cover site_settings');
+if (!launchMigration.includes('is_admin()')) {
+  fail('launch_security_hardening must define is_admin() helper');
+}
+if (!launchMigration.includes('Admins update auto_leads')) {
+  fail('launch_security_hardening must allow admin update on auto_leads');
 }
 
 const proMigration = fs.readFileSync(

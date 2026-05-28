@@ -1,10 +1,28 @@
--- Launch security hardening (additive only).
--- Rules: no DROP TABLE, no DROP POLICY, no destructive changes.
--- service_role continues to bypass RLS (Supabase default).
+-- Launch security hardening (idempotent, additive only).
+-- Destructive DDL intentionally omitted; service_role bypass unchanged.
+--
+-- Lead/event intake: auto-intake & analytics use service_role (not direct anon REST).
+-- Admin CRM: authenticated admin JWT + policies below.
 
 -- ---------------------------------------------------------------------------
--- Shared helper: active admin/moderator check (used by policies below)
+-- Admin helpers (reuse if already present via CREATE OR REPLACE)
 -- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    WHERE p.id = auth.uid()
+      AND p.role = 'admin'
+      AND COALESCE(p.is_banned, false) = false
+  );
+$$;
+
 CREATE OR REPLACE FUNCTION public.is_active_admin_or_moderator()
 RETURNS boolean
 LANGUAGE sql
@@ -21,11 +39,13 @@ AS $$
   );
 $$;
 
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.is_active_admin_or_moderator() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.is_active_admin_or_moderator() TO anon, authenticated, service_role;
 
 -- ---------------------------------------------------------------------------
--- profiles — RLS, anon lockdown, escalation guards
+-- 1. profiles — RLS + self access + admin read + role escalation guard
 -- ---------------------------------------------------------------------------
 DO $$
 BEGIN
@@ -56,7 +76,7 @@ BEGIN
         ON public.profiles
         FOR SELECT
         TO authenticated
-        USING (public.is_active_admin_or_moderator());
+        USING (public.is_admin());
     END IF;
 
     IF NOT EXISTS (
@@ -110,7 +130,6 @@ BEGIN
   END IF;
 END $$;
 
--- Force safe defaults on profile INSERT (works alongside existing INSERT policies)
 CREATE OR REPLACE FUNCTION public.enforce_profile_insert_safe_defaults()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -126,23 +145,6 @@ BEGIN
 END;
 $$;
 
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.tables
-    WHERE table_schema = 'public' AND table_name = 'profiles'
-  ) AND NOT EXISTS (
-    SELECT 1 FROM pg_trigger
-    WHERE tgname = 'trg_enforce_profile_insert_safe_defaults'
-  ) THEN
-    CREATE TRIGGER trg_enforce_profile_insert_safe_defaults
-      BEFORE INSERT ON public.profiles
-      FOR EACH ROW
-      EXECUTE FUNCTION public.enforce_profile_insert_safe_defaults();
-  END IF;
-END $$;
-
--- Prevent removing the last active admin
 CREATE OR REPLACE FUNCTION public.enforce_minimum_admin_count()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -175,18 +177,29 @@ BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.tables
     WHERE table_schema = 'public' AND table_name = 'profiles'
-  ) AND NOT EXISTS (
-    SELECT 1 FROM pg_trigger WHERE tgname = 'trg_enforce_minimum_admin'
   ) THEN
-    CREATE TRIGGER trg_enforce_minimum_admin
-      BEFORE UPDATE ON public.profiles
-      FOR EACH ROW
-      EXECUTE FUNCTION public.enforce_minimum_admin_count();
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_trigger WHERE tgname = 'trg_enforce_profile_insert_safe_defaults'
+    ) THEN
+      CREATE TRIGGER trg_enforce_profile_insert_safe_defaults
+        BEFORE INSERT ON public.profiles
+        FOR EACH ROW
+        EXECUTE FUNCTION public.enforce_profile_insert_safe_defaults();
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_trigger WHERE tgname = 'trg_enforce_minimum_admin'
+    ) THEN
+      CREATE TRIGGER trg_enforce_minimum_admin
+        BEFORE UPDATE ON public.profiles
+        FOR EACH ROW
+        EXECUTE FUNCTION public.enforce_minimum_admin_count();
+    END IF;
   END IF;
 END $$;
 
 -- ---------------------------------------------------------------------------
--- auto_leads — RLS + deny anon/authenticated direct access + admin read
+-- 2. auto_leads — no public SELECT (PII); admin read/update; intake via service_role
 -- ---------------------------------------------------------------------------
 DO $$
 BEGIN
@@ -218,13 +231,26 @@ BEGIN
         ON public.auto_leads
         FOR SELECT
         TO authenticated
-        USING (public.is_active_admin_or_moderator());
+        USING (public.is_admin());
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies
+      WHERE schemaname = 'public' AND tablename = 'auto_leads'
+        AND policyname = 'Admins update auto_leads'
+    ) THEN
+      CREATE POLICY "Admins update auto_leads"
+        ON public.auto_leads
+        FOR UPDATE
+        TO authenticated
+        USING (public.is_admin())
+        WITH CHECK (public.is_admin());
     END IF;
   END IF;
 END $$;
 
 -- ---------------------------------------------------------------------------
--- auto_events — RLS + deny anon/authenticated direct access + admin read
+-- 3. auto_events — no public SELECT; admin read; insert via service_role
 -- ---------------------------------------------------------------------------
 DO $$
 BEGIN
@@ -256,13 +282,13 @@ BEGIN
         ON public.auto_events
         FOR SELECT
         TO authenticated
-        USING (public.is_active_admin_or_moderator());
+        USING (public.is_admin());
     END IF;
   END IF;
 END $$;
 
 -- ---------------------------------------------------------------------------
--- site_settings — bootstrap + RLS + allowlist read + write lockdown
+-- 4. site_settings — public allowlist read; admin read/write; anon write denied
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.site_settings (
   key text PRIMARY KEY,
@@ -328,7 +354,20 @@ BEGIN
       ON public.site_settings
       FOR SELECT
       TO authenticated
-      USING (public.is_active_admin_or_moderator());
+      USING (public.is_admin());
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'site_settings'
+      AND policyname = 'Launch admins write site_settings'
+  ) THEN
+    CREATE POLICY "Launch admins write site_settings"
+      ON public.site_settings
+      FOR INSERT, UPDATE, DELETE
+      TO authenticated
+      USING (public.is_admin())
+      WITH CHECK (public.is_admin());
   END IF;
 
   IF NOT EXISTS (
@@ -339,14 +378,14 @@ BEGIN
     CREATE POLICY "Launch deny client write site_settings"
       ON public.site_settings
       FOR INSERT, UPDATE, DELETE
-      TO anon, authenticated
+      TO anon
       USING (false)
       WITH CHECK (false);
   END IF;
 END $$;
 
 -- ---------------------------------------------------------------------------
--- listings — RLS + admin CRM read (preserve public active listing access)
+-- 5. listings — public active read; owner write; admin full access
 -- ---------------------------------------------------------------------------
 DO $$
 BEGIN
@@ -396,19 +435,44 @@ BEGIN
     IF NOT EXISTS (
       SELECT 1 FROM pg_policies
       WHERE schemaname = 'public' AND tablename = 'listings'
+        AND policyname = 'Users can delete own listings'
+    ) THEN
+      CREATE POLICY "Users can delete own listings"
+        ON public.listings
+        FOR DELETE
+        TO authenticated
+        USING (auth.uid() = user_id);
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies
+      WHERE schemaname = 'public' AND tablename = 'listings'
         AND policyname = 'Launch admins read all listings'
     ) THEN
       CREATE POLICY "Launch admins read all listings"
         ON public.listings
         FOR SELECT
         TO authenticated
-        USING (public.is_active_admin_or_moderator());
+        USING (public.is_admin());
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies
+      WHERE schemaname = 'public' AND tablename = 'listings'
+        AND policyname = 'Launch admins manage all listings'
+    ) THEN
+      CREATE POLICY "Launch admins manage all listings"
+        ON public.listings
+        FOR UPDATE, DELETE
+        TO authenticated
+        USING (public.is_admin())
+        WITH CHECK (public.is_admin());
     END IF;
   END IF;
 END $$;
 
 -- ---------------------------------------------------------------------------
--- analytics_funnel_daily — revoke client access (view may exist from prior migration)
+-- analytics_funnel_daily — revoke client access (non-destructive grant change)
 -- ---------------------------------------------------------------------------
 DO $$
 BEGIN
