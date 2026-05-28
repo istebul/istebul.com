@@ -1,37 +1,55 @@
-# Architecture Guide
+# isteBul — Architecture Overview
 
-## Overview
+## Runtime surfaces
 
-istebul is a vanilla JavaScript single-page marketplace application deployed on Netlify and backed by Supabase.
+| Surface | Entry | Bundle |
+|---------|-------|--------|
+| Main marketplace | `index.html` → `js/app.js` | esbuild `app` |
+| Auto funnel | `auto/index.html` → `js/auto/auto-app.js` | esbuild `auto` |
+| Admin CRM | `admin-panel.html` → `js/admin-panel.js` | esbuild `admin-panel` |
+| Corporate static | `*.html` + `js/corporate/` | per-page |
 
-## Runtime components
+## Core layer (`js/core/`)
 
-- **Browser SPA:** `index.html`, `css/style.css`, `js/app.js`
-- **Routing:** `js/core/router.js`
-- **API client:** `js/core/api.js`
-- **Auth/data/storage:** Supabase Auth, Postgres and Storage
-- **Serverless API:** Netlify Functions in `netlify/functions`
-- **AI proxy:** `functions/ai-proxy.js`
-- **Image upload:** `netlify/functions/upload-image.js`
-- **Health check:** `netlify/functions/health.js`
+Shared infrastructure — import from here instead of duplicating:
 
-## Data flow
+- `supabase.js` — client factory
+- `api.js` — authenticated API helpers
+- `state.js` — lightweight app state
+- `router.js` — hash/path routing (main app)
+- `security.js` / `dom-safe.js` — HTML escaping, safe URLs
+- `storage-keys.js` — canonical `localStorage` / `sessionStorage` keys + legacy migration
+- `admin-client.js` — `admin-action` edge function (mutations + `list` reads)
+- `analytics.js` — `analytics_events` ingest pipeline
+- `app-bridge.js` — cross-bundle access without tight `window.app` coupling
 
-1. User interacts with the SPA.
-2. Router shows the matching section.
-3. API client validates/sanitizes inputs.
-4. Public reads go to Supabase or local fallback data.
-5. Protected operations use Supabase auth tokens.
-6. Sensitive operations go through Netlify Functions.
+## Auth flow
 
-## Security boundaries
+1. **Main app:** `AuthManager` → `API.signIn` → `supabase.auth.signInWithPassword`
+2. **Admin:** direct `signInWithPassword` on admin bundle client
+3. Session bootstrap: `App.checkAuth()` on init; `completeSessionBootstrap()` for history/listings/checkout resume (no duplicate `userLoggedIn` on cold load)
 
-- Service role keys stay only in Netlify environment variables.
-- Browser code only receives public anon keys.
-- Function endpoints validate Bearer tokens where required.
-- AI/upload endpoints use rate limiting headers and hashed client keys.
-- Monitoring and analytics scripts load only after consent.
+## Data access patterns
 
-## Build output
+| Data | Client pattern |
+|------|----------------|
+| Public listings, CMS | Anon Supabase + RLS |
+| User profile (self) | Authenticated client |
+| Admin writes | `admin-action` service role |
+| Admin sensitive reads (`auto_leads`, `auto_events`) | `admin-action` `list` |
 
-`npm run build` creates `dist/` with minified HTML, CSS and JavaScript plus static assets, `robots.txt`, `sitemap.xml` and a build manifest.
+## Feature folders
+
+- `js/features/auth/` — login/register modals
+- `js/features/monetization/` — Stripe / Pro gating
+- `js/ui/` — presentation (`UIManager` + domain UI installers)
+- `js/engines/` — pure calculation (cost, scoring)
+- `js/auto/` — Auto product (standalone bundle)
+
+## Build & deploy
+
+`npm run build` → `scripts/production-build.cjs` → `dist/` → Cloudflare Pages (`istebul-com`).
+
+## Technical debt (tracked)
+
+See `docs/MAINTAINABILITY_AUDIT.md` for prioritized backlog (e.g. split `app.js`, merge cost engines, UI composition refactor).
