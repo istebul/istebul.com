@@ -285,7 +285,7 @@ export class PremiumPages {
             <article class="ib-method-card">
               <i data-lucide="layers"></i>
               <h3>Ağırlıklandırma</h3>
-              <p>Araç segmentinde özelleştirilmiş ağırlık vektörleri (konut/tatil yakında).</p>
+              <p>Araç, konut, tatil ve finansman için özelleştirilmiş ağırlık vektörleri; sigorta ve kasko erken erişimde.</p>
             </article>
             <article class="ib-method-card">
               <i data-lucide="git-compare"></i>

@@ -13,6 +13,7 @@ const BUDGET_EXCLUDE = [
   /^js\/admin-panel\.js$/,
   /^js\/corporate\//,
   /^assets\/auto-runtime\//,
+  /^assets\/tatil-runtime\//,
   /^assets\/lucide\.min\.js$/,
   /^env\.js$/,
   /^sw\.js$/,

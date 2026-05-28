@@ -511,42 +511,57 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <header class="section-header ib-section-intro ib-section-intro--center">
                     <span class="section-kicker">Karar kategorileri</span>
                     <h2 id="home-use-cases-title">Hangi kararda destek istiyorsunuz?</h2>
-                    <p class="ib-section-lead-muted">Otomobil ve tatil analizleri canlıdır; konut, finans ve sigorta yakında.</p>
+                    <p class="ib-section-lead-muted">Araç, konut, tatil ve finansman analizleri canlıdır. Sigorta ve kasko için erken erişim listesi açıktır.</p>
                 </header>
                 <div class="ib-category-showcase-grid" id="home-category-grid" aria-live="polite">
+                    <div class="ib-category-showcase-live" aria-label="Canlı kategoriler">
                     <a href="/auto/" class="ib-category-showcase is-active ib-category-showcase--auto" data-category-id="otomobil" data-native-route>
-                        <span class="ib-category-showcase-badge">AI destekli</span>
-                        <h3><i data-lucide="car" aria-hidden="true"></i> Otomobil</h3>
-                        <p>TCO, finansman, risk ve AI gerekçe — tam araç karar analizi.</p>
-                        <span class="ib-category-showcase-insight">Toplam maliyet + uygunluk + risk analizi</span>
-                        <span class="ib-category-showcase-cta">Analiz Et →</span>
+                        <span class="ib-category-showcase-badge">Canlı</span>
+                        <h3><i data-lucide="car" aria-hidden="true"></i> Araç</h3>
+                        <p>TCO, finansman ve risk — tam araç karar analizi.</p>
+                        <ul class="ib-category-showcase-pillars" aria-label="Karar özeti"><li>Karar skoru</li><li>Toplam maliyet</li><li>Risk analizi</li><li>Sonraki adım</li></ul>
+                        <span class="ib-category-showcase-cta">Analiz et →</span>
                         <span class="ib-category-showcase-score">89<span>/100</span></span>
                     </a>
+                    <a href="/konut/" class="ib-category-showcase is-active ib-category-showcase--konut" data-category-id="konut" data-native-route>
+                        <span class="ib-category-showcase-badge">Canlı</span>
+                        <h3><i data-lucide="home" aria-hidden="true"></i> Konut</h3>
+                        <p>Aidat, ipotek ve toplam sahip olma maliyeti analizi.</p>
+                        <ul class="ib-category-showcase-pillars" aria-label="Karar özeti"><li>Karar skoru</li><li>Toplam maliyet</li><li>Risk analizi</li><li>Sonraki adım</li></ul>
+                        <span class="ib-category-showcase-cta">Konut analizine git →</span>
+                        <span class="ib-category-showcase-score">84<span>/100</span></span>
+                    </a>
                     <a href="/tatil/" class="ib-category-showcase is-active ib-category-showcase--tatil" data-category-id="tatil" data-native-route>
-                        <span class="ib-category-showcase-badge">AI destekli</span>
+                        <span class="ib-category-showcase-badge">Canlı</span>
                         <h3><i data-lucide="palmtree" aria-hidden="true"></i> Tatil</h3>
-                        <p>Travel Decision Intelligence: bütçe, tarih ve aile yapısına göre karar analizi.</p>
-                        <span class="ib-category-showcase-insight">Toplam maliyet + uygunluk + risk analizi</span>
+                        <p>Bütçe, tarih ve aile yapısına göre tatil karar analizi.</p>
+                        <ul class="ib-category-showcase-pillars" aria-label="Karar özeti"><li>Karar skoru</li><li>Toplam maliyet</li><li>Risk analizi</li><li>Sonraki adım</li></ul>
                         <span class="ib-category-showcase-cta">Planlamaya başla →</span>
                         <span class="ib-category-showcase-score">86<span>/100</span></span>
                     </a>
-                    <div class="ib-category-showcase is-soon ib-category-showcase--konut" role="group" aria-disabled="true" data-category-id="konut">
-                        <span class="ib-category-showcase-badge">Yakında</span>
-                        <h3><i data-lucide="home" aria-hidden="true"></i> Konut</h3>
-                        <p>Faiz, aidat ve toplam sahip olma maliyeti — yakında.</p>
-                        <span class="ib-category-showcase-cta is-disabled" aria-hidden="true">Yakında</span>
+                    <a href="/finans/" class="ib-category-showcase is-active ib-category-showcase--finans" data-category-id="finans" data-native-route>
+                        <span class="ib-category-showcase-badge">Canlı</span>
+                        <h3><i data-lucide="landmark" aria-hidden="true"></i> Finansman</h3>
+                        <p>Kredi senaryoları, nakit akışı ve finansman yükü karşılaştırması.</p>
+                        <ul class="ib-category-showcase-pillars" aria-label="Karar özeti"><li>Karar skoru</li><li>Toplam maliyet</li><li>Risk analizi</li><li>Sonraki adım</li></ul>
+                        <span class="ib-category-showcase-cta">Finansman analizine git →</span>
+                        <span class="ib-category-showcase-score">82<span>/100</span></span>
+                    </a>
                     </div>
-                    <div class="ib-category-showcase is-soon ib-category-showcase--finans" role="group" aria-disabled="true" data-category-id="finans">
-                        <span class="ib-category-showcase-badge">Yakında</span>
-                        <h3><i data-lucide="landmark" aria-hidden="true"></i> Finans</h3>
-                        <p>Kredi senaryoları ve nakit akışı karşılaştırması — yakında.</p>
-                        <span class="ib-category-showcase-cta is-disabled" aria-hidden="true">Yakında</span>
-                    </div>
+                    <div class="ib-category-showcase-soon" aria-label="Yakında açılacak kategoriler">
+                        <p class="ib-category-soon-heading">Yakında</p>
                     <div class="ib-category-showcase is-soon ib-category-showcase--sigorta" role="group" aria-disabled="true" data-category-id="sigorta">
-                        <span class="ib-category-showcase-badge">Yakında</span>
+                        <span class="ib-category-showcase-badge">Yakında · erken erişim</span>
                         <h3><i data-lucide="shield" aria-hidden="true"></i> Sigorta</h3>
-                        <p>Kapsam, prim ve risk dengesi analizi — yakında.</p>
-                        <span class="ib-category-showcase-cta is-disabled" aria-hidden="true">Yakında</span>
+                        <p>Kapsam, prim ve risk dengesi — erken erişim listesine katılın.</p>
+                        <span class="ib-category-showcase-cta is-disabled">Erken erişim listesi</span>
+                    </div>
+                    <div class="ib-category-showcase is-soon ib-category-showcase--kasko" role="group" aria-disabled="true" data-category-id="kasko">
+                        <span class="ib-category-showcase-badge">Yakında · erken erişim</span>
+                        <h3><i data-lucide="shield-check" aria-hidden="true"></i> Kasko</h3>
+                        <p>Kasko primi ve teminat karşılaştırması — erken erişim yakında.</p>
+                        <span class="ib-category-showcase-cta is-disabled">Erken erişim listesi</span>
+                    </div>
                     </div>
                 </div>
             </div>

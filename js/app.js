@@ -504,8 +504,7 @@ class App {
             { id: 'arac', name: 'Araç', icon: 'car', count: 0 }
         ];
         this.comingSoonCategories = [
-            { id: 'ev', name: 'Konut', icon: 'home', comingSoon: true },
-            { id: 'tatil', name: 'Tatil', icon: 'plane', comingSoon: true }
+            { id: 'ev', name: 'Konut', icon: 'home', comingSoon: true }
         ];
 
         try {
