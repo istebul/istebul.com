@@ -141,6 +141,8 @@ jobs:
             lead-alert
             admin-action
             partner-daily-reset
+            vacation-intake
+            vertical-intake
           )
           for fn in "${FUNCTIONS[@]}"; do
             echo "Deploying $fn..."

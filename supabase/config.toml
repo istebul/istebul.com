@@ -422,6 +422,16 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/lifecycle-cron/index.ts"
 
+[functions.vacation-intake]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/vacation-intake/index.ts"
+
+[functions.vertical-intake]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/vertical-intake/index.ts"
+
 [functions.admin-action]
 enabled = true
 verify_jwt = true
