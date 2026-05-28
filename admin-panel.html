@@ -416,6 +416,13 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <button type="button" class="nav-group-toggle" aria-expanded="true">Konut &amp; Finans</button>
           <div class="nav-group-items">
             <div class="nav-item" data-page-target="vertical-leads"><span class="nav-label">Dikey leadler</span></div>
+            <div class="nav-item" data-page-target="housing-leads"><span class="nav-label">Konut Leadleri</span></div>
+            <div class="nav-item" data-page-target="housing-locations"><span class="nav-label">Lokasyon Yönetimi</span></div>
+            <div class="nav-item" data-page-target="housing-partners"><span class="nav-label">Konut Partnerleri</span></div>
+            <div class="nav-item" data-page-target="housing-scoring"><span class="nav-label">Konut Scoring Ayarları</span></div>
+            <div class="nav-item" data-page-target="finance-leads"><span class="nav-label">Finans Leadleri</span></div>
+            <div class="nav-item" data-page-target="finance-partners"><span class="nav-label">Finans Partnerleri</span></div>
+            <div class="nav-item" data-page-target="finance-scoring"><span class="nav-label">Finans Scoring Ayarları</span></div>
           </div>
         </div>
         <div class="nav-group">
@@ -659,6 +666,57 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
               <div class="toggle-track"><div class="toggle-thumb"></div></div>
               <span class="text-muted-sm">Bakım modu</span>
             </label>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Kategoriler / Ana Sayfa Görünümü</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="toggle">
+                <input type="checkbox" id="s-home_category_auto_enabled" checked />
+                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                <span class="text-muted-sm">Araç kategorisi görünür</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="toggle">
+                <input type="checkbox" id="s-home_category_konut_enabled" checked />
+                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                <span class="text-muted-sm">Konut kategorisi görünür</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="toggle">
+                <input type="checkbox" id="s-home_category_tatil_enabled" checked />
+                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                <span class="text-muted-sm">Tatil kategorisi görünür</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="toggle">
+                <input type="checkbox" id="s-home_category_finans_enabled" checked />
+                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                <span class="text-muted-sm">Finansman kategorisi görünür</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="toggle">
+                <input type="checkbox" id="s-home_category_sigorta_enabled" />
+                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                <span class="text-muted-sm">Sigorta (yakında) kategorisi görünür</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="toggle">
+                <input type="checkbox" id="s-home_category_kasko_enabled" />
+                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                <span class="text-muted-sm">Kasko (yakında) kategorisi görünür</span>
+              </label>
+            </div>
           </div>
         </div>
         <div class="actions"><button class="btn btn-primary" data-action="save-settings">Kaydet</button></div>
@@ -994,6 +1052,174 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <div class="actions"><button class="btn btn-primary" data-action="vacation-save-scoring">Kaydet</button></div>
         </div>
         <div class="card"><div id="vacation-scoring-list"><div class="empty">Yükleniyor...</div></div></div>
+      </div>
+
+      <div class="page" id="page-housing-leads">
+        <div class="page-header">
+          <h2>Konut</h2>
+          <p>Konut karar asistanı analiz ve lead yönetimi</p>
+        </div>
+        <div id="housing-leads-stats" class="card" aria-live="polite"></div>
+        <div class="card">
+          <div class="auto-leads-toolbar">
+            <input id="housing-leads-search" class="form-input" type="search" placeholder="Ad, e-posta, telefon, lokasyon ara...">
+            <select id="housing-leads-status-filter" class="status-select">
+              <option value="">Tüm durumlar</option>
+              <option value="new">yeni</option>
+              <option value="incelendi">incelendi</option>
+              <option value="arandi">arandı</option>
+              <option value="uygun">uygun</option>
+              <option value="partnere_yonlendirildi">partnere yönlendirildi</option>
+              <option value="kapandi">kapandı</option>
+              <option value="reddedildi">reddedildi</option>
+            </select>
+          </div>
+          <div id="housing-leads-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-housing-locations">
+        <div class="page-header">
+          <h2>Konut Destinasyon / Lokasyon Yönetimi</h2>
+          <p>Şehir, ilçe, ulaşım, yaşam kalitesi ve risk bazlı lokasyon yönetimi</p>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group"><label>Şehir</label><input id="housing-location-city" type="text"></div>
+            <div class="form-group"><label>İlçe/Semt</label><input id="housing-location-district" type="text"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Ortalama fiyat seviyesi</label><input id="housing-location-price" type="number" min="0"></div>
+            <div class="form-group"><label>Ulaşım skoru</label><input id="housing-location-transport" type="number" min="0" max="100"></div>
+            <div class="form-group"><label>Yaşam kalitesi skoru</label><input id="housing-location-life" type="number" min="0" max="100"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Yatırım potansiyeli</label><input id="housing-location-invest" type="number" min="0" max="100"></div>
+            <div class="form-group"><label>Risk skoru</label><input id="housing-location-risk" type="number" min="0" max="100"></div>
+            <div class="form-group"><label>Notlar</label><input id="housing-location-notes" type="text"></div>
+          </div>
+          <div class="form-group">
+            <label class="toggle"><input type="checkbox" id="housing-location-active" checked><div class="toggle-track"><div class="toggle-thumb"></div></div><span class="text-muted-sm">Aktif</span></label>
+          </div>
+          <div class="actions"><button class="btn btn-primary" data-action="housing-save-location">Kaydet</button></div>
+        </div>
+        <div class="card"><div id="housing-locations-list"><div class="empty">Yükleniyor...</div></div></div>
+      </div>
+
+      <div class="page" id="page-housing-partners">
+        <div class="page-header">
+          <h2>Konut Partnerleri</h2>
+          <p>Emlak ofisi, proje ve danışman partner yönetimi</p>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group"><label>Partner adı</label><input id="housing-partner-name" type="text"></div>
+            <div class="form-group"><label>Partner tipi</label><input id="housing-partner-type" type="text"></div>
+            <div class="form-group"><label>Şehir</label><input id="housing-partner-city" type="text"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>İlçe</label><input id="housing-partner-district" type="text"></div>
+            <div class="form-group"><label>Başvuru/iletişim linki</label><input id="housing-partner-link" type="text"></div>
+            <div class="form-group"><label>Komisyon/affiliate notu</label><input id="housing-partner-commission" type="text"></div>
+          </div>
+          <div class="form-group"><label>Notlar</label><textarea id="housing-partner-notes" class="textarea-md"></textarea></div>
+          <div class="form-group">
+            <label class="toggle"><input type="checkbox" id="housing-partner-active" checked><div class="toggle-track"><div class="toggle-thumb"></div></div><span class="text-muted-sm">Aktif</span></label>
+          </div>
+          <div class="actions"><button class="btn btn-primary" data-action="housing-save-partner">Kaydet</button></div>
+        </div>
+        <div class="card"><div id="housing-partners-list"><div class="empty">Yükleniyor...</div></div></div>
+      </div>
+
+      <div class="page" id="page-housing-scoring">
+        <div class="page-header">
+          <h2>Konut Scoring Ayarları</h2>
+          <p>Ödeme konforu, lokasyon, risk, yatırım ve toplam maliyet ağırlıkları</p>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group"><label>Ödeme konforu ağırlığı</label><input id="hs-housing_payment_weight" type="number" step="0.01"></div>
+            <div class="form-group"><label>Lokasyon uyumu ağırlığı</label><input id="hs-housing_location_weight" type="number" step="0.01"></div>
+            <div class="form-group"><label>Risk katsayısı</label><input id="hs-housing_risk_factor" type="number" step="0.01"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Yatırım potansiyeli ağırlığı</label><input id="hs-housing_investment_weight" type="number" step="0.01"></div>
+            <div class="form-group"><label>Toplam maliyet ağırlığı</label><input id="hs-housing_total_cost_weight" type="number" step="0.01"></div>
+          </div>
+          <div class="form-group"><label>AI yorum şablonu</label><textarea id="hs-housing_ai_prompt_template" class="textarea-lg"></textarea></div>
+          <div class="actions"><button class="btn btn-primary" data-action="save-housing-settings">Kaydet</button></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-finance-leads">
+        <div class="page-header">
+          <h2>Finans Leadleri</h2>
+          <p>Finans karar asistanı lead yönetimi</p>
+        </div>
+        <div class="card">
+          <div class="auto-leads-toolbar">
+            <input id="finance-leads-search" class="form-input" type="search" placeholder="Amaç, telefon, e-posta veya AI sonucu ara...">
+            <select id="finance-leads-status-filter" class="status-select">
+              <option value="">Tüm durumlar</option>
+              <option value="new">yeni</option>
+              <option value="incelendi">incelendi</option>
+              <option value="arandi">arandı</option>
+              <option value="uygun">uygun</option>
+              <option value="partnere_yonlendirildi">partnere yönlendirildi</option>
+              <option value="kapandi">kapandı</option>
+              <option value="reddedildi">reddedildi</option>
+            </select>
+          </div>
+          <div id="finance-leads-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-finance-partners">
+        <div class="page-header">
+          <h2>Finans Partnerleri</h2>
+          <p>Banka / finans kuruluşu ve ürün yönetimi</p>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group"><label>Kuruluş adı</label><input id="finance-partner-name" type="text"></div>
+            <div class="form-group"><label>Ürün tipi</label><input id="finance-partner-product" type="text"></div>
+            <div class="form-group"><label>Min tutar</label><input id="finance-partner-min-amount" type="number" min="0"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Max tutar</label><input id="finance-partner-max-amount" type="number" min="0"></div>
+            <div class="form-group"><label>Min vade</label><input id="finance-partner-min-term" type="number" min="1"></div>
+            <div class="form-group"><label>Max vade</label><input id="finance-partner-max-term" type="number" min="1"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Tahmini oran aralığı</label><input id="finance-partner-rate" type="text"></div>
+            <div class="form-group"><label>Başvuru/affiliate linki</label><input id="finance-partner-link" type="text"></div>
+            <div class="form-group"><label>Notlar</label><input id="finance-partner-notes" type="text"></div>
+          </div>
+          <div class="form-group">
+            <label class="toggle"><input type="checkbox" id="finance-partner-active" checked><div class="toggle-track"><div class="toggle-thumb"></div></div><span class="text-muted-sm">Aktif</span></label>
+          </div>
+          <div class="actions"><button class="btn btn-primary" data-action="finance-save-partner">Kaydet</button></div>
+        </div>
+        <div class="card"><div id="finance-partners-list"><div class="empty">Yükleniyor...</div></div></div>
+      </div>
+
+      <div class="page" id="page-finance-scoring">
+        <div class="page-header">
+          <h2>Finans Scoring Ayarları</h2>
+          <p>Ödeme konforu, toplam maliyet, risk ve nakit akışı ağırlıkları</p>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group"><label>Ödeme konforu ağırlığı</label><input id="fs-finance_payment_comfort_weight" type="number" step="0.01"></div>
+            <div class="form-group"><label>Toplam maliyet ağırlığı</label><input id="fs-finance_total_cost_weight" type="number" step="0.01"></div>
+            <div class="form-group"><label>Risk katsayısı</label><input id="fs-finance_risk_factor" type="number" step="0.01"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Nakit akışı ağırlığı</label><input id="fs-finance_cashflow_weight" type="number" step="0.01"></div>
+          </div>
+          <div class="form-group"><label>AI yorum şablonu</label><textarea id="fs-finance_ai_prompt_template" class="textarea-lg"></textarea></div>
+          <div class="actions"><button class="btn btn-primary" data-action="save-finance-settings">Kaydet</button></div>
+        </div>
       </div>
 
       <div class="page" id="page-auto-analytics">

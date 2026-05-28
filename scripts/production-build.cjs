@@ -380,17 +380,45 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
 }
 
 bundleVerticalPage(
-  'js/konut/konut-app.js',
-  'konut/index.html',
-  'konut-runtime',
-  /\/js\/konut\/konut-app\.js/g
-);
-bundleVerticalPage(
   'js/finans/finans-app.js',
   'finans/index.html',
   'finans-runtime',
   /\/js\/finans\/finans-app\.js/g
 );
+
+const housingAppSrc = path.join(root, 'js/real-estate/real-estate-app.js');
+if (fs.existsSync(housingAppSrc)) {
+  const housingAssetDir = path.join(dist, 'assets', 'real-estate-runtime');
+  fs.mkdirSync(housingAssetDir, { recursive: true });
+  const housingBundleResult = esbuild.buildSync({
+    entryPoints: [housingAppSrc],
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2020',
+    minify: true,
+    sourcemap: false,
+    write: false
+  });
+  const housingBundleCode = housingBundleResult.outputFiles[0].text;
+  const housingAppFile = `real-estate-app.${hashContent(housingBundleCode)}.js`;
+  writeFile(`assets/real-estate-runtime/${housingAppFile}`, housingBundleCode);
+  writeFile('assets/real-estate-runtime/real-estate-app.js', housingBundleCode);
+
+  const housingHtmlPath = path.join(dist, 'konut', 'index.html');
+  if (fs.existsSync(housingHtmlPath)) {
+    let housingHtml = fs.readFileSync(housingHtmlPath, 'utf8');
+    housingHtml = housingHtml.replace(
+      /\/js\/real-estate\/real-estate-app\.js/g,
+      `/assets/real-estate-runtime/${housingAppFile}`
+    );
+    const housingCssHashed = assetRefs.get('css/real-estate.css');
+    if (housingCssHashed) {
+      housingHtml = housingHtml.replace(/\/css\/real-estate(?:\.[a-f0-9]+)?\.css/g, `/${housingCssHashed}`);
+    }
+    fs.writeFileSync(housingHtmlPath, minifyHtml(housingHtml));
+  }
+}
 
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
 if (fs.existsSync(autoHtmlPath)) {

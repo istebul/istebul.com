@@ -15,9 +15,13 @@ const STATIC_ALIASES = Object.freeze({
   '/hakkimizda': '/hakkimizda.html',
   '/iletisim': '/iletisim.html',
   '/metodoloji': '/metodoloji/',
+  '/araba': '/auto/',
   '/konut': '/konut/',
   '/tatil': '/tatil/',
-  '/finans': '/finans/'
+  '/finans': '/finans/',
+  '/finansman': '/finans/',
+  '/sigorta': '/sigorta/',
+  '/kasko': '/kasko/'
 });
 
 /**

@@ -426,7 +426,7 @@
 
 .ib-problem-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -660,7 +660,7 @@
 
 .ib-trust-strip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -965,7 +965,9 @@ body.ib-enterprise #home .ib-dash-pick-link {
 
 @media (max-width: 900px) {
   .ib-problem-grid,
-  .ib-trust-strip {
+  .ib-trust-strip,
+  .ib-example-grid,
+  .ib-why-grid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -976,7 +978,9 @@ body.ib-enterprise #home .ib-dash-pick-link {
 
 @media (max-width: 560px) {
   .ib-problem-grid,
-  .ib-trust-strip {
+  .ib-trust-strip,
+  .ib-example-grid,
+  .ib-why-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1139,9 +1143,7 @@ body.ib-enterprise #home .ib-dash-pick-link {
 }
 
 .ib-category-showcase.is-soon {
-  opacity: 0.72;
-  pointer-events: none;
-  cursor: default;
+  opacity: 0.82;
 }
 
 .ib-category-showcase-badge {
@@ -1185,6 +1187,44 @@ body.ib-enterprise #home .ib-dash-pick-link {
   color: #cbd5e1;
 }
 
+.ib-category-showcase-points {
+  margin: 0.25rem 0 0;
+  padding: 0 0 0 1rem;
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.74rem;
+  color: #dbeafe;
+}
+
+.ib-category-showcase-summary {
+  margin: 0.2rem 0 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.ib-category-showcase-summary div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+}
+
+.ib-category-showcase-summary dt {
+  color: #cbd5e1;
+}
+
+.ib-category-showcase-summary dd {
+  margin: 0;
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.ib-category-showcase-ai,
+.ib-category-showcase-next {
+  font-size: 0.72rem !important;
+  color: #dbeafe !important;
+}
+
 .ib-category-showcase-insight {
   font-size: 0.72rem;
   color: #bfdbfe;
@@ -1196,6 +1236,10 @@ body.ib-enterprise #home .ib-dash-pick-link {
   font-size: 0.82rem;
   font-weight: 700;
   color: #60a5fa;
+  background: none;
+  border: 0;
+  text-align: left;
+  padding: 0;
 }
 
 .ib-category-showcase-cta.is-disabled {
@@ -1223,6 +1267,77 @@ body.ib-enterprise #home .ib-dash-pick-link {
   font-size: 0.68rem;
   font-weight: 600;
   color: #94a3b8;
+}
+
+.ib-example-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ib-example-card {
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.ib-example-kicker {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.ib-example-card h3 {
+  margin: 0.4rem 0 0.5rem;
+  font-size: 0.98rem;
+  color: #0f172a;
+}
+
+.ib-example-card p {
+  margin: 0 0 0.32rem;
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+.ib-example-card a {
+  display: inline-block;
+  margin-top: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.ib-why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ib-why-card {
+  padding: 1.15rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.ib-why-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.ib-why-card p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #475569;
 }
 
 body.ib-enterprise #home .ib-hero-cta-arrow {
@@ -1358,6 +1473,58 @@ body.ib-enterprise #home .ib-dash-line-chart {
   body.ib-enterprise #home .ib-dash-charts {
     grid-template-columns: 1fr;
   }
+}
+
+.ib-interest-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+}
+
+.ib-interest-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.72);
+}
+
+.ib-interest-modal__card {
+  position: relative;
+  max-width: 440px;
+  margin: 10vh auto 0;
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 16px;
+  padding: 1rem;
+  z-index: 1;
+}
+
+.ib-interest-modal__close {
+  position: absolute;
+  right: 0.7rem;
+  top: 0.5rem;
+  background: none;
+  border: 0;
+  color: #cbd5e1;
+  font-size: 1.5rem;
+}
+
+.ib-interest-modal__form {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ib-interest-modal__form label {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.82rem;
+}
+
+.ib-interest-modal__form input {
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 0.55rem 0.6rem;
 }
 
 @media (max-width: 560px) {

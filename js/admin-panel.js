@@ -50,6 +50,8 @@ import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-rou
 import { initAdminShell } from './admin/admin-shell.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initVerticalAdmin } from './admin/vertical-admin.js';
+import { initHousingAdmin } from './admin/housing-admin.js';
+import { initFinanceAdmin } from './admin/finance-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
@@ -1570,6 +1572,8 @@ async function adminAction(payload) {
 
 const vacationAdmin = initVacationAdmin({ sb, adminAction, toast });
 const verticalAdmin = initVerticalAdmin({ sb, adminAction, toast });
+const housingAdmin = initHousingAdmin({ sb, adminAction, toast });
+const financeAdmin = initFinanceAdmin({ sb, adminAction, toast });
 
 async function loadDashboard() {
   const setStat = (id, value) => {
@@ -1633,6 +1637,7 @@ async function loadDashboard() {
 
 const KEYS = ['phone','email','address','instagram','twitter','facebook','linkedin','youtube','tiktok',
               'site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc','title','description','auto_whatsapp_phone'];
+const BOOLEAN_SETTING_KEYS = ['maintenance','home_category_auto_enabled','home_category_konut_enabled','home_category_tatil_enabled','home_category_finans_enabled','home_category_sigorta_enabled','home_category_kasko_enabled'];
 
 async function loadSettings() {
   const { data } = await sb.from('site_settings').select('*');
@@ -1643,12 +1648,21 @@ async function loadSettings() {
     const el = document.getElementById('s-' + f);
     if (el && map[f] !== undefined) el.value = map[f];
   });
-  if (map['maintenance'] === 'true') document.getElementById('s-maintenance').checked = true;
+  BOOLEAN_SETTING_KEYS.forEach((key) => {
+    const el = document.getElementById('s-' + key);
+    if (!el) return;
+    const value = map[key];
+    el.checked = value == null ? true : String(value).toLowerCase() === 'true';
+  });
 }
 
 async function saveSettings() {
   const rows = KEYS.map(f => ({ key: f, value: document.getElementById('s-' + f)?.value || '' }));
-  rows.push({ key: 'maintenance', value: document.getElementById('s-maintenance').checked ? 'true' : 'false' });
+  BOOLEAN_SETTING_KEYS.forEach((key) => {
+    const el = document.getElementById('s-' + key);
+    if (!el) return;
+    rows.push({ key, value: el.checked ? 'true' : 'false' });
+  });
   await adminAction({ action: 'upsert_settings', table: 'site_settings', id: 'settings', values: rows });
   toast('Kaydedildi!');
 }
@@ -4078,6 +4092,13 @@ registerAdminPageHandlers({
   'vacation-destinations': () => vacationAdmin.loadVacationDestinations(),
   'vacation-partners': () => vacationAdmin.loadVacationPartners(),
   'vacation-scoring': () => vacationAdmin.loadVacationScoring(),
+  'housing-leads': () => housingAdmin.loadHousingLeads(),
+  'housing-locations': () => housingAdmin.loadHousingLocations(),
+  'housing-partners': () => housingAdmin.loadHousingPartners(),
+  'housing-scoring': () => housingAdmin.loadHousingSettings(),
+  'finance-leads': () => financeAdmin.loadFinanceLeads(),
+  'finance-partners': () => financeAdmin.loadFinancePartners(),
+  'finance-scoring': () => financeAdmin.loadFinanceScoring(),
   'auto-analytics': () => loadAutoAnalytics(),
   'platform-analytics': () => loadPlatformAnalytics(),
   'dashboard-ceo': () => refreshInternalDashboard('ceo', 'dashboard-ceo-root'),
@@ -4143,6 +4164,8 @@ function bindAdminPanelEvents() {
     if (!el) return;
 
     if (await vacationAdmin.handleVacationAction(event, el)) return;
+    if (await housingAdmin.handleHousingAction(event, el)) return;
+    if (await financeAdmin.handleFinanceAction(event, el)) return;
 
     const { action, id, active, role } = el.dataset;
     const isActive = active === 'true';
@@ -4392,6 +4415,14 @@ document.addEventListener('change', (event) => {
   ['vacation-leads-search', 'vacation-leads-status-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => vacationAdmin.loadVacationLeads());
     document.getElementById(id)?.addEventListener('change', () => vacationAdmin.loadVacationLeads());
+  });
+  ['housing-leads-search', 'housing-leads-status-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => housingAdmin.loadHousingLeads());
+    document.getElementById(id)?.addEventListener('change', () => housingAdmin.loadHousingLeads());
+  });
+  ['finance-leads-search', 'finance-leads-status-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => financeAdmin.loadFinanceLeads());
+    document.getElementById(id)?.addEventListener('change', () => financeAdmin.loadFinanceLeads());
   });
 
 bindAdminPanelEvents();

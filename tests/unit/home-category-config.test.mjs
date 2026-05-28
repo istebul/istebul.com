@@ -7,12 +7,12 @@ import {
   isHomeCategoryActive
 } from '../../js/platform/home-category-config.js';
 
-test('home categories: four live verticals', () => {
+test('home categories: araba, tatil, konut and finansman active', () => {
   const active = HOME_DECISION_CATEGORIES.filter((c) => isHomeCategoryActive(c));
   assert.equal(active.length, 4);
   assert.deepEqual(
     active.map((c) => c.id).sort(),
-    ['finans', 'konut', 'otomobil', 'tatil']
+    ['araba', 'finansman', 'konut', 'tatil']
   );
   active.forEach((c) => {
     assert.ok(c.href);
@@ -20,7 +20,7 @@ test('home categories: four live verticals', () => {
   });
 });
 
-test('home categories: sigorta and kasko coming soon without href', () => {
+test('home categories: sigorta and kasko are coming soon', () => {
   const soon = getHomeCategoriesByStatus('coming_soon');
   assert.equal(soon.length, 2);
   assert.deepEqual(
@@ -28,7 +28,7 @@ test('home categories: sigorta and kasko coming soon without href', () => {
     ['kasko', 'sigorta']
   );
   soon.forEach((c) => {
-    assert.equal(c.href, null);
+    assert.ok(c.href);
     assert.equal(isHomeCategoryActive(c), false);
   });
 });

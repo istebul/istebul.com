@@ -99,7 +99,7 @@ export async function hydrateHomeContentHubPreview(root = document) {
             })
           )
           .join('')
-      : renderContentEmpty('Henüz yayınlanmış duyuru yok.')
+      : renderContentEmpty('Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.')
   );
 
   mountPreviewList(
@@ -116,7 +116,7 @@ export async function hydrateHomeContentHubPreview(root = document) {
               cta: item.cta_label || 'İncele'
             })
           )
-          .join('') || renderContentEmpty('Şu an aktif kampanya bulunmuyor.')
+          .join('') || renderContentEmpty('Şu anda gösterilecek kayıt bulunamadı.')
   );
 
   mountPreviewList(
@@ -135,7 +135,7 @@ export async function hydrateHomeContentHubPreview(root = document) {
             })
           )
           .join('')
-      : renderContentEmpty('Henüz yayınlanmış blog yazısı yok.')
+      : renderContentEmpty('Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.')
   );
 
   window.lucide?.createIcons?.();
@@ -157,7 +157,7 @@ export async function renderAnnouncementsPage(root = document) {
         </article>`
         )
         .join('')}</div>`
-    : renderContentEmpty('Henüz aktif duyuru yok. Üst şeritte güncel duyuru göründüğünde burada da listelenir.');
+    : renderContentEmpty('Şu anda gösterilecek kayıt bulunamadı.');
   window.lucide?.createIcons?.();
 }
 
@@ -179,7 +179,7 @@ export async function renderCampaignsPage(root = document) {
         </article>`
         )
         .join('')}</div>`
-    : renderContentEmpty('Aktif kampanya bulunamadı.');
+    : renderContentEmpty('Şu anda gösterilecek kayıt bulunamadı.');
   window.lucide?.createIcons?.();
 }
 
@@ -201,7 +201,7 @@ export async function renderBlogPage(root = document) {
           })
         )
         .join('')}</div>`
-    : renderContentEmpty('Henüz yayınlanmış blog yazısı yok. Admin panelinden yazı ekleyebilirsiniz.');
+    : renderContentEmpty('Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.');
   window.lucide?.createIcons?.();
 }
 

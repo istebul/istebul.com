@@ -163,6 +163,12 @@ Deno.serve(async (req) => {
     "vacation_destinations",
     "vacation_partners",
     "vacation_scoring_configs",
+    "housing_leads",
+    "housing_locations",
+    "housing_partners",
+    "housing_settings",
+    "finance_leads",
+    "finance_partners",
     "partner_endpoints",
     "partner_applications",
   ];
@@ -195,6 +201,15 @@ Deno.serve(async (req) => {
     "vacation_scoring_configs",
     "vertical_events",
     "vertical_leads",
+    "housing_events",
+    "housing_leads",
+    "housing_locations",
+    "housing_partners",
+    "housing_settings",
+    "finance_events",
+    "finance_leads",
+    "finance_partners",
+    "finance_settings",
   ];
 
   if (action === "upsert_settings") {
@@ -239,6 +254,15 @@ Deno.serve(async (req) => {
         vacation_scoring_configs: "*",
         vertical_events: "*",
         vertical_leads: "*",
+        housing_events: "*",
+        housing_leads: "*",
+        housing_locations: "*",
+        housing_partners: "*",
+        housing_settings: "*",
+        finance_events: "*",
+        finance_leads: "*",
+        finance_partners: "*",
+        finance_settings: "*",
       };
 
       const allowedOrderColumns: Record<string, string[]> = {
@@ -251,6 +275,15 @@ Deno.serve(async (req) => {
         vacation_scoring_configs: ["created_at"],
         vertical_events: ["created_at", "event_type"],
         vertical_leads: ["created_at", "decision_score", "status"],
+        housing_events: ["created_at", "event_type"],
+        housing_leads: ["created_at", "decision_score", "status"],
+        housing_locations: ["created_at", "city", "district"],
+        housing_partners: ["created_at", "partner_name"],
+        housing_settings: ["key", "updated_at"],
+        finance_events: ["created_at", "event_type"],
+        finance_leads: ["created_at", "decision_score", "status"],
+        finance_partners: ["created_at", "institution_name"],
+        finance_settings: ["key", "updated_at"],
         auto_events: ["created_at"],
         analytics_events: ["created_at"],
         announcements: ["created_at"],
@@ -357,6 +390,9 @@ Deno.serve(async (req) => {
         ],
         vacation_partners: ["name", "partner_type", "affiliate_link", "notes", "is_active"],
         vacation_scoring_configs: ["risk_factor", "cost_factor", "family_weight", "prompt_template"],
+        housing_locations: ["city", "district", "avg_price_level", "transport_score", "life_quality_score", "investment_score", "risk_score", "is_active", "notes"],
+        housing_partners: ["partner_name", "partner_type", "city", "district", "contact_link", "commission_note", "is_active", "notes"],
+        finance_partners: ["institution_name", "product_type", "min_amount", "max_amount", "min_term", "max_term", "rate_range", "affiliate_link", "is_active", "notes"],
       };
 
       const allowedKeys = allowedInserts[table] || [];
@@ -408,7 +444,11 @@ Deno.serve(async (req) => {
         "hero-eyebrow","hero-title","hero-desc","title","description",
         "auto_whatsapp_phone","maintenance","public_campaigns",
         "vacation_enabled","vacation_ai_enabled","vacation_partner_cta_enabled",
-        "vacation_default_budget_note","vacation_disclaimer_text"
+        "vacation_default_budget_note","vacation_disclaimer_text",
+        "housing_payment_weight","housing_location_weight","housing_risk_factor",
+        "housing_investment_weight","housing_total_cost_weight","housing_ai_prompt_template",
+        "finance_payment_comfort_weight","finance_total_cost_weight","finance_risk_factor",
+        "finance_cashflow_weight","finance_ai_prompt_template"
       ];
 
       for (const row of values) {
@@ -479,6 +519,13 @@ Deno.serve(async (req) => {
         ],
         vacation_partners: ["name", "partner_type", "affiliate_link", "notes", "is_active"],
         vacation_scoring_configs: ["risk_factor", "cost_factor", "family_weight", "prompt_template"],
+        housing_leads: ["status", "notes", "follow_up_at"],
+        housing_locations: ["city", "district", "avg_price_level", "transport_score", "life_quality_score", "investment_score", "risk_score", "is_active", "notes"],
+        housing_partners: ["partner_name", "partner_type", "city", "district", "contact_link", "commission_note", "is_active", "notes"],
+        housing_settings: ["value"],
+        finance_leads: ["status", "notes"],
+        finance_partners: ["institution_name", "product_type", "min_amount", "max_amount", "min_term", "max_term", "rate_range", "affiliate_link", "is_active", "notes"],
+        finance_settings: ["value"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority", "health_status"],
         partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan"],
       };
