@@ -17,8 +17,9 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 
 | Secret | Nasıl alınır |
 |--------|----------------|
-| `SUPABASE_ACCESS_TOKEN` | https://supabase.com/dashboard/account/tokens |
-| `SUPABASE_DB_PASSWORD` | Supabase → Settings → Database → password (migration `db push` için) |
+| `SUPABASE_ACCESS_TOKEN` | https://supabase.com/dashboard/account/tokens — **migration + edge deploy için yeterli** (CLI password-less DB rolü) |
+| `SUPABASE_DB_PASSWORD` | (Opsiyonel) Eski CLI veya açık postgres şifresi gerektiğinde |
+| `SUPABASE_DATABASE_URL` | (Opsiyonel) Pooler connection string — `db push --db-url` yedek yolu |
 
 ## Opsiyonel
 

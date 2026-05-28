@@ -42,7 +42,7 @@ Domain alındı ve aktif; **otomatik deploy** için aşağıdaki zincirin tamam�
 | Secret adı | Değer |
 |------------|--------|
 | `SUPABASE_ACCESS_TOKEN` | [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) |
-| `SUPABASE_DB_PASSWORD` | Supabase → Database → database password |
+| `SUPABASE_DB_PASSWORD` | (Opsiyonel) Database password — `SUPABASE_ACCESS_TOKEN` ile `db push` genelde yeterli |
 
 ### Adım 3 — Cloudflare Pages proje ayarı (10 dk)
 
