@@ -422,6 +422,14 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           </div>
         </div>
         <div class="nav-group">
+          <button type="button" class="nav-group-toggle" aria-expanded="true">Finans</button>
+          <div class="nav-group-items">
+            <div class="nav-item" data-page-target="finance-leads"><span class="nav-label">Finans Leadleri</span></div>
+            <div class="nav-item" data-page-target="finance-partners"><span class="nav-label">Finans Partnerleri</span></div>
+            <div class="nav-item" data-page-target="finance-scoring"><span class="nav-label">Finans Scoring Ayarları</span></div>
+          </div>
+        </div>
+        <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">Partnerler</button>
           <div class="nav-group-items">
             <div class="nav-item" data-page-target="partner-endpoints"><span class="nav-label">Partner kanalları</span></div>
@@ -1074,6 +1082,77 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           </div>
           <div class="form-group"><label>AI yorum şablonu</label><textarea id="hs-housing_ai_prompt_template" class="textarea-lg"></textarea></div>
           <div class="actions"><button class="btn btn-primary" data-action="save-housing-settings">Kaydet</button></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-finance-leads">
+        <div class="page-header">
+          <h2>Finans Leadleri</h2>
+          <p>Finans karar asistanı lead yönetimi</p>
+        </div>
+        <div class="card">
+          <div class="auto-leads-toolbar">
+            <input id="finance-leads-search" class="form-input" type="search" placeholder="Amaç, telefon, e-posta veya AI sonucu ara...">
+            <select id="finance-leads-status-filter" class="status-select">
+              <option value="">Tüm durumlar</option>
+              <option value="new">yeni</option>
+              <option value="incelendi">incelendi</option>
+              <option value="arandi">arandı</option>
+              <option value="uygun">uygun</option>
+              <option value="partnere_yonlendirildi">partnere yönlendirildi</option>
+              <option value="kapandi">kapandı</option>
+              <option value="reddedildi">reddedildi</option>
+            </select>
+          </div>
+          <div id="finance-leads-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-finance-partners">
+        <div class="page-header">
+          <h2>Finans Partnerleri</h2>
+          <p>Banka / finans kuruluşu ve ürün yönetimi</p>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group"><label>Kuruluş adı</label><input id="finance-partner-name" type="text"></div>
+            <div class="form-group"><label>Ürün tipi</label><input id="finance-partner-product" type="text"></div>
+            <div class="form-group"><label>Min tutar</label><input id="finance-partner-min-amount" type="number" min="0"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Max tutar</label><input id="finance-partner-max-amount" type="number" min="0"></div>
+            <div class="form-group"><label>Min vade</label><input id="finance-partner-min-term" type="number" min="1"></div>
+            <div class="form-group"><label>Max vade</label><input id="finance-partner-max-term" type="number" min="1"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Tahmini oran aralığı</label><input id="finance-partner-rate" type="text"></div>
+            <div class="form-group"><label>Başvuru/affiliate linki</label><input id="finance-partner-link" type="text"></div>
+            <div class="form-group"><label>Notlar</label><input id="finance-partner-notes" type="text"></div>
+          </div>
+          <div class="form-group">
+            <label class="toggle"><input type="checkbox" id="finance-partner-active" checked><div class="toggle-track"><div class="toggle-thumb"></div></div><span class="text-muted-sm">Aktif</span></label>
+          </div>
+          <div class="actions"><button class="btn btn-primary" data-action="finance-save-partner">Kaydet</button></div>
+        </div>
+        <div class="card"><div id="finance-partners-list"><div class="empty">Yükleniyor...</div></div></div>
+      </div>
+
+      <div class="page" id="page-finance-scoring">
+        <div class="page-header">
+          <h2>Finans Scoring Ayarları</h2>
+          <p>Ödeme konforu, toplam maliyet, risk ve nakit akışı ağırlıkları</p>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group"><label>Ödeme konforu ağırlığı</label><input id="fs-finance_payment_comfort_weight" type="number" step="0.01"></div>
+            <div class="form-group"><label>Toplam maliyet ağırlığı</label><input id="fs-finance_total_cost_weight" type="number" step="0.01"></div>
+            <div class="form-group"><label>Risk katsayısı</label><input id="fs-finance_risk_factor" type="number" step="0.01"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Nakit akışı ağırlığı</label><input id="fs-finance_cashflow_weight" type="number" step="0.01"></div>
+          </div>
+          <div class="form-group"><label>AI yorum şablonu</label><textarea id="fs-finance_ai_prompt_template" class="textarea-lg"></textarea></div>
+          <div class="actions"><button class="btn btn-primary" data-action="save-finance-settings">Kaydet</button></div>
         </div>
       </div>
 

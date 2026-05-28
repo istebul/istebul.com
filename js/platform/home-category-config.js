@@ -41,12 +41,14 @@ export const HOME_DECISION_CATEGORIES = [
   },
   {
     id: 'finans',
-    name: 'Finans',
-    description: 'Kredi senaryoları ve nakit akışı karşılaştırması — yakında.',
-    status: 'coming_soon',
-    href: null,
+    name: 'Finans Karar Asistanı',
+    description: 'Kredi, ödeme planı, toplam maliyet ve riskleri birlikte analiz edin.',
+    status: 'active',
+    href: '/finans/',
     icon: 'landmark',
-    sampleScore: null,
+    sampleScore: 88,
+    ctaLabel: 'Finansmanımı analiz et',
+    insight: 'Toplam maliyet + ödeme konforu + nakit akışı',
     theme: 'finans'
   },
   {

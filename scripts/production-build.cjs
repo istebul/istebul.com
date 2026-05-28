@@ -376,6 +376,40 @@ if (fs.existsSync(housingAppSrc)) {
   }
 }
 
+const financeAppSrc = path.join(root, 'js/finance/finance-app.js');
+if (fs.existsSync(financeAppSrc)) {
+  const financeAssetDir = path.join(dist, 'assets', 'finance-runtime');
+  fs.mkdirSync(financeAssetDir, { recursive: true });
+  const financeBundleResult = esbuild.buildSync({
+    entryPoints: [financeAppSrc],
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2020',
+    minify: true,
+    sourcemap: false,
+    write: false
+  });
+  const financeBundleCode = financeBundleResult.outputFiles[0].text;
+  const financeAppFile = `finance-app.${hashContent(financeBundleCode)}.js`;
+  writeFile(`assets/finance-runtime/${financeAppFile}`, financeBundleCode);
+  writeFile('assets/finance-runtime/finance-app.js', financeBundleCode);
+
+  const financeHtmlPath = path.join(dist, 'finans', 'index.html');
+  if (fs.existsSync(financeHtmlPath)) {
+    let financeHtml = fs.readFileSync(financeHtmlPath, 'utf8');
+    financeHtml = financeHtml.replace(
+      /\/js\/finance\/finance-app\.js/g,
+      `/assets/finance-runtime/${financeAppFile}`
+    );
+    const financeCssHashed = assetRefs.get('css/finance.css');
+    if (financeCssHashed) {
+      financeHtml = financeHtml.replace(/\/css\/finance(?:\.[a-f0-9]+)?\.css/g, `/${financeCssHashed}`);
+    }
+    fs.writeFileSync(financeHtmlPath, minifyHtml(financeHtml));
+  }
+}
+
 const autoHtmlPath = path.join(dist, 'auto', 'index.html');
 if (fs.existsSync(autoHtmlPath)) {
   let autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');

@@ -50,6 +50,7 @@ import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-rou
 import { initAdminShell } from './admin/admin-shell.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
+import { initFinanceAdmin } from './admin/finance-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
@@ -1570,6 +1571,7 @@ async function adminAction(payload) {
 
 const vacationAdmin = initVacationAdmin({ sb, adminAction, toast });
 const housingAdmin = initHousingAdmin({ sb, adminAction, toast });
+const financeAdmin = initFinanceAdmin({ sb, adminAction, toast });
 
 async function loadDashboard() {
   const setStat = (id, value) => {
@@ -4081,6 +4083,9 @@ registerAdminPageHandlers({
   'housing-locations': () => housingAdmin.loadHousingLocations(),
   'housing-partners': () => housingAdmin.loadHousingPartners(),
   'housing-scoring': () => housingAdmin.loadHousingSettings(),
+  'finance-leads': () => financeAdmin.loadFinanceLeads(),
+  'finance-partners': () => financeAdmin.loadFinancePartners(),
+  'finance-scoring': () => financeAdmin.loadFinanceScoring(),
   'auto-analytics': () => loadAutoAnalytics(),
   'platform-analytics': () => loadPlatformAnalytics(),
   'dashboard-ceo': () => refreshInternalDashboard('ceo', 'dashboard-ceo-root'),
@@ -4147,6 +4152,7 @@ function bindAdminPanelEvents() {
 
     if (await vacationAdmin.handleVacationAction(event, el)) return;
     if (await housingAdmin.handleHousingAction(event, el)) return;
+    if (await financeAdmin.handleFinanceAction(event, el)) return;
 
     const { action, id, active, role } = el.dataset;
     const isActive = active === 'true';
@@ -4400,6 +4406,10 @@ document.addEventListener('change', (event) => {
   ['housing-leads-search', 'housing-leads-status-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => housingAdmin.loadHousingLeads());
     document.getElementById(id)?.addEventListener('change', () => housingAdmin.loadHousingLeads());
+  });
+  ['finance-leads-search', 'finance-leads-status-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => financeAdmin.loadFinanceLeads());
+    document.getElementById(id)?.addEventListener('change', () => financeAdmin.loadFinanceLeads());
   });
 
 bindAdminPanelEvents();
