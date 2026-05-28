@@ -1,10 +1,10 @@
 import API from '../../core/api.js';
 import { escapeHtml } from '../../core/security.js';
 import config from '../../core/config.js';
-import { canOpenBillingPortal } from '../../core/billing-portal.js';
 import { enrollBillingHelp } from '../customer/customer-ops-client.js';
-
-import { STORAGE_KEYS } from '../../core/storage-keys.js';
+import { STORAGE_KEYS, readStoredJson, userScopedKey } from '../../core/storage-keys.js';
+import { renderUserDashboard } from '../profil/user-dashboard.js';
+import { mapHistoryRecordToResult } from '../../ui/components/user-result-card.js';
 
 const ONBOARDING_KEY = STORAGE_KEYS.ACCOUNT_ONBOARDING_DONE;
 
@@ -16,26 +16,15 @@ const SUBSCRIPTION_LABELS = {
     incomplete: { label: 'Tamamlanmadı', tone: 'muted' }
 };
 
-function formatDate(value) {
-    if (!value) return '—';
-    try {
-        return new Intl.DateTimeFormat('tr-TR', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        }).format(new Date(value));
-    } catch {
-        return '—';
-    }
-}
-
 export class AccountManager {
     constructor(ui, auth) {
         this.ui = ui;
         this.auth = auth;
         this.activeTab = 'overview';
+        this.activeFavoritesTab = 'arac';
         this.subscription = null;
         this.loading = false;
+        this.app = null;
     }
 
     handleQueryParams(params = new URLSearchParams()) {
@@ -44,19 +33,20 @@ export class AccountManager {
         const billingManaged = params.get('billing') === 'managed';
         const tab = params.get('tab');
 
-        if (tab && ['overview', 'settings', 'subscription', 'security'].includes(tab)) {
-            this.setTab(tab);
+        const allowedTabs = ['overview', 'analyses', 'favorites', 'comparisons', 'recommendations', 'notifications', 'settings', 'security', 'help'];
+        if (tab && allowedTabs.includes(tab)) {
+            this.activeTab = tab;
         }
 
         if (subscribed) {
             this.ui?.showSuccess?.('Ödemeniz alındı. Premium aboneliğiniz birkaç dakika içinde hesabınıza yansır.');
-            this.setTab('subscription');
+            this.activeTab = 'overview';
         } else if (cancelled) {
             this.ui?.showError?.('Ödeme işlemi iptal edildi. İstediğiniz zaman tekrar deneyebilirsiniz.');
-            this.setTab('subscription');
+            this.activeTab = 'overview';
         } else if (billingManaged) {
             this.ui?.showSuccess?.('Stripe abonelik panelinden döndünüz. Kart, fatura veya plan değişiklikleri kısa süre içinde yansır.');
-            this.setTab('subscription');
+            this.activeTab = 'overview';
             const user = this.auth?.getCurrentUser?.();
             if (user?.email) {
                 enrollBillingHelp({
@@ -121,14 +111,14 @@ export class AccountManager {
         const section = document.getElementById('profil');
         if (!section) return;
 
-        section.querySelectorAll('[data-account-tab]').forEach((btn) => {
-            const isActive = btn.dataset.accountTab === tabId;
+        section.querySelectorAll('[data-dashboard-tab]').forEach((btn) => {
+            const isActive = btn.dataset.dashboardTab === tabId;
             btn.classList.toggle('is-active', isActive);
             btn.setAttribute('aria-selected', String(isActive));
         });
 
-        section.querySelectorAll('[data-account-panel]').forEach((panel) => {
-            const isActive = panel.dataset.accountPanel === tabId;
+        section.querySelectorAll('[data-dashboard-panel]').forEach((panel) => {
+            const isActive = panel.dataset.dashboardPanel === tabId;
             panel.hidden = !isActive;
             panel.classList.toggle('is-active', isActive);
             if (isActive) panel.removeAttribute('tabindex');
@@ -137,15 +127,25 @@ export class AccountManager {
     }
 
     bindEvents(app) {
+        this.app = app;
         const section = document.getElementById('profil');
         if (!section || section.dataset.accountBound) return;
         section.dataset.accountBound = 'true';
 
         section.addEventListener('click', (event) => {
-            const tabBtn = event.target.closest('[data-account-tab]');
+            const tabBtn = event.target.closest('[data-dashboard-tab]');
             if (tabBtn) {
                 event.preventDefault();
-                this.setTab(tabBtn.dataset.accountTab);
+                this.setTab(tabBtn.dataset.dashboardTab);
+                this.toggleSidebar(false);
+                return;
+            }
+
+            const favoriteTabBtn = event.target.closest('[data-favorites-tab]');
+            if (favoriteTabBtn) {
+                event.preventDefault();
+                this.activeFavoritesTab = favoriteTabBtn.dataset.favoritesTab || 'arac';
+                this.refresh(this.auth?.getCurrentUser?.());
                 return;
             }
 
@@ -164,16 +164,39 @@ export class AccountManager {
                 app.handleLogout();
             }
 
+            if (event.target.closest('#user-dashboard-menu-toggle')) {
+                event.preventDefault();
+                this.toggleSidebar(true);
+            }
+
+            if (event.target.closest('#user-dashboard-sidebar-backdrop')) {
+                event.preventDefault();
+                this.toggleSidebar(false);
+            }
+
+            const removeFavoriteBtn = event.target.closest('[data-dashboard-remove-favorite]');
+            if (removeFavoriteBtn?.dataset.dashboardRemoveFavorite) {
+                event.preventDefault();
+                app.toggleFavorite(removeFavoriteBtn.dataset.dashboardRemoveFavorite);
+                this.refresh(this.auth?.getCurrentUser?.());
+            }
+
+            const compareFavoriteBtn = event.target.closest('[data-dashboard-compare-favorite]');
+            if (compareFavoriteBtn?.dataset.dashboardCompareFavorite) {
+                event.preventDefault();
+                app.addListingToComparison(compareFavoriteBtn.dataset.dashboardCompareFavorite);
+                this.ui?.showSuccess?.('Favori karşılaştırma listesine eklendi.');
+            }
+
             if (event.target.closest('#account-resend-verify')) {
                 event.preventDefault();
                 this.resendVerification(app);
             }
         });
-
-        const settingsForm = section.querySelector('#account-settings-form');
-        if (settingsForm) {
-            settingsForm.addEventListener('submit', (event) => this.handleSettingsSubmit(event, app));
-        }
+        section.addEventListener('submit', (event) => {
+            const settingsForm = event.target.closest('#account-settings-form');
+            if (settingsForm) this.handleSettingsSubmit(event, app);
+        });
     }
 
     async resendVerification(app) {
@@ -323,197 +346,113 @@ export class AccountManager {
         const sub = this.subscription;
         const subMeta = SUBSCRIPTION_LABELS[sub?.status] || { label: 'Ücretsiz', tone: 'muted' };
         const hasPremium = ['active', 'trialing'].includes(sub?.status);
-        const canManageBilling = canOpenBillingPortal(sub);
-        const isPastDue = sub?.status === 'past_due';
-
+        const dashboardData = this.buildDashboardData(user, profile, subMeta, hasPremium, emailVerified);
         root.innerHTML = `
-            <div class="account-shell">
-                <aside class="account-sidebar" aria-label="Hesap menüsü">
-                    <div class="account-user-chip">
-                        <div class="account-avatar" aria-hidden="true">${escapeHtml(this.getInitials(profile))}</div>
-                        <div>
-                            <strong>${escapeHtml(profile?.full_name || user.email)}</strong>
-                            <span>${escapeHtml(user.email)}</span>
-                        </div>
-                    </div>
-                    <nav class="account-nav" role="tablist" aria-label="Hesap sekmeleri">
-                        <button type="button" role="tab" id="account-tab-overview" class="account-nav-btn ${this.activeTab === 'overview' ? 'is-active' : ''}" data-account-tab="overview" aria-controls="account-panel-overview" aria-selected="${this.activeTab === 'overview'}">Genel bakış</button>
-                        <button type="button" role="tab" id="account-tab-settings" class="account-nav-btn ${this.activeTab === 'settings' ? 'is-active' : ''}" data-account-tab="settings" aria-controls="account-panel-settings" aria-selected="${this.activeTab === 'settings'}">Profil ve ayarlar</button>
-                        <button type="button" role="tab" id="account-tab-subscription" class="account-nav-btn ${this.activeTab === 'subscription' ? 'is-active' : ''}" data-account-tab="subscription" aria-controls="account-panel-subscription" aria-selected="${this.activeTab === 'subscription'}">Abonelik</button>
-                        <button type="button" role="tab" id="account-tab-security" class="account-nav-btn ${this.activeTab === 'security' ? 'is-active' : ''}" data-account-tab="security" aria-controls="account-panel-security" aria-selected="${this.activeTab === 'security'}">Güvenlik</button>
-                    </nav>
-                    <button type="button" class="btn btn-ghost account-logout" id="account-logout-btn">Oturumu kapat</button>
-                </aside>
-
-                <div class="account-panels">
-                    <div id="account-onboarding" class="account-onboarding" hidden>
-                        <div>
-                            <strong>Hoş geldiniz</strong>
-                            <p>Profilinizi tamamlayın, araç analiz geçmişinizi saklayın ve Premium ile gelişmiş karşılaştırmalara erişin.</p>
-                        </div>
-                        <button type="button" class="btn btn-outline btn-sm" data-onboarding-dismiss>Anladım</button>
-                    </div>
-
-                    ${!emailVerified ? `
-                        <div class="account-banner account-banner--warning" role="status">
-                            <div>
-                                <strong>E-posta doğrulaması bekleniyor</strong>
-                                <p>Hesabınızın tüm özelliklerini kullanmak için e-posta adresinizi doğrulayın.</p>
-                            </div>
-                            <button type="button" class="btn btn-outline btn-sm" id="account-resend-verify">Doğrulama e-postasını yeniden gönder</button>
-                        </div>
-                    ` : ''}
-
-                    <section id="account-panel-overview" role="tabpanel" aria-labelledby="account-tab-overview" class="account-panel ${this.activeTab === 'overview' ? 'is-active' : ''}" data-account-panel="overview" ${this.activeTab === 'overview' ? '' : 'hidden'}>
-                        <header class="account-panel-head">
-                            <h2>Genel bakış</h2>
-                            <p>Karar platformu hesabınızın özeti</p>
-                        </header>
-                        <div class="account-stat-grid">
-                            <article class="account-stat-card">
-                                <span>Plan</span>
-                                <strong class="tone-${subMeta.tone}">${escapeHtml(subMeta.label)}</strong>
-                            </article>
-                            <article class="account-stat-card">
-                                <span>E-posta</span>
-                                <strong>${emailVerified ? 'Doğrulandı' : 'Bekliyor'}</strong>
-                            </article>
-                            <article class="account-stat-card">
-                                <span>Rol</span>
-                                <strong>${escapeHtml(profile?.role || 'Kullanıcı')}</strong>
-                            </article>
-                        </div>
-                        <div class="account-quick-actions">
-                            <a href="/auto" class="btn btn-primary" data-native-route>Araç analizine git</a>
-                            <button type="button" class="btn btn-outline" data-account-tab="settings">Profili düzenle</button>
-                        </div>
-                    </section>
-
-                    <section id="account-panel-settings" role="tabpanel" aria-labelledby="account-tab-settings" class="account-panel ${this.activeTab === 'settings' ? 'is-active' : ''}" data-account-panel="settings" ${this.activeTab === 'settings' ? '' : 'hidden'}>
-                        <header class="account-panel-head">
-                            <h2>Profil ve ayarlar</h2>
-                            <p>Bilgileriniz yalnızca hesabınızda görünür.</p>
-                        </header>
-                        <form id="account-settings-form" class="account-settings-form" data-enterprise-form>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="account-full-name">Ad Soyad</label>
-                                    <input id="account-full-name" name="full_name" type="text" autocomplete="name" value="${escapeHtml(profile?.full_name || '')}" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="account-phone">Telefon</label>
-                                    <input id="account-phone" name="phone" type="tel" autocomplete="tel" value="${escapeHtml(profile?.phone || '')}">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="account-location">Konum</label>
-                                <input id="account-location" name="location" type="text" value="${escapeHtml(profile?.location || '')}" placeholder="İl / İlçe">
-                            </div>
-                            <div class="form-group">
-                                <label for="account-bio">Kısa not</label>
-                                <textarea id="account-bio" name="bio" rows="3" maxlength="280" placeholder="İsteğe bağlı">${escapeHtml(profile?.bio || '')}</textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Değişiklikleri kaydet</button>
-                        </form>
-                        <div class="account-privacy-block">
-                            <h3>Veri ve gizlilik</h3>
-                            <p>Kişisel verilerinize ilişkin haklarınız (erişim, düzeltme, silme) için <a href="/kvkk.html">KVKK metni</a> ve <a href="/gizlilik.html">gizlilik politikası</a> geçerlidir.</p>
-                            <p><a href="/iletisim.html">İletişim</a> üzerinden KVKK başvurusu oluşturabilirsiniz. Hesap silme talepleri güvenlik doğrulaması sonrası işlenir; yasal süreler içinde yanıtlanır.</p>
-                        </div>
-                    </section>
-
-                    <section id="account-panel-subscription" role="tabpanel" aria-labelledby="account-tab-subscription" class="account-panel ${this.activeTab === 'subscription' ? 'is-active' : ''}" data-account-panel="subscription" ${this.activeTab === 'subscription' ? '' : 'hidden'}>
-                        <header class="account-panel-head">
-                            <h2>Abonelik</h2>
-                            <p>Premium özellikler Stripe üzerinden güvenle yönetilir.</p>
-                        </header>
-                        <div class="account-subscription-card ${hasPremium || isPastDue ? 'is-premium' : ''}">
-                            <div>
-                                <span class="account-eyebrow">Mevcut plan</span>
-                                <h3>${hasPremium || isPastDue ? 'isteBul Pro' : 'Ücretsiz'}</h3>
-                                <p>${hasPremium
-            ? `Dönem sonu: ${formatDate(sub?.current_period_end)}${sub?.cancel_at_period_end ? ' · Dönem sonunda iptal edilecek' : ''}`
-            : isPastDue
-                ? 'Son ödeme başarısız oldu. Kart bilginizi güncelleyerek aboneliğinizi sürdürebilirsiniz.'
-                : canManageBilling
-                    ? `Abonelik durumu: ${escapeHtml(subMeta.label)}. Faturalarınızı ve planınızı Stripe panelinden yönetin.`
-                    : 'Gelişmiş karşılaştırma, öncelikli analiz ve kayıtlı karar geçmişi için Pro\'ya geçin.'}</p>
-                            </div>
-                            ${canManageBilling
-            ? `<span class="account-plan-badge tone-${subMeta.tone}">${escapeHtml(subMeta.label)}</span>`
-            : `<button type="button" class="btn btn-primary" id="account-upgrade-btn">7 gün ücretsiz dene</button>`}
-                        </div>
-                        ${isPastDue ? `
-                        <div class="account-billing-panel" style="margin-bottom:12px;padding:12px;background:rgba(220,53,69,0.06);border-radius:8px">
-                            <p style="margin:0 0 8px;font-size:14px"><strong>Ödeme sorunu?</strong> Kartınızı güncelleyin veya <button type="button" class="btn btn-ghost btn-sm" data-help-open>Yardım merkezi</button> üzerinden «ödeme» arayın.</p>
-                        </div>
-                        ` : ''}
-                        ${canManageBilling ? `
-                        <div class="account-billing-panel">
-                            <button type="button" class="btn btn-primary" id="account-billing-portal-btn" data-billing-portal>Aboneliği yönet</button>
-                            <p class="account-billing-hint">Stripe müşteri panelinde:</p>
-                            <ul class="account-billing-features">
-                                <li>Kart bilgisi güncelle</li>
-                                <li>Faturaları görüntüle ve indir</li>
-                                <li>Plan değiştir veya iptal et</li>
-                            </ul>
-                        </div>
-                        ` : ''}
-                        ${!canManageBilling ? `
-                        <p class="revenue-risk-reversal account-billing-reassurance" role="note">
-                            <span>7 gün ücretsiz deneme</span>
-                            <span>Stripe ile güvenli ödeme</span>
-                            <span>İstediğiniz zaman iptal</span>
-                        </p>
-                        ` : ''}
-                        <p class="account-trust-note"><i data-lucide="shield"></i> Ödeme bilgileriniz isteBul sunucularında saklanmaz; kart ve fatura işlemleri Stripe üzerinden yönetilir.</p>
-                    </section>
-
-                    <section id="account-panel-security" role="tabpanel" aria-labelledby="account-tab-security" class="account-panel ${this.activeTab === 'security' ? 'is-active' : ''}" data-account-panel="security" ${this.activeTab === 'security' ? '' : 'hidden'}>
-                        <header class="account-panel-head">
-                            <h2>Güvenlik</h2>
-                            <p>Hesap güvenliğinizi koruyun.</p>
-                        </header>
-                        <ul class="account-security-list">
-                            <li>
-                                <div>
-                                    <strong>Şifre</strong>
-                                    <p>Şifrenizi unuttuysanız e-posta ile güvenli sıfırlama bağlantısı alın.</p>
-                                </div>
-                                <button type="button" class="btn btn-outline btn-sm" id="account-reset-password">Şifre sıfırla</button>
-                            </li>
-                            <li>
-                                <div>
-                                    <strong>Oturum</strong>
-                                    <p>Bu cihazda oturumunuz açık. Paylaşımlı cihazlarda işiniz bitince çıkış yapın.</p>
-                                </div>
-                                <button type="button" class="btn btn-outline btn-sm" id="account-logout-secondary">Çıkış yap</button>
-                            </li>
-                        </ul>
-                    </section>
+            ${renderUserDashboard(dashboardData)}
+            <section class="ud-panel-extra ${this.activeTab === 'comparisons' ? 'is-active' : ''}" data-dashboard-panel="comparisons" ${this.activeTab === 'comparisons' ? '' : 'hidden'}>
+                <header class="account-panel-head">
+                    <h2>Karşılaştırmalarım</h2>
+                    <p>Kaydettiğiniz karşılaştırmaları tek merkezde yönetin.</p>
+                </header>
+                <p class="ud-empty-note">Karşılaştırma öğesi: ${dashboardData.comparisonsCount}</p>
+                <div class="account-quick-actions">
+                    <a href="/karsilastir" class="btn btn-primary">Karşılaştırma Merkezine Git</a>
+                    <a href="/auto/" class="btn btn-outline">Yeni analiz başlat</a>
                 </div>
-            </div>
+            </section>
+            <section class="ud-panel-extra ${this.activeTab === 'recommendations' ? 'is-active' : ''}" data-dashboard-panel="recommendations" ${this.activeTab === 'recommendations' ? '' : 'hidden'}>
+                <header class="account-panel-head">
+                    <h2>AI Önerilerim</h2>
+                    <p>Kayıtlı analizlerinize göre bilgilendirme amaçlı öneriler.</p>
+                </header>
+                ${dashboardData.recommendations.length
+                  ? `<div class="ud-side-stack">${dashboardData.recommendations.map((item) => `<article class="ud-rec-item"><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.description)}</p></article>`).join('')}</div>`
+                  : '<p class="ud-empty-note">Henüz AI önerisi oluşturacak yeterli veri yok.</p>'}
+            </section>
+            <section class="ud-panel-extra ${this.activeTab === 'notifications' ? 'is-active' : ''}" data-dashboard-panel="notifications" ${this.activeTab === 'notifications' ? '' : 'hidden'}>
+                <header class="account-panel-head">
+                    <h2>Bildirimler</h2>
+                    <p>Karar durum güncellemeleri ve sistem bildirimleri.</p>
+                </header>
+                <p class="ud-empty-note">Yeni bildirim yok. Analiz tamamlandığında veya favori durumu değiştiğinde burada listelenir.</p>
+            </section>
+            <section class="ud-panel-extra ${this.activeTab === 'settings' ? 'is-active' : ''}" data-dashboard-panel="settings" ${this.activeTab === 'settings' ? '' : 'hidden'}>
+                <header class="account-panel-head">
+                    <h2>Profil Ayarları</h2>
+                    <p>Profil bilgileriniz ve bildirim tercihleriniz.</p>
+                </header>
+                <form id="account-settings-form" class="account-settings-form" data-enterprise-form>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="account-full-name">Ad Soyad</label>
+                            <input id="account-full-name" name="full_name" type="text" autocomplete="name" value="${escapeHtml(profile?.full_name || '')}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="account-phone">Telefon</label>
+                            <input id="account-phone" name="phone" type="tel" autocomplete="tel" value="${escapeHtml(profile?.phone || '')}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="account-location">Konum</label>
+                            <input id="account-location" name="location" type="text" value="${escapeHtml(profile?.location || '')}" placeholder="İl / İlçe">
+                        </div>
+                        <div class="form-group">
+                            <label for="account-notification-preference">Bildirim tercihi</label>
+                            <select id="account-notification-preference" name="notification_preference">
+                                <option value="all">Tüm bildirimler</option>
+                                <option value="important">Sadece önemli bildirimler</option>
+                                <option value="none">Kapalı</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="account-bio">Kısa not</label>
+                        <textarea id="account-bio" name="bio" rows="3" maxlength="280" placeholder="İsteğe bağlı">${escapeHtml(profile?.bio || '')}</textarea>
+                    </div>
+                    <div class="account-quick-actions">
+                        <button type="submit" class="btn btn-primary">Değişiklikleri kaydet</button>
+                        <button type="button" class="btn btn-ghost" id="account-logout-btn">Çıkış yap</button>
+                    </div>
+                </form>
+            </section>
+            <section class="ud-panel-extra ${this.activeTab === 'security' ? 'is-active' : ''}" data-dashboard-panel="security" ${this.activeTab === 'security' ? '' : 'hidden'}>
+                <header class="account-panel-head">
+                    <h2>Hesap Güvenliği</h2>
+                    <p>Şifre ve oturum güvenliği kontrolleri.</p>
+                </header>
+                <ul class="account-security-list">
+                    <li>
+                        <div>
+                            <strong>Şifre</strong>
+                            <p>Şifrenizi unuttuysanız güvenli sıfırlama bağlantısı alın.</p>
+                        </div>
+                        <button type="button" class="btn btn-outline btn-sm" id="account-reset-password">Şifre sıfırla</button>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>E-posta doğrulaması</strong>
+                            <p>${emailVerified ? 'E-posta doğrulandı.' : 'E-posta doğrulaması bekleniyor.'}</p>
+                        </div>
+                        ${emailVerified ? '<span class="account-plan-badge tone-success">Doğrulandı</span>' : '<button type="button" class="btn btn-outline btn-sm" id="account-resend-verify">Doğrulama e-postasını gönder</button>'}
+                    </li>
+                </ul>
+            </section>
+            <section class="ud-panel-extra ${this.activeTab === 'help' ? 'is-active' : ''}" data-dashboard-panel="help" ${this.activeTab === 'help' ? '' : 'hidden'}>
+                <header class="account-panel-head">
+                    <h2>Yardım & Destek</h2>
+                    <p>Sık sorulan sorular ve destek kanalları.</p>
+                </header>
+                <div class="account-quick-actions">
+                    <a href="/#landing-faq" class="btn btn-outline" data-home-anchor="landing-faq">SSS</a>
+                    <a href="/iletisim.html" class="btn btn-outline">Destek Talebi</a>
+                    <a href="/metodoloji/" class="btn btn-outline">Metodoloji</a>
+                </div>
+            </section>
         `;
 
         root.querySelector('#account-reset-password')?.addEventListener('click', () => {
             this.auth?.showForgotPasswordForm?.(user.email);
-        });
-
-        root.querySelector('#account-logout-secondary')?.addEventListener('click', () => {
-            document.getElementById('account-logout-btn')?.click();
-        });
-
-        root.querySelector('[data-help-open]')?.addEventListener('click', () => {
-            document.querySelector('[data-help-toggle]')?.click();
-        });
-
-        root.querySelectorAll('[data-account-tab]').forEach((btn) => {
-            if (btn.closest('.account-quick-actions')) {
-                btn.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    this.setTab(btn.dataset.accountTab);
-                });
-            }
         });
 
         this.setTab(this.activeTab);
@@ -527,6 +466,141 @@ export class AccountManager {
             return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
         }
         return source.slice(0, 2).toUpperCase();
+    }
+
+    toggleSidebar(open) {
+        const sidebar = document.getElementById('user-dashboard-sidebar');
+        const backdrop = document.getElementById('user-dashboard-sidebar-backdrop');
+        const toggle = document.getElementById('user-dashboard-menu-toggle');
+        if (!sidebar || !backdrop || !toggle) return;
+        sidebar.classList.toggle('is-open', open);
+        backdrop.hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+    }
+
+    buildDashboardData(user, profile, subMeta, hasPremium, emailVerified) {
+        const history = this.readDecisionHistory(user.id);
+        const favorites = this.readFavorites();
+        const comparisons = this.readComparisons();
+        const ongoingCards = this.buildOngoingCards(history);
+        const resultCards = history.slice(0, 8).map((record) => mapHistoryRecordToResult(record));
+        const groupedFavorites = this.groupFavoritesByCategory(favorites);
+        const recommendations = this.buildRecommendations(resultCards, emailVerified);
+        const initials = this.getInitials(profile);
+        return {
+            profile,
+            user,
+            initials,
+            activeTab: this.activeTab,
+            activeFavoritesTab: this.activeFavoritesTab,
+            metrics: [
+                { title: 'Tamamlanan Analizler', value: String(history.length), subtitle: 'Tüm kategorilerde', icon: 'clipboard-check', tone: 'success' },
+                { title: 'Devam Edenler', value: String(ongoingCards.length), subtitle: 'Yarım kalan analizler', icon: 'timer-reset', tone: 'info' },
+                { title: 'Favoriler', value: String(favorites.length), subtitle: 'Kaydedilen öğeler', icon: 'heart', tone: 'violet' },
+                { title: 'Kaydedilen Sonuçlar', value: String(resultCards.length), subtitle: 'Önemli kararlar', icon: 'folder-kanban', tone: 'warning' }
+            ],
+            ongoingCards,
+            resultCards,
+            favorites: groupedFavorites,
+            recommendations,
+            notificationCount: recommendations.length,
+            quickActions: [
+                { title: 'Yeni Analiz Başlat', description: 'İstediğiniz kategoride yeni analiz yap', href: '/auto/', icon: 'plus-circle' },
+                { title: 'Karşılaştırma Oluştur', description: 'Seçenekleri karşılaştır', href: '/karsilastir', icon: 'scale' },
+                { title: 'Raporlarımı İndir', description: 'Tüm analiz raporlarını indir', href: '/gecmis', icon: 'download' },
+                { title: 'Favori Listemi Gör', description: 'Kaydettiğiniz tüm öğeleri görüntüleyin', href: '/favoriler', icon: 'heart' }
+            ],
+            membershipLabel: subMeta.label,
+            hasPremium,
+            comparisonsCount: comparisons.length
+        };
+    }
+
+    readDecisionHistory(userId) {
+        if (!userId) return [];
+        return readStoredJson(userScopedKey(STORAGE_KEYS.DECISION_HISTORY, userId), []);
+    }
+
+    readFavorites() {
+        return readStoredJson(STORAGE_KEYS.FAVORITES, []);
+    }
+
+    readComparisons() {
+        return readStoredJson(STORAGE_KEYS.COMPARISON_ITEMS, []);
+    }
+
+    buildOngoingCards(history = []) {
+        const routeMap = {
+            auto: { category: 'Auto', href: '/auto/' },
+            konut: { category: 'Konut', href: '/konut/' },
+            tatil: { category: 'Tatil', href: '/tatil/' },
+            finans: { category: 'Finans', href: '/finans/' }
+        };
+        const recentRecords = history
+            .filter((item) => item?.createdAt)
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, 4);
+
+        return recentRecords.map((record) => {
+            const key = record.categoryId === 'auto' ? 'auto' : record.categoryId;
+            const meta = routeMap[key] || { category: record.categoryName || 'Karar', href: '/karar-asistani' };
+            const score = Number(record?.topPick?.score) || 50;
+            const progress = Math.max(20, Math.min(95, score));
+            return {
+                category: `${meta.category} Analizi`,
+                title: record?.topPick?.name || `${meta.category} kararı`,
+                description: record.summary || 'Analiz kaydınızdan devam edebilirsiniz.',
+                progress,
+                updatedAtLabel: record.createdAt ? new Date(record.createdAt).toLocaleDateString('tr-TR') : 'Tarih bilinmiyor',
+                href: meta.href
+            };
+        });
+    }
+
+    normalizeFavoriteCategory(item = {}) {
+        const raw = String(item.category || '').toLowerCase();
+        if (raw === 'arac' || raw === 'auto') return 'arac';
+        if (raw === 'ev' || raw === 'konut' || raw === 'housing') return 'konut';
+        if (raw === 'tatil' || raw === 'vacation' || raw === 'travel') return 'tatil';
+        if (raw === 'finans' || raw === 'finance') return 'finans';
+        return 'arac';
+    }
+
+    groupFavoritesByCategory(favorites = []) {
+        const groups = { arac: [], konut: [], tatil: [], finans: [] };
+        favorites.forEach((item) => {
+            const key = this.normalizeFavoriteCategory(item);
+            groups[key].push({
+                id: item.id,
+                title: item.title || item.name || 'Kayıtlı Favori',
+                categoryLabel: item.category || key,
+                priceLabel: Number(item.price) > 0
+                    ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(item.price)
+                    : 'Maliyet belirtilmedi',
+                detail: item.location || item.description || 'Detay bilgisi yok'
+            });
+        });
+        return groups;
+    }
+
+    buildRecommendations(resultCards = [], emailVerified = true) {
+        const picks = resultCards.slice(0, 4);
+        if (!picks.length) return [];
+        const base = picks.map((item) => ({
+            title: item.categoryLabel,
+            description: item.score >= 80
+                ? `${item.categoryLabel} skorunuz güçlü görünüyor. Maliyet ve risk dengesini koruyarak ilerleyin.`
+                : `${item.categoryLabel} skorunuz geliştirmeye açık. Alternatif senaryolarla maliyet/risk dengesini gözden geçirin.`,
+            href: '/gecmis'
+        }));
+        if (!emailVerified) {
+            base.unshift({
+                title: 'Hesap güvenliği',
+                description: 'E-posta doğrulamanızı tamamladığınızda bildirim ve kayıt özellikleri daha sağlıklı çalışır.',
+                href: '/profil/'
+            });
+        }
+        return base.slice(0, 4);
     }
 }
 
