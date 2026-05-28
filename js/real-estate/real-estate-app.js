@@ -5,13 +5,19 @@ import {
   calculateRiskLevel,
   calculateInvestmentPotential,
   calculateHousingDecisionScore,
+  calculateDownPaymentStrength,
+  calculateHomeTypeFit,
+  calculateFinancingClarity,
+  calculateRiskDensity,
+  getScoreBand,
   buildHousingScenarios,
   formatTry
 } from './real-estate-calculator.js';
 import { buildHousingAiCommentary } from './real-estate-ai.js';
+import { TURKEY_CITIES } from './turkey-cities.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
 
-const STEP_LABELS = ['Karar amacı', 'Bütçe', 'Lokasyon', 'Konut tipi', 'Risk & tercih', 'İletişim'];
+const STEP_LABELS = ['Karar amacı', 'Bütçe', 'Lokasyon', 'Konut tipi', 'Riskler'];
 const PURPOSE_OPTIONS = [
   'Satın almak istiyorum',
   'Kiralamak istiyorum',
@@ -80,6 +86,7 @@ const state = {
 };
 
 let lastResultPayload = null;
+let resultsRendered = false;
 
 function $(selector, root = document) {
   return root.querySelector(selector);
@@ -91,6 +98,13 @@ function escapeHtml(value) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function formatLocationLabel() {
+  const il = String(state.city || '').trim();
+  const ilce = String(state.district || '').trim();
+  if (il && ilce) return `${il} / ${ilce}`;
+  return il || '—';
 }
 
 function sessionId() {
@@ -175,13 +189,23 @@ function budgetFields() {
 }
 
 function locationFields() {
+  const cityOptions = TURKEY_CITIES.map((name) => `
+    <option value="${escapeHtml(name)}" ${state.city === name ? 'selected' : ''}>${escapeHtml(name)}</option>
+  `).join('');
   return `
     <div class="housing-form-grid">
-      <label>Şehir<input data-input="city" value="${escapeHtml(state.city)}"></label>
-      <label>İlçe<input data-input="district" value="${escapeHtml(state.district)}"></label>
+      <label>İl <span class="housing-required">*</span>
+        <select data-input="city" required>
+          <option value="">İl seçin</option>
+          ${cityOptions}
+        </select>
+      </label>
+      <label>İlçe <span class="housing-optional">(opsiyonel)</span>
+        <input data-input="district" value="${escapeHtml(state.district)}" placeholder="Örn. Karşıyaka">
+      </label>
       <label>Merkeze yakınlık beklentisi<input data-input="proximityCenter" value="${escapeHtml(state.proximityCenter)}" placeholder="Örn. 15 dk içinde"></label>
     </div>
-    <p class="housing-field-hint">Yaşam ve ulaşım tercihlerinizi seçin:</p>
+    <p class="housing-field-hint">Yaşam ve ulaşım tercihlerinizi seçin (opsiyonel):</p>
     ${chipButtons(LOCATION_PREFS, state.locationPreferences, 'toggle-location')}`;
 }
 
@@ -206,48 +230,184 @@ function riskFields() {
       <label>Tadilat tahmini<input data-input="renovationCost" type="number" min="0" value="${escapeHtml(state.renovationCost)}"></label>
       <label>Ulaşım maliyeti (aylık)<input data-input="transportCost" type="number" min="0" value="${escapeHtml(state.transportCost)}"></label>
     </div>
-    <p class="housing-field-hint">Risk ve tercih öncelikleri:</p>
+    <p class="housing-field-hint">Risk ve tercih öncelikleri (opsiyonel, en fazla 6):</p>
     ${chipButtons(RISK_PREFS, state.riskPreferences, 'toggle-risk')}`;
 }
 
-function contactFields() {
-  return `
-    <p class="housing-field-hint">İletişim bilgisi isteğe bağlıdır. Doldurmadan da analiz sonucunu görebilirsiniz.</p>
-    <div class="housing-form-grid">
-      <label>Ad Soyad<input data-input="leadName" value="${escapeHtml(state.leadName)}"></label>
-      <label>E-posta<input data-input="leadEmail" type="email" value="${escapeHtml(state.leadEmail)}"></label>
-      <label>Telefon<input data-input="leadPhone" type="tel" value="${escapeHtml(state.leadPhone)}"></label>
-    </div>
-    <label class="housing-check-row">
-      <input type="checkbox" id="housing-partner-offer" ${state.wantPartnerOffer ? 'checked' : ''}>
-      Uzman/partner teklifi almak istiyorum
-    </label>`;
+function validateStep(stepIndex) {
+  if (stepIndex === 0 && !state.purchasePurpose) return 'Karar amacını seçin.';
+  if (stepIndex === 1) {
+    if (!Number(state.totalBudget)) return 'Toplam bütçe zorunludur.';
+    if (!Number(state.monthlyIncome)) return 'Aylık net gelir zorunludur.';
+    if (!Number(state.monthlyCapacity)) return 'Aylık ödeme kapasitesi zorunludur.';
+    if (state.useFinancing === 'evet' && !Number(state.loanAmount)) return 'Kredi tutarını girin.';
+    if (!state.useFinancing) return 'Kredi kullanım tercihini seçin.';
+  }
+  if (stepIndex === 2 && !String(state.city || '').trim()) return 'İl seçimi zorunludur.';
+  if (stepIndex === 3 && !state.homeType) return 'Konut tipini seçin.';
+  return '';
 }
 
-function updateLivePreview() {
+function validateAllSteps() {
+  for (let i = 0; i < STEP_LABELS.length; i += 1) {
+    const msg = validateStep(i);
+    if (msg) return { step: i, message: msg };
+  }
+  return null;
+}
+
+function buildMetrics() {
+  const ownership = calculateOwnershipCost(state);
+  const monthlyDebt = ownership.monthlyPayment + Number(state.currentDebt || 0);
+  const dti = calculateDebtToIncome(monthlyDebt, Number(state.monthlyIncome || 0));
+  const locationFit = calculateLocationFitScore(state);
+  const maintenanceRisk = Math.min(100, Number(state.buildingAge || 0) * 2 + Number(state.renovationCost || 0) / 40000 * 25);
+  const earthquakeRiskScore = Math.min(100, Number(state.earthquakeRiskInput || 40));
+  const locationRisk = Math.max(15, 100 - locationFit);
+  const liquidityRisk = Math.min(100, Math.max(20, 70 - Number(state.squareMeters || 90) / 2));
+  const lifeQuality = Math.min(100, locationFit * 0.55 + (state.riskPreferences.length ? 12 : 4) + (state.locationPreferences.length ? 8 : 0));
+  const costPressure = Math.min(100, ownership.monthlyPayment / Math.max(Number(state.monthlyIncome || 1), 1) * 100);
+  const capacity = Number(state.monthlyCapacity || 0);
+  const budgetFit = capacity > 0
+    ? Math.round(Math.max(20, 100 - Math.max(0, ownership.monthlyPayment - capacity) / capacity * 100))
+    : Math.round(100 - costPressure);
+  const downPaymentStrength = calculateDownPaymentStrength(state.totalBudget, state.downPayment);
+  const homeTypeFit = calculateHomeTypeFit(state.homeType);
+  const financingClarity = calculateFinancingClarity(state.useFinancing, state.loanAmount);
+  const riskDensity = calculateRiskDensity(state.riskPreferences, earthquakeRiskScore);
+  const risk = calculateRiskLevel({ dti, earthquakeRiskScore, maintenanceRisk, locationRisk, liquidityRisk });
+  const investmentPotential = calculateInvestmentPotential({
+    locationRisk,
+    maintenanceRisk,
+    locationFit,
+    rentYield: Number(state.rentYield || 0)
+  });
+  const score = calculateHousingDecisionScore({
+    dti,
+    locationFit,
+    investmentPotential,
+    risk,
+    lifeQuality,
+    costPressure,
+    budgetFit,
+    downPaymentStrength,
+    homeTypeFit,
+    financingClarity,
+    riskDensity
+  });
+  const scoreBand = getScoreBand(score);
+  const creditLoadScore = Math.round(100 - Math.min(dti, 100));
+  return {
+    ownership,
+    dti,
+    locationFit,
+    maintenanceRisk,
+    earthquakeRiskScore,
+    locationRisk,
+    liquidityRisk,
+    lifeQuality,
+    costPressure,
+    budgetFit,
+    downPaymentStrength,
+    homeTypeFit,
+    financingClarity,
+    riskDensity,
+    risk,
+    investmentPotential,
+    score,
+    scoreBand,
+    creditLoadScore,
+    creditLoadLabel: dti > 45 ? 'Yüksek baskı' : dti > 32 ? 'Orta baskı' : 'Kontrollü'
+  };
+}
+
+function buildProfileSummary() {
+  const financingLabel = state.useFinancing === 'evet'
+    ? `Kredi (${formatTry(Number(state.loanAmount || 0))})`
+    : state.useFinancing === 'hayir'
+      ? 'Nakit ağırlıklı'
+      : 'Henüz net değil';
+  return [
+    ['Amaç', state.purchasePurpose || '—'],
+    ['Lokasyon', formatLocationLabel()],
+    ['Konut tipi', state.homeType || '—'],
+    ['Bütçe', Number(state.totalBudget) ? formatTry(state.totalBudget) : '—'],
+    ['Finansman', financingLabel]
+  ];
+}
+
+function buildAttentionItems(metrics) {
+  const items = [];
+  if (metrics.dti > 40) items.push('Aylık ödeme yükü gelirinize göre yüksek görünüyor; vade veya peşinat senaryosu gözden geçirin.');
+  if (metrics.earthquakeRiskScore > 55) items.push('Deprem/zemin riski hassasiyetinize göre ek teknik kontrol önerilir.');
+  if (Number(state.dues || 0) > 5000) items.push('Aidat seviyesi bütçe planınızı zorlayabilir.');
+  if (!state.deedStatus.trim()) items.push('Tapu ve iskan durumu için resmi evrak kontrolü yapılmalıdır.');
+  if (metrics.riskDensity > 50) items.push('Birden fazla risk faktörü işaretlendi; alternatif lokasyon ve konut tipi senaryoları önerilir.');
+  if (!items.length) items.push('Mevcut girdiler dengeli görünüyor; yine de ekspertiz ve hukuki kontrol önerilir.');
+  return items;
+}
+
+function buildNextStep(metrics) {
+  const loc = formatLocationLabel();
+  if (state.purchasePurpose === 'Kiralamak istiyorum') {
+    return `${loc} için kira sözleşmesi ve toplam yaşam maliyetini karşılaştırmalı listeleyin.`;
+  }
+  if (state.purchasePurpose === 'Yatırım amaçlı düşünüyorum') {
+    return `${loc} bölgesinde kira getirisi ve değer artış senaryolarını 3 alternatif konutla kıyaslayın.`;
+  }
+  if (metrics.dti > 40) {
+    return 'Önce peşinatı artırarak kredi tutarını düşürmeyi simüle edin; ardından aynı ilde 2–3 alternatif için ekspertiz planlayın.';
+  }
+  return `${loc} içinde benzer bütçeli 2–3 konut için ekspertiz randevusu ve tapu ön kontrolü planlayın.`;
+}
+
+function updateSidePanel(mode = 'wizard') {
   const panel = document.getElementById('housing-live-preview');
   if (!panel) return;
+
+  if (mode === 'results' && lastResultPayload) {
+    const { metrics, ai } = lastResultPayload;
+    panel.innerHTML = `
+      <h3>Konut karar asistanınız</h3>
+      <p class="housing-preview-score"><strong>${metrics.score}</strong><span>/100</span></p>
+      <p class="housing-score-band housing-score-band--${escapeHtml(metrics.scoreBand.tone)}">${escapeHtml(metrics.scoreBand.label)}</p>
+      <ul>
+        <li><strong>Lokasyon:</strong> ${escapeHtml(formatLocationLabel())}</li>
+        <li><strong>Toplam maliyet:</strong> ${formatTry(metrics.ownership.realTotal)}</li>
+        <li><strong>Aylık yük:</strong> ${formatTry(metrics.ownership.monthlyPayment)}</li>
+        <li><strong>Risk:</strong> ${escapeHtml(metrics.risk.label)}</li>
+      </ul>
+      <p class="housing-preview-ai"><strong>AI özeti:</strong> ${escapeHtml(ai.text.slice(0, 160))}${ai.text.length > 160 ? '…' : ''}</p>
+      <p class="housing-preview-note">Tahmini analiz — bağlayıcı teklif değildir.</p>`;
+    return;
+  }
+
   if (state.step < 2) {
     panel.innerHTML = `
-      <h3>Canlı özet</h3>
+      <h3>Konut karar asistanınız</h3>
       <p>Adımları tamamladıkça bütçe, lokasyon ve risk önizlemesi burada güncellenir.</p>
       <ul>
-        <li><strong>Amaç:</strong> ${escapeHtml(state.purchasePurpose || '—')}</li>
-        <li><strong>Şehir:</strong> ${escapeHtml(state.city || '—')}</li>
+        <li><strong>Amaç:</strong> ${escapeHtml(state.purchasePurpose || 'Henüz net değil')}</li>
+        <li><strong>İl:</strong> ${escapeHtml(state.city || 'Henüz net değil')}</li>
       </ul>`;
     return;
   }
-  const metrics = buildMetrics();
-  panel.innerHTML = `
-    <h3>Canlı özet</h3>
-    <p class="housing-preview-score"><strong>${metrics.score}</strong><span>/100</span> Konut karar skoru</p>
-    <ul>
-      <li><strong>Bütçe uyumu:</strong> ${metrics.budgetFit}/100</li>
-      <li><strong>Aylık yük:</strong> ${formatTry(metrics.ownership.monthlyPayment)}</li>
-      <li><strong>Risk:</strong> ${escapeHtml(metrics.risk.label)}</li>
-      <li><strong>Lokasyon:</strong> ${metrics.locationFit}/100</li>
-    </ul>
-    <p class="housing-preview-note">Önizleme tahminidir; nihai teklif değildir.</p>`;
+
+  try {
+    const metrics = buildMetrics();
+    panel.innerHTML = `
+      <h3>Konut karar asistanınız</h3>
+      <p class="housing-preview-score"><strong>${metrics.score}</strong><span>/100</span> önizleme skoru</p>
+      <ul>
+        <li><strong>Lokasyon:</strong> ${escapeHtml(formatLocationLabel())}</li>
+        <li><strong>Bütçe uyumu:</strong> ${metrics.budgetFit}/100</li>
+        <li><strong>Aylık yük:</strong> ${formatTry(metrics.ownership.monthlyPayment)}</li>
+        <li><strong>Risk:</strong> ${escapeHtml(metrics.risk.label)}</li>
+      </ul>
+      <p class="housing-preview-note">Önizleme tahminidir; nihai teklif değildir.</p>`;
+  } catch {
+    panel.innerHTML = `<h3>Konut karar asistanınız</h3><p>Önizleme için gerekli alanları tamamlayın.</p>`;
+  }
 }
 
 function renderStep() {
@@ -259,39 +419,26 @@ function renderStep() {
     { title: 'Adım 2 — Bütçe', html: budgetFields() },
     { title: 'Adım 3 — Lokasyon', html: locationFields() },
     { title: 'Adım 4 — Konut tipi', html: homeTypeFields() },
-    { title: 'Adım 5 — Risk ve tercih', html: riskFields() },
-    { title: 'Adım 6 — İletişim (opsiyonel)', html: contactFields() }
+    { title: 'Adım 5 — Riskler', html: riskFields() }
   ];
   const body = steps[state.step];
+  const isLast = state.step === steps.length - 1;
 
   wizard.innerHTML = `
     <section class="housing-step-card">
       <h2>${body.title}</h2>
       ${body.html}
-      <p class="housing-validation" id="housing-validation"></p>
+      <p class="housing-validation" id="housing-validation" role="alert"></p>
       <div class="housing-step-actions">
         ${state.step > 0 ? '<button type="button" class="btn-secondary" id="housing-prev">Geri</button>' : ''}
-        <button type="button" class="btn-primary" id="housing-next">${state.step === steps.length - 1 ? 'Analizi oluştur' : 'Devam et'}</button>
+        <button type="button" class="btn-primary" id="housing-next">${isLast ? 'Sonuçları gör' : 'Devam et'}</button>
       </div>
     </section>
   `;
 
   bindWizardEvents();
   mountProgress();
-  updateLivePreview();
-}
-
-function validateCurrentStep() {
-  if (state.step === 0 && !state.purchasePurpose) return 'Karar amacını seçin.';
-  if (state.step === 1) {
-    if (!Number(state.totalBudget)) return 'Toplam bütçe zorunludur.';
-    if (!Number(state.monthlyIncome)) return 'Aylık net gelir zorunludur.';
-    if (!Number(state.monthlyCapacity)) return 'Aylık ödeme kapasitesi zorunludur.';
-    if (state.useFinancing === 'evet' && !Number(state.loanAmount)) return 'Kredi tutarını girin.';
-  }
-  if (state.step === 2 && (!state.city.trim() || !state.district.trim())) return 'Şehir ve ilçe alanlarını doldurun.';
-  if (state.step === 3 && !state.homeType) return 'Konut tipini seçin.';
-  return '';
+  updateSidePanel('wizard');
 }
 
 function bindWizardEvents() {
@@ -315,120 +462,75 @@ function bindWizardEvents() {
     button.addEventListener('click', () => {
       const value = button.dataset.value;
       if (!value) return;
-      state.riskPreferences = state.riskPreferences.includes(value)
-        ? state.riskPreferences.filter((item) => item !== value)
-        : [...state.riskPreferences, value];
+      if (state.riskPreferences.includes(value)) {
+        state.riskPreferences = state.riskPreferences.filter((item) => item !== value);
+      } else if (state.riskPreferences.length < 6) {
+        state.riskPreferences = [...state.riskPreferences, value];
+      }
       renderStep();
     });
   });
   document.querySelectorAll('[data-input]').forEach((input) => {
     const handler = () => {
       state[input.dataset.input] = input.type === 'checkbox' ? input.checked : input.value;
-      updateLivePreview();
+      updateSidePanel('wizard');
     };
     input.addEventListener('input', handler);
     input.addEventListener('change', handler);
-  });
-  $('#housing-partner-offer')?.addEventListener('change', (event) => {
-    state.wantPartnerOffer = event.target.checked;
   });
   $('#housing-prev')?.addEventListener('click', () => {
     state.step = Math.max(state.step - 1, 0);
     renderStep();
   });
-  $('#housing-next')?.addEventListener('click', async () => {
-    const validation = validateCurrentStep();
-    const validationNode = $('#housing-validation');
-    if (validation) {
-      if (validationNode) validationNode.textContent = validation;
-      return;
+  $('#housing-next')?.addEventListener('click', () => void handleNext());
+}
+
+async function handleNext() {
+  const validationNode = $('#housing-validation');
+  const fail = (message, step = state.step) => {
+    if (validationNode) validationNode.textContent = message;
+    if (step !== state.step) {
+      state.step = step;
+      renderStep();
+      if (validationNode) validationNode.textContent = message;
     }
+    validationNode?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
+  const currentError = validateStep(state.step);
+  if (currentError) {
+    fail(currentError);
+    return;
+  }
+
+  if (state.step < STEP_LABELS.length - 1) {
     if (validationNode) validationNode.textContent = '';
     trackEvent('home_analysis_step_completed', { step: state.step + 1, label: STEP_LABELS[state.step] });
-    if (state.step < STEP_LABELS.length - 1) {
-      state.step += 1;
-      renderStep();
-      return;
-    }
-    await renderResults();
-  });
-}
-
-function buildMetrics() {
-  const ownership = calculateOwnershipCost(state);
-  const monthlyDebt = ownership.monthlyPayment + Number(state.currentDebt || 0);
-  const dti = calculateDebtToIncome(monthlyDebt, Number(state.monthlyIncome || 0));
-  const locationFit = calculateLocationFitScore(state);
-  const maintenanceRisk = Math.min(100, Number(state.buildingAge || 0) * 2 + Number(state.renovationCost || 0) / 40000 * 25);
-  const earthquakeRiskScore = Math.min(100, Number(state.earthquakeRiskInput || 40));
-  const locationRisk = Math.max(15, 100 - locationFit);
-  const liquidityRisk = Math.min(100, Math.max(20, 70 - Number(state.squareMeters || 90) / 2));
-  const lifeQuality = Math.min(100, locationFit * 0.55 + (state.riskPreferences.length ? 12 : 4));
-  const costPressure = Math.min(100, ownership.monthlyPayment / Math.max(Number(state.monthlyIncome || 1), 1) * 100);
-  const capacity = Number(state.monthlyCapacity || 0);
-  const budgetFit = capacity > 0
-    ? Math.round(Math.max(20, 100 - Math.max(0, ownership.monthlyPayment - capacity) / capacity * 100))
-    : Math.round(100 - costPressure);
-  const risk = calculateRiskLevel({ dti, earthquakeRiskScore, maintenanceRisk, locationRisk, liquidityRisk });
-  const investmentPotential = calculateInvestmentPotential({
-    locationRisk,
-    maintenanceRisk,
-    locationFit,
-    rentYield: Number(state.rentYield || 0)
-  });
-  const score = calculateHousingDecisionScore({
-    dti,
-    locationFit,
-    investmentPotential,
-    risk,
-    lifeQuality,
-    costPressure
-  });
-  return {
-    ownership,
-    dti,
-    locationFit,
-    maintenanceRisk,
-    earthquakeRiskScore,
-    locationRisk,
-    liquidityRisk,
-    lifeQuality,
-    costPressure,
-    budgetFit,
-    risk,
-    investmentPotential,
-    score,
-    creditLoadLabel: dti > 45 ? 'Yüksek baskı' : dti > 32 ? 'Orta baskı' : 'Kontrollü'
-  };
-}
-
-function buildAttentionItems(metrics) {
-  const items = [];
-  if (metrics.dti > 40) items.push('Aylık ödeme yükü gelirinize göre yüksek görünüyor; vade veya peşinat senaryosu gözden geçirin.');
-  if (metrics.earthquakeRiskScore > 55) items.push('Deprem/zemin riski hassasiyetinize göre ek teknik kontrol önerilir.');
-  if (Number(state.dues || 0) > 5000) items.push('Aidat seviyesi bütçe planınızı zorlayabilir.');
-  if (!state.deedStatus.trim()) items.push('Tapu ve iskan durumu için resmi evrak kontrolü yapılmalıdır.');
-  if (!items.length) items.push('Mevcut girdiler dengeli görünüyor; yine de ekspertiz ve hukuki kontrol önerilir.');
-  return items;
-}
-
-function buildNextStep(metrics) {
-  if (state.purchasePurpose === 'Kiralamak istiyorum') {
-    return 'Kira sözleşmesi ve toplam yaşam maliyetini karşılaştırmalı listeleyin.';
+    state.step += 1;
+    renderStep();
+    return;
   }
-  if (state.purchasePurpose === 'Yatırım amaçlı düşünüyorum') {
-    return 'Kira getirisi ve değer artış senaryolarını 3 farklı lokasyonla kıyaslayın.';
+
+  const allError = validateAllSteps();
+  if (allError) {
+    fail(allError.message, allError.step);
+    return;
   }
-  if (metrics.dti > 40) {
-    return 'Önce peşinatı artırarak kredi tutarını düşürmeyi simüle edin.';
-  }
-  return 'Seçtiğiniz lokasyonda 2-3 alternatif konut için ekspertiz randevusu planlayın.';
+
+  if (validationNode) validationNode.textContent = '';
+  trackEvent('home_analysis_step_completed', { step: STEP_LABELS.length, label: 'Sonuçlar' });
+  await renderResults();
 }
 
 async function getAuthUserId() {
   try {
+    const base = window.__env?.SUPABASE_URL;
+    const key = window.__env?.SUPABASE_ANON_KEY;
+    if (!base || !key) return null;
     const { getSupabaseClient } = await import('../core/supabase.js');
-    const { data } = await getSupabaseClient().auth.getUser();
+    const client = getSupabaseClient();
+    if (!client) return null;
+    const { data } = await client.auth.getUser();
     return data?.user?.id || null;
   } catch {
     return null;
@@ -446,7 +548,7 @@ function saveReportLocally(metrics, aiText) {
     city: state.city,
     district: state.district,
     topPick: {
-      name: `${state.city} ${state.district} · ${state.purchasePurpose}`,
+      name: `${formatLocationLabel()} · ${state.purchasePurpose}`,
       score: metrics.score,
       monthlyPayment: metrics.ownership.monthlyPayment,
       yearlyCost: metrics.ownership.realTotal,
@@ -473,6 +575,7 @@ function saveReportLocally(metrics, aiText) {
 async function submitLead(metrics, aiText) {
   const hasContact = Boolean(state.leadName || state.leadEmail || state.leadPhone);
   if (!hasContact && !state.wantPartnerOffer) return;
+  const loc = formatLocationLabel();
   await intake('lead', {
     formData: {
       full_name: state.leadName,
@@ -487,7 +590,7 @@ async function submitLead(metrics, aiText) {
       monthly_capacity: Number(state.monthlyCapacity || 0),
       financing_needed: state.useFinancing === 'evet',
       term_months: Number(state.termMonths || 0),
-      location_text: `${state.city} / ${state.district}`,
+      location_text: loc,
       priorities: [...state.locationPreferences, ...state.riskPreferences].join(', '),
       decision_score: metrics.score,
       risk_level: metrics.risk.label,
@@ -498,97 +601,188 @@ async function submitLead(metrics, aiText) {
   trackEvent('home_lead_submit', { score: metrics.score, partner: state.wantPartnerOffer });
 }
 
+function renderContactBlock() {
+  return `
+    <section class="housing-result-contact">
+      <h3>İletişim ve lead (opsiyonel)</h3>
+      <p class="housing-field-hint">İletişim bilgisi vermeden de analiz sonucunu kullanabilirsiniz.</p>
+      <div class="housing-form-grid">
+        <label>Ad Soyad<input data-result-input="leadName" value="${escapeHtml(state.leadName)}"></label>
+        <label>E-posta<input data-result-input="leadEmail" type="email" value="${escapeHtml(state.leadEmail)}"></label>
+        <label>Telefon<input data-result-input="leadPhone" type="tel" value="${escapeHtml(state.leadPhone)}"></label>
+      </div>
+      <label class="housing-check-row">
+        <input type="checkbox" id="housing-partner-offer-result" ${state.wantPartnerOffer ? 'checked' : ''}>
+        Uzman/partner teklifi almak istiyorum
+      </label>
+      <button type="button" class="btn-secondary" id="housing-submit-lead">İletişim bilgilerimi gönder</button>
+      <p class="housing-validation" id="housing-lead-validation"></p>
+    </section>`;
+}
+
 async function renderResults() {
-  const metrics = buildMetrics();
-  const scenarios = buildHousingScenarios({ score: metrics.score });
-  const ai = await buildHousingAiCommentary({
-    ...state,
-    score: metrics.score,
-    risk: metrics.risk,
-    ownership: metrics.ownership
-  });
-  const attention = buildAttentionItems(metrics);
-  const nextStep = buildNextStep(metrics);
-  const userId = await getAuthUserId();
-
-  lastResultPayload = { metrics, ai, scenarios, attention, nextStep };
-
-  await trackEvent('home_results_view', { score: metrics.score, risk: metrics.risk.label });
-  if (state.leadName || state.leadEmail || state.leadPhone || state.wantPartnerOffer) {
-    await submitLead(metrics, ai.text);
-  }
-
   const results = $('#housing-results');
   const wizard = $('#housing-wizard');
-  if (wizard) wizard.hidden = true;
+  const flow = $('#housing-flow');
   if (!results) return;
-  results.hidden = false;
-  results.innerHTML = `
-    <header class="housing-result-hero">
-      <div>
-        <p class="housing-result-kicker">Konut karar sonucu</p>
-        <h2>Konut karar skoru <strong>${metrics.score}</strong><span>/100</span></h2>
-        <p>Risk seviyesi: <strong>${escapeHtml(metrics.risk.label)}</strong> · Bütçe uyumu: <strong>${metrics.budgetFit}/100</strong></p>
-      </div>
-    </header>
-    <section class="housing-result-grid housing-result-grid--scores">
-      ${[
-        ['Bütçe uyumu', metrics.budgetFit],
-        ['Kredi yükü', Math.round(100 - Math.min(metrics.dti, 100))],
-        ['Yaşam uygunluğu', Math.round(metrics.lifeQuality)],
-        ['Yatırım potansiyeli', metrics.investmentPotential],
-        ['Lokasyon uyumu', metrics.locationFit]
-      ].map(([label, value]) => `<article class="result-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}/100</strong></article>`).join('')}
-    </section>
-    <section class="housing-result-grid housing-result-grid--dual">
+
+  try {
+    const metrics = buildMetrics();
+    const scenarios = buildHousingScenarios({ score: metrics.score });
+    const priorities = [...state.locationPreferences, ...state.riskPreferences];
+    const ai = await buildHousingAiCommentary({
+      ...state,
+      score: metrics.score,
+      scoreBand: metrics.scoreBand,
+      risk: metrics.risk,
+      ownership: metrics.ownership,
+      priorities
+    });
+    const attention = buildAttentionItems(metrics);
+    const nextStep = buildNextStep(metrics);
+    const userId = await getAuthUserId();
+    const profileRows = buildProfileSummary();
+
+    lastResultPayload = { metrics, ai, scenarios, attention, nextStep };
+    resultsRendered = true;
+
+    void trackEvent('home_results_view', { score: metrics.score, risk: metrics.risk.label });
+
+    if (wizard) wizard.hidden = true;
+    results.hidden = false;
+    results.classList.add('is-visible');
+    flow?.classList.add('has-results');
+
+    results.innerHTML = `
+      <header class="housing-result-hero">
+        <div>
+          <p class="housing-result-kicker">Konut karar sonucu</p>
+          <h2>Konut karar skoru <strong>${metrics.score}</strong><span>/100</span></h2>
+          <p class="housing-score-band housing-score-band--${escapeHtml(metrics.scoreBand.tone)}">${escapeHtml(metrics.scoreBand.label)}</p>
+          <p>Risk: <strong>${escapeHtml(metrics.risk.label)}</strong> · Lokasyon: <strong>${escapeHtml(formatLocationLabel())}</strong></p>
+        </div>
+      </header>
+
+      <section class="housing-result-grid housing-result-grid--profile">
+        <article class="result-card result-card--profile">
+          <h3>Profil özeti</h3>
+          <dl class="housing-profile-dl">
+            ${profileRows.map(([k, v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join('')}
+          </dl>
+        </article>
+        <article class="result-card result-card--ai">
+          <h3>AI karar yorumu <span class="housing-ai-tag">${ai.source === 'ai' ? 'AI' : 'Fallback'}</span></h3>
+          <p class="housing-ai-commentary">${escapeHtml(ai.text)}</p>
+        </article>
+      </section>
+
+      <section class="housing-result-grid housing-result-grid--scores">
+        ${[
+          ['Bütçe uyumu', metrics.budgetFit],
+          ['Aylık yük baskısı', Math.round(100 - metrics.costPressure)],
+          ['Finansman/kredi yükü', metrics.creditLoadScore],
+          ['Lokasyon uygunluğu', metrics.locationFit],
+          ['Yaşam uygunluğu', Math.round(metrics.lifeQuality)],
+          ['Yatırım potansiyeli', metrics.investmentPotential],
+          ['Peşinat gücü', metrics.downPaymentStrength],
+          ['Risk yoğunluğu', Math.round(100 - metrics.riskDensity)]
+        ].map(([label, value]) => `<article class="result-card result-card--metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}/100</strong></article>`).join('')}
+      </section>
+
+      <section class="housing-result-grid housing-result-grid--dual">
+        <article class="result-card">
+          <h3>Toplam maliyet tahmini</h3>
+          <ul class="result-list">
+            <li><span>Konut fiyatı</span><strong>${formatTry(metrics.ownership.homePrice)}</strong></li>
+            <li><span>Peşinat</span><strong>${formatTry(metrics.ownership.downPayment)}</strong></li>
+            <li><span>Tahmini aylık ödeme</span><strong>${formatTry(metrics.ownership.monthlyPayment)}</strong></li>
+            <li><span>Toplam geri ödeme</span><strong>${formatTry(metrics.ownership.totalRepayment)}</strong></li>
+            <li><span>Tapu/ekspertiz/masraf</span><strong>${formatTry(metrics.ownership.titleFees)}</strong></li>
+            <li><span>Gerçek toplam maliyet</span><strong>${formatTry(metrics.ownership.realTotal)}</strong></li>
+          </ul>
+        </article>
+        <article class="result-card">
+          <h3>Aylık yük ve finansman</h3>
+          <p>Tahmini aylık taksit: <strong>${formatTry(metrics.ownership.monthlyPayment)}</strong></p>
+          <p>Ödeme kapasitesi: <strong>${formatTry(Number(state.monthlyCapacity || 0))}</strong></p>
+          <p>Borç/gelir etkisi: <strong>%${Math.round(metrics.dti)}</strong> (${escapeHtml(metrics.creditLoadLabel)})</p>
+          <p>Risk seviyesi: <strong>${escapeHtml(metrics.risk.label)}</strong></p>
+        </article>
+      </section>
+
+      <section class="housing-result-grid housing-result-grid--dual">
+        <article class="result-card">
+          <h3>Dikkat edilmesi gerekenler</h3>
+          <ul class="result-list result-list--bullets">${attention.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+        </article>
+        <article class="result-card">
+          <h3>Sonraki en mantıklı adım</h3>
+          <p>${escapeHtml(nextStep)}</p>
+        </article>
+      </section>
+
+      <section class="housing-result-actions">
+        <button type="button" class="btn-primary" id="housing-save-report">${userId ? 'Raporu kaydet' : 'Raporu kaydetmek için giriş yapın'}</button>
+        <button type="button" class="btn-secondary" id="housing-restart">Tekrar analiz et</button>
+        <button type="button" class="btn-secondary" id="housing-partner-cta">Uzman/partner teklifi almak istiyorum</button>
+      </section>
+
+      ${renderContactBlock()}
+
+      <p class="result-disclaimer">Bu analiz bilgilendirme amaçlıdır; nihai karar öncesinde tapu, ekspertiz, kredi ve hukuki kontroller yapılmalıdır.</p>
+      ${!userId ? '<p class="housing-login-hint"><a href="/profil/?returnTo=/konut/">Giriş yapın</a> — raporunuzu profilinizde saklayın.</p>' : ''}
+
+      <section class="housing-result-grid">
+        <article class="result-card">
+          <h3>Alternatif senaryolar</h3>
+          <div class="scenario-grid">${scenarios.slice(0, 4).map((scenario) => `
+            <div class="scenario-card">
+              <h4>${escapeHtml(scenario.title)}</h4>
+              <p>${escapeHtml(scenario.monthlyEffect)} · ${escapeHtml(scenario.riskEffect)}</p>
+            </div>`).join('')}</div>
+        </article>
+      </section>
+    `;
+
+    bindResultsEvents(metrics, ai, userId);
+    updateSidePanel('results');
+
+    requestAnimationFrame(() => {
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  } catch (error) {
+    console.warn('housing-results-failed', error);
+    results.hidden = false;
+    results.classList.add('is-visible');
+    results.innerHTML = `
       <article class="result-card">
-        <h3>AI gerekçesi (${ai.source === 'ai' ? 'AI' : 'Fallback'})</h3>
-        <p>${escapeHtml(ai.text)}</p>
-      </article>
-      <article class="result-card">
-        <h3>Kredi yükü değerlendirmesi</h3>
-        <p>Aylık taksit: <strong>${formatTry(metrics.ownership.monthlyPayment)}</strong></p>
-        <p>Borç/gelir etkisi: <strong>%${Math.round(metrics.dti)}</strong> (${escapeHtml(metrics.creditLoadLabel)})</p>
-        <p>Kapasite: <strong>${formatTry(Number(state.monthlyCapacity || 0))}</strong></p>
-      </article>
-    </section>
-    <section class="housing-result-grid housing-result-grid--dual">
-      <article class="result-card">
-        <h3>Toplam maliyet tahmini</h3>
-        <ul class="result-list">
-          <li><span>Konut fiyatı</span><strong>${formatTry(metrics.ownership.homePrice)}</strong></li>
-          <li><span>Peşinat</span><strong>${formatTry(metrics.ownership.downPayment)}</strong></li>
-          <li><span>Tahmini aylık ödeme</span><strong>${formatTry(metrics.ownership.monthlyPayment)}</strong></li>
-          <li><span>Toplam geri ödeme</span><strong>${formatTry(metrics.ownership.totalRepayment)}</strong></li>
-          <li><span>Tapu/ekspertiz/masraf</span><strong>${formatTry(metrics.ownership.titleFees)}</strong></li>
-          <li><span>Gerçek toplam maliyet</span><strong>${formatTry(metrics.ownership.realTotal)}</strong></li>
-        </ul>
-      </article>
-      <article class="result-card">
-        <h3>Dikkat edilmesi gerekenler</h3>
-        <ul class="result-list">${attention.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
-        <h3>Sonraki önerilen adım</h3>
-        <p>${escapeHtml(nextStep)}</p>
-      </article>
-    </section>
-    <section class="housing-result-actions">
-      <button type="button" class="btn-primary" id="housing-save-report">${userId ? 'Raporu kaydet' : 'Raporu kaydetmek için giriş yapın'}</button>
-      <button type="button" class="btn-secondary" id="housing-restart">Tekrar analiz et</button>
-      <button type="button" class="btn-secondary" id="housing-partner-cta">Uzman/partner teklifi almak istiyorum</button>
-    </section>
-    <p class="result-disclaimer">Bu analiz bilgilendirme amaçlıdır; nihai karar öncesinde tapu, ekspertiz, kredi ve hukuki kontroller yapılmalıdır.</p>
-    ${!userId ? '<p class="housing-login-hint"><a href="/profil/">Giriş yapın</a> — raporunuzu profilinizde saklayın.</p>' : ''}
-    <section class="housing-result-grid">
-      <article class="result-card">
-        <h3>Alternatif senaryolar</h3>
-        <div class="scenario-grid">${scenarios.map((scenario) => `
-          <div class="scenario-card">
-            <h4>${escapeHtml(scenario.title)}</h4>
-            <p>${escapeHtml(scenario.monthlyEffect)} · ${escapeHtml(scenario.riskEffect)}</p>
-          </div>`).join('')}</div>
-      </article>
-    </section>
-  `;
+        <h3>Sonuç oluşturulamadı</h3>
+        <p>Lütfen zorunlu alanları kontrol edip tekrar deneyin. İl seçimi ve bütçe bilgileri eksiksiz olmalıdır.</p>
+        <button type="button" class="btn-primary" id="housing-retry-results">Forma dön</button>
+      </article>`;
+    $('#housing-retry-results')?.addEventListener('click', () => {
+      results.hidden = true;
+      results.innerHTML = '';
+      if (wizard) wizard.hidden = false;
+      state.step = STEP_LABELS.length - 1;
+      renderStep();
+    });
+  }
+}
+
+function bindResultsEvents(metrics, ai, userId) {
+  const results = $('#housing-results');
+  const wizard = $('#housing-wizard');
+  const flow = $('#housing-flow');
+
+  results?.querySelectorAll('[data-result-input]').forEach((input) => {
+    input.addEventListener('input', () => {
+      state[input.dataset.resultInput] = input.value;
+    });
+  });
+  $('#housing-partner-offer-result')?.addEventListener('change', (e) => {
+    state.wantPartnerOffer = e.target.checked;
+  });
 
   $('#housing-save-report')?.addEventListener('click', () => {
     if (!userId) {
@@ -601,14 +795,22 @@ async function renderResults() {
     msg.textContent = 'Rapor profilinize kaydedildi.';
     $('#housing-save-report')?.insertAdjacentElement('afterend', msg);
   });
+
   $('#housing-restart')?.addEventListener('click', () => {
     state.step = 0;
+    resultsRendered = false;
+    lastResultPayload = null;
     if (wizard) wizard.hidden = false;
-    results.hidden = true;
-    results.innerHTML = '';
+    if (results) {
+      results.hidden = true;
+      results.classList.remove('is-visible');
+      results.innerHTML = '';
+    }
+    flow?.classList.remove('has-results');
     renderStep();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+
   $('#housing-partner-cta')?.addEventListener('click', async () => {
     state.wantPartnerOffer = true;
     await submitLead(metrics, ai.text);
@@ -618,7 +820,16 @@ async function renderResults() {
     $('#housing-partner-cta')?.insertAdjacentElement('afterend', msg);
   });
 
-  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('#housing-submit-lead')?.addEventListener('click', async () => {
+    const leadValidation = $('#housing-lead-validation');
+    if (!state.leadName && !state.leadEmail && !state.leadPhone && !state.wantPartnerOffer) {
+      if (leadValidation) leadValidation.textContent = 'En az bir iletişim alanı doldurun veya partner kutusunu işaretleyin.';
+      return;
+    }
+    if (leadValidation) leadValidation.textContent = '';
+    await submitLead(metrics, ai.text);
+    if (leadValidation) leadValidation.textContent = 'Bilgileriniz alındı. Teşekkürler.';
+  });
 }
 
 function bindHeroCtas() {

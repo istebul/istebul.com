@@ -98,15 +98,59 @@ export function calculateOwnershipCost(input) {
   };
 }
 
+export function getScoreBand(score) {
+  const s = Number(score) || 0;
+  if (s >= 85) return { label: 'Güçlü profil', tone: 'strong' };
+  if (s >= 70) return { label: 'Dengeli profil', tone: 'balanced' };
+  if (s >= 55) return { label: 'Dikkatli ilerlenmeli', tone: 'caution' };
+  return { label: 'Yüksek riskli karar', tone: 'high-risk' };
+}
+
+export function calculateDownPaymentStrength(totalBudget, downPayment) {
+  const total = Math.max(Number(totalBudget) || 0, 1);
+  const down = Math.max(Number(downPayment) || 0, 0);
+  return clamp(Math.round((down / total) * 100), 0, 100);
+}
+
+export function calculateHomeTypeFit(homeType) {
+  const map = {
+    Daire: 88,
+    'Site içi': 85,
+    'Yeni bina': 84,
+    Müstakil: 78,
+    Villa: 72,
+    'Eski bina ama uygun fiyatlı': 70
+  };
+  return map[homeType] || 75;
+}
+
+export function calculateFinancingClarity(useFinancing, loanAmount) {
+  if (useFinancing === 'hayir') return 90;
+  if (useFinancing === 'evet' && Number(loanAmount) > 0) return 85;
+  if (useFinancing === 'evet') return 55;
+  return 50;
+}
+
+export function calculateRiskDensity(riskPreferences = [], earthquakeScore = 40) {
+  const count = riskPreferences.length;
+  const base = count * 8 + Math.min(Number(earthquakeScore) || 0, 100) * 0.25;
+  return clamp(Math.round(base), 10, 95);
+}
+
 export function calculateHousingDecisionScore(metrics) {
   const score = 100
-    - metrics.dti * 0.23
-    + metrics.locationFit * 0.22
-    + metrics.investmentPotential * 0.18
-    - metrics.risk.score * 0.2
-    + metrics.lifeQuality * 0.15
-    - metrics.costPressure * 0.12;
-  return clamp(Math.round(score), 30, 99);
+    - metrics.dti * 0.2
+    + metrics.locationFit * 0.18
+    + metrics.investmentPotential * 0.14
+    - metrics.risk.score * 0.16
+    + metrics.lifeQuality * 0.12
+    - metrics.costPressure * 0.1
+    + metrics.budgetFit * 0.06
+    + metrics.downPaymentStrength * 0.06
+    + metrics.homeTypeFit * 0.04
+    + metrics.financingClarity * 0.04
+    - metrics.riskDensity * 0.04;
+  return clamp(Math.round(score), 0, 100);
 }
 
 export function buildHousingScenarios(base) {
