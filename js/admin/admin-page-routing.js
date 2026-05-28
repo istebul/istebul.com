@@ -108,5 +108,22 @@ export function showAdminPage(name, navEl) {
 
   Promise.resolve(handler()).catch((err) => {
     console.error('[admin] page load failed:', name, err);
+    const msg = String(err?.message || err || 'Bilinmeyen hata');
+    const targets = pageEl.querySelectorAll(
+      '[id$="-list"], [id$="-root"], [id$="-stats"]'
+    );
+    const html = `<div class="empty" role="alert">Sayfa yüklenemedi: ${escapeAdminPageText(msg)}</div>`;
+    if (targets.length) {
+      targets.forEach((node) => {
+        node.innerHTML = html;
+      });
+    }
   });
+}
+
+function escapeAdminPageText(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }

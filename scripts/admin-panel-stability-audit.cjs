@@ -42,6 +42,12 @@ if (!adminQuery.includes('PARTNER_APPLICATIONS_BASE_SELECT')) {
 if (!adminQuery.includes('runDirect')) {
   fail('admin-query must not pass undefined into direct() (breaks default params)');
 }
+if (adminQuery.includes('if (!isSchemaMissingError(res.error))')) {
+  fail('admin-query must fall back to admin-action on all direct errors (incl. RLS)');
+}
+if (!adminQuery.includes('withAdminFetchTimeout')) {
+  fail('admin-query must timeout direct Supabase reads to avoid stuck loading');
+}
 
 const repairSql = fs.readFileSync(
   path.join(root, 'supabase/migrations/20260609_partner_applications_schema_repair.sql'),

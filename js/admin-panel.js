@@ -1571,7 +1571,7 @@ async function adminAction(payload) {
 }
 
 const vacationAdmin = initVacationAdmin({ sb, adminAction, toast });
-const verticalAdmin = initVerticalAdmin({ sb, adminAction, toast });
+const verticalAdmin = initVerticalAdmin({ sb });
 const housingAdmin = initHousingAdmin({ sb, adminAction, toast });
 const financeAdmin = initFinanceAdmin({ sb, adminAction, toast });
 
@@ -4423,6 +4423,10 @@ document.addEventListener('change', (event) => {
   ['finance-leads-search', 'finance-leads-status-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => financeAdmin.loadFinanceLeads());
     document.getElementById(id)?.addEventListener('change', () => financeAdmin.loadFinanceLeads());
+  });
+  ['vertical-leads-search', 'vertical-leads-vertical-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => verticalAdmin.loadVerticalLeads());
+    document.getElementById(id)?.addEventListener('change', () => verticalAdmin.loadVerticalLeads());
   });
 
 bindAdminPanelEvents();

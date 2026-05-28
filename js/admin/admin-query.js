@@ -22,6 +22,28 @@ function isMissingColumnInSelect(error) {
   return msg.includes('column') && msg.includes('does not exist');
 }
 
+const ADMIN_DIRECT_FETCH_MS = 12_000;
+
+/**
+ * @template T
+ * @param {Promise<T>} promise
+ * @param {number} [ms]
+ */
+async function withAdminFetchTimeout(promise, ms = ADMIN_DIRECT_FETCH_MS) {
+  let timeoutId;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = setTimeout(
+      () => reject(new Error('Supabase isteği zaman aşımına uğradı')),
+      ms
+    );
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 /** Columns guaranteed by 20260518_partner_applications.sql */
 export const PARTNER_APPLICATIONS_BASE_SELECT =
   'id, created_at, company_name, contact_name, phone, email, city, category, lead_capacity, webhook_ready, status, notes';
@@ -42,18 +64,24 @@ export async function fetchAdminTable(sb, options) {
       return direct(expr);
     };
 
-    let res =
-      select && select !== '*'
-        ? await runDirect(select)
-        : await runDirect();
+    let res;
+    try {
+      res =
+        select && select !== '*'
+          ? await withAdminFetchTimeout(runDirect(select))
+          : await withAdminFetchTimeout(runDirect());
+    } catch (timeoutErr) {
+      directError = timeoutErr;
+      res = { data: [], error: timeoutErr };
+    }
 
-    if (res.error && isMissingColumnInSelect(res.error)) {
-      res = await runDirect('*');
+    if (res?.error && isMissingColumnInSelect(res.error)) {
+      res = await withAdminFetchTimeout(runDirect('*'));
     }
-    if (res.error && isMissingColumnInSelect(res.error) && table === 'partner_applications') {
-      res = await runDirect(PARTNER_APPLICATIONS_BASE_SELECT);
+    if (res?.error && isMissingColumnInSelect(res.error) && table === 'partner_applications') {
+      res = await withAdminFetchTimeout(runDirect(PARTNER_APPLICATIONS_BASE_SELECT));
     }
-    if (!res.error) {
+    if (res && !res.error) {
       return {
         data: res.data || [],
         error: null,
@@ -61,10 +89,7 @@ export async function fetchAdminTable(sb, options) {
         table
       };
     }
-    directError = res.error;
-    if (!isSchemaMissingError(res.error)) {
-      return { data: [], error: res.error, source: 'direct', table };
-    }
+    directError = res?.error || directError;
   }
 
   const fallbackSelect = select && select !== '*' ? '*' : select;
