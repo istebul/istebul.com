@@ -36,6 +36,7 @@ const state = {
   duration: '',
   user_note: '',
   selected_option: '',
+  confirmationStep: false,
   results: [],
   settings: { ...DEFAULT_SETTINGS },
   scenarios: []
@@ -510,9 +511,22 @@ function bindWizardEvents() {
   });
 }
 
+function getSelectedResult() {
+  if (!state.selected_option) return null;
+  return state.results.find((r) => r.id === state.selected_option) || null;
+}
+
+function getDisplayResult() {
+  const selected = getSelectedResult();
+  if (state.confirmationStep && selected) return selected;
+  return state.results[0] || null;
+}
+
 async function showResults() {
   syncDerivedState(state);
   state.results = buildResults(state, state.scenarios);
+  state.selected_option = '';
+  state.confirmationStep = false;
   renderWizard();
   renderResults();
   await trackVacationEvent('vacation_results_view', {
@@ -528,7 +542,8 @@ function renderResults() {
 
   const commentary = buildAiCommentary(state, state.results);
   const summary = buildResultsSummary(state, state.results);
-  const primary = state.results[0];
+  const primary = getDisplayResult();
+  const selectedCard = getSelectedResult();
   const costLabelMap = {
     accommodation: 'Konaklama',
     transport: 'Ulaşım / uçuş',
@@ -574,11 +589,18 @@ function renderResults() {
       <article><span>Konfor Skoru</span><strong>${escapeHtml(String(primary?.scores?.comfort ?? '—'))}/100</strong></article>
       <article><span>Risk Seviyesi</span><strong>${escapeHtml(primary?.scores?.risk || '—')}</strong></article>
     </section>
-    <div class="vacation-result-cards">
+    <div class="vacation-result-cards" role="list" aria-label="Tatil seçenekleri">
       ${state.results
         .map(
-          (r) => `
-        <article class="vacation-result-card ${r.badge.className}">
+          (r) => {
+            const isPicked = state.selected_option === r.id;
+            return `
+        <article
+          class="vacation-result-card ${r.badge.className} ${isPicked ? 'is-selected' : ''}"
+          role="listitem"
+          data-option="${escapeHtml(r.id)}"
+          aria-pressed="${isPicked ? 'true' : 'false'}"
+        >
           <div class="vacation-result-badge">${escapeHtml(r.badge.label)}</div>
           <div class="vacation-result-score" aria-label="Karar skoru">${r.score}<span>/100</span></div>
           <div class="vacation-result-visual" role="img" aria-label=""></div>
@@ -606,14 +628,50 @@ function renderResults() {
             <strong>Dikkat edilmesi gerekenler</strong>
             <ul>${r.cautions.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul>
           </div>
-          <button type="button" class="btn btn-outline btn-sm vacation-detail-btn" data-option="${escapeHtml(r.id)}">
-            Detayları incele →
+          <button
+            type="button"
+            class="btn btn-sm vacation-select-card-btn ${isPicked ? 'btn-primary' : 'btn-outline'}"
+            data-option="${escapeHtml(r.id)}"
+            aria-label="${isPicked ? 'Seçili tatil' : 'Tatil seçeneği olarak seç'}: ${escapeHtml(r.title)}"
+          >
+            ${isPicked ? '✓ Seçildi' : 'Bu tatili seç'}
           </button>
         </article>
-      `
+      `;
+          }
         )
         .join('')}
     </div>
+
+    ${
+      !state.confirmationStep
+        ? `
+    <div class="vacation-selection-bar" id="vacation-selection-bar">
+      <div class="vacation-selection-copy">
+        <p class="vacation-selection-hint ${selectedCard ? 'hidden' : ''}" id="vacation-selection-hint">
+          Devam etmek için yukarıdaki seçeneklerden birini seçin.
+        </p>
+        <p class="vacation-selection-picked ${selectedCard ? '' : 'hidden'}" id="vacation-selection-picked" aria-live="polite">
+          Seçiminiz: <strong>${selectedCard ? escapeHtml(selectedCard.title) : ''}</strong>
+          <span class="vacation-selection-meta">${selectedCard ? ` · ${escapeHtml(selectedCard.estimatedCost)} · Skor ${selectedCard.score}/100` : ''}</span>
+        </p>
+      </div>
+      <button
+        type="button"
+        class="btn btn-primary"
+        id="vacation-confirm-selection"
+        ${selectedCard ? '' : 'disabled'}
+      >
+        Seçimi onayla ve devam et
+      </button>
+    </div>
+    <div class="vacation-results-toolbar">
+      <button type="button" class="btn btn-ghost btn-sm" id="vacation-alt-economic">Daha ekonomik alternatif üret</button>
+      <button type="button" class="btn btn-ghost btn-sm" id="vacation-alt-comfort">Daha konforlu alternatif üret</button>
+    </div>
+    `
+        : ''
+    }
 
     <div class="vacation-ai-comment" id="vacation-ai-comment">
       <h3>Yapay Zekâ Karar Yorumu</h3>
@@ -625,7 +683,11 @@ function renderResults() {
     <section class="vacation-cost-panel" aria-label="Toplam maliyet görünümü">
       <div class="vacation-cost-head">
         <h3>Toplam maliyet görünümü</h3>
-        <p>Görünen fiyat ile tahmini gerçek maliyeti birlikte gösterir.</p>
+        <p>${
+          state.confirmationStep && selectedCard
+            ? `Seçtiğiniz seçenek (${escapeHtml(selectedCard.title)}) için tahmini maliyet özeti.`
+            : 'Öne çıkan seçenek için tahmini maliyet; kart seçiminizi onayladıktan sonra seçtiğiniz seçeneğe göre güncellenir.'
+        }</p>
       </div>
       <div class="vacation-cost-kpis">
         <article><span>Görünen fiyat</span><strong>${escapeHtml(primary?.costs?.visiblePriceLabel || '—')}</strong></article>
@@ -662,46 +724,80 @@ function renderResults() {
       </div>
     </section>
 
-    <div class="vacation-final-cta">
-      <h3>Nihai kararınızı verin</h3>
+    ${
+      state.confirmationStep && selectedCard
+        ? `
+    <div class="vacation-final-cta" id="vacation-final-cta">
+      <button type="button" class="btn btn-ghost btn-sm vacation-change-selection" id="vacation-change-selection">
+        ← Seçimi değiştir
+      </button>
+      <div class="vacation-selected-recap" aria-label="Onaylanan tatil seçimi">
+        <span class="vacation-selected-recap-label">Onayladığınız seçenek</span>
+        <h3>${escapeHtml(selectedCard.title)}</h3>
+        <p>${escapeHtml(selectedCard.badge.label)} · Skor ${selectedCard.score}/100 · ${escapeHtml(selectedCard.estimatedCost)}</p>
+      </div>
+      <h3 class="vacation-final-heading">İletişim bilgileriniz (isteğe bağlı)</h3>
+      <p class="vacation-final-lead-hint">Tercihinizi kaydedelim; size özel teklif veya danışman dönüşü için iletişim bırakabilirsiniz.</p>
       <div class="vacation-lead-form" id="vacation-lead-form">
         <div class="form-row">
-          <input type="text" id="vacation-lead-name" placeholder="Ad soyad (isteğe bağlı)" autocomplete="name">
-          <input type="tel" id="vacation-lead-phone" placeholder="Telefon (isteğe bağlı)" autocomplete="tel">
-          <input type="email" id="vacation-lead-email" placeholder="E-posta (isteğe bağlı)" autocomplete="email">
+          <input type="text" id="vacation-lead-name" placeholder="Ad soyad" autocomplete="name">
+          <input type="tel" id="vacation-lead-phone" placeholder="Telefon" autocomplete="tel">
+          <input type="email" id="vacation-lead-email" placeholder="E-posta" autocomplete="email">
         </div>
       </div>
       <button type="button" class="btn btn-primary btn-lg" id="vacation-select-primary">
-        Bu tatili seç
+        Bu tatili seç ve talebi gönder
       </button>
       <div class="vacation-final-secondary">
-        <button type="button" class="btn btn-ghost" id="vacation-alt-economic">Daha ekonomik alternatif üret</button>
-        <button type="button" class="btn btn-ghost" id="vacation-alt-comfort">Daha konforlu alternatif üret</button>
         <button type="button" class="btn btn-ghost" id="vacation-partner-cta" ${partnerEnabled ? '' : 'disabled'} title="${partnerEnabled ? '' : 'Partner teklifleri şu an kapalı'}">
           Partner tekliflerini görmek istiyorum
         </button>
       </div>
       <p class="vacation-disclaimer">${escapeHtml(disclaimer)}</p>
     </div>
+    `
+        : ''
+    }
   `;
 
   bindResultsEvents(commentary);
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function selectVacationOption(id) {
+  if (!id) return;
+  state.selected_option = id;
+  trackVacationEvent('vacation_option_selected', { option: id, phase: 'pick' });
+  renderResults();
+}
+
 function bindResultsEvents(commentary) {
-  document.querySelectorAll('.vacation-detail-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.option;
-      state.selected_option = id;
-      trackVacationEvent('vacation_option_selected', { option: id });
-      const card = state.results.find((r) => r.id === id);
-      if (card) {
-        alert(
-          `${card.title}\n\nKarar skoru: ${card.score}/100\nTahmini maliyet: ${card.estimatedCost}\n\n${card.why}\n\n${card.description}`
-        );
-      }
+  document.querySelectorAll('.vacation-select-card-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectVacationOption(btn.dataset.option);
     });
+  });
+
+  document.querySelectorAll('.vacation-result-card[data-option]').forEach((card) => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      selectVacationOption(card.dataset.option);
+    });
+  });
+
+  $('#vacation-confirm-selection')?.addEventListener('click', () => {
+    if (!state.selected_option) return;
+    state.confirmationStep = true;
+    trackVacationEvent('vacation_selection_confirmed', { option: state.selected_option });
+    renderResults();
+    $('#vacation-final-cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  $('#vacation-change-selection')?.addEventListener('click', () => {
+    state.confirmationStep = false;
+    renderResults();
+    $('#vacation-selection-bar')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
   $('#vacation-select-primary')?.addEventListener('click', () => submitLead('primary', commentary));
@@ -722,6 +818,8 @@ function regenerateVariant(mode) {
     rotated.sort((a, b) => b.score - a.score);
   }
   state.results = rotated;
+  state.selected_option = '';
+  state.confirmationStep = false;
   renderResults();
   trackVacationEvent('vacation_option_selected', { variant: mode });
 }
@@ -741,11 +839,22 @@ function buildLeadNote() {
 }
 
 async function submitLead(source, commentary) {
+  if (!state.confirmationStep || !state.selected_option) {
+    const bar = $('#vacation-selection-bar');
+    if (bar) {
+      bar.classList.add('vacation-selection-bar--attention');
+      bar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => bar.classList.remove('vacation-selection-bar--attention'), 2400);
+    }
+    return;
+  }
+
   syncDerivedState(state);
   const full_name = $('#vacation-lead-name')?.value?.trim() || '';
   const phone = $('#vacation-lead-phone')?.value?.trim() || '';
   const email = $('#vacation-lead-email')?.value?.trim() || '';
-  const selected = state.selected_option || state.results[0]?.id || '';
+  const selectedResult = getSelectedResult();
+  const selected = state.selected_option;
 
   const budgetPayload =
     state.budget_range === 'manuel' && state.budget_manual
@@ -767,8 +876,9 @@ async function submitLead(source, commentary) {
     duration: state.duration,
     user_note: buildLeadNote(),
     selected_option: selected,
-    decision_score: state.results[0]?.score || null,
-    estimated_cost_range: state.results[0]?.costs?.realTotalLabel || state.results[0]?.estimatedCost || '',
+    decision_score: selectedResult?.score || null,
+    estimated_cost_range:
+      selectedResult?.costs?.realTotalLabel || selectedResult?.estimatedCost || '',
     ai_summary: commentary.summary
   };
 

@@ -497,11 +497,12 @@ body.vacation-page {
   font-weight: 700;
   font-size: 1rem;
   margin-bottom: 6px;
+  color: var(--vacation-on-surface);
 }
 
 .vacation-budget-card-desc {
   font-size: 0.85rem;
-  color: var(--vacation-muted);
+  color: var(--vacation-on-surface-muted);
   margin: 0 0 10px;
   line-height: 1.45;
 }
@@ -726,6 +727,18 @@ body.vacation-page {
 
 .vacation-results-header {
   margin-bottom: 24px;
+}
+
+.vacation-results-header h2 {
+  margin: 0 0 8px;
+  color: #f8fafc;
+}
+
+.vacation-results-header p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 .vacation-results-summary {
@@ -989,6 +1002,132 @@ body.vacation-page {
 
 .vacation-result-card.is-comfort .vacation-result-badge {
   background: #7c3aed;
+}
+
+.vacation-result-card.is-selected {
+  border-color: var(--vacation-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.28), var(--vacation-shadow);
+}
+
+.vacation-result-card[data-option] {
+  cursor: pointer;
+}
+
+.vacation-result-card[data-option]:focus-within {
+  outline: 2px solid var(--vacation-blue-light);
+  outline-offset: 2px;
+}
+
+.vacation-select-card-btn {
+  margin: 8px 16px 0;
+  width: calc(100% - 32px);
+}
+
+.vacation-selection-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 20px 0 8px;
+  padding: 18px 20px;
+  border-radius: var(--vacation-radius);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--vacation-border);
+  box-shadow: var(--vacation-shadow);
+  color: var(--vacation-on-surface-body);
+}
+
+.vacation-selection-bar--attention {
+  animation: vacation-selection-pulse 0.6s ease 2;
+  border-color: #f59e0b;
+}
+
+@keyframes vacation-selection-pulse {
+  0%,
+  100% {
+    box-shadow: var(--vacation-shadow);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.35);
+  }
+}
+
+.vacation-selection-copy {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.vacation-selection-hint,
+.vacation-selection-picked {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.vacation-selection-picked strong {
+  color: var(--vacation-on-surface);
+}
+
+.vacation-selection-meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: var(--vacation-on-surface-muted);
+}
+
+.vacation-results-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.vacation-selected-recap {
+  margin: 12px 0 20px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.vacation-selected-recap-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--vacation-blue);
+  margin-bottom: 6px;
+}
+
+.vacation-selected-recap h3 {
+  margin: 0 0 6px;
+  padding: 0;
+  color: var(--vacation-on-surface);
+  font-size: 1.15rem;
+}
+
+.vacation-selected-recap p {
+  margin: 0;
+  padding: 0;
+  color: var(--vacation-on-surface-muted);
+  font-size: 0.88rem;
+}
+
+.vacation-change-selection {
+  margin-bottom: 4px;
+}
+
+.vacation-final-heading {
+  margin: 0 0 6px;
+  color: var(--vacation-on-surface);
+}
+
+.vacation-final-lead-hint {
+  margin: 0 0 14px;
+  font-size: 0.88rem;
+  color: var(--vacation-on-surface-muted);
 }
 
 .vacation-result-score {
