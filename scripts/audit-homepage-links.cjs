@@ -49,7 +49,7 @@ for (const route of requiredRoutes) {
   }
 }
 
-const heroMust = ['Karar Asistanını Başlat', 'Demo Sonucu Gör'];
+const heroMust = ['Kararımı Analiz Et', 'Nasıl Çalışır?'];
 for (const text of heroMust) {
   if (!html.includes(text)) {
     console.error('FAIL: hero missing CTA text:', text);
