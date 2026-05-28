@@ -29,12 +29,14 @@ export const HOME_DECISION_CATEGORIES = [
   },
   {
     id: 'konut',
-    name: 'Konut',
-    description: 'Faiz, aidat ve toplam sahip olma maliyeti — yakında.',
-    status: 'coming_soon',
-    href: null,
+    name: 'Konut Karar Asistanı',
+    description: 'Ev alırken toplam maliyet, lokasyon, kredi yükü ve riskleri birlikte analiz edin.',
+    status: 'active',
+    href: '/konut/',
     icon: 'home',
-    sampleScore: null,
+    sampleScore: 89,
+    ctaLabel: 'Konut kararımı analiz et',
+    insight: 'Toplam sahip olma maliyeti + risk + yaşam kalitesi',
     theme: 'konut'
   },
   {

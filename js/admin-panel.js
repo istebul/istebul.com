@@ -49,6 +49,7 @@ import {
 import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
 import { initAdminShell } from './admin/admin-shell.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
+import { initHousingAdmin } from './admin/housing-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
@@ -1568,6 +1569,7 @@ async function adminAction(payload) {
 }
 
 const vacationAdmin = initVacationAdmin({ sb, adminAction, toast });
+const housingAdmin = initHousingAdmin({ sb, adminAction, toast });
 
 async function loadDashboard() {
   const setStat = (id, value) => {
@@ -4075,6 +4077,10 @@ registerAdminPageHandlers({
   'vacation-destinations': () => vacationAdmin.loadVacationDestinations(),
   'vacation-partners': () => vacationAdmin.loadVacationPartners(),
   'vacation-scoring': () => vacationAdmin.loadVacationScoring(),
+  'housing-leads': () => housingAdmin.loadHousingLeads(),
+  'housing-locations': () => housingAdmin.loadHousingLocations(),
+  'housing-partners': () => housingAdmin.loadHousingPartners(),
+  'housing-scoring': () => housingAdmin.loadHousingSettings(),
   'auto-analytics': () => loadAutoAnalytics(),
   'platform-analytics': () => loadPlatformAnalytics(),
   'dashboard-ceo': () => refreshInternalDashboard('ceo', 'dashboard-ceo-root'),
@@ -4140,6 +4146,7 @@ function bindAdminPanelEvents() {
     if (!el) return;
 
     if (await vacationAdmin.handleVacationAction(event, el)) return;
+    if (await housingAdmin.handleHousingAction(event, el)) return;
 
     const { action, id, active, role } = el.dataset;
     const isActive = active === 'true';
@@ -4389,6 +4396,10 @@ document.addEventListener('change', (event) => {
   ['vacation-leads-search', 'vacation-leads-status-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => vacationAdmin.loadVacationLeads());
     document.getElementById(id)?.addEventListener('change', () => vacationAdmin.loadVacationLeads());
+  });
+  ['housing-leads-search', 'housing-leads-status-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => housingAdmin.loadHousingLeads());
+    document.getElementById(id)?.addEventListener('change', () => housingAdmin.loadHousingLeads());
   });
 
 bindAdminPanelEvents();

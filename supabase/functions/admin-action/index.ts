@@ -163,6 +163,10 @@ Deno.serve(async (req) => {
     "vacation_destinations",
     "vacation_partners",
     "vacation_scoring_configs",
+    "housing_leads",
+    "housing_locations",
+    "housing_partners",
+    "housing_settings",
     "partner_endpoints",
     "partner_applications",
   ];
@@ -193,6 +197,11 @@ Deno.serve(async (req) => {
     "vacation_destinations",
     "vacation_partners",
     "vacation_scoring_configs",
+    "housing_events",
+    "housing_leads",
+    "housing_locations",
+    "housing_partners",
+    "housing_settings",
   ];
 
   if (action === "upsert_settings") {
@@ -235,6 +244,11 @@ Deno.serve(async (req) => {
         vacation_destinations: "*",
         vacation_partners: "*",
         vacation_scoring_configs: "*",
+        housing_events: "*",
+        housing_leads: "*",
+        housing_locations: "*",
+        housing_partners: "*",
+        housing_settings: "*",
       };
 
       const allowedOrderColumns: Record<string, string[]> = {
@@ -245,6 +259,11 @@ Deno.serve(async (req) => {
         vacation_destinations: ["created_at", "season_score", "risk_score"],
         vacation_partners: ["created_at", "name"],
         vacation_scoring_configs: ["created_at"],
+        housing_events: ["created_at", "event_type"],
+        housing_leads: ["created_at", "decision_score", "status"],
+        housing_locations: ["created_at", "city", "district"],
+        housing_partners: ["created_at", "partner_name"],
+        housing_settings: ["key", "updated_at"],
         auto_events: ["created_at"],
         analytics_events: ["created_at"],
         announcements: ["created_at"],
@@ -351,6 +370,8 @@ Deno.serve(async (req) => {
         ],
         vacation_partners: ["name", "partner_type", "affiliate_link", "notes", "is_active"],
         vacation_scoring_configs: ["risk_factor", "cost_factor", "family_weight", "prompt_template"],
+        housing_locations: ["city", "district", "avg_price_level", "transport_score", "life_quality_score", "investment_score", "risk_score", "is_active", "notes"],
+        housing_partners: ["partner_name", "partner_type", "city", "district", "contact_link", "commission_note", "is_active", "notes"],
       };
 
       const allowedKeys = allowedInserts[table] || [];
@@ -402,7 +423,9 @@ Deno.serve(async (req) => {
         "hero-eyebrow","hero-title","hero-desc","title","description",
         "auto_whatsapp_phone","maintenance","public_campaigns",
         "vacation_enabled","vacation_ai_enabled","vacation_partner_cta_enabled",
-        "vacation_default_budget_note","vacation_disclaimer_text"
+        "vacation_default_budget_note","vacation_disclaimer_text",
+        "housing_payment_weight","housing_location_weight","housing_risk_factor",
+        "housing_investment_weight","housing_total_cost_weight","housing_ai_prompt_template"
       ];
 
       for (const row of values) {
@@ -473,6 +496,10 @@ Deno.serve(async (req) => {
         ],
         vacation_partners: ["name", "partner_type", "affiliate_link", "notes", "is_active"],
         vacation_scoring_configs: ["risk_factor", "cost_factor", "family_weight", "prompt_template"],
+        housing_leads: ["status", "notes"],
+        housing_locations: ["city", "district", "avg_price_level", "transport_score", "life_quality_score", "investment_score", "risk_score", "is_active", "notes"],
+        housing_partners: ["partner_name", "partner_type", "city", "district", "contact_link", "commission_note", "is_active", "notes"],
+        housing_settings: ["value"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority", "health_status"],
         partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan"],
       };

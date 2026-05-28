@@ -3,80 +3,73 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Konut Karar Analizi | isteBul — Pilot</title>
-  <meta name="description" content="Ev ve konut alımında toplam sahip olma maliyeti, ipotek yükü ve risk dengesi. Karar altyapısı pilotu — erken erişim.">
+  <title>Konut Karar Asistanı | isteBul</title>
+  <meta name="description" content="Konut karar simülasyonu: toplam sahip olma maliyeti, kredi yükü, lokasyon uyumu ve riskleri birlikte analiz edin.">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <link rel="canonical" href="https://www.istebul.com/konut/">
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
-  <meta property="og:locale" content="tr_TR">
-  <meta property="og:site_name" content="isteBul">
-  <meta property="og:title" content="Konut Karar Analizi | isteBul — Pilot">
-  <meta property="og:description" content="Ev ve konut alımında toplam sahip olma maliyeti, ipotek yükü ve risk dengesi. Karar altyapısı pilotu — erken erişim.">
-  <meta property="og:type" content="article">
+  <meta property="og:title" content="Yapay zekâ destekli konut karar asistanı">
+  <meta property="og:description" content="Tahmini analiz: toplam maliyet, lokasyon, kredi yükü ve risk dengesiyle konut kararınızı güçlendirin.">
+  <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.istebul.com/konut/">
-  <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.svg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Konut Karar Analizi | isteBul — Pilot">
-  <meta name="twitter:description" content="Ev ve konut alımında toplam sahip olma maliyeti, ipotek yükü ve risk dengesi. Karar altyapısı pilotu — erken erişim.">
-  <link rel="stylesheet" href="/css/auto.css?v=4">
-  <link rel="stylesheet" href="/css/corporate-pages.css?v=1">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"isteBul Konut","url":"https://www.istebul.com/konut/","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"Ev ve konut alımında toplam sahip olma maliyeti, ipotek yükü ve risk dengesi. Karar altyapısı pilotu — erken erişim.","offers":{"@type":"Offer","price":"0","priceCurrency":"TRY"},"inLanguage":"tr-TR"}</script>
+  <link rel="stylesheet" href="/css/real-estate.css">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/real-estate/real-estate-app.js"></script>
 </head>
-<body class="corporate-vertical">
-  <header class="auto-header corporate-header">
-    <a class="logo" href="/">isteBul</a>
-    <nav class="corporate-nav" aria-label="Ana navigasyon">
-      <a href="/">Ana sayfa</a>
-      <a href="/auto/">Auto</a>
-      <a href="/konut/" class="is-active">Konut</a>
-      <a href="/tatil/">Tatil</a>
-      <a href="/finans/">Finans</a>
-      <a href="/metodoloji/">Metodoloji</a>
-      <a href="/hakkimizda.html">Hakkımızda</a>
-      <a href="/partner-olun.html">Partner</a>
-    </nav>
+<body class="housing-page">
+  <header class="housing-header">
+    <div class="housing-container housing-nav">
+      <a class="housing-brand" href="/">isteBul</a>
+      <nav aria-label="Ana navigasyon">
+        <a href="/">Ana sayfa</a>
+        <a href="/auto/">Auto</a>
+        <a href="/tatil/">Tatil</a>
+        <a href="/konut/" aria-current="page">Konut</a>
+      </nav>
+    </div>
   </header>
-  <main class="section corporate-page">
-    <p class="kicker">Konut · Pilot</p>
-    <h1>Konut kararını toplam maliyete göre verin</h1>
-    <p class="lead">Liste fiyatının ötesinde ipotek, vergi, aidat, bakım ve nakit akışı yükünü tek çerçevede görün — ilan sitesi değil, karar motoru.</p>
-    <p class="corporate-pilot-badge">Pilot aşama · skor kural tabanlı · AI yalnızca gerekçe · finansal tavsiye değildir</p>
 
-    <section class="corporate-vm" aria-labelledby="konut-vision">
-      <h2 id="konut-vision">Vizyon</h2>
-      <p>Türkiye'de konut alım kararlarında şeffaf TCO ve finansman yükü sunan karar altyapısının öncü platformu olmak.</p>
-    </section>
-    <section class="corporate-vm" aria-labelledby="konut-mission">
-      <h2 id="konut-mission">Misyon</h2>
-      <p>Alıcıların ev seçiminde yalnızca m² fiyatına değil; toplam sahip olma maliyeti, kredi yükü ve yaşam tarzı uyumuna göre bilinçli karar vermesini sağlamak.</p>
-    </section>
-
-    <div class="grid three premium-steps">
-      <article><span>01</span><h3>Profil</h3><p>Bütçe, bölge, kullanım (oturum/yatırım), peşinat ve vade tercihleri.</p></article>
-      <article><span>02</span><h3>Motor</h3><p>İpotek taksiti, vergi, aidat, bakım ve 12 ay nakit akışı senaryosu.</p></article>
-      <article><span>03</span><h3>Karar</h3><p>Uyum skoru, alternatifler ve AI destekli gerekçe — skor motor tarafından belirlenir.</p></article>
+  <section class="housing-hero">
+    <div class="housing-container housing-hero-grid">
+      <article class="glass-card hero-copy">
+        <span class="hero-badge">AI destekli konut karar motoru</span>
+        <h1>Yapay zekâ destekli konut karar asistanı</h1>
+        <p>Bütçe, lokasyon, kredi yükü, aidat, ulaşım, deprem riski ve yaşam beklentilerini birlikte analiz ederek sizin için en doğru konut kararını görün.</p>
+        <div class="hero-actions">
+          <button type="button" class="btn-primary" id="housing-hero-cta">Konut kararımı analiz et</button>
+          <button type="button" class="btn-secondary" id="housing-hero-secondary">AI önerilerini gör</button>
+        </div>
+      </article>
+      <aside class="glass-card hero-dashboard" aria-label="Premium karar paneli">
+        <div class="hero-metric hero-score"><span>Konut Karar Skoru</span><strong>89/100</strong></div>
+        <div class="hero-metric-grid">
+          <div class="hero-metric"><span>Tahmini Toplam Maliyet</span><strong>5.250.000 TL</strong></div>
+          <div class="hero-metric"><span>Aylık Ödeme Yükü</span><strong>24.850 TL</strong></div>
+          <div class="hero-metric"><span>Lokasyon Uyumu</span><strong>%92</strong></div>
+          <div class="hero-metric"><span>Risk Seviyesi</span><strong>Düşük-Orta</strong></div>
+          <div class="hero-metric"><span>Yatırım Potansiyeli</span><strong>88/100</strong></div>
+          <div class="hero-metric"><span>Karar Tipi</span><strong>Tahmini analiz</strong></div>
+        </div>
+      </aside>
     </div>
+  </section>
 
-    <div class="actions corporate-actions">
-      <a class="btn primary" href="/iletisim.html?dikey=konut">Erken erişim talebi</a>
-      <a class="btn secondary" href="mailto:nadigurel.60@gmail.com?subject=Erken%20eri%C5%9Fim%20%E2%80%94%20isteBul%20Konut">E-posta ile başvur</a>
-      <a class="btn secondary" href="/auto/">Canlı Auto analizine git</a>
+  <main class="housing-main">
+    <div class="housing-container housing-layout" id="housing-flow">
+      <section>
+        <div id="housing-progress" class="housing-progress"></div>
+        <div id="housing-wizard"></div>
+        <section id="housing-results" hidden aria-live="polite"></section>
+      </section>
+      <aside class="glass-card housing-side-panel">
+        <h3>Konut karar simülasyonu</h3>
+        <ul>
+          <li>Toplam sahip olma maliyeti + kredi yükü + lokasyon uyumu birlikte hesaplanır.</li>
+          <li>AI yorumu başarısız olursa deterministic fallback otomatik devreye girer.</li>
+          <li>Bu ekran gerçek başvuru / ekspertiz öncesi ön değerlendirme içindir.</li>
+        </ul>
+      </aside>
     </div>
-    <p class="corporate-disclaimer">Bu dikey henüz pilot hazırlığındadır. Tam analiz akışı için şimdilik <a href="/auto/">isteBul Auto</a> kullanılabilir.</p>
   </main>
-  <footer class="corporate-footer">
-    <div>
-      <strong>isteBul</strong>
-      <p>Karar zekâsı platformu — ilan sitesi değil, karar motoru.</p>
-    </div>
-    <nav>
-      <a href="/hakkimizda.html">Hakkımızda</a>
-      <a href="/metodoloji/">Metodoloji</a>
-      <a href="/iletisim.html">İletişim</a>
-      <a href="/gizlilik.html">Gizlilik</a>
-      <a href="/kvkk.html">KVKK</a>
-      <a href="/partner-olun.html">Partner olun</a>
-    </nav>
-  </footer>
 </body>
 </html>
