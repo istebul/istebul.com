@@ -1,6 +1,12 @@
 import { adminList } from '../core/admin-client.js';
 import { escapeHtml, safeAttr, safeJsonParse } from '../core/dom-safe.js';
 import { normalizePhoneForWhatsapp } from '../core/phone.js';
+import {
+  fetchAdminTable,
+  collectAdminWarnings,
+  renderAdminWarningBanner
+} from './admin-query.js';
+import { setAdminRootLoading } from './admin-page-routing.js';
 
 const VACATION_SETTING_KEYS = [
   'vacation_enabled',
@@ -19,42 +25,81 @@ const VACATION_SETTING_DEFAULTS = {
     'Fiyatlar ve uygunluk tahminidir; sezon, doluluk ve partner bilgilerine göre değişebilir.'
 };
 
+function vacationLeadsDirect(sb, limit = 1000) {
+  return sb
+    .from('vacation_leads')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+}
+
+function vacationEventsDirect(sb, limit = 5000) {
+  return sb
+    .from('vacation_events')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+}
+
+function vacationScenariosDirect(sb, limit = 500) {
+  return sb
+    .from('vacation_scenarios')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .limit(limit);
+}
+
+function renderVacationLoadError(el, res, label) {
+  const msg = res?.error?.message || res?.error || 'Veri yüklenemedi';
+  el.innerHTML = `
+    <p class="empty">${escapeHtml(label)}: ${escapeHtml(String(msg))}</p>
+    <p class="text-muted-sm" style="margin-top:8px">Tablolar yoksa: <code>supabase db push</code> · Edge: <code>supabase functions deploy admin-action</code></p>
+  `;
+}
+
 export function initVacationAdmin(ctx) {
   const { sb, adminAction, toast } = ctx;
   return {
-    loadVacationAnalytics: () => loadVacationAnalytics(sb, adminList),
-    loadVacationLeads: () => loadVacationLeads(sb, adminList, adminAction, toast),
-    loadVacationScenarios: () => loadVacationScenarios(sb, adminList, adminAction, toast),
-    loadVacationSettings: () => loadVacationSettings(sb),
+    loadVacationAnalytics: () => loadVacationAnalytics(sb),
+    loadVacationLeads: () => loadVacationLeads(sb, adminAction, toast),
+    loadVacationScenarios: () => loadVacationScenarios(sb, adminAction, toast),
+    loadVacationSettings: () => loadVacationSettings(sb, toast),
     saveVacationSettings: () => saveVacationSettings(sb, adminAction, toast),
-    handleVacationAction: (event, el) => handleVacationAction(event, el, { adminAction, toast, sb, adminList })
+    handleVacationAction: (event, el) =>
+      handleVacationAction(event, el, { adminAction, toast, sb, adminList })
   };
 }
 
-async function loadVacationAnalytics(sb, adminListFn) {
+async function loadVacationAnalytics(sb) {
   const el = document.getElementById('vacation-analytics-root');
   if (!el) return;
 
-  let events = [];
-  let leads = [];
+  setAdminRootLoading('vacation-analytics-root');
 
-  try {
-    [events, leads] = await Promise.all([
-      adminListFn(sb, {
-        table: 'vacation_events',
-        order: { column: 'created_at', ascending: false },
-        limit: 5000
-      }),
-      adminListFn(sb, {
-        table: 'vacation_leads',
-        order: { column: 'created_at', ascending: false },
-        limit: 2000
-      })
-    ]);
-  } catch (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  const [eventsRes, leadsRes] = await Promise.all([
+    fetchAdminTable(sb, {
+      table: 'vacation_events',
+      limit: 5000,
+      order: { column: 'created_at', ascending: false },
+      direct: () => vacationEventsDirect(sb, 5000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'vacation_leads',
+      limit: 2000,
+      order: { column: 'created_at', ascending: false },
+      direct: () => vacationLeadsDirect(sb, 2000)
+    })
+  ]);
+
+  const warnings = collectAdminWarnings([eventsRes, leadsRes]);
+  const fatal = eventsRes.error && leadsRes.error;
+  if (fatal) {
+    renderVacationLoadError(el, eventsRes.error ? eventsRes : leadsRes, 'Analytics yüklenemedi');
     return;
   }
+
+  const events = eventsRes.data || [];
+  const leads = leadsRes.data || [];
 
   const sessions = new Set(events.map((e) => e.session_id).filter(Boolean));
   const pageViews = events.filter((e) => e.event_type === 'vacation_page_view').length;
@@ -94,6 +139,7 @@ async function loadVacationAnalytics(sb, adminListFn) {
   ];
 
   el.innerHTML = `
+    ${renderAdminWarningBanner(warnings)}
     <div class="stat-grid">
       ${cards
         .map(
@@ -110,21 +156,26 @@ async function loadVacationAnalytics(sb, adminListFn) {
   `;
 }
 
-async function loadVacationLeads(sb, adminListFn, adminAction, toast) {
+async function loadVacationLeads(sb, adminAction, toast) {
   const el = document.getElementById('vacation-leads-list');
   if (!el) return;
 
-  let data = [];
-  try {
-    data = await adminListFn(sb, {
-      table: 'vacation_leads',
-      order: { column: 'created_at', ascending: false },
-      limit: 1000
-    });
-  } catch (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  setAdminRootLoading('vacation-leads-list');
+
+  const res = await fetchAdminTable(sb, {
+    table: 'vacation_leads',
+    limit: 1000,
+    order: { column: 'created_at', ascending: false },
+    direct: () => vacationLeadsDirect(sb, 1000)
+  });
+
+  if (res.error && !res.data?.length) {
+    renderVacationLoadError(el, res, 'Lead listesi');
     return;
   }
+
+  const data = res.data || [];
+  const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
 
   const search = (document.getElementById('vacation-leads-search')?.value || '').toLowerCase().trim();
   const statusFilter = document.getElementById('vacation-leads-status-filter')?.value || '';
@@ -140,11 +191,12 @@ async function loadVacationLeads(sb, adminListFn, adminAction, toast) {
   });
 
   if (!filtered.length) {
-    el.innerHTML = '<p class="empty">Kayıt bulunamadı.</p>';
+    el.innerHTML = `${banner}<p class="empty">${data.length ? 'Filtreye uygun kayıt yok.' : 'Henüz tatil lead kaydı yok.'}</p>`;
     return;
   }
 
   el.innerHTML = `
+    ${banner}
     <table class="table">
       <thead>
         <tr>
@@ -245,28 +297,34 @@ async function loadVacationLeads(sb, adminListFn, adminAction, toast) {
   });
 }
 
-async function loadVacationScenarios(sb, adminListFn, adminAction, toast) {
+async function loadVacationScenarios(sb, adminAction, toast) {
   const el = document.getElementById('vacation-scenarios-list');
   if (!el) return;
 
-  let data = [];
-  try {
-    data = await adminListFn(sb, {
-      table: 'vacation_scenarios',
-      order: { column: 'sort_order', ascending: true },
-      limit: 500
-    });
-  } catch (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  setAdminRootLoading('vacation-scenarios-list');
+
+  const res = await fetchAdminTable(sb, {
+    table: 'vacation_scenarios',
+    limit: 500,
+    order: { column: 'sort_order', ascending: true },
+    direct: () => vacationScenariosDirect(sb, 500)
+  });
+
+  if (res.error && !res.data?.length) {
+    renderVacationLoadError(el, res, 'Senaryolar');
     return;
   }
 
+  const data = res.data || [];
+  const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
+
   if (!data.length) {
-    el.innerHTML = '<p class="empty">Henüz senaryo yok.</p>';
+    el.innerHTML = `${banner}<p class="empty">Henüz senaryo yok. Yukarıdaki formdan ekleyebilirsiniz.</p>`;
     return;
   }
 
   el.innerHTML = `
+    ${banner}
     <table class="table">
       <thead>
         <tr>
@@ -307,17 +365,26 @@ async function loadVacationScenarios(sb, adminListFn, adminAction, toast) {
         values: { sort_order: Number(input.value) || 0 }
       });
       toast('Sıra güncellendi');
-      loadVacationScenarios(sb, adminListFn, adminAction, toast);
+      loadVacationScenarios(sb, adminAction, toast);
     });
   });
 }
 
-async function loadVacationSettings(sb) {
-  const { data } = await sb.from('site_settings').select('*');
-  const map = { ...VACATION_SETTING_DEFAULTS };
-  (data || []).forEach((row) => {
-    if (VACATION_SETTING_KEYS.includes(row.key)) map[row.key] = row.value;
+async function loadVacationSettings(sb, toast) {
+  const res = await fetchAdminTable(sb, {
+    table: 'site_settings',
+    limit: 500,
+    direct: () => sb.from('site_settings').select('key, value')
   });
+
+  const map = { ...VACATION_SETTING_DEFAULTS };
+  if (res.error) {
+    toast?.(`Tatil ayarları yüklenemedi: ${res.error.message || res.error}`, 'error');
+  } else {
+    (res.data || []).forEach((row) => {
+      if (VACATION_SETTING_KEYS.includes(row.key)) map[row.key] = row.value;
+    });
+  }
 
   VACATION_SETTING_KEYS.forEach((key) => {
     const el = document.getElementById(`vs-${key}`);
@@ -345,6 +412,19 @@ async function saveVacationSettings(sb, adminAction, toast) {
     values: rows
   });
   toast('Tatil ayarları kaydedildi');
+}
+
+async function fetchVacationScenarios(sb) {
+  const res = await fetchAdminTable(sb, {
+    table: 'vacation_scenarios',
+    limit: 500,
+    order: { column: 'sort_order', ascending: true },
+    direct: () => vacationScenariosDirect(sb, 500)
+  });
+  if (res.error && !res.data?.length) {
+    throw res.error;
+  }
+  return res.data || [];
 }
 
 async function handleVacationAction(event, el, ctx) {
@@ -376,7 +456,7 @@ async function handleVacationAction(event, el, ctx) {
       toast('Senaryo eklendi');
       document.getElementById('vacation-scenario-form-id').value = 'new';
     }
-    loadVacationScenarios(sb, adminList, adminAction, toast);
+    loadVacationScenarios(sb, adminAction, toast);
     return true;
   }
 
@@ -390,7 +470,7 @@ async function handleVacationAction(event, el, ctx) {
       values: { notes }
     });
     toast('Not kaydedildi');
-    loadVacationLeads(sb, adminList, adminAction, toast);
+    loadVacationLeads(sb, adminAction, toast);
     return true;
   }
 
@@ -402,12 +482,17 @@ async function handleVacationAction(event, el, ctx) {
       values: { is_active: el.dataset.active !== 'true' }
     });
     toast('Senaryo durumu güncellendi');
-    loadVacationScenarios(sb, adminList, adminAction, toast);
+    loadVacationScenarios(sb, adminAction, toast);
     return true;
   }
 
   if (action === 'vacation-edit-scenario' && id) {
-    const rows = await adminList(sb, { table: 'vacation_scenarios', limit: 500 });
+    let rows = [];
+    try {
+      rows = await fetchVacationScenarios(sb);
+    } catch {
+      rows = await adminList(sb, { table: 'vacation_scenarios', limit: 500 });
+    }
     const row = rows.find((r) => r.id === id);
     if (!row) return true;
     document.getElementById('vacation-scenario-form-id').value = row.id;
