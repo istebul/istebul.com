@@ -10,7 +10,7 @@ function renderFavoritesTabs(activeFavoritesTab) {
     { id: 'arac', label: 'Araçlar' },
     { id: 'konut', label: 'Konutlar' },
     { id: 'tatil', label: 'Tatil' },
-    { id: 'finans', label: 'Finans' }
+    { id: 'finans', label: 'Finansman' }
   ];
   return `
     <div class="ud-favorites-tabs">
@@ -131,7 +131,7 @@ export function renderUserDashboard(payload) {
         <header class="ud-main-header">
           <div>
             <h1>Merhaba ${escapeHtml(profile?.full_name || user.email?.split('@')[0] || 'Kullanıcı')}, karar merkezine hoş geldin.</h1>
-            <p>Araç, konut, tatil ve finans kararlarınızı tek yerden takip edin.</p>
+            <p>Araç, konut, tatil ve finansman kararlarınızı tek yerden takip edin.</p>
           </div>
         </header>
         <section class="ud-summary-grid" aria-label="Karar merkezi özet kartları">

@@ -23,7 +23,7 @@ export function renderEmptyDecisionCard() {
   return `
     <article class="ud-empty-card">
       <h3>Henüz devam eden kararınız yok.</h3>
-      <p>Auto, konut, tatil veya finans kategorilerinden yeni analiz başlatabilirsiniz.</p>
+      <p>Araba, konut, tatil veya finansman kategorilerinden yeni analiz başlatabilirsiniz.</p>
       <a href="/auto/" class="btn btn-outline btn-sm">Yeni analiz başlat</a>
     </article>
   `;

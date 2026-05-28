@@ -36,6 +36,7 @@
     "analyze:bundle": "node scripts/production-build.cjs && node scripts/analyze-bundle.cjs",
     "build:check": "node scripts/check-build-output.cjs",
     "audit:launch": "node scripts/final-production-launch-audit.cjs",
+    "audit": "node scripts/release-final-audit.cjs",
     "verify:deploy": "node scripts/verify-deploy-setup.cjs",
     "metrics:investor": "node scripts/investor-metrics-snapshot.cjs",
     "metrics:unit-economics": "node scripts/unit-economics-snapshot.cjs",

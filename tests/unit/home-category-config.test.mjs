@@ -5,20 +5,20 @@ import {
   isHomeCategoryActive
 } from '../../js/platform/home-category-config.js';
 
-test('home categories: auto, tatil, konut and finans active', () => {
+test('home categories: araba, tatil, konut and finansman active', () => {
   const active = HOME_DECISION_CATEGORIES.filter((c) => isHomeCategoryActive(c));
   assert.equal(active.length, 4);
   assert.deepEqual(
     active.map((c) => c.id).sort(),
-    ['finans', 'konut', 'otomobil', 'tatil']
+    ['araba', 'finansman', 'konut', 'tatil']
   );
 });
 
-test('home categories: sigorta coming soon without href', () => {
+test('home categories: sigorta and kasko are coming soon', () => {
   const soon = HOME_DECISION_CATEGORIES.filter((c) => c.status === 'coming_soon');
-  assert.equal(soon.length, 1);
+  assert.equal(soon.length, 2);
   soon.forEach((c) => {
-    assert.equal(c.href, null);
+    assert.ok(c.href);
     assert.equal(isHomeCategoryActive(c), false);
   });
 });

@@ -534,7 +534,8 @@ export class AccountManager {
             auto: { category: 'Auto', href: '/auto/' },
             konut: { category: 'Konut', href: '/konut/' },
             tatil: { category: 'Tatil', href: '/tatil/' },
-            finans: { category: 'Finans', href: '/finans/' }
+            finans: { category: 'Finansman', href: '/finansman/' },
+            finansman: { category: 'Finansman', href: '/finansman/' }
         };
         const recentRecords = history
             .filter((item) => item?.createdAt)
@@ -562,7 +563,7 @@ export class AccountManager {
         if (raw === 'arac' || raw === 'auto') return 'arac';
         if (raw === 'ev' || raw === 'konut' || raw === 'housing') return 'konut';
         if (raw === 'tatil' || raw === 'vacation' || raw === 'travel') return 'tatil';
-        if (raw === 'finans' || raw === 'finance') return 'finans';
+        if (raw === 'finans' || raw === 'finansman' || raw === 'finance') return 'finans';
         return 'arac';
     }
 

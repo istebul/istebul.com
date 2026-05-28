@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sigorta Analizi | Yakında | isteBul</title>
+  <meta name="description" content="Sigorta analiz modülü yakında yayında. Bilgilendirme formuna kaydolabilirsiniz." />
+  <link rel="canonical" href="https://www.istebul.com/sigorta/" />
+  <style>
+    body{font-family:Inter,system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;margin:0}
+    main{max-width:640px;margin:0 auto;padding:48px 20px}
+    .card{background:#111827;border:1px solid #334155;border-radius:16px;padding:20px}
+    input,button{width:100%;min-height:44px;border-radius:10px;border:1px solid #475569;padding:10px}
+    input{background:#020617;color:#e2e8f0;margin:8px 0 12px}
+    button{background:#2563eb;color:#fff;border:0;cursor:pointer}
+    a{color:#93c5fd}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="card">
+      <h1>Sigorta analizi yakında</h1>
+      <p>Bu modül henüz canlı değil. Bilgilendirme amaçlı kayıt bırakabilirsiniz.</p>
+      <form id="interest-form">
+        <label for="name">Ad Soyad</label>
+        <input id="name" name="name" required autocomplete="name" />
+        <label for="email">E-posta</label>
+        <input id="email" name="email" type="email" required autocomplete="email" />
+        <button type="submit">Bilgilendirme al</button>
+      </form>
+      <p id="status" aria-live="polite"></p>
+      <p><a href="/">Ana sayfaya dön</a></p>
+    </div>
+  </main>
+  <script src="/env.js"></script>
+  <script>
+    const form = document.getElementById('interest-form');
+    const status = document.getElementById('status');
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      if (!name || !email) return;
+      const payload = { full_name: name, email, category: 'sigorta', interest_type: 'insurance', source: 'coming_soon_page', consent: true };
+      try {
+        const url = window.__env?.SUPABASE_URL;
+        const key = window.__env?.SUPABASE_ANON_KEY;
+        if (url && key) {
+          await fetch(`${url}/functions/v1/auto-intake`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', apikey: key, authorization: `Bearer ${key}` },
+            body: JSON.stringify(payload)
+          });
+        }
+      } catch (err) {
+        console.warn('sigorta-interest-submit-failed', { message: String(err?.message || err) });
+      }
+      const stored = JSON.parse(localStorage.getItem('ib_coming_soon_interest_queue') || '[]');
+      stored.push({ ...payload, created_at: new Date().toISOString() });
+      localStorage.setItem('ib_coming_soon_interest_queue', JSON.stringify(stored.slice(-100)));
+      status.textContent = 'Talebiniz alındı. Sigorta kategorisi açıldığında bilgilendirileceksiniz.';
+      form.reset();
+    });
+  </script>
+</body>
+</html>
