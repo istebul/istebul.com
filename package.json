@@ -10,7 +10,7 @@
     "build": "node scripts/generate-route-bootstrap.cjs && node scripts/production-build.cjs",
     "generate:route-bootstrap": "node scripts/generate-route-bootstrap.cjs",
     "build:corporate": "node scripts/build-corporate-static.cjs",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name=istebul-com",
+    "deploy": "npm run build && npx wrangler pages deploy dist --project-name=istebul-com",
     "deploy:cf": "npm run build && wrangler pages deploy dist --project-name=istebul-com",
     "check": "node scripts/check-syntax.cjs && node scripts/check-console.cjs",
     "type-check": "node scripts/check-syntax.cjs",
@@ -89,7 +89,8 @@
     "@lhci/cli": "^0.13.0",
     "@playwright/test": "^1.44.0",
     "esbuild": "^0.19.11",
-    "eslint": "^8.57.0"
+    "eslint": "^8.57.0",
+    "wrangler": "^4.95.0"
   },
   "engines": {
     "node": ">=18.0.0"
