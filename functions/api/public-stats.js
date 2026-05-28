@@ -68,9 +68,10 @@ export async function onRequestGet(context) {
           analyses: formatDisplay(analyses) || '—',
           reports: formatDisplay(reports) || '—',
           users: users > 0 ? formatDisplay(users) : 'Aktif',
-          partners: formatDisplay(partners) || '—'
+          partners: formatDisplay(partners) || '—',
+          categories: '4'
         },
-        raw: { analyses, reports, users, partners }
+        raw: { analyses, reports, users, partners, categories: 4 }
       },
       200,
       origin

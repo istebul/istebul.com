@@ -26,14 +26,14 @@ export const FINANS_STEPS = [
   {
     id: 'cashflow',
     label: 'Nakit akışı',
-    title: 'Gelir ve erken ödeme profili',
-    subtitle: 'Gelir istikrarı ve erken kapama ihtimali senaryoyu etkiler.'
+    title: 'Gelir, gider ve mevcut borç profili',
+    subtitle: 'Aylık gelir/gider dengesi borçlanma skorunu belirler.'
   },
   {
     id: 'sensitivity',
     label: 'Hassasiyet',
-    title: 'Faiz hassasiyeti ve risk toleransı',
-    subtitle: 'Son adım — skor ve alternatif senaryolar üretilir.'
+    title: 'Vade tercihi, faiz hassasiyeti ve risk seviyesi',
+    subtitle: 'Son adım — borçlanma skoru ve alternatif senaryolar üretilir.'
   }
 ];
 

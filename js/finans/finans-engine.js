@@ -46,7 +46,57 @@ function baseScore(state) {
   if (pay <= cap * 0.85) score += 8;
   else if (pay <= cap) score += 4;
   else score -= 6;
+  const income = Number(state.monthly_income || 0);
+  const expense = Number(state.monthly_expense || 0);
+  const debt = Number(state.existing_debt || 0);
+  if (income > 0) {
+    const dti = ((pay + debt) / income) * 100;
+    if (dti <= 35) score += 6;
+    else if (dti <= 45) score += 2;
+    else score -= 8;
+    const freeCash = income - expense - debt - pay;
+    if (freeCash > income * 0.15) score += 4;
+    else if (freeCash < 0) score -= 5;
+  }
   return Math.min(Math.max(score, 48), 94);
+}
+
+function computeDebtScore(state) {
+  const income = Number(state.monthly_income || 0);
+  const expense = Number(state.monthly_expense || 0);
+  const debt = Number(state.existing_debt || 0);
+  const pay = estimatePayment(amountMid(state), termMonths(state));
+  if (!income) return 62;
+  const dti = ((pay + debt) / income) * 100;
+  const buffer = income - expense - debt - pay;
+  let score = 88 - Math.max(0, dti - 28) * 1.2;
+  if (buffer < 0) score -= 12;
+  else if (buffer > income * 0.2) score += 6;
+  return Math.round(Math.min(Math.max(score, 35), 95));
+}
+
+function recommendedCreditRange(state) {
+  const principal = amountMid(state);
+  const low = Math.round(principal * 0.85);
+  const high = Math.round(principal * 1.08);
+  return `${formatTry(low)} – ${formatTry(high)}`;
+}
+
+function financialRiskLabel(state, pressure) {
+  const debtScore = computeDebtScore(state);
+  if (debtScore >= 78 && pressure !== 'Yüksek') return 'Düşük';
+  if (debtScore >= 62) return 'Orta';
+  return 'Yüksek';
+}
+
+function buildNextFinansStep(state, primary) {
+  if (primary?.metrics?.cashPressure === 'Yüksek') {
+    return 'Tutarı düşürün veya vadeyi uzatarak aylık yükü kapasite bandına çekin; ardından banka ön görüşmesi planlayın.';
+  }
+  if (state.risk_tolerance === 'muhafazakar') {
+    return 'Muhafazakar profiliniz için kısa vade senaryosunu banka teklifiyle doğrulayın.';
+  }
+  return 'Önerilen kredi aralığında 2–3 kurumdan karşılaştırmalı teklif alın; erken ödeme koşullarını sorun.';
 }
 
 function buildScenario(state, badgeKey, rateAdj, termAdj, title, desc) {
@@ -123,27 +173,40 @@ export function buildFinansResults(state) {
 
 export function buildFinansSummary(state, results) {
   const primary = results[0];
+  const debtScore = computeDebtScore(state);
+  const finRisk = financialRiskLabel(state, primary?.metrics?.cashPressure);
   return {
     totalCostLabel: `Toplam ~${formatTry(primary?.metrics?.totalRepay)}`,
+    totalCostHint: `Aylık ~${formatTry(primary?.metrics?.monthlyPayment)}`,
     fitScore: primary?.score ?? '—',
-    seasonRisk: primary?.metrics?.riskLevel || '—',
+    seasonRisk: finRisk,
+    riskDetail: primary?.metrics?.cashPressure || '—',
     familyFit: primary?.metrics?.financeFit || '—',
     topTitle: primary?.title || '—',
-    monthlyLoad: primary?.metrics?.monthlyPayment
+    monthlyLoad: primary?.metrics?.monthlyPayment,
+    scoreBand: debtScore >= 75 ? 'Borçlanma profili güçlü' : debtScore >= 60 ? 'Dengeli borçlanma profili' : 'Revizyon önerilir',
+    nextStep: buildNextFinansStep(state, primary),
+    extraKpis: [
+      { label: 'Borçlanma Skoru', value: `${debtScore}/100` },
+      { label: 'Finansal Risk', value: finRisk },
+      { label: 'Önerilen Kredi Aralığı', value: recommendedCreditRange(state) }
+    ]
   };
 }
 
 export function buildFinansCommentary(state, results) {
   const p = results[0];
+  const debtScore = computeDebtScore(state);
   return {
-    summary: `${label('purpose', state.purpose)} finansmanı için ön senaryo: aylık ödeme bandı ${formatTry(p?.metrics?.monthlyPayment)}, uyum skoru ${p?.score}/100.`,
+    summary: `${label('purpose', state.purpose)} finansmanı için ön senaryo: aylık ödeme ${formatTry(p?.metrics?.monthlyPayment)}, borçlanma skoru ${debtScore}/100.`,
     bullets: [
-      `Tutar bandı: ${state.amount_manual ? formatTry(state.amount_manual) : label('amount', state.amount_range)}`,
-      `Vade: ${label('term', state.term_months)} · Kapasite: ${state.capacity_manual ? formatTry(state.capacity_manual) : label('capacity', state.capacity_range)}`,
-      `Risk toleransı: ${label('riskTolerance', state.risk_tolerance)}`
+      `Kredi amacı: ${label('purpose', state.purpose)} · Vade: ${label('term', state.term_months)}`,
+      `Gelir: ${state.monthly_income ? formatTry(state.monthly_income) : '—'} · Gider: ${state.monthly_expense ? formatTry(state.monthly_expense) : '—'}`,
+      `Mevcut borç: ${state.existing_debt ? formatTry(state.existing_debt) : '—'} · Risk: ${label('riskTolerance', state.risk_tolerance)}`
     ],
     caution:
-      'Banka onayı, KKDF/BSMV ve sigorta kalemleri teklif ile netleşir. Bu çıktı finansal tavsiye değildir.'
+      'Banka onayı, KKDF/BSMV ve sigorta kalemleri teklif ile netleşir. Bu çıktı finansal tavsiye değildir.',
+    nextStep: buildNextFinansStep(state, p)
   };
 }
 
@@ -159,7 +222,8 @@ export function getFinansProgress(state) {
       key: 'Kapasite',
       value: state.capacity_manual ? formatTry(state.capacity_manual) : label('capacity', state.capacity_range)
     },
-    { key: 'Gelir', value: label('income', state.income_type) }
+    { key: 'Gelir', value: state.monthly_income ? formatTry(state.monthly_income) : label('income', state.income_type) },
+    { key: 'Gider', value: state.monthly_expense ? formatTry(state.monthly_expense) : '—' }
   ];
 }
 

@@ -27,7 +27,7 @@ function canAdvance(state, step) {
     return true;
   }
   if (step.id === 'cashflow') {
-    return Boolean(state.income_type) && Boolean(state.early_payment);
+    return Boolean(state.income_type) && Boolean(state.early_payment) && Boolean(state.monthly_income);
   }
   if (step.id === 'sensitivity') {
     return Boolean(state.rate_sensitivity) && Boolean(state.risk_tolerance);
@@ -60,6 +60,15 @@ function renderStepBody(step, state, { renderOptionGrid }) {
   }
   if (step.id === 'cashflow') {
     return `
+      <p class="vacation-step-subtitle">Aylık gelir</p>
+      <label class="vacation-field"><span>Net aylık gelir</span>
+        <input type="text" data-manual="monthly_income" value="${state.monthly_income ? formatTry(state.monthly_income) : ''}" placeholder="Örn: 45.000 TL"></label>
+      <p class="vacation-step-subtitle">Aylık gider</p>
+      <label class="vacation-field"><span>Sabit aylık giderler</span>
+        <input type="text" data-manual="monthly_expense" value="${state.monthly_expense ? formatTry(state.monthly_expense) : ''}" placeholder="Örn: 18.000 TL"></label>
+      <p class="vacation-step-subtitle">Mevcut borç ödemeleri</p>
+      <label class="vacation-field"><span>Toplam mevcut borç taksiti / ay</span>
+        <input type="text" data-manual="existing_debt" value="${state.existing_debt ? formatTry(state.existing_debt) : ''}" placeholder="Örn: 6.500 TL"></label>
       <p class="vacation-step-subtitle">Gelir tipi</p>
       ${renderOptionGrid('income_type', FINANS_OPTIONS.income, true)}
       <p class="vacation-step-subtitle">Erken ödeme ihtimali</p>
@@ -81,6 +90,7 @@ initDecisionFlow({
   steps: FINANS_STEPS,
   disclaimer: FINANS_DISCLAIMER,
   resultsTitle: 'Finansman senaryo önerileri',
+  resultsKicker: 'Finansman analizi tamamlandı',
   tracker,
   parseManual: parseManualBudget,
   initialState: {
@@ -90,6 +100,9 @@ initDecisionFlow({
     term_months: '',
     capacity_range: '',
     capacity_manual: null,
+    monthly_income: null,
+    monthly_expense: null,
+    existing_debt: null,
     income_type: '',
     early_payment: '',
     rate_sensitivity: '',

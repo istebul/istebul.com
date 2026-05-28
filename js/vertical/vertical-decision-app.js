@@ -1,4 +1,5 @@
 import { formatTry } from '../tatil/tatil-utils.js';
+import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 
 /**
  * Shared decision wizard + results UI (tatil.css class names).
@@ -214,25 +215,30 @@ export function initDecisionFlow(config) {
     const primary = getDisplayResult();
     const selectedCard = getSelectedResult();
 
+    const dashboardHtml = renderPremiumDecisionDashboard({
+      category: config.vertical,
+      kicker: config.resultsKicker || 'Karar analizi tamamlandı',
+      title: config.resultsTitle || 'Kişiselleştirilmiş öneriler',
+      decisionScore: summary.fitScore,
+      scoreBand: summary.scoreBand,
+      totalCostLabel: summary.totalCostLabel,
+      totalCostHint: summary.totalCostHint,
+      riskLabel: summary.seasonRisk,
+      riskDetail: summary.riskDetail,
+      advantages: primary?.pros || summary.advantages,
+      cautions: primary?.cautions || summary.cautions,
+      aiSummary: commentary.summary,
+      aiBullets: commentary.bullets,
+      nextStep: summary.nextStep || commentary.nextStep || 'Bir senaryo seçin ve iletişim adımına geçin.',
+      extraKpis: summary.extraKpis
+    });
+
     section.innerHTML = `
     <div class="vacation-results-header">
-      <h2>${escapeHtml(config.resultsTitle || 'Kişiselleştirilmiş öneriler')}</h2>
       <p>Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin teklif taahhüdü değildir.</p>
     </div>
-    <div class="vacation-results-summary">
-      <article class="vacation-summary-card"><span>Karar skoru</span><strong>${escapeHtml(String(summary.fitScore))}<small>/100</small></strong></article>
-      <article class="vacation-summary-card"><span>Toplam maliyet / yük</span><strong>${escapeHtml(summary.totalCostLabel)}</strong></article>
-      <article class="vacation-summary-card"><span>Aylık yük</span><strong>${escapeHtml(formatTry(summary.monthlyLoad) || '—')}</strong></article>
-      <article class="vacation-summary-card"><span>Risk seviyesi</span><strong>${escapeHtml(summary.seasonRisk)}</strong></article>
-    </div>
+    ${dashboardHtml}
     <p class="vacation-results-top-pick">Öne çıkan: <strong>${escapeHtml(summary.topTitle)}</strong></p>
-    <section class="vacation-score-panel">
-      <article><span>Finansman uyumu</span><strong>${escapeHtml(summary.familyFit || primary?.metrics?.financeFit || '—')}</strong></article>
-      <article><span>Nakit baskısı</span><strong>${escapeHtml(primary?.metrics?.cashPressure || primary?.metrics?.riskLevel || '—')}</strong></article>
-      <article><span>Profil</span><strong>${escapeHtml(primary?.audience || '—')}</strong></article>
-      <article><span>Sonraki adım</span><strong>Seçim + iletişim</strong></article>
-      <article><span>Uyarı</span><strong>Bilgilendirme</strong></article>
-    </section>
     <div class="vacation-result-cards">
       ${state.results
         .map((r) => {
@@ -270,12 +276,6 @@ export function initDecisionFlow(config) {
     </div>`
         : ''
     }
-    <div class="vacation-ai-comment">
-      <h3>Yapay zekâ karar yorumu</h3>
-      <p class="vacation-ai-lead">${escapeHtml(commentary.summary)}</p>
-      <ul>${commentary.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
-      <p class="vacation-ai-caution">⚠ ${escapeHtml(commentary.caution)}</p>
-    </div>
     ${
       state.confirmationStep && selectedCard
         ? `

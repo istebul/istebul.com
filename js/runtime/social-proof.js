@@ -6,7 +6,8 @@ const EXAMPLE_METRICS = Object.freeze({
   analyses: 'Örnek',
   reports: 'Örnek',
   users: '—',
-  partners: 'Pilot'
+  partners: 'Pilot',
+  categories: '4'
 });
 
 export function formatMetricLabel(value, fallback = '—') {

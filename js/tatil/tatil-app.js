@@ -13,6 +13,7 @@ import {
   syncDerivedState
 } from './tatil-engine.js';
 import { parseManualBudget, formatTry } from './tatil-utils.js';
+import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 
 const state = {
   stepIndex: 0,
@@ -31,6 +32,8 @@ const state = {
   date_end: '',
   date_period_note: '',
   date_flexibility: '',
+  transport_preference: '',
+  comfort_expectation: '',
   trip_nights: null,
   date_range: '',
   duration: '',
@@ -74,7 +77,6 @@ function canAdvance() {
     }
     return true;
   }
-  if (step.id === 'expectations') return state.expectations.length > 0;
   if (step.id === 'date') {
     if (!state.date_flexibility) return false;
     const hasDates = state.date_start && state.date_end;
@@ -84,6 +86,10 @@ function canAdvance() {
     }
     return hasPeriod || state.date_flexibility === 'undecided';
   }
+  if (step.id === 'preferences') {
+    return Boolean(state.transport_preference) && Boolean(state.comfort_expectation);
+  }
+  if (step.id === 'expectations') return state.expectations.length > 0;
   if (step.id === 'note') return true;
   return false;
 }
@@ -296,6 +302,38 @@ function renderDateStep() {
   `;
 }
 
+function renderPreferencesStep() {
+  return `
+    <p class="vacation-step-subtitle">Ulaşım tercihi</p>
+    <div class="vacation-option-grid vacation-option-grid--rich">
+      ${STEP_OPTIONS.transport
+        .map((opt) => {
+          const isSelected = state.transport_preference === opt.value;
+          return `
+          <button type="button" class="vacation-option-card vacation-option-card--rich ${isSelected ? 'is-selected' : ''}"
+            data-field="transport_preference" data-value="${escapeHtml(opt.value)}">
+            <span class="vacation-option-card-title">${escapeHtml(opt.label)}</span>
+            <span class="vacation-option-card-desc">${escapeHtml(opt.description)}</span>
+          </button>`;
+        })
+        .join('')}
+    </div>
+    <p class="vacation-step-subtitle">Konfor beklentisi</p>
+    <div class="vacation-option-grid vacation-option-grid--rich">
+      ${STEP_OPTIONS.comfort
+        .map((opt) => {
+          const isSelected = state.comfort_expectation === opt.value;
+          return `
+          <button type="button" class="vacation-option-card vacation-option-card--rich ${isSelected ? 'is-selected' : ''}"
+            data-field="comfort_expectation" data-value="${escapeHtml(opt.value)}">
+            <span class="vacation-option-card-title">${escapeHtml(opt.label)}</span>
+            <span class="vacation-option-card-desc">${escapeHtml(opt.description)}</span>
+          </button>`;
+        })
+        .join('')}
+    </div>`;
+}
+
 function renderWizard() {
   const mount = $('#vacation-wizard');
   if (!mount) return;
@@ -315,6 +353,7 @@ function renderWizard() {
   else if (step.id === 'people') body = renderPeopleStep();
   else if (step.id === 'type') body = renderTypeStep();
   else if (step.id === 'date') body = renderDateStep();
+  else if (step.id === 'preferences') body = renderPreferencesStep();
   else if (step.id === 'expectations') body = renderExpectationsStep();
   else if (step.id === 'note') {
     body = `
@@ -558,37 +597,28 @@ function renderResults() {
     state.settings.vacation_disclaimer_text || DEFAULT_SETTINGS.vacation_disclaimer_text;
   const partnerEnabled = state.settings.vacation_partner_cta_enabled === 'true';
 
+  const dashboardHtml = renderPremiumDecisionDashboard({
+    category: 'tatil',
+    kicker: 'Tatil analizi tamamlandı',
+    title: 'Kişiselleştirilmiş tatil önerileri',
+    decisionScore: summary.fitScore,
+    scoreBand: summary.scoreBand,
+    totalCostLabel: summary.totalCostLabel,
+    riskLabel: summary.seasonRisk,
+    riskDetail: primary?.scores?.risk,
+    advantages: primary?.pros || [],
+    cautions: primary?.cautions || [],
+    aiSummary: commentary.summary,
+    aiBullets: commentary.bullets,
+    nextStep: summary.nextStep || 'Bir destinasyon seçin ve sezon yoğunluğunu tekrar kontrol edin.'
+  });
+
   section.innerHTML = `
     <div class="vacation-results-header">
-      <h2>Kişiselleştirilmiş tatil önerileri</h2>
       <p>Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin fiyat taahhüdü değildir.</p>
     </div>
-    <div class="vacation-results-summary" aria-label="Özet karar metrikleri">
-      <article class="vacation-summary-card">
-        <span>Toplam tatil maliyeti</span>
-        <strong>${escapeHtml(summary.totalCostLabel)}</strong>
-      </article>
-      <article class="vacation-summary-card">
-        <span>Uygunluk skoru</span>
-        <strong>${escapeHtml(String(summary.fitScore))}<small>/100</small></strong>
-      </article>
-      <article class="vacation-summary-card">
-        <span>Sezon / risk</span>
-        <strong>${escapeHtml(summary.seasonRisk)}</strong>
-      </article>
-      <article class="vacation-summary-card">
-        <span>Aile uygunluğu</span>
-        <strong>${escapeHtml(summary.familyFit)}</strong>
-      </article>
-    </div>
+    ${dashboardHtml}
     <p class="vacation-results-top-pick">Öne çıkan: <strong>${escapeHtml(summary.topTitle)}</strong></p>
-    <section class="vacation-score-panel" aria-label="AI karar skoru">
-      <article><span>Genel Uygunluk</span><strong>${escapeHtml(String(primary?.scores?.general ?? '—'))}/100</strong></article>
-      <article><span>Aile Uyumu</span><strong>${escapeHtml(String(primary?.scores?.family ?? '—'))}/100</strong></article>
-      <article><span>Bütçe Verimliliği</span><strong>${escapeHtml(String(primary?.scores?.budgetEfficiency ?? '—'))}/100</strong></article>
-      <article><span>Konfor Skoru</span><strong>${escapeHtml(String(primary?.scores?.comfort ?? '—'))}/100</strong></article>
-      <article><span>Risk Seviyesi</span><strong>${escapeHtml(primary?.scores?.risk || '—')}</strong></article>
-    </section>
     <div class="vacation-result-cards" role="list" aria-label="Tatil seçenekleri">
       ${state.results
         .map(
@@ -672,13 +702,6 @@ function renderResults() {
     `
         : ''
     }
-
-    <div class="vacation-ai-comment" id="vacation-ai-comment">
-      <h3>Yapay Zekâ Karar Yorumu</h3>
-      <p class="vacation-ai-lead">${escapeHtml(commentary.summary)}</p>
-      <ul>${commentary.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
-      <p class="vacation-ai-caution">⚠ ${escapeHtml(commentary.caution)}</p>
-    </div>
 
     <section class="vacation-cost-panel" aria-label="Toplam maliyet görünümü">
       <div class="vacation-cost-head">

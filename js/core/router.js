@@ -18,26 +18,20 @@ import { isFullPageNavigation, resolveFullPageNavigation } from '../runtime/full
 /** Marketing sections on index.html (long-scroll landing). */
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
     'home',
-    'home-problem',
     'how-it-works',
     'home-vertical-focus',
-    'home-ai-engine',
-    'home-ai-diff',
     'sample-preview',
     'trust',
     'pricing',
     'partner-enterprise',
     'landing-faq',
-    'home-final-cta',
-    'home-content-hub'
+    'home-final-cta'
 ]);
 
 /** Hash targets on the marketing page. */
 export const MARKETING_HASH_IDS = Object.freeze([
     'home',
     'home-vertical-focus',
-    'home-problem',
-    'home-ai-engine',
     'home-tco-lens',
     'sample-preview',
     'trust',

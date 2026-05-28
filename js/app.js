@@ -4594,10 +4594,11 @@ const MARKETING_SECTION_IDS = new Set([
     'sample-preview',
     'home-auto-bridge',
     'how-it-works',
-    'home-content-hub',
+    'home-vertical-focus',
     'pricing',
     'partner-enterprise',
-    'landing-faq'
+    'landing-faq',
+    'home-final-cta'
 ]);
 const MARKETING_PATH_ALIASES = new Set(['/metodoloji-ozet', '/planlar-ozet']);
 

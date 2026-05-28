@@ -16,6 +16,7 @@ import {
 import { buildHousingAiCommentary } from './real-estate-ai.js';
 import { TURKEY_CITIES } from './turkey-cities.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
+import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 
 const STEP_LABELS = ['Karar amacı', 'Bütçe', 'Lokasyon', 'Konut tipi', 'Riskler'];
 const PURPOSE_OPTIONS = [
@@ -68,6 +69,8 @@ const state = {
   proximityCenter: '',
   locationPreferences: [],
   homeType: '',
+  householdSize: '',
+  duesExpectation: '',
   roomCount: '',
   squareMeters: '',
   buildingAge: '',
@@ -168,12 +171,13 @@ function chipButtons(options, selectedList, action) {
 
 function budgetFields() {
   return `
-    <div class="housing-form-grid">
-      <label>Toplam bütçe<input data-input="totalBudget" type="number" min="0" value="${escapeHtml(state.totalBudget)}"></label>
-      <label>Peşinat<input data-input="downPayment" type="number" min="0" value="${escapeHtml(state.downPayment)}"></label>
-      <label>Aylık ödeyebileceğiniz maksimum tutar<input data-input="monthlyCapacity" type="number" min="0" value="${escapeHtml(state.monthlyCapacity)}"></label>
-      <label>Aylık net gelir<input data-input="monthlyIncome" type="number" min="0" value="${escapeHtml(state.monthlyIncome)}"></label>
-      <label>Mevcut borç ödemeleri<input data-input="currentDebt" type="number" min="0" value="${escapeHtml(state.currentDebt)}"></label>
+    <div class="housing-form-grid housing-form-grid--budget">
+      <label>Toplam bütçe<input data-input="totalBudget" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.totalBudget)}"></label>
+      <label>Peşinat<input data-input="downPayment" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.downPayment)}"></label>
+      <label>Aylık ödeyebileceğiniz maksimum tutar<input data-input="monthlyCapacity" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.monthlyCapacity)}"></label>
+      <label>Aylık net gelir<input data-input="monthlyIncome" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.monthlyIncome)}"></label>
+      <label>Mevcut borç ödemeleri<input data-input="currentDebt" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.currentDebt)}"></label>
+      <label>Aidat beklentisi (aylık)<input data-input="duesExpectation" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.duesExpectation)}" placeholder="Örn: 2500"></label>
       <label>Kredi kullanacak mısınız?
         <select data-input="useFinancing">
           <option value="">Seçin</option>
@@ -213,8 +217,9 @@ function homeTypeFields() {
   return `
     ${cardButtons(HOME_TYPE_OPTIONS, 'homeType', state.homeType)}
     <div class="housing-form-grid">
+      <label>Hane büyüklüğü<input data-input="householdSize" type="number" min="1" max="12" inputmode="numeric" value="${escapeHtml(state.householdSize)}" placeholder="Örn: 4"></label>
       <label>Oda sayısı<input data-input="roomCount" value="${escapeHtml(state.roomCount)}" placeholder="2+1, 3+1"></label>
-      <label>Metrekare beklentisi<input data-input="squareMeters" type="number" min="0" value="${escapeHtml(state.squareMeters)}"></label>
+      <label>Metrekare beklentisi<input data-input="squareMeters" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.squareMeters)}"></label>
     </div>`;
 }
 
@@ -331,7 +336,9 @@ function buildProfileSummary() {
     ['Amaç', state.purchasePurpose || '—'],
     ['Lokasyon', formatLocationLabel()],
     ['Konut tipi', state.homeType || '—'],
+    ['Hane büyüklüğü', state.householdSize ? `${state.householdSize} kişi` : '—'],
     ['Bütçe', Number(state.totalBudget) ? formatTry(state.totalBudget) : '—'],
+    ['Aidat beklentisi', Number(state.duesExpectation) ? formatTry(state.duesExpectation) : '—'],
     ['Finansman', financingLabel]
   ];
 }
@@ -341,6 +348,9 @@ function buildAttentionItems(metrics) {
   if (metrics.dti > 40) items.push('Aylık ödeme yükü gelirinize göre yüksek görünüyor; vade veya peşinat senaryosu gözden geçirin.');
   if (metrics.earthquakeRiskScore > 55) items.push('Deprem/zemin riski hassasiyetinize göre ek teknik kontrol önerilir.');
   if (Number(state.dues || 0) > 5000) items.push('Aidat seviyesi bütçe planınızı zorlayabilir.');
+  if (Number(state.duesExpectation || 0) > 4000 && Number(state.duesExpectation || 0) > Number(state.monthlyCapacity || 0) * 0.15) {
+    items.push('Aidat beklentiniz aylık kapasitenize göre yüksek görünüyor.');
+  }
   if (!state.deedStatus.trim()) items.push('Tapu ve iskan durumu için resmi evrak kontrolü yapılmalıdır.');
   if (metrics.riskDensity > 50) items.push('Birden fazla risk faktörü işaretlendi; alternatif lokasyon ve konut tipi senaryoları önerilir.');
   if (!items.length) items.push('Mevcut girdiler dengeli görünüyor; yine de ekspertiz ve hukuki kontrol önerilir.');
@@ -654,14 +664,25 @@ async function renderResults() {
     flow?.classList.add('has-results');
 
     results.innerHTML = `
-      <header class="housing-result-hero">
-        <div>
-          <p class="housing-result-kicker">Konut karar sonucu</p>
-          <h2>Konut karar skoru <strong>${metrics.score}</strong><span>/100</span></h2>
-          <p class="housing-score-band housing-score-band--${escapeHtml(metrics.scoreBand.tone)}">${escapeHtml(metrics.scoreBand.label)}</p>
-          <p>Risk: <strong>${escapeHtml(metrics.risk.label)}</strong> · Lokasyon: <strong>${escapeHtml(formatLocationLabel())}</strong></p>
-        </div>
-      </header>
+      ${renderPremiumDecisionDashboard({
+        category: 'konut',
+        kicker: 'Konut karar sonucu',
+        title: `Konut karar skoru ${metrics.score}/100`,
+        scoreBand: metrics.scoreBand.label,
+        decisionScore: metrics.score,
+        totalCostLabel: formatTry(metrics.ownership.realTotal),
+        totalCostHint: `Aylık ~${formatTry(metrics.ownership.monthlyPayment)}`,
+        riskLabel: metrics.risk.label,
+        riskDetail: metrics.creditLoadLabel,
+        advantages: [
+          `Lokasyon uygunluğu ${metrics.locationFit}/100`,
+          `Bütçe uyumu ${metrics.budgetFit}/100`,
+          `Peşinat gücü ${metrics.downPaymentStrength}/100`
+        ],
+        cautions: attention,
+        aiSummary: ai.text,
+        nextStep: nextStep
+      })}
 
       <section class="housing-result-grid housing-result-grid--profile">
         <article class="result-card result-card--profile">
@@ -669,10 +690,6 @@ async function renderResults() {
           <dl class="housing-profile-dl">
             ${profileRows.map(([k, v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join('')}
           </dl>
-        </article>
-        <article class="result-card result-card--ai">
-          <h3>AI karar yorumu <span class="housing-ai-tag">${ai.source === 'ai' ? 'AI' : 'Fallback'}</span></h3>
-          <p class="housing-ai-commentary">${escapeHtml(ai.text)}</p>
         </article>
       </section>
 
@@ -707,17 +724,6 @@ async function renderResults() {
           <p>Ödeme kapasitesi: <strong>${formatTry(Number(state.monthlyCapacity || 0))}</strong></p>
           <p>Borç/gelir etkisi: <strong>%${Math.round(metrics.dti)}</strong> (${escapeHtml(metrics.creditLoadLabel)})</p>
           <p>Risk seviyesi: <strong>${escapeHtml(metrics.risk.label)}</strong></p>
-        </article>
-      </section>
-
-      <section class="housing-result-grid housing-result-grid--dual">
-        <article class="result-card">
-          <h3>Dikkat edilmesi gerekenler</h3>
-          <ul class="result-list result-list--bullets">${attention.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
-        </article>
-        <article class="result-card">
-          <h3>Sonraki en mantıklı adım</h3>
-          <p>${escapeHtml(nextStep)}</p>
         </article>
       </section>
 

@@ -120,6 +120,10 @@ body.housing-page {
 .housing-chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .housing-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.housing-form-grid--budget { grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 640px) {
+  .housing-form-grid--budget { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .housing-form-grid label { display: grid; gap: 6px; font-size: 13px; color: var(--housing-muted); }
 .housing-form-grid input {
   min-height: 44px; border-radius: 10px; border: 1px solid var(--housing-border); background: rgba(7, 14, 33, .95); color: var(--housing-text); padding: 10px;

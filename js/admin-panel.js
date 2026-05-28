@@ -4073,6 +4073,50 @@ sb.auth.getSession().then(({ data }) => {
   if (data.session) { currentUser = data.session.user; showApp(); }
 });
 
+async function loadUnifiedFunnelDashboard() {
+  const el = document.getElementById('unified-funnel-root');
+  if (!el) return;
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
+  const since = new Date(Date.now() - SCALE_LIMITS.admin.analyticsWindowDays * 24 * 60 * 60 * 1000).toISOString();
+  const selectExpr = 'event_name, event_type, session_id, metadata, created_at';
+
+  const [analyticsRes, housingRes, vacationRes] = await Promise.all([
+    fetchAdminTable(sb, {
+      table: 'analytics_events',
+      select: selectExpr,
+      limit: SCALE_LIMITS.admin.analyticsRowLimit,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb.from('analytics_events').select(selectExpr).gte('created_at', since).order('created_at', { ascending: false }).limit(SCALE_LIMITS.admin.analyticsRowLimit)
+    }),
+    fetchAdminTable(sb, {
+      table: 'housing_events',
+      select: 'event_type, session_id, metadata, created_at',
+      limit: 5000,
+      order: { column: 'created_at', ascending: false },
+      direct: () => sb.from('housing_events').select('event_type, session_id, metadata, created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(5000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'vacation_events',
+      select: 'event_type, session_id, metadata, created_at',
+      limit: 5000,
+      order: { column: 'created_at', ascending: false },
+      direct: () => sb.from('vacation_events').select('event_type, session_id, metadata, created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(5000)
+    })
+  ]);
+
+  const { buildUnifiedFunnelMetrics, renderUnifiedFunnelDashboard } = await import('./admin/unified-funnel-dashboard.js');
+  const rows = [
+    ...(analyticsRes.data || []),
+    ...(housingRes.data || []),
+    ...(vacationRes.data || [])
+  ];
+  const metrics = buildUnifiedFunnelMetrics(rows);
+  const banner = renderAdminWarningBanner(collectAdminWarnings([analyticsRes, housingRes, vacationRes]));
+  el.innerHTML = `${banner}${renderUnifiedFunnelDashboard(metrics, escapeHtml)}`;
+}
+
 registerAdminPageHandlers({
   dashboard: () => loadDashboard(),
   settings: () => loadSettings(),
@@ -4099,6 +4143,7 @@ registerAdminPageHandlers({
   'finance-leads': () => financeAdmin.loadFinanceLeads(),
   'finance-partners': () => financeAdmin.loadFinancePartners(),
   'finance-scoring': () => financeAdmin.loadFinanceScoring(),
+  'unified-funnel': () => loadUnifiedFunnelDashboard(),
   'auto-analytics': () => loadAutoAnalytics(),
   'platform-analytics': () => loadPlatformAnalytics(),
   'dashboard-ceo': () => refreshInternalDashboard('ceo', 'dashboard-ceo-root'),

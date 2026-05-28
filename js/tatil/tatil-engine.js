@@ -325,7 +325,9 @@ export function buildResultsSummary(state, results = []) {
     fitScore,
     seasonRisk: top?.costs?.seasonRisk ? `${seasonRisk} · ${top.costs.seasonRisk}` : seasonRisk,
     familyFit,
-    topTitle: top?.title || 'Önerilen profil'
+    topTitle: top?.title || 'Önerilen profil',
+    scoreBand: fitScore >= 80 ? 'Güçlü uyum' : fitScore >= 65 ? 'Dengeli profil' : 'Alternatif değerlendirin',
+    nextStep: 'Bir destinasyon seçin; sezon yoğunluğu ve ulaşım maliyetini tekrar kontrol edin.'
   };
 }
 

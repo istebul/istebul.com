@@ -4,7 +4,7 @@
   <meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>isteBu — Admin</title>
+<title>isteBul — Admin</title>
 <link rel="stylesheet" href="/css/admin-partner-ops.css">
 <link rel="stylesheet" href="/css/sales-partner.css">
 <link rel="stylesheet" href="/css/admin-internal-dashboards.css">
@@ -370,7 +370,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
 <div id="login-screen">
   <div class="login-box">
-    <div class="logo"><div class="logo-dot"></div><span>isteBu</span><small>ADMIN</small></div>
+    <div class="logo"><div class="logo-dot"></div><span>isteBul</span><small>ADMIN</small></div>
     <h1>Giriş yap</h1>
     <p>Admin paneline erişmek için giriş yapın</p>
     <div class="field"><label for="login-email">E-posta</label><input type="email" id="login-email" name="email" autocomplete="username" placeholder="admin@istebul.com" required /></div>
@@ -455,6 +455,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
         <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">Analitik</button>
           <div class="nav-group-items">
+            <div class="nav-item" data-page-target="unified-funnel"><span class="nav-label">Unified Funnel</span></div>
             <div class="nav-item" data-page-target="auto-analytics"><span class="nav-label">Auto analitik</span></div>
             <div class="nav-item" data-page-target="platform-analytics"><span class="nav-label">Platform analitik</span></div>
             <div class="nav-item" data-page-target="dashboard-ceo"><span class="nav-label">CEO</span></div>
@@ -523,7 +524,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <span class="admin-menu-icon" aria-hidden="true"></span>
         </button>
         <div>
-          <span class="admin-mobile-kicker">isteBu Admin</span>
+          <span class="admin-mobile-kicker">isteBul Admin</span>
           <span class="admin-mobile-title" id="admin-mobile-title">Genel Bakış</span>
         </div>
       </header>
@@ -1220,6 +1221,14 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <div class="form-group"><label>AI yorum şablonu</label><textarea id="fs-finance_ai_prompt_template" class="textarea-lg"></textarea></div>
           <div class="actions"><button class="btn btn-primary" data-action="save-finance-settings">Kaydet</button></div>
         </div>
+      </div>
+
+      <div class="page" id="page-unified-funnel">
+        <div class="page-header">
+          <h2>Unified Funnel Dashboard</h2>
+          <p>Auto · Konut · Tatil · Finans — ziyaret, sonuç, lead ve dönüşüm karşılaştırması</p>
+        </div>
+        <div id="unified-funnel-root"><div class="empty">Yükleniyor…</div></div>
       </div>
 
       <div class="page" id="page-auto-analytics">

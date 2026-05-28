@@ -1,12 +1,18 @@
-const CACHE_VERSION = 'v50';
-const STATIC_CACHE = `istebu-static-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v51';
+const STATIC_CACHE = `istebul-static-${CACHE_VERSION}`;
 const OFFLINE_PAGE = '/offline.html';
 
 const PRECACHE_ASSETS = [
   OFFLINE_PAGE,
   '/assets/images/placeholder.svg',
   '/assets/icons/favicon-192.png',
-  '/assets/icons/favicon-512.png'
+  '/assets/icons/favicon-512.png',
+  '/auto/index.html',
+  '/konut/index.html',
+  '/tatil/index.html',
+  '/finans/index.html',
+  '/css/premium-decision-dashboard.css',
+  '/css/home-trust-unified.css'
 ];
 
 const IMMUTABLE_ASSET = /\.[a-f0-9]{8,}\.(?:js|css)$/i;
@@ -26,7 +32,7 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then((keys) => Promise.all(
         keys
-          .filter((key) => key.startsWith('istebu-') && !key.includes(CACHE_VERSION))
+          .filter((key) => key.startsWith('istebul-') && !key.includes(CACHE_VERSION))
           .map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())

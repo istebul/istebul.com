@@ -24,6 +24,12 @@ export const VACATION_STEPS = [
     subtitle: 'Yoğun sezon, hava ve fiyat avantajı analizi tarih verisiyle hesaplanır.'
   },
   {
+    id: 'preferences',
+    label: 'Tercihler',
+    title: 'Ulaşım ve konfor beklentiniz',
+    subtitle: 'Transfer, uçuş ve konaklama konforu skoru etkiler.'
+  },
+  {
     id: 'expectations',
     label: 'Beklentiler',
     title: 'Önceliklerinizi işaretleyin',
@@ -175,6 +181,18 @@ export const STEP_OPTIONS = {
     { value: '1-2-days', label: '1–2 gün esneyebilir' },
     { value: '1-week', label: '1 hafta esneyebilir' },
     { value: 'undecided', label: 'Henüz karar vermedim' }
+  ],
+  transport: [
+    { value: 'ucak', label: 'Uçak', description: 'Hızlı ulaşım, havalimanı transferi' },
+    { value: 'otobus', label: 'Otobüs / tren', description: 'Ekonomik kara ulaşımı' },
+    { value: 'arac', label: 'Kendi aracım', description: 'Esnek rota, yakıt maliyeti dahil' },
+    { value: 'karma', label: 'Karma', description: 'Uçuş + yerel transfer kombinasyonu' }
+  ],
+  comfort: [
+    { value: 'temel', label: 'Temel konfor', description: 'Temiz konaklama, bütçe odaklı' },
+    { value: 'dengeli', label: 'Dengeli', description: 'Konfor/fiyat dengesi' },
+    { value: 'premium', label: 'Premium', description: 'Geniş oda, iyi hizmet' },
+    { value: 'luks', label: 'Lüks', description: 'Üst segment konaklama ve transfer' }
   ]
 };
 
