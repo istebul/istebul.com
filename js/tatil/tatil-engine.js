@@ -1,4 +1,11 @@
-import { RESULT_BADGES, STEP_OPTIONS } from './tatil-config.js';
+import { RESULT_BADGES, STEP_OPTIONS, BUDGET_PLANS } from './tatil-config.js';
+import {
+  computeTripNights,
+  formatTry,
+  getBudgetDisplay,
+  getDateSummary,
+  getFlexibilityLabel
+} from './tatil-utils.js';
 
 const FALLBACK_SCENARIOS = [
   {
@@ -24,63 +31,144 @@ const FALLBACK_SCENARIOS = [
   }
 ];
 
-const BUDGET_COST = {
-  '0-30K': '18.000 – 28.000 ₺',
-  '30-60K': '32.000 – 55.000 ₺',
-  '60-100K': '58.000 – 92.000 ₺',
-  '100K+': '95.000 – 140.000 ₺'
+const PLAN_COST = {
+  ekonomik: { min: 12000, max: 48000, label: '18.000 – 45.000 ₺' },
+  dengeli: { min: 45000, max: 115000, label: '52.000 – 108.000 ₺' }
 };
 
-function labelFor(stepId, value) {
-  const opts = STEP_OPTIONS[stepId] || [];
-  return opts.find((o) => o.value === value)?.label || value || 'Belirtilmedi';
+function labelForGoal(value) {
+  return STEP_OPTIONS.goal?.find((o) => o.value === value)?.label || value || '';
+}
+
+function labelForPeople(value) {
+  return STEP_OPTIONS.people?.find((o) => o.value === value)?.label || value || '';
+}
+
+function labelForType(value) {
+  return STEP_OPTIONS.type?.find((o) => o.value === value)?.label || value || '';
+}
+
+function estimateCostRange(state) {
+  if (state.budget_range === 'manuel' && state.budget_manual) {
+    const t = Number(state.budget_manual);
+    const low = Math.round(t * 0.88);
+    const high = Math.round(t * 1.12);
+    return {
+      label: `${formatTry(low)} – ${formatTry(high)} (hedef: ${formatTry(t)})`,
+      target: t,
+      isManual: true
+    };
+  }
+  const plan = PLAN_COST[state.budget_range] || PLAN_COST.dengeli;
+  return { label: plan.label, target: (plan.min + plan.max) / 2, isManual: false };
+}
+
+function budgetFitScore(state, cardMidCost) {
+  if (!state.budget_manual || state.budget_range !== 'manuel') return null;
+  const target = Number(state.budget_manual);
+  const ratio = cardMidCost / target;
+  if (ratio >= 0.85 && ratio <= 1.15) return 'high';
+  if (ratio >= 0.7 && ratio <= 1.3) return 'medium';
+  return 'low';
 }
 
 function baseScore(state) {
-  let score = 62;
-  if (state.budget_range === '100K+') score += 12;
-  else if (state.budget_range === '60-100K') score += 8;
-  else if (state.budget_range === '30-60K') score += 4;
-  if (state.vacation_goal === 'luks' || state.vacation_goal === 'balayi') score += 6;
+  let score = 64;
+  if (state.budget_range === 'dengeli') score += 5;
+  if (state.budget_range === 'ekonomik') score += 2;
+  if (state.budget_range === 'manuel' && state.budget_manual) {
+    if (state.budget_manual >= 80000) score += 8;
+    else if (state.budget_manual >= 40000) score += 5;
+  }
+  if (state.vacation_goal === 'luks' || state.vacation_goal === 'balayi') score += 5;
   if (state.people_type === 'cocuklu-aile') score += 4;
-  if (state.vacation_type === 'her-sey-dahil') score += 5;
-  if (state.duration === '7-10' || state.duration === '10+') score += 3;
-  return Math.min(score, 88);
+  if (state.people_type === 'yasli-aile') score += 3;
+  if (['deniz-resort', 'cocuk-dostu'].includes(state.vacation_type)) score += 4;
+  if (state.trip_nights && state.trip_nights >= 7) score += 3;
+  return Math.min(score, 90);
+}
+
+function buildTags(state, budgetFit) {
+  const tags = [];
+  if (budgetFit === 'high') tags.push({ text: 'Hedef bütçeye uyum', className: 'tag-budget' });
+  if (budgetFit === 'medium') tags.push({ text: 'Bütçeye yakın profil', className: 'tag-budget' });
+  if (state.people_type === 'cocuklu-aile') {
+    tags.push({ text: 'Çocuk uygunluğu', className: 'tag-family' });
+  }
+  if (state.people_type === 'yasli-aile') {
+    tags.push({ text: 'Erişilebilirlik odağı', className: 'tag-access' });
+  }
+  return tags;
 }
 
 function mapScenarioToResult(scenario, badgeKey, state, scoreOffset) {
   const badge = RESULT_BADGES[badgeKey] || RESULT_BADGES.logical;
-  const cfg = scenario.config && typeof scenario.config === 'object' ? scenario.config : {};
+  const cost = estimateCostRange(state);
   const score = Math.min(100, baseScore(state) + scoreOffset);
+  const mid =
+    state.budget_range === 'ekonomik'
+      ? 30000
+      : state.budget_range === 'dengeli'
+        ? 78000
+        : cost.target || 70000;
+  const budgetFit = budgetFitScore(state, mid);
 
   const pros = [];
   const cautions = [];
+  const why = [];
 
-  if (state.people_type === 'cocuklu-aile' || state.people_type === 'aile') {
-    pros.push('Çocuk dostu konaklama profiline uygun görünüyor');
+  if (state.people_type === 'cocuklu-aile') {
+    pros.push('Çocuk dostu konaklama ve aktivite profiline uygun görünüyor');
+    if (state.children_ages) {
+      pros.push(`Çocuk yaş profili (${state.children_ages}) dikkate alındı`);
+    }
+    cautions.push('Okul tatili dönemlerinde doluluk ve fiyat artışı olabilir');
+  } else if (state.people_type === 'aile') {
+    pros.push('Yetişkin aile yapısı için esnek oda ve tempo seçenekleri');
+    why.push('Aile seçiminiz çocuklu aile profilinden ayrı değerlendirildi; tempo daha esnek planlanabilir.');
+  } else if (state.people_type === 'yasli-aile') {
+    pros.push('Düşük tempo ve erişilebilirlik öncelikli değerlendirme');
+    cautions.push('Sağlık ve transfer konforu için ek süre planlayın');
   }
-  if (state.vacation_type === 'deniz' || state.vacation_type === 'her-sey-dahil') {
-    pros.push('Deniz ve paket tatil beklentisiyle örtüşebilir');
+
+  if (['deniz-resort', 'cocuk-dostu'].includes(state.vacation_type)) {
+    pros.push('Deniz ve resort beklentisiyle örtüşen konaklama modeli');
   }
+  if (state.vacation_type === 'vizesiz-yurtdisi') {
+    cautions.push('Güncel giriş koşulları ve sigorta şartları partner tarafından doğrulanmalıdır');
+  }
+
   if (badgeKey === 'economic') {
-    pros.push('Bütçe aralığınızla uyumlu ekonomik profil');
-    cautions.push('Sezon içi fiyat dalgalanması olabilir');
+    pros.push('Maliyet kontrollü tatil profiline yakın tahmin aralığı');
+    cautions.push('Sezon içi ek masraflar bütçeyi etkileyebilir');
+    why.push('Ekonomik plan veya manuel hedef bütçenizle uyumlu maliyet bandı önceliklendirildi.');
   }
   if (badgeKey === 'comfort') {
-    pros.push('Konfor ve sakin tempo için uygun profil');
-    cautions.push('Özel dönemlerde müsaitlik sınırlı olabilir');
+    pros.push('Konfor ve hizmet kalitesi ağırlıklı profil');
+    cautions.push('Yüksek sezonda müsaitlik sınırlı olabilir');
   }
   if (badgeKey === 'logical') {
-    pros.push('Profilinizle dengeli maliyet–konfor dengesi');
+    pros.push('Bütçe, konfor ve risk dengesi birlikte değerlendirildi');
+    why.push('Seçimlerinize göre dengeli bir tatil modeli daha uygun görünüyor.');
   }
-  cautions.push('Kesin fiyat veya otel adı yerine tahmini aralık sunulur');
+
+  cautions.push('Gösterilen fiyatlar tahminidir; kesin teklif partner onayı ile netleşir');
 
   const fitLabels = {
     tek: 'Yalnız gezginler',
     cift: 'Çiftler',
-    aile: 'Aileler',
-    'cocuklu-aile': 'Çocuklu aileler'
+    aile: 'Yetişkin aileler (çocuksuz profil)',
+    arkadas: 'Arkadaş grupları',
+    'cocuklu-aile': 'Çocuklu aileler',
+    'yasli-aile': 'Yaşlı bireyle seyahat edenler'
   };
+
+  const suitability =
+    badgeKey === 'economic'
+      ? 'Bütçe hassasiyeti yüksek profiller'
+      : badgeKey === 'comfort'
+        ? 'Konfor ve hizmet beklentisi yüksek profiller'
+        : 'Dengeli beklenti ve risk profili';
 
   return {
     id: scenario.slug,
@@ -89,11 +177,14 @@ function mapScenarioToResult(scenario, badgeKey, state, scoreOffset) {
     image_url: scenario.image_url || '/assets/images/placeholder.svg',
     badge,
     score,
-    estimatedCost: BUDGET_COST[state.budget_range] || 'Profilinize göre değişir',
+    estimatedCost: cost.label,
     audience: fitLabels[state.people_type] || 'Genel profil',
+    suitability,
     pros,
     cautions,
-    region: cfg.region || ''
+    why: why[0] || 'Profilinizdeki amaç, bütçe ve seyahat tipi birlikte skorlandı.',
+    tags: buildTags(state, budgetFit),
+    region: scenario.config?.region || ''
   };
 }
 
@@ -113,42 +204,125 @@ export function buildResults(state, scenarios = []) {
 }
 
 export function buildAiCommentary(state, results) {
-  const goal = labelFor('goal', state.vacation_goal);
-  const budget = labelFor('budget', state.budget_range);
-  const people = labelFor('people', state.people_type);
-  const vType = labelFor('type', state.vacation_type);
+  const goal = labelForGoal(state.vacation_goal);
+  const people = labelForPeople(state.people_type);
+  const vType = labelForType(state.vacation_type);
+  const budget = getBudgetDisplay(state);
+  const dates = getDateSummary(state);
+  const flex = getFlexibilityLabel(state);
   const top = results[0];
 
-  const bullets = [
-    `${goal} profiliniz için ${top?.title || 'önerilen bölge'} genel olarak uyumlu görünüyor.`,
-    `${people} ve ${vType} tercihleri, konaklama tipi seçiminde yol gösterici olabilir.`,
-    `${budget} bütçe bandında tahmini maliyet aralığı sunuldu; kesin fiyat teklifi için partner onayı gerekir.`
-  ];
+  const bullets = [];
 
-  if (state.user_note) {
-    bullets.push(`Notunuz dikkate alındı: “${state.user_note.slice(0, 120)}${state.user_note.length > 120 ? '…' : ''}”`);
+  if (budget) {
+    bullets.push(
+      state.budget_range === 'manuel' && state.budget_manual
+        ? `Manuel bütçe hedefiniz (${formatTry(state.budget_manual)}) sonuç hesaplamasına dahil edilmiştir.`
+        : `${budget} bandında tahmini maliyet aralığı değerlendirilmiştir.`
+    );
   }
 
+  bullets.push(
+    `${people || 'Seyahat grubunuz'} için konaklama tipi ve tempo öncelikleri profile göre ayarlandı.`
+  );
+
+  if (state.people_type === 'cocuklu-aile') {
+    const ages = state.children_ages ? ` (${state.children_ages})` : '';
+    const count = state.children_count ? `${state.children_count} çocuk` : 'Çocuklu';
+    bullets.push(
+      `${count}${ages} profili nedeniyle ulaşım kolaylığı, otel içi aktivite çeşitliliği ve sağlık/erişim imkânları öncelikli değerlendirilmelidir.`
+    );
+  }
+
+  if (state.people_type === 'aile') {
+    bullets.push(
+      'Yetişkin aile seçimi, çocuklu aile profilinden ayrı değerlendirildi; tempo ve oda planı daha esnek kurgulanabilir.'
+    );
+  }
+
+  if (vType) {
+    bullets.push(`“${vType}” beklentiniz konaklama ve aktivite yoğunluğu seçiminde temel alındı.`);
+  }
+
+  if (dates || flex) {
+    const seasonNote =
+      state.date_flexibility === 'undecided'
+        ? 'Tarih esnekliği yüksek; sezon ve doluluk riski fiyat bandını genişletebilir.'
+        : flex === '1 hafta esneyebilir' || flex === '1–2 gün esneyebilir'
+          ? 'Tarih esnekliğiniz alternatif dönemlerde daha uygun fiyat bulmanıza yardımcı olabilir.'
+          : 'Net tarih profiliniz sezon ve doluluk riskini daha öngörülebilir kılar.';
+    bullets.push(
+      dates
+        ? `Seyahat dönemi: ${dates}${flex ? ` · Esneklik: ${flex}` : ''}. ${seasonNote}`
+        : `${seasonNote} Yaklaşık dönem: ${state.date_period_note || 'belirtilmedi'}.`
+    );
+  }
+
+  if (state.trip_nights) {
+    bullets.push(`Planlanan süre yaklaşık ${state.trip_nights} gece olarak hesaplandı.`);
+  }
+
+  bullets.push(
+    `${top?.title || 'Öne çıkan seçenek'} profilinizle uyumlu görünüyor; ${top?.why || 'maliyet ve konfor dengesi gözetildi'}.`
+  );
+
+  if (state.user_note) {
+    bullets.push(
+      `Özel beklentiniz: “${state.user_note.slice(0, 140)}${state.user_note.length > 140 ? '…' : ''}”`
+    );
+  }
+
+  const summary =
+    'Seçimlerinize göre dengeli bir tatil modeli genel olarak daha uygun görünüyor. ' +
+    'Aşağıdaki değerlendirme bilgilendirme amaçlıdır; kesin otel, uçuş veya paket fiyatı taahhüdü içermez.';
+
   return {
-    summary:
-      'Aşağıdaki öneriler, verdiğiniz yanıtlara göre oluşturulmuş tahmini karar özetidir. ' +
-      'Kesin otel, uçuş veya paket fiyatı taahhüdü içermez.',
+    summary,
     bullets,
     caution:
-      'Sezon, doluluk ve kampanya koşulları fiyatları değiştirebilir. Nihai teklif için partner doğrulaması önerilir.'
+      'Fiyatlar sezona, doluluğa ve partner tekliflerine göre değişebilir. Nihai plan için güncel teklif doğrulaması önerilir.'
   };
 }
 
 export function getProgressSummary(state) {
+  const budgetVal = getBudgetDisplay(state) || null;
+  let peopleVal = state.people_type ? labelForPeople(state.people_type) : null;
+  if (state.people_type === 'cocuklu-aile' && (state.children_count || state.children_ages)) {
+    const parts = [];
+    if (state.children_count) parts.push(`${state.children_count} çocuk`);
+    if (state.children_ages) parts.push(`yaş: ${state.children_ages}`);
+    peopleVal = `${peopleVal} (${parts.join(', ')})`;
+  }
+
+  let dateVal = getDateSummary(state);
+  if (getFlexibilityLabel(state)) {
+    dateVal = [dateVal, getFlexibilityLabel(state)].filter(Boolean).join(' · ');
+  }
+
   return [
-    { key: 'Amaç', value: state.vacation_goal ? labelFor('goal', state.vacation_goal) : null },
-    { key: 'Bütçe', value: state.budget_range ? labelFor('budget', state.budget_range) : null },
-    { key: 'Kişi', value: state.people_type ? labelFor('people', state.people_type) : null },
-    { key: 'Tip', value: state.vacation_type ? labelFor('type', state.vacation_type) : null },
-    {
-      key: 'Tarih',
-      value: state.date_range || state.duration ? [state.date_range, state.duration && labelFor('duration', state.duration)].filter(Boolean).join(' · ') : null
-    },
-    { key: 'Not', value: state.user_note ? 'Eklendi' : null }
+    { key: 'Amaç', value: state.vacation_goal ? labelForGoal(state.vacation_goal) : null },
+    { key: 'Bütçe', value: budgetVal },
+    { key: 'Seyahat grubu', value: peopleVal },
+    { key: 'Deneyim', value: state.vacation_type ? labelForType(state.vacation_type) : null },
+    { key: 'Tarih', value: dateVal || null },
+    { key: 'Beklenti', value: state.user_note ? 'Eklendi' : null }
   ];
+}
+
+/** Sync derived fields on state before results */
+export function syncDerivedState(state) {
+  state.trip_nights = computeTripNights(state.date_start, state.date_end);
+  if (state.date_start && state.date_end) {
+    state.date_range = `${state.date_start} – ${state.date_end}`;
+    state.duration = state.trip_nights ? `${state.trip_nights} gece` : '';
+  } else if (state.date_period_note) {
+    state.date_range = state.date_period_note;
+    state.duration = state.duration || '';
+  }
+  if (state.budget_range === 'manuel' && state.budget_manual) {
+    state.budget_label = formatTry(state.budget_manual);
+  } else {
+    const plan = BUDGET_PLANS.find((p) => p.value === state.budget_range);
+    state.budget_label = plan ? `${plan.label} (${plan.range})` : state.budget_range;
+  }
 }

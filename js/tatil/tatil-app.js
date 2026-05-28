@@ -1,18 +1,27 @@
-import { VACATION_STEPS, STEP_OPTIONS, DEFAULT_SETTINGS } from './tatil-config.js';
+import { VACATION_STEPS, STEP_OPTIONS, BUDGET_PLANS, DEFAULT_SETTINGS } from './tatil-config.js';
 import {
   trackVacationEvent,
   saveVacationLead,
   loadVacationSettings,
   loadActiveScenarios
 } from './tatil-intake.js';
-import { buildResults, buildAiCommentary, getProgressSummary } from './tatil-engine.js';
+import { buildResults, buildAiCommentary, getProgressSummary, syncDerivedState } from './tatil-engine.js';
+import { parseManualBudget, formatTry } from './tatil-utils.js';
 
 const state = {
   stepIndex: 0,
   vacation_goal: '',
   budget_range: '',
+  budget_manual: null,
   people_type: '',
+  children_count: '',
+  children_ages: '',
   vacation_type: '',
+  date_start: '',
+  date_end: '',
+  date_period_note: '',
+  date_flexibility: '',
+  trip_nights: null,
   date_range: '',
   duration: '',
   user_note: '',
@@ -21,8 +30,6 @@ const state = {
   settings: { ...DEFAULT_SETTINGS },
   scenarios: []
 };
-
-let resultsRendered = false;
 
 function $(sel, root = document) {
   return root.querySelector(sel);
@@ -44,10 +51,28 @@ function canAdvance() {
   const step = currentStep();
   if (!step) return false;
   if (step.id === 'goal') return Boolean(state.vacation_goal);
-  if (step.id === 'budget') return Boolean(state.budget_range);
-  if (step.id === 'people') return Boolean(state.people_type);
+  if (step.id === 'budget') {
+    if (!state.budget_range) return false;
+    if (state.budget_range === 'manuel') return Boolean(state.budget_manual);
+    return true;
+  }
+  if (step.id === 'people') {
+    if (!state.people_type) return false;
+    if (state.people_type === 'cocuklu-aile') {
+      return Boolean(state.children_count || state.children_ages?.trim());
+    }
+    return true;
+  }
   if (step.id === 'type') return Boolean(state.vacation_type);
-  if (step.id === 'date') return Boolean(state.date_range && state.duration);
+  if (step.id === 'date') {
+    if (!state.date_flexibility) return false;
+    const hasDates = state.date_start && state.date_end;
+    const hasPeriod = Boolean(state.date_period_note?.trim());
+    if (hasDates) {
+      return new Date(state.date_end) >= new Date(state.date_start);
+    }
+    return hasPeriod || state.date_flexibility === 'undecided';
+  }
   if (step.id === 'note') return true;
   return false;
 }
@@ -83,30 +108,145 @@ function renderAiPanel() {
     .join('');
 }
 
-const STEP_FIELD = {
-  goal: 'vacation_goal',
-  budget: 'budget_range',
-  people: 'people_type',
-  type: 'vacation_type'
-};
-
-function renderOptionCards(stepId) {
-  const options = STEP_OPTIONS[stepId] || [];
-  const field = STEP_FIELD[stepId];
+function renderGoalCards() {
   return `
     <div class="vacation-option-grid">
-      ${options
+      ${STEP_OPTIONS.goal
         .map((opt) => {
-          const isSelected = state[field] === opt.value;
+          const isSelected = state.vacation_goal === opt.value;
           return `
           <button type="button" class="vacation-option-card ${isSelected ? 'is-selected' : ''}"
-            data-field="${field}" data-value="${escapeHtml(opt.value)}">
+            data-field="vacation_goal" data-value="${escapeHtml(opt.value)}">
             ${opt.icon ? `<span class="vacation-option-icon">${opt.icon}</span>` : ''}
-            <span>${escapeHtml(opt.label)}</span>
+            <span class="vacation-option-card-title">${escapeHtml(opt.label)}</span>
           </button>
         `;
         })
         .join('')}
+    </div>
+  `;
+}
+
+function renderBudgetStep() {
+  return `
+    <div class="vacation-budget-grid">
+      ${BUDGET_PLANS.map((plan) => {
+        const isSelected = state.budget_range === plan.value;
+        return `
+        <button type="button" class="vacation-budget-card ${isSelected ? 'is-selected' : ''}"
+          data-field="budget_range" data-value="${escapeHtml(plan.value)}">
+          <span class="vacation-budget-card-title">${escapeHtml(plan.label)}</span>
+          <p class="vacation-budget-card-desc">${escapeHtml(plan.description)}</p>
+          ${plan.range ? `<span class="vacation-budget-card-range">${escapeHtml(plan.range)}</span>` : ''}
+          ${plan.manual ? '<span class="vacation-budget-card-hint">Kendi tutarınızı girin</span>' : ''}
+        </button>
+      `;
+      }).join('')}
+    </div>
+    <label class="vacation-manual-budget ${state.budget_range === 'manuel' ? '' : 'hidden'}">
+      <span>Hedef bütçeniz</span>
+      <input type="text" inputmode="numeric" id="vacation-budget-manual"
+        placeholder="Örn: 85.000 TL"
+        value="${state.budget_manual ? formatTry(state.budget_manual) : ''}"
+        autocomplete="off">
+    </label>
+  `;
+}
+
+function renderPeopleStep() {
+  const childFields =
+    state.people_type === 'cocuklu-aile'
+      ? `
+    <div class="vacation-children-fields">
+      <label class="vacation-field">
+        <span>Çocuk sayısı</span>
+        <input type="number" id="vacation-children-count" min="1" max="8" inputmode="numeric"
+          value="${escapeHtml(state.children_count)}" placeholder="Örn: 2">
+      </label>
+      <label class="vacation-field">
+        <span>Çocuk yaşları</span>
+        <input type="text" id="vacation-children-ages"
+          value="${escapeHtml(state.children_ages)}"
+          placeholder="Örn: 4, 8" autocomplete="off">
+      </label>
+    </div>
+  `
+      : '';
+
+  return `
+    <div class="vacation-option-grid vacation-option-grid--rich">
+      ${STEP_OPTIONS.people
+        .map((opt) => {
+          const isSelected = state.people_type === opt.value;
+          return `
+          <button type="button" class="vacation-option-card vacation-option-card--rich ${isSelected ? 'is-selected' : ''}"
+            data-field="people_type" data-value="${escapeHtml(opt.value)}">
+            <span class="vacation-option-card-title">${escapeHtml(opt.label)}</span>
+            <span class="vacation-option-card-desc">${escapeHtml(opt.description)}</span>
+          </button>
+        `;
+        })
+        .join('')}
+    </div>
+    ${childFields}
+  `;
+}
+
+function renderTypeStep() {
+  return `
+    <div class="vacation-option-grid vacation-option-grid--rich vacation-option-grid--type">
+      ${STEP_OPTIONS.type
+        .map((opt) => {
+          const isSelected = state.vacation_type === opt.value;
+          return `
+          <button type="button" class="vacation-option-card vacation-option-card--rich ${isSelected ? 'is-selected' : ''}"
+            data-field="vacation_type" data-value="${escapeHtml(opt.value)}">
+            <span class="vacation-option-card-title">${escapeHtml(opt.label)}</span>
+            <span class="vacation-option-card-desc">${escapeHtml(opt.description)}</span>
+          </button>
+        `;
+        })
+        .join('')}
+    </div>
+  `;
+}
+
+function renderDateStep() {
+  return `
+    <div class="vacation-date-step">
+      <div class="vacation-date-fields vacation-date-fields--range">
+        <label class="vacation-field">
+          <span>Başlangıç tarihi</span>
+          <input type="date" id="vacation-date-start" value="${escapeHtml(state.date_start)}">
+        </label>
+        <label class="vacation-field">
+          <span>Bitiş tarihi</span>
+          <input type="date" id="vacation-date-end" value="${escapeHtml(state.date_end)}"
+            min="${escapeHtml(state.date_start || '')}">
+        </label>
+      </div>
+      <p class="vacation-field-hint" id="vacation-date-duration-hint" hidden></p>
+      <label class="vacation-field">
+        <span>Yaklaşık dönem (tarih seçemiyorsanız)</span>
+        <input type="text" id="vacation-date-period" value="${escapeHtml(state.date_period_note)}"
+          placeholder="Örn: Temmuz ortası, 1 hafta">
+      </label>
+      <fieldset class="vacation-flex-fieldset">
+        <legend>Tarih esnekliği</legend>
+        <div class="vacation-flex-options">
+          ${STEP_OPTIONS.dateFlexibility
+            .map(
+              (opt) => `
+            <label class="vacation-flex-option">
+              <input type="radio" name="date_flexibility" value="${escapeHtml(opt.value)}"
+                ${state.date_flexibility === opt.value ? 'checked' : ''}>
+              <span>${escapeHtml(opt.label)}</span>
+            </label>
+          `
+            )
+            .join('')}
+        </div>
+      </fieldset>
     </div>
   `;
 }
@@ -125,36 +265,12 @@ function renderWizard() {
   const step = currentStep();
   let body = '';
 
-  if (step.id === 'goal') {
-    body = renderOptionCards('goal');
-  } else if (step.id === 'budget') {
-    body = renderOptionCards('budget');
-  } else if (step.id === 'people') {
-    body = renderOptionCards('people');
-  } else if (step.id === 'type') {
-    body = renderOptionCards('type');
-  } else if (step.id === 'date') {
-    body = `
-      <div class="vacation-date-fields">
-        <label class="vacation-field">
-          <span>Tarih aralığı</span>
-          <input type="date" id="vacation-date-start" value="${escapeHtml(state.date_range.split('–')[0]?.trim() || '')}">
-        </label>
-        <label class="vacation-field">
-          <span>Süre</span>
-          <select id="vacation-duration">
-            <option value="">Seçin</option>
-            ${STEP_OPTIONS.duration
-              .map(
-                (d) =>
-                  `<option value="${escapeHtml(d.value)}" ${state.duration === d.value ? 'selected' : ''}>${escapeHtml(d.label)}</option>`
-              )
-              .join('')}
-          </select>
-        </label>
-      </div>
-    `;
-  } else if (step.id === 'note') {
+  if (step.id === 'goal') body = renderGoalCards();
+  else if (step.id === 'budget') body = renderBudgetStep();
+  else if (step.id === 'people') body = renderPeopleStep();
+  else if (step.id === 'type') body = renderTypeStep();
+  else if (step.id === 'date') body = renderDateStep();
+  else if (step.id === 'note') {
     body = `
       <textarea id="vacation-user-note" class="vacation-note-input" rows="4"
         placeholder="Çocukla rahat olsun, çok yorucu olmasın, bütçe aşılmasın.">${escapeHtml(state.user_note)}</textarea>
@@ -164,43 +280,124 @@ function renderWizard() {
   mount.innerHTML = `
     <div class="vacation-wizard-card">
       <h2>${escapeHtml(step.title)}</h2>
+      ${step.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(step.subtitle)}</p>` : ''}
       ${body}
       <div class="vacation-wizard-actions">
         ${state.stepIndex > 0 ? '<button type="button" class="btn btn-ghost" id="vacation-back">Geri</button>' : ''}
         <button type="button" class="btn btn-primary" id="vacation-next" ${canAdvance() ? '' : 'disabled'}>
-          ${step.id === 'note' ? 'Sonuçları gör' : 'Devam et →'}
+          ${step.id === 'note' ? 'Kişiselleştirilmiş önerileri gör' : 'Devam et →'}
         </button>
       </div>
     </div>
   `;
 
   bindWizardEvents();
+  updateDateHint();
   renderProgress();
   renderAiPanel();
 }
 
+function updateDateHint() {
+  const hint = $('#vacation-date-duration-hint');
+  if (!hint) return;
+  if (state.date_start && state.date_end) {
+    const end = new Date(state.date_end);
+    const start = new Date(state.date_start);
+    if (end < start) {
+      hint.hidden = false;
+      hint.textContent = 'Bitiş tarihi başlangıçtan önce olamaz.';
+      hint.classList.add('is-error');
+      return;
+    }
+    hint.classList.remove('is-error');
+    const nights = Math.round((end - start) / (86400000));
+    if (nights > 0) {
+      hint.hidden = false;
+      hint.textContent = `Tahmini süre: ${nights} gece (${nights + 1} gün).`;
+    } else {
+      hint.hidden = true;
+    }
+  } else {
+    hint.hidden = true;
+  }
+}
+
+function refreshNextButton() {
+  const next = $('#vacation-next');
+  if (next) next.disabled = !canAdvance();
+}
+
 function bindWizardEvents() {
-  document.querySelectorAll('.vacation-option-card').forEach((btn) => {
+  document.querySelectorAll('[data-field]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const field = btn.dataset.field;
       const value = btn.dataset.value;
       state[field] = value;
+      if (field === 'budget_range' && value !== 'manuel') {
+        state.budget_manual = null;
+      }
+      if (field === 'people_type' && value !== 'cocuklu-aile') {
+        state.children_count = '';
+        state.children_ages = '';
+      }
       renderWizard();
     });
   });
 
-  $('#vacation-date-start')?.addEventListener('change', (e) => {
-    state.date_range = e.target.value;
-    const next = $('#vacation-next');
-    if (next) next.disabled = !canAdvance();
+  const manualInput = $('#vacation-budget-manual');
+  manualInput?.addEventListener('input', (e) => {
+    state.budget_manual = parseManualBudget(e.target.value);
+    e.target.value = state.budget_manual ? formatTry(state.budget_manual) : e.target.value;
+    refreshNextButton();
     renderAiPanel();
   });
 
-  $('#vacation-duration')?.addEventListener('change', (e) => {
-    state.duration = e.target.value;
-    const next = $('#vacation-next');
-    if (next) next.disabled = !canAdvance();
+  $('#vacation-children-count')?.addEventListener('input', (e) => {
+    state.children_count = e.target.value;
+    refreshNextButton();
     renderAiPanel();
+  });
+
+  $('#vacation-children-ages')?.addEventListener('input', (e) => {
+    state.children_ages = e.target.value;
+    refreshNextButton();
+    renderAiPanel();
+  });
+
+  $('#vacation-date-start')?.addEventListener('change', (e) => {
+    state.date_start = e.target.value;
+    const endInput = $('#vacation-date-end');
+    if (endInput) endInput.min = state.date_start;
+    if (state.date_end && state.date_end < state.date_start) {
+      state.date_end = '';
+      if (endInput) endInput.value = '';
+    }
+    updateDateHint();
+    refreshNextButton();
+    renderAiPanel();
+  });
+
+  $('#vacation-date-end')?.addEventListener('change', (e) => {
+    state.date_end = e.target.value;
+    updateDateHint();
+    refreshNextButton();
+    renderAiPanel();
+  });
+
+  $('#vacation-date-period')?.addEventListener('input', (e) => {
+    state.date_period_note = e.target.value;
+    refreshNextButton();
+    renderAiPanel();
+  });
+
+  document.querySelectorAll('input[name="date_flexibility"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      if (radio.checked) {
+        state.date_flexibility = radio.value;
+        refreshNextButton();
+        renderAiPanel();
+      }
+    });
   });
 
   $('#vacation-user-note')?.addEventListener('input', (e) => {
@@ -221,6 +418,7 @@ function bindWizardEvents() {
     if (step?.id === 'note') {
       state.user_note = $('#vacation-user-note')?.value?.trim() || '';
     }
+    syncDerivedState(state);
     await trackVacationEvent('vacation_step_completed', {
       step: step?.id,
       step_index: state.stepIndex
@@ -235,8 +433,8 @@ function bindWizardEvents() {
 }
 
 async function showResults() {
+  syncDerivedState(state);
   state.results = buildResults(state, state.scenarios);
-  resultsRendered = true;
   renderWizard();
   renderResults();
   await trackVacationEvent('vacation_results_view', {
@@ -257,8 +455,8 @@ function renderResults() {
 
   section.innerHTML = `
     <div class="vacation-results-header">
-      <h2>Size özel öneriler</h2>
-      <p>Tahmini skor ve maliyet aralıkları — kesin fiyat taahhüdü değildir.</p>
+      <h2>Kişiselleştirilmiş tatil önerileri</h2>
+      <p>Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin fiyat taahhüdü değildir.</p>
     </div>
     <div class="vacation-result-cards">
       ${state.results
@@ -267,19 +465,29 @@ function renderResults() {
         <article class="vacation-result-card ${r.badge.className}">
           <div class="vacation-result-badge">${escapeHtml(r.badge.label)}</div>
           <div class="vacation-result-score" aria-label="Karar skoru">${r.score}<span>/100</span></div>
-          <img src="${escapeHtml(r.image_url)}" alt="" loading="lazy" width="400" height="220">
+          <div class="vacation-result-visual" role="img" aria-label=""></div>
           <h3>${escapeHtml(r.title)}</h3>
           <p>${escapeHtml(r.description)}</p>
+          ${
+            r.tags?.length
+              ? `<div class="vacation-result-tags">${r.tags.map((t) => `<span class="vacation-tag ${t.className}">${escapeHtml(t.text)}</span>`).join('')}</div>`
+              : ''
+          }
           <ul class="vacation-result-meta">
             <li><strong>Tahmini maliyet:</strong> ${escapeHtml(r.estimatedCost)}</li>
-            <li><strong>Kime uygun:</strong> ${escapeHtml(r.audience)}</li>
+            <li><strong>Uygunluk:</strong> ${escapeHtml(r.suitability)}</li>
+            <li><strong>Kimler için uygun?</strong> ${escapeHtml(r.audience)}</li>
           </ul>
+          <div class="vacation-result-why">
+            <strong>Neden önerildi?</strong>
+            <p>${escapeHtml(r.why)}</p>
+          </div>
           <div class="vacation-result-pros">
             <strong>Artılar</strong>
             <ul>${r.pros.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul>
           </div>
           <div class="vacation-result-cautions">
-            <strong>Dikkat</strong>
+            <strong>Dikkat edilmesi gerekenler</strong>
             <ul>${r.cautions.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul>
           </div>
           <button type="button" class="btn btn-outline btn-sm vacation-detail-btn" data-option="${escapeHtml(r.id)}">
@@ -292,8 +500,8 @@ function renderResults() {
     </div>
 
     <div class="vacation-ai-comment" id="vacation-ai-comment">
-      <h3>Yapay zekâ yorumu</h3>
-      <p>${escapeHtml(commentary.summary)}</p>
+      <h3>Yapay Zekâ Karar Yorumu</h3>
+      <p class="vacation-ai-lead">${escapeHtml(commentary.summary)}</p>
       <ul>${commentary.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>
       <p class="vacation-ai-caution">⚠ ${escapeHtml(commentary.caution)}</p>
     </div>
@@ -334,7 +542,7 @@ function bindResultsEvents(commentary) {
       const card = state.results.find((r) => r.id === id);
       if (card) {
         alert(
-          `${card.title}\n\nKarar skoru: ${card.score}/100\nTahmini maliyet: ${card.estimatedCost}\n\n${card.description}`
+          `${card.title}\n\nKarar skoru: ${card.score}/100\nTahmini maliyet: ${card.estimatedCost}\n\n${card.why}\n\n${card.description}`
         );
       }
     });
@@ -362,23 +570,43 @@ function regenerateVariant(mode) {
   trackVacationEvent('vacation_option_selected', { variant: mode });
 }
 
+function buildLeadNote() {
+  const parts = [state.user_note].filter(Boolean);
+  if (state.people_type === 'cocuklu-aile') {
+    const c = [];
+    if (state.children_count) c.push(`çocuk sayısı: ${state.children_count}`);
+    if (state.children_ages) c.push(`yaşlar: ${state.children_ages}`);
+    if (c.length) parts.push(c.join(', '));
+  }
+  if (state.date_flexibility) {
+    parts.push(`esneklik: ${state.date_flexibility}`);
+  }
+  return parts.join(' | ');
+}
+
 async function submitLead(source, commentary) {
+  syncDerivedState(state);
   const full_name = $('#vacation-lead-name')?.value?.trim() || '';
   const phone = $('#vacation-lead-phone')?.value?.trim() || '';
   const email = $('#vacation-lead-email')?.value?.trim() || '';
   const selected = state.selected_option || state.results[0]?.id || '';
+
+  const budgetPayload =
+    state.budget_range === 'manuel' && state.budget_manual
+      ? `manuel:${state.budget_manual}`
+      : state.budget_range;
 
   const payload = {
     full_name,
     phone,
     email,
     vacation_goal: state.vacation_goal,
-    budget_range: state.budget_range,
+    budget_range: budgetPayload,
     people_type: state.people_type,
     vacation_type: state.vacation_type,
     date_range: state.date_range,
     duration: state.duration,
-    user_note: state.user_note,
+    user_note: buildLeadNote(),
     selected_option: selected,
     decision_score: state.results[0]?.score || null,
     estimated_cost_range: state.results[0]?.estimatedCost || '',
@@ -415,6 +643,9 @@ function scrollToWizard() {
 }
 
 async function init() {
+  const [settings, scenarios] = await Promise.all([loadVacationSettings(), loadActiveScenarios()]);
+  if (settings) state.settings = { ...DEFAULT_SETTINGS, ...settings };
+
   if (state.settings.vacation_enabled === 'false') {
     const main = document.querySelector('.vacation-main');
     if (main) {
@@ -424,8 +655,6 @@ async function init() {
     return;
   }
 
-  const [settings, scenarios] = await Promise.all([loadVacationSettings(), loadActiveScenarios()]);
-  if (settings) state.settings = { ...DEFAULT_SETTINGS, ...settings };
   if (scenarios.length) state.scenarios = scenarios;
 
   setupMobileNav();

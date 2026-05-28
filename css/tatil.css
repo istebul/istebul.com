@@ -73,17 +73,62 @@ body.vacation-page {
 
 .vacation-hero {
   position: relative;
-  min-height: 420px;
+  isolation: isolate;
+  min-height: clamp(380px, 52vh, 520px);
+  aspect-ratio: 21 / 9;
+  max-height: 560px;
   display: grid;
   align-items: end;
   padding: 48px 24px 56px;
-  background:
-    linear-gradient(105deg, rgba(15, 23, 42, 0.72) 0%, rgba(29, 78, 216, 0.45) 55%, rgba(14, 165, 233, 0.25) 100%),
-    url('/assets/images/placeholder.svg') center/cover no-repeat;
+  overflow: hidden;
   color: #fff;
+  background:
+    linear-gradient(145deg, #0c4a6e 0%, #1e3a5f 35%, #0f766e 70%, #164e63 100%);
+}
+
+.vacation-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.vacation-hero-media picture,
+.vacation-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  opacity: 0.35;
+}
+
+.vacation-hero-media img {
+  /* Fallback if image fails: gradient still visible */
+  background: transparent;
+}
+
+.vacation-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(105deg, rgba(8, 18, 36, 0.82) 0%, rgba(15, 45, 90, 0.55) 45%, rgba(8, 47, 73, 0.4) 100%),
+    linear-gradient(0deg, rgba(8, 18, 36, 0.75) 0%, transparent 55%);
+}
+
+.vacation-hero-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 20%, rgba(56, 189, 248, 0.22), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(16, 185, 129, 0.15), transparent 50%);
 }
 
 .vacation-hero-inner {
+  position: relative;
+  z-index: 2;
   max-width: 1120px;
   margin: 0 auto;
   width: 100%;
@@ -238,8 +283,16 @@ body.vacation-page {
 }
 
 .vacation-wizard-card h2 {
-  margin: 0 0 20px;
+  margin: 0 0 8px;
   font-size: 1.35rem;
+}
+
+.vacation-step-subtitle {
+  margin: 0 0 20px;
+  color: var(--vacation-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  max-width: 52ch;
 }
 
 .vacation-option-grid {
@@ -273,8 +326,176 @@ body.vacation-page {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
+.vacation-option-card-title {
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.vacation-option-card-desc {
+  font-size: 0.78rem;
+  color: var(--vacation-muted);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.vacation-option-card--rich {
+  align-items: flex-start;
+  text-align: left;
+  padding: 14px 16px;
+}
+
+.vacation-option-grid--rich {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.vacation-option-grid--type {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
 .vacation-option-icon {
   font-size: 1.5rem;
+}
+
+.vacation-budget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.vacation-budget-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 18px 16px;
+  border: 2px solid var(--vacation-border);
+  border-radius: var(--vacation-radius);
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.vacation-budget-card:hover {
+  border-color: #93c5fd;
+}
+
+.vacation-budget-card.is-selected {
+  border-color: var(--vacation-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+.vacation-budget-card-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.vacation-budget-card-desc {
+  font-size: 0.85rem;
+  color: var(--vacation-muted);
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+
+.vacation-budget-card-range {
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--vacation-blue);
+}
+
+.vacation-budget-card-hint {
+  font-size: 0.75rem;
+  color: var(--vacation-muted);
+  margin-top: 6px;
+}
+
+.vacation-manual-budget {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.vacation-manual-budget span {
+  font-size: 0.8rem;
+  color: var(--vacation-muted);
+  font-weight: 600;
+}
+
+.vacation-manual-budget input {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px 14px;
+  border: 1px solid var(--vacation-border);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 1rem;
+}
+
+.vacation-children-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--vacation-border);
+}
+
+.vacation-date-step {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vacation-date-fields--range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.vacation-field-hint {
+  font-size: 0.85rem;
+  color: var(--vacation-blue);
+  margin: 0;
+}
+
+.vacation-field-hint.is-error {
+  color: #b91c1c;
+}
+
+.vacation-flex-fieldset {
+  border: 1px solid var(--vacation-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 0;
+}
+
+.vacation-flex-fieldset legend {
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--vacation-muted);
+  padding: 0 6px;
+}
+
+.vacation-flex-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.vacation-flex-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.vacation-flex-option input {
+  accent-color: var(--vacation-blue);
 }
 
 .vacation-date-fields {
@@ -382,11 +603,59 @@ body.vacation-page {
   padding-bottom: 16px;
 }
 
-.vacation-result-card img {
+.vacation-result-visual {
   width: 100%;
   height: 140px;
-  object-fit: cover;
   display: block;
+  background:
+    linear-gradient(135deg, rgba(29, 78, 216, 0.25), rgba(14, 165, 233, 0.35)),
+    url('/assets/images/placeholder.svg') center/cover no-repeat;
+}
+
+.vacation-result-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 16px 8px;
+}
+
+.vacation-tag {
+  font-size: 0.7rem;
+  font-weight: 650;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.vacation-tag.tag-budget {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.vacation-tag.tag-family {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.vacation-tag.tag-access {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.vacation-result-why {
+  padding: 0 16px 12px;
+  font-size: 0.88rem;
+}
+
+.vacation-result-why p {
+  margin: 4px 0 0;
+  color: var(--vacation-muted);
+}
+
+.vacation-ai-lead {
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .vacation-result-badge {
@@ -559,14 +828,28 @@ body.vacation-page {
   border: 0;
 }
 
+.hidden {
+  display: none !important;
+}
+
 @media (max-width: 960px) {
+  .vacation-hero {
+    aspect-ratio: auto;
+    min-height: 360px;
+    max-height: none;
+  }
+
   .vacation-layout {
     grid-template-columns: 1fr;
   }
 
   .vacation-aside {
-    order: -1;
+    order: 2;
     position: static;
+  }
+
+  .vacation-flow-main {
+    order: 1;
   }
 
   .vacation-result-cards {
@@ -579,6 +862,15 @@ body.vacation-page {
 }
 
 @media (max-width: 720px) {
+  .vacation-hero {
+    min-height: 320px;
+    padding: 32px 16px 40px;
+  }
+
+  .vacation-hero h1 {
+    max-width: none;
+  }
+
   .vacation-nav-toggle {
     display: inline-flex;
   }
@@ -604,11 +896,29 @@ body.vacation-page {
     position: relative;
   }
 
-  .vacation-date-fields {
+  .vacation-date-fields,
+  .vacation-date-fields--range,
+  .vacation-children-fields {
     grid-template-columns: 1fr;
   }
 
-  .vacation-option-grid {
-    grid-template-columns: 1fr 1fr;
+  .vacation-budget-grid,
+  .vacation-option-grid,
+  .vacation-option-grid--rich,
+  .vacation-option-grid--type {
+    grid-template-columns: 1fr;
+  }
+
+  .vacation-manual-budget input {
+    max-width: none;
+  }
+
+  .vacation-flex-options {
+    grid-template-columns: 1fr;
+  }
+
+  .vacation-header {
+    flex-wrap: wrap;
+    position: relative;
   }
 }

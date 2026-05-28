@@ -1,10 +1,53 @@
 export const VACATION_STEPS = [
   { id: 'goal', label: 'Amaç', title: 'Tatil amacınız nedir?' },
-  { id: 'budget', label: 'Bütçe', title: 'Tahmini tatil bütçeniz?' },
-  { id: 'people', label: 'Kişi', title: 'Kimlerle seyahat edeceksiniz?' },
-  { id: 'type', label: 'Tip', title: 'Tatil tipiniz hangisine yakın?' },
-  { id: 'date', label: 'Tarih', title: 'Tarih ve süre' },
-  { id: 'note', label: 'Not', title: 'Ek notlarınız' }
+  { id: 'budget', label: 'Bütçe', title: 'Tatil bütçenizi nasıl planlıyorsunuz?' },
+  {
+    id: 'people',
+    label: 'Kişi',
+    title: 'Kimlerle seyahat edeceksiniz?',
+    subtitle: 'Grup yapınıza göre konaklama ve ulaşım önerileri özelleştirilir.'
+  },
+  {
+    id: 'type',
+    label: 'Deneyim',
+    title: 'Nasıl bir tatil deneyimi arıyorsunuz?',
+    subtitle:
+      'Konaklama, aktivite yoğunluğu ve beklentinize göre en uygun tatil modelini seçin.'
+  },
+  {
+    id: 'date',
+    label: 'Tarih',
+    title: 'Seyahat tarihlerinizi belirleyin',
+    subtitle: 'Net tarih girebilir veya yaklaşık dönem ile esneklik belirtebilirsiniz.'
+  },
+  {
+    id: 'note',
+    label: 'Beklenti',
+    title: 'Özel beklentileriniz',
+    subtitle: 'Sağlık, tempo, erişilebilirlik veya bütçe hassasiyetlerinizi paylaşın.'
+  }
+];
+
+export const BUDGET_PLANS = [
+  {
+    value: 'ekonomik',
+    label: 'Ekonomik Plan',
+    description: 'Temel ihtiyaçları karşılayan, maliyet odaklı tatil.',
+    range: '0 – 50.000 TL'
+  },
+  {
+    value: 'dengeli',
+    label: 'Dengeli Plan',
+    description: 'Konfor ve bütçe dengesini koruyan tatil.',
+    range: '50.000 – 120.000 TL'
+  },
+  {
+    value: 'manuel',
+    label: 'Manuel Bütçe',
+    description: 'Kendi hedef bütçenizi girin.',
+    range: null,
+    manual: true
+  }
 ];
 
 export const STEP_OPTIONS = {
@@ -16,31 +59,85 @@ export const STEP_OPTIONS = {
     { value: 'yurtdisi', label: 'Yurt Dışı', icon: '✈️' },
     { value: 'kacamak', label: 'Kısa Kaçamak', icon: '⏱️' }
   ],
-  budget: [
-    { value: '0-30K', label: '0 – 30.000 ₺' },
-    { value: '30-60K', label: '30.000 – 60.000 ₺' },
-    { value: '60-100K', label: '60.000 – 100.000 ₺' },
-    { value: '100K+', label: '100.000 ₺ ve üzeri' }
-  ],
   people: [
-    { value: 'tek', label: 'Tek kişi' },
-    { value: 'cift', label: 'Çift' },
-    { value: 'aile', label: 'Aile' },
-    { value: 'cocuklu-aile', label: 'Çocuklu aile' }
+    {
+      value: 'tek',
+      label: 'Tek başıma',
+      description: 'Esnek tempo; bireysel konfor ve ulaşım önceliği.'
+    },
+    {
+      value: 'cift',
+      label: 'Çift olarak',
+      description: 'Romantik veya sakin çift tatili; ortak bütçe planı.'
+    },
+    {
+      value: 'aile',
+      label: 'Aile ile',
+      description: 'Yetişkin aile üyeleri; çocuksuz veya çocuklar ayrı planlanmış.'
+    },
+    {
+      value: 'arkadas',
+      label: 'Arkadaş grubuyla',
+      description: 'Paylaşımlı konaklama ve aktivite odaklı plan.'
+    },
+    {
+      value: 'cocuklu-aile',
+      label: 'Çocuklu aile',
+      description: 'Çocuk güvenliği, aktivite ve oda düzeni öncelikli.'
+    },
+    {
+      value: 'yasli-aile',
+      label: 'Yaşlı aile bireyiyle',
+      description: 'Erişilebilirlik, sağlık ve düşük tempo öncelikli.'
+    }
   ],
   type: [
-    { value: 'deniz', label: 'Deniz' },
-    { value: 'doga', label: 'Doğa' },
-    { value: 'sehir', label: 'Şehir' },
-    { value: 'kultur', label: 'Kültür' },
-    { value: 'her-sey-dahil', label: 'Her şey dahil' },
-    { value: 'villa', label: 'Villa / butik' }
+    {
+      value: 'deniz-resort',
+      label: 'Deniz ve resort tatili',
+      description: 'Sahil, havuz ve paket konforu; aileler için yaygın model.'
+    },
+    {
+      value: 'doga',
+      label: 'Doğa ve sakinlik',
+      description: 'Yayla, orman veya sakin koy; düşük tempo.'
+    },
+    {
+      value: 'kultur-sehir',
+      label: 'Kültür ve şehir keşfi',
+      description: 'Müze, gastronomi ve şehir merkezi konaklama.'
+    },
+    {
+      value: 'luks',
+      label: 'Lüks ve özel deneyim',
+      description: 'Butik hizmet, özel transfer ve yüksek konfor beklentisi.'
+    },
+    {
+      value: 'cocuk-dostu',
+      label: 'Çocuk dostu otel',
+      description: 'Kulüp, animasyon ve aile odası profili.'
+    },
+    {
+      value: 'ekonomik-kacamak',
+      label: 'Ekonomik kaçamak',
+      description: 'Kısa süre, maliyet kontrollü kaçamak.'
+    },
+    {
+      value: 'vizesiz-yurtdisi',
+      label: 'Vizesiz yurt dışı',
+      description: 'Yakın ülke veya vizesiz destinasyon odaklı plan.'
+    },
+    {
+      value: 'villa-butik',
+      label: 'Villa / butik konaklama',
+      description: 'Mahremiyet ve özel alan; grup veya çift için.'
+    }
   ],
-  duration: [
-    { value: '2-3', label: '2–3 gece' },
-    { value: '4-6', label: '4–6 gece' },
-    { value: '7-10', label: '7–10 gece' },
-    { value: '10+', label: '10+ gece' }
+  dateFlexibility: [
+    { value: 'net', label: 'Net tarihlerim var' },
+    { value: '1-2-days', label: '1–2 gün esneyebilir' },
+    { value: '1-week', label: '1 hafta esneyebilir' },
+    { value: 'undecided', label: 'Henüz karar vermedim' }
   ]
 };
 
