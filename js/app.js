@@ -28,6 +28,7 @@ import {
     trackUpsellClick
 } from './features/monetization/upsell-engine.js';
 import { initEnterpriseUx } from './runtime/enterprise-ux.js';
+import { initHomeCategories } from './runtime/home-categories.js';
 import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
 import { revenueManager } from './features/monetization/revenue-manager.js';
@@ -135,6 +136,7 @@ class App {
     async init() {
         try {
             initEnterpriseUx();
+            initHomeCategories();
 
             const deferNonCritical = (work, timeout = 1200) => {
                 if ('requestIdleCallback' in window) {

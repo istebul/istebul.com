@@ -203,6 +203,38 @@ export function buildResults(state, scenarios = []) {
   ];
 }
 
+export function buildResultsSummary(state, results = []) {
+  const cost = estimateCostRange(state);
+  const top = results[0];
+  const fitScore = top?.score ?? baseScore(state);
+
+  let familyFit = 'Seyahat grubunuza uygun konaklama ve tempo profili';
+  if (state.people_type === 'cocuklu-aile') {
+    familyFit = 'Çocuklu aile — aktivite ve konaklama uygunluğu öncelikli';
+  } else if (state.people_type === 'yasli-aile') {
+    familyFit = 'Yaşlı bireyle seyahat — erişilebilirlik ve düşük tempo';
+  } else if (state.people_type === 'cift') {
+    familyFit = 'Çiftler için konfor ve mahremiyet odaklı profil';
+  }
+
+  let seasonRisk = 'Sezon ve doluluk fiyat bandını etkileyebilir';
+  if (state.date_flexibility === 'undecided') {
+    seasonRisk = 'Tarih esnek — sezon/doluluk riski orta-yüksek';
+  } else if (state.date_start && state.date_end) {
+    seasonRisk = 'Net tarih — sezon riski daha öngörülebilir';
+  } else if (state.date_period_note) {
+    seasonRisk = `Dönem notu: ${state.date_period_note.slice(0, 48)}`;
+  }
+
+  return {
+    totalCostLabel: cost.label,
+    fitScore,
+    seasonRisk,
+    familyFit,
+    topTitle: top?.title || 'Önerilen profil'
+  };
+}
+
 export function buildAiCommentary(state, results) {
   const goal = labelForGoal(state.vacation_goal);
   const people = labelForPeople(state.people_type);

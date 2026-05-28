@@ -5,7 +5,13 @@ import {
   loadVacationSettings,
   loadActiveScenarios
 } from './tatil-intake.js';
-import { buildResults, buildAiCommentary, getProgressSummary, syncDerivedState } from './tatil-engine.js';
+import {
+  buildResults,
+  buildAiCommentary,
+  buildResultsSummary,
+  getProgressSummary,
+  syncDerivedState
+} from './tatil-engine.js';
 import { parseManualBudget, formatTry } from './tatil-utils.js';
 
 const state = {
@@ -449,6 +455,7 @@ function renderResults() {
   section.hidden = false;
 
   const commentary = buildAiCommentary(state, state.results);
+  const summary = buildResultsSummary(state, state.results);
   const disclaimer =
     state.settings.vacation_disclaimer_text || DEFAULT_SETTINGS.vacation_disclaimer_text;
   const partnerEnabled = state.settings.vacation_partner_cta_enabled === 'true';
@@ -458,6 +465,25 @@ function renderResults() {
       <h2>Kişiselleştirilmiş tatil önerileri</h2>
       <p>Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin fiyat taahhüdü değildir.</p>
     </div>
+    <div class="vacation-results-summary" aria-label="Özet karar metrikleri">
+      <article class="vacation-summary-card">
+        <span>Toplam tatil maliyeti</span>
+        <strong>${escapeHtml(summary.totalCostLabel)}</strong>
+      </article>
+      <article class="vacation-summary-card">
+        <span>Uygunluk skoru</span>
+        <strong>${escapeHtml(String(summary.fitScore))}<small>/100</small></strong>
+      </article>
+      <article class="vacation-summary-card">
+        <span>Sezon / risk</span>
+        <strong>${escapeHtml(summary.seasonRisk)}</strong>
+      </article>
+      <article class="vacation-summary-card">
+        <span>Aile uygunluğu</span>
+        <strong>${escapeHtml(summary.familyFit)}</strong>
+      </article>
+    </div>
+    <p class="vacation-results-top-pick">Öne çıkan: <strong>${escapeHtml(summary.topTitle)}</strong></p>
     <div class="vacation-result-cards">
       ${state.results
         .map(
