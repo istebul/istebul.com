@@ -109,6 +109,7 @@ export class AccountManager {
         }
     }
 
+    /** Dashboard panels expose role="tabpanel"; tab buttons use role="tab". */
     setTab(tabId) {
         this.activeTab = tabId;
         const section = document.getElementById('profil');
@@ -117,6 +118,7 @@ export class AccountManager {
         section.querySelectorAll('[data-dashboard-tab]').forEach((btn) => {
             const isActive = btn.dataset.dashboardTab === tabId;
             btn.classList.toggle('is-active', isActive);
+            btn.setAttribute('role', 'tab');
             btn.setAttribute('aria-selected', String(isActive));
         });
 
@@ -132,6 +134,7 @@ export class AccountManager {
 
         section.querySelectorAll('[data-dashboard-panel]').forEach((panel) => {
             const isActive = panel.dataset.dashboardPanel === tabId;
+            panel.setAttribute('role', 'tabpanel');
             panel.hidden = !isActive;
             panel.classList.toggle('is-active', isActive);
             if (isActive) panel.removeAttribute('tabindex');

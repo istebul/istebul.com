@@ -46,6 +46,12 @@
 /tatil/ /tatil/index.html 200
 /finans /finans/index.html 200
 /finans/ /finans/index.html 200
+/sigorta /sigorta/ 301
+/sigorta/ /sigorta/index.html 200
+/sigorta/* /sigorta/index.html 200
+/kasko /kasko/ 301
+/kasko/ /kasko/index.html 200
+/kasko/* /kasko/index.html 200
 
 # --- Locale shells (marketing SPA) ---
 /en /index.html 200
