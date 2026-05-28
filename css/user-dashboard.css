@@ -112,16 +112,18 @@
   gap: 1rem;
 }
 
-.ud-main-header h1 {
+.user-dashboard-shell .ud-main-header h1 {
   margin: 0;
-  color: #f8fafc;
+  color: #f8fafc !important;
   font-size: clamp(1.15rem, 2.2vw, 1.8rem);
+  text-wrap: balance;
 }
 
-.ud-main-header p {
+.user-dashboard-shell .ud-main-header p {
   margin: 0.45rem 0 0;
-  color: #93c5fd;
+  color: #bfdbfe !important;
   font-size: 0.92rem;
+  max-width: none;
 }
 
 .ud-summary-grid {
@@ -157,23 +159,39 @@
   margin: 0.22rem 0;
 }
 
+.ud-panels-host {
+  display: grid;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
 .ud-content-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.9fr);
   gap: 0.9rem;
 }
 
+.ud-primary-column {
+  min-width: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
 .ud-panel,
 .ud-side-card,
-.ud-panel-extra {
+.ud-tab-panel {
   border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.22);
   background: rgba(15, 23, 42, 0.67);
   padding: 0.85rem;
 }
 
-.ud-panel-extra {
-  margin-top: 0.75rem;
+.ud-tab-panel[hidden] {
+  display: none !important;
+}
+
+.ud-panel[hidden] {
+  display: none !important;
 }
 
 .ud-block + .ud-block {
@@ -391,6 +409,101 @@
   margin: 0.55rem 0 0;
   font-size: 0.72rem;
   color: #94a3b8;
+}
+
+.user-dashboard-shell .account-panel-head h2 {
+  margin: 0 0 0.25rem;
+  color: #f8fafc;
+  font-size: 1.1rem;
+}
+
+.user-dashboard-shell .account-panel-head p {
+  margin: 0 0 0.85rem;
+  color: #93c5fd;
+  max-width: none;
+}
+
+.user-dashboard-shell .account-settings-form label {
+  color: #cbd5e1;
+  font-size: 0.82rem;
+}
+
+.user-dashboard-shell .account-settings-form input,
+.user-dashboard-shell .account-settings-form textarea,
+.user-dashboard-shell .account-settings-form select,
+.user-dashboard-shell #account-notification-preference-inline {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.85);
+  color: #f8fafc;
+  padding: 0.65rem 0.75rem;
+}
+
+.user-dashboard-shell .account-settings-form input::placeholder,
+.user-dashboard-shell .account-settings-form textarea::placeholder {
+  color: #64748b;
+}
+
+.user-dashboard-shell .account-security-list li {
+  border-color: rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.user-dashboard-shell .account-security-list strong {
+  color: #f8fafc;
+}
+
+.user-dashboard-shell .account-security-list p {
+  color: #94a3b8;
+  max-width: none;
+}
+
+.ud-comparison-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.ud-comparison-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.ud-comparison-item strong {
+  color: #f8fafc;
+  display: block;
+}
+
+.ud-comparison-item p {
+  margin: 0.2rem 0 0;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  max-width: none;
+}
+
+.ud-notification-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+#profil.profil-has-dashboard > .container > .section-header {
+  display: none;
+}
+
+#profil.profil-has-dashboard > .container {
+  max-width: min(1280px, 96vw);
 }
 
 @media (max-width: 1100px) {

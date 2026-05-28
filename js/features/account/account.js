@@ -7,6 +7,9 @@ import { renderUserDashboard } from '../profil/user-dashboard.js';
 import { mapHistoryRecordToResult } from '../../ui/components/user-result-card.js';
 
 const ONBOARDING_KEY = STORAGE_KEYS.ACCOUNT_ONBOARDING_DONE;
+const NOTIFICATION_PREF_KEY = 'istebul_notification_preference';
+
+const MAIN_DASHBOARD_TABS = ['overview', 'analyses', 'favorites'];
 
 const SUBSCRIPTION_LABELS = {
     active: { label: 'Aktif', tone: 'success' },
@@ -117,6 +120,16 @@ export class AccountManager {
             btn.setAttribute('aria-selected', String(isActive));
         });
 
+        section.querySelectorAll('[data-dashboard-overview]').forEach((el) => {
+            const part = el.dataset.dashboardOverview;
+            let visible = false;
+            if (part === 'header') visible = true;
+            if (part === 'summary') visible = tabId === 'overview';
+            if (part === 'grid') visible = MAIN_DASHBOARD_TABS.includes(tabId);
+            if (part === 'side') visible = tabId === 'overview';
+            el.hidden = !visible;
+        });
+
         section.querySelectorAll('[data-dashboard-panel]').forEach((panel) => {
             const isActive = panel.dataset.dashboardPanel === tabId;
             panel.hidden = !isActive;
@@ -188,6 +201,14 @@ export class AccountManager {
                 this.ui?.showSuccess?.('Favori karşılaştırma listesine eklendi.');
             }
 
+            const removeComparisonBtn = event.target.closest('[data-comparison-remove]');
+            if (removeComparisonBtn?.dataset.comparisonRemove) {
+                event.preventDefault();
+                app.removeComparisonItem?.(removeComparisonBtn.dataset.comparisonRemove);
+                this.refresh(this.auth?.getCurrentUser?.());
+                return;
+            }
+
             if (event.target.closest('#account-resend-verify')) {
                 event.preventDefault();
                 this.resendVerification(app);
@@ -196,6 +217,25 @@ export class AccountManager {
         section.addEventListener('submit', (event) => {
             const settingsForm = event.target.closest('#account-settings-form');
             if (settingsForm) this.handleSettingsSubmit(event, app);
+        });
+
+        section.addEventListener('change', (event) => {
+            const pref = event.target.closest(
+                '#account-notification-preference, #account-notification-preference-inline'
+            );
+            if (!pref) return;
+            const user = app.currentUser;
+            if (!user?.id) return;
+            try {
+                localStorage.setItem(userScopedKey(NOTIFICATION_PREF_KEY, user.id), pref.value);
+            } catch {}
+            const other = section.querySelector(
+                pref.id === 'account-notification-preference'
+                    ? '#account-notification-preference-inline'
+                    : '#account-notification-preference'
+            );
+            if (other) other.value = pref.value;
+            this.ui?.showSuccess?.('Bildirim tercihi kaydedildi.');
         });
     }
 
@@ -286,6 +326,8 @@ export class AccountManager {
         const root = document.getElementById('account-root');
         if (!root) return;
 
+        document.getElementById('profil')?.classList.remove('profil-has-dashboard');
+
         root.innerHTML = `
             <div class="account-guest">
                 <div class="account-guest-copy">
@@ -347,109 +389,8 @@ export class AccountManager {
         const subMeta = SUBSCRIPTION_LABELS[sub?.status] || { label: 'Ücretsiz', tone: 'muted' };
         const hasPremium = ['active', 'trialing'].includes(sub?.status);
         const dashboardData = this.buildDashboardData(user, profile, subMeta, hasPremium, emailVerified);
-        root.innerHTML = `
-            ${renderUserDashboard(dashboardData)}
-            <section class="ud-panel-extra ${this.activeTab === 'comparisons' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="comparisons" ${this.activeTab === 'comparisons' ? '' : 'hidden'}>
-                <header class="account-panel-head">
-                    <h2>Karşılaştırmalarım</h2>
-                    <p>Kaydettiğiniz karşılaştırmaları tek merkezde yönetin.</p>
-                </header>
-                <p class="ud-empty-note">Karşılaştırma öğesi: ${dashboardData.comparisonsCount}</p>
-                <div class="account-quick-actions">
-                    <a href="/karsilastir" class="btn btn-primary">Karşılaştırma Merkezine Git</a>
-                    <a href="/auto/" class="btn btn-outline">Yeni analiz başlat</a>
-                </div>
-            </section>
-            <section class="ud-panel-extra ${this.activeTab === 'recommendations' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="recommendations" ${this.activeTab === 'recommendations' ? '' : 'hidden'}>
-                <header class="account-panel-head">
-                    <h2>AI Önerilerim</h2>
-                    <p>Kayıtlı analizlerinize göre bilgilendirme amaçlı öneriler.</p>
-                </header>
-                ${dashboardData.recommendations.length
-                  ? `<div class="ud-side-stack">${dashboardData.recommendations.map((item) => `<article class="ud-rec-item"><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.description)}</p></article>`).join('')}</div>`
-                  : '<p class="ud-empty-note">Henüz AI önerisi oluşturacak yeterli veri yok.</p>'}
-            </section>
-            <section class="ud-panel-extra ${this.activeTab === 'notifications' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="notifications" ${this.activeTab === 'notifications' ? '' : 'hidden'}>
-                <header class="account-panel-head">
-                    <h2>Bildirimler</h2>
-                    <p>Karar durum güncellemeleri ve sistem bildirimleri.</p>
-                </header>
-                <p class="ud-empty-note">Yeni bildirim yok. Analiz tamamlandığında veya favori durumu değiştiğinde burada listelenir.</p>
-            </section>
-            <section class="ud-panel-extra ${this.activeTab === 'settings' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="settings" ${this.activeTab === 'settings' ? '' : 'hidden'}>
-                <header class="account-panel-head">
-                    <h2>Profil Ayarları</h2>
-                    <p>Profil bilgileriniz ve bildirim tercihleriniz.</p>
-                </header>
-                <form id="account-settings-form" class="account-settings-form" data-enterprise-form>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="account-full-name">Ad Soyad</label>
-                            <input id="account-full-name" name="full_name" type="text" autocomplete="name" value="${escapeHtml(profile?.full_name || '')}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="account-phone">Telefon</label>
-                            <input id="account-phone" name="phone" type="tel" autocomplete="tel" value="${escapeHtml(profile?.phone || '')}">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="account-location">Konum</label>
-                            <input id="account-location" name="location" type="text" value="${escapeHtml(profile?.location || '')}" placeholder="İl / İlçe">
-                        </div>
-                        <div class="form-group">
-                            <label for="account-notification-preference">Bildirim tercihi</label>
-                            <select id="account-notification-preference" name="notification_preference">
-                                <option value="all">Tüm bildirimler</option>
-                                <option value="important">Sadece önemli bildirimler</option>
-                                <option value="none">Kapalı</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="account-bio">Kısa not</label>
-                        <textarea id="account-bio" name="bio" rows="3" maxlength="280" placeholder="İsteğe bağlı">${escapeHtml(profile?.bio || '')}</textarea>
-                    </div>
-                    <div class="account-quick-actions">
-                        <button type="submit" class="btn btn-primary">Değişiklikleri kaydet</button>
-                        <button type="button" class="btn btn-ghost" id="account-logout-btn">Çıkış yap</button>
-                    </div>
-                </form>
-            </section>
-            <section class="ud-panel-extra ${this.activeTab === 'security' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="security" ${this.activeTab === 'security' ? '' : 'hidden'}>
-                <header class="account-panel-head">
-                    <h2>Hesap Güvenliği</h2>
-                    <p>Şifre ve oturum güvenliği kontrolleri.</p>
-                </header>
-                <ul class="account-security-list">
-                    <li>
-                        <div>
-                            <strong>Şifre</strong>
-                            <p>Şifrenizi unuttuysanız güvenli sıfırlama bağlantısı alın.</p>
-                        </div>
-                        <button type="button" class="btn btn-outline btn-sm" id="account-reset-password">Şifre sıfırla</button>
-                    </li>
-                    <li>
-                        <div>
-                            <strong>E-posta doğrulaması</strong>
-                            <p>${emailVerified ? 'E-posta doğrulandı.' : 'E-posta doğrulaması bekleniyor.'}</p>
-                        </div>
-                        ${emailVerified ? '<span class="account-plan-badge tone-success">Doğrulandı</span>' : '<button type="button" class="btn btn-outline btn-sm" id="account-resend-verify">Doğrulama e-postasını gönder</button>'}
-                    </li>
-                </ul>
-            </section>
-            <section class="ud-panel-extra ${this.activeTab === 'help' ? 'is-active' : ''}" role="tabpanel" data-dashboard-panel="help" ${this.activeTab === 'help' ? '' : 'hidden'}>
-                <header class="account-panel-head">
-                    <h2>Yardım & Destek</h2>
-                    <p>Sık sorulan sorular ve destek kanalları.</p>
-                </header>
-                <div class="account-quick-actions">
-                    <a href="/#landing-faq" class="btn btn-outline" data-home-anchor="landing-faq">SSS</a>
-                    <a href="/iletisim.html" class="btn btn-outline">Destek Talebi</a>
-                    <a href="/metodoloji/" class="btn btn-outline">Metodoloji</a>
-                </div>
-            </section>
-        `;
+        document.getElementById('profil')?.classList.add('profil-has-dashboard');
+        root.innerHTML = renderUserDashboard(dashboardData);
 
         root.querySelector('#account-reset-password')?.addEventListener('click', () => {
             this.auth?.showForgotPasswordForm?.(user.email);
@@ -482,6 +423,7 @@ export class AccountManager {
         const history = this.readDecisionHistory(user.id);
         const favorites = this.readFavorites();
         const comparisons = this.readComparisons();
+        const notificationPreference = this.readNotificationPreference(user.id);
         const ongoingCards = this.buildOngoingCards(history);
         const resultCards = history.slice(0, 8).map((record) => mapHistoryRecordToResult(record));
         const housingAnalyses = history
@@ -517,8 +459,20 @@ export class AccountManager {
             ],
             membershipLabel: subMeta.label,
             hasPremium,
-            comparisonsCount: comparisons.length
+            comparisonsCount: comparisons.length,
+            comparisons,
+            emailVerified,
+            notificationPreference
         };
+    }
+
+    readNotificationPreference(userId) {
+        if (!userId) return 'all';
+        try {
+            return localStorage.getItem(userScopedKey(NOTIFICATION_PREF_KEY, userId)) || 'all';
+        } catch {
+            return 'all';
+        }
     }
 
     readDecisionHistory(userId) {

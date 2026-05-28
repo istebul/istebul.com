@@ -4,6 +4,7 @@ import { renderUserDecisionCard, renderEmptyDecisionCard } from '../../ui/compon
 import { renderUserResultCard } from '../../ui/components/user-result-card.js';
 import { renderUserSidebar } from '../../ui/components/user-sidebar.js';
 import { renderUserAiRecommendationsPanel } from '../../ui/components/user-ai-recommendations.js';
+import { renderUserDashboardTabPanels } from '../../ui/components/user-dashboard-panels.js';
 
 function renderFavoritesTabs(activeFavoritesTab) {
   const tabs = [
@@ -129,7 +130,10 @@ export function renderUserDashboard(payload) {
     quickActions,
     membershipLabel,
     notificationCount,
-    hasPremium
+    hasPremium,
+    comparisons = [],
+    emailVerified = true,
+    notificationPreference = 'all'
   } = payload;
 
   return `
@@ -148,26 +152,39 @@ export function renderUserDashboard(payload) {
         hasPremium
       })}
       <div class="ud-main">
-        <header class="ud-main-header">
+        <header class="ud-main-header" data-dashboard-overview="header">
           <div>
             <h1>Merhaba ${escapeHtml(profile?.full_name || user.email?.split('@')[0] || 'Kullanıcı')}, karar merkezine hoş geldin.</h1>
             <p>Araç, konut, tatil ve finansman kararlarınızı tek yerden takip edin.</p>
           </div>
         </header>
-        <section class="ud-summary-grid" aria-label="Karar merkezi özet kartları">
+        <section class="ud-summary-grid" data-dashboard-overview="summary" aria-label="Karar merkezi özet kartları">
           ${metrics.map((metric) => renderUserSummaryCard(metric)).join('')}
         </section>
-        <div class="ud-content-grid">
-          ${renderSectionPanels({ activeTab, ongoingCards, resultCards, housingAnalyses, favorites, activeFavoritesTab })}
-          ${renderUserAiRecommendationsPanel({
+        <div class="ud-panels-host">
+          <div class="ud-content-grid" data-dashboard-overview="grid">
+            <div class="ud-primary-column">
+              ${renderSectionPanels({ activeTab, ongoingCards, resultCards, housingAnalyses, favorites, activeFavoritesTab })}
+            </div>
+            <div data-dashboard-overview="side">
+              ${renderUserAiRecommendationsPanel({
+                recommendations,
+                quickActions,
+                profileSummary: {
+                  fullName: profile?.full_name || '—',
+                  email: user.email || '—',
+                  phone: profile?.phone || '—',
+                  membership: membershipLabel
+                }
+              })}
+            </div>
+          </div>
+          ${renderUserDashboardTabPanels({
+            comparisons,
             recommendations,
-            quickActions,
-            profileSummary: {
-              fullName: profile?.full_name || '—',
-              email: user.email || '—',
-              phone: profile?.phone || '—',
-              membership: membershipLabel
-            }
+            emailVerified,
+            profile,
+            notificationPreference
           })}
         </div>
       </div>
