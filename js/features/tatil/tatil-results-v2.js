@@ -15,6 +15,7 @@ import {
   safeTrackEvent
 } from '../results/results-engine.js';
 import { gatePdfDownload } from '../billing/pdf-access-v1.js';
+import { getResultsPlanContext } from '../billing/paywall-v1.js';
 import {
   buildInsightInputFromIntelligence,
   buildDecisionInsight,
@@ -448,8 +449,17 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
   const nextSteps = intel.nextSteps;
   const criticalRisk = riskAnalysis.find((r) => r.level === 'yüksek')?.title || '';
 
+  const { planTier } = getResultsPlanContext();
+  const insightInput = buildInsightInputFromIntelligence('tatil', intel.context || {}, intel, {
+    planTier,
+    strengths,
+    weaknesses,
+    costs: { totalBudget: cost.totalBudget, realTotal: cost.realTotal }
+  });
+
   const pdfReportData = buildPdfReportData({
     category: 'tatil',
+    planTier,
     goal: optionLabel('goal', state.vacation_goal),
     decisionScore,
     scoreLabel: intel.scoreLabel,
@@ -496,13 +506,9 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
     goalLabel: optionLabel('goal', state.vacation_goal),
     totalLabel: formatTryAmount(cost.totalBudget),
     criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || '',
-    insight: buildDecisionInsight(
-      buildInsightInputFromIntelligence('tatil', intel.context || {}, intel, {
-        strengths,
-        weaknesses,
-        costs: { totalBudget: cost.totalBudget, realTotal: cost.realTotal }
-      })
-    )
+    planTier,
+    insightInput,
+    insight: buildDecisionInsight(insightInput)
   };
 }
 
@@ -610,7 +616,10 @@ function renderTatilResultsV2Html(model) {
 
       <article class="tatil-v2-block tatil-v2-block--exec" data-tatil-v2-insight-root>
         <h3>AI karar yorumu</h3>
-        ${renderInsightBlocksHtml(model.insight, esc)}
+        ${renderInsightBlocksHtml(model.insight, esc, {
+          planTier: model.planTier,
+          insightInput: model.insightInput
+        })}
         <p class="tatil-v2-exec-hint" data-tatil-v2-source></p>
       </article>
 
@@ -675,6 +684,7 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
   });
 
   const summary = await fetchExecutiveSummaryV3('tatil', model.intelligence?.context || {}, model.intelligence || model, {
+    planTier: model.planTier,
     strengths: model.strengths,
     weaknesses: model.weaknesses,
     costs: model.totalCost

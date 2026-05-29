@@ -526,6 +526,32 @@ export function buildNextBestActions(rawInput = {}) {
   return [...new Set(base.map((s) => sanitizeInsightText(s, 240)).filter(Boolean))].slice(0, max);
 }
 
+function buildNext90DayPlan(rawInput = {}) {
+  const input = normalizeInsightInput({ ...rawInput, planTier: 'pro' });
+  const actions = buildNextBestActions(input);
+  const vertical = input.vertical;
+  const horizon = [
+    '0–30 gün: teklif, ekspertiz ve finansman ön onayını netleştirin.',
+    '30–60 gün: sözleşme maddeleri, sigorta ve toplam maliyet tablosunu doğrulayın.',
+    '60–90 gün: teslimat, bakım planı ve ikinci el değer senaryosunu izleyin.'
+  ];
+
+  if (vertical === 'konut') {
+    horizon[0] = '0–30 gün: bölge emsali, tapu ve kredi ön onayı.';
+    horizon[1] = '30–60 gün: aidat, sigorta ve taşınma maliyet tablosu.';
+  } else if (vertical === 'tatil') {
+    horizon[0] = '0–30 gün: rezervasyon, iptal koşulları ve ulaşım teyidi.';
+    horizon[1] = '30–60 gün: sezon fiyat hareketi ve alternatif tarih planı.';
+  } else if (vertical === 'finansman') {
+    horizon[0] = '0–30 gün: gelir/borç tablosu ve faiz senaryoları.';
+    horizon[1] = '30–60 gün: erken ödeme ve nakit akışı stres testi.';
+  }
+
+  return actions.length ?
+      actions.map((step, i) => `${i + 1}. ${step}`)
+    : horizon;
+}
+
 /**
  * Pro-tier extended insight package.
  */
@@ -730,9 +756,14 @@ export function formatInsightBlocksAsExecutive(insight) {
 /**
  * HTML for V2 result panels (keeps existing section wrapper).
  */
-export function renderInsightBlocksHtml(insight, esc) {
+export function renderInsightBlocksHtml(insight, esc, options = {}) {
   const e = typeof esc === 'function' ? esc : (s) => String(s);
   const i = insight || buildDecisionInsight({});
+  const planTier = normalizePlanTier(options.planTier || i.planTier);
+  const isPro = planTier === 'pro';
+  const insightInput = options.insightInput || null;
+  const proInsight = isPro && insightInput ? buildProInsight({ ...insightInput, planTier: 'pro' }) : null;
+
   return `
     <div class="ib-insight-blocks">
       <h4 class="ib-insight-blocks__title">AI karar özeti</h4>
@@ -743,8 +774,60 @@ export function renderInsightBlocksHtml(insight, esc) {
       <p class="ib-insight-blocks__text" data-insight-risk>${e(i.risk || '—')}</p>
       <h4 class="ib-insight-blocks__title">Sonraki en iyi adım</h4>
       <p class="ib-insight-blocks__text" data-insight-next>${e(i.nextStep || '—')}</p>
+      ${renderProInsightExtensionsHtml(proInsight, planTier, insightInput, e)}
       <p class="ib-insight-blocks__disclaimer text-muted-sm">${e(i.disclaimer || shortDisclaimer())}</p>
     </div>`;
+}
+
+function renderProSection(title, contentHtml, isPro, e) {
+  if (isPro) {
+    return `
+      <div class="ib-pro-insight-section">
+        <h4 class="ib-insight-blocks__title">${e(title)}</h4>
+        <div class="ib-pro-insight-section__body">${contentHtml}</div>
+      </div>`;
+  }
+  return `
+    <div class="ib-pro-insight-section ib-pro-insight-section--locked">
+      <h4 class="ib-insight-blocks__title">${e(title)} <span class="ib-pro-badge">Pro</span></h4>
+      <p class="ib-pro-insight-teaser">Bu içgörü Pro üyelikte kullanılabilir.</p>
+    </div>`;
+}
+
+export function renderProInsightExtensionsHtml(proInsight, planTier, insightInput, esc) {
+  const e = typeof esc === 'function' ? esc : (s) => String(s);
+  const isPro = normalizePlanTier(planTier) === 'pro';
+  const input = insightInput ? normalizeInsightInput(insightInput) : normalizeInsightInput({ planTier });
+  const pro = proInsight || (isPro ? buildProInsight({ ...input, planTier: 'pro' }) : null);
+  const risks = buildRiskNarrative({ ...input, planTier: isPro ? 'pro' : 'guest' });
+  const next90 = buildNext90DayPlan(input);
+
+  const execPlus = pro ?
+    `<p class="ib-insight-blocks__text">${e(pro.executiveSummary)} ${e(pro.criticalReason || '')}</p>`
+  : '';
+  const altScenario = pro ?
+    `<p class="ib-insight-blocks__text">${e(pro.alternativeScenario)}</p>`
+  : '';
+  const costSensitivity = pro ?
+    `<p class="ib-insight-blocks__text">${e(pro.costPressure)}</p>`
+  : '';
+  const criticalVar = pro ?
+    `<p class="ib-insight-blocks__text">${e(pro.criticalVariable)}</p>`
+  : '';
+  const riskDistribution = isPro ?
+    `<ul class="ib-pro-risk-list">${risks.map((r) => `<li>${e(r)}</li>`).join('')}</ul>`
+  : '';
+  const next90Html = isPro ?
+    `<ol class="ib-pro-action-list">${next90.map((r) => `<li>${e(r)}</li>`).join('')}</ol>`
+  : '';
+
+  return `
+    ${renderProSection('Executive Summary Plus', execPlus, isPro, e)}
+    ${renderProSection('Alternatif Senaryo Analizi', altScenario, isPro, e)}
+    ${renderProSection('Maliyet Hassasiyet Analizi', costSensitivity, isPro, e)}
+    ${renderProSection('Kritik Değişken Analizi', criticalVar, isPro, e)}
+    ${renderProSection('Risk Dağılımı', riskDistribution, isPro, e)}
+    ${renderProSection('Sonraki 90 Gün Önerisi', next90Html, isPro, e)}`;
 }
 
 export function hydrateInsightBlocks(root, insight) {

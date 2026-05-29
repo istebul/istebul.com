@@ -275,6 +275,48 @@
   font-size: 0.75rem;
 }
 
+.ib-pro-insight-section {
+  margin-top: 0.35rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--v2-border, #e2e8f0) 88%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--v2-surface, #fff) 96%, #eff6ff);
+}
+
+.ib-pro-insight-section--locked {
+  background: color-mix(in srgb, var(--v2-surface, #fff) 98%, #f8fafc);
+}
+
+.ib-pro-insight-teaser {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--v2-muted, #64748b);
+}
+
+.ib-pro-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.ib-pro-risk-list,
+.ib-pro-action-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.ib-pro-insight-section__body p {
+  margin: 0;
+}
+
 .auto-v2-actions {
   display: flex;
   flex-wrap: wrap;

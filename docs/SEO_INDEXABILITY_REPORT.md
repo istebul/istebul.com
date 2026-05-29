@@ -8,10 +8,10 @@
 | Metric | Value |
 |--------|-------|
 | noindex pages (repo scan) | 7 |
-| sitemap URL count | 34 |
+| sitemap URL count | 35 |
 | canonical issues | 0 |
-| orphan HTML (vs sitemap) | 7 |
-| internal /rehber/ links (sample) | 199 |
+| orphan HTML (vs sitemap) | 6 |
+| internal /rehber/ links (sample) | 193 |
 | FAQ schema pages (scan) | 20 |
 | Rehber BreadcrumbList pages | 13 |
 | Invalid JSON-LD blocks | 0 |
@@ -32,13 +32,13 @@
 | Slug | Words | ≥1200 target |
 |------|-------|-------------------------------|
 | arac-kredisi-hesaplama | 1433 | yes |
-| arac-toplam-sahiplik-maliyeti | 1316 | yes |
-| ikinci-el-arac-alirken | 1197 | no |
+| tco-rehberi | 1316 | yes |
+| ikinci-el-rehberi | 1185 | no |
 | sifir-arac-mi-ikinci-el-mi | 1202 | yes |
 | arac-karsilastirma-rehberi | 1127 | no |
-| elektrikli-arac-alirken | 1232 | yes |
+| elektrikli-arac-rehberi | 1220 | yes |
 | suv-mi-sedan-mi | 1375 | yes |
-| arac-finansman-secenekleri | 1159 | no |
+| finansman-rehberi | 1177 | no |
 | aylik-arac-butcesi-hesaplama | 1121 | no |
 | arac-alim-karar-asistani | 1133 | no |
 | ticari-arac-alimi-rehberi | 1112 | no |

@@ -13,6 +13,7 @@ import {
   safeTrackEvent
 } from '../results/results-engine.js';
 import { gatePdfDownload } from '../billing/pdf-access-v1.js';
+import { getResultsPlanContext } from '../billing/paywall-v1.js';
 import {
   buildInsightInputFromIntelligence,
   buildDecisionInsight,
@@ -340,8 +341,22 @@ export function buildKonutResultsV2Payload({
     ? formatTryAmount(state.totalBudget)
     : 'Belirtilmedi';
 
+  const { planTier } = getResultsPlanContext();
+  const insightInput = buildInsightInputFromIntelligence('konut', intel.context || {}, intel, {
+    planTier,
+    strengths,
+    weaknesses,
+    costs: {
+      budget: state.totalBudget,
+      monthlyPayment: totalCost.monthlyPayment,
+      duesMonthly: totalCost.duesMonthly,
+      dti: metrics.dti
+    }
+  });
+
   const pdfReportData = buildPdfReportData({
     category: 'konut',
+    planTier,
     location: locationLabel,
     decisionScore,
     scoreLabel: intel.scoreLabel,
@@ -387,18 +402,9 @@ export function buildKonutResultsV2Payload({
     budgetLabel,
     homeType: state.homeType || '—',
     purpose: state.purchasePurpose || '—',
-    insight: buildDecisionInsight(
-      buildInsightInputFromIntelligence('konut', intel.context || {}, intel, {
-        strengths,
-        weaknesses,
-        costs: {
-          budget: state.totalBudget,
-          monthlyPayment: totalCost.monthlyPayment,
-          duesMonthly: totalCost.duesMonthly,
-          dti: metrics.dti
-        }
-      })
-    )
+    planTier,
+    insightInput,
+    insight: buildDecisionInsight(insightInput)
   };
 }
 
@@ -506,7 +512,10 @@ function renderKonutResultsV2Html(model) {
 
       <article class="konut-v2-block konut-v2-block--exec" data-konut-v2-insight-root>
         <h3>AI karar yorumu</h3>
-        ${renderInsightBlocksHtml(model.insight, esc)}
+        ${renderInsightBlocksHtml(model.insight, esc, {
+          planTier: model.planTier,
+          insightInput: model.insightInput
+        })}
         <p class="konut-v2-exec-hint" data-konut-v2-source>${esc(model.summarySourceLabel || '')}</p>
       </article>
 
@@ -595,6 +604,7 @@ export async function mountKonutResultsV2({
       warnings: model.warnings
     },
     {
+      planTier: model.planTier,
       strengths: model.strengths,
       weaknesses: model.weaknesses,
       costs: model.totalCost

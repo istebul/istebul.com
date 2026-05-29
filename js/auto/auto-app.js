@@ -8,6 +8,7 @@ import {
   renderReferralSharePanel,
   bindReferralShare
 } from '../features/growth/growth-engine.js';
+import { computePartnerMatchScores } from '../features/partner/partner-match-engine.js';
 import { trackOpsEvent } from '../core/operational-telemetry.js';
 import {
   enrollAutoResultsReady,
@@ -986,7 +987,13 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
         top_match_score: readDecisionSession().topMatchScore ?? null,
         confidence_tier: readDecisionSession().confidenceTier ?? null,
         segment_key: buildSegmentKey(leadPayload)
-      }
+      },
+      partner_match: computePartnerMatchScores({
+        ...leadPayload,
+        purchase_timeline: options.purchaseTimeline || leadPayload.purchase_timeline || '',
+        financing_intent: options.financingIntent || leadPayload.financing_intent || leadPayload.loan || '',
+        urgency: options.urgency || leadPayload.urgency || ''
+      }).slice(0, 3)
     }),
     formData: {
       ...leadPayload,

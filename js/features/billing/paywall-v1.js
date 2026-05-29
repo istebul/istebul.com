@@ -7,7 +7,8 @@ import {
   canAccessProFeature,
   PRO_FEATURE,
   PRO_FEATURE_COPY,
-  resolveIsPro
+  resolveIsPro,
+  resolveProPlan
 } from './pro-features.js';
 import { PLANS } from '../monetization/plans.js';
 
@@ -234,13 +235,26 @@ export function buildPaywallContextFromApp(ctx = {}) {
   const subscription = ctx.subscription || app?.accountManager?.subscription || null;
   const profile = ctx.profile || user?.profile || null;
   const isAuthenticated = Boolean(user?.id);
-  const isPro = resolveIsPro({ isPro: ctx.isPro, profile, subscription });
+  const plan = resolveProPlan(user, {
+    isPro: ctx.isPro,
+    profile,
+    subscription,
+    isAuthenticated
+  });
 
   return {
     isAuthenticated,
-    isPro,
+    isPro: plan.isPro,
+    planTier: plan.planTier,
     profile,
     subscription,
     user
   };
+}
+
+/**
+ * Plan tier for results / PDF surfaces (guest | free | pro).
+ */
+export function getResultsPlanContext(ctx = {}) {
+  return buildPaywallContextFromApp(ctx);
 }

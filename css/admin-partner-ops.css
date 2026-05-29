@@ -169,3 +169,53 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.lead-ai-intelligence .lead-ai-narrative {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #e2e8f0;
+}
+
+.lead-ai-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin: 0 0 12px;
+}
+
+.lead-ai-grid dt {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.lead-ai-grid dd {
+  margin: 0;
+  font-size: 13px;
+}
+
+.lead-ai-subtitle {
+  font-size: 12px;
+  margin: 0 0 8px;
+  color: #cbd5e1;
+}
+
+.partner-match-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.partner-match-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #2a3441;
+  font-size: 13px;
+}
+
+.partner-match-score {
+  color: #93c5fd;
+}

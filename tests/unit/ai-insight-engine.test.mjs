@@ -10,7 +10,8 @@ import {
   buildHomepageSampleInsight,
   HOMEPAGE_SAMPLE_INSIGHTS,
   containsBannedWeakPhrase,
-  normalizeInsightInput
+  normalizeInsightInput,
+  renderProInsightExtensionsHtml
 } from '../../js/features/ai/ai-insight-engine.js';
 
 function assertNoBanned(text) {
@@ -164,4 +165,24 @@ test('buildExecutiveSummary respects pro length', () => {
   const proText = buildExecutiveSummary(input);
   const guestText = buildExecutiveSummary({ ...input, planTier: 'guest' });
   assert.ok(proText.length >= guestText.length);
+});
+
+test('renderProInsightExtensionsHtml shows Pro teaser for guest', () => {
+  const html = renderProInsightExtensionsHtml(null, 'guest', null, (s) => String(s));
+  assert.match(html, /Bu içgörü Pro üyelikte kullanılabilir/);
+  assert.match(html, /Executive Summary Plus/);
+});
+
+test('renderProInsightExtensionsHtml renders pro sections for pro tier', () => {
+  const input = normalizeInsightInput({
+    vertical: 'auto',
+    planTier: 'pro',
+    answers: { loan: 'yes', usage: 'city', fuel: 'hybrid', budget: 1_500_000 },
+    costs: { budget: 1_500_000, tco12: 340_000 },
+    scores: { decision: 86, overallRisk: 'Orta' }
+  });
+  const pro = buildProInsight(input);
+  const html = renderProInsightExtensionsHtml(pro, 'pro', input, (s) => String(s));
+  assert.doesNotMatch(html, /Bu içgörü Pro üyelikte kullanılabilir/);
+  assert.match(html, /Alternatif Senaryo Analizi/);
 });

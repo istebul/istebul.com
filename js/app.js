@@ -37,8 +37,6 @@ import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
 import { state } from './core/state.js';
-import { loadCMS } from './core/cms.js';
-import { initPublicContentHub } from './runtime/init-public-content.js';
 import { supabase } from './core/supabase.js';
 import API from './core/api.js';
 import { monitoring } from './core/monitoring.js';
@@ -4531,8 +4529,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await completeOAuthIfPresent();
 
-    loadCMS();
-    initPublicContentHub();
+    const deferContentHub = () => {
+        Promise.all([
+            import('./core/cms.js'),
+            import('./runtime/init-public-content.js')
+        ]).then(([{ loadCMS }, { initPublicContentHub }]) => {
+            loadCMS();
+            initPublicContentHub();
+        }).catch(() => {});
+    };
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(deferContentHub, { timeout: 2500 });
+    } else {
+        setTimeout(deferContentHub, 400);
+    }
+
     window.app = new App();
     try {
         await window.app.init();

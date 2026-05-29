@@ -54,6 +54,7 @@ import { initHousingAdmin } from './admin/housing-admin.js';
 import { initFinanceAdmin } from './admin/finance-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
+import { renderLeadAiSummaryHtml } from './features/admin/lead-ai-intelligence.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
 
 const sb = getSupabaseClient();
@@ -3782,6 +3783,7 @@ async function openLeadDrawer(lead) {
 
   content.innerHTML = `
     ${renderDispatchPanelHtml(lead, logs)}
+    ${renderLeadAiSummaryHtml(lead, escapeHtml)}
     <section class="lead-drawer-section">
       <h4>CRM durumu</h4>
       <div class="lead-pipeline-chips">${pipelineChips}</div>

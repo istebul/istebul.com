@@ -26,7 +26,7 @@ const mustContain = [
   ['css/hero-v4.css', 'ib-soon-badge'],
   ['index.html', 'ib-hero-v4'],
   ['index.html', 'hero-v4-title'],
-  ['index.html', 'Kararımı Analiz Et'],
+  ['index.html', 'Ücretsiz analiz başlat'],
   ['index.html', 'ib-hero-v4-trust'],
   ['index.html', 'Sigorta'],
   ['index.html', 'Kasko'],

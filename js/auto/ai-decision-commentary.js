@@ -7,6 +7,7 @@ import { escapeHtml } from '../core/security.js';
 import { formatMoney } from '../core/format.js';
 import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
 import { buildDecisionInsight, normalizeInsightInput } from '../features/ai/ai-insight-engine.js';
+import { getResultsPlanContext } from '../features/billing/paywall-v1.js';
 import { buildExplanationBundle } from '../features/moat/ai-explanation-experience.js';
 
 export const COMMENTARY_SCHEMA_KEYS = [
@@ -93,6 +94,8 @@ export function buildDeterministicDecisionCommentary(results = [], formData = {}
   const confidence_level =
     confidenceTier === 'high' ? 'yüksek' : confidenceTier === 'medium' ? 'orta' : 'düşük';
 
+  const { planTier } = getResultsPlanContext();
+
   const insightInput = normalizeInsightInput({
     vertical: 'auto',
     answers: formData,
@@ -100,7 +103,7 @@ export function buildDeterministicDecisionCommentary(results = [], formData = {}
     costs: costs ? { budget: formData.budget, tco12: costs.months12 } : {},
     risks: leader?.risks || [],
     recommendation: { name: leader?.name },
-    planTier: 'guest'
+    planTier
   });
   const autoInsight = buildDecisionInsight(insightInput);
   const executive_summary = leader

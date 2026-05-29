@@ -51,6 +51,42 @@ export function isProSubscriptionStatus(status) {
   return ['active', 'trialing', 'past_due'].includes(String(status || ''));
 }
 
+const PRO_PLAN_IDS = new Set(['pro', 'enterprise']);
+
+function hasActiveProPlan(plan, status) {
+  return PRO_PLAN_IDS.has(String(plan || '').toLowerCase()) && isProSubscriptionStatus(status);
+}
+
+/**
+ * Resolve subscription tier for AI insight, PDF and paywall surfaces.
+ * @param {object|null} [user]
+ * @param {object} [ctx]
+ * @param {boolean} [ctx.isPro]
+ * @param {boolean} [ctx.isAuthenticated]
+ * @param {object} [ctx.profile]
+ * @param {object} [ctx.subscription]
+ * @returns {{ isPro: boolean, planTier: 'guest'|'free'|'pro' }}
+ */
+export function resolveProPlan(user = null, ctx = {}) {
+  if (ctx.isPro === true) return { isPro: true, planTier: 'pro' };
+
+  const profile = ctx.profile || user?.profile || null;
+  const subscription = ctx.subscription || ctx.subscription || null;
+  const isAuthenticated = Boolean(ctx.isAuthenticated ?? user?.id);
+
+  if (profile && hasActiveProPlan(profile.plan, profile.subscription_status)) {
+    return { isPro: true, planTier: 'pro' };
+  }
+  if (subscription && isProSubscriptionStatus(subscription.status)) {
+    return { isPro: true, planTier: 'pro' };
+  }
+  if (isAuthenticated) return { isPro: false, planTier: 'free' };
+  return { isPro: false, planTier: 'guest' };
+}
+
+/** Sprint alias — resolveIsPro(user) object form. */
+export const resolveIsProPlan = resolveProPlan;
+
 /**
  * @param {object} [ctx]
  * @param {boolean} [ctx.isPro]
@@ -58,12 +94,7 @@ export function isProSubscriptionStatus(status) {
  * @param {object} [ctx.subscription]
  */
 export function resolveIsPro(ctx = {}) {
-  if (ctx.isPro === true) return true;
-  if (ctx.profile?.plan === 'pro' && isProSubscriptionStatus(ctx.profile?.subscription_status)) {
-    return true;
-  }
-  if (ctx.subscription && isProSubscriptionStatus(ctx.subscription.status)) return true;
-  return false;
+  return resolveProPlan(ctx.user || null, ctx).isPro;
 }
 
 /**

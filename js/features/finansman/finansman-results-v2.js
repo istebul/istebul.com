@@ -15,6 +15,7 @@ import {
   safeTrackEvent
 } from '../results/results-engine.js';
 import { gatePdfDownload } from '../billing/pdf-access-v1.js';
+import { getResultsPlanContext } from '../billing/paywall-v1.js';
 import {
   buildInsightInputFromIntelligence,
   buildDecisionInsight,
@@ -356,8 +357,21 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [] }) {
   const highRisk = riskAnalysis.find((r) => r.level === 'yüksek');
   const criticalRisk = highRisk?.title || '';
 
+  const { planTier } = getResultsPlanContext();
+  const insightInput = buildInsightInputFromIntelligence('finansman', intel.context || {}, intel, {
+    planTier,
+    strengths,
+    weaknesses,
+    costs: {
+      monthlyPayment: cost.monthlyPayment,
+      paymentToIncome: cost.incomeLoadPct,
+      termMonths: state.term_months === '60' ? 60 : state.term_months === '24' ? 24 : 36
+    }
+  });
+
   const pdfReportData = buildPdfReportData({
     category: 'finansman',
+    planTier,
     purpose: optionLabel('purpose', state.purpose),
     decisionScore,
     scoreLabel: intel.scoreLabel,
@@ -403,17 +417,9 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [] }) {
     monthlyLabel: formatTryAmount(cost.monthlyPayment),
     totalLabel: formatTryAmount(cost.totalRepayment),
     criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || '',
-    insight: buildDecisionInsight(
-      buildInsightInputFromIntelligence('finansman', intel.context || {}, intel, {
-        strengths,
-        weaknesses,
-        costs: {
-          monthlyPayment: cost.monthlyPayment,
-          paymentToIncome: cost.incomeLoadPct,
-          termMonths: state.term_months === '60' ? 60 : state.term_months === '24' ? 24 : 36
-        }
-      })
-    )
+    planTier,
+    insightInput,
+    insight: buildDecisionInsight(insightInput)
   };
 }
 
@@ -521,7 +527,10 @@ function renderFinansmanResultsV2Html(model) {
 
       <article class="finansman-v2-block finansman-v2-block--exec" data-finansman-v2-insight-root>
         <h3>AI karar yorumu</h3>
-        ${renderInsightBlocksHtml(model.insight, esc)}
+        ${renderInsightBlocksHtml(model.insight, esc, {
+          planTier: model.planTier,
+          insightInput: model.insightInput
+        })}
         <p class="finansman-v2-exec-hint" data-finansman-v2-source></p>
       </article>
 
@@ -590,6 +599,7 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
     model.intelligence?.context || {},
     model.intelligence || model,
     {
+      planTier: model.planTier,
       strengths: model.strengths,
       weaknesses: model.weaknesses,
       costs: model.totalCost

@@ -18,10 +18,12 @@ function fail(msg) {
 }
 
 const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
-if (!style.includes("award-polish.css")) {
-  fail('style.css must import award-polish.css');
+const hasExcellenceLayer =
+  style.includes('award-polish.css') || style.includes('final-enterprise-release.css');
+if (!hasExcellenceLayer) {
+  fail('style.css must import award-polish.css or final-enterprise-release.css');
 } else {
-  ok('style.css imports award-polish');
+  ok('style.css imports excellence polish layer');
 }
 
 const awardPath = path.join(root, 'css/award-polish.css');

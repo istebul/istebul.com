@@ -13,6 +13,7 @@ import {
   safeTrackEvent
 } from '../features/results/results-engine.js';
 import { gatePdfDownload } from '../features/billing/pdf-access-v1.js';
+import { getResultsPlanContext } from '../features/billing/paywall-v1.js';
 import {
   buildInsightInputFromIntelligence,
   buildDecisionInsight,
@@ -181,7 +182,10 @@ function renderAutoResultsV2Html(model) {
 
       <article class="auto-v2-block auto-v2-block--exec" data-auto-v2-insight-root>
         <h3>AI karar yorumu</h3>
-        ${renderInsightBlocksHtml(model.insight, esc)}
+        ${renderInsightBlocksHtml(model.insight, esc, {
+          planTier: model.planTier,
+          insightInput: model.insightInput
+        })}
         <p class="auto-v2-exec-hint" data-auto-v2-source>${esc(model.summarySourceLabel)}</p>
       </article>
 
@@ -241,6 +245,15 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
       alternatives
     : [{ title: 'Alternatif bulunamadı', score: 0, reason: '' }];
 
+  const { planTier } = getResultsPlanContext();
+
+  const insightInput = buildInsightInputFromIntelligence('auto', intel.context || {}, intel, {
+    planTier,
+    strengths,
+    weaknesses: cautions,
+    costs: { budget, tco12: totalCost, vehiclePrice }
+  });
+
   const model = {
     decisionScore,
     confidenceScore: confidenceScore || computeConfidenceScore(formData),
@@ -257,13 +270,9 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     cautions,
     alternatives: altCards,
     executiveSummary: intel.executiveSummary,
-    insight: buildDecisionInsight(
-      buildInsightInputFromIntelligence('auto', intel.context || {}, intel, {
-        strengths,
-        weaknesses: cautions,
-        costs: { budget, tco12: totalCost, vehiclePrice }
-      })
-    ),
+    insight: buildDecisionInsight(insightInput),
+    insightInput,
+    planTier,
     summarySourceLabel: 'Kaynak: hazırlanıyor',
     nextSteps: intel.nextSteps.length ? intel.nextSteps : buildNextSteps({ riskLevel: risk.label, budgetFit }),
     usage: String(formData?.usage || ''),
@@ -273,6 +282,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   model.pdfReportData = buildPdfReportData({
     category: 'auto',
+    planTier,
     decisionScore,
     confidenceScore: model.confidenceScore,
     overallRisk: model.riskLevel,
@@ -317,6 +327,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   // Executive Summary (AI proxy + fallback)
   const summary = await fetchExecutiveSummaryV3('auto', intel.context || {}, intel, {
+    planTier,
     strengths,
     weaknesses: cautions,
     costs: { budget, tco12: totalCost, vehiclePrice }

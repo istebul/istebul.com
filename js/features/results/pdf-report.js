@@ -3,7 +3,7 @@
  * Designed so a server-side PDF service can reuse buildReportHtml(pdfReportData) later.
  */
 import { escapeHtml } from '../../core/security.js';
-import { buildPdfInsight, normalizeInsightInput } from '../ai/ai-insight-engine.js';
+import { buildPdfInsight, buildProInsight, normalizeInsightInput } from '../ai/ai-insight-engine.js';
 import { recordPdfReportHistory } from '../account/dashboard-v2-store.js';
 
 const CATEGORY_LABELS = {
@@ -393,6 +393,7 @@ li + li { margin-top: 0.25rem; }
 
 function resolvePdfInsightSections(data) {
   if (data.pdfInsight && data.pdfInsight.executiveSummary) return data.pdfInsight;
+  const planTier = data.planTier || 'guest';
   const input = normalizeInsightInput({
     vertical: data.category,
     answers: data.profile || {},
@@ -412,7 +413,7 @@ function resolvePdfInsightSections(data) {
       level: data.recommendationLevel,
       label: data.recommendationLabel
     },
-    planTier: data.planTier || 'pro',
+    planTier,
     locale: 'tr-TR'
   });
   return buildPdfInsight(input);
@@ -425,10 +426,29 @@ export function buildReportHtml(pdfReportData = {}) {
   const data = pdfReportData && typeof pdfReportData === 'object' ? pdfReportData : {};
   const category = String(data.category || 'karar').toLowerCase();
   const label = categoryLabel(category);
+  const cost = data.totalCost && typeof data.totalCost === 'object' ? data.totalCost : {};
   const pdfInsight = resolvePdfInsightSections(data);
+  const isProPdf = String(data.planTier || 'guest').toLowerCase() === 'pro';
+  const proInsight = isProPdf ?
+    buildProInsight(
+      normalizeInsightInput({
+        vertical: category,
+        answers: data.profile || {},
+        scores: {
+          decision: data.decisionScore,
+          confidence: data.confidenceScore,
+          overallRisk: data.overallRisk,
+          factors: data.scoreFactors
+        },
+        costs: cost,
+        risks: data.riskAnalysis,
+        alternatives: data.alternatives,
+        planTier: 'pro'
+      })
+    )
+  : null;
   const executiveText =
     sanitizeReportText(data.executiveSummary || pdfInsight.executiveSummary || '');
-  const cost = data.totalCost && typeof data.totalCost === 'object' ? data.totalCost : {};
   const estimateNote = cost.isEstimate
     ? sanitizeReportText(cost.estimateNote || 'Bazı tutarlar tahmini model ile hesaplanmıştır; güncel teklif ile doğrulanmalıdır.')
     : '';
@@ -488,8 +508,30 @@ export function buildReportHtml(pdfReportData = {}) {
         <h2>Yönetici özeti</h2>
         <div class="exec">
           <p>${executiveText || 'Özet henüz oluşturulmadı.'}</p>
+          ${
+            proInsight ?
+              `<p><strong>Plus:</strong> ${sanitizeReportText(proInsight.criticalReason || '')}</p>`
+            : ''
+          }
         </div>
       </section>
+
+      ${
+        isProPdf && proInsight ?
+          `<section aria-label="Kritik riskler">
+        <h2>Kritik riskler</h2>
+        ${listHtml([proInsight.mainRisk, ...(pdfInsight.riskWarnings || [])].filter(Boolean).slice(0, 4))}
+      </section>
+      <section aria-label="Alternatif senaryo">
+        <h2>Alternatif senaryo</h2>
+        <div class="exec"><p>${sanitizeReportText(proInsight.alternativeScenario || '—')}</p></div>
+      </section>
+      <section aria-label="Maliyet kırılımı">
+        <h2>Maliyet kırılımı</h2>
+        <div class="exec"><p>${sanitizeReportText(proInsight.costPressure || pdfInsight.costCommentary || '—')}</p></div>
+      </section>`
+        : ''
+      }
 
       <section aria-label="Karar gerekçeleri">
         <h2>Karar gerekçeleri</h2>
@@ -539,8 +581,12 @@ export function buildReportHtml(pdfReportData = {}) {
       </section>
 
       <section aria-label="Sonraki Adımlar">
-        <h2>Sonraki Adımlar</h2>
-        ${listHtml(data.nextSteps, true)}
+        <h2>Sonraki adımlar</h2>
+        ${
+          isProPdf && proInsight?.nextSteps?.length ?
+            listHtml(proInsight.nextSteps, true)
+          : listHtml(data.nextSteps, true)
+        }
       </section>
 
       <p class="disclaimer">${sanitizeReportText(DISCLAIMER)}</p>

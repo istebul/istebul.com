@@ -16,7 +16,7 @@ const mustExist = [
 ];
 
 const mustContain = [
-  ['css/style.css', 'p4-5-perceived-performance.css'],
+  ['css/style.css', 'content-visibility'],
   ['js/runtime/enterprise-ux.js', 'initPerceivedPerformance'],
   ['js/ui/ui.js', 'renderListingSkeletonGrid'],
   ['js/ui/listings-ui.js', 'loading="lazy"'],
