@@ -1,0 +1,550 @@
+/**
+ * isteBul UI Final Stabilization V5
+ * Scoped overrides for contrast, layout, footer, cards, hero, responsive.
+ * Load after Design System v4 / marketing polish.
+ */
+
+/* —— V5 tokens —— */
+html.ib-ds-v4 {
+  --ib-v5-ink: #111827;
+  --ib-v5-muted: #4b5563;
+  --ib-v5-muted-soft: #6b7280;
+  --ib-v5-border: #e5e7eb;
+  --ib-v5-surface: #ffffff;
+  --ib-v5-bg: #fafaf8;
+  --ib-v5-accent: #2563eb;
+  --ib-v5-accent-hover: #1d4ed8;
+  --ib-v5-footer-link: #374151;
+  --ib-v5-footer-link-hover: #1d4ed8;
+  --ib-v5-hero-muted: #e2e8f0;
+  --ib-v5-hero-subtle: #cbd5e1;
+  --ib-v5-nav-ink: #1e293b;
+  --ib-v5-nav-muted: #64748b;
+  --ib-v5-radius: 24px;
+  --ib-v5-shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+/* —— Global: overflow & typography baseline —— */
+html.ib-ds-v4 body.ib-enterprise,
+html.ib-ds-v4 body.housing-page,
+html.ib-ds-v4 body.vacation-page,
+html.ib-ds-v4 body.admin-enterprise {
+  overflow-x: clip;
+  text-rendering: optimizeLegibility;
+}
+
+html.ib-ds-v4 ::selection {
+  background: rgba(37, 99, 235, 0.2);
+  color: var(--ib-v5-ink);
+}
+
+/* —— Priority 1: Header / trust rail —— */
+html.ib-ds-v4 body.ib-enterprise .navbar,
+html.ib-ds-v4 body.ib-enterprise #main-nav.navbar {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid var(--ib-v5-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85), 0 10px 32px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+}
+
+html.ib-ds-v4 body.ib-enterprise .nav-container {
+  min-height: clamp(56px, 8vw, 64px);
+  align-items: center;
+}
+
+html.ib-ds-v4 body.ib-enterprise .brand-title {
+  color: var(--ib-v5-ink);
+  font-weight: 800;
+}
+
+html.ib-ds-v4 body.ib-enterprise .nav-subtitle {
+  color: var(--ib-v5-nav-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.35;
+  max-width: 22ch;
+}
+
+html.ib-ds-v4 body.ib-enterprise .nav-link,
+html.ib-ds-v4 body.ib-enterprise .nav-dropdown-btn,
+html.ib-ds-v4 body.ib-enterprise .nav-link-btn {
+  color: var(--ib-v5-nav-ink);
+  font-weight: 600;
+}
+
+html.ib-ds-v4 body.ib-enterprise .nav-link:hover,
+html.ib-ds-v4 body.ib-enterprise .nav-dropdown-btn:hover,
+html.ib-ds-v4 body.ib-enterprise .nav-link-btn:hover,
+html.ib-ds-v4 body.ib-enterprise .nav-link:focus-visible,
+html.ib-ds-v4 body.ib-enterprise .nav-dropdown-btn:focus-visible {
+  color: var(--ib-v5-accent-hover);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+html.ib-ds-v4 body.ib-enterprise .nav-dropdown-content .nav-dropdown-link,
+html.ib-ds-v4 body.ib-enterprise .nav-more-list .nav-dropdown-link {
+  color: var(--ib-v5-nav-ink);
+}
+
+html.ib-ds-v4 body.ib-enterprise .nav-dropdown-content .nav-dropdown-link:hover,
+html.ib-ds-v4 body.ib-enterprise .nav-more-list .nav-dropdown-link:hover {
+  color: var(--ib-v5-accent-hover);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+html.ib-ds-v4 body.ib-enterprise .ib-trust-rail {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-top: 1px solid var(--ib-v5-border);
+  border-bottom: 1px solid var(--ib-v5-border);
+}
+
+html.ib-ds-v4 body.ib-enterprise .ib-trust-rail-inner > span {
+  color: var(--ib-v5-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+html.ib-ds-v4 body.ib-enterprise .ib-trust-rail-inner [data-lucide] {
+  color: var(--ib-v5-accent);
+}
+
+html.ib-ds-v4 body.ib-enterprise .top-bar p,
+html.ib-ds-v4 body.ib-enterprise .top-bar a {
+  color: #e2e8f0;
+}
+
+html.ib-ds-v4 body.ib-enterprise .top-bar a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* —— Priority 2: Dark hero contrast —— */
+html.ib-ds-v4 #home .hero-lead,
+html.ib-ds-v4 #home .ib-hero-v4-sub {
+  color: var(--ib-v5-hero-muted);
+  line-height: 1.6;
+}
+
+html.ib-ds-v4 #home .ib-hero-v4-how {
+  color: var(--ib-v5-hero-subtle);
+  font-weight: 600;
+}
+
+html.ib-ds-v4 #home .ib-hero-v4-trust li {
+  color: var(--ib-v5-hero-muted);
+}
+
+html.ib-ds-v4 #home .ib-hero-cta-hint {
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+html.ib-ds-v4 #home .hero-container.ib-hero-v4-grid {
+  align-items: center;
+}
+
+html.ib-ds-v4 #home .ib-glass-dashboard,
+html.ib-ds-v4 #home .decision-preview.ib-ai-dashboard {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+html.ib-ds-v4 #home .ib-dash-kpi-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+html.ib-ds-v4 #home .ib-dash-stat span {
+  color: #94a3b8;
+}
+
+html.ib-ds-v4 #home .ib-dash-stat strong {
+  color: #f8fafc;
+}
+
+html.ib-ds-v4 #home .hero-actions .btn-primary {
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.32);
+}
+
+html.ib-ds-v4 #home .hero-actions .btn-outline,
+html.ib-ds-v4 #home .ib-hero-btn-ghost {
+  color: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+/* —— Priority 3: Category showcase cards (light premium) —— */
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase {
+  background: var(--ib-v5-surface);
+  background-image: none;
+  border: 1px solid var(--ib-v5-border);
+  border-radius: 20px;
+  box-shadow: var(--ib-v5-shadow-soft);
+  color: var(--ib-v5-ink);
+  min-height: 280px;
+  padding: 1.15rem 1.1rem 3.5rem;
+  overflow: hidden;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase::before {
+  display: none;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase h3 {
+  color: var(--ib-v5-ink);
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase h3 [data-lucide] {
+  color: var(--ib-v5-accent);
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase p,
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-points,
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-summary dt {
+  color: var(--ib-v5-muted);
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-summary dd {
+  color: var(--ib-v5-ink);
+  font-weight: 700;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-ai,
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-next,
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-insight {
+  color: #334155;
+  line-height: 1.45;
+  font-size: 0.78rem;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-cta {
+  color: var(--ib-v5-accent);
+  font-weight: 700;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-badge {
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase.is-soon {
+  background: #f9fafb;
+  border-style: dashed;
+  opacity: 1;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase.is-soon h3,
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase.is-soon p {
+  color: var(--ib-v5-muted);
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase.is-soon .ib-category-showcase-badge {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fed7aa;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-score {
+  background: #111827;
+  border: 1px solid #374151;
+  color: #f9fafb;
+  bottom: 0.75rem;
+  right: 0.75rem;
+}
+
+html.ib-ds-v4 .ib-category-showcase-live {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  html.ib-ds-v4 .ib-category-showcase-live {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  html.ib-ds-v4 .ib-category-showcase-live {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  html.ib-ds-v4 .ib-category-showcase-live {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  html.ib-ds-v4 .ib-category-showcase-soon {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+html.ib-ds-v4 .ib-category-soon-heading {
+  color: var(--ib-v5-muted-soft);
+}
+
+/* —— Priority 4: Footer & newsletter —— */
+html.ib-ds-v4 .footer.footer-premium {
+  background: var(--ib-v5-bg);
+  border-top: 1px solid var(--ib-v5-border);
+  padding-bottom: 5.5rem;
+}
+
+html.ib-ds-v4 .footer-section h4 {
+  color: var(--ib-v5-ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html.ib-ds-v4 .footer-section a {
+  color: var(--ib-v5-footer-link);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.5;
+  transition: color 160ms ease;
+}
+
+html.ib-ds-v4 .footer-section a:hover,
+html.ib-ds-v4 .footer-section a:focus-visible {
+  color: var(--ib-v5-footer-link-hover);
+  text-decoration: underline;
+}
+
+html.ib-ds-v4 .footer-content {
+  gap: 2rem 1.5rem;
+}
+
+html.ib-ds-v4 .newsletter-card,
+html.ib-ds-v4 .newsletter-card.newsletter-card--compact {
+  background: var(--ib-v5-surface);
+  border: 1px solid var(--ib-v5-border);
+  border-radius: var(--ib-v5-radius);
+  box-shadow: var(--ib-v5-shadow-soft);
+  color: var(--ib-v5-ink);
+  padding: 1.35rem 1.5rem;
+  margin-top: 1.5rem;
+}
+
+html.ib-ds-v4 .newsletter-card h3 {
+  color: var(--ib-v5-ink);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+html.ib-ds-v4 .newsletter-card p {
+  color: var(--ib-v5-muted);
+  line-height: 1.55;
+}
+
+html.ib-ds-v4 .newsletter-form input[type='email'] {
+  width: 100%;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ib-v5-border);
+  border-radius: 12px;
+  background: var(--ib-v5-bg);
+  color: var(--ib-v5-ink);
+  font-size: 0.95rem;
+}
+
+html.ib-ds-v4 .newsletter-form input::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+html.ib-ds-v4 .newsletter-consent {
+  color: var(--ib-v5-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+html.ib-ds-v4 .newsletter-consent span {
+  color: var(--ib-v5-muted);
+}
+
+html.ib-ds-v4 .newsletter-consent a {
+  color: var(--ib-v5-accent);
+  font-weight: 600;
+}
+
+html.ib-ds-v4 .newsletter-submit {
+  margin-top: 0.25rem;
+}
+
+html.ib-ds-v4 .footer-cta-row .text-muted-sm,
+html.ib-ds-v4 .footer-bottom p,
+html.ib-ds-v4 .ib-enterprise-meta {
+  color: var(--ib-v5-muted-soft);
+}
+
+html.ib-ds-v4 .cookie-consent {
+  background: var(--ib-v5-surface);
+  border: 1px solid var(--ib-v5-border);
+  color: var(--ib-v5-muted);
+}
+
+html.ib-ds-v4 .cookie-consent p {
+  color: var(--ib-v5-muted);
+}
+
+/* Help FAB: above footer, below modals */
+html.ib-ds-v4 .ib-help-fab {
+  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  z-index: 1040;
+}
+
+html.ib-ds-v4 .cro-sticky-cta {
+  z-index: 1030;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+@media (max-width: 767px) {
+  html.ib-ds-v4 body.ib-enterprise:has(.ib-help-fab) .footer.footer-premium {
+    padding-bottom: 6.5rem;
+  }
+
+  html.ib-ds-v4 .cro-sticky-cta {
+    bottom: 0;
+  }
+}
+
+/* —— Priority 5: Forms & light surfaces —— */
+html.ib-ds-v4 input:not([type='checkbox']):not([type='radio']),
+html.ib-ds-v4 select,
+html.ib-ds-v4 textarea {
+  color: var(--ib-v5-ink);
+}
+
+html.ib-ds-v4 input::placeholder,
+html.ib-ds-v4 textarea::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+html.ib-ds-v4 .section-header h2,
+html.ib-ds-v4 .ib-section-intro h2 {
+  color: var(--ib-v5-ink);
+}
+
+html.ib-ds-v4 .ib-section-lead-muted,
+html.ib-ds-v4 .text-muted-sm {
+  color: var(--ib-v5-muted);
+}
+
+html.ib-ds-v4 .how-step p,
+html.ib-ds-v4 .ib-trust-strip-card p,
+html.ib-ds-v4 .pricing-card p {
+  color: var(--ib-v5-muted);
+}
+
+html.ib-ds-v4 a:not(.btn):not(.nav-link):not(.footer-section a):hover {
+  color: var(--ib-v5-accent-hover);
+}
+
+/* —— SEO / corporate static pages —— */
+html.ib-ds-v4 body.seo-page .seo-header {
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--ib-v5-border);
+}
+
+html.ib-ds-v4 body.seo-page .seo-nav a {
+  color: var(--ib-v5-nav-ink);
+  font-weight: 600;
+}
+
+html.ib-ds-v4 body.seo-page .seo-nav a:hover {
+  color: var(--ib-v5-accent);
+}
+
+html.ib-ds-v4 body.seo-page .seo-logo {
+  color: var(--ib-v5-ink);
+  font-weight: 800;
+}
+
+/* —— Vertical pages: headers on light shell —— */
+html.ib-ds-v4 .auto-header a,
+html.ib-ds-v4 .housing-header a,
+html.ib-ds-v4 .vacation-header a,
+html.ib-ds-v4 .corporate-header a {
+  color: var(--ib-v5-nav-ink);
+}
+
+html.ib-ds-v4 .auto-header a:hover,
+html.ib-ds-v4 .housing-header a:hover,
+html.ib-ds-v4 .vacation-header a:hover {
+  color: var(--ib-v5-accent);
+}
+
+/* —— Admin: readability only —— */
+html.ib-ds-v4 body.admin-enterprise .sidebar .nav-item {
+  color: var(--ib-v5-muted);
+}
+
+html.ib-ds-v4 body.admin-enterprise .sidebar .nav-item:hover,
+html.ib-ds-v4 body.admin-enterprise .sidebar .nav-item.active {
+  color: var(--ib-v5-accent);
+}
+
+/* —— Reduced motion —— */
+@media (prefers-reduced-motion: reduce) {
+  html.ib-ds-v4 *,
+  html.ib-ds-v4 *::before,
+  html.ib-ds-v4 *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* —— Required !important overrides (legacy premium bundle wins otherwise) —— */
+/* Newsletter: award-polish forces white surface but leaves white text */
+html.ib-ds-v4 body.ib-enterprise .newsletter-card.newsletter-card--compact {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: var(--ib-v5-shadow-soft) !important;
+}
+
+html.ib-ds-v4 body.ib-enterprise .newsletter-card.newsletter-card--compact h3 {
+  color: #111827 !important;
+}
+
+html.ib-ds-v4 body.ib-enterprise .newsletter-card.newsletter-card--compact p,
+html.ib-ds-v4 body.ib-enterprise .newsletter-card.newsletter-card--compact .newsletter-consent span {
+  color: #4b5563 !important;
+}
+
+/* Nav: v4 dark navbar vs marketing light shell */
+html.ib-ds-v4 body.ib-enterprise .navbar .nav-link,
+html.ib-ds-v4 body.ib-enterprise .navbar .nav-dropdown-btn,
+html.ib-ds-v4 body.ib-enterprise .navbar .brand-title {
+  color: #1e293b !important;
+}
+
+html.ib-ds-v4 body.ib-enterprise .navbar .nav-link:hover,
+html.ib-ds-v4 body.ib-enterprise .navbar .nav-dropdown-btn:hover {
+  color: #1d4ed8 !important;
+}
+
+html.ib-ds-v4 body.ib-enterprise .navbar {
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+/* Category cards: dark gradient legacy on white section */
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-ai,
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-next {
+  color: #334155 !important;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase {
+  background: #ffffff !important;
+  color: #111827 !important;
+}
