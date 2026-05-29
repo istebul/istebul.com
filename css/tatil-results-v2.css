@@ -396,3 +396,43 @@
   color: var(--v2-muted);
   font-size: 0.92rem;
 }
+
+.tatil-v2-rec-level {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--v2-accent);
+}
+
+.tatil-v2-factors {
+  margin-bottom: 1rem;
+  border: 1px solid var(--v2-border);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  background: var(--v2-elev);
+}
+
+.tatil-v2-factors h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+}
+
+.tatil-v2-factor-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tatil-v2-factor-list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.65rem;
+  font-size: 0.85rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px dashed var(--v2-border);
+}
+
+.tatil-v2-factor-impact {
+  font-weight: 800;
+  color: var(--v2-accent);
+}

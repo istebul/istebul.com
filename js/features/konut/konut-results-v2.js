@@ -13,6 +13,11 @@ import {
   safeTrackEvent
 } from '../results/results-engine.js';
 import { downloadDecisionReport } from '../results/pdf-report.js';
+import {
+  buildDecisionIntelligenceResult,
+  fetchExecutiveSummaryV3,
+  renderScoreFactorsHtml
+} from '../results/decision-intelligence-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -39,6 +44,10 @@ function decisionScoreLabel(score) {
  * Form doluluğuna göre güven skoru.
  */
 export function computeConfidenceScore(state = {}) {
+  return buildDecisionIntelligenceResult('konut', state, {}).confidenceScore;
+}
+
+export function computeConfidenceScoreLegacy(state = {}) {
   return buildConfidenceScore(state, [
     { ok: Boolean(String(state.city || '').trim()), weight: 14 },
     { ok: Boolean(String(state.district || '').trim()), weight: 6 },
@@ -58,6 +67,10 @@ export function computeConfidenceScore(state = {}) {
  * V2 karar skoru — mevcut metrics ile harmanlanır.
  */
 export function computeDecisionScore(state = {}, metrics = {}) {
+  return buildDecisionIntelligenceResult('konut', state, metrics).decisionScore;
+}
+
+function computeDecisionScoreLegacy(state = {}, metrics = {}) {
   const purposeScore = state.purchasePurpose
     ? state.purchasePurpose.includes('Yatırım')
       ? 78
@@ -93,6 +106,10 @@ export function computeDecisionScore(state = {}, metrics = {}) {
 }
 
 export function buildRiskAnalysis(state = {}, metrics = {}) {
+  return buildDecisionIntelligenceResult('konut', state, metrics).riskAnalysis;
+}
+
+function buildRiskAnalysisLegacy(state = {}, metrics = {}) {
   const ownership = metrics.ownership || {};
   const budget = safeNumber(state.totalBudget) || safeNumber(ownership.homePrice);
   const monthly = safeNumber(ownership.monthlyPayment);
@@ -357,15 +374,16 @@ export function buildKonutResultsV2Payload({
   scenarios = [],
   attention = []
 }) {
-  const decisionScore = computeDecisionScore(state, metrics);
-  const confidenceScore = computeConfidenceScore(state);
-  const riskAnalysis = buildRiskAnalysis(state, metrics);
+  const intel = buildDecisionIntelligenceResult('konut', state, metrics, { scenarios, attention });
+  const decisionScore = intel.decisionScore;
+  const confidenceScore = intel.confidenceScore;
+  const riskAnalysis = intel.riskAnalysis;
   const totalCost = buildTotalCostView(state, metrics);
   const strengths = buildStrengths(state, metrics);
   const weaknesses = buildWeaknesses(attention, metrics);
-  const alternatives = buildAlternatives(scenarios);
-  const nextSteps = buildNextSteps(state, metrics, riskAnalysis);
-  const overallRisk = metrics.risk?.label || 'Orta';
+  const alternatives = intel.alternatives.length ? intel.alternatives : buildAlternatives(scenarios);
+  const nextSteps = intel.nextSteps;
+  const overallRisk = intel.overallRisk;
 
   const locationLabel = [state.city, state.district].filter(Boolean).join(' / ') || 'Seçilen bölge';
   const budgetLabel = safeNumber(state.totalBudget)
@@ -376,7 +394,7 @@ export function buildKonutResultsV2Payload({
     category: 'konut',
     location: locationLabel,
     decisionScore,
-    scoreLabel: decisionScoreLabel(decisionScore),
+    scoreLabel: intel.scoreLabel,
     confidenceScore,
     overallRisk,
     totalCost,
@@ -385,6 +403,9 @@ export function buildKonutResultsV2Payload({
     weaknesses,
     alternatives,
     nextSteps,
+    scoreFactors: intel.scoreFactors,
+    warnings: intel.warnings,
+    recommendationLevel: intel.recommendationLevel,
     profile: {
       purpose: state.purchasePurpose,
       homeType: state.homeType,
@@ -395,7 +416,7 @@ export function buildKonutResultsV2Payload({
 
   return {
     decisionScore,
-    scoreLabel: decisionScoreLabel(decisionScore),
+    scoreLabel: intel.scoreLabel,
     confidenceScore,
     overallRisk,
     riskTone: riskLevelToTone(overallRisk),
@@ -404,8 +425,13 @@ export function buildKonutResultsV2Payload({
     strengths,
     weaknesses,
     alternatives,
-    executiveSummary: '',
+    executiveSummary: intel.executiveSummary,
     nextSteps,
+    scoreFactors: intel.scoreFactors,
+    warnings: intel.warnings,
+    recommendationLevel: intel.recommendationLevel,
+    recommendationLabel: intel.recommendationLabel,
+    intelligence: intel,
     pdfReportData,
     locationLabel,
     budgetLabel,
@@ -427,7 +453,10 @@ function renderKonutResultsV2Html(model) {
         <p class="konut-v2-kicker">AI destekli konut karar analizi</p>
         <h2 class="konut-v2-title">Konut karar raporu</h2>
         <p class="konut-v2-band">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</p>
+        ${model.recommendationLabel ? `<p class="konut-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
       </header>
+
+      ${renderScoreFactorsHtml(model.scoreFactors, 'konut-v2')}
 
       <div class="konut-v2-kpis">
         <article class="konut-v2-kpi konut-v2-kpi--score">
@@ -590,18 +619,20 @@ export async function mountKonutResultsV2({
     downloadDecisionReport(model.pdfReportData);
   });
 
-  const summary = await buildAiExecutiveSummary({
-    locationLabel: model.locationLabel,
-    budgetLabel: model.budgetLabel,
-    homeType: model.homeType,
-    purpose: model.purpose,
-    decisionScore: model.decisionScore,
-    scoreLabel: model.scoreLabel,
-    confidenceScore: model.confidenceScore,
-    overallRisk: model.overallRisk,
-    strengths: model.strengths,
-    weaknesses: model.weaknesses
-  });
+  const summary = await fetchExecutiveSummaryV3(
+    'konut',
+    model.intelligence?.context || {},
+    model.intelligence || {
+      decisionScore: model.decisionScore,
+      confidenceScore: model.confidenceScore,
+      scoreFactors: model.scoreFactors,
+      riskAnalysis: model.riskAnalysis,
+      recommendationLevel: model.recommendationLevel,
+      recommendationLabel: model.recommendationLabel,
+      overallRisk: model.overallRisk,
+      warnings: model.warnings
+    }
+  );
 
   const execEl = root.querySelector('[data-konut-v2-exec]');
   if (execEl) execEl.textContent = summary.text;

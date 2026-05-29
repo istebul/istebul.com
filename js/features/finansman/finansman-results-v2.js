@@ -15,6 +15,11 @@ import {
   safeTrackEvent
 } from '../results/results-engine.js';
 import { downloadDecisionReport } from '../results/pdf-report.js';
+import {
+  buildDecisionIntelligenceResult,
+  fetchExecutiveSummaryV3,
+  renderScoreFactorsHtml
+} from '../results/decision-intelligence-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -72,6 +77,10 @@ function overallRiskFromDti(dti, cashPressure) {
 }
 
 export function computeConfidenceScore(state = {}) {
+  return buildDecisionIntelligenceResult('finansman', state, {}).confidenceScore;
+}
+
+function computeConfidenceScoreLegacy(state = {}) {
   return buildConfidenceScore(state, [
     { ok: Boolean(state.purpose), weight: 12 },
     { ok: Boolean(state.amount_range) || safeNumber(state.amount_manual) > 0, weight: 14 },
@@ -87,6 +96,11 @@ export function computeConfidenceScore(state = {}) {
 }
 
 export function computeDecisionScore(state = {}, primaryResult = null) {
+  return buildDecisionIntelligenceResult('finansman', state, {}, { primaryResult, results: [primaryResult] })
+    .decisionScore;
+}
+
+function computeDecisionScoreLegacy(state = {}, primaryResult = null) {
   const principal = amountMid(state);
   const months = termMonths(state);
   const pay = primaryResult?.metrics?.monthlyPayment ?? estimatePayment(principal, months);
@@ -141,6 +155,10 @@ export function buildTotalCostView(state = {}, primaryResult = null) {
 }
 
 export function buildRiskAnalysis(state = {}, primaryResult = null) {
+  return buildDecisionIntelligenceResult('finansman', state, {}, { primaryResult }).riskAnalysis;
+}
+
+function buildRiskAnalysisLegacy(state = {}, primaryResult = null) {
   const principal = amountMid(state);
   const months = termMonths(state);
   const pay = primaryResult?.metrics?.monthlyPayment ?? estimatePayment(principal, months);
@@ -373,21 +391,19 @@ async function buildAiExecutiveSummary(ctx) {
 export function buildFinansmanResultsV2Payload({ state = {}, results = [] }) {
   const primary = results[0] || null;
   const cost = buildTotalCostView(state, primary);
-  const riskAnalysis = buildRiskAnalysis(state, primary);
-  const decisionScore = computeDecisionScore(state, primary);
-  const confidenceScore = computeConfidenceScore(state);
-  const dti =
-    safeNumber(state.monthly_income) > 0
-      ? Math.round(
-          ((cost.monthlyPayment + safeNumber(state.existing_debt)) / safeNumber(state.monthly_income)) * 100
-        )
-      : null;
-  const overallRisk = overallRiskFromDti(dti || 50, primary?.metrics?.cashPressure);
+  const intel = buildDecisionIntelligenceResult('finansman', state, { monthlyPayment: cost.monthlyPayment }, {
+    primaryResult: primary,
+    results
+  });
+  const riskAnalysis = intel.riskAnalysis;
+  const decisionScore = intel.decisionScore;
+  const confidenceScore = intel.confidenceScore;
+  const overallRisk = intel.overallRisk;
 
   const strengths = buildStrengths(state, primary, cost);
   const weaknesses = buildWeaknesses(state, primary, cost);
-  const alternatives = buildAlternatives(state, results);
-  const nextSteps = buildNextSteps(state, riskAnalysis);
+  const alternatives = intel.alternatives;
+  const nextSteps = intel.nextSteps;
   const highRisk = riskAnalysis.find((r) => r.level === 'yüksek');
   const criticalRisk = highRisk?.title || '';
 
@@ -395,7 +411,7 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [] }) {
     category: 'finansman',
     purpose: optionLabel('purpose', state.purpose),
     decisionScore,
-    scoreLabel: decisionScoreLabel(decisionScore),
+    scoreLabel: intel.scoreLabel,
     confidenceScore,
     overallRisk,
     totalCost: cost,
@@ -404,7 +420,10 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [] }) {
     weaknesses,
     alternatives,
     nextSteps,
-    executiveSummary: '',
+    executiveSummary: intel.executiveSummary,
+    scoreFactors: intel.scoreFactors,
+    warnings: intel.warnings,
+    recommendationLevel: intel.recommendationLevel,
     profile: {
       term: optionLabel('term', state.term_months),
       incomeType: optionLabel('income', state.income_type),
@@ -414,7 +433,7 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [] }) {
 
   return {
     decisionScore,
-    scoreLabel: decisionScoreLabel(decisionScore),
+    scoreLabel: intel.scoreLabel,
     confidenceScore,
     overallRisk,
     riskTone: riskLevelToTone(overallRisk),
@@ -423,13 +442,18 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [] }) {
     strengths,
     weaknesses,
     alternatives,
-    executiveSummary: '',
+    executiveSummary: intel.executiveSummary,
     nextSteps,
+    scoreFactors: intel.scoreFactors,
+    warnings: intel.warnings,
+    recommendationLevel: intel.recommendationLevel,
+    recommendationLabel: intel.recommendationLabel,
+    intelligence: intel,
     pdfReportData,
     purpose: state.purpose,
     monthlyLabel: formatTryAmount(cost.monthlyPayment),
     totalLabel: formatTryAmount(cost.totalRepayment),
-    criticalRisk
+    criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || ''
   };
 }
 
@@ -446,7 +470,10 @@ function renderFinansmanResultsV2Html(model) {
         <p class="finansman-v2-kicker">AI destekli finansman karar analizi</p>
         <h2 class="finansman-v2-title">Finansman karar raporu</h2>
         <p class="finansman-v2-band">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</p>
+        ${model.recommendationLabel ? `<p class="finansman-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
       </header>
+
+      ${renderScoreFactorsHtml(model.scoreFactors, 'finansman-v2')}
 
       <div class="finansman-v2-kpis">
         <article class="finansman-v2-kpi finansman-v2-kpi--score">
@@ -598,18 +625,7 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
     downloadDecisionReport(model.pdfReportData);
   });
 
-  const summary = await buildAiExecutiveSummary({
-    purpose: state.purpose,
-    decisionScore: model.decisionScore,
-    scoreLabel: model.scoreLabel,
-    confidenceScore: model.confidenceScore,
-    overallRisk: model.overallRisk,
-    monthlyLabel: model.monthlyLabel,
-    totalLabel: model.totalLabel,
-    strengths: model.strengths,
-    weaknesses: model.weaknesses,
-    criticalRisk: model.criticalRisk || ''
-  });
+  const summary = await fetchExecutiveSummaryV3('finansman', model.intelligence?.context || {}, model.intelligence || model);
 
   const execEl = root.querySelector('[data-finansman-v2-exec]');
   if (execEl) execEl.textContent = summary.text;

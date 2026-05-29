@@ -15,6 +15,11 @@ import {
   safeTrackEvent
 } from '../results/results-engine.js';
 import { downloadDecisionReport } from '../results/pdf-report.js';
+import {
+  buildDecisionIntelligenceResult,
+  fetchExecutiveSummaryV3,
+  renderScoreFactorsHtml
+} from '../results/decision-intelligence-engine.js';
 
 const PLAN_MID = {
   ekonomik: 40_000,
@@ -84,6 +89,10 @@ function overallRiskFromAnalysis(riskAnalysis) {
 }
 
 export function computeConfidenceScore(state = {}) {
+  return buildDecisionIntelligenceResult('tatil', state, {}).confidenceScore;
+}
+
+function computeConfidenceScoreLegacy(state = {}) {
   return buildConfidenceScore(state, [
     { ok: Boolean(state.budget_range) || safeNumber(state.budget_manual) > 0, weight: 14 },
     { ok: Boolean(state.people_type) || safeNumber(state.travelers_count) > 0, weight: 12 },
@@ -107,6 +116,10 @@ export function computeConfidenceScore(state = {}) {
 }
 
 export function computeDecisionScore(state = {}, primaryResult = null) {
+  return buildDecisionIntelligenceResult('tatil', state, {}, { primaryResult }).decisionScore;
+}
+
+function computeDecisionScoreLegacy(state = {}, primaryResult = null) {
   const target = budgetTarget(state);
   const realTotal = safeNumber(primaryResult?.costs?.realTotal) || target * 1.05;
   const budgetFit =
@@ -209,6 +222,10 @@ export function buildTotalCostView(state = {}, primaryResult = null) {
 }
 
 export function buildRiskAnalysis(state = {}, primaryResult = null) {
+  return buildDecisionIntelligenceResult('tatil', state, {}, { primaryResult }).riskAnalysis;
+}
+
+function buildRiskAnalysisLegacy(state = {}, primaryResult = null) {
   const cost = buildTotalCostView(state, primaryResult);
   const target = budgetTarget(state);
   const overBudget = target > 0 && cost.totalBudget > target * 1.12;
@@ -471,22 +488,22 @@ async function buildAiExecutiveSummary(ctx) {
 export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
   const primary = results[0] || null;
   const cost = buildTotalCostView(state, primary);
-  const riskAnalysis = buildRiskAnalysis(state, primary);
-  const decisionScore = computeDecisionScore(state, primary);
-  const confidenceScore = computeConfidenceScore(state);
-  const overallRisk = overallRiskFromAnalysis(riskAnalysis);
+  const intel = buildDecisionIntelligenceResult('tatil', state, {}, { primaryResult: primary, results });
+  const riskAnalysis = intel.riskAnalysis;
+  const decisionScore = intel.decisionScore;
+  const confidenceScore = intel.confidenceScore;
+  const overallRisk = intel.overallRisk;
   const strengths = buildStrengths(state, primary, cost);
   const weaknesses = buildWeaknesses(state, primary, cost);
-  const alternatives = buildAlternatives(state, results);
-  const nextSteps = buildNextSteps(state, riskAnalysis);
-  const highRisk = riskAnalysis.find((r) => r.level === 'yüksek');
-  const criticalRisk = highRisk?.title || '';
+  const alternatives = intel.alternatives;
+  const nextSteps = intel.nextSteps;
+  const criticalRisk = riskAnalysis.find((r) => r.level === 'yüksek')?.title || '';
 
   const pdfReportData = buildPdfReportData({
     category: 'tatil',
     goal: optionLabel('goal', state.vacation_goal),
     decisionScore,
-    scoreLabel: decisionScoreLabel(decisionScore),
+    scoreLabel: intel.scoreLabel,
     confidenceScore,
     overallRisk,
     totalCost: cost,
@@ -495,7 +512,10 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
     weaknesses,
     alternatives,
     nextSteps,
-    executiveSummary: '',
+    executiveSummary: intel.executiveSummary,
+    scoreFactors: intel.scoreFactors,
+    warnings: intel.warnings,
+    recommendationLevel: intel.recommendationLevel,
     profile: {
       people: optionLabel('people', state.people_type),
       type: optionLabel('type', state.vacation_type),
@@ -507,7 +527,7 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
 
   return {
     decisionScore,
-    scoreLabel: decisionScoreLabel(decisionScore),
+    scoreLabel: intel.scoreLabel,
     confidenceScore,
     overallRisk,
     riskTone: riskLevelToTone(overallRisk),
@@ -516,12 +536,17 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
     strengths,
     weaknesses,
     alternatives,
-    executiveSummary: '',
+    executiveSummary: intel.executiveSummary,
     nextSteps,
+    scoreFactors: intel.scoreFactors,
+    warnings: intel.warnings,
+    recommendationLevel: intel.recommendationLevel,
+    recommendationLabel: intel.recommendationLabel,
+    intelligence: intel,
     pdfReportData,
     goalLabel: optionLabel('goal', state.vacation_goal),
     totalLabel: formatTryAmount(cost.totalBudget),
-    criticalRisk
+    criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || ''
   };
 }
 
@@ -538,7 +563,10 @@ function renderTatilResultsV2Html(model) {
         <p class="tatil-v2-kicker">AI destekli tatil karar analizi</p>
         <h2 class="tatil-v2-title">Tatil karar raporu</h2>
         <p class="tatil-v2-band">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</p>
+        ${model.recommendationLabel ? `<p class="tatil-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
       </header>
+
+      ${renderScoreFactorsHtml(model.scoreFactors, 'tatil-v2')}
 
       <div class="tatil-v2-kpis">
         <article class="tatil-v2-kpi tatil-v2-kpi--score">
@@ -690,17 +718,7 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
     downloadDecisionReport(model.pdfReportData);
   });
 
-  const summary = await buildAiExecutiveSummary({
-    goalLabel: model.goalLabel,
-    decisionScore: model.decisionScore,
-    scoreLabel: model.scoreLabel,
-    confidenceScore: model.confidenceScore,
-    overallRisk: model.overallRisk,
-    totalLabel: model.totalLabel,
-    strengths: model.strengths,
-    weaknesses: model.weaknesses,
-    criticalRisk: model.criticalRisk || ''
-  });
+  const summary = await fetchExecutiveSummaryV3('tatil', model.intelligence?.context || {}, model.intelligence || model);
 
   const execEl = root.querySelector('[data-tatil-v2-exec]');
   if (execEl) execEl.textContent = summary.text;

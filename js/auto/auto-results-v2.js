@@ -13,6 +13,11 @@ import {
   safeTrackEvent
 } from '../features/results/results-engine.js';
 import { downloadDecisionReport } from '../features/results/pdf-report.js';
+import {
+  buildDecisionIntelligenceResult,
+  fetchExecutiveSummaryV3,
+  renderScoreFactorsHtml
+} from '../features/results/decision-intelligence-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -175,7 +180,10 @@ function renderAutoResultsV2Html(model) {
       <header class="auto-v2-hero">
         <p class="auto-v2-kicker">Decision Results V2 · Premium AI Karar Raporu</p>
         <h2 class="auto-v2-title">Auto karar raporu</h2>
+        ${model.recommendationLabel ? `<p class="auto-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
       </header>
+
+      ${renderScoreFactorsHtml(model.scoreFactors, 'auto-v2')}
 
       <div class="auto-v2-kpis">
         <article class="auto-v2-kpi auto-v2-kpi--score">
@@ -253,7 +261,6 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   const budget = safeNumber(formData?.budget);
   const totalCost = safeNumber(topResult?.costs?.ownership?.totals?.months12 || topResult?.costs?.total);
   const vehiclePrice = safeNumber(topResult?.price);
-  const confidenceScore = computeConfidenceScore(formData);
 
   const budgetFit = computeBudgetFit({ budget, vehiclePrice, totalCost });
   const usageFit = computeUsageFit(formData, topResult);
@@ -269,27 +276,41 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   if (!cautions.length) cautions.push('Kesin fiyat teklifi değildir; toplam maliyet değişebilir');
 
   const risk = computeRiskLevel({ budget, totalCost, riskItems: cautions });
-  const decisionScore = computeDecisionScore({
-    budgetFit,
-    usageFit,
-    costFit,
-    altFit,
-    riskScore: risk.score
-  });
+
+  const intel = buildDecisionIntelligenceResult(
+    'auto',
+    formData,
+    { topResult, budget, totalCost },
+    { topResult, results, budget, totalCost, cautions }
+  );
+  const decisionScore = intel.decisionScore;
+  const confidenceScore = intel.confidenceScore;
+
+  const altCards =
+    intel.alternatives.length ?
+      intel.alternatives.map((a) => ({ title: a.title, score: 0, reason: a.description }))
+    : alternatives.length ?
+      alternatives
+    : [{ title: 'Alternatif bulunamadı', score: 0, reason: '' }];
 
   const model = {
     decisionScore,
-    confidenceScore,
-    riskLevel: risk.label,
-    riskTone: riskLevelToTone(risk.label),
+    confidenceScore: confidenceScore || computeConfidenceScore(formData),
+    riskLevel: intel.overallRisk || risk.label,
+    riskTone: riskLevelToTone(intel.overallRisk || risk.label),
+    scoreFactors: intel.scoreFactors,
+    warnings: intel.warnings,
+    recommendationLevel: intel.recommendationLevel,
+    recommendationLabel: intel.recommendationLabel,
+    intelligence: intel,
     totalCostLabel: totalCost ? formatTryAmount(totalCost) : '—',
     costHint: totalCost && budget ? `Bütçe ${formatTryAmount(budget)} · 12 ay TCO` : '12 ay TCO (tahmini)',
     strengths,
     cautions,
-    alternatives: alternatives.length ? alternatives : [{ title: 'Alternatif bulunamadı', score: 0, reason: '' }],
-    executiveSummary: '',
+    alternatives: altCards,
+    executiveSummary: intel.executiveSummary,
     summarySourceLabel: 'Kaynak: hazırlanıyor',
-    nextSteps: buildNextSteps({ riskLevel: risk.label, budgetFit }),
+    nextSteps: intel.nextSteps.length ? intel.nextSteps : buildNextSteps({ riskLevel: risk.label, budgetFit }),
     usage: String(formData?.usage || ''),
     budgetLabel: budget ? formatTryAmount(budget) : '—',
     totalCostLabelRaw: totalCost ? formatTryAmount(totalCost) : '—'
@@ -298,24 +319,17 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   model.pdfReportData = buildPdfReportData({
     category: 'auto',
     decisionScore,
-    confidenceScore,
-    overallRisk: risk.label,
+    confidenceScore: model.confidenceScore,
+    overallRisk: model.riskLevel,
     strengths: model.strengths,
     cautions: model.cautions,
-    alternatives: model.alternatives.map((a) => ({
+    alternatives: altCards.map((a) => ({
       title: a.title,
       description: a.reason || '',
       meta: a.score ? `${a.score}/100` : ''
     })),
-    riskAnalysis: cautions.map((text, index) =>
-      buildRiskItem(
-        `caution-${index}`,
-        'orta',
-        'Dikkat edilmesi gereken',
-        text,
-        'Teklif, ekspertiz ve toplam maliyeti güncel verilerle doğrulayın.'
-      )
-    ),
+    riskAnalysis: intel.riskAnalysis,
+    scoreFactors: intel.scoreFactors,
     totalCost: {
       isEstimate: true,
       estimateNote: 'Tahmini TCO — kesin fiyat taahhüdü değildir.',
@@ -323,7 +337,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
       vehiclePrice: vehiclePrice || null
     },
     nextSteps: model.nextSteps,
-    executiveSummary: '',
+    executiveSummary: model.executiveSummary,
     profile: {
       usage: model.usage,
       budgetLabel: model.budgetLabel
@@ -337,8 +351,8 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     score: decisionScore,
-    confidence: confidenceScore,
-    risk: risk.label
+    confidence: model.confidenceScore,
+    risk: model.riskLevel
   });
 
   root.querySelector('[data-auto-v2-print]')?.addEventListener('click', () => {
@@ -347,16 +361,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   });
 
   // Executive Summary (AI proxy + fallback)
-  const summary = await buildAiExecutiveSummary({
-    usage: model.usage,
-    budgetLabel: model.budgetLabel,
-    totalCostLabel: model.totalCostLabelRaw,
-    decisionScore,
-    confidenceScore,
-    riskLevel: risk.label,
-    strengths,
-    cautions
-  });
+  const summary = await fetchExecutiveSummaryV3('auto', intel.context || {}, intel);
 
   const execEl = root.querySelector('[data-auto-v2-exec]');
   if (execEl) execEl.textContent = summary.text;
