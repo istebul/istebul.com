@@ -1,0 +1,288 @@
+/**
+ * Enterprise card readability — WCAG-friendly text on light card surfaces site-wide.
+ * Loaded last on marketing shells and vertical decision pages.
+ */
+
+:root {
+  --ib-card-ink: #0f172a;
+  --ib-card-body: #334155;
+  --ib-card-muted: #475569;
+  --ib-card-label: #64748b;
+  --ib-card-surface: #ffffff;
+  --ib-card-elevated: #f8fafc;
+  --ib-card-border: rgba(148, 163, 184, 0.32);
+}
+
+/* —— Decision results V2 panels (Auto, Konut, Tatil, Finansman) —— */
+[class*='-v2-panel'] {
+  --v2-surface: var(--ib-card-surface);
+  --v2-elev: var(--ib-card-elevated);
+  --v2-text: var(--ib-card-ink);
+  --v2-muted: var(--ib-card-label);
+  color: var(--ib-card-ink);
+}
+
+[class*='-v2-panel'] h2,
+[class*='-v2-panel'] h3,
+[class*='-v2-panel'] h4,
+[class*='-v2-block'] h3,
+[class*='-v2-block'] h4,
+[class*='-v2-alt-card'] h4,
+[class*='-v2-factors'] h3,
+[class*='-v2-title'] {
+  color: var(--ib-card-ink);
+}
+
+[class*='-v2-kicker'] {
+  color: var(--ib-card-label);
+}
+
+[class*='-v2-block'],
+[class*='-v2-kpi'],
+[class*='-v2-alt-card'],
+[class*='-v2-factors'] {
+  background: var(--ib-card-elevated);
+  color: var(--ib-card-body);
+}
+
+[class*='-v2-block'] ul,
+[class*='-v2-block'] ol,
+[class*='-v2-block'] li,
+[class*='-v2-block'] p,
+[class*='-v2-block--exec'] p,
+[class*='-v2-exec'],
+[class*='-v2-factor-list'] li,
+[class*='-v2-factor-list'] li span,
+[class*='-v2-factor-list'] li strong {
+  color: var(--ib-card-body);
+}
+
+[class*='-v2-kpi'] > span,
+[class*='-v2-exec-hint'],
+[class*='-v2-alt-card'] p,
+[class*='-v2-kpi'] strong small,
+[class*='-v2-kpi--cost'] small {
+  color: var(--ib-card-muted);
+}
+
+[class*='-v2-kpi'] strong,
+[class*='-v2-alt-meta'],
+[class*='-v2-rec-level'],
+[class*='-v2-factor-impact'] {
+  color: var(--ib-card-ink);
+}
+
+[class*='-v2-alt-meta'] {
+  color: #1d4ed8;
+}
+
+[class*='-v2-alt-card'] {
+  background: var(--ib-card-surface);
+}
+
+[class*='-v2-block--exec'] {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), var(--ib-card-elevated));
+}
+
+/* OS dark mode: keep corporate light cards on vertical marketing pages */
+@media (prefers-color-scheme: dark) {
+  [class*='-v2-panel'] {
+    --v2-surface: var(--ib-card-surface);
+    --v2-elev: var(--ib-card-elevated);
+    --v2-text: var(--ib-card-ink);
+    --v2-muted: var(--ib-card-label);
+    color: var(--ib-card-ink);
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+  }
+
+  [class*='-v2-block'],
+  [class*='-v2-kpi'],
+  [class*='-v2-alt-card'],
+  [class*='-v2-factors'] {
+    background: var(--ib-card-elevated);
+    color: var(--ib-card-body);
+  }
+
+  [class*='-v2-alt-card'] {
+    background: var(--ib-card-surface);
+  }
+}
+
+/* —— Auto results area —— */
+body.ib-auto #auto-results .auto-v2-root,
+body.ib-auto #auto-results .auto-v2-panel {
+  color: var(--ib-card-ink);
+}
+
+body.ib-auto #auto-results .analysis-box,
+body.ib-auto #auto-results .risk-box,
+body.ib-auto #auto-results .cost,
+body.ib-auto #auto-results .monthly-impact,
+body.ib-auto #auto-results .auto-finance-note,
+body.ib-auto #auto-results .ib-ai-synthesis-card,
+body.ib-auto #auto-results .ib-ai-panel,
+body.ib-auto #auto-results .ib-ai-tradeoff-card,
+body.ib-auto #auto-results .ib-ai-rationale-card,
+body.ib-auto #auto-results .ib-decision-insight-card,
+body.ib-auto #auto-results .auto-results-leader-highlight,
+body.ib-auto #auto-results .auto-side-card,
+body.ib-auto #auto-results .ib-auto-results-meta-grid li,
+body.ib-auto #auto-results .ib-ownership-breakdown-grid li,
+body.ib-auto #auto-results .ib-how-calculated-grid li {
+  color: var(--ib-card-body);
+}
+
+body.ib-auto #auto-results .analysis-box strong,
+body.ib-auto #auto-results .risk-box strong,
+body.ib-auto #auto-results .ib-ai-reasoning-list strong,
+body.ib-auto #auto-results .ib-ai-finance-metrics b,
+body.ib-auto #auto-results .ib-ai-tradeoff-card strong,
+body.ib-auto #auto-results .ib-decision-insight-card h4,
+body.ib-auto #auto-results .auto-results-leader-name,
+body.ib-auto #auto-results .auto-results-leader-metrics dd,
+body.ib-auto #auto-results .auto-side-card h4 {
+  color: var(--ib-card-ink);
+}
+
+body.ib-auto #auto-results .analysis-box li,
+body.ib-auto #auto-results .risk-box li,
+body.ib-auto #auto-results .ib-ai-reasoning-list li,
+body.ib-auto #auto-results .ib-ai-rationale-card ul,
+body.ib-auto #auto-results .ib-decision-insight-card p {
+  color: var(--ib-card-muted);
+}
+
+body.ib-auto #auto-results .auto-results-guide,
+body.ib-auto #auto-results .auto-results-guide-steps,
+body.ib-auto #auto-results .auto-results-guide-steps li {
+  color: var(--ib-card-body);
+}
+
+body.ib-auto #auto-results .auto-results-guide h3 {
+  color: var(--ib-card-ink);
+}
+
+/* —— Unified marketing / product cards —— */
+.card,
+.ib-example-card,
+.ib-category-showcase,
+.ib-tco-lens-card,
+.how-step,
+.billing-v1-plan-card,
+.comparison-card,
+.listing-card,
+.revenue-paywall-card,
+.partner-enterprise-card,
+.ib-sample-preview-panel,
+.ib-faq-item,
+.ib-home-auto-bridge-panel,
+.dashboard-v2-card:not(.dashboard-v2-card--dark),
+.premium-result-card,
+.auto-market-card,
+.conversion-result-card,
+.auto-results-leader,
+.auto-results-leader-highlight,
+.auto-filter-toolbar,
+.wizard-option.auto-option-card,
+.auto-wizard-progress,
+.auto-wizard-question,
+.auto-results-guide {
+  color: var(--ib-card-ink);
+}
+
+.card p,
+.card li,
+.ib-example-card p,
+.how-step p,
+.comparison-card p,
+.listing-card p,
+.partner-enterprise-features li,
+.ib-sample-preview-panel p,
+.ib-faq-panel,
+.ib-home-auto-bridge-steps,
+.auto-results-guide-steps li {
+  color: var(--ib-card-body);
+}
+
+.card h3,
+.card h4,
+.how-step h3,
+.comparison-card h3,
+.listing-card h3,
+.ib-faq-trigger {
+  color: var(--ib-card-ink);
+}
+
+/* Theme toggle dark: light-surface cards keep dark text */
+:root[data-theme='dark'] .card,
+:root[data-theme='dark'] [class*='-v2-panel'],
+:root[data-theme='dark'] [class*='-v2-block'],
+:root[data-theme='dark'] [class*='-v2-kpi'],
+:root[data-theme='dark'] [class*='-v2-alt-card'],
+:root[data-theme='dark'] .premium-result-card,
+:root[data-theme='dark'] .auto-market-card,
+:root[data-theme='dark'] .conversion-result-card,
+:root[data-theme='dark'] .ib-ai-panel,
+:root[data-theme='dark'] .ib-ai-synthesis-card,
+:root[data-theme='dark'] .ib-decision-insight-card,
+:root[data-theme='dark'] .billing-v1-plan-card,
+:root[data-theme='dark'] .comparison-card,
+:root[data-theme='dark'] .listing-card,
+:root[data-theme='dark'] .dashboard-v2-card:not(.dashboard-v2-card--dark) {
+  color: var(--ib-card-ink);
+}
+
+:root[data-theme='dark'] .card p,
+:root[data-theme='dark'] .card li,
+:root[data-theme='dark'] [class*='-v2-block'] li,
+:root[data-theme='dark'] [class*='-v2-alt-card'] p,
+:root[data-theme='dark'] .premium-result-card p,
+:root[data-theme='dark'] .premium-result-card li,
+:root[data-theme='dark'] .analysis-box li,
+:root[data-theme='dark'] .risk-box li {
+  color: var(--ib-card-body);
+}
+
+:root[data-theme='dark'] .card h3,
+:root[data-theme='dark'] [class*='-v2-block'] h3,
+:root[data-theme='dark'] [class*='-v2-alt-card'] h4 {
+  color: var(--ib-card-ink);
+}
+
+/* Intentionally dark sections keep light text */
+.final-cta-card,
+.auto-results-trust-banner,
+.ib-trust-rail--auto,
+.auto-market-score,
+body.ib-auto .final-cta-card * {
+  color: inherit;
+}
+
+.final-cta-card h2,
+.final-cta-card p,
+.auto-results-trust-banner h3,
+.auto-results-trust-banner p {
+  color: inherit;
+}
+
+@media (max-width: 720px) {
+  [class*='-v2-block'] ul,
+  [class*='-v2-block'] ol,
+  [class*='-v2-block'] li {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --ib-card-body: #1e293b;
+    --ib-card-muted: #334155;
+  }
+
+  [class*='-v2-block'],
+  [class*='-v2-kpi'],
+  [class*='-v2-alt-card'] {
+    border-color: rgba(15, 23, 42, 0.22);
+  }
+}
