@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr" class="ib-route-pending ib-ds-v4">
+<html lang="tr" class="ib-route-pending ib-ds-v4 ib-premium-v7">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -28,9 +28,8 @@
     <!-- perf:preload-style -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
-    <link rel="stylesheet" href="css/style.css?v=62">
-    <link rel="stylesheet" href="css/istebul-ui-final-v5.css?v=2">
-    <link rel="stylesheet" href="css/istebul-ui-product-cards-v6.css?v=1">
+    <link rel="stylesheet" href="css/style.css?v=63">
+    <link rel="stylesheet" href="css/istebul-premium-final-v7.css?v=7">
     <link rel="stylesheet" href="css/growth-cro.css?v=1">
     <link rel="stylesheet" href="css/growth-retention.css?v=1">
     <link rel="stylesheet" href="css/help-center.css?v=1">
@@ -464,37 +463,53 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <span class="ib-demo-badge" role="status">Örnek analizdir</span>
                 </header>
                 <div class="ib-example-grid" aria-label="Kategori sonuç örnekleri">
-                    <article class="ib-example-card">
-                        <p class="ib-example-kicker">Araç sonucu</p>
-                        <h3>Karar skoru 86/100</h3>
-                        <p>Aylık toplam maliyet: ₺28.540</p>
-                        <p>Risk seviyesi: Çok iyi</p>
-                        <p>AI yorumu: Kredi ve işletme maliyeti dengeli.</p>
-                        <a href="/auto/" data-native-route>Detayı Gör →</a>
+                    <article class="ib-example-card ib-dash-sample">
+                        <header class="ib-dash-sample__head">
+                            <span class="ib-example-kicker">Araç</span>
+                            <strong class="ib-dash-sample__score" aria-label="Karar skoru 86 üzerinden 100">86<span>/100</span></strong>
+                        </header>
+                        <dl class="ib-dash-sample__meta">
+                            <div><dt>Aylık maliyet</dt><dd>₺28.540</dd></div>
+                            <div><dt>Risk</dt><dd class="is-good">Orta-düşük</dd></div>
+                        </dl>
+                        <p class="ib-dash-sample__ai">Kredi ve işletme maliyeti dengeli görünüyor.</p>
+                        <a class="ib-dash-sample__cta" href="/auto/" data-native-route>Detayı gör →</a>
                     </article>
-                    <article class="ib-example-card">
-                        <p class="ib-example-kicker">Konut sonucu</p>
-                        <h3>Karar skoru 92/100</h3>
-                        <p>Aylık maliyet: ₺22.850</p>
-                        <p>Risk seviyesi: Düşük</p>
-                        <p>AI yorumu: Lokasyon ve ödeme konforu güçlü.</p>
-                        <a href="/konut/" data-native-route>Detayı Gör →</a>
+                    <article class="ib-example-card ib-dash-sample">
+                        <header class="ib-dash-sample__head">
+                            <span class="ib-example-kicker">Konut</span>
+                            <strong class="ib-dash-sample__score" aria-label="Karar skoru 92 üzerinden 100">92<span>/100</span></strong>
+                        </header>
+                        <dl class="ib-dash-sample__meta">
+                            <div><dt>Aylık maliyet</dt><dd>₺22.850</dd></div>
+                            <div><dt>Risk</dt><dd class="is-good">Düşük</dd></div>
+                        </dl>
+                        <p class="ib-dash-sample__ai">Lokasyon ve ödeme konforu güçlü.</p>
+                        <a class="ib-dash-sample__cta" href="/konut/" data-native-route>Detayı gör →</a>
                     </article>
-                    <article class="ib-example-card">
-                        <p class="ib-example-kicker">Tatil sonucu</p>
-                        <h3>Karar skoru 81/100</h3>
-                        <p>Toplam maliyet: ₺68.450</p>
-                        <p>Risk seviyesi: Orta</p>
-                        <p>AI yorumu: Sezon yoğunluğu etkisi yüksek.</p>
-                        <a href="/tatil/" data-native-route>Detayı Gör →</a>
+                    <article class="ib-example-card ib-dash-sample">
+                        <header class="ib-dash-sample__head">
+                            <span class="ib-example-kicker">Tatil</span>
+                            <strong class="ib-dash-sample__score" aria-label="Karar skoru 81 üzerinden 100">81<span>/100</span></strong>
+                        </header>
+                        <dl class="ib-dash-sample__meta">
+                            <div><dt>Toplam maliyet</dt><dd>₺68.450</dd></div>
+                            <div><dt>Risk</dt><dd class="is-warn">Orta</dd></div>
+                        </dl>
+                        <p class="ib-dash-sample__ai">Sezon yoğunluğu maliyeti artırabilir.</p>
+                        <a class="ib-dash-sample__cta" href="/tatil/" data-native-route>Detayı gör →</a>
                     </article>
-                    <article class="ib-example-card">
-                        <p class="ib-example-kicker">Finansman sonucu</p>
-                        <h3>Karar skoru 88/100</h3>
-                        <p>Aylık ödeme: ₺16.750</p>
-                        <p>Risk seviyesi: Düşük</p>
-                        <p>AI yorumu: Nakit akışı ile vade dengeli.</p>
-                        <a href="/finansman/" data-native-route>Detayı Gör →</a>
+                    <article class="ib-example-card ib-dash-sample">
+                        <header class="ib-dash-sample__head">
+                            <span class="ib-example-kicker">Finansman</span>
+                            <strong class="ib-dash-sample__score" aria-label="Karar skoru 88 üzerinden 100">88<span>/100</span></strong>
+                        </header>
+                        <dl class="ib-dash-sample__meta">
+                            <div><dt>Aylık ödeme</dt><dd>₺16.750</dd></div>
+                            <div><dt>Risk</dt><dd class="is-good">Düşük</dd></div>
+                        </dl>
+                        <p class="ib-dash-sample__ai">Nakit akışı ile vade dengeli.</p>
+                        <a class="ib-dash-sample__cta" href="/finans/" data-native-route>Detayı gör →</a>
                     </article>
                 </div>
             </div>
@@ -1194,9 +1209,17 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     <!-- Footer -->
 
 
-    <footer class="footer footer-premium">
-        <div class="container">
-            <div class="footer-content ib-footer-v4">
+    <footer class="footer footer-premium ib-footer-v7">
+        <div class="container ib-footer-v7__inner">
+            <div class="ib-footer-v7__top">
+                <div class="ib-footer-v7__brand">
+                    <a href="/" class="ib-footer-v7__logo" data-native-route aria-label="isteBul ana sayfa">
+                        <span class="brand-mark" aria-hidden="true">iB</span>
+                        <span class="brand-title">isteBul</span>
+                    </a>
+                    <p class="ib-footer-v7__desc">Yapay zekâ destekli karar platformu. Toplam maliyet, risk ve uygunluk analizini şeffaf ve ölçülebilir sunar.</p>
+                </div>
+                <div class="footer-content ib-footer-v4 ib-footer-v7__cols">
                 <div class="footer-section">
                     <h4>Ürünler</h4>
                     <ul>
@@ -1238,6 +1261,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         <li><a href="/cerez-politikasi.html">Çerez politikası</a></li>
                         <li><a href="/kullanim-sartlari.html">Kullanım şartları</a></li>
                     </ul>
+                </div>
                 </div>
             </div>
             <div class="newsletter-card newsletter-card--compact">

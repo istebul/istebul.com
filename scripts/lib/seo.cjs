@@ -104,8 +104,8 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra }) {
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(ogImage)}">
   <link rel="stylesheet" href="/css/seo-landing.css">
-  <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=5">
-  <link rel="stylesheet" href="/css/istebul-ui-final-v5.css?v=1">
+  <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=7">
+  <link rel="stylesheet" href="/css/istebul-premium-final-v7.css?v=7">
   <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })}</script>`;
 }
 
@@ -332,7 +332,7 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
     .join('');
 
   return `<!DOCTYPE html>
-<html lang="tr" class="ib-ds-v4">
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
 <head>
   ${renderHead({ site, title: page.title, description: page.description, canonicalPath: path, jsonLdExtra: jsonLd })}
 </head>
