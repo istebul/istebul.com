@@ -17,6 +17,7 @@ import { buildHousingAiCommentary } from './real-estate-ai.js';
 import { TURKEY_CITIES } from './turkey-cities.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
+import { mountKonutResultsV2 } from '../features/konut/konut-results-v2.js';
 
 const STEP_LABELS = ['Karar amacı', 'Bütçe', 'Lokasyon', 'Konut tipi', 'Riskler'];
 const PURPOSE_OPTIONS = [
@@ -752,6 +753,15 @@ async function renderResults() {
 
     bindResultsEvents(metrics, ai, userId);
     updateSidePanel('results');
+
+    void mountKonutResultsV2({
+      mountNode: results,
+      state,
+      metrics,
+      scenarios,
+      attention,
+      track: (eventName, meta) => trackEvent(eventName, meta)
+    });
 
     requestAnimationFrame(() => {
       results.scrollIntoView({ behavior: 'smooth', block: 'start' });
