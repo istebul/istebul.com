@@ -263,36 +263,64 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </noscript>
         <!-- Home Section -->
-        <section id="home" class="hero-section ib-hero-venture ib-hero-premium-dark">
-            <div class="hero-container container">
-                <div class="hero-content">
-                    <p class="hero-eyebrow" data-cms="hero-eyebrow"><i data-lucide="sparkles" aria-hidden="true"></i> AI destekli karar platformu</p>
-                    <h1 data-cms="hero-title">Büyük kararları <span class="ib-hero-emphasis">yapay zekâ destekli analizle netleştir.</span></h1>
-                    <p class="hero-lead ib-hero-outcome-lead" data-cms="hero-desc">Araç, konut, tatil ve finans kararlarınızı toplam maliyet, risk, uygunluk ve karar skoru ile değerlendirin.</p>
-                    <div class="hero-actions ib-hero-cta-stack ib-hero-cta-dual">
+        <section id="home" class="hero-section ib-hero-venture ib-hero-premium-dark ib-hero-v4" aria-labelledby="hero-v4-title">
+            <div class="hero-container container ib-hero-v4-grid">
+                <div class="hero-content ib-hero-v4-copy">
+                    <p class="hero-eyebrow ib-hero-v4-tagline" data-cms="hero-eyebrow"><i data-lucide="sparkles" aria-hidden="true"></i> AI Decision Intelligence Platform</p>
+                    <h1 id="hero-v4-title" data-cms="hero-title">isteBul — büyük satın alma kararlarını <span class="ib-hero-emphasis">netleştirin.</span></h1>
+                    <p class="hero-lead ib-hero-v4-sub" data-cms="hero-desc">Araç, konut, tatil ve finansman gibi yüksek tutarlı kararlarda toplam maliyet, risk ve uygunluğu tek panelde görün; yanlış seçim maliyetini azaltın.</p>
+                    <p class="ib-hero-v4-how" id="hero-v4-how">Nasıl çalışır: sorularınızı yanıtlayın → AI analiz üretir → skor, maliyet ve sonraki adımlar raporlanır.</p>
+                    <div class="ib-hero-v4-categories" role="navigation" aria-label="Canlı karar kategorileri">
+                        <a href="/auto/" class="ib-hero-v4-cat is-live" data-native-route>
+                            Araç
+                            <small>TCO · kredi · risk</small>
+                        </a>
+                        <a href="/konut/" class="ib-hero-v4-cat is-live" data-native-route>
+                            Konut
+                            <small>Ödeme · lokasyon · risk</small>
+                        </a>
+                        <a href="/tatil/" class="ib-hero-v4-cat is-live" data-native-route>
+                            Tatil
+                            <small>Bütçe · sezon · konfor</small>
+                        </a>
+                        <a href="/finans/" class="ib-hero-v4-cat is-live" data-native-route>
+                            Finansman
+                            <small>Vade · nakit akışı</small>
+                        </a>
+                        <span class="ib-hero-v4-cat is-soon" aria-disabled="true">
+                            Sigorta
+                            <span class="ib-soon-badge">Yakında</span>
+                        </span>
+                        <span class="ib-hero-v4-cat is-soon" aria-disabled="true">
+                            Kasko
+                            <span class="ib-soon-badge">Yakında</span>
+                        </span>
+                    </div>
+                    <ul class="ib-hero-v4-trust" aria-label="Güven göstergeleri">
+                        <li>KVKK uyumlu veri işleme</li>
+                        <li>Stripe ile güvenli ödeme</li>
+                        <li>Kural tabanlı skor + AI açıklama</li>
+                        <li>Mobil-first deneyim</li>
+                    </ul>
+                    <div class="hero-actions ib-hero-cta-stack ib-hero-cta-dual ib-hero-v4-actions">
                         <div class="ib-hero-cta-primary-row">
                             <a href="/#home-vertical-focus" class="btn btn-primary btn-lg" data-home-anchor="home-vertical-focus" data-hero-cta-primary data-analytics-cta="cta_decision_hero" data-analytics-placement="hero">
                                 <i data-lucide="sparkles" aria-hidden="true"></i> Kararımı Analiz Et
                                 <i data-lucide="arrow-right" class="ib-hero-cta-arrow" aria-hidden="true"></i>
                             </a>
-                            <a href="/#home-vertical-focus" class="btn btn-outline btn-lg ib-hero-btn-ghost" data-home-anchor="home-vertical-focus" data-analytics-cta="cta_how_it_works" data-analytics-placement="hero">
-                                <i data-lucide="layout-grid" aria-hidden="true"></i> Kategorileri Keşfet
+                            <a href="/#how-it-works" class="btn btn-outline btn-lg ib-hero-btn-ghost" data-home-anchor="how-it-works" data-analytics-cta="cta_how_it_works" data-analytics-placement="hero">
+                                <i data-lucide="circle-help" aria-hidden="true"></i> Nasıl Çalışır?
                             </a>
                         </div>
                         <span class="ib-hero-cta-hint" data-social-proof-disclaimer>Örnek skor ve maliyetler gösterim amaçlıdır · finansal tavsiye değildir</span>
                     </div>
-                    <nav class="ib-hero-category-chips" aria-label="Hızlı kategori erişimi">
-                        <a href="/auto/" class="ib-hero-chip" data-native-route>Araç</a>
-                        <a href="/konut/" class="ib-hero-chip" data-native-route>Konut</a>
-                        <a href="/tatil/" class="ib-hero-chip" data-native-route>Tatil</a>
-                        <a href="/finans/" class="ib-hero-chip" data-native-route>Finansman</a>
-                    </nav>
                 </div>
                 <div class="hero-image decision-preview ib-ai-dashboard ib-glass-dashboard" aria-label="Örnek AI analiz paneli önizlemesi">
                     <div class="preview-toolbar" aria-hidden="true">
                         <span></span><span></span><span></span>
                     </div>
-                    <p class="preview-category-label">AI öneri özeti</p>
+                    <p class="preview-category-label" data-preview-title>AI öneri özeti — Araç kararı</p>
+                    <p class="preview-sources" data-preview-sources hidden>Örnek veri kaynakları: TCO motoru, finansman simülasyonu</p>
                     <div class="ib-dash-grid ib-dash-grid--platform">
                         <div class="ib-dash-score-ring" aria-label="Genel uygunluk skoru 89 üzerinden 100, çok iyi">
                             <div class="ib-dash-score-ring-inner">

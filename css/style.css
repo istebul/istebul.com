@@ -23,6 +23,8 @@
 @import './rtl.css';
 @import './homepage-layout-fixes.css';
 @import './auth-modal-polish.css';
+@import './hero-v4.css';
+@import './final-enterprise-release.css';
 
 /* Reset and Base Styles */
 * {

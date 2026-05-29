@@ -1,0 +1,463 @@
+/**
+ * FINAL ENTERPRISE UX RELEASE — global responsive, readability, cards, forms, a11y.
+ * Vanilla CSS only; no new frameworks. Loaded last in style.css cascade.
+ */
+
+/* —— Design tokens (unified card system) —— */
+:root {
+  --ib-enterprise-card-radius: var(--radius-card, 16px);
+  --ib-enterprise-card-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 14px 36px rgba(15, 23, 42, 0.08);
+  --ib-enterprise-card-pad: clamp(1rem, 2.5vw, 1.35rem);
+  --ib-enterprise-card-border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
+  --ib-readability-muted: color-mix(in srgb, var(--text-secondary) 72%, var(--text-primary));
+  --ib-readability-body: var(--text-primary);
+  --ib-focus-ring: 0 0 0 3px color-mix(in srgb, var(--primary-color) 35%, transparent);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* —— Global overflow guard —— */
+html {
+  overflow-x: clip;
+}
+
+body,
+#main-content,
+section,
+article,
+main,
+.nav-container,
+.hero-container,
+.modal-content,
+.comparison-table-wrap,
+.admin-content,
+.dashboard-v2-root,
+[class*='-v2-root'],
+[class*='-v2-panel'] {
+  max-width: 100%;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe,
+table,
+pre,
+code {
+  max-width: 100%;
+}
+
+svg.ib-dash-line-chart {
+  height: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+li,
+td,
+th,
+label,
+span,
+a,
+.btn,
+.chip,
+.badge,
+.ib-hero-chip,
+.ib-category-showcase,
+.notification {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* —— Typography hierarchy (WCAG-friendly sizes) —— */
+h1 {
+  font-size: clamp(1.85rem, 4.2vw, 2.75rem);
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+h2 {
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+h3 {
+  font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+  line-height: 1.28;
+  font-weight: 650;
+  color: var(--text-primary);
+}
+
+h4 {
+  font-size: clamp(1rem, 1.8vw, 1.125rem);
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hero-lead,
+.ib-section-lead,
+.ib-section-lead-muted,
+.section-header p,
+.form-hint,
+.ib-form-hint,
+.auto-v2-exec-hint,
+.dashboard-v2-muted,
+.vacation-hero-lead,
+.housing-hero-lead {
+  color: var(--ib-readability-muted);
+  line-height: 1.6;
+  font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+}
+
+.ib-hero-premium-dark .hero-lead,
+.ib-hero-premium-dark .ib-hero-v4-sub,
+.ib-how-premium-dark p,
+.ib-trust-premium-dark p {
+  color: color-mix(in srgb, #e2e8f0 92%, #fff);
+}
+
+/* —— Unified card surface —— */
+.card,
+.ib-example-card,
+.ib-category-showcase,
+.ib-tco-lens-card,
+.how-step,
+.billing-v1-plan-card,
+.dashboard-v2-card,
+.auto-v2-kpi,
+.auto-v2-block,
+.auto-v2-alt-card,
+.konut-v2-kpi,
+.konut-v2-block,
+.tatil-v2-kpi,
+.tatil-v2-block,
+.finansman-v2-kpi,
+.finansman-v2-block,
+.comparison-card,
+.listing-card,
+.revenue-paywall-card,
+.partner-enterprise-card {
+  border-radius: var(--ib-enterprise-card-radius);
+  box-shadow: var(--ib-enterprise-card-shadow);
+  padding: var(--ib-enterprise-card-pad);
+  border: var(--ib-enterprise-card-border);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.auto-v2-panel,
+.konut-v2-panel,
+.tatil-v2-panel,
+.finansman-v2-panel {
+  border-radius: calc(var(--ib-enterprise-card-radius) + 2px);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ib-category-showcase:hover,
+.ib-example-card:hover,
+.comparison-card:hover,
+.auto-v2-alt-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.06), 0 20px 44px rgba(15, 23, 42, 0.12);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.ib-category-showcase:focus-visible,
+.ib-example-card:focus-within,
+.comparison-card:focus-within,
+.btn:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--ib-focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ib-category-showcase:hover,
+  .ib-example-card:hover,
+  .comparison-card:hover {
+    transform: none;
+  }
+}
+
+/* —— Buttons & chips —— */
+.btn,
+.ib-hero-chip,
+.chip,
+.badge,
+.ib-category-showcase-badge,
+.paywall-v1-badge {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+
+.hero-actions,
+.form-actions,
+.ib-hero-v4-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  max-width: 100%;
+}
+
+.hero-actions .btn,
+.form-actions .btn {
+  min-width: min(100%, 12rem);
+}
+
+/* —— Tables & modals —— */
+.table-wrap,
+.comparison-table-wrap,
+.admin-table-scroll,
+.data-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.comparison-table {
+  width: 100%;
+  min-width: min(100%, 640px);
+}
+
+.modal .modal-content {
+  width: min(100% - 1.5rem, 32rem);
+  max-height: min(90dvh, 720px);
+  overflow-y: auto;
+}
+
+/* —— Forms (all verticals) —— */
+.form-group label,
+.field label,
+.ib-lead-field label,
+.vacation-form label,
+.housing-form label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.form-group label .required,
+.field label .required,
+[data-required='true'] label::after,
+label[for] .ib-required::after {
+  content: ' *';
+  color: var(--error-color, #dc2626);
+  font-weight: 700;
+}
+
+.form-hint,
+.ib-form-hint,
+.field-hint,
+small.form-text {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ib-readability-muted);
+  line-height: 1.45;
+}
+
+.form-error,
+.field-error,
+.ib-field-error {
+  color: #b91c1c;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+input::placeholder,
+textarea::placeholder,
+select:invalid {
+  color: color-mix(in srgb, var(--text-secondary) 65%, transparent);
+  opacity: 1;
+}
+
+.ib-lead-field input:not(:placeholder-shown),
+.form-group input:not(:placeholder-shown) {
+  border-color: color-mix(in srgb, var(--primary-color) 40%, var(--border-color));
+}
+
+@media (max-width: 640px) {
+  .form-group,
+  .field,
+  .ib-lead-field {
+    margin-bottom: 1rem;
+  }
+
+  input,
+  select,
+  textarea,
+  .btn {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
+
+/* —— Results V2 shared responsive —— */
+[class*='-v2-kpis'],
+[class*='-v2-grid'],
+[class*='-v2-alt-grid'],
+[class*='-v2-actions'] {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+[class*='-v2-kpis'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 860px) {
+  [class*='-v2-kpis'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+[class*='-v2-grid'] {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  [class*='-v2-grid'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+[class*='-v2-bar'] {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+[class*='-v2-exec'],
+[class*='-v2-title'] {
+  max-width: 100%;
+}
+
+/* —— Stat / KPI readability —— */
+.ib-dash-stat span,
+.auto-v2-kpi span,
+[class*='-v2-kpi'] span {
+  color: var(--ib-readability-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.ib-dash-stat strong,
+.auto-v2-kpi strong,
+[class*='-v2-kpi'] strong {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--text-primary);
+}
+
+/* —— Grids —— */
+.ib-example-grid,
+.ib-category-showcase-grid,
+.how-grid,
+.comparison-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  max-width: 100%;
+}
+
+/* —— Skip link & sr-only reinforcement —— */
+.skip-link:focus {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 10000;
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: #fff;
+  border-radius: 8px;
+}
+
+/* —— CLS: reserve space for hero media —— */
+.ib-hero-v4 .hero-image,
+.ib-hero-v4 .ib-glass-dashboard {
+  min-height: clamp(280px, 42vw, 420px);
+  contain: layout style;
+}
+
+.ib-dash-charts svg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 200 / 64;
+}
+
+/* —— Admin panel (linked from admin-panel.html) —— */
+body.admin-enterprise #app .content,
+body.admin-enterprise .main-content {
+  min-width: 0;
+  overflow-x: clip;
+}
+
+body.admin-enterprise .table-wrap,
+body.admin-enterprise table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+body.admin-enterprise .layout {
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 1024px) {
+  body.admin-enterprise .sidebar {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid var(--border, rgba(148, 163, 184, 0.22));
+  }
+
+  body.admin-enterprise .layout {
+    flex-direction: column;
+  }
+
+  body.admin-enterprise .main {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  body.admin-enterprise .stat-grid,
+  body.admin-enterprise .kpi-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.admin-enterprise .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
