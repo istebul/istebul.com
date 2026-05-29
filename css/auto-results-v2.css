@@ -246,6 +246,35 @@
   color: var(--v2-muted);
 }
 
+.ib-insight-blocks {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ib-insight-blocks__title {
+  margin: 0.35rem 0 0.15rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--v2-muted);
+}
+
+.ib-insight-blocks__title:first-child {
+  margin-top: 0;
+}
+
+.ib-insight-blocks__text {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.ib-insight-blocks__disclaimer {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+}
+
 .auto-v2-actions {
   display: flex;
   flex-wrap: wrap;

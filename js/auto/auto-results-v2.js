@@ -14,6 +14,12 @@ import {
 } from '../features/results/results-engine.js';
 import { gatePdfDownload } from '../features/billing/pdf-access-v1.js';
 import {
+  buildInsightInputFromIntelligence,
+  buildDecisionInsight,
+  hydrateInsightBlocks,
+  renderInsightBlocksHtml
+} from '../features/ai/ai-insight-engine.js';
+import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
@@ -115,64 +121,6 @@ function buildNextSteps({ riskLevel, budgetFit }) {
   return steps.slice(0, 3);
 }
 
-function buildDeterministicExecutiveSummary(ctx) {
-  const usageLabel = {
-    family: 'aile',
-    city: 'şehir içi',
-    long: 'uzun yol',
-    business: 'iş'
-  }[ctx.usage] || 'karma';
-
-  const tone = ctx.riskLevel === 'Yüksek' ? 'daha riskli' : ctx.riskLevel === 'Orta' ? 'dengeli ancak dikkat gerektiren' : 'mantıklı';
-  const why1 = `Kullanım amacınız (${usageLabel}), bütçe aralığınız ve toplam maliyet beklentiniz birlikte değerlendirildiğinde bu tercih ${tone} görünmektedir.`;
-  const why2 = `Karar skorunuz ${ctx.decisionScore}/100 ve güven skorunuz ${ctx.confidenceScore}/100; risk seviyesi ${ctx.riskLevel} olarak işaretlendi.`;
-  const why3 = ctx.strengths?.length
-    ? `Güçlü yönler tarafında öne çıkan nokta: ${ctx.strengths[0]}.`
-    : 'Toplam sahip olma maliyeti ve kullanım uyumu, bu kararın ana belirleyicileridir.';
-  const why4 = ctx.cautions?.length
-    ? `Dikkat edilmesi gereken başlık: ${ctx.cautions[0]}.`
-    : 'Bakım, sigorta ve ikinci el değer kaybı gibi kalemler nihai kararı etkileyebilir.';
-  const why5 = 'Son adımda, teklif/finansman senaryosunu gerçek oranlarla doğrulayıp alternatifleri yan yana karşılaştırmanız önerilir.';
-  return [why1, why2, why3, why4, why5].join(' ');
-}
-
-async function buildAiExecutiveSummary(ctx) {
-  const fallback = buildDeterministicExecutiveSummary(ctx);
-  const prompt = [
-    'Profesyonel otomotiv karar danismani gibi Turkce 4-6 cumle yaz.',
-    'Kesin tavsiye verme; tahmini analiz dili kullan.',
-    'Soruya cevap ver: Bu arac karari neden mantikli veya neden riskli?',
-    `Kullanim: ${ctx.usage}`,
-    `Butce: ${ctx.budgetLabel}`,
-    `Toplam maliyet: ${ctx.totalCostLabel}`,
-    `Karar skoru: ${ctx.decisionScore}/100`,
-    `Guven skoru: ${ctx.confidenceScore}/100`,
-    `Risk: ${ctx.riskLevel}`,
-    `Guclu: ${(ctx.strengths || []).slice(0, 2).join('; ')}`,
-    `Dikkat: ${(ctx.cautions || []).slice(0, 2).join('; ')}`
-  ].join('\n');
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, context: { category: 'auto-decision-results-v2' } }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return { text: fallback, source: 'fallback' };
-    const data = await res.json().catch(() => ({}));
-    const text = String(data?.text || data?.output || '').trim();
-    if (!text) return { text: fallback, source: 'fallback' };
-    return { text: text.slice(0, 900), source: 'ai' };
-  } catch {
-    clearTimeout(timeout);
-    return { text: fallback, source: 'fallback' };
-  }
-}
-
 function renderAutoResultsV2Html(model) {
   const esc = escapeHtml;
   return `
@@ -231,9 +179,9 @@ function renderAutoResultsV2Html(model) {
         </div>
       </section>
 
-      <article class="auto-v2-block auto-v2-block--exec">
-        <h3>AI Executive Summary</h3>
-        <p class="auto-v2-exec" data-auto-v2-exec>${esc(model.executiveSummary || 'Executive Summary hazırlanıyor…')}</p>
+      <article class="auto-v2-block auto-v2-block--exec" data-auto-v2-insight-root>
+        <h3>AI karar yorumu</h3>
+        ${renderInsightBlocksHtml(model.insight, esc)}
         <p class="auto-v2-exec-hint" data-auto-v2-source>${esc(model.summarySourceLabel)}</p>
       </article>
 
@@ -309,6 +257,13 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     cautions,
     alternatives: altCards,
     executiveSummary: intel.executiveSummary,
+    insight: buildDecisionInsight(
+      buildInsightInputFromIntelligence('auto', intel.context || {}, intel, {
+        strengths,
+        weaknesses: cautions,
+        costs: { budget, tco12: totalCost, vehiclePrice }
+      })
+    ),
     summarySourceLabel: 'Kaynak: hazırlanıyor',
     nextSteps: intel.nextSteps.length ? intel.nextSteps : buildNextSteps({ riskLevel: risk.label, budgetFit }),
     usage: String(formData?.usage || ''),
@@ -361,15 +316,27 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   });
 
   // Executive Summary (AI proxy + fallback)
-  const summary = await fetchExecutiveSummaryV3('auto', intel.context || {}, intel);
+  const summary = await fetchExecutiveSummaryV3('auto', intel.context || {}, intel, {
+    strengths,
+    weaknesses: cautions,
+    costs: { budget, tco12: totalCost, vehiclePrice }
+  });
 
-  const execEl = root.querySelector('[data-auto-v2-exec]');
-  if (execEl) execEl.textContent = summary.text;
+  if (summary.insight) {
+    model.insight = summary.insight;
+    hydrateInsightBlocks(root.querySelector('[data-auto-v2-insight-root]'), summary.insight);
+  }
   const sourceEl = root.querySelector('[data-auto-v2-source]');
-  if (sourceEl) sourceEl.textContent = `Kaynak: ${summary.source === 'ai' ? 'AI destekli' : 'Deterministic fallback'}`;
+  if (sourceEl) {
+    sourceEl.textContent =
+      summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
+  }
   model.executiveSummary = summary.text;
   model.summarySourceLabel = sourceEl?.textContent || '';
   model.pdfReportData.executiveSummary = summary.text;
+  if (summary.insight) {
+    model.pdfReportData.insightBlocks = summary.insight;
+  }
 
   return model;
 }

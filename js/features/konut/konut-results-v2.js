@@ -14,6 +14,12 @@ import {
 } from '../results/results-engine.js';
 import { gatePdfDownload } from '../billing/pdf-access-v1.js';
 import {
+  buildInsightInputFromIntelligence,
+  buildDecisionInsight,
+  hydrateInsightBlocks,
+  renderInsightBlocksHtml
+} from '../ai/ai-insight-engine.js';
+import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
@@ -309,62 +315,6 @@ function buildNextSteps(state = {}, metrics = {}, riskAnalysis = []) {
   return steps.slice(0, 6);
 }
 
-function buildDeterministicExecutiveSummary(ctx) {
-  const tone =
-    ctx.decisionScore >= 70 && ctx.overallRisk !== 'Yüksek'
-      ? 'mantıklı'
-      : ctx.decisionScore >= 55
-        ? 'koşullu olarak değerlendirilebilir'
-        : 'riskli';
-
-  return [
-    `${ctx.locationLabel} için konut kararınız, bütçe (${ctx.budgetLabel}), ${ctx.homeType || 'konut tipi'} ve ${ctx.purpose || 'kullanım amacı'} birlikte değerlendirildiğinde ${tone} görünmektedir.`,
-    `Karar skorunuz ${ctx.decisionScore}/100 (${ctx.scoreLabel}); güven skorunuz ${ctx.confidenceScore}/100. Genel risk seviyesi: ${ctx.overallRisk}.`,
-    ctx.strengths?.[0] ? `Güçlü yön: ${ctx.strengths[0]}` : 'Lokasyon ve bütçe uyumu kararın ana dayanağıdır.',
-    ctx.weaknesses?.[0] ? `Kritik dikkat noktası: ${ctx.weaknesses[0]}` : 'Tapu, ekspertiz ve finansman koşulları nihai kararı belirler.',
-    ctx.decisionScore < 55 || ctx.overallRisk === 'Yüksek'
-      ? 'Bu aşamada beklemek veya alternatif segment/lokasyon senaryolarını karşılaştırmak daha güvenli olabilir.'
-      : 'Şartlar uygunsa ekspertiz ve kredi ön onayı sonrası teklif aşamasına geçilebilir.',
-    'Bu özet bilgilendirme amaçlıdır; bağlayıcı değerlendirme veya satın alma taahhüdü değildir.'
-  ].join(' ');
-}
-
-async function buildAiExecutiveSummary(ctx) {
-  const fallback = buildDeterministicExecutiveSummary(ctx);
-  const prompt = [
-    'Profesyonel konut/karar danismani gibi Turkce 4-6 cumle yaz.',
-    'Sorular: Bu konut karari mantikli mi? Hangi sartlarda alinmali? Ne zaman beklenmeli? En kritik dikkat noktasi ne?',
-    'Kesin tavsiye verme; tahmini analiz dili.',
-    `Lokasyon: ${ctx.locationLabel}`,
-    `Butce: ${ctx.budgetLabel}`,
-    `Karar skoru: ${ctx.decisionScore}/100`,
-    `Guven: ${ctx.confidenceScore}/100`,
-    `Risk: ${ctx.overallRisk}`,
-    `Guclu: ${(ctx.strengths || []).slice(0, 2).join('; ')}`,
-    `Zayif: ${(ctx.weaknesses || []).slice(0, 2).join('; ')}`
-  ].join('\n');
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, context: { category: 'konut-decision-results-v2' } }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return { text: fallback, source: 'fallback' };
-    const data = await res.json().catch(() => ({}));
-    const text = String(data?.text || data?.output || '').trim();
-    if (!text) return { text: fallback, source: 'fallback' };
-    return { text: text.slice(0, 950), source: 'ai' };
-  } catch {
-    clearTimeout(timeout);
-    return { text: fallback, source: 'fallback' };
-  }
-}
-
 /**
  * Tam result payload (PDF ve ileride API için).
  */
@@ -436,7 +386,19 @@ export function buildKonutResultsV2Payload({
     locationLabel,
     budgetLabel,
     homeType: state.homeType || '—',
-    purpose: state.purchasePurpose || '—'
+    purpose: state.purchasePurpose || '—',
+    insight: buildDecisionInsight(
+      buildInsightInputFromIntelligence('konut', intel.context || {}, intel, {
+        strengths,
+        weaknesses,
+        costs: {
+          budget: state.totalBudget,
+          monthlyPayment: totalCost.monthlyPayment,
+          duesMonthly: totalCost.duesMonthly,
+          dti: metrics.dti
+        }
+      })
+    )
   };
 }
 
@@ -542,9 +504,9 @@ function renderKonutResultsV2Html(model) {
         </div>
       </section>
 
-      <article class="konut-v2-block konut-v2-block--exec">
-        <h3>AI Executive Summary</h3>
-        <p class="konut-v2-exec" data-konut-v2-exec>${esc(model.executiveSummary || 'Özet hazırlanıyor…')}</p>
+      <article class="konut-v2-block konut-v2-block--exec" data-konut-v2-insight-root>
+        <h3>AI karar yorumu</h3>
+        ${renderInsightBlocksHtml(model.insight, esc)}
         <p class="konut-v2-exec-hint" data-konut-v2-source>${esc(model.summarySourceLabel || '')}</p>
       </article>
 
@@ -631,17 +593,26 @@ export async function mountKonutResultsV2({
       recommendationLabel: model.recommendationLabel,
       overallRisk: model.overallRisk,
       warnings: model.warnings
+    },
+    {
+      strengths: model.strengths,
+      weaknesses: model.weaknesses,
+      costs: model.totalCost
     }
   );
 
-  const execEl = root.querySelector('[data-konut-v2-exec]');
-  if (execEl) execEl.textContent = summary.text;
+  if (summary.insight) {
+    model.insight = summary.insight;
+    hydrateInsightBlocks(root.querySelector('[data-konut-v2-insight-root]'), summary.insight);
+  }
   const sourceEl = root.querySelector('[data-konut-v2-source]');
   if (sourceEl) {
-    sourceEl.textContent = `Kaynak: ${summary.source === 'ai' ? 'AI destekli' : 'Kural tabanlı danışman'}`;
+    sourceEl.textContent =
+      summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
   }
   model.executiveSummary = summary.text;
   model.pdfReportData.executiveSummary = summary.text;
+  if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
 
   return model;
 }

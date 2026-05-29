@@ -4,6 +4,12 @@
  */
 import { escapeHtml } from '../../core/security.js';
 import {
+  buildExecutiveSummary,
+  buildInsightInputFromIntelligence,
+  fetchInsightWithProxy,
+  sanitizeInsightText
+} from '../ai/ai-insight-engine.js';
+import {
   buildConfidenceScore,
   buildRiskItem,
   clampScore,
@@ -682,32 +688,22 @@ export function buildExecutiveSummaryFallbackV3(category, context = {}) {
   const confidence = clampScore(
     context.confidenceScore ?? computeConfidenceScoreV3(cat, context)
   );
-  const level = resolveRecommendationLevel(score, {
-    ...context,
-    riskAnalysis: context.riskAnalysis || buildRiskAnalysisV3(cat, context)
-  });
-  const levelLabel = RECOMMENDATION_LABELS[level] || level;
-  const highRisk = (context.riskAnalysis || []).find((r) => r.level === 'yüksek');
-
-  const positive = (context.scoreFactors || []).filter((f) => String(f.impact).startsWith('+'));
-  const negative = (context.scoreFactors || []).filter((f) => String(f.impact).startsWith('-'));
-
-  const parts = [
-    `${categoryLabel(cat)} kararınız için karar skoru ${score}/100, güven skoru ${confidence}/100 olarak modellenmiştir.`,
-    `Genel öneri seviyesi: ${levelLabel}.`,
-    positive.length ?
-      `Olumlu sinyal: ${positive[0].label} — ${positive[0].reason}.`
-    : 'Profil verileri dengeli görünüyor.',
-    negative.length ?
-      `Dikkat: ${negative[0].label} — ${negative[0].reason}.`
-    : 'Belirgin negatif faktör sınırlı.',
-    highRisk ?
-      `En kritik risk başlığı: ${highRisk.title}.`
-    : 'Kritik risk başlığı sınırlı görünüyor.',
-    'Bu özet karar destek amaçlıdır; finansal, hukuki veya yatırım tavsiyesi değildir. Nihai karar öncesi güncel teklif ve sözleşme koşullarını doğrulayın.'
-  ];
-
-  return parts.join(' ');
+  const input = buildInsightInputFromIntelligence(
+    cat,
+    context,
+    {
+      decisionScore: score,
+      confidenceScore: confidence,
+      scoreFactors: context.scoreFactors,
+      riskAnalysis: context.riskAnalysis,
+      recommendationLevel: context.recommendationLevel,
+      recommendationLabel: context.recommendationLabel || RECOMMENDATION_LABELS[context.recommendationLevel],
+      overallRisk: context.overallRisk || overallRiskLabel(context.riskAnalysis),
+      warnings: context.warnings
+    },
+    { planTier: context.planTier || 'guest' }
+  );
+  return buildExecutiveSummary(input);
 }
 
 function categoryLabel(cat) {
@@ -812,59 +808,27 @@ export function buildDecisionIntelligenceResult(category, formData = {}, metrics
 /**
  * AI executive summary with V3 context; safe fallback.
  */
-export async function fetchExecutiveSummaryV3(category, context = {}, intelligence = {}) {
+export async function fetchExecutiveSummaryV3(category, context = {}, intelligence = {}, options = {}) {
   const cat = normalizeCategory(category);
-  const fallback = buildExecutiveSummaryFallbackV3(cat, {
-    ...context,
-    ...intelligence,
-    decisionScore: intelligence.decisionScore,
-    confidenceScore: intelligence.confidenceScore,
-    scoreFactors: intelligence.scoreFactors,
-    riskAnalysis: intelligence.riskAnalysis,
-    recommendationLevel: intelligence.recommendationLevel
+  const input = buildInsightInputFromIntelligence(cat, context, intelligence, {
+    planTier: options.planTier || context.planTier || 'guest',
+    locale: options.locale || 'tr-TR',
+    strengths: options.strengths,
+    weaknesses: options.weaknesses,
+    costs: options.costs
   });
 
-  const factorsText = (intelligence.scoreFactors || [])
-    .slice(0, 5)
-    .map((f) => `${f.label} (${f.impact}): ${f.reason}`)
-    .join('; ');
+  const result = await fetchInsightWithProxy(input, {
+    executiveOnly: true,
+    skipProxy: options.skipProxy,
+    timeoutMs: options.timeoutMs
+  });
 
-  const prompt = [
-    'Profesyonel karar danismani gibi Turkce 4-6 cumle yaz.',
-    'Kesin finansal/hukuki/yatirim tavsiyesi verme; karar destek dili kullan.',
-    `Kategori: ${categoryLabel(cat)}`,
-    `Karar skoru: ${intelligence.decisionScore}/100`,
-    `Guven: ${intelligence.confidenceScore}/100`,
-    `Oneri seviyesi: ${intelligence.recommendationLabel || intelligence.recommendationLevel}`,
-    `Risk: ${intelligence.overallRisk}`,
-    factorsText ? `Skor faktorleri: ${factorsText}` : '',
-    intelligence.warnings?.length ? `Uyarilar: ${intelligence.warnings.join('; ')}` : ''
-  ]
-    .filter(Boolean)
-    .join('\n');
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt,
-        context: { category: `${cat}-decision-intelligence-v3` }
-      }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return { text: fallback, source: 'fallback' };
-    const data = await res.json().catch(() => ({}));
-    const text = String(data?.text || data?.output || '').trim();
-    if (!text) return { text: fallback, source: 'fallback' };
-    return { text: text.slice(0, 950), source: 'ai' };
-  } catch {
-    clearTimeout(timeout);
-    return { text: fallback, source: 'fallback' };
-  }
+  return {
+    text: sanitizeInsightText(result.text, 950),
+    source: result.source === 'ai' ? 'ai' : 'fallback',
+    insight: result.insight
+  };
 }
 
 /**

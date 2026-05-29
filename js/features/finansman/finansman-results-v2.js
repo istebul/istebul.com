@@ -16,6 +16,12 @@ import {
 } from '../results/results-engine.js';
 import { gatePdfDownload } from '../billing/pdf-access-v1.js';
 import {
+  buildInsightInputFromIntelligence,
+  buildDecisionInsight,
+  hydrateInsightBlocks,
+  renderInsightBlocksHtml
+} from '../ai/ai-insight-engine.js';
+import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
@@ -328,63 +334,6 @@ function buildNextSteps(state, riskAnalysis) {
   return steps.slice(0, 6);
 }
 
-function buildDeterministicExecutiveSummary(ctx) {
-  const tone =
-    ctx.decisionScore >= 70 && ctx.overallRisk !== 'Yüksek'
-      ? 'mantıklı'
-      : ctx.decisionScore >= 55
-        ? 'koşullu olarak değerlendirilebilir'
-        : 'riskli';
-
-  return [
-    `${optionLabel('purpose', ctx.purpose)} finansmanı için profiliniz ${tone} görünüyor; karar skoru ${ctx.decisionScore}/100 (${ctx.scoreLabel}).`,
-    `Tahmini aylık ödeme ${ctx.monthlyLabel}, toplam geri ödeme yaklaşık ${ctx.totalLabel}; güven skoru ${ctx.confidenceScore}/100.`,
-    ctx.overallRisk === 'Yüksek' || ctx.decisionScore < 55
-      ? 'Bu aşamada finansmanı ertelemek veya tutar/vade revizyonu yapmak daha güvenli olabilir.'
-      : 'Şartlar uygunsa banka ön onayı ve yazılı teklif sonrası ilerlenebilir.',
-    ctx.criticalRisk
-      ? `En kritik risk: ${ctx.criticalRisk}.`
-      : 'En kritik kontrol: EYM ve aylık ödeme/gelir oranı.',
-    'Mutlaka kontrol edin: masraf kalemleri, sigorta zorunlulukları, erken kapama koşulları ve kampanya süresi.',
-    'Bu özet bilgilendirme amaçlıdır; bağlayıcı kredi onayı veya finansal tavsiye değildir.'
-  ].join(' ');
-}
-
-async function buildAiExecutiveSummary(ctx) {
-  const fallback = buildDeterministicExecutiveSummary(ctx);
-  const prompt = [
-    'Profesyonel finans danismani gibi Turkce 4-6 cumle yaz.',
-    'Sorular: Bu finansman mantikli mi? Hangi sartlarda alinmali? Ne zaman ertelenmeli? En kritik risk? Ne kontrol edilmeli?',
-    'Kesin tavsiye verme; tahmini analiz.',
-    `Amaç: ${optionLabel('purpose', ctx.purpose)}`,
-    `Karar: ${ctx.decisionScore}/100`,
-    `Risk: ${ctx.overallRisk}`,
-    `Aylik: ${ctx.monthlyLabel}`,
-    `Guclu: ${(ctx.strengths || []).slice(0, 2).join('; ')}`,
-    `Zayif: ${(ctx.weaknesses || []).slice(0, 2).join('; ')}`
-  ].join('\n');
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, context: { category: 'finansman-decision-results-v2' } }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return { text: fallback, source: 'fallback' };
-    const data = await res.json().catch(() => ({}));
-    const text = String(data?.text || data?.output || '').trim();
-    if (!text) return { text: fallback, source: 'fallback' };
-    return { text: text.slice(0, 950), source: 'ai' };
-  } catch {
-    clearTimeout(timeout);
-    return { text: fallback, source: 'fallback' };
-  }
-}
-
 /**
  * Tam result payload.
  */
@@ -453,7 +402,18 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [] }) {
     purpose: state.purpose,
     monthlyLabel: formatTryAmount(cost.monthlyPayment),
     totalLabel: formatTryAmount(cost.totalRepayment),
-    criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || ''
+    criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || '',
+    insight: buildDecisionInsight(
+      buildInsightInputFromIntelligence('finansman', intel.context || {}, intel, {
+        strengths,
+        weaknesses,
+        costs: {
+          monthlyPayment: cost.monthlyPayment,
+          paymentToIncome: cost.incomeLoadPct,
+          termMonths: state.term_months === '60' ? 60 : state.term_months === '24' ? 24 : 36
+        }
+      })
+    )
   };
 }
 
@@ -559,9 +519,9 @@ function renderFinansmanResultsV2Html(model) {
         </div>
       </section>
 
-      <article class="finansman-v2-block finansman-v2-block--exec">
-        <h3>AI Executive Summary</h3>
-        <p class="finansman-v2-exec" data-finansman-v2-exec>${esc(model.executiveSummary || 'Özet hazırlanıyor…')}</p>
+      <article class="finansman-v2-block finansman-v2-block--exec" data-finansman-v2-insight-root>
+        <h3>AI karar yorumu</h3>
+        ${renderInsightBlocksHtml(model.insight, esc)}
         <p class="finansman-v2-exec-hint" data-finansman-v2-source></p>
       </article>
 
@@ -625,16 +585,29 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
     gatePdfDownload(model.pdfReportData);
   });
 
-  const summary = await fetchExecutiveSummaryV3('finansman', model.intelligence?.context || {}, model.intelligence || model);
+  const summary = await fetchExecutiveSummaryV3(
+    'finansman',
+    model.intelligence?.context || {},
+    model.intelligence || model,
+    {
+      strengths: model.strengths,
+      weaknesses: model.weaknesses,
+      costs: model.totalCost
+    }
+  );
 
-  const execEl = root.querySelector('[data-finansman-v2-exec]');
-  if (execEl) execEl.textContent = summary.text;
+  if (summary.insight) {
+    model.insight = summary.insight;
+    hydrateInsightBlocks(root.querySelector('[data-finansman-v2-insight-root]'), summary.insight);
+  }
   const sourceEl = root.querySelector('[data-finansman-v2-source]');
   if (sourceEl) {
-    sourceEl.textContent = `Kaynak: ${summary.source === 'ai' ? 'AI destekli' : 'Kural tabanlı danışman'}`;
+    sourceEl.textContent =
+      summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
   }
   model.executiveSummary = summary.text;
   model.pdfReportData.executiveSummary = summary.text;
+  if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
 
   return model;
 }

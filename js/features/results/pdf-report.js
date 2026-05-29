@@ -3,6 +3,7 @@
  * Designed so a server-side PDF service can reuse buildReportHtml(pdfReportData) later.
  */
 import { escapeHtml } from '../../core/security.js';
+import { buildPdfInsight, normalizeInsightInput } from '../ai/ai-insight-engine.js';
 import { recordPdfReportHistory } from '../account/dashboard-v2-store.js';
 
 const CATEGORY_LABELS = {
@@ -390,6 +391,33 @@ li + li { margin-top: 0.25rem; }
 }
 `;
 
+function resolvePdfInsightSections(data) {
+  if (data.pdfInsight && data.pdfInsight.executiveSummary) return data.pdfInsight;
+  const input = normalizeInsightInput({
+    vertical: data.category,
+    answers: data.profile || {},
+    scores: {
+      decision: data.decisionScore,
+      confidence: data.confidenceScore,
+      overallRisk: data.overallRisk,
+      scoreLabel: data.scoreLabel,
+      factors: data.scoreFactors
+    },
+    costs: data.totalCost,
+    risks: data.riskAnalysis,
+    strengths: data.strengths,
+    weaknesses: data.weaknesses || data.cautions,
+    alternatives: data.alternatives,
+    recommendation: {
+      level: data.recommendationLevel,
+      label: data.recommendationLabel
+    },
+    planTier: data.planTier || 'pro',
+    locale: 'tr-TR'
+  });
+  return buildPdfInsight(input);
+}
+
 /**
  * @param {object} [pdfReportData]
  */
@@ -397,6 +425,9 @@ export function buildReportHtml(pdfReportData = {}) {
   const data = pdfReportData && typeof pdfReportData === 'object' ? pdfReportData : {};
   const category = String(data.category || 'karar').toLowerCase();
   const label = categoryLabel(category);
+  const pdfInsight = resolvePdfInsightSections(data);
+  const executiveText =
+    sanitizeReportText(data.executiveSummary || pdfInsight.executiveSummary || '');
   const cost = data.totalCost && typeof data.totalCost === 'object' ? data.totalCost : {};
   const estimateNote = cost.isEstimate
     ? sanitizeReportText(cost.estimateNote || 'Bazı tutarlar tahmini model ile hesaplanmıştır; güncel teklif ile doğrulanmalıdır.')
@@ -453,10 +484,32 @@ export function buildReportHtml(pdfReportData = {}) {
         </div>
       </section>
 
-      <section aria-label="Executive Summary">
-        <h2>AI Executive Summary</h2>
+      <section aria-label="Yönetici özeti">
+        <h2>Yönetici özeti</h2>
         <div class="exec">
-          <p>${sanitizeReportText(data.executiveSummary || 'Özet henüz oluşturulmadı.')}</p>
+          <p>${executiveText || 'Özet henüz oluşturulmadı.'}</p>
+        </div>
+      </section>
+
+      <section aria-label="Karar gerekçeleri">
+        <h2>Karar gerekçeleri</h2>
+        ${listHtml(pdfInsight.decisionReasons, true)}
+      </section>
+
+      <section aria-label="Risk ve uyarılar">
+        <h2>Risk ve uyarılar</h2>
+        ${listHtml(pdfInsight.riskWarnings)}
+      </section>
+
+      <section aria-label="Önerilen aksiyonlar">
+        <h2>Önerilen aksiyonlar</h2>
+        ${listHtml(pdfInsight.actions, true)}
+      </section>
+
+      <section aria-label="Maliyet yorumu">
+        <h2>Maliyet yorumu</h2>
+        <div class="exec">
+          <p>${sanitizeReportText(pdfInsight.costCommentary || '—')}</p>
         </div>
       </section>
 

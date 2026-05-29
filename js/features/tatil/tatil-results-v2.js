@@ -16,6 +16,12 @@ import {
 } from '../results/results-engine.js';
 import { gatePdfDownload } from '../billing/pdf-access-v1.js';
 import {
+  buildInsightInputFromIntelligence,
+  buildDecisionInsight,
+  hydrateInsightBlocks,
+  renderInsightBlocksHtml
+} from '../ai/ai-insight-engine.js';
+import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
@@ -425,63 +431,6 @@ function buildNextSteps(state, riskAnalysis) {
   return steps.slice(0, 6);
 }
 
-function buildDeterministicExecutiveSummary(ctx) {
-  const tone =
-    ctx.decisionScore >= 70 && ctx.overallRisk !== 'Yüksek'
-      ? 'mantıklı'
-      : ctx.decisionScore >= 55
-        ? 'koşullu olarak değerlendirilebilir'
-        : 'riskli';
-
-  return [
-    `${ctx.goalLabel || 'Tatil'} planınız ${tone} görünüyor; karar skoru ${ctx.decisionScore}/100 (${ctx.scoreLabel}).`,
-    `Toplam tatil bütçesi yaklaşık ${ctx.totalLabel}; güven skoru ${ctx.confidenceScore}/100.`,
-    ctx.overallRisk === 'Yüksek' || ctx.decisionScore < 55
-      ? 'Bu aşamada tarihi veya destinasyonu değiştirmek veya planı ertelemek daha güvenli olabilir.'
-      : 'Şartlar uygunsa yazılı teklif ve iptal koşulları netleştikten sonra rezervasyon yapılabilir.',
-    ctx.criticalRisk
-      ? `En kritik risk: ${ctx.criticalRisk}.`
-      : 'En kritik kontrol: sezon yoğunluğu ve iptal koşulları.',
-    'Mutlaka kontrol edin: konaklama yorumları, ulaşım bağlantıları, çocuk uygunluğu ve gizli masraflar.',
-    'Bu özet bilgilendirme amaçlıdır; bağlayıcı rezervasyon veya seyahat tavsiyesi değildir.'
-  ].join(' ');
-}
-
-async function buildAiExecutiveSummary(ctx) {
-  const fallback = buildDeterministicExecutiveSummary(ctx);
-  const prompt = [
-    'Profesyonel seyahat danismani gibi Turkce 4-6 cumle yaz.',
-    'Sorular: Plan mantikli mi? Hangi sartlarda alinmali? Ne zaman ertelenmeli? En kritik risk? Ne kontrol edilmeli?',
-    'Kesin tavsiye verme; tahmini analiz.',
-    `Hedef: ${ctx.goalLabel}`,
-    `Karar: ${ctx.decisionScore}/100`,
-    `Risk: ${ctx.overallRisk}`,
-    `Butce: ${ctx.totalLabel}`,
-    `Guclu: ${(ctx.strengths || []).slice(0, 2).join('; ')}`,
-    `Zayif: ${(ctx.weaknesses || []).slice(0, 2).join('; ')}`
-  ].join('\n');
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, context: { category: 'tatil-decision-results-v2' } }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return { text: fallback, source: 'fallback' };
-    const data = await res.json().catch(() => ({}));
-    const text = String(data?.text || data?.output || '').trim();
-    if (!text) return { text: fallback, source: 'fallback' };
-    return { text: text.slice(0, 950), source: 'ai' };
-  } catch {
-    clearTimeout(timeout);
-    return { text: fallback, source: 'fallback' };
-  }
-}
-
 /**
  * Tam result payload.
  */
@@ -546,7 +495,14 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
     pdfReportData,
     goalLabel: optionLabel('goal', state.vacation_goal),
     totalLabel: formatTryAmount(cost.totalBudget),
-    criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || ''
+    criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || '',
+    insight: buildDecisionInsight(
+      buildInsightInputFromIntelligence('tatil', intel.context || {}, intel, {
+        strengths,
+        weaknesses,
+        costs: { totalBudget: cost.totalBudget, realTotal: cost.realTotal }
+      })
+    )
   };
 }
 
@@ -652,9 +608,9 @@ function renderTatilResultsV2Html(model) {
         </div>
       </section>
 
-      <article class="tatil-v2-block tatil-v2-block--exec">
-        <h3>AI Executive Summary</h3>
-        <p class="tatil-v2-exec" data-tatil-v2-exec>${esc(model.executiveSummary || 'Özet hazırlanıyor…')}</p>
+      <article class="tatil-v2-block tatil-v2-block--exec" data-tatil-v2-insight-root>
+        <h3>AI karar yorumu</h3>
+        ${renderInsightBlocksHtml(model.insight, esc)}
         <p class="tatil-v2-exec-hint" data-tatil-v2-source></p>
       </article>
 
@@ -718,16 +674,24 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
     gatePdfDownload(model.pdfReportData);
   });
 
-  const summary = await fetchExecutiveSummaryV3('tatil', model.intelligence?.context || {}, model.intelligence || model);
+  const summary = await fetchExecutiveSummaryV3('tatil', model.intelligence?.context || {}, model.intelligence || model, {
+    strengths: model.strengths,
+    weaknesses: model.weaknesses,
+    costs: model.totalCost
+  });
 
-  const execEl = root.querySelector('[data-tatil-v2-exec]');
-  if (execEl) execEl.textContent = summary.text;
+  if (summary.insight) {
+    model.insight = summary.insight;
+    hydrateInsightBlocks(root.querySelector('[data-tatil-v2-insight-root]'), summary.insight);
+  }
   const sourceEl = root.querySelector('[data-tatil-v2-source]');
   if (sourceEl) {
-    sourceEl.textContent = `Kaynak: ${summary.source === 'ai' ? 'AI destekli' : 'Kural tabanlı danışman'}`;
+    sourceEl.textContent =
+      summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
   }
   model.executiveSummary = summary.text;
   model.pdfReportData.executiveSummary = summary.text;
+  if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
 
   return model;
 }
