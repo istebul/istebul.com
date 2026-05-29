@@ -1,58 +1,108 @@
 /* Billing V1 + Paywall V1 */
 
-.billing-v1-pricing-grid {
-  display: grid;
-  gap: 1rem;
-  margin: 1rem 0;
+/* Ana sayfa #pricing — 3 kart; dar 2 sütun teaser grid’ine sıkışmasın */
+#pricing .ib-pricing-home-teaser:has(.billing-v1-pricing-grid) {
+  display: block;
+  max-width: min(1120px, 100%);
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-@media (min-width: 900px) {
+.billing-v1-pricing-grid {
+  display: grid;
+  gap: 1.25rem;
+  margin: 1.25rem 0;
+  width: 100%;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
   .billing-v1-pricing-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .billing-v1-pricing-grid {
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
     align-items: stretch;
   }
+}
+
+.billing-v1-plan-card,
+.billing-v1-plan-card h3,
+.billing-v1-plan-card .billing-v1-plan-kicker,
+.billing-v1-plan-card .billing-v1-plan-name,
+.billing-v1-plan-card .billing-v1-plan-desc,
+.billing-v1-plan-card .billing-v1-plan-price {
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: none;
 }
 
 .billing-v1-plan-card {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.15rem 1.2rem;
+  gap: 0.55rem;
+  padding: 1.35rem 1.4rem;
   border-radius: 1rem;
   border: 1px solid color-mix(in srgb, var(--border-color, #334155) 55%, transparent);
-  background: color-mix(in srgb, var(--surface-color, #0f172a) 88%, transparent);
+  background: color-mix(in srgb, var(--surface-color, #fff) 96%, transparent);
   min-height: 22rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+#pricing .billing-v1-plan-card {
+  background: #fff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 12px 32px rgba(15, 23, 42, 0.06);
 }
 
 .billing-v1-plan-card--pro {
   border-color: color-mix(in srgb, var(--primary-color, #3b82f6) 45%, transparent);
-  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.12);
 }
 
 .billing-v1-plan-kicker {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, #64748b);
+  white-space: nowrap;
 }
 
 .billing-v1-plan-kicker--pro {
-  color: var(--primary-color, #60a5fa);
+  color: var(--primary-color, #2563eb);
 }
 
 .billing-v1-trial {
-  display: inline-block;
-  font-size: 0.75rem;
-  padding: 0.15rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  padding: 0.28rem 0.65rem;
   border-radius: 999px;
-  background: color-mix(in srgb, #22c55e 20%, transparent);
-  color: #86efac;
-  width: fit-content;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  width: auto;
+  max-width: 100%;
+  white-space: normal;
+  margin: 0.15rem 0 0.35rem;
 }
 
 .billing-v1-plan-name {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  line-height: 1.25;
+  font-weight: 700;
+  white-space: normal;
 }
 
 .billing-v1-plan-price {
@@ -69,9 +119,14 @@
 
 .billing-v1-plan-desc {
   margin: 0;
-  font-size: 0.88rem;
-  color: var(--text-muted, #94a3b8);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted, #475569);
   flex: 1;
+}
+
+#pricing .billing-v1-plan-desc {
+  color: #475569;
 }
 
 .billing-v1-plan-features {

@@ -932,6 +932,14 @@ body.revenue-paywall-open {
   align-items: stretch;
 }
 
+/* Billing V1 üçlü plan grid — teaser 2 sütun / 720px kısıtını kaldır */
+.ib-pricing-home-teaser:has(.billing-v1-pricing-grid),
+#pricing .ib-pricing-home-teaser:has(.billing-v1-pricing-grid) {
+  display: block;
+  max-width: min(1120px, 100%);
+  width: 100%;
+}
+
 .ib-pricing-teaser-card .revenue-plan-desc {
   padding: 0 1.35rem;
   margin: 0.75rem 0;
