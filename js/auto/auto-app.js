@@ -588,11 +588,12 @@ function renderAutoResultsInterpretationGuide(topResult, formData = {}) {
 
   return `
     <section class="auto-results-guide" aria-label="Sonuçları nasıl okursunuz">
+      <p class="auto-results-guide-kicker">Sonuç rehberi</p>
       <h3>Sonuçlarınızı nasıl yorumlarsınız?</h3>
       <ol class="auto-results-guide-steps">
-        <li><strong>Uyum skoru ${escapeHtml(String(score))}/100</strong> — Bütçe ve kullanımınıza göre sıralama; satın alma garantisi değildir.</li>
-        <li><strong>Yaklaşık aylık yük ${escapeHtml(monthly)}</strong> — 12 aylık TCO’nun parçası; finansman tercihinize göre değişir.</li>
-        <li><strong>Sonraki adım</strong> — Modelleri karşılaştırın; derin rapor için Pro’yu değerlendirin.</li>
+        <li><strong>Uyum skoru ${escapeHtml(String(score))}/100</strong> — Bütçe ve kullanımınıza göre sıralama göstergesidir; satın alma garantisi değildir.</li>
+        <li><strong>Yaklaşık aylık yük ${escapeHtml(monthly)}</strong> — 12 aylık toplam maliyetin parçasıdır; finansman tercihinize göre değişir.</li>
+        <li><strong>Sonraki adım</strong> — Modelleri karşılaştırın; detaylı rapor için Pro seçeneğini değerlendirin.</li>
       </ol>
       <div class="auto-results-guide-actions">
         <a class="btn secondary" href="/karsilastir/">Karşılaştırma merkezi</a>
@@ -929,7 +930,7 @@ function renderLoading() {
   ];
 
   container.innerHTML = `
-    <div class="ai-loading premium-loading" role="status" aria-live="polite" aria-busy="true">
+    <div class="ai-loading premium-loading auto-pre-result-panel" role="status" aria-live="polite" aria-busy="true">
       <div class="premium-loading-ring" aria-hidden="true">
         <div class="spinner"></div>
       </div>
@@ -2373,10 +2374,10 @@ document.querySelectorAll('#gelir .btn.secondary').forEach((btn, index) => {
 const wizard = document.getElementById('auto-wizard');
 
 const usageOptions = [
-  { label: 'Aile', value: 'family', note: 'Geniş iç hacim ve güvenlik' },
-  { label: 'Şehir içi', value: 'city', note: 'Yakıt ve park kolaylığı' },
-  { label: 'Uzun yol', value: 'long', note: 'Konfor ve düşük tüketim' },
-  { label: 'İş', value: 'business', note: 'Prestij ve kullanım verimliliği' }
+  { label: 'Aile', value: 'family', note: 'Geniş iç hacim ve güvenlik önceliği' },
+  { label: 'Şehir içi', value: 'city', note: 'Park kolaylığı ve düşük tüketim' },
+  { label: 'Uzun yol', value: 'long', note: 'Konfor ve sürüş stabilitesi' },
+  { label: 'İş / profesyonel', value: 'business', note: 'Prestij ve verimli kullanım' }
 ];
 
 const bodyOptions = [
@@ -2386,19 +2387,19 @@ const bodyOptions = [
 ];
 
 const fuelOptions = [
-  { label: 'Fark etmez', value: 'any', note: 'En dengeli seçenek' },
-  { label: 'Hibrit', value: 'hybrid', note: 'Şehir içi tasarruf' },
-  { label: 'Elektrikli', value: 'electric', note: 'Düşük kullanım maliyeti' },
-  { label: 'Benzinli', value: 'gasoline', note: 'Geniş servis ağı' },
-  { label: 'Dizel', value: 'diesel', note: 'Uzun yol / yüksek km' }
+  { label: 'Fark etmez', value: 'any', note: 'En dengeli seçenekleri göster' },
+  { label: 'Hibrit', value: 'hybrid', note: 'Şehir içi yakıt tasarrufu' },
+  { label: 'Elektrikli', value: 'electric', note: 'Düşük işletme maliyeti' },
+  { label: 'Benzinli', value: 'gasoline', note: 'Geniş servis ve yakıt ağı' },
+  { label: 'Dizel', value: 'diesel', note: 'Uzun yol ve yüksek km' }
 ];
 
 const kmOptions = [
-  { label: '10.000 km altı', value: '8000', note: 'Düşük kullanım' },
-  { label: '10.000 – 20.000 km', value: '15000', note: 'Ortalama kullanım' },
-  { label: '20.000 – 35.000 km', value: '28000', note: 'Yoğun kullanım' },
-  { label: '35.000 km+', value: '40000', note: 'Profesyonel kullanım' },
-  { label: 'Tam km gireceğim', value: 'custom', note: 'Net kilometre' }
+  { label: '10.000 km altı', value: '8000', note: 'Düşük kullanım profili' },
+  { label: '10.000 – 20.000 km', value: '15000', note: 'Ortalama yıllık kullanım' },
+  { label: '20.000 – 35.000 km', value: '28000', note: 'Yoğun günlük kullanım' },
+  { label: '35.000 km+', value: '40000', note: 'Profesyonel / filo düzeyi' },
+  { label: 'Tam km gireceğim', value: 'custom', note: 'Net kilometre ile hassas analiz' }
 ];
 
 const kmCustom = {
@@ -2423,20 +2424,20 @@ const WIZARD_FIELD_LABELS = {
 
 const wizardSteps = [
   {
-    title: 'Bütçe ve kullanım',
-    description: 'İki hızlı seçimle size uygun segmenti ve maliyet bandını belirliyoruz.',
-    why: 'Bütçe TCO hesabının üst sınırıdır; kullanım amacı ise yakıt ve segment önerisini şekillendirir.',
+    title: 'Bütçe ve kullanım profiliniz',
+    description: 'İki net seçimle size uygun segmenti ve maliyet bandını belirliyoruz.',
+    why: 'Bütçe toplam maliyet simülasyonunun üst sınırıdır; kullanım amacı ise yakıt ve kasa önerisini şekillendirir.',
     parts: [
       {
         key: 'budget',
-        title: 'Toplam araç bütçeniz (yaklaşık)',
-        why: 'Finansman ve toplam maliyet simülasyonunu gerçekçi tutmak için gereklidir.',
+        title: 'Toplam araç bütçeniz ne kadar?',
+        why: 'Gerçekçi finansman ve TCO hesabı için bütçe aralığını bilmemiz gerekir.',
         options: [
-          { label: '500 bin TL altı', value: '500000', note: 'Ekonomik başlangıç seviyesi' },
-          { label: '500 bin – 1 milyon TL', value: '900000', note: 'Ulaşılabilir güçlü seçenekler' },
-          { label: '1 – 2 milyon TL', value: '1500000', note: 'Dengeli ve geniş pazar' },
-          { label: '2 milyon TL+', value: '2500000', note: 'Premium seçenekler' },
-          { label: 'Kendi bütçemi gireceğim', value: 'custom', note: 'Net bütçe ile daha hassas analiz' }
+          { label: '500 bin TL altı', value: '500000', note: 'Ekonomik başlangıç segmenti' },
+          { label: '500 bin – 1 milyon TL', value: '900000', note: 'Ulaşılabilir, güçlü seçenekler' },
+          { label: '1 – 2 milyon TL', value: '1500000', note: 'En geniş model ve fiyat aralığı' },
+          { label: '2 milyon TL+', value: '2500000', note: 'Premium ve üst segment' },
+          { label: 'Kendi bütçemi gireceğim', value: 'custom', note: 'Net tutarla daha hassas analiz' }
         ],
         custom: {
           type: 'text',
@@ -2449,70 +2450,70 @@ const wizardSteps = [
       {
         key: 'usage',
         title: 'Aracı en çok nasıl kullanacaksınız?',
-        why: 'Şehir içi, aile veya uzun yol kullanımı yakıt ve kasa tipini değiştirir.',
+        why: 'Kullanım profili; kasa tipi, yakıt ve konfor beklentisini doğrudan etkiler.',
         options: usageOptions
       }
     ]
   },
   {
-    title: 'Araç tipi ve yakıt',
-    description: 'Kasa ve yakıt tercihi yıllık işletme maliyetini doğrudan etkiler.',
-    why: 'Bu iki sinyal, öneri listesindeki modelleri daraltır ve TCO’yu kişiselleştirir.',
+    title: 'Araç tipi ve yakıt tercihi',
+    description: 'Kasa ve yakıt seçiminiz yıllık işletme maliyetini belirler.',
+    why: 'Bu iki tercih, öneri listesini daraltır ve maliyet simülasyonunu kişiselleştirir.',
     parts: [
       {
         key: 'body',
-        title: 'Hangi araç tipi size daha yakın?',
+        title: 'Hangi araç tipi size daha uygun?',
         why: 'SUV, sedan veya hatchback farklı kullanım ve maliyet profilleri sunar.',
         options: bodyOptions
       },
       {
         key: 'fuel',
-        title: 'Yakıt tercihiniz',
-        why: 'Yakıt tipi yıllık enerji maliyetini ve ikinci el değerini etkiler.',
+        title: 'Yakıt tercihiniz nedir?',
+        why: 'Yakıt tipi enerji maliyetini ve ikinci el değerini etkiler.',
         options: fuelOptions
       }
     ]
   },
   {
-    title: 'Kilometre ve bölge',
-    description: 'Km ve şehir bilgisi işletme maliyeti ile partner eşleşmesi için kullanılır.',
-    why: 'Yıllık km bakım/yakıt tahminini belirler; şehir ise size yakın teklif yönlendirmesini iyileştirir.',
+    title: 'Kullanım yoğunluğu ve bölge',
+    description: 'Kilometre ve şehir bilgisi işletme maliyeti ile bölgesel eşleşmeyi iyileştirir.',
+    why: 'Yıllık km bakım/yakıt tahminini belirler; şehir ise size yakın teklif yönlendirmesini güçlendirir.',
     parts: [
       {
         key: 'km',
-        title: 'Yılda yaklaşık kaç km?',
-        why: 'Kilometre, amortisman ve yakıt giderlerinin en güçlü girdilerinden biridir.',
+        title: 'Yılda yaklaşık kaç km kullanırsınız?',
+        why: 'Kilometre; amortisman, yakıt ve bakım giderlerinin en güçlü girdilerinden biridir.',
         options: kmOptions,
         custom: kmCustom
       },
       {
         key: 'city_ratio',
-        title: 'Kullanım dengesi',
+        title: 'Kullanım dengeniz nasıl?',
         why: 'Şehir içi / otoyol payı yakıt ve amortisman tahminini kişiselleştirir.',
         options: [
           { label: 'Ağırlıklı şehir içi', value: '0.85', note: 'Düşük ortalama hız' },
-          { label: 'Dengeli', value: '0.6', note: 'Karma kullanım' },
-          { label: 'Ağırlıklı otoyol', value: '0.25', note: 'Uzun yol' }
+          { label: 'Dengeli kullanım', value: '0.6', note: 'Şehir + otoyol karışık' },
+          { label: 'Ağırlıklı otoyol', value: '0.25', note: 'Uzun yol ağırlıklı' }
         ]
       },
       {
         key: 'ownership_months',
-        title: 'Sahiplik süresi hedefi',
+        title: 'Aracı ne kadar süre kullanmayı planlıyorsunuz?',
         why: 'Toplam maliyet ve değer kaybı görünümü bu süreye göre hesaplanır.',
         options: [
-          { label: '12 ay', value: '12', note: 'Kısa dönem' },
-          { label: '24 ay', value: '24', note: 'Orta dönem' },
+          { label: '12 ay', value: '12', note: 'Kısa dönem sahiplik' },
+          { label: '24 ay', value: '24', note: 'Orta vadeli plan' },
           { label: '36 ay', value: '36', note: 'Önerilen varsayılan' },
-          { label: '48 ay', value: '48', note: 'Uzun dönem' }
+          { label: '48 ay', value: '48', note: 'Uzun vadeli sahiplik' }
         ]
       },
       {
         key: 'location',
         title: 'Aracı hangi şehirde arıyorsunuz?',
-        why: 'Partner ve galeri yönlendirmesi bölgesel olarak yapılır; ilçe isteğe bağlıdır.',
+        why: 'Bölgesel eşleşme; size yakın partner ve galeri yönlendirmesini iyileştirir.',
         options: [
-          { label: 'İzmir', value: 'İzmir', note: 'İzmir ve çevresindeki satıcılar' },
-          { label: 'İstanbul', value: 'İstanbul', note: 'İstanbul Avrupa / Anadolu' },
+          { label: 'İzmir', value: 'İzmir', note: 'İzmir ve çevresi' },
+          { label: 'İstanbul', value: 'İstanbul', note: 'Avrupa ve Anadolu' },
           { label: 'Ankara', value: 'Ankara', note: 'Ankara ve çevresi' },
           { label: 'Antalya', value: 'Antalya', note: 'Antalya ve çevresi' },
           { label: 'Başka şehir', value: 'custom', note: 'Şehir adını kendim gireceğim' }
@@ -2534,11 +2535,100 @@ const wizardSteps = [
     description: 'Son adım — kredi tercihi aylık yük ve toplam maliyet tablosunu günceller.',
     why: 'Finansman seçimi, ödeme planı ve toplam sahip olma maliyeti görünümünü değiştirir.',
     options: [
-      { label: 'Evet', value: 'yes', note: 'Finansman etkisi dahil edilsin' },
-      { label: 'Hayır', value: 'no', note: 'Peşin alım dengesiyle analiz edilsin' }
+      { label: 'Evet, kredi kullanacağım', value: 'yes', note: 'Finansman etkisi dahil edilsin' },
+      { label: 'Hayır, peşin alım', value: 'no', note: 'Peşin alım dengesiyle analiz edilsin' }
     ]
   }
 ];
+
+const WIZARD_OPTION_ICONS = {
+  budget: {
+    '500000': '💵',
+    '900000': '💰',
+    '1500000': '🏦',
+    '2500000': '✨',
+    custom: '✎'
+  },
+  usage: {
+    family: '👨‍👩‍👧',
+    city: '🏙',
+    long: '🛣',
+    business: '💼'
+  },
+  body: {
+    suv: '🚙',
+    sedan: '🚗',
+    hatchback: '🚘'
+  },
+  fuel: {
+    any: '⚡',
+    hybrid: '🔋',
+    electric: '⚡',
+    gasoline: '⛽',
+    diesel: '🛢'
+  },
+  km: {
+    '8000': '📉',
+    '15000': '📊',
+    '28000': '📈',
+    '40000': '🚀',
+    custom: '✎'
+  },
+  city_ratio: {
+    '0.85': '🏙',
+    '0.6': '⚖',
+    '0.25': '🛣'
+  },
+  ownership_months: {
+    '12': '1️⃣',
+    '24': '2️⃣',
+    '36': '3️⃣',
+    '48': '4️⃣'
+  },
+  location: {
+    'İzmir': '📍',
+    'İstanbul': '📍',
+    'Ankara': '📍',
+    'Antalya': '📍',
+    custom: '✎'
+  },
+  loan: {
+    yes: '💳',
+    no: '💵'
+  }
+};
+
+function getWizardOptionIcon(fieldKey, value) {
+  return WIZARD_OPTION_ICONS[fieldKey]?.[value] || '◆';
+}
+
+function isFeaturedWizardOption(fieldKey, value) {
+  return value === 'custom';
+}
+
+function renderWizardOptionButton(fieldKey, option, selected) {
+  const isSelected = selected === option.value;
+  const isFeatured = isFeaturedWizardOption(fieldKey, option.value);
+  const icon = getWizardOptionIcon(fieldKey, option.value);
+
+  return `
+    <button
+      type="button"
+      class="wizard-option auto-option-card ${isSelected ? 'is-selected' : ''} ${isFeatured ? 'auto-option-card--featured' : ''}"
+      data-wizard-value="${escapeHtml(option.value)}"
+      data-wizard-key="${escapeHtml(fieldKey)}"
+      role="radio"
+      aria-checked="${isSelected ? 'true' : 'false'}"
+    >
+      <span class="auto-option-card__icon" aria-hidden="true">${icon}</span>
+      <span class="auto-option-card__body">
+        <span class="auto-option-card__title">${escapeHtml(option.label)}</span>
+        <span class="auto-option-card__desc">${escapeHtml(option.note)}</span>
+      </span>
+      <span class="auto-option-card__check" aria-hidden="true">${isSelected ? '✓' : ''}</span>
+    </button>
+  `;
+}
 
 const wizardState = {};
 let wizardIndex = 0;
@@ -2646,19 +2736,14 @@ function renderWizardPartOptions(part) {
         : 'Değer girin';
 
   return `
-    <div class="wizard-part" data-wizard-part="${escapeHtml(part.key)}">
-      <h4 class="wizard-part-title">${escapeHtml(part.title)}</h4>
-      ${part.why ? `<p class="wizard-part-why">${escapeHtml(part.why)}</p>` : ''}
-      <div class="wizard-options">
-        ${part.options.map((option) => `
-          <button type="button" class="wizard-option ${selected === option.value ? 'is-selected' : ''}" data-wizard-value="${escapeHtml(option.value)}" data-wizard-key="${escapeHtml(part.key)}">
-            ${escapeHtml(option.label)}
-            <small>${escapeHtml(option.note)}</small>
-          </button>
-        `).join('')}
+    <div class="wizard-part auto-wizard-part" data-wizard-part="${escapeHtml(part.key)}">
+      <h4 class="wizard-part-title auto-wizard-part-title" id="auto-wizard-part-${escapeHtml(part.key)}">${escapeHtml(part.title)}</h4>
+      ${part.why ? `<p class="wizard-part-why auto-wizard-part-why">${escapeHtml(part.why)}</p>` : ''}
+      <div class="wizard-options auto-wizard-options" role="radiogroup" aria-labelledby="auto-wizard-part-${escapeHtml(part.key)}">
+        ${part.options.map((option) => renderWizardOptionButton(part.key, option, selected)).join('')}
       </div>
       ${part.custom && isCustom ? `
-        <label class="wizard-custom-input">
+        <label class="wizard-custom-input auto-wizard-custom-input">
           <span>${escapeHtml(customLabel)}</span>
           <div>
             <input
@@ -2704,16 +2789,11 @@ function renderWizard() {
     const customValue = wizardState[`${step.key}_custom`] || '';
 
     bodyHtml = `
-      <div class="wizard-options">
-        ${step.options.map((option) => `
-          <button type="button" class="wizard-option ${selected === option.value ? 'is-selected' : ''}" data-wizard-value="${escapeHtml(option.value)}" data-wizard-key="${escapeHtml(step.key)}">
-            ${escapeHtml(option.label)}
-            <small>${escapeHtml(option.note)}</small>
-          </button>
-        `).join('')}
+      <div class="wizard-options auto-wizard-options" role="radiogroup" aria-label="${escapeHtml(step.title)}">
+        ${step.options.map((option) => renderWizardOptionButton(step.key, option, selected)).join('')}
       </div>
       ${step.custom && isCustom ? `
-        <label class="wizard-custom-input">
+        <label class="wizard-custom-input auto-wizard-custom-input">
           <span>${step.key === 'budget' ? 'Net bütçenizi girin' : step.key === 'km' ? 'Yıllık net kilometrenizi girin' : 'Şehir adını girin'}</span>
           <div>
             <input
@@ -2759,34 +2839,41 @@ function renderWizard() {
 
   wizard.innerHTML = `
     ${onboardingIntro}
-    <div class="wizard-progress">
-      <div class="wizard-progress-text">
-        <span>Adım ${wizardIndex + 1} / ${wizardSteps.length}</span>
-        <span class="wizard-progress-motivation">${motivationCopy}</span>
-        <span class="wizard-progress-eta">${escapeHtml(WIZARD_ETA_BY_STEP[wizardIndex] || '~2 dk · 4 kısa adım')}</span>
+    <div class="wizard-progress auto-wizard-progress">
+      <div class="auto-wizard-progress-top">
+        <div class="auto-wizard-progress-meta">
+          <span class="auto-wizard-progress-step">Adım ${wizardIndex + 1} / ${wizardSteps.length}</span>
+          <span class="auto-wizard-progress-category">Auto · Araç karar analizi</span>
+        </div>
+        <div class="auto-wizard-progress-side">
+          <span class="wizard-progress-motivation auto-wizard-progress-remaining">${motivationCopy}</span>
+          <span class="wizard-progress-eta auto-wizard-progress-eta">${escapeHtml(WIZARD_ETA_BY_STEP[wizardIndex] || '~2 dk · 4 kısa adım')}</span>
+        </div>
       </div>
-      <div class="wizard-progress-milestones" aria-hidden="true">
+      <div class="wizard-progress-bar auto-wizard-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}" aria-label="Analiz ilerlemesi">
+        <div class="wizard-progress-fill auto-wizard-progress-fill auto-wizard-progress-fill--${wizardIndex + 1}"></div>
+      </div>
+      <div class="auto-wizard-progress-foot">
+        <p class="wizard-progress-percent auto-wizard-progress-percent">${CONVERSION_COPY.auto.wizardProgress(progress)}</p>
+      </div>
+      <div class="wizard-progress-milestones auto-wizard-milestones" aria-hidden="true">
         ${WIZARD_MILESTONES.map((label, index) => `
-          <span class="wizard-milestone ${index < wizardIndex ? 'is-done' : ''} ${index === wizardIndex ? 'is-current' : ''}">${escapeHtml(label)}</span>
+          <span class="wizard-milestone auto-wizard-milestone ${index < wizardIndex ? 'is-done' : ''} ${index === wizardIndex ? 'is-current' : ''}">${escapeHtml(label)}</span>
         `).join('')}
       </div>
-      <div class="wizard-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}" aria-label="Analiz ilerlemesi">
-        <div class="wizard-progress-fill" style="width:${progress}%"></div>
-      </div>
-      <p class="wizard-progress-percent">${CONVERSION_COPY.auto.wizardProgress(progress)}</p>
     </div>
 
-    <div class="wizard-question">
+    <div class="wizard-question auto-wizard-question">
       <p class="kicker">Karar altyapısı</p>
       <h3>${escapeHtml(step.title)}</h3>
-      <p>${escapeHtml(step.description)}</p>
-      ${step.why ? `<p class="wizard-step-why">${escapeHtml(step.why)}</p>` : ''}
+      <p class="auto-wizard-question-desc">${escapeHtml(step.description)}</p>
+      ${step.why ? `<p class="wizard-step-why auto-wizard-step-why">${escapeHtml(step.why)}</p>` : ''}
     </div>
 
     ${bodyHtml}
 
-    <p class="wizard-cro-hint text-muted-sm" data-cro-wizard-hint>Sonraki adım</p>
-    <div class="wizard-actions">
+    <p class="wizard-cro-hint auto-wizard-hint text-muted-sm" data-cro-wizard-hint>Sonraki adım</p>
+    <div class="wizard-actions auto-wizard-actions">
       <button type="button" class="btn secondary" data-wizard-back ${wizardIndex === 0 ? 'disabled' : ''}>Geri</button>
       <button type="button" class="btn primary" data-wizard-next ${canProceed ? '' : 'disabled'}>
         <span class="growth-exp-label">${wizardIndex === wizardSteps.length - 1 ? CONVERSION_COPY.auto.wizardFinish : CONVERSION_COPY.auto.wizardNext}</span>
@@ -2808,7 +2895,7 @@ function showWizardInlineError(message) {
   let banner = wizard.querySelector('.wizard-inline-error');
   if (!banner) {
     banner = document.createElement('p');
-    banner.className = 'wizard-inline-error';
+    banner.className = 'wizard-inline-error auto-wizard-inline-error';
     banner.setAttribute('role', 'alert');
     wizard.querySelector('.wizard-actions')?.before(banner);
   }

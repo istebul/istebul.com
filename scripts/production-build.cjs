@@ -276,7 +276,8 @@ const autoCssParts = [
   'css/award-polish.css',
   'css/auto-mobile-results.css',
   'css/auto-results-ux.css',
-  'css/auto-decision-engine-ui.css'
+  'css/auto-decision-engine-ui.css',
+  'css/auto-question-ux.css'
 ];
 const autoCssCombined = autoCssParts
   .filter((rel) => fs.existsSync(path.join(root, rel)))
