@@ -1,0 +1,542 @@
+/**
+ * isteBul Design System v4 — Premium polish (quality tour 2)
+ * Builds on v4 restore. No !important. Scoped to html.ib-ds-v4.
+ */
+
+html.ib-ds-v4 {
+  --ib-dark-bg: #0b1220;
+  --ib-dark-surface: #111827;
+  --ib-premium-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 32px rgba(15, 23, 42, 0.07);
+  --ib-space-section: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* —— Sitewide overflow guard —— */
+html.ib-ds-v4,
+html.ib-ds-v4 body {
+  overflow-x: clip;
+}
+
+html.ib-ds-v4 img,
+html.ib-ds-v4 video,
+html.ib-ds-v4 svg,
+html.ib-ds-v4 canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+html.ib-ds-v4 .container,
+html.ib-ds-v4 .housing-container,
+html.ib-ds-v4 .vacation-container,
+html.ib-ds-v4 main {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* —— Shared premium card (light surfaces) —— */
+html.ib-ds-v4 .ib-surface-card,
+html.ib-ds-v4 .card:not(.glass-card):not(.hero-metric),
+html.ib-ds-v4 .how-step,
+html.ib-ds-v4 .ib-trust-strip-card,
+html.ib-ds-v4 .pricing-card,
+html.ib-ds-v4 .filter-panel,
+html.ib-ds-v4 .modal-content {
+  box-shadow: var(--ib-premium-shadow);
+}
+
+/* —— Homepage hero: award-level refinement —— */
+html.ib-ds-v4 #home.ib-hero-v4 {
+  background:
+    radial-gradient(ellipse 85% 55% at 72% -8%, rgba(37, 99, 235, 0.16), transparent 58%),
+    radial-gradient(ellipse 55% 45% at 8% 92%, rgba(56, 189, 248, 0.07), transparent 52%),
+    linear-gradient(168deg, #0b1220 0%, #0f172a 44%, #111827 100%);
+  padding: var(--ib-space-section) 0 clamp(3rem, 6vw, 4.75rem);
+}
+
+html.ib-ds-v4 #home .hero-container {
+  gap: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+html.ib-ds-v4 #home .hero-content h1 {
+  font-size: clamp(2.1rem, 4.8vw, 3.35rem);
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+}
+
+html.ib-ds-v4 #home .ib-glass-dashboard {
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+html.ib-ds-v4 #home .ib-dash-grid--platform {
+  gap: 0.6rem;
+}
+
+html.ib-ds-v4 #home .ib-dash-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+html.ib-ds-v4 #home .preview-toolbar {
+  margin-bottom: 0.5rem;
+}
+
+html.ib-ds-v4 #home .preview-toolbar span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.45);
+  display: inline-block;
+  margin-right: 5px;
+}
+
+/* Category showcase — premium white cards */
+html.ib-ds-v4 .ib-home-categories-premium {
+  padding: var(--ib-space-section) 0;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase {
+  min-height: 252px;
+  padding: 1.15rem 1.1rem 3.25rem;
+  box-shadow: var(--ib-premium-shadow);
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase h3 {
+  font-size: 1.12rem;
+  font-weight: 700;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-summary dd {
+  font-size: 0.8rem;
+}
+
+html.ib-ds-v4 .ib-home-categories-premium .ib-category-showcase-cta {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+html.ib-ds-v4 .ib-live-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  html.ib-ds-v4 .ib-live-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+html.ib-ds-v4 .ib-live-stats article {
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+html.ib-ds-v4 .ib-live-stats article > span {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+  margin-bottom: 0.35rem;
+}
+
+html.ib-ds-v4 .ib-live-stats article strong {
+  color: var(--color-text);
+  font-size: 1.35rem;
+}
+
+/* CTA polish */
+html.ib-ds-v4 .btn-primary {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+html.ib-ds-v4 #home .btn-primary {
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.32);
+}
+
+/* —— Konut: hero dashboard metrics —— */
+html.ib-ds-v4 body.housing-page .housing-hero {
+  padding: clamp(2rem, 4vw, 3rem) 0;
+}
+
+html.ib-ds-v4 body.housing-page .housing-hero-grid {
+  gap: clamp(1rem, 2.5vw, 1.35rem);
+}
+
+html.ib-ds-v4 body.housing-page .hero-dashboard.glass-card {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+html.ib-ds-v4 body.housing-page .hero-metric.hero-score {
+  padding: 1rem 1.15rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.32), rgba(51, 209, 255, 0.14));
+  border-color: rgba(111, 124, 255, 0.42);
+}
+
+html.ib-ds-v4 body.housing-page .hero-metric.hero-score span {
+  color: #cbd5e1;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+html.ib-ds-v4 body.housing-page .hero-metric.hero-score strong {
+  color: #ffffff;
+  font-size: clamp(1.75rem, 4vw, 2.15rem);
+  margin-top: 0.35rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+html.ib-ds-v4 body.housing-page .hero-metric-grid {
+  gap: 0.65rem;
+}
+
+html.ib-ds-v4 body.housing-page .hero-metric:not(.hero-score) {
+  padding: 0.8rem 0.9rem;
+  min-height: 4.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+html.ib-ds-v4 body.housing-page .hero-metric:not(.hero-score) span {
+  color: #94a3b8;
+  font-size: 0.67rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+
+html.ib-ds-v4 body.housing-page .hero-metric:not(.hero-score) strong {
+  color: #ffffff;
+  font-size: 1.02rem;
+  margin-top: 0.3rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+/* Konut: wizard + side panel — light premium on dark page */
+html.ib-ds-v4 body.housing-page .housing-step-card,
+html.ib-ds-v4 body.housing-page .housing-side-panel,
+html.ib-ds-v4 body.housing-page .konut-v2-panel {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  box-shadow: var(--ib-premium-shadow);
+}
+
+html.ib-ds-v4 body.housing-page .housing-step-card h2,
+html.ib-ds-v4 body.housing-page .housing-side-panel h3,
+html.ib-ds-v4 body.housing-page .konut-v2-title {
+  color: #111827;
+}
+
+html.ib-ds-v4 body.housing-page .housing-side-panel p,
+html.ib-ds-v4 body.housing-page .housing-side-notes,
+html.ib-ds-v4 body.housing-page .housing-field-hint {
+  color: #6b7280;
+}
+
+html.ib-ds-v4 body.housing-page .housing-form-grid label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+html.ib-ds-v4 body.housing-page .housing-form-grid input,
+html.ib-ds-v4 body.housing-page .housing-form-grid select,
+html.ib-ds-v4 body.housing-page .housing-form-grid textarea {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+html.ib-ds-v4 body.housing-page .housing-option-card,
+html.ib-ds-v4 body.housing-page .housing-chip {
+  background: #f8fafc;
+  border-color: #e5e7eb;
+  color: #111827;
+}
+
+html.ib-ds-v4 body.housing-page .housing-option-card.is-selected,
+html.ib-ds-v4 body.housing-page .housing-chip.is-selected {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #1e40af;
+}
+
+html.ib-ds-v4 body.housing-page .result-card {
+  background: #ffffff;
+  border-color: #e5e7eb;
+  color: #111827;
+}
+
+html.ib-ds-v4 body.housing-page .result-card p,
+html.ib-ds-v4 body.housing-page .result-list li {
+  color: #6b7280;
+}
+
+html.ib-ds-v4 body.housing-page .result-card strong {
+  color: #111827;
+}
+
+html.ib-ds-v4 body.housing-page .konut-v2-kpi {
+  background: #f8fafc;
+  border-color: #e5e7eb;
+}
+
+html.ib-ds-v4 body.housing-page .konut-v2-kpi > span {
+  color: #6b7280;
+}
+
+html.ib-ds-v4 body.housing-page .konut-v2-kpi strong {
+  color: #111827;
+}
+
+/* —— Finans / Tatil: hero + results —— */
+html.ib-ds-v4 body.finans-page .finans-hero-dashboard,
+html.ib-ds-v4 body.vacation-page .vacation-hero-dashboard {
+  padding: 1.1rem;
+  gap: 0.65rem;
+}
+
+html.ib-ds-v4 body.finans-page .finans-dash-card {
+  padding: 0.85rem 0.95rem;
+  background: rgba(17, 24, 39, 0.75);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+html.ib-ds-v4 body.finans-page .finans-dash-card span {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+html.ib-ds-v4 body.finans-page .finans-dash-card strong {
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+html.ib-ds-v4 body.finans-page .finans-dash-card small {
+  color: #7dd3fc;
+}
+
+html.ib-ds-v4 body.finans-page .finans-dash-card--score {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(14, 165, 233, 0.12));
+  border-color: rgba(96, 165, 250, 0.35);
+}
+
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard {
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  box-shadow: var(--ib-premium-shadow);
+}
+
+html.ib-ds-v4 body.finans-page .ib-premium-kpi,
+html.ib-ds-v4 body.vacation-page .ib-premium-kpi {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 0.95rem 1.05rem;
+  min-width: 0;
+}
+
+html.ib-ds-v4 body.finans-page .ib-premium-kpi span,
+html.ib-ds-v4 body.vacation-page .ib-premium-kpi span {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+html.ib-ds-v4 body.finans-page .ib-premium-kpi strong,
+html.ib-ds-v4 body.vacation-page .ib-premium-kpi strong {
+  color: #111827;
+  font-size: 1.4rem;
+}
+
+html.ib-ds-v4 body.finans-page .ib-premium-kpi--score strong {
+  color: #2563eb;
+}
+
+html.ib-ds-v4 body.finans-page .ib-premium-block,
+html.ib-ds-v4 body.vacation-page .ib-premium-block {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+html.ib-ds-v4 body.finans-page .ib-premium-block h3 {
+  color: #111827;
+}
+
+html.ib-ds-v4 body.vacation-page .vh-card {
+  padding: 0.85rem;
+}
+
+html.ib-ds-v4 body.vacation-page .vh-card span {
+  color: #94a3b8;
+}
+
+html.ib-ds-v4 body.vacation-page .vh-card strong {
+  color: #fff;
+  font-family: var(--font-mono);
+}
+
+/* —— Auto —— */
+html.ib-ds-v4 body.ib-auto {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+html.ib-ds-v4 body.ib-auto .auto-header {
+  background: rgba(250, 250, 248, 0.96);
+  border-bottom: 1px solid var(--color-border);
+}
+
+html.ib-ds-v4 body.ib-auto .auto-v2-panel {
+  border-radius: 20px;
+  border-color: #e5e7eb;
+  box-shadow: var(--ib-premium-shadow);
+}
+
+html.ib-ds-v4 body.ib-auto .auto-v2-kpi {
+  background: #f8fafc;
+  border-color: #e5e7eb;
+}
+
+html.ib-ds-v4 body.ib-auto .auto-v2-kpi > span {
+  color: #6b7280;
+}
+
+html.ib-ds-v4 body.ib-auto .auto-v2-kpi strong {
+  color: #111827;
+}
+
+html.ib-ds-v4 body.ib-auto .auto-v2-block {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  color: #334155;
+}
+
+/* —— Account / profile (index) —— */
+html.ib-ds-v4 .profile-section,
+html.ib-ds-v4 .revenue-profile-shell {
+  background: var(--color-bg);
+}
+
+html.ib-ds-v4 .profile-card,
+html.ib-ds-v4 .account-root .card,
+html.ib-ds-v4 .favorite-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  box-shadow: var(--ib-premium-shadow);
+  color: #111827;
+}
+
+html.ib-ds-v4 .profile-card h3,
+html.ib-ds-v4 .account-root h2,
+html.ib-ds-v4 .account-root h3 {
+  color: #111827;
+}
+
+html.ib-ds-v4 .profile-card p,
+html.ib-ds-v4 .account-root .text-muted,
+html.ib-ds-v4 .account-root label {
+  color: #6b7280;
+}
+
+/* —— Admin spacing + contrast —— */
+html.ib-ds-v4 body.admin-enterprise .page {
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+html.ib-ds-v4 body.admin-enterprise .card,
+html.ib-ds-v4 body.admin-enterprise .stat-card {
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+html.ib-ds-v4 body.admin-enterprise .table th {
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+html.ib-ds-v4 body.admin-enterprise .table td {
+  color: #111827;
+}
+
+html.ib-ds-v4 body.admin-enterprise .form-group input,
+html.ib-ds-v4 body.admin-enterprise .form-group select,
+html.ib-ds-v4 body.admin-enterprise .form-group textarea {
+  min-height: 44px;
+  border-radius: 10px;
+}
+
+html.ib-ds-v4 body.admin-enterprise .btn {
+  min-height: 44px;
+}
+
+/* —— Responsive: 375 / 768 / 1440 —— */
+@media (max-width: 767px) {
+  html.ib-ds-v4 #home .hero-image {
+    min-height: 0;
+  }
+
+  html.ib-ds-v4 #home .ib-hero-v4-categories {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  html.ib-ds-v4 body.housing-page .housing-hero-grid,
+  html.ib-ds-v4 body.housing-page .housing-layout {
+    grid-template-columns: 1fr;
+  }
+
+  html.ib-ds-v4 body.housing-page .hero-metric-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  html.ib-ds-v4 body.finans-page .finans-hero-grid,
+  html.ib-ds-v4 body.vacation-page .vacation-hero-inner {
+    grid-template-columns: 1fr;
+  }
+
+  html.ib-ds-v4 .ib-premium-dashboard__kpis {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  html.ib-ds-v4 .modal-content,
+  html.ib-ds-v4 .nav-dropdown-content {
+    max-width: calc(100vw - 2rem);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  html.ib-ds-v4 .ib-category-showcase-live {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  html.ib-ds-v4 body.housing-page .housing-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1440px) {
+  html.ib-ds-v4 .container {
+    max-width: 1180px;
+  }
+
+  html.ib-ds-v4 #home .hero-container.ib-hero-v4-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  }
+}

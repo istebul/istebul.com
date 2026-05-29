@@ -7,6 +7,7 @@
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap');
+@import './istebul-ds-v4-polish.css';
 
 :root {
   --color-bg: #fafaf8;
@@ -24,9 +25,9 @@
   --transition-fast: 200ms ease-out;
 
   --ib-hero-bg: linear-gradient(
-    165deg,
-    #0b1120 0%,
-    #0f172a 48%,
+    168deg,
+    #0b1220 0%,
+    #0f172a 44%,
     #111827 100%
   );
   --ib-hero-text: #ffffff;
