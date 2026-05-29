@@ -19,6 +19,12 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://www.istebul.com/rehber/</loc>
+    <lastmod>2026-05-29</lastmod>
+    <priority>0.85</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
     <loc>https://www.istebul.com/konut/</loc>
     <lastmod>2026-05-29</lastmod>
     <priority>0.75</priority>

@@ -42,6 +42,19 @@
 /category/*   /  301
 
 # --- SEO hubs & guides (static HTML before SPA fallback) ---
+/rehber/arac-alim-karar-asistani /rehber/arac-alim-karar-asistani/ 301
+/rehber/arac-finansman-secenekleri /rehber/arac-finansman-secenekleri/ 301
+/rehber/arac-karsilastirma-rehberi /rehber/arac-karsilastirma-rehberi/ 301
+/rehber/arac-kredisi-hesaplama /rehber/arac-kredisi-hesaplama/ 301
+/rehber/arac-sigortasi-karsilastirma /rehber/arac-sigortasi-karsilastirma/ 301
+/rehber/arac-toplam-sahiplik-maliyeti /rehber/arac-toplam-sahiplik-maliyeti/ 301
+/rehber/aylik-arac-butcesi-hesaplama /rehber/aylik-arac-butcesi-hesaplama/ 301
+/rehber/elektrikli-arac-alirken /rehber/elektrikli-arac-alirken/ 301
+/rehber/ikinci-el-arac-alirken /rehber/ikinci-el-arac-alirken/ 301
+/rehber/sifir-arac-mi-ikinci-el-mi /rehber/sifir-arac-mi-ikinci-el-mi/ 301
+/rehber/suv-mi-sedan-mi /rehber/suv-mi-sedan-mi/ 301
+/rehber/ticari-arac-alimi-rehberi /rehber/ticari-arac-alimi-rehberi/ 301
+/rehber/ /rehber/index.html 200
 /rehber/*     /rehber/:splat/index.html  200
 /karar-asistani /karar-asistani/index.html 200
 /karar-asistani/ /karar-asistani/index.html 200

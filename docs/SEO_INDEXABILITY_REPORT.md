@@ -10,12 +10,12 @@
 | noindex pages (repo scan) | 7 |
 | sitemap URL count | 34 |
 | canonical issues | 0 |
-| orphan HTML (vs sitemap) | 6 |
-| internal /rehber/ links (sample) | 170 |
-| FAQ schema pages (scan) | 17 |
-| Rehber BreadcrumbList pages | 12 |
+| orphan HTML (vs sitemap) | 7 |
+| internal /rehber/ links (sample) | 199 |
+| FAQ schema pages (scan) | 20 |
+| Rehber BreadcrumbList pages | 13 |
 | Invalid JSON-LD blocks | 0 |
-| Indexable public HTML (estimate) | 51 |
+| Indexable public HTML (estimate) | 52 |
 
 ## noindex pages
 
@@ -31,18 +31,18 @@
 
 | Slug | Words | ≥1200 target |
 |------|-------|-------------------------------|
-| arac-kredisi-hesaplama | 1419 | yes |
-| arac-toplam-sahiplik-maliyeti | 1233 | yes |
-| ikinci-el-arac-alirken | 1149 | no |
-| sifir-arac-mi-ikinci-el-mi | 1192 | no |
-| arac-karsilastirma-rehberi | 1123 | no |
-| elektrikli-arac-alirken | 1162 | no |
-| suv-mi-sedan-mi | 1303 | yes |
-| arac-finansman-secenekleri | 1092 | no |
-| aylik-arac-butcesi-hesaplama | 1115 | no |
-| arac-alim-karar-asistani | 1127 | no |
-| ticari-arac-alimi-rehberi | 1106 | no |
-| arac-sigortasi-karsilastirma | 1105 | no |
+| arac-kredisi-hesaplama | 1433 | yes |
+| arac-toplam-sahiplik-maliyeti | 1316 | yes |
+| ikinci-el-arac-alirken | 1197 | no |
+| sifir-arac-mi-ikinci-el-mi | 1202 | yes |
+| arac-karsilastirma-rehberi | 1127 | no |
+| elektrikli-arac-alirken | 1232 | yes |
+| suv-mi-sedan-mi | 1375 | yes |
+| arac-finansman-secenekleri | 1159 | no |
+| aylik-arac-butcesi-hesaplama | 1121 | no |
+| arac-alim-karar-asistani | 1133 | no |
+| ticari-arac-alimi-rehberi | 1112 | no |
+| arac-sigortasi-karsilastirma | 1111 | no |
 
 ## Canonical issues
 
@@ -50,8 +50,8 @@ _None detected on core vertical pages._
 
 ## Schema validation
 
-- FAQPage occurrences: 17
-- BreadcrumbList on /rehber/: 12
+- FAQPage occurrences: 20
+- BreadcrumbList on /rehber/: 13
 - JSON-LD parse errors: 0
 
 ## Required sitemap paths

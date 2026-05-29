@@ -1,0 +1,57 @@
+{
+  "title": "İletişim | isteBul Destek ve İş Birliği",
+  "description": "isteBul destek, partner başvurusu ve kurumsal teklif talepleri. destek@istebul.com üzerinden bize ulaşın. KVKK başvuruları için iletişim kanalları.",
+  "h1": "Bizimle iletişime geçin",
+  "intro": "Kullanıcı desteği, iş ortaklığı, kurumsal teklifler ve geri bildirimler için aşağıdaki kanalları kullanabilirsiniz. Yanıt süresi talep türüne göre 1–3 iş günüdür.",
+  "sections": [
+    {
+      "heading": "Destek ve satış",
+      "body": "Ürün kullanımı, hesap, abonelik ve analiz sonuçları hakkında destek@istebul.com adresine yazın. Konu satırına kategori adını (Auto, Konut, Tatil, Finans) eklemeniz çözümü hızlandırır.",
+      "subsections": []
+    },
+    {
+      "heading": "Partner başvuruları",
+      "body": "Galeri, finansman, sigorta ve hizmet partnerleri için partner sayfamızdaki başvuru akışını kullanın. Teknik entegrasyon ve lead dağıtımı hakkında bilgi partner dokümantasyonunda yer alır.",
+      "subsections": [
+        {
+          "heading": "Partner sayfası",
+          "body": "Detaylı başvuru formu ve SLA bilgileri için /partner-olun.html adresini ziyaret edin."
+        }
+      ]
+    },
+    {
+      "heading": "Kurumsal teklif talepleri",
+      "body": "Kurumsal lisans, toplu analiz veya özel entegrasyon talepleri için destek@istebul.com adresine «Kurumsal Teklif» konu başlığıyla yazın. Kısa kullanım senaryonuzu ve tahmini hacmi belirtin.",
+      "subsections": []
+    },
+    {
+      "heading": "Kullanıcı geri bildirimleri",
+      "body": "Ürün önerileri ve deneyim geri bildirimleri memnuniyetle karşılanır. Hata bildirimlerinde ekran görüntüsü ve tarayıcı bilgisi paylaşmanız faydalıdır.",
+      "subsections": []
+    },
+    {
+      "heading": "KVKK başvuruları",
+      "body": "6698 sayılı Kanun kapsamındaki taleplerinizi e-posta ile iletebilirsiniz. Konuya «KVKK Başvurusu» yazın; kimlik doğrulama için gerekli bilgiler tarafınıza iletilir. Yanıt süresi en geç 30 gündür.",
+      "subsections": []
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Telefon desteği var mı?",
+      "a": "Öncelikli kanal e-postadır. Acil güvenlik konularında destek@istebul.com kullanın."
+    },
+    {
+      "q": "Partner olmak için ne gerekir?",
+      "a": "Partner sayfasındaki başvuru formunu doldurun; ekip 2–5 iş günü içinde dönüş yapar."
+    },
+    {
+      "q": "Basın ve medya iletişimi?",
+      "a": "Medya talepleri için destek@istebul.com adresine «Basın» konu başlığıyla yazın."
+    },
+    {
+      "q": "Veri silme talebi nasıl iletilir?",
+      "a": "KVKK başvurusu olarak e-posta gönderin; kimlik doğrulama adımları paylaşılır."
+    }
+  ],
+  "conclusion": "Sorularınız için destek@istebul.com adresinden bize ulaşın. Karar analizine hemen başlamak için ücretsiz Auto akışını deneyebilirsiniz."
+}

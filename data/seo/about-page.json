@@ -1,0 +1,62 @@
+{
+  "title": "Hakkımızda | isteBul — AI Karar Platformu",
+  "description": "isteBul; araç, konut, tatil ve finansman kararlarında toplam maliyet, risk ve uygunluk analizi sunan yapay zekâ destekli karar platformudur. Şeffaf metodoloji.",
+  "h1": "Yapay zekâ destekli karar platformu",
+  "intro": "isteBul, büyük satın alma kararlarında yanlış seçimin maliyetini azaltmak için tasarlanmış bir karar destek sistemidir. İlan listesi veya sohbet botu değil; kural tabanlı skor, toplam maliyet (TCO) ve yapay zekâ ile açıklanabilir gerekçe sunar.",
+  "sections": [
+    {
+      "heading": "Ne yapıyoruz?",
+      "body": "Araç, konut, tatil ve finansman kategorilerinde kullanıcı profilini yapılandırır; risk, uygunluk ve toplam maliyet sinyallerini tek panelde birleştiririz. Yapay zekâ skoru değiştirmez — yalnızca gerekçe ve sonraki adımları açıklar.",
+      "subsections": [
+        {
+          "heading": "Karar kategorileri",
+          "body": "Auto (TCO, kredi, risk), konut (ödeme yükü, lokasyon), tatil (bütçe, sezon) ve finansman (nakit akışı, vade) canlıdır. Sigorta ve kasko yol haritasındadır."
+        }
+      ]
+    },
+    {
+      "heading": "Şeffaf metodoloji",
+      "body": "Skorlar denetlenebilir kurallarla üretilir; varsayımlar kullanıcı girdilerine dayanır. Finansal tavsiye veya getiri taahhüdü verilmez. Metodoloji sayfamızda süreci adım adım okuyabilirsiniz.",
+      "subsections": []
+    },
+    {
+      "heading": "KVKK ve veri güvenliği",
+      "body": "Veri minimizasyonu ilkesiyle çalışırız; gereksiz kişisel veri toplanmaz. Ödeme işlemleri Stripe üzerinden tokenize edilir. Pazarlama iletişimi yalnızca açık rıza ile yapılır.",
+      "subsections": [
+        {
+          "heading": "Kullanıcı hakları",
+          "body": "Erişim, düzeltme ve silme talepleri KVKK başvuru kanalları üzerinden işlenir. Aydınlatma metinleri sitede yayınlanır."
+        }
+      ]
+    },
+    {
+      "heading": "Kime hizmet ediyoruz?",
+      "body": "Bireysel kullanıcılar ve partner ekosistemi (bayi, finans, sigorta) için tasarlanmıştır. Partner lead paylaşımı yalnızca kullanıcı onayıyla yapılır.",
+      "subsections": []
+    },
+    {
+      "heading": "Vizyon ve misyon",
+      "body": "Vizyonumuz: Türkiye'de yüksek tutarlı kararlarda güvenilir karar zekâsı altyapısı olmak. Misyonumuz: parçalı araçlar yerine ölçülebilir TCO ve risk ile seçenekleri netleştirmek.",
+      "subsections": []
+    }
+  ],
+  "faqs": [
+    {
+      "q": "isteBul bir ilan sitesi mi?",
+      "a": "Hayır. Karar destek ve analiz platformudur; nihai satın alma sözleşmesi kullanıcı ile yetkili satıcı/banka arasında yapılır."
+    },
+    {
+      "q": "AI skoru nasıl üretilir?",
+      "a": "Kural tabanlı motor bütçe, kullanım ve maliyet sinyallerini birleştirir. AI yalnızca açıklama metnini üretir."
+    },
+    {
+      "q": "Ücretsiz analiz var mı?",
+      "a": "Temel karar analizi ücretsiz başlatılabilir. Pro plan ek raporlar sunar; koşullar planlar sayfasında güncellenir."
+    },
+    {
+      "q": "Finansal tavsiye veriyor musunuz?",
+      "a": "Hayır. Sonuçlar bilgilendirme amaçlıdır; kredi onayı bankaya aittir."
+    }
+  ],
+  "conclusion": "Karar vermeyi daha net, hızlı ve güvenilir hale getirmek için buradayız. Ücretsiz analizle profilinizi yapılandırın; toplam maliyet ve riski birlikte görün."
+}

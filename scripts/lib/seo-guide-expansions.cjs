@@ -419,7 +419,7 @@ function universalSupplementSections(slug, h1) {
     },
     {
       heading: 'Satış ve yenileme döngüsü',
-      body: 'Kaç yıl sonra satmayı planladığınızı baştan yazın. Kısa döngüde değer kaybı yüksek segmentlerden kaçının. Uzun döngüde bakım disiplini ikinci el fiyatını korur. Takas ve yeniden finansman maliyetini bir sonraki alıma ekleyin. «${h1}» kararında yenileme tarihi net değilse TCO hesabı varsayılan 5 yıl kullanın; daha kısa planlıyorsanız 36 ay projeksiyon yeterlidir.',
+      body: `Kaç yıl sonra satmayı planladığınızı baştan yazın. Kısa döngüde değer kaybı yüksek segmentlerden kaçının. Uzun döngüde bakım disiplini ikinci el fiyatını korur. Takas ve yeniden finansman maliyetini bir sonraki alıma ekleyin. «${h1}» kararında yenileme tarihi net değilse TCO hesabı varsayılan 5 yıl kullanın; daha kısa planlıyorsanız 36 ay projeksiyon yeterlidir.`,
       subsections: []
     },
     {
@@ -429,7 +429,7 @@ function universalSupplementSections(slug, h1) {
     },
     {
       heading: 'On beş maddelik uygulama planı',
-      body: '1) Bütçe üst sınırını yazın. 2) Yıllık km tahmini yapın. 3) Finansman türünü seçin. 4) En az iki modeli listeleyin. 5) TCO tablosu açın. 6) Sigorta teklifi alın. 7) Ekspertiz randevusu planlayın. 8) Tramer sorgusu yapın. 9) Test sürüşü yapın. 10) Pazarlık referansı toplayın. 11) Sözleşme maddelerini okuyun. 12) Teslimat formunu kontrol edin. 13) İlk bakım tarihini takvime yazın. 14) Skor çıktınızı arşivleyin. 15) Bir yıl sonra TCO gerçekleşenle kıyaslayın. Bu plan «${h1}» kararını disipline eder; isteBul ilk adımları hızlandırır.',
+      body: `1) Bütçe üst sınırını yazın. 2) Yıllık km tahmini yapın. 3) Finansman türünü seçin. 4) En az iki modeli listeleyin. 5) TCO tablosu açın. 6) Sigorta teklifi alın. 7) Ekspertiz randevusu planlayın. 8) Tramer sorgusu yapın. 9) Test sürüşü yapın. 10) Pazarlık referansı toplayın. 11) Sözleşme maddelerini okuyun. 12) Teslimat formunu kontrol edin. 13) İlk bakım tarihini takvime yazın. 14) Skor çıktınızı arşivleyin. 15) Bir yıl sonra TCO gerçekleşenle kıyaslayın. Bu plan «${h1}» kararını disipline eder; isteBul ilk adımları hızlandırır.`,
       subsections: [
         {
           heading: 'Belge klasörü',

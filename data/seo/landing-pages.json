@@ -31,18 +31,30 @@
     },
     {
       "slug": "arac-toplam-sahiplik-maliyeti",
-      "title": "Araç Toplam Sahiplik Maliyeti (TCO) | isteBul",
-      "description": "TCO nedir? Yakıt, bakım, sigorta, vergi ve değer kaybını içeren araç sahiplik maliyetini Türkiye koşullarında nasıl hesaplarsınız?",
+      "title": "TCO Rehberi: Toplam Sahiplik Maliyeti | isteBul",
+      "description": "Toplam sahip olma maliyeti (TCO) nedir? Yakıt, bakım, sigorta, vergi, değer kaybı ve finansmanı birlikte hesaplayın. Türkiye için pratik TCO rehberi.",
       "h1": "Toplam sahip olma maliyeti (TCO) nedir?",
       "intro": "Araç etiket fiyatı satın alma anındaki maliyetin yalnızca bir parçasıdır. TCO; yakıt veya şarj, periyodik bakım, kasko/trafik, MTV ve ikinci el değer kaybını kapsayan bütüncül göstergedir.",
       "sections": [
         {
-          "heading": "Neden TCO'ya bakmalısınız?",
-          "body": "Benzer fiyatlı iki araç, yıllık 40.000 km kullanımda farklı yakıt ve bakım profiline sahip olabilir. TCO karşılaştırması uzun vadede daha ucuz seçeneği ortaya çıkarır."
+          "heading": "Neden liste fiyatı tek başına yeterli değil?",
+          "body": "Kampanyalı taksit veya indirimli etiket fiyatı cazip görünebilir; ancak yüksek sigorta primi, pahalı lastik veya hızlı değer kaybı toplam yükü artırır. TCO beş yıllık nakit çıkışını tek tabloda toplar."
+        },
+        {
+          "heading": "Yakıt ve enerji kalemi",
+          "body": "Yıllık kilometre ve gerçek tüketim verisi TCO'nun en değişken parçasıdır. Benzinli, dizel, hibrit ve elektrikli araçlarda birim maliyet farklı hesaplanır."
+        },
+        {
+          "heading": "Bakım, sigorta ve vergi",
+          "body": "Periyodik servis, lastik, kasko ve MTV her yıl tekrarlanır. Segment yükseldikçe parça ve prim maliyeti artar."
+        },
+        {
+          "heading": "Değer kaybı ve finansman",
+          "body": "İkinci el satış fiyatı ile alış fiyatı arasındaki fark gizli maliyettir. Kredi faizi de TCO'ya dahil edilmelidir."
         },
         {
           "heading": "isteBul TCO yaklaşımı",
-          "body": "Platformumuz bütçe, kullanım tipi ve finansman tercihinizi birleştirerek segment bazlı maliyet sinyalleri üretir; böylece «ucuz görünen» modelin gerçek yükünü görürsünüz."
+          "body": "Platformumuz bütçe, kullanım tipi ve finansman tercihinizi birleştirerek segment bazlı maliyet sinyalleri üretir; örnek hesaplama bandı analiz çıktısında görünür."
         }
       ],
       "faqs": [
@@ -55,18 +67,26 @@
     },
     {
       "slug": "ikinci-el-arac-alirken",
-      "title": "İkinci El Araç Alırken Dikkat Edilecekler | isteBul",
-      "description": "İkinci el araç alımında ekspertiz, km, hasar kaydı ve fiyat pazarlığı kontrol listesi. Güvenli ikinci el kararı için rehber.",
+      "title": "İkinci El Araç Rehberi: Risk ve Ekspertiz | isteBul",
+      "description": "İkinci el araç alırken ekspertiz, kilometre, hasar kaydı, likidite ve pazarlık riskleri. Toplam maliyet ve güvenli alım rehberi.",
       "h1": "İkinci el araç alırken kontrol listesi",
       "intro": "Türkiye ikinci el pazarı geniş ve fiyat aralığı yüksektir. Doğru araç; sadece uygun fiyat değil, bakım geçmişi, hasar durumu ve gelecekteki satış değeriyle de ölçülür.",
       "sections": [
         {
-          "heading": "Ekspertiz ve belge kontrolü",
-          "body": "Tramer kaydı, motor-şanzıman testi ve boya-değişen parça raporu riski azaltır. Satıcıdan servis geçmişi ve faturalı bakım kayıtlarını isteyin."
+          "heading": "Ekspertiz ve Tramer",
+          "body": "Bağımsız ekspertiz motor, şanzıman ve şasi kontrolü yapar. Tramer kaydı ağır hasar ve airbag açılımını gösterir."
         },
         {
-          "heading": "Fiyatı piyasa ile doğrulayın",
-          "body": "Aynı model-yıl-km bandında ilan ortalamasını görmeden pazarlık yapmayın. isteBul analizi bütçe bandınızda hangi segmentin mantıklı olduğunu önce netleştirir."
+          "heading": "Kilometre ve bakım geçmişi",
+          "body": "Düşük km her zaman avantaj değildir; garaj aracı veya yoğun şehir içi kullanım farklı aşınma yaratır. Faturalı servis kaydı isteyin."
+        },
+        {
+          "heading": "Likidite ve pazarlık",
+          "body": "Niş modeller satışta zorlanır. Piyasa ortalaması dışında fiyat için gerekçe sorun; aceleci pazarlık risklidir."
+        },
+        {
+          "heading": "Toplam maliyet ve değer kaybı",
+          "body": "Alım fiyatına ekspertiz, noter ve ilk bakımı ekleyin. Satış planınız varsa segment likiditesini TCO ile birlikte değerlendirin."
         }
       ],
       "faqs": [
@@ -111,42 +131,78 @@
     },
     {
       "slug": "elektrikli-arac-alirken",
-      "title": "Elektrikli Araç Alırken Bilmeniz Gerekenler | isteBul",
-      "description": "Türkiye'de elektrikli araç: şarj altyapısı, menzil, batarya garantisi ve TCO. EV alım kararı rehberi.",
+      "title": "Elektrikli Araç Rehberi: EV Alım Kararı | isteBul",
+      "description": "Elektrikli araç alırken batarya sağlığı, menzil, şarj altyapısı, bakım ve TCO. Türkiye koşullarında EV karar rehberi ve kontrol listesi.",
       "h1": "Elektrikli araç alırken nelere bakmalı?",
       "intro": "EV pazarı büyüyor; ancak şarj erişimi, kış menzili ve batarya garantisi gibi yerel faktörler kararı etkiler. Benzinli/hibrit alternatifle TCO kıyaslaması şarttır.",
       "sections": [
         {
+          "heading": "Batarya sağlığı ve garanti",
+          "body": "Üretici batarya garantisi (yıl/km) ikinci el değerini destekler. Mümkünse kapasite sağlığı (SOH) raporu isteyin."
+        },
+        {
+          "heading": "Menzil ve kış kullanımı",
+          "body": "WLTP menzili gerçek kullanımda düşebilir. Kışın ısıtma yükü ve otoyol hızı planlamayı etkiler; %20–30 tampon önerilir."
+        },
+        {
           "heading": "Şarj altyapısı planı",
-          "body": "Ev tipi wallbox, iş yeri şarjı ve halka açık istasyon haritası günlük kullanımınızı belirler. Sık şehirlerarası sürüşte menzil tamponu önemlidir."
+          "body": "Ev tipi wallbox, iş yeri şarjı ve halka açık istasyon haritası günlük kullanımınızı belirler. Sık şehirlerarası sürüşte DC şarj planı şarttır."
+        },
+        {
+          "heading": "Bakım maliyeti ve ikinci el riski",
+          "body": "EV bakımı genelde daha az parça değişimi gerektirir; ancak batarya dışı elektronik arızaları sigorta kapsamına göre değerlendirin."
         }
       ],
       "related": ["arac-toplam-sahiplik-maliyeti", "arac-karsilastirma-rehberi"]
     },
     {
       "slug": "suv-mi-sedan-mi",
-      "title": "SUV mu Sedan mı? Kullanımına Göre Seçim | isteBul",
-      "description": "Aile, şehir içi ve uzun yol için SUV ve sedan karşılaştırması. Segment seçimi rehberi.",
+      "title": "SUV mu Sedan mı? Segment Seçim Rehberi | isteBul",
+      "description": "SUV ve sedan farkları: aile kullanımı, şehir içi, yakıt, bagaj, ikinci el değeri ve TCO. Hangi gövde size uygun — karar rehberi.",
       "h1": "SUV mu sedan mı — kullanımınıza göre",
       "intro": "SUV yüksek oturma ve bagaj hacmi sunar; sedan ise genelde daha düşük tüketim ve daha iyi yol tutuşu sağlar. Çocuk sayısı, park alanı ve yıllık km kararınızı şekillendirir.",
       "sections": [
         {
           "heading": "Şehir içi kullanım",
           "body": "Dar sokaklar ve park için kompakt sedan veya B-SUV düşünün. Yüksek tavanlı büyük SUV'ler manevra ve tüketimde dezavantajlı olabilir."
+        },
+        {
+          "heading": "Aile ve bagaj ihtiyacı",
+          "body": "Çocuk koltuğu, bebek arabası ve hafta sonu bagajı segment seçimini belirler. Station wagon sedan alternatifi olabilir."
+        },
+        {
+          "heading": "Yakıt ve TCO etkisi",
+          "body": "Aynı motor gücünde SUV ağırlığı tüketimi artırır. Beş yıllık TCO tablosunda yakıt ve lastik farkını sayısal görün."
+        },
+        {
+          "heading": "İkinci el değeri",
+          "body": "Popüler SUV modelleri likiditesi yüksek kalabilir; niş modellerde satış süresi uzar. Segment bazlı piyasa verisiyle doğrulayın."
         }
       ],
       "related": ["arac-karsilastirma-rehberi", "ticari-arac-alimi-rehberi"]
     },
     {
       "slug": "arac-finansman-secenekleri",
-      "title": "Araç Finansman Seçenekleri: Kredi, Leasing, Peşin | isteBul",
-      "description": "Taşıt kredisi, finansal kiralama ve peşin alım karşılaştırması. Türkiye'de araç finansman rehberi.",
+      "title": "Finansman Rehberi: Kredi, Vade, Nakit Akışı | isteBul",
+      "description": "Araç finansmanında kredi, peşinat, vade, faiz ve toplam geri ödeme. Aylık taksit yerine toplam maliyet ve borç yükü odaklı rehber.",
       "h1": "Araç finansman seçenekleri karşılaştırması",
-      "intro": "Peşin alım toplam faizi sıfırlar; kredi nakit akışını korur; operasyonel leasing kurumsal filolarda yaygındır. Vergi ve muhasebe etkisini mali müşavirinizle doğrulayın.",
+      "intro": "Peşin alım toplam faizi sıfırlar; kredi nakit akışını korur; operasyonel leasing kurumsal filolarda yaygındır. Karar verirken toplam geri ödeme ve nakit akışı birlikte okunmalıdır.",
       "sections": [
         {
-          "heading": "Hangi profil hangi aracı seçer?",
-          "body": "Bireysel kullanıcılar çoğunlukla taşıt kredisi kullanır; KOBİ'ler leasing ile filo yenilemesi yapabilir. Her durumda TCO hesabı zorunludur."
+          "heading": "Kredi, peşinat ve vade",
+          "body": "Düşük taksit için vade uzatıldığında toplam faiz artar. Aynı peşinat ve vade ile bankaları kıyaslayın; dosya masrafını unutmayın."
+        },
+        {
+          "heading": "Toplam maliyet odaklı karar",
+          "body": "Aylık ödeme sürdürülebilir görünse bile 36–48 ay toplam geri ödeme bütçenizi aşmamalıdır. TCO tablosuna finansman kalemini ekleyin."
+        },
+        {
+          "heading": "Borç yükü ve nakit akışı",
+          "body": "Gelirin sabit payına araç yükü bindirmek risklidir. Acil durum fonunu koruyarak peşinat planlayın."
+        },
+        {
+          "heading": "Finansman karar skoru",
+          "body": "isteBul finansman analizi vade, faiz ve aylık taşıma maliyetini birlikte özetler; bilgilendirme amaçlıdır, banka onayı ayrıdır."
         }
       ],
       "related": ["arac-kredisi-hesaplama", "aylik-arac-butcesi-hesaplama"]

@@ -254,7 +254,40 @@ function renderSeoFooter({ site, guideLinks }) {
   </footer>`;
 }
 
-function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta }) {
+const GUIDE_CTAS = {
+  'arac-finansman-secenekleri': { href: '/finans/', label: 'Finansman analizine başla' },
+  'arac-toplam-sahiplik-maliyeti': { href: '/auto/', label: 'TCO analizine başlat' },
+  'suv-mi-sedan-mi': { href: '/auto/', label: 'Araç segment analizi başlat' },
+  'elektrikli-arac-alirken': { href: '/auto/', label: 'Elektrikli araç analizi başlat' },
+  'ikinci-el-arac-alirken': { href: '/auto/', label: 'İkinci el araç analizi başlat' }
+};
+
+function renderContactCards() {
+  return `<section class="seo-section seo-contact-grid" aria-label="İletişim kanalları">
+    <div class="seo-contact-card">
+      <h2>Destek ve satış</h2>
+      <p><a href="mailto:destek@istebul.com">destek@istebul.com</a></p>
+      <p class="seo-contact-note">Ürün, hesap ve analiz soruları</p>
+    </div>
+    <div class="seo-contact-card">
+      <h2>Partner başvurusu</h2>
+      <p><a href="/partner-olun.html">Partner olun sayfası</a></p>
+      <p class="seo-contact-note">Galeri, finans ve sigorta iş birlikleri</p>
+    </div>
+    <div class="seo-contact-card">
+      <h2>Kurumsal teklif</h2>
+      <p><a href="mailto:destek@istebul.com?subject=Kurumsal%20Teklif">Kurumsal teklif talebi</a></p>
+      <p class="seo-contact-note">Lisans ve entegrasyon talepleri</p>
+    </div>
+    <div class="seo-contact-card">
+      <h2>KVKK başvurusu</h2>
+      <p><a href="mailto:destek@istebul.com?subject=KVKK%20Başvurusu">KVKK başvurusu gönder</a></p>
+      <p class="seo-contact-note">Yanıt süresi en geç 30 gün</p>
+    </div>
+  </section>`;
+}
+
+function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, kicker, extraHtml }) {
   const base = site.baseUrl;
   const jsonLd = [
     breadcrumbSchema(base, breadcrumbs),
@@ -307,10 +340,11 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta })
   <main class="seo-main">
     <nav class="seo-breadcrumb" aria-label="Breadcrumb">${crumbs}</nav>
     <article>
-      <p class="seo-kicker">Türkiye · Araç alım rehberi</p>
+      <p class="seo-kicker">${escapeHtml(kicker || 'Türkiye · Karar rehberi')}</p>
       <h1>${escapeHtml(page.h1)}</h1>
       <p class="seo-lead">${escapeHtml(page.intro)}</p>
       ${bullets ? `<ul class="seo-bullets">${bullets}</ul>` : ''}
+      ${extraHtml || ''}
       ${sections}
       ${comparisonHtml}
       ${prosConsHtml}
@@ -328,11 +362,126 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta })
 </html>`;
 }
 
+function buildCorporateRichPages(distDir, site) {
+  const pages = [
+    {
+      filename: 'hakkimizda.html',
+      jsonPath: 'data/seo/about-page.json',
+      path: '/hakkimizda.html',
+      kicker: 'Kurumsal · Hakkımızda',
+      breadcrumbs: [
+        { name: 'Ana sayfa', path: '/' },
+        { name: 'Hakkımızda', path: '/hakkimizda.html' }
+      ],
+      relatedLinks: [
+        { href: '/metodoloji/', label: 'Metodoloji' },
+        { href: '/rehber/arac-toplam-sahiplik-maliyeti/', label: 'TCO rehberi' },
+        { href: '/auto/', label: 'Ücretsiz analiz' }
+      ],
+      cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' }
+    },
+    {
+      filename: 'iletisim.html',
+      jsonPath: 'data/seo/contact-page.json',
+      path: '/iletisim.html',
+      kicker: 'Kurumsal · İletişim',
+      breadcrumbs: [
+        { name: 'Ana sayfa', path: '/' },
+        { name: 'İletişim', path: '/iletisim.html' }
+      ],
+      relatedLinks: [
+        { href: '/partner-olun.html', label: 'Partner olun' },
+        { href: '/hakkimizda.html', label: 'Hakkımızda' },
+        { href: '/kvkk.html', label: 'KVKK' }
+      ],
+      cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' },
+      extraHtml: renderContactCards()
+    }
+  ];
+
+  pages.forEach((cfg) => {
+    const page = loadJson(cfg.jsonPath);
+    const html = renderContentPage({
+      site,
+      page,
+      path: cfg.path,
+      breadcrumbs: cfg.breadcrumbs,
+      relatedLinks: cfg.relatedLinks,
+      cta: cfg.cta,
+      kicker: cfg.kicker,
+      extraHtml: cfg.extraHtml
+    });
+    fs.writeFileSync(path.join(distDir, cfg.filename), html);
+    fs.writeFileSync(path.join(root, cfg.filename), html);
+  });
+}
+
+function buildRehberHubIndex(distDir, site, landingConfig) {
+  const prefix = landingConfig.prefix || '/rehber/';
+  const links = landingConfig.pages.map((p) => ({
+    href: `${prefix}${p.slug}/`,
+    label: p.h1,
+    desc: p.description
+  }));
+
+  const hubListHtml = `<section class="seo-section" aria-labelledby="rehber-hub-list-title">
+    <h2 id="rehber-hub-list-title">Tüm rehberler</h2>
+    <ul class="seo-hub-list">
+      ${links
+        .map(
+          (l) => `<li>
+        <a href="${escapeHtml(l.href)}"><strong>${escapeHtml(l.label)}</strong></a>
+        <p>${escapeHtml(l.desc)}</p>
+      </li>`
+        )
+        .join('')}
+    </ul>
+  </section>`;
+
+  const page = {
+    title: 'Araç Alım Rehberleri | TCO, Finansman, SUV | isteBul',
+    description:
+      'Türkiye odaklı araç alım rehberleri: TCO, finansman, SUV vs sedan, elektrikli araç, ikinci el kontrol listesi ve karşılaştırma.',
+    h1: 'Karar rehberleri',
+    intro:
+      'Satın alma öncesi okumanız gereken uzman rehberler. Her sayfa toplam maliyet, risk ve kullanım profiline göre yapılandırılmıştır.',
+    sections: [],
+    faqs: [
+      {
+        q: 'Rehberler ücretsiz mi?',
+        a: 'Evet, tüm rehber içerikleri ücretsiz okunabilir. Analiz aracı ayrıca ücretsiz başlatılabilir.'
+      }
+    ],
+    conclusion: 'Rehber okuduktan sonra ücretsiz Auto analizi ile kendi profilinize özel skor ve TCO özeti alın.'
+  };
+
+  const html = renderContentPage({
+    site,
+    page,
+    path: prefix,
+    breadcrumbs: [
+      { name: 'Ana sayfa', path: '/' },
+      { name: 'Rehber', path: prefix }
+    ],
+    relatedLinks: links.slice(0, 5),
+    cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' },
+    kicker: 'Kaynaklar · Rehber merkezi',
+    extraHtml: hubListHtml
+  });
+
+  const outDir = path.join(distDir, 'rehber');
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, 'index.html'), html);
+}
+
 function injectCorporateMeta(distDir) {
   const metaMap = loadJson('data/seo/corporate-meta.json');
   const site = loadJson('data/seo/site.json');
 
+  const skipFullBuild = new Set(['hakkimizda.html', 'iletisim.html']);
+
   Object.entries(metaMap).forEach(([filename, meta]) => {
+    if (skipFullBuild.has(filename)) return;
     const filePath = path.join(distDir, filename);
     if (!fs.existsSync(filePath)) return;
 
@@ -417,13 +566,14 @@ function buildSeoPages(distDir) {
       { name: page.h1, path: pagePath }
     ];
     const relatedLinks = resolveRelatedLinks(page, landingBySlug, hubsBySlug);
+    const guideCta = GUIDE_CTAS[page.slug] || { href: '/auto/', label: 'Ücretsiz karar analizine başla' };
     const html = renderContentPage({
       site,
       page,
       path: pagePath,
       breadcrumbs,
       relatedLinks,
-      cta: { href: '/auto/', label: 'Ücretsiz karar analizine başla' }
+      cta: guideCta
     });
 
     const outDir = path.join(distDir, 'rehber', page.slug);
@@ -462,6 +612,8 @@ function buildSeoPages(distDir) {
     fs.writeFileSync(path.join(outDir, 'index.html'), html);
   });
 
+  buildRehberHubIndex(distDir, site, landingConfig);
+  buildCorporateRichPages(distDir, site);
   injectCorporateMeta(distDir);
   buildMethodologyPage(distDir, site);
   return { site, landingConfig, hubsConfig, topGuides, guideWordCounts: wordCounts };
