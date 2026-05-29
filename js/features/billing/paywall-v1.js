@@ -8,8 +8,9 @@ import {
   PRO_FEATURE,
   PRO_FEATURE_COPY,
   resolveIsPro,
-  resolveProPlan
+  resolvePlanTier
 } from './pro-features.js';
+import { revenueManager } from '../monetization/revenue-manager.js';
 import { PLANS } from '../monetization/plans.js';
 
 export const PAYWALL_STATE = Object.freeze({
@@ -232,11 +233,15 @@ export function bindPaywallV1(root, handlers = {}) {
 export function buildPaywallContextFromApp(ctx = {}) {
   const app = typeof window !== 'undefined' ? window.app : null;
   const user = ctx.user || app?.currentUser || null;
-  const subscription = ctx.subscription || app?.accountManager?.subscription || null;
+  const subscription =
+    ctx.subscription ||
+    app?.accountManager?.subscription ||
+    revenueManager.subscription ||
+    null;
   const profile = ctx.profile || user?.profile || null;
   const isAuthenticated = Boolean(user?.id);
-  const plan = resolveProPlan(user, {
-    isPro: ctx.isPro,
+  const plan = resolvePlanTier(user, {
+    isPro: ctx.isPro ?? revenueManager.isPremium,
     profile,
     subscription,
     isAuthenticated
@@ -246,6 +251,7 @@ export function buildPaywallContextFromApp(ctx = {}) {
     isAuthenticated,
     isPro: plan.isPro,
     planTier: plan.planTier,
+    subscriptionState: plan.subscriptionState,
     profile,
     subscription,
     user

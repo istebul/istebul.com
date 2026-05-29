@@ -3,10 +3,6 @@
  */
 import { computePartnerMatchScores, formatPartnerMatchScoresHtml } from '../partner/partner-match-engine.js';
 
-function label(map, value) {
-  return map[value] || value || '—';
-}
-
 function riskFromLead(lead) {
   const score = Number(lead.lead_score);
   const urgency = String(lead.urgency || '').toLowerCase();
@@ -56,9 +52,11 @@ function partnerRecommendation(lead, matches) {
   const loan = String(lead.loan || lead.financing_intent || '').toLowerCase();
   if (loan === 'yes' || loan === 'evet') {
     const fin = matches.find((m) => m.route === 'finance_partner') || top;
-    return `${fin.name} — finansman rotası (${fin.score}/100)`;
+    return `${fin.name} — ${fin.category} (${fin.score}/100 · ${fin.reason})`;
   }
-  return top ? `${top.name} — bayi rotası (${top.score}/100)` : 'Partner havuzu değerlendirilmeli';
+  return top ?
+      `${top.name} — ${top.category} (${top.score}/100 · ${top.reason})`
+    : 'Partner havuzu değerlendirilmeli';
 }
 
 function buildNarrative(lead, summary) {
@@ -79,9 +77,10 @@ function buildNarrative(lead, summary) {
 
 /**
  * @param {Record<string, unknown>} lead
+ * @param {Array<object>} [partners]
  */
-export function buildLeadAiSummary(lead = {}) {
-  const matches = computePartnerMatchScores(lead);
+export function buildLeadAiSummary(lead = {}, partners) {
+  const matches = computePartnerMatchScores(lead, partners);
   const conversionLikelihoodValue = conversionLikelihood(lead);
 
   const summary = {
@@ -101,11 +100,13 @@ export function buildLeadAiSummary(lead = {}) {
 /**
  * @param {Record<string, unknown>} lead
  * @param {(value: unknown) => string} esc
+ * @param {{ partners?: Array<object>, source?: 'live'|'static' }} [options]
  */
-export function renderLeadAiSummaryHtml(lead, esc) {
+export function renderLeadAiSummaryHtml(lead, esc, options = {}) {
   const e = typeof esc === 'function' ? esc : (s) => String(s ?? '');
-  const summary = buildLeadAiSummary(lead);
-  const matches = computePartnerMatchScores(lead);
+  const partners = options.partners;
+  const summary = buildLeadAiSummary(lead, partners);
+  const matches = computePartnerMatchScores(lead, partners);
 
   return `
     <section class="lead-drawer-section lead-ai-intelligence">
@@ -120,7 +121,7 @@ export function renderLeadAiSummaryHtml(lead, esc) {
         <div><dt>Partner yönlendirme</dt><dd>${e(summary.partnerRecommendation)}</dd></div>
       </dl>
       <h5 class="lead-ai-subtitle">Partner Uyumu</h5>
-      ${formatPartnerMatchScoresHtml(matches, e)}
+      ${formatPartnerMatchScoresHtml(matches, e, { source: options.source || 'static' })}
     </section>`;
 }
 

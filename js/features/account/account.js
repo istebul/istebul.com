@@ -13,6 +13,7 @@ import {
 } from './dashboard-v2.js';
 import { addAnalysisToCompareSelection, removeCompareSelection } from './dashboard-v2-store.js';
 import { bindPaywallV1 } from '../billing/paywall-v1.js';
+import { resolvePlanTier } from '../billing/pro-features.js';
 
 const ONBOARDING_KEY = STORAGE_KEYS.ACCOUNT_ONBOARDING_DONE;
 const NOTIFICATION_PREF_KEY = 'istebul_notification_preference';
@@ -403,7 +404,11 @@ export class AccountManager {
         const emailVerified = Boolean(user.email_confirmed_at || user.confirmed_at);
         const sub = this.subscription;
         const subMeta = SUBSCRIPTION_LABELS[sub?.status] || { label: 'Ücretsiz', tone: 'muted' };
-        const hasPremium = ['active', 'trialing'].includes(sub?.status);
+        const { isPro: hasPremium } = resolvePlanTier(user, {
+            profile,
+            subscription: sub,
+            isAuthenticated: true
+        });
         const dashboardData = this.buildDashboardData(user, profile, subMeta, hasPremium, emailVerified);
         const v2Data = buildDashboardV2Data({
             user,

@@ -347,6 +347,16 @@ html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__cols.footer-content {
   }
 }
 
+@media (max-width: 639px) {
+  html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__inner {
+    overflow-x: clip;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section a {
+    overflow-wrap: anywhere;
+  }
+}
+
 html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section h4 {
   font-size: 0.7rem;
   font-weight: 800;

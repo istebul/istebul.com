@@ -55,6 +55,7 @@ import { initFinanceAdmin } from './admin/finance-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
 import { renderLeadAiSummaryHtml } from './features/admin/lead-ai-intelligence.js';
+import { fetchActivePartnerPool } from './features/partner/partner-pool.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
 
 const sb = getSupabaseClient();
@@ -3780,10 +3781,14 @@ async function openLeadDrawer(lead) {
   `).join('');
 
   const logs = await fetchLeadDispatchLogs(lead.id);
+  const partnerPool = await fetchActivePartnerPool(sb);
 
   content.innerHTML = `
     ${renderDispatchPanelHtml(lead, logs)}
-    ${renderLeadAiSummaryHtml(lead, escapeHtml)}
+    ${renderLeadAiSummaryHtml(lead, escapeHtml, {
+      partners: partnerPool.partners,
+      source: partnerPool.source
+    })}
     <section class="lead-drawer-section">
       <h4>CRM durumu</h4>
       <div class="lead-pipeline-chips">${pipelineChips}</div>

@@ -44,57 +44,87 @@ export const PRO_FEATURE_COPY = Object.freeze({
   [PRO_FEATURE.FAVORITES_HISTORY]: 'Favoriler ve geçmiş'
 });
 
+/** Paid Pro entitlement — active payment only. */
+export const PRO_PAID_STATUSES = Object.freeze(['active', 'trialing']);
+
+/** Limited access — billing issue, not full Pro. */
+export const LIMITED_SUBSCRIPTION_STATUSES = Object.freeze([
+  'past_due',
+  'unpaid',
+  'incomplete',
+  'incomplete_expired'
+]);
+
+const PRO_PLAN_IDS = new Set(['pro', 'enterprise']);
+
 /**
  * @param {string} [status]
  */
 export function isProSubscriptionStatus(status) {
-  return ['active', 'trialing', 'past_due'].includes(String(status || ''));
+  return PRO_PAID_STATUSES.includes(String(status || '').toLowerCase());
 }
 
-const PRO_PLAN_IDS = new Set(['pro', 'enterprise']);
+/**
+ * @param {string} [status]
+ */
+export function isLimitedSubscriptionStatus(status) {
+  return LIMITED_SUBSCRIPTION_STATUSES.includes(String(status || '').toLowerCase());
+}
 
-function hasActiveProPlan(plan, status) {
+function hasPaidProPlan(plan, status) {
   return PRO_PLAN_IDS.has(String(plan || '').toLowerCase()) && isProSubscriptionStatus(status);
 }
 
-/**
- * Resolve subscription tier for AI insight, PDF and paywall surfaces.
- * @param {object|null} [user]
- * @param {object} [ctx]
- * @param {boolean} [ctx.isPro]
- * @param {boolean} [ctx.isAuthenticated]
- * @param {object} [ctx.profile]
- * @param {object} [ctx.subscription]
- * @returns {{ isPro: boolean, planTier: 'guest'|'free'|'pro' }}
- */
-export function resolveProPlan(user = null, ctx = {}) {
-  if (ctx.isPro === true) return { isPro: true, planTier: 'pro' };
-
-  const profile = ctx.profile || user?.profile || null;
-  const subscription = ctx.subscription || ctx.subscription || null;
-  const isAuthenticated = Boolean(ctx.isAuthenticated ?? user?.id);
-
-  if (profile && hasActiveProPlan(profile.plan, profile.subscription_status)) {
-    return { isPro: true, planTier: 'pro' };
-  }
-  if (subscription && isProSubscriptionStatus(subscription.status)) {
-    return { isPro: true, planTier: 'pro' };
-  }
-  if (isAuthenticated) return { isPro: false, planTier: 'free' };
-  return { isPro: false, planTier: 'guest' };
+function subscriptionStatus(ctx = {}) {
+  const profile = ctx.profile || null;
+  const subscription = ctx.subscription || null;
+  return String(subscription?.status || profile?.subscription_status || '').toLowerCase();
 }
 
-/** Sprint alias — resolveIsPro(user) object form. */
-export const resolveIsProPlan = resolveProPlan;
+/**
+ * Central plan tier resolver for UI, insight, PDF and paywall surfaces.
+ * Product rule: active/trialing = pro; past_due/unpaid/incomplete* = free (limited); guest otherwise.
+ *
+ * @param {object|null} [user]
+ * @param {object} [ctx]
+ * @returns {{ isPro: boolean, planTier: 'guest'|'free'|'pro', subscriptionState: 'guest'|'free'|'pro'|'limited' }}
+ */
+export function resolvePlanTier(user = null, ctx = {}) {
+  if (ctx.isPro === true) {
+    return { isPro: true, planTier: 'pro', subscriptionState: 'pro' };
+  }
+
+  const profile = ctx.profile || user?.profile || null;
+  const subscription = ctx.subscription || null;
+  const isAuthenticated = Boolean(ctx.isAuthenticated ?? user?.id);
+  const status = subscriptionStatus({ profile, subscription });
+
+  if (profile && hasPaidProPlan(profile.plan, profile.subscription_status)) {
+    return { isPro: true, planTier: 'pro', subscriptionState: 'pro' };
+  }
+  if (subscription && isProSubscriptionStatus(subscription.status)) {
+    return { isPro: true, planTier: 'pro', subscriptionState: 'pro' };
+  }
+  if (isLimitedSubscriptionStatus(status)) {
+    return { isPro: false, planTier: 'free', subscriptionState: 'limited' };
+  }
+  if (isAuthenticated) {
+    return { isPro: false, planTier: 'free', subscriptionState: 'free' };
+  }
+  return { isPro: false, planTier: 'guest', subscriptionState: 'guest' };
+}
+
+/** @alias resolvePlanTier */
+export const resolveProPlan = resolvePlanTier;
+
+/** @alias resolvePlanTier */
+export const resolveIsProPlan = resolvePlanTier;
 
 /**
  * @param {object} [ctx]
- * @param {boolean} [ctx.isPro]
- * @param {object} [ctx.profile]
- * @param {object} [ctx.subscription]
  */
 export function resolveIsPro(ctx = {}) {
-  return resolveProPlan(ctx.user || null, ctx).isPro;
+  return resolvePlanTier(ctx.user || null, ctx).isPro;
 }
 
 /**

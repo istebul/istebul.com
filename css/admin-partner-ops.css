@@ -216,6 +216,24 @@
   font-size: 13px;
 }
 
+.partner-match-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.partner-match-meta,
+.partner-match-reason,
+.partner-match-source {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.partner-match-reason {
+  color: #cbd5e1;
+}
+
 .partner-match-score {
   color: #93c5fd;
+  flex-shrink: 0;
 }

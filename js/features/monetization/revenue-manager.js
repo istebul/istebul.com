@@ -11,7 +11,7 @@ import {
 import { AFFILIATE_DEFAULTS, FREE_LIMITS, PLANS, PRICING_MESSAGING, PRO_FEATURES } from './plans.js';
 import { isProSubscriptionStatus } from '../billing/pro-features.js';
 
-const ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due']);
+const ACTIVE_STATUSES = new Set(['active', 'trialing']);
 
 function hasActiveReferralPro(entitlements = {}) {
   const until = entitlements?.pro_until;
@@ -561,7 +561,7 @@ export class RevenueManager {
           <span class="revenue-upgrade-kicker">${isPastDue ? 'Ödeme gerekli' : isTrialing ? 'Deneme süresi' : 'Aktif abonelik'}</span>
           <h3>isteBul Pro</h3>
           <p>${isPastDue
-            ? 'Son ödeme alınamadı. Stripe panelinden kartınızı güncelleyin veya planınızı yönetin.'
+            ? 'Son ödeme alınamadı. Pro özellikler geçici olarak sınırlı; kartınızı güncelleyin veya planınızı yönetin.'
             : isTrialing
               ? `${PLANS.pro.trialDays} günlük ücretsiz deneme aktif. Deneme bitiminde seçtiğiniz plan üzerinden ücretlendirilirsiniz.`
               : `Tüm premium özellikler açık${end ? ` · Dönem sonu: ${end}` : ''}.`}</p>

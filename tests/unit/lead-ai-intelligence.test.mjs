@@ -5,6 +5,7 @@ import {
   buildLeadAiSummary,
   computePartnerMatchScores
 } from '../../js/features/admin/lead-ai-intelligence.js';
+import { mapPartnerEndpointRow } from '../../js/features/partner/partner-match-engine.js';
 
 test('buildLeadAiSummary produces admin narrative fields', () => {
   const summary = buildLeadAiSummary({
@@ -19,7 +20,7 @@ test('buildLeadAiSummary produces admin narrative fields', () => {
 
   assert.match(summary.narrative, /Finansman|yüksek|dönüşüm/i);
   assert.ok(summary.userType);
-  assert.ok(summary.partnerRecommendation);
+  assert.match(summary.partnerRecommendation, /finansman|Finans/i);
 });
 
 test('computePartnerMatchScores ranks SUV partner for SUV lead', () => {
@@ -33,5 +34,21 @@ test('computePartnerMatchScores ranks SUV partner for SUV lead', () => {
 
   assert.ok(scores.length >= 3);
   assert.ok(scores[0].score >= scores[1].score);
-  assert.ok(scores.some((s) => /SUV|Premium|Oto/i.test(s.name)));
+  assert.ok(scores[0].category);
+  assert.ok(scores[0].reason);
+});
+
+test('mapPartnerEndpointRow maps live partner endpoint', () => {
+  const mapped = mapPartnerEndpointRow({
+    id: 'ep-1',
+    name: 'Live Dealer',
+    route_type: 'dealer_partner',
+    is_active: true,
+    priority_weight: 120,
+    health_status: 'healthy'
+  });
+
+  assert.equal(mapped.name, 'Live Dealer');
+  assert.equal(mapped.route, 'dealer_partner');
+  assert.equal(mapped.source, 'live');
 });

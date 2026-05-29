@@ -33,8 +33,6 @@ const BUDGET_EXCLUDE = [
   /^css\/p4-5-perceived-performance/,
   /^css\/p4-6-brand-consistency/,
   /^css\/premium-pages/,
-  /^css\/revenue/,
-  /^css\/premium-pages/,
   /^css\/auto/,
   /^css\/partner-platform/,
   /^css\/seo-landing/,
