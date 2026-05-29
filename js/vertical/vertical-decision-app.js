@@ -1,5 +1,7 @@
 import { formatTry } from '../tatil/tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
+import { financeResultAdapter } from '../core/decision-results-v2.js';
+import { mountDecisionResultsV2 } from '../ui/decision-results-ui.js';
 
 /**
  * Shared decision wizard + results UI (tatil.css class names).
@@ -301,6 +303,19 @@ export function initDecisionFlow(config) {
     }`;
 
     bindResultsEvents(commentary);
+
+    if (config.vertical === 'finans') {
+      void mountDecisionResultsV2(section, financeResultAdapter({
+        state,
+        results: state.results,
+        summary,
+        commentary
+      }), {
+        insert: 'prepend',
+        trackFn: (eventName, meta) => config.tracker.track(eventName, meta)
+      });
+    }
+
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 

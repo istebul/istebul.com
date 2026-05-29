@@ -12,6 +12,8 @@ import {
   formatTry
 } from './finance-calculator.js';
 import { buildFinanceAiCommentary } from './finance-ai.js';
+import { financeResultAdapter } from '../core/decision-results-v2.js';
+import { mountDecisionResultsV2 } from '../ui/decision-results-ui.js';
 
 const PURPOSES = ['Araç kredisi', 'Konut kredisi', 'İhtiyaç kredisi', 'Eğitim finansmanı', 'Tatil finansmanı', 'Borç kapatma', 'İşletme finansmanı', 'Diğer'];
 const PRIORITIES = ['Düşük risk', 'En düşük faiz', 'En düşük toplam maliyet', 'Düşük aylık taksit', 'Hızlı onay', 'Esnek ödeme', 'Erken kapama', 'Masrafsız kredi', 'Sabit taksit', 'Kısa vade'];
@@ -318,6 +320,13 @@ async function renderResults() {
       </div>
       <p class="result-disclaimer">Bu karar simülasyonu gerçek başvuru öncesi ön değerlendirme içindir; kesin finansal tavsiye değildir.</p>
     </section>`;
+  void mountDecisionResultsV2(results, financeResultAdapter({ state, metrics, ai, scenarios }), {
+    insert: 'prepend',
+    trackFn: (eventName, meta) => {
+      void intake('event', { event_type: eventName, metadata: meta });
+    }
+  });
+
   $('#finance-save-lead')?.addEventListener('click', async () => {
     state.leadName = $('#finance-lead-name')?.value?.trim() || '';
     state.leadEmail = $('#finance-lead-email')?.value?.trim() || '';

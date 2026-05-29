@@ -17,6 +17,8 @@ import { buildHousingAiCommentary } from './real-estate-ai.js';
 import { TURKEY_CITIES } from './turkey-cities.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
+import { housingResultAdapter } from '../core/decision-results-v2.js';
+import { mountDecisionResultsV2 } from '../ui/decision-results-ui.js';
 
 const STEP_LABELS = ['Karar amacı', 'Bütçe', 'Lokasyon', 'Konut tipi', 'Riskler'];
 const PURPOSE_OPTIONS = [
@@ -752,6 +754,19 @@ async function renderResults() {
 
     bindResultsEvents(metrics, ai, userId);
     updateSidePanel('results');
+
+    void mountDecisionResultsV2(results, housingResultAdapter({
+      state,
+      metrics,
+      ai,
+      scenarios,
+      attention,
+      nextStep
+    }), {
+      insert: 'prepend',
+      trackFn: (eventName, meta) => trackEvent(eventName, meta),
+      partnerSelector: '#housing-partner-cta'
+    });
 
     requestAnimationFrame(() => {
       results.scrollIntoView({ behavior: 'smooth', block: 'start' });
