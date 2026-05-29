@@ -222,8 +222,16 @@ const LONGFORM = {
   ]
 };
 
+const LONGFORM_ALIAS = {
+  'elektrikli-arac-rehberi': 'elektrikli-arac-alirken',
+  'finansman-rehberi': 'arac-finansman-secenekleri',
+  'tco-rehberi': 'arac-toplam-sahiplik-maliyeti',
+  'ikinci-el-rehberi': 'ikinci-el-arac-alirken'
+};
+
 function getLongformSections(slug) {
-  return LONGFORM[slug] || [];
+  const key = LONGFORM_ALIAS[slug] || slug;
+  return LONGFORM[key] || [];
 }
 
 module.exports = { getLongformSections, LONGFORM };

@@ -44,7 +44,11 @@ const requiredSitemapPaths = [
   'https://www.istebul.com/planlar',
   'https://www.istebul.com/ilanlar/',
   'https://www.istebul.com/karsilastir/',
-  'https://www.istebul.com/rehber/suv-mi-sedan-mi/'
+  'https://www.istebul.com/rehber/suv-mi-sedan-mi/',
+  'https://www.istebul.com/rehber/elektrikli-arac-rehberi/',
+  'https://www.istebul.com/rehber/finansman-rehberi/',
+  'https://www.istebul.com/rehber/tco-rehberi/',
+  'https://www.istebul.com/rehber/ikinci-el-rehberi/'
 ];
 
 for (const loc of requiredSitemapPaths) {

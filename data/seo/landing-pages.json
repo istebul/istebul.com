@@ -27,13 +27,13 @@
           "a": "Önce bütçe bandınızı ve aylık taşıma kapasitenizi netleştirmek, yanlış modele bağlanmanızı önler."
         }
       ],
-      "related": ["arac-finansman-secenekleri", "aylik-arac-butcesi-hesaplama", "arac-toplam-sahiplik-maliyeti"]
+      "related": ["finansman-rehberi", "aylik-arac-butcesi-hesaplama", "tco-rehberi"]
     },
     {
-      "slug": "arac-toplam-sahiplik-maliyeti",
+      "slug": "tco-rehberi",
       "title": "TCO Rehberi: Toplam Sahiplik Maliyeti | isteBul",
-      "description": "Toplam sahip olma maliyeti (TCO) nedir? Yakıt, bakım, sigorta, vergi, değer kaybı ve finansmanı birlikte hesaplayın. Türkiye için pratik TCO rehberi.",
-      "h1": "Toplam sahip olma maliyeti (TCO) nedir?",
+      "description": "TCO rehberi: satın alma, kredi, vergi, sigorta, bakım, yakıt/enerji ve değer kaybını birlikte hesaplayın. Türkiye için pratik toplam maliyet çerçevesi.",
+      "h1": "TCO rehberi: toplam sahip olma maliyeti",
       "intro": "Araç etiket fiyatı satın alma anındaki maliyetin yalnızca bir parçasıdır. TCO; yakıt veya şarj, periyodik bakım, kasko/trafik, MTV ve ikinci el değer kaybını kapsayan bütüncül göstergedir.",
       "sections": [
         {
@@ -63,13 +63,13 @@
           "a": "Enerji birimi maliyeti, şarj altyapısı ve batarya garantisi TCO'yu etkiler; kullanım profilinize göre benzinli alternatifle kıyaslayın."
         }
       ],
-      "related": ["arac-kredisi-hesaplama", "elektrikli-arac-alirken", "arac-karsilastirma-rehberi"]
+      "related": ["arac-kredisi-hesaplama", "elektrikli-arac-rehberi", "arac-karsilastirma-rehberi"]
     },
     {
-      "slug": "ikinci-el-arac-alirken",
-      "title": "İkinci El Araç Rehberi: Risk ve Ekspertiz | isteBul",
-      "description": "İkinci el araç alırken ekspertiz, kilometre, hasar kaydı, likidite ve pazarlık riskleri. Toplam maliyet ve güvenli alım rehberi.",
-      "h1": "İkinci el araç alırken kontrol listesi",
+      "slug": "ikinci-el-rehberi",
+      "title": "İkinci El Araç Rehberi: Ekspertiz, Tramer ve Likidite | isteBul",
+      "description": "İkinci el rehberi: piyasa değeri, ekspertiz, Tramer, kilometre, bakım kayıtları, likidite ve pazarlık riskleri. Güvenli alım çerçevesi.",
+      "h1": "İkinci el araç rehberi",
       "intro": "Türkiye ikinci el pazarı geniş ve fiyat aralığı yüksektir. Doğru araç; sadece uygun fiyat değil, bakım geçmişi, hasar durumu ve gelecekteki satış değeriyle de ölçülür.",
       "sections": [
         {
@@ -113,7 +113,7 @@
           "body": "Bütçe sınırlıysa veya 2–3 yıl içinde model değiştirecekseniz, 1–3 yaşında bakımlı ikinci el genelde daha verimli TCO verir."
         }
       ],
-      "related": ["ikinci-el-arac-alirken", "arac-toplam-sahiplik-maliyeti"]
+      "related": ["ikinci-el-rehberi", "tco-rehberi"]
     },
     {
       "slug": "arac-karsilastirma-rehberi",
@@ -127,13 +127,13 @@
           "body": "Satın alma fiyatı, yıllık yakıt, sigorta, bakım ve olası değer kaybını sütunlara yazın. isteBul /karsilastir/ akışı bu tabloyu otomatik özetler."
         }
       ],
-      "related": ["suv-mi-sedan-mi", "arac-toplam-sahiplik-maliyeti"]
+      "related": ["suv-mi-sedan-mi", "tco-rehberi"]
     },
     {
-      "slug": "elektrikli-arac-alirken",
-      "title": "Elektrikli Araç Rehberi: EV Alım Kararı | isteBul",
-      "description": "Elektrikli araç alırken batarya sağlığı, menzil, şarj altyapısı, bakım ve TCO. Türkiye koşullarında EV karar rehberi ve kontrol listesi.",
-      "h1": "Elektrikli araç alırken nelere bakmalı?",
+      "slug": "elektrikli-arac-rehberi",
+      "title": "Elektrikli Araç Rehberi: Şarj, Menzil ve TCO | isteBul",
+      "description": "Elektrikli araç rehberi: batarya sağlığı, menzil, ev/iş şarjı, bakım farkı ve sigorta etkisi. Türkiye koşullarında EV karar çerçevesi.",
+      "h1": "Elektrikli araç rehberi",
       "intro": "EV pazarı büyüyor; ancak şarj erişimi, kış menzili ve batarya garantisi gibi yerel faktörler kararı etkiler. Benzinli/hibrit alternatifle TCO kıyaslaması şarttır.",
       "sections": [
         {
@@ -153,7 +153,7 @@
           "body": "EV bakımı genelde daha az parça değişimi gerektirir; ancak batarya dışı elektronik arızaları sigorta kapsamına göre değerlendirin."
         }
       ],
-      "related": ["arac-toplam-sahiplik-maliyeti", "arac-karsilastirma-rehberi"]
+      "related": ["tco-rehberi", "arac-karsilastirma-rehberi"]
     },
     {
       "slug": "suv-mi-sedan-mi",
@@ -182,10 +182,10 @@
       "related": ["arac-karsilastirma-rehberi", "ticari-arac-alimi-rehberi"]
     },
     {
-      "slug": "arac-finansman-secenekleri",
-      "title": "Finansman Rehberi: Kredi, Vade, Nakit Akışı | isteBul",
-      "description": "Araç finansmanında kredi, peşinat, vade, faiz ve toplam geri ödeme. Aylık taksit yerine toplam maliyet ve borç yükü odaklı rehber.",
-      "h1": "Araç finansman seçenekleri karşılaştırması",
+      "slug": "finansman-rehberi",
+      "title": "Finansman Rehberi: Kredi, Vade ve Nakit Akışı | isteBul",
+      "description": "Araç ve ihtiyaç finansmanında kredi, peşinat, vade, faiz ve toplam geri ödeme. Borçluluk oranı ve nakit akışı odaklı karar rehberi.",
+      "h1": "Finansman rehberi: kredi, vade ve toplam maliyet",
       "intro": "Peşin alım toplam faizi sıfırlar; kredi nakit akışını korur; operasyonel leasing kurumsal filolarda yaygındır. Karar verirken toplam geri ödeme ve nakit akışı birlikte okunmalıdır.",
       "sections": [
         {
@@ -219,7 +219,7 @@
           "body": "Gelirinizin belirli bir yüzdesini ulaşıma ayırın; kredi + işletme gideri bu tavanı aşmamalı. isteBul analizi önerilen üst bütçe bandını çıkarır."
         }
       ],
-      "related": ["arac-kredisi-hesaplama", "arac-finansman-secenekleri"]
+      "related": ["arac-kredisi-hesaplama", "finansman-rehberi"]
     },
     {
       "slug": "arac-alim-karar-asistani",
@@ -233,7 +233,7 @@
           "body": "Kısa soru seti → skorlama → öncelikli segment listesi → isteğe bağlı partner teklif akışı. Veriler KVKK çerçevesinde işlenir."
         }
       ],
-      "related": ["karar-asistani", "arac-toplam-sahiplik-maliyeti"]
+      "related": ["karar-asistani", "tco-rehberi"]
     },
     {
       "slug": "ticari-arac-alimi-rehberi",
@@ -247,7 +247,7 @@
           "body": "Günlük rota, yük hacmi ve şehir içi/dışı oranı model seçimini belirler. Fazla kapasiteli araç gereksiz yakıt ve bakım demektir."
         }
       ],
-      "related": ["suv-mi-sedan-mi", "arac-finansman-secenekleri"]
+      "related": ["suv-mi-sedan-mi", "finansman-rehberi"]
     },
     {
       "slug": "arac-sigortasi-karsilastirma",
@@ -261,7 +261,7 @@
           "body": "Cam, doğal afet, mini onarım ve ikame araç teminatlarını madde madde karşılaştırın. TCO hesabına yıllık primi sabit gider olarak ekleyin."
         }
       ],
-      "related": ["arac-toplam-sahiplik-maliyeti", "aylik-arac-butcesi-hesaplama"]
+      "related": ["tco-rehberi", "aylik-arac-butcesi-hesaplama"]
     }
   ]
 }

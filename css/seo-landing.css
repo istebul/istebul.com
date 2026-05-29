@@ -208,6 +208,33 @@
   opacity: 0.9;
 }
 
+.seo-cta-row-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.seo-cta-btn--secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.seo-guide-standard__block h2 {
+  font-size: 1.05rem;
+  margin-top: 0;
+}
+
+.seo-guide-standard__note {
+  font-size: 0.88rem;
+  color: var(--seo-muted, #64748b);
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--seo-border, #e2e8f0);
+}
+
 .seo-footer {
   background: #0f172a;
   color: #cbd5e1;

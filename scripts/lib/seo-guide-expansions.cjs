@@ -360,8 +360,21 @@ function defaultExpansion(slug, h1) {
   };
 }
 
+/** Footer Final V1 canonical slugs → expansion content keys */
+const GUIDE_EXPANSION_ALIAS = {
+  'elektrikli-arac-rehberi': 'elektrikli-arac-alirken',
+  'finansman-rehberi': 'arac-finansman-secenekleri',
+  'tco-rehberi': 'arac-toplam-sahiplik-maliyeti',
+  'ikinci-el-rehberi': 'ikinci-el-arac-alirken'
+};
+
+function resolveExpansionSlug(slug) {
+  return GUIDE_EXPANSION_ALIAS[slug] || slug;
+}
+
 function getGuideExpansion(slug, h1) {
-  const custom = EXPANSIONS[slug];
+  const key = resolveExpansionSlug(slug);
+  const custom = EXPANSIONS[key];
   if (custom) return custom;
   return defaultExpansion(slug, h1);
 }
@@ -442,10 +455,11 @@ function universalSupplementSections(slug, h1) {
 
 function mergeGuidePage(page) {
   const exp = getGuideExpansion(page.slug, page.h1);
+  const longformKey = resolveExpansionSlug(page.slug);
   const sections = [
     ...(page.sections || []),
     ...(exp.extraSections || []),
-    ...getLongformSections(page.slug),
+    ...getLongformSections(longformKey),
     ...universalSupplementSections(page.slug, page.h1)
   ];
   const faqs = [...(page.faqs || []), ...(exp.extraFaqs || []), ...SHARED_FAQ_TAIL];

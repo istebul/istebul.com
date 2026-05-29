@@ -15,7 +15,7 @@
       ],
       "ctaHref": "/auto/",
       "ctaLabel": "Karar analizini başlat",
-      "relatedLandings": ["arac-alim-karar-asistani", "arac-toplam-sahiplik-maliyeti", "arac-karsilastirma-rehberi"]
+      "relatedLandings": ["arac-alim-karar-asistani", "tco-rehberi", "arac-karsilastirma-rehberi"]
     },
     {
       "slug": "ilanlar",
@@ -32,7 +32,7 @@
       ],
       "ctaHref": "/auto/",
       "ctaLabel": "Ücretsiz analiz",
-      "relatedLandings": ["ikinci-el-arac-alirken", "sifir-arac-mi-ikinci-el-mi", "arac-alim-karar-asistani"]
+      "relatedLandings": ["ikinci-el-rehberi", "sifir-arac-mi-ikinci-el-mi", "arac-alim-karar-asistani"]
     },
     {
       "slug": "karsilastir",
@@ -49,7 +49,7 @@
       ],
       "ctaHref": "/auto/",
       "ctaLabel": "Karşılaştırmaya başla",
-      "relatedLandings": ["arac-karsilastirma-rehberi", "suv-mi-sedan-mi", "elektrikli-arac-alirken"]
+      "relatedLandings": ["arac-karsilastirma-rehberi", "suv-mi-sedan-mi", "elektrikli-arac-rehberi"]
     }
   ]
 }

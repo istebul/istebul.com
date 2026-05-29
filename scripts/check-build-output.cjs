@@ -11,6 +11,10 @@ const required = [
   'dist/sitemap.xml',
   'dist/build-manifest.json',
   'dist/rehber/arac-kredisi-hesaplama/index.html',
+  'dist/rehber/tco-rehberi/index.html',
+  'dist/rehber/finansman-rehberi/index.html',
+  'dist/rehber/elektrikli-arac-rehberi/index.html',
+  'dist/rehber/ikinci-el-rehberi/index.html',
   'dist/karar-asistani/index.html',
   'dist/css/seo-landing.css'
 ];

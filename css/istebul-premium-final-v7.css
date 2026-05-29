@@ -368,6 +368,9 @@ html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section a:hover,
 html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section a:focus-visible {
   color: var(--ib-v7-accent);
   text-decoration: underline;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+  border-radius: 2px;
 }
 
 html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .newsletter-card {

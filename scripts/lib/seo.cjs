@@ -198,6 +198,66 @@ function renderProsCons(advantages, disadvantages) {
   </section>`;
 }
 
+let guideStandardV1 = null;
+
+function loadGuideStandardV1() {
+  if (!guideStandardV1) {
+    try {
+      guideStandardV1 = loadJson('data/seo/guide-standard-v1.json');
+    } catch {
+      guideStandardV1 = {};
+    }
+  }
+  return guideStandardV1;
+}
+
+function slugFromGuidePath(path = '') {
+  const m = String(path).match(/\/rehber\/([^/]+)\//);
+  return m ? m[1] : '';
+}
+
+function renderGuideStandardBlocks(slug) {
+  const blocks = loadGuideStandardV1()[slug];
+  if (!blocks) return '';
+
+  const parts = [
+    { title: 'Kimler için uygun?', body: blocks.whoFor },
+    { title: 'Karar verirken bakılması gerekenler', body: blocks.decisionFactors },
+    { title: 'Toplam maliyet etkisi', body: blocks.costImpact },
+    { title: 'Riskler', body: blocks.risks },
+    { title: 'isteBul nasıl yardımcı olur?', body: blocks.howIstebulHelps }
+  ];
+
+  return `<div class="seo-guide-standard" aria-label="Karar rehberi özeti">
+    ${parts
+      .map(
+        (p) => `<section class="seo-section seo-guide-standard__block">
+      <h2>${escapeHtml(p.title)}</h2>
+      <p>${escapeHtml(p.body)}</p>
+    </section>`
+      )
+      .join('\n')}
+    <p class="seo-guide-standard__note">${escapeHtml(
+      'Bu içerik bilgilendirme ve karar destek amaçlıdır; bağlayıcı finansal, hukuki veya yatırım tavsiyesi değildir. Nihai teklif ve sözleşme koşullarını yetkili kurumlardan doğrulayın.'
+    )}</p>
+  </div>`;
+}
+
+function renderGuideCta(cta) {
+  if (!cta) return '';
+  const secondary =
+    cta.secondary ?
+      `<a class="seo-cta-btn seo-cta-btn--secondary" href="${escapeHtml(cta.secondary.href)}">${escapeHtml(cta.secondary.label)}</a>`
+    : '';
+  return `<div class="seo-cta">
+        <div class="seo-cta-row-inner">
+          <a class="seo-cta-btn" href="${escapeHtml(cta.href)}">${escapeHtml(cta.label)}</a>
+          ${secondary}
+        </div>
+        <p class="seo-cta-note">Ücretsiz · KVKK uyumlu · Skorlar kural motorundan gelir</p>
+      </div>`;
+}
+
 function renderSections(sections) {
   return (sections || [])
     .map((s) => {
@@ -256,11 +316,15 @@ function renderSeoFooter({ site, guideLinks }) {
 }
 
 const GUIDE_CTAS = {
-  'arac-finansman-secenekleri': { href: '/finans/', label: 'Finansman analizine başla' },
-  'arac-toplam-sahiplik-maliyeti': { href: '/auto/', label: 'TCO analizine başlat' },
-  'suv-mi-sedan-mi': { href: '/auto/', label: 'Araç segment analizi başlat' },
-  'elektrikli-arac-alirken': { href: '/auto/', label: 'Elektrikli araç analizi başlat' },
-  'ikinci-el-arac-alirken': { href: '/auto/', label: 'İkinci el araç analizi başlat' }
+  'finansman-rehberi': { href: '/finans/', label: 'Finansman analizini başlat' },
+  'tco-rehberi': {
+    href: '/auto/',
+    label: 'Araç TCO analizini başlat',
+    secondary: { href: '/finans/', label: 'Finansman analizini başlat' }
+  },
+  'suv-mi-sedan-mi': { href: '/auto/', label: 'Araç analizini başlat' },
+  'elektrikli-arac-rehberi': { href: '/auto/', label: 'Araç analizini başlat' },
+  'ikinci-el-rehberi': { href: '/auto/', label: 'Araç analizini başlat' }
 };
 
 function renderContactCards() {
@@ -297,7 +361,9 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
   const faq = faqSchema(page.faqs);
   if (faq) jsonLd.push(faq);
 
-  const sections = renderSections(page.sections);
+  const guideSlug = slugFromGuidePath(path);
+  const standardBlocks = renderGuideStandardBlocks(guideSlug);
+  const sections = `${standardBlocks}${renderSections(page.sections)}`;
   const comparisonHtml = renderComparisonTable(page.comparisonTable);
   const prosConsHtml = renderProsCons(page.advantages, page.disadvantages);
   const conclusionHtml = page.conclusion
@@ -352,10 +418,7 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
       ${conclusionHtml}
       ${faqHtml}
       ${related}
-      <div class="seo-cta">
-        <a class="seo-cta-btn" href="${escapeHtml(cta.href)}">${escapeHtml(cta.label)}</a>
-        <p class="seo-cta-note">Ücretsiz · KVKK uyumlu · Birkaç dakikada sonuç</p>
-      </div>
+      ${renderGuideCta(loadGuideStandardV1()[guideSlug]?.cta || cta)}
     </article>
   </main>
   ${renderSeoFooter({ site, guideLinks: relatedLinks })}
@@ -376,7 +439,7 @@ function buildCorporateRichPages(distDir, site) {
       ],
       relatedLinks: [
         { href: '/metodoloji/', label: 'Metodoloji' },
-        { href: '/rehber/arac-toplam-sahiplik-maliyeti/', label: 'TCO rehberi' },
+        { href: '/rehber/tco-rehberi/', label: 'TCO rehberi' },
         { href: '/auto/', label: 'Ücretsiz analiz' }
       ],
       cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' }
@@ -519,7 +582,7 @@ function injectCorporateMeta(distDir) {
         '</footer>',
         `<nav class="seo-footer-links" aria-label="SEO rehber">
       <a href="/rehber/arac-kredisi-hesaplama/">Kredi rehberi</a>
-      <a href="/rehber/arac-toplam-sahiplik-maliyeti/">TCO</a>
+      <a href="/rehber/tco-rehberi/">TCO rehberi</a>
       <a href="/auto/">Karar analizi</a>
     </nav>
   </footer>`
@@ -629,7 +692,7 @@ function buildMethodologyPage(distDir, site) {
   ];
   const relatedLinks = [
     { href: '/auto/', label: 'Auto analiz' },
-    { href: '/rehber/arac-toplam-sahiplik-maliyeti/', label: 'TCO rehberi' },
+    { href: '/rehber/tco-rehberi/', label: 'TCO rehberi' },
     { href: '/karar-asistani/', label: 'Karar asistanı' }
   ];
   const html = renderContentPage({
@@ -665,7 +728,18 @@ function generateSitemap(distDir, { site, landingConfig, hubsConfig }) {
 
   const prefix = landingConfig.prefix || '/rehber/';
   landingConfig.pages.forEach((p) => {
-    urls.push({ loc: `${prefix}${p.slug}/`, priority: '0.75', changefreq: 'monthly' });
+    const isFooterGuide = [
+      'suv-mi-sedan-mi',
+      'elektrikli-arac-rehberi',
+      'finansman-rehberi',
+      'tco-rehberi',
+      'ikinci-el-rehberi'
+    ].includes(p.slug);
+    urls.push({
+      loc: `${prefix}${p.slug}/`,
+      priority: isFooterGuide ? '0.65' : '0.7',
+      changefreq: 'monthly'
+    });
   });
 
   const seen = new Set();
