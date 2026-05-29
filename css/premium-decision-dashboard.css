@@ -128,7 +128,8 @@ body.vacation-page .ib-premium-kpi strong {
 
 body.finans-page .ib-premium-block,
 body.vacation-page .ib-premium-block {
-  background: rgba(11, 21, 48, 0.72);
+  background: #f8fafc;
+  border-color: var(--ib-dash-line);
 }
 
 .ib-premium-block h3 {
@@ -146,7 +147,7 @@ body.vacation-page .ib-premium-block {
 
 body.finans-page .ib-premium-block ul,
 body.vacation-page .ib-premium-block ul {
-  color: #cbd5e1;
+  color: #475569;
 }
 
 .ib-premium-block--ai,
@@ -162,7 +163,7 @@ body.vacation-page .ib-premium-block ul {
 
 body.finans-page .ib-premium-ai-lead,
 body.vacation-page .ib-premium-ai-lead {
-  color: #e2e8f0;
+  color: #334155;
 }
 
 .ib-premium-ai-bullets {

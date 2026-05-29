@@ -104,7 +104,7 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra }) {
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(ogImage)}">
   <link rel="stylesheet" href="/css/seo-landing.css">
-  <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=1">
+  <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=2">
   <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })}</script>`;
 }
 

@@ -792,7 +792,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home.ib-hero-premium-dark .ib-hero-btn-g
   color: #fff;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-glass-dashboard {
+body.ib-enterprise #home .ib-glass-dashboard {
   background: linear-gradient(165deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.84)) !important;
   border: 1px solid rgba(148, 163, 184, 0.36) !important;
   backdrop-filter: blur(16px) saturate(1.2);
@@ -801,19 +801,19 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-glass-dashboard {
     inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-glass-dashboard .preview-category-label {
+body.ib-enterprise #home .ib-glass-dashboard .preview-category-label {
   color: #dbeafe;
   font-weight: 700;
   letter-spacing: 0.05em;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-grid {
+body.ib-enterprise #home .ib-dash-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.65rem;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-score-ring {
+body.ib-enterprise #home .ib-dash-score-ring {
   grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
@@ -825,7 +825,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-score-ring {
   border: 1px solid rgba(148, 163, 184, 0.28);
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-score-ring-inner {
+body.ib-enterprise #home .ib-dash-score-ring-inner {
   display: flex;
   align-items: baseline;
   gap: 0.15rem;
@@ -836,29 +836,29 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-score-ring-inner {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-score-ring-inner strong {
+body.ib-enterprise #home .ib-dash-score-ring-inner strong {
   font-size: 1.7rem;
   color: #ffffff;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-score-ring-inner span {
+body.ib-enterprise #home .ib-dash-score-ring-inner span {
   font-size: 0.9rem;
   color: #dbeafe;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-score-label,
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-score-tier {
+body.ib-enterprise #home .ib-dash-score-label,
+body.ib-enterprise #home .ib-dash-score-tier {
   margin: 0;
   font-size: 0.82rem;
   color: #e2e8f0;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-score-tier {
+body.ib-enterprise #home .ib-dash-score-tier {
   color: #4ade80;
   font-weight: 700;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-stat {
+body.ib-enterprise #home .ib-dash-stat {
   padding: 0.65rem 0.75rem;
   border-radius: 12px;
   background: rgba(2, 6, 23, 0.58);
@@ -866,7 +866,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-stat {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-stat span {
+body.ib-enterprise #home .ib-dash-stat span {
   display: block;
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -874,7 +874,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-stat span {
   color: #cbd5e1;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-stat strong {
+body.ib-enterprise #home .ib-dash-stat strong {
   display: block;
   margin-top: 0.2rem;
   font-size: 1.08rem;
@@ -882,11 +882,11 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-stat strong {
   font-weight: 800;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-stat--risk strong {
+body.ib-enterprise #home .ib-dash-stat--risk strong {
   color: #4ade80;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-finance {
+body.ib-enterprise #home .ib-dash-finance {
   grid-column: 1 / -1;
   padding: 0.65rem;
   border-radius: 12px;
@@ -894,7 +894,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-finance {
   border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-finance-title {
+body.ib-enterprise #home .ib-dash-finance-title {
   margin: 0 0 0.45rem;
   font-size: 0.72rem;
   font-weight: 700;
@@ -903,26 +903,26 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-finance-title {
   color: #94a3b8;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-finance-table {
+body.ib-enterprise #home .ib-dash-finance-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.75rem;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-finance-table th,
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-finance-table td {
+body.ib-enterprise #home .ib-dash-finance-table th,
+body.ib-enterprise #home .ib-dash-finance-table td {
   padding: 0.35rem 0.25rem;
   text-align: left;
   color: #cbd5e1;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-finance-table tr.is-best td {
+body.ib-enterprise #home .ib-dash-finance-table tr.is-best td {
   color: #93c5fd;
   font-weight: 700;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-pick {
+body.ib-enterprise #home .ib-dash-pick {
   grid-column: 1 / -1;
   display: flex;
   gap: 0.65rem;
@@ -933,7 +933,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-pick {
   border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-pick-visual {
+body.ib-enterprise #home .ib-dash-pick-visual {
   width: 72px;
   height: 48px;
   border-radius: 8px;
@@ -941,7 +941,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-pick-visual {
   background: linear-gradient(135deg, #64748b, #334155);
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-pick-label {
+body.ib-enterprise #home .ib-dash-pick-label {
   margin: 0;
   font-size: 0.68rem;
   text-transform: uppercase;
@@ -949,14 +949,14 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-pick-label {
   color: #94a3b8;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-pick-name {
+body.ib-enterprise #home .ib-dash-pick-name {
   margin: 0.15rem 0;
   font-weight: 700;
   color: #f8fafc;
   font-size: 0.88rem;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-pick-link {
+body.ib-enterprise #home .ib-dash-pick-link {
   font-size: 0.78rem;
   font-weight: 700;
   color: #60a5fa;
@@ -1346,17 +1346,17 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-hero-cta-arrow {
   margin-left: 0.15rem;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-grid--platform {
+body.ib-enterprise #home .ib-dash-grid--platform {
   grid-template-columns: 1fr;
   gap: 0.75rem;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-score-copy {
+body.ib-enterprise #home .ib-dash-score-copy {
   flex: 1;
   min-width: 0;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-kpi-row {
+body.ib-enterprise #home .ib-dash-kpi-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
@@ -1368,13 +1368,13 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-kpi-row {
   }
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-charts {
+body.ib-enterprise #home .ib-dash-charts {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.55rem;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-chart {
+body.ib-enterprise #home .ib-dash-chart {
   padding: 0.55rem 0.65rem;
   border-radius: 12px;
   background: rgba(2, 6, 23, 0.6);
@@ -1382,7 +1382,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-chart {
   min-width: 0;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-chart-title {
+body.ib-enterprise #home .ib-dash-chart-title {
   margin: 0 0 0.4rem;
   font-size: 0.67rem;
   font-weight: 700;
@@ -1391,7 +1391,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-chart-title {
   color: #cbd5e1;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-donut {
+body.ib-enterprise #home .ib-dash-donut {
   width: 64px;
   height: 64px;
   margin: 0 auto 0.35rem;
@@ -1405,7 +1405,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-donut {
   -webkit-mask: radial-gradient(circle at center, transparent 52%, #000 53%);
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-donut-legend {
+body.ib-enterprise #home .ib-dash-donut-legend {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1415,13 +1415,13 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-donut-legend {
   gap: 0.2rem;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-donut-legend li {
+body.ib-enterprise #home .ib-dash-donut-legend li {
   display: flex;
   align-items: center;
   gap: 0.3rem;
 }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-donut-legend .swatch {
+body.ib-enterprise #home .ib-dash-donut-legend .swatch {
   width: 8px;
   height: 8px;
   border-radius: 2px;
@@ -1432,7 +1432,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .swatch-a { background: #3b82f6; }
 html:not(.ib-ds-v4) body.ib-enterprise #home .swatch-b { background: #8b5cf6; }
 html:not(.ib-ds-v4) body.ib-enterprise #home .swatch-c { background: #22d3ee; }
 
-html:not(.ib-ds-v4) body.ib-enterprise #home .ib-dash-line-chart {
+body.ib-enterprise #home .ib-dash-line-chart {
   display: block;
   width: 100%;
   height: 64px;
