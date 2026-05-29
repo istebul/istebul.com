@@ -1,5 +1,6 @@
 import { formatTry } from '../tatil/tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
+import { mountFinansmanResultsV2 } from '../features/finansman/finansman-results-v2.js';
 
 /**
  * Shared decision wizard + results UI (tatil.css class names).
@@ -301,6 +302,15 @@ export function initDecisionFlow(config) {
     }`;
 
     bindResultsEvents(commentary);
+
+    if (config.vertical === 'finans') {
+      void mountFinansmanResultsV2(section, {
+        state,
+        results: state.results,
+        track: (eventName, meta) => config.tracker.track(eventName, meta)
+      });
+    }
+
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 

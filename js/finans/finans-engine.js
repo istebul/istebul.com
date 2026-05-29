@@ -35,7 +35,7 @@ function estimatePayment(principal, months, annualRate = 0.45) {
   return Math.round((principal * r * (1 + r) ** months) / ((1 + r) ** months - 1));
 }
 
-function baseScore(state) {
+export function baseScore(state) {
   let score = 60;
   if (state.risk_tolerance === 'dengeli') score += 5;
   if (state.income_type === 'stabil') score += 6;
@@ -61,7 +61,7 @@ function baseScore(state) {
   return Math.min(Math.max(score, 48), 94);
 }
 
-function computeDebtScore(state) {
+export function computeDebtScore(state) {
   const income = Number(state.monthly_income || 0);
   const expense = Number(state.monthly_expense || 0);
   const debt = Number(state.existing_debt || 0);
