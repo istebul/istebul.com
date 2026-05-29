@@ -1,3 +1,11 @@
+import { revenueManager } from '../features/monetization/revenue-manager.js';
+import {
+    buildPaywallContextFromApp,
+    renderPaywallV1,
+    resolvePaywallState
+} from '../features/billing/paywall-v1.js';
+import { PRO_FEATURE } from '../features/billing/pro-features.js';
+
 export class ComparisonUI {
     renderComparison(items = []) {
         const container = document.getElementById('comparison-content');
@@ -36,7 +44,7 @@ export class ComparisonUI {
                 '<button type="button" class="btn btn-outline" data-upsell-trigger="decision_export" data-upsell-placement="compare_export"><i data-lucide="file-down"></i> PDF export</button>' +
             '</div>' +
             '<div class="comparison-grid">' + items.map((item) => this.getComparisonCardMarkup(item, maxValues, items)).join('') + '</div>' +
-            this.getComparisonMatrixMarkup(items);
+            this.getComparisonAdvancedSection(items);
 
         this.loadIcons();
     }
@@ -142,6 +150,23 @@ export class ComparisonUI {
                 '<strong>' + this.formatPrice(metric.value) + '</strong>' +
             '</div>';
         }).join('') + '</div>';
+    }
+
+    getComparisonAdvancedSection(items = []) {
+        const ctx = buildPaywallContextFromApp();
+        const state = resolvePaywallState(ctx);
+        if (state === 'pro' || revenueManager.isPremium) {
+            return this.getComparisonMatrixMarkup(items);
+        }
+        if (items.length < 2) {
+            return this.getComparisonMatrixMarkup(items);
+        }
+        return renderPaywallV1({
+            feature: PRO_FEATURE.COMPARISON_ADVANCED,
+            state,
+            compact: true,
+            stripeReady: true
+        });
     }
 
     getComparisonMatrixMarkup(items = []) {

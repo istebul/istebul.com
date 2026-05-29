@@ -12,7 +12,7 @@ import {
   riskLevelToTone,
   safeTrackEvent
 } from '../features/results/results-engine.js';
-import { downloadDecisionReport } from '../features/results/pdf-report.js';
+import { gatePdfDownload } from '../features/billing/pdf-access-v1.js';
 import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
@@ -357,7 +357,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   root.querySelector('[data-auto-v2-print]')?.addEventListener('click', () => {
     safeTrackEvent(track, 'decision_report_print_click', { score: decisionScore });
-    downloadDecisionReport(model.pdfReportData);
+    gatePdfDownload(model.pdfReportData);
   });
 
   // Executive Summary (AI proxy + fallback)

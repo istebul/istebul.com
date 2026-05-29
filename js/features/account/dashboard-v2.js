@@ -11,6 +11,13 @@ import {
   listPdfReportHistory,
   normalizeDashboardCategory
 } from './dashboard-v2-store.js';
+import {
+  buildPaywallContextFromApp,
+  renderPaywallV1,
+  resolvePaywallState,
+  renderProBadge
+} from '../billing/paywall-v1.js';
+import { PRO_FEATURE } from '../billing/pro-features.js';
 
 const EMPTY_CTAS = [
   { label: 'Araç Analizi', href: '/auto/' },
@@ -240,6 +247,16 @@ export function renderDashboardV2(data) {
   const esc = escapeHtml;
   const user = data.user || {};
   const name = data.profile?.full_name || user.email?.split('@')[0] || 'Kullanıcı';
+  const paywallCtx = buildPaywallContextFromApp({
+    isPro: data.hasPremium,
+    profile: data.profile,
+    user: data.user
+  });
+  const pdfPaywallState = resolvePaywallState(paywallCtx);
+  const pdfPaywallHtml =
+    pdfPaywallState !== 'pro'
+      ? renderPaywallV1({ feature: PRO_FEATURE.PDF_HISTORY, state: pdfPaywallState, compact: true })
+      : '';
 
   return `
     <div class="dashboard-v2-root" data-dashboard-v2>
@@ -269,10 +286,11 @@ export function renderDashboardV2(data) {
         </div>
       </section>
 
-      <section class="dashboard-v2-section" aria-labelledby="dashboard-v2-pdf-title">
+      <section class="dashboard-v2-section ${!data.hasPremium ? 'dashboard-v2-pro-locked' : ''}" aria-labelledby="dashboard-v2-pdf-title">
         <div class="dashboard-v2-section-head">
-          <h3 id="dashboard-v2-pdf-title">PDF rapor geçmişi</h3>
+          <h3 id="dashboard-v2-pdf-title">PDF rapor geçmişi ${data.hasPremium ? renderProBadge({ active: true }) : ''}</h3>
         </div>
+        ${pdfPaywallHtml}
         <div class="dashboard-v2-table-wrap">
           <table class="dashboard-v2-table">
             <thead>

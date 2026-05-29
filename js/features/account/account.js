@@ -12,6 +12,7 @@ import {
     renderDashboardV2Guest
 } from './dashboard-v2.js';
 import { addAnalysisToCompareSelection, removeCompareSelection } from './dashboard-v2-store.js';
+import { bindPaywallV1 } from '../billing/paywall-v1.js';
 
 const ONBOARDING_KEY = STORAGE_KEYS.ACCOUNT_ONBOARDING_DONE;
 const NOTIFICATION_PREF_KEY = 'istebul_notification_preference';
@@ -365,6 +366,7 @@ export class AccountManager {
             ui: this.ui,
             onRefresh: () => this.refresh(this.auth?.getCurrentUser?.())
         });
+        bindPaywallV1(root);
         this.ui?.loadIcons?.();
     }
 
@@ -428,6 +430,10 @@ export class AccountManager {
             pdfReports: v2Data.pdfReports,
             store: { addAnalysisToCompareSelection, removeCompareSelection },
             onRefresh: () => this.refresh(user)
+        });
+
+        bindPaywallV1(root, {
+            onCheckoutError: () => this.ui?.showError?.('Pro ödeme oturumu başlatılamadı.')
         });
 
         root.querySelector('#account-reset-password')?.addEventListener('click', () => {

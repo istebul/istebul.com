@@ -1,0 +1,176 @@
+/* Billing V1 + Paywall V1 */
+
+.billing-v1-pricing-grid {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+@media (min-width: 900px) {
+  .billing-v1-pricing-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+}
+
+.billing-v1-plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.15rem 1.2rem;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--border-color, #334155) 55%, transparent);
+  background: color-mix(in srgb, var(--surface-color, #0f172a) 88%, transparent);
+  min-height: 22rem;
+}
+
+.billing-v1-plan-card--pro {
+  border-color: color-mix(in srgb, var(--primary-color, #3b82f6) 45%, transparent);
+  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.15);
+}
+
+.billing-v1-plan-kicker {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #94a3b8);
+}
+
+.billing-v1-plan-kicker--pro {
+  color: var(--primary-color, #60a5fa);
+}
+
+.billing-v1-trial {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, #22c55e 20%, transparent);
+  color: #86efac;
+  width: fit-content;
+}
+
+.billing-v1-plan-name {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.billing-v1-plan-price {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 700;
+}
+
+.billing-v1-plan-price small {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted, #94a3b8);
+}
+
+.billing-v1-plan-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted, #94a3b8);
+  flex: 1;
+}
+
+.billing-v1-plan-features {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.billing-v1-plan-card .btn-block {
+  margin-top: auto;
+}
+
+/* Paywall */
+
+.paywall-v1 {
+  border-radius: 0.85rem;
+  border: 1px dashed color-mix(in srgb, var(--primary-color, #3b82f6) 40%, transparent);
+  background: color-mix(in srgb, var(--primary-color, #3b82f6) 8%, var(--surface-color, #0f172a));
+  padding: 1rem 1.1rem;
+  margin: 0.75rem 0;
+}
+
+.paywall-v1--compact {
+  padding: 0.75rem 0.85rem;
+}
+
+.paywall-v1.is-dismissed {
+  display: none;
+}
+
+.paywall-v1-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #94a3b8);
+}
+
+.paywall-v1-title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.paywall-v1-body {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-muted, #cbd5e1);
+}
+
+.paywall-v1-list {
+  margin: 0 0 0.65rem;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+}
+
+.paywall-v1-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.paywall-v1-lock {
+  margin-bottom: 0.35rem;
+  opacity: 0.85;
+}
+
+.paywall-v1-gate {
+  position: relative;
+}
+
+.paywall-v1-gate-preview {
+  opacity: 0.35;
+  pointer-events: none;
+  max-height: 8rem;
+  overflow: hidden;
+  filter: blur(2px);
+}
+
+.paywall-v1-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border-radius: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, #64748b 30%, transparent);
+  color: #e2e8f0;
+}
+
+.paywall-v1-badge--active {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+}
+
+.dashboard-v2-pro-locked .dashboard-v2-table-wrap {
+  opacity: 0.5;
+  pointer-events: none;
+}

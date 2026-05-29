@@ -14,7 +14,7 @@ import {
   riskLevelToTone,
   safeTrackEvent
 } from '../results/results-engine.js';
-import { downloadDecisionReport } from '../results/pdf-report.js';
+import { gatePdfDownload } from '../billing/pdf-access-v1.js';
 import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
@@ -622,7 +622,7 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
       hint.textContent =
         'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
     }
-    downloadDecisionReport(model.pdfReportData);
+    gatePdfDownload(model.pdfReportData);
   });
 
   const summary = await fetchExecutiveSummaryV3('finansman', model.intelligence?.context || {}, model.intelligence || model);

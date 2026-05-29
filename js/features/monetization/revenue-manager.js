@@ -9,6 +9,7 @@ import {
   PRICING_ROI_DEFAULTS
 } from './pricing-roi.js';
 import { AFFILIATE_DEFAULTS, FREE_LIMITS, PLANS, PRICING_MESSAGING, PRO_FEATURES } from './plans.js';
+import { isProSubscriptionStatus } from '../billing/pro-features.js';
 
 const ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due']);
 
@@ -49,7 +50,9 @@ export class RevenueManager {
       this.referralEntitlements = profile?.referral_entitlements || {};
       const subPremium = Boolean(sub && ACTIVE_STATUSES.has(sub.status));
       const referralPremium = hasActiveReferralPro(this.referralEntitlements);
-      this.isPremium = subPremium || referralPremium;
+      const profilePremium =
+        profile?.plan === 'pro' && isProSubscriptionStatus(profile?.subscription_status);
+      this.isPremium = subPremium || referralPremium || profilePremium;
       this.trialEligible = trialEligible && !subPremium;
 
       if (typeof localStorage !== 'undefined') {
@@ -78,8 +81,15 @@ export class RevenueManager {
 
     switch (feature) {
       case 'comparison_unlimited':
+      case 'comparison_advanced':
         return false;
       case 'premium_report':
+      case 'premium_pdf_report':
+      case 'pdf_history':
+      case 'scenario_analysis':
+      case 'unlimited_analysis':
+      case 'favorites_history':
+        return false;
       case 'advanced_ai_summary':
         return Boolean(this.referralEntitlements?.premium_explanation_unlock);
       case 'priority_partner':
