@@ -12,6 +12,7 @@ const PRECACHE_ASSETS = [
   '/tatil/index.html',
   '/finans/index.html',
   '/css/premium-decision-dashboard.css',
+  '/css/decision-results-v2.css',
   '/css/home-trust-unified.css'
 ];
 

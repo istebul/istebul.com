@@ -37,6 +37,8 @@ import { mirrorLegacyAutoFunnel, trackAutoStart, trackGrowthFunnel, GROWTH_FUNNE
 import { trackPaidFunnelStep } from '../features/growth/paid-acquisition.js';
 import { sendServerPaidConversion } from '../features/growth/paid-capi-bridge.js';
 import { escapeHtml } from '../core/security.js';
+import { autoResultAdapter } from '../core/decision-results-v2.js';
+import { mountDecisionResultsV2 } from '../ui/decision-results-ui.js';
 import { safeJsonParse } from '../core/dom-safe.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-keys.js';
 import { storeCheckoutIntentPayload } from '../core/checkout-intent.js';
@@ -2155,6 +2157,16 @@ function renderResults(results) {
 
   renderDecisionStepper();
   mountAutoPartnerNextSteps();
+
+  const autoResultsMain = root.querySelector('.auto-results-main') || root;
+  void mountDecisionResultsV2(
+    autoResultsMain,
+    autoResultAdapter({ topResult: results[0], formData, results }),
+    {
+      insert: 'prepend',
+      trackFn: (eventName, meta) => trackAutoEvent(eventName, meta)
+    }
+  );
 
   root.querySelectorAll('[data-auto-open-detail]').forEach((button) => {
     button.addEventListener('click', () => {

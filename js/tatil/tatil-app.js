@@ -14,6 +14,8 @@ import {
 } from './tatil-engine.js';
 import { parseManualBudget, formatTry } from './tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
+import { travelResultAdapter } from '../core/decision-results-v2.js';
+import { mountDecisionResultsV2 } from '../ui/decision-results-ui.js';
 
 const state = {
   stepIndex: 0,
@@ -784,6 +786,21 @@ function renderResults() {
   `;
 
   bindResultsEvents(commentary);
+
+  void mountDecisionResultsV2(section, travelResultAdapter({
+    state,
+    results: state.results,
+    summary,
+    commentary,
+    primary
+  }), {
+    insert: 'prepend',
+    trackFn: (eventName, meta) => {
+      void trackVacationEvent(eventName, meta);
+    },
+    partnerSelector: '#vacation-partner-cta'
+  });
+
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
