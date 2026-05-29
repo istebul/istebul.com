@@ -14,6 +14,7 @@ import {
 } from './tatil-engine.js';
 import { parseManualBudget, formatTry } from './tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
+import { mountTatilResultsV2 } from '../features/tatil/tatil-results-v2.js';
 
 const state = {
   stepIndex: 0,
@@ -784,6 +785,17 @@ function renderResults() {
   `;
 
   bindResultsEvents(commentary);
+
+  void mountTatilResultsV2(section, {
+    state,
+    results: state.results,
+    track: (eventName, meta) => {
+      try {
+        trackVacationEvent(eventName, meta);
+      } catch {}
+    }
+  });
+
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 

@@ -74,7 +74,7 @@ function budgetFitScore(state, cardMidCost) {
   return 'low';
 }
 
-function baseScore(state) {
+export function baseScore(state) {
   let score = 64;
   if (state.budget_range === 'dengeli') score += 5;
   if (state.budget_range === 'ekonomik') score += 2;
