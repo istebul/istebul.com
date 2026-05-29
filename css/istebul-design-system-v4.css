@@ -9,6 +9,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap');
 @import './istebul-ds-v4-polish.css';
 @import './istebul-ui-final-v5.css';
+@import './istebul-ui-product-cards-v6.css';
 
 :root {
   --color-bg: #fafaf8;

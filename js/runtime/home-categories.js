@@ -13,34 +13,46 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+/** Presentational risk tone for badge color (V6 cards). */
+function riskToneClass(riskValue) {
+  const v = String(riskValue || '').toLowerCase();
+  if (!v || v === '—') return 'neutral';
+  if (v.includes('yüksek')) return 'high';
+  if (v.includes('orta') && v.includes('düşük')) return 'medium-low';
+  if (v.includes('düşük') && v.includes('orta')) return 'medium-low';
+  if (v.includes('orta')) return 'medium';
+  if (v.includes('düşük')) return 'low';
+  return 'neutral';
+}
+
 function renderActiveCard(category) {
-  const highlights = Array.isArray(category.highlights) ? category.highlights : [];
+  const score = category.sampleScore != null ? String(category.sampleScore) : '—';
+  const risk = category.riskValue || '—';
+  const riskClass = riskToneClass(risk);
   return `
     <a
       href="${escapeHtml(category.href)}"
-      class="ib-category-showcase is-active ib-category-showcase--${escapeHtml(category.theme)}"
+      class="ib-cat-v6 is-active ib-category-showcase ib-category-showcase--${escapeHtml(category.theme)}"
       data-category-id="${escapeHtml(category.id)}"
       data-native-route
     >
-      <span class="ib-category-showcase-badge">AI destekli</span>
-      <h3><i data-lucide="${escapeHtml(category.icon)}" aria-hidden="true"></i> ${escapeHtml(category.name)}</h3>
-      <p>${escapeHtml(category.description)}</p>
-      <dl class="ib-category-showcase-summary">
-        <div><dt>Karar skoru</dt><dd>${escapeHtml(category.sampleScore ?? '—')}/100</dd></div>
-        <div><dt>${escapeHtml(category.totalCostLabel || 'Toplam maliyet')}</dt><dd>${escapeHtml(category.totalCostValue || '—')}</dd></div>
-        <div><dt>${escapeHtml(category.riskLabel || 'Risk seviyesi')}</dt><dd>${escapeHtml(category.riskValue || '—')}</dd></div>
-      </dl>
-      <p class="ib-category-showcase-ai"><strong>AI gerekçesi:</strong> ${escapeHtml(category.aiRationale || 'Kişisel veriye göre yorum üretilecektir.')}</p>
-      <p class="ib-category-showcase-next"><strong>Sonraki adım:</strong> ${escapeHtml(category.nextStep || 'Detay analizi başlat')}</p>
-      <ul class="ib-category-showcase-points">
-        ${highlights.map((point) => `<li>${escapeHtml(point)}</li>`).join('')}
-      </ul>
-      <span class="ib-category-showcase-cta">${escapeHtml(category.ctaLabel || 'Analiz Et')} →</span>
-      ${
-        category.sampleScore != null
-          ? `<span class="ib-category-showcase-score" aria-label="Örnek karar skoru">${category.sampleScore}<span>/100</span></span>`
-          : ''
-      }
+      <span class="ib-cat-v6__badge ib-cat-v6__badge--ai">AI destekli</span>
+      <div class="ib-cat-v6__icon" aria-hidden="true">
+        <i data-lucide="${escapeHtml(category.icon)}"></i>
+      </div>
+      <h3 class="ib-cat-v6__title">${escapeHtml(category.name)}</h3>
+      <p class="ib-cat-v6__value">${escapeHtml(category.description)}</p>
+      <div class="ib-cat-v6__metrics">
+        <div class="ib-cat-v6__metric ib-cat-v6__metric--score">
+          <span class="ib-cat-v6__metric-label">Karar skoru</span>
+          <strong class="ib-cat-v6__score-value" aria-label="Örnek karar skoru">${escapeHtml(score)}<span>/100</span></strong>
+        </div>
+        <div class="ib-cat-v6__metric ib-cat-v6__risk ib-cat-v6__risk--${escapeHtml(riskClass)}">
+          <span class="ib-cat-v6__metric-label">Risk</span>
+          <strong class="ib-cat-v6__risk-value">${escapeHtml(risk)}</strong>
+        </div>
+      </div>
+      <span class="ib-cat-v6__cta">${escapeHtml(category.ctaLabel || 'Analizi başlat')}</span>
     </a>
   `;
 }
@@ -48,15 +60,18 @@ function renderActiveCard(category) {
 function renderComingSoonCard(category) {
   return `
     <article
-      class="ib-category-showcase is-coming-soon ib-category-showcase--${escapeHtml(category.theme)}"
+      class="ib-cat-v6 is-soon ib-category-showcase is-coming-soon ib-category-showcase--${escapeHtml(category.theme)}"
       data-category-id="${escapeHtml(category.id)}"
     >
-      <span class="ib-category-showcase-badge">Yakında</span>
-      <h3><i data-lucide="${escapeHtml(category.icon)}" aria-hidden="true"></i> ${escapeHtml(category.name)}</h3>
-      <p>${escapeHtml(category.description)}</p>
-      <p class="ib-category-showcase-ai"><strong>Durum:</strong> Yakında</p>
-      <button type="button" class="ib-category-showcase-cta ib-category-interest-btn" data-interest-category="${escapeHtml(category.id)}">
-        ${escapeHtml(category.ctaLabel || 'Bilgilendirme al')} →
+      <span class="ib-cat-v6__badge ib-cat-v6__badge--soon">Yakında</span>
+      <div class="ib-cat-v6__icon" aria-hidden="true">
+        <i data-lucide="${escapeHtml(category.icon)}"></i>
+      </div>
+      <h3 class="ib-cat-v6__title">${escapeHtml(category.name)}</h3>
+      <p class="ib-cat-v6__value">${escapeHtml(category.description)}</p>
+      <p class="ib-cat-v6__soon-note">Kategori yayına alındığında bilgilendirme listesine eklenin.</p>
+      <button type="button" class="ib-cat-v6__cta ib-category-interest-btn" data-interest-category="${escapeHtml(category.id)}">
+        ${escapeHtml(category.ctaLabel || 'Bilgilendirme al')}
       </button>
     </article>
   `;
@@ -213,10 +228,14 @@ export async function mountHomeCategoryGrid() {
   });
   const activeCategories = categories.filter((category) => isHomeCategoryActive(category));
   const soonCategories = categories.filter((category) => category.status === 'coming_soon');
-  grid.innerHTML = [
-    ...activeCategories.map((category) => renderActiveCard(category)),
-    ...soonCategories.map((category) => renderComingSoonCard(category))
-  ].join('');
+  const liveHtml = activeCategories.map((category) => renderActiveCard(category)).join('');
+  const soonHtml = soonCategories.map((category) => renderComingSoonCard(category)).join('');
+  grid.innerHTML = `
+    <div class="ib-cat-v6-shell">
+      ${liveHtml ? `<div class="ib-cat-v6-grid ib-cat-v6-grid--live" role="list">${liveHtml}</div>` : ''}
+      ${soonHtml ? `<div class="ib-cat-v6-grid ib-cat-v6-grid--soon" role="list">${soonHtml}</div>` : ''}
+    </div>
+  `;
 
   document.dispatchEvent(new CustomEvent('ib:refresh-icons'));
   grid.querySelectorAll('.ib-category-interest-btn').forEach((btn) => {

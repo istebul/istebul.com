@@ -13,7 +13,7 @@ export const HOME_DECISION_CATEGORIES = [
   {
     id: 'araba',
     name: 'Araba',
-    description: 'Araç kararında toplam maliyet, risk ve uygunluğu tek ekranda netleştirin.',
+    description: 'Toplam sahip olma maliyetini, riskleri ve uygunluğu analiz edin.',
     status: 'active',
     href: '/auto/',
     icon: 'car',
@@ -40,7 +40,7 @@ export const HOME_DECISION_CATEGORIES = [
   {
     id: 'konut',
     name: 'Konut',
-    description: 'Konut kararında lokasyon, kredi yükü ve yaşam maliyetini birlikte analiz edin.',
+    description: 'Lokasyon, kredi yükü ve yaşam maliyetini birlikte değerlendirin.',
     status: 'active',
     href: '/konut/',
     icon: 'home',
@@ -67,7 +67,7 @@ export const HOME_DECISION_CATEGORIES = [
   {
     id: 'tatil',
     name: 'Tatil',
-    description: 'Tatil kararında bütçe, sezon riski ve deneyim uygunluğunu birlikte değerlendirin.',
+    description: 'Bütçe, sezon ve deneyim uygunluğunu birlikte değerlendirin.',
     status: 'active',
     href: '/tatil/',
     icon: 'palmtree',
@@ -94,7 +94,7 @@ export const HOME_DECISION_CATEGORIES = [
   {
     id: 'finansman',
     name: 'Finansman',
-    description: 'Finansman kararında ödeme planı, nakit akışı ve risk etkisini net görün.',
+    description: 'Ödeme planı, nakit akışı ve borç yükünü net görün.',
     status: 'active',
     href: '/finans/',
     icon: 'landmark',
@@ -121,7 +121,7 @@ export const HOME_DECISION_CATEGORIES = [
   {
     id: 'sigorta',
     name: 'Sigorta',
-    description: 'Kapsam, prim ve risk dengesi için karşılaştırmalı analiz çok yakında.',
+    description: 'Kapsam, prim ve risk dengesini karşılaştırmalı analiz edin.',
     status: 'coming_soon',
     href: '/sigorta/',
     icon: 'shield',
@@ -134,7 +134,7 @@ export const HOME_DECISION_CATEGORIES = [
   {
     id: 'kasko',
     name: 'Kasko',
-    description: 'Teminat, muafiyet ve prim dengesini optimize eden analiz çok yakında.',
+    description: 'Teminat, muafiyet ve prim dengesini optimize edin.',
     status: 'coming_soon',
     href: '/kasko/',
     icon: 'shield-plus',
