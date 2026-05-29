@@ -5,6 +5,13 @@ import { enrollBillingHelp } from '../customer/customer-ops-client.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey } from '../../core/storage-keys.js';
 import { renderUserDashboard } from '../profil/user-dashboard.js';
 import { mapHistoryRecordToResult } from '../../ui/components/user-result-card.js';
+import {
+    buildDashboardV2Data,
+    bindDashboardV2,
+    renderDashboardV2,
+    renderDashboardV2Guest
+} from './dashboard-v2.js';
+import { addAnalysisToCompareSelection, removeCompareSelection } from './dashboard-v2-store.js';
 
 const ONBOARDING_KEY = STORAGE_KEYS.ACCOUNT_ONBOARDING_DONE;
 const NOTIFICATION_PREF_KEY = 'istebul_notification_preference';
@@ -331,8 +338,8 @@ export class AccountManager {
 
         document.getElementById('profil')?.classList.remove('profil-has-dashboard');
 
-        root.innerHTML = `
-            <div class="account-guest">
+        root.innerHTML = renderDashboardV2Guest() + `
+            <div class="account-guest dashboard-v2-legacy-guest hidden" hidden>
                 <div class="account-guest-copy">
                     <span class="account-eyebrow"><i data-lucide="shield-check"></i> Güvenli hesap alanı</span>
                     <h2>Hesabınızı tek yerden yönetin</h2>
@@ -354,6 +361,10 @@ export class AccountManager {
             this.auth?.showRegisterModal?.();
         });
 
+        bindDashboardV2(root.querySelector('[data-dashboard-v2]'), {
+            ui: this.ui,
+            onRefresh: () => this.refresh(this.auth?.getCurrentUser?.())
+        });
         this.ui?.loadIcons?.();
     }
 
@@ -392,8 +403,32 @@ export class AccountManager {
         const subMeta = SUBSCRIPTION_LABELS[sub?.status] || { label: 'Ücretsiz', tone: 'muted' };
         const hasPremium = ['active', 'trialing'].includes(sub?.status);
         const dashboardData = this.buildDashboardData(user, profile, subMeta, hasPremium, emailVerified);
+        const v2Data = buildDashboardV2Data({
+            user,
+            profile,
+            userId: user.id,
+            history: this.readDecisionHistory(user.id),
+            favorites: this.readFavorites(),
+            hasPremium,
+            membershipLabel: subMeta.label
+        });
         document.getElementById('profil')?.classList.add('profil-has-dashboard');
-        root.innerHTML = renderUserDashboard(dashboardData);
+        root.innerHTML = `
+            ${renderDashboardV2(v2Data)}
+            <div class="dashboard-v2-legacy-wrap" id="dashboard-v2-legacy-wrap">
+              <details class="dashboard-v2-legacy-details">
+                <summary>Hesap ayarları ve klasik görünüm</summary>
+                ${renderUserDashboard(dashboardData)}
+              </details>
+            </div>`;
+
+        bindDashboardV2(root.querySelector('[data-dashboard-v2]'), {
+            userId: user.id,
+            ui: this.ui,
+            pdfReports: v2Data.pdfReports,
+            store: { addAnalysisToCompareSelection, removeCompareSelection },
+            onRefresh: () => this.refresh(user)
+        });
 
         root.querySelector('#account-reset-password')?.addEventListener('click', () => {
             this.auth?.showForgotPasswordForm?.(user.email);

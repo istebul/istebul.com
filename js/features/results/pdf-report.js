@@ -3,6 +3,7 @@
  * Designed so a server-side PDF service can reuse buildReportHtml(pdfReportData) later.
  */
 import { escapeHtml } from '../../core/security.js';
+import { recordPdfReportHistory } from '../account/dashboard-v2-store.js';
 
 const CATEGORY_LABELS = {
   auto: 'Araç',
@@ -535,6 +536,15 @@ export function downloadDecisionReport(pdfReportData = {}, options = {}) {
         options.onComplete?.();
       };
       setTimeout(trigger, 400);
+      try {
+        const userId =
+          data.userId ||
+          (typeof window !== 'undefined' ? window.app?.currentUser?.id : null) ||
+          null;
+        recordPdfReportHistory({ ...data, filename }, userId);
+      } catch {
+        /* PDF geçmişi kaydı dashboard'u kırmamalı */
+      }
       return { ok: true, method: 'print-dialog', filename };
     }
   } catch {
