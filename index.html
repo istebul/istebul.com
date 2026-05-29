@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr" class="ib-route-pending">
+<html lang="tr" class="ib-route-pending ib-ds-v4">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -26,7 +26,9 @@
     <link rel="icon" type="image/png" href="assets/icons/favicon-192.png">
     <script src="/env.js" defer></script>
     <!-- perf:preload-style -->
-    <link rel="stylesheet" href="css/style.css?v=60">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+    <link rel="stylesheet" href="css/style.css?v=61">
     <link rel="stylesheet" href="css/growth-cro.css?v=1">
     <link rel="stylesheet" href="css/growth-retention.css?v=1">
     <link rel="stylesheet" href="css/help-center.css?v=1">
@@ -264,12 +266,12 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </noscript>
         <!-- Home Section -->
-        <section id="home" class="hero-section ib-hero-venture ib-hero-premium-dark ib-hero-v4" aria-labelledby="hero-v4-title">
+        <section id="home" class="hero-section ib-hero-venture ib-hero-light-premium ib-hero-v4" aria-labelledby="hero-v4-title">
             <div class="hero-container container ib-hero-v4-grid">
                 <div class="hero-content ib-hero-v4-copy">
-                    <p class="hero-eyebrow ib-hero-v4-tagline" data-cms="hero-eyebrow"><i data-lucide="sparkles" aria-hidden="true"></i> AI Decision Intelligence Platform</p>
-                    <h1 id="hero-v4-title" data-cms="hero-title">isteBul — büyük satın alma kararlarını <span class="ib-hero-emphasis">netleştirin.</span></h1>
-                    <p class="hero-lead ib-hero-v4-sub" data-cms="hero-desc">Araç, konut, tatil ve finansman gibi yüksek tutarlı kararlarda toplam maliyet, risk ve uygunluğu tek panelde görün; yanlış seçim maliyetini azaltın.</p>
+                    <p class="hero-eyebrow ib-hero-v4-tagline" data-cms="hero-eyebrow"><i data-lucide="sparkles" aria-hidden="true"></i> AI karar zekâsı platformu</p>
+                    <h1 id="hero-v4-title" data-cms="hero-title">Daha doğru satın alma kararları verin.</h1>
+                    <p class="hero-lead ib-hero-v4-sub" data-cms="hero-desc">Araç, konut, tatil ve finansman kararlarında riskleri ve toplam maliyeti önceden görün.</p>
                     <p class="ib-hero-v4-how" id="hero-v4-how">Nasıl çalışır: sorularınızı yanıtlayın → AI analiz üretir → skor, maliyet ve sonraki adımlar raporlanır.</p>
                     <div class="ib-hero-v4-categories" role="navigation" aria-label="Canlı karar kategorileri">
                         <a href="/auto/" class="ib-hero-v4-cat is-live" data-native-route>
@@ -306,7 +308,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <div class="hero-actions ib-hero-cta-stack ib-hero-cta-dual ib-hero-v4-actions">
                         <div class="ib-hero-cta-primary-row">
                             <a href="/#home-vertical-focus" class="btn btn-primary btn-lg" data-home-anchor="home-vertical-focus" data-hero-cta-primary data-analytics-cta="cta_decision_hero" data-analytics-placement="hero">
-                                <i data-lucide="sparkles" aria-hidden="true"></i> Kararımı Analiz Et
+                                <i data-lucide="sparkles" aria-hidden="true"></i> Analize Başla
                                 <i data-lucide="arrow-right" class="ib-hero-cta-arrow" aria-hidden="true"></i>
                             </a>
                             <a href="/#how-it-works" class="btn btn-outline btn-lg ib-hero-btn-ghost" data-home-anchor="how-it-works" data-analytics-cta="cta_how_it_works" data-analytics-placement="hero">
@@ -334,20 +336,20 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             </div>
                         </div>
                         <div class="ib-dash-kpi-row">
-                            <div class="ib-dash-stat">
-                                <span>Aylık toplam maliyet</span>
-                                <strong>₺28.540</strong>
+                            <div class="ib-dash-stat ib-metric">
+                                <span>Karar Skoru</span>
+                                <strong>89/100</strong>
                             </div>
-                            <div class="ib-dash-stat ib-dash-stat--risk">
-                                <span>Risk seviyesi</span>
-                                <strong>Orta Düşük</strong>
+                            <div class="ib-dash-stat ib-metric">
+                                <span>Güven Skoru</span>
+                                <strong>93%</strong>
                             </div>
-                            <div class="ib-dash-stat">
-                                <span>AI önerisi</span>
-                                <strong>Uygun</strong>
+                            <div class="ib-dash-stat ib-dash-stat--risk ib-metric">
+                                <span>Risk</span>
+                                <strong>Düşük</strong>
                             </div>
-                            <div class="ib-dash-stat">
-                                <span>5 yıllık projeksiyon</span>
+                            <div class="ib-dash-stat ib-metric">
+                                <span>Toplam Maliyet</span>
                                 <strong>₺1.712.400</strong>
                             </div>
                         </div>
@@ -380,7 +382,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
-        <section id="how-it-works" class="how-section ib-section-venture ib-how-premium-dark" aria-labelledby="how-it-works-title">
+        <section id="how-it-works" class="how-section ib-section-venture" aria-labelledby="how-it-works-title">
             <div class="container">
                 <header class="section-header ib-section-intro ib-section-intro--center">
                     <span class="section-kicker">Nasıl çalışır</span>
@@ -540,7 +542,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
-        <section id="trust" class="trust-section ib-section-venture ib-trust-premium-dark ib-trust-unified" aria-labelledby="trust-title">
+        <section id="trust" class="trust-section ib-section-venture ib-trust-unified" aria-labelledby="trust-title">
             <div class="container">
                 <header class="section-header ib-section-intro ib-section-intro--center">
                     <span class="section-kicker">Platform güveni</span>
@@ -1192,56 +1194,44 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
 
     <footer class="footer footer-premium">
         <div class="container">
-            <div class="footer-content">
+            <div class="footer-content ib-footer-v4">
                 <div class="footer-section">
-                    <h4>Product</h4>
+                    <h4>Ürünler</h4>
                     <ul>
-                        <li><a href="/">Ana sayfa</a></li>
-                        <li><a href="/#how-it-works">Nasıl çalışır</a></li>
-                        <li><a href="/#sample-preview">Örnek analiz</a></li>
+                        <li><a href="/auto/">Araç</a></li>
+                        <li><a href="/konut/">Konut</a></li>
+                        <li><a href="/tatil/">Tatil</a></li>
+                        <li><a href="/finans/">Finansman</a></li>
+                        <li><a href="/planlar" data-native-route>Planlar</a></li>
                         <li><a href="/metodoloji/">Metodoloji</a></li>
-                        <li><a href="/#pricing">Fiyatlandırma</a></li>
-                        <li><a href="/auto/">Ücretsiz analiz başlat</a></li>
-                        <li><a href="/duyurular" data-native-route>Duyurular</a></li>
-                        <li><a href="/kampanyalar" data-native-route>Kampanyalar</a></li>
-                        <li><a href="/blog" data-native-route>Blog</a></li>
-                        <li><a href="/#landing-faq">SSS</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4>Company</h4>
+                    <h4>Şirket</h4>
                     <ul>
                         <li><a href="/hakkimizda.html">Hakkımızda</a></li>
                         <li><a href="/iletisim.html">İletişim</a></li>
-                        <li><a href="/rehber/suv-mi-sedan-mi/">SUV mi Sedan mı</a></li>
-                        <li><a href="/rehber/elektrikli-arac-alirken/">Elektrikli araç rehberi</a></li>
-                        <li><a href="/rehber/arac-finansman-secenekleri/">Finansman rehberi</a></li>
-                        <li><a href="/rehber/arac-toplam-sahiplik-maliyeti/">TCO rehberi</a></li>
-                        <li><a href="/rehber/ikinci-el-arac-alirken/">İkinci el rehberi</a></li>
+                        <li><a href="/partner-olun.html">Partner olun</a></li>
+                        <li><a href="mailto:destek@istebul.com">destek@istebul.com</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4>Enterprise</h4>
+                    <h4>Kaynaklar</h4>
                     <ul>
-                        <li><a href="/partner-olun.html">Partner programı</a></li>
-                        <li><a href="/partner-docs.html">Partner API</a></li>
-                        <li><a href="/iletisim.html?konu=enterprise">Enterprise teklif</a></li>
+                        <li><a href="/blog" data-native-route>Blog / Rehber</a></li>
+                        <li><a href="/duyurular" data-native-route>Duyurular</a></li>
+                        <li><a href="/kampanyalar" data-native-route>Kampanyalar</a></li>
+                        <li><a href="/#landing-faq">SSS</a></li>
+                        <li><a href="/rehber/arac-toplam-sahiplik-maliyeti/">TCO rehberi</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4>Legal</h4>
+                    <h4>Yasal</h4>
                     <ul>
                         <li><a href="/gizlilik.html">Gizlilik</a></li>
                         <li><a href="/kvkk.html">KVKK</a></li>
                         <li><a href="/cerez-politikasi.html">Çerez politikası</a></li>
                         <li><a href="/kullanim-sartlari.html">Kullanım şartları</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Contact</h4>
-                    <ul>
-                        <li><a href="/iletisim.html">Destek ve satış</a></li>
-                        <li><a href="mailto:destek@istebul.com">destek@istebul.com</a></li>
                     </ul>
                 </div>
             </div>

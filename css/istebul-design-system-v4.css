@@ -1,0 +1,512 @@
+/**
+ * isteBul Design System v4
+ * Light Premium — Apple / Linear / Stripe / Ramp inspired
+ * Visual-only layer; do not change layout contracts or JS hooks.
+ */
+
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --color-bg: #fafaf8;
+  --color-surface: #ffffff;
+  --color-text: #111827;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-accent: #2563eb;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+  --radius-card: 24px;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.03);
+  --transition-fast: 200ms ease-out;
+
+  --font-heading: 'Satoshi', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Legacy aliases */
+  --primary-color: var(--color-accent);
+  --primary-dark: #1d4ed8;
+  --background-color: var(--color-bg);
+  --surface-color: var(--color-surface);
+  --elevated-color: var(--color-surface);
+  --text-primary: var(--color-text);
+  --text-secondary: var(--color-muted);
+  --border-color: var(--color-border);
+  --success-color: var(--color-success);
+  --warning-color: var(--color-warning);
+  --error-color: var(--color-danger);
+  --radius-card: 24px;
+  --shadow: var(--shadow-card);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.03);
+  --ib-ds-radius-card: 24px;
+  --ib-ds-shadow-card: var(--shadow-card);
+  --ib-ds-border: var(--color-border);
+  --ib-ds-ink: var(--color-text);
+  --ib-ds-muted: var(--color-muted);
+}
+
+html.ib-ds-v4 {
+  scroll-behavior: smooth;
+}
+
+html.ib-ds-v4 body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--color-text);
+  background: var(--color-bg);
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+html.ib-ds-v4 h1,
+html.ib-ds-v4 h2,
+html.ib-ds-v4 h3,
+html.ib-ds-v4 h4,
+html.ib-ds-v4 .brand-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.03em;
+}
+
+html.ib-ds-v4 p,
+html.ib-ds-v4 li,
+html.ib-ds-v4 label,
+html.ib-ds-v4 .text-muted-sm {
+  color: var(--color-muted);
+}
+
+html.ib-ds-v4 .ib-metric,
+html.ib-ds-v4 .ib-dash-stat strong,
+html.ib-ds-v4 .ib-premium-kpi strong,
+html.ib-ds-v4 .hero-metric strong,
+html.ib-ds-v4 .ib-category-showcase-summary dd,
+html.ib-ds-v4 .ib-live-stats strong,
+html.ib-ds-v4 [data-metric],
+html.ib-ds-v4 .auto-results-metric-value,
+html.ib-ds-v4 .ib-premium-dashboard__band {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* —— Cards —— */
+html.ib-ds-v4 .card,
+html.ib-ds-v4 .glass-card,
+html.ib-ds-v4 .ib-example-card,
+html.ib-ds-v4 .how-step,
+html.ib-ds-v4 .ib-trust-strip-card,
+html.ib-ds-v4 .ib-trust-diff-card,
+html.ib-ds-v4 .pricing-card,
+html.ib-ds-v4 .newsletter-card,
+html.ib-ds-v4 .filter-panel,
+html.ib-ds-v4 .modal-content,
+html.ib-ds-v4 .ib-category-showcase,
+html.ib-ds-v4 .ib-premium-dashboard,
+html.ib-ds-v4 .ib-premium-kpi,
+html.ib-ds-v4 .auto-results-card,
+html.ib-ds-v4 .housing-hero .glass-card,
+html.ib-ds-v4 .login-box,
+html.ib-ds-v4 .admin-card,
+html.ib-ds-v4 .stat-card {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-card) !important;
+  background-image: none !important;
+}
+
+html.ib-ds-v4 .ib-category-showcase:hover,
+html.ib-ds-v4 .ib-example-card:hover,
+html.ib-ds-v4 .how-step:hover,
+html.ib-ds-v4 .pricing-card:hover {
+  transform: translateY(-2px);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* —— Hero light —— */
+html.ib-ds-v4 #home.ib-hero-v4,
+html.ib-ds-v4 #home.ib-hero-premium-dark,
+html.ib-ds-v4 .ib-hero-light-premium {
+  background: var(--color-bg) !important;
+  color: var(--color-text) !important;
+}
+
+html.ib-ds-v4 #home .hero-eyebrow,
+html.ib-ds-v4 #home .ib-hero-v4-tagline {
+  color: var(--color-accent) !important;
+}
+
+html.ib-ds-v4 #home .hero-content h1,
+html.ib-ds-v4 #home .hero-lead,
+html.ib-ds-v4 #home .ib-hero-v4-how,
+html.ib-ds-v4 #home .ib-hero-v4-trust li {
+  color: var(--color-text) !important;
+}
+
+html.ib-ds-v4 #home .ib-hero-v4-how {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-muted) !important;
+}
+
+html.ib-ds-v4 #home .ib-hero-v4-cat {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
+  box-shadow: var(--shadow-card);
+}
+
+html.ib-ds-v4 #home .ib-hero-v4-cat small {
+  color: var(--color-muted) !important;
+}
+
+html.ib-ds-v4 .ib-glass-dashboard,
+html.ib-ds-v4 .decision-preview.ib-ai-dashboard {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-card) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+html.ib-ds-v4 .ib-glass-dashboard .preview-category-label,
+html.ib-ds-v4 .ib-dash-score-label,
+html.ib-ds-v4 .ib-dash-stat span {
+  color: var(--color-muted) !important;
+}
+
+html.ib-ds-v4 .ib-dash-score-ring-inner strong,
+html.ib-ds-v4 .ib-dash-stat strong {
+  color: var(--color-text) !important;
+}
+
+html.ib-ds-v4 .ib-dash-chart--donut .ib-dash-donut,
+html.ib-ds-v4 .ib-dash-line-chart polyline {
+  opacity: 0.85;
+}
+
+/* —— Sections (no dark bands) —— */
+html.ib-ds-v4 .ib-how-premium-dark,
+html.ib-ds-v4 .ib-trust-premium-dark,
+html.ib-ds-v4 .section-bg,
+html.ib-ds-v4 .section-surface {
+  background: var(--color-bg) !important;
+  color: var(--color-text) !important;
+}
+
+html.ib-ds-v4 .section-kicker {
+  color: var(--color-accent) !important;
+}
+
+/* —— Nav —— */
+html.ib-ds-v4 .navbar,
+html.ib-ds-v4 .auto-header,
+html.ib-ds-v4 .housing-header,
+html.ib-ds-v4 .vacation-header,
+html.ib-ds-v4 .corporate-header {
+  background: rgba(250, 250, 248, 0.92) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(12px);
+}
+
+html.ib-ds-v4 .nav-link,
+html.ib-ds-v4 .nav-dropdown-link,
+html.ib-ds-v4 .corporate-nav a {
+  color: var(--color-muted) !important;
+}
+
+html.ib-ds-v4 .nav-link:hover,
+html.ib-ds-v4 .nav-dropdown-link:hover,
+html.ib-ds-v4 .nav-dropdown-content {
+  color: var(--color-text) !important;
+}
+
+html.ib-ds-v4 .nav-dropdown-content {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* —— Buttons —— */
+html.ib-ds-v4 .btn {
+  min-height: 44px;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  transition: transform var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+}
+
+html.ib-ds-v4 .btn-primary {
+  background: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+html.ib-ds-v4 .btn-outline,
+html.ib-ds-v4 .ib-hero-btn-ghost {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+html.ib-ds-v4 .btn:focus-visible,
+html.ib-ds-v4 a:focus-visible,
+html.ib-ds-v4 button:focus-visible,
+html.ib-ds-v4 input:focus-visible,
+html.ib-ds-v4 select:focus-visible,
+html.ib-ds-v4 textarea:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* —— Forms —— */
+html.ib-ds-v4 input,
+html.ib-ds-v4 select,
+html.ib-ds-v4 textarea {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  color: var(--color-text);
+  min-height: 44px;
+}
+
+/* —— Category grid (4 live) —— */
+html.ib-ds-v4 .ib-category-showcase-live {
+  display: grid !important;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  html.ib-ds-v4 .ib-category-showcase-live {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  html.ib-ds-v4 .ib-category-showcase-live {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+html.ib-ds-v4 .ib-category-showcase-cta::after,
+html.ib-ds-v4 .ib-category-showcase-cta {
+  font-weight: 500;
+  color: var(--color-accent);
+}
+
+/* —— Results dashboards —— */
+html.ib-ds-v4 .ib-premium-dashboard {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard,
+html.ib-ds-v4 body.finans-page .ib-premium-kpi,
+html.ib-ds-v4 body.vacation-page .ib-premium-kpi {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+}
+
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard__title,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard__title,
+html.ib-ds-v4 body.finans-page .ib-premium-kpi strong,
+html.ib-ds-v4 body.vacation-page .ib-premium-kpi strong {
+  color: var(--color-text) !important;
+}
+
+html.ib-ds-v4 .auto-results-v2-root,
+html.ib-ds-v4 .auto-results-guide {
+  color: var(--color-text);
+}
+
+/* —— Footer —— */
+html.ib-ds-v4 .footer.footer-premium {
+  background: var(--color-bg) !important;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-muted);
+}
+
+html.ib-ds-v4 .footer-section h4 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text);
+}
+
+html.ib-ds-v4 .footer-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+  html.ib-ds-v4 .footer-content {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* —— Admin (light shell, keep layout) —— */
+html.ib-ds-v4 body.admin-enterprise {
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --surface2: #f3f4f6;
+  --border: #e5e7eb;
+  --accent: #2563eb;
+  --accent2: #3b82f6;
+  --text: #111827;
+  --muted: #6b7280;
+  --danger: #dc2626;
+  --warning: #f59e0b;
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+html.ib-ds-v4 .sidebar {
+  background: var(--surface) !important;
+  border-right: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-card);
+}
+
+html.ib-ds-v4 .main-content,
+html.ib-ds-v4 .admin-topbar {
+  background: var(--bg) !important;
+}
+
+html.ib-ds-v4 .admin-topbar {
+  border-bottom: 1px solid var(--border) !important;
+}
+
+html.ib-ds-v4 table {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+html.ib-ds-v4 th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+html.ib-ds-v4 td {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* —— Modals / empty / loading —— */
+html.ib-ds-v4 .modal-overlay {
+  background: rgba(17, 24, 39, 0.4) !important;
+}
+
+html.ib-ds-v4 .empty,
+html.ib-ds-v4 .loading-skeleton,
+html.ib-ds-v4 [aria-busy='true'] {
+  color: var(--color-muted);
+}
+
+/* —— Disallow playful motion —— */
+html.ib-ds-v4 [class*='bounce'],
+html.ib-ds-v4 [class*='spin'],
+html.ib-ds-v4 [class*='flip'],
+html.ib-ds-v4 .animate-bounce,
+html.ib-ds-v4 .animate-spin {
+  animation: none !important;
+}
+
+html.ib-ds-v4 [class*='glow'],
+html.ib-ds-v4 [class*='neon'],
+html.ib-ds-v4 .ib-hero-premium-dark::before {
+  display: none !important;
+}
+
+html.ib-ds-v4 .btn-primary {
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* —— Responsive guard —— */
+html.ib-ds-v4 .container,
+html.ib-ds-v4 main,
+html.ib-ds-v4 .nav-container {
+  max-width: 100%;
+}
+
+html.ib-ds-v4 pre,
+html.ib-ds-v4 table,
+html.ib-ds-v4 .admin-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 767px) {
+  html.ib-ds-v4 .hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* —— SEO / corporate pages —— */
+html.ib-ds-v4.seo-page,
+html.ib-ds-v4 .seo-page,
+html.ib-ds-v4 .corporate-page {
+  background: var(--color-bg);
+}
+
+html.ib-ds-v4 .seo-header,
+html.ib-ds-v4 .corporate-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* —— Vertical heroes (tatil / finans light) —— */
+html.ib-ds-v4 body.vacation-page,
+html.ib-ds-v4 body.finans-page,
+html.ib-ds-v4 body.housing-page {
+  background: var(--color-bg) !important;
+  color: var(--color-text) !important;
+}
+
+html.ib-ds-v4 .vacation-hero,
+html.ib-ds-v4 .finans-hero,
+html.ib-ds-v4 .housing-hero {
+  background: var(--color-bg) !important;
+  background-image: none !important;
+}
+
+html.ib-ds-v4 .vacation-hero-copy h1,
+html.ib-ds-v4 .finans-hero-copy h1,
+html.ib-ds-v4 .housing-hero h1,
+html.ib-ds-v4 .vacation-hero-copy p,
+html.ib-ds-v4 .finans-hero-copy p {
+  color: var(--color-text) !important;
+}
+
+html.ib-ds-v4 .vacation-hero-overlay,
+html.ib-ds-v4 .finans-hero-overlay,
+html.ib-ds-v4 .vacation-hero-media::after {
+  opacity: 0.15 !important;
+  background: linear-gradient(180deg, rgba(250, 250, 248, 0.2), rgba(250, 250, 248, 0.85)) !important;
+}
+
+/* PDF preview areas */
+html.ib-ds-v4 .pdf-preview,
+html.ib-ds-v4 [data-pdf-preview],
+html.ib-ds-v4 .ib-pdf-report-preview {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}

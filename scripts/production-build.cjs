@@ -279,7 +279,8 @@ const autoCssParts = [
   'css/auto-results-ux.css',
   'css/auto-decision-engine-ui.css',
   'css/auto-question-ux.css',
-  'css/enterprise-card-readability.css'
+  'css/enterprise-card-readability.css',
+  'css/istebul-design-system-v4.css'
 ];
 const autoCssCombined = autoCssParts
   .filter((rel) => fs.existsSync(path.join(root, rel)))
@@ -469,6 +470,23 @@ spaRoutes.forEach((route) => {
 });
 
 const seoResult = buildSeoPages(dist);
+
+/** SEO HTML is written after static pass — rewrite hashed CSS/JS refs */
+const rewriteSeoHtmlAssets = () => {
+  const seoRoots = ['rehber', 'karar-asistani', 'ilanlar', 'karsilastir', 'metodoloji'];
+  seoRoots.forEach((name) => {
+    const base = path.join(dist, name);
+    if (!fs.existsSync(base)) return;
+    walk(base, (file) => {
+      if (!file.endsWith('.html')) return;
+      let html = fs.readFileSync(file, 'utf8');
+      html = rewriteAssetRefs(html);
+      fs.writeFileSync(file, minifyHtml(html));
+    });
+  });
+};
+rewriteSeoHtmlAssets();
+
 generateSitemap(dist, seoResult);
 generateRobots(dist, seoResult.site);
 injectVerticalFaqs(dist);

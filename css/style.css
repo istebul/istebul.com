@@ -26,6 +26,7 @@
 @import './hero-v4.css';
 @import './final-enterprise-release.css';
 @import './enterprise-card-readability.css';
+@import './istebul-design-system-v4.css';
 
 /* Reset and Base Styles */
 * {
@@ -36,22 +37,22 @@
 
 :root {
     /* Canonical palette (merged from Professional Visual Refresh) */
-    --primary-color: #1f6feb;
-    --primary-dark: #164fb4;
-    --secondary-color: #475569;
-    --accent-color: #0f766e;
-    --accent-warm: #b45309;
-    --success-color: #059669;
-    --warning-color: #d97706;
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary-color: #6b7280;
+    --accent-color: #2563eb;
+    --accent-warm: #f59e0b;
+    --success-color: #16a34a;
+    --warning-color: #f59e0b;
     --error-color: #dc2626;
-    --background-color: #ffffff;
-    --surface-color: #f6f8fb;
+    --background-color: #fafaf8;
+    --surface-color: #ffffff;
     --elevated-color: #ffffff;
     --text-primary: #111827;
-    --text-secondary: #5b6472;
-    --border-color: #d9e1ec;
-    --shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
-    --shadow-lg: 0 22px 60px rgba(15, 23, 42, 0.12);
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.06);
     --border-radius: 8px;
     --border-radius-lg: 10px;
     --transition: all 0.18s ease;
