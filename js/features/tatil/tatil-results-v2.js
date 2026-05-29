@@ -20,6 +20,7 @@ import {
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
+import { mountResultsV3 } from '../results/results-v3-ui.js';
 
 const PLAN_MID = {
   ekonomik: 40_000,
@@ -728,6 +729,14 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
   }
   model.executiveSummary = summary.text;
   model.pdfReportData.executiveSummary = summary.text;
+
+  mountResultsV3(mountNode, {
+    category: 'tatil',
+    model,
+    formData: state,
+    metrics: built.metrics,
+    track
+  });
 
   return model;
 }

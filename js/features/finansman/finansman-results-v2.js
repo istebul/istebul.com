@@ -20,6 +20,7 @@ import {
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
+import { mountResultsV3 } from '../results/results-v3-ui.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -635,6 +636,14 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
   }
   model.executiveSummary = summary.text;
   model.pdfReportData.executiveSummary = summary.text;
+
+  mountResultsV3(mountNode, {
+    category: 'finansman',
+    model,
+    formData: state,
+    metrics: built.metrics,
+    track
+  });
 
   return model;
 }

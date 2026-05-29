@@ -18,6 +18,7 @@ import {
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
+import { mountResultsV3 } from '../results/results-v3-ui.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -642,6 +643,14 @@ export async function mountKonutResultsV2({
   }
   model.executiveSummary = summary.text;
   model.pdfReportData.executiveSummary = summary.text;
+
+  mountResultsV3(mountNode, {
+    category: 'konut',
+    model,
+    formData: state,
+    metrics,
+    track
+  });
 
   return model;
 }

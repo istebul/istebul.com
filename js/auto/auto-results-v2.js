@@ -18,6 +18,7 @@ import {
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
 } from '../features/results/decision-intelligence-engine.js';
+import { mountResultsV3 } from '../features/results/results-v3-ui.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -370,6 +371,13 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   model.executiveSummary = summary.text;
   model.summarySourceLabel = sourceEl?.textContent || '';
   model.pdfReportData.executiveSummary = summary.text;
+
+  mountResultsV3(mountNode, {
+    category: 'auto',
+    model,
+    formData,
+    track
+  });
 
   return model;
 }

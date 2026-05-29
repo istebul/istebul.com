@@ -27,9 +27,12 @@ function renderActiveCard(category) {
       <p>${escapeHtml(category.description)}</p>
       <dl class="ib-category-showcase-summary">
         <div><dt>Karar skoru</dt><dd>${escapeHtml(category.sampleScore ?? '—')}/100</dd></div>
+        <div><dt>Risk analizi</dt><dd>${escapeHtml(category.riskValue || '—')}</dd></div>
         <div><dt>${escapeHtml(category.totalCostLabel || 'Toplam maliyet')}</dt><dd>${escapeHtml(category.totalCostValue || '—')}</dd></div>
-        <div><dt>${escapeHtml(category.riskLabel || 'Risk seviyesi')}</dt><dd>${escapeHtml(category.riskValue || '—')}</dd></div>
       </dl>
+      <div class="home-v3-category-pills" aria-label="Öne çıkan yetenekler">
+        <span>Karar Skoru</span><span>Risk Analizi</span><span>Toplam Maliyet</span><span>AI Değerlendirmesi</span>
+      </div>
       <p class="ib-category-showcase-ai"><strong>AI gerekçesi:</strong> ${escapeHtml(category.aiRationale || 'Kişisel veriye göre yorum üretilecektir.')}</p>
       <p class="ib-category-showcase-next"><strong>Sonraki adım:</strong> ${escapeHtml(category.nextStep || 'Detay analizi başlat')}</p>
       <ul class="ib-category-showcase-points">

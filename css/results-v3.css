@@ -1,0 +1,309 @@
+/* Results V3 — results-v3-* namespace, glassmorphism, low CLS */
+
+.results-v3-root {
+  margin: 0 0 1.25rem;
+  contain: layout style;
+}
+
+.results-v3-panel {
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--primary-color, #3b82f6) 28%, transparent);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--surface-color, #0f172a) 92%, #1e3a8a 8%),
+    color-mix(in srgb, var(--background-color, #020617) 96%, transparent)
+  );
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+  min-height: 12rem;
+}
+
+.results-v3-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 1.1rem 1.25rem 0.85rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color, #334155) 55%, transparent);
+}
+
+.results-v3-kicker {
+  margin: 0 0 0.2rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted, #94a3b8);
+}
+
+.results-v3-title {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  line-height: 1.25;
+}
+
+.results-v3-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted, #94a3b8);
+}
+
+.results-v3-toggle {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--border-color, #475569) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-color, #1e293b) 80%, transparent);
+  color: inherit;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  min-height: 2.25rem;
+}
+
+.results-v3-toggle:focus-visible {
+  outline: 2px solid var(--primary-color, #3b82f6);
+  outline-offset: 2px;
+}
+
+.results-v3-body {
+  padding: 1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.results-v3-score-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  .results-v3-score-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.results-v3-score-card {
+  border-radius: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  background: color-mix(in srgb, #fff 6%, var(--surface-color, #1e293b));
+  border: 1px solid color-mix(in srgb, var(--border-color, #334155) 45%, transparent);
+  backdrop-filter: blur(12px);
+  min-height: 4.5rem;
+}
+
+.results-v3-score-card span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+  margin-bottom: 0.15rem;
+}
+
+.results-v3-score {
+  font-size: 1.55rem;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.results-v3-score-card small {
+  font-size: 0.75rem;
+  color: var(--text-muted, #94a3b8);
+  margin-left: 0.15rem;
+}
+
+.results-v3-score--excellent {
+  color: #34d399;
+}
+
+.results-v3-score--good {
+  color: #60a5fa;
+}
+
+.results-v3-score--fair {
+  color: #fbbf24;
+}
+
+.results-v3-score--low {
+  color: #f87171;
+}
+
+.results-v3-score--risk {
+  color: #fb923c;
+}
+
+.results-v3-glass {
+  border-radius: 1rem;
+  padding: 1rem 1.1rem;
+  background: color-mix(in srgb, #fff 5%, var(--surface-color, #1e293b));
+  border: 1px solid color-mix(in srgb, var(--border-color, #334155) 40%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.results-v3-glass h3,
+.results-v3-alts h3 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+}
+
+.results-v3-exec-overview {
+  margin: 0 0 0.75rem;
+  line-height: 1.55;
+}
+
+.results-v3-exec-cols {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 720px) {
+  .results-v3-exec-cols {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.results-v3-exec-cols h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+}
+
+.results-v3-exec-cols ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.results-v3-exec-rec {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.results-v3-grid-2 {
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .results-v3-grid-2 {
+    grid-template-columns: 1fr 1.2fr;
+  }
+}
+
+.results-v3-cost-horizon {
+  margin: 0 0 0.25rem;
+  font-size: 0.82rem;
+  color: var(--text-muted, #94a3b8);
+}
+
+.results-v3-cost-value {
+  margin: 0;
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.results-v3-scenario-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.results-v3-scenario-list li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.25rem 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, #000 8%, transparent);
+  font-size: 0.82rem;
+}
+
+.results-v3-scenario-list p {
+  grid-column: 1 / -1;
+  margin: 0.15rem 0 0;
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.78rem;
+}
+
+.results-v3-scenario-label {
+  font-weight: 600;
+}
+
+.results-v3-scenario-score,
+.results-v3-scenario-cost {
+  font-variant-numeric: tabular-nums;
+}
+
+.results-v3-alt-grid {
+  display: grid;
+  gap: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  .results-v3-alt-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.results-v3-alt-card {
+  border-radius: 0.85rem;
+  padding: 0.85rem;
+  background: color-mix(in srgb, #fff 4%, var(--surface-color, #1e293b));
+  border: 1px solid color-mix(in srgb, var(--border-color, #334155) 35%, transparent);
+  min-height: 5rem;
+}
+
+.results-v3-alt-card h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.92rem;
+}
+
+.results-v3-alt-card p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-muted, #cbd5e1);
+}
+
+.results-v3-next ol {
+  margin: 0;
+  padding-left: 1.15rem;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .results-v3-panel {
+    animation: results-v3-fade 0.35s ease-out;
+  }
+}
+
+@keyframes results-v3-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .results-v3-panel {
+    background: linear-gradient(145deg, #f8fafc, #eff6ff);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+  }
+
+  .results-v3-score-card,
+  .results-v3-glass,
+  .results-v3-alt-card {
+    background: color-mix(in srgb, #fff 88%, #e2e8f0);
+  }
+}
