@@ -39,6 +39,7 @@ import { sendServerPaidConversion } from '../features/growth/paid-capi-bridge.js
 import { escapeHtml } from '../core/security.js';
 import { safeJsonParse } from '../core/dom-safe.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-keys.js';
+import { mountAutoResultsV2 } from './auto-results-v2.js';
 import { storeCheckoutIntentPayload } from '../core/checkout-intent.js';
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
@@ -2152,6 +2153,16 @@ function renderResults(results) {
       ${renderResultsSidebar(results[0], displayResults)}
     </div>
   `;
+
+  // Sprint 1: Decision Results V2 panel (controlled overlay, non-breaking).
+  const main = root.querySelector('.auto-results-main') || root;
+  void mountAutoResultsV2({
+    mountNode: main,
+    topResult: results[0],
+    results,
+    formData,
+    track: (eventName, metadata) => trackAutoEvent(eventName, metadata)
+  });
 
   renderDecisionStepper();
   mountAutoPartnerNextSteps();

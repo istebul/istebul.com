@@ -1,0 +1,258 @@
+/**
+ * Auto Results V2 (Sprint 1) — premium SaaS panel (mobile + dark mode uyumlu).
+ * Mevcut Auto premium tasarım diline uyumlu, izole sınıf isimleri.
+ */
+.auto-v2-root {
+  margin: 1.25rem 0 1.75rem;
+}
+
+.auto-v2-panel {
+  --v2-surface: rgba(255, 255, 255, 0.96);
+  --v2-elev: rgba(248, 250, 252, 0.9);
+  --v2-border: rgba(148, 163, 184, 0.35);
+  --v2-text: #0f172a;
+  --v2-muted: #64748b;
+  --v2-accent: var(--primary, #2563eb);
+  --v2-success: #16a34a;
+  --v2-warning: #d97706;
+  --v2-danger: #dc2626;
+
+  border: 1px solid var(--v2-border);
+  border-radius: 18px;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: radial-gradient(1200px 420px at 15% -10%, rgba(37, 99, 235, 0.12), transparent 55%),
+    radial-gradient(800px 320px at 90% 5%, rgba(99, 102, 241, 0.10), transparent 60%),
+    var(--v2-surface);
+  color: var(--v2-text);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 18px 50px rgba(15, 23, 42, 0.10);
+}
+
+@media (prefers-color-scheme: dark) {
+  .auto-v2-panel {
+    --v2-surface: rgba(15, 23, 42, 0.92);
+    --v2-elev: rgba(30, 41, 59, 0.86);
+    --v2-border: rgba(148, 163, 184, 0.28);
+    --v2-text: #f1f5f9;
+    --v2-muted: #94a3b8;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.auto-v2-hero {
+  margin-bottom: 1rem;
+}
+
+.auto-v2-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--v2-muted);
+}
+
+.auto-v2-title {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.6vw, 1.45rem);
+  line-height: 1.2;
+}
+
+.auto-v2-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 860px) {
+  .auto-v2-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.auto-v2-kpi {
+  border: 1px solid var(--v2-border);
+  background: var(--v2-elev);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.auto-v2-kpi > span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--v2-muted);
+}
+
+.auto-v2-kpi strong {
+  font-size: 1.18rem;
+  line-height: 1.2;
+}
+
+.auto-v2-kpi strong small {
+  font-size: 0.65em;
+  font-weight: 600;
+  color: var(--v2-muted);
+}
+
+.auto-v2-kpi--cost small {
+  font-size: 0.8rem;
+  color: var(--v2-muted);
+}
+
+.auto-v2-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.25);
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+
+.auto-v2-bar span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--v2-accent), rgba(99, 102, 241, 0.95));
+  border-radius: inherit;
+  transition: width 0.35s ease;
+}
+
+.auto-v2-risk {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid var(--v2-border);
+}
+
+.auto-v2-risk--low {
+  background: rgba(22, 163, 74, 0.14);
+  color: var(--v2-success);
+}
+.auto-v2-risk--mid {
+  background: rgba(217, 119, 6, 0.14);
+  color: var(--v2-warning);
+}
+.auto-v2-risk--high {
+  background: rgba(220, 38, 38, 0.14);
+  color: var(--v2-danger);
+}
+
+.auto-v2-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 820px) {
+  .auto-v2-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.auto-v2-block {
+  border: 1px solid var(--v2-border);
+  background: var(--v2-elev);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+}
+
+.auto-v2-block h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+}
+
+.auto-v2-block ul,
+.auto-v2-block ol {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.92rem;
+}
+
+.auto-v2-block li + li {
+  margin-top: 0.35rem;
+}
+
+.auto-v2-alts h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+}
+
+.auto-v2-alt-grid {
+  display: grid;
+  gap: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  .auto-v2-alt-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.auto-v2-alt-card {
+  border: 1px solid var(--v2-border);
+  border-radius: 14px;
+  padding: 0.85rem 0.95rem;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  .auto-v2-alt-card {
+    background: rgba(15, 23, 42, 0.35);
+  }
+}
+
+.auto-v2-alt-card h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+}
+
+.auto-v2-alt-card p {
+  margin: 0;
+  color: var(--v2-muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.auto-v2-alt-meta {
+  display: inline-block;
+  margin-top: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--v2-accent);
+}
+
+.auto-v2-block--exec {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.10), var(--v2-elev));
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+.auto-v2-exec {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.auto-v2-exec-hint {
+  margin: 0.55rem 0 0;
+  font-size: 0.75rem;
+  color: var(--v2-muted);
+}
+
+.auto-v2-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+@media print {
+  .auto-v2-actions { display: none; }
+  .auto-v2-panel { box-shadow: none; }
+}
+
