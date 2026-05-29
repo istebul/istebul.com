@@ -6,13 +6,13 @@ import { escapeHtml } from '../../core/security.js';
 import {
   buildConfidenceScore,
   buildPdfReportData,
-  buildPrintReportHandler,
   buildRiskItem,
   clampScore,
   resolveScoreLabel,
   riskLevelToTone,
   safeTrackEvent
 } from '../results/results-engine.js';
+import { downloadDecisionReport } from '../results/pdf-report.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -533,34 +533,6 @@ function renderKonutResultsV2Html(model) {
     </section>`;
 }
 
-function buildPrintHtml(model) {
-  const esc = escapeHtml;
-  const cost = model.totalCost || {};
-  return `<!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><title>isteBul Konut Karar Raporu</title>
-<style>
-body{font-family:system-ui,sans-serif;margin:24px;color:#0f172a;line-height:1.55}
-h1{font-size:1.35rem} .meta{color:#64748b;font-size:.9rem}
-@media print{body{margin:12mm}}
-</style></head><body>
-<h1>isteBul — Konut Karar Raporu</h1>
-<p class="meta">AI destekli konut karar analizi · ${esc(new Date().toLocaleString('tr-TR'))}</p>
-<p><strong>Karar:</strong> ${esc(String(model.decisionScore))}/100 (${esc(model.scoreLabel)}) · <strong>Güven:</strong> ${esc(String(model.confidenceScore))}/100</p>
-<p><strong>Lokasyon:</strong> ${esc(model.locationLabel)}</p>
-<h2>Maliyet özeti</h2>
-<ul>
-<li>Peşinat: ${esc(formatTryAmount(cost.downPayment))}</li>
-<li>Kredi: ${esc(formatTryAmount(cost.loanNeed))}</li>
-<li>Aylık ödeme: ${esc(formatTryAmount(cost.monthlyPayment))}</li>
-<li>İlk yıl toplam: ${esc(formatTryAmount(cost.firstYearTotal))}</li>
-</ul>
-<h2>AI Executive Summary</h2>
-<p>${esc(model.executiveSummary || '')}</p>
-<h2>Sonraki adımlar</h2>
-<ol>${model.nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
-</body></html>`;
-}
-
 /**
  * @param {object} opts
  * @param {HTMLElement} opts.mountNode
@@ -603,10 +575,6 @@ export async function mountKonutResultsV2({
 
   const pdfBtn = root.querySelector('[data-konut-v2-pdf]');
   const pdfHint = root.querySelector('[data-konut-v2-pdf-hint]');
-  const printReport = buildPrintReportHandler(model.pdfReportData, {
-    buildHtml: () => buildPrintHtml(model),
-    frameTitle: 'Konut karar raporu'
-  });
 
   pdfBtn?.addEventListener('click', () => {
     safeTrackEvent(track, 'decision_report_print_click', {
@@ -617,9 +585,9 @@ export async function mountKonutResultsV2({
     if (pdfHint) {
       pdfHint.hidden = false;
       pdfHint.textContent =
-        'Rapor verisi hazır. Şimdilik yazdır/PDF ile kaydedebilirsiniz; yakında doğrudan PDF indirme eklenecek.';
+        'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
     }
-    printReport();
+    downloadDecisionReport(model.pdfReportData);
   });
 
   const summary = await buildAiExecutiveSummary({

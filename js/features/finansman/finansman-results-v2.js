@@ -8,13 +8,13 @@ import { baseScore as finansBaseScore, computeDebtScore } from '../../finans/fin
 import {
   buildConfidenceScore,
   buildPdfReportData,
-  buildPrintReportHandler,
   buildRiskItem,
   clampScore,
   resolveScoreLabel,
   riskLevelToTone,
   safeTrackEvent
 } from '../results/results-engine.js';
+import { downloadDecisionReport } from '../results/pdf-report.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -552,23 +552,6 @@ function renderFinansmanResultsV2Html(model) {
     </section>`;
 }
 
-function buildPrintHtml(model) {
-  const esc = escapeHtml;
-  const cost = model.totalCost || {};
-  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>isteBul Finansman Raporu</title></head><body style="font-family:system-ui,sans-serif;margin:24px">
-<h1>isteBul — Finansman Karar Raporu</h1>
-<p>AI destekli finansman karar analizi · ${esc(new Date().toLocaleString('tr-TR'))}</p>
-<p>Karar: ${esc(String(model.decisionScore))}/100 · Güven: ${esc(String(model.confidenceScore))}/100</p>
-<h2>Maliyet</h2>
-<ul>
-<li>Tutar: ${esc(formatTryAmount(cost.principal))}</li>
-<li>Aylık: ${esc(formatTryAmount(cost.monthlyPayment))}</li>
-<li>Toplam: ${esc(formatTryAmount(cost.totalRepayment))}</li>
-</ul>
-<h2>Özet</h2><p>${esc(model.executiveSummary || '')}</p>
-</body></html>`;
-}
-
 /**
  * @param {HTMLElement} mountNode
  * @param {object} payload — state, results, track, summary (opsiyonel)
@@ -601,11 +584,6 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
     risk: model.overallRisk
   });
 
-  const printReport = buildPrintReportHandler(model.pdfReportData, {
-    buildHtml: () => buildPrintHtml(model),
-    frameTitle: 'Finansman karar raporu'
-  });
-
   root.querySelector('[data-finansman-v2-pdf]')?.addEventListener('click', () => {
     safeTrackEvent(track, 'finance_report_print_click', {
       category: 'finansman',
@@ -615,9 +593,9 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
     if (hint) {
       hint.hidden = false;
       hint.textContent =
-        'Rapor verisi hazır. Şimdilik yazdır/PDF ile kaydedebilirsiniz; yakında doğrudan PDF indirme eklenecek.';
+        'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
     }
-    printReport();
+    downloadDecisionReport(model.pdfReportData);
   });
 
   const summary = await buildAiExecutiveSummary({

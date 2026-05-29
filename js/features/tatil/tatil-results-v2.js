@@ -8,13 +8,13 @@ import { formatTry } from '../../tatil/tatil-utils.js';
 import {
   buildConfidenceScore,
   buildPdfReportData,
-  buildPrintReportHandler,
   buildRiskItem,
   clampScore,
   resolveScoreLabel,
   riskLevelToTone,
   safeTrackEvent
 } from '../results/results-engine.js';
+import { downloadDecisionReport } from '../results/pdf-report.js';
 
 const PLAN_MID = {
   ekonomik: 40_000,
@@ -644,22 +644,6 @@ function renderTatilResultsV2Html(model) {
     </section>`;
 }
 
-function buildPrintHtml(model) {
-  const esc = escapeHtml;
-  const cost = model.totalCost || {};
-  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>isteBul Tatil Raporu</title></head><body style="font-family:system-ui,sans-serif;margin:24px">
-<h1>isteBul — Tatil Karar Raporu</h1>
-<p>AI destekli tatil karar analizi · ${esc(new Date().toLocaleString('tr-TR'))}</p>
-<p>Karar: ${esc(String(model.decisionScore))}/100 · Güven: ${esc(String(model.confidenceScore))}/100</p>
-<h2>Maliyet</h2>
-<ul>
-<li>Toplam: ${esc(formatTryAmount(cost.totalBudget))}</li>
-<li>Kişi başı: ${esc(formatTryAmount(cost.perPerson))}</li>
-</ul>
-<h2>Özet</h2><p>${esc(model.executiveSummary || '')}</p>
-</body></html>`;
-}
-
 /**
  * @param {HTMLElement} mountNode
  * @param {object} payload — state, results, track
@@ -692,11 +676,6 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
     risk: model.overallRisk
   });
 
-  const printReport = buildPrintReportHandler(model.pdfReportData, {
-    buildHtml: () => buildPrintHtml(model),
-    frameTitle: 'Tatil karar raporu'
-  });
-
   root.querySelector('[data-tatil-v2-pdf]')?.addEventListener('click', () => {
     safeTrackEvent(track, 'travel_report_print_click', {
       category: 'tatil',
@@ -706,9 +685,9 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
     if (hint) {
       hint.hidden = false;
       hint.textContent =
-        'Rapor verisi hazır. Şimdilik yazdır/PDF ile kaydedebilirsiniz; yakında doğrudan PDF indirme eklenecek.';
+        'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
     }
-    printReport();
+    downloadDecisionReport(model.pdfReportData);
   });
 
   const summary = await buildAiExecutiveSummary({

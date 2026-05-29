@@ -7,11 +7,12 @@
 import { escapeHtml } from '../core/security.js';
 import {
   buildPdfReportData,
-  buildPrintReportHandler,
+  buildRiskItem,
   clampScore,
   riskLevelToTone,
   safeTrackEvent
 } from '../features/results/results-engine.js';
+import { downloadDecisionReport } from '../features/results/pdf-report.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -235,54 +236,11 @@ function renderAutoResultsV2Html(model) {
 
       <div class="auto-v2-actions">
         <button type="button" class="btn secondary auto-v2-print" data-auto-v2-print>
-          Karar Raporunu Yazdır / PDF
+          Araç karar raporunu indir
         </button>
       </div>
     </section>
   `;
-}
-
-function buildPrintHtml(model) {
-  const esc = escapeHtml;
-  return `<!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8">
-  <title>isteBul Auto Karar Raporu</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 24px; color: #0f172a; line-height: 1.55; }
-    h1 { font-size: 1.35rem; margin: 0 0 8px; }
-    .meta { color: #475569; font-size: 0.92rem; margin-bottom: 18px; }
-    .kpis { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin: 14px 0; }
-    .kpi { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
-    .kpi span { display:block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
-    .kpi strong { font-size: 1.1rem; }
-    h2 { font-size: 1rem; margin: 18px 0 8px; }
-    ul, ol { margin: 0; padding-left: 1.2rem; }
-    .exec { background: #f8fafc; border-left: 4px solid #2563eb; padding: 12px 14px; }
-    @media print { body { margin: 12mm; } }
-  </style>
-</head>
-<body>
-  <h1>isteBul — Auto Karar Raporu</h1>
-  <p class="meta">Decision Results V2 · ${esc(new Date().toLocaleString('tr-TR'))}</p>
-  <div class="kpis">
-    <div class="kpi"><span>Karar Skoru</span><strong>${esc(String(model.decisionScore))}/100</strong></div>
-    <div class="kpi"><span>Güven Skoru</span><strong>${esc(String(model.confidenceScore))}/100</strong></div>
-    <div class="kpi"><span>Risk Seviyesi</span><strong>${esc(model.riskLevel)}</strong></div>
-    <div class="kpi"><span>Toplam Maliyet</span><strong>${esc(model.totalCostLabel)}</strong></div>
-  </div>
-  <h2>Güçlü Yönler</h2>
-  <ul>${model.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
-  <h2>Dikkat Edilecekler</h2>
-  <ul>${model.cautions.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
-  <h2>AI Executive Summary</h2>
-  <p class="exec">${esc(model.executiveSummary || '')}</p>
-  <h2>Sonraki Adımlar</h2>
-  <ol>${model.nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
-  <p class="meta">Bilgilendirme amaçlıdır; bağlayıcı teklif değildir.</p>
-</body>
-</html>`;
 }
 
 export async function mountAutoResultsV2({ mountNode, topResult, results, formData, track }) {
@@ -344,18 +302,32 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     overallRisk: risk.label,
     strengths: model.strengths,
     cautions: model.cautions,
-    alternatives: model.alternatives,
+    alternatives: model.alternatives.map((a) => ({
+      title: a.title,
+      description: a.reason || '',
+      meta: a.score ? `${a.score}/100` : ''
+    })),
+    riskAnalysis: cautions.map((text, index) =>
+      buildRiskItem(
+        `caution-${index}`,
+        'orta',
+        'Dikkat edilmesi gereken',
+        text,
+        'Teklif, ekspertiz ve toplam maliyeti güncel verilerle doğrulayın.'
+      )
+    ),
+    totalCost: {
+      isEstimate: true,
+      estimateNote: 'Tahmini TCO — kesin fiyat taahhüdü değildir.',
+      tco12Months: totalCost || null,
+      vehiclePrice: vehiclePrice || null
+    },
     nextSteps: model.nextSteps,
     executiveSummary: '',
     profile: {
       usage: model.usage,
       budgetLabel: model.budgetLabel
     }
-  });
-
-  const printReport = buildPrintReportHandler(model.pdfReportData, {
-    buildHtml: () => buildPrintHtml(model),
-    frameTitle: 'Auto karar raporu yazdırma'
   });
 
   const root = document.createElement('div');
@@ -371,7 +343,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   root.querySelector('[data-auto-v2-print]')?.addEventListener('click', () => {
     safeTrackEvent(track, 'decision_report_print_click', { score: decisionScore });
-    printReport();
+    downloadDecisionReport(model.pdfReportData);
   });
 
   // Executive Summary (AI proxy + fallback)
