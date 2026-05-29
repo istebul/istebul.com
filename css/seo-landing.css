@@ -107,6 +107,61 @@
   margin: 0 0 0.5rem;
 }
 
+.seo-section h3 {
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.35rem;
+  color: var(--seo-text);
+}
+
+.seo-table-wrap {
+  overflow-x: auto;
+  margin: 0.75rem 0 1rem;
+}
+
+.seo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background: var(--seo-surface);
+  border: 1px solid var(--seo-border);
+  border-radius: 8px;
+}
+
+.seo-table caption {
+  text-align: left;
+  font-weight: 600;
+  padding: 0.5rem 0;
+}
+
+.seo-table th,
+.seo-table td {
+  border: 1px solid var(--seo-border);
+  padding: 0.5rem 0.65rem;
+  vertical-align: top;
+}
+
+.seo-table th {
+  background: #f1f5f9;
+  text-align: left;
+}
+
+.seo-pros-cons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.seo-pros-cons ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.seo-conclusion {
+  background: var(--seo-surface);
+  border-left: 4px solid var(--seo-accent);
+  padding-left: 1rem;
+}
+
 .seo-faq details {
   background: var(--seo-surface);
   border: 1px solid var(--seo-border);

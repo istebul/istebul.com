@@ -2,8 +2,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const { mergeGuidePage, estimatePageWords, MIN_GUIDE_WORDS } = require('./seo-guide-expansions.cjs');
 
 const root = path.resolve(__dirname, '../..');
+const SEO_BUILD_DATE = new Date().toISOString().slice(0, 10);
 
 function loadJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
@@ -167,6 +169,51 @@ function renderSeoNav() {
   </header>`;
 }
 
+function renderComparisonTable(table) {
+  if (!table?.headers?.length) return '';
+  const caption = table.caption ? `<caption>${escapeHtml(table.caption)}</caption>` : '';
+  const head = table.headers.map((h) => `<th scope="col">${escapeHtml(h)}</th>`).join('');
+  const body = (table.rows || [])
+    .map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`)
+    .join('');
+  return `<section class="seo-section seo-compare">
+    <h2>Karşılaştırma tablosu</h2>
+    <div class="seo-table-wrap">
+      <table class="seo-table">${caption}<thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
+    </div>
+  </section>`;
+}
+
+function renderProsCons(advantages, disadvantages) {
+  if (!advantages?.length && !disadvantages?.length) return '';
+  const pros = (advantages || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+  const cons = (disadvantages || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+  return `<section class="seo-section seo-pros-cons">
+    <div class="seo-pros-cons-grid">
+      ${pros ? `<div><h2>Avantajlar</h2><ul>${pros}</ul></div>` : ''}
+      ${cons ? `<div><h2>Dezavantajlar</h2><ul>${cons}</ul></div>` : ''}
+    </div>
+  </section>`;
+}
+
+function renderSections(sections) {
+  return (sections || [])
+    .map((s) => {
+      const subs = (s.subsections || [])
+        .map(
+          (sub) => `<h3>${escapeHtml(sub.heading)}</h3>
+        <p>${escapeHtml(sub.body)}</p>`
+        )
+        .join('\n');
+      return `<section class="seo-section">
+        <h2>${escapeHtml(s.heading)}</h2>
+        <p>${escapeHtml(s.body)}</p>
+        ${subs}
+      </section>`;
+    })
+    .join('\n');
+}
+
 function renderSeoFooter({ site, guideLinks }) {
   const guides = (guideLinks || []).slice(0, 8)
     .map((l) => `<li><a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a></li>`)
@@ -215,14 +262,12 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta })
   const faq = faqSchema(page.faqs);
   if (faq) jsonLd.push(faq);
 
-  const sections = (page.sections || [])
-    .map(
-      (s) => `<section class="seo-section">
-        <h2>${escapeHtml(s.heading)}</h2>
-        <p>${escapeHtml(s.body)}</p>
-      </section>`
-    )
-    .join('\n');
+  const sections = renderSections(page.sections);
+  const comparisonHtml = renderComparisonTable(page.comparisonTable);
+  const prosConsHtml = renderProsCons(page.advantages, page.disadvantages);
+  const conclusionHtml = page.conclusion
+    ? `<section class="seo-section seo-conclusion"><h2>Sonuç</h2><p>${escapeHtml(page.conclusion)}</p></section>`
+    : '';
 
   const faqHtml = (page.faqs || []).length
     ? `<section class="seo-section seo-faq">
@@ -266,6 +311,9 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta })
       <p class="seo-lead">${escapeHtml(page.intro)}</p>
       ${bullets ? `<ul class="seo-bullets">${bullets}</ul>` : ''}
       ${sections}
+      ${comparisonHtml}
+      ${prosConsHtml}
+      ${conclusionHtml}
       ${faqHtml}
       ${related}
       <div class="seo-cta">
@@ -352,7 +400,15 @@ function buildSeoPages(distDir) {
     label: p.h1
   }));
 
-  landingConfig.pages.forEach((page) => {
+  const wordCounts = {};
+  landingConfig.pages.forEach((rawPage) => {
+    const page = mergeGuidePage(rawPage);
+    const words = estimatePageWords(page);
+    wordCounts[page.slug] = words;
+    if (words < MIN_GUIDE_WORDS) {
+      console.warn(`SEO guide ${page.slug}: ${words} words (target ${MIN_GUIDE_WORDS}+)`);
+    }
+
     const pagePath = `${prefix}${page.slug}/`;
     const breadcrumbs = [
       { name: 'Ana sayfa', path: '/' },
@@ -406,7 +462,44 @@ function buildSeoPages(distDir) {
   });
 
   injectCorporateMeta(distDir);
-  return { site, landingConfig, hubsConfig, topGuides };
+  buildMethodologyPage(distDir, site);
+  return { site, landingConfig, hubsConfig, topGuides, guideWordCounts: wordCounts };
+}
+
+function buildMethodologyPage(distDir, site) {
+  const page = loadJson('data/seo/methodology-page.json');
+  const pathName = '/metodoloji/';
+  const breadcrumbs = [
+    { name: 'Ana sayfa', path: '/' },
+    { name: 'Metodoloji', path: pathName }
+  ];
+  const relatedLinks = [
+    { href: '/auto/', label: 'Auto analiz' },
+    { href: '/rehber/arac-toplam-sahiplik-maliyeti/', label: 'TCO rehberi' },
+    { href: '/karar-asistani/', label: 'Karar asistanı' }
+  ];
+  const html = renderContentPage({
+    site,
+    page: {
+      ...page,
+      title: page.title,
+      description: page.description,
+      h1: page.h1,
+      intro: page.intro,
+      sections: page.sections,
+      faqs: page.faqs,
+      conclusion: page.conclusion
+    },
+    path: pathName,
+    breadcrumbs,
+    relatedLinks,
+    cta: { href: '/auto/', label: 'Metodolojiyi dene — Auto analiz' }
+  });
+
+  const outDir = path.join(distDir, 'metodoloji');
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, 'index.html'), html);
+  fs.writeFileSync(path.join(root, 'metodoloji', 'index.html'), html);
 }
 
 function generateSitemap(distDir, { site, landingConfig, hubsConfig }) {
@@ -433,8 +526,9 @@ function generateSitemap(distDir, { site, landingConfig, hubsConfig }) {
       const loc = absoluteUrl(site.baseUrl, u.loc);
       const priority = u.priority ? `\n    <priority>${u.priority}</priority>` : '';
       const changefreq = u.changefreq ? `\n    <changefreq>${u.changefreq}</changefreq>` : '';
+      const lastmod = `\n    <lastmod>${u.lastmod || SEO_BUILD_DATE}</lastmod>`;
       return `  <url>
-    <loc>${loc}</loc>${priority}${changefreq}
+    <loc>${loc}</loc>${lastmod}${priority}${changefreq}
   </url>`;
     })
     .join('\n');
@@ -474,6 +568,8 @@ module.exports = {
   escapeHtml,
   absoluteUrl,
   buildSeoPages,
+  buildMethodologyPage,
   generateSitemap,
-  generateRobots
+  generateRobots,
+  SEO_BUILD_DATE
 };

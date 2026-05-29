@@ -23,6 +23,7 @@ const staticFiles = ['_headers', '_redirects', 'index.html', 'offline.html', 'ma
     'css/admin-internal-dashboards.css',
     'css/admin-ops-ai-assistant.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
+const { injectVerticalFaqs } = require('./lib/seo-vertical-faq.cjs');
 const { injectRouteBootstrap, writeRouteBootstrapFile } = require('./lib/route-bootstrap.cjs');
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
 const { injectPartnerHtmlFiles } = require('./lib/inject-partner-prerender.cjs');
@@ -470,6 +471,7 @@ spaRoutes.forEach((route) => {
 const seoResult = buildSeoPages(dist);
 generateSitemap(dist, seoResult);
 generateRobots(dist, seoResult.site);
+injectVerticalFaqs(dist);
 
 fs.copyFileSync(path.join(root, '_redirects'), path.join(dist, '_redirects'));
 

@@ -36,9 +36,15 @@ if (!robots.includes('Sitemap: https://www.istebul.com/sitemap.xml')) {
 const requiredSitemapPaths = [
   'https://www.istebul.com/',
   'https://www.istebul.com/auto/',
+  'https://www.istebul.com/konut/',
+  'https://www.istebul.com/tatil/',
+  'https://www.istebul.com/finans/',
+  'https://www.istebul.com/metodoloji/',
   'https://www.istebul.com/karar-asistani/',
+  'https://www.istebul.com/planlar',
   'https://www.istebul.com/ilanlar/',
-  'https://www.istebul.com/karsilastir/'
+  'https://www.istebul.com/karsilastir/',
+  'https://www.istebul.com/rehber/suv-mi-sedan-mi/'
 ];
 
 for (const loc of requiredSitemapPaths) {
@@ -73,6 +79,14 @@ checkPage('auto/index.html', {
   canonical: 'https://www.istebul.com/auto/',
   aiCopy: true
 });
+checkPage('konut/index.html', { canonical: 'https://www.istebul.com/konut/' });
+checkPage('tatil/index.html', { canonical: 'https://www.istebul.com/tatil/' });
+checkPage('finans/index.html', { canonical: 'https://www.istebul.com/finans/' });
+checkPage('metodoloji/index.html', { canonical: 'https://www.istebul.com/metodoloji/' });
+
+if (!sitemap.includes('<lastmod>')) {
+  fail('sitemap.xml should include lastmod entries');
+}
 
 const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 if (!indexHtml.includes('application/ld+json')) fail('index.html missing JSON-LD');

@@ -17,7 +17,8 @@ export const MARKETING_SURFACE_IDS = Object.freeze([
     'pricing',
     'partner-enterprise',
     'landing-faq',
-    'home-final-cta'
+    'home-final-cta',
+    'karar-rehberi'
 ]);
 
 const PREMIUM_PATHS = Object.freeze({
