@@ -5,6 +5,16 @@ import { escapeHtml } from '../../core/security.js';
 import { FINANS_OPTIONS } from '../../finans/finans-config.js';
 import { formatTry } from '../../tatil/tatil-utils.js';
 import { baseScore as finansBaseScore, computeDebtScore } from '../../finans/finans-engine.js';
+import {
+  buildConfidenceScore,
+  buildPdfReportData,
+  buildPrintReportHandler,
+  buildRiskItem,
+  clampScore,
+  resolveScoreLabel,
+  riskLevelToTone,
+  safeTrackEvent
+} from '../results/results-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -52,18 +62,7 @@ function estimatePayment(principal, months, annualRate = 0.45) {
 }
 
 export function decisionScoreLabel(score) {
-  const s = safeNumber(score);
-  if (s >= 85) return 'Çok uygun';
-  if (s >= 70) return 'Uygun';
-  if (s >= 55) return 'Dikkatli değerlendir';
-  return 'Riskli finansman';
-}
-
-function riskTone(level) {
-  const l = String(level || '').toLowerCase();
-  if (l.includes('yüksek')) return 'high';
-  if (l.includes('düşük')) return 'low';
-  return 'mid';
+  return resolveScoreLabel(score, 'finansman');
 }
 
 function overallRiskFromDti(dti, cashPressure) {
@@ -73,7 +72,7 @@ function overallRiskFromDti(dti, cashPressure) {
 }
 
 export function computeConfidenceScore(state = {}) {
-  const checks = [
+  return buildConfidenceScore(state, [
     { ok: Boolean(state.purpose), weight: 12 },
     { ok: Boolean(state.amount_range) || safeNumber(state.amount_manual) > 0, weight: 14 },
     { ok: Boolean(state.term_months), weight: 12 },
@@ -84,10 +83,7 @@ export function computeConfidenceScore(state = {}) {
     { ok: Boolean(state.income_type), weight: 8 },
     { ok: Boolean(state.risk_tolerance), weight: 8 },
     { ok: Boolean(state.rate_sensitivity), weight: 6 }
-  ];
-  const max = checks.reduce((s, c) => s + c.weight, 0);
-  const got = checks.reduce((s, c) => s + (c.ok ? c.weight : 0), 0);
-  return clamp(Math.round(52 + (got / max) * 46), 32, 98);
+  ]);
 }
 
 export function computeDecisionScore(state = {}, primaryResult = null) {
@@ -110,7 +106,7 @@ export function computeDecisionScore(state = {}, primaryResult = null) {
     paymentFit * 0.26 + dtiFit * 0.24 + purposeFit * 0.12 + riskTol * 0.14 + termFit * 0.1 + 14
   );
   const legacy = safeNumber(primaryResult?.score) || finansBaseScore(state);
-  return clamp(Math.round(blended * 0.55 + legacy * 0.45), 0, 100);
+  return clampScore(Math.round(blended * 0.55 + legacy * 0.45));
 }
 
 export function buildTotalCostView(state = {}, primaryResult = null) {
@@ -165,16 +161,8 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
   const earlyLevel =
     state.early_payment === 'dusuk' ? 'orta' : state.early_payment === 'yuksek' ? 'düşük' : 'orta';
 
-  const mk = (key, title, level, description, recommendation) => ({
-    key,
-    title,
-    level,
-    description,
-    recommendation
-  });
-
   return [
-    mk(
+    buildRiskItem(
       'payment',
       'Aylık ödeme riski',
       paymentLevel,
@@ -183,7 +171,7 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         : 'Aylık ödeme kapasite bandınızla uyumlu görünüyor.',
       'Kapasite altında kalacak vade/tutar senaryosu simüle edin.'
     ),
-    mk(
+    buildRiskItem(
       'dti',
       'Borç/gelir oranı riski',
       dtiLevel,
@@ -192,7 +180,7 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         ? 'Kredi tutarını düşürün veya gelir belgesi ile birlikte banka ön görüşmesi yapın.'
         : 'Gelir/borç tablosunu güncel belgelerle doğrulayın.'
     ),
-    mk(
+    buildRiskItem(
       'rate',
       'Faiz oranı riski',
       rateLevel,
@@ -201,7 +189,7 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         : 'Faiz bandı için 2–3 kurumdan teklif karşılaştırması önerilir.',
       'Efektif yıllık maliyet oranını (EYM) her teklifte kontrol edin.'
     ),
-    mk(
+    buildRiskItem(
       'term',
       'Vade riski',
       termLevel,
@@ -210,7 +198,7 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         : 'Vade yapısı dengeli görünüyor.',
       'Kısa ve uzun vade senaryolarını yan yana tablolaştırın.'
     ),
-    mk(
+    buildRiskItem(
       'cashflow',
       'Nakit akışı riski',
       cashflowLevel,
@@ -219,7 +207,7 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         : 'Nakit akışında makul tampon var.',
       '3 aylık gider planı ile serbest nakit tamponunu test edin.'
     ),
-    mk(
+    buildRiskItem(
       'flex',
       'Erken kapama / esneklik riski',
       earlyLevel,
@@ -403,9 +391,8 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [] }) {
   const highRisk = riskAnalysis.find((r) => r.level === 'yüksek');
   const criticalRisk = highRisk?.title || '';
 
-  const pdfReportData = {
+  const pdfReportData = buildPdfReportData({
     category: 'finansman',
-    generatedAt: new Date().toISOString(),
     purpose: optionLabel('purpose', state.purpose),
     decisionScore,
     scoreLabel: decisionScoreLabel(decisionScore),
@@ -423,14 +410,14 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [] }) {
       incomeType: optionLabel('income', state.income_type),
       riskTolerance: optionLabel('riskTolerance', state.risk_tolerance)
     }
-  };
+  });
 
   return {
     decisionScore,
     scoreLabel: decisionScoreLabel(decisionScore),
     confidenceScore,
     overallRisk,
-    riskTone: riskTone(overallRisk),
+    riskTone: riskLevelToTone(overallRisk),
     riskAnalysis,
     totalCost: cost,
     strengths,
@@ -508,7 +495,7 @@ function renderFinansmanResultsV2Html(model) {
             <article class="finansman-v2-risk-card">
               <div class="finansman-v2-risk-card-head">
                 <h4>${esc(r.title)}</h4>
-                <span class="finansman-v2-risk finansman-v2-risk--${esc(riskTone(r.level))}">${esc(r.level)}</span>
+                <span class="finansman-v2-risk finansman-v2-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level)}</span>
               </div>
               <p>${esc(r.description)}</p>
               <p class="finansman-v2-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>
@@ -582,30 +569,6 @@ function buildPrintHtml(model) {
 </body></html>`;
 }
 
-function printFinansmanReport(model) {
-  const html = buildPrintHtml(model);
-  const frame = document.createElement('iframe');
-  frame.setAttribute('title', 'Finansman karar raporu');
-  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
-  document.body.appendChild(frame);
-  const doc = frame.contentWindow?.document;
-  if (!doc) {
-    frame.remove();
-    return;
-  }
-  doc.open();
-  doc.write(html);
-  doc.close();
-  frame.contentWindow?.focus();
-  setTimeout(() => {
-    try {
-      frame.contentWindow?.print();
-    } finally {
-      setTimeout(() => frame.remove(), 800);
-    }
-  }, 250);
-}
-
 /**
  * @param {HTMLElement} mountNode
  * @param {object} payload — state, results, track, summary (opsiyonel)
@@ -631,29 +594,30 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
   root.innerHTML = renderFinansmanResultsV2Html(model);
   mountNode.prepend(root);
 
-  try {
-    track?.('finance_result_v2_view', {
-      category: 'finansman',
-      score: model.decisionScore,
-      confidence: model.confidenceScore,
-      risk: model.overallRisk
-    });
-  } catch {}
+  safeTrackEvent(track, 'finance_result_v2_view', {
+    category: 'finansman',
+    score: model.decisionScore,
+    confidence: model.confidenceScore,
+    risk: model.overallRisk
+  });
+
+  const printReport = buildPrintReportHandler(model.pdfReportData, {
+    buildHtml: () => buildPrintHtml(model),
+    frameTitle: 'Finansman karar raporu'
+  });
 
   root.querySelector('[data-finansman-v2-pdf]')?.addEventListener('click', () => {
-    try {
-      track?.('finance_report_print_click', {
-        category: 'finansman',
-        score: model.decisionScore
-      });
-    } catch {}
+    safeTrackEvent(track, 'finance_report_print_click', {
+      category: 'finansman',
+      score: model.decisionScore
+    });
     const hint = root.querySelector('[data-finansman-v2-pdf-hint]');
     if (hint) {
       hint.hidden = false;
       hint.textContent =
         'Rapor verisi hazır. Şimdilik yazdır/PDF ile kaydedebilirsiniz; yakında doğrudan PDF indirme eklenecek.';
     }
-    printFinansmanReport(model);
+    printReport();
   });
 
   const summary = await buildAiExecutiveSummary({

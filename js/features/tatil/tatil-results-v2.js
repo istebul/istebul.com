@@ -5,6 +5,16 @@ import { escapeHtml } from '../../core/security.js';
 import { STEP_OPTIONS } from '../../tatil/tatil-config.js';
 import { baseScore as tatilBaseScore } from '../../tatil/tatil-engine.js';
 import { formatTry } from '../../tatil/tatil-utils.js';
+import {
+  buildConfidenceScore,
+  buildPdfReportData,
+  buildPrintReportHandler,
+  buildRiskItem,
+  clampScore,
+  resolveScoreLabel,
+  riskLevelToTone,
+  safeTrackEvent
+} from '../results/results-engine.js';
 
 const PLAN_MID = {
   ekonomik: 40_000,
@@ -63,18 +73,7 @@ function riskToleranceProxy(state) {
 }
 
 export function decisionScoreLabel(score) {
-  const s = safeNumber(score);
-  if (s >= 85) return 'Çok uygun';
-  if (s >= 70) return 'Uygun';
-  if (s >= 55) return 'Dikkatli değerlendir';
-  return 'Riskli tatil planı';
-}
-
-function riskTone(level) {
-  const l = String(level || '').toLowerCase();
-  if (l.includes('yüksek')) return 'high';
-  if (l.includes('düşük')) return 'low';
-  return 'mid';
+  return resolveScoreLabel(score, 'tatil');
 }
 
 function overallRiskFromAnalysis(riskAnalysis) {
@@ -85,7 +84,7 @@ function overallRiskFromAnalysis(riskAnalysis) {
 }
 
 export function computeConfidenceScore(state = {}) {
-  const checks = [
+  return buildConfidenceScore(state, [
     { ok: Boolean(state.budget_range) || safeNumber(state.budget_manual) > 0, weight: 14 },
     { ok: Boolean(state.people_type) || safeNumber(state.travelers_count) > 0, weight: 12 },
     {
@@ -104,10 +103,7 @@ export function computeConfidenceScore(state = {}) {
     { ok: (state.expectations?.length || 0) >= 1, weight: 8 },
     { ok: Boolean(state.date_flexibility), weight: 8 },
     { ok: Boolean(state.user_note), weight: 4 }
-  ];
-  const max = checks.reduce((s, c) => s + c.weight, 0);
-  const got = checks.reduce((s, c) => s + (c.ok ? c.weight : 0), 0);
-  return clamp(Math.round(52 + (got / max) * 46), 32, 98);
+  ]);
 }
 
 export function computeDecisionScore(state = {}, primaryResult = null) {
@@ -166,7 +162,7 @@ export function computeDecisionScore(state = {}, primaryResult = null) {
   );
 
   const legacy = safeNumber(primaryResult?.score) || tatilBaseScore(state);
-  return clamp(Math.round(blended * 0.55 + legacy * 0.45), 0, 100);
+  return clampScore(Math.round(blended * 0.55 + legacy * 0.45));
 }
 
 export function buildTotalCostView(state = {}, primaryResult = null) {
@@ -255,16 +251,8 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         ? 'düşük'
         : 'orta';
 
-  const mk = (key, title, level, description, recommendation) => ({
-    key,
-    title,
-    level,
-    description,
-    recommendation
-  });
-
   return [
-    mk(
+    buildRiskItem(
       'budget',
       'Bütçe aşımı riski',
       budgetLevel,
@@ -273,7 +261,7 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         : 'Bütçe bandı ile model uyumlu görünüyor.',
       'Toplam bütçeye %10–15 rezerv ekleyin; kampanya fiyatlarını ayrı satırda takip edin.'
     ),
-    mk(
+    buildRiskItem(
       'season',
       'Tarih/sezon riski',
       seasonLevel,
@@ -282,7 +270,7 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         : 'Tarih profiliniz sezon riskini sınırlıyor.',
       'Tarih ve sezon yoğunluğunu kontrol edin; esnek günlerde alternatif dönem arayın.'
     ),
-    mk(
+    buildRiskItem(
       'family',
       'Çocuklu aile uygunluğu riski',
       childLevel,
@@ -291,7 +279,7 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         : 'Aile profili ile konaklama/aktivite uyumu iyi görünüyor.',
       'Çocuklu aile için uygunluk, oda tipi ve aktivite programını doğrulayın.'
     ),
-    mk(
+    buildRiskItem(
       'transport',
       'Ulaşım riski',
       transportLevel,
@@ -300,7 +288,7 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         : 'Ulaşım tercihi profilinizle uyumlu modelleniyor.',
       'Ulaşım alternatiflerini (uçuş, transfer, araç) yan yana maliyetlendirin.'
     ),
-    mk(
+    buildRiskItem(
       'lodging',
       'Konaklama kalitesi riski',
       comfortLevel,
@@ -309,7 +297,7 @@ export function buildRiskAnalysis(state = {}, primaryResult = null) {
         : 'Konaklama konforu ile bütçe dengeli görünüyor.',
       'Konaklama yorumlarını ve oda tipini karşılaştırın.'
     ),
-    mk(
+    buildRiskItem(
       'cancel',
       'İptal/esneklik riski',
       cancelLevel,
@@ -494,9 +482,8 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
   const highRisk = riskAnalysis.find((r) => r.level === 'yüksek');
   const criticalRisk = highRisk?.title || '';
 
-  const pdfReportData = {
+  const pdfReportData = buildPdfReportData({
     category: 'tatil',
-    generatedAt: new Date().toISOString(),
     goal: optionLabel('goal', state.vacation_goal),
     decisionScore,
     scoreLabel: decisionScoreLabel(decisionScore),
@@ -516,14 +503,14 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
       comfort: optionLabel('comfort', state.comfort_expectation),
       flexibility: state.date_flexibility
     }
-  };
+  });
 
   return {
     decisionScore,
     scoreLabel: decisionScoreLabel(decisionScore),
     confidenceScore,
     overallRisk,
-    riskTone: riskTone(overallRisk),
+    riskTone: riskLevelToTone(overallRisk),
     riskAnalysis,
     totalCost: cost,
     strengths,
@@ -600,7 +587,7 @@ function renderTatilResultsV2Html(model) {
             <article class="tatil-v2-risk-card">
               <div class="tatil-v2-risk-card-head">
                 <h4>${esc(r.title)}</h4>
-                <span class="tatil-v2-risk tatil-v2-risk--${esc(riskTone(r.level))}">${esc(r.level)}</span>
+                <span class="tatil-v2-risk tatil-v2-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level)}</span>
               </div>
               <p>${esc(r.description)}</p>
               <p class="tatil-v2-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>
@@ -673,30 +660,6 @@ function buildPrintHtml(model) {
 </body></html>`;
 }
 
-function printTatilReport(model) {
-  const html = buildPrintHtml(model);
-  const frame = document.createElement('iframe');
-  frame.setAttribute('title', 'Tatil karar raporu');
-  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
-  document.body.appendChild(frame);
-  const doc = frame.contentWindow?.document;
-  if (!doc) {
-    frame.remove();
-    return;
-  }
-  doc.open();
-  doc.write(html);
-  doc.close();
-  frame.contentWindow?.focus();
-  setTimeout(() => {
-    try {
-      frame.contentWindow?.print();
-    } finally {
-      setTimeout(() => frame.remove(), 800);
-    }
-  }, 250);
-}
-
 /**
  * @param {HTMLElement} mountNode
  * @param {object} payload — state, results, track
@@ -722,29 +685,30 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
   root.innerHTML = renderTatilResultsV2Html(model);
   mountNode.prepend(root);
 
-  try {
-    track?.('travel_result_v2_view', {
-      category: 'tatil',
-      score: model.decisionScore,
-      confidence: model.confidenceScore,
-      risk: model.overallRisk
-    });
-  } catch {}
+  safeTrackEvent(track, 'travel_result_v2_view', {
+    category: 'tatil',
+    score: model.decisionScore,
+    confidence: model.confidenceScore,
+    risk: model.overallRisk
+  });
+
+  const printReport = buildPrintReportHandler(model.pdfReportData, {
+    buildHtml: () => buildPrintHtml(model),
+    frameTitle: 'Tatil karar raporu'
+  });
 
   root.querySelector('[data-tatil-v2-pdf]')?.addEventListener('click', () => {
-    try {
-      track?.('travel_report_print_click', {
-        category: 'tatil',
-        score: model.decisionScore
-      });
-    } catch {}
+    safeTrackEvent(track, 'travel_report_print_click', {
+      category: 'tatil',
+      score: model.decisionScore
+    });
     const hint = root.querySelector('[data-tatil-v2-pdf-hint]');
     if (hint) {
       hint.hidden = false;
       hint.textContent =
         'Rapor verisi hazır. Şimdilik yazdır/PDF ile kaydedebilirsiniz; yakında doğrudan PDF indirme eklenecek.';
     }
-    printTatilReport(model);
+    printReport();
   });
 
   const summary = await buildAiExecutiveSummary({

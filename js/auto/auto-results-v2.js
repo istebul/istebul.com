@@ -5,6 +5,13 @@
  * - innerHTML basılan her içerik escape edilir.
  */
 import { escapeHtml } from '../core/security.js';
+import {
+  buildPdfReportData,
+  buildPrintReportHandler,
+  clampScore,
+  riskLevelToTone,
+  safeTrackEvent
+} from '../features/results/results-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -77,7 +84,7 @@ function computeRiskLevel({ budget, totalCost, riskItems = [] }) {
 
 function computeDecisionScore({ budgetFit, usageFit, costFit, altFit, riskScore }) {
   const score = budgetFit * 0.26 + usageFit * 0.18 + costFit * 0.2 + altFit * 0.16 + (100 - riskScore) * 0.2;
-  return clamp(Math.round(score), 22, 99);
+  return clampScore(Math.round(score));
 }
 
 function buildAlternatives(results = []) {
@@ -278,31 +285,6 @@ function buildPrintHtml(model) {
 </html>`;
 }
 
-function printReport(model) {
-  const html = buildPrintHtml(model);
-  const frame = document.createElement('iframe');
-  frame.setAttribute('title', 'Auto karar raporu yazdırma');
-  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
-  document.body.appendChild(frame);
-  const doc = frame.contentWindow?.document;
-  if (!doc) {
-    frame.remove();
-    window.print();
-    return;
-  }
-  doc.open();
-  doc.write(html);
-  doc.close();
-  frame.contentWindow?.focus();
-  setTimeout(() => {
-    try {
-      frame.contentWindow?.print();
-    } finally {
-      setTimeout(() => frame.remove(), 800);
-    }
-  }, 250);
-}
-
 export async function mountAutoResultsV2({ mountNode, topResult, results, formData, track }) {
   if (!mountNode || !topResult) return null;
 
@@ -341,7 +323,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     decisionScore,
     confidenceScore,
     riskLevel: risk.label,
-    riskTone: risk.label === 'Yüksek' ? 'high' : risk.label === 'Düşük' ? 'low' : 'mid',
+    riskTone: riskLevelToTone(risk.label),
     totalCostLabel: totalCost ? formatTryAmount(totalCost) : '—',
     costHint: totalCost && budget ? `Bütçe ${formatTryAmount(budget)} · 12 ay TCO` : '12 ay TCO (tahmini)',
     strengths,
@@ -355,26 +337,41 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     totalCostLabelRaw: totalCost ? formatTryAmount(totalCost) : '—'
   };
 
+  model.pdfReportData = buildPdfReportData({
+    category: 'auto',
+    decisionScore,
+    confidenceScore,
+    overallRisk: risk.label,
+    strengths: model.strengths,
+    cautions: model.cautions,
+    alternatives: model.alternatives,
+    nextSteps: model.nextSteps,
+    executiveSummary: '',
+    profile: {
+      usage: model.usage,
+      budgetLabel: model.budgetLabel
+    }
+  });
+
+  const printReport = buildPrintReportHandler(model.pdfReportData, {
+    buildHtml: () => buildPrintHtml(model),
+    frameTitle: 'Auto karar raporu yazdırma'
+  });
+
   const root = document.createElement('div');
   root.className = 'auto-v2-root';
   root.innerHTML = renderAutoResultsV2Html(model);
   mountNode.prepend(root);
 
-  // Event: view (non-blocking)
-  try {
-    track?.('decision_result_v2_view', {
-      score: decisionScore,
-      confidence: confidenceScore,
-      risk: risk.label
-    });
-  } catch {}
+  safeTrackEvent(track, 'decision_result_v2_view', {
+    score: decisionScore,
+    confidence: confidenceScore,
+    risk: risk.label
+  });
 
-  // Bind print
   root.querySelector('[data-auto-v2-print]')?.addEventListener('click', () => {
-    try {
-      track?.('decision_report_print_click', { score: decisionScore });
-    } catch {}
-    printReport(model);
+    safeTrackEvent(track, 'decision_report_print_click', { score: decisionScore });
+    printReport();
   });
 
   // Executive Summary (AI proxy + fallback)
@@ -395,6 +392,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   if (sourceEl) sourceEl.textContent = `Kaynak: ${summary.source === 'ai' ? 'AI destekli' : 'Deterministic fallback'}`;
   model.executiveSummary = summary.text;
   model.summarySourceLabel = sourceEl?.textContent || '';
+  model.pdfReportData.executiveSummary = summary.text;
 
   return model;
 }

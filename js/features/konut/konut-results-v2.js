@@ -3,6 +3,16 @@
  * Mevcut konut sonuç ekranını bozmaz; üstüne prepend edilir.
  */
 import { escapeHtml } from '../../core/security.js';
+import {
+  buildConfidenceScore,
+  buildPdfReportData,
+  buildPrintReportHandler,
+  buildRiskItem,
+  clampScore,
+  resolveScoreLabel,
+  riskLevelToTone,
+  safeTrackEvent
+} from '../results/results-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -22,25 +32,14 @@ function formatTryAmount(value) {
 }
 
 function decisionScoreLabel(score) {
-  const s = safeNumber(score);
-  if (s >= 85) return 'Çok uygun';
-  if (s >= 70) return 'Uygun';
-  if (s >= 55) return 'Dikkatli değerlendir';
-  return 'Riskli karar';
-}
-
-function riskTone(level) {
-  const l = String(level || '').toLowerCase();
-  if (l.includes('yüksek')) return 'high';
-  if (l.includes('düşük')) return 'low';
-  return 'mid';
+  return resolveScoreLabel(score, 'konut');
 }
 
 /**
  * Form doluluğuna göre güven skoru.
  */
 export function computeConfidenceScore(state = {}) {
-  const checks = [
+  return buildConfidenceScore(state, [
     { ok: Boolean(String(state.city || '').trim()), weight: 14 },
     { ok: Boolean(String(state.district || '').trim()), weight: 6 },
     { ok: safeNumber(state.totalBudget) > 0, weight: 14 },
@@ -52,11 +51,7 @@ export function computeConfidenceScore(state = {}) {
     { ok: safeNumber(state.monthlyCapacity) > 0, weight: 8 },
     { ok: (state.locationPreferences?.length || 0) > 0, weight: 7 },
     { ok: (state.riskPreferences?.length || 0) > 0, weight: 7 }
-  ];
-  const max = checks.reduce((s, c) => s + c.weight, 0);
-  const got = checks.reduce((s, c) => s + (c.ok ? c.weight : 0), 0);
-  const ratio = max ? got / max : 0.5;
-  return clamp(Math.round(52 + ratio * 46), 32, 98);
+  ]);
 }
 
 /**
@@ -94,7 +89,7 @@ export function computeDecisionScore(state = {}, metrics = {}) {
   );
 
   const legacy = safeNumber(metrics.score);
-  return clamp(Math.round(blended * 0.5 + legacy * 0.5), 0, 100);
+  return clampScore(Math.round(blended * 0.5 + legacy * 0.5));
 }
 
 export function buildRiskAnalysis(state = {}, metrics = {}) {
@@ -127,16 +122,8 @@ export function buildRiskAnalysis(state = {}, metrics = {}) {
   const duesLevel =
     dues > 5000 || (capacity > 0 && dues / capacity > 0.2) ? 'yüksek' : dues > 2500 ? 'orta' : 'düşük';
 
-  const mk = (key, title, level, description, recommendation) => ({
-    key,
-    title,
-    level,
-    description,
-    recommendation
-  });
-
   return [
-    mk(
+    buildRiskItem(
       'budget',
       'Bütçe riski',
       budgetLevel,
@@ -149,7 +136,7 @@ export function buildRiskAnalysis(state = {}, metrics = {}) {
         ? 'Peşinatı artırın veya daha düşük bütçeli segmentlere bakın.'
         : '2 alternatif bütçe senaryosu ile aylık yükü doğrulayın.'
     ),
-    mk(
+    buildRiskItem(
       'location',
       'Lokasyon riski',
       locationLevel,
@@ -158,7 +145,7 @@ export function buildRiskAnalysis(state = {}, metrics = {}) {
         : 'Lokasyon tercihleri ile bölge profili genel olarak uyumlu.',
       'Bölge fiyat trendi ve ulaşım altyapısını karşılaştırmalı kontrol edin.'
     ),
-    mk(
+    buildRiskItem(
       'credit',
       'Kredi/finansman riski',
       creditLevel,
@@ -167,7 +154,7 @@ export function buildRiskAnalysis(state = {}, metrics = {}) {
         : 'Finansman yapısı kontrollü görünüyor; yine de banka ön onayı önerilir.',
       'Kredi ön onayı alın; vade ve faiz senaryolarını yan yana simüle edin.'
     ),
-    mk(
+    buildRiskItem(
       'depreciation',
       'Değer kaybı riski',
       depreciationLevel,
@@ -176,7 +163,7 @@ export function buildRiskAnalysis(state = {}, metrics = {}) {
         : 'Segment ve bina yaşı açısından değer kaybı baskısı sınırlı görünüyor.',
       'Emsal satış fiyatlarını ve bölge talep trendini doğrulayın.'
     ),
-    mk(
+    buildRiskItem(
       'liquidity',
       'Likidite/satılabilirlik riski',
       liquidityLevel,
@@ -185,7 +172,7 @@ export function buildRiskAnalysis(state = {}, metrics = {}) {
         : 'Piyasa likiditesi bu profil için kabul edilebilir görünüyor.',
       'Satış senaryosu için 3 emsal ilan ile likidite testi yapın.'
     ),
-    mk(
+    buildRiskItem(
       'dues',
       'Aidat ve ek maliyet riski',
       duesLevel,
@@ -385,9 +372,8 @@ export function buildKonutResultsV2Payload({
     ? formatTryAmount(state.totalBudget)
     : 'Belirtilmedi';
 
-  const pdfReportData = {
+  const pdfReportData = buildPdfReportData({
     category: 'konut',
-    generatedAt: new Date().toISOString(),
     location: locationLabel,
     decisionScore,
     scoreLabel: decisionScoreLabel(decisionScore),
@@ -405,14 +391,14 @@ export function buildKonutResultsV2Payload({
       roomCount: state.roomCount,
       financing: state.useFinancing
     }
-  };
+  });
 
   return {
     decisionScore,
     scoreLabel: decisionScoreLabel(decisionScore),
     confidenceScore,
     overallRisk,
-    riskTone: riskTone(overallRisk),
+    riskTone: riskLevelToTone(overallRisk),
     riskAnalysis,
     totalCost,
     strengths,
@@ -490,7 +476,7 @@ function renderKonutResultsV2Html(model) {
             <article class="konut-v2-risk-card">
               <div class="konut-v2-risk-card-head">
                 <h4>${esc(r.title)}</h4>
-                <span class="konut-v2-risk konut-v2-risk--${esc(riskTone(r.level))}">${esc(r.level)}</span>
+                <span class="konut-v2-risk konut-v2-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level)}</span>
               </div>
               <p>${esc(r.description)}</p>
               <p class="konut-v2-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>
@@ -575,30 +561,6 @@ h1{font-size:1.35rem} .meta{color:#64748b;font-size:.9rem}
 </body></html>`;
 }
 
-function printKonutReport(model) {
-  const html = buildPrintHtml(model);
-  const frame = document.createElement('iframe');
-  frame.setAttribute('title', 'Konut karar raporu');
-  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
-  document.body.appendChild(frame);
-  const doc = frame.contentWindow?.document;
-  if (!doc) {
-    frame.remove();
-    return;
-  }
-  doc.open();
-  doc.write(html);
-  doc.close();
-  frame.contentWindow?.focus();
-  setTimeout(() => {
-    try {
-      frame.contentWindow?.print();
-    } finally {
-      setTimeout(() => frame.remove(), 800);
-    }
-  }, 250);
-}
-
 /**
  * @param {object} opts
  * @param {HTMLElement} opts.mountNode
@@ -632,33 +594,32 @@ export async function mountKonutResultsV2({
   root.innerHTML = renderKonutResultsV2Html(model);
   mountNode.prepend(root);
 
-  try {
-    track?.('decision_result_v2_view', {
-      category: 'konut',
-      score: model.decisionScore,
-      confidence: model.confidenceScore,
-      risk: model.overallRisk
-    });
-  } catch {}
+  safeTrackEvent(track, 'decision_result_v2_view', {
+    category: 'konut',
+    score: model.decisionScore,
+    confidence: model.confidenceScore,
+    risk: model.overallRisk
+  });
 
   const pdfBtn = root.querySelector('[data-konut-v2-pdf]');
   const pdfHint = root.querySelector('[data-konut-v2-pdf-hint]');
+  const printReport = buildPrintReportHandler(model.pdfReportData, {
+    buildHtml: () => buildPrintHtml(model),
+    frameTitle: 'Konut karar raporu'
+  });
 
   pdfBtn?.addEventListener('click', () => {
-    try {
-      track?.('decision_report_print_click', {
-        category: 'konut',
-        score: model.decisionScore
-      });
-    } catch {}
+    safeTrackEvent(track, 'decision_report_print_click', {
+      category: 'konut',
+      score: model.decisionScore
+    });
 
-  // PDF pipeline hazır payload; şimdilik yazdırma + kullanıcı bilgisi
     if (pdfHint) {
       pdfHint.hidden = false;
       pdfHint.textContent =
         'Rapor verisi hazır. Şimdilik yazdır/PDF ile kaydedebilirsiniz; yakında doğrudan PDF indirme eklenecek.';
     }
-    printKonutReport(model);
+    printReport();
   });
 
   const summary = await buildAiExecutiveSummary({
