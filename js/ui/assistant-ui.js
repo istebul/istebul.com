@@ -527,7 +527,9 @@ export class AssistantUI {
     }
 
     renderDecisionHistory(history = []) {
-        const container = document.getElementById('history-list');
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const container = doc.getElementById('history-list');
         if (!container) return;
 
         if (!history.length) {
@@ -650,10 +652,12 @@ export class AssistantUI {
     }
 
     setActiveCategory(categoryId, categories = []) {
-        const label = document.getElementById('active-category-label');
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const label = doc.getElementById('active-category-label');
         const category = categories.find((item) => item.id === categoryId);
 
-        document.querySelectorAll('[data-category]').forEach((element) => {
+        doc.querySelectorAll('[data-category]').forEach((element) => {
             element.classList.toggle('active', !!categoryId && element.dataset.category === categoryId);
         });
 

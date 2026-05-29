@@ -1,5 +1,6 @@
 import { installListingsUI } from './listings-ui.js';
 import { installComparisonUI } from './comparison-ui.js';
+import { installAssistantUI } from './assistant-ui.js';
 import { escapeHtml as escapeHtmlValue, safeImageUrl as sanitizeImageUrl, safeUrl } from '../core/security.js';
 import { refreshLucideIcons, scheduleLucideIcons } from '../runtime/lucide-loader.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
@@ -24,6 +25,7 @@ export class UIManager {
     }
 
     init() {
+        installAssistantUI(this.constructor);
         this.setupTheme();
         this.setupGlobalUI();
         this.setupResponsiveNav();
@@ -372,12 +374,6 @@ export class UIManager {
         }
     }
 
-
-    async renderDecisionAssistant(...args) {
-        const { installAssistantUI } = await import('./assistant-ui.js');
-        installAssistantUI(this.constructor);
-        return this.renderDecisionAssistant(...args);
-    }
 
     getListingLocationLabel(listing = {}) {
         if (listing.province) return listing.province + (listing.district ? '/' + listing.district : ' geneli');

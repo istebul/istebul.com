@@ -235,9 +235,17 @@ class App {
                 ]);
 
                 this.loadComparisonItems();
-                this.loadDecisionHistory();
+                try {
+                    this.loadDecisionHistory();
+                } catch (error) {
+                    console.warn('Deferred loadDecisionHistory failed:', error);
+                }
                 this.loadComparisonHistory();
-                this.renderDecisionAssistant();
+                try {
+                    this.renderDecisionAssistant();
+                } catch (error) {
+                    console.warn('Deferred renderDecisionAssistant failed:', error);
+                }
             };
 
             if ('requestIdleCallback' in window) {
@@ -532,15 +540,19 @@ class App {
     }
 
     renderCategorySurfaces() {
-        const displayCategories = [
-            ...this.categories,
-            ...(this.comingSoonCategories || [])
-        ];
-        this.ui.renderCategories(displayCategories, this.activeCategory);
-        this.ui.renderHeroCategories(this.categories, this.activeCategory);
-        this.ui.renderCategoryMenu(this.categories, this.activeCategory);
-        this.ui.renderCategorySelect(this.categories);
-        this.ui.setActiveCategory(this.activeCategory, this.categories);
+        try {
+            const displayCategories = [
+                ...this.categories,
+                ...(this.comingSoonCategories || [])
+            ];
+            this.ui.renderCategories?.(displayCategories, this.activeCategory);
+            this.ui.renderHeroCategories?.(this.categories, this.activeCategory);
+            this.ui.renderCategoryMenu?.(this.categories, this.activeCategory);
+            this.ui.renderCategorySelect?.(this.categories);
+            this.ui.setActiveCategory?.(this.activeCategory, this.categories);
+        } catch (error) {
+            console.warn('renderCategorySurfaces failed:', error);
+        }
     }
 
     async handleCategorySelect(category) {
@@ -2061,7 +2073,7 @@ class App {
         }
 
         this.lastDecisionResult = result;
-        this.ui.renderDecisionResults(result);
+        this.ui.renderDecisionResults?.(result);
         const savedToHistory = this.saveDecisionHistory(result);
         this.ui.showSuccess(savedToHistory ? 'Karar sonucu geçmişinize kaydedildi.' : 'Sonuç hazır. Geçmişe kaydetmek için giriş yapın.');
     }
@@ -2886,17 +2898,22 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     loadDecisionHistory() {
-        const storageKey = this.getUserHistoryStorageKey(STORAGE_KEYS.DECISION_HISTORY);
-        if (!storageKey) {
-            this.decisionHistory = [];
-            this.ui.renderHistoryAuthGate?.();
-            return;
-        }
+        try {
+            const storageKey = this.getUserHistoryStorageKey(STORAGE_KEYS.DECISION_HISTORY);
+            if (!storageKey) {
+                this.decisionHistory = [];
+                this.ui.renderHistoryAuthGate?.();
+                return;
+            }
 
-        this.decisionHistory = this.readStoredArray(storageKey);
-        this.ui.renderDecisionHistory(this.decisionHistory);
-        this.injectDecisionHistoryUpsell();
-        this.injectDecisionHistoryProductFeedback();
+            this.decisionHistory = this.readStoredArray(storageKey);
+            this.ui.renderDecisionHistory?.(this.decisionHistory);
+            this.injectDecisionHistoryUpsell();
+            this.injectDecisionHistoryProductFeedback();
+        } catch (error) {
+            console.warn('loadDecisionHistory failed:', error);
+            this.decisionHistory = this.decisionHistory || [];
+        }
     }
 
     async injectDecisionHistoryProductFeedback() {
@@ -2952,7 +2969,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const filtered = [record, ...history.filter((item) => item.id !== record.id)].slice(0, 12);
         this.writeStoredValue(storageKey, filtered);
         this.decisionHistory = filtered;
-        this.ui.renderDecisionHistory(this.decisionHistory);
+        this.ui.renderDecisionHistory?.(this.decisionHistory);
         this.injectDecisionHistoryUpsell();
         this.saveSearchHistory(`Karar Asistanı: ${result.categoryName} - ${topPick?.name || 'Sonuç'}`);
         return true;
@@ -2996,7 +3013,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.renderDecisionAssistant();
         const result = this.buildDecisionResult(this.getResolvedDecisionAssistantConfig()[this.assistantCategory], this.assistantAnswers);
         this.lastDecisionResult = result;
-        this.ui.renderDecisionResults(result);
+        this.ui.renderDecisionResults?.(result);
     }
 
     deleteDecision(decisionId) {
@@ -3008,7 +3025,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         this.decisionHistory = this.decisionHistory.filter((item) => item.id !== decisionId);
         this.writeStoredValue(storageKey, this.decisionHistory);
-        this.ui.renderDecisionHistory(this.decisionHistory);
+        this.ui.renderDecisionHistory?.(this.decisionHistory);
         this.ui.showSuccess('Karar geçmişten silindi.');
     }
 
