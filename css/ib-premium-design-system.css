@@ -101,12 +101,20 @@ body.ib-enterprise textarea:focus-visible {
   outline-offset: 2px;
 }
 
-body.ib-enterprise .btn-primary,
-body.ib-premium-route-active .btn-primary {
+html:not(.ib-ds-v4) body.ib-enterprise .btn-primary,
+html:not(.ib-ds-v4) body.ib-premium-route-active .btn-primary {
   background: linear-gradient(135deg, #2563eb 0%, #0d9488 100%) !important;
   border: 1px solid rgba(37, 99, 235, 0.2) !important;
   color: #f8fbff !important;
   box-shadow: 0 12px 32px rgba(37, 99, 235, 0.28);
+}
+
+html.ib-ds-v4 body.ib-enterprise .btn-primary,
+html.ib-ds-v4 body.ib-premium-route-active .btn-primary {
+  background: var(--color-accent, #2563eb);
+  border: 1px solid var(--color-accent, #2563eb);
+  color: #fff;
+  box-shadow: none;
 }
 
 body.ib-enterprise .btn-outline,
@@ -142,23 +150,23 @@ body.ib-enterprise .btn-sm {
 }
 
 /* —— Premium cards (shared surfaces) —— */
-body.ib-enterprise .trust-card,
-body.ib-enterprise .how-step,
-body.ib-enterprise .category-card,
-body.ib-enterprise .step-card,
-body.ib-enterprise .ib-use-case-card,
-body.ib-enterprise .ib-content-hub-nav-card,
-body.ib-enterprise .ib-content-hub-preview-col,
-body.ib-enterprise .ib-content-detail-card,
-body.ib-enterprise .ib-sample-preview-panel,
-body.ib-enterprise .ib-home-auto-bridge-panel,
-body.ib-enterprise .listing-card,
-body.ib-enterprise .add-listing-card,
-body.ib-enterprise .ib-faq-item,
-body.ib-enterprise .partner-enterprise-features li,
-body.ib-premium-route-active .ib-premium-step-list li,
-body.ib-premium-route-active .revenue-pricing-grid article,
-body.ib-premium-route-active .ib-methodology-steps li {
+html:not(.ib-ds-v4) body.ib-enterprise .trust-card,
+html:not(.ib-ds-v4) body.ib-enterprise .how-step,
+html:not(.ib-ds-v4) body.ib-enterprise .category-card,
+html:not(.ib-ds-v4) body.ib-enterprise .step-card,
+html:not(.ib-ds-v4) body.ib-enterprise .ib-use-case-card,
+html:not(.ib-ds-v4) body.ib-enterprise .ib-content-hub-nav-card,
+html:not(.ib-ds-v4) body.ib-enterprise .ib-content-hub-preview-col,
+html:not(.ib-ds-v4) body.ib-enterprise .ib-content-detail-card,
+html:not(.ib-ds-v4) body.ib-enterprise .ib-sample-preview-panel,
+html:not(.ib-ds-v4) body.ib-enterprise .ib-home-auto-bridge-panel,
+html:not(.ib-ds-v4) body.ib-enterprise .listing-card,
+html:not(.ib-ds-v4) body.ib-enterprise .add-listing-card,
+html:not(.ib-ds-v4) body.ib-enterprise .ib-faq-item,
+html:not(.ib-ds-v4) body.ib-enterprise .partner-enterprise-features li,
+html:not(.ib-ds-v4) body.ib-premium-route-active .ib-premium-step-list li,
+html:not(.ib-ds-v4) body.ib-premium-route-active .revenue-pricing-grid article,
+html:not(.ib-ds-v4) body.ib-premium-route-active .ib-methodology-steps li {
   border: 1px solid var(--ib-ds-border) !important;
   border-radius: var(--ib-ds-radius-card) !important;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.9)) !important;
@@ -166,12 +174,12 @@ body.ib-premium-route-active .ib-methodology-steps li {
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
-body.ib-enterprise .trust-card:hover,
-body.ib-enterprise .how-step:hover,
-body.ib-enterprise .category-card:hover:not(.is-coming-soon),
-body.ib-enterprise .ib-use-case-card:hover,
-body.ib-enterprise .ib-content-hub-nav-card:hover,
-body.ib-enterprise .listing-card:hover {
+html:not(.ib-ds-v4) body.ib-enterprise .trust-card:hover,
+html:not(.ib-ds-v4) body.ib-enterprise .how-step:hover,
+html:not(.ib-ds-v4) body.ib-enterprise .category-card:hover:not(.is-coming-soon),
+html:not(.ib-ds-v4) body.ib-enterprise .ib-use-case-card:hover,
+html:not(.ib-ds-v4) body.ib-enterprise .ib-content-hub-nav-card:hover,
+html:not(.ib-ds-v4) body.ib-enterprise .listing-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--ib-ds-shadow-card-hover) !important;
   border-color: rgba(37, 99, 235, 0.24) !important;

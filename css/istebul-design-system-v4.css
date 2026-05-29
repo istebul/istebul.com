@@ -1,7 +1,7 @@
 /**
  * isteBul Design System v4
- * Light Premium — Apple / Linear / Stripe / Ramp inspired
- * Visual-only layer; do not change layout contracts or JS hooks.
+ * Light Premium — primary visual source when html.ib-ds-v4 is set.
+ * Legacy dark/gradient layers are gated with html:not(.ib-ds-v4) in source CSS.
  */
 
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');
@@ -26,7 +26,6 @@
   --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  /* Legacy aliases */
   --primary-color: var(--color-accent);
   --primary-dark: #1d4ed8;
   --background-color: var(--color-bg);
@@ -38,10 +37,8 @@
   --success-color: var(--color-success);
   --warning-color: var(--color-warning);
   --error-color: var(--color-danger);
-  --radius-card: 24px;
   --shadow: var(--shadow-card);
   --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.06);
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.03);
   --ib-ds-radius-card: 24px;
   --ib-ds-shadow-card: var(--shadow-card);
   --ib-ds-border: var(--color-border);
@@ -95,7 +92,7 @@ html.ib-ds-v4 .ib-premium-dashboard__band {
   color: var(--color-text);
 }
 
-/* —— Cards —— */
+/* Cards */
 html.ib-ds-v4 .card,
 html.ib-ds-v4 .glass-card,
 html.ib-ds-v4 .ib-example-card,
@@ -114,11 +111,11 @@ html.ib-ds-v4 .housing-hero .glass-card,
 html.ib-ds-v4 .login-box,
 html.ib-ds-v4 .admin-card,
 html.ib-ds-v4 .stat-card {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: var(--radius-card) !important;
-  box-shadow: var(--shadow-card) !important;
-  background-image: none !important;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  background-image: none;
 }
 
 html.ib-ds-v4 .ib-category-showcase:hover,
@@ -127,65 +124,117 @@ html.ib-ds-v4 .how-step:hover,
 html.ib-ds-v4 .pricing-card:hover {
   transform: translateY(-2px);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* —— Hero light —— */
+/* Hero light */
 html.ib-ds-v4 #home.ib-hero-v4,
 html.ib-ds-v4 #home.ib-hero-premium-dark,
+html.ib-ds-v4 #home.ib-hero-light-premium,
 html.ib-ds-v4 .ib-hero-light-premium {
-  background: var(--color-bg) !important;
-  color: var(--color-text) !important;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 html.ib-ds-v4 #home .hero-eyebrow,
 html.ib-ds-v4 #home .ib-hero-v4-tagline {
-  color: var(--color-accent) !important;
+  color: var(--color-accent);
 }
 
 html.ib-ds-v4 #home .hero-content h1,
 html.ib-ds-v4 #home .hero-lead,
 html.ib-ds-v4 #home .ib-hero-v4-how,
 html.ib-ds-v4 #home .ib-hero-v4-trust li {
-  color: var(--color-text) !important;
+  color: var(--color-text);
 }
 
 html.ib-ds-v4 #home .ib-hero-v4-how {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
-  color: var(--color-muted) !important;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted);
 }
 
 html.ib-ds-v4 #home .ib-hero-v4-cat {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
-  color: var(--color-text) !important;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
   box-shadow: var(--shadow-card);
 }
 
 html.ib-ds-v4 #home .ib-hero-v4-cat small {
-  color: var(--color-muted) !important;
+  color: var(--color-muted);
 }
 
 html.ib-ds-v4 .ib-glass-dashboard,
 html.ib-ds-v4 .decision-preview.ib-ai-dashboard {
-  background: rgba(255, 255, 255, 0.92) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: var(--radius-card) !important;
-  box-shadow: var(--shadow-card) !important;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+
+html.ib-ds-v4 body.ib-enterprise #home .ib-glass-dashboard {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-score-ring {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+}
+
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-score-ring-inner {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  box-shadow: none;
+}
+
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-score-ring-inner strong,
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-stat strong {
+  color: var(--color-text);
+}
+
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-score-label,
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-score-tier,
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-stat span,
+html.ib-ds-v4 body.ib-enterprise #home .ib-glass-dashboard .preview-category-label {
+  color: var(--color-muted);
+}
+
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-stat {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  box-shadow: none;
+}
+
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-finance,
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-pick {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+}
+
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-finance-table th,
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-finance-table td {
+  color: var(--color-muted);
+  border-color: var(--color-border);
+}
+
+html.ib-ds-v4 body.ib-enterprise #home .ib-dash-pick-name {
+  color: var(--color-text);
 }
 
 html.ib-ds-v4 .ib-glass-dashboard .preview-category-label,
 html.ib-ds-v4 .ib-dash-score-label,
 html.ib-ds-v4 .ib-dash-stat span {
-  color: var(--color-muted) !important;
+  color: var(--color-muted);
 }
 
 html.ib-ds-v4 .ib-dash-score-ring-inner strong,
 html.ib-ds-v4 .ib-dash-stat strong {
-  color: var(--color-text) !important;
+  color: var(--color-text);
 }
 
 html.ib-ds-v4 .ib-dash-chart--donut .ib-dash-donut,
@@ -193,51 +242,72 @@ html.ib-ds-v4 .ib-dash-line-chart polyline {
   opacity: 0.85;
 }
 
-/* —— Sections (no dark bands) —— */
+/* Sections */
 html.ib-ds-v4 .ib-how-premium-dark,
 html.ib-ds-v4 .ib-trust-premium-dark,
+html.ib-ds-v4 .ib-home-categories-premium,
 html.ib-ds-v4 .section-bg,
 html.ib-ds-v4 .section-surface {
-  background: var(--color-bg) !important;
-  color: var(--color-text) !important;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
-html.ib-ds-v4 .section-kicker {
-  color: var(--color-accent) !important;
+html.ib-ds-v4 .ib-how-premium-dark h2,
+html.ib-ds-v4 .ib-how-premium-dark h3,
+html.ib-ds-v4 .ib-trust-premium-dark h3,
+html.ib-ds-v4 .ib-home-categories-premium h2 {
+  color: var(--color-text);
 }
 
-/* —— Nav —— */
+html.ib-ds-v4 .ib-how-premium-dark .how-step,
+html.ib-ds-v4 .ib-trust-strip-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+html.ib-ds-v4 .ib-how-premium-dark .how-step p,
+html.ib-ds-v4 .ib-trust-strip-card p,
+html.ib-ds-v4 .ib-section-lead-muted {
+  color: var(--color-muted);
+}
+
+html.ib-ds-v4 .section-kicker,
+html.ib-ds-v4 .ib-home-categories-premium .section-kicker {
+  color: var(--color-accent);
+}
+
+/* Nav */
 html.ib-ds-v4 .navbar,
 html.ib-ds-v4 .auto-header,
 html.ib-ds-v4 .housing-header,
 html.ib-ds-v4 .vacation-header,
 html.ib-ds-v4 .corporate-header {
-  background: rgba(250, 250, 248, 0.92) !important;
-  border-bottom: 1px solid var(--color-border) !important;
-  box-shadow: none !important;
+  background: rgba(250, 250, 248, 0.92);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: none;
   backdrop-filter: blur(12px);
 }
 
 html.ib-ds-v4 .nav-link,
 html.ib-ds-v4 .nav-dropdown-link,
 html.ib-ds-v4 .corporate-nav a {
-  color: var(--color-muted) !important;
+  color: var(--color-muted);
 }
 
 html.ib-ds-v4 .nav-link:hover,
-html.ib-ds-v4 .nav-dropdown-link:hover,
-html.ib-ds-v4 .nav-dropdown-content {
-  color: var(--color-text) !important;
+html.ib-ds-v4 .nav-dropdown-link:hover {
+  color: var(--color-text);
 }
 
 html.ib-ds-v4 .nav-dropdown-content {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  color: var(--color-text);
 }
 
-/* —— Buttons —— */
+/* Buttons */
 html.ib-ds-v4 .btn {
   min-height: 44px;
   border-radius: 12px;
@@ -247,17 +317,18 @@ html.ib-ds-v4 .btn {
 }
 
 html.ib-ds-v4 .btn-primary {
-  background: var(--color-accent) !important;
-  border-color: var(--color-accent) !important;
-  color: #fff !important;
-  box-shadow: none !important;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+  background-image: none;
+  box-shadow: none;
 }
 
 html.ib-ds-v4 .btn-outline,
 html.ib-ds-v4 .ib-hero-btn-ghost {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
-  color: var(--color-text) !important;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 
 html.ib-ds-v4 .btn:focus-visible,
@@ -270,7 +341,7 @@ html.ib-ds-v4 textarea:focus-visible {
   outline-offset: 2px;
 }
 
-/* —— Forms —— */
+/* Forms */
 html.ib-ds-v4 input,
 html.ib-ds-v4 select,
 html.ib-ds-v4 textarea {
@@ -281,9 +352,9 @@ html.ib-ds-v4 textarea {
   min-height: 44px;
 }
 
-/* —— Category grid (4 live) —— */
+/* Category grid */
 html.ib-ds-v4 .ib-category-showcase-live {
-  display: grid !important;
+  display: grid;
   gap: 1rem;
   grid-template-columns: 1fr;
 }
@@ -306,26 +377,26 @@ html.ib-ds-v4 .ib-category-showcase-cta {
   color: var(--color-accent);
 }
 
-/* —— Results dashboards —— */
+/* Results dashboards */
 html.ib-ds-v4 .ib-premium-dashboard {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
-  box-shadow: var(--shadow-card) !important;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
 }
 
 html.ib-ds-v4 body.finans-page .ib-premium-dashboard,
 html.ib-ds-v4 body.vacation-page .ib-premium-dashboard,
 html.ib-ds-v4 body.finans-page .ib-premium-kpi,
 html.ib-ds-v4 body.vacation-page .ib-premium-kpi {
-  background: var(--color-surface) !important;
-  color: var(--color-text) !important;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 html.ib-ds-v4 body.finans-page .ib-premium-dashboard__title,
 html.ib-ds-v4 body.vacation-page .ib-premium-dashboard__title,
 html.ib-ds-v4 body.finans-page .ib-premium-kpi strong,
 html.ib-ds-v4 body.vacation-page .ib-premium-kpi strong {
-  color: var(--color-text) !important;
+  color: var(--color-text);
 }
 
 html.ib-ds-v4 .auto-results-v2-root,
@@ -333,9 +404,9 @@ html.ib-ds-v4 .auto-results-guide {
   color: var(--color-text);
 }
 
-/* —— Footer —— */
+/* Footer */
 html.ib-ds-v4 .footer.footer-premium {
-  background: var(--color-bg) !important;
+  background: var(--color-bg);
   border-top: 1px solid var(--color-border);
   color: var(--color-muted);
 }
@@ -361,11 +432,13 @@ html.ib-ds-v4 .footer-content {
   }
 }
 
-/* —— Admin (light shell, keep layout) —— */
-html.ib-ds-v4 body.admin-enterprise {
+/* Admin shell tokens (inline styles use these vars) */
+html.ib-ds-v4 body.admin-enterprise,
+html.ib-ds-v4 {
   --bg: #fafaf8;
   --surface: #ffffff;
   --surface2: #f3f4f6;
+  --card: #ffffff;
   --border: #e5e7eb;
   --accent: #2563eb;
   --accent2: #3b82f6;
@@ -373,23 +446,38 @@ html.ib-ds-v4 body.admin-enterprise {
   --muted: #6b7280;
   --danger: #dc2626;
   --warning: #f59e0b;
-  background: var(--bg) !important;
-  color: var(--text) !important;
+  --radius: 12px;
+}
+
+html.ib-ds-v4 body.admin-enterprise {
+  background: var(--bg);
+  color: var(--text);
 }
 
 html.ib-ds-v4 .sidebar {
-  background: var(--surface) !important;
-  border-right: 1px solid var(--border) !important;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   box-shadow: var(--shadow-card);
 }
 
 html.ib-ds-v4 .main-content,
-html.ib-ds-v4 .admin-topbar {
-  background: var(--bg) !important;
+html.ib-ds-v4 .admin-topbar,
+html.ib-ds-v4 .main {
+  background: var(--bg);
 }
 
 html.ib-ds-v4 .admin-topbar {
-  border-bottom: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border);
+}
+
+html.ib-ds-v4 .nav-item.active {
+  background: #eff6ff;
+  color: var(--accent);
+  border-color: #bfdbfe;
+}
+
+html.ib-ds-v4 .table tr:hover td {
+  background: #f9fafb;
 }
 
 html.ib-ds-v4 table {
@@ -407,9 +495,24 @@ html.ib-ds-v4 td {
   border-color: var(--border);
 }
 
-/* —— Modals / empty / loading —— */
+html.ib-ds-v4 .card,
+html.ib-ds-v4 .stat-card,
+html.ib-ds-v4 .login-box {
+  border-radius: var(--radius-card);
+}
+
+html.ib-ds-v4 .btn-primary {
+  background: var(--accent);
+}
+
+html.ib-ds-v4 .logo-dot,
+html.ib-ds-v4 .user-avatar {
+  background: var(--accent);
+}
+
+/* Modals */
 html.ib-ds-v4 .modal-overlay {
-  background: rgba(17, 24, 39, 0.4) !important;
+  background: rgba(17, 24, 39, 0.4);
 }
 
 html.ib-ds-v4 .empty,
@@ -418,27 +521,22 @@ html.ib-ds-v4 [aria-busy='true'] {
   color: var(--color-muted);
 }
 
-/* —— Disallow playful motion —— */
+/* Motion / glow cleanup */
 html.ib-ds-v4 [class*='bounce'],
 html.ib-ds-v4 [class*='spin'],
 html.ib-ds-v4 [class*='flip'],
 html.ib-ds-v4 .animate-bounce,
 html.ib-ds-v4 .animate-spin {
-  animation: none !important;
+  animation: none;
 }
 
 html.ib-ds-v4 [class*='glow'],
 html.ib-ds-v4 [class*='neon'],
 html.ib-ds-v4 .ib-hero-premium-dark::before {
-  display: none !important;
+  display: none;
 }
 
-html.ib-ds-v4 .btn-primary {
-  background-image: none !important;
-  box-shadow: none !important;
-}
-
-/* —— Responsive guard —— */
+/* Responsive */
 html.ib-ds-v4 .container,
 html.ib-ds-v4 main,
 html.ib-ds-v4 .nav-container {
@@ -459,7 +557,7 @@ html.ib-ds-v4 .admin-table-wrap {
   }
 }
 
-/* —— SEO / corporate pages —— */
+/* SEO / corporate */
 html.ib-ds-v4.seo-page,
 html.ib-ds-v4 .seo-page,
 html.ib-ds-v4 .corporate-page {
@@ -472,37 +570,15 @@ html.ib-ds-v4 .corporate-header {
   border-bottom: 1px solid var(--color-border);
 }
 
-/* —— Vertical heroes (tatil / finans light) —— */
+/* Vertical pages */
 html.ib-ds-v4 body.vacation-page,
 html.ib-ds-v4 body.finans-page,
 html.ib-ds-v4 body.housing-page {
-  background: var(--color-bg) !important;
-  color: var(--color-text) !important;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
-html.ib-ds-v4 .vacation-hero,
-html.ib-ds-v4 .finans-hero,
-html.ib-ds-v4 .housing-hero {
-  background: var(--color-bg) !important;
-  background-image: none !important;
-}
-
-html.ib-ds-v4 .vacation-hero-copy h1,
-html.ib-ds-v4 .finans-hero-copy h1,
-html.ib-ds-v4 .housing-hero h1,
-html.ib-ds-v4 .vacation-hero-copy p,
-html.ib-ds-v4 .finans-hero-copy p {
-  color: var(--color-text) !important;
-}
-
-html.ib-ds-v4 .vacation-hero-overlay,
-html.ib-ds-v4 .finans-hero-overlay,
-html.ib-ds-v4 .vacation-hero-media::after {
-  opacity: 0.15 !important;
-  background: linear-gradient(180deg, rgba(250, 250, 248, 0.2), rgba(250, 250, 248, 0.85)) !important;
-}
-
-/* PDF preview areas */
+/* PDF preview */
 html.ib-ds-v4 .pdf-preview,
 html.ib-ds-v4 [data-pdf-preview],
 html.ib-ds-v4 .ib-pdf-report-preview {

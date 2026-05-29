@@ -426,3 +426,73 @@ body.finans-page .finans-value-card p {
     justify-self: start;
   }
 }
+
+/* Design System v4 — light finans hero */
+html.ib-ds-v4 body.finans-page {
+  --finans-glass: #ffffff;
+  --finans-glass-border: #e5e7eb;
+  background: #fafaf8;
+  color: #111827;
+}
+
+html.ib-ds-v4 body.finans-page.vacation-page {
+  background: #fafaf8;
+}
+
+html.ib-ds-v4 body.finans-page .finans-hero {
+  background: #fafaf8;
+  color: #111827;
+}
+
+html.ib-ds-v4 body.finans-page .finans-hero-bg,
+html.ib-ds-v4 body.finans-page .finans-hero-overlay::after {
+  background: none;
+}
+
+html.ib-ds-v4 body.finans-page .finans-hero-overlay {
+  background: linear-gradient(
+    105deg,
+    rgba(250, 250, 248, 0.94) 0%,
+    rgba(250, 250, 248, 0.5) 50%,
+    transparent 70%
+  );
+}
+
+html.ib-ds-v4 body.finans-page .finans-hero-badge {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #2563eb;
+}
+
+html.ib-ds-v4 body.finans-page .finans-hero h1,
+html.ib-ds-v4 body.finans-page .finans-hero-lead,
+html.ib-ds-v4 body.finans-page .finans-hero-disclaimer {
+  color: #111827;
+}
+
+html.ib-ds-v4 body.finans-page .finans-hero-lead,
+html.ib-ds-v4 body.finans-page .finans-hero-disclaimer {
+  color: #6b7280;
+}
+
+html.ib-ds-v4 body.finans-page .finans-hero-actions .btn-primary {
+  background: #2563eb;
+  box-shadow: none;
+}
+
+html.ib-ds-v4 body.finans-page .finans-hero-actions .btn-ghost {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+html.ib-ds-v4 body.finans-page .finans-hero-dashboard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  backdrop-filter: none;
+}
+
+html.ib-ds-v4 body.finans-page .finans-hero-holo {
+  display: none;
+}

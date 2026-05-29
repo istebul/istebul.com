@@ -1470,3 +1470,69 @@ body.vacation-page {
     position: relative;
   }
 }
+
+/* Design System v4 — light vacation shell (natural cascade) */
+html.ib-ds-v4 body.vacation-page {
+  color: #111827;
+  background: #fafaf8;
+}
+
+html.ib-ds-v4 body.vacation-page .vacation-hero {
+  color: #111827;
+  background: #fafaf8;
+  min-height: auto;
+  padding: clamp(32px, 4vw, 48px) 0;
+  align-items: center;
+}
+
+html.ib-ds-v4 body.vacation-page .vacation-hero-overlay {
+  background: linear-gradient(
+    100deg,
+    rgba(250, 250, 248, 0.92) 0%,
+    rgba(250, 250, 248, 0.55) 42%,
+    transparent 58%
+  );
+}
+
+html.ib-ds-v4 body.vacation-page .vacation-hero-overlay::after {
+  background: none;
+}
+
+html.ib-ds-v4 body.vacation-page .vacation-hero-media img {
+  opacity: 0.35;
+  object-position: center;
+}
+
+html.ib-ds-v4 body.vacation-page .vacation-hero-copy h1,
+html.ib-ds-v4 body.vacation-page .vacation-hero-lead,
+html.ib-ds-v4 body.vacation-page .vacation-hero-badge {
+  color: #111827;
+}
+
+html.ib-ds-v4 body.vacation-page .vacation-hero-badge {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+html.ib-ds-v4 body.vacation-page .vacation-hero-dashboard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  backdrop-filter: none;
+}
+
+html.ib-ds-v4 body.vacation-page .vh-card {
+  background: #fafaf8;
+  border-color: #e5e7eb;
+  color: #111827;
+}
+
+@media (max-width: 767px) {
+  html.ib-ds-v4 body.vacation-page .vacation-hero-inner {
+    grid-template-columns: 1fr;
+  }
+
+  html.ib-ds-v4 body.vacation-page .vacation-hero-overlay {
+    background: linear-gradient(180deg, rgba(250, 250, 248, 0.95), rgba(250, 250, 248, 0.7));
+  }
+}

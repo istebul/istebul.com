@@ -124,10 +124,10 @@ h4 {
   font-size: clamp(0.95rem, 1.6vw, 1.05rem);
 }
 
-.ib-hero-premium-dark .hero-lead,
-.ib-hero-premium-dark .ib-hero-v4-sub,
-.ib-how-premium-dark p,
-.ib-trust-premium-dark p {
+html:not(.ib-ds-v4) .ib-hero-premium-dark .hero-lead,
+html:not(.ib-ds-v4) .ib-hero-premium-dark .ib-hero-v4-sub,
+html:not(.ib-ds-v4) .ib-how-premium-dark p,
+html:not(.ib-ds-v4) .ib-trust-premium-dark p {
   color: color-mix(in srgb, #e2e8f0 92%, #fff);
 }
 

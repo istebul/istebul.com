@@ -1,5 +1,6 @@
 /**
  * Hero V4 — 3-second value prop: what / problem / how + live categories + trust.
+ * Light Premium tokens (Design System v4).
  */
 
 .ib-hero-v4 .hero-container.ib-hero-v4-grid {
@@ -24,12 +25,13 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #93c5fd;
+  color: var(--color-accent, #2563eb);
 }
 
 .ib-hero-v4 .hero-content h1 {
   margin: 0 0 0.75rem;
   max-width: 18ch;
+  color: var(--color-text, #111827);
 }
 
 .ib-hero-v4-sub {
@@ -37,17 +39,18 @@
   font-size: clamp(1rem, 2vw, 1.15rem);
   line-height: 1.55;
   max-width: 42rem;
+  color: var(--color-text, #111827);
 }
 
 .ib-hero-v4-how {
   margin: 0 0 1.15rem;
   padding: 0.55rem 0.85rem;
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 0.35);
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
   font-size: 0.88rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--color-muted, #6b7280);
   display: inline-block;
   max-width: 100%;
 }
@@ -79,19 +82,20 @@
   gap: 0.2rem;
   padding: 0.65rem 0.75rem;
   border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  background: rgba(15, 23, 42, 0.45);
-  color: #f8fafc;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text, #111827);
   text-decoration: none;
   font-weight: 600;
   font-size: 0.88rem;
   min-width: 0;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: border-color 200ms ease-out, background 200ms ease-out, box-shadow 200ms ease-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 a.ib-hero-v4-cat:hover {
-  border-color: rgba(96, 165, 250, 0.65);
-  background: rgba(37, 99, 235, 0.22);
+  border-color: rgba(37, 99, 235, 0.35);
+  background: #f8fafc;
 }
 
 .ib-hero-v4-cat.is-live::before {
@@ -99,8 +103,8 @@ a.ib-hero-v4-cat:hover {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4ade80;
-  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
   margin-bottom: 0.15rem;
 }
 
@@ -112,7 +116,7 @@ a.ib-hero-v4-cat:hover {
 .ib-hero-v4-cat small {
   font-size: 0.72rem;
   font-weight: 500;
-  color: #cbd5e1;
+  color: var(--color-muted, #6b7280);
   line-height: 1.35;
 }
 
@@ -125,9 +129,9 @@ a.ib-hero-v4-cat:hover {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: rgba(251, 191, 36, 0.2);
-  color: #fde68a;
-  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
 .ib-hero-v4-trust {
@@ -146,12 +150,12 @@ a.ib-hero-v4-cat:hover {
   gap: 0.35rem;
   font-size: 0.78rem;
   font-weight: 600;
-  color: #cbd5e1;
+  color: var(--color-muted, #6b7280);
 }
 
 .ib-hero-v4-trust li::before {
   content: '✓';
-  color: #4ade80;
+  color: #16a34a;
   font-weight: 800;
 }
 
@@ -160,7 +164,7 @@ a.ib-hero-v4-cat:hover {
 }
 
 .ib-hero-v4 .ib-hero-cta-hint {
-  color: #94a3b8;
+  color: var(--color-muted, #6b7280);
   font-size: 0.78rem;
 }
 
@@ -169,4 +173,38 @@ a.ib-hero-v4-cat:hover {
     order: -1;
     min-height: clamp(220px, 50vw, 320px);
   }
+}
+
+/* Legacy dark hero polish only when v4 is off */
+html:not(.ib-ds-v4) .ib-hero-v4-tagline {
+  color: #93c5fd;
+}
+
+html:not(.ib-ds-v4) .ib-hero-v4-how {
+  background: rgba(15, 23, 42, 0.35);
+  border-color: rgba(148, 163, 184, 0.25);
+  color: #e2e8f0;
+}
+
+html:not(.ib-ds-v4) .ib-hero-v4-cat {
+  background: rgba(15, 23, 42, 0.45);
+  border-color: rgba(148, 163, 184, 0.28);
+  color: #f8fafc;
+  box-shadow: none;
+}
+
+html:not(.ib-ds-v4) a.ib-hero-v4-cat:hover {
+  border-color: rgba(96, 165, 250, 0.65);
+  background: rgba(37, 99, 235, 0.22);
+}
+
+html:not(.ib-ds-v4) .ib-hero-v4-cat small,
+html:not(.ib-ds-v4) .ib-hero-v4-trust li {
+  color: #cbd5e1;
+}
+
+html:not(.ib-ds-v4) .ib-soon-badge {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.35);
 }
