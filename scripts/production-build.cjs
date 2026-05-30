@@ -266,6 +266,9 @@ esbuild.buildSync({
   outfile: verticalLocaleShellOut
 });
 
+const routeBootstrapOut = path.join(dist, 'js/runtime/route-bootstrap-head.js');
+writeRouteBootstrapFile(routeBootstrapOut);
+
 const autoDocumentReadySrc = path.join(root, 'js/auto/auto-document-ready.js');
 if (fs.existsSync(autoDocumentReadySrc)) {
   const autoReadyCode = esbuild.transformSync(fs.readFileSync(autoDocumentReadySrc, 'utf8'), {

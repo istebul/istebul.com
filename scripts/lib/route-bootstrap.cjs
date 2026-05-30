@@ -38,7 +38,7 @@ function injectRouteBootstrap(html) {
   }
 
   const block = `<!-- ROUTE_BOOTSTRAP_START -->
-    <script src="js/runtime/route-bootstrap-head.js"></script>
+    <script src="/js/runtime/route-bootstrap-head.js"></script>
     <!-- ROUTE_BOOTSTRAP_END -->`;
 
   return html.replace(BOOTSTRAP_MARKERS, block);
