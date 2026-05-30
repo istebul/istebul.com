@@ -75,18 +75,7 @@ html.ib-ds-v4.ib-premium-v7 #home .ib-dash-stat strong {
   word-break: break-word;
 }
 
-/* —— Category grid: progressive columns (avoid 5-col squeeze on tablet) —— */
-@media (min-width: 1024px) and (max-width: 1199px) {
-  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1200px) {
-  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-}
+/* —— Category grid: 4 live + 2 soon (see home-category-cards-premium-v2.css) —— */
 
 /* —— Feature strip: wrap long copy —— */
 html.ib-ds-v4.ib-premium-v7 .ib-features-strip-item {

@@ -13,7 +13,8 @@ const REQUIRED_KEYS = [
   'home.heroTitle',
   'features.stripAria',
   'categories.araba.name',
-  'vertical.konutHeroTitle'
+  'categories.kasko.name',
+  'home.analyzeAction',
 ];
 
 function getNested(obj, path) {

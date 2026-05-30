@@ -2,10 +2,26 @@ import {
   HOME_DECISION_CATEGORIES,
   isHomeCategoryActive
 } from '../platform/home-category-config.js';
+import { getHomeCategoryCardImage } from '../platform/home-category-visuals.js';
+import { marketingCopy } from '../features/i18n/marketing-copy.js';
 
-const FEATURED_CATEGORY_IDS = new Set(['araba', 'konut', 'tatil', 'finansman', 'sigorta']);
+const FEATURED_CATEGORY_IDS = new Set([
+  'araba',
+  'konut',
+  'tatil',
+  'finansman',
+  'sigorta',
+  'kasko'
+]);
 
-const CATEGORY_DISPLAY_ORDER = ['araba', 'tatil', 'konut', 'finansman', 'sigorta'];
+const CATEGORY_DISPLAY_ORDER = [
+  'araba',
+  'tatil',
+  'konut',
+  'finansman',
+  'sigorta',
+  'kasko'
+];
 
 const CATEGORY_ICONS = {
   araba:
@@ -17,11 +33,13 @@ const CATEGORY_ICONS = {
   finansman:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h18M5 10V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M5 10v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/><path d="M12 14v4"/></svg>',
   sigorta:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>'
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>',
+  kasko:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="M12 11v4"/><path d="M12 8h.01"/></svg>'
 };
 
 function categoryIconMarkup(categoryId) {
-  return CATEGORY_ICONS[categoryId] || '';
+  return CATEGORY_ICONS[categoryId] || CATEGORY_ICONS.sigorta;
 }
 
 function sortCategoriesForDisplay(categories) {
@@ -30,27 +48,32 @@ function sortCategoriesForDisplay(categories) {
   );
 }
 
-const CATEGORY_SHORT_NAMES = {
-  araba: 'Otomobil',
-  konut: 'Konut',
-  tatil: 'Tatil',
-  finansman: 'Finans',
-  sigorta: 'Sigorta',
-  kasko: 'Kasko'
-};
+function resolveLocaleId() {
+  return (
+    window.__ibI18n?.currentLang ||
+    document.documentElement.dataset.locale ||
+    'tr'
+  );
+}
 
-function translate(key, fallback = '') {
+function translate(key) {
   const result = window.__ibI18n?.t(key);
   if (result && result !== key) return result;
-  return fallback;
+  const locale = resolveLocaleId();
+  const keys = key.split('.');
+  let node = marketingCopy[locale] || marketingCopy.tr;
+  for (const part of keys) {
+    node = node?.[part];
+  }
+  return typeof node === 'string' ? node : key;
 }
 
 function categoryDisplayName(category) {
-  return translate(`categories.${category.id}.name`, categoryShortName(category));
+  return translate(`categories.${category.id}.name`);
 }
 
 function categoryDisplayDesc(category) {
-  return translate(`categories.${category.id}.desc`, category.description || '');
+  return translate(`categories.${category.id}.desc`);
 }
 
 function escapeHtml(str) {
@@ -61,15 +84,32 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function categoryShortName(category) {
-  return CATEGORY_SHORT_NAMES[category.id] || category.name;
+function renderCardImage(category, index, eager = false) {
+  const src = getHomeCategoryCardImage(category.id);
+  if (!src) return '<div class="ib-cat-mockup__bg" aria-hidden="true"></div>';
+  const loading = eager ? 'eager' : 'lazy';
+  const fetchPriority = eager ? 'high' : 'low';
+  return `
+    <div class="ib-cat-mockup__bg" aria-hidden="true">
+      <img
+        src="${escapeHtml(src)}"
+        alt=""
+        width="800"
+        height="500"
+        loading="${loading}"
+        decoding="async"
+        fetchpriority="${fetchPriority}"
+      />
+    </div>
+  `;
 }
 
 function renderActiveCard(category, index) {
   const score = category.sampleScore != null ? String(category.sampleScore) : '—';
   const title = categoryDisplayName(category);
   const desc = categoryDisplayDesc(category);
-  const analyzeLabel = translate('home.analyzeLink', 'Analiz Et →');
+  const analyzeLabel = translate('home.analyzeLink');
+  const analyzeAction = translate('home.analyzeAction');
   return `
     <a
       href="${escapeHtml(category.href)}"
@@ -78,16 +118,16 @@ function renderActiveCard(category, index) {
       data-native-route
       role="listitem"
       style="--ib-cat-i: ${index}"
-      aria-label="${escapeHtml(title)} — Analiz et"
+      aria-label="${escapeHtml(title)} — ${escapeHtml(analyzeAction)}"
     >
-      <div class="ib-cat-mockup__bg" aria-hidden="true"></div>
+      ${renderCardImage(category, index, index < 2)}
       <div class="ib-cat-mockup__theme" aria-hidden="true"></div>
       <div class="ib-cat-mockup__overlay" aria-hidden="true"></div>
       <div class="ib-cat-mockup__glow" aria-hidden="true"></div>
       <div class="ib-cat-mockup__body">
         <div class="ib-cat-mockup__top">
           <span class="ib-cat-mockup__icon">${categoryIconMarkup(category.id)}</span>
-          <span class="ib-cat-mockup__score">${escapeHtml(score)}/100</span>
+          <span class="ib-cat-mockup__score">${escapeHtml(score)}<span class="ib-cat-mockup__score-suffix">/100</span></span>
         </div>
         <div class="ib-cat-mockup__panel">
           <h3 class="ib-cat-mockup__title">${escapeHtml(title)}</h3>
@@ -102,17 +142,17 @@ function renderActiveCard(category, index) {
 function renderComingSoonCard(category, index) {
   const title = categoryDisplayName(category);
   const desc = categoryDisplayDesc(category);
-  const soonLabel = translate('home.soon', 'Yakında');
+  const soonLabel = translate('home.soon');
   return `
     <article
       class="ib-cat-mockup ib-cat-mockup--premium is-soon ib-cat-mockup--${escapeHtml(category.id)} is-coming-soon"
       data-category-id="${escapeHtml(category.id)}"
       role="listitem"
       style="--ib-cat-i: ${index}"
-      aria-label="${escapeHtml(title)} — yakında"
+      aria-label="${escapeHtml(title)} — ${escapeHtml(soonLabel)}"
     >
       <span class="ib-cat-mockup__soon-badge">${escapeHtml(soonLabel)}</span>
-      <div class="ib-cat-mockup__bg" aria-hidden="true"></div>
+      ${renderCardImage(category, index)}
       <div class="ib-cat-mockup__theme" aria-hidden="true"></div>
       <div class="ib-cat-mockup__overlay" aria-hidden="true"></div>
       <div class="ib-cat-mockup__body">
@@ -244,9 +284,9 @@ async function fetchVisibilitySettings() {
     const supabaseUrl = window.__env?.SUPABASE_URL;
     const supabaseAnonKey = window.__env?.SUPABASE_ANON_KEY;
     if (!supabaseUrl || !supabaseAnonKey) return {};
-    const keys = HOME_DECISION_CATEGORIES
-      .filter((category) => FEATURED_CATEGORY_IDS.has(category.id) && category.settingKey)
-      .map((category) => category.settingKey);
+    const keys = HOME_DECISION_CATEGORIES.filter(
+      (category) => FEATURED_CATEGORY_IDS.has(category.id) && category.settingKey
+    ).map((category) => category.settingKey);
     if (!keys.length) return {};
     const query = encodeURIComponent(`(${keys.join(',')})`);
     const endpoint = `${supabaseUrl}/rest/v1/site_settings?select=key,value&key=in.${query}`;
@@ -288,11 +328,18 @@ export async function mountHomeCategoryGrid() {
   const soonHtml = soonCategories
     .map((category, index) => renderComingSoonCard(category, activeCategories.length + index))
     .join('');
-  const gridAria = translate('home.categoriesGridAria', 'Karar kategorileri');
+  const gridAria = translate('home.categoriesGridAria');
+  const soonAria = translate('home.categoriesSoonAria');
   grid.innerHTML = `
-    <div class="ib-cat-mockup-shell" role="list" aria-label="${escapeHtml(gridAria)}">
-      ${liveHtml}
-      ${soonHtml}
+    <div class="ib-cat-mockup-shell">
+      <div class="ib-cat-mockup-shell__live" role="list" aria-label="${escapeHtml(gridAria)}">
+        ${liveHtml}
+      </div>
+      ${
+        soonHtml
+          ? `<div class="ib-cat-mockup-shell__soon" role="list" aria-label="${escapeHtml(soonAria)}">${soonHtml}</div>`
+          : ''
+      }
     </div>
   `;
 
@@ -319,5 +366,4 @@ export function initHomeCategories() {
   });
 }
 
-// Preserve modal export for tests / future interest CTA
 export { openInterestModal, ensureComingSoonModal };

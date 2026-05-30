@@ -153,20 +153,30 @@ html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup {
 }
 
 html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__live,
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__soon {
   display: grid;
-  grid-template-columns: 1fr;
   gap: 1rem;
 }
 
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__live {
+  grid-template-columns: 1fr;
+}
+
 @media (min-width: 768px) {
-  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell {
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__live {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 900px) {
-  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__live {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

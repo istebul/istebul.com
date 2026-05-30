@@ -54,8 +54,10 @@ export const marketingCopy = {
       costDistribution: 'Maliyet dağılımı',
       costTrend: '5 yıllık toplam maliyet projeksiyonu',
       analyzeLink: 'Analiz Et →',
+      analyzeAction: 'Analiz et',
       soon: 'Yakında',
-      categoriesGridAria: 'Karar kategorileri'
+      categoriesGridAria: 'Karar kategorileri',
+      categoriesSoonAria: 'Yakında açılacak kategoriler'
     },
     features: {
       stripAria: 'Platform özellikleri',
@@ -104,23 +106,27 @@ export const marketingCopy = {
     categories: {
       araba: {
         name: 'Otomobil',
-        desc: 'Bütçe, kullanım amacı, yakıt tercihi ve toplam sahip olma maliyetini birlikte analiz edin.'
+        desc: 'TCO, kredi ve yakıt — tek skorda birleşir.'
       },
       konut: {
         name: 'Konut',
-        desc: 'Bölge analizi, yatırım getirisi ve yaşam kalitesi değerlendirmesi.'
+        desc: 'Lokasyon, aidat ve kredi yükü bir arada.'
       },
       tatil: {
         name: 'Tatil',
-        desc: 'Bütçe, sezon, ulaşım, konaklama ve deneyim beklentisini birlikte karşılaştırın.'
+        desc: 'Bütçe, sezon ve konaklama dengesi.'
       },
       finansman: {
         name: 'Finans',
-        desc: 'Ödeme planı, nakit akışı, borç yükü ve geri ödeme riskini net görün.'
+        desc: 'Vade, faiz ve nakit akışı net görünür.'
       },
       sigorta: {
         name: 'Sigorta',
-        desc: 'Poliçe kapsamı, prim dengesi ve risk koruması için karar analizi.'
+        desc: 'Poliçe kapsamı ve prim dengesi analizi.'
+      },
+      kasko: {
+        name: 'Kasko',
+        desc: 'Teminat, prim ve araç profili değerlendirmesi.'
       }
     },
     vertical: {
@@ -190,8 +196,10 @@ export const marketingCopy = {
       costDistribution: 'Cost breakdown',
       costTrend: '5-year total cost projection',
       analyzeLink: 'Analyze →',
+      analyzeAction: 'Analyze',
       soon: 'Coming soon',
-      categoriesGridAria: 'Decision categories'
+      categoriesGridAria: 'Decision categories',
+      categoriesSoonAria: 'Categories launching soon'
     },
     features: {
       stripAria: 'Platform features',
@@ -240,23 +248,27 @@ export const marketingCopy = {
     categories: {
       araba: {
         name: 'Automobile',
-        desc: 'Analyze budget, usage, fuel preference and total cost of ownership together.'
+        desc: 'TCO, loan and fuel — in one score.'
       },
       konut: {
         name: 'Housing',
-        desc: 'Regional analysis, investment return and quality of life assessment.'
+        desc: 'Location, fees and mortgage load together.'
       },
       tatil: {
         name: 'Travel',
-        desc: 'Compare budget, season, transport, accommodation and experience expectations.'
+        desc: 'Budget, season and stay balance.'
       },
       finansman: {
         name: 'Finance',
-        desc: 'See payment plans, cash flow, debt load and repayment risk clearly.'
+        desc: 'Term, rate and cash flow made clear.'
       },
       sigorta: {
         name: 'Insurance',
-        desc: 'Decision analysis for policy coverage, premium balance and risk protection.'
+        desc: 'Policy coverage and premium balance.'
+      },
+      kasko: {
+        name: 'Comprehensive',
+        desc: 'Coverage, premium and vehicle profile.'
       }
     },
     vertical: {
@@ -326,8 +338,10 @@ export const marketingCopy = {
       costDistribution: 'Kostenverteilung',
       costTrend: '5-Jahres-Gesamtkostenprognose',
       analyzeLink: 'Analysieren →',
+      analyzeAction: 'Analysieren',
       soon: 'Demnächst',
-      categoriesGridAria: 'Entscheidungskategorien'
+      categoriesGridAria: 'Entscheidungskategorien',
+      categoriesSoonAria: 'Demnächst verfügbare Kategorien'
     },
     features: {
       stripAria: 'Plattformfunktionen',
@@ -372,11 +386,12 @@ export const marketingCopy = {
         'Analyse-Cookies dienen nur der Produktverbesserung; Daten werden nicht verkauft. <a href="/cerez-politikasi.html">Cookie-Richtlinie</a>'
     },
     categories: {
-      araba: { name: 'Automobil', desc: 'Budget, Nutzung, Kraftstoff und Gesamtkosten gemeinsam analysieren.' },
-      konut: { name: 'Immobilie', desc: 'Regionalanalyse, Rendite und Lebensqualität bewerten.' },
-      tatil: { name: 'Reise', desc: 'Budget, Saison, Transport und Unterkunft vergleichen.' },
-      finansman: { name: 'Finanzierung', desc: 'Zahlungsplan, Cashflow und Rückzahlungsrisiko klar sehen.' },
-      sigorta: { name: 'Versicherung', desc: 'Entscheidungsanalyse für Deckung, Prämie und Risikoschutz.' }
+      araba: { name: 'Automobil', desc: 'TCO, Kredit und Kraftstoff — ein Score.' },
+      konut: { name: 'Immobilie', desc: 'Lage, Nebenkosten und Kreditlast zusammen.' },
+      tatil: { name: 'Reise', desc: 'Budget, Saison und Unterkunft im Gleichgewicht.' },
+      finansman: { name: 'Finanzierung', desc: 'Laufzeit, Zins und Cashflow klar sehen.' },
+      sigorta: { name: 'Versicherung', desc: 'Deckung und Prämienbalance analysieren.' },
+      kasko: { name: 'Kasko', desc: 'Deckung, Prämie und Fahrzeugprofil bewerten.' }
     },
     vertical: {
       konutHeroBadge: 'KI-gestützter Immobilien-Entscheidungsmotor',
@@ -445,8 +460,10 @@ export const marketingCopy = {
       costDistribution: 'توزيع التكلفة',
       costTrend: 'توقعات التكلفة لـ 5 سنوات',
       analyzeLink: 'تحليل ←',
+      analyzeAction: 'تحليل',
       soon: 'قريباً',
-      categoriesGridAria: 'فئات القرار'
+      categoriesGridAria: 'فئات القرار',
+      categoriesSoonAria: 'فئات قادمة قريباً'
     },
     features: {
       stripAria: 'ميزات المنصة',
@@ -493,11 +510,12 @@ export const marketingCopy = {
         'نستخدم ملفات تعريف الارتباط التحليلية لتحسين المنتج فقط؛ لا نبيع البيانات. <a href="/cerez-politikasi.html">سياسة ملفات تعريف الارتباط</a>'
     },
     categories: {
-      araba: { name: 'السيارات', desc: 'حلّل الميزانية والاستخدام ونوع الوقود وتكلفة الملكية.' },
-      konut: { name: 'السكن', desc: 'تحليل المنطقة والعائد على الاستثمار وجودة الحياة.' },
-      tatil: { name: 'السفر', desc: 'قارن الميزانية والموسم والنقل والإقامة.' },
-      finansman: { name: 'التمويل', desc: 'خطط الدفع والتدفق النقدي ومخاطر السداد.' },
-      sigorta: { name: 'التأمين', desc: 'تحليل التغطية والقسط وحماية المخاطر.' }
+      araba: { name: 'السيارات', desc: 'TCO والقرض والوقود — في درجة واحدة.' },
+      konut: { name: 'السكن', desc: 'الموقع والرسوم وعبء القرض معاً.' },
+      tatil: { name: 'السفر', desc: 'توازن الميزانية والموسم والإقامة.' },
+      finansman: { name: 'التمويل', desc: 'المدة والفائدة والتدفق النقدي بوضوح.' },
+      sigorta: { name: 'التأمين', desc: 'تحليل التغطية وتوازن القسط.' },
+      kasko: { name: 'تأمين شامل', desc: 'التغطية والقسط وملف المركبة.' }
     },
     vertical: {
       konutHeroBadge: 'محرك قرارات السكن بالذكاء الاصطناعي',
