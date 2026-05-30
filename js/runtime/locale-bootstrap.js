@@ -79,17 +79,38 @@ export function switchLocale(localeId) {
 
 let localeMenuDocListenerBound = false;
 
-function bindLocaleMenuDismiss(root) {
+function closeLocaleMenu(root) {
+  const menu = root.querySelector('.locale-switcher-menu');
+  const toggle = root.querySelector('.locale-switcher-more');
+  if (menu) {
+    menu.hidden = true;
+    menu.classList.remove('is-open');
+  }
+  toggle?.setAttribute('aria-expanded', 'false');
+}
+
+function openLocaleMenu(root) {
+  const menu = root.querySelector('.locale-switcher-menu');
+  const toggle = root.querySelector('.locale-switcher-more');
+  if (menu) {
+    menu.hidden = false;
+    menu.classList.add('is-open');
+  }
+  toggle?.setAttribute('aria-expanded', 'true');
+}
+
+function bindLocaleMenuDismiss() {
   if (localeMenuDocListenerBound) return;
   localeMenuDocListenerBound = true;
   document.addEventListener('click', (event) => {
-    if (root.contains(event.target)) return;
-    const menu = root.querySelector('.locale-switcher-menu');
-    const toggle = root.querySelector('.locale-switcher-more');
-    if (menu && !menu.hidden) {
-      menu.hidden = true;
-      toggle?.setAttribute('aria-expanded', 'false');
-    }
+    const root = document.getElementById('locale-switcher');
+    if (!root || root.contains(event.target)) return;
+    closeLocaleMenu(root);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const root = document.getElementById('locale-switcher');
+    if (root) closeLocaleMenu(root);
   });
 }
 
@@ -120,25 +141,27 @@ export function mountLocaleSwitcher(containerId = 'locale-switcher') {
         </div>
       </div>`;
 
-    bindLocaleMenuDismiss(root);
+    bindLocaleMenuDismiss();
 
     const toggle = root.querySelector('.locale-switcher-more');
     const menu = root.querySelector('.locale-switcher-menu');
 
     toggle?.addEventListener('click', (event) => {
       event.stopPropagation();
-      const open = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-      if (menu) menu.hidden = open;
+      const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+      if (isOpen) {
+        closeLocaleMenu(root);
+      } else {
+        openLocaleMenu(root);
+      }
     });
 
-    root.querySelectorAll('[data-locale]').forEach((btn) => {
+    root.querySelectorAll('.locale-switcher-menu [data-locale]').forEach((btn) => {
       btn.addEventListener('click', (event) => {
         event.stopPropagation();
         const next = btn.dataset.locale;
         if (next && next !== getLocale()) switchLocale(next);
-        if (menu) menu.hidden = true;
-        toggle?.setAttribute('aria-expanded', 'false');
+        closeLocaleMenu(root);
       });
     });
   });

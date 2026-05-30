@@ -70,11 +70,11 @@ html.ib-rtl select {
 }
 
 .locale-switcher-menu {
+  display: none;
   position: absolute;
   bottom: calc(100% + 0.35rem);
   inset-inline-end: 0;
   z-index: 40;
-  display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.3rem;
   min-width: 12rem;
@@ -83,6 +83,10 @@ html.ib-rtl select {
   border: 1px solid rgba(148, 163, 184, 0.45);
   background: #fff;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+.locale-switcher-menu.is-open {
+  display: grid;
 }
 
 html.ib-rtl .locale-switcher-menu {
