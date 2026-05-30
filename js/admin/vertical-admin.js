@@ -4,8 +4,7 @@
 import { escapeHtml } from '../core/dom-safe.js';
 import {
   fetchAdminTable,
-  collectAdminWarnings,
-  renderAdminWarningBanner
+  renderAdminDataSourceNotices
 } from './admin-query.js';
 import { setAdminRootLoading } from './admin-page-routing.js';
 
@@ -46,7 +45,7 @@ export function initVerticalAdmin({ sb }) {
         return;
       }
 
-      const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
+      const banner = renderAdminDataSourceNotices([res]);
       let rows = res.data || [];
       if (filterVertical) rows = rows.filter((r) => r.vertical === filterVertical);
       if (search) {

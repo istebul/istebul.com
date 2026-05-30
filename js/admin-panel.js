@@ -20,8 +20,7 @@ import {
 import { SCALE_LIMITS } from './core/scale-limits.js';
 import {
   fetchAdminTable,
-  collectAdminWarnings,
-  renderAdminWarningBanner
+  renderAdminDataSourceNotices
 } from './admin/admin-query.js';
 import {
   computeExecutiveFunnel,
@@ -221,7 +220,7 @@ async function loadOpsAiAssistantPage() {
   await loadOpsAiAssistant(
     internalDashboardDeps(),
     escapeHtml,
-    renderAdminWarningBanner
+    renderAdminDataSourceNotices
   );
 }
 
@@ -250,7 +249,7 @@ async function loadCompanyDashboard(kind, rootId) {
     kind,
     rootId,
     escapeHtml,
-    renderAdminWarningBanner
+    renderAdminDataSourceNotices
   );
 }
 
@@ -316,7 +315,7 @@ async function loadOperationalHealth() {
     })
   ]);
 
-  const warnings = collectAdminWarnings([opsEventsRes, dispatchRes, auditRes, leadsRes]);
+  const opsHealthBatch = [opsEventsRes, dispatchRes, auditRes, leadsRes];
   const allOpsEvents = opsEventsRes.data || [];
   const sinceMs = new Date(since).getTime();
   const severityRows = rollupSeverity24h(allOpsEvents);
@@ -355,7 +354,7 @@ async function loadOperationalHealth() {
   const healthTable = rollupHealth24h(allOpsEvents).slice(0, 15);
 
   el.innerHTML = `
-    ${renderAdminWarningBanner(warnings)}
+    ${renderAdminDataSourceNotices(opsHealthBatch)}
     <div class="stat-grid">
       <div class="stat-card">
         <div class="stat-label">Critical (24h)</div>
@@ -592,6 +591,7 @@ async function loadOpsCommandCenter() {
       table: 'lifecycle_enrollments',
       select: 'flow_id, status, enrolled_at',
       limit: 3000,
+      order: { column: 'enrolled_at', ascending: false },
       direct: () =>
         sb
           .from('lifecycle_enrollments')
@@ -645,7 +645,7 @@ async function loadOpsCommandCenter() {
     })
   ]);
 
-  const warnings = collectAdminWarnings([
+  const opsCommandBatch = [
     subsRes,
     leadsRes,
     eventsRes,
@@ -656,7 +656,7 @@ async function loadOpsCommandCenter() {
     endpointsRes,
     retryLeadsRes,
     ceoLeadsRes
-  ]);
+  ];
 
   const sinceMs = new Date(since).getTime();
   const events = (eventsRes.data || []).filter((row) => {
@@ -711,7 +711,7 @@ async function loadOpsCommandCenter() {
         : 'var(--warning)';
 
   el.innerHTML = `
-    ${renderAdminWarningBanner(warnings)}
+    ${renderAdminDataSourceNotices(opsCommandBatch)}
     <p class="text-muted-sm" style="margin:0 0 16px">
       P9 Ops + P12 Partner + P13 CEO alerts · <code>npm run metrics:ops:center</code> · <code>npm run ceo:alerts:run</code>
     </p>
@@ -904,7 +904,7 @@ async function loadStartupOperatingCenter() {
       })
     ]);
 
-    const warnings = collectAdminWarnings([eventsRes, subsRes, opsRes]);
+    const startupBatch = [eventsRes, subsRes, opsRes];
     opsCenter = buildOpsCommandCenter({
       analyticsEvents: eventsRes.data || [],
       subscriptions: subsRes.data || [],
@@ -917,7 +917,7 @@ async function loadStartupOperatingCenter() {
 
     const snapshot = buildStartupOperatingSnapshot({ config, opsCenter });
     el.innerHTML =
-      renderAdminWarningBanner(warnings) + renderStartupOperatingCenter(snapshot, escapeHtml);
+      renderAdminDataSourceNotices(startupBatch) + renderStartupOperatingCenter(snapshot, escapeHtml);
     return;
   } catch {
     /* static config only */
@@ -988,7 +988,7 @@ async function loadScaleArchitectureCenter() {
       })
     ]);
 
-    const warnings = collectAdminWarnings([eventsRes, opsRes]);
+    const scaleBatch = [eventsRes, opsRes];
     const opsCenter = buildOpsCommandCenter({
       analyticsEvents: eventsRes.data || [],
       subscriptions: [],
@@ -1006,7 +1006,7 @@ async function loadScaleArchitectureCenter() {
 
     const report = buildScaleArchitectureReport({ config, liveSignals });
     el.innerHTML =
-      renderAdminWarningBanner(warnings) + renderScaleArchitectureCenter(report, escapeHtml);
+      renderAdminDataSourceNotices(scaleBatch) + renderScaleArchitectureCenter(report, escapeHtml);
     return;
   } catch {
     /* static matrix */
@@ -1310,7 +1310,7 @@ async function loadAcquisitionExit() {
       })
     ]);
 
-    const warnings = collectAdminWarnings([subsRes, leadsRes, eventsRes]);
+    const exitBatch = [subsRes, leadsRes, eventsRes];
     const founderMetrics = computeExitOptionalityMetrics({
       leads: leadsRes.data || [],
       subscriptions: subsRes.data || [],
@@ -1324,7 +1324,7 @@ async function loadAcquisitionExit() {
     });
 
     el.innerHTML =
-      renderAdminWarningBanner(warnings) +
+      renderAdminDataSourceNotices(exitBatch) +
       renderAcquisitionExitCenter(snapshot, escapeHtml, founderMetrics);
   } catch (err) {
     console.error('[admin] acquisition-exit', err);
@@ -1380,7 +1380,7 @@ async function loadExecutiveKpis() {
     })
   ]);
 
-  const warnings = collectAdminWarnings([subsRes, leadsRes, eventsRes]);
+  const executiveKpiBatch = [subsRes, leadsRes, eventsRes];
   const sinceMs = new Date(since).getTime();
   const events = (eventsRes.data || []).filter((row) => {
     const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
@@ -1399,7 +1399,7 @@ async function loadExecutiveKpis() {
       leadsRes.error?.message ||
       subsRes.error?.message ||
       'Veri yüklenemedi';
-    el.innerHTML = `${renderAdminWarningBanner(warnings)}<p class="empty">Hata: ${escapeHtml(msg)}</p>`;
+    el.innerHTML = `${renderAdminDataSourceNotices(executiveKpiBatch)}<p class="empty">Hata: ${escapeHtml(msg)}</p>`;
     return;
   }
 
@@ -1456,7 +1456,7 @@ async function loadExecutiveKpis() {
   const c = dash.conversions.counts;
 
   el.innerHTML = `
-    ${renderAdminWarningBanner(warnings)}
+    ${renderAdminDataSourceNotices(executiveKpiBatch)}
     <p class="text-muted-sm" style="margin:0 0 16px">CEO decision dashboard · Son ${windowDays} gün · ${dash.sampleSize.analyticsEvents} analytics event · Export: <code>npm run metrics:executive</code></p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;background:rgba(37,99,235,0.08);border-radius:10px">
@@ -2504,7 +2504,7 @@ async function loadPlatformAnalytics() {
   });
 
   if (analyticsRes.error && !(analyticsRes.data || []).length) {
-    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([analyticsRes]))}<p class="empty">Hata: ${escapeHtml(analyticsRes.error.message)}</p>`;
+    el.innerHTML = `${renderAdminDataSourceNotices([analyticsRes])}<p class="empty">Hata: ${escapeHtml(analyticsRes.error.message)}</p>`;
     return;
   }
 
@@ -2512,10 +2512,7 @@ async function loadPlatformAnalytics() {
     const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
     return ts >= sinceMs;
   });
-  const analyticsBanner =
-    analyticsRes.source === 'admin-action'
-      ? renderAdminWarningBanner(collectAdminWarnings([analyticsRes]))
-      : '';
+  const analyticsBanner = renderAdminDataSourceNotices([analyticsRes]);
   if (!rows.length) {
     el.innerHTML = '<p class="empty">Henüz platform analytics event yok. Migration ve analytics-ingest deploy sonrası veri akışı başlar.</p>';
     return;
@@ -2888,7 +2885,7 @@ async function loadPartnerEndpoints() {
   });
 
   if (res.error && !(res.data || []).length) {
-    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([res]))}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
+    el.innerHTML = `${renderAdminDataSourceNotices([res])}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
     return;
   }
 
@@ -2964,16 +2961,16 @@ async function loadPartnerApplications() {
     }
   });
 
-  const warnings = collectAdminWarnings([res]);
+  const partnerAppBatch = [res];
 
   if (res.error && !(res.data || []).length) {
-    el.innerHTML = `${renderAdminWarningBanner(warnings)}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p><p class="text-muted-sm">Migration: <code>supabase db push</code> (20260609_partner_applications_schema_repair.sql)</p>`;
+    el.innerHTML = `${renderAdminDataSourceNotices(partnerAppBatch)}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p><p class="text-muted-sm">Migration: <code>supabase db push</code> (20260609_partner_applications_schema_repair.sql)</p>`;
     return;
   }
 
   const data = res.data || [];
   if (!data.length) {
-    el.innerHTML = `${renderAdminWarningBanner(warnings)}<p class="empty">Başvuru yok.</p>`;
+    el.innerHTML = `${renderAdminDataSourceNotices(partnerAppBatch)}<p class="empty">Başvuru yok.</p>`;
     return;
   }
 
@@ -2983,7 +2980,7 @@ async function loadPartnerApplications() {
   );
 
   el.innerHTML = `
-    ${renderAdminWarningBanner(warnings)}
+    ${renderAdminDataSourceNotices(partnerAppBatch)}
     ${pipelineBoard}
     <table class="table">
       <thead>
@@ -3064,7 +3061,7 @@ async function loadPartnerDispatchLogs() {
   });
 
   if (res.error && !(res.data || []).length) {
-    el.innerHTML = `${renderAdminWarningBanner(collectAdminWarnings([res]))}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
+    el.innerHTML = `${renderAdminDataSourceNotices([res])}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
     return;
   }
 

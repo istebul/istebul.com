@@ -12,9 +12,9 @@ let lastBrief = null;
 /**
  * @param {object} deps
  * @param {function} escapeHtml
- * @param {function} renderAdminWarningBanner
+ * @param {function} renderAdminDataSourceNotices
  */
-export async function loadOpsAiAssistant(deps, escapeHtml, renderAdminWarningBanner) {
+export async function loadOpsAiAssistant(deps, escapeHtml, renderAdminDataSourceNotices) {
   const root = document.getElementById('ops-ai-assistant-root');
   if (!root) return;
 
@@ -33,7 +33,7 @@ export async function loadOpsAiAssistant(deps, escapeHtml, renderAdminWarningBan
   }
 
   try {
-    const { ctx, warnings } = await fetchInternalDashboardContext(deps);
+    const { ctx, dataSourceResults } = await fetchInternalDashboardContext(deps);
     const events = await deps.getAnalyticsEvents48h?.() || [];
 
     lastBrief = buildOpsDecisionBrief(ctx, {
@@ -42,7 +42,7 @@ export async function loadOpsAiAssistant(deps, escapeHtml, renderAdminWarningBan
     });
 
     root.innerHTML =
-      renderAdminWarningBanner(warnings) +
+      renderAdminDataSourceNotices(dataSourceResults) +
       renderOpsAiAssistantPage(lastBrief, escapeHtml, {});
 
     bindOpsAiAssistantUi(root, escapeHtml);

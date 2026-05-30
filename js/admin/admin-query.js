@@ -96,33 +96,65 @@ export async function fetchAdminTable(sb, options) {
 
   try {
     const data = await adminList(sb, { table, select: fallbackSelect, limit, order });
+    const directErrObj =
+      directError && typeof directError === 'object'
+        ? directError
+        : directError
+          ? { message: String(directError) }
+          : null;
     return {
       data,
       error: null,
       source: 'admin-action',
       table,
-      directError: directError?.message || null
+      directError: directErrObj?.message || null,
+      schemaMissing: isSchemaMissingError(directErrObj)
     };
   } catch (adminError) {
     return {
       data: [],
       error: directError || adminError,
       source: 'failed',
-      table
+      table,
+      schemaMissing: isSchemaMissingError(directError)
     };
   }
 }
 
 /**
- * @param {Array<{ table: string, error?: { message?: string } | null, source?: string }>} results
+ * Critical issues only (failed reads or missing schema with no data).
+ * @param {Array<{ table: string, error?: { message?: string } | null, source?: string, data?: unknown[], schemaMissing?: boolean, directError?: string | null }>} results
  */
 export function collectAdminWarnings(results) {
   const lines = [];
   for (const r of results) {
     if (r.error) {
       lines.push(`${r.table}: ${r.error.message || r.error}`);
-    } else if (r.source === 'admin-action' && r.directError) {
-      lines.push(`${r.table}: direct query unavailable — loaded via admin-action`);
+      continue;
+    }
+    if (
+      r.schemaMissing &&
+      (!r.data || r.data.length === 0) &&
+      r.source !== 'direct'
+    ) {
+      lines.push(
+        `${r.table}: tablo şemada yok — supabase db push (20260617_lifecycle_crm_schema_repair.sql)`
+      );
+    }
+  }
+  return lines;
+}
+
+/**
+ * Successful admin-action fallback (RLS / direct blocked) — informational, not an error.
+ * @param {Array<{ table: string, error?: unknown, source?: string, directError?: string | null, schemaMissing?: boolean }>} results
+ */
+export function collectAdminFallbackNotes(results) {
+  const lines = [];
+  for (const r of results) {
+    if (r.error) continue;
+    if (r.source === 'admin-action' && r.directError && !r.schemaMissing) {
+      lines.push(`${r.table}: güvenli admin-action üzerinden yüklendi`);
     }
   }
   return lines;
@@ -139,6 +171,29 @@ export function renderAdminWarningBanner(warnings = []) {
       <p style="margin:8px 0 0" class="text-muted-sm">Eksik tablolar için: <code>supabase db push</code> (migrations) ve <code>admin-action</code> edge deploy.</p>
     </div>
   `;
+}
+
+export function renderAdminFallbackInfoBanner(notes = []) {
+  if (!notes.length) return '';
+  return `
+    <div class="admin-schema-banner" role="status" style="margin:0 0 16px;padding:12px 14px;border-radius:8px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);font-size:13px;line-height:1.5">
+      <strong>Veri kaynağı</strong>
+      <ul style="margin:8px 0 0;padding-left:18px">
+        ${notes.map((n) => `<li>${escapeHtmlAdmin(n)}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+}
+
+/**
+ * Warning + informational banners for a batch of fetchAdminTable results.
+ * @param {Parameters<typeof collectAdminWarnings>[0]} results
+ */
+export function renderAdminDataSourceNotices(results) {
+  return (
+    renderAdminWarningBanner(collectAdminWarnings(results)) +
+    renderAdminFallbackInfoBanner(collectAdminFallbackNotes(results))
+  );
 }
 
 function escapeHtmlAdmin(value) {

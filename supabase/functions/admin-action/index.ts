@@ -210,6 +210,9 @@ Deno.serve(async (req) => {
     "finance_leads",
     "finance_partners",
     "finance_settings",
+    "lifecycle_contacts",
+    "lifecycle_enrollments",
+    "lifecycle_messages",
   ];
 
   if (action === "upsert_settings") {
@@ -263,6 +266,9 @@ Deno.serve(async (req) => {
         finance_leads: "*",
         finance_partners: "*",
         finance_settings: "*",
+        lifecycle_contacts: "*",
+        lifecycle_enrollments: "*",
+        lifecycle_messages: "*",
       };
 
       const allowedOrderColumns: Record<string, string[]> = {
@@ -298,9 +304,17 @@ Deno.serve(async (req) => {
         admin_audit_logs: ["created_at"],
         site_settings: ["key"],
         subscriptions: ["created_at"],
+        lifecycle_contacts: ["created_at", "last_active_at"],
+        lifecycle_enrollments: ["enrolled_at", "flow_id", "status"],
+        lifecycle_messages: ["created_at", "scheduled_at", "status"],
       };
 
-      const orderColumn = body.order?.column || "created_at";
+      const defaultOrderColumn: Record<string, string> = {
+        lifecycle_enrollments: "enrolled_at",
+        lifecycle_contacts: "last_active_at",
+      };
+      const orderColumn =
+        body.order?.column || defaultOrderColumn[table] || "created_at";
       const orderAscending = body.order?.ascending === true;
       const limit = Math.min(Math.max(Number(body.limit) || 100, 1), 1000);
       const selectExpr = String(body.select || selectColumns[table] || "*").slice(0, 500);
