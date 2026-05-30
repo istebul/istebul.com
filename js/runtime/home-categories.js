@@ -5,6 +5,31 @@ import {
 
 const FEATURED_CATEGORY_IDS = new Set(['araba', 'konut', 'tatil', 'finansman', 'sigorta']);
 
+const CATEGORY_DISPLAY_ORDER = ['araba', 'tatil', 'konut', 'finansman', 'sigorta'];
+
+const CATEGORY_ICONS = {
+  araba:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M5 17a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h1l1.4-3.5A2 2 0 0 1 9.2 7h5.6a2 2 0 0 1 1.8 1.1L18 11.5h1a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2M5 17a2 2 0 1 0 4 0M15 17a2 2 0 1 0 4 0"/></svg>',
+  konut:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+  tatil:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M8 7c0-2 1.5-4 4-4s4 2 4 4-1.5 3-4 3-4-1-4-3Z"/><path d="M6 21c1.5-2 4-3 6-3s4.5 1 6 3"/></svg>',
+  finansman:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h18M5 10V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M5 10v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/><path d="M12 14v4"/></svg>',
+  sigorta:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>'
+};
+
+function categoryIconMarkup(categoryId) {
+  return CATEGORY_ICONS[categoryId] || '';
+}
+
+function sortCategoriesForDisplay(categories) {
+  return [...categories].sort(
+    (a, b) => CATEGORY_DISPLAY_ORDER.indexOf(a.id) - CATEGORY_DISPLAY_ORDER.indexOf(b.id)
+  );
+}
+
 const CATEGORY_SHORT_NAMES = {
   araba: 'Otomobil',
   konut: 'Konut',
@@ -26,46 +51,61 @@ function categoryShortName(category) {
   return CATEGORY_SHORT_NAMES[category.id] || category.name;
 }
 
-function renderActiveCard(category) {
+function renderActiveCard(category, index) {
   const score = category.sampleScore != null ? String(category.sampleScore) : '—';
   const title = categoryShortName(category);
   return `
     <a
       href="${escapeHtml(category.href)}"
-      class="ib-cat-mockup is-active ib-cat-mockup--${escapeHtml(category.id)}"
+      class="ib-cat-mockup ib-cat-mockup--premium is-active ib-cat-mockup--${escapeHtml(category.id)}"
       data-category-id="${escapeHtml(category.id)}"
       data-native-route
       role="listitem"
+      style="--ib-cat-i: ${index}"
       aria-label="${escapeHtml(title)} — Analiz et"
     >
       <div class="ib-cat-mockup__bg" aria-hidden="true"></div>
+      <div class="ib-cat-mockup__theme" aria-hidden="true"></div>
       <div class="ib-cat-mockup__overlay" aria-hidden="true"></div>
+      <div class="ib-cat-mockup__glow" aria-hidden="true"></div>
       <div class="ib-cat-mockup__body">
-        <span class="ib-cat-mockup__score">${escapeHtml(score)}/100</span>
-        <h3 class="ib-cat-mockup__title">${escapeHtml(title)}</h3>
-        <p class="ib-cat-mockup__desc">${escapeHtml(category.description)}</p>
-        <span class="ib-cat-mockup__link">Analiz Et →</span>
+        <div class="ib-cat-mockup__top">
+          <span class="ib-cat-mockup__icon">${categoryIconMarkup(category.id)}</span>
+          <span class="ib-cat-mockup__score">${escapeHtml(score)}/100</span>
+        </div>
+        <div class="ib-cat-mockup__panel">
+          <h3 class="ib-cat-mockup__title">${escapeHtml(title)}</h3>
+          <p class="ib-cat-mockup__desc">${escapeHtml(category.description)}</p>
+          <span class="ib-cat-mockup__link">Analiz Et →</span>
+        </div>
       </div>
     </a>
   `;
 }
 
-function renderComingSoonCard(category) {
+function renderComingSoonCard(category, index) {
   const title = categoryShortName(category);
   return `
     <article
-      class="ib-cat-mockup is-soon ib-cat-mockup--${escapeHtml(category.id)} is-coming-soon"
+      class="ib-cat-mockup ib-cat-mockup--premium is-soon ib-cat-mockup--${escapeHtml(category.id)} is-coming-soon"
       data-category-id="${escapeHtml(category.id)}"
       role="listitem"
+      style="--ib-cat-i: ${index}"
       aria-label="${escapeHtml(title)} — yakında"
     >
       <span class="ib-cat-mockup__soon-badge">Yakında</span>
       <div class="ib-cat-mockup__bg" aria-hidden="true"></div>
+      <div class="ib-cat-mockup__theme" aria-hidden="true"></div>
       <div class="ib-cat-mockup__overlay" aria-hidden="true"></div>
       <div class="ib-cat-mockup__body">
-        <h3 class="ib-cat-mockup__title">${escapeHtml(title)}</h3>
-        <p class="ib-cat-mockup__desc">${escapeHtml(category.description)}</p>
-        <span class="ib-cat-mockup__link">Yakında</span>
+        <div class="ib-cat-mockup__top">
+          <span class="ib-cat-mockup__icon">${categoryIconMarkup(category.id)}</span>
+        </div>
+        <div class="ib-cat-mockup__panel">
+          <h3 class="ib-cat-mockup__title">${escapeHtml(title)}</h3>
+          <p class="ib-cat-mockup__desc">${escapeHtml(category.description)}</p>
+          <span class="ib-cat-mockup__link">Yakında</span>
+        </div>
       </div>
     </article>
   `;
@@ -220,10 +260,16 @@ export async function mountHomeCategoryGrid() {
     if (!category.settingKey) return true;
     return visibilitySettings[category.settingKey] ?? true;
   });
-  const activeCategories = categories.filter((category) => isHomeCategoryActive(category));
-  const soonCategories = categories.filter((category) => category.status === 'coming_soon');
-  const liveHtml = activeCategories.map((category) => renderActiveCard(category)).join('');
-  const soonHtml = soonCategories.map((category) => renderComingSoonCard(category)).join('');
+  const activeCategories = sortCategoriesForDisplay(
+    categories.filter((category) => isHomeCategoryActive(category))
+  );
+  const soonCategories = sortCategoriesForDisplay(
+    categories.filter((category) => category.status === 'coming_soon')
+  );
+  const liveHtml = activeCategories.map((category, index) => renderActiveCard(category, index)).join('');
+  const soonHtml = soonCategories
+    .map((category, index) => renderComingSoonCard(category, activeCategories.length + index))
+    .join('');
   grid.innerHTML = `
     <div class="ib-cat-mockup-shell" role="list" aria-label="Karar kategorileri">
       ${liveHtml}
