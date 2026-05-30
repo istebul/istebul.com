@@ -20,11 +20,11 @@ export const marketingSections = {
       midCtaSecondary: 'Metodolojiyi incele',
       partnerHintHtml:
         'Partner galeriler için lead başına ücretlendirme modeli ayrıca sunulur — <a href="/partner-olun.html">Partner olun</a>.',
-      trialBadge: '7 gün ücretsiz deneme',
-      stripeBadge: 'Stripe ile güvenli ödeme',
+      trialBadge: 'Türkiye ödeme altyapısı',
+      paymentBadge: 'iyzico / PayTR ile güvenli ödeme',
       cancelBadge: 'İstediğiniz zaman iptal',
       trustNoteHtml:
-        'Ödeme Stripe ile alınır; kart bilgileri sunucularımızda tutulmaz. Analiz ve skorlar bilgilendirme amaçlıdır. <a href="/kullanim-sartlari.html">Kullanım şartları</a> · <a href="/kvkk.html">KVKK</a>'
+        'Ödeme iyzico (birincil) ve PayTR (yedek) ile alınır; kart bilgileri sunucularımızda tutulmaz. Analiz ve skorlar bilgilendirme amaçlıdır. <a href="/kullanim-sartlari.html">Kullanım şartları</a> · <a href="/kvkk.html">KVKK</a>'
     },
     faq: {
       kicker: 'SSS',
@@ -35,7 +35,7 @@ export const marketingSections = {
       q1: 'Skorlar garanti sonuç verir mi?',
       a1: 'Hayır. Skorlar ve raporlar bilgilendirme amaçlıdır; kesin getiri, fiyat veya onay taahhüdü değildir. Karar sizde kalır — biz maliyet ve uyumu görünür kılarız.',
       q2: 'Ödeme güvenli mi?',
-      a2: 'Pro abonelik ödemeleri Stripe üzerinden alınır; kart bilgileri isteBul sunucularında tutulmaz. İstediğiniz zaman iptal edebilirsiniz.',
+      a2: 'Pro abonelik ve premium rapor ödemeleri iyzico (birincil) ve PayTR (yedek) altyapısı ile alınır; kart bilgileri isteBul sunucularında tutulmaz. İstediğiniz zaman iptal edebilirsiniz.',
       q3: 'Ücretsiz planda neler var?',
       a3: 'TCO özeti, sınırlı karşılaştırma ve özet çıktılar. Daha derin rapor, sınırsız karşılaştırma ve partner eşleşmesi için Pro plana geçebilirsiniz.'
     },
@@ -103,10 +103,10 @@ export const marketingSections = {
       partnerHintHtml:
         'Per-lead pricing for partner galleries is also available — <a href="/partner-olun.html">Become a partner</a>.',
       trialBadge: '7-day free trial',
-      stripeBadge: 'Secure payment via Stripe',
+      paymentBadge: 'Secure payment via iyzico / PayTR',
       cancelBadge: 'Cancel anytime',
       trustNoteHtml:
-        'Payments are processed by Stripe; card data is not stored on our servers. Scores are informational. <a href="/kullanim-sartlari.html">Terms</a> · <a href="/kvkk.html">Privacy</a>'
+        'Payments are processed via iyzico (primary) and PayTR (fallback); card data is not stored on our servers. Scores are informational. <a href="/kullanim-sartlari.html">Terms</a> · <a href="/kvkk.html">Privacy</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -117,7 +117,7 @@ export const marketingSections = {
       q1: 'Do scores guarantee results?',
       a1: 'No. Scores and reports are informational, not guarantees of returns, prices or approvals. The decision stays yours — we make cost and fit visible.',
       q2: 'Is payment secure?',
-      a2: 'Pro subscriptions are billed through Stripe; card details are not stored on isteBul servers. You can cancel anytime.',
+      a2: 'Pro subscriptions are billed via iyzico / PayTR; card details are not stored on isteBul servers. You can cancel anytime.',
       q3: 'What is included in the free plan?',
       a3: 'TCO summary, limited comparisons and summary outputs. Upgrade to Pro for deeper reports, unlimited comparisons and partner matching.'
     },
@@ -185,10 +185,10 @@ export const marketingSections = {
       partnerHintHtml:
         'Lead-Preise für Partner-Galerien ebenfalls verfügbar — <a href="/partner-olun.html">Partner werden</a>.',
       trialBadge: '7 Tage kostenlos testen',
-      stripeBadge: 'Sichere Zahlung via Stripe',
+      paymentBadge: 'Sichere Zahlung via iyzico / PayTR',
       cancelBadge: 'Jederzeit kündbar',
       trustNoteHtml:
-        'Zahlungen über Stripe; Kartendaten werden nicht auf unseren Servern gespeichert. Scores sind informativ. <a href="/kullanim-sartlari.html">AGB</a> · <a href="/kvkk.html">Datenschutz</a>'
+        'Zahlungen über iyzico / PayTR; Kartendaten werden nicht auf unseren Servern gespeichert. Scores sind informativ. <a href="/kullanim-sartlari.html">AGB</a> · <a href="/kvkk.html">Datenschutz</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -199,7 +199,7 @@ export const marketingSections = {
       q1: 'Garantieren Scores Ergebnisse?',
       a1: 'Nein. Scores und Berichte sind informativ, keine Garantie für Rendite, Preise oder Genehmigungen. Die Entscheidung bleibt bei Ihnen — wir machen Kosten und Fit sichtbar.',
       q2: 'Ist die Zahlung sicher?',
-      a2: 'Pro-Abonnements werden über Stripe abgerechnet; Kartendaten werden nicht auf isteBul-Servern gespeichert. Jederzeit kündbar.',
+      a2: 'Pro-Abonnements werden über iyzico / PayTR abgerechnet; Kartendaten werden nicht auf isteBul-Servern gespeichert. Jederzeit kündbar.',
       q3: 'Was ist im kostenlosen Plan enthalten?',
       a3: 'TCO-Übersicht, begrenzte Vergleiche und Zusammenfassungen. Upgrade auf Pro für tiefere Berichte, unbegrenzte Vergleiche und Partner-Matching.'
     },
@@ -267,10 +267,10 @@ export const marketingSections = {
       partnerHintHtml:
         'تسعير لكل lead للمعارض الشريكة متاح أيضاً — <a href="/partner-olun.html">كن شريكاً</a>.',
       trialBadge: 'تجربة مجانية 7 أيام',
-      stripeBadge: 'دفع آمن عبر Stripe',
+      paymentBadge: 'دفع آمن عبر iyzico / PayTR',
       cancelBadge: 'إلغاء في أي وقت',
       trustNoteHtml:
-        'المدفوعات عبر Stripe؛ بيانات البطاقة لا تُخزّن على خوادمنا. الدرجات للمعلومات فقط. <a href="/kullanim-sartlari.html">الشروط</a> · <a href="/kvkk.html">الخصوصية</a>'
+        'المدفوعات عبر iyzico وPayTR؛ بيانات البطاقة لا تُخزّن على خوادمنا. الدرجات للمعلومات فقط. <a href="/kullanim-sartlari.html">الشروط</a> · <a href="/kvkk.html">الخصوصية</a>'
     },
     faq: {
       kicker: 'الأسئلة الشائعة',
@@ -281,7 +281,7 @@ export const marketingSections = {
       q1: 'هل تضمن الدرجات النتائج؟',
       a1: 'لا. الدرجات والتقارير للمعلومات فقط، وليست ضماناً للعوائد أو الأسعار أو الموافقات. القرار لك — نحن نجعل التكلفة والملاءمة مرئية.',
       q2: 'هل الدفع آمن؟',
-      a2: 'اشتراكات Pro تُفوتر عبر Stripe؛ تفاصيل البطاقة لا تُخزّن على خوادم isteBul. يمكنك الإلغاء في أي وقت.',
+      a2: 'اشتراكات Pro تُفوتر عبر iyzico / PayTR؛ تفاصيل البطاقة لا تُخزّن على خوادم isteBul. يمكنك الإلغاء في أي وقت.',
       q3: 'ماذا يتضمن الخطة المجانية؟',
       a3: 'ملخص TCO ومقارنات محدودة ومخرجات موجزة. ترقّ إلى Pro لتقارير أعمق ومقارنات غير محدودة ومطابقة شركاء.'
     },
@@ -349,10 +349,10 @@ export const marketingSections = {
       partnerHintHtml:
         'Prezzi per lead per gallerie partner disponibili — <a href="/partner-olun.html">Diventa partner</a>.',
       trialBadge: 'Prova gratuita 7 giorni',
-      stripeBadge: 'Pagamento sicuro via Stripe',
+      paymentBadge: 'Pagamento sicuro via iyzico / PayTR',
       cancelBadge: 'Annulla quando vuoi',
       trustNoteHtml:
-        'Pagamenti tramite Stripe; i dati carta non sono sui nostri server. I punteggi sono informativi. <a href="/kullanim-sartlari.html">Termini</a> · <a href="/kvkk.html">Privacy</a>'
+        'Pagamenti tramite iyzico / PayTR; i dati carta non sono sui nostri server. I punteggi sono informativi. <a href="/kullanim-sartlari.html">Termini</a> · <a href="/kvkk.html">Privacy</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -363,7 +363,7 @@ export const marketingSections = {
       q1: 'I punteggi garantiscono risultati?',
       a1: 'No. Punteggi e report sono informativi, non garanzie di rendimento, prezzi o approvazioni. La decisione resta tua — rendiamo visibili costo e adeguatezza.',
       q2: 'Il pagamento è sicuro?',
-      a2: 'Gli abbonamenti Pro passano da Stripe; i dati carta non sono sui server isteBul. Puoi annullare quando vuoi.',
+      a2: 'Gli abbonamenti Pro passano da iyzico / PayTR; i dati carta non sono sui server isteBul. Puoi annullare quando vuoi.',
       q3: 'Cosa include il piano gratuito?',
       a3: 'Riepilogo TCO, confronti limitati e output riassuntivi. Passa a Pro per report più profondi, confronti illimitati e matching partner.'
     },
@@ -431,10 +431,10 @@ export const marketingSections = {
       partnerHintHtml:
         'Tarification par lead pour galeries partenaires — <a href="/partner-olun.html">Devenir partenaire</a>.',
       trialBadge: 'Essai gratuit 7 jours',
-      stripeBadge: 'Paiement sécurisé via Stripe',
+      paymentBadge: 'Paiement sécurisé via iyzico / PayTR',
       cancelBadge: 'Annulation à tout moment',
       trustNoteHtml:
-        'Paiements via Stripe ; les données carte ne sont pas stockées chez nous. Les scores sont informatifs. <a href="/kullanim-sartlari.html">Conditions</a> · <a href="/kvkk.html">Confidentialité</a>'
+        'Paiements via iyzico et PayTR ; les données carte ne sont pas stockées chez nous. Les scores sont informatifs. <a href="/kullanim-sartlari.html">Conditions</a> · <a href="/kvkk.html">Confidentialité</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -445,7 +445,7 @@ export const marketingSections = {
       q1: 'Les scores garantissent-ils des résultats ?',
       a1: 'Non. Scores et rapports sont informatifs, pas des garanties de rendement, prix ou approbations. La décision reste la vôtre — nous rendons coût et adéquation visibles.',
       q2: 'Le paiement est-il sécurisé ?',
-      a2: 'Les abonnements Pro passent par Stripe ; les données carte ne sont pas stockées sur les serveurs isteBul. Annulation à tout moment.',
+      a2: 'Les abonnements Pro passent par iyzico / PayTR ; les données carte ne sont pas stockées sur les serveurs isteBul. Annulation à tout moment.',
       q3: 'Que comprend l\'offre gratuite ?',
       a3: 'Résumé TCO, comparaisons limitées et sorties synthétiques. Passez à Pro pour des rapports plus profonds, comparaisons illimitées et matching partenaire.'
     },
@@ -513,10 +513,10 @@ export const marketingSections = {
       partnerHintHtml:
         'Precio por lead para galerías partner — <a href="/partner-olun.html">Ser partner</a>.',
       trialBadge: 'Prueba gratis 7 días',
-      stripeBadge: 'Pago seguro vía Stripe',
+      paymentBadge: 'Pago seguro vía iyzico / PayTR',
       cancelBadge: 'Cancelar cuando quiera',
       trustNoteHtml:
-        'Pagos vía Stripe; datos de tarjeta no se guardan en nuestros servidores. Puntuaciones informativas. <a href="/kullanim-sartlari.html">Términos</a> · <a href="/kvkk.html">Privacidad</a>'
+        'Pagos vía iyzico / PayTR; datos de tarjeta no se guardan en nuestros servidores. Puntuaciones informativas. <a href="/kullanim-sartlari.html">Términos</a> · <a href="/kvkk.html">Privacidad</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -527,7 +527,7 @@ export const marketingSections = {
       q1: '¿Las puntuaciones garantizan resultados?',
       a1: 'No. Puntuaciones e informes son informativos, no garantías de rendimiento, precios o aprobaciones. La decisión es suya — hacemos visibles coste y adecuación.',
       q2: '¿Es seguro el pago?',
-      a2: 'Suscripciones Pro vía Stripe; datos de tarjeta no en servidores isteBul. Cancelación en cualquier momento.',
+      a2: 'Suscripciones Pro vía iyzico / PayTR; datos de tarjeta no en servidores isteBul. Cancelación en cualquier momento.',
       q3: '¿Qué incluye el plan gratuito?',
       a3: 'Resumen TCO, comparaciones limitadas y salidas resumidas. Pase a Pro para informes más profundos, comparaciones ilimitadas y matching partner.'
     },
@@ -595,10 +595,10 @@ export const marketingSections = {
       partnerHintHtml:
         'パートナーギャラリー向けリード単価も提供 — <a href="/partner-olun.html">パートナーになる</a>。',
       trialBadge: '7日間無料トライアル',
-      stripeBadge: 'Stripe安全決済',
+      paymentBadge: 'iyzico / PayTR 安全決済',
       cancelBadge: 'いつでも解約',
       trustNoteHtml:
-        '決済はStripe経由。カード情報は当社サーバーに保存しません。スコアは参考情報です。<a href="/kullanim-sartlari.html">利用規約</a> · <a href="/kvkk.html">プライバシー</a>'
+        '決済は iyzico / PayTR 経由。カード情報は当社サーバーに保存しません。スコアは参考情報です。<a href="/kullanim-sartlari.html">利用規約</a> · <a href="/kvkk.html">プライバシー</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -609,7 +609,7 @@ export const marketingSections = {
       q1: 'スコアは結果を保証しますか？',
       a1: 'いいえ。スコアとレポートは参考情報であり、リターン、価格、承認の保証ではありません。決定はお客様に — コストと適合を可視化します。',
       q2: '支払いは安全ですか？',
-      a2: 'ProサブスクリプションはStripe経由。カード情報はisteBulサーバーに保存されません。いつでも解約可能。',
+      a2: 'Proサブスクリプションは iyzico / PayTR 経由。カード情報はisteBulサーバーに保存されません。いつでも解約可能。',
       q3: '無料プランに含まれるものは？',
       a3: 'TCO概要、限定比較、概要出力。Proで詳細レポート、無制限比較、パートナーマッチング。'
     },
@@ -677,10 +677,10 @@ export const marketingSections = {
       partnerHintHtml:
         '合作展厅按 lead 计费 — <a href="/partner-olun.html">成为合作伙伴</a>。',
       trialBadge: '7 天免费试用',
-      stripeBadge: 'Stripe 安全支付',
+      paymentBadge: 'iyzico / PayTR 安全支付',
       cancelBadge: '随时取消',
       trustNoteHtml:
-        '支付经 Stripe 处理；卡信息不存于我们的服务器。分数仅供参考。<a href="/kullanim-sartlari.html">使用条款</a> · <a href="/kvkk.html">隐私</a>'
+        '支付经 iyzico / PayTR 处理；卡信息不存于我们的服务器。分数仅供参考。<a href="/kullanim-sartlari.html">使用条款</a> · <a href="/kvkk.html">隐私</a>'
     },
     faq: {
       kicker: '常见问题',
@@ -691,7 +691,7 @@ export const marketingSections = {
       q1: '分数保证结果吗？',
       a1: '不保证。分数和报告仅供参考，不是收益、价格或审批的保证。决定权在您 — 我们让成本和适配度可见。',
       q2: '支付安全吗？',
-      a2: 'Pro 订阅通过 Stripe 计费；卡信息不存储在 isteBul 服务器。可随时取消。',
+      a2: 'Pro 订阅通过 iyzico / PayTR 计费；卡信息不存储在 isteBul 服务器。可随时取消。',
       q3: '免费方案包含什么？',
       a3: 'TCO 摘要、有限对比和摘要输出。升级 Pro 获得更深报告、无限对比和合作伙伴匹配。'
     },

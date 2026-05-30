@@ -54,16 +54,14 @@ async function fetchProviderStatus(sb) {
 function fallbackProviderStatus() {
   return {
     iyzico: { status: 'pending' },
-    paytr: { status: 'pending' },
-    stripe: { status: 'passive', scope: 'global_provider_passive' }
+    paytr: { status: 'pending' }
   };
 }
 
 function renderProviderCards(providers) {
   const items = [
     { id: 'iyzico', label: 'iyzico (birincil)' },
-    { id: 'paytr', label: 'PayTR (yedek)' },
-    { id: 'stripe', label: 'Stripe (global yedek)' }
+    { id: 'paytr', label: 'PayTR (yedek)' }
   ];
   return items
     .map(({ id, label }) => {

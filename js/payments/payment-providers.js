@@ -19,7 +19,8 @@ export const PAYMENT_PROVIDERS = Object.freeze({
     id: 'stripe',
     status: 'passive',
     scope: 'global_provider_passive',
-    label: 'Stripe (global yedek)'
+    label: 'Legacy (pasif)',
+    internalOnly: true
   }
 });
 

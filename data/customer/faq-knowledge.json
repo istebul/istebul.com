@@ -6,9 +6,9 @@
     {
       "id": "billing-portal",
       "category": "billing",
-      "keywords": ["fatura", "kart", "ödeme", "stripe", "abonelik", "iptal", "yenileme", "past_due"],
+      "keywords": ["fatura", "kart", "ödeme", "iyzico", "paytr", "abonelik", "iptal", "yenileme", "past_due"],
       "question": "Aboneliğimi ve faturamı nasıl yönetirim?",
-      "answer": "Hesabım → Abonelik → «Aboneliği yönet» ile Stripe müşteri paneline gidin. Kart güncelleme, fatura indirme ve iptal buradan yapılır.",
+      "answer": "Hesabım → Abonelik bölümünden planınızı görüntüleyin; iptal ve destek için «Aboneliği yönet» veya destek kanalını kullanın. Kart ve fatura işlemleri ödeme sağlayıcısı üzerinden yönetilir.",
       "action": { "type": "link", "href": "/account.html?tab=subscription&billing=portal", "label": "Faturalandırmayı aç" }
     },
     {
@@ -16,7 +16,7 @@
       "category": "billing",
       "keywords": ["başarısız", "reddedildi", "ödeme hatası", "past due", "gecikmiş"],
       "question": "Ödemem neden başarısız oldu?",
-      "answer": "Kart limiti, 3D Secure veya banka reddi olabilir. Stripe panelinden kartı güncelleyin; sistem otomatik yeniden dener.",
+      "answer": "Kart limiti, 3D Secure veya banka reddi olabilir. Hesabınızdan ödemeyi tekrar deneyin veya destek ile iletişime geçin; bankanız onay verdiğinde işlem tamamlanır.",
       "action": { "type": "link", "href": "/account.html?tab=subscription&billing=portal", "label": "Kartı güncelle" }
     },
     {

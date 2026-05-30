@@ -13,7 +13,7 @@
     },
     "page-planlar": {
       "title": "Planlar ve Fiyatlandırma | isteBul",
-      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, Stripe ile güvenli ödeme.",
+      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, iyzico / PayTR ile güvenli ödeme.",
       "path": "/planlar"
     },
     "page-duyurular": {

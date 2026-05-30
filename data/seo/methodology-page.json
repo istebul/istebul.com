@@ -88,7 +88,7 @@
     },
     {
       "heading": "Gizlilik ve Güvenlik",
-      "body": "TLS şifreleme, Turnstile bot koruması (Auto), Stripe ile ödeme ve rol tabanlı admin erişimi temel kontrollerdir. Admin paneli ve oturum rotaları robots.txt ile taranmaz.",
+      "body": "TLS şifreleme, Turnstile bot koruması (Auto), iyzico / PayTR ile ödeme ve rol tabanlı admin erişimi temel kontrollerdir. Admin paneli ve oturum rotaları robots.txt ile taranmaz.",
       "subsections": [
         {
           "heading": "Saklama",
@@ -138,7 +138,7 @@
     },
     {
       "heading": "Kullanıcı hakları ve şeffaflık",
-      "body": "KVKK kapsamında aydınlatma metinleri, çerez politikası ve abonelik iptal akışları erişilebilirdir. Kullanıcı verilerini silme talepleri destek kanalı üzerinden işlenir. Pazarlama e-postası yalnızca açık onayla gönderilir. Karar geçmişi hesapta saklanabilir; bu veri reklam ağlarıyla satılmaz. Ödeme işlemleri Stripe üzerinden tokenize edilir; kart verisi isteBul sunucularında tutulmaz.",
+      "body": "KVKK kapsamında aydınlatma metinleri, çerez politikası ve abonelik iptal akışları erişilebilirdir. Kullanıcı verilerini silme talepleri destek kanalı üzerinden işlenir. Pazarlama e-postası yalnızca açık onayla gönderilir. Karar geçmişi hesapta saklanabilir; bu veri reklam ağlarıyla satılmaz. Ödeme işlemleri iyzico ve PayTR üzerinden alınır; kart verisi isteBul sunucularında tutulmaz.",
       "subsections": []
     },
     {

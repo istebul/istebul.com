@@ -81,7 +81,7 @@ export async function onRequestPost(context) {
           code: 'STRIPE_PASSIVE',
           status: 'global_provider_passive',
           message:
-            'Stripe checkout pasif. Türkiye ödemeleri için iyzico / PayTR kullanın.'
+            'Bu ödeme kanalı kullanımdan kaldırıldı. Türkiye ödemeleri için iyzico / PayTR kullanın.'
         },
         503,
         origin

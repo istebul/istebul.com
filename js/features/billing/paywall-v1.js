@@ -55,7 +55,7 @@ export function renderProBadge(opts = {}) {
  * @param {string} [opts.state] guest|free|pro|error
  * @param {boolean} [opts.compact]
  * @param {string} [opts.errorMessage]
- * @param {boolean} [opts.stripeReady]
+ * @param {boolean} [opts.paymentReady]
  */
 export function renderPaywallV1(opts = {}) {
   const feature = opts.feature || PRO_FEATURE.PREMIUM_PDF_REPORT;
@@ -63,7 +63,9 @@ export function renderPaywallV1(opts = {}) {
   const compact = Boolean(opts.compact);
   const esc = escapeHtml;
   const title = PRO_FEATURE_COPY[feature] || 'Pro özellik';
-  const stripeReady = opts.stripeReady !== false;
+  const paymentReady =
+    opts.paymentReady !== false &&
+    (opts.stripeReady === undefined || opts.stripeReady !== false);
 
   if (state === PAYWALL_STATE.PRO) {
     return '';
@@ -91,7 +93,7 @@ export function renderPaywallV1(opts = {}) {
       </aside>`;
   }
 
-  const ctaLabel = stripeReady
+  const ctaLabel = paymentReady
     ? PLANS.pro.trialLabel || "Pro'ya geç"
     : 'Erken erişim — Planlar';
 
@@ -107,7 +109,7 @@ export function renderPaywallV1(opts = {}) {
       </ul>
       <div class="paywall-v1-actions">
         ${
-          stripeReady
+          paymentReady
             ? `<button type="button" class="btn btn-primary btn-sm" data-paywall-v1-checkout data-payment-product="pro_monthly">${esc(ctaLabel)}</button>`
             : `<a href="/planlar" class="btn btn-primary btn-sm" data-native-route>Planları incele</a>`
         }
@@ -132,7 +134,7 @@ export function renderPaywallGate(opts = {}) {
     feature: opts.feature,
     state,
     compact: opts.compact,
-    stripeReady: opts.stripeReady
+    paymentReady: opts.paymentReady !== false
   });
   if (opts.compact) {
     return `${paywall}`;

@@ -55,10 +55,10 @@ test('guest user sees login CTA', () => {
 test('error state shows fallback without checkout', () => {
   const html = renderPaywallV1({
     state: PAYWALL_STATE.ERROR,
-    errorMessage: 'Stripe yapılandırması eksik'
+    errorMessage: 'Ödeme sağlayıcı yapılandırması bekleniyor'
   });
   assert.match(html, /data-paywall-state="error"/);
-  assert.match(html, /Stripe yapılandırması eksik/);
+  assert.match(html, /Ödeme sağlayıcı yapılandırması bekleniyor/);
   assert.doesNotMatch(html, /data-paywall-v1-checkout/);
 });
 

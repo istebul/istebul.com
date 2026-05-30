@@ -165,7 +165,7 @@ export class ComparisonUI {
             feature: PRO_FEATURE.COMPARISON_ADVANCED,
             state,
             compact: true,
-            stripeReady: true
+            paymentReady: true
         });
     }
 

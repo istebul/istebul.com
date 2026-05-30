@@ -28,7 +28,7 @@ export const PLANS = {
     id: 'pro',
     name: 'isteBul Pro',
     priceLabel: 'Aylık abonelik',
-    priceHint: 'Stripe ile güvenli ödeme · dilediğiniz zaman iptal',
+    priceHint: 'iyzico / PayTR ile güvenli ödeme · dilediğiniz zaman iptal',
     description: 'Detaylı TCO, senaryo karşılaştırma, gelişmiş AI açıklama ve premium rapor',
     trialDays: 7,
     trialLabel: '7 gün ücretsiz dene',

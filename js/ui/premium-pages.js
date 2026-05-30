@@ -357,7 +357,7 @@ export class PremiumPages {
               <div><span>AI yorum</span><small>Şeffaf özet katmanı</small></div>
             </div>
             <div class="ib-arch-arrow" aria-hidden="true">↓</div>
-            <div class="ib-arch-layer"><span>Veri &amp; ödeme</span><small>Supabase · Stripe</small></div>
+            <div class="ib-arch-layer"><span>Veri &amp; ödeme</span><small>Supabase · iyzico · PayTR</small></div>
           </div>
         </div>
       </section>
@@ -398,7 +398,7 @@ export class PremiumPages {
       <section class="ib-premium-trust-panel ib-premium-trust-panel--pricing" aria-label="Ödeme güvencesi">
         <div class="container">
           <ul class="ib-pricing-trust-chips">
-            <li><i data-lucide="shield"></i><span><strong>Stripe · PCI</strong> — kart bilgileri sunucularımızda tutulmaz</span></li>
+            <li><i data-lucide="shield"></i><span><strong>iyzico · PayTR</strong> — kart bilgileri sunucularımızda tutulmaz</span></li>
             <li><i data-lucide="rotate-ccw"></i><span><strong>İptal</strong> — panelden istediğiniz zaman</span></li>
             <li><i data-lucide="gift"></i><span><strong>7 gün deneme</strong> — ilk Pro aboneliğinde</span></li>
           </ul>

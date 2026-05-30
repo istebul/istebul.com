@@ -36,7 +36,7 @@ export const CONVERSION_COPY = Object.freeze({
       'Hesabınız hazır. Doğrulama gerekiyorsa e-postanızı kontrol edin — Pro adımınız kayıtlı kalır.',
     successReset: 'Sıfırlama bağlantısı e-postanıza gönderildi. Gelen kutusu ve spam klasörünü kontrol edin.',
     checkoutIntentBanner:
-      'Pro ödeme adımı — 7 gün ücretsiz deneme · Stripe ile güvenli ödeme · İstediğiniz zaman iptal. Kart bilgileri sunucularımızda tutulmaz.'
+      'Pro ödeme adımı — iyzico / PayTR ile güvenli ödeme · İstediğiniz zaman iptal. Kart bilgileri sunucularımızda tutulmaz.'
   },
   checkout: {
     buttonLoading: 'Güvenli ödeme sayfası hazırlanıyor…',

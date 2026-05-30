@@ -213,7 +213,7 @@ export class RevenueManager {
             <button type="button" class="btn btn-primary" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_compact">Pro'ya geç</button>
             <button type="button" class="btn btn-outline" data-revenue-paywall-close>Şimdilik ücretsiz devam et</button>
           </div>
-          <p class="revenue-paywall-note">İstediğiniz zaman iptal edebilirsiniz. Ödeme Stripe ile güvenli şekilde alınır.</p>
+          <p class="revenue-paywall-note">İstediğiniz zaman iptal edebilirsiniz. Ödeme iyzico / PayTR altyapısı ile güvenli şekilde alınır.</p>
         </div>
       </div>
     `;
@@ -342,12 +342,12 @@ export class RevenueManager {
     return `
       <div class="revenue-pricing-reassurance" role="region" aria-label="${pt('reassuranceAria', {}, 'Ödeme ve iptal güvencesi')}">
         <div class="revenue-pricing-reassurance-item">
-          <strong>${pt('stripeTitle', {}, 'Stripe · PCI')}</strong>
-          <p>${pt('stripeDesc', {}, 'Ödeme Stripe üzerinden; kart bilgileri sunucularımızda saklanmaz.')}</p>
+          <strong>${pt('paymentTitle', {}, 'iyzico · PayTR')}</strong>
+          <p>${pt('paymentDesc', {}, 'Ödeme iyzico (birincil) ve PayTR (yedek) altyapısı ile alınır; kart bilgileri sunucularımızda tutulmaz.')}</p>
         </div>
         <div class="revenue-pricing-reassurance-item">
           <strong>${pt('cancelTitle', {}, 'İptal')}</strong>
-          <p>${pt('cancelDescHtml', {}, 'Aboneliği Stripe müşteri panelinden veya hesabınızdan istediğiniz zaman sonlandırın. <a href="/abonelik-iptal.html">İptal rehberi</a>')}</p>
+          <p>${pt('cancelDescHtml', {}, 'Aboneliğinizi hesabınızdan veya destek kanalından istediğiniz zaman sonlandırabilirsiniz. <a href="/abonelik-iptal.html">İptal rehberi</a>')}</p>
         </div>
         <div class="revenue-pricing-reassurance-item">
           <strong>${pt('trialTitle', {}, 'Deneme')}</strong>
@@ -445,10 +445,12 @@ export class RevenueManager {
           <p class="revenue-plan-desc">${pt('proDesc', {}, plans.pro.description)}</p>
           <ul class="revenue-plan-features">${this.renderPlanFeatureList(proHighlights)}</ul>
           <div class="revenue-plan-card-foot">
-            <div class="revenue-plan-cta-stack">
+            <div class="revenue-plan-cta-stack revenue-plan-cta-stack--tr">
               <button type="button" class="btn btn-primary btn-lg btn-block" data-payment-product="pro_monthly" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">Pro'ya geç · ${monthly.priceDisplay}</button>
-              <button type="button" class="btn btn-outline btn-block" data-payment-product="pro_yearly" data-analytics-cta="cta_secondary_checkout" data-analytics-placement="pricing_dynamic_pro_annual">Yıllık Pro · ${annual.priceDisplay}</button>
-              <button type="button" class="btn btn-ghost btn-sm btn-block" data-payment-product="premium_report" data-analytics-cta="cta_premium_report" data-analytics-placement="pricing_dynamic_premium_report">Premium rapor · 99 TL</button>
+              <div class="revenue-plan-cta-row">
+                <button type="button" class="btn btn-outline btn-sm btn-block" data-payment-product="pro_yearly" data-analytics-cta="cta_secondary_checkout" data-analytics-placement="pricing_dynamic_pro_annual">Yıllık Pro</button>
+                <button type="button" class="btn btn-ghost btn-sm btn-block" data-payment-product="premium_report" data-analytics-cta="cta_premium_report" data-analytics-placement="pricing_dynamic_premium_report">Premium rapor</button>
+              </div>
               <a href="/auto/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_pro_secondary">${pt('proSecondaryCta', {}, 'Önce ücretsiz TCO analizi')}</a>
             </div>
             <p class="revenue-plan-hint">${pt('proPriceHint', {}, PLANS.pro.priceHint)}${this.trialEligible ? pt('trialHint', { days: PLANS.pro.trialDays }, ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz`) : ''}</p>
@@ -460,7 +462,7 @@ export class RevenueManager {
     const trustFooter = `
       <p class="revenue-risk-reversal" role="note">
         <span>${pt('trustTrial', { days: PLANS.pro.trialDays }, `${PLANS.pro.trialDays} gün ücretsiz deneme (ilk abonelik)`)}</span>
-        <span>${pt('trustStripe', {}, 'iyzico / PayTR ile güvenli ödeme')}</span>
+        <span>${pt('trustPayment', {}, 'iyzico / PayTR ile güvenli ödeme')}</span>
         <span>${pt('trustCancel', {}, 'Panelden iptal — taahhütsüz')}</span>
         <span>${pt('trustDisclaimer', {}, 'Skorlar bilgilendirme amaçlıdır')}</span>
       </p>
@@ -640,8 +642,7 @@ export class RevenueManager {
               ? `${PLANS.pro.trialDays} günlük ücretsiz deneme aktif. Deneme bitiminde seçtiğiniz plan üzerinden ücretlendirilirsiniz.`
               : `Tüm premium özellikler açık${end ? ` · Dönem sonu: ${end}` : ''}.`}</p>
           ${canManage ? `
-          <button type="button" class="btn btn-primary" data-billing-portal>Aboneliği yönet</button>
-          <p class="revenue-plan-hint">Kart güncelle · faturalar · plan değiştir · iptal — Stripe panelinde</p>
+          <p class="revenue-plan-hint">Abonelik ve ödeme işlemleri için hesap ayarlarınızı kullanın veya <a href="/iletisim.html?konu=abonelik">destek</a> ile iletişime geçin.</p>
           ` : ''}
         </div>
       `;

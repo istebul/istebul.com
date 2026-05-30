@@ -6,19 +6,21 @@ import { PLANS } from '../monetization/plans.js';
 
 /**
  * @param {object} [opts]
- * @param {boolean} [opts.stripeReady]
+ * @param {boolean} [opts.paymentReady]
+ * @param {boolean} [opts.stripeReady] @deprecated use paymentReady
  * @param {boolean} [opts.trialEligible]
  */
 export function renderBillingV1PricingGrid(opts = {}) {
   const esc = escapeHtml;
-  const stripeReady = opts.stripeReady !== false;
+  const paymentReady =
+    opts.paymentReady !== false && opts.stripeReady !== false;
   const trialEligible = opts.trialEligible !== false;
   const free = PLANS.free;
   const pro = PLANS.pro;
   const ent = PLANS.enterprise;
   const monthly = pro.billing.monthly;
 
-  const proCta = stripeReady
+  const proCta = paymentReady
     ? `<button type="button" class="btn btn-primary btn-block billing-v1-cta-pro" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="billing_v1_pro">Pro'ya geç</button>`
     : `<a href="/planlar" class="btn btn-primary btn-block" data-native-route>Erken erişim — Planlar</a>`;
 
@@ -37,7 +39,7 @@ export function renderBillingV1PricingGrid(opts = {}) {
 
       <article class="billing-v1-plan-card billing-v1-plan-card--pro" role="listitem">
         <span class="billing-v1-plan-kicker billing-v1-plan-kicker--pro">Pro</span>
-        ${trialEligible && stripeReady ? `<span class="billing-v1-trial">${esc(pro.trialLabel)}</span>` : ''}
+        ${trialEligible && paymentReady ? `<span class="billing-v1-trial">${esc(pro.trialLabel)}</span>` : ''}
         <h3 class="billing-v1-plan-name">${esc(pro.name)}</h3>
         <p class="billing-v1-plan-price">${esc(monthly.priceDisplay)}<small>${esc(monthly.periodLabel)}</small></p>
         <p class="billing-v1-plan-desc">${esc(pro.description)}</p>

@@ -7,7 +7,7 @@ export function renderHomePricingTeaser(revenueManager) {
   return `
     <div class="ib-pricing-home-teaser" data-pricing-home-teaser>
       ${renderBillingV1PricingGrid({
-        stripeReady: true,
+        paymentReady: true,
         trialEligible: revenueManager?.trialEligible
       })}
     </div>`;

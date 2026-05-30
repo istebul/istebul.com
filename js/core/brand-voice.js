@@ -34,7 +34,7 @@ export const BRAND_VOICE = Object.freeze({
     railLine:
       'Skor metodolojisi açık · AI skoru tek başına değiştirmez · şeffaf TCO',
     stickyLine:
-      'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · ödeme Stripe ile',
+      'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · ödeme iyzico / PayTR',
     pricingLine:
       'Yanlış seçim maliyeti · 7 gün deneme · iptal tek tık',
     compliance:

@@ -413,6 +413,25 @@
   padding-bottom: 0.75rem;
 }
 
+.revenue-plan-cta-stack--tr .revenue-plan-cta-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.revenue-pricing-grid--triple {
+  align-items: start;
+}
+
+.revenue-plan-card--featured .revenue-plan-card-foot {
+  min-width: 0;
+}
+
+.ib-pricing-cards-stage {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 .revenue-feature-compare {
   margin: 2rem 0 1.5rem;
 }

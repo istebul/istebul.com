@@ -24,7 +24,7 @@ const tr = {
   planlar: {
     kicker: 'Planlar',
     title: 'Planlar ve fiyatlandırma',
-    lead: 'Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — 7 gün deneme, Stripe ile güvenli ödeme.',
+    lead: 'Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — iyzico / PayTR ile güvenli ödeme.',
     starterBullet: 'Başlangıç: sınırlı analiz ve 2 karşılaştırma',
     proBullet: 'Pro: derin TCO, AI karar notu, premium export',
     enterpriseBullet: 'Enterprise: API, webhook, SLA',
@@ -75,7 +75,7 @@ const en = {
   planlar: {
     kicker: 'Plans',
     title: 'Plans and pricing',
-    lead: 'Start with a free TCO summary. Pro unlocks unlimited comparisons, premium decision reports and partner matching — 7-day trial, secure Stripe checkout.',
+    lead: 'Start with a free TCO summary. Pro unlocks unlimited comparisons, premium decision reports and partner matching — secure iyzico / PayTR checkout.',
     starterBullet: 'Starter: limited analysis and 2 comparisons',
     proBullet: 'Pro: deep TCO, AI decision notes, premium export',
     enterpriseBullet: 'Enterprise: API, webhook, SLA',
@@ -128,7 +128,7 @@ const de = {
     ...en.planlar,
     kicker: 'Pläne',
     title: 'Pläne und Preise',
-    lead: 'Starten Sie mit einer kostenlosen TCO-Zusammenfassung. Pro bietet unbegrenzte Vergleiche und Premium-Berichte — 7 Tage Test, sichere Stripe-Zahlung.',
+    lead: 'Starten Sie mit einer kostenlosen TCO-Zusammenfassung. Pro bietet unbegrenzte Vergleiche und Premium-Berichte — sichere iyzico / PayTR-Zahlung.',
     ctaPrimary: 'Kostenlose Analyse starten',
     ctaSecondary: 'Methodik ansehen'
   }

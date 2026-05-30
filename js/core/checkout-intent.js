@@ -100,6 +100,6 @@ export function mapCheckoutApiError(status, data = {}) {
 export const CHECKOUT_REASSURANCE_HTML = `
   <p class="revenue-risk-reversal checkout-reassurance" role="note">
     <span>7 gün ücretsiz deneme</span>
-    <span>Stripe ile güvenli ödeme</span>
+    <span>iyzico / PayTR ile güvenli ödeme</span>
     <span>İstediğiniz zaman iptal</span>
   </p>`;

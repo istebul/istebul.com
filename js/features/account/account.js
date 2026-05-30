@@ -65,7 +65,7 @@ export class AccountManager {
             this.ui?.showError?.('Ödeme işlemi iptal edildi. İstediğiniz zaman tekrar deneyebilirsiniz.');
             this.activeTab = 'overview';
         } else if (billingManaged) {
-            this.ui?.showSuccess?.('Stripe abonelik panelinden döndünüz. Kart, fatura veya plan değişiklikleri kısa süre içinde yansır.');
+            this.ui?.showSuccess?.('Abonelik ayarlarınızdan döndünüz. Değişiklikler kısa süre içinde yansır.');
             this.activeTab = 'overview';
             const user = this.auth?.getCurrentUser?.();
             if (user?.email) {
@@ -367,7 +367,7 @@ export class AccountManager {
                     <ul class="account-trust-list">
                         <li><i data-lucide="lock"></i> Oturumlar şifreli bağlantı üzerinden korunur</li>
                         <li><i data-lucide="mail-check"></i> E-posta doğrulama ve şifre sıfırlama desteği</li>
-                        <li><i data-lucide="credit-card"></i> Stripe ile güvenli ödeme</li>
+                        <li><i data-lucide="credit-card"></i> iyzico / PayTR ile güvenli ödeme</li>
                     </ul>
                     <div class="account-guest-actions">
                         <button type="button" class="btn btn-primary" id="account-login-btn" data-auth-open="login">Hesabına gir</button>
