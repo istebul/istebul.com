@@ -19,8 +19,10 @@
   <link rel="stylesheet" href="/css/enterprise-card-readability.css?v=1">
   <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=7">
   <link rel="stylesheet" href="/css/istebul-premium-final-v7.css?v=7">
+  <link rel="stylesheet" href="/css/rtl.css">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/finans/finans-app.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Finansman simülasyonu onay mı?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Vade ve ödeme projeksiyonu bilgilendirme amaçlıdır."}},{"@type":"Question","name":"Hangi senaryolar karşılaştırılır?","acceptedAnswer":{"@type":"Answer","text":"Kredi tutarı, vade, peşinat ve aylık taşıma kapasitesi kombinasyonları."}},{"@type":"Question","name":"isteBul banka mı?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Karar destek platformudur; teklifler partner veya kullanıcı kaynaklıdır."}}]}</script>
 </head>
 <body class="vacation-page finans-page">
@@ -28,13 +30,13 @@
     <a class="logo" href="/">isteBul</a>
     <button class="vacation-nav-toggle" type="button" aria-controls="vacation-nav" aria-expanded="false">Menü</button>
     <nav id="vacation-nav" aria-label="Ana navigasyon">
-      <a href="/">Ana Sayfa</a>
-      <a href="/auto/">Araç</a>
-      <a href="/konut/">Konut</a>
-      <a href="/tatil/">Tatil</a>
-      <a href="/finans/" class="is-active">Finansman</a>
-      <a href="/metodoloji/">Metodoloji</a>
-      <a href="/iletisim.html">İletişim</a>
+      <a href="/" data-i18n="nav.home">Ana Sayfa</a>
+      <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
+      <a href="/konut/" data-i18n="vertical.konut">Konut</a>
+      <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
+      <a href="/finans/" class="is-active" data-i18n="vertical.finans">Finansman</a>
+      <a href="/metodoloji/" data-i18n="nav.methodology">Metodoloji</a>
+      <a href="/iletisim.html" data-i18n="nav.contact">İletişim</a>
     </nav>
   </header>
 
@@ -212,6 +214,7 @@
   <footer class="vacation-footer">
     <p>isteBul — karar zekâsı platformu. Kredi onayı ve faiz bankaya göre değişir.</p>
     <p><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">KVKK</a></p>
+    <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi" data-i18n-aria="meta.language"></div>
   </footer>
 </body>
 </html>

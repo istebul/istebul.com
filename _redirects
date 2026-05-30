@@ -111,6 +111,24 @@
 /de/auto/ /auto/index.html 200
 /ar/auto /auto/index.html 200
 /ar/auto/ /auto/index.html 200
+/en/konut /konut/index.html 200
+/en/konut/ /konut/index.html 200
+/de/konut /konut/index.html 200
+/de/konut/ /konut/index.html 200
+/ar/konut /konut/index.html 200
+/ar/konut/ /konut/index.html 200
+/en/tatil /tatil/index.html 200
+/en/tatil/ /tatil/index.html 200
+/de/tatil /tatil/index.html 200
+/de/tatil/ /tatil/index.html 200
+/ar/tatil /tatil/index.html 200
+/ar/tatil/ /tatil/index.html 200
+/en/finans /finans/index.html 200
+/en/finans/ /finans/index.html 200
+/de/finans /finans/index.html 200
+/de/finans/ /finans/index.html 200
+/ar/finans /finans/index.html 200
+/ar/finans/ /finans/index.html 200
 
 # --- App deep-link shells (physical index.html per route) ---
 /profil/* /profil/index.html 200

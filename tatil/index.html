@@ -20,8 +20,10 @@
   <link rel="stylesheet" href="/css/enterprise-card-readability.css?v=1">
   <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=7">
   <link rel="stylesheet" href="/css/istebul-premium-final-v7.css?v=7">
+  <link rel="stylesheet" href="/css/rtl.css">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/tatil/tatil-app.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Tatil karar asistanı ne ölçer?","acceptedAnswer":{"@type":"Answer","text":"Bütçe, sezon, konfor ve tercihlerinize göre tahmini maliyet ve uygunluk skoru üretir."}},{"@type":"Question","name":"Fiyat garantisi var mı?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Gösterilen tutarlar tahmini analizdir; rezervasyon koşulları sağlayıcıya bağlıdır."}},{"@type":"Question","name":"Kişisel veriler nasıl işlenir?","acceptedAnswer":{"@type":"Answer","text":"KVKK kapsamında; ayrıntılar gizlilik politikasında."}}]}</script>
 </head>
 <body class="vacation-page">
@@ -29,11 +31,11 @@
     <a class="logo" href="/">isteBul</a>
     <button class="vacation-nav-toggle" type="button" aria-controls="vacation-nav" aria-expanded="false">Menü</button>
     <nav id="vacation-nav" aria-label="Ana navigasyon">
-      <a href="/">Ana Sayfa</a>
-      <a href="/auto/">Ürünler</a>
-      <a href="/tatil/" class="is-active">Tatil Karar Asistanı</a>
-      <a href="/hakkimizda.html">Hakkımızda</a>
-      <a href="/iletisim.html">İletişim</a>
+      <a href="/" data-i18n="nav.home">Ana Sayfa</a>
+      <a href="/auto/" data-i18n="nav.products">Ürünler</a>
+      <a href="/tatil/" class="is-active" data-i18n="vertical.tatil">Tatil</a>
+      <a href="/hakkimizda.html" data-i18n="nav.about">Hakkımızda</a>
+      <a href="/iletisim.html" data-i18n="nav.contact">İletişim</a>
     </nav>
   </header>
 
@@ -115,6 +117,7 @@
   <footer class="vacation-footer">
     <p>isteBul — karar zekâsı platformu. Fiyatlar tahminidir; kesin teklif partner onayı ile sunulur.</p>
     <p><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">KVKK</a></p>
+    <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi" data-i18n-aria="meta.language"></div>
   </footer>
 </body>
 </html>

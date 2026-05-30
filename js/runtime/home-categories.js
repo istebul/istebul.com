@@ -39,6 +39,20 @@ const CATEGORY_SHORT_NAMES = {
   kasko: 'Kasko'
 };
 
+function translate(key, fallback = '') {
+  const result = window.__ibI18n?.t(key);
+  if (result && result !== key) return result;
+  return fallback;
+}
+
+function categoryDisplayName(category) {
+  return translate(`categories.${category.id}.name`, categoryShortName(category));
+}
+
+function categoryDisplayDesc(category) {
+  return translate(`categories.${category.id}.desc`, category.description || '');
+}
+
 function escapeHtml(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;')
@@ -53,7 +67,9 @@ function categoryShortName(category) {
 
 function renderActiveCard(category, index) {
   const score = category.sampleScore != null ? String(category.sampleScore) : '—';
-  const title = categoryShortName(category);
+  const title = categoryDisplayName(category);
+  const desc = categoryDisplayDesc(category);
+  const analyzeLabel = translate('home.analyzeLink', 'Analiz Et →');
   return `
     <a
       href="${escapeHtml(category.href)}"
@@ -75,8 +91,8 @@ function renderActiveCard(category, index) {
         </div>
         <div class="ib-cat-mockup__panel">
           <h3 class="ib-cat-mockup__title">${escapeHtml(title)}</h3>
-          <p class="ib-cat-mockup__desc">${escapeHtml(category.description)}</p>
-          <span class="ib-cat-mockup__link">Analiz Et →</span>
+          <p class="ib-cat-mockup__desc">${escapeHtml(desc)}</p>
+          <span class="ib-cat-mockup__link">${escapeHtml(analyzeLabel)}</span>
         </div>
       </div>
     </a>
@@ -84,7 +100,9 @@ function renderActiveCard(category, index) {
 }
 
 function renderComingSoonCard(category, index) {
-  const title = categoryShortName(category);
+  const title = categoryDisplayName(category);
+  const desc = categoryDisplayDesc(category);
+  const soonLabel = translate('home.soon', 'Yakında');
   return `
     <article
       class="ib-cat-mockup ib-cat-mockup--premium is-soon ib-cat-mockup--${escapeHtml(category.id)} is-coming-soon"
@@ -93,7 +111,7 @@ function renderComingSoonCard(category, index) {
       style="--ib-cat-i: ${index}"
       aria-label="${escapeHtml(title)} — yakında"
     >
-      <span class="ib-cat-mockup__soon-badge">Yakında</span>
+      <span class="ib-cat-mockup__soon-badge">${escapeHtml(soonLabel)}</span>
       <div class="ib-cat-mockup__bg" aria-hidden="true"></div>
       <div class="ib-cat-mockup__theme" aria-hidden="true"></div>
       <div class="ib-cat-mockup__overlay" aria-hidden="true"></div>
@@ -103,8 +121,8 @@ function renderComingSoonCard(category, index) {
         </div>
         <div class="ib-cat-mockup__panel">
           <h3 class="ib-cat-mockup__title">${escapeHtml(title)}</h3>
-          <p class="ib-cat-mockup__desc">${escapeHtml(category.description)}</p>
-          <span class="ib-cat-mockup__link">Yakında</span>
+          <p class="ib-cat-mockup__desc">${escapeHtml(desc)}</p>
+          <span class="ib-cat-mockup__link">${escapeHtml(soonLabel)}</span>
         </div>
       </div>
     </article>
@@ -270,8 +288,9 @@ export async function mountHomeCategoryGrid() {
   const soonHtml = soonCategories
     .map((category, index) => renderComingSoonCard(category, activeCategories.length + index))
     .join('');
+  const gridAria = translate('home.categoriesGridAria', 'Karar kategorileri');
   grid.innerHTML = `
-    <div class="ib-cat-mockup-shell" role="list" aria-label="Karar kategorileri">
+    <div class="ib-cat-mockup-shell" role="list" aria-label="${escapeHtml(gridAria)}">
       ${liveHtml}
       ${soonHtml}
     </div>
@@ -290,6 +309,11 @@ export function initHomeCategories() {
   }
   document.addEventListener('routeChanged', () => {
     if (document.documentElement.dataset.ibRoute === 'home') {
+      mountHomeCategoryGrid();
+    }
+  });
+  document.addEventListener('ib:locale-changed', () => {
+    if (document.getElementById('home-category-grid')) {
       mountHomeCategoryGrid();
     }
   });

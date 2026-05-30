@@ -77,6 +77,11 @@ body.housing-page {
   color: var(--housing-accent-2);
 }
 
+.housing-locale-footer {
+  padding: 1rem 0 1.5rem;
+  border-top: 1px solid var(--housing-border);
+}
+
 .housing-hero { padding: 42px 0; }
 .housing-hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: stretch; }
 .glass-card {

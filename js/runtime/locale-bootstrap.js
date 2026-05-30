@@ -6,7 +6,8 @@ import {
   setActiveLocale,
   applyDocumentLocale,
   buildLocalizedPath,
-  stripLocalePrefix
+  stripLocalePrefix,
+  getActiveLocale
 } from '../platform/locale-registry.js';
 import { readStorageRaw, writeStorageRaw, STORAGE_KEYS } from '../core/storage-keys.js';
 
@@ -36,21 +37,52 @@ export function bootstrapLocale() {
 }
 
 export function switchLocale(localeId) {
+  if (!localeId || localeId === getActiveLocale()) return;
+
   setActiveLocale(localeId);
   applyDocumentLocale(localeId);
   writeStorageRaw(STORAGE_KEYS.LOCALE, localeId);
 
   const { pathname } = stripLocalePrefix(window.location.pathname);
   const target = buildLocalizedPath(pathname, localeId);
-  window.location.assign(target + window.location.search + window.location.hash);
+  const nextUrl = target + window.location.search + window.location.hash;
+
+  const applyClientI18n = () => {
+    if (window.__ibI18n?.setLanguage) {
+      window.__ibI18n.setLanguage(localeId);
+    }
+    document.dispatchEvent(new CustomEvent('ib:locale-changed', { detail: { localeId } }));
+    mountLocaleSwitcher('locale-switcher');
+  };
+
+  const isVerticalLocaleShell =
+    document.body?.classList.contains('housing-page') ||
+    document.body?.classList.contains('ib-auto') ||
+    document.body?.classList.contains('vacation-page');
+
+  // SPA shell or vertical pages with i18n — soft switch without full reload
+  if (document.getElementById('main-content') || isVerticalLocaleShell) {
+    if (window.location.pathname !== target) {
+      window.history.replaceState(null, '', nextUrl);
+    }
+    applyClientI18n();
+    return;
+  }
+
+  if (window.location.pathname + window.location.search + window.location.hash !== nextUrl) {
+    window.location.assign(nextUrl);
+    return;
+  }
+
+  applyClientI18n();
 }
 
 export function mountLocaleSwitcher(containerId = 'locale-switcher') {
   const root = document.getElementById(containerId);
   if (!root) return;
 
-  import('../platform/locale-registry.js').then(({ listPublicLocales, getActiveLocale }) => {
-    const active = getActiveLocale();
+  import('../platform/locale-registry.js').then(({ listPublicLocales, getActiveLocale: getLocale }) => {
+    const active = getLocale();
     root.innerHTML = listPublicLocales()
       .map(
         (loc) =>
@@ -61,7 +93,7 @@ export function mountLocaleSwitcher(containerId = 'locale-switcher') {
     root.querySelectorAll('[data-locale]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const next = btn.dataset.locale;
-        if (next && next !== getActiveLocale()) switchLocale(next);
+        if (next && next !== getLocale()) switchLocale(next);
       });
     });
   });
@@ -70,5 +102,10 @@ export function mountLocaleSwitcher(containerId = 'locale-switcher') {
 bootstrapLocale();
 
 if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => mountLocaleSwitcher('locale-switcher'));
+  document.addEventListener('DOMContentLoaded', () => {
+    mountLocaleSwitcher('locale-switcher');
+    if (window.__ibI18n?.applyTranslations) {
+      window.__ibI18n.applyTranslations();
+    }
+  });
 }

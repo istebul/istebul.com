@@ -19,8 +19,10 @@
   <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=8">
   <link rel="stylesheet" href="/css/istebul-premium-final-v7.css?v=8">
   <link rel="stylesheet" href="/css/konut-header-premium-v1.css?v=1">
+  <link rel="stylesheet" href="/css/rtl.css">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/real-estate/real-estate-app.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Konut analizi finansal tavsiye midir?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Sonuçlar bilgilendirme amaçlıdır; kredi onayı bankaya aittir."}},{"@type":"Question","name":"Hangi girdiler kullanılır?","acceptedAnswer":{"@type":"Answer","text":"Bütçe, lokasyon, kredi yükü, aidat, ulaşım ve risk toleransı gibi profil alanları."}},{"@type":"Question","name":"Deprem riski dahil mi?","acceptedAnswer":{"@type":"Answer","text":"Risk katmanında bölgesel sinyaller dikkate alınabilir; nihai teknik değerlendirme uzman gerektirir."}}]}</script>
 </head>
 <body class="housing-page">
@@ -36,11 +38,11 @@
         Menü
       </button>
       <nav id="housing-nav" aria-label="Ana navigasyon">
-        <a href="/">Ana sayfa</a>
-        <a href="/auto/">Auto</a>
-        <a href="/tatil/">Tatil</a>
-        <a href="/finans/">Finansman</a>
-        <a href="/konut/" class="is-active" aria-current="page">Konut</a>
+        <a href="/" data-i18n="nav.home">Ana sayfa</a>
+        <a href="/auto/" data-i18n="vertical.auto">Auto</a>
+        <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
+        <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+        <a href="/konut/" class="is-active" aria-current="page" data-i18n="vertical.konut">Konut</a>
       </nav>
     </div>
   </header>
@@ -48,12 +50,12 @@
   <section class="housing-hero">
     <div class="housing-container housing-hero-grid">
       <article class="glass-card hero-copy">
-        <span class="hero-badge">AI destekli konut karar motoru</span>
-        <h1>Yapay zekâ destekli konut karar asistanı</h1>
-        <p>Bütçe, lokasyon, kredi yükü, aidat, ulaşım, deprem riski ve yaşam beklentilerini birlikte analiz ederek sizin için en doğru konut kararını görün.</p>
+        <span class="hero-badge" data-i18n="vertical.konutHeroBadge">AI destekli konut karar motoru</span>
+        <h1 data-i18n="vertical.konutHeroTitle">Yapay zekâ destekli konut karar asistanı</h1>
+        <p data-i18n="vertical.konutHeroDesc">Bütçe, lokasyon, kredi yükü, aidat, ulaşım, deprem riski ve yaşam beklentilerini birlikte analiz ederek sizin için en doğru konut kararını görün.</p>
         <div class="hero-actions">
-          <button type="button" class="btn-primary" id="housing-hero-cta">Konut kararımı analiz et</button>
-          <button type="button" class="btn-secondary" id="housing-hero-secondary">AI önerilerini gör</button>
+          <button type="button" class="btn-primary" id="housing-hero-cta" data-i18n="vertical.konutCtaPrimary">Konut kararımı analiz et</button>
+          <button type="button" class="btn-secondary" id="housing-hero-secondary" data-i18n="vertical.konutCtaSecondary">AI önerilerini gör</button>
         </div>
       </article>
       <aside class="glass-card hero-dashboard" aria-label="Premium karar paneli">
@@ -90,5 +92,10 @@
       </aside>
     </div>
   </main>
+  <footer class="housing-locale-footer">
+    <div class="housing-container">
+      <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi" data-i18n-aria="meta.language"></div>
+    </div>
+  </footer>
 </body>
 </html>

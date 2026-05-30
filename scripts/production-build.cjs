@@ -253,6 +253,19 @@ partnerCorporateEntries.forEach((entry) => {
   });
 });
 
+const verticalLocaleShellOut = path.join(dist, 'js/runtime/vertical-locale-shell.js');
+ensureDir(verticalLocaleShellOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/runtime/vertical-locale-shell.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: verticalLocaleShellOut
+});
+
 const autoDocumentReadySrc = path.join(root, 'js/auto/auto-document-ready.js');
 if (fs.existsSync(autoDocumentReadySrc)) {
   const autoReadyCode = esbuild.transformSync(fs.readFileSync(autoDocumentReadySrc, 'utf8'), {
