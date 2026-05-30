@@ -42,10 +42,7 @@ export function renderBillingV1PricingGrid(opts = {}) {
         <p class="billing-v1-plan-price">${esc(monthly.priceDisplay)}<small>${esc(monthly.periodLabel)}</small></p>
         <p class="billing-v1-plan-desc">${esc(pro.description)}</p>
         <ul class="billing-v1-plan-features">
-          <li>Sınırsız analiz</li>
-          <li>Gelişmiş PDF rapor &amp; geçmiş</li>
-          <li>Senaryo analizi &amp; çoklu karşılaştırma</li>
-          <li>Gelişmiş AI Executive Summary</li>
+          ${pro.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}
         </ul>
         ${proCta}
         <a href="/planlar" class="btn btn-ghost btn-sm btn-block" data-native-route>Plan detayları</a>

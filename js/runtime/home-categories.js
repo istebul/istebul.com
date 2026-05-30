@@ -305,7 +305,12 @@ async function fetchVisibilitySettings() {
 export async function mountHomeCategoryGrid() {
   const grid = document.getElementById('home-category-grid');
   if (!grid) return;
-  await window.__ibI18n?.ready;
+
+  const ready = window.__ibI18n?.ready;
+  if (ready) {
+    await Promise.race([ready, new Promise((resolve) => setTimeout(resolve, 3000))]);
+  }
+
   const visibilitySettings = await fetchVisibilitySettings();
   const categories = HOME_DECISION_CATEGORIES.filter((category) => {
     if (!FEATURED_CATEGORY_IDS.has(category.id)) return false;

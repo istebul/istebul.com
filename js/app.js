@@ -6,6 +6,7 @@ import {
   handleAuthRouteEntry
 } from './runtime/auth-return.js';
 import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
+import { initHomeCategories } from './runtime/home-categories.js';
 import { stripLocalePrefix } from './platform/locale-registry.js';
 import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
@@ -3418,6 +3419,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     async renderPricingSection() {
+        await window.__ibI18n?.ready;
         const revenueManager = await ensureRevenueManager();
         const premiumRoot = document.getElementById('premium-pricing-plans-root');
         const homeRoot = document.querySelector('#pricing #pricing-plans-root');
@@ -3428,7 +3430,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
 
         if (homeRoot && homeRoot !== premiumRoot) {
-            homeRoot.innerHTML = await renderHomePricingTeaser(revenueManager);
+            homeRoot.innerHTML = revenueManager.renderPricingCards({ layout: 'default' });
+            revenueManager.initPricingControls(homeRoot);
         }
 
         initPricingCardsMotion(document);

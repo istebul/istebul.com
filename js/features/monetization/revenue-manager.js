@@ -368,12 +368,12 @@ export class RevenueManager {
     const trialBadge = this.trialEligible
       ? `<span class="revenue-trial-badge">${ptMarketing('pricing.trialBadge', PLANS.pro.trialLabel)}</span>`
       : '';
-    const enterprise = plans.enterprise;
+    const enterprise = plans.enterprise || PLANS.enterprise;
     const roiBlock = this.renderPricingRoiCalculator(this.selectedBilling);
     const compareBlock = layout === 'premium' ? renderFeatureComparisonCards() : '';
     const reassuranceBlock = this.renderPricingReassurance();
-    const freeHighlights = ptHighlights('freeHighlights', PLANS.free.highlights);
-    const proHighlights = ptHighlights('proHighlights', PLANS.pro.highlights);
+    const freeHighlights = ptHighlights('freeHighlights', plans.free?.highlights || PLANS.free.highlights);
+    const proHighlights = ptHighlights('proHighlights', plans.pro?.highlights || PLANS.pro.highlights);
     const enterpriseHighlights = ptHighlights('enterpriseHighlights', enterprise?.highlights || []);
 
     const billingToggle = `
