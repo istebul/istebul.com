@@ -521,14 +521,30 @@ html.ib-ds-v4 .vacation-header #vacation-nav a[aria-current="page"] {
   opacity: 1;
 }
 
-/* —— Admin: readability only —— */
-html.ib-ds-v4 body.admin-enterprise .sidebar .nav-item {
-  color: var(--ib-v5-muted);
+/* —— Admin: premium SaaS shell —— */
+html.ib-ds-v4 body.admin-enterprise {
+  background: #f8fafc;
+  color: #0f172a;
 }
 
-html.ib-ds-v4 body.admin-enterprise .sidebar .nav-item:hover,
+html.ib-ds-v4 body.admin-enterprise .sidebar .nav-item {
+  color: #64748b;
+}
+
+html.ib-ds-v4 body.admin-enterprise .sidebar .nav-item:hover {
+  color: #0f172a;
+  background: #f8fafc;
+}
+
 html.ib-ds-v4 body.admin-enterprise .sidebar .nav-item.active {
-  color: var(--ib-v5-accent);
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+html.ib-ds-v4 body.admin-enterprise .page,
+html.ib-ds-v4 body.admin-enterprise .card,
+html.ib-ds-v4 body.admin-enterprise .stat-card {
+  color: #0f172a;
 }
 
 /* —— Reduced motion —— */
