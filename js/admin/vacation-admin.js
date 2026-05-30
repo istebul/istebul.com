@@ -3,8 +3,7 @@ import { escapeHtml, safeAttr, safeJsonParse } from '../core/dom-safe.js';
 import { normalizePhoneForWhatsapp } from '../core/phone.js';
 import {
   fetchAdminTable,
-  collectAdminWarnings,
-  renderAdminWarningBanner
+  renderAdminDataSourceNotices
 } from './admin-query.js';
 import { setAdminRootLoading } from './admin-page-routing.js';
 
@@ -101,7 +100,7 @@ async function loadVacationDestinations(sb) {
   }
   const rows = res.data || [];
   el.innerHTML = `
-    ${renderAdminWarningBanner(collectAdminWarnings([res]))}
+    ${renderAdminDataSourceNotices([res])}
     <table class="table"><thead><tr><th>Şehir</th><th>Ülke</th><th>Tip</th><th>Sezon</th><th>Risk</th><th>Maliyet</th><th>Aile</th><th>Çocuk</th><th>Durum</th></tr></thead>
     <tbody>
       ${rows.map((r) => `<tr>
@@ -135,7 +134,7 @@ async function loadVacationPartners(sb) {
   }
   const rows = res.data || [];
   el.innerHTML = `
-    ${renderAdminWarningBanner(collectAdminWarnings([res]))}
+    ${renderAdminDataSourceNotices([res])}
     <table class="table"><thead><tr><th>Ad</th><th>Tip</th><th>Link</th><th>Not</th><th>Durum</th></tr></thead>
     <tbody>
       ${rows.map((r) => `<tr>
@@ -176,7 +175,7 @@ async function loadVacationScoring(sb) {
     setVal('vacation-scoring-prompt-template', top.prompt_template || '');
   }
   el.innerHTML = `
-    ${renderAdminWarningBanner(collectAdminWarnings([res]))}
+    ${renderAdminDataSourceNotices([res])}
     <div class="text-muted-sm">Son kayıt: ${top ? new Date(top.created_at).toLocaleString('tr-TR') : '—'}</div>
   `;
 }
@@ -202,7 +201,7 @@ async function loadVacationAnalytics(sb) {
     })
   ]);
 
-  const warnings = collectAdminWarnings([eventsRes, leadsRes]);
+  const vacationBatch = [eventsRes, leadsRes];
   const fatal = eventsRes.error && leadsRes.error;
   if (fatal) {
     renderVacationLoadError(el, eventsRes.error ? eventsRes : leadsRes, 'Analytics yüklenemedi');
@@ -250,7 +249,7 @@ async function loadVacationAnalytics(sb) {
   ];
 
   el.innerHTML = `
-    ${renderAdminWarningBanner(warnings)}
+    ${renderAdminDataSourceNotices(vacationBatch)}
     <div class="stat-grid">
       ${cards
         .map(
@@ -286,7 +285,7 @@ async function loadVacationLeads(sb, adminAction, toast) {
   }
 
   const data = res.data || [];
-  const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
+  const banner = renderAdminDataSourceNotices([res]);
 
   const search = (document.getElementById('vacation-leads-search')?.value || '').toLowerCase().trim();
   const statusFilter = document.getElementById('vacation-leads-status-filter')?.value || '';
@@ -437,7 +436,7 @@ async function loadVacationScenarios(sb, adminAction, toast) {
   }
 
   const data = res.data || [];
-  const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
+  const banner = renderAdminDataSourceNotices([res]);
 
   if (!data.length) {
     el.innerHTML = `${banner}<p class="empty">Henüz senaryo yok. Yukarıdaki formdan ekleyebilirsiniz.</p>`;

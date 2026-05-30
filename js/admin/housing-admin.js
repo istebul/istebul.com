@@ -1,5 +1,5 @@
 import { escapeHtml, safeAttr } from '../core/dom-safe.js';
-import { fetchAdminTable, collectAdminWarnings, renderAdminWarningBanner } from './admin-query.js';
+import { fetchAdminTable, renderAdminDataSourceNotices } from './admin-query.js';
 import { setAdminRootLoading } from './admin-page-routing.js';
 
 const HOUSING_SETTING_KEYS = [
@@ -87,7 +87,7 @@ async function loadHousingLeads(sb, adminAction, toast) {
   if (res.error && !res.data?.length) return renderLoadError(el, res, 'Konut leadleri');
   const allRows = res.data || [];
   renderHousingLeadStats(allRows, eventsRes.data || []);
-  const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
+  const banner = renderAdminDataSourceNotices([res]);
   const search = (document.getElementById('housing-leads-search')?.value || '').toLowerCase().trim();
   const status = document.getElementById('housing-leads-status-filter')?.value || '';
   const rows = allRows.filter((row) => {
@@ -154,7 +154,7 @@ async function loadHousingLocations(sb) {
     direct: () => sb.from('housing_locations').select('*').order('created_at', { ascending: false }).limit(600)
   });
   if (res.error && !res.data?.length) return renderLoadError(el, res, 'Konut lokasyonları');
-  const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
+  const banner = renderAdminDataSourceNotices([res]);
   el.innerHTML = `${banner}<table class="table"><thead><tr><th>Şehir</th><th>İlçe/Semt</th><th>Fiyat seviyesi</th><th>Ulaşım</th><th>Yaşam kalitesi</th><th>Yatırım</th><th>Risk</th><th>Durum</th></tr></thead><tbody>${
     (res.data || []).map((row) => `<tr>
       <td>${escapeHtml(row.city || '—')}</td>
@@ -180,7 +180,7 @@ async function loadHousingPartners(sb) {
     direct: () => sb.from('housing_partners').select('*').order('created_at', { ascending: false }).limit(500)
   });
   if (res.error && !res.data?.length) return renderLoadError(el, res, 'Konut partnerleri');
-  const banner = renderAdminWarningBanner(collectAdminWarnings([res]));
+  const banner = renderAdminDataSourceNotices([res]);
   el.innerHTML = `${banner}<table class="table"><thead><tr><th>Partner</th><th>Tip</th><th>Şehir</th><th>İlçe</th><th>Link</th><th>Komisyon notu</th><th>Durum</th></tr></thead><tbody>${
     (res.data || []).map((row) => `<tr>
       <td>${escapeHtml(row.partner_name || '—')}</td>

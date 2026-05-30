@@ -14,7 +14,6 @@ let cachedAt = 0;
  * @param {import('@supabase/supabase-js').SupabaseClient} deps.sb
  * @param {function} deps.fetchAdminTable
  * @param {object} deps.SCALE_LIMITS
- * @param {function} deps.collectAdminWarnings
  */
 export async function fetchInternalDashboardContext(deps) {
   const now = Date.now();
@@ -22,7 +21,7 @@ export async function fetchInternalDashboardContext(deps) {
     return cachedContext;
   }
 
-  const { sb, fetchAdminTable, SCALE_LIMITS, collectAdminWarnings } = deps;
+  const { sb, fetchAdminTable, SCALE_LIMITS } = deps;
   const windowDays = SCALE_LIMITS.admin.executiveWindowDays || 30;
   const since = new Date(Date.now() - windowDays * 86400000).toISOString();
   const since48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
@@ -123,6 +122,7 @@ export async function fetchInternalDashboardContext(deps) {
       table: 'lifecycle_enrollments',
       select: 'flow_id, status, enrolled_at',
       limit: 3000,
+      order: { column: 'enrolled_at', ascending: false },
       direct: () =>
         sb
           .from('lifecycle_enrollments')
@@ -182,7 +182,7 @@ export async function fetchInternalDashboardContext(deps) {
     })
   ]);
 
-  const warnings = collectAdminWarnings([
+  const dataSourceResults = [
     subsRes,
     leadsRes,
     eventsRes,
@@ -194,7 +194,7 @@ export async function fetchInternalDashboardContext(deps) {
     retryLeadsRes,
     ceoLeadsRes,
     faqRes
-  ]);
+  ];
 
   const sinceMs = new Date(since).getTime();
   const events = (eventsRes.data || []).filter((row) => {
@@ -229,7 +229,7 @@ export async function fetchInternalDashboardContext(deps) {
 
   cachedContext = {
     ctx,
-    warnings,
+    dataSourceResults,
     fetchWarnings: [subsRes, leadsRes, eventsRes],
     analyticsEvents48h: eventsRes.data || []
   };
@@ -247,18 +247,18 @@ export function invalidateInternalDashboardCache() {
  * @param {'ceo'|'growth'|'revenue'|'partner_ops'|'support'} kind
  * @param {string} rootId
  * @param {function} escapeHtml
- * @param {function} renderAdminWarningBanner
+ * @param {function} renderAdminDataSourceNotices
  */
-export async function loadInternalDashboard(deps, kind, rootId, escapeHtml, renderAdminWarningBanner) {
+export async function loadInternalDashboard(deps, kind, rootId, escapeHtml, renderAdminDataSourceNotices) {
   const el = document.getElementById(rootId);
   if (!el) return;
 
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
   try {
-    const { ctx, warnings } = await fetchInternalDashboardContext(deps);
+    const { ctx, dataSourceResults } = await fetchInternalDashboardContext(deps);
     el.innerHTML =
-      renderAdminWarningBanner(warnings) + renderInternalDashboard(kind, ctx, escapeHtml);
+      renderAdminDataSourceNotices(dataSourceResults) + renderInternalDashboard(kind, ctx, escapeHtml);
   } catch (err) {
     el.innerHTML = `<p class="empty">Hata: ${escapeHtml(err?.message || String(err))}</p>`;
   }
