@@ -49,10 +49,11 @@ for (const route of requiredRoutes) {
   }
 }
 
-const heroMust = ['Analize Başla', 'Nasıl Çalışır'];
-for (const text of heroMust) {
+const heroMust = ['Kararımı Analiz Et', 'Nasıl Çalışır?'];
+const navMust = ['Fiyatlandırma', 'Hakkımızda', 'Hemen Başla'];
+for (const text of [...heroMust, ...navMust]) {
   if (!html.includes(text)) {
-    console.error('FAIL: hero missing CTA text:', text);
+    console.error('FAIL: homepage missing expected text:', text);
     failed = true;
   }
 }

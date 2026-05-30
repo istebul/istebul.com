@@ -3,26 +3,16 @@ import {
   isHomeCategoryActive
 } from '../platform/home-category-config.js';
 
-const FEATURED_CATEGORY_IDS = new Set(['araba', 'konut', 'tatil', 'finansman', 'sigorta', 'kasko']);
+const FEATURED_CATEGORY_IDS = new Set(['araba', 'konut', 'tatil', 'finansman', 'sigorta']);
 
-const CATEGORY_ICONS = {
-  araba:
-    '<svg class="ib-cat-v6__svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M5 17a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h1l1.4-3.5A2 2 0 0 1 9.2 7h5.6a2 2 0 0 1 1.8 1.1L18 11.5h1a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2M5 17a2 2 0 1 0 4 0M15 17a2 2 0 1 0 4 0"/></svg>',
-  konut:
-    '<svg class="ib-cat-v6__svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
-  tatil:
-    '<svg class="ib-cat-v6__svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M8 7c0-2 1.5-4 4-4s4 2 4 4-1.5 3-4 3-4-1-4-3Z"/><path d="M6 21c1.5-2 4-3 6-3s4.5 1 6 3"/></svg>',
-  finansman:
-    '<svg class="ib-cat-v6__svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h18M5 10V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M5 10v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/><path d="M12 14v4"/></svg>',
-  sigorta:
-    '<svg class="ib-cat-v6__svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>',
-  kasko:
-    '<svg class="ib-cat-v6__svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>'
+const CATEGORY_SHORT_NAMES = {
+  araba: 'Otomobil',
+  konut: 'Konut',
+  tatil: 'Tatil',
+  finansman: 'Finans',
+  sigorta: 'Sigorta',
+  kasko: 'Kasko'
 };
-
-function categoryIconMarkup(categoryId) {
-  return CATEGORY_ICONS[categoryId] || '';
-}
 
 function escapeHtml(str) {
   return String(str ?? '')
@@ -32,68 +22,51 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-/** Presentational risk tone for badge color (V6 cards). */
-function riskToneClass(riskValue) {
-  const v = String(riskValue || '').toLowerCase();
-  if (!v || v === '—') return 'neutral';
-  if (v.includes('yüksek')) return 'high';
-  if (v.includes('orta') && v.includes('düşük')) return 'medium-low';
-  if (v.includes('düşük') && v.includes('orta')) return 'medium-low';
-  if (v.includes('orta')) return 'medium';
-  if (v.includes('düşük')) return 'low';
-  return 'neutral';
+function categoryShortName(category) {
+  return CATEGORY_SHORT_NAMES[category.id] || category.name;
 }
 
 function renderActiveCard(category) {
   const score = category.sampleScore != null ? String(category.sampleScore) : '—';
-  const risk = category.riskValue || '—';
-  const riskClass = riskToneClass(risk);
+  const title = categoryShortName(category);
   return `
     <a
       href="${escapeHtml(category.href)}"
-      class="ib-cat-v6 is-active ib-category-showcase ib-category-showcase--${escapeHtml(category.theme)} ib-cat-v6--enterprise"
+      class="ib-cat-mockup is-active ib-cat-mockup--${escapeHtml(category.id)}"
       data-category-id="${escapeHtml(category.id)}"
       data-native-route
       role="listitem"
-      aria-label="${escapeHtml(category.name)} — ${escapeHtml(category.ctaLabel || 'Analizi başlat')}"
+      aria-label="${escapeHtml(title)} — Analiz et"
     >
-      <span class="ib-cat-v6__badge ib-cat-v6__badge--ai">AI Destekli</span>
-      <div class="ib-cat-v6__icon ib-cat-v6__icon--${escapeHtml(category.id)}" aria-hidden="true">
-        ${categoryIconMarkup(category.id)}
+      <div class="ib-cat-mockup__bg" aria-hidden="true"></div>
+      <div class="ib-cat-mockup__overlay" aria-hidden="true"></div>
+      <div class="ib-cat-mockup__body">
+        <span class="ib-cat-mockup__score">${escapeHtml(score)}/100</span>
+        <h3 class="ib-cat-mockup__title">${escapeHtml(title)}</h3>
+        <p class="ib-cat-mockup__desc">${escapeHtml(category.description)}</p>
+        <span class="ib-cat-mockup__link">Analiz Et →</span>
       </div>
-      <h3 class="ib-cat-v6__title">${escapeHtml(category.name)}</h3>
-      <p class="ib-cat-v6__value">${escapeHtml(category.description)}</p>
-      <div class="ib-cat-v6__metrics ib-cat-v6__metrics--dashboard" aria-label="Örnek karar sinyalleri">
-        <div class="ib-cat-v6__metric ib-cat-v6__metric--score">
-          <span class="ib-cat-v6__metric-label">Karar sinyali</span>
-          <strong class="ib-cat-v6__score-value" aria-label="Örnek karar sinyali ${escapeHtml(score)} üzerinden 100">${escapeHtml(score)}<span>/100</span></strong>
-          <span class="ib-cat-v6__metric-hint">Örnek analiz çıktısı</span>
-        </div>
-        <div class="ib-cat-v6__metric ib-cat-v6__risk ib-cat-v6__risk--${escapeHtml(riskClass)}">
-          <span class="ib-cat-v6__metric-label">Risk görünümü</span>
-          <strong class="ib-cat-v6__risk-value">${escapeHtml(risk)}</strong>
-        </div>
-      </div>
-      <span class="ib-cat-v6__cta">${escapeHtml(category.ctaLabel || 'Analizi başlat')}</span>
     </a>
   `;
 }
 
 function renderComingSoonCard(category) {
+  const title = categoryShortName(category);
   return `
     <article
-      class="ib-cat-v6 is-soon ib-category-showcase is-coming-soon ib-category-showcase--${escapeHtml(category.theme)} ib-cat-v6--enterprise"
+      class="ib-cat-mockup is-soon ib-cat-mockup--${escapeHtml(category.id)} is-coming-soon"
       data-category-id="${escapeHtml(category.id)}"
       role="listitem"
-      aria-label="${escapeHtml(category.name)} — yakında"
+      aria-label="${escapeHtml(title)} — yakında"
     >
-      <span class="ib-cat-v6__badge ib-cat-v6__badge--soon">Yakında</span>
-      <div class="ib-cat-v6__icon ib-cat-v6__icon--${escapeHtml(category.id)}" aria-hidden="true">
-        ${categoryIconMarkup(category.id)}
+      <span class="ib-cat-mockup__soon-badge">Yakında</span>
+      <div class="ib-cat-mockup__bg" aria-hidden="true"></div>
+      <div class="ib-cat-mockup__overlay" aria-hidden="true"></div>
+      <div class="ib-cat-mockup__body">
+        <h3 class="ib-cat-mockup__title">${escapeHtml(title)}</h3>
+        <p class="ib-cat-mockup__desc">${escapeHtml(category.description)}</p>
+        <span class="ib-cat-mockup__link">Yakında</span>
       </div>
-      <h3 class="ib-cat-v6__title">${escapeHtml(category.name)}</h3>
-      <p class="ib-cat-v6__value">${escapeHtml(category.description)}</p>
-      <span class="ib-cat-v6__cta ib-cat-v6__cta--passive" aria-disabled="true">Yakında</span>
     </article>
   `;
 }
@@ -252,7 +225,7 @@ export async function mountHomeCategoryGrid() {
   const liveHtml = activeCategories.map((category) => renderActiveCard(category)).join('');
   const soonHtml = soonCategories.map((category) => renderComingSoonCard(category)).join('');
   grid.innerHTML = `
-    <div class="ib-cat-v6-shell ib-cat-v6-shell--enterprise" role="list" aria-label="Karar kategorileri">
+    <div class="ib-cat-mockup-shell" role="list" aria-label="Karar kategorileri">
       ${liveHtml}
       ${soonHtml}
     </div>
@@ -275,3 +248,6 @@ export function initHomeCategories() {
     }
   });
 }
+
+// Preserve modal export for tests / future interest CTA
+export { openInterestModal, ensureComingSoonModal };

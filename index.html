@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="css/istebul-premium-final-v7.css?v=8">
     <link rel="stylesheet" href="css/home-header-saas-v1.css?v=2">
     <link rel="stylesheet" href="css/home-product-cards-enterprise-v1.css?v=2">
+    <link rel="stylesheet" href="css/home-mockup-final-v1.css?v=1">
     <link rel="stylesheet" href="css/growth-cro.css?v=1">
     <link rel="stylesheet" href="css/growth-retention.css?v=1">
     <link rel="stylesheet" href="css/help-center.css?v=1">
@@ -65,6 +66,7 @@ html.ib-route-pending .ib-prerender-seo{display:none!important}
 html[data-ib-route="home"] #home,
 html[data-ib-route="home"] #how-it-works,
 html[data-ib-route="home"] #home-vertical-focus,
+html[data-ib-route="home"] #home-features-strip,
 html[data-ib-route="home"] #sample-preview,
 html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #pricing,
@@ -154,7 +156,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <a class="nav-brand" href="/" data-native-route aria-label="Ana sayfaya dön">
                 <span class="brand-mark" aria-hidden="true">iB</span>
                 <span class="brand-copy">
-                    <span class="brand-title" data-cms="site-name">isteBul</span>
+                    <span class="brand-title" data-cms="site-name">isteBul <span class="brand-ai-suffix">AI</span></span>
                     <span class="nav-subtitle" data-cms="site-subtitle">AI destekli karar zekası platformu</span>
                 </span>
             </a>
@@ -182,8 +184,10 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             <a href="/#home-vertical-focus" class="nav-dropdown-link" data-home-anchor="home-vertical-focus" role="menuitem">Tüm kategoriler</a>
                         </div>
                     </div>
-                    <a href="/#how-it-works" class="nav-link" data-home-anchor="how-it-works">Nasıl Çalışır</a>
+                    <a href="/#how-it-works" class="nav-link" data-home-anchor="how-it-works">Nasıl Çalışır?</a>
                     <a href="/metodoloji/" class="nav-link" data-native-route>Metodoloji</a>
+                    <a href="/#pricing" class="nav-link" data-home-anchor="pricing">Fiyatlandırma</a>
+                    <a href="/hakkimizda.html" class="nav-link" data-native-route>Hakkımızda</a>
                     <div class="nav-dropdown nav-more-menu" id="nav-more-menu">
                         <button
                             type="button"
@@ -206,6 +210,8 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         </div>
                     </div>
                     <div class="nav-more-mobile-links" aria-label="Ek kaynaklar">
+                        <a href="/#pricing" class="nav-link" data-home-anchor="pricing">Fiyatlandırma</a>
+                        <a href="/hakkimizda.html" class="nav-link" data-native-route>Hakkımızda</a>
                         <span class="nav-more-mobile-label">Kaynaklar</span>
                         <a href="/blog" class="nav-link" data-native-route>Blog</a>
                         <a href="/duyurular" class="nav-link" data-native-route>Duyurular</a>
@@ -223,7 +229,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Tema değiştir" title="Tema değiştir"></button>
                 <div class="nav-auth" id="nav-auth">
                     <button id="login-btn" class="btn btn-outline" type="button" data-auth-open="login" aria-label="Giriş Yap">Giriş Yap</button>
-                    <a href="/auto/" class="btn btn-primary nav-cta-decision" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav">Analize Başla</a>
+                    <a href="/#home-vertical-focus" class="btn btn-primary nav-cta-decision" data-home-anchor="home-vertical-focus" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav">Hemen Başla</a>
                 </div>
             </div>
             <div class="nav-user hidden" id="nav-user">
@@ -246,7 +252,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
         </div>
     </nav>
 
-    <div class="ib-trust-rail ib-trust-rail--saas" role="complementary" aria-label="Platform güvenilirliği">
+    <div class="ib-trust-rail ib-trust-rail--saas ib-trust-rail--compact" role="complementary" aria-label="Platform güvenilirliği">
         <div class="container ib-trust-rail-inner">
             <span>KVKK Uyumlu</span>
             <span>TLS Şifreleme</span>
@@ -267,9 +273,9 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
         <section id="home" class="hero-section ib-hero-venture ib-hero-premium-dark ib-hero-v4" aria-labelledby="hero-v4-title">
             <div class="hero-container container ib-hero-v4-grid">
                 <div class="hero-content ib-hero-v4-copy">
-                    <p class="hero-eyebrow ib-hero-v4-tagline ib-hero-saas-badge" data-cms="hero-eyebrow">AI karar zekâsı platformu</p>
-                    <h1 id="hero-v4-title" data-cms="hero-title">Daha doğru satın alma kararları verin.</h1>
-                    <p class="hero-lead ib-hero-v4-sub" data-cms="hero-desc">Araç, konut, tatil ve finansman kararlarında riskleri ve toplam maliyeti önceden görün.</p>
+                    <p class="hero-eyebrow ib-hero-v4-tagline ib-hero-saas-badge" data-cms="hero-eyebrow">AI destekli karar platformu</p>
+                    <h1 id="hero-v4-title" data-cms="hero-title">Büyük kararları verirken <span class="ib-hero-gradient-text">yalnız değilsiniz.</span></h1>
+                    <p class="hero-lead ib-hero-v4-sub" data-cms="hero-desc">Aracınızdan tatilinize, konuttan finansmanınıza kadar — yapay zeka destekli analiz ile en doğru seçimi yapın.</p>
                     <ul class="ib-hero-v4-trust ib-hero-saas-trust-compact" hidden aria-hidden="true">
                         <li>KVKK uyumlu veri işleme</li>
                         <li>Stripe ile güvenli ödeme</li>
@@ -278,8 +284,8 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     </ul>
                     <div class="hero-actions ib-hero-cta-stack ib-hero-cta-dual ib-hero-v4-actions ib-hero-saas-actions">
                         <div class="ib-hero-cta-primary-row">
-                            <a href="/#home-vertical-focus" class="btn btn-primary btn-lg" data-home-anchor="home-vertical-focus" data-hero-cta-primary data-analytics-cta="cta_decision_hero" data-analytics-placement="hero">Analize Başla</a>
-                            <a href="/#how-it-works" class="btn btn-outline btn-lg ib-hero-btn-ghost" data-home-anchor="how-it-works" data-analytics-cta="cta_how_it_works" data-analytics-placement="hero">Nasıl Çalışır</a>
+                            <a href="/#home-vertical-focus" class="btn btn-primary btn-lg ib-hero-cta-arrow" data-home-anchor="home-vertical-focus" data-hero-cta-primary data-analytics-cta="cta_decision_hero" data-analytics-placement="hero">Kararımı Analiz Et <span class="ib-hero-arrow" aria-hidden="true">→</span></a>
+                            <a href="/#how-it-works" class="btn btn-outline btn-lg ib-hero-btn-ghost ib-hero-cta-play" data-home-anchor="how-it-works" data-analytics-cta="cta_how_it_works" data-analytics-placement="hero"><span class="ib-hero-play-icon" aria-hidden="true">▶</span> Nasıl Çalışır?</a>
                         </div>
                         <span class="ib-hero-cta-hint" data-social-proof-disclaimer>Örnek skor ve maliyetler gösterim amaçlıdır · finansal tavsiye değildir</span>
                     </div>
@@ -288,7 +294,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <div class="preview-toolbar" aria-hidden="true">
                         <span></span><span></span><span></span>
                     </div>
-                    <p class="preview-category-label" data-preview-title>AI öneri özeti — Araç kararı</p>
+                    <p class="preview-category-label" data-preview-title>AI Öneri Özeti</p>
                     <p class="preview-sources" data-preview-sources hidden>Örnek veri kaynakları: TCO motoru, finansman simülasyonu</p>
                     <div class="ib-dash-grid ib-dash-grid--platform">
                         <div class="ib-dash-score-ring" aria-label="Genel uygunluk skoru 89 üzerinden 100, çok iyi">
@@ -303,20 +309,24 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         </div>
                         <div class="ib-dash-kpi-row">
                             <div class="ib-dash-stat ib-metric">
-                                <span>Karar Skoru</span>
-                                <strong>89/100</strong>
+                                <span>Toplam Maliyet</span>
+                                <strong>₺1.247.500</strong>
+                                <a href="/auto/" class="ib-dash-detail-link" data-native-route>Detayları Gör</a>
+                            </div>
+                            <div class="ib-dash-stat ib-dash-stat--risk ib-metric">
+                                <span>Risk Seviyesi</span>
+                                <strong>Düşük</strong>
+                                <a href="/auto/" class="ib-dash-detail-link" data-native-route>Detayları Gör</a>
+                            </div>
+                            <div class="ib-dash-stat ib-metric">
+                                <span>Uygunluk</span>
+                                <strong>92/100</strong>
+                                <a href="/auto/" class="ib-dash-detail-link" data-native-route>Detayları Gör</a>
                             </div>
                             <div class="ib-dash-stat ib-metric">
                                 <span>Güven Skoru</span>
-                                <strong>93%</strong>
-                            </div>
-                            <div class="ib-dash-stat ib-dash-stat--risk ib-metric">
-                                <span>Risk</span>
-                                <strong>Düşük</strong>
-                            </div>
-                            <div class="ib-dash-stat ib-metric">
-                                <span>Toplam Maliyet</span>
-                                <strong>₺1.712.400</strong>
+                                <strong>85/100</strong>
+                                <a href="/auto/" class="ib-dash-detail-link" data-native-route>Detayları Gör</a>
                             </div>
                         </div>
                         <div class="ib-dash-charts" aria-hidden="true">
@@ -481,14 +491,52 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
-        <section id="home-vertical-focus" class="ib-use-cases ib-section-venture ib-home-categories ib-home-categories-premium ib-product-cards-v6 ib-product-cards-enterprise" aria-labelledby="home-use-cases-title">
+        <section id="home-vertical-focus" class="ib-use-cases ib-section-venture ib-home-categories ib-home-categories-premium ib-product-cards-v6 ib-product-cards-enterprise ib-home-categories-mockup" aria-labelledby="home-use-cases-title">
             <div class="container">
-                <header class="section-header ib-section-intro ib-section-intro--center">
-                    <span class="section-kicker">Ürün modülleri</span>
-                    <h2 id="home-use-cases-title">Hangi kararda destek istiyorsunuz?</h2>
-                    <p class="ib-section-lead-muted">Canlı modüller tam analiz akışına bağlanır. Örnek sinyaller gösterim amaçlıdır; gerçek skorlar profilinize göre üretilir.</p>
-                </header>
                 <div class="ib-category-showcase-grid" id="home-category-grid" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <section id="home-features-strip" class="ib-features-strip ib-section-venture" aria-label="Platform özellikleri">
+            <div class="container">
+                <div class="ib-features-strip-grid">
+                    <article class="ib-features-strip-item ib-features-strip-item--cost">
+                        <span class="ib-features-strip-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </span>
+                        <div>
+                            <h3>Gerçek Toplam Maliyet</h3>
+                            <p>Gizli maliyetler dahil gerçekçi analiz</p>
+                        </div>
+                    </article>
+                    <article class="ib-features-strip-item ib-features-strip-item--ai">
+                        <span class="ib-features-strip-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3a6 6 0 0 0 9 9 6 6 0 1 1-9-9Z"/><path d="M19 3v4M21 5h-4"/></svg>
+                        </span>
+                        <div>
+                            <h3>AI Destekli Analiz</h3>
+                            <p>Gelişmiş yapay zeka algoritmaları ile kişiselleştirilmiş öneriler</p>
+                        </div>
+                    </article>
+                    <article class="ib-features-strip-item ib-features-strip-item--compare">
+                        <span class="ib-features-strip-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+                        </span>
+                        <div>
+                            <h3>Tarafsız Karşılaştırma</h3>
+                            <p>Bağımsız ve objektif değerlendirme</p>
+                        </div>
+                    </article>
+                    <article class="ib-features-strip-item ib-features-strip-item--secure">
+                        <span class="ib-features-strip-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3 4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+                        </span>
+                        <div>
+                            <h3>Güvenli &amp; Şeffaf</h3>
+                            <p>Verileriniz güvende, sonuçlar şeffaf</p>
+                        </div>
+                    </article>
+                </div>
             </div>
         </section>
 

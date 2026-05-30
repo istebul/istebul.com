@@ -60,6 +60,10 @@ html.ib-ds-v4.ib-premium-v7 #home-vertical-focus {
   order: 20;
 }
 
+html.ib-ds-v4.ib-premium-v7 #home-features-strip {
+  order: 25;
+}
+
 html.ib-ds-v4.ib-premium-v7 #sample-preview {
   order: 30;
 }
