@@ -228,8 +228,7 @@ function internalDashboardDepsBase() {
   return {
     sb,
     fetchAdminTable,
-    SCALE_LIMITS,
-    collectAdminWarnings
+    SCALE_LIMITS
   };
 }
 

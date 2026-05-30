@@ -21,7 +21,7 @@ export async function fetchInternalDashboardContext(deps) {
     return cachedContext;
   }
 
-  const { sb, fetchAdminTable, SCALE_LIMITS, collectAdminWarnings } = deps;
+  const { sb, fetchAdminTable, SCALE_LIMITS } = deps;
   const windowDays = SCALE_LIMITS.admin.executiveWindowDays || 30;
   const since = new Date(Date.now() - windowDays * 86400000).toISOString();
   const since48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
