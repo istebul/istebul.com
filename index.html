@@ -31,8 +31,8 @@
     <link rel="stylesheet" href="css/style.css?v=63">
     <link rel="stylesheet" href="css/istebul-premium-final-v7.css?v=8">
     <link rel="stylesheet" href="css/home-header-saas-v1.css?v=2">
-    <link rel="stylesheet" href="css/home-product-cards-enterprise-v1.css?v=2">
     <link rel="stylesheet" href="css/home-mockup-final-v1.css?v=1">
+    <link rel="stylesheet" href="css/homepage-lean-v1.css?v=1">
     <link rel="stylesheet" href="css/growth-cro.css?v=1">
     <link rel="stylesheet" href="css/growth-retention.css?v=1">
     <link rel="stylesheet" href="css/help-center.css?v=1">
@@ -40,7 +40,6 @@
     <link rel="stylesheet" href="css/dashboard-v2.css?v=2">
     <link rel="stylesheet" href="css/billing-v1.css?v=2">
     <link rel="stylesheet" href="css/listing-gallery.css?v=1">
-    <link rel="stylesheet" href="css/home-trust-unified.css?v=1">
     <link rel="stylesheet" href="css/enterprise-remediation.css?v=3">
 
 <style>
@@ -67,12 +66,12 @@ html[data-ib-route="home"] #home,
 html[data-ib-route="home"] #how-it-works,
 html[data-ib-route="home"] #home-vertical-focus,
 html[data-ib-route="home"] #home-features-strip,
-html[data-ib-route="home"] #sample-preview,
-html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #pricing,
 html[data-ib-route="home"] #partner-enterprise,
-html[data-ib-route="home"] #landing-faq,
-html[data-ib-route="home"] #karar-rehberi{display:block!important}
+html[data-ib-route="home"] #landing-faq{display:block!important}
+html[data-ib-route="home"] #sample-preview,
+html[data-ib-route="home"] #trust,
+html[data-ib-route="home"] #karar-rehberi{display:none!important}
 html[data-ib-route="page-duyurular"] #page-duyurular,
 html[data-ib-route="page-kampanyalar"] #page-kampanyalar,
 html[data-ib-route="page-blog"] #page-blog,
@@ -201,7 +200,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             Kaynaklar
                         </button>
                         <div id="nav-more-list" class="nav-dropdown-content nav-more-list" role="menu" hidden>
-                            <a href="/#sample-preview" class="nav-dropdown-link" data-home-anchor="sample-preview" role="menuitem">Örnek analiz</a>
+                            <a href="/#home-vertical-focus" class="nav-dropdown-link" data-home-anchor="home-vertical-focus" role="menuitem">Örnek analiz</a>
                             <a href="/blog" class="nav-dropdown-link" data-native-route role="menuitem">Blog</a>
                             <a href="/duyurular" class="nav-dropdown-link" data-native-route role="menuitem">Duyurular</a>
                             <a href="/kampanyalar" class="nav-dropdown-link" data-native-route role="menuitem">Kampanyalar</a>
@@ -251,15 +250,6 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </div>
     </nav>
-
-    <div class="ib-trust-rail ib-trust-rail--saas ib-trust-rail--compact" role="complementary" aria-label="Platform güvenilirliği">
-        <div class="container ib-trust-rail-inner">
-            <span>KVKK Uyumlu</span>
-            <span>TLS Şifreleme</span>
-            <span data-cro-trust-rail-item="methodology">Denetlenebilir metodoloji</span>
-            <span>AI karar altyapısı</span>
-        </div>
-    </div>
 
     <!-- Main Content -->
     <main id="main-content">
@@ -387,7 +377,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
-        <section id="karar-rehberi" class="ib-section-venture section-bg" aria-labelledby="karar-rehberi-title">
+        <section id="karar-rehberi" class="ib-section-venture section-bg" aria-labelledby="karar-rehberi-title" data-landing-excluded hidden>
             <div class="container">
                 <header class="section-header ib-section-intro ib-section-intro--center">
                     <span class="section-kicker">Karar Rehberi</span>
@@ -428,7 +418,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
-        <section id="sample-preview" class="sample-preview-section ib-section-venture section-bg" aria-labelledby="sample-preview-title">
+        <section id="sample-preview" class="sample-preview-section ib-section-venture section-bg" aria-labelledby="sample-preview-title" data-landing-excluded hidden>
             <div class="container">
                 <header class="section-header ib-section-intro ib-demo-header">
                     <div>
@@ -573,7 +563,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
-        <section id="trust" class="trust-section ib-section-venture ib-trust-unified" aria-labelledby="trust-title">
+        <section id="trust" class="trust-section ib-section-venture ib-trust-unified" aria-labelledby="trust-title" data-landing-excluded hidden>
             <div class="container">
                 <header class="section-header ib-section-intro ib-section-intro--center">
                     <span class="section-kicker">Platform güveni</span>

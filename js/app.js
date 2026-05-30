@@ -173,7 +173,7 @@ class App {
             this.setupCookieConsent();
             this.renderHeroDecisionPreview();
             const trustMount = document.getElementById('home-trust-layer-mount');
-            if (trustMount) {
+            if (trustMount && resolveRouteSurface(window.location.pathname) !== 'home') {
                 trustMount.innerHTML = renderTrustLayerCompact('home');
                 this.ui.loadIcons?.();
             }

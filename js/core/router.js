@@ -20,21 +20,17 @@ export const HOMEPAGE_SECTION_IDS = Object.freeze([
     'home',
     'how-it-works',
     'home-vertical-focus',
-    'sample-preview',
-    'trust',
+    'home-features-strip',
     'pricing',
     'partner-enterprise',
-    'landing-faq',
-    'home-final-cta'
+    'landing-faq'
 ]);
 
 /** Hash targets on the marketing page. */
 export const MARKETING_HASH_IDS = Object.freeze([
     'home',
     'home-vertical-focus',
-    'home-tco-lens',
-    'sample-preview',
-    'trust',
+    'home-features-strip',
     'how-it-works',
     'pricing',
     'partner-enterprise',
@@ -149,7 +145,7 @@ export class Router {
 
         document.querySelectorAll('section[id]').forEach((section) => {
             const isMarketing = HOMEPAGE_SECTION_IDS.includes(section.id);
-            if (isMarketing) {
+            if (isMarketing && !section.hasAttribute('data-landing-excluded')) {
                 section.classList.remove('hidden');
                 section.removeAttribute('hidden');
                 section.removeAttribute('aria-hidden');

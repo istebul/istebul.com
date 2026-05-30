@@ -64,7 +64,7 @@ html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #main-nav.navbar {
 }
 
 html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-container {
-  width: min(1200px, calc(100vw - 2rem));
+  width: 100%;
   max-width: 1200px;
   min-height: var(--ib-saas-nav-h);
   height: auto;

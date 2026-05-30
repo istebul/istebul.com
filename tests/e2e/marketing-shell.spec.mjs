@@ -14,13 +14,21 @@ test.describe('Marketing shell (anon landing)', () => {
     await waitForAppReady(page);
 
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'home');
-    await expect(page.getByRole('heading', { name: /Pahalı bir araç hatasından/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /yalnız değilsiniz/i })).toBeVisible();
     await expect(page.locator('#ilanlar')).toBeHidden();
     await expect(page.locator('#pricing')).toBeVisible();
-    await expect(page.locator('#sample-preview')).toBeVisible();
-    await expect(page.locator('#home-auto-bridge')).toBeVisible();
+    await expect(page.locator('#home-features-strip')).toBeVisible();
+    await expect(page.locator('#sample-preview')).toBeHidden();
+    await expect(page.locator('#trust')).toBeHidden();
+    await expect(page.locator('#home-auto-bridge')).toBeHidden();
     await expect(page.locator('#landing-faq')).toBeVisible();
-    await expect(page.getByRole('link', { name: /Analiz başlat/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Hemen Başla/i }).first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 1;
+    });
+    expect(overflow).toBe(false);
   });
 
   test('/giris?return= auth modalı ve return yakalama', async ({ page }) => {

@@ -37,7 +37,7 @@ const requiredRoutes = [
   '/karsilastir/',
   '/planlar',
   '/#how-it-works',
-  '/#sample-preview',
+  '/#home-vertical-focus',
   '/#pricing'
 ];
 for (const route of requiredRoutes) {

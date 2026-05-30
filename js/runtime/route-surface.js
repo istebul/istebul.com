@@ -12,13 +12,10 @@ export const MARKETING_SURFACE_IDS = Object.freeze([
     'home',
     'how-it-works',
     'home-vertical-focus',
-    'sample-preview',
-    'trust',
+    'home-features-strip',
     'pricing',
     'partner-enterprise',
-    'landing-faq',
-    'home-final-cta',
-    'karar-rehberi'
+    'landing-faq'
 ]);
 
 const PREMIUM_PATHS = Object.freeze({
