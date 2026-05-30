@@ -99,6 +99,16 @@ const LONGFORM = {
       heading: 'isteBul karşılaştırma merkezi',
       body: '/karsilastir/ akışı skor, maliyet farkı ve risk özetini yan yana sunar. Manuel tablo ile platform çıktısını çapraz doğrulayın.',
       subsections: []
+    },
+    {
+      heading: 'Karar öncesi kontrol listesi',
+      body: 'Satın almadan önce servis geçmişi, garanti durumu, lastik yaşı ve sigorta geçmişini ayrı satırlara yazın. Test sürüşünde şehir içi, otoyol ve park manevrasını deneyin. TCO tablosuna «beklenmedik bakım» için %5–10 tampon eklemek sürpriz maliyetleri azaltır. İkinci elde ekspertiz raporu olmadan nihai karar vermeyin. Satıcı «hemen alın» baskısı kuruyorsa mola verip tabloyu evde tamamlayın.',
+      subsections: []
+    },
+    {
+      heading: 'Sonuç',
+      body: 'Doğru karşılaştırma duygu yerine tablo ister. Skor, maliyet farkı ve risk özetini birlikte okuyun; tek kriterle karar vermeyin. isteBul çıktısını manuel notlarınızla birleştirerek galeri veya banka görüşmesine hazırlanın.',
+      subsections: []
     }
   ],
   'elektrikli-arac-alirken': [
@@ -167,6 +177,16 @@ const LONGFORM = {
       heading: 'Senaryo planlama',
       body: 'Faiz artışı (değişken faiz), yakıt fiyatı artışı ve sigorta prim artışı için %10 stres testi uygulayın. Stres testinden geçen bütçe sürdürülebilir kabul edilir.',
       subsections: []
+    },
+    {
+      heading: 'Aylık bütçe şablonu',
+      body: 'Excel veya not defterinde dört sütun yeterlidir: sabit giderler (taksit, sigorta, MTV), değişken giderler (yakıt, otopark), bakım rezervi ve acil durum payı. Gelirin %15–20 kuralını aşsanız bile stres testi ile en az üç ay dayanabileceğinizden emin olun. EV sahipleri ev şarj maliyetini ayrı satırda takip etmelidir. Yılda bir kez tabloyu güncellemek enflasyon ve faiz değişimlerini yakalamanızı sağlar.',
+      subsections: []
+    },
+    {
+      heading: 'Sonuç',
+      body: 'Sürdürülebilir bütçe, yalnızca taksiti değil tüm ulaşım yükünü kapsar. Tabloyu aylık güncellerseniz sürpriz giderler erken görünür; isteBul TCO özeti bu tablonun başlangıç noktası olabilir.',
+      subsections: []
     }
   ],
   'arac-alim-karar-asistani': [
@@ -183,6 +203,16 @@ const LONGFORM = {
     {
       heading: 'Partner ve lead akışı',
       body: 'Partner teklifleri yalnızca onayınızla paylaşılır. Lead sonrası ekspertiz ve sözleşme adımlarında profesyonel destek alın. Platform finansal aracı kurum değildir.',
+      subsections: []
+    },
+    {
+      heading: 'Yaygın hatalar',
+      body: 'Yalnızca aylık taksite bakıp sigorta, bakım ve değer kaybını ihmal etmek en sık hatadır. İkinci elde «pazarlık payı» sanılarak ekspertiz atlanmamalıdır. Kampanyalı faizli kredide erken kapama cezasını ve kasko paket zorunluluğunu sözleşmeden okuyun. Karar asistanı skoru yüksek olsa bile bütçe bandınız dışına çıkmayın.',
+      subsections: []
+    },
+    {
+      heading: 'Sonuç',
+      body: 'Karar asistanı zaman kazandırır; nihai sözleşme yine sizin kontrolünüzdedir. Skor, TCO bandı ve alternatif listesini birlikte kullanın; tek satırlık «en ucuz» seçimi uzun vadede pahalı olabilir.',
       subsections: []
     }
   ],
@@ -201,6 +231,16 @@ const LONGFORM = {
       heading: 'ROI hesabı',
       body: 'Araç iş gelirine hizmet ediyorsa aylık kazanç artışı veya maliyet düşüşü araç gideriyle kıyaslanmalıdır. Panelvan ile pickup iş modeline göre seçilir.',
       subsections: []
+    },
+    {
+      heading: 'Vergi ve amortisman',
+      body: 'Ticari plakada gider yazımı ve amortisman kuralları bireysel alımdan farklıdır. Mali müşavirinizle yıllık vergi etkisini modelleyin. Leasing stopaj ve KDV detaylarını sözleşmede netleştirin; TCO tablosuna vergi avantajını ayrı satır olarak ekleyin. Filo büyürken tek tip araç standardı bakım maliyetini düşürür.',
+      subsections: []
+    },
+    {
+      heading: 'Sonuç',
+      body: 'Ticari araç alımı nakit akışı ve vergi planlaması gerektirir. ROI tablosunu en az iki senaryo ile güncelleyin; isteBul TCO çıktısı operasyonel maliyet satırlarını doldurmak için kullanılabilir. Sözleşme imzadan önce mali müşavir ve sigorta brokerinizle tabloyu doğrulayın. Yük değişirse dingil yükü ve yakıt kalemlerini yeniden hesaplayın. Kış lastiği ve zincir zorunluluğu operasyon planına eklenmelidir.',
+      subsections: []
     }
   ],
   'arac-sigortasi-karsilastirma': [
@@ -217,6 +257,16 @@ const LONGFORM = {
     {
       heading: 'Prim artışını modelleme',
       body: 'Hasar sonrası prim artışını 3 yıllık TCO’ya yansıtın. Sürücü yaşı, il ve garaj tipi (kapalı/açık) primi değiştirir.',
+      subsections: []
+    },
+    {
+      heading: 'Poliçe seçiminde son kontrol',
+      body: 'Teminat limitleri, cam-kırılması, ikame araç süresi ve anlaşmalı servis ağını yazılı karşılaştırın. En düşük prim her zaman en düşük toplam maliyet demek değildir; yüksek muafiyetli poliçede küçük hasarlar birikir. Yenileme döneminde en az üç bağımsız teklif alın ve TCO tablosuna yıllık prim artış senaryosu ekleyin. Hasarsızlık indirimini kaybetmemek için küçük hasarları muafiyet altında bırakmayı değerlendirin.',
+      subsections: []
+    },
+    {
+      heading: 'Sonuç',
+      body: 'Sigorta, TCO’nun sabit kalemidir; yalnızca yenileme döneminde değil yıl boyunca takip edin. Teminat boşluklarını kapatmak çoğu zaman prim artışından ucuzdur. Poliçe PDF’ini saklayın ve hasar anında muafiyet tutarını hatırlayın. İkame araç süresi kısa poliçeler iş kullanımında pahalıya dönebilir.',
       subsections: []
     }
   ]

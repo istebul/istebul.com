@@ -28,6 +28,31 @@ html.ib-rtl select {
   text-align: start;
 }
 
+html.ib-rtl input[type='number'],
+html.ib-rtl input[type='tel'],
+html.ib-rtl input[inputmode='numeric'],
+html.ib-rtl .revenue-plan-price,
+html.ib-rtl .vacation-option-card-desc {
+  direction: ltr;
+  unicode-bidi: plaintext;
+  text-align: end;
+}
+
+html.ib-rtl .form-row,
+html.ib-rtl .vacation-lead-form .form-row,
+html.ib-rtl .vacation-wizard-actions {
+  direction: rtl;
+}
+
+html.ib-rtl .vacation-progress-item {
+  direction: rtl;
+}
+
+html.ib-rtl .ib-cat-mockup__score {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
 .locale-switcher {
   display: flex;
   flex-wrap: wrap;

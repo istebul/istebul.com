@@ -3,7 +3,6 @@ import {
   isHomeCategoryActive
 } from '../platform/home-category-config.js';
 import { getHomeCategoryCardImage } from '../platform/home-category-visuals.js';
-import { marketingCopy } from '../features/i18n/marketing-copy.js';
 
 const FEATURED_CATEGORY_IDS = new Set([
   'araba',
@@ -59,13 +58,7 @@ function resolveLocaleId() {
 function translate(key) {
   const result = window.__ibI18n?.t(key);
   if (result && result !== key) return result;
-  const locale = resolveLocaleId();
-  const keys = key.split('.');
-  let node = marketingCopy[locale] || marketingCopy.tr;
-  for (const part of keys) {
-    node = node?.[part];
-  }
-  return typeof node === 'string' ? node : key;
+  return key;
 }
 
 function categoryDisplayName(category) {
@@ -151,7 +144,7 @@ function renderComingSoonCard(category, index) {
       style="--ib-cat-i: ${index}"
       aria-label="${escapeHtml(title)} — ${escapeHtml(soonLabel)}"
     >
-      <span class="ib-cat-mockup__soon-badge">${escapeHtml(soonLabel)}</span>
+      <span class="ib-cat-mockup__soon-badge ib-soon-badge">${escapeHtml(soonLabel)}</span>
       ${renderCardImage(category, index)}
       <div class="ib-cat-mockup__theme" aria-hidden="true"></div>
       <div class="ib-cat-mockup__overlay" aria-hidden="true"></div>
@@ -312,6 +305,7 @@ async function fetchVisibilitySettings() {
 export async function mountHomeCategoryGrid() {
   const grid = document.getElementById('home-category-grid');
   if (!grid) return;
+  await window.__ibI18n?.ready;
   const visibilitySettings = await fetchVisibilitySettings();
   const categories = HOME_DECISION_CATEGORIES.filter((category) => {
     if (!FEATURED_CATEGORY_IDS.has(category.id)) return false;

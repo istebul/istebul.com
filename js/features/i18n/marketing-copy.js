@@ -3,6 +3,7 @@ import { marketingSections } from './marketing-sections.js';
 import { newLocaleOverrides } from './new-locale-overrides.js';
 import { pricingDynamicCopy } from './pricing-dynamic-copy.js';
 import { spaPagesCopy } from './spa-pages-copy.js';
+import { wizardCopy } from './wizard-copy.js';
 
 function deepMerge(target, ...sources) {
   const output = { ...(target || {}) };
@@ -565,7 +566,8 @@ export const marketingCopy = Object.fromEntries(
           newLocaleOverrides[localeId],
           marketingSections[localeId],
           { pricingDynamic: pricingDynamicCopy.en },
-          { spaPages: spaPagesCopy.en }
+          { spaPages: spaPagesCopy.en },
+          { wizard: wizardCopy.en }
         )
       ];
     }
@@ -575,7 +577,8 @@ export const marketingCopy = Object.fromEntries(
         baseMarketingCopy[localeId],
         marketingSections[localeId],
         { pricingDynamic: pricingDynamicCopy[localeId] || pricingDynamicCopy.en },
-        { spaPages: spaPagesCopy[localeId] || spaPagesCopy.en }
+        { spaPages: spaPagesCopy[localeId] || spaPagesCopy.en },
+        { wizard: wizardCopy[localeId] || wizardCopy.en }
       )
     ];
   })

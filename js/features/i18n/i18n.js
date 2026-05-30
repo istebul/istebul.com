@@ -1,4 +1,5 @@
-import { translations } from './translations.js';
+import { getCoreTranslations } from './translations.js';
+import { loadLocaleBundle, mergeLocaleBundle } from './locale-loader.js';
 import { state } from '../../core/state.js';
 import {
   getActiveLocale,
@@ -12,26 +13,33 @@ import { writeStorageRaw, STORAGE_KEYS } from '../../core/storage-keys.js';
 export class I18nManager {
   constructor() {
     this.currentLang = getActiveLocale();
-    this.translations = translations;
-    this.init();
+    this.translations = { ...getCoreTranslations() };
+    this._loadedLocales = new Set();
+    this.ready = this.bootstrap();
   }
 
-  init() {
+  async bootstrap() {
+    await this.ensureLocaleLoaded(this.currentLang);
+    this.bindEvents();
     this.applyTranslations();
-    state.subscribe('lang', (lang) => {
+  }
+
+  bindEvents() {
+    state.subscribe('lang', async (lang) => {
       this.currentLang = lang;
       setActiveLocale(lang);
       applyDocumentLocale(lang);
+      await this.ensureLocaleLoaded(lang);
       this.applyTranslations();
     });
 
     if (typeof document !== 'undefined') {
-      document.addEventListener('ib:locale-changed', (event) => {
+      document.addEventListener('ib:locale-changed', async (event) => {
         const lang = event.detail?.localeId;
-        if (lang && this.translations[lang]) {
-          this.currentLang = lang;
-          this.applyTranslations();
-        }
+        if (!lang || !this.translations[lang]) return;
+        this.currentLang = lang;
+        await this.ensureLocaleLoaded(lang);
+        this.applyTranslations();
       });
       document.addEventListener('routeChanged', () => {
         this.applyTranslations();
@@ -39,21 +47,29 @@ export class I18nManager {
     }
   }
 
-  setLanguage(lang) {
+  async ensureLocaleLoaded(lang) {
+    if (!lang || this._loadedLocales.has(lang)) return;
+    const bundle = await loadLocaleBundle(lang);
+    this.translations[lang] = mergeLocaleBundle(this.translations[lang] || {}, bundle);
+    this._loadedLocales.add(lang);
+  }
+
+  async setLanguage(lang) {
     if (!this.translations[lang]) return;
     this.currentLang = lang;
     writeStorageRaw(STORAGE_KEYS.LOCALE, lang);
     state.set('lang', lang);
     setActiveLocale(lang);
     applyDocumentLocale(lang);
+    await this.ensureLocaleLoaded(lang);
     this.applyTranslations();
   }
 
-  switchLanguage(lang) {
+  async switchLanguage(lang) {
     if (!this.translations[lang]) return;
     const { pathname } = stripLocalePrefix(window.location.pathname);
     const target = buildLocalizedPath(pathname, lang);
-    this.setLanguage(lang);
+    await this.setLanguage(lang);
     if (typeof window !== 'undefined' && window.location.pathname !== target) {
       window.history.replaceState(null, '', target + window.location.search + window.location.hash);
     }

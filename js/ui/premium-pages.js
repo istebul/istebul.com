@@ -4,6 +4,13 @@
 import { renderStaticPricingFallback } from '../runtime/pricing-static-fallback.js';
 import { BRAND_VOICE } from '../core/brand-voice.js';
 
+function spaText(key, fallback = '') {
+  const fullKey = `spaPages.${key}`;
+  const translated = typeof window !== 'undefined' ? window.__ibI18n?.t(fullKey) : null;
+  if (translated && translated !== fullKey) return translated;
+  return fallback;
+}
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -145,10 +152,10 @@ export class PremiumPages {
 
       <div class="ib-premium-trust-strip" role="complementary">
         <div class="container ib-premium-trust-strip-inner">
-          <span><i data-lucide="shield-check"></i> KVKK uyumlu</span>
-          <span><i data-lucide="lock"></i> TLS şifreleme</span>
-          <span><i data-lucide="eye"></i> Açık skorlama</span>
-          <span><i data-lucide="ban"></i> Satıcı baskısı yok</span>
+          <span><i data-lucide="shield-check"></i> ${escapeHtml(spaText('premiumKarar.trustKvkk', 'KVKK uyumlu'))}</span>
+          <span><i data-lucide="lock"></i> ${escapeHtml(spaText('premiumKarar.trustTls', 'TLS şifreleme'))}</span>
+          <span><i data-lucide="eye"></i> ${escapeHtml(spaText('premiumKarar.trustScoring', 'Açık skorlama'))}</span>
+          <span><i data-lucide="ban"></i> ${escapeHtml(spaText('premiumKarar.trustNoPressure', 'Satıcı baskısı yok'))}</span>
         </div>
       </div>
 
@@ -156,8 +163,8 @@ export class PremiumPages {
         <div class="container">
           <div class="ib-premium-block-head">
             <span class="section-kicker">${BRAND_VOICE.kickers.preview}</span>
-            <h2>Karar önizlemesi</h2>
-            <p>Kısa sorularla maliyet sinyallerini görün. Tam TCO analizi ve sıralama için Auto akışını kullanın.</p>
+            <h2>${escapeHtml(spaText('premiumKarar.previewTitle', 'Karar önizlemesi'))}</h2>
+            <p>${escapeHtml(spaText('premiumKarar.previewLead', 'Kısa sorularla maliyet sinyallerini görün. Tam TCO analizi ve sıralama için Auto akışını kullanın.'))}</p>
           </div>
           <div class="assistant-section ib-premium-assistant-shell">
             <div class="assistant-shell">
@@ -185,8 +192,8 @@ export class PremiumPages {
         <div class="container">
           <div class="ib-premium-block-head">
             <span class="section-kicker">Karşılaştırma</span>
-            <h2>İki seçeneği yan yana görün</h2>
-            <p>Pro ile 4 modele kadar detaylı karşılaştırma; ücretsiz planda 2 model.</p>
+            <h2>${escapeHtml(spaText('premiumKarar.compareTitle', 'İki seçeneği yan yana görün'))}</h2>
+            <p>${escapeHtml(spaText('premiumKarar.compareLead', 'Pro ile 4 modele kadar detaylı karşılaştırma; ücretsiz planda 2 model.'))}</p>
           </div>
           <div class="ib-compare-table-wrap">
             <p class="ib-sample-scenario-label ib-sample-scenario-label--block">Örnek senaryo — canlı analizde değerler girdilerinize göre hesaplanır</p>

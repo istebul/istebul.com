@@ -1,4 +1,5 @@
 import { initDecisionFlow } from '../vertical/vertical-decision-app.js';
+import { resolveWizardConfig } from '../vertical/wizard-i18n.js';
 import { createVerticalTracker } from '../vertical/vertical-intake.js';
 import { FINANS_STEPS, FINANS_OPTIONS, FINANS_DISCLAIMER } from './finans-config.js';
 import {
@@ -84,7 +85,8 @@ function renderStepBody(step, state, { renderOptionGrid }) {
   return '';
 }
 
-initDecisionFlow({
+initDecisionFlow(
+  resolveWizardConfig('finans', {
   vertical: 'finans',
   themeClass: 'finans-page',
   steps: FINANS_STEPS,
@@ -121,4 +123,5 @@ initDecisionFlow({
   buildSummary: buildFinansSummary,
   buildCommentary: buildFinansCommentary,
   getProgress: getFinansProgress
-});
+  })
+);

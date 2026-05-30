@@ -9,6 +9,7 @@ import {
   PRICING_ROI_DEFAULTS
 } from './pricing-roi.js';
 import { AFFILIATE_DEFAULTS, FREE_LIMITS, PLANS, PRICING_MESSAGING, PRO_FEATURES } from './plans.js';
+import { applyLocalizedPricingToPlans } from './pricing-localization.js';
 import { isProSubscriptionStatus } from '../billing/pro-features.js';
 
 function pt(key, vars = {}, fallback = '') {
@@ -29,6 +30,11 @@ function ptMarketing(key, fallback = '') {
   const translated = typeof window !== 'undefined' ? window.__ibI18n?.t(key) : null;
   if (translated && translated !== key) return translated;
   return fallback;
+}
+
+function getLocalizedPlans() {
+  const localeId = typeof window !== 'undefined' ? window.__ibI18n?.currentLang || 'tr' : 'tr';
+  return applyLocalizedPricingToPlans(PLANS, localeId);
 }
 
 const ACTIVE_STATUSES = new Set(['active', 'trialing']);
@@ -341,7 +347,8 @@ export class RevenueManager {
   }
 
   getSelectedBillingOption() {
-    return PLANS.pro.billing[this.selectedBilling] || PLANS.pro.billing.monthly;
+    const plans = getLocalizedPlans();
+    return plans.pro.billing[this.selectedBilling] || plans.pro.billing.monthly;
   }
 
   renderPlanFeatureList(highlights = []) {
@@ -354,13 +361,14 @@ export class RevenueManager {
   }
 
   renderPricingCards({ layout = 'default' } = {}) {
-    const monthly = PLANS.pro.billing.monthly;
-    const annual = PLANS.pro.billing.annual;
+    const plans = getLocalizedPlans();
+    const monthly = plans.pro.billing.monthly;
+    const annual = plans.pro.billing.annual;
     const savingsFacts = getAnnualSavingsFacts();
     const trialBadge = this.trialEligible
       ? `<span class="revenue-trial-badge">${ptMarketing('pricing.trialBadge', PLANS.pro.trialLabel)}</span>`
       : '';
-    const enterprise = PLANS.enterprise;
+    const enterprise = plans.enterprise;
     const roiBlock = this.renderPricingRoiCalculator(this.selectedBilling);
     const compareBlock = layout === 'premium' ? renderFeatureComparisonCards() : '';
     const reassuranceBlock = this.renderPricingReassurance();
@@ -406,10 +414,10 @@ export class RevenueManager {
         <article class="revenue-plan-card" role="listitem">
           <div class="revenue-plan-card-head">
             <span class="revenue-plan-badge">${pt('badgeIndividual', {}, 'Bireysel')}</span>
-            <h3 class="revenue-plan-title">${pt('freeName', {}, PLANS.free.name)}</h3>
-            <p class="revenue-plan-price">${pt('freePrice', {}, PLANS.free.priceLabel)}</p>
+            <h3 class="revenue-plan-title">${pt('freeName', {}, plans.free.name)}</h3>
+            <p class="revenue-plan-price">${pt('freePrice', {}, plans.free.priceLabel)}</p>
           </div>
-          <p class="revenue-plan-desc">${pt('freeDesc', {}, PLANS.free.description)}</p>
+          <p class="revenue-plan-desc">${pt('freeDesc', {}, plans.free.description)}</p>
           <ul class="revenue-plan-features">${this.renderPlanFeatureList(freeHighlights)}</ul>
           <div class="revenue-plan-card-foot">
             <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">${pt('freeCta', {}, 'TCO analizini başlat')}</a>
@@ -419,12 +427,12 @@ export class RevenueManager {
           <div class="revenue-plan-card-head">
             <span class="revenue-plan-badge revenue-plan-badge--popular">${pt('popularBadge', {}, PRICING_MESSAGING.popularBadge)}</span>
             ${trialBadge}
-            <h3 class="revenue-plan-title">${pt('proName', {}, PLANS.pro.name)}</h3>
+            <h3 class="revenue-plan-title">${pt('proName', {}, plans.pro.name)}</h3>
             <p class="revenue-plan-price" data-revenue-price-display>${monthly.priceDisplay}<small data-revenue-price-period>${monthly.periodLabel}</small></p>
             <p class="revenue-plan-equiv" data-revenue-price-equiv hidden>${annual.monthlyEquivalent} · ${pt('billingAnnualSavings', {}, annual.savingsLabel)}</p>
             <p class="revenue-plan-savings-fact" data-revenue-savings-fact hidden>${pt('savingsFact', { amount: formatTry(savingsFacts.savingsAmount) }, `12 aylık aylık ödemeye göre ${formatTry(savingsFacts.savingsAmount)} daha az (listelenen fiyat)`)}</p>
           </div>
-          <p class="revenue-plan-desc">${pt('proDesc', {}, PLANS.pro.description)}</p>
+          <p class="revenue-plan-desc">${pt('proDesc', {}, plans.pro.description)}</p>
           <ul class="revenue-plan-features">${this.renderPlanFeatureList(proHighlights)}</ul>
           <div class="revenue-plan-card-foot">
             <div class="revenue-plan-cta-stack">
@@ -540,6 +548,8 @@ export class RevenueManager {
     };
 
     const sync = () => {
+      const plans = getLocalizedPlans();
+      const annual = plans.pro.billing.annual;
       const selected = root.querySelector('input[name="billing-interval"]:checked')?.value || 'monthly';
       this.selectedBilling = selected;
       const plan = this.getSelectedBillingOption();
@@ -550,7 +560,7 @@ export class RevenueManager {
 
       if (priceEquiv) {
         if (selected === 'annual') {
-          priceEquiv.textContent = `${PLANS.pro.billing.annual.monthlyEquivalent} · ${PLANS.pro.billing.annual.savingsLabel}`;
+          priceEquiv.textContent = `${annual.monthlyEquivalent} · ${pt('billingAnnualSavings', {}, annual.savingsLabel)}`;
           priceEquiv.hidden = false;
         } else {
           priceEquiv.hidden = true;
@@ -578,6 +588,8 @@ export class RevenueManager {
     radios.forEach((radio) => {
       radio.addEventListener('change', sync);
     });
+
+    document.addEventListener('ib:locale-changed', sync);
 
     if (roiPanel) {
       const budgetInput = roiPanel.querySelector('[data-roi-budget]');

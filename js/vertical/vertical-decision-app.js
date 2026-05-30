@@ -1,6 +1,7 @@
 import { formatTry } from '../tatil/tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountFinansmanResultsV2 } from '../features/finansman/finansman-results-v2.js';
+import { wt } from './wizard-i18n.js';
 
 /**
  * Shared decision wizard + results UI (tatil.css class names).
@@ -54,7 +55,7 @@ export function initDecisionFlow(config) {
         (row) => `
     <li class="${row.value ? 'is-set' : ''}">
       <span>${escapeHtml(row.key)}</span>
-      <strong>${escapeHtml(row.value || 'Belirtilmedi')}</strong>
+      <strong>${escapeHtml(row.value || wt('common.unspecified', 'Belirtilmedi'))}</strong>
     </li>`
       )
       .join('');
@@ -172,9 +173,9 @@ export function initDecisionFlow(config) {
       ${step.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(step.subtitle)}</p>` : ''}
       ${body}
       <div class="vacation-wizard-actions">
-        ${state.stepIndex > 0 ? '<button type="button" class="btn btn-ghost" id="vacation-back">Geri</button>' : ''}
+        ${state.stepIndex > 0 ? `<button type="button" class="btn btn-ghost" id="vacation-back">${escapeHtml(wt('common.back', 'Geri'))}</button>` : ''}
         <button type="button" class="btn btn-primary" id="vacation-next" ${config.canAdvance(state, step) ? '' : 'disabled'}>
-          ${state.stepIndex === config.steps.length - 1 ? 'Sonuçları gör' : 'Devam et →'}
+          ${state.stepIndex === config.steps.length - 1 ? escapeHtml(wt('common.showResults', 'Sonuçları gör')) : escapeHtml(wt('common.continue', 'Devam et →'))}
         </button>
       </div>
     </div>`;
@@ -218,8 +219,8 @@ export function initDecisionFlow(config) {
 
     const dashboardHtml = renderPremiumDecisionDashboard({
       category: config.vertical,
-      kicker: config.resultsKicker || 'Karar analizi tamamlandı',
-      title: config.resultsTitle || 'Kişiselleştirilmiş öneriler',
+      kicker: config.resultsKicker || wt('common.resultsKicker', 'Karar analizi tamamlandı'),
+      title: config.resultsTitle || wt('common.resultsTitle', 'Kişiselleştirilmiş öneriler'),
       decisionScore: summary.fitScore,
       scoreBand: summary.scoreBand,
       totalCostLabel: summary.totalCostLabel,
@@ -230,16 +231,16 @@ export function initDecisionFlow(config) {
       cautions: primary?.cautions || summary.cautions,
       aiSummary: commentary.summary,
       aiBullets: commentary.bullets,
-      nextStep: summary.nextStep || commentary.nextStep || 'Bir senaryo seçin ve iletişim adımına geçin.',
+      nextStep: summary.nextStep || commentary.nextStep || wt('common.nextStepDefault', 'Bir senaryo seçin ve iletişim adımına geçin.'),
       extraKpis: summary.extraKpis
     });
 
     section.innerHTML = `
     <div class="vacation-results-header">
-      <p>Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin teklif taahhüdü değildir.</p>
+      <p>${escapeHtml(wt('common.resultsDisclaimer', 'Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin teklif taahhüdü değildir.'))}</p>
     </div>
     ${dashboardHtml}
-    <p class="vacation-results-top-pick">Öne çıkan: <strong>${escapeHtml(summary.topTitle)}</strong></p>
+    <p class="vacation-results-top-pick">${escapeHtml(wt('common.topPick', 'Öne çıkan'))}: <strong>${escapeHtml(summary.topTitle)}</strong></p>
     <div class="vacation-result-cards">
       ${state.results
         .map((r) => {
@@ -252,14 +253,14 @@ export function initDecisionFlow(config) {
           <h3>${escapeHtml(r.title)}</h3>
           <p>${escapeHtml(r.description)}</p>
           <ul class="vacation-result-meta">
-            <li><strong>Tahmini:</strong> ${escapeHtml(r.estimatedCost)}</li>
-            <li><strong>Uygunluk:</strong> ${escapeHtml(r.suitability)}</li>
+            <li><strong>${escapeHtml(wt('common.estimated', 'Tahmini'))}:</strong> ${escapeHtml(r.estimatedCost)}</li>
+            <li><strong>${escapeHtml(wt('common.suitability', 'Uygunluk'))}:</strong> ${escapeHtml(r.suitability)}</li>
           </ul>
-          <div class="vacation-result-why"><strong>Neden önerildi?</strong><p>${escapeHtml(r.why)}</p></div>
-          <div class="vacation-result-pros"><strong>Artılar</strong><ul>${r.pros.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
-          <div class="vacation-result-cautions"><strong>Dikkat</strong><ul>${r.cautions.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
+          <div class="vacation-result-why"><strong>${escapeHtml(wt('common.whyRecommended', 'Neden önerildi?'))}</strong><p>${escapeHtml(r.why)}</p></div>
+          <div class="vacation-result-pros"><strong>${escapeHtml(wt('common.pros', 'Artılar'))}</strong><ul>${r.pros.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
+          <div class="vacation-result-cautions"><strong>${escapeHtml(wt('common.cautions', 'Dikkat'))}</strong><ul>${r.cautions.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
           <button type="button" class="btn btn-sm vacation-select-card-btn ${isPicked ? 'btn-primary' : 'btn-outline'}" data-option="${escapeHtml(r.id)}">
-            ${isPicked ? '✓ Seçildi' : 'Bu seçeneği seç'}
+            ${isPicked ? escapeHtml(wt('common.selected', '✓ Seçildi')) : escapeHtml(wt('common.selectOption', 'Bu seçeneği seç'))}
           </button>
         </article>`;
         })
@@ -270,10 +271,10 @@ export function initDecisionFlow(config) {
         ? `
     <div class="vacation-selection-bar" id="vacation-selection-bar">
       <div class="vacation-selection-copy">
-        <p class="vacation-selection-hint ${selectedCard ? 'hidden' : ''}">Devam etmek için bir senaryo seçin.</p>
-        <p class="vacation-selection-picked ${selectedCard ? '' : 'hidden'}">Seçiminiz: <strong>${selectedCard ? escapeHtml(selectedCard.title) : ''}</strong></p>
+        <p class="vacation-selection-hint ${selectedCard ? 'hidden' : ''}">${escapeHtml(wt('common.pickHint', 'Devam etmek için bir senaryo seçin.'))}</p>
+        <p class="vacation-selection-picked ${selectedCard ? '' : 'hidden'}">${escapeHtml(wt('common.yourPick', 'Seçiminiz'))}: <strong>${selectedCard ? escapeHtml(selectedCard.title) : ''}</strong></p>
       </div>
-      <button type="button" class="btn btn-primary" id="vacation-confirm-selection" ${selectedCard ? '' : 'disabled'}>Seçimi onayla ve devam et</button>
+      <button type="button" class="btn btn-primary" id="vacation-confirm-selection" ${selectedCard ? '' : 'disabled'}>${escapeHtml(wt('common.confirmSelection', 'Seçimi onayla ve devam et'))}</button>
     </div>`
         : ''
     }
@@ -281,21 +282,21 @@ export function initDecisionFlow(config) {
       state.confirmationStep && selectedCard
         ? `
     <div class="vacation-final-cta" id="vacation-final-cta">
-      <button type="button" class="btn btn-ghost btn-sm vacation-change-selection" id="vacation-change-selection">← Seçimi değiştir</button>
+      <button type="button" class="btn btn-ghost btn-sm vacation-change-selection" id="vacation-change-selection">${escapeHtml(wt('common.changeSelection', '← Seçimi değiştir'))}</button>
       <div class="vacation-selected-recap">
-        <span class="vacation-selected-recap-label">Onayladığınız senaryo</span>
+        <span class="vacation-selected-recap-label">${escapeHtml(wt('common.confirmedScenario', 'Onayladığınız senaryo'))}</span>
         <h3>${escapeHtml(selectedCard.title)}</h3>
         <p>${escapeHtml(selectedCard.estimatedCost)} · Skor ${selectedCard.score}/100</p>
       </div>
-      <h3 class="vacation-final-heading">İletişim (isteğe bağlı)</h3>
+      <h3 class="vacation-final-heading">${escapeHtml(wt('common.contactOptional', 'İletişim (isteğe bağlı)'))}</h3>
       <div class="vacation-lead-form">
         <div class="form-row">
-          <input type="text" id="vacation-lead-name" placeholder="Ad soyad" autocomplete="name">
-          <input type="tel" id="vacation-lead-phone" placeholder="Telefon" autocomplete="tel">
-          <input type="email" id="vacation-lead-email" placeholder="E-posta" autocomplete="email">
+          <input type="text" id="vacation-lead-name" placeholder="${escapeHtml(wt('common.namePlaceholder', 'Ad soyad'))}" autocomplete="name">
+          <input type="tel" id="vacation-lead-phone" placeholder="${escapeHtml(wt('common.phonePlaceholder', 'Telefon'))}" autocomplete="tel">
+          <input type="email" id="vacation-lead-email" placeholder="${escapeHtml(wt('common.emailPlaceholder', 'E-posta'))}" autocomplete="email">
         </div>
       </div>
-      <button type="button" class="btn btn-primary btn-lg" id="vacation-select-primary">Talebi gönder</button>
+      <button type="button" class="btn btn-primary btn-lg" id="vacation-select-primary">${escapeHtml(wt('common.sendRequest', 'Talebi gönder'))}</button>
       <p class="vacation-disclaimer">${escapeHtml(config.disclaimer)}</p>
     </div>`
         : ''
@@ -382,6 +383,7 @@ export function initDecisionFlow(config) {
   }
 
   async function init() {
+    await window.__ibI18n?.ready;
     document.body.classList.add(config.themeClass || '');
     setupMobileNav();
     $('#vacation-hero-cta')?.addEventListener('click', () => {
@@ -394,6 +396,10 @@ export function initDecisionFlow(config) {
     });
     await config.tracker.trackStart();
     renderWizard();
+    document.addEventListener('ib:locale-changed', () => {
+      renderWizard();
+      if (state.results?.length) renderResults();
+    });
   }
 
   if (document.readyState === 'loading') {

@@ -1,4 +1,5 @@
 import { initDecisionFlow } from '../vertical/vertical-decision-app.js';
+import { resolveWizardConfig, wt } from '../vertical/wizard-i18n.js';
 import { createVerticalTracker } from '../vertical/vertical-intake.js';
 import { KONUT_STEPS, KONUT_OPTIONS, KONUT_DISCLAIMER } from './konut-config.js';
 import {
@@ -34,8 +35,8 @@ function renderStepBody(step, state, { escapeHtml, renderOptionGrid, renderChipG
       ${renderOptionGrid('budget_range', KONUT_OPTIONS.budget, true)}
       ${
         state.budget_range === 'manuel'
-          ? `<label class="vacation-field"><span>Toplam bütçe hedefi</span>
-        <input type="text" data-manual="budget_manual" value="${state.budget_manual ? formatTry(state.budget_manual) : ''}" placeholder="Örn: 5.500.000 ₺"></label>`
+          ? `<label class="vacation-field"><span>${escapeHtml(wt('common.manualBudgetLabel', 'Toplam bütçe hedefi'))}</span>
+        <input type="text" data-manual="budget_manual" value="${state.budget_manual ? formatTry(state.budget_manual) : ''}" placeholder="${escapeHtml(wt('common.manualBudgetPlaceholder', 'Örn: 5.500.000 ₺'))}"></label>`
           : ''
       }`;
   }
@@ -44,14 +45,15 @@ function renderStepBody(step, state, { escapeHtml, renderOptionGrid, renderChipG
   if (step.id === 'financing') {
     return `
       ${renderOptionGrid('financing_mode', KONUT_OPTIONS.financing, true)}
-      <p class="vacation-step-subtitle">Sabit gider beklentileri (en az 1)</p>
+      <p class="vacation-step-subtitle">${escapeHtml(wt('common.fixedCostsHint', 'Sabit gider beklentileri (en az 1)'))}</p>
       ${renderChipGrid('cost_factors', KONUT_OPTIONS.costLevel)}`;
   }
   if (step.id === 'risks') return renderChipGrid('risk_factors', KONUT_OPTIONS.risks);
   return '';
 }
 
-initDecisionFlow({
+initDecisionFlow(
+  resolveWizardConfig('konut', {
   vertical: 'konut',
   themeClass: 'konut-page',
   steps: KONUT_STEPS,
@@ -81,4 +83,5 @@ initDecisionFlow({
   buildSummary: buildKonutSummary,
   buildCommentary: buildKonutCommentary,
   getProgress: getKonutProgress
-});
+  })
+);

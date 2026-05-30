@@ -31,6 +31,22 @@ const tr = {
     cancelBullet: 'İstediğiniz zaman iptal',
     ctaPrimary: 'Ücretsiz analiz başlat',
     ctaSecondary: 'Metodolojiyi incele'
+  },
+  premiumKarar: {
+    previewTitle: 'Karar önizlemesi',
+    previewLead: 'Kısa sorularla maliyet sinyallerini görün. Tam TCO analizi ve sıralama için Auto akışını kullanın.',
+    compareTitle: 'İki seçeneği yan yana görün',
+    compareLead: 'Pro ile 4 modele kadar detaylı karşılaştırma; ücretsiz planda 2 model.',
+    trustKvkk: 'KVKK uyumlu',
+    trustTls: 'TLS şifreleme',
+    trustScoring: 'Açık skorlama',
+    trustNoPressure: 'Satıcı baskısı yok'
+  },
+  premiumMetodoloji: {
+    title: 'Karar metodolojisi',
+    lead: 'Skor, TCO ve AI gerekçesi nasıl üretilir — şeffaf sınırlarla.',
+    stepsTitle: 'Beş adımlı süreç',
+    limitsTitle: 'Sınırlar ve sorumluluk'
   }
 };
 
@@ -66,6 +82,22 @@ const en = {
     cancelBullet: 'Cancel anytime',
     ctaPrimary: 'Start free analysis',
     ctaSecondary: 'Explore methodology'
+  },
+  premiumKarar: {
+    previewTitle: 'Decision preview',
+    previewLead: 'See cost signals with a short questionnaire. Use Auto flow for full TCO ranking.',
+    compareTitle: 'Compare two options side by side',
+    compareLead: 'Pro supports up to 4 models; free plan includes 2.',
+    trustKvkk: 'Privacy compliant',
+    trustTls: 'TLS encryption',
+    trustScoring: 'Transparent scoring',
+    trustNoPressure: 'No seller pressure'
+  },
+  premiumMetodoloji: {
+    title: 'Decision methodology',
+    lead: 'How score, TCO and AI rationale are produced — with clear limits.',
+    stepsTitle: 'Five-step process',
+    limitsTitle: 'Limits and responsibility'
   }
 };
 
