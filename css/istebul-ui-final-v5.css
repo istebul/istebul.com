@@ -483,6 +483,44 @@ html.ib-ds-v4 .vacation-header a:hover {
   color: var(--ib-v5-accent);
 }
 
+/* ID-scoped nav lists beat .header a — enforce readable ink on light header */
+html.ib-ds-v4 .housing-header .housing-brand {
+  color: var(--ib-v5-ink);
+  font-weight: 800;
+}
+
+html.ib-ds-v4 .housing-header #housing-nav a {
+  color: var(--ib-v5-nav-ink);
+  opacity: 1;
+  font-weight: 600;
+}
+
+html.ib-ds-v4 .housing-header #housing-nav a:hover,
+html.ib-ds-v4 .housing-header #housing-nav a.is-active,
+html.ib-ds-v4 .housing-header #housing-nav a[aria-current="page"] {
+  color: var(--ib-v5-accent);
+  opacity: 1;
+}
+
+html.ib-ds-v4 .housing-header .housing-nav-toggle {
+  color: var(--ib-v5-nav-ink);
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+html.ib-ds-v4 .vacation-header #vacation-nav a {
+  color: var(--ib-v5-nav-ink);
+  opacity: 1;
+  font-weight: 600;
+}
+
+html.ib-ds-v4 .vacation-header #vacation-nav a:hover,
+html.ib-ds-v4 .vacation-header #vacation-nav a.is-active,
+html.ib-ds-v4 .vacation-header #vacation-nav a[aria-current="page"] {
+  color: var(--ib-v5-accent);
+  opacity: 1;
+}
+
 /* —— Admin: readability only —— */
 html.ib-ds-v4 body.admin-enterprise .sidebar .nav-item {
   color: var(--ib-v5-muted);
