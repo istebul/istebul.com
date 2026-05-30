@@ -266,7 +266,7 @@ export function renderDashboardV2(data) {
           <h2 class="dashboard-v2-title">Merhaba ${esc(name)}, kararlarınız tek panelde</h2>
           <p class="dashboard-v2-lead">Son analizler, PDF geçmişi, favoriler ve karşılaştırma seçimleriniz.</p>
         </div>
-        <a href="/karsilastir" class="btn btn-outline btn-sm" data-native-route>Karşılaştırma merkezi</a>
+        <a href="/karsilastir" class="btn btn-outline btn-sm dashboard-v2-hero-cta" data-native-route>Karşılaştırma merkezi</a>
       </header>
 
       ${renderSummaryCards(data.summary, data.hasPremium)}
