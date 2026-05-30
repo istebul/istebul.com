@@ -63,7 +63,7 @@
           "a": "Enerji birimi maliyeti, şarj altyapısı ve batarya garantisi TCO'yu etkiler; kullanım profilinize göre benzinli alternatifle kıyaslayın."
         }
       ],
-      "related": ["arac-kredisi-hesaplama", "elektrikli-arac-rehberi", "arac-karsilastirma-rehberi"]
+      "related": ["finansman-rehberi", "elektrikli-arac-rehberi", "arac-karsilastirma-rehberi"]
     },
     {
       "slug": "ikinci-el-rehberi",
@@ -95,7 +95,7 @@
           "a": "Yetkili satıcı garantisi riski düşürür; maliyeti TCO'ya ekleyerek kıyaslayın."
         }
       ],
-      "related": ["sifir-arac-mi-ikinci-el-mi", "arac-alim-karar-asistani"]
+      "related": ["sifir-arac-mi-ikinci-el-mi", "tco-rehberi", "finansman-rehberi"]
     },
     {
       "slug": "sifir-arac-mi-ikinci-el-mi",
@@ -153,7 +153,7 @@
           "body": "EV bakımı genelde daha az parça değişimi gerektirir; ancak batarya dışı elektronik arızaları sigorta kapsamına göre değerlendirin."
         }
       ],
-      "related": ["tco-rehberi", "arac-karsilastirma-rehberi"]
+      "related": ["elektrikli-arac-rehberi", "arac-karsilastirma-rehberi", "finansman-rehberi"]
     },
     {
       "slug": "suv-mi-sedan-mi",
@@ -179,7 +179,7 @@
           "body": "Popüler SUV modelleri likiditesi yüksek kalabilir; niş modellerde satış süresi uzar. Segment bazlı piyasa verisiyle doğrulayın."
         }
       ],
-      "related": ["arac-karsilastirma-rehberi", "ticari-arac-alimi-rehberi"]
+      "related": ["elektrikli-arac-rehberi", "tco-rehberi", "finansman-rehberi"]
     },
     {
       "slug": "finansman-rehberi",
@@ -205,7 +205,7 @@
           "body": "isteBul finansman analizi vade, faiz ve aylık taşıma maliyetini birlikte özetler; bilgilendirme amaçlıdır, banka onayı ayrıdır."
         }
       ],
-      "related": ["arac-kredisi-hesaplama", "aylik-arac-butcesi-hesaplama"]
+      "related": ["tco-rehberi", "arac-kredisi-hesaplama", "suv-mi-sedan-mi"]
     },
     {
       "slug": "aylik-arac-butcesi-hesaplama",

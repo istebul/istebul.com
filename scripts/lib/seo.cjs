@@ -133,12 +133,14 @@ function faqSchema(faqs) {
   };
 }
 
-function articleSchema(base, { title, description, path }) {
+function articleSchema(base, { title, description, path, dateModified }) {
   return {
     '@type': 'Article',
     headline: title,
     description,
     inLanguage: 'tr-TR',
+    datePublished: '2026-01-15',
+    dateModified: dateModified || SEO_BUILD_DATE,
     author: { '@id': `${base}/#organization` },
     publisher: { '@id': `${base}/#organization` },
     mainEntityOfPage: absoluteUrl(base, path)
@@ -243,7 +245,8 @@ function renderGuideStandardBlocks(slug) {
   </div>`;
 }
 
-function renderGuideCta(cta) {
+function renderGuideCta(cta, usePremium) {
+  if (usePremium) return renderPremiumGuideCta();
   if (!cta) return '';
   const secondary =
     cta.secondary ?
@@ -258,16 +261,165 @@ function renderGuideCta(cta) {
       </div>`;
 }
 
+function sectionAnchor(heading, index) {
+  const base = String(heading || '')
+    .toLowerCase()
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return base || `bolum-${index + 1}`;
+}
+
+function formatDateTr(isoDate) {
+  const [y, m, d] = String(isoDate).split('-');
+  const months = [
+    'Ocak',
+    'Şubat',
+    'Mart',
+    'Nisan',
+    'Mayıs',
+    'Haziran',
+    'Temmuz',
+    'Ağustos',
+    'Eylül',
+    'Ekim',
+    'Kasım',
+    'Aralık'
+  ];
+  return `${Number(d)} ${months[Number(m) - 1]} ${y}`;
+}
+
+function estimateReadingMinutes(page) {
+  const words = estimatePageWords(page);
+  return Math.max(5, Math.ceil(words / 200));
+}
+
+const GUIDE_INTERNAL_LINKS = {
+  'suv-mi-sedan-mi': [
+    { href: '/auto/', label: 'Araç karar analizi' },
+    { href: '/finans/', label: 'Finansman analizi' },
+    { href: '/metodoloji/', label: 'Metodoloji ve skor şeffaflığı' },
+    { href: '/#landing-faq', label: 'Sık sorulan sorular (SSS)' }
+  ],
+  'elektrikli-arac-rehberi': [
+    { href: '/auto/', label: 'Araç karar analizi' },
+    { href: '/finans/', label: 'Finansman analizi' },
+    { href: '/metodoloji/', label: 'Metodoloji' },
+    { href: '/#landing-faq', label: 'SSS' }
+  ],
+  'finansman-rehberi': [
+    { href: '/finans/', label: 'Finansman analizi' },
+    { href: '/auto/', label: 'Araç karar analizi' },
+    { href: '/metodoloji/', label: 'Metodoloji' },
+    { href: '/#landing-faq', label: 'SSS' }
+  ],
+  'tco-rehberi': [
+    { href: '/auto/', label: 'Araç TCO analizi' },
+    { href: '/finans/', label: 'Finansman analizi' },
+    { href: '/metodoloji/', label: 'Metodoloji' },
+    { href: '/#landing-faq', label: 'SSS' }
+  ],
+  'ikinci-el-rehberi': [
+    { href: '/auto/', label: 'Araç karar analizi' },
+    { href: '/finans/', label: 'Finansman analizi' },
+    { href: '/metodoloji/', label: 'Metodoloji' },
+    { href: '/#landing-faq', label: 'SSS' }
+  ]
+};
+
+function renderSocialShare(canonicalPath) {
+  const url = encodeURIComponent(absoluteUrl('https://www.istebul.com', canonicalPath));
+  return `<div class="seo-share" aria-label="Paylaş">
+    <span>Paylaş:</span>
+    <a href="https://www.linkedin.com/sharing/share-offsite/?url=${url}" rel="noopener noreferrer" target="_blank">LinkedIn</a>
+    <a href="https://twitter.com/intent/tweet?url=${url}" rel="noopener noreferrer" target="_blank">X</a>
+    <a href="https://wa.me/?text=${url}" rel="noopener noreferrer" target="_blank">WhatsApp</a>
+  </div>`;
+}
+
+function renderArticleMeta(page, canonicalPath) {
+  const minutes = estimateReadingMinutes(page);
+  return `<div class="seo-article-meta">
+    <span class="seo-reading-time">${minutes} dk okuma</span>
+    <time datetime="${SEO_BUILD_DATE}">Güncellendi: ${formatDateTr(SEO_BUILD_DATE)}</time>
+    ${renderSocialShare(canonicalPath)}
+  </div>`;
+}
+
+function renderSummaryBox(page) {
+  return `<aside class="seo-summary-box" aria-label="Özet">
+    <strong>Bu rehberde</strong>
+    <p>${escapeHtml(page.intro)}</p>
+  </aside>`;
+}
+
+function renderStickyToc(sections) {
+  const items = (sections || [])
+    .slice(0, 14)
+    .map((s, index) => {
+      const id = sectionAnchor(s.heading, index);
+      return `<li><a href="#${escapeHtml(id)}">${escapeHtml(s.heading)}</a></li>`;
+    })
+    .join('');
+  if (!items) return '';
+  return `<nav class="seo-toc" aria-label="İçindekiler">
+    <strong class="seo-toc__title">İçindekiler</strong>
+    <ol>${items}</ol>
+  </nav>`;
+}
+
+function renderExpertTips(tips) {
+  if (!tips?.length) return '';
+  return `<section class="seo-section seo-expert-tips">
+    <h2>Uzman önerileri</h2>
+    <ul>${tips.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>
+  </section>`;
+}
+
+function renderCommonMistakes(mistakes) {
+  if (!mistakes?.length) return '';
+  return `<section class="seo-section seo-mistakes">
+    <h2>Sık yapılan hatalar</h2>
+    <ul>${mistakes.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>
+  </section>`;
+}
+
+function renderInternalLinks(slug) {
+  const links = GUIDE_INTERNAL_LINKS[slug];
+  if (!links?.length) return '';
+  return `<section class="seo-section seo-internal-links">
+    <h2>İlgili sayfalar</h2>
+    <ul>${links.map((l) => `<li><a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a></li>`).join('')}</ul>
+  </section>`;
+}
+
+function renderPremiumGuideCta() {
+  return `<section class="seo-cta seo-cta--premium" aria-labelledby="seo-premium-cta-title">
+    <h2 id="seo-premium-cta-title">Kararınızı veriyle destekleyin</h2>
+    <p>isteBul yapay zekâ destekli karar analizi ile maliyet, risk ve uygunluk değerlendirmesini birkaç dakika içinde oluşturun.</p>
+    <div class="seo-cta-row-inner">
+      <a class="seo-cta-btn" href="/auto/">Ücretsiz Analize Başla</a>
+    </div>
+    <p class="seo-cta-note">Ücretsiz · KVKK uyumlu · Bilgilendirme amaçlı — finansal tavsiye değildir</p>
+  </section>`;
+}
+
 function renderSections(sections) {
   return (sections || [])
-    .map((s) => {
+    .map((s, index) => {
+      const id = sectionAnchor(s.heading, index);
       const subs = (s.subsections || [])
         .map(
           (sub) => `<h3>${escapeHtml(sub.heading)}</h3>
         <p>${escapeHtml(sub.body)}</p>`
         )
         .join('\n');
-      return `<section class="seo-section">
+      return `<section class="seo-section" id="${escapeHtml(id)}">
         <h2>${escapeHtml(s.heading)}</h2>
         <p>${escapeHtml(s.body)}</p>
         ${subs}
@@ -356,7 +508,12 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
   const base = site.baseUrl;
   const jsonLd = [
     breadcrumbSchema(base, breadcrumbs),
-    articleSchema(base, { title: page.title, description: page.description, path })
+    articleSchema(base, {
+      title: page.title,
+      description: page.description,
+      path,
+      dateModified: SEO_BUILD_DATE
+    })
   ];
   const faq = faqSchema(page.faqs);
   if (faq) jsonLd.push(faq);
@@ -366,8 +523,10 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
   const sections = `${standardBlocks}${renderSections(page.sections)}`;
   const comparisonHtml = renderComparisonTable(page.comparisonTable);
   const prosConsHtml = renderProsCons(page.advantages, page.disadvantages);
+  const expertTipsHtml = renderExpertTips(page.expertTips);
+  const mistakesHtml = renderCommonMistakes(page.commonMistakes);
   const conclusionHtml = page.conclusion
-    ? `<section class="seo-section seo-conclusion"><h2>Sonuç</h2><p>${escapeHtml(page.conclusion)}</p></section>`
+    ? `<section class="seo-section seo-conclusion" id="sonuc"><h2>Sonuç</h2><p>${escapeHtml(page.conclusion)}</p></section>`
     : '';
 
   const faqHtml = (page.faqs || []).length
@@ -381,10 +540,14 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
 
   const related = relatedLinks.length
     ? `<section class="seo-section seo-related">
-        <h2>İlgili rehberler</h2>
+        <h2>Sonraki rehber önerileri</h2>
         <ul>${relatedLinks.map((l) => `<li><a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a></li>`).join('')}</ul>
       </section>`
     : '';
+
+  const internalLinksHtml = renderInternalLinks(guideSlug);
+  const tocHtml = page.isFooterGuide ? renderStickyToc(page.sections) : '';
+  const usePremiumCta = Boolean(page.isFooterGuide);
 
   const crumbs = breadcrumbs
     .map((b, i) => {
@@ -402,24 +565,32 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
 <head>
   ${renderHead({ site, title: page.title, description: page.description, canonicalPath: path, jsonLdExtra: jsonLd })}
 </head>
-<body class="seo-page">
+<body class="seo-page${page.isFooterGuide ? ' seo-page--guide-v2' : ''}">
   ${renderSeoNav()}
   <main class="seo-main">
     <nav class="seo-breadcrumb" aria-label="Breadcrumb">${crumbs}</nav>
-    <article>
+    <div class="seo-article-layout">
+      ${tocHtml ? `<aside class="seo-toc-sidebar">${tocHtml}</aside>` : ''}
+      <article class="seo-article-body">
       <p class="seo-kicker">${escapeHtml(kicker || 'Türkiye · Karar rehberi')}</p>
       <h1>${escapeHtml(page.h1)}</h1>
-      <p class="seo-lead">${escapeHtml(page.intro)}</p>
+      ${page.isFooterGuide ? renderArticleMeta(page, path) : ''}
+      ${page.isFooterGuide ? '' : `<p class="seo-lead">${escapeHtml(page.intro)}</p>`}
+      ${page.isFooterGuide ? renderSummaryBox(page) : ''}
       ${bullets ? `<ul class="seo-bullets">${bullets}</ul>` : ''}
       ${extraHtml || ''}
       ${sections}
       ${comparisonHtml}
       ${prosConsHtml}
+      ${mistakesHtml}
+      ${expertTipsHtml}
       ${conclusionHtml}
       ${faqHtml}
+      ${internalLinksHtml}
       ${related}
-      ${renderGuideCta(loadGuideStandardV1()[guideSlug]?.cta || cta)}
-    </article>
+      ${renderGuideCta(loadGuideStandardV1()[guideSlug]?.cta || cta, usePremiumCta)}
+      </article>
+    </div>
   </main>
   ${renderSeoFooter({ site, guideLinks: relatedLinks })}
 </body>

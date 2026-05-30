@@ -1,0 +1,250 @@
+{
+  "suv-mi-sedan-mi": {
+    "sections": [
+      {
+        "heading": "SUV nedir",
+        "body": "SUV (Sport Utility Vehicle), yüksek oturma pozisyonu, geniş iç hacim ve çoğu zaman artırılmış yerden yükseklik sunan gövde sınıfıdır. Crossover, kompakt SUV ve tam boy SUV alt segmentleri vardır. Türkiye pazarında aile tercihlerinde SUV payı yükselse de her SUV aynı boyut ve tüketim profiline sahip değildir; B-SUV ile D-SUV arasında park, yakıt ve sigorta farkı belirgindir."
+      },
+      {
+        "heading": "Sedan nedir",
+        "body": "Sedan, yolcu kabini ile bagajı ayrı hacimlerde olan klasik binek gövde tipidir. Düşük ağırlık merkezi, aerodinamik profil ve genelde daha iyi yol tutuşu sunar. C ve D segment sedanlar şehir içi kullanımda verimli kalır; station wagon türevleri bagaj hacmini SUV’a yaklaştırırken tüketimi sedan seviyesinde tutabilir."
+      },
+      {
+        "heading": "Kullanım senaryoları",
+        "body": "Günlük işe gidiş-geliş, okul servisi, hafta sonu şehir dışı, kış koşulları ve yük taşıma ihtiyacı segment seçimini belirler. Kısa mesafe şehir içi ağırlıklı profilde kompakt sedan veya B-SUV yeterli olabilir. Sık karayolu ve yüksek bagaj ihtiyacında orta boy SUV öne çıkar. TCO hesabında her senaryoyu ayrı satırda modelleyin."
+      },
+      {
+        "heading": "Uzun yol kullanımı",
+        "body": "Uzun yolda yüksek oturma ve geniş görüş alanı SUV lehine çalışabilir; rüzgar gürültüsü ve süspansiyon sertliği modele göre değişir. Sedan’da alçak profil ve daha iyi aerodinamik genelde yakıt tasarrufu sağlar. Mola sıklığı, bagaj hacmi ve arka koltuk konforu aile kararını etkiler."
+      },
+      {
+        "heading": "Yakıt tüketimi",
+        "body": "Aynı motor ve güç sınıfında SUV ağırlığı ve aerodinamik direnç tüketimi artırır. Hibrit SUV bu farkı kısmen kapatır. Yıllık 20.000 km üzeri kullanımda %8–15 tüketim farkı TCO’da belirginleşir. Gerçek tüketim değerlerini WLTP’nin üzerinde planlayın."
+      },
+      {
+        "heading": "Bakım maliyetleri",
+        "body": "SUV lastik ebatları genelde daha büyük ve pahalıdır; fren diskleri ve amortisör yükü artabilir. Sedan’da periyodik bakım kalemleri segment ortalamasına daha yakındır. 5 yıllık bakım planını yetkili servisten yazılı isteyin ve TCO tablosuna ekleyin."
+      },
+      {
+        "heading": "Aile kullanımı",
+        "body": "Çocuk koltuğu sayısı, ISOFIX noktaları, kapı açıklığı ve arka diz mesafesi pratik kullanımı belirler. Üç çocuklu ailelerde bagaj hacmi ve üçlü koltuk sırası erişimi SUV lehine olabilir; iki çocuklu ailede kompakt sedan yeterli kalabilir."
+      },
+      {
+        "heading": "Güvenlik",
+        "body": "Euro NCAP ve donanım paketi (AEB, şerit takip, kör nokta) gövde tipinden bağımsız değerlendirilmelidir. SUV’da devrilme algısı yüksek olsa da modern ESP sistemleri riski azaltır. Sedan’da alçak ağırlık merkezi viraj stabilitesini artırır. Lastik kalitesi her iki gövdede de kritiktir."
+      },
+      {
+        "heading": "Hangi kullanıcı için hangisi uygun",
+        "body": "Dar park, düşük km ve bütçe odaklı kullanıcı: kompakt sedan. Çocuklu aile, kötü yol ve yüksek bagaj: B veya C SUV. Uzun yol konforu öncelikli, orta bütçe: D sedan veya orta SUV. Elektrikli altyapısı güçlü şehir kullanıcısı: kompakt EV sedan veya crossover. isteBul Auto profilinize göre skor üretir."
+      }
+    ],
+    "expertTips": [
+      "Broşür bagaj hacmi yerine gerçek bebek koltuğu kurulumu test edin.",
+      "Aynı motorlu sedan ve SUV’u test sürüşünde aynı rotada kıyaslayın.",
+      "5 yıllık TCO’da lastik ve sigorta farkını ayrı satırda tutun.",
+      "İkinci el satış planınız varsa likidite skorunu modele göre araştırın."
+    ],
+    "commonMistakes": [
+      "Yalnızca görsel tercih veya moda ile SUV seçmek",
+      "Park alanını ölçmeden büyük gövde almak",
+      "Yakıt farkını yıllık km ile çarpmadan karar vermek",
+      "Station wagon alternatifini değerlendirmeden SUV almak"
+    ]
+  },
+  "elektrikli-arac-rehberi": {
+    "sections": [
+      {
+        "heading": "Elektrikli araç nedir",
+        "body": "Tam elektrikli araç (BEV), tahrik gücünü yalnızca bataryadan alır; içten yanmalı motor taşımaz. Hibrit ve plug-in hibrit farklıdır; bu rehber BEV odaklıdır. Menzil, şarj süresi ve batarya garantisi satın alma kararının çekirdeğini oluşturur."
+      },
+      {
+        "heading": "Batarya teknolojisi",
+        "body": "LFP ve NMC kimyası menzil, ağırlık ve dayanıklılık açısından farklıdır. Batarya kapasitesi (kWh), termal yönetim ve garanti süresi ikinci el değerini etkiler. Mümkünse kapasite sağlığı (SOH) raporu isteyin; hızlı şarj sıklığı uzun vadeli kapasiteyi etkileyebilir."
+      },
+      {
+        "heading": "Şarj türleri",
+        "body": "AC (yavaş/ normal) ev ve iş yerinde; DC (hızlı) otoyol ve şehirlerarası rotada kullanılır. Onboard charger gücü AC şarj hızını sınırlar. DC şarjda %10–80 bandı planlamak batarya sağlığı için önerilir."
+      },
+      {
+        "heading": "Evde şarj",
+        "body": "Wallbox kurulumu elektrik panosu kapasitesi, apartman yönetimi izni ve montaj maliyeti gerektirir. Gece tarifesi ile kWh maliyeti düşer. Evde şarj imkânı yoksa kamu şarj maliyetini TCO’ya gerçekçi ekleyin."
+      },
+      {
+        "heading": "Kamu şarj istasyonları",
+        "body": "Operatör ağı, soket tipi (CCS2 vb.) ve kWh fiyatı güzergah planınızı belirler. Yoğun saatlerde kuyruk ve fiyat farkı maliyeti artırır. Şehirlerarası sık seyahatte DC istasyon haritasını rota üzerinde doğrulayın."
+      },
+      {
+        "heading": "Maliyet karşılaştırması",
+        "body": "EV satın alma fiyatı genelde yüksek; enerji birimi maliyeti ve bakım avantajı TCO’yu dengeleyebilir. Aynı segment benzinli araçla 5 yıllık TCO kıyaslaması yapmadan karar vermeyin. Teşvik ve vergi avantajları döneme göre değişir."
+      },
+      {
+        "heading": "Kimler tercih etmeli",
+        "body": "Günlük km’si öngörülebilir, ev veya iş yerinde şarj imkânı olan, şehir içi ağırlıklı sürücüler için EV mantıklı olabilir. Sık uzun yol ve zayıf şarj altyapısı olan bölgelerde hibrit veya dizel alternatif değerlendirilmelidir."
+      }
+    ],
+    "expertTips": [
+      "Kış menzili için %25 tampon ekleyin; ısıtma yükünü test sürüşünde ölçün.",
+      "Batarya garantisi bitiş km/yıl sınırını sözleşmeden okuyun.",
+      "Wallbox + montaj maliyetini ilk yıl TCO’ya dahil edin.",
+      "Benzinli eşdeğer ile aynı km varsayımında 5 yıllık tablo oluşturun."
+    ],
+    "commonMistakes": [
+      "Broşür menziline güvenip şarj planı yapmamak",
+      "Wallbox maliyetini TCO dışında bırakmak",
+      "Kış menzili tamponu eklemeden karar vermek",
+      "Benzinli alternatifle 5 yıllık TCO kıyaslamamak"
+    ]
+  },
+  "finansman-rehberi": {
+    "sections": [
+      {
+        "heading": "Taşıt kredisi",
+        "body": "Taşıt kredisi aracın rehinine bağlıdır; genelde ihtiyaç kredisine göre daha düşük faiz sunulabilir. Peşinat oranı, vade, dosya masrafı ve hayat sigortası (varsa) toplam geri ödemeyi belirler. Kampanya faizlerinin süresi ve sonrası oranı sözleşmede net olmalıdır."
+      },
+      {
+        "heading": "İhtiyaç kredisi",
+        "body": "Araç alımında ihtiyaç kredisi kullanımı genelde önerilmez; faiz daha yüksek olabilir ve araç rehin yapısı farklıdır. Acil durumda bile taşıt kredisi koşullarıyla toplam maliyeti kıyaslayın."
+      },
+      {
+        "heading": "Peşinat etkisi",
+        "body": "Yüksek peşinat aylık taksiti ve toplam faizi düşürür; nakit rezervinizi eritmemeye dikkat edin. %20–40 peşinat bandı banka onayını kolaylaştırabilir. Peşinat artışının TCO’ya etkisini senaryo tablosunda görün."
+      },
+      {
+        "heading": "Faiz maliyeti",
+        "body": "Nominal faiz tek başına yeterli değildir; efektif yıllık maliyet (EYM), KKDF/BSMV ve masraflar dahil toplam geri ödeme tutarını okuyun. Sabit faiz öngörülebilirlik sağlar; değişken faiz piyasa hareketine açıktır."
+      },
+      {
+        "heading": "Toplam geri ödeme",
+        "body": "Aylık taksit × vade + peşinat + masraflar toplam nakit çıkışını verir. Düşük taksit için vade uzatıldığında toplam faiz katlanabilir. 36 ve 48 ay senaryolarını yan yana yazın."
+      },
+      {
+        "heading": "Kredi notu",
+        "body": "Kredi notu faiz bandını ve onay limitini etkiler. Başvuru öncesi borç/gelir oranını düşürmek onay şansını artırabilir. Kısa sürede çok sayıda kredi sorgusu notu olumsuz etkileyebilir."
+      },
+      {
+        "heading": "Risk analizi",
+        "body": "Gelir kesintisi, faiz artışı ve beklenmedik gider senaryolarında taksit taşınabilirliğini test edin. Acil durum fonunu koruyarak peşinat planlayın. Temerrüt maliyeti yalnızca gecikme faizi değil, varlık kaybı riskidir."
+      },
+      {
+        "heading": "Bütçe planlama",
+        "body": "Taksit + yakıt/enerji + sigorta + bakım + otopark toplamı sürdürülebilir bütçeyi oluşturur. Bankanın onayladığı taksit tavanı ile gerçek taşıma maliyeti farklı olabilir. isteBul Finansman analizi bu bütünleşik yükü özetler."
+      }
+    ],
+    "expertTips": [
+      "Her bankadan aynı peşinat ve vade ile yazılı toplam geri ödeme isteyin.",
+      "Dosya masrafı ve sigorta paketini kredi dışında ayrı teklif alarak kıyaslayın.",
+      "Faiz +2 puan stres testinde bütçe taşıyorsa segment veya peşinat revize edin.",
+      "Erken kapama cezasını sözleşmeden okuyup TCO’ya ekleyin."
+    ],
+    "commonMistakes": [
+      "Yalnızca aylık taksite bakmak",
+      "Vadeyi uzatarak toplam faizi gizlemek",
+      "Dosya masrafı ve sigorta paketini hesaba katmamak",
+      "Acil durum fonunu peşinata eritmek"
+    ]
+  },
+  "tco-rehberi": {
+    "sections": [
+      {
+        "heading": "Toplam sahip olma maliyeti nedir",
+        "body": "TCO (Total Cost of Ownership), aracı satın aldığınız andan satış veya hurdaya çıkışına kadar tüm nakit çıkışlarının toplamıdır. Etiket fiyatı yalnızca başlangıç kalemidir; finansman, işletme ve değer kaybı birlikte okunmalıdır."
+      },
+      {
+        "heading": "Satın alma maliyeti",
+        "body": "Peşin fiyat veya peşinat + kredi anaparası, tescil harçları, plaka ve dealer hazırlık bedellerini kapsar. Kampanyalı fiyatlara aksesuar ve zorunlu paketleri ekleyin."
+      },
+      {
+        "heading": "Yakıt",
+        "body": "Yıllık km ve gerçek tüketim (L/100 km veya kWh/100 km) ile çarpılır. Şehir içi ağırlıklı profilde tüketim broşür değerinin üzerinde çıkabilir. Fiyat artış senaryosu için %10–15 tampon kullanın."
+      },
+      {
+        "heading": "Sigorta",
+        "body": "Trafik ve kasko primleri marka, model, il ve sürücü geçmişine göre değişir. Hasarsızlık indirimi yıllar içinde primi düşürür; hasar primi artırır. Yıllık güncelleme yapın."
+      },
+      {
+        "heading": "MTV",
+        "body": "Motor hacmi ve araç yaşına bağlı MTV her yıl tekrarlanır. Sıfır ve ikinci el devirlerinde güncel tarife uygulanır. TCO tablosunda sabit yıllık gider satırı olarak ekleyin."
+      },
+      {
+        "heading": "Bakım",
+        "body": "Periyodik servis, yağ/filtre, fren balata ve zamanlama gibi kalemler km ve yaşa bağlıdır. Garanti bitişi sonrası maliyet artışını 4.–5. yıl için ayrı planlayın."
+      },
+      {
+        "heading": "Lastik",
+        "body": "Orijinal ebat lastik seti 40.000–60.000 km aralığında değişebilir. SUV lastikleri genelde daha pahalıdır. Kış/yaz seti ayrı bütçe kalemidir."
+      },
+      {
+        "heading": "Değer kaybı",
+        "body": "Satış fiyatı ile alış fiyatı arasındaki fark gizli maliyettir. Sıfır araçta ilk yıl kayıp en yüksektir. Popüler modellerde likidite değer kaybını yumuşatabilir."
+      },
+      {
+        "heading": "5 yıllık örnek hesaplama",
+        "body": "Örnek: 1.800.000 TL satın alma, 60 ay kredi, yıllık 18.000 km, ortalama tüketim ve sigorta ile 5 yıl sonunda 950.000 TL tahmini satış değeri. Kalemleri toplayıp 5’e bölerek yıllık TCO; 60’a bölerek aylık taşıma maliyeti elde edilir. Rakamlar örnektir; kendi profilinizle güncelleyin."
+      },
+      {
+        "heading": "Karar verirken TCO kullanımı",
+        "body": "En az iki modeli aynı km, vade ve yakıt fiyatı varsayımlarıyla kıyaslayın. Liste fiyatı düşük olan model yüksek sigorta veya hızlı değer kaybında pahalı çıkabilir. isteBul Auto TCO bandını profilinize göre üretir."
+      }
+    ],
+    "expertTips": [
+      "Broşür tüketimi yerine gerçek km logunuzu kullanın.",
+      "Değer kaybını mutlaka tabloya ekleyin — en büyük gizli kalemdir.",
+      "Sigorta için iki bağımsız teklif alıp yıllık primi sabitleyin.",
+      "Finansman faizini TCO’ya ayrı sütun olarak yazın."
+    ],
+    "commonMistakes": [
+      "Değer kaybını tabloya eklememek",
+      "Broşür tüketimi ile bütçe planlamak",
+      "Sigortayı yalnızca ilk teklifle sabitlemek",
+      "Finansman faizini TCO dışında tutmak"
+    ]
+  },
+  "ikinci-el-rehberi": {
+    "sections": [
+      {
+        "heading": "İkinci el araç alırken dikkat edilmesi gerekenler",
+        "body": "Piyasa fiyat bandı, ekspertiz, Tramer, km tutarlılığı, bakım geçmişi ve satıcı güvenilirliği birlikte değerlendirilmelidir. Aceleci kapora ve ekspertizsiz alım en sık hata kaynağıdır. Bir gece ara vermek duygusal kararı azaltır."
+      },
+      {
+        "heading": "Kilometre analizi",
+        "body": "Düşük km her zaman avantaj değildir; uzun süre kullanılmayan araçlarda akü, lastik ve yağ yaşlanması sorun çıkarabilir. Yıllık ortalama km (toplam km / araç yaşı) gerçekçi bandı gösterir. Anormal düşük km Tramer ile çapraz kontrol edilmelidir."
+      },
+      {
+        "heading": "Hasar kaydı",
+        "body": "Tramer ve sigorta geçmişi ağır hasar, airbag açılımı ve şasi müdahalesini gösterir. Boya-değişen parça ekspertizle teyit edilmelidir. Yapısal hasarlı araç TCO’da onarım ve değer kaybı riski taşır."
+      },
+      {
+        "heading": "Ekspertiz",
+        "body": "Bağımsız ekspertiz motor, şanzıman, süspansiyon, elektronik ve kaporta kontrolü yapar. Test sürüşünde vites, fren ve titreşim değerlendirilmelidir. Rapor pazarlık ve karar için veri sağlar."
+      },
+      {
+        "heading": "Tramer",
+        "body": "Resmi Tramer sorgusu satın alma öncesi zorunludur. Gizli hasar beyanı hukuki risk doğurur. Hasar tutarı yüksek araçlarda sigorta primi artabilir."
+      },
+      {
+        "heading": "Bakım geçmişi",
+        "body": "Yetkili servis faturaları, yağ değişim periyotları ve zamanlama kayışı değişimi mekanik ömür için kritiktir. Eksik bakım kayıtlı araçlarda indirim talep edin veya listeden çıkarın."
+      },
+      {
+        "heading": "Sahiplik geçmişi",
+        "body": "Çok sayıda kısa süreli sahip, filo çıkışı veya ticari kullanım geçmişi fiyatı ve riski etkiler. Noter satış belgesi ve ruhsat sahibi zincirini kontrol edin."
+      },
+      {
+        "heading": "Pazarlık stratejileri",
+        "body": "Piyasa emsal ilanları, ekspertiz bulguları ve Tramer kaydı pazarlık argümanıdır. Nakit ödeme veya hızlı devir karşılığında makul indirim mümkün olabilir. Aşırı ucuz ilanlarda dolandırıcılık riskine dikkat."
+      }
+    ],
+    "expertTips": [
+      "Kapora öncesi mutlaka Tramer + bağımsız ekspertiz tamamlayın.",
+      "Satıcı ekspertize izin vermiyorsa işlemi sonlandırın.",
+      "Alım fiyatına ilk yıl bakım rezervi (%3–5) ekleyin.",
+      "Likiditesi düşük niş modellerde satış süresini TCO’ya dahil edin."
+    ],
+    "commonMistakes": [
+      "Ekspertizsiz kapora ödemek",
+      "Düşük km ye güvenip bakım geçmişini okumamak",
+      "Tramer sorgusunu atlamak",
+      "Piyasa ortalamasının çok altındaki ilana acele etmek"
+    ]
+  }
+}

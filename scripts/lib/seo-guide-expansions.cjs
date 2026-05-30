@@ -1,6 +1,20 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const { getLongformSections } = require('./seo-guide-longform.cjs');
+
+const FOOTER_GUIDES_V1 = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '../../data/seo/footer-guides-v1.json'), 'utf8')
+);
+
+const FOOTER_GUIDE_SLUGS = new Set([
+  'suv-mi-sedan-mi',
+  'elektrikli-arac-rehberi',
+  'finansman-rehberi',
+  'tco-rehberi',
+  'ikinci-el-rehberi'
+]);
 
 /**
  * Rich SEO body expansions merged into landing-pages at build time.
@@ -380,7 +394,7 @@ function getGuideExpansion(slug, h1) {
 }
 
 function universalSupplementSections(slug, h1) {
-  return [
+  const blocks = [
     {
       heading: `${h1} için karar çerçevesi`,
       body: `${h1} konusunda aceleci seçim, yüksek tutarlı ve geri dönüşü zor bir hataya dönüşebilir. Türkiye’de faiz, kur, yakıt ve sigorta primleri kısa sürede değişebildiği için kararı tek bir teklif üzerinden kilitlemek yerine senaryo tablosu kurun. Önce ihtiyaç (km, aile, şehir), sonra üst bütçe, ardından finansman ve TCO gelmelidir. Bu sıra, «önce model beğendim» tuzağını azaltır. isteBul Auto analizi bu çerçeveyi dakikalar içinde yapılandırır; skor ve maliyet bandı üretir. Sonuçlar bilgilendirme amaçlıdır — ekspertiz, hukuki kontrol ve banka onayı ayrı adımlardır. ${h1} özelinde bayi veya satıcı baskısı hissederseniz 24 saat ara verin; duygusal karar TCO’yu bozar.`,
@@ -451,12 +465,22 @@ function universalSupplementSections(slug, h1) {
       ]
     }
   ];
+  if (FOOTER_GUIDE_SLUGS.has(slug)) {
+    return blocks.filter((b) => b.heading !== 'Sık yapılan hatalar');
+  }
+  return blocks;
+}
+
+function getFooterGuidePack(slug) {
+  return FOOTER_GUIDES_V1[slug] || null;
 }
 
 function mergeGuidePage(page) {
   const exp = getGuideExpansion(page.slug, page.h1);
   const longformKey = resolveExpansionSlug(page.slug);
+  const footerPack = getFooterGuidePack(page.slug);
   const sections = [
+    ...(footerPack?.sections || []),
     ...(page.sections || []),
     ...(exp.extraSections || []),
     ...getLongformSections(longformKey),
@@ -471,7 +495,10 @@ function mergeGuidePage(page) {
     comparisonTable: exp.comparisonTable,
     advantages: exp.advantages,
     disadvantages: exp.disadvantages,
-    conclusion: exp.conclusion
+    conclusion: exp.conclusion,
+    expertTips: footerPack?.expertTips || null,
+    commonMistakes: footerPack?.commonMistakes || null,
+    isFooterGuide: FOOTER_GUIDE_SLUGS.has(page.slug)
   };
 }
 
@@ -488,7 +515,9 @@ function estimatePageWords(page) {
       s.body,
       ...((s.subsections || []).flatMap((sub) => [sub.heading, sub.body]))
     ]),
-    ...(page.comparisonTable?.rows || []).flat()
+    ...(page.comparisonTable?.rows || []).flat(),
+    ...(page.expertTips || []),
+    ...(page.commonMistakes || [])
   ];
   return wordCount(parts);
 }
@@ -497,6 +526,8 @@ module.exports = {
   mergeGuidePage,
   estimatePageWords,
   getGuideExpansion,
-  MIN_GUIDE_WORDS: 1050,
+  getFooterGuidePack,
+  FOOTER_GUIDE_SLUGS,
+  MIN_GUIDE_WORDS: 1200,
   TARGET_GUIDE_WORDS: 1200
 };
