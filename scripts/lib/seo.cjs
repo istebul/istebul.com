@@ -21,7 +21,7 @@ function loadSeoLocales() {
 
 function stripLocalePrefixPath(pathname = '/') {
   const p = pathname.startsWith('/') ? pathname : `/${pathname}`;
-  return p.replace(/^\/(en|de|ar)(?=\/|$)/, '') || '/';
+  return p.replace(/^\/(en|de|ar|it|fr|es|ja|zh)(?=\/|$)/, '') || '/';
 }
 
 function renderHreflangAlternates(site, canonicalPath) {
@@ -892,6 +892,8 @@ function buildMethodologyPage(distDir, site) {
 
 function generateSitemap(distDir, { site, landingConfig, hubsConfig }) {
   const urls = [...site.staticUrls];
+  const localePrefixes = ['', '/en', '/de', '/ar', '/it', '/fr', '/es', '/ja', '/zh'];
+  const localizedPaths = new Set(['/', '/auto/', '/metodoloji/', '/konut/', '/tatil/', '/finans/', '/planlar', '/hakkimizda.html', '/iletisim.html']);
 
   hubsConfig.hubs.forEach((h) => {
     urls.push({ loc: h.path, priority: '0.85', changefreq: 'weekly' });
@@ -914,7 +916,19 @@ function generateSitemap(distDir, { site, landingConfig, hubsConfig }) {
   });
 
   const seen = new Set();
-  const body = urls
+  const expandedUrls = [];
+
+  urls.forEach((entry) => {
+    expandedUrls.push(entry);
+    if (!localizedPaths.has(entry.loc)) return;
+    localePrefixes.forEach((prefix) => {
+      if (!prefix) return;
+      const localizedLoc = entry.loc === '/' ? `${prefix}/` : `${prefix}${entry.loc}`;
+      expandedUrls.push({ ...entry, loc: localizedLoc });
+    });
+  });
+
+  const body = expandedUrls
     .filter((u) => {
       const key = u.loc;
       if (seen.has(key)) return false;

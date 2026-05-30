@@ -85,8 +85,21 @@ export function formatTry(amount) {
   }).format(amount);
 }
 
-export function buildRoiSummaryCopy(result) {
+export function buildRoiSummaryCopy(result, { t, formatAmount = formatTry } = {}) {
   const { driftCost, proYearlyCost, coverageRatio } = result;
+
+  if (t) {
+    const driftStr = formatAmount(driftCost);
+    const proStr = formatAmount(proYearlyCost);
+    if (driftCost <= proYearlyCost) {
+      return t('roiSummaryNear', { driftCost: driftStr, proYearlyCost: proStr });
+    }
+    const multiple =
+      coverageRatio >= 1.1
+        ? `≈ ${coverageRatio.toFixed(1).replace('.0', '')}×`
+        : t('roiSummaryMultiple');
+    return t('roiSummaryExceeds', { driftCost: driftStr, proYearlyCost: proStr, multiple });
+  }
 
   if (driftCost <= proYearlyCost) {
     return `Örnek senaryoda ${formatTry(driftCost)} TCO sapması, yıllık Pro maliyetine (${formatTry(proYearlyCost)}) yakın — tek net karar döngüsünde bile maliyet görünürlüğü anlamlı olabilir.`;

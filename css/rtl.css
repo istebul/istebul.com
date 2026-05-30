@@ -38,6 +38,65 @@ html.ib-rtl select {
   padding: 0 0.5rem;
 }
 
+.locale-switcher-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.locale-switcher-dropdown {
+  position: relative;
+}
+
+.locale-switcher-more {
+  border: 1px dashed rgba(148, 163, 184, 0.65);
+  background: rgba(255, 255, 255, 0.82);
+  color: #475569;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.locale-switcher-more[aria-expanded='true'] {
+  border-color: #2563eb;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.locale-switcher-menu {
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  inset-inline-end: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+  min-width: 12rem;
+  padding: 0.45rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+html.ib-rtl .locale-switcher-menu {
+  inset-inline-end: auto;
+  inset-inline-start: 0;
+}
+
+@media (max-width: 480px) {
+  .locale-switcher-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 10.5rem;
+  }
+}
+
 .locale-switcher-btn {
   border: 1px solid rgba(148, 163, 184, 0.45);
   background: rgba(255, 255, 255, 0.9);

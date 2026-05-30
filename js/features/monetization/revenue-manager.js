@@ -11,6 +11,26 @@ import {
 import { AFFILIATE_DEFAULTS, FREE_LIMITS, PLANS, PRICING_MESSAGING, PRO_FEATURES } from './plans.js';
 import { isProSubscriptionStatus } from '../billing/pro-features.js';
 
+function pt(key, vars = {}, fallback = '') {
+  const fullKey = `pricingDynamic.${key}`;
+  const translated = typeof window !== 'undefined' ? window.__ibI18n?.t(fullKey, vars) : null;
+  if (translated && translated !== fullKey) return translated;
+  return fallback || key;
+}
+
+function ptHighlights(key, fallback = []) {
+  if (typeof window === 'undefined') return fallback;
+  const lang = window.__ibI18n?.currentLang || 'tr';
+  const list = window.__ibI18n?.translations?.[lang]?.pricingDynamic?.[key];
+  return Array.isArray(list) && list.length ? list : fallback;
+}
+
+function ptMarketing(key, fallback = '') {
+  const translated = typeof window !== 'undefined' ? window.__ibI18n?.t(key) : null;
+  if (translated && translated !== key) return translated;
+  return fallback;
+}
+
 const ACTIVE_STATUSES = new Set(['active', 'trialing']);
 
 function hasActiveReferralPro(entitlements = {}) {
@@ -255,60 +275,67 @@ export class RevenueManager {
       costDriftPercent: PRICING_ROI_DEFAULTS.costDriftPercent,
       billing
     });
-    const summary = buildRoiSummaryCopy(result);
+    const summary = buildRoiSummaryCopy(result, {
+      t: (key, vars) => pt(key, vars),
+      formatAmount: formatTry
+    });
     const savings = getAnnualSavingsFacts();
 
     return `
       <section class="revenue-roi-panel" data-pricing-roi-panel aria-labelledby="pricing-roi-title">
         <div class="revenue-roi-panel-head">
-          <h3 id="pricing-roi-title">${PRICING_MESSAGING.roiTitle}</h3>
-          <p class="revenue-roi-panel-lead">Bütçeniz ve makul bir TCO sapması varsayımıyla Pro maliyetini yanlış seçim riskiyle kıyaslayın.</p>
+          <h3 id="pricing-roi-title">${pt('roiTitle', {}, PRICING_MESSAGING.roiTitle)}</h3>
+          <p class="revenue-roi-panel-lead">${pt('roiLead', {}, 'Bütçeniz ve makul bir TCO sapması varsayımıyla Pro maliyetini yanlış seçim riskiyle kıyaslayın.')}</p>
         </div>
         <div class="revenue-roi-controls">
           <label class="revenue-roi-field">
-            <span>Araç bütçesi (örnek)</span>
+            <span>${pt('budgetLabel', {}, 'Araç bütçesi (örnek)')}</span>
             <input type="range" min="${PRICING_ROI_DEFAULTS.budgetMin}" max="${PRICING_ROI_DEFAULTS.budgetMax}" step="${PRICING_ROI_DEFAULTS.budgetStep}" value="${PRICING_ROI_DEFAULTS.purchaseBudget}" data-roi-budget>
             <output data-roi-budget-display>${formatTry(PRICING_ROI_DEFAULTS.purchaseBudget)}</output>
           </label>
           <label class="revenue-roi-field">
-            <span>TCO sapması varsayımı</span>
+            <span>${pt('driftLabel', {}, 'TCO sapması varsayımı')}</span>
             <input type="range" min="${PRICING_ROI_DEFAULTS.minPercent}" max="${PRICING_ROI_DEFAULTS.maxPercent}" step="0.5" value="${PRICING_ROI_DEFAULTS.costDriftPercent}" data-roi-drift>
             <output data-roi-drift-display>%${PRICING_ROI_DEFAULTS.costDriftPercent}</output>
           </label>
         </div>
         <div class="revenue-roi-results" data-roi-results>
           <div class="revenue-roi-stat">
-            <span class="revenue-roi-stat-label">Örnek sapma maliyeti</span>
+            <span class="revenue-roi-stat-label">${pt('driftCostLabel', {}, 'Örnek sapma maliyeti')}</span>
             <strong data-roi-drift-cost>${formatTry(result.driftCost)}</strong>
           </div>
           <div class="revenue-roi-stat">
-            <span class="revenue-roi-stat-label">Pro (yıllık, seçili dönem)</span>
+            <span class="revenue-roi-stat-label">${pt('proYearlyLabel', {}, 'Pro (yıllık, seçili dönem)')}</span>
             <strong data-roi-pro-cost>${formatTry(result.proYearlyCost)}</strong>
-            <small data-roi-pro-monthly>≈ ${formatTry(result.proMonthlyCost)} / ay</small>
+            <small data-roi-pro-monthly>${pt('proMonthlyApprox', { amount: formatTry(result.proMonthlyCost) }, `≈ ${formatTry(result.proMonthlyCost)} / ay`)}</small>
           </div>
         </div>
         <p class="revenue-roi-summary" data-roi-summary>${summary}</p>
         <p class="revenue-roi-savings" data-roi-savings hidden>
-          Yıllık faturalama: 12× aylık listeye göre ${formatTry(savings.savingsAmount)} daha az (${savings.savingsPercent}% — listelenen fiyatlar).
+          ${pt(
+            'annualSavings',
+            { amount: formatTry(savings.savingsAmount), percent: savings.savingsPercent },
+            `Yıllık faturalama: 12× aylık listeye göre ${formatTry(savings.savingsAmount)} daha az (${savings.savingsPercent}% — listelenen fiyatlar).`
+          )}
         </p>
-        <p class="revenue-roi-disclaimer">${PRICING_MESSAGING.roiDisclaimer}</p>
+        <p class="revenue-roi-disclaimer">${pt('roiDisclaimer', {}, PRICING_MESSAGING.roiDisclaimer)}</p>
       </section>`;
   }
 
   renderPricingReassurance() {
     return `
-      <div class="revenue-pricing-reassurance" role="region" aria-label="Ödeme ve iptal güvencesi">
+      <div class="revenue-pricing-reassurance" role="region" aria-label="${pt('reassuranceAria', {}, 'Ödeme ve iptal güvencesi')}">
         <div class="revenue-pricing-reassurance-item">
-          <strong>Stripe · PCI</strong>
-          <p>Ödeme Stripe üzerinden; kart bilgileri sunucularımızda saklanmaz.</p>
+          <strong>${pt('stripeTitle', {}, 'Stripe · PCI')}</strong>
+          <p>${pt('stripeDesc', {}, 'Ödeme Stripe üzerinden; kart bilgileri sunucularımızda saklanmaz.')}</p>
         </div>
         <div class="revenue-pricing-reassurance-item">
-          <strong>İptal</strong>
-          <p>Aboneliği Stripe müşteri panelinden veya hesabınızdan istediğiniz zaman sonlandırın. <a href="/abonelik-iptal.html">İptal rehberi</a></p>
+          <strong>${pt('cancelTitle', {}, 'İptal')}</strong>
+          <p>${pt('cancelDescHtml', {}, 'Aboneliği Stripe müşteri panelinden veya hesabınızdan istediğiniz zaman sonlandırın. <a href="/abonelik-iptal.html">İptal rehberi</a>')}</p>
         </div>
         <div class="revenue-pricing-reassurance-item">
-          <strong>Deneme</strong>
-          <p>İlk Pro aboneliğinde ${PLANS.pro.trialDays} gün ücretsiz; deneme bitiminde seçtiğiniz dönem ücretlendirilir — sürpriz yok.</p>
+          <strong>${pt('trialTitle', {}, 'Deneme')}</strong>
+          <p>${pt('trialDesc', { days: PLANS.pro.trialDays }, `İlk Pro aboneliğinde ${PLANS.pro.trialDays} gün ücretsiz; deneme bitiminde seçtiğiniz dönem ücretlendirilir — sürpriz yok.`)}</p>
         </div>
       </div>`;
   }
@@ -331,25 +358,28 @@ export class RevenueManager {
     const annual = PLANS.pro.billing.annual;
     const savingsFacts = getAnnualSavingsFacts();
     const trialBadge = this.trialEligible
-      ? `<span class="revenue-trial-badge">${PLANS.pro.trialLabel}</span>`
+      ? `<span class="revenue-trial-badge">${ptMarketing('pricing.trialBadge', PLANS.pro.trialLabel)}</span>`
       : '';
     const enterprise = PLANS.enterprise;
     const roiBlock = this.renderPricingRoiCalculator(this.selectedBilling);
     const compareBlock = layout === 'premium' ? renderFeatureComparisonCards() : '';
     const reassuranceBlock = this.renderPricingReassurance();
+    const freeHighlights = ptHighlights('freeHighlights', PLANS.free.highlights);
+    const proHighlights = ptHighlights('proHighlights', PLANS.pro.highlights);
+    const enterpriseHighlights = ptHighlights('enterpriseHighlights', enterprise?.highlights || []);
 
     const billingToggle = `
-      <div class="revenue-billing-toggle" role="radiogroup" aria-label="Faturalama dönemi">
+      <div class="revenue-billing-toggle" role="radiogroup" aria-label="${pt('billingToggleAria', {}, 'Faturalama dönemi')}">
         <label class="revenue-billing-option">
           <input type="radio" name="billing-interval" value="monthly" checked>
-          <span>${monthly.label}</span>
+          <span>${pt('billingMonthly', {}, monthly.label)}</span>
           <strong>${monthly.priceDisplay}<small>${monthly.periodLabel}</small></strong>
         </label>
         <label class="revenue-billing-option revenue-billing-option--annual">
           <input type="radio" name="billing-interval" value="annual">
-          <span>${annual.label} <em>${annual.savingsLabel}</em></span>
+          <span>${pt('billingAnnual', {}, annual.label)} <em>${pt('billingAnnualSavings', {}, annual.savingsLabel)}</em></span>
           <strong>${annual.priceDisplay}<small>${annual.periodLabel}</small></strong>
-          <small class="revenue-billing-equiv">${annual.monthlyEquivalent} · 12 ay ${formatTry(savingsFacts.twelveMonthly)} yerine ${formatTry(savingsFacts.annual)}</small>
+          <small class="revenue-billing-equiv">${annual.monthlyEquivalent}${pt('billingAnnualEquiv', { twelveMonthly: formatTry(savingsFacts.twelveMonthly), annual: formatTry(savingsFacts.annual) }, ` · 12 ay ${formatTry(savingsFacts.twelveMonthly)} yerine ${formatTry(savingsFacts.annual)}`)}</small>
         </label>
       </div>`;
 
@@ -357,14 +387,14 @@ export class RevenueManager {
       ? `
         <article class="revenue-plan-card revenue-plan-card--enterprise" role="listitem">
           <div class="revenue-plan-card-head">
-            <span class="revenue-plan-badge">Kurumsal</span>
-            <h3 class="revenue-plan-title">${enterprise.name}</h3>
-            <p class="revenue-plan-price">${enterprise.priceLabel}</p>
+            <span class="revenue-plan-badge">${pt('badgeEnterprise', {}, 'Kurumsal')}</span>
+            <h3 class="revenue-plan-title">${pt('enterpriseName', {}, enterprise.name)}</h3>
+            <p class="revenue-plan-price">${pt('enterprisePrice', {}, enterprise.priceLabel)}</p>
           </div>
-          <p class="revenue-plan-desc">${enterprise.description}</p>
-          <ul class="revenue-plan-features">${this.renderPlanFeatureList(enterprise.highlights)}</ul>
+          <p class="revenue-plan-desc">${pt('enterpriseDesc', {}, enterprise.description)}</p>
+          <ul class="revenue-plan-features">${this.renderPlanFeatureList(enterpriseHighlights)}</ul>
           <div class="revenue-plan-card-foot">
-            <a href="${enterprise.contactHref}" class="btn btn-outline btn-block">${enterprise.cta}</a>
+            <a href="${enterprise.contactHref}" class="btn btn-outline btn-block">${pt('enterpriseCta', {}, enterprise.cta)}</a>
           </div>
         </article>`
       : '';
@@ -372,36 +402,36 @@ export class RevenueManager {
     const gridClass = 'revenue-pricing-grid revenue-pricing-grid--triple revenue-pricing-grid--cards';
 
     const planCards = `
-      <div class="${gridClass}" role="list" aria-label="Plan seçenekleri">
+      <div class="${gridClass}" role="list" aria-label="${pt('plansAria', {}, 'Plan seçenekleri')}">
         <article class="revenue-plan-card" role="listitem">
           <div class="revenue-plan-card-head">
-            <span class="revenue-plan-badge">Bireysel</span>
-            <h3 class="revenue-plan-title">${PLANS.free.name}</h3>
-            <p class="revenue-plan-price">${PLANS.free.priceLabel}</p>
+            <span class="revenue-plan-badge">${pt('badgeIndividual', {}, 'Bireysel')}</span>
+            <h3 class="revenue-plan-title">${pt('freeName', {}, PLANS.free.name)}</h3>
+            <p class="revenue-plan-price">${pt('freePrice', {}, PLANS.free.priceLabel)}</p>
           </div>
-          <p class="revenue-plan-desc">${PLANS.free.description}</p>
-          <ul class="revenue-plan-features">${this.renderPlanFeatureList(PLANS.free.highlights)}</ul>
+          <p class="revenue-plan-desc">${pt('freeDesc', {}, PLANS.free.description)}</p>
+          <ul class="revenue-plan-features">${this.renderPlanFeatureList(freeHighlights)}</ul>
           <div class="revenue-plan-card-foot">
-            <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">TCO analizini başlat</a>
+            <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_dynamic_free">${pt('freeCta', {}, 'TCO analizini başlat')}</a>
           </div>
         </article>
         <article class="revenue-plan-card revenue-plan-card--featured" data-revenue-plan-pro role="listitem">
           <div class="revenue-plan-card-head">
-            <span class="revenue-plan-badge revenue-plan-badge--popular">${PRICING_MESSAGING.popularBadge}</span>
+            <span class="revenue-plan-badge revenue-plan-badge--popular">${pt('popularBadge', {}, PRICING_MESSAGING.popularBadge)}</span>
             ${trialBadge}
-            <h3 class="revenue-plan-title">${PLANS.pro.name}</h3>
+            <h3 class="revenue-plan-title">${pt('proName', {}, PLANS.pro.name)}</h3>
             <p class="revenue-plan-price" data-revenue-price-display>${monthly.priceDisplay}<small data-revenue-price-period>${monthly.periodLabel}</small></p>
-            <p class="revenue-plan-equiv" data-revenue-price-equiv hidden>${annual.monthlyEquivalent} · ${annual.savingsLabel}</p>
-            <p class="revenue-plan-savings-fact" data-revenue-savings-fact hidden>12 aylık aylık ödemeye göre ${formatTry(savingsFacts.savingsAmount)} daha az (listelenen fiyat)</p>
+            <p class="revenue-plan-equiv" data-revenue-price-equiv hidden>${annual.monthlyEquivalent} · ${pt('billingAnnualSavings', {}, annual.savingsLabel)}</p>
+            <p class="revenue-plan-savings-fact" data-revenue-savings-fact hidden>${pt('savingsFact', { amount: formatTry(savingsFacts.savingsAmount) }, `12 aylık aylık ödemeye göre ${formatTry(savingsFacts.savingsAmount)} daha az (listelenen fiyat)`)}</p>
           </div>
-          <p class="revenue-plan-desc">${PLANS.pro.description}</p>
-          <ul class="revenue-plan-features">${this.renderPlanFeatureList(PLANS.pro.highlights)}</ul>
+          <p class="revenue-plan-desc">${pt('proDesc', {}, PLANS.pro.description)}</p>
+          <ul class="revenue-plan-features">${this.renderPlanFeatureList(proHighlights)}</ul>
           <div class="revenue-plan-card-foot">
             <div class="revenue-plan-cta-stack">
               <button type="button" class="btn btn-primary btn-lg btn-block" data-upgrade-checkout data-billing="monthly" data-trial="1" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">${this.getCheckoutCtaLabel('monthly')}</button>
-              <a href="/auto/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_pro_secondary">Önce ücretsiz TCO analizi</a>
+              <a href="/auto/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_pro_secondary">${pt('proSecondaryCta', {}, 'Önce ücretsiz TCO analizi')}</a>
             </div>
-            <p class="revenue-plan-hint">${PLANS.pro.priceHint}${this.trialEligible ? ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz` : ''}</p>
+            <p class="revenue-plan-hint">${pt('proPriceHint', {}, PLANS.pro.priceHint)}${this.trialEligible ? pt('trialHint', { days: PLANS.pro.trialDays }, ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz`) : ''}</p>
           </div>
         </article>
         ${enterpriseCard}
@@ -409,14 +439,13 @@ export class RevenueManager {
 
     const trustFooter = `
       <p class="revenue-risk-reversal" role="note">
-        <span>${PLANS.pro.trialDays} gün ücretsiz deneme (ilk abonelik)</span>
-        <span>Stripe ile güvenli ödeme</span>
-        <span>Panelden iptal — taahhütsüz</span>
-        <span>Skorlar bilgilendirme amaçlıdır</span>
+        <span>${pt('trustTrial', { days: PLANS.pro.trialDays }, `${PLANS.pro.trialDays} gün ücretsiz deneme (ilk abonelik)`)}</span>
+        <span>${pt('trustStripe', {}, 'Stripe ile güvenli ödeme')}</span>
+        <span>${pt('trustCancel', {}, 'Panelden iptal — taahhütsüz')}</span>
+        <span>${pt('trustDisclaimer', {}, 'Skorlar bilgilendirme amaçlıdır')}</span>
       </p>
       <p class="pricing-trust-note" role="note">
-        Analiz ve uyum skorları metodolojik destek sunar; kesin sonuç veya getiri taahhüdü değildir.
-        <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
+        ${pt('trustNoteHtml', {}, 'Analiz ve uyum skorları metodolojik destek sunar; kesin sonuç veya getiri taahhüdü değildir. <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>')}
       </p>`;
 
     const shellModifier = layout === 'premium' ? 'ib-pricing-shell--page' : 'ib-pricing-shell--home';
@@ -426,7 +455,7 @@ export class RevenueManager {
         ${
           layout === 'premium'
             ? `<header class="ib-pricing-intro">
-          <p class="revenue-pricing-value-prop">${PRICING_MESSAGING.subhead}</p>
+          <p class="revenue-pricing-value-prop">${pt('subhead', {}, PRICING_MESSAGING.subhead)}</p>
         </header>`
             : ''
         }
@@ -442,8 +471,7 @@ export class RevenueManager {
         ${
           layout === 'premium'
             ? `<p class="ib-pricing-compliance" role="note">
-          Skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü değildir.
-          <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>
+          ${pt('complianceHtml', {}, 'Skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü değildir. <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/metodoloji">Metodoloji</a>')}
         </p>`
             : trustFooter
         }
@@ -486,12 +514,27 @@ export class RevenueManager {
       if (driftOut) driftOut.textContent = `%${costDriftPercent}`;
       if (driftCostEl) driftCostEl.textContent = formatTry(result.driftCost);
       if (proCostEl) proCostEl.textContent = formatTry(result.proYearlyCost);
-      if (proMonthlyEl) proMonthlyEl.textContent = `≈ ${formatTry(result.proMonthlyCost)} / ay`;
-      if (summaryEl) summaryEl.textContent = buildRoiSummaryCopy(result);
+      if (proMonthlyEl) {
+        proMonthlyEl.textContent = pt(
+          'proMonthlyApprox',
+          { amount: formatTry(result.proMonthlyCost) },
+          `≈ ${formatTry(result.proMonthlyCost)} / ay`
+        );
+      }
+      if (summaryEl) {
+        summaryEl.textContent = buildRoiSummaryCopy(result, {
+          t: (key, vars) => pt(key, vars),
+          formatAmount: formatTry
+        });
+      }
       if (savingsEl) {
         savingsEl.hidden = billing !== 'annual';
         if (billing === 'annual') {
-          savingsEl.textContent = `Yıllık faturalama: 12× aylık listeye göre ${formatTry(savings.savingsAmount)} daha az (${savings.savingsPercent}% — listelenen fiyatlar).`;
+          savingsEl.textContent = pt(
+            'annualSavings',
+            { amount: formatTry(savings.savingsAmount), percent: savings.savingsPercent },
+            `Yıllık faturalama: 12× aylık listeye göre ${formatTry(savings.savingsAmount)} daha az (${savings.savingsPercent}% — listelenen fiyatlar).`
+          );
         }
       }
     };
@@ -516,7 +559,11 @@ export class RevenueManager {
 
       if (savingsFact) {
         const savings = getAnnualSavingsFacts();
-        savingsFact.textContent = `12 aylık aylık ödemeye göre ${formatTry(savings.savingsAmount)} daha az (listelenen fiyat)`;
+        savingsFact.textContent = pt(
+          'savingsFact',
+          { amount: formatTry(savings.savingsAmount) },
+          `12 aylık aylık ödemeye göre ${formatTry(savings.savingsAmount)} daha az (listelenen fiyat)`
+        );
         savingsFact.hidden = selected !== 'annual';
       }
 

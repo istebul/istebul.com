@@ -1,6 +1,7 @@
 /** Marketing + vertical shell copy — merged into translations.js */
 import { marketingSections } from './marketing-sections.js';
 import { newLocaleOverrides } from './new-locale-overrides.js';
+import { pricingDynamicCopy } from './pricing-dynamic-copy.js';
 
 function deepMerge(target, ...sources) {
   const output = { ...(target || {}) };
@@ -561,10 +562,18 @@ export const marketingCopy = Object.fromEntries(
         deepMerge(
           baseMarketingCopy.en,
           newLocaleOverrides[localeId],
-          marketingSections[localeId]
+          marketingSections[localeId],
+          { pricingDynamic: pricingDynamicCopy.en }
         )
       ];
     }
-    return [localeId, deepMerge(baseMarketingCopy[localeId], marketingSections[localeId])];
+    return [
+      localeId,
+      deepMerge(
+        baseMarketingCopy[localeId],
+        marketingSections[localeId],
+        { pricingDynamic: pricingDynamicCopy[localeId] || pricingDynamicCopy.en }
+      )
+    ];
   })
 );

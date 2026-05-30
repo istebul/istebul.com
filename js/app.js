@@ -179,6 +179,10 @@ class App {
             }
             this.renderPricingSection();
 
+            document.addEventListener('ib:locale-changed', () => {
+                this.renderPricingSection();
+            });
+
             document.addEventListener('routeChanged', (event) => {
                 if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) !== 'accepted') return;
                 analytics.track('route_change', {

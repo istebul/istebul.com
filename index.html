@@ -20,6 +20,16 @@
     <meta name="twitter:description" id="meta-twitter-description" content="Araba, ev, tatil ve finans kararlarında AI destekli analiz ve karşılaştırma.">
     <meta name="twitter:image" content="https://www.istebul.com/assets/images/og-image.svg">
     <link rel="canonical" id="meta-canonical" href="https://www.istebul.com/">
+    <link rel="alternate" hreflang="tr" href="https://www.istebul.com/">
+    <link rel="alternate" hreflang="en" href="https://www.istebul.com/en/">
+    <link rel="alternate" hreflang="de" href="https://www.istebul.com/de/">
+    <link rel="alternate" hreflang="ar" href="https://www.istebul.com/ar/">
+    <link rel="alternate" hreflang="it" href="https://www.istebul.com/it/">
+    <link rel="alternate" hreflang="fr" href="https://www.istebul.com/fr/">
+    <link rel="alternate" hreflang="es" href="https://www.istebul.com/es/">
+    <link rel="alternate" hreflang="ja" href="https://www.istebul.com/ja/">
+    <link rel="alternate" hreflang="zh" href="https://www.istebul.com/zh/">
+    <link rel="alternate" hreflang="x-default" href="https://www.istebul.com/">
     <link rel="sitemap" type="application/xml" href="/sitemap.xml">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="assets/icons/favicon-192.png">
@@ -1148,23 +1158,23 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     <div id="auth-modal" class="modal auth-modal-premium" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="auth-modal-title">Giriş Yap</h3>
-                <button type="button" class="modal-close" aria-label="Pencereyi kapat">&times;</button>
+                <h3 id="auth-modal-title" data-i18n="auth.login">Giriş Yap</h3>
+                <button type="button" class="modal-close" data-i18n-aria="common.closeModal" aria-label="Pencereyi kapat">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="login-form">
                     <div class="form-group">
-                        <label for="email">E-posta</label>
+                        <label for="email" data-i18n="auth.email">E-posta</label>
                         <input type="email" id="email" required>
                     </div>
                     <div class="form-group">
-                        <label for="password">Şifre</label>
+                        <label for="password" data-i18n="auth.password">Şifre</label>
                         <input type="password" id="password" required>
                     </div>
-                    <button type="submit" class="btn btn-primary full-width">Giriş Yap</button>
+                    <button type="submit" class="btn btn-primary full-width" data-i18n="auth.login">Giriş Yap</button>
                 </form>
                 <div class="modal-footer">
-                    <p>Hesabınız yok mu? <button type="button" class="ib-inline-link-btn" id="switch-to-register" data-auth-open="register">Üye olun</button></p>
+                    <p><span data-i18n="auth.noAccount">Hesabınız yok mu?</span> <button type="button" class="ib-inline-link-btn" id="switch-to-register" data-auth-open="register" data-i18n="auth.register">Üye olun</button></p>
                 </div>
             </div>
         </div>
