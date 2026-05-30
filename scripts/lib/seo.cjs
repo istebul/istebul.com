@@ -458,6 +458,7 @@ function renderSeoFooter({ site, guideLinks }) {
         <ul>
           <li><a href="/hakkimizda.html">Hakkımızda</a></li>
           <li><a href="/iletisim.html">İletişim</a></li>
+          <li><a href="/yardim.html">Yardım merkezi</a></li>
           <li><a href="/gizlilik.html">Gizlilik</a></li>
           <li><a href="/kvkk.html">KVKK</a></li>
         </ul>
@@ -501,6 +502,36 @@ function renderContactCards() {
       <p><a href="mailto:destek@istebul.com?subject=KVKK%20Başvurusu">KVKK başvurusu gönder</a></p>
       <p class="seo-contact-note">Yanıt süresi en geç 30 gün</p>
     </div>
+  </section>`;
+}
+
+function renderHelpFaqSection() {
+  let articles = [];
+  try {
+    const knowledge = loadJson('data/customer/faq-knowledge.json');
+    articles = knowledge.articles || [];
+  } catch {
+    articles = [];
+  }
+
+  const faqItems = articles
+    .map(
+      (item) => `<details class="seo-help-faq">
+        <summary>${escapeHtml(item.question)}</summary>
+        <p>${escapeHtml(item.answer)}</p>
+        ${
+          item.action?.href
+            ? `<p><a href="${escapeHtml(item.action.href)}">${escapeHtml(item.action.label || 'Devam et')} →</a></p>`
+            : ''
+        }
+      </details>`
+    )
+    .join('\n');
+
+  return `<section class="seo-section seo-faq seo-help-faq-list" aria-labelledby="help-faq-title">
+    <h2 id="help-faq-title">Sık sorulan sorular</h2>
+    <p class="seo-help-note">Site içi «Yardım» düğmesi aynı SSS içeriğini sunar. Sorunuz çözülmezse <a href="/iletisim.html">iletişim</a> veya WhatsApp destek hattını kullanın.</p>
+    ${faqItems}
   </section>`;
 }
 
@@ -631,6 +662,24 @@ function buildCorporateRichPages(distDir, site) {
       ],
       cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' },
       extraHtml: renderContactCards()
+    },
+    {
+      filename: 'yardim.html',
+      jsonPath: 'data/seo/help-page.json',
+      path: '/yardim.html',
+      kicker: 'Destek · Yardım merkezi',
+      breadcrumbs: [
+        { name: 'Ana sayfa', path: '/' },
+        { name: 'Yardım', path: '/yardim.html' }
+      ],
+      relatedLinks: [
+        { href: '/iletisim.html', label: 'İletişim' },
+        { href: '/kvkk.html', label: 'KVKK' },
+        { href: '/planlar', label: 'Planlar' },
+        { href: '/auto/', label: 'Ücretsiz analiz' }
+      ],
+      cta: { href: '/auto/', label: 'Analize başla' },
+      extraHtml: renderHelpFaqSection()
     }
   ];
 
@@ -713,7 +762,7 @@ function injectCorporateMeta(distDir) {
   const metaMap = loadJson('data/seo/corporate-meta.json');
   const site = loadJson('data/seo/site.json');
 
-  const skipFullBuild = new Set(['hakkimizda.html', 'iletisim.html']);
+  const skipFullBuild = new Set(['hakkimizda.html', 'iletisim.html', 'yardim.html']);
 
   Object.entries(metaMap).forEach(([filename, meta]) => {
     if (skipFullBuild.has(filename)) return;

@@ -1,0 +1,32 @@
+{
+  "title": "Yardım Merkezi | isteBul — SSS ve Destek",
+  "description": "isteBul yardım merkezi: abonelik, Auto analizi, Pro plan, KVKK ve hesap soruları. SSS araması ve destek kanalları.",
+  "h1": "Yardım merkezi",
+  "intro": "Sık sorulan sorulara göz atın veya destek kanallarımızdan bize ulaşın. Çoğu konu birkaç dakika içinde çözülür.",
+  "sections": [
+    {
+      "heading": "Hızlı bağlantılar",
+      "body": "En sık kullanılan sayfalar:",
+      "subsections": [
+        {
+          "heading": "Ürün",
+          "body": "Araç analizi: /auto/ · Planlar: /planlar · Metodoloji: /metodoloji/"
+        },
+        {
+          "heading": "Hesap",
+          "body": "Dashboard: /profil/ · Abonelik iptali: /abonelik-iptal.html"
+        },
+        {
+          "heading": "Yasal",
+          "body": "KVKK: /kvkk.html · Gizlilik: /gizlilik.html · Çerez: /cerez-politikasi.html"
+        }
+      ]
+    },
+    {
+      "heading": "Destek kanalları",
+      "body": "E-posta: destek@istebul.com (1–3 iş günü). KVKK başvuruları için konuya «KVKK Başvurusu» yazın. Acil konularda iletişim sayfasındaki WhatsApp hattını kullanabilirsiniz.",
+      "subsections": []
+    }
+  ],
+  "faqs": []
+}

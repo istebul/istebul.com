@@ -180,7 +180,7 @@ const TEMPLATES: Record<string, (v: TemplateVars) => string> = {
     <h1>Hızlı başlangıç</h1>
     <p>Hesabınız hazır. İlk adım: ücretsiz Auto analizi (3–5 dk).</p>
     <p><a href="${esc(v.cta_url)}">Analize başla →</a></p>
-    <p style="font-size:14px"><a href="${esc(buildUtmLink("/account.html", v.flow_id, v.step_id))}">Hesap ayarları</a></p>
+    <p style="font-size:14px"><a href="${esc(buildUtmLink("/profil/?tab=settings", v.flow_id, v.step_id))}">Hesap ayarları</a></p>
   `),
   onboarding_help_tips: (v) => layout(`
     <h1>3 ipucu</h1>
@@ -233,7 +233,7 @@ export function renderTemplate(
 
   const ctaPath =
     revopsBillingFlows.has(flowId) || supportBillingFlows.has(flowId)
-      ? "/account.html?billing=portal"
+      ? "/profil/?billing=portal"
       : flowId === "finance_follow_up"
         ? "/auto/?interest=finance"
         : flowId === "checkout_abandon_recovery" ||
@@ -259,8 +259,8 @@ export function renderTemplate(
       { growth_campaign: String(context.campaign || flowId), growth_channel: "email_feedback" }
     ),
     pricing_url: buildUtmLink("/planlar?checkout=pro", flowId, stepId),
-    account_url: buildUtmLink("/account.html", flowId, stepId),
-    billing_url: buildUtmLink("/account.html?billing=portal", flowId, stepId, {
+    account_url: buildUtmLink("/profil/", flowId, stepId),
+    billing_url: buildUtmLink("/profil/?billing=portal", flowId, stepId, {
       revops: "1",
     }),
     unsubscribe_url: recipientEmail ? buildUnsubscribeUrl(recipientEmail) : undefined,

@@ -571,6 +571,48 @@
     <changefreq>yearly</changefreq>
   </url>
   <url>
+    <loc>https://www.istebul.com/yardim.html</loc>
+    <lastmod>2026-05-30</lastmod>
+    <priority>0.55</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/blog</loc>
+    <lastmod>2026-05-30</lastmod>
+    <priority>0.6</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/duyurular</loc>
+    <lastmod>2026-05-30</lastmod>
+    <priority>0.5</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/kampanyalar</loc>
+    <lastmod>2026-05-30</lastmod>
+    <priority>0.5</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/karar-moat.html</loc>
+    <lastmod>2026-05-30</lastmod>
+    <priority>0.45</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/sigorta/</loc>
+    <lastmod>2026-05-30</lastmod>
+    <priority>0.4</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.istebul.com/kasko/</loc>
+    <lastmod>2026-05-30</lastmod>
+    <priority>0.4</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://www.istebul.com/rehber/arac-kredisi-hesaplama/</loc>
     <lastmod>2026-05-30</lastmod>
     <priority>0.7</priority>

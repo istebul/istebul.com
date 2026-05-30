@@ -498,7 +498,7 @@ const rewriteSeoHtmlAssets = () => {
       fs.writeFileSync(file, minifyHtml(html));
     });
   });
-  ['hakkimizda.html', 'iletisim.html'].forEach((name) => {
+  ['hakkimizda.html', 'iletisim.html', 'yardim.html'].forEach((name) => {
     const file = path.join(dist, name);
     if (!fs.existsSync(file)) return;
     let html = rewriteAssetRefs(fs.readFileSync(file, 'utf8'));

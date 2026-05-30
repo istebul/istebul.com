@@ -34,6 +34,12 @@
 /partner-basvuru.html /partner-basvuru.html 200
 /partner-closing-kit.html /partner-closing-kit.html 200
 /karar-moat.html /karar-moat.html 200
+/yardim.html /yardim.html 200
+/abonelik-iptal.html /abonelik-iptal.html 200
+/cerez-politikasi.html /cerez-politikasi.html 200
+
+# --- Legacy account URL (preserve query string on redirect) ---
+/account.html /profil/ 301
 
 # --- Legacy / junk URLs (no modern equivalent) ---
 /index.php/*  /  410

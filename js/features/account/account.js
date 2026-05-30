@@ -37,19 +37,27 @@ export class AccountManager {
         this.subscription = null;
         this.loading = false;
         this.app = null;
+        this._openBillingPortal = false;
     }
 
     handleQueryParams(params = new URLSearchParams()) {
         const subscribed = params.get('subscribed') === 'true';
         const cancelled = params.get('cancelled') === 'true';
         const billingManaged = params.get('billing') === 'managed';
+        const billingPortal = params.get('billing') === 'portal';
         const paymentSuccess = params.get('payment') === 'success';
         const paymentFailed = params.get('payment') === 'failed';
         const tab = params.get('tab');
 
         const allowedTabs = ['overview', 'analyses', 'favorites', 'comparisons', 'recommendations', 'notifications', 'settings', 'security', 'help'];
-        if (tab && allowedTabs.includes(tab)) {
+        if (tab === 'subscription') {
+            this.activeTab = 'settings';
+        } else if (tab && allowedTabs.includes(tab)) {
             this.activeTab = tab;
+        }
+
+        if (billingPortal) {
+            this._openBillingPortal = true;
         }
 
         if (paymentSuccess) {
@@ -78,7 +86,7 @@ export class AccountManager {
             }
         }
 
-        if (subscribed || cancelled || billingManaged || paymentSuccess || paymentFailed || tab) {
+        if (subscribed || cancelled || billingManaged || billingPortal || paymentSuccess || paymentFailed || tab) {
             const cleanUrl = `${window.location.pathname}`;
             window.history.replaceState(null, '', cleanUrl);
         }
@@ -387,6 +395,11 @@ export class AccountManager {
         });
         bindPaywallV1(root);
         this.ui?.loadIcons?.();
+
+        if (this._openBillingPortal) {
+            this._openBillingPortal = false;
+            queueMicrotask(() => this.auth?.showLoginModal?.());
+        }
     }
 
     renderLoading(user) {
@@ -473,6 +486,13 @@ export class AccountManager {
 
         this.setTab(this.activeTab);
         this.ui?.loadIcons?.();
+
+        if (this._openBillingPortal && this.app?.openBillingPortal) {
+            this._openBillingPortal = false;
+            queueMicrotask(() => {
+                this.app.openBillingPortal();
+            });
+        }
     }
 
     getInitials(profile) {
@@ -568,8 +588,8 @@ export class AccountManager {
             auto: { category: 'Auto', href: '/auto/' },
             konut: { category: 'Konut', href: '/konut/' },
             tatil: { category: 'Tatil', href: '/tatil/' },
-            finans: { category: 'Finansman', href: '/finansman/' },
-            finansman: { category: 'Finansman', href: '/finansman/' }
+            finans: { category: 'Finansman', href: '/finans/' },
+            finansman: { category: 'Finansman', href: '/finans/' }
         };
         const recentRecords = history
             .filter((item) => item?.createdAt)

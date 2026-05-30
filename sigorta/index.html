@@ -2,25 +2,38 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sigorta Analizi | Yakında | isteBul</title>
-  <meta name="description" content="Sigorta analiz modülü yakında yayında. Bilgilendirme formuna kaydolabilirsiniz." />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sigorta Karar Analizi | Yakında | isteBul</title>
+  <meta name="description" content="Sigorta analiz modülü yakında. Araç sigortası karşılaştırma rehberi ve bilgilendirme listesi." />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
   <link rel="canonical" href="https://www.istebul.com/sigorta/" />
+  <link rel="stylesheet" href="/css/corporate-pages.css?v=1" />
+  <link rel="stylesheet" href="/css/corporate-shell.css?v=1" />
   <style>
-    body{font-family:Inter,system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;margin:0}
-    main{max-width:640px;margin:0 auto;padding:48px 20px}
-    .card{background:#111827;border:1px solid #334155;border-radius:16px;padding:20px}
-    input,button{width:100%;min-height:44px;border-radius:10px;border:1px solid #475569;padding:10px}
-    input{background:#020617;color:#e2e8f0;margin:8px 0 12px}
-    button{background:#2563eb;color:#fff;border:0;cursor:pointer}
-    a{color:#93c5fd}
+    .coming-soon-card{max-width:640px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px}
+    .coming-soon-card input,.coming-soon-card button{width:100%;min-height:44px;border-radius:10px;border:1px solid #cbd5e1;padding:10px;margin:8px 0 12px}
+    .coming-soon-card button{background:#2563eb;color:#fff;border:0;cursor:pointer;font-weight:600}
   </style>
 </head>
 <body>
-  <main>
-    <div class="card">
-      <h1>Sigorta analizi yakında</h1>
-      <p>Bu modül henüz canlı değil. Bilgilendirme amaçlı kayıt bırakabilirsiniz.</p>
+  <header class="auto-header corporate-header">
+    <a class="logo" href="/">isteBul</a>
+    <nav class="corporate-nav" aria-label="Ana navigasyon">
+      <a href="/">Ana sayfa</a>
+      <a href="/auto/">Auto</a>
+      <a href="/sigorta/" class="is-active" aria-current="page">Sigorta</a>
+      <a href="/yardim.html">Yardım</a>
+      <a href="/iletisim.html">İletişim</a>
+    </nav>
+  </header>
+  <main class="section legal-page corporate-page">
+    <p class="kicker">Sigorta · Yakında</p>
+    <h1>Sigorta karar analizi yakında</h1>
+    <p class="lead">Bu modül geliştirme aşamasında. Şimdilik araç sigortası rehberimizi okuyabilir veya bilgilendirme listesine kaydolabilirsiniz.</p>
+    <p><a href="/rehber/arac-sigortasi-karsilastirma/">Araç sigortası karşılaştırma rehberi →</a> · <a href="/auto/">Canlı Auto analizi →</a></p>
+    <div class="coming-soon-card">
+      <h2>Bilgilendirme listesi</h2>
+      <p>Modül açıldığında e-posta ile haberdar olun.</p>
       <form id="interest-form">
         <label for="name">Ad Soyad</label>
         <input id="name" name="name" required autocomplete="name" />
@@ -29,9 +42,17 @@
         <button type="submit">Bilgilendirme al</button>
       </form>
       <p id="status" aria-live="polite"></p>
-      <p><a href="/">Ana sayfaya dön</a></p>
     </div>
+    <p class="corporate-disclaimer">Sigorta teklifleri bilgilendirme amaçlıdır; bağlayıcı poliçe koşulları sigorta şirketine aittir.</p>
   </main>
+  <footer class="corporate-footer">
+    <div><strong>isteBul</strong><p>Karar zekâsı platformu</p></div>
+    <nav>
+      <a href="/yardim.html">Yardım</a>
+      <a href="/gizlilik.html">Gizlilik</a>
+      <a href="/kvkk.html">KVKK</a>
+    </nav>
+  </footer>
   <script src="/env.js"></script>
   <script>
     const form = document.getElementById('interest-form');

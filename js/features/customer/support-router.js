@@ -95,7 +95,7 @@ export function routeSupportRequest(input = {}) {
   if (intent === 'billing') {
     actions.push({
       type: 'link',
-      href: '/account.html?tab=subscription&billing=portal',
+      href: '/profil/?tab=settings&billing=portal',
       label: 'Fatura & abonelik'
     });
   }

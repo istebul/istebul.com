@@ -32,7 +32,13 @@
     { "loc": "/gizlilik.html", "priority": "0.3", "changefreq": "yearly" },
     { "loc": "/kvkk.html", "priority": "0.3", "changefreq": "yearly" },
     { "loc": "/kullanim-sartlari.html", "priority": "0.3", "changefreq": "yearly" },
-    { "loc": "/cerez-politikasi.html", "priority": "0.3", "changefreq": "yearly" },
-    { "loc": "/abonelik-iptal.html", "priority": "0.4", "changefreq": "yearly" }
+    { "loc": "/abonelik-iptal.html", "priority": "0.4", "changefreq": "yearly" },
+    { "loc": "/yardim.html", "priority": "0.55", "changefreq": "monthly" },
+    { "loc": "/blog", "priority": "0.6", "changefreq": "weekly" },
+    { "loc": "/duyurular", "priority": "0.5", "changefreq": "weekly" },
+    { "loc": "/kampanyalar", "priority": "0.5", "changefreq": "weekly" },
+    { "loc": "/karar-moat.html", "priority": "0.45", "changefreq": "monthly" },
+    { "loc": "/sigorta/", "priority": "0.4", "changefreq": "monthly" },
+    { "loc": "/kasko/", "priority": "0.4", "changefreq": "monthly" }
   ]
 }
