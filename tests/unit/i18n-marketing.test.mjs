@@ -18,6 +18,9 @@ const REQUIRED_KEYS = [
   'categories.kasko.name',
   'home.analyzeAction',
   'pricing.kicker',
+  'spaPages.announcements.title',
+  'spaPages.blog.lead',
+  'spaPages.planlar.ctaPrimary',
   'faq.q0',
   'footerNav.products',
 ];

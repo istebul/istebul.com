@@ -19,20 +19,17 @@ import {
 } from './features/lifecycle/lifecycle-client.js';
 import { trackPricingViewForUpgrade } from './features/revenue/revenue-ops-client.js';
 import { mountHelpCenterWidget } from './ui/help-center-widget.js';
-import {
-    bindContextualUpsell,
-    flushUpsellConversion,
-    openUpsellCheckout,
-    renderContextualUpsellCard,
-    shouldShowUpsell,
-    trackUpsellClick
-} from './features/monetization/upsell-engine.js';
-import { initHomeCategories } from './runtime/home-categories.js';
 import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
-import { revenueManager } from './features/monetization/revenue-manager.js';
-import { renderHomePricingTeaser } from './features/monetization/pricing-home-teaser.js';
-import { renderTrustLayerCompact } from './features/moat/decision-insight-panels.js';
+import {
+  ensureAccountManager,
+  ensureCatalogData,
+  ensureRevenueManager,
+  ensureUpsellEngine,
+  getRevenueManager,
+  renderHomePricingTeaser,
+  renderTrustLayerCompact
+} from './runtime/lazy-app-modules.js';
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { Router } from './core/router.js';
@@ -45,9 +42,6 @@ import { analytics } from './core/analytics.js';
 import { canCallAiNarration, hasAiNarrationBudget } from './core/scale-limits.js';
 import { errorBoundary } from './core/error-boundary.js';
 import { wireAutoListingFilters } from './features/listings/auto-listing-filters.js';
-import { ListingManager } from './features/ilan/ilan.js';
-import { ProfileManager } from './features/profil/profil.js';
-import AccountManager from './features/account/account.js';
 import {
     mapBillingPortalError,
     setBillingPortalButtonsLoading
@@ -98,11 +92,9 @@ class App {
         this.auth = new AuthManager();
         this.ui = new UIManager();
         this.router = new Router();
-        /** @deprecated ListingManager not wired — listings live in App methods until extracted. */
-        this.ilan = new ListingManager(this.ui, this.router);
-        /** @deprecated ProfileManager not wired — profile UI via App + UIManager. */
-        this.profil = new ProfileManager(this.ui);
-        this.account = new AccountManager(this.ui, this.auth);
+        this.account = null;
+        this.ilan = null;
+        this.profil = null;
         this.messagingModule = null;
         this._billingPortalInFlight = false;
         this.currentUser = null;
@@ -128,6 +120,14 @@ class App {
         this.assistantStep = 0;
         this.lastDecisionResult = null;
         this._sessionBootstrapDone = false;
+    }
+
+    async ensureAccount() {
+        if (this.account) return this.account;
+        this.account = await ensureAccountManager(this.ui, this.auth);
+        this.account.app = this;
+        this.account?.bindEvents?.(this);
+        return this.account;
     }
 
     async init() {
@@ -174,13 +174,15 @@ class App {
             this.renderHeroDecisionPreview();
             const trustMount = document.getElementById('home-trust-layer-mount');
             if (trustMount && resolveRouteSurface(window.location.pathname) !== 'home') {
-                trustMount.innerHTML = renderTrustLayerCompact('home');
-                this.ui.loadIcons?.();
+                renderTrustLayerCompact('home').then((html) => {
+                    trustMount.innerHTML = html;
+                    this.ui.loadIcons?.();
+                });
             }
-            this.renderPricingSection();
+            await this.renderPricingSection();
 
             document.addEventListener('ib:locale-changed', () => {
-                this.renderPricingSection();
+                void this.renderPricingSection();
             });
 
             document.addEventListener('routeChanged', (event) => {
@@ -205,6 +207,7 @@ class App {
             this.checkForNewDeployment();
 
             if (this.currentUser) {
+                const revenueManager = await ensureRevenueManager();
                 await revenueManager.refresh(this.currentUser.id);
                 this.initMessaging(this.currentUser.id);
             }
@@ -469,9 +472,11 @@ class App {
                 state.setUser(user);
                 this.ui.updateAuthUI(user);
                 await this.loadUserProfile(user.id);
+                const revenueManager = await ensureRevenueManager();
                 await revenueManager.refresh(user.id);
                 await this.initMessaging(user.id);
             } else {
+                const revenueManager = await ensureRevenueManager();
                 await revenueManager.refresh(null);
                 this.currentUser = null;
                 this.ui.updateAuthUI(null);
@@ -488,7 +493,7 @@ class App {
             if (profile) {
                 this.currentUser.profile = profile;
                 this.ui.updateUserUI(profile);
-                await this.account?.refresh?.(this.currentUser);
+                await this.ensureAccount().then((account) => account?.refresh?.(this.currentUser));
                 
                 // Set user in monitoring
                 monitoring.setUser({
@@ -1104,12 +1109,14 @@ class App {
 
             if (route === 'profil') {
                 const params = new URLSearchParams(window.location.search);
-                this.account?.handleQueryParams?.(params);
-                if (this.currentUser) {
-                    this.account?.refresh?.(this.currentUser);
-                } else {
-                    this.account?.renderGuest?.();
-                }
+                void this.ensureAccount().then((account) => {
+                    account?.handleQueryParams?.(params);
+                    if (this.currentUser) {
+                        account?.refresh?.(this.currentUser);
+                    } else {
+                        account?.renderGuest?.();
+                    }
+                });
 
                 const upgrade = params.get('upgrade');
                 if (upgrade === '1') {
@@ -1205,22 +1212,26 @@ class App {
             newsletterForm.addEventListener('submit', (e) => this.handleNewsletterSubscribe(e));
         }
 
-        document.addEventListener('click', (event) => {
+        void this.ensureAccount();
+
+        document.addEventListener('click', async (event) => {
             const exportBtn = event.target.closest('[data-upsell-trigger="decision_export"]');
-            if (!exportBtn || revenueManager.isPremium) return;
+            const revenueManager = getRevenueManager();
+            if (!exportBtn || revenueManager?.isPremium) return;
             event.preventDefault();
             const placement = exportBtn.dataset.upsellPlacement || 'compare_export';
-            if (shouldShowUpsell('decision_export')) {
+            const upsell = await ensureUpsellEngine();
+            if (upsell.shouldShowUpsell('decision_export')) {
                 const container = document.getElementById('comparison-content') || exportBtn.parentElement;
                 const slot = document.createElement('div');
-                slot.innerHTML = renderContextualUpsellCard('decision_export', placement);
+                slot.innerHTML = upsell.renderContextualUpsellCard('decision_export', placement);
                 const card = slot.firstElementChild;
                 if (card && container) {
                     container.prepend(card);
-                    bindContextualUpsell(container);
+                    upsell.bindContextualUpsell(container);
                 }
             } else {
-                openUpsellCheckout('decision_export', placement, { feature: 'premium_report', modal: true });
+                upsell.openUpsellCheckout('decision_export', placement, { feature: 'premium_report', modal: true });
             }
         });
 
@@ -1257,7 +1268,7 @@ class App {
         });
         document.addEventListener('userLoggedOut', () => this.handleUserLogout());
 
-        this.account?.bindEvents?.(this);
+        void this.ensureAccount();
     }
 
 
@@ -2058,7 +2069,7 @@ class App {
 
         let result = this.buildDecisionResult(categoryConfig, answers);
 
-        const aiPro = revenueManager.isPremium;
+        const aiPro = getRevenueManager()?.isPremium;
         if (hasAiNarrationBudget({ pro: aiPro })) {
             try {
                 this.ui.showInfo?.('AI karar analizi hazırlanıyor...');
@@ -2972,22 +2983,24 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.writeStoredValue(storageKey, filtered);
         this.decisionHistory = filtered;
         this.ui.renderDecisionHistory?.(this.decisionHistory);
-        this.injectDecisionHistoryUpsell();
+        void this.injectDecisionHistoryUpsell();
         this.saveSearchHistory(`Karar Asistanı: ${result.categoryName} - ${topPick?.name || 'Sonuç'}`);
         return true;
     }
 
-    injectDecisionHistoryUpsell() {
-        if (revenueManager.isPremium || !this.decisionHistory?.length) return;
+    async injectDecisionHistoryUpsell() {
+        const revenueManager = getRevenueManager();
+        if (revenueManager?.isPremium || !this.decisionHistory?.length) return;
         const container = document.getElementById('history-list');
-        if (!container || !shouldShowUpsell('decision_history')) return;
+        const upsell = await ensureUpsellEngine();
+        if (!container || !upsell.shouldShowUpsell('decision_history')) return;
         if (container.querySelector('[data-upsell-offer="decision_history"]')) return;
         const slot = document.createElement('div');
-        slot.innerHTML = renderContextualUpsellCard('decision_history', 'decision_history');
+        slot.innerHTML = upsell.renderContextualUpsellCard('decision_history', 'decision_history');
         const card = slot.firstElementChild;
         if (card) {
             container.prepend(card);
-            bindContextualUpsell(container);
+            upsell.bindContextualUpsell(container);
         }
     }
 
@@ -3404,7 +3417,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
     }
 
-    renderPricingSection() {
+    async renderPricingSection() {
+        const revenueManager = await ensureRevenueManager();
         const premiumRoot = document.getElementById('premium-pricing-plans-root');
         const homeRoot = document.querySelector('#pricing #pricing-plans-root');
 
@@ -3414,7 +3428,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
 
         if (homeRoot && homeRoot !== premiumRoot) {
-            homeRoot.innerHTML = renderHomePricingTeaser();
+            homeRoot.innerHTML = await renderHomePricingTeaser(revenueManager);
         }
 
         initPricingCardsMotion(document);
@@ -3437,7 +3451,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const params = new URLSearchParams(window.location.search);
 
             if (params.get('subscribed') === 'true') {
-            flushUpsellConversion({ source: 'checkout_return' });
+            void ensureUpsellEngine().then((upsell) => upsell.flushUpsellConversion({ source: 'checkout_return' }));
             const billingPlan = params.get('plan') || 'monthly';
             const isTrial = params.get('trial') === '1';
             const returnKey = `return:${this.currentUser?.id || analytics.getSessionId()}:${billingPlan}`;
@@ -3461,7 +3475,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             }
 
             if (this.currentUser?.id) {
-                revenueManager.refresh(this.currentUser.id);
+                void ensureRevenueManager().then((revenueManager) => revenueManager.refresh(this.currentUser.id));
             }
 
             params.delete('subscribed');
@@ -3530,7 +3544,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
     }
 
-    requestPremiumUpgrade(feature = 'default') {
+    async requestPremiumUpgrade(feature = 'default') {
+        const revenueManager = await ensureRevenueManager();
         if (!revenueManager.canAccess(feature === 'default' ? 'premium_report' : feature)) {
             revenueManager.mountPaywall(feature);
             return false;
@@ -3558,7 +3573,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     storeCheckoutIntent(event) {
         const billingInterval = this.resolveCheckoutBilling(event);
         const trigger = event?.target?.closest?.('[data-upgrade-checkout]');
-        const useTrial = trigger?.dataset?.trial !== '0' && revenueManager.trialEligible;
+        const useTrial = trigger?.dataset?.trial !== '0' && getRevenueManager()?.trialEligible;
         storeCheckoutIntentPayload({ billing: billingInterval, useTrial });
     }
 
@@ -3697,6 +3712,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             || 'monthly';
         const trigger = event?.target?.closest?.('[data-upgrade-checkout]');
         const useTrialFromTrigger = trigger?.dataset?.trial !== '0';
+        const revenueManager = await ensureRevenueManager();
         const useTrial = storedIntent && options.fromResume
             ? storedIntent.useTrial !== false && revenueManager.trialEligible
             : useTrialFromTrigger && revenueManager.trialEligible;
@@ -3998,6 +4014,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
     addComparisonItem(item) {
         if (!item) return;
+        void this._addComparisonItem(item);
+    }
+
+    async _addComparisonItem(item) {
         const existingCategory = this.comparisonItems[0]?.categoryId;
         if (existingCategory && existingCategory !== item.categoryId) {
             this.ui.showError('Net sonuç için aynı tabloda yalnızca aynı kategoriden seçenekler karşılaştırılır.');
@@ -4012,21 +4032,23 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             return;
         }
 
+        const revenueManager = await ensureRevenueManager();
         const maxItems = revenueManager.getComparisonLimit();
 
         if (this.comparisonItems.length >= maxItems) {
             if (!revenueManager.isPremium) {
-                if (shouldShowUpsell('comparison_unlimited')) {
+                const upsell = await ensureUpsellEngine();
+                if (upsell.shouldShowUpsell('comparison_unlimited')) {
                     const container = document.getElementById('comparison-content');
                     if (container) {
                         const slot = document.createElement('div');
-                        slot.innerHTML = renderContextualUpsellCard('comparison_unlimited', 'compare_center_limit');
+                        slot.innerHTML = upsell.renderContextualUpsellCard('comparison_unlimited', 'compare_center_limit');
                         const card = slot.firstElementChild;
                         if (card) container.prepend(card);
-                        bindContextualUpsell(container);
+                        upsell.bindContextualUpsell(container);
                     }
                 } else {
-                    trackUpsellClick('comparison_unlimited', 'compare_center_limit', { modal: true });
+                    upsell.trackUpsellClick('comparison_unlimited', 'compare_center_limit', { modal: true });
                     revenueManager.mountPaywall('comparison');
                 }
                 this.ui.showError(`Ücretsiz planda en fazla ${maxItems} seçenek karşılaştırabilirsiniz. Pro ile 4\'e kadar.`);
@@ -4373,6 +4395,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         state.setUser(user);
         this.ui.updateAuthUI(user);
         await this.loadUserProfile(user.id);
+        const revenueManager = await ensureRevenueManager();
         await revenueManager.refresh(user.id);
         await this.initMessaging(user.id);
         await this.completeSessionBootstrap();
@@ -4395,14 +4418,13 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this._sessionBootstrapDone = false;
         this.currentUser = null;
         this.messagingModule = null;
+        const revenueManager = await ensureRevenueManager();
         await revenueManager.refresh(null);
         this.decisionHistory = [];
         this.localListings = [];
         this.ui.updateAuthUI(null);
         this.ui.renderHistoryAuthGate?.();
-        this.account?.renderGuest?.();
-
-        // Reload listings
+        void this.ensureAccount().then((account) => account?.renderGuest?.());
         await this.loadListings();
     }
 

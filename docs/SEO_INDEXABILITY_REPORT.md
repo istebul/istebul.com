@@ -8,7 +8,7 @@
 | Metric | Value |
 |--------|-------|
 | noindex pages (repo scan) | 7 |
-| sitemap URL count | 35 |
+| sitemap URL count | 107 |
 | canonical issues | 0 |
 | orphan HTML (vs sitemap) | 6 |
 | internal /rehber/ links (sample) | 207 |

@@ -12,6 +12,7 @@ const maxTotalBytes = 1045 * 1024;
 const BUDGET_EXCLUDE = [
   /^js\/admin-panel\.js$/,
   /^js\/corporate\//,
+  /^js\/chunks\//,
   /^assets\/auto-runtime\//,
   /^assets\/tatil-runtime\//,
   /^assets\/real-estate-runtime\//,
