@@ -207,6 +207,13 @@ pendingStaticFiles.forEach(({ file, source }) => {
   let html = rewriteAssetRefs(source);
   if (file === 'index.html') {
     html = injectRouteBootstrap(html);
+    const bootstrapHash = hashContent(
+      fs.readFileSync(path.join(root, 'js/runtime/route-bootstrap-head.js'), 'utf8')
+    );
+    html = html.replace(
+      '/js/runtime/route-bootstrap-head.js',
+      `/js/runtime/route-bootstrap-head.js?v=${bootstrapHash}`
+    );
     html = injectPremiumPrerender(html);
     html = html.replace(/js\/app\.bundle(?:-[A-Z0-9]+)?\.js(?:\?v=\d+)?/g, '/js/' + appBundleFile);
     html = injectPerformanceHints(html, appBundleFile);
