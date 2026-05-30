@@ -165,5 +165,205 @@ export const translations = {
       }
     },
     marketingCopy.ar
+  ),
+  it: mergeLocale(
+    {
+      meta: { language: 'Lingua', region: 'Regione' },
+      common: {
+        loading: 'Caricamento...',
+        error: 'Si è verificato un errore',
+        success: 'Operazione riuscita',
+        save: 'Salva',
+        cancel: 'Annulla',
+        delete: 'Elimina',
+        edit: 'Modifica',
+        search: 'Cerca',
+        filter: 'Filtra',
+        all: 'Tutti'
+      },
+      auth: {
+        login: 'Accedi',
+        register: 'Registrati',
+        logout: 'Esci',
+        email: 'Email',
+        password: 'Password',
+        fullName: 'Nome completo',
+        forgotPassword: 'Password dimenticata',
+        noAccount: 'Non hai un account?',
+        haveAccount: 'Hai già un account?'
+      },
+      listings: {
+        title: 'Opzioni',
+        addListing: 'Aggiungi opzione',
+        myListings: 'Le mie opzioni',
+        favorites: 'Preferiti',
+        price: 'Prezzo',
+        location: 'Posizione',
+        category: 'Categoria',
+        description: 'Descrizione',
+        publish: 'Pubblica'
+      }
+    },
+    marketingCopy.it
+  ),
+  fr: mergeLocale(
+    {
+      meta: { language: 'Langue', region: 'Région' },
+      common: {
+        loading: 'Chargement...',
+        error: 'Une erreur est survenue',
+        success: 'Opération réussie',
+        save: 'Enregistrer',
+        cancel: 'Annuler',
+        delete: 'Supprimer',
+        edit: 'Modifier',
+        search: 'Rechercher',
+        filter: 'Filtrer',
+        all: 'Tout'
+      },
+      auth: {
+        login: 'Connexion',
+        register: 'Inscription',
+        logout: 'Déconnexion',
+        email: 'E-mail',
+        password: 'Mot de passe',
+        fullName: 'Nom complet',
+        forgotPassword: 'Mot de passe oublié',
+        noAccount: 'Pas de compte ?',
+        haveAccount: 'Déjà un compte ?'
+      },
+      listings: {
+        title: 'Options',
+        addListing: 'Ajouter une option',
+        myListings: 'Mes options',
+        favorites: 'Favoris',
+        price: 'Prix',
+        location: 'Emplacement',
+        category: 'Catégorie',
+        description: 'Description',
+        publish: 'Publier'
+      }
+    },
+    marketingCopy.fr
+  ),
+  es: mergeLocale(
+    {
+      meta: { language: 'Idioma', region: 'Región' },
+      common: {
+        loading: 'Cargando...',
+        error: 'Se produjo un error',
+        success: 'Operación exitosa',
+        save: 'Guardar',
+        cancel: 'Cancelar',
+        delete: 'Eliminar',
+        edit: 'Editar',
+        search: 'Buscar',
+        filter: 'Filtrar',
+        all: 'Todos'
+      },
+      auth: {
+        login: 'Iniciar sesión',
+        register: 'Registrarse',
+        logout: 'Cerrar sesión',
+        email: 'Correo electrónico',
+        password: 'Contraseña',
+        fullName: 'Nombre completo',
+        forgotPassword: 'Olvidé mi contraseña',
+        noAccount: '¿No tiene cuenta?',
+        haveAccount: '¿Ya tiene cuenta?'
+      },
+      listings: {
+        title: 'Opciones',
+        addListing: 'Añadir opción',
+        myListings: 'Mis opciones',
+        favorites: 'Favoritos',
+        price: 'Precio',
+        location: 'Ubicación',
+        category: 'Categoría',
+        description: 'Descripción',
+        publish: 'Publicar'
+      }
+    },
+    marketingCopy.es
+  ),
+  ja: mergeLocale(
+    {
+      meta: { language: '言語', region: '地域' },
+      common: {
+        loading: '読み込み中...',
+        error: 'エラーが発生しました',
+        success: '成功しました',
+        save: '保存',
+        cancel: 'キャンセル',
+        delete: '削除',
+        edit: '編集',
+        search: '検索',
+        filter: 'フィルター',
+        all: 'すべて'
+      },
+      auth: {
+        login: 'ログイン',
+        register: '登録',
+        logout: 'ログアウト',
+        email: 'メール',
+        password: 'パスワード',
+        fullName: '氏名',
+        forgotPassword: 'パスワードを忘れた',
+        noAccount: 'アカウントをお持ちでないですか？',
+        haveAccount: 'すでにアカウントをお持ちですか？'
+      },
+      listings: {
+        title: 'オプション',
+        addListing: 'オプションを追加',
+        myListings: 'マイオプション',
+        favorites: 'お気に入り',
+        price: '価格',
+        location: '場所',
+        category: 'カテゴリ',
+        description: '説明',
+        publish: '公開'
+      }
+    },
+    marketingCopy.ja
+  ),
+  zh: mergeLocale(
+    {
+      meta: { language: '语言', region: '地区' },
+      common: {
+        loading: '加载中...',
+        error: '发生错误',
+        success: '操作成功',
+        save: '保存',
+        cancel: '取消',
+        delete: '删除',
+        edit: '编辑',
+        search: '搜索',
+        filter: '筛选',
+        all: '全部'
+      },
+      auth: {
+        login: '登录',
+        register: '注册',
+        logout: '退出登录',
+        email: '邮箱',
+        password: '密码',
+        fullName: '姓名',
+        forgotPassword: '忘记密码',
+        noAccount: '没有账户？',
+        haveAccount: '已有账户？'
+      },
+      listings: {
+        title: '选项',
+        addListing: '添加选项',
+        myListings: '我的选项',
+        favorites: '收藏',
+        price: '价格',
+        location: '位置',
+        category: '类别',
+        description: '描述',
+        publish: '发布'
+      }
+    },
+    marketingCopy.zh
   )
 };

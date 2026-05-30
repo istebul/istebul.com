@@ -1,5 +1,23 @@
 /** Marketing + vertical shell copy — merged into translations.js */
-export const marketingCopy = {
+import { marketingSections } from './marketing-sections.js';
+import { newLocaleOverrides } from './new-locale-overrides.js';
+
+function deepMerge(target, ...sources) {
+  const output = { ...(target || {}) };
+  for (const source of sources) {
+    if (!source || typeof source !== 'object') continue;
+    for (const [key, value] of Object.entries(source)) {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        output[key] = deepMerge(output[key], value);
+      } else {
+        output[key] = value;
+      }
+    }
+  }
+  return output;
+}
+
+const baseMarketingCopy = {
   tr: {
     nav: {
       products: 'Ürünler',
@@ -531,3 +549,22 @@ export const marketingCopy = {
     }
   }
 };
+
+const CLONED_LOCALE_IDS = ['it', 'fr', 'es', 'ja', 'zh'];
+const SECTION_LOCALE_IDS = ['tr', 'en', 'de', 'ar', ...CLONED_LOCALE_IDS];
+
+export const marketingCopy = Object.fromEntries(
+  SECTION_LOCALE_IDS.map((localeId) => {
+    if (CLONED_LOCALE_IDS.includes(localeId)) {
+      return [
+        localeId,
+        deepMerge(
+          baseMarketingCopy.en,
+          newLocaleOverrides[localeId],
+          marketingSections[localeId]
+        )
+      ];
+    }
+    return [localeId, deepMerge(baseMarketingCopy[localeId], marketingSections[localeId])];
+  })
+);
