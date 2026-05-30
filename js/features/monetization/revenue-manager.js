@@ -11,6 +11,7 @@ import {
 import { AFFILIATE_DEFAULTS, FREE_LIMITS, PLANS, PRICING_MESSAGING, PRO_FEATURES } from './plans.js';
 import { applyLocalizedPricingToPlans } from './pricing-localization.js';
 import { isProSubscriptionStatus } from '../billing/pro-features.js';
+import { bindPaymentProductButtons } from '../../payments/payment-client.js';
 
 function pt(key, vars = {}, fallback = '') {
   const fullKey = `pricingDynamic.${key}`;
@@ -67,17 +68,25 @@ export class RevenueManager {
     this.loading = true;
 
     try {
-      const [sub, trialEligible, profile] = await Promise.all([
+      const [sub, trialEligible, profile, entitlements] = await Promise.all([
         API.getSubscription(userId),
         API.isTrialEligible(userId),
-        API.getProfile(userId).catch(() => null)
+        API.getProfile(userId).catch(() => null),
+        API.getUserEntitlements(userId).catch(() => [])
       ]);
       this.subscription = sub;
+      this.paymentEntitlements = entitlements || [];
+      if (typeof window !== 'undefined') {
+        window.__ibPaymentEntitlements = this.paymentEntitlements;
+      }
       this.referralEntitlements = profile?.referral_entitlements || {};
       const subPremium = Boolean(sub && ACTIVE_STATUSES.has(sub.status));
       const referralPremium = hasActiveReferralPro(this.referralEntitlements);
       const profilePremium =
         profile?.plan === 'pro' && isProSubscriptionStatus(profile?.subscription_status);
+      this.hasPremiumReportEntitlement = this.paymentEntitlements.some(
+        (e) => e.entitlement_code === 'premium_report' && e.status === 'active'
+      );
       this.isPremium = subPremium || referralPremium || profilePremium;
       this.trialEligible = trialEligible && !subPremium;
 
@@ -111,6 +120,7 @@ export class RevenueManager {
         return false;
       case 'premium_report':
       case 'premium_pdf_report':
+        return Boolean(this.hasPremiumReportEntitlement);
       case 'pdf_history':
       case 'scenario_analysis':
       case 'unlimited_analysis':
@@ -179,7 +189,7 @@ export class RevenueManager {
           <p>${copy.body}</p>
         </div>
         <div class="revenue-upgrade-actions">
-          <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_banner">${this.getCheckoutCtaLabel()}</button>
+          <button type="button" class="btn btn-primary" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_banner">Pro'ya geç</button>
           <a href="/planlar" class="btn btn-outline" data-native-route data-analytics-cta="cta_secondary_plans" data-analytics-placement="paywall_banner">Planları incele</a>
         </div>
       </aside>
@@ -200,7 +210,7 @@ export class RevenueManager {
             ${PLANS.pro.highlights.slice(0, 4).map((item) => `<li>${item}</li>`).join('')}
           </ul>
           <div class="revenue-upgrade-actions">
-            <button type="button" class="btn btn-primary" data-upgrade-checkout data-billing="monthly" data-trial="1" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_compact">${this.getCheckoutCtaLabel()}</button>
+            <button type="button" class="btn btn-primary" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="paywall_compact">Pro'ya geç</button>
             <button type="button" class="btn btn-outline" data-revenue-paywall-close>Şimdilik ücretsiz devam et</button>
           </div>
           <p class="revenue-paywall-note">İstediğiniz zaman iptal edebilirsiniz. Ödeme Stripe ile güvenli şekilde alınır.</p>
@@ -436,7 +446,9 @@ export class RevenueManager {
           <ul class="revenue-plan-features">${this.renderPlanFeatureList(proHighlights)}</ul>
           <div class="revenue-plan-card-foot">
             <div class="revenue-plan-cta-stack">
-              <button type="button" class="btn btn-primary btn-lg btn-block" data-upgrade-checkout data-billing="monthly" data-trial="1" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">${this.getCheckoutCtaLabel('monthly')}</button>
+              <button type="button" class="btn btn-primary btn-lg btn-block" data-payment-product="pro_monthly" data-revenue-checkout-cta data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_dynamic_pro">Pro'ya geç · ${monthly.priceDisplay}</button>
+              <button type="button" class="btn btn-outline btn-block" data-payment-product="pro_yearly" data-analytics-cta="cta_secondary_checkout" data-analytics-placement="pricing_dynamic_pro_annual">Yıllık Pro · ${annual.priceDisplay}</button>
+              <button type="button" class="btn btn-ghost btn-sm btn-block" data-payment-product="premium_report" data-analytics-cta="cta_premium_report" data-analytics-placement="pricing_dynamic_premium_report">Premium rapor · 99 TL</button>
               <a href="/auto/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_pro_secondary">${pt('proSecondaryCta', {}, 'Önce ücretsiz TCO analizi')}</a>
             </div>
             <p class="revenue-plan-hint">${pt('proPriceHint', {}, PLANS.pro.priceHint)}${this.trialEligible ? pt('trialHint', { days: PLANS.pro.trialDays }, ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz`) : ''}</p>
@@ -448,7 +460,7 @@ export class RevenueManager {
     const trustFooter = `
       <p class="revenue-risk-reversal" role="note">
         <span>${pt('trustTrial', { days: PLANS.pro.trialDays }, `${PLANS.pro.trialDays} gün ücretsiz deneme (ilk abonelik)`)}</span>
-        <span>${pt('trustStripe', {}, 'Stripe ile güvenli ödeme')}</span>
+        <span>${pt('trustStripe', {}, 'iyzico / PayTR ile güvenli ödeme')}</span>
         <span>${pt('trustCancel', {}, 'Panelden iptal — taahhütsüz')}</span>
         <span>${pt('trustDisclaimer', {}, 'Skorlar bilgilendirme amaçlıdır')}</span>
       </p>
@@ -578,8 +590,10 @@ export class RevenueManager {
       }
 
       if (checkoutCta) {
-        checkoutCta.textContent = this.getCheckoutCtaLabel(selected);
-        checkoutCta.dataset.billing = selected;
+        const productCode = selected === 'annual' ? 'pro_yearly' : 'pro_monthly';
+        checkoutCta.dataset.paymentProduct = productCode;
+        checkoutCta.textContent =
+          selected === 'annual' ? 'Yıllık Pro\'ya geç' : 'Pro\'ya geç';
       }
 
       syncRoi(selected);
@@ -602,6 +616,7 @@ export class RevenueManager {
     }
 
     sync();
+    bindPaymentProductButtons(root);
   }
 
   renderProfileSubscriptionBlock() {
@@ -641,7 +656,7 @@ export class RevenueManager {
           <label><input type="radio" name="profile-billing-interval" value="monthly" checked> Aylık (${PLANS.pro.billing.monthly.priceDisplay})</label>
           <label><input type="radio" name="profile-billing-interval" value="annual"> Yıllık (${PLANS.pro.billing.annual.savingsLabel})</label>
         </div>
-        <button type="button" class="btn btn-primary" id="premium-checkout-btn" data-upgrade-checkout data-billing="monthly" data-trial="1" data-analytics-cta="cta_primary_checkout" data-analytics-placement="profile_upgrade">${this.getCheckoutCtaLabel('monthly')}</button>
+        <button type="button" class="btn btn-primary" id="premium-checkout-btn" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="profile_upgrade">Pro'ya geç</button>
         <a href="/planlar" class="btn btn-ghost btn-sm" data-native-route>Plan detayları</a>
       </div>
     `;
@@ -650,7 +665,7 @@ export class RevenueManager {
   initProfileBillingControls(root = document.getElementById('profil')) {
     if (!root) return;
 
-    const checkoutBtn = root.querySelector('#premium-checkout-btn[data-upgrade-checkout]');
+    const checkoutBtn = root.querySelector('#premium-checkout-btn[data-payment-product]');
     const radios = root.querySelectorAll('input[name="profile-billing-interval"]');
 
     if (!checkoutBtn || !radios.length) return;

@@ -19,7 +19,7 @@ export function renderBillingV1PricingGrid(opts = {}) {
   const monthly = pro.billing.monthly;
 
   const proCta = stripeReady
-    ? `<button type="button" class="btn btn-primary btn-block billing-v1-cta-pro" data-upgrade-checkout data-billing="monthly" data-trial="1" data-analytics-cta="cta_primary_checkout" data-analytics-placement="billing_v1_pro">${esc(trialEligible ? pro.trialLabel : monthly.checkoutLabel)}</button>`
+    ? `<button type="button" class="btn btn-primary btn-block billing-v1-cta-pro" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="billing_v1_pro">Pro'ya geç</button>`
     : `<a href="/planlar" class="btn btn-primary btn-block" data-native-route>Erken erişim — Planlar</a>`;
 
   return `

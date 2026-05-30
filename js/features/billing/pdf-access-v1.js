@@ -30,8 +30,18 @@ function incrementPdfCount(userId) {
 /**
  * @param {string} [userId]
  */
+function hasPremiumReportEntitlement() {
+  if (revenueManager.hasPremiumReportEntitlement) return true;
+  const list =
+    (typeof window !== 'undefined' && window.__ibPaymentEntitlements) || [];
+  return list.some(
+    (e) => e.entitlement_code === 'premium_report' && e.status === 'active'
+  );
+}
+
 export function canDownloadPdfNow(userId = null) {
   if (revenueManager.isPremium) return true;
+  if (hasPremiumReportEntitlement()) return true;
   const uid = userId || (typeof window !== 'undefined' ? window.app?.currentUser?.id : null);
   const limit = getPdfMonthlyLimit(false);
   return readPdfCount(uid) < limit;
@@ -44,11 +54,18 @@ export function canDownloadPdfNow(userId = null) {
  */
 export function gatePdfDownload(pdfReportData = {}, options = {}) {
   try {
+    const user = typeof window !== 'undefined' ? window.app?.currentUser : null;
+    if (!user?.id) {
+      if (typeof window !== 'undefined' && window.app?.auth) {
+        window.app.auth.showCheckoutAuthGate?.();
+      }
+      return false;
+    }
     if (!canDownloadPdfNow()) {
       revenueManager.mountPaywall('premium_report');
       return false;
     }
-    if (!revenueManager.isPremium) {
+    if (!revenueManager.isPremium && !hasPremiumReportEntitlement()) {
       incrementPdfCount(window.app?.currentUser?.id);
     }
     downloadDecisionReport(pdfReportData, options);

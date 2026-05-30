@@ -1,8 +1,8 @@
 /**
- * Paywall V1 — guest / free / pro UX; checkout via mevcut /api/create-checkout.
+ * Paywall V1 — guest / free / pro UX; checkout via TR payment providers (iyzico / PayTR).
  */
 import { escapeHtml } from '../../core/security.js';
-import { supabase } from '../../core/supabase.js';
+import { startPaymentCheckout } from '../../payments/payment-client.js';
 import {
   canAccessProFeature,
   PRO_FEATURE,
@@ -108,7 +108,7 @@ export function renderPaywallV1(opts = {}) {
       <div class="paywall-v1-actions">
         ${
           stripeReady
-            ? `<button type="button" class="btn btn-primary btn-sm" data-paywall-v1-checkout data-upgrade-checkout data-billing="monthly" data-trial="1">${esc(ctaLabel)}</button>`
+            ? `<button type="button" class="btn btn-primary btn-sm" data-paywall-v1-checkout data-payment-product="pro_monthly">${esc(ctaLabel)}</button>`
             : `<a href="/planlar" class="btn btn-primary btn-sm" data-native-route>Planları incele</a>`
         }
         <button type="button" class="btn btn-ghost btn-sm" data-paywall-v1-dismiss>Ücretsiz devam et</button>
@@ -145,41 +145,35 @@ export function renderPaywallGate(opts = {}) {
 }
 
 /**
- * Mevcut /api/create-checkout — app.handlePremiumCheckout ile aynı sözleşme.
+ * Pro checkout — iyzico birincil, PayTR yedek.
  * @param {object} [opts]
  */
 export async function requestProCheckout(opts = {}) {
+  const productCode =
+    opts.productCode ||
+    (opts.billingInterval === 'annual' || opts.billingInterval === 'yearly'
+      ? 'pro_yearly'
+      : 'pro_monthly');
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
+    const result = await startPaymentCheckout(productCode, {
+      metadata: { attribution: opts.attribution || {}, source: 'paywall_v1' }
+    });
+    if (result?.needsAuth) {
       return { ok: false, reason: 'auth_required', url: null };
     }
-
-    const response = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify({
-        billingInterval: opts.billingInterval || 'monthly',
-        useTrial: opts.useTrial !== false,
-        attribution: opts.attribution || {}
-      })
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok || !data?.url) {
+    if (result?.ok) {
       return {
-        ok: false,
-        reason: data?.error || 'checkout_failed',
-        url: null,
-        status: response.status
+        ok: true,
+        url: result.paymentPageUrl || result.iframeUrl || null,
+        trialApplied: false
       };
     }
-
-    return { ok: true, url: data.url, trialApplied: data.trialApplied };
+    return {
+      ok: false,
+      reason: result?.code || 'checkout_failed',
+      url: null,
+      status: result?.code === 'PAYMENT_PROVIDER_NOT_CONFIGURED' ? 503 : undefined
+    };
   } catch (err) {
     return { ok: false, reason: err?.message || 'network_error', url: null };
   }

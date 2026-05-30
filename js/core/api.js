@@ -131,15 +131,34 @@ export class API {
     static async getSubscription(userId) {
         const { data, error } = await supabase
             .from('subscriptions')
-            .select('status, current_period_start, current_period_end, cancel_at_period_end, stripe_price_id, updated_at')
+            .select(
+                'status, current_period_start, current_period_end, cancel_at_period_end, stripe_price_id, provider, plan_code, updated_at'
+            )
             .eq('user_id', userId)
-            .in('status', ['active', 'trialing', 'past_due', 'canceled'])
+            .in('status', ['active', 'trialing', 'past_due', 'canceled', 'cancelled'])
             .order('updated_at', { ascending: false })
             .limit(1)
             .maybeSingle();
 
         if (error) throw error;
         return data;
+    }
+
+    static async getUserEntitlements(userId) {
+        const { data, error } = await supabase
+            .from('user_entitlements')
+            .select('entitlement_code, status, expires_at, created_at, source_order_id')
+            .eq('user_id', userId)
+            .eq('status', 'active')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            if (error.code === '42P01' || error.message?.includes('does not exist')) {
+                return [];
+            }
+            throw error;
+        }
+        return data || [];
     }
 
     // Profile API

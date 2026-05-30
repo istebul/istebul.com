@@ -52,6 +52,7 @@ import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
 import { initFinanceAdmin } from './admin/finance-admin.js';
+import { loadPaymentsAdminPage } from './admin/payments-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
 import { renderLeadAiSummaryHtml } from './features/admin/lead-ai-intelligence.js';
@@ -4178,7 +4179,8 @@ registerAdminPageHandlers({
     await initPartnerSalesMachineAdmin().catch(() => {});
     await loadPartnerApplications();
   },
-  'partner-dispatch-logs': () => loadPartnerDispatchLogs()
+  'partner-dispatch-logs': () => loadPartnerDispatchLogs(),
+  payments: () => loadPaymentsAdminPage()
 });
 
 function bindAdminPanelEvents() {

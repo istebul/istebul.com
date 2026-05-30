@@ -43,6 +43,8 @@ export class AccountManager {
         const subscribed = params.get('subscribed') === 'true';
         const cancelled = params.get('cancelled') === 'true';
         const billingManaged = params.get('billing') === 'managed';
+        const paymentSuccess = params.get('payment') === 'success';
+        const paymentFailed = params.get('payment') === 'failed';
         const tab = params.get('tab');
 
         const allowedTabs = ['overview', 'analyses', 'favorites', 'comparisons', 'recommendations', 'notifications', 'settings', 'security', 'help'];
@@ -50,7 +52,13 @@ export class AccountManager {
             this.activeTab = tab;
         }
 
-        if (subscribed) {
+        if (paymentSuccess) {
+            this.ui?.showSuccess?.('Ödeme başarılı. Abonelik/rapor hakkınız güncellendi.');
+            this.activeTab = 'overview';
+        } else if (paymentFailed) {
+            this.ui?.showError?.('Ödeme tamamlanamadı.');
+            this.activeTab = 'overview';
+        } else if (subscribed) {
             this.ui?.showSuccess?.('Ödemeniz alındı. Premium aboneliğiniz birkaç dakika içinde hesabınıza yansır.');
             this.activeTab = 'overview';
         } else if (cancelled) {
@@ -70,7 +78,7 @@ export class AccountManager {
             }
         }
 
-        if (subscribed || cancelled || billingManaged || tab) {
+        if (subscribed || cancelled || billingManaged || paymentSuccess || paymentFailed || tab) {
             const cleanUrl = `${window.location.pathname}`;
             window.history.replaceState(null, '', cleanUrl);
         }
@@ -93,6 +101,7 @@ export class AccountManager {
             const profile = await API.getProfile(currentUser.id);
             currentUser.profile = profile;
 
+            let entitlements = [];
             try {
                 this.subscription = await API.getSubscription(currentUser.id);
             } catch (subError) {
@@ -100,7 +109,16 @@ export class AccountManager {
                 this.subscription = null;
             }
 
-            this.renderAccount(currentUser, profile);
+            try {
+                entitlements = await API.getUserEntitlements(currentUser.id);
+                if (typeof window !== 'undefined') {
+                    window.__ibPaymentEntitlements = entitlements;
+                }
+            } catch (entError) {
+                console.warn('Entitlements could not be loaded:', entError);
+            }
+
+            this.renderAccount(currentUser, profile, entitlements);
             this.maybeShowOnboarding(profile);
             if (this.subscription?.status === 'past_due') {
                 enrollBillingHelp({
@@ -397,18 +415,26 @@ export class AccountManager {
         `;
     }
 
-    renderAccount(user, profile) {
+    renderAccount(user, profile, entitlements = []) {
         const root = document.getElementById('account-root');
         if (!root) return;
 
         const emailVerified = Boolean(user.email_confirmed_at || user.confirmed_at);
         const sub = this.subscription;
         const subMeta = SUBSCRIPTION_LABELS[sub?.status] || { label: 'Ücretsiz', tone: 'muted' };
+        const hasPremiumReport = entitlements.some(
+            (e) => e.entitlement_code === 'premium_report' && e.status === 'active'
+        );
         const { isPro: hasPremium } = resolvePlanTier(user, {
             profile,
             subscription: sub,
             isAuthenticated: true
         });
+        const membershipLabel = hasPremium
+            ? subMeta.label
+            : hasPremiumReport
+                ? 'Premium rapor'
+                : subMeta.label;
         const dashboardData = this.buildDashboardData(user, profile, subMeta, hasPremium, emailVerified);
         const v2Data = buildDashboardV2Data({
             user,
@@ -417,7 +443,7 @@ export class AccountManager {
             history: this.readDecisionHistory(user.id),
             favorites: this.readFavorites(),
             hasPremium,
-            membershipLabel: subMeta.label
+            membershipLabel
         });
         document.getElementById('profil')?.classList.add('profil-has-dashboard');
         root.innerHTML = `

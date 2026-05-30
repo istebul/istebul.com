@@ -129,7 +129,7 @@ function renderComparePlanCard(plan) {
       <footer class="revenue-compare-plan-card-foot">
         ${
           plan.checkoutButton
-            ? `<button type="button" class="${plan.ctaClass}" data-upgrade-checkout data-billing="monthly" data-trial="1" data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_compare_pro">${plan.ctaLabel}</button>`
+            ? `<button type="button" class="${plan.ctaClass}" data-payment-product="pro_monthly" data-analytics-cta="cta_primary_checkout" data-analytics-placement="pricing_compare_pro">Pro'ya geç</button>`
             : `<a href="${plan.ctaHref}" class="${plan.ctaClass}">${plan.ctaLabel}</a>`
         }
       </footer>

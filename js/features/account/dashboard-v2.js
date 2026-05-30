@@ -339,7 +339,7 @@ export function renderDashboardV2(data) {
           data.hasPremium
             ? `<p><i data-lucide="badge-check" aria-hidden="true"></i> <strong>Pro aktif</strong> — Sınırsız rapor, gelişmiş karşılaştırma ve PDF geçmişi kullanılabilir.</p>`
             : `<p><strong>Pro ile</strong> sınırsız rapor, gelişmiş karşılaştırma ve PDF geçmişi.</p>
-             <button type="button" class="btn btn-primary btn-sm" id="account-upgrade-btn">Pro&apos;ya yükselt</button>`
+             <button type="button" class="btn btn-primary btn-sm" id="account-upgrade-btn" data-payment-product="pro_monthly">Pro&apos;ya geç</button>`
         }
       </section>
     </div>`;

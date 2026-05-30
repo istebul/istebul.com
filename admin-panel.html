@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>isteBul — Admin</title>
 <link rel="stylesheet" href="/css/admin-partner-ops.css">
+<link rel="stylesheet" href="/css/payments-ui.css">
 <link rel="stylesheet" href="/css/sales-partner.css">
 <link rel="stylesheet" href="/css/admin-internal-dashboards.css">
 <link rel="stylesheet" href="/css/admin-ops-ai-assistant.css">
@@ -467,7 +468,8 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <div class="nav-item" data-page-target="investor-metrics"><span class="nav-label">Executive KPIs</span></div>
           </div>
         </div>
-        <div class="nav-item" data-page-target="dashboard-revenue"><span class="nav-icon" aria-hidden="true">₺</span><span class="nav-label">Ödemeler</span></div>
+        <div class="nav-item" data-page-target="dashboard-revenue"><span class="nav-icon" aria-hidden="true">₺</span><span class="nav-label">Revenue</span></div>
+        <div class="nav-item" data-page-target="payments"><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">Payments</span></div>
         <div class="nav-item" data-page-target="settings"><span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Ayarlar</span></div>
         <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">Sistem Logları</button>
@@ -608,6 +610,14 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
       <div class="page page--dashboard" id="page-dashboard-revenue">
         <div class="page-header"><h2>Revenue Dashboard</h2><p>MRR, churn, checkout, RevOps signals, pipeline</p></div>
         <div class="card"><div id="dashboard-revenue-root"><div class="empty">Yükleniyor…</div></div></div>
+      </div>
+
+      <div class="page" id="page-payments">
+        <div class="page-header">
+          <h2>Payments</h2>
+          <p>iyzico / PayTR siparişleri, abonelikler, haklar ve webhook logları</p>
+        </div>
+        <div class="card"><div id="payments-admin-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-partner-ops">

@@ -85,6 +85,13 @@ test('shouldShowPaywall respects feature matrix', () => {
   assert.equal(shouldShowPaywall(PRO_FEATURE.BASIC_DECISION_SCORE, freeCtx), false);
 });
 
+function stubFunctionsInvoke(impl) {
+  Object.defineProperty(supabase, 'functions', {
+    configurable: true,
+    value: { invoke: impl }
+  });
+}
+
 test('requestProCheckout without session returns auth_required', async () => {
   const original = supabase.auth.getSession;
   supabase.auth.getSession = async () => ({ data: { session: null } });
@@ -97,60 +104,70 @@ test('requestProCheckout without session returns auth_required', async () => {
   }
 });
 
-test('requestProCheckout calls create-checkout with bearer token', async () => {
+test('requestProCheckout invokes create-payment-session edge function', async () => {
   const originalSession = supabase.auth.getSession;
-  const originalFetch = globalThis.fetch;
+  const originalFunctions = supabase.functions;
 
   supabase.auth.getSession = async () => ({
     data: { session: { access_token: 'unit-test-token' } }
   });
 
   let captured = null;
-  globalThis.fetch = async (url, init) => {
-    captured = { url, init };
+  stubFunctionsInvoke(async (name, opts) => {
+    captured = { name, opts };
     return {
-      ok: true,
-      json: async () => ({ url: 'https://checkout.stripe.com/c/test_session' })
+      data: {
+        ok: true,
+        paymentPageUrl: 'https://sandbox.iyzipay.com/checkout',
+        conversationId: 'istebul_test'
+      },
+      error: null
     };
-  };
+  });
 
   try {
-    const result = await requestProCheckout({ billingInterval: 'monthly', useTrial: true });
+    const result = await requestProCheckout({ billingInterval: 'monthly' });
     assert.equal(result.ok, true);
-    assert.equal(result.url, 'https://checkout.stripe.com/c/test_session');
-    assert.equal(captured.url, '/api/create-checkout');
-    assert.equal(captured.init.method, 'POST');
-    assert.match(captured.init.headers.Authorization, /unit-test-token/);
-    const body = JSON.parse(captured.init.body);
-    assert.equal(body.billingInterval, 'monthly');
-    assert.equal(body.useTrial, true);
+    assert.equal(result.url, 'https://sandbox.iyzipay.com/checkout');
+    assert.equal(captured.name, 'create-payment-session');
+    assert.equal(captured.opts.body.product_code, 'pro_monthly');
   } finally {
     supabase.auth.getSession = originalSession;
-    globalThis.fetch = originalFetch;
+    Object.defineProperty(supabase, 'functions', {
+      configurable: true,
+      value: originalFunctions
+    });
   }
 });
 
-test('requestProCheckout handles API failure gracefully', async () => {
+test('requestProCheckout handles provider not configured', async () => {
   const originalSession = supabase.auth.getSession;
-  const originalFetch = globalThis.fetch;
+  const originalFunctions = supabase.functions;
 
   supabase.auth.getSession = async () => ({
     data: { session: { access_token: 'unit-test-token' } }
   });
 
-  globalThis.fetch = async () => ({
-    ok: false,
-    status: 500,
-    json: async () => ({ error: 'checkout_failed' })
-  });
+  stubFunctionsInvoke(async () => ({
+    data: {
+      ok: false,
+      code: 'PAYMENT_PROVIDER_NOT_CONFIGURED',
+      message: 'Ödeme sağlayıcı yapılandırması bekleniyor.',
+      fallbackAvailable: false
+    },
+    error: null
+  }));
 
   try {
     const result = await requestProCheckout();
     assert.equal(result.ok, false);
-    assert.equal(result.reason, 'checkout_failed');
-    assert.equal(result.url, null);
+    assert.equal(result.reason, 'PAYMENT_PROVIDER_NOT_CONFIGURED');
+    assert.equal(result.status, 503);
   } finally {
     supabase.auth.getSession = originalSession;
-    globalThis.fetch = originalFetch;
+    Object.defineProperty(supabase, 'functions', {
+      configurable: true,
+      value: originalFunctions
+    });
   }
 });

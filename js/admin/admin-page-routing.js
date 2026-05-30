@@ -56,7 +56,8 @@ export const ADMIN_PAGE_IDS = [
   'acquisition-exit',
   'partner-endpoints',
   'partner-applications',
-  'partner-dispatch-logs'
+  'partner-dispatch-logs',
+  'payments'
 ];
 
 /**

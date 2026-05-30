@@ -46,6 +46,11 @@ import {
     mapBillingPortalError,
     setBillingPortalButtonsLoading
 } from './core/billing-portal.js';
+import { isStripeCheckoutActive } from './payments/payment-providers.js';
+import {
+    bindPaymentProductButtons,
+    startPaymentCheckout
+} from './payments/payment-client.js';
 import './features/i18n/i18n.js';
 import { formatMoney } from './core/format.js';
 import {
@@ -1248,6 +1253,21 @@ class App {
                 storeCheckoutIntentPayload({ billing, useTrial });
             }
 
+            const paymentBtn = e.target.closest('[data-payment-product]');
+            if (paymentBtn) {
+                e.preventDefault();
+                const productCode = paymentBtn.getAttribute('data-payment-product');
+                if (productCode) {
+                    void startPaymentCheckout(productCode, {
+                        metadata: {
+                            placement: paymentBtn.getAttribute('data-payment-placement') ||
+                                paymentBtn.getAttribute('data-analytics-placement')
+                        }
+                    });
+                }
+                return;
+            }
+
             const upgradeBtn = e.target.closest('[data-upgrade-checkout]');
             if (upgradeBtn) {
                 e.preventDefault();
@@ -1269,6 +1289,7 @@ class App {
         document.addEventListener('userLoggedOut', () => this.handleUserLogout());
 
         void this.ensureAccount();
+        bindPaymentProductButtons(document);
     }
 
 
@@ -3690,6 +3711,26 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     async handlePremiumCheckout(event, options = {}) {
+        if (!isStripeCheckoutActive()) {
+            const storedIntent = peekCheckoutIntent();
+            const billingInterval = this.resolveCheckoutBilling(event)
+                || storedIntent?.billing
+                || 'monthly';
+            const productCode = billingInterval === 'annual' || billingInterval === 'yearly'
+                ? 'pro_yearly'
+                : 'pro_monthly';
+
+            if (!this.currentUser) {
+                if (event) this.storeCheckoutIntent(event);
+                analytics.track('auth_modal_open', { reason: 'checkout' }, { category: 'auth', funnel: 'subscription' });
+                this.auth.showCheckoutAuthGate();
+                return;
+            }
+
+            await startPaymentCheckout(productCode, { metadata: { from_resume: Boolean(options.fromResume) } });
+            return;
+        }
+
         const storedIntent = peekCheckoutIntent();
 
         if (event) {
