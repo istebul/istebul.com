@@ -1232,8 +1232,7 @@ function openFinanceCompareModal(vehicleName = '') {
       </div>
     `;
 
-    const closeModal = () => modal.remove();
-    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeModal);
+    modal.querySelector('.lead-modal-close')?.addEventListener('click', closeFinanceModal);
 
     const loanInput = modal.querySelector('#finance-loan-amount');
     loanInput?.addEventListener('input', (event) => {
@@ -1250,7 +1249,7 @@ function openFinanceCompareModal(vehicleName = '') {
     modal.querySelectorAll('.finance-prequal-btn').forEach((button) => {
       button.addEventListener('click', () => {
         const selectedVehicle = button.getAttribute('data-vehicle') || vehicleName;
-        closeModal();
+        closeFinanceModal();
         window.lastFinanceLeadContext = {
           bank: button.dataset.bank,
           vehicle: selectedVehicle,
@@ -1268,10 +1267,18 @@ function openFinanceCompareModal(vehicleName = '') {
     });
   }
 
+  const closeFinanceModal = () => {
+    modal.remove();
+    if (!document.querySelector('.lead-modal, .revenue-paywall')) {
+      document.body.classList.remove('modal-open');
+    }
+  };
+
   modal.addEventListener('click', (event) => {
-    if (event.target === modal) modal.remove();
+    if (event.target === modal) closeFinanceModal();
   });
 
+  document.body.classList.add('modal-open');
   document.body.appendChild(modal);
   render();
   bindContextualUpsell(modal);
@@ -1338,7 +1345,12 @@ function openLeadModal(type, vehicle = '') {
     success: 'Uzman değerlendirme talebiniz alındı'
   };
 
-  const closeModal = () => modal.remove();
+  const closeModal = () => {
+    modal.remove();
+    if (!document.querySelector('.lead-modal, .revenue-paywall')) {
+      document.body.classList.remove('modal-open');
+    }
+  };
 
   modal.addEventListener('click', (event) => {
     if (event.target === modal) closeModal();
@@ -1615,6 +1627,7 @@ function openLeadModal(type, vehicle = '') {
     document.getElementById('close-error-lead-modal')?.addEventListener('click', closeModal);
   }
 
+  document.body.classList.add('modal-open');
   document.body.appendChild(modal);
   renderLeadForm();
 }

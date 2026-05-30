@@ -28,7 +28,6 @@ import {
   ensureRevenueManager,
   ensureUpsellEngine,
   getRevenueManager,
-  renderHomePricingTeaser,
   renderTrustLayerCompact
 } from './runtime/lazy-app-modules.js';
 import { AuthManager } from './features/auth/auth.js';
