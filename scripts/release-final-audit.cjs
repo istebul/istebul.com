@@ -39,6 +39,9 @@ addCheck('Kategori config yakında durumları', hasSoon ? 'PASS' : 'FAIL');
 const hasRoutes = ['/araba', '/konut', '/tatil', '/finansman', '/sigorta', '/kasko'].every((route) => routeSource.includes(`'${route}'`));
 addCheck('Route alias kapsamı', hasRoutes ? 'PASS' : 'WARN');
 
+const hasRehberBypass = routeSource.includes("'/rehber'") && routeSource.includes('REHBER_PREFIX');
+addCheck('Rehber sayfaları SPA bypass', hasRehberBypass ? 'PASS' : 'FAIL');
+
 const hasNoStuckLoading = !indexSource.includes('Yükleniyor...');
 addCheck('Ana sayfada sonsuz yükleniyor metni', hasNoStuckLoading ? 'PASS' : 'WARN');
 

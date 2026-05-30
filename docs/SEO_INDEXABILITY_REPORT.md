@@ -1,6 +1,6 @@
 # SEO Indexability Report
 
-**Generated:** 2026-05-29  
+**Generated:** 2026-05-30  
 **Build artifact:** `dist/` present
 
 ## Summary
@@ -11,7 +11,7 @@
 | sitemap URL count | 35 |
 | canonical issues | 0 |
 | orphan HTML (vs sitemap) | 6 |
-| internal /rehber/ links (sample) | 193 |
+| internal /rehber/ links (sample) | 207 |
 | FAQ schema pages (scan) | 20 |
 | Rehber BreadcrumbList pages | 13 |
 | Invalid JSON-LD blocks | 0 |
@@ -32,13 +32,13 @@
 | Slug | Words | ≥1200 target |
 |------|-------|-------------------------------|
 | arac-kredisi-hesaplama | 1433 | yes |
-| tco-rehberi | 1316 | yes |
-| ikinci-el-rehberi | 1185 | no |
+| tco-rehberi | 1614 | yes |
+| ikinci-el-rehberi | 1422 | yes |
 | sifir-arac-mi-ikinci-el-mi | 1202 | yes |
 | arac-karsilastirma-rehberi | 1127 | no |
-| elektrikli-arac-rehberi | 1220 | yes |
-| suv-mi-sedan-mi | 1375 | yes |
-| finansman-rehberi | 1177 | no |
+| elektrikli-arac-rehberi | 1472 | yes |
+| suv-mi-sedan-mi | 1799 | yes |
+| finansman-rehberi | 1437 | yes |
 | aylik-arac-butcesi-hesaplama | 1121 | no |
 | arac-alim-karar-asistani | 1133 | no |
 | ticari-arac-alimi-rehberi | 1112 | no |

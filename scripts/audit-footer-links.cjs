@@ -120,6 +120,11 @@ const requiredGuides = [
   '/rehber/ikinci-el-rehberi/'
 ];
 
+const fullPageNavSource = fs.readFileSync(path.join(root, 'js/runtime/full-page-navigation.js'), 'utf8');
+if (!fullPageNavSource.includes('REHBER_PREFIX')) {
+  fail('full-page-navigation.js must bypass SPA for /rehber/* links');
+}
+
 for (const guide of requiredGuides) {
   if (!links.includes(guide)) {
     fail(`footer missing required guide link: ${guide}`);
