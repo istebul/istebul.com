@@ -12,8 +12,8 @@ export const HOME_CATEGORY_PILLARS = [
 export const HOME_DECISION_CATEGORIES = [
   {
     id: 'araba',
-    name: 'Araba',
-    description: 'Toplam sahip olma maliyetini, riskleri ve uygunluğu analiz edin.',
+    name: 'Araç Karar Analizi',
+    description: 'Bütçe, kullanım amacı, yakıt tercihi ve toplam sahip olma maliyetini birlikte analiz edin.',
     status: 'active',
     href: '/auto/',
     icon: 'car',
@@ -39,8 +39,8 @@ export const HOME_DECISION_CATEGORIES = [
   },
   {
     id: 'konut',
-    name: 'Konut',
-    description: 'Lokasyon, kredi yükü ve yaşam maliyetini birlikte değerlendirin.',
+    name: 'Konut Karar Analizi',
+    description: 'Lokasyon, kredi yükü, deprem riski, aidat ve yaşam maliyetini tek ekranda değerlendirin.',
     status: 'active',
     href: '/konut/',
     icon: 'home',
@@ -66,8 +66,8 @@ export const HOME_DECISION_CATEGORIES = [
   },
   {
     id: 'tatil',
-    name: 'Tatil',
-    description: 'Bütçe, sezon ve deneyim uygunluğunu birlikte değerlendirin.',
+    name: 'Tatil Karar Analizi',
+    description: 'Bütçe, sezon, ulaşım, konaklama ve deneyim beklentisini birlikte karşılaştırın.',
     status: 'active',
     href: '/tatil/',
     icon: 'palmtree',
@@ -93,8 +93,8 @@ export const HOME_DECISION_CATEGORIES = [
   },
   {
     id: 'finansman',
-    name: 'Finansman',
-    description: 'Ödeme planı, nakit akışı ve borç yükünü net görün.',
+    name: 'Finansman Karar Analizi',
+    description: 'Ödeme planı, nakit akışı, borç yükü ve geri ödeme riskini net görün.',
     status: 'active',
     href: '/finans/',
     icon: 'landmark',
@@ -121,12 +121,12 @@ export const HOME_DECISION_CATEGORIES = [
   {
     id: 'sigorta',
     name: 'Sigorta',
-    description: 'Kapsam, prim ve risk dengesini karşılaştırmalı analiz edin.',
+    description: 'Poliçe kapsamı, prim dengesi ve risk koruması için karar analizi.',
     status: 'coming_soon',
     href: '/sigorta/',
     icon: 'shield',
     sampleScore: null,
-    ctaLabel: 'Bilgilendirme al',
+    ctaLabel: 'Yakında',
     insight: 'Yakında',
     theme: 'sigorta',
     settingKey: 'home_category_sigorta_enabled'
@@ -134,12 +134,12 @@ export const HOME_DECISION_CATEGORIES = [
   {
     id: 'kasko',
     name: 'Kasko',
-    description: 'Teminat, muafiyet ve prim dengesini optimize edin.',
+    description: 'Araç değeri, kullanım profili ve teminat kapsamına göre kasko değerlendirmesi.',
     status: 'coming_soon',
     href: '/kasko/',
     icon: 'shield-plus',
     sampleScore: null,
-    ctaLabel: 'Bilgilendirme al',
+    ctaLabel: 'Yakında',
     insight: 'Yakında',
     theme: 'kasko',
     settingKey: 'home_category_kasko_enabled'

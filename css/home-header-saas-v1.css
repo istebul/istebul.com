@@ -302,33 +302,7 @@ html.ib-ds-v4.ib-premium-v7 #home .ib-hero-btn-ghost {
 }
 
 /* —— Category grid: 4 live cards only —— */
-html.ib-ds-v4.ib-premium-v7[data-ib-route="home"] #home-category-grid [data-category-id="sigorta"],
-html.ib-ds-v4.ib-premium-v7[data-ib-route="home"] #home-category-grid [data-category-id="kasko"] {
-  display: none !important;
-}
-
-html.ib-ds-v4.ib-premium-v7 #home-vertical-focus {
-  padding: clamp(3.5rem, 7vw, 5rem) 0;
-}
-
-html.ib-ds-v4.ib-premium-v7 #home-vertical-focus .ib-category-showcase-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-@media (min-width: 640px) {
-  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus .ib-category-showcase-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus .ib-category-showcase-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1.15rem;
-  }
-}
+/* Category grid layout handled by home-product-cards-enterprise-v1.css */
 
 /* —— Section rhythm: more whitespace —— */
 html.ib-ds-v4.ib-premium-v7 #how-it-works.ib-section-venture,
