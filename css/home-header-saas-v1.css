@@ -1,0 +1,396 @@
+/**
+ * Homepage header + hero — premium SaaS layout (Linear / Stripe tier).
+ * UI only: utility bar, compact nav, trust rail, hero whitespace, 4-card grid.
+ */
+
+html.ib-ds-v4.ib-premium-v7 {
+  --ib-saas-utility-h: 44px;
+  --ib-saas-nav-h: 52px;
+  --ib-saas-trust-h: 36px;
+  --ib-saas-ink: #0f172a;
+  --ib-saas-muted: #475569;
+  --ib-saas-border: rgba(148, 163, 184, 0.28);
+  --ib-saas-accent: #2563eb;
+}
+
+/* —— Layer 1: utility bar (44px) —— */
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .top-bar {
+  min-height: var(--ib-saas-utility-h);
+  background: linear-gradient(90deg, #060e1c 0%, #0f1f35 56%, #163145 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .top-bar p {
+  min-height: var(--ib-saas-utility-h);
+  margin: 0;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #e2e8f0;
+  line-height: 1.35;
+  text-align: center;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .top-bar strong {
+  color: #f8fafc;
+  font-weight: 650;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .top-bar a {
+  color: #bfdbfe;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .top-bar a:hover {
+  color: #fff;
+}
+
+/* —— Layer 2: main navigation —— */
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #main-nav.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1201;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--ib-saas-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px) saturate(1.12);
+  -webkit-backdrop-filter: blur(14px) saturate(1.12);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-container {
+  min-height: var(--ib-saas-nav-h);
+  gap: clamp(0.35rem, 1.2vw, 0.75rem);
+  align-items: center;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .brand-mark {
+  width: 32px;
+  height: 32px;
+  font-size: 0.72rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .brand-title {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ib-saas-ink);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-subtitle {
+  display: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-menu {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #nav-links-anon.nav-links-group {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-link,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 0.62rem;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #1e293b;
+  box-shadow: none;
+  transform: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-link:hover,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-dropdown-btn:hover {
+  color: var(--ib-saas-accent);
+  background: rgba(37, 99, 235, 0.08);
+  box-shadow: none;
+  transform: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-dropdown-btn [data-lucide] {
+  display: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-controls {
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #login-btn {
+  min-height: 36px;
+  padding-inline: 0.72rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155;
+  border-color: rgba(100, 116, 139, 0.35);
+  background: transparent;
+  box-shadow: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth .nav-cta-decision {
+  min-height: 36px;
+  padding-inline: 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border-radius: 9px;
+  background: var(--ib-saas-accent) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.22);
+  white-space: nowrap;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth .nav-cta-decision:hover {
+  background: #1d4ed8 !important;
+}
+
+@media (min-width: 769px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-controls .theme-toggle {
+    display: none !important;
+  }
+}
+
+/* —— Layer 3: trust rail —— */
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .ib-trust-rail--saas {
+  background: #f8fafc;
+  border-top: 0;
+  border-bottom: 1px solid var(--ib-saas-border);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .ib-trust-rail--saas .ib-trust-rail-inner {
+  min-height: var(--ib-saas-trust-h);
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.65rem, 2vw, 1.35rem);
+  padding-block: 0.35rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .ib-trust-rail--saas .ib-trust-rail-inner::-webkit-scrollbar {
+  display: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .ib-trust-rail--saas .ib-trust-rail-inner > span {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  color: #475569;
+  white-space: nowrap;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .ib-trust-rail--saas .ib-trust-rail-inner > span:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: calc(-0.35rem - clamp(0.2rem, 1vw, 0.45rem));
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+/* —— Hero: fewer elements, more whitespace —— */
+html.ib-ds-v4.ib-premium-v7 #home.ib-hero-v4 {
+  padding: clamp(2.5rem, 5vw, 4.25rem) 0 clamp(2.75rem, 5vw, 4.5rem);
+}
+
+html.ib-ds-v4.ib-premium-v7 #home .ib-hero-saas-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 0 0 1rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(147, 197, 253, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #93c5fd;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home .hero-content h1 {
+  margin: 0 0 1rem;
+  max-width: 14ch;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home .ib-hero-v4-sub {
+  margin: 0 0 1.75rem;
+  max-width: 38ch;
+  font-size: clamp(1rem, 1.8vw, 1.125rem);
+  color: #cbd5e1;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home .ib-hero-saas-actions {
+  margin-top: 0;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home .ib-hero-saas-actions .ib-hero-cta-hint {
+  display: block;
+  margin-top: 0.85rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home .ib-hero-cta-primary-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home .ib-hero-cta-primary-row .btn {
+  min-height: 46px;
+  padding-inline: 1.15rem;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 650;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home .ib-hero-cta-primary-row .btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.28);
+}
+
+html.ib-ds-v4.ib-premium-v7 #home .ib-hero-cta-primary-row .btn [data-lucide] {
+  display: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home .ib-hero-btn-ghost {
+  color: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.45);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* —— Category grid: 4 live cards only —— */
+html.ib-ds-v4.ib-premium-v7[data-ib-route="home"] #home-category-grid [data-category-id="sigorta"],
+html.ib-ds-v4.ib-premium-v7[data-ib-route="home"] #home-category-grid [data-category-id="kasko"] {
+  display: none !important;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus {
+  padding: clamp(3.5rem, 7vw, 5rem) 0;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus .ib-category-showcase-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus .ib-category-showcase-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus .ib-category-showcase-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.15rem;
+  }
+}
+
+/* —— Section rhythm: more whitespace —— */
+html.ib-ds-v4.ib-premium-v7 #how-it-works.ib-section-venture,
+html.ib-ds-v4.ib-premium-v7 #sample-preview.ib-section-venture,
+html.ib-ds-v4.ib-premium-v7 #trust.ib-section-venture,
+html.ib-ds-v4.ib-premium-v7 #pricing.ib-section-venture,
+html.ib-ds-v4.ib-premium-v7 #partner-enterprise.ib-section-venture,
+html.ib-ds-v4.ib-premium-v7 #landing-faq.ib-section-venture {
+  padding-block: clamp(3.25rem, 6vw, 4.75rem);
+}
+
+html.ib-ds-v4.ib-premium-v7 #trust .ib-trust-diff-grid {
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+/* —— Responsive nav: single row, no overflow —— */
+@media (max-width: 1180px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-subtitle {
+    display: none;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-link,
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-dropdown-btn {
+    padding-inline: 0.48rem;
+    font-size: 0.78rem;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise #login-btn,
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-auth .nav-cta-decision {
+    padding-inline: 0.62rem;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 960px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-menu {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 767px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .top-bar p {
+    font-size: 0.75rem;
+    padding-inline: 0.75rem;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .ib-trust-rail--saas .ib-trust-rail-inner {
+    justify-content: flex-start;
+    padding-inline: 0.25rem;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 #home .hero-content h1 {
+    max-width: 100%;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 #home .ib-hero-cta-primary-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 #home .ib-hero-cta-primary-row .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
