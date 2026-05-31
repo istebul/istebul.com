@@ -67,6 +67,7 @@ if (!sb) {
       <div>
         <h2>Supabase yapılandırması eksik</h2>
         <p>SUPABASE_URL veya SUPABASE_ANON_KEY yüklenemedi.</p>
+        <p class="text-muted-sm">Cloudflare Pages → Settings → Environment variables bölümünde <code>SUPABASE_ANON_KEY</code> tanımlı olmalıdır. Ardından siteyi yeniden deploy edin.</p>
       </div>
     </div>
   `;

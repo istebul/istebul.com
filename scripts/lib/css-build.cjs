@@ -11,7 +11,7 @@ const CSS_BUNDLE_ENTRIES = new Set(['css/style.css']);
  */
 function rewriteCssImports(css, assetRefs) {
   return css.replace(
-    /@import\s+(?:url\()?['"](\.\/)?([^'"]+)['"]\)?\s*;?/g,
+    /@import\s*(?:url\()?['"](\.\/)?([^'"]+)['"]\)?\s*;?/g,
     (match, _dot, importFile) => {
       const normalized = importFile.replace(/^\.\//, '');
       const candidates = [

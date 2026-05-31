@@ -74,6 +74,19 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           LOGROCKET_APP_ID: ${{ secrets.LOGROCKET_APP_ID }}
 
+      - name: Verify dist/env.js Supabase config
+        if: steps.cf.outputs.deploy == 'true'
+        run: |
+          node -e "
+            const fs = require('fs');
+            const src = fs.readFileSync('dist/env.js', 'utf8');
+            if (!src.includes('SUPABASE_URL') || !/SUPABASE_ANON_KEY\":\"[^\"]+\"/.test(src)) {
+              console.error('dist/env.js is missing SUPABASE_URL or SUPABASE_ANON_KEY');
+              process.exit(1);
+            }
+            console.log('dist/env.js Supabase config OK');
+          "
+
       - name: Deploy to Cloudflare Pages
         if: steps.cf.outputs.deploy == 'true'
         uses: cloudflare/wrangler-action@v3
