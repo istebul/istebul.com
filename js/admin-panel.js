@@ -2417,6 +2417,115 @@ function conversionPct(numerator, denominator) {
   return denominator ? `${Math.round((numerator / denominator) * 100)}%` : '—';
 }
 
+const PLATFORM_ANALYTICS_EVENTS_SELECT =
+  'event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id, properties';
+
+function filterAnalyticsRowsSince(rows, sinceMs) {
+  return (rows || []).filter((row) => {
+    const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
+    return ts >= sinceMs;
+  });
+}
+
+async function fetchAnalyticsFunnelDailyRows(sb, sinceIso) {
+  try {
+    const { data, error } = await sb
+      .from('analytics_funnel_daily')
+      .select('day, funnel, funnel_step, events, sessions')
+      .gte('day', sinceIso)
+      .order('day', { ascending: false })
+      .limit(400);
+    if (error) return { data: [], error };
+    return { data: data || [], error: null };
+  } catch (err) {
+    return { data: [], error: err };
+  }
+}
+
+/** Fallback when analytics_funnel_daily is not selectable (RLS); mirrors view definition. */
+function aggregateFunnelDailyFromEvents(rows) {
+  const buckets = new Map();
+  for (const row of rows || []) {
+    if (!row.funnel || !row.funnel_step || !row.created_at) continue;
+    const dayKey = String(row.created_at).slice(0, 10);
+    const key = `${dayKey}|${row.funnel}|${row.funnel_step}`;
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = {
+        day: dayKey,
+        funnel: row.funnel,
+        funnel_step: row.funnel_step,
+        events: 0,
+        sessions: new Set()
+      };
+      buckets.set(key, bucket);
+    }
+    bucket.events += 1;
+    if (row.session_id) bucket.sessions.add(row.session_id);
+  }
+  return Array.from(buckets.values())
+    .map((b) => ({
+      day: b.day,
+      funnel: b.funnel,
+      funnel_step: b.funnel_step,
+      events: b.events,
+      sessions: b.sessions.size
+    }))
+    .sort((a, b) => String(b.day).localeCompare(String(a.day)));
+}
+
+function renderFunnelDailySection(funnelRows) {
+  if (!funnelRows?.length) return '';
+  const top = funnelRows.slice(0, 40);
+  return `
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Funnel günlük özeti (analytics_funnel_daily)</h3>
+    <table class="table">
+      <thead><tr><th>Gün</th><th>Funnel</th><th>Adım</th><th>Events</th><th>Sessions</th></tr></thead>
+      <tbody>
+        ${top
+          .map(
+            (r) => `
+          <tr>
+            <td>${escapeHtml(r.day ? new Date(r.day).toLocaleDateString('tr-TR') : '—')}</td>
+            <td>${escapeHtml(r.funnel || '—')}</td>
+            <td>${escapeHtml(r.funnel_step || '—')}</td>
+            <td><strong>${Number(r.events) || 0}</strong></td>
+            <td>${Number(r.sessions) || 0}</td>
+          </tr>`
+          )
+          .join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderRecentAnalyticsEventsTable(displayRows, limit = 40) {
+  const recent = (displayRows || []).slice(0, limit);
+  if (!recent.length) return '';
+  return `
+    <div style="height:20px"></div>
+    <h3 style="margin:0 0 14px 0;">Son platform eventleri (analytics_events)</h3>
+    <table class="table">
+      <thead><tr><th>Zaman</th><th>Event</th><th>Kategori</th><th>Funnel</th><th>Session</th></tr></thead>
+      <tbody>
+        ${recent
+          .map(
+            (row) => `
+          <tr>
+            <td>${escapeHtml(row.created_at ? new Date(row.created_at).toLocaleString('tr-TR') : '—')}</td>
+            <td><code>${escapeHtml(row.event_name || '—')}</code></td>
+            <td>${escapeHtml(row.event_category || '—')}</td>
+            <td>${escapeHtml(row.funnel_step || row.funnel || '—')}</td>
+            <td class="text-muted-sm">${escapeHtml(row.session_id ? `${String(row.session_id).slice(0, 14)}…` : '—')}</td>
+          </tr>`
+          )
+          .join('')}
+      </tbody>
+    </table>
+  `;
+}
+
 function renderGrowthCommandCenter(rows) {
   const funnel = computeExecutiveFunnel(rows);
   const channels = computeChannelBreakdown(rows);
@@ -2484,43 +2593,56 @@ async function loadPlatformAnalytics() {
 
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
-  const since = new Date(
-    Date.now() - SCALE_LIMITS.admin.analyticsWindowDays * 24 * 60 * 60 * 1000
-  ).toISOString();
+  const windowDays = SCALE_LIMITS.admin.executiveWindowDays || 30;
+  const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
   const sinceMs = new Date(since).getTime();
-  const selectExpr =
-    'event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id, properties';
 
-  const analyticsRes = await fetchAdminTable(sb, {
-    table: 'analytics_events',
-    select: selectExpr,
-    limit: SCALE_LIMITS.admin.analyticsRowLimit,
-    order: { column: 'created_at', ascending: false },
-    direct: () =>
-      sb
-        .from('analytics_events')
-        .select(selectExpr)
-        .gte('created_at', since)
-        .order('created_at', { ascending: false })
-        .limit(SCALE_LIMITS.admin.analyticsRowLimit)
-  });
+  const [analyticsRes, funnelRes] = await Promise.all([
+    fetchAdminTable(sb, {
+      table: 'analytics_events',
+      select: PLATFORM_ANALYTICS_EVENTS_SELECT,
+      limit: SCALE_LIMITS.admin.analyticsRowLimit,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb
+          .from('analytics_events')
+          .select(PLATFORM_ANALYTICS_EVENTS_SELECT)
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(SCALE_LIMITS.admin.analyticsRowLimit)
+    }),
+    fetchAnalyticsFunnelDailyRows(sb, since)
+  ]);
 
-  if (analyticsRes.error && !(analyticsRes.data || []).length) {
-    el.innerHTML = `${renderAdminDataSourceNotices([analyticsRes])}<p class="empty">Hata: ${escapeHtml(analyticsRes.error.message)}</p>`;
-    return;
-  }
-
-  const rows = (analyticsRes.data || []).filter((row) => {
-    const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
-    return ts >= sinceMs;
-  });
   const analyticsBanner = renderAdminDataSourceNotices([analyticsRes]);
-  if (!rows.length) {
-    el.innerHTML = '<p class="empty">Henüz platform analytics event yok. Migration ve analytics-ingest deploy sonrası veri akışı başlar.</p>';
+  const fetchedRows = analyticsRes.data || [];
+
+  if (analyticsRes.error && analyticsRes.source === 'failed' && !fetchedRows.length) {
+    el.innerHTML = `${analyticsBanner}<p class="empty">Hata: ${escapeHtml(analyticsRes.error.message || String(analyticsRes.error))}</p>`;
     return;
   }
 
-  const windowNote = `<p class="text-muted-sm" style="margin:0 0 12px">Son ${SCALE_LIMITS.admin.analyticsWindowDays} gün · en fazla ${SCALE_LIMITS.admin.analyticsRowLimit} event (P4.7 scale guard).</p>`;
+  const windowedRows = filterAnalyticsRowsSince(fetchedRows, sinceMs);
+  const funnelFromView = funnelRes.data || [];
+  const funnelDaily = funnelFromView.length
+    ? funnelFromView
+    : aggregateFunnelDailyFromEvents(fetchedRows);
+
+  if (!fetchedRows.length && !funnelDaily.length) {
+    el.innerHTML = `${analyticsBanner}<p class="empty">Henüz platform analytics event yok. <code>analytics-ingest</code> deploy ve canlı trafik sonrası veri görünür.</p>`;
+    return;
+  }
+
+  const rows = windowedRows.length ? windowedRows : fetchedRows;
+  let windowNote = `<p class="text-muted-sm" style="margin:0 0 12px">Son ${windowDays} gün · en fazla ${SCALE_LIMITS.admin.analyticsRowLimit} event · kaynak: <code>analytics_events</code></p>`;
+  if (fetchedRows.length && !windowedRows.length) {
+    windowNote = `<p class="text-muted-sm" style="margin:0 0 12px">Son ${windowDays} günde eşleşen event yok; en güncel <strong>${fetchedRows.length}</strong> kayıt gösteriliyor (admin-action batch).</p>`;
+  }
+  if (funnelFromView.length) {
+    windowNote += `<p class="text-muted-sm" style="margin:0 0 12px">Funnel özeti: <code>analytics_funnel_daily</code> view.</p>`;
+  } else if (funnelDaily.length) {
+    windowNote += `<p class="text-muted-sm" style="margin:0 0 12px">Funnel özeti: <code>analytics_events</code> üzerinden türetildi (view erişilemedi).</p>`;
+  }
 
   const pageViews = countEvents(rows, 'page_view') + countEvents(rows, 'auto_page_view');
   const authModal = countEvents(rows, 'auth_modal_open');
@@ -2625,6 +2747,7 @@ async function loadPlatformAnalytics() {
   el.innerHTML = `
     ${analyticsBanner}
     ${windowNote}
+    ${renderFunnelDailySection(funnelDaily)}
     ${renderGrowthCommandCenter(rows)}
     <h3 style="margin:0 0 14px 0;">Executive growth funnel (kanal bazlı)</h3>
     <p class="text-muted" style="margin:0 0 12px;font-size:13px;">Tutarlı event isimleri; legacy alias’lar toplamda bir kez sayılır. Gelir: paid_conversion + checkout.</p>
@@ -2736,7 +2859,8 @@ async function loadPlatformAnalytics() {
 
     <div style="height:20px"></div>
     <h3 style="margin:0 0 14px 0;">Admin CRM outcomes</h3>
-    <p class="text-muted">${crmEvents.length} CRM event (son 2500 kayıt içinde)</p>
+    <p class="text-muted">${crmEvents.length} CRM event (yüklenen kayıt içinde)</p>
+    ${renderRecentAnalyticsEventsTable(rows)}
   `;
 }
 
