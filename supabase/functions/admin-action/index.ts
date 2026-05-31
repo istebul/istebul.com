@@ -213,6 +213,14 @@ Deno.serve(async (req) => {
     "lifecycle_contacts",
     "lifecycle_enrollments",
     "lifecycle_messages",
+    "product_feedback",
+    "decision_feedback",
+    "outcome_signal_events",
+    "payment_orders",
+    "user_entitlements",
+    "partner_billing",
+    "partner_lead_credits",
+    "payment_webhook_logs",
   ];
 
   if (action === "upsert_settings") {
@@ -221,10 +229,28 @@ Deno.serve(async (req) => {
     }
   } else if (action === "list") {
     if (!table || !listTables.includes(table)) {
-      return json({ error: "Invalid action or table" }, 400, origin);
+      return json(
+        {
+          error: "Invalid action or table",
+          action,
+          table: table || null,
+          hint: "Table must be in admin-action listTables; run supabase functions deploy admin-action",
+        },
+        400,
+        origin
+      );
     }
   } else if (!allowedTables.includes(table)) {
-    return json({ error: "Invalid action or table" }, 400, origin);
+    return json(
+      {
+        error: "Invalid action or table",
+        action,
+        table: table || null,
+        hint: "Mutation not allowed for this table",
+      },
+      400,
+      origin
+    );
   }
 
   if (action !== "upsert_settings" && action !== "list" && !id) {
@@ -269,6 +295,14 @@ Deno.serve(async (req) => {
         lifecycle_contacts: "*",
         lifecycle_enrollments: "*",
         lifecycle_messages: "*",
+        product_feedback: "*",
+        decision_feedback: "*",
+        outcome_signal_events: "*",
+        payment_orders: "*",
+        user_entitlements: "*",
+        partner_billing: "*",
+        partner_lead_credits: "*",
+        payment_webhook_logs: "*",
       };
 
       const allowedOrderColumns: Record<string, string[]> = {
@@ -307,6 +341,14 @@ Deno.serve(async (req) => {
         lifecycle_contacts: ["created_at", "last_active_at"],
         lifecycle_enrollments: ["enrolled_at", "flow_id", "status"],
         lifecycle_messages: ["created_at", "scheduled_at", "status"],
+        product_feedback: ["created_at"],
+        decision_feedback: ["created_at"],
+        outcome_signal_events: ["created_at"],
+        payment_orders: ["created_at", "status"],
+        user_entitlements: ["created_at"],
+        partner_billing: ["created_at"],
+        partner_lead_credits: ["created_at"],
+        payment_webhook_logs: ["created_at"],
       };
 
       const defaultOrderColumn: Record<string, string> = {
@@ -320,7 +362,16 @@ Deno.serve(async (req) => {
       const selectExpr = String(body.select || selectColumns[table] || "*").slice(0, 500);
 
       if (!allowedOrderColumns[table]?.includes(orderColumn)) {
-        return json({ error: "Invalid order column" }, 400, origin);
+        return json(
+          {
+            error: "Invalid order column",
+            table,
+            column: orderColumn,
+            allowed: allowedOrderColumns[table] || [],
+          },
+          400,
+          origin
+        );
       }
 
       let query = adminClient
@@ -536,7 +587,7 @@ Deno.serve(async (req) => {
         ],
         vacation_partners: ["name", "partner_type", "affiliate_link", "notes", "is_active"],
         vacation_scoring_configs: ["risk_factor", "cost_factor", "family_weight", "prompt_template"],
-        housing_leads: ["status", "notes", "follow_up_at"],
+        housing_leads: ["status", "notes", "follow_up_at", "follow_up_done"],
         housing_locations: ["city", "district", "avg_price_level", "transport_score", "life_quality_score", "investment_score", "risk_score", "is_active", "notes"],
         housing_partners: ["partner_name", "partner_type", "city", "district", "contact_link", "commission_note", "is_active", "notes"],
         housing_settings: ["value"],

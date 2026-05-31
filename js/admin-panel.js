@@ -1869,12 +1869,13 @@ let adminCampaigns = [];
 let adminCampaignsHasKey = false;
 
 async function readCampaignsFromSettings() {
-  const { data, error } = await sb
-    .from('site_settings')
-    .select('key,value')
-    .eq('key', CAMPAIGNS_SETTING_KEY)
-    .maybeSingle();
-  if (error) throw error;
+  const res = await fetchAdminTable(sb, {
+    table: 'site_settings',
+    select: 'key,value',
+    limit: 500,
+    direct: () => sb.from('site_settings').select('key,value').eq('key', CAMPAIGNS_SETTING_KEY)
+  });
+  const data = (res.data || []).find((row) => row.key === CAMPAIGNS_SETTING_KEY);
   if (!data?.value) {
     return { hasKey: false, list: [] };
   }
@@ -2200,23 +2201,33 @@ async function loadAutoAnalytics() {
   let events = [];
   let leadRows = [];
 
-  try {
-    [events, leadRows] = await Promise.all([
-      adminList(sb, {
-        table: 'auto_events',
-        order: { column: 'created_at', ascending: false },
-        limit: 500
-      }),
-      adminList(sb, {
-        table: 'auto_leads',
-        select: 'status, follow_up_at, follow_up_done, partner_status, estimated_revenue, actual_revenue',
-        limit: 1000
-      })
-    ]);
-  } catch (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  const [eventsRes, leadsRes] = await Promise.all([
+    fetchAdminTable(sb, {
+      table: 'auto_events',
+      limit: 500,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb.from('auto_events').select('*').order('created_at', { ascending: false }).limit(500)
+    }),
+    fetchAdminTable(sb, {
+      table: 'auto_leads',
+      select: 'status, follow_up_at, follow_up_done, partner_status, estimated_revenue, actual_revenue',
+      limit: 1000,
+      direct: (expr) =>
+        sb
+          .from('auto_leads')
+          .select(expr || 'status, follow_up_at, follow_up_done, partner_status, estimated_revenue, actual_revenue')
+          .limit(1000)
+    })
+  ]);
+
+  if (eventsRes.error && !(eventsRes.data || []).length) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(eventsRes.error.message || eventsRes.error)}</p>`;
     return;
   }
+
+  events = eventsRes.data || [];
+  leadRows = leadsRes.data || [];
 
   const counts = events.reduce((acc, event) => {
     acc[event.event_name] = (acc[event.event_name] || 0) + 1;
@@ -3235,22 +3246,32 @@ async function loadPartnerOpsFunnel() {
   if (!root) return;
 
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await sb
-    .from('analytics_events')
-    .select('event_name')
-    .gte('created_at', since)
-    .in('event_name', [
-      'partner_landing_view',
-      'partner_application_submit',
-      'partner_onboarding_view',
-      'partner_webhook_draft_saved',
-      'partner_onboarding_complete',
-      'partner_dispatch_success',
-      'partner_dispatch_failed'
-    ])
-    .limit(SCALE_LIMITS.admin.partnerFunnelRowLimit);
+  const funnelEventNames = [
+    'partner_landing_view',
+    'partner_application_submit',
+    'partner_onboarding_view',
+    'partner_webhook_draft_saved',
+    'partner_onboarding_complete',
+    'partner_dispatch_success',
+    'partner_dispatch_failed'
+  ];
+  const res = await fetchAdminTable(sb, {
+    table: 'analytics_events',
+    select: 'event_name, created_at',
+    limit: SCALE_LIMITS.admin.partnerFunnelRowLimit,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb
+        .from('analytics_events')
+        .select('event_name, created_at')
+        .gte('created_at', since)
+        .in('event_name', funnelEventNames)
+        .limit(SCALE_LIMITS.admin.partnerFunnelRowLimit)
+  });
 
-  if (error || !data?.length) {
+  const data = (res.data || []).filter((row) => funnelEventNames.includes(row.event_name));
+
+  if ((res.error && !data.length) || !data.length) {
     root.hidden = true;
     return;
   }
@@ -3360,15 +3381,14 @@ async function renderMoatArchitectureStrip(leads = [], feedback = [], signals = 
   if (!root) return;
 
   let productFeedback = [];
-  try {
-    productFeedback = await adminList(sb, {
-      table: 'product_feedback',
-      order: { column: 'created_at', ascending: false },
-      limit: 500
-    });
-  } catch {
-    /* migration pending */
-  }
+  const productRes = await fetchAdminTable(sb, {
+    table: 'product_feedback',
+    limit: 500,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb.from('product_feedback').select('*').order('created_at', { ascending: false }).limit(500)
+  });
+  productFeedback = productRes.data || [];
 
   const useful = productFeedback.filter((r) => r.useful_rating === 'yes').length;
   const metrics = buildMoatMetricsFromAdminData(leads, feedback, signals, {
@@ -3385,25 +3405,27 @@ async function renderMoatIntelligenceStrip(leads = []) {
 
   let feedback = [];
   let signals = [];
-  try {
-    feedback = await adminList(sb, {
-      table: 'decision_feedback',
-      order: { column: 'created_at', ascending: false },
-      limit: 500
-    });
-  } catch {
-    /* migration may be pending */
-  }
+  const feedbackRes = await fetchAdminTable(sb, {
+    table: 'decision_feedback',
+    limit: 500,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb.from('decision_feedback').select('*').order('created_at', { ascending: false }).limit(500)
+  });
+  feedback = feedbackRes.data || [];
 
-  try {
-    signals = await adminList(sb, {
-      table: 'outcome_signal_events',
-      order: { column: 'created_at', ascending: false },
-      limit: 2000
-    });
-  } catch {
-    /* migration may be pending */
-  }
+  const signalsRes = await fetchAdminTable(sb, {
+    table: 'outcome_signal_events',
+    limit: 2000,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb
+        .from('outcome_signal_events')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(2000)
+  });
+  signals = signalsRes.data || [];
 
   const dash = computeMoatDashboard(leads, feedback, signals);
   const helpful = dash.feedbackCounts.helpful || 0;
@@ -3487,21 +3509,25 @@ async function loadAutoLeads() {
 
   let data = [];
 
-  try {
-    data = await adminList(sb, {
-      table: 'auto_leads',
-      order: { column: 'created_at', ascending: false },
-      limit: 1000
-    });
-    data.sort((a, b) => {
+  const res = await fetchAdminTable(sb, {
+    table: 'auto_leads',
+    limit: 1000,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb.from('auto_leads').select('*').order('created_at', { ascending: false }).limit(1000)
+  });
+
+  if (res.error && !(res.data || []).length) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(res.error.message || res.error)}</p>`;
+    return;
+  }
+
+  data = res.data || [];
+  data.sort((a, b) => {
       const scoreDiff = (Number(b.lead_score) || 0) - (Number(a.lead_score) || 0);
       if (scoreDiff !== 0) return scoreDiff;
       return new Date(b.created_at || 0) - new Date(a.created_at || 0);
     });
-  } catch (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
-    return;
-  }
 
   if (!data?.length) {
     el.innerHTML = '<p class="empty">Henüz lead yok.</p>';

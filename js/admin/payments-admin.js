@@ -2,6 +2,7 @@
  * Admin Payments sekmesi — ödeme tabloları + sağlayıcı durumu.
  */
 import { getSupabaseClient } from '../core/supabase.js';
+import { fetchAdminTable } from './admin-query.js';
 
 const TABLES = [
   { key: 'orders', table: 'payment_orders', label: 'Son ödeme siparişleri', limit: 50 },
@@ -28,15 +29,17 @@ function formatRow(row) {
 }
 
 async function fetchTable(sb, table, limit) {
-  const { data, error } = await sb
-    .from(table)
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(limit);
-  if (error) {
-    return { error: error.message, rows: [] };
+  const res = await fetchAdminTable(sb, {
+    table,
+    limit,
+    order: { column: 'created_at', ascending: false },
+    direct: () => sb.from(table).select('*').order('created_at', { ascending: false }).limit(limit)
+  });
+  if (res.error && !(res.data || []).length) {
+    const message = res.error?.message || String(res.error);
+    return { error: message, rows: [], schemaMissing: res.schemaMissing };
   }
-  return { rows: data || [] };
+  return { rows: res.data || [], schemaMissing: res.schemaMissing };
 }
 
 async function fetchProviderStatus(sb) {
@@ -82,9 +85,12 @@ function renderProviderCards(providers) {
     .join('');
 }
 
-function renderTableSection(label, rows, error) {
+function renderTableSection(label, rows, error, schemaMissing) {
   if (error) {
-    return `<section class="admin-payment-section"><h3>${esc(label)}</h3><p class="empty">${esc(error)}</p></section>`;
+    const hint = schemaMissing
+      ? ' Tablo şemada yok — <code>supabase db push</code> çalıştırın.'
+      : '';
+    return `<section class="admin-payment-section"><h3>${esc(label)}</h3><p class="empty">${esc(error)}${hint}</p></section>`;
   }
   if (!rows.length) {
     return `<section class="admin-payment-section"><h3>${esc(label)}</h3><p class="empty">Kayıt yok.</p></section>`;
@@ -123,7 +129,12 @@ export async function loadPaymentsAdminPage() {
   ]);
 
   const sections = TABLES.map((t, i) =>
-    renderTableSection(t.label, tableResults[i].rows, tableResults[i].error)
+    renderTableSection(
+      t.label,
+      tableResults[i].rows,
+      tableResults[i].error,
+      tableResults[i].schemaMissing
+    )
   ).join('');
 
   root.innerHTML = `

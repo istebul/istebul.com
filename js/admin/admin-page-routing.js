@@ -33,6 +33,8 @@ export const ADMIN_PAGE_IDS = [
   'finance-leads',
   'finance-partners',
   'finance-scoring',
+  'vertical-leads',
+  'unified-funnel',
   'auto-analytics',
   'platform-analytics',
   'dashboard-ceo',
