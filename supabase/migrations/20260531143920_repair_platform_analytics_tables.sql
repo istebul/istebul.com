@@ -1,14 +1,10 @@
--- Repair: platform analytics tables/view for production deploys that skipped
--- analytics DDL in 20260526_final_production_lead_fields.sql (or partial apply).
--- Idempotent, non-destructive: no DROP TABLE, no data deletes.
+-- Unified platform analytics (journeys, funnels, conversions, attribution)
 
--- ---------------------------------------------------------------------------
--- public.analytics_sessions
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS public.analytics_sessions (
-  session_id text PRIMARY KEY,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
+create table if not exists public.analytics_sessions (
+  session_id text primary key,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+
   user_id uuid,
   first_page_path text,
   last_page_path text,
@@ -19,182 +15,117 @@ CREATE TABLE IF NOT EXISTS public.analytics_sessions (
   utm_content text,
   utm_term text,
   device_type text,
-  consent_analytics boolean DEFAULT false
+  consent_analytics boolean default false
 );
 
-ALTER TABLE public.analytics_sessions
-  ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
-  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now(),
-  ADD COLUMN IF NOT EXISTS user_id uuid,
-  ADD COLUMN IF NOT EXISTS first_page_path text,
-  ADD COLUMN IF NOT EXISTS last_page_path text,
-  ADD COLUMN IF NOT EXISTS referrer text,
-  ADD COLUMN IF NOT EXISTS utm_source text,
-  ADD COLUMN IF NOT EXISTS utm_medium text,
-  ADD COLUMN IF NOT EXISTS utm_campaign text,
-  ADD COLUMN IF NOT EXISTS utm_content text,
-  ADD COLUMN IF NOT EXISTS utm_term text,
-  ADD COLUMN IF NOT EXISTS device_type text,
-  ADD COLUMN IF NOT EXISTS consent_analytics boolean DEFAULT false;
+create index if not exists analytics_sessions_user_idx
+  on public.analytics_sessions (user_id, updated_at desc);
 
-CREATE INDEX IF NOT EXISTS analytics_sessions_user_idx
-  ON public.analytics_sessions (user_id, updated_at DESC);
+create table if not exists public.analytics_events (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
 
--- ---------------------------------------------------------------------------
--- public.analytics_events
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS public.analytics_events (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  event_name text NOT NULL,
-  event_category text NOT NULL,
+  event_name text not null,
+  event_category text not null,
+
   session_id text,
   user_id uuid,
   anonymous_id text,
+
   page_path text,
   page_section text,
   funnel text,
   funnel_step text,
   step_index integer,
+
   cta_id text,
   element_id text,
+
   email text,
   phone text,
-  revenue_cents integer DEFAULT 0,
-  currency text DEFAULT 'TRY',
-  properties jsonb NOT NULL DEFAULT '{}'::jsonb,
-  attribution jsonb NOT NULL DEFAULT '{}'::jsonb,
-  source text NOT NULL DEFAULT 'web',
-  idempotency_key text
+
+  revenue_cents integer default 0,
+  currency text default 'TRY',
+
+  properties jsonb not null default '{}'::jsonb,
+  attribution jsonb not null default '{}'::jsonb,
+
+  source text not null default 'web',
+  idempotency_key text,
+
+  constraint analytics_events_category_check
+    check (event_category in (
+      'page',
+      'cta',
+      'auth',
+      'subscription',
+      'lead',
+      'auto',
+      'finance',
+      'partner',
+      'admin',
+      'revenue'
+    ))
 );
 
-ALTER TABLE public.analytics_events
-  ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
-  ADD COLUMN IF NOT EXISTS event_name text,
-  ADD COLUMN IF NOT EXISTS event_category text,
-  ADD COLUMN IF NOT EXISTS session_id text,
-  ADD COLUMN IF NOT EXISTS user_id uuid,
-  ADD COLUMN IF NOT EXISTS anonymous_id text,
-  ADD COLUMN IF NOT EXISTS page_path text,
-  ADD COLUMN IF NOT EXISTS page_section text,
-  ADD COLUMN IF NOT EXISTS funnel text,
-  ADD COLUMN IF NOT EXISTS funnel_step text,
-  ADD COLUMN IF NOT EXISTS step_index integer,
-  ADD COLUMN IF NOT EXISTS cta_id text,
-  ADD COLUMN IF NOT EXISTS element_id text,
-  ADD COLUMN IF NOT EXISTS email text,
-  ADD COLUMN IF NOT EXISTS phone text,
-  ADD COLUMN IF NOT EXISTS revenue_cents integer DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS currency text DEFAULT 'TRY',
-  ADD COLUMN IF NOT EXISTS properties jsonb NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS attribution jsonb NOT NULL DEFAULT '{}'::jsonb,
-  ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'web',
-  ADD COLUMN IF NOT EXISTS idempotency_key text;
+create unique index if not exists analytics_events_idempotency_idx
+  on public.analytics_events (idempotency_key)
+  where idempotency_key is not null;
 
-CREATE UNIQUE INDEX IF NOT EXISTS analytics_events_idempotency_idx
-  ON public.analytics_events (idempotency_key)
-  WHERE idempotency_key IS NOT NULL;
+create index if not exists analytics_events_name_time_idx
+  on public.analytics_events (event_name, created_at desc);
 
-CREATE INDEX IF NOT EXISTS analytics_events_name_time_idx
-  ON public.analytics_events (event_name, created_at DESC);
+create index if not exists analytics_events_funnel_idx
+  on public.analytics_events (funnel, funnel_step, created_at desc);
 
-CREATE INDEX IF NOT EXISTS analytics_events_funnel_idx
-  ON public.analytics_events (funnel, funnel_step, created_at DESC);
+create index if not exists analytics_events_session_idx
+  on public.analytics_events (session_id, created_at desc);
 
-CREATE INDEX IF NOT EXISTS analytics_events_session_idx
-  ON public.analytics_events (session_id, created_at DESC);
+create index if not exists analytics_events_category_time_idx
+  on public.analytics_events (event_category, created_at desc);
 
-CREATE INDEX IF NOT EXISTS analytics_events_category_time_idx
-  ON public.analytics_events (event_category, created_at DESC);
+alter table public.analytics_sessions enable row level security;
+alter table public.analytics_events enable row level security;
 
--- ---------------------------------------------------------------------------
--- event_category check (safe replace; includes growth/lifecycle from later migrations)
--- ---------------------------------------------------------------------------
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'analytics_events_category_check'
-      AND conrelid = 'public.analytics_events'::regclass
-  ) THEN
-    ALTER TABLE public.analytics_events
-      DROP CONSTRAINT analytics_events_category_check;
-  END IF;
-END $$;
+drop policy if exists "deny direct analytics_sessions" on public.analytics_sessions;
+create policy "deny direct analytics_sessions"
+on public.analytics_sessions
+for all
+to authenticated
+using (false)
+with check (false);
 
-ALTER TABLE public.analytics_events
-  ADD CONSTRAINT analytics_events_category_check
-  CHECK (event_category IN (
-    'page',
-    'cta',
-    'auth',
-    'subscription',
-    'lead',
-    'auto',
-    'finance',
-    'partner',
-    'admin',
-    'revenue',
-    'growth',
-    'lifecycle'
-  ));
+drop policy if exists "admin read analytics events" on public.analytics_events;
+create policy "admin read analytics events"
+on public.analytics_events
+for select
+to authenticated
+using (
+  exists (
+    select 1 from public.profiles
+    where profiles.id = auth.uid()
+      and profiles.role = 'admin'
+      and coalesce(profiles.is_banned, false) = false
+  )
+);
 
--- ---------------------------------------------------------------------------
--- Row level security
--- ---------------------------------------------------------------------------
-ALTER TABLE public.analytics_sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.analytics_events ENABLE ROW LEVEL SECURITY;
+drop policy if exists "deny analytics events write" on public.analytics_events;
+create policy "deny analytics events write"
+on public.analytics_events
+for insert
+to authenticated
+with check (false);
 
-DROP POLICY IF EXISTS "deny direct analytics_sessions" ON public.analytics_sessions;
-CREATE POLICY "deny direct analytics_sessions"
-  ON public.analytics_sessions
-  FOR ALL
-  TO authenticated
-  USING (false)
-  WITH CHECK (false);
-
-DROP POLICY IF EXISTS "admin read analytics events" ON public.analytics_events;
-CREATE POLICY "admin read analytics events"
-  ON public.analytics_events
-  FOR SELECT
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.profiles
-      WHERE profiles.id = auth.uid()
-        AND profiles.role = 'admin'
-        AND COALESCE(profiles.is_banned, false) = false
-    )
-  );
-
-DROP POLICY IF EXISTS "deny analytics events write" ON public.analytics_events;
-CREATE POLICY "deny analytics events write"
-  ON public.analytics_events
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (false);
-
--- ---------------------------------------------------------------------------
--- public.analytics_funnel_daily (view)
--- ---------------------------------------------------------------------------
-CREATE OR REPLACE VIEW public.analytics_funnel_daily AS
-SELECT
-  date_trunc('day', created_at) AS day,
+-- Funnel conversion summary (admin dashboards)
+create or replace view public.analytics_funnel_daily as
+select
+  date_trunc('day', created_at) as day,
   funnel,
   funnel_step,
-  count(*)::bigint AS events,
-  count(DISTINCT session_id)::bigint AS sessions
-FROM public.analytics_events
-WHERE funnel IS NOT NULL
-  AND funnel_step IS NOT NULL
-GROUP BY 1, 2, 3;
+  count(*)::bigint as events,
+  count(distinct session_id)::bigint as sessions
+from public.analytics_events
+where funnel is not null and funnel_step is not null
+group by 1, 2, 3;
 
--- ---------------------------------------------------------------------------
--- Grants (service role only for funnel summary; no client PII funnel leak)
--- ---------------------------------------------------------------------------
-REVOKE ALL ON public.analytics_funnel_daily FROM PUBLIC;
-REVOKE ALL ON public.analytics_funnel_daily FROM authenticated;
-REVOKE ALL ON public.analytics_funnel_daily FROM anon;
-GRANT SELECT ON public.analytics_funnel_daily TO service_role;
+grant select on public.analytics_funnel_daily to authenticated;
