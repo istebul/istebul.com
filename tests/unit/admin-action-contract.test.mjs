@@ -37,6 +37,24 @@ describe('admin-action contract', () => {
     assert.match(source, /Invalid order column/);
     assert.match(source, /allowed:/);
   });
+
+  it('exposes partner application CRM admin actions', () => {
+    const source = fs.readFileSync(
+      path.join(root, 'supabase/functions/admin-action/index.ts'),
+      'utf8'
+    );
+    for (const action of [
+      'listPartnerApplications',
+      'createPartnerApplication',
+      'updatePartnerApplication',
+      'archivePartnerApplication',
+      'togglePartnerApplicationActive'
+    ]) {
+      assert.match(source, new RegExp(`"${action}"`));
+    }
+    assert.match(source, /is_archived: true/);
+    assert.match(source, /buildPartnerApplicationRow/);
+  });
 });
 
 describe('admin panel route contract', () => {
@@ -60,5 +78,32 @@ describe('admin panel route contract', () => {
     assert.match(sql, /CREATE OR REPLACE FUNCTION public\.is_admin\(\)/);
     assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.partner_lead_dispatch_logs/);
     assert.match(sql, /DROP POLICY IF EXISTS/);
+  });
+
+  it('partner applications CRM migration adds soft-archive fields', () => {
+    const sql = fs.readFileSync(
+      path.join(
+        root,
+        'supabase/migrations/20260531230000_partner_applications_crm_crud.sql'
+      ),
+      'utf8'
+    );
+    assert.match(sql, /is_archived boolean/);
+    assert.match(sql, /is_active boolean/);
+    assert.match(sql, /'inactive'/);
+    assert.match(sql, /Arabam/);
+  });
+
+  it('partner applications admin module is wired', () => {
+    const panel = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
+    assert.match(panel, /partner-applications-admin\.js/);
+    assert.match(panel, /initPartnerApplicationsShell/);
+    const module = fs.readFileSync(
+      path.join(root, 'js/admin/partner-applications-admin.js'),
+      'utf8'
+    );
+    assert.match(module, /listPartnerApplications/);
+    assert.match(module, /archivePartnerApplication/);
+    assert.match(module, /İlk Temas/);
   });
 });

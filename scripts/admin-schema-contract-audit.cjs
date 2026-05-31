@@ -75,6 +75,34 @@ if (!fs.existsSync(repairMigration)) {
   }
 }
 
+const partnerCrmMigration = path.join(
+  root,
+  'supabase/migrations/20260531230000_partner_applications_crm_crud.sql'
+);
+if (!fs.existsSync(partnerCrmMigration)) {
+  fail('missing 20260531230000_partner_applications_crm_crud.sql');
+} else {
+  const crmSql = fs.readFileSync(partnerCrmMigration, 'utf8');
+  if (!crmSql.includes('is_archived')) {
+    fail('partner CRM migration must add is_archived');
+  }
+  if (!crmSql.includes("'inactive'")) {
+    fail('partner CRM migration must allow inactive status');
+  }
+}
+
+for (const action of [
+  'listPartnerApplications',
+  'createPartnerApplication',
+  'updatePartnerApplication',
+  'archivePartnerApplication',
+  'togglePartnerApplicationActive'
+]) {
+  if (!adminActionSrc.includes(`"${action}"`)) {
+    fail(`admin-action missing partner CRM action: ${action}`);
+  }
+}
+
 const adminQuery = fs.readFileSync(path.join(root, 'js/admin/admin-query.js'), 'utf8');
 if (!adminQuery.includes('preferDirect')) {
   fail('admin-query must support admin-action-first via preferDirect flag');
