@@ -27,6 +27,6 @@ describe('support-router', () => {
       articles
     });
     assert.equal(route.intent, 'billing');
-    assert.ok(route.actions.some((a) => a.href?.includes('billing')));
+    assert.ok(route.actions.some((a) => a.href?.includes('subscription')));
   });
 });

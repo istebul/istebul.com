@@ -95,8 +95,8 @@ export function routeSupportRequest(input = {}) {
   if (intent === 'billing') {
     actions.push({
       type: 'link',
-      href: '/profil/?tab=settings&billing=portal',
-      label: 'Fatura & abonelik'
+      href: '/profil/?tab=subscription&billing=portal',
+      label: 'Abonelik yardımı'
     });
   }
   if (intent === 'onboarding') {
