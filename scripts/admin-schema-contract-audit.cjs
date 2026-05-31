@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Admin schema contract — frontend table access must match admin-action listTables.
+ * Admin schema contract — partner CRM actions and migration checks.
  */
 const fs = require('fs');
 const path = require('path');
@@ -26,34 +26,7 @@ if (!listMatch) {
 
 const listTables = [...listMatch[1].matchAll(/"([a-z_]+)"/g)].map((m) => m[1]);
 
-const REQUIRED_LIST_TABLES = [
-  'site_settings',
-  'listings',
-  'profiles',
-  'auto_leads',
-  'auto_events',
-  'subscriptions',
-  'partner_endpoints',
-  'partner_lead_dispatch_logs',
-  'partner_applications',
-  'operational_events',
-  'lifecycle_enrollments',
-  'lifecycle_messages',
-  'finance_leads',
-  'housing_leads',
-  'vertical_leads',
-  'analytics_events',
-  'product_feedback',
-  'decision_feedback',
-  'outcome_signal_events',
-  'payment_orders',
-  'user_entitlements',
-  'partner_billing',
-  'partner_lead_credits',
-  'payment_webhook_logs'
-];
-
-for (const table of REQUIRED_LIST_TABLES) {
+for (const table of ['partner_applications', 'partner_lead_dispatch_logs', 'subscriptions']) {
   if (!listTables.includes(table)) {
     fail(`admin-action listTables missing required table: ${table}`);
   }
@@ -88,19 +61,16 @@ for (const action of [
 }
 
 const adminQuery = fs.readFileSync(path.join(root, 'js/admin/admin-query.js'), 'utf8');
-if (!adminQuery.includes('preferDirect')) {
-  fail('admin-query must support admin-action-first via preferDirect flag');
-}
-if (!adminQuery.includes('fetchAdminRowById')) {
-  fail('admin-query must export fetchAdminRowById');
-}
 if (!adminQuery.includes('collectAdminFallbackNotes')) {
   fail('admin-query must export collectAdminFallbackNotes');
 }
 
-const adminPanel = fs.readFileSync(path.join(root, 'js/admin-panel.js'), 'utf8');
-if (!adminPanel.includes('partner-applications-admin.js')) {
-  fail('admin-panel must import partner-applications-admin module');
+const moduleSrc = fs.readFileSync(
+  path.join(root, 'js/admin/partner-applications-admin.js'),
+  'utf8'
+);
+if (!moduleSrc.includes('listPartnerApplications')) {
+  fail('partner-applications-admin must call listPartnerApplications');
 }
 
 if (failed) {

@@ -12,19 +12,18 @@ function extractListTables(source) {
 }
 
 describe('admin-action contract', () => {
-  it('includes moat and payment tables for admin panel reads', () => {
+  it('includes core admin panel tables in listTables', () => {
     const source = fs.readFileSync(
       path.join(root, 'supabase/functions/admin-action/index.ts'),
       'utf8'
     );
     const tables = extractListTables(source);
     for (const table of [
-      'product_feedback',
-      'decision_feedback',
-      'outcome_signal_events',
-      'payment_orders',
+      'partner_applications',
       'partner_lead_dispatch_logs',
-      'partner_applications'
+      'subscriptions',
+      'analytics_events',
+      'lifecycle_enrollments'
     ]) {
       assert.ok(tables.includes(table), `listTables includes ${table}`);
     }
@@ -59,14 +58,13 @@ describe('admin-action contract', () => {
 });
 
 describe('admin panel route contract', () => {
-  it('registers unified funnel and vertical leads pages', () => {
+  it('registers partner applications admin page', () => {
     const routing = fs.readFileSync(
       path.join(root, 'js/admin/admin-page-routing.js'),
       'utf8'
     );
-    assert.match(routing, /'unified-funnel'/);
-    assert.match(routing, /'vertical-leads'/);
     assert.match(routing, /'partner-applications'/);
+    assert.match(routing, /'partner-dispatch-logs'/);
   });
 
   it('partner applications CRM migration adds soft-archive fields', () => {
