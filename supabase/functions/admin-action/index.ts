@@ -68,6 +68,186 @@ function json(body: unknown, status = 200, origin: string | null = null) {
   });
 }
 
+const PARTNER_APP_ACTIONS = new Set([
+  "listPartnerApplications",
+  "createPartnerApplication",
+  "updatePartnerApplication",
+  "archivePartnerApplication",
+  "togglePartnerApplicationActive",
+]);
+
+const PARTNER_APP_ID_ACTIONS = new Set([
+  "updatePartnerApplication",
+  "archivePartnerApplication",
+  "togglePartnerApplicationActive",
+]);
+
+const PARTNER_APP_STATUSES = new Set([
+  "lead",
+  "qualified",
+  "demo",
+  "pilot",
+  "negotiation",
+  "won",
+  "lost",
+  "inactive",
+  "new",
+  "contacted",
+  "integrating",
+  "live",
+  "rejected",
+]);
+
+const PARTNER_APP_CATEGORIES = new Set([
+  "auto",
+  "housing",
+  "finance",
+  "travel",
+  "insurance",
+  "general",
+  "dealer_partner",
+  "finance_partner",
+  "insurance_partner",
+  "premium_report",
+  "general_sales",
+]);
+
+const PARTNER_APP_CREATE_FIELDS = [
+  "company_name",
+  "contact_name",
+  "phone",
+  "email",
+  "website",
+  "city",
+  "category",
+  "source_channel",
+  "status",
+  "is_active",
+  "notes",
+  "next_action",
+  "contacted_at",
+  "follow_up_at",
+  "lead_capacity",
+  "webhook_ready",
+  "billing_plan",
+];
+
+const PARTNER_APP_UPDATE_FIELDS = [
+  ...PARTNER_APP_CREATE_FIELDS,
+  "webhook_url_draft",
+  "partner_endpoint_id",
+];
+
+function sanitizePartnerField(value: unknown, max = 500) {
+  return String(value ?? "").trim().slice(0, max);
+}
+
+function normalizePartnerAppStatus(status: unknown, fallback = "lead") {
+  const normalized = sanitizePartnerField(status, 40).toLowerCase();
+  return PARTNER_APP_STATUSES.has(normalized) ? normalized : fallback;
+}
+
+function normalizePartnerAppCategory(category: unknown) {
+  const normalized = sanitizePartnerField(category, 40).toLowerCase();
+  return PARTNER_APP_CATEGORIES.has(normalized) ? normalized : null;
+}
+
+function normalizePartnerAppEmail(email: unknown) {
+  return sanitizePartnerField(email, 320).toLowerCase();
+}
+
+function normalizePartnerAppPhone(phone: unknown) {
+  return String(phone ?? "").replace(/\D/g, "").slice(0, 20);
+}
+
+function normalizePartnerAppTimestamp(value: unknown) {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = new Date(String(value));
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+function pickPartnerAppPayload(raw: Record<string, unknown>, allowed: string[]) {
+  const payload: Record<string, unknown> = {};
+  for (const key of allowed) {
+    if (raw[key] !== undefined) payload[key] = raw[key];
+  }
+  return payload;
+}
+
+function buildPartnerApplicationRow(raw: Record<string, unknown>, mode: "create" | "update") {
+  const payload = pickPartnerAppPayload(raw, mode === "create" ? PARTNER_APP_CREATE_FIELDS : PARTNER_APP_UPDATE_FIELDS);
+
+  if (payload.company_name !== undefined) {
+    payload.company_name = sanitizePartnerField(payload.company_name, 200);
+  }
+  if (payload.contact_name !== undefined) {
+    payload.contact_name = sanitizePartnerField(payload.contact_name, 200);
+  }
+  if (payload.phone !== undefined) {
+    payload.phone = normalizePartnerAppPhone(payload.phone);
+  }
+  if (payload.email !== undefined) {
+    payload.email = normalizePartnerAppEmail(payload.email);
+  }
+  if (payload.website !== undefined) {
+    payload.website = sanitizePartnerField(payload.website, 500) || null;
+  }
+  if (payload.city !== undefined) {
+    payload.city = sanitizePartnerField(payload.city, 120) || null;
+  }
+  if (payload.category !== undefined) {
+    const category = normalizePartnerAppCategory(payload.category);
+    if (!category) {
+      return { error: "Invalid category" };
+    }
+    payload.category = category;
+  }
+  if (payload.source_channel !== undefined) {
+    payload.source_channel = sanitizePartnerField(payload.source_channel, 80) || "manual";
+  }
+  if (payload.status !== undefined) {
+    payload.status = normalizePartnerAppStatus(payload.status);
+  }
+  if (payload.notes !== undefined) {
+    payload.notes = sanitizePartnerField(payload.notes, 5000);
+  }
+  if (payload.next_action !== undefined) {
+    payload.next_action = sanitizePartnerField(payload.next_action, 500) || null;
+  }
+  if (payload.lead_capacity !== undefined) {
+    payload.lead_capacity = sanitizePartnerField(payload.lead_capacity, 120) || null;
+  }
+  if (payload.contacted_at !== undefined) {
+    payload.contacted_at = normalizePartnerAppTimestamp(payload.contacted_at);
+  }
+  if (payload.follow_up_at !== undefined) {
+    payload.follow_up_at = normalizePartnerAppTimestamp(payload.follow_up_at);
+  }
+  if (payload.is_active !== undefined) {
+    payload.is_active = payload.is_active === true || payload.is_active === "true";
+  }
+  if (payload.webhook_ready !== undefined) {
+    payload.webhook_ready = payload.webhook_ready === true || payload.webhook_ready === "true";
+  }
+  if (payload.billing_plan !== undefined) {
+    payload.billing_plan = sanitizePartnerField(payload.billing_plan, 40) || "pilot";
+  }
+
+  if (mode === "create") {
+    const company = String(payload.company_name || "");
+    const contact = String(payload.contact_name || "");
+    const phone = String(payload.phone || "");
+    const email = String(payload.email || "");
+    const category = payload.category ? String(payload.category) : "";
+
+    if (company.length < 2 || contact.length < 2 || phone.length < 10 || !email.includes("@") || !category) {
+      return { error: "company_name, contact_name, phone, email and category are required" };
+    }
+  }
+
+  return { payload };
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
 
@@ -223,15 +403,195 @@ Deno.serve(async (req) => {
     if (!table || !listTables.includes(table)) {
       return json({ error: "Invalid action or table" }, 400, origin);
     }
+  } else if (PARTNER_APP_ACTIONS.has(action)) {
+    /* partner CRM actions — validated in handler */
   } else if (!allowedTables.includes(table)) {
     return json({ error: "Invalid action or table" }, 400, origin);
   }
 
-  if (action !== "upsert_settings" && action !== "list" && !id) {
+  if (
+    action !== "upsert_settings" &&
+    action !== "list" &&
+    action !== "listPartnerApplications" &&
+    action !== "createPartnerApplication" &&
+    !id
+  ) {
+    return json({ error: "Missing id" }, 400, origin);
+  }
+
+  if (PARTNER_APP_ID_ACTIONS.has(action) && !id) {
     return json({ error: "Missing id" }, 400, origin);
   }
 
   try {
+    if (action === "listPartnerApplications") {
+      const includeArchived = body.includeArchived === true;
+      const limit = Math.min(Math.max(Number(body.limit) || 500, 1), 1000);
+
+      let query = adminClient
+        .from("partner_applications")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (!includeArchived) {
+        query = query.eq("is_archived", false);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        const msg = String(error.message || "");
+        const code = String((error as { code?: string }).code || "");
+        if (
+          code === "42P01" ||
+          msg.includes("does not exist") ||
+          msg.includes("schema cache")
+        ) {
+          return json({ ok: true, data: [] }, 200, origin);
+        }
+        throw error;
+      }
+
+      return json({ ok: true, data: data ?? [] }, 200, origin);
+    }
+
+    if (action === "createPartnerApplication") {
+      if (!values || typeof values !== "object") {
+        return json({ error: "Missing create values" }, 400, origin);
+      }
+
+      const built = buildPartnerApplicationRow(values as Record<string, unknown>, "create");
+      if (built.error) {
+        return json({ error: built.error }, 400, origin);
+      }
+
+      const row = {
+        ...built.payload,
+        status: normalizePartnerAppStatus(built.payload?.status, "lead"),
+        source_channel: built.payload?.source_channel || "manual",
+        is_active: built.payload?.is_active !== false,
+        is_archived: false,
+        webhook_ready: built.payload?.webhook_ready === true,
+        billing_plan: built.payload?.billing_plan || "pilot",
+      };
+
+      const { data, error } = await adminClient
+        .from("partner_applications")
+        .insert(row)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+
+      await writeAdminAudit(adminClient, user, {
+        action: "createPartnerApplication",
+        entity_table: "partner_applications",
+        entity_id: data?.id,
+        summary: `Created partner application ${row.company_name}`,
+      });
+
+      return json({ ok: true, data }, 200, origin);
+    }
+
+    if (action === "updatePartnerApplication") {
+      if (!values || typeof values !== "object") {
+        return json({ error: "Missing update values" }, 400, origin);
+      }
+
+      const built = buildPartnerApplicationRow(values as Record<string, unknown>, "update");
+      if (built.error) {
+        return json({ error: built.error }, 400, origin);
+      }
+
+      if (!Object.keys(built.payload || {}).length) {
+        return json({ error: "No valid fields to update" }, 400, origin);
+      }
+
+      const { data, error } = await adminClient
+        .from("partner_applications")
+        .update(built.payload)
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+
+      await writeAdminAudit(adminClient, user, {
+        action: "updatePartnerApplication",
+        entity_table: "partner_applications",
+        entity_id: id,
+        summary: `Updated partner application`,
+        metadata: { fields: Object.keys(built.payload || {}) },
+      });
+
+      return json({ ok: true, data }, 200, origin);
+    }
+
+    if (action === "archivePartnerApplication") {
+      const { data, error } = await adminClient
+        .from("partner_applications")
+        .update({
+          is_archived: true,
+          is_active: false,
+          archived_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+
+      await writeAdminAudit(adminClient, user, {
+        action: "archivePartnerApplication",
+        entity_table: "partner_applications",
+        entity_id: id,
+        summary: "Archived partner application",
+      });
+
+      return json({ ok: true, data }, 200, origin);
+    }
+
+    if (action === "togglePartnerApplicationActive") {
+      const { data: current, error: readError } = await adminClient
+        .from("partner_applications")
+        .select("id, is_active, is_archived")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (readError) throw readError;
+      if (!current) {
+        return json({ error: "Partner application not found" }, 404, origin);
+      }
+      if (current.is_archived) {
+        return json({ error: "Archived applications cannot be toggled active" }, 400, origin);
+      }
+
+      const nextActive = !current.is_active;
+      const patch: Record<string, unknown> = { is_active: nextActive };
+      if (!nextActive) {
+        patch.status = "inactive";
+      }
+
+      const { data, error } = await adminClient
+        .from("partner_applications")
+        .update(patch)
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+
+      await writeAdminAudit(adminClient, user, {
+        action: "togglePartnerApplicationActive",
+        entity_table: "partner_applications",
+        entity_id: id,
+        summary: nextActive ? "Activated partner application" : "Deactivated partner application",
+      });
+
+      return json({ ok: true, data }, 200, origin);
+    }
+
     if (action === "list") {
       const selectColumns: Record<string, string> = {
         auto_leads: "*",
@@ -381,7 +741,7 @@ Deno.serve(async (req) => {
         faqs: ["question", "answer", "order_num", "is_active"],
         posts: ["title", "slug", "content", "is_published"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority"],
-        partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan"],
+        partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan", "company_name", "contact_name", "phone", "email", "website", "city", "category", "source_channel", "is_active", "next_action", "contacted_at", "follow_up_at", "lead_capacity", "webhook_ready"],
         vacation_scenarios: [
           "title",
           "slug",
@@ -544,7 +904,7 @@ Deno.serve(async (req) => {
         finance_partners: ["institution_name", "product_type", "min_amount", "max_amount", "min_term", "max_term", "rate_range", "affiliate_link", "is_active", "notes"],
         finance_settings: ["value"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority", "health_status"],
-        partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan"],
+        partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan", "company_name", "contact_name", "phone", "email", "website", "city", "category", "source_channel", "is_active", "next_action", "contacted_at", "follow_up_at", "lead_capacity", "webhook_ready"],
       };
 
       const keys = Object.keys(values);
