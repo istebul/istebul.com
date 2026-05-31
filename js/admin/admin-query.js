@@ -177,13 +177,21 @@ export function collectAdminWarnings(results) {
 }
 
 /**
- * Direct fallback after admin-action miss — informational, not an error.
- * @param {Array<{ table: string, error?: unknown, source?: string, adminError?: string | null, schemaMissing?: boolean }>} results
+ * Successful fallback reads — informational, not an error.
+ * @param {Array<{ table: string, error?: unknown, source?: string, data?: unknown[], adminError?: string | null, directError?: string | null, schemaMissing?: boolean }>} results
  */
 export function collectAdminFallbackNotes(results) {
   const lines = [];
   for (const r of results) {
     if (r.error) continue;
+    if (
+      r.source === 'admin-action' &&
+      r.directError &&
+      !r.schemaMissing &&
+      r.data?.length
+    ) {
+      lines.push(`${r.table}: direct query unavailable — loaded via admin-action`);
+    }
     if (r.source === 'direct' && r.adminError && !r.schemaMissing) {
       lines.push(`${r.table}: doğrudan Supabase okuması kullanıldı`);
     }
