@@ -1,7 +1,12 @@
-# Cloudflare Pages routing — static assets BEFORE SPA fallback.
-# CF applies redirects before static lookup; passthrough rules preserve real MIME types.
+# Cloudflare Pages routing — keep dynamic rules under 100 (CF limit).
+# Static files (/*.html, /auto/index.html, …) are served directly; no self-rewrite loops.
 
-# --- Static asset passthrough (do not rewrite to index.html) ---
+# --- Admin (must stay first) ---
+/admin-panel /admin-panel.html 200
+/admin /admin-panel.html 200
+/admin/ /admin-panel.html 200
+
+# --- Static asset passthrough (before SPA fallback) ---
 /css/*       /css/:splat       200
 /js/*        /js/:splat        200
 /assets/*    /assets/:splat    200
@@ -9,64 +14,30 @@
 /fonts/*     /fonts/:splat     200
 /data/*      /data/:splat      200
 /docs/*      /docs/:splat      200
-/env.js      /env.js           200
-/sw.js       /sw.js            200
-/manifest.json /manifest.json  200
-/importmap.json /importmap.json 200
-/robots.txt  /robots.txt       200
-/sitemap.xml /sitemap.xml      200
-/build-manifest.json /build-manifest.json 200
-/offline.html /offline.html   200
-/favicon.ico /favicon.ico     200
 
-# --- Standalone HTML (not SPA shell) ---
-# Admin panel: extensionless canonical only (/admin-panel). No /admin-panel.html rule —
-# let Cloudflare Pages strip .html naturally; 200 rewrite serves the file at /admin-panel.
-/admin-panel /admin-panel.html 200
-/admin /admin-panel.html 200
-/admin/ /admin-panel.html 200
-/hakkimizda.html /hakkimizda.html 200
-/iletisim.html /iletisim.html 200
-/gizlilik.html /gizlilik.html 200
-/kvkk.html /kvkk.html 200
-/kullanim-sartlari.html /kullanim-sartlari.html 200
-/partner-olun.html /partner-olun.html 200
-/partner-planlar.html /partner-planlar.html 200
-/partner-guven.html /partner-guven.html 200
-/partner-docs.html /partner-docs.html 200
-/partner-onboarding.html /partner-onboarding.html 200
-/partner-basvuru.html /partner-basvuru.html 200
-/partner-closing-kit.html /partner-closing-kit.html 200
-/karar-moat.html /karar-moat.html 200
-/yardim.html /yardim.html 200
-/abonelik-iptal.html /abonelik-iptal.html 200
-/cerez-politikasi.html /cerez-politikasi.html 200
-
-# --- Legacy account URL (preserve query string on redirect) ---
+# --- Legacy account URL ---
 /account.html /profil/ 301
 
-# --- Legacy / junk URLs (no modern equivalent) ---
+# --- Legacy / junk URLs ---
 /index.php/*  /  410
 /cgi-sys/*    /  410
 /2025/*       /  410
 /category/*   /  301
 
-# --- SEO hubs & guides (static HTML before SPA fallback) ---
+# --- SEO rehber redirects (301 only; static HTML served from /rehber/) ---
 /rehber/arac-alim-karar-asistani /rehber/arac-alim-karar-asistani/ 301
-/rehber/arac-finansman-secenekleri /rehber/arac-finansman-secenekleri/ 301
+/rehber/arac-finansman-secenekleri /rehber/finansman-rehberi/ 301
 /rehber/arac-karsilastirma-rehberi /rehber/arac-karsilastirma-rehberi/ 301
 /rehber/arac-kredisi-hesaplama /rehber/arac-kredisi-hesaplama/ 301
 /rehber/arac-sigortasi-karsilastirma /rehber/arac-sigortasi-karsilastirma/ 301
-/rehber/arac-toplam-sahiplik-maliyeti /rehber/arac-toplam-sahiplik-maliyeti/ 301
+/rehber/arac-toplam-sahiplik-maliyeti /rehber/tco-rehberi/ 301
 /rehber/aylik-arac-butcesi-hesaplama /rehber/aylik-arac-butcesi-hesaplama/ 301
-/rehber/elektrikli-arac-alirken /rehber/elektrikli-arac-alirken/ 301
+/rehber/elektrikli-arac-alirken /rehber/elektrikli-arac-rehberi/ 301
 /rehber/elektrikli-arac-alirken/ /rehber/elektrikli-arac-rehberi/ 301
 /rehber/arac-finansman-secenekleri/ /rehber/finansman-rehberi/ 301
 /rehber/arac-toplam-sahiplik-maliyeti/ /rehber/tco-rehberi/ 301
-/rehber/ikinci-el-arac-alirken /rehber/ikinci-el-arac-alirken/ 301
+/rehber/ikinci-el-arac-alirken /rehber/ikinci-el-rehberi/ 301
 /rehber/ikinci-el-arac-alirken/ /rehber/ikinci-el-rehberi/ 301
-/rehber/arac-finansman-secenekleri /rehber/finansman-rehberi/ 301
-/rehber/arac-toplam-sahiplik-maliyeti /rehber/tco-rehberi/ 301
 /rehber/elektrikli-arac-rehberi /rehber/elektrikli-arac-rehberi/ 301
 /rehber/finansman-rehberi /rehber/finansman-rehberi/ 301
 /rehber/tco-rehberi /rehber/tco-rehberi/ 301
@@ -81,34 +52,9 @@
 /rehberler/ikinci-el-arac-rehberi/ /rehber/ikinci-el-rehberi/ 301
 /rehberler/ikinci-el-rehberi/ /rehber/ikinci-el-rehberi/ 301
 /rehberler/* /rehber/:splat/ 301
-/rehber/ /rehber/index.html 200
 /rehber/*     /rehber/:splat/index.html  200
-/karar-asistani /karar-asistani/index.html 200
-/karar-asistani/ /karar-asistani/index.html 200
-/ilanlar /ilanlar/index.html 200
-/ilanlar/ /ilanlar/index.html 200
-/karsilastir /karsilastir/index.html 200
-/karsilastir/ /karsilastir/index.html 200
 
-# --- Section entry HTML ---
-/auto /auto/index.html 200
-/auto/ /auto/index.html 200
-/metodoloji /metodoloji/index.html 200
-/metodoloji/ /metodoloji/index.html 200
-/konut /konut/index.html 200
-/konut/ /konut/index.html 200
-/tatil /tatil/index.html 200
-/tatil/ /tatil/index.html 200
-/finans /finans/index.html 200
-/finans/ /finans/index.html 200
-/sigorta /sigorta/ 301
-/sigorta/ /sigorta/index.html 200
-/sigorta/* /sigorta/index.html 200
-/kasko /kasko/ 301
-/kasko/ /kasko/index.html 200
-/kasko/* /kasko/index.html 200
-
-# --- Locale shells (marketing SPA) ---
+# --- Locale marketing SPA shells ---
 /en /index.html 200
 /en/* /index.html 200
 /de /index.html 200
@@ -125,72 +71,8 @@
 /ja/* /index.html 200
 /zh /index.html 200
 /zh/* /index.html 200
-/en/auto /auto/index.html 200
-/en/auto/ /auto/index.html 200
-/de/auto /auto/index.html 200
-/de/auto/ /auto/index.html 200
-/ar/auto /auto/index.html 200
-/ar/auto/ /auto/index.html 200
-/en/konut /konut/index.html 200
-/en/konut/ /konut/index.html 200
-/de/konut /konut/index.html 200
-/de/konut/ /konut/index.html 200
-/ar/konut /konut/index.html 200
-/ar/konut/ /konut/index.html 200
-/en/tatil /tatil/index.html 200
-/en/tatil/ /tatil/index.html 200
-/de/tatil /tatil/index.html 200
-/de/tatil/ /tatil/index.html 200
-/ar/tatil /tatil/index.html 200
-/ar/tatil/ /tatil/index.html 200
-/en/finans /finans/index.html 200
-/en/finans/ /finans/index.html 200
-/de/finans /finans/index.html 200
-/de/finans/ /finans/index.html 200
-/ar/finans /finans/index.html 200
-/ar/finans/ /finans/index.html 200
-/it/auto /auto/index.html 200
-/it/auto/ /auto/index.html 200
-/fr/auto /auto/index.html 200
-/fr/auto/ /auto/index.html 200
-/es/auto /auto/index.html 200
-/es/auto/ /auto/index.html 200
-/ja/auto /auto/index.html 200
-/ja/auto/ /auto/index.html 200
-/zh/auto /auto/index.html 200
-/zh/auto/ /auto/index.html 200
-/it/konut /konut/index.html 200
-/it/konut/ /konut/index.html 200
-/fr/konut /konut/index.html 200
-/fr/konut/ /konut/index.html 200
-/es/konut /konut/index.html 200
-/es/konut/ /konut/index.html 200
-/ja/konut /konut/index.html 200
-/ja/konut/ /konut/index.html 200
-/zh/konut /konut/index.html 200
-/zh/konut/ /konut/index.html 200
-/it/tatil /tatil/index.html 200
-/it/tatil/ /tatil/index.html 200
-/fr/tatil /tatil/index.html 200
-/fr/tatil/ /tatil/index.html 200
-/es/tatil /tatil/index.html 200
-/es/tatil/ /tatil/index.html 200
-/ja/tatil /tatil/index.html 200
-/ja/tatil/ /tatil/index.html 200
-/zh/tatil /tatil/index.html 200
-/zh/tatil/ /tatil/index.html 200
-/it/finans /finans/index.html 200
-/it/finans/ /finans/index.html 200
-/fr/finans /finans/index.html 200
-/fr/finans/ /finans/index.html 200
-/es/finans /finans/index.html 200
-/es/finans/ /finans/index.html 200
-/ja/finans /finans/index.html 200
-/ja/finans/ /finans/index.html 200
-/zh/finans /finans/index.html 200
-/zh/finans/ /finans/index.html 200
 
-# --- App deep-link shells (physical index.html per route) ---
+# --- App deep-link SPA shells ---
 /profil/* /profil/index.html 200
 /favoriler/* /favoriler/index.html 200
 /gecmis/* /gecmis/index.html 200
