@@ -1,5 +1,8 @@
 import { buildOwnershipCosts } from './cost-engine.js';
-import { buildRecommendationIntelligence } from './recommendation-intelligence.js';
+import {
+  buildRecommendationIntelligence,
+  computeAutoRankingTieBreak
+} from './recommendation-intelligence.js';
 import {
   scoreVehicleMatch,
   computeConfidenceMeta,
@@ -44,7 +47,7 @@ export function recommendVehicles(form, catalog = []) {
 
   const scored = pool
     .map((vehicle) => {
-      const { score, scoreBreakdown } = scoreVehicleMatch(vehicle, form);
+      const { score, scoreBreakdown, scoreRaw } = scoreVehicleMatch(vehicle, form);
       const costs = buildOwnershipCosts(vehicle, form);
       const costSource = costs.source === 'truth' ? 'truth' : 'estimate';
 
@@ -58,9 +61,10 @@ export function recommendVehicles(form, catalog = []) {
         vehiclePrice: vehicle.price
       });
 
-      return {
+      const enriched = {
         ...vehicle,
         score,
+        scoreRaw,
         scoreBreakdown,
         confidence: confidenceMeta.score,
         confidenceMeta,
@@ -70,8 +74,14 @@ export function recommendVehicles(form, catalog = []) {
         matchTier,
         methodology: buildMethodologyPanel()
       };
+      enriched.rankingTieBreak = computeAutoRankingTieBreak(enriched, form);
+      return enriched;
     })
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => {
+      const byScore = (b.score ?? 0) - (a.score ?? 0);
+      if (byScore !== 0) return byScore;
+      return (b.rankingTieBreak ?? 0) - (a.rankingTieBreak ?? 0);
+    });
 
   const top = scored.slice(0, 3);
 

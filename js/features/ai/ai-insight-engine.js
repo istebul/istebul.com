@@ -4,6 +4,12 @@
  */
 import { formatMoney } from '../../core/format.js';
 import { sanitizeAiNarrative } from '../../engines/decision-consultant.js';
+import {
+  isTechnicalPreferenceValue,
+  preferencePhrase,
+  stripTechnicalTokensFromCopy
+} from '../../core/user-facing-text.js';
+import { formatScore, formatScoreOutOf100 } from '../results/results-engine.js';
 
 export const BANNED_WEAK_PHRASES = Object.freeze([
   'bu karar sizin için uygun olabilir',
@@ -85,6 +91,7 @@ export function sanitizeInsightText(text, maxLen = 900) {
     const re = new RegExp(banned.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
     out = out.replace(re, '').trim();
   }
+  out = stripTechnicalTokensFromCopy(out);
   return out.replace(/\s{2,}/g, ' ').trim();
 }
 
@@ -239,7 +246,7 @@ function buildAutoInsight(input) {
   const usage = pickAnswer(a, ['usage']) || '';
   const usageLabel = USAGE_LABELS[usage] || usage || 'kullanım profiliniz';
   const fuel = pickAnswer(a, ['fuel']) || '';
-  const fuelLabel = FUEL_LABELS[fuel] || fuel;
+  const fuelLabel = isTechnicalPreferenceValue(fuel) ? '' : FUEL_LABELS[fuel] || '';
   const km = safeNum(a.km);
   const loan = pickAnswer(a, ['loan']);
   const budgetTry = formatTry(input.costs.budget ?? a.budget, input.locale);
@@ -260,13 +267,14 @@ function buildAutoInsight(input) {
       'kredi yükü ve yıllık kullanım seviyeniz birlikte değerlendirildiğinde'
     : 'peşin/kısıtlı finansman ve kullanım profiliniz birlikte değerlendirildiğinde',
     operatingFocus + ' görünüyor.',
-    decision != null ? `Karar skoru ${decision}/100.` : ''
+    decision != null ? `Karar skoru ${formatScoreOutOf100(decision)}.` : ''
   ].filter(Boolean);
 
+  const fuelPart = fuelLabel ? `${fuelLabel} tercihiniz` : preferencePhrase(fuel, 'fuel');
   const whyParts = [
-    fuelLabel ? `${fuelLabel} tercihiniz` : null,
+    fuelPart || null,
     km ? `yıllık ${km.toLocaleString('tr-TR')} km planı` : null,
-    usageLabel ? `${usageLabel}` : null,
+    usageLabel && !isTechnicalPreferenceValue(usage) ? usageLabel : null,
     budgetTry ? `bütçe bandı ${budgetTry}` : null
   ].filter(Boolean);
 
@@ -857,7 +865,7 @@ export function buildInsightProxyPrompt(input, insight) {
     `Özet taslak: ${base.summary}`,
     `Neden: ${base.why}`,
     `Risk: ${base.risk}`,
-    `Skor: ${i.scores?.decision ?? '—'}/100`,
+    `Skor: ${formatScoreOutOf100(i.scores?.decision)}`,
     'Rakam yazacaksan yalnızca verilen bağlamdaki tutarları kullan; yeni rakam uydurma.'
   ].join('\n');
 }

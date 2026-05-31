@@ -46,6 +46,7 @@ import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
 import { getSupabaseClient } from '../core/supabase.js';
 import { formatMoney, formatNumber } from '../core/format.js';
+import { formatScore, formatScoreOutOf100 } from '../features/results/results-engine.js';
 import {
   getOrCreateDecisionSession,
   updateDecisionSession,
@@ -270,6 +271,7 @@ function renderDecisionDashboard(topResult, formData) {
   if (!topResult) return '';
 
   const score = Number(topResult.score) || 0;
+  const scoreLabel = formatScore(score);
   const fit = getFitLevel(score);
   const risk = getRiskLevel(topResult);
   const costs = buildFiveYearCostBreakdown(topResult);
@@ -292,7 +294,7 @@ function renderDecisionDashboard(topResult, formData) {
       <article class="auto-dash-card auto-dash-score-ring">
         <p class="kicker">Karar skoru</p>
         <div class="auto-dash-gauge" style="--score-pct: ${Math.min(100, Math.max(0, score))}">
-          <strong>${score}<span style="font-size:0.55em;font-weight:600">/100</span></strong>
+          <strong>${escapeHtml(scoreLabel)}<span style="font-size:0.55em;font-weight:600">/100</span></strong>
         </div>
         <div class="auto-dash-badges">
           <span class="auto-dash-badge auto-dash-badge--${fit.tone}">Uygunluk: ${escapeHtml(fit.label)}</span>
@@ -393,7 +395,7 @@ function renderCompactRecommendationCard(vehicle, index) {
         <div class="auto-rec-score-bar" role="meter" aria-valuenow="${vehicle.score}" aria-valuemin="0" aria-valuemax="100">
           <i style="width:${Math.min(100, vehicle.score)}%"></i>
         </div>
-        <strong>${vehicle.score}/100</strong>
+        <strong>${escapeHtml(formatScoreOutOf100(vehicle.score))}</strong>
       </div>
       <div class="auto-rec-actions">
         <button type="button" class="btn primary btn-sm" data-auto-open-detail="${index}">Detaylı Analiz</button>
@@ -592,7 +594,7 @@ function renderAutoResultsInterpretationGuide(topResult, formData = {}) {
       <p class="auto-results-guide-kicker">Sonuç rehberi</p>
       <h3>Sonuçlarınızı nasıl yorumlarsınız?</h3>
       <ol class="auto-results-guide-steps">
-        <li><strong>Uyum skoru ${escapeHtml(String(score))}/100</strong> — Bütçe ve kullanımınıza göre sıralama göstergesidir; satın alma garantisi değildir.</li>
+        <li><strong>Uyum skoru ${escapeHtml(formatScoreOutOf100(score))}</strong> — Bütçe ve kullanımınıza göre sıralama göstergesidir; satın alma garantisi değildir.</li>
         <li><strong>Yaklaşık aylık yük ${escapeHtml(monthly)}</strong> — 12 aylık toplam maliyetin parçasıdır; finansman tercihinize göre değişir.</li>
         <li><strong>Sonraki adım</strong> — Modelleri karşılaştırın; detaylı rapor için Pro seçeneğini değerlendirin.</li>
       </ol>
@@ -643,7 +645,7 @@ function renderResultsLeaderSummary(topResult, { displayCount, totalCount }) {
         <dl class="auto-results-leader-metrics">
           <div>
             <dt>Uyum skoru</dt>
-            <dd><strong>${escapeHtml(String(topResult.score))}</strong>/100</dd>
+            <dd><strong>${escapeHtml(formatScoreOutOf100(topResult.score))}</strong></dd>
           </div>
           <div>
             <dt>Yaklaşık aylık yük</dt>
@@ -2062,7 +2064,7 @@ function renderResults(results) {
 
       <aside class="auto-market-decision">
         <div class="auto-market-score">
-          <strong>${vehicle.score}</strong>
+          <strong>${escapeHtml(formatScore(vehicle.score))}</strong>
           <span>/100 uyum skoru</span>
           <small class="auto-score-hint">Metodolojik sıralama; kesin sonuç değildir</small>
         </div>

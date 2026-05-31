@@ -55,6 +55,39 @@ export function clampScore(value) {
 }
 
 /**
+ * Premium score display — never emit raw JS floats (e.g. 40.199999999999996).
+ * @param {unknown} value
+ * @param {number} [digits=1] max decimal places when not an integer
+ * @returns {string}
+ */
+export function formatScore(value, digits = 1) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  const clamped = Math.min(100, Math.max(0, n));
+  const places = Math.max(0, Math.min(2, Number(digits) || 0));
+  const factor = 10 ** places;
+  const rounded = Math.round(clamped * factor) / factor;
+  const asInt = Math.round(rounded);
+  if (Math.abs(rounded - asInt) < 1e-9) {
+    return String(asInt);
+  }
+  let s = rounded.toFixed(places);
+  if (places > 0) {
+    s = s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+  }
+  return s;
+}
+
+/**
+ * @param {unknown} value
+ * @param {number} [digits]
+ */
+export function formatScoreOutOf100(value, digits = 1) {
+  const core = formatScore(value, digits);
+  return core === '—' ? '—' : `${core}/100`;
+}
+
+/**
  * @param {number} score
  * @param {'auto'|'konut'|'tatil'|'finansman'} type
  */

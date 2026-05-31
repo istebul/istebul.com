@@ -9,6 +9,8 @@ import {
   buildPdfReportData,
   buildRiskItem,
   clampScore,
+  formatScore,
+  formatScoreOutOf100,
   riskLevelToTone,
   safeTrackEvent
 } from '../features/results/results-engine.js';
@@ -137,13 +139,13 @@ function renderAutoResultsV2Html(model) {
       <div class="auto-v2-kpis">
         <article class="auto-v2-kpi auto-v2-kpi--score">
           <span>Karar Skoru</span>
-          <strong>${esc(String(model.decisionScore))}<small>/100</small></strong>
-          <div class="auto-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.decisionScore))}%"></span></div>
+          <strong>${esc(formatScore(model.decisionScore))}<small>/100</small></strong>
+          <div class="auto-v2-bar" aria-hidden="true"><span style="width:${esc(formatScore(model.decisionScore))}%"></span></div>
         </article>
         <article class="auto-v2-kpi auto-v2-kpi--confidence">
           <span>Güven Skoru</span>
-          <strong>${esc(String(model.confidenceScore))}<small>/100</small></strong>
-          <div class="auto-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.confidenceScore))}%"></span></div>
+          <strong>${esc(formatScore(model.confidenceScore))}<small>/100</small></strong>
+          <div class="auto-v2-bar" aria-hidden="true"><span style="width:${esc(formatScore(model.confidenceScore))}%"></span></div>
         </article>
         <article class="auto-v2-kpi auto-v2-kpi--risk">
           <span>Risk Seviyesi</span>
@@ -174,7 +176,7 @@ function renderAutoResultsV2Html(model) {
             <article class="auto-v2-alt-card">
               <h4>${esc(a.title)}</h4>
               <p>${esc(a.reason || 'Alternatif senaryo: skor/maliyet dengesi için değerlendirin.')}</p>
-              <span class="auto-v2-alt-meta">${esc(String(a.score || '—'))}/100</span>
+              <span class="auto-v2-alt-meta">${esc(formatScoreOutOf100(a.score))}</span>
             </article>
           `).join('')}
         </div>
@@ -291,7 +293,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     alternatives: altCards.map((a) => ({
       title: a.title,
       description: a.reason || '',
-      meta: a.score ? `${a.score}/100` : ''
+      meta: a.score ? formatScoreOutOf100(a.score) : ''
     })),
     riskAnalysis: intel.riskAnalysis,
     scoreFactors: intel.scoreFactors,

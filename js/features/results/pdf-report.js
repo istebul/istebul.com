@@ -3,6 +3,7 @@
  * Designed so a server-side PDF service can reuse buildReportHtml(pdfReportData) later.
  */
 import { escapeHtml } from '../../core/security.js';
+import { formatScoreOutOf100 } from './results-engine.js';
 import { buildPdfInsight, buildProInsight, normalizeInsightInput } from '../ai/ai-insight-engine.js';
 import { recordPdfReportHistory } from '../account/dashboard-v2-store.js';
 
@@ -44,9 +45,7 @@ export function formatReportMoney(value) {
  * @param {string} [label]
  */
 export function formatReportScore(value, label = '') {
-  const n = Number(value);
-  const score = Number.isFinite(n) ? Math.min(100, Math.max(0, Math.round(n))) : '—';
-  const base = `${score}/100`;
+  const base = formatScoreOutOf100(value);
   return label ? `${base} (${sanitizeReportText(label)})` : base;
 }
 
