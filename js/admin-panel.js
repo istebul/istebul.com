@@ -55,6 +55,12 @@ import { initFinanceAdmin } from './admin/finance-admin.js';
 import { loadPaymentsAdminPage } from './admin/payments-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
+import {
+  bindPartnerApplicationsAdminUi,
+  getPartnerApplicationFormMarkup,
+  handlePartnerApplicationAdminAction,
+  loadPartnerApplications as loadPartnerApplicationsPage
+} from './admin/partner-applications-admin.js';
 import { renderLeadAiSummaryHtml } from './features/admin/lead-ai-intelligence.js';
 import { fetchActivePartnerPool } from './features/partner/partner-pool.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
@@ -152,6 +158,7 @@ async function showApp() {
   const topAvatar = document.getElementById('admin-topbar-avatar');
   if (topEmail) topEmail.textContent = email;
   if (topAvatar) topAvatar.textContent = email[0]?.toUpperCase() || 'A';
+  initPartnerApplicationsShell();
   loadDashboard();
   loadSettings();
   loadAnnouncements();
@@ -1869,12 +1876,13 @@ let adminCampaigns = [];
 let adminCampaignsHasKey = false;
 
 async function readCampaignsFromSettings() {
-  const { data, error } = await sb
-    .from('site_settings')
-    .select('key,value')
-    .eq('key', CAMPAIGNS_SETTING_KEY)
-    .maybeSingle();
-  if (error) throw error;
+  const res = await fetchAdminTable(sb, {
+    table: 'site_settings',
+    select: 'key,value',
+    limit: 500,
+    direct: () => sb.from('site_settings').select('key,value').eq('key', CAMPAIGNS_SETTING_KEY)
+  });
+  const data = (res.data || []).find((row) => row.key === CAMPAIGNS_SETTING_KEY);
   if (!data?.value) {
     return { hasKey: false, list: [] };
   }
@@ -2200,23 +2208,33 @@ async function loadAutoAnalytics() {
   let events = [];
   let leadRows = [];
 
-  try {
-    [events, leadRows] = await Promise.all([
-      adminList(sb, {
-        table: 'auto_events',
-        order: { column: 'created_at', ascending: false },
-        limit: 500
-      }),
-      adminList(sb, {
-        table: 'auto_leads',
-        select: 'status, follow_up_at, follow_up_done, partner_status, estimated_revenue, actual_revenue',
-        limit: 1000
-      })
-    ]);
-  } catch (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
+  const [eventsRes, leadsRes] = await Promise.all([
+    fetchAdminTable(sb, {
+      table: 'auto_events',
+      limit: 500,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb.from('auto_events').select('*').order('created_at', { ascending: false }).limit(500)
+    }),
+    fetchAdminTable(sb, {
+      table: 'auto_leads',
+      select: 'status, follow_up_at, follow_up_done, partner_status, estimated_revenue, actual_revenue',
+      limit: 1000,
+      direct: (expr) =>
+        sb
+          .from('auto_leads')
+          .select(expr || 'status, follow_up_at, follow_up_done, partner_status, estimated_revenue, actual_revenue')
+          .limit(1000)
+    })
+  ]);
+
+  if (eventsRes.error && !(eventsRes.data || []).length) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(eventsRes.error.message || eventsRes.error)}</p>`;
     return;
   }
+
+  events = eventsRes.data || [];
+  leadRows = leadsRes.data || [];
 
   const counts = events.reduce((acc, event) => {
     acc[event.event_name] = (acc[event.event_name] || 0) + 1;
@@ -2996,100 +3014,26 @@ async function loadPartnerEndpoints() {
   `;
 }
 
+const partnerApplicationsCtx = () => ({
+  sb,
+  adminAction,
+  toast,
+  escapeHtml,
+  safeAttr,
+  renderAdminDataSourceNotices
+});
+
+function initPartnerApplicationsShell() {
+  const shell = document.getElementById('partner-applications-shell');
+  if (!shell || shell.dataset.ready === '1') return;
+  shell.innerHTML = getPartnerApplicationFormMarkup();
+  shell.dataset.ready = '1';
+  bindPartnerApplicationsAdminUi(partnerApplicationsCtx());
+}
+
 async function loadPartnerApplications() {
-  const el = document.getElementById('partner-applications-list');
-  if (!el) return;
-
-  const res = await fetchAdminTable(sb, {
-    table: 'partner_applications',
-    select: '*',
-    limit: 200,
-    order: { column: 'created_at', ascending: false },
-    direct: (selectExpr) => {
-      const cols = selectExpr || '*';
-      return sb
-        .from('partner_applications')
-        .select(cols)
-        .order('created_at', { ascending: false })
-        .limit(200);
-    }
-  });
-
-  const partnerAppBatch = [res];
-
-  if (res.error && !(res.data || []).length) {
-    el.innerHTML = `${renderAdminDataSourceNotices(partnerAppBatch)}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p><p class="text-muted-sm">Migration: <code>supabase db push</code> (20260609_partner_applications_schema_repair.sql)</p>`;
-    return;
-  }
-
-  const data = res.data || [];
-  if (!data.length) {
-    el.innerHTML = `${renderAdminDataSourceNotices(partnerAppBatch)}<p class="empty">Başvuru yok.</p>`;
-    return;
-  }
-
-  const crmOptions = partnerCrmStatusOptions();
-  const pipelineBoard = renderPartnerPipelineBoardHtml(
-    data.map((row) => ({ ...row, status: normalizePartnerCrmStatus(row.status) }))
-  );
-
-  el.innerHTML = `
-    ${renderAdminDataSourceNotices(partnerAppBatch)}
-    ${pipelineBoard}
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Firma</th>
-          <th>İletişim</th>
-          <th>Kategori</th>
-          <th>Webhook</th>
-          <th>Durum</th>
-          <th>Tarih</th>
-          <th>Plan</th>
-          <th>Skor</th>
-          <th>Hız</th>
-          <th>İşlem</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.map((row) => {
-          const velocity = computeOnboardingVelocity(row);
-          const dealScore = scorePartnerApplication(row);
-          const nextAction = recommendNextSalesAction(row);
-          return `
-          <tr>
-            <td><strong>${escapeHtml(row.company_name)}</strong><br><small>${escapeHtml(row.contact_name)}</small><br><small class="text-muted">${escapeHtml(nextAction.action)}</small></td>
-            <td>${escapeHtml(row.phone)}<br><small>${escapeHtml(row.email)}</small></td>
-            <td>${escapeHtml(row.category)}${row.city ? `<br><small>${escapeHtml(row.city)}</small>` : ''}</td>
-            <td>${row.webhook_ready ? 'Hazır' : 'Manuel'}${row.webhook_url_draft != null && row.webhook_url_draft !== '' ? `<br><small title="${safeAttr(row.webhook_url_draft)}">Taslak URL</small>` : ''}</td>
-            <td>
-              <select class="status-select" data-action="update-partner-application-status" data-id="${safeAttr(row.id)}"
-                data-previous-status="${safeAttr(normalizePartnerCrmStatus(row.status))}">
-                ${crmOptions.map(({ value, label }) => {
-                  const current = normalizePartnerCrmStatus(row.status);
-                  return `<option value="${value}" ${current === value ? 'selected' : ''}>${escapeHtml(label)}</option>`;
-                }).join('')}
-              </select>
-              <small class="text-muted">P(win) ${Math.round(getPartnerCrmWinProbability(row.status) * 100)}%</small>
-            </td>
-            <td>${formatShortDate(row.created_at)}</td>
-            <td><small>${escapeHtml(row.billing_plan != null ? row.billing_plan : 'pilot')}</small>${row.utm_source ? `<br><small>utm:${escapeHtml(row.utm_source)}</small>` : ''}</td>
-            <td><span class="badge badge-blue">${dealScore}</span></td>
-            <td><span class="badge ${velocityBadgeClass(velocity)} ib-sales-velocity-badge">${escapeHtml(velocity.label)}</span><br><small>${velocity.daysSinceApply}g · %${velocity.progressPct}</small></td>
-            <td class="table-actions">
-              <select class="ib-sales-touch-select" data-action="log-partner-sales-touch" data-id="${safeAttr(row.id)}" data-stage="${safeAttr(row.status || '')}" data-tier="${safeAttr(row.billing_plan || '')}">
-                <option value="">Satış dokunuşu</option>
-                ${SALES_TOUCH_TYPES.map((t) => `<option value="${t.id}">${escapeHtml(t.label)}</option>`).join('')}
-              </select>
-              ${row.onboarding_token ? `<a class="btn btn-ghost btn-sm" href="/partner-basvuru.html?token=${encodeURIComponent(row.onboarding_token)}&step=2" target="_blank" rel="noopener">Onboarding</a>` : ''}
-              ${row.partner_endpoint_id == null || row.partner_endpoint_id === '' ? `<button type="button" class="btn btn-primary btn-sm" data-action="provision-partner-application" data-id="${safeAttr(row.id)}">Endpoint oluştur</button>` : '<span class="badge badge-green">Endpoint var</span>'}
-            </td>
-          </tr>
-        `;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
+  initPartnerApplicationsShell();
+  await loadPartnerApplicationsPage(partnerApplicationsCtx());
 }
 
 async function loadPartnerDispatchLogs() {
@@ -3235,22 +3179,32 @@ async function loadPartnerOpsFunnel() {
   if (!root) return;
 
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await sb
-    .from('analytics_events')
-    .select('event_name')
-    .gte('created_at', since)
-    .in('event_name', [
-      'partner_landing_view',
-      'partner_application_submit',
-      'partner_onboarding_view',
-      'partner_webhook_draft_saved',
-      'partner_onboarding_complete',
-      'partner_dispatch_success',
-      'partner_dispatch_failed'
-    ])
-    .limit(SCALE_LIMITS.admin.partnerFunnelRowLimit);
+  const funnelEventNames = [
+    'partner_landing_view',
+    'partner_application_submit',
+    'partner_onboarding_view',
+    'partner_webhook_draft_saved',
+    'partner_onboarding_complete',
+    'partner_dispatch_success',
+    'partner_dispatch_failed'
+  ];
+  const res = await fetchAdminTable(sb, {
+    table: 'analytics_events',
+    select: 'event_name, created_at',
+    limit: SCALE_LIMITS.admin.partnerFunnelRowLimit,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb
+        .from('analytics_events')
+        .select('event_name, created_at')
+        .gte('created_at', since)
+        .in('event_name', funnelEventNames)
+        .limit(SCALE_LIMITS.admin.partnerFunnelRowLimit)
+  });
 
-  if (error || !data?.length) {
+  const data = (res.data || []).filter((row) => funnelEventNames.includes(row.event_name));
+
+  if ((res.error && !data.length) || !data.length) {
     root.hidden = true;
     return;
   }
@@ -3360,15 +3314,14 @@ async function renderMoatArchitectureStrip(leads = [], feedback = [], signals = 
   if (!root) return;
 
   let productFeedback = [];
-  try {
-    productFeedback = await adminList(sb, {
-      table: 'product_feedback',
-      order: { column: 'created_at', ascending: false },
-      limit: 500
-    });
-  } catch {
-    /* migration pending */
-  }
+  const productRes = await fetchAdminTable(sb, {
+    table: 'product_feedback',
+    limit: 500,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb.from('product_feedback').select('*').order('created_at', { ascending: false }).limit(500)
+  });
+  productFeedback = productRes.data || [];
 
   const useful = productFeedback.filter((r) => r.useful_rating === 'yes').length;
   const metrics = buildMoatMetricsFromAdminData(leads, feedback, signals, {
@@ -3385,25 +3338,27 @@ async function renderMoatIntelligenceStrip(leads = []) {
 
   let feedback = [];
   let signals = [];
-  try {
-    feedback = await adminList(sb, {
-      table: 'decision_feedback',
-      order: { column: 'created_at', ascending: false },
-      limit: 500
-    });
-  } catch {
-    /* migration may be pending */
-  }
+  const feedbackRes = await fetchAdminTable(sb, {
+    table: 'decision_feedback',
+    limit: 500,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb.from('decision_feedback').select('*').order('created_at', { ascending: false }).limit(500)
+  });
+  feedback = feedbackRes.data || [];
 
-  try {
-    signals = await adminList(sb, {
-      table: 'outcome_signal_events',
-      order: { column: 'created_at', ascending: false },
-      limit: 2000
-    });
-  } catch {
-    /* migration may be pending */
-  }
+  const signalsRes = await fetchAdminTable(sb, {
+    table: 'outcome_signal_events',
+    limit: 2000,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb
+        .from('outcome_signal_events')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(2000)
+  });
+  signals = signalsRes.data || [];
 
   const dash = computeMoatDashboard(leads, feedback, signals);
   const helpful = dash.feedbackCounts.helpful || 0;
@@ -3487,21 +3442,25 @@ async function loadAutoLeads() {
 
   let data = [];
 
-  try {
-    data = await adminList(sb, {
-      table: 'auto_leads',
-      order: { column: 'created_at', ascending: false },
-      limit: 1000
-    });
-    data.sort((a, b) => {
+  const res = await fetchAdminTable(sb, {
+    table: 'auto_leads',
+    limit: 1000,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb.from('auto_leads').select('*').order('created_at', { ascending: false }).limit(1000)
+  });
+
+  if (res.error && !(res.data || []).length) {
+    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(res.error.message || res.error)}</p>`;
+    return;
+  }
+
+  data = res.data || [];
+  data.sort((a, b) => {
       const scoreDiff = (Number(b.lead_score) || 0) - (Number(a.lead_score) || 0);
       if (scoreDiff !== 0) return scoreDiff;
       return new Date(b.created_at || 0) - new Date(a.created_at || 0);
     });
-  } catch (error) {
-    el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
-    return;
-  }
 
   if (!data?.length) {
     el.innerHTML = '<p class="empty">Henüz lead yok.</p>';
@@ -4410,6 +4369,12 @@ function bindAdminPanelEvents() {
       return;
     }
 
+    if (
+      await handlePartnerApplicationAdminAction(partnerApplicationsCtx(), action, el)
+    ) {
+      return;
+    }
+
     if (action === 'edit-partner-endpoint') {
       editPartnerEndpoint(id, el.dataset.name, el.dataset.webhook);
       return;
@@ -4418,16 +4383,18 @@ function bindAdminPanelEvents() {
     if (action === 'update-partner-application-status') {
       const prev = el.dataset.previousStatus || '';
       const next = el.value;
-      adminAction({
-        action: 'update',
-        table: 'partner_applications',
-        id,
-        values: { status: next }
-      }).then(() => {
+      try {
+        await adminAction({
+          action: 'updatePartnerApplication',
+          id,
+          values: { status: next }
+        });
         logPartnerCrmStageChange(prev, next, { application_id: id, force: true });
         toast('CRM aşaması güncellendi', 'success');
-        loadPartnerApplications();
-      });
+        await loadPartnerApplications();
+      } catch (error) {
+        toast(error.message || 'Durum güncellenemedi', 'error');
+      }
       return;
     }
 

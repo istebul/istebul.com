@@ -26,7 +26,7 @@ describe('admin-query', () => {
     );
   });
 
-  it('fetchAdminTable always attempts admin-action after direct failure', () => {
+  it('fetchAdminTable prefers admin-action before direct fallback', () => {
     const source = fs.readFileSync(
       path.join(process.cwd(), 'js/admin/admin-query.js'),
       'utf8'
@@ -36,7 +36,22 @@ describe('admin-query', () => {
       false,
       'must not skip admin-action fallback on permission errors'
     );
+    assert.ok(source.includes('if (!preferDirect)'));
     assert.ok(source.includes('withAdminFetchTimeout'));
+  });
+
+  it('treats direct fallback after admin-action miss as info note', () => {
+    const batch = [
+      {
+        table: 'subscriptions',
+        source: 'direct',
+        adminError: 'Invalid action or table',
+        data: [{ status: 'active' }]
+      }
+    ];
+    assert.equal(collectAdminWarnings(batch).length, 0);
+    assert.equal(collectAdminFallbackNotes(batch).length, 1);
+    assert.match(collectAdminFallbackNotes(batch)[0], /doğrudan Supabase/);
   });
 
   it('base partner applications select excludes partner_endpoint_id', () => {
@@ -49,13 +64,11 @@ describe('admin-query', () => {
       {
         table: 'subscriptions',
         source: 'admin-action',
-        directError: 'permission denied',
         data: [{ status: 'active' }]
       }
     ];
     assert.equal(collectAdminWarnings(batch).length, 0);
-    assert.equal(collectAdminFallbackNotes(batch).length, 1);
-    assert.match(collectAdminFallbackNotes(batch)[0], /admin-action/);
+    assert.equal(collectAdminFallbackNotes(batch).length, 0);
   });
 
   it('warns when lifecycle tables missing and no rows loaded', () => {
