@@ -20,13 +20,13 @@
 /favicon.ico /favicon.ico     200
 
 # --- Standalone HTML (not SPA shell) ---
-# admin-panel.html MUST be first: CF strips .html to extension-less /admin-panel;
-# a 301 on /admin-panel before this rule causes an infinite redirect loop.
+# Admin panel: use 200 rewrites only — never 301 between /admin-panel and /admin-panel.html.
+# CF Pages strips .html to extension-less paths; 301 aliases cause infinite redirect loops.
 /admin-panel.html /admin-panel.html 200
-/admin-panel /admin-panel.html 301
-/admin-panel/ /admin-panel.html 301
-/admin /admin-panel.html 301
-/admin/ /admin-panel.html 301
+/admin-panel /admin-panel.html 200
+/admin-panel/ /admin-panel.html 200
+/admin /admin-panel.html 200
+/admin/ /admin-panel.html 200
 /hakkimizda.html /hakkimizda.html 200
 /iletisim.html /iletisim.html 200
 /gizlilik.html /gizlilik.html 200
