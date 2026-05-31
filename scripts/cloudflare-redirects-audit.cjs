@@ -37,18 +37,20 @@ const staticRules = rules.filter((r) => !isDynamic(r.source));
 
 const infiniteLoops = rules.filter((r) => r.source === r.destination);
 
-const adminExpected = [
-  '/admin-panel /admin-panel.html 200',
-  '/admin /admin-panel.html 200',
-  '/admin/ /admin-panel.html 200'
-];
+const adminRedirectRules = rules.filter((r) =>
+  /^\/admin/.test(r.source) || /admin-panel/.test(r.source) || /admin-panel/.test(r.destination)
+);
+if (adminRedirectRules.length) {
+  errors.push(
+    `admin must not use _redirects (serve dist/admin/index.html statically): ${adminRedirectRules
+      .map((r) => r.raw)
+      .join('; ')}`
+  );
+}
 
-for (let i = 0; i < adminExpected.length; i++) {
-  if (rules[i]?.raw !== adminExpected[i]) {
-    errors.push(
-      `admin rules must be first 3 active rules; expected "${adminExpected[i]}", got "${rules[i]?.raw || '(missing)'}"`
-    );
-  }
+const adminIndexPath = path.join(root, 'dist', 'admin', 'index.html');
+if (!fs.existsSync(adminIndexPath) || fs.statSync(adminIndexPath).size === 0) {
+  errors.push('dist/admin/index.html missing — run npm run build');
 }
 
 const spaIdx = rules.findIndex((r) => r.source === '/*');

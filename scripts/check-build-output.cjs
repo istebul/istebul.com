@@ -17,7 +17,10 @@ const required = [
   'dist/rehber/ikinci-el-rehberi/index.html',
   'dist/karar-asistani/index.html',
   'dist/css/seo-landing.css',
-  'dist/js/runtime/route-bootstrap-head.js'
+  'dist/js/runtime/route-bootstrap-head.js',
+  'dist/admin/index.html',
+  'dist/admin-panel.html',
+  'dist/js/admin-panel.js'
 ];
 
 let failed = false;

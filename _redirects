@@ -1,10 +1,6 @@
 # Cloudflare Pages routing — keep dynamic rules under 100 (CF limit).
-# Static files (/*.html, /auto/index.html, …) are served directly; no self-rewrite loops.
-
-# --- Admin (must stay first) ---
-/admin-panel /admin-panel.html 200
-/admin /admin-panel.html 200
-/admin/ /admin-panel.html 200
+# Static files (/*.html, /auto/index.html, /admin/index.html, …) are served directly.
+# Admin panel: dist/admin/index.html — no _redirects rules required.
 
 # --- Static asset passthrough (before SPA fallback) ---
 /css/*       /css/:splat       200

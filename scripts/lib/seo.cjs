@@ -1010,6 +1010,7 @@ function generateRobots(distDir, site) {
 Allow: /
 Disallow: /admin-panel
 Disallow: /admin-panel.html
+Disallow: /admin/
 Disallow: /profil/
 Disallow: /favoriler/
 Disallow: /gecmis/

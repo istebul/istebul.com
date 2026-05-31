@@ -235,6 +235,10 @@ pendingStaticFiles.forEach(({ file, source }) => {
   }
 
   writeFile(file, minifyHtml(html));
+
+  if (file === 'admin-panel.html') {
+    writeFile('admin/index.html', minifyHtml(html));
+  }
 });
 
 esbuild.buildSync({
