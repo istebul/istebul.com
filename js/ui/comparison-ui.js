@@ -224,14 +224,14 @@ export class ComparisonUI {
 
 }
 
-let installed = false;
+const installedClasses = new WeakSet();
 
 export function installComparisonUI(UIManagerClass) {
-    if (installed) return;
-    installed = true;
+    if (!UIManagerClass || installedClasses.has(UIManagerClass)) return;
+    installedClasses.add(UIManagerClass);
 
     for (const name of Object.getOwnPropertyNames(ComparisonUI.prototype)) {
-        if (name == 'constructor') continue;
+        if (name === 'constructor') continue;
         UIManagerClass.prototype[name] = ComparisonUI.prototype[name];
     }
 }

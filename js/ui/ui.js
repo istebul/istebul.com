@@ -1214,4 +1214,8 @@ export class UIManager {
     }
 }
 
+installAssistantUI(UIManager);
+installListingsUI(UIManager);
+installComparisonUI(UIManager);
+
 export default UIManager;

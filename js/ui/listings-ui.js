@@ -86,11 +86,11 @@ export class ListingsUI {
 
 }
 
-let installed = false;
+const installedClasses = new WeakSet();
 
 export function installListingsUI(UIManagerClass) {
-    if (installed) return;
-    installed = true;
+    if (!UIManagerClass || installedClasses.has(UIManagerClass)) return;
+    installedClasses.add(UIManagerClass);
 
     for (const name of Object.getOwnPropertyNames(ListingsUI.prototype)) {
         if (name === 'constructor') continue;

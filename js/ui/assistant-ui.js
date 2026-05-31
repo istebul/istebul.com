@@ -712,11 +712,11 @@ export class AssistantUI {
 
 }
 
-let installed = false;
+const installedClasses = new WeakSet();
 
 export function installAssistantUI(UIManagerClass) {
-    if (installed) return;
-    installed = true;
+    if (!UIManagerClass || installedClasses.has(UIManagerClass)) return;
+    installedClasses.add(UIManagerClass);
 
     for (const name of Object.getOwnPropertyNames(AssistantUI.prototype)) {
         if (name === 'constructor') continue;
