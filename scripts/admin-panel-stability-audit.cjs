@@ -49,6 +49,12 @@ if (adminQuery.includes('if (!isSchemaMissingError(res.error))')) {
 if (!adminQuery.includes('withAdminFetchTimeout')) {
   fail('admin-query must timeout direct Supabase reads to avoid stuck loading');
 }
+if (!adminQuery.includes('preferDirect')) {
+  fail('admin-query must support preferDirect option');
+}
+if (!adminQuery.includes('fetchAdminRowById')) {
+  fail('admin-query must export fetchAdminRowById');
+}
 if (!adminQuery.includes('collectAdminFallbackNotes')) {
   fail('admin-query must separate admin-action fallback info from critical warnings');
 }

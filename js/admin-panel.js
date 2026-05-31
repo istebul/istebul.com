@@ -20,6 +20,7 @@ import {
 import { SCALE_LIMITS } from './core/scale-limits.js';
 import {
   fetchAdminTable,
+  fetchAdminRowById,
   renderAdminDataSourceNotices
 } from './admin/admin-query.js';
 import {
@@ -1585,28 +1586,73 @@ async function loadDashboard() {
   };
 
   try {
-    const [u, l, a, f, p, campaignRow, leadsRes] = await Promise.all([
-      sb.from('profiles').select('*', { count: 'exact', head: true }),
-      sb.from('listings').select('*', { count: 'exact', head: true }),
-      sb.from('announcements').select('*', { count: 'exact', head: true }).eq('is_active', true),
-      sb.from('faqs').select('*', { count: 'exact', head: true }),
-      sb.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', true),
-      sb.from('site_settings').select('value').eq('key', 'public_campaigns').maybeSingle(),
-      sb.from('auto_leads').select('status, created_at').limit(800)
-    ]);
+    const [profilesRes, listingsRes, annRes, faqsRes, postsRes, settingsRes, leadsRes] =
+      await Promise.all([
+        fetchAdminTable(sb, {
+          table: 'profiles',
+          select: 'id',
+          limit: 5000,
+          direct: () => sb.from('profiles').select('id').limit(5000)
+        }),
+        fetchAdminTable(sb, {
+          table: 'listings',
+          select: 'id',
+          limit: 5000,
+          direct: () => sb.from('listings').select('id').limit(5000)
+        }),
+        fetchAdminTable(sb, {
+          table: 'announcements',
+          select: 'id, is_active',
+          limit: 2000,
+          direct: () => sb.from('announcements').select('id, is_active').limit(2000)
+        }),
+        fetchAdminTable(sb, {
+          table: 'faqs',
+          select: 'id',
+          limit: 2000,
+          direct: () => sb.from('faqs').select('id').limit(2000)
+        }),
+        fetchAdminTable(sb, {
+          table: 'posts',
+          select: 'id, is_published',
+          limit: 2000,
+          direct: () => sb.from('posts').select('id, is_published').limit(2000)
+        }),
+        fetchAdminTable(sb, {
+          table: 'site_settings',
+          select: 'key, value',
+          limit: 500,
+          direct: () => sb.from('site_settings').select('key, value').limit(500)
+        }),
+        fetchAdminTable(sb, {
+          table: 'auto_leads',
+          select: 'status, created_at',
+          limit: 5000,
+          direct: () => sb.from('auto_leads').select('status, created_at').limit(5000)
+        })
+      ]);
 
-    setStat('stat-users', u.count ?? '—');
-    setStat('stat-listings', l.count ?? '—');
-    setStat('stat-ann', a.count ?? '—');
-    setStat('stat-faqs', f.count ?? '—');
-    setStat('stat-posts', p.count ?? '—');
+    setStat('stat-users', profilesRes.data?.length ?? '—');
+    setStat('stat-listings', listingsRes.data?.length ?? '—');
+    setStat(
+      'stat-ann',
+      (annRes.data || []).filter((row) => row.is_active).length || '—'
+    );
+    setStat('stat-faqs', faqsRes.data?.length ?? '—');
+    setStat(
+      'stat-posts',
+      (postsRes.data || []).filter((row) => row.is_published).length || '—'
+    );
 
     const statCampaigns = document.getElementById('stat-campaigns');
     if (statCampaigns) {
       let activeCampaigns = DEFAULT_CAMPAIGNS.length;
-      if (campaignRow.data?.value) {
+      const campaignSetting = (settingsRes.data || []).find(
+        (row) => row.key === 'public_campaigns'
+      );
+      if (campaignSetting?.value) {
         try {
-          const parsed = JSON.parse(campaignRow.data.value);
+          const parsed = JSON.parse(campaignSetting.value);
           activeCampaigns = Array.isArray(parsed)
             ? parsed.filter((c) => c?.is_active !== false).length
             : 0;
@@ -1643,8 +1689,13 @@ const KEYS = ['phone','email','address','instagram','twitter','facebook','linked
 const BOOLEAN_SETTING_KEYS = ['maintenance','home_category_auto_enabled','home_category_konut_enabled','home_category_tatil_enabled','home_category_finans_enabled','home_category_sigorta_enabled','home_category_kasko_enabled'];
 
 async function loadSettings() {
-  const { data } = await sb.from('site_settings').select('*');
-  if (!data) return;
+  const res = await fetchAdminTable(sb, {
+    table: 'site_settings',
+    limit: 500,
+    direct: () => sb.from('site_settings').select('*')
+  });
+  const data = res.data;
+  if (!data?.length) return;
   const map = {};
   data.forEach(r => map[r.key] = r.value);
   KEYS.forEach(f => {
@@ -3246,20 +3297,28 @@ function renderPartnerStatusBadgeHtml(status) {
 
 async function fetchLeadDispatchLogs(leadId) {
   if (!leadId) return [];
-  const { data, error } = await sb
-    .from('partner_lead_dispatch_logs')
-    .select('*')
-    .eq('lead_id', leadId)
-    .order('created_at', { ascending: false })
-    .limit(10);
-  if (error) return [];
-  return data || [];
+  const res = await fetchAdminTable(sb, {
+    table: 'partner_lead_dispatch_logs',
+    limit: 500,
+    order: { column: 'created_at', ascending: false },
+    direct: () =>
+      sb
+        .from('partner_lead_dispatch_logs')
+        .select('*')
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false })
+        .limit(10)
+  });
+  return (res.data || []).filter((row) => row.lead_id === leadId).slice(0, 10);
 }
 
 async function refreshOpenLeadDrawer() {
   if (!activeDrawerLeadId) return;
-  const { data, error } = await sb.from('auto_leads').select('*').eq('id', activeDrawerLeadId).maybeSingle();
-  if (!error && data) await openLeadDrawer(data);
+  const res = await fetchAdminRowById(sb, {
+    table: 'auto_leads',
+    id: activeDrawerLeadId
+  });
+  if (res.data) await openLeadDrawer(res.data);
 }
 
 function formatFollowUpLabel(lead) {

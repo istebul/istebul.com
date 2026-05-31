@@ -20,6 +20,10 @@
 /favicon.ico /favicon.ico     200
 
 # --- Standalone HTML (not SPA shell) ---
+/admin-panel /admin-panel.html 301
+/admin-panel/ /admin-panel.html 301
+/admin /admin-panel.html 301
+/admin/ /admin-panel.html 301
 /admin-panel.html /admin-panel.html 200
 /hakkimizda.html /hakkimizda.html 200
 /iletisim.html /iletisim.html 200

@@ -297,7 +297,7 @@ Deno.serve(async (req) => {
         posts: ["created_at"],
         listings: ["created_at"],
         profiles: ["created_at"],
-        partner_endpoints: ["created_at"],
+        partner_endpoints: ["created_at", "priority_weight"],
         partner_applications: ["created_at"],
         partner_lead_dispatch_logs: ["created_at"],
         operational_events: ["created_at", "severity"],

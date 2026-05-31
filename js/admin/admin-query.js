@@ -1,5 +1,5 @@
 /**
- * Resilient admin data access — direct Supabase + admin-action fallback.
+ * Resilient admin data access — admin-action first, direct Supabase fallback.
  */
 import { adminList } from '../core/admin-client.js';
 
@@ -50,86 +50,117 @@ export const PARTNER_APPLICATIONS_BASE_SELECT =
 
 /**
  * @param {import('@supabase/supabase-js').SupabaseClient} sb
- * @param {{ table: string, select?: string, limit?: number, order?: { column: string, ascending?: boolean }, direct?: () => Promise<{ data?: unknown[], error?: { message?: string } | null }> }} options
+ * @param {{ table: string, select?: string, limit?: number, order?: { column: string, ascending?: boolean }, direct?: (selectExpr?: string) => Promise<{ data?: unknown[] | unknown | null, error?: { message?: string } | null }>, preferDirect?: boolean }} options
  */
 export async function fetchAdminTable(sb, options) {
-  const { table, select, limit = 500, order, direct } = options;
-  let directError = null;
+  const { table, select, limit = 500, order, direct, preferDirect = false } = options;
+  let adminError = null;
 
-  if (typeof direct === 'function') {
-    const runDirect = (expr) => {
-      if (expr === undefined || expr === null) {
-        return direct();
-      }
-      return direct(expr);
-    };
-
-    let res;
+  if (!preferDirect) {
     try {
-      res =
-        select && select !== '*'
-          ? await withAdminFetchTimeout(runDirect(select))
-          : await withAdminFetchTimeout(runDirect());
-    } catch (timeoutErr) {
-      directError = timeoutErr;
-      res = { data: [], error: timeoutErr };
-    }
-
-    if (res?.error && isMissingColumnInSelect(res.error)) {
-      res = await withAdminFetchTimeout(runDirect('*'));
-    }
-    if (res?.error && isMissingColumnInSelect(res.error) && table === 'partner_applications') {
-      res = await withAdminFetchTimeout(runDirect(PARTNER_APPLICATIONS_BASE_SELECT));
-    }
-    if (res && !res.error) {
+      const data = await adminList(sb, { table, select, limit, order });
       return {
-        data: res.data || [],
+        data: data || [],
         error: null,
-        source: 'direct',
+        source: 'admin-action',
         table
       };
+    } catch (err) {
+      adminError = err;
     }
-    directError = res?.error || directError;
   }
 
-  const fallbackSelect = select && select !== '*' ? '*' : select;
-
-  try {
-    const data = await adminList(sb, { table, select: fallbackSelect, limit, order });
-    const directErrObj =
-      directError && typeof directError === 'object'
-        ? directError
-        : directError
-          ? { message: String(directError) }
-          : null;
-    return {
-      data,
-      error: null,
-      source: 'admin-action',
-      table,
-      directError: directErrObj?.message || null,
-      schemaMissing: isSchemaMissingError(directErrObj)
-    };
-  } catch (adminError) {
+  if (typeof direct !== 'function') {
     return {
       data: [],
-      error: directError || adminError,
+      error: adminError,
       source: 'failed',
       table,
-      schemaMissing: isSchemaMissingError(directError)
+      schemaMissing: isSchemaMissingError(adminError)
     };
   }
+
+  const runDirect = (expr) => {
+    if (expr === undefined || expr === null) {
+      return direct();
+    }
+    return direct(expr);
+  };
+
+  let directError = adminError;
+  let res;
+  try {
+    res =
+      select && select !== '*'
+        ? await withAdminFetchTimeout(runDirect(select))
+        : await withAdminFetchTimeout(runDirect());
+  } catch (timeoutErr) {
+    directError = timeoutErr;
+    res = { data: [], error: timeoutErr };
+  }
+
+  if (res?.error && isMissingColumnInSelect(res.error)) {
+    res = await withAdminFetchTimeout(runDirect('*'));
+  }
+  if (res?.error && isMissingColumnInSelect(res.error) && table === 'partner_applications') {
+    res = await withAdminFetchTimeout(runDirect(PARTNER_APPLICATIONS_BASE_SELECT));
+  }
+
+  if (res && !res.error) {
+    const rows = Array.isArray(res.data) ? res.data : res.data ? [res.data] : [];
+    return {
+      data: rows,
+      error: null,
+      source: 'direct',
+      table,
+      adminError: adminError?.message || null
+    };
+  }
+
+  directError = res?.error || directError;
+
+  return {
+    data: [],
+    error: directError || adminError,
+    source: 'failed',
+    table,
+    schemaMissing: isSchemaMissingError(directError || adminError),
+    adminError: adminError?.message || null,
+    directError: directError?.message || String(directError || '')
+  };
+}
+
+/**
+ * @param {import('@supabase/supabase-js').SupabaseClient} sb
+ * @param {{ table: string, id: string, select?: string, limit?: number }} options
+ */
+export async function fetchAdminRowById(sb, options) {
+  const { table, id, select = '*', limit = 5000 } = options;
+  const res = await fetchAdminTable(sb, {
+    table,
+    select,
+    limit,
+    direct: (expr) =>
+      sb.from(table).select(expr || select).eq('id', id).maybeSingle()
+  });
+  if (res.error) {
+    return { data: null, error: res.error, source: res.source, table };
+  }
+  const row = (res.data || []).find((entry) => entry?.id === id) || null;
+  return { data: row, error: row ? null : res.error, source: res.source, table };
 }
 
 /**
  * Critical issues only (failed reads or missing schema with no data).
- * @param {Array<{ table: string, error?: { message?: string } | null, source?: string, data?: unknown[], schemaMissing?: boolean, directError?: string | null }>} results
+ * @param {Array<{ table: string, error?: { message?: string } | null, source?: string, data?: unknown[], schemaMissing?: boolean, directError?: string | null, adminError?: string | null }>} results
  */
 export function collectAdminWarnings(results) {
   const lines = [];
   for (const r of results) {
     if (r.error) {
-      lines.push(`${r.table}: ${r.error.message || r.error}`);
+      const detail = r.error.message || r.error;
+      const hint = r.adminError ? ` (admin-action: ${r.adminError})` : '';
+      lines.push(`${r.table}: ${detail}${hint}`);
       continue;
     }
     if (
@@ -146,15 +177,15 @@ export function collectAdminWarnings(results) {
 }
 
 /**
- * Successful admin-action fallback (RLS / direct blocked) — informational, not an error.
- * @param {Array<{ table: string, error?: unknown, source?: string, directError?: string | null, schemaMissing?: boolean }>} results
+ * Direct fallback after admin-action miss — informational, not an error.
+ * @param {Array<{ table: string, error?: unknown, source?: string, adminError?: string | null, schemaMissing?: boolean }>} results
  */
 export function collectAdminFallbackNotes(results) {
   const lines = [];
   for (const r of results) {
     if (r.error) continue;
-    if (r.source === 'admin-action' && r.directError && !r.schemaMissing) {
-      lines.push(`${r.table}: güvenli admin-action üzerinden yüklendi`);
+    if (r.source === 'direct' && r.adminError && !r.schemaMissing) {
+      lines.push(`${r.table}: doğrudan Supabase okuması kullanıldı`);
     }
   }
   return lines;
