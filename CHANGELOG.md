@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.17] — 2026-06-01
+
+### Added
+- 30-day live data rollout checklist (`docs/LIVE_DATA_30DAY_CHECKLIST.md`)
+- Client bootstrap for `live_providers_enabled` from public `site_settings` (`js/runtime/live-data-integrations.js`)
+- Supabase migration for live data settings + public allowlist
+- Admin panel: Canlı veri toggle and finance feed URL field
+- `audit:live-data` and go-live gate for live-data readiness
+
+### Changed
+- `app.js` merges production live-data flags on init (default remains simulation until admin enables)
+
 ## [2.2.16] — 2026-06-01
 
 ### Added

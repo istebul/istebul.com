@@ -1018,7 +1018,9 @@ Deno.serve(async (req) => {
         "housing_investment_weight","housing_total_cost_weight","housing_ai_prompt_template",
         "finance_payment_comfort_weight","finance_total_cost_weight","finance_risk_factor",
         "finance_cashflow_weight",        "finance_ai_prompt_template",
-        "analytics_clean_start_at"
+        "analytics_clean_start_at",
+        "live_providers_enabled",
+        "live_finance_feed_url"
       ];
 
       for (const row of values) {
