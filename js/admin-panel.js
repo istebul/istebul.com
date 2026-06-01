@@ -71,9 +71,24 @@ import {
   renderSiteAnalyticsDashboard,
   FILTER_PRESETS
 } from './admin/platform-site-analytics-dashboard.js';
+import {
+  ANALYTICS_DATA_MODES,
+  ANALYTICS_DATA_MODE_LABELS,
+  filterAnalyticsRows,
+  renderAnalyticsDataModeToolbar,
+  fetchAnalyticsCleanStartAt
+} from './admin/analytics-traffic-filters.js';
+import {
+  getDeviceHash,
+  markCurrentDeviceAsInternalTest
+} from './core/analytics-internal.js';
 
 let activeDrawerLeadId = null;
 let platformAnalyticsFilter = '7d';
+let platformAnalyticsDataMode = ANALYTICS_DATA_MODES.REAL;
+let unifiedFunnelDataMode = ANALYTICS_DATA_MODES.REAL;
+let autoAnalyticsDataMode = ANALYTICS_DATA_MODES.REAL;
+let analyticsCleanStartAt = null;
 
 function renderAdminConfigError(message) {
   document.body.innerHTML = `
@@ -1710,7 +1725,8 @@ async function loadDashboard() {
 }
 
 const KEYS = ['phone','email','address','instagram','twitter','facebook','linkedin','youtube','tiktok',
-              'site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc','title','description','auto_whatsapp_phone'];
+              'site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc','title','description','auto_whatsapp_phone',
+              'analytics_clean_start_at'];
 const BOOLEAN_SETTING_KEYS = ['maintenance','home_category_auto_enabled','home_category_konut_enabled','home_category_tatil_enabled','home_category_finans_enabled','home_category_sigorta_enabled','home_category_kasko_enabled'];
 
 async function loadSettings() {
@@ -1733,16 +1749,108 @@ async function loadSettings() {
     const value = map[key];
     el.checked = value == null ? true : String(value).toLowerCase() === 'true';
   });
+  const cleanStart = map.analytics_clean_start_at;
+  analyticsCleanStartAt = cleanStart || null;
+  const cleanEl = document.getElementById('s-analytics_clean_start_at');
+  if (cleanEl && cleanStart) {
+    try {
+      const d = new Date(cleanStart);
+      if (!Number.isNaN(d.getTime())) {
+        cleanEl.value = d.toISOString().slice(0, 16);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  loadAnalyticsExclusionSettings();
+}
+
+async function loadAnalyticsExclusionSettings() {
+  const listEl = document.getElementById('analytics-exclusion-list');
+  if (!listEl) return;
+  try {
+    const res = await invokeAdminFunction(sb, {
+      action: 'list_analytics_exclusions'
+    });
+    const rows = res?.data || [];
+    if (!rows.length) {
+      listEl.innerHTML = '<p class="text-muted-sm">Henüz dahili IP/cihaz kuralı yok.</p>';
+      return;
+    }
+    listEl.innerHTML = `
+      <table class="table">
+        <thead><tr><th>Tür</th><th>Hash</th><th>Etiket</th><th></th></tr></thead>
+        <tbody>
+          ${rows
+            .map(
+              (row) => `
+            <tr>
+              <td>${escapeHtml(row.type)}</td>
+              <td><code>${escapeHtml(String(row.value_hash).slice(0, 16))}…</code></td>
+              <td>${escapeHtml(row.label || '—')}</td>
+              <td><button type="button" class="btn btn-danger btn-sm" data-action="analytics-delete-exclusion" data-id="${safeAttr(row.id)}">Sil</button></td>
+            </tr>`
+            )
+            .join('')}
+        </tbody>
+      </table>`;
+  } catch (err) {
+    listEl.innerHTML = `<p class="empty">Kurallar yüklenemedi: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+async function addAnalyticsInternalIp() {
+  const ip = document.getElementById('analytics-internal-ip')?.value?.trim();
+  const label = document.getElementById('analytics-internal-ip-label')?.value?.trim() || 'Admin IP';
+  if (!ip) {
+    toast('IP adresi girin', 'error');
+    return;
+  }
+  await invokeAdminFunction(sb, {
+    action: 'add_analytics_ip_exclusion',
+    values: { ip, label }
+  });
+  toast('IP hash eklendi');
+  document.getElementById('analytics-internal-ip').value = '';
+  loadAnalyticsExclusionSettings();
+}
+
+async function markAnalyticsTestDevice() {
+  markCurrentDeviceAsInternalTest();
+  const device_hash = await getDeviceHash();
+  await invokeAdminFunction(sb, {
+    action: 'register_analytics_device_exclusion',
+    values: { device_hash, label: 'Admin panel — bu cihaz' }
+  });
+  const status = document.getElementById('analytics-device-status');
+  if (status) {
+    status.textContent = 'Bu cihaz test cihazı olarak işaretlendi. Bu tarayıcıdan gelen eventler internal sayılır.';
+  }
+  toast('Test cihazı kaydedildi');
+  loadAnalyticsExclusionSettings();
 }
 
 async function saveSettings() {
-  const rows = KEYS.map(f => ({ key: f, value: document.getElementById('s-' + f)?.value || '' }));
+  const rows = KEYS.map((f) => {
+    let value = document.getElementById('s-' + f)?.value || '';
+    if (f === 'analytics_clean_start_at' && value) {
+      try {
+        const d = new Date(value);
+        if (!Number.isNaN(d.getTime())) value = d.toISOString();
+      } catch {
+        /* keep raw */
+      }
+    }
+    return { key: f, value };
+  });
   BOOLEAN_SETTING_KEYS.forEach((key) => {
     const el = document.getElementById('s-' + key);
     if (!el) return;
     rows.push({ key, value: el.checked ? 'true' : 'false' });
   });
   await adminAction({ action: 'upsert_settings', table: 'site_settings', id: 'settings', values: rows });
+  const cleanRow = rows.find((r) => r.key === 'analytics_clean_start_at');
+  if (cleanRow?.value) analyticsCleanStartAt = cleanRow.value;
   toast('Kaydedildi!');
 }
 
@@ -2204,33 +2312,60 @@ async function loadUsers() {
 async function trackAdminCrmEvent(eventName, metadata = {}) {
   try {
     const { analytics } = await import('./core/analytics.js');
-    analytics.track(eventName, metadata, {
-      category: 'admin',
-      funnel: 'crm',
-      funnel_step: eventName,
-      force: true
-    });
+    await analytics.track(
+      eventName,
+      { ...metadata, admin_crm: true },
+      {
+        category: 'admin',
+        funnel: 'crm',
+        funnel_step: eventName,
+        force: true
+      }
+    );
     analytics.flush();
-  } catch {}
+  } catch {
+    /* admin CRM telemetry is best-effort */
+  }
 }
 
 async function trackAdminAutoEvent(eventName, metadata = {}) {
   return trackAdminCrmEvent(eventName, metadata);
 }
 
-async function loadAutoAnalytics() {
+async function loadAutoAnalytics(dataMode = autoAnalyticsDataMode) {
   const el = document.getElementById('auto-analytics-list');
   if (!el) return;
+
+  autoAnalyticsDataMode = dataMode;
+  el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
+  if (!analyticsCleanStartAt) {
+    analyticsCleanStartAt = await fetchAnalyticsCleanStartAt(sb);
+  }
+
+  const windowDays = SCALE_LIMITS.admin.analyticsWindowDays || 30;
+  const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
+  const analyticsSelect =
+    'event_name, email, phone, created_at, session_id, is_internal, internal_reason, traffic_type, properties, utm_source';
 
   let events = [];
   let leadRows = [];
 
   try {
-    [events, leadRows] = await Promise.all([
-      adminList(sb, {
-        table: 'auto_events',
+    const [analyticsRes, leadList] = await Promise.all([
+      fetchAdminTable(sb, {
+        table: 'analytics_events',
+        select: analyticsSelect,
+        limit: SCALE_LIMITS.admin.analyticsRowLimit,
         order: { column: 'created_at', ascending: false },
-        limit: 500
+        direct: () =>
+          sb
+            .from('analytics_events')
+            .select(analyticsSelect)
+            .gte('created_at', since)
+            .like('event_name', 'auto_%')
+            .order('created_at', { ascending: false })
+            .limit(SCALE_LIMITS.admin.analyticsRowLimit)
       }),
       adminList(sb, {
         table: 'auto_leads',
@@ -2238,10 +2373,33 @@ async function loadAutoAnalytics() {
         limit: 1000
       })
     ]);
+    leadRows = leadList;
+    const rawAnalytics = (analyticsRes.data || []).filter((row) =>
+      String(row.event_name || '').startsWith('auto_')
+    );
+    events = filterAnalyticsRows(
+      rawAnalytics,
+      dataMode,
+      dataMode === ANALYTICS_DATA_MODES.REAL ? analyticsCleanStartAt : null
+    );
+    if (!events.length && dataMode === ANALYTICS_DATA_MODES.REAL) {
+      const legacy = await adminList(sb, {
+        table: 'auto_events',
+        order: { column: 'created_at', ascending: false },
+        limit: 500
+      });
+      events = legacy.filter((row) => {
+        const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
+        return ts >= new Date(since).getTime();
+      });
+    }
   } catch (error) {
     el.innerHTML = `<p class="empty">Hata: ${escapeHtml(error.message)}</p>`;
     return;
   }
+
+  const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
+  const modeNote = `<p class="text-muted-sm" style="margin:0 0 12px">${escapeHtml(ANALYTICS_DATA_MODE_LABELS[dataMode] || dataMode)} · Temiz başlangıç: ${analyticsCleanStartAt ? new Date(analyticsCleanStartAt).toLocaleString('tr-TR') : '—'}</p>`;
 
   const counts = events.reduce((acc, event) => {
     acc[event.event_name] = (acc[event.event_name] || 0) + 1;
@@ -2373,6 +2531,8 @@ async function loadAutoAnalytics() {
   ];
 
   el.innerHTML = `
+    ${dataModeToolbar}
+    ${modeNote}
     <h3 style="margin:0 0 14px 0;">Operasyon</h3>
     <div class="stat-grid">
       ${opsCards.map(([label, value, sub]) => `
@@ -2435,6 +2595,12 @@ async function loadAutoAnalytics() {
       </table>
     ` : '<p class="empty">Henüz analytics event yok.</p>'}
   `;
+
+  el.querySelectorAll('[data-analytics-data-mode]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      loadAutoAnalytics(btn.getAttribute('data-analytics-data-mode') || ANALYTICS_DATA_MODES.REAL);
+    });
+  });
 }
 
 
@@ -2555,12 +2721,17 @@ function renderGrowthCommandCenter(rows) {
   `;
 }
 
-async function loadPlatformAnalytics(filterId = platformAnalyticsFilter) {
+async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMode = platformAnalyticsDataMode) {
   const el = document.getElementById('platform-analytics-root');
   if (!el) return;
 
   platformAnalyticsFilter = filterId;
+  platformAnalyticsDataMode = dataMode;
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
+
+  if (!analyticsCleanStartAt) {
+    analyticsCleanStartAt = await fetchAnalyticsCleanStartAt(sb);
+  }
 
   const preset = FILTER_PRESETS.find((p) => p.id === filterId) || FILTER_PRESETS[1];
   const windowDays = preset.id === 'all' ? 365 : preset.days;
@@ -2572,7 +2743,7 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter) {
   const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
   const sinceMs = new Date(since).getTime();
   const selectExpr =
-    'event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id, properties, page_path';
+    'event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id, properties, page_path, is_internal, internal_reason, traffic_type, utm_source, utm_medium, utm_campaign, referrer, landing_page';
 
   const analyticsRes = await fetchAdminTable(sb, {
     table: 'analytics_events',
@@ -2603,45 +2774,52 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter) {
     return;
   }
 
-  const filteredRows = filterRowsByPreset(rows, filterId);
+  const timeFiltered = filterRowsByPreset(rows, filterId);
+  const filteredRows = filterAnalyticsRows(
+    timeFiltered,
+    dataMode,
+    dataMode === ANALYTICS_DATA_MODES.REAL ? analyticsCleanStartAt : null
+  );
   const siteMetrics = buildSiteAnalyticsMetrics(filteredRows);
+  const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
   const siteDashboard = renderSiteAnalyticsDashboard(siteMetrics, {
     filterId,
-    windowNote: `${preset.label} · en fazla ${rowLimit} event (ölçek limiti). Auto Analytics ve Unified Funnel aşağıda korunur.`
+    windowNote: `${preset.label} · ${ANALYTICS_DATA_MODE_LABELS?.[dataMode] || dataMode} · en fazla ${rowLimit} event. Temiz başlangıç: ${analyticsCleanStartAt ? new Date(analyticsCleanStartAt).toLocaleString('tr-TR') : '—'}`
   });
 
   const windowNote = `<p class="text-muted-sm" style="margin:0 0 12px">Legacy platform özeti · ${escapeHtml(preset.label)}.</p>`;
 
-  const pageViews = countEvents(rows, 'page_view') + countEvents(rows, 'auto_page_view');
-  const authModal = countEvents(rows, 'auth_modal_open');
-  const authLoginOk = countEvents(rows, 'auth_login_success');
-  const authRegisterOk = countEvents(rows, 'auth_register_success');
-  const checkoutStarted = countFunnelStep(rows, 'checkout_start');
-  const checkoutCompleted = countFunnelStep(rows, 'checkout_complete');
-  const paidConversions = countFunnelStep(rows, 'paid_conversion');
-  const leadSubmit = countEvents(rows, 'lead_submit') + countEvents(rows, 'auto_lead_submit');
-  const partnerOk = countEvents(rows, 'partner_dispatch_success');
-  const partnerFail = countEvents(rows, 'partner_dispatch_failed');
-  const financeStart = countEvents(rows, 'finance_funnel_start');
-  const ctaClicks = countEvents(rows, 'cta_click');
-  const pricingViews = countFunnelStep(rows, 'pricing_view');
-  const checkoutAbandoned = countEvents(rows, 'checkout_abandoned');
-  const partnerLanding = countEvents(rows, 'partner_landing_view');
-  const partnerApply = countEvents(rows, 'partner_application_submit');
-  const partnerOnboarding = countEvents(rows, 'partner_onboarding_view');
-  const partnerWebhookDraft = countEvents(rows, 'partner_webhook_draft_saved');
-  const referralLand = countEvents(rows, 'growth_referral_land');
-  const referralShare = countEvents(rows, 'growth_referral_share');
-  const referralConvert = countEvents(rows, 'growth_referral_convert');
-  const referralLinkCreated = countEvents(rows, 'referral_link_created');
-  const referralLinkClicked = countEvents(rows, 'referral_link_clicked');
-  const referralSignup = countEvents(rows, 'referral_signup');
-  const referralConversion = countEvents(rows, 'referral_conversion');
-  const upsellViews = countEvents(rows, 'upsell_view');
-  const upsellClicks = countEvents(rows, 'upsell_click');
-  const upsellConversions = countEvents(rows, 'upsell_conversion');
-  const lifecycleEnroll = countEvents(rows, 'lifecycle_enroll_requested');
-  const growthChannelRows = rows.filter((row) => row.event_category === 'growth');
+  const kpiRows = filteredRows;
+  const pageViews = countEvents(kpiRows, 'page_view') + countEvents(kpiRows, 'auto_page_view');
+  const authModal = countEvents(kpiRows, 'auth_modal_open');
+  const authLoginOk = countEvents(kpiRows, 'auth_login_success');
+  const authRegisterOk = countEvents(kpiRows, 'auth_register_success');
+  const checkoutStarted = countFunnelStep(kpiRows, 'checkout_start');
+  const checkoutCompleted = countFunnelStep(kpiRows, 'checkout_complete');
+  const paidConversions = countFunnelStep(kpiRows, 'paid_conversion');
+  const leadSubmit = countEvents(kpiRows, 'lead_submit') + countEvents(kpiRows, 'auto_lead_submit');
+  const partnerOk = countEvents(kpiRows, 'partner_dispatch_success');
+  const partnerFail = countEvents(kpiRows, 'partner_dispatch_failed');
+  const financeStart = countEvents(kpiRows, 'finance_funnel_start');
+  const ctaClicks = countEvents(kpiRows, 'cta_click');
+  const pricingViews = countFunnelStep(kpiRows, 'pricing_view');
+  const checkoutAbandoned = countEvents(kpiRows, 'checkout_abandoned');
+  const partnerLanding = countEvents(kpiRows, 'partner_landing_view');
+  const partnerApply = countEvents(kpiRows, 'partner_application_submit');
+  const partnerOnboarding = countEvents(kpiRows, 'partner_onboarding_view');
+  const partnerWebhookDraft = countEvents(kpiRows, 'partner_webhook_draft_saved');
+  const referralLand = countEvents(kpiRows, 'growth_referral_land');
+  const referralShare = countEvents(kpiRows, 'growth_referral_share');
+  const referralConvert = countEvents(kpiRows, 'growth_referral_convert');
+  const referralLinkCreated = countEvents(kpiRows, 'referral_link_created');
+  const referralLinkClicked = countEvents(kpiRows, 'referral_link_clicked');
+  const referralSignup = countEvents(kpiRows, 'referral_signup');
+  const referralConversion = countEvents(kpiRows, 'referral_conversion');
+  const upsellViews = countEvents(kpiRows, 'upsell_view');
+  const upsellClicks = countEvents(kpiRows, 'upsell_click');
+  const upsellConversions = countEvents(kpiRows, 'upsell_conversion');
+  const lifecycleEnroll = countEvents(kpiRows, 'lifecycle_enroll_requested');
+  const growthChannelRows = kpiRows.filter((row) => row.event_category === 'growth');
   const growthByChannel = growthChannelRows.reduce((acc, row) => {
     const channel = row.funnel || row.attribution?.growth_channel || 'growth';
     acc[channel] = (acc[channel] || 0) + 1;
@@ -2658,13 +2836,13 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter) {
   ];
 
   const dropoffRows = autoSteps.map(([eventName, label], index) => {
-    const count = countEvents(rows, eventName);
-    const prev = index > 0 ? countEvents(rows, autoSteps[index - 1][0]) : count;
+    const count = countEvents(kpiRows, eventName);
+    const prev = index > 0 ? countEvents(kpiRows, autoSteps[index - 1][0]) : count;
     const drop = index > 0 && prev ? Math.max(0, prev - count) : 0;
     return { label, count, drop, conv: index > 0 ? conversionPct(count, prev) : '100%' };
   });
 
-  const attributionMap = rows
+  const attributionMap = kpiRows
     .filter((row) => row.event_name === 'revenue_attributed' || row.event_name === 'checkout_completed')
     .reduce((acc, row) => {
       const source = row.attribution?.utm_source || 'direct';
@@ -2672,7 +2850,7 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter) {
       return acc;
     }, {});
 
-  const crmEvents = rows.filter((row) => row.event_name.startsWith('crm_'));
+  const crmEvents = kpiRows.filter((row) => row.event_name.startsWith('crm_'));
 
   const executiveFunnel = [
     ['landing_visit', 'Landing ziyaret'],
@@ -2689,17 +2867,17 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter) {
   ];
 
   const executiveRows = executiveFunnel.map(([key, label], index) => {
-    const count = countFunnelStep(rows, key);
+    const count = countFunnelStep(kpiRows, key);
     const prevKey = index > 0 ? executiveFunnel[index - 1][0] : null;
-    const prev = prevKey ? countFunnelStep(rows, prevKey) : count;
+    const prev = prevKey ? countFunnelStep(kpiRows, prevKey) : count;
     return { label, count, conv: index > 0 ? conversionPct(count, prev) : '—' };
   });
 
   const channelRevenue = sumRevenueCentsByChannel(
-    rows,
+    kpiRows,
     ['paid_conversion', 'checkout_completed', 'checkout_complete', 'revenue_attributed']
   );
-  const channelLeads = rows
+  const channelLeads = kpiRows
     .filter((row) => row.event_name === 'lead_submit' || row.event_name === 'auto_lead_submit')
     .reduce((acc, row) => {
       const props = row.properties || {};
@@ -2714,10 +2892,11 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter) {
 
   el.innerHTML = `
     ${analyticsBanner}
+    ${dataModeToolbar}
     ${siteDashboard}
     <div style="height:24px"></div>
     ${windowNote}
-    ${renderGrowthCommandCenter(rows)}
+    ${renderGrowthCommandCenter(kpiRows)}
     <h3 style="margin:0 0 14px 0;">Executive growth funnel (kanal bazlı)</h3>
     <p class="text-muted" style="margin:0 0 12px;font-size:13px;">Tutarlı event isimleri; legacy alias’lar toplamda bir kez sayılır. Gelir: paid_conversion + checkout.</p>
     <table class="table">
@@ -2833,7 +3012,12 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter) {
 
   el.querySelectorAll('[data-site-analytics-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      loadPlatformAnalytics(btn.getAttribute('data-site-analytics-filter') || '7d');
+      loadPlatformAnalytics(btn.getAttribute('data-site-analytics-filter') || '7d', platformAnalyticsDataMode);
+    });
+  });
+  el.querySelectorAll('[data-analytics-data-mode]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      loadPlatformAnalytics(platformAnalyticsFilter, btn.getAttribute('data-analytics-data-mode') || ANALYTICS_DATA_MODES.REAL);
     });
   });
 }
@@ -4109,13 +4293,20 @@ sb.auth.getSession().then(({ data }) => {
   if (data.session) { currentUser = data.session.user; showApp(); }
 });
 
-async function loadUnifiedFunnelDashboard() {
+async function loadUnifiedFunnelDashboard(dataMode = unifiedFunnelDataMode) {
   const el = document.getElementById('unified-funnel-root');
   if (!el) return;
+
+  unifiedFunnelDataMode = dataMode;
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
+  if (!analyticsCleanStartAt) {
+    analyticsCleanStartAt = await fetchAnalyticsCleanStartAt(sb);
+  }
+
   const since = new Date(Date.now() - SCALE_LIMITS.admin.analyticsWindowDays * 24 * 60 * 60 * 1000).toISOString();
-  const selectExpr = 'event_name, event_type, session_id, metadata, created_at';
+  const selectExpr =
+    'event_name, event_type, session_id, metadata, created_at, is_internal, traffic_type, properties';
 
   const [analyticsRes, housingRes, vacationRes] = await Promise.all([
     fetchAdminTable(sb, {
@@ -4143,14 +4334,27 @@ async function loadUnifiedFunnelDashboard() {
   ]);
 
   const { buildUnifiedFunnelMetrics, renderUnifiedFunnelDashboard } = await import('./admin/unified-funnel-dashboard.js');
+  const filteredAnalytics = filterAnalyticsRows(
+    analyticsRes.data || [],
+    dataMode,
+    dataMode === ANALYTICS_DATA_MODES.REAL ? analyticsCleanStartAt : null
+  );
   const rows = [
-    ...(analyticsRes.data || []),
+    ...filteredAnalytics,
     ...(housingRes.data || []),
     ...(vacationRes.data || [])
   ];
   const metrics = buildUnifiedFunnelMetrics(rows);
   const banner = renderAdminWarningBanner(collectAdminWarnings([analyticsRes, housingRes, vacationRes]));
-  el.innerHTML = `${banner}${renderUnifiedFunnelDashboard(metrics, escapeHtml)}`;
+  const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
+  const modeNote = `<p class="text-muted-sm" style="margin:0 0 12px">${escapeHtml(ANALYTICS_DATA_MODE_LABELS[dataMode] || dataMode)} · Platform eventleri ITE ile filtrelenir; konut/tatil legacy tabloları ham veridir.</p>`;
+  el.innerHTML = `${banner}${dataModeToolbar}${modeNote}${renderUnifiedFunnelDashboard(metrics, escapeHtml)}`;
+
+  el.querySelectorAll('[data-analytics-data-mode]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      loadUnifiedFunnelDashboard(btn.getAttribute('data-analytics-data-mode') || ANALYTICS_DATA_MODES.REAL);
+    });
+  });
 }
 
 registerAdminPageHandlers({
@@ -4448,6 +4652,24 @@ function bindAdminPanelEvents() {
           actual_revenue: Number(el.value || 0)
         }
       });
+      return;
+    }
+
+    if (action === 'analytics-add-ip') {
+      addAnalyticsInternalIp().catch((err) => toast(err.message || 'IP eklenemedi', 'error'));
+      return;
+    }
+    if (action === 'analytics-mark-device') {
+      markAnalyticsTestDevice().catch((err) => toast(err.message || 'Cihaz kaydedilemedi', 'error'));
+      return;
+    }
+    if (action === 'analytics-delete-exclusion') {
+      adminAction({ action: 'delete_analytics_exclusion', id })
+        .then(() => {
+          toast('Kural silindi');
+          loadAnalyticsExclusionSettings();
+        })
+        .catch(() => {});
       return;
     }
 

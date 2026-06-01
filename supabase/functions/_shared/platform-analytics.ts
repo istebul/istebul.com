@@ -294,6 +294,17 @@ export type PlatformEventInput = {
   attribution?: Record<string, unknown>;
   source?: string;
   idempotency_key?: string | null;
+  is_internal?: boolean;
+  internal_reason?: string | null;
+  traffic_type?: string | null;
+  ip_hash?: string | null;
+  device_hash?: string | null;
+  user_agent_hash?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  referrer?: string | null;
+  landing_page?: string | null;
 };
 
 function clampString(value: unknown, max = 120) {
@@ -377,6 +388,23 @@ export async function recordPlatformEvent(
   }
 
   const category = eventCategoryFor(eventName, input.event_category);
+  const properties = {
+    ...clampProperties(input.properties),
+    is_internal: input.is_internal === true,
+    internal_reason: input.internal_reason
+      ? clampString(input.internal_reason, 40)
+      : null,
+    traffic_type: input.traffic_type
+      ? clampString(input.traffic_type, 20)
+      : "unknown",
+    utm_source: input.utm_source ? clampString(input.utm_source, 120) : null,
+    utm_medium: input.utm_medium ? clampString(input.utm_medium, 120) : null,
+    utm_campaign: input.utm_campaign ? clampString(input.utm_campaign, 120) : null,
+    referrer: input.referrer ? clampString(input.referrer, 500) : null,
+    landing_page: input.landing_page ? clampString(input.landing_page, 200) : null,
+    session_id: input.session_id ? clampString(input.session_id, 64) : null,
+  };
+
   const row = {
     event_name: eventName,
     event_category: category,
@@ -397,12 +425,27 @@ export async function recordPlatformEvent(
     phone: input.phone ? clampString(input.phone, 20) : null,
     revenue_cents: Math.max(0, Math.min(Number(input.revenue_cents || 0), 100000000)),
     currency: clampString(input.currency || "TRY", 8),
-    properties: clampProperties(input.properties),
+    properties,
     attribution: clampProperties(input.attribution),
     source: clampString(input.source || "web", 32),
     idempotency_key: input.idempotency_key
       ? clampString(input.idempotency_key, 120)
       : null,
+    is_internal: input.is_internal === true,
+    internal_reason: input.internal_reason
+      ? clampString(input.internal_reason, 40)
+      : null,
+    traffic_type: clampString(input.traffic_type || "unknown", 20),
+    ip_hash: input.ip_hash ? clampString(input.ip_hash, 128) : null,
+    device_hash: input.device_hash ? clampString(input.device_hash, 128) : null,
+    user_agent_hash: input.user_agent_hash
+      ? clampString(input.user_agent_hash, 128)
+      : null,
+    utm_source: input.utm_source ? clampString(input.utm_source, 120) : null,
+    utm_medium: input.utm_medium ? clampString(input.utm_medium, 120) : null,
+    utm_campaign: input.utm_campaign ? clampString(input.utm_campaign, 120) : null,
+    referrer: input.referrer ? clampString(input.referrer, 500) : null,
+    landing_page: input.landing_page ? clampString(input.landing_page, 200) : null,
   };
 
   const { error } = await adminClient.from("analytics_events").insert(row);
@@ -411,7 +454,7 @@ export async function recordPlatformEvent(
     throw error;
   }
 
-  if (isAutoLegacyEvent(eventName)) {
+  if (isAutoLegacyEvent(eventName) && !row.is_internal) {
     await adminClient.from("auto_events").insert({
       event_name: eventName,
       email: row.email,

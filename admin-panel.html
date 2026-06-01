@@ -684,6 +684,28 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             </label>
           </div>
         </div>
+        <div class="card" id="analytics-exclusion-settings">
+          <div class="card-title">Analytics — Internal Traffic Exclusion</div>
+          <p class="text-muted-sm">Kurucu/test trafiği gerçek KPI’lara dahil edilmez. IP düz metin saklanmaz; yalnızca SHA-256 hash kaydedilir.</p>
+          <div class="form-group">
+            <label>Temiz başlangıç tarihi (analytics_clean_start_at)</label>
+            <input type="datetime-local" id="s-analytics_clean_start_at" />
+            <small class="text-muted">Varsayılan KPI’lar bu tarihten sonraki gerçek kullanıcı verisini gösterir.</small>
+          </div>
+          <div class="form-group">
+            <label>Dahili IP ekle</label>
+            <div class="form-row">
+              <input type="text" id="analytics-internal-ip" placeholder="Örn: 203.0.113.10" autocomplete="off" />
+              <input type="text" id="analytics-internal-ip-label" placeholder="Etiket (opsiyonel)" />
+              <button type="button" class="btn btn-ghost btn-sm" data-action="analytics-add-ip">IP hash ekle</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <button type="button" class="btn btn-primary btn-sm" data-action="analytics-mark-device">Bu cihazı test cihazı olarak işaretle</button>
+            <p class="text-muted-sm" id="analytics-device-status" style="margin-top:8px"></p>
+          </div>
+          <div id="analytics-exclusion-list" class="empty" style="margin-top:12px">Yükleniyor…</div>
+        </div>
         <div class="card">
           <div class="card-title">Kategoriler / Ana Sayfa Görünümü</div>
           <div class="form-row">

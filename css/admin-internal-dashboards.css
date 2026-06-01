@@ -37,6 +37,28 @@
   margin-bottom: 28px;
 }
 
+.analytics-data-mode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.analytics-data-mode .btn {
+  white-space: normal;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .analytics-data-mode {
+    flex-direction: column;
+  }
+
+  .analytics-data-mode .btn {
+    width: 100%;
+  }
+}
+
 .ib-dash-section h3 {
   font-size: 14px;
   font-weight: 600;

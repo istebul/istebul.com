@@ -122,10 +122,12 @@ function trafficSourceKey(row) {
   const attr = row.attribution || {};
   const props = row.properties || {};
   return (
+    row.utm_source ||
     attr.utm_source ||
     props.utm_source ||
-    (attr.referrer ? 'referrer' : null) ||
+    (attr.referrer || row.referrer ? 'referrer' : null) ||
     props.referrer ||
+    row.referrer ||
     'direct'
   );
 }

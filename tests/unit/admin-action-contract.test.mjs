@@ -38,6 +38,23 @@ describe('admin-action contract', () => {
     assert.match(source, /allowed:/);
   });
 
+  it('exposes analytics internal traffic exclusion admin actions', () => {
+    const source = fs.readFileSync(
+      path.join(root, 'supabase/functions/admin-action/index.ts'),
+      'utf8'
+    );
+    for (const action of [
+      'list_analytics_exclusions',
+      'add_analytics_ip_exclusion',
+      'register_analytics_device_exclusion',
+      'delete_analytics_exclusion'
+    ]) {
+      assert.match(source, new RegExp(`"${action}"`));
+    }
+    assert.match(source, /analytics_exclusion_rules/);
+    assert.match(source, /analytics_clean_start_at/);
+  });
+
   it('exposes partner application CRM admin actions', () => {
     const source = fs.readFileSync(
       path.join(root, 'supabase/functions/admin-action/index.ts'),

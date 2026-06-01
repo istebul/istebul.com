@@ -1,4 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  hashPlainIpForAdmin,
+} from "../_shared/analytics-traffic.ts";
 import { assertSafePartnerWebhookUrl } from "../_shared/webhook-url.ts";
 import {
   mapCrmLeadUpdateSignals,
@@ -469,6 +472,7 @@ Deno.serve(async (req) => {
     "finance_settings",
     "sigorta_events",
     "sigorta_leads",
+    "analytics_exclusion_rules",
     "lifecycle_contacts",
     "lifecycle_enrollments",
     "lifecycle_messages",
@@ -488,11 +492,19 @@ Deno.serve(async (req) => {
     return json({ error: "Invalid action or table" }, 400, origin);
   }
 
+  const ANALYTICS_ADMIN_ACTIONS = new Set([
+    "list_analytics_exclusions",
+    "add_analytics_ip_exclusion",
+    "register_analytics_device_exclusion",
+    "delete_analytics_exclusion",
+  ]);
+
   if (
     action !== "upsert_settings" &&
     action !== "list" &&
     action !== "listPartnerApplications" &&
     action !== "createPartnerApplication" &&
+    !ANALYTICS_ADMIN_ACTIONS.has(action) &&
     !id
   ) {
     return json({ error: "Missing id" }, 400, origin);
@@ -503,6 +515,59 @@ Deno.serve(async (req) => {
   }
 
   try {
+    if (action === "list_analytics_exclusions") {
+      const { data, error } = await adminClient
+        .from("analytics_exclusion_rules")
+        .select("id, type, value_hash, label, is_active, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return json({ ok: true, data: data ?? [] }, 200, origin);
+    }
+
+    if (action === "add_analytics_ip_exclusion") {
+      const ip = String(values?.ip || "").trim();
+      const label = sanitizeText(values?.label || "Admin IP");
+      if (!ip) return json({ error: "IP required" }, 400, origin);
+      const value_hash = await hashPlainIpForAdmin(ip);
+      const { error } = await adminClient.from("analytics_exclusion_rules").insert({
+        type: "ip_hash",
+        value_hash,
+        label,
+        is_active: true,
+        created_by: user.id,
+      });
+      if (error && error.code !== "23505") throw error;
+      return json({ ok: true, value_hash }, 200, origin);
+    }
+
+    if (action === "register_analytics_device_exclusion") {
+      const value_hash = String(values?.device_hash || "").trim();
+      const label = sanitizeText(values?.label || "Test cihazı");
+      if (!value_hash || value_hash.length < 32) {
+        return json({ error: "Invalid device_hash" }, 400, origin);
+      }
+      const { error } = await adminClient.from("analytics_exclusion_rules").insert({
+        type: "device_hash",
+        value_hash: value_hash.slice(0, 128),
+        label,
+        is_active: true,
+        created_by: user.id,
+      });
+      if (error) throw error;
+      return json({ ok: true }, 200, origin);
+    }
+
+    if (action === "delete_analytics_exclusion") {
+      if (!id) return json({ error: "Missing id" }, 400, origin);
+      const { error } = await adminClient
+        .from("analytics_exclusion_rules")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      return json({ ok: true }, 200, origin);
+    }
+
     if (action === "listPartnerApplications") {
       const includeArchived = body.includeArchived === true;
       const limit = Math.min(Math.max(Number(body.limit) || 500, 1), 1000);
@@ -945,7 +1010,8 @@ Deno.serve(async (req) => {
         "housing_payment_weight","housing_location_weight","housing_risk_factor",
         "housing_investment_weight","housing_total_cost_weight","housing_ai_prompt_template",
         "finance_payment_comfort_weight","finance_total_cost_weight","finance_risk_factor",
-        "finance_cashflow_weight","finance_ai_prompt_template"
+        "finance_cashflow_weight",        "finance_ai_prompt_template",
+        "analytics_clean_start_at"
       ];
 
       for (const row of values) {
