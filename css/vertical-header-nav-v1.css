@@ -1,6 +1,43 @@
 /**
- * Vertical pages — mobile drawer for any *-nav id (not only #vacation-nav).
+ * Vertical pages — desktop nav spacing + mobile drawer for any *-nav id.
  */
+
+.vacation-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.vacation-header .logo {
+  flex-shrink: 0;
+}
+
+.vacation-header nav[id$='-nav'] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.vacation-header nav[id$='-nav'] a {
+  color: var(--vacation-muted, #64748b);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.vacation-header nav[id$='-nav'] a:hover,
+.vacation-header nav[id$='-nav'] a.is-active,
+.vacation-header nav[id$='-nav'] a[aria-current='page'] {
+  color: var(--vacation-blue, #2563eb);
+}
+
+.vacation-header [data-vertical-nav-products] {
+  display: contents;
+}
 
 @media (max-width: 768px) {
   .vacation-header {
@@ -20,6 +57,7 @@
 
   .vacation-header nav[id$='-nav'] {
     display: none;
+    margin-left: 0;
     position: absolute;
     top: 100%;
     left: 0;

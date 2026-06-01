@@ -249,20 +249,33 @@ body.ib-auto #auto-results .auto-results-guide h3 {
   color: var(--ib-card-ink);
 }
 
-/* Intentionally dark sections keep light text */
-.final-cta-card,
+/* Intentionally dark sections keep light text (do not use inherit on .final-cta-card — breaks on dark card) */
 .auto-results-trust-banner,
 .ib-trust-rail--auto,
-.auto-market-score,
-body.ib-auto .final-cta-card * {
+.auto-market-score {
   color: inherit;
 }
 
-.final-cta-card h2,
-.final-cta-card p,
 .auto-results-trust-banner h3,
 .auto-results-trust-banner p {
   color: inherit;
+}
+
+body.ib-auto .final-cta-card {
+  color: #fff;
+}
+
+body.ib-auto .final-cta-card h2,
+body.ib-auto .final-cta-card .kicker {
+  color: #f8fafc;
+}
+
+body.ib-auto .final-cta-card p {
+  color: rgba(226, 232, 240, 0.9);
+}
+
+body.ib-auto .final-cta-card .text-cta {
+  color: rgba(226, 232, 240, 0.88);
 }
 
 @media (max-width: 720px) {

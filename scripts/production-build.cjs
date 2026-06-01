@@ -324,6 +324,7 @@ const autoCssParts = [
   'css/auto-decision-engine-ui.css',
   'css/auto-question-ux.css',
   'css/enterprise-card-readability.css',
+  'css/auto-final-cta-contrast-v1.css',
   'css/istebul-design-system-v4.css',
   'css/istebul-ds-v4-polish.css'
 ];
