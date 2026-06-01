@@ -230,7 +230,21 @@ function renderPartnerApplicationsTable(ctx, data) {
   }));
 
   return `
-    <table class="table">
+    <div class="partner-applications-table-wrap">
+    <table class="table partner-applications-table">
+      <colgroup>
+        <col class="pa-col-company" />
+        <col class="pa-col-contact" />
+        <col class="pa-col-category" />
+        <col class="pa-col-source" />
+        <col class="pa-col-status" />
+        <col class="pa-col-active" />
+        <col class="pa-col-followup" />
+        <col class="pa-col-score" />
+        <col class="pa-col-velocity" />
+        <col class="pa-col-date" />
+        <col class="pa-col-actions" />
+      </colgroup>
       <thead>
         <tr>
           <th>Firma</th>
@@ -240,9 +254,10 @@ function renderPartnerApplicationsTable(ctx, data) {
           <th>Durum</th>
           <th>Aktif</th>
           <th>Takip</th>
-          <th>Tarih</th>
           <th>Skor</th>
-          <th>İşlem</th>
+          <th>Yolunda</th>
+          <th>Tarih</th>
+          <th>İşlemler</th>
         </tr>
       </thead>
       <tbody>
@@ -255,22 +270,24 @@ function renderPartnerApplicationsTable(ctx, data) {
             const inactive = row.is_active === false;
             return `
           <tr class="${archived ? 'is-archived-row' : ''} ${inactive ? 'is-inactive-row' : ''}">
-            <td>
-              <strong>${escapeHtml(row.company_name)}</strong>
-              ${archived ? '<br><span class="badge badge-red">Arşiv</span>' : ''}
-              ${row.source_channel === 'test' ? '<br><span class="badge badge-yellow">Test</span>' : ''}
-              ${row.partner_endpoint_id ? '<br><span class="badge badge-green">Endpoint var</span>' : ''}
-              <br><small class="text-muted">${escapeHtml(nextAction.action)}</small>
+            <td class="pa-cell pa-cell-company">
+              <div class="pa-clamp-2"><strong>${escapeHtml(row.company_name)}</strong></div>
+              ${archived ? '<span class="badge badge-red pa-badge">Arşiv</span> ' : ''}
+              ${row.source_channel === 'test' ? '<span class="badge badge-yellow pa-badge">Test</span> ' : ''}
+              ${row.partner_endpoint_id ? '<span class="badge badge-green pa-badge">Endpoint var</span> ' : ''}
+              <small class="text-muted">${escapeHtml(nextAction.action)}</small>
             </td>
-            <td>
-              ${escapeHtml(row.contact_name || '—')}<br>
-              ${escapeHtml(row.phone || '—')}<br>
-              <small>${escapeHtml(row.email || '—')}</small>
-              ${row.website ? `<br><small>${escapeHtml(row.website)}</small>` : ''}
+            <td class="pa-cell pa-cell-contact">
+              <div class="pa-clamp-2">${escapeHtml(row.contact_name || '—')}</div>
+              <span class="pa-phone">${escapeHtml(row.phone || '—')}</span>
+              <span class="pa-email">${escapeHtml(row.email || '—')}</span>
+              ${row.website ? `<span class="pa-email" title="${safeAttr(row.website)}">${escapeHtml(row.website)}</span>` : ''}
             </td>
-            <td>${escapeHtml(row.category || '—')}${row.city ? `<br><small>${escapeHtml(row.city)}</small>` : ''}</td>
-            <td>${escapeHtml(row.source_channel || 'web')}</td>
-            <td>
+            <td class="pa-cell pa-cell-category">
+              <div class="pa-clamp-2">${escapeHtml(row.category || '—')}${row.city ? ` · ${escapeHtml(row.city)}` : ''}</div>
+            </td>
+            <td class="pa-cell pa-cell-source">${escapeHtml(row.source_channel || 'web')}</td>
+            <td class="pa-cell pa-cell-status">
               <select class="status-select" data-action="update-partner-application-status" data-id="${safeAttr(row.id)}"
                 data-previous-status="${safeAttr(normalizePartnerCrmStatus(row.status))}">
                 ${crmOptions
@@ -285,14 +302,15 @@ function renderPartnerApplicationsTable(ctx, data) {
               </select>
               <small class="text-muted">P(win) ${Math.round(getPartnerCrmWinProbability(row.status) * 100)}%</small>
             </td>
-            <td>${row.is_active !== false ? '<span class="badge badge-green">Aktif</span>' : '<span class="badge badge-red">Pasif</span>'}</td>
-            <td>
+            <td class="pa-cell pa-cell-active">${row.is_active !== false ? '<span class="badge badge-green pa-badge">Aktif</span>' : '<span class="badge badge-red pa-badge">Pasif</span>'}</td>
+            <td class="pa-cell pa-cell-followup">
               <small>İletişim: ${formatShortDate(row.contacted_at)}</small><br>
               <small>Takip: ${formatShortDate(row.follow_up_at)}</small>
             </td>
-            <td>${formatShortDate(row.created_at)}</td>
-            <td><span class="badge badge-blue">${dealScore}</span><br><span class="badge ${velocityBadgeClass(velocity)}">${escapeHtml(velocity.label)}</span></td>
-            <td class="table-actions">
+            <td class="pa-cell pa-cell-score"><span class="badge badge-blue pa-badge">${dealScore}</span></td>
+            <td class="pa-cell pa-cell-velocity"><span class="badge ${velocityBadgeClass(velocity)} pa-badge">${escapeHtml(velocity.label)}</span></td>
+            <td class="pa-cell pa-cell-date">${formatShortDate(row.created_at)}</td>
+            <td class="pa-cell pa-cell-actions table-actions partner-applications-actions">
               <button type="button" class="btn btn-ghost btn-sm" data-action="edit-partner-application" data-id="${safeAttr(row.id)}">Düzenle</button>
               <button type="button" class="btn btn-ghost btn-sm" data-action="toggle-partner-application-active" data-id="${safeAttr(row.id)}" ${archived ? 'disabled' : ''}>
                 ${row.is_active !== false ? 'Pasif yap' : 'Aktif yap'}
@@ -309,7 +327,8 @@ function renderPartnerApplicationsTable(ctx, data) {
           })
           .join('')}
       </tbody>
-    </table>`;
+    </table>
+    </div>`;
 }
 
 export async function loadPartnerApplications(ctx) {
