@@ -1,4 +1,4 @@
-import { getSupabaseClient } from './core/supabase.js';
+import { getSupabaseClient, isSupabaseConfigured, SUPABASE_CONFIG_ERROR } from './core/supabase.js';
 import { invokeAdminFunction, adminList } from './core/admin-client.js';
 import { escapeHtml, safeAttr, safeJsonParse, safeExternalUrl } from './core/dom-safe.js';
 import { normalizePhoneForWhatsapp } from './core/phone.js';
@@ -66,21 +66,26 @@ import { renderLeadAiSummaryHtml } from './features/admin/lead-ai-intelligence.j
 import { fetchActivePartnerPool } from './features/partner/partner-pool.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
 
-const sb = getSupabaseClient();
 let activeDrawerLeadId = null;
 
-if (!sb) {
+function renderAdminConfigError(message) {
   document.body.innerHTML = `
     <div class="admin-config-error">
       <div>
-        <h2>Supabase yapılandırması eksik</h2>
-        <p>SUPABASE_URL veya SUPABASE_ANON_KEY yüklenemedi.</p>
-        <p class="text-muted-sm">Cloudflare Pages → Settings → Environment variables bölümünde <code>SUPABASE_ANON_KEY</code> tanımlı olmalıdır. Ardından siteyi yeniden deploy edin.</p>
+        <h2>Kimlik doğrulama servisi yapılandırılamadı</h2>
+        <p>${escapeHtml(message)}</p>
+        <p class="text-muted-sm">Cloudflare Pages veya GitHub Actions ortamında <code>SUPABASE_URL</code> ve <code>SUPABASE_ANON_KEY</code> tanımlı olmalı; ardından <code>npm run build</code> ile yeniden deploy edin.</p>
       </div>
     </div>
   `;
+}
+
+if (!isSupabaseConfigured()) {
+  renderAdminConfigError(SUPABASE_CONFIG_ERROR);
   throw new Error('Supabase config missing');
 }
+
+const sb = getSupabaseClient();
 let currentUser = null;
 
 function showLoginError(message) {
@@ -102,6 +107,10 @@ async function login() {
   const password = document.getElementById('login-password').value;
   const btn = document.getElementById('login-btn');
   clearLoginError();
+  if (!isSupabaseConfigured()) {
+    showLoginError(SUPABASE_CONFIG_ERROR);
+    return;
+  }
   if (!email || !password) {
     showLoginError('E-posta ve şifre alanlarını doldurun.');
     return;

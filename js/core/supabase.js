@@ -4,9 +4,12 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = config.supabase.url;
 const supabaseKey = config.supabase.anonKey;
 
-if (!supabaseUrl || !supabaseKey) {
-    console.warn('Supabase config missing. Check SUPABASE_URL and SUPABASE_ANON_KEY.');
+export function isSupabaseConfigured() {
+    return Boolean(supabaseUrl && supabaseKey);
 }
+
+export const SUPABASE_CONFIG_ERROR =
+    'Kimlik doğrulama yapılandırması eksik. SUPABASE_URL ve SUPABASE_ANON_KEY değerleri /env.js içinde tanımlı olmalıdır. Deploy ortamında bu değişkenleri ayarlayıp siteyi yeniden yayınlayın.';
 
 const createEmptyQuery = () => {
     const query = {
@@ -56,7 +59,7 @@ export const getSupabaseClient = () => {
         return supabaseSingleton;
     }
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!isSupabaseConfigured()) {
         supabaseSingleton = createFallbackSupabaseClient();
         return supabaseSingleton;
     }

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { assertEnvJsFileContents } = require('./lib/public-env.cjs');
 const root = path.resolve(__dirname, '..');
 
 const required = [
@@ -116,6 +117,26 @@ if (fs.existsSync(envPath)) {
       console.error('Build env.js exposes forbidden secret key name: ' + secretName);
     }
   });
+  try {
+    assertEnvJsFileContents(envSource, 'dist/env.js');
+  } catch (err) {
+    failed = true;
+    console.error(err.message);
+  }
+} else {
+  failed = true;
+  console.error('Missing build output: dist/env.js');
+}
+
+const adminPanelPath = path.join(root, 'dist/admin-panel.html');
+if (fs.existsSync(adminPanelPath)) {
+  const adminHtml = fs.readFileSync(adminPanelPath, 'utf8');
+  const envIdx = adminHtml.indexOf('/env.js');
+  const adminJsIdx = adminHtml.indexOf('/js/admin-panel.js');
+  if (envIdx === -1 || adminJsIdx === -1 || envIdx > adminJsIdx) {
+    failed = true;
+    console.error('dist/admin-panel.html must load /env.js before admin-panel.js');
+  }
 }
 
 const indexPath = path.join(root, 'dist/index.html');

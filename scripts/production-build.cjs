@@ -28,14 +28,6 @@ const { injectRouteBootstrap, writeRouteBootstrapFile } = require('./lib/route-b
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
 const { injectPartnerHtmlFiles } = require('./lib/inject-partner-prerender.cjs');
 const { buildHashedCssAssets } = require('./lib/css-build.cjs');
-const publicEnvKeys = [
-  'SUPABASE_URL',
-  'SUPABASE_ANON_KEY',
-  'SENTRY_DSN',
-  'LOGROCKET_APP_ID',
-  'GOOGLE_OAUTH_ENABLED'
-];
-
 const runOpsEmbed = spawnSync(process.execPath, [path.join(root, 'scripts/generate-admin-ops-embed.cjs')], {
   cwd: root,
   stdio: 'inherit'
@@ -156,26 +148,17 @@ if (!fs.existsSync(lucideUmd)) {
 }
 writeFile('assets/lucide.min.js', fs.readFileSync(lucideUmd));
 
-const publicEnvDefaultsPath = path.join(root, 'config/public-env.defaults.json');
-const publicEnvDefaults = fs.existsSync(publicEnvDefaultsPath)
-  ? JSON.parse(fs.readFileSync(publicEnvDefaultsPath, 'utf8'))
-  : {};
+const {
+  buildPublicEnv,
+  isStrictPublicEnvBuild,
+  assertPublicEnvForBuild,
+  formatEnvJs
+} = require('./lib/public-env.cjs');
 
-const publicEnv = publicEnvKeys.reduce((env, key) => {
-  env[key] = process.env[key] || publicEnvDefaults[key] || '';
-  return env;
-}, {});
+const publicEnv = buildPublicEnv(process.env, root);
+assertPublicEnvForBuild(publicEnv, { strict: isStrictPublicEnvBuild() });
 
-if (!publicEnv.SUPABASE_ANON_KEY) {
-  console.warn(
-    '[build] SUPABASE_ANON_KEY is empty — set GitHub/Cloudflare Pages env or /env.js function binding.'
-  );
-}
-if (!publicEnv.SUPABASE_URL) {
-  publicEnv.SUPABASE_URL = 'https://hjfrcdstbyonmgatgwcc.supabase.co';
-}
-
-writeFile('env.js', 'window.__env = Object.assign({}, window.__env || {}, ' + JSON.stringify(publicEnv) + ');\n');
+writeFile('env.js', formatEnvJs(publicEnv));
 
 const pendingStaticFiles = [];
 staticFiles.forEach((file) => {

@@ -1,6 +1,6 @@
 /**
  * Runtime public env for Cloudflare Pages.
- * Serves /env.js from Pages environment variables (build-time static env.js may be empty).
+ * Serves /env.js from Pages environment variables (overrides empty build-time env.js).
  */
 const DEFAULT_SUPABASE_URL = 'https://hjfrcdstbyonmgatgwcc.supabase.co';
 
@@ -12,22 +12,38 @@ const PUBLIC_ENV_KEYS = [
   'GOOGLE_OAUTH_ENABLED'
 ];
 
+const ENV_SOURCE_KEYS = {
+  SUPABASE_URL: ['SUPABASE_URL', 'VITE_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL'],
+  SUPABASE_ANON_KEY: [
+    'SUPABASE_ANON_KEY',
+    'VITE_SUPABASE_ANON_KEY',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  ]
+};
+
 const headers = {
   'Content-Type': 'application/javascript; charset=utf-8',
   'Cache-Control': 'no-cache, no-store, must-revalidate'
 };
 
+function pickFromBindings(bindings, key) {
+  const sources = ENV_SOURCE_KEYS[key] || [key];
+  for (const sourceKey of sources) {
+    const value = bindings?.[sourceKey];
+    if (value != null && String(value).trim() !== '') {
+      return String(value).trim();
+    }
+  }
+  if (key === 'SUPABASE_URL') {
+    return DEFAULT_SUPABASE_URL;
+  }
+  return '';
+}
+
 export async function onRequest(context) {
   const payload = {};
   for (const key of PUBLIC_ENV_KEYS) {
-    const value = context.env?.[key];
-    if (value) {
-      payload[key] = String(value);
-    } else if (key === 'SUPABASE_URL') {
-      payload[key] = DEFAULT_SUPABASE_URL;
-    } else {
-      payload[key] = '';
-    }
+    payload[key] = pickFromBindings(context.env, key);
   }
 
   const body = `window.__env = Object.assign({}, window.__env || {}, ${JSON.stringify(payload)});\n`;
