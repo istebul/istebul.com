@@ -676,6 +676,23 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
         </div>
 
         <div class="card">
+          <div class="card-title">Canlı veri</div>
+          <p class="text-muted-sm">Simülasyon modundan canlı moda geçiş. Feed URL yalnızca edge tarafında kullanılır; istemciye açılmaz.</p>
+          <div class="form-group">
+            <label class="toggle">
+              <input type="checkbox" id="s-live_providers_enabled" />
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span class="text-muted-sm">Canlı sağlayıcı modu (live_providers_enabled)</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label>Canlı finans / faiz feed URL (edge)</label>
+            <input type="url" id="s-live_finance_feed_url" placeholder="https://…" autocomplete="off" />
+            <small class="text-muted">Boş bırakılırsa simülasyon katalog kullanılır. Açmadan önce feed’in çalıştığını doğrulayın.</small>
+          </div>
+          <p class="text-muted-sm" id="live-data-admin-hint" role="status">Plan: docs/LIVE_DATA_30DAY_CHECKLIST.md</p>
+        </div>
+        <div class="card">
           <div class="card-title">Sistem</div>
           <div class="form-group">
             <label class="toggle">

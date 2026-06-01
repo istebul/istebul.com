@@ -85,6 +85,7 @@ import {
     resetMarketData,
     saveMarketData
 } from './data/market-data.js';
+import { bootstrapLiveDataIntegrations } from './runtime/live-data-integrations.js';
 import { estimateListingPeriodicCost } from './engines/cost-engine.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from './core/storage-keys.js';
 import {
@@ -140,6 +141,8 @@ class App {
 
     async init() {
         try {
+            this.marketData = await bootstrapLiveDataIntegrations(this.marketData);
+
             const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
             initEnterpriseUx();
             initHomeCategories();

@@ -38,7 +38,8 @@ const checks = [
   'scripts/audit-footer-links.cjs',
   'scripts/audit-rehber-sitemap.cjs',
   'scripts/compliance-audit-check.cjs',
-  'scripts/platform-scorecard.cjs'
+  'scripts/platform-scorecard.cjs',
+  'scripts/live-data-readiness-audit.cjs'
 ];
 for (const script of checks) {
   run('node', [script]);

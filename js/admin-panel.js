@@ -1732,8 +1732,8 @@ async function loadDashboard() {
 
 const KEYS = ['phone','email','address','instagram','twitter','facebook','linkedin','youtube','tiktok',
               'site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc','title','description','auto_whatsapp_phone',
-              'analytics_clean_start_at'];
-const BOOLEAN_SETTING_KEYS = ['maintenance','home_category_auto_enabled','home_category_konut_enabled','home_category_tatil_enabled','home_category_finans_enabled','home_category_sigorta_enabled','home_category_kasko_enabled'];
+              'analytics_clean_start_at','live_finance_feed_url'];
+const BOOLEAN_SETTING_KEYS = ['maintenance','live_providers_enabled','home_category_auto_enabled','home_category_konut_enabled','home_category_tatil_enabled','home_category_finans_enabled','home_category_sigorta_enabled','home_category_kasko_enabled'];
 
 async function loadSettings() {
   const res = await fetchAdminTable(sb, {
