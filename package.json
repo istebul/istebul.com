@@ -1,6 +1,6 @@
 {
   "name": "istebu-v2",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Modern Turkish marketplace platform - isteBu v2",
   "main": "js/app.js",
   "scripts": {
@@ -99,7 +99,7 @@
     "wrangler": "^4.95.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "type": "module"
 }
