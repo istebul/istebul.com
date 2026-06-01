@@ -494,8 +494,9 @@
   margin-top: 0.75rem;
 }
 
+/* Hero photo + overlay: css/sigorta-hero-v1.css */
 .sigorta-page .vacation-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 45%, #0c4a6e 100%);
+  background: #0f172a;
 }
 
 /* Sigorta nav — tatil.css #vacation-nav ile aynı davranış, vacation dosyasına dokunulmaz */

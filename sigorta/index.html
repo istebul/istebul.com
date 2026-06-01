@@ -16,11 +16,12 @@
   <meta property="og:description" content="AI destekli sigorta karar motoru: koruma, teminat ve maliyet dengesi.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.istebul.com/sigorta/">
-  <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.svg">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/sigorta-hero.jpg">
+  <link rel="preload" href="/assets/images/sigorta-hero.jpg" as="image" fetchpriority="high">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Sigorta Karar Analizi | isteBul">
   <meta name="twitter:description" content="Koruma skoru, teminat yeterliliği ve prim verimliliği analizi.">
-  <meta name="twitter:image" content="https://www.istebul.com/assets/images/og-image.svg">
+  <meta name="twitter:image" content="https://www.istebul.com/assets/images/sigorta-hero.jpg">
   <link rel="stylesheet" href="/css/tatil.css">
   <link rel="stylesheet" href="/css/sigorta-page.css?v=1">
   <link rel="stylesheet" href="/css/vertical-themes.css">
@@ -28,6 +29,7 @@
   <link rel="stylesheet" href="/css/sigorta-results-v2.css?v=1">
   <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=4">
   <link rel="stylesheet" href="/css/sigorta-flow-visible-v1.css?v=1">
+  <link rel="stylesheet" href="/css/sigorta-hero-v1.css?v=1">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.istebul.com/#organization","name":"isteBul","url":"https://www.istebul.com/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ana sayfa","item":"https://www.istebul.com/"},{"@type":"ListItem","position":2,"name":"Sigorta","item":"https://www.istebul.com/sigorta/"}]},{"@type":"WebApplication","name":"isteBul Sigorta Karar Analizi","url":"https://www.istebul.com/sigorta/","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"Koruma, teminat ve prim verimliliği skorları ile sigorta karar desteği.","inLanguage":"tr-TR"},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Sigorta analizi poliçe taahhüdü mü?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Skor ve prim bandı bilgilendirme amaçlıdır; bağlayıcı teklif sigorta şirketine aittir."}},{"@type":"Question","name":"Hangi sigorta türleri desteklenir?","acceptedAnswer":{"@type":"Answer","text":"Araç, konut, sağlık ve seyahat sigortası profilleri modellenir."}}]}]}</script>
 </head>
 <body class="vacation-page sigorta-page">
@@ -53,7 +55,18 @@
     </nav>
   </div>
 
-  <section class="vacation-hero" aria-labelledby="sigorta-hero-title">
+  <section class="vacation-hero sigorta-hero" aria-labelledby="sigorta-hero-title">
+    <div class="vacation-hero-media" aria-hidden="true">
+      <picture>
+        <img
+          src="/assets/images/sigorta-hero.jpg"
+          alt=""
+          width="1920"
+          height="1080"
+          decoding="async"
+          fetchpriority="high">
+      </picture>
+    </div>
     <div class="vacation-hero-overlay" aria-hidden="true"></div>
     <div class="vacation-container vacation-hero-inner">
       <div class="vacation-hero-copy">
