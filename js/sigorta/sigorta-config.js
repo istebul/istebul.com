@@ -28,14 +28,20 @@ export const SIGORTA_STEP_DEFS = Object.freeze({
   profile: {
     id: 'profile',
     label: 'Profil',
-    title: 'Yaş ve medeni durum',
-    subtitle: 'Sağlık teminatı ve aile paketi için.'
+    title: 'Yaş bilgisi',
+    subtitle: 'Sağlık prim bandı ve yaş grubu teminatı için.'
   },
-  household: {
-    id: 'household',
-    label: 'Hane',
-    title: 'Hane yapısı',
-    subtitle: 'Aile koruması ve eşya / sağlık teminatı için.'
+  dependents: {
+    id: 'dependents',
+    label: 'Bağımlılar',
+    title: 'Bakmakla yükümlü olduğunuz kişiler',
+    subtitle: 'Aile paketi ve çocuk teminatı için (yoksa “Çocuk yok” seçin).'
+  },
+  occupancy: {
+    id: 'occupancy',
+    label: 'Konut hane',
+    title: 'Konutta yaşayanlar',
+    subtitle: 'Kişi sayısı DASK ve eşya teminat limitini etkiler.'
   },
   trip: {
     id: 'trip',
@@ -59,8 +65,8 @@ export const SIGORTA_STEP_DEFS = Object.freeze({
 
 const FLOW_BY_TYPE = Object.freeze({
   arac: ['type', 'driver', 'vehicle', 'risk', 'budget'],
-  konut: ['type', 'property', 'household', 'risk', 'budget'],
-  saglik: ['type', 'profile', 'household', 'risk', 'budget'],
+  konut: ['type', 'property', 'occupancy', 'risk', 'budget'],
+  saglik: ['type', 'profile', 'dependents', 'risk', 'budget'],
   seyahat: ['type', 'trip', 'risk', 'budget']
 });
 
@@ -138,6 +144,12 @@ export const SIGORTA_OPTIONS = {
     { value: '3', label: '3 kişi' },
     { value: '4plus', label: '4 ve üzeri' }
   ],
+  residents_count: [
+    { value: '1', label: '1 kişi' },
+    { value: '2', label: '2 kişi' },
+    { value: '3', label: '3 kişi' },
+    { value: '4plus', label: '4 ve üzeri' }
+  ],
   risk_perception: [
     { value: 'dusuk', label: 'Düşük', description: 'Temel koruma yeterli' },
     { value: 'orta', label: 'Orta', description: 'Dengeli teminat' },
@@ -183,7 +195,8 @@ const TYPE_ONLY_FIELDS = [
   'property_type',
   'destination_type',
   'trip_duration',
-  'traveler_count'
+  'traveler_count',
+  'residents_count'
 ];
 
 /**
@@ -197,10 +210,10 @@ export function resetSigortaFieldsForTypeChange(state, prevType) {
     state[key] = '';
   });
   const type = state.insurance_type;
-  if (type === 'arac' || type === 'seyahat') {
-    state.marital_status = '';
-    state.children_count = '';
-  }
+  state.marital_status = '';
+  state.children_count = '';
+  state.residents_count = '';
+
   if (type === 'arac') {
     state.property_role = '';
     state.property_type = '';
@@ -215,7 +228,6 @@ export function resetSigortaFieldsForTypeChange(state, prevType) {
     state.destination_type = '';
     state.trip_duration = '';
     state.traveler_count = '';
-    state.marital_status = '';
   } else if (type === 'saglik') {
     state.license_years = '';
     state.usage_type = '';
@@ -226,6 +238,7 @@ export function resetSigortaFieldsForTypeChange(state, prevType) {
     state.destination_type = '';
     state.trip_duration = '';
     state.traveler_count = '';
+    state.residents_count = '';
   } else if (type === 'seyahat') {
     state.license_years = '';
     state.usage_type = '';
@@ -233,7 +246,34 @@ export function resetSigortaFieldsForTypeChange(state, prevType) {
     state.vehicle_year_band = '';
     state.property_role = '';
     state.property_type = '';
-    state.marital_status = '';
-    state.children_count = '';
+  }
+}
+
+/**
+ * Tür değişince adım indeksini yeni akışa hizalar (eski adım kimliğinde takılmayı önler).
+ * @param {Record<string, unknown>} state
+ * @param {string} [prevType]
+ */
+export function syncSigortaStepIndexAfterTypeChange(state, prevType) {
+  const steps = getSigortaSteps(state.insurance_type);
+  if (!steps.length) {
+    state.stepIndex = 0;
+    return;
+  }
+  if (prevType && prevType !== state.insurance_type) {
+    state.stepIndex = Math.min(1, steps.length - 1);
+    return;
+  }
+  const current = steps[state.stepIndex];
+  const allowed = new Set(steps.map((s) => s.id));
+  if (!current || current.id === 'type') {
+    if (state.stepIndex > 0) state.stepIndex = Math.min(1, steps.length - 1);
+    return;
+  }
+  if (!allowed.has(current.id)) {
+    state.stepIndex = Math.min(1, steps.length - 1);
+  }
+  if (state.stepIndex >= steps.length) {
+    state.stepIndex = steps.length - 1;
   }
 }

@@ -46,6 +46,34 @@ test.describe('Site health — readability and layout', () => {
     await expect(page.locator('#sigorta-wizard button, #sigorta-wizard [role="button"]').first()).toBeVisible();
   });
 
+  test('/sigorta/ arac flow skips marital status and reaches results', async ({ page }) => {
+    await page.goto('/sigorta/');
+    await page.waitForLoadState('domcontentloaded');
+
+    await page.locator('#sigorta-wizard [data-field="insurance_type"][data-value="arac"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await expect(page.locator('#sigorta-wizard')).not.toContainText('Medeni durum');
+
+    await page.locator('#sigorta-wizard [data-manual="age"]').fill('35');
+    await page.locator('#sigorta-wizard [data-field="license_years"][data-value="3-10"]').click();
+    await page.locator('#sigorta-wizard [data-field="usage_type"][data-value="ozel"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-field="vehicle_category"][data-value="otomobil"]').click();
+    await page.locator('#sigorta-wizard [data-field="vehicle_year_band"][data-value="4-10"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-field="risk_perception"][data-value="orta"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-field="budget_level"][data-value="orta"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await expect(page.locator('#sigorta-results')).toBeVisible();
+    await expect(page.locator('#sigorta-results')).toContainText(/koruma|prim|₺/i);
+  });
+
   test('cookie consent blocks third-party scripts until accept', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');

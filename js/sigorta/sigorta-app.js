@@ -4,7 +4,8 @@ import {
   getSigortaSteps,
   SIGORTA_OPTIONS,
   SIGORTA_DISCLAIMER,
-  resetSigortaFieldsForTypeChange
+  resetSigortaFieldsForTypeChange,
+  syncSigortaStepIndexAfterTypeChange
 } from './sigorta-config.js';
 import {
   buildSigortaResults,
@@ -88,17 +89,16 @@ function canAdvance(state, step) {
     case 'property':
       return Boolean(state.property_role) && Boolean(state.property_type);
     case 'profile':
-      return isValidAge(state.age) && Boolean(state.marital_status);
-    case 'household':
-      if (state.insurance_type === 'konut') {
-        return (
-          isValidAge(state.age) &&
-          Boolean(state.marital_status) &&
-          state.children_count !== undefined &&
-          state.children_count !== ''
-        );
-      }
+      return isValidAge(state.age);
+    case 'dependents':
       return state.children_count !== undefined && state.children_count !== '';
+    case 'occupancy':
+      return (
+        isValidAge(state.age) &&
+        Boolean(state.residents_count) &&
+        state.children_count !== undefined &&
+        state.children_count !== ''
+      );
     case 'trip':
       return (
         Boolean(state.destination_type) &&
@@ -141,20 +141,19 @@ function renderStepBody(step, state, { renderOptionGrid }) {
     case 'profile':
       return `
       <label class="vacation-field"><span>Yaşınız</span>
+        <input type="number" min="18" max="99" data-manual="age" value="${state.age ?? ''}" placeholder="Örn: 35"></label>`;
+    case 'dependents':
+      return `
+      <p class="vacation-step-subtitle">18 yaş altı bakmakla yükümlü olduğunuz çocuk sayısı</p>
+      ${renderOptionGrid('children_count', SIGORTA_OPTIONS.children_count, true)}`;
+    case 'occupancy':
+      return `
+      <label class="vacation-field"><span>Poliçe sahibi yaşı</span>
         <input type="number" min="18" max="99" data-manual="age" value="${state.age ?? ''}" placeholder="Örn: 35"></label>
-      <p class="vacation-step-subtitle">Medeni durum</p>
-      ${renderOptionGrid('marital_status', SIGORTA_OPTIONS.marital_status, true)}`;
-    case 'household':
-      if (state.insurance_type === 'konut') {
-        return `
-        <label class="vacation-field"><span>Yaşınız</span>
-          <input type="number" min="18" max="99" data-manual="age" value="${state.age ?? ''}" placeholder="Örn: 35"></label>
-        <p class="vacation-step-subtitle">Medeni durum</p>
-        ${renderOptionGrid('marital_status', SIGORTA_OPTIONS.marital_status, true)}
-        <p class="vacation-step-subtitle">Çocuk sayısı</p>
-        ${renderOptionGrid('children_count', SIGORTA_OPTIONS.children_count, true)}`;
-      }
-      return renderOptionGrid('children_count', SIGORTA_OPTIONS.children_count, true);
+      <p class="vacation-step-subtitle">Konutta yaşayan kişi sayısı (siz dahil)</p>
+      ${renderOptionGrid('residents_count', SIGORTA_OPTIONS.residents_count, true)}
+      <p class="vacation-step-subtitle">18 yaş altı çocuk sayısı</p>
+      ${renderOptionGrid('children_count', SIGORTA_OPTIONS.children_count, true)}`;
     case 'trip':
       return `
       <p class="vacation-step-subtitle">Destinasyon</p>
@@ -306,6 +305,7 @@ function bootSigortaApp() {
         age: null,
         marital_status: '',
         children_count: '',
+        residents_count: '',
         license_years: '',
         usage_type: '',
         vehicle_category: '',
@@ -326,13 +326,7 @@ function bootSigortaApp() {
         if (state.insurance_type === prev) return;
         resetSigortaFieldsForTypeChange(state, prev);
         state._lastInsuranceType = state.insurance_type;
-        const steps = getSigortaSteps(state.insurance_type);
-        if (state.stepIndex >= steps.length) {
-          state.stepIndex = Math.max(0, steps.length - 1);
-        }
-        if (state.stepIndex > 0 && prev) {
-          state.stepIndex = 1;
-        }
+        syncSigortaStepIndexAfterTypeChange(state, prev);
       },
       onStepComplete(state, step) {
         return tracker.trackStep(step.id, state.stepIndex);

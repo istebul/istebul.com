@@ -16,7 +16,6 @@ const { buildSigortaPdfPayload } = await import('../../js/features/sigorta/sigor
 const sampleState = {
   insurance_type: 'saglik',
   age: 38,
-  marital_status: 'evli',
   children_count: '2',
   risk_perception: 'yuksek',
   budget_level: 'orta'

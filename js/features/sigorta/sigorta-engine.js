@@ -7,6 +7,11 @@ function travelerCountNumeric(value) {
   if (value === '4plus') return 4;
   return safeNumber(value) || 1;
 }
+
+function residentsCountNumeric(value) {
+  if (value === '4plus') return 4;
+  return safeNumber(value) || 1;
+}
 import { buildRiskItem, clampScore } from '../results/results-engine.js';
 
 function safeNumber(value) {
@@ -49,7 +54,8 @@ export function computeProtectionScore(state = {}) {
   else if (age >= 40) score += 4;
   else if (age > 0 && age < 28) score += 3;
 
-  if (state.marital_status === 'evli' && (type === 'konut' || type === 'saglik')) score += 5;
+  if (type === 'konut' && residentsCountNumeric(state.residents_count) >= 2) score += 5;
+  if (type === 'saglik' && childrenCountNumeric(state.children_count) > 0) score += 4;
 
   if (type === 'arac') {
     if (state.license_years === '0-2') score -= 4;
@@ -78,7 +84,7 @@ export function computeCoverageAdequacyScore(state = {}) {
   const kids = childrenCountNumeric(state.children_count);
 
   if (type === 'saglik' && kids > 0) score += 10;
-  if (type === 'konut' && state.marital_status === 'evli') score += 8;
+  if (type === 'konut' && residentsCountNumeric(state.residents_count) >= 2) score += 8;
   if (type === 'arac') {
     if (risk === 'yuksek') score += 6;
     if (state.usage_type === 'ticari') score += 4;
@@ -165,14 +171,13 @@ export function computeConfidenceScore(state = {}) {
       { ok: Boolean(state.property_role), weight: 12 },
       { ok: Boolean(state.property_type), weight: 10 },
       { ok: safeNumber(state.age) >= 18 && safeNumber(state.age) <= 99, weight: 10 },
-      { ok: Boolean(state.marital_status), weight: 8 },
+      { ok: Boolean(state.residents_count), weight: 10 },
       { ok: state.children_count !== undefined && state.children_count !== '', weight: 8 }
     );
   } else if (type === 'saglik') {
     checks.push(
-      { ok: safeNumber(state.age) >= 18 && safeNumber(state.age) <= 99, weight: 14 },
-      { ok: Boolean(state.marital_status), weight: 10 },
-      { ok: state.children_count !== undefined && state.children_count !== '', weight: 10 }
+      { ok: safeNumber(state.age) >= 18 && safeNumber(state.age) <= 99, weight: 18 },
+      { ok: state.children_count !== undefined && state.children_count !== '', weight: 12 }
     );
   } else if (type === 'seyahat') {
     checks.push(
@@ -296,8 +301,11 @@ export function buildStrengths(state = {}) {
   if (scores.coverage >= 70) items.push('Teminat yeterliliği iyi — profil ve ürün tipi dengeli.');
   if (scores.costEfficiency >= 68) items.push('Maliyet verimliliği olumlu — prim/teminat dengesi makul.');
   if (state.budget_level === 'orta') items.push('Dengeli bütçe seviyesi çoğu senaryo için esneklik sağlar.');
-  if (state.marital_status === 'evli' && state.insurance_type === 'konut') {
-    items.push('Evli profil konut sigortasında standart paketlerle uyumlu.');
+  if (
+    state.insurance_type === 'konut' &&
+    residentsCountNumeric(state.residents_count) >= 2
+  ) {
+    items.push('Çok kişili hane — konut ve eşya teminatı birlikte planlanmalı.');
   }
   if (items.length < 3) {
     items.push(`${optionLabel('insurance_type', state.insurance_type)} için yapılandırılmış analiz tamamlandı.`);
@@ -524,26 +532,19 @@ export function getSigortaProgress(state = {}) {
       { key: 'Konut durumu', value: optionLabel('property_role', state.property_role) },
       { key: 'Konut tipi', value: optionLabel('property_type', state.property_type) },
       { key: 'Yaş', value: state.age ? String(state.age) : '' },
-      { key: 'Medeni durum', value: optionLabel('marital_status', state.marital_status) },
-      { key: 'Çocuk', value: optionLabel('children_count', state.children_count) }
+      { key: 'Konutta yaşayan', value: optionLabel('residents_count', state.residents_count) },
+      { key: 'Çocuk (18 altı)', value: optionLabel('children_count', state.children_count) }
     );
   } else if (type === 'saglik') {
     rows.push(
       { key: 'Yaş', value: state.age ? String(state.age) : '' },
-      { key: 'Medeni durum', value: optionLabel('marital_status', state.marital_status) },
-      { key: 'Çocuk', value: optionLabel('children_count', state.children_count) }
+      { key: 'Bağımlı çocuk', value: optionLabel('children_count', state.children_count) }
     );
   } else if (type === 'seyahat') {
     rows.push(
       { key: 'Destinasyon', value: optionLabel('destination_type', state.destination_type) },
       { key: 'Süre', value: optionLabel('trip_duration', state.trip_duration) },
       { key: 'Yolcu', value: optionLabel('traveler_count', state.traveler_count) }
-    );
-  } else {
-    rows.push(
-      { key: 'Yaş', value: state.age ? String(state.age) : '' },
-      { key: 'Medeni durum', value: optionLabel('marital_status', state.marital_status) },
-      { key: 'Çocuk', value: optionLabel('children_count', state.children_count) }
     );
   }
 
