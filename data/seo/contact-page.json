@@ -1,12 +1,12 @@
 {
   "title": "İletişim | isteBul Destek ve İş Birliği",
-  "description": "isteBul destek, partner başvurusu ve kurumsal teklif talepleri. destek@istebul.com üzerinden bize ulaşın. KVKK başvuruları için iletişim kanalları.",
+  "description": "isteBul destek, partner başvurusu ve kurumsal teklif talepleri. info@istebul.com üzerinden bize ulaşın. KVKK başvuruları için iletişim kanalları.",
   "h1": "Bizimle iletişime geçin",
   "intro": "Kullanıcı desteği, iş ortaklığı, kurumsal teklifler ve geri bildirimler için aşağıdaki kanalları kullanabilirsiniz. Yanıt süresi talep türüne göre 1–3 iş günüdür.",
   "sections": [
     {
       "heading": "Destek ve satış",
-      "body": "Ürün kullanımı, hesap, abonelik ve analiz sonuçları hakkında destek@istebul.com adresine yazın. Konu satırına kategori adını (Auto, Konut, Tatil, Finans) eklemeniz çözümü hızlandırır.",
+      "body": "Ürün kullanımı, hesap, abonelik ve analiz sonuçları hakkında info@istebul.com adresine yazın. Konu satırına kategori adını (Auto, Konut, Tatil, Finans) eklemeniz çözümü hızlandırır.",
       "subsections": []
     },
     {
@@ -21,7 +21,7 @@
     },
     {
       "heading": "Kurumsal teklif talepleri",
-      "body": "Kurumsal lisans, toplu analiz veya özel entegrasyon talepleri için destek@istebul.com adresine «Kurumsal Teklif» konu başlığıyla yazın. Kısa kullanım senaryonuzu ve tahmini hacmi belirtin.",
+      "body": "Kurumsal lisans, toplu analiz veya özel entegrasyon talepleri için info@istebul.com adresine «Kurumsal Teklif» konu başlığıyla yazın. Kısa kullanım senaryonuzu ve tahmini hacmi belirtin.",
       "subsections": []
     },
     {
@@ -38,7 +38,7 @@
   "faqs": [
     {
       "q": "Telefon desteği var mı?",
-      "a": "Öncelikli kanal e-postadır. Acil güvenlik konularında destek@istebul.com kullanın."
+      "a": "Öncelikli kanal e-postadır. Acil güvenlik konularında info@istebul.com kullanın."
     },
     {
       "q": "Partner olmak için ne gerekir?",
@@ -46,12 +46,12 @@
     },
     {
       "q": "Basın ve medya iletişimi?",
-      "a": "Medya talepleri için destek@istebul.com adresine «Basın» konu başlığıyla yazın."
+      "a": "Medya talepleri için info@istebul.com adresine «Basın» konu başlığıyla yazın."
     },
     {
       "q": "Veri silme talebi nasıl iletilir?",
       "a": "KVKK başvurusu olarak e-posta gönderin; kimlik doğrulama adımları paylaşılır."
     }
   ],
-  "conclusion": "Sorularınız için destek@istebul.com adresinden bize ulaşın. Karar analizine hemen başlamak için ücretsiz Auto akışını deneyebilirsiniz."
+  "conclusion": "Sorularınız için info@istebul.com adresinden bize ulaşın. Karar analizine hemen başlamak için ücretsiz Auto akışını deneyebilirsiniz."
 }

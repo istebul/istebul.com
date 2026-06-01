@@ -39,7 +39,7 @@ Footer **Şirket** column links now resolve to full, indexable static pages with
 ## New / generated pages
 
 - `hakkimizda.html` — AI karar platformu, KVKK, metodoloji, CTA
-- `iletisim.html` — destek@istebul.com, partner/kurumsal/KVKK kartları
+- `iletisim.html` — info@istebul.com, partner/kurumsal/KVKK kartları
 - `dist/rehber/index.html` — Rehber hub (liste)
 - `dist/rehber/{slug}/index.html` — 13 guides including all footer targets
 

@@ -489,7 +489,7 @@ function renderContactCards() {
   return `<section class="seo-section seo-contact-grid" aria-label="İletişim kanalları">
     <div class="seo-contact-card">
       <h2>Destek ve satış</h2>
-      <p><a href="mailto:destek@istebul.com">destek@istebul.com</a></p>
+      <p><a href="mailto:info@istebul.com">info@istebul.com</a></p>
       <p class="seo-contact-note">Ürün, hesap ve analiz soruları</p>
     </div>
     <div class="seo-contact-card">
@@ -499,12 +499,12 @@ function renderContactCards() {
     </div>
     <div class="seo-contact-card">
       <h2>Kurumsal teklif</h2>
-      <p><a href="mailto:destek@istebul.com?subject=Kurumsal%20Teklif">Kurumsal teklif talebi</a></p>
+      <p><a href="mailto:info@istebul.com?subject=Kurumsal%20Teklif">Kurumsal teklif talebi</a></p>
       <p class="seo-contact-note">Lisans ve entegrasyon talepleri</p>
     </div>
     <div class="seo-contact-card">
       <h2>KVKK başvurusu</h2>
-      <p><a href="mailto:destek@istebul.com?subject=KVKK%20Başvurusu">KVKK başvurusu gönder</a></p>
+      <p><a href="mailto:info@istebul.com?subject=KVKK%20Başvurusu">KVKK başvurusu gönder</a></p>
       <p class="seo-contact-note">Yanıt süresi en geç 30 gün</p>
     </div>
   </section>`;
