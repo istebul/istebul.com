@@ -69,6 +69,8 @@ import {
   buildSiteAnalyticsMetrics,
   filterRowsByPreset,
   renderSiteAnalyticsDashboard,
+  renderPlatformAnalyticsEmptyGuide,
+  exportPlatformAnalyticsCsv,
   FILTER_PRESETS
 } from './admin/platform-site-analytics-dashboard.js';
 import {
@@ -89,6 +91,7 @@ let platformAnalyticsDataMode = ANALYTICS_DATA_MODES.REAL;
 let unifiedFunnelDataMode = ANALYTICS_DATA_MODES.REAL;
 let autoAnalyticsDataMode = ANALYTICS_DATA_MODES.REAL;
 let analyticsCleanStartAt = null;
+let lastPlatformSiteMetrics = null;
 
 function renderAdminConfigError(message) {
   document.body.innerHTML = `
@@ -2759,8 +2762,13 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
         .limit(rowLimit)
   });
 
+  const analyticsBanner = renderAdminDataSourceNotices([analyticsRes]);
+
   if (analyticsRes.error && !(analyticsRes.data || []).length) {
-    el.innerHTML = `${renderAdminDataSourceNotices([analyticsRes])}<p class="empty">Hata: ${escapeHtml(analyticsRes.error.message)}</p>`;
+    el.innerHTML = `${analyticsBanner}${renderPlatformAnalyticsEmptyGuide({
+      fetchError: analyticsRes.error.message
+    })}`;
+    bindPlatformAnalyticsToolbar(el, filterId, dataMode);
     return;
   }
 
@@ -2768,11 +2776,6 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
     return ts >= sinceMs;
   });
-  const analyticsBanner = renderAdminDataSourceNotices([analyticsRes]);
-  if (!rows.length) {
-    el.innerHTML = '<p class="empty">Henüz platform analytics event yok. Migration ve analytics-ingest deploy sonrası veri akışı başlar.</p>';
-    return;
-  }
 
   const timeFiltered = filterRowsByPreset(rows, filterId);
   const filteredRows = filterAnalyticsRows(
@@ -2780,7 +2783,19 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     dataMode,
     dataMode === ANALYTICS_DATA_MODES.REAL ? analyticsCleanStartAt : null
   );
+
+  if (!rows.length || !filteredRows.length) {
+    el.innerHTML = `${analyticsBanner}${renderAnalyticsDataModeToolbar(dataMode)}${renderPlatformAnalyticsEmptyGuide({
+      rawRowCount: rows.length,
+      filteredRowCount: filteredRows.length,
+      dataMode
+    })}`;
+    bindPlatformAnalyticsToolbar(el, filterId, dataMode);
+    return;
+  }
+
   const siteMetrics = buildSiteAnalyticsMetrics(filteredRows);
+  lastPlatformSiteMetrics = siteMetrics;
   const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
   const siteDashboard = renderSiteAnalyticsDashboard(siteMetrics, {
     filterId,
@@ -3010,6 +3025,11 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     <p class="text-muted">${crmEvents.length} CRM event (son 2500 kayıt içinde)</p>
   `;
 
+  bindPlatformAnalyticsToolbar(el, filterId, dataMode);
+}
+
+function bindPlatformAnalyticsToolbar(el, filterId, dataMode) {
+  if (!el) return;
   el.querySelectorAll('[data-site-analytics-filter]').forEach((btn) => {
     btn.addEventListener('click', () => {
       loadPlatformAnalytics(btn.getAttribute('data-site-analytics-filter') || '7d', platformAnalyticsDataMode);
@@ -3019,6 +3039,18 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     btn.addEventListener('click', () => {
       loadPlatformAnalytics(platformAnalyticsFilter, btn.getAttribute('data-analytics-data-mode') || ANALYTICS_DATA_MODES.REAL);
     });
+  });
+  el.querySelectorAll('[data-action="export-platform-csv"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const kind = btn.getAttribute('data-kind');
+      const result = exportPlatformAnalyticsCsv(lastPlatformSiteMetrics, kind);
+      if (result.ok) toast('CSV indirildi');
+      else if (result.error === 'empty') toast('Dışa aktarılacak satır yok', 'error');
+      else toast('Önce veri yükleyin', 'error');
+    });
+  });
+  el.querySelectorAll('[data-page-target="settings"]').forEach((btn) => {
+    btn.addEventListener('click', () => showPage('settings', btn));
   });
 }
 

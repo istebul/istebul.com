@@ -4,6 +4,8 @@ import {
   buildSiteAnalyticsMetrics,
   buildPagePathRows,
   buildTopEventRows,
+  exportPlatformAnalyticsCsv,
+  renderPlatformAnalyticsEmptyGuide,
   filterRowsByPreset
 } from '../../js/admin/platform-site-analytics-dashboard.js';
 
@@ -79,6 +81,17 @@ test('buildSiteAnalyticsMetrics includes page and event tables', () => {
   assert.ok(Array.isArray(metrics.pagePathRows));
   assert.ok(Array.isArray(metrics.topEventRows));
   assert.ok(metrics.pagePathRows.length >= 1);
+});
+
+test('renderPlatformAnalyticsEmptyGuide includes deploy checklist', () => {
+  const html = renderPlatformAnalyticsEmptyGuide({ rawRowCount: 0 });
+  assert.match(html, /analytics-ingest/);
+  assert.match(html, /çerez onayı/i);
+});
+
+test('exportPlatformAnalyticsCsv returns empty when no rows', () => {
+  const metrics = buildSiteAnalyticsMetrics([]);
+  assert.equal(exportPlatformAnalyticsCsv(metrics, 'page_paths').error, 'empty');
 });
 
 test('filterRowsByPreset keeps today only', () => {

@@ -293,17 +293,162 @@ export function buildSiteAnalyticsMetrics(rows) {
   };
 }
 
+function escapeCsvCell(value) {
+  const text = value === null || value === undefined ? '' : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function triggerCsvDownload(filename, headers, dataRows) {
+  const csv = [
+    headers.join(','),
+    ...dataRows.map((row) => headers.map((key) => escapeCsvCell(row[key])).join(','))
+  ].join('\n');
+  const blob = new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * @param {ReturnType<typeof buildSiteAnalyticsMetrics>} metrics
+ * @param {'page_paths'|'top_events'|'traffic'|'categories'} kind
+ */
+export function exportPlatformAnalyticsCsv(metrics, kind) {
+  if (!metrics) return { ok: false, error: 'no_metrics' };
+  const date = new Date().toISOString().slice(0, 10);
+
+  if (kind === 'page_paths') {
+    const rows = metrics.pagePathRows || [];
+    if (!rows.length) return { ok: false, error: 'empty' };
+    triggerCsvDownload(`platform-sayfa-trafik-${date}.csv`, [
+      'path',
+      'sessions',
+      'events',
+      'views',
+      'analysis',
+      'leads',
+      'conversion'
+    ], rows);
+    return { ok: true };
+  }
+
+  if (kind === 'top_events') {
+    const rows = metrics.topEventRows || [];
+    if (!rows.length) return { ok: false, error: 'empty' };
+    triggerCsvDownload(`platform-event-trafik-${date}.csv`, [
+      'eventName',
+      'section',
+      'count',
+      'sessions'
+    ], rows);
+    return { ok: true };
+  }
+
+  if (kind === 'traffic') {
+    const rows = metrics.trafficRows || [];
+    if (!rows.length) return { ok: false, error: 'empty' };
+    triggerCsvDownload(`platform-trafik-kaynak-${date}.csv`, [
+      'source',
+      'visits',
+      'analysis',
+      'leads',
+      'conversion'
+    ], rows);
+    return { ok: true };
+  }
+
+  if (kind === 'categories') {
+    const rows = metrics.categoryRows || [];
+    if (!rows.length) return { ok: false, error: 'empty' };
+    triggerCsvDownload(`platform-kategori-${date}.csv`, [
+      'label',
+      'visit',
+      'analysis',
+      'results',
+      'lead',
+      'conversion'
+    ], rows.map((r) => ({
+      label: r.label,
+      visit: r.visit,
+      analysis: r.analysis,
+      results: r.results,
+      lead: r.lead,
+      conversion: r.conversion
+    })));
+    return { ok: true };
+  }
+
+  return { ok: false, error: 'unknown_kind' };
+}
+
+/**
+ * Veri yok / filtre sonucu boş — deploy ve consent kontrol listesi.
+ */
+export function renderPlatformAnalyticsEmptyGuide({
+  rawRowCount = 0,
+  filteredRowCount = 0,
+  dataMode = 'real',
+  fetchError = ''
+} = {}) {
+  const filteredEmpty = rawRowCount > 0 && filteredRowCount === 0;
+  const title = fetchError
+    ? 'Analytics verisi yüklenemedi'
+    : filteredEmpty
+      ? 'Seçilen veri modunda kayıt yok'
+      : 'Henüz site analytics verisi yok';
+
+  const intro = fetchError
+    ? escapeHtml(fetchError)
+    : filteredEmpty
+      ? `Ham ${rawRowCount} event var; <strong>${escapeHtml(String(dataMode))}</strong> filtresi sonrası 0 kayıt. Test modu veya &quot;Tüm veri&quot; deneyin.`
+      : 'Event akışı başlamadı veya henüz kayıt oluşmadı.';
+
+  return `
+    <div class="platform-analytics-guide" role="status">
+      <h4 style="margin:0 0 8px">${title}</h4>
+      <p class="text-muted-sm" style="margin:0 0 12px">${intro}</p>
+      <ol class="platform-analytics-guide__list">
+        <li>Supabase migration: <code>20260602_analytics_internal_traffic.sql</code></li>
+        <li>Edge deploy: <code>analytics-ingest</code>, <code>admin-action</code></li>
+        <li>Production secret: <code>ANALYTICS_HASH_SALT</code></li>
+        <li>Sitede ziyaretçi <strong>çerez onayı</strong> vermeli (analytics consent)</li>
+        <li>Admin → Ayarlar → Analytics: dahili IP / test cihazı hariç tutma</li>
+        <li>Veri modu: <strong>Gerçek kullanıcı</strong> veya <strong>Tüm veri</strong></li>
+      </ol>
+      <p class="text-muted-sm" style="margin:12px 0 0">
+        <button type="button" class="btn btn-ghost btn-sm" data-page-target="settings">Analytics ayarlarına git</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-analytics-data-mode="all">Tüm veriyi göster</button>
+      </p>
+    </div>`;
+}
+
 export function renderSiteAnalyticsDashboard(metrics, { filterId = '7d', windowNote = '' } = {}) {
   const filters = FILTER_PRESETS.map(
     (p) =>
       `<button type="button" class="btn btn-sm ${p.id === filterId ? 'btn-primary' : 'btn-ghost'}" data-site-analytics-filter="${escapeHtml(p.id)}">${escapeHtml(p.label)}</button>`
   ).join('');
 
+  const exportActions = `
+    <div class="platform-site-analytics__exports" role="group" aria-label="CSV dışa aktar">
+      <button type="button" class="btn btn-ghost btn-sm" data-action="export-platform-csv" data-kind="page_paths">Sayfa CSV</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-action="export-platform-csv" data-kind="top_events">Event CSV</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-action="export-platform-csv" data-kind="traffic">Kaynak CSV</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-action="export-platform-csv" data-kind="categories">Kategori CSV</button>
+    </div>`;
+
   return `
     <section class="platform-site-analytics" aria-labelledby="site-analytics-title">
       <div class="platform-site-analytics__head">
         <h3 id="site-analytics-title" style="margin:0">Site geneli ölçüm</h3>
-        <div class="platform-site-analytics__filters" role="group" aria-label="Zaman aralığı">${filters}</div>
+        <div class="platform-site-analytics__toolbar">
+          <div class="platform-site-analytics__filters" role="group" aria-label="Zaman aralığı">${filters}</div>
+          ${exportActions}
+        </div>
       </div>
       ${windowNote ? `<p class="text-muted-sm" style="margin:8px 0 12px">${escapeHtml(windowNote)}</p>` : ''}
       <div class="stat-grid platform-site-analytics__kpis">

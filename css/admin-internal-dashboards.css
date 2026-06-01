@@ -108,10 +108,45 @@
 .platform-site-analytics__head {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+}
+
+.platform-site-analytics__toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.platform-site-analytics__exports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.platform-analytics-guide {
+  margin: 0 0 20px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--surface2, #f8fafc);
+  border-left: 4px solid var(--warning, #d97706);
+}
+
+.platform-analytics-guide__list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--text, #0f172a);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.platform-analytics-guide__list code {
+  font-size: 12px;
 }
 
 .platform-site-analytics__filters {
