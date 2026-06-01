@@ -22,7 +22,8 @@ const HOMEPAGE_EXTENSION = [
   'css/home-first-impression.css',
   'css/home-category-compact-v1.css',
   'css/home-newsletter-compact-v1.css',
-  'css/home-category-layout-fix-v1.css'
+  'css/home-category-layout-fix-v1.css',
+  'css/home-newsletter-fix-critical-v1.css'
 ];
 
 /** Design system + readability for vertical decision pages (replaces 3–4 link tags). */

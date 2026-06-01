@@ -1,0 +1,111 @@
+/**
+ * Footer newsletter — critical overrides (wins over style.css grid on .newsletter-form).
+ */
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact {
+  display: block !important;
+  max-width: 42rem !important;
+  margin-inline: auto !important;
+  padding: 1rem 1.1rem !important;
+  margin-top: 1rem !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact > div:first-child {
+  margin-bottom: 0.65rem;
+}
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact h3 {
+  font-size: 0.95rem !important;
+  margin: 0 0 0.2rem !important;
+}
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact > div > p {
+  font-size: 0.8rem !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-form {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  gap: 0.6rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-form-row {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+}
+
+@media (min-width: 520px) {
+  body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-form-row {
+    flex-direction: row !important;
+    align-items: stretch !important;
+  }
+
+  body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-form-row input[type='email'] {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-form-row .newsletter-submit {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+}
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-form input[type='email'] {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 42px !important;
+  box-sizing: border-box !important;
+}
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-consent {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-consent input[type='checkbox'] {
+  flex: 0 0 auto !important;
+  margin-top: 0.2rem !important;
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-consent span {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  line-height: 1.45 !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-submit {
+  width: 100% !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+}
+
+@media (min-width: 520px) {
+  body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact .newsletter-form-row .newsletter-submit {
+    width: auto !important;
+  }
+}

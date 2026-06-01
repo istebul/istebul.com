@@ -41,8 +41,9 @@
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
     <link rel="preload" href="css/style.css?v=65" as="style">
     <link rel="stylesheet" href="css/style.css?v=65">
-    <link rel="preload" href="css/bundles/homepage.bundle.css?v=4" as="style">
-    <link rel="stylesheet" href="css/bundles/homepage.bundle.css?v=4">
+    <link rel="preload" href="css/bundles/homepage.bundle.css?v=5" as="style">
+    <link rel="stylesheet" href="css/bundles/homepage.bundle.css?v=5">
+    <link rel="stylesheet" href="css/home-newsletter-fix-critical-v1.css?v=1">
 
 <style>
 .hidden{display:none!important;}
@@ -1252,12 +1253,14 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                     <p data-i18n="footer.newsletterDesc">Seçilmiş piyasa ve TCO güncellemeleri — yalnızca onayladığınızda.</p>
                 </div>
                 <form id="newsletter-form" class="newsletter-form">
-                    <input type="email" id="newsletter-email" placeholder="E-posta adresiniz" required autocomplete="email" data-i18n-placeholder="footer.emailPlaceholder">
+                    <div class="newsletter-form-row">
+                        <input type="email" id="newsletter-email" placeholder="E-posta adresiniz" required autocomplete="email" data-i18n-placeholder="footer.emailPlaceholder">
+                        <button type="submit" class="btn btn-primary newsletter-submit" data-i18n="footer.subscribe">Abone Ol</button>
+                    </div>
                     <label class="newsletter-consent">
                         <input type="checkbox" id="newsletter-marketing-consent" name="marketing_consent" value="accepted" required>
                         <span data-i18n-html="footer.consentHtml">Pazarlama e-postası almayı kabul ediyorum. <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik politikası</a>.</span>
                     </label>
-                    <button type="submit" class="btn btn-primary newsletter-submit" data-i18n="footer.subscribe">Abone Ol</button>
                 </form>
             </div>
             <div class="footer-cta-row">

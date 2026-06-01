@@ -841,6 +841,16 @@ function setupAutoMobileNav() {
       setOpen(false);
     }
   });
+
+  document.addEventListener('click', (event) => {
+    if (!header.classList.contains('is-nav-open')) return;
+    if (event.target.closest('.auto-header')) return;
+    setOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') setOpen(false);
+  });
 }
 
 function getCurrentLeadPayload() {

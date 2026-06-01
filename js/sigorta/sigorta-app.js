@@ -349,6 +349,12 @@ function bootSigortaApp() {
     revealFlow(domRefs.flow);
     flowApi.startWizard?.();
     ensureWizardRendered();
+    requestAnimationFrame(() => {
+      const wizard = domRefs.wizard;
+      if (wizard && !wizard.hidden) {
+        wizard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   }
 
   trackSigortaPageView();

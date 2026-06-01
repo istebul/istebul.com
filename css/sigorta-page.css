@@ -6,6 +6,25 @@ body.sigorta-page.vacation-page {
   text-rendering: optimizeLegibility;
 }
 
+body.sigorta-page #sigorta-wizard {
+  min-height: 12rem;
+  scroll-margin-top: 5rem;
+}
+
+body.sigorta-page #sigorta-wizard .vacation-wizard-card {
+  margin-top: 0.5rem;
+}
+
+body.sigorta-page #sigorta-wizard .vacation-option-grid--type {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+@media (min-width: 640px) {
+  body.sigorta-page #sigorta-wizard .vacation-option-grid--type {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 body.sigorta-page .vacation-hero-copy h1,
 body.sigorta-page .vacation-hero-lead,
 body.sigorta-page .vacation-hero-badge {
