@@ -29,6 +29,15 @@ function loadCloudflareBeacon(token) {
   document.head.appendChild(script);
 }
 
+function loadClarity(projectId) {
+  if (!projectId || typeof window.clarity === 'function') return;
+  const script = document.createElement('script');
+  script.async = true;
+  script.dataset.analyticsProvider = 'clarity';
+  script.src = `https://www.clarity.ms/tag/${encodeURIComponent(projectId)}`;
+  document.head.appendChild(script);
+}
+
 function loadGa4(measurementId) {
   if (!measurementId || document.querySelector('script[data-analytics-provider="ga4"]')) return;
 
@@ -57,4 +66,5 @@ export function loadThirdPartyMeasurement() {
   loadPlausible(envValue('PLAUSIBLE_DOMAIN') || 'istebul.com');
   loadCloudflareBeacon(envValue('CF_WEB_ANALYTICS_TOKEN'));
   loadGa4(envValue('GA4_MEASUREMENT_ID'));
+  loadClarity(envValue('CLARITY_PROJECT_ID'));
 }

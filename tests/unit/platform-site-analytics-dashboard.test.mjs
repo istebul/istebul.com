@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {
   buildSiteAnalyticsMetrics,
   buildPagePathRows,
+  buildPagePathDetail,
   buildTopEventRows,
+  renderPagePathDetailPanel,
   exportPlatformAnalyticsCsv,
   renderPlatformAnalyticsEmptyGuide,
   filterRowsByPreset
@@ -60,6 +62,22 @@ test('buildSiteAnalyticsMetrics aggregates site funnel KPIs', () => {
   const autoRow = metrics.categoryRows.find((r) => r.id === 'auto');
   assert.ok(autoRow);
   assert.ok(autoRow.analysis >= 1);
+});
+
+test('buildPagePathDetail filters events for one path', () => {
+  const detail = buildPagePathDetail(sampleRows, '/auto/');
+  assert.equal(detail.path, '/auto/');
+  assert.ok(detail.totalEvents >= 1);
+  assert.ok(detail.eventRows.length >= 1);
+  assert.ok(detail.recent.length >= 1);
+});
+
+test('renderPagePathDetailPanel includes path and event table', () => {
+  const detail = buildPagePathDetail(sampleRows, '/auto/');
+  const html = renderPagePathDetailPanel(detail);
+  assert.match(html, /\/auto\//);
+  assert.match(html, /platform-path-detail-panel/);
+  assert.match(html, /auto_page_view/);
 });
 
 test('buildPagePathRows groups by path with sessions', () => {

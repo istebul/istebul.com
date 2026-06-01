@@ -149,6 +149,24 @@
   font-size: 12px;
 }
 
+.platform-path-detail {
+  margin: 16px 0 24px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--surface2, #f8fafc);
+}
+
+.platform-path-detail--empty {
+  background: transparent;
+  border-style: dashed;
+}
+
+.platform-path-detail__head code {
+  font-size: 13px;
+  word-break: break-all;
+}
+
 .platform-site-analytics__filters {
   display: flex;
   flex-wrap: wrap;
