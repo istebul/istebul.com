@@ -46,7 +46,8 @@ function renderCorporateFooter() {
       <a href="/metodoloji/">Metodoloji</a>
       <a href="/iletisim.html">İletişim</a>
       <a href="/gizlilik.html">Gizlilik</a>
-      <a href="/kvkk.html">KVKK</a>
+      <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a>
+      <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a>
       <a href="/partner-olun.html">Partner olun</a>
     </nav>
   </footer>`;
@@ -267,10 +268,15 @@ function renderKvkkPage(site, controller, retention) {
 </head>
 <body>
   ${renderCorporateNav('/kvkk.html')}
-  <main class="section legal-page corporate-page">
+  <main class="section legal-page corporate-page" id="ziyaretci-aydinlatma">
     <p class="kicker">KVKK</p>
     <h1>Kişisel Verilerin Korunması Aydınlatma Metni</h1>
     <p class="lead">6698 sayılı Kişisel Verilerin Korunması Kanunu (“KVKK”) kapsamında, veri sorumlusu sıfatıyla kişisel verilerinizin işlenmesine ilişkin bilgilendirme metnidir.</p>
+
+    <section class="auto-methodology premium-methodology" id="kvkk-bilgilendirme">
+      <div><h3>Kişisel Verilerin Korunması Kanunu hakkında bilgilendirme</h3></div>
+      <p>6698 sayılı Kanun, kişisel verilerin işlenmesinde veri sorumlularına şeffaflık ve ilgili kişi hakları yükümlülüğü getirir. isteBul olarak web sitesi ziyaretçileri, kayıtlı kullanıcılar ve iş ortakları için aşağıdaki aydınlatma metni geçerlidir.</p>
+    </section>
 
     <section class="auto-methodology premium-methodology">
       <div><h3>Veri sorumlusu</h3></div>

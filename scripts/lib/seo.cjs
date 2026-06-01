@@ -465,7 +465,8 @@ function renderSeoFooter({ site, guideLinks }) {
           <li><a href="/iletisim.html">İletişim</a></li>
           <li><a href="/yardim.html">Yardım merkezi</a></li>
           <li><a href="/gizlilik.html">Gizlilik</a></li>
-          <li><a href="/kvkk.html">KVKK</a></li>
+          <li><a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a></li>
+          <li><a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a></li>
         </ul>
       </div>
     </div>
