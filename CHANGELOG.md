@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.2.19] — 2026-06-01
+
+### Fixed
+- Homepage: social + newsletter styles in `homepage.bundle` (≤3 stylesheets; E2E deploy gate)
+
 ## [2.2.18] — 2026-06-01
 
 ### Fixed
