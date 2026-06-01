@@ -2,6 +2,11 @@
  * Sigorta V2 — deterministik karar motoru (skorlar LLM ile değiştirilmez).
  */
 import { SIGORTA_OPTIONS } from '../../sigorta/sigorta-config.js';
+
+function travelerCountNumeric(value) {
+  if (value === '4plus') return 4;
+  return safeNumber(value) || 1;
+}
 import { buildRiskItem, clampScore } from '../results/results-engine.js';
 
 function safeNumber(value) {
@@ -35,14 +40,29 @@ export function computeProtectionScore(state = {}) {
   else if (type === 'seyahat') score += 6;
 
   const kids = childrenCountNumeric(state.children_count);
-  score += Math.min(kids * 4, 12);
+  if (type === 'saglik' || type === 'konut') {
+    score += Math.min(kids * 4, 12);
+  }
 
   const age = safeNumber(state.age);
   if (age >= 55) score += 8;
   else if (age >= 40) score += 4;
   else if (age > 0 && age < 28) score += 3;
 
-  if (state.marital_status === 'evli') score += 5;
+  if (state.marital_status === 'evli' && (type === 'konut' || type === 'saglik')) score += 5;
+
+  if (type === 'arac') {
+    if (state.license_years === '0-2') score -= 4;
+    if (state.license_years === '11plus') score += 4;
+    if (state.usage_type === 'ticari') score += 6;
+    if (state.vehicle_year_band === '11plus') score += 5;
+  }
+
+  if (type === 'seyahat') {
+    const travelers = travelerCountNumeric(state.traveler_count);
+    score += Math.min(travelers * 3, 9);
+    if (state.destination_type === 'schengen') score += 4;
+  }
 
   return clampScore(score);
 }
@@ -59,8 +79,17 @@ export function computeCoverageAdequacyScore(state = {}) {
 
   if (type === 'saglik' && kids > 0) score += 10;
   if (type === 'konut' && state.marital_status === 'evli') score += 8;
-  if (type === 'arac' && risk === 'yuksek') score += 6;
-  if (type === 'seyahat' && risk === 'dusuk') score += 4;
+  if (type === 'arac') {
+    if (risk === 'yuksek') score += 6;
+    if (state.usage_type === 'ticari') score += 4;
+    if (state.vehicle_year_band === '0-3' && budget === 'dusuk') score -= 6;
+  }
+  if (type === 'seyahat') {
+    if (risk === 'dusuk') score += 4;
+    if (state.destination_type === 'schengen' && budget === 'dusuk') score -= 8;
+    if (travelerCountNumeric(state.traveler_count) >= 3) score += 5;
+  }
+  if (type === 'konut' && state.property_role === 'kiraci') score += 4;
 
   if (risk === 'yuksek' && budget === 'yuksek') score += 14;
   else if (risk === 'orta' && budget !== 'dusuk') score += 10;
@@ -120,14 +149,44 @@ export function computeOverallDecisionScore(state = {}) {
 
 export function computeConfidenceScore(state = {}) {
   let score = 32;
-  const checks = [
-    { ok: Boolean(state.insurance_type), weight: 18 },
-    { ok: safeNumber(state.age) >= 18 && safeNumber(state.age) <= 99, weight: 14 },
-    { ok: Boolean(state.marital_status), weight: 10 },
-    { ok: state.children_count !== undefined && state.children_count !== '', weight: 10 },
+  const type = state.insurance_type;
+  const checks = [{ ok: Boolean(type), weight: 18 }];
+
+  if (type === 'arac') {
+    checks.push(
+      { ok: safeNumber(state.age) >= 18 && safeNumber(state.age) <= 99, weight: 14 },
+      { ok: Boolean(state.license_years), weight: 10 },
+      { ok: Boolean(state.usage_type), weight: 10 },
+      { ok: Boolean(state.vehicle_category), weight: 8 },
+      { ok: Boolean(state.vehicle_year_band), weight: 8 }
+    );
+  } else if (type === 'konut') {
+    checks.push(
+      { ok: Boolean(state.property_role), weight: 12 },
+      { ok: Boolean(state.property_type), weight: 10 },
+      { ok: safeNumber(state.age) >= 18 && safeNumber(state.age) <= 99, weight: 10 },
+      { ok: Boolean(state.marital_status), weight: 8 },
+      { ok: state.children_count !== undefined && state.children_count !== '', weight: 8 }
+    );
+  } else if (type === 'saglik') {
+    checks.push(
+      { ok: safeNumber(state.age) >= 18 && safeNumber(state.age) <= 99, weight: 14 },
+      { ok: Boolean(state.marital_status), weight: 10 },
+      { ok: state.children_count !== undefined && state.children_count !== '', weight: 10 }
+    );
+  } else if (type === 'seyahat') {
+    checks.push(
+      { ok: Boolean(state.destination_type), weight: 12 },
+      { ok: Boolean(state.trip_duration), weight: 10 },
+      { ok: Boolean(state.traveler_count), weight: 10 }
+    );
+  }
+
+  checks.push(
     { ok: Boolean(state.risk_perception), weight: 14 },
     { ok: Boolean(state.budget_level), weight: 14 }
-  ];
+  );
+
   checks.forEach(({ ok, weight }) => {
     if (ok) score += weight;
   });
@@ -156,9 +215,13 @@ export function buildRiskAnalysis(state = {}) {
     costEff < 50 ? 'yüksek' : costEff < 68 ? 'orta' : 'düşük';
 
   const familyLevel =
-    kids >= 2 && state.insurance_type === 'saglik' && state.budget_level === 'dusuk'
+    state.insurance_type === 'saglik' &&
+    kids >= 2 &&
+    state.budget_level === 'dusuk'
       ? 'yüksek'
-      : kids > 0 && state.budget_level === 'dusuk'
+      : (state.insurance_type === 'saglik' || state.insurance_type === 'konut') &&
+          kids > 0 &&
+          state.budget_level === 'dusuk'
         ? 'orta'
         : 'düşük';
 
@@ -349,11 +412,26 @@ const BADGES = {
 };
 
 function estimatePremiumBand(state) {
-  const base = { arac: 18_000, konut: 9_500, saglik: 28_000, seyahat: 1_200 }[state.insurance_type] || 12_000;
+  const type = state.insurance_type;
+  let base = { arac: 18_000, konut: 9_500, saglik: 28_000, seyahat: 1_200 }[type] || 12_000;
   const budgetMul = { dusuk: 0.75, orta: 1, yuksek: 1.35 }[state.budget_level] || 1;
   const riskMul = { dusuk: 0.9, orta: 1, yuksek: 1.15 }[state.risk_perception] || 1;
-  const kids = childrenCountNumeric(state.children_count);
-  return Math.round(base * budgetMul * riskMul * (1 + kids * 0.06));
+
+  if (type === 'arac') {
+    if (state.usage_type === 'ticari') base *= 1.2;
+    if (state.vehicle_year_band === '11plus') base *= 1.08;
+    if (state.license_years === '0-2') base *= 1.12;
+  } else if (type === 'seyahat') {
+    const travelers = travelerCountNumeric(state.traveler_count);
+    base *= 0.85 + travelers * 0.35;
+    if (state.destination_type === 'schengen') base *= 1.15;
+    if (state.trip_duration === '16plus') base *= 1.25;
+  } else {
+    const kids = childrenCountNumeric(state.children_count);
+    base *= 1 + kids * 0.06;
+  }
+
+  return Math.round(base * budgetMul * riskMul);
 }
 
 export function buildSigortaResults(state = {}) {
@@ -428,12 +506,51 @@ export function buildSigortaSummary(state = {}, results = []) {
 }
 
 export function getSigortaProgress(state = {}) {
-  return [
-    { key: 'Sigorta türü', value: optionLabel('insurance_type', state.insurance_type) },
-    { key: 'Yaş', value: state.age ? String(state.age) : '' },
-    { key: 'Medeni durum', value: optionLabel('marital_status', state.marital_status) },
-    { key: 'Çocuk', value: optionLabel('children_count', state.children_count) },
+  const rows = [
+    { key: 'Sigorta türü', value: optionLabel('insurance_type', state.insurance_type) }
+  ];
+  const type = state.insurance_type;
+
+  if (type === 'arac') {
+    rows.push(
+      { key: 'Sürücü yaşı', value: state.age ? String(state.age) : '' },
+      { key: 'Ehliyet', value: optionLabel('license_years', state.license_years) },
+      { key: 'Kullanım', value: optionLabel('usage_type', state.usage_type) },
+      { key: 'Araç tipi', value: optionLabel('vehicle_category', state.vehicle_category) },
+      { key: 'Araç yaşı', value: optionLabel('vehicle_year_band', state.vehicle_year_band) }
+    );
+  } else if (type === 'konut') {
+    rows.push(
+      { key: 'Konut durumu', value: optionLabel('property_role', state.property_role) },
+      { key: 'Konut tipi', value: optionLabel('property_type', state.property_type) },
+      { key: 'Yaş', value: state.age ? String(state.age) : '' },
+      { key: 'Medeni durum', value: optionLabel('marital_status', state.marital_status) },
+      { key: 'Çocuk', value: optionLabel('children_count', state.children_count) }
+    );
+  } else if (type === 'saglik') {
+    rows.push(
+      { key: 'Yaş', value: state.age ? String(state.age) : '' },
+      { key: 'Medeni durum', value: optionLabel('marital_status', state.marital_status) },
+      { key: 'Çocuk', value: optionLabel('children_count', state.children_count) }
+    );
+  } else if (type === 'seyahat') {
+    rows.push(
+      { key: 'Destinasyon', value: optionLabel('destination_type', state.destination_type) },
+      { key: 'Süre', value: optionLabel('trip_duration', state.trip_duration) },
+      { key: 'Yolcu', value: optionLabel('traveler_count', state.traveler_count) }
+    );
+  } else {
+    rows.push(
+      { key: 'Yaş', value: state.age ? String(state.age) : '' },
+      { key: 'Medeni durum', value: optionLabel('marital_status', state.marital_status) },
+      { key: 'Çocuk', value: optionLabel('children_count', state.children_count) }
+    );
+  }
+
+  rows.push(
     { key: 'Risk algısı', value: optionLabel('risk_perception', state.risk_perception) },
     { key: 'Bütçe', value: optionLabel('budget_level', state.budget_level) }
-  ];
+  );
+
+  return rows;
 }

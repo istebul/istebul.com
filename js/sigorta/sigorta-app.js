@@ -1,9 +1,10 @@
 import { initDecisionFlow } from '../vertical/vertical-decision-app.js';
 import { resolveWizardConfig } from '../vertical/wizard-i18n.js';
 import {
-  SIGORTA_STEPS,
+  getSigortaSteps,
   SIGORTA_OPTIONS,
-  SIGORTA_DISCLAIMER
+  SIGORTA_DISCLAIMER,
+  resetSigortaFieldsForTypeChange
 } from './sigorta-config.js';
 import {
   buildSigortaResults,
@@ -66,40 +67,109 @@ const tracker = {
   events: {}
 };
 
+function isValidAge(age) {
+  const n = Number(age);
+  return Number.isFinite(n) && n >= 18 && n <= 99;
+}
+
 function canAdvance(state, step) {
   if (!step) return false;
-  if (step.id === 'type') return Boolean(state.insurance_type);
-  if (step.id === 'profile') {
-    const age = Number(state.age);
-    return age >= 18 && age <= 99 && Boolean(state.marital_status);
+  switch (step.id) {
+    case 'type':
+      return Boolean(state.insurance_type);
+    case 'driver':
+      return (
+        isValidAge(state.age) &&
+        Boolean(state.license_years) &&
+        Boolean(state.usage_type)
+      );
+    case 'vehicle':
+      return Boolean(state.vehicle_category) && Boolean(state.vehicle_year_band);
+    case 'property':
+      return Boolean(state.property_role) && Boolean(state.property_type);
+    case 'profile':
+      return isValidAge(state.age) && Boolean(state.marital_status);
+    case 'household':
+      if (state.insurance_type === 'konut') {
+        return (
+          isValidAge(state.age) &&
+          Boolean(state.marital_status) &&
+          state.children_count !== undefined &&
+          state.children_count !== ''
+        );
+      }
+      return state.children_count !== undefined && state.children_count !== '';
+    case 'trip':
+      return (
+        Boolean(state.destination_type) &&
+        Boolean(state.trip_duration) &&
+        Boolean(state.traveler_count)
+      );
+    case 'risk':
+      return Boolean(state.risk_perception);
+    case 'budget':
+      return Boolean(state.budget_level);
+    default:
+      return true;
   }
-  if (step.id === 'household') return state.children_count !== undefined && state.children_count !== '';
-  if (step.id === 'risk') return Boolean(state.risk_perception);
-  if (step.id === 'budget') return Boolean(state.budget_level);
-  return true;
 }
 
 function renderStepBody(step, state, { renderOptionGrid }) {
-  if (step.id === 'type') {
-    return renderOptionGrid('insurance_type', SIGORTA_OPTIONS.insurance_type, true);
-  }
-  if (step.id === 'profile') {
-    return `
+  switch (step.id) {
+    case 'type':
+      return renderOptionGrid('insurance_type', SIGORTA_OPTIONS.insurance_type, true);
+    case 'driver':
+      return `
+      <label class="vacation-field"><span>Sürücü yaşı</span>
+        <input type="number" min="18" max="99" data-manual="age" value="${state.age ?? ''}" placeholder="Örn: 35"></label>
+      <p class="vacation-step-subtitle">Ehliyet süresi</p>
+      ${renderOptionGrid('license_years', SIGORTA_OPTIONS.license_years, true)}
+      <p class="vacation-step-subtitle">Kullanım tipi</p>
+      ${renderOptionGrid('usage_type', SIGORTA_OPTIONS.usage_type, true)}`;
+    case 'vehicle':
+      return `
+      <p class="vacation-step-subtitle">Araç tipi</p>
+      ${renderOptionGrid('vehicle_category', SIGORTA_OPTIONS.vehicle_category, true)}
+      <p class="vacation-step-subtitle">Araç yaşı</p>
+      ${renderOptionGrid('vehicle_year_band', SIGORTA_OPTIONS.vehicle_year_band, true)}`;
+    case 'property':
+      return `
+      <p class="vacation-step-subtitle">Konut durumu</p>
+      ${renderOptionGrid('property_role', SIGORTA_OPTIONS.property_role, true)}
+      <p class="vacation-step-subtitle">Konut tipi</p>
+      ${renderOptionGrid('property_type', SIGORTA_OPTIONS.property_type, true)}`;
+    case 'profile':
+      return `
       <label class="vacation-field"><span>Yaşınız</span>
         <input type="number" min="18" max="99" data-manual="age" value="${state.age ?? ''}" placeholder="Örn: 35"></label>
       <p class="vacation-step-subtitle">Medeni durum</p>
       ${renderOptionGrid('marital_status', SIGORTA_OPTIONS.marital_status, true)}`;
+    case 'household':
+      if (state.insurance_type === 'konut') {
+        return `
+        <label class="vacation-field"><span>Yaşınız</span>
+          <input type="number" min="18" max="99" data-manual="age" value="${state.age ?? ''}" placeholder="Örn: 35"></label>
+        <p class="vacation-step-subtitle">Medeni durum</p>
+        ${renderOptionGrid('marital_status', SIGORTA_OPTIONS.marital_status, true)}
+        <p class="vacation-step-subtitle">Çocuk sayısı</p>
+        ${renderOptionGrid('children_count', SIGORTA_OPTIONS.children_count, true)}`;
+      }
+      return renderOptionGrid('children_count', SIGORTA_OPTIONS.children_count, true);
+    case 'trip':
+      return `
+      <p class="vacation-step-subtitle">Destinasyon</p>
+      ${renderOptionGrid('destination_type', SIGORTA_OPTIONS.destination_type, true)}
+      <p class="vacation-step-subtitle">Seyahat süresi</p>
+      ${renderOptionGrid('trip_duration', SIGORTA_OPTIONS.trip_duration, true)}
+      <p class="vacation-step-subtitle">Kaç kişi seyahat edecek?</p>
+      ${renderOptionGrid('traveler_count', SIGORTA_OPTIONS.traveler_count, true)}`;
+    case 'risk':
+      return renderOptionGrid('risk_perception', SIGORTA_OPTIONS.risk_perception, true);
+    case 'budget':
+      return renderOptionGrid('budget_level', SIGORTA_OPTIONS.budget_level, true);
+    default:
+      return '';
   }
-  if (step.id === 'household') {
-    return renderOptionGrid('children_count', SIGORTA_OPTIONS.children_count, true);
-  }
-  if (step.id === 'risk') {
-    return renderOptionGrid('risk_perception', SIGORTA_OPTIONS.risk_perception, true);
-  }
-  if (step.id === 'budget') {
-    return renderOptionGrid('budget_level', SIGORTA_OPTIONS.budget_level, true);
-  }
-  return '';
 }
 
 function buildCommentary(state, _results) {
@@ -225,7 +295,8 @@ function bootSigortaApp() {
       themeClass: 'sigorta-page',
       domIds: SIGORTA_DOM_IDS,
       externalHeroBindings: true,
-      steps: SIGORTA_STEPS,
+      steps: getSigortaSteps(),
+      getSteps: (s) => getSigortaSteps(s.insurance_type),
       disclaimer: SIGORTA_DISCLAIMER,
       resultsTitle: 'Sigorta koruma senaryoları',
       resultsKicker: 'Sigorta analizi tamamlandı',
@@ -235,11 +306,34 @@ function bootSigortaApp() {
         age: null,
         marital_status: '',
         children_count: '',
+        license_years: '',
+        usage_type: '',
+        vehicle_category: '',
+        vehicle_year_band: '',
+        property_role: '',
+        property_type: '',
+        destination_type: '',
+        trip_duration: '',
+        traveler_count: '',
         risk_perception: '',
         budget_level: ''
       },
       canAdvance,
       renderStepBody,
+      onFieldChange(state, field) {
+        if (field !== 'insurance_type') return;
+        const prev = state._lastInsuranceType || '';
+        if (state.insurance_type === prev) return;
+        resetSigortaFieldsForTypeChange(state, prev);
+        state._lastInsuranceType = state.insurance_type;
+        const steps = getSigortaSteps(state.insurance_type);
+        if (state.stepIndex >= steps.length) {
+          state.stepIndex = Math.max(0, steps.length - 1);
+        }
+        if (state.stepIndex > 0 && prev) {
+          state.stepIndex = 1;
+        }
+      },
       onStepComplete(state, step) {
         return tracker.trackStep(step.id, state.stepIndex);
       },

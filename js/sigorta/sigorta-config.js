@@ -1,35 +1,80 @@
-export const SIGORTA_STEPS = [
-  {
+/** @typedef {{ id: string, label: string, title: string, subtitle: string }} SigortaStep */
+
+export const SIGORTA_STEP_DEFS = Object.freeze({
+  type: {
     id: 'type',
     label: 'Tür',
     title: 'Hangi sigorta korumasına ihtiyaç duyuyorsunuz?',
     subtitle: 'Analiz, seçtiğiniz ürün ailesine göre özelleştirilir.'
   },
-  {
+  driver: {
+    id: 'driver',
+    label: 'Sürücü',
+    title: 'Sürücü ve kullanım bilgileri',
+    subtitle: 'Trafik ve kasko prim bandı için temel girdiler.'
+  },
+  vehicle: {
+    id: 'vehicle',
+    label: 'Araç',
+    title: 'Araç profili',
+    subtitle: 'Araç tipi ve yaşı teminat seçeneklerini etkiler.'
+  },
+  property: {
+    id: 'property',
+    label: 'Konut',
+    title: 'Konut bilgileri',
+    subtitle: 'DASK, yangın ve eşya teminatı için.'
+  },
+  profile: {
     id: 'profile',
     label: 'Profil',
     title: 'Yaş ve medeni durum',
-    subtitle: 'Teminat ihtiyacı ve risk profili için temel girdiler.'
+    subtitle: 'Sağlık teminatı ve aile paketi için.'
   },
-  {
+  household: {
     id: 'household',
     label: 'Hane',
-    title: 'Çocuk sayısı',
-    subtitle: 'Aile koruması ve sağlık teminatı için önemlidir.'
+    title: 'Hane yapısı',
+    subtitle: 'Aile koruması ve eşya / sağlık teminatı için.'
   },
-  {
+  trip: {
+    id: 'trip',
+    label: 'Seyahat',
+    title: 'Seyahat detayları',
+    subtitle: 'Yolcu sayısı ve süre prim bandını belirler.'
+  },
+  risk: {
     id: 'risk',
     label: 'Risk',
     title: 'Risk algınız',
     subtitle: 'Koruma seviyesi ve teminat derinliği bu tercihe göre ayarlanır.'
   },
-  {
+  budget: {
     id: 'budget',
     label: 'Bütçe',
     title: 'Bütçe seviyesi',
     subtitle: 'Prim–teminat dengesi ve maliyet verimliliği hesaplanır.'
   }
-];
+});
+
+const FLOW_BY_TYPE = Object.freeze({
+  arac: ['type', 'driver', 'vehicle', 'risk', 'budget'],
+  konut: ['type', 'property', 'household', 'risk', 'budget'],
+  saglik: ['type', 'profile', 'household', 'risk', 'budget'],
+  seyahat: ['type', 'trip', 'risk', 'budget']
+});
+
+/**
+ * @param {string} [insuranceType]
+ * @returns {SigortaStep[]}
+ */
+export function getSigortaSteps(insuranceType) {
+  const ids = insuranceType ? FLOW_BY_TYPE[insuranceType] || ['type'] : ['type'];
+  return ids.map((id) => SIGORTA_STEP_DEFS[id]).filter(Boolean);
+}
+
+/** @deprecated — use getSigortaSteps(type); kept for tests/imports */
+export const SIGORTA_STEPS = getSigortaSteps('saglik');
 
 export const SIGORTA_OPTIONS = {
   insurance_type: [
@@ -49,6 +94,49 @@ export const SIGORTA_OPTIONS = {
     { value: '1', label: '1 çocuk' },
     { value: '2', label: '2 çocuk' },
     { value: '3plus', label: '3 ve üzeri' }
+  ],
+  license_years: [
+    { value: '0-2', label: '0–2 yıl', description: 'Yeni ehliyet' },
+    { value: '3-10', label: '3–10 yıl', description: 'Deneyimli' },
+    { value: '11plus', label: '11+ yıl', description: 'Uzun süreli' }
+  ],
+  usage_type: [
+    { value: 'ozel', label: 'Özel kullanım', description: 'Günlük / bireysel' },
+    { value: 'ticari', label: 'Ticari kullanım', description: 'İş / filo' }
+  ],
+  vehicle_category: [
+    { value: 'otomobil', label: 'Otomobil' },
+    { value: 'motosiklet', label: 'Motosiklet' },
+    { value: 'ticari_arac', label: 'Ticari araç' }
+  ],
+  vehicle_year_band: [
+    { value: '0-3', label: '0–3 yaş', description: 'Sıfır / yeni' },
+    { value: '4-10', label: '4–10 yaş', description: 'Orta yaş' },
+    { value: '11plus', label: '11+ yaş', description: 'Eski model' }
+  ],
+  property_role: [
+    { value: 'malik', label: 'Malik', description: 'Mülk sahibiyim' },
+    { value: 'kiraci', label: 'Kiracı', description: 'Kiracıyım' }
+  ],
+  property_type: [
+    { value: 'daire', label: 'Daire' },
+    { value: 'mustakil', label: 'Müstakil' }
+  ],
+  destination_type: [
+    { value: 'yurtici', label: 'Yurt içi' },
+    { value: 'yurtdisi', label: 'Yurt dışı' },
+    { value: 'schengen', label: 'Schengen / AB' }
+  ],
+  trip_duration: [
+    { value: '1-7', label: '1–7 gün' },
+    { value: '8-15', label: '8–15 gün' },
+    { value: '16plus', label: '16+ gün' }
+  ],
+  traveler_count: [
+    { value: '1', label: '1 kişi' },
+    { value: '2', label: '2 kişi' },
+    { value: '3', label: '3 kişi' },
+    { value: '4plus', label: '4 ve üzeri' }
   ],
   risk_perception: [
     { value: 'dusuk', label: 'Düşük', description: 'Temel koruma yeterli' },
@@ -85,3 +173,67 @@ export const SIGORTA_INTEREST_CTAS = [
     description: 'Sigorta uzmanı ile kısa görüşme talebi'
   }
 ];
+
+const TYPE_ONLY_FIELDS = [
+  'license_years',
+  'usage_type',
+  'vehicle_category',
+  'vehicle_year_band',
+  'property_role',
+  'property_type',
+  'destination_type',
+  'trip_duration',
+  'traveler_count'
+];
+
+/**
+ * Tür değişince diğer dallara ait alanları temizler.
+ * @param {Record<string, unknown>} state
+ * @param {string} [prevType]
+ */
+export function resetSigortaFieldsForTypeChange(state, prevType) {
+  if (!state || state.insurance_type === prevType) return;
+  TYPE_ONLY_FIELDS.forEach((key) => {
+    state[key] = '';
+  });
+  const type = state.insurance_type;
+  if (type === 'arac' || type === 'seyahat') {
+    state.marital_status = '';
+    state.children_count = '';
+  }
+  if (type === 'arac') {
+    state.property_role = '';
+    state.property_type = '';
+    state.destination_type = '';
+    state.trip_duration = '';
+    state.traveler_count = '';
+  } else if (type === 'konut') {
+    state.license_years = '';
+    state.usage_type = '';
+    state.vehicle_category = '';
+    state.vehicle_year_band = '';
+    state.destination_type = '';
+    state.trip_duration = '';
+    state.traveler_count = '';
+    state.marital_status = '';
+  } else if (type === 'saglik') {
+    state.license_years = '';
+    state.usage_type = '';
+    state.vehicle_category = '';
+    state.vehicle_year_band = '';
+    state.property_role = '';
+    state.property_type = '';
+    state.destination_type = '';
+    state.trip_duration = '';
+    state.traveler_count = '';
+  } else if (type === 'seyahat') {
+    state.license_years = '';
+    state.usage_type = '';
+    state.vehicle_category = '';
+    state.vehicle_year_band = '';
+    state.property_role = '';
+    state.property_type = '';
+    state.marital_status = '';
+    state.children_count = '';
+  }
+}

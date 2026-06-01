@@ -43,6 +43,12 @@ export function buildSigortaPdfPayload({ state = {}, planTier = 'free', engine =
       age: state.age ? String(state.age) : '—',
       maritalStatus: optionLabel('marital_status', state.marital_status),
       children: optionLabel('children_count', state.children_count),
+      licenseYears: optionLabel('license_years', state.license_years),
+      usageType: optionLabel('usage_type', state.usage_type),
+      vehicleCategory: optionLabel('vehicle_category', state.vehicle_category),
+      propertyRole: optionLabel('property_role', state.property_role),
+      destination: optionLabel('destination_type', state.destination_type),
+      travelers: optionLabel('traveler_count', state.traveler_count),
       riskPerception: optionLabel('risk_perception', state.risk_perception),
       budgetLevel: optionLabel('budget_level', state.budget_level)
     },

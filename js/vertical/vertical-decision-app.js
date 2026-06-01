@@ -66,14 +66,20 @@ export function initDecisionFlow(config) {
       .replace(/"/g, '&quot;');
   }
 
+  function getSteps() {
+    return typeof config.getSteps === 'function' ? config.getSteps(state) : config.steps;
+  }
+
   function currentStep() {
-    return config.steps[state.stepIndex];
+    const steps = getSteps();
+    return steps[state.stepIndex];
   }
 
   function renderProgress() {
     const progressEl = el('stepProgress');
     if (!progressEl) return;
-    progressEl.innerHTML = config.steps
+    const steps = getSteps();
+    progressEl.innerHTML = steps
       .map((step, i) => {
         const active = i === state.stepIndex;
         const done = i < state.stepIndex;
@@ -181,7 +187,8 @@ export function initDecisionFlow(config) {
       if (!config.canAdvance(state, step) && step?.id !== 'note') return;
       if (config.onStepComplete) await config.onStepComplete(state, step);
       state.stepIndex += 1;
-      if (state.stepIndex >= config.steps.length) {
+      const steps = getSteps();
+      if (state.stepIndex >= steps.length) {
         await showResults();
       } else {
         renderWizard();
@@ -198,7 +205,8 @@ export function initDecisionFlow(config) {
     const mount = el('wizard');
     if (!mount) return;
 
-    if (state.stepIndex >= config.steps.length) {
+    const steps = getSteps();
+    if (state.stepIndex >= steps.length) {
       mount.hidden = true;
       return;
     }
@@ -215,7 +223,7 @@ export function initDecisionFlow(config) {
       <div class="vacation-wizard-actions">
         ${state.stepIndex > 0 ? `<button type="button" class="btn btn-ghost" id="${dom.back}">${escapeHtml(wt('common.back', 'Geri'))}</button>` : ''}
         <button type="button" class="btn btn-primary" id="${dom.next}" ${config.canAdvance(state, step) ? '' : 'disabled'}>
-          ${state.stepIndex === config.steps.length - 1 ? escapeHtml(wt('common.showResults', 'Sonuçları gör')) : escapeHtml(wt('common.continue', 'Devam et →'))}
+          ${state.stepIndex === steps.length - 1 ? escapeHtml(wt('common.showResults', 'Sonuçları gör')) : escapeHtml(wt('common.continue', 'Devam et →'))}
         </button>
       </div>
     </div>`;
