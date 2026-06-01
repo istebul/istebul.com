@@ -6,6 +6,8 @@ import {
   fetchPublicCampaigns,
   fetchPublishedPosts,
   formatContentDate,
+  getGuideCategory,
+  GUIDE_CATEGORIES,
   renderContentEmpty
 } from './public-content.js';
 import { escapeHtml } from '../../core/security.js';
@@ -183,25 +185,48 @@ export async function renderCampaignsPage(root = document) {
   window.lucide?.createIcons?.();
 }
 
-export async function renderBlogPage(root = document) {
+export async function renderBlogPage(root = document, categoryFilter = '') {
   const list = root.querySelector('#page-blog [data-content-list="blog"]');
+  const filterBar = root.querySelector('#page-blog [data-blog-category-filter]');
   if (!list) return;
+
+  const activeCategory = getGuideCategory(categoryFilter)?.id || '';
+
+  if (filterBar) {
+    filterBar.innerHTML = `
+      <div class="ib-guides-tabs ib-blog-filter-tabs" role="tablist" aria-label="Blog kategorileri">
+        <a class="ib-guides-tab${activeCategory ? '' : ' is-active'}" href="/blog" data-native-route>Tümü</a>
+        ${GUIDE_CATEGORIES.map(
+          (cat) => `
+          <a
+            class="ib-guides-tab${activeCategory === cat.id ? ' is-active' : ''}"
+            href="/blog?kategori=${encodeURIComponent(cat.id)}"
+            data-native-route
+          >${escapeHtml(cat.label)}</a>`
+        ).join('')}
+      </div>`;
+  }
+
   list.innerHTML = '<p class="text-muted-sm">Yükleniyor…</p>';
-  const posts = await fetchPublishedPosts(40);
+  const posts = await fetchPublishedPosts(40, activeCategory);
   list.innerHTML = posts.length
     ? `<div class="ib-content-list-grid">${posts
         .map((post) =>
           renderListCard({
-            kicker: 'Blog',
+            kicker: getGuideCategory(post.category)?.label || 'Blog',
             title: post.title,
-            excerpt: excerptText(post.body, 180),
+            excerpt: post.excerpt || excerptText(post.body, 180),
             meta: formatContentDate(post.created_at),
             href: blogPostPath(post.slug),
             cta: 'Yazıyı oku'
           })
         )
         .join('')}</div>`
-    : renderContentEmpty('Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.');
+    : renderContentEmpty(
+        activeCategory
+          ? `${getGuideCategory(activeCategory)?.label || 'Bu kategori'} için henüz yayınlanmış rehber yok.`
+          : 'Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.'
+      );
   window.lucide?.createIcons?.();
 }
 
@@ -221,12 +246,14 @@ export async function renderBlogPostPage(root = document, slug) {
 
   mount.innerHTML = `
     <article class="ib-content-article">
-      <p class="kicker">Blog · ${escapeHtml(formatContentDate(post.created_at))}</p>
+      <p class="kicker">${escapeHtml(getGuideCategory(post.category)?.label || 'Blog')} · ${escapeHtml(formatContentDate(post.created_at))}</p>
       <h1>${escapeHtml(post.title)}</h1>
+      ${post.cover_image_url ? `<p class="ib-content-cover"><img src="${escapeHtml(post.cover_image_url)}" alt="" loading="lazy" decoding="async"></p>` : ''}
+      ${post.source_label ? `<p class="ib-content-card-meta text-muted-sm">Kaynak: ${post.source_url ? `<a href="${escapeHtml(post.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(post.source_label)}</a>` : escapeHtml(post.source_label)}</p>` : ''}
       <div class="ib-content-prose">${escapeHtml(post.body).replace(/\n/g, '<br>')}</div>
       <p class="ib-prerender-actions">
         <a class="btn btn-outline" href="/blog" data-native-route>← Tüm yazılar</a>
-        <a class="btn btn-primary" href="/auto/" data-analytics-cta="cta_primary_auto" data-analytics-placement="blog_post">Ücretsiz analiz başlat</a>
+        <a class="btn btn-primary" href="${escapeHtml(getGuideCategory(post.category)?.ctaHref || '/auto/')}" data-analytics-cta="cta_primary_auto" data-analytics-placement="blog_post">${escapeHtml(getGuideCategory(post.category)?.ctaLabel || 'Ücretsiz analiz başlat')}</a>
       </p>
     </article>`;
   window.lucide?.createIcons?.();

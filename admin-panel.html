@@ -898,19 +898,42 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
       </div>
 
       <div class="page" id="page-blog">
-        <div class="page-header"><h2>Blog / Haberler</h2><p>İçerik yazıları</p></div>
+        <div class="page-header"><h2>Blog / Haberler</h2><p>Karar rehberleri — kategori, kapak görseli ve kaynak alanları</p></div>
         <div class="card">
           <div class="card-title">Yeni yazı</div>
           <div class="form-row">
             <div class="form-group"><label>Başlık</label><input type="text" id="post-title" oninput="autoSlug()" /></div>
             <div class="form-group"><label>URL (slug)</label><input type="text" id="post-slug" /></div>
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Kategori</label>
+              <select id="post-category">
+                <option value="auto">Araba</option>
+                <option value="konut">Konut</option>
+                <option value="tatil">Tatil</option>
+                <option value="finans">Finansman</option>
+                <option value="sigorta">Sigorta</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Kapak görseli URL</label><input type="url" id="post-cover" placeholder="/assets/images/auto-hero.jpg" /></div>
+          </div>
+          <div class="form-group"><label>Kısa özet (liste kartı)</label><input type="text" id="post-excerpt" maxlength="220" /></div>
+          <div class="form-row">
+            <div class="form-group"><label>Kaynak etiketi</label><input type="text" id="post-source-label" placeholder="Resmi Gazete / BDDK" /></div>
+            <div class="form-group"><label>Kaynak URL (opsiyonel)</label><input type="url" id="post-source-url" /></div>
+          </div>
           <div class="form-group"><label>İçerik</label><textarea id="post-content" class="textarea-xl"></textarea></div>
-          <div class="form-group">
+          <div class="form-row">
             <label class="toggle">
               <input type="checkbox" id="post-published" />
               <div class="toggle-track"><div class="toggle-thumb"></div></div>
               <span class="text-muted-sm">Hemen yayınla</span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="post-featured" />
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span class="text-muted-sm">Öne çıkan (hero kart)</span>
             </label>
           </div>
           <div class="actions"><button class="btn btn-primary" data-action="save-post">Ekle</button></div>

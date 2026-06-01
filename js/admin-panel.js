@@ -1993,21 +1993,33 @@ async function loadPosts() {
       : '<p class="empty">Henüz yazı yok.</p>';
     return;
   }
-  el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Slug</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
-    data.map(p => `<tr><td><strong>${escapeHtml(p.title||'—')}</strong></td><td class="text-muted text-xs">/${escapeHtml(p.slug||'—')}</td><td><span class="badge ${p.is_published?'badge-green':'badge-yellow'}">${p.is_published?'Yayında':'Taslak'}</span></td><td class="text-muted cell-nowrap">${new Date(p.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-post" data-id="${safeAttr(p.id)}" data-active="${p.is_published}">${p.is_published?'Taslağa al':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-post" data-id="${safeAttr(p.id)}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
+  el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Kategori</th><th>Slug</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
+    data.map(p => `<tr><td><strong>${escapeHtml(p.title||'—')}</strong>${p.is_featured ? ' <span class="badge badge-blue">Öne çıkan</span>' : ''}</td><td class="text-muted text-xs">${escapeHtml(p.category||'auto')}</td><td class="text-muted text-xs">/${escapeHtml(p.slug||'—')}</td><td><span class="badge ${p.is_published?'badge-green':'badge-yellow'}">${p.is_published?'Yayında':'Taslak'}</span></td><td class="text-muted cell-nowrap">${new Date(p.created_at).toLocaleDateString('tr-TR')}</td><td><div class="table-actions"><button class="btn btn-ghost btn-sm" data-action="toggle-post" data-id="${safeAttr(p.id)}" data-active="${p.is_published}">${p.is_published?'Taslağa al':'Yayınla'}</button><button class="btn btn-danger btn-sm" data-action="delete-post" data-id="${safeAttr(p.id)}">Sil</button></div></td></tr>`).join('') + '</tbody></table>';
 }
 
 async function savePost() {
   const title = document.getElementById('post-title').value.trim();
   const slug = document.getElementById('post-slug').value.trim() || title.toLowerCase().replace(/\s+/g,'-');
   const content = document.getElementById('post-content').value.trim();
+  const excerpt = document.getElementById('post-excerpt').value.trim();
+  const category = document.getElementById('post-category').value || 'auto';
+  const cover_image_url = document.getElementById('post-cover').value.trim() || null;
+  const source_label = document.getElementById('post-source-label').value.trim() || null;
+  const source_url = document.getElementById('post-source-url').value.trim() || null;
   const is_published = document.getElementById('post-published').checked;
+  const is_featured = document.getElementById('post-featured').checked;
   if (!title) { toast('Başlık zorunlu', 'error'); return; }
-  await adminAction({ action: 'insert', table: 'posts', id: 'new', values: { title, slug, content, is_published } });
+  await adminAction({ action: 'insert', table: 'posts', id: 'new', values: { title, slug, content, excerpt, category, cover_image_url, source_label, source_url, is_published, is_featured } });
   toast('Yazı eklendi');
   document.getElementById('post-title').value = '';
   document.getElementById('post-slug').value = '';
+  document.getElementById('post-excerpt').value = '';
+  document.getElementById('post-cover').value = '';
+  document.getElementById('post-source-label').value = '';
+  document.getElementById('post-source-url').value = '';
   document.getElementById('post-content').value = '';
+  document.getElementById('post-published').checked = false;
+  document.getElementById('post-featured').checked = false;
   loadPosts(); loadDashboard();
 }
 

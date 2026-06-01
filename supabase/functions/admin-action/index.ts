@@ -931,7 +931,7 @@ Deno.serve(async (req) => {
       const allowedInserts: Record<string, string[]> = {
         announcements: ["title", "content", "is_active"],
         faqs: ["question", "answer", "order_num", "is_active"],
-        posts: ["title", "slug", "content", "is_published"],
+        posts: ["title", "slug", "content", "excerpt", "category", "cover_image_url", "source_label", "source_url", "is_published", "is_featured"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority"],
         partner_applications: ["status", "notes", "webhook_url_draft", "partner_endpoint_id", "billing_plan", "company_name", "contact_name", "phone", "email", "website", "city", "category", "source_channel", "is_active", "next_action", "contacted_at", "follow_up_at", "lead_capacity", "webhook_ready"],
         vacation_scenarios: [
@@ -1064,7 +1064,7 @@ Deno.serve(async (req) => {
       const allowedUpdates: Record<string, string[]> = {
         announcements: ["is_active"],
         faqs: ["is_active"],
-        posts: ["is_published"],
+        posts: ["is_published", "is_featured", "category", "excerpt", "cover_image_url", "source_label", "source_url", "title", "slug", "content"],
         listings: ["is_featured"],
         profiles: ["role", "is_banned"],
         auto_leads: ["status", "notes", "follow_up_at", "follow_up_done", "partner_status", "estimated_revenue", "actual_revenue", "commission_notes", "dispatch_retry_count", "last_dispatch_at", "next_retry_at", "last_dispatch_error"],

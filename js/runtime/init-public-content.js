@@ -5,7 +5,9 @@ import {
   renderBlogPostPage,
   renderCampaignsPage
 } from '../features/content/content-hub-ui.js';
+import { blogCategoryFromQuery } from '../features/content/category-guides-ui.js';
 import { blogSlugFromPath, resolveContentRouteSurface } from './route-surface.js';
+import { initCategoryGuidesHub } from './init-category-guides.js';
 
 export async function refreshPublicContentSurface(surfaceId) {
   if (surfaceId === 'home') {
@@ -24,7 +26,7 @@ export async function refreshPublicContentSurface(surfaceId) {
   }
 
   if (surfaceId === 'page-blog') {
-    await renderBlogPage(document);
+    await renderBlogPage(document, blogCategoryFromQuery(window.location.search));
     return;
   }
 
@@ -34,6 +36,8 @@ export async function refreshPublicContentSurface(surfaceId) {
 }
 
 export function initPublicContentHub() {
+  initCategoryGuidesHub();
+
   const run = () => {
     const surface =
       resolveContentRouteSurface(window.location.pathname) ||

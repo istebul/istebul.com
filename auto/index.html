@@ -59,6 +59,7 @@
   <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"isteBul Auto ücretsiz mi?","acceptedAnswer":{"@type":"Answer","text":"Temel karar analizi ücretsiz başlatılabilir; Pro plan derin rapor ve ek özellikler sunar. Koşullar planlar sayfasında güncellenir."}},{"@type":"Question","name":"Skor nasıl hesaplanır?","acceptedAnswer":{"@type":"Answer","text":"Skor kural tabanlı motordadır; bütçe, kullanım, TCO ve risk sinyalleri birleştirilir. AI skoru değiştirmez."}},{"@type":"Question","name":"TCO ne kadar güvenilir?","acceptedAnswer":{"@type":"Answer","text":"TCO varsayımlara dayalı bilgilendirme amaçlı projeksiyondur; bayi teklifi ve ekspertiz ile doğrulanmalıdır."}},{"@type":"Question","name":"Partner teklifleri zorunlu mu?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Lead paylaşımı yalnızca onayınızla yapılır."}}]}</script>
+  <link rel="stylesheet" href="/css/category-guides-hub.css?v=1">
   <link rel="stylesheet" href="/css/static-cookie-consent-v1.css?v=1">
 </head>
 <body class="ib-enterprise ib-auto">
@@ -247,6 +248,8 @@
     </section>
   </main>
 
+  <div id="auto-guides-hub-mount" class="container ib-guides-hub--compact" style="margin: 2rem auto 0; max-width: 1120px; padding: 0 1rem;"></div>
+
   <footer class="corporate-footer">
     <div>
       <strong>isteBul Auto</strong>
@@ -279,6 +282,10 @@
 
   <script type="module" src="/assets/auto-runtime/auto-app.js" defer></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
+  <script type="module">
+    import { initCategoryGuidesHub } from '/js/runtime/init-category-guides.js';
+    initCategoryGuidesHub();
+  </script>
   <div class="static-cookie-consent" id="static-cookie-consent" role="region" aria-label="Çerez tercihi" hidden>
   <p>Çerez ve analitik tercihinizi yönetin. <a href="/cerez-politikasi.html">Çerez politikası</a> · Ana sitede <a href="/">tam tercih paneli</a>.</p>
   <div class="static-cookie-consent__actions">

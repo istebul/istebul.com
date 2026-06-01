@@ -3,7 +3,61 @@
  * Reads Supabase when available; falls back to curated defaults without throwing.
  */
 
+import autoGuideSeed from '../../../data/content/auto-guide-seed-headlines.json' with { type: 'json' };
 import { escapeHtml } from '../../core/security.js';
+
+export const GUIDE_CATEGORIES = Object.freeze([
+  { id: 'auto', label: 'Araba', ctaHref: '/auto/', ctaLabel: 'Ücretsiz analiz' },
+  { id: 'konut', label: 'Konut', ctaHref: '/konut/', ctaLabel: 'Konut analizi' },
+  { id: 'tatil', label: 'Tatil', ctaHref: '/tatil/', ctaLabel: 'Tatil planla' },
+  { id: 'finans', label: 'Finansman', ctaHref: '/finansman/', ctaLabel: 'Finans karşılaştır' },
+  { id: 'sigorta', label: 'Sigorta', ctaHref: '/sigorta/', ctaLabel: 'Sigorta rehberi' }
+]);
+
+const POST_SELECT =
+  'id,title,slug,content,excerpt,category,cover_image_url,is_featured,source_label,source_url,created_at';
+
+export function getGuideCategory(id) {
+  const key = String(id || '').trim().toLowerCase();
+  return GUIDE_CATEGORIES.find((cat) => cat.id === key) || null;
+}
+
+function mapPostRow(row) {
+  return {
+    id: row.id,
+    title: row.title || 'Yazı',
+    slug: row.slug || String(row.id),
+    body: row.content || '',
+    excerpt: row.excerpt || '',
+    category: row.category || 'auto',
+    cover_image_url: row.cover_image_url || '',
+    is_featured: Boolean(row.is_featured),
+    source_label: row.source_label || '',
+    source_url: row.source_url || '',
+    created_at: row.created_at
+  };
+}
+
+export function normalizeGuidePost(post) {
+  return mapPostRow(post);
+}
+
+function fallbackAutoGuides(limit = 6) {
+  const headlines = Array.isArray(autoGuideSeed?.headlines) ? autoGuideSeed.headlines : [];
+  return headlines.slice(0, limit).map((item, index) => ({
+    id: `seed-auto-${index}`,
+    title: item.title,
+    slug: item.slug,
+    body: item.excerpt || '',
+    excerpt: item.excerpt || '',
+    category: 'auto',
+    cover_image_url: item.cover_image_url || '',
+    is_featured: Boolean(item.is_featured),
+    source_label: item.source_label || '',
+    source_url: '',
+    created_at: new Date().toISOString()
+  }));
+}
 
 export const DEFAULT_CAMPAIGNS = Object.freeze([
   {
@@ -91,34 +145,30 @@ export async function fetchActiveAnnouncements(limit = 12) {
   }));
 }
 
-export async function fetchPublishedPosts(limit = 12) {
+export async function fetchPublishedPosts(limit = 12, category = '') {
+  const cat = getGuideCategory(category)?.id;
+  const categoryFilter = cat ? `&category=eq.${encodeURIComponent(cat)}` : '';
   const rows = await restGet(
-    `posts?select=id,title,slug,content,created_at&is_published=eq.true&order=created_at.desc&limit=${limit}`
+    `posts?select=${POST_SELECT}&is_published=eq.true${categoryFilter}&order=is_featured.desc,created_at.desc&limit=${limit}`
   );
-  return rows.map((row) => ({
-    id: row.id,
-    title: row.title || 'Yazı',
-    slug: row.slug || String(row.id),
-    body: row.content || '',
-    created_at: row.created_at
-  }));
+  return rows.map(mapPostRow);
+}
+
+export async function fetchPublishedPostsByCategory(category, limit = 6) {
+  const cat = getGuideCategory(category)?.id || String(category || 'auto').trim().toLowerCase();
+  const rows = await fetchPublishedPosts(limit, cat);
+  if (rows.length) return rows;
+  if (cat === 'auto') return fallbackAutoGuides(limit);
+  return [];
 }
 
 export async function fetchPostBySlug(slug) {
   const safe = encodeURIComponent(String(slug || '').trim());
   if (!safe) return null;
   const rows = await restGet(
-    `posts?select=id,title,slug,content,created_at&is_published=eq.true&slug=eq.${safe}&limit=1`
+    `posts?select=${POST_SELECT}&is_published=eq.true&slug=eq.${safe}&limit=1`
   );
-  return rows[0]
-    ? {
-        id: rows[0].id,
-        title: rows[0].title || 'Yazı',
-        slug: rows[0].slug || slug,
-        body: rows[0].content || '',
-        created_at: rows[0].created_at
-      }
-    : null;
+  return rows[0] ? mapPostRow(rows[0]) : null;
 }
 
 export function normalizePublicCampaign(raw, index = 0) {
