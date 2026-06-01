@@ -1,3 +1,5 @@
+import { renderSiteSocialLinks } from '../runtime/site-social-links.js';
+
 export async function loadCMS() {
   try {
     const url = window.__env?.SUPABASE_URL;
@@ -8,7 +10,8 @@ export async function loadCMS() {
 
     const cmsKeys = [
       'site-name', 'site-subtitle', 'hero-eyebrow', 'hero-title', 'hero-desc',
-      'title', 'description', 'phone', 'email', 'address', 'maintenance'
+      'title', 'description', 'phone', 'email', 'address', 'maintenance',
+      'instagram', 'twitter', 'facebook', 'linkedin', 'youtube', 'tiktok'
     ];
     const settingsFilter = cmsKeys.map((k) => `key.eq.${k}`).join(',');
     const [settingsRes, annRes] = await Promise.all([
@@ -46,6 +49,8 @@ export async function loadCMS() {
         });
       }
     }
+
+    renderSiteSocialLinks(s);
 
     if (s.maintenance === 'true') {
       document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;text-align:center"><div><h1>🔧 Bakım modu</h1><p>Sitemiz kısa süreliğine bakımda.</p></div></div>';

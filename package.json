@@ -1,6 +1,6 @@
 {
   "name": "istebu-v2",
-  "version": "2.2.10",
+  "version": "2.2.11",
   "description": "Modern Turkish marketplace platform - isteBu v2",
   "main": "js/app.js",
   "scripts": {
