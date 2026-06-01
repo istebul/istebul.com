@@ -7,12 +7,12 @@ import {
   isHomeCategoryActive
 } from '../../js/platform/home-category-config.js';
 
-test('home categories: araba, tatil, konut, finansman and sigorta active', () => {
+test('home categories: six active verticals including kasko', () => {
   const active = HOME_DECISION_CATEGORIES.filter((c) => isHomeCategoryActive(c));
-  assert.equal(active.length, 5);
+  assert.equal(active.length, 6);
   assert.deepEqual(
     active.map((c) => c.id).sort(),
-    ['araba', 'finansman', 'konut', 'sigorta', 'tatil']
+    ['araba', 'finansman', 'kasko', 'konut', 'sigorta', 'tatil']
   );
   active.forEach((c) => {
     assert.ok(c.href);
@@ -20,17 +20,9 @@ test('home categories: araba, tatil, konut, finansman and sigorta active', () =>
   });
 });
 
-test('home categories: kasko is coming soon', () => {
+test('home categories: no coming_soon entries when all live', () => {
   const soon = getHomeCategoriesByStatus('coming_soon');
-  assert.equal(soon.length, 1);
-  assert.deepEqual(
-    soon.map((c) => c.id).sort(),
-    ['kasko']
-  );
-  soon.forEach((c) => {
-    assert.ok(c.href);
-    assert.equal(isHomeCategoryActive(c), false);
-  });
+  assert.equal(soon.length, 0);
 });
 
 test('home category pillars are standardized', () => {

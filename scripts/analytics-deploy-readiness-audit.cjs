@@ -37,8 +37,14 @@ if (!indexHtml.includes('homepage.bundle.css')) {
 }
 
 const kaskoHtml = fs.readFileSync(path.join(root, 'kasko/index.html'), 'utf8');
-if (!kaskoHtml.includes('vertical-shared.bundle.css') && !kaskoHtml.includes('enterprise-card-readability.css')) {
-  fail('kasko/index.html must link vertical-shared.bundle.css or enterprise-card-readability.css');
+if (
+  !kaskoHtml.includes('vertical-decision.bundle.css') &&
+  !kaskoHtml.includes('vertical-shared.bundle.css')
+) {
+  fail('kasko/index.html must link vertical-decision.bundle.css or vertical-shared.bundle.css');
+}
+if (!kaskoHtml.includes('kasko-app.js')) {
+  fail('kasko/index.html must load js/kasko/kasko-app.js');
 }
 
 const ingest = fs.readFileSync(

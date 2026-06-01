@@ -46,8 +46,9 @@ export const HOME_DECISION_CATEGORIES = [
   },
   {
     id: 'kasko',
-    status: 'coming_soon',
+    status: 'active',
     href: '/kasko/',
+    sampleScore: 85,
     settingKey: 'home_category_kasko_enabled'
   }
 ];

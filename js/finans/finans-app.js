@@ -13,6 +13,27 @@ import { formatTry } from '../tatil/tatil-utils.js';
 
 const tracker = createVerticalTracker('finans');
 
+export const FINANS_DOM_IDS = {
+  stepProgress: 'finans-step-progress',
+  aiSummary: 'finans-ai-summary',
+  wizard: 'finans-wizard',
+  results: 'finans-results',
+  flow: 'finans-flow',
+  heroCta: 'finans-hero-cta',
+  heroCtaSecondary: 'finans-hero-cta-secondary',
+  nav: 'finans-nav',
+  back: 'finans-back',
+  next: 'finans-next',
+  confirmSelection: 'finans-confirm-selection',
+  finalCta: 'finans-final-cta',
+  changeSelection: 'finans-change-selection',
+  selectPrimary: 'finans-select-primary',
+  selectionBar: 'finans-selection-bar',
+  leadName: 'finans-lead-name',
+  leadPhone: 'finans-lead-phone',
+  leadEmail: 'finans-lead-email'
+};
+
 function canAdvance(state, step) {
   if (!step) return false;
   if (step.id === 'purpose') return Boolean(state.purpose);
@@ -89,6 +110,7 @@ initDecisionFlow(
   resolveWizardConfig('finans', {
   vertical: 'finans',
   themeClass: 'finans-page',
+  domIds: FINANS_DOM_IDS,
   steps: FINANS_STEPS,
   disclaimer: FINANS_DISCLAIMER,
   resultsTitle: 'Finansman senaryo önerileri',

@@ -26,6 +26,12 @@ const liveRoutes = [
     status: 200,
     optional: true
   },
+  {
+    path: '/kasko/',
+    must: ['kasko-page', 'kasko-wizard', 'Kasko'],
+    status: 200,
+    optional: true
+  },
   { path: '/karar-asistani/', must: ['data-ib-route', 'page-karar-analizi'], status: 200, optional: true },
   { path: '/karsilastir/', must: ['data-ib-route', 'compare'], status: 200, optional: true },
   { path: '/ilanlar/', must: ['data-ib-route', 'ilanlar'], status: 200, optional: true },

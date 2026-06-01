@@ -51,7 +51,8 @@ function safeNum(value) {
 function normalizeVertical(vertical) {
   const v = String(vertical || 'konut').toLowerCase();
   if (v === 'sigorta' || v === 'insurance') return 'sigorta';
-  if (['auto', 'konut', 'tatil', 'finansman', 'sigorta'].includes(v)) return v;
+  if (v === 'kasko') return 'kasko';
+  if (['auto', 'konut', 'tatil', 'finansman', 'sigorta', 'kasko'].includes(v)) return v;
   return 'konut';
 }
 
@@ -445,6 +446,25 @@ function buildFinansmanInsight(input) {
   return { summary, why, risk, nextStep };
 }
 
+function buildKaskoInsight(input) {
+  const a = input.answers;
+  const { decision, overallRisk } = scoreFromInput(input);
+  const level = pickAnswer(a, ['coverage_level']) || 'kasko paketi';
+  const summary = [
+    decision != null
+      ? `${level} için karar skoru ${decision}/100.`
+      : 'Kasko profili ön değerlendirme aşamasında.',
+    'Teminat, onarım riski ve prim verimliliği sabit ağırlıklarla birleştirilir.'
+  ].join(' ');
+  const why = `Güçlü: ${(input.strengths || []).slice(0, 2).join('; ') || '—'}. Dikkat: ${(input.weaknesses || []).slice(0, 2).join('; ') || '—'}.`;
+  const risk =
+    overallRisk === 'Yüksek'
+      ? 'Geniş teminat veya muafiyet detayları teklif aşamasında netleştirilmeli.'
+      : 'Prim artışı ve parça maliyeti poliçe döneminde değişebilir.';
+  const nextStep = 'İki farklı kasko teklifinde cam, ikame araç ve mini onarım maddelerini karşılaştırın.';
+  return { summary, why, risk, nextStep };
+}
+
 function buildSigortaInsight(input) {
   const a = input.answers;
   const { decision, overallRisk } = scoreFromInput(input);
@@ -482,6 +502,8 @@ function buildVerticalInsight(input) {
       return buildFinansmanInsight(input);
     case 'sigorta':
       return buildSigortaInsight(input);
+    case 'kasko':
+      return buildKaskoInsight(input);
   }
   return buildKonutInsight(input);
 }

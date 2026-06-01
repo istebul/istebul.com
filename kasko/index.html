@@ -1,89 +1,82 @@
 <!doctype html>
-<html lang="tr">
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Kasko Karar Analizi | Yakında | isteBul</title>
-  <meta name="description" content="Kasko analiz modülü yakında. Araç sigortası rehberi ve bilgilendirme listesi." />
-  <meta name="robots" content="index, follow, max-image-preview:large" />
-  <link rel="canonical" href="https://www.istebul.com/kasko/" />
-  <link rel="stylesheet" href="/css/corporate-pages.css?v=1" />
-  <link rel="stylesheet" href="/css/corporate-shell.css?v=1" />
-  <link rel="stylesheet" href="/css/bundles/vertical-shared.bundle.css?v=1" />
-  <style>
-    .coming-soon-card{max-width:640px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px}
-    .coming-soon-card input,.coming-soon-card button{width:100%;min-height:44px;border-radius:10px;border:1px solid #cbd5e1;padding:10px;margin:8px 0 12px}
-    .coming-soon-card button{background:#2563eb;color:#fff;border:0;cursor:pointer;font-weight:600}
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kasko Karar Analizi | isteBul — Teminat ve prim dengesi</title>
+  <meta name="description" content="Araç profilinize göre kasko teminat yeterliliği, onarım riski ve prim verimliliği analizi. Bilgilendirme amaçlıdır.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://www.istebul.com/kasko/">
+  <meta property="og:title" content="Kasko Karar Analizi | isteBul">
+  <meta property="og:description" content="AI destekli kasko karar motoru: teminat, onarım riski ve prim dengesi.">
+  <meta property="og:url" content="https://www.istebul.com/kasko/">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.svg">
+  <link rel="stylesheet" href="/css/tatil.css">
+  <link rel="stylesheet" href="/css/sigorta-page.css?v=1">
+  <link rel="stylesheet" href="/css/vertical-themes.css">
+  <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
+  <link rel="stylesheet" href="/css/sigorta-results-v2.css?v=1">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=1">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/kasko/kasko-app.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
 </head>
-<body>
-  <header class="auto-header corporate-header">
+<body class="vacation-page kasko-page sigorta-page">
+  <header class="vacation-header">
     <a class="logo" href="/">isteBul</a>
-    <nav class="corporate-nav" aria-label="Ana navigasyon">
-      <a href="/">Ana sayfa</a>
-      <a href="/auto/">Auto</a>
+    <button class="vacation-nav-toggle" type="button" aria-controls="kasko-nav" aria-expanded="false">Menü</button>
+    <nav id="kasko-nav" aria-label="Ana navigasyon">
+      <a href="/">Ana Sayfa</a>
+      <a href="/auto/">Araç</a>
+      <a href="/sigorta/">Sigorta</a>
       <a href="/kasko/" class="is-active" aria-current="page">Kasko</a>
-      <a href="/yardim.html">Yardım</a>
-      <a href="/iletisim.html">İletişim</a>
+      <a href="/metodoloji/">Metodoloji</a>
     </nav>
   </header>
-  <main class="section legal-page corporate-page">
-    <p class="kicker">Kasko · Yakında</p>
-    <h1>Kasko karar analizi yakında</h1>
-    <p class="lead">Kapsamlı kasko karşılaştırma modülü geliştiriliyor. Şimdilik sigorta rehberimizi inceleyebilir veya bilgilendirme listesine kaydolabilirsiniz.</p>
-    <p><a href="/rehber/arac-sigortasi-karsilastirma/">Araç sigortası rehberi →</a> · <a href="/auto/">Canlı Auto analizi →</a></p>
-    <div class="coming-soon-card">
-      <h2>Bilgilendirme listesi</h2>
-      <p>Modül açıldığında e-posta ile haberdar olun.</p>
-      <form id="interest-form">
-        <label for="name">Ad Soyad</label>
-        <input id="name" name="name" required autocomplete="name" />
-        <label for="email">E-posta</label>
-        <input id="email" name="email" type="email" required autocomplete="email" />
-        <button type="submit">Bilgilendirme al</button>
-      </form>
-      <p id="status" aria-live="polite"></p>
-    </div>
-    <p class="corporate-disclaimer">Kasko teklifleri bilgilendirme amaçlıdır; poliçe koşulları sigorta şirketine aittir.</p>
-  </main>
-  <footer class="corporate-footer">
-    <div><strong>isteBul</strong><p>Karar zekâsı platformu</p></div>
-    <nav>
-      <a href="/yardim.html">Yardım</a>
-      <a href="/gizlilik.html">Gizlilik</a>
-      <a href="/kvkk.html">KVKK</a>
+
+  <div class="vacation-container vacation-container--breadcrumb">
+    <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana Sayfa</a> › <span>Kasko karar analizi</span>
     </nav>
+  </div>
+
+  <section class="vacation-hero" aria-labelledby="kasko-hero-title">
+    <div class="vacation-hero-overlay" aria-hidden="true"></div>
+    <div class="vacation-container vacation-hero-inner">
+      <div class="vacation-hero-copy">
+        <span class="vacation-hero-badge">🚗 Kasko Decision Intelligence</span>
+        <h1 id="kasko-hero-title">Kasko kararınızı veriye dayalı verin</h1>
+        <p class="vacation-hero-lead">Teminat seviyesi, onarım riski ve yıllık prim bandını birlikte değerlendirin.</p>
+        <div class="vacation-hero-actions">
+          <button type="button" class="btn btn-primary" id="kasko-hero-cta">Kasko analizine başla</button>
+          <button type="button" class="btn btn-ghost" id="kasko-hero-cta-secondary">Akışa git</button>
+        </div>
+        <p class="vacation-disclaimer" style="margin-top:0.75rem;font-size:0.85rem;opacity:0.9">Bilgilendirme amaçlıdır · poliçe koşulları sigorta şirketine aittir</p>
+      </div>
+    </div>
+  </section>
+
+  <main class="vacation-main">
+    <div class="vacation-container vacation-layout" id="kasko-flow">
+      <div class="vacation-flow-main">
+        <div class="vacation-progress" id="kasko-step-progress" aria-hidden="true"></div>
+        <div id="kasko-wizard"></div>
+        <section id="kasko-results" hidden aria-live="polite"></section>
+      </div>
+      <aside class="vacation-aside" aria-label="Kasko karar asistanı">
+        <div class="vacation-ai-panel">
+          <h3>Kasko karar asistanınız</h3>
+          <p>Araç ve sürücü profilinize göre teminat senaryoları üretiyoruz.</p>
+          <ul id="kasko-ai-summary"></ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="vacation-footer">
+    <p>isteBul — karar zekâsı platformu.</p>
+    <p><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">KVKK</a></p>
+    <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi"></div>
   </footer>
-  <script src="/env.js"></script>
-  <script type="module" src="/js/runtime/site-analytics-boot.js"></script>
-  <script>
-    const form = document.getElementById('interest-form');
-    const status = document.getElementById('status');
-    form?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const name = form.name.value.trim();
-      const email = form.email.value.trim();
-      if (!name || !email) return;
-      const payload = { full_name: name, email, category: 'kasko', interest_type: 'insurance', source: 'coming_soon_page', consent: true };
-      try {
-        const url = window.__env?.SUPABASE_URL;
-        const key = window.__env?.SUPABASE_ANON_KEY;
-        if (url && key) {
-          await fetch(`${url}/functions/v1/auto-intake`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json', apikey: key, authorization: `Bearer ${key}` },
-            body: JSON.stringify(payload)
-          });
-        }
-      } catch (err) {
-        console.warn('kasko-interest-submit-failed', { message: String(err?.message || err) });
-      }
-      const stored = JSON.parse(localStorage.getItem('ib_coming_soon_interest_queue') || '[]');
-      stored.push({ ...payload, created_at: new Date().toISOString() });
-      localStorage.setItem('ib_coming_soon_interest_queue', JSON.stringify(stored.slice(-100)));
-      status.textContent = 'Talebiniz alındı. Kasko kategorisi açıldığında bilgilendirileceksiniz.';
-      form.reset();
-    });
-  </script>
 </body>
 </html>

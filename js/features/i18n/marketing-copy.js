@@ -43,7 +43,7 @@ const baseMarketingCopy = {
       catTatil: 'Tatil',
       catFinans: 'Finansman',
       catSigorta: 'Sigorta',
-      catKasko: 'Kasko (Yakında)',
+      catKasko: 'Kasko',
       allCategories: 'Tüm kategoriler',
       home: 'Ana sayfa',
       productsMenu: 'Ürünler menüsü',

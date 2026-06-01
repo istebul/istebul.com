@@ -47,3 +47,19 @@ body.konut-page .vacation-selected-recap p,
 body.finans-page .vacation-selected-recap p {
   color: var(--vacation-on-surface);
 }
+
+.ib-vertical-soft-auth {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.04);
+  font-size: 0.9rem;
+}
+
+.ib-vertical-soft-auth__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}

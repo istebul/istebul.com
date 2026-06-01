@@ -2,6 +2,7 @@ import { formatTry } from '../tatil/tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountFinansmanResultsV2 } from '../features/finansman/finansman-results-v2.js';
 import { mountSigortaResultsV2 } from '../features/sigorta/sigorta-results-v2.js';
+import { mountKaskoResultsV2 } from '../features/kasko/kasko-results-v2.js';
 import {
   trackAnalysisStarted,
   trackResultsViewed,
@@ -13,6 +14,7 @@ import { wt } from './wizard-i18n.js';
 const VERTICAL_SITE_CATEGORY = Object.freeze({
   finans: 'finansman',
   sigorta: 'sigorta',
+  kasko: 'kasko',
   tatil: 'tatil',
   konut: 'konut'
 });
@@ -369,6 +371,14 @@ export function initDecisionFlow(config) {
         state,
         results: state.results,
         selectedOption: state.selected_option,
+        track: (eventName, meta) => config.tracker.track(eventName, meta)
+      });
+    }
+
+    if (config.vertical === 'kasko') {
+      void mountKaskoResultsV2(section, {
+        state,
+        results: state.results,
         track: (eventName, meta) => config.tracker.track(eventName, meta)
       });
     }

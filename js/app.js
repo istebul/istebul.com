@@ -24,6 +24,7 @@ import { trackPricingViewForUpgrade } from './features/revenue/revenue-ops-clien
 import { mountHelpCenterWidget } from './ui/help-center-widget.js';
 import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
+import { scoreVehicleMatch } from './engines/decision-consultant.js';
 import {
   ensureAccountManager,
   ensureCatalogData,
@@ -2553,43 +2554,108 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         });
     }
 
+    getConsultantVehicleScore(option, answers) {
+        const match = option.match || {};
+        const form = {
+            budget: Number(answers.budget) || 0,
+            fuel: answers.fuel || 'any',
+            body: answers.body || '',
+            usage:
+                answers.usage === 'longRoad'
+                    ? 'long'
+                    : answers.usage === 'prestige'
+                      ? 'prestige'
+                      : answers.usage || '',
+            loan: answers.loan || 'no'
+        };
+        const vehicle = {
+            price: option.price,
+            body: match.body || 'sedan',
+            fuel: match.fuel || 'gasoline',
+            family: 62,
+            city: 62,
+            long: 58,
+            prestige: 55,
+            resale: 65
+        };
+        if (Array.isArray(match.usage)) {
+            if (match.usage.includes('family')) vehicle.family = 88;
+            if (match.usage.includes('city')) vehicle.city = 88;
+            if (match.usage.includes('longRoad')) vehicle.long = 88;
+        }
+        if (Array.isArray(match.priority) && match.priority.includes('prestige')) {
+            vehicle.prestige = 85;
+        }
+        const consultant = scoreVehicleMatch(vehicle, form);
+        const scoreBreakdown = (consultant.scoreBreakdown || []).map((row) => ({
+            label: row.label || row.factor || 'Skor',
+            status: row.status || (row.delta > 0 ? 'Güçlü eşleşme' : 'Zayıf eşleşme'),
+            delta: row.delta,
+            positive: row.delta > 0
+        }));
+        return { score: consultant.score, scoreBreakdown };
+    }
+
     calculateAssistantScores(categoryConfig, answers) {
         return this.getContextualDecisionOptions(categoryConfig, answers).map((option) => {
             let score = 52;
             const scoreBreakdown = [];
 
-            categoryConfig.questions.forEach((question) => {
-                if (question.id === 'budget') return;
-
-                const answer = answers[question.id];
-                const matchValue = option.match?.[question.id];
-                if (!answer || !matchValue) return;
-
-                const matched = Array.isArray(matchValue) ? matchValue.includes(answer) : matchValue === answer;
-                const delta = matched ? Number(question.weight || 8) : -3;
-                score += delta;
-                scoreBreakdown.push({
-                    label: question.label,
-                    status: matched ? 'Güçlü eşleşme' : 'Zayıf eşleşme',
-                    delta,
-                    positive: matched
-                });
-            });
-
-            const budget = Number(answers.budget);
-            if (Number.isFinite(budget) && budget > 0) {
-                if (option.price <= budget) {
-                    score += 8;
-                    scoreBreakdown.push({ label: 'Bütçe uyumu', status: 'Bütçe içinde', delta: 8, positive: true });
-                } else {
-                    const overBudgetRatio = (option.price - budget) / Math.max(budget, 1);
-                    const delta = -Math.min(28, Math.ceil(overBudgetRatio * 45));
-                    score += delta;
-                    scoreBreakdown.push({ label: 'Bütçe uyumu', status: 'Bütçe üstü', delta, positive: false });
-                }
+            if (this.assistantCategory === 'arac') {
+                const consultant = this.getConsultantVehicleScore(option, answers);
+                score = consultant.score;
+                scoreBreakdown.push(...consultant.scoreBreakdown);
             } else {
-                scoreBreakdown.push({ label: 'Bütçe uyumu', status: 'Bütçe sınırı yok', delta: 4, positive: true });
-                score += 4;
+                categoryConfig.questions.forEach((question) => {
+                    if (question.id === 'budget') return;
+
+                    const answer = answers[question.id];
+                    const matchValue = option.match?.[question.id];
+                    if (!answer || !matchValue) return;
+
+                    const matched = Array.isArray(matchValue)
+                        ? matchValue.includes(answer)
+                        : matchValue === answer;
+                    const delta = matched ? Number(question.weight || 8) : -3;
+                    score += delta;
+                    scoreBreakdown.push({
+                        label: question.label,
+                        status: matched ? 'Güçlü eşleşme' : 'Zayıf eşleşme',
+                        delta,
+                        positive: matched
+                    });
+                });
+
+                const budget = Number(answers.budget);
+                if (Number.isFinite(budget) && budget > 0) {
+                    if (option.price <= budget) {
+                        score += 8;
+                        scoreBreakdown.push({
+                            label: 'Bütçe uyumu',
+                            status: 'Bütçe içinde',
+                            delta: 8,
+                            positive: true
+                        });
+                    } else {
+                        const overBudgetRatio = (option.price - budget) / Math.max(budget, 1);
+                        const delta = -Math.min(28, Math.ceil(overBudgetRatio * 45));
+                        score += delta;
+                        scoreBreakdown.push({
+                            label: 'Bütçe uyumu',
+                            status: 'Bütçe üstü',
+                            delta,
+                            positive: false
+                        });
+                    }
+                } else {
+                    scoreBreakdown.push({
+                        label: 'Bütçe uyumu',
+                        status: 'Bütçe sınırı yok',
+                        delta: 4,
+                        positive: true
+                    });
+                    score += 4;
+                }
             }
 
             const yearlyCost = this.sumOptionCosts(option.costs);
@@ -2597,15 +2663,30 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             const report = this.createCategoryDecisionReport(option, this.assistantCategory, answers, financeComparisons, yearlyCost);
             const sourceTrace = this.createRecommendationSourceTrace(this.assistantCategory, option, financeComparisons);
             const costRatio = yearlyCost / Math.max(option.price, 1);
-            if (costRatio < 0.055) {
-                score += 5;
-                scoreBreakdown.push({ label: 'Dönemsel gider', status: 'Kontrollü maliyet', delta: 5, positive: true });
-            } else if (costRatio > 0.12) {
-                score -= 6;
-                scoreBreakdown.push({ label: 'Dönemsel gider', status: 'Yüksek yan maliyet', delta: -6, positive: false });
+            if (this.assistantCategory !== 'arac') {
+                if (costRatio < 0.055) {
+                    score += 5;
+                    scoreBreakdown.push({
+                        label: 'Dönemsel gider',
+                        status: 'Kontrollü maliyet',
+                        delta: 5,
+                        positive: true
+                    });
+                } else if (costRatio > 0.12) {
+                    score -= 6;
+                    scoreBreakdown.push({
+                        label: 'Dönemsel gider',
+                        status: 'Yüksek yan maliyet',
+                        delta: -6,
+                        positive: false
+                    });
+                }
             }
 
-            const normalizedScore = Math.max(20, Math.min(99, Math.round(score)));
+            const normalizedScore =
+                this.assistantCategory === 'arac'
+                    ? score
+                    : Math.max(20, Math.min(99, Math.round(score)));
 
             return {
                 ...option,

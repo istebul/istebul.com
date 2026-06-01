@@ -13,7 +13,6 @@ import {
   buildHousingScenarios,
   formatTry
 } from './real-estate-calculator.js';
-import { buildHousingAiCommentary } from './real-estate-ai.js';
 import { TURKEY_CITIES } from './turkey-cities.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
@@ -643,14 +642,10 @@ async function renderResults() {
     const metrics = buildMetrics();
     const scenarios = buildHousingScenarios({ score: metrics.score });
     const priorities = [...state.locationPreferences, ...state.riskPreferences];
-    const ai = await buildHousingAiCommentary({
-      ...state,
-      score: metrics.score,
-      scoreBand: metrics.scoreBand,
-      risk: metrics.risk,
-      ownership: metrics.ownership,
-      priorities
-    });
+    const ai = {
+      text: `Konut karar skorunuz ${metrics.score}/100 (${metrics.scoreBand.label}). Aylık ödeme tahmini ${formatTry(metrics.ownership.monthlyPayment)}; ayrıntılı V2 raporu ve AI özeti aşağıdadır.`,
+      source: 'engine'
+    };
     const attention = buildAttentionItems(metrics);
     const nextStep = buildNextStep(metrics);
     const userId = await getAuthUserId();

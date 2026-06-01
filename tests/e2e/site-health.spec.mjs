@@ -5,7 +5,7 @@ const PAGES = [
   { path: '/auto/', selector: '#vacation-flow, #auto-flow, .vacation-main, main' },
   { path: '/sigorta/', heading: /sigorta|veriye dayalı/i },
   { path: '/konut/', selector: 'main' },
-  { path: '/kasko/', heading: /kasko|yakında/i }
+  { path: '/kasko/', heading: /kasko|veriye dayalı/i }
 ];
 
 test.describe('Site health — readability and layout', () => {
@@ -29,6 +29,13 @@ test.describe('Site health — readability and layout', () => {
     expect(styleLinks).toBeLessThanOrEqual(3);
     const bundle = await page.locator('link[href*="homepage.bundle"]').count();
     expect(bundle).toBeGreaterThan(0);
+  });
+
+  test('/kasko/ wizard shell is interactive', async ({ page }) => {
+    await page.goto('/kasko/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.locator('#kasko-hero-cta').click();
+    await expect(page.locator('#kasko-wizard')).toBeVisible();
   });
 
   test('/sigorta/ wizard shell is interactive', async ({ page }) => {
