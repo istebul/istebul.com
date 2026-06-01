@@ -460,15 +460,9 @@ class App {
     }
 
     loadAnalytics() {
-        if (document.querySelector('script[data-analytics-provider="plausible"]')) return;
-
-        const script = document.createElement('script');
-        script.async = true;
-        script.defer = true;
-        script.dataset.analyticsProvider = 'plausible';
-        script.dataset.domain = 'istebul.com';
-        script.src = 'https://plausible.io/js/plausible.js';
-        document.head.appendChild(script);
+        import('./core/third-party-analytics.js')
+            .then(({ loadThirdPartyMeasurement }) => loadThirdPartyMeasurement())
+            .catch(() => {});
     }
 
     async checkAuth() {

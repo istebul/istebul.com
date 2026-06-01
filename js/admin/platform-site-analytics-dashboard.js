@@ -415,7 +415,8 @@ export function renderPlatformAnalyticsEmptyGuide({
       <ol class="platform-analytics-guide__list">
         <li>Supabase migration: <code>20260602_analytics_internal_traffic.sql</code></li>
         <li>Edge deploy: <code>analytics-ingest</code>, <code>admin-action</code></li>
-        <li>Production secret: <code>ANALYTICS_HASH_SALT</code></li>
+        <li>Production secret: <code>ANALYTICS_HASH_SALT</code> (Supabase Edge)</li>
+        <li>Opsiyonel harici ölçüm (çerez sonrası): <code>GA4_MEASUREMENT_ID</code>, <code>CF_WEB_ANALYTICS_TOKEN</code> — Cloudflare Pages env</li>
         <li>Sitede ziyaretçi <strong>çerez onayı</strong> vermeli (analytics consent)</li>
         <li>Admin → Ayarlar → Analytics: dahili IP / test cihazı hariç tutma</li>
         <li>Veri modu: <strong>Gerçek kullanıcı</strong> veya <strong>Tüm veri</strong></li>

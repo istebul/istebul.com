@@ -705,6 +705,16 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <p class="text-muted-sm" id="analytics-device-status" style="margin-top:8px"></p>
           </div>
           <div id="analytics-exclusion-list" class="empty" style="margin-top:12px">Yükleniyor…</div>
+          <div class="platform-analytics-guide" style="margin-top:16px;border-left-color:#2563eb">
+            <h4 style="margin:0 0 8px">Canlı deploy kontrol listesi</h4>
+            <ol class="platform-analytics-guide__list">
+              <li><code>supabase db push</code> — migration <code>20260602_analytics_internal_traffic.sql</code></li>
+              <li>Edge: <code>analytics-ingest</code>, <code>admin-action</code></li>
+              <li>Secret: <code>ANALYTICS_HASH_SALT</code> (Supabase Edge)</li>
+              <li>Opsiyonel Pages env: <code>GA4_MEASUREMENT_ID</code>, <code>CF_WEB_ANALYTICS_TOKEN</code>, <code>PLAUSIBLE_DOMAIN</code></li>
+              <li>Doğrulama: <code>npm run audit:analytics</code></li>
+            </ol>
+          </div>
         </div>
         <div class="card">
           <div class="card-title">Kategoriler / Ana Sayfa Görünümü</div>

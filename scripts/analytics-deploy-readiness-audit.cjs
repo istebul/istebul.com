@@ -1,0 +1,91 @@
+#!/usr/bin/env node
+/**
+ * Analytics & measurement deploy readiness — static contract audit.
+ */
+const fs = require('fs');
+const path = require('path');
+
+const root = path.join(__dirname, '..');
+let failed = false;
+
+const fail = (msg) => {
+  console.error(msg);
+  failed = true;
+};
+
+const mustExist = [
+  'supabase/migrations/20260602_analytics_internal_traffic.sql',
+  'supabase/functions/_shared/analytics-traffic.ts',
+  'supabase/functions/analytics-ingest/index.ts',
+  'supabase/functions/admin-action/index.ts',
+  'js/core/analytics.js',
+  'js/core/analytics-internal.js',
+  'js/core/third-party-analytics.js',
+  'js/platform/site-analytics.js',
+  'js/runtime/site-analytics-boot.js',
+  'js/admin/platform-site-analytics-dashboard.js',
+  'js/admin/analytics-traffic-filters.js'
+];
+
+for (const rel of mustExist) {
+  if (!fs.existsSync(path.join(root, rel))) fail(`MISSING: ${rel}`);
+}
+
+const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+if (!indexHtml.includes('enterprise-card-readability.css')) {
+  fail('index.html must link enterprise-card-readability.css');
+}
+
+const kaskoHtml = fs.readFileSync(path.join(root, 'kasko/index.html'), 'utf8');
+if (!kaskoHtml.includes('enterprise-card-readability.css')) {
+  fail('kasko/index.html must link enterprise-card-readability.css');
+}
+
+const ingest = fs.readFileSync(
+  path.join(root, 'supabase/functions/analytics-ingest/index.ts'),
+  'utf8'
+);
+if (!ingest.includes('classifyAnalyticsTraffic')) {
+  fail('analytics-ingest must call classifyAnalyticsTraffic');
+}
+
+const traffic = fs.readFileSync(
+  path.join(root, 'supabase/functions/_shared/analytics-traffic.ts'),
+  'utf8'
+);
+if (!traffic.includes('ANALYTICS_HASH_SALT')) fail('analytics-traffic must reference ANALYTICS_HASH_SALT');
+
+const adminAction = fs.readFileSync(
+  path.join(root, 'supabase/functions/admin-action/index.ts'),
+  'utf8'
+);
+for (const action of [
+  'list_analytics_exclusions',
+  'add_analytics_ip_exclusion',
+  'delete_analytics_exclusion'
+]) {
+  if (!adminAction.includes(`"${action}"`)) fail(`admin-action missing ${action}`);
+}
+
+const dashboard = fs.readFileSync(
+  path.join(root, 'js/admin/platform-site-analytics-dashboard.js'),
+  'utf8'
+);
+if (!dashboard.includes('buildPagePathRows')) fail('platform dashboard missing buildPagePathRows');
+if (!dashboard.includes('exportPlatformAnalyticsCsv')) {
+  fail('platform dashboard missing CSV export');
+}
+if (!dashboard.includes('renderPlatformAnalyticsEmptyGuide')) {
+  fail('platform dashboard missing empty guide');
+}
+
+const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
+if (!headers.includes('static.cloudflareinsights.com')) {
+  fail('_headers CSP must allow Cloudflare Web Analytics');
+}
+
+const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+if (!pkg.scripts['audit:analytics']) fail('package.json must define audit:analytics script');
+
+if (failed) process.exit(1);
+console.log('analytics-deploy-readiness-audit: OK');

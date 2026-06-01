@@ -24,6 +24,10 @@ assert(
   'Premium process section is missing.'
 );
 assert(index.includes('cookie-consent'), 'Cookie consent UI is missing.');
+assert(
+  index.includes('enterprise-card-readability.css'),
+  'Homepage should load enterprise-card-readability.css for contrast.'
+);
 assert(index.includes('/kvkk.html'), 'KVKK policy link is missing.');
 assert(index.includes('/sitemap.xml'), 'Sitemap link is missing.');
 assert(!index.includes('https://plausible.io/js/plausible.js'), 'Analytics should not load before consent.');
