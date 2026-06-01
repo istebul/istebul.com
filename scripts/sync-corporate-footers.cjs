@@ -27,7 +27,6 @@ const CORPORATE_HTML = [
   'partner-docs.html',
   'karar-moat.html',
   'auto/index.html',
-  'index.html'
 ];
 
 const COOKIE_CSS = '<link rel="stylesheet" href="/css/static-cookie-consent-v1.css?v=1">';
@@ -87,6 +86,7 @@ for (const rel of CORPORATE_HTML) {
   html = syncCorporateNav(html);
   html = injectCookieAssets(html);
   if (rel === 'partner-olun.html') html = syncPartnerLegalLine(html);
+  if (rel === 'index.html') continue;
   if (html !== before) {
     fs.writeFileSync(filePath, html);
     console.log('[sync]', rel);
