@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
   }
 
   const sb = createClient(SUPABASE_URL, SERVICE_ROLE);
-  const signatureValid = verifyIyzicoWebhookSignature(rawBody, req.headers);
+  const signatureValid = await verifyIyzicoWebhookSignature(rawBody, req.headers);
   const eventType = String(payload?.paymentStatus || payload?.status || "unknown");
   const conversationId = String(
     payload?.conversationId || payload?.conversation_id || "",

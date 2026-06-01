@@ -5,6 +5,7 @@ const {
   renderSiteSocialFooterNav,
   renderSiteSocialBootScripts
 } = require('./site-social-footer.cjs');
+const { CORPORATE_FOOTER_NAV_HTML, renderKvkkApplyCta } = require('./legal-footer.cjs');
 
 function renderCorporateNav(activePath) {
   const items = [
@@ -41,15 +42,7 @@ function renderCorporateFooter() {
       <p>Karar zekâsı platformu — ilan sitesi değil, karar motoru.</p>
       ${renderSiteSocialFooterNav()}
     </div>
-    <nav>
-      <a href="/hakkimizda.html">Hakkımızda</a>
-      <a href="/metodoloji/">Metodoloji</a>
-      <a href="/iletisim.html">İletişim</a>
-      <a href="/gizlilik.html">Gizlilik</a>
-      <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a>
-      <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a>
-      <a href="/partner-olun.html">Partner olun</a>
-    </nav>
+    ${CORPORATE_FOOTER_NAV_HTML}
   </footer>`;
 }
 

@@ -22,9 +22,34 @@ function baseUrl(): string {
   return (Deno.env.get("IYZICO_BASE_URL") || "https://api.iyzipay.com").replace(/\/$/, "");
 }
 
-/**
- * TODO(iyzico): Replace placeholder Authorization with IYZWSv2 signed request body.
- */
+const CHECKOUT_URI = "/payment/iyzipos/checkoutform/initialize/auth/ecom";
+
+async function buildIyzwsv2Authorization(
+  apiKey: string,
+  secretKey: string,
+  uriPath: string,
+  body: Record<string, unknown>,
+): Promise<string> {
+  const randomKey = `${Date.now()}${Math.floor(Math.random() * 1e6)}`;
+  const bodyStr = JSON.stringify(body);
+  const payload = randomKey + uriPath + bodyStr;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secretKey),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sigBuf = await crypto.subtle.sign("HMAC", key, enc.encode(payload));
+  const signature = Array.from(new Uint8Array(sigBuf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  const authorizationString = `apiKey:${apiKey}&randomKey:${randomKey}&signature:${signature}`;
+  const base64 = btoa(authorizationString);
+  return `IYZWSv2 ${base64}`;
+}
+
 export async function initializeIyzicoCheckout(
   input: IyzicoInitInput,
 ): Promise<IyzicoInitResult> {
@@ -72,11 +97,17 @@ export async function initializeIyzicoCheckout(
   };
 
   try {
-    const res = await fetch(`${baseUrl()}/payment/iyzipos/checkoutform/initialize/auth/ecom`, {
+    const authorization = await buildIyzwsv2Authorization(
+      apiKey,
+      secretKey,
+      CHECKOUT_URI,
+      payload,
+    );
+    const res = await fetch(`${baseUrl()}${CHECKOUT_URI}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `IYZWS ${apiKey}:${secretKey}`,
+        Authorization: authorization,
       },
       body: JSON.stringify(payload),
     });
@@ -102,17 +133,40 @@ export async function initializeIyzicoCheckout(
 }
 
 /**
- * Webhook signature verification — default reject until implemented.
- * TODO(iyzico): Implement per https://dev.iyzipay.com webhook docs.
+ * Webhook signature verification (X-IYZ-SIGNATURE-V3 when present).
+ * @see https://docs.iyzico.com
  */
-export function verifyIyzicoWebhookSignature(
-  _rawBody: string,
-  _headers: Headers,
-): boolean {
+export async function verifyIyzicoWebhookSignature(
+  rawBody: string,
+  headers: Headers,
+): Promise<boolean> {
   const secret = Deno.env.get("IYZICO_WEBHOOK_SECRET");
   if (!secret) return false;
-  // TODO: HMAC validation with IYZICO_WEBHOOK_SECRET
-  return false;
+
+  const signatureV3 = headers.get("x-iyz-signature-v3") || headers.get("X-IYZ-SIGNATURE-V3");
+  if (!signatureV3) {
+    return false;
+  }
+
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sigBuf = await crypto.subtle.sign("HMAC", key, enc.encode(rawBody));
+  const expected = Array.from(new Uint8Array(sigBuf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  if (expected.length !== signatureV3.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) {
+    diff |= expected.charCodeAt(i) ^ signatureV3.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 export { paymentFailureUrl, paymentSuccessUrl };

@@ -44,7 +44,11 @@ function resolveDistPath(href) {
   if (href === '#' || href.startsWith('#') || href.startsWith('/#')) return { hash: true };
   if (href.startsWith('http')) return { external: true };
 
+  const hashIndex = href.indexOf('#');
   let p = href.split('?')[0];
+  if (hashIndex >= 0) {
+    p = p.slice(0, hashIndex) || '/';
+  }
   const normalized = p.endsWith('/') && p.length > 1 ? p.slice(0, -1) : p;
 
   if (p.endsWith('/')) {
@@ -89,20 +93,38 @@ for (const href of links) {
     continue;
   }
 
+  if (href.includes('#')) {
+    const hashPart = href.includes('#') ? href.split('#')[1] : '';
+    const pathPart = href.split('#')[0] || '/kvkk.html';
+    const anchor = hashPart.split('?')[0];
+    if (!anchor) continue;
+    let targetHtml = html;
+    if (pathPart && pathPart !== '/' && !pathPart.startsWith('/#')) {
+      const pagePath = pathPart.replace(/^\//, '');
+      const distFile = path.join(dist, pagePath);
+      const sourceFile = path.join(root, pagePath);
+      if (fs.existsSync(distFile) && fs.statSync(distFile).isFile()) {
+        targetHtml = fs.readFileSync(distFile, 'utf8');
+      } else if (fs.existsSync(sourceFile) && fs.statSync(sourceFile).isFile()) {
+        targetHtml = fs.readFileSync(sourceFile, 'utf8');
+      } else {
+        fail(`footer hash page missing: ${href}`);
+        continue;
+      }
+    }
+    if (!targetHtml.includes(`id="${anchor}"`) && !targetHtml.includes(`id='${anchor}'`)) {
+      fail(`footer hash target missing (${pathPart}): #${anchor}`);
+    }
+    continue;
+  }
+
   const resolved = resolveDistPath(href);
   if (!resolved) continue;
   if (resolved.invalid) {
     fail(`invalid footer href: ${href}`);
     continue;
   }
-  if (resolved.hash) {
-    const id = href.replace(/^\/?#/, '');
-    const anchor = id || href.slice(1);
-    if (anchor && !html.includes(`id="${anchor}"`) && !html.includes(`id='${anchor}'`)) {
-      fail(`footer hash target missing on index: ${href}`);
-    }
-    continue;
-  }
+  if (resolved.hash) continue;
   if (resolved.external) continue;
   if (resolved.missing) {
     fail(`footer link not in dist: ${href} → ${resolved.missing}`);

@@ -1769,6 +1769,7 @@ async function loadSettings() {
     }
   }
   loadAnalyticsExclusionSettings();
+  warnIfSocialSettingsEmpty();
 }
 
 async function loadAnalyticsExclusionSettings() {
@@ -1836,7 +1837,27 @@ async function markAnalyticsTestDevice() {
   loadAnalyticsExclusionSettings();
 }
 
+const SOCIAL_SETTING_KEYS = ['instagram', 'twitter', 'facebook', 'linkedin', 'youtube', 'tiktok'];
+
+function warnIfSocialSettingsEmpty({ notify = false } = {}) {
+  const filled = SOCIAL_SETTING_KEYS.filter((key) => {
+    const el = document.getElementById(`s-${key}`);
+    return el?.value?.trim();
+  });
+  const hint = document.getElementById('social-settings-hint');
+  if (!filled.length) {
+    if (hint) hint.textContent = 'Uyarı: Tüm sosyal alanlar boş — sitede ikon görünmez.';
+    if (notify) toast('Sosyal medya alanları boş — footer ikonları gizli kalacak.', 'error');
+    return false;
+  }
+  if (hint) {
+    hint.textContent = `Footer’da ${filled.length} platform yayında (${filled.join(', ')}).`;
+  }
+  return true;
+}
+
 async function saveSettings() {
+  warnIfSocialSettingsEmpty({ notify: true });
   const rows = KEYS.map((f) => {
     let value = document.getElementById('s-' + f)?.value || '';
     if (f === 'analytics_clean_start_at' && value) {

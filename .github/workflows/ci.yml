@@ -21,6 +21,19 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
+      - name: Production build and link audits
+        run: |
+          npm run build
+          node scripts/audit-footer-links.cjs
+          node scripts/audit-rehber-sitemap.cjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Lighthouse CI (non-blocking)
+        run: npm run lhci
+        continue-on-error: true
+
   e2e-site-health:
     runs-on: ubuntu-latest
     needs: quality

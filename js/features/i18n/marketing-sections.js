@@ -24,7 +24,7 @@ export const marketingSections = {
       paymentBadge: 'iyzico / PayTR ile güvenli ödeme',
       cancelBadge: 'İstediğiniz zaman iptal',
       trustNoteHtml:
-        'Ödeme iyzico (birincil) ve PayTR (yedek) ile alınır; kart bilgileri sunucularımızda tutulmaz. Analiz ve skorlar bilgilendirme amaçlıdır. <a href="/kullanim-sartlari.html">Kullanım şartları</a> · <a href="/kvkk.html">KVKK</a>'
+        'Ödeme iyzico (birincil) ve PayTR (yedek) ile alınır; kart bilgileri sunucularımızda tutulmaz. Analiz ve skorlar bilgilendirme amaçlıdır. <a href="/kullanim-sartlari.html">Kullanım şartları</a> · <a href="/kvkk.html">Ziyaretçi aydınlatma</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK bilgilendirme</a>'
     },
     faq: {
       kicker: 'SSS',
@@ -108,7 +108,7 @@ export const marketingSections = {
       paymentBadge: 'Secure payment via iyzico / PayTR',
       cancelBadge: 'Cancel anytime',
       trustNoteHtml:
-        'Payments are processed via iyzico (primary) and PayTR (fallback); card data is not stored on our servers. Scores are informational. <a href="/kullanim-sartlari.html">Terms</a> · <a href="/kvkk.html">Privacy</a>'
+        'Payments are processed via iyzico (primary) and PayTR (fallback); card data is not stored on our servers. Scores are informational. <a href="/kullanim-sartlari.html">Terms</a> · <a href="/kvkk.html">Visitor notice</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK info</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -192,7 +192,7 @@ export const marketingSections = {
       paymentBadge: 'Sichere Zahlung via iyzico / PayTR',
       cancelBadge: 'Jederzeit kündbar',
       trustNoteHtml:
-        'Zahlungen über iyzico / PayTR; Kartendaten werden nicht auf unseren Servern gespeichert. Scores sind informativ. <a href="/kullanim-sartlari.html">AGB</a> · <a href="/kvkk.html">Datenschutz</a>'
+        'Zahlungen über iyzico / PayTR; Kartendaten werden nicht auf unseren Servern gespeichert. Scores sind informativ. <a href="/kullanim-sartlari.html">AGB</a> · <a href="/kvkk.html">Besucherhinweis</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK-Info</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -276,7 +276,7 @@ export const marketingSections = {
       paymentBadge: 'دفع آمن عبر iyzico / PayTR',
       cancelBadge: 'إلغاء في أي وقت',
       trustNoteHtml:
-        'المدفوعات عبر iyzico وPayTR؛ بيانات البطاقة لا تُخزّن على خوادمنا. الدرجات للمعلومات فقط. <a href="/kullanim-sartlari.html">الشروط</a> · <a href="/kvkk.html">الخصوصية</a>'
+        'المدفوعات عبر iyzico وPayTR؛ بيانات البطاقة لا تُخزّن على خوادمنا. الدرجات للمعلومات فقط. <a href="/kullanim-sartlari.html">الشروط</a> · <a href="/kvkk.html">إشعار الزوار</a> · <a href="/kvkk.html#kvkk-bilgilendirme">معلومات KVKK</a>'
     },
     faq: {
       kicker: 'الأسئلة الشائعة',
@@ -360,7 +360,7 @@ export const marketingSections = {
       paymentBadge: 'Pagamento sicuro via iyzico / PayTR',
       cancelBadge: 'Annulla quando vuoi',
       trustNoteHtml:
-        'Pagamenti tramite iyzico / PayTR; i dati carta non sono sui nostri server. I punteggi sono informativi. <a href="/kullanim-sartlari.html">Termini</a> · <a href="/kvkk.html">Privacy</a>'
+        'Pagamenti tramite iyzico / PayTR; i dati carta non sono sui nostri server. I punteggi sono informativi. <a href="/kullanim-sartlari.html">Termini</a> · <a href="/kvkk.html">Informativa visitatori</a> · <a href="/kvkk.html#kvkk-bilgilendirme">Info KVKK</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -444,7 +444,7 @@ export const marketingSections = {
       paymentBadge: 'Paiement sécurisé via iyzico / PayTR',
       cancelBadge: 'Annulation à tout moment',
       trustNoteHtml:
-        'Paiements via iyzico et PayTR ; les données carte ne sont pas stockées chez nous. Les scores sont informatifs. <a href="/kullanim-sartlari.html">Conditions</a> · <a href="/kvkk.html">Confidentialité</a>'
+        'Paiements via iyzico et PayTR ; les données carte ne sont pas stockées chez nous. Les scores sont informatifs. <a href="/kullanim-sartlari.html">Conditions</a> · <a href="/kvkk.html">Notice visiteurs</a> · <a href="/kvkk.html#kvkk-bilgilendirme">Info KVKK</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -528,7 +528,7 @@ export const marketingSections = {
       paymentBadge: 'Pago seguro vía iyzico / PayTR',
       cancelBadge: 'Cancelar cuando quiera',
       trustNoteHtml:
-        'Pagos vía iyzico / PayTR; datos de tarjeta no se guardan en nuestros servidores. Puntuaciones informativas. <a href="/kullanim-sartlari.html">Términos</a> · <a href="/kvkk.html">Privacidad</a>'
+        'Pagos vía iyzico / PayTR; datos de tarjeta no se guardan en nuestros servidores. Puntuaciones informativas. <a href="/kullanim-sartlari.html">Términos</a> · <a href="/kvkk.html">Aviso visitantes</a> · <a href="/kvkk.html#kvkk-bilgilendirme">Info KVKK</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -612,7 +612,7 @@ export const marketingSections = {
       paymentBadge: 'iyzico / PayTR 安全決済',
       cancelBadge: 'いつでも解約',
       trustNoteHtml:
-        '決済は iyzico / PayTR 経由。カード情報は当社サーバーに保存しません。スコアは参考情報です。<a href="/kullanim-sartlari.html">利用規約</a> · <a href="/kvkk.html">プライバシー</a>'
+        '決済は iyzico / PayTR 経由。カード情報は当社サーバーに保存しません。スコアは参考情報です。<a href="/kullanim-sartlari.html">利用規約</a> · <a href="/kvkk.html">訪問者向け通知</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK情報</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -696,7 +696,7 @@ export const marketingSections = {
       paymentBadge: 'iyzico / PayTR 安全支付',
       cancelBadge: '随时取消',
       trustNoteHtml:
-        '支付经 iyzico / PayTR 处理；卡信息不存于我们的服务器。分数仅供参考。<a href="/kullanim-sartlari.html">使用条款</a> · <a href="/kvkk.html">隐私</a>'
+        '支付经 iyzico / PayTR 处理；卡信息不存于我们的服务器。分数仅供参考。<a href="/kullanim-sartlari.html">使用条款</a> · <a href="/kvkk.html">访客说明</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK 说明</a>'
     },
     faq: {
       kicker: '常见问题',

@@ -1,6 +1,6 @@
 {
   "name": "istebu-v2",
-  "version": "2.2.15",
+  "version": "2.2.16",
   "description": "Modern Turkish marketplace platform - isteBu v2",
   "main": "js/app.js",
   "scripts": {
@@ -11,6 +11,10 @@
     "generate:css-bundles": "node scripts/generate-css-bundles.cjs",
     "generate:route-bootstrap": "node scripts/generate-route-bootstrap.cjs",
     "build:corporate": "node scripts/build-corporate-static.cjs",
+    "sync:legal-footers": "node scripts/sync-corporate-footers.cjs",
+    "audit:footer-links": "node scripts/audit-footer-links.cjs",
+    "audit:rehber-sitemap": "node scripts/audit-rehber-sitemap.cjs",
+    "audit:platform-scorecard": "node scripts/platform-scorecard.cjs",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name=istebul-com",
     "deploy:cf": "npm run build && wrangler pages deploy dist --project-name=istebul-com",
     "check": "node scripts/check-syntax.cjs && node scripts/check-console.cjs",

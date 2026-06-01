@@ -34,7 +34,11 @@ const checks = [
   'scripts/css-bundles-audit.cjs',
   'scripts/gsc-index-readiness-audit.cjs',
   'scripts/analytics-deploy-readiness-audit.cjs',
-  'scripts/audit-seo.cjs'
+  'scripts/audit-seo.cjs',
+  'scripts/audit-footer-links.cjs',
+  'scripts/audit-rehber-sitemap.cjs',
+  'scripts/compliance-audit-check.cjs',
+  'scripts/platform-scorecard.cjs'
 ];
 for (const script of checks) {
   run('node', [script]);

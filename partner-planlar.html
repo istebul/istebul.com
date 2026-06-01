@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/css/corporate-shell.css?v=1">
   <link rel="stylesheet" href="/css/partner-platform.css?v=5">
   <link rel="stylesheet" href="/css/sales-partner.css?v=1">
+  <link rel="stylesheet" href="/css/static-cookie-consent-v1.css?v=1">
 </head>
 <body class="ib-enterprise ib-partner-page ib-partner-pricing-page">
   <header class="auto-header corporate-header ib-partner-header">
@@ -37,11 +38,19 @@
     <nav>
       <a href="/partner-olun.html">Partner</a>
       <a href="/iletisim.html">İletişim</a>
-      <a href="/kvkk.html">KVKK</a>
+      <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a>
     </nav>
   </footer>
 
   <script src="/env.js" defer></script>
   <script type="module" src="/js/corporate/partner-planlar.js"></script>
+  <div class="static-cookie-consent" id="static-cookie-consent" role="region" aria-label="Çerez tercihi" hidden>
+  <p>Çerez ve analitik tercihinizi yönetin. <a href="/cerez-politikasi.html">Çerez politikası</a> · Ana sitede <a href="/">tam tercih paneli</a>.</p>
+  <div class="static-cookie-consent__actions">
+    <button type="button" class="btn btn-primary btn-sm" data-static-cookie-accept>Kabul et</button>
+    <button type="button" class="btn btn-outline btn-sm" data-static-cookie-decline>Reddet</button>
+  </div>
+</div>
+  <script src="/js/runtime/static-cookie-consent.js" defer></script>
 </body>
 </html>

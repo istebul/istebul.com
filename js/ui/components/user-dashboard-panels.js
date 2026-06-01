@@ -144,6 +144,19 @@ export function renderUserDashboardTabPanels(ctx = {}) {
               : '<button type="button" class="btn btn-outline btn-sm" id="account-resend-verify">Doğrulama e-postasını gönder</button>'
           }
         </li>
+        <li>
+          <div>
+            <strong>Kişisel verileriniz</strong>
+            <p><a href="/kvkk.html">Ziyaretçi aydınlatma</a> · <a href="/gizlilik.html">Gizlilik</a> · <a href="/cerez-politikasi.html">Çerez</a></p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Hesap silme (KVKK)</strong>
+            <p>KVKK kapsamında hesap ve veri silme talebinizi iletebilirsiniz. En geç 30 gün içinde yanıtlanır.</p>
+          </div>
+          <a href="mailto:info@istebul.com?subject=KVKK%20Hesap%20Silme%20Talebi" class="btn btn-outline btn-sm">Silme talebi gönder</a>
+        </li>
       </ul>
     </section>
 
