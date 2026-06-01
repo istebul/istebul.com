@@ -93,6 +93,10 @@ checkPage('konut/index.html', { canonical: 'https://www.istebul.com/konut/' });
 checkPage('tatil/index.html', { canonical: 'https://www.istebul.com/tatil/' });
 checkPage('finans/index.html', { canonical: 'https://www.istebul.com/finans/' });
 checkPage('metodoloji/index.html', { canonical: 'https://www.istebul.com/metodoloji/' });
+checkPage('sigorta/index.html', {
+  canonical: 'https://www.istebul.com/sigorta/',
+  aiCopy: true
+});
 
 if (!sitemap.includes('<lastmod>')) {
   fail('sitemap.xml should include lastmod entries');

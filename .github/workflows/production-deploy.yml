@@ -29,6 +29,11 @@ jobs:
       - run: npm ci
       - run: npm run test
 
+      - name: E2E site health (Playwright)
+        run: |
+          npx playwright install chromium --with-deps
+          npm run test:e2e:ci
+
   deploy-cloudflare:
     name: Cloudflare Pages
     needs: quality
@@ -156,12 +161,31 @@ jobs:
             echo "::warning::db push incomplete (migration history drift). Vertical schema applied via Management API fallback."
           fi
 
+      - name: Sync edge secrets (analytics ITE)
+        if: steps.gate.outputs.skip != 'true'
+        env:
+          ANALYTICS_HASH_SALT: ${{ secrets.ANALYTICS_HASH_SALT }}
+        run: |
+          if [ -n "$ANALYTICS_HASH_SALT" ]; then
+            supabase secrets set ANALYTICS_HASH_SALT="$ANALYTICS_HASH_SALT" --project-ref "$SUPABASE_PROJECT_REF"
+            echo "ANALYTICS_HASH_SALT synced to edge"
+          else
+            echo "::warning::Set GitHub secret ANALYTICS_HASH_SALT for internal traffic exclusion hashing"
+          fi
+
       - name: Deploy edge functions
         if: always() && steps.gate.outputs.skip != 'true'
         run: |
           FUNCTIONS=(
             auto-intake
+            housing-intake
+            finance-intake
+            sigorta-intake
+            vacation-intake
+            vertical-intake
+            support-intake
             analytics-ingest
+            admin-action
             ops-ingest
             lifecycle-enroll
             lifecycle-cron
@@ -174,21 +198,36 @@ jobs:
             outcome-capture
             moat-health
             lead-alert
-            admin-action
             partner-daily-reset
-            vacation-intake
-            vertical-intake
+            create-payment-session
           )
           for fn in "${FUNCTIONS[@]}"; do
             echo "Deploying $fn..."
             supabase functions deploy "$fn" --project-ref "$SUPABASE_PROJECT_REF"
           done
 
+  smoke-live:
+    name: Live smoke (post-deploy)
+    needs: [deploy-cloudflare]
+    runs-on: ubuntu-latest
+    if: needs.deploy-cloudflare.result == 'success'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Wait for CDN propagation
+        run: sleep 45
+      - name: HTTP smoke www
+        run: node scripts/smoke-live.cjs https://www.istebul.com
+        env:
+          SMOKE_OPTIONAL: '1'
+
   deploy-report:
     name: Deploy summary
-    needs: [quality, deploy-cloudflare, deploy-supabase]
+    needs: [quality, deploy-cloudflare, deploy-supabase, smoke-live]
     runs-on: ubuntu-latest
-    if: always() && github.ref == 'refs/heads/main'
+    if: always() && github.ref == 'refs/heads/main' && needs.quality.result == 'success'
     steps:
       - name: Summary
         run: |
@@ -200,6 +239,10 @@ jobs:
             echo "| Test & Build | ${{ needs.quality.result }} |"
             echo "| Cloudflare Pages | ${{ needs.deploy-cloudflare.result }} |"
             echo "| Supabase | ${{ needs.deploy-supabase.result }} |"
+            echo "| Live smoke | ${{ needs.smoke-live.result }} |"
+            echo ""
+            echo "Sigorta canlı URL: https://www.istebul.com/sigorta/"
+            echo "GSC: sitemap https://www.istebul.com/sitemap.xml"
             echo ""
             echo "Cloudflare **skipped** ise: repo **Secrets** → \`CLOUDFLARE_API_TOKEN\`, \`CLOUDFLARE_ACCOUNT_ID\`, \`SUPABASE_URL\`, \`SUPABASE_ANON_KEY\`"
             echo ""

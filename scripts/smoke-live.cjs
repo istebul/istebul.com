@@ -20,6 +20,12 @@ const liveRoutes = [
   { path: '/konut/', must: ['vacation-page', 'konut-page', 'Analize başla'], status: 200, optional: true },
   { path: '/finans/', must: ['vacation-page', 'finans-page', 'Analize başla'], status: 200, optional: true },
   { path: '/tatil/', must: ['vacation-page', 'Analize başla'], status: 200, optional: true },
+  {
+    path: '/sigorta/',
+    must: ['sigorta-page', 'sigorta-wizard', 'Sigorta'],
+    status: 200,
+    optional: true
+  },
   { path: '/karar-asistani/', must: ['data-ib-route', 'page-karar-analizi'], status: 200, optional: true },
   { path: '/karsilastir/', must: ['data-ib-route', 'compare'], status: 200, optional: true },
   { path: '/ilanlar/', must: ['data-ib-route', 'ilanlar'], status: 200, optional: true },
