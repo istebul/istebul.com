@@ -14,4 +14,14 @@ describe('third-party-analytics', () => {
     assert.match(app, /third-party-analytics\.js/);
     assert.match(app, /loadThirdPartyMeasurement/);
   });
+
+  it('loads Clarity when CLARITY_PROJECT_ID is set', () => {
+    const src = fs.readFileSync(
+      path.join(process.cwd(), 'js/core/third-party-analytics.js'),
+      'utf8'
+    );
+    assert.match(src, /loadClarity/);
+    assert.match(src, /CLARITY_PROJECT_ID/);
+    assert.match(src, /www\.clarity\.ms/);
+  });
 });

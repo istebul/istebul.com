@@ -72,6 +72,13 @@ const dashboard = fs.readFileSync(
   'utf8'
 );
 if (!dashboard.includes('buildPagePathRows')) fail('platform dashboard missing buildPagePathRows');
+if (!dashboard.includes('buildPagePathDetail')) fail('platform dashboard missing buildPagePathDetail');
+
+const thirdParty = fs.readFileSync(path.join(root, 'js/core/third-party-analytics.js'), 'utf8');
+if (!thirdParty.includes('loadClarity')) fail('third-party-analytics missing loadClarity');
+if (!thirdParty.includes('CLARITY_PROJECT_ID')) {
+  fail('third-party-analytics must read CLARITY_PROJECT_ID');
+}
 if (!dashboard.includes('exportPlatformAnalyticsCsv')) {
   fail('platform dashboard missing CSV export');
 }
@@ -82,6 +89,12 @@ if (!dashboard.includes('renderPlatformAnalyticsEmptyGuide')) {
 const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
 if (!headers.includes('static.cloudflareinsights.com')) {
   fail('_headers CSP must allow Cloudflare Web Analytics');
+}
+if (!headers.includes('www.clarity.ms')) {
+  fail('_headers CSP must allow Microsoft Clarity (www.clarity.ms)');
+}
+if (!headers.includes('*.clarity.ms')) {
+  fail('_headers CSP connect-src must allow https://*.clarity.ms');
 }
 
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));

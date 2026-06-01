@@ -67,8 +67,10 @@ import { fetchActivePartnerPool } from './features/partner/partner-pool.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
 import {
   buildSiteAnalyticsMetrics,
+  buildPagePathDetail,
   filterRowsByPreset,
   renderSiteAnalyticsDashboard,
+  renderPagePathDetailPanel,
   renderPlatformAnalyticsEmptyGuide,
   exportPlatformAnalyticsCsv,
   FILTER_PRESETS
@@ -92,6 +94,7 @@ let unifiedFunnelDataMode = ANALYTICS_DATA_MODES.REAL;
 let autoAnalyticsDataMode = ANALYTICS_DATA_MODES.REAL;
 let analyticsCleanStartAt = null;
 let lastPlatformSiteMetrics = null;
+let lastPlatformAnalyticsRows = null;
 
 function renderAdminConfigError(message) {
   document.body.innerHTML = `
@@ -2765,6 +2768,7 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
   const analyticsBanner = renderAdminDataSourceNotices([analyticsRes]);
 
   if (analyticsRes.error && !(analyticsRes.data || []).length) {
+    lastPlatformAnalyticsRows = null;
     el.innerHTML = `${analyticsBanner}${renderPlatformAnalyticsEmptyGuide({
       fetchError: analyticsRes.error.message
     })}`;
@@ -2785,6 +2789,7 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
   );
 
   if (!rows.length || !filteredRows.length) {
+    lastPlatformAnalyticsRows = filteredRows.length ? filteredRows : null;
     el.innerHTML = `${analyticsBanner}${renderAnalyticsDataModeToolbar(dataMode)}${renderPlatformAnalyticsEmptyGuide({
       rawRowCount: rows.length,
       filteredRowCount: filteredRows.length,
@@ -2794,6 +2799,7 @@ async function loadPlatformAnalytics(filterId = platformAnalyticsFilter, dataMod
     return;
   }
 
+  lastPlatformAnalyticsRows = filteredRows;
   const siteMetrics = buildSiteAnalyticsMetrics(filteredRows);
   lastPlatformSiteMetrics = siteMetrics;
   const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
@@ -3051,6 +3057,23 @@ function bindPlatformAnalyticsToolbar(el, filterId, dataMode) {
   });
   el.querySelectorAll('[data-page-target="settings"]').forEach((btn) => {
     btn.addEventListener('click', () => showPage('settings', btn));
+  });
+  el.querySelectorAll('[data-action="analytics-path-detail"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const path = btn.getAttribute('data-path');
+      if (!path || !lastPlatformAnalyticsRows?.length) {
+        toast('Önce veri yükleyin', 'error');
+        return;
+      }
+      const panel = document.getElementById('platform-path-detail-panel');
+      const detail = buildPagePathDetail(lastPlatformAnalyticsRows, path);
+      if (panel) {
+        panel.outerHTML = renderPagePathDetailPanel(detail);
+        document
+          .getElementById('platform-path-detail-panel')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
   });
 }
 

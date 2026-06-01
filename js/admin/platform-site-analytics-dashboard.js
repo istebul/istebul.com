@@ -168,6 +168,96 @@ export function buildPagePathRows(rows, limit = 25) {
 }
 
 /**
+ * Tek sayfa path için event kırılımı ve son kayıtlar.
+ * @param {object[]} rows
+ * @param {string} path
+ */
+export function buildPagePathDetail(rows, path, { eventLimit = 15, recentLimit = 25 } = {}) {
+  const target = String(path || '/');
+  const matching = rows.filter((row) => normalizePagePath(row) === target);
+  const eventRows = buildTopEventRows(matching, eventLimit);
+  const recent = [...matching]
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+    .slice(0, recentLimit)
+    .map((row) => ({
+      event_name: row.event_name || '—',
+      created_at: row.created_at
+        ? new Date(row.created_at).toLocaleString('tr-TR')
+        : '—',
+      session_id: row.session_id ? String(row.session_id).slice(0, 8) + '…' : '—',
+      step: row.funnel_step || row.page_section || row.properties?.section || '—',
+      utm_source: row.utm_source || row.attribution?.utm_source || '—'
+    }));
+
+  const sessions = new Set(matching.map((r) => r.session_id).filter(Boolean));
+
+  return {
+    path: target,
+    totalEvents: matching.length,
+    sessions: sessions.size || matching.length,
+    eventRows,
+    recent
+  };
+}
+
+export function renderPagePathDetailPanel(detail) {
+  if (!detail?.path) {
+    return '<div id="platform-path-detail-panel" class="platform-path-detail"></div>';
+  }
+
+  return `
+    <div id="platform-path-detail-panel" class="platform-path-detail" aria-live="polite">
+      <div class="platform-path-detail__head">
+        <h4 style="margin:0">Sayfa detayı: <code>${escapeHtml(detail.path)}</code></h4>
+        <p class="text-muted-sm" style="margin:6px 0 0">${detail.totalEvents} event · ${detail.sessions} oturum</p>
+      </div>
+      <div class="table-scroll" style="margin-top:12px">
+        <table class="table platform-site-analytics__table">
+          <thead><tr><th>Event</th><th>Bölüm</th><th>Adet</th></tr></thead>
+          <tbody>
+            ${
+              detail.eventRows?.length
+                ? detail.eventRows
+                    .map(
+                      (r) => `
+              <tr><td>${escapeHtml(r.eventName)}</td><td>${escapeHtml(r.section)}</td><td>${r.count}</td></tr>`
+                    )
+                    .join('')
+                : '<tr><td colspan="3">Bu sayfada event yok</td></tr>'
+            }
+          </tbody>
+        </table>
+      </div>
+      <h5 style="margin:16px 0 8px">Son eventler</h5>
+      <div class="table-scroll">
+        <table class="table platform-site-analytics__table">
+          <thead>
+            <tr><th>Zaman</th><th>Event</th><th>Adım</th><th>UTM</th><th>Oturum</th></tr>
+          </thead>
+          <tbody>
+            ${
+              detail.recent?.length
+                ? detail.recent
+                    .map(
+                      (r) => `
+              <tr>
+                <td class="cell-nowrap">${escapeHtml(r.created_at)}</td>
+                <td>${escapeHtml(r.event_name)}</td>
+                <td>${escapeHtml(r.step)}</td>
+                <td>${escapeHtml(r.utm_source)}</td>
+                <td><code>${escapeHtml(r.session_id)}</code></td>
+              </tr>`
+                    )
+                    .join('')
+                : '<tr><td colspan="5">Kayıt yok</td></tr>'
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+/**
  * En sık event adları (bölüm/aksiyon proxy).
  * @param {object[]} rows
  * @param {number} [limit]
@@ -416,7 +506,7 @@ export function renderPlatformAnalyticsEmptyGuide({
         <li>Supabase migration: <code>20260602_analytics_internal_traffic.sql</code></li>
         <li>Edge deploy: <code>analytics-ingest</code>, <code>admin-action</code></li>
         <li>Production secret: <code>ANALYTICS_HASH_SALT</code> (Supabase Edge)</li>
-        <li>Opsiyonel harici ölçüm (çerez sonrası): <code>GA4_MEASUREMENT_ID</code>, <code>CF_WEB_ANALYTICS_TOKEN</code> — Cloudflare Pages env</li>
+        <li>Opsiyonel harici ölçüm (çerez sonrası): <code>GA4_MEASUREMENT_ID</code>, <code>CF_WEB_ANALYTICS_TOKEN</code>, <code>PLAUSIBLE_DOMAIN</code>, <code>CLARITY_PROJECT_ID</code> — Cloudflare Pages env</li>
         <li>Sitede ziyaretçi <strong>çerez onayı</strong> vermeli (analytics consent)</li>
         <li>Admin → Ayarlar → Analytics: dahili IP / test cihazı hariç tutma</li>
         <li>Veri modu: <strong>Gerçek kullanıcı</strong> veya <strong>Tüm veri</strong></li>
@@ -497,7 +587,7 @@ export function renderSiteAnalyticsDashboard(metrics, { filterId = '7d', windowN
         <table class="table platform-site-analytics__table">
           <thead>
             <tr>
-              <th>Sayfa</th><th>Oturum</th><th>Event</th><th>Görüntüleme</th><th>Analiz</th><th>Lead</th><th>CR</th>
+              <th>Sayfa</th><th>Oturum</th><th>Event</th><th>Görüntüleme</th><th>Analiz</th><th>Lead</th><th>CR</th><th></th>
             </tr>
           </thead>
           <tbody>
@@ -514,13 +604,17 @@ export function renderSiteAnalyticsDashboard(metrics, { filterId = '7d', windowN
                 <td>${r.analysis}</td>
                 <td>${r.leads}</td>
                 <td>${r.conversion}</td>
+                <td><button type="button" class="btn btn-ghost btn-sm" data-action="analytics-path-detail" data-path="${escapeHtml(r.path)}">Detay</button></td>
               </tr>`
                     )
                     .join('')
-                : '<tr><td colspan="7">Henüz sayfa path verisi yok (cookie onayı + analytics-ingest gerekir)</td></tr>'
+                : '<tr><td colspan="8">Henüz sayfa path verisi yok (cookie onayı + analytics-ingest gerekir)</td></tr>'
             }
           </tbody>
         </table>
+      </div>
+      <div id="platform-path-detail-panel" class="platform-path-detail platform-path-detail--empty">
+        <p class="text-muted-sm" style="margin:12px 0 0">Bir sayfa satırında <strong>Detay</strong> ile o path’teki eventleri ve son kayıtları görün.</p>
       </div>
 
       <h4 style="margin:20px 0 10px">Bölüm ve aksiyonlar (event)</h4>
