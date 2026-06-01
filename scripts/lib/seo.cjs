@@ -3,6 +3,10 @@
 const fs = require('fs');
 const path = require('path');
 const { mergeGuidePage, estimatePageWords, MIN_GUIDE_WORDS } = require('./seo-guide-expansions.cjs');
+const {
+  renderSiteSocialFooterNav,
+  renderSiteSocialBootScripts
+} = require('./site-social-footer.cjs');
 
 const root = path.resolve(__dirname, '../..');
 const SEO_BUILD_DATE = new Date().toISOString().slice(0, 10);
@@ -437,6 +441,7 @@ function renderSeoFooter({ site, guideLinks }) {
       <div>
         <strong>${escapeHtml(site.siteName)}</strong>
         <p>Türkiye odaklı araç alım karar destek platformu — TCO, kredi ve karşılaştırma.</p>
+        ${renderSiteSocialFooterNav()}
       </div>
       <div>
         <h2>Platform</h2>
@@ -624,6 +629,7 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
     </div>
   </main>
   ${renderSeoFooter({ site, guideLinks: relatedLinks })}
+  ${renderSiteSocialBootScripts()}
 </body>
 </html>`;
 }

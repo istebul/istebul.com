@@ -1,6 +1,10 @@
 'use strict';
 
 const { escapeHtml, absoluteUrl } = require('./seo.cjs');
+const {
+  renderSiteSocialFooterNav,
+  renderSiteSocialBootScripts
+} = require('./site-social-footer.cjs');
 
 function renderCorporateNav(activePath) {
   const items = [
@@ -35,6 +39,7 @@ function renderCorporateFooter() {
     <div>
       <strong>isteBul</strong>
       <p>Karar zekâsı platformu — ilan sitesi değil, karar motoru.</p>
+      ${renderSiteSocialFooterNav()}
     </div>
     <nav>
       <a href="/hakkimizda.html">Hakkımızda</a>
@@ -116,6 +121,7 @@ function renderAboutPage(site, page, controller) {
     <p class="corporate-note text-muted-sm">Veri sorumlusu: ${escapeHtml(c.contactPerson)} · <a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a> · <a href="/kvkk.html">KVKK aydınlatma</a></p>
   </main>
   ${renderCorporateFooter()}
+  ${renderSiteSocialBootScripts()}
 </body>
 </html>`;
 }
@@ -168,6 +174,7 @@ function renderMethodologyPage(site, page) {
     <p class="corporate-disclaimer">Analiz ve skorlar bilgilendirme amaçlıdır; finansal tavsiye veya getiri taahhüdü değildir.</p>
   </main>
   ${renderCorporateFooter()}
+  ${renderSiteSocialBootScripts()}
 </body>
 </html>`;
 }
@@ -233,6 +240,7 @@ function renderVerticalPage(site, vertical, controllerEmail) {
     <p class="corporate-disclaimer">Bu dikey henüz pilot hazırlığındadır. Tam analiz akışı için şimdilik <a href="/auto/">isteBul Auto</a> kullanılabilir.</p>
   </main>
   ${renderCorporateFooter()}
+  ${renderSiteSocialBootScripts()}
 </body>
 </html>`;
 }
@@ -321,6 +329,7 @@ function renderKvkkPage(site, controller, retention) {
     </section>
   </main>
   ${renderCorporateFooter()}
+  ${renderSiteSocialBootScripts()}
 </body>
 </html>`;
 }

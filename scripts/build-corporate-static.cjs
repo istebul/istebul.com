@@ -29,7 +29,14 @@ writePage('hakkimizda.html', renderAboutPage(site, pages.about, controller));
 writePage('kvkk.html', renderKvkkPage(site, controller, retention));
 writePage('metodoloji/index.html', renderMethodologyPage(site, pages.methodology));
 
+/** Live decision verticals ship their own index.html — do not overwrite with pilot stubs. */
+const LIVE_VERTICAL_SLUGS = new Set(['auto', 'konut', 'tatil', 'finans', 'sigorta', 'kasko']);
+
 Object.values(pages.verticals).forEach((vertical) => {
+  if (LIVE_VERTICAL_SLUGS.has(vertical.slug)) {
+    console.log(`[corporate] skip ${vertical.slug}/index.html (live vertical app)`);
+    return;
+  }
   writePage(`${vertical.slug}/index.html`, renderVerticalPage(site, vertical, email));
 });
 

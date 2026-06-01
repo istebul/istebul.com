@@ -4,8 +4,10 @@ import './site-analytics-boot.js';
 import '../features/auth/auth-click-bindings.js';
 import { mountVerticalSoftAuthGate } from '../features/auth/vertical-soft-auth.js';
 import { mountVerticalProductNav } from './vertical-product-nav.js';
+import { initSiteSocialLinks } from './site-social-links.js';
 
 mountVerticalProductNav();
+initSiteSocialLinks();
 
 if (typeof document !== 'undefined') {
   const bootAuthBanner = () => {

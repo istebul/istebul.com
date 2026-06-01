@@ -57,22 +57,32 @@ export function buildSiteSocialLinks(settings = {}) {
   }).filter(Boolean);
 }
 
-/**
- * @param {Record<string, string>} settings
- */
-export function renderSiteSocialLinks(settings = {}) {
-  const root = document.querySelector('[data-site-social-links]');
-  if (!root) return;
+const SOCIAL_SETTING_KEYS = ['instagram', 'twitter', 'facebook', 'linkedin', 'youtube', 'tiktok'];
 
-  const links = buildSiteSocialLinks(settings);
-  if (!links.length) {
-    root.hidden = true;
-    root.replaceChildren();
-    return;
+export async function fetchSiteSocialSettings() {
+  const url = window.__env?.SUPABASE_URL;
+  const key = window.__env?.SUPABASE_ANON_KEY;
+  if (!url || !key) return {};
+
+  const filter = SOCIAL_SETTING_KEYS.map((k) => `key.eq.${k}`).join(',');
+  try {
+    const res = await fetch(`${url}/rest/v1/site_settings?select=key,value&or=(${filter})`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` }
+    });
+    const rows = await res.json();
+    if (!Array.isArray(rows)) return {};
+    const settings = {};
+    rows.forEach((row) => {
+      settings[row.key] = row.value;
+    });
+    return settings;
+  } catch {
+    return {};
   }
+}
 
-  root.hidden = false;
-  root.innerHTML = links
+function renderLinksHtml(links) {
+  return links
     .map(
       ({ key, label, href }) =>
         `<a class="ib-site-social__link ib-site-social__link--${key}" href="${escapeAttr(
@@ -80,6 +90,32 @@ export function renderSiteSocialLinks(settings = {}) {
         )}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`
     )
     .join('');
+}
+
+/**
+ * @param {Record<string, string>} settings
+ */
+export function renderSiteSocialLinks(settings = {}) {
+  const roots = document.querySelectorAll('[data-site-social-links]');
+  if (!roots.length) return;
+
+  const links = buildSiteSocialLinks(settings);
+  roots.forEach((root) => {
+    if (!links.length) {
+      root.hidden = true;
+      root.replaceChildren();
+      return;
+    }
+    root.hidden = false;
+    root.innerHTML = renderLinksHtml(links);
+  });
+}
+
+/** Fetch site_settings and fill every [data-site-social-links] on the page. */
+export async function initSiteSocialLinks() {
+  if (!document.querySelector('[data-site-social-links]')) return;
+  const settings = await fetchSiteSocialSettings();
+  renderSiteSocialLinks(settings);
 }
 
 function escapeHtml(value) {

@@ -294,6 +294,19 @@ esbuild.buildSync({
   outfile: siteAnalyticsBootOut
 });
 
+const siteSocialInitOut = path.join(dist, 'js/runtime/site-social-init.js');
+ensureDir(siteSocialInitOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/runtime/site-social-init.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: siteSocialInitOut
+});
+
 const routeBootstrapOut = path.join(dist, 'js/runtime/route-bootstrap-head.js');
 writeRouteBootstrapFile(routeBootstrapOut);
 
@@ -568,6 +581,20 @@ if (fs.existsSync(path.join(root, '_headers'))) {
 }
 
 injectPartnerHtmlFiles(dist);
+
+const { injectSiteSocialIntoHtml } = require('./lib/site-social-footer.cjs');
+let socialInjectCount = 0;
+walk(dist, (file) => {
+  if (!file.endsWith('.html')) return;
+  const before = fs.readFileSync(file, 'utf8');
+  const after = injectSiteSocialIntoHtml(before);
+  if (after === before) return;
+  fs.writeFileSync(file, minifyHtml(after));
+  socialInjectCount += 1;
+});
+if (socialInjectCount > 0) {
+  console.log(`[social] footer hooks added to ${socialInjectCount} HTML file(s)`);
+}
 
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');
