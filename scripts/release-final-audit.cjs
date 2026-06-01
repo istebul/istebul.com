@@ -33,8 +33,11 @@ try {
 const hasLive = ['araba', 'konut', 'tatil', 'finansman'].every((id) => configSource.includes(`id: '${id}'`) && configSource.includes("status: 'active'"));
 addCheck('Kategori config canlı durumları', hasLive ? 'PASS' : 'FAIL');
 
-const hasSoon = ['sigorta', 'kasko'].every((id) => configSource.includes(`id: '${id}'`) && configSource.includes("status: 'coming_soon'"));
-addCheck('Kategori config yakında durumları', hasSoon ? 'PASS' : 'FAIL');
+const sigortaLive = configSource.includes("id: 'sigorta'") && configSource.includes("status: 'active'");
+addCheck('Sigorta kategorisi canlı', sigortaLive ? 'PASS' : 'FAIL');
+
+const kaskoSoon = configSource.includes("id: 'kasko'") && configSource.includes("status: 'coming_soon'");
+addCheck('Kasko kategorisi yakında', kaskoSoon ? 'PASS' : 'FAIL');
 
 const hasRoutes = ['/araba', '/konut', '/tatil', '/finansman', '/sigorta', '/kasko'].every((route) => routeSource.includes(`'${route}'`));
 addCheck('Route alias kapsamı', hasRoutes ? 'PASS' : 'WARN');

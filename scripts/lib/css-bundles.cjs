@@ -18,7 +18,8 @@ const HOMEPAGE_EXTENSION = [
   'css/payments-ui.css',
   'css/listing-gallery.css',
   'css/enterprise-remediation.css',
-  'css/enterprise-card-readability.css'
+  'css/enterprise-card-readability.css',
+  'css/home-first-impression.css'
 ];
 
 /** Design system + readability for vertical decision pages (replaces 3–4 link tags). */

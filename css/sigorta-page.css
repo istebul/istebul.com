@@ -1,0 +1,31 @@
+/**
+ * Sigorta vertical — readability on vacation hero + wizard surfaces.
+ */
+body.sigorta-page.vacation-page {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.sigorta-page .vacation-hero-copy h1,
+body.sigorta-page .vacation-hero-lead,
+body.sigorta-page .vacation-hero-badge {
+  color: #f8fafc;
+  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.4);
+}
+
+body.sigorta-page .vacation-disclaimer {
+  color: #cbd5e1;
+}
+
+body.sigorta-page .sigorta-v2-lead-form label.sigorta-lead-consent {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  font-size: 0.875rem;
+  color: #334155;
+  margin: 0.75rem 0;
+}
+
+body.sigorta-page .sigorta-v2-lead-form label.sigorta-lead-consent a {
+  color: #2563eb;
+}

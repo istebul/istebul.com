@@ -38,7 +38,7 @@
     { "loc": "/duyurular", "priority": "0.5", "changefreq": "weekly" },
     { "loc": "/kampanyalar", "priority": "0.5", "changefreq": "weekly" },
     { "loc": "/karar-moat.html", "priority": "0.45", "changefreq": "monthly" },
-    { "loc": "/sigorta/", "priority": "0.4", "changefreq": "monthly" },
+    { "loc": "/sigorta/", "priority": "0.85", "changefreq": "weekly" },
     { "loc": "/kasko/", "priority": "0.4", "changefreq": "monthly" }
   ]
 }

@@ -180,10 +180,17 @@ function renderSigortaResultsV2Html(model) {
         </div>
         <div class="sigorta-v2-lead-form" hidden data-sigorta-lead-form>
           <div class="form-row">
-            <input type="text" data-sigorta-lead-name placeholder="Ad soyad" autocomplete="name">
+            <input type="text" data-sigorta-lead-name placeholder="Ad soyad" autocomplete="name" required>
             <input type="tel" data-sigorta-lead-phone placeholder="Telefon" autocomplete="tel">
-            <input type="email" data-sigorta-lead-email placeholder="E-posta" autocomplete="email">
+            <input type="email" data-sigorta-lead-email placeholder="E-posta" autocomplete="email" required>
           </div>
+          <label class="sigorta-lead-consent">
+            <input type="checkbox" data-sigorta-lead-privacy value="accepted">
+            <span>
+              <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a> ve
+              <a href="/gizlilik.html" target="_blank" rel="noopener">gizlilik</a> metnini okudum; iletişim için onay veriyorum.
+            </span>
+          </label>
           <button type="button" class="btn btn-primary" data-sigorta-lead-submit>Talebi gönder</button>
           <p class="sigorta-v2-lead-status" data-sigorta-lead-status aria-live="polite"></p>
         </div>
@@ -289,10 +296,21 @@ export async function mountSigortaResultsV2(mountNode, payload = {}) {
 
   root.querySelector('[data-sigorta-lead-submit]')?.addEventListener('click', async () => {
     const statusEl = root.querySelector('[data-sigorta-lead-status]');
+    const privacyAccepted = root.querySelector('[data-sigorta-lead-privacy]')?.checked;
+    if (!privacyAccepted) {
+      if (statusEl) statusEl.textContent = 'Devam etmek için KVKK onayını işaretleyin.';
+      return;
+    }
+    const email = root.querySelector('[data-sigorta-lead-email]')?.value?.trim() || '';
+    if (!email) {
+      if (statusEl) statusEl.textContent = 'E-posta adresi zorunludur.';
+      return;
+    }
     const leadPayload = {
       full_name: root.querySelector('[data-sigorta-lead-name]')?.value?.trim() || '',
       phone: root.querySelector('[data-sigorta-lead-phone]')?.value?.trim() || '',
-      email: root.querySelector('[data-sigorta-lead-email]')?.value?.trim() || '',
+      email,
+      privacy_consent: 'accepted',
       interest_type: pendingInterest,
       insurance_type: state.insurance_type,
       decision_score: model.decisionScore,

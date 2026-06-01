@@ -116,6 +116,10 @@ Deno.serve(async (req) => {
       return json({ error: "Invalid interest type" }, 400, origin);
     }
 
+    if (cleanText(form.privacy_consent, 20) !== "accepted") {
+      return json({ error: "privacy_consent_required" }, 400, origin);
+    }
+
     const { score: leadScore, priority } = calculateLeadScore(form);
 
     const profileJson =

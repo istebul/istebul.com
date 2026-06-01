@@ -47,7 +47,9 @@ function canonicalIssues(files) {
     'konut/index.html',
     'tatil/index.html',
     'finans/index.html',
-    'metodoloji/index.html'
+    'metodoloji/index.html',
+    'sigorta/index.html',
+    'kasko/index.html'
   ];
   publicPaths.forEach((rel) => {
     const full = path.join(root, rel);

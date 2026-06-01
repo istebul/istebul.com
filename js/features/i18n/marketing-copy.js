@@ -42,7 +42,7 @@ const baseMarketingCopy = {
       catKonut: 'Konut',
       catTatil: 'Tatil',
       catFinans: 'Finansman',
-      catSigorta: 'Sigorta (Yakında)',
+      catSigorta: 'Sigorta',
       catKasko: 'Kasko (Yakında)',
       allCategories: 'Tüm kategoriler',
       home: 'Ana sayfa',
@@ -60,7 +60,7 @@ const baseMarketingCopy = {
       heroTitle:
         'Büyük kararları verirken <span class="ib-hero-gradient-text">yalnız değilsiniz.</span>',
       heroDesc:
-        'Aracınızdan tatilinize, konuttan finansmanınıza kadar — yapay zeka destekli analiz ile en doğru seçimi yapın.',
+        'Aracınızdan tatilinize, konuttan finansman ve sigortaya kadar — yapay zeka destekli analiz ile en doğru seçimi yapın.',
       ctaAnalyze: 'Kararımı Analiz Et',
       ctaHow: 'Nasıl Çalışır?',
       disclaimer: 'Örnek skor ve maliyetler gösterim amaçlıdır · finansal tavsiye değildir',
@@ -143,7 +143,7 @@ const baseMarketingCopy = {
       },
       sigorta: {
         name: 'Sigorta',
-        desc: 'Poliçe kapsamı ve prim dengesi analizi.'
+        desc: 'Koruma, teminat ve prim dengesi — canlı analiz.'
       },
       kasko: {
         name: 'Kasko',
@@ -184,7 +184,7 @@ const baseMarketingCopy = {
       catKonut: 'Housing',
       catTatil: 'Travel',
       catFinans: 'Finance',
-      catSigorta: 'Insurance (Soon)',
+      catSigorta: 'Insurance',
       catKasko: 'Comprehensive (Soon)',
       allCategories: 'All categories',
       home: 'Home',
@@ -326,7 +326,7 @@ const baseMarketingCopy = {
       catKonut: 'Immobilie',
       catTatil: 'Reise',
       catFinans: 'Finanzierung',
-      catSigorta: 'Versicherung (Bald)',
+      catSigorta: 'Versicherung',
       catKasko: 'Kasko (Bald)',
       allCategories: 'Alle Kategorien',
       home: 'Startseite',
@@ -448,7 +448,7 @@ const baseMarketingCopy = {
       catKonut: 'السكن',
       catTatil: 'السفر',
       catFinans: 'التمويل',
-      catSigorta: 'التأمين (قريباً)',
+      catSigorta: 'التأمين',
       catKasko: 'تأمين شامل (قريباً)',
       allCategories: 'جميع الفئات',
       home: 'الرئيسية',

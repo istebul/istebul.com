@@ -31,6 +31,14 @@ test.describe('Site health — readability and layout', () => {
     expect(bundle).toBeGreaterThan(0);
   });
 
+  test('/sigorta/ wizard shell is interactive', async ({ page }) => {
+    await page.goto('/sigorta/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.locator('#sigorta-hero-cta').click();
+    await expect(page.locator('#sigorta-wizard')).toBeVisible();
+    await expect(page.locator('#sigorta-wizard button, #sigorta-wizard [role="button"]').first()).toBeVisible();
+  });
+
   test('cookie consent blocks third-party scripts until accept', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
