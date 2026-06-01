@@ -10,6 +10,7 @@ import {
   buildHomepageSampleInsight,
   HOMEPAGE_SAMPLE_INSIGHTS,
   containsBannedWeakPhrase,
+  extractAiProxyText,
   normalizeInsightInput,
   renderProInsightExtensionsHtml
 } from '../../js/features/ai/ai-insight-engine.js';
@@ -185,4 +186,24 @@ test('renderProInsightExtensionsHtml renders pro sections for pro tier', () => {
   const html = renderProInsightExtensionsHtml(pro, 'pro', input, (s) => String(s));
   assert.doesNotMatch(html, /Bu içgörü Pro üyelikte kullanılabilir/);
   assert.match(html, /Alternatif Senaryo Analizi/);
+});
+
+test('extractAiProxyText prefers Cloudflare ai-proxy result field', () => {
+  assert.equal(extractAiProxyText({ result: 'Groq metni' }), 'Groq metni');
+  assert.equal(extractAiProxyText({ text: 'legacy' }), 'legacy');
+  assert.equal(extractAiProxyText({}), '');
+});
+
+test('sigorta insight uses protection and score context', () => {
+  const insight = buildDecisionInsight({
+    vertical: 'sigorta',
+    answers: { insurance_type: 'health', risk_perception: 'high' },
+    scores: { decision: 72, overallRisk: 'Orta' },
+    strengths: ['Teminat dengesi'],
+    weaknesses: ['Prim baskısı'],
+    planTier: 'guest'
+  });
+  assert.match(insight.summary, /sigorta|analiz/i);
+  assert.match(insight.why, /Teminat dengesi/);
+  assertNoBanned(insight.summary);
 });

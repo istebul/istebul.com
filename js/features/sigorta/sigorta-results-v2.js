@@ -8,7 +8,7 @@ import {
   optionLabel,
   resolveScoreLabel
 } from './sigorta-engine.js';
-import { buildSigortaAiSummary } from './sigorta-ai-summary.js';
+import { buildSigortaAiSummary, fetchSigortaExecutiveSummary } from './sigorta-ai-summary.js';
 import { buildSigortaPdfPayload } from './sigorta-pdf.js';
 import { riskLevelToTone, safeTrackEvent } from '../results/results-engine.js';
 import { gatePdfDownload } from '../billing/pdf-access-v1.js';
@@ -253,6 +253,27 @@ export async function mountSigortaResultsV2(mountNode, payload = {}) {
   root.className = 'sigorta-v2-root';
   root.innerHTML = renderSigortaResultsV2Html(model);
   target.prepend(root);
+
+  try {
+    const enriched = await fetchSigortaExecutiveSummary(model.engine, state, {
+      planTier: model.planTier
+    });
+    if (enriched?.text) {
+      model.executiveSummary = enriched.text;
+      model.ai = { ...model.ai, source: enriched.source };
+      const execBody = root.querySelector('.sigorta-v2-exec-body');
+      if (execBody) {
+        execBody.innerHTML = `<p>${escapeHtml(enriched.text)}</p>`;
+      }
+      const execHint = root.querySelector('.sigorta-v2-exec-hint');
+      if (execHint && enriched.source === 'ai') {
+        execHint.textContent =
+          'Kaynak: Deterministik skorlar + AI destekli özet (skorlar değiştirilmez).';
+      }
+    }
+  } catch {
+    /* deterministic summary already rendered */
+  }
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'sigorta',

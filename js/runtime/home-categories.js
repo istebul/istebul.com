@@ -346,9 +346,16 @@ export async function mountHomeCategoryGrid() {
   `;
 
   grid.querySelectorAll('[data-category-id]').forEach((card) => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (event) => {
       const categoryId = card.getAttribute('data-category-id');
-      if (categoryId) trackCategoryCardClick(categoryId, { href: card.getAttribute('href') });
+      if (!categoryId) return;
+      if (card.classList.contains('is-coming-soon')) {
+        event.preventDefault();
+        openInterestModal(categoryId);
+        trackCategoryCardClick(categoryId, { href: null, interest: true });
+        return;
+      }
+      trackCategoryCardClick(categoryId, { href: card.getAttribute('href') });
     });
   });
 

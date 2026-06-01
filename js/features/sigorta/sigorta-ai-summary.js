@@ -1,8 +1,13 @@
 /**
- * Sigorta AI Executive Summary — yalnızca deterministik motor çıktısını açıklar.
+ * Sigorta AI Executive Summary — deterministik motor + isteğe bağlı Groq açıklama.
  * Skorları veya risk seviyelerini değiştirmez.
  */
 import { optionLabel } from './sigorta-engine.js';
+import {
+  buildDecisionInsight,
+  fetchInsightWithProxy,
+  normalizeInsightInput
+} from '../ai/ai-insight-engine.js';
 
 function formatScoreLine(label, value) {
   return `${label}: ${value}/100`;
@@ -46,6 +51,45 @@ export function buildSigortaAiSummary(engine = {}, state = {}) {
 /**
  * Opsiyonel LLM açıklaması için bağlam — skorlar değiştirilemez olarak işaretlenir.
  */
+/**
+ * Groq ile yönetici özeti (skorlar sabit); başarısızlıkta deterministik metin.
+ */
+export async function fetchSigortaExecutiveSummary(engine = {}, state = {}, options = {}) {
+  const deterministic = buildSigortaAiSummary(engine, state);
+  const input = normalizeInsightInput({
+    vertical: 'sigorta',
+    category: 'sigorta',
+    answers: state,
+    decisionScore: engine.decisionScore,
+    confidenceScore: engine.confidenceScore,
+    overallRisk: engine.overallRisk,
+    scoreLabel: engine.scoreLabel,
+    risks: engine.riskAnalysis,
+    strengths: engine.strengths,
+    weaknesses: engine.weaknesses,
+    planTier: options.planTier || 'guest'
+  });
+  buildDecisionInsight(input);
+
+  const result = await fetchInsightWithProxy(
+    input,
+    {
+      executiveOnly: true,
+      skipProxy: options.skipProxy,
+      timeoutMs: options.timeoutMs || 6000
+    }
+  );
+
+  const text = result.source === 'ai' ? result.text : deterministic.summary;
+  return {
+    text,
+    bullets: deterministic.bullets,
+    paragraphs: deterministic.paragraphs,
+    source: result.source === 'ai' ? 'ai' : 'deterministic',
+    scoresSnapshot: deterministic.scoresSnapshot
+  };
+}
+
 export function buildSigortaAiPromptContext(engine = {}, state = {}) {
   const commentary = buildSigortaAiSummary(engine, state);
   return {

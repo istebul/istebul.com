@@ -32,7 +32,7 @@ export async function buildFinanceAiCommentary(payload) {
     clearTimeout(timeout);
     if (!response.ok) return { text: fallback, source: 'fallback' };
     const data = await response.json().catch(() => ({}));
-    const text = String(data?.text || data?.output || '').trim();
+    const text = String(data?.result ?? data?.text ?? data?.output ?? '').trim();
     if (!text) return { text: fallback, source: 'fallback' };
     return { text, source: 'ai' };
   } catch {

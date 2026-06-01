@@ -23,7 +23,8 @@ function safeNumber(value) {
 
 function normalizeCategory(category) {
   const c = String(category || '').toLowerCase();
-  if (['auto', 'konut', 'tatil', 'finansman'].includes(c)) return c;
+  if (c === 'sigorta' || c === 'insurance') return 'sigorta';
+  if (['auto', 'konut', 'tatil', 'finansman', 'sigorta'].includes(c)) return c;
   return 'konut';
 }
 

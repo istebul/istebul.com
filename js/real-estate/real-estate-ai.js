@@ -57,7 +57,7 @@ export async function buildHousingAiCommentary(payload) {
     clearTimeout(timeout);
     if (!response.ok) return { text: safeFallback, source: 'fallback' };
     const json = await response.json().catch(() => ({}));
-    const text = String(json?.text || json?.output || json?.message || '').trim();
+    const text = String(json?.result ?? json?.text ?? json?.output ?? json?.message ?? '').trim();
     if (!text) return { text: safeFallback, source: 'fallback' };
     return { text, source: 'ai' };
   } catch {

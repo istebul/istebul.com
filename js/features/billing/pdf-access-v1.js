@@ -56,8 +56,15 @@ export function gatePdfDownload(pdfReportData = {}, options = {}) {
   try {
     const user = typeof window !== 'undefined' ? window.app?.currentUser : null;
     if (!user?.id) {
-      if (typeof window !== 'undefined' && window.app?.auth) {
-        window.app.auth.showCheckoutAuthGate?.();
+      if (typeof window !== 'undefined') {
+        if (window.app?.auth?.showCheckoutAuthGate && document.getElementById('auth-modal')) {
+          window.app.auth.showCheckoutAuthGate();
+        } else {
+          const ret = encodeURIComponent(
+            `${window.location.pathname || '/'}${window.location.search || ''}`
+          );
+          window.location.assign(`/giris?return=${ret}`);
+        }
       }
       return false;
     }

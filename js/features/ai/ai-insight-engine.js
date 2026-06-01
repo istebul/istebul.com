@@ -50,8 +50,14 @@ function safeNum(value) {
 
 function normalizeVertical(vertical) {
   const v = String(vertical || 'konut').toLowerCase();
-  if (['auto', 'konut', 'tatil', 'finansman'].includes(v)) return v;
+  if (v === 'sigorta' || v === 'insurance') return 'sigorta';
+  if (['auto', 'konut', 'tatil', 'finansman', 'sigorta'].includes(v)) return v;
   return 'konut';
+}
+
+/** Normalize Cloudflare ai-proxy JSON ({ result }) and legacy shapes. */
+export function extractAiProxyText(data) {
+  return String(data?.result ?? data?.text ?? data?.output ?? data?.message ?? '').trim();
 }
 
 function normalizePlanTier(planTier) {
@@ -214,6 +220,9 @@ export function buildInsightInputFromIntelligence(category, context = {}, intell
   if (vertical === 'finansman') {
     costs.monthlyPayment = costs.monthlyPayment ?? context.monthlyPayment;
     costs.paymentToIncome = costs.paymentToIncome ?? context.paymentToIncome;
+  }
+  if (vertical === 'sigorta') {
+    costs.premiumBand = costs.premiumBand ?? context.premiumBand;
   }
 
   return normalizeInsightInput({
@@ -436,6 +445,33 @@ function buildFinansmanInsight(input) {
   return { summary, why, risk, nextStep };
 }
 
+function buildSigortaInsight(input) {
+  const a = input.answers;
+  const { decision, overallRisk } = scoreFromInput(input);
+  const type = pickAnswer(a, ['insurance_type']) || 'sigorta profili';
+  const strengths = (input.strengths || []).slice(0, 2).join('; ') || '—';
+  const weaknesses = (input.weaknesses || []).slice(0, 2).join('; ') || '—';
+
+  const summary = [
+    decision != null ?
+      `${type} analizi tamamlandı; karar skoru ${decision}/100 (${input.scores?.scoreLabel || 'modellenmiş band'}).`
+    : `${type} için ön değerlendirme oluşturuldu.`,
+    'Skorlar koruma, teminat yeterliliği ve maliyet verimliliği bileşenlerinden türetilir; motor skoru değiştirmez.'
+  ].join(' ');
+
+  const why = `Güçlü yönler: ${strengths}. Zayıf veya dikkat gerektiren alanlar: ${weaknesses}.`;
+  const risk =
+    overallRisk === 'Yüksek' ?
+      'Teminat boşlukları veya prim baskısı yüksek modelleniyor; poliçe şartlarını ve muafiyetleri teklif aşamasında doğrulayın.'
+    : topRisk(input)?.description ||
+      'Prim artışı, muafiyet ve yenileme koşulları toplam koruma maliyetini değiştirebilir.';
+
+  const nextStep =
+    'En az iki sigorta sağlayıcısından EYM dahil teklif isteyin; teminat limitleri ve muafiyetleri yan yana karşılaştırın.';
+
+  return { summary, why, risk, nextStep };
+}
+
 function buildVerticalInsight(input) {
   switch (input.vertical) {
     case 'auto':
@@ -444,6 +480,8 @@ function buildVerticalInsight(input) {
       return buildTatilInsight(input);
     case 'finansman':
       return buildFinansmanInsight(input);
+    case 'sigorta':
+      return buildSigortaInsight(input);
   }
   return buildKonutInsight(input);
 }
@@ -903,7 +941,7 @@ export async function fetchInsightWithProxy(rawInput = {}, options = {}) {
       return { text: fallbackText, insight, source: 'fallback' };
     }
     const data = await res.json().catch(() => ({}));
-    let text = sanitizeInsightText(String(data?.text || data?.output || '').trim(), 950);
+    let text = sanitizeInsightText(extractAiProxyText(data), 950);
     if (!text || containsBannedWeakPhrase(text)) {
       return { text: fallbackText, insight, source: 'fallback' };
     }

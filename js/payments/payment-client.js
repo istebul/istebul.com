@@ -24,12 +24,15 @@ export async function createPaymentSession(productCode, options = {}) {
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) {
-    if (typeof window !== 'undefined' && window.app?.auth) {
-      window.app.auth.showCheckoutAuthGate?.();
-      return { ok: false, needsAuth: true };
-    }
     if (typeof window !== 'undefined') {
-      window.location.assign('/?auth=login');
+      if (window.app?.auth?.showCheckoutAuthGate && document.getElementById('auth-modal')) {
+        window.app.auth.showCheckoutAuthGate();
+      } else {
+        const ret = encodeURIComponent(
+          `${window.location.pathname || '/'}${window.location.search || ''}`
+        );
+        window.location.assign(`/giris?return=${ret}`);
+      }
     }
     return { ok: false, needsAuth: true };
   }
