@@ -4400,7 +4400,7 @@ async function loadUnifiedFunnelDashboard(dataMode = unifiedFunnelDataMode) {
     ...(vacationRes.data || [])
   ];
   const metrics = buildUnifiedFunnelMetrics(rows);
-  const banner = renderAdminWarningBanner(collectAdminWarnings([analyticsRes, housingRes, vacationRes]));
+  const banner = renderAdminDataSourceNotices([analyticsRes, housingRes, vacationRes]);
   const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
   const modeNote = `<p class="text-muted-sm" style="margin:0 0 12px">${escapeHtml(ANALYTICS_DATA_MODE_LABELS[dataMode] || dataMode)} · Platform eventleri ITE ile filtrelenir; konut/tatil legacy tabloları ham veridir.</p>`;
   el.innerHTML = `${banner}${dataModeToolbar}${modeNote}${renderUnifiedFunnelDashboard(metrics, escapeHtml)}`;
