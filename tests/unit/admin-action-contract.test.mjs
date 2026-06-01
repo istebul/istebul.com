@@ -23,6 +23,7 @@ describe('admin-action contract', () => {
       'partner_lead_dispatch_logs',
       'subscriptions',
       'analytics_events',
+      'analytics_exclusion_rules',
       'lifecycle_enrollments'
     ]) {
       assert.ok(tables.includes(table), `listTables includes ${table}`);

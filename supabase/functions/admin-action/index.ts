@@ -865,7 +865,14 @@ Deno.serve(async (req) => {
       const selectExpr = String(body.select || selectColumns[table] || "*").slice(0, 500);
 
       if (!allowedOrderColumns[table]?.includes(orderColumn)) {
-        return json({ error: "Invalid order column" }, 400, origin);
+        return json(
+          {
+            error: "Invalid order column",
+            allowed: allowedOrderColumns[table] || ["created_at"],
+          },
+          400,
+          origin
+        );
       }
 
       let query = adminClient

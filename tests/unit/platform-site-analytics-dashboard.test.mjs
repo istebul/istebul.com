@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildSiteAnalyticsMetrics,
+  buildPagePathRows,
+  buildTopEventRows,
   filterRowsByPreset
 } from '../../js/admin/platform-site-analytics-dashboard.js';
 
@@ -23,6 +25,7 @@ const sampleRows = [
     event_name: 'auto_page_view',
     session_id: 's2',
     created_at: new Date().toISOString(),
+    page_path: '/auto/',
     properties: { category: 'auto' }
   },
   {
@@ -55,6 +58,27 @@ test('buildSiteAnalyticsMetrics aggregates site funnel KPIs', () => {
   const autoRow = metrics.categoryRows.find((r) => r.id === 'auto');
   assert.ok(autoRow);
   assert.ok(autoRow.analysis >= 1);
+});
+
+test('buildPagePathRows groups by path with sessions', () => {
+  const rows = buildPagePathRows(sampleRows);
+  assert.ok(rows.length >= 1);
+  const autoPath = rows.find((r) => r.path.includes('/auto'));
+  assert.ok(autoPath);
+  assert.ok(autoPath.sessions >= 1);
+});
+
+test('buildTopEventRows ranks events by count', () => {
+  const rows = buildTopEventRows(sampleRows);
+  assert.ok(rows.length >= 1);
+  assert.ok(rows[0].count >= rows[rows.length - 1].count);
+});
+
+test('buildSiteAnalyticsMetrics includes page and event tables', () => {
+  const metrics = buildSiteAnalyticsMetrics(sampleRows);
+  assert.ok(Array.isArray(metrics.pagePathRows));
+  assert.ok(Array.isArray(metrics.topEventRows));
+  assert.ok(metrics.pagePathRows.length >= 1);
 });
 
 test('filterRowsByPreset keeps today only', () => {

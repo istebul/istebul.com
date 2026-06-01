@@ -13,7 +13,7 @@ test('buildUnifiedFunnelMetrics aggregates category funnel rows', () => {
     { event_name: 'finans_start', session_id: 'f1' }
   ];
   const metrics = buildUnifiedFunnelMetrics(rows);
-  assert.equal(metrics.length, 4);
+  assert.equal(metrics.length, 6);
   const auto = metrics.find((m) => m.id === 'auto');
   assert.ok(auto.visits >= 1);
   assert.ok(auto.results >= 1);

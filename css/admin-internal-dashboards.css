@@ -134,6 +134,21 @@
   min-width: 520px;
 }
 
+.platform-site-analytics__table th,
+.platform-site-analytics__table td {
+  color: var(--text, #0f172a);
+}
+
+.platform-site-analytics__table code {
+  font-size: 12px;
+  color: var(--text, #0f172a);
+  word-break: break-all;
+}
+
+.platform-site-analytics .text-muted-sm {
+  color: var(--muted, #475569);
+}
+
 @media (max-width: 768px) {
   .platform-site-analytics__head {
     flex-direction: column;

@@ -111,7 +111,7 @@ export function renderUnifiedFunnelDashboard(metrics, escapeHtml) {
       <div class="stat-grid" style="margin-bottom:16px">
         <article class="stat-card"><div class="stat-label">En yüksek lead</div><div class="stat-value">${esc(bestLead?.label || '—')}</div><div class="stat-sub">${bestLead?.leads ?? 0} lead</div></article>
         <article class="stat-card"><div class="stat-label">En iyi dönüşüm</div><div class="stat-value">${esc(bestCr?.label || '—')}</div><div class="stat-sub">${esc(bestCr?.overallConversion || '—')}</div></article>
-        <article class="stat-card"><div class="stat-label">Kategori sayısı</div><div class="stat-value">4</div><div class="stat-sub">Auto · Konut · Tatil · Finans</div></article>
+        <article class="stat-card"><div class="stat-label">Kategori sayısı</div><div class="stat-value">${metrics.length}</div><div class="stat-sub">Auto · Konut · Tatil · Finans · Sigorta · Kasko</div></article>
       </div>
       <div class="table-wrap">
         <table class="admin-table">

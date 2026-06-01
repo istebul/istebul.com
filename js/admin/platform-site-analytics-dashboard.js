@@ -118,6 +118,90 @@ function countAliasForCategory(rows, aliasKey, categoryId) {
   return sessions.size || total;
 }
 
+function normalizePagePath(row) {
+  const raw =
+    row.page_path ||
+    row.landing_page ||
+    row.properties?.landing_page ||
+    row.attribution?.landing_path ||
+    '/';
+  const path = String(raw).split('?')[0].split('#')[0].trim();
+  return path || '/';
+}
+
+/**
+ * Sayfa path kırılımı — oturum ve dönüşüm adımları.
+ * @param {object[]} rows
+ * @param {number} [limit]
+ */
+export function buildPagePathRows(rows, limit = 25) {
+  const map = new Map();
+  for (const row of rows) {
+    const path = normalizePagePath(row);
+    if (!map.has(path)) {
+      map.set(path, { path, events: 0, sessions: new Set(), analysis: 0, leads: 0, views: 0 });
+    }
+    const bucket = map.get(path);
+    bucket.events += 1;
+    if (row.session_id) bucket.sessions.add(row.session_id);
+    if (
+      matchesAlias(row.event_name, 'category_page_view') ||
+      matchesAlias(row.event_name, 'homepage_view')
+    ) {
+      bucket.views += 1;
+    }
+    if (matchesAlias(row.event_name, 'analysis_started')) bucket.analysis += 1;
+    if (matchesAlias(row.event_name, 'lead_submitted')) bucket.leads += 1;
+  }
+  return [...map.values()]
+    .map((b) => ({
+      path: b.path,
+      events: b.events,
+      sessions: b.sessions.size || b.events,
+      views: b.views,
+      analysis: b.analysis,
+      leads: b.leads,
+      conversion: pct(b.leads, b.sessions.size || b.events)
+    }))
+    .sort((a, b) => b.sessions - a.sessions || b.events - a.events)
+    .slice(0, limit);
+}
+
+/**
+ * En sık event adları (bölüm/aksiyon proxy).
+ * @param {object[]} rows
+ * @param {number} [limit]
+ */
+export function buildTopEventRows(rows, limit = 20) {
+  const map = new Map();
+  for (const row of rows) {
+    const name = String(row.event_name || 'unknown').slice(0, 80);
+    const section =
+      row.page_section ||
+      row.funnel_step ||
+      row.properties?.section ||
+      row.properties?.placement ||
+      '';
+    const key = section ? `${name} · ${String(section).slice(0, 40)}` : name;
+    if (!map.has(key)) {
+      map.set(key, { label: key, eventName: name, section: section || '—', count: 0, sessions: new Set() });
+    }
+    const bucket = map.get(key);
+    bucket.count += 1;
+    if (row.session_id) bucket.sessions.add(row.session_id);
+  }
+  return [...map.values()]
+    .map((b) => ({
+      label: b.label,
+      eventName: b.eventName,
+      section: b.section,
+      count: b.count,
+      sessions: b.sessions.size || b.count
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
 function trafficSourceKey(row) {
   const attr = row.attribution || {};
   const props = row.properties || {};
@@ -188,6 +272,9 @@ export function buildSiteAnalyticsMetrics(rows) {
     }))
     .sort((a, b) => b.visits - a.visits);
 
+  const pagePathRows = buildPagePathRows(rows);
+  const topEventRows = buildTopEventRows(rows);
+
   return {
     visits,
     homepageVisits,
@@ -200,7 +287,9 @@ export function buildSiteAnalyticsMetrics(rows) {
     analysisToResults: pct(resultsViewed, analysisStarted),
     resultsToLead: pct(leads, resultsViewed),
     categoryRows,
-    trafficRows
+    trafficRows,
+    pagePathRows,
+    topEventRows
   };
 }
 
@@ -252,6 +341,65 @@ export function renderSiteAnalyticsDashboard(metrics, { filterId = '7d', windowN
               </tr>`
               )
               .join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <h4 style="margin:20px 0 10px">Sayfa trafiği (path)</h4>
+      <p class="text-muted-sm" style="margin:0 0 8px">Hangi sayfada kaç oturum ve dönüşüm adımı gerçekleşti.</p>
+      <div class="table-scroll">
+        <table class="table platform-site-analytics__table">
+          <thead>
+            <tr>
+              <th>Sayfa</th><th>Oturum</th><th>Event</th><th>Görüntüleme</th><th>Analiz</th><th>Lead</th><th>CR</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${
+              metrics.pagePathRows?.length
+                ? metrics.pagePathRows
+                    .map(
+                      (r) => `
+              <tr>
+                <td><code>${escapeHtml(r.path)}</code></td>
+                <td>${r.sessions}</td>
+                <td>${r.events}</td>
+                <td>${r.views}</td>
+                <td>${r.analysis}</td>
+                <td>${r.leads}</td>
+                <td>${r.conversion}</td>
+              </tr>`
+                    )
+                    .join('')
+                : '<tr><td colspan="7">Henüz sayfa path verisi yok (cookie onayı + analytics-ingest gerekir)</td></tr>'
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <h4 style="margin:20px 0 10px">Bölüm ve aksiyonlar (event)</h4>
+      <p class="text-muted-sm" style="margin:0 0 8px">En sık tetiklenen eventler; section/funnel_step varsa gösterilir.</p>
+      <div class="table-scroll">
+        <table class="table platform-site-analytics__table">
+          <thead>
+            <tr><th>Event</th><th>Bölüm</th><th>Adet</th><th>Oturum</th></tr>
+          </thead>
+          <tbody>
+            ${
+              metrics.topEventRows?.length
+                ? metrics.topEventRows
+                    .map(
+                      (r) => `
+              <tr>
+                <td>${escapeHtml(r.eventName)}</td>
+                <td>${escapeHtml(r.section)}</td>
+                <td>${r.count}</td>
+                <td>${r.sessions}</td>
+              </tr>`
+                    )
+                    .join('')
+                : '<tr><td colspan="4">Henüz event verisi yok</td></tr>'
+            }
           </tbody>
         </table>
       </div>
