@@ -26,10 +26,8 @@
   <link rel="stylesheet" href="/css/vertical-themes.css">
   <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
   <link rel="stylesheet" href="/css/sigorta-results-v2.css?v=1">
-  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=3">
-  <script src="/env.js" defer></script>
-  <script type="module" src="/js/sigorta/sigorta-app.js"></script>
-  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=4">
+  <link rel="stylesheet" href="/css/sigorta-flow-visible-v1.css?v=1">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.istebul.com/#organization","name":"isteBul","url":"https://www.istebul.com/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ana sayfa","item":"https://www.istebul.com/"},{"@type":"ListItem","position":2,"name":"Sigorta","item":"https://www.istebul.com/sigorta/"}]},{"@type":"WebApplication","name":"isteBul Sigorta Karar Analizi","url":"https://www.istebul.com/sigorta/","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"Koruma, teminat ve prim verimliliği skorları ile sigorta karar desteği.","inLanguage":"tr-TR"},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Sigorta analizi poliçe taahhüdü mü?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Skor ve prim bandı bilgilendirme amaçlıdır; bağlayıcı teklif sigorta şirketine aittir."}},{"@type":"Question","name":"Hangi sigorta türleri desteklenir?","acceptedAnswer":{"@type":"Answer","text":"Araç, konut, sağlık ve seyahat sigortası profilleri modellenir."}}]}]}</script>
 </head>
 <body class="vacation-page sigorta-page">
@@ -94,10 +92,21 @@
   </section>
 
   <main class="vacation-main">
-    <div class="vacation-container vacation-layout" id="sigorta-flow">
+    <div class="vacation-container vacation-layout" id="sigorta-flow" tabindex="-1">
       <div class="vacation-flow-main">
         <div class="vacation-progress" id="sigorta-step-progress" aria-hidden="true"></div>
-        <div id="sigorta-wizard"></div>
+        <div id="sigorta-wizard" aria-live="polite">
+          <div class="sigorta-wizard-skeleton" id="sigorta-wizard-skeleton">
+            <h2>Hangi sigorta korumasına ihtiyaç duyuyorsunuz?</h2>
+            <p>Analiz, seçtiğiniz ürün ailesine göre özelleştirilir.</p>
+            <div class="sigorta-type-skeleton-grid" role="group" aria-label="Sigorta türü">
+              <button type="button" data-sigorta-type="arac">Araç</button>
+              <button type="button" data-sigorta-type="konut">Konut</button>
+              <button type="button" data-sigorta-type="saglik">Sağlık</button>
+              <button type="button" data-sigorta-type="seyahat">Seyahat</button>
+            </div>
+          </div>
+        </div>
         <section id="sigorta-results" hidden aria-live="polite"></section>
       </div>
       <aside class="vacation-aside" aria-label="Sigorta karar asistanı">
@@ -116,5 +125,8 @@
     <p><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">KVKK</a> · <a href="/rehber/arac-sigortasi-karsilastirma/">Araç sigortası rehberi</a></p>
     <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi" data-i18n-aria="meta.language"></div>
   </footer>
+  <script src="/env.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
+  <script type="module" src="/js/sigorta/sigorta-app.js"></script>
 </body>
 </html>

@@ -440,21 +440,19 @@ bundleVerticalPage(
   /\/js\/finans\/finans-app\.js/g
 );
 
-// Sigorta V2 — copy js/sigorta for config/intake; bundle app in place (HTML path unchanged)
+// Sigorta — hashed runtime bundle (avoid /js/* immutable cache on fixed sigorta-app.js path)
+bundleVerticalPage(
+  'js/sigorta/sigorta-app.js',
+  'sigorta/index.html',
+  'sigorta-runtime',
+  /\/js\/sigorta\/sigorta-app\.js/g
+);
+
 if (fs.existsSync(path.join(root, 'js/sigorta'))) {
   copyDir('js/sigorta');
-  const sigortaAppSrc = path.join(root, 'js/sigorta/sigorta-app.js');
-  if (fs.existsSync(sigortaAppSrc)) {
-    esbuild.buildSync({
-      entryPoints: [sigortaAppSrc],
-      bundle: true,
-      format: 'esm',
-      platform: 'browser',
-      target: 'es2020',
-      minify: true,
-      sourcemap: false,
-      outfile: path.join(dist, 'js/sigorta/sigorta-app.js')
-    });
+  const bundledSigortaApp = path.join(dist, 'js/sigorta/sigorta-app.js');
+  if (fs.existsSync(bundledSigortaApp)) {
+    fs.unlinkSync(bundledSigortaApp);
   }
 }
 

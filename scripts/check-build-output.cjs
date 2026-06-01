@@ -91,6 +91,37 @@ if (fs.existsSync(autoRuntimeDir)) {
   console.error('Missing build output: dist/assets/auto-runtime/');
 }
 
+const sigortaRuntimeDir = path.join(root, 'dist/assets/sigorta-runtime');
+if (fs.existsSync(sigortaRuntimeDir)) {
+  const hashedSigortaJs = fs
+    .readdirSync(sigortaRuntimeDir)
+    .some((name) => /^sigorta-app\.[a-f0-9]+\.js$/.test(name));
+  if (!hashedSigortaJs) {
+    failed = true;
+    console.error('Missing hashed Sigorta bundle: dist/assets/sigorta-runtime/sigorta-app.[hash].js');
+  }
+} else {
+  failed = true;
+  console.error('Missing build output: dist/assets/sigorta-runtime/');
+}
+
+const sigortaHtmlPath = path.join(root, 'dist/sigorta/index.html');
+if (fs.existsSync(sigortaHtmlPath)) {
+  const sigortaHtml = fs.readFileSync(sigortaHtmlPath, 'utf8');
+  if (!/\/assets\/sigorta-runtime\/sigorta-app\.[a-f0-9]+\.js/.test(sigortaHtml)) {
+    failed = true;
+    console.error('dist/sigorta/index.html must reference hashed sigorta-app bundle');
+  }
+  if (!sigortaHtml.includes('sigorta-wizard-skeleton')) {
+    failed = true;
+    console.error('dist/sigorta/index.html must include wizard skeleton fallback');
+  }
+  if (/\/js\/sigorta\/sigorta-app\.js/.test(sigortaHtml)) {
+    failed = true;
+    console.error('dist/sigorta/index.html must not use immutable /js/sigorta/sigorta-app.js path');
+  }
+}
+
 const autoHtmlPath = path.join(root, 'dist/auto/index.html');
 if (fs.existsSync(autoHtmlPath)) {
   const autoHtml = fs.readFileSync(autoHtmlPath, 'utf8');

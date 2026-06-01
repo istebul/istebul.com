@@ -255,18 +255,44 @@ function scrollToFlow(flowEl) {
   flowEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function markWizardHydrated() {
+  const wizard = domRefs?.wizard;
+  if (wizard) wizard.dataset.ibHydrated = '1';
+}
+
 function ensureWizardRendered() {
   if (!flowApi?.renderWizard) return;
   const wizard = domRefs?.wizard;
-  if (wizard && !wizard.innerHTML.trim()) {
-    flowApi.renderWizard();
-    return;
-  }
   if (wizard?.hidden) {
     flowApi.startWizard?.();
-    return;
   }
   flowApi.renderWizard();
+  markWizardHydrated();
+}
+
+function bindWizardSkeleton() {
+  const wizard = document.getElementById(SIGORTA_DOM_IDS.wizard);
+  if (!wizard || wizard.dataset.ibSkeletonBound === '1') return;
+  wizard.dataset.ibSkeletonBound = '1';
+
+  wizard.querySelectorAll('[data-sigorta-type]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const flow = domRefs?.flow || document.getElementById(SIGORTA_DOM_IDS.flow);
+      scrollToFlow(flow);
+      flowApi?.startWizard?.();
+      const state = flowApi?.getState?.();
+      if (state) {
+        state.insurance_type = btn.getAttribute('data-sigorta-type') || '';
+        state._lastInsuranceType = '';
+        resetSigortaFieldsForTypeChange(state, '');
+        state._lastInsuranceType = state.insurance_type;
+        syncSigortaStepIndexAfterTypeChange(state, '');
+        state.stepIndex = 1;
+      }
+      ensureWizardRendered();
+      trackSigortaAnalysisStarted({ source: 'skeleton_type' });
+    });
+  });
 }
 
 function bindSigortaHeroCtas(refs) {
@@ -285,9 +311,19 @@ function bindSigortaHeroCtas(refs) {
 }
 
 function bootSigortaApp() {
-  domRefs = collectDomRefs();
+  try {
+    domRefs = collectDomRefs();
+  } catch (err) {
+    showBootError(
+      `Sigorta yüklenirken hata: ${err?.message || err}. Sayfayı yenileyin.`
+    );
+    console.error('sigorta-boot-failed', err);
+    return;
+  }
+
   const domOk = validateDomRefs(domRefs);
 
+  try {
   flowApi = initDecisionFlow(
     resolveWizardConfig('sigorta', {
       vertical: 'sigorta',
@@ -339,6 +375,7 @@ function bootSigortaApp() {
   );
 
   if (domOk) {
+    bindWizardSkeleton();
     bindSigortaHeroCtas(domRefs);
     revealFlow(domRefs.flow);
     flowApi.startWizard?.();
@@ -350,8 +387,23 @@ function bootSigortaApp() {
       }
     });
   }
+  } catch (err) {
+    showBootError(
+      `Sigorta analizi başlatılamadı: ${err?.message || err}. Sayfayı yenileyin.`
+    );
+    console.error('sigorta-flow-init-failed', err);
+  }
 
   trackSigortaPageView();
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    if (!window.location.pathname.includes('/sigorta')) return;
+    const msg = event?.message || '';
+    if (!/sigorta|vertical-decision|chunk/i.test(msg)) return;
+    showBootError('Sigorta modülü yüklenemedi. Önbelleği temizleyip sayfayı yenileyin.');
+  });
 }
 
 if (document.readyState === 'loading') {

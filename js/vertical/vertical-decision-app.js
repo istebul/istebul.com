@@ -492,7 +492,6 @@ export function initDecisionFlow(config) {
   }
 
   async function init() {
-    await window.__ibI18n?.ready;
     document.body.classList.add(config.themeClass || '');
     setupMobileNav();
     if (!config.externalHeroBindings) {
@@ -502,19 +501,32 @@ export function initDecisionFlow(config) {
       });
       el('heroCtaSecondary')?.addEventListener('click', scrollToFlow);
     }
-    await config.tracker.trackStart();
     renderWizard();
+    try {
+      await Promise.race([
+        window.__ibI18n?.ready ?? Promise.resolve(),
+        new Promise((resolve) => setTimeout(resolve, 1200))
+      ]);
+      renderWizard();
+    } catch {
+      /* i18n optional — wizard already rendered */
+    }
+    void Promise.resolve(config.tracker.trackStart?.()).catch(() => {});
     document.addEventListener('ib:locale-changed', () => {
       renderWizard();
       if (state.results?.length) renderResults();
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
-  } else {
-    init();
+  function bootInit() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => void init(), { once: true });
+    } else {
+      void init();
+    }
   }
 
-  return { scrollToFlow, startWizard, renderWizard, showResults };
+  bootInit();
+
+  return { scrollToFlow, startWizard, renderWizard, showResults, getState: () => state };
 }
