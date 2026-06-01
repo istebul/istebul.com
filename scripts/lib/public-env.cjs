@@ -74,6 +74,22 @@ function isStrictPublicEnvBuild(processEnv = process.env) {
   );
 }
 
+/** CI test builds may use placeholders; production deploy sets REQUIRE_SUPABASE_ENV=1. */
+function withCiBuildPublicEnvFallback(env, processEnv = process.env) {
+  if (env.SUPABASE_URL && env.SUPABASE_ANON_KEY) return env;
+  if (processEnv.REQUIRE_SUPABASE_ENV === '1' || processEnv.CF_PAGES === '1') {
+    return env;
+  }
+  if (processEnv.GITHUB_ACTIONS !== 'true' && processEnv.CI !== 'true') {
+    return env;
+  }
+  return {
+    ...env,
+    SUPABASE_URL: env.SUPABASE_URL || 'https://hjfrcdstbyonmgatgwcc.supabase.co',
+    SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY || 'ci-build-placeholder-anon-key-not-for-production'
+  };
+}
+
 function assertPublicEnvForBuild(env, { strict = false } = {}) {
   const missing = [];
   if (!env.SUPABASE_URL) missing.push('SUPABASE_URL');
@@ -126,6 +142,7 @@ module.exports = {
   DEFAULT_SUPABASE_URL,
   buildPublicEnv,
   isStrictPublicEnvBuild,
+  withCiBuildPublicEnvFallback,
   assertPublicEnvForBuild,
   formatEnvJs,
   parseEnvJsPayload,

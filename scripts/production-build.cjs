@@ -156,11 +156,12 @@ writeFile('assets/lucide.min.js', fs.readFileSync(lucideUmd));
 const {
   buildPublicEnv,
   isStrictPublicEnvBuild,
+  withCiBuildPublicEnvFallback,
   assertPublicEnvForBuild,
   formatEnvJs
 } = require('./lib/public-env.cjs');
 
-const publicEnv = buildPublicEnv(process.env, root);
+const publicEnv = withCiBuildPublicEnvFallback(buildPublicEnv(process.env, root), process.env);
 assertPublicEnvForBuild(publicEnv, { strict: isStrictPublicEnvBuild() });
 
 writeFile('env.js', formatEnvJs(publicEnv));
