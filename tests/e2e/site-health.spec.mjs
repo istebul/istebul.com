@@ -35,8 +35,7 @@ test.describe('Site health — readability and layout', () => {
     await page.evaluate(() => localStorage.removeItem('istebul_cookie_consent'));
     await page.reload();
     await page.waitForLoadState('domcontentloaded');
-    const ga4 = await page.locator('script[data-analytics-provider="ga4"]').count();
-    const plausible = await page.locator('script[data-analytics-provider="plausible"]').count();
-    expect(ga4 + plausible).toBe(0);
+    const thirdPartyScripts = await page.locator('script[data-analytics-provider]').count();
+    expect(thirdPartyScripts).toBe(0);
   });
 });
