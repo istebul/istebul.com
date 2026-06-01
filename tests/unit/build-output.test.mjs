@@ -7,13 +7,15 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 test('production env script only contains browser-safe keys', () => {
-  const script = fs.readFileSync(path.join(root, 'scripts/production-build.cjs'), 'utf8');
+  const buildScript = fs.readFileSync(path.join(root, 'scripts/production-build.cjs'), 'utf8');
+  const publicEnvLib = fs.readFileSync(path.join(root, 'scripts/lib/public-env.cjs'), 'utf8');
 
-  assert.match(script, /SUPABASE_URL/);
-  assert.match(script, /SUPABASE_ANON_KEY/);
-  assert.doesNotMatch(script, /SUPABASE_SERVICE_ROLE_KEY/);
-  assert.doesNotMatch(script, /CLAUDE_API_KEY/);
-  assert.doesNotMatch(script, /NETLIFY_AUTH_TOKEN/);
+  assert.match(buildScript, /public-env\.cjs/);
+  assert.match(publicEnvLib, /SUPABASE_URL/);
+  assert.match(publicEnvLib, /SUPABASE_ANON_KEY/);
+  assert.doesNotMatch(publicEnvLib, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.doesNotMatch(publicEnvLib, /CLAUDE_API_KEY/);
+  assert.doesNotMatch(publicEnvLib, /NETLIFY_AUTH_TOKEN/);
 });
 
 test('service worker pre-caches offline page but bypasses env.js cache', () => {
