@@ -54,6 +54,19 @@ describe('admin-action contract', () => {
     }
     assert.match(source, /is_archived: true/);
     assert.match(source, /buildPartnerApplicationRow/);
+    assert.match(source, /stripPartnerAppPayload/);
+    assert.match(source, /partnerActionFailure/);
+    assert.match(source, /createPartnerApplication insert/);
+    assert.doesNotMatch(source, /billing_plan: built\.payload/);
+  });
+
+  it('surfaces PostgREST errors without instanceof Error guard', () => {
+    const source = fs.readFileSync(
+      path.join(root, 'supabase/functions/admin-action/index.ts'),
+      'utf8'
+    );
+    assert.match(source, /extractActionError/);
+    assert.doesNotMatch(source, /instanceof Error && err\.message \? err\.message : "Server error"/);
   });
 });
 
