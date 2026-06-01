@@ -27,8 +27,8 @@
 <body class="vacation-page sigorta-page">
   <header class="vacation-header">
     <a class="logo" href="/">isteBul</a>
-    <button class="vacation-nav-toggle" type="button" aria-controls="vacation-nav" aria-expanded="false">Menü</button>
-    <nav id="vacation-nav" aria-label="Ana navigasyon">
+    <button class="vacation-nav-toggle" type="button" aria-controls="sigorta-nav" aria-expanded="false">Menü</button>
+    <nav id="sigorta-nav" aria-label="Ana navigasyon">
       <a href="/" data-i18n="nav.home">Ana Sayfa</a>
       <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
       <a href="/konut/" data-i18n="vertical.konut">Konut</a>
@@ -53,8 +53,8 @@
         <h1 id="sigorta-hero-title">Sigorta ihtiyacınızı veriye dayalı değerlendirin</h1>
         <p class="vacation-hero-lead">Koruma skoru, teminat yeterliliği ve maliyet verimliliğini birlikte analiz ederek hangi koruma bandının size uygun olduğunu görün.</p>
         <div class="vacation-hero-actions">
-          <button type="button" class="btn btn-primary" id="vacation-hero-cta">Sigorta analizine başla</button>
-          <button type="button" class="btn btn-ghost" id="vacation-hero-cta-secondary">Akışa git</button>
+          <button type="button" class="btn btn-primary" id="sigorta-hero-cta">Sigorta analizine başla</button>
+          <button type="button" class="btn btn-ghost" id="sigorta-hero-cta-secondary">Akışa git</button>
         </div>
         <p class="vacation-disclaimer" style="margin-top:0.75rem;font-size:0.85rem;opacity:0.9">Bilgilendirme amaçlıdır · finansal tavsiye değildir</p>
       </div>
@@ -84,17 +84,17 @@
   </section>
 
   <main class="vacation-main">
-    <div class="vacation-container vacation-layout" id="vacation-flow">
+    <div class="vacation-container vacation-layout" id="sigorta-flow">
       <div class="vacation-flow-main">
-        <div class="vacation-progress" id="vacation-step-progress" aria-hidden="true"></div>
-        <div id="vacation-wizard"></div>
-        <section id="vacation-results" hidden aria-live="polite"></section>
+        <div class="vacation-progress" id="sigorta-step-progress" aria-hidden="true"></div>
+        <div id="sigorta-wizard"></div>
+        <section id="sigorta-results" hidden aria-live="polite"></section>
       </div>
       <aside class="vacation-aside" aria-label="Sigorta karar asistanı">
         <div class="vacation-ai-panel">
           <h3>Sigorta karar asistanınız</h3>
           <p>Profilinize göre koruma ve teminat senaryolarını netleştiriyoruz.</p>
-          <ul id="vacation-ai-summary"></ul>
+          <ul id="sigorta-ai-summary"></ul>
           <p class="vacation-ai-eta">Tahmini süre: 2 dakika</p>
         </div>
       </aside>

@@ -497,3 +497,40 @@
 .sigorta-page .vacation-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 45%, #0c4a6e 100%);
 }
+
+/* Sigorta nav — tatil.css #vacation-nav ile aynı davranış, vacation dosyasına dokunulmaz */
+.sigorta-page #sigorta-nav {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.sigorta-page #sigorta-nav a {
+  color: var(--vacation-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.sigorta-page #sigorta-nav a:hover,
+.sigorta-page #sigorta-nav a.is-active {
+  color: var(--vacation-blue);
+}
+
+@media (max-width: 768px) {
+  .sigorta-page #sigorta-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: #fff;
+    padding: 16px;
+    border-bottom: 1px solid var(--vacation-border);
+  }
+
+  .sigorta-page #sigorta-nav.is-open {
+    display: flex;
+  }
+}

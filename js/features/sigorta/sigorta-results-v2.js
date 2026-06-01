@@ -198,18 +198,24 @@ function renderSigortaResultsV2Html(model) {
     </section>`;
 }
 
+export const SIGORTA_RESULTS_MOUNT_ID = 'sigorta-results';
+
 /**
- * @param {HTMLElement} mountNode
+ * @param {HTMLElement|string|null} [mountNode] — #sigorta-results varsayılan
  * @param {object} payload
  */
 export async function mountSigortaResultsV2(mountNode, payload = {}) {
-  if (!mountNode) return null;
+  const target =
+    (mountNode && typeof mountNode !== 'string' ? mountNode : null) ||
+    (typeof mountNode === 'string' ? document.getElementById(mountNode) : null) ||
+    document.getElementById(SIGORTA_RESULTS_MOUNT_ID);
+  if (!target) return null;
 
   const state = payload.state || {};
   const results = payload.results || [];
   const track = payload.track;
 
-  mountNode.querySelector('.sigorta-v2-root')?.remove();
+  target.querySelector('.sigorta-v2-root')?.remove();
 
   const built = buildSigortaResultsV2Payload({ state, results });
   const model = { ...built };
@@ -217,7 +223,7 @@ export async function mountSigortaResultsV2(mountNode, payload = {}) {
   const root = document.createElement('div');
   root.className = 'sigorta-v2-root';
   root.innerHTML = renderSigortaResultsV2Html(model);
-  mountNode.prepend(root);
+  target.prepend(root);
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'sigorta',

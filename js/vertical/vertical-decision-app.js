@@ -4,11 +4,37 @@ import { mountFinansmanResultsV2 } from '../features/finansman/finansman-results
 import { mountSigortaResultsV2 } from '../features/sigorta/sigorta-results-v2.js';
 import { wt } from './wizard-i18n.js';
 
+/** @type {Record<string, string>} */
+const DEFAULT_DOM_IDS = {
+  stepProgress: 'vacation-step-progress',
+  aiSummary: 'vacation-ai-summary',
+  wizard: 'vacation-wizard',
+  results: 'vacation-results',
+  flow: 'vacation-flow',
+  heroCta: 'vacation-hero-cta',
+  heroCtaSecondary: 'vacation-hero-cta-secondary',
+  nav: 'vacation-nav',
+  back: 'vacation-back',
+  next: 'vacation-next',
+  confirmSelection: 'vacation-confirm-selection',
+  finalCta: 'vacation-final-cta',
+  changeSelection: 'vacation-change-selection',
+  selectPrimary: 'vacation-select-primary',
+  selectionBar: 'vacation-selection-bar',
+  leadName: 'vacation-lead-name',
+  leadPhone: 'vacation-lead-phone',
+  leadEmail: 'vacation-lead-email'
+};
+
 /**
  * Shared decision wizard + results UI (tatil.css class names).
  * @param {object} config
+ * @param {Record<string, string>} [config.domIds] — page-specific element ids (finans/tatil use defaults)
  */
 export function initDecisionFlow(config) {
+  const dom = { ...DEFAULT_DOM_IDS, ...(config.domIds || {}) };
+  const el = (key) => document.getElementById(dom[key]);
+
   const state = {
     stepIndex: 0,
     selected_option: '',
@@ -32,9 +58,9 @@ export function initDecisionFlow(config) {
   }
 
   function renderProgress() {
-    const el = $('#vacation-step-progress');
-    if (!el) return;
-    el.innerHTML = config.steps
+    const progressEl = el('stepProgress');
+    if (!progressEl) return;
+    progressEl.innerHTML = config.steps
       .map((step, i) => {
         const active = i === state.stepIndex;
         const done = i < state.stepIndex;
@@ -48,9 +74,9 @@ export function initDecisionFlow(config) {
   }
 
   function renderAiPanel() {
-    const el = $('#vacation-ai-summary');
-    if (!el || !config.getProgress) return;
-    el.innerHTML = config
+    const summaryEl = el('aiSummary');
+    if (!summaryEl || !config.getProgress) return;
+    summaryEl.innerHTML = config
       .getProgress(state)
       .map(
         (row) => `
@@ -130,14 +156,14 @@ export function initDecisionFlow(config) {
       });
     });
 
-    $('#vacation-back')?.addEventListener('click', () => {
+    el('back')?.addEventListener('click', () => {
       if (state.stepIndex > 0) {
         state.stepIndex -= 1;
         renderWizard();
       }
     });
 
-    $('#vacation-next')?.addEventListener('click', async () => {
+    el('next')?.addEventListener('click', async () => {
       const step = currentStep();
       if (!config.canAdvance(state, step) && step?.id !== 'note') return;
       if (config.onStepComplete) await config.onStepComplete(state, step);
@@ -151,12 +177,12 @@ export function initDecisionFlow(config) {
   }
 
   function refreshNext() {
-    const next = $('#vacation-next');
-    if (next) next.disabled = !config.canAdvance(state, currentStep());
+    const nextBtn = el('next');
+    if (nextBtn) nextBtn.disabled = !config.canAdvance(state, currentStep());
   }
 
   function renderWizard() {
-    const mount = $('#vacation-wizard');
+    const mount = el('wizard');
     if (!mount) return;
 
     if (state.stepIndex >= config.steps.length) {
@@ -174,8 +200,8 @@ export function initDecisionFlow(config) {
       ${step.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(step.subtitle)}</p>` : ''}
       ${body}
       <div class="vacation-wizard-actions">
-        ${state.stepIndex > 0 ? `<button type="button" class="btn btn-ghost" id="vacation-back">${escapeHtml(wt('common.back', 'Geri'))}</button>` : ''}
-        <button type="button" class="btn btn-primary" id="vacation-next" ${config.canAdvance(state, step) ? '' : 'disabled'}>
+        ${state.stepIndex > 0 ? `<button type="button" class="btn btn-ghost" id="${dom.back}">${escapeHtml(wt('common.back', 'Geri'))}</button>` : ''}
+        <button type="button" class="btn btn-primary" id="${dom.next}" ${config.canAdvance(state, step) ? '' : 'disabled'}>
           ${state.stepIndex === config.steps.length - 1 ? escapeHtml(wt('common.showResults', 'Sonuçları gör')) : escapeHtml(wt('common.continue', 'Devam et →'))}
         </button>
       </div>
@@ -200,7 +226,8 @@ export function initDecisionFlow(config) {
     state.results = config.buildResults(state);
     state.selected_option = '';
     state.confirmationStep = false;
-    $('#vacation-wizard') && ($('#vacation-wizard').hidden = true);
+    const wizardEl = el('wizard');
+    if (wizardEl) wizardEl.hidden = true;
     renderResults();
     await config.tracker.trackResults({
       vertical: config.vertical,
@@ -209,7 +236,7 @@ export function initDecisionFlow(config) {
   }
 
   function renderResults() {
-    const section = $('#vacation-results');
+    const section = el('results');
     if (!section || !state.results.length) return;
     section.hidden = false;
 
@@ -270,20 +297,20 @@ export function initDecisionFlow(config) {
     ${
       !state.confirmationStep
         ? `
-    <div class="vacation-selection-bar" id="vacation-selection-bar">
+    <div class="vacation-selection-bar" id="${dom.selectionBar}">
       <div class="vacation-selection-copy">
         <p class="vacation-selection-hint ${selectedCard ? 'hidden' : ''}">${escapeHtml(wt('common.pickHint', 'Devam etmek için bir senaryo seçin.'))}</p>
         <p class="vacation-selection-picked ${selectedCard ? '' : 'hidden'}">${escapeHtml(wt('common.yourPick', 'Seçiminiz'))}: <strong>${selectedCard ? escapeHtml(selectedCard.title) : ''}</strong></p>
       </div>
-      <button type="button" class="btn btn-primary" id="vacation-confirm-selection" ${selectedCard ? '' : 'disabled'}>${escapeHtml(wt('common.confirmSelection', 'Seçimi onayla ve devam et'))}</button>
+      <button type="button" class="btn btn-primary" id="${dom.confirmSelection}" ${selectedCard ? '' : 'disabled'}>${escapeHtml(wt('common.confirmSelection', 'Seçimi onayla ve devam et'))}</button>
     </div>`
         : ''
     }
     ${
       state.confirmationStep && selectedCard
         ? `
-    <div class="vacation-final-cta" id="vacation-final-cta">
-      <button type="button" class="btn btn-ghost btn-sm vacation-change-selection" id="vacation-change-selection">${escapeHtml(wt('common.changeSelection', '← Seçimi değiştir'))}</button>
+    <div class="vacation-final-cta" id="${dom.finalCta}">
+      <button type="button" class="btn btn-ghost btn-sm vacation-change-selection" id="${dom.changeSelection}">${escapeHtml(wt('common.changeSelection', '← Seçimi değiştir'))}</button>
       <div class="vacation-selected-recap">
         <span class="vacation-selected-recap-label">${escapeHtml(wt('common.confirmedScenario', 'Onayladığınız senaryo'))}</span>
         <h3>${escapeHtml(selectedCard.title)}</h3>
@@ -292,12 +319,12 @@ export function initDecisionFlow(config) {
       <h3 class="vacation-final-heading">${escapeHtml(wt('common.contactOptional', 'İletişim (isteğe bağlı)'))}</h3>
       <div class="vacation-lead-form">
         <div class="form-row">
-          <input type="text" id="vacation-lead-name" placeholder="${escapeHtml(wt('common.namePlaceholder', 'Ad soyad'))}" autocomplete="name">
-          <input type="tel" id="vacation-lead-phone" placeholder="${escapeHtml(wt('common.phonePlaceholder', 'Telefon'))}" autocomplete="tel">
-          <input type="email" id="vacation-lead-email" placeholder="${escapeHtml(wt('common.emailPlaceholder', 'E-posta'))}" autocomplete="email">
+          <input type="text" id="${dom.leadName}" placeholder="${escapeHtml(wt('common.namePlaceholder', 'Ad soyad'))}" autocomplete="name">
+          <input type="tel" id="${dom.leadPhone}" placeholder="${escapeHtml(wt('common.phonePlaceholder', 'Telefon'))}" autocomplete="tel">
+          <input type="email" id="${dom.leadEmail}" placeholder="${escapeHtml(wt('common.emailPlaceholder', 'E-posta'))}" autocomplete="email">
         </div>
       </div>
-      <button type="button" class="btn btn-primary btn-lg" id="vacation-select-primary">${escapeHtml(wt('common.sendRequest', 'Talebi gönder'))}</button>
+      <button type="button" class="btn btn-primary btn-lg" id="${dom.selectPrimary}">${escapeHtml(wt('common.sendRequest', 'Talebi gönder'))}</button>
       <p class="vacation-disclaimer">${escapeHtml(config.disclaimer)}</p>
     </div>`
         : ''
@@ -344,30 +371,30 @@ export function initDecisionFlow(config) {
         selectOption(card.dataset.option);
       });
     });
-    $('#vacation-confirm-selection')?.addEventListener('click', async () => {
+    el('confirmSelection')?.addEventListener('click', async () => {
       if (!state.selected_option) return;
       state.confirmationStep = true;
       await config.tracker.trackConfirm(state.selected_option);
       renderResults();
-      $('#vacation-final-cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el('finalCta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-    $('#vacation-change-selection')?.addEventListener('click', () => {
+    el('changeSelection')?.addEventListener('click', () => {
       state.confirmationStep = false;
       renderResults();
     });
-    $('#vacation-select-primary')?.addEventListener('click', () => submitLead(commentary));
+    el('selectPrimary')?.addEventListener('click', () => submitLead(commentary));
   }
 
   async function submitLead(commentary) {
     if (!state.confirmationStep || !state.selected_option) {
-      $('#vacation-selection-bar')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el('selectionBar')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     const selected = getSelectedResult();
     const payload = {
-      full_name: $('#vacation-lead-name')?.value?.trim() || '',
-      phone: $('#vacation-lead-phone')?.value?.trim() || '',
-      email: $('#vacation-lead-email')?.value?.trim() || '',
+      full_name: el('leadName')?.value?.trim() || '',
+      phone: el('leadPhone')?.value?.trim() || '',
+      email: el('leadEmail')?.value?.trim() || '',
       profile: { ...state },
       selected_option: state.selected_option,
       decision_score: selected?.score ?? null,
@@ -379,31 +406,39 @@ export function initDecisionFlow(config) {
       const msg = document.createElement('p');
       msg.className = 'vacation-toast';
       msg.textContent = 'Tercihiniz kaydedildi. Ekibimiz profilinize uygun bilgilendirme yapabilir.';
-      $('#vacation-final-cta')?.prepend(msg);
+      el('finalCta')?.prepend(msg);
     }
   }
 
   function setupMobileNav() {
     const toggle = $('.vacation-nav-toggle');
-    const nav = $('#vacation-nav');
+    const nav = el('nav');
     toggle?.addEventListener('click', () => {
       const open = nav?.classList.toggle('is-open');
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
   }
 
+  function scrollToFlow() {
+    el('flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function startWizard() {
+    state.stepIndex = 0;
+    renderWizard();
+  }
+
   async function init() {
     await window.__ibI18n?.ready;
     document.body.classList.add(config.themeClass || '');
     setupMobileNav();
-    $('#vacation-hero-cta')?.addEventListener('click', () => {
-      document.getElementById('vacation-flow')?.scrollIntoView({ behavior: 'smooth' });
-      state.stepIndex = 0;
-      renderWizard();
-    });
-    $('#vacation-hero-cta-secondary')?.addEventListener('click', () => {
-      document.getElementById('vacation-flow')?.scrollIntoView({ behavior: 'smooth' });
-    });
+    if (!config.externalHeroBindings) {
+      el('heroCta')?.addEventListener('click', () => {
+        scrollToFlow();
+        startWizard();
+      });
+      el('heroCtaSecondary')?.addEventListener('click', scrollToFlow);
+    }
     await config.tracker.trackStart();
     renderWizard();
     document.addEventListener('ib:locale-changed', () => {
@@ -417,4 +452,6 @@ export function initDecisionFlow(config) {
   } else {
     init();
   }
+
+  return { scrollToFlow, startWizard, renderWizard, showResults };
 }

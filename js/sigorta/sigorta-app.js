@@ -19,6 +19,28 @@ import {
   saveSigortaLead
 } from './sigorta-intake.js';
 
+/** Sigorta sayfası DOM id’leri — vacation-* id’leri ile çakışmayı önler */
+export const SIGORTA_DOM_IDS = {
+  stepProgress: 'sigorta-step-progress',
+  aiSummary: 'sigorta-ai-summary',
+  wizard: 'sigorta-wizard',
+  results: 'sigorta-results',
+  flow: 'sigorta-flow',
+  heroCta: 'sigorta-hero-cta',
+  heroCtaSecondary: 'sigorta-hero-cta-secondary',
+  nav: 'sigorta-nav',
+  back: 'sigorta-back',
+  next: 'sigorta-next',
+  confirmSelection: 'sigorta-confirm-selection',
+  finalCta: 'sigorta-final-cta',
+  changeSelection: 'sigorta-change-selection',
+  selectPrimary: 'sigorta-select-primary',
+  selectionBar: 'sigorta-selection-bar',
+  leadName: 'sigorta-lead-name',
+  leadPhone: 'sigorta-lead-phone',
+  leadEmail: 'sigorta-lead-email'
+};
+
 const tracker = {
   track(eventName, metadata = {}) {
     return trackSigortaStep(eventName, metadata?.step_index ?? 0);
@@ -88,33 +110,65 @@ function buildCommentary(state, _results) {
   };
 }
 
-initDecisionFlow(
-  resolveWizardConfig('sigorta', {
-    vertical: 'sigorta',
-    themeClass: 'sigorta-page',
-    steps: SIGORTA_STEPS,
-    disclaimer: SIGORTA_DISCLAIMER,
-    resultsTitle: 'Sigorta koruma senaryoları',
-    resultsKicker: 'Sigorta analizi tamamlandı',
-    tracker,
-    initialState: {
-      insurance_type: '',
-      age: null,
-      marital_status: '',
-      children_count: '',
-      risk_perception: '',
-      budget_level: ''
-    },
-    canAdvance,
-    renderStepBody,
-    onStepComplete(state, step) {
-      return tracker.trackStep(step.id, state.stepIndex);
-    },
-    buildResults: buildSigortaResults,
-    buildSummary: buildSigortaSummary,
-    buildCommentary,
-    getProgress: getSigortaProgress
-  })
-);
+let flowApi = null;
 
-trackSigortaPageView();
+function bindSigortaHeroCtas() {
+  const primary = document.getElementById(SIGORTA_DOM_IDS.heroCta);
+  const secondary = document.getElementById(SIGORTA_DOM_IDS.heroCtaSecondary);
+  const scrollToFlow = () => {
+    document.getElementById(SIGORTA_DOM_IDS.flow)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  primary?.addEventListener('click', () => {
+    scrollToFlow();
+    flowApi?.startWizard?.();
+    trackSigortaAnalysisStarted({ source: 'hero_cta' });
+  });
+
+  secondary?.addEventListener('click', () => {
+    scrollToFlow();
+    trackSigortaAnalysisStarted({ source: 'hero_secondary' });
+  });
+}
+
+function bootSigortaApp() {
+  flowApi = initDecisionFlow(
+    resolveWizardConfig('sigorta', {
+      vertical: 'sigorta',
+      themeClass: 'sigorta-page',
+      domIds: SIGORTA_DOM_IDS,
+      externalHeroBindings: true,
+      steps: SIGORTA_STEPS,
+      disclaimer: SIGORTA_DISCLAIMER,
+      resultsTitle: 'Sigorta koruma senaryoları',
+      resultsKicker: 'Sigorta analizi tamamlandı',
+      tracker,
+      initialState: {
+        insurance_type: '',
+        age: null,
+        marital_status: '',
+        children_count: '',
+        risk_perception: '',
+        budget_level: ''
+      },
+      canAdvance,
+      renderStepBody,
+      onStepComplete(state, step) {
+        return tracker.trackStep(step.id, state.stepIndex);
+      },
+      buildResults: buildSigortaResults,
+      buildSummary: buildSigortaSummary,
+      buildCommentary,
+      getProgress: getSigortaProgress
+    })
+  );
+
+  bindSigortaHeroCtas();
+  trackSigortaPageView();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootSigortaApp, { once: true });
+} else {
+  bootSigortaApp();
+}
