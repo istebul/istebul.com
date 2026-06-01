@@ -1,0 +1,128 @@
+/**
+ * Partner Başvuruları — admin tablo UX (yatay scroll, sabit kolonlar, metin kırılması yok).
+ */
+#page-partner-applications .card {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.partner-applications-table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+#partner-applications-list .partner-applications-table {
+  display: table !important;
+  width: 100%;
+  min-width: 1180px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+#partner-applications-list .partner-applications-table col.pa-col-company {
+  width: 160px;
+}
+#partner-applications-list .partner-applications-table col.pa-col-contact {
+  width: 220px;
+}
+#partner-applications-list .partner-applications-table col.pa-col-category {
+  width: 110px;
+}
+#partner-applications-list .partner-applications-table col.pa-col-source {
+  width: 100px;
+}
+#partner-applications-list .partner-applications-table col.pa-col-status {
+  width: 150px;
+}
+#partner-applications-list .partner-applications-table col.pa-col-active {
+  width: 90px;
+}
+#partner-applications-list .partner-applications-table col.pa-col-followup {
+  width: 130px;
+}
+#partner-applications-list .partner-applications-table col.pa-col-score {
+  width: 80px;
+}
+#partner-applications-list .partner-applications-table col.pa-col-velocity {
+  width: 90px;
+}
+#partner-applications-list .partner-applications-table col.pa-col-date {
+  width: 130px;
+}
+#partner-applications-list .partner-applications-table col.pa-col-actions {
+  width: 280px;
+}
+
+#partner-applications-list .partner-applications-table th,
+#partner-applications-list .partner-applications-table td {
+  word-break: normal;
+  overflow-wrap: normal;
+  white-space: normal;
+  vertical-align: top;
+}
+
+#partner-applications-list .partner-applications-table .pa-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+#partner-applications-list .partner-applications-table .pa-email,
+#partner-applications-list .partner-applications-table .pa-phone {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#partner-applications-list .partner-applications-table .pa-badge,
+#partner-applications-list .partner-applications-table .badge {
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
+  word-break: normal;
+  overflow-wrap: normal;
+  max-width: 100%;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+#partner-applications-list .partner-applications-table .pa-cell-status .status-select {
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#partner-applications-list .partner-applications-table .partner-applications-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-width: 260px;
+}
+
+#partner-applications-list .partner-applications-table .partner-applications-actions .btn,
+#partner-applications-list .partner-applications-table .partner-applications-actions .ib-sales-touch-select {
+  flex: 0 1 auto;
+}
+
+#partner-applications-list .partner-applications-table .ib-sales-touch-select {
+  min-width: 7.5rem;
+  max-width: 100%;
+}
+
+@media (max-width: 1024px) {
+  #page-partner-applications {
+    overflow-x: hidden;
+  }
+
+  .partner-applications-table-wrap {
+    margin-left: -4px;
+    margin-right: -4px;
+    padding-bottom: 4px;
+  }
+}

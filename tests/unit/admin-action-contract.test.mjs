@@ -106,5 +106,9 @@ describe('admin panel route contract', () => {
     assert.match(module, /İlk Temas/);
     assert.match(module, /partner-applications-filter-category/);
     assert.match(module, /partner-applications-search/);
+    assert.match(module, /partner-applications-table-wrap/);
+    assert.match(module, /partner-applications-table/);
+    assert.match(module, /pa-col-velocity/);
+    assert.match(module, /partner-applications-actions/);
   });
 });
