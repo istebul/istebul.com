@@ -534,3 +534,15 @@
     display: flex;
   }
 }
+
+.sigorta-boot-error,
+.sigorta-v2-mount-fallback {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  background: rgba(254, 226, 226, 0.92);
+  color: #991b1b;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}

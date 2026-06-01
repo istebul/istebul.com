@@ -314,6 +314,8 @@ export async function mountHomeCategoryGrid() {
   const visibilitySettings = await fetchVisibilitySettings();
   const categories = HOME_DECISION_CATEGORIES.filter((category) => {
     if (!FEATURED_CATEGORY_IDS.has(category.id)) return false;
+    // Active verticals follow config status; remote flags cannot hide live product cards.
+    if (isHomeCategoryActive(category)) return true;
     if (!category.settingKey) return true;
     return visibilitySettings[category.settingKey] ?? true;
   });

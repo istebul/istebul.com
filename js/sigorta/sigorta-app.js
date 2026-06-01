@@ -41,6 +41,8 @@ export const SIGORTA_DOM_IDS = {
   leadEmail: 'sigorta-lead-email'
 };
 
+const BOOT_ERROR_ID = 'sigorta-boot-error';
+
 const tracker = {
   track(eventName, metadata = {}) {
     return trackSigortaStep(eventName, metadata?.step_index ?? 0);
@@ -111,27 +113,112 @@ function buildCommentary(state, _results) {
 }
 
 let flowApi = null;
+let domRefs = null;
 
-function bindSigortaHeroCtas() {
-  const primary = document.getElementById(SIGORTA_DOM_IDS.heroCta);
-  const secondary = document.getElementById(SIGORTA_DOM_IDS.heroCtaSecondary);
-  const scrollToFlow = () => {
-    document.getElementById(SIGORTA_DOM_IDS.flow)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function showBootError(message, anchorId = SIGORTA_DOM_IDS.wizard) {
+  const anchor =
+    document.getElementById(anchorId) ||
+    document.getElementById(SIGORTA_DOM_IDS.flow) ||
+    document.querySelector('.vacation-main');
+  if (!anchor) return;
+
+  let banner = document.getElementById(BOOT_ERROR_ID);
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = BOOT_ERROR_ID;
+    banner.className = 'sigorta-boot-error';
+    banner.setAttribute('role', 'alert');
+    anchor.prepend(banner);
+  }
+  banner.hidden = false;
+  banner.textContent = message;
+}
+
+function clearBootError() {
+  const banner = document.getElementById(BOOT_ERROR_ID);
+  if (banner) banner.hidden = true;
+}
+
+function collectDomRefs() {
+  return {
+    heroCta: document.getElementById(SIGORTA_DOM_IDS.heroCta),
+    heroCtaSecondary: document.getElementById(SIGORTA_DOM_IDS.heroCtaSecondary),
+    flow: document.getElementById(SIGORTA_DOM_IDS.flow),
+    wizard: document.getElementById(SIGORTA_DOM_IDS.wizard),
+    results: document.getElementById(SIGORTA_DOM_IDS.results),
+    stepProgress: document.getElementById(SIGORTA_DOM_IDS.stepProgress),
+    aiSummary: document.getElementById(SIGORTA_DOM_IDS.aiSummary)
   };
+}
 
-  primary?.addEventListener('click', () => {
-    scrollToFlow();
+function validateDomRefs(refs) {
+  const required = [
+    ['heroCta', SIGORTA_DOM_IDS.heroCta],
+    ['flow', SIGORTA_DOM_IDS.flow],
+    ['wizard', SIGORTA_DOM_IDS.wizard],
+    ['results', SIGORTA_DOM_IDS.results]
+  ];
+  const missing = required.filter(([key]) => !refs[key]).map(([, id]) => id);
+  if (missing.length) {
+    showBootError(
+      `Sigorta analizi başlatılamadı. Eksik sayfa öğeleri: ${missing.join(', ')}. Sayfayı yenileyin veya destek ile iletişime geçin.`
+    );
+    return false;
+  }
+  clearBootError();
+  return true;
+}
+
+function revealFlow(flowEl) {
+  if (!flowEl) return;
+  flowEl.hidden = false;
+  flowEl.classList.remove('hidden');
+  flowEl.removeAttribute('hidden');
+  const main = flowEl.closest('main');
+  if (main) {
+    main.hidden = false;
+    main.classList.remove('hidden');
+  }
+}
+
+function scrollToFlow(flowEl) {
+  revealFlow(flowEl);
+  flowEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function ensureWizardRendered() {
+  if (!flowApi?.renderWizard) return;
+  const wizard = domRefs?.wizard;
+  if (wizard && !wizard.innerHTML.trim()) {
+    flowApi.renderWizard();
+    return;
+  }
+  if (wizard?.hidden) {
+    flowApi.startWizard?.();
+    return;
+  }
+  flowApi.renderWizard();
+}
+
+function bindSigortaHeroCtas(refs) {
+  refs.heroCta?.addEventListener('click', () => {
+    scrollToFlow(refs.flow);
     flowApi?.startWizard?.();
+    ensureWizardRendered();
     trackSigortaAnalysisStarted({ source: 'hero_cta' });
   });
 
-  secondary?.addEventListener('click', () => {
-    scrollToFlow();
+  refs.heroCtaSecondary?.addEventListener('click', () => {
+    scrollToFlow(refs.flow);
+    ensureWizardRendered();
     trackSigortaAnalysisStarted({ source: 'hero_secondary' });
   });
 }
 
 function bootSigortaApp() {
+  domRefs = collectDomRefs();
+  const domOk = validateDomRefs(domRefs);
+
   flowApi = initDecisionFlow(
     resolveWizardConfig('sigorta', {
       vertical: 'sigorta',
@@ -163,7 +250,12 @@ function bootSigortaApp() {
     })
   );
 
-  bindSigortaHeroCtas();
+  if (domOk) {
+    bindSigortaHeroCtas(domRefs);
+    revealFlow(domRefs.flow);
+    ensureWizardRendered();
+  }
+
   trackSigortaPageView();
 }
 

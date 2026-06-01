@@ -200,6 +200,22 @@ function renderSigortaResultsV2Html(model) {
 
 export const SIGORTA_RESULTS_MOUNT_ID = 'sigorta-results';
 
+function showMountFallback(message) {
+  const flow = document.getElementById('sigorta-flow');
+  const host = flow || document.querySelector('.vacation-main') || document.body;
+  let el = document.getElementById('sigorta-results-mount-fallback');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sigorta-results-mount-fallback';
+    el.className = 'sigorta-v2-mount-fallback';
+    el.setAttribute('role', 'alert');
+    host.appendChild(el);
+  }
+  el.hidden = false;
+  el.textContent = message;
+  return null;
+}
+
 /**
  * @param {HTMLElement|string|null} [mountNode] — #sigorta-results varsayılan
  * @param {object} payload
@@ -209,7 +225,13 @@ export async function mountSigortaResultsV2(mountNode, payload = {}) {
     (mountNode && typeof mountNode !== 'string' ? mountNode : null) ||
     (typeof mountNode === 'string' ? document.getElementById(mountNode) : null) ||
     document.getElementById(SIGORTA_RESULTS_MOUNT_ID);
-  if (!target) return null;
+  if (!target) {
+    return showMountFallback(
+      'Sonuç paneli yüklenemedi (#sigorta-results bulunamadı). Sayfayı yenileyip analizi tekrar deneyin.'
+    );
+  }
+
+  document.getElementById('sigorta-results-mount-fallback')?.remove();
 
   const state = payload.state || {};
   const results = payload.results || [];
