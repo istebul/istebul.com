@@ -206,6 +206,10 @@ jobs:
             lead-alert
             partner-daily-reset
             create-payment-session
+            iyzico-webhook
+            paytr-create-payment-session
+            paytr-webhook
+            payment-provider-status
           )
           for fn in "${FUNCTIONS[@]}"; do
             echo "Deploying $fn..."

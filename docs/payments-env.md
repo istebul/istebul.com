@@ -11,7 +11,7 @@ Aşağıdaki değerleri **Supabase Dashboard → Project Settings → Edge Funct
 | `IYZICO_API_KEY` | iyzico API anahtarı |
 | `IYZICO_SECRET_KEY` | iyzico gizli anahtar |
 | `IYZICO_BASE_URL` | `https://api.iyzipay.com` veya sandbox URL |
-| `IYZICO_WEBHOOK_SECRET` | Webhook imza doğrulama (TODO implementasyon sonrası) |
+| `IYZICO_WEBHOOK_SECRET` | Webhook imza doğrulama (IYZWSv2 — `iyzico-webhook`) |
 | `PAYTR_MERCHANT_ID` | PayTR mağaza no |
 | `PAYTR_MERCHANT_KEY` | PayTR merchant key |
 | `PAYTR_MERCHANT_SALT` | PayTR merchant salt |

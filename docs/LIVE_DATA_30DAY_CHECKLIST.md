@@ -105,6 +105,8 @@ node scripts/live-data-readiness-audit.cjs
 
 ## İlgili dokümanlar
 
+- **`docs/OPS_SUPABASE_IYZICO_RUNBOOK.md`** — migration + iyzico sandbox (adım adım)
+- `docs/payments-env.md`
 - `docs/BUILD_CORPORATE_STATIC.md`
 - `docs/COMPLIANCE_READINESS_AUDIT.md`
 - `docs/investor/INVESTOR_READINESS.md`
