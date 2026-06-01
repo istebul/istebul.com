@@ -112,31 +112,34 @@ const PARTNER_APP_CATEGORIES = new Set([
   "general_sales",
 ]);
 
-const PARTNER_APP_CREATE_FIELDS = [
+/** Only columns present on partner_applications (CRM V1 + core). */
+const PARTNER_APP_ALLOWED_FIELDS = [
+  "id",
   "company_name",
   "contact_name",
-  "phone",
   "email",
+  "phone",
   "website",
   "city",
   "category",
-  "source_channel",
+  "lead_capacity",
+  "webhook_ready",
   "status",
-  "is_active",
   "notes",
+  "source_channel",
   "next_action",
   "contacted_at",
   "follow_up_at",
-  "lead_capacity",
-  "webhook_ready",
-  "billing_plan",
-];
+  "is_active",
+  "is_archived",
+  "archived_at",
+] as const;
 
-const PARTNER_APP_UPDATE_FIELDS = [
-  ...PARTNER_APP_CREATE_FIELDS,
-  "webhook_url_draft",
-  "partner_endpoint_id",
-];
+const PARTNER_APP_DATE_FIELDS = new Set([
+  "contacted_at",
+  "follow_up_at",
+  "archived_at",
+]);
 
 function sanitizePartnerField(value: unknown, max = 500) {
   return String(value ?? "").trim().slice(0, max);
@@ -166,16 +169,85 @@ function normalizePartnerAppTimestamp(value: unknown) {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
-function pickPartnerAppPayload(raw: Record<string, unknown>, allowed: string[]) {
+function stripPartnerAppPayload(raw: Record<string, unknown>) {
   const payload: Record<string, unknown> = {};
-  for (const key of allowed) {
+  for (const key of PARTNER_APP_ALLOWED_FIELDS) {
     if (raw[key] !== undefined) payload[key] = raw[key];
+  }
+  for (const key of PARTNER_APP_DATE_FIELDS) {
+    if (payload[key] === "" || payload[key] === undefined) {
+      payload[key] = null;
+    }
+  }
+  if (payload.website === "") {
+    payload.website = null;
   }
   return payload;
 }
 
+function extractActionError(err: unknown) {
+  const e =
+    err && typeof err === "object" ? (err as Record<string, unknown>) : {};
+  const message =
+    typeof e.message === "string"
+      ? e.message
+      : err instanceof Error
+        ? err.message
+        : String(err);
+  return {
+    code: typeof e.code === "string" ? e.code : null,
+    message: message || "Unknown error",
+    details: typeof e.details === "string" ? e.details : null,
+    hint: typeof e.hint === "string" ? e.hint : null,
+    stack: typeof e.stack === "string" ? e.stack : null,
+  };
+}
+
+function logActionError(action: string, payload: unknown, err: unknown) {
+  const info = extractActionError(err);
+  console.error(
+    JSON.stringify(
+      {
+        action,
+        payload,
+        code: info.code,
+        message: info.message,
+        details: info.details,
+        hint: info.hint,
+        stack: info.stack,
+      },
+      null,
+      2
+    )
+  );
+}
+
+function partnerActionFailure(
+  action: string,
+  err: unknown,
+  origin: string | null
+) {
+  const { code, message, details, hint } = extractActionError(err);
+  return json(
+    {
+      ok: false,
+      action,
+      code,
+      message,
+      details,
+      hint,
+      error: message,
+    },
+    500,
+    origin
+  );
+}
+
 function buildPartnerApplicationRow(raw: Record<string, unknown>, mode: "create" | "update") {
-  const payload = pickPartnerAppPayload(raw, mode === "create" ? PARTNER_APP_CREATE_FIELDS : PARTNER_APP_UPDATE_FIELDS);
+  const payload = stripPartnerAppPayload(raw);
+  if (mode === "create") {
+    delete payload.id;
+  }
 
   if (payload.company_name !== undefined) {
     payload.company_name = sanitizePartnerField(payload.company_name, 200);
@@ -229,8 +301,11 @@ function buildPartnerApplicationRow(raw: Record<string, unknown>, mode: "create"
   if (payload.webhook_ready !== undefined) {
     payload.webhook_ready = payload.webhook_ready === true || payload.webhook_ready === "true";
   }
-  if (payload.billing_plan !== undefined) {
-    payload.billing_plan = sanitizePartnerField(payload.billing_plan, 40) || "pilot";
+  if (payload.is_archived !== undefined) {
+    payload.is_archived = payload.is_archived === true || payload.is_archived === "true";
+  }
+  if (payload.archived_at !== undefined) {
+    payload.archived_at = normalizePartnerAppTimestamp(payload.archived_at);
   }
 
   if (mode === "create") {
@@ -457,75 +532,112 @@ Deno.serve(async (req) => {
     }
 
     if (action === "createPartnerApplication") {
-      if (!values || typeof values !== "object") {
-        return json({ error: "Missing create values" }, 400, origin);
+      try {
+        if (!values || typeof values !== "object") {
+          return json({ error: "Missing create values" }, 400, origin);
+        }
+
+        console.log(
+          "createPartnerApplication payload",
+          JSON.stringify(values, null, 2)
+        );
+
+        const built = buildPartnerApplicationRow(
+          values as Record<string, unknown>,
+          "create"
+        );
+        if (built.error) {
+          return json({ error: built.error }, 400, origin);
+        }
+
+        const insertPayload = {
+          ...built.payload,
+          status: normalizePartnerAppStatus(built.payload?.status, "lead"),
+          source_channel: built.payload?.source_channel || "manual",
+          is_active: built.payload?.is_active !== false,
+          is_archived: false,
+          webhook_ready: built.payload?.webhook_ready === true,
+        };
+
+        console.log(
+          "createPartnerApplication insert",
+          JSON.stringify(insertPayload, null, 2)
+        );
+
+        const { data, error } = await adminClient
+          .from("partner_applications")
+          .insert(insertPayload)
+          .select("*")
+          .single();
+
+        if (error) throw error;
+
+        await writeAdminAudit(adminClient, user, {
+          action: "createPartnerApplication",
+          entity_table: "partner_applications",
+          entity_id: data?.id,
+          summary: `Created partner application ${insertPayload.company_name}`,
+        });
+
+        return json({ ok: true, data }, 200, origin);
+      } catch (err) {
+        logActionError(action, { values }, err);
+        return partnerActionFailure(action, err, origin);
       }
-
-      const built = buildPartnerApplicationRow(values as Record<string, unknown>, "create");
-      if (built.error) {
-        return json({ error: built.error }, 400, origin);
-      }
-
-      const row = {
-        ...built.payload,
-        status: normalizePartnerAppStatus(built.payload?.status, "lead"),
-        source_channel: built.payload?.source_channel || "manual",
-        is_active: built.payload?.is_active !== false,
-        is_archived: false,
-        webhook_ready: built.payload?.webhook_ready === true,
-        billing_plan: built.payload?.billing_plan || "pilot",
-      };
-
-      const { data, error } = await adminClient
-        .from("partner_applications")
-        .insert(row)
-        .select("*")
-        .single();
-
-      if (error) throw error;
-
-      await writeAdminAudit(adminClient, user, {
-        action: "createPartnerApplication",
-        entity_table: "partner_applications",
-        entity_id: data?.id,
-        summary: `Created partner application ${row.company_name}`,
-      });
-
-      return json({ ok: true, data }, 200, origin);
     }
 
     if (action === "updatePartnerApplication") {
-      if (!values || typeof values !== "object") {
-        return json({ error: "Missing update values" }, 400, origin);
+      try {
+        if (!values || typeof values !== "object") {
+          return json({ error: "Missing update values" }, 400, origin);
+        }
+
+        console.log(
+          "updatePartnerApplication payload",
+          JSON.stringify({ id, values }, null, 2)
+        );
+
+        const built = buildPartnerApplicationRow(
+          values as Record<string, unknown>,
+          "update"
+        );
+        if (built.error) {
+          return json({ error: built.error }, 400, origin);
+        }
+
+        if (!Object.keys(built.payload || {}).length) {
+          return json({ error: "No valid fields to update" }, 400, origin);
+        }
+
+        const updatePayload = built.payload;
+
+        console.log(
+          "updatePartnerApplication update",
+          JSON.stringify(updatePayload, null, 2)
+        );
+
+        const { data, error } = await adminClient
+          .from("partner_applications")
+          .update(updatePayload)
+          .eq("id", id)
+          .select("*")
+          .single();
+
+        if (error) throw error;
+
+        await writeAdminAudit(adminClient, user, {
+          action: "updatePartnerApplication",
+          entity_table: "partner_applications",
+          entity_id: id,
+          summary: `Updated partner application`,
+          metadata: { fields: Object.keys(updatePayload || {}) },
+        });
+
+        return json({ ok: true, data }, 200, origin);
+      } catch (err) {
+        logActionError(action, { id, values }, err);
+        return partnerActionFailure(action, err, origin);
       }
-
-      const built = buildPartnerApplicationRow(values as Record<string, unknown>, "update");
-      if (built.error) {
-        return json({ error: built.error }, 400, origin);
-      }
-
-      if (!Object.keys(built.payload || {}).length) {
-        return json({ error: "No valid fields to update" }, 400, origin);
-      }
-
-      const { data, error } = await adminClient
-        .from("partner_applications")
-        .update(built.payload)
-        .eq("id", id)
-        .select("*")
-        .single();
-
-      if (error) throw error;
-
-      await writeAdminAudit(adminClient, user, {
-        action: "updatePartnerApplication",
-        entity_table: "partner_applications",
-        entity_id: id,
-        summary: `Updated partner application`,
-        metadata: { fields: Object.keys(built.payload || {}) },
-      });
-
-      return json({ ok: true, data }, 200, origin);
     }
 
     if (action === "archivePartnerApplication") {
@@ -1020,9 +1132,7 @@ Deno.serve(async (req) => {
 
     return json({ error: "Unsupported action" }, 400, origin);
   } catch (err) {
-    console.error(err);
-    const message =
-      err instanceof Error && err.message ? err.message : "Server error";
-    return json({ error: message }, 500, origin);
+    logActionError(action, body, err);
+    return partnerActionFailure(action, err, origin);
   }
 });
