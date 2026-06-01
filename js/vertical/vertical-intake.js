@@ -1,3 +1,11 @@
+import { analytics } from '../core/analytics.js';
+import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
+
+const VERTICAL_SITE_CATEGORY = Object.freeze({
+  finans: 'finansman',
+  konut: 'konut'
+});
+
 function getEnv() {
   return {
     url: window.__env?.SUPABASE_URL || '',
@@ -58,6 +66,10 @@ export function createVerticalTracker(vertical) {
 
   return {
     track(eventType, metadata = {}) {
+      const siteCategory = VERTICAL_SITE_CATEGORY[vertical] || vertical;
+      if (analytics.hasConsent()) {
+        mirrorLegacySiteEvent(eventType, { category: siteCategory, ...metadata });
+      }
       return callVerticalIntake(vertical, {
         type: 'event',
         event_type: eventType,

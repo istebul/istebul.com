@@ -275,6 +275,19 @@ esbuild.buildSync({
   outfile: verticalLocaleShellOut
 });
 
+const siteAnalyticsBootOut = path.join(dist, 'js/runtime/site-analytics-boot.js');
+ensureDir(siteAnalyticsBootOut);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/runtime/site-analytics-boot.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: siteAnalyticsBootOut
+});
+
 const routeBootstrapOut = path.join(dist, 'js/runtime/route-bootstrap-head.js');
 writeRouteBootstrapFile(routeBootstrapOut);
 

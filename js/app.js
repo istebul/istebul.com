@@ -7,6 +7,8 @@ import {
 } from './runtime/auth-return.js';
 import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
 import { initHomeCategories } from './runtime/home-categories.js';
+import { trackHomepageView } from './platform/site-analytics.js';
+import './runtime/site-analytics-boot.js';
 import { stripLocalePrefix } from './platform/locale-registry.js';
 import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';

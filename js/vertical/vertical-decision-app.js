@@ -2,7 +2,20 @@ import { formatTry } from '../tatil/tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountFinansmanResultsV2 } from '../features/finansman/finansman-results-v2.js';
 import { mountSigortaResultsV2 } from '../features/sigorta/sigorta-results-v2.js';
+import {
+  trackAnalysisStarted,
+  trackResultsViewed,
+  trackLeadFormOpened,
+  trackLeadSubmitted
+} from '../platform/site-analytics.js';
 import { wt } from './wizard-i18n.js';
+
+const VERTICAL_SITE_CATEGORY = Object.freeze({
+  finans: 'finansman',
+  sigorta: 'sigorta',
+  tatil: 'tatil',
+  konut: 'konut'
+});
 
 /** @type {Record<string, string>} */
 const DEFAULT_DOM_IDS = {
@@ -228,6 +241,9 @@ export function initDecisionFlow(config) {
     state.confirmationStep = false;
     const wizardEl = el('wizard');
     if (wizardEl) wizardEl.hidden = true;
+    const siteCategory = VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical;
+    trackAnalysisStarted(siteCategory, { phase: 'wizard_complete' });
+    trackResultsViewed(siteCategory, { results_count: state.results.length });
     renderResults();
     await config.tracker.trackResults({
       vertical: config.vertical,
@@ -374,6 +390,7 @@ export function initDecisionFlow(config) {
     el('confirmSelection')?.addEventListener('click', async () => {
       if (!state.selected_option) return;
       state.confirmationStep = true;
+      trackLeadFormOpened(VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical);
       await config.tracker.trackConfirm(state.selected_option);
       renderResults();
       el('finalCta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -403,6 +420,9 @@ export function initDecisionFlow(config) {
     };
     const res = await config.tracker.saveLead(payload);
     if (res.ok) {
+      trackLeadSubmitted(VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical, {
+        selected_option: state.selected_option
+      });
       const msg = document.createElement('p');
       msg.className = 'vacation-toast';
       msg.textContent = 'Tercihiniz kaydedildi. Ekibimiz profilinize uygun bilgilendirme yapabilir.';

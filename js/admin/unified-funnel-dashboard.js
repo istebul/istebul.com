@@ -27,9 +27,23 @@ const CATEGORY_FUNNELS = Object.freeze([
   {
     id: 'finans',
     label: 'Finans',
-    visit: ['finans_start', 'finance_page_view', 'finance_funnel_start'],
-    results: ['finans_results_view', 'finance_results_view'],
-    lead: ['finans_lead_submit']
+    visit: ['finans_start', 'finance_page_view', 'finance_funnel_start', 'category_page_view'],
+    results: ['finans_results_view', 'finance_results_view', 'results_viewed'],
+    lead: ['finans_lead_submit', 'lead_submitted']
+  },
+  {
+    id: 'sigorta',
+    label: 'Sigorta',
+    visit: ['insurance_page_view', 'category_page_view'],
+    results: ['insurance_results_view', 'results_viewed'],
+    lead: ['lead_submitted', 'insurance_interest']
+  },
+  {
+    id: 'kasko',
+    label: 'Kasko',
+    visit: ['category_page_view', 'page_view'],
+    results: [],
+    lead: ['lead_submitted']
   }
 ]);
 

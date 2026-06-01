@@ -3,6 +3,7 @@ import {
   isHomeCategoryActive
 } from '../platform/home-category-config.js';
 import { getHomeCategoryCardImage } from '../platform/home-category-visuals.js';
+import { trackCategoryCardClick } from '../platform/site-analytics.js';
 
 const FEATURED_CATEGORY_IDS = new Set([
   'araba',
@@ -343,6 +344,13 @@ export async function mountHomeCategoryGrid() {
       }
     </div>
   `;
+
+  grid.querySelectorAll('[data-category-id]').forEach((card) => {
+    card.addEventListener('click', () => {
+      const categoryId = card.getAttribute('data-category-id');
+      if (categoryId) trackCategoryCardClick(categoryId, { href: card.getAttribute('href') });
+    });
+  });
 
   document.dispatchEvent(new CustomEvent('ib:refresh-icons'));
 }

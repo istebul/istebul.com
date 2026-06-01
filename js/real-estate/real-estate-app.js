@@ -18,6 +18,7 @@ import { TURKEY_CITIES } from './turkey-cities.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountKonutResultsV2 } from '../features/konut/konut-results-v2.js';
+import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
 
 const STEP_LABELS = ['Karar amacı', 'Bütçe', 'Lokasyon', 'Konut tipi', 'Riskler'];
 const PURPOSE_OPTIONS = [
@@ -144,6 +145,7 @@ async function intake(type, payload = {}) {
 }
 
 function trackEvent(eventType, metadata = {}) {
+  mirrorLegacySiteEvent(eventType, { category: 'konut', ...metadata });
   void intake('event', { event_type: eventType, metadata: { session_id: sessionId(), ...metadata } });
 }
 

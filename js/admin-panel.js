@@ -65,8 +65,15 @@ import {
 import { renderLeadAiSummaryHtml } from './features/admin/lead-ai-intelligence.js';
 import { fetchActivePartnerPool } from './features/partner/partner-pool.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
+import {
+  buildSiteAnalyticsMetrics,
+  filterRowsByPreset,
+  renderSiteAnalyticsDashboard,
+  FILTER_PRESETS
+} from './admin/platform-site-analytics-dashboard.js';
 
 let activeDrawerLeadId = null;
+let platformAnalyticsFilter = '7d';
 
 function renderAdminConfigError(message) {
   document.body.innerHTML = `
@@ -2548,23 +2555,29 @@ function renderGrowthCommandCenter(rows) {
   `;
 }
 
-async function loadPlatformAnalytics() {
+async function loadPlatformAnalytics(filterId = platformAnalyticsFilter) {
   const el = document.getElementById('platform-analytics-root');
   if (!el) return;
 
+  platformAnalyticsFilter = filterId;
   el.innerHTML = '<div class="empty">Yükleniyor…</div>';
 
-  const since = new Date(
-    Date.now() - SCALE_LIMITS.admin.analyticsWindowDays * 24 * 60 * 60 * 1000
-  ).toISOString();
+  const preset = FILTER_PRESETS.find((p) => p.id === filterId) || FILTER_PRESETS[1];
+  const windowDays = preset.id === 'all' ? 365 : preset.days;
+  const rowLimit =
+    preset.id === 'all' || preset.id === '30d'
+      ? SCALE_LIMITS.admin.executiveRowLimit
+      : SCALE_LIMITS.admin.analyticsRowLimit;
+
+  const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
   const sinceMs = new Date(since).getTime();
   const selectExpr =
-    'event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id, properties';
+    'event_name, event_category, funnel, funnel_step, revenue_cents, attribution, created_at, session_id, properties, page_path';
 
   const analyticsRes = await fetchAdminTable(sb, {
     table: 'analytics_events',
     select: selectExpr,
-    limit: SCALE_LIMITS.admin.analyticsRowLimit,
+    limit: rowLimit,
     order: { column: 'created_at', ascending: false },
     direct: () =>
       sb
@@ -2572,7 +2585,7 @@ async function loadPlatformAnalytics() {
         .select(selectExpr)
         .gte('created_at', since)
         .order('created_at', { ascending: false })
-        .limit(SCALE_LIMITS.admin.analyticsRowLimit)
+        .limit(rowLimit)
   });
 
   if (analyticsRes.error && !(analyticsRes.data || []).length) {
@@ -2590,7 +2603,14 @@ async function loadPlatformAnalytics() {
     return;
   }
 
-  const windowNote = `<p class="text-muted-sm" style="margin:0 0 12px">Son ${SCALE_LIMITS.admin.analyticsWindowDays} gün · en fazla ${SCALE_LIMITS.admin.analyticsRowLimit} event (P4.7 scale guard).</p>`;
+  const filteredRows = filterRowsByPreset(rows, filterId);
+  const siteMetrics = buildSiteAnalyticsMetrics(filteredRows);
+  const siteDashboard = renderSiteAnalyticsDashboard(siteMetrics, {
+    filterId,
+    windowNote: `${preset.label} · en fazla ${rowLimit} event (ölçek limiti). Auto Analytics ve Unified Funnel aşağıda korunur.`
+  });
+
+  const windowNote = `<p class="text-muted-sm" style="margin:0 0 12px">Legacy platform özeti · ${escapeHtml(preset.label)}.</p>`;
 
   const pageViews = countEvents(rows, 'page_view') + countEvents(rows, 'auto_page_view');
   const authModal = countEvents(rows, 'auth_modal_open');
@@ -2694,6 +2714,8 @@ async function loadPlatformAnalytics() {
 
   el.innerHTML = `
     ${analyticsBanner}
+    ${siteDashboard}
+    <div style="height:24px"></div>
     ${windowNote}
     ${renderGrowthCommandCenter(rows)}
     <h3 style="margin:0 0 14px 0;">Executive growth funnel (kanal bazlı)</h3>
@@ -2808,6 +2830,12 @@ async function loadPlatformAnalytics() {
     <h3 style="margin:0 0 14px 0;">Admin CRM outcomes</h3>
     <p class="text-muted">${crmEvents.length} CRM event (son 2500 kayıt içinde)</p>
   `;
+
+  el.querySelectorAll('[data-site-analytics-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      loadPlatformAnalytics(btn.getAttribute('data-site-analytics-filter') || '7d');
+    });
+  });
 }
 
 async function createPartnerEndpoint() {

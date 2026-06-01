@@ -133,6 +133,17 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "upsell_view",
   "upsell_click",
   "upsell_conversion",
+  // Site-wide measurement (homepage + verticals)
+  "homepage_view",
+  "category_card_click",
+  "category_page_view",
+  "analysis_started",
+  "analysis_completed",
+  "results_viewed",
+  "lead_form_opened",
+  "lead_submitted",
+  "pdf_downloaded",
+  "cta_clicked",
   // Canonical growth funnel (P1.5)
   "landing_visit",
   "hero_cta_click",
@@ -217,6 +228,16 @@ export function eventCategoryFor(name: string, fallback?: string) {
     name.startsWith("growth_") ||
     name.startsWith("referral_") ||
     name === "newsletter_subscribe" ||
+    name === "homepage_view" ||
+    name === "category_card_click" ||
+    name === "category_page_view" ||
+    name === "analysis_started" ||
+    name === "analysis_completed" ||
+    name === "results_viewed" ||
+    name === "lead_form_opened" ||
+    name === "lead_submitted" ||
+    name === "pdf_downloaded" ||
+    name === "cta_clicked" ||
     name === "landing_visit" ||
     name === "hero_cta_click" ||
     name === "auto_start" ||

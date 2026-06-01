@@ -2,6 +2,7 @@
  * Sigorta vertical intake — events, leads, analytics.
  */
 import { analytics } from '../core/analytics.js';
+import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
 import { getVerticalSessionId } from '../vertical/vertical-intake.js';
 
 const VERTICAL = 'sigorta';
@@ -40,6 +41,7 @@ async function callSigortaIntake(payload) {
 
 function trackAnalytics(eventName, metadata = {}) {
   if (!analytics.hasConsent()) return;
+  mirrorLegacySiteEvent(eventName, { category: 'sigorta', ...metadata });
   analytics.track(
     eventName,
     {
