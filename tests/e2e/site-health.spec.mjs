@@ -22,11 +22,13 @@ test.describe('Site health — readability and layout', () => {
     });
   }
 
-  test('homepage links enterprise readability stylesheet', async ({ page }) => {
+  test('homepage uses consolidated CSS bundles', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
-    const href = await page.locator('link[href*="enterprise-card-readability"]').count();
-    expect(href).toBeGreaterThan(0);
+    const styleLinks = await page.locator('link[rel="stylesheet"]').count();
+    expect(styleLinks).toBeLessThanOrEqual(3);
+    const bundle = await page.locator('link[href*="homepage.bundle"]').count();
+    expect(bundle).toBeGreaterThan(0);
   });
 
   test('cookie consent blocks third-party scripts until accept', async ({ page }) => {

@@ -25,8 +25,8 @@ assert(
 );
 assert(index.includes('cookie-consent'), 'Cookie consent UI is missing.');
 assert(
-  index.includes('enterprise-card-readability.css'),
-  'Homepage should load enterprise-card-readability.css for contrast.'
+  index.includes('homepage.bundle.css') || index.includes('enterprise-card-readability.css'),
+  'Homepage should load homepage.bundle.css (or enterprise-card-readability.css) for contrast.'
 );
 assert(index.includes('/kvkk.html'), 'KVKK policy link is missing.');
 assert(index.includes('/sitemap.xml'), 'Sitemap link is missing.');

@@ -97,7 +97,7 @@ export const newLocaleOverrides = {
       consentHtml:
         'Accetto email marketing. <a href="/gizlilik.html" target="_blank" rel="noopener">Privacy</a>.',
       cookieHtml:
-        'Cookie analitici solo per migliorare il prodotto; non vendiamo dati. <a href="/cerez-politikasi.html">Cookie policy</a>'
+        'Analitica e registrazione sessione opzionale (es. Microsoft Clarity), GA4 e Cloudflare solo dopo <strong>Accetta</strong>; non vendiamo dati. <a href="/cerez-politikasi.html">Cookie policy</a>'
     },
     categories: {
       araba: { name: 'Automobile', desc: 'TCO, prestito e carburante — un punteggio.' },
@@ -217,7 +217,7 @@ export const newLocaleOverrides = {
       consentHtml:
         'J\'accepte les e-mails marketing. <a href="/gizlilik.html" target="_blank" rel="noopener">Confidentialité</a>.',
       cookieHtml:
-        'Cookies analytiques uniquement pour améliorer le produit ; nous ne vendons pas de données. <a href="/cerez-politikasi.html">Politique cookies</a>'
+        'Analytique et enregistrement de session optionnel (ex. Microsoft Clarity), GA4 et Cloudflare uniquement après <strong>Accepter</strong> ; pas de vente de données. <a href="/cerez-politikasi.html">Politique cookies</a>'
     },
     categories: {
       araba: { name: 'Automobile', desc: 'TCO, prêt et carburant — un seul score.' },
@@ -337,7 +337,7 @@ export const newLocaleOverrides = {
       consentHtml:
         'Acepto correos de marketing. <a href="/gizlilik.html" target="_blank" rel="noopener">Privacidad</a>.',
       cookieHtml:
-        'Cookies analíticas solo para mejorar el producto; no vendemos datos. <a href="/cerez-politikasi.html">Política de cookies</a>'
+        'Analítica y grabación de sesión opcional (p. ej. Microsoft Clarity), GA4 y Cloudflare solo tras <strong>Aceptar</strong>; no vendemos datos. <a href="/cerez-politikasi.html">Política de cookies</a>'
     },
     categories: {
       araba: { name: 'Automóvil', desc: 'TCO, préstamo y combustible — un solo score.' },
@@ -457,7 +457,7 @@ export const newLocaleOverrides = {
       consentHtml:
         'マーケティングメールに同意します。<a href="/gizlilik.html" target="_blank" rel="noopener">プライバシー</a>。',
       cookieHtml:
-        '分析Cookieは製品改善のみに使用。データ販売はしません。<a href="/cerez-politikasi.html">Cookieポリシー</a>'
+        '分析および任意のセッション記録（Microsoft Clarity等）、GA4・Cloudflareは<strong>同意</strong>後のみ。データ販売なし。<a href="/cerez-politikasi.html">Cookieポリシー</a>'
     },
     categories: {
       araba: { name: '自動車', desc: 'TCO、ローン、燃料 — 一つのスコア。' },
@@ -577,7 +577,7 @@ export const newLocaleOverrides = {
       consentHtml:
         '我同意接收营销邮件。<a href="/gizlilik.html" target="_blank" rel="noopener">隐私政策</a>。',
       cookieHtml:
-        '分析 Cookie 仅用于改进产品；不出售数据。<a href="/cerez-politikasi.html">Cookie 政策</a>'
+        '分析与可选会话记录（如 Microsoft Clarity）、GA4 和 Cloudflare 仅在<strong>接受</strong>后加载；不出售数据。<a href="/cerez-politikasi.html">Cookie 政策</a>'
     },
     categories: {
       araba: { name: '汽车', desc: 'TCO、贷款和燃油 — 一个分数。' },

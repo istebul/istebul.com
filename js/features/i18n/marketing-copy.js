@@ -122,7 +122,7 @@ const baseMarketingCopy = {
       consentHtml:
         'Pazarlama e-postası almayı kabul ediyorum. <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik politikası</a>.',
       cookieHtml:
-        'Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz. <a href="/cerez-politikasi.html">Çerez politikası</a>'
+        'Analitik ve isteğe bağlı oturum kaydı (ör. Microsoft Clarity), GA4 ve Cloudflare ölçümü yalnızca <strong>Kabul Et</strong> sonrası çalışır; veri satışı yapılmaz. <a href="/cerez-politikasi.html">Çerez politikası</a>'
     },
     categories: {
       araba: {
@@ -264,7 +264,7 @@ const baseMarketingCopy = {
       consentHtml:
         'I agree to receive marketing emails. <a href="/gizlilik.html" target="_blank" rel="noopener">Privacy policy</a>.',
       cookieHtml:
-        'We use analytics cookies only to improve the product; we do not sell data. <a href="/cerez-politikasi.html">Cookie policy</a>'
+        'Analytics and optional session replay (e.g. Microsoft Clarity), GA4, and Cloudflare measurement load only after <strong>Accept</strong>; we do not sell data. <a href="/cerez-politikasi.html">Cookie policy</a>'
     },
     categories: {
       araba: {
@@ -404,7 +404,7 @@ const baseMarketingCopy = {
       consentHtml:
         'Ich stimme Marketing-E-Mails zu. <a href="/gizlilik.html" target="_blank" rel="noopener">Datenschutzrichtlinie</a>.',
       cookieHtml:
-        'Analyse-Cookies dienen nur der Produktverbesserung; Daten werden nicht verkauft. <a href="/cerez-politikasi.html">Cookie-Richtlinie</a>'
+        'Analyse und optionale Sitzungsaufzeichnung (z. B. Microsoft Clarity), GA4 und Cloudflare nur nach <strong>Akzeptieren</strong>; kein Datenverkauf. <a href="/cerez-politikasi.html">Cookie-Richtlinie</a>'
     },
     categories: {
       araba: { name: 'Automobil', desc: 'TCO, Kredit und Kraftstoff — ein Score.' },

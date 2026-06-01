@@ -28,6 +28,11 @@ const { injectRouteBootstrap, writeRouteBootstrapFile } = require('./lib/route-b
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
 const { injectPartnerHtmlFiles } = require('./lib/inject-partner-prerender.cjs');
 const { buildHashedCssAssets } = require('./lib/css-build.cjs');
+const runCssBundles = spawnSync(process.execPath, [path.join(root, 'scripts/generate-css-bundles.cjs')], {
+  cwd: root,
+  stdio: 'inherit'
+});
+if (runCssBundles.status !== 0) process.exit(runCssBundles.status || 1);
 const runOpsEmbed = spawnSync(process.execPath, [path.join(root, 'scripts/generate-admin-ops-embed.cjs')], {
   cwd: root,
   stdio: 'inherit'

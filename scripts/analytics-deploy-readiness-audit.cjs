@@ -32,13 +32,13 @@ for (const rel of mustExist) {
 }
 
 const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-if (!indexHtml.includes('enterprise-card-readability.css')) {
-  fail('index.html must link enterprise-card-readability.css');
+if (!indexHtml.includes('homepage.bundle.css')) {
+  fail('index.html must link css/bundles/homepage.bundle.css');
 }
 
 const kaskoHtml = fs.readFileSync(path.join(root, 'kasko/index.html'), 'utf8');
-if (!kaskoHtml.includes('enterprise-card-readability.css')) {
-  fail('kasko/index.html must link enterprise-card-readability.css');
+if (!kaskoHtml.includes('vertical-shared.bundle.css') && !kaskoHtml.includes('enterprise-card-readability.css')) {
+  fail('kasko/index.html must link vertical-shared.bundle.css or enterprise-card-readability.css');
 }
 
 const ingest = fs.readFileSync(
@@ -73,6 +73,9 @@ const dashboard = fs.readFileSync(
 );
 if (!dashboard.includes('buildPagePathRows')) fail('platform dashboard missing buildPagePathRows');
 if (!dashboard.includes('buildPagePathDetail')) fail('platform dashboard missing buildPagePathDetail');
+
+const homepageBundle = path.join(root, 'css/bundles/homepage.bundle.css');
+if (!fs.existsSync(homepageBundle)) fail('css/bundles/homepage.bundle.css missing — run generate:css-bundles');
 
 const thirdParty = fs.readFileSync(path.join(root, 'js/core/third-party-analytics.js'), 'utf8');
 if (!thirdParty.includes('loadClarity')) fail('third-party-analytics missing loadClarity');

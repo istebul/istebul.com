@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Çerez Politikası | isteBul</title>
-  <meta name="description" content="isteBul çerez ve benzeri teknolojiler politikası.">
+  <meta name="description" content="isteBul çerez, analitik ve oturum kaydı politikası.">
   <link rel="stylesheet" href="/css/auto.css?v=3">
 </head>
 <body>
@@ -20,13 +20,14 @@
   <main class="section legal-page">
     <p class="kicker">Çerezler</p>
     <h1>Çerez ve analitik tercihleri</h1>
-    <p class="lead">isteBul, siteyi çalıştırmak için gerekli teknolojiler ile — yalnızca onayınızla — ürün analitiği için isteğe bağlı çerezleri kullanır.</p>
+    <p class="lead">isteBul, siteyi çalıştırmak için gerekli teknolojiler ile — yalnızca onayınızla — ürün analitiği ve isteğe bağlı oturum kaydı (session replay) için çerezleri kullanır.</p>
 
     <section class="auto-methodology premium-methodology">
       <div><h3>Çerez kategorileri</h3></div>
       <ul>
         <li><strong>Zorunlu:</strong> Oturum, güvenlik (Cloudflare Turnstile), temel site işlevi. Bunlar devre dışı bırakılamaz.</li>
-        <li><strong>Analitik (isteğe bağlı):</strong> Birinci taraf analitik (Plausible) ve ürün telemetrisi — yalnızca banner’da <em>Kabul Et</em> seçerseniz.</li>
+        <li><strong>Analitik (isteğe bağlı):</strong> Birinci taraf ürün telemetrisi (analytics-ingest), Plausible, Google Analytics 4 (GA4) ve Cloudflare Web Analytics — yalnızca banner’da <em>Kabul Et</em> seçerseniz.</li>
+        <li><strong>Oturum kaydı (isteğe bağlı):</strong> Microsoft Clarity — tıklama/scroll gibi etkileşimleri anonimleştirilmiş oturum özetleri olarak kaydedebilir; yalnızca analitik onayı sonrası yüklenir. Hassas form alanları maskeleme ile sınırlandırılır.</li>
         <li><strong>Hata izleme (isteğe bağlı):</strong> Sentry — yalnızca analitik onayı sonrası etkinleşir.</li>
       </ul>
     </section>
@@ -36,13 +37,13 @@
       <ul>
         <li>İlk ziyarette gösterilen banner ile kabul veya red.</li>
         <li>Tercihi değiştirmek için tarayıcı yerel depolamasından <code>istebul_cookie_consent</code> anahtarını silebilir veya siteyi gizli pencerede açabilirsiniz.</li>
-        <li>Red durumunda pazarlama amaçlı veri satışı yapılmaz; birinci taraf analitik gönderilmez.</li>
+        <li>Red durumunda pazarlama amaçlı veri satışı yapılmaz; harici analitik ve oturum kaydı script’leri yüklenmez.</li>
       </ul>
     </section>
 
     <section class="auto-methodology premium-methodology">
       <div><h3>Üçüncü taraflar</h3></div>
-      <p>Ödeme (iyzico, PayTR), kimlik doğrulama ve veritabanı (Supabase) hizmetleri kendi çerezlerini kullanabilir. Ayrıntılar için <a href="/gizlilik.html">Gizlilik Politikası</a> ve teknik alt işleyen listesi (data room).</p>
+      <p>Onay sonrası etkinleşebilen hizmetler: Plausible, Google (GA4), Cloudflare (ölçüm), Microsoft (Clarity). Ödeme (iyzico, PayTR), kimlik doğrulama ve veritabanı (Supabase) hizmetleri kendi çerezlerini kullanabilir. Ayrıntılar için <a href="/gizlilik.html">Gizlilik Politikası</a> ve teknik alt işleyen listesi (data room).</p>
     </section>
 
     <p class="lead">Bu metin bilgilendirme amaçlıdır; güncel hukuki metinler için <a href="/kvkk.html">KVKK Aydınlatma</a> sayfasına bakınız.</p>
