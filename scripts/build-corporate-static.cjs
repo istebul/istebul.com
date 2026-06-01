@@ -30,7 +30,7 @@ writePage('kvkk.html', renderKvkkPage(site, controller, retention));
 writePage('metodoloji/index.html', renderMethodologyPage(site, pages.methodology));
 
 /** Live decision verticals ship their own index.html — do not overwrite with pilot stubs. */
-const LIVE_VERTICAL_SLUGS = new Set(['auto', 'konut', 'tatil', 'finans', 'sigorta', 'kasko']);
+const LIVE_VERTICAL_SLUGS = new Set(['auto', 'konut', 'tatil', 'finans', 'sigorta', 'kasko', 'metodoloji']);
 
 Object.values(pages.verticals).forEach((vertical) => {
   if (LIVE_VERTICAL_SLUGS.has(vertical.slug)) {
