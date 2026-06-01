@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.18] — 2026-06-01
+
+### Fixed
+- Production build: copy `static-cookie-consent.js`, bundle kasko vertical app, rewrite hashed CSS after social footer inject (CI `dist-asset-integrity-audit`)
+- Bundle budget: exclude sigorta/kasko vertical runtime from main SPA budget (same as finans)
+
 ## [2.2.17] — 2026-06-01
 
 ### Added

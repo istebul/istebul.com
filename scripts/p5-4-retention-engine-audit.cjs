@@ -81,8 +81,14 @@ if (!auto.includes('notifyDecisionSaved')) {
 }
 
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-if (!index.includes('growth-retention.css')) {
-  fail('index.html must link growth-retention.css');
+const homepageBundlePath = path.join(root, 'css/bundles/homepage.bundle.css');
+const homepageBundle = fs.existsSync(homepageBundlePath)
+  ? fs.readFileSync(homepageBundlePath, 'utf8')
+  : '';
+const hasRetentionStyles =
+  index.includes('growth-retention.css') || homepageBundle.includes('growth-retention');
+if (!hasRetentionStyles) {
+  fail('index must include growth-retention styles (direct link or homepage bundle)');
 }
 
 if (failed) process.exit(1);

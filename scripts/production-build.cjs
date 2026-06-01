@@ -307,6 +307,18 @@ esbuild.buildSync({
   outfile: siteSocialInitOut
 });
 
+const staticCookieConsentSrc = path.join(root, 'js/runtime/static-cookie-consent.js');
+if (fs.existsSync(staticCookieConsentSrc)) {
+  writeFile(
+    'js/runtime/static-cookie-consent.js',
+    esbuild.transformSync(fs.readFileSync(staticCookieConsentSrc, 'utf8'), {
+      loader: 'js',
+      minify: true,
+      target: 'es2020'
+    }).code
+  );
+}
+
 const routeBootstrapOut = path.join(dist, 'js/runtime/route-bootstrap-head.js');
 writeRouteBootstrapFile(routeBootstrapOut);
 
@@ -461,6 +473,13 @@ bundleVerticalPage(
   /\/js\/sigorta\/sigorta-app\.js/g
 );
 
+bundleVerticalPage(
+  'js/kasko/kasko-app.js',
+  'kasko/index.html',
+  'kasko-runtime',
+  /\/js\/kasko\/kasko-app\.js/g
+);
+
 if (fs.existsSync(path.join(root, 'js/sigorta'))) {
   copyDir('js/sigorta');
   const bundledSigortaApp = path.join(dist, 'js/sigorta/sigorta-app.js');
@@ -595,6 +614,15 @@ walk(dist, (file) => {
 if (socialInjectCount > 0) {
   console.log(`[social] footer hooks added to ${socialInjectCount} HTML file(s)`);
 }
+
+/** Social/cookie injectors may add unhashed /css/* refs — rewrite after all HTML mutations */
+walk(dist, (file) => {
+  if (!file.endsWith('.html')) return;
+  const html = fs.readFileSync(file, 'utf8');
+  const next = rewriteAssetRefs(html);
+  if (next === html) return;
+  fs.writeFileSync(file, minifyHtml(next));
+});
 
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');
