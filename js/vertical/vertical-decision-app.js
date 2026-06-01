@@ -1,6 +1,7 @@
 import { formatTry } from '../tatil/tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountFinansmanResultsV2 } from '../features/finansman/finansman-results-v2.js';
+import { mountSigortaResultsV2 } from '../features/sigorta/sigorta-results-v2.js';
 import { wt } from './wizard-i18n.js';
 
 /**
@@ -308,6 +309,15 @@ export function initDecisionFlow(config) {
       void mountFinansmanResultsV2(section, {
         state,
         results: state.results,
+        track: (eventName, meta) => config.tracker.track(eventName, meta)
+      });
+    }
+
+    if (config.vertical === 'sigorta') {
+      void mountSigortaResultsV2(section, {
+        state,
+        results: state.results,
+        selectedOption: state.selected_option,
         track: (eventName, meta) => config.tracker.track(eventName, meta)
       });
     }

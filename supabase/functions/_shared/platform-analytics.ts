@@ -71,6 +71,11 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "auto_whatsapp_lead_intent",
   "auto_finance_click",
   "auto_insurance_click",
+  "insurance_page_view",
+  "insurance_analysis_started",
+  "insurance_results_view",
+  "insurance_interest",
+  "insurance_pdf_download",
   "auto_vehicle_offer_click",
   "auto_premium_report_click",
   "auto_premium_paywall_view",
@@ -192,6 +197,7 @@ export function eventCategoryFor(name: string, fallback?: string) {
   if (fallback && ANALYTICS_CATEGORIES.has(fallback)) return fallback;
   if (name.startsWith("auto_")) return "auto";
   if (name.startsWith("finance_")) return "finance";
+  if (name.startsWith("insurance_")) return "decision";
   if (name.startsWith("auth_")) return "auth";
   if (name.startsWith("partner_")) return "partner";
   if (

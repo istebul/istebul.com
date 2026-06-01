@@ -1,0 +1,298 @@
+/**
+ * Sigorta Decision Results V2 — Auto/Finansman V2 premium dil.
+ */
+import { escapeHtml } from '../../core/security.js';
+import { SIGORTA_INTEREST_CTAS } from '../../sigorta/sigorta-config.js';
+import {
+  buildEngineResult,
+  optionLabel,
+  resolveScoreLabel
+} from './sigorta-engine.js';
+import { buildSigortaAiSummary } from './sigorta-ai-summary.js';
+import { buildSigortaPdfPayload } from './sigorta-pdf.js';
+import { riskLevelToTone, safeTrackEvent } from '../results/results-engine.js';
+import { gatePdfDownload } from '../billing/pdf-access-v1.js';
+import { getResultsPlanContext } from '../billing/paywall-v1.js';
+import {
+  trackSigortaInterest,
+  trackSigortaPdfDownload,
+  trackSigortaResultsView,
+  saveSigortaLead
+} from '../../sigorta/sigorta-intake.js';
+
+function formatTryAmount(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    maximumFractionDigits: 0
+  }).format(n);
+}
+
+export function buildSigortaResultsV2Payload({ state = {}, results = [] }) {
+  const engine = buildEngineResult(state);
+  const ai = buildSigortaAiSummary(engine, state);
+  const { planTier } = getResultsPlanContext();
+  const primary = results[0];
+  const premiumBand = primary?.metrics?.premiumBand;
+
+  const pdfReportData = buildSigortaPdfPayload({ state, planTier, engine });
+
+  return {
+    decisionScore: engine.decisionScore,
+    protectionScore: engine.protectionScore,
+    coverageScore: engine.coverageScore,
+    costEfficiencyScore: engine.costEfficiencyScore,
+    scoreLabel: engine.scoreLabel,
+    confidenceScore: engine.confidenceScore,
+    overallRisk: engine.overallRisk,
+    riskTone: riskLevelToTone(engine.overallRisk),
+    riskAnalysis: engine.riskAnalysis,
+    strengths: engine.strengths,
+    weaknesses: engine.weaknesses,
+    alternatives: engine.alternatives,
+    nextSteps: engine.nextSteps,
+    executiveSummary: ai.summary,
+    aiBullets: ai.bullets,
+    pdfReportData,
+    planTier,
+    premiumLabel: premiumBand ? formatTryAmount(premiumBand) : '—',
+    engine,
+    ai
+  };
+}
+
+function renderSigortaResultsV2Html(model) {
+  const esc = escapeHtml;
+
+  return `
+    <section class="sigorta-v2-panel" aria-label="Sigorta Decision Results V2">
+      <header class="sigorta-v2-hero">
+        <p class="sigorta-v2-kicker">AI destekli sigorta karar analizi</p>
+        <h2 class="sigorta-v2-title">Sigorta karar raporu</h2>
+        <p class="sigorta-v2-band">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</p>
+      </header>
+
+      <div class="sigorta-v2-kpis">
+        <article class="sigorta-v2-kpi sigorta-v2-kpi--decision">
+          <span>Karar skoru</span>
+          <strong>${esc(String(model.decisionScore))}<small>/100</small></strong>
+          <div class="sigorta-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.decisionScore))}%"></span></div>
+        </article>
+        <article class="sigorta-v2-kpi">
+          <span>Koruma skoru</span>
+          <strong>${esc(String(model.protectionScore))}<small>/100</small></strong>
+          <div class="sigorta-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.protectionScore))}%"></span></div>
+        </article>
+        <article class="sigorta-v2-kpi">
+          <span>Teminat yeterliliği</span>
+          <strong>${esc(String(model.coverageScore))}<small>/100</small></strong>
+          <div class="sigorta-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.coverageScore))}%"></span></div>
+        </article>
+        <article class="sigorta-v2-kpi">
+          <span>Maliyet verimliliği</span>
+          <strong>${esc(String(model.costEfficiencyScore))}<small>/100</small></strong>
+          <div class="sigorta-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.costEfficiencyScore))}%"></span></div>
+        </article>
+        <article class="sigorta-v2-kpi sigorta-v2-kpi--risk">
+          <span>Genel risk</span>
+          <strong><span class="sigorta-v2-risk sigorta-v2-risk--${esc(model.riskTone)}">${esc(model.overallRisk)}</span></strong>
+          <small>Tahmini prim: ${esc(model.premiumLabel)}</small>
+        </article>
+      </div>
+
+      <section class="sigorta-v2-risks" aria-label="Risk analizi">
+        <h3>Risk analizi</h3>
+        <div class="sigorta-v2-risk-grid">
+          ${model.riskAnalysis
+            .map(
+              (r) => `
+            <article class="sigorta-v2-risk-card">
+              <div class="sigorta-v2-risk-card-head">
+                <h4>${esc(r.title)}</h4>
+                <span class="sigorta-v2-risk sigorta-v2-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level)}</span>
+              </div>
+              <p>${esc(r.description)}</p>
+              <p class="sigorta-v2-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>
+            </article>`
+            )
+            .join('')}
+        </div>
+      </section>
+
+      <div class="sigorta-v2-grid">
+        <article class="sigorta-v2-block sigorta-v2-block--pros">
+          <h3>Güçlü taraflar</h3>
+          <ul>${model.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
+        </article>
+        <article class="sigorta-v2-block sigorta-v2-block--cons">
+          <h3>Dikkat edilmesi gerekenler</h3>
+          <ul>${model.weaknesses.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
+        </article>
+      </div>
+
+      <section class="sigorta-v2-alts" aria-label="Alternatif senaryolar">
+        <h3>Alternatif senaryolar</h3>
+        <div class="sigorta-v2-alt-grid">
+          ${model.alternatives
+            .map(
+              (a) => `
+            <article class="sigorta-v2-alt-card">
+              <h4>${esc(a.title)}</h4>
+              <p>${esc(a.description)}</p>
+              ${a.meta ? `<span class="sigorta-v2-alt-meta">${esc(a.meta)}</span>` : ''}
+            </article>`
+            )
+            .join('')}
+        </div>
+      </section>
+
+      <article class="sigorta-v2-block sigorta-v2-block--exec" data-sigorta-v2-insight-root>
+        <h3>AI executive summary</h3>
+        <div class="sigorta-v2-exec-body">
+          ${(model.ai?.paragraphs || [model.executiveSummary])
+            .filter(Boolean)
+            .map((p) => `<p>${esc(p)}</p>`)
+            .join('')}
+        </div>
+        <ul class="sigorta-v2-exec-bullets">
+          ${(model.aiBullets || []).map((b) => `<li>${esc(b)}</li>`).join('')}
+        </ul>
+        <p class="sigorta-v2-exec-hint">Kaynak: Deterministik karar motoru — skorlar yapay zekâ tarafından değiştirilmez.</p>
+      </article>
+
+      <article class="sigorta-v2-block sigorta-v2-block--next">
+        <h3>Sonraki adımlar</h3>
+        <ol>${model.nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
+      </article>
+
+      <section class="sigorta-v2-interests" aria-label="Sigorta ilgi talepleri">
+        <h3>Uzman / teklif talebi</h3>
+        <div class="sigorta-v2-interest-grid">
+          ${SIGORTA_INTEREST_CTAS.map(
+            (cta) => `
+          <button type="button" class="btn btn-outline sigorta-v2-interest-btn" data-sigorta-interest="${esc(cta.interestType)}">
+            <strong>${esc(cta.label)}</strong>
+            <span>${esc(cta.description)}</span>
+          </button>`
+          ).join('')}
+        </div>
+        <div class="sigorta-v2-lead-form" hidden data-sigorta-lead-form>
+          <div class="form-row">
+            <input type="text" data-sigorta-lead-name placeholder="Ad soyad" autocomplete="name">
+            <input type="tel" data-sigorta-lead-phone placeholder="Telefon" autocomplete="tel">
+            <input type="email" data-sigorta-lead-email placeholder="E-posta" autocomplete="email">
+          </div>
+          <button type="button" class="btn btn-primary" data-sigorta-lead-submit>Talebi gönder</button>
+          <p class="sigorta-v2-lead-status" data-sigorta-lead-status aria-live="polite"></p>
+        </div>
+      </section>
+
+      <div class="sigorta-v2-actions">
+        <button type="button" class="btn secondary sigorta-v2-pdf" data-sigorta-v2-pdf>
+          PDF indir
+        </button>
+        <p class="sigorta-v2-pdf-hint" data-sigorta-v2-pdf-hint hidden></p>
+      </div>
+    </section>`;
+}
+
+/**
+ * @param {HTMLElement} mountNode
+ * @param {object} payload
+ */
+export async function mountSigortaResultsV2(mountNode, payload = {}) {
+  if (!mountNode) return null;
+
+  const state = payload.state || {};
+  const results = payload.results || [];
+  const track = payload.track;
+
+  mountNode.querySelector('.sigorta-v2-root')?.remove();
+
+  const built = buildSigortaResultsV2Payload({ state, results });
+  const model = { ...built };
+
+  const root = document.createElement('div');
+  root.className = 'sigorta-v2-root';
+  root.innerHTML = renderSigortaResultsV2Html(model);
+  mountNode.prepend(root);
+
+  safeTrackEvent(track, 'decision_result_v2_view', {
+    category: 'sigorta',
+    score: model.decisionScore,
+    protection: model.protectionScore,
+    coverage: model.coverageScore,
+    cost_efficiency: model.costEfficiencyScore,
+    risk: model.overallRisk
+  });
+
+  trackSigortaResultsView({
+    decision_score: model.decisionScore,
+    overall_risk: model.overallRisk,
+    insurance_type: state.insurance_type
+  });
+
+  root.querySelector('[data-sigorta-v2-pdf]')?.addEventListener('click', () => {
+    safeTrackEvent(track, 'decision_report_print_click', {
+      category: 'sigorta',
+      score: model.decisionScore
+    });
+    trackSigortaPdfDownload({ decision_score: model.decisionScore });
+    const hint = root.querySelector('[data-sigorta-v2-pdf-hint]');
+    if (hint) {
+      hint.hidden = false;
+      hint.textContent =
+        'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
+    }
+    gatePdfDownload(model.pdfReportData);
+  });
+
+  let pendingInterest = 'insurance_quote';
+  root.querySelectorAll('[data-sigorta-interest]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      pendingInterest = btn.dataset.sigortaInterest || 'insurance_quote';
+      trackSigortaInterest(pendingInterest, { decision_score: model.decisionScore });
+      const form = root.querySelector('[data-sigorta-lead-form]');
+      if (form) form.hidden = false;
+    });
+  });
+
+  root.querySelector('[data-sigorta-lead-submit]')?.addEventListener('click', async () => {
+    const statusEl = root.querySelector('[data-sigorta-lead-status]');
+    const leadPayload = {
+      full_name: root.querySelector('[data-sigorta-lead-name]')?.value?.trim() || '',
+      phone: root.querySelector('[data-sigorta-lead-phone]')?.value?.trim() || '',
+      email: root.querySelector('[data-sigorta-lead-email]')?.value?.trim() || '',
+      interest_type: pendingInterest,
+      insurance_type: state.insurance_type,
+      decision_score: model.decisionScore,
+      protection_score: model.protectionScore,
+      coverage_score: model.coverageScore,
+      cost_efficiency_score: model.costEfficiencyScore,
+      overall_risk: model.overallRisk,
+      ai_summary: model.executiveSummary,
+      profile: { ...state },
+      selected_option: payload.selectedOption || ''
+    };
+    const res = await saveSigortaLead(leadPayload);
+    if (statusEl) {
+      statusEl.textContent = res.ok
+        ? 'Talebiniz alındı. Sigorta ekibimiz profilinize uygun bilgilendirme yapabilir.'
+        : 'Şu an kaydedilemedi; lütfen daha sonra tekrar deneyin.';
+    }
+  });
+
+  return model;
+}
+
+export {
+  buildEngineResult,
+  computeOverallDecisionScore,
+  buildRiskAnalysis,
+  resolveScoreLabel
+} from './sigorta-engine.js';
+
+export { buildSigortaAiSummary } from './sigorta-ai-summary.js';
+export { buildSigortaPdfPayload } from './sigorta-pdf.js';

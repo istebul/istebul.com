@@ -31,6 +31,7 @@ export const ADMIN_PAGE_IDS = [
   'housing-partners',
   'housing-scoring',
   'finance-leads',
+  'sigorta-leads',
   'finance-partners',
   'finance-scoring',
   'auto-analytics',

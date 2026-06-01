@@ -39,8 +39,9 @@ export const HOME_DECISION_CATEGORIES = [
   },
   {
     id: 'sigorta',
-    status: 'coming_soon',
+    status: 'active',
     href: '/sigorta/',
+    sampleScore: 86,
     settingKey: 'home_category_sigorta_enabled'
   },
   {

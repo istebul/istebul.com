@@ -11,7 +11,8 @@ const CATEGORY_LABELS = {
   auto: 'Araç',
   konut: 'Konut',
   tatil: 'Tatil',
-  finansman: 'Finansman'
+  finansman: 'Finansman',
+  sigorta: 'Sigorta'
 };
 
 const DISCLAIMER =
@@ -58,7 +59,8 @@ export function createReportFilename(category, createdAt) {
     auto: 'arac',
     konut: 'konut',
     tatil: 'tatil',
-    finansman: 'finansman'
+    finansman: 'finansman',
+    sigorta: 'sigorta'
   };
   const slug = slugMap[String(category || '').toLowerCase()] || 'karar';
   const date = createdAt ? new Date(createdAt) : new Date();
@@ -129,6 +131,18 @@ function buildCostRows(data) {
       {
         label: 'Gelire göre aylık yük',
         value: cost.incomeLoadPct != null ? `%${cost.incomeLoadPct}` : '—'
+      }
+    ];
+  }
+
+  if (category === 'sigorta') {
+    return [
+      { label: 'Koruma skoru', value: formatReportScore(cost.protectionScore) },
+      { label: 'Teminat yeterliliği', value: formatReportScore(cost.coverageScore) },
+      { label: 'Maliyet verimliliği', value: formatReportScore(cost.costEfficiencyScore) },
+      {
+        label: 'Tahmini yıllık prim bandı',
+        value: cost.yearlyPremium ? sanitizeReportText(cost.yearlyPremium) : '—'
       }
     ];
   }

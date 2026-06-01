@@ -1,87 +1,110 @@
 <!doctype html>
-<html lang="tr">
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Sigorta Karar Analizi | Yakında | isteBul</title>
-  <meta name="description" content="Sigorta analiz modülü yakında. Araç sigortası karşılaştırma rehberi ve bilgilendirme listesi." />
-  <meta name="robots" content="index, follow, max-image-preview:large" />
-  <link rel="canonical" href="https://www.istebul.com/sigorta/" />
-  <link rel="stylesheet" href="/css/corporate-pages.css?v=1" />
-  <link rel="stylesheet" href="/css/corporate-shell.css?v=1" />
-  <style>
-    .coming-soon-card{max-width:640px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px}
-    .coming-soon-card input,.coming-soon-card button{width:100%;min-height:44px;border-radius:10px;border:1px solid #cbd5e1;padding:10px;margin:8px 0 12px}
-    .coming-soon-card button{background:#2563eb;color:#fff;border:0;cursor:pointer;font-weight:600}
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sigorta Karar Analizi | isteBul — Koruma ve teminat analizi</title>
+  <meta name="description" content="Sigorta türü, risk algısı ve bütçenize göre koruma skoru, teminat yeterliliği ve maliyet verimliliği analizi. Bilgilendirme amaçlıdır.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://www.istebul.com/sigorta/">
+  <meta property="og:title" content="Sigorta Karar Analizi | isteBul">
+  <meta property="og:description" content="AI destekli sigorta karar motoru: koruma, teminat ve maliyet dengesi.">
+  <meta property="og:url" content="https://www.istebul.com/sigorta/">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.svg">
+  <link rel="stylesheet" href="/css/tatil.css">
+  <link rel="stylesheet" href="/css/vertical-themes.css">
+  <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
+  <link rel="stylesheet" href="/css/sigorta-results-v2.css?v=1">
+  <link rel="stylesheet" href="/css/enterprise-card-readability.css?v=1">
+  <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=7">
+  <link rel="stylesheet" href="/css/istebul-premium-final-v7.css?v=7">
+  <link rel="stylesheet" href="/css/rtl.css">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/sigorta/sigorta-app.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Sigorta analizi poliçe taahhüdü mü?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Skor ve prim bandı bilgilendirme amaçlıdır; bağlayıcı teklif sigorta şirketine aittir."}},{"@type":"Question","name":"Hangi sigorta türleri desteklenir?","acceptedAnswer":{"@type":"Answer","text":"Araç, konut, sağlık ve seyahat sigortası profilleri modellenir."}}]}</script>
 </head>
-<body>
-  <header class="auto-header corporate-header">
+<body class="vacation-page sigorta-page">
+  <header class="vacation-header">
     <a class="logo" href="/">isteBul</a>
-    <nav class="corporate-nav" aria-label="Ana navigasyon">
-      <a href="/">Ana sayfa</a>
-      <a href="/auto/">Auto</a>
-      <a href="/sigorta/" class="is-active" aria-current="page">Sigorta</a>
-      <a href="/yardim.html">Yardım</a>
-      <a href="/iletisim.html">İletişim</a>
+    <button class="vacation-nav-toggle" type="button" aria-controls="vacation-nav" aria-expanded="false">Menü</button>
+    <nav id="vacation-nav" aria-label="Ana navigasyon">
+      <a href="/" data-i18n="nav.home">Ana Sayfa</a>
+      <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
+      <a href="/konut/" data-i18n="vertical.konut">Konut</a>
+      <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+      <a href="/sigorta/" class="is-active">Sigorta</a>
+      <a href="/metodoloji/" data-i18n="nav.methodology">Metodoloji</a>
+      <a href="/iletisim.html" data-i18n="nav.contact">İletişim</a>
     </nav>
   </header>
-  <main class="section legal-page corporate-page">
-    <p class="kicker">Sigorta · Yakında</p>
-    <h1>Sigorta karar analizi yakında</h1>
-    <p class="lead">Bu modül geliştirme aşamasında. Şimdilik araç sigortası rehberimizi okuyabilir veya bilgilendirme listesine kaydolabilirsiniz.</p>
-    <p><a href="/rehber/arac-sigortasi-karsilastirma/">Araç sigortası karşılaştırma rehberi →</a> · <a href="/auto/">Canlı Auto analizi →</a></p>
-    <div class="coming-soon-card">
-      <h2>Bilgilendirme listesi</h2>
-      <p>Modül açıldığında e-posta ile haberdar olun.</p>
-      <form id="interest-form">
-        <label for="name">Ad Soyad</label>
-        <input id="name" name="name" required autocomplete="name" />
-        <label for="email">E-posta</label>
-        <input id="email" name="email" type="email" required autocomplete="email" />
-        <button type="submit">Bilgilendirme al</button>
-      </form>
-      <p id="status" aria-live="polite"></p>
-    </div>
-    <p class="corporate-disclaimer">Sigorta teklifleri bilgilendirme amaçlıdır; bağlayıcı poliçe koşulları sigorta şirketine aittir.</p>
-  </main>
-  <footer class="corporate-footer">
-    <div><strong>isteBul</strong><p>Karar zekâsı platformu</p></div>
-    <nav>
-      <a href="/yardim.html">Yardım</a>
-      <a href="/gizlilik.html">Gizlilik</a>
-      <a href="/kvkk.html">KVKK</a>
+
+  <div class="vacation-container vacation-container--breadcrumb">
+    <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana Sayfa</a> › <span>Sigorta karar analizi</span>
     </nav>
+  </div>
+
+  <section class="vacation-hero" aria-labelledby="sigorta-hero-title">
+    <div class="vacation-hero-overlay" aria-hidden="true"></div>
+    <div class="vacation-container vacation-hero-inner">
+      <div class="vacation-hero-copy">
+        <span class="vacation-hero-badge">🛡️ Sigorta Decision Intelligence</span>
+        <h1 id="sigorta-hero-title">Sigorta ihtiyacınızı veriye dayalı değerlendirin</h1>
+        <p class="vacation-hero-lead">Koruma skoru, teminat yeterliliği ve maliyet verimliliğini birlikte analiz ederek hangi koruma bandının size uygun olduğunu görün.</p>
+        <div class="vacation-hero-actions">
+          <button type="button" class="btn btn-primary" id="vacation-hero-cta">Sigorta analizine başla</button>
+          <button type="button" class="btn btn-ghost" id="vacation-hero-cta-secondary">Akışa git</button>
+        </div>
+        <p class="vacation-disclaimer" style="margin-top:0.75rem;font-size:0.85rem;opacity:0.9">Bilgilendirme amaçlıdır · finansal tavsiye değildir</p>
+      </div>
+      <aside class="vacation-hero-dashboard" aria-label="Örnek sigorta skor paneli">
+        <article class="vh-card vh-card-score">
+          <span>Karar skoru</span>
+          <strong>78/100</strong>
+          <small>Dengeli koruma</small>
+        </article>
+        <article class="vh-card">
+          <span>Koruma</span>
+          <strong>82</strong>
+          <small>Risk algısı uyumu</small>
+        </article>
+        <article class="vh-card">
+          <span>Teminat</span>
+          <strong>74</strong>
+          <small>Yeterlilik</small>
+        </article>
+        <article class="vh-card">
+          <span>Verimlilik</span>
+          <strong>76</strong>
+          <small>Prim dengesi</small>
+        </article>
+      </aside>
+    </div>
+  </section>
+
+  <main class="vacation-main">
+    <div class="vacation-container vacation-layout" id="vacation-flow">
+      <div class="vacation-flow-main">
+        <div class="vacation-progress" id="vacation-step-progress" aria-hidden="true"></div>
+        <div id="vacation-wizard"></div>
+        <section id="vacation-results" hidden aria-live="polite"></section>
+      </div>
+      <aside class="vacation-aside" aria-label="Sigorta karar asistanı">
+        <div class="vacation-ai-panel">
+          <h3>Sigorta karar asistanınız</h3>
+          <p>Profilinize göre koruma ve teminat senaryolarını netleştiriyoruz.</p>
+          <ul id="vacation-ai-summary"></ul>
+          <p class="vacation-ai-eta">Tahmini süre: 2 dakika</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="vacation-footer">
+    <p>isteBul — karar zekâsı platformu. Poliçe koşulları sigorta şirketine göre değişir.</p>
+    <p><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">KVKK</a> · <a href="/rehber/arac-sigortasi-karsilastirma/">Araç sigortası rehberi</a></p>
+    <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi" data-i18n-aria="meta.language"></div>
   </footer>
-  <script src="/env.js"></script>
-  <script>
-    const form = document.getElementById('interest-form');
-    const status = document.getElementById('status');
-    form?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const name = form.name.value.trim();
-      const email = form.email.value.trim();
-      if (!name || !email) return;
-      const payload = { full_name: name, email, category: 'sigorta', interest_type: 'insurance', source: 'coming_soon_page', consent: true };
-      try {
-        const url = window.__env?.SUPABASE_URL;
-        const key = window.__env?.SUPABASE_ANON_KEY;
-        if (url && key) {
-          await fetch(`${url}/functions/v1/auto-intake`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json', apikey: key, authorization: `Bearer ${key}` },
-            body: JSON.stringify(payload)
-          });
-        }
-      } catch (err) {
-        console.warn('sigorta-interest-submit-failed', { message: String(err?.message || err) });
-      }
-      const stored = JSON.parse(localStorage.getItem('ib_coming_soon_interest_queue') || '[]');
-      stored.push({ ...payload, created_at: new Date().toISOString() });
-      localStorage.setItem('ib_coming_soon_interest_queue', JSON.stringify(stored.slice(-100)));
-      status.textContent = 'Talebiniz alındı. Sigorta kategorisi açıldığında bilgilendirileceksiniz.';
-      form.reset();
-    });
-  </script>
 </body>
 </html>

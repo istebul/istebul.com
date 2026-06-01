@@ -7,12 +7,12 @@ import {
   isHomeCategoryActive
 } from '../../js/platform/home-category-config.js';
 
-test('home categories: araba, tatil, konut and finansman active', () => {
+test('home categories: araba, tatil, konut, finansman and sigorta active', () => {
   const active = HOME_DECISION_CATEGORIES.filter((c) => isHomeCategoryActive(c));
-  assert.equal(active.length, 4);
+  assert.equal(active.length, 5);
   assert.deepEqual(
     active.map((c) => c.id).sort(),
-    ['araba', 'finansman', 'konut', 'tatil']
+    ['araba', 'finansman', 'konut', 'sigorta', 'tatil']
   );
   active.forEach((c) => {
     assert.ok(c.href);
@@ -20,12 +20,12 @@ test('home categories: araba, tatil, konut and finansman active', () => {
   });
 });
 
-test('home categories: sigorta and kasko are coming soon', () => {
+test('home categories: kasko is coming soon', () => {
   const soon = getHomeCategoriesByStatus('coming_soon');
-  assert.equal(soon.length, 2);
+  assert.equal(soon.length, 1);
   assert.deepEqual(
     soon.map((c) => c.id).sort(),
-    ['kasko', 'sigorta']
+    ['kasko']
   );
   soon.forEach((c) => {
     assert.ok(c.href);

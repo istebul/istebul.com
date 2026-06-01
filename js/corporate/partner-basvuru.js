@@ -153,6 +153,9 @@ function renderStep3(app, needs) {
         <label class="checkbox-row"><input type="checkbox" name="interest_types" value="vehicle_offer" ${interests.includes('vehicle_offer') ? 'checked' : ''}> Araç teklifi</label>
         <label class="checkbox-row"><input type="checkbox" name="interest_types" value="finance" ${interests.includes('finance') ? 'checked' : ''}> Finansman</label>
         <label class="checkbox-row"><input type="checkbox" name="interest_types" value="insurance" ${interests.includes('insurance') ? 'checked' : ''}> Sigorta</label>
+        <label class="checkbox-row"><input type="checkbox" name="interest_types" value="insurance_quote" ${interests.includes('insurance_quote') ? 'checked' : ''}> Sigorta teklifi</label>
+        <label class="checkbox-row"><input type="checkbox" name="interest_types" value="insurance_review" ${interests.includes('insurance_review') ? 'checked' : ''}> Poliçe incelemesi</label>
+        <label class="checkbox-row"><input type="checkbox" name="interest_types" value="insurance_consultation" ${interests.includes('insurance_consultation') ? 'checked' : ''}> Sigorta danışmanlığı</label>
       </fieldset>
       <label>Ek not<textarea name="notes" rows="2">${escapeHtml(needs.notes || '')}</textarea></label>
       <button type="submit" class="btn primary">Kaydet ve devam et</button>

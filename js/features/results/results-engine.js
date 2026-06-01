@@ -28,6 +28,12 @@ const SCORE_LABELS = {
     good: 'Uygun',
     mid: 'Dikkatli değerlendir',
     low: 'Riskli finansman'
+  },
+  sigorta: {
+    high: 'Çok uygun',
+    good: 'Uygun',
+    mid: 'Dikkatli değerlendir',
+    low: 'Riskli koruma profili'
   }
 };
 

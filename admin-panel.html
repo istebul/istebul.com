@@ -426,6 +426,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <div class="nav-item" data-page-target="housing-partners"><span class="nav-label">Konut Partnerleri</span></div>
             <div class="nav-item" data-page-target="housing-scoring"><span class="nav-label">Konut Scoring Ayarları</span></div>
             <div class="nav-item" data-page-target="finance-leads"><span class="nav-label">Finans Leadleri</span></div>
+            <div class="nav-item" data-page-target="sigorta-leads"><span class="nav-label">Sigorta Leadleri</span></div>
             <div class="nav-item" data-page-target="finance-partners"><span class="nav-label">Finans Partnerleri</span></div>
             <div class="nav-item" data-page-target="finance-scoring"><span class="nav-label">Finans Scoring Ayarları</span></div>
           </div>
@@ -1163,6 +1164,29 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           </div>
           <div class="form-group"><label>AI yorum şablonu</label><textarea id="hs-housing_ai_prompt_template" class="textarea-lg"></textarea></div>
           <div class="actions"><button class="btn btn-primary" data-action="save-housing-settings">Kaydet</button></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-sigorta-leads">
+        <div class="page-header">
+          <h2>Sigorta Leadleri</h2>
+          <p>Sigorta V2 karar analizi lead yönetimi (teklif, inceleme, danışmanlık)</p>
+        </div>
+        <div class="card">
+          <div class="auto-leads-toolbar">
+            <input id="sigorta-leads-search" class="form-input" type="search" placeholder="İlgi tipi, tür, telefon veya AI özeti ara...">
+            <select id="sigorta-leads-status-filter" class="status-select">
+              <option value="">Tüm durumlar</option>
+              <option value="new">yeni</option>
+              <option value="incelendi">incelendi</option>
+              <option value="arandi">arandı</option>
+              <option value="uygun">uygun</option>
+              <option value="partnere_yonlendirildi">partnere yönlendirildi</option>
+              <option value="kapandi">kapandı</option>
+              <option value="reddedildi">reddedildi</option>
+            </select>
+          </div>
+          <div id="sigorta-leads-list"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
 

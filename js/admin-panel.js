@@ -52,6 +52,7 @@ import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
 import { initFinanceAdmin } from './admin/finance-admin.js';
+import { initSigortaAdmin } from './admin/sigorta-admin.js';
 import { loadPaymentsAdminPage } from './admin/payments-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
@@ -1585,6 +1586,7 @@ const vacationAdmin = initVacationAdmin({ sb, adminAction, toast });
 const verticalAdmin = initVerticalAdmin({ sb });
 const housingAdmin = initHousingAdmin({ sb, adminAction, toast });
 const financeAdmin = initFinanceAdmin({ sb, adminAction, toast });
+const sigortaAdmin = initSigortaAdmin({ sb, adminAction, toast });
 
 async function loadDashboard() {
   const setStat = (id, value) => {
@@ -4140,6 +4142,7 @@ registerAdminPageHandlers({
   'finance-leads': () => financeAdmin.loadFinanceLeads(),
   'finance-partners': () => financeAdmin.loadFinancePartners(),
   'finance-scoring': () => financeAdmin.loadFinanceScoring(),
+  'sigorta-leads': () => sigortaAdmin.loadSigortaLeads(),
   'unified-funnel': () => loadUnifiedFunnelDashboard(),
   'auto-analytics': () => loadAutoAnalytics(),
   'platform-analytics': () => loadPlatformAnalytics(),
@@ -4209,6 +4212,7 @@ function bindAdminPanelEvents() {
     if (await vacationAdmin.handleVacationAction(event, el)) return;
     if (await housingAdmin.handleHousingAction(event, el)) return;
     if (await financeAdmin.handleFinanceAction(event, el)) return;
+    if (await sigortaAdmin.handleSigortaAction(event, el)) return;
 
     const { action, id, active, role } = el.dataset;
     const isActive = active === 'true';
@@ -4474,6 +4478,10 @@ document.addEventListener('change', (event) => {
   ['finance-leads-search', 'finance-leads-status-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => financeAdmin.loadFinanceLeads());
     document.getElementById(id)?.addEventListener('change', () => financeAdmin.loadFinanceLeads());
+  });
+  ['sigorta-leads-search', 'sigorta-leads-status-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => sigortaAdmin.loadSigortaLeads());
+    document.getElementById(id)?.addEventListener('change', () => sigortaAdmin.loadSigortaLeads());
   });
   ['vertical-leads-search', 'vertical-leads-vertical-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => verticalAdmin.loadVerticalLeads());
