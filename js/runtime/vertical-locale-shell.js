@@ -3,6 +3,9 @@ import '../features/i18n/i18n.js';
 import './site-analytics-boot.js';
 import '../features/auth/auth-click-bindings.js';
 import { mountVerticalSoftAuthGate } from '../features/auth/vertical-soft-auth.js';
+import { mountVerticalProductNav } from './vertical-product-nav.js';
+
+mountVerticalProductNav();
 
 if (typeof document !== 'undefined') {
   const bootAuthBanner = () => {

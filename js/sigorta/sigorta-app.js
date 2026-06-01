@@ -117,7 +117,7 @@ function canAdvance(state, step) {
 function renderStepBody(step, state, { renderOptionGrid }) {
   switch (step.id) {
     case 'type':
-      return renderOptionGrid('insurance_type', SIGORTA_OPTIONS.insurance_type, true);
+      return renderOptionGrid('insurance_type', SIGORTA_OPTIONS.insurance_type, true, 'type');
     case 'driver':
       return `
       <label class="vacation-field"><span>Sürücü yaşı</span>
@@ -347,6 +347,7 @@ function bootSigortaApp() {
   if (domOk) {
     bindSigortaHeroCtas(domRefs);
     revealFlow(domRefs.flow);
+    flowApi.startWizard?.();
     ensureWizardRendered();
   }
 

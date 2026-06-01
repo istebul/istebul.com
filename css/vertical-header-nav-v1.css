@@ -1,0 +1,64 @@
+/**
+ * Vertical pages — mobile drawer for any *-nav id (not only #vacation-nav).
+ */
+
+@media (max-width: 768px) {
+  .vacation-header {
+    flex-wrap: nowrap;
+    position: sticky;
+  }
+
+  .vacation-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    flex-shrink: 0;
+    min-height: 40px;
+    z-index: 2;
+  }
+
+  .vacation-header nav[id$='-nav'] {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: #fff;
+    padding: 12px 16px 16px;
+    border-bottom: 1px solid var(--vacation-border, #e2e8f0);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+    z-index: 45;
+    max-height: min(70vh, 420px);
+    overflow-y: auto;
+  }
+
+  .vacation-header nav[id$='-nav'].is-open {
+    display: flex;
+  }
+
+  .vacation-header nav[id$='-nav'] a {
+    padding: 0.7rem 0.65rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+  }
+
+  .vacation-header nav[id$='-nav'] a:active {
+    background: #f1f5f9;
+  }
+
+  .ib-vertical-nav-section-label {
+    margin: 0.35rem 0 0.15rem;
+    padding: 0.35rem 0.65rem 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+}

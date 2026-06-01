@@ -109,9 +109,15 @@ export function initDecisionFlow(config) {
       .join('');
   }
 
-  function renderOptionGrid(field, items, rich = false) {
+  function renderOptionGrid(field, items, rich = false, layout = '') {
+    const layoutClass =
+      layout === 'type'
+        ? 'vacation-option-grid--type'
+        : layout === 'insurance_type'
+          ? 'vacation-option-grid--type'
+          : '';
     return `
-    <div class="vacation-option-grid ${rich ? 'vacation-option-grid--rich' : ''}">
+    <div class="vacation-option-grid ${rich ? 'vacation-option-grid--rich' : ''} ${layoutClass}">
       ${items
         .map((opt) => {
           const isSelected = state[field] === opt.value;
@@ -449,12 +455,31 @@ export function initDecisionFlow(config) {
   }
 
   function setupMobileNav() {
-    const toggle = $('.vacation-nav-toggle');
+    const navId = dom.nav;
+    const toggle =
+      document.querySelector(`.vacation-nav-toggle[aria-controls="${navId}"]`) ||
+      $('.vacation-nav-toggle');
     const nav = el('nav');
-    toggle?.addEventListener('click', () => {
-      const open = nav?.classList.toggle('is-open');
+    if (!toggle || !nav) return;
+
+    const setOpen = (open) => {
+      nav.classList.toggle('is-open', open);
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
+    };
+
+    if (toggle.dataset.ibFlowNavBound !== '1') {
+      toggle.dataset.ibFlowNavBound = '1';
+      toggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        setOpen(!nav.classList.contains('is-open'));
+      });
+      nav.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => setOpen(false));
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setOpen(false);
+      });
+    }
   }
 
   function scrollToFlow() {

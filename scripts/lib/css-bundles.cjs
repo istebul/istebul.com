@@ -19,7 +19,9 @@ const HOMEPAGE_EXTENSION = [
   'css/listing-gallery.css',
   'css/enterprise-remediation.css',
   'css/enterprise-card-readability.css',
-  'css/home-first-impression.css'
+  'css/home-first-impression.css',
+  'css/home-category-compact-v1.css',
+  'css/home-newsletter-compact-v1.css'
 ];
 
 /** Design system + readability for vertical decision pages (replaces 3–4 link tags). */
@@ -27,6 +29,7 @@ const VERTICAL_DECISION = [
   'css/layout-guard.css',
   'css/enterprise-card-readability.css',
   'css/istebul-design-system-v4.css',
+  'css/vertical-header-nav-v1.css',
   'css/rtl.css'
 ];
 

@@ -830,7 +830,9 @@ function setupAutoMobileNav() {
     toggle.setAttribute('aria-expanded', String(isOpen));
   };
 
-  toggle.addEventListener('click', () => {
+  toggle.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     setOpen(!header.classList.contains('is-nav-open'));
   });
 

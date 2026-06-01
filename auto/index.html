@@ -48,9 +48,11 @@
   <link rel="preload" href="/assets/auto-runtime/ib-car.css" as="style">
   <link rel="stylesheet" href="/assets/auto-runtime/ib-car.css">
   <link rel="stylesheet" href="/css/auto-results-v2.css?v=1">
-  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=1">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=2">
+  <link rel="stylesheet" href="/css/auto-header-nav-v1.css?v=1">
   <script src="/env.js" defer></script>
   <script src="/js/auto/auto-document-ready.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"isteBul Auto ücretsiz mi?","acceptedAnswer":{"@type":"Answer","text":"Temel karar analizi ücretsiz başlatılabilir; Pro plan derin rapor ve ek özellikler sunar. Koşullar planlar sayfasında güncellenir."}},{"@type":"Question","name":"Skor nasıl hesaplanır?","acceptedAnswer":{"@type":"Answer","text":"Skor kural tabanlı motordadır; bütçe, kullanım, TCO ve risk sinyalleri birleştirilir. AI skoru değiştirmez."}},{"@type":"Question","name":"TCO ne kadar güvenilir?","acceptedAnswer":{"@type":"Answer","text":"TCO varsayımlara dayalı bilgilendirme amaçlı projeksiyondur; bayi teklifi ve ekspertiz ile doğrulanmalıdır."}},{"@type":"Question","name":"Partner teklifleri zorunlu mu?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Lead paylaşımı yalnızca onayınızla yapılır."}}]}</script>
 </head>
@@ -64,6 +66,8 @@
       <span class="auto-nav-toggle-lines" aria-hidden="true"></span>
     </button>
     <nav id="auto-nav" aria-label="Auto navigasyonu">
+      <div data-vertical-nav-products aria-label="Kategoriler"></div>
+      <span class="ib-vertical-nav-section-label">Bu sayfa</span>
       <a href="#nasil-calisir">Nasıl çalışır</a>
       <a href="#analiz">Analiz sonuçları</a>
       <a href="#gelir">Teklifler</a>
