@@ -10,13 +10,16 @@
   <meta property="og:title" content="Kasko Karar Analizi | isteBul">
   <meta property="og:description" content="AI destekli kasko karar motoru: teminat, onarım riski ve prim dengesi.">
   <meta property="og:url" content="https://www.istebul.com/kasko/">
-  <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.svg">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/kasko-hero.jpg">
+  <link rel="preload" href="/assets/images/kasko-hero.jpg" as="image" fetchpriority="high">
+  <meta name="twitter:image" content="https://www.istebul.com/assets/images/kasko-hero.jpg">
   <link rel="stylesheet" href="/css/tatil.css">
   <link rel="stylesheet" href="/css/sigorta-page.css?v=1">
   <link rel="stylesheet" href="/css/vertical-themes.css">
   <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
   <link rel="stylesheet" href="/css/sigorta-results-v2.css?v=1">
   <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=3">
+  <link rel="stylesheet" href="/css/vertical-category-heroes-v1.css?v=1">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/kasko/kasko-app.js"></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
@@ -40,7 +43,18 @@
     </nav>
   </div>
 
-  <section class="vacation-hero" aria-labelledby="kasko-hero-title">
+  <section class="vacation-hero kasko-hero" aria-labelledby="kasko-hero-title">
+    <div class="vacation-hero-media" aria-hidden="true">
+      <picture>
+        <img
+          src="/assets/images/kasko-hero.jpg"
+          alt=""
+          width="1920"
+          height="1080"
+          decoding="async"
+          fetchpriority="high">
+      </picture>
+    </div>
     <div class="vacation-hero-overlay" aria-hidden="true"></div>
     <div class="vacation-container vacation-hero-inner">
       <div class="vacation-hero-copy">
