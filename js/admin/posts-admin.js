@@ -67,7 +67,8 @@ let adminPostsCache = [];
 const editingByType = { news: null, blog: null };
 const pendingCoverFile = { news: null, blog: null };
 let hasPostsContentTypeColumn = true;
-let hasPostsCategoryColumn = true;
+// Production schema drift: posts.category may not exist.
+let hasPostsCategoryColumn = false;
 
 function isMissingColumnError(error, column) {
   const msg = String(error?.message || '').toLowerCase();
@@ -265,7 +266,9 @@ export async function loadPostsList(kind) {
     .limit(200);
 
   if (hasPostsContentTypeColumn) q = q.eq('content_type', conf.contentType);
-  if (filter && hasPostsCategoryColumn) q = q.eq('category', filter);
+  const normalizedFilter = String(filter || '').trim();
+  const shouldFilterByCategory = hasPostsCategoryColumn && normalizedFilter && !/^tümü|all$/i.test(normalizedFilter);
+  if (shouldFilterByCategory) q = q.eq('category', normalizedFilter);
 
   let { data, error } = await q;
   if (error && isMissingColumnError(error, 'content_type')) {
