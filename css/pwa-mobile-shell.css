@@ -1,0 +1,185 @@
+/**
+ * PWA install + iOS hint — mobile-first (safe-area, bottom sheet).
+ */
+
+.ib-pwa-install-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10050;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+
+.ib-pwa-install-banner__inner {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+}
+
+.ib-pwa-install-banner__icon {
+  flex-shrink: 0;
+  border-radius: 10px;
+}
+
+.ib-pwa-install-banner__copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.ib-pwa-install-banner__copy strong {
+  display: block;
+  font-size: 14px;
+  line-height: 1.25;
+  color: #0f172a;
+}
+
+.ib-pwa-install-banner__copy span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.ib-pwa-install-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ib-pwa-install-banner__primary {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #1f7ae0, #0f8f80);
+  cursor: pointer;
+}
+
+.ib-pwa-install-banner__ghost {
+  border: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ib-pwa-install-banner.is-busy {
+  opacity: 0.85;
+}
+
+.ib-pwa-ios-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 10060;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.ib-pwa-ios-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.ib-pwa-ios-sheet__panel {
+  position: relative;
+  width: min(100%, 420px);
+  margin: 0 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  padding: 20px 20px 16px;
+  border-radius: 20px 20px 16px 16px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 -8px 40px rgba(15, 23, 42, 0.2);
+}
+
+.ib-pwa-ios-sheet__close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: 0;
+  background: transparent;
+  font-size: 24px;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.ib-pwa-ios-sheet__icon {
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.ib-pwa-ios-sheet__panel h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #0f172a;
+}
+
+.ib-pwa-ios-sheet__panel p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.ib-pwa-ios-sheet__primary {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: #1f7ae0;
+  cursor: pointer;
+}
+
+@media (min-width: 769px) {
+  .ib-pwa-install-banner {
+    left: auto;
+    right: 20px;
+    bottom: 20px;
+    width: min(400px, calc(100% - 40px));
+    padding: 0;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .ib-pwa-install-banner__inner,
+  .ib-pwa-ios-sheet__panel {
+    background: #0f172a;
+    border-color: rgba(148, 163, 184, 0.2);
+  }
+
+  .ib-pwa-install-banner__copy strong,
+  .ib-pwa-ios-sheet__panel h2 {
+    color: #f8fafc;
+  }
+
+  .ib-pwa-install-banner__copy span,
+  .ib-pwa-ios-sheet__panel p {
+    color: #94a3b8;
+  }
+
+  .ib-pwa-install-banner__ghost {
+    background: #1e293b;
+    color: #cbd5e1;
+  }
+}

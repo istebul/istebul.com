@@ -23,6 +23,7 @@ import {
 import { trackPricingViewForUpgrade } from './features/revenue/revenue-ops-client.js';
 import { mountHelpCenterWidget } from './ui/help-center-widget.js';
 import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
+import { initPwaShell } from './runtime/pwa-shell.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
 import { scoreVehicleMatch } from './engines/decision-consultant.js';
 import {
@@ -171,8 +172,8 @@ class App {
             // Initialize UI
             this.ui.init();
 
-            // Register service worker for PWA
-            this.registerServiceWorker();
+            // PWA: install banner, offline shell, update prompt
+            initPwaShell();
 
             // Setup event listeners before routing so initial route changes are handled
             this.setupEventListeners();
@@ -297,137 +298,6 @@ class App {
         } catch (error) {
             console.error('Messaging init failed:', error);
         }
-    }
-
-    registerServiceWorker() {
-        const enableServiceWorker = window.ISTEBU_ENABLE_SW === true;
-
-        if (!enableServiceWorker) {
-            this.setupInstallPrompt();
-            return;
-        }
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then((registration) => {
-                    // Handle updates
-                    registration.addEventListener('updatefound', () => {
-                        const newWorker = registration.installing;
-                        if (newWorker) {
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    this.showUpdateNotification();
-                                }
-                            });
-                        }
-                    });
-
-                    // Setup install prompt
-                    this.setupInstallPrompt();
-                })
-                .catch(() => undefined);
-        }
-    }
-
-    setupInstallPrompt() {
-        let deferredPrompt;
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent the mini-infobar from appearing on mobile
-            e.preventDefault();
-            // Stash the event so it can be triggered later
-            deferredPrompt = e;
-
-            // Show install button
-            this.showInstallButton(deferredPrompt);
-        });
-
-        // Listen for successful installation
-        window.addEventListener('appinstalled', (_evt) => {
-            // Hide install button
-            this.hideInstallButton();
-        });
-    }
-
-    showInstallButton(deferredPrompt) {
-        // Remove existing install button
-        this.hideInstallButton();
-
-        // Create install button
-        const installBtn = document.createElement('button');
-        installBtn.id = 'pwa-install-btn';
-        installBtn.className = 'pwa-install-btn';
-        installBtn.innerHTML = `
-            <i data-lucide="download"></i>
-            <span>Uygulamayı Yükle</span>
-        `;
-        installBtn.onclick = async () => {
-            // Hide the button
-            installBtn.style.display = 'none';
-
-            // Show the install prompt
-            deferredPrompt.prompt();
-
-            // Wait for the user to respond to the prompt
-            await deferredPrompt.userChoice;
-
-            // Reset the deferred prompt
-            deferredPrompt = null;
-
-        };
-
-        // Add to header
-        const header = document.querySelector('.header');
-        if (header) {
-            header.appendChild(installBtn);
-        }
-
-        // Load icons
-        if (typeof lucide !== 'undefined') {
-            window.lucide?.createIcons();
-        }
-    }
-
-    hideInstallButton() {
-        const existingBtn = document.getElementById('pwa-install-btn');
-        if (existingBtn) {
-            existingBtn.remove();
-        }
-    }
-
-    showUpdateNotification() {
-        // Create update notification
-        const updateDiv = document.createElement('div');
-        updateDiv.className = 'update-notification';
-        updateDiv.innerHTML = `
-            <div class="update-content">
-                <i data-lucide="refresh-cw"></i>
-                <div class="update-text">
-                    <strong>Yeni sürüm mevcut!</strong>
-                    <span>Uygulamayı güncellemek için sayfayı yenileyin.</span>
-                </div>
-                <button type="button" data-action="reload-page" class="btn btn-primary btn-sm">
-                    Güncelle
-                </button>
-                <button type="button" data-action="dismiss-parent-card" class="btn-close">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-        `;
-
-        document.body.appendChild(updateDiv);
-
-        // Load icons
-        if (typeof lucide !== 'undefined') {
-            window.lucide?.createIcons();
-        }
-
-        // Auto remove after 30 seconds
-        setTimeout(() => {
-            if (updateDiv.parentNode) {
-                updateDiv.remove();
-            }
-        }, 30000);
     }
 
     setupCookieConsent() {

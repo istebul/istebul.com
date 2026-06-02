@@ -5,8 +5,10 @@ import '../features/auth/auth-click-bindings.js';
 import { mountVerticalSoftAuthGate } from '../features/auth/vertical-soft-auth.js';
 import { mountVerticalProductNav } from './vertical-product-nav.js';
 import { initSiteSocialLinks } from './site-social-links.js';
+import { initPwaShell } from './pwa-shell.js';
 
 mountVerticalProductNav();
+initPwaShell();
 initSiteSocialLinks();
 
 if (typeof document !== 'undefined') {

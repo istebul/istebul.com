@@ -25,7 +25,8 @@ const HOMEPAGE_EXTENSION = [
   'css/home-category-layout-fix-v1.css',
   'css/home-newsletter-fix-critical-v1.css',
   'css/site-social-links-v1.css',
-  'css/perf-home-v1.css'
+  'css/perf-home-v1.css',
+  'css/pwa-mobile-shell.css'
 ];
 
 /** Design system + readability for vertical decision pages (replaces 3–4 link tags). */
@@ -35,7 +36,8 @@ const VERTICAL_DECISION = [
   'css/istebul-design-system-v4.css',
   'css/vertical-header-nav-v1.css',
   'css/rtl.css',
-  'css/perf-vertical-v1.css'
+  'css/perf-vertical-v1.css',
+  'css/pwa-mobile-shell.css'
 ];
 
 /** Lightweight shared polish for corporate / coming-soon pages. */
