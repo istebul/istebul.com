@@ -1,6 +1,8 @@
 /**
- * Admin kapak görseli — doğrudan Supabase Storage (content-covers, admin RLS).
+ * Admin kapak görseli — önce doğrudan Supabase Storage, gerekirse admin-action fallback.
  */
+
+import { invokeAdminFunction } from '../core/admin-client.js';
 
 const BUCKET = 'content-covers';
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -18,10 +20,14 @@ function safeExt(fileName) {
   return ext || 'jpg';
 }
 
+function isBucketMissing(message) {
+  return /bucket not found/i.test(String(message || ''));
+}
+
 function mapStorageError(message) {
   const msg = String(message || '');
-  if (/bucket not found/i.test(msg)) {
-    return 'Kapak deposu (content-covers) bulunamadı. Supabase’de: supabase db push';
+  if (isBucketMissing(msg)) {
+    return 'Kapak deposu (content-covers) bulunamadı.';
   }
   if (/row-level security|policy|permission|not allowed/i.test(msg)) {
     return 'Kapak yükleme yetkisi yok. Admin hesabıyla giriş yaptığınızdan emin olun.';
@@ -30,6 +36,35 @@ function mapStorageError(message) {
     return 'Kapak görseli en fazla 5 MB olabilir.';
   }
   return msg || 'Kapak yüklenemedi';
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      const base64 = result.includes(',') ? result.split(',')[1] : result;
+      resolve(base64);
+    };
+    reader.onerror = () => reject(new Error('Dosya okunamadı'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadViaAdminAction(supabaseClient, file, folder) {
+  const base64 = await fileToBase64(file);
+  const result = await invokeAdminFunction(supabaseClient, {
+    action: 'upload_post_cover',
+    values: {
+      folder,
+      fileName: file.name,
+      contentType: file.type || 'image/jpeg',
+      base64
+    }
+  });
+  const url = String(result?.publicUrl || '').trim();
+  if (!url) throw new Error('Yüklenen görsel URL alınamadı.');
+  return url;
 }
 
 /**
@@ -64,6 +99,13 @@ export async function uploadPostCoverImage(supabaseClient, file, opts = {}) {
   });
 
   if (uploadError) {
+    if (isBucketMissing(uploadError.message)) {
+      try {
+        return await uploadViaAdminAction(supabaseClient, file, folder);
+      } catch (fallbackError) {
+        throw new Error(fallbackError?.message || 'Kapak yüklenemedi');
+      }
+    }
     throw new Error(mapStorageError(uploadError.message));
   }
 

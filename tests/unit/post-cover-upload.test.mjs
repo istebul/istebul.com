@@ -31,11 +31,11 @@ describe('posts content admin', () => {
     assert.match(panel, /loadNewsPostsAdmin/);
   });
 
-  it('cover upload uses Supabase storage directly (not admin-action)', () => {
+  it('cover upload uses storage first with admin-action fallback', () => {
     const mod = fs.readFileSync(path.join(root, 'js/admin/post-cover-upload.js'), 'utf8');
-    assert.match(mod, /storage\.from\(BUCKET\)/);
-    assert.match(mod, /content-covers/);
-    assert.doesNotMatch(mod, /invokeAdminFunction|admin-action/);
+    assert.match(mod, /storage\.from\(BUCKET\)\.upload/);
+    assert.match(mod, /invokeAdminFunction/);
+    assert.match(mod, /upload_post_cover/);
   });
 
   it('admin-panel news/blog forms avoid inline event handlers', () => {
