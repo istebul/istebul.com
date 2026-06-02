@@ -1,4 +1,4 @@
-import { getSupabaseClient, isSupabaseConfigured, SUPABASE_CONFIG_ERROR } from './core/supabase.js';
+import { getAdminSupabaseClient, isSupabaseConfigured, SUPABASE_CONFIG_ERROR } from './core/supabase.js';
 import { invokeAdminFunction, adminList } from './core/admin-client.js';
 import { escapeHtml, safeAttr, safeJsonParse, safeExternalUrl } from './core/dom-safe.js';
 import { normalizePhoneForWhatsapp } from './core/phone.js';
@@ -119,7 +119,7 @@ if (!isSupabaseConfigured()) {
   throw new Error('Supabase config missing');
 }
 
-const sb = getSupabaseClient();
+const sb = getAdminSupabaseClient();
 let currentUser = null;
 
 initPostsAdmin(sb, {

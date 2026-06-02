@@ -29,6 +29,7 @@ describe('posts content admin', () => {
     assert.match(panel, /posts-admin\.js/);
     assert.match(panel, /home-news/);
     assert.match(panel, /loadNewsPostsAdmin/);
+    assert.match(panel, /getAdminSupabaseClient/);
   });
 
   it('posts-admin tolerates missing posts.category column', () => {

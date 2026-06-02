@@ -51,8 +51,24 @@ const createFallbackSupabaseClient = () => {
     };
 };
 
+const PUBLIC_AUTH_STORAGE_KEY = 'istebul-auth-public-v1';
+const ADMIN_AUTH_STORAGE_KEY = 'istebul-auth-admin-v1';
+
 /** @type {ReturnType<typeof createClient> | ReturnType<typeof createFallbackSupabaseClient> | null} */
 let supabaseSingleton = null;
+/** @type {ReturnType<typeof createClient> | ReturnType<typeof createFallbackSupabaseClient> | null} */
+let adminSupabaseSingleton = null;
+
+function buildSupabaseClient(storageKey) {
+    return createClient(supabaseUrl, supabaseKey, {
+        auth: {
+            storageKey,
+            detectSessionInUrl: true,
+            persistSession: true,
+            autoRefreshToken: true
+        }
+    });
+}
 
 export const getSupabaseClient = () => {
     if (supabaseSingleton) {
@@ -64,15 +80,23 @@ export const getSupabaseClient = () => {
         return supabaseSingleton;
     }
 
-    supabaseSingleton = createClient(supabaseUrl, supabaseKey, {
-        auth: {
-            detectSessionInUrl: true,
-            persistSession: true,
-            autoRefreshToken: true
-        }
-    });
+    supabaseSingleton = buildSupabaseClient(PUBLIC_AUTH_STORAGE_KEY);
 
     return supabaseSingleton;
+};
+
+export const getAdminSupabaseClient = () => {
+    if (adminSupabaseSingleton) {
+        return adminSupabaseSingleton;
+    }
+
+    if (!isSupabaseConfigured()) {
+        adminSupabaseSingleton = createFallbackSupabaseClient();
+        return adminSupabaseSingleton;
+    }
+
+    adminSupabaseSingleton = buildSupabaseClient(ADMIN_AUTH_STORAGE_KEY);
+    return adminSupabaseSingleton;
 };
 
 export const supabase = getSupabaseClient();
