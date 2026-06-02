@@ -62,6 +62,12 @@ import {
   handlePartnerApplicationAdminAction,
   loadPartnerApplications as loadPartnerApplicationsPage
 } from './admin/partner-applications-admin.js';
+import {
+  handlePostsAdminAction,
+  initPostsAdmin,
+  loadBlogPostsAdmin,
+  loadNewsPostsAdmin
+} from './admin/posts-admin.js';
 import { renderLeadAiSummaryHtml } from './features/admin/lead-ai-intelligence.js';
 import { fetchActivePartnerPool } from './features/partner/partner-pool.js';
 import { DEFAULT_CAMPAIGNS, normalizePublicCampaign } from './features/content/public-content.js';
@@ -115,6 +121,11 @@ if (!isSupabaseConfigured()) {
 
 const sb = getSupabaseClient();
 let currentUser = null;
+
+initPostsAdmin(sb, {
+  toast: (message, type) => toast(message, type)
+});
+window.__adminReloadDashboard = () => loadDashboard();
 
 function showLoginError(message) {
   const err = document.getElementById('login-error');
@@ -202,7 +213,8 @@ async function showApp() {
   loadAnnouncements();
   loadCampaigns();
   loadFaqs();
-  loadPosts();
+  loadNewsPostsAdmin();
+  loadBlogPostsAdmin();
   loadListings();
   loadUsers();
   loadAutoLeads();
@@ -1969,177 +1981,6 @@ async function deleteFaq(id) {
   await adminAction({ action: 'delete', table: 'faqs', id });
   toast('Silindi');
   loadFaqs(); loadDashboard();
-}
-
-let editingPostId = null;
-let adminPostsCache = [];
-
-function autoSlug() {
-  const title = document.getElementById('post-title').value;
-  document.getElementById('post-slug').value = title.toLowerCase()
-    .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
-    .replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim();
-}
-
-function previewPostCover() {
-  const url = document.getElementById('post-cover')?.value.trim();
-  const box = document.getElementById('post-cover-preview');
-  if (!box) return;
-  if (!url) {
-    box.innerHTML = '<span class="text-muted-sm">Kapak URL girildiğinde önizleme burada görünür.</span>';
-    return;
-  }
-  box.innerHTML = `<img src="${escapeHtml(url)}" alt="" loading="lazy">`;
-}
-
-function resetPostForm() {
-  editingPostId = null;
-  const titleEl = document.getElementById('post-form-title');
-  if (titleEl) titleEl.textContent = 'Yeni haber / rehber';
-  document.getElementById('post-title').value = '';
-  document.getElementById('post-slug').value = '';
-  document.getElementById('post-excerpt').value = '';
-  document.getElementById('post-cover').value = '';
-  document.getElementById('post-source-label').value = '';
-  document.getElementById('post-source-url').value = '';
-  document.getElementById('post-content').value = '';
-  document.getElementById('post-published').checked = false;
-  document.getElementById('post-featured').checked = false;
-  const cancelBtn = document.querySelector('[data-action="cancel-post-edit"]');
-  const saveBtn = document.querySelector('[data-action="save-post"]');
-  if (cancelBtn) cancelBtn.hidden = true;
-  if (saveBtn) saveBtn.textContent = 'Kaydet';
-  previewPostCover();
-}
-
-function editPostById(id) {
-  const post = adminPostsCache.find((p) => String(p.id) === String(id));
-  if (!post) {
-    toast('Yazı bulunamadı', 'error');
-    return;
-  }
-  editingPostId = post.id;
-  document.getElementById('post-form-title').textContent = 'Haber düzenle';
-  document.getElementById('post-title').value = post.title || '';
-  document.getElementById('post-slug').value = post.slug || '';
-  document.getElementById('post-excerpt').value = post.excerpt || '';
-  document.getElementById('post-cover').value = post.cover_image_url || '';
-  document.getElementById('post-source-label').value = post.source_label || '';
-  document.getElementById('post-source-url').value = post.source_url || '';
-  document.getElementById('post-content').value = post.content || '';
-  document.getElementById('post-category').value = post.category || 'auto';
-  document.getElementById('post-published').checked = Boolean(post.is_published);
-  document.getElementById('post-featured').checked = Boolean(post.is_featured);
-  document.querySelector('[data-action="cancel-post-edit"]').hidden = false;
-  document.querySelector('[data-action="save-post"]').textContent = 'Güncelle';
-  previewPostCover();
-  document.getElementById('post-editor-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  toast('Düzenleme modu');
-}
-
-async function loadPosts() {
-  const el = document.getElementById('posts-list');
-  const filter = document.getElementById('post-list-filter')?.value || '';
-  const res = await fetchAdminTable(sb, {
-    table: 'posts',
-    limit: 200,
-    order: { column: 'created_at', ascending: false },
-    direct: () => sb.from('posts').select('*').order('created_at', { ascending: false })
-  });
-  let data = res.data || [];
-  adminPostsCache = data;
-  if (filter) data = data.filter((p) => (p.category || 'auto') === filter);
-  if (!data.length) {
-    el.innerHTML = res.error
-      ? `<p class="empty">Yazılar yüklenemedi: ${escapeHtml(res.error.message)}</p>`
-      : '<p class="empty">Henüz yazı yok.</p>';
-    return;
-  }
-  el.innerHTML =
-    '<table class="table"><thead><tr><th>Görsel</th><th>Başlık</th><th>Kategori</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
-    data
-      .map((p) => {
-        const thumb = p.cover_image_url
-          ? `<img src="${escapeHtml(p.cover_image_url)}" alt="" loading="lazy">`
-          : '<span class="text-muted text-xs">—</span>';
-        return `<tr>
-        <td class="ib-post-thumb-cell">${thumb}</td>
-        <td><strong>${escapeHtml(p.title || '—')}</strong>${p.is_featured ? ' <span class="badge badge-blue">Ana sayfa</span>' : ''}</td>
-        <td class="text-muted text-xs">${escapeHtml(p.category || 'auto')}</td>
-        <td><span class="badge ${p.is_published ? 'badge-green' : 'badge-yellow'}">${p.is_published ? 'Yayında' : 'Taslak'}</span></td>
-        <td class="text-muted cell-nowrap">${new Date(p.created_at).toLocaleDateString('tr-TR')}</td>
-        <td><div class="table-actions">
-          <button class="btn btn-ghost btn-sm" data-action="edit-post" data-id="${safeAttr(p.id)}">Düzenle</button>
-          <button class="btn btn-ghost btn-sm" data-action="toggle-post-featured" data-id="${safeAttr(p.id)}" data-active="${p.is_featured}">${p.is_featured ? 'Öne çıkandan al' : 'Ana sayfa'}</button>
-          <button class="btn btn-ghost btn-sm" data-action="toggle-post" data-id="${safeAttr(p.id)}" data-active="${p.is_published}">${p.is_published ? 'Taslağa al' : 'Yayınla'}</button>
-          <button class="btn btn-danger btn-sm" data-action="delete-post" data-id="${safeAttr(p.id)}">Sil</button>
-        </div></td></tr>`;
-      })
-      .join('') +
-    '</tbody></table>';
-}
-
-async function savePost() {
-  const title = document.getElementById('post-title').value.trim();
-  const slug = document.getElementById('post-slug').value.trim() || title.toLowerCase().replace(/\s+/g, '-');
-  const content = document.getElementById('post-content').value.trim();
-  const excerpt = document.getElementById('post-excerpt').value.trim();
-  const category = document.getElementById('post-category').value || 'auto';
-  const cover_image_url = document.getElementById('post-cover').value.trim() || null;
-  const source_label = document.getElementById('post-source-label').value.trim() || null;
-  const source_url = document.getElementById('post-source-url').value.trim() || null;
-  const is_published = document.getElementById('post-published').checked;
-  const is_featured = document.getElementById('post-featured').checked;
-  if (!title) {
-    toast('Başlık zorunlu', 'error');
-    return;
-  }
-  const values = {
-    title,
-    slug,
-    content,
-    excerpt,
-    category,
-    cover_image_url,
-    source_label,
-    source_url,
-    is_published,
-    is_featured
-  };
-  if (editingPostId) {
-    await adminAction({ action: 'update', table: 'posts', id: editingPostId, values });
-    toast('Haber güncellendi');
-  } else {
-    await adminAction({ action: 'insert', table: 'posts', id: 'new', values });
-    toast('Haber eklendi');
-  }
-  resetPostForm();
-  loadPosts();
-  loadDashboard();
-}
-
-async function togglePostFeatured(id, current) {
-  await adminAction({ action: 'update', table: 'posts', id, values: { is_featured: !current } });
-  toast(!current ? 'Ana sayfada gösterilecek' : 'Ana sayfadan kaldırıldı');
-  loadPosts();
-}
-
-if (typeof window !== 'undefined') {
-  window.previewPostCover = previewPostCover;
-  window.loadPosts = loadPosts;
-}
-
-async function togglePost(id, current) {
-  await adminAction({ action: 'update', table: 'posts', id, values: { is_published: !current } });
-  toast(current ? 'Taslağa alındı' : 'Yayınlandı');
-  loadPosts(); loadDashboard();
-}
-
-async function deletePost(id) {
-  if (!confirm('Silmek istediğinize emin misiniz?')) return;
-  await adminAction({ action: 'delete', table: 'posts', id });
-  toast('Silindi');
-  loadPosts(); loadDashboard();
 }
 
 const CAMPAIGNS_SETTING_KEY = 'public_campaigns';
@@ -4558,7 +4399,8 @@ registerAdminPageHandlers({
   announcements: () => loadAnnouncements(),
   campaigns: () => loadCampaigns(),
   faqs: () => loadFaqs(),
-  blog: () => loadPosts(),
+  'home-news': () => loadNewsPostsAdmin(),
+  blog: () => loadBlogPostsAdmin(),
   listings: () => loadListings(),
   users: () => loadUsers(),
   'auto-leads': () => loadAutoLeads(),
@@ -4635,7 +4477,6 @@ function bindAdminPanelEvents() {
 
   document.querySelector('[data-action="save-announcement"]')?.addEventListener('click', saveAnnouncement);
   document.querySelector('[data-action="save-faq"]')?.addEventListener('click', saveFaq);
-  document.querySelector('[data-action="save-post"]')?.addEventListener('click', savePost);
   document.querySelector('[data-action="save-campaign"]')?.addEventListener('click', saveCampaign);
   document.querySelector('[data-action="reset-campaign-form"]')?.addEventListener('click', resetCampaignForm);
   document.querySelector('[data-action="seed-default-campaigns"]')?.addEventListener('click', seedDefaultCampaigns);
@@ -4871,11 +4712,7 @@ function bindAdminPanelEvents() {
     if (action === 'delete-ann') deleteAnn(id);
     if (action === 'toggle-faq') toggleFaq(id, isActive);
     if (action === 'delete-faq') deleteFaq(id);
-    if (action === 'toggle-post') togglePost(id, isActive);
-    if (action === 'delete-post') deletePost(id);
-    if (action === 'edit-post') editPostById(id);
-    if (action === 'toggle-post-featured') togglePostFeatured(id, isActive);
-    if (action === 'cancel-post-edit') resetPostForm();
+    if (handlePostsAdminAction(action, id, isActive)) return;
     if (action === 'edit-campaign') editCampaign(id);
     if (action === 'toggle-campaign') toggleCampaign(id);
     if (action === 'delete-campaign') deleteCampaign(id);

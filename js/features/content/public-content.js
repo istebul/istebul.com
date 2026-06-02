@@ -27,7 +27,7 @@ export const GUIDE_CATEGORIES = Object.freeze([
 ]);
 
 const POST_SELECT =
-  'id,title,slug,content,excerpt,category,cover_image_url,is_featured,source_label,source_url,created_at';
+  'id,title,slug,content,excerpt,category,content_type,cover_image_url,is_featured,source_label,source_url,created_at';
 
 export function getGuideCategory(id) {
   const key = String(id || '').trim().toLowerCase();
@@ -42,6 +42,7 @@ function mapPostRow(row) {
     body: row.content || '',
     excerpt: row.excerpt || '',
     category: row.category || 'auto',
+    content_type: row.content_type || 'news',
     cover_image_url: row.cover_image_url || '',
     is_featured: Boolean(row.is_featured),
     source_label: row.source_label || '',
@@ -158,20 +159,22 @@ export async function fetchActiveAnnouncements(limit = 12) {
   }));
 }
 
-export async function fetchPublishedPosts(limit = 12, category = '') {
+export async function fetchPublishedPosts(limit = 12, category = '', contentType = 'blog') {
   const cat = getGuideCategory(category)?.id;
   const categoryFilter = cat ? `&category=eq.${encodeURIComponent(cat)}` : '';
+  const type = String(contentType || 'blog').trim().toLowerCase();
+  const typeFilter = type ? `&content_type=eq.${encodeURIComponent(type)}` : '';
   const rows = await restGet(
-    `posts?select=${POST_SELECT}&is_published=eq.true${categoryFilter}&order=is_featured.desc,created_at.desc&limit=${limit}`
+    `posts?select=${POST_SELECT}&is_published=eq.true${typeFilter}${categoryFilter}&order=is_featured.desc,created_at.desc&limit=${limit}`
   );
   return rows.map(mapPostRow);
 }
 
-export async function fetchPublishedPostsByCategory(category, limit = 6) {
+export async function fetchPublishedPostsByCategory(category, limit = 6, contentType = 'news') {
   const cat = getGuideCategory(category)?.id || String(category || 'auto').trim().toLowerCase();
-  const rows = await fetchPublishedPosts(limit, cat);
+  const rows = await fetchPublishedPosts(limit, cat, contentType);
   if (rows.length) return rows;
-  if (GUIDE_SEED_BY_CATEGORY[cat]) return fallbackGuidesFromSeed(cat, limit);
+  if (contentType === 'news' && GUIDE_SEED_BY_CATEGORY[cat]) return fallbackGuidesFromSeed(cat, limit);
   return [];
 }
 

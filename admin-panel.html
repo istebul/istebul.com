@@ -64,6 +64,9 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .card-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px;}
 .ib-post-cover-preview{display:flex;align-items:center;gap:12px;min-height:56px;padding:10px;border:1px dashed var(--border);border-radius:10px;background:var(--surface2);}
 .ib-post-cover-preview img{display:block;max-width:200px;max-height:72px;border-radius:8px;object-fit:cover;}
+.ib-post-cover-upload{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+.ib-post-cover-upload input[type=file]{max-width:100%;}
+.ib-post-cover-upload .text-muted-sm{margin:0;flex:1 1 200px;}
 .ib-post-thumb-cell img{width:48px;height:36px;border-radius:6px;object-fit:cover;background:var(--surface2);}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .form-group{margin-bottom:16px;}
@@ -458,7 +461,8 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <div class="nav-item" data-page-target="announcements"><span class="nav-label">Duyurular</span></div>
             <div class="nav-item" data-page-target="campaigns"><span class="nav-label">Kampanyalar</span></div>
             <div class="nav-item" data-page-target="faqs"><span class="nav-label">SSS</span></div>
-            <div class="nav-item" data-page-target="blog"><span class="nav-label">Güncel haberler</span></div>
+            <div class="nav-item" data-page-target="home-news"><span class="nav-label">Güncel haberler</span></div>
+            <div class="nav-item" data-page-target="blog"><span class="nav-label">Blog</span></div>
           </div>
         </div>
         <div class="nav-group">
@@ -900,24 +904,24 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
         </div>
       </div>
 
-      <div class="page" id="page-blog">
+      <div class="page" id="page-home-news">
         <div class="page-header">
           <h2>Güncel haberler</h2>
-          <p>Ana sayfa şeridi ve blog — kapak görseli URL ile konuyu güncelleyin. Yayınlanan + öne çıkan yazı ana sayfada görünür.</p>
+          <p>Ana sayfa bilgilendirme şeridi — kapak görseli dosya olarak yüklenir. Yayınlanan + öne çıkan haberler SSS altında görünür.</p>
         </div>
         <div class="card" style="margin-bottom:1rem;padding:1rem 1.15rem;background:#f8fafc">
-          <p class="text-muted-sm" style="margin:0"><strong>Operasyon:</strong> Kapak görseli değiştirin → başlık/özet güncelleyin → kategori seçin → <em>Ana sayfada göster</em> işaretleyin → <em>Yayınla</em>. Ana sayfa: SSS altı, tek satır önizleme.</p>
+          <p class="text-muted-sm" style="margin:0"><strong>Operasyon:</strong> Kapak görseli yükle → başlık/özet → kategori → <em>Ana sayfada göster</em> → <em>Yayınla</em>.</p>
         </div>
-        <div class="card" id="post-editor-card">
-          <div class="card-title" id="post-form-title">Yeni haber / rehber</div>
+        <div class="card" id="news-editor-card">
+          <div class="card-title" id="news-form-title">Yeni haber</div>
           <div class="form-row">
-            <div class="form-group"><label>Başlık</label><input type="text" id="post-title" oninput="autoSlug()" /></div>
-            <div class="form-group"><label>URL (slug)</label><input type="text" id="post-slug" /></div>
+            <div class="form-group"><label>Başlık</label><input type="text" id="news-post-title" oninput="autoNewsSlug()" /></div>
+            <div class="form-group"><label>URL (slug)</label><input type="text" id="news-post-slug" /></div>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label>Kategori</label>
-              <select id="post-category">
+              <select id="news-post-category">
                 <option value="auto">Araba</option>
                 <option value="konut">Konut</option>
                 <option value="tatil">Tatil</option>
@@ -926,46 +930,49 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
               </select>
             </div>
             <div class="form-group">
-              <label>Kapak görseli URL</label>
-              <input type="url" id="post-cover" placeholder="/assets/images/auto-hero.jpg" oninput="previewPostCover()" />
-              <p class="text-muted-sm" style="margin:0.35rem 0 0">Örnek: /assets/images/auto-hero.jpg · /assets/images/demo/kadikoy-daire.svg</p>
+              <label>Kapak görseli (dosya)</label>
+              <div class="ib-post-cover-upload">
+                <input type="file" id="news-post-cover-file" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml" />
+                <p class="text-muted-sm">JPEG, PNG, WebP, GIF veya SVG · en fazla 5 MB</p>
+              </div>
+              <input type="hidden" id="news-post-cover-url" />
             </div>
           </div>
           <div class="form-group ib-post-cover-preview-wrap">
             <label>Önizleme (ana sayfa şeridi)</label>
-            <div id="post-cover-preview" class="ib-post-cover-preview" aria-live="polite">
-              <span class="text-muted-sm">Kapak URL girildiğinde önizleme burada görünür.</span>
+            <div id="news-post-cover-preview" class="ib-post-cover-preview" aria-live="polite">
+              <span class="text-muted-sm">Kapak yüklendiğinde önizleme burada görünür.</span>
             </div>
           </div>
-          <div class="form-group"><label>Kısa özet (liste kartı)</label><input type="text" id="post-excerpt" maxlength="220" /></div>
+          <div class="form-group"><label>Kısa özet</label><input type="text" id="news-post-excerpt" maxlength="220" /></div>
           <div class="form-row">
-            <div class="form-group"><label>Kaynak etiketi</label><input type="text" id="post-source-label" placeholder="Resmi Gazete / BDDK" /></div>
-            <div class="form-group"><label>Kaynak URL (opsiyonel)</label><input type="url" id="post-source-url" /></div>
+            <div class="form-group"><label>Kaynak etiketi</label><input type="text" id="news-post-source-label" placeholder="Resmi Gazete / BDDK" /></div>
+            <div class="form-group"><label>Kaynak URL (opsiyonel)</label><input type="url" id="news-post-source-url" /></div>
           </div>
-          <div class="form-group"><label>İçerik</label><textarea id="post-content" class="textarea-xl"></textarea></div>
+          <div class="form-group"><label>İçerik (kısa haber metni)</label><textarea id="news-post-content" class="textarea-lg"></textarea></div>
           <div class="form-row">
             <label class="toggle">
-              <input type="checkbox" id="post-published" />
+              <input type="checkbox" id="news-post-published" />
               <div class="toggle-track"><div class="toggle-thumb"></div></div>
               <span class="text-muted-sm">Hemen yayınla</span>
             </label>
             <label class="toggle">
-              <input type="checkbox" id="post-featured" />
+              <input type="checkbox" id="news-post-featured" />
               <div class="toggle-track"><div class="toggle-thumb"></div></div>
-              <span class="text-muted-sm">Ana sayfada göster (görsel + başlık)</span>
+              <span class="text-muted-sm">Ana sayfada göster</span>
             </label>
           </div>
           <div class="actions">
-            <button class="btn btn-primary" data-action="save-post">Kaydet</button>
-            <button type="button" class="btn btn-ghost" data-action="cancel-post-edit" hidden>İptal</button>
+            <button class="btn btn-primary" data-action="save-news-post">Kaydet</button>
+            <button type="button" class="btn btn-ghost" data-action="cancel-news-edit" hidden>İptal</button>
           </div>
         </div>
         <div class="card">
-          <div class="card-title">Yayınlanan içerikler</div>
+          <div class="card-title">Haber listesi</div>
           <div class="form-row" style="margin-bottom:0.75rem">
             <div class="form-group">
               <label>Kategori filtresi</label>
-              <select id="post-list-filter" onchange="loadPosts()">
+              <select id="news-list-filter" onchange="loadNewsPosts()">
                 <option value="">Tümü</option>
                 <option value="auto">Araba</option>
                 <option value="konut">Konut</option>
@@ -975,7 +982,85 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
               </select>
             </div>
           </div>
-          <div id="posts-list"><div class="empty">Yükleniyor...</div></div>
+          <div id="news-posts-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-blog">
+        <div class="page-header">
+          <h2>Blog</h2>
+          <p>Uzun format karar rehberleri — /blog sayfasında listelenir. Kapak görseli dosya veya harici URL ile eklenebilir.</p>
+        </div>
+        <div class="card" id="blog-editor-card">
+          <div class="card-title" id="blog-form-title">Yeni blog yazısı</div>
+          <div class="form-row">
+            <div class="form-group"><label>Başlık</label><input type="text" id="blog-post-title" oninput="autoBlogSlug()" /></div>
+            <div class="form-group"><label>URL (slug)</label><input type="text" id="blog-post-slug" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Kategori</label>
+              <select id="blog-post-category">
+                <option value="auto">Araba</option>
+                <option value="konut">Konut</option>
+                <option value="tatil">Tatil</option>
+                <option value="finans">Finansman</option>
+                <option value="sigorta">Sigorta</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Kapak görseli (dosya)</label>
+              <div class="ib-post-cover-upload">
+                <input type="file" id="blog-post-cover-file" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml" />
+                <p class="text-muted-sm">Öncelik: yüklenen dosya</p>
+              </div>
+              <input type="hidden" id="blog-post-cover-url" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Harici kapak URL (opsiyonel)</label>
+            <input type="url" id="blog-post-cover-external" placeholder="https://…" oninput="previewBlogPostCover()" />
+          </div>
+          <div class="form-group ib-post-cover-preview-wrap">
+            <label>Önizleme</label>
+            <div id="blog-post-cover-preview" class="ib-post-cover-preview" aria-live="polite">
+              <span class="text-muted-sm">Kapak yüklendiğinde veya URL girildiğinde önizleme burada görünür.</span>
+            </div>
+          </div>
+          <div class="form-group"><label>Özet</label><input type="text" id="blog-post-excerpt" maxlength="280" /></div>
+          <div class="form-row">
+            <div class="form-group"><label>Kaynak etiketi (opsiyonel)</label><input type="text" id="blog-post-source-label" /></div>
+            <div class="form-group"><label>Kaynak URL (opsiyonel)</label><input type="url" id="blog-post-source-url" /></div>
+          </div>
+          <div class="form-group"><label>İçerik</label><textarea id="blog-post-content" class="textarea-xl"></textarea></div>
+          <div class="form-row">
+            <label class="toggle">
+              <input type="checkbox" id="blog-post-published" />
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span class="text-muted-sm">Hemen yayınla</span>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" data-action="save-blog-post">Kaydet</button>
+            <button type="button" class="btn btn-ghost" data-action="cancel-blog-edit" hidden>İptal</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Blog yazıları</div>
+          <div class="form-row" style="margin-bottom:0.75rem">
+            <div class="form-group">
+              <label>Kategori filtresi</label>
+              <select id="blog-list-filter" onchange="loadBlogPosts()">
+                <option value="">Tümü</option>
+                <option value="auto">Araba</option>
+                <option value="konut">Konut</option>
+                <option value="tatil">Tatil</option>
+                <option value="finans">Finansman</option>
+                <option value="sigorta">Sigorta</option>
+              </select>
+            </div>
+          </div>
+          <div id="blog-posts-list"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
 
@@ -1676,7 +1761,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
 <script type="importmap" src="/importmap.json"></script>
 <script src="/env.js"></script>
-<script type="module" src="/js/admin-panel.js?v=5"></script>
+<script type="module" src="/js/admin-panel.js?v=6"></script>
 
 <style>
 .auto-leads-toolbar{
