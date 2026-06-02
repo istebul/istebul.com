@@ -6,10 +6,12 @@ function mountHomeGuidesHub() {
   mount.dataset.guidesMounted = '1';
   mount.innerHTML = renderCategoryGuidesShell({
     mountId: 'home-guides-hub',
-    title: 'Güncel rehberler',
-    lead: 'Kararınızı etkileyen güncel bağlam — haber değil, karar rehberi.',
+    title: 'Güncel bilgilendirme',
+    lead: 'Mevzuat ve karar rehberi özetleri — yatırım veya kredi tavsiyesi değildir.',
     showTabs: true,
-    defaultCategory: 'auto'
+    defaultCategory: 'auto',
+    layout: 'digest',
+    allLinkLabel: 'Tüm yazılar'
   });
   return hydrateCategoryGuides(document, { mountId: 'home-guides-hub' });
 }

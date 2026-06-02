@@ -27,6 +27,22 @@ function coverUrl(post) {
   return url || DEFAULT_COVER;
 }
 
+function renderDigestLead(post) {
+  const href = postHref(post);
+  const excerpt = post.excerpt || excerptText(post.body, 72);
+  return `
+    <a class="ib-guides-digest-lead" href="${escapeHtml(href)}" data-native-route>
+      <span class="ib-guides-digest-lead-thumb">
+        <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="80" height="60">
+      </span>
+      <span class="ib-guides-digest-lead-body">
+        <span class="ib-guides-digest-lead-kicker">${escapeHtml(getGuideCategory(post.category)?.label || 'Rehber')}</span>
+        <strong>${escapeHtml(post.title)}</strong>
+        <span>${escapeHtml(excerpt)}</span>
+      </span>
+    </a>`;
+}
+
 function renderFeaturedCard(post, ctaHref, ctaLabel) {
   const href = postHref(post);
   const excerpt = post.excerpt || excerptText(post.body, 120);
@@ -71,12 +87,22 @@ function renderEmptyState(categoryId) {
     </div>`;
 }
 
-function renderGuidesPanel(posts, categoryId) {
+function renderGuidesPanel(posts, categoryId, layout = 'hero') {
   const cat = getGuideCategory(categoryId);
   if (!posts.length) return renderEmptyState(categoryId);
 
   const featured = posts.find((p) => p.is_featured) || posts[0];
-  const rest = posts.filter((p) => p.slug !== featured.slug).slice(0, 2);
+  const rest = posts.filter((p) => p.slug !== featured.slug).slice(0, layout === 'digest' ? 2 : 2);
+
+  if (layout === 'digest') {
+    return `
+      <div class="ib-guides-panel ib-guides-panel--digest" data-guides-panel="${escapeHtml(categoryId)}">
+        ${renderDigestLead(featured)}
+        <div class="ib-guides-compact-list ib-guides-compact-list--digest">
+          ${rest.map(renderCompactItem).join('')}
+        </div>
+      </div>`;
+  }
 
   return `
     <div class="ib-guides-panel" data-guides-panel="${escapeHtml(categoryId)}">
@@ -93,7 +119,9 @@ export function renderCategoryGuidesShell({
   lead = 'Araba, konut, tatil, finansman ve sigorta — kararınızı etkileyen güncel bağlam.',
   showTabs = true,
   defaultCategory = 'auto',
-  allHref = '/blog'
+  allHref = '/blog',
+  layout = 'hero',
+  allLinkLabel = 'Tüm rehberler'
 } = {}) {
   const tabs = showTabs
     ? `
@@ -111,24 +139,28 @@ export function renderCategoryGuidesShell({
       </div>`
     : '';
 
+  const layoutClass = layout === 'digest' ? ' ib-guides-hub--digest' : '';
+
   return `
     <section
       id="${escapeHtml(mountId)}"
-      class="ib-guides-hub ib-section-venture section-surface"
+      class="ib-guides-hub ib-section-venture${layoutClass}"
       aria-labelledby="${escapeHtml(mountId)}-title"
       data-guides-default-category="${escapeHtml(defaultCategory)}"
       data-guides-show-tabs="${showTabs ? '1' : '0'}"
+      data-guides-layout="${escapeHtml(layout)}"
     >
       <div class="container">
         <div class="ib-guides-card">
           <header class="ib-guides-header">
+            <p class="ib-guides-eyebrow">Karar rehberi</p>
             <h2 id="${escapeHtml(mountId)}-title">${escapeHtml(title)}</h2>
             ${lead ? `<p class="ib-guides-lead">${escapeHtml(lead)}</p>` : ''}
           </header>
           ${tabs}
           <div class="ib-guides-body" data-guides-body aria-live="polite">Yükleniyor…</div>
           <footer class="ib-guides-footer">
-            <a class="ib-guides-all" href="${escapeHtml(allHref)}" data-guides-all-link data-native-route>Tüm rehberler</a>
+            <a class="ib-guides-all" href="${escapeHtml(allHref)}" data-guides-all-link data-native-route>${escapeHtml(allLinkLabel)}</a>
           </footer>
         </div>
       </div>
@@ -165,8 +197,11 @@ export async function hydrateCategoryGuides(root = document, options = {}) {
       btn.setAttribute('aria-selected', on ? 'true' : 'false');
     });
 
-    const posts = (await fetchPublishedPostsByCategory(categoryId, 6)).map(normalizeGuidePost);
-    body.innerHTML = renderGuidesPanel(posts, categoryId);
+    const layout = section.dataset.guidesLayout || 'hero';
+    const posts = (await fetchPublishedPostsByCategory(categoryId, layout === 'digest' ? 4 : 6)).map(
+      normalizeGuidePost
+    );
+    body.innerHTML = renderGuidesPanel(posts, categoryId, layout);
     window.lucide?.createIcons?.();
   };
 
