@@ -46,6 +46,43 @@ Seed: `supabase/migrations/20260621_posts_guides_category.sql` + `data/content/a
 
 ---
 
+## 3b) Konut pilot — 5 başlık
+
+Seed: `data/content/konut-guide-seed-headlines.json` · migration `20260622_posts_guides_konut_tatil_seed.sql`
+
+1. 2026 konut kredisi faizleri — aylık taksit nasıl hesaplanır? *(öne çıkan)*
+2. Tapu harcı ve masraflar 2026 — alıcı kontrol listesi
+3. Kira mı satın alma mı? 2026 karar çerçevesi
+4. İstanbul'da ilçe seçimi: ulaşım ve yaşam maliyeti
+5. Konut alırken gizli maliyetler (aidat, depozito, taşınma)
+
+CTA: `/konut/`
+
+---
+
+## 3c) Tatil pilot — 5 başlık
+
+Seed: `data/content/tatil-guide-seed-headlines.json`
+
+1. 2026 erken rezervasyon vs son dakika — maliyet karşılaştırması *(öne çıkan)*
+2. Yurt içi tatil bütçesi: aile için 7 günlük plan
+3. Döviz kuru tatil maliyetini nasıl etkiler?
+4. Çocuklu tatil destinasyonu seçimi — risk ve konfor
+5. Tatil sigortası ne zaman mantıklı?
+
+CTA: `/tatil/`
+
+---
+
+## 3d) 8 haftalık içerik takvimi
+
+- **JSON (operasyon):** `data/content/editorial-weekly-calendar.json`
+- **Okunabilir tablo:** `docs/EDITORIAL_WEEKLY_CALENDAR.md`
+
+Ritim: Pazartesi Auto · Çarşamba finans/sigorta · Cuma konut/tatil.
+
+---
+
 ## 4) Haftalık editoryal ritim
 
 | Gün | İş |

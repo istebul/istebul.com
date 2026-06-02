@@ -4,7 +4,15 @@
  */
 
 import autoGuideSeed from '../../../data/content/auto-guide-seed-headlines.json' with { type: 'json' };
+import konutGuideSeed from '../../../data/content/konut-guide-seed-headlines.json' with { type: 'json' };
+import tatilGuideSeed from '../../../data/content/tatil-guide-seed-headlines.json' with { type: 'json' };
 import { escapeHtml } from '../../core/security.js';
+
+const GUIDE_SEED_BY_CATEGORY = Object.freeze({
+  auto: autoGuideSeed,
+  konut: konutGuideSeed,
+  tatil: tatilGuideSeed
+});
 
 export const GUIDE_CATEGORIES = Object.freeze([
   { id: 'auto', label: 'Araba', ctaHref: '/auto/', ctaLabel: 'Ücretsiz analiz' },
@@ -42,15 +50,16 @@ export function normalizeGuidePost(post) {
   return mapPostRow(post);
 }
 
-function fallbackAutoGuides(limit = 6) {
-  const headlines = Array.isArray(autoGuideSeed?.headlines) ? autoGuideSeed.headlines : [];
+function fallbackGuidesFromSeed(category, limit = 6) {
+  const seed = GUIDE_SEED_BY_CATEGORY[category];
+  const headlines = Array.isArray(seed?.headlines) ? seed.headlines : [];
   return headlines.slice(0, limit).map((item, index) => ({
-    id: `seed-auto-${index}`,
+    id: `seed-${category}-${index}`,
     title: item.title,
     slug: item.slug,
     body: item.excerpt || '',
     excerpt: item.excerpt || '',
-    category: 'auto',
+    category,
     cover_image_url: item.cover_image_url || '',
     is_featured: Boolean(item.is_featured),
     source_label: item.source_label || '',
@@ -158,7 +167,7 @@ export async function fetchPublishedPostsByCategory(category, limit = 6) {
   const cat = getGuideCategory(category)?.id || String(category || 'auto').trim().toLowerCase();
   const rows = await fetchPublishedPosts(limit, cat);
   if (rows.length) return rows;
-  if (cat === 'auto') return fallbackAutoGuides(limit);
+  if (GUIDE_SEED_BY_CATEGORY[cat]) return fallbackGuidesFromSeed(cat, limit);
   return [];
 }
 
