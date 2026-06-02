@@ -92,6 +92,10 @@ html.ib-ds-v4.ib-premium-v7 #landing-faq {
   order: 90;
 }
 
+html.ib-ds-v4.ib-premium-v7 #home-guides-strip {
+  order: 95;
+}
+
 html.ib-ds-v4.ib-premium-v7 #home-final-cta {
   order: 100;
 }
