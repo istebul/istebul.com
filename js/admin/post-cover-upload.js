@@ -24,12 +24,16 @@ function isBucketMissing(message) {
   return /bucket not found/i.test(String(message || ''));
 }
 
+function isStoragePermissionError(message) {
+  return /row-level security|policy|permission|not allowed/i.test(String(message || ''));
+}
+
 function mapStorageError(message) {
   const msg = String(message || '');
   if (isBucketMissing(msg)) {
     return 'Kapak deposu (content-covers) bulunamadı.';
   }
-  if (/row-level security|policy|permission|not allowed/i.test(msg)) {
+  if (isStoragePermissionError(msg)) {
     return 'Kapak yükleme yetkisi yok. Admin hesabıyla giriş yaptığınızdan emin olun.';
   }
   if (/payload too large|exceeded.*size/i.test(msg)) {
@@ -99,7 +103,7 @@ export async function uploadPostCoverImage(supabaseClient, file, opts = {}) {
   });
 
   if (uploadError) {
-    if (isBucketMissing(uploadError.message)) {
+    if (isBucketMissing(uploadError.message) || isStoragePermissionError(uploadError.message)) {
       try {
         return await uploadViaAdminAction(supabaseClient, file, folder);
       } catch (fallbackError) {
