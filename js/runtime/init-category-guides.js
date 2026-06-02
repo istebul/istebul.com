@@ -1,19 +1,30 @@
-import { hydrateCategoryGuides, renderCategoryGuidesShell } from '../features/content/category-guides-ui.js';
+import {
+  hydrateCategoryGuides,
+  renderCategoryGuidesInner,
+  renderCategoryGuidesShell
+} from '../features/content/category-guides-ui.js';
 
-function mountHomeGuidesHub() {
-  const mount = document.getElementById('home-guides-hub-mount');
-  if (!mount || mount.dataset.guidesMounted === '1') return;
-  mount.dataset.guidesMounted = '1';
-  mount.innerHTML = renderCategoryGuidesShell({
-    mountId: 'home-guides-hub',
-    title: 'Güncel bilgilendirme',
-    lead: 'Mevzuat ve karar rehberi özetleri — yatırım veya kredi tavsiyesi değildir.',
-    showTabs: true,
-    defaultCategory: 'auto',
-    layout: 'digest',
-    allLinkLabel: 'Tüm yazılar'
-  });
-  return hydrateCategoryGuides(document, { mountId: 'home-guides-hub' });
+const HOME_STRIP_OPTS = {
+  mountId: 'home-guides-strip',
+  title: 'Güncel haberler',
+  lead: '',
+  showTabs: true,
+  defaultCategory: 'auto',
+  layout: 'strip',
+  allLinkLabel: 'Tümü',
+  allHref: '/blog'
+};
+
+function mountHomeGuidesStrip() {
+  const section = document.getElementById('home-guides-strip');
+  if (!section || section.dataset.guidesMounted === '1') return;
+
+  const inner = section.querySelector('[data-guides-inner]');
+  if (!inner) return;
+
+  section.dataset.guidesMounted = '1';
+  inner.innerHTML = renderCategoryGuidesInner(HOME_STRIP_OPTS);
+  return hydrateCategoryGuides(document, { mountId: 'home-guides-strip' });
 }
 
 function mountAutoGuidesHub() {
@@ -34,8 +45,8 @@ function mountAutoGuidesHub() {
 
 export function initCategoryGuidesHub() {
   const run = () => {
-    if (document.getElementById('home-guides-hub-mount')) {
-      mountHomeGuidesHub().catch(() => {});
+    if (document.getElementById('home-guides-strip')) {
+      mountHomeGuidesStrip().catch(() => {});
     }
     if (document.getElementById('auto-guides-hub-mount')) {
       mountAutoGuidesHub().catch(() => {});

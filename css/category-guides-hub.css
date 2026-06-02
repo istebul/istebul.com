@@ -4,17 +4,161 @@
   padding: 3rem 0;
 }
 
-/* Ana sayfa: footer öncesi — kompakt bilgilendirme şeridi */
-#home-guides-hub-mount.ib-guides-hub--home-footer {
-  margin-top: 0;
+/* Ana sayfa: SSS altı — tek satır haber şeridi */
+#home-guides-strip.ib-guides-hub--strip {
+  padding: 1.35rem 0 1.5rem;
   border-top: 1px solid rgba(15, 23, 42, 0.08);
   background: #f8fafc;
 }
 
-#home-guides-hub-mount.ib-guides-hub--home-footer .ib-guides-hub--digest {
-  padding: 1.75rem 0 2rem;
-  background: transparent;
-  box-shadow: none;
+#home-guides-strip .ib-guides-card {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+.ib-guides-hub--strip .ib-guides-header--strip {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.55rem;
+}
+
+.ib-guides-hub--strip .ib-guides-header-main h2 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.ib-guides-hub--strip .ib-guides-eyebrow {
+  display: block;
+  margin: 0 0 0.15rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.ib-guides-all--header {
+  flex-shrink: 0;
+  padding: 0.32rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  background: #f8fafc;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ib-guides-all--header:hover {
+  background: #eff6ff;
+}
+
+.ib-guides-hub--strip .ib-guides-tabs {
+  margin-bottom: 0.55rem;
+}
+
+.ib-guides-hub--strip .ib-guides-tab {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.66rem;
+}
+
+.ib-guides-hub--strip .ib-guides-body {
+  min-height: 0;
+}
+
+.ib-guides-strip-row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.45rem 0;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.ib-guides-strip-row:hover {
+  background: #f8fafc;
+}
+
+.ib-guides-strip-thumb {
+  width: 64px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.ib-guides-strip-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ib-guides-strip-text {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.ib-guides-strip-kicker {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.ib-guides-strip-text strong {
+  font-size: 0.82rem;
+  line-height: 1.3;
+  color: #0f172a;
+}
+
+.ib-guides-strip-text span {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ib-guides-strip-more {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.ib-guides-strip-row:hover .ib-guides-strip-text strong {
+  color: #2563eb;
+}
+
+@media (max-width: 640px) {
+  .ib-guides-hub--strip .ib-guides-header--strip {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ib-guides-strip-row {
+    grid-template-columns: 56px 1fr;
+  }
+
+  .ib-guides-strip-more {
+    display: none;
+  }
 }
 
 .ib-guides-hub--digest .ib-guides-eyebrow {

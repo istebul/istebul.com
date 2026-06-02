@@ -39,8 +39,8 @@
     <!-- perf:preload-style -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
-    <link rel="preload" href="css/style.css?v=66" as="style">
-    <link rel="stylesheet" href="css/style.css?v=66">
+    <link rel="preload" href="css/style.css?v=67" as="style">
+    <link rel="stylesheet" href="css/style.css?v=67">
     <link rel="preload" href="css/bundles/homepage.bundle.css?v=5" as="style">
     <link rel="stylesheet" href="css/bundles/homepage.bundle.css?v=6">
 
@@ -70,7 +70,8 @@ html[data-ib-route="home"] #home-vertical-focus,
 html[data-ib-route="home"] #home-features-strip,
 html[data-ib-route="home"] #pricing,
 html[data-ib-route="home"] #partner-enterprise,
-html[data-ib-route="home"] #landing-faq{display:block!important}
+html[data-ib-route="home"] #landing-faq,
+html[data-ib-route="home"] #home-guides-strip{display:block!important}
 html[data-ib-route="home"] #sample-preview,
 html[data-ib-route="home"] #trust,
 html[data-ib-route="home"] #karar-rehberi{display:none!important}
@@ -1142,6 +1143,26 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
+        <section
+            id="home-guides-strip"
+            class="ib-guides-hub ib-guides-hub--digest ib-guides-hub--strip"
+            aria-labelledby="home-guides-strip-title"
+            data-guides-default-category="auto"
+            data-guides-show-tabs="1"
+            data-guides-layout="strip"
+        >
+            <div class="container">
+                <div data-guides-inner>
+                    <p class="text-muted-sm">Güncel haberler yükleniyor…</p>
+                </div>
+            </div>
+            <noscript>
+                <div class="container">
+                    <p><a href="/blog">Güncel haberler ve karar rehberleri</a></p>
+                </div>
+            </noscript>
+        </section>
+
         <!-- Categories Section (app shell — not on marketing home) -->
         <section id="categories" class="categories-section ib-section-venture hidden" data-landing-excluded hidden>
             <div class="container">
@@ -1155,8 +1176,6 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 </div>
             </div>
         </section>
-
-        <div id="home-guides-hub-mount" class="ib-guides-hub--home-footer" aria-label="Güncel bilgilendirme"></div>
 
     </main>
 
@@ -1226,6 +1245,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <div class="footer-section">
                     <h4 data-i18n="footerNav.resources">Kaynaklar</h4>
                     <ul>
+                        <li><a href="/#home-guides-strip" data-home-anchor="home-guides-strip">Güncel haberler</a></li>
                         <li><a href="/blog" data-native-route data-i18n="nav.blog">Blog</a></li>
                         <li><a href="/duyurular" data-native-route data-i18n="nav.announcements">Duyurular</a></li>
                         <li><a href="/kampanyalar" data-native-route data-i18n="nav.campaigns">Kampanyalar</a></li>
@@ -1298,6 +1318,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     </div>
 
     <!-- Scripts -->
+    <script type="module" src="/js/runtime/init-category-guides.js"></script>
     <script type="module" src="js/app.bundle.js"></script>
     <script type="module" src="/js/runtime/site-social-init.js"></script>
 </body>

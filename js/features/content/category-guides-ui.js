@@ -87,12 +87,36 @@ function renderEmptyState(categoryId) {
     </div>`;
 }
 
+function renderStripRow(post) {
+  const href = postHref(post);
+  const excerpt = post.excerpt || excerptText(post.body, 58);
+  return `
+    <a class="ib-guides-strip-row" href="${escapeHtml(href)}" data-native-route>
+      <span class="ib-guides-strip-thumb">
+        <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="64" height="48">
+      </span>
+      <span class="ib-guides-strip-text">
+        <span class="ib-guides-strip-kicker">${escapeHtml(getGuideCategory(post.category)?.label || 'Haber')}</span>
+        <strong>${escapeHtml(post.title)}</strong>
+        <span>${escapeHtml(excerpt)}</span>
+      </span>
+      <span class="ib-guides-strip-more" aria-hidden="true">Oku</span>
+    </a>`;
+}
+
 function renderGuidesPanel(posts, categoryId, layout = 'hero') {
   const cat = getGuideCategory(categoryId);
   if (!posts.length) return renderEmptyState(categoryId);
 
   const featured = posts.find((p) => p.is_featured) || posts[0];
   const rest = posts.filter((p) => p.slug !== featured.slug).slice(0, layout === 'digest' ? 2 : 2);
+
+  if (layout === 'strip') {
+    return `
+      <div class="ib-guides-panel ib-guides-panel--strip" data-guides-panel="${escapeHtml(categoryId)}">
+        ${renderStripRow(featured)}
+      </div>`;
+  }
 
   if (layout === 'digest') {
     return `
@@ -113,10 +137,10 @@ function renderGuidesPanel(posts, categoryId, layout = 'hero') {
     </div>`;
 }
 
-export function renderCategoryGuidesShell({
+export function renderCategoryGuidesInner({
   mountId = 'guides-hub',
   title = 'Güncel rehberler',
-  lead = 'Araba, konut, tatil, finansman ve sigorta — kararınızı etkileyen güncel bağlam.',
+  lead = '',
   showTabs = true,
   defaultCategory = 'auto',
   allHref = '/blog',
@@ -139,7 +163,36 @@ export function renderCategoryGuidesShell({
       </div>`
     : '';
 
-  const layoutClass = layout === 'digest' ? ' ib-guides-hub--digest' : '';
+  const headerClass = layout === 'strip' ? ' ib-guides-header--strip' : '';
+
+  return `
+    <div class="ib-guides-card">
+      <header class="ib-guides-header${headerClass}">
+        <div class="ib-guides-header-main">
+          <p class="ib-guides-eyebrow">Bilgilendirme</p>
+          <h2 id="${escapeHtml(mountId)}-title">${escapeHtml(title)}</h2>
+          ${lead ? `<p class="ib-guides-lead">${escapeHtml(lead)}</p>` : ''}
+        </div>
+        <a class="ib-guides-all ib-guides-all--header" href="${escapeHtml(allHref)}" data-guides-all-link data-native-route>${escapeHtml(allLinkLabel)}</a>
+      </header>
+      ${tabs}
+      <div class="ib-guides-body" data-guides-body aria-live="polite">Yükleniyor…</div>
+      ${layout === 'strip' ? '' : `<footer class="ib-guides-footer"><a class="ib-guides-all" href="${escapeHtml(allHref)}" data-guides-all-link data-native-route>${escapeHtml(allLinkLabel)}</a></footer>`}
+    </div>`;
+}
+
+export function renderCategoryGuidesShell({
+  mountId = 'guides-hub',
+  title = 'Güncel rehberler',
+  lead = 'Araba, konut, tatil, finansman ve sigorta — kararınızı etkileyen güncel bağlam.',
+  showTabs = true,
+  defaultCategory = 'auto',
+  allHref = '/blog',
+  layout = 'hero',
+  allLinkLabel = 'Tüm rehberler'
+} = {}) {
+  const layoutClass =
+    layout === 'digest' ? ' ib-guides-hub--digest' : layout === 'strip' ? ' ib-guides-hub--strip' : '';
 
   return `
     <section
@@ -151,18 +204,7 @@ export function renderCategoryGuidesShell({
       data-guides-layout="${escapeHtml(layout)}"
     >
       <div class="container">
-        <div class="ib-guides-card">
-          <header class="ib-guides-header">
-            <p class="ib-guides-eyebrow">Karar rehberi</p>
-            <h2 id="${escapeHtml(mountId)}-title">${escapeHtml(title)}</h2>
-            ${lead ? `<p class="ib-guides-lead">${escapeHtml(lead)}</p>` : ''}
-          </header>
-          ${tabs}
-          <div class="ib-guides-body" data-guides-body aria-live="polite">Yükleniyor…</div>
-          <footer class="ib-guides-footer">
-            <a class="ib-guides-all" href="${escapeHtml(allHref)}" data-guides-all-link data-native-route>${escapeHtml(allLinkLabel)}</a>
-          </footer>
-        </div>
+        ${renderCategoryGuidesInner({ mountId, title, lead, showTabs, defaultCategory, allHref, layout, allLinkLabel })}
       </div>
     </section>`;
 }
@@ -198,9 +240,8 @@ export async function hydrateCategoryGuides(root = document, options = {}) {
     });
 
     const layout = section.dataset.guidesLayout || 'hero';
-    const posts = (await fetchPublishedPostsByCategory(categoryId, layout === 'digest' ? 4 : 6)).map(
-      normalizeGuidePost
-    );
+    const limit = layout === 'strip' ? 3 : layout === 'digest' ? 4 : 6;
+    const posts = (await fetchPublishedPostsByCategory(categoryId, limit)).map(normalizeGuidePost);
     body.innerHTML = renderGuidesPanel(posts, categoryId, layout);
     window.lucide?.createIcons?.();
   };

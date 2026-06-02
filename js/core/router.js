@@ -23,7 +23,8 @@ export const HOMEPAGE_SECTION_IDS = Object.freeze([
     'home-features-strip',
     'pricing',
     'partner-enterprise',
-    'landing-faq'
+    'landing-faq',
+    'home-guides-strip'
 ]);
 
 /** Hash targets on the marketing page. */
@@ -34,7 +35,8 @@ export const MARKETING_HASH_IDS = Object.freeze([
     'how-it-works',
     'pricing',
     'partner-enterprise',
-    'landing-faq'
+    'landing-faq',
+    'home-guides-strip'
 ]);
 
 /** Legacy hash shortcuts on homepage (long-scroll). */

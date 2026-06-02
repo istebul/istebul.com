@@ -4775,6 +4775,7 @@ const MARKETING_SECTION_IDS = new Set([
     'pricing',
     'partner-enterprise',
     'landing-faq',
+    'home-guides-strip',
     'home-final-cta'
 ]);
 const MARKETING_PATH_ALIASES = new Set(['/metodoloji-ozet', '/planlar-ozet']);
