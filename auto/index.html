@@ -14,12 +14,12 @@
   <meta property="og:description" content="36 ay TCO, risk skoru, likidite ve karşılaştırma matrisi. KVKK uyumlu, Turnstile korumalı form.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.istebul.com/auto/">
-  <meta property="og:image" content="https://www.istebul.com/assets/images/auto-hero.jpg">
-  <link rel="preload" href="/assets/images/auto-hero.jpg" as="image">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/auto-hero-1280.jpg">
+  <link rel="preload" href="/assets/images/auto-hero.webp" as="image" type="image/webp" fetchpriority="high">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="isteBul Auto">
   <meta name="twitter:description" content="Araç alım karar analizi — TCO, finansman ve segment önerisi.">
-  <meta name="twitter:image" content="https://www.istebul.com/assets/images/auto-hero.jpg">
+  <meta name="twitter:image" content="https://www.istebul.com/assets/images/auto-hero-1280.jpg">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -48,22 +48,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
-  <link rel="preconnect" href="https://challenges.cloudflare.com" crossorigin>
   <link rel="preload" href="/assets/auto-runtime/ib-car.css" as="style">
   <link rel="stylesheet" href="/assets/auto-runtime/ib-car.css">
-  <link rel="stylesheet" href="/css/auto-results-v2.css?v=1">
-  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=3">
-  <link rel="stylesheet" href="/css/auto-header-nav-v1.css?v=3">
-  <link rel="stylesheet" href="/css/auto-final-cta-contrast-v1.css?v=1">
-  <link rel="stylesheet" href="/css/vertical-category-heroes-v1.css?v=1">
-  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=4">
+  <link rel="stylesheet" href="/css/bundles/auto-page.bundle.css?v=1">
   <script src="/env.js" defer></script>
   <script src="/js/auto/auto-document-ready.js"></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"isteBul Auto ücretsiz mi?","acceptedAnswer":{"@type":"Answer","text":"Temel karar analizi ücretsiz başlatılabilir; Pro plan derin rapor ve ek özellikler sunar. Koşullar planlar sayfasında güncellenir."}},{"@type":"Question","name":"Skor nasıl hesaplanır?","acceptedAnswer":{"@type":"Answer","text":"Skor kural tabanlı motordadır; bütçe, kullanım, TCO ve risk sinyalleri birleştirilir. AI skoru değiştirmez."}},{"@type":"Question","name":"TCO ne kadar güvenilir?","acceptedAnswer":{"@type":"Answer","text":"TCO varsayımlara dayalı bilgilendirme amaçlı projeksiyondur; bayi teklifi ve ekspertiz ile doğrulanmalıdır."}},{"@type":"Question","name":"Partner teklifleri zorunlu mu?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Lead paylaşımı yalnızca onayınızla yapılır."}}]}</script>
-  <link rel="stylesheet" href="/css/category-guides-hub.css?v=1">
-  <link rel="stylesheet" href="/css/static-cookie-consent-v1.css?v=1">
 </head>
 <body class="ib-enterprise ib-auto">
   <header class="auto-header">
@@ -107,13 +99,17 @@
       </div>
 
       <div class="auto-hero-visual" aria-hidden="true">
-        <img
-          src="/assets/images/auto-hero.jpg"
-          alt=""
-          width="1920"
-          height="1080"
-          decoding="async"
-          loading="eager">
+        <picture>
+          <source srcset="/assets/images/auto-hero.webp" type="image/webp">
+          <img
+            src="/assets/images/auto-hero-1280.jpg"
+            alt=""
+            width="1280"
+            height="720"
+            decoding="async"
+            fetchpriority="high"
+            loading="eager">
+        </picture>
         <div class="auto-hero-float-stat auto-hero-float-stat--tl"><strong>TCO</strong>12 ay + finansman</div>
         <div class="auto-hero-float-stat auto-hero-float-stat--tr"><strong>Skor</strong>Uyum /100</div>
         <div class="auto-hero-float-stat auto-hero-float-stat--bl"><strong>Risk</strong>Şeffaf bant</div>
@@ -283,11 +279,14 @@
   </a>
 
 
-  <script type="module" src="/assets/auto-runtime/auto-app.js" defer></script>
-  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
+  <script type="module" src="/assets/auto-runtime/auto-app.js"></script>
   <script type="module">
-    import { initCategoryGuidesHub } from '/js/runtime/init-category-guides.js';
-    initCategoryGuidesHub();
+    const bootGuides = () =>
+      import('/js/runtime/init-category-guides.js')
+        .then((m) => m.initCategoryGuidesHub())
+        .catch(() => {});
+    if ('requestIdleCallback' in window) requestIdleCallback(bootGuides, { timeout: 4000 });
+    else setTimeout(bootGuides, 800);
   </script>
   <div class="static-cookie-consent" id="static-cookie-consent" role="region" aria-label="Çerez tercihi" hidden>
   <p>Çerez ve analitik tercihinizi yönetin. <a href="/cerez-politikasi.html">Çerez politikası</a> · Ana sitede <a href="/">tam tercih paneli</a>.</p>
@@ -297,9 +296,10 @@
   </div>
 </div>
   <script src="/js/runtime/static-cookie-consent.js" defer></script>
-  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
-<link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
-<script src="/env.js" defer></script>
-<script type="module" src="/js/runtime/site-social-init.js"></script>
+  <script type="module">
+    const bootSocial = () => import('/js/runtime/site-social-init.js').catch(() => {});
+    if ('requestIdleCallback' in window) requestIdleCallback(bootSocial, { timeout: 3000 });
+    else window.addEventListener('load', () => setTimeout(bootSocial, 500), { once: true });
+  </script>
 </body>
 </html>

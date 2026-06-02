@@ -35,5 +35,19 @@ if (sigorta.includes('istebul-premium-final-v7.css')) {
   fail('sigorta/index.html must not duplicate istebul-premium-final-v7.css');
 }
 
+const auto = fs.readFileSync(path.join(root, 'auto/index.html'), 'utf8');
+if (!auto.includes('css/bundles/auto-page.bundle.css')) {
+  fail('auto/index.html must link css/bundles/auto-page.bundle.css');
+}
+const autoLinks = (auto.match(/<link rel="stylesheet"/g) || []).length;
+if (autoLinks > 5) {
+  fail(`auto/index.html has ${autoLinks} stylesheets; expected ≤5 after consolidation`);
+}
+
+const konut = fs.readFileSync(path.join(root, 'konut/index.html'), 'utf8');
+if (!konut.includes('css/bundles/konut-page.bundle.css')) {
+  fail('konut/index.html must link css/bundles/konut-page.bundle.css');
+}
+
 if (failed) process.exit(1);
 console.log('css-bundles-audit: OK');

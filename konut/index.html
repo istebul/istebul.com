@@ -11,20 +11,16 @@
   <meta property="og:description" content="Tahmini analiz: toplam maliyet, lokasyon, kredi yükü ve risk dengesiyle konut kararınızı güçlendirin.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.istebul.com/konut/">
-  <meta property="og:image" content="https://www.istebul.com/assets/images/konut-hero.jpg">
-  <link rel="preload" href="/assets/images/konut-hero.jpg" as="image" fetchpriority="high">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/konut-hero-1280.jpg">
+  <link rel="preload" href="/assets/images/konut-hero.webp" as="image" type="image/webp" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://www.istebul.com/assets/images/konut-hero.jpg">
+  <meta name="twitter:image" content="https://www.istebul.com/assets/images/konut-hero-1280.jpg">
   <link rel="stylesheet" href="/css/real-estate.css?v=2">
-  <link rel="stylesheet" href="/css/vertical-category-heroes-v1.css?v=1">
-  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
-  <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
-  <link rel="stylesheet" href="/css/konut-results-v2.css?v=1">
-  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=3">
-  <link rel="stylesheet" href="/css/konut-header-premium-v1.css?v=1">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=4">
+  <link rel="stylesheet" href="/css/bundles/konut-page.bundle.css?v=1">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/real-estate/real-estate-app.js"></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
@@ -56,13 +52,17 @@
 
   <section class="housing-hero">
     <div class="housing-hero-media" aria-hidden="true">
-      <img
-        src="/assets/images/konut-hero.jpg"
-        alt=""
-        width="1920"
-        height="1080"
-        decoding="async"
-        fetchpriority="high">
+      <picture>
+        <source srcset="/assets/images/konut-hero.webp" type="image/webp">
+        <img
+          src="/assets/images/konut-hero-1280.jpg"
+          alt=""
+          width="1280"
+          height="853"
+          decoding="async"
+          fetchpriority="high"
+          loading="eager">
+      </picture>
     </div>
     <div class="housing-hero-overlay" aria-hidden="true"></div>
     <div class="housing-container housing-hero-grid">

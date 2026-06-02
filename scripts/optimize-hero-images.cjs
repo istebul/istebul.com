@@ -8,6 +8,15 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const assetsDir = path.join(root, 'assets/images');
 
+const TARGETS = [
+  'auto-hero.jpg',
+  'konut-hero.jpg',
+  'finans-hero.jpg',
+  'kasko-hero.jpg',
+  'sigorta-hero.jpg',
+  'tatil-hero.png'
+];
+
 async function main() {
   let sharp;
   try {
@@ -17,23 +26,28 @@ async function main() {
     process.exit(0);
   }
 
-  const targets = [
-    { src: 'tatil-hero.png', webp: 'tatil-hero.webp', jpg: 'tatil-hero-1280.jpg', width: 1280 },
-    { src: 'konut-hero.jpg', webp: 'konut-hero.webp', jpg: 'konut-hero-1280.jpg', width: 1280 }
-  ];
+  for (const src of TARGETS) {
+    const input = path.join(assetsDir, src);
+    if (!fs.existsSync(input)) {
+      console.warn('skip missing', src);
+      continue;
+    }
+    const base = src.replace(/\.(jpg|jpeg|png)$/i, '');
+    const webpOut = path.join(assetsDir, `${base}.webp`);
+    const jpgOut = path.join(assetsDir, `${base}-1280.jpg`);
 
-  for (const t of targets) {
-    const input = path.join(assetsDir, t.src);
-    if (!fs.existsSync(input)) continue;
     await sharp(input)
-      .resize(t.width, null, { withoutEnlargement: true })
+      .resize(1280, null, { withoutEnlargement: true })
       .webp({ quality: 82 })
-      .toFile(path.join(assetsDir, t.webp));
+      .toFile(webpOut);
     await sharp(input)
-      .resize(t.width, null, { withoutEnlargement: true })
+      .resize(1280, null, { withoutEnlargement: true })
       .jpeg({ quality: 82, mozjpeg: true })
-      .toFile(path.join(assetsDir, t.jpg));
-    console.log('optimized', t.src);
+      .toFile(jpgOut);
+
+    const webpBytes = fs.statSync(webpOut).size;
+    const jpgBytes = fs.statSync(jpgOut).size;
+    console.log(`${src} → webp ${webpBytes} B, jpg ${jpgBytes} B`);
   }
   console.log('optimize-hero-images: OK');
 }

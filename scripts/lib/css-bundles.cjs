@@ -34,7 +34,8 @@ const VERTICAL_DECISION = [
   'css/enterprise-card-readability.css',
   'css/istebul-design-system-v4.css',
   'css/vertical-header-nav-v1.css',
-  'css/rtl.css'
+  'css/rtl.css',
+  'css/perf-vertical-v1.css'
 ];
 
 /** Lightweight shared polish for corporate / coming-soon pages. */
@@ -43,10 +44,39 @@ const VERTICAL_SHARED = [
   'css/enterprise-remediation.css'
 ];
 
+/** Auto page — secondary styles (ib-car.css stays separate for LCP). */
+const AUTO_PAGE_EXTENSION = [
+  'css/auto-results-v2.css',
+  'css/auto-header-nav-v1.css',
+  'css/auto-final-cta-contrast-v1.css',
+  'css/vertical-category-heroes-v1.css',
+  'css/site-social-links-v1.css',
+  'css/category-guides-hub.css',
+  'css/static-cookie-consent-v1.css'
+];
+
+/** Konut page — secondary styles (real-estate.css stays separate). */
+const KONUT_PAGE_EXTENSION = [
+  'css/vertical-category-heroes-v1.css',
+  'css/site-social-links-v1.css',
+  'css/premium-decision-dashboard.css',
+  'css/konut-results-v2.css',
+  'css/konut-header-premium-v1.css'
+];
+
 const BUNDLES = {
   'css/bundles/homepage.bundle.css': HOMEPAGE_EXTENSION,
   'css/bundles/vertical-decision.bundle.css': VERTICAL_DECISION,
-  'css/bundles/vertical-shared.bundle.css': VERTICAL_SHARED
+  'css/bundles/vertical-shared.bundle.css': VERTICAL_SHARED,
+  'css/bundles/auto-page.bundle.css': AUTO_PAGE_EXTENSION,
+  'css/bundles/konut-page.bundle.css': KONUT_PAGE_EXTENSION
 };
 
-module.exports = { BUNDLES, HOMEPAGE_EXTENSION, VERTICAL_DECISION, VERTICAL_SHARED };
+module.exports = {
+  BUNDLES,
+  HOMEPAGE_EXTENSION,
+  VERTICAL_DECISION,
+  VERTICAL_SHARED,
+  AUTO_PAGE_EXTENSION,
+  KONUT_PAGE_EXTENSION
+};

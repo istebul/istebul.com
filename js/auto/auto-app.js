@@ -1041,6 +1041,9 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
 const TURNSTILE_SITE_KEY = '0x4AAAAAADRgIOMcaKMMBndc';
 
 async function getTurnstileToken() {
+  const { loadTurnstileScript } = await import('../runtime/load-turnstile.js');
+  await loadTurnstileScript();
+
   return new Promise((resolve) => {
     if (!window.turnstile || !TURNSTILE_SITE_KEY) {
       resolve('');
