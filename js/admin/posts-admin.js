@@ -66,6 +66,13 @@ const POSTS_CONFIG = Object.freeze({
 let adminPostsCache = [];
 const editingByType = { news: null, blog: null };
 const pendingCoverFile = { news: null, blog: null };
+let hasPostsContentTypeColumn = true;
+let hasPostsCategoryColumn = true;
+
+function isMissingColumnError(error, column) {
+  const msg = String(error?.message || '').toLowerCase();
+  return msg.includes(String(column || '').toLowerCase()) && (msg.includes('could not find') || msg.includes('column'));
+}
 
 function cfg(kind) {
   return POSTS_CONFIG[kind];
@@ -257,16 +264,25 @@ export async function loadPostsList(kind) {
     .order('created_at', { ascending: false })
     .limit(200);
 
-  // content_type separation: news vs blog
-  q = q.eq('content_type', conf.contentType);
-  if (filter) q = q.eq('category', filter);
+  if (hasPostsContentTypeColumn) q = q.eq('content_type', conf.contentType);
+  if (filter && hasPostsCategoryColumn) q = q.eq('category', filter);
 
   let { data, error } = await q;
-  if (error && /content_type/i.test(String(error.message || ''))) {
+  if (error && isMissingColumnError(error, 'content_type')) {
+    hasPostsContentTypeColumn = false;
     const fallback = await sb.from('posts').select('*').order('created_at', { ascending: false }).limit(200);
     data = (fallback.data || []).filter(
       (p) => (p.content_type || 'news') === conf.contentType
     );
+    error = fallback.error;
+  }
+  if (error && isMissingColumnError(error, 'category')) {
+    hasPostsCategoryColumn = false;
+    const fallback = await sb.from('posts').select('*').order('created_at', { ascending: false }).limit(200);
+    data = (fallback.data || []).filter((p) => {
+      const typeOk = hasPostsContentTypeColumn ? (p.content_type || 'news') === conf.contentType : true;
+      return typeOk;
+    });
     error = fallback.error;
   }
   if (error) {
@@ -366,7 +382,6 @@ export async function savePost(kind) {
     slug,
     content,
     excerpt,
-    category,
     cover_image_url,
     source_label,
     source_url,
@@ -374,6 +389,7 @@ export async function savePost(kind) {
     is_featured,
     content_type: conf.contentType
   };
+  if (hasPostsCategoryColumn) values.category = category;
 
   if (editingByType[kind]) {
     const { error } = await window.__adminSupabase

@@ -31,6 +31,12 @@ describe('posts content admin', () => {
     assert.match(panel, /loadNewsPostsAdmin/);
   });
 
+  it('posts-admin tolerates missing posts.category column', () => {
+    const mod = fs.readFileSync(path.join(root, 'js/admin/posts-admin.js'), 'utf8');
+    assert.match(mod, /hasPostsCategoryColumn/);
+    assert.match(mod, /isMissingColumnError\(error, 'category'\)/);
+  });
+
   it('cover upload uses admin-action edge upload', () => {
     const mod = fs.readFileSync(path.join(root, 'js/admin/post-cover-upload.js'), 'utf8');
     assert.match(mod, /invokeAdminFunction/);
