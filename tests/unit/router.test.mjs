@@ -40,6 +40,7 @@ const sections = new Map([
     ['partner-enterprise', sectionStub('partner-enterprise')],
     ['landing-faq', sectionStub('landing-faq')],
     ['home-final-cta', sectionStub('home-final-cta')],
+    ['home-guides-strip', sectionStub('home-guides-strip')],
     ['category-ownership', sectionStub('category-ownership')],
     ['categories', sectionStub('categories')],
     ['ilanlar', sectionStub('ilanlar')]

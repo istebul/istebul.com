@@ -117,6 +117,10 @@
     </div>
   </footer>
   <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
-  <script type="module" src="/js/runtime/site-social-init.js"></script>
+  <script type="module">
+    const bootSocial = () => import("/js/runtime/site-social-init.js").catch(() => {});
+    if ("requestIdleCallback" in window) requestIdleCallback(bootSocial, { timeout: 3000 });
+    else window.addEventListener("load", () => setTimeout(bootSocial, 500), { once: true });
+  </script>
 </body>
 </html>
