@@ -34,6 +34,10 @@ test('buildKaskoResults returns scenario', () => {
     risk_perception: 'yuksek',
     budget_level: 'yuksek'
   });
-  assert.equal(results.length, 1);
+  assert.equal(results.length, 3);
   assert.ok(results[0].score >= 40);
+  assert.ok(results[0].badge?.className);
+  assert.ok(Array.isArray(results[0].pros) && results[0].pros.length > 0);
+  assert.ok(Array.isArray(results[0].cautions));
+  assert.ok(results[0].why);
 });

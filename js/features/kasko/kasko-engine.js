@@ -155,6 +155,12 @@ export function buildEngineResult(state = {}) {
   };
 }
 
+const BADGES = {
+  balanced: { label: 'Dengeli Paket', className: 'is-logical' },
+  economic: { label: 'Ekonomik', className: 'is-economic' },
+  premium: { label: 'Geniş Teminat', className: 'is-comfort' }
+};
+
 function estimatePremium(state) {
   let base = 14_000;
   if (state.vehicle_category === 'suv') base *= 1.08;
@@ -185,15 +191,47 @@ function buildAlternatives(state, scores) {
 export function buildKaskoResults(state = {}) {
   const engine = buildEngineResult(state);
   const premium = estimatePremium(state);
+  const coverageLabel = optionLabel('coverage_level', state.coverage_level) || 'Standart';
+
   return [
     {
       id: 'balanced',
+      badge: BADGES.balanced,
       title: 'Önerilen kasko paketi',
-      description: optionLabel('coverage_level', state.coverage_level) || 'Standart',
+      description: coverageLabel,
       score: engine.decisionScore,
       estimatedCost: `Yıllık ~₺${premium.toLocaleString('tr-TR')}`,
       suitability: engine.scoreLabel,
-      metrics: { premiumBand: premium }
+      why: 'Teminat, onarım riski ve prim verimliliği skorlarının birleşimi.',
+      pros: engine.strengths.slice(0, 3),
+      cautions: engine.weaknesses.slice(0, 2),
+      metrics: { premiumBand: premium, package: 'balanced' }
+    },
+    {
+      id: 'economic',
+      badge: BADGES.economic,
+      title: 'Ekonomik kasko senaryosu',
+      description: 'Daha dar teminat — prim baskısını azaltır.',
+      score: Math.max(48, engine.decisionScore - 6),
+      estimatedCost: `Yıllık ~₺${Math.round(premium * 0.82).toLocaleString('tr-TR')}`,
+      suitability: 'Maliyet odaklı',
+      why: 'Prim verimliliği ve bütçe bandı öncelikli profil.',
+      pros: ['Daha düşük prim bandı', 'Zorunlu teminatları karşılar'],
+      cautions: ['Teminat limitleri dar olabilir', 'Hasar anında ek ödeme riski'],
+      metrics: { premiumBand: Math.round(premium * 0.82), package: 'economic' }
+    },
+    {
+      id: 'premium',
+      badge: BADGES.premium,
+      title: 'Geniş kasko senaryosu',
+      description: 'Üst limitler ve ek teminatlar.',
+      score: Math.min(96, engine.decisionScore + 4),
+      estimatedCost: `Yıllık ~₺${Math.round(premium * 1.28).toLocaleString('tr-TR')}`,
+      suitability: engine.overallRisk === 'Yüksek' ? 'Risk azaltıcı' : 'Üst segment',
+      why: 'Yüksek risk algısı veya geniş bütçe için uygun.',
+      pros: ['Geniş limit ve ek teminatlar', 'Muafiyetler düşük olabilir'],
+      cautions: ['Prim yükü artar', 'Kullanılmayan teminatlar maliyet yaratır'],
+      metrics: { premiumBand: Math.round(premium * 1.28), package: 'premium' }
     }
   ];
 }
