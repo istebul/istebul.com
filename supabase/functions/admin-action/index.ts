@@ -482,6 +482,8 @@ Deno.serve(async (req) => {
     if (table !== "site_settings") {
       return json({ error: "Invalid settings table" }, 400, origin);
     }
+  } else if (action === "upload_post_cover") {
+    /* multipart cover upload — no table/id */
   } else if (action === "list") {
     if (!table || !listTables.includes(table)) {
       return json({ error: "Invalid action or table" }, 400, origin);
@@ -501,6 +503,7 @@ Deno.serve(async (req) => {
 
   if (
     action !== "upsert_settings" &&
+    action !== "upload_post_cover" &&
     action !== "list" &&
     action !== "listPartnerApplications" &&
     action !== "createPartnerApplication" &&
@@ -514,7 +517,99 @@ Deno.serve(async (req) => {
     return json({ error: "Missing id" }, 400, origin);
   }
 
+  const COVER_BUCKET = "content-covers";
+  const MAX_COVER_BYTES = 5 * 1024 * 1024;
+  const COVER_MIME_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/svg+xml",
+  ]);
+
+  async function ensureContentCoversBucket() {
+    const { data: buckets, error: listError } = await adminClient.storage.listBuckets();
+    if (listError) throw listError;
+    const exists = (buckets || []).some(
+      (bucket) => bucket.id === COVER_BUCKET || bucket.name === COVER_BUCKET
+    );
+    if (exists) return;
+
+    const { error: createError } = await adminClient.storage.createBucket(COVER_BUCKET, {
+      public: true,
+      fileSizeLimit: MAX_COVER_BYTES,
+      allowedMimeTypes: [...COVER_MIME_TYPES],
+    });
+    if (createError && !/already exists|duplicate/i.test(createError.message)) {
+      throw createError;
+    }
+  }
+
   try {
+    if (action === "upload_post_cover") {
+      const payload = values && typeof values === "object" ? values : body;
+      const folderRaw = String(payload?.folder || "news").trim().toLowerCase();
+      const folder = /^[a-z0-9_-]{1,32}$/.test(folderRaw) ? folderRaw : "news";
+      const contentType = String(payload?.contentType || payload?.mime || "image/jpeg").trim();
+      const fileName = String(payload?.fileName || "cover.jpg")
+        .replace(/[^a-zA-Z0-9._-]/g, "")
+        .slice(0, 120);
+      const base64Raw = String(payload?.base64 || "").trim();
+
+      if (!base64Raw) {
+        return json({ error: "Missing image data" }, 400, origin);
+      }
+      if (!COVER_MIME_TYPES.has(contentType)) {
+        return json({ error: "Invalid image type" }, 400, origin);
+      }
+
+      const base64 = base64Raw.replace(/^data:[^;]+;base64,/, "");
+      let bytes: Uint8Array;
+      try {
+        const binary = atob(base64);
+        bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+      } catch {
+        return json({ error: "Invalid image encoding" }, 400, origin);
+      }
+
+      if (bytes.length > MAX_COVER_BYTES) {
+        return json({ error: "Kapak görseli en fazla 5 MB olabilir" }, 400, origin);
+      }
+      if (!bytes.length) {
+        return json({ error: "Empty image file" }, 400, origin);
+      }
+
+      await ensureContentCoversBucket();
+
+      const ext = fileName.includes(".") ? fileName.split(".").pop() : "jpg";
+      const path = `${folder}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+
+      const { error: uploadError } = await adminClient.storage.from(COVER_BUCKET).upload(path, bytes, {
+        contentType,
+        upsert: false,
+        cacheControl: "3600",
+      });
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = adminClient.storage.from(COVER_BUCKET).getPublicUrl(path);
+      const publicUrl = String(urlData?.publicUrl || "").trim();
+      if (!publicUrl) {
+        return json({ error: "Public URL could not be resolved" }, 500, origin);
+      }
+
+      await writeAdminAudit(adminClient, user, {
+        action: "upload_post_cover",
+        entity_table: "storage.objects",
+        summary: `Uploaded post cover to ${COVER_BUCKET}/${path}`,
+        metadata: { folder, contentType, bytes: bytes.length },
+      });
+
+      return json({ ok: true, publicUrl, path }, 200, origin);
+    }
+
     if (action === "list_analytics_exclusions") {
       const { data, error } = await adminClient
         .from("analytics_exclusion_rules")

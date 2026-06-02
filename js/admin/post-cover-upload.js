@@ -1,8 +1,9 @@
 /**
- * Admin kapak görseli yükleme — Supabase Storage `content-covers` bucket.
+ * Admin kapak görseli — admin-action edge function (service role, bucket otomatik).
  */
 
-const COVER_BUCKET = 'content-covers';
+import { invokeAdminFunction } from '../core/admin-client.js';
+
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = new Set([
   'image/jpeg',
@@ -12,20 +13,17 @@ const ALLOWED_TYPES = new Set([
   'image/svg+xml'
 ]);
 
-function safeExt(file) {
-  const fromName = String(file?.name || '')
-    .split('.')
-    .pop()
-    ?.toLowerCase()
-    .replace(/[^a-z0-9]/g, '');
-  if (fromName && fromName.length <= 5) return fromName;
-  const mime = String(file?.type || '');
-  if (mime === 'image/jpeg') return 'jpg';
-  if (mime === 'image/png') return 'png';
-  if (mime === 'image/webp') return 'webp';
-  if (mime === 'image/gif') return 'gif';
-  if (mime === 'image/svg+xml') return 'svg';
-  return 'jpg';
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      const base64 = result.includes(',') ? result.split(',')[1] : result;
+      resolve(base64);
+    };
+    reader.onerror = () => reject(new Error('Dosya okunamadı'));
+    reader.readAsDataURL(file);
+  });
 }
 
 /**
@@ -46,20 +44,21 @@ export async function uploadPostCoverImage(supabaseClient, file, opts = {}) {
   }
 
   const folder = String(opts.folder || 'news').replace(/[^a-z0-9_-]/gi, '') || 'news';
-  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExt(file)}`;
+  const base64 = await fileToBase64(file);
 
-  const { error } = await supabaseClient.storage.from(COVER_BUCKET).upload(path, file, {
-    cacheControl: '3600',
-    upsert: false,
-    contentType: file.type || 'image/jpeg'
+  const result = await invokeAdminFunction(supabaseClient, {
+    action: 'upload_post_cover',
+    values: {
+      folder,
+      fileName: file.name,
+      contentType: file.type || 'image/jpeg',
+      base64
+    }
   });
 
-  if (error) {
-    throw new Error(error.message || 'Görsel yüklenemedi.');
+  const url = String(result?.publicUrl || '').trim();
+  if (!url) {
+    throw new Error('Yüklenen görsel URL alınamadı.');
   }
-
-  const { data } = supabaseClient.storage.from(COVER_BUCKET).getPublicUrl(path);
-  const url = data?.publicUrl?.trim();
-  if (!url) throw new Error('Yüklenen görsel URL alınamadı.');
   return url;
 }
