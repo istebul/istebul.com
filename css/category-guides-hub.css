@@ -4,6 +4,13 @@
   padding: 3rem 0;
 }
 
+/* Ana sayfa: dönüşüm anlatımından sonra (SSS altı) */
+.ib-guides-hub--below-fold {
+  margin-top: 0;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 24%);
+}
+
 .ib-guides-card {
   max-width: 420px;
   margin: 0 auto;

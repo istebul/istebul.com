@@ -21,7 +21,7 @@
 
 | Yüzey | Bileşen |
 |-------|---------|
-| Ana sayfa | Kategori sekmeli hub (`#home-guides-hub`) |
+| Ana sayfa | Kategori sekmeli hub (`#home-guides-hub`) — **SSS (`#landing-faq`) altında** |
 | `/auto/` | Sadece `auto` kategorisi widget |
 | `/blog` | `?kategori=` filtresi |
 
