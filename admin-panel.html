@@ -910,12 +910,12 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <p>Ana sayfa bilgilendirme şeridi — kapak görseli dosya olarak yüklenir. Yayınlanan + öne çıkan haberler SSS altında görünür.</p>
         </div>
         <div class="card" style="margin-bottom:1rem;padding:1rem 1.15rem;background:#f8fafc">
-          <p class="text-muted-sm" style="margin:0"><strong>Operasyon:</strong> Kapak görseli yükle → başlık/özet → kategori → <em>Ana sayfada göster</em> → <em>Yayınla</em>. «Bucket not found» hatası: <code>supabase functions deploy admin-action</code> ve <code>supabase db push</code> çalıştırın.</p>
+          <p class="text-muted-sm" style="margin:0"><strong>Operasyon:</strong> Kapak görseli yükle → başlık/özet → kategori → <em>Ana sayfada göster</em> → <em>Yayınla</em>. Depo/izin hatası: <code>supabase db push</code> (content-covers bucket + posts.content_type).</p>
         </div>
         <div class="card" id="news-editor-card">
           <div class="card-title" id="news-form-title">Yeni haber</div>
           <div class="form-row">
-            <div class="form-group"><label>Başlık</label><input type="text" id="news-post-title" oninput="autoNewsSlug()" /></div>
+            <div class="form-group"><label>Başlık</label><input type="text" id="news-post-title" /></div>
             <div class="form-group"><label>URL (slug)</label><input type="text" id="news-post-slug" /></div>
           </div>
           <div class="form-row">
@@ -972,7 +972,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <div class="form-row" style="margin-bottom:0.75rem">
             <div class="form-group">
               <label>Kategori filtresi</label>
-              <select id="news-list-filter" onchange="loadNewsPosts()">
+              <select id="news-list-filter">
                 <option value="">Tümü</option>
                 <option value="auto">Araba</option>
                 <option value="konut">Konut</option>
@@ -994,7 +994,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
         <div class="card" id="blog-editor-card">
           <div class="card-title" id="blog-form-title">Yeni blog yazısı</div>
           <div class="form-row">
-            <div class="form-group"><label>Başlık</label><input type="text" id="blog-post-title" oninput="autoBlogSlug()" /></div>
+            <div class="form-group"><label>Başlık</label><input type="text" id="blog-post-title" /></div>
             <div class="form-group"><label>URL (slug)</label><input type="text" id="blog-post-slug" /></div>
           </div>
           <div class="form-row">
@@ -1019,7 +1019,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           </div>
           <div class="form-group">
             <label>Harici kapak URL (opsiyonel)</label>
-            <input type="url" id="blog-post-cover-external" placeholder="https://…" oninput="previewBlogPostCover()" />
+            <input type="url" id="blog-post-cover-external" placeholder="https://…" />
           </div>
           <div class="form-group ib-post-cover-preview-wrap">
             <label>Önizleme</label>
@@ -1050,7 +1050,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <div class="form-row" style="margin-bottom:0.75rem">
             <div class="form-group">
               <label>Kategori filtresi</label>
-              <select id="blog-list-filter" onchange="loadBlogPosts()">
+              <select id="blog-list-filter">
                 <option value="">Tümü</option>
                 <option value="auto">Araba</option>
                 <option value="konut">Konut</option>
@@ -1761,7 +1761,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
 <script type="importmap" src="/importmap.json"></script>
 <script src="/env.js"></script>
-<script type="module" src="/js/admin-panel.js?v=7"></script>
+<script type="module" src="/js/admin-panel.js?v=8"></script>
 
 <style>
 .auto-leads-toolbar{

@@ -94,13 +94,30 @@ function setFieldValue(kind, key, value) {
 export function initPostsAdmin(supabaseClient, { toast }) {
   window.__adminSupabase = supabaseClient;
   window.__adminPostsToast = toast;
+  bindPostFormInputs('news');
+  bindPostFormInputs('blog');
+}
 
-  window.autoNewsSlug = () => autoSlug('news');
-  window.autoBlogSlug = () => autoSlug('blog');
-  window.previewNewsPostCover = () => previewPostCover('news');
-  window.previewBlogPostCover = () => previewPostCover('blog');
-  window.loadNewsPosts = () => loadPostsList('news');
-  window.loadBlogPosts = () => loadPostsList('blog');
+function bindPostFormInputs(kind) {
+  const conf = cfg(kind);
+  const titleEl = el(conf.fields.title);
+  if (titleEl && titleEl.dataset.slugBound !== '1') {
+    titleEl.dataset.slugBound = '1';
+    titleEl.addEventListener('input', () => autoSlug(kind));
+  }
+  const filterEl = el(conf.filterId);
+  if (filterEl && filterEl.dataset.filterBound !== '1') {
+    filterEl.dataset.filterBound = '1';
+    filterEl.addEventListener('change', () => loadPostsList(kind));
+  }
+  if (conf.fields.coverUrlFallback) {
+    const externalEl = el(conf.fields.coverUrlFallback);
+    if (externalEl && externalEl.dataset.previewBound !== '1') {
+      externalEl.dataset.previewBound = '1';
+      externalEl.addEventListener('input', () => previewPostCover(kind));
+    }
+  }
+  bindCoverFileInput(kind);
 }
 
 function autoSlug(kind) {
@@ -130,8 +147,13 @@ function previewPostCover(kind) {
 
   const pending = pendingCoverFile[kind];
   if (pending) {
-    const objUrl = URL.createObjectURL(pending);
-    box.innerHTML = `<img src="${escapeHtml(objUrl)}" alt="" loading="lazy">`;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      if (!dataUrl.startsWith('data:')) return;
+      box.innerHTML = `<img src="${escapeHtml(dataUrl)}" alt="" loading="lazy">`;
+    };
+    reader.readAsDataURL(pending);
     return;
   }
 
@@ -239,7 +261,14 @@ export async function loadPostsList(kind) {
   q = q.eq('content_type', conf.contentType);
   if (filter) q = q.eq('category', filter);
 
-  const { data, error } = await q;
+  let { data, error } = await q;
+  if (error && /content_type/i.test(String(error.message || ''))) {
+    const fallback = await sb.from('posts').select('*').order('created_at', { ascending: false }).limit(200);
+    data = (fallback.data || []).filter(
+      (p) => (p.content_type || 'news') === conf.contentType
+    );
+    error = fallback.error;
+  }
   if (error) {
     listEl.innerHTML = `<p class="empty">Yüklenemedi: ${escapeHtml(error.message || String(error))}</p>`;
     return;

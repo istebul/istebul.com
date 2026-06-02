@@ -30,4 +30,19 @@ describe('posts content admin', () => {
     assert.match(panel, /home-news/);
     assert.match(panel, /loadNewsPostsAdmin/);
   });
+
+  it('cover upload uses Supabase storage directly (not admin-action)', () => {
+    const mod = fs.readFileSync(path.join(root, 'js/admin/post-cover-upload.js'), 'utf8');
+    assert.match(mod, /storage\.from\(BUCKET\)/);
+    assert.match(mod, /content-covers/);
+    assert.doesNotMatch(mod, /invokeAdminFunction|admin-action/);
+  });
+
+  it('admin-panel news/blog forms avoid inline event handlers', () => {
+    const html = fs.readFileSync(path.join(root, 'admin-panel.html'), 'utf8');
+    const newsBlock = html.slice(html.indexOf('id="page-home-news"'), html.indexOf('id="page-blog"'));
+    const blogBlock = html.slice(html.indexOf('id="page-blog"'), html.indexOf('id="page-listings"'));
+    assert.doesNotMatch(newsBlock, /oninput=|onchange=.*loadNewsPosts/);
+    assert.doesNotMatch(blogBlock, /oninput=|onchange=.*loadBlogPosts/);
+  });
 });
