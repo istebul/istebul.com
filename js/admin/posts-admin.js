@@ -391,26 +391,33 @@ export async function savePost(kind) {
   };
   if (hasPostsCategoryColumn) values.category = category;
 
-  if (editingByType[kind]) {
-    const { error } = await window.__adminSupabase
-      .from('posts')
-      .update(values)
-      .eq('id', editingByType[kind]);
-    if (error) {
-      toast?.(error.message || String(error), 'error');
-      return;
+  const submit = async (payload) => {
+    if (editingByType[kind]) {
+      return window.__adminSupabase
+        .from('posts')
+        .update(payload)
+        .eq('id', editingByType[kind]);
     }
-    toast?.(kind === 'news' ? 'Haber güncellendi' : 'Blog yazısı güncellendi');
-  } else {
-    const { error } = await window.__adminSupabase
+    return window.__adminSupabase
       .from('posts')
-      .insert(values);
-    if (error) {
-      toast?.(error.message || String(error), 'error');
-      return;
-    }
-    toast?.(kind === 'news' ? 'Haber eklendi' : 'Blog yazısı eklendi');
+      .insert(payload);
+  };
+
+  let { error } = await submit(values);
+  if (error && isMissingColumnError(error, 'category')) {
+    hasPostsCategoryColumn = false;
+    const { category: _ignored, ...withoutCategory } = values;
+    ({ error } = await submit(withoutCategory));
   }
+  if (error) {
+    toast?.(error.message || String(error), 'error');
+    return;
+  }
+  toast?.(
+    editingByType[kind]
+      ? (kind === 'news' ? 'Haber güncellendi' : 'Blog yazısı güncellendi')
+      : (kind === 'news' ? 'Haber eklendi' : 'Blog yazısı eklendi')
+  );
   resetPostForm(kind);
   loadPostsList(kind);
   if (typeof window.__adminReloadDashboard === 'function') window.__adminReloadDashboard();
