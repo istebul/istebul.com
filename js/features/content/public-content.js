@@ -4,14 +4,18 @@
  */
 
 import autoGuideSeed from '../../../data/content/auto-guide-seed-headlines.json' with { type: 'json' };
+import finansGuideSeed from '../../../data/content/finans-guide-seed-headlines.json' with { type: 'json' };
 import konutGuideSeed from '../../../data/content/konut-guide-seed-headlines.json' with { type: 'json' };
+import sigortaGuideSeed from '../../../data/content/sigorta-guide-seed-headlines.json' with { type: 'json' };
 import tatilGuideSeed from '../../../data/content/tatil-guide-seed-headlines.json' with { type: 'json' };
 import { escapeHtml } from '../../core/security.js';
 
 const GUIDE_SEED_BY_CATEGORY = Object.freeze({
   auto: autoGuideSeed,
   konut: konutGuideSeed,
-  tatil: tatilGuideSeed
+  tatil: tatilGuideSeed,
+  finans: finansGuideSeed,
+  sigorta: sigortaGuideSeed
 });
 
 export const GUIDE_CATEGORIES = Object.freeze([

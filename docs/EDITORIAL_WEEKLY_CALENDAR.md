@@ -32,7 +32,7 @@
 | Gün | Slug | Kategori |
 |-----|------|----------|
 | Pzt | `ikinci-el-arac-alirken-ekspertiz` | auto |
-| Çar | *(yeni)* Konut/taşıt kredi limitleri özeti | finans |
+| Çar | `2026-kredi-limitleri-konut-tasit` | finans |
 | Cum | `2026-konut-kredisi-aylik-taksit` | konut |
 
 ---
@@ -42,7 +42,7 @@
 | Gün | Slug | Kategori |
 |-----|------|----------|
 | Pzt | `mtv-2026-segment-karsilastirma` | auto |
-| Çar | *(yeni)* Kasko prim trendleri 2026 | sigorta |
+| Çar | `2026-kasko-prim-trendleri` | sigorta |
 | Cum | `kira-mi-satin-alma-mi-2026` | konut |
 
 ---
@@ -62,7 +62,7 @@
 | Gün | Slug | Kategori |
 |-----|------|----------|
 | Pzt | `kasko-primini-dusuren-faktorler` | auto |
-| Çar | *(yeni)* Leasing vs kredi — taşıt | finans |
+| Çar | `leasing-vs-kredi-tasit-2026` | finans |
 | Cum | `yurt-ici-tatil-butcesi-aile-7-gun` | tatil |
 
 ---
@@ -92,7 +92,7 @@
 | Gün | Slug | Kategori |
 |-----|------|----------|
 | Pzt | `arac-satisinda-deger-kaybi` | auto |
-| Çar | *(yeni)* DASK ve konut poliçesi | sigorta |
+| Çar | `dask-konut-policesi-karar` | sigorta |
 | Cum | `tatil-sigortasi-ne-zaman` | tatil |
 
 ---
@@ -130,3 +130,16 @@ Migration: `20260622_posts_guides_konut_tatil_seed.sql`
 ## Tatil seed (5 başlık)
 
 Dosya: `data/content/tatil-guide-seed-headlines.json`
+
+## Finansman seed (5 başlık)
+
+Dosya: `data/content/finans-guide-seed-headlines.json`  
+Migration: `20260623_posts_guides_finans_sigorta_seed.sql`
+
+## Sigorta seed (5 başlık)
+
+Dosya: `data/content/sigorta-guide-seed-headlines.json`
+
+---
+
+**Toplam taslak (5 dikey):** Auto 10 + Konut 5 + Tatil 5 + Finans 5 + Sigorta 5 = **30 yazı**

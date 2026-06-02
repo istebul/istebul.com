@@ -74,7 +74,35 @@ CTA: `/tatil/`
 
 ---
 
-## 3d) 8 haftalık içerik takvimi
+## 3d) Finansman pilot — 5 başlık
+
+Seed: `data/content/finans-guide-seed-headlines.json` · migration `20260623_posts_guides_finans_sigorta_seed.sql`
+
+1. 2026 konut ve taşıt kredi limitleri — özet tablo *(öne çıkan)*
+2. Leasing vs kredi — taşıt finansmanı 2026 karar çerçevesi
+3. Faiz oranı değişince aylık taksit nasıl hesaplanır?
+4. Erken kapama ve yapılandırma — gizli maliyetler
+5. Kredi notu ve onay süreci — gerçekçi beklenti
+
+CTA: `/finansman/`
+
+---
+
+## 3e) Sigorta pilot — 5 başlık
+
+Seed: `data/content/sigorta-guide-seed-headlines.json`
+
+1. 2026 kasko prim trendleri — TCO payı *(öne çıkan)*
+2. DASK ve konut poliçesi — karar çerçevesi 2026
+3. Trafik sigortası zorunluluğu ve TCO payı
+4. Tamamlayıcı sağlık ve araç sigortası birlikte planlanmalı mı?
+5. Hasarsızlık indirimi nasıl korunur?
+
+CTA: `/sigorta/`
+
+---
+
+## 3f) 8 haftalık içerik takvimi
 
 - **JSON (operasyon):** `data/content/editorial-weekly-calendar.json`
 - **Okunabilir tablo:** `docs/EDITORIAL_WEEKLY_CALENDAR.md`

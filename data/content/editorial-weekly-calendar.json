@@ -27,7 +27,7 @@
       "label": "Auto derinleşme",
       "slots": {
         "monday": { "category": "auto", "slug": "ikinci-el-arac-alirken-ekspertiz", "status": "draft" },
-        "wednesday": { "category": "finans", "slug": null, "status": "draft", "titlePlaceholder": "2026 konut/taşıt kredisi limitleri özeti" },
+        "wednesday": { "category": "finans", "slug": "2026-kredi-limitleri-konut-tasit", "status": "draft" },
         "friday": { "category": "konut", "slug": "2026-konut-kredisi-aylik-taksit", "status": "draft" }
       }
     },
@@ -36,7 +36,7 @@
       "label": "Konut pilot",
       "slots": {
         "monday": { "category": "auto", "slug": "mtv-2026-segment-karsilastirma", "status": "draft" },
-        "wednesday": { "category": "sigorta", "slug": null, "status": "draft", "titlePlaceholder": "Kasko prim trendleri 2026" },
+        "wednesday": { "category": "sigorta", "slug": "2026-kasko-prim-trendleri", "status": "draft" },
         "friday": { "category": "konut", "slug": "kira-mi-satin-alma-mi-2026", "status": "draft" }
       }
     },
@@ -54,7 +54,7 @@
       "label": "Tatil pilot",
       "slots": {
         "monday": { "category": "auto", "slug": "kasko-primini-dusuren-faktorler", "status": "draft" },
-        "wednesday": { "category": "finans", "slug": null, "status": "draft", "titlePlaceholder": "Leasing vs kredi — taşıt" },
+        "wednesday": { "category": "finans", "slug": "leasing-vs-kredi-tasit-2026", "status": "draft" },
         "friday": { "category": "tatil", "slug": "yurt-ici-tatil-butcesi-aile-7-gun", "status": "draft" }
       }
     },
@@ -81,7 +81,7 @@
       "label": "Kapanış + sigorta",
       "slots": {
         "monday": { "category": "auto", "slug": "arac-satisinda-deger-kaybi", "status": "draft" },
-        "wednesday": { "category": "sigorta", "slug": null, "status": "draft", "titlePlaceholder": "DASK ve konut poliçesi karar çerçevesi" },
+        "wednesday": { "category": "sigorta", "slug": "dask-konut-policesi-karar", "status": "draft" },
         "friday": { "category": "tatil", "slug": "tatil-sigortasi-ne-zaman", "status": "draft" }
       }
     }
