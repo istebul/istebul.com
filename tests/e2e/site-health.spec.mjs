@@ -3,9 +3,17 @@ import { test, expect } from '@playwright/test';
 const PAGES = [
   { path: '/', heading: /yalnız değilsiniz/i },
   { path: '/auto/', selector: '#vacation-flow, #auto-flow, .vacation-main, main' },
-  { path: '/sigorta/', heading: /sigorta|veriye dayalı/i },
   { path: '/konut/', selector: 'main' },
+  { path: '/tatil/', selector: 'main' },
+  { path: '/finans/', selector: 'main' },
+  { path: '/sigorta/', heading: /sigorta|veriye dayalı/i },
   { path: '/kasko/', heading: /kasko|veriye dayalı/i }
+];
+
+const RESPONSIVE_PATHS = ['/', '/auto/'];
+const VIEWPORTS = [
+  { label: 'mobile', width: 390, height: 844 },
+  { label: 'tablet', width: 768, height: 1024 }
 ];
 
 test.describe('Site health — readability and layout', () => {
@@ -21,6 +29,31 @@ test.describe('Site health — readability and layout', () => {
       expect(overflow).toBe(false);
     });
   }
+
+  for (const viewport of VIEWPORTS) {
+    for (const pagePath of RESPONSIVE_PATHS) {
+      test(`${pagePath} @ ${viewport.label} has no horizontal overflow`, async ({ page }) => {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await page.goto(pagePath);
+        await page.waitForLoadState('domcontentloaded');
+
+        const overflow = await page.evaluate(() => {
+          const doc = document.documentElement;
+          return doc.scrollWidth > doc.clientWidth + 2;
+        });
+        expect(overflow).toBe(false);
+      });
+    }
+  }
+
+  test('/profil/ logged out loads account shell without crash', async ({ page }) => {
+    await page.goto('/profil/');
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'profil');
+    await expect(page.locator('#profil')).toBeVisible();
+    await expect(page.locator('#account-root')).toContainText(/Karar Merkezi/i);
+    await expect(page.locator('#account-root').getByRole('button', { name: /Hesabına gir/i }).first()).toBeVisible();
+  });
 
   test('homepage uses consolidated CSS bundles', async ({ page }) => {
     await page.goto('/');

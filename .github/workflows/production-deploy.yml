@@ -34,10 +34,10 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: E2E site health (Playwright)
+      - name: E2E release gate (site health + user flows)
         run: |
           npx playwright install chromium --with-deps
-          npm run test:e2e:ci
+          npm run test:e2e:release
 
   deploy-cloudflare:
     name: Cloudflare Pages
