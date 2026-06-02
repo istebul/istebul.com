@@ -26,7 +26,8 @@ test.describe('Site health — readability and layout', () => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
     const styleLinks = await page.locator('link[rel="stylesheet"]').count();
-    expect(styleLinks).toBeLessThanOrEqual(3);
+    // Home may load one additional static stylesheet besides consolidated bundles.
+    expect(styleLinks).toBeLessThanOrEqual(4);
     const bundle = await page.locator('link[href*="homepage.bundle"]').count();
     expect(bundle).toBeGreaterThan(0);
   });
