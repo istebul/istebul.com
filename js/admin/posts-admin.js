@@ -2,9 +2,7 @@
  * Admin — Güncel haberler (news) ve Blog (blog) içerik operasyonları.
  */
 
-import { invokeAdminFunction } from '../core/admin-client.js';
 import { escapeHtml, safeAttr } from '../core/dom-safe.js';
-import { fetchAdminTable } from './admin-query.js';
 import { uploadPostCoverImage } from './post-cover-upload.js';
 
 const POSTS_CONFIG = Object.freeze({
@@ -91,10 +89,6 @@ function setFieldValue(kind, key, value) {
   if (!node) return;
   if (node.type === 'checkbox') node.checked = Boolean(value);
   else node.value = value ?? '';
-}
-
-async function adminAction(payload) {
-  return invokeAdminFunction(window.__adminSupabase, payload);
 }
 
 export function initPostsAdmin(supabaseClient, { toast }) {
@@ -235,28 +229,33 @@ export async function loadPostsList(kind) {
   const filter = el(conf.filterId)?.value || '';
   const sb = window.__adminSupabase;
 
-  const res = await fetchAdminTable(sb, {
-    table: 'posts',
-    limit: 200,
-    order: { column: 'created_at', ascending: false },
-    direct: () => sb.from('posts').select('*').order('created_at', { ascending: false })
-  });
+  let q = sb
+    .from('posts')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(200);
 
-  let data = res.data || [];
-  adminPostsCache = data;
-  data = data.filter((p) => (p.content_type || 'news') === conf.contentType);
-  if (filter) data = data.filter((p) => (p.category || 'auto') === filter);
+  // content_type separation: news vs blog
+  q = q.eq('content_type', conf.contentType);
+  if (filter) q = q.eq('category', filter);
 
-  if (!data.length) {
-    listEl.innerHTML = res.error
-      ? `<p class="empty">Yüklenemedi: ${escapeHtml(res.error.message)}</p>`
-      : '<p class="empty">Henüz kayıt yok.</p>';
+  const { data, error } = await q;
+  if (error) {
+    listEl.innerHTML = `<p class="empty">Yüklenemedi: ${escapeHtml(error.message || String(error))}</p>`;
+    return;
+  }
+
+  const rows = Array.isArray(data) ? data : [];
+  adminPostsCache = rows;
+
+  if (!rows.length) {
+    listEl.innerHTML = '<p class="empty">Henüz kayıt yok.</p>';
     return;
   }
 
   listEl.innerHTML =
     '<table class="table"><thead><tr><th>Görsel</th><th>Başlık</th><th>Kategori</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
-    data
+    rows
       .map((p) => {
         const thumb = p.cover_image_url
           ? `<img src="${escapeHtml(p.cover_image_url)}" alt="" loading="lazy">`
@@ -348,10 +347,23 @@ export async function savePost(kind) {
   };
 
   if (editingByType[kind]) {
-    await adminAction({ action: 'update', table: 'posts', id: editingByType[kind], values });
+    const { error } = await window.__adminSupabase
+      .from('posts')
+      .update(values)
+      .eq('id', editingByType[kind]);
+    if (error) {
+      toast?.(error.message || String(error), 'error');
+      return;
+    }
     toast?.(kind === 'news' ? 'Haber güncellendi' : 'Blog yazısı güncellendi');
   } else {
-    await adminAction({ action: 'insert', table: 'posts', id: 'new', values });
+    const { error } = await window.__adminSupabase
+      .from('posts')
+      .insert(values);
+    if (error) {
+      toast?.(error.message || String(error), 'error');
+      return;
+    }
     toast?.(kind === 'news' ? 'Haber eklendi' : 'Blog yazısı eklendi');
   }
   resetPostForm(kind);
@@ -360,31 +372,42 @@ export async function savePost(kind) {
 }
 
 export async function togglePost(kind, id, current) {
-  await adminAction({
-    action: 'update',
-    table: 'posts',
-    id,
-    values: { is_published: !current }
-  });
+  const { error } = await window.__adminSupabase
+    .from('posts')
+    .update({ is_published: !current })
+    .eq('id', id);
+  if (error) {
+    window.__adminPostsToast?.(error.message || String(error), 'error');
+    return;
+  }
   window.__adminPostsToast?.(current ? 'Taslağa alındı' : 'Yayınlandı');
   loadPostsList(kind);
   window.__adminReloadDashboard?.();
 }
 
 export async function togglePostFeatured(id, current) {
-  await adminAction({
-    action: 'update',
-    table: 'posts',
-    id,
-    values: { is_featured: !current }
-  });
+  const { error } = await window.__adminSupabase
+    .from('posts')
+    .update({ is_featured: !current })
+    .eq('id', id);
+  if (error) {
+    window.__adminPostsToast?.(error.message || String(error), 'error');
+    return;
+  }
   window.__adminPostsToast?.(!current ? 'Ana sayfada gösterilecek' : 'Ana sayfadan kaldırıldı');
   loadPostsList('news');
 }
 
 export async function deletePost(kind, id) {
   if (!confirm('Silmek istediğinize emin misiniz?')) return;
-  await adminAction({ action: 'delete', table: 'posts', id });
+  const { error } = await window.__adminSupabase
+    .from('posts')
+    .delete()
+    .eq('id', id);
+  if (error) {
+    window.__adminPostsToast?.(error.message || String(error), 'error');
+    return;
+  }
   window.__adminPostsToast?.('Silindi');
   loadPostsList(kind);
   window.__adminReloadDashboard?.();
