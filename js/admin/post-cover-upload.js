@@ -103,14 +103,17 @@ export async function uploadPostCoverImage(supabaseClient, file, opts = {}) {
   });
 
   if (uploadError) {
-    if (isBucketMissing(uploadError.message) || isStoragePermissionError(uploadError.message)) {
-      try {
-        return await uploadViaAdminAction(supabaseClient, file, folder);
-      } catch (fallbackError) {
-        throw new Error(fallbackError?.message || 'Kapak yüklenemedi');
+    // Production'da Storage policy/bucket driftlerinde akışı kesmemek için
+    // her upload hatasında edge fallback'i dene.
+    try {
+      return await uploadViaAdminAction(supabaseClient, file, folder);
+    } catch (fallbackError) {
+      const fallbackMessage = String(fallbackError?.message || '').trim();
+      if (fallbackMessage) {
+        throw new Error(fallbackMessage);
       }
+      throw new Error(mapStorageError(uploadError.message));
     }
-    throw new Error(mapStorageError(uploadError.message));
   }
 
   const { data: urlData } = supabaseClient.storage.from(BUCKET).getPublicUrl(path);
