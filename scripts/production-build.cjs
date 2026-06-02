@@ -108,6 +108,22 @@ const rewriteAssetRefs = (html) => {
   return output;
 };
 
+const FONT_ASYNC_MARK = '<!-- perf:async-fonts -->';
+const FONT_ASYNC_SNIPPET = `${FONT_ASYNC_MARK}
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/css/perf-fonts.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="/css/perf-fonts.css"></noscript>`;
+
+const injectAsyncFonts = (html) => {
+  if (html.includes(FONT_ASYNC_MARK) || html.includes('perf-fonts.css')) {
+    return html;
+  }
+  if (!html.includes('ib-ds-v4') && !html.includes('vertical-decision.bundle')) {
+    return html;
+  }
+  return html.replace(/<head([^>]*)>/i, `<head$1>\n  ${FONT_ASYNC_SNIPPET}`);
+};
+
 const injectPerformanceHints = (html, appBundleFile) => {
   let output = html;
 
@@ -117,14 +133,22 @@ const injectPerformanceHints = (html, appBundleFile) => {
   );
 
   const styleHashed = assetRefs.get('css/style.css');
+  const homeBundleHashed = assetRefs.get('css/bundles/homepage.bundle.css');
+  const preloadBlocks = [];
   if (styleHashed) {
-    output = output.replace(
-      '<!-- perf:preload-style -->',
-      `<link rel="preload" href="/${styleHashed}" as="style">`
-    );
-  } else {
-    output = output.replace('<!-- perf:preload-style -->', '');
+    preloadBlocks.push(`<link rel="preload" href="/${styleHashed}" as="style">`);
   }
+  if (homeBundleHashed) {
+    preloadBlocks.push(`<link rel="preload" href="/${homeBundleHashed}" as="style">`);
+  }
+  output = output.replace(
+    '<!-- perf:preload-style -->',
+    preloadBlocks[0] || ''
+  );
+  output = output.replace(
+    '<!-- perf:preload-homepage-bundle -->',
+    preloadBlocks[1] || ''
+  );
 
   if (appBundleFile) {
     output = output.replace(
@@ -208,7 +232,7 @@ if (!appBundleFile) {
 }
 
 pendingStaticFiles.forEach(({ file, source }) => {
-  let html = rewriteAssetRefs(source);
+  let html = injectAsyncFonts(rewriteAssetRefs(source));
   if (file === 'index.html') {
     html = injectRouteBootstrap(html);
     const bootstrapHash = hashContent(

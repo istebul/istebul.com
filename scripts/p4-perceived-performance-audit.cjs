@@ -22,6 +22,8 @@ const mustContain = [
   ['js/ui/listings-ui.js', 'loading="lazy"'],
   ['js/core/router.js', 'pulseRouteSection'],
   ['index.html', 'perf:preload-style'],
+  ['index.html', 'perf:preload-homepage-bundle'],
+  ['index.html', 'perf-fonts.css'],
   ['!index.html', 'enterprise-polish.css'],
   ['scripts/production-build.cjs', 'perf:preload-style'],
   ['sw.js', 'v51'],

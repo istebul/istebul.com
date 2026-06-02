@@ -107,8 +107,17 @@ function assertPublicEnvForBuild(env, { strict = false } = {}) {
   console.warn(`[build] Missing public env: ${missing.join(', ')}. ${hint}`);
 }
 
-function formatEnvJs(env) {
-  return `window.__env = Object.assign({}, window.__env || {}, ${JSON.stringify(env)});\n`;
+function formatEnvJs(env, processEnv = process.env) {
+  const payload = { ...env };
+  const onPages =
+    processEnv.CF_PAGES === '1' ||
+    processEnv.CLOUDFLARE_PAGES === '1' ||
+    processEnv.ISTEBU_ENABLE_SW === '1';
+  let extra = '';
+  if (onPages) {
+    extra = 'window.ISTEBU_ENABLE_SW = true;\n';
+  }
+  return `window.__env = Object.assign({}, window.__env || {}, ${JSON.stringify(payload)});\n${extra}`;
 }
 
 function parseEnvJsPayload(source) {

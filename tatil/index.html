@@ -13,7 +13,10 @@
   <meta property="og:description" content="Bütçenize ve seyahat tercihlerinize göre tatil seçeneklerini analiz edin.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.istebul.com/tatil/">
-  <meta property="og:image" content="https://www.istebul.com/assets/images/tatil-hero.png">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/tatil-hero-1280.jpg">
+  <link rel="preload" href="/assets/images/tatil-hero.webp" as="image" type="image/webp" fetchpriority="high">
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
   <link rel="stylesheet" href="/css/tatil.css">
   <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
   <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
@@ -50,13 +53,15 @@
   <section class="vacation-hero" aria-labelledby="vacation-hero-title">
     <div class="vacation-hero-media" aria-hidden="true">
       <picture>
+        <source srcset="/assets/images/tatil-hero.webp" type="image/webp">
         <img
-          src="/assets/images/tatil-hero.png"
+          src="/assets/images/tatil-hero-1280.jpg"
           alt=""
-          width="1536"
-          height="1024"
+          width="1280"
+          height="853"
           decoding="async"
-          fetchpriority="high">
+          fetchpriority="high"
+          loading="eager">
       </picture>
     </div>
     <div class="vacation-hero-overlay" aria-hidden="true"></div>

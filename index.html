@@ -36,13 +36,15 @@
     <link rel="apple-touch-icon" href="assets/icons/favicon-192.png">
     <link rel="icon" type="image/png" href="assets/icons/favicon-192.png">
     <script src="/env.js" defer></script>
-    <!-- perf:preload-style -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
-    <link rel="preload" href="css/style.css?v=68" as="style">
-    <link rel="stylesheet" href="css/style.css?v=68">
-    <link rel="preload" href="css/bundles/homepage.bundle.css?v=5" as="style">
-    <link rel="stylesheet" href="css/bundles/homepage.bundle.css?v=6">
+    <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
+    <!-- perf:preload-style -->
+    <link rel="stylesheet" href="css/style.css?v=69">
+    <!-- perf:preload-homepage-bundle -->
+    <link rel="stylesheet" href="css/bundles/homepage.bundle.css?v=7">
 
 <style>
 .hidden{display:none!important;}
@@ -1317,9 +1319,12 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
         <a href="/karar-asistani" class="btn btn-primary" data-cro-cta-sticky data-native-route data-analytics-cta="cta_decision_sticky" data-analytics-placement="sticky" data-i18n-title="footer.stickyCta" title="Karar analizini başlat" data-i18n="footer.stickyCta">Karar analizini başlat</a>
     </div>
 
-    <!-- Scripts -->
-    <script type="module" src="/js/runtime/init-category-guides.js"></script>
+    <!-- Scripts (guides via app bundle; social after idle) -->
     <script type="module" src="js/app.bundle.js"></script>
-    <script type="module" src="/js/runtime/site-social-init.js"></script>
+    <script type="module">
+      const bootSocial = () => import('/js/runtime/site-social-init.js').catch(() => {});
+      if ('requestIdleCallback' in window) requestIdleCallback(bootSocial, { timeout: 2500 });
+      else window.addEventListener('load', () => setTimeout(bootSocial, 400), { once: true });
+    </script>
 </body>
 </html>

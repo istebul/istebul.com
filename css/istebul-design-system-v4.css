@@ -4,9 +4,6 @@
  * Scoped to html.ib-ds-v4; does not blanket-override legacy vertical themes.
  */
 
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap');
 @import './istebul-ds-v4-polish.css';
 @import './istebul-ui-final-v5.css';
 @import './istebul-ui-product-cards-v6.css';
