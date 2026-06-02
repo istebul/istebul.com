@@ -95,6 +95,7 @@ const walk = (dir, callback) => {
 const relative = (filePath) => path.relative(root, filePath).split(path.sep).join('/');
 const assetRefs = new Map();
 const hashContent = (content) => crypto.createHash('sha256').update(content).digest('hex').slice(0, 10);
+const bundleExternals = ['lucide'];
 const withHashName = (relativePath, hash) => {
   const parsed = path.parse(relativePath);
   return path.join(parsed.dir, `${parsed.name}.${hash}${parsed.ext}`).split(path.sep).join('/');
@@ -223,6 +224,7 @@ esbuild.buildSync({
   splitting: true,
   chunkNames: 'chunks/[name]-[hash]',
   entryNames: 'app.bundle-[hash]',
+  external: bundleExternals,
   outdir: path.join(dist, 'js')
 });
 
