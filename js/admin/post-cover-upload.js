@@ -1,10 +1,9 @@
 /**
- * Admin kapak görseli — önce doğrudan Supabase Storage, gerekirse admin-action fallback.
+ * Admin kapak görseli — admin-action edge upload (service role).
  */
 
 import { invokeAdminFunction } from '../core/admin-client.js';
 
-const BUCKET = 'content-covers';
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = new Set([
   'image/jpeg',
@@ -13,34 +12,6 @@ const ALLOWED_TYPES = new Set([
   'image/gif',
   'image/svg+xml'
 ]);
-
-function safeExt(fileName) {
-  const raw = String(fileName || '').split('.').pop() || 'jpg';
-  const ext = raw.replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 8);
-  return ext || 'jpg';
-}
-
-function isBucketMissing(message) {
-  return /bucket not found/i.test(String(message || ''));
-}
-
-function isStoragePermissionError(message) {
-  return /row-level security|policy|permission|not allowed/i.test(String(message || ''));
-}
-
-function mapStorageError(message) {
-  const msg = String(message || '');
-  if (isBucketMissing(msg)) {
-    return 'Kapak deposu (content-covers) bulunamadı.';
-  }
-  if (isStoragePermissionError(msg)) {
-    return 'Kapak yükleme yetkisi yok. Admin hesabıyla giriş yaptığınızdan emin olun.';
-  }
-  if (/payload too large|exceeded.*size/i.test(msg)) {
-    return 'Kapak görseli en fazla 5 MB olabilir.';
-  }
-  return msg || 'Kapak yüklenemedi';
-}
 
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -93,33 +64,5 @@ export async function uploadPostCoverImage(supabaseClient, file, opts = {}) {
 
   const folderRaw = String(opts.folder || 'news').trim().toLowerCase();
   const folder = /^[a-z0-9_-]{1,32}$/.test(folderRaw) ? folderRaw : 'news';
-  const ext = safeExt(file.name);
-  const path = `${folder}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
-
-  const { error: uploadError } = await supabaseClient.storage.from(BUCKET).upload(path, file, {
-    contentType: file.type || 'image/jpeg',
-    cacheControl: '3600',
-    upsert: false
-  });
-
-  if (uploadError) {
-    // Production'da Storage policy/bucket driftlerinde akışı kesmemek için
-    // her upload hatasında edge fallback'i dene.
-    try {
-      return await uploadViaAdminAction(supabaseClient, file, folder);
-    } catch (fallbackError) {
-      const fallbackMessage = String(fallbackError?.message || '').trim();
-      if (fallbackMessage) {
-        throw new Error(fallbackMessage);
-      }
-      throw new Error(mapStorageError(uploadError.message));
-    }
-  }
-
-  const { data: urlData } = supabaseClient.storage.from(BUCKET).getPublicUrl(path);
-  const url = String(urlData?.publicUrl || '').trim();
-  if (!url) {
-    throw new Error('Yüklenen görsel URL alınamadı.');
-  }
-  return url;
+  return uploadViaAdminAction(supabaseClient, file, folder);
 }

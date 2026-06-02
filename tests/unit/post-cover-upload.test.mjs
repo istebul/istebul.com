@@ -31,9 +31,8 @@ describe('posts content admin', () => {
     assert.match(panel, /loadNewsPostsAdmin/);
   });
 
-  it('cover upload uses storage first with admin-action fallback', () => {
+  it('cover upload uses admin-action edge upload', () => {
     const mod = fs.readFileSync(path.join(root, 'js/admin/post-cover-upload.js'), 'utf8');
-    assert.match(mod, /storage\.from\(BUCKET\)\.upload/);
     assert.match(mod, /invokeAdminFunction/);
     assert.match(mod, /upload_post_cover/);
   });
