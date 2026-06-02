@@ -22,9 +22,11 @@ export function mountVerticalSoftAuthGate(options = {}) {
     </div>`;
 
   const host =
+    document.querySelector('[data-vertical-soft-auth-host]') ||
     document.querySelector('.vacation-flow-main') ||
     document.querySelector('.vacation-main') ||
-    document.body;
+    null;
+  if (!host) return null;
   host.prepend(banner);
   return banner;
 }
