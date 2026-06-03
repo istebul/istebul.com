@@ -127,10 +127,35 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Apply analytics ITE schema (Management API, idempotent)
+        id: analytics_ite_schema
+        if: steps.gate.outputs.skip != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq jq
+          bash scripts/apply-analytics-ite-migration-api.sh
+
+      - name: Verify analytics_exclusion_rules table
+        if: steps.gate.outputs.skip != 'true' && steps.analytics_ite_schema.outcome == 'success'
+        run: node scripts/verify-analytics-exclusion-schema.cjs
+
+      - name: Require analytics ITE schema
+        if: steps.gate.outputs.skip != 'true'
+        run: |
+          if [ "${{ steps.analytics_ite_schema.outcome }}" != "success" ]; then
+            echo "::error::analytics_exclusion_rules could not be created — check Management API token"
+            exit 1
+          fi
+
       - uses: supabase/setup-cli@v1
+        id: setup_supabase_cli
+        continue-on-error: true
         if: steps.gate.outputs.skip != 'true'
         with:
-          version: latest
+          version: 2.31.4
+
+      - name: Install Supabase CLI fallback
+        if: steps.gate.outputs.skip != 'true' && steps.setup_supabase_cli.outcome != 'success'
+        run: npm install -g supabase@2.31.4
 
       - name: Link Supabase project
         if: steps.gate.outputs.skip != 'true'
@@ -156,15 +181,6 @@ jobs:
         if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-vertical-migration-api.sh
 
-      - name: Apply analytics ITE schema (Management API, idempotent)
-        id: analytics_ite_schema
-        if: steps.gate.outputs.skip != 'true'
-        run: bash scripts/apply-analytics-ite-migration-api.sh
-
-      - name: Verify analytics_exclusion_rules table
-        if: steps.gate.outputs.skip != 'true' && steps.analytics_ite_schema.outcome == 'success'
-        run: node scripts/verify-analytics-exclusion-schema.cjs
-
       - name: Require Konut/Finans schema
         if: steps.gate.outputs.skip != 'true'
         run: |
@@ -189,8 +205,9 @@ jobs:
           fi
 
       - name: Deploy edge functions
-        if: always() && steps.gate.outputs.skip != 'true'
+        if: steps.gate.outputs.skip != 'true'
         run: |
+          command -v supabase >/dev/null || { echo "::error::supabase CLI not available"; exit 1; }
           FUNCTIONS=(
             auto-intake
             housing-intake
