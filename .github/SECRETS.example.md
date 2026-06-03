@@ -13,6 +13,13 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 | `SUPABASE_URL` | `https://hjfrcdstbyonmgatgwcc.supabase.co` |
 | `SUPABASE_ANON_KEY` | Supabase → Settings → API → anon public |
 
+**Cloudflare Pages (Production env)** — `functions/api/analytics-ingest.js` için zorunlu:
+
+| Variable | Açıklama |
+|----------|----------|
+| `SUPABASE_URL` | `https://hjfrcdstbyonmgatgwcc.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → service_role (gizli) |
+
 ## Önerilen (Supabase otomatik deploy)
 
 | Secret | Nasıl alınır |

@@ -24,7 +24,10 @@ const mustExist = [
   'js/platform/site-analytics.js',
   'js/runtime/site-analytics-boot.js',
   'js/admin/platform-site-analytics-dashboard.js',
-  'js/admin/analytics-traffic-filters.js'
+  'js/admin/analytics-traffic-filters.js',
+  'functions/api/analytics-ingest.js',
+  'functions/api/_shared/analytics-ingest-normalize.js',
+  'functions/analytics-ingest.js'
 ];
 
 for (const rel of mustExist) {
@@ -82,6 +85,20 @@ if (!dashboard.includes('buildPagePathDetail')) fail('platform dashboard missing
 
 const homepageBundle = path.join(root, 'css/bundles/homepage.bundle.css');
 if (!fs.existsSync(homepageBundle)) fail('css/bundles/homepage.bundle.css missing — run generate:css-bundles');
+
+const analyticsApi = fs.readFileSync(path.join(root, 'functions/api/analytics-ingest.js'), 'utf8');
+if (!analyticsApi.includes('onRequestPost')) fail('functions/api/analytics-ingest.js missing onRequestPost');
+if (!analyticsApi.includes('onRequestOptions')) {
+  fail('functions/api/analytics-ingest.js missing onRequestOptions');
+}
+if (!analyticsApi.includes('SUPABASE_SERVICE_ROLE_KEY')) {
+  fail('functions/api/analytics-ingest.js must use SUPABASE_SERVICE_ROLE_KEY');
+}
+
+const analyticsClient = fs.readFileSync(path.join(root, 'js/core/analytics.js'), 'utf8');
+if (!analyticsClient.includes('/api/analytics-ingest')) {
+  fail('js/core/analytics.js must POST to /api/analytics-ingest');
+}
 
 const thirdParty = fs.readFileSync(path.join(root, 'js/core/third-party-analytics.js'), 'utf8');
 if (!thirdParty.includes('loadClarity')) fail('third-party-analytics missing loadClarity');

@@ -213,10 +213,16 @@ Deno.serve(async (req) => {
 
       results.push({ event_name: event.event_name, ...result });
     } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : err && typeof err === "object" && "message" in err
+            ? String((err as { message: unknown }).message)
+            : "invalid_event";
       results.push({
         event_name: event.event_name,
         ok: false,
-        error: err instanceof Error ? err.message : "invalid_event",
+        error: message,
       });
     }
   }

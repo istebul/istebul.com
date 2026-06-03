@@ -335,10 +335,6 @@ export class Analytics {
     if (!this.queue.length) return;
     if (!this.hasConsent()) return;
 
-    const supabaseUrl = window.__env?.SUPABASE_URL;
-    const supabaseKey = window.__env?.SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseKey) return;
-
     const batch = this.queue.splice(0, SCALE_LIMITS.analytics.flushBatch);
     const attribution = this.getAttribution();
     const body = JSON.stringify({
@@ -358,19 +354,20 @@ export class Analytics {
       events: batch
     });
 
-    const url = `${supabaseUrl.replace(/\/$/, '')}/functions/v1/analytics-ingest`;
+    const url = '/api/analytics-ingest';
 
     try {
-      await fetch(url, {
+      const res = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`
+          'Content-Type': 'application/json'
         },
         body,
         keepalive: Boolean(options.beacon)
       });
+      if (!res.ok) {
+        this.queue.unshift(...batch);
+      }
     } catch {
       this.queue.unshift(...batch);
     }
