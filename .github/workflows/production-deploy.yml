@@ -259,6 +259,10 @@ jobs:
         env:
           SMOKE_OPTIONAL: '1'
 
+      - name: Bot access verification
+        run: node scripts/verify-bot-access.cjs https://www.istebul.com
+        continue-on-error: true
+
   deploy-report:
     name: Deploy summary
     needs: [quality, deploy-cloudflare, deploy-supabase, smoke-live]

@@ -22,6 +22,8 @@ const required = [
   'dist/duyurular/index.html',
   'dist/kampanyalar/index.html',
   'dist/profil/index.html',
+  'dist/en/index.html',
+  'dist/blog-posts-manifest.json',
   'dist/css/seo-landing.css',
   'dist/js/runtime/route-bootstrap-head.js',
   'dist/admin/index.html',

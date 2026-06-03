@@ -24,6 +24,7 @@ const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'of
     'css/admin-ops-ai-assistant.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const { patchSpaShellHtml, loadRouteMeta } = require('./lib/spa-shell-meta.cjs');
+const { injectLocaleShellMeta, loadLocaleIds } = require('./lib/locale-shell-meta.cjs');
 const { injectVerticalFaqs } = require('./lib/seo-vertical-faq.cjs');
 const { injectRouteBootstrap, writeRouteBootstrapFile } = require('./lib/route-bootstrap.cjs');
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
@@ -188,11 +189,13 @@ const {
   isStrictPublicEnvBuild,
   withCiBuildPublicEnvFallback,
   assertPublicEnvForBuild,
+  assertProductionAnonKeyNotPlaceholder,
   formatEnvJs
 } = require('./lib/public-env.cjs');
 
 const publicEnv = withCiBuildPublicEnvFallback(buildPublicEnv(process.env, root), process.env);
 assertPublicEnvForBuild(publicEnv, { strict: isStrictPublicEnvBuild() });
+assertProductionAnonKeyNotPlaceholder(publicEnv, process.env);
 
 writeFile('env.js', formatEnvJs(publicEnv));
 
@@ -609,6 +612,32 @@ spaRoutes.forEach((route) => {
 
 const seoResult = buildSeoPages(dist);
 
+const blogBuild = spawnSync(process.execPath, [path.join(root, 'scripts/build-blog-post-pages.cjs'), dist], {
+  cwd: root,
+  stdio: 'inherit',
+  env: process.env
+});
+if (blogBuild.status !== 0) process.exit(blogBuild.status || 1);
+
+let blogPosts = [];
+const blogManifestPath = path.join(dist, 'blog-posts-manifest.json');
+if (fs.existsSync(blogManifestPath)) {
+  try {
+    blogPosts = JSON.parse(fs.readFileSync(blogManifestPath, 'utf8')).posts || [];
+  } catch {
+    blogPosts = [];
+  }
+}
+
+/** Locale marketing SPA shells (/en/, /de/, …) with document meta */
+loadLocaleIds().forEach((localeId) => {
+  const localeDir = path.join(dist, localeId);
+  fs.mkdirSync(localeDir, { recursive: true });
+  let localeHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  localeHtml = injectLocaleShellMeta(localeHtml, localeId);
+  fs.writeFileSync(path.join(localeDir, 'index.html'), minifyHtml(localeHtml));
+});
+
 /** SEO HTML is written after static pass — rewrite hashed CSS/JS refs */
 const rewriteSeoHtmlAssets = () => {
   const seoRoots = [
@@ -620,7 +649,15 @@ const rewriteSeoHtmlAssets = () => {
     'planlar',
     'blog',
     'duyurular',
-    'kampanyalar'
+    'kampanyalar',
+    'en',
+    'de',
+    'ar',
+    'it',
+    'fr',
+    'es',
+    'ja',
+    'zh'
   ];
   seoRoots.forEach((name) => {
     const base = path.join(dist, name);
@@ -643,7 +680,7 @@ const rewriteSeoHtmlAssets = () => {
 };
 rewriteSeoHtmlAssets();
 
-generateSitemap(dist, seoResult);
+generateSitemap(dist, { ...seoResult, blogPosts });
 generateRobots(dist, seoResult.site);
 injectVerticalFaqs(dist);
 

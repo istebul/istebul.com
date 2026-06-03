@@ -37,6 +37,8 @@ const checks = [
   'scripts/audit-seo.cjs',
   'scripts/audit-footer-links.cjs',
   'scripts/audit-rehber-sitemap.cjs',
+  'scripts/audit-sitemap-coverage.cjs',
+  'scripts/verify-bot-access.cjs',
   'scripts/compliance-audit-check.cjs',
   'scripts/platform-scorecard.cjs',
   'scripts/live-data-readiness-audit.cjs'

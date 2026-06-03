@@ -97,22 +97,39 @@ function internalLinkCount(htmlFiles) {
 }
 
 function orphanEstimate(sitemapLocs, distFiles) {
+  const EXCLUDED_PREFIXES = [
+    '/profil',
+    '/favoriler',
+    '/gecmis',
+    '/messages',
+    '/ilan-ekle',
+    '/admin',
+    '/offline'
+  ];
+
   const htmlPaths = new Set(
-    distFiles.map((f) => {
-      const rel = path.relative(dist, f).replace(/\\/g, '/');
-      if (rel === 'index.html') return 'https://www.istebul.com/';
-      if (rel.endsWith('/index.html')) {
-        const dir = rel.replace(/\/index\.html$/, '');
-        return `https://www.istebul.com/${dir}/`;
-      }
-      return null;
-    }).filter(Boolean)
+    distFiles
+      .map((f) => {
+        const rel = path.relative(dist, f).replace(/\\/g, '/');
+        if (rel === 'index.html') return 'https://www.istebul.com/';
+        if (rel.endsWith('/index.html')) {
+          const dir = rel.replace(/\/index\.html$/, '');
+          return `https://www.istebul.com/${dir}/`;
+        }
+        if (rel.endsWith('.html')) {
+          return `https://www.istebul.com/${rel}`;
+        }
+        return null;
+      })
+      .filter(Boolean)
   );
 
   const sitemapSet = new Set(sitemapLocs);
   let orphans = 0;
   htmlPaths.forEach((loc) => {
-    if (!sitemapSet.has(loc) && !loc.includes('/profil')) orphans += 1;
+    const pathOnly = loc.replace('https://www.istebul.com', '');
+    if (EXCLUDED_PREFIXES.some((p) => pathOnly.startsWith(p))) return;
+    if (!sitemapSet.has(loc) && !sitemapSet.has(loc.replace(/\/$/, ''))) orphans += 1;
   });
   return orphans;
 }

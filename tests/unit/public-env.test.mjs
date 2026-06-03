@@ -6,7 +6,8 @@ import {
   parseEnvJsPayload,
   assertEnvJsFileContents,
   isStrictPublicEnvBuild,
-  withCiBuildPublicEnvFallback
+  withCiBuildPublicEnvFallback,
+  assertProductionAnonKeyNotPlaceholder
 } from '../../scripts/lib/public-env.cjs';
 
 test('buildPublicEnv resolves SUPABASE aliases', () => {
@@ -42,4 +43,13 @@ test('withCiBuildPublicEnvFallback fills placeholders outside production deploy'
   const env = withCiBuildPublicEnvFallback({ SUPABASE_URL: '', SUPABASE_ANON_KEY: '' }, {});
   assert.ok(env.SUPABASE_URL);
   assert.ok(env.SUPABASE_ANON_KEY.includes('placeholder'));
+});
+
+test('assertProductionAnonKeyNotPlaceholder rejects placeholder in production', () => {
+  assert.throws(() =>
+    assertProductionAnonKeyNotPlaceholder(
+      { SUPABASE_ANON_KEY: 'local-build-placeholder-anon-key-not-for-production' },
+      { REQUIRE_SUPABASE_ENV: '1' }
+    )
+  );
 });

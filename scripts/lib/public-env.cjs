@@ -88,6 +88,20 @@ function withCiBuildPublicEnvFallback(env, processEnv = process.env) {
   };
 }
 
+function assertProductionAnonKeyNotPlaceholder(env, processEnv = process.env) {
+  const strict =
+    processEnv.REQUIRE_SUPABASE_ENV === '1' ||
+    processEnv.CF_PAGES === '1' ||
+    processEnv.GITHUB_ACTIONS === 'true';
+  if (!strict) return;
+  const key = String(env.SUPABASE_ANON_KEY || '');
+  if (!key || key.includes('placeholder')) {
+    throw new Error(
+      '[build] Production deploy requires real SUPABASE_ANON_KEY (not placeholder). Set GitHub/Cloudflare secret.'
+    );
+  }
+}
+
 function assertPublicEnvForBuild(env, { strict = false } = {}) {
   const missing = [];
   if (!env.SUPABASE_URL) missing.push('SUPABASE_URL');
@@ -153,5 +167,6 @@ module.exports = {
   assertPublicEnvForBuild,
   formatEnvJs,
   parseEnvJsPayload,
-  assertEnvJsFileContents
+  assertEnvJsFileContents,
+  assertProductionAnonKeyNotPlaceholder
 };
