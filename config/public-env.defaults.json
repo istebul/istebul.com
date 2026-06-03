@@ -1,4 +1,5 @@
 {
   "SUPABASE_URL": "https://hjfrcdstbyonmgatgwcc.supabase.co",
-  "PLAUSIBLE_DOMAIN": "istebul.com"
+  "PLAUSIBLE_DOMAIN": "istebul.com",
+  "GA4_MEASUREMENT_ID": "G-SEV413SX9T"
 }
