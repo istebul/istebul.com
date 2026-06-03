@@ -21,18 +21,18 @@ CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... \
   node scripts/apply-cloudflare-bot-access.cjs --apply
 ```
 
-Oluşturulan kurallar:
+Oluşturulan kurallar ve `--apply` ile **Bot Fight Mode kapatma** (`fight_mode=false`):
+
+**Gerekli API token izinleri:** `Zone WAF Write`, `Bot Management Write`.
+
+`ISTEBUL_KEEP_BOT_FIGHT_MODE=1` ile BFM kapatma atlanır (yalnızca WAF skip kuralları uygulanır).
 
 | ref | ifade | Amaç |
 |-----|--------|------|
 | `istebul_skip_verified_bots` | `(cf.client.bot)` | Googlebot / Bingbot vb. |
 | `istebul_skip_production_smoke` | UA contains `isteBul-production-smoke` | CI smoke + uptime |
 
-**Gerekli API token izinleri:** `Zone WAF Write` (kurallar için), isteğe bağlı `Bot Management Read` (durum raporu).
-
-Mevcut token yalnızca **Pages:Edit** ise script uyarı verir; kurallar dashboard'dan da eklenebilir (aşağı).
-
-## Bot Fight Mode (Free plan) uyarısı
+## Bot Fight Mode (Free plan)
 
 **Bot Fight Mode**, WAF custom rules ile **atlanamaz** (Ruleset Engine dışında çalışır). Skip kuralları **Super Bot Fight Mode** (Pro+) ve managed WAF için geçerlidir.
 

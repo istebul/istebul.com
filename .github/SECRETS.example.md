@@ -6,7 +6,7 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 
 | Secret | Nasıl alınır |
 |--------|----------------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare Dashboard → My Profile → API Tokens → Create → **Edit Cloudflare Workers** + **Cloudflare Pages:Edit** + **Zone WAF Write** (bot skip kuralları için) |
+| `CLOUDFLARE_API_TOKEN` | … + **Cloudflare Pages:Edit** + **Zone WAF Write** + **Bot Management Write** |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Dashboard → sağ sütun Account ID |
 | `CLOUDFLARE_ZONE_ID` | (Opsiyonel) Zone ID — yoksa script `istebul.com` adından çözümler |
 
