@@ -1,4 +1,5 @@
 import { RESULT_BADGES, STEP_OPTIONS, BUDGET_PLANS } from './tatil-config.js';
+import { findPeopleLabel } from './tatil-flow.js';
 import {
   computeTripNights,
   formatTry,
@@ -42,8 +43,8 @@ function labelForGoal(value) {
   return STEP_OPTIONS.goal?.find((o) => o.value === value)?.label || value || '';
 }
 
-function labelForPeople(value) {
-  return STEP_OPTIONS.people?.find((o) => o.value === value)?.label || value || '';
+function labelForPeople(value, vacationGoal) {
+  return findPeopleLabel(value, vacationGoal);
 }
 
 function labelForType(value) {
@@ -333,7 +334,7 @@ export function buildResultsSummary(state, results = []) {
 
 export function buildAiCommentary(state, results) {
   const goal = labelForGoal(state.vacation_goal);
-  const people = labelForPeople(state.people_type);
+  const people = labelForPeople(state.people_type, state.vacation_goal);
   const vType = labelForType(state.vacation_type);
   const budget = getBudgetDisplay(state);
   const dates = getDateSummary(state);
@@ -414,7 +415,7 @@ export function buildAiCommentary(state, results) {
 
 export function getProgressSummary(state) {
   const budgetVal = getBudgetDisplay(state) || null;
-  let peopleVal = state.people_type ? labelForPeople(state.people_type) : null;
+  let peopleVal = state.people_type ? labelForPeople(state.people_type, state.vacation_goal) : null;
   if (state.people_type === 'cocuklu-aile' && (state.children_count || state.children_ages)) {
     const parts = [];
     if (state.children_count) parts.push(`${state.children_count} çocuk`);

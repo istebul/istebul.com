@@ -1,4 +1,12 @@
-import { VACATION_STEPS, STEP_OPTIONS, BUDGET_PLANS, DEFAULT_SETTINGS } from './tatil-config.js';
+import { STEP_OPTIONS, BUDGET_PLANS, DEFAULT_SETTINGS } from './tatil-config.js';
+import {
+  getVacationFlowSteps,
+  getStepMeta,
+  getOptionsForStep,
+  applyGoalFlowDefaults,
+  resetFieldsOnGoalChange,
+  shouldShowChildrenFields
+} from './tatil-flow.js';
 import {
   trackVacationEvent,
   saveVacationLead,
@@ -58,14 +66,19 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+function activeSteps() {
+  return getVacationFlowSteps(state.vacation_goal);
+}
+
 function currentStep() {
-  return VACATION_STEPS[state.stepIndex];
+  return activeSteps()[state.stepIndex];
 }
 
 function canAdvance() {
   const step = currentStep();
   if (!step) return false;
   if (step.id === 'goal') return Boolean(state.vacation_goal);
+  if (step.id === 'type') return Boolean(state.vacation_type);
   if (step.id === 'budget') {
     if (!state.budget_range) return false;
     if (state.budget_range === 'manuel') return Boolean(state.budget_total || state.budget_per_person || state.budget_manual);
@@ -73,7 +86,7 @@ function canAdvance() {
   }
   if (step.id === 'people') {
     if (!state.people_type || !state.travelers_count) return false;
-    if (state.people_type === 'cocuklu-aile') {
+    if (shouldShowChildrenFields(state)) {
       return Boolean(state.children_count || state.children_ages?.trim());
     }
     return true;
@@ -98,7 +111,7 @@ function canAdvance() {
 function renderProgress() {
   const el = $('#vacation-step-progress');
   if (!el) return;
-  el.innerHTML = VACATION_STEPS.map((step, i) => {
+  el.innerHTML = activeSteps().map((step, i) => {
     const active = i === state.stepIndex;
     const done = i < state.stepIndex;
     return `
@@ -180,8 +193,9 @@ function renderBudgetStep() {
 }
 
 function renderPeopleStep() {
+  const peopleOptions = getOptionsForStep('people', state.vacation_goal);
   const childFields =
-    state.people_type === 'cocuklu-aile'
+    shouldShowChildrenFields(state)
       ? `
     <div class="vacation-children-fields">
       <label class="vacation-field">
@@ -201,7 +215,7 @@ function renderPeopleStep() {
 
   return `
     <div class="vacation-option-grid vacation-option-grid--rich">
-      ${STEP_OPTIONS.people
+      ${peopleOptions
         .map((opt) => {
           const isSelected = state.people_type === opt.value;
           return `
@@ -224,9 +238,10 @@ function renderPeopleStep() {
 }
 
 function renderExpectationsStep() {
+  const chips = getOptionsForStep('expectations', state.vacation_goal);
   return `
     <div class="vacation-chip-grid">
-      ${STEP_OPTIONS.expectations
+      ${chips
         .map((item) => {
           const selected = state.expectations.includes(item);
           return `
@@ -245,9 +260,10 @@ function renderExpectationsStep() {
 }
 
 function renderTypeStep() {
+  const typeOptions = getOptionsForStep('type', state.vacation_goal);
   return `
     <div class="vacation-option-grid vacation-option-grid--rich vacation-option-grid--type">
-      ${STEP_OPTIONS.type
+      ${typeOptions
         .map((opt) => {
           const isSelected = state.vacation_type === opt.value;
           return `
@@ -304,10 +320,12 @@ function renderDateStep() {
 }
 
 function renderPreferencesStep() {
+  const transportOptions = getOptionsForStep('transport', state.vacation_goal);
+  const comfortOptions = getOptionsForStep('comfort', state.vacation_goal);
   return `
     <p class="vacation-step-subtitle">Ulaşım tercihi</p>
     <div class="vacation-option-grid vacation-option-grid--rich">
-      ${STEP_OPTIONS.transport
+      ${transportOptions
         .map((opt) => {
           const isSelected = state.transport_preference === opt.value;
           return `
@@ -321,7 +339,7 @@ function renderPreferencesStep() {
     </div>
     <p class="vacation-step-subtitle">Konfor beklentisi</p>
     <div class="vacation-option-grid vacation-option-grid--rich">
-      ${STEP_OPTIONS.comfort
+      ${comfortOptions
         .map((opt) => {
           const isSelected = state.comfort_expectation === opt.value;
           return `
@@ -339,7 +357,8 @@ function renderWizard() {
   const mount = $('#vacation-wizard');
   if (!mount) return;
 
-  if (state.stepIndex >= VACATION_STEPS.length) {
+  const steps = activeSteps();
+  if (state.stepIndex >= steps.length) {
     mount.hidden = true;
     renderResults();
     return;
@@ -347,6 +366,7 @@ function renderWizard() {
 
   mount.hidden = false;
   const step = currentStep();
+  const stepMeta = getStepMeta(step.id, state.vacation_goal);
   let body = '';
 
   if (step.id === 'goal') body = renderGoalCards();
@@ -365,8 +385,8 @@ function renderWizard() {
 
   mount.innerHTML = `
     <div class="vacation-wizard-card">
-      <h2>${escapeHtml(step.title)}</h2>
-      ${step.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(step.subtitle)}</p>` : ''}
+      <h2>${escapeHtml(stepMeta.title)}</h2>
+      ${stepMeta.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(stepMeta.subtitle)}</p>` : ''}
       ${body}
       <div class="vacation-wizard-actions">
         ${state.stepIndex > 0 ? '<button type="button" class="btn btn-ghost" id="vacation-back">Geri</button>' : ''}
@@ -418,18 +438,28 @@ function bindWizardEvents() {
     btn.addEventListener('click', () => {
       const field = btn.dataset.field;
       const value = btn.dataset.value;
-      state[field] = value;
       if (field === 'vacation_goal') {
-        state.vacation_type = value;
+        const previousGoal = state.vacation_goal;
+        state.vacation_goal = value;
+        resetFieldsOnGoalChange(state, previousGoal, value);
+        const steps = getVacationFlowSteps(value);
+        if (state.stepIndex >= steps.length) {
+          state.stepIndex = Math.max(0, steps.length - 1);
+        }
+      } else {
+        state[field] = value;
       }
       if (field === 'budget_range' && value !== 'manuel') {
         state.budget_manual = null;
         state.budget_total = null;
         state.budget_per_person = null;
       }
-      if (field === 'people_type' && value !== 'cocuklu-aile') {
+      if (field === 'people_type' && value !== 'cocuklu-aile' && state.vacation_goal !== 'cocuklu-aile') {
         state.children_count = '';
         state.children_ages = '';
+      }
+      if (field === 'people_type') {
+        applyGoalFlowDefaults(state, state.vacation_goal);
       }
       renderWizard();
     });
@@ -543,7 +573,7 @@ function bindWizardEvents() {
       step_index: state.stepIndex
     });
     state.stepIndex += 1;
-    if (state.stepIndex >= VACATION_STEPS.length) {
+    if (state.stepIndex >= activeSteps().length) {
       showResults();
     } else {
       renderWizard();
@@ -861,7 +891,7 @@ function regenerateVariant(mode) {
 
 function buildLeadNote() {
   const parts = [state.user_note].filter(Boolean);
-  if (state.people_type === 'cocuklu-aile') {
+  if (shouldShowChildrenFields(state)) {
     const c = [];
     if (state.children_count) c.push(`çocuk sayısı: ${state.children_count}`);
     if (state.children_ages) c.push(`yaşlar: ${state.children_ages}`);
