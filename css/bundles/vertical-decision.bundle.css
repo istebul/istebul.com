@@ -2,8 +2,8 @@
 /* Manifest: scripts/lib/css-bundles.cjs */
 
 @import '../layout-guard.css';
-@import '../enterprise-card-readability.css';
 @import '../istebul-design-system-v4.css';
 @import '../vertical-header-nav-v1.css';
 @import '../rtl.css';
 @import '../perf-vertical-v1.css';
+@import '../enterprise-card-readability.css';

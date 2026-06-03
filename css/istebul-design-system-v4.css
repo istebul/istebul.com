@@ -481,13 +481,22 @@ html.ib-ds-v4 body.housing-page {
   color: #ecf1ff;
 }
 
-html.ib-ds-v4 body.housing-page .glass-card,
+html.ib-ds-v4 body.housing-page .glass-card:not(.housing-side-panel):not(.housing-step-card),
 html.ib-ds-v4 body.housing-page .hero-dashboard.glass-card,
 html.ib-ds-v4 body.housing-page .hero-metric {
   background: linear-gradient(145deg, rgba(21, 34, 71, 0.92), rgba(8, 16, 38, 0.94));
   border: 1px solid rgba(129, 150, 214, 0.28);
   color: #ecf1ff;
   box-shadow: 0 16px 42px rgba(2, 5, 16, 0.45);
+}
+
+/* Wizard + live preview: light cards (not hero glass) */
+html.ib-ds-v4 body.housing-page .glass-card.housing-side-panel,
+html.ib-ds-v4 body.housing-page .housing-step-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  color: #111827;
+  box-shadow: var(--shadow-card);
 }
 
 html.ib-ds-v4 body.housing-page .hero-metric span,

@@ -31,11 +31,12 @@ const HOMEPAGE_EXTENSION = [
 /** Design system + readability for vertical decision pages (replaces 3–4 link tags). */
 const VERTICAL_DECISION = [
   'css/layout-guard.css',
-  'css/enterprise-card-readability.css',
   'css/istebul-design-system-v4.css',
   'css/vertical-header-nav-v1.css',
   'css/rtl.css',
-  'css/perf-vertical-v1.css'
+  'css/perf-vertical-v1.css',
+  /* Last: overrides DS v4 dark-shell rules on light cards */
+  'css/enterprise-card-readability.css'
 ];
 
 /** Lightweight shared polish for corporate / coming-soon pages. */

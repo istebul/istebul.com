@@ -339,7 +339,8 @@ html.ib-ds-v4 body.finans-page .finans-dash-card--score {
 }
 
 html.ib-ds-v4 body.finans-page .ib-premium-dashboard,
-html.ib-ds-v4 body.vacation-page .ib-premium-dashboard {
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard {
   padding: clamp(1.25rem, 3vw, 1.75rem);
   box-shadow: var(--ib-premium-shadow);
 }
@@ -374,8 +375,20 @@ html.ib-ds-v4 body.vacation-page .ib-premium-block {
   border: 1px solid #e5e7eb;
 }
 
-html.ib-ds-v4 body.finans-page .ib-premium-block h3 {
+html.ib-ds-v4 body.finans-page .ib-premium-block h3,
+html.ib-ds-v4 body.housing-page .ib-premium-block h3,
+html.ib-ds-v4 body.housing-page .ib-premium-block--next p {
   color: #111827;
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-block--next p {
+  color: #334155;
+}
+
+html.ib-ds-v4 body.housing-page .housing-side-panel #housing-live-preview ul,
+html.ib-ds-v4 body.housing-page .housing-side-panel .housing-preview-ai,
+html.ib-ds-v4 body.housing-page .housing-side-panel .housing-preview-note {
+  color: #475569;
 }
 
 html.ib-ds-v4 body.vacation-page .vh-card {

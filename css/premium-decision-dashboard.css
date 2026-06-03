@@ -16,7 +16,8 @@
 }
 
 body.finans-page .ib-premium-dashboard,
-body.vacation-page .ib-premium-dashboard {
+body.vacation-page .ib-premium-dashboard,
+body.housing-page .ib-premium-dashboard {
   --ib-dash-surface: #ffffff;
   color: #111827;
 }
@@ -37,7 +38,8 @@ body.vacation-page .ib-premium-dashboard {
 }
 
 body.finans-page .ib-premium-dashboard__title,
-body.vacation-page .ib-premium-dashboard__title {
+body.vacation-page .ib-premium-dashboard__title,
+body.housing-page .ib-premium-dashboard__title {
   color: var(--ib-dash-navy);
 }
 
@@ -68,7 +70,8 @@ body.vacation-page .ib-premium-dashboard__title {
 }
 
 body.finans-page .ib-premium-kpi,
-body.vacation-page .ib-premium-kpi {
+body.vacation-page .ib-premium-kpi,
+body.housing-page .ib-premium-kpi {
   background: #fafaf8;
 }
 
@@ -89,7 +92,8 @@ body.vacation-page .ib-premium-kpi {
 }
 
 body.finans-page .ib-premium-kpi strong,
-body.vacation-page .ib-premium-kpi strong {
+body.vacation-page .ib-premium-kpi strong,
+body.housing-page .ib-premium-kpi strong {
   color: var(--ib-dash-navy);
   font-family: 'Geist Mono', ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
@@ -127,14 +131,26 @@ body.vacation-page .ib-premium-kpi strong {
 }
 
 body.finans-page .ib-premium-block,
-body.vacation-page .ib-premium-block {
+body.vacation-page .ib-premium-block,
+body.housing-page .ib-premium-block {
   background: #f8fafc;
   border-color: var(--ib-dash-line);
+}
+
+body.housing-page .ib-premium-block h3 {
+  color: var(--ib-dash-navy);
 }
 
 .ib-premium-block h3 {
   margin: 0 0 0.65rem;
   font-size: 0.95rem;
+  color: var(--ib-dash-navy);
+}
+
+body.housing-page .ib-premium-block--next p {
+  margin: 0;
+  line-height: 1.55;
+  color: #334155;
 }
 
 .ib-premium-block ul {
@@ -146,7 +162,8 @@ body.vacation-page .ib-premium-block {
 }
 
 body.finans-page .ib-premium-block ul,
-body.vacation-page .ib-premium-block ul {
+body.vacation-page .ib-premium-block ul,
+body.housing-page .ib-premium-block ul {
   color: #475569;
 }
 
@@ -162,8 +179,17 @@ body.vacation-page .ib-premium-block ul {
 }
 
 body.finans-page .ib-premium-ai-lead,
-body.vacation-page .ib-premium-ai-lead {
+body.vacation-page .ib-premium-ai-lead,
+body.housing-page .ib-premium-ai-lead {
   color: #334155;
+}
+
+body.housing-page .ib-premium-ai-bullets {
+  color: #475569;
+}
+
+body.housing-page .ib-premium-dashboard__kicker {
+  color: #64748b;
 }
 
 .ib-premium-ai-bullets {

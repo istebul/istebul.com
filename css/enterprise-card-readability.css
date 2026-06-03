@@ -299,3 +299,139 @@ body.ib-auto .final-cta-card .text-cta {
     border-color: rgba(15, 23, 42, 0.22);
   }
 }
+
+/* —— Dark page shell + light decision surfaces (Konut, Tatil, Finans, …) —— */
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard,
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard {
+  color: var(--ib-card-ink);
+  background: var(--ib-card-surface);
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-dashboard__kicker {
+  color: var(--ib-card-label);
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-dashboard__title,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-block h3,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard .ib-premium-block h3,
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard .ib-premium-block h3 {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-block ul,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-block--next p,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-ai-lead,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-ai-bullets,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard .ib-premium-block ul,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard .ib-premium-block--next p,
+html.ib-ds-v4 body.vacation-page .ib-premium-dashboard .ib-premium-ai-lead,
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard .ib-premium-block ul,
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard .ib-premium-block--next p,
+html.ib-ds-v4 body.finans-page .ib-premium-dashboard .ib-premium-ai-lead {
+  color: var(--ib-card-body);
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-kpi span,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-kpi strong small,
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-kpi small {
+  color: var(--ib-card-muted);
+}
+
+html.ib-ds-v4 body.housing-page .ib-premium-dashboard .ib-premium-kpi strong {
+  color: var(--ib-card-ink);
+}
+
+/* Konut: wizard + canlı önizleme — beyaz kart (glass-card koyu kabuk kuralının üstüne) */
+html.ib-ds-v4 body.housing-page .glass-card.housing-side-panel,
+html.ib-ds-v4 body.housing-page .housing-step-card {
+  background: var(--ib-card-surface);
+  color: var(--ib-card-ink);
+  border: 1px solid var(--ib-card-border);
+}
+
+html.ib-ds-v4 body.housing-page .housing-side-panel h3,
+html.ib-ds-v4 body.housing-page #housing-live-preview strong {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page .housing-side-panel ul,
+html.ib-ds-v4 body.housing-page .housing-side-panel p,
+html.ib-ds-v4 body.housing-page .housing-side-notes,
+html.ib-ds-v4 body.housing-page .housing-preview-ai,
+html.ib-ds-v4 body.housing-page .housing-preview-note,
+html.ib-ds-v4 body.housing-page .housing-preview-score span {
+  color: var(--ib-card-body);
+}
+
+html.ib-ds-v4 body.housing-page .housing-preview-score strong {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page .housing-side-panel ul strong {
+  color: var(--ib-card-muted);
+}
+
+/* Konut: sonuç kartları — açık yüzey (profil özeti dahil) */
+html.ib-ds-v4 body.housing-page .result-card,
+html.ib-ds-v4 body.housing-page .scenario-card {
+  background: var(--ib-card-surface);
+  color: var(--ib-card-ink);
+  border-color: var(--ib-card-border);
+}
+
+html.ib-ds-v4 body.housing-page .result-card h3,
+html.ib-ds-v4 body.housing-page .result-card h4,
+html.ib-ds-v4 body.housing-page .scenario-card h4 {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page .result-card p,
+html.ib-ds-v4 body.housing-page .result-list li,
+html.ib-ds-v4 body.housing-page .result-disclaimer,
+html.ib-ds-v4 body.housing-page .scenario-card p,
+html.ib-ds-v4 body.housing-page .scenario-card ul {
+  color: var(--ib-card-body);
+}
+
+html.ib-ds-v4 body.housing-page .housing-profile-dl dt {
+  color: var(--ib-card-muted);
+}
+
+html.ib-ds-v4 body.housing-page .housing-profile-dl dd {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page .result-card--metric span {
+  color: var(--ib-card-label);
+}
+
+html.ib-ds-v4 body.housing-page .result-card--metric strong {
+  color: var(--ib-card-ink);
+}
+
+/* Tatil: açık sihirbaz / sonuç kartları (koyu body metnini devralmasın) */
+html.ib-ds-v4 body.vacation-page .vacation-wizard-card,
+html.ib-ds-v4 body.vacation-page .vacation-result-card,
+html.ib-ds-v4 body.vacation-page .vacation-selected-recap {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.vacation-page .vacation-wizard-card p,
+html.ib-ds-v4 body.vacation-page .vacation-wizard-card label,
+html.ib-ds-v4 body.vacation-page .vacation-result-card p,
+html.ib-ds-v4 body.vacation-page .vacation-selected-recap p {
+  color: var(--ib-card-body);
+}
+
+@media (prefers-color-scheme: dark) {
+  html.ib-ds-v4 body.housing-page .ib-premium-dashboard,
+  html.ib-ds-v4 body.housing-page .glass-card.housing-side-panel,
+  html.ib-ds-v4 body.housing-page .housing-step-card,
+  html.ib-ds-v4 body.housing-page .result-card,
+  html.ib-ds-v4 body.vacation-page .ib-premium-dashboard,
+  html.ib-ds-v4 body.vacation-page .vacation-wizard-card {
+    color: var(--ib-card-ink);
+    background: var(--ib-card-surface);
+  }
+}
