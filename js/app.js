@@ -51,6 +51,13 @@ import { canCallAiNarration, hasAiNarrationBudget } from './core/scale-limits.js
 import { errorBoundary } from './core/error-boundary.js';
 import { wireAutoListingFilters } from './features/listings/auto-listing-filters.js';
 import {
+    applyAssistantQuestionFlow,
+    buildAssistantWizardSteps,
+    getAssistantForkField,
+    isAssistantForkField,
+    resetAssistantAnswersOnForkChange
+} from './features/assistant/assistant-flow.js';
+import {
     mapBillingPortalError,
     setBillingPortalButtonsLoading
 } from './core/billing-portal.js';
@@ -1651,6 +1658,7 @@ class App {
                         weight: 16,
                         options: [
                             { value: 'familyResort', label: 'Aile için resort' },
+                            { value: 'honeymoon', label: 'Balayı / çift tatili' },
                             { value: 'culture', label: 'Kültür ve şehir gezisi' },
                             { value: 'nature', label: 'Doğa ve sakinlik' },
                             { value: 'luxury', label: 'Lüks ve konfor' }
@@ -1755,7 +1763,7 @@ class App {
                         name: 'Lüks Ada Kaçamağı',
                         price: 260000,
                         scoreNote: 'Özel rota, üst segment konaklama ve yüksek hizmet beklentisi için.',
-                        match: { vacationType: ['luxury'], destination: 'island', travelers: ['couple', 'group'], budget: ['400000'], priority: ['premium', 'quiet'] },
+                        match: { vacationType: ['luxury', 'honeymoon'], destination: 'island', travelers: ['couple', 'group'], budget: ['400000'], priority: ['premium', 'quiet'] },
                         costs: [
                             { label: 'Konaklama', value: 165000 },
                             { label: 'Uçuş/feribot', value: 54000 },
@@ -1785,37 +1793,7 @@ class App {
     }
 
     getAssistantWizardSteps(categoryConfig) {
-        if (!categoryConfig?.questions?.length) return [];
-
-        const locationQuestionIds = new Set(['province', 'district', 'carModel', 'vacationPlace']);
-        const budgetQuestionIds = new Set(['budget', 'priority']);
-        const locationQuestions = categoryConfig.questions.filter((question) => locationQuestionIds.has(question.id));
-        const financeQuestions = categoryConfig.questions.filter((question) => budgetQuestionIds.has(question.id));
-        const needQuestions = categoryConfig.questions.filter((question) => !locationQuestionIds.has(question.id) && !budgetQuestionIds.has(question.id));
-
-        return [
-            {
-                id: 'location',
-                label: 'Konum ve kapsam',
-                eyebrow: '1. adım',
-                description: 'Önce il seçin; ilçe, araç marka/modeli veya tatil yeri tercihi boş bırakılabilir.',
-                questions: locationQuestions
-            },
-            {
-                id: 'needs',
-                label: 'İhtiyaç profili',
-                eyebrow: '2. adım',
-                description: 'Kullanım amacını, beklentileri ve karar kriterlerini netleştirin.',
-                questions: needQuestions
-            },
-            {
-                id: 'finance',
-                label: 'Bütçe ve maliyet',
-                eyebrow: '3. adım',
-                description: 'Serbest bütçe girin; sistem toplam maliyet ve kredi yükünü birlikte hesaplar.',
-                questions: financeQuestions
-            }
-        ].filter((step) => step.questions.length);
+        return buildAssistantWizardSteps(this.assistantCategory, categoryConfig, this.assistantAnswers);
     }
 
     getQuestionStepIndex(categoryConfig, questionId) {
@@ -1870,25 +1848,31 @@ class App {
         const activeConfig = this.decisionAssistant[this.assistantCategory];
         if (!activeConfig) return resolvedConfig;
 
+        const mappedQuestions = activeConfig.questions.map((question) => {
+            if (question.source === 'districts') {
+                return {
+                    ...question,
+                    options: getDistrictOptions(this.assistantAnswers.province)
+                };
+            }
+
+            if (question.source === 'vacationPlaces') {
+                return {
+                    ...question,
+                    options: getVacationPlaceOptions(this.assistantAnswers.province, this.assistantAnswers.district)
+                };
+            }
+
+            return question;
+        });
+
         resolvedConfig[this.assistantCategory] = {
             ...activeConfig,
-            questions: activeConfig.questions.map((question) => {
-                if (question.source === 'districts') {
-                    return {
-                        ...question,
-                        options: getDistrictOptions(this.assistantAnswers.province)
-                    };
-                }
-
-                if (question.source === 'vacationPlaces') {
-                    return {
-                        ...question,
-                        options: getVacationPlaceOptions(this.assistantAnswers.province, this.assistantAnswers.district)
-                    };
-                }
-
-                return question;
-            })
+            questions: applyAssistantQuestionFlow(
+                this.assistantCategory,
+                mappedQuestions,
+                this.assistantAnswers
+            )
         };
 
         return resolvedConfig;
@@ -1898,21 +1882,33 @@ class App {
         const categoryConfig = this.getResolvedDecisionAssistantConfig()[this.assistantCategory];
         if (!categoryConfig) return;
 
-        const nextAnswers = this.collectAssistantAnswers(event.currentTarget, categoryConfig);
+        let nextAnswers = this.collectAssistantAnswers(event.currentTarget, categoryConfig);
+        const fieldName = event.target.name;
 
-        if (event.target.name === 'province') {
+        if (isAssistantForkField(this.assistantCategory, fieldName)) {
+            const previousFork = this.assistantAnswers[fieldName];
+            nextAnswers = resetAssistantAnswersOnForkChange(
+                this.assistantCategory,
+                nextAnswers,
+                fieldName,
+                previousFork
+            );
+        }
+
+        if (fieldName === 'province') {
             nextAnswers.district = '';
             nextAnswers.vacationPlace = 'any';
         }
 
-        if (event.target.name === 'district') {
+        if (fieldName === 'district') {
             nextAnswers.vacationPlace = 'any';
         }
 
         this.assistantAnswers = nextAnswers;
         this.ui.clearDecisionResults();
 
-        if (['province', 'district'].includes(event.target.name)) {
+        const forkField = getAssistantForkField(this.assistantCategory);
+        if (['province', 'district', forkField].filter(Boolean).includes(fieldName)) {
             this.renderDecisionAssistant();
         }
     }
