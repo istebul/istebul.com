@@ -6,8 +6,9 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 
 | Secret | Nasıl alınır |
 |--------|----------------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare Dashboard → My Profile → API Tokens → Create → Template **Edit Cloudflare Workers** + **Cloudflare Pages:Edit** |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare Dashboard → My Profile → API Tokens → Create → **Edit Cloudflare Workers** + **Cloudflare Pages:Edit** + **Zone WAF Write** (bot skip kuralları için) |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Dashboard → sağ sütun Account ID |
+| `CLOUDFLARE_ZONE_ID` | (Opsiyonel) Zone ID — yoksa script `istebul.com` adından çözümler |
 
 **Not:** Pages proje adı dashboard’daki isimle aynı olmalı (ör. `istebul-com`). Farklıysa workflow’daki `CF_PAGES_PROJECT` env’ini güncelleyin veya repo secret `CLOUDFLARE_PAGES_PROJECT` ekleyin.
 | `SUPABASE_URL` | `https://hjfrcdstbyonmgatgwcc.supabase.co` |
