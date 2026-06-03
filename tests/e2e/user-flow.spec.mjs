@@ -47,12 +47,12 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('main, .seo-main')).toBeVisible();
   });
 
-  test('planlar SPA route yüklenir', async ({ page }) => {
+  test('planlar hub sayfası yüklenir', async ({ page }) => {
     await page.goto('/planlar/');
-    await waitForSpaReady(page);
-    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'page-planlar');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveTitle(/Planlar/i);
-    await expect(page.locator('#page-planlar')).toBeVisible();
+    await expect(page.locator('main.seo-main')).toBeVisible();
+    await expect(page.locator('.seo-page')).toBeVisible();
   });
 
   test('login modalı hata durumlarını kullanıcıya gösterir', async ({ page }) => {
