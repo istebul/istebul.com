@@ -10,6 +10,11 @@
 'use strict';
 
 const DOMAIN = process.env.CLOUDFLARE_ZONE_NAME || 'istebul.com';
+const DOMAIN_CANDIDATES = [
+  DOMAIN,
+  DOMAIN.replace(/^www\./, ''),
+  DOMAIN.startsWith('www.') ? DOMAIN : `www.${DOMAIN}`
+].filter((v, i, a) => a.indexOf(v) === i);
 const API_BASE = 'https://api.cloudflare.com/client/v4';
 const APPLY = process.argv.includes('--apply');
 
@@ -60,13 +65,31 @@ async function resolveZoneId() {
   if (process.env.CLOUDFLARE_ZONE_ID) return process.env.CLOUDFLARE_ZONE_ID;
 
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const params = new URLSearchParams({ name: DOMAIN, status: 'active' });
-  if (accountId) params.set('account.id', accountId);
 
-  const zones = await cfRequest(`/zones?${params.toString()}`);
-  const zone = (zones || []).find((z) => z.name === DOMAIN) || zones?.[0];
-  if (!zone) throw new Error(`Cloudflare zone not found for ${DOMAIN}`);
-  return zone.id;
+  for (const name of DOMAIN_CANDIDATES) {
+    const params = new URLSearchParams({ name, status: 'active' });
+    if (accountId) params.set('account.id', accountId);
+    try {
+      const zones = await cfRequest(`/zones?${params.toString()}`);
+      const zone = (zones || []).find((z) => z.name === name);
+      if (zone) return zone.id;
+    } catch {
+      /* try next candidate */
+    }
+  }
+
+  if (accountId) {
+    const zones = await cfRequest(`/zones?account.id=${accountId}&per_page=50&status=active`);
+    const zone = (zones || []).find((z) => /istebul\.com$/i.test(z.name));
+    if (zone) {
+      console.log(`Zone resolved via account list: ${zone.name}`);
+      return zone.id;
+    }
+  }
+
+  throw new Error(
+    `Cloudflare zone not found (tried: ${DOMAIN_CANDIDATES.join(', ')}). Set CLOUDFLARE_ZONE_ID or grant Zone Read on token.`
+  );
 }
 
 async function getCustomFirewallEntrypoint(zoneId) {
