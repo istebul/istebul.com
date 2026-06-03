@@ -9,10 +9,19 @@ describe('third-party-analytics', () => {
     assert.equal(typeof mod.loadThirdPartyMeasurement, 'function');
   });
 
-  it('app.js delegates loadAnalytics to third-party module', () => {
+  it('analytics-consent-boot loads third-party measurement after consent', () => {
+    const boot = fs.readFileSync(
+      path.join(process.cwd(), 'js/runtime/analytics-consent-boot.js'),
+      'utf8'
+    );
+    assert.match(boot, /third-party-analytics\.js/);
+    assert.match(boot, /loadThirdPartyMeasurement/);
+  });
+
+  it('app.js wires analytics consent runtime', () => {
     const app = fs.readFileSync(path.join(process.cwd(), 'js/app.js'), 'utf8');
-    assert.match(app, /third-party-analytics\.js/);
-    assert.match(app, /loadThirdPartyMeasurement/);
+    assert.match(app, /analytics-consent-boot\.js/);
+    assert.match(app, /bootAnalyticsMeasurement/);
   });
 
   it('loads Clarity when CLARITY_PROJECT_ID is set', () => {

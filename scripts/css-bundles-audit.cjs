@@ -39,9 +39,13 @@ const auto = fs.readFileSync(path.join(root, 'auto/index.html'), 'utf8');
 if (!auto.includes('css/bundles/auto-page.bundle.css')) {
   fail('auto/index.html must link css/bundles/auto-page.bundle.css');
 }
-const autoLinks = (auto.match(/<link rel="stylesheet"/g) || []).length;
-if (autoLinks > 5) {
-  fail(`auto/index.html has ${autoLinks} stylesheets; expected ≤5 after consolidation`);
+const autoLinks = (auto.match(/<link rel="stylesheet"[^>]*href/g) || []).length;
+const autoNoscriptDupes = (auto.match(/<noscript>[\s\S]*?<link rel="stylesheet"/g) || []).length;
+const autoStylesheetCount = autoLinks - autoNoscriptDupes;
+if (autoStylesheetCount > 5) {
+  fail(
+    `auto/index.html has ${autoStylesheetCount} stylesheets; expected ≤5 after consolidation`
+  );
 }
 
 const konut = fs.readFileSync(path.join(root, 'konut/index.html'), 'utf8');

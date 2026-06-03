@@ -39,8 +39,14 @@ if (/noindex/i.test(sigorta.match(/<head[\s\S]*?<\/head>/i)?.[0] || '')) {
 if (!sigorta.includes('application/ld+json')) fail('sigorta needs structured data');
 if (!sigorta.includes('BreadcrumbList')) fail('sigorta needs BreadcrumbList schema');
 
-if (!index.includes('ItemList')) fail('homepage needs ItemList schema for categories');
-if (!index.includes('https://www.istebul.com/sigorta/')) {
+const homeSchemaPath = index.includes('home-graph.json')
+  ? path.join(root, 'data/schema/home-graph.json')
+  : null;
+const homeSchema = homeSchemaPath && fs.existsSync(homeSchemaPath)
+  ? fs.readFileSync(homeSchemaPath, 'utf8')
+  : index;
+if (!homeSchema.includes('ItemList')) fail('homepage needs ItemList schema for categories');
+if (!homeSchema.includes('https://www.istebul.com/sigorta/')) {
   fail('homepage schema must link sigorta');
 }
 
