@@ -12,16 +12,31 @@ const ERROR_MESSAGES = {
   method_not_allowed: 'Geçersiz istek.'
 };
 
-function getFunctionUrl() {
-  const base = (window.__env?.SUPABASE_URL || '').replace(/\/$/, '');
-  return base ? `${base}/functions/v1/user-account` : '';
-}
-
 function resolveErrorMessage(data = {}) {
   if (data.message && typeof data.message === 'string') return data.message;
   const code = String(data.error || '').trim();
   if (code && ERROR_MESSAGES[code]) return ERROR_MESSAGES[code];
   return 'Hesap silme işlemi tamamlanamadı.';
+}
+
+async function readInvokeError(error) {
+  if (!error) return 'Hesap silme işlemi tamamlanamadı.';
+
+  let detail = error.message || 'Hesap silme işlemi tamamlanamadı.';
+  try {
+    const body = await error.context?.clone?.().json?.();
+    if (body && typeof body === 'object') {
+      return resolveErrorMessage(body);
+    }
+  } catch {
+    try {
+      const text = await error.context?.clone?.().text?.();
+      if (text) detail = text;
+    } catch {
+      /* ignore */
+    }
+  }
+  return detail;
 }
 
 /**
@@ -31,6 +46,10 @@ function resolveErrorMessage(data = {}) {
 export async function requestAccountDeletion(options = {}) {
   const sb = getSupabaseClient();
   if (!sb) return { ok: false, error: 'Bağlantı yapılandırması eksik.' };
+
+  if (!sb.functions?.invoke) {
+    return { ok: false, error: 'Silme servisi yapılandırılmamış.' };
+  }
 
   const { data: refreshData, error: refreshError } = await sb.auth.refreshSession();
   const session = refreshData?.session ?? (await sb.auth.getSession()).data?.session;
@@ -43,31 +62,33 @@ export async function requestAccountDeletion(options = {}) {
     return { ok: false, error: 'Oturum bulunamadı. Lütfen tekrar giriş yapın.' };
   }
 
-  const url = getFunctionUrl();
-  if (!url) return { ok: false, error: 'Silme servisi yapılandırılmamış.' };
-
   try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        apikey: window.__env?.SUPABASE_ANON_KEY || '',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+    const { data, error } = await sb.functions.invoke('user-account', {
+      body: {
         action: 'delete_account',
         confirm: options.confirm !== false
-      })
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
     });
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return { ok: false, error: resolveErrorMessage(data) };
+    if (error) {
+      return { ok: false, error: await readInvokeError(error) };
+    }
+
+    const body = data && typeof data === 'object' ? data : {};
+    if (body.ok === false || body.error) {
+      return { ok: false, error: resolveErrorMessage(body) };
     }
 
     await sb.auth.signOut();
     return { ok: true };
-  } catch {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : '';
+    if (message && !/^failed to fetch$/i.test(message)) {
+      return { ok: false, error: message };
+    }
     return { ok: false, error: 'Ağ hatası. Lütfen daha sonra tekrar deneyin.' };
   }
 }

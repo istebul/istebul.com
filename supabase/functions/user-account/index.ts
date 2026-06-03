@@ -137,14 +137,18 @@ Deno.serve(async (req) => {
     );
   }
 
-  await recordPlatformEvent(admin, {
-    event_name: "user_account_deleted",
-    event_category: "compliance",
-    user_id: user.id,
-    email: user.email || null,
-    properties: { source: "self_serve" },
-    source: "user_account",
-  });
+  try {
+    await recordPlatformEvent(admin, {
+      event_name: "user_account_deleted",
+      event_category: "compliance",
+      user_id: user.id,
+      email: user.email || null,
+      properties: { source: "self_serve" },
+      source: "user_account",
+    });
+  } catch (err) {
+    console.error("user_account_deleted analytics failed", err);
+  }
 
   return json({ ok: true, deleted: true }, 200, origin);
 });

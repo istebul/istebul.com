@@ -12,6 +12,7 @@ export const ANALYTICS_CATEGORIES = new Set([
   "revenue",
   "growth",
   "lifecycle",
+  "compliance",
 ]);
 
 export const ALLOWED_ANALYTICS_EVENTS = new Set([
@@ -199,6 +200,7 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "lifecycle_enroll_requested",
   "lifecycle_unsubscribe",
   "lifecycle_enroll_requested",
+  "user_account_deleted",
 ]);
 
 const AUTO_EVENT_NAMES = new Set(
@@ -253,6 +255,7 @@ export function eventCategoryFor(name: string, fallback?: string) {
     return "growth";
   }
   if (name.startsWith("lifecycle_")) return "lifecycle";
+  if (name.startsWith("user_account_")) return "compliance";
   if (name.startsWith("page_") || name === "route_change") return "page";
   if (name.startsWith("cta_")) return "cta";
   if (
