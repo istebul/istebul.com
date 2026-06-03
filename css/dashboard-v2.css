@@ -4,8 +4,8 @@
  */
 
 html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard.section {
-  background: linear-gradient(180deg, #040a14 0%, #0b1732 48%, #0a1f42 100%);
-  color: #dbeafe;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  color: #0f172a;
   padding-block: clamp(2rem, 4vw, 3rem);
 }
 
@@ -13,65 +13,9 @@ html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard > .container {
   max-width: min(1180px, 96vw);
 }
 
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-section {
-  background: rgba(15, 23, 42, 0.72);
-  border-color: rgba(148, 163, 184, 0.22);
-  color: #dbeafe;
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-section h3,
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .account-root .dashboard-v2-section h3 {
-  color: #f8fafc;
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-muted {
-  color: #94a3b8;
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-summary-card {
-  background: rgba(15, 23, 42, 0.72);
-  border-color: rgba(148, 163, 184, 0.22);
-  color: #dbeafe;
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-summary-card span {
-  color: #94a3b8;
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-summary-card strong {
-  color: #f8fafc;
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-analysis-card {
-  background: rgba(15, 23, 42, 0.62);
-  border-color: rgba(148, 163, 184, 0.2);
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-analysis-summary,
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-analysis-scores span {
-  color: #94a3b8;
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-table-wrap {
-  border-color: rgba(148, 163, 184, 0.22);
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-table th,
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-table td {
-  color: #cbd5e1;
-  border-color: rgba(148, 163, 184, 0.16);
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-root .btn-outline {
-  background: rgba(15, 23, 42, 0.72);
-  border-color: rgba(148, 163, 184, 0.38);
-  color: #e2e8f0;
-}
-
-html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-root .btn-outline:hover {
-  background: rgba(37, 99, 235, 0.22);
-  border-color: rgba(96, 165, 250, 0.55);
-  color: #f8fafc;
+html.ib-ds-v4.ib-premium-v7 #profil.profil-has-dashboard .dashboard-v2-hero {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 52%, #4f46e5 100%);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.18);
 }
 
 .dashboard-v2-root {
