@@ -187,7 +187,37 @@ body.modal-open {
   }
 }
 
-/* —— Bottom bars: sticky CTA + cookie —— */
+/* —— Cookie consent: fixed overlay on all viewports (footer-in-flow is not visible on desktop) —— */
+#cookie-consent:not([hidden]) {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 1045;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.14);
+  max-height: min(42vh, 320px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 769px) {
+  #cookie-consent:not([hidden]) {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(960px, calc(100% - 2rem));
+    bottom: 1rem;
+    border-radius: 16px;
+  }
+
+  body.cookie-consent-pending {
+    padding-bottom: 5.5rem;
+  }
+}
+
+/* —— Bottom bars: sticky CTA + cookie (mobile) —— */
 @media (max-width: 768px) {
   .cro-sticky-cta {
     padding-bottom: calc(0.65rem + var(--ib-safe-b));
@@ -202,18 +232,8 @@ body.modal-open {
     padding-bottom: 0;
   }
 
-  .cookie-consent {
-    position: fixed;
-    left: 0;
-    right: 0;
+  #cookie-consent:not([hidden]) {
     bottom: var(--ib-bottom-cta);
-    z-index: 840;
-    margin: 0;
-    border-radius: 16px 16px 0 0;
-    box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.12);
-    max-height: 40vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   .cookie-consent .btn {

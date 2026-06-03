@@ -439,24 +439,36 @@ class App {
         const banner = document.getElementById('cookie-consent');
         if (!banner) return;
 
+        const hideBanner = () => {
+            banner.hidden = true;
+            document.body.classList.remove('cookie-consent-pending');
+        };
+
+        const showBanner = () => {
+            banner.hidden = false;
+            document.body.classList.add('cookie-consent-pending');
+        };
+
         const preference = readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT);
         if (preference) {
             if (preference === 'accepted') {
                 void bootAnalyticsMeasurement();
                 monitoring.init(true);
             }
-            banner.hidden = true;
+            hideBanner();
             return;
         }
+
+        showBanner();
 
         banner.querySelector('[data-cookie-accept]')?.addEventListener('click', () => {
             acceptAnalyticsConsent();
             monitoring.init(true);
-            banner.hidden = true;
+            hideBanner();
         });
         banner.querySelector('[data-cookie-decline]')?.addEventListener('click', () => {
             declineAnalyticsConsent();
-            banner.hidden = true;
+            hideBanner();
         });
     }
 
@@ -4747,8 +4759,9 @@ document.addEventListener('click', (event) => {
 
     const consent = document.getElementById('cookie-consent');
     if (consent) {
+        consent.hidden = true;
         consent.classList.add('hidden');
-        consent.style.display = 'none';
+        document.body.classList.remove('cookie-consent-pending');
     }
 });
 
