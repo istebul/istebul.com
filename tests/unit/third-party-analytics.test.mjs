@@ -33,4 +33,13 @@ describe('third-party-analytics', () => {
     assert.match(src, /CLARITY_PROJECT_ID/);
     assert.match(src, /www\.clarity\.ms/);
   });
+
+  it('grants GA4 consent on accept when gtag already in head', () => {
+    const src = fs.readFileSync(
+      path.join(process.cwd(), 'js/core/third-party-analytics.js'),
+      'utf8'
+    );
+    assert.match(src, /consent', 'update'/);
+    assert.match(src, /analytics_storage: 'granted'/);
+  });
 });
