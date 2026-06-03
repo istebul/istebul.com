@@ -1,7 +1,13 @@
 import { initDecisionFlow } from '../vertical/vertical-decision-app.js';
 import { resolveWizardConfig } from '../vertical/wizard-i18n.js';
 import { createVerticalTracker } from '../vertical/vertical-intake.js';
-import { FINANS_STEPS, FINANS_OPTIONS, FINANS_DISCLAIMER } from './finans-config.js';
+import { FINANS_OPTIONS, FINANS_DISCLAIMER } from './finans-config.js';
+import {
+  getFinansSteps,
+  getFinansOptions,
+  getFinansStepMeta,
+  resetFieldsOnPurposeChange
+} from './finans-flow.js';
 import {
   buildFinansResults,
   buildFinansSummary,
@@ -58,10 +64,11 @@ function canAdvance(state, step) {
 }
 
 function renderStepBody(step, state, { renderOptionGrid }) {
+  const purpose = state.purpose;
   if (step.id === 'purpose') return renderOptionGrid('purpose', FINANS_OPTIONS.purpose, true);
   if (step.id === 'amount') {
     return `
-      ${renderOptionGrid('amount_range', FINANS_OPTIONS.amount, true)}
+      ${renderOptionGrid('amount_range', getFinansOptions('amount', purpose), true)}
       ${
         state.amount_range === 'manuel'
           ? `<label class="vacation-field"><span>Kredi tutarı</span>
@@ -69,10 +76,10 @@ function renderStepBody(step, state, { renderOptionGrid }) {
           : ''
       }`;
   }
-  if (step.id === 'term') return renderOptionGrid('term_months', FINANS_OPTIONS.term, true);
+  if (step.id === 'term') return renderOptionGrid('term_months', getFinansOptions('term', purpose), true);
   if (step.id === 'capacity') {
     return `
-      ${renderOptionGrid('capacity_range', FINANS_OPTIONS.capacity, true)}
+      ${renderOptionGrid('capacity_range', getFinansOptions('capacity', purpose), true)}
       ${
         state.capacity_range === 'manuel'
           ? `<label class="vacation-field"><span>Aylık ödeme kapasitesi</span>
@@ -92,16 +99,16 @@ function renderStepBody(step, state, { renderOptionGrid }) {
       <label class="vacation-field"><span>Toplam mevcut borç taksiti / ay</span>
         <input type="text" data-manual="existing_debt" value="${state.existing_debt ? formatTry(state.existing_debt) : ''}" placeholder="Örn: 6.500 TL"></label>
       <p class="vacation-step-subtitle">Gelir tipi</p>
-      ${renderOptionGrid('income_type', FINANS_OPTIONS.income, true)}
+      ${renderOptionGrid('income_type', getFinansOptions('income', purpose), true)}
       <p class="vacation-step-subtitle">Erken ödeme ihtimali</p>
-      ${renderOptionGrid('early_payment', FINANS_OPTIONS.earlyPayment, true)}`;
+      ${renderOptionGrid('early_payment', getFinansOptions('earlyPayment', purpose), true)}`;
   }
   if (step.id === 'sensitivity') {
     return `
       <p class="vacation-step-subtitle">Faiz hassasiyeti</p>
-      ${renderOptionGrid('rate_sensitivity', FINANS_OPTIONS.rateSensitivity, true)}
+      ${renderOptionGrid('rate_sensitivity', getFinansOptions('rateSensitivity', purpose), true)}
       <p class="vacation-step-subtitle">Risk toleransı</p>
-      ${renderOptionGrid('risk_tolerance', FINANS_OPTIONS.riskTolerance, true)}`;
+      ${renderOptionGrid('risk_tolerance', getFinansOptions('riskTolerance', purpose), true)}`;
   }
   return '';
 }
@@ -111,7 +118,9 @@ initDecisionFlow(
   vertical: 'finans',
   themeClass: 'finans-page',
   domIds: FINANS_DOM_IDS,
-  steps: FINANS_STEPS,
+  steps: getFinansSteps(),
+  getSteps: (s) => getFinansSteps(s.purpose),
+  getStepMeta: (s, step) => getFinansStepMeta(s.purpose, step),
   disclaimer: FINANS_DISCLAIMER,
   resultsTitle: 'Finansman senaryo önerileri',
   resultsKicker: 'Finansman analizi tamamlandı',
@@ -134,7 +143,10 @@ initDecisionFlow(
   },
   canAdvance,
   renderStepBody,
-  onFieldChange(state, field) {
+  onFieldChange(state, field, _value, previousValue) {
+    if (field === 'purpose') {
+      resetFieldsOnPurposeChange(state, previousValue, state.purpose);
+    }
     if (field === 'amount_range' && state.amount_range !== 'manuel') state.amount_manual = null;
     if (field === 'capacity_range' && state.capacity_range !== 'manuel') state.capacity_manual = null;
   },

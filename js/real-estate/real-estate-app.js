@@ -18,8 +18,11 @@ import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '..
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountKonutResultsV2 } from '../features/konut/konut-results-v2.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
+import { getKonutFlow, resetKonutFieldsOnPurposeChange } from '../konut/konut-flow.js';
 
-const STEP_LABELS = ['Karar amacı', 'Bütçe', 'Lokasyon', 'Konut tipi', 'Riskler'];
+function stepLabelsForState() {
+  return getKonutFlow(state.purchasePurpose).stepLabels;
+}
 const PURPOSE_OPTIONS = [
   'Satın almak istiyorum',
   'Kiralamak istiyorum',
@@ -151,7 +154,7 @@ function trackEvent(eventType, metadata = {}) {
 function mountProgress() {
   const progress = $('#housing-progress');
   if (!progress) return;
-  progress.innerHTML = STEP_LABELS.map((label, idx) => `
+  progress.innerHTML = stepLabelsForState().map((label, idx) => `
     <span class="housing-progress-item ${idx <= state.step ? 'is-active' : ''}">${idx + 1}. ${escapeHtml(label)}</span>
   `).join('');
 }
@@ -217,7 +220,7 @@ function locationFields() {
 
 function homeTypeFields() {
   return `
-    ${cardButtons(HOME_TYPE_OPTIONS, 'homeType', state.homeType)}
+    ${cardButtons(getKonutFlow(state.purchasePurpose).homeTypes, 'homeType', state.homeType)}
     <div class="housing-form-grid">
       <label>Hane büyüklüğü<input data-input="householdSize" type="number" min="1" max="12" inputmode="numeric" value="${escapeHtml(state.householdSize)}" placeholder="Örn: 4"></label>
       <label>Oda sayısı<input data-input="roomCount" value="${escapeHtml(state.roomCount)}" placeholder="2+1, 3+1"></label>
@@ -238,17 +241,22 @@ function riskFields() {
       <label>Ulaşım maliyeti (aylık)<input data-input="transportCost" type="number" min="0" value="${escapeHtml(state.transportCost)}"></label>
     </div>
     <p class="housing-field-hint">Risk ve tercih öncelikleri (opsiyonel, en fazla 6):</p>
-    ${chipButtons(RISK_PREFS, state.riskPreferences, 'toggle-risk')}`;
+    ${chipButtons(getKonutFlow(state.purchasePurpose).riskPrefs, state.riskPreferences, 'toggle-risk')}`;
 }
 
 function validateStep(stepIndex) {
+  const flow = getKonutFlow(state.purchasePurpose);
   if (stepIndex === 0 && !state.purchasePurpose) return 'Karar amacını seçin.';
   if (stepIndex === 1) {
-    if (!Number(state.totalBudget)) return 'Toplam bütçe zorunludur.';
+    if (!Number(state.totalBudget)) {
+      return flow.requireFinancing ? 'Toplam bütçe zorunludur.' : 'Aylık kira veya bütçe çerçevesi zorunludur.';
+    }
     if (!Number(state.monthlyIncome)) return 'Aylık net gelir zorunludur.';
     if (!Number(state.monthlyCapacity)) return 'Aylık ödeme kapasitesi zorunludur.';
-    if (state.useFinancing === 'evet' && !Number(state.loanAmount)) return 'Kredi tutarını girin.';
-    if (!state.useFinancing) return 'Kredi kullanım tercihini seçin.';
+    if (flow.requireFinancing) {
+      if (state.useFinancing === 'evet' && !Number(state.loanAmount)) return 'Kredi tutarını girin.';
+      if (!state.useFinancing) return 'Kredi kullanım tercihini seçin.';
+    }
   }
   if (stepIndex === 2 && !String(state.city || '').trim()) return 'İl seçimi zorunludur.';
   if (stepIndex === 3 && !state.homeType) return 'Konut tipini seçin.';
@@ -256,7 +264,7 @@ function validateStep(stepIndex) {
 }
 
 function validateAllSteps() {
-  for (let i = 0; i < STEP_LABELS.length; i += 1) {
+  for (let i = 0; i < stepLabelsForState().length; i += 1) {
     const msg = validateStep(i);
     if (msg) return { step: i, message: msg };
   }
@@ -426,12 +434,28 @@ function renderStep() {
   const wizard = $('#housing-wizard');
   if (!wizard) return;
 
+  const flow = getKonutFlow(state.purchasePurpose);
   const steps = [
     { title: 'Adım 1 — Karar amacı', html: cardButtons(PURPOSE_OPTIONS, 'purchasePurpose', state.purchasePurpose) },
-    { title: 'Adım 2 — Bütçe', html: budgetFields() },
-    { title: 'Adım 3 — Lokasyon', html: locationFields() },
-    { title: 'Adım 4 — Konut tipi', html: homeTypeFields() },
-    { title: 'Adım 5 — Riskler', html: riskFields() }
+    {
+      title: flow.budgetTitle,
+      html: `<p class="housing-field-hint">${escapeHtml(flow.budgetHint)}</p>${budgetFields()}`
+    },
+    { title: 'Adım 3 — Lokasyon tercihi', html: locationFields() },
+    {
+      title:
+        flow.stepLabels[3] === 'Konut tipi'
+          ? 'Adım 4 — Konut tipi'
+          : `Adım 4 — ${flow.stepLabels[3]}`,
+      html: homeTypeFields()
+    },
+    {
+      title:
+        flow.stepLabels[4] === 'Riskler'
+          ? 'Adım 5 — Riskler ve öncelikler'
+          : `Adım 5 — ${flow.stepLabels[4]}`,
+      html: riskFields()
+    }
   ];
   const body = steps[state.step];
   const isLast = state.step === steps.length - 1;
@@ -456,7 +480,12 @@ function renderStep() {
 function bindWizardEvents() {
   document.querySelectorAll('[data-field]').forEach((button) => {
     button.addEventListener('click', () => {
-      state[button.dataset.field] = button.dataset.value || '';
+      const field = button.dataset.field;
+      const previousValue = state[field];
+      state[field] = button.dataset.value || '';
+      if (field === 'purchasePurpose') {
+        resetKonutFieldsOnPurposeChange(state, previousValue, state.purchasePurpose);
+      }
       renderStep();
     });
   });
@@ -515,9 +544,10 @@ async function handleNext() {
     return;
   }
 
-  if (state.step < STEP_LABELS.length - 1) {
+  const labels = stepLabelsForState();
+  if (state.step < labels.length - 1) {
     if (validationNode) validationNode.textContent = '';
-    trackEvent('home_analysis_step_completed', { step: state.step + 1, label: STEP_LABELS[state.step] });
+    trackEvent('home_analysis_step_completed', { step: state.step + 1, label: labels[state.step] });
     state.step += 1;
     renderStep();
     return;
@@ -530,7 +560,7 @@ async function handleNext() {
   }
 
   if (validationNode) validationNode.textContent = '';
-  trackEvent('home_analysis_step_completed', { step: STEP_LABELS.length, label: 'Sonuçlar' });
+  trackEvent('home_analysis_step_completed', { step: stepLabelsForState().length, label: 'Sonuçlar' });
   await renderResults();
 }
 
@@ -777,7 +807,7 @@ async function renderResults() {
       results.hidden = true;
       results.innerHTML = '';
       if (wizard) wizard.hidden = false;
-      state.step = STEP_LABELS.length - 1;
+      state.step = stepLabelsForState().length - 1;
       renderStep();
     });
   }

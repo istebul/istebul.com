@@ -153,8 +153,11 @@ export function initDecisionFlow(config) {
   function bindWizardEvents() {
     document.querySelectorAll('[data-field]').forEach((btn) => {
       btn.addEventListener('click', () => {
+        const previousValue = state[btn.dataset.field];
         state[btn.dataset.field] = btn.dataset.value;
-        if (config.onFieldChange) config.onFieldChange(state, btn.dataset.field, btn.dataset.value);
+        if (config.onFieldChange) {
+          config.onFieldChange(state, btn.dataset.field, btn.dataset.value, previousValue);
+        }
         renderWizard();
       });
     });
@@ -221,12 +224,16 @@ export function initDecisionFlow(config) {
 
     mount.hidden = false;
     const step = currentStep();
+    const stepMeta =
+      typeof config.getStepMeta === 'function'
+        ? { ...step, ...config.getStepMeta(state, step) }
+        : step;
     const body = config.renderStepBody(step, state, { escapeHtml, renderOptionGrid, renderChipGrid, formatTry });
 
     mount.innerHTML = `
     <div class="vacation-wizard-card">
-      <h2>${escapeHtml(step.title)}</h2>
-      ${step.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(step.subtitle)}</p>` : ''}
+      <h2>${escapeHtml(stepMeta.title)}</h2>
+      ${stepMeta.subtitle ? `<p class="vacation-step-subtitle">${escapeHtml(stepMeta.subtitle)}</p>` : ''}
       ${body}
       <div class="vacation-wizard-actions">
         ${state.stepIndex > 0 ? `<button type="button" class="btn btn-ghost" id="${dom.back}">${escapeHtml(wt('common.back', 'Geri'))}</button>` : ''}

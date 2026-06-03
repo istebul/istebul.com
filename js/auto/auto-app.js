@@ -36,6 +36,7 @@ import { FREE_LIMITS, PLANS } from '../features/monetization/plans.js';
 import { analytics } from '../core/analytics.js';
 import { bootAnalyticsMeasurement } from '../runtime/analytics-consent-boot.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
+import { getAutoPartOptions, getAutoStepCopy, sanitizeWizardStateForUsage } from './auto-flow.js';
 import { mirrorLegacyAutoFunnel, trackAutoStart, trackGrowthFunnel, GROWTH_FUNNEL_EVENTS } from '../features/growth/growth-funnel.js';
 import { trackPaidFunnelStep } from '../features/growth/paid-acquisition.js';
 import { sendServerPaidConversion } from '../features/growth/paid-capi-bridge.js';
@@ -2763,10 +2764,22 @@ function renderWizardDistrictField() {
   `;
 }
 
+function autoPartOptionPool(partKey) {
+  if (partKey === 'body') return bodyOptions;
+  if (partKey === 'fuel') return fuelOptions;
+  if (partKey === 'km') return kmOptions;
+  const cityPart = wizardSteps[2]?.parts?.find((p) => p.key === 'city_ratio');
+  if (partKey === 'city_ratio') return cityPart?.options || [];
+  return [];
+}
+
 function renderWizardPartOptions(part) {
   const selected = wizardState[part.key];
   const isCustom = selected === 'custom';
   const customValue = wizardState[`${part.key}_custom`] || '';
+  const filteredOptions = ['body', 'fuel', 'km', 'city_ratio'].includes(part.key)
+    ? getAutoPartOptions(part.key, wizardState.usage, part.options)
+    : part.options;
   const customLabel = part.key === 'budget'
     ? 'Net bütçenizi girin'
     : part.key === 'km'
@@ -2780,7 +2793,7 @@ function renderWizardPartOptions(part) {
       <h4 class="wizard-part-title auto-wizard-part-title" id="auto-wizard-part-${escapeHtml(part.key)}">${escapeHtml(part.title)}</h4>
       ${part.why ? `<p class="wizard-part-why auto-wizard-part-why">${escapeHtml(part.why)}</p>` : ''}
       <div class="wizard-options auto-wizard-options" role="radiogroup" aria-labelledby="auto-wizard-part-${escapeHtml(part.key)}">
-        ${part.options.map((option) => renderWizardOptionButton(part.key, option, selected)).join('')}
+        ${filteredOptions.map((option) => renderWizardOptionButton(part.key, option, selected)).join('')}
       </div>
       ${part.custom && isCustom ? `
         <label class="wizard-custom-input auto-wizard-custom-input">
@@ -2811,6 +2824,9 @@ function renderWizard() {
   if (!wizard) return;
 
   const step = wizardSteps[wizardIndex];
+  const stepCopy = getAutoStepCopy(wizardIndex, wizardState.usage);
+  const stepTitle = stepCopy?.title || step.title;
+  const stepDescription = stepCopy?.description || step.description;
   const progress = Math.round(((wizardIndex + 1) / wizardSteps.length) * 100);
   const canProceed = wizardStepCanProceed(step);
   const isMulti = Array.isArray(step.parts) && step.parts.length > 0;
@@ -2905,8 +2921,8 @@ function renderWizard() {
 
     <div class="wizard-question auto-wizard-question">
       <p class="kicker">Karar altyapısı</p>
-      <h3>${escapeHtml(step.title)}</h3>
-      <p class="auto-wizard-question-desc">${escapeHtml(step.description)}</p>
+      <h3>${escapeHtml(stepTitle)}</h3>
+      <p class="auto-wizard-question-desc">${escapeHtml(stepDescription)}</p>
       ${step.why ? `<p class="wizard-step-why auto-wizard-step-why">${escapeHtml(step.why)}</p>` : ''}
     </div>
 
@@ -3066,7 +3082,16 @@ if (wizard) {
     if (option) {
       const step = wizardSteps[wizardIndex];
       const fieldKey = option.dataset.wizardKey || step.key;
+      const previousUsage = wizardState.usage;
       wizardState[fieldKey] = option.dataset.wizardValue;
+      if (fieldKey === 'usage' && previousUsage !== wizardState.usage) {
+        sanitizeWizardStateForUsage(wizardState, {
+          body: bodyOptions,
+          fuel: fuelOptions,
+          km: kmOptions,
+          city_ratio: autoPartOptionPool('city_ratio')
+        });
+      }
       syncWizardToForm();
       renderWizard();
 

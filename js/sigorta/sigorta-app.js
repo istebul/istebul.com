@@ -7,6 +7,7 @@ import {
   resetSigortaFieldsForTypeChange,
   syncSigortaStepIndexAfterTypeChange
 } from './sigorta-config.js';
+import { getSigortaOptions, getSigortaStepMeta } from './sigorta-flow.js';
 import {
   buildSigortaResults,
   buildSigortaSummary,
@@ -115,6 +116,9 @@ function canAdvance(state, step) {
 }
 
 function renderStepBody(step, state, { renderOptionGrid }) {
+  const type = state.insurance_type;
+  const opts = (field) => getSigortaOptions(field, type, SIGORTA_OPTIONS);
+
   switch (step.id) {
     case 'type':
       return renderOptionGrid('insurance_type', SIGORTA_OPTIONS.insurance_type, true, 'type');
@@ -125,17 +129,17 @@ function renderStepBody(step, state, { renderOptionGrid }) {
       <p class="vacation-step-subtitle">Ehliyet süresi</p>
       ${renderOptionGrid('license_years', SIGORTA_OPTIONS.license_years, true)}
       <p class="vacation-step-subtitle">Kullanım tipi</p>
-      ${renderOptionGrid('usage_type', SIGORTA_OPTIONS.usage_type, true)}`;
+      ${renderOptionGrid('usage_type', opts('usage_type'), true)}`;
     case 'vehicle':
       return `
       <p class="vacation-step-subtitle">Araç tipi</p>
-      ${renderOptionGrid('vehicle_category', SIGORTA_OPTIONS.vehicle_category, true)}
+      ${renderOptionGrid('vehicle_category', opts('vehicle_category'), true)}
       <p class="vacation-step-subtitle">Araç yaşı</p>
       ${renderOptionGrid('vehicle_year_band', SIGORTA_OPTIONS.vehicle_year_band, true)}`;
     case 'property':
       return `
       <p class="vacation-step-subtitle">Konut durumu</p>
-      ${renderOptionGrid('property_role', SIGORTA_OPTIONS.property_role, true)}
+      ${renderOptionGrid('property_role', opts('property_role'), true)}
       <p class="vacation-step-subtitle">Konut tipi</p>
       ${renderOptionGrid('property_type', SIGORTA_OPTIONS.property_type, true)}`;
     case 'profile':
@@ -145,27 +149,27 @@ function renderStepBody(step, state, { renderOptionGrid }) {
     case 'dependents':
       return `
       <p class="vacation-step-subtitle">18 yaş altı bakmakla yükümlü olduğunuz çocuk sayısı</p>
-      ${renderOptionGrid('children_count', SIGORTA_OPTIONS.children_count, true)}`;
+      ${renderOptionGrid('children_count', opts('children_count'), true)}`;
     case 'occupancy':
       return `
       <label class="vacation-field"><span>Poliçe sahibi yaşı</span>
         <input type="number" min="18" max="99" data-manual="age" value="${state.age ?? ''}" placeholder="Örn: 35"></label>
       <p class="vacation-step-subtitle">Konutta yaşayan kişi sayısı (siz dahil)</p>
-      ${renderOptionGrid('residents_count', SIGORTA_OPTIONS.residents_count, true)}
+      ${renderOptionGrid('residents_count', opts('residents_count'), true)}
       <p class="vacation-step-subtitle">18 yaş altı çocuk sayısı</p>
-      ${renderOptionGrid('children_count', SIGORTA_OPTIONS.children_count, true)}`;
+      ${renderOptionGrid('children_count', opts('children_count'), true)}`;
     case 'trip':
       return `
       <p class="vacation-step-subtitle">Destinasyon</p>
-      ${renderOptionGrid('destination_type', SIGORTA_OPTIONS.destination_type, true)}
+      ${renderOptionGrid('destination_type', opts('destination_type'), true)}
       <p class="vacation-step-subtitle">Seyahat süresi</p>
       ${renderOptionGrid('trip_duration', SIGORTA_OPTIONS.trip_duration, true)}
       <p class="vacation-step-subtitle">Kaç kişi seyahat edecek?</p>
-      ${renderOptionGrid('traveler_count', SIGORTA_OPTIONS.traveler_count, true)}`;
+      ${renderOptionGrid('traveler_count', opts('traveler_count'), true)}`;
     case 'risk':
-      return renderOptionGrid('risk_perception', SIGORTA_OPTIONS.risk_perception, true);
+      return renderOptionGrid('risk_perception', opts('risk_perception'), true);
     case 'budget':
-      return renderOptionGrid('budget_level', SIGORTA_OPTIONS.budget_level, true);
+      return renderOptionGrid('budget_level', opts('budget_level'), true);
     default:
       return '';
   }
@@ -331,7 +335,12 @@ function bootSigortaApp() {
       domIds: SIGORTA_DOM_IDS,
       externalHeroBindings: true,
       steps: getSigortaSteps(),
-      getSteps: (s) => getSigortaSteps(s.insurance_type),
+      getSteps: (s) =>
+        getSigortaSteps(s.insurance_type).map((step) => ({
+          ...step,
+          ...getSigortaStepMeta(s.insurance_type, step)
+        })),
+      getStepMeta: (s, step) => getSigortaStepMeta(s.insurance_type, step),
       disclaimer: SIGORTA_DISCLAIMER,
       resultsTitle: 'Sigorta koruma senaryoları',
       resultsKicker: 'Sigorta analizi tamamlandı',

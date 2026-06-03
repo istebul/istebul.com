@@ -5,6 +5,7 @@ import {
   KASKO_OPTIONS,
   KASKO_DISCLAIMER
 } from './kasko-config.js';
+import { getKaskoOptions, getKaskoStepMeta, resetKaskoFieldsOnUsageChange } from './kasko-flow.js';
 import {
   buildKaskoResults,
   buildKaskoSummary,
@@ -81,7 +82,7 @@ function renderStepBody(step, state, { renderOptionGrid }) {
     case 'vehicle':
       return `
       <p class="vacation-step-subtitle">Araç tipi</p>
-      ${renderOptionGrid('vehicle_category', KASKO_OPTIONS.vehicle_category, true)}
+      ${renderOptionGrid('vehicle_category', getKaskoOptions('vehicle_category', state), true)}
       <p class="vacation-step-subtitle">Araç yaşı</p>
       ${renderOptionGrid('vehicle_year_band', KASKO_OPTIONS.vehicle_year_band, true)}`;
     case 'driver':
@@ -93,7 +94,7 @@ function renderStepBody(step, state, { renderOptionGrid }) {
       <p class="vacation-step-subtitle">Kullanım</p>
       ${renderOptionGrid('usage_type', KASKO_OPTIONS.usage_type, true)}`;
     case 'coverage':
-      return renderOptionGrid('coverage_level', KASKO_OPTIONS.coverage_level, true);
+      return renderOptionGrid('coverage_level', getKaskoOptions('coverage_level', state), true);
     case 'risk':
       return renderOptionGrid('risk_perception', KASKO_OPTIONS.risk_perception, true);
     case 'budget':
@@ -116,6 +117,7 @@ function boot() {
       themeClass: 'kasko-page',
       domIds: KASKO_DOM_IDS,
       steps: KASKO_STEPS,
+      getStepMeta: (s, step) => getKaskoStepMeta(s, step),
       disclaimer: KASKO_DISCLAIMER,
       resultsTitle: 'Kasko senaryoları',
       resultsKicker: 'Kasko analizi tamamlandı',
@@ -132,6 +134,11 @@ function boot() {
       },
       canAdvance,
       renderStepBody,
+      onFieldChange(state, field, _value, previousValue) {
+        if (field === 'usage_type') {
+          resetKaskoFieldsOnUsageChange(state, previousValue, state.usage_type);
+        }
+      },
       buildResults: buildKaskoResults,
       buildSummary: buildKaskoSummary,
       buildCommentary,

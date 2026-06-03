@@ -34,8 +34,8 @@ export const KASKO_STEP_DEFS = Object.freeze({
 });
 
 export const KASKO_STEPS = [
-  KASKO_STEP_DEFS.vehicle,
   KASKO_STEP_DEFS.driver,
+  KASKO_STEP_DEFS.vehicle,
   KASKO_STEP_DEFS.coverage,
   KASKO_STEP_DEFS.risk,
   KASKO_STEP_DEFS.budget
