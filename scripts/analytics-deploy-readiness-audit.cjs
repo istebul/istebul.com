@@ -122,6 +122,12 @@ if (!headers.includes('www.clarity.ms')) {
 if (!headers.includes('*.clarity.ms')) {
   fail('_headers CSP connect-src must allow https://*.clarity.ms');
 }
+if (!headers.includes('worker-src')) {
+  fail('_headers CSP must include worker-src for service worker');
+}
+if (!headers.includes('https://www.istebul.com')) {
+  fail('_headers CSP must allow explicit www.istebul.com origins');
+}
 
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 if (!pkg.scripts['audit:analytics']) fail('package.json must define audit:analytics script');

@@ -14,7 +14,7 @@
   <meta property="og:image" content="https://www.istebul.com/assets/images/konut-hero-1280.jpg">
   <link rel="preload" href="/assets/images/konut-hero.webp" as="image" type="image/webp" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
   <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://www.istebul.com/assets/images/konut-hero-1280.jpg">
@@ -117,10 +117,6 @@
     </div>
   </footer>
   <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
-  <script type="module">
-    const bootSocial = () => import("/js/runtime/site-social-init.js").catch(() => {});
-    if ("requestIdleCallback" in window) requestIdleCallback(bootSocial, { timeout: 3000 });
-    else window.addEventListener("load", () => setTimeout(bootSocial, 500), { once: true });
-  </script>
+  <script type="module" src="/js/runtime/site-social-deferred-boot.js"></script>
 </body>
 </html>

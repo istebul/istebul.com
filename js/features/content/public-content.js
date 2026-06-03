@@ -29,6 +29,9 @@ export const GUIDE_CATEGORIES = Object.freeze([
 const POST_SELECT =
   'id,title,slug,content,excerpt,category,content_type,cover_image_url,is_featured,source_label,source_url,created_at';
 
+const POST_SELECT_LEGACY =
+  'id,title,slug,content,excerpt,category,cover_image_url,is_featured,source_label,source_url,created_at';
+
 export function getGuideCategory(id) {
   const key = String(id || '').trim().toLowerCase();
   return GUIDE_CATEGORIES.find((cat) => cat.id === key) || null;
@@ -110,12 +113,20 @@ function getSupabaseHeaders() {
   return { url: url.replace(/\/$/, ''), headers: { apikey: key, Authorization: `Bearer ${key}` } };
 }
 
-async function restGet(path) {
+async function restGet(path, { allowLegacyPosts = false } = {}) {
   const cfg = getSupabaseHeaders();
   if (!cfg) return [];
   try {
     const res = await fetch(`${cfg.url}/rest/v1/${path}`, { headers: cfg.headers });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      if (allowLegacyPosts && res.status === 400 && path.startsWith('posts?')) {
+        const legacyPath = path
+          .replace(POST_SELECT, POST_SELECT_LEGACY)
+          .replace(/&content_type=[^&]+/g, '');
+        if (legacyPath !== path) return restGet(legacyPath, { allowLegacyPosts: false });
+      }
+      return [];
+    }
     const data = await res.json();
     return Array.isArray(data) ? data : [];
   } catch {
@@ -165,7 +176,8 @@ export async function fetchPublishedPosts(limit = 12, category = '', contentType
   const type = String(contentType || 'blog').trim().toLowerCase();
   const typeFilter = type ? `&content_type=eq.${encodeURIComponent(type)}` : '';
   const rows = await restGet(
-    `posts?select=${POST_SELECT}&is_published=eq.true${typeFilter}${categoryFilter}&order=is_featured.desc,created_at.desc&limit=${limit}`
+    `posts?select=${POST_SELECT}&is_published=eq.true${typeFilter}${categoryFilter}&order=is_featured.desc,created_at.desc&limit=${limit}`,
+    { allowLegacyPosts: true }
   );
   return rows.map(mapPostRow);
 }

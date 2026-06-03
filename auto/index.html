@@ -46,7 +46,7 @@
   }
   </script>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
   <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
   <link rel="preload" href="/assets/auto-runtime/ib-car.css" as="style">
   <link rel="stylesheet" href="/assets/auto-runtime/ib-car.css">
@@ -281,14 +281,7 @@
 
 
   <script type="module" src="/assets/auto-runtime/auto-app.js"></script>
-  <script type="module">
-    const bootGuides = () =>
-      import('/js/runtime/init-category-guides.js')
-        .then((m) => m.initCategoryGuidesHub())
-        .catch(() => {});
-    if ('requestIdleCallback' in window) requestIdleCallback(bootGuides, { timeout: 4000 });
-    else setTimeout(bootGuides, 800);
-  </script>
+  <script type="module" src="/js/runtime/category-guides-deferred-boot.js"></script>
   <div class="static-cookie-consent" id="static-cookie-consent" role="region" aria-label="Çerez tercihi" hidden>
   <p>Çerez ve analitik tercihinizi yönetin. <a href="/cerez-politikasi.html">Çerez politikası</a> · Ana sitede <a href="/">tam tercih paneli</a>.</p>
   <div class="static-cookie-consent__actions">
@@ -297,10 +290,6 @@
   </div>
 </div>
   <script type="module" src="/js/runtime/static-cookie-consent.js"></script>
-  <script type="module">
-    const bootSocial = () => import('/js/runtime/site-social-init.js').catch(() => {});
-    if ('requestIdleCallback' in window) requestIdleCallback(bootSocial, { timeout: 3000 });
-    else window.addEventListener('load', () => setTimeout(bootSocial, 500), { once: true });
-  </script>
+  <script type="module" src="/js/runtime/site-social-deferred-boot.js"></script>
 </body>
 </html>
