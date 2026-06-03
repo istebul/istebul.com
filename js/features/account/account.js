@@ -15,6 +15,7 @@ import { addAnalysisToCompareSelection, removeCompareSelection } from './dashboa
 import { bindPaywallV1 } from '../billing/paywall-v1.js';
 import { resolvePlanTier } from '../billing/pro-features.js';
 import { requestAccountDeletion } from '../auth/account-deletion.js';
+import { resolveRouteSurface } from '../../runtime/route-surface.js';
 
 const ONBOARDING_KEY = STORAGE_KEYS.ACCOUNT_ONBOARDING_DONE;
 const NOTIFICATION_PREF_KEY = 'istebul_notification_preference';
@@ -101,8 +102,14 @@ export class AccountManager {
         if (!section) return;
 
         const currentUser = user || this.auth?.getCurrentUser?.();
+        const onProfilRoute = resolveRouteSurface(window.location.pathname) === 'profil';
+
         if (!currentUser) {
-            this.renderGuest();
+            if (onProfilRoute) this.renderGuest();
+            return;
+        }
+
+        if (!onProfilRoute) {
             return;
         }
 

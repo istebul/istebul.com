@@ -223,6 +223,14 @@ export class UIManager {
         });
 
         userDropdown?.addEventListener('click', (event) => {
+            const accountLink = event.target.closest('a[href="/profil/"], a[href="/profil"]');
+            if (accountLink) {
+                event.preventDefault();
+                closeUserMenu();
+                window.app?.router?.navigate?.('/profil');
+                return;
+            }
+
             if (event.target.closest('a[href], button')) {
                 closeUserMenu();
             }
@@ -238,6 +246,12 @@ export class UIManager {
             if (event.key === 'Escape') {
                 closeUserMenu();
             }
+        });
+
+        document.getElementById('nav-dashboard-quick')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            closeUserMenu();
+            window.app?.router?.navigate?.('/profil');
         });
     }
 

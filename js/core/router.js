@@ -143,6 +143,10 @@ export class Router {
 
         document.querySelectorAll('[data-private-section]').forEach((section) => {
             section.classList.remove('route-visible');
+            section.style.setProperty('display', 'none', 'important');
+            section.setAttribute('hidden', '');
+            section.setAttribute('aria-hidden', 'true');
+            section.classList.add('hidden');
         });
 
         document.querySelectorAll('section[id]').forEach((section) => {
@@ -408,10 +412,19 @@ export class Router {
 
         document.querySelectorAll('[data-private-section]').forEach((section) => {
             section.classList.remove('route-visible');
+            section.style.setProperty('display', 'none', 'important');
+        });
+
+        HOMEPAGE_SECTION_IDS.forEach((sectionId) => {
+            const marketingSection = document.getElementById(sectionId);
+            if (!marketingSection) return;
+            marketingSection.style.setProperty('display', 'none', 'important');
+            marketingSection.setAttribute('hidden', '');
+            marketingSection.setAttribute('aria-hidden', 'true');
         });
 
         document.querySelectorAll('section[id]').forEach((section) => {
-            section.style.display = 'none';
+            section.style.setProperty('display', 'none', 'important');
         });
 
         if (routeId === 'auth-login' || routeId === 'auth-register') {
@@ -433,8 +446,9 @@ export class Router {
                 targetSection.classList.add('route-visible');
             }
 
-            targetSection.style.display = 'block';
+            targetSection.style.setProperty('display', 'block', 'important');
             pulseRouteSection(targetSection);
+            window.scrollTo({ top: 0, behavior: 'auto' });
             return;
         }
 
