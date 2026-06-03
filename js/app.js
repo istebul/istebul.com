@@ -9,6 +9,11 @@ import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.j
 import { initHomeCategories } from './runtime/home-categories.js';
 import { trackHomepageView } from './platform/site-analytics.js';
 import './runtime/site-analytics-boot.js';
+import {
+    acceptAnalyticsConsent,
+    bootAnalyticsMeasurement,
+    declineAnalyticsConsent
+} from './runtime/analytics-consent-boot.js';
 import { stripLocalePrefix } from './platform/locale-registry.js';
 import './features/auth/auth-click-bindings.js';
 import './runtime/growth-bootstrap.js';
@@ -437,36 +442,22 @@ class App {
         const preference = readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT);
         if (preference) {
             if (preference === 'accepted') {
-                this.loadAnalytics();
+                void bootAnalyticsMeasurement();
                 monitoring.init(true);
             }
             banner.hidden = true;
             return;
         }
 
-        const savePreference = (value) => {
-            writeStorageRaw(STORAGE_KEYS.COOKIE_CONSENT, value);
-            if (value === 'accepted') {
-                this.loadAnalytics();
-                analytics.init();
-                monitoring.init(true);
-                document.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
-            }
+        banner.querySelector('[data-cookie-accept]')?.addEventListener('click', () => {
+            acceptAnalyticsConsent();
+            monitoring.init(true);
             banner.hidden = true;
-        };
-
-        if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted') {
-            analytics.init();
-        }
-
-        banner.querySelector('[data-cookie-accept]')?.addEventListener('click', () => savePreference('accepted'));
-        banner.querySelector('[data-cookie-decline]')?.addEventListener('click', () => savePreference('declined'));
-    }
-
-    loadAnalytics() {
-        import('./core/third-party-analytics.js')
-            .then(({ loadThirdPartyMeasurement }) => loadThirdPartyMeasurement())
-            .catch(() => {});
+        });
+        banner.querySelector('[data-cookie-decline]')?.addEventListener('click', () => {
+            declineAnalyticsConsent();
+            banner.hidden = true;
+        });
     }
 
     async checkAuth() {
@@ -4751,9 +4742,7 @@ document.addEventListener('click', (event) => {
     } catch {}
 
     if (accept) {
-        window.app?.loadAnalytics?.();
-        analytics.init();
-        document.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
+        void bootAnalyticsMeasurement();
     }
 
     const consent = document.getElementById('cookie-consent');

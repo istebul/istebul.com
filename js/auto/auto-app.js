@@ -34,6 +34,7 @@ import { getVehicleCatalog } from './auto-catalog.js?v=truth3';
 import { getDealerOffers } from './auto-offers.js?v=offers2';
 import { FREE_LIMITS, PLANS } from '../features/monetization/plans.js';
 import { analytics } from '../core/analytics.js';
+import { bootAnalyticsMeasurement } from '../runtime/analytics-consent-boot.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
 import { mirrorLegacyAutoFunnel, trackAutoStart, trackGrowthFunnel, GROWTH_FUNNEL_EVENTS } from '../features/growth/growth-funnel.js';
 import { trackPaidFunnelStep } from '../features/growth/paid-acquisition.js';
@@ -3143,9 +3144,7 @@ initPerceivedPerformance();
 initBrandConsistency();
 initAutoEntitlements();
 loadAutoRuntimeConfig();
-if (readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted') {
-  analytics.init();
-}
+void bootAnalyticsMeasurement();
 trackAutoEvent('auto_page_view');
 
 document.addEventListener('click', (event) => {

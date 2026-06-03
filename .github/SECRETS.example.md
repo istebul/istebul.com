@@ -30,6 +30,21 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 | `LOGROCKET_APP_ID` | Build-time session replay |
 | `GOOGLE_OAUTH_ENABLED` | `true` — Google OAuth butonunu gösterir (Supabase + Google Console gerekli) |
 
+## Ziyaretçi analitiği (Cloudflare Pages env)
+
+GitHub secret değil — **Cloudflare Pages → istebul-com → Settings → Environment variables** (Production):
+
+| Variable | Açıklama |
+|----------|----------|
+| `PLAUSIBLE_DOMAIN` | `istebul.com` — Plausible dashboard’da site tanımlı olmalı |
+| `CF_WEB_ANALYTICS_TOKEN` | Cloudflare Web Analytics beacon token |
+| `GA4_MEASUREMENT_ID` | `G-XXXXXXXX` (opsiyonel) |
+| `CLARITY_PROJECT_ID` | Microsoft Clarity proje ID (opsiyonel) |
+
+Birinci taraf admin metrikleri için ayrıca `ANALYTICS_HASH_SALT` (GitHub secret, Supabase edge’e sync).
+
+Detay: [docs/ZIYARETCI_ANALITIK_KURULUM.md](../docs/ZIYARETCI_ANALITIK_KURULUM.md)
+
 ## Tek seferlik CLI (repo admin)
 
 ```bash

@@ -56,7 +56,10 @@ function injectCookieAssets(html) {
     out = out.replace('</head>', `  ${COOKIE_CSS}\n</head>`);
   }
   if (!out.includes('id="static-cookie-consent"') && !out.includes('id="cookie-consent"')) {
-    out = out.replace('</body>', `  ${COOKIE_BANNER}\n  <script src="/js/runtime/static-cookie-consent.js" defer></script>\n</body>`);
+    out = out.replace('</body>', `  ${COOKIE_BANNER}\n  <script type="module" src="/js/runtime/static-cookie-consent.js"></script>\n</body>`);
+  }
+  if (!out.includes('src="/env.js"')) {
+    out = out.replace('</body>', '  <script src="/env.js" defer></script>\n</body>');
   }
   if (!out.includes('site-social-init.js') && out.includes('data-site-social-links')) {
     out = out.replace(

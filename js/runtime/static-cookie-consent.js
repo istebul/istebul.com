@@ -1,22 +1,16 @@
 /**
  * Lightweight cookie consent for static corporate HTML pages (same key as main SPA).
  */
-const STORAGE_KEY = 'istebul_cookie_consent';
+import {
+  acceptAnalyticsConsent,
+  bootAnalyticsMeasurement,
+  declineAnalyticsConsent,
+  hasAnalyticsConsent
+} from './analytics-consent-boot.js';
+import { STORAGE_KEYS, readStorageRaw } from '../core/storage-keys.js';
 
 function readConsent() {
-  try {
-    return localStorage.getItem(STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function writeConsent(value) {
-  try {
-    localStorage.setItem(STORAGE_KEY, value);
-  } catch {
-    /* ignore */
-  }
+  return readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT);
 }
 
 function initStaticCookieConsent() {
@@ -24,18 +18,23 @@ function initStaticCookieConsent() {
   if (!banner) return;
 
   const existing = readConsent();
-  if (existing) {
+  if (existing === 'accepted') {
+    banner.hidden = true;
+    void bootAnalyticsMeasurement();
+    return;
+  }
+  if (existing === 'declined') {
     banner.hidden = true;
     return;
   }
 
   banner.hidden = false;
   banner.querySelector('[data-static-cookie-accept]')?.addEventListener('click', () => {
-    writeConsent('accepted');
+    acceptAnalyticsConsent();
     banner.hidden = true;
   });
   banner.querySelector('[data-static-cookie-decline]')?.addEventListener('click', () => {
-    writeConsent('declined');
+    declineAnalyticsConsent();
     banner.hidden = true;
   });
 }
@@ -45,3 +44,5 @@ if (document.readyState === 'loading') {
 } else {
   initStaticCookieConsent();
 }
+
+export { hasAnalyticsConsent };

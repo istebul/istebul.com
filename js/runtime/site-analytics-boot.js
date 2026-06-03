@@ -1,9 +1,8 @@
-import { analytics } from '../core/analytics.js';
-import { initSiteAnalyticsPage } from '../platform/site-analytics.js';
+import { bootAnalyticsMeasurement, hasAnalyticsConsent } from './analytics-consent-boot.js';
 
 function boot() {
-  if (!analytics.hasConsent()) return;
-  initSiteAnalyticsPage();
+  if (!hasAnalyticsConsent()) return;
+  void bootAnalyticsMeasurement();
 }
 
 if (document.readyState === 'loading') {
@@ -11,5 +10,3 @@ if (document.readyState === 'loading') {
 } else {
   boot();
 }
-
-document.addEventListener('cookieConsentAccepted', boot, { once: false });
