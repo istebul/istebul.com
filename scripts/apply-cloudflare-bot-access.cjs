@@ -61,6 +61,13 @@ async function cfRequest(path, { method = 'GET', body } = {}) {
   return json.result;
 }
 
+function normalizeZoneId(raw) {
+  if (!raw) return null;
+  const compact = String(raw).replace(/-/g, '').toLowerCase();
+  if (/^[a-f0-9]{32}$/.test(compact)) return compact;
+  return String(raw);
+}
+
 async function resolveZoneIdViaPages(accountId) {
   const project = process.env.CF_PAGES_PROJECT || 'istebul-com';
   const domains = await cfRequest(`/accounts/${accountId}/pages/projects/${project}/domains`);
@@ -68,7 +75,7 @@ async function resolveZoneIdViaPages(accountId) {
     (domains || []).find((d) => d.status === 'active') ||
     (domains || []).find((d) => /istebul\.com/i.test(d.name || '')) ||
     domains?.[0];
-  const zoneId = active?.zone_tag || active?.domain_id;
+  const zoneId = normalizeZoneId(active?.zone_tag || active?.domain_id);
   if (zoneId) {
     console.log(`Zone resolved via Pages project "${project}" domain ${active.name}: ${zoneId}`);
     return zoneId;
@@ -77,7 +84,7 @@ async function resolveZoneIdViaPages(accountId) {
 }
 
 async function resolveZoneId() {
-  if (process.env.CLOUDFLARE_ZONE_ID) return process.env.CLOUDFLARE_ZONE_ID;
+  if (process.env.CLOUDFLARE_ZONE_ID) return normalizeZoneId(process.env.CLOUDFLARE_ZONE_ID);
 
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
 
