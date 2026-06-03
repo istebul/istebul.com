@@ -5,7 +5,7 @@
  *
  * Usage:
  *   node scripts/apply-cloudflare-bot-access.cjs          # dry-run
- *   node scripts/apply-cloudflare-bot-access.cjs --apply  # create missing rules
+ *   node scripts/apply-cloudflare-bot-access.cjs --apply  # WAF skip rules + disable Bot Fight Mode
  */
 'use strict';
 
@@ -130,6 +130,27 @@ async function ensureSkipRule(zoneId, rulesetId, ruleSpec, existingRules) {
   return created;
 }
 
+async function relaxBotFightMode(zoneId, bm) {
+  if (!bm) return;
+  if (bm.fight_mode !== true) {
+    console.log('OK  Bot Fight Mode already off');
+    return;
+  }
+  if (process.env.ISTEBUL_KEEP_BOT_FIGHT_MODE === '1') {
+    console.log('SKIP Bot Fight Mode (ISTEBUL_KEEP_BOT_FIGHT_MODE=1)');
+    return;
+  }
+  if (!APPLY) {
+    console.log('DRY would disable Bot Fight Mode (fight_mode=false)');
+    return;
+  }
+  await cfRequest(`/zones/${zoneId}/bot_management`, {
+    method: 'PUT',
+    body: { fight_mode: false }
+  });
+  console.log('OK  disabled Bot Fight Mode (fight_mode=false)');
+}
+
 async function reportBotManagement(zoneId) {
   try {
     const bm = await cfRequest(`/zones/${zoneId}/bot_management`);
@@ -144,7 +165,7 @@ async function reportBotManagement(zoneId) {
     console.log(`Bot management: ${parts.join(' ') || JSON.stringify(bm)}`);
     if (bm.fight_mode === true) {
       console.warn(
-        'WARN Bot Fight Mode is ON — WAF skip rules do not bypass BFM. Consider Super Bot Fight Mode + skip rules (see docs/CLOUDFLARE_BOT_ACCESS.md).'
+        'WARN Bot Fight Mode is ON — WAF skip rules cannot bypass BFM; will disable on --apply unless ISTEBUL_KEEP_BOT_FIGHT_MODE=1'
       );
     }
     return bm;
@@ -160,7 +181,8 @@ async function main() {
   const zoneId = await resolveZoneId();
   console.log(`Zone: ${zoneId}`);
 
-  await reportBotManagement(zoneId);
+  const bm = await reportBotManagement(zoneId);
+  await relaxBotFightMode(zoneId, bm);
 
   let entry = await getCustomFirewallEntrypoint(zoneId);
   if (!entry) {
@@ -182,7 +204,7 @@ async function main() {
   console.log('\nDone.\n');
   if (!APPLY) {
     console.log('Re-run with --apply to create rules.');
-    console.log('Token permissions: Zone WAF Write (+ Bot Management Read optional).\n');
+    console.log('Token permissions: Zone WAF Write + Bot Management Write.\n');
   }
 }
 
