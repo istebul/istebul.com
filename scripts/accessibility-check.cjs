@@ -14,5 +14,8 @@ assert(index.includes('aria-live') || css.includes('role="status"'), 'Live/statu
 assert(css.includes(':focus') || css.includes(':focus-visible'), 'Focus indicator styles are missing.');
 assert(css.includes('sr-only'), 'Screen-reader-only utility is missing.');
 assert(!index.includes('onclick="'), 'Inline onclick handlers should be avoided in source HTML.');
+assert(!index.includes('onload="'), 'Inline onload handlers should be avoided in source HTML.');
+const productionBuild = read('scripts/production-build.cjs');
+assert(!productionBuild.includes('onload="'), 'production-build must not inject inline onload handlers.');
 
 console.log('Accessibility static checks passed.');

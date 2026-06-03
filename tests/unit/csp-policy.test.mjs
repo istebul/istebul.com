@@ -20,7 +20,10 @@ assert.ok(globalCsp.includes(WORKER_SRC.split(' ')[0]), '_headers must include w
 assert.ok(globalCsp.includes('https://www.istebul.com'), '_headers must allow www origin');
 
 const indexHtml = readFileSync(join(root, 'index.html'), 'utf8');
+const productionBuild = readFileSync(join(root, 'scripts/production-build.cjs'), 'utf8');
 assert.ok(!indexHtml.includes('onload="this.media'), 'index.html must not use font onload handlers');
+assert.ok(!productionBuild.includes('onload="this.media'), 'production-build must not inject font onload handlers');
+assert.ok(productionBuild.includes('perf-fonts-async.js'), 'production-build must use perf-fonts-async.js');
 assert.ok(indexHtml.includes('site-social-deferred-boot.js'), 'index.html must use external social boot');
 assert.ok(indexHtml.includes('home-graph.json'), 'index.html must use external JSON-LD');
 

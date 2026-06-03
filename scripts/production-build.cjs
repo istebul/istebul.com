@@ -112,11 +112,13 @@ const rewriteAssetRefs = (html) => {
 const FONT_ASYNC_MARK = '<!-- perf:async-fonts -->';
 const FONT_ASYNC_SNIPPET = `${FONT_ASYNC_MARK}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="/css/perf-fonts.css" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="/css/perf-fonts.css"></noscript>`;
+<link rel="stylesheet" href="/css/perf-fonts.css" media="print" data-perf-fonts-async>
+<noscript><link rel="stylesheet" href="/css/perf-fonts.css"></noscript>
+<script src="/js/runtime/perf-fonts-async.js" defer></script>`;
 
 const injectAsyncFonts = (html) => {
-  if (html.includes(FONT_ASYNC_MARK) || html.includes('perf-fonts.css')) {
+  // After rewriteAssetRefs, href is perf-fonts.<hash>.css — not literal perf-fonts.css
+  if (html.includes(FONT_ASYNC_MARK) || html.includes('data-perf-fonts-async') || html.includes('perf-fonts')) {
     return html;
   }
   if (!html.includes('ib-ds-v4') && !html.includes('vertical-decision.bundle')) {
@@ -333,17 +335,25 @@ esbuild.buildSync({
   outfile: siteSocialInitOut
 });
 
-const staticCookieConsentSrc = path.join(root, 'js/runtime/static-cookie-consent.js');
-if (fs.existsSync(staticCookieConsentSrc)) {
+const emitRuntimeScript = (relativePath) => {
+  const src = path.join(root, relativePath);
+  if (!fs.existsSync(src)) return;
   writeFile(
-    'js/runtime/static-cookie-consent.js',
-    esbuild.transformSync(fs.readFileSync(staticCookieConsentSrc, 'utf8'), {
+    relativePath,
+    esbuild.transformSync(fs.readFileSync(src, 'utf8'), {
       loader: 'js',
       minify: true,
       target: 'es2020'
     }).code
   );
-}
+};
+
+[
+  'js/runtime/static-cookie-consent.js',
+  'js/runtime/perf-fonts-async.js',
+  'js/runtime/site-social-deferred-boot.js',
+  'js/runtime/category-guides-deferred-boot.js'
+].forEach(emitRuntimeScript);
 
 const routeBootstrapOut = path.join(dist, 'js/runtime/route-bootstrap-head.js');
 writeRouteBootstrapFile(routeBootstrapOut);
@@ -649,6 +659,12 @@ walk(dist, (file) => {
   if (next === html) return;
   fs.writeFileSync(file, minifyHtml(next));
 });
+
+const inlineAudit = spawnSync(process.execPath, [path.join(root, 'scripts/dist-inline-handlers-audit.cjs')], {
+  cwd: root,
+  stdio: 'inherit'
+});
+if (inlineAudit.status !== 0) process.exit(inlineAudit.status || 1);
 
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');

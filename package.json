@@ -45,7 +45,7 @@
     "smoke:live": "SMOKE_OPTIONAL=1 node scripts/smoke-live.cjs",
     "smoke:live:strict": "node scripts/smoke-live.cjs",
     "analyze:bundle": "node scripts/production-build.cjs && node scripts/analyze-bundle.cjs",
-    "build:check": "node scripts/check-build-output.cjs && node scripts/cloudflare-redirects-audit.cjs",
+    "build:check": "node scripts/check-build-output.cjs && node scripts/dist-inline-handlers-audit.cjs && node scripts/cloudflare-redirects-audit.cjs",
     "audit:launch": "node scripts/final-production-launch-audit.cjs",
     "audit": "node scripts/release-final-audit.cjs",
     "verify:deploy": "node scripts/verify-deploy-setup.cjs",
