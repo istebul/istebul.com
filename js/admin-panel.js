@@ -1811,7 +1811,13 @@ async function loadAnalyticsExclusionSettings() {
             .order('created_at', { ascending: false })
             .limit(200)
       });
-      if (fallback.error && !fallback.data?.length) throw edgeErr;
+      if (fallback.error && !fallback.data?.length) {
+        const missingTable = /analytics_exclusion_rules|PGRST205/i.test(
+          String(fallback.error?.message || edgeErr?.message || '')
+        );
+        if (missingTable) throw new Error('SCHEMA_MISSING_ANALYTICS_EXCLUSION');
+        throw edgeErr;
+      }
       rows = fallback.data || [];
       if (fallback.source === 'direct' && rows.length) {
         toast('Kurallar doğrudan veritabanından yüklendi (edge güncellemesi bekleniyor).', 'success');
@@ -1839,6 +1845,16 @@ async function loadAnalyticsExclusionSettings() {
         </tbody>
       </table>`;
   } catch (err) {
+    if (String(err?.message) === 'SCHEMA_MISSING_ANALYTICS_EXCLUSION') {
+      listEl.innerHTML = `
+        <div class="empty">
+          <p><strong>Veritabanı tablosu eksik:</strong> <code>analytics_exclusion_rules</code></p>
+          <p class="text-muted-sm">Production Deploy → Supabase adımında migration uygulanmalı. Geçici çözüm: Supabase Dashboard → SQL Editor →
+            <code>supabase/migrations/20260602_analytics_internal_traffic.sql</code> dosyasının tamamını çalıştırın, ardından sayfayı yenileyin.</p>
+          <button type="button" class="btn btn-primary btn-sm" data-action="reload-analytics-exclusions">Tekrar dene</button>
+        </div>`;
+      return;
+    }
     listEl.innerHTML = `<p class="empty">Kurallar yüklenemedi: ${escapeHtml(err.message)}</p>`;
   }
 }
@@ -4715,6 +4731,10 @@ function bindAdminPanelEvents() {
       return;
     }
 
+    if (action === 'reload-analytics-exclusions') {
+      loadAnalyticsExclusionSettings();
+      return;
+    }
     if (action === 'analytics-add-ip') {
       addAnalyticsInternalIp().catch((err) => toast(err.message || 'IP eklenemedi', 'error'));
       return;

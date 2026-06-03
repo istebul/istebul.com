@@ -156,6 +156,15 @@ jobs:
         if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-vertical-migration-api.sh
 
+      - name: Apply analytics ITE schema (Management API, idempotent)
+        id: analytics_ite_schema
+        if: steps.gate.outputs.skip != 'true'
+        run: bash scripts/apply-analytics-ite-migration-api.sh
+
+      - name: Verify analytics_exclusion_rules table
+        if: steps.gate.outputs.skip != 'true' && steps.analytics_ite_schema.outcome == 'success'
+        run: node scripts/verify-analytics-exclusion-schema.cjs
+
       - name: Require Konut/Finans schema
         if: steps.gate.outputs.skip != 'true'
         run: |
