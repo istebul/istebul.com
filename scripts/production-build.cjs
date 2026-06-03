@@ -23,6 +23,7 @@ const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'of
     'css/admin-internal-dashboards.css',
     'css/admin-ops-ai-assistant.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
+const { patchSpaShellHtml, loadRouteMeta } = require('./lib/spa-shell-meta.cjs');
 const { injectVerticalFaqs } = require('./lib/seo-vertical-faq.cjs');
 const { injectRouteBootstrap, writeRouteBootstrapFile } = require('./lib/route-bootstrap.cjs');
 const { injectPremiumPrerender } = require('./lib/inject-premium-prerender.cjs');
@@ -596,18 +597,31 @@ writeFile('build-manifest.json', JSON.stringify(manifest, null, 2));
 // Create physical SPA route entrypoints to avoid Cloudflare Pages clean-url redirects.
 // App-only SPA shells (SEO hubs /rehber/, /ilanlar/, /karsilastir/ are static HTML from buildSeoPages)
 const spaRoutes = ['favoriler', 'gecmis', 'profil', 'ilan-ekle', 'messages'];
+const routeDocumentMeta = loadRouteMeta(root);
 
 spaRoutes.forEach((route) => {
   const routeDir = path.join(dist, route);
   fs.mkdirSync(routeDir, { recursive: true });
-  fs.copyFileSync(path.join(dist, 'index.html'), path.join(routeDir, 'index.html'));
+  let shellHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  shellHtml = patchSpaShellHtml(shellHtml, route, routeDocumentMeta);
+  fs.writeFileSync(path.join(routeDir, 'index.html'), minifyHtml(shellHtml));
 });
 
 const seoResult = buildSeoPages(dist);
 
 /** SEO HTML is written after static pass — rewrite hashed CSS/JS refs */
 const rewriteSeoHtmlAssets = () => {
-  const seoRoots = ['rehber', 'karar-asistani', 'ilanlar', 'karsilastir', 'metodoloji'];
+  const seoRoots = [
+    'rehber',
+    'karar-asistani',
+    'ilanlar',
+    'karsilastir',
+    'metodoloji',
+    'planlar',
+    'blog',
+    'duyurular',
+    'kampanyalar'
+  ];
   seoRoots.forEach((name) => {
     const base = path.join(dist, name);
     if (!fs.existsSync(base)) return;

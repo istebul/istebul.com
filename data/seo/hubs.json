@@ -50,6 +50,74 @@
       "ctaHref": "/auto/",
       "ctaLabel": "Karşılaştırmaya başla",
       "relatedLandings": ["arac-karsilastirma-rehberi", "suv-mi-sedan-mi", "elektrikli-arac-rehberi"]
+    },
+    {
+      "slug": "planlar",
+      "path": "/planlar",
+      "title": "Planlar ve Fiyatlandırma | isteBul",
+      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, iyzico / PayTR ile güvenli ödeme.",
+      "h1": "Planlar ve fiyatlandırma",
+      "intro": "Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — 7 gün deneme, iyzico / PayTR ile güvenli ödeme.",
+      "bullets": [
+        "Başlangıç: sınırlı analiz ve 2 karşılaştırma",
+        "Pro: derin TCO, AI karar notu, premium export",
+        "Enterprise: API, webhook, SLA",
+        "İstediğiniz zaman iptal"
+      ],
+      "ctaHref": "/auto/",
+      "ctaLabel": "Ücretsiz analiz başlat",
+      "relatedLandings": ["tco-rehberi", "finansman-rehberi", "arac-alim-karar-asistani"]
+    },
+    {
+      "slug": "blog",
+      "path": "/blog",
+      "title": "Blog | isteBul — Karar rehberleri",
+      "description": "Araç alımı, TCO, finansman ve karar metodolojisi üzerine rehber yazılar.",
+      "h1": "Karar rehberleri",
+      "intro": "TCO, finansman ve araç alım kararı üzerine yazılar — bilgilendirme amaçlı; yatırım veya kredi tavsiyesi değildir.",
+      "bullets": [
+        "Toplam sahip olma maliyeti (TCO) analizi",
+        "Finansman ve kredi senaryoları",
+        "İkinci el ve sıfır araç karşılaştırmaları",
+        "Şeffaf metodoloji ve karar skoru"
+      ],
+      "ctaHref": "/auto/",
+      "ctaLabel": "Analiz başlat",
+      "relatedLandings": ["tco-rehberi", "finansman-rehberi", "arac-karsilastirma-rehberi"]
+    },
+    {
+      "slug": "duyurular",
+      "path": "/duyurular",
+      "title": "Duyurular | isteBul",
+      "description": "isteBul platform duyuruları, ürün güncellemeleri ve operasyonel bilgilendirmeler.",
+      "h1": "isteBul duyuruları",
+      "intro": "Ürün güncellemeleri, metodoloji notları ve operasyonel bilgilendirmeler — bağlayıcı teklif değildir.",
+      "bullets": [
+        "Platform ve ürün güncellemeleri",
+        "Metodoloji ve skorlama notları",
+        "Operasyonel bilgilendirmeler",
+        "KVKK ve güvenlik duyuruları"
+      ],
+      "ctaHref": "/auto/",
+      "ctaLabel": "Ücretsiz analiz",
+      "relatedLandings": ["arac-alim-karar-asistani", "tco-rehberi"]
+    },
+    {
+      "slug": "kampanyalar",
+      "path": "/kampanyalar",
+      "title": "Kampanyalar | isteBul",
+      "description": "isteBul Pro deneme, ücretsiz Auto analizi ve pilot partner kampanyaları.",
+      "h1": "Aktif kampanyalar",
+      "intro": "Pro deneme, ücretsiz Auto analizi ve pilot partner fırsatları. Koşullar değişebilir; finansal taahhüt içermez.",
+      "bullets": [
+        "Pro plan 7 gün deneme",
+        "Ücretsiz Auto karar analizi",
+        "Pilot partner fırsatları",
+        "Kampanya koşulları değişebilir"
+      ],
+      "ctaHref": "/planlar",
+      "ctaLabel": "Planları incele",
+      "relatedLandings": ["tco-rehberi", "arac-alim-karar-asistani"]
     }
   ]
 }

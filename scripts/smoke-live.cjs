@@ -32,10 +32,14 @@ const liveRoutes = [
     status: 200,
     optional: true
   },
-  { path: '/karar-asistani/', must: ['data-ib-route', 'page-karar-analizi'], status: 200, optional: true },
-  { path: '/karsilastir/', must: ['data-ib-route', 'compare'], status: 200, optional: true },
-  { path: '/ilanlar/', must: ['data-ib-route', 'ilanlar'], status: 200, optional: true },
-  { path: '/profil/', must: ['data-ib-route'], status: 200, optional: true },
+  { path: '/karar-asistani/', must: ['Araç karar asistanı', 'seo-page'], status: 200, optional: true },
+  { path: '/karsilastir/', must: ['Karşılaştır', 'seo-page'], status: 200, optional: true },
+  { path: '/ilanlar/', must: ['Araç ilanı', 'seo-page'], status: 200, optional: true },
+  { path: '/planlar', must: ['Planlar ve fiyatlandırma', 'seo-page'], status: 200, optional: true },
+  { path: '/blog', must: ['Karar rehberleri', 'seo-page'], status: 200, optional: true },
+  { path: '/duyurular', must: ['isteBul duyuruları', 'seo-page'], status: 200, optional: true },
+  { path: '/kampanyalar', must: ['Aktif kampanyalar', 'seo-page'], status: 200, optional: true },
+  { path: '/profil/', must: ['data-ib-route="profil"', 'Hesabım'], status: 200, optional: true },
   { path: '/sitemap.xml', must: ['<urlset', 'www.istebul.com'], status: 200 },
   { path: '/robots.txt', must: ['Sitemap:', 'User-agent'], status: 200 }
 ];

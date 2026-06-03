@@ -17,6 +17,11 @@ const required = [
   'dist/rehber/elektrikli-arac-rehberi/index.html',
   'dist/rehber/ikinci-el-rehberi/index.html',
   'dist/karar-asistani/index.html',
+  'dist/planlar/index.html',
+  'dist/blog/index.html',
+  'dist/duyurular/index.html',
+  'dist/kampanyalar/index.html',
+  'dist/profil/index.html',
   'dist/css/seo-landing.css',
   'dist/js/runtime/route-bootstrap-head.js',
   'dist/admin/index.html',
@@ -208,6 +213,44 @@ if (fs.existsSync(routeBootstrapPath)) {
   if (bootstrapSource.trimStart().startsWith('<!DOCTYPE') || bootstrapSource.trimStart().startsWith('<html')) {
     failed = true;
     console.error('dist/js/runtime/route-bootstrap-head.js looks like HTML fallback, not JavaScript');
+  }
+}
+
+const seoHubChecks = [
+  ['dist/planlar/index.html', 'Planlar ve Fiyatlandırma | isteBul', 'https://www.istebul.com/planlar'],
+  ['dist/blog/index.html', 'Blog | isteBul', 'https://www.istebul.com/blog'],
+  ['dist/duyurular/index.html', 'Duyurular | isteBul', 'https://www.istebul.com/duyurular'],
+  ['dist/kampanyalar/index.html', 'Kampanyalar | isteBul', 'https://www.istebul.com/kampanyalar']
+];
+
+seoHubChecks.forEach(([rel, title, canonical]) => {
+  const full = path.join(root, rel);
+  if (!fs.existsSync(full)) return;
+  const html = fs.readFileSync(full, 'utf8');
+  if (!html.includes(title)) {
+    failed = true;
+    console.error(`${rel} missing title: ${title}`);
+  }
+  if (!html.includes(canonical)) {
+    failed = true;
+    console.error(`${rel} missing canonical: ${canonical}`);
+  }
+  if (!html.includes('class="seo-page"')) {
+    failed = true;
+    console.error(`${rel} must be static seo-page shell`);
+  }
+});
+
+const profilShellPath = path.join(root, 'dist/profil/index.html');
+if (fs.existsSync(profilShellPath)) {
+  const profilHtml = fs.readFileSync(profilShellPath, 'utf8');
+  if (!profilHtml.includes('data-ib-route="profil"')) {
+    failed = true;
+    console.error('dist/profil/index.html missing data-ib-route="profil"');
+  }
+  if (!profilHtml.includes('Hesabım | isteBul')) {
+    failed = true;
+    console.error('dist/profil/index.html missing account route title');
   }
 }
 

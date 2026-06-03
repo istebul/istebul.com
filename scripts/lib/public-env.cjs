@@ -74,19 +74,17 @@ function isStrictPublicEnvBuild(processEnv = process.env) {
   );
 }
 
-/** CI test builds may use placeholders; production deploy sets REQUIRE_SUPABASE_ENV=1. */
+/** Non-production builds may use placeholders; deploy sets REQUIRE_SUPABASE_ENV=1 or CF_PAGES=1. */
 function withCiBuildPublicEnvFallback(env, processEnv = process.env) {
   if (env.SUPABASE_URL && env.SUPABASE_ANON_KEY) return env;
   if (processEnv.REQUIRE_SUPABASE_ENV === '1' || processEnv.CF_PAGES === '1') {
     return env;
   }
-  if (processEnv.GITHUB_ACTIONS !== 'true' && processEnv.CI !== 'true') {
-    return env;
-  }
   return {
     ...env,
-    SUPABASE_URL: env.SUPABASE_URL || 'https://hjfrcdstbyonmgatgwcc.supabase.co',
-    SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY || 'ci-build-placeholder-anon-key-not-for-production'
+    SUPABASE_URL: env.SUPABASE_URL || DEFAULT_SUPABASE_URL,
+    SUPABASE_ANON_KEY:
+      env.SUPABASE_ANON_KEY || 'local-build-placeholder-anon-key-not-for-production'
   };
 }
 

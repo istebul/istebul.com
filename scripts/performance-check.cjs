@@ -14,7 +14,11 @@ const distIndex = fs.existsSync(distIndexPath)
 
 const imageTags = index.match(/<img\b[^>]*>/gi) || [];
 for (const tag of imageTags) {
-  assert(/loading=["']lazy["']/.test(tag), `Image should use loading="lazy": ${tag}`);
+  const isLcpNavLogo =
+    /ib-brand-logo-nav/.test(tag) && /fetchpriority=["']high["']/.test(tag);
+  if (!isLcpNavLogo) {
+    assert(/loading=["']lazy["']/.test(tag), `Image should use loading="lazy": ${tag}`);
+  }
   assert(/decoding=["']async["']/.test(tag), `Image should use decoding="async": ${tag}`);
 }
 

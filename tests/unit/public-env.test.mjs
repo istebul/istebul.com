@@ -5,7 +5,8 @@ import {
   formatEnvJs,
   parseEnvJsPayload,
   assertEnvJsFileContents,
-  isStrictPublicEnvBuild
+  isStrictPublicEnvBuild,
+  withCiBuildPublicEnvFallback
 } from '../../scripts/lib/public-env.cjs';
 
 test('buildPublicEnv resolves SUPABASE aliases', () => {
@@ -35,4 +36,10 @@ test('formatEnvJs and assertEnvJsFileContents validate payload', () => {
 test('isStrictPublicEnvBuild is true in CI', () => {
   assert.equal(isStrictPublicEnvBuild({ CI: 'true' }), true);
   assert.equal(isStrictPublicEnvBuild({}), false);
+});
+
+test('withCiBuildPublicEnvFallback fills placeholders outside production deploy', () => {
+  const env = withCiBuildPublicEnvFallback({ SUPABASE_URL: '', SUPABASE_ANON_KEY: '' }, {});
+  assert.ok(env.SUPABASE_URL);
+  assert.ok(env.SUPABASE_ANON_KEY.includes('placeholder'));
 });
