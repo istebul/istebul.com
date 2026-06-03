@@ -10,10 +10,28 @@ html.ib-ds-v4.ib-premium-v7 .ib-vertical-brand {
   flex-shrink: 0;
 }
 
+html.ib-ds-v4.ib-premium-v7 .vacation-header .logo.ib-vertical-brand,
+html.ib-ds-v4.ib-premium-v7 .vacation-header a.logo.ib-vertical-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+}
+
 html.ib-ds-v4.ib-premium-v7 .ib-vertical-brand__word {
   font-weight: 800;
   font-size: 1.25rem;
   letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.finans-page .vacation-header .ib-vertical-brand__word,
+html.ib-ds-v4.ib-premium-v7 body.vacation-page .vacation-header .ib-vertical-brand__word,
+html.ib-ds-v4.ib-premium-v7 body.sigorta-page .vacation-header .ib-vertical-brand__word,
+html.ib-ds-v4.ib-premium-v7 body.kasko-page .vacation-header .ib-vertical-brand__word {
   color: #0f172a;
 }
 

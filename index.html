@@ -43,7 +43,7 @@
     <!-- perf:preload-style -->
     <link rel="stylesheet" href="css/style.css?v=69">
     <!-- perf:preload-homepage-bundle -->
-    <link rel="stylesheet" href="css/bundles/homepage.bundle.css?v=7">
+    <link rel="stylesheet" href="css/bundles/homepage.bundle.css?v=8">
 
 <style>
 .hidden{display:none!important;}
@@ -119,11 +119,18 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     <!-- Navigation -->
     <nav id="main-nav" class="navbar">
         <div class="nav-container">
-            <a class="nav-brand" href="/" data-native-route aria-label="Ana sayfaya dön">
-                <span class="brand-mark" aria-hidden="true">iB</span>
-                <span class="brand-copy">
-                    <span class="brand-title" data-cms="site-name">isteBul <span class="brand-ai-suffix">AI</span></span>
-                    <span class="nav-subtitle" data-cms="site-subtitle">AI destekli karar zekası platformu</span>
+            <a class="nav-brand ib-brand-lockup" href="/" data-native-route aria-label="isteBul ana sayfa">
+                <img
+                    class="ib-brand-logo-nav"
+                    src="/assets/brand/istebul-logo-nav.svg"
+                    alt="isteBul"
+                    width="168"
+                    height="36"
+                    decoding="async"
+                    fetchpriority="high">
+                <span class="brand-copy" aria-hidden="true">
+                    <span class="brand-title" data-cms="site-name">isteBul</span>
+                    <span class="nav-subtitle" data-cms="site-subtitle">Doğru kararı bul</span>
                 </span>
             </a>
             <div class="nav-menu" id="nav-menu">
@@ -1165,8 +1172,15 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <div class="ib-footer-v7__top">
                 <div class="ib-footer-v7__brand">
                     <a href="/" class="ib-footer-v7__logo" data-native-route data-i18n-aria="footerNav.homeAria" aria-label="isteBul ana sayfa">
-                        <span class="brand-mark" aria-hidden="true">iB</span>
-                        <span class="brand-title">isteBul</span>
+                        <img
+                            class="ib-brand-logo-full"
+                            src="/assets/brand/istebul-logo-full.svg"
+                            alt="isteBul — Doğru kararı bul"
+                            width="168"
+                            height="98"
+                            decoding="async"
+                            loading="lazy">
+                        <span class="brand-title" aria-hidden="true">isteBul</span>
                     </a>
                     <p class="ib-footer-v7__desc" data-i18n="footerNav.brandDesc">Yapay zekâ destekli karar platformu. Toplam maliyet, risk ve uygunluk analizini şeffaf ve ölçülebilir sunar.</p>
                     <div class="ib-site-social-block">

@@ -3,6 +3,7 @@
  * Bundles are built with esbuild in production (see css-build.cjs).
  */
 const HOMEPAGE_EXTENSION = [
+  'css/ib-brand-logo-v1.css',
   'css/home-header-saas-v1.css',
   'css/home-mockup-final-v1.css',
   'css/home-category-cards-premium-v2.css',
@@ -36,6 +37,7 @@ const VERTICAL_DECISION = [
   'css/rtl.css',
   'css/perf-vertical-v1.css',
   'css/vertical-brand-shell-v1.css',
+  'css/ib-brand-logo-v1.css',
   /* Last: overrides DS v4 dark-shell rules on light cards */
   'css/enterprise-card-readability.css'
 ];
