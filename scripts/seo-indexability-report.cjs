@@ -104,7 +104,10 @@ function orphanEstimate(sitemapLocs, distFiles) {
     '/messages',
     '/ilan-ekle',
     '/admin',
-    '/offline'
+    '/offline',
+    '/docs/investor/export',
+    '/docs/previews',
+    '/docs/site-owner'
   ];
 
   const htmlPaths = new Set(

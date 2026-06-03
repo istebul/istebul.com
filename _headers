@@ -68,3 +68,12 @@
 /netlify/functions/*
   Cache-Control: no-store
 
+/docs/investor/export/*
+  X-Robots-Tag: noindex, nofollow
+
+/docs/previews/*
+  X-Robots-Tag: noindex, nofollow
+
+/docs/site-owner/*
+  X-Robots-Tag: noindex, nofollow
+

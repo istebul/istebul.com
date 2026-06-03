@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-const { translations } = await import('../../js/features/i18n/translations.js');
+const { marketingCopy } = await import('../../js/features/i18n/marketing-copy.js');
 
 const LOCALE_IDS = ['tr', 'en', 'de', 'ar', 'it', 'fr', 'es', 'ja', 'zh'];
 
@@ -31,7 +31,7 @@ function getNested(obj, path) {
 
 for (const localeId of LOCALE_IDS) {
   test(`marketing copy includes required keys for ${localeId}`, () => {
-    const locale = translations[localeId];
+    const locale = marketingCopy[localeId];
     assert.ok(locale, `missing locale ${localeId}`);
     for (const key of REQUIRED_KEYS) {
       const value = getNested(locale, key);

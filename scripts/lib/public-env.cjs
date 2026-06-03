@@ -89,10 +89,8 @@ function withCiBuildPublicEnvFallback(env, processEnv = process.env) {
 }
 
 function assertProductionAnonKeyNotPlaceholder(env, processEnv = process.env) {
-  const strict =
-    processEnv.REQUIRE_SUPABASE_ENV === '1' ||
-    processEnv.CF_PAGES === '1' ||
-    processEnv.GITHUB_ACTIONS === 'true';
+  // Only real production deploy builds — not CI/E2E webServer (GITHUB_ACTIONS alone).
+  const strict = processEnv.REQUIRE_SUPABASE_ENV === '1' || processEnv.CF_PAGES === '1';
   if (!strict) return;
   const key = String(env.SUPABASE_ANON_KEY || '');
   if (!key || key.includes('placeholder')) {
