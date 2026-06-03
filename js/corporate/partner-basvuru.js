@@ -22,6 +22,45 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
+function funnelField(label, controlHtml) {
+  return `<div class="ib-partner-funnel-field"><span class="ib-partner-funnel-label">${escapeHtml(label)}</span>${controlHtml}</div>`;
+}
+
+const BILLING_PLAN_OPTIONS = [
+  { value: 'pilot', title: 'Entegrasyon pilotu', hint: 'İlk 5 sıcak lead ücretsiz' },
+  { value: 'starter', title: 'Starter', hint: 'CPL / düşük hacim', checked: true },
+  { value: 'growth', title: 'Growth', hint: 'Aylık kapasite' },
+  { value: 'enterprise', title: 'Enterprise', hint: 'Kurumsal platform' }
+];
+
+function renderPlanPicker() {
+  const options = BILLING_PLAN_OPTIONS.map((plan) => {
+    const checked = plan.checked ? ' checked' : '';
+    return `
+        <label class="ib-partner-plan-option">
+          <input type="radio" name="billing_plan" value="${plan.value}"${checked}>
+          <span class="ib-partner-plan-option__body">
+            <strong>${escapeHtml(plan.title)}</strong>
+            <span>${escapeHtml(plan.hint)}</span>
+          </span>
+        </label>`;
+  }).join('');
+  return `
+      <fieldset class="ib-partner-plan-picker" id="partner-billing-plan-fieldset">
+        <legend class="ib-partner-plan-picker__title">İlgilendiğiniz plan</legend>
+        <p class="ib-partner-plan-picker__hint">Fiyat teklif ile netleşir. <a href="/partner-planlar.html">Plan karşılaştırması</a></p>
+        <div class="ib-partner-plan-picker__grid">${options}</div>
+      </fieldset>`;
+}
+
+function renderFunnelCheck(name, label, attrs = '') {
+  return `
+      <label class="ib-partner-funnel-check">
+        <input type="checkbox" name="${escapeHtml(name)}"${attrs}>
+        <span>${escapeHtml(label)}</span>
+      </label>`;
+}
+
 function partnerFunnelError(root, message) {
   const panel = root?.querySelector('.ib-partner-funnel-panel') || root;
   if (!panel) return;
@@ -50,41 +89,30 @@ function renderStep1() {
     <p class="kicker">Adım 1 / 6</p>
     <h1>Partner başvurusu</h1>
     <p class="lead">Kurumsal bilgilerinizi girin; sonraki adımlarda uygunluk, lead ihtiyaçları ve webhook doğrulamasını self-serve tamamlayın.</p>
-    <form id="partner-funnel-application" class="partner-form">
+    <form id="partner-funnel-application" class="partner-form ib-partner-funnel-form">
       <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="ib-honeypot">
-      <div class="form-row">
-        <label>Firma adı<input name="company_name" required maxlength="120"></label>
-        <label>Yetkili<input name="contact_name" required maxlength="80"></label>
+      <div class="ib-partner-funnel-grid ib-partner-funnel-grid--2">
+        ${funnelField('Firma adı', '<input name="company_name" required maxlength="120">')}
+        ${funnelField('Yetkili', '<input name="contact_name" required maxlength="80">')}
       </div>
-      <div class="form-row">
-        <label>Telefon<input name="phone" type="tel" required placeholder="5xx xxx xx xx"></label>
-        <label>E-posta<input name="email" type="email" required></label>
+      <div class="ib-partner-funnel-grid ib-partner-funnel-grid--2">
+        ${funnelField('Telefon', '<input name="phone" type="tel" required placeholder="5xx xxx xx xx">')}
+        ${funnelField('E-posta', '<input name="email" type="email" required>')}
       </div>
-      <div class="form-row">
-        <label>Şehir<input name="city" maxlength="60"></label>
-        <label>Kategori
-          <select name="category" required>
+      <div class="ib-partner-funnel-grid ib-partner-funnel-grid--2">
+        ${funnelField('Şehir', '<input name="city" maxlength="60">')}
+        ${funnelField('Kategori', `<select name="category" required>
             <option value="">Seçin</option>
             <option value="dealer_partner">Bayi / Galeri</option>
             <option value="finance_partner">Finansman</option>
             <option value="insurance_partner">Sigorta</option>
             <option value="general_sales">Genel satış</option>
-          </select>
-        </label>
+          </select>`)}
       </div>
-      <label>Aylık lead kapasitesi<input name="lead_capacity" placeholder="Örn. 50–100"></label>
-      <fieldset class="ib-partner-billing-fieldset" id="partner-billing-plan-fieldset">
-        <legend>İlgilendiğiniz plan</legend>
-        <p class="text-muted-sm">Fiyat teklif ile netleşir. <a href="/partner-planlar.html">Plan karşılaştırması</a></p>
-        <label class="checkbox-row"><input type="radio" name="billing_plan" value="pilot"> Entegrasyon pilotu (ilk 5 sıcak lead ücretsiz)</label>
-        <label class="checkbox-row"><input type="radio" name="billing_plan" value="starter" checked> Starter — CPL / düşük hacim</label>
-        <label class="checkbox-row"><input type="radio" name="billing_plan" value="growth"> Growth — aylık kapasite</label>
-        <label class="checkbox-row"><input type="radio" name="billing_plan" value="enterprise"> Enterprise — kurumsal platform</label>
-      </fieldset>
-      <label class="checkbox-row">
-        <input type="checkbox" name="webhook_ready"> HTTPS webhook endpoint'imiz hazır veya hazırlanıyor
-      </label>
-      <label>Not<textarea name="notes" rows="3" placeholder="CRM, entegrasyon tercihi…"></textarea></label>
+      ${funnelField('Aylık lead kapasitesi', '<input name="lead_capacity" placeholder="Örn. 50–100">')}
+      ${renderPlanPicker()}
+      ${renderFunnelCheck('webhook_ready', "HTTPS webhook endpoint'imiz hazır veya hazırlanıyor")}
+      ${funnelField('Not', '<textarea name="notes" rows="4" placeholder="CRM, entegrasyon tercihi…"></textarea>')}
       <button type="submit" class="btn primary">Başvuruyu gönder ve devam et</button>
     </form>
     <p class="ib-partner-funnel-help">Zaten başvurdunuz mu? E-postanızdaki onboarding linkini kullanın veya <a href="/iletisim.html">kurumsal iletişim</a>.</p>
@@ -92,43 +120,37 @@ function renderStep1() {
 }
 
 function renderStep2(app, q) {
+  const kvkkChecked = q.kvkk_dpa_ready ? ' checked' : '';
   return renderShell(2, app, `
     <p class="kicker">Adım 2 / 6 · Uygunluk</p>
     <h1>${escapeHtml(app.company_name)}</h1>
     <p class="lead">Operasyonel uygunluğunuzu anlayalım; pilot ve canlı teslimat planını buna göre netleştiririz.</p>
-    <form id="partner-funnel-qualification" class="partner-form">
-      <label>Yıllık ciro bandı
-        <select name="annual_revenue_band" required>
+    <form id="partner-funnel-qualification" class="partner-form ib-partner-funnel-form">
+      ${funnelField('Yıllık ciro bandı', `<select name="annual_revenue_band" required>
           <option value="">Seçin</option>
           <option value="under_10m" ${q.annual_revenue_band === 'under_10m' ? 'selected' : ''}>10M TL altı</option>
           <option value="10m_50m" ${q.annual_revenue_band === '10m_50m' ? 'selected' : ''}>10–50M TL</option>
           <option value="50m_200m" ${q.annual_revenue_band === '50m_200m' ? 'selected' : ''}>50–200M TL</option>
           <option value="200m_plus" ${q.annual_revenue_band === '200m_plus' ? 'selected' : ''}>200M TL üzeri</option>
-        </select>
-      </label>
-      <label>CRM / lead yönetimi<input name="crm_platform" required maxlength="80" value="${escapeHtml(q.crm_platform || '')}" placeholder="Salesforce, özel CRM, Excel…"></label>
-      <label>Satış ekibi büyüklüğü
-        <select name="sales_team_size" required>
-          <option value="">Seçin</option>
-          <option value="1-5" ${q.sales_team_size === '1-5' ? 'selected' : ''}>1–5</option>
-          <option value="6-20" ${q.sales_team_size === '6-20' ? 'selected' : ''}>6–20</option>
-          <option value="21-50" ${q.sales_team_size === '21-50' ? 'selected' : ''}>21–50</option>
-          <option value="50+" ${q.sales_team_size === '50+' ? 'selected' : ''}>50+</option>
-        </select>
-      </label>
-      <label>Entegrasyon sorumlusu<input name="integration_owner" maxlength="80" value="${escapeHtml(q.integration_owner || '')}" placeholder="Ad soyad veya ekip"></label>
-      <label>Pilot başlangıç hedefi
-        <select name="pilot_timeline" required>
+        </select>`)}
+      ${funnelField('CRM / lead yönetimi', `<input name="crm_platform" required maxlength="80" value="${escapeHtml(q.crm_platform || '')}" placeholder="Salesforce, özel CRM, Excel…">`)}
+      <div class="ib-partner-funnel-grid ib-partner-funnel-grid--2">
+        ${funnelField('Satış ekibi büyüklüğü', `<select name="sales_team_size" required>
+            <option value="">Seçin</option>
+            <option value="1-5" ${q.sales_team_size === '1-5' ? 'selected' : ''}>1–5</option>
+            <option value="6-20" ${q.sales_team_size === '6-20' ? 'selected' : ''}>6–20</option>
+            <option value="21-50" ${q.sales_team_size === '21-50' ? 'selected' : ''}>21–50</option>
+            <option value="50+" ${q.sales_team_size === '50+' ? 'selected' : ''}>50+</option>
+          </select>`)}
+        ${funnelField('Entegrasyon sorumlusu', `<input name="integration_owner" maxlength="80" value="${escapeHtml(q.integration_owner || '')}" placeholder="Ad soyad veya ekip">`)}
+      </div>
+      ${funnelField('Pilot başlangıç hedefi', `<select name="pilot_timeline" required>
           <option value="">Seçin</option>
           <option value="2_weeks" ${q.pilot_timeline === '2_weeks' ? 'selected' : ''}>2 hafta içinde</option>
           <option value="1_month" ${q.pilot_timeline === '1_month' ? 'selected' : ''}>1 ay içinde</option>
           <option value="quarter" ${q.pilot_timeline === 'quarter' ? 'selected' : ''}>Çeyrek içinde</option>
-        </select>
-      </label>
-      <label class="checkbox-row">
-        <input type="checkbox" name="kvkk_dpa_ready" ${q.kvkk_dpa_ready ? 'checked' : ''}>
-        KVKK / veri işleme süreçlerimiz hazır veya hazırlanıyor
-      </label>
+        </select>`)}
+      ${renderFunnelCheck('kvkk_dpa_ready', 'KVKK / veri işleme süreçlerimiz hazır veya hazırlanıyor', kvkkChecked)}
       <button type="submit" class="btn primary">Kaydet ve devam et</button>
     </form>
   `);
@@ -136,28 +158,41 @@ function renderStep2(app, q) {
 
 function renderStep3(app, needs) {
   const interests = Array.isArray(needs.interest_types) ? needs.interest_types : [];
+  const interestOptions = [
+    ['vehicle_offer', 'Araç teklifi'],
+    ['finance', 'Finansman'],
+    ['insurance', 'Sigorta'],
+    ['insurance_quote', 'Sigorta teklifi'],
+    ['insurance_review', 'Poliçe incelemesi'],
+    ['insurance_consultation', 'Sigorta danışmanlığı']
+  ];
+  const interestHtml = interestOptions.map(([value, label]) => {
+    const checked = interests.includes(value) ? ' checked' : '';
+    return `
+        <label class="ib-partner-funnel-check">
+          <input type="checkbox" name="interest_types" value="${value}"${checked}>
+          <span>${escapeHtml(label)}</span>
+        </label>`;
+  }).join('');
   return renderShell(3, app, `
     <p class="kicker">Adım 3 / 6 · Lead ihtiyaçları</p>
     <h1>Lead profili</h1>
     <p class="lead">isteBul Auto skor ve öncelik ile teslim eder; kapasite ve coğrafya tercihlerinizi belirleyin.</p>
-    <form id="partner-funnel-lead-needs" class="partner-form">
-      <p><strong>Kategori:</strong> ${escapeHtml(PARTNER_ROUTE_LABELS[app.category] || app.category)}</p>
-      <label>Minimum lead skoru (önerilen 120+)
-        <input name="min_lead_score" type="number" min="80" max="200" value="${needs.min_lead_score || 120}">
-      </label>
-      <label>Günlük maksimum lead<input name="max_leads_per_day" type="number" min="1" max="500" value="${needs.max_leads_per_day || 10}"></label>
-      <label>Coğrafi odak<input name="geographic_focus" maxlength="120" value="${escapeHtml(needs.geographic_focus || 'İzmir ve çevresi')}" placeholder="İl / bölge"></label>
-      <label>Araç odağı<input name="vehicle_focus" maxlength="120" value="${escapeHtml(needs.vehicle_focus || '')}" placeholder="SUV, sedan, ticari…"></label>
-      <fieldset class="ib-partner-billing-fieldset">
+    <form id="partner-funnel-lead-needs" class="partner-form ib-partner-funnel-form">
+      <p class="ib-partner-funnel-meta"><strong>Kategori:</strong> ${escapeHtml(PARTNER_ROUTE_LABELS[app.category] || app.category)}</p>
+      <div class="ib-partner-funnel-grid ib-partner-funnel-grid--2">
+        ${funnelField('Minimum lead skoru (önerilen 120+)', `<input name="min_lead_score" type="number" min="80" max="200" value="${needs.min_lead_score || 120}">`)}
+        ${funnelField('Günlük maksimum lead', `<input name="max_leads_per_day" type="number" min="1" max="500" value="${needs.max_leads_per_day || 10}">`)}
+      </div>
+      <div class="ib-partner-funnel-grid ib-partner-funnel-grid--2">
+        ${funnelField('Coğrafi odak', `<input name="geographic_focus" maxlength="120" value="${escapeHtml(needs.geographic_focus || 'İzmir ve çevresi')}" placeholder="İl / bölge">`)}
+        ${funnelField('Araç odağı', `<input name="vehicle_focus" maxlength="120" value="${escapeHtml(needs.vehicle_focus || '')}" placeholder="SUV, sedan, ticari…">`)}
+      </div>
+      <fieldset class="ib-partner-check-grid">
         <legend>İlgi türleri</legend>
-        <label class="checkbox-row"><input type="checkbox" name="interest_types" value="vehicle_offer" ${interests.includes('vehicle_offer') ? 'checked' : ''}> Araç teklifi</label>
-        <label class="checkbox-row"><input type="checkbox" name="interest_types" value="finance" ${interests.includes('finance') ? 'checked' : ''}> Finansman</label>
-        <label class="checkbox-row"><input type="checkbox" name="interest_types" value="insurance" ${interests.includes('insurance') ? 'checked' : ''}> Sigorta</label>
-        <label class="checkbox-row"><input type="checkbox" name="interest_types" value="insurance_quote" ${interests.includes('insurance_quote') ? 'checked' : ''}> Sigorta teklifi</label>
-        <label class="checkbox-row"><input type="checkbox" name="interest_types" value="insurance_review" ${interests.includes('insurance_review') ? 'checked' : ''}> Poliçe incelemesi</label>
-        <label class="checkbox-row"><input type="checkbox" name="interest_types" value="insurance_consultation" ${interests.includes('insurance_consultation') ? 'checked' : ''}> Sigorta danışmanlığı</label>
+        ${interestHtml}
       </fieldset>
-      <label>Ek not<textarea name="notes" rows="2">${escapeHtml(needs.notes || '')}</textarea></label>
+      ${funnelField('Ek not', `<textarea name="notes" rows="3">${escapeHtml(needs.notes || '')}</textarea>`)}
       <button type="submit" class="btn primary">Kaydet ve devam et</button>
     </form>
   `);
@@ -168,11 +203,9 @@ function renderStep4(app) {
     <p class="kicker">Adım 4 / 6 · Webhook</p>
     <h1>Webhook endpoint</h1>
     <p class="lead">HTTPS URL kaydedin. Canlı lead, ekip onayı ve endpoint sağlık kontrolünden sonra akar. <a href="/partner-docs.html">Entegrasyon dokümanı</a></p>
-    <form id="partner-funnel-webhook" class="partner-form">
-      <label>Webhook URL
-        <input name="webhook_url" type="url" required placeholder="https://api.sizin-domain.com/istebul/leads" value="${escapeHtml(app.webhook_url_draft || '')}">
-      </label>
-      <label>Entegrasyon notu (opsiyonel)<textarea name="integration_notes" rows="2" placeholder="Staging URL, IP allowlist…">${escapeHtml(app.integration_notes || '')}</textarea></label>
+    <form id="partner-funnel-webhook" class="partner-form ib-partner-funnel-form">
+      ${funnelField('Webhook URL', `<input name="webhook_url" type="url" required placeholder="https://api.sizin-domain.com/istebul/leads" value="${escapeHtml(app.webhook_url_draft || '')}">`)}
+      ${funnelField('Entegrasyon notu (opsiyonel)', `<textarea name="integration_notes" rows="3" placeholder="Staging URL, IP allowlist…">${escapeHtml(app.integration_notes || '')}</textarea>`)}
       <button type="submit" class="btn primary">Webhook kaydet</button>
     </form>
   `);
@@ -185,16 +218,14 @@ function renderStep5(app) {
     <h1>Örnek payload imzası</h1>
     <p class="lead">Paylaşılan gizli anahtarınızla aşağıdaki gövdeyi HMAC-SHA256 ile imzalayın. Bu adım, canlıya geçmeden önce entegrasyonunuzun doğru çalıştığını doğrular.</p>
     <pre class="ib-partner-funnel-sample">${sampleJson}</pre>
-    <form id="partner-funnel-test" class="partner-form">
-      <label>Webhook signing secret
-        <input name="webhook_secret" type="password" required minlength="8" autocomplete="off" placeholder="Üretim secret ile aynı mantık">
-      </label>
-      <p class="text-muted-sm">Secret tarayıcıda kalır; yalnızca imza doğrulaması için kullanılır ve sunucuda saklanmaz.</p>
-      <button type="button" class="btn secondary" id="partner-funnel-compute-sig">İmzayı hesapla</button>
-      <label>Hesaplanan imza (hex)
-        <input name="signature" readonly placeholder="Önce hesaplayın veya yapıştırın">
-      </label>
-      <button type="submit" class="btn primary" ${app.test_payload_verified ? '' : ''}>Doğrula ve devam et</button>
+    <form id="partner-funnel-test" class="partner-form ib-partner-funnel-form">
+      ${funnelField('Webhook signing secret', '<input name="webhook_secret" type="password" required minlength="8" autocomplete="off" placeholder="Üretim secret ile aynı mantık">')}
+      <p class="ib-partner-plan-picker__hint">Secret tarayıcıda kalır; yalnızca imza doğrulaması için kullanılır ve sunucuda saklanmaz.</p>
+      <div class="ib-partner-funnel-actions-row">
+        <button type="button" class="btn secondary" id="partner-funnel-compute-sig">İmzayı hesapla</button>
+      </div>
+      ${funnelField('Hesaplanan imza (hex)', '<input name="signature" readonly placeholder="Önce hesaplayın veya yapıştırın">')}
+      <button type="submit" class="btn primary">Doğrula ve devam et</button>
       ${app.test_payload_verified ? '<p class="ib-partner-funnel-success-inline">Test doğrulaması tamamlandı.</p>' : ''}
     </form>
   `);
@@ -220,7 +251,7 @@ function renderStep6(app) {
       <p class="lead">Tüm adımlar tamamlandığında başvurunuzu operasyon kuyruğuna alıyoruz.</p>
       <button type="button" class="btn primary" id="partner-funnel-complete">Onboarding'i tamamla</button>
     `}
-    <div class="final-cta-actions" style="margin-top:1.5rem;">
+    <div class="final-cta-actions">
       <a class="btn secondary" href="/partner-docs.html">API dokümantasyonu</a>
       <a class="btn secondary" href="/partner-olun.html">Partner ana sayfa</a>
     </div>
