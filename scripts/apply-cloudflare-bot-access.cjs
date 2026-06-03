@@ -61,6 +61,21 @@ async function cfRequest(path, { method = 'GET', body } = {}) {
   return json.result;
 }
 
+async function resolveZoneIdViaPages(accountId) {
+  const project = process.env.CF_PAGES_PROJECT || 'istebul-com';
+  const domains = await cfRequest(`/accounts/${accountId}/pages/projects/${project}/domains`);
+  const active =
+    (domains || []).find((d) => d.status === 'active') ||
+    (domains || []).find((d) => /istebul\.com/i.test(d.name || '')) ||
+    domains?.[0];
+  const zoneId = active?.zone_tag || active?.domain_id;
+  if (zoneId) {
+    console.log(`Zone resolved via Pages project "${project}" domain ${active.name}: ${zoneId}`);
+    return zoneId;
+  }
+  return null;
+}
+
 async function resolveZoneId() {
   if (process.env.CLOUDFLARE_ZONE_ID) return process.env.CLOUDFLARE_ZONE_ID;
 
@@ -79,12 +94,19 @@ async function resolveZoneId() {
   }
 
   if (accountId) {
-    const zones = await cfRequest(`/zones?account.id=${accountId}&per_page=50&status=active`);
-    const zone = (zones || []).find((z) => /istebul\.com$/i.test(z.name));
-    if (zone) {
-      console.log(`Zone resolved via account list: ${zone.name}`);
-      return zone.id;
+    try {
+      const zones = await cfRequest(`/zones?account.id=${accountId}&per_page=50&status=active`);
+      const zone = (zones || []).find((z) => /istebul\.com$/i.test(z.name));
+      if (zone) {
+        console.log(`Zone resolved via account list: ${zone.name}`);
+        return zone.id;
+      }
+    } catch {
+      /* Pages fallback below */
     }
+
+    const pagesZone = await resolveZoneIdViaPages(accountId);
+    if (pagesZone) return pagesZone;
   }
 
   throw new Error(
