@@ -76,14 +76,15 @@ test.describe('Site health — readability and layout', () => {
     await page.goto('/kasko/');
     await page.waitForLoadState('domcontentloaded');
     await page.locator('#kasko-hero-cta').click();
-
-    await page.locator('#kasko-wizard [data-field="vehicle_category"][data-value="suv"]').click();
-    await page.locator('#kasko-wizard [data-field="vehicle_year_band"][data-value="0-3"]').click();
-    await page.locator('#kasko-next').click();
+    await expect(page.locator('#kasko-wizard')).toBeVisible();
 
     await page.locator('#kasko-wizard [data-manual="age"]').fill('35');
     await page.locator('#kasko-wizard [data-field="license_years"][data-value="11plus"]').click();
     await page.locator('#kasko-wizard [data-field="usage_type"][data-value="ozel"]').click();
+    await page.locator('#kasko-next').click();
+
+    await page.locator('#kasko-wizard [data-field="vehicle_category"][data-value="suv"]').click();
+    await page.locator('#kasko-wizard [data-field="vehicle_year_band"][data-value="0-3"]').click();
     await page.locator('#kasko-next').click();
 
     await page.locator('#kasko-wizard [data-field="coverage_level"][data-value="full"]').click();
