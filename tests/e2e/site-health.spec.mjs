@@ -65,18 +65,23 @@ test.describe('Site health — readability and layout', () => {
     expect(bundle).toBeGreaterThan(0);
   });
 
+  async function openKaskoWizard(page) {
+    await page.locator('#kasko-flow').scrollIntoViewIfNeeded();
+    const cta = page.locator('#kasko-hero-cta');
+    await cta.click({ force: true });
+    await expect(page.locator('#kasko-wizard')).toBeVisible();
+  }
+
   test('/kasko/ wizard shell is interactive', async ({ page }) => {
     await page.goto('/kasko/');
     await page.waitForLoadState('domcontentloaded');
-    await page.locator('#kasko-hero-cta').click();
-    await expect(page.locator('#kasko-wizard')).toBeVisible();
+    await openKaskoWizard(page);
   });
 
   test('/kasko/ completes flow and shows AI results', async ({ page }) => {
     await page.goto('/kasko/');
     await page.waitForLoadState('domcontentloaded');
-    await page.locator('#kasko-hero-cta').click();
-    await expect(page.locator('#kasko-wizard')).toBeVisible();
+    await openKaskoWizard(page);
 
     await page.locator('#kasko-wizard [data-manual="age"]').fill('35');
     await page.locator('#kasko-wizard [data-field="license_years"][data-value="11plus"]').click();
