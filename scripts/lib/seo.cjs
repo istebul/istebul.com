@@ -7,6 +7,7 @@ const {
   renderSiteSocialFooterNav,
   renderSiteSocialBootScripts
 } = require('./site-social-footer.cjs');
+const { FAVICON_HEAD } = require('./favicon-head.cjs');
 
 const root = path.resolve(__dirname, '../..');
 const SEO_BUILD_DATE = new Date().toISOString().slice(0, 10);
@@ -96,6 +97,7 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra }) {
   <link rel="canonical" href="${escapeHtml(canonical)}">
   ${renderHreflangAlternates(site, canonicalPath)}
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+  ${FAVICON_HEAD}
   <meta property="og:locale" content="${escapeHtml(site.locale)}">
   <meta property="og:site_name" content="${escapeHtml(site.siteName)}">
   <meta property="og:title" content="${escapeHtml(title)}">

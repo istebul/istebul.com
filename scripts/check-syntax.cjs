@@ -17,8 +17,12 @@ const requiredAssets = [
   'assets/images/placeholder.svg',
   'assets/images/hero-illustration.svg',
   'assets/images/og-image.svg',
+  'assets/brand/istebul-icon.svg',
+  'assets/icons/favicon-16.png',
+  'assets/icons/favicon-32.png',
   'assets/icons/favicon-192.png',
-  'assets/icons/favicon-512.png'
+  'assets/icons/favicon-512.png',
+  'favicon.ico'
 ];
 
 const jsFiles = [];
