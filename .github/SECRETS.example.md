@@ -8,7 +8,7 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 |--------|----------------|
 | `CLOUDFLARE_API_TOKEN` | … + **Cloudflare Pages:Edit** + **Zone WAF Write** + **Bot Management Write** |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Dashboard → sağ sütun Account ID |
-| `CLOUDFLARE_ZONE_ID` | (Opsiyonel) Zone ID — yoksa script `istebul.com` adından çözümler |
+| `CLOUDFLARE_ZONE_ID` | (Önerilen) Zone ID — token Zone Read vermiyorsa zorunlu; Dashboard → istebul.com → Overview sağ sütun |
 
 **Not:** Pages proje adı dashboard’daki isimle aynı olmalı (ör. `istebul-com`). Farklıysa workflow’daki `CF_PAGES_PROJECT` env’ini güncelleyin veya repo secret `CLOUDFLARE_PAGES_PROJECT` ekleyin.
 | `SUPABASE_URL` | `https://hjfrcdstbyonmgatgwcc.supabase.co` |
