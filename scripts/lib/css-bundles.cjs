@@ -47,6 +47,7 @@ const VERTICAL_SHARED = [
 
 /** Auto page — secondary styles (ib-car.css stays separate for LCP). */
 const AUTO_PAGE_EXTENSION = [
+  'css/auto-hero-dashboard-v1.css',
   'css/auto-results-v2.css',
   'css/auto-header-nav-v1.css',
   'css/auto-final-cta-contrast-v1.css',

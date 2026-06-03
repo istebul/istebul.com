@@ -41,47 +41,6 @@ body.ib-auto .auto-hero-decision .lead {
   max-width: 52ch;
 }
 
-body.ib-auto .auto-hero-visual {
-  position: relative;
-  min-height: 280px;
-  border-radius: 20px;
-  background:
-    linear-gradient(145deg, #e2e8f0 0%, #cbd5e1 40%, #94a3b8 100%);
-  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.12);
-  overflow: hidden;
-}
-
-body.ib-auto .auto-hero-visual::after {
-  content: "";
-  position: absolute;
-  inset: auto 12% 8% 12%;
-  height: 42%;
-  border-radius: 12px 12px 6px 6px;
-  background: linear-gradient(180deg, #64748b, #334155);
-  opacity: 0.35;
-}
-
-body.ib-auto .auto-hero-float-stat {
-  position: absolute;
-  padding: 0.65rem 0.85rem;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--auto-line);
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
-  font-size: 0.78rem;
-  max-width: 160px;
-}
-
-body.ib-auto .auto-hero-float-stat strong {
-  display: block;
-  font-size: 0.95rem;
-  color: var(--auto-navy);
-}
-
-body.ib-auto .auto-hero-float-stat--tl { top: 12%; left: 6%; }
-body.ib-auto .auto-hero-float-stat--tr { top: 18%; right: 6%; }
-body.ib-auto .auto-hero-float-stat--bl { bottom: 14%; left: 8%; }
-
 body.ib-auto .auto-hero-wizard-col {
   grid-column: 1 / -1;
 }

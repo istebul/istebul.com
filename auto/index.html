@@ -15,7 +15,6 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.istebul.com/auto/">
   <meta property="og:image" content="https://www.istebul.com/assets/images/auto-hero-1280.jpg">
-  <link rel="preload" href="/assets/images/auto-hero.webp" as="image" type="image/webp" fetchpriority="high">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="isteBul Auto">
   <meta name="twitter:description" content="Araç alım karar analizi — TCO, finansman ve segment önerisi.">
@@ -51,7 +50,7 @@
   <link rel="preload" href="/assets/auto-runtime/ib-car.css" as="style">
   <link rel="stylesheet" href="/assets/auto-runtime/ib-car.css">
   <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=4">
-  <link rel="stylesheet" href="/css/bundles/auto-page.bundle.css?v=1">
+  <link rel="stylesheet" href="/css/bundles/auto-page.bundle.css?v=2">
   <script src="/env.js" defer></script>
   <script src="/js/auto/auto-document-ready.js"></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js?v=2"></script>
@@ -99,22 +98,35 @@
         <p class="auto-sample-note">Skor ve maliyetler kural tabanlıdır; AI yalnızca gerekçe metnini açıklar.</p>
       </div>
 
-      <div class="auto-hero-visual" aria-hidden="true">
-        <picture>
-          <source srcset="/assets/images/auto-hero.webp" type="image/webp">
-          <img
-            src="/assets/images/auto-hero-1280.jpg"
-            alt=""
-            width="1280"
-            height="720"
-            decoding="async"
-            fetchpriority="high"
-            loading="eager">
-        </picture>
-        <div class="auto-hero-float-stat auto-hero-float-stat--tl"><strong>TCO</strong>12 ay + finansman</div>
-        <div class="auto-hero-float-stat auto-hero-float-stat--tr"><strong>Skor</strong>Uyum /100</div>
-        <div class="auto-hero-float-stat auto-hero-float-stat--bl"><strong>Risk</strong>Şeffaf bant</div>
-      </div>
+      <aside class="auto-hero-dashboard" aria-label="Örnek Auto karar paneli">
+        <p class="auto-hero-dashboard__kicker">Örnek analiz · bilgilendirme</p>
+        <article class="auto-hero-dash-card auto-hero-dash-card--score">
+          <div class="auto-hero-dash-card__copy">
+            <span>Karar skoru</span>
+            <strong>86<small>/100</small></strong>
+            <small>Uyum · bütçe · kullanım</small>
+          </div>
+          <div class="auto-hero-dash-gauge" aria-hidden="true">
+            <svg viewBox="0 0 88 52" fill="none" role="presentation">
+              <path d="M8 44 A36 36 0 0 1 80 44" stroke="#e2e8f0" stroke-width="6" stroke-linecap="round"/>
+              <path d="M8 44 A36 36 0 0 1 80 44" stroke="#2563eb" stroke-width="6" stroke-linecap="round" stroke-dasharray="74 113"/>
+            </svg>
+          </div>
+        </article>
+        <div class="auto-hero-dash-grid">
+          <article class="auto-hero-dash-card">
+            <span>12 ay TCO</span>
+            <strong>₺412.800</strong>
+            <small>Finansman dahil</small>
+          </article>
+          <article class="auto-hero-dash-card">
+            <span>Risk bandı</span>
+            <strong>Şeffaf</strong>
+            <small>Kural tabanlı skor</small>
+          </article>
+        </div>
+        <p class="auto-hero-dashboard__note">Gerçek skor ve maliyetler sizin cevaplarınıza göre hesaplanır; AI yalnızca gerekçe metnini açıklar.</p>
+      </aside>
 
       <div class="auto-hero-wizard-col">
         <div id="auto-decision-stepper-mount" class="auto-decision-stepper" aria-label="Karar akışı özeti" hidden></div>

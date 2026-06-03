@@ -104,25 +104,4 @@ body.kasko-page .vacation-hero-overlay {
   }
 }
 
-/* —— Auto (photo in visual column; wizard/copy unchanged) —— */
-body.ib-auto .auto-hero-visual img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 45%;
-}
-
-body.ib-auto .auto-hero-visual::after {
-  display: none;
-}
-
-body.ib-auto .auto-hero-visual {
-  background: #0f172a;
-  min-height: clamp(260px, 32vw, 340px);
-}
-
-body.ib-auto .auto-hero-float-stat {
-  z-index: 2;
-}
+/* —— Auto hero dashboard: see auto-hero-dashboard-v1.css —— */
