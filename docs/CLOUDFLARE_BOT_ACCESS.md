@@ -8,14 +8,47 @@ Bazı User-Agent / IP kombinasyonları ana sayfada **403 Cloudflare challenge** 
 - Googlebot / Bingbot indexleme riski
 - Rastgele kullanıcı oturumlarında kötü UX
 
-## Önerilen Cloudflare ayarları
+## Otomatik WAF kuralları (repo)
+
+Production deploy sonrası (Cloudflare Pages başarılıysa) WAF skip kuralları uygulanır:
+
+```bash
+# Dry-run (mevcut kuralları listeler)
+node scripts/apply-cloudflare-bot-access.cjs
+
+# Canlı uygulama (GitHub Actions veya yerel)
+CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... \
+  node scripts/apply-cloudflare-bot-access.cjs --apply
+```
+
+Oluşturulan kurallar:
+
+| ref | ifade | Amaç |
+|-----|--------|------|
+| `istebul_skip_verified_bots` | `(cf.client.bot)` | Googlebot / Bingbot vb. |
+| `istebul_skip_production_smoke` | UA contains `isteBul-production-smoke` | CI smoke + uptime |
+
+**Gerekli API token izinleri:** `Zone WAF Write` (kurallar için), isteğe bağlı `Bot Management Read` (durum raporu).
+
+Mevcut token yalnızca **Pages:Edit** ise script uyarı verir; kurallar dashboard'dan da eklenebilir (aşağı).
+
+## Bot Fight Mode (Free plan) uyarısı
+
+**Bot Fight Mode**, WAF custom rules ile **atlanamaz** (Ruleset Engine dışında çalışır). Skip kuralları **Super Bot Fight Mode** (Pro+) ve managed WAF için geçerlidir.
+
+BFM açıksa ve Googlebot hâlâ 403 alıyorsa:
+
+1. **Security → Settings → Bot traffic** — Bot Fight Mode'u kapatın **veya**
+2. Pro+ planda **Super Bot Fight Mode** açın, Verified bots = Allow, smoke UA için skip kuralı ekleyin
+
+## Manuel dashboard ayarları
 
 Cloudflare Dashboard → **isteBul.com** → **Security** → **WAF** / **Bots**
 
 1. **Verified Bots** — Allow (Googlebot, Bingbot, Applebot)
-2. **Bot Fight Mode** — Ana sayfa için agresif mod kullanıyorsanız, Verified Bots istisnasını açık tutun
+2. **Bot Fight Mode** — BFM kullanıyorsanız smoke/monitor için kapatmayı veya SBFM'e geçmeyi değerlendirin
 3. **Custom rule (skip)** — önerilen ifadeler:
-   - `(http.user_agent contains "isteBul-production-smoke")` → Skip all remaining rules
+   - `(http.user_agent contains "isteBul-production-smoke")` → Skip all remaining rules + SBFM
    - `(cf.client.bot)` → Skip (Verified Bots)
 4. **Rate limiting** — `/api/*` için ayrı; statik HTML için geniş limit
 
@@ -25,9 +58,10 @@ Cloudflare Dashboard → **isteBul.com** → **Security** → **WAF** / **Bots**
 node scripts/verify-bot-access.cjs https://www.istebul.com
 ```
 
-Production deploy workflow (`smoke-live`) smoke UA kullanır. `verify-bot-access` CI'da uyarı üretir; Googlebot 403 ise dashboard ayarı gerekir.
+Production deploy workflow (`smoke-live`) smoke UA kullanır. `verify-bot-access` CI'da uyarı üretir; Googlebot 403 ise dashboard veya `--apply` script kontrol edin.
 
 ## Referans
 
+- `scripts/apply-cloudflare-bot-access.cjs` — WAF skip kuralları (API)
 - `scripts/smoke-live.cjs` — smoke UA tanımı
-- `.github/workflows/production-deploy.yml` — post-deploy smoke
+- `.github/workflows/production-deploy.yml` — post-deploy smoke + bot access job

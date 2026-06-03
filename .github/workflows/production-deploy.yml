@@ -109,6 +109,20 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=${{ env.CF_PAGES_PROJECT }} --branch=main
 
+  apply-cloudflare-bot-access:
+    name: Cloudflare bot access (WAF skip rules)
+    needs: deploy-cloudflare
+    runs-on: ubuntu-latest
+    if: needs.deploy-cloudflare.result == 'success'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply WAF skip rules (verified bots + smoke UA)
+        run: node scripts/apply-cloudflare-bot-access.cjs --apply
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
   deploy-supabase:
     name: Supabase (migrations + edge)
     needs: quality
@@ -154,11 +168,17 @@ jobs:
         continue-on-error: true
         if: steps.gate.outputs.skip != 'true'
         with:
-          version: 2.31.4
+          version: 2.104.0
 
       - name: Install Supabase CLI fallback
         if: steps.gate.outputs.skip != 'true' && steps.setup_supabase_cli.outcome != 'success'
-        run: npm install -g supabase@2.31.4
+        run: npm install -g supabase@2.104.0
+
+      - name: Verify Supabase CLI parses config.toml
+        if: steps.gate.outputs.skip != 'true'
+        run: |
+          supabase --version
+          test -f supabase/config.toml
 
       - name: Link Supabase project
         if: steps.gate.outputs.skip != 'true'
