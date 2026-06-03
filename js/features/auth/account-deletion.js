@@ -3,9 +3,25 @@
  */
 import { getSupabaseClient } from '../../core/supabase.js';
 
+const ERROR_MESSAGES = {
+  unauthorized: 'Oturum doğrulanamadı. Çıkış yapıp tekrar giriş yapın.',
+  confirmation_required: 'Silme onayı gerekli.',
+  delete_failed: 'Hesap silinemedi. Lütfen destek ile iletişime geçin.',
+  unsupported_action: 'Geçersiz işlem.',
+  invalid_json: 'İstek işlenemedi.',
+  method_not_allowed: 'Geçersiz istek.'
+};
+
 function getFunctionUrl() {
   const base = (window.__env?.SUPABASE_URL || '').replace(/\/$/, '');
   return base ? `${base}/functions/v1/user-account` : '';
+}
+
+function resolveErrorMessage(data = {}) {
+  if (data.message && typeof data.message === 'string') return data.message;
+  const code = String(data.error || '').trim();
+  if (code && ERROR_MESSAGES[code]) return ERROR_MESSAGES[code];
+  return 'Hesap silme işlemi tamamlanamadı.';
 }
 
 /**
@@ -16,12 +32,14 @@ export async function requestAccountDeletion(options = {}) {
   const sb = getSupabaseClient();
   if (!sb) return { ok: false, error: 'Bağlantı yapılandırması eksik.' };
 
-  const {
-    data: { session },
-    error: sessionError
-  } = await sb.auth.getSession();
+  const { data: refreshData, error: refreshError } = await sb.auth.refreshSession();
+  const session = refreshData?.session ?? (await sb.auth.getSession()).data?.session;
 
-  if (sessionError || !session?.access_token) {
+  if (refreshError && !session?.access_token) {
+    return { ok: false, error: 'Oturum süresi doldu. Lütfen tekrar giriş yapın.' };
+  }
+
+  if (!session?.access_token) {
     return { ok: false, error: 'Oturum bulunamadı. Lütfen tekrar giriş yapın.' };
   }
 
@@ -44,10 +62,7 @@ export async function requestAccountDeletion(options = {}) {
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      return {
-        ok: false,
-        error: data.message || data.error || 'Hesap silme işlemi tamamlanamadı.'
-      };
+      return { ok: false, error: resolveErrorMessage(data) };
     }
 
     await sb.auth.signOut();

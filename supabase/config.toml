@@ -445,6 +445,6 @@ entrypoint = "./functions/admin-action/index.ts"
 
 [functions.user-account]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/user-account/deno.json"
 entrypoint = "./functions/user-account/index.ts"

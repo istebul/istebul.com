@@ -20,6 +20,11 @@ function json(body: unknown, status = 200, origin: string | null = null) {
   });
 }
 
+function extractBearerToken(authHeader: string) {
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  return match?.[1]?.trim() || "";
+}
+
 async function anonymizeUserLeads(admin: ReturnType<typeof createClient>, email: string | null) {
   if (!email) return;
   try {
@@ -48,22 +53,34 @@ Deno.serve(async (req) => {
     return json({ error: "method_not_allowed" }, 405, origin);
   }
 
-  const authHeader = req.headers.get("Authorization") || "";
-  if (!authHeader.startsWith("Bearer ")) {
-    return json({ error: "unauthorized" }, 401, origin);
+  const token = extractBearerToken(req.headers.get("Authorization") || "");
+  if (!token) {
+    return json(
+      { error: "unauthorized", message: "Oturum bulunamadı. Lütfen tekrar giriş yapın." },
+      401,
+      origin
+    );
   }
 
-  const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
-    global: { headers: { Authorization: authHeader } },
+  const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
+    auth: { persistSession: false, autoRefreshToken: false },
   });
 
   const {
     data: { user },
     error: userError,
-  } = await userClient.auth.getUser();
+  } = await admin.auth.getUser(token);
 
   if (userError || !user) {
-    return json({ error: "unauthorized" }, 401, origin);
+    console.error("user-account getUser failed", userError?.message);
+    return json(
+      {
+        error: "unauthorized",
+        message: "Oturum doğrulanamadı. Çıkış yapıp tekrar giriş yapın.",
+      },
+      401,
+      origin
+    );
   }
 
   let body: Record<string, unknown> = {};
@@ -80,10 +97,12 @@ Deno.serve(async (req) => {
 
   const confirm = body.confirm === true || body.confirm === "true";
   if (!confirm) {
-    return json({ error: "confirmation_required" }, 400, origin);
+    return json(
+      { error: "confirmation_required", message: "Silme onayı gerekli." },
+      400,
+      origin
+    );
   }
-
-  const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 
   await anonymizeUserLeads(admin, user.email || null);
 
@@ -108,7 +127,14 @@ Deno.serve(async (req) => {
   const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
   if (deleteError) {
     console.error("auth deleteUser failed", deleteError);
-    return json({ error: "delete_failed", message: deleteError.message }, 500, origin);
+    return json(
+      {
+        error: "delete_failed",
+        message: deleteError.message || "Hesap silinemedi. Lütfen destek ile iletişime geçin.",
+      },
+      500,
+      origin
+    );
   }
 
   await recordPlatformEvent(admin, {

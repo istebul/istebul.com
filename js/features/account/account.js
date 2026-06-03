@@ -491,8 +491,16 @@ export class AccountManager {
             );
             if (!confirmed) return;
 
+            const deleteBtn = root.querySelector('#account-delete-self-serve');
             const statusEl = root.querySelector('#account-delete-status');
-            if (statusEl) statusEl.textContent = 'Silme işlemi başlatılıyor…';
+            if (statusEl) {
+                statusEl.textContent = 'Silme işlemi başlatılıyor…';
+                statusEl.classList.remove('is-error');
+            }
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteBtn.setAttribute('aria-busy', 'true');
+            }
 
             const result = await requestAccountDeletion({ confirm: true });
             if (result.ok) {
@@ -500,8 +508,13 @@ export class AccountManager {
                 return;
             }
 
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.removeAttribute('aria-busy');
+            }
             if (statusEl) {
                 statusEl.textContent = result.error || 'Silme işlemi tamamlanamadı.';
+                statusEl.classList.add('is-error');
             } else {
                 this.ui?.showError?.(result.error || 'Silme işlemi tamamlanamadı.');
             }
