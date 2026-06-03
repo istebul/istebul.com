@@ -146,7 +146,6 @@ html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .ib-enterprise-meta > span {
 }
 
 .seo-footer .ib-site-social__link,
-.corporate-footer .ib-site-social__link,
 .vacation-footer .ib-site-social__link,
 .housing-locale-footer .ib-site-social__link {
   display: inline-flex;
@@ -162,13 +161,33 @@ html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .ib-enterprise-meta > span {
   text-decoration: none;
 }
 
+.corporate-footer .ib-site-social__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
 .seo-footer .ib-site-social__link:hover,
-.corporate-footer .ib-site-social__link:hover,
 .vacation-footer .ib-site-social__link:hover,
 .housing-locale-footer .ib-site-social__link:hover {
   background: rgba(37, 99, 235, 0.2);
   border-color: rgba(96, 165, 250, 0.5);
   color: #fff;
+}
+
+.corporate-footer .ib-site-social__link:hover {
+  background: #eff6ff;
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #1d4ed8;
 }
 
 .vacation-footer .ib-site-social,

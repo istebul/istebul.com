@@ -52,10 +52,17 @@ function injectFavicon(html) {
 function injectBrandCss(html) {
   if (html.includes('ib-brand-logo-v1.css')) return html;
   if (html.includes('corporate-shell.css')) {
-    return html.replace(
+    let next = html.replace(
       /(<link rel="stylesheet" href="\/css\/corporate-shell\.css[^"]*">)/,
       `  <link rel="stylesheet" href="/css/ib-brand-logo-v1.css">\n  $1`
     );
+    if (!next.includes('corporate-footer-v1.css')) {
+      next = next.replace(
+        /(<link rel="stylesheet" href="\/css\/corporate-shell\.css[^"]*">)/,
+        `$1\n  <link rel="stylesheet" href="/css/corporate-footer-v1.css?v=1">\n  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">`
+      );
+    }
+    return next;
   }
   const sheet = html.match(/<link rel="stylesheet" href="\/css\/[^"]+\.css[^"]*">/);
   if (!sheet) return html;

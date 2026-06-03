@@ -6,7 +6,7 @@ const {
   renderSiteSocialFooterNav,
   renderSiteSocialBootScripts
 } = require('./site-social-footer.cjs');
-const { CORPORATE_FOOTER_NAV_HTML, renderKvkkApplyCta } = require('./legal-footer.cjs');
+const { renderCorporateFooter, renderKvkkApplyCta } = require('./legal-footer.cjs');
 
 function renderCorporateNav(activePath) {
   const items = [
@@ -36,16 +36,6 @@ function renderCorporateNav(activePath) {
   </header>`;
 }
 
-function renderCorporateFooter() {
-  return `<footer class="corporate-footer">
-    <div>
-      <strong>isteBul</strong>
-      <p>Karar zekâsı platformu — ilan sitesi değil, karar motoru.</p>
-      ${renderSiteSocialFooterNav()}
-    </div>
-    ${CORPORATE_FOOTER_NAV_HTML}
-  </footer>`;
-}
 
 function renderHeadBlock({ site, title, description, canonicalPath, jsonLd }) {
   const canonical = absoluteUrl(site.baseUrl, canonicalPath);
@@ -73,6 +63,8 @@ function renderHeadBlock({ site, title, description, canonicalPath, jsonLd }) {
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <link rel="stylesheet" href="/css/ib-brand-logo-v1.css">
   <link rel="stylesheet" href="/css/corporate-shell.css?v=1">
+  <link rel="stylesheet" href="/css/corporate-footer-v1.css?v=1">
+  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
   <link rel="stylesheet" href="/css/corporate-pages.css?v=1">${ld}`;
 }
 

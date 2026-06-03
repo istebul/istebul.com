@@ -807,7 +807,7 @@ function injectCorporateMeta(distDir) {
       );
     }
 
-    if (!html.includes('seo-footer-links')) {
+    if (!html.includes('seo-footer-links') && !html.includes('corporate-footer__nav')) {
       html = html.replace(
         '</footer>',
         `<nav class="seo-footer-links" aria-label="SEO rehber">
