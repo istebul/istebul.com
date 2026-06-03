@@ -75,5 +75,8 @@
 /messages/* /messages/index.html 200
 /ilan-ekle/* /ilan-ekle/index.html 200
 
+# --- Blog post static SEO pages ---
+/blog/* /blog/:splat/index.html 200
+
 # --- SPA fallback (MUST be last) ---
 /* /index.html 200

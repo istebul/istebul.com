@@ -17,9 +17,9 @@ const UA =
 const liveRoutes = [
   { path: '/', must: ['data-ib-route', 'Karar analizini başlat'], status: 200 },
   { path: '/auto/', must: ['auto-wizard', 'TCO'], status: 200 },
-  { path: '/konut/', must: ['vacation-page', 'konut-page', 'Analize başla'], status: 200, optional: true },
-  { path: '/finans/', must: ['vacation-page', 'finans-page', 'Analize başla'], status: 200, optional: true },
-  { path: '/tatil/', must: ['vacation-page', 'Analize başla'], status: 200, optional: true },
+  { path: '/konut/', must: ['Konut Karar', 'housing-page', 'housing-flow'], status: 200, optional: true },
+  { path: '/finans/', must: ['Finansman', 'finans-page', 'finans-flow'], status: 200, optional: true },
+  { path: '/tatil/', must: ['Tatil', 'vacation-page', 'vacation-flow'], status: 200, optional: true },
   {
     path: '/sigorta/',
     must: ['sigorta-page', 'sigorta-wizard', 'Sigorta'],

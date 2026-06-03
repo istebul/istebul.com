@@ -951,13 +951,18 @@ function buildMethodologyPage(distDir, site) {
   fs.writeFileSync(path.join(root, 'metodoloji', 'index.html'), html);
 }
 
-function generateSitemap(distDir, { site, landingConfig, hubsConfig }) {
+function generateSitemap(distDir, { site, landingConfig, hubsConfig, blogPosts = [] }) {
   const urls = [...site.staticUrls];
   const localePrefixes = ['', '/en', '/de', '/ar', '/it', '/fr', '/es', '/ja', '/zh'];
-  const localizedPaths = new Set(['/', '/auto/', '/metodoloji/', '/konut/', '/tatil/', '/finans/', '/planlar', '/hakkimizda.html', '/iletisim.html']);
+  const localizedPaths = new Set(['/', '/auto/', '/metodoloji/', '/konut/', '/tatil/', '/finans/', '/planlar', '/blog', '/duyurular', '/kampanyalar', '/hakkimizda.html', '/iletisim.html', '/en/', '/de/', '/ar/']);
 
   hubsConfig.hubs.forEach((h) => {
     urls.push({ loc: h.path, priority: '0.85', changefreq: 'weekly' });
+  });
+
+  (blogPosts || []).forEach((entry) => {
+    const loc = entry.path || `/blog/${entry.slug}/`;
+    urls.push({ loc, priority: '0.65', changefreq: 'monthly' });
   });
 
   const prefix = landingConfig.prefix || '/rehber/';
@@ -1046,5 +1051,6 @@ module.exports = {
   buildMethodologyPage,
   generateSitemap,
   generateRobots,
+  renderContentPage,
   SEO_BUILD_DATE
 };
