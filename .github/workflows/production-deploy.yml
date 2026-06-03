@@ -245,6 +245,7 @@ jobs:
             support-intake
             analytics-ingest
             admin-action
+            user-account
             ops-ingest
             lifecycle-enroll
             lifecycle-cron
