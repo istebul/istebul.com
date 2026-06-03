@@ -58,5 +58,18 @@ if (!sigortaEntry || Number(sigortaEntry.priority) < 0.8) {
   fail('data/seo/site.json sigorta priority should be >= 0.8');
 }
 
+const distIndexPath = path.join(root, 'dist/index.html');
+if (fs.existsSync(distIndexPath)) {
+  const distIndex = fs.readFileSync(distIndexPath, 'utf8');
+  if (process.env.GOOGLE_SITE_VERIFICATION && !distIndex.includes('google-site-verification')) {
+    fail('dist/index.html missing google-site-verification meta (run production build with secret)');
+  }
+  if (!process.env.GOOGLE_SITE_VERIFICATION && !distIndex.includes('google-site-verification')) {
+    console.warn(
+      'gsc-index: GOOGLE_SITE_VERIFICATION not set — add GitHub secret for Search Console HTML tag verification'
+    );
+  }
+}
+
 if (failed) process.exit(1);
 console.log('gsc-index-readiness-audit: OK');

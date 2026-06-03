@@ -25,6 +25,7 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 
 | Secret | Nasıl alınır |
 |--------|----------------|
+| `GOOGLE_SITE_VERIFICATION` | [Search Console](https://search.google.com/search-console) → mülk ekle → **HTML etiketi** yöntemi → `content="..."` içindeki kod (tırnaksız). Build tüm indexlenebilir HTML sayfalarına `<meta name="google-site-verification">` enjekte eder. |
 | `SUPABASE_ACCESS_TOKEN` | https://supabase.com/dashboard/account/tokens — **migration + edge deploy için yeterli** (CLI password-less DB rolü) |
 | `ANALYTICS_HASH_SALT` | Rastgele uzun string — internal traffic exclusion (`analytics-ingest`, edge) |
 | `SUPABASE_DB_PASSWORD` | (Opsiyonel) Eski CLI veya açık postgres şifresi gerektiğinde |
@@ -62,6 +63,7 @@ gh secret set SUPABASE_URL -b"https://hjfrcdstbyonmgatgwcc.supabase.co"
 gh secret set SUPABASE_ANON_KEY
 gh secret set SUPABASE_ACCESS_TOKEN
 gh secret set SUPABASE_DB_PASSWORD
+gh secret set GOOGLE_SITE_VERIFICATION
 ```
 
 Secret’lar eklendikten sonra `main`’e push veya **Actions → Production Deploy → Run workflow** ile otomatik deploy başlar.

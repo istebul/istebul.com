@@ -727,5 +727,21 @@ const inlineAudit = spawnSync(process.execPath, [path.join(root, 'scripts/dist-i
 });
 if (inlineAudit.status !== 0) process.exit(inlineAudit.status || 1);
 
+const {
+  getGoogleSiteVerificationCode,
+  applyGoogleSiteVerificationToHtmlFiles
+} = require('./lib/gsc-verification.cjs');
+const gscCode = getGoogleSiteVerificationCode(process.env);
+if (gscCode) {
+  const gscResult = applyGoogleSiteVerificationToHtmlFiles(dist, { code: gscCode });
+  console.log(
+    `[gsc] google-site-verification meta injected into ${gscResult.injected} HTML file(s)`
+  );
+} else {
+  console.warn(
+    '[gsc] GOOGLE_SITE_VERIFICATION not set — skip Search Console HTML tag (see .github/SECRETS.example.md)'
+  );
+}
+
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');
