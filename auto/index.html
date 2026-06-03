@@ -50,7 +50,7 @@
   <link rel="preload" href="/assets/auto-runtime/ib-car.css" as="style">
   <link rel="stylesheet" href="/assets/auto-runtime/ib-car.css">
   <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=4">
-  <link rel="stylesheet" href="/css/bundles/auto-page.bundle.css?v=3">
+  <link rel="stylesheet" href="/css/bundles/auto-page.bundle.css?v=4">
   <script src="/env.js" defer></script>
   <script src="/js/auto/auto-document-ready.js"></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js?v=2"></script>
@@ -65,19 +65,34 @@
     </a>
     <button class="vacation-nav-toggle" type="button" aria-controls="auto-nav" aria-expanded="false">Menü</button>
     <nav id="auto-nav" aria-label="Ana navigasyon">
-      <a href="/" data-i18n="nav.home">Ana sayfa</a>
-      <a href="/auto/" class="is-active" aria-current="page" data-i18n="nav.catAuto">Araç</a>
-      <a href="/konut/" data-i18n="vertical.konut">Konut</a>
-      <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
-      <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
-      <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
-      <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
-      <span class="ib-vertical-nav-section-label">Bu sayfa</span>
-      <a href="#nasil-calisir">Nasıl çalışır</a>
-      <a href="#analiz">Analiz sonuçları</a>
-      <a href="#gelir">Teklifler</a>
-      <a href="/metodoloji/" data-i18n="nav.methodology">Metodoloji</a>
-      <a href="/iletisim.html" data-i18n="nav.contact">İletişim</a>
+      <div class="ib-vertical-nav-primary">
+        <a href="/" data-i18n="nav.home">Ana sayfa</a>
+        <a href="/auto/" class="is-active" aria-current="page" data-i18n="nav.catAuto">Araç</a>
+        <a href="/konut/" data-i18n="vertical.konut">Konut</a>
+        <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
+        <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+        <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
+        <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
+      </div>
+      <div class="ib-vertical-nav-more">
+        <button
+          type="button"
+          class="ib-vertical-nav-more-btn"
+          id="auto-nav-more-btn"
+          aria-expanded="false"
+          aria-controls="auto-nav-more-menu"
+          aria-haspopup="menu"
+        >
+          Bu sayfa
+        </button>
+        <div class="ib-vertical-nav-more-menu" id="auto-nav-more-menu" role="menu" hidden>
+          <a href="#nasil-calisir" role="menuitem">Nasıl çalışır</a>
+          <a href="#analiz" role="menuitem">Analiz sonuçları</a>
+          <a href="#gelir" role="menuitem">Teklifler</a>
+          <a href="/metodoloji/" role="menuitem" data-i18n="nav.methodology">Metodoloji</a>
+          <a href="/iletisim.html" role="menuitem" data-i18n="nav.contact">İletişim</a>
+        </div>
+      </div>
     </nav>
   </header>
 
