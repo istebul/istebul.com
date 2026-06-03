@@ -74,7 +74,7 @@ if (!fs.existsSync(autoRuntimeDir)) {
   }
 }
 
-const requiredSource = ['functions/api/public-stats.js'];
+const requiredSource = ['functions/api/public-stats.js', 'functions/api/analytics-ingest.js'];
 requiredSource.forEach((rel) => {
   if (!fs.existsSync(path.join(root, rel))) {
     fail(`source missing ${rel}`);

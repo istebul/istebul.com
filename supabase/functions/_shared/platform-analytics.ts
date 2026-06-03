@@ -19,6 +19,7 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "page_view",
   "page_exit",
   "route_change",
+  "manual_test",
   // CTA
   "cta_click",
   // Auth
@@ -451,7 +452,11 @@ export async function recordPlatformEvent(
   const { error } = await adminClient.from("analytics_events").insert(row);
   if (error) {
     if (error.code === "23505") return { ok: true, duplicate: true };
-    throw error;
+    const message =
+      typeof error.message === "string" && error.message
+        ? error.message
+        : "analytics_events_insert_failed";
+    throw new Error(message);
   }
 
   if (isAutoLegacyEvent(eventName) && !row.is_internal) {
