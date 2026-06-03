@@ -470,16 +470,16 @@ html.ib-ds-v4 body.seo-page .seo-logo {
 }
 
 /* —— Vertical pages: headers on light shell —— */
-html.ib-ds-v4 .auto-header a,
 html.ib-ds-v4 .housing-header a,
 html.ib-ds-v4 .vacation-header a,
+html.ib-ds-v4 .ib-vertical-header--auto a,
 html.ib-ds-v4 .corporate-header a {
   color: var(--ib-v5-nav-ink);
 }
 
-html.ib-ds-v4 .auto-header a:hover,
 html.ib-ds-v4 .housing-header a:hover,
-html.ib-ds-v4 .vacation-header a:hover {
+html.ib-ds-v4 .vacation-header a:hover,
+html.ib-ds-v4 .ib-vertical-header--auto a:hover {
   color: var(--ib-v5-accent);
 }
 

@@ -50,32 +50,44 @@
   <link rel="preload" href="/assets/auto-runtime/ib-car.css" as="style">
   <link rel="stylesheet" href="/assets/auto-runtime/ib-car.css">
   <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=4">
-  <link rel="stylesheet" href="/css/bundles/auto-page.bundle.css?v=2">
+  <link rel="stylesheet" href="/css/bundles/auto-page.bundle.css?v=3">
   <script src="/env.js" defer></script>
   <script src="/js/auto/auto-document-ready.js"></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js?v=2"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"isteBul Auto ücretsiz mi?","acceptedAnswer":{"@type":"Answer","text":"Temel karar analizi ücretsiz başlatılabilir; Pro plan derin rapor ve ek özellikler sunar. Koşullar planlar sayfasında güncellenir."}},{"@type":"Question","name":"Skor nasıl hesaplanır?","acceptedAnswer":{"@type":"Answer","text":"Skor kural tabanlı motordadır; bütçe, kullanım, TCO ve risk sinyalleri birleştirilir. AI skoru değiştirmez."}},{"@type":"Question","name":"TCO ne kadar güvenilir?","acceptedAnswer":{"@type":"Answer","text":"TCO varsayımlara dayalı bilgilendirme amaçlı projeksiyondur; bayi teklifi ve ekspertiz ile doğrulanmalıdır."}},{"@type":"Question","name":"Partner teklifleri zorunlu mu?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Lead paylaşımı yalnızca onayınızla yapılır."}}]}</script>
   <link rel="stylesheet" href="/css/static-cookie-consent-v1.css?v=1">
 </head>
-<body class="ib-enterprise ib-auto">
-  <header class="auto-header">
-    <a class="logo brand-logo-link" href="/" aria-label="isteBul Auto ana sayfa">
-      <img src="/assets/brand/istebul-auto-logo.svg?v=2" alt="isteBul Auto" width="168" height="40" decoding="async" fetchpriority="high">
+<body class="ib-auto">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--auto">
+    <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
+      <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">Auto</span>
     </a>
-    <button class="auto-nav-toggle" type="button" aria-controls="auto-nav" aria-expanded="false">
-      <span>Menü</span>
-      <span class="auto-nav-toggle-lines" aria-hidden="true"></span>
-    </button>
-    <nav id="auto-nav" aria-label="Auto navigasyonu">
-      <div data-vertical-nav-products aria-label="Kategoriler"></div>
+    <button class="vacation-nav-toggle" type="button" aria-controls="auto-nav" aria-expanded="false">Menü</button>
+    <nav id="auto-nav" aria-label="Ana navigasyon">
+      <a href="/" data-i18n="nav.home">Ana sayfa</a>
+      <a href="/auto/" class="is-active" aria-current="page" data-i18n="nav.catAuto">Araç</a>
+      <a href="/konut/" data-i18n="vertical.konut">Konut</a>
+      <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
+      <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+      <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
+      <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
       <span class="ib-vertical-nav-section-label">Bu sayfa</span>
       <a href="#nasil-calisir">Nasıl çalışır</a>
       <a href="#analiz">Analiz sonuçları</a>
       <a href="#gelir">Teklifler</a>
+      <a href="/metodoloji/" data-i18n="nav.methodology">Metodoloji</a>
+      <a href="/iletisim.html" data-i18n="nav.contact">İletişim</a>
     </nav>
   </header>
 
-  <div class="ib-trust-rail ib-trust-rail--auto" role="complementary" aria-label="Auto güvenilirliği">
+  <div class="vacation-container vacation-container--breadcrumb">
+    <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana sayfa</a> › <span>Araç karar analizi</span>
+    </nav>
+  </div>
+
+  <div class="ib-trust-rail" role="complementary" aria-label="Güvenilirlik">
     <div class="ib-trust-rail-inner">
       <span>Kurumsal karar motoru</span>
       <span>KVKK uyumlu işleme</span>
@@ -264,7 +276,7 @@
 
   <footer class="corporate-footer">
     <div>
-      <strong>isteBul Auto</strong>
+      <strong>isteBul</strong>
       <p>Araç alımında fiyat, kredi ve toplam maliyeti birlikte değerlendiren karar altyapısı. Bilgilendirme amaçlıdır; yatırım veya kredi taahhüdü içermez.</p>
       <nav class="ib-site-social" data-site-social-links aria-label="Sosyal medya" hidden></nav>
     </div>

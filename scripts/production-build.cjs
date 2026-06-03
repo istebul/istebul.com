@@ -384,6 +384,7 @@ const autoCssParts = [
   'css/auto-results-ux.css',
   'css/auto-decision-engine-ui.css',
   'css/auto-hero-dashboard-v1.css',
+  'css/auto-shell-unified-v1.css',
   'css/auto-question-ux.css',
   'css/enterprise-card-readability.css',
   'css/auto-final-cta-contrast-v1.css',

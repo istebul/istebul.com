@@ -49,7 +49,7 @@ const VERTICAL_SHARED = [
 const AUTO_PAGE_EXTENSION = [
   'css/auto-hero-dashboard-v1.css',
   'css/auto-results-v2.css',
-  'css/auto-header-nav-v1.css',
+  'css/auto-shell-unified-v1.css',
   'css/auto-final-cta-contrast-v1.css',
   'css/vertical-category-heroes-v1.css',
   'css/site-social-links-v1.css',

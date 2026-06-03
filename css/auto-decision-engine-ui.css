@@ -13,11 +13,6 @@ body.ib-auto {
   --auto-line: rgba(148, 163, 184, 0.28);
 }
 
-body.ib-auto .auto-header nav {
-  gap: 1.25rem;
-  font-size: 0.88rem;
-}
-
 body.ib-auto .auto-hero-decision {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.85fr);

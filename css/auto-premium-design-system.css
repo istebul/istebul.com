@@ -74,7 +74,7 @@ body.ib-auto textarea {
   border: 1px solid var(--ib-ds-border);
 }
 
-body.ib-auto .auto-header {
+body.ib-auto .vacation-header.ib-vertical-header--auto {
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--ib-ds-border);
 }

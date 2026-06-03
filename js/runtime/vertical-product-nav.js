@@ -107,7 +107,7 @@ function enhanceVerticalHeader(header) {
   if (!header) return;
 
   const toggle = header.querySelector(
-    '.vacation-nav-toggle, .housing-nav-toggle, .auto-nav-toggle'
+    '.vacation-nav-toggle, .housing-nav-toggle'
   );
   const nav =
     header.querySelector('nav[id$="-nav"]') ||
@@ -120,7 +120,6 @@ function enhanceVerticalHeader(header) {
     markActiveLinks(nav);
   }
 
-  if (header.classList.contains('auto-header')) return;
   bindVacationToggle(header, toggle, nav);
 }
 
@@ -129,7 +128,7 @@ export function mountVerticalProductNav() {
 
   const run = () => {
     document
-      .querySelectorAll('.vacation-header, .housing-header, .auto-header')
+      .querySelectorAll('.vacation-header, .housing-header, .ib-vertical-header--auto')
       .forEach((header) => enhanceVerticalHeader(header));
   };
 

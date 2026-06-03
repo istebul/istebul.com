@@ -818,43 +818,6 @@ function readForm(form) {
   return Object.fromEntries(new FormData(form).entries());
 }
 
-function setupAutoMobileNav() {
-  const header = document.querySelector('.auto-header');
-  const toggle = document.querySelector('.auto-nav-toggle');
-  const nav = document.getElementById('auto-nav');
-
-  if (!header || !toggle || !nav) return;
-
-  header.classList.add('nav-enhanced');
-
-  const setOpen = (isOpen) => {
-    header.classList.toggle('is-nav-open', isOpen);
-    toggle.setAttribute('aria-expanded', String(isOpen));
-  };
-
-  toggle.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setOpen(!header.classList.contains('is-nav-open'));
-  });
-
-  nav.addEventListener('click', (event) => {
-    if (event.target.closest('a')) {
-      setOpen(false);
-    }
-  });
-
-  document.addEventListener('click', (event) => {
-    if (!header.classList.contains('is-nav-open')) return;
-    if (event.target.closest('.auto-header')) return;
-    setOpen(false);
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') setOpen(false);
-  });
-}
-
 function getCurrentLeadPayload() {
   const autoForm = document.getElementById('auto-form');
   const formPayload = autoForm ? readForm(autoForm) : {};
@@ -3160,7 +3123,6 @@ async function checkForNewAutoDeployment() {
   }
 }
 
-setupAutoMobileNav();
 checkForNewAutoDeployment();
 initP4ProductPolish();
 initMobilePremiumUx();
