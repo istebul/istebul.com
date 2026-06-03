@@ -162,9 +162,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             <a href="/#home-vertical-focus" class="nav-dropdown-link" data-home-anchor="home-vertical-focus" role="menuitem" data-i18n="nav.allCategories">Tüm kategoriler</a>
                         </div>
                     </div>
-                    <a href="/#how-it-works" class="nav-link" data-home-anchor="how-it-works" data-i18n="nav.howItWorks">Nasıl Çalışır?</a>
                     <a href="/metodoloji/" class="nav-link" data-native-route data-i18n="nav.methodology">Metodoloji</a>
-                    <a href="/#pricing" class="nav-link" data-home-anchor="pricing" data-i18n="nav.pricing">Fiyatlandırma</a>
                     <a href="/hakkimizda.html" class="nav-link" data-native-route data-i18n="nav.about">Hakkımızda</a>
                     <div class="nav-dropdown nav-more-menu" id="nav-more-menu">
                         <button
@@ -180,6 +178,9 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             Kaynaklar
                         </button>
                         <div id="nav-more-list" class="nav-dropdown-content nav-more-list" role="menu" hidden>
+                            <a href="/#how-it-works" class="nav-dropdown-link" data-home-anchor="how-it-works" role="menuitem" data-i18n="nav.howItWorks">Nasıl Çalışır?</a>
+                            <a href="/#pricing" class="nav-dropdown-link" data-home-anchor="pricing" role="menuitem" data-i18n="nav.pricing">Fiyatlandırma</a>
+                            <span class="nav-dropdown-divider" role="separator" aria-hidden="true"></span>
                             <a href="/#home-vertical-focus" class="nav-dropdown-link" data-home-anchor="home-vertical-focus" role="menuitem" data-i18n="nav.sampleAnalysis">Örnek analiz</a>
                             <a href="/blog" class="nav-dropdown-link" data-native-route role="menuitem" data-i18n="nav.blog">Blog</a>
                             <a href="/duyurular" class="nav-dropdown-link" data-native-route role="menuitem" data-i18n="nav.announcements">Duyurular</a>
@@ -189,9 +190,10 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                         </div>
                     </div>
                     <div class="nav-more-mobile-links" aria-label="Ek kaynaklar">
-                        <a href="/#pricing" class="nav-link" data-home-anchor="pricing" data-i18n="nav.pricing">Fiyatlandırma</a>
                         <a href="/hakkimizda.html" class="nav-link" data-native-route data-i18n="nav.about">Hakkımızda</a>
                         <span class="nav-more-mobile-label" data-i18n="nav.resources">Kaynaklar</span>
+                        <a href="/#how-it-works" class="nav-link" data-home-anchor="how-it-works" data-i18n="nav.howItWorks">Nasıl Çalışır?</a>
+                        <a href="/#pricing" class="nav-link" data-home-anchor="pricing" data-i18n="nav.pricing">Fiyatlandırma</a>
                         <a href="/blog" class="nav-link" data-native-route data-i18n="nav.blog">Blog</a>
                         <a href="/duyurular" class="nav-link" data-native-route data-i18n="nav.announcements">Duyurular</a>
                         <a href="/kampanyalar" class="nav-link" data-native-route data-i18n="nav.campaigns">Kampanyalar</a>
@@ -207,16 +209,16 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <div class="nav-controls">
                 <a href="/profil/" class="btn btn-outline btn-sm nav-dashboard-quick hidden" id="nav-dashboard-quick" data-native-route data-auth-only data-i18n="nav.dashboard">Dashboard</a>
                 <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Tema değiştir" title="Tema değiştir"></button>
-                <div class="nav-auth" id="nav-auth">
+                <div class="nav-auth nav-auth--pro" id="nav-auth">
                     <a
                         href="/partner-basvuru.html"
-                        class="btn btn-outline btn-sm nav-partner-apply"
+                        class="btn btn-ghost btn-sm nav-partner-apply"
                         data-analytics-cta="partner_nav_apply"
                         data-analytics-placement="nav"
                         data-i18n="nav.partnerApply"
                     >Partner başvurusu</a>
-                    <button id="login-btn" class="btn btn-outline" type="button" data-auth-open="login" aria-label="Giriş Yap" data-i18n="nav.login">Giriş Yap</button>
-                    <a href="/#home-vertical-focus" class="btn btn-primary nav-cta-decision" data-home-anchor="home-vertical-focus" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav" data-i18n="nav.getStarted">Hemen Başla</a>
+                    <button id="login-btn" class="btn btn-ghost btn-sm nav-login-btn" type="button" data-auth-open="login" aria-label="Giriş Yap" data-i18n="nav.login">Giriş Yap</button>
+                    <a href="/#home-vertical-focus" class="btn btn-primary btn-sm nav-cta-decision" data-home-anchor="home-vertical-focus" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav" data-i18n="nav.getStarted">Hemen Başla</a>
                 </div>
             </div>
             <div class="nav-user hidden" id="nav-user">
