@@ -267,6 +267,7 @@ export function renderDashboardV2(data) {
           <p class="dashboard-v2-lead">Son analizler, PDF geçmişi, favoriler ve karşılaştırma seçimleriniz.</p>
         </div>
         <a href="/karsilastir" class="btn btn-outline btn-sm dashboard-v2-hero-cta" data-native-route>Karşılaştırma merkezi</a>
+        <button type="button" class="btn btn-outline btn-sm dashboard-v2-hero-cta" data-dashboard-tab="settings">Hesap ayarları</button>
       </header>
 
       ${renderSummaryCards(data.summary, data.hasPremium)}

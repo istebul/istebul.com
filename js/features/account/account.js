@@ -3,7 +3,7 @@ import { escapeHtml } from '../../core/security.js';
 import config from '../../core/config.js';
 import { enrollBillingHelp } from '../customer/customer-ops-client.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey } from '../../core/storage-keys.js';
-import { renderUserDashboard } from '../profil/user-dashboard.js';
+import { renderAccountHub } from '../../ui/components/account-hub.js';
 import { mapHistoryRecordToResult } from '../../ui/components/user-result-card.js';
 import {
     buildDashboardV2Data,
@@ -20,6 +20,7 @@ const ONBOARDING_KEY = STORAGE_KEYS.ACCOUNT_ONBOARDING_DONE;
 const NOTIFICATION_PREF_KEY = 'istebul_notification_preference';
 
 const MAIN_DASHBOARD_TABS = ['overview', 'analyses', 'favorites'];
+const ACCOUNT_HUB_TABS = ['settings', 'security', 'notifications', 'help'];
 
 const SUBSCRIPTION_LABELS = {
     active: { label: 'Aktif', tone: 'success' },
@@ -55,6 +56,8 @@ export class AccountManager {
             this.activeTab = 'settings';
         } else if (tab && allowedTabs.includes(tab)) {
             this.activeTab = tab;
+        } else if (!ACCOUNT_HUB_TABS.includes(this.activeTab) && !MAIN_DASHBOARD_TABS.includes(this.activeTab)) {
+            this.activeTab = 'settings';
         }
 
         if (billingPortal) {
@@ -154,8 +157,10 @@ export class AccountManager {
         section.querySelectorAll('[data-dashboard-tab]').forEach((btn) => {
             const isActive = btn.dataset.dashboardTab === tabId;
             btn.classList.toggle('is-active', isActive);
-            btn.setAttribute('role', 'tab');
-            btn.setAttribute('aria-selected', String(isActive));
+            if (btn.matches('.account-hub-tab, .ud-nav-item')) {
+                btn.setAttribute('role', 'tab');
+                btn.setAttribute('aria-selected', String(isActive));
+            }
         });
 
         section.querySelectorAll('[data-dashboard-overview]').forEach((el) => {
@@ -176,6 +181,11 @@ export class AccountManager {
             if (isActive) panel.removeAttribute('tabindex');
             else panel.setAttribute('tabindex', '-1');
         });
+
+        if (ACCOUNT_HUB_TABS.includes(tabId)) {
+            const hub = section.querySelector('.account-hub');
+            hub?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 
     bindEvents(app) {
@@ -316,9 +326,15 @@ export class AccountManager {
             return;
         }
 
+        const statusEl = form.querySelector('#account-settings-status');
+
         try {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Kaydediliyor...';
+            if (statusEl) {
+                statusEl.textContent = 'Kaydediliyor…';
+                statusEl.classList.remove('is-error');
+            }
 
             const updates = {
                 full_name: form.full_name.value.trim(),
@@ -331,10 +347,15 @@ export class AccountManager {
             app.currentUser.profile = profile;
             this.ui?.updateUserUI?.(profile);
             this.ui?.showSuccess?.(config.messages.success.profileUpdated);
+            if (statusEl) statusEl.textContent = 'Profil bilgileriniz kaydedildi.';
             await this.refresh(app.currentUser);
         } catch (error) {
             console.error('Settings save failed:', error);
             this.ui?.showError?.('Profil güncellenemedi. Lütfen tekrar deneyin.');
+            if (statusEl) {
+                statusEl.textContent = 'Kayıt başarısız. Lütfen tekrar deneyin.';
+                statusEl.classList.add('is-error');
+            }
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = original || 'Değişiklikleri kaydet';
@@ -460,14 +481,19 @@ export class AccountManager {
             membershipLabel
         });
         document.getElementById('profil')?.classList.add('profil-has-dashboard');
+        const hubTab = ACCOUNT_HUB_TABS.includes(this.activeTab) ? this.activeTab : 'settings';
         root.innerHTML = `
             ${renderDashboardV2(v2Data)}
-            <div class="dashboard-v2-legacy-wrap" id="dashboard-v2-legacy-wrap">
-              <details class="dashboard-v2-legacy-details">
-                <summary>Hesap ayarları ve klasik görünüm</summary>
-                ${renderUserDashboard(dashboardData)}
-              </details>
-            </div>`;
+            ${renderAccountHub({
+                activeTab: hubTab,
+                profile,
+                emailVerified,
+                notificationPreference: dashboardData.notificationPreference,
+                comparisons: dashboardData.comparisons,
+                recommendations: dashboardData.recommendations,
+                membershipLabel,
+                hasPremium
+            })}`;
 
         bindDashboardV2(root.querySelector('[data-dashboard-v2]'), {
             userId: user.id,
@@ -520,7 +546,7 @@ export class AccountManager {
             }
         });
 
-        this.setTab(this.activeTab);
+        this.setTab(ACCOUNT_HUB_TABS.includes(this.activeTab) ? this.activeTab : hubTab);
         this.ui?.loadIcons?.();
 
         if (this._openBillingPortal && this.app?.openBillingPortal) {
