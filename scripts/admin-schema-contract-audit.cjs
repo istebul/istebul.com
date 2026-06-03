@@ -60,6 +60,27 @@ for (const action of [
   }
 }
 
+const analyticsGuard = adminActionSrc.indexOf('ANALYTICS_ADMIN_ACTIONS.has(action)');
+const tableGuard = adminActionSrc.indexOf('!allowedTables.includes(table)');
+if (analyticsGuard < 0 || tableGuard < 0 || analyticsGuard > tableGuard) {
+  fail('analytics admin actions must bypass allowedTables check (guard order)');
+}
+
+for (const action of [
+  'list_analytics_exclusions',
+  'add_analytics_ip_exclusion',
+  'register_analytics_device_exclusion',
+  'delete_analytics_exclusion'
+]) {
+  if (!adminActionSrc.includes(`"${action}"`)) {
+    fail(`admin-action missing analytics action: ${action}`);
+  }
+}
+
+if (!listTables.includes('analytics_exclusion_rules')) {
+  fail('listTables must include analytics_exclusion_rules');
+}
+
 const adminQuery = fs.readFileSync(path.join(root, 'js/admin/admin-query.js'), 'utf8');
 if (!adminQuery.includes('collectAdminFallbackNotes')) {
   fail('admin-query must export collectAdminFallbackNotes');

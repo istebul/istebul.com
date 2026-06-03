@@ -56,6 +56,17 @@ describe('admin-action contract', () => {
     assert.match(source, /analytics_clean_start_at/);
   });
 
+  it('validates analytics actions before allowedTables table check', () => {
+    const source = fs.readFileSync(
+      path.join(root, 'supabase/functions/admin-action/index.ts'),
+      'utf8'
+    );
+    const analyticsGuard = source.indexOf('ANALYTICS_ADMIN_ACTIONS.has(action)');
+    const tableGuard = source.indexOf('!allowedTables.includes(table)');
+    assert.ok(analyticsGuard > 0, 'analytics guard exists');
+    assert.ok(tableGuard > analyticsGuard, 'analytics guard runs before table guard');
+  });
+
   it('exposes partner application CRM admin actions', () => {
     const source = fs.readFileSync(
       path.join(root, 'supabase/functions/admin-action/index.ts'),

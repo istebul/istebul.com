@@ -85,6 +85,13 @@ const PARTNER_APP_ID_ACTIONS = new Set([
   "togglePartnerApplicationActive",
 ]);
 
+const ANALYTICS_ADMIN_ACTIONS = new Set([
+  "list_analytics_exclusions",
+  "add_analytics_ip_exclusion",
+  "register_analytics_device_exclusion",
+  "delete_analytics_exclusion",
+]);
+
 const PARTNER_APP_STATUSES = new Set([
   "lead",
   "qualified",
@@ -490,16 +497,11 @@ Deno.serve(async (req) => {
     }
   } else if (PARTNER_APP_ACTIONS.has(action)) {
     /* partner CRM actions — validated in handler */
+  } else if (ANALYTICS_ADMIN_ACTIONS.has(action)) {
+    /* internal traffic exclusion — no table field on request */
   } else if (!allowedTables.includes(table)) {
     return json({ error: "Invalid action or table" }, 400, origin);
   }
-
-  const ANALYTICS_ADMIN_ACTIONS = new Set([
-    "list_analytics_exclusions",
-    "add_analytics_ip_exclusion",
-    "register_analytics_device_exclusion",
-    "delete_analytics_exclusion",
-  ]);
 
   if (
     action !== "upsert_settings" &&

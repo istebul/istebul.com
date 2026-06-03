@@ -1788,10 +1788,35 @@ async function loadAnalyticsExclusionSettings() {
   const listEl = document.getElementById('analytics-exclusion-list');
   if (!listEl) return;
   try {
-    const res = await invokeAdminFunction(sb, {
-      action: 'list_analytics_exclusions'
-    });
-    const rows = res?.data || [];
+    let rows = [];
+    try {
+      const res = await invokeAdminFunction(sb, {
+        action: 'list_analytics_exclusions'
+      });
+      rows = res?.data || [];
+    } catch (edgeErr) {
+      const msg = String(edgeErr?.message || '');
+      const useFallback =
+        /invalid action or table/i.test(msg) ||
+        /schema cache|could not find the table|does not exist/i.test(msg);
+      if (!useFallback) throw edgeErr;
+      const fallback = await fetchAdminTable(sb, {
+        table: 'analytics_exclusion_rules',
+        limit: 200,
+        order: { column: 'created_at', ascending: false },
+        direct: () =>
+          sb
+            .from('analytics_exclusion_rules')
+            .select('id, type, value_hash, label, is_active, created_at')
+            .order('created_at', { ascending: false })
+            .limit(200)
+      });
+      if (fallback.error && !fallback.data?.length) throw edgeErr;
+      rows = fallback.data || [];
+      if (fallback.source === 'direct' && rows.length) {
+        toast('Kurallar doğrudan veritabanından yüklendi (edge güncellemesi bekleniyor).', 'success');
+      }
+    }
     if (!rows.length) {
       listEl.innerHTML = '<p class="text-muted-sm">Henüz dahili IP/cihaz kuralı yok.</p>';
       return;
