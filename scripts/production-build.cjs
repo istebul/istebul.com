@@ -7,6 +7,8 @@ const crypto = require('crypto');
 const root = process.cwd();
 const dist = path.join(root, 'dist');
 const staticRoots = ['assets', 'data', 'docs'];
+/** Internal-only docs — not copied to public dist (orphan HTML / investor exports). */
+const PUBLIC_DOCS_SKIP_PREFIXES = ['docs/investor/export', 'docs/previews', 'docs/site-owner'];
 const copyDataSubdir = (subdir) => {
   const src = path.join(root, 'data', subdir);
   const dest = path.join(dist, 'data', subdir);
@@ -65,6 +67,10 @@ const copyFile = (relativePath) => {
 };
 const shouldSkipEntry = (name) => name.startsWith('.') || name === 'Thumbs.db';
 const copyDir = (relativePath) => {
+  const normalized = relativePath.split(path.sep).join('/');
+  if (PUBLIC_DOCS_SKIP_PREFIXES.some((skip) => normalized === skip || normalized.startsWith(`${skip}/`))) {
+    return;
+  }
   const sourceDir = path.join(root, relativePath);
   const targetDir = path.join(dist, relativePath);
   fs.mkdirSync(targetDir, { recursive: true });

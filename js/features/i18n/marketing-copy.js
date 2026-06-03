@@ -566,7 +566,7 @@ export const marketingCopy = Object.fromEntries(
           newLocaleOverrides[localeId],
           marketingSections[localeId],
           { pricingDynamic: pricingDynamicCopy.en },
-          { spaPages: spaPagesCopy.en },
+          { spaPages: spaPagesCopy[localeId] || spaPagesCopy.en },
           { wizard: wizardCopy.en }
         )
       ];

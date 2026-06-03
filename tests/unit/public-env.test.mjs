@@ -53,3 +53,12 @@ test('assertProductionAnonKeyNotPlaceholder rejects placeholder in production', 
     )
   );
 });
+
+test('assertProductionAnonKeyNotPlaceholder allows placeholder during CI E2E build', () => {
+  assert.doesNotThrow(() =>
+    assertProductionAnonKeyNotPlaceholder(
+      { SUPABASE_ANON_KEY: 'local-build-placeholder-anon-key-not-for-production' },
+      { GITHUB_ACTIONS: 'true' }
+    )
+  );
+});
