@@ -371,7 +371,10 @@ function renderWizard() {
 
   if (step.id === 'goal') body = renderGoalCards();
   else if (step.id === 'budget') body = renderBudgetStep();
-  else if (step.id === 'people') body = renderPeopleStep();
+  else if (step.id === 'people') {
+    applyGoalFlowDefaults(state, state.vacation_goal);
+    body = renderPeopleStep();
+  }
   else if (step.id === 'type') body = renderTypeStep();
   else if (step.id === 'date') body = renderDateStep();
   else if (step.id === 'preferences') body = renderPreferencesStep();

@@ -16,7 +16,7 @@ test('balayi flow inserts type step and limits people options', () => {
   assert.equal(ids.indexOf('type'), ids.indexOf('goal') + 1);
 
   const people = getOptionsForStep('people', 'balayi').map((o) => o.value);
-  assert.deepEqual(people, ['cift', 'tek']);
+  assert.deepEqual(people, ['cift']);
   assert.ok(!people.includes('cocuklu-aile'));
   assert.ok(!people.includes('aile'));
 });

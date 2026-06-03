@@ -62,7 +62,7 @@ export const GOAL_FLOW = {
   },
   balayi: {
     typeValues: ['villa-butik', 'luks', 'deniz-resort'],
-    peopleValues: ['cift', 'tek'],
+    peopleValues: ['cift'],
     expectationValues: [
       'Lüks deneyim',
       'Spa',
@@ -81,8 +81,9 @@ export const GOAL_FLOW = {
       subtitle: 'Butik, resort veya villa konforu öneri skorunu doğrudan etkiler.'
     },
     peopleStep: {
-      title: 'Balayı seyahatiniz',
-      subtitle: 'Çoğunlukla çift planlanır; kişi sayısını netleştirmeniz yeterli.'
+      title: 'Balayı çift seyahati',
+      subtitle:
+        'Balayı çiftler için planlanır; konaklama ve paket önerileri iki kişilik profilinize göre hazırlanır.'
     },
     expectationsStep: {
       title: 'Balayında öncelikleriniz',
