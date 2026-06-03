@@ -37,6 +37,18 @@
   text-decoration: none;
 }
 
+.seo-logo.ib-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+}
+
+.seo-logo .ib-brand-logo-nav {
+  display: block;
+  height: 32px;
+  width: auto;
+  max-width: min(160px, 40vw);
+}
+
 .seo-nav {
   display: flex;
   flex-wrap: wrap;

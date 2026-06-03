@@ -1,0 +1,159 @@
+/**
+ * Vertical headers — primary category row + “Bu sayfa” overflow menu (Auto, Konut, …).
+ */
+
+.ib-vertical-header nav[id$='-nav'],
+.housing-header.ib-vertical-header #housing-nav {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem 0.65rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.ib-vertical-header .ib-vertical-nav-primary {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.35rem 0.65rem;
+  min-width: 0;
+}
+
+.ib-vertical-header .ib-vertical-nav-more {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ib-vertical-header .ib-vertical-nav-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 36px;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--vacation-border, #e5e7eb);
+  border-radius: 10px;
+  background: #fff;
+  color: #334155;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ib-vertical-header .ib-vertical-nav-more-btn:hover,
+.ib-vertical-header .ib-vertical-nav-more-btn[aria-expanded='true'] {
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #1d4ed8;
+  background: #f8fafc;
+}
+
+.ib-vertical-header .ib-vertical-nav-more-btn::after {
+  content: '';
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-1px);
+  transition: transform 0.15s ease;
+}
+
+.ib-vertical-header .ib-vertical-nav-more-btn[aria-expanded='true']::after {
+  transform: rotate(-135deg) translateY(1px);
+}
+
+.ib-vertical-header .ib-vertical-nav-more-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 120;
+  min-width: 200px;
+  padding: 0.35rem;
+  border: 1px solid var(--vacation-border, #e5e7eb);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.ib-vertical-header .ib-vertical-nav-more-menu:not([hidden]) {
+  display: block;
+}
+
+.ib-vertical-header .ib-vertical-nav-more-menu a {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ib-vertical-header .ib-vertical-nav-more-menu a:hover {
+  background: #f1f5f9;
+  color: #1d4ed8;
+}
+
+@media (max-width: 768px) {
+  .ib-vertical-header .ib-vertical-nav-primary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+  }
+
+  .ib-vertical-header .ib-vertical-nav-more {
+    width: 100%;
+    margin-top: 0.35rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid var(--vacation-border, #e2e8f0);
+  }
+
+  .ib-vertical-header .ib-vertical-nav-more-btn {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .ib-vertical-header .ib-vertical-nav-more-menu {
+    position: static;
+    display: flex !important;
+    flex-direction: column;
+    min-width: 0;
+    margin-top: 0.25rem;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .ib-vertical-header .ib-vertical-nav-more-menu[hidden] {
+    display: flex !important;
+  }
+
+  .ib-vertical-header .ib-vertical-nav-more-menu::before {
+    content: 'Bu sayfa';
+    display: block;
+    padding: 0.4rem 0.65rem 0.15rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 769px) {
+  .ib-vertical-header nav[id$='-nav'] a,
+  .ib-vertical-header .ib-vertical-nav-more-btn {
+    font-size: 0.78rem;
+  }
+
+  .ib-vertical-header .ib-vertical-nav-primary {
+    gap: 0.3rem 0.45rem;
+  }
+}

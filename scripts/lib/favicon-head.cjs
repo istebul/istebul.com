@@ -9,4 +9,12 @@ const FAVICON_HEAD = `  <meta name="theme-color" content="#2563eb">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
   <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">`;
 
-module.exports = { FAVICON_HEAD };
+const SEO_BRAND_LOGO = `<a class="seo-logo ib-brand-lockup" href="/" aria-label="isteBul ana sayfa">
+      <img class="ib-brand-logo-nav" src="/assets/brand/istebul-logo-nav.svg" alt="" width="120" height="28" decoding="async">
+    </a>`;
+
+const CORPORATE_BRAND_LOGO = `<a class="logo ib-corporate-brand" href="/" aria-label="isteBul ana sayfa">
+      <img class="ib-brand-logo-nav" src="/assets/brand/istebul-logo-nav.svg" alt="" width="120" height="28" decoding="async">
+    </a>`;
+
+module.exports = { FAVICON_HEAD, SEO_BRAND_LOGO, CORPORATE_BRAND_LOGO };

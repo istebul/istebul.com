@@ -2,6 +2,7 @@
 /* Manifest: scripts/lib/css-bundles.cjs */
 
 @import '../vertical-brand-shell-v1.css';
+@import '../vertical-nav-more-v1.css';
 @import '../vertical-category-heroes-v1.css';
 @import '../site-social-links-v1.css';
 @import '../premium-decision-dashboard.css';

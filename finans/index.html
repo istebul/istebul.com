@@ -30,29 +30,48 @@
   <link rel="stylesheet" href="/css/vertical-category-heroes-v1.css?v=1">
   <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
   <link rel="stylesheet" href="/css/finansman-results-v2.css?v=1">
-  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=5">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=6">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/finans/finans-app.js"></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Finansman simülasyonu onay mı?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Vade ve ödeme projeksiyonu bilgilendirme amaçlıdır."}},{"@type":"Question","name":"Hangi senaryolar karşılaştırılır?","acceptedAnswer":{"@type":"Answer","text":"Kredi tutarı, vade, peşinat ve aylık taşıma kapasitesi kombinasyonları."}},{"@type":"Question","name":"isteBul banka mı?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Karar destek platformudur; teklifler partner veya kullanıcı kaynaklıdır."}}]}</script>
 </head>
 <body class="vacation-page finans-page">
-  <header class="vacation-header">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--finans">
     <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
       <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
       <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">Finansman</span>
     </a>
     <button class="vacation-nav-toggle" type="button" aria-controls="finans-nav" aria-expanded="false">Menü</button>
     <nav id="finans-nav" aria-label="Ana navigasyon">
-      <a href="/" data-i18n="nav.home">Ana Sayfa</a>
-      <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
-      <a href="/konut/" data-i18n="vertical.konut">Konut</a>
-      <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
-      <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
-      <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
-      <a href="/finans/" class="is-active" data-i18n="vertical.finans">Finansman</a>
-      <a href="/metodoloji/" data-i18n="nav.methodology">Metodoloji</a>
-      <a href="/iletisim.html" data-i18n="nav.contact">İletişim</a>
+      <div class="ib-vertical-nav-primary">
+        <a href="/" data-i18n="nav.home">Ana sayfa</a>
+        <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
+        <a href="/konut/" data-i18n="vertical.konut">Konut</a>
+        <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
+        <a href="/finans/" class="is-active" aria-current="page" data-i18n="vertical.finans">Finansman</a>
+        <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
+        <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
+      </div>
+      <div class="ib-vertical-nav-more">
+        <button
+          type="button"
+          class="ib-vertical-nav-more-btn"
+          id="finans-nav-more-btn"
+          aria-expanded="false"
+          aria-controls="finans-nav-more-menu"
+          aria-haspopup="menu"
+        >
+          Bu sayfa
+        </button>
+        <div class="ib-vertical-nav-more-menu" id="finans-nav-more-menu" role="menu" hidden>
+          <a href="#finans-flow" role="menuitem">Analiz başlat</a>
+          <a href="#finans-results" role="menuitem">Sonuçlar</a>
+          <a href="/metodoloji/" role="menuitem" data-i18n="nav.methodology">Metodoloji</a>
+          <a href="/iletisim.html" role="menuitem" data-i18n="nav.contact">İletişim</a>
+        </div>
+      </div>
     </nav>
   </header>
 

@@ -2,6 +2,7 @@
 /* Manifest: scripts/lib/css-bundles.cjs */
 
 @import '../vertical-brand-shell-v1.css';
+@import '../vertical-nav-more-v1.css';
 @import '../auto-hero-dashboard-v1.css';
 @import '../auto-results-v2.css';
 @import '../auto-shell-unified-v1.css';

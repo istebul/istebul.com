@@ -7,7 +7,7 @@ const {
   renderSiteSocialFooterNav,
   renderSiteSocialBootScripts
 } = require('./site-social-footer.cjs');
-const { FAVICON_HEAD } = require('./favicon-head.cjs');
+const { FAVICON_HEAD, SEO_BRAND_LOGO } = require('./favicon-head.cjs');
 
 const root = path.resolve(__dirname, '../..');
 const SEO_BUILD_DATE = new Date().toISOString().slice(0, 10);
@@ -110,6 +110,7 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra }) {
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(ogImage)}">
   <link rel="stylesheet" href="/css/seo-landing.css">
+  <link rel="stylesheet" href="/css/ib-brand-logo-v1.css">
   <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=7">
   <link rel="stylesheet" href="/css/istebul-premium-final-v7.css?v=7">
   <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })}</script>`;
@@ -169,7 +170,7 @@ function resolveRelatedLinks(page, landingBySlug, hubsBySlug) {
 
 function renderSeoNav() {
   return `<header class="seo-header">
-    <a class="seo-logo" href="/">isteBul</a>
+    ${SEO_BRAND_LOGO}
     <nav class="seo-nav" aria-label="Ana navigasyon">
       <a href="/auto/">Karar Analizi</a>
       <a href="/karar-asistani/">Karar Asistanı</a>

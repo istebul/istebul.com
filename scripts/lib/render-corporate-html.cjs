@@ -1,6 +1,7 @@
 'use strict';
 
 const { escapeHtml, absoluteUrl } = require('./seo.cjs');
+const { FAVICON_HEAD, CORPORATE_BRAND_LOGO } = require('./favicon-head.cjs');
 const {
   renderSiteSocialFooterNav,
   renderSiteSocialBootScripts
@@ -28,7 +29,7 @@ function renderCorporateNav(activePath) {
     })
     .join('\n      ');
   return `<header class="auto-header corporate-header">
-    <a class="logo" href="/">isteBul</a>
+    ${CORPORATE_BRAND_LOGO}
     <nav class="corporate-nav" aria-label="Ana navigasyon">
       ${links}
     </nav>
@@ -59,6 +60,7 @@ function renderHeadBlock({ site, title, description, canonicalPath, jsonLd }) {
   <meta name="robots" content="index, follow, max-image-preview:large">
   <link rel="canonical" href="${escapeHtml(canonical)}">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+  ${FAVICON_HEAD}
   <meta property="og:locale" content="${escapeHtml(site.locale)}">
   <meta property="og:site_name" content="${escapeHtml(site.siteName)}">
   <meta property="og:title" content="${escapeHtml(title)}">
@@ -69,7 +71,8 @@ function renderHeadBlock({ site, title, description, canonicalPath, jsonLd }) {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
-  <link rel="stylesheet" href="/css/auto.css?v=4">
+  <link rel="stylesheet" href="/css/ib-brand-logo-v1.css">
+  <link rel="stylesheet" href="/css/corporate-shell.css?v=1">
   <link rel="stylesheet" href="/css/corporate-pages.css?v=1">${ld}`;
 }
 

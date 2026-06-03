@@ -180,7 +180,7 @@ export function mountVerticalProductNav() {
   const run = () => {
     document
       .querySelectorAll(
-        '.vacation-header, .housing-header, .ib-vertical-header--auto, .ib-vertical-header--konut'
+        'header.ib-vertical-header, .vacation-header.ib-vertical-header, .housing-header.ib-vertical-header'
       )
       .forEach((header) => enhanceVerticalHeader(header));
   };

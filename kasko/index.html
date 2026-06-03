@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="/css/vertical-themes.css">
   <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
   <link rel="stylesheet" href="/css/sigorta-results-v2.css?v=1">
-  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=5">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=6">
   <link rel="stylesheet" href="/css/vertical-category-heroes-v1.css?v=1">
   <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
   <script src="/env.js" defer></script>
@@ -36,18 +36,41 @@
   <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
 </head>
 <body class="vacation-page kasko-page sigorta-page">
-  <header class="vacation-header">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--kasko">
     <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
       <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
       <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">Kasko</span>
     </a>
     <button class="vacation-nav-toggle" type="button" aria-controls="kasko-nav" aria-expanded="false">Menü</button>
     <nav id="kasko-nav" aria-label="Ana navigasyon">
-      <a href="/">Ana Sayfa</a>
-      <a href="/auto/">Araç</a>
-      <a href="/sigorta/">Sigorta</a>
-      <a href="/kasko/" class="is-active" aria-current="page">Kasko</a>
-      <a href="/metodoloji/">Metodoloji</a>
+      <div class="ib-vertical-nav-primary">
+        <a href="/" data-i18n="nav.home">Ana sayfa</a>
+        <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
+        <a href="/konut/" data-i18n="vertical.konut">Konut</a>
+        <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
+        <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+        <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
+        <a href="/kasko/" class="is-active" aria-current="page" data-i18n="nav.catKasko">Kasko</a>
+      </div>
+      <div class="ib-vertical-nav-more">
+        <button
+          type="button"
+          class="ib-vertical-nav-more-btn"
+          id="kasko-nav-more-btn"
+          aria-expanded="false"
+          aria-controls="kasko-nav-more-menu"
+          aria-haspopup="menu"
+        >
+          Bu sayfa
+        </button>
+        <div class="ib-vertical-nav-more-menu" id="kasko-nav-more-menu" role="menu" hidden>
+          <a href="#kasko-flow" role="menuitem">Analiz başlat</a>
+          <a href="#kasko-results" role="menuitem">Sonuçlar</a>
+          <a href="/metodoloji/" role="menuitem" data-i18n="nav.methodology">Metodoloji</a>
+          <a href="/iletisim.html" role="menuitem" data-i18n="nav.contact">İletişim</a>
+        </div>
+      </div>
     </nav>
   </header>
 

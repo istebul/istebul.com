@@ -37,29 +37,48 @@
   <link rel="stylesheet" href="/css/vertical-themes.css">
   <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
   <link rel="stylesheet" href="/css/sigorta-results-v2.css?v=1">
-  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=5">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=6">
   <link rel="stylesheet" href="/css/sigorta-flow-visible-v1.css?v=1">
   <link rel="stylesheet" href="/css/sigorta-hero-v1.css?v=1">
   <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.istebul.com/#organization","name":"isteBul","url":"https://www.istebul.com/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ana sayfa","item":"https://www.istebul.com/"},{"@type":"ListItem","position":2,"name":"Sigorta","item":"https://www.istebul.com/sigorta/"}]},{"@type":"WebApplication","name":"isteBul Sigorta Karar Analizi","url":"https://www.istebul.com/sigorta/","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"Koruma, teminat ve prim verimliliği skorları ile sigorta karar desteği.","inLanguage":"tr-TR"},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Sigorta analizi poliçe taahhüdü mü?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Skor ve prim bandı bilgilendirme amaçlıdır; bağlayıcı teklif sigorta şirketine aittir."}},{"@type":"Question","name":"Hangi sigorta türleri desteklenir?","acceptedAnswer":{"@type":"Answer","text":"Araç, konut, sağlık ve seyahat sigortası profilleri modellenir."}}]}]}</script>
 </head>
 <body class="vacation-page sigorta-page">
-  <header class="vacation-header">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--sigorta">
     <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
       <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
       <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">Sigorta</span>
     </a>
     <button class="vacation-nav-toggle" type="button" aria-controls="sigorta-nav" aria-expanded="false">Menü</button>
     <nav id="sigorta-nav" aria-label="Ana navigasyon">
-      <a href="/" data-i18n="nav.home">Ana Sayfa</a>
-      <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
-      <a href="/konut/" data-i18n="vertical.konut">Konut</a>
-      <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
-      <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
-      <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
-      <a href="/sigorta/" class="is-active">Sigorta</a>
-      <a href="/metodoloji/" data-i18n="nav.methodology">Metodoloji</a>
-      <a href="/iletisim.html" data-i18n="nav.contact">İletişim</a>
+      <div class="ib-vertical-nav-primary">
+        <a href="/" data-i18n="nav.home">Ana sayfa</a>
+        <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
+        <a href="/konut/" data-i18n="vertical.konut">Konut</a>
+        <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
+        <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+        <a href="/sigorta/" class="is-active" aria-current="page">Sigorta</a>
+        <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
+      </div>
+      <div class="ib-vertical-nav-more">
+        <button
+          type="button"
+          class="ib-vertical-nav-more-btn"
+          id="sigorta-nav-more-btn"
+          aria-expanded="false"
+          aria-controls="sigorta-nav-more-menu"
+          aria-haspopup="menu"
+        >
+          Bu sayfa
+        </button>
+        <div class="ib-vertical-nav-more-menu" id="sigorta-nav-more-menu" role="menu" hidden>
+          <a href="#sigorta-flow" role="menuitem">Analiz başlat</a>
+          <a href="#sigorta-results" role="menuitem">Sonuçlar</a>
+          <a href="/metodoloji/" role="menuitem" data-i18n="nav.methodology">Metodoloji</a>
+          <a href="/iletisim.html" role="menuitem" data-i18n="nav.contact">İletişim</a>
+        </div>
+      </div>
     </nav>
   </header>
 

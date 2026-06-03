@@ -26,8 +26,8 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://www.istebul.com/assets/images/konut-hero-1280.jpg">
   <link rel="stylesheet" href="/css/real-estate.css?v=2">
-  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=5">
-  <link rel="stylesheet" href="/css/bundles/konut-page.bundle.css?v=3">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=6">
+  <link rel="stylesheet" href="/css/bundles/konut-page.bundle.css?v=4">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/real-estate/real-estate-app.js"></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
@@ -50,15 +50,33 @@
         Menü
       </button>
       <nav id="housing-nav" aria-label="Ana navigasyon">
-        <a href="/" data-i18n="nav.home">Ana sayfa</a>
-        <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
-        <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
-        <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
-        <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
-        <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
-        <a href="/konut/" class="is-active" aria-current="page" data-i18n="vertical.konut">Konut</a>
-        <a href="/metodoloji/" data-i18n="nav.methodology">Metodoloji</a>
-        <a href="/iletisim.html" data-i18n="nav.contact">İletişim</a>
+        <div class="ib-vertical-nav-primary">
+          <a href="/" data-i18n="nav.home">Ana sayfa</a>
+          <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
+          <a href="/konut/" class="is-active" aria-current="page" data-i18n="vertical.konut">Konut</a>
+          <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
+          <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+          <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
+          <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
+        </div>
+        <div class="ib-vertical-nav-more">
+          <button
+            type="button"
+            class="ib-vertical-nav-more-btn"
+            id="housing-nav-more-btn"
+            aria-expanded="false"
+            aria-controls="housing-nav-more-menu"
+            aria-haspopup="menu"
+          >
+            Bu sayfa
+          </button>
+          <div class="ib-vertical-nav-more-menu" id="housing-nav-more-menu" role="menu" hidden>
+            <a href="#housing-flow" role="menuitem">Analiz başlat</a>
+            <a href="#housing-results" role="menuitem">Sonuçlar</a>
+            <a href="/metodoloji/" role="menuitem" data-i18n="nav.methodology">Metodoloji</a>
+            <a href="/iletisim.html" role="menuitem" data-i18n="nav.contact">İletişim</a>
+          </div>
+        </div>
       </nav>
     </div>
   </header>

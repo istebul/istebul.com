@@ -28,29 +28,48 @@
   <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
   <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
   <link rel="stylesheet" href="/css/tatil-results-v2.css?v=1">
-  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=5">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=6">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/tatil/tatil-app.js"></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Tatil karar asistanı ne ölçer?","acceptedAnswer":{"@type":"Answer","text":"Bütçe, sezon, konfor ve tercihlerinize göre tahmini maliyet ve uygunluk skoru üretir."}},{"@type":"Question","name":"Fiyat garantisi var mı?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Gösterilen tutarlar tahmini analizdir; rezervasyon koşulları sağlayıcıya bağlıdır."}},{"@type":"Question","name":"Kişisel veriler nasıl işlenir?","acceptedAnswer":{"@type":"Answer","text":"KVKK kapsamında; ayrıntılar gizlilik politikasında."}}]}</script>
 </head>
 <body class="vacation-page">
-  <header class="vacation-header">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--tatil">
     <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
       <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
       <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">Tatil</span>
     </a>
     <button class="vacation-nav-toggle" type="button" aria-controls="vacation-nav" aria-expanded="false">Menü</button>
     <nav id="vacation-nav" aria-label="Ana navigasyon">
-      <a href="/" data-i18n="nav.home">Ana Sayfa</a>
-      <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
-      <a href="/konut/" data-i18n="vertical.konut">Konut</a>
-      <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
-      <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
-      <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
-      <a href="/tatil/" class="is-active" data-i18n="vertical.tatil">Tatil</a>
-      <a href="/hakkimizda.html" data-i18n="nav.about">Hakkımızda</a>
-      <a href="/iletisim.html" data-i18n="nav.contact">İletişim</a>
+      <div class="ib-vertical-nav-primary">
+        <a href="/" data-i18n="nav.home">Ana sayfa</a>
+        <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
+        <a href="/konut/" data-i18n="vertical.konut">Konut</a>
+        <a href="/tatil/" class="is-active" aria-current="page" data-i18n="vertical.tatil">Tatil</a>
+        <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+        <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
+        <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
+      </div>
+      <div class="ib-vertical-nav-more">
+        <button
+          type="button"
+          class="ib-vertical-nav-more-btn"
+          id="vacation-nav-more-btn"
+          aria-expanded="false"
+          aria-controls="vacation-nav-more-menu"
+          aria-haspopup="menu"
+        >
+          Bu sayfa
+        </button>
+        <div class="ib-vertical-nav-more-menu" id="vacation-nav-more-menu" role="menu" hidden>
+          <a href="#vacation-flow" role="menuitem">Analiz başlat</a>
+          <a href="#vacation-results" role="menuitem">Sonuçlar</a>
+          <a href="/metodoloji/" role="menuitem" data-i18n="nav.methodology">Metodoloji</a>
+          <a href="/iletisim.html" role="menuitem" data-i18n="nav.contact">İletişim</a>
+        </div>
+      </div>
     </nav>
   </header>
 
