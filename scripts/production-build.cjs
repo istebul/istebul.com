@@ -743,5 +743,17 @@ if (gscCode) {
   );
 }
 
+const {
+  getGa4MeasurementId,
+  applyGa4ConsentHeadToHtmlFiles
+} = require('./lib/ga4-consent-head.cjs');
+const ga4Id = getGa4MeasurementId(process.env, root);
+if (ga4Id) {
+  const ga4Result = applyGa4ConsentHeadToHtmlFiles(dist, { measurementId: ga4Id });
+  console.log(`[ga4] consent-mode head snippet injected into ${ga4Result.injected} HTML file(s)`);
+} else {
+  console.warn('[ga4] GA4_MEASUREMENT_ID not set — skip gtag head (see docs/ZIYARETCI_ANALITIK_KURULUM.md)');
+}
+
 console.log('Production build complete: dist/');
 console.log('Built ' + manifest.files.length + ' files.');

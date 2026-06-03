@@ -39,7 +39,19 @@ function loadClarity(projectId) {
 }
 
 function loadGa4(measurementId) {
-  if (!measurementId || document.querySelector('script[data-analytics-provider="ga4"]')) return;
+  if (!measurementId) return;
+
+  if (typeof window.gtag === 'function') {
+    window.gtag('consent', 'update', {
+      analytics_storage: 'granted',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied'
+    });
+    return;
+  }
+
+  if (document.querySelector('script[data-analytics-provider="ga4"]')) return;
 
   window.dataLayer = window.dataLayer || [];
   if (!window.gtag) {
@@ -48,6 +60,13 @@ function loadGa4(measurementId) {
     };
   }
   window.gtag('js', new Date());
+  window.gtag('consent', 'default', {
+    analytics_storage: 'denied',
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    wait_for_update: 500
+  });
   window.gtag('config', measurementId, { anonymize_ip: true });
 
   const script = document.createElement('script');
