@@ -484,7 +484,8 @@ html.ib-ds-v4 .ib-vertical-header--auto a:hover {
 }
 
 /* ID-scoped nav lists beat .header a — enforce readable ink on light header */
-html.ib-ds-v4 .housing-header .housing-brand {
+html.ib-ds-v4 .housing-header .housing-brand,
+html.ib-ds-v4 .housing-header .ib-vertical-brand__word {
   color: var(--ib-v5-ink);
   font-weight: 800;
 }

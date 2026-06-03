@@ -66,7 +66,8 @@ const KONUT_PAGE_EXTENSION = [
   'css/site-social-links-v1.css',
   'css/premium-decision-dashboard.css',
   'css/konut-results-v2.css',
-  'css/konut-header-premium-v1.css'
+  'css/konut-header-premium-v1.css',
+  'css/konut-wizard-cards-v1.css'
 ];
 
 const BUNDLES = {

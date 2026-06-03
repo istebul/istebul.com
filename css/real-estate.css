@@ -127,7 +127,21 @@ html:has(body.housing-page) {
 .housing-option-card, .housing-chip {
   min-height: 44px; border-radius: 12px; border: 1px solid var(--housing-border); background: rgba(7, 14, 33, .86); color: var(--housing-text); cursor: pointer; padding: 12px; text-align: left;
 }
-.housing-option-card.is-selected, .housing-chip.is-selected { border-color: rgba(53, 209, 255, .9); background: rgba(53, 209, 255, .16); }
+.housing-option-card.is-selected, .housing-chip.is-selected { border-color: rgba(53, 209, 255, .9); background: rgba(53, 209, 255, .16); color: var(--housing-text); }
+
+/* Wizard (beyaz adım kartı): koyu chip stili devre dışı — konut-wizard-cards-v1.css ile tamamlanır */
+.housing-step-card .housing-option-card,
+.housing-step-card .housing-chip {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+.housing-step-card .housing-option-card.is-selected,
+.housing-step-card .housing-chip.is-selected {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #1e40af;
+}
 .housing-chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .housing-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
