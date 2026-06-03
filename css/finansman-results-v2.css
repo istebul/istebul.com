@@ -427,3 +427,30 @@
   font-weight: 800;
   color: var(--v2-accent);
 }
+
+.finansman-v2-bddk {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--v2-border);
+  background: var(--v2-elev);
+}
+
+.finansman-v2-bddk-note {
+  font-size: 0.85rem;
+  color: var(--v2-muted);
+}
+
+.finansman-v2-rate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.finansman-v2-rate-table th,
+.finansman-v2-rate-table td {
+  border: 1px solid var(--v2-border);
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+}

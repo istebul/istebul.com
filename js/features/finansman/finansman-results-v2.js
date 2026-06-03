@@ -465,6 +465,19 @@ function renderFinansmanResultsV2Html(model) {
 
       ${estimateNote}
 
+      <section class="finansman-v2-bddk" aria-label="BDDK bilgilendirme">
+        <h3>BDDK uyumlu bilgilendirme</h3>
+        <p class="finansman-v2-bddk-note">Gösterilen oranlar örnek bandıdır; gerçek teklif kredi notu, gelir belgesi ve banka politikasına göre değişir. isteBul banka veya kredi kuruluşu değildir.</p>
+        <table class="finansman-v2-rate-table">
+          <thead><tr><th>Senaryo</th><th>Örnek yıllık faiz bandı</th><th>36 ay taksit (örnek)</th></tr></thead>
+          <tbody>
+            <tr><td>Düşük risk profili</td><td>%38 – %42</td><td>${esc(formatTryAmount(model.totalCost?.monthlyPayment || 0))}</td></tr>
+            <tr><td>Orta risk profili</td><td>%42 – %48</td><td>Profilinize göre değişir</td></tr>
+            <tr><td>Yüksek nakit baskısı</td><td>%48+ veya revizyon</td><td>Kapasite altına çekilmeli</td></tr>
+          </tbody>
+        </table>
+      </section>
+
       <section class="finansman-v2-cost-grid" aria-label="Toplam maliyet görünümü">
         <h3>Toplam Maliyet Görünümü</h3>
         <dl class="finansman-v2-cost-dl">

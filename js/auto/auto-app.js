@@ -42,7 +42,7 @@ import { trackPaidFunnelStep } from '../features/growth/paid-acquisition.js';
 import { sendServerPaidConversion } from '../features/growth/paid-capi-bridge.js';
 import { escapeHtml } from '../core/security.js';
 import { safeJsonParse } from '../core/dom-safe.js';
-import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from '../core/storage-keys.js';
+import { STORAGE_KEYS, readStorageRaw, writeStorageRaw, readStoredJson, writeStoredJson, removeStorageRaw } from '../core/storage-keys.js';
 import { mountAutoResultsV2 } from './auto-results-v2.js';
 import { storeCheckoutIntentPayload } from '../core/checkout-intent.js';
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
@@ -127,6 +127,7 @@ const DECISION_FLOW_STEPS = [
   { key: 'fuel', label: 'Yakıt Tercihi', field: 'fuel' },
   { key: 'loan', label: 'Kredi Durumu', field: 'loan' },
   { key: 'priority', label: 'Önceliğiniz', field: 'city_ratio' },
+  { key: 'vehicle', label: 'Araç seçimi', field: null },
   { key: 'result', label: 'Sonuç', field: null }
 ];
 
@@ -160,6 +161,7 @@ function findWizardOptionLabel(fieldKey, rawValue) {
 
 function getDecisionStepStatuses() {
   const hasResults = Array.isArray(allResults) && allResults.length > 0;
+  const selectedVehicle = readSelectedVehicle();
 
   const steps = DECISION_FLOW_STEPS.map((spec) => {
     if (spec.key === 'result') {
@@ -167,6 +169,15 @@ function getDecisionStepStatuses() {
         ...spec,
         done: hasResults,
         value: hasResults ? 'Analiz hazır' : 'Bekliyor',
+        isCurrent: false
+      };
+    }
+
+    if (spec.key === 'vehicle') {
+      return {
+        ...spec,
+        done: Boolean(selectedVehicle),
+        value: selectedVehicle ? selectedVehicle.name : '—',
         isCurrent: false
       };
     }
@@ -181,12 +192,17 @@ function getDecisionStepStatuses() {
     };
   });
 
+  if (hasResults && selectedVehicle) {
+    steps[8].isCurrent = true;
+    return steps;
+  }
+
   if (hasResults) {
     steps[7].isCurrent = true;
     return steps;
   }
 
-  const firstIncomplete = steps.findIndex((step) => step.key !== 'result' && !step.done);
+  const firstIncomplete = steps.findIndex((step) => !['result', 'vehicle'].includes(step.key) && !step.done);
   const currentIndex = firstIncomplete === -1 ? 7 : firstIncomplete;
   steps[currentIndex].isCurrent = true;
   return steps;
@@ -409,6 +425,121 @@ function renderCompactRecommendationCard(vehicle, index) {
   `;
 }
 
+function readSelectedVehicle() {
+  return readStoredJson(STORAGE_KEYS.AUTO_SELECTED_VEHICLE, null, sessionStorage);
+}
+
+function writeSelectedVehicle(vehicle) {
+  if (!vehicle?.name) {
+    removeStorageRaw(STORAGE_KEYS.AUTO_SELECTED_VEHICLE, sessionStorage);
+    return;
+  }
+  writeStoredJson(
+    STORAGE_KEYS.AUTO_SELECTED_VEHICLE,
+    {
+      name: vehicle.name,
+      id: vehicle.id || vehicle.catalog_id || null,
+      index: Number.isFinite(Number(vehicle.index)) ? Number(vehicle.index) : null,
+      confirmedAt: new Date().toISOString()
+    },
+    sessionStorage
+  );
+}
+
+function clearSelectedVehicle() {
+  removeStorageRaw(STORAGE_KEYS.AUTO_SELECTED_VEHICLE, sessionStorage);
+}
+
+function scrollToVehicleSelection() {
+  document.getElementById('auto-vehicle-selection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showVehicleSelectionRequiredNotice() {
+  scrollToVehicleSelection();
+  const gate = document.getElementById('auto-vehicle-selection');
+  if (!gate) return;
+  gate.classList.add('auto-vehicle-selection--required');
+  gate.setAttribute('aria-invalid', 'true');
+  window.setTimeout(() => {
+    gate.classList.remove('auto-vehicle-selection--required');
+    gate.removeAttribute('aria-invalid');
+  }, 2400);
+}
+
+function renderVehicleSelectionGate(displayResults) {
+  const selected = readSelectedVehicle();
+  const cards = (displayResults || []).slice(0, 3);
+  if (!cards.length) return '';
+
+  return `
+    <section id="auto-vehicle-selection" class="auto-vehicle-selection" aria-labelledby="auto-vehicle-selection-title">
+      <div class="section-head">
+        <p class="kicker">Zorunlu adım</p>
+        <h2 id="auto-vehicle-selection-title">Tek bir aracı seçin</h2>
+        <p class="section-subtitle">Sonraki adımda kredi, sigorta veya bayi yönlendirmesi seçtiğiniz modele göre ilerler.</p>
+      </div>
+      <div class="auto-vehicle-selection-grid" role="radiogroup" aria-label="Araç seçimi">
+        ${cards
+          .map((vehicle, index) => {
+            const isSelected = selected?.name === vehicle.name;
+            const monthlyImpact = Math.round((Number(vehicle.costs?.total || 0) / 12) / 100) * 100;
+            return `
+          <button
+            type="button"
+            class="auto-vehicle-select-card auto-option-card ${isSelected ? 'is-selected' : ''}"
+            data-auto-vehicle-select="${index}"
+            data-vehicle-name="${escapeHtml(vehicle.name)}"
+            role="radio"
+            aria-checked="${isSelected ? 'true' : 'false'}"
+          >
+            <span class="auto-vehicle-select-rank">#${index + 1}</span>
+            <strong>${escapeHtml(vehicle.name)}</strong>
+            <span class="auto-vehicle-select-score">${escapeHtml(formatScoreOutOf100(vehicle.score))} uyum</span>
+            <span class="auto-vehicle-select-cost">~${escapeHtml(formatAmount(monthlyImpact))} / ay</span>
+            <span class="auto-vehicle-select-cta">${isSelected ? '✓ Seçildi' : 'Bu aracı seç'}</span>
+          </button>`;
+          })
+          .join('')}
+      </div>
+      ${
+        selected
+          ? `<p class="auto-vehicle-selection-confirmed">Seçiminiz: <strong>${escapeHtml(selected.name)}</strong> — aşağıdaki yönlendirme adımlarına geçebilirsiniz.</p>`
+          : `<p class="auto-vehicle-selection-hint text-muted-sm">Devam etmek için yukarıdan bir model seçin.</p>`
+      }
+    </section>
+  `;
+}
+
+function bindVehicleSelectionGate(root) {
+  if (!root) return;
+  root.querySelectorAll('[data-auto-vehicle-select]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const index = Number(button.getAttribute('data-auto-vehicle-select'));
+      const vehicle = allResults[index] || lastResults[index];
+      if (!vehicle) return;
+
+      writeSelectedVehicle({ ...vehicle, index });
+      trackAutoEvent('auto_vehicle_selected', {
+        vehicle: vehicle.name,
+        index,
+        score: vehicle.score
+      });
+      captureVehicleRecommendedSelected({
+        vehicle: vehicle.name,
+        interestType: 'vehicle_selected',
+        form: readForm(document.getElementById('auto-form'))
+      });
+
+      renderFilteredAutoResults();
+      mountAutoPartnerNextSteps();
+      renderDecisionStepper();
+
+      const partnerMount = document.getElementById('auto-partner-next-mount');
+      partnerMount?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+}
+
 function mountAutoPartnerNextSteps() {
   const mount = document.getElementById('auto-partner-next-mount');
   if (!mount) return;
@@ -419,32 +550,55 @@ function mountAutoPartnerNextSteps() {
     return;
   }
 
+  const selected = readSelectedVehicle();
   mount.hidden = false;
+
+  if (!selected?.name) {
+    mount.innerHTML = `
+      <div class="section-head">
+        <p class="kicker">Sonraki adım</p>
+        <h2>Önce aracınızı seçin</h2>
+        <p class="section-subtitle">Yukarıdaki listeden tek bir model seçerek kredi, sigorta veya bayi yönlendirmesine geçin.</p>
+      </div>
+      <button type="button" class="btn secondary" data-auto-scroll-selection>Araç seçimine git</button>
+    `;
+    mount.querySelector('[data-auto-scroll-selection]')?.addEventListener('click', scrollToVehicleSelection);
+    return;
+  }
+
+  const vehicleName = escapeHtml(selected.name);
   mount.innerHTML = `
     <div class="section-head">
       <p class="kicker">Sonraki adım</p>
-      <h2>Partner akışları</h2>
-      <p class="section-subtitle">İsteğe bağlı yönlendirme — bağlayıcı teklif değildir.</p>
+      <h2>${vehicleName} için yönlendirme</h2>
+      <p class="section-subtitle">Seçiminize göre tek bir partner akışı — bağlayıcı teklif değildir.</p>
     </div>
-    <div class="auto-partner-next">
-      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="finance">
+    <div class="auto-partner-next auto-partner-next--branch">
+      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="finance" data-vehicle="${vehicleName}" data-branch="credit">
         <strong>Kredi tekliflerini karşılaştır</strong>
-        <span>Örnek senaryo · banka onayı ayrıdır</span>
+        <span>Finansman simülasyonu · banka onayı ayrıdır</span>
       </button>
-      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="insurance">
+      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="insurance" data-vehicle="${vehicleName}" data-branch="insurance">
         <strong>Sigorta &amp; kasko teklifi</strong>
-        <span>Kuruma göre değişir</span>
+        <span>Seçilen modele göre prim bandı</span>
       </button>
-      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="report">
-        <strong>Ekspertiz randevusu</strong>
-        <span>Rapor kontrolü önerilir</span>
-      </button>
-      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(allResults[0]?.name || '')}">
+      <button type="button" class="auto-partner-next-card auto-interest-btn" data-interest="dealer_match" data-vehicle="${vehicleName}" data-branch="dealer">
         <strong>Bayi / satıcı görüşmesi</strong>
         <span>Uygun eşleşme talebi</span>
       </button>
     </div>
+    <p class="auto-partner-next-change text-muted-sm">
+      <button type="button" class="btn btn-ghost btn-sm" data-auto-change-vehicle>← Farklı araç seç</button>
+    </p>
   `;
+
+  mount.querySelector('[data-auto-change-vehicle]')?.addEventListener('click', () => {
+    clearSelectedVehicle();
+    renderFilteredAutoResults();
+    mountAutoPartnerNextSteps();
+    renderDecisionStepper();
+    scrollToVehicleSelection();
+  });
 }
 
 const ONBOARDING_STARTED_KEY = 'istebul_auto_onboarding_started';
@@ -656,8 +810,8 @@ function renderResultsLeaderSummary(topResult, { displayCount, totalCount }) {
           </div>
         </dl>
         <div class="auto-results-leader-cta">
-          <button type="button" class="btn primary auto-interest-btn" data-interest="vehicle_offer" data-vehicle="${escapeHtml(topResult.name || 'Araç önerisi')}">
-            Teklif sürecini başlat
+          <button type="button" class="btn primary" data-auto-scroll-selection>
+            Aracınızı seçin
           </button>
           <a class="btn secondary" href="#auto-results-cards">Tüm önerilere in</a>
         </div>
@@ -987,6 +1141,9 @@ async function updateLeadInterest(phone, interestType, vehicle = '', options = {
       marketing_consent: options.marketingConsent ? 'accepted' : '',
       interest_type: interestType,
       vehicle,
+      vehicle_catalog_id: options.vehicleCatalogId || readSelectedVehicle()?.id || '',
+      selection_confirmed_at: options.selectionConfirmedAt || readSelectedVehicle()?.confirmedAt || '',
+      branch_intent: options.branchIntent || '',
       finance_bank: options.financeBank || '',
       finance_loan_amount: options.financeLoanAmount || '',
       finance_term: options.financeTerm || '',
@@ -1281,7 +1438,9 @@ function clearLeadAbandonPending() {
   } catch {}
 }
 
-function openLeadModal(type, vehicle = '') {
+function openLeadModal(type, vehicle = '', leadOptions = {}) {
+  const selected = readSelectedVehicle();
+  vehicle = vehicle || selected?.name || '';
   trackAutoEvent('auto_modal_open', { interest_type: type, vehicle });
   markLeadAbandonPending({ interest_type: type, vehicle });
 
@@ -1496,7 +1655,10 @@ function openLeadModal(type, vehicle = '') {
           financeLoanAmount: financeComparison.loanAmount || '',
           financeTerm: financeComparison.term || '',
           financeMonthlyPayment: bestFinanceOffer?.monthly || '',
-          financeTotalPayment: bestFinanceOffer?.total || ''
+          financeTotalPayment: bestFinanceOffer?.total || '',
+          branchIntent: leadOptions.branchIntent || '',
+          vehicleCatalogId: leadOptions.vehicleCatalogId || selected?.id || '',
+          selectionConfirmedAt: leadOptions.selectionConfirmedAt || selected?.confirmedAt || ''
         });
 
         renderStep3();
@@ -1976,6 +2138,8 @@ function renderResults(results) {
       ${displayResults.slice(0, 3).map((vehicle, index) => renderCompactRecommendationCard(vehicle, index)).join('')}
     </div>
 
+    ${renderVehicleSelectionGate(displayResults)}
+
     <div class="auto-results-cards-detailed" aria-label="Detaylı model analizleri">
   ` + displayResults.map((vehicle, index) => {
     const monthlyImpact = Math.round((Number(vehicle.costs.total || 0) / 12) / 100) * 100;
@@ -2171,6 +2335,11 @@ function renderResults(results) {
 
   renderDecisionStepper();
   mountAutoPartnerNextSteps();
+  bindVehicleSelectionGate(root);
+
+  root.querySelectorAll('[data-auto-scroll-selection]').forEach((button) => {
+    button.addEventListener('click', scrollToVehicleSelection);
+  });
 
   root.querySelectorAll('[data-auto-open-detail]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -3180,6 +3349,7 @@ form.addEventListener('submit', async (event) => {
   const results = recommendVehicles(formData, vehicleCatalog);
   lastResults = results;
   allResults = [...results];
+  clearSelectedVehicle();
 
   trackAutoEvent('auto_analysis_started', formData);
 
@@ -3504,7 +3674,12 @@ Destek almak istiyorum.`;
 
   const financeCompareBtn = event.target.closest('.finance-compare-trigger');
   if (financeCompareBtn) {
-    openFinanceCompareModal(financeCompareBtn.dataset.vehicle || '');
+    const selected = readSelectedVehicle();
+    if (!selected?.name) {
+      showVehicleSelectionRequiredNotice();
+      return;
+    }
+    openFinanceCompareModal(financeCompareBtn.dataset.vehicle || selected.name);
     return;
   }
 
@@ -3512,7 +3687,18 @@ Destek almak istiyorum.`;
 
   if (interestBtn) {
     const interest = interestBtn.dataset.interest || 'finance';
-    const vehicle = interestBtn.dataset.vehicle || '';
+    const selected = readSelectedVehicle();
+    const requiresSelection =
+      interestBtn.dataset.requiresSelection === '1' ||
+      ['finance', 'finance_review', 'insurance', 'vehicle_offer', 'dealer_match', 'report'].includes(interest);
+
+    if (requiresSelection && !selected?.name && interest !== 'premium_report') {
+      showVehicleSelectionRequiredNotice();
+      return;
+    }
+
+    const vehicle = interestBtn.dataset.vehicle || selected?.name || '';
+    const branchIntent = interestBtn.dataset.branch || '';
 
     if (interest === 'premium_report' && !isProActive()) {
       trackAutoEvent('auto_premium_paywall_view', { interest_type: interest, vehicle });
@@ -3547,7 +3733,8 @@ Destek almak istiyorum.`;
       vehicle_offer: 'auto_vehicle_offer_click',
       premium_report: 'auto_premium_report_click',
       expert_consultation: 'auto_advisor_cta_clicked',
-      dealer_match: 'auto_dealer_cta_clicked'
+      dealer_match: 'auto_dealer_cta_clicked',
+      report: 'auto_expertise_click'
     };
 
     if (eventMap[interest]) {
@@ -3562,7 +3749,11 @@ Destek almak istiyorum.`;
       });
     }
 
-    openLeadModal(interest, vehicle);
+    openLeadModal(interest, vehicle, {
+      branchIntent,
+      vehicleCatalogId: selected?.id || '',
+      selectionConfirmedAt: selected?.confirmedAt || ''
+    });
   }
 });
 

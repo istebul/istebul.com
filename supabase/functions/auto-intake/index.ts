@@ -199,7 +199,7 @@ function getPartnerRoute(form: Record<string, unknown>) {
   ) {
     return "insurance_partner";
   }
-  if (interest === "vehicle_offer") return "dealer_partner";
+  if (interest === "vehicle_offer" || interest === "dealer_match") return "dealer_partner";
   if (interest === "premium_report") return "premium_report";
 
   return "general_sales";

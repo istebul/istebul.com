@@ -5,6 +5,7 @@ import { escapeHtml } from '../../core/security.js';
 import { SIGORTA_INTEREST_CTAS } from '../../sigorta/sigorta-config.js';
 import {
   buildEngineResult,
+  buildCoverageComparisonMatrix,
   optionLabel,
   resolveScoreLabel
 } from './sigorta-engine.js';
@@ -38,6 +39,7 @@ export function buildSigortaResultsV2Payload({ state = {}, results = [] }) {
   const premiumBand = primary?.metrics?.premiumBand;
 
   const pdfReportData = buildSigortaPdfPayload({ state, planTier, engine });
+  const coverageMatrix = buildCoverageComparisonMatrix(state);
 
   return {
     decisionScore: engine.decisionScore,
@@ -58,6 +60,7 @@ export function buildSigortaResultsV2Payload({ state = {}, results = [] }) {
     pdfReportData,
     planTier,
     premiumLabel: premiumBand ? formatTryAmount(premiumBand) : '—',
+    coverageMatrix,
     engine,
     ai
   };
@@ -101,6 +104,34 @@ function renderSigortaResultsV2Html(model) {
           <small>Tahmini prim: ${esc(model.premiumLabel)}</small>
         </article>
       </div>
+
+      <section class="sigorta-v2-coverage" aria-label="Teminat karşılaştırma">
+        <h3>Teminat karşılaştırma (${esc(model.coverageMatrix?.typeLabel || 'Sigorta')})</h3>
+        <table class="sigorta-v2-coverage-table">
+          <thead>
+            <tr>
+              <th>Teminat</th>
+              <th>Ekonomik</th>
+              <th>Dengeli</th>
+              <th>Geniş</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(model.coverageMatrix?.rows || [])
+              .map(
+                (row) => `
+              <tr>
+                <th scope="row">${esc(row.label)}</th>
+                <td>${esc(row.economic)}</td>
+                <td>${esc(row.balanced)}</td>
+                <td>${esc(row.premium)}</td>
+              </tr>`
+              )
+              .join('')}
+          </tbody>
+        </table>
+        <p class="sigorta-v2-coverage-note text-muted-sm">${esc(model.coverageMatrix?.disclaimer || '')}</p>
+      </section>
 
       <section class="sigorta-v2-risks" aria-label="Risk analizi">
         <h3>Risk analizi</h3>

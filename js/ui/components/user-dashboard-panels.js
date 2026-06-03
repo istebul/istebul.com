@@ -153,11 +153,19 @@ export function renderUserDashboardTabPanels(ctx = {}) {
         <li>
           <div>
             <strong>Hesap silme (KVKK)</strong>
-            <p>KVKK kapsamında hesap ve veri silme talebinizi iletebilirsiniz. En geç 30 gün içinde yanıtlanır.</p>
+            <p>KVKK kapsamında hesabınızı ve ilişkili verileri doğrudan silebilirsiniz. İşlem geri alınamaz; en geç 30 gün içinde tamamlanır.</p>
           </div>
-          <a href="mailto:info@istebul.com?subject=KVKK%20Hesap%20Silme%20Talebi" class="btn btn-outline btn-sm">Silme talebi gönder</a>
+          <button type="button" class="btn btn-outline btn-sm btn-danger-outline" id="account-delete-self-serve">Hesabımı sil</button>
+        </li>
+        <li>
+          <div>
+            <strong>E-posta ile başvuru</strong>
+            <p>Alternatif olarak KVKK başvuru e-postası gönderebilirsiniz.</p>
+          </div>
+          <a href="mailto:info@istebul.com?subject=KVKK%20Hesap%20Silme%20Talebi" class="btn btn-outline btn-sm">E-posta ile talep</a>
         </li>
       </ul>
+      <p id="account-delete-status" class="text-muted-sm" aria-live="polite"></p>
     </section>
 
     <section class="ud-panel ud-tab-panel" data-dashboard-panel="help" hidden>

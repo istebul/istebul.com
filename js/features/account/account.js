@@ -14,6 +14,7 @@ import {
 import { addAnalysisToCompareSelection, removeCompareSelection } from './dashboard-v2-store.js';
 import { bindPaywallV1 } from '../billing/paywall-v1.js';
 import { resolvePlanTier } from '../billing/pro-features.js';
+import { requestAccountDeletion } from '../auth/account-deletion.js';
 
 const ONBOARDING_KEY = STORAGE_KEYS.ACCOUNT_ONBOARDING_DONE;
 const NOTIFICATION_PREF_KEY = 'istebul_notification_preference';
@@ -482,6 +483,28 @@ export class AccountManager {
 
         root.querySelector('#account-reset-password')?.addEventListener('click', () => {
             this.auth?.showForgotPasswordForm?.(user.email);
+        });
+
+        root.querySelector('#account-delete-self-serve')?.addEventListener('click', async () => {
+            const confirmed = window.confirm(
+                'Hesabınız ve ilişkili veriler kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?'
+            );
+            if (!confirmed) return;
+
+            const statusEl = root.querySelector('#account-delete-status');
+            if (statusEl) statusEl.textContent = 'Silme işlemi başlatılıyor…';
+
+            const result = await requestAccountDeletion({ confirm: true });
+            if (result.ok) {
+                window.location.href = '/?account_deleted=1';
+                return;
+            }
+
+            if (statusEl) {
+                statusEl.textContent = result.error || 'Silme işlemi tamamlanamadı.';
+            } else {
+                this.ui?.showError?.(result.error || 'Silme işlemi tamamlanamadı.');
+            }
         });
 
         this.setTab(this.activeTab);

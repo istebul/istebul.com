@@ -217,6 +217,14 @@
         {
           "heading": "50/30/20 kuralı araç için",
           "body": "Gelirinizin belirli bir yüzdesini ulaşıma ayırın; kredi + işletme gideri bu tavanı aşmamalı. isteBul analizi önerilen üst bütçe bandını çıkarır."
+        },
+        {
+          "heading": "Aylık kalemler",
+          "body": "Kredi taksiti, yakıt/şarj, trafik sigortası, kasko, bakım, otopark ve vergi kalemlerini ayrı satırlarda toplayın. Tek satırda sadece taksit okumak yanıltıcı olabilir."
+        },
+        {
+          "heading": "Acil durum tamponu",
+          "body": "Araç bütçesi gelirin tamamını tüketmemeli; en az 3 aylık gider tamponu bırakın. Finansman analizi borç/gelir oranınızı bu çerçevede özetler."
         }
       ],
       "related": ["arac-kredisi-hesaplama", "finansman-rehberi"]
@@ -262,6 +270,28 @@
         }
       ],
       "related": ["tco-rehberi", "aylik-arac-butcesi-hesaplama"]
+    },
+    {
+      "slug": "konut-karar-rehberi",
+      "title": "Konut Karar Rehberi: Aidat, Kredi ve DASK | isteBul",
+      "description": "Konut alımında aidat, ipotek, DASK ve toplam sahip olma maliyeti. Türkiye için konut karar çerçevesi.",
+      "h1": "Konut karar rehberi",
+      "intro": "Konut kararı yalnızca metrekare fiyatı değildir; aidat, vergi, sigorta, ulaşım ve finansman birlikte okunmalıdır.",
+      "sections": [
+        {
+          "heading": "Aidat ve işletme giderleri",
+          "body": "Site aidatı, ısınma ve ortak alan giderleri aylık nakit akışını etkiler. TCO hesabına sabit gider olarak ekleyin."
+        },
+        {
+          "heading": "Konut kredisi ve peşinat",
+          "body": "Peşinat oranı taksiti düşürür; konut kredisi vadesi genelde uzundur. Toplam geri ödeme tutarını mutlaka hesaplayın."
+        },
+        {
+          "heading": "DASK ve konut sigortası",
+          "body": "Zorunlu DASK yanında yangın, deprem ve eşya teminatlarını karşılaştırın. /sigorta/ analizi koruma skorunu özetler."
+        }
+      ],
+      "related": ["finansman-rehberi", "tco-rehberi", "arac-alim-karar-asistani"]
     }
   ]
 }

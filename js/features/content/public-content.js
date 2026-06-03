@@ -65,15 +65,22 @@ function fallbackGuidesFromSeed(category, limit = 6) {
     id: `seed-${category}-${index}`,
     title: item.title,
     slug: item.slug,
-    body: item.excerpt || '',
+    body:
+      item.body ||
+      `${item.excerpt || ''}\n\nBu rehber bilgilendirme amaçlıdır; bağlayıcı teklif veya finansal tavsiye değildir. Kişisel profilinize göre analiz için ilgili karar aracını kullanabilirsiniz.`,
     excerpt: item.excerpt || '',
     category,
+    content_type: 'blog',
     cover_image_url: item.cover_image_url || '',
     is_featured: Boolean(item.is_featured),
     source_label: item.source_label || '',
-    source_url: '',
+    source_url: item.source_url || '',
     created_at: new Date().toISOString()
   }));
+}
+
+export function fetchAllGuideSeeds(limitPerCategory = 4) {
+  return GUIDE_CATEGORIES.flatMap((cat) => fallbackGuidesFromSeed(cat.id, limitPerCategory));
 }
 
 export const DEFAULT_CAMPAIGNS = Object.freeze([
@@ -171,15 +178,25 @@ export async function fetchActiveAnnouncements(limit = 12) {
 }
 
 export async function fetchPublishedPosts(limit = 12, category = '', contentType = 'blog') {
-  const cat = getGuideCategory(category)?.id;
-  const categoryFilter = cat ? `&category=eq.${encodeURIComponent(cat)}` : '';
+  const catKey = getGuideCategory(category)?.id;
+  const categoryFilter = catKey ? `&category=eq.${encodeURIComponent(catKey)}` : '';
   const type = String(contentType || 'blog').trim().toLowerCase();
   const typeFilter = type ? `&content_type=eq.${encodeURIComponent(type)}` : '';
   const rows = await restGet(
     `posts?select=${POST_SELECT}&is_published=eq.true${typeFilter}${categoryFilter}&order=is_featured.desc,created_at.desc&limit=${limit}`,
     { allowLegacyPosts: true }
   );
-  return rows.map(mapPostRow);
+  const mapped = rows.map(mapPostRow);
+  if (mapped.length) return mapped;
+
+  const fallbackCat = catKey || String(category || '').trim().toLowerCase();
+  if (fallbackCat && GUIDE_SEED_BY_CATEGORY[fallbackCat]) {
+    return fallbackGuidesFromSeed(fallbackCat, limit);
+  }
+  if (!fallbackCat && (type === 'blog' || type === 'news')) {
+    return fetchAllGuideSeeds(Math.max(3, Math.ceil(limit / GUIDE_CATEGORIES.length))).slice(0, limit);
+  }
+  return [];
 }
 
 export async function fetchPublishedPostsByCategory(category, limit = 6, contentType = 'news') {
@@ -196,7 +213,13 @@ export async function fetchPostBySlug(slug) {
   const rows = await restGet(
     `posts?select=${POST_SELECT}&is_published=eq.true&slug=eq.${safe}&limit=1`
   );
-  return rows[0] ? mapPostRow(rows[0]) : null;
+  if (rows[0]) return mapPostRow(rows[0]);
+
+  for (const category of Object.keys(GUIDE_SEED_BY_CATEGORY)) {
+    const hit = fallbackGuidesFromSeed(category, 50).find((post) => post.slug === String(slug || '').trim());
+    if (hit) return hit;
+  }
+  return null;
 }
 
 export function normalizePublicCampaign(raw, index = 0) {

@@ -555,3 +555,53 @@ export function getSigortaProgress(state = {}) {
 
   return rows;
 }
+
+const COVERAGE_ROWS_BY_TYPE = Object.freeze({
+  arac: [
+    { key: 'trafik', label: 'Zorunlu trafik', economic: 'Standart', balanced: 'Standart', premium: 'Standart' },
+    { key: 'kasko', label: 'Kasko ana teminat', economic: 'Dar', balanced: 'Geniş', premium: 'Geniş+' },
+    { key: 'cam', label: 'Cam / mini onarım', economic: 'Opsiyonel', balanced: 'Dahil', premium: 'Dahil' },
+    { key: 'ikame', label: 'İkame araç', economic: 'Yok', balanced: 'Sınırlı', premium: 'Geniş' },
+    { key: 'muafiyet', label: 'Muafiyet bandı', economic: 'Yüksek', balanced: 'Orta', premium: 'Düşük' }
+  ],
+  konut: [
+    { key: 'dask', label: 'DASK (zorunlu)', economic: 'Standart', balanced: 'Standart', premium: 'Standart' },
+    { key: 'yangin', label: 'Yangın / deprem', economic: 'Temel', balanced: 'Geniş', premium: 'Geniş+' },
+    { key: 'esya', label: 'Eşya teminatı', economic: 'Düşük limit', balanced: 'Orta limit', premium: 'Yüksek limit' },
+    { key: 'sorumluluk', label: 'Komşu sorumluluğu', economic: 'Opsiyonel', balanced: 'Dahil', premium: 'Dahil' }
+  ],
+  saglik: [
+    { key: 'yatarak', label: 'Yatarak tedavi', economic: 'Temel', balanced: 'Geniş', premium: 'Geniş+' },
+    { key: 'ayakta', label: 'Ayakta tedavi', economic: 'Sınırlı', balanced: 'Orta', premium: 'Geniş' },
+    { key: 'dogum', label: 'Doğum / check-up', economic: 'Hariç', balanced: 'Opsiyonel', premium: 'Dahil' },
+    { key: 'ag', label: 'Anlaşmalı kurum ağı', economic: 'Dar', balanced: 'Orta', premium: 'Geniş' }
+  ],
+  seyahat: [
+    { key: 'iptal', label: 'Seyahat iptali', economic: 'Hariç', balanced: 'Opsiyonel', premium: 'Dahil' },
+    { key: 'saglik', label: 'Yurt dışı sağlık', economic: 'Temel', balanced: 'Geniş', premium: 'Geniş+' },
+    { key: 'bagaj', label: 'Bagaj / gecikme', economic: 'Sınırlı', balanced: 'Dahil', premium: 'Dahil' },
+    { key: 'schengen', label: 'Schengen minimum', economic: 'Kontrol gerekir', balanced: 'Uyumlu', premium: 'Uyumlu+' }
+  ]
+});
+
+export function buildCoverageComparisonMatrix(state = {}) {
+  const type = state.insurance_type || 'arac';
+  const rows = COVERAGE_ROWS_BY_TYPE[type] || COVERAGE_ROWS_BY_TYPE.arac;
+  return {
+    insuranceType: type,
+    typeLabel: optionLabel('insurance_type', type),
+    packages: [
+      { id: 'economic', label: 'Ekonomik temel' },
+      { id: 'balanced', label: 'Dengeli koruma' },
+      { id: 'premium', label: 'Geniş teminat' }
+    ],
+    rows: rows.map((row) => ({
+      label: row.label,
+      economic: row.economic,
+      balanced: row.balanced,
+      premium: row.premium
+    })),
+    disclaimer:
+      'Teminat tablosu bilgilendirme amaçlıdır; poliçe şartnamesi nihai kaynaktır. Prim teklifi partner kurum onayına tabidir.'
+  };
+}

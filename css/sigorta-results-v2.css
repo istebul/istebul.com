@@ -547,3 +547,21 @@
   font-size: 0.95rem;
   line-height: 1.45;
 }
+
+.sigorta-v2-coverage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.sigorta-v2-coverage-table th,
+.sigorta-v2-coverage-table td {
+  border: 1px solid var(--v2-border);
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+}
+
+.sigorta-v2-coverage-note {
+  margin-top: 0.65rem;
+}

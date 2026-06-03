@@ -101,7 +101,7 @@ export async function hydrateHomeContentHubPreview(root = document) {
             })
           )
           .join('')
-      : renderContentEmpty('Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.')
+      : renderContentEmpty('Henüz duyuru yok. Karar rehberleri /rehber/ adresinde.')
   );
 
   mountPreviewList(
@@ -137,7 +137,7 @@ export async function hydrateHomeContentHubPreview(root = document) {
             })
           )
           .join('')
-      : renderContentEmpty('Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.')
+      : renderContentEmpty('Blog yazıları yükleniyor. SEO rehberleri: /rehber/')
   );
 
   window.lucide?.createIcons?.();
@@ -224,8 +224,8 @@ export async function renderBlogPage(root = document, categoryFilter = '') {
         .join('')}</div>`
     : renderContentEmpty(
         activeCategory
-          ? `${getGuideCategory(activeCategory)?.label || 'Bu kategori'} için henüz yayınlanmış rehber yok.`
-          : 'Henüz içerik yok. Yeni içerikler yakında burada yayınlanacak.'
+          ? `${getGuideCategory(activeCategory)?.label || 'Bu kategori'} için henüz yayınlanmış rehber yok. Statik rehberler: /rehber/`
+          : 'Henüz blog yazısı yok. Karar rehberleri /rehber/ adresinde ücretsiz okunabilir.'
       );
   window.lucide?.createIcons?.();
 }
