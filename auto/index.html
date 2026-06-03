@@ -56,9 +56,12 @@
   <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
   <link rel="preload" href="/assets/auto-runtime/ib-car.css" as="style">
   <link rel="stylesheet" href="/assets/auto-runtime/ib-car.css">
-  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=6">
-  <link rel="stylesheet" href="/css/bundles/auto-page.bundle.css?v=5">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=7">
+  <link rel="stylesheet" href="/css/bundles/auto-page.bundle.css?v=6">
+  <link rel="stylesheet" href="/css/corporate-footer-v1.css?v=2">
+  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=2">
   <script src="/env.js" defer></script>
+  <script type="module" src="/js/runtime/site-social-init.js"></script>
   <script src="/js/auto/auto-document-ready.js"></script>
   <script type="module" src="/js/runtime/vertical-locale-shell.js?v=2"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"isteBul Auto ücretsiz mi?","acceptedAnswer":{"@type":"Answer","text":"Temel karar analizi ücretsiz başlatılabilir; Pro plan derin rapor ve ek özellikler sunar. Koşullar planlar sayfasında güncellenir."}},{"@type":"Question","name":"Skor nasıl hesaplanır?","acceptedAnswer":{"@type":"Answer","text":"Skor kural tabanlı motordadır; bütçe, kullanım, TCO ve risk sinyalleri birleştirilir. AI skoru değiştirmez."}},{"@type":"Question","name":"TCO ne kadar güvenilir?","acceptedAnswer":{"@type":"Answer","text":"TCO varsayımlara dayalı bilgilendirme amaçlı projeksiyondur; bayi teklifi ve ekspertiz ile doğrulanmalıdır."}},{"@type":"Question","name":"Partner teklifleri zorunlu mu?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Lead paylaşımı yalnızca onayınızla yapılır."}}]}</script>
@@ -298,12 +301,13 @@
   <div id="auto-guides-hub-mount" class="container ib-guides-hub--compact" style="margin: 2rem auto 0; max-width: 1120px; padding: 0 1rem;"></div>
 
   <footer class="corporate-footer">
-    <div>
+    <div class="corporate-footer__brand">
       <strong>isteBul</strong>
-      <p>Araç alımında fiyat, kredi ve toplam maliyeti birlikte değerlendiren karar altyapısı. Bilgilendirme amaçlıdır; yatırım veya kredi taahhüdü içermez.</p>
-      <nav class="ib-site-social" data-site-social-links aria-label="Sosyal medya" hidden></nav>
+      <p>Karar zekâsı platformu — bilgilendirme amaçlıdır; finansal taahhüt içermez.</p>
+      <nav class="ib-site-social ib-site-social--footer" data-site-social-links aria-label="Sosyal medya" hidden></nav>
+      <p class="corporate-footer__legal"><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a> · <a href="/cerez-politikasi.html">Çerez politikası</a></p>
     </div>
-    <nav>
+    <nav class="corporate-footer__nav" aria-label="Site bağlantıları">
       <a href="/hakkimizda.html">Hakkımızda</a>
       <a href="/metodoloji/">Metodoloji</a>
       <a href="/iletisim.html">İletişim</a>
@@ -313,8 +317,10 @@
       <a href="/cerez-politikasi.html">Çerez politikası</a>
       <a href="/kullanim-sartlari.html">Kullanım şartları</a>
       <a href="/partner-olun.html">Partner olun</a>
+      <a href="/rehber/arac-kredisi-hesaplama/">Kredi rehberi</a>
+      <a href="/rehber/tco-rehberi/">TCO rehberi</a>
+      <a href="/auto/">Karar analizi</a>
     </nav>
-    <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi" data-i18n-aria="meta.language"></div>
   </footer>
   <a
     class="floating-whatsapp"

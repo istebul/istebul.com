@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 'use strict';
 
+/**
+ * Site-wide corporate/partner footer: structure, assets, social boot.
+ */
 const fs = require('fs');
 const path = require('path');
 const {
   renderCorporateFooter,
   replaceLegacyKvkkAnchor
 } = require('./lib/legal-footer.cjs');
+const { FOOTER_STYLESHEETS_HTML } = require('./lib/footer-assets.cjs');
 const { renderSiteSocialBootScripts } = require('./lib/site-social-footer.cjs');
 
 const root = path.join(__dirname, '..');
@@ -29,11 +33,20 @@ const CORPORATE_HTML = [
   'karar-moat.html',
   'abonelik-iptal.html',
   'offline.html',
-  'admin-panel.html'
+  'admin-panel.html',
+  'auto/index.html'
 ];
 
-const FOOTER_CSS = '<link rel="stylesheet" href="/css/corporate-footer-v1.css?v=1">';
-const SOCIAL_CSS = '<link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">';
+const PARTNER_TAGLINES = {
+  'partner-olun.html':
+    'Araç alım karar altyapısı ve nitelikli lead teslimatı. Bilgilendirme amaçlıdır; finansal taahhüt içermez.',
+  'partner-guven.html': 'Bilgilendirme amaçlıdır; hukuki danışmanlık yerine geçmez.',
+  'partner-planlar.html': 'Partner planları ve lead teslimat koşulları — bilgilendirme amaçlıdır.',
+  'partner-basvuru.html': 'Partner başvuru süreci KVKK ve sözleşme metinleriyle uyumludur.',
+  'partner-docs.html': 'API ve webhook dokümantasyonu — production davranışını yansıtır.',
+  'partner-closing-kit.html': 'Kurumsal satış materyalleri — bilgilendirme amaçlıdır.'
+};
+
 const COOKIE_CSS = '<link rel="stylesheet" href="/css/static-cookie-consent-v1.css?v=1">';
 const COOKIE_BANNER = `<div class="static-cookie-consent" id="static-cookie-consent" role="region" aria-label="Çerez tercihi" hidden>
   <p>Çerez ve analitik tercihinizi yönetin. <a href="/cerez-politikasi.html">Çerez politikası</a> · Ana sitede <a href="/">tam tercih paneli</a>.</p>
@@ -43,44 +56,63 @@ const COOKIE_BANNER = `<div class="static-cookie-consent" id="static-cookie-cons
   </div>
 </div>`;
 
-const PARTNER_TAGLINES = {
-  'partner-olun.html':
-    'Araç alım karar altyapısı ve nitelikli lead teslimatı. Bilgilendirme amaçlıdır; finansal taahhüt içermez.',
-  'partner-guven.html': 'Bilgilendirme amaçlıdır; hukuki danışmanlık yerine geçmez.',
-  'partner-planlar.html': 'Partner planları ve lead teslimat koşulları — bilgilendirme amaçlıdır.',
-  'partner-basvuru.html': 'Partner başvuru süreci KVKK ve sözleşme metinleriyle uyumludur.',
-  'partner-docs.html': 'API ve webhook dokümantasyonu — production davranışını yansıtır.',
-  'partner-onboarding.html': 'Self-serve partner onboarding — bilgilendirme amaçlıdır.',
-  'partner-closing-kit.html': 'Kurumsal satış ve kapanış materyalleri — bilgilendirme amaçlıdır.'
-};
-
 function injectFooterAssets(html) {
   let out = html;
   if (!out.includes('corporate-footer-v1.css')) {
     if (out.includes('corporate-shell.css')) {
       out = out.replace(
         /<link rel="stylesheet" href="\/css\/corporate-shell\.css[^"]*">/,
-        `$&\n  ${FOOTER_CSS}\n  ${SOCIAL_CSS}`
+        `$&\n  ${FOOTER_STYLESHEETS_HTML}`
+      );
+    } else if (out.includes('/css/bundles/auto-page.bundle.css')) {
+      out = out.replace(
+        /<link rel="stylesheet" href="\/css\/bundles\/auto-page\.bundle\.css[^"]*">/,
+        `$&\n  ${FOOTER_STYLESHEETS_HTML}`
       );
     } else if (out.includes('corporate-pages.css')) {
       out = out.replace(
         /<link rel="stylesheet" href="\/css\/corporate-pages\.css[^"]*">/,
-        `${FOOTER_CSS}\n  ${SOCIAL_CSS}\n  $&`
+        `${FOOTER_STYLESHEETS_HTML}\n  $&`
       );
     } else {
-      out = out.replace('</head>', `  ${FOOTER_CSS}\n  ${SOCIAL_CSS}\n</head>`);
+      out = out.replace('</head>', `  ${FOOTER_STYLESHEETS_HTML}\n</head>`);
     }
+  } else if (out.includes('corporate-footer-v1.css?v=1')) {
+    out = out.replace(/corporate-footer-v1\.css\?v=1/g, 'corporate-footer-v1.css?v=2');
+    out = out.replace(/site-social-links-v1\.css\?v=1/g, 'site-social-links-v1.css?v=2');
   }
   return out;
 }
 
 function syncCorporateFooter(html, rel) {
-  if (!html.includes('corporate-footer')) return html;
   const tagline = PARTNER_TAGLINES[rel];
   const footerHtml = renderCorporateFooter(tagline ? { tagline } : {});
-  const footerRe = /<footer class="corporate-footer">[\s\S]*?<\/footer>/;
-  if (!footerRe.test(html)) return html;
-  return html.replace(footerRe, footerHtml);
+
+  if (html.includes('corporate-footer__nav')) {
+    const footerRe = /<footer class="corporate-footer">[\s\S]*?<\/footer>/;
+    if (footerRe.test(html)) {
+      return html.replace(footerRe, footerHtml);
+    }
+    return html;
+  }
+
+  if (html.includes('class="corporate-footer"')) {
+    const footerRe = /<footer class="corporate-footer">[\s\S]*?<\/footer>/;
+    return html.replace(footerRe, footerHtml);
+  }
+
+  if (
+    rel.startsWith('partner-') ||
+    rel === 'karar-moat.html' ||
+    rel === 'auto/index.html'
+  ) {
+    return html.replace(
+      /(\s*<script src="\/env\.js"|<\s*script type="module" src="\/js\/corporate)/,
+      `\n  ${footerHtml}\n$1`
+    );
+  }
+
+  return html;
 }
 
 function stripSeoFooterLinks(html) {
@@ -88,6 +120,21 @@ function stripSeoFooterLinks(html) {
     /<nav class="seo-footer-links"[\s\S]*?<\/nav>\s*(?=<\/footer>)/,
     ''
   );
+}
+
+function normalizeBodyScripts(html) {
+  let out = html;
+  out = out.replace(
+    /<link rel="stylesheet" href="\/css\/site-social-links-v1\.css[^"]*">\s*<script src="\/env\.js" defer><\/script>\s*<script type="module" src="\/js\/runtime\/site-social-init\.js"><\/script>\s*$/m,
+    ''
+  );
+  if (out.includes('data-site-social-links') && !out.includes('site-social-init.js')) {
+    out = out.replace(
+      /(<script src="\/env\.js" defer><\/script>)/,
+      `$1\n  <script type="module" src="/js/runtime/site-social-init.js"></script>`
+    );
+  }
+  return out;
 }
 
 function injectCookieAssets(html) {
@@ -100,9 +147,6 @@ function injectCookieAssets(html) {
   }
   if (!out.includes('src="/env.js"')) {
     out = out.replace('</body>', '  <script src="/env.js" defer></script>\n</body>');
-  }
-  if (!out.includes('site-social-init.js') && out.includes('data-site-social-links')) {
-    out = out.replace('</body>', `  ${renderSiteSocialBootScripts()}\n</body>`);
   }
   return out;
 }
@@ -120,7 +164,8 @@ for (const rel of CORPORATE_HTML) {
   html = syncCorporateFooter(html, rel);
   html = injectFooterAssets(html);
   html = injectCookieAssets(html);
-  if (rel !== 'index.html' && html !== before) {
+  html = normalizeBodyScripts(html);
+  if (html !== before) {
     fs.writeFileSync(filePath, html);
     console.log('[sync]', rel);
     updated += 1;

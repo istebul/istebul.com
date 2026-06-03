@@ -165,10 +165,12 @@ const injectPerformanceHints = (html, appBundleFile) => {
   return output;
 };
 
-const minifyHtml = (source) => source
-  .replace(/<!--[\s\S]*?-->/g, '')
-  .replace(/>\s+</g, '><')
-  .trim();
+const minifyHtml = (source) =>
+  source
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<\/a>\s*<a\b/gi, '</a> <a')
+    .replace(/>\s+</g, '><')
+    .trim();
 
 staticRoots.forEach(copyDir);
 copyGrowthDataDir();

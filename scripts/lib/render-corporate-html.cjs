@@ -63,8 +63,8 @@ function renderHeadBlock({ site, title, description, canonicalPath, jsonLd }) {
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <link rel="stylesheet" href="/css/ib-brand-logo-v1.css">
   <link rel="stylesheet" href="/css/corporate-shell.css?v=1">
-  <link rel="stylesheet" href="/css/corporate-footer-v1.css?v=1">
-  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
+  <link rel="stylesheet" href="/css/corporate-footer-v1.css?v=2">
+  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=2">
   <link rel="stylesheet" href="/css/corporate-pages.css?v=1">${ld}`;
 }
 

@@ -111,6 +111,8 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra }) {
   <meta name="twitter:image" content="${escapeHtml(ogImage)}">
   <link rel="stylesheet" href="/css/seo-landing.css">
   <link rel="stylesheet" href="/css/ib-brand-logo-v1.css">
+  <link rel="stylesheet" href="/css/corporate-footer-v1.css?v=2">
+  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=2">
   <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=7">
   <link rel="stylesheet" href="/css/istebul-premium-final-v7.css?v=7">
   <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })}</script>`;

@@ -38,6 +38,7 @@ const VERTICAL_DECISION = [
   'css/perf-vertical-v1.css',
   'css/vertical-brand-shell-v1.css',
   'css/vertical-nav-more-v1.css',
+  'css/corporate-footer-v1.css',
   'css/ib-brand-logo-v1.css',
   /* Last: overrides DS v4 dark-shell rules on light cards */
   'css/enterprise-card-readability.css'
@@ -56,6 +57,7 @@ const AUTO_PAGE_EXTENSION = [
   'css/auto-hero-dashboard-v1.css',
   'css/auto-results-v2.css',
   'css/auto-shell-unified-v1.css',
+  'css/corporate-footer-v1.css',
   'css/auto-final-cta-contrast-v1.css',
   'css/vertical-category-heroes-v1.css',
   'css/site-social-links-v1.css',
