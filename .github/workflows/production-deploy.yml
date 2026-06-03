@@ -85,6 +85,7 @@ jobs:
           REQUIRE_SUPABASE_ENV: '1'
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_SITE_VERIFICATION: ${{ secrets.GOOGLE_SITE_VERIFICATION }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           LOGROCKET_APP_ID: ${{ secrets.LOGROCKET_APP_ID }}
 
