@@ -51,9 +51,17 @@ body.ib-auto .vacation-nav-toggle:hover {
 body.ib-auto .vacation-header #auto-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
+  gap: 0.5rem 1rem;
   align-items: center;
+  justify-content: flex-end;
   margin-left: auto;
+  max-width: min(72vw, 920px);
+}
+
+body.ib-auto .vacation-header #auto-nav .ib-vertical-nav-section-label:only-child,
+body.ib-auto .vacation-header #auto-nav [data-vertical-nav-products]:empty,
+body.ib-auto .vacation-header #auto-nav [data-vertical-nav-products]:not(:has(a)) {
+  display: none;
 }
 
 body.ib-auto .vacation-header #auto-nav a {

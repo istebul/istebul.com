@@ -42,17 +42,11 @@ function ensureProductNavBlock(nav) {
     nav.prepend(block);
   }
 
-  if (!block.querySelector('.ib-vertical-nav-section-label')) {
-    const label = document.createElement('span');
-    label.className = 'ib-vertical-nav-section-label';
-    label.textContent = translate('nav.allCategories', 'Kategoriler');
-    block.appendChild(label);
-  }
-
   const existing = new Set(
     [...nav.querySelectorAll('a[href]')].map((a) => normalizePath(a.getAttribute('href') || ''))
   );
 
+  let addedLinks = 0;
   for (const item of PRODUCT_LINKS) {
     const path = normalizePath(item.href);
     if (existing.has(path)) continue;
@@ -66,6 +60,18 @@ function ensureProductNavBlock(nav) {
     }
     block.appendChild(link);
     existing.add(path);
+    addedLinks += 1;
+  }
+
+  if (addedLinks > 0 && !block.querySelector('.ib-vertical-nav-section-label')) {
+    const label = document.createElement('span');
+    label.className = 'ib-vertical-nav-section-label';
+    label.textContent = translate('nav.allCategories', 'Kategoriler');
+    block.prepend(label);
+  }
+
+  if (!addedLinks && !block.querySelector('a[href]')) {
+    block.remove();
   }
 }
 

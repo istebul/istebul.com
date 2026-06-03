@@ -65,23 +65,49 @@ html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-container--breadcrumb .ib
   color: #cbd5e1;
 }
 
-/* Light trust rail on vertical pages */
+/* Light trust rail on vertical pages (full layout — ib-car/home bundles may not load enterprise-polish) */
 html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail,
 html.ib-ds-v4.ib-premium-v7 body.ib-auto .ib-trust-rail {
-  background: rgba(255, 255, 255, 0.92);
+  display: block;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.96);
   border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+  color: #475569;
+  font-size: 0.78rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail-inner,
+html.ib-ds-v4.ib-premium-v7 body.ib-auto .ib-trust-rail-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem 1.35rem;
+  width: min(1180px, 100%);
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0.55rem clamp(16px, 3vw, 28px);
+  box-sizing: border-box;
 }
 
 html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail-inner > span,
 html.ib-ds-v4.ib-premium-v7 body.ib-auto .ib-trust-rail-inner > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   color: #475569;
   font-weight: 600;
   font-size: 0.78rem;
+  line-height: 1.35;
+  white-space: nowrap;
 }
 
-html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail-inner > span:not(:last-child)::after,
-html.ib-ds-v4.ib-premium-v7 body.ib-auto .ib-trust-rail-inner > span:not(:last-child)::after {
-  background: rgba(148, 163, 184, 0.45);
+@media (max-width: 640px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-auto .ib-trust-rail-inner,
+  html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail-inner {
+    gap: 0.35rem 0.75rem;
+    justify-content: flex-start;
+  }
 }
 
 /* Footer category badge */
