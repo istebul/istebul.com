@@ -222,12 +222,13 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 </div>
             </div>
             <div class="nav-user hidden" id="nav-user">
-                <div class="user-menu">
-                    <button class="user-menu-btn">
+                <div class="user-menu" id="user-menu">
+                    <button type="button" class="user-menu-btn" id="user-menu-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="user-dropdown">
                         <i data-lucide="user"></i>
                         <span id="user-name"></span>
+                        <i data-lucide="chevron-down" class="user-menu-chevron" aria-hidden="true"></i>
                     </button>
-                    <div class="user-dropdown" role="menu">
+                    <div class="user-dropdown" id="user-dropdown" role="menu">
                         <a href="/profil/" data-auth-only role="menuitem" data-i18n="nav.myAccount">Hesabım</a>
                         <a href="/profil/" data-auth-only role="menuitem" data-i18n="nav.dashboard">Dashboard</a>
                         <a href="/ilanlar/" data-my-listings role="menuitem" data-i18n="nav.myOptions">Seçeneklerim</a>

@@ -194,6 +194,51 @@ export class UIManager {
 
         window.addEventListener('resize', checkScreenSize);
         checkScreenSize();
+
+        this.setupUserMenu();
+    }
+
+    setupUserMenu() {
+        const userMenu = document.getElementById('user-menu');
+        const userMenuBtn = document.getElementById('user-menu-btn');
+        const userDropdown = document.getElementById('user-dropdown');
+        if (!userMenu || !userMenuBtn || userMenu.dataset.userMenuBound === 'true') return;
+
+        userMenu.dataset.userMenuBound = 'true';
+
+        const closeUserMenu = () => {
+            userMenu.classList.remove('is-open');
+            userMenuBtn.setAttribute('aria-expanded', 'false');
+        };
+
+        const toggleUserMenu = () => {
+            const isOpen = userMenu.classList.toggle('is-open');
+            userMenuBtn.setAttribute('aria-expanded', String(isOpen));
+        };
+
+        userMenuBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            toggleUserMenu();
+        });
+
+        userDropdown?.addEventListener('click', (event) => {
+            if (event.target.closest('a[href], button')) {
+                closeUserMenu();
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!userMenu.contains(event.target)) {
+                closeUserMenu();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeUserMenu();
+            }
+        });
     }
 
     setupKeyboardShortcuts() {
@@ -262,6 +307,9 @@ export class UIManager {
             navLinksAuth?.classList.add('hidden');
 
             dashboardQuick?.classList.remove('hidden');
+
+            document.getElementById('user-menu')?.classList.remove('is-open');
+            document.getElementById('user-menu-btn')?.setAttribute('aria-expanded', 'false');
         } else {
             document.body.classList.remove('nav-signed-in');
             mainNav?.classList.remove('is-authenticated');
@@ -276,6 +324,9 @@ export class UIManager {
             navLinksAuth?.classList.add('hidden');
 
             dashboardQuick?.classList.add('hidden');
+
+            document.getElementById('user-menu')?.classList.remove('is-open');
+            document.getElementById('user-menu-btn')?.setAttribute('aria-expanded', 'false');
         }
     }
 

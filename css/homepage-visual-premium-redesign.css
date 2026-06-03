@@ -213,6 +213,11 @@ body.ib-enterprise .user-dropdown {
   background: color-mix(in srgb, #ffffff 82%, rgba(223, 232, 246, 0.4));
   box-shadow: var(--hp-strong-shadow);
   backdrop-filter: blur(18px);
+  z-index: 1301;
+}
+
+body.ib-enterprise .user-menu {
+  z-index: 1300;
 }
 
 body.ib-enterprise .nav-dropdown-content a,
