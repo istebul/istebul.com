@@ -42,7 +42,24 @@ Build’de varsayılan: `config/public-env.defaults.json` içinde `PLAUSIBLE_DOM
 
 Script yalnızca ziyaretçi **çerezleri kabul ettikten** sonra yüklenir.
 
-## 3) Cloudflare Web Analytics (ücretsiz, aynı hesap)
+## 3) Google Analytics 4 (GA4)
+
+1. https://analytics.google.com → mülk oluştur → **Veri akışı ekle** → Web.
+2. Site URL: `https://www.istebul.com` (www ile aynı akışta veya ayrı akış).
+3. Ölçüm kimliğini kopyalayın (ör. `G-SEV413SX9T`).
+
+**Manuel gtag yapıştırmayın** — site `js/core/third-party-analytics.js` ile çerez onayı sonrası otomatik yükler.
+
+| Nerede | Değişken |
+|--------|----------|
+| Cloudflare Pages → istebul-com → Production env | `GA4_MEASUREMENT_ID` = `G-SEV413SX9T` |
+| GitHub secret (opsiyonel, build override) | `GA4_MEASUREMENT_ID` |
+
+Varsayılan: `config/public-env.defaults.json` içinde tanımlı; deploy sonrası **Kabul et** (çerez) → GA4 Realtime’da ziyaret görünür.
+
+GA4 **Kurulumu test et** yalnızca çerez kabulünden sonra başarılı olur.
+
+## 4) Cloudflare Web Analytics (ücretsiz, aynı hesap)
 
 1. Cloudflare Dashboard → **Analytics & Logs** → **Web Analytics** → Add site `istebul.com`.
 2. Beacon **token** kopyalayın.
@@ -56,8 +73,9 @@ Script yalnızca ziyaretçi **çerezleri kabul ettikten** sonra yüklenir.
 
 | Değişken | Hizmet |
 |----------|--------|
-| `GA4_MEASUREMENT_ID` | Google Analytics 4 |
 | `CLARITY_PROJECT_ID` | Microsoft Clarity (oturum kaydı) |
+
+(GA4 yukarıda; `GA4_MEASUREMENT_ID` defaults + Pages env.)
 
 Tümü çerez onayı sonrası `js/core/third-party-analytics.js` ile yüklenir.
 

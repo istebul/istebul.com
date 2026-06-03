@@ -47,7 +47,7 @@ GitHub secret değil — **Cloudflare Pages → istebul-com → Settings → Env
 |----------|----------|
 | `PLAUSIBLE_DOMAIN` | `istebul.com` — Plausible dashboard’da site tanımlı olmalı |
 | `CF_WEB_ANALYTICS_TOKEN` | Cloudflare Web Analytics beacon token |
-| `GA4_MEASUREMENT_ID` | `G-XXXXXXXX` (opsiyonel) |
+| `GA4_MEASUREMENT_ID` | Google Analytics 4 → **Veri akışları** → web akışı → Ölçüm Kimliği (`G-SEV413SX9T`). Build → `dist/env.js`; çerez onayı sonrası yüklenir. Cloudflare Pages env ile override edilebilir. |
 | `CLARITY_PROJECT_ID` | Microsoft Clarity proje ID (opsiyonel) |
 
 Birinci taraf admin metrikleri için ayrıca `ANALYTICS_HASH_SALT` (GitHub secret, Supabase edge’e sync).
