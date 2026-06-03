@@ -128,7 +128,9 @@ export function mountVerticalProductNav() {
 
   const run = () => {
     document
-      .querySelectorAll('.vacation-header, .housing-header, .ib-vertical-header--auto')
+      .querySelectorAll(
+        '.vacation-header, .housing-header, .ib-vertical-header--auto, .ib-vertical-header--konut'
+      )
       .forEach((header) => enhanceVerticalHeader(header));
   };
 

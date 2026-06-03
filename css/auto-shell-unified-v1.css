@@ -29,34 +29,6 @@ body.ib-auto .vacation-header.ib-vertical-header--auto {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.88);
 }
 
-body.ib-auto .ib-vertical-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-
-body.ib-auto .ib-vertical-brand__word {
-  font-weight: 800;
-  font-size: 1.25rem;
-  letter-spacing: -0.03em;
-  color: #0f172a;
-}
-
-body.ib-auto .ib-vertical-brand__badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #1d4ed8;
-  background: rgba(37, 99, 235, 0.1);
-  border: 1px solid rgba(37, 99, 235, 0.22);
-  border-radius: 999px;
-  padding: 0.2rem 0.55rem;
-  line-height: 1.2;
-}
-
 body.ib-auto .vacation-nav-toggle {
   display: none;
   margin-left: auto;
@@ -102,7 +74,7 @@ body.ib-auto .vacation-header #auto-nav [data-vertical-nav-products] {
   display: contents;
 }
 
-/* —— Breadcrumb —— */
+/* —— Breadcrumb (Auto uses vacation-breadcrumb alias) —— */
 body.ib-auto .vacation-container {
   width: 100%;
   max-width: var(--vacation-content-max);
@@ -130,22 +102,6 @@ body.ib-auto .vacation-breadcrumb a {
 
 body.ib-auto .vacation-breadcrumb a:hover {
   text-decoration: underline;
-}
-
-/* —— Trust rail (light, same band as marketing shell) —— */
-body.ib-auto .ib-trust-rail {
-  background: rgba(255, 255, 255, 0.92);
-  border-bottom: 1px solid var(--vacation-border);
-}
-
-body.ib-auto .ib-trust-rail-inner > span {
-  color: #475569;
-  font-weight: 600;
-  font-size: 0.78rem;
-}
-
-body.ib-auto .ib-trust-rail-inner > span:not(:last-child)::after {
-  background: rgba(148, 163, 184, 0.45);
 }
 
 /* —— Footer brand line —— */
