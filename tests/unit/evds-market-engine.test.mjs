@@ -11,7 +11,8 @@ const {
   hasEvdsDataForCategory,
   renderFinansmanMarketAssessmentHtml,
   renderKonutFinancingOutlookHtml,
-  renderAutoFxRiskHtml
+  renderAutoFxRiskHtml,
+  fetchEvdsRatesForEngine
 } = await import('../../js/features/evds/evds-market-engine.js');
 
 const {
@@ -153,4 +154,41 @@ test('computeDecisionScoreV3 EVDS ayarlaması olmadan değişmez', () => {
   const scoreBefore = computeDecisionScoreV3('finansman', { ...ctx });
   assert.equal(ctx.evdsScoreAdjustment, undefined);
   assert.ok(scoreBefore >= 0 && scoreBefore <= 100);
+});
+
+test('fetchEvdsRatesForEngine — sarmalanmış API yanıtını parse eder', async () => {
+  const mockFetch = async () => ({
+    ok: true,
+    json: async () => ({
+      ok: true,
+      data: {
+        status: 'connected',
+        source: 'evds',
+        dataDate: '04-06-2026',
+        rates: {
+          policyRate: 40,
+          housingLoanRate: 53.23,
+          cpiAnnual: 30.65,
+          usdTry: 45.87,
+          eurTry: 53.28
+        }
+      }
+    })
+  });
+
+  const snapshot = await fetchEvdsRatesForEngine(mockFetch);
+  assert.ok(snapshot);
+  assert.equal(snapshot.status, 'connected');
+  assert.equal(snapshot.source, 'evds');
+  assert.equal(snapshot.rates.policyRate, 40);
+  assert.equal(snapshot.rates.housingLoanRate, 53.23);
+  assert.equal(snapshot.rates.usdTry, 45.87);
+});
+
+test('fetchEvdsRatesForEngine — rates yoksa null döner', async () => {
+  const mockFetch = async () => ({
+    ok: true,
+    json: async () => ({ ok: true, data: { status: 'connected' } })
+  });
+  assert.equal(await fetchEvdsRatesForEngine(mockFetch), null);
 });

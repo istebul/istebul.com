@@ -635,12 +635,14 @@ export async function fetchEvdsRatesForEngine(fetchImpl = globalThis.fetch) {
   try {
     const res = await fetchImpl('/api/evds-snapshot', { credentials: 'same-origin' });
     if (!res.ok) return null;
-    const data = await res.json().catch(() => null);
+    const body = await res.json().catch(() => null);
+    const data = body?.data ?? body;
     if (!data?.rates) return null;
     return {
       rates: normalizeEvdsRates(data.rates),
       status: data.status || 'unknown',
-      dataDate: data.dataDate || null
+      dataDate: data.dataDate || null,
+      source: data.source || null
     };
   } catch {
     return null;
