@@ -1,7 +1,7 @@
 /**
  * Public TCMB EVDS snapshot (sanitized). API key stays in env.TCMB_EVDS_API_KEY only.
  */
-import { fetchEvdsFxDebugProbe, fetchEvdsSnapshot } from '../../js/services/evds-service.js';
+import { fetchEvdsSnapshot } from '../../js/services/evds-service.js';
 import { resolveCorsOrigin } from '../_shared/cors-origins.js';
 import { jsonApiHead, jsonApiSuccess, logApiEvent } from '../_shared/api-response.js';
 
@@ -11,18 +11,6 @@ const corsHeaders = (origin = null) => ({
   'Content-Type': 'application/json; charset=utf-8',
   'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400'
 });
-
-const debugCorsHeaders = (origin = null) => ({
-  ...corsHeaders(origin),
-  'Cache-Control': 'private, no-store, no-cache, must-revalidate',
-  'CDN-Cache-Control': 'no-store',
-  Pragma: 'no-cache'
-});
-
-function isDebugRequest(request) {
-  const debugParam = new URL(request.url).searchParams.get('debug');
-  return debugParam === '1' || debugParam === 'true';
-}
 
 function buildSnapshotPayload(snapshot) {
   const status = snapshot.configured ? 'connected' : 'unconfigured';
@@ -49,13 +37,11 @@ export async function onRequestOptions(context) {
 
 export async function onRequestHead(context) {
   const origin = context.request.headers.get('Origin');
-  const headers = isDebugRequest(context.request) ? debugCorsHeaders(origin) : corsHeaders(origin);
-  return jsonApiHead(headers);
+  return jsonApiHead(corsHeaders(origin));
 }
 
 export async function onRequestGet(context) {
   const origin = context.request.headers.get('Origin');
-  const debugMode = isDebugRequest(context.request);
 
   try {
     const snapshot = await fetchEvdsSnapshot(context.env);
@@ -64,21 +50,6 @@ export async function onRequestGet(context) {
       stale: snapshot.source === 'stale',
       errorCount: snapshot.errors?.length || 0
     };
-
-    if (debugMode) {
-      payload.debug = await fetchEvdsFxDebugProbe(context.env);
-      logApiEvent('warn', 'evds_snapshot_debug_served', {
-        status: payload.status,
-        source: payload.source,
-        evdsHttpStatus: payload.debug?.evdsHttpStatus ?? null,
-        errorMessage: payload.debug?.errorMessage ?? null
-      });
-      return jsonApiSuccess(payload, 200, debugCorsHeaders(origin), {
-        ...meta,
-        debug: true,
-        temporary: true
-      });
-    }
 
     logApiEvent('info', 'evds_snapshot_served', {
       status: payload.status,
@@ -96,45 +67,23 @@ export async function onRequestGet(context) {
       message: error?.message || 'unknown'
     });
 
-    const payload = {
-      status: 'degraded',
-      source: 'fallback',
-      fetchedAt: null,
-      dataDate: null,
-      rates: { usdTry: null, eurTry: null, policyRate: null, cpiAnnual: null, housingLoanRate: null },
-      seriesDates: {},
-      attribution: {
-        provider: 'TCMB EVDS',
-        url: 'https://evds3.tcmb.gov.tr/',
-        disclaimer: 'Veri geçici olarak kullanılamıyor.'
-      }
-    };
-
-    if (debugMode) {
-      try {
-        payload.debug = await fetchEvdsFxDebugProbe(context.env);
-      } catch (debugError) {
-        payload.debug = {
-          temporary: true,
-          usedSeries: ['TP.DK.USD.A', 'TP.DK.EUR.A'],
-          evdsRequestUrlMasked: null,
-          evdsHttpStatus: null,
-          evdsContentType: null,
-          evdsBodyPreview: null,
-          evdsTopLevelKeys: [],
-          evdsItemsLength: null,
-          evdsFirstItemKeys: [],
-          normalizedFieldCandidates: ['TP_DK_USD_A', 'TP_DK_EUR_A'],
-          errorMessage: debugError?.message || 'debug_probe_failed'
-        };
-      }
-      return jsonApiSuccess(payload, 200, debugCorsHeaders(origin), {
-        degraded: true,
-        debug: true,
-        temporary: true
-      });
-    }
-
-    return jsonApiSuccess(payload, 200, corsHeaders(origin), { degraded: true });
+    return jsonApiSuccess(
+      {
+        status: 'degraded',
+        source: 'fallback',
+        fetchedAt: null,
+        dataDate: null,
+        rates: { usdTry: null, eurTry: null, policyRate: null, cpiAnnual: null, housingLoanRate: null },
+        seriesDates: {},
+        attribution: {
+          provider: 'TCMB EVDS',
+          url: 'https://evds3.tcmb.gov.tr/',
+          disclaimer: 'Veri geçici olarak kullanılamıyor.'
+        }
+      },
+      200,
+      corsHeaders(origin),
+      { degraded: true }
+    );
   }
 }
