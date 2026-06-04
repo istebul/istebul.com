@@ -4810,21 +4810,23 @@ function hydratePublicContentSurface(pageId) {
 function showPremiumPageFallback(pageId) {
     document.body.classList.add('app-route-active', 'ib-premium-route-active');
 
-    document.querySelectorAll('[data-private-section]').forEach((section) => {
-        section.classList.remove('route-visible');
-    });
-
     document.querySelectorAll('section[id]').forEach((section) => {
+        section.style?.removeProperty?.('display');
+        section.classList.remove('route-visible');
         const shouldShow = section.id === pageId;
         section.classList.toggle('hidden', !shouldShow);
-        section.style.display = shouldShow ? 'block' : 'none';
+        if (!shouldShow) {
+            section.setAttribute('hidden', '');
+            section.setAttribute('aria-hidden', 'true');
+        }
     });
 
     const target = document.getElementById(pageId);
     if (target) {
         target.classList.remove('hidden');
+        target.removeAttribute('hidden');
+        target.removeAttribute('aria-hidden');
         target.classList.add('route-visible');
-        target.style.display = 'block';
     }
 
     if (pageId === 'page-blog-post') {

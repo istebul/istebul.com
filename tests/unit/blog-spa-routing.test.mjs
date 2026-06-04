@@ -17,14 +17,22 @@ test('production build emits SPA shells for dynamic content list routes', () => 
   assert.match(build, /patchSpaShellHtml\(shellHtml, route, routeDocumentMeta\)/);
 });
 
-test('_redirects does not force all blog paths to static seo-page index', () => {
+test('_redirects serves blog list hub from SPA shell without wildcard override', () => {
   const redirects = fs.readFileSync(path.join(root, '_redirects'), 'utf8');
+  assert.match(redirects, /^\/blog \/blog\/index\.html 200/m);
+  assert.match(redirects, /^\/blog\/ \/blog\/index\.html 200/m);
   assert.doesNotMatch(redirects, /^\/blog\/\* /m);
 });
 
 test('router SPA-navigates /blog from data-native-route links', () => {
   const router = fs.readFileSync(path.join(root, 'js/core/router.js'), 'utf8');
   assert.match(router, /path === '\/blog'/);
+  assert.match(router, /clearSectionDisplayOverride/);
+});
+
+test('index route CSS hides marketing hero on premium content pages', () => {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  assert.match(html, /html\[data-ib-route\^="page-"\] #home/);
 });
 
 test('router navigate preserves query string for blog category filters', () => {

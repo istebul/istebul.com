@@ -4,15 +4,33 @@ import assert from 'node:assert/strict';
 const listeners = new Map();
 function sectionStub(id, { privateSection = false } = {}) {
     const attrs = new Set(privateSection ? ['data-private-section'] : []);
+    const classes = new Set();
     return {
         id,
         style: {
             display: '',
             setProperty(prop, value) {
                 this[prop] = value;
+            },
+            removeProperty(prop) {
+                delete this[prop];
             }
         },
-        classList: { add() {}, remove() {} },
+        classList: {
+            add(...names) {
+                names.forEach((name) => classes.add(name));
+            },
+            remove(...names) {
+                names.forEach((name) => classes.delete(name));
+            },
+            toggle(name, on) {
+                if (on) classes.add(name);
+                else classes.delete(name);
+            },
+            has(name) {
+                return classes.has(name);
+            }
+        },
         hasAttribute(name) {
             return attrs.has(name);
         },
@@ -151,8 +169,9 @@ test('handleRoute maps /planlar to premium planlar page', () => {
 
     router.handleRoute();
 
-    assert.equal(sections.get('page-planlar').style.display, 'block');
-    assert.equal(sections.get('pricing').style.display, 'none');
+    assert.ok(sections.get('page-planlar').classList.has('route-visible'));
+    assert.equal(sections.get('page-planlar').style.display, undefined);
+    assert.equal(sections.get('pricing').style.display, undefined);
 });
 
 test('handleRoute maps locale-prefixed premium paths to distinct pages', () => {
@@ -166,14 +185,16 @@ test('handleRoute maps locale-prefixed premium paths to distinct pages', () => {
     global.window.location.hash = '';
     router.handleRoute();
 
-    assert.equal(planlar.style.display, 'block');
-    assert.equal(karar.style.display, 'none');
+    assert.ok(planlar.classList.has('route-visible'));
+    assert.equal(planlar.style.display, undefined);
+    assert.equal(karar.style.display, undefined);
 
     global.window.location.pathname = '/en/karar-analizi';
     router.handleRoute();
 
-    assert.equal(karar.style.display, 'block');
-    assert.equal(planlar.style.display, 'none');
+    assert.ok(karar.classList.has('route-visible'));
+    assert.equal(karar.style.display, undefined);
+    assert.equal(planlar.style.display, undefined);
 });
 
 test('navigate switches between premium routes and updates pathname', () => {
@@ -186,6 +207,33 @@ test('navigate switches between premium routes and updates pathname', () => {
     router.navigate('/planlar');
 
     assert.equal(global.window.location.pathname, '/planlar');
-    assert.equal(sections.get('page-planlar').style.display, 'block');
-    assert.equal(sections.get('page-karar-analizi').style.display, 'none');
+    assert.ok(sections.get('page-planlar').classList.has('route-visible'));
+    assert.equal(sections.get('page-planlar').style.display, undefined);
+    assert.equal(sections.get('page-karar-analizi').style.display, undefined);
+});
+
+test('showPremiumPage clears homepage hero display after marketing shell was shown', () => {
+    const router = new Router();
+    sections.set('page-blog', sectionStub('page-blog', { privateSection: true }));
+    const home = sections.get('home');
+    home.style.setProperty('display', 'block', 'important');
+
+    router.showPremiumPage('page-blog');
+
+    assert.equal(home.style.display, undefined);
+    assert.equal(sections.get('page-blog').style.display, undefined);
+});
+
+test('handleRoute on /blog hides marketing hero after home was visible', () => {
+    const router = new Router();
+    sections.set('page-blog', sectionStub('page-blog', { privateSection: true }));
+    const home = sections.get('home');
+    router.showHomeSections();
+    assert.equal(home.style.display, 'block');
+
+    global.window.location.pathname = '/blog';
+    router.handleRoute();
+
+    assert.equal(home.style.display, undefined);
+    assert.equal(sections.get('page-blog').style.display, undefined);
 });
