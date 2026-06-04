@@ -9,7 +9,9 @@ import {
   fetchPublishedPostsByCategory,
   formatContentDate,
   getGuideCategory,
-  normalizeGuidePost
+  normalizeGuidePost,
+  blogListHref,
+  blogCategoryFromSearch
 } from './public-content.js';
 import { escapeHtml } from '../../core/security.js';
 
@@ -19,7 +21,7 @@ function postHref(post) {
   const slug = String(post?.slug || '').trim();
   if (slug) return blogPostPath(slug);
   if (String(post?.id || '').startsWith('seed-')) {
-    return `/blog?kategori=${encodeURIComponent(post.category || 'auto')}`;
+    return blogListHref(post.category || 'auto');
   }
   return '/blog/';
 }
@@ -247,11 +249,11 @@ export async function hydrateCategoryGuides(root = document, options = {}) {
       return;
     }
     // Keep "Tümü" on full blog list; only sync href when pinned to a category filter.
-    if (!/[?&]kategori=/.test(pinned) && /^\/blog\/?$/.test(pinned.split('?')[0])) {
+    if (!/[?&](?:category|kategori)=/.test(pinned) && /^\/blog\/?$/.test(pinned.split('?')[0])) {
       allLink.href = '/blog';
       return;
     }
-    allLink.href = `/blog?kategori=${encodeURIComponent(categoryId)}`;
+    allLink.href = blogListHref(categoryId);
   };
 
   const renderCategory = async (categoryId) => {
@@ -285,7 +287,5 @@ export async function hydrateCategoryGuides(root = document, options = {}) {
 }
 
 export function blogCategoryFromQuery(search = '') {
-  const params = new URLSearchParams(search);
-  const raw = String(params.get('kategori') || params.get('category') || '').trim().toLowerCase();
-  return getGuideCategory(raw)?.id || '';
+  return blogCategoryFromSearch(search);
 }

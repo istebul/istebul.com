@@ -26,3 +26,16 @@ test('router SPA-navigates /blog from data-native-route links', () => {
   const router = fs.readFileSync(path.join(root, 'js/core/router.js'), 'utf8');
   assert.match(router, /path === '\/blog'/);
 });
+
+test('router navigate preserves query string for blog category filters', () => {
+  const router = fs.readFileSync(path.join(root, 'js/core/router.js'), 'utf8');
+  assert.match(router, /searchPart/);
+  assert.match(router, /queryChanged/);
+});
+
+test('blog filter tabs use canonical category hrefs', () => {
+  const ui = fs.readFileSync(path.join(root, 'js/features/content/content-hub-ui.js'), 'utf8');
+  assert.match(ui, /blogListHref\(cat\.id\)/);
+  assert.match(ui, /blogCategoryFromSearch/);
+  assert.doesNotMatch(ui, /kategori=\$\{/);
+});

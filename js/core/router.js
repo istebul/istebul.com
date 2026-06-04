@@ -212,12 +212,23 @@ export class Router {
     }
 
     navigate(path, { force = false } = {}) {
-        const hashPart = path.includes('#') ? path.slice(path.indexOf('#')) : '';
+        let targetUrl;
+        try {
+            targetUrl = new URL(path, window.location.origin);
+        } catch {
+            targetUrl = new URL('/', window.location.origin);
+        }
+
+        const hashPart = targetUrl.hash || '';
+        const searchPart = targetUrl.search || '';
         const normalized = this.normalizePath(path);
         const displayPath = buildLocalizedPath(normalized, getActiveLocale());
+        const nextUrl = `${displayPath}${searchPart}${hashPart}`;
+        const routeChanged = normalized !== this.currentRoute;
+        const queryChanged = searchPart !== window.location.search;
 
-        if (force || normalized !== this.currentRoute) {
-            window.history.pushState(null, '', displayPath + hashPart);
+        if (force || routeChanged || queryChanged) {
+            window.history.pushState(null, '', nextUrl);
             this.currentRoute = normalized;
             this.handleRoute();
             return;

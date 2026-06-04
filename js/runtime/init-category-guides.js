@@ -37,7 +37,7 @@ function mountAutoGuidesHub() {
     lead: '',
     showTabs: false,
     defaultCategory: 'auto',
-    allHref: '/blog?kategori=auto'
+    allHref: '/blog/?category=auto'
   });
   mount.classList.add('ib-guides-hub--compact');
   return hydrateCategoryGuides(document, { mountId: 'auto-guides-hub', category: 'auto' });

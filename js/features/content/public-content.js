@@ -70,8 +70,26 @@ const POST_SELECT_LEGACY =
   'id,title,slug,content,excerpt,category,cover_image_url,is_featured,source_label,source_url,created_at';
 
 export function getGuideCategory(id) {
-  const canonical = normalizePostCategory(id);
+  const key = String(id || '').trim().toLowerCase();
+  if (!key) return null;
+  const canonical = normalizePostCategory(key);
+  if (!canonical) return null;
   return GUIDE_CATEGORIES.find((cat) => cat.id === canonical) || null;
+}
+
+/** Canonical blog list URL for a category filter (empty = all posts). */
+export function blogListHref(categoryId = '') {
+  const canonical = categoryId ? normalizePostCategory(categoryId) : '';
+  if (!canonical) return '/blog/';
+  return `/blog/?category=${encodeURIComponent(canonical)}`;
+}
+
+/** Parse ?category= or legacy ?kategori= into canonical posts.category id. */
+export function blogCategoryFromSearch(search = '') {
+  const params = new URLSearchParams(String(search || '').replace(/^\?/, ''));
+  const raw = String(params.get('category') || params.get('kategori') || '').trim();
+  if (!raw) return '';
+  return getGuideCategory(raw)?.id || '';
 }
 
 function mapPostRow(row) {

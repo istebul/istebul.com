@@ -5,7 +5,6 @@ import {
   renderBlogPostPage,
   renderCampaignsPage
 } from '../features/content/content-hub-ui.js';
-import { blogCategoryFromQuery } from '../features/content/category-guides-ui.js';
 import { resolveContentRouteSurface } from './route-surface.js';
 import { initCategoryGuidesHub } from './init-category-guides.js';
 
@@ -26,7 +25,7 @@ export async function refreshPublicContentSurface(surfaceId) {
   }
 
   if (surfaceId === 'page-blog') {
-    await renderBlogPage(document, blogCategoryFromQuery(window.location.search));
+    await renderBlogPage(document, window.location.search);
     return;
   }
 

@@ -8,9 +8,20 @@ import {
   formatContentDate,
   getGuideCategory,
   GUIDE_CATEGORIES,
+  blogListHref,
+  blogCategoryFromSearch,
   renderContentEmpty
 } from './public-content.js';
 import { escapeHtml } from '../../core/security.js';
+
+function resolveActiveBlogCategory(input = '') {
+  const raw = String(input || '');
+  if (raw.includes('category=') || raw.includes('kategori=') || raw.startsWith('?')) {
+    return blogCategoryFromSearch(raw);
+  }
+  if (!raw) return '';
+  return getGuideCategory(raw)?.id || '';
+}
 
 function renderListCard({ kicker, title, excerpt, meta, href, cta = 'Oku' }) {
   return `
@@ -190,17 +201,17 @@ export async function renderBlogPage(root = document, categoryFilter = '') {
   const filterBar = root.querySelector('#page-blog [data-blog-category-filter]');
   if (!list) return;
 
-  const activeCategory = getGuideCategory(categoryFilter)?.id || '';
+  const activeCategory = resolveActiveBlogCategory(categoryFilter);
 
   if (filterBar) {
     filterBar.innerHTML = `
       <div class="ib-guides-tabs ib-blog-filter-tabs" role="tablist" aria-label="Blog kategorileri">
-        <a class="ib-guides-tab${activeCategory ? '' : ' is-active'}" href="/blog" data-native-route>Tümü</a>
+        <a class="ib-guides-tab${activeCategory ? '' : ' is-active'}" href="${escapeHtml(blogListHref())}" data-native-route>Tümü</a>
         ${GUIDE_CATEGORIES.map(
           (cat) => `
           <a
             class="ib-guides-tab${activeCategory === cat.id ? ' is-active' : ''}"
-            href="/blog?kategori=${encodeURIComponent(cat.id)}"
+            href="${escapeHtml(blogListHref(cat.id))}"
             data-native-route
           >${escapeHtml(cat.label)}</a>`
         ).join('')}
