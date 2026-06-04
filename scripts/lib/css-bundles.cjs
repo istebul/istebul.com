@@ -26,7 +26,8 @@ const HOMEPAGE_EXTENSION = [
   'css/home-category-layout-fix-v1.css',
   'css/home-newsletter-fix-critical-v1.css',
   'css/site-social-links-v1.css',
-  'css/perf-home-v1.css'
+  'css/perf-home-v1.css',
+  'css/home-economic-indicators.css'
 ];
 
 /** Design system + readability for vertical decision pages (replaces 3–4 link tags). */

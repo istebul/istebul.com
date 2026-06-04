@@ -7,6 +7,7 @@ import {
 } from './runtime/auth-return.js';
 import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
 import { initHomeCategories } from './runtime/home-categories.js';
+import { initHomeEconomicIndicators } from './features/home/home-economic-indicators.js';
 import { trackHomepageView } from './platform/site-analytics.js';
 import './runtime/site-analytics-boot.js';
 import {
@@ -158,6 +159,7 @@ class App {
             const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
             initEnterpriseUx();
             initHomeCategories();
+            initHomeEconomicIndicators();
 
             const deferNonCritical = (work, timeout = 1200) => {
                 if ('requestIdleCallback' in window) {
@@ -4762,6 +4764,7 @@ document.addEventListener('click', (event) => {
 // Production route visibility guard (kept in sync with js/core/router.js marketing IDs)
 const MARKETING_SECTION_IDS = new Set([
     'home',
+    'home-economic-indicators',
     'trust',
     'methodology-teaser',
     'sample-preview',

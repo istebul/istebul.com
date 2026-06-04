@@ -24,9 +24,13 @@ assert(
   'Premium process section is missing.'
 );
 assert(index.includes('cookie-consent'), 'Cookie consent UI is missing.');
-assert(
-  index.includes('homepage.bundle.css') || index.includes('enterprise-card-readability.css'),
+assert(index.includes('homepage.bundle.css') || index.includes('enterprise-card-readability.css'),
   'Homepage should load homepage.bundle.css (or enterprise-card-readability.css) for contrast.'
+);
+assert(index.includes('home-economic-indicators-mount'), 'Homepage economic indicators mount is missing.');
+assert(
+  read('js/features/home/home-economic-indicators.js').includes('/api/evds-snapshot'),
+  'Home economic indicators module must fetch EVDS snapshot.'
 );
 assert(index.includes('/kvkk.html'), 'KVKK policy link is missing.');
 assert(index.includes('/sitemap.xml'), 'Sitemap link is missing.');

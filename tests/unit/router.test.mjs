@@ -28,6 +28,7 @@ function sectionStub(id, { privateSection = false } = {}) {
 
 const sections = new Map([
     ['home', sectionStub('home')],
+    ['home-economic-indicators', sectionStub('home-economic-indicators')],
     ['how-it-works', sectionStub('how-it-works')],
     ['home-vertical-focus', sectionStub('home-vertical-focus')],
     ['home-features-strip', sectionStub('home-features-strip')],
@@ -98,6 +99,7 @@ global.CustomEvent = class CustomEvent {
 const { Router, HOMEPAGE_SECTION_IDS, MARKETING_HASH_IDS } = await import('../../js/core/router.js');
 
 test('marketing section constants include pricing and lean home blocks', () => {
+    assert.ok(HOMEPAGE_SECTION_IDS.includes('home-economic-indicators'));
     assert.ok(HOMEPAGE_SECTION_IDS.includes('pricing'));
     assert.ok(HOMEPAGE_SECTION_IDS.includes('home-features-strip'));
     assert.ok(!HOMEPAGE_SECTION_IDS.includes('sample-preview'));
