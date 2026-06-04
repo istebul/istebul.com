@@ -44,8 +44,8 @@ const CARD_SUBTITLE = 'TCMB EVDS verileriyle bilgilendirme amaçlıdır.';
 const SOURCE_LABEL = 'TCMB EVDS';
 const FALLBACK_MESSAGE = 'Veri geçici olarak alınamadı';
 
-/** Auto sonuçları — ana sayfa ile aynı kart düzeni. */
-const HOME_LAYOUT_PRESETS = new Set(['auto']);
+/** Sonuç ekranları — ana sayfa ile aynı kompakt EVDS kartı. */
+const HOME_LAYOUT_PRESETS = new Set(['auto', 'konut']);
 
 function usesHomeLayout(preset) {
   return HOME_LAYOUT_PRESETS.has(String(preset || '').trim());

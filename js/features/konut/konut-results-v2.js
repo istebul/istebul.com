@@ -417,15 +417,22 @@ function renderKonutResultsV2Html(model) {
     : '';
 
   return `
-    <section class="konut-v2-panel" aria-label="Konut Decision Results V2">
+    <section class="konut-v2-panel" aria-label="Konut karar raporu özeti">
       <header class="konut-v2-hero">
-        <p class="konut-v2-kicker">AI destekli konut karar analizi</p>
+        <p class="konut-v2-kicker">Karar raporu · konut analizi</p>
         <h2 class="konut-v2-title">Konut karar raporu</h2>
-        <p class="konut-v2-band">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</p>
+        <p class="konut-v2-band"><span class="konut-v2-band-label">${esc(model.scoreLabel)}</span> · <strong>${esc(String(model.decisionScore))}/100</strong></p>
         ${model.recommendationLabel ? `<p class="konut-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
       </header>
 
-      ${renderScoreFactorsHtml(model.scoreFactors, 'konut-v2')}
+      ${
+        model.scoreFactors?.length
+          ? `<details class="konut-v2-factors-details">
+        <summary>Skor faktörleri (açıklanabilir analiz)</summary>
+        ${renderScoreFactorsHtml(model.scoreFactors, 'konut-v2')}
+      </details>`
+          : ''
+      }
 
       <div class="konut-v2-kpis">
         <article class="konut-v2-kpi konut-v2-kpi--score">
@@ -451,7 +458,7 @@ function renderKonutResultsV2Html(model) {
 
       ${costNote}
 
-      <div class="ib-results-economic-mount konut-v2-evds-mount" data-results-economic-mount hidden></div>
+      <div class="ib-results-economic-mount konut-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
 
       <section class="konut-v2-cost-grid" aria-label="Toplam maliyet görünümü">
         <h3>Toplam Maliyet Görünümü</h3>

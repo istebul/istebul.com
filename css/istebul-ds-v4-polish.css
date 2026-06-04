@@ -305,6 +305,37 @@ html.ib-ds-v4 body.housing-page .konut-v2-kpi strong {
   color: #111827;
 }
 
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kicker,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-band,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-exec-hint {
+  color: #64748b;
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-title,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-band strong {
+  color: #111827;
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-band-label,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-rec-level {
+  color: #2563eb;
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-factors,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-block,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-cost-grid,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-risk-card,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-alt-card {
+  background: #f8fafc;
+  border-color: #e5e7eb;
+  color: #334155;
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .ib-home-economic__card {
+  background: #ffffff;
+  color: #111827;
+}
+
 /* —— Finans / Tatil: hero + results —— */
 html.ib-ds-v4 body.finans-page .finans-hero-dashboard,
 html.ib-ds-v4 body.vacation-page .vacation-hero-dashboard {

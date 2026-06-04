@@ -52,6 +52,11 @@ test('renderResultsEconomicCardHtml shows title, subtitle and TCMB EVDS per item
   assert.match(auto, /ib-home-economic__grid/);
   assert.match(auto, /data-results-economic-layout="home"/);
   assert.match(auto, /ib-home-economic__meta/);
+
+  const konut = renderResultsEconomicCardHtml(sampleData, 'konut');
+  assert.match(konut, /ib-home-economic__card/);
+  assert.match(konut, /Konut kredisi faizi/);
+  assert.match(konut, /data-results-economic-layout="home"/);
 });
 
 test('renderResultsEconomicFallbackHtml keeps card visible with fallback message', () => {
