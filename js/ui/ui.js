@@ -126,7 +126,6 @@ export class UIManager {
             <span class="nav-toggle-burger" aria-hidden="true">
                 <span></span><span></span><span></span>
             </span>
-            <span class="nav-toggle-label">Menü</span>
         `;
         navToggle.style.display = 'none';
 
