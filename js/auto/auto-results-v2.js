@@ -27,6 +27,7 @@ import {
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
 } from '../features/results/decision-intelligence-engine.js';
+import { hydrateResultsEconomicIndicators } from '../features/results/results-economic-indicators.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -157,6 +158,8 @@ function renderAutoResultsV2Html(model) {
           <small>${esc(model.costHint)}</small>
         </article>
       </div>
+
+      <div class="ib-results-economic-mount auto-v2-evds-mount" data-results-economic-mount hidden></div>
 
       <div class="auto-v2-grid">
         <article class="auto-v2-block auto-v2-block--pros">
@@ -315,6 +318,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   root.className = 'auto-v2-root';
   root.innerHTML = renderAutoResultsV2Html(model);
   mountNode.prepend(root);
+  await hydrateResultsEconomicIndicators(root, 'auto');
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     score: decisionScore,

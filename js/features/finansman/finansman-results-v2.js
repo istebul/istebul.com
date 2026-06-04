@@ -27,7 +27,7 @@ import {
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
-import { hydrateFinansmanEvdsCard } from './evds-reference-card.js';
+import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -440,8 +440,6 @@ function renderFinansmanResultsV2Html(model) {
         ${model.recommendationLabel ? `<p class="finansman-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
       </header>
 
-      <div class="finansman-v2-evds-mount" data-finansman-evds-mount></div>
-
       ${renderScoreFactorsHtml(model.scoreFactors, 'finansman-v2')}
 
       <div class="finansman-v2-kpis">
@@ -467,6 +465,8 @@ function renderFinansmanResultsV2Html(model) {
       </div>
 
       ${estimateNote}
+
+      <div class="ib-results-economic-mount finansman-v2-evds-mount" data-results-economic-mount hidden></div>
 
       <section class="finansman-v2-bddk" aria-label="BDDK bilgilendirme">
         <h3>BDDK uyumlu bilgilendirme</h3>
@@ -588,7 +588,7 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
   root.className = 'finansman-v2-root';
   root.innerHTML = renderFinansmanResultsV2Html(model);
   mountNode.prepend(root);
-  await hydrateFinansmanEvdsCard(root);
+  await hydrateResultsEconomicIndicators(root, 'finansman');
 
   safeTrackEvent(track, 'finance_result_v2_view', {
     category: 'finansman',

@@ -2,28 +2,28 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderCardHtml, hydrateFinansmanEvdsCard } from '../../js/features/finansman/evds-reference-card.js';
 
-test('renderCardHtml shows TCMB reference fields', () => {
-  const html = renderCardHtml({
-    dataDate: '04-06-2026',
-    rates: { usdTry: 45.8696, eurTry: 53.2768, policyRate: 46.5 }
-  });
+const sampleData = {
+  rates: {
+    policyRate: 46.5,
+    cpiAnnual: 30.65,
+    housingLoanRate: 53.23
+  },
+  seriesDates: {
+    policyRate: '04-06-2026',
+    cpiAnnual: '2026-1',
+    housingLoanRate: '29-05-2026'
+  }
+};
 
-  assert.match(html, /TCMB Referans Verileri/);
-  assert.match(html, /USD\/TRY/);
-  assert.match(html, /EUR\/TRY/);
-  assert.match(html, /TCMB politika faizi \(referans\)/);
-  assert.match(html, /Veri tarihi/);
-  assert.match(html, /04-06-2026/);
-  assert.match(html, /TCMB EVDS \(Canlı referans veri\)/);
-  assert.match(html, /bilgilendirme amaçlı referans/);
-  assert.match(html, /45,87/);
-  assert.match(html, /53,28/);
-  assert.doesNotMatch(html, /TÜFE/);
-  assert.doesNotMatch(html, /kredi teklifi/);
-  assert.doesNotMatch(html, /en iyi faiz/);
-  assert.doesNotMatch(html, /yatırım tavsiyesi/);
-  assert.doesNotMatch(html, /banka oranı/);
-  assert.doesNotMatch(html, /kesin oran/);
+test('renderCardHtml shows finansman economic indicators card', () => {
+  const html = renderCardHtml(sampleData);
+
+  assert.match(html, /Güncel Ekonomik Göstergeler/);
+  assert.match(html, /Politika faizi/);
+  assert.match(html, /Konut kredisi faizi/);
+  assert.match(html, /TÜFE/);
+  assert.match(html, /TCMB EVDS/);
+  assert.doesNotMatch(html, /USD\/TRY/);
 });
 
 test('hydrateFinansmanEvdsCard fills mount when API succeeds', async () => {
@@ -33,24 +33,18 @@ test('hydrateFinansmanEvdsCard fills mount when API succeeds', async () => {
   globalThis.fetch = async () => ({
     ok: true,
     async json() {
-      return {
-        ok: true,
-        data: {
-          rates: { usdTry: 45.87, eurTry: 53.28, policyRate: 46 },
-          dataDate: '04-06-2026'
-        }
-      };
+      return { ok: true, data: sampleData };
     }
   });
 
   await hydrateFinansmanEvdsCard(root);
 
-  assert.match(mount.innerHTML, /data-finansman-evds-card/);
-  assert.match(mount.innerHTML, /TCMB Referans Verileri/);
+  assert.match(mount.innerHTML, /data-results-economic-card/);
+  assert.match(mount.innerHTML, /Güncel Ekonomik Göstergeler/);
   assert.equal(mount.hidden, false);
 });
 
-test('hydrateFinansmanEvdsCard hides mount when API fails', async () => {
+test('hydrateFinansmanEvdsCard shows fallback when API fails', async () => {
   const mount = createMountNode();
   const root = createRootWithMount(mount);
 
@@ -64,15 +58,15 @@ test('hydrateFinansmanEvdsCard hides mount when API fails', async () => {
 
   await hydrateFinansmanEvdsCard(root);
 
-  assert.equal(mount.innerHTML, '');
-  assert.equal(mount.hidden, true);
+  assert.match(mount.innerHTML, /Veri geçici olarak alınamadı/);
+  assert.equal(mount.hidden, false);
 });
 
 function createMountNode() {
   let card = null;
   return {
     innerHTML: '',
-    hidden: false,
+    hidden: true,
     attributes: {},
     setAttribute(name, value) {
       this.attributes[name] = value;
@@ -81,14 +75,8 @@ function createMountNode() {
       delete this.attributes[name];
     },
     querySelector(sel) {
-      if (sel === '[data-finansman-evds-card]') return card;
+      if (sel === '[data-results-economic-card]') return card;
       return null;
-    },
-    get querySelectorInner() {
-      return card;
-    },
-    set cardEl(el) {
-      card = el;
     }
   };
 }
@@ -96,7 +84,7 @@ function createMountNode() {
 function createRootWithMount(mount) {
   return {
     querySelector(sel) {
-      if (sel === '[data-finansman-evds-mount]') return mount;
+      if (sel === '[data-results-economic-mount]') return mount;
       return null;
     }
   };
