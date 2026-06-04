@@ -39,6 +39,17 @@ describe('posts content admin', () => {
     assert.ok(fs.existsSync(path.join(root, 'scripts/apply-posts-schema-migration-api.sh')));
   });
 
+  it('blog build includes news and blog content types', () => {
+    const buildLib = fs.readFileSync(path.join(root, 'scripts/lib/build-blog-pages.cjs'), 'utf8');
+    assert.match(buildLib, /content_type=in\.\(news,blog\)/);
+  });
+
+  it('router keeps /blog/:slug in SPA instead of full static navigation', () => {
+    const router = fs.readFileSync(path.join(root, 'js/core/router.js'), 'utf8');
+    assert.match(router, /blogSlugFromPath\(path\)/);
+    assert.match(router, /data-native-route/);
+  });
+
   it('verify-posts-content-type-schema script exists', () => {
     assert.ok(
       fs.existsSync(path.join(root, 'scripts/verify-posts-content-type-schema.cjs'))

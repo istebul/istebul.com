@@ -7,7 +7,9 @@ import {
     getActiveLocale
 } from '../platform/locale-registry.js';
 import {
+    blogSlugFromPath,
     resolveRouteSurface,
+    stripPathname,
     syncHtmlRouteSurface,
     syncRouteDocumentMeta,
     tryExternalRouteRedirect
@@ -99,9 +101,21 @@ export class Router {
 
             const link = e.target.closest('a[href^="/"]');
             if (!link) return;
-            if (link.hasAttribute('data-native-route')) return;
 
             const rawHref = link.getAttribute('href') || '/';
+            if (link.hasAttribute('data-native-route')) {
+                try {
+                    const path = stripPathname(new URL(rawHref, window.location.origin).pathname);
+                    if (blogSlugFromPath(path)) {
+                        e.preventDefault();
+                        this.navigate(rawHref);
+                        return;
+                    }
+                } catch {
+                    /* full navigation for other native routes */
+                }
+                return;
+            }
             if (rawHref.startsWith('/#')) {
                 e.preventDefault();
                 const targetId = rawHref.slice(2).split('?')[0];

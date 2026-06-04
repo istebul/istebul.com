@@ -244,13 +244,18 @@ export async function renderBlogPostPage(root = document, slug) {
 
   document.title = `${post.title} | isteBul Blog`;
 
+  const prose = String(post.body || post.excerpt || '').trim();
+  const proseHtml = prose
+    ? `<div class="ib-content-prose">${escapeHtml(prose).replace(/\n/g, '<br>')}</div>`
+    : renderContentEmpty('Bu yazının metni henüz eklenmemiş. Kısa süre içinde güncellenecektir.');
+
   mount.innerHTML = `
     <article class="ib-content-article">
       <p class="kicker">${escapeHtml(getGuideCategory(post.category)?.label || 'Blog')} · ${escapeHtml(formatContentDate(post.created_at))}</p>
       <h1>${escapeHtml(post.title)}</h1>
       ${post.cover_image_url ? `<p class="ib-content-cover"><img src="${escapeHtml(post.cover_image_url)}" alt="" loading="lazy" decoding="async"></p>` : ''}
       ${post.source_label ? `<p class="ib-content-card-meta text-muted-sm">Kaynak: ${post.source_url ? `<a href="${escapeHtml(post.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(post.source_label)}</a>` : escapeHtml(post.source_label)}</p>` : ''}
-      <div class="ib-content-prose">${escapeHtml(post.body).replace(/\n/g, '<br>')}</div>
+      ${proseHtml}
       <p class="ib-prerender-actions">
         <a class="btn btn-outline" href="/blog" data-native-route>← Tüm yazılar</a>
         <a class="btn btn-primary" href="${escapeHtml(getGuideCategory(post.category)?.ctaHref || '/auto/')}" data-analytics-cta="cta_primary_auto" data-analytics-placement="blog_post">${escapeHtml(getGuideCategory(post.category)?.ctaLabel || 'Ücretsiz analiz başlat')}</a>

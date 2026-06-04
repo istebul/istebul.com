@@ -28,6 +28,10 @@ async function main() {
       { href: '/blog', label: 'Tüm blog yazıları' }
     ];
 
+    const coverHtml = page.cover_image_url
+      ? `<p class="seo-cover"><img src="${page.cover_image_url.replace(/"/g, '&quot;')}" alt="" loading="lazy" decoding="async" width="960" height="540"></p>`
+      : '';
+
     const html = renderContentPage({
       site,
       page,
@@ -35,7 +39,8 @@ async function main() {
       breadcrumbs,
       relatedLinks,
       cta: { href: '/auto/', label: 'Karar analizini başlat' },
-      kicker: 'Blog · Karar rehberi'
+      kicker: page.kicker || 'Blog · Karar rehberi',
+      extraHtml: coverHtml
     });
 
     const outDir = path.join(distDir, 'blog', page.slug);
