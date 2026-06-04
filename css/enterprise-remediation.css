@@ -737,7 +737,26 @@ body.ib-enterprise.nav-signed-in .nav-menu.show {
     }
 
     body.nav-signed-in .nav-container {
-        grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-columns: minmax(0, 1fr) auto auto auto !important;
+    }
+
+    body.nav-signed-in .nav-user {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    body.nav-signed-in .nav-controls {
+        display: flex;
+        grid-column: 3;
+        grid-row: 1;
+        justify-self: end;
+        gap: 0.35rem;
+    }
+
+    body.nav-signed-in .nav-toggle {
+        grid-column: 4;
+        grid-row: 1;
     }
 
     body.nav-signed-in .nav-menu {

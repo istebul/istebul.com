@@ -18,7 +18,6 @@ const REGISTER_SELECTORS = [
     '#register-btn',
     '[data-history-register]',
     '[data-mobile-register]',
-    '[data-mobile-header-register]',
     '[data-account-register]',
     '#switch-to-register'
 ].join(', ');

@@ -74,10 +74,6 @@ body.modal-open {
     white-space: nowrap;
   }
 
-  .nav-auth-mobile-register {
-    padding-inline: 0.72rem !important;
-  }
-
   body.nav-signed-in .nav-auth-mobile {
     display: none !important;
   }
@@ -514,7 +510,8 @@ body.modal-open {
   }
 
   body.ib-enterprise .nav-controls .theme-toggle {
-    display: none;
+    display: inline-flex;
+    flex-shrink: 0;
   }
 
   body.ib-enterprise .mobile-auth-actions {
@@ -529,21 +526,25 @@ body.modal-open {
   }
 
   body.nav-signed-in .nav-controls {
-    display: none;
+    display: flex;
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    gap: 0.35rem;
   }
 
   body.nav-signed-in .nav-toggle {
-    grid-column: 3;
+    grid-column: 4;
+  }
+
+  body.nav-signed-in .nav-container {
+    grid-template-columns: minmax(0, 1fr) auto auto auto !important;
   }
 }
 
 @media (max-width: 420px) {
   .nav-auth-mobile-login {
     padding-inline: 0.5rem !important;
-  }
-
-  .nav-auth-mobile-register {
-    padding-inline: 0.58rem !important;
   }
 
   .nav-toggle-label {
