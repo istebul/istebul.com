@@ -440,6 +440,8 @@ function renderFinansmanResultsV2Html(model) {
         ${model.recommendationLabel ? `<p class="finansman-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
       </header>
 
+      <div class="finansman-v2-evds-mount" data-finansman-evds-mount></div>
+
       ${renderScoreFactorsHtml(model.scoreFactors, 'finansman-v2')}
 
       <div class="finansman-v2-kpis">
@@ -586,7 +588,7 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
   root.className = 'finansman-v2-root';
   root.innerHTML = renderFinansmanResultsV2Html(model);
   mountNode.prepend(root);
-  hydrateFinansmanEvdsCard(root);
+  await hydrateFinansmanEvdsCard(root);
 
   safeTrackEvent(track, 'finance_result_v2_view', {
     category: 'finansman',

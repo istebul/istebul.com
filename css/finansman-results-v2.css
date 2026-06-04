@@ -38,6 +38,20 @@
   }
 }
 
+.finansman-v2-evds-mount[hidden] {
+  display: none !important;
+}
+
+.finansman-v2-evds__loading {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  border: 1px dashed rgba(37, 99, 235, 0.35);
+  background: rgba(239, 246, 255, 0.5);
+  font-size: 0.85rem;
+  color: var(--v2-muted, #64748b);
+}
+
 .finansman-v2-evds {
   margin: 0 0 1rem;
   padding: 0.85rem 1rem;

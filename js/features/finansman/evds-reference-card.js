@@ -10,48 +10,64 @@ function formatRate(value, suffix = '') {
   return n.toLocaleString('tr-TR', { maximumFractionDigits: 4 });
 }
 
-function renderCardHtml(data) {
+export function renderCardHtml(data) {
   const rates = data?.rates || {};
-  const meta = data?.dataDate
-    ? `Veri tarihi: ${escapeHtml(data.dataDate)}`
+  const dataDate = data?.dataDate
+    ? escapeHtml(data.dataDate)
     : data?.fetchedAt
-      ? `Güncelleme: ${escapeHtml(new Date(data.fetchedAt).toLocaleString('tr-TR'))}`
-      : '';
+      ? escapeHtml(new Date(data.fetchedAt).toLocaleDateString('tr-TR'))
+      : '—';
 
   return `
-    <section class="finansman-v2-evds" aria-label="Son TCMB verileri" data-finansman-evds-card>
+    <section class="finansman-v2-evds" aria-label="TCMB referans verileri" data-finansman-evds-card>
       <header class="finansman-v2-evds__head">
-        <h3>Son TCMB Verileri</h3>
+        <h3>TCMB Referans Verileri</h3>
         <p class="finansman-v2-evds__note">Resmi EVDS referansı — simülasyon varsayımlarını kalibre eder; teklif değildir.</p>
       </header>
       <dl class="finansman-v2-evds__grid">
         <div><dt>USD/TRY</dt><dd>${escapeHtml(formatRate(rates.usdTry))}</dd></div>
         <div><dt>EUR/TRY</dt><dd>${escapeHtml(formatRate(rates.eurTry))}</dd></div>
         <div><dt>Politika faizi</dt><dd>${escapeHtml(formatRate(rates.policyRate, '%'))}</dd></div>
-        <div><dt>TÜFE (yıllık)</dt><dd>${escapeHtml(formatRate(rates.cpiAnnual, '%'))}</dd></div>
+        <div><dt>Veri tarihi</dt><dd>${dataDate}</dd></div>
       </dl>
-      ${meta ? `<p class="finansman-v2-evds__meta">${meta} · <a href="/veri-kaynaklari/">Veri kaynakları</a></p>` : ''}
+      <p class="finansman-v2-evds__meta">
+        Kaynak:
+        <a href="https://evds3.tcmb.gov.tr/" rel="noopener noreferrer" target="_blank">TCMB EVDS</a>
+        · <a href="/veri-kaynaklari/">Veri kaynakları</a>
+      </p>
     </section>`;
 }
 
+/**
+ * @param {HTMLElement | null} root — .finansman-v2-root (içinde [data-finansman-evds-mount] olmalı)
+ */
 export async function hydrateFinansmanEvdsCard(root) {
   if (!root) return;
-  const host = root.querySelector('[data-finansman-evds-card]');
-  if (host) return;
 
-  const placeholder = document.createElement('div');
-  placeholder.setAttribute('data-finansman-evds-placeholder', '');
-  placeholder.hidden = true;
-  root.insertBefore(placeholder, root.querySelector('.finansman-v2-kpis') || root.firstChild);
+  const mount = root.querySelector('[data-finansman-evds-mount]');
+  if (!mount || mount.querySelector('[data-finansman-evds-card]')) return;
+
+  mount.hidden = false;
+  mount.setAttribute('aria-busy', 'true');
+  mount.innerHTML =
+    '<p class="finansman-v2-evds__loading">TCMB referans verileri yükleniyor…</p>';
 
   try {
     const res = await fetch('/api/evds-snapshot', { credentials: 'same-origin' });
     const body = await res.json().catch(() => ({}));
-    if (!body?.ok || !body?.data) return;
 
-    const html = renderCardHtml(body.data);
-    placeholder.outerHTML = html;
+    if (!res.ok || !body?.ok || !body?.data) {
+      mount.hidden = true;
+      mount.innerHTML = '';
+      mount.removeAttribute('aria-busy');
+      return;
+    }
+
+    mount.innerHTML = renderCardHtml(body.data);
+    mount.removeAttribute('aria-busy');
   } catch {
-    /* Sessiz düşüş — karar motoru etkilenmez */
+    mount.hidden = true;
+    mount.innerHTML = '';
+    mount.removeAttribute('aria-busy');
   }
 }
