@@ -1738,8 +1738,45 @@ async function loadDashboard() {
       leads.length > 0 ? Math.round((wonLeads.length / leads.length) * 1000) / 10 : 0;
     setStat('stat-conversion', leads.length ? `%${convPct}` : '—');
     setStat('stat-system-alerts', '0');
+    await loadEvdsStatusCard();
   } catch {
     /* dashboard stats are best-effort */
+  }
+}
+
+async function loadEvdsStatusCard() {
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
+  try {
+    const res = await fetch('/api/evds-snapshot', { credentials: 'same-origin' });
+    const body = await res.json().catch(() => ({}));
+    const data = body?.data;
+
+    if (!data) {
+      set('evds-status-connection', 'Bilinmiyor');
+      return;
+    }
+
+    const statusMap = {
+      connected: 'Bağlı',
+      unconfigured: 'Anahtar yok',
+      degraded: 'Kısıtlı'
+    };
+    set('evds-status-connection', statusMap[data.status] || data.status || '—');
+    set(
+      'evds-status-fetched',
+      data.fetchedAt ? new Date(data.fetchedAt).toLocaleString('tr-TR') : '—'
+    );
+    set('evds-status-data-date', data.dataDate || '—');
+    set('evds-status-source', data.source || '—');
+  } catch {
+    set('evds-status-connection', 'Erişilemedi');
+    set('evds-status-fetched', '—');
+    set('evds-status-data-date', '—');
+    set('evds-status-source', '—');
   }
 }
 

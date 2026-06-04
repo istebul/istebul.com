@@ -608,6 +608,28 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <button class="btn btn-ghost btn-sm" data-page-target="dashboard-revenue">Ödemeler</button>
           </div>
         </div>
+        <div class="card" id="admin-evds-status-card">
+          <div class="card-title">Veri Kaynakları Durumu</div>
+          <p class="text-muted-sm">TCMB EVDS bağlantısı ve son başarılı güncelleme</p>
+          <div class="stat-grid stat-grid--secondary" style="margin-top:12px">
+            <div class="stat-card">
+              <div class="stat-label">EVDS bağlantı</div>
+              <div class="stat-value" id="evds-status-connection">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Son başarılı güncelleme</div>
+              <div class="stat-value" id="evds-status-fetched" style="font-size:0.95rem">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Son veri tarihi</div>
+              <div class="stat-value" id="evds-status-data-date" style="font-size:0.95rem">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Kaynak</div>
+              <div class="stat-value" id="evds-status-source" style="font-size:0.85rem">—</div>
+            </div>
+          </div>
+        </div>
         <div class="stat-grid stat-grid--secondary">
           <div class="stat-card"><div class="stat-label">İlan</div><div class="stat-value" id="stat-listings">—</div></div>
           <div class="stat-card"><div class="stat-label">Duyuru</div><div class="stat-value" id="stat-ann">—</div></div>
