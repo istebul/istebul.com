@@ -51,47 +51,78 @@ function startDateDaysAgo(days = 45) {
   return formatEvdsDate(d);
 }
 
+/** EVDS JSON columns use underscores instead of dots (TP.DK.USD.A → TP_DK_USD_A). */
+export function seriesCodeToColumn(seriesCode) {
+  return String(seriesCode).replace(/\./g, '_');
+}
+
+/**
+ * Path-style EVDS URL (key must be sent via HTTP header since 2024-04-05).
+ * @see https://evds2.tcmb.gov.tr/
+ */
+export function buildEvdsSeriesUrl(seriesCode, { startDate, endDate } = {}) {
+  const params = new URLSearchParams({
+    series: seriesCode,
+    startDate: startDate || startDateDaysAgo(60),
+    endDate: endDate || formatEvdsDate(),
+    type: 'json'
+  });
+  return `${EVDS_BASE_URL}${params.toString()}`;
+}
+
+function pickValueFromRow(row, seriesCode) {
+  if (!row || typeof row !== 'object') return null;
+
+  const dateKey = Object.keys(row).find((k) => /tarih|date/i.test(k));
+  const columnCandidates = [
+    seriesCodeToColumn(seriesCode),
+    seriesCode,
+    `${seriesCodeToColumn(seriesCode)}_YTL`
+  ];
+  let valueKey = columnCandidates.find((k) => row[k] != null && row[k] !== '');
+  if (!valueKey) {
+    valueKey = Object.keys(row).find(
+      (k) => k !== dateKey && !/unix/i.test(k) && row[k] !== '' && row[k] != null
+    );
+  }
+  if (!valueKey) return null;
+
+  const raw = String(row[valueKey]).replace(',', '.');
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return null;
+
+  return {
+    value,
+    date: dateKey ? String(row[dateKey]) : null
+  };
+}
+
 export function parseLatestValue(evdsJson, seriesCode) {
   if (!evdsJson || typeof evdsJson !== 'object') return null;
 
   const items = evdsJson.items;
   if (!Array.isArray(items) || !items.length) return null;
 
-  const bucket =
-    items.find((row) => row.SERIES_CODE === seriesCode || row.seriesCode === seriesCode) ||
-    items[0];
-  const rows = bucket?.items || bucket?.data || [];
-  if (!Array.isArray(rows) || !rows.length) return null;
-
-  const last = rows[rows.length - 1];
-  if (!last || typeof last !== 'object') return null;
-
-  const dateKey = Object.keys(last).find((k) => /tarih|date/i.test(k));
-  const valueKey = Object.keys(last).find(
-    (k) => k !== dateKey && !/unix/i.test(k) && last[k] !== '' && last[k] != null
+  const nestedBucket = items.find(
+    (row) => row && (row.SERIES_CODE === seriesCode || row.seriesCode === seriesCode)
   );
-  if (!valueKey) return null;
+  if (nestedBucket) {
+    const rows = nestedBucket.items || nestedBucket.data || [];
+    if (Array.isArray(rows) && rows.length) {
+      return pickValueFromRow(rows[rows.length - 1], seriesCode);
+    }
+  }
 
-  const raw = String(last[valueKey]).replace(',', '.');
-  const value = Number(raw);
-  if (!Number.isFinite(value)) return null;
+  for (let i = items.length - 1; i >= 0; i -= 1) {
+    const point = pickValueFromRow(items[i], seriesCode);
+    if (point) return point;
+  }
 
-  return {
-    value,
-    date: dateKey ? String(last[dateKey]) : null
-  };
+  return null;
 }
 
 async function fetchEvdsSeries(apiKey, seriesCode, { startDate, endDate, fetchImpl = fetch } = {}) {
-  const params = new URLSearchParams({
-    series: seriesCode,
-    startDate: startDate || startDateDaysAgo(60),
-    endDate: endDate || formatEvdsDate(),
-    type: 'json',
-    key: apiKey
-  });
-
-  const url = `${EVDS_BASE_URL}?${params.toString()}`;
+  const url = buildEvdsSeriesUrl(seriesCode, { startDate, endDate });
   let lastError = null;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
@@ -100,7 +131,10 @@ async function fetchEvdsSeries(apiKey, seriesCode, { startDate, endDate, fetchIm
     try {
       const response = await fetchImpl(url, {
         method: 'GET',
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          key: apiKey
+        },
         signal: controller.signal
       });
       clearTimeout(timer);
@@ -115,11 +149,39 @@ async function fetchEvdsSeries(apiKey, seriesCode, { startDate, endDate, fetchIm
         continue;
       }
 
-      const json = await response.json();
+      const contentType = String(response.headers?.get?.('content-type') || '').toLowerCase();
+      let json;
+      try {
+        json = await response.json();
+      } catch (parseError) {
+        lastError = new Error(`EVDS invalid JSON (${seriesCode})`);
+        logEvds('warn', 'evds_series_json_parse_failed', {
+          series: seriesCode,
+          attempt,
+          contentType: contentType || 'unknown'
+        });
+        continue;
+      }
+
+      if (!contentType.includes('json') && !Array.isArray(json?.items)) {
+        lastError = new Error(`EVDS non-JSON payload (${seriesCode})`);
+        logEvds('warn', 'evds_series_non_json', {
+          series: seriesCode,
+          attempt,
+          contentType: contentType || 'unknown',
+          itemCount: Array.isArray(json?.items) ? json.items.length : 0
+        });
+        continue;
+      }
+
       const point = parseLatestValue(json, seriesCode);
       if (!point) {
         lastError = new Error(`EVDS empty series (${seriesCode})`);
-        logEvds('warn', 'evds_series_empty', { series: seriesCode, attempt });
+        logEvds('warn', 'evds_series_empty', {
+          series: seriesCode,
+          attempt,
+          itemCount: Array.isArray(json?.items) ? json.items.length : 0
+        });
         continue;
       }
 
@@ -205,9 +267,9 @@ async function pullLiveSnapshot(apiKey, fetchImpl) {
     pull('housingLoanRate', EVDS_SERIES.HOUSING_LOAN, true)
   ]);
 
-  const hasAny = Object.values(rates).some((r) => r?.value != null);
-  if (!hasAny) {
-    throw new Error('EVDS returned no usable series');
+  const hasFx = rates.usdTry?.value != null && rates.eurTry?.value != null;
+  if (!hasFx) {
+    throw new Error('EVDS returned no usable FX series');
   }
 
   return buildSnapshot({

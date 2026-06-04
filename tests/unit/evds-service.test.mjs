@@ -8,24 +8,55 @@ const {
   getInflationData,
   getHousingLoanRates,
   parseLatestValue,
+  buildEvdsSeriesUrl,
+  seriesCodeToColumn,
   __resetEvdsCacheForTests,
   EVDS_SERIES
 } = await import('../../js/services/evds-service.js');
 
+function seriesFromEvdsUrl(url) {
+  const match = String(url).match(/series=([^&]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 function mockEvdsResponse(seriesCode, value, date = '15-05-2026') {
-  const col = seriesCode.replace(/\./g, '_');
+  const col = seriesCodeToColumn(seriesCode);
   return {
-    items: [
-      {
-        SERIES_CODE: seriesCode,
-        items: [{ Tarih: date, [col]: String(value) }]
-      }
-    ]
+    items: [{ Tarih: date, UNIXTIME: '1715760000', [col]: String(value) }]
   };
 }
 
-test('parseLatestValue reads last EVDS row', () => {
-  const json = mockEvdsResponse('TP.DK.USD.A', 32.5);
+test('buildEvdsSeriesUrl uses path-style params without API key', () => {
+  const url = buildEvdsSeriesUrl('TP.DK.USD.A', {
+    startDate: '01-01-2026',
+    endDate: '04-06-2026'
+  });
+  assert.ok(url.startsWith('https://evds2.tcmb.gov.tr/service/evds/series='));
+  assert.ok(url.includes('startDate=01-01-2026'));
+  assert.ok(!url.includes('key='));
+});
+
+test('parseLatestValue reads flat EVDS items array', () => {
+  const json = {
+    items: [
+      { Tarih: '01-05-2026', UNIXTIME: '1', TP_DK_USD_A: '32.10' },
+      { Tarih: '02-05-2026', UNIXTIME: '2', TP_DK_USD_A: '32.55' }
+    ]
+  };
+  const point = parseLatestValue(json, 'TP.DK.USD.A');
+  assert.equal(point.value, 32.55);
+  assert.equal(point.date, '02-05-2026');
+});
+
+test('parseLatestValue reads nested EVDS bucket (legacy)', () => {
+  const json = {
+    items: [
+      {
+        SERIES_CODE: 'TP.DK.USD.A',
+        items: [{ Tarih: '15-05-2026', TP_DK_USD_A: '32.5' }]
+      }
+    ]
+  };
   const point = parseLatestValue(json, 'TP.DK.USD.A');
   assert.equal(point.value, 32.5);
   assert.equal(point.date, '15-05-2026');
@@ -39,14 +70,41 @@ test('fetchEvdsSnapshot returns unconfigured without API key', async () => {
   assert.equal(snap.rates.usdTry, null);
 });
 
+test('fetchEvdsSnapshot uses header key and path URL (no query key)', async () => {
+  __resetEvdsCacheForTests();
+  const seen = [];
+  const fetchImpl = async (url, init) => {
+    seen.push({ url, key: init?.headers?.key });
+    const series = seriesFromEvdsUrl(url);
+    return {
+      ok: true,
+      headers: { get: () => 'application/json; charset=UTF-8' },
+      async json() {
+        return mockEvdsResponse(series, series === EVDS_SERIES.USD_TRY ? 34.1 : 37.2);
+      }
+    };
+  };
+
+  const env = { TCMB_EVDS_API_KEY: 'test-secret-key' };
+  const snap = await fetchEvdsSnapshot(env, { fetchImpl, forceRefresh: true });
+
+  assert.equal(snap.source, 'live');
+  assert.equal(snap.rates.usdTry, 34.1);
+  assert.equal(snap.rates.eurTry, 37.2);
+  assert.ok(snap.dataDate);
+  assert.ok(seen.every((s) => !s.url.includes('key=')));
+  assert.ok(seen.every((s) => s.key === 'test-secret-key'));
+});
+
 test('fetchEvdsSnapshot caches live snapshot for 24h', async () => {
   __resetEvdsCacheForTests();
   let calls = 0;
   const fetchImpl = async (url) => {
     calls += 1;
-    const series = new URL(url).searchParams.get('series');
+    const series = seriesFromEvdsUrl(url);
     return {
       ok: true,
+      headers: { get: () => 'application/json' },
       async json() {
         if (series === EVDS_SERIES.USD_TRY) return mockEvdsResponse(series, 34.1);
         if (series === EVDS_SERIES.EUR_TRY) return mockEvdsResponse(series, 37.2);
@@ -73,9 +131,10 @@ test('fetchEvdsSnapshot uses stale snapshot when upstream fails', async () => {
   let fail = false;
   const fetchImpl = async (url) => {
     if (fail) throw new Error('network down');
-    const series = new URL(url).searchParams.get('series');
+    const series = seriesFromEvdsUrl(url);
     return {
       ok: true,
+      headers: { get: () => 'application/json' },
       async json() {
         return mockEvdsResponse(series, 30);
       }
@@ -92,12 +151,47 @@ test('fetchEvdsSnapshot uses stale snapshot when upstream fails', async () => {
   assert.equal(stale.rates.usdTry, 30);
 });
 
+test('fetchEvdsSnapshot returns live when optional series fail but FX ok', async () => {
+  __resetEvdsCacheForTests();
+  const fetchImpl = async (url) => {
+    const series = seriesFromEvdsUrl(url);
+    if (series === EVDS_SERIES.HOUSING_LOAN) {
+      return {
+        ok: true,
+        headers: { get: () => 'application/json' },
+        async json() {
+          return { items: [] };
+        }
+      };
+    }
+    return {
+      ok: true,
+      headers: { get: () => 'application/json' },
+      async json() {
+        const value =
+          series === EVDS_SERIES.USD_TRY ? 35 : series === EVDS_SERIES.EUR_TRY ? 38 : 10;
+        return mockEvdsResponse(series, value);
+      }
+    };
+  };
+
+  const snap = await fetchEvdsSnapshot(
+    { TCMB_EVDS_API_KEY: 'k' },
+    { fetchImpl, forceRefresh: true }
+  );
+
+  assert.equal(snap.source, 'live');
+  assert.equal(snap.rates.usdTry, 35);
+  assert.equal(snap.rates.eurTry, 38);
+});
+
 test('getter helpers expose exchange and policy rates', async () => {
   __resetEvdsCacheForTests();
   const fetchImpl = async (url) => {
-    const series = new URL(url).searchParams.get('series');
+    const series = seriesFromEvdsUrl(url);
     return {
       ok: true,
+      headers: { get: () => 'application/json' },
       async json() {
         return mockEvdsResponse(series, series === EVDS_SERIES.CPI_ANNUAL ? 40 : 10);
       }
