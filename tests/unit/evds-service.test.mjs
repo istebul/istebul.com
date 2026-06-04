@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const {
-  fetchEvdsDebugReport,
+  fetchEvdsFxDebugProbe,
   fetchEvdsSnapshot,
   getExchangeRates,
   getPolicyRate,
@@ -210,11 +210,20 @@ test('getter helpers expose exchange and policy rates', async () => {
   assert.ok(housing.housingLoanRate == null || typeof housing.housingLoanRate === 'number');
 });
 
-test('fetchEvdsDebugReport exposes safe upstream diagnostics without secrets', async () => {
+test('fetchEvdsFxDebugProbe exposes safe FX upstream diagnostics without secrets', async () => {
   const secret = 'super-secret-evds-key';
   const fetchImpl = async (url, init) => {
-    const series = seriesFromEvdsUrl(url);
-    const body = JSON.stringify(mockEvdsResponse(series, 34.5));
+    assert.ok(!url.includes('key='));
+    assert.equal(init?.headers?.key, secret);
+    const body = JSON.stringify({
+      items: [
+        {
+          Tarih: '01-05-2026',
+          TP_DK_USD_A: '34.1',
+          TP_DK_EUR_A: '37.2'
+        }
+      ]
+    });
     return {
       ok: true,
       status: 200,
@@ -225,33 +234,26 @@ test('fetchEvdsDebugReport exposes safe upstream diagnostics without secrets', a
     };
   };
 
-  const report = await fetchEvdsDebugReport(
-    { TCMB_EVDS_API_KEY: secret },
-    { fetchImpl }
-  );
+  const debug = await fetchEvdsFxDebugProbe({ TCMB_EVDS_API_KEY: secret }, { fetchImpl });
 
-  assert.equal(report.debug, true);
-  assert.equal(report.configured, true);
-  assert.deepEqual(report.requiredSeries, [EVDS_SERIES.USD_TRY, EVDS_SERIES.EUR_TRY]);
-  assert.equal(report.probes.length, Object.keys(EVDS_SERIES).length);
+  assert.equal(debug.temporary, true);
+  assert.deepEqual(debug.usedSeries, [EVDS_SERIES.USD_TRY, EVDS_SERIES.EUR_TRY]);
+  assert.ok(debug.evdsRequestUrlMasked.includes('series=TP.DK.USD.A-TP.DK.EUR.A'));
+  assert.ok(!debug.evdsRequestUrlMasked.includes('key='));
+  assert.equal(debug.evdsHttpStatus, 200);
+  assert.match(debug.evdsContentType, /json/i);
+  assert.ok(debug.evdsBodyPreview.length <= 300);
+  assert.deepEqual(debug.evdsTopLevelKeys, ['items']);
+  assert.equal(debug.evdsItemsLength, 1);
+  assert.ok(debug.evdsFirstItemKeys.includes('TP_DK_USD_A'));
+  assert.ok(debug.normalizedFieldCandidates.includes('TP_DK_USD_A'));
+  assert.equal(debug.errorMessage, null);
 
-  const serialized = JSON.stringify(report);
+  const serialized = JSON.stringify(debug);
   assert.ok(!serialized.includes(secret));
-  assert.ok(!serialized.includes('key='));
-
-  const usdProbe = report.probes.find((probe) => probe.seriesCode === EVDS_SERIES.USD_TRY);
-  assert.ok(usdProbe.requestUrl.includes('series=TP.DK.USD.A'));
-  assert.ok(!usdProbe.requestUrl.includes('key='));
-  assert.equal(usdProbe.httpStatus, 200);
-  assert.match(usdProbe.contentType, /json/i);
-  assert.ok(usdProbe.responseBodyPreview.length <= 300);
-  assert.deepEqual(usdProbe.parsedTopLevelKeys, ['items']);
-  assert.ok(usdProbe.normalizedFieldNames.includes('TP_DK_USD_A'));
-  assert.equal(usdProbe.parseResult.value, 34.5);
-  assert.equal(usdProbe.errorMessage, null);
 });
 
-test('fetchEvdsDebugReport reports upstream HTTP errors safely', async () => {
+test('fetchEvdsFxDebugProbe reports upstream HTTP errors safely', async () => {
   const fetchImpl = async () => ({
     ok: false,
     status: 403,
@@ -261,14 +263,19 @@ test('fetchEvdsDebugReport reports upstream HTTP errors safely', async () => {
     }
   });
 
-  const report = await fetchEvdsDebugReport(
+  const debug = await fetchEvdsFxDebugProbe(
     { TCMB_EVDS_API_KEY: 'leaked-secret-value' },
     { fetchImpl }
   );
 
-  const probe = report.probes[0];
-  assert.equal(probe.httpStatus, 403);
-  assert.match(probe.errorMessage, /403/);
-  assert.ok(!probe.responseBodyPreview.includes('leaked-secret-value'));
-  assert.ok(probe.responseBodyPreview.includes('[REDACTED]'));
+  assert.equal(debug.evdsHttpStatus, 403);
+  assert.match(debug.errorMessage, /403/);
+  assert.ok(!debug.evdsBodyPreview.includes('leaked-secret-value'));
+  assert.ok(debug.evdsBodyPreview.includes('[REDACTED]'));
+});
+
+test('fetchEvdsFxDebugProbe handles missing API key', async () => {
+  const debug = await fetchEvdsFxDebugProbe({});
+  assert.match(debug.errorMessage, /not configured/i);
+  assert.equal(debug.evdsRequestUrlMasked, null);
 });
