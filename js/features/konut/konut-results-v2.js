@@ -25,6 +25,7 @@ import {
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
+import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -450,6 +451,8 @@ function renderKonutResultsV2Html(model) {
 
       ${costNote}
 
+      <div class="ib-results-economic-mount konut-v2-evds-mount" data-results-economic-mount hidden></div>
+
       <section class="konut-v2-cost-grid" aria-label="Toplam maliyet görünümü">
         <h3>Toplam Maliyet Görünümü</h3>
         <dl class="konut-v2-cost-dl">
@@ -565,6 +568,7 @@ export async function mountKonutResultsV2({
   root.className = 'konut-v2-root';
   root.innerHTML = renderKonutResultsV2Html(model);
   mountNode.prepend(root);
+  await hydrateResultsEconomicIndicators(root, 'konut');
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'konut',

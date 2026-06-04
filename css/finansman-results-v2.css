@@ -1,7 +1,7 @@
 /**
- * Auto Results V2 (Sprint 1) — premium SaaS panel (mobile + dark mode uyumlu).
- * Mevcut Auto premium tasarım diline uyumlu, izole sınıf isimleri.
+ * Finansman Results V2 — premium SaaS panel (mobile + dark mode uyumlu).
  */
+@import 'results-economic-indicators.css';
 .finansman-v2-root {
   margin: 1.25rem 0 1.75rem;
 }

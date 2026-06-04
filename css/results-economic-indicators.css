@@ -1,0 +1,157 @@
+/**
+ * Sonuç ekranları — Güncel Ekonomik Göstergeler (kompakt premium kart)
+ */
+
+.ib-results-economic-mount {
+  margin: 0 0 1rem;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.ib-results-economic-mount[hidden] {
+  display: none !important;
+}
+
+.ib-results-economic__card {
+  padding: 0.85rem 0.95rem 0.75rem;
+  border-radius: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.92) 0%, rgba(248, 250, 252, 0.95) 100%);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  min-width: 0;
+}
+
+.ib-results-economic__card--fallback {
+  border-style: dashed;
+  border-color: rgba(148, 163, 184, 0.45);
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.ib-results-economic__head {
+  margin-bottom: 0.6rem;
+}
+
+.ib-results-economic__head h3 {
+  margin: 0;
+  font-size: clamp(0.92rem, 2.4vw, 1rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--v2-text, #0f172a);
+}
+
+.ib-results-economic__subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--v2-muted, #64748b);
+}
+
+.ib-results-economic__fallback {
+  margin: 0 0 0.55rem;
+  font-size: 0.8rem;
+  color: var(--v2-muted, #64748b);
+}
+
+.ib-results-economic__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.ib-results-economic__item {
+  padding: 0.55rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(255, 255, 255, 0.78);
+  min-width: 0;
+}
+
+.ib-results-economic__label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--v2-muted, #64748b);
+}
+
+.ib-results-economic__value {
+  margin: 0.18rem 0 0;
+  font-size: clamp(0.92rem, 2.6vw, 1.05rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--v2-text, #0f172a);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.ib-results-economic__date {
+  margin: 0.12rem 0 0;
+  font-size: 0.68rem;
+  color: var(--v2-muted, #64748b);
+}
+
+.ib-results-economic__source {
+  margin: 0.2rem 0 0;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(37, 99, 235, 0.85);
+}
+
+.ib-results-economic__item--skeleton .ib-results-economic__skeleton-label,
+.ib-results-economic__item--skeleton .ib-results-economic__skeleton-value,
+.ib-results-economic__item--skeleton .ib-results-economic__skeleton-date {
+  display: block;
+  border-radius: 5px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.16) 0%,
+    rgba(148, 163, 184, 0.3) 50%,
+    rgba(148, 163, 184, 0.16) 100%
+  );
+  background-size: 200% 100%;
+  animation: ib-results-economic-shimmer 1.2s ease-in-out infinite;
+}
+
+.ib-results-economic__item--skeleton .ib-results-economic__skeleton-label {
+  width: 62%;
+  height: 0.55rem;
+}
+
+.ib-results-economic__item--skeleton .ib-results-economic__skeleton-value {
+  width: 70%;
+  height: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+.ib-results-economic__item--skeleton .ib-results-economic__skeleton-date {
+  width: 45%;
+  height: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+@keyframes ib-results-economic-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .ib-results-economic__grid {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ib-results-economic__item--skeleton .ib-results-economic__skeleton-label,
+  .ib-results-economic__item--skeleton .ib-results-economic__skeleton-value,
+  .ib-results-economic__item--skeleton .ib-results-economic__skeleton-date {
+    animation: none;
+  }
+}
