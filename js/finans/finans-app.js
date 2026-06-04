@@ -6,7 +6,8 @@ import {
   getFinansSteps,
   getFinansOptions,
   getFinansStepMeta,
-  resetFieldsOnPurposeChange
+  resetFieldsOnPurposeChange,
+  canAdvanceFinansStep
 } from './finans-flow.js';
 import {
   buildFinansResults,
@@ -39,29 +40,6 @@ export const FINANS_DOM_IDS = {
   leadPhone: 'finans-lead-phone',
   leadEmail: 'finans-lead-email'
 };
-
-function canAdvance(state, step) {
-  if (!step) return false;
-  if (step.id === 'purpose') return Boolean(state.purpose);
-  if (step.id === 'amount') {
-    if (!state.amount_range) return false;
-    if (state.amount_range === 'manuel') return Boolean(state.amount_manual);
-    return true;
-  }
-  if (step.id === 'term') return Boolean(state.term_months);
-  if (step.id === 'capacity') {
-    if (!state.capacity_range) return false;
-    if (state.capacity_range === 'manuel') return Boolean(state.capacity_manual);
-    return true;
-  }
-  if (step.id === 'cashflow') {
-    return Boolean(state.income_type) && Boolean(state.early_payment) && Boolean(state.monthly_income);
-  }
-  if (step.id === 'sensitivity') {
-    return Boolean(state.rate_sensitivity) && Boolean(state.risk_tolerance);
-  }
-  return true;
-}
 
 function renderStepBody(step, state, { renderOptionGrid }) {
   const purpose = state.purpose;
@@ -141,7 +119,7 @@ initDecisionFlow(
     rate_sensitivity: '',
     risk_tolerance: ''
   },
-  canAdvance,
+  canAdvance: canAdvanceFinansStep,
   renderStepBody,
   onFieldChange(state, field, _value, previousValue) {
     if (field === 'purpose') {

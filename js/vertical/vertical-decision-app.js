@@ -1,4 +1,6 @@
+import { withTimeout } from '../core/async-utils.js';
 import { formatTry } from '../tatil/tatil-utils.js';
+import { setSubmitLoading } from '../runtime/enterprise-form-ux.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountFinansmanResultsV2 } from '../features/finansman/finansman-results-v2.js';
 import { mountSigortaResultsV2 } from '../features/sigorta/sigorta-results-v2.js';
@@ -20,6 +22,8 @@ const VERTICAL_SITE_CATEGORY = Object.freeze({
 });
 
 /** @type {Record<string, string>} */
+const TRACKER_STEP_TIMEOUT_MS = 8000;
+
 const DEFAULT_DOM_IDS = {
   stepProgress: 'vacation-step-progress',
   aiSummary: 'vacation-ai-summary',
@@ -219,14 +223,45 @@ export function initDecisionFlow(config) {
 
     el('next')?.addEventListener('click', async () => {
       const step = currentStep();
+      const nextBtn = el('next');
       if (!config.canAdvance(state, step) && step?.id !== 'note') return;
-      if (config.onStepComplete) await config.onStepComplete(state, step);
-      state.stepIndex += 1;
+
+      clearWizardError();
+      setSubmitLoading(nextBtn, true, {
+        busyLabel: wt('common.processing', 'Hazırlanıyor…')
+      });
+
       const steps = getSteps();
-      if (state.stepIndex >= steps.length) {
-        await showResults();
-      } else {
-        renderWizard();
+      const advancingToResults = state.stepIndex >= steps.length - 1;
+
+      try {
+        if (config.onStepComplete) {
+          await withTimeout(
+            Promise.resolve(config.onStepComplete(state, step)),
+            TRACKER_STEP_TIMEOUT_MS
+          );
+        }
+        state.stepIndex += 1;
+        if (state.stepIndex >= steps.length) {
+          await showResults();
+        } else {
+          renderWizard();
+        }
+      } catch (error) {
+        console.warn(`${config.vertical || 'vertical'}-wizard-step-failed`, error);
+        if (advancingToResults) {
+          state.stepIndex = Math.max(0, steps.length - 1);
+          setWizardVisible(true);
+          renderWizard();
+        }
+        showWizardError(
+          wt(
+            'common.resultsError',
+            'Sonuçlar hazırlanırken bir sorun oluştu. Lütfen girdilerinizi kontrol edip tekrar deneyin.'
+          )
+        );
+      } finally {
+        setSubmitLoading(nextBtn, false);
       }
     });
   }
@@ -234,6 +269,23 @@ export function initDecisionFlow(config) {
   function refreshNext() {
     const nextBtn = el('next');
     if (nextBtn) nextBtn.disabled = !config.canAdvance(state, currentStep());
+  }
+
+  function showWizardError(message) {
+    const mount = el('wizard');
+    if (!mount || !message) return;
+    let banner = mount.querySelector('.vacation-wizard-error');
+    if (!banner) {
+      banner = document.createElement('p');
+      banner.className = 'vacation-wizard-error ib-form-banner ib-form-banner--error';
+      banner.setAttribute('role', 'alert');
+      mount.querySelector('.vacation-wizard-card')?.prepend(banner);
+    }
+    banner.textContent = message;
+  }
+
+  function clearWizardError() {
+    el('wizard')?.querySelector('.vacation-wizard-error')?.remove();
   }
 
   function renderWizard() {
@@ -283,7 +335,18 @@ export function initDecisionFlow(config) {
   }
 
   async function showResults() {
-    state.results = config.buildResults(state);
+    let built = [];
+    try {
+      built = config.buildResults(state) || [];
+    } catch (error) {
+      console.warn(`${config.vertical || 'vertical'}-build-results-failed`, error);
+      throw error;
+    }
+    if (!built.length) {
+      throw new Error('empty_results');
+    }
+
+    state.results = built;
     state.selected_option = '';
     state.confirmationStep = false;
     setWizardVisible(false);
@@ -291,10 +354,16 @@ export function initDecisionFlow(config) {
     trackAnalysisStarted(siteCategory, { phase: 'wizard_complete' });
     trackResultsViewed(siteCategory, { results_count: state.results.length });
     renderResults();
-    await config.tracker.trackResults({
-      vertical: config.vertical,
-      score: state.results[0]?.score
-    });
+
+    void withTimeout(
+      Promise.resolve(
+        config.tracker.trackResults({
+          vertical: config.vertical,
+          score: state.results[0]?.score
+        })
+      ),
+      TRACKER_STEP_TIMEOUT_MS
+    ).catch(() => {});
   }
 
   function renderResults() {
