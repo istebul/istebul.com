@@ -50,5 +50,8 @@ fi
 apply_sql "$ROOT/supabase/migrations/20260626_posts_full_schema_repair.sql" \
   "20260626_posts_full_schema_repair"
 
+apply_sql "$ROOT/supabase/migrations/20260627_posts_category_canonical.sql" \
+  "20260627_posts_category_canonical"
+
 apply_sql_optional "$ROOT/supabase/migrations/20260624_posts_content_type_and_covers_storage.sql" \
   "20260624_posts_content_type_and_covers_storage"
