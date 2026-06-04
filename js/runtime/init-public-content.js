@@ -5,32 +5,44 @@ import {
   renderBlogPostPage,
   renderCampaignsPage
 } from '../features/content/content-hub-ui.js';
-import { resolveContentRouteSurface } from './route-surface.js';
+import { blogSlugFromPath, resolveContentRouteSurface } from './route-surface.js';
 import { initCategoryGuidesHub } from './init-category-guides.js';
 
 export async function refreshPublicContentSurface(surfaceId) {
-  if (surfaceId === 'home') {
-    await hydrateHomeContentHubPreview();
-    return;
-  }
+  try {
+    if (surfaceId === 'home') {
+      await hydrateHomeContentHubPreview();
+      return;
+    }
 
-  if (surfaceId === 'page-duyurular') {
-    await renderAnnouncementsPage(document);
-    return;
-  }
+    if (surfaceId === 'page-duyurular') {
+      await renderAnnouncementsPage(document);
+      return;
+    }
 
-  if (surfaceId === 'page-kampanyalar') {
-    await renderCampaignsPage(document);
-    return;
-  }
+    if (surfaceId === 'page-kampanyalar') {
+      await renderCampaignsPage(document);
+      return;
+    }
 
-  if (surfaceId === 'page-blog') {
-    await renderBlogPage(document, window.location.search);
-    return;
-  }
+    if (surfaceId === 'page-blog') {
+      await renderBlogPage(document, window.location.search);
+      return;
+    }
 
-  if (surfaceId === 'page-blog-post') {
-    await renderBlogPostPage(document, blogSlugFromPath(window.location.pathname));
+    if (surfaceId === 'page-blog-post') {
+      await renderBlogPostPage(document, blogSlugFromPath(window.location.pathname));
+    }
+  } catch (err) {
+    console.error('[public-content]', surfaceId, err);
+    const fallbackRoot =
+      surfaceId === 'page-blog-post'
+        ? document.querySelector('#page-blog-post [data-blog-post-root]')
+        : document.querySelector(`#${surfaceId} [data-content-list]`);
+    if (fallbackRoot) {
+      fallbackRoot.innerHTML =
+        '<p class="text-muted-sm">İçerik yüklenemedi. Sayfayı yenileyin veya <a href="/blog/">blog listesine</a> dönün.</p>';
+    }
   }
 }
 

@@ -39,3 +39,9 @@ test('blog filter tabs use canonical category hrefs', () => {
   assert.match(ui, /blogCategoryFromSearch/);
   assert.doesNotMatch(ui, /kategori=\$\{/);
 });
+
+test('init-public-content imports blogSlugFromPath for blog post hydration', () => {
+  const mod = fs.readFileSync(path.join(root, 'js/runtime/init-public-content.js'), 'utf8');
+  assert.match(mod, /import\s*\{[^}]*blogSlugFromPath[^}]*\}\s*from\s*'\.\/route-surface\.js'/);
+  assert.match(mod, /renderBlogPostPage\(document,\s*blogSlugFromPath/);
+});
