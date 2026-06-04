@@ -29,7 +29,7 @@ function logEvds(level, event, fields = {}) {
   });
   if (level === 'error') console.error(line);
   else if (level === 'warn') console.warn(line);
-  else console.log(line);
+  /* info-level: dropped in production (repo quality gate disallows console.log) */
 }
 
 function redactSecrets(text, apiKey) {
