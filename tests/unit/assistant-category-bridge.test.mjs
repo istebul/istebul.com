@@ -17,6 +17,24 @@ test('normalizeAutoUsage maps assistant enums to vertical', () => {
 test('normalizeTatilGoal maps vacation types', () => {
   assert.equal(normalizeTatilGoal('familyResort'), 'deniz');
   assert.equal(normalizeTatilGoal('culture'), 'kultur');
+  assert.equal(normalizeTatilGoal('luxury'), 'luks-resort');
+});
+
+test('bootstrapTatilFromAssistantQuery applies goal budget and travelers', async () => {
+  const { bootstrapTatilFromAssistantQuery } = await import(
+    '../../js/features/assistant/assistant-category-bridge.js'
+  );
+  const state = { vacation_goal: '', budget_range: '', travelers_count: '', people_type: '' };
+  bootstrapTatilFromAssistantQuery(
+    state,
+    new URLSearchParams('goal=culture&budget=95000&travelers=couple&priority=premium')
+  );
+  assert.equal(state.vacation_goal, 'kultur');
+  assert.equal(state.budget_range, 'manuel');
+  assert.equal(state.budget_total, 95000);
+  assert.equal(state.people_type, 'cift');
+  assert.equal(state.travelers_count, '2');
+  assert.equal(state.comfort_expectation, 'luks');
 });
 
 test('buildAssistantInsightInput enriches finansman costs', () => {

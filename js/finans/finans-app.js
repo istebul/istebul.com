@@ -17,6 +17,7 @@ import {
   parseManualBudget
 } from './finans-engine.js';
 import { formatTry } from '../tatil/tatil-utils.js';
+import { bootstrapFinansFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
 
 const tracker = createVerticalTracker('finans');
 
@@ -134,6 +135,7 @@ initDecisionFlow(
   buildResults: buildFinansResults,
   buildSummary: buildFinansSummary,
   buildCommentary: buildFinansCommentary,
-  getProgress: getFinansProgress
+  getProgress: getFinansProgress,
+  bootstrapFromQuery: bootstrapFinansFromAssistantQuery
   })
 );

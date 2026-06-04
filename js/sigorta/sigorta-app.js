@@ -21,6 +21,7 @@ import {
   trackSigortaStep,
   saveSigortaLead
 } from './sigorta-intake.js';
+import { bootstrapSigortaFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
 
 /** Sigorta sayfası DOM id’leri — vacation-* id’leri ile çakışmayı önler */
 export const SIGORTA_DOM_IDS = {
@@ -97,8 +98,8 @@ function canAdvance(state, step) {
       return (
         isValidAge(state.age) &&
         Boolean(state.residents_count) &&
-        state.children_count !== undefined &&
-        state.children_count !== ''
+        (state.residents_count === '1' ||
+          (state.children_count !== undefined && state.children_count !== ''))
       );
     case 'trip':
       return (
@@ -366,6 +367,9 @@ function bootSigortaApp() {
       canAdvance,
       renderStepBody,
       onFieldChange(state, field) {
+        if (field === 'residents_count' && state.residents_count === '1') {
+          state.children_count = '0';
+        }
         if (field !== 'insurance_type') return;
         const prev = state._lastInsuranceType || '';
         if (state.insurance_type === prev) return;
@@ -379,7 +383,8 @@ function bootSigortaApp() {
       buildResults: buildSigortaResults,
       buildSummary: buildSigortaSummary,
       buildCommentary,
-      getProgress: getSigortaProgress
+      getProgress: getSigortaProgress,
+      bootstrapFromQuery: bootstrapSigortaFromAssistantQuery
     })
   );
 

@@ -1,3 +1,7 @@
+/**
+ * @deprecated Canlı /konut/ rotası `js/real-estate/real-estate-app.js` kullanır.
+ * Bu modül yalnızca test/legacy referansları içindir — HTML'e bağlamayın.
+ */
 import { initDecisionFlow } from '../vertical/vertical-decision-app.js';
 import { resolveWizardConfig, wt } from '../vertical/wizard-i18n.js';
 import { createVerticalTracker } from '../vertical/vertical-intake.js';

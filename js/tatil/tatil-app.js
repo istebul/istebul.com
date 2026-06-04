@@ -23,6 +23,7 @@ import {
 import { parseManualBudget, formatTry } from './tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountTatilResultsV2 } from '../features/tatil/tatil-results-v2.js';
+import { bootstrapTatilFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
 
 const state = {
   stepIndex: 0,
@@ -993,6 +994,11 @@ async function init() {
   }
 
   if (scenarios.length) state.scenarios = scenarios;
+
+  bootstrapTatilFromAssistantQuery(state, new URLSearchParams(window.location.search));
+  if (state.vacation_goal) {
+    applyGoalFlowDefaults(state);
+  }
 
   setupMobileNav();
   renderProgress();

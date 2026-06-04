@@ -61,3 +61,21 @@ test('finansman konut fork limits long terms only', () => {
     ['120', '240']
   );
 });
+
+test('sigorta seyahat fork limits destination options', () => {
+  const questions = [
+    { id: 'insuranceType', options: [{ value: 'seyahat' }, { value: 'arac' }] },
+    {
+      id: 'destination_type',
+      options: [
+        { value: 'yurtici' },
+        { value: 'yurtdisi' },
+        { value: 'schengen' }
+      ]
+    },
+    { id: 'budget', type: 'number' }
+  ];
+  const filtered = applyAssistantQuestionFlow('sigorta', questions, { insuranceType: 'seyahat' });
+  const dest = filtered.find((q) => q.id === 'destination_type');
+  assert.equal(dest.options.length, 3);
+});

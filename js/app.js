@@ -1952,6 +1952,361 @@ class App {
                         ]
                     }
                 ]
+            },
+            sigorta: {
+                name: 'Sigorta',
+                icon: 'shield',
+                description: 'Araç, konut, sağlık ve seyahat sigortasında teminat derinliği ve prim bandını karşılaştırın.',
+                questions: [
+                    {
+                        id: 'insuranceType',
+                        label: 'Hangi sigorta korumasına ihtiyaç duyuyorsunuz?',
+                        weight: 18,
+                        options: [
+                            { value: 'arac', label: 'Araç (trafik/kasko bağlamı)' },
+                            { value: 'konut', label: 'Konut (DASK/yangın/eşya)' },
+                            { value: 'saglik', label: 'Sağlık' },
+                            { value: 'seyahat', label: 'Seyahat' }
+                        ]
+                    },
+                    {
+                        id: 'license_years',
+                        label: 'Ehliyet süreniz nedir?',
+                        weight: 8,
+                        options: [
+                            { value: '0-2', label: '0–2 yıl' },
+                            { value: '3-10', label: '3–10 yıl' },
+                            { value: '11plus', label: '11+ yıl' }
+                        ]
+                    },
+                    {
+                        id: 'usage_type',
+                        label: 'Kullanım tipiniz nedir?',
+                        weight: 10,
+                        options: [
+                            { value: 'ozel', label: 'Özel kullanım' },
+                            { value: 'ticari', label: 'Ticari kullanım' }
+                        ]
+                    },
+                    {
+                        id: 'property_role',
+                        label: 'Konut durumunuz nedir?',
+                        weight: 10,
+                        options: [
+                            { value: 'malik', label: 'Malik' },
+                            { value: 'kiraci', label: 'Kiracı' }
+                        ]
+                    },
+                    {
+                        id: 'destination_type',
+                        label: 'Seyahat destinasyonu nedir?',
+                        weight: 10,
+                        options: [
+                            { value: 'yurtici', label: 'Yurt içi' },
+                            { value: 'yurtdisi', label: 'Yurt dışı' },
+                            { value: 'schengen', label: 'Schengen / AB' }
+                        ]
+                    },
+                    {
+                        id: 'trip_duration',
+                        label: 'Seyahat süresi nedir?',
+                        weight: 8,
+                        options: [
+                            { value: '1-7', label: '1–7 gün' },
+                            { value: '8-15', label: '8–15 gün' },
+                            { value: '16plus', label: '16+ gün' }
+                        ]
+                    },
+                    {
+                        id: 'risk_perception',
+                        label: 'Risk algınız nedir?',
+                        weight: 12,
+                        options: [
+                            { value: 'dusuk', label: 'Düşük — temel koruma yeterli' },
+                            { value: 'orta', label: 'Orta — dengeli teminat' },
+                            { value: 'yuksek', label: 'Yüksek — geniş kapsam' }
+                        ]
+                    },
+                    {
+                        id: 'budget_level',
+                        label: 'Prim bütçe bandınız nedir?',
+                        weight: 14,
+                        options: [
+                            { value: 'dusuk', label: 'Ekonomik' },
+                            { value: 'orta', label: 'Dengeli' },
+                            { value: 'yuksek', label: 'Geniş koruma' }
+                        ]
+                    },
+                    {
+                        id: 'budget',
+                        label: 'Yıllık prim bütçe hedefiniz (opsiyonel)',
+                        type: 'number',
+                        required: false,
+                        weight: 6,
+                        min: 0,
+                        step: 500,
+                        placeholder: 'Örn. 12000'
+                    }
+                ],
+                options: [
+                    {
+                        name: 'Dengeli standart paket',
+                        price: 14500,
+                        scoreNote: 'Zorunlu + temel ek teminat dengesi; çoğu profil için sürdürülebilir prim bandı.',
+                        match: {
+                            insuranceType: ['arac', 'konut', 'saglik', 'seyahat'],
+                            risk_perception: ['orta', 'dusuk'],
+                            budget_level: ['orta', 'dusuk']
+                        },
+                        costs: [
+                            { label: 'Tahmini yıllık prim', value: 14500 },
+                            { label: 'Teminat yeterliliği', value: 8200 },
+                            { label: 'Muafiyet payı', value: 2500 },
+                            { label: 'Dosya/masraf', value: 600 }
+                        ],
+                        channels: [
+                            { label: 'Sigorta karşılaştırma', url: 'https://www.sigortam.net/' },
+                            { label: 'Poliçe inceleme', url: 'https://www.hangikredi.com/sigorta' },
+                            { label: 'KVKK bilgilendirme', url: '/kvkk.html' }
+                        ]
+                    },
+                    {
+                        name: 'Geniş koruma senaryosu',
+                        price: 22800,
+                        scoreNote: 'Yüksek risk algısı ve geniş bütçe bandında üst teminat limitleri öne çıkar.',
+                        match: {
+                            insuranceType: ['arac', 'konut', 'saglik'],
+                            risk_perception: ['yuksek', 'orta'],
+                            budget_level: ['yuksek', 'orta']
+                        },
+                        costs: [
+                            { label: 'Tahmini yıllık prim', value: 22800 },
+                            { label: 'Ek teminat limiti', value: 12000 },
+                            { label: 'Asistans/ek hizmet', value: 3200 },
+                            { label: 'Muafiyet payı', value: 1800 }
+                        ],
+                        channels: [
+                            { label: 'Geniş paket teklifleri', url: 'https://www.sigortam.net/' },
+                            { label: 'Sağlık sigortası', url: 'https://www.hangikredi.com/sigorta/saglik-sigortasi' },
+                            { label: 'Konut DASK', url: 'https://www.dask.gov.tr/' }
+                        ]
+                    },
+                    {
+                        name: 'Ekonomik temel koruma',
+                        price: 7800,
+                        scoreNote: 'Minimum yasal/zorunlu koruma ve düşük prim bandı; kapsam sınırlı kalabilir.',
+                        match: {
+                            insuranceType: ['arac', 'seyahat', 'saglik'],
+                            risk_perception: ['dusuk'],
+                            budget_level: ['dusuk']
+                        },
+                        costs: [
+                            { label: 'Tahmini yıllık prim', value: 7800 },
+                            { label: 'Temel teminat', value: 5200 },
+                            { label: 'Muafiyet payı', value: 1400 },
+                            { label: 'Ek teminat', value: 0 }
+                        ],
+                        channels: [
+                            { label: 'Zorunlu trafik', url: 'https://www.sigortam.net/trafik-sigortasi' },
+                            { label: 'Seyahat sigortası', url: 'https://www.sigortam.net/seyahat-sigortasi' },
+                            { label: 'Karşılaştırma', url: 'https://www.enuygun.com/sigorta/' }
+                        ]
+                    },
+                    {
+                        name: 'Seyahat odaklı paket',
+                        price: 4200,
+                        scoreNote: 'Kısa/orta süreli seyahatler için iptal, sağlık ve bagaj teminatı dengeli profil.',
+                        match: {
+                            insuranceType: ['seyahat'],
+                            destination_type: ['yurtici', 'yurtdisi', 'schengen'],
+                            trip_duration: ['1-7', '8-15', '16plus'],
+                            risk_perception: ['orta', 'dusuk'],
+                            budget_level: ['dusuk', 'orta']
+                        },
+                        costs: [
+                            { label: 'Seyahat primi', value: 4200 },
+                            { label: 'Sağlık teminatı', value: 2800 },
+                            { label: 'İptal/bagaj', value: 900 },
+                            { label: 'Asistans', value: 500 }
+                        ],
+                        channels: [
+                            { label: 'Seyahat sigortası', url: 'https://www.sigortam.net/seyahat-sigortasi' },
+                            { label: 'Schengen vize', url: 'https://www.konsolosluk.gov.tr/' },
+                            { label: 'Uçuş karşılaştırma', url: 'https://www.enuygun.com/' }
+                        ]
+                    }
+                ]
+            },
+            kasko: {
+                name: 'Kasko',
+                icon: 'shield-alert',
+                description: 'Araç tipi, yaş, kullanım ve teminat seviyesine göre kasko prim/teminat dengesini analiz edin.',
+                questions: [
+                    {
+                        id: 'vehicle_category',
+                        label: 'Araç tipiniz nedir?',
+                        weight: 16,
+                        options: [
+                            { value: 'otomobil', label: 'Otomobil' },
+                            { value: 'suv', label: 'SUV / crossover' },
+                            { value: 'motosiklet', label: 'Motosiklet' },
+                            { value: 'ticari_arac', label: 'Ticari araç' }
+                        ]
+                    },
+                    {
+                        id: 'vehicle_year_band',
+                        label: 'Araç yaş bandı nedir?',
+                        weight: 12,
+                        options: [
+                            { value: '0-3', label: '0–3 yaş' },
+                            { value: '4-10', label: '4–10 yaş' },
+                            { value: '11plus', label: '11+ yaş' }
+                        ]
+                    },
+                    {
+                        id: 'usage_type',
+                        label: 'Kullanım tipiniz nedir?',
+                        weight: 10,
+                        options: [
+                            { value: 'ozel', label: 'Özel kullanım' },
+                            { value: 'ticari', label: 'Ticari kullanım' }
+                        ]
+                    },
+                    {
+                        id: 'coverage_level',
+                        label: 'Tercih ettiğiniz kasko kapsamı nedir?',
+                        weight: 14,
+                        options: [
+                            { value: 'mini', label: 'Mini kasko' },
+                            { value: 'standard', label: 'Standart kasko' },
+                            { value: 'full', label: 'Geniş kasko' }
+                        ]
+                    },
+                    {
+                        id: 'risk_perception',
+                        label: 'Onarım/risk algınız nedir?',
+                        weight: 10,
+                        options: [
+                            { value: 'dusuk', label: 'Düşük' },
+                            { value: 'orta', label: 'Orta' },
+                            { value: 'yuksek', label: 'Yüksek' }
+                        ]
+                    },
+                    {
+                        id: 'budget_level',
+                        label: 'Yıllık prim bütçe bandınız nedir?',
+                        weight: 12,
+                        options: [
+                            { value: 'dusuk', label: 'Ekonomik' },
+                            { value: 'orta', label: 'Dengeli' },
+                            { value: 'yuksek', label: 'Üst segment' }
+                        ]
+                    },
+                    {
+                        id: 'budget',
+                        label: 'Hedef yıllık prim (opsiyonel)',
+                        type: 'number',
+                        required: false,
+                        weight: 6,
+                        min: 0,
+                        step: 500,
+                        placeholder: 'Örn. 18500'
+                    }
+                ],
+                options: [
+                    {
+                        name: 'Standart kasko — dengeli teminat',
+                        price: 16800,
+                        scoreNote: 'Otomobil/SUV profilleri için cam, mini onarım ve ikame araç maddeleri dengeli.',
+                        match: {
+                            vehicle_category: ['otomobil', 'suv'],
+                            vehicle_year_band: ['0-3', '4-10'],
+                            usage_type: ['ozel'],
+                            coverage_level: ['standard', 'full'],
+                            risk_perception: ['orta', 'dusuk'],
+                            budget_level: ['orta', 'yuksek']
+                        },
+                        costs: [
+                            { label: 'Tahmini yıllık prim', value: 16800 },
+                            { label: 'Teminat limiti', value: 9800 },
+                            { label: 'Muafiyet payı', value: 3200 },
+                            { label: 'Asistans', value: 1200 }
+                        ],
+                        channels: [
+                            { label: 'Kasko teklifleri', url: 'https://www.sigortam.net/kasko' },
+                            { label: 'Araç değerleme', url: 'https://www.arabam.com/' },
+                            { label: 'Ekspertiz', url: 'https://www.otorapor.com/' }
+                        ]
+                    },
+                    {
+                        name: 'Geniş kasko — üst limit',
+                        price: 24500,
+                        scoreNote: 'Yüksek risk algısı ve geniş bütçede ikame araç + cam + doğal afet kapsamı güçlü.',
+                        match: {
+                            vehicle_category: ['otomobil', 'suv', 'ticari_arac'],
+                            coverage_level: ['full'],
+                            risk_perception: ['yuksek', 'orta'],
+                            budget_level: ['yuksek', 'orta']
+                        },
+                        costs: [
+                            { label: 'Tahmini yıllık prim', value: 24500 },
+                            { label: 'Geniş teminat', value: 15200 },
+                            { label: 'İkame araç', value: 4800 },
+                            { label: 'Muafiyet payı', value: 2100 }
+                        ],
+                        channels: [
+                            { label: 'Geniş kasko', url: 'https://www.sigortam.net/kasko' },
+                            { label: 'Karşılaştırma', url: 'https://www.hangikredi.com/sigorta/kasko' },
+                            { label: 'Poliçe şartları', url: '/yardim.html' }
+                        ]
+                    },
+                    {
+                        name: 'Mini kasko — maliyet odaklı',
+                        price: 9200,
+                        scoreNote: 'Eski model ve düşük prim bandında temel hasar koruması; kapsam sınırlıdır.',
+                        match: {
+                            vehicle_category: ['otomobil', 'motosiklet'],
+                            vehicle_year_band: ['4-10', '11plus'],
+                            coverage_level: ['mini', 'standard'],
+                            risk_perception: ['dusuk'],
+                            budget_level: ['dusuk']
+                        },
+                        costs: [
+                            { label: 'Tahmini yıllık prim', value: 9200 },
+                            { label: 'Temel teminat', value: 6100 },
+                            { label: 'Muafiyet payı', value: 1800 },
+                            { label: 'Ek teminat', value: 0 }
+                        ],
+                        channels: [
+                            { label: 'Mini kasko', url: 'https://www.sigortam.net/kasko' },
+                            { label: 'Trafik + kasko', url: 'https://www.enuygun.com/sigorta/' },
+                            { label: 'Araç ilanları', url: 'https://www.sahibinden.com/otomobil' }
+                        ]
+                    },
+                    {
+                        name: 'Ticari filo profili',
+                        price: 31200,
+                        scoreNote: 'Ticari kullanım ve yüksek km profillerinde onarım riski ve prim bandı yukarı modellenir.',
+                        match: {
+                            vehicle_category: ['ticari_arac'],
+                            usage_type: ['ticari'],
+                            coverage_level: ['standard', 'full'],
+                            risk_perception: ['yuksek', 'orta'],
+                            budget_level: ['orta', 'yuksek']
+                        },
+                        costs: [
+                            { label: 'Tahmini yıllık prim', value: 31200 },
+                            { label: 'Ticari teminat', value: 18400 },
+                            { label: 'İş durması', value: 5200 },
+                            { label: 'Muafiyet payı', value: 3600 }
+                        ],
+                        channels: [
+                            { label: 'Ticari kasko', url: 'https://www.sigortam.net/kasko' },
+                            { label: 'Filo teklifleri', url: 'https://www.hangikredi.com/sigorta/kasko' },
+                            { label: 'Partner başvurusu', url: '/partner-olun.html' }
+                        ]
+                    }
+                ]
             }
         };
     }
@@ -2334,7 +2689,9 @@ class App {
             arac: 'Türkiye otomotiv satın alma danışmanı',
             ev: 'Türkiye gayrimenkul satın alma danışmanı',
             tatil: 'Türkiye seyahat planlama danışmanı',
-            finansman: 'Türkiye tüketici ve konut finansmanı danışmanı'
+            finansman: 'Türkiye tüketici ve konut finansmanı danışmanı',
+            sigorta: 'Türkiye sigorta ve koruma danışmanı',
+            kasko: 'Türkiye kasko ve araç sigortası danışmanı'
         };
 
         const answerLines = categoryConfig.questions
@@ -2547,6 +2904,14 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             finansman: [
                 'Gösterilen faiz ve taksitler örnek bandıdır; banka teklifi müşteri profiline göre değişir.',
                 'Dosya masrafı, sigorta ve erken kapama koşulları toplam maliyeti etkiler.'
+            ],
+            sigorta: [
+                'Gösterilen prim bandı bilgilendirme amaçlıdır; poliçe şartları sigorta şirketine aittir.',
+                'Teminat limitleri, muafiyetler ve istisnalar teklif aşamasında mutlaka okunmalıdır.'
+            ],
+            kasko: [
+                'Kasko primi araç değeri, hasar geçmişi ve bölgeye göre teklifte değişir.',
+                'Cam, ikame araç ve mini onarım maddeleri poliçe paketine göre farklılaşır.'
             ]
         };
         return cautions[categoryId] || ['Güncel fiyat ve sözleşme koşulları karar öncesi doğrulanmalıdır.'];
@@ -2573,6 +2938,16 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 'En az 2–3 kurumdan karşılaştırmalı kredi teklifi alın; EYM (efektif yıllık maliyet) satırını kontrol edin.',
                 'Aylık taksit/gelir oranını %40–45 bandının altında tutmayı hedefleyin.',
                 'Erken kapama cezası ve sigorta zorunluluklarını sözleşmede doğrulayın.'
+            ],
+            sigorta: [
+                'En az iki sigorta teklifinde teminat tablosunu satır satır karşılaştırın.',
+                'Poliçe yenileme tarihinden önce muafiyet ve istisna maddelerini kontrol edin.',
+                'Zorunlu trafik ile kasko/tamamlayıcı ürünleri ayrı ayrı değerlendirin.'
+            ],
+            kasko: [
+                'İki farklı kasko teklifinde cam, ikame araç ve mini onarım maddelerini karşılaştırın.',
+                'Araç rayiç bedelini güncel piyasa verisiyle doğrulayın.',
+                'Hasarsızlık indirimi ve muafiyet tutarını poliçe öncesi netleştirin.'
             ]
         };
         return steps[categoryId] || ['En iyi iki seçeneği gerçek fiyat ve sözleşme koşullarıyla karşılaştırın.'];
@@ -3122,7 +3497,9 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             arac: 'Araçta fiyat kadar yakıt/enerji, kasko, trafik sigortası ve bakım toplamı önemlidir.',
             ev: 'Evde alım bedeline ek olarak aidat/bakım, sigorta, vergi ve yenileme payı hesaplanır.',
             tatil: 'Tatilde yalnızca paket fiyatı değil ulaşım, aktivite/transfer ve sigorta da toplam bütçeye girer.',
-            finansman: 'Finansmanda faiz, dosya masrafı, sigorta zorunluluğu ve erken kapama koşulları toplam maliyeti belirler.'
+            finansman: 'Finansmanda faiz, dosya masrafı, sigorta zorunluluğu ve erken kapama koşulları toplam maliyeti belirler.',
+            sigorta: 'Sigortada prim kadar teminat limiti, muafiyet ve istisna maddeleri toplam koruma seviyesini belirler.',
+            kasko: 'Kaskoda prim bandı; araç yaşı, kullanım tipi, teminat kapsamı ve muafiyetlerle birlikte okunmalıdır.'
         };
         return notes[categoryId] || 'Seçilen kategoriye göre maliyet kalemleri ayrıştırıldı.';
     }
@@ -3132,7 +3509,9 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             arac: 'Yıllık sahip olma maliyeti',
             ev: 'Yıllık konut gideri',
             tatil: 'Toplam tatil maliyeti',
-            finansman: 'Toplam finansman maliyeti'
+            finansman: 'Toplam finansman maliyeti',
+            sigorta: 'Tahmini yıllık prim yükü',
+            kasko: 'Tahmini yıllık kasko primi'
         };
         return labels[categoryId] || 'Toplam dönemsel maliyet';
     }
@@ -3180,6 +3559,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         if (categoryId === 'arac') return option.name + ' için sonuç tahmini fiyat, yıllık gider ve finansman yükü üzerinden üretilmiştir. Gerçek ilan, ekspertiz ve sigorta teklifiyle doğrulanmalıdır.';
         if (categoryId === 'ev') return option.name + ' için sonuç alım bedeli, yıllık konut giderleri ve kredi simülasyonuna göre üretilmiştir. Tapu, imar, deprem ve aidat bilgileri kontrol edilmelidir.';
         if (categoryId === 'finansman') return option.name + ' için sonuç vade, kapasite ve faiz bandı varsayımlarıyla üretilmiştir. Kesin teklif banka onayına ve EYM satırına bağlıdır.';
+        if (categoryId === 'sigorta') return option.name + ' için sonuç teminat derinliği ve prim bandı varsayımlarıyla üretilmiştir. Bağlayıcı poliçe koşulları sigorta şirketi teklifinde doğrulanmalıdır.';
+        if (categoryId === 'kasko') return option.name + ' için sonuç araç profili ve teminat seviyesi varsayımlarıyla üretilmiştir. Nihai prim teklif aşamasında değişebilir.';
         return option.name + ' için sonuç paket bütçesi, ulaşım ve ek giderlere göre üretilmiştir. Sezon, oda tipi ve iptal koşulları kontrol edilmelidir.';
     }
 

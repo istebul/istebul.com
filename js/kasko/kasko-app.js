@@ -18,6 +18,7 @@ import {
   trackKaskoAnalysisStarted,
   trackKaskoStep
 } from './kasko-intake.js';
+import { bootstrapKaskoFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
 
 export const KASKO_DOM_IDS = {
   stepProgress: 'kasko-step-progress',
@@ -143,7 +144,8 @@ function boot() {
       buildResults: buildKaskoResults,
       buildSummary: buildKaskoSummary,
       buildCommentary,
-      getProgress: getKaskoProgress
+      getProgress: getKaskoProgress,
+      bootstrapFromQuery: bootstrapKaskoFromAssistantQuery
     })
   );
 
