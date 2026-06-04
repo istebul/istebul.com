@@ -15,11 +15,19 @@ body.kasko-page #kasko-flow {
   scroll-margin-top: 5rem;
 }
 
-body.sigorta-page #sigorta-wizard,
-body.kasko-page #kasko-wizard {
+body.sigorta-page #sigorta-wizard:not([hidden]),
+body.kasko-page #kasko-wizard:not([hidden]) {
   display: block !important;
   visibility: visible !important;
   min-height: 12rem;
+}
+
+body.sigorta-page #sigorta-wizard[hidden],
+body.kasko-page #kasko-wizard[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  min-height: 0 !important;
+  pointer-events: none;
 }
 
 body.sigorta-page #sigorta-wizard .vacation-wizard-card,

@@ -60,6 +60,23 @@ export function initDecisionFlow(config) {
 
   const $ = (sel, root = document) => root.querySelector(sel);
 
+  /** Hide wizard when results are shown (CSS flow-visible uses !important otherwise). */
+  function setWizardVisible(visible) {
+    const mount = el('wizard');
+    if (!mount) return;
+    if (visible) {
+      mount.hidden = false;
+      mount.setAttribute('aria-hidden', 'false');
+      mount.style.removeProperty('display');
+      mount.style.removeProperty('visibility');
+    } else {
+      mount.hidden = true;
+      mount.setAttribute('aria-hidden', 'true');
+      mount.style.setProperty('display', 'none', 'important');
+      mount.style.setProperty('visibility', 'hidden', 'important');
+    }
+  }
+
   function escapeHtml(str) {
     return String(str ?? '')
       .replace(/&/g, '&amp;')
@@ -225,11 +242,11 @@ export function initDecisionFlow(config) {
 
     const steps = getSteps();
     if (state.stepIndex >= steps.length) {
-      mount.hidden = true;
+      setWizardVisible(false);
       return;
     }
 
-    mount.hidden = false;
+    setWizardVisible(true);
     const step = currentStep();
     const stepMeta =
       typeof config.getStepMeta === 'function'
@@ -269,8 +286,7 @@ export function initDecisionFlow(config) {
     state.results = config.buildResults(state);
     state.selected_option = '';
     state.confirmationStep = false;
-    const wizardEl = el('wizard');
-    if (wizardEl) wizardEl.hidden = true;
+    setWizardVisible(false);
     const siteCategory = VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical;
     trackAnalysisStarted(siteCategory, { phase: 'wizard_complete' });
     trackResultsViewed(siteCategory, { results_count: state.results.length });
