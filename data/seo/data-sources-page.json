@@ -1,0 +1,145 @@
+{
+  "title": "Veri Kaynakları | isteBul",
+  "description": "isteBul karar analizlerinde kullanılan TÜİK, TCMB EVDS ve diğer veri kaynakları hakkında şeffaf bilgi.",
+  "h1": "Veri kaynakları merkezi",
+  "trustMessage": "Kullanılan veri kaynakları düzenli olarak gözden geçirilir ve kaynaklarıyla birlikte şeffaf biçimde yayınlanır. isteBul veri üretmez; kamuya açık kaynaklar, kullanıcı girdileri ve karar motoru çıktıları birlikte değerlendirilir.",
+  "intro": "isteBul, karar skoru ve toplam maliyet (TCO) çıktılarını üretirken kamuya açık resmi istatistikleri, kullanıcı girdilerini ve kural tabanlı varsayımları bir araya getirir. Bu sayfa hangi kaynaktan hangi amaçla yararlandığımızı şeffaf biçimde listeler; finansal tavsiye veya resmi kurum adına taahhüt içermez.",
+  "schemaProfile": "data-sources",
+  "sources": [
+    {
+      "id": "tuik",
+      "name": "Türkiye İstatistik Kurumu (TÜİK)",
+      "providerType": "public",
+      "status": "active",
+      "purpose": "Tüketici fiyatları, enflasyon ve hanehalkı harcama yapısı gibi makro göstergeler; TCO ve bütçe bandı varsayımlarının kalibrasyonu için referans.",
+      "categories": [
+        "Tüketici fiyat endeksi (TÜFE)",
+        "Yıllık enflasyon oranları",
+        "Hanehalkı bütçe istatistikleri",
+        "Konut ve ulaştırma harcama payları",
+        "Motorlu Kara Taşıtları İstatistikleri",
+        "Karayolu Trafik Kaza İstatistikleri",
+        "Konut Satış İstatistikleri",
+        "Turizm İstatistikleri",
+        "Nüfus ve Demografi İstatistikleri"
+      ],
+      "categoryVerticals": [
+        {
+          "category": "Motorlu Kara Taşıtları İstatistikleri",
+          "vertical": "Auto",
+          "verticalHref": "/auto/",
+          "note": "Araç parkı, segment dağılımı ve kayıt verileri — TCO segment varsayımları ve ikinci el likidite sinyalleri için."
+        },
+        {
+          "category": "Karayolu Trafik Kaza İstatistikleri",
+          "vertical": "Auto · Sigorta",
+          "verticalHref": "/sigorta/",
+          "note": "Risk bandı ve sigorta maliyeti bağlamı — kaza yoğunluğu kullanıcıya açıklanabilir risk faktörü olarak yansıtılır."
+        },
+        {
+          "category": "Konut Satış İstatistikleri",
+          "vertical": "Konut",
+          "verticalHref": "/konut/",
+          "note": "Konut piyasası hacmi ve fiyat baskısı — ödeme yükü ve lokasyon kararlarında makro referans."
+        },
+        {
+          "category": "Turizm İstatistikleri",
+          "vertical": "Tatil",
+          "verticalHref": "/tatil/",
+          "note": "Sezon, konaklama ve harcama eğilimleri — tatil bütçe bandı ve talep yoğunluğu kalibrasyonu."
+        },
+        {
+          "category": "Nüfus ve Demografi İstatistikleri",
+          "vertical": "Tüm dikeyler",
+          "verticalHref": "/",
+          "note": "Bölgesel talep ve hane profili — segmentasyon ve güven skoru bağlamında destekleyici sinyal."
+        },
+        {
+          "category": "Tüketici fiyat endeksi (TÜFE)",
+          "vertical": "Finansman · Auto",
+          "verticalHref": "/finans/",
+          "note": "Enflasyon ve satın alma gücü — finansman vadesi ve TCO projeksiyonlarında maliyet güncellemesi."
+        }
+      ],
+      "lastUpdated": "2026-05-28",
+      "officialUrl": "https://www.tuik.gov.tr/",
+      "accessMode": "Kamuya açık web yayınları ve Data Portal",
+      "licenseNote": "Kaynak atıfı TÜİK yayın kurallarına uygun yapılır; ham veri yeniden satılmaz."
+    },
+    {
+      "id": "tcmb-evds",
+      "name": "TCMB Elektronik Veri Dağıtım Sistemi (EVDS)",
+      "providerType": "public",
+      "status": "active",
+      "purpose": "Döviz kurları, politika faizi ve seçilmiş finansal seriler; finansman simülasyonu ve nakit akışı stres testlerinde referans.",
+      "categories": [
+        "Günlük döviz kurları (USD, EUR)",
+        "Politika faizi ve para piyasası göstergeleri",
+        "Tüketici kredisi / konut kredisi referans serileri (seçili)",
+        "Enflasyon beklentisi serileri (seçili)"
+      ],
+      "lastUpdated": "2026-06-02",
+      "officialUrl": "https://evds2.tcmb.gov.tr/",
+      "accessMode": "EVDS API veya resmi web arayüzü (iş ortaklığı anahtarı ile)",
+      "licenseNote": "TCMB kullanım koşulları geçerlidir; ticari yeniden dağıtım kısıtlarına uyulur."
+    },
+    {
+      "id": "partner-feeds",
+      "name": "İş ortağı ve lisanslı veri sağlayıcıları (planlanan)",
+      "providerType": "partner",
+      "status": "planned",
+      "purpose": "Kasko prim aralıkları, segment bakım maliyeti, konut endeksi veya canlı kredi teklifi gibi kategori-özel sinyaller — yalnızca sözleşmeli API veya dosya beslemesi ile.",
+      "categories": [
+        "Sigorta ve kasko prim referansları",
+        "Araç segment bakım / yedek parça endeksleri",
+        "Konut fiyat ve aidat bantları",
+        "Lisanslı finansman teklif parametreleri"
+      ],
+      "lastUpdated": "2026-06-04",
+      "officialUrl": "https://www.istebul.com/partner-olun.html",
+      "accessMode": "Pilot entegrasyon — henüz canlı üretim beslemesi yok",
+      "licenseNote": "Her ortak için ayrı sözleşme, KVKK ve API kullanım şartları uygulanır."
+    }
+  ],
+  "disclaimer": {
+    "heading": "Veri kullanımı ve sorumluluk",
+    "paragraphs": [
+      "isteBul, listelenen kaynaklardan alınan verileri olduğu gibi veya kural tabanlı dönüşümlerle kullanır; resmi kurumların güncel yayınları her zaman platform çıktısından önce güncellenmiş olabilir.",
+      "Gösterilen simülasyonlar, skorlar ve TCO bantları bilgilendirme amaçlıdır; banka onayı, sigorta poliçesi veya bağlayıcı fiyat teklifi yerine geçmez.",
+      "Üçüncü taraf sitelere yönlendirme (ilan, sigorta karşılaştırma vb.) kullanıcı tercihine bağlıdır; isteBul bu sitelerin içeriğinden sorumlu değildir.",
+      "Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz. Veri silme ve erişim talepleri destek kanallarından yürütülür."
+    ],
+    "bullets": [
+      "Kritik kararlar için ekspertiz, hukuki inceleme ve resmi kurum teyidi kullanıcı sorumluluğundadır.",
+      "Canlı API entegrasyonu devreye alındığında bu sayfadaki «son güncelleme» tarihleri ve kategori listesi güncellenir.",
+      "Metodoloji ve skor üretim süreci için /metodoloji/ sayfasına bakın."
+    ]
+  },
+  "sections": [
+    {
+      "heading": "Nasıl kullanıyoruz?",
+      "body": "Karar motoru önce kullanıcı profilini (bütçe, kullanım, finansman tercihi) yapılandırır; ardından kategori kural seti ile kamu verisini ve varsayımları birleştirir. Yapay zekâ katmanı yalnızca motor çıktısını açıklar; kaynak verisini keyfi olarak değiştirmez.",
+      "subsections": [
+        {
+          "heading": "Manuel ve otomatik güncelleme",
+          "body": "TÜİK ve TCMB serileri periyodik olarak gözden geçirilir. EVDS veya benzeri API anahtarı bağlandığında güncelleme sıklığı ürün sürüm notlarında belirtilir."
+        }
+      ]
+    }
+  ],
+  "faqs": [
+    {
+      "q": "isteBul veriyi satıyor mu veya yeniden yayınlıyor mu?",
+      "a": "Hayır. Kamu verisi referans ve kalibrasyon içindir; ham TÜİK/TCMB tabloları ticari olarak yeniden paketlenmez. Kullanıcıya sunulan çıktı karar skoru ve TCO özetidir."
+    },
+    {
+      "q": "Son güncelleme tarihi ne anlama geliyor?",
+      "a": "isteBul’un ilgili kaynak serisini platform varsayımlarına en son işlediği tarihtir. Resmi kurumun kendi yayın tarihi farklı olabilir; bağlayıcı işlem öncesi resmi siteyi kontrol edin."
+    },
+    {
+      "q": "İş ortağı verisi ne zaman görünür?",
+      "a": "Sözleşmeli API veya dosya beslemesi devreye alındığında kart durumu «aktif» olur ve bu sayfada listelenir. Pilot başvuru için partner sayfasını kullanın."
+    }
+  ],
+  "conclusion": "Şeffaflık, isteBul karar altyapısının temelidir. Sorularınız için iletişim veya metodoloji sayfamızı kullanın."
+}

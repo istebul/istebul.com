@@ -16,6 +16,7 @@ const STATIC_ALIASES = Object.freeze({
   '/hakkimizda': '/hakkimizda.html',
   '/iletisim': '/iletisim.html',
   '/metodoloji': '/metodoloji/',
+  '/veri-kaynaklari': '/veri-kaynaklari/',
   '/araba': '/auto/',
   '/konut': '/konut/',
   '/tatil': '/tatil/',

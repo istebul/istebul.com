@@ -78,11 +78,15 @@
     },
     {
       "heading": "Veri Kaynakları",
-      "body": "Katalog segmentleri, ortalama işletme maliyeti sinyalleri, finansman parametreleri ve kullanıcı girdileri birleştirilir. Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz.",
+      "body": "Katalog segmentleri, ortalama işletme maliyeti sinyalleri, finansman parametreleri ve kullanıcı girdileri birleştirilir. Kamuya açık TÜİK ve TCMB EVDS referansları ile planlanan iş ortağı beslemeleri /veri-kaynaklari/ adresinde listelenir. Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz.",
       "subsections": [
         {
           "heading": "Güncelleme",
-          "body": "Piyasa verileri periyodik güncellenir; kritik değişiklikler metodoloji notlarında yansıtılır. Geçmiş analizleriniz hesabınızda saklanabilir — silme talebi destek kanalından yapılır."
+          "body": "Piyasa verileri periyodik güncellenir; kritik değişiklikler metodoloji notlarında ve veri kaynakları merkezinde yansıtılır. Geçmiş analizleriniz hesabınızda saklanabilir — silme talebi destek kanalından yapılır."
+        },
+        {
+          "heading": "Şeffaflık merkezi",
+          "body": "Kaynak adı, kullanım amacı, veri kategorileri ve son güncelleme tarihleri için Veri Kaynakları sayfasına bakın: /veri-kaynaklari/"
         }
       ]
     },

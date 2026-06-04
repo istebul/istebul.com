@@ -40,6 +40,7 @@ const requiredSitemapPaths = [
   'https://www.istebul.com/tatil/',
   'https://www.istebul.com/finans/',
   'https://www.istebul.com/metodoloji/',
+  'https://www.istebul.com/veri-kaynaklari/',
   'https://www.istebul.com/karar-asistani/',
   'https://www.istebul.com/planlar',
   'https://www.istebul.com/ilanlar/',
@@ -93,6 +94,7 @@ checkPage('konut/index.html', { canonical: 'https://www.istebul.com/konut/' });
 checkPage('tatil/index.html', { canonical: 'https://www.istebul.com/tatil/' });
 checkPage('finans/index.html', { canonical: 'https://www.istebul.com/finans/' });
 checkPage('metodoloji/index.html', { canonical: 'https://www.istebul.com/metodoloji/' });
+checkPage('veri-kaynaklari/index.html', { canonical: 'https://www.istebul.com/veri-kaynaklari/' });
 checkPage('sigorta/index.html', {
   canonical: 'https://www.istebul.com/sigorta/',
   aiCopy: true

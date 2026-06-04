@@ -13,6 +13,7 @@
     { "loc": "/", "priority": "1.0", "changefreq": "weekly" },
     { "loc": "/auto/", "priority": "1.0", "changefreq": "weekly" },
     { "loc": "/metodoloji/", "priority": "0.9", "changefreq": "monthly" },
+    { "loc": "/veri-kaynaklari/", "priority": "0.75", "changefreq": "monthly" },
     { "loc": "/rehber/", "priority": "0.85", "changefreq": "weekly" },
     { "loc": "/konut/", "priority": "0.75", "changefreq": "weekly" },
     { "loc": "/tatil/", "priority": "0.75", "changefreq": "weekly" },
