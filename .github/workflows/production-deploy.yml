@@ -134,15 +134,28 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq jq
           bash scripts/apply-analytics-ite-migration-api.sh
 
+      - name: Apply posts content_type schema (Management API, idempotent)
+        id: posts_content_type_schema
+        if: steps.gate.outputs.skip != 'true'
+        run: bash scripts/apply-posts-content-type-migration-api.sh
+
       - name: Verify analytics_exclusion_rules table
         if: steps.gate.outputs.skip != 'true' && steps.analytics_ite_schema.outcome == 'success'
         run: node scripts/verify-analytics-exclusion-schema.cjs
+
+      - name: Verify posts.content_type column
+        if: steps.gate.outputs.skip != 'true' && steps.posts_content_type_schema.outcome == 'success'
+        run: node scripts/verify-posts-content-type-schema.cjs
 
       - name: Require analytics ITE schema
         if: steps.gate.outputs.skip != 'true'
         run: |
           if [ "${{ steps.analytics_ite_schema.outcome }}" != "success" ]; then
             echo "::error::analytics_exclusion_rules could not be created — check Management API token"
+            exit 1
+          fi
+          if [ "${{ steps.posts_content_type_schema.outcome }}" != "success" ]; then
+            echo "::error::posts.content_type could not be created — check Management API token"
             exit 1
           fi
 

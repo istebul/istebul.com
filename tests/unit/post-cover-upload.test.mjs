@@ -15,6 +15,22 @@ describe('posts content admin', () => {
     assert.match(sql, /content-covers/);
   });
 
+  it('repair migration adds content_type with default news and backfill', () => {
+    const sql = fs.readFileSync(
+      path.join(root, 'supabase/migrations/20260625_posts_content_type_repair.sql'),
+      'utf8'
+    );
+    assert.match(sql, /ADD COLUMN IF NOT EXISTS content_type text NOT NULL DEFAULT 'news'/i);
+    assert.match(sql, /SET content_type = 'news'/);
+    assert.match(sql, /NOTIFY pgrst, 'reload schema'/);
+  });
+
+  it('verify-posts-content-type-schema script exists', () => {
+    assert.ok(
+      fs.existsSync(path.join(root, 'scripts/verify-posts-content-type-schema.cjs'))
+    );
+  });
+
   it('admin panel has separate home-news and blog pages', () => {
     const html = fs.readFileSync(path.join(root, 'admin-panel.html'), 'utf8');
     assert.match(html, /data-page-target="home-news"/);
@@ -30,6 +46,15 @@ describe('posts content admin', () => {
     assert.match(panel, /home-news/);
     assert.match(panel, /loadNewsPostsAdmin/);
     assert.match(panel, /getAdminSupabaseClient/);
+    assert.match(panel, /initPostsAdmin\(sb,\s*\{[\s\S]*adminAction/);
+  });
+
+  it('savePost always sends content_type for news and blog', () => {
+    const mod = fs.readFileSync(path.join(root, 'js/admin/posts-admin.js'), 'utf8');
+    assert.match(mod, /content_type: conf\.contentType/);
+    assert.match(mod, /contentType: 'news'/);
+    assert.match(mod, /persistViaAdminAction/);
+    assert.match(mod, /table: 'posts'/);
   });
 
   it('posts-admin tolerates missing posts.category column', () => {
