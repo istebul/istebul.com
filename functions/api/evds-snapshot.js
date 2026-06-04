@@ -1,7 +1,7 @@
 /**
  * Public TCMB EVDS snapshot (sanitized). API key stays in env.TCMB_EVDS_API_KEY only.
  */
-import { fetchEvdsSnapshot } from '../../js/services/evds-service.js';
+import { fetchEvdsSnapshot, EVDS_SNAPSHOT_SERIES_MAP } from '../../js/services/evds-service.js';
 import { resolveCorsOrigin } from '../_shared/cors-origins.js';
 import { jsonApiHead, jsonApiSuccess, logApiEvent } from '../_shared/api-response.js';
 
@@ -42,6 +42,7 @@ export async function onRequestHead(context) {
 
 export async function onRequestGet(context) {
   const origin = context.request.headers.get('Origin');
+  const debug = new URL(context.request.url).searchParams.get('debug') === '1';
 
   try {
     const snapshot = await fetchEvdsSnapshot(context.env);
@@ -50,6 +51,13 @@ export async function onRequestGet(context) {
       stale: snapshot.source === 'stale',
       errorCount: snapshot.errors?.length || 0
     };
+
+    if (debug) {
+      payload.debug = {
+        seriesCodes: EVDS_SNAPSHOT_SERIES_MAP,
+        errors: snapshot.errors || []
+      };
+    }
 
     logApiEvent('info', 'evds_snapshot_served', {
       status: payload.status,

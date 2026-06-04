@@ -13,8 +13,25 @@ export const EVDS_SERIES = Object.freeze({
   USD_TRY: 'TP.DK.USD.A',
   EUR_TRY: 'TP.DK.EUR.A',
   POLICY_RATE: 'TP.APIFON4',
-  CPI_ANNUAL: 'TP.FG.Y01',
+  /** TÜFE genel endeks — yıllık % değişim için formulas=3 ile çekilir */
+  CPI_ANNUAL: 'TP.FG.J0',
   HOUSING_LOAN: 'TP.KTF17'
+});
+
+/** CPI yıllık TÜFE: aylık frekans + yıllık yüzde değişim formülü */
+export const EVDS_CPI_ANNUAL_FETCH = Object.freeze({
+  series: EVDS_SERIES.CPI_ANNUAL,
+  formulas: '3',
+  frequency: '5'
+});
+
+/** Debug / dokümantasyon — endpoint'te hangi serinin kullanıldığını gösterir */
+export const EVDS_SNAPSHOT_SERIES_MAP = Object.freeze({
+  usdTry: EVDS_SERIES.USD_TRY,
+  eurTry: EVDS_SERIES.EUR_TRY,
+  policyRate: EVDS_SERIES.POLICY_RATE,
+  cpiAnnual: `${EVDS_CPI_ANNUAL_FETCH.series} (formulas=${EVDS_CPI_ANNUAL_FETCH.formulas}, frequency=${EVDS_CPI_ANNUAL_FETCH.frequency})`,
+  housingLoanRate: EVDS_SERIES.HOUSING_LOAN
 });
 
 let memoryCache = null;
@@ -52,6 +69,12 @@ function startDateDaysAgo(days = 45) {
   return formatEvdsDate(d);
 }
 
+function startDateMonthsAgo(months = 24) {
+  const d = new Date();
+  d.setMonth(d.getMonth() - months);
+  return formatEvdsDate(d);
+}
+
 /** EVDS JSON columns use underscores instead of dots (TP.DK.USD.A → TP_DK_USD_A). */
 export function seriesCodeToColumn(seriesCode) {
   return String(seriesCode).replace(/\./g, '_');
@@ -62,13 +85,15 @@ export function seriesCodeToColumn(seriesCode) {
  * Multi-series: join codes with `-` (e.g. TP.DK.USD.A-TP.DK.EUR.A).
  * @see https://evds3.tcmb.gov.tr/igmevdsms-dis/
  */
-export function buildEvdsSeriesUrl(seriesCode, { startDate, endDate } = {}) {
+export function buildEvdsSeriesUrl(seriesCode, { startDate, endDate, formulas, frequency } = {}) {
   const params = new URLSearchParams({
     series: seriesCode,
     startDate: startDate || startDateDaysAgo(60),
     endDate: endDate || formatEvdsDate(),
     type: 'json'
   });
+  if (formulas != null && formulas !== '') params.set('formulas', String(formulas));
+  if (frequency != null && frequency !== '') params.set('frequency', String(frequency));
   return `${EVDS_BASE_URL}${params.toString()}`;
 }
 
@@ -186,8 +211,12 @@ export function parseLatestValue(evdsJson, seriesCode) {
   return null;
 }
 
-async function fetchEvdsSeries(apiKey, seriesCode, { startDate, endDate, fetchImpl = fetch } = {}) {
-  const url = buildEvdsSeriesUrl(seriesCode, { startDate, endDate });
+async function fetchEvdsSeries(
+  apiKey,
+  seriesCode,
+  { startDate, endDate, formulas, frequency, fetchImpl = fetch } = {}
+) {
+  const url = buildEvdsSeriesUrl(seriesCode, { startDate, endDate, formulas, frequency });
   let lastError = null;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
@@ -345,15 +374,24 @@ async function pullLiveSnapshot(apiKey, fetchImpl) {
   const errors = [];
   const rates = {};
 
-  const pull = async (key, code, optional = false) => {
+  const pull = async (key, code, optional = false, fetchOptions = {}) => {
     try {
-      rates[key] = await fetchEvdsSeries(apiKey, code, { startDate, endDate, fetchImpl });
+      rates[key] = await fetchEvdsSeries(apiKey, code, {
+        startDate,
+        endDate,
+        fetchImpl,
+        ...fetchOptions
+      });
     } catch (error) {
+      const seriesLabel =
+        fetchOptions.formulas != null
+          ? `${code} (formulas=${fetchOptions.formulas}${fetchOptions.frequency ? `, frequency=${fetchOptions.frequency}` : ''})`
+          : code;
       errors.push({
-        series: code,
+        series: seriesLabel,
         message: redactSecrets(error?.message || String(error), apiKey)
       });
-      if (!optional) logEvds('warn', 'evds_required_series_failed', { series: code });
+      if (!optional) logEvds('warn', 'evds_required_series_failed', { series: seriesLabel });
     }
   };
 
@@ -377,7 +415,11 @@ async function pullLiveSnapshot(apiKey, fetchImpl) {
 
   await Promise.all([
     pull('policyRate', EVDS_SERIES.POLICY_RATE),
-    pull('cpiAnnual', EVDS_SERIES.CPI_ANNUAL),
+    pull('cpiAnnual', EVDS_SERIES.CPI_ANNUAL, true, {
+      startDate: startDateMonthsAgo(24),
+      formulas: EVDS_CPI_ANNUAL_FETCH.formulas,
+      frequency: EVDS_CPI_ANNUAL_FETCH.frequency
+    }),
     pull('housingLoanRate', EVDS_SERIES.HOUSING_LOAN, true)
   ]);
 

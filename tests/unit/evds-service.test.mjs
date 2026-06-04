@@ -13,7 +13,9 @@ const {
   parseEvdsResponseBody,
   seriesCodeToColumn,
   __resetEvdsCacheForTests,
-  EVDS_SERIES
+  EVDS_SERIES,
+  EVDS_CPI_ANNUAL_FETCH,
+  EVDS_SNAPSHOT_SERIES_MAP
 } = await import('../../js/services/evds-service.js');
 
 function seriesFromEvdsUrl(url) {
@@ -77,6 +79,24 @@ test('buildEvdsSeriesUrl uses EVDS3 igmevdsms-dis path without API key', () => {
   assert.ok(!url.includes('key='));
 });
 
+test('buildEvdsSeriesUrl supports CPI annual formula and frequency', () => {
+  const url = buildEvdsSeriesUrl(EVDS_CPI_ANNUAL_FETCH.series, {
+    startDate: '01-01-2024',
+    endDate: '04-06-2026',
+    formulas: EVDS_CPI_ANNUAL_FETCH.formulas,
+    frequency: EVDS_CPI_ANNUAL_FETCH.frequency
+  });
+  assert.ok(url.includes('series=TP.FG.J0'));
+  assert.ok(url.includes('formulas=3'));
+  assert.ok(url.includes('frequency=5'));
+});
+
+test('EVDS_SNAPSHOT_SERIES_MAP documents CPI annual fetch params', () => {
+  assert.equal(EVDS_SERIES.CPI_ANNUAL, 'TP.FG.J0');
+  assert.match(EVDS_SNAPSHOT_SERIES_MAP.cpiAnnual, /TP\.FG\.J0/);
+  assert.match(EVDS_SNAPSHOT_SERIES_MAP.cpiAnnual, /formulas=3/);
+});
+
 test('parseEvdsResponseBody skips JSON parse for HTML upstream', async () => {
   const response = {
     headers: { get: () => 'text/html; charset=utf-8' },
@@ -115,6 +135,19 @@ test('parseLatestValue reads nested EVDS bucket (legacy)', () => {
   assert.equal(point.date, '15-05-2026');
 });
 
+test('parseLatestValue skips trailing empty monthly rows', () => {
+  const json = {
+    items: [
+      { Tarih: '2026-1', TP_FG_J0: '34.10' },
+      { Tarih: '2026-2', TP_FG_J0: '' },
+      { Tarih: '2026-3', TP_FG_J0: null }
+    ]
+  };
+  const point = parseLatestValue(json, 'TP.FG.J0');
+  assert.equal(point.value, 34.1);
+  assert.equal(point.date, '2026-1');
+});
+
 test('fetchEvdsSnapshot returns unconfigured without API key', async () => {
   __resetEvdsCacheForTests();
   const snap = await fetchEvdsSnapshot({});
@@ -143,6 +176,8 @@ test('fetchEvdsSnapshot uses header key and path URL (no query key)', async () =
   assert.equal(snap.source, 'live');
   assert.equal(snap.rates.usdTry, 34.1);
   assert.equal(snap.rates.eurTry, 37.2);
+  assert.equal(typeof snap.rates.cpiAnnual, 'number');
+  assert.ok(snap.seriesDates.cpiAnnual);
   assert.ok(snap.dataDate);
   assert.ok(seen.every((s) => !s.url.includes('key=')));
   assert.ok(seen.every((s) => s.key === 'test-secret-key'));
