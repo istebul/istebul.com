@@ -112,6 +112,7 @@ export const SIGORTA_OPTIONS = {
   ],
   vehicle_category: [
     { value: 'otomobil', label: 'Otomobil' },
+    { value: 'suv', label: 'SUV / crossover' },
     { value: 'motosiklet', label: 'Motosiklet' },
     { value: 'ticari_arac', label: 'Ticari araç' }
   ],

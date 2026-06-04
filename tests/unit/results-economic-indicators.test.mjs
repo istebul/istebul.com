@@ -25,13 +25,15 @@ const sampleData = {
   }
 };
 
-test('RESULTS_ECONOMIC_PRESETS define finansman, konut and auto indicator sets', () => {
+test('RESULTS_ECONOMIC_PRESETS define finansman, konut, auto and tatil indicator sets', () => {
   assert.equal(RESULTS_ECONOMIC_PRESETS.finansman.length, 3);
   assert.equal(RESULTS_ECONOMIC_PRESETS.konut.length, 3);
   assert.equal(RESULTS_ECONOMIC_PRESETS.auto.length, 3);
+  assert.equal(RESULTS_ECONOMIC_PRESETS.tatil.length, 3);
   assert.equal(RESULTS_ECONOMIC_PRESETS.finansman[0].label, 'Politika faizi');
   assert.equal(RESULTS_ECONOMIC_PRESETS.konut[0].label, 'Konut kredisi faizi');
   assert.equal(RESULTS_ECONOMIC_PRESETS.auto[0].label, 'USD/TRY');
+  assert.equal(RESULTS_ECONOMIC_PRESETS.tatil[0].label, 'USD/TRY');
 });
 
 test('renderResultsEconomicCardHtml shows title, subtitle and TCMB EVDS per item', () => {

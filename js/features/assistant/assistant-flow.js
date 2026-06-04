@@ -128,6 +128,144 @@ const CATEGORY_FLOW = {
         priority: ['premium', 'quiet', 'allInclusive']
       }
     }
+  },
+  finansman: {
+    fork: 'purpose',
+    profileStep: {
+      label: 'Finansman amacı',
+      description: 'Kredi türüne göre vade, kapasite ve risk soruları özelleşir.'
+    },
+    needsStep: (answers) => ({
+      description:
+        answers.purpose === 'konut'
+          ? 'Konut kredisi için uzun vade ve ödeme kapasitesi birlikte değerlendirilir.'
+          : answers.purpose === 'arac'
+            ? 'Taşıt kredisi için vade, faiz hassasiyeti ve aylık kapasite netleştirilir.'
+            : answers.purpose === 'tatil'
+              ? 'Tatil/seyahat finansmanı için kısa vade ve nakit akışı önceliklidir.'
+              : answers.purpose === 'isletme'
+                ? 'İşletme finansmanında nakit akışı ve erken kapama senaryoları öne çıkar.'
+                : 'İhtiyaç kredisi için vade, kapasite ve faiz hassasiyetinizi belirleyin.'
+    }),
+    forks: {
+      arac: {
+        term: ['24', '36', '48', '60'],
+        capacity: ['15k', '25k', '40k', '60k'],
+        rateSensitivity: ['dusuk', 'orta', 'yuksek'],
+        riskTolerance: ['muhafazakar', 'dengeli', 'agresif']
+      },
+      konut: {
+        term: ['60', '120', '180', '240'],
+        capacity: ['25k', '40k', '60k'],
+        rateSensitivity: ['dusuk', 'orta', 'yuksek'],
+        riskTolerance: ['muhafazakar', 'dengeli']
+      },
+      tatil: {
+        term: ['12', '24', '36'],
+        capacity: ['15k', '25k', '40k'],
+        rateSensitivity: ['orta', 'yuksek'],
+        riskTolerance: ['muhafazakar', 'dengeli']
+      },
+      ihtiyac: {
+        term: ['12', '24', '36', '48'],
+        capacity: ['15k', '25k', '40k', '60k'],
+        rateSensitivity: ['dusuk', 'orta', 'yuksek'],
+        riskTolerance: ['muhafazakar', 'dengeli', 'agresif']
+      },
+      isletme: {
+        term: ['24', '36', '48', '60'],
+        capacity: ['25k', '40k', '60k'],
+        rateSensitivity: ['orta', 'yuksek'],
+        riskTolerance: ['dengeli', 'agresif']
+      }
+    }
+  },
+  sigorta: {
+    fork: 'insuranceType',
+    profileStep: {
+      label: 'Sigorta türü',
+      description: 'Araç, konut, sağlık veya seyahat sigortası için soru seti özelleşir.'
+    },
+    needsStep: (answers) => ({
+      description:
+        answers.insuranceType === 'arac'
+          ? 'Araç sigortasında kullanım, ehliyet ve risk profili prim bandını belirler.'
+          : answers.insuranceType === 'konut'
+            ? 'Konut sigortasında malik/kiracı durumu ve hane profili teminatı etkiler.'
+            : answers.insuranceType === 'saglik'
+              ? 'Sağlık sigortasında risk algısı ve bütçe bandı paket derinliğini belirler.'
+              : answers.insuranceType === 'seyahat'
+                ? 'Seyahat sigortasında rota, süre ve yolcu sayısı prim bandını şekillendirir.'
+                : 'Sigorta profilinize uygun koruma seviyesini tamamlayın.'
+    }),
+    forks: {
+      arac: {
+        license_years: ['0-2', '3-10', '11plus'],
+        usage_type: ['ozel', 'ticari'],
+        risk_perception: ['dusuk', 'orta', 'yuksek'],
+        budget_level: ['dusuk', 'orta', 'yuksek']
+      },
+      konut: {
+        property_role: ['malik', 'kiraci'],
+        risk_perception: ['dusuk', 'orta', 'yuksek'],
+        budget_level: ['dusuk', 'orta', 'yuksek']
+      },
+      saglik: {
+        risk_perception: ['dusuk', 'orta', 'yuksek'],
+        budget_level: ['dusuk', 'orta', 'yuksek']
+      },
+      seyahat: {
+        destination_type: ['yurtici', 'yurtdisi', 'schengen'],
+        trip_duration: ['1-7', '8-15', '16plus'],
+        risk_perception: ['dusuk', 'orta', 'yuksek'],
+        budget_level: ['dusuk', 'orta', 'yuksek']
+      }
+    }
+  },
+  kasko: {
+    fork: 'vehicle_category',
+    profileStep: {
+      label: 'Araç tipi',
+      description: 'Otomobil, SUV veya ticari araç profiline göre teminat soruları açılır.'
+    },
+    needsStep: (answers) => ({
+      description:
+        answers.vehicle_category === 'ticari_arac'
+          ? 'Ticari kullanımda onarım riski ve prim bandı daha yüksek modellenir.'
+          : answers.vehicle_category === 'suv'
+            ? 'SUV profillerinde cam, ikame araç ve mini onarım maddeleri öne çıkar.'
+            : 'Kasko kapsam seviyesi ve araç yaşı prim/teminat dengesini belirler.'
+    }),
+    forks: {
+      otomobil: {
+        vehicle_year_band: ['0-3', '4-10', '11plus'],
+        usage_type: ['ozel', 'ticari'],
+        coverage_level: ['mini', 'standard', 'full'],
+        risk_perception: ['dusuk', 'orta', 'yuksek'],
+        budget_level: ['dusuk', 'orta', 'yuksek']
+      },
+      suv: {
+        vehicle_year_band: ['0-3', '4-10', '11plus'],
+        usage_type: ['ozel'],
+        coverage_level: ['standard', 'full'],
+        risk_perception: ['orta', 'yuksek'],
+        budget_level: ['orta', 'yuksek']
+      },
+      motosiklet: {
+        vehicle_year_band: ['0-3', '4-10', '11plus'],
+        usage_type: ['ozel'],
+        coverage_level: ['mini', 'standard'],
+        risk_perception: ['orta', 'yuksek'],
+        budget_level: ['dusuk', 'orta']
+      },
+      ticari_arac: {
+        vehicle_year_band: ['0-3', '4-10', '11plus'],
+        usage_type: ['ticari'],
+        coverage_level: ['standard', 'full'],
+        risk_perception: ['orta', 'yuksek'],
+        budget_level: ['orta', 'yuksek']
+      }
+    }
   }
 };
 
@@ -168,7 +306,10 @@ export function applyAssistantQuestionFlow(categoryId, questions, answers = {}) 
 const FORK_RESET_FIELDS = {
   arac: ['fuel', 'body', 'priority'],
   ev: ['propertyType', 'location', 'priority'],
-  tatil: ['destination', 'travelers', 'priority']
+  tatil: ['destination', 'travelers', 'priority'],
+  finansman: ['term', 'capacity', 'rateSensitivity', 'riskTolerance'],
+  sigorta: ['license_years', 'usage_type', 'property_role', 'destination_type', 'trip_duration', 'risk_perception', 'budget_level'],
+  kasko: ['vehicle_year_band', 'usage_type', 'coverage_level', 'risk_perception', 'budget_level']
 };
 
 /**

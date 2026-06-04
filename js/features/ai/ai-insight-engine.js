@@ -26,7 +26,9 @@ const USAGE_LABELS = {
   family: 'aile kullanımı',
   city: 'şehir içi kullanım',
   long: 'uzun yol',
-  business: 'iş kullanımı'
+  business: 'iş ve prestij kullanımı',
+  longRoad: 'uzun yol',
+  prestige: 'konfor ve prestij'
 };
 
 const FUEL_LABELS = {
@@ -263,7 +265,8 @@ function appendMarketAssessment(summary, input) {
 function buildAutoInsight(input) {
   const a = input.answers;
   const usage = pickAnswer(a, ['usage']) || '';
-  const usageLabel = USAGE_LABELS[usage] || usage || 'kullanım profiliniz';
+  const usageKey = usage === 'longRoad' ? 'long' : usage === 'prestige' ? 'business' : usage;
+  const usageLabel = USAGE_LABELS[usage] || USAGE_LABELS[usageKey] || usageKey || 'kullanım profiliniz';
   const fuel = pickAnswer(a, ['fuel']) || '';
   const fuelLabel = isTechnicalPreferenceValue(fuel) ? '' : FUEL_LABELS[fuel] || '';
   const km = safeNum(a.km);

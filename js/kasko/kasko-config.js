@@ -45,7 +45,8 @@ export const KASKO_OPTIONS = {
   vehicle_category: [
     { value: 'otomobil', label: 'Otomobil' },
     { value: 'suv', label: 'SUV / crossover' },
-    { value: 'ticari', label: 'Ticari araç' }
+    { value: 'motosiklet', label: 'Motosiklet' },
+    { value: 'ticari_arac', label: 'Ticari araç' }
   ],
   vehicle_year_band: [
     { value: '0-3', label: '0–3 yaş', description: 'Sıfır / yeni' },

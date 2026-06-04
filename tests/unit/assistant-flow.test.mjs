@@ -47,3 +47,35 @@ test('resetAssistantAnswersOnForkChange clears incompatible tatil answers', () =
 test('arac fork field is usage', () => {
   assert.equal(getAssistantForkField('arac'), 'usage');
 });
+
+test('finansman konut fork limits long terms only', () => {
+  const questions = [
+    { id: 'purpose', options: [{ value: 'konut' }, { value: 'arac' }] },
+    { id: 'term', options: [{ value: '36' }, { value: '120' }, { value: '240' }] },
+    { id: 'budget', type: 'number' }
+  ];
+  const filtered = applyAssistantQuestionFlow('finansman', questions, { purpose: 'konut' });
+  const term = filtered.find((q) => q.id === 'term');
+  assert.deepEqual(
+    term.options.map((o) => o.value),
+    ['120', '240']
+  );
+});
+
+test('sigorta seyahat fork limits destination options', () => {
+  const questions = [
+    { id: 'insuranceType', options: [{ value: 'seyahat' }, { value: 'arac' }] },
+    {
+      id: 'destination_type',
+      options: [
+        { value: 'yurtici' },
+        { value: 'yurtdisi' },
+        { value: 'schengen' }
+      ]
+    },
+    { id: 'budget', type: 'number' }
+  ];
+  const filtered = applyAssistantQuestionFlow('sigorta', questions, { insuranceType: 'seyahat' });
+  const dest = filtered.find((q) => q.id === 'destination_type');
+  assert.equal(dest.options.length, 3);
+});

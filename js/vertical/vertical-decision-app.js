@@ -596,6 +596,13 @@ export function initDecisionFlow(config) {
   async function init() {
     document.body.classList.add(config.themeClass || '');
     setupMobileNav();
+    if (typeof config.bootstrapFromQuery === 'function') {
+      try {
+        config.bootstrapFromQuery(state, new URLSearchParams(window.location.search));
+      } catch {
+        /* optional profile bootstrap */
+      }
+    }
     if (!config.externalHeroBindings) {
       el('heroCta')?.addEventListener('click', () => {
         scrollToFlow();

@@ -34,7 +34,7 @@ export function computeRepairRiskScore(state = {}) {
   if (state.usage_type === 'ticari') score -= 10;
   if (state.license_years === '0-2') score -= 8;
   if (state.license_years === '11plus') score += 5;
-  if (state.vehicle_category === 'ticari') score -= 6;
+  if (state.vehicle_category === 'ticari_arac' || state.vehicle_category === 'ticari') score -= 6;
   return clampScore(score);
 }
 
@@ -164,7 +164,7 @@ const BADGES = {
 function estimatePremium(state) {
   let base = 14_000;
   if (state.vehicle_category === 'suv') base *= 1.08;
-  if (state.vehicle_category === 'ticari') base *= 1.25;
+  if (state.vehicle_category === 'ticari_arac' || state.vehicle_category === 'ticari') base *= 1.25;
   if (state.vehicle_year_band === '0-3') base *= 1.15;
   if (state.vehicle_year_band === '11plus') base *= 0.92;
   const covMul = { mini: 0.72, standard: 1, full: 1.38 }[state.coverage_level] || 1;
