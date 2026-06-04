@@ -44,11 +44,24 @@ export function apiSuccessBody(data = {}, meta = undefined) {
   return body;
 }
 
+export const JSON_CONTENT_TYPE = 'application/json; charset=utf-8';
+
 export function jsonApiResponse(body, status = 200, headers = {}) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': JSON_CONTENT_TYPE,
+      ...headers
+    }
+  });
+}
+
+/** HEAD without body — avoids SPA /* → index.html (text/html) on API paths. */
+export function jsonApiHead(headers = {}) {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Content-Type': JSON_CONTENT_TYPE,
       ...headers
     }
   });

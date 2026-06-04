@@ -3,12 +3,12 @@
  */
 import { fetchEvdsFxDebugProbe, fetchEvdsSnapshot } from '../../js/services/evds-service.js';
 import { resolveCorsOrigin } from '../_shared/cors-origins.js';
-import { jsonApiSuccess, logApiEvent } from '../_shared/api-response.js';
+import { jsonApiHead, jsonApiSuccess, logApiEvent } from '../_shared/api-response.js';
 
 const corsHeaders = (origin = null) => ({
   'Access-Control-Allow-Origin': resolveCorsOrigin(origin),
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
+  'Content-Type': 'application/json; charset=utf-8',
   'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400'
 });
 
@@ -45,6 +45,12 @@ function buildSnapshotPayload(snapshot) {
 export async function onRequestOptions(context) {
   const origin = context.request.headers.get('Origin');
   return new Response(null, { status: 204, headers: corsHeaders(origin) });
+}
+
+export async function onRequestHead(context) {
+  const origin = context.request.headers.get('Origin');
+  const headers = isDebugRequest(context.request) ? debugCorsHeaders(origin) : corsHeaders(origin);
+  return jsonApiHead(headers);
 }
 
 export async function onRequestGet(context) {

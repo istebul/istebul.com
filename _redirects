@@ -78,5 +78,8 @@
 # --- Blog post static SEO pages ---
 /blog/* /blog/:splat/index.html 200
 
+# --- API (Pages Functions — skip SPA /* fallback; fixes HEAD Content-Type) ---
+/api/* /api/:splat 200
+
 # --- SPA fallback (MUST be last) ---
 /* /index.html 200

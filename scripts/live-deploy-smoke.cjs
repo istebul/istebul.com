@@ -34,6 +34,14 @@ async function run() {
         failed += 1;
         continue;
       }
+      if (json) {
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          console.error(`✗ ${path} Content-Type beklenen application/json, gelen: ${ct || '(yok)'}`);
+          failed += 1;
+          continue;
+        }
+      }
       const missing = must.filter((needle) => !body.includes(needle));
       if (json) {
         try {
