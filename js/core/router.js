@@ -49,6 +49,11 @@ const MARKETING_PATH_ALIASES = Object.freeze({
     '/planlar-ozet': 'pricing'
 });
 
+/** Clears inline display overrides (e.g. showHomeSections uses !important). */
+function clearSectionDisplayOverride(section) {
+    section?.style?.removeProperty?.('display');
+}
+
 /** Premium full-page routes (dedicated sections). */
 export const PREMIUM_PAGE_ROUTES = Object.freeze({
     '/karar-analizi': 'page-karar-analizi',
@@ -399,14 +404,18 @@ export class Router {
     showPremiumPage(pageId) {
         document.body.classList.add('app-route-active', 'ib-premium-route-active');
 
-        document.querySelectorAll('[data-private-section]').forEach((section) => {
-            section.classList.remove('route-visible');
-        });
-
         document.querySelectorAll('section[id]').forEach((section) => {
-            section.style.display = 'none';
-            if (section.hasAttribute('data-private-section')) {
+            clearSectionDisplayOverride(section);
+            section.classList.remove('route-visible');
+            if (section.id === pageId) return;
+
+            if (
+                section.hasAttribute('data-private-section') ||
+                HOMEPAGE_SECTION_IDS.includes(section.id)
+            ) {
                 section.classList.add('hidden');
+                section.setAttribute('hidden', '');
+                section.setAttribute('aria-hidden', 'true');
             }
         });
 
@@ -420,7 +429,7 @@ export class Router {
         target.removeAttribute('hidden');
         target.removeAttribute('aria-hidden');
         target.classList.add('route-visible');
-        target.style.display = 'block';
+        clearSectionDisplayOverride(target);
         pulseRouteSection(target);
         window.scrollTo({ top: 0, behavior: 'auto' });
         document.body.classList.add('ib-premium-mounted');
