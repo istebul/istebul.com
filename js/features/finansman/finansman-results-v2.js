@@ -34,6 +34,10 @@ import {
   mountEvdsRiskLayer
 } from '../results/results-evds-risk-layer.js';
 import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
+import {
+  renderResultsHeroLayout,
+  scoreToneFromLabel
+} from '../results/results-hero-layout.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -429,7 +433,8 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [], evdsR
     planTier,
     insightInput,
     insight: buildDecisionInsight(insightInput),
-    evdsRiskLayer
+    evdsRiskLayer,
+    primaryTitle: primary?.title || `${optionLabel('purpose', state.purpose)} — Dengeli vade`
   };
 }
 
@@ -440,23 +445,43 @@ function renderFinansmanResultsV2Html(model) {
     ? `<p class="finansman-v2-estimate-note">${esc(cost.estimateNote)}</p>`
     : '';
 
+  const exampleRate = cost.months && cost.principal && cost.monthlyPayment
+    ? '~%42 (örnek band)'
+    : 'Profilinize göre';
+
+  const heroHtml = renderResultsHeroLayout({
+    vertical: 'finance',
+    title: 'Finansman Planı Öneriniz',
+    subtitle: 'Analizinize göre en uygun finansman planı belirlendi.',
+    recommendation: {
+      kicker: 'Önerilen Plan',
+      title: model.primaryTitle || 'Dengeli vade senaryosu',
+      badge: model.recommendationLabel || 'En Uygun',
+      badgeTone: 'success'
+    },
+    specs: [
+      { label: 'Kredi Tutarı', value: formatTryAmount(cost.principal) },
+      { label: 'Vade', value: cost.months ? `${cost.months} ay` : '—' },
+      { label: 'Faiz Oranı', value: exampleRate },
+      { label: 'Aylık Taksit', value: formatTryAmount(cost.monthlyPayment) },
+      { label: 'Toplam Geri Ödeme', value: formatTryAmount(cost.totalRepayment) },
+      { label: 'Genel Risk', value: model.overallRisk || '—' }
+    ],
+    score: model.decisionScore,
+    scoreLabel: model.scoreLabel || 'Uygunluk Skoru',
+    scoreTone: scoreToneFromLabel(model.scoreLabel),
+    evdsMountClass: 'finansman-v2-evds-mount ib-results-economic--compact'
+  });
+
   return `
     <section class="finansman-v2-panel" aria-label="Finansman Decision Results V2">
-      <header class="finansman-v2-hero">
-        <p class="finansman-v2-kicker">AI destekli finansman karar analizi</p>
-        <h2 class="finansman-v2-title">Finansman karar raporu</h2>
-        <p class="finansman-v2-band">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</p>
-        ${model.recommendationLabel ? `<p class="finansman-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
-      </header>
+      ${heroHtml}
+
+      <div id="ib-results-detail"></div>
 
       ${renderScoreFactorsHtml(model.scoreFactors, 'finansman-v2')}
 
-      <div class="finansman-v2-kpis">
-        <article class="finansman-v2-kpi finansman-v2-kpi--score">
-          <span>Finansman Karar Skoru</span>
-          <strong>${esc(String(model.decisionScore))}<small>/100</small></strong>
-          <div class="finansman-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.decisionScore))}%"></span></div>
-        </article>
+      <div class="finansman-v2-kpis finansman-v2-kpis--secondary">
         <article class="finansman-v2-kpi finansman-v2-kpi--confidence">
           <span>Güven Skoru</span>
           <strong>${esc(String(model.confidenceScore))}<small>/100</small></strong>
@@ -474,8 +499,6 @@ function renderFinansmanResultsV2Html(model) {
       </div>
 
       ${estimateNote}
-
-      <div class="ib-results-economic-mount finansman-v2-evds-mount" data-results-economic-mount hidden></div>
 
       <section class="finansman-v2-bddk" aria-label="BDDK bilgilendirme">
         <h3>BDDK uyumlu bilgilendirme</h3>

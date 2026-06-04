@@ -3,6 +3,7 @@
  */
 @import 'results-economic-indicators.css';
 @import 'home-economic-indicators.css';
+@import 'results-hero-layout.css';
 
 .konut-v2-root {
   margin: 0.75rem 0 1rem;
@@ -125,6 +126,16 @@ body.housing-page #housing-results .konut-v2-rec-level {
 @media (min-width: 640px) {
   .konut-v2-kpis {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.konut-v2-kpis--secondary {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .konut-v2-kpis--secondary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

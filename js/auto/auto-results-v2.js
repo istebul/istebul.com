@@ -34,6 +34,34 @@ import {
   mountEvdsRiskLayer
 } from '../features/results/results-evds-risk-layer.js';
 import { fetchEvdsRatesForEngine } from '../features/evds/evds-market-engine.js';
+import {
+  renderResultsHeroLayout,
+  scoreToneFromLabel
+} from '../features/results/results-hero-layout.js';
+
+function vehicleImageUrl(name = '') {
+  const key = String(name || '');
+  if (key.includes('Toyota')) return '/assets/images/auto/toyota-corolla-cross-hybrid.svg';
+  if (key.includes('Honda')) return '/assets/images/auto/honda-civic-eco.svg';
+  if (key.includes('Hyundai')) return '/assets/images/auto/hyundai-tucson-tgdi.svg';
+  if (key.includes('Renault')) return '/assets/images/auto/renault-clio-icon.svg';
+  if (key.includes('Volkswagen')) return '/assets/images/auto/volkswagen-golf-tsi.svg';
+  if (key.includes('Togg')) return '/assets/images/auto/togg-t10x.svg';
+  if (key.includes('Tesla')) return '/assets/images/auto/tesla-model.svg';
+  return '/assets/images/auto/toyota-corolla-cross-hybrid.svg';
+}
+
+function fuelLabel(value = '') {
+  const map = { electric: 'Elektrik', diesel: 'Dizel', hybrid: 'Hibrit', gasoline: 'Benzin', benzin: 'Benzin' };
+  return map[String(value).toLowerCase()] || value || '—';
+}
+
+function transmissionLabel(value = '') {
+  const key = String(value || '').toLowerCase();
+  if (key.includes('otomatik') || key === 'auto') return 'Otomatik';
+  if (key.includes('manuel') || key === 'manual') return 'Manuel';
+  return value || '—';
+}
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -133,13 +161,39 @@ function buildNextSteps({ riskLevel, budgetFit }) {
 
 function renderAutoResultsV2Html(model) {
   const esc = escapeHtml;
+  const top = model.topResult || {};
+
+  const heroHtml = renderResultsHeroLayout({
+    vertical: 'auto',
+    title: 'Araç Öneriniz',
+    subtitle: 'Kriterlerinize göre en uygun araç seçeneği belirlendi.',
+    recommendation: {
+      kicker: 'Önerilen Araç',
+      title: top.name || 'Profilinize uygun araç',
+      badge: model.recommendationLabel || 'En Uygun',
+      badgeTone: 'success',
+      imageUrl: top.imageUrl || '',
+      imageAlt: top.name || 'Araç önerisi'
+    },
+    specs: [
+      { label: 'Yıl', value: top.year || '—' },
+      { label: 'Yakıt', value: fuelLabel(top.fuel) },
+      { label: 'Vites', value: transmissionLabel(top.transmission) },
+      { label: 'Fiyat (tahmini)', value: top.priceLabel || '—' },
+      { label: '12 ay TCO', value: model.totalCostLabel || '—' },
+      { label: 'Risk', value: model.riskLevel || '—' }
+    ],
+    score: model.decisionScore,
+    scoreLabel: model.intelligence?.scoreLabel || 'Uygunluk Skoru',
+    scoreTone: scoreToneFromLabel(model.intelligence?.scoreLabel),
+    evdsMountClass: 'auto-v2-evds-mount ib-results-economic--home'
+  });
+
   return `
     <section class="auto-v2-panel" aria-label="Auto karar raporu özeti">
-      <header class="auto-v2-hero">
-        <p class="auto-v2-kicker">Karar raporu · özet panel</p>
-        <h2 class="auto-v2-title">Auto karar raporu</h2>
-        ${model.recommendationLabel ? `<p class="auto-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
-      </header>
+      ${heroHtml}
+
+      <div id="ib-results-detail"></div>
 
       ${
         model.scoreFactors?.length
@@ -150,12 +204,7 @@ function renderAutoResultsV2Html(model) {
           : ''
       }
 
-      <div class="auto-v2-kpis">
-        <article class="auto-v2-kpi auto-v2-kpi--score">
-          <span>Karar Skoru</span>
-          <strong>${esc(formatScore(model.decisionScore))}<small>/100</small></strong>
-          <div class="auto-v2-bar" aria-hidden="true"><span style="width:${esc(formatScore(model.decisionScore))}%"></span></div>
-        </article>
+      <div class="auto-v2-kpis auto-v2-kpis--secondary">
         <article class="auto-v2-kpi auto-v2-kpi--confidence">
           <span>Güven Skoru</span>
           <strong>${esc(formatScore(model.confidenceScore))}<small>/100</small></strong>
@@ -171,8 +220,6 @@ function renderAutoResultsV2Html(model) {
           <small>${esc(model.costHint)}</small>
         </article>
       </div>
-
-      <div class="ib-results-economic-mount auto-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
 
       <div class="auto-v2-grid">
         <article class="auto-v2-block auto-v2-block--pros">
@@ -301,7 +348,15 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     usage: String(formData?.usage || ''),
     budgetLabel: budget ? formatTryAmount(budget) : '—',
     totalCostLabelRaw: totalCost ? formatTryAmount(totalCost) : '—',
-    evdsRiskLayer
+    evdsRiskLayer,
+    topResult: {
+      name: topResult.name || '',
+      year: topResult.year || topResult.model_year || new Date().getFullYear(),
+      fuel: topResult.fuel || formData?.fuel || '',
+      transmission: topResult.transmission || topResult.gear || '',
+      priceLabel: vehiclePrice ? formatTryAmount(vehiclePrice) : '—',
+      imageUrl: vehicleImageUrl(topResult.name)
+    }
   };
 
   model.pdfReportData = buildPdfReportData({

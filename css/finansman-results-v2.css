@@ -2,6 +2,7 @@
  * Finansman Results V2 — premium SaaS panel (mobile + dark mode uyumlu).
  */
 @import 'results-economic-indicators.css';
+@import 'results-hero-layout.css';
 .finansman-v2-root {
   margin: 1.25rem 0 1.75rem;
 }
@@ -133,6 +134,16 @@
 @media (min-width: 860px) {
   .finansman-v2-kpis {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.finansman-v2-kpis--secondary {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .finansman-v2-kpis--secondary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

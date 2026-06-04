@@ -32,6 +32,10 @@ import {
   mountEvdsRiskLayer
 } from '../results/results-evds-risk-layer.js';
 import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
+import {
+  renderResultsHeroLayout,
+  scoreToneFromLabel
+} from '../results/results-hero-layout.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -415,6 +419,8 @@ export function buildKonutResultsV2Payload({
     budgetLabel,
     homeType: state.homeType || '—',
     purpose: state.purchasePurpose || '—',
+    primaryTitle: `${state.homeType || 'Konut'} · ${locationLabel}`,
+    primaryImageUrl: '/assets/images/demo/kadikoy-daire.svg',
     planTier,
     insightInput,
     insight: buildDecisionInsight(insightInput),
@@ -429,14 +435,38 @@ function renderKonutResultsV2Html(model) {
     ? `<p class="konut-v2-estimate-note">${esc(cost.estimateNote || 'Tahmini model')}</p>`
     : '';
 
+  const heroHtml = renderResultsHeroLayout({
+    vertical: 'housing',
+    title: 'Konut Alım Öneriniz',
+    subtitle: 'Profilinize göre en uygun konut senaryosu belirlendi.',
+    recommendation: {
+      kicker: 'Önerilen Konut',
+      title: model.primaryTitle || `${model.homeType || 'Konut'} · ${model.locationLabel || 'Seçilen bölge'}`,
+      subtitle: model.purpose !== '—' ? model.purpose : '',
+      badge: model.recommendationLabel || 'En Uygun',
+      badgeTone: 'success',
+      imageUrl: model.primaryImageUrl || '/assets/images/demo/kadikoy-daire.svg',
+      imageAlt: model.primaryTitle || 'Konut önerisi'
+    },
+    specs: [
+      { label: 'Bütçe', value: model.budgetLabel || '—' },
+      { label: 'Aylık ödeme', value: formatTryAmount(cost.monthlyPayment) },
+      { label: 'Peşinat', value: formatTryAmount(cost.downPayment) },
+      { label: 'Kredi ihtiyacı', value: formatTryAmount(cost.loanNeed) },
+      { label: 'İlk yıl toplam', value: formatTryAmount(cost.firstYearTotal) },
+      { label: 'Genel risk', value: model.overallRisk || '—' }
+    ],
+    score: model.decisionScore,
+    scoreLabel: model.scoreLabel || 'Uygunluk Skoru',
+    scoreTone: scoreToneFromLabel(model.scoreLabel),
+    evdsMountClass: 'konut-v2-evds-mount ib-results-economic--home'
+  });
+
   return `
     <section class="konut-v2-panel" aria-label="Konut karar raporu özeti">
-      <header class="konut-v2-hero">
-        <p class="konut-v2-kicker">Karar raporu · konut analizi</p>
-        <h2 class="konut-v2-title">Konut karar raporu</h2>
-        <p class="konut-v2-band"><span class="konut-v2-band-label">${esc(model.scoreLabel)}</span> · <strong>${esc(String(model.decisionScore))}/100</strong></p>
-        ${model.recommendationLabel ? `<p class="konut-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
-      </header>
+      ${heroHtml}
+
+      <div id="ib-results-detail"></div>
 
       ${
         model.scoreFactors?.length
@@ -447,12 +477,7 @@ function renderKonutResultsV2Html(model) {
           : ''
       }
 
-      <div class="konut-v2-kpis">
-        <article class="konut-v2-kpi konut-v2-kpi--score">
-          <span>Karar Skoru</span>
-          <strong>${esc(String(model.decisionScore))}<small>/100</small></strong>
-          <div class="konut-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.decisionScore))}%"></span></div>
-        </article>
+      <div class="konut-v2-kpis konut-v2-kpis--secondary">
         <article class="konut-v2-kpi konut-v2-kpi--confidence">
           <span>Güven Skoru</span>
           <strong>${esc(String(model.confidenceScore))}<small>/100</small></strong>
@@ -470,8 +495,6 @@ function renderKonutResultsV2Html(model) {
       </div>
 
       ${costNote}
-
-      <div class="ib-results-economic-mount konut-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
 
       <section class="konut-v2-cost-grid" aria-label="Toplam maliyet görünümü">
         <h3>Toplam Maliyet Görünümü</h3>
