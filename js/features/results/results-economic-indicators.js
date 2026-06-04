@@ -44,19 +44,115 @@ const CARD_SUBTITLE = 'TCMB EVDS verileriyle bilgilendirme amaçlıdır.';
 const SOURCE_LABEL = 'TCMB EVDS';
 const FALLBACK_MESSAGE = 'Veri geçici olarak alınamadı';
 
-/** Kompakt şerit düzeni (Auto sonuçları — az dikey alan). */
-const COMPACT_PRESETS = new Set(['auto']);
+/** Auto sonuçları — ana sayfa ile aynı kart düzeni. */
+const HOME_LAYOUT_PRESETS = new Set(['auto']);
 
-function isCompactPreset(preset) {
-  return COMPACT_PRESETS.has(String(preset || '').trim());
-}
-
-function compactCardClass(preset) {
-  return isCompactPreset(preset) ? ' ib-results-economic--compact' : '';
+function usesHomeLayout(preset) {
+  return HOME_LAYOUT_PRESETS.has(String(preset || '').trim());
 }
 
 function formatIndicatorValue(kind, value) {
   return kind === 'fx' ? formatFxTry(value) : formatPercentTr(value);
+}
+
+function renderHomeStyleHead(preset) {
+  const id = `results-economic-title-${String(preset || 'auto')}`;
+  return `
+      <header class="ib-home-economic__head">
+        <div class="ib-home-economic__head-row">
+          <h2 id="${escapeHtml(id)}">${escapeHtml(CARD_TITLE)}</h2>
+          <p class="ib-home-economic__refresh">${escapeHtml(CARD_SUBTITLE)}</p>
+        </div>
+      </header>`;
+}
+
+function renderHomeStyleItems(indicators, rates, seriesDates, { empty = false } = {}) {
+  return indicators
+    .map(({ key, label, kind, rateKey, dateKey }) => {
+      if (empty) {
+        return `
+      <article class="ib-home-economic__item" data-economic-key="${escapeHtml(key)}">
+        <h3 class="ib-home-economic__label">${escapeHtml(label)}</h3>
+        <p class="ib-home-economic__value">—</p>
+        <p class="ib-home-economic__date">—</p>
+      </article>`;
+      }
+      const displayValue = formatIndicatorValue(kind, rates[rateKey]);
+      const displayDate = formatSeriesDateLabel(seriesDates[dateKey]);
+      return `
+      <article class="ib-home-economic__item" data-economic-key="${escapeHtml(key)}">
+        <h3 class="ib-home-economic__label">${escapeHtml(label)}</h3>
+        <p class="ib-home-economic__value">${escapeHtml(displayValue)}</p>
+        <p class="ib-home-economic__date">${escapeHtml(displayDate)}</p>
+      </article>`;
+    })
+    .join('');
+}
+
+function renderHomeStyleSkeletonItems(count) {
+  return Array.from({ length: count }, () => `
+      <div class="ib-home-economic__item ib-home-economic__item--skeleton" aria-hidden="true">
+        <span class="ib-home-economic__skeleton-label"></span>
+        <span class="ib-home-economic__skeleton-value"></span>
+        <span class="ib-home-economic__skeleton-date"></span>
+      </div>`).join('');
+}
+
+function renderHomeStyleCardHtml(data, preset) {
+  const indicators = resolvePreset(preset);
+  if (!indicators) return '';
+
+  const rates = data?.rates || {};
+  const seriesDates = data?.seriesDates || {};
+
+  return `
+    <section
+      class="ib-home-economic__card"
+      aria-labelledby="results-economic-title-${escapeHtml(preset)}"
+      data-results-economic-card
+      data-results-economic-state="ready"
+      data-results-economic-layout="home"
+    >
+      ${renderHomeStyleHead(preset)}
+      <div class="ib-home-economic__grid">${renderHomeStyleItems(indicators, rates, seriesDates)}</div>
+      <p class="ib-home-economic__meta">Kaynak: ${escapeHtml(SOURCE_LABEL)} · Bilgilendirme amaçlıdır.</p>
+    </section>`;
+}
+
+function renderHomeStyleFallbackHtml(preset) {
+  const indicators = resolvePreset(preset);
+  if (!indicators) return '';
+
+  return `
+    <section
+      class="ib-home-economic__card ib-home-economic__card--fallback"
+      aria-label="${escapeHtml(CARD_TITLE)}"
+      data-results-economic-card
+      data-results-economic-state="fallback"
+      data-results-economic-layout="home"
+    >
+      ${renderHomeStyleHead(preset)}
+      <p class="ib-home-economic__fallback">${escapeHtml(FALLBACK_MESSAGE)}</p>
+      <div class="ib-home-economic__grid">${renderHomeStyleItems(indicators, {}, {}, { empty: true })}</div>
+      <p class="ib-home-economic__meta">Kaynak: ${escapeHtml(SOURCE_LABEL)} · Bilgilendirme amaçlıdır.</p>
+    </section>`;
+}
+
+function renderHomeStyleSkeletonHtml(preset) {
+  const indicators = resolvePreset(preset);
+  if (!indicators) return '';
+
+  return `
+    <section
+      class="ib-home-economic__card"
+      aria-label="${escapeHtml(CARD_TITLE)} yükleniyor"
+      data-results-economic-state="loading"
+      data-results-economic-layout="home"
+    >
+      ${renderHomeStyleHead(preset)}
+      <div class="ib-home-economic__grid">${renderHomeStyleSkeletonItems(indicators.length)}</div>
+      <p class="ib-home-economic__meta">Kaynak: ${escapeHtml(SOURCE_LABEL)} · Bilgilendirme amaçlıdır.</p>
+    </section>`;
 }
 
 function resolvePreset(preset) {
@@ -71,13 +167,13 @@ export function hasAnyPresetValue(indicators, rates = {}) {
 }
 
 export function renderResultsEconomicCardHtml(data, preset) {
+  if (usesHomeLayout(preset)) return renderHomeStyleCardHtml(data, preset);
+
   const indicators = resolvePreset(preset);
   if (!indicators) return '';
 
   const rates = data?.rates || {};
   const seriesDates = data?.seriesDates || {};
-
-  const compact = isCompactPreset(preset);
 
   const items = indicators
     .map(({ key, label, kind, rateKey, dateKey }) => {
@@ -91,14 +187,14 @@ export function renderResultsEconomicCardHtml(data, preset) {
         <h4 class="ib-results-economic__label">${escapeHtml(label)}</h4>
         <p class="ib-results-economic__value">${escapeHtml(displayValue)}</p>
         <p class="ib-results-economic__date">${escapeHtml(displayDate)}</p>
-        ${compact ? '' : `<p class="ib-results-economic__source">${escapeHtml(SOURCE_LABEL)}</p>`}
+        <p class="ib-results-economic__source">${escapeHtml(SOURCE_LABEL)}</p>
       </article>`;
     })
     .join('');
 
   return `
     <section
-      class="ib-results-economic__card${compactCardClass(preset)}"
+      class="ib-results-economic__card"
       aria-labelledby="results-economic-title-${escapeHtml(preset)}"
       data-results-economic-card
       data-results-economic-state="ready"
@@ -108,15 +204,14 @@ export function renderResultsEconomicCardHtml(data, preset) {
         <p class="ib-results-economic__subtitle">${escapeHtml(CARD_SUBTITLE)}</p>
       </header>
       <div class="ib-results-economic__grid">${items}</div>
-      ${compact ? `<p class="ib-results-economic__foot">${escapeHtml(SOURCE_LABEL)} · bilgilendirme amaçlı</p>` : ''}
     </section>`;
 }
 
 export function renderResultsEconomicFallbackHtml(preset) {
+  if (usesHomeLayout(preset)) return renderHomeStyleFallbackHtml(preset);
+
   const indicators = resolvePreset(preset);
   if (!indicators) return '';
-
-  const compact = isCompactPreset(preset);
 
   const items = indicators
     .map(
@@ -125,14 +220,14 @@ export function renderResultsEconomicFallbackHtml(preset) {
         <h4 class="ib-results-economic__label">${escapeHtml(label)}</h4>
         <p class="ib-results-economic__value">—</p>
         <p class="ib-results-economic__date">—</p>
-        ${compact ? '' : `<p class="ib-results-economic__source">${escapeHtml(SOURCE_LABEL)}</p>`}
+        <p class="ib-results-economic__source">${escapeHtml(SOURCE_LABEL)}</p>
       </article>`
     )
     .join('');
 
   return `
     <section
-      class="ib-results-economic__card ib-results-economic__card--fallback${compactCardClass(preset)}"
+      class="ib-results-economic__card ib-results-economic__card--fallback"
       aria-label="${escapeHtml(CARD_TITLE)}"
       data-results-economic-card
       data-results-economic-state="fallback"
@@ -143,11 +238,12 @@ export function renderResultsEconomicFallbackHtml(preset) {
       </header>
       <p class="ib-results-economic__fallback">${escapeHtml(FALLBACK_MESSAGE)}</p>
       <div class="ib-results-economic__grid">${items}</div>
-      ${compact ? `<p class="ib-results-economic__foot">${escapeHtml(SOURCE_LABEL)} · bilgilendirme amaçlı</p>` : ''}
     </section>`;
 }
 
 export function renderResultsEconomicSkeletonHtml(preset) {
+  if (usesHomeLayout(preset)) return renderHomeStyleSkeletonHtml(preset);
+
   const indicators = resolvePreset(preset);
   if (!indicators) return '';
 
@@ -164,7 +260,7 @@ export function renderResultsEconomicSkeletonHtml(preset) {
 
   return `
     <section
-      class="ib-results-economic__card${compactCardClass(preset)}"
+      class="ib-results-economic__card"
       aria-label="${escapeHtml(CARD_TITLE)} yükleniyor"
       data-results-economic-state="loading"
     >

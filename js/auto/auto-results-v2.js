@@ -166,7 +166,7 @@ function renderAutoResultsV2Html(model) {
         </article>
       </div>
 
-      <div class="ib-results-economic-mount auto-v2-evds-mount ib-results-economic--compact" data-results-economic-mount hidden></div>
+      <div class="ib-results-economic-mount auto-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
 
       <div class="auto-v2-grid">
         <article class="auto-v2-block auto-v2-block--pros">

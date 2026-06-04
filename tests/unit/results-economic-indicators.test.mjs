@@ -48,9 +48,10 @@ test('renderResultsEconomicCardHtml shows title, subtitle and TCMB EVDS per item
   assert.match(auto, /USD\/TRY/);
   assert.match(auto, /EUR\/TRY/);
   assert.match(auto, /₺45,87/);
-  assert.match(auto, /ib-results-economic--compact/);
-  assert.match(auto, /ib-results-economic__foot/);
-  assert.doesNotMatch(auto, /<p class="ib-results-economic__source">TCMB EVDS<\/p>/);
+  assert.match(auto, /ib-home-economic__card/);
+  assert.match(auto, /ib-home-economic__grid/);
+  assert.match(auto, /data-results-economic-layout="home"/);
+  assert.match(auto, /ib-home-economic__meta/);
 });
 
 test('renderResultsEconomicFallbackHtml keeps card visible with fallback message', () => {

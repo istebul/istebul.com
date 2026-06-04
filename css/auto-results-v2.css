@@ -2,6 +2,7 @@
  * Auto Results V2 — premium SaaS panel (mobile + dark mode uyumlu).
  */
 @import 'results-economic-indicators.css';
+@import 'home-economic-indicators.css';
 .auto-v2-root {
   margin: 0.75rem 0 1rem;
 }
@@ -393,6 +394,60 @@
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--v2-accent);
+}
+
+/* Auto V2 — EVDS kartı ana sayfa düzeni (3 sütun, kompakt) */
+.auto-v2-evds-mount.ib-results-economic-mount {
+  margin: 0 0 0.6rem;
+}
+
+.auto-v2-evds-mount .ib-home-economic__card {
+  margin: 0;
+  padding: 0.75rem 0.85rem 0.65rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.auto-v2-evds-mount .ib-home-economic__head {
+  margin-bottom: 0.55rem;
+}
+
+.auto-v2-evds-mount .ib-home-economic__head h2 {
+  font-size: 0.92rem;
+}
+
+.auto-v2-evds-mount .ib-home-economic__refresh {
+  font-size: 0.68rem;
+}
+
+.auto-v2-evds-mount .ib-home-economic__grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.auto-v2-evds-mount .ib-home-economic__item {
+  padding: 0.5rem 0.55rem;
+}
+
+.auto-v2-evds-mount .ib-home-economic__value {
+  font-size: 0.92rem;
+}
+
+.auto-v2-evds-mount .ib-home-economic__meta {
+  margin-top: 0.45rem;
+  font-size: 0.68rem;
+}
+
+@media (max-width: 520px) {
+  .auto-v2-evds-mount .ib-home-economic__head-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .auto-v2-evds-mount .ib-home-economic__refresh {
+    text-align: left;
+    margin-left: 0;
+  }
 }
 
 .auto-v2-factors {

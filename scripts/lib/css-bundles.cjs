@@ -57,6 +57,7 @@ const AUTO_PAGE_EXTENSION = [
   'css/vertical-nav-more-v1.css',
   'css/auto-hero-dashboard-v1.css',
   'css/auto-results-v2.css',
+  'css/home-economic-indicators.css',
   'css/auto-shell-unified-v1.css',
   'css/corporate-footer-v1.css',
   'css/auto-final-cta-contrast-v1.css',
