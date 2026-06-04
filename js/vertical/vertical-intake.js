@@ -1,5 +1,8 @@
 import { analytics } from '../core/analytics.js';
+import { withTimeout } from '../core/async-utils.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
+
+const INTAKE_FETCH_TIMEOUT_MS = 8000;
 
 const VERTICAL_SITE_CATEGORY = Object.freeze({
   finans: 'finansman',
@@ -32,22 +35,27 @@ async function callVerticalIntake(vertical, payload) {
   if (!url || !key) return { ok: false, offline: true };
 
   try {
-    const response = await fetch(`${url}/functions/v1/vertical-intake`, {
-      method: 'POST',
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        vertical,
-        ...payload,
-        metadata: {
-          ...(payload.metadata || {}),
-          session_id: getVerticalSessionId(vertical)
-        }
-      })
-    });
+    const response = await withTimeout(
+      fetch(`${url}/functions/v1/vertical-intake`, {
+        method: 'POST',
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          vertical,
+          ...payload,
+          metadata: {
+            ...(payload.metadata || {}),
+            session_id: getVerticalSessionId(vertical)
+          }
+        })
+      }),
+      INTAKE_FETCH_TIMEOUT_MS,
+      null
+    );
+    if (!response) return { ok: false, offline: true, timeout: true };
     const data = await response.json().catch(() => ({}));
     if (!response.ok) return { ok: false, error: data.error || 'request_failed' };
     return { ok: true, ...data };

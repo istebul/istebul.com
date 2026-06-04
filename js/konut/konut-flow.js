@@ -79,6 +79,61 @@ export function getKonutFlow(purchasePurposeLabel) {
   return PURPOSE_FLOW[key] || PURPOSE_FLOW.belirsiz;
 }
 
+/**
+ * Finansman zorunlu olmayan akışlarda boş kredi tercihini güvenli varsayılana çeker.
+ * @param {object} state
+ * @param {ReturnType<typeof getKonutFlow>} flow
+ */
+export function applyKonutFinancingDefaults(state, flow) {
+  if (!flow || flow.requireFinancing) return;
+  if (!state.useFinancing) state.useFinancing = 'hayir';
+}
+
+/**
+ * @param {object} state — real-estate wizard state
+ * @param {number} stepIndex
+ * @returns {string} hata mesajı veya boş string
+ */
+export function validateKonutStep(state, stepIndex) {
+  const flow = getKonutFlow(state.purchasePurpose);
+  if (stepIndex === 0 && !state.purchasePurpose) return 'Karar amacını seçin.';
+  if (stepIndex === 1) {
+    const hasBudget = Number(state.totalBudget) > 0;
+    const hasCapacity = Number(state.monthlyCapacity) > 0;
+    if (!hasBudget && !hasCapacity) {
+      return flow.requireFinancing
+        ? 'Toplam bütçe zorunludur.'
+        : 'Toplam bütçe veya aylık ödeme kapasitesi girin.';
+    }
+    if (!Number(state.monthlyIncome)) return 'Aylık net gelir zorunludur.';
+    if (!hasCapacity) return 'Aylık ödeme kapasitesi zorunludur.';
+    if (flow.requireFinancing) {
+      if (!state.useFinancing) return 'Kredi kullanım tercihini seçin.';
+      if (state.useFinancing === 'evet' && !Number(state.loanAmount)) return 'Kredi tutarını girin.';
+    } else {
+      applyKonutFinancingDefaults(state, flow);
+    }
+  }
+  if (stepIndex === 2 && !String(state.city || '').trim()) return 'İl seçimi zorunludur.';
+  if (stepIndex === 3 && !state.homeType) return 'Konut tipini seçin.';
+  return '';
+}
+
+/**
+ * @param {object} state
+ * @returns {{ step: number, message: string } | null}
+ */
+export function validateKonutAllSteps(state) {
+  const flow = getKonutFlow(state.purchasePurpose);
+  applyKonutFinancingDefaults(state, flow);
+  const stepCount = flow.stepLabels.length;
+  for (let i = 0; i < stepCount; i += 1) {
+    const msg = validateKonutStep(state, i);
+    if (msg) return { step: i, message: msg };
+  }
+  return null;
+}
+
 export function resetKonutFieldsOnPurposeChange(state, previousLabel, newLabel) {
   if (previousLabel === newLabel) return;
   const flow = getKonutFlow(newLabel);

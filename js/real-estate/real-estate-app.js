@@ -18,7 +18,15 @@ import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '..
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountKonutResultsV2 } from '../features/konut/konut-results-v2.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
-import { getKonutFlow, resetKonutFieldsOnPurposeChange } from '../konut/konut-flow.js';
+import { withTimeout } from '../core/async-utils.js';
+import { setSubmitLoading } from '../runtime/enterprise-form-ux.js';
+import {
+  getKonutFlow,
+  resetKonutFieldsOnPurposeChange,
+  validateKonutStep,
+  validateKonutAllSteps,
+  applyKonutFinancingDefaults
+} from '../konut/konut-flow.js';
 
 function stepLabelsForState() {
   return getKonutFlow(state.purchasePurpose).stepLabels;
@@ -133,11 +141,16 @@ async function intake(type, payload = {}) {
   const key = window.__env?.SUPABASE_ANON_KEY;
   if (!base || !key) return { ok: false };
   try {
-    const res = await fetch(`${base.replace(/\/$/, '')}/functions/v1/housing-intake`, {
-      method: 'POST',
-      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, session_id: sessionId(), ...payload })
-    });
+    const res = await withTimeout(
+      fetch(`${base.replace(/\/$/, '')}/functions/v1/housing-intake`, {
+        method: 'POST',
+        headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, session_id: sessionId(), ...payload })
+      }),
+      8000,
+      null
+    );
+    if (!res) return { ok: false, timeout: true };
     const data = await res.json().catch(() => ({}));
     return { ok: res.ok, data };
   } catch (error) {
@@ -245,30 +258,11 @@ function riskFields() {
 }
 
 function validateStep(stepIndex) {
-  const flow = getKonutFlow(state.purchasePurpose);
-  if (stepIndex === 0 && !state.purchasePurpose) return 'Karar amacını seçin.';
-  if (stepIndex === 1) {
-    if (!Number(state.totalBudget)) {
-      return flow.requireFinancing ? 'Toplam bütçe zorunludur.' : 'Aylık kira veya bütçe çerçevesi zorunludur.';
-    }
-    if (!Number(state.monthlyIncome)) return 'Aylık net gelir zorunludur.';
-    if (!Number(state.monthlyCapacity)) return 'Aylık ödeme kapasitesi zorunludur.';
-    if (flow.requireFinancing) {
-      if (state.useFinancing === 'evet' && !Number(state.loanAmount)) return 'Kredi tutarını girin.';
-      if (!state.useFinancing) return 'Kredi kullanım tercihini seçin.';
-    }
-  }
-  if (stepIndex === 2 && !String(state.city || '').trim()) return 'İl seçimi zorunludur.';
-  if (stepIndex === 3 && !state.homeType) return 'Konut tipini seçin.';
-  return '';
+  return validateKonutStep(state, stepIndex);
 }
 
 function validateAllSteps() {
-  for (let i = 0; i < stepLabelsForState().length; i += 1) {
-    const msg = validateStep(i);
-    if (msg) return { step: i, message: msg };
-  }
-  return null;
+  return validateKonutAllSteps(state);
 }
 
 function buildMetrics() {
@@ -528,6 +522,7 @@ function bindWizardEvents() {
 
 async function handleNext() {
   const validationNode = $('#housing-validation');
+  const nextBtn = $('#housing-next');
   const fail = (message, step = state.step) => {
     if (validationNode) validationNode.textContent = message;
     if (step !== state.step) {
@@ -544,24 +539,43 @@ async function handleNext() {
     return;
   }
 
+  const flow = getKonutFlow(state.purchasePurpose);
+  if (state.step === 1) applyKonutFinancingDefaults(state, flow);
+
   const labels = stepLabelsForState();
-  if (state.step < labels.length - 1) {
+  const advancingToResults = state.step >= labels.length - 1;
+
+  setSubmitLoading(nextBtn, true, { busyLabel: 'Hazırlanıyor…' });
+
+  try {
+    if (state.step < labels.length - 1) {
+      if (validationNode) validationNode.textContent = '';
+      trackEvent('home_analysis_step_completed', { step: state.step + 1, label: labels[state.step] });
+      state.step += 1;
+      renderStep();
+      return;
+    }
+
+    const allError = validateAllSteps();
+    if (allError) {
+      fail(allError.message, allError.step);
+      return;
+    }
+
     if (validationNode) validationNode.textContent = '';
-    trackEvent('home_analysis_step_completed', { step: state.step + 1, label: labels[state.step] });
-    state.step += 1;
-    renderStep();
-    return;
+    trackEvent('home_analysis_step_completed', { step: stepLabelsForState().length, label: 'Sonuçlar' });
+    await renderResults();
+  } catch (error) {
+    console.warn('housing-wizard-results-failed', error);
+    if (advancingToResults) {
+      fail(
+        'Sonuçlar hazırlanırken bir sorun oluştu. Zorunlu alanları kontrol edip tekrar deneyin.',
+        labels.length - 1
+      );
+    }
+  } finally {
+    setSubmitLoading(nextBtn, false);
   }
-
-  const allError = validateAllSteps();
-  if (allError) {
-    fail(allError.message, allError.step);
-    return;
-  }
-
-  if (validationNode) validationNode.textContent = '';
-  trackEvent('home_analysis_step_completed', { step: stepLabelsForState().length, label: 'Sonuçlar' });
-  await renderResults();
 }
 
 async function getAuthUserId() {
@@ -572,7 +586,7 @@ async function getAuthUserId() {
     const { getSupabaseClient } = await import('../core/supabase.js');
     const client = getSupabaseClient();
     if (!client) return null;
-    const { data } = await client.auth.getUser();
+    const { data } = await withTimeout(client.auth.getUser(), 4000, { data: { user: null } });
     return data?.user?.id || null;
   } catch {
     return null;
