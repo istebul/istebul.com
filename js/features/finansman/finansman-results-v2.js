@@ -29,10 +29,11 @@ import {
 } from '../results/decision-intelligence-engine.js';
 import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
 import {
-  buildEvdsMarketAnalysis,
-  fetchEvdsRatesForEngine,
-  renderFinansmanMarketAssessmentHtml
-} from '../evds/evds-market-engine.js';
+  buildEvdsAiMarketSentence,
+  buildEvdsRiskLayer,
+  mountEvdsRiskLayer
+} from '../results/results-evds-risk-layer.js';
+import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -349,10 +350,9 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [], evdsR
   const cost = buildTotalCostView(state, primary);
   const intel = buildDecisionIntelligenceResult('finansman', state, { monthlyPayment: cost.monthlyPayment }, {
     primaryResult: primary,
-    results,
-    evdsRates: evdsRates || undefined
+    results
   });
-  const evdsAnalysis = intel.context?.evdsAnalysis || buildEvdsMarketAnalysis('finansman', evdsRates || {});
+  const evdsRiskLayer = buildEvdsRiskLayer('finance', evdsRates || {});
   const riskAnalysis = intel.riskAnalysis;
   const decisionScore = intel.decisionScore;
   const confidenceScore = intel.confidenceScore;
@@ -370,7 +370,7 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [], evdsR
     planTier,
     strengths,
     weaknesses,
-    marketAssessment: intel.context?.marketAssessment || '',
+    marketAssessment: buildEvdsAiMarketSentence(evdsRiskLayer),
     costs: {
       monthlyPayment: cost.monthlyPayment,
       paymentToIncome: cost.incomeLoadPct,
@@ -429,8 +429,7 @@ export function buildFinansmanResultsV2Payload({ state = {}, results = [], evdsR
     planTier,
     insightInput,
     insight: buildDecisionInsight(insightInput),
-    evdsAnalysis,
-    evdsMarketHtml: renderFinansmanMarketAssessmentHtml(evdsAnalysis, escapeHtml)
+    evdsRiskLayer
   };
 }
 
@@ -475,8 +474,6 @@ function renderFinansmanResultsV2Html(model) {
       </div>
 
       ${estimateNote}
-
-      ${model.evdsMarketHtml || ''}
 
       <div class="ib-results-economic-mount finansman-v2-evds-mount" data-results-economic-mount hidden></div>
 
@@ -606,6 +603,7 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
   root.innerHTML = renderFinansmanResultsV2Html(model);
   mountNode.prepend(root);
   await hydrateResultsEconomicIndicators(root, 'finansman');
+  mountEvdsRiskLayer(root, model.evdsRiskLayer);
 
   safeTrackEvent(track, 'finance_result_v2_view', {
     category: 'finansman',
@@ -636,7 +634,7 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
       planTier: model.planTier,
       strengths: model.strengths,
       weaknesses: model.weaknesses,
-      marketAssessment: model.intelligence?.context?.marketAssessment || '',
+      marketAssessment: buildEvdsAiMarketSentence(model.evdsRiskLayer),
       costs: model.totalCost
     }
   );

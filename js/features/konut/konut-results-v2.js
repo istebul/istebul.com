@@ -27,10 +27,11 @@ import {
 } from '../results/decision-intelligence-engine.js';
 import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
 import {
-  buildEvdsMarketAnalysis,
-  fetchEvdsRatesForEngine,
-  renderKonutFinancingOutlookHtml
-} from '../evds/evds-market-engine.js';
+  buildEvdsAiMarketSentence,
+  buildEvdsRiskLayer,
+  mountEvdsRiskLayer
+} from '../results/results-evds-risk-layer.js';
+import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -334,10 +335,9 @@ export function buildKonutResultsV2Payload({
 }) {
   const intel = buildDecisionIntelligenceResult('konut', state, metrics, {
     scenarios,
-    attention,
-    evdsRates: evdsRates || undefined
+    attention
   });
-  const evdsAnalysis = intel.context?.evdsAnalysis || buildEvdsMarketAnalysis('konut', evdsRates || {});
+  const evdsRiskLayer = buildEvdsRiskLayer('konut', evdsRates || {});
   const decisionScore = intel.decisionScore;
   const confidenceScore = intel.confidenceScore;
   const riskAnalysis = intel.riskAnalysis;
@@ -358,7 +358,7 @@ export function buildKonutResultsV2Payload({
     planTier,
     strengths,
     weaknesses,
-    marketAssessment: intel.context?.marketAssessment || '',
+    marketAssessment: buildEvdsAiMarketSentence(evdsRiskLayer),
     costs: {
       budget: state.totalBudget,
       monthlyPayment: totalCost.monthlyPayment,
@@ -418,8 +418,7 @@ export function buildKonutResultsV2Payload({
     planTier,
     insightInput,
     insight: buildDecisionInsight(insightInput),
-    evdsAnalysis,
-    evdsMarketHtml: renderKonutFinancingOutlookHtml(evdsAnalysis, escapeHtml)
+    evdsRiskLayer
   };
 }
 
@@ -471,8 +470,6 @@ function renderKonutResultsV2Html(model) {
       </div>
 
       ${costNote}
-
-      ${model.evdsMarketHtml || ''}
 
       <div class="ib-results-economic-mount konut-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
 
@@ -599,6 +596,7 @@ export async function mountKonutResultsV2({
   root.innerHTML = renderKonutResultsV2Html(model);
   mountNode.prepend(root);
   await hydrateResultsEconomicIndicators(root, 'konut');
+  mountEvdsRiskLayer(root, model.evdsRiskLayer);
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'konut',
@@ -641,7 +639,7 @@ export async function mountKonutResultsV2({
       planTier: model.planTier,
       strengths: model.strengths,
       weaknesses: model.weaknesses,
-      marketAssessment: model.intelligence?.context?.marketAssessment || '',
+      marketAssessment: buildEvdsAiMarketSentence(model.evdsRiskLayer),
       costs: model.totalCost
     }
   );
