@@ -20,7 +20,7 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 |----------|----------|
 | `SUPABASE_URL` | `https://hjfrcdstbyonmgatgwcc.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → service_role (gizli) |
-| `TCMB_EVDS_API_KEY` | [EVDS](https://evds2.tcmb.gov.tr/) profil → API anahtarı (yalnızca sunucu; `/api/evds-snapshot`) |
+| `TCMB_EVDS_API_KEY` | [EVDS 3](https://evds3.tcmb.gov.tr/) profil → API anahtarı (yalnızca sunucu; `/api/evds-snapshot`) |
 
 ## Önerilen (Supabase otomatik deploy)
 

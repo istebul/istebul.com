@@ -10,6 +10,8 @@ const {
   getHousingLoanRates,
   parseLatestValue,
   buildEvdsSeriesUrl,
+  EVDS_BASE_URL,
+  parseEvdsResponseBody,
   seriesCodeToColumn,
   __resetEvdsCacheForTests,
   EVDS_SERIES
@@ -27,14 +29,64 @@ function mockEvdsResponse(seriesCode, value, date = '15-05-2026') {
   };
 }
 
-test('buildEvdsSeriesUrl uses path-style params without API key', () => {
+function mockEvdsFetchResponse(body, contentType = 'application/json; charset=UTF-8') {
+  const payload = typeof body === 'string' ? body : JSON.stringify(body);
+  return {
+    ok: true,
+    status: 200,
+    headers: { get: () => contentType },
+    async text() {
+      return payload;
+    }
+  };
+}
+
+function mockFxPairFetchResponse(usd = 34.1, eur = 37.2, date = '15-05-2026') {
+  return mockEvdsFetchResponse({
+    items: [
+      {
+        Tarih: date,
+        UNIXTIME: '1715760000',
+        TP_DK_USD_A: String(usd),
+        TP_DK_EUR_A: String(eur)
+      }
+    ]
+  });
+}
+
+function resolveEvdsFetch(url, valueBySeries = {}) {
+  const series = seriesFromEvdsUrl(url);
+  if (series?.includes('-')) {
+    return mockFxPairFetchResponse(
+      valueBySeries[EVDS_SERIES.USD_TRY] ?? 34.1,
+      valueBySeries[EVDS_SERIES.EUR_TRY] ?? 37.2
+    );
+  }
+  const value = valueBySeries[series] ?? 10;
+  return mockEvdsFetchResponse(mockEvdsResponse(series, value));
+}
+
+test('buildEvdsSeriesUrl uses EVDS3 igmevdsms-dis path without API key', () => {
   const url = buildEvdsSeriesUrl('TP.DK.USD.A', {
     startDate: '01-01-2026',
     endDate: '04-06-2026'
   });
-  assert.ok(url.startsWith('https://evds2.tcmb.gov.tr/service/evds/series='));
+  assert.equal(EVDS_BASE_URL, 'https://evds3.tcmb.gov.tr/igmevdsms-dis/service/evds/');
+  assert.ok(url.startsWith(`${EVDS_BASE_URL}series=`));
   assert.ok(url.includes('startDate=01-01-2026'));
   assert.ok(!url.includes('key='));
+});
+
+test('parseEvdsResponseBody skips JSON parse for HTML upstream', async () => {
+  const response = {
+    headers: { get: () => 'text/html; charset=utf-8' },
+    text: async () => '<!DOCTYPE html><html><body>EVDS app shell</body></html>'
+  };
+  const parsed = await parseEvdsResponseBody(response, 'secret');
+  assert.equal(parsed.parseSkipped, true);
+  assert.match(parsed.parseError, /non-JSON/i);
+  assert.equal(parsed.json, null);
+  assert.ok(!parsed.bodyText.includes('secret'));
 });
 
 test('parseLatestValue reads flat EVDS items array', () => {
@@ -76,14 +128,13 @@ test('fetchEvdsSnapshot uses header key and path URL (no query key)', async () =
   const seen = [];
   const fetchImpl = async (url, init) => {
     seen.push({ url, key: init?.headers?.key });
-    const series = seriesFromEvdsUrl(url);
-    return {
-      ok: true,
-      headers: { get: () => 'application/json; charset=UTF-8' },
-      async json() {
-        return mockEvdsResponse(series, series === EVDS_SERIES.USD_TRY ? 34.1 : 37.2);
-      }
-    };
+    return resolveEvdsFetch(url, {
+      [EVDS_SERIES.USD_TRY]: 34.1,
+      [EVDS_SERIES.EUR_TRY]: 37.2,
+      [EVDS_SERIES.POLICY_RATE]: 45,
+      [EVDS_SERIES.CPI_ANNUAL]: 38.5,
+      [EVDS_SERIES.HOUSING_LOAN]: 3.2
+    });
   };
 
   const env = { TCMB_EVDS_API_KEY: 'test-secret-key' };
@@ -102,18 +153,13 @@ test('fetchEvdsSnapshot caches live snapshot for 24h', async () => {
   let calls = 0;
   const fetchImpl = async (url) => {
     calls += 1;
-    const series = seriesFromEvdsUrl(url);
-    return {
-      ok: true,
-      headers: { get: () => 'application/json' },
-      async json() {
-        if (series === EVDS_SERIES.USD_TRY) return mockEvdsResponse(series, 34.1);
-        if (series === EVDS_SERIES.EUR_TRY) return mockEvdsResponse(series, 37.2);
-        if (series === EVDS_SERIES.POLICY_RATE) return mockEvdsResponse(series, 45);
-        if (series === EVDS_SERIES.CPI_ANNUAL) return mockEvdsResponse(series, 38.5);
-        return mockEvdsResponse(series, 3.2);
-      }
-    };
+    return resolveEvdsFetch(url, {
+      [EVDS_SERIES.USD_TRY]: 34.1,
+      [EVDS_SERIES.EUR_TRY]: 37.2,
+      [EVDS_SERIES.POLICY_RATE]: 45,
+      [EVDS_SERIES.CPI_ANNUAL]: 38.5,
+      [EVDS_SERIES.HOUSING_LOAN]: 3.2
+    });
   };
 
   const env = { TCMB_EVDS_API_KEY: 'test-secret-key' };
@@ -132,14 +178,13 @@ test('fetchEvdsSnapshot uses stale snapshot when upstream fails', async () => {
   let fail = false;
   const fetchImpl = async (url) => {
     if (fail) throw new Error('network down');
-    const series = seriesFromEvdsUrl(url);
-    return {
-      ok: true,
-      headers: { get: () => 'application/json' },
-      async json() {
-        return mockEvdsResponse(series, 30);
-      }
-    };
+    return resolveEvdsFetch(url, {
+      [EVDS_SERIES.USD_TRY]: 30,
+      [EVDS_SERIES.EUR_TRY]: 30,
+      [EVDS_SERIES.POLICY_RATE]: 30,
+      [EVDS_SERIES.CPI_ANNUAL]: 30,
+      [EVDS_SERIES.HOUSING_LOAN]: 30
+    });
   };
 
   const env = { TCMB_EVDS_API_KEY: 'test-secret-key' };
@@ -157,23 +202,14 @@ test('fetchEvdsSnapshot returns live when optional series fail but FX ok', async
   const fetchImpl = async (url) => {
     const series = seriesFromEvdsUrl(url);
     if (series === EVDS_SERIES.HOUSING_LOAN) {
-      return {
-        ok: true,
-        headers: { get: () => 'application/json' },
-        async json() {
-          return { items: [] };
-        }
-      };
+      return mockEvdsFetchResponse({ items: [] });
     }
-    return {
-      ok: true,
-      headers: { get: () => 'application/json' },
-      async json() {
-        const value =
-          series === EVDS_SERIES.USD_TRY ? 35 : series === EVDS_SERIES.EUR_TRY ? 38 : 10;
-        return mockEvdsResponse(series, value);
-      }
-    };
+    return resolveEvdsFetch(url, {
+      [EVDS_SERIES.USD_TRY]: 35,
+      [EVDS_SERIES.EUR_TRY]: 38,
+      [EVDS_SERIES.POLICY_RATE]: 10,
+      [EVDS_SERIES.CPI_ANNUAL]: 10
+    });
   };
 
   const snap = await fetchEvdsSnapshot(
@@ -188,16 +224,14 @@ test('fetchEvdsSnapshot returns live when optional series fail but FX ok', async
 
 test('getter helpers expose exchange and policy rates', async () => {
   __resetEvdsCacheForTests();
-  const fetchImpl = async (url) => {
-    const series = seriesFromEvdsUrl(url);
-    return {
-      ok: true,
-      headers: { get: () => 'application/json' },
-      async json() {
-        return mockEvdsResponse(series, series === EVDS_SERIES.CPI_ANNUAL ? 40 : 10);
-      }
-    };
-  };
+  const fetchImpl = async (url) =>
+    resolveEvdsFetch(url, {
+      [EVDS_SERIES.USD_TRY]: 10,
+      [EVDS_SERIES.EUR_TRY]: 10,
+      [EVDS_SERIES.POLICY_RATE]: 10,
+      [EVDS_SERIES.CPI_ANNUAL]: 40,
+      [EVDS_SERIES.HOUSING_LOAN]: 10
+    });
   const env = { TCMB_EVDS_API_KEY: 'k' };
   const fx = await getExchangeRates(env, { fetchImpl });
   const policy = await getPolicyRate(env, { fetchImpl });
@@ -215,29 +249,14 @@ test('fetchEvdsFxDebugProbe exposes safe FX upstream diagnostics without secrets
   const fetchImpl = async (url, init) => {
     assert.ok(!url.includes('key='));
     assert.equal(init?.headers?.key, secret);
-    const body = JSON.stringify({
-      items: [
-        {
-          Tarih: '01-05-2026',
-          TP_DK_USD_A: '34.1',
-          TP_DK_EUR_A: '37.2'
-        }
-      ]
-    });
-    return {
-      ok: true,
-      status: 200,
-      headers: { get: () => 'application/json; charset=UTF-8' },
-      async text() {
-        return body;
-      }
-    };
+    return mockFxPairFetchResponse(34.1, 37.2, '01-05-2026');
   };
 
   const debug = await fetchEvdsFxDebugProbe({ TCMB_EVDS_API_KEY: secret }, { fetchImpl });
 
   assert.equal(debug.temporary, true);
   assert.deepEqual(debug.usedSeries, [EVDS_SERIES.USD_TRY, EVDS_SERIES.EUR_TRY]);
+  assert.ok(debug.evdsRequestUrlMasked.includes('igmevdsms-dis/service/evds/'));
   assert.ok(debug.evdsRequestUrlMasked.includes('series=TP.DK.USD.A-TP.DK.EUR.A'));
   assert.ok(!debug.evdsRequestUrlMasked.includes('key='));
   assert.equal(debug.evdsHttpStatus, 200);
@@ -251,6 +270,23 @@ test('fetchEvdsFxDebugProbe exposes safe FX upstream diagnostics without secrets
 
   const serialized = JSON.stringify(debug);
   assert.ok(!serialized.includes(secret));
+});
+
+test('fetchEvdsFxDebugProbe reports HTML app shell without JSON parse', async () => {
+  const fetchImpl = async () => ({
+    ok: true,
+    status: 200,
+    headers: { get: () => 'text/html; charset=utf-8' },
+    async text() {
+      return '<!DOCTYPE html><html><body>EVDS app shell</body></html>';
+    }
+  });
+
+  const debug = await fetchEvdsFxDebugProbe({ TCMB_EVDS_API_KEY: 'k' }, { fetchImpl });
+
+  assert.match(debug.evdsContentType, /text\/html/i);
+  assert.match(debug.errorMessage, /non-JSON/i);
+  assert.equal(debug.evdsTopLevelKeys.length, 0);
 });
 
 test('fetchEvdsFxDebugProbe reports upstream HTTP errors safely', async () => {

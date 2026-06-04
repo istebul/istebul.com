@@ -2,7 +2,8 @@
  * TCMB EVDS — server-side only. Requires env.TCMB_EVDS_API_KEY (never expose to browser).
  */
 
-const EVDS_BASE_URL = 'https://evds2.tcmb.gov.tr/service/evds/';
+/** EVDS 3 REST API (evds2 /service/evds/ redirects to HTML app shell). */
+export const EVDS_BASE_URL = 'https://evds3.tcmb.gov.tr/igmevdsms-dis/service/evds/';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10_000;
 const MAX_RETRIES = 2;
@@ -66,8 +67,9 @@ export function seriesCodeToColumn(seriesCode) {
 }
 
 /**
- * Path-style EVDS URL (key must be sent via HTTP header since 2024-04-05).
- * @see https://evds2.tcmb.gov.tr/
+ * Path-style EVDS URL (key via HTTP header since 2024-04-05).
+ * Multi-series: join codes with `-` (e.g. TP.DK.USD.A-TP.DK.EUR.A).
+ * @see https://evds3.tcmb.gov.tr/
  */
 export function buildEvdsSeriesUrl(seriesCode, { startDate, endDate } = {}) {
   const params = new URLSearchParams({
@@ -77,6 +79,69 @@ export function buildEvdsSeriesUrl(seriesCode, { startDate, endDate } = {}) {
     type: 'json'
   });
   return `${EVDS_BASE_URL}${params.toString()}`;
+}
+
+function evdsRequestHeaders(apiKey) {
+  return {
+    Accept: 'application/json',
+    key: apiKey
+  };
+}
+
+function isJsonContentType(contentType) {
+  return String(contentType || '').toLowerCase().includes('json');
+}
+
+function bodyLooksLikeJson(bodyText) {
+  const trimmed = String(bodyText || '').trimStart();
+  return trimmed.startsWith('{') || trimmed.startsWith('[');
+}
+
+/**
+ * @param {Response} response
+ * @param {string} apiKey
+ */
+async function readEvdsBodyText(response, apiKey) {
+  return redactSecrets(await response.text(), apiKey);
+}
+
+/**
+ * Parse EVDS JSON body; skip parse when upstream returned HTML/app shell.
+ * @returns {{ json: object, contentType: string, bodyText: string, parseSkipped: boolean, parseError: string | null }}
+ */
+export async function parseEvdsResponseBody(response, apiKey) {
+  const contentType = response.headers?.get?.('content-type') || '';
+  const bodyText = await readEvdsBodyText(response, apiKey);
+  const canParse =
+    isJsonContentType(contentType) || bodyLooksLikeJson(bodyText);
+
+  if (!canParse) {
+    return {
+      json: null,
+      contentType,
+      bodyText,
+      parseSkipped: true,
+      parseError: `EVDS non-JSON response (${contentType || 'unknown content-type'})`
+    };
+  }
+
+  try {
+    return {
+      json: JSON.parse(bodyText),
+      contentType,
+      bodyText,
+      parseSkipped: false,
+      parseError: null
+    };
+  } catch {
+    return {
+      json: null,
+      contentType,
+      bodyText,
+      parseSkipped: false,
+      parseError: 'EVDS invalid JSON'
+    };
+  }
 }
 
 function pickValueFromRow(row, seriesCode) {
@@ -140,11 +205,9 @@ async function fetchEvdsSeries(apiKey, seriesCode, { startDate, endDate, fetchIm
     try {
       const response = await fetchImpl(url, {
         method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          key: apiKey
-        },
-        signal: controller.signal
+        headers: evdsRequestHeaders(apiKey),
+        signal: controller.signal,
+        redirect: 'follow'
       });
       clearTimeout(timer);
 
@@ -158,38 +221,27 @@ async function fetchEvdsSeries(apiKey, seriesCode, { startDate, endDate, fetchIm
         continue;
       }
 
-      const contentType = String(response.headers?.get?.('content-type') || '').toLowerCase();
-      let json;
-      try {
-        json = await response.json();
-      } catch (parseError) {
-        lastError = new Error(`EVDS invalid JSON (${seriesCode})`);
-        logEvds('warn', 'evds_series_json_parse_failed', {
-          series: seriesCode,
-          attempt,
-          contentType: contentType || 'unknown'
-        });
-        continue;
-      }
-
-      if (!contentType.includes('json') && !Array.isArray(json?.items)) {
-        lastError = new Error(`EVDS non-JSON payload (${seriesCode})`);
+      const parsed = await parseEvdsResponseBody(response, apiKey);
+      if (parsed.parseSkipped || parsed.parseError || !parsed.json) {
+        lastError = new Error(
+          parsed.parseError || `EVDS non-JSON payload (${seriesCode})`
+        );
         logEvds('warn', 'evds_series_non_json', {
           series: seriesCode,
           attempt,
-          contentType: contentType || 'unknown',
-          itemCount: Array.isArray(json?.items) ? json.items.length : 0
+          contentType: parsed.contentType || 'unknown',
+          parseSkipped: parsed.parseSkipped
         });
         continue;
       }
 
-      const point = parseLatestValue(json, seriesCode);
+      const point = parseLatestValue(parsed.json, seriesCode);
       if (!point) {
         lastError = new Error(`EVDS empty series (${seriesCode})`);
         logEvds('warn', 'evds_series_empty', {
           series: seriesCode,
           attempt,
-          itemCount: Array.isArray(json?.items) ? json.items.length : 0
+          itemCount: Array.isArray(parsed.json?.items) ? parsed.json.items.length : 0
         });
         continue;
       }
@@ -207,6 +259,52 @@ async function fetchEvdsSeries(apiKey, seriesCode, { startDate, endDate, fetchIm
   }
 
   throw lastError || new Error(`EVDS fetch failed (${seriesCode})`);
+}
+
+/** Single request for USD + EUR (primary FX path). */
+async function fetchEvdsFxPair(apiKey, { startDate, endDate, fetchImpl = fetch } = {}) {
+  const seriesParam = `${EVDS_SERIES.USD_TRY}-${EVDS_SERIES.EUR_TRY}`;
+  const url = buildEvdsSeriesUrl(seriesParam, { startDate, endDate });
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const response = await fetchImpl(url, {
+        method: 'GET',
+        headers: evdsRequestHeaders(apiKey),
+        signal: controller.signal,
+        redirect: 'follow'
+      });
+      clearTimeout(timer);
+
+      if (!response.ok) {
+        lastError = new Error(`EVDS HTTP ${response.status} (FX pair)`);
+        continue;
+      }
+
+      const parsed = await parseEvdsResponseBody(response, apiKey);
+      if (parsed.parseSkipped || parsed.parseError || !parsed.json) {
+        lastError = new Error(parsed.parseError || 'EVDS non-JSON payload (FX pair)');
+        continue;
+      }
+
+      const usdTry = parseLatestValue(parsed.json, EVDS_SERIES.USD_TRY);
+      const eurTry = parseLatestValue(parsed.json, EVDS_SERIES.EUR_TRY);
+      if (!usdTry?.value || !eurTry?.value) {
+        lastError = new Error('EVDS FX pair missing USD or EUR values');
+        continue;
+      }
+
+      return { usdTry, eurTry };
+    } catch (error) {
+      clearTimeout(timer);
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('EVDS FX pair fetch failed');
 }
 
 function emptyRates() {
@@ -268,9 +366,25 @@ async function pullLiveSnapshot(apiKey, fetchImpl) {
     }
   };
 
+  try {
+    const fx = await fetchEvdsFxPair(apiKey, { startDate, endDate, fetchImpl });
+    rates.usdTry = fx.usdTry;
+    rates.eurTry = fx.eurTry;
+  } catch (error) {
+    errors.push({
+      series: `${EVDS_SERIES.USD_TRY}-${EVDS_SERIES.EUR_TRY}`,
+      message: redactSecrets(error?.message || String(error), apiKey)
+    });
+    logEvds('warn', 'evds_fx_pair_failed', {
+      message: redactSecrets(error?.message || String(error), apiKey)
+    });
+    await Promise.all([
+      pull('usdTry', EVDS_SERIES.USD_TRY),
+      pull('eurTry', EVDS_SERIES.EUR_TRY)
+    ]);
+  }
+
   await Promise.all([
-    pull('usdTry', EVDS_SERIES.USD_TRY),
-    pull('eurTry', EVDS_SERIES.EUR_TRY),
     pull('policyRate', EVDS_SERIES.POLICY_RATE),
     pull('cpiAnnual', EVDS_SERIES.CPI_ANNUAL),
     pull('housingLoanRate', EVDS_SERIES.HOUSING_LOAN, true)
@@ -388,17 +502,12 @@ async function probeEvdsFxUpstream(apiKey, fetchImpl = fetch) {
   const usedSeries = [EVDS_SERIES.USD_TRY, EVDS_SERIES.EUR_TRY];
   const startDate = startDateDaysAgo(90);
   const endDate = formatEvdsDate();
-  const params = new URLSearchParams({
-    series: usedSeries.join('-'),
-    startDate,
-    endDate,
-    type: 'json'
-  });
-  const requestUrl = `${EVDS_BASE_URL}${params.toString()}`;
+  const requestUrl = buildEvdsSeriesUrl(usedSeries.join('-'), { startDate, endDate });
 
   const debug = {
     temporary: true,
     usedSeries,
+    evdsBaseUrl: EVDS_BASE_URL,
     evdsRequestUrlMasked: requestUrl,
     evdsHttpStatus: null,
     evdsContentType: null,
@@ -422,32 +531,34 @@ async function probeEvdsFxUpstream(apiKey, fetchImpl = fetch) {
   try {
     const response = await fetchImpl(requestUrl, {
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        key: apiKey
-      },
-      signal: controller.signal
+      headers: evdsRequestHeaders(apiKey),
+      signal: controller.signal,
+      redirect: 'follow'
     });
     clearTimeout(timer);
 
     debug.evdsHttpStatus = response.status;
     debug.evdsContentType = response.headers?.get?.('content-type') || null;
 
-    const bodyText = await response.text();
-    debug.evdsBodyPreview = sanitizeDebugText(bodyText, apiKey);
+    const parsed = await parseEvdsResponseBody(response, apiKey);
+    debug.evdsBodyPreview = sanitizeDebugText(parsed.bodyText, apiKey);
 
     if (!response.ok) {
       debug.errorMessage = `EVDS HTTP ${response.status}`;
       return debug;
     }
 
-    let json;
-    try {
-      json = JSON.parse(bodyText);
-    } catch {
-      debug.errorMessage = 'EVDS invalid JSON';
+    if (parsed.parseSkipped) {
+      debug.errorMessage = parsed.parseError;
       return debug;
     }
+
+    if (parsed.parseError || !parsed.json) {
+      debug.errorMessage = parsed.parseError || 'EVDS invalid JSON';
+      return debug;
+    }
+
+    const json = parsed.json;
 
     debug.evdsTopLevelKeys =
       json && typeof json === 'object' && !Array.isArray(json) ? Object.keys(json) : [];
