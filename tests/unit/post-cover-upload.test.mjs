@@ -113,6 +113,7 @@ describe('posts content admin', () => {
     assert.match(mod, /hasPostsCategoryColumn/);
     assert.match(mod, /isMissingColumnError\(error, 'category'\)/);
     assert.match(mod, /const \{ category: _ignored, \.\.\.withoutCategory \} = values/);
+    assert.match(mod, /category\s*\n\s*\};/s);
   });
 
   it('cover upload uses admin-action edge upload', () => {

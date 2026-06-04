@@ -10,10 +10,10 @@ const POST_SELECT =
 
 const GUIDE_SEED_FILES = Object.freeze([
   { file: 'auto-guide-seed-headlines.json', category: 'auto' },
-  { file: 'konut-guide-seed-headlines.json', category: 'konut' },
-  { file: 'tatil-guide-seed-headlines.json', category: 'tatil' },
-  { file: 'finans-guide-seed-headlines.json', category: 'finans' },
-  { file: 'sigorta-guide-seed-headlines.json', category: 'sigorta' }
+  { file: 'konut-guide-seed-headlines.json', category: 'housing' },
+  { file: 'tatil-guide-seed-headlines.json', category: 'travel' },
+  { file: 'finans-guide-seed-headlines.json', category: 'finance' },
+  { file: 'sigorta-guide-seed-headlines.json', category: 'insurance' }
 ]);
 
 function mapSeedHeadline(item, category, index) {

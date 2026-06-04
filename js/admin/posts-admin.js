@@ -4,6 +4,11 @@
 
 import { escapeHtml, safeAttr } from '../core/dom-safe.js';
 import { uploadPostCoverImage } from './post-cover-upload.js';
+import {
+  getGuideCategory,
+  normalizePostCategory,
+  postCategoryFilterValues
+} from '../features/content/public-content.js';
 
 const POSTS_CONFIG = Object.freeze({
   news: {
@@ -67,8 +72,8 @@ let adminPostsCache = [];
 const editingByType = { news: null, blog: null };
 const pendingCoverFile = { news: null, blog: null };
 let hasPostsContentTypeColumn = true;
-// Production schema drift: posts.category may not exist.
-let hasPostsCategoryColumn = false;
+// Production schema drift: posts.category may not exist (strip on insert error).
+let hasPostsCategoryColumn = true;
 
 function isMissingColumnError(error, column) {
   const msg = String(error?.message || '').toLowerCase();
@@ -204,6 +209,7 @@ export function resetPostForm(kind) {
   setFieldValue(kind, 'sourceLabel', '');
   setFieldValue(kind, 'sourceUrl', '');
   setFieldValue(kind, 'content', '');
+  setFieldValue(kind, 'category', 'auto');
   setFieldValue(kind, 'published', false);
   if (conf.fields.featured) setFieldValue(kind, 'featured', false);
   if (conf.fields.coverUrlFallback) el(conf.fields.coverUrlFallback).value = '';
@@ -236,7 +242,7 @@ export function editPostById(kind, id) {
   setFieldValue(kind, 'sourceLabel', post.source_label);
   setFieldValue(kind, 'sourceUrl', post.source_url);
   setFieldValue(kind, 'content', post.content);
-  setFieldValue(kind, 'category', post.category || 'auto');
+  setFieldValue(kind, 'category', normalizePostCategory(post.category || 'auto'));
   setFieldValue(kind, 'published', post.is_published);
   if (cfg(kind).fields.featured) setFieldValue(kind, 'featured', post.is_featured);
   if (cfg(kind).fields.coverUrlFallback) {
@@ -267,9 +273,15 @@ export async function loadPostsList(kind) {
     .limit(200);
 
   if (hasPostsContentTypeColumn) q = q.eq('content_type', conf.contentType);
-  const normalizedFilter = String(filter || '').trim();
-  const shouldFilterByCategory = hasPostsCategoryColumn && normalizedFilter && !/^tümü|all$/i.test(normalizedFilter);
-  if (shouldFilterByCategory) q = q.eq('category', normalizedFilter);
+  const rawFilter = String(filter || '').trim();
+  const shouldFilterByCategory =
+    hasPostsCategoryColumn && rawFilter && !/^tümü|all$/i.test(rawFilter);
+  const filterValues = shouldFilterByCategory ? postCategoryFilterValues(rawFilter) : [];
+  if (filterValues.length === 1) {
+    q = q.eq('category', filterValues[0]);
+  } else if (filterValues.length > 1) {
+    q = q.in('category', filterValues);
+  }
 
   let { data, error } = await q;
   if (error && isMissingColumnError(error, 'content_type')) {
@@ -295,6 +307,9 @@ export async function loadPostsList(kind) {
   }
 
   const rows = Array.isArray(data) ? data : [];
+  if (rows.some((p) => p.category !== undefined)) {
+    hasPostsCategoryColumn = true;
+  }
   adminPostsCache = rows;
 
   if (!rows.length) {
@@ -324,7 +339,7 @@ export async function loadPostsList(kind) {
         return `<tr>
         <td class="ib-post-thumb-cell">${thumb}</td>
         <td><strong>${escapeHtml(p.title || '—')}</strong>${featuredBadge}</td>
-        <td class="text-muted text-xs">${escapeHtml(p.category || 'auto')}</td>
+        <td class="text-muted text-xs">${escapeHtml(getGuideCategory(p.category)?.label || normalizePostCategory(p.category))}</td>
         <td><span class="badge ${p.is_published ? 'badge-green' : 'badge-yellow'}">${p.is_published ? 'Yayında' : 'Taslak'}</span></td>
         <td class="text-muted cell-nowrap">${new Date(p.created_at).toLocaleDateString('tr-TR')}</td>
         <td><div class="table-actions">${actions}</div></td></tr>`;
@@ -357,7 +372,7 @@ export async function savePost(kind) {
     String(fieldValue(kind, 'slug')).trim() || slugify(title);
   const content = String(fieldValue(kind, 'content')).trim();
   const excerpt = String(fieldValue(kind, 'excerpt')).trim();
-  const category = fieldValue(kind, 'category') || 'auto';
+  const category = normalizePostCategory(fieldValue(kind, 'category') || 'auto');
   const source_label = String(fieldValue(kind, 'sourceLabel')).trim() || null;
   const source_url = String(fieldValue(kind, 'sourceUrl')).trim() || null;
   const is_published = Boolean(fieldValue(kind, 'published'));
@@ -391,9 +406,9 @@ export async function savePost(kind) {
     source_url,
     is_published,
     is_featured,
-    content_type: conf.contentType
+    content_type: conf.contentType,
+    category
   };
-  if (hasPostsCategoryColumn) values.category = category;
 
   const persistDirect = async (payload) => {
     if (editingByType[kind]) {
