@@ -29,6 +29,32 @@ function canonicalUrl(siteOrigin, routePath) {
   return `${base}${p.startsWith('/') ? p : `/${p}`}`;
 }
 
+/** Set data-ib-route on <html> only — never touch inline route CSS selectors. */
+function setHtmlRouteSurface(html, routeSurface) {
+  const escaped = escapeAttr(routeSurface);
+  if (/<html\b[^>]*\bdata-ib-route="/i.test(html)) {
+    return html.replace(
+      /(<html\b[^>]*\b)data-ib-route="[^"]*"/i,
+      `$1data-ib-route="${escaped}"`
+    );
+  }
+  return html.replace(
+    /<html(\s+lang="[^"]+")/i,
+    `<html$1 data-ib-route="${escaped}"`
+  );
+}
+
+/** Remove ib-route-pending from the <html> class list only. */
+function stripHtmlRoutePendingClass(html) {
+  return html.replace(
+    /(<html\b[^>]*\sclass=")([^"]*)(")/i,
+    (_match, open, classes, close) => {
+      const trimmed = classes.replace(/\bib-route-pending\b/g, '').replace(/\s+/g, ' ').trim();
+      return `${open}${trimmed}${close}`;
+    }
+  );
+}
+
 /**
  * Patch SPA shell HTML with route-specific document meta for crawlers without JS.
  */
@@ -37,15 +63,8 @@ function injectSpaShellDocumentMeta(html, { routeSurface, meta, siteOrigin }) {
 
   let out = html;
 
-  if (/\bdata-ib-route=/.test(out)) {
-    out = out.replace(/\bdata-ib-route="[^"]*"/, `data-ib-route="${escapeAttr(routeSurface)}"`);
-  } else {
-    out = out.replace(
-      /<html\s+lang="([^"]+)"/,
-      `<html lang="$1" data-ib-route="${escapeAttr(routeSurface)}"`
-    );
-  }
-  out = out.replace(/\bib-route-pending\b/g, '');
+  out = setHtmlRouteSurface(out, routeSurface);
+  out = stripHtmlRoutePendingClass(out);
 
   out = out.replace(/<title>[^<]*<\/title>/i, `<title>${escapeAttr(meta.title)}</title>`);
 
@@ -89,5 +108,7 @@ module.exports = {
   SPA_SHELL_ROUTE_MAP,
   injectSpaShellDocumentMeta,
   patchSpaShellHtml,
-  loadRouteMeta
+  loadRouteMeta,
+  setHtmlRouteSurface,
+  stripHtmlRoutePendingClass
 };
