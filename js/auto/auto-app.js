@@ -399,7 +399,7 @@ function renderCompactRecommendationCard(vehicle, index) {
   const maintRisk = Number(vehicle.maintenance || 5) >= 7 ? 'Orta' : 'Düşük';
 
   return `
-    <article class="premium-result-card auto-rec-card">
+    <article class="premium-result-card auto-rec-card" role="listitem">
       <span class="auto-rec-rank ${rankClass}">${escapeHtml(rankLabel)}</span>
       <h3>${escapeHtml(vehicle.name)}</h3>
       <dl class="auto-rec-metrics">
@@ -417,7 +417,7 @@ function renderCompactRecommendationCard(vehicle, index) {
         <strong>${escapeHtml(formatScoreOutOf100(vehicle.score))}</strong>
       </div>
       <div class="auto-rec-actions">
-        <button type="button" class="btn primary btn-sm" data-auto-open-detail="${index}">Detaylı Analiz</button>
+        <button type="button" class="btn primary btn-sm" data-auto-open-detail="${index}" aria-label="Detaylı analiz: ${escapeHtml(vehicle.name)}">Detaylı Analiz</button>
         <button type="button" class="btn secondary btn-sm auto-compare-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}" data-track-compare="1">Karşılaştır</button>
         <button type="button" class="btn secondary btn-sm auto-shortlist-btn auto-fav-btn" data-result-index="${index}" data-vehicle="${escapeHtml(vehicle.name)}" aria-label="Favorilere ekle">♥</button>
       </div>
@@ -2134,7 +2134,7 @@ function renderResults(results) {
 
     ${rankIntelPanel || ''}
 
-    <div id="auto-results-cards" class="auto-results-cards auto-rec-cards">
+    <div id="auto-results-cards" class="auto-results-cards auto-rec-cards" role="list" aria-label="Öne çıkan araç önerileri">
       ${displayResults.slice(0, 3).map((vehicle, index) => renderCompactRecommendationCard(vehicle, index)).join('')}
     </div>
 
@@ -2792,6 +2792,7 @@ function renderWizardOptionButton(fieldKey, option, selected) {
       data-wizard-key="${escapeHtml(fieldKey)}"
       role="radio"
       aria-checked="${isSelected ? 'true' : 'false'}"
+      aria-label="${escapeHtml(option.label)}"
     >
       <span class="auto-option-card__icon" aria-hidden="true">${icon}</span>
       <span class="auto-option-card__body">
@@ -3044,9 +3045,9 @@ function renderWizard() {
       <div class="auto-wizard-progress-foot">
         <p class="wizard-progress-percent auto-wizard-progress-percent">${CONVERSION_COPY.auto.wizardProgress(progress)}</p>
       </div>
-      <div class="wizard-progress-milestones auto-wizard-milestones" aria-hidden="true">
+      <div class="wizard-progress-milestones auto-wizard-milestones" role="list" aria-label="Analiz aşamaları">
         ${WIZARD_MILESTONES.map((label, index) => `
-          <span class="wizard-milestone auto-wizard-milestone ${index < wizardIndex ? 'is-done' : ''} ${index === wizardIndex ? 'is-current' : ''}">${escapeHtml(label)}</span>
+          <span class="wizard-milestone auto-wizard-milestone ${index < wizardIndex ? 'is-done' : ''} ${index === wizardIndex ? 'is-current' : ''}" role="listitem" ${index === wizardIndex ? 'aria-current="step"' : ''}>${escapeHtml(label)}</span>
         `).join('')}
       </div>
     </div>
@@ -3171,40 +3172,42 @@ function advanceWizard() {
   form.requestSubmit();
 }
 
+function syncWizardManualFields(event) {
+  const customInput = event.target.closest('[data-wizard-custom]');
+  const districtInput = event.target.closest('[data-wizard-district]');
+  const step = wizardSteps[wizardIndex];
+
+  if (districtInput) {
+    wizardState.district = String(districtInput.value || '').trim().slice(0, 60);
+    syncWizardToForm();
+    return;
+  }
+
+  if (!customInput) return;
+
+  const fieldKey = customInput.dataset.wizardKey || step.key;
+  const fieldDef = getWizardFieldDef(step, fieldKey) || step;
+  const rawValue = String(customInput.value || '');
+  const cleanValue = fieldKey === 'location'
+    ? rawValue.trim().slice(0, fieldDef.custom?.max || 40)
+    : rawValue.replace(/\D/g, '');
+
+  wizardState[`${fieldKey}_custom`] = cleanValue;
+  customInput.value = cleanValue;
+  syncWizardToForm();
+
+  const nextButton = wizard.querySelector('[data-wizard-next]');
+  if (nextButton) {
+    nextButton.disabled = !wizardStepCanProceed(step);
+  }
+}
+
 if (wizard) {
   renderWizard();
   trackWizardStepView(0);
 
-  wizard.addEventListener('input', (event) => {
-    const customInput = event.target.closest('[data-wizard-custom]');
-    const districtInput = event.target.closest('[data-wizard-district]');
-
-    const step = wizardSteps[wizardIndex];
-
-    if (districtInput) {
-      wizardState.district = String(districtInput.value || '').trim().slice(0, 60);
-      syncWizardToForm();
-      return;
-    }
-
-    if (!customInput) return;
-
-    const fieldKey = customInput.dataset.wizardKey || step.key;
-    const fieldDef = getWizardFieldDef(step, fieldKey) || step;
-    const rawValue = String(customInput.value || '');
-    const cleanValue = fieldKey === 'location'
-      ? rawValue.trim().slice(0, fieldDef.custom?.max || 40)
-      : rawValue.replace(/\D/g, '');
-
-    wizardState[`${fieldKey}_custom`] = cleanValue;
-    customInput.value = cleanValue;
-    syncWizardToForm();
-
-    const nextButton = wizard.querySelector('[data-wizard-next]');
-    if (nextButton) {
-      nextButton.disabled = !wizardStepCanProceed(step);
-    }
-  });
+  wizard.addEventListener('input', syncWizardManualFields);
+  wizard.addEventListener('change', syncWizardManualFields);
 
   wizard.addEventListener('click', (event) => {
     const option = event.target.closest('.wizard-option');
