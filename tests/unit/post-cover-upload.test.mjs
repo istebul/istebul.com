@@ -44,10 +44,26 @@ describe('posts content admin', () => {
     assert.match(buildLib, /content_type=in\.\(news,blog\)/);
   });
 
+  it('blog build merges guide seed slugs for static post pages', () => {
+    const buildLib = fs.readFileSync(path.join(root, 'scripts/lib/build-blog-pages.cjs'), 'utf8');
+    assert.match(buildLib, /konut-guide-seed-headlines/);
+    assert.match(buildLib, /mergePostsForBuild/);
+    const konutSeed = JSON.parse(
+      fs.readFileSync(path.join(root, 'data/content/konut-guide-seed-headlines.json'), 'utf8')
+    );
+    assert.ok(konutSeed.headlines.some((h) => h.slug === '2026-konut-kredisi-aylik-taksit'));
+  });
+
   it('router keeps /blog/:slug in SPA instead of full static navigation', () => {
     const router = fs.readFileSync(path.join(root, 'js/core/router.js'), 'utf8');
     assert.match(router, /blogSlugFromPath\(path\)/);
     assert.match(router, /data-native-route/);
+  });
+
+  it('app fallback hydrates blog post surface when SPA loads /blog/:slug', () => {
+    const app = fs.readFileSync(path.join(root, 'js/app.js'), 'utf8');
+    assert.match(app, /hydrateBlogPostSurface/);
+    assert.match(app, /page-blog-post.*hydrateBlogPostSurface/s);
   });
 
   it('homepage news cards use full-page post links with trailing slash', () => {

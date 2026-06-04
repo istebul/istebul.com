@@ -4791,6 +4791,12 @@ function applyHomeMarketingVisibility() {
     document.body.classList.remove('app-route-active', 'ib-premium-route-active');
 }
 
+function hydrateBlogPostSurface() {
+    import('./runtime/init-public-content.js')
+        .then((m) => m.refreshPublicContentSurface('page-blog-post'))
+        .catch(() => {});
+}
+
 function showPremiumPageFallback(pageId) {
     document.body.classList.add('app-route-active', 'ib-premium-route-active');
 
@@ -4809,6 +4815,10 @@ function showPremiumPageFallback(pageId) {
         target.classList.remove('hidden');
         target.classList.add('route-visible');
         target.style.display = 'block';
+    }
+
+    if (pageId === 'page-blog-post') {
+        hydrateBlogPostSurface();
     }
 }
 
