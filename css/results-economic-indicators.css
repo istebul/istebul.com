@@ -142,9 +142,98 @@
 }
 
 @media (max-width: 720px) {
-  .ib-results-economic__grid {
+  .ib-results-economic__card:not(.ib-results-economic--compact) .ib-results-economic__grid {
     grid-template-columns: 1fr;
     gap: 0.45rem;
+  }
+}
+
+/* —— Kompakt mod (Auto V2) —— */
+.ib-results-economic--compact.ib-results-economic__card,
+.ib-results-economic__card.ib-results-economic--compact {
+  padding: 0.5rem 0.65rem 0.45rem;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  background: rgba(248, 250, 252, 0.98);
+}
+
+.auto-v2-evds-mount.ib-results-economic-mount {
+  margin: 0 0 0.65rem;
+}
+
+.ib-results-economic--compact .ib-results-economic__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.ib-results-economic--compact .ib-results-economic__head h3 {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.ib-results-economic--compact .ib-results-economic__subtitle {
+  margin: 0;
+  font-size: 0.68rem;
+  flex: 1 1 100%;
+  line-height: 1.3;
+}
+
+.ib-results-economic--compact .ib-results-economic__fallback {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+}
+
+.ib-results-economic--compact .ib-results-economic__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.ib-results-economic--compact .ib-results-economic__item {
+  padding: 0.4rem 0.45rem;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.ib-results-economic--compact .ib-results-economic__label {
+  font-size: 0.62rem;
+  margin: 0;
+}
+
+.ib-results-economic--compact .ib-results-economic__value {
+  margin: 0.1rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.ib-results-economic--compact .ib-results-economic__date {
+  margin: 0.08rem 0 0;
+  font-size: 0.6rem;
+  line-height: 1.2;
+}
+
+.ib-results-economic--compact .ib-results-economic__foot {
+  margin: 0.35rem 0 0;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(37, 99, 235, 0.88);
+}
+
+@media (max-width: 420px) {
+  .ib-results-economic--compact .ib-results-economic__grid {
+    grid-template-columns: repeat(3, minmax(72px, 1fr));
+    gap: 0.28rem;
+  }
+
+  .ib-results-economic--compact .ib-results-economic__value {
+    font-size: 0.76rem;
   }
 }
 

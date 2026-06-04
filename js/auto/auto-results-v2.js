@@ -128,14 +128,21 @@ function buildNextSteps({ riskLevel, budgetFit }) {
 function renderAutoResultsV2Html(model) {
   const esc = escapeHtml;
   return `
-    <section class="auto-v2-panel" aria-label="Decision Results V2 premium rapor">
+    <section class="auto-v2-panel" aria-label="Auto karar raporu özeti">
       <header class="auto-v2-hero">
-        <p class="auto-v2-kicker">Decision Results V2 · Premium AI Karar Raporu</p>
+        <p class="auto-v2-kicker">Karar raporu · özet panel</p>
         <h2 class="auto-v2-title">Auto karar raporu</h2>
         ${model.recommendationLabel ? `<p class="auto-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
       </header>
 
-      ${renderScoreFactorsHtml(model.scoreFactors, 'auto-v2')}
+      ${
+        model.scoreFactors?.length
+          ? `<details class="auto-v2-factors-details">
+        <summary>Skor faktörleri (açıklanabilir analiz)</summary>
+        ${renderScoreFactorsHtml(model.scoreFactors, 'auto-v2')}
+      </details>`
+          : ''
+      }
 
       <div class="auto-v2-kpis">
         <article class="auto-v2-kpi auto-v2-kpi--score">
@@ -159,7 +166,7 @@ function renderAutoResultsV2Html(model) {
         </article>
       </div>
 
-      <div class="ib-results-economic-mount auto-v2-evds-mount" data-results-economic-mount hidden></div>
+      <div class="ib-results-economic-mount auto-v2-evds-mount ib-results-economic--compact" data-results-economic-mount hidden></div>
 
       <div class="auto-v2-grid">
         <article class="auto-v2-block auto-v2-block--pros">

@@ -44,6 +44,17 @@ const CARD_SUBTITLE = 'TCMB EVDS verileriyle bilgilendirme amaçlıdır.';
 const SOURCE_LABEL = 'TCMB EVDS';
 const FALLBACK_MESSAGE = 'Veri geçici olarak alınamadı';
 
+/** Kompakt şerit düzeni (Auto sonuçları — az dikey alan). */
+const COMPACT_PRESETS = new Set(['auto']);
+
+function isCompactPreset(preset) {
+  return COMPACT_PRESETS.has(String(preset || '').trim());
+}
+
+function compactCardClass(preset) {
+  return isCompactPreset(preset) ? ' ib-results-economic--compact' : '';
+}
+
 function formatIndicatorValue(kind, value) {
   return kind === 'fx' ? formatFxTry(value) : formatPercentTr(value);
 }
@@ -66,6 +77,8 @@ export function renderResultsEconomicCardHtml(data, preset) {
   const rates = data?.rates || {};
   const seriesDates = data?.seriesDates || {};
 
+  const compact = isCompactPreset(preset);
+
   const items = indicators
     .map(({ key, label, kind, rateKey, dateKey }) => {
       const value = rates[rateKey];
@@ -78,14 +91,14 @@ export function renderResultsEconomicCardHtml(data, preset) {
         <h4 class="ib-results-economic__label">${escapeHtml(label)}</h4>
         <p class="ib-results-economic__value">${escapeHtml(displayValue)}</p>
         <p class="ib-results-economic__date">${escapeHtml(displayDate)}</p>
-        <p class="ib-results-economic__source">${escapeHtml(SOURCE_LABEL)}</p>
+        ${compact ? '' : `<p class="ib-results-economic__source">${escapeHtml(SOURCE_LABEL)}</p>`}
       </article>`;
     })
     .join('');
 
   return `
     <section
-      class="ib-results-economic__card"
+      class="ib-results-economic__card${compactCardClass(preset)}"
       aria-labelledby="results-economic-title-${escapeHtml(preset)}"
       data-results-economic-card
       data-results-economic-state="ready"
@@ -95,12 +108,15 @@ export function renderResultsEconomicCardHtml(data, preset) {
         <p class="ib-results-economic__subtitle">${escapeHtml(CARD_SUBTITLE)}</p>
       </header>
       <div class="ib-results-economic__grid">${items}</div>
+      ${compact ? `<p class="ib-results-economic__foot">${escapeHtml(SOURCE_LABEL)} · bilgilendirme amaçlı</p>` : ''}
     </section>`;
 }
 
 export function renderResultsEconomicFallbackHtml(preset) {
   const indicators = resolvePreset(preset);
   if (!indicators) return '';
+
+  const compact = isCompactPreset(preset);
 
   const items = indicators
     .map(
@@ -109,14 +125,14 @@ export function renderResultsEconomicFallbackHtml(preset) {
         <h4 class="ib-results-economic__label">${escapeHtml(label)}</h4>
         <p class="ib-results-economic__value">—</p>
         <p class="ib-results-economic__date">—</p>
-        <p class="ib-results-economic__source">${escapeHtml(SOURCE_LABEL)}</p>
+        ${compact ? '' : `<p class="ib-results-economic__source">${escapeHtml(SOURCE_LABEL)}</p>`}
       </article>`
     )
     .join('');
 
   return `
     <section
-      class="ib-results-economic__card ib-results-economic__card--fallback"
+      class="ib-results-economic__card ib-results-economic__card--fallback${compactCardClass(preset)}"
       aria-label="${escapeHtml(CARD_TITLE)}"
       data-results-economic-card
       data-results-economic-state="fallback"
@@ -127,6 +143,7 @@ export function renderResultsEconomicFallbackHtml(preset) {
       </header>
       <p class="ib-results-economic__fallback">${escapeHtml(FALLBACK_MESSAGE)}</p>
       <div class="ib-results-economic__grid">${items}</div>
+      ${compact ? `<p class="ib-results-economic__foot">${escapeHtml(SOURCE_LABEL)} · bilgilendirme amaçlı</p>` : ''}
     </section>`;
 }
 
@@ -147,7 +164,7 @@ export function renderResultsEconomicSkeletonHtml(preset) {
 
   return `
     <section
-      class="ib-results-economic__card"
+      class="ib-results-economic__card${compactCardClass(preset)}"
       aria-label="${escapeHtml(CARD_TITLE)} yükleniyor"
       data-results-economic-state="loading"
     >
