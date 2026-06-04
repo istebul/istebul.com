@@ -109,9 +109,15 @@ export class Router {
             if (link.hasAttribute('data-native-route')) {
                 try {
                     const path = stripPathname(new URL(rawHref, window.location.origin).pathname);
-                    if (blogSlugFromPath(path)) {
+                    const search = new URL(rawHref, window.location.origin).search || '';
+                    if (
+                        path === '/blog' ||
+                        path === '/duyurular' ||
+                        path === '/kampanyalar' ||
+                        blogSlugFromPath(path)
+                    ) {
                         e.preventDefault();
-                        this.navigate(rawHref);
+                        this.navigate(`${path}${search}`);
                         return;
                     }
                 } catch {

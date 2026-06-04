@@ -4800,6 +4800,13 @@ function hydrateBlogPostSurface() {
         .catch(() => {});
 }
 
+function hydratePublicContentSurface(pageId) {
+    if (!String(pageId || '').startsWith('page-')) return;
+    import('./runtime/init-public-content.js')
+        .then((m) => m.refreshPublicContentSurface(pageId))
+        .catch(() => {});
+}
+
 function showPremiumPageFallback(pageId) {
     document.body.classList.add('app-route-active', 'ib-premium-route-active');
 
@@ -4822,6 +4829,8 @@ function showPremiumPageFallback(pageId) {
 
     if (pageId === 'page-blog-post') {
         hydrateBlogPostSurface();
+    } else {
+        hydratePublicContentSurface(pageId);
     }
 }
 

@@ -75,8 +75,9 @@
 /messages/* /messages/index.html 200
 /ilan-ekle/* /ilan-ekle/index.html 200
 
-# --- Blog post static SEO pages ---
-/blog/* /blog/:splat/index.html 200
+# --- Blog post static SEO pages (list hub uses SPA shell at /blog/index.html) ---
+# Physical /blog/:slug/index.html files are served directly when present.
+# Missing slugs fall through to /* SPA fallback below.
 
 # --- API (Pages Functions — skip SPA /* fallback; fixes HEAD Content-Type) ---
 /api/* /api/:splat 200

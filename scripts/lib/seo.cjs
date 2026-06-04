@@ -995,6 +995,9 @@ function injectCorporateMeta(distDir) {
   });
 }
 
+/** Hubs backed by Supabase + client hydration — must not emit static seo-page index.html. */
+const DYNAMIC_CONTENT_SPA_HUBS = new Set(['blog', 'duyurular', 'kampanyalar']);
+
 function buildSeoPages(distDir) {
   const site = loadJson('data/seo/site.json');
   const landingConfig = loadJson('data/seo/landing-pages.json');
@@ -1048,6 +1051,10 @@ function buildSeoPages(distDir) {
   });
 
   hubsConfig.hubs.forEach((hub) => {
+    /** Blog, duyurular, kampanyalar — Supabase posts; SPA shell (not static seo-page). */
+    if (DYNAMIC_CONTENT_SPA_HUBS.has(hub.slug)) {
+      return;
+    }
     const page = {
       title: hub.title,
       description: hub.description,

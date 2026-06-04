@@ -219,10 +219,13 @@ if (fs.existsSync(routeBootstrapPath)) {
 }
 
 const seoHubChecks = [
-  ['dist/planlar/index.html', 'Planlar ve Fiyatlandırma | isteBul', 'https://www.istebul.com/planlar'],
-  ['dist/blog/index.html', 'Blog | isteBul', 'https://www.istebul.com/blog'],
-  ['dist/duyurular/index.html', 'Duyurular | isteBul', 'https://www.istebul.com/duyurular'],
-  ['dist/kampanyalar/index.html', 'Kampanyalar | isteBul', 'https://www.istebul.com/kampanyalar']
+  ['dist/planlar/index.html', 'Planlar ve Fiyatlandırma | isteBul', 'https://www.istebul.com/planlar']
+];
+
+const dynamicContentSpaChecks = [
+  ['dist/blog/index.html', 'data-ib-route="page-blog"', 'Blog | isteBul'],
+  ['dist/duyurular/index.html', 'data-ib-route="page-duyurular"', 'Duyurular | isteBul'],
+  ['dist/kampanyalar/index.html', 'data-ib-route="page-kampanyalar"', 'Kampanyalar | isteBul']
 ];
 
 seoHubChecks.forEach(([rel, title, canonical]) => {
@@ -240,6 +243,28 @@ seoHubChecks.forEach(([rel, title, canonical]) => {
   if (!html.includes('class="seo-page"')) {
     failed = true;
     console.error(`${rel} must be static seo-page shell`);
+  }
+});
+
+dynamicContentSpaChecks.forEach(([rel, routeAttr, title]) => {
+  const full = path.join(root, rel);
+  if (!fs.existsSync(full)) {
+    failed = true;
+    console.error(`${rel} missing — dynamic content SPA shell required`);
+    return;
+  }
+  const html = fs.readFileSync(full, 'utf8');
+  if (!html.includes(routeAttr)) {
+    failed = true;
+    console.error(`${rel} missing ${routeAttr}`);
+  }
+  if (!html.includes(title)) {
+    failed = true;
+    console.error(`${rel} missing title: ${title}`);
+  }
+  if (html.includes('class="seo-page"')) {
+    failed = true;
+    console.error(`${rel} must be SPA shell, not static seo-page`);
   }
 });
 

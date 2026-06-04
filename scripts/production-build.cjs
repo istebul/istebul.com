@@ -625,6 +625,16 @@ const blogBuild = spawnSync(process.execPath, [path.join(root, 'scripts/build-bl
 });
 if (blogBuild.status !== 0) process.exit(blogBuild.status || 1);
 
+/** Dynamic content list routes — SPA shells (must run after SEO/blog static pass). */
+const dynamicContentSpaRoutes = ['blog', 'duyurular', 'kampanyalar'];
+dynamicContentSpaRoutes.forEach((route) => {
+  const routeDir = path.join(dist, route);
+  fs.mkdirSync(routeDir, { recursive: true });
+  let shellHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  shellHtml = patchSpaShellHtml(shellHtml, route, routeDocumentMeta);
+  fs.writeFileSync(path.join(routeDir, 'index.html'), minifyHtml(shellHtml));
+});
+
 let blogPosts = [];
 const blogManifestPath = path.join(dist, 'blog-posts-manifest.json');
 if (fs.existsSync(blogManifestPath)) {
