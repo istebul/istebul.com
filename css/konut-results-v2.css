@@ -37,13 +37,24 @@ body.housing-page #housing-results .konut-v2-panel {
 body.housing-page #housing-results .konut-v2-kicker,
 body.housing-page #housing-results .konut-v2-band,
 body.housing-page #housing-results .konut-v2-exec-hint,
-body.housing-page #housing-results .konut-v2-pdf-hint {
+body.housing-page #housing-results .konut-v2-pdf-hint,
+body.housing-page #housing-results .konut-v2-kpi > span,
+body.housing-page #housing-results .konut-v2-kpi strong small,
+body.housing-page #housing-results .konut-v2-kpi--cost small {
   color: #64748b;
+}
+
+body.housing-page #housing-results .konut-v2-kpi,
+body.housing-page #housing-results .konut-v2-factors-details {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #334155;
 }
 
 body.housing-page #housing-results .konut-v2-title,
 body.housing-page #housing-results .konut-v2-band strong,
 body.housing-page #housing-results .konut-v2-kpi strong,
+body.housing-page #housing-results .konut-v2-factors-details > summary,
 body.housing-page #housing-results .konut-v2-block h3,
 body.housing-page #housing-results .konut-v2-cost-grid h3,
 body.housing-page #housing-results .konut-v2-risks h3,

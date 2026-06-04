@@ -410,6 +410,57 @@ html.ib-ds-v4 body.housing-page .result-card--metric strong {
   color: var(--ib-card-ink);
 }
 
+/* Konut V2 — koyu body rengini devralmasın (KPI + EVDS) */
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-root,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-panel {
+  background: var(--ib-card-surface);
+  color: var(--ib-card-ink);
+  border-color: var(--ib-card-border);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-factors-details,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-block,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-cost-grid,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-risk-card,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-alt-card {
+  background: var(--ib-card-elevated);
+  color: var(--ib-card-body);
+  border-color: var(--ib-card-border);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi > span,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kicker,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-band,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-exec-hint {
+  color: var(--ib-card-label);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi strong,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-title,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-band strong {
+  color: var(--ib-card-ink);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__card,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__item {
+  background: var(--ib-card-surface);
+  color: var(--ib-card-ink);
+  border-color: var(--ib-card-border);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__label,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__date,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__meta,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__refresh {
+  color: var(--ib-card-label);
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__head h2,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__value {
+  color: var(--ib-card-ink);
+}
+
 /* Tatil: açık sihirbaz / sonuç kartları (koyu body metnini devralmasın) */
 html.ib-ds-v4 body.vacation-page .vacation-wizard-card,
 html.ib-ds-v4 body.vacation-page .vacation-result-card,
@@ -429,6 +480,9 @@ html.ib-ds-v4 body.vacation-page .vacation-selected-recap p {
   html.ib-ds-v4 body.housing-page .glass-card.housing-side-panel,
   html.ib-ds-v4 body.housing-page .housing-step-card,
   html.ib-ds-v4 body.housing-page .result-card,
+  html.ib-ds-v4 body.housing-page #housing-results .konut-v2-panel,
+  html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi,
+  html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__card,
   html.ib-ds-v4 body.vacation-page .ib-premium-dashboard,
   html.ib-ds-v4 body.vacation-page .vacation-wizard-card {
     color: var(--ib-card-ink);

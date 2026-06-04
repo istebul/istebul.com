@@ -331,8 +331,35 @@ html.ib-ds-v4 body.housing-page #housing-results .konut-v2-alt-card {
   color: #334155;
 }
 
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-root,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-panel {
+  background: #ffffff;
+  color: #111827;
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi > span,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi strong small,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-kpi--cost small {
+  color: #6b7280;
+}
+
 html.ib-ds-v4 body.housing-page #housing-results .ib-home-economic__card {
   background: #ffffff;
+  color: #111827;
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__item {
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__label,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__date,
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__meta {
+  color: #6b7280;
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__value {
   color: #111827;
 }
 

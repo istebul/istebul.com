@@ -252,3 +252,77 @@ html:has(body.housing-page) {
     padding: 6px 0;
   }
 }
+
+/* Konut sonuç V2 — koyu sayfa üzerinde her zaman okunaklı (bundle/import önbelleğinden bağımsız) */
+body.housing-page #housing-results .konut-v2-root,
+body.housing-page #housing-results .konut-v2-panel {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
+body.housing-page #housing-results .konut-v2-kicker,
+body.housing-page #housing-results .konut-v2-band,
+body.housing-page #housing-results .konut-v2-exec-hint,
+body.housing-page #housing-results .konut-v2-pdf-hint,
+body.housing-page #housing-results .konut-v2-kpi > span,
+body.housing-page #housing-results .konut-v2-kpi strong small,
+body.housing-page #housing-results .konut-v2-kpi--cost small {
+  color: #64748b;
+}
+
+body.housing-page #housing-results .konut-v2-title,
+body.housing-page #housing-results .konut-v2-band strong,
+body.housing-page #housing-results .konut-v2-kpi strong,
+body.housing-page #housing-results .konut-v2-block h3,
+body.housing-page #housing-results .konut-v2-cost-grid h3,
+body.housing-page #housing-results .konut-v2-risks h3,
+body.housing-page #housing-results .konut-v2-alts h3,
+body.housing-page #housing-results .konut-v2-factors-details > summary {
+  color: #0f172a;
+}
+
+body.housing-page #housing-results .konut-v2-band-label,
+body.housing-page #housing-results .konut-v2-rec-level {
+  color: #2563eb;
+}
+
+body.housing-page #housing-results .konut-v2-kpi,
+body.housing-page #housing-results .konut-v2-factors-details,
+body.housing-page #housing-results .konut-v2-block,
+body.housing-page #housing-results .konut-v2-cost-grid,
+body.housing-page #housing-results .konut-v2-risk-card,
+body.housing-page #housing-results .konut-v2-alt-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #334155;
+}
+
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__card {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__head h2,
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__value {
+  color: #0f172a;
+}
+
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__label,
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__date,
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__meta,
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__refresh {
+  color: #64748b;
+}
+
+body.housing-page #housing-results .konut-v2-evds-mount .ib-home-economic__item {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+html.ib-ds-v4 body.housing-page #housing-results .ib-premium-dashboard {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
