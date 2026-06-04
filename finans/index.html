@@ -77,7 +77,7 @@
 
   <div class="vacation-container vacation-container--breadcrumb">
     <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
-      <a href="/">Ana Sayfa</a> › <span>Finansman karar analizi</span>
+      <a href="/">Ana sayfa</a> › <span>Finansman karar analizi</span>
     </nav>
   </div>
 
@@ -243,9 +243,14 @@
   <main class="vacation-main">
     <div class="vacation-container vacation-layout" id="finans-flow">
       <div class="vacation-flow-main">
-        <div class="vacation-progress" id="finans-step-progress" aria-hidden="true"></div>
+        <div class="vacation-progress" id="finans-step-progress"></div>
         <div id="finans-wizard"></div>
-        <section id="finans-results" hidden aria-live="polite"></section>
+        <section id="finans-results" class="vacation-results-section" aria-live="polite">
+          <div class="vacation-results-empty-state">
+            <h2>Sonuçlar</h2>
+            <p>Analizi tamamladığınızda kişiselleştirilmiş finansman senaryoları burada listelenir.</p>
+          </div>
+        </section>
       </div>
       <aside class="vacation-aside" aria-label="Karar asistanı özeti">
         <div class="vacation-ai-panel">

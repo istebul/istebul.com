@@ -75,7 +75,7 @@
 
   <div class="vacation-container vacation-container--breadcrumb">
     <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
-      <a href="/">Ana Sayfa</a> › <a href="/auto/">Ürünler</a> › <span>Tatil Karar Asistanı</span>
+      <a href="/">Ana sayfa</a> › <a href="/auto/">Ürünler</a> › <span>Tatil karar asistanı</span>
     </nav>
   </div>
 
@@ -96,7 +96,7 @@
     <div class="vacation-hero-overlay" aria-hidden="true"></div>
     <div class="vacation-container vacation-hero-inner">
       <div class="vacation-hero-copy">
-      <span class="vacation-hero-badge">🏖️ Travel Decision Intelligence</span>
+      <span class="vacation-hero-badge">🏖️ Tatil karar analizi</span>
       <h1 id="vacation-hero-title">Yapay zekâ destekli tatil karar asistanı</h1>
       <p class="vacation-hero-lead">Bütçe, tarih, aile yapısı, konfor beklentisi, ulaşım maliyeti ve riskleri birlikte analiz ederek size en uygun tatili bulun.</p>
       <div class="vacation-hero-actions">
@@ -134,16 +134,21 @@
   <main class="vacation-main">
     <div class="vacation-container vacation-layout" id="vacation-flow">
       <div class="vacation-flow-main">
-        <div class="vacation-progress" id="vacation-step-progress" aria-hidden="true"></div>
+        <div class="vacation-progress" id="vacation-step-progress"></div>
         <div id="vacation-wizard"></div>
-        <section id="vacation-results" hidden aria-live="polite"></section>
+        <section id="vacation-results" class="vacation-results-section" aria-live="polite">
+          <div class="vacation-results-empty-state">
+            <h2>Sonuçlar</h2>
+            <p>Analizi tamamladığınızda kişiselleştirilmiş tatil senaryoları burada listelenir.</p>
+          </div>
+        </section>
       </div>
       <aside class="vacation-aside" aria-label="Yapay zeka asistanı">
         <div class="vacation-ai-panel">
           <h3>✨ Yapay Zekâ Asistanınız</h3>
           <p>Tercihlerinize göre kişiselleştirilmiş tatil profilini birlikte netleştirelim.</p>
-          <p class="sr-only">Şu ana kadar</p>
-          <ul id="vacation-ai-summary"></ul>
+          <p class="sr-only" id="vacation-ai-summary-label">Şu ana kadar seçtiğiniz tercihler</p>
+          <ul id="vacation-ai-summary" aria-labelledby="vacation-ai-summary-label"></ul>
           <p class="vacation-ai-eta">Tahmini tamamlama: 2–3 dakika</p>
         </div>
       </aside>

@@ -25,6 +25,7 @@
   <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
   <link rel="stylesheet" href="/css/tatil.css">
   <link rel="stylesheet" href="/css/sigorta-page.css?v=1">
+  <link rel="stylesheet" href="/css/sigorta-flow-visible-v1.css?v=1">
   <link rel="stylesheet" href="/css/vertical-themes.css">
   <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
   <link rel="stylesheet" href="/css/sigorta-results-v2.css?v=1">
@@ -76,7 +77,7 @@
 
   <div class="vacation-container vacation-container--breadcrumb">
     <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
-      <a href="/">Ana Sayfa</a> › <span>Kasko karar analizi</span>
+      <a href="/">Ana sayfa</a> › <span>Kasko karar analizi</span>
     </nav>
   </div>
 
@@ -97,24 +98,51 @@
     <div class="vacation-hero-overlay" aria-hidden="true"></div>
     <div class="vacation-container vacation-hero-inner">
       <div class="vacation-hero-copy">
-        <span class="vacation-hero-badge">🚗 Kasko Decision Intelligence</span>
+        <span class="vacation-hero-badge">🚗 Kasko karar analizi</span>
         <h1 id="kasko-hero-title">Kasko kararınızı veriye dayalı verin</h1>
         <p class="vacation-hero-lead">Teminat seviyesi, onarım riski ve yıllık prim bandını birlikte değerlendirin.</p>
         <div class="vacation-hero-actions">
           <button type="button" class="btn btn-primary" id="kasko-hero-cta">Kasko analizine başla</button>
           <button type="button" class="btn btn-ghost" id="kasko-hero-cta-secondary">Akışa git</button>
         </div>
-        <p class="vacation-disclaimer" style="margin-top:0.75rem;font-size:0.85rem;opacity:0.9">Bilgilendirme amaçlıdır · poliçe koşulları sigorta şirketine aittir</p>
+        <p class="vacation-disclaimer">Bilgilendirme amaçlıdır · poliçe koşulları sigorta şirketine aittir</p>
       </div>
+      <aside class="vacation-hero-dashboard" aria-label="Örnek kasko skor paneli">
+        <article class="vh-card vh-card-score">
+          <span>Karar skoru</span>
+          <strong>81/100</strong>
+          <small>Dengeli teminat</small>
+        </article>
+        <article class="vh-card">
+          <span>Teminat</span>
+          <strong>79</strong>
+          <small>Yeterlilik</small>
+        </article>
+        <article class="vh-card">
+          <span>Onarım riski</span>
+          <strong>72</strong>
+          <small>Kabul edilebilir</small>
+        </article>
+        <article class="vh-card">
+          <span>Prim verimliliği</span>
+          <strong>77</strong>
+          <small>Band içi</small>
+        </article>
+      </aside>
     </div>
   </section>
 
   <main class="vacation-main">
     <div class="vacation-container vacation-layout" id="kasko-flow">
       <div class="vacation-flow-main">
-        <div class="vacation-progress" id="kasko-step-progress" aria-hidden="true"></div>
+        <div class="vacation-progress" id="kasko-step-progress"></div>
         <div id="kasko-wizard"></div>
-        <section id="kasko-results" hidden aria-live="polite"></section>
+        <section id="kasko-results" class="vacation-results-section" aria-live="polite">
+          <div class="vacation-results-empty-state">
+            <h2>Sonuçlar</h2>
+            <p>Analizi tamamladığınızda kişiselleştirilmiş kasko senaryoları burada listelenir.</p>
+          </div>
+        </section>
       </div>
       <aside class="vacation-aside" aria-label="Kasko karar asistanı">
         <div class="vacation-ai-panel">
@@ -130,7 +158,7 @@
     <nav class="ib-site-social" data-site-social-links aria-label="Sosyal medya" hidden></nav>
     <p>isteBul — karar zekâsı platformu.</p>
     <p class="site-footer-legal"><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a></p>
-    <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi"></div>
+    <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi" data-i18n-aria="meta.language"></div>
   </footer>
 </body>
 </html>

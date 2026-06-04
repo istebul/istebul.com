@@ -1,26 +1,30 @@
 /**
- * Sigorta — wizard akışı her zaman görünür (hero altı); boş / gizli kalmasın.
+ * Sigorta & Kasko — wizard akışı her zaman görünür (hero altı); boş / gizli kalmasın.
  */
-body.sigorta-page .vacation-main {
+body.sigorta-page .vacation-main,
+body.kasko-page .vacation-main {
   display: block;
   width: 100%;
 }
 
-body.sigorta-page #sigorta-flow {
+body.sigorta-page #sigorta-flow,
+body.kasko-page #kasko-flow {
   display: block !important;
   visibility: visible !important;
   min-height: min(70vh, 720px);
   scroll-margin-top: 5rem;
 }
 
-body.sigorta-page #sigorta-wizard {
+body.sigorta-page #sigorta-wizard,
+body.kasko-page #kasko-wizard {
   display: block !important;
   visibility: visible !important;
   min-height: 12rem;
 }
 
 body.sigorta-page #sigorta-wizard .vacation-wizard-card,
-body.sigorta-page #sigorta-wizard .sigorta-wizard-skeleton {
+body.sigorta-page #sigorta-wizard .sigorta-wizard-skeleton,
+body.kasko-page #kasko-wizard .vacation-wizard-card {
   background: #fff;
   color: #0f172a;
 }

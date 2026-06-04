@@ -662,6 +662,12 @@ function renderContactBlock() {
     </section>`;
 }
 
+const HOUSING_RESULTS_EMPTY_HTML = `
+  <div class="housing-results-empty-state">
+    <h2>Sonuçlar</h2>
+    <p>Analizi tamamladığınızda konut skoru, maliyet tahmini ve senaryolar burada listelenir.</p>
+  </div>`;
+
 async function renderResults() {
   const results = $('#housing-results');
   const wizard = $('#housing-wizard');
@@ -804,8 +810,8 @@ async function renderResults() {
         <button type="button" class="btn-primary" id="housing-retry-results">Forma dön</button>
       </article>`;
     $('#housing-retry-results')?.addEventListener('click', () => {
-      results.hidden = true;
-      results.innerHTML = '';
+      results.hidden = false;
+      results.innerHTML = HOUSING_RESULTS_EMPTY_HTML;
       if (wizard) wizard.hidden = false;
       state.step = stepLabelsForState().length - 1;
       renderStep();
@@ -845,9 +851,9 @@ function bindResultsEvents(metrics, ai, userId) {
     lastResultPayload = null;
     if (wizard) wizard.hidden = false;
     if (results) {
-      results.hidden = true;
+      results.hidden = false;
       results.classList.remove('is-visible');
-      results.innerHTML = '';
+      results.innerHTML = HOUSING_RESULTS_EMPTY_HTML;
     }
     flow?.classList.remove('has-results');
     renderStep();

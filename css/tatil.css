@@ -1470,3 +1470,46 @@ body.vacation-page {
     position: relative;
   }
 }
+
+.vacation-results-empty-state {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--vacation-radius, 16px);
+  border: 1px dashed var(--vacation-border, #e2e8f0);
+  background: #f8fafc;
+  color: #475569;
+}
+
+.vacation-results-empty-state h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.vacation-results-empty-state p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.housing-results-empty-state {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.housing-results-empty-state h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.housing-results-empty-state p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}

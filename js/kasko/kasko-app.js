@@ -111,11 +111,12 @@ function buildCommentary(state) {
 }
 
 function boot() {
-  initDecisionFlow(
+  const flowApi = initDecisionFlow(
     resolveWizardConfig('kasko', {
       vertical: 'kasko',
       themeClass: 'kasko-page',
       domIds: KASKO_DOM_IDS,
+      externalHeroBindings: true,
       steps: KASKO_STEPS,
       getStepMeta: (s, step) => getKaskoStepMeta(s, step),
       disclaimer: KASKO_DISCLAIMER,
@@ -147,8 +148,13 @@ function boot() {
   );
 
   document.getElementById(KASKO_DOM_IDS.heroCta)?.addEventListener('click', () => {
-    document.getElementById(KASKO_DOM_IDS.flow)?.scrollIntoView({ behavior: 'smooth' });
+    flowApi.scrollToFlow();
+    flowApi.startWizard();
     trackKaskoAnalysisStarted({ source: 'hero_cta' });
+  });
+  document.getElementById(KASKO_DOM_IDS.heroCtaSecondary)?.addEventListener('click', () => {
+    flowApi.scrollToFlow();
+    trackKaskoAnalysisStarted({ source: 'hero_secondary' });
   });
 
   trackKaskoPageView();

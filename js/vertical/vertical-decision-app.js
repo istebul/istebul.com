@@ -81,13 +81,16 @@ export function initDecisionFlow(config) {
     const progressEl = el('stepProgress');
     if (!progressEl) return;
     const steps = getSteps();
+    progressEl.setAttribute('role', 'list');
+    progressEl.setAttribute('aria-label', wt('common.wizardProgress', 'Analiz adımları'));
+    progressEl.removeAttribute('aria-hidden');
     progressEl.innerHTML = steps
       .map((step, i) => {
         const active = i === state.stepIndex;
         const done = i < state.stepIndex;
         return `
-      <div class="vacation-progress-item ${active ? 'is-active' : ''} ${done ? 'is-done' : ''}">
-        <span class="vacation-progress-num">${i + 1}</span>
+      <div class="vacation-progress-item ${active ? 'is-active' : ''} ${done ? 'is-done' : ''}" role="listitem" ${active ? 'aria-current="step"' : ''}>
+        <span class="vacation-progress-num" aria-hidden="true">${i + 1}</span>
         <span class="vacation-progress-label">${escapeHtml(step.label)}</span>
       </div>`;
       })
@@ -175,15 +178,19 @@ export function initDecisionFlow(config) {
       });
     });
 
+    const syncManualField = (input, rawValue) => {
+      const field = input.dataset.manual;
+      const parsed =
+        config.parseManual?.(rawValue) ?? Number(String(rawValue).replace(/\D/g, ''));
+      state[field] = Number.isFinite(parsed) ? parsed : null;
+      if (config.onManualChange) config.onManualChange(state, field, state[field]);
+      refreshNext();
+      renderAiPanel();
+    };
+
     document.querySelectorAll('[data-manual]').forEach((input) => {
-      input.addEventListener('input', (e) => {
-        const field = input.dataset.manual;
-        const parsed = config.parseManual?.(e.target.value) ?? Number(String(e.target.value).replace(/\D/g, ''));
-        state[field] = parsed;
-        if (config.onManualChange) config.onManualChange(state, field, parsed);
-        refreshNext();
-        renderAiPanel();
-      });
+      input.addEventListener('input', (e) => syncManualField(input, e.target.value));
+      input.addEventListener('change', (e) => syncManualField(input, e.target.value));
     });
 
     el('back')?.addEventListener('click', () => {
@@ -308,15 +315,18 @@ export function initDecisionFlow(config) {
     </div>
     ${dashboardHtml}
     <p class="vacation-results-top-pick">${escapeHtml(wt('common.topPick', 'Öne çıkan'))}: <strong>${escapeHtml(summary.topTitle)}</strong></p>
-    <div class="vacation-result-cards">
+    <div class="vacation-result-cards" role="list" aria-label="${escapeHtml(config.resultsTitle || wt('common.resultsTitle', 'Kişiselleştirilmiş öneriler'))}">
       ${state.results
         .map((r) => {
           const isPicked = state.selected_option === r.id;
+          const selectLabel = isPicked
+            ? wt('common.selectedOption', 'Seçili senaryo')
+            : wt('common.selectOption', 'Bu seçeneği seç');
           return `
-        <article class="vacation-result-card ${r.badge.className} ${isPicked ? 'is-selected' : ''}" data-option="${escapeHtml(r.id)}">
+        <article class="vacation-result-card ${r.badge.className} ${isPicked ? 'is-selected' : ''}" role="listitem" data-option="${escapeHtml(r.id)}" aria-pressed="${isPicked ? 'true' : 'false'}">
           <div class="vacation-result-badge">${escapeHtml(r.badge.label)}</div>
-          <div class="vacation-result-score">${r.score}<span>/100</span></div>
-          <div class="vacation-result-visual"></div>
+          <div class="vacation-result-score" aria-label="${escapeHtml(wt('common.decisionScore', 'Karar skoru'))}">${r.score}<span>/100</span></div>
+          <div class="vacation-result-visual" role="presentation"></div>
           <h3>${escapeHtml(r.title)}</h3>
           <p>${escapeHtml(r.description)}</p>
           <ul class="vacation-result-meta">
@@ -326,7 +336,7 @@ export function initDecisionFlow(config) {
           <div class="vacation-result-why"><strong>${escapeHtml(wt('common.whyRecommended', 'Neden önerildi?'))}</strong><p>${escapeHtml(r.why)}</p></div>
           <div class="vacation-result-pros"><strong>${escapeHtml(wt('common.pros', 'Artılar'))}</strong><ul>${r.pros.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
           <div class="vacation-result-cautions"><strong>${escapeHtml(wt('common.cautions', 'Dikkat'))}</strong><ul>${r.cautions.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
-          <button type="button" class="btn btn-sm vacation-select-card-btn ${isPicked ? 'btn-primary' : 'btn-outline'}" data-option="${escapeHtml(r.id)}">
+          <button type="button" class="btn btn-sm vacation-select-card-btn ${isPicked ? 'btn-primary' : 'btn-outline'}" data-option="${escapeHtml(r.id)}" aria-label="${escapeHtml(selectLabel)}: ${escapeHtml(r.title)}">
             ${isPicked ? escapeHtml(wt('common.selected', '✓ Seçildi')) : escapeHtml(wt('common.selectOption', 'Bu seçeneği seç'))}
           </button>
         </article>`;
