@@ -156,6 +156,43 @@ export function buildVerticalContinueHref(categoryId, answers = {}) {
 }
 
 /** Tatil dikey sihirbaz — ana sayfa asistan query profili. */
+const AUTO_WIZARD_BUDGET_PRESETS = Object.freeze(['500000', '900000', '1500000', '2500000']);
+
+const AUTO_WIZARD_USAGE = new Set(['family', 'city', 'long', 'business']);
+const AUTO_WIZARD_BODY = new Set(['suv', 'sedan', 'hatchback']);
+const AUTO_WIZARD_FUEL = new Set(['any', 'hybrid', 'electric', 'gasoline', 'diesel']);
+
+/** Auto dikey sihirbaz — ana sayfa asistan query profili. */
+export function bootstrapAutoFromAssistantQuery(state, params = new URLSearchParams()) {
+  if (!state || !params) return state;
+
+  const usage = params.get('usage');
+  const budget = params.get('budget');
+  const fuel = params.get('fuel');
+  const body = params.get('body');
+
+  if (usage) {
+    const normalized = normalizeAutoUsage(usage);
+    if (AUTO_WIZARD_USAGE.has(normalized)) state.usage = normalized;
+  }
+  if (budget) {
+    const n = Number(String(budget).replace(/\D/g, ''));
+    if (Number.isFinite(n) && n > 0) {
+      const preset = AUTO_WIZARD_BUDGET_PRESETS.find((value) => Number(value) === n);
+      if (preset) {
+        state.budget = preset;
+      } else {
+        state.budget = 'custom';
+        state.budget_custom = String(Math.round(n));
+      }
+    }
+  }
+  if (fuel && AUTO_WIZARD_FUEL.has(fuel)) state.fuel = fuel;
+  if (body && AUTO_WIZARD_BODY.has(body)) state.body = body;
+
+  return state;
+}
+
 export function bootstrapTatilFromAssistantQuery(state, params = new URLSearchParams()) {
   if (!state || !params) return state;
   const goal = params.get('goal');

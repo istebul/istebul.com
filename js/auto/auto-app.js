@@ -37,6 +37,7 @@ import { analytics } from '../core/analytics.js';
 import { bootAnalyticsMeasurement } from '../runtime/analytics-consent-boot.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
 import { getAutoPartOptions, getAutoStepCopy, sanitizeWizardStateForUsage } from './auto-flow.js';
+import { bootstrapAutoFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
 import { mirrorLegacyAutoFunnel, trackAutoStart, trackGrowthFunnel, GROWTH_FUNNEL_EVENTS } from '../features/growth/growth-funnel.js';
 import { trackPaidFunnelStep } from '../features/growth/paid-acquisition.js';
 import { sendServerPaidConversion } from '../features/growth/paid-capi-bridge.js';
@@ -3203,6 +3204,15 @@ function syncWizardManualFields(event) {
 }
 
 if (wizard) {
+  bootstrapAutoFromAssistantQuery(wizardState, new URLSearchParams(window.location.search));
+  if (wizardState.usage) {
+    sanitizeWizardStateForUsage(wizardState, {
+      body: bodyOptions,
+      fuel: fuelOptions,
+      km: kmOptions,
+      city_ratio: autoPartOptionPool('city_ratio')
+    });
+  }
   renderWizard();
   trackWizardStepView(0);
 
