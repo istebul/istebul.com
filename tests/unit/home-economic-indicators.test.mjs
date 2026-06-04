@@ -43,7 +43,8 @@ test('renderCardHtml shows all economic indicators with dates', () => {
     }
   });
 
-  assert.match(html, /Güncel Ekonomik Göstergeler/);
+  assert.match(html, /Kararlarınızı Etkileyen Güncel Veriler/);
+  assert.match(html, /TCMB EVDS üzerinden otomatik güncellenmektedir\./);
   assert.match(html, /USD\/TRY/);
   assert.match(html, /EUR\/TRY/);
   assert.match(html, /Politika Faizi/);

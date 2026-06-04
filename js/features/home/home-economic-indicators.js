@@ -17,7 +17,20 @@ const INDICATORS = Object.freeze([
   }
 ]);
 
+const CARD_TITLE = 'Kararlarınızı Etkileyen Güncel Veriler';
+const CARD_REFRESH_NOTE = 'TCMB EVDS üzerinden otomatik güncellenmektedir.';
+
 const MONTH_LABELS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+
+function renderHeadHtml() {
+  return `
+      <header class="ib-home-economic__head">
+        <div class="ib-home-economic__head-row">
+          <h2 id="home-economic-indicators-title">${CARD_TITLE}</h2>
+          <p class="ib-home-economic__refresh">${CARD_REFRESH_NOTE}</p>
+        </div>
+      </header>`;
+}
 
 export function formatFxTry(value) {
   if (value == null || !Number.isFinite(Number(value))) return '—';
@@ -67,9 +80,7 @@ export function renderSkeletonHtml() {
 
   return `
     <section class="ib-home-economic__card" aria-label="Güncel ekonomik göstergeler yükleniyor" data-home-economic-state="loading">
-      <header class="ib-home-economic__head">
-        <h2 id="home-economic-indicators-title">Güncel Ekonomik Göstergeler</h2>
-      </header>
+      ${renderHeadHtml()}
       <div class="ib-home-economic__grid">${items}</div>
       <p class="ib-home-economic__meta">Kaynak: TCMB EVDS · Bilgilendirme amaçlıdır.</p>
     </section>`;
@@ -78,9 +89,7 @@ export function renderSkeletonHtml() {
 export function renderFallbackHtml() {
   return `
     <section class="ib-home-economic__card ib-home-economic__card--fallback" aria-label="Güncel ekonomik göstergeler" data-home-economic-state="fallback">
-      <header class="ib-home-economic__head">
-        <h2 id="home-economic-indicators-title">Güncel Ekonomik Göstergeler</h2>
-      </header>
+      ${renderHeadHtml()}
       <p class="ib-home-economic__fallback">Göstergeler şu an yüklenemedi. Lütfen daha sonra tekrar deneyin.</p>
       <p class="ib-home-economic__meta">Kaynak: TCMB EVDS · Bilgilendirme amaçlıdır.</p>
     </section>`;
@@ -106,9 +115,7 @@ export function renderCardHtml(data) {
 
   return `
     <section class="ib-home-economic__card" aria-labelledby="home-economic-indicators-title" data-home-economic-state="ready">
-      <header class="ib-home-economic__head">
-        <h2 id="home-economic-indicators-title">Güncel Ekonomik Göstergeler</h2>
-      </header>
+      ${renderHeadHtml()}
       <div class="ib-home-economic__grid">${items}</div>
       <p class="ib-home-economic__meta">Kaynak: TCMB EVDS · Bilgilendirme amaçlıdır.</p>
     </section>`;

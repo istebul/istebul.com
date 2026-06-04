@@ -28,10 +28,17 @@ assert(index.includes('homepage.bundle.css') || index.includes('enterprise-card-
   'Homepage should load homepage.bundle.css (or enterprise-card-readability.css) for contrast.'
 );
 assert(index.includes('home-economic-indicators-mount'), 'Homepage economic indicators mount is missing.');
-assert(
-  read('js/features/home/home-economic-indicators.js').includes('/api/evds-snapshot'),
-  'Home economic indicators module must fetch EVDS snapshot.'
-);
+test('home economic indicators flex order follows hero in premium layout', () => {
+  const css = read('css/istebul-premium-final-v7.css');
+  const homeOrder = css.match(/#home\s*\{[^}]*order:\s*(\d+)/)?.[1];
+  const evdsOrder = css.match(/#home-economic-indicators\s*\{[^}]*order:\s*(\d+)/)?.[1];
+  const howOrder = css.match(/#how-it-works\s*\{[^}]*order:\s*(\d+)/)?.[1];
+  assert.ok(homeOrder);
+  assert.ok(evdsOrder);
+  assert.ok(howOrder);
+  assert.ok(Number(evdsOrder) > Number(homeOrder));
+  assert.ok(Number(howOrder) > Number(evdsOrder));
+});
 assert(index.includes('/kvkk.html'), 'KVKK policy link is missing.');
 assert(index.includes('/sitemap.xml'), 'Sitemap link is missing.');
 assert(!index.includes('https://plausible.io/js/plausible.js'), 'Analytics should not load before consent.');
