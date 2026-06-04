@@ -41,7 +41,7 @@ export const FINANS_OPTIONS = {
   purpose: [
     { value: 'arac', label: 'Araç', description: 'Taşıt kredisi bağlamı' },
     { value: 'konut', label: 'Konut', description: 'İpotek / konut kredisi' },
-    { value: 'tatil', label: 'Tatil', description: 'Tüketici / ihtiyaç finansmanı' },
+    { value: 'tatil', label: 'Tatil / seyahat', description: 'Tatil ve seyahat harcamaları finansmanı' },
     { value: 'ihtiyac', label: 'İhtiyaç kredisi', description: 'Genel tüketici kredisi' },
     { value: 'isletme', label: 'İşletme', description: 'Ticari nakit akışı' }
   ],

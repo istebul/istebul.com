@@ -111,7 +111,8 @@ function buildCostBreakdown(state, score) {
     food: Math.round(base * 0.14),
     extras: Math.round(base * 0.1),
     children: Math.round(childrenCount * 3200),
-    visaDocs: state.vacation_goal === 'yurtdisi' || state.vacation_goal === 'vizesiz-yurtdisi' ? 4200 : 0,
+    visaDocs:
+      state.vacation_type === 'vizesiz-yurtdisi' || state.vacation_goal === 'vizesiz-yurtdisi' ? 4200 : 0,
     carRental: state.vacation_type === 'doga' || state.vacation_type === 'villa-butik' ? 8500 : 3000
   };
 

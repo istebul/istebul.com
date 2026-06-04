@@ -52,12 +52,17 @@ import { canCallAiNarration, hasAiNarrationBudget } from './core/scale-limits.js
 import { errorBoundary } from './core/error-boundary.js';
 import { wireAutoListingFilters } from './features/listings/auto-listing-filters.js';
 import {
-    applyAssistantQuestionFlow,
-    buildAssistantWizardSteps,
-    getAssistantForkField,
-    isAssistantForkField,
-    resetAssistantAnswersOnForkChange
+  applyAssistantQuestionFlow,
+  buildAssistantWizardSteps,
+  getAssistantForkField,
+  isAssistantForkField,
+  resetAssistantAnswersOnForkChange
 } from './features/assistant/assistant-flow.js';
+import {
+  buildAssistantInsightInput,
+  buildVerticalContinueHref
+} from './features/assistant/assistant-category-bridge.js';
+import { buildDecisionInsight } from './features/ai/ai-insight-engine.js';
 import {
     mapBillingPortalError,
     setBillingPortalButtonsLoading
@@ -1779,6 +1784,174 @@ class App {
                         ]
                     }
                 ]
+            },
+            finansman: {
+                name: 'Finansman',
+                icon: 'landmark',
+                description: 'Kredi tutarı, vade, aylık kapasite ve faiz hassasiyetine göre finansman planını karşılaştırın.',
+                questions: [
+                    {
+                        id: 'purpose',
+                        label: 'Finansman amacınız nedir?',
+                        weight: 18,
+                        options: [
+                            { value: 'arac', label: 'Araç / taşıt kredisi' },
+                            { value: 'konut', label: 'Konut / ipotek' },
+                            { value: 'tatil', label: 'Tatil / seyahat' },
+                            { value: 'ihtiyac', label: 'İhtiyaç kredisi' },
+                            { value: 'isletme', label: 'İşletme finansmanı' }
+                        ]
+                    },
+                    {
+                        id: 'term',
+                        label: 'Tercih ettiğiniz vade nedir?',
+                        weight: 14,
+                        options: [
+                            { value: '12', label: '12 ay' },
+                            { value: '24', label: '24 ay' },
+                            { value: '36', label: '36 ay' },
+                            { value: '48', label: '48 ay' },
+                            { value: '60', label: '60 ay' },
+                            { value: '120', label: '120 ay' },
+                            { value: '180', label: '180 ay' },
+                            { value: '240', label: '240 ay' }
+                        ]
+                    },
+                    {
+                        id: 'capacity',
+                        label: 'Aylık ödeme kapasiteniz nedir?',
+                        weight: 12,
+                        options: [
+                            { value: '15k', label: '₺15.000 altı / ay' },
+                            { value: '25k', label: '₺15K – ₺25K / ay' },
+                            { value: '40k', label: '₺25K – ₺40K / ay' },
+                            { value: '60k', label: '₺40K+ / ay' }
+                        ]
+                    },
+                    {
+                        id: 'rateSensitivity',
+                        label: 'Faiz artışına karşı hassasiyetiniz?',
+                        weight: 10,
+                        options: [
+                            { value: 'dusuk', label: 'Düşük' },
+                            { value: 'orta', label: 'Orta' },
+                            { value: 'yuksek', label: 'Yüksek' }
+                        ]
+                    },
+                    {
+                        id: 'riskTolerance',
+                        label: 'Borçlanma risk toleransınız?',
+                        weight: 10,
+                        options: [
+                            { value: 'muhafazakar', label: 'Muhafazakar' },
+                            { value: 'dengeli', label: 'Dengeli' },
+                            { value: 'agresif', label: 'Agresif' }
+                        ]
+                    },
+                    {
+                        id: 'budget',
+                        label: 'İhtiyaç duyduğunuz finansman tutarı nedir?',
+                        type: 'number',
+                        weight: 16,
+                        min: 0,
+                        step: 25000,
+                        placeholder: 'Örn. 750000'
+                    }
+                ],
+                options: [
+                    {
+                        name: 'Dengeli vade senaryosu',
+                        price: 750000,
+                        scoreNote: 'Vade, kapasite ve faiz hassasiyeti dengelenmiş; sürdürülebilir taksit bandında.',
+                        match: {
+                            purpose: ['arac', 'konut', 'ihtiyac', 'isletme'],
+                            term: ['36', '48', '60', '120'],
+                            capacity: ['25k', '40k', '60k'],
+                            rateSensitivity: ['orta', 'dusuk'],
+                            riskTolerance: ['dengeli', 'muhafazakar']
+                        },
+                        costs: [
+                            { label: 'Tahmini faiz maliyeti', value: 185000 },
+                            { label: 'Dosya/masraf', value: 9000 },
+                            { label: 'Sigorta zorunluluğu', value: 6000 },
+                            { label: 'Erken kapama payı', value: 0 }
+                        ],
+                        channels: [
+                            { label: 'Kredi karşılaştırma', url: 'https://www.hangikredi.com/' },
+                            { label: 'Banka teklifleri', url: 'https://www.enpara.com/' },
+                            { label: 'EYM hesaplama', url: 'https://www.tbb.org.tr/' }
+                        ]
+                    },
+                    {
+                        name: 'Kısa vade — düşük toplam maliyet',
+                        price: 450000,
+                        scoreNote: 'Yüksek aylık ödeme toleransı olanlar için toplam faiz yükünü düşürür.',
+                        match: {
+                            purpose: ['arac', 'tatil', 'ihtiyac'],
+                            term: ['12', '24', '36'],
+                            capacity: ['40k', '60k'],
+                            rateSensitivity: ['dusuk', 'orta'],
+                            riskTolerance: ['agresif', 'dengeli']
+                        },
+                        costs: [
+                            { label: 'Tahmini faiz maliyeti', value: 98000 },
+                            { label: 'Dosya/masraf', value: 5500 },
+                            { label: 'Sigorta zorunluluğu', value: 3500 },
+                            { label: 'Erken kapama payı', value: 0 }
+                        ],
+                        channels: [
+                            { label: 'İhtiyaç kredisi', url: 'https://www.hangikredi.com/kredi/ihtiyac-kredisi' },
+                            { label: 'Taşıt kredisi', url: 'https://www.hangikredi.com/kredi/tasit-kredisi' },
+                            { label: 'Banka karşılaştırma', url: 'https://www.enpara.com/' }
+                        ]
+                    },
+                    {
+                        name: 'Uzun vade — düşük aylık yük',
+                        price: 1200000,
+                        scoreNote: 'Konut ve yüksek tutarlı finansman için aylık taksiti aşağı çeker; toplam maliyet artabilir.',
+                        match: {
+                            purpose: ['konut', 'arac', 'isletme'],
+                            term: ['120', '180', '240', '60'],
+                            capacity: ['15k', '25k', '40k'],
+                            rateSensitivity: ['yuksek', 'orta'],
+                            riskTolerance: ['muhafazakar', 'dengeli']
+                        },
+                        costs: [
+                            { label: 'Tahmini faiz maliyeti', value: 420000 },
+                            { label: 'Dosya/masraf', value: 14000 },
+                            { label: 'Sigorta zorunluluğu', value: 11000 },
+                            { label: 'Erken kapama payı', value: 8000 }
+                        ],
+                        channels: [
+                            { label: 'Konut kredisi', url: 'https://www.hangikredi.com/kredi/konut-kredisi' },
+                            { label: 'Mortgage karşılaştırma', url: 'https://www.enpara.com/' },
+                            { label: 'BDDK bilgilendirme', url: 'https://www.bddk.org.tr/' }
+                        ]
+                    },
+                    {
+                        name: 'Tatil / kısa dönem nakit akışı',
+                        price: 180000,
+                        scoreNote: 'Tatil ve kısa vadeli harcamalar için hızlı kapama odaklı plan.',
+                        match: {
+                            purpose: ['tatil', 'ihtiyac'],
+                            term: ['12', '24', '36'],
+                            capacity: ['15k', '25k', '40k'],
+                            rateSensitivity: ['orta', 'yuksek'],
+                            riskTolerance: ['dengeli', 'muhafazakar']
+                        },
+                        costs: [
+                            { label: 'Tahmini faiz maliyeti', value: 42000 },
+                            { label: 'Dosya/masraf', value: 3200 },
+                            { label: 'Sigorta zorunluluğu', value: 0 },
+                            { label: 'Erken kapama payı', value: 0 }
+                        ],
+                        channels: [
+                            { label: 'Tüketici kredisi', url: 'https://www.hangikredi.com/kredi/ihtiyac-kredisi' },
+                            { label: 'Kart/taksit alternatifleri', url: 'https://www.enpara.com/' },
+                            { label: 'Seyahat bütçesi planlama', url: 'https://www.etstur.com/' }
+                        ]
+                    }
+                ]
             }
         };
     }
@@ -2160,7 +2333,8 @@ class App {
         const roles = {
             arac: 'Türkiye otomotiv satın alma danışmanı',
             ev: 'Türkiye gayrimenkul satın alma danışmanı',
-            tatil: 'Türkiye seyahat planlama danışmanı'
+            tatil: 'Türkiye seyahat planlama danışmanı',
+            finansman: 'Türkiye tüketici ve konut finansmanı danışmanı'
         };
 
         const answerLines = categoryConfig.questions
@@ -2301,24 +2475,58 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             };
         }
 
+        const answers = this.assistantAnswers || {};
+        const insightInput = buildAssistantInsightInput(
+            this.assistantCategory,
+            categoryConfig,
+            primary,
+            answers,
+            recommendations
+        );
+        insightInput.weaknesses = this.getCategoryDecisionCautions(this.assistantCategory);
+        insightInput.planTier = getRevenueManager()?.isPremium ? 'pro' : 'guest';
+
+        let engineInsight = null;
+        try {
+            engineInsight = buildDecisionInsight(insightInput);
+        } catch {
+            engineInsight = null;
+        }
+
         const bestFinance = primary.financeComparisons?.[0];
         const alternative = recommendations.find((item) => item.name !== primary.name);
-        const affordability = bestFinance ? bestFinance.bank + ' için yaklaşık aylık ödeme ' + this.formatCurrency(bestFinance.monthlyPayment) + '.' : 'Finansman simülasyonu hazır değil.';
-        const alternativeText = alternative ? alternative.name + ' ikinci seçenek olarak tutulabilir; skor farkı ' + Math.max(0, primary.score - alternative.score) + ' puan.' : 'Güçlü ikinci seçenek bulunamadı.';
+        const affordability = bestFinance
+            ? `${bestFinance.bank} için yaklaşık aylık ödeme ${this.formatCurrency(bestFinance.monthlyPayment)}.`
+            : 'Finansman simülasyonu hazır değil.';
+        const alternativeText = alternative
+            ? `${alternative.name} ikinci seçenek olarak tutulabilir; skor farkı ${Math.max(0, primary.score - alternative.score)} puan.`
+            : 'Güçlü ikinci seçenek bulunamadı.';
+        const continueHref = buildVerticalContinueHref(this.assistantCategory, answers);
 
         return {
-            headline: primary.name + ', ' + categoryConfig.name.toLocaleLowerCase('tr-TR') + ' kararınızda en dengeli seçenek olarak öne çıkıyor.',
+            headline:
+                engineInsight?.summary?.split('.').filter(Boolean)[0]?.trim() + '.' ||
+                `${primary.name}, ${categoryConfig.name.toLocaleLowerCase('tr-TR')} kararınızda en dengeli seçenek olarak öne çıkıyor.`,
             reasons: [
+                engineInsight?.why,
                 primary.scoreNote,
                 primary.realisticComment,
-                'Toplam dönemsel maliyet ' + this.formatCurrency(primary.yearlyCost) + ' seviyesinde hesaplandı.',
+                `Toplam dönemsel maliyet ${this.formatCurrency(primary.yearlyCost)} seviyesinde hesaplandı.`,
                 affordability
             ].filter(Boolean),
             cautions: [
+                engineInsight?.risk,
                 ...this.getCategoryDecisionCautions(this.assistantCategory),
                 alternativeText
-            ],
-            nextSteps: this.getCategoryDecisionNextSteps(this.assistantCategory)
+            ].filter(Boolean),
+            nextSteps: [
+                ...(engineInsight?.nextStep ?
+                    engineInsight.nextStep.split(';').map((s) => s.trim()).filter(Boolean)
+                : []),
+                ...this.getCategoryDecisionNextSteps(this.assistantCategory),
+                continueHref !== '/' ? `Detaylı analiz için ${categoryConfig.name} sayfasında devam edin: ${continueHref}` : ''
+            ].filter(Boolean),
+            aiBlocks: engineInsight || null
         };
     }
 
@@ -2335,6 +2543,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             tatil: [
                 'Tatil için sezon, uçuş saati, oda tipi, iptal koşulu ve çocuk/ek kişi ücretleri toplam maliyeti değiştirebilir.',
                 'Erken rezervasyon ve son dakika fiyatları aynı rota için ciddi farklılık gösterebilir.'
+            ],
+            finansman: [
+                'Gösterilen faiz ve taksitler örnek bandıdır; banka teklifi müşteri profiline göre değişir.',
+                'Dosya masrafı, sigorta ve erken kapama koşulları toplam maliyeti etkiler.'
             ]
         };
         return cautions[categoryId] || ['Güncel fiyat ve sözleşme koşulları karar öncesi doğrulanmalıdır.'];
@@ -2356,6 +2568,11 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 'Aynı rota için uçuş saatleri, otel puanı ve iptal koşullarını yan yana karşılaştırın.',
                 'Transfer, bagaj, aktivite ve sigorta kalemlerini paket fiyatına dahil edin.',
                 'Sezon yoğunluğuna göre erken rezervasyon ve esnek tarih alternatiflerini kontrol edin.'
+            ],
+            finansman: [
+                'En az 2–3 kurumdan karşılaştırmalı kredi teklifi alın; EYM (efektif yıllık maliyet) satırını kontrol edin.',
+                'Aylık taksit/gelir oranını %40–45 bandının altında tutmayı hedefleyin.',
+                'Erken kapama cezası ve sigorta zorunluluklarını sözleşmede doğrulayın.'
             ]
         };
         return steps[categoryId] || ['En iyi iki seçeneği gerçek fiyat ve sözleşme koşullarıyla karşılaştırın.'];
@@ -2379,7 +2596,17 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             return this.getVacationDecisionOptions(answers);
         }
 
+        if (this.assistantCategory === 'finansman') {
+            return categoryConfig.options;
+        }
+
         return categoryConfig.options;
+    }
+
+    resolveFinanceCategoryId(categoryId, answers = {}) {
+        if (categoryId !== 'finansman') return categoryId;
+        const purposeMap = { arac: 'arac', konut: 'ev', tatil: 'tatil' };
+        return purposeMap[answers.purpose] || 'finansman';
     }
 
     getVehicleDecisionOptions(answers) {
@@ -2568,7 +2795,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 answers.usage === 'longRoad'
                     ? 'long'
                     : answers.usage === 'prestige'
-                      ? 'prestige'
+                      ? 'business'
                       : answers.usage || '',
             loan: answers.loan || 'no'
         };
@@ -2663,7 +2890,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             }
 
             const yearlyCost = this.sumOptionCosts(option.costs);
-            const financeComparisons = this.createFinanceComparisons(option.price, this.assistantCategory);
+            const financeCategoryId = this.resolveFinanceCategoryId(this.assistantCategory, answers);
+            const financeComparisons = this.createFinanceComparisons(option.price, financeCategoryId);
             const report = this.createCategoryDecisionReport(option, this.assistantCategory, answers, financeComparisons, yearlyCost);
             const sourceTrace = this.createRecommendationSourceTrace(this.assistantCategory, option, financeComparisons);
             const costRatio = yearlyCost / Math.max(option.price, 1);
@@ -2883,7 +3111,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const titles = {
             arac: 'Araç sahip olma maliyeti tablosu',
             ev: 'Konut alım ve yıllık gider tablosu',
-            tatil: 'Tatil paket ve seyahat gider tablosu'
+            tatil: 'Tatil paket ve seyahat gider tablosu',
+            finansman: 'Finansman maliyet ve yük tablosu'
         };
         return titles[categoryId] || 'Karar maliyeti tablosu';
     }
@@ -2892,7 +3121,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const notes = {
             arac: 'Araçta fiyat kadar yakıt/enerji, kasko, trafik sigortası ve bakım toplamı önemlidir.',
             ev: 'Evde alım bedeline ek olarak aidat/bakım, sigorta, vergi ve yenileme payı hesaplanır.',
-            tatil: 'Tatilde yalnızca paket fiyatı değil ulaşım, aktivite/transfer ve sigorta da toplam bütçeye girer.'
+            tatil: 'Tatilde yalnızca paket fiyatı değil ulaşım, aktivite/transfer ve sigorta da toplam bütçeye girer.',
+            finansman: 'Finansmanda faiz, dosya masrafı, sigorta zorunluluğu ve erken kapama koşulları toplam maliyeti belirler.'
         };
         return notes[categoryId] || 'Seçilen kategoriye göre maliyet kalemleri ayrıştırıldı.';
     }
@@ -2901,7 +3131,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const labels = {
             arac: 'Yıllık sahip olma maliyeti',
             ev: 'Yıllık konut gideri',
-            tatil: 'Toplam tatil maliyeti'
+            tatil: 'Toplam tatil maliyeti',
+            finansman: 'Toplam finansman maliyeti'
         };
         return labels[categoryId] || 'Toplam dönemsel maliyet';
     }
@@ -2948,6 +3179,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     createFallbackRealisticComment(option, categoryId) {
         if (categoryId === 'arac') return option.name + ' için sonuç tahmini fiyat, yıllık gider ve finansman yükü üzerinden üretilmiştir. Gerçek ilan, ekspertiz ve sigorta teklifiyle doğrulanmalıdır.';
         if (categoryId === 'ev') return option.name + ' için sonuç alım bedeli, yıllık konut giderleri ve kredi simülasyonuna göre üretilmiştir. Tapu, imar, deprem ve aidat bilgileri kontrol edilmelidir.';
+        if (categoryId === 'finansman') return option.name + ' için sonuç vade, kapasite ve faiz bandı varsayımlarıyla üretilmiştir. Kesin teklif banka onayına ve EYM satırına bağlıdır.';
         return option.name + ' için sonuç paket bütçesi, ulaşım ve ek giderlere göre üretilmiştir. Sezon, oda tipi ve iptal koşulları kontrol edilmelidir.';
     }
 

@@ -27,6 +27,11 @@ import {
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
+import {
+  renderResultsHeroLayout,
+  scoreToneFromLabel
+} from '../results/results-hero-layout.js';
+import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
 
 const PLAN_MID = {
   ekonomik: 40_000,
@@ -519,23 +524,39 @@ function renderTatilResultsV2Html(model) {
     ? `<p class="tatil-v2-estimate-note">${esc(cost.estimateNote)}</p>`
     : '';
 
+  const heroHtml = renderResultsHeroLayout({
+    vertical: 'travel',
+    title: 'Tatil Planı Öneriniz',
+    subtitle: 'Profilinize göre en uygun tatil senaryosu belirlendi.',
+    recommendation: {
+      kicker: 'Önerilen rota',
+      title: model.goalLabel || 'Tatil paketi',
+      badge: model.recommendationLabel || 'En uygun',
+      badgeTone: 'success'
+    },
+    specs: [
+      { label: 'Toplam bütçe', value: formatTryAmount(cost.totalBudget) },
+      { label: 'Kişi başı', value: formatTryAmount(cost.perPerson) },
+      { label: 'Konaklama', value: formatTryAmount(cost.accommodation) },
+      { label: 'Ulaşım', value: formatTryAmount(cost.transport) },
+      { label: 'Aktivite/rezerv', value: formatTryAmount((cost.activities || 0) + (cost.reserve || 0)) },
+      { label: 'Genel risk', value: model.overallRisk || '—' }
+    ],
+    score: model.decisionScore,
+    scoreLabel: model.scoreLabel || 'Tatil karar skoru',
+    scoreTone: scoreToneFromLabel(model.scoreLabel),
+    evdsMountClass: 'tatil-v2-evds-mount ib-results-economic--compact'
+  });
+
   return `
     <section class="tatil-v2-panel" aria-label="Tatil Decision Results V2">
-      <header class="tatil-v2-hero">
-        <p class="tatil-v2-kicker">AI destekli tatil karar analizi</p>
-        <h2 class="tatil-v2-title">Tatil karar raporu</h2>
-        <p class="tatil-v2-band">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</p>
-        ${model.recommendationLabel ? `<p class="tatil-v2-rec-level">${esc(model.recommendationLabel)}</p>` : ''}
-      </header>
+      ${heroHtml}
+
+      <div id="ib-results-detail"></div>
 
       ${renderScoreFactorsHtml(model.scoreFactors, 'tatil-v2')}
 
-      <div class="tatil-v2-kpis">
-        <article class="tatil-v2-kpi tatil-v2-kpi--score">
-          <span>Tatil Karar Skoru</span>
-          <strong>${esc(String(model.decisionScore))}<small>/100</small></strong>
-          <div class="tatil-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.decisionScore))}%"></span></div>
-        </article>
+      <div class="tatil-v2-kpis tatil-v2-kpis--secondary">
         <article class="tatil-v2-kpi tatil-v2-kpi--confidence">
           <span>Güven Skoru</span>
           <strong>${esc(String(model.confidenceScore))}<small>/100</small></strong>
@@ -546,9 +567,9 @@ function renderTatilResultsV2Html(model) {
           <strong><span class="tatil-v2-risk tatil-v2-risk--${esc(model.riskTone)}">${esc(model.overallRisk)}</span></strong>
         </article>
         <article class="tatil-v2-kpi tatil-v2-kpi--cost">
-          <span>Toplam tatil bütçesi</span>
-          <strong>${esc(formatTryAmount(cost.totalBudget))}</strong>
-          <small>Kişi başı ${esc(formatTryAmount(cost.perPerson))}</small>
+          <span>Bütçe uyumu</span>
+          <strong>${cost.budgetFitPct != null ? esc(`%${cost.budgetFitPct}`) : '—'}</strong>
+          <small>Toplam ${esc(formatTryAmount(cost.totalBudget))}</small>
         </article>
       </div>
 
@@ -661,6 +682,8 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
   root.className = 'tatil-v2-root';
   root.innerHTML = renderTatilResultsV2Html(model);
   mountNode.prepend(root);
+
+  await hydrateResultsEconomicIndicators(root, 'tatil');
 
   safeTrackEvent(track, 'travel_result_v2_view', {
     category: 'tatil',

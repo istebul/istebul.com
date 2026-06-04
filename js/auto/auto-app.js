@@ -126,7 +126,7 @@ const DECISION_FLOW_STEPS = [
   { key: 'km', label: 'Yıllık Km', field: 'km' },
   { key: 'fuel', label: 'Yakıt Tercihi', field: 'fuel' },
   { key: 'loan', label: 'Kredi Durumu', field: 'loan' },
-  { key: 'priority', label: 'Önceliğiniz', field: 'city_ratio' },
+  { key: 'priority', label: 'Şehir / otoyol dengesi', field: 'city_ratio' },
   { key: 'vehicle', label: 'Araç seçimi', field: null },
   { key: 'result', label: 'Sonuç', field: null }
 ];

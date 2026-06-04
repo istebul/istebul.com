@@ -15,6 +15,12 @@ import { riskLevelToTone, safeTrackEvent } from '../results/results-engine.js';
 import { gatePdfDownload } from '../billing/pdf-access-v1.js';
 import { getResultsPlanContext } from '../billing/paywall-v1.js';
 import {
+  buildDecisionInsight,
+  buildInsightInputFromIntelligence,
+  hydrateInsightBlocks,
+  renderInsightBlocksHtml
+} from '../ai/ai-insight-engine.js';
+import {
   trackSigortaInterest,
   trackSigortaPdfDownload,
   trackSigortaResultsView,
@@ -41,6 +47,14 @@ export function buildSigortaResultsV2Payload({ state = {}, results = [] }) {
   const pdfReportData = buildSigortaPdfPayload({ state, planTier, engine });
   const coverageMatrix = buildCoverageComparisonMatrix(state);
 
+  const insightInput = buildInsightInputFromIntelligence('sigorta', state, engine, {
+    planTier,
+    strengths: engine.strengths,
+    weaknesses: engine.weaknesses,
+    costs: { premiumBand: premiumBand || null }
+  });
+  const insight = buildDecisionInsight(insightInput);
+
   return {
     decisionScore: engine.decisionScore,
     protectionScore: engine.protectionScore,
@@ -62,7 +76,9 @@ export function buildSigortaResultsV2Payload({ state = {}, results = [] }) {
     premiumLabel: premiumBand ? formatTryAmount(premiumBand) : '—',
     coverageMatrix,
     engine,
-    ai
+    ai,
+    insightInput,
+    insight
   };
 }
 
@@ -180,17 +196,12 @@ function renderSigortaResultsV2Html(model) {
       </section>
 
       <article class="sigorta-v2-block sigorta-v2-block--exec" data-sigorta-v2-insight-root>
-        <h3>AI executive summary</h3>
-        <div class="sigorta-v2-exec-body">
-          ${(model.ai?.paragraphs || [model.executiveSummary])
-            .filter(Boolean)
-            .map((p) => `<p>${esc(p)}</p>`)
-            .join('')}
-        </div>
-        <ul class="sigorta-v2-exec-bullets">
-          ${(model.aiBullets || []).map((b) => `<li>${esc(b)}</li>`).join('')}
-        </ul>
-        <p class="sigorta-v2-exec-hint">Kaynak: Deterministik karar motoru — skorlar yapay zekâ tarafından değiştirilmez.</p>
+        <h3>AI karar yorumu</h3>
+        ${renderInsightBlocksHtml(model.insight, esc, {
+          planTier: model.planTier,
+          insightInput: model.insightInput
+        })}
+        <p class="sigorta-v2-exec-hint" data-sigorta-v2-source>Skorlar deterministik motordan; AI yalnızca açıklama üretir.</p>
       </article>
 
       <article class="sigorta-v2-block sigorta-v2-block--next">
@@ -292,18 +303,18 @@ export async function mountSigortaResultsV2(mountNode, payload = {}) {
     if (enriched?.text) {
       model.executiveSummary = enriched.text;
       model.ai = { ...model.ai, source: enriched.source };
-      const execBody = root.querySelector('.sigorta-v2-exec-body');
-      if (execBody) {
-        execBody.innerHTML = `<p>${escapeHtml(enriched.text)}</p>`;
+      if (enriched.insight) {
+        model.insight = enriched.insight;
+        hydrateInsightBlocks(root.querySelector('[data-sigorta-v2-insight-root]'), enriched.insight);
       }
-      const execHint = root.querySelector('.sigorta-v2-exec-hint');
+      const execHint = root.querySelector('[data-sigorta-v2-source]');
       if (execHint && enriched.source === 'ai') {
         execHint.textContent =
-          'Kaynak: Deterministik skorlar + AI destekli özet (skorlar değiştirilmez).';
+          'Kaynak: Deterministik skorlar + AI destekli yorum (skorlar değiştirilmez).';
       }
     }
   } catch {
-    /* deterministic summary already rendered */
+    /* deterministic insight already rendered */
   }
 
   safeTrackEvent(track, 'decision_result_v2_view', {

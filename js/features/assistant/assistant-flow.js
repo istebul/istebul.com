@@ -128,6 +128,57 @@ const CATEGORY_FLOW = {
         priority: ['premium', 'quiet', 'allInclusive']
       }
     }
+  },
+  finansman: {
+    fork: 'purpose',
+    profileStep: {
+      label: 'Finansman amacı',
+      description: 'Kredi türüne göre vade, kapasite ve risk soruları özelleşir.'
+    },
+    needsStep: (answers) => ({
+      description:
+        answers.purpose === 'konut'
+          ? 'Konut kredisi için uzun vade ve ödeme kapasitesi birlikte değerlendirilir.'
+          : answers.purpose === 'arac'
+            ? 'Taşıt kredisi için vade, faiz hassasiyeti ve aylık kapasite netleştirilir.'
+            : answers.purpose === 'tatil'
+              ? 'Tatil/seyahat finansmanı için kısa vade ve nakit akışı önceliklidir.'
+              : answers.purpose === 'isletme'
+                ? 'İşletme finansmanında nakit akışı ve erken kapama senaryoları öne çıkar.'
+                : 'İhtiyaç kredisi için vade, kapasite ve faiz hassasiyetinizi belirleyin.'
+    }),
+    forks: {
+      arac: {
+        term: ['24', '36', '48', '60'],
+        capacity: ['15k', '25k', '40k', '60k'],
+        rateSensitivity: ['dusuk', 'orta', 'yuksek'],
+        riskTolerance: ['muhafazakar', 'dengeli', 'agresif']
+      },
+      konut: {
+        term: ['60', '120', '180', '240'],
+        capacity: ['25k', '40k', '60k'],
+        rateSensitivity: ['dusuk', 'orta', 'yuksek'],
+        riskTolerance: ['muhafazakar', 'dengeli']
+      },
+      tatil: {
+        term: ['12', '24', '36'],
+        capacity: ['15k', '25k', '40k'],
+        rateSensitivity: ['orta', 'yuksek'],
+        riskTolerance: ['muhafazakar', 'dengeli']
+      },
+      ihtiyac: {
+        term: ['12', '24', '36', '48'],
+        capacity: ['15k', '25k', '40k', '60k'],
+        rateSensitivity: ['dusuk', 'orta', 'yuksek'],
+        riskTolerance: ['muhafazakar', 'dengeli', 'agresif']
+      },
+      isletme: {
+        term: ['24', '36', '48', '60'],
+        capacity: ['25k', '40k', '60k'],
+        rateSensitivity: ['orta', 'yuksek'],
+        riskTolerance: ['dengeli', 'agresif']
+      }
+    }
   }
 };
 
@@ -168,7 +219,8 @@ export function applyAssistantQuestionFlow(categoryId, questions, answers = {}) 
 const FORK_RESET_FIELDS = {
   arac: ['fuel', 'body', 'priority'],
   ev: ['propertyType', 'location', 'priority'],
-  tatil: ['destination', 'travelers', 'priority']
+  tatil: ['destination', 'travelers', 'priority'],
+  finansman: ['term', 'capacity', 'rateSensitivity', 'riskTolerance']
 };
 
 /**

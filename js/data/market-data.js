@@ -17,6 +17,11 @@ export const DEFAULT_FINANCE_PRODUCTS = {
         { id: 'travel-a', bank: 'Banka A Tatil Kredisi', rate: 4.05, term: 12, ratio: 0.8, type: 'tatil' },
         { id: 'travel-b', bank: 'Banka B İhtiyaç Kredisi', rate: 4.35, term: 18, ratio: 0.7, type: 'ihtiyaç' },
         { id: 'travel-c', bank: 'Banka C Kart Taksiti', rate: 3.75, term: 9, ratio: 0.6, type: 'kart' }
+    ],
+    finansman: [
+        { id: 'fin-a', bank: 'Banka A İhtiyaç Kredisi', rate: 3.65, term: 36, ratio: 0.85, type: 'ihtiyaç' },
+        { id: 'fin-b', bank: 'Banka B Tüketici Kredisi', rate: 3.95, term: 48, ratio: 0.8, type: 'ihtiyaç' },
+        { id: 'fin-c', bank: 'Banka C İşletme Destek', rate: 4.15, term: 36, ratio: 0.75, type: 'işletme' }
     ]
 };
 
@@ -65,6 +70,10 @@ export const DEFAULT_COST_PROFILES = {
         transportRatio: 0.2,
         activityRatio: 0.12,
         insuranceRatio: 0.06
+    },
+    finansman: {
+        fileFeeRate: 0.012,
+        insuranceRate: 0.008
     }
 };
 

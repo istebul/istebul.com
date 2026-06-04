@@ -4,6 +4,12 @@ import { buildKaskoAiSummary, fetchKaskoExecutiveSummary } from './kasko-ai-summ
 import { riskLevelToTone, safeTrackEvent } from '../results/results-engine.js';
 import { gatePdfDownload } from '../billing/pdf-access-v1.js';
 import { getResultsPlanContext } from '../billing/paywall-v1.js';
+import {
+  buildDecisionInsight,
+  buildInsightInputFromIntelligence,
+  hydrateInsightBlocks,
+  renderInsightBlocksHtml
+} from '../ai/ai-insight-engine.js';
 import { saveKaskoLead, trackKaskoResultsView } from '../../kasko/kasko-intake.js';
 
 export const KASKO_RESULTS_MOUNT_ID = 'kasko-results';
@@ -24,6 +30,14 @@ export function buildKaskoResultsV2Payload({ state = {}, results = [] }) {
   const { planTier } = getResultsPlanContext();
   const primary = results[0];
   const premiumBand = primary?.metrics?.premiumBand;
+
+  const insightInput = buildInsightInputFromIntelligence('kasko', state, engine, {
+    planTier,
+    strengths: engine.strengths,
+    weaknesses: engine.weaknesses,
+    costs: { premiumBand: premiumBand || null }
+  });
+  const insight = buildDecisionInsight(insightInput);
 
   return {
     decisionScore: engine.decisionScore,
@@ -50,7 +64,9 @@ export function buildKaskoResultsV2Payload({ state = {}, results = [] }) {
     planTier,
     premiumLabel: premiumBand ? formatTryAmount(premiumBand) : '—',
     engine,
-    ai
+    ai,
+    insightInput,
+    insight
   };
 }
 
@@ -98,10 +114,13 @@ function renderHtml(model) {
           )
           .join('')}</div>
       </section>
-      <article class="sigorta-v2-block sigorta-v2-block--exec">
-        <h3>Yönetici özeti</h3>
-        <div class="sigorta-v2-exec-body"><p>${esc(model.executiveSummary)}</p></div>
-        <p class="sigorta-v2-exec-hint">Skorlar deterministik motordan; AI yalnızca açıklama üretir.</p>
+      <article class="sigorta-v2-block sigorta-v2-block--exec" data-kasko-v2-insight-root>
+        <h3>AI karar yorumu</h3>
+        ${renderInsightBlocksHtml(model.insight, esc, {
+          planTier: model.planTier,
+          insightInput: model.insightInput
+        })}
+        <p class="sigorta-v2-exec-hint" data-kasko-v2-source>Skorlar deterministik motordan; AI yalnızca açıklama üretir.</p>
       </article>
       <div class="sigorta-v2-actions">
         <button type="button" class="btn secondary" data-kasko-v2-pdf>PDF indir</button>
@@ -138,8 +157,15 @@ export async function mountKaskoResultsV2(mountNode, payload = {}) {
   try {
     const enriched = await fetchKaskoExecutiveSummary(model.engine, state, { planTier: model.planTier });
     if (enriched?.text) {
-      const body = root.querySelector('.sigorta-v2-exec-body');
-      if (body) body.innerHTML = `<p>${escapeHtml(enriched.text)}</p>`;
+      model.executiveSummary = enriched.text;
+      if (enriched.insight) {
+        model.insight = enriched.insight;
+        hydrateInsightBlocks(root.querySelector('[data-kasko-v2-insight-root]'), enriched.insight);
+      }
+      const hint = root.querySelector('[data-kasko-v2-source]');
+      if (hint && enriched.source === 'ai') {
+        hint.textContent = 'Kaynak: Deterministik skorlar + AI destekli yorum (skorlar değiştirilmez).';
+      }
     }
   } catch {
     /* deterministic */

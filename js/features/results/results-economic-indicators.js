@@ -36,6 +36,11 @@ export const RESULTS_ECONOMIC_PRESETS = Object.freeze({
     { key: 'usdTry', label: 'USD/TRY', kind: 'fx', rateKey: 'usdTry', dateKey: 'usdTry' },
     { key: 'eurTry', label: 'EUR/TRY', kind: 'fx', rateKey: 'eurTry', dateKey: 'eurTry' },
     { key: 'cpiAnnual', label: 'TÜFE', kind: 'pct', rateKey: 'cpiAnnual', dateKey: 'cpiAnnual' }
+  ]),
+  tatil: Object.freeze([
+    { key: 'usdTry', label: 'USD/TRY', kind: 'fx', rateKey: 'usdTry', dateKey: 'usdTry' },
+    { key: 'eurTry', label: 'EUR/TRY', kind: 'fx', rateKey: 'eurTry', dateKey: 'eurTry' },
+    { key: 'cpiAnnual', label: 'TÜFE (yıllık)', kind: 'pct', rateKey: 'cpiAnnual', dateKey: 'cpiAnnual' }
   ])
 });
 
@@ -274,7 +279,7 @@ export function renderResultsEconomicSkeletonHtml(preset) {
 
 /**
  * @param {HTMLElement | null} root — sonuç v2 kökü ([data-results-economic-mount] içerir)
- * @param {'finansman'|'konut'|'auto'} preset
+ * @param {'finansman'|'konut'|'auto'|'tatil'} preset
  */
 export async function hydrateResultsEconomicIndicators(root, preset) {
   if (!root || !resolvePreset(preset)) return;

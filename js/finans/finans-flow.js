@@ -59,6 +59,14 @@ export const PURPOSE_FLOW = {
     termStep: {
       title: 'İhtiyaç kredisi vadesi',
       subtitle: 'Kısa vadede toplam maliyet, uzun vadede aylık yük değişir.'
+    },
+    cashflowStep: {
+      title: 'İhtiyaç kredisi için gelir ve borç profili',
+      subtitle: 'Net gelir, giderler ve mevcut taksitler kapasiteyi belirler.'
+    },
+    sensitivityStep: {
+      title: 'Faiz hassasiyeti ve risk toleransı',
+      subtitle: 'Faiz artışına karşı dayanıklılık ve erken ödeme esnekliği.'
     }
   },
   isletme: {

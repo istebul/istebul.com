@@ -47,3 +47,17 @@ test('resetAssistantAnswersOnForkChange clears incompatible tatil answers', () =
 test('arac fork field is usage', () => {
   assert.equal(getAssistantForkField('arac'), 'usage');
 });
+
+test('finansman konut fork limits long terms only', () => {
+  const questions = [
+    { id: 'purpose', options: [{ value: 'konut' }, { value: 'arac' }] },
+    { id: 'term', options: [{ value: '36' }, { value: '120' }, { value: '240' }] },
+    { id: 'budget', type: 'number' }
+  ];
+  const filtered = applyAssistantQuestionFlow('finansman', questions, { purpose: 'konut' });
+  const term = filtered.find((q) => q.id === 'term');
+  assert.deepEqual(
+    term.options.map((o) => o.value),
+    ['120', '240']
+  );
+});
