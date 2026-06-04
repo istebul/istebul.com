@@ -29,10 +29,11 @@ import {
 } from '../features/results/decision-intelligence-engine.js';
 import { hydrateResultsEconomicIndicators } from '../features/results/results-economic-indicators.js';
 import {
-  buildEvdsMarketAnalysis,
-  fetchEvdsRatesForEngine,
-  renderAutoFxRiskHtml
-} from '../features/evds/evds-market-engine.js';
+  buildEvdsAiMarketSentence,
+  buildEvdsRiskLayer,
+  mountEvdsRiskLayer
+} from '../features/results/results-evds-risk-layer.js';
+import { fetchEvdsRatesForEngine } from '../features/evds/evds-market-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -171,8 +172,6 @@ function renderAutoResultsV2Html(model) {
         </article>
       </div>
 
-      ${model.evdsMarketHtml || ''}
-
       <div class="ib-results-economic-mount auto-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
 
       <div class="auto-v2-grid">
@@ -250,14 +249,14 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   const evdsSnapshot = await fetchEvdsRatesForEngine();
   const evdsRates = evdsSnapshot?.rates || null;
+  const evdsRiskLayer = buildEvdsRiskLayer('auto', evdsRates);
 
   const intel = buildDecisionIntelligenceResult(
     'auto',
     formData,
     { topResult, budget, totalCost },
-    { topResult, results, budget, totalCost, cautions, evdsRates: evdsRates || undefined }
+    { topResult, results, budget, totalCost, cautions }
   );
-  const evdsAnalysis = intel.context?.evdsAnalysis || buildEvdsMarketAnalysis('auto', evdsRates || {});
   const decisionScore = intel.decisionScore;
   const confidenceScore = intel.confidenceScore;
 
@@ -274,7 +273,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     planTier,
     strengths,
     weaknesses: cautions,
-    marketAssessment: intel.context?.marketAssessment || '',
+    marketAssessment: buildEvdsAiMarketSentence(evdsRiskLayer),
     costs: { budget, tco12: totalCost, vehiclePrice }
   });
 
@@ -302,8 +301,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     usage: String(formData?.usage || ''),
     budgetLabel: budget ? formatTryAmount(budget) : '—',
     totalCostLabelRaw: totalCost ? formatTryAmount(totalCost) : '—',
-    evdsAnalysis,
-    evdsMarketHtml: renderAutoFxRiskHtml(evdsAnalysis, escapeHtml)
+    evdsRiskLayer
   };
 
   model.pdfReportData = buildPdfReportData({
@@ -340,6 +338,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   root.innerHTML = renderAutoResultsV2Html(model);
   mountNode.prepend(root);
   await hydrateResultsEconomicIndicators(root, 'auto');
+  mountEvdsRiskLayer(root, model.evdsRiskLayer);
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     score: decisionScore,
@@ -357,7 +356,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     planTier,
     strengths,
     weaknesses: cautions,
-    marketAssessment: intel.context?.marketAssessment || '',
+    marketAssessment: buildEvdsAiMarketSentence(evdsRiskLayer),
     costs: { budget, tco12: totalCost, vehiclePrice }
   });
 
