@@ -11,11 +11,19 @@ test('renderCardHtml shows TCMB reference fields', () => {
   assert.match(html, /TCMB Referans Verileri/);
   assert.match(html, /USD\/TRY/);
   assert.match(html, /EUR\/TRY/);
-  assert.match(html, /Politika faizi/);
+  assert.match(html, /TCMB politika faizi \(referans\)/);
   assert.match(html, /Veri tarihi/);
   assert.match(html, /04-06-2026/);
-  assert.match(html, /TCMB EVDS/);
+  assert.match(html, /TCMB EVDS \(Canlı referans veri\)/);
+  assert.match(html, /bilgilendirme amaçlı referans/);
+  assert.match(html, /45,87/);
+  assert.match(html, /53,28/);
   assert.doesNotMatch(html, /TÜFE/);
+  assert.doesNotMatch(html, /kredi teklifi/);
+  assert.doesNotMatch(html, /en iyi faiz/);
+  assert.doesNotMatch(html, /yatırım tavsiyesi/);
+  assert.doesNotMatch(html, /banka oranı/);
+  assert.doesNotMatch(html, /kesin oran/);
 });
 
 test('hydrateFinansmanEvdsCard fills mount when API succeeds', async () => {
