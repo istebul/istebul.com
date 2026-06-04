@@ -25,6 +25,20 @@ describe('posts content admin', () => {
     assert.match(sql, /NOTIFY pgrst, 'reload schema'/);
   });
 
+  it('full schema repair migration adds cover_image_url and related columns', () => {
+    const sql = fs.readFileSync(
+      path.join(root, 'supabase/migrations/20260626_posts_full_schema_repair.sql'),
+      'utf8'
+    );
+    assert.match(sql, /ADD COLUMN IF NOT EXISTS cover_image_url text/i);
+    assert.match(sql, /ADD COLUMN IF NOT EXISTS content_type text NOT NULL DEFAULT 'news'/i);
+    assert.match(sql, /NOTIFY pgrst, 'reload schema'/);
+  });
+
+  it('apply-posts-schema-migration-api script exists', () => {
+    assert.ok(fs.existsSync(path.join(root, 'scripts/apply-posts-schema-migration-api.sh')));
+  });
+
   it('verify-posts-content-type-schema script exists', () => {
     assert.ok(
       fs.existsSync(path.join(root, 'scripts/verify-posts-content-type-schema.cjs'))
