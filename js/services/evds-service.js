@@ -37,6 +37,39 @@ function redactSecrets(text, apiKey) {
   return String(text).split(apiKey).join('[REDACTED]');
 }
 
+/** TEMPORARY: sanitize upstream text for ?debug=1 responses (remove before prod hardening). */
+function sanitizeDebugText(text, apiKey, maxLen = 300) {
+  if (text == null) return null;
+  let safe = redactSecrets(String(text), apiKey);
+  safe = safe.replace(/([?&]key=)[^&\s"']+/gi, '$1[REDACTED]');
+  safe = safe.replace(/("key"\s*:\s*")[^"]+(")/gi, '$1[REDACTED]$2');
+  return safe.length > maxLen ? safe.slice(0, maxLen) : safe;
+}
+
+function normalizedFieldNameExamples(seriesCode, evdsJson) {
+  const examples = [
+    seriesCodeToColumn(seriesCode),
+    seriesCode,
+    `${seriesCodeToColumn(seriesCode)}_YTL`
+  ];
+
+  const items = evdsJson?.items;
+  if (Array.isArray(items) && items.length) {
+    const nested = items.find(
+      (row) => row && (row.SERIES_CODE === seriesCode || row.seriesCode === seriesCode)
+    );
+    const rows = nested ? nested.items || nested.data || [] : items;
+    const lastRow = Array.isArray(rows) && rows.length ? rows[rows.length - 1] : null;
+    if (lastRow && typeof lastRow === 'object') {
+      examples.push(
+        ...Object.keys(lastRow).filter((key) => !/unix/i.test(key))
+      );
+    }
+  }
+
+  return [...new Set(examples)];
+}
+
 function formatEvdsDate(date = new Date()) {
   const d = date instanceof Date ? date : new Date(date);
   const day = String(d.getDate()).padStart(2, '0');
@@ -368,6 +401,135 @@ export async function getHousingLoanRates(env = {}, options = {}) {
     fetchedAt: snapshot.fetchedAt,
     dataDate: snapshot.seriesDates?.housingLoanRate || snapshot.dataDate,
     source: snapshot.source
+  };
+}
+
+/**
+ * TEMPORARY upstream probe for /api/evds-snapshot?debug=1 — remove after EVDS incident.
+ * Never returns API keys or other secrets.
+ */
+async function probeEvdsSeries(apiKey, seriesCode, { startDate, endDate, fetchImpl = fetch } = {}) {
+  const requestUrl = buildEvdsSeriesUrl(seriesCode, { startDate, endDate });
+  const probe = {
+    seriesCode,
+    requestUrl,
+    httpStatus: null,
+    contentType: null,
+    responseBodyPreview: null,
+    parsedTopLevelKeys: [],
+    normalizedFieldNames: [seriesCodeToColumn(seriesCode)],
+    parseResult: null,
+    errorMessage: null
+  };
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetchImpl(requestUrl, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        key: apiKey
+      },
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+
+    probe.httpStatus = response.status;
+    probe.contentType = response.headers?.get?.('content-type') || null;
+
+    const bodyText = await response.text();
+    probe.responseBodyPreview = sanitizeDebugText(bodyText, apiKey);
+
+    if (!response.ok) {
+      probe.errorMessage = `EVDS HTTP ${response.status} (${seriesCode})`;
+      return probe;
+    }
+
+    let json;
+    try {
+      json = JSON.parse(bodyText);
+    } catch {
+      probe.errorMessage = `EVDS invalid JSON (${seriesCode})`;
+      return probe;
+    }
+
+    probe.parsedTopLevelKeys =
+      json && typeof json === 'object' && !Array.isArray(json) ? Object.keys(json) : [];
+    probe.normalizedFieldNames = normalizedFieldNameExamples(seriesCode, json);
+
+    const point = parseLatestValue(json, seriesCode);
+    probe.parseResult = point ? { value: point.value, date: point.date } : null;
+    if (!point) {
+      probe.errorMessage = `EVDS empty or unparseable series (${seriesCode})`;
+    }
+
+    return probe;
+  } catch (error) {
+    clearTimeout(timer);
+    probe.errorMessage = redactSecrets(error?.message || String(error), apiKey);
+    return probe;
+  }
+}
+
+/**
+ * TEMPORARY debug report for live EVDS upstream diagnosis.
+ * @param {{ TCMB_EVDS_API_KEY?: string }} env
+ * @param {{ fetchImpl?: typeof fetch }} [options]
+ */
+export async function fetchEvdsDebugReport(env = {}, options = {}) {
+  const apiKey = String(env.TCMB_EVDS_API_KEY || '').trim();
+  const fetchImpl = options.fetchImpl || fetch;
+  const startDate = startDateDaysAgo(90);
+  const endDate = formatEvdsDate();
+
+  const seriesCodes = { ...EVDS_SERIES };
+  const requiredSeries = [EVDS_SERIES.USD_TRY, EVDS_SERIES.EUR_TRY];
+  const optionalSeries = [
+    EVDS_SERIES.POLICY_RATE,
+    EVDS_SERIES.CPI_ANNUAL,
+    EVDS_SERIES.HOUSING_LOAN
+  ];
+
+  if (!apiKey) {
+    return {
+      debug: true,
+      temporary: true,
+      configured: false,
+      fetchedAt: new Date().toISOString(),
+      seriesCodes,
+      requiredSeries,
+      optionalSeries,
+      errorMessage: 'TCMB_EVDS_API_KEY not configured',
+      probes: []
+    };
+  }
+
+  const probes = await Promise.all(
+    Object.values(EVDS_SERIES).map((code) =>
+      probeEvdsSeries(apiKey, code, { startDate, endDate, fetchImpl })
+    )
+  );
+
+  const failedRequired = probes.filter(
+    (probe) =>
+      requiredSeries.includes(probe.seriesCode) &&
+      (probe.errorMessage || probe.parseResult == null)
+  );
+
+  return {
+    debug: true,
+    temporary: true,
+    configured: true,
+    fetchedAt: new Date().toISOString(),
+    seriesCodes,
+    requiredSeries,
+    optionalSeries,
+    errorMessage: failedRequired.length
+      ? failedRequired.map((probe) => probe.errorMessage).filter(Boolean).join('; ')
+      : null,
+    probes
   };
 }
 

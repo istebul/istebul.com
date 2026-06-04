@@ -1,7 +1,7 @@
 /**
  * Public TCMB EVDS snapshot (sanitized). API key stays in env.TCMB_EVDS_API_KEY only.
  */
-import { fetchEvdsSnapshot } from '../../js/services/evds-service.js';
+import { fetchEvdsDebugReport, fetchEvdsSnapshot } from '../../js/services/evds-service.js';
 import { resolveCorsOrigin } from '../_shared/cors-origins.js';
 import { jsonApiSuccess, logApiEvent } from '../_shared/api-response.js';
 
@@ -17,8 +17,45 @@ export async function onRequestOptions(context) {
   return new Response(null, { status: 204, headers: corsHeaders(origin) });
 }
 
+const debugCorsHeaders = (origin = null) => ({
+  ...corsHeaders(origin),
+  'Cache-Control': 'no-store'
+});
+
 export async function onRequestGet(context) {
   const origin = context.request.headers.get('Origin');
+  const debugMode = new URL(context.request.url).searchParams.get('debug') === '1';
+
+  // TEMPORARY: safe upstream diagnostics — remove after EVDS incident is resolved.
+  if (debugMode) {
+    try {
+      const report = await fetchEvdsDebugReport(context.env);
+      logApiEvent('warn', 'evds_snapshot_debug_served', {
+        configured: report.configured,
+        probeCount: report.probes?.length || 0
+      });
+      return jsonApiSuccess(report, 200, debugCorsHeaders(origin), {
+        debug: true,
+        temporary: true
+      });
+    } catch (error) {
+      logApiEvent('error', 'evds_snapshot_debug_error', {
+        message: error?.message || 'unknown'
+      });
+      return jsonApiSuccess(
+        {
+          debug: true,
+          temporary: true,
+          configured: Boolean(String(context.env?.TCMB_EVDS_API_KEY || '').trim()),
+          errorMessage: error?.message || 'debug_probe_failed',
+          probes: []
+        },
+        200,
+        debugCorsHeaders(origin),
+        { debug: true, temporary: true }
+      );
+    }
+  }
 
   try {
     const snapshot = await fetchEvdsSnapshot(context.env);
