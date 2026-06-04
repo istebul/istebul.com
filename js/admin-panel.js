@@ -122,9 +122,6 @@ if (!isSupabaseConfigured()) {
 const sb = getAdminSupabaseClient();
 let currentUser = null;
 
-initPostsAdmin(sb, {
-  toast: (message, type) => toast(message, type)
-});
 window.__adminReloadDashboard = () => loadDashboard();
 
 function showLoginError(message) {
@@ -1631,6 +1628,10 @@ async function adminAction(payload) {
   }
 }
 
+initPostsAdmin(sb, {
+  toast: (message, type) => toast(message, type),
+  adminAction
+});
 const vacationAdmin = initVacationAdmin({ sb, adminAction, toast });
 const verticalAdmin = initVerticalAdmin({ sb });
 const housingAdmin = initHousingAdmin({ sb, adminAction, toast });

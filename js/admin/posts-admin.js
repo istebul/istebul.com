@@ -99,9 +99,10 @@ function setFieldValue(kind, key, value) {
   else node.value = value ?? '';
 }
 
-export function initPostsAdmin(supabaseClient, { toast }) {
+export function initPostsAdmin(supabaseClient, { toast, adminAction }) {
   window.__adminSupabase = supabaseClient;
   window.__adminPostsToast = toast;
+  window.__adminPostAction = typeof adminAction === 'function' ? adminAction : null;
   bindPostFormInputs('news');
   bindPostFormInputs('blog');
 }
@@ -394,26 +395,62 @@ export async function savePost(kind) {
   };
   if (hasPostsCategoryColumn) values.category = category;
 
-  const submit = async (payload) => {
+  const persistDirect = async (payload) => {
     if (editingByType[kind]) {
       return window.__adminSupabase
         .from('posts')
         .update(payload)
         .eq('id', editingByType[kind]);
     }
-    return window.__adminSupabase
-      .from('posts')
-      .insert(payload);
+    return window.__adminSupabase.from('posts').insert(payload);
   };
 
-  let { error } = await submit(values);
+  const persistViaAdminAction = async (payload) => {
+    const actionFn = window.__adminPostAction;
+    if (!actionFn) return { error: { message: 'admin-action unavailable' } };
+    try {
+      await actionFn({
+        action: editingByType[kind] ? 'update' : 'insert',
+        table: 'posts',
+        id: editingByType[kind] || 'new',
+        values: payload
+      });
+      return { error: null };
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
+  let { error } = window.__adminPostAction
+    ? await persistViaAdminAction(values)
+    : await persistDirect(values);
+
+  if (error && isMissingColumnError(error, 'content_type')) {
+    toast?.(
+      'posts.content_type kolonu eksik. Supabase migration 20260625_posts_content_type_repair.sql uygulanmalı.',
+      'error'
+    );
+    return;
+  }
+
   if (error && isMissingColumnError(error, 'category')) {
     hasPostsCategoryColumn = false;
     const { category: _ignored, ...withoutCategory } = values;
-    ({ error } = await submit(withoutCategory));
+    ({ error } = window.__adminPostAction
+      ? await persistViaAdminAction(withoutCategory)
+      : await persistDirect(withoutCategory));
   }
+
   if (error) {
-    toast?.(error.message || String(error), 'error');
+    const msg = error?.message || String(error);
+    if (isMissingColumnError(error, 'content_type')) {
+      toast?.(
+        'posts.content_type kolonu eksik. Production Deploy veya SQL migration çalıştırın.',
+        'error'
+      );
+      return;
+    }
+    toast?.(msg, 'error');
     return;
   }
   toast?.(
