@@ -191,7 +191,8 @@ export function normalizeInsightInput(raw = {}) {
     locale: raw.locale || 'tr-TR',
     strengths: raw.strengths || [],
     weaknesses: raw.weaknesses || raw.cautions || [],
-    warnings: raw.warnings || []
+    warnings: raw.warnings || [],
+    marketAssessment: String(raw.marketAssessment || '').trim()
   };
 }
 
@@ -247,8 +248,16 @@ export function buildInsightInputFromIntelligence(category, context = {}, intell
     planTier: extras.planTier || 'guest',
     locale: extras.locale || 'tr-TR',
     strengths: extras.strengths,
-    weaknesses: extras.weaknesses
+    weaknesses: extras.weaknesses,
+    marketAssessment: extras.marketAssessment || context.marketAssessment || ''
   });
+}
+
+function appendMarketAssessment(summary, input) {
+  const market = String(input.marketAssessment || '').trim();
+  if (!market) return summary;
+  if (summary.includes(market.slice(0, 40))) return summary;
+  return `${summary} ${market}`.trim();
 }
 
 function buildAutoInsight(input) {
@@ -306,7 +315,12 @@ function buildAutoInsight(input) {
       'Satın almadan önce kredi vadesi ile sigorta teklifini aynı tabloda karşılaştırın.'
     : 'Ekspertiz, garanti kapsamı ve güncel sigorta tekliflerini lider modele göre doğrulayın.';
 
-  return { summary: summaryParts.join(' '), why, risk, nextStep };
+  return {
+    summary: appendMarketAssessment(summaryParts.join(' '), input),
+    why,
+    risk,
+    nextStep
+  };
 }
 
 function buildKonutInsight(input) {
@@ -358,7 +372,12 @@ function buildKonutInsight(input) {
       'Kira sözleşmesi, depozito ve aidat kalemlerini yıllık toplam maliyetle karşılaştırın.'
     : 'Kredi ön onayı ve bölge emsali (en az 3 ilan) ile teklif aşamasına geçmeden önce ekspertiz planlayın.';
 
-  return { summary, why, risk, nextStep };
+  return {
+    summary: appendMarketAssessment(summary, input),
+    why,
+    risk,
+    nextStep
+  };
 }
 
 function buildTatilInsight(input) {
@@ -406,7 +425,12 @@ function buildTatilInsight(input) {
       'Tarihleri bir hafta kaydırarak fiyat farkını kontrol edin; iptal koşullarını okuyun.'
     : 'Konaklama yorumları, ulaşım bağlantısı ve gizli masrafları toplam bütçe tablosuna ekleyin.';
 
-  return { summary, why, risk, nextStep };
+  return {
+    summary: appendMarketAssessment(summary, input),
+    why,
+    risk,
+    nextStep
+  };
 }
 
 function buildFinansmanInsight(input) {
@@ -443,7 +467,12 @@ function buildFinansmanInsight(input) {
   const nextStep =
     'En az iki kurumdan EYM dahil teklif alın; vade ve erken ödeme senaryolarını aynı tabloda karşılaştırın.';
 
-  return { summary, why, risk, nextStep };
+  return {
+    summary: appendMarketAssessment(summary, input),
+    why,
+    risk,
+    nextStep
+  };
 }
 
 function buildKaskoInsight(input) {
@@ -926,8 +955,11 @@ export function buildInsightProxyPrompt(input, insight) {
     `Neden: ${base.why}`,
     `Risk: ${base.risk}`,
     `Skor: ${formatScoreOutOf100(i.scores?.decision)}`,
+    i.marketAssessment ? `Piyasa değerlendirmesi (TCMB EVDS): ${i.marketAssessment}` : '',
     'Rakam yazacaksan yalnızca verilen bağlamdaki tutarları kullan; yeni rakam uydurma.'
-  ].join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 /**

@@ -26,6 +26,11 @@ import {
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
 import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
+import {
+  buildEvdsMarketAnalysis,
+  fetchEvdsRatesForEngine,
+  renderKonutFinancingOutlookHtml
+} from '../evds/evds-market-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -324,9 +329,15 @@ export function buildKonutResultsV2Payload({
   state = {},
   metrics = {},
   scenarios = [],
-  attention = []
+  attention = [],
+  evdsRates = null
 }) {
-  const intel = buildDecisionIntelligenceResult('konut', state, metrics, { scenarios, attention });
+  const intel = buildDecisionIntelligenceResult('konut', state, metrics, {
+    scenarios,
+    attention,
+    evdsRates: evdsRates || undefined
+  });
+  const evdsAnalysis = intel.context?.evdsAnalysis || buildEvdsMarketAnalysis('konut', evdsRates || {});
   const decisionScore = intel.decisionScore;
   const confidenceScore = intel.confidenceScore;
   const riskAnalysis = intel.riskAnalysis;
@@ -347,6 +358,7 @@ export function buildKonutResultsV2Payload({
     planTier,
     strengths,
     weaknesses,
+    marketAssessment: intel.context?.marketAssessment || '',
     costs: {
       budget: state.totalBudget,
       monthlyPayment: totalCost.monthlyPayment,
@@ -405,7 +417,9 @@ export function buildKonutResultsV2Payload({
     purpose: state.purchasePurpose || '—',
     planTier,
     insightInput,
-    insight: buildDecisionInsight(insightInput)
+    insight: buildDecisionInsight(insightInput),
+    evdsAnalysis,
+    evdsMarketHtml: renderKonutFinancingOutlookHtml(evdsAnalysis, escapeHtml)
   };
 }
 
@@ -457,6 +471,8 @@ function renderKonutResultsV2Html(model) {
       </div>
 
       ${costNote}
+
+      ${model.evdsMarketHtml || ''}
 
       <div class="ib-results-economic-mount konut-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
 
@@ -564,7 +580,14 @@ export async function mountKonutResultsV2({
 
   mountNode.querySelector('.konut-v2-root')?.remove();
 
-  const payload = buildKonutResultsV2Payload({ state, metrics, scenarios, attention });
+  const evdsSnapshot = await fetchEvdsRatesForEngine();
+  const payload = buildKonutResultsV2Payload({
+    state,
+    metrics,
+    scenarios,
+    attention,
+    evdsRates: evdsSnapshot?.rates || null
+  });
   const model = {
     ...payload,
     executiveSummary: '',
@@ -618,6 +641,7 @@ export async function mountKonutResultsV2({
       planTier: model.planTier,
       strengths: model.strengths,
       weaknesses: model.weaknesses,
+      marketAssessment: model.intelligence?.context?.marketAssessment || '',
       costs: model.totalCost
     }
   );

@@ -15,6 +15,11 @@ import {
   clampScore,
   resolveScoreLabel
 } from './results-engine.js';
+import {
+  applyEvdsToDecisionContext,
+  appendEvdsRiskItem,
+  buildEvdsMarketAnalysis
+} from '../evds/evds-market-engine.js';
 
 function safeNumber(value) {
   const n = Number(value);
@@ -338,6 +343,11 @@ export function computeDecisionScoreV3(category, context = {}) {
   const legacy = safeNumber(context.legacyScore);
   if (legacy > 0) {
     score = clampScore(Math.round(score * 0.55 + legacy * 0.45));
+  }
+
+  const evdsAdj = safeNumber(context.evdsScoreAdjustment);
+  if (evdsAdj !== 0 && context.evdsMarket?.hasData) {
+    score = clampScore(score + evdsAdj);
   }
 
   context.scoreFactors = factors;
@@ -773,7 +783,19 @@ export function buildDecisionIntelligenceResult(category, formData = {}, metrics
   const cat = normalizeCategory(category);
   const context = buildDecisionContext(cat, formData, metrics, extras);
 
-  const riskAnalysis = buildRiskAnalysisV3(cat, context);
+  let evdsAnalysis = extras.evdsAnalysis || null;
+  if (!evdsAnalysis && extras.evdsRates && ['finansman', 'konut', 'auto'].includes(cat)) {
+    evdsAnalysis = buildEvdsMarketAnalysis(cat, extras.evdsRates);
+  }
+  if (evdsAnalysis) {
+    applyEvdsToDecisionContext(cat, context, evdsAnalysis);
+    context.evdsAnalysis = evdsAnalysis;
+  }
+
+  let riskAnalysis = buildRiskAnalysisV3(cat, context);
+  if (evdsAnalysis) {
+    riskAnalysis = appendEvdsRiskItem(cat, riskAnalysis, evdsAnalysis, buildRiskItem);
+  }
   context.riskAnalysis = riskAnalysis;
 
   const decisionScore = computeDecisionScoreV3(cat, context);
@@ -816,6 +838,7 @@ export async function fetchExecutiveSummaryV3(category, context = {}, intelligen
     locale: options.locale || 'tr-TR',
     strengths: options.strengths,
     weaknesses: options.weaknesses,
+    marketAssessment: options.marketAssessment || context.marketAssessment || '',
     costs: options.costs
   });
 

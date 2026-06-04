@@ -28,6 +28,11 @@ import {
   renderScoreFactorsHtml
 } from '../features/results/decision-intelligence-engine.js';
 import { hydrateResultsEconomicIndicators } from '../features/results/results-economic-indicators.js';
+import {
+  buildEvdsMarketAnalysis,
+  fetchEvdsRatesForEngine,
+  renderAutoFxRiskHtml
+} from '../features/evds/evds-market-engine.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -166,6 +171,8 @@ function renderAutoResultsV2Html(model) {
         </article>
       </div>
 
+      ${model.evdsMarketHtml || ''}
+
       <div class="ib-results-economic-mount auto-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
 
       <div class="auto-v2-grid">
@@ -241,12 +248,16 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   const risk = computeRiskLevel({ budget, totalCost, riskItems: cautions });
 
+  const evdsSnapshot = await fetchEvdsRatesForEngine();
+  const evdsRates = evdsSnapshot?.rates || null;
+
   const intel = buildDecisionIntelligenceResult(
     'auto',
     formData,
     { topResult, budget, totalCost },
-    { topResult, results, budget, totalCost, cautions }
+    { topResult, results, budget, totalCost, cautions, evdsRates: evdsRates || undefined }
   );
+  const evdsAnalysis = intel.context?.evdsAnalysis || buildEvdsMarketAnalysis('auto', evdsRates || {});
   const decisionScore = intel.decisionScore;
   const confidenceScore = intel.confidenceScore;
 
@@ -263,6 +274,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     planTier,
     strengths,
     weaknesses: cautions,
+    marketAssessment: intel.context?.marketAssessment || '',
     costs: { budget, tco12: totalCost, vehiclePrice }
   });
 
@@ -289,7 +301,9 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     nextSteps: intel.nextSteps.length ? intel.nextSteps : buildNextSteps({ riskLevel: risk.label, budgetFit }),
     usage: String(formData?.usage || ''),
     budgetLabel: budget ? formatTryAmount(budget) : '—',
-    totalCostLabelRaw: totalCost ? formatTryAmount(totalCost) : '—'
+    totalCostLabelRaw: totalCost ? formatTryAmount(totalCost) : '—',
+    evdsAnalysis,
+    evdsMarketHtml: renderAutoFxRiskHtml(evdsAnalysis, escapeHtml)
   };
 
   model.pdfReportData = buildPdfReportData({
@@ -343,6 +357,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     planTier,
     strengths,
     weaknesses: cautions,
+    marketAssessment: intel.context?.marketAssessment || '',
     costs: { budget, tco12: totalCost, vehiclePrice }
   });
 
