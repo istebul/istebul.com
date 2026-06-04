@@ -16,10 +16,12 @@ import { escapeHtml } from '../../core/security.js';
 const DEFAULT_COVER = '/assets/images/og-image.svg';
 
 function postHref(post) {
+  const slug = String(post?.slug || '').trim();
+  if (slug) return blogPostPath(slug);
   if (String(post?.id || '').startsWith('seed-')) {
     return `/blog?kategori=${encodeURIComponent(post.category || 'auto')}`;
   }
-  return blogPostPath(post.slug);
+  return '/blog/';
 }
 
 function coverUrl(post) {
@@ -31,7 +33,7 @@ function renderDigestLead(post) {
   const href = postHref(post);
   const excerpt = post.excerpt || excerptText(post.body, 72);
   return `
-    <a class="ib-guides-digest-lead" href="${escapeHtml(href)}" data-native-route>
+    <a class="ib-guides-digest-lead" href="${escapeHtml(href)}" data-blog-post-link>
       <span class="ib-guides-digest-lead-thumb">
         <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="80" height="60">
       </span>
@@ -47,7 +49,7 @@ function renderFeaturedCard(post, ctaHref, ctaLabel) {
   const href = postHref(post);
   const excerpt = post.excerpt || excerptText(post.body, 120);
   return `
-    <a class="ib-guides-featured" href="${escapeHtml(href)}" data-native-route>
+    <a class="ib-guides-featured" href="${escapeHtml(href)}" data-blog-post-link>
       <span class="ib-guides-featured-media">
         <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="640" height="360">
       </span>
@@ -65,7 +67,7 @@ function renderCompactItem(post) {
   const href = postHref(post);
   const excerpt = post.excerpt || excerptText(post.body, 90);
   return `
-    <a class="ib-guides-compact" href="${escapeHtml(href)}" data-native-route>
+    <a class="ib-guides-compact" href="${escapeHtml(href)}" data-blog-post-link>
       <span class="ib-guides-compact-thumb">
         <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="96" height="72">
       </span>
@@ -91,7 +93,7 @@ function renderStripRow(post) {
   const href = postHref(post);
   const excerpt = post.excerpt || excerptText(post.body, 58);
   return `
-    <a class="ib-guides-strip-row" href="${escapeHtml(href)}" data-native-route>
+    <a class="ib-guides-strip-row" href="${escapeHtml(href)}" data-blog-post-link>
       <span class="ib-guides-strip-thumb">
         <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="64" height="48">
       </span>
@@ -173,11 +175,11 @@ export function renderCategoryGuidesInner({
           <h2 id="${escapeHtml(mountId)}-title">${escapeHtml(title)}</h2>
           ${lead ? `<p class="ib-guides-lead">${escapeHtml(lead)}</p>` : ''}
         </div>
-        <a class="ib-guides-all ib-guides-all--header" href="${escapeHtml(allHref)}" data-guides-all-link data-native-route>${escapeHtml(allLinkLabel)}</a>
+        <a class="ib-guides-all ib-guides-all--header" href="${escapeHtml(allHref)}" data-guides-all-link data-guides-all-href="${escapeHtml(allHref)}" data-native-route>${escapeHtml(allLinkLabel)}</a>
       </header>
       ${tabs}
       <div class="ib-guides-body" data-guides-body aria-live="polite">Yükleniyor…</div>
-      ${layout === 'strip' ? '' : `<footer class="ib-guides-footer"><a class="ib-guides-all" href="${escapeHtml(allHref)}" data-guides-all-link data-native-route>${escapeHtml(allLinkLabel)}</a></footer>`}
+      ${layout === 'strip' ? '' : `<footer class="ib-guides-footer"><a class="ib-guides-all" href="${escapeHtml(allHref)}" data-guides-all-link data-guides-all-href="${escapeHtml(allHref)}" data-native-route>${escapeHtml(allLinkLabel)}</a></footer>`}
     </div>`;
 }
 
@@ -225,6 +227,11 @@ export async function hydrateCategoryGuides(root = document, options = {}) {
 
   const setAllLink = (categoryId) => {
     if (!allLink) return;
+    const pinned = allLink.dataset.guidesAllHref || '';
+    if (pinned.startsWith('/#') || pinned === '/') {
+      allLink.href = pinned;
+      return;
+    }
     allLink.href = `/blog?kategori=${encodeURIComponent(categoryId)}`;
   };
 

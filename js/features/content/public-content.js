@@ -260,5 +260,7 @@ export function renderContentEmpty(message) {
 }
 
 export function blogPostPath(slug) {
-  return `/blog/${encodeURIComponent(String(slug || '').trim())}`;
+  const safe = encodeURIComponent(String(slug || '').trim());
+  if (!safe) return '/blog/';
+  return `/blog/${safe}/`;
 }
