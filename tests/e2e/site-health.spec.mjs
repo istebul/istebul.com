@@ -103,7 +103,7 @@ test.describe('Site health — readability and layout', () => {
 
     await expect(page.locator('#kasko-results')).toBeVisible();
     await expect(page.locator('#kasko-results .kasko-v2-root')).toBeVisible();
-    await expect(page.locator('#kasko-results .sigorta-v2-exec-body')).toContainText(/Kasko|skor|teminat/i);
+    await expect(page.locator('#kasko-results .ib-insight-blocks')).toContainText(/karar|skor|teminat|risk/i);
     await expect(page.locator('#kasko-wizard')).toBeHidden();
   });
 

@@ -55,6 +55,22 @@ test('buildAssistantInsightInput enriches finansman costs', () => {
   assert.equal(input.answers.term_months, '36');
 });
 
+test('bootstrapAutoFromAssistantQuery applies usage budget fuel and body', async () => {
+  const { bootstrapAutoFromAssistantQuery } = await import(
+    '../../js/features/assistant/assistant-category-bridge.js'
+  );
+  const state = { budget: '', usage: '', fuel: '', body: '' };
+  bootstrapAutoFromAssistantQuery(
+    state,
+    new URLSearchParams('budget=1800000&usage=longRoad&fuel=hybrid&body=suv')
+  );
+  assert.equal(state.usage, 'long');
+  assert.equal(state.budget, 'custom');
+  assert.equal(state.budget_custom, '1800000');
+  assert.equal(state.fuel, 'hybrid');
+  assert.equal(state.body, 'suv');
+});
+
 test('buildVerticalContinueHref carries finansman query params', () => {
   const href = buildVerticalContinueHref('finansman', {
     purpose: 'konut',
