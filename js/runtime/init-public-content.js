@@ -6,7 +6,7 @@ import {
   renderCampaignsPage
 } from '../features/content/content-hub-ui.js';
 import { blogCategoryFromQuery } from '../features/content/category-guides-ui.js';
-import { blogSlugFromPath, resolveContentRouteSurface, stripPathname } from './route-surface.js';
+import { resolveContentRouteSurface } from './route-surface.js';
 import { initCategoryGuidesHub } from './init-category-guides.js';
 
 export async function refreshPublicContentSurface(surfaceId) {
@@ -53,25 +53,7 @@ export function initPublicContentHub() {
   window.addEventListener('app:ready', run);
 
   document.addEventListener('click', (event) => {
-    const postLink = event.target.closest('a[data-blog-post-link], a[href^="/blog/"]');
-    if (postLink) {
-      try {
-        const path = stripPathname(new URL(postLink.href, window.location.origin).pathname);
-        if (blogSlugFromPath(path)) {
-          event.preventDefault();
-          if (window.app?.router?.navigate) {
-            window.app.router.navigate(postLink.getAttribute('href') || path);
-          } else {
-            window.history.pushState(null, '', postLink.getAttribute('href') || path);
-            run();
-          }
-          window.setTimeout(() => refreshPublicContentSurface('page-blog-post'), 0);
-          return;
-        }
-      } catch {
-        /* fall through */
-      }
-    }
+    if (event.target.closest('a[data-full-page]')) return;
 
     const link = event.target.closest('a[data-native-route], a[href^="/duyurular"], a[href^="/kampanyalar"], a[href^="/blog"]');
     if (!link) return;

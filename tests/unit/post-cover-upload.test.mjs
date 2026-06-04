@@ -50,12 +50,14 @@ describe('posts content admin', () => {
     assert.match(router, /data-native-route/);
   });
 
-  it('homepage news cards use data-blog-post-link and trailing-slash paths', () => {
+  it('homepage news cards use full-page post links with trailing slash', () => {
     const guides = fs.readFileSync(path.join(root, 'js/features/content/category-guides-ui.js'), 'utf8');
     const paths = fs.readFileSync(path.join(root, 'js/features/content/public-content.js'), 'utf8');
-    assert.match(guides, /data-blog-post-link/);
+    const router = fs.readFileSync(path.join(root, 'js/core/router.js'), 'utf8');
+    assert.match(guides, /data-full-page="1"/);
     assert.match(guides, /data-guides-all-href/);
     assert.match(paths, /return `\/blog\/\$\{safe\}\/`/);
+    assert.match(router, /data-full-page/);
   });
 
   it('verify-posts-content-type-schema script exists', () => {

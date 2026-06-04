@@ -16,10 +16,10 @@ function renderListCard({ kicker, title, excerpt, meta, href, cta = 'Oku' }) {
   return `
     <article class="ib-content-card">
       ${kicker ? `<span class="ib-content-card-kicker">${escapeHtml(kicker)}</span>` : ''}
-      <h3><a href="${escapeHtml(href)}">${escapeHtml(title)}</a></h3>
+      <h3><a href="${escapeHtml(href)}" data-full-page="1">${escapeHtml(title)}</a></h3>
       ${excerpt ? `<p>${escapeHtml(excerpt)}</p>` : ''}
       ${meta ? `<p class="ib-content-card-meta text-muted-sm">${escapeHtml(meta)}</p>` : ''}
-      <a class="ib-content-card-link" href="${escapeHtml(href)}">${escapeHtml(cta)} →</a>
+      <a class="ib-content-card-link" href="${escapeHtml(href)}" data-full-page="1">${escapeHtml(cta)} →</a>
     </article>`;
 }
 

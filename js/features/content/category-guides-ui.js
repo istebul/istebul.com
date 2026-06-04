@@ -33,7 +33,7 @@ function renderDigestLead(post) {
   const href = postHref(post);
   const excerpt = post.excerpt || excerptText(post.body, 72);
   return `
-    <a class="ib-guides-digest-lead" href="${escapeHtml(href)}" data-blog-post-link>
+    <a class="ib-guides-digest-lead" href="${escapeHtml(href)}" data-full-page="1">
       <span class="ib-guides-digest-lead-thumb">
         <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="80" height="60">
       </span>
@@ -49,7 +49,7 @@ function renderFeaturedCard(post, ctaHref, ctaLabel) {
   const href = postHref(post);
   const excerpt = post.excerpt || excerptText(post.body, 120);
   return `
-    <a class="ib-guides-featured" href="${escapeHtml(href)}" data-blog-post-link>
+    <a class="ib-guides-featured" href="${escapeHtml(href)}" data-full-page="1">
       <span class="ib-guides-featured-media">
         <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="640" height="360">
       </span>
@@ -67,7 +67,7 @@ function renderCompactItem(post) {
   const href = postHref(post);
   const excerpt = post.excerpt || excerptText(post.body, 90);
   return `
-    <a class="ib-guides-compact" href="${escapeHtml(href)}" data-blog-post-link>
+    <a class="ib-guides-compact" href="${escapeHtml(href)}" data-full-page="1">
       <span class="ib-guides-compact-thumb">
         <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="96" height="72">
       </span>
@@ -90,10 +90,24 @@ function renderEmptyState(categoryId) {
 }
 
 function renderStripRow(post) {
-  const href = postHref(post);
+  const slug = String(post?.slug || '').trim();
   const excerpt = post.excerpt || excerptText(post.body, 58);
+  if (!slug) {
+    return `
+    <div class="ib-guides-strip-row ib-guides-strip-row--no-link">
+      <span class="ib-guides-strip-thumb">
+        <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="64" height="48">
+      </span>
+      <span class="ib-guides-strip-text">
+        <span class="ib-guides-strip-kicker">${escapeHtml(getGuideCategory(post.category)?.label || 'Haber')}</span>
+        <strong>${escapeHtml(post.title)}</strong>
+        <span>${escapeHtml(excerpt)}</span>
+      </span>
+    </div>`;
+  }
+  const href = blogPostPath(slug);
   return `
-    <a class="ib-guides-strip-row" href="${escapeHtml(href)}" data-blog-post-link>
+    <a class="ib-guides-strip-row" href="${escapeHtml(href)}" data-full-page="1">
       <span class="ib-guides-strip-thumb">
         <img src="${escapeHtml(coverUrl(post))}" alt="" loading="lazy" decoding="async" width="64" height="48">
       </span>

@@ -101,6 +101,7 @@ export class Router {
 
             const link = e.target.closest('a[href^="/"]');
             if (!link) return;
+            if (link.hasAttribute('data-full-page')) return;
 
             const rawHref = link.getAttribute('href') || '/';
             if (link.hasAttribute('data-native-route')) {
