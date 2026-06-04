@@ -246,6 +246,11 @@ export async function hydrateCategoryGuides(root = document, options = {}) {
       allLink.href = pinned;
       return;
     }
+    // Keep "Tümü" on full blog list; only sync href when pinned to a category filter.
+    if (!/[?&]kategori=/.test(pinned) && /^\/blog\/?$/.test(pinned.split('?')[0])) {
+      allLink.href = '/blog';
+      return;
+    }
     allLink.href = `/blog?kategori=${encodeURIComponent(categoryId)}`;
   };
 

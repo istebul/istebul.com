@@ -12,7 +12,7 @@ const HOME_STRIP_OPTS = {
   defaultCategory: 'auto',
   layout: 'strip',
   allLinkLabel: 'Tümü',
-  allHref: '/#home-guides-strip'
+  allHref: '/blog'
 };
 
 function mountHomeGuidesStrip() {
