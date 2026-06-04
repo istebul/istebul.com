@@ -2,13 +2,13 @@
  * TCMB EVDS — server-side only. Requires env.TCMB_EVDS_API_KEY (never expose to browser).
  */
 
-/** EVDS 3 REST API (evds2 /service/evds/ redirects to HTML app shell). */
-export const EVDS_BASE_URL = 'https://evds3.tcmb.gov.tr/igmevdsms-dis/service/evds/';
+/** EVDS 3 REST API (evds2 redirects; /service/evds/ path returns 404/HTML). */
+export const EVDS_BASE_URL = 'https://evds3.tcmb.gov.tr/igmevdsms-dis/';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10_000;
 const MAX_RETRIES = 2;
 
-/** @see https://evds2.tcmb.gov.tr/ */
+/** @see https://evds3.tcmb.gov.tr/ */
 export const EVDS_SERIES = Object.freeze({
   USD_TRY: 'TP.DK.USD.A',
   EUR_TRY: 'TP.DK.EUR.A',
@@ -69,7 +69,7 @@ export function seriesCodeToColumn(seriesCode) {
 /**
  * Path-style EVDS URL (key via HTTP header since 2024-04-05).
  * Multi-series: join codes with `-` (e.g. TP.DK.USD.A-TP.DK.EUR.A).
- * @see https://evds3.tcmb.gov.tr/
+ * @see https://evds3.tcmb.gov.tr/igmevdsms-dis/
  */
 export function buildEvdsSeriesUrl(seriesCode, { startDate, endDate } = {}) {
   const params = new URLSearchParams({

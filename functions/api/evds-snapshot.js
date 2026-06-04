@@ -35,7 +35,7 @@ function buildSnapshotPayload(snapshot) {
     seriesDates: snapshot.seriesDates,
     attribution: {
       provider: 'TCMB EVDS',
-      url: 'https://evds2.tcmb.gov.tr/',
+      url: 'https://evds3.tcmb.gov.tr/',
       disclaimer:
         'Bilgilendirme amaçlı referans veriler; bağlayıcı teklif veya resmi kurum taahhüdü değildir.'
     }
@@ -105,7 +105,7 @@ export async function onRequestGet(context) {
       seriesDates: {},
       attribution: {
         provider: 'TCMB EVDS',
-        url: 'https://evds2.tcmb.gov.tr/',
+        url: 'https://evds3.tcmb.gov.tr/',
         disclaimer: 'Veri geçici olarak kullanılamıyor.'
       }
     };

@@ -71,8 +71,9 @@ test('buildEvdsSeriesUrl uses EVDS3 igmevdsms-dis path without API key', () => {
     startDate: '01-01-2026',
     endDate: '04-06-2026'
   });
-  assert.equal(EVDS_BASE_URL, 'https://evds3.tcmb.gov.tr/igmevdsms-dis/service/evds/');
+  assert.equal(EVDS_BASE_URL, 'https://evds3.tcmb.gov.tr/igmevdsms-dis/');
   assert.ok(url.startsWith(`${EVDS_BASE_URL}series=`));
+  assert.ok(!url.includes('/service/evds/'));
   assert.ok(url.includes('startDate=01-01-2026'));
   assert.ok(!url.includes('key='));
 });
@@ -256,7 +257,8 @@ test('fetchEvdsFxDebugProbe exposes safe FX upstream diagnostics without secrets
 
   assert.equal(debug.temporary, true);
   assert.deepEqual(debug.usedSeries, [EVDS_SERIES.USD_TRY, EVDS_SERIES.EUR_TRY]);
-  assert.ok(debug.evdsRequestUrlMasked.includes('igmevdsms-dis/service/evds/'));
+  assert.ok(debug.evdsRequestUrlMasked.includes('igmevdsms-dis/series='));
+  assert.ok(!debug.evdsRequestUrlMasked.includes('/service/evds/'));
   assert.ok(debug.evdsRequestUrlMasked.includes('series=TP.DK.USD.A-TP.DK.EUR.A'));
   assert.ok(!debug.evdsRequestUrlMasked.includes('key='));
   assert.equal(debug.evdsHttpStatus, 200);
