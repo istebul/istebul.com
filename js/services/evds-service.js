@@ -436,13 +436,18 @@ async function pullLiveSnapshot(apiKey, fetchImpl) {
   });
 }
 
+/** @param {{ TCMB_EVDS_API_KEY?: string, EVDS_API_KEY?: string }} env */
+export function resolveEvdsApiKey(env = {}) {
+  return String(env.TCMB_EVDS_API_KEY || env.EVDS_API_KEY || '').trim();
+}
+
 /**
  * Full snapshot with 24h cache and stale fallback.
- * @param {{ TCMB_EVDS_API_KEY?: string }} env
+ * @param {{ TCMB_EVDS_API_KEY?: string, EVDS_API_KEY?: string }} env
  * @param {{ fetchImpl?: typeof fetch, forceRefresh?: boolean }} [options]
  */
 export async function fetchEvdsSnapshot(env = {}, options = {}) {
-  const apiKey = String(env.TCMB_EVDS_API_KEY || '').trim();
+  const apiKey = resolveEvdsApiKey(env);
   const fetchImpl = options.fetchImpl || fetch;
 
   if (!apiKey) {
