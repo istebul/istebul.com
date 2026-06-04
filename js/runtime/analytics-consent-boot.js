@@ -15,21 +15,27 @@ export async function bootAnalyticsMeasurement() {
   if (!hasAnalyticsConsent() || measurementBooted) return;
   measurementBooted = true;
 
-  analytics.init();
-  initSiteAnalyticsPage();
+  console.info('[Consent]', readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT));
 
   try {
-    const { loadThirdPartyMeasurement } = await import('../core/third-party-analytics.js');
+    const { updateGa4ConsentGranted, loadThirdPartyMeasurement } = await import(
+      '../core/third-party-analytics.js'
+    );
+    updateGa4ConsentGranted();
     loadThirdPartyMeasurement();
   } catch {
     /* optional providers */
   }
+
+  analytics.init();
+  initSiteAnalyticsPage();
 
   document.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
 }
 
 export function acceptAnalyticsConsent() {
   writeStorageRaw(STORAGE_KEYS.COOKIE_CONSENT, 'accepted');
+  console.info('[Consent]', readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT));
   void bootAnalyticsMeasurement();
 }
 

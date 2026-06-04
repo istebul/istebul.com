@@ -8,6 +8,47 @@ function envValue(key) {
   return String(typeof window !== 'undefined' ? window.__env?.[key] || '' : '').trim();
 }
 
+export const GA4_GRANTED_CONSENT = Object.freeze({
+  analytics_storage: 'granted',
+  ad_storage: 'granted',
+  ad_user_data: 'granted',
+  ad_personalization: 'granted'
+});
+
+export function readCookieConsentRaw() {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
+  return (
+    localStorage.getItem('istebul_cookie_consent') ||
+    localStorage.getItem('istebu_cookie_consent')
+  );
+}
+
+/**
+ * Grant GA4 Consent Mode when cookie banner preference is accepted.
+ * Safe to call before or after gtag.js loads (queues in dataLayer).
+ */
+export function updateGa4ConsentGranted() {
+  const consent = readCookieConsentRaw();
+  console.info('[Consent]', consent);
+
+  if (consent !== 'accepted') return false;
+  if (typeof window === 'undefined' || typeof window.gtag !== 'function') return false;
+
+  window.gtag('consent', 'update', { ...GA4_GRANTED_CONSENT });
+  console.info('[GA4 Consent State Updated]');
+  return true;
+}
+
+function sendGa4PageView(measurementId) {
+  if (!measurementId || typeof window.gtag !== 'function') return;
+  window.gtag('event', 'page_view', {
+    page_location: window.location.href,
+    page_path: `${window.location.pathname}${window.location.search || ''}`,
+    page_title: document.title,
+    send_to: measurementId
+  });
+}
+
 function loadPlausible(domain) {
   if (document.querySelector('script[data-analytics-provider="plausible"]')) return;
   const script = document.createElement('script');
@@ -42,12 +83,9 @@ function loadGa4(measurementId) {
   if (!measurementId) return;
 
   if (typeof window.gtag === 'function') {
-    window.gtag('consent', 'update', {
-      analytics_storage: 'granted',
-      ad_storage: 'denied',
-      ad_user_data: 'denied',
-      ad_personalization: 'denied'
-    });
+    if (updateGa4ConsentGranted()) {
+      sendGa4PageView(measurementId);
+    }
     return;
   }
 
@@ -67,6 +105,7 @@ function loadGa4(measurementId) {
     ad_personalization: 'denied',
     wait_for_update: 500
   });
+  updateGa4ConsentGranted();
   window.gtag('config', measurementId, { anonymize_ip: true });
 
   const script = document.createElement('script');
@@ -81,6 +120,8 @@ function loadGa4(measurementId) {
  */
 export function loadThirdPartyMeasurement() {
   if (!analytics.hasConsent()) return;
+
+  updateGa4ConsentGranted();
 
   loadPlausible(envValue('PLAUSIBLE_DOMAIN') || 'istebul.com');
   loadCloudflareBeacon(envValue('CF_WEB_ANALYTICS_TOKEN'));

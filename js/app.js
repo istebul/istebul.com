@@ -4745,12 +4745,10 @@ document.addEventListener('click', (event) => {
 
     if (!accept && !decline) return;
 
-    try {
-        writeStorageRaw(STORAGE_KEYS.COOKIE_CONSENT, accept ? 'accepted' : 'declined');
-    } catch {}
-
     if (accept) {
-        void bootAnalyticsMeasurement();
+        acceptAnalyticsConsent();
+    } else {
+        declineAnalyticsConsent();
     }
 
     const consent = document.getElementById('cookie-consent');

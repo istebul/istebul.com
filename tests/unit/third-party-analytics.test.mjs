@@ -34,12 +34,28 @@ describe('third-party-analytics', () => {
     assert.match(src, /www\.clarity\.ms/);
   });
 
-  it('grants GA4 consent on accept when gtag already in head', () => {
+  it('grants full GA4 consent on accept when gtag already in head', () => {
     const src = fs.readFileSync(
       path.join(process.cwd(), 'js/core/third-party-analytics.js'),
       'utf8'
     );
     assert.match(src, /consent', 'update'/);
     assert.match(src, /analytics_storage: 'granted'/);
+    assert.match(src, /ad_storage: 'granted'/);
+    assert.match(src, /ad_user_data: 'granted'/);
+    assert.match(src, /ad_personalization: 'granted'/);
+    assert.match(src, /console\.info\('\[Consent\]'/);
+    assert.match(src, /console\.info\('\[GA4 Consent State Updated\]'\)/);
+    assert.match(src, /page_view/);
+  });
+
+  it('boots GA4 consent before first-party analytics init', () => {
+    const boot = fs.readFileSync(
+      path.join(process.cwd(), 'js/runtime/analytics-consent-boot.js'),
+      'utf8'
+    );
+    const updateIndex = boot.indexOf('updateGa4ConsentGranted');
+    const analyticsInitIndex = boot.indexOf('analytics.init()');
+    assert.ok(updateIndex > -1 && analyticsInitIndex > updateIndex);
   });
 });
