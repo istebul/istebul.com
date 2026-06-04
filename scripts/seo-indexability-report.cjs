@@ -48,6 +48,7 @@ function canonicalIssues(files) {
     'tatil/index.html',
     'finans/index.html',
     'metodoloji/index.html',
+    'veri-kaynaklari/index.html',
     'sigorta/index.html',
     'kasko/index.html'
   ];

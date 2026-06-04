@@ -467,6 +467,8 @@ function renderSeoFooter({ site, guideLinks }) {
         <h2>Kurumsal</h2>
         <ul>
           <li><a href="/hakkimizda.html">Hakkımızda</a></li>
+          <li><a href="/metodoloji/">Metodoloji</a></li>
+          <li><a href="/veri-kaynaklari/">Veri kaynakları</a></li>
           <li><a href="/iletisim.html">İletişim</a></li>
           <li><a href="/yardim.html">Yardım merkezi</a></li>
           <li><a href="/gizlilik.html">Gizlilik</a></li>
@@ -490,6 +492,112 @@ const GUIDE_CTAS = {
   'elektrikli-arac-rehberi': { href: '/auto/', label: 'Araç analizini başlat' },
   'ikinci-el-rehberi': { href: '/auto/', label: 'Araç analizini başlat' }
 };
+
+function formatDataSourceStatus(status) {
+  const map = {
+    active: { label: 'Aktif', className: 'is-active' },
+    planned: { label: 'Planlanan', className: 'is-planned' }
+  };
+  return map[status] || { label: 'Bilinmiyor', className: '' };
+}
+
+function renderDataSourceCategories(categories) {
+  if (!categories?.length) return '';
+  return `<ul class="seo-data-source-categories">${categories
+    .map((cat) => `<li>${escapeHtml(cat)}</li>`)
+    .join('')}</ul>`;
+}
+
+function renderDataSourcesCards(sources = []) {
+  const cards = (sources || [])
+    .map((source) => {
+      const status = formatDataSourceStatus(source.status);
+      const categories = renderDataSourceCategories(source.categories);
+      const official = source.officialUrl
+        ? `<p><a href="${escapeHtml(source.officialUrl)}" rel="noopener noreferrer" target="_blank">Resmi web sitesi →</a></p>`
+        : '';
+      const license = source.licenseNote
+        ? `<p class="seo-data-source-note">${escapeHtml(source.licenseNote)}</p>`
+        : '';
+      const access = source.accessMode
+        ? `<dt>Erişim</dt><dd>${escapeHtml(source.accessMode)}</dd>`
+        : '';
+
+      return `<article class="seo-data-source-card" id="kaynak-${escapeHtml(source.id)}" data-source-id="${escapeHtml(source.id)}">
+        <header class="seo-data-source-card__head">
+          <h2>${escapeHtml(source.name)}</h2>
+          <span class="seo-data-source-badge seo-data-source-badge--${escapeHtml(status.className)}">${escapeHtml(status.label)}</span>
+        </header>
+        <p class="seo-data-source-purpose">${escapeHtml(source.purpose)}</p>
+        <h3 class="seo-data-source-subhead">Veri kategorileri</h3>
+        ${categories}
+        <dl class="seo-data-source-meta">
+          <dt>Son güncelleme (platform)</dt>
+          <dd><time datetime="${escapeHtml(source.lastUpdated)}">${escapeHtml(source.lastUpdated)}</time></dd>
+          ${access}
+        </dl>
+        ${official}
+        ${license}
+      </article>`;
+    })
+    .join('\n');
+
+  return `<section class="seo-section seo-data-sources-grid" aria-labelledby="data-sources-cards-title">
+    <h2 id="data-sources-cards-title">Kayıtlı veri kaynakları</h2>
+    <p class="seo-data-sources-lead">Kamuya açık kurumlar ve gelecekteki lisanslı iş ortağı beslemeleri — karar motoru referansları.</p>
+    <div class="seo-data-sources-grid__inner">${cards}</div>
+  </section>`;
+}
+
+function renderDataSourcesDisclaimer(disclaimer = {}) {
+  const paragraphs = (disclaimer.paragraphs || [])
+    .map((p) => `<p>${escapeHtml(p)}</p>`)
+    .join('\n');
+  const bullets = (disclaimer.bullets || []).length
+    ? `<ul class="seo-bullets">${disclaimer.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}</ul>`
+    : '';
+
+  return `<section class="seo-section seo-data-disclaimer" id="veri-sorumluluk" aria-labelledby="data-disclaimer-title">
+    <h2 id="data-disclaimer-title">${escapeHtml(disclaimer.heading || 'Veri kullanımı ve sorumluluk')}</h2>
+    ${paragraphs}
+    ${bullets}
+  </section>`;
+}
+
+function dataSourcesJsonLd(site, page) {
+  const base = site.baseUrl.replace(/\/$/, '');
+  const orgId = `${base}/#organization`;
+  const items = [];
+
+  (page.sources || []).forEach((source) => {
+    const providerOrg = {
+      '@type': 'Organization',
+      '@id': `${base}/veri-kaynaklari/#org-${source.id}`,
+      name: source.name,
+      url: source.officialUrl || `${base}/veri-kaynaklari/`
+    };
+    items.push(providerOrg);
+
+    items.push({
+      '@type': 'Dataset',
+      '@id': `${base}/veri-kaynaklari/#dataset-${source.id}`,
+      name: source.name,
+      description: source.purpose,
+      url: source.officialUrl || `${base}/veri-kaynaklari/#kaynak-${source.id}`,
+      dateModified: source.lastUpdated,
+      keywords: (source.categories || []).join(', '),
+      creator: { '@id': providerOrg['@id'] },
+      publisher: { '@id': orgId },
+      isAccessibleForFree: source.providerType === 'public',
+      license: source.licenseNote || undefined,
+      distribution: source.officialUrl
+        ? [{ '@type': 'DataDownload', contentUrl: source.officialUrl, encodingFormat: 'text/html' }]
+        : undefined
+    });
+  });
+
+  return items;
+}
 
 function renderContactCards() {
   return `<section class="seo-section seo-contact-grid" aria-label="İletişim kanalları">
@@ -546,7 +654,7 @@ function renderHelpFaqSection() {
   </section>`;
 }
 
-function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, kicker, extraHtml }) {
+function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, kicker, extraHtml, jsonLdExtra }) {
   const base = site.baseUrl;
   const jsonLd = [
     breadcrumbSchema(base, breadcrumbs),
@@ -559,6 +667,9 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
   ];
   const faq = faqSchema(page.faqs);
   if (faq) jsonLd.push(faq);
+  if (jsonLdExtra) {
+    jsonLd.push(...(Array.isArray(jsonLdExtra) ? jsonLdExtra : [jsonLdExtra]));
+  }
 
   const guideSlug = slugFromGuidePath(path);
   const standardBlocks = renderGuideStandardBlocks(guideSlug);
@@ -912,7 +1023,41 @@ function buildSeoPages(distDir) {
   buildCorporateRichPages(distDir, site);
   injectCorporateMeta(distDir);
   buildMethodologyPage(distDir, site);
+  buildDataSourcesPage(distDir, site);
   return { site, landingConfig, hubsConfig, topGuides, guideWordCounts: wordCounts };
+}
+
+function buildDataSourcesPage(distDir, site) {
+  const page = loadJson('data/seo/data-sources-page.json');
+  const pathName = '/veri-kaynaklari/';
+  const breadcrumbs = [
+    { name: 'Ana sayfa', path: '/' },
+    { name: 'Veri kaynakları', path: pathName }
+  ];
+  const relatedLinks = [
+    { href: '/metodoloji/', label: 'Metodoloji' },
+    { href: '/hakkimizda.html', label: 'Hakkımızda' },
+    { href: '/gizlilik.html', label: 'Gizlilik' },
+    { href: '/auto/', label: 'Ücretsiz analiz' }
+  ];
+  const extraHtml = `${renderDataSourcesCards(page.sources)}${renderDataSourcesDisclaimer(page.disclaimer)}`;
+  const html = renderContentPage({
+    site,
+    page,
+    path: pathName,
+    breadcrumbs,
+    relatedLinks,
+    cta: { href: '/metodoloji/', label: 'Metodolojiyi incele' },
+    kicker: 'Şeffaflık · Veri kaynakları',
+    extraHtml,
+    jsonLdExtra: dataSourcesJsonLd(site, page)
+  });
+
+  const outDir = path.join(distDir, 'veri-kaynaklari');
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, 'index.html'), html);
+  fs.mkdirSync(path.join(root, 'veri-kaynaklari'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'veri-kaynaklari', 'index.html'), html);
 }
 
 function buildMethodologyPage(distDir, site) {
@@ -923,6 +1068,7 @@ function buildMethodologyPage(distDir, site) {
     { name: 'Metodoloji', path: pathName }
   ];
   const relatedLinks = [
+    { href: '/veri-kaynaklari/', label: 'Veri kaynakları' },
     { href: '/auto/', label: 'Auto analiz' },
     { href: '/rehber/tco-rehberi/', label: 'TCO rehberi' },
     { href: '/karar-asistani/', label: 'Karar asistanı' }
@@ -954,7 +1100,7 @@ function buildMethodologyPage(distDir, site) {
 function generateSitemap(distDir, { site, landingConfig, hubsConfig, blogPosts = [] }) {
   const urls = [...site.staticUrls];
   const localePrefixes = ['', '/en', '/de', '/ar', '/it', '/fr', '/es', '/ja', '/zh'];
-  const localizedPaths = new Set(['/', '/auto/', '/metodoloji/', '/konut/', '/tatil/', '/finans/', '/planlar', '/blog', '/duyurular', '/kampanyalar', '/hakkimizda.html', '/iletisim.html', '/en/', '/de/', '/ar/']);
+  const localizedPaths = new Set(['/', '/auto/', '/metodoloji/', '/veri-kaynaklari/', '/konut/', '/tatil/', '/finans/', '/planlar', '/blog', '/duyurular', '/kampanyalar', '/hakkimizda.html', '/iletisim.html', '/en/', '/de/', '/ar/']);
 
   hubsConfig.hubs.forEach((h) => {
     urls.push({ loc: h.path, priority: '0.85', changefreq: 'weekly' });
@@ -1049,6 +1195,7 @@ module.exports = {
   absoluteUrl,
   buildSeoPages,
   buildMethodologyPage,
+  buildDataSourcesPage,
   generateSitemap,
   generateRobots,
   renderContentPage,
