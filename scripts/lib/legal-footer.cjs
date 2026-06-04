@@ -12,7 +12,7 @@ const LEGAL_INLINE_LINKS_HTML = `<a href="/gizlilik.html">Gizlilik</a> · <a hre
 const CORPORATE_FOOTER_NAV_LINKS_HTML = `
       <a href="/hakkimizda.html">Hakkımızda</a>
       <a href="/metodoloji/">Metodoloji</a>
-      <a href="/veri-kaynaklari/">Veri kaynakları</a>
+      <a href="/veri-kaynaklari/">Veri Kaynakları</a>
       <a href="/iletisim.html">İletişim</a>
       <a href="/gizlilik.html">Gizlilik</a>
       <a href="/kvkk.html">${KVKK_VISITOR_LABEL}</a>

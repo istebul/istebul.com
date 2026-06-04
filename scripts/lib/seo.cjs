@@ -63,7 +63,7 @@ function absoluteUrl(baseUrl, pathname) {
   return `${base}${p}`;
 }
 
-function renderHead({ site, title, description, canonicalPath, jsonLdExtra }) {
+function renderHead({ site, title, description, canonicalPath, jsonLdExtra, ogType = 'article' }) {
   const base = site.baseUrl;
   const canonical = absoluteUrl(base, canonicalPath);
   const ogImage = absoluteUrl(base, site.defaultOgImage);
@@ -102,7 +102,7 @@ function renderHead({ site, title, description, canonicalPath, jsonLdExtra }) {
   <meta property="og:site_name" content="${escapeHtml(site.siteName)}">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
-  <meta property="og:type" content="article">
+  <meta property="og:type" content="${escapeHtml(ogType)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
   <meta property="og:image" content="${escapeHtml(ogImage)}">
   <meta name="twitter:card" content="summary_large_image">
@@ -153,6 +153,22 @@ function articleSchema(base, { title, description, path, dateModified }) {
     author: { '@id': `${base}/#organization` },
     publisher: { '@id': `${base}/#organization` },
     mainEntityOfPage: absoluteUrl(base, path)
+  };
+}
+
+function webPageSchema(base, { name, description, path, dateModified }) {
+  const pageUrl = absoluteUrl(base, path);
+  return {
+    '@type': 'WebPage',
+    '@id': `${pageUrl}#webpage`,
+    url: pageUrl,
+    name,
+    description,
+    inLanguage: 'tr-TR',
+    dateModified: dateModified || SEO_BUILD_DATE,
+    isPartOf: { '@id': `${base}/#website` },
+    about: { '@id': `${base}/#organization` },
+    publisher: { '@id': `${base}/#organization` }
   };
 }
 
@@ -468,7 +484,7 @@ function renderSeoFooter({ site, guideLinks }) {
         <ul>
           <li><a href="/hakkimizda.html">Hakkımızda</a></li>
           <li><a href="/metodoloji/">Metodoloji</a></li>
-          <li><a href="/veri-kaynaklari/">Veri kaynakları</a></li>
+          <li><a href="/veri-kaynaklari/">Veri Kaynakları</a></li>
           <li><a href="/iletisim.html">İletişim</a></li>
           <li><a href="/yardim.html">Yardım merkezi</a></li>
           <li><a href="/gizlilik.html">Gizlilik</a></li>
@@ -508,11 +524,37 @@ function renderDataSourceCategories(categories) {
     .join('')}</ul>`;
 }
 
+function renderDataSourceCategoryVerticals(verticals = []) {
+  if (!verticals?.length) return '';
+  return `<div class="seo-data-source-verticals">
+    <h3 class="seo-data-source-subhead">Dikey ilişkileri</h3>
+    <ul class="seo-data-source-verticals-list">
+      ${verticals
+        .map(
+          (row) => `<li class="seo-data-source-verticals-item">
+        <strong>${escapeHtml(row.category)}</strong>
+        <span class="seo-data-source-verticals-meta">
+          <a href="${escapeHtml(row.verticalHref || '/')}">${escapeHtml(row.vertical)}</a>
+          — ${escapeHtml(row.note)}
+        </span>
+      </li>`
+        )
+        .join('')}
+    </ul>
+  </div>`;
+}
+
+function renderDataSourcesTrustMessage(message) {
+  if (!message) return '';
+  return `<p class="seo-trust-banner" role="note">${escapeHtml(message)}</p>`;
+}
+
 function renderDataSourcesCards(sources = []) {
   const cards = (sources || [])
     .map((source) => {
       const status = formatDataSourceStatus(source.status);
       const categories = renderDataSourceCategories(source.categories);
+      const verticals = renderDataSourceCategoryVerticals(source.categoryVerticals);
       const official = source.officialUrl
         ? `<p><a href="${escapeHtml(source.officialUrl)}" rel="noopener noreferrer" target="_blank">Resmi web sitesi →</a></p>`
         : '';
@@ -531,6 +573,7 @@ function renderDataSourcesCards(sources = []) {
         <p class="seo-data-source-purpose">${escapeHtml(source.purpose)}</p>
         <h3 class="seo-data-source-subhead">Veri kategorileri</h3>
         ${categories}
+        ${verticals}
         <dl class="seo-data-source-meta">
           <dt>Son güncelleme (platform)</dt>
           <dd><time datetime="${escapeHtml(source.lastUpdated)}">${escapeHtml(source.lastUpdated)}</time></dd>
@@ -585,7 +628,9 @@ function dataSourcesJsonLd(site, page) {
       description: source.purpose,
       url: source.officialUrl || `${base}/veri-kaynaklari/#kaynak-${source.id}`,
       dateModified: source.lastUpdated,
-      keywords: (source.categories || []).join(', '),
+      keywords: [...(source.categories || []), ...(source.categoryVerticals || []).map((v) => v.category)]
+        .filter(Boolean)
+        .join(', '),
       creator: { '@id': providerOrg['@id'] },
       publisher: { '@id': orgId },
       isAccessibleForFree: source.providerType === 'public',
@@ -656,15 +701,26 @@ function renderHelpFaqSection() {
 
 function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, kicker, extraHtml, jsonLdExtra }) {
   const base = site.baseUrl;
-  const jsonLd = [
-    breadcrumbSchema(base, breadcrumbs),
-    articleSchema(base, {
-      title: page.title,
-      description: page.description,
-      path,
-      dateModified: SEO_BUILD_DATE
-    })
-  ];
+  const jsonLd = [breadcrumbSchema(base, breadcrumbs)];
+  if (page.schemaProfile === 'data-sources') {
+    jsonLd.push(
+      webPageSchema(base, {
+        name: page.h1,
+        description: page.description,
+        path,
+        dateModified: SEO_BUILD_DATE
+      })
+    );
+  } else {
+    jsonLd.push(
+      articleSchema(base, {
+        title: page.title,
+        description: page.description,
+        path,
+        dateModified: SEO_BUILD_DATE
+      })
+    );
+  }
   const faq = faqSchema(page.faqs);
   if (faq) jsonLd.push(faq);
   if (jsonLdExtra) {
@@ -713,12 +769,14 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
     .map((b) => `<li>${escapeHtml(b)}</li>`)
     .join('');
 
+  const headOgType = page.schemaProfile === 'data-sources' ? 'website' : 'article';
+
   return `<!DOCTYPE html>
 <html lang="tr" class="ib-ds-v4 ib-premium-v7">
 <head>
-  ${renderHead({ site, title: page.title, description: page.description, canonicalPath: path, jsonLdExtra: jsonLd })}
+  ${renderHead({ site, title: page.title, description: page.description, canonicalPath: path, jsonLdExtra: jsonLd, ogType: headOgType })}
 </head>
-<body class="seo-page${page.isFooterGuide ? ' seo-page--guide-v2' : ''}">
+<body class="seo-page${page.isFooterGuide ? ' seo-page--guide-v2' : ''}${page.schemaProfile === 'data-sources' ? ' seo-page--data-sources' : ''}">
   ${renderSeoNav()}
   <main class="seo-main">
     <nav class="seo-breadcrumb" aria-label="Breadcrumb">${crumbs}</nav>
@@ -727,6 +785,7 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
       <article class="seo-article-body">
       <p class="seo-kicker">${escapeHtml(kicker || 'Türkiye · Karar rehberi')}</p>
       <h1>${escapeHtml(page.h1)}</h1>
+      ${page.trustMessage ? renderDataSourcesTrustMessage(page.trustMessage) : ''}
       ${page.isFooterGuide ? renderArticleMeta(page, path) : ''}
       ${page.isFooterGuide ? '' : `<p class="seo-lead">${escapeHtml(page.intro)}</p>`}
       ${page.isFooterGuide ? renderSummaryBox(page) : ''}
@@ -1043,7 +1102,10 @@ function buildDataSourcesPage(distDir, site) {
   const extraHtml = `${renderDataSourcesCards(page.sources)}${renderDataSourcesDisclaimer(page.disclaimer)}`;
   const html = renderContentPage({
     site,
-    page,
+    page: {
+      ...page,
+      schemaProfile: page.schemaProfile || 'data-sources'
+    },
     path: pathName,
     breadcrumbs,
     relatedLinks,

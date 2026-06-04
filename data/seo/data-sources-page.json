@@ -1,8 +1,10 @@
 {
-  "title": "Veri Kaynakları | isteBul — Kamu ve Resmi Veri Şeffaflığı",
-  "description": "isteBul karar motorunda kullanılan kamuya açık veri kaynakları: TÜİK, TCMB EVDS ve planlanan iş ortağı beslemeleri. Kullanım amacı, kategoriler ve güncelleme tarihleri.",
+  "title": "Veri Kaynakları | isteBul",
+  "description": "isteBul karar analizlerinde kullanılan TÜİK, TCMB EVDS ve diğer veri kaynakları hakkında şeffaf bilgi.",
   "h1": "Veri kaynakları merkezi",
+  "trustMessage": "Kullanılan veri kaynakları düzenli olarak gözden geçirilir ve kaynaklarıyla birlikte şeffaf biçimde yayınlanır. isteBul veri üretmez; kamuya açık kaynaklar, kullanıcı girdileri ve karar motoru çıktıları birlikte değerlendirilir.",
   "intro": "isteBul, karar skoru ve toplam maliyet (TCO) çıktılarını üretirken kamuya açık resmi istatistikleri, kullanıcı girdilerini ve kural tabanlı varsayımları bir araya getirir. Bu sayfa hangi kaynaktan hangi amaçla yararlandığımızı şeffaf biçimde listeler; finansal tavsiye veya resmi kurum adına taahhüt içermez.",
+  "schemaProfile": "data-sources",
   "sources": [
     {
       "id": "tuik",
@@ -14,7 +16,50 @@
         "Tüketici fiyat endeksi (TÜFE)",
         "Yıllık enflasyon oranları",
         "Hanehalkı bütçe istatistikleri",
-        "Konut ve ulaştırma harcama payları"
+        "Konut ve ulaştırma harcama payları",
+        "Motorlu Kara Taşıtları İstatistikleri",
+        "Karayolu Trafik Kaza İstatistikleri",
+        "Konut Satış İstatistikleri",
+        "Turizm İstatistikleri",
+        "Nüfus ve Demografi İstatistikleri"
+      ],
+      "categoryVerticals": [
+        {
+          "category": "Motorlu Kara Taşıtları İstatistikleri",
+          "vertical": "Auto",
+          "verticalHref": "/auto/",
+          "note": "Araç parkı, segment dağılımı ve kayıt verileri — TCO segment varsayımları ve ikinci el likidite sinyalleri için."
+        },
+        {
+          "category": "Karayolu Trafik Kaza İstatistikleri",
+          "vertical": "Auto · Sigorta",
+          "verticalHref": "/sigorta/",
+          "note": "Risk bandı ve sigorta maliyeti bağlamı — kaza yoğunluğu kullanıcıya açıklanabilir risk faktörü olarak yansıtılır."
+        },
+        {
+          "category": "Konut Satış İstatistikleri",
+          "vertical": "Konut",
+          "verticalHref": "/konut/",
+          "note": "Konut piyasası hacmi ve fiyat baskısı — ödeme yükü ve lokasyon kararlarında makro referans."
+        },
+        {
+          "category": "Turizm İstatistikleri",
+          "vertical": "Tatil",
+          "verticalHref": "/tatil/",
+          "note": "Sezon, konaklama ve harcama eğilimleri — tatil bütçe bandı ve talep yoğunluğu kalibrasyonu."
+        },
+        {
+          "category": "Nüfus ve Demografi İstatistikleri",
+          "vertical": "Tüm dikeyler",
+          "verticalHref": "/",
+          "note": "Bölgesel talep ve hane profili — segmentasyon ve güven skoru bağlamında destekleyici sinyal."
+        },
+        {
+          "category": "Tüketici fiyat endeksi (TÜFE)",
+          "vertical": "Finansman · Auto",
+          "verticalHref": "/finans/",
+          "note": "Enflasyon ve satın alma gücü — finansman vadesi ve TCO projeksiyonlarında maliyet güncellemesi."
+        }
       ],
       "lastUpdated": "2026-05-28",
       "officialUrl": "https://www.tuik.gov.tr/",

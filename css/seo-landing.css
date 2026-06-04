@@ -336,6 +336,17 @@
   color: #6b7280;
 }
 
+.seo-trust-banner {
+  margin: 0.65rem 0 1.1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1e3a5f;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
 .seo-data-sources-lead {
   margin: 0 0 1rem;
   color: #4b5563;
@@ -457,6 +468,42 @@
   font-size: 0.82rem;
   color: #6b7280;
   line-height: 1.45;
+}
+
+.seo-data-source-verticals {
+  margin: 0 0 0.9rem;
+}
+
+.seo-data-source-verticals-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.seo-data-source-verticals-item {
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.seo-data-source-verticals-item strong {
+  display: block;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.seo-data-source-verticals-meta a {
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.seo-page--data-sources .seo-data-source-card {
+  contain: layout style;
 }
 
 .seo-data-disclaimer {

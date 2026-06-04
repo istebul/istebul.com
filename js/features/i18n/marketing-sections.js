@@ -52,7 +52,7 @@ export const marketingSections = {
       plans: 'Planlar',
       partner: 'Partner olun',
       allGuides: 'Tüm rehberler',
-      dataSources: 'Veri kaynakları',
+      dataSources: 'Veri Kaynakları',
       privacy: 'Gizlilik',
       visitorNotice: 'Ziyaretçi Aydınlatma Metni',
       kvkkAbout: 'KVKK hakkında bilgilendirme',
