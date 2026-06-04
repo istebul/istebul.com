@@ -18,7 +18,8 @@ import {
 import {
   applyEvdsToDecisionContext,
   appendEvdsRiskItem,
-  buildEvdsMarketAnalysis
+  buildEvdsMarketAnalysis,
+  capEvdsScoreImpact
 } from '../evds/evds-market-engine.js';
 
 function safeNumber(value) {
@@ -345,9 +346,13 @@ export function computeDecisionScoreV3(category, context = {}) {
     score = clampScore(Math.round(score * 0.55 + legacy * 0.45));
   }
 
-  const evdsAdj = safeNumber(context.evdsScoreAdjustment);
-  if (evdsAdj !== 0 && context.evdsMarket?.hasData) {
-    score = clampScore(score + evdsAdj);
+  const evdsAdjRaw = safeNumber(context.evdsScoreAdjustment);
+  if (evdsAdjRaw !== 0 && context.evdsMarket?.hasData) {
+    const capped = capEvdsScoreImpact(score, evdsAdjRaw);
+    context.evdsScoreAdjustmentApplied = capped;
+    if (capped !== 0) {
+      score = clampScore(score + capped);
+    }
   }
 
   context.scoreFactors = factors;

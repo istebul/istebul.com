@@ -11,7 +11,10 @@ const {
   hasEvdsDataForCategory,
   renderFinansmanMarketAssessmentHtml,
   renderKonutFinancingOutlookHtml,
-  renderAutoFxRiskHtml
+  renderAutoFxRiskHtml,
+  capEvdsScoreImpact,
+  sanitizeEvdsDecisionSupportCopy,
+  EVDS_MAX_DECISION_IMPACT_RATIO
 } = await import('../../js/features/evds/evds-market-engine.js');
 
 const {
@@ -50,7 +53,7 @@ test('yüksek faiz senaryosu — finansman piyasa skoru düşük ve negatif ayar
   assert.equal(result.components.financingRisk.level, 'yüksek');
   assert.equal(result.components.creditAccessibility.level, 'düşük');
   assert.equal(result.components.realCostRisk.level, 'yüksek');
-  assert.match(result.summary, /Finansman piyasası skoru/);
+  assert.match(result.summary, /Karar destek amaçlı/);
 });
 
 test('düşük faiz senaryosu — finansman piyasa skoru yüksek ve pozitif ayarlama', () => {
@@ -126,7 +129,8 @@ test('EVDS karar motoruna skor ayarlaması uygular', () => {
 test('EVDS piyasa değerlendirmesi AI özetine eklenir', () => {
   const analysis = buildEvdsMarketAnalysis('finansman', HIGH_RATES);
   const marketText = buildMarketAssessmentText('finansman', analysis);
-  assert.match(marketText, /finansman maliyeti karar üzerinde önemli etki/);
+  assert.match(marketText, /Karar destek amaçlı/);
+  assert.match(marketText, /destekleyici sinyal/);
 
   const summary = buildExecutiveSummary(
     normalizeInsightInput({
@@ -137,7 +141,43 @@ test('EVDS piyasa değerlendirmesi AI özetine eklenir', () => {
       marketAssessment: marketText
     })
   );
-  assert.match(summary, /finansman maliyeti karar üzerinde önemli etki/);
+  assert.match(summary, /Karar destek amaçlı/);
+});
+
+test('EVDS skor etkisi toplam skorun en fazla %15 ini aşmaz', () => {
+  const state = {
+    monthly_income: 80_000,
+    existing_debt: 0,
+    term_months: '36'
+  };
+  const primary = { metrics: { monthlyPayment: 12_000 }, score: 88 };
+
+  const without = buildDecisionIntelligenceResult('finansman', state, {}, { primaryResult: primary });
+  const withEvds = buildDecisionIntelligenceResult('finansman', state, {}, {
+    primaryResult: primary,
+    evdsRates: HIGH_RATES
+  });
+
+  const delta = Math.abs(withEvds.decisionScore - without.decisionScore);
+  const maxAllowed = Math.ceil(without.decisionScore * 0.15);
+  assert.ok(delta <= maxAllowed, `EVDS delta ${delta} exceeds 15% cap (${maxAllowed})`);
+  assert.ok(withEvds.context.evdsScoreAdjustmentApplied !== undefined);
+});
+
+test('capEvdsScoreImpact enforces ratio cap', () => {
+  assert.equal(capEvdsScoreImpact(80, 20), Math.round(80 * EVDS_MAX_DECISION_IMPACT_RATIO));
+  assert.equal(capEvdsScoreImpact(80, -20), -Math.round(80 * EVDS_MAX_DECISION_IMPACT_RATIO));
+  assert.equal(capEvdsScoreImpact(80, 3), 3);
+});
+
+test('sanitizeEvdsDecisionSupportCopy removes directive phrases', () => {
+  const cleaned = sanitizeEvdsDecisionSupportCopy(
+    'Şimdi satın alın ve kredi çekerek yatırım yapın; fiyat yükselecek.'
+  );
+  assert.doesNotMatch(cleaned, /satın al/i);
+  assert.doesNotMatch(cleaned, /kredi çek/i);
+  assert.doesNotMatch(cleaned, /yatırım yap/i);
+  assert.doesNotMatch(cleaned, /yükselecek/i);
 });
 
 test('applyEvdsToDecisionContext skor faktörü ekler', () => {

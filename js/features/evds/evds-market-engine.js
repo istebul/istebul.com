@@ -14,6 +14,58 @@ export const EVDS_THRESHOLDS = Object.freeze({
   fxTry: { low: 30, medium: 35, high: 38 }
 });
 
+/** Yasal/metodolojik üst sınır: EVDS toplam karar skorunun en fazla %12'sini etkiler (10–15% bandı). */
+export const EVDS_MAX_DECISION_IMPACT_RATIO = 0.12;
+export const EVDS_MIN_DECISION_IMPACT_RATIO = 0.1;
+
+const EVDS_DECISION_SUPPORT_PREFIX =
+  'Karar destek amaçlı mevcut piyasa koşulları değerlendirmesi:';
+
+const EVDS_CARD_DISCLAIMER =
+  'Karar destek amaçlıdır · Yalnızca mevcut piyasa koşulları yorumlanır · Gelecek fiyat/getiri taahhüdü yoktur · Kaynak: TCMB EVDS';
+
+/** Yönlendirici veya geleceğe dönük ifadeler — EVDS metinlerinde kullanılmaz. */
+const EVDS_BANNED_COPY_PATTERNS = [
+  /\bsatın al(?:ın|mak)?\b/giu,
+  /\b(?:şimdi )?sat(?:ın|ış)?\b/giu,
+  /\bbekle(?:yin|meli|yerek)?\b/giu,
+  /\bkredi çek\w*\b/giu,
+  /\byatırım yap\w*\b/giu,
+  /\bgelecek(?:te)?\b/giu,
+  /\btahmin(?:i| edilir| edilecek)?\b/giu,
+  /\b(?:yükselecek|düşecek|artacak|azalacak)\b/giu
+];
+
+/**
+ * EVDS metinlerini karar destek diline normalize eder; yasak ifadeleri temizler.
+ * @param {string} text
+ */
+export function sanitizeEvdsDecisionSupportCopy(text = '') {
+  let out = String(text || '').trim();
+  for (const pattern of EVDS_BANNED_COPY_PATTERNS) {
+    out = out.replace(pattern, '').trim();
+  }
+  return out
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s+([,.;:])/g, '$1')
+    .replace(/(?:^|\s)(?:ve|ile|için|olarak|şimdi)\s*[,.;:]/gi, '')
+    .replace(/^[,.;\s]+|[,.;\s]+$/g, '')
+    .trim();
+}
+
+/**
+ * EVDS skor ayarlamasını toplam skorun yasal üst sınırına (%10–15) göre sınırlar.
+ * @param {number} baseScore — EVDS öncesi karar skoru
+ * @param {number} rawAdjustment — ham piyasa sinyali
+ */
+export function capEvdsScoreImpact(baseScore, rawAdjustment) {
+  const base = clampScore(typeof baseScore === 'number' && Number.isFinite(baseScore) ? baseScore : 70);
+  const raw = Number(rawAdjustment);
+  if (!Number.isFinite(raw) || raw === 0) return 0;
+  const maxAbs = Math.max(1, Math.round(base * EVDS_MAX_DECISION_IMPACT_RATIO));
+  return clamp(Math.round(raw), -maxAbs, maxAbs);
+}
+
 function safeRate(value) {
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? n : null;
@@ -141,7 +193,7 @@ export function computeFinansmanMarketScore(rates = {}) {
   }
 
   const finalScore = clampScore(clamp(score, 15, 95));
-  const scoreAdjustment = clamp(Math.round((finalScore - 70) * 0.12), -8, 8);
+  const scoreAdjustment = clamp(Math.round((finalScore - 70) * 0.12), -10, 10);
 
   return {
     hasData: true,
@@ -149,7 +201,7 @@ export function computeFinansmanMarketScore(rates = {}) {
     scoreAdjustment,
     components,
     rates: r,
-    summary: buildFinansmanMarketSummary(r, components, finalScore)
+    summary: sanitizeEvdsDecisionSupportCopy(buildFinansmanMarketSummary(r, components, finalScore))
   };
 }
 
@@ -160,7 +212,7 @@ function buildFinansmanMarketSummary(rates, components, score) {
   if (components.realCostRisk.detail) parts.push(components.realCostRisk.detail);
   if (!parts.length) return '';
   const band = score >= 72 ? 'destekleyici' : score >= 55 ? 'nötr-baskılı' : 'baskılayıcı';
-  return `Finansman piyasası skoru ${score}/100 (${band}). ${parts.join(' ')}`;
+  return `${EVDS_DECISION_SUPPORT_PREFIX} Finansman piyasası skoru ${score}/100 (${band}). ${parts.join(' ')}`;
 }
 
 /**
@@ -214,7 +266,7 @@ export function computeKonutFinancingAccessScore(rates = {}) {
     outlook.inflationEffect.level = level || 'orta';
     if (level === 'yüksek') {
       score -= 8;
-      outlook.inflationEffect.detail = `TÜFE ${formatPct(r.cpiAnnual)} — reel konut maliyeti ve kira/getiri dengesi baskı altında.`;
+      outlook.inflationEffect.detail = `TÜFE ${formatPct(r.cpiAnnual)} — reel konut maliyeti ve kira/toplam maliyet dengesi baskı altında.`;
     } else if (level === 'düşük') {
       score += 5;
       outlook.inflationEffect.detail = `TÜFE ${formatPct(r.cpiAnnual)} — enflasyon etkisi görece sınırlı.`;
@@ -225,7 +277,7 @@ export function computeKonutFinancingAccessScore(rates = {}) {
   }
 
   const finalScore = clampScore(clamp(score, 15, 95));
-  const scoreAdjustment = clamp(Math.round((finalScore - 68) * 0.1), -6, 6);
+  const scoreAdjustment = clamp(Math.round((finalScore - 68) * 0.1), -8, 8);
 
   return {
     hasData: true,
@@ -233,7 +285,7 @@ export function computeKonutFinancingAccessScore(rates = {}) {
     scoreAdjustment,
     outlook,
     rates: r,
-    summary: buildKonutFinancingSummary(outlook, finalScore)
+    summary: sanitizeEvdsDecisionSupportCopy(buildKonutFinancingSummary(outlook, finalScore))
   };
 }
 
@@ -242,7 +294,7 @@ function buildKonutFinancingSummary(outlook, score) {
     Boolean
   );
   if (!parts.length) return '';
-  return `Konut finansman erişilebilirlik skoru ${score}/100. ${parts.join(' ')}`;
+  return `${EVDS_DECISION_SUPPORT_PREFIX} Konut finansman erişilebilirlik skoru ${score}/100. ${parts.join(' ')}`;
 }
 
 /**
@@ -301,14 +353,14 @@ export function computeAutoFxRiskAnalysis(rates = {}) {
     risks.inflationEffect.level = level || 'orta';
     if (level === 'yüksek') {
       score -= 6;
-      risks.inflationEffect.detail = `TÜFE ${formatPct(r.cpiAnnual)} — reel sahip olma maliyeti artıyor.`;
+      risks.inflationEffect.detail = `TÜFE ${formatPct(r.cpiAnnual)} — reel sahip olma maliyeti yükselmiş seviyede.`;
     } else {
       risks.inflationEffect.detail = `TÜFE ${formatPct(r.cpiAnnual)} — enflasyon toplam maliyeti etkileyebilir.`;
     }
   }
 
   const finalScore = clampScore(clamp(score, 15, 95));
-  const scoreAdjustment = clamp(Math.round((finalScore - 72) * 0.1), -5, 5);
+  const scoreAdjustment = clamp(Math.round((finalScore - 72) * 0.1), -8, 8);
 
   return {
     hasData: true,
@@ -317,7 +369,7 @@ export function computeAutoFxRiskAnalysis(rates = {}) {
     risks,
     rates: r,
     fxReference: fxRef,
-    summary: buildAutoFxSummary(risks, finalScore)
+    summary: sanitizeEvdsDecisionSupportCopy(buildAutoFxSummary(risks, finalScore))
   };
 }
 
@@ -326,7 +378,7 @@ function buildAutoFxSummary(risks, score) {
     Boolean
   );
   if (!parts.length) return '';
-  return `Kur ve maliyet risk skoru ${score}/100. ${parts.join(' ')}`;
+  return `${EVDS_DECISION_SUPPORT_PREFIX} Kur ve maliyet risk skoru ${score}/100. ${parts.join(' ')}`;
 }
 
 /**
@@ -426,7 +478,9 @@ export function buildMarketAssessmentText(category, evdsAnalysis = {}) {
     const highLoan = r.housingLoanRate != null && r.housingLoanRate >= EVDS_THRESHOLDS.housingLoanRate.medium;
     const highPolicy = r.policyRate != null && r.policyRate >= EVDS_THRESHOLDS.policyRate.medium;
     if (highLoan || highPolicy) {
-      return `Konut kredisi faizlerinin ${highLoan ? 'yüksek' : 'güncel'} seyrettiği ve politika faizinin ${highPolicy ? 'yüksek' : 'mevcut'} olduğu piyasa koşullarında finansman maliyeti karar üzerinde önemli etki yaratmaktadır. ${m.summary}`;
+      return sanitizeEvdsDecisionSupportCopy(
+        `${EVDS_DECISION_SUPPORT_PREFIX} Mevcut piyasa koşullarında (politika faizi ${highPolicy ? formatPct(r.policyRate) : 'güncel'}, konut kredisi faizi ${highLoan ? formatPct(r.housingLoanRate) : 'güncel'}) finansman maliyeti karar skoruna destekleyici sinyal olarak yansır. ${m.summary}`
+      );
     }
     return m.summary;
   }
@@ -435,7 +489,9 @@ export function buildMarketAssessmentText(category, evdsAnalysis = {}) {
     const k = evdsAnalysis.konut;
     const r = k.rates || {};
     if (r.housingLoanRate != null && r.housingLoanRate >= EVDS_THRESHOLDS.housingLoanRate.medium) {
-      return `Konut kredisi faizlerinin yüksek seyrettiği mevcut piyasa koşullarında finansman maliyeti karar üzerinde önemli etki yaratmaktadır. ${k.summary}`;
+      return sanitizeEvdsDecisionSupportCopy(
+        `${EVDS_DECISION_SUPPORT_PREFIX} Mevcut piyasa koşullarında konut kredisi faizi ${formatPct(r.housingLoanRate)} seviyesinde; finansman maliyeti karar skoruna destekleyici sinyal olarak yansır. ${k.summary}`
+      );
     }
     return k.summary;
   }
@@ -443,7 +499,9 @@ export function buildMarketAssessmentText(category, evdsAnalysis = {}) {
   if (cat === 'auto' && evdsAnalysis.auto?.hasData) {
     const a = evdsAnalysis.auto;
     if (a.risks.zeroVehicleCost?.level === 'yüksek') {
-      return `Yüksek kur seviyesinde sıfır araç ve yedek parça maliyetleri toplam sahip olma yükünü artırmaktadır. ${a.summary}`;
+      return sanitizeEvdsDecisionSupportCopy(
+        `${EVDS_DECISION_SUPPORT_PREFIX} Mevcut kur seviyesinde sıfır araç ve yedek parça maliyetleri toplam sahip olma yükünü artırmaktadır. ${a.summary}`
+      );
     }
     return a.summary;
   }
@@ -490,7 +548,7 @@ export function renderFinansmanMarketAssessmentHtml(analysis = {}, esc = escapeH
           <p>${e(c.realCostRisk?.detail || '')}</p>
         </li>
       </ul>
-      <p class="ib-evds-market__note">Kaynak: TCMB EVDS · Bilgilendirme amaçlıdır; skor destekleyicidir.</p>
+      <p class="ib-evds-market__note">${e(EVDS_CARD_DISCLAIMER)}</p>
     </section>`;
 }
 
@@ -527,7 +585,7 @@ export function renderKonutFinancingOutlookHtml(analysis = {}, esc = escapeHtml)
           <p>${e(o.inflationEffect?.detail || '')}</p>
         </li>
       </ul>
-      <p class="ib-evds-market__note">Kaynak: TCMB EVDS · Bilgilendirme amaçlıdır; skor destekleyicidir.</p>
+      <p class="ib-evds-market__note">${e(EVDS_CARD_DISCLAIMER)}</p>
     </section>`;
 }
 
@@ -564,7 +622,7 @@ export function renderAutoFxRiskHtml(analysis = {}, esc = escapeHtml) {
           <p>${e(r.inflationEffect?.detail || '')}</p>
         </li>
       </ul>
-      <p class="ib-evds-market__note">Kaynak: TCMB EVDS · Bilgilendirme amaçlıdır; skor destekleyicidir.</p>
+      <p class="ib-evds-market__note">${e(EVDS_CARD_DISCLAIMER)}</p>
     </section>`;
 }
 
@@ -611,7 +669,7 @@ export function appendEvdsRiskItem(category, riskAnalysis = [], evdsAnalysis = {
         'Piyasa/faiz ortamı (EVDS)',
         m.summary.split('.')[0] + '.',
         level === 'yüksek'
-          ? 'Faiz ve enflasyon senaryolarını vade tablosuna ekleyin.'
+          ? 'Mevcut faiz ve enflasyon verilerini vade tablosuna ekleyerek karşılaştırın.'
           : 'Güncel piyasa faizlerini tekliflerle karşılaştırın.'
       )
     );
@@ -641,7 +699,7 @@ export function appendEvdsRiskItem(category, riskAnalysis = [], evdsAnalysis = {
         'Kur ve maliyet riski (EVDS)',
         a.summary.split('.')[0] + '.',
         level === 'yüksek'
-          ? 'Kur artış senaryosunda TCO ve yedek parça maliyetini yeniden hesaplayın.'
+          ? 'Mevcut kur seviyesini TCO ve yedek parça maliyeti tablosuna ekleyerek karşılaştırın.'
           : 'Güncel kur ve enflasyon verilerini teklif aşamasında kontrol edin.'
       )
     );
