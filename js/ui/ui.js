@@ -122,7 +122,12 @@ export class UIManager {
         navToggle.type = 'button';
         navToggle.setAttribute('aria-label', 'Menüyü aç');
         navToggle.setAttribute('aria-expanded', 'false');
-        navToggle.innerHTML = '<i data-lucide="menu"></i>';
+        navToggle.innerHTML = `
+            <span class="nav-toggle-burger" aria-hidden="true">
+                <span></span><span></span><span></span>
+            </span>
+            <span class="nav-toggle-label">Menü</span>
+        `;
         navToggle.style.display = 'none';
 
         document.querySelector('.nav-container').insertBefore(navToggle, navMenu);
@@ -133,7 +138,8 @@ export class UIManager {
             mobileAuthActions.className = 'mobile-auth-actions';
             mobileAuthActions.innerHTML = `
                 <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav_mobile">TCO analizini başlat</a>
-                <button type="button" class="btn btn-outline" data-auth-open="login" data-mobile-login>Giriş Yap</button>
+                <button type="button" class="btn btn-outline" data-auth-open="login" data-mobile-login>Üye Girişi</button>
+                <button type="button" class="btn btn-primary" data-auth-open="register" data-mobile-register>Üye Ol</button>
             `;
             navMenu.append(mobileAuthActions);
         }
@@ -195,6 +201,7 @@ export class UIManager {
         window.addEventListener('resize', checkScreenSize);
         checkScreenSize();
 
+        this.loadIcons();
         this.setupUserMenu();
     }
 
@@ -299,6 +306,7 @@ export class UIManager {
 
     updateAuthUI(user) {
         const navAuth = document.getElementById('nav-auth');
+        const navAuthMobile = document.getElementById('nav-auth-mobile');
         const navUser = document.getElementById('nav-user');
         const navLinksAnon = document.getElementById('nav-links-anon');
         const navLinksAuth = document.getElementById('nav-links-auth');
@@ -313,6 +321,9 @@ export class UIManager {
 
             navAuth.classList.add('hidden');
             navAuth.style.display = 'none';
+
+            navAuthMobile?.classList.add('hidden');
+            navAuthMobile?.setAttribute('hidden', '');
 
             navUser.classList.remove('hidden');
             navUser.style.display = 'flex';
@@ -330,6 +341,9 @@ export class UIManager {
 
             navAuth.classList.remove('hidden');
             navAuth.style.display = 'flex';
+
+            navAuthMobile?.classList.remove('hidden');
+            navAuthMobile?.removeAttribute('hidden');
 
             navUser.classList.add('hidden');
             navUser.style.display = 'none';

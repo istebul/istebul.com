@@ -51,10 +51,35 @@ body.modal-open {
   }
 
   .nav-toggle {
-    width: var(--ib-touch);
-    height: var(--ib-touch);
+    width: auto;
     min-width: var(--ib-touch);
+    height: var(--ib-touch);
     min-height: var(--ib-touch);
+    padding: 0 0.72rem 0 0.58rem;
+    gap: 0.42rem;
+  }
+
+  .nav-auth-mobile {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+  }
+
+  .nav-auth-mobile .btn {
+    min-height: 36px;
+    padding-inline: 0.62rem;
+    font-size: 0.76rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .nav-auth-mobile-register {
+    padding-inline: 0.72rem !important;
+  }
+
+  body.nav-signed-in .nav-auth-mobile {
+    display: none !important;
   }
 
   .modal-close {
@@ -415,5 +440,113 @@ body.modal-open {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+/* —— Mobile header: visible menu control + auth strip —— */
+.nav-auth-mobile {
+  display: none;
+}
+
+.nav-toggle {
+  flex-direction: row;
+}
+
+.nav-toggle-burger {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 18px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.nav-toggle-burger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.nav-toggle-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: inherit;
+}
+
+@media (min-width: 1181px) {
+  .nav-auth-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  body.ib-enterprise .nav-container {
+    grid-template-columns: minmax(0, 1fr) auto auto !important;
+    align-items: center;
+  }
+
+  body.ib-enterprise .nav-brand {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  body.ib-enterprise .nav-controls {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    gap: 0.35rem;
+  }
+
+  body.ib-enterprise .nav-toggle {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  body.ib-enterprise .nav-auth-mobile {
+    display: flex;
+  }
+
+  body.ib-enterprise .nav-controls .theme-toggle {
+    display: none;
+  }
+
+  body.ib-enterprise .mobile-auth-actions {
+    grid-template-columns: 1fr;
+  }
+
+  body.nav-signed-in .nav-user {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    max-width: min(42vw, 11rem);
+  }
+
+  body.nav-signed-in .nav-controls {
+    display: none;
+  }
+
+  body.nav-signed-in .nav-toggle {
+    grid-column: 3;
+  }
+}
+
+@media (max-width: 420px) {
+  .nav-auth-mobile-login {
+    padding-inline: 0.5rem !important;
+  }
+
+  .nav-auth-mobile-register {
+    padding-inline: 0.58rem !important;
+  }
+
+  .nav-toggle-label {
+    font-size: 0.75rem;
   }
 }

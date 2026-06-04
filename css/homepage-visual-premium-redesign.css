@@ -618,7 +618,7 @@ html:not(.ib-ds-v4) body.ib-enterprise #home .preview-metrics > div {
 
   body.ib-enterprise .nav-container {
     min-height: 56px;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
 
   body.ib-enterprise .nav-brand {

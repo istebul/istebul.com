@@ -8,6 +8,7 @@ const LOGIN_SELECTORS = [
     '#profile-login-btn',
     '[data-history-login]',
     '[data-mobile-login]',
+    '[data-mobile-header-login]',
     '#account-login-btn',
     '#switch-to-login'
 ].join(', ');
@@ -17,6 +18,7 @@ const REGISTER_SELECTORS = [
     '#register-btn',
     '[data-history-register]',
     '[data-mobile-register]',
+    '[data-mobile-header-register]',
     '[data-account-register]',
     '#switch-to-register'
 ].join(', ');

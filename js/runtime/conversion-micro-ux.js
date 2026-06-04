@@ -43,10 +43,10 @@ function applyNavConversionLabels() {
     );
   }
 
-  document.querySelectorAll('[data-mobile-login]').forEach((el) => {
+  document.querySelectorAll('[data-mobile-login], [data-mobile-header-login]').forEach((el) => {
     if (el instanceof HTMLElement) el.textContent = mobileNav.login;
   });
-  document.querySelectorAll('[data-mobile-register]').forEach((el) => {
+  document.querySelectorAll('[data-mobile-register], [data-mobile-header-register]').forEach((el) => {
     if (el instanceof HTMLElement) {
       el.textContent = mobileNav.register;
       el.setAttribute('aria-label', mobileNav.register);

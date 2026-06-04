@@ -4067,6 +4067,7 @@ body {
 /* Premium Mobile Navigation Fix */
 .nav-toggle {
     display: none;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     width: 42px;
