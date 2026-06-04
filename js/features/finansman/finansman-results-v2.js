@@ -27,6 +27,7 @@ import {
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
+import { hydrateFinansmanEvdsCard } from './evds-reference-card.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -585,6 +586,7 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
   root.className = 'finansman-v2-root';
   root.innerHTML = renderFinansmanResultsV2Html(model);
   mountNode.prepend(root);
+  hydrateFinansmanEvdsCard(root);
 
   safeTrackEvent(track, 'finance_result_v2_view', {
     category: 'finansman',

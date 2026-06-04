@@ -38,6 +38,59 @@
   }
 }
 
+.finansman-v2-evds {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  background: rgba(239, 246, 255, 0.75);
+}
+
+.finansman-v2-evds__head h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.finansman-v2-evds__note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--v2-muted, #64748b);
+}
+
+.finansman-v2-evds__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0.65rem 0 0;
+}
+
+.finansman-v2-evds__grid dt {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--v2-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.finansman-v2-evds__grid dd {
+  margin: 0.1rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--v2-text, #0f172a);
+}
+
+.finansman-v2-evds__meta {
+  margin: 0.55rem 0 0;
+  font-size: 0.75rem;
+  color: var(--v2-muted, #64748b);
+}
+
+@media (min-width: 640px) {
+  .finansman-v2-evds__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .finansman-v2-hero {
   margin-bottom: 1rem;
 }
