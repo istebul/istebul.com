@@ -6,9 +6,9 @@
 @import 'results-hero-layout.css';
 
 /* V2 aktifken eski özet panellerini gizle — tek kaynak V2 hero */
-.auto-v2-root ~ #auto-results-leader,
-.auto-v2-root ~ .auto-decision-dashboard {
-  display: none;
+body.ib-auto #auto-results .auto-v2-root ~ #auto-results-leader,
+body.ib-auto #auto-results .auto-v2-root ~ .auto-decision-dashboard {
+  display: none !important;
 }
 
 .auto-v2-root {

@@ -79,6 +79,7 @@ import {
     syncHtmlRouteSurface,
     tryExternalRouteRedirect
 } from './runtime/route-surface.js';
+import { resolveVehicleImageUrl } from './auto/vehicle-image.js';
 
 window.lucide = window.lucide || {
     createIcons() {},
@@ -4984,26 +4985,11 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     getAutoComparisonImage(vehicle) {
-        const name = String(vehicle?.name || '');
-
         if (vehicle?.image || vehicle?.imageUrl || vehicle?.visual) {
             return vehicle.image || vehicle.imageUrl || vehicle.visual;
         }
 
-        if (name.includes('Toyota')) return '/assets/images/auto/toyota-corolla-cross-hybrid.svg';
-        if (name.includes('Honda')) return '/assets/images/auto/honda-civic-eco.svg';
-        if (name.includes('Hyundai')) return '/assets/images/auto/hyundai-tucson-tgdi.svg';
-        if (name.includes('Renault')) return '/assets/images/auto/renault-clio-icon.svg';
-        if (name.includes('Volkswagen')) return '/assets/images/auto/volkswagen-golf-tsi.svg';
-        if (name.includes('Togg')) return '/assets/images/auto/togg-t10x.svg';
-        if (name.includes('Tesla')) return '/assets/images/auto/tesla-model.svg';
-        if (name.includes('BYD')) return '/assets/images/auto/byd-electric.svg';
-        if (name.includes('Peugeot')) return '/assets/images/auto/peugeot-suv.svg';
-        if (name.includes('Skoda')) return '/assets/images/auto/skoda-family.svg';
-        if (name.includes('BMW')) return '/assets/images/auto/bmw-premium.svg';
-        if (name.includes('Mercedes')) return '/assets/images/auto/mercedes-premium.svg';
-
-        return '';
+        return resolveVehicleImageUrl(vehicle);
     }
 
     addAutoVehicleToComparison(vehicle) {
