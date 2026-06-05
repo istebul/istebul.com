@@ -1,5 +1,6 @@
 import { escapeHtml, safeAttr } from '../core/dom-safe.js';
 import {
+  enrichVerticalLeadsDispatch,
   manualVerticalDispatch,
   renderVerticalDispatchDetail,
   verticalDispatchBadge
@@ -105,11 +106,12 @@ async function loadHousingLeads(sb, adminAction, toast) {
     el.innerHTML = `${banner}<p class="empty">Filtreye uygun kayıt bulunamadı.</p>`;
     return;
   }
+  const enrichedRows = await enrichVerticalLeadsDispatch(sb, rows);
   el.innerHTML = `${banner}<table class="table"><thead><tr>
     <th>Tarih</th><th>Ad</th><th>Telefon</th><th>E-posta</th><th>Amaç</th><th>Tip</th><th>Bütçe</th>
     <th>Skor</th><th>Risk</th><th>Lokasyon</th><th>Partner</th><th>Durum</th><th>Not</th><th>Takip</th>
   </tr></thead><tbody>${
-    rows.map((row) => {
+    enrichedRows.map((row) => {
       const dispatchBadge = verticalDispatchBadge(row.partner_dispatch_status);
       return `<tr data-housing-lead-id="${safeAttr(row.id)}">
       <td class="cell-nowrap">${new Date(row.created_at).toLocaleString('tr-TR')}</td>

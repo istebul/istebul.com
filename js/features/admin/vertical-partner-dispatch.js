@@ -32,22 +32,59 @@ export function formatVerticalDispatchError(error) {
   return String(error).slice(0, 120);
 }
 
+export async function enrichVerticalLeadsDispatch(sb, leads = []) {
+  if (!Array.isArray(leads) || !leads.length) return leads;
+
+  const leadIds = leads.map((l) => l.id).filter(Boolean);
+  const endpointIds = [...new Set(leads.map((l) => l.partner_endpoint_id).filter(Boolean))];
+
+  const [endpointsRes, logsRes] = await Promise.all([
+    endpointIds.length
+      ? sb.from('partner_endpoints').select('id,name').in('id', endpointIds)
+      : Promise.resolve({ data: [] }),
+    leadIds.length
+      ? sb
+          .from('partner_lead_dispatch_logs')
+          .select('lead_id,http_status,error_message,success,created_at,endpoint_name')
+          .in('lead_id', leadIds)
+          .order('created_at', { ascending: false })
+          .limit(200)
+      : Promise.resolve({ data: [] })
+  ]);
+
+  const endpointMap = Object.fromEntries((endpointsRes.data || []).map((e) => [e.id, e.name]));
+  const latestLogByLead = {};
+  for (const log of logsRes.data || []) {
+    if (!latestLogByLead[log.lead_id]) latestLogByLead[log.lead_id] = log;
+  }
+
+  return leads.map((lead) => ({
+    ...lead,
+    _partner_endpoint_name: lead.partner_endpoint_id
+      ? endpointMap[lead.partner_endpoint_id] || null
+      : null,
+    _dispatch_log: latestLogByLead[lead.id] || null
+  }));
+}
+
 export function renderVerticalDispatchDetail(row, leadTable) {
   const badge = verticalDispatchBadge(row.partner_dispatch_status);
-  const endpoint = row.partner_endpoint_id
-    ? String(row.partner_endpoint_id).slice(0, 8) + '…'
-    : '—';
+  const endpointName = row._partner_endpoint_name || '—';
+  const log = row._dispatch_log;
+  const httpStatus = log?.http_status != null ? String(log.http_status) : '—';
 
   return `
     <div class="vertical-dispatch-panel" style="margin-top:8px;padding:10px;background:var(--surface-2,#f6f7f9);border-radius:8px;">
       <div class="text-muted-sm" style="margin-bottom:6px;"><strong>Partner dispatch</strong></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;font-size:13px;">
-        <div><span class="text-muted-sm">Endpoint</span><br><code>${escapeHtml(endpoint)}</code></div>
+        <div><span class="text-muted-sm">Endpoint</span><br>${escapeHtml(endpointName)}</div>
         <div><span class="text-muted-sm">Durum</span><br><span class="badge ${badge.badge}">${escapeHtml(badge.label)}</span></div>
         <div><span class="text-muted-sm">Son gönderim</span><br>${escapeHtml(formatVerticalDispatchAt(row.partner_dispatch_at))}</div>
+        <div><span class="text-muted-sm">HTTP</span><br>${escapeHtml(httpStatus)}</div>
         <div><span class="text-muted-sm">Retry</span><br>${escapeHtml(String(row.partner_dispatch_retry_count || 0))}/5</div>
       </div>
       ${row.partner_dispatch_error ? `<p class="text-muted-sm" style="margin-top:8px;color:#b45309;">Hata: ${escapeHtml(formatVerticalDispatchError(row.partner_dispatch_error))}</p>` : ''}
+      ${log?.error_message && !row.partner_dispatch_error ? `<p class="text-muted-sm" style="margin-top:8px;color:#b45309;">Log: ${escapeHtml(formatVerticalDispatchError(log.error_message))}</p>` : ''}
       ${['failed', 'pending', 'dead'].includes(String(row.partner_dispatch_status)) ? `
         <button type="button" class="btn btn-sm btn-secondary" style="margin-top:8px"
           data-action="vertical-retry-dispatch"

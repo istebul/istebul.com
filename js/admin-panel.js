@@ -54,6 +54,7 @@ import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
 import { initFinanceAdmin } from './admin/finance-admin.js';
 import { initSigortaAdmin } from './admin/sigorta-admin.js';
+import { initPartnerEndpointsAdmin } from './admin/partner-endpoints-admin.js';
 import { loadPaymentsAdminPage } from './admin/payments-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
 import { enrichLeadQualFields } from './admin/lead-qual-fields.js';
@@ -220,7 +221,7 @@ async function showApp() {
   loadPlatformAnalytics();
   loadExecutiveKpis();
   loadOperationalHealth();
-  loadPartnerEndpoints();
+  partnerEndpointsAdmin.loadPartnerEndpoints();
   loadPartnerApplications();
   loadPartnerDispatchLogs();
 }
@@ -1638,6 +1639,7 @@ const verticalAdmin = initVerticalAdmin({ sb });
 const housingAdmin = initHousingAdmin({ sb, adminAction, toast });
 const financeAdmin = initFinanceAdmin({ sb, adminAction, toast });
 const sigortaAdmin = initSigortaAdmin({ sb, adminAction, toast });
+const partnerEndpointsAdmin = initPartnerEndpointsAdmin({ sb, adminAction, toast });
 
 async function loadDashboard() {
   const setStat = (id, value) => {
@@ -3137,42 +3139,6 @@ function bindPlatformAnalyticsToolbar(el, filterId, dataMode) {
   });
 }
 
-async function createPartnerEndpoint() {
-  const name = document.getElementById('partner-name')?.value?.trim();
-  const routeType = document.getElementById('partner-route-type')?.value;
-  const webhookUrl = document.getElementById('partner-webhook-url')?.value?.trim();
-  const priorityWeight = Number(document.getElementById('partner-priority-weight')?.value || 100);
-  const dailyCapRaw = document.getElementById('partner-daily-cap')?.value;
-  const notes = document.getElementById('partner-notes')?.value || '';
-
-  if (!name || !routeType || !webhookUrl) {
-    toast('Partner adı, yönlendirme tipi ve webhook URL zorunlu.', 'error');
-    return;
-  }
-
-  await adminAction({
-    action: 'insert',
-    table: 'partner_endpoints',
-    id: 'new',
-    values: {
-      name,
-      route_type: routeType,
-      webhook_url: webhookUrl,
-      is_active: true,
-      priority_weight: priorityWeight,
-      daily_cap: dailyCapRaw ? Number(dailyCapRaw) : null,
-      notes
-    }
-  });
-
-  toast('Partner kanalı eklendi');
-  ['partner-name', 'partner-webhook-url', 'partner-daily-cap', 'partner-notes'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  loadPartnerEndpoints();
-}
-
 async function provisionPartnerFromApplication(applicationId) {
   const { data: app, error } = await sb
     .from('partner_applications')
@@ -3216,7 +3182,7 @@ async function provisionPartnerFromApplication(applicationId) {
 
   if (lookupError || !endpointRow?.id) {
     toast('Endpoint oluşturuldu ancak ID alınamadı — listeyi yenileyin.', 'error');
-    loadPartnerEndpoints();
+    partnerEndpointsAdmin.loadPartnerEndpoints();
     return;
   }
 
@@ -3234,111 +3200,7 @@ async function provisionPartnerFromApplication(applicationId) {
 
   toast('Partner endpoint oluşturuldu — test sonrası aktif edin.');
   loadPartnerApplications();
-  loadPartnerEndpoints();
-}
-
-async function editPartnerEndpoint(id, currentName, currentWebhook) {
-  const name = window.prompt('Partner adı:', currentName || '');
-  if (!name) return;
-  const webhookUrl = window.prompt('Webhook URL:', currentWebhook || '');
-  if (!webhookUrl) return;
-
-  await adminAction({
-    action: 'update',
-    table: 'partner_endpoints',
-    id,
-    values: {
-      name: name.trim(),
-      webhook_url: webhookUrl.trim()
-    }
-  });
-
-  toast('Partner endpoint güncellendi');
-  loadPartnerEndpoints();
-}
-
-async function togglePartnerEndpoint(id, active) {
-  await adminAction({
-    action: 'update',
-    table: 'partner_endpoints',
-    id,
-    values: {
-      is_active: active === 'true'
-    }
-  });
-
-  toast('Partner kanalı güncellendi');
-  loadPartnerEndpoints();
-}
-
-async function loadPartnerEndpoints() {
-  const el = document.getElementById('partner-endpoints-list');
-  if (!el) return;
-
-  const res = await fetchAdminTable(sb, {
-    table: 'partner_endpoints',
-    limit: 200,
-    order: { column: 'created_at', ascending: false },
-    direct: () =>
-      sb.from('partner_endpoints').select('*').order('priority_weight', { ascending: false })
-  });
-
-  if (res.error && !(res.data || []).length) {
-    el.innerHTML = `${renderAdminDataSourceNotices([res])}<p class="empty">Hata: ${escapeHtml(res.error.message)}</p>`;
-    return;
-  }
-
-  const data = res.data || [];
-  if (!data.length) {
-    el.innerHTML = '<p class="empty">Partner endpoint yok.</p>';
-    return;
-  }
-
-  el.innerHTML = `
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Partner</th>
-          <th>Yönlendirme</th>
-          <th>Durum</th>
-          <th>Öncelik</th>
-          <th>Günlük Limit</th>
-          <th>Bugün Gönderilen</th>
-          <th>Sağlık</th>
-          <th>Başarılı</th>
-          <th>Başarısız</th>
-          <th>İşlem</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.map(row => `
-          <tr>
-            <td><strong>${escapeHtml(row.name)}</strong></td>
-            <td>${escapeHtml({
-              dealer_partner: 'Bayi / Galeri',
-              finance_partner: 'Finansman',
-              insurance_partner: 'Sigorta',
-              premium_report: 'Premium Rapor',
-              general_sales: 'Genel Satış'
-            }[row.route_type] || row.route_type)}</td>
-            <td>${row.is_active ? 'Aktif' : 'Pasif'}</td>
-            <td>${row.priority_weight || 0}</td>
-            <td>${row.daily_cap || '∞'}</td>
-            <td>${row.sent_today || 0}</td>
-            <td><span class="badge ${row.health_status === 'healthy' ? 'badge-green' : row.health_status === 'degraded' ? 'badge-yellow' : 'badge-red'}">${escapeHtml(row.health_status || 'healthy')}</span></td>
-            <td>${row.success_count || 0}</td>
-            <td>${row.fail_count || 0}</td>
-            <td class="table-actions">
-              <button class="btn btn-ghost btn-sm" data-action="edit-partner-endpoint" data-id="${safeAttr(row.id)}" data-name="${safeAttr(row.name)}" data-webhook="${safeAttr(row.webhook_url)}">Düzenle</button>
-              <button class="btn btn-ghost btn-sm" data-action="toggle-partner-endpoint" data-id="${safeAttr(row.id)}" data-active="${row.is_active ? 'false' : 'true'}">
-                ${row.is_active ? 'Pasif yap' : 'Aktif yap'}
-              </button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
+  partnerEndpointsAdmin.loadPartnerEndpoints();
 }
 
 const partnerApplicationsCtx = () => ({
@@ -3460,7 +3322,7 @@ async function manualDispatchLead(leadId, force = false) {
 
   loadAutoLeads();
   loadPartnerDispatchLogs();
-  loadPartnerEndpoints();
+  partnerEndpointsAdmin.loadPartnerEndpoints();
   if (activeDrawerLeadId) refreshOpenLeadDrawer();
 }
 
@@ -4306,7 +4168,7 @@ async function updateAutoLeadStatus(id, status) {
   toast('Lead durumu güncellendi');
   loadAutoLeads();
   loadAutoAnalytics();
-  loadPartnerEndpoints();
+  partnerEndpointsAdmin.loadPartnerEndpoints();
   if (activeDrawerLeadId === id) refreshOpenLeadDrawer();
 }
 
@@ -4537,7 +4399,10 @@ registerAdminPageHandlers({
   'expansion-prioritization': () => loadExpansionPrioritization(),
   'strategic-partnerships': () => loadStrategicPartnerships(),
   'acquisition-exit': () => loadAcquisitionExit(),
-  'partner-endpoints': () => loadPartnerEndpoints(),
+  'partner-endpoints': () => {
+    partnerEndpointsAdmin.mountRouteTypeSelect();
+    partnerEndpointsAdmin.loadPartnerEndpoints();
+  },
   'partner-applications': async () => {
     await initPartnerSalesMachineAdmin().catch(() => {});
     await loadPartnerApplications();
@@ -4583,6 +4448,7 @@ function bindAdminPanelEvents() {
     if (await housingAdmin.handleHousingAction(event, el)) return;
     if (await financeAdmin.handleFinanceAction(event, el)) return;
     if (await sigortaAdmin.handleSigortaAction(event, el)) return;
+    if (await partnerEndpointsAdmin.handlePartnerEndpointsAction(event, el)) return;
 
     const { action, id, active, role } = el.dataset;
     const isActive = active === 'true';
@@ -4736,11 +4602,6 @@ function bindAdminPanelEvents() {
     if (
       await handlePartnerApplicationAdminAction(partnerApplicationsCtx(), action, el)
     ) {
-      return;
-    }
-
-    if (action === 'edit-partner-endpoint') {
-      editPartnerEndpoint(id, el.dataset.name, el.dataset.webhook);
       return;
     }
 
