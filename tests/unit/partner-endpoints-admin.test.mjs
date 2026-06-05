@@ -179,7 +179,14 @@ test('partner-endpoint-test returns endpoint_not_found with endpoint_id', () => 
   const source = partnerEndpointTestSource();
   assert.match(source, /endpoint_not_found/);
   assert.match(source, /endpoint_id: endpointId/);
-  assert.match(source, /status: 404/);
+  assert.match(source, /maybeSingle/);
+  assert.match(source, /fetchPartnerEndpoint/);
+});
+
+test('partner-endpoint-test distinguishes lookup failures from not found', () => {
+  const source = partnerEndpointTestSource();
+  assert.match(source, /endpoint_lookup_failed/);
+  assert.match(source, /ENDPOINT_SELECT_FALLBACKS/);
 });
 
 test('partner-endpoint-test returns webhook_failed on dispatch failure', () => {
@@ -197,6 +204,8 @@ test('frontend test payload sends endpoint_id from row id', () => {
   assert.match(source, /isPartnerEndpointUuid/);
   assert.match(source, /formatPartnerEndpointTestError/);
   assert.match(source, /fetch\(`\$\{config\.url\}\/functions\/v1\/partner-endpoint-test`/);
+  assert.match(source, /\.from\('partner_endpoints'\)/);
+  assert.match(source, /endpoint_edge_mismatch/);
   assert.doesNotMatch(source, /functions\.invoke\('partner-endpoint-test'/);
 });
 

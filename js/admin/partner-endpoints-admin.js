@@ -37,6 +37,22 @@ export function initPartnerEndpointsAdmin(ctx) {
       return;
     }
 
+    const { data: localRow, error: localError } = await sb
+      .from('partner_endpoints')
+      .select('id,name')
+      .eq('id', normalizedId)
+      .maybeSingle();
+
+    if (localError) {
+      toast(`Endpoint sorgusu başarısız: ${localError.message}`, 'error');
+      return;
+    }
+    if (!localRow) {
+      toast(formatPartnerEndpointTestError({ error: 'endpoint_stale_list' }), 'error');
+      await loadPartnerEndpoints();
+      return;
+    }
+
     const { data: sessionData } = await sb.auth.getSession();
     const token = sessionData?.session?.access_token;
     if (!token) {
@@ -58,6 +74,8 @@ export function initPartnerEndpointsAdmin(ctx) {
       data = await response.json().catch(() => ({}));
       if (response.ok && data?.ok) {
         toast(`Test OK — HTTP ${data.status || response.status}`, 'success');
+      } else if (data?.error === 'endpoint_not_found') {
+        toast(formatPartnerEndpointTestError({ error: 'endpoint_edge_mismatch', endpoint_id: normalizedId }), 'error');
       } else {
         toast(formatPartnerEndpointTestError(data), 'error');
       }

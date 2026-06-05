@@ -50,6 +50,9 @@ export function isPartnerEndpointUuid(id) {
 export const PARTNER_ENDPOINT_TEST_ERRORS = Object.freeze({
   endpoint_not_found: 'Endpoint bulunamadı — kayıt silinmiş veya ID hatalı',
   endpoint_id_required: 'Endpoint ID gönderilmedi',
+  endpoint_lookup_failed: 'Endpoint sorgusu başarısız — şema veya deploy kontrol edin',
+  endpoint_stale_list: 'Endpoint artık yok — liste yenilendi, tekrar deneyin',
+  endpoint_edge_mismatch: 'Endpoint panelde var ama edge function bulamadı — deploy kontrol edin',
   webhook_failed: 'Webhook yanıt vermedi veya hata döndü',
   admin_required: 'Bu işlem için admin yetkisi gerekli'
 });
