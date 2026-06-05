@@ -14,7 +14,9 @@ const {
   buildKonutResultsV2Payload,
   buildAlternatives,
   syncCanonicalDecisionScore,
-  renderKonutWarningsHtml
+  renderKonutWarningsHtml,
+  renderKonutActionsBarHtml,
+  resolveKonutPartnerCtaLabel
 } = await import('../../js/features/konut/konut-results-v2.js');
 
 const { formatKonutAlternativeDescription, buildAlternativesV3 } = await import(
@@ -189,4 +191,58 @@ test('mobile overflow containment rules exist for housing results', () => {
   assert.match(css, /@media \(max-width: 768px\)/);
   assert.match(css, /body\.housing-page #housing-results/);
   assert.match(css, /overflow-x:\s*clip/);
+});
+
+test('renderKonutActionsBarHtml renders V2 action bar', () => {
+  const html = renderKonutActionsBarHtml({ userId: 'user-1', state: sampleState });
+  assert.match(html, /konut-v2-actions/);
+  assert.match(html, /aria-label="Sonuç aksiyonları"/);
+  assert.match(html, /data-konut-v2-pdf/);
+  assert.match(html, /data-konut-v2-restart/);
+  assert.match(html, /data-konut-v2-partner/);
+});
+
+test('V2 action bar includes PDF save button', () => {
+  const html = renderKonutActionsBarHtml({ userId: 'user-1', state: sampleState });
+  assert.match(html, /PDF olarak kaydet/);
+  assert.match(html, /data-konut-v2-pdf/);
+});
+
+test('V2 action bar includes restart analysis button', () => {
+  const html = renderKonutActionsBarHtml({ userId: 'user-1', state: sampleState });
+  assert.match(html, /Tekrar analiz yap/);
+  assert.match(html, /data-konut-v2-restart/);
+});
+
+test('V2 action bar includes partner CTA for purchase profile', () => {
+  const html = renderKonutActionsBarHtml({ userId: 'user-1', state: sampleState });
+  assert.match(html, /Bana uygun konut fırsatlarını göster/);
+  assert.match(html, /data-konut-v2-partner/);
+});
+
+test('partner CTA switches to advisor label for investment profile', () => {
+  const label = resolveKonutPartnerCtaLabel({ purchasePurpose: 'Yatırım amaçlı düşünüyorum' });
+  assert.equal(label, 'Danışman/partner teklifi al');
+  const html = renderKonutActionsBarHtml({
+    userId: 'user-1',
+    state: { purchasePurpose: 'Yatırım amaçlı düşünüyorum' }
+  });
+  assert.match(html, /Danışman\/partner teklifi al/);
+});
+
+test('guest users still get login hint in V2 action bar', () => {
+  const html = renderKonutActionsBarHtml({ userId: null, state: sampleState });
+  assert.match(html, /konut-v2-login-hint/);
+  assert.match(html, /Giriş yapın/);
+  assert.match(html, /returnTo=\/konut\//);
+});
+
+test('legacy actions hidden but V2 preserves user actions', () => {
+  const css = readFileSync(join(root, 'css/konut-results-v2.css'), 'utf8');
+  assert.match(css, /\.konut-v2-root ~ \.housing-result-actions/);
+  const html = renderKonutActionsBarHtml({ userId: null, state: sampleState });
+  assert.match(html, /PDF olarak kaydet/);
+  assert.match(html, /Tekrar analiz yap/);
+  assert.match(html, /data-konut-v2-partner/);
+  assert.match(html, /konut-v2-login-hint/);
 });

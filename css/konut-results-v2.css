@@ -405,15 +405,55 @@ body.housing-page #housing-results .konut-v2-rec-level {
   color: var(--v2-muted);
 }
 
-.konut-v2-actions {
+body.housing-page #housing-results .konut-v2-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.65rem;
   margin-top: 1rem;
+  width: 100%;
+  min-width: 0;
+}
+
+body.housing-page #housing-results .konut-v2-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  body.housing-page #housing-results .konut-v2-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  body.housing-page #housing-results .konut-v2-actions .btn {
+    width: auto;
+    flex: 0 1 auto;
+  }
+}
+
+.konut-v2-login-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--v2-muted);
+  width: 100%;
+}
+
+.konut-v2-login-hint a {
+  color: var(--v2-accent);
+  font-weight: 600;
+}
+
+.konut-v2-action-feedback {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--v2-success);
+  width: 100%;
 }
 
 @media print {
-  .konut-v2-actions { display: none; }
+  body.housing-page #housing-results .konut-v2-actions { display: none; }
   .konut-v2-panel { box-shadow: none; }
 }
 
