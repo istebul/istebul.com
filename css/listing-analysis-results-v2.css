@@ -1,0 +1,262 @@
+/**
+ * AI İlan Analizi V1 — izole Enterprise V2 premium kart stili.
+ */
+
+body.listing-analysis-page {
+  overflow-x: hidden;
+}
+
+.la-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.la-hero {
+  margin-bottom: 1.5rem;
+}
+
+.la-hero h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.2;
+  color: #0f172a;
+}
+
+.la-hero p {
+  margin: 0;
+  color: #475569;
+  max-width: 62ch;
+}
+
+.la-flow {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 18px;
+  background: #fff;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 18px 50px rgba(15, 23, 42, 0.08);
+}
+
+.la-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.la-tab {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.la-tab.is-active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.la-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.la-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.la-field--wide {
+  grid-column: 1 / -1;
+}
+
+.la-field span {
+  font-size: 0.85rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.la-field input,
+.la-field select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  color: #0f172a;
+  background: #fff;
+}
+
+.la-disclaimer {
+  margin: 1rem 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.la-submit {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.la-submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.la-form-errors {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+.la-form-errors p {
+  margin: 0.25rem 0;
+}
+
+.la-v2-root {
+  margin-top: 1.25rem;
+}
+
+.la-v2-panel {
+  --v2-surface: rgba(255, 255, 255, 0.96);
+  --v2-border: rgba(148, 163, 184, 0.35);
+  --v2-text: #0f172a;
+  --v2-muted: #64748b;
+  border: 1px solid var(--v2-border);
+  border-radius: 18px;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: radial-gradient(1200px 420px at 15% -10%, rgba(37, 99, 235, 0.12), transparent 55%),
+    var(--v2-surface);
+  color: var(--v2-text);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 18px 50px rgba(15, 23, 42, 0.1);
+}
+
+.la-v2-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--v2-muted);
+}
+
+.la-v2-title {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.6vw, 1.45rem);
+  line-height: 1.2;
+}
+
+.la-v2-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.la-v2-kpi {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem;
+  min-width: 0;
+}
+
+.la-v2-kpi span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--v2-muted);
+}
+
+.la-v2-kpi strong {
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.la-v2-kpi--success strong { color: #16a34a; }
+.la-v2-kpi--warning strong { color: #d97706; }
+.la-v2-kpi--danger strong { color: #dc2626; }
+
+.la-v2-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.la-v2-block h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.la-v2-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #334155;
+}
+
+.la-v2-cost {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.la-v2-muted {
+  margin: 0.35rem 0 0;
+  color: var(--v2-muted);
+  font-size: 0.85rem;
+}
+
+.la-v2-summary {
+  margin: 0;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  color: #334155;
+}
+
+.la-v2-actions {
+  margin-top: 1rem;
+}
+
+.la-v2-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .la-grid,
+  .la-v2-kpis,
+  .la-v2-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .la-v2-panel,
+  .la-flow {
+    --v2-surface: #ffffff;
+    background: #ffffff;
+    color: #0f172a;
+  }
+}
