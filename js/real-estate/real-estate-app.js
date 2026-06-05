@@ -17,7 +17,11 @@ import { TURKEY_CITIES } from './turkey-cities.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountKonutResultsV2, syncCanonicalDecisionScore } from '../features/konut/konut-results-v2.js';
-import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
+import {
+  mirrorLegacySiteEvent,
+  trackAnalysisCompleted,
+  trackLeadFormOpened
+} from '../platform/site-analytics.js';
 import { withTimeout } from '../core/async-utils.js';
 import { setSubmitLoading } from '../runtime/enterprise-form-ux.js';
 import {
@@ -102,6 +106,39 @@ const state = {
 
 let lastResultPayload = null;
 let resultsRendered = false;
+let wizardCompleteFired = false;
+let leadOpenFired = false;
+
+const HOUSING_ANALYSIS_START_KEY = 'ib_housing_analysis_start';
+
+function hasHomeAnalysisStartFired() {
+  try {
+    return sessionStorage.getItem(HOUSING_ANALYSIS_START_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markHomeAnalysisStartFired() {
+  try {
+    sessionStorage.setItem(HOUSING_ANALYSIS_START_KEY, '1');
+  } catch {
+    /* ignore */
+  }
+}
+
+function maybeFireHomeAnalysisStart(source = 'interaction') {
+  if (hasHomeAnalysisStartFired()) return;
+  markHomeAnalysisStartFired();
+  trackEvent('home_analysis_start', { source });
+}
+
+function maybeFireHomeLeadOpen(source = 'interaction') {
+  if (leadOpenFired) return;
+  leadOpenFired = true;
+  trackEvent('home_lead_open', { source });
+  trackLeadFormOpened('konut', { source });
+}
 
 function $(selector, root = document) {
   return root.querySelector(selector);
@@ -476,6 +513,7 @@ function renderStep() {
 function bindWizardEvents() {
   document.querySelectorAll('[data-field]').forEach((button) => {
     button.addEventListener('click', () => {
+      maybeFireHomeAnalysisStart('field_select');
       const field = button.dataset.field;
       const previousValue = state[field];
       state[field] = button.dataset.value || '';
@@ -487,6 +525,7 @@ function bindWizardEvents() {
   });
   document.querySelectorAll('[data-action="toggle-location"]').forEach((button) => {
     button.addEventListener('click', () => {
+      maybeFireHomeAnalysisStart('chip_select');
       const value = button.dataset.value;
       if (!value) return;
       state.locationPreferences = state.locationPreferences.includes(value)
@@ -497,6 +536,7 @@ function bindWizardEvents() {
   });
   document.querySelectorAll('[data-action="toggle-risk"]').forEach((button) => {
     button.addEventListener('click', () => {
+      maybeFireHomeAnalysisStart('chip_select');
       const value = button.dataset.value;
       if (!value) return;
       if (state.riskPreferences.includes(value)) {
@@ -509,6 +549,7 @@ function bindWizardEvents() {
   });
   document.querySelectorAll('[data-input]').forEach((input) => {
     const handler = () => {
+      maybeFireHomeAnalysisStart('form_input');
       state[input.dataset.input] = input.type === 'checkbox' ? input.checked : input.value;
       updateSidePanel('wizard');
     };
@@ -523,6 +564,7 @@ function bindWizardEvents() {
 }
 
 async function handleNext() {
+  maybeFireHomeAnalysisStart('next_click');
   const validationNode = $('#housing-validation');
   const nextBtn = $('#housing-next');
   const fail = (message, step = state.step) => {
@@ -706,6 +748,11 @@ async function renderResults() {
     lastResultPayload = { metrics, ai, scenarios, attention, nextStep };
     resultsRendered = true;
 
+    if (!wizardCompleteFired) {
+      wizardCompleteFired = true;
+      trackEvent('home_wizard_complete', { score: metrics.score, risk: metrics.risk.label });
+      trackAnalysisCompleted('konut', { score: metrics.score, risk: metrics.risk.label });
+    }
     void trackEvent('home_results_view', { score: metrics.score, risk: metrics.risk.label });
 
     if (wizard) wizard.hidden = true;
@@ -845,6 +892,8 @@ function handleHousingRestart() {
   state.step = 0;
   resultsRendered = false;
   lastResultPayload = null;
+  wizardCompleteFired = false;
+  leadOpenFired = false;
   if (wizard) wizard.hidden = false;
   if (results) {
     results.hidden = false;
@@ -876,6 +925,7 @@ function handleHousingSaveReport(metrics, aiText, userId, feedbackEl) {
 }
 
 async function handleHousingPartnerCta(metrics, aiText, feedbackEl) {
+  maybeFireHomeLeadOpen('partner_cta');
   state.wantPartnerOffer = true;
   await submitLead(metrics, aiText);
   const message = 'Partner talebiniz alındı. Ekibimiz sizinle iletişime geçecektir.';
@@ -896,7 +946,11 @@ function bindResultsEvents(metrics, ai, userId) {
 
   results?.querySelectorAll('[data-result-input]').forEach((input) => {
     input.addEventListener('input', () => {
+      maybeFireHomeLeadOpen('lead_form');
       state[input.dataset.resultInput] = input.value;
+    });
+    input.addEventListener('focus', () => {
+      maybeFireHomeLeadOpen('lead_form');
     });
   });
   $('#housing-partner-offer-result')?.addEventListener('change', (e) => {
@@ -926,17 +980,19 @@ function bindResultsEvents(metrics, ai, userId) {
 }
 
 function bindHeroCtas() {
-  ['#housing-hero-cta', '#housing-hero-secondary'].forEach((selector) => {
-    $(selector)?.addEventListener('click', () => {
-      $('#housing-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+  $('#housing-hero-cta')?.addEventListener('click', () => {
+    maybeFireHomeAnalysisStart('hero_cta');
+    $('#housing-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  $('#housing-hero-secondary')?.addEventListener('click', () => {
+    maybeFireHomeAnalysisStart('hero_secondary');
+    $('#housing-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 }
 
 async function init() {
   bindHeroCtas();
   renderStep();
-  trackEvent('home_analysis_start', {});
   await intake('event', { event_type: 'housing_page_view', metadata: {} });
 }
 

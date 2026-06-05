@@ -46,7 +46,11 @@ const EVENT_ALIASES = Object.freeze({
     'analysis_completed',
     'auto_form_submitted',
     'auto_wizard_complete',
-    'finance_funnel_complete'
+    'wizard_complete',
+    'finance_funnel_complete',
+    'home_wizard_complete',
+    'vacation_wizard_complete',
+    'kasko_wizard_complete'
   ],
   results_viewed: [
     'results_viewed',
@@ -59,14 +63,21 @@ const EVENT_ALIASES = Object.freeze({
     'home_results_view',
     'insurance_results_view'
   ],
-  lead_form_opened: ['lead_form_opened', 'auto_modal_open', 'insurance_interest'],
+  lead_form_opened: [
+    'lead_form_opened',
+    'auto_modal_open',
+    'insurance_interest',
+    'home_lead_open',
+    'vacation_lead_open'
+  ],
   lead_submitted: [
     'lead_submitted',
     'lead_submit',
     'auto_lead_submit',
     'finans_lead_submit',
     'vacation_lead_submit',
-    'home_lead_submit'
+    'home_lead_submit',
+    'insurance_lead_submit'
   ],
   pdf_downloaded: ['pdf_downloaded', 'insurance_pdf_download'],
   cta_clicked: ['cta_clicked', 'cta_click', 'hero_cta_click']
