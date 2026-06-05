@@ -2,7 +2,7 @@ import { analytics } from '../core/analytics.js';
 import { withTimeout } from '../core/async-utils.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
 
-const INTAKE_FETCH_TIMEOUT_MS = 8000;
+const INTAKE_FETCH_TIMEOUT_MS = 4000;
 
 const VERTICAL_SITE_CATEGORY = Object.freeze({
   finans: 'finansman',

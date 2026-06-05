@@ -3,7 +3,10 @@
  * EVDS verisi yoksa mevcut davranış korunur (null / hasData: false).
  */
 import { escapeHtml } from '../../core/security.js';
+import { withTimeout } from '../../core/async-utils.js';
 import { clampScore } from '../results/results-engine.js';
+
+const EVDS_SNAPSHOT_TIMEOUT_MS = 5000;
 
 /** @typedef {{ policyRate?: number|null, housingLoanRate?: number|null, cpiAnnual?: number|null, usdTry?: number|null, eurTry?: number|null }} EvdsRates */
 
@@ -630,11 +633,15 @@ export function renderAutoFxRiskHtml(analysis = {}, esc = escapeHtml) {
  * Tarayıcıda EVDS snapshot çeker (karar motoru için).
  * @returns {Promise<{ rates: EvdsRates, status: string }|null>}
  */
-export async function fetchEvdsRatesForEngine(fetchImpl = globalThis.fetch) {
+export async function fetchEvdsRatesForEngine(fetchImpl = globalThis.fetch, timeoutMs = EVDS_SNAPSHOT_TIMEOUT_MS) {
   if (typeof fetchImpl !== 'function') return null;
   try {
-    const res = await fetchImpl('/api/evds-snapshot', { credentials: 'same-origin' });
-    if (!res.ok) return null;
+    const res = await withTimeout(
+      fetchImpl('/api/evds-snapshot', { credentials: 'same-origin' }),
+      timeoutMs,
+      null
+    );
+    if (!res || !res.ok) return null;
     const body = await res.json().catch(() => null);
     const data = body?.data ?? body;
     if (!data?.rates) return null;

@@ -34,6 +34,7 @@ import {
   mountEvdsRiskLayer
 } from '../results/results-evds-risk-layer.js';
 import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
+import { withTimeout } from '../../core/async-utils.js';
 import {
   renderResultsHeroLayout,
   scoreToneFromLabel
@@ -889,6 +890,63 @@ function bindFinansmanScenarioSelection(root, payload) {
   });
 }
 
+const FINANSMAN_EVDS_TIMEOUT_MS = 5000;
+const FINANSMAN_SUMMARY_TIMEOUT_MS = 10000;
+
+async function hydrateFinansmanResultsV2Extras(root, model, track) {
+  try {
+    const evdsSnapshot = await withTimeout(fetchEvdsRatesForEngine(), FINANSMAN_EVDS_TIMEOUT_MS, null);
+    if (evdsSnapshot?.rates) {
+      const refreshed = buildFinansmanResultsV2Payload({
+        state: model.state || {},
+        results: model.results || [],
+        selectedOption: model.selectedOption,
+        evdsRates: evdsSnapshot.rates
+      });
+      model.evdsRiskLayer = refreshed.evdsRiskLayer;
+      mountEvdsRiskLayer(root, model.evdsRiskLayer);
+    }
+    await withTimeout(hydrateResultsEconomicIndicators(root, 'finansman'), FINANSMAN_EVDS_TIMEOUT_MS);
+  } catch (error) {
+    console.warn('finansman-v2-evds-hydrate-failed', error);
+  }
+
+  try {
+    const summary = await withTimeout(
+      fetchExecutiveSummaryV3(
+        'finansman',
+        model.intelligence?.context || {},
+        model.intelligence || model,
+        {
+          planTier: model.planTier,
+          strengths: model.strengths,
+          weaknesses: model.weaknesses,
+          marketAssessment: buildEvdsAiMarketSentence(model.evdsRiskLayer),
+          costs: model.totalCost
+        }
+      ),
+      FINANSMAN_SUMMARY_TIMEOUT_MS,
+      null
+    );
+    if (!summary) return;
+
+    if (summary.insight) {
+      model.insight = summary.insight;
+      hydrateInsightBlocks(root.querySelector('[data-finansman-v2-insight-root]'), summary.insight);
+    }
+    const sourceEl = root.querySelector('[data-finansman-v2-source]');
+    if (sourceEl) {
+      sourceEl.textContent =
+        summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
+    }
+    model.executiveSummary = summary.text;
+    model.pdfReportData.executiveSummary = summary.text;
+    if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
+  } catch (error) {
+    console.warn('finansman-v2-summary-hydrate-failed', error);
+  }
+}
+
 export async function mountFinansmanResultsV2(mountNode, payload = {}) {
   if (!mountNode) return null;
 
@@ -901,15 +959,16 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
 
   syncCanonicalFinansScores(state, results, selectedOption);
 
-  const evdsSnapshot = await fetchEvdsRatesForEngine();
   const built = buildFinansmanResultsV2Payload({
     state,
     results,
     selectedOption,
-    evdsRates: evdsSnapshot?.rates || null
+    evdsRates: null
   });
   const model = {
     ...built,
+    state,
+    results,
     executiveSummary: '',
     summarySourceLabel: ''
   };
@@ -919,8 +978,6 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
   root.innerHTML = renderFinansmanResultsV2Html(model);
   mountNode.prepend(root);
   bindFinansmanScenarioSelection(root, { ...payload, selectedOption });
-  await hydrateResultsEconomicIndicators(root, 'finansman');
-  mountEvdsRiskLayer(root, model.evdsRiskLayer);
 
   safeTrackEvent(track, 'finance_result_v2_view', {
     category: 'finansman',
@@ -939,31 +996,7 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
     onLeadSubmit: payload.onLeadSubmit
   });
 
-  const summary = await fetchExecutiveSummaryV3(
-    'finansman',
-    model.intelligence?.context || {},
-    model.intelligence || model,
-    {
-      planTier: model.planTier,
-      strengths: model.strengths,
-      weaknesses: model.weaknesses,
-      marketAssessment: buildEvdsAiMarketSentence(model.evdsRiskLayer),
-      costs: model.totalCost
-    }
-  );
-
-  if (summary.insight) {
-    model.insight = summary.insight;
-    hydrateInsightBlocks(root.querySelector('[data-finansman-v2-insight-root]'), summary.insight);
-  }
-  const sourceEl = root.querySelector('[data-finansman-v2-source]');
-  if (sourceEl) {
-    sourceEl.textContent =
-      summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
-  }
-  model.executiveSummary = summary.text;
-  model.pdfReportData.executiveSummary = summary.text;
-  if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
+  void hydrateFinansmanResultsV2Extras(root, model, track);
 
   return model;
 }

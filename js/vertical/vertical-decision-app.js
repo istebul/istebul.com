@@ -26,6 +26,7 @@ const VERTICAL_SITE_CATEGORY = Object.freeze({
 
 /** @type {Record<string, string>} */
 const TRACKER_STEP_TIMEOUT_MS = 8000;
+const TRACKER_STEP_FIRE_AND_FORGET_MS = 2500;
 
 const DEFAULT_DOM_IDS = {
   stepProgress: 'vacation-step-progress',
@@ -66,6 +67,22 @@ export function initDecisionFlow(config) {
   };
 
   const $ = (sel, root = document) => root.querySelector(sel);
+  const verticalLabel = config.vertical || 'vertical';
+
+  function clearWizardSubmitLoading(staleBtn) {
+    setSubmitLoading(staleBtn, false);
+    setSubmitLoading(el('next'), false);
+  }
+
+  function fireStepSideEffects(step) {
+    if (!config.onStepComplete) return;
+    void withTimeout(
+      Promise.resolve(config.onStepComplete(state, step)),
+      TRACKER_STEP_FIRE_AND_FORGET_MS
+    ).catch((error) => {
+      console.warn(`${verticalLabel}-step-track-failed`, error);
+    });
+  }
 
   /** Hide wizard when results are shown (CSS flow-visible uses !important otherwise). */
   function setWizardVisible(visible) {
@@ -238,20 +255,15 @@ export function initDecisionFlow(config) {
       const advancingToResults = state.stepIndex >= steps.length - 1;
 
       try {
-        if (config.onStepComplete) {
-          await withTimeout(
-            Promise.resolve(config.onStepComplete(state, step)),
-            TRACKER_STEP_TIMEOUT_MS
-          );
-        }
+        fireStepSideEffects(step);
         state.stepIndex += 1;
         if (state.stepIndex >= steps.length) {
-          await showResults();
+          showResults();
         } else {
           renderWizard();
         }
       } catch (error) {
-        console.warn(`${config.vertical || 'vertical'}-wizard-step-failed`, error);
+        console.warn(`${verticalLabel}-wizard-step-failed`, error);
         if (advancingToResults) {
           state.stepIndex = Math.max(0, steps.length - 1);
           setWizardVisible(true);
@@ -264,7 +276,7 @@ export function initDecisionFlow(config) {
           )
         );
       } finally {
-        setSubmitLoading(nextBtn, false);
+        clearWizardSubmitLoading(nextBtn);
       }
     });
   }
@@ -340,12 +352,12 @@ export function initDecisionFlow(config) {
     return state.results[0] || null;
   }
 
-  async function showResults() {
+  function showResults() {
     let built = [];
     try {
       built = config.buildResults(state) || [];
     } catch (error) {
-      console.warn(`${config.vertical || 'vertical'}-build-results-failed`, error);
+      console.warn(`${verticalLabel}-build-results-failed`, error);
       throw error;
     }
     if (!built.length) {
@@ -356,10 +368,15 @@ export function initDecisionFlow(config) {
     state.selected_option = config.vertical === 'finans' && built[0]?.id ? built[0].id : '';
     state.confirmationStep = false;
     setWizardVisible(false);
-    const siteCategory = VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical;
-    trackAnalysisStarted(siteCategory, { phase: 'wizard_complete' });
-    trackResultsViewed(siteCategory, { results_count: state.results.length });
     renderResults();
+
+    try {
+      const siteCategory = VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical;
+      trackAnalysisStarted(siteCategory, { phase: 'wizard_complete' });
+      trackResultsViewed(siteCategory, { results_count: state.results.length });
+    } catch (error) {
+      console.warn(`${verticalLabel}-results-analytics-failed`, error);
+    }
 
     void withTimeout(
       Promise.resolve(
@@ -368,8 +385,10 @@ export function initDecisionFlow(config) {
           score: state.results[0]?.score
         })
       ),
-      TRACKER_STEP_TIMEOUT_MS
-    ).catch(() => {});
+      TRACKER_STEP_FIRE_AND_FORGET_MS
+    ).catch((error) => {
+      console.warn(`${verticalLabel}-results-track-failed`, error);
+    });
   }
 
   function renderResults() {
@@ -541,8 +560,17 @@ export function initDecisionFlow(config) {
     if (!state.selected_option) return;
 
     state.confirmationStep = true;
-    trackLeadFormOpened(VERTICAL_SITE_CATEGORY.finans || 'finansman');
-    await config.tracker.trackConfirm(state.selected_option);
+    try {
+      trackLeadFormOpened(VERTICAL_SITE_CATEGORY.finans || 'finansman');
+    } catch (error) {
+      console.warn(`${verticalLabel}-lead-form-analytics-failed`, error);
+    }
+    void withTimeout(
+      Promise.resolve(config.tracker.trackConfirm(state.selected_option)),
+      TRACKER_STEP_FIRE_AND_FORGET_MS
+    ).catch((error) => {
+      console.warn(`${verticalLabel}-confirm-track-failed`, error);
+    });
 
     if (leadPanel) leadPanel.hidden = false;
     if (leadHint) {
