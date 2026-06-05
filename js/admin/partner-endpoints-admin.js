@@ -114,7 +114,12 @@ export function initPartnerEndpointsAdmin(ctx) {
       limit: 200,
       order: { column: 'created_at', ascending: false },
       direct: () =>
-        sb.from('partner_endpoints').select('*').order('priority_weight', { ascending: false })
+        sb
+          .from('partner_endpoints')
+          .select(
+            'id,name,route_type,webhook_url,is_active,priority_weight,daily_cap,sent_today,health_status,last_success_at,last_failure_at,consecutive_failures,notes,created_at'
+          )
+          .order('priority_weight', { ascending: false })
     });
 
     if (res.error && !(res.data || []).length) {
