@@ -16,7 +16,7 @@ import {
 import { TURKEY_CITIES } from './turkey-cities.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
-import { mountKonutResultsV2 } from '../features/konut/konut-results-v2.js';
+import { mountKonutResultsV2, syncCanonicalDecisionScore } from '../features/konut/konut-results-v2.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
 import { withTimeout } from '../core/async-utils.js';
 import { setSubmitLoading } from '../runtime/enterprise-form-ux.js';
@@ -306,7 +306,7 @@ function buildMetrics() {
   });
   const scoreBand = getScoreBand(score);
   const creditLoadScore = Math.round(100 - Math.min(dti, 100));
-  return {
+  const metrics = {
     ownership,
     dti,
     locationFit,
@@ -328,6 +328,8 @@ function buildMetrics() {
     creditLoadScore,
     creditLoadLabel: dti > 45 ? 'Yüksek baskı' : dti > 32 ? 'Orta baskı' : 'Kontrollü'
   };
+  syncCanonicalDecisionScore(state, metrics, getScoreBand);
+  return metrics;
 }
 
 function buildProfileSummary() {

@@ -88,6 +88,21 @@ export function computeDecisionScore(state = {}, metrics = {}) {
   return buildDecisionIntelligenceResult('konut', state, metrics).decisionScore;
 }
 
+/**
+ * metrics.score ve scoreBand'ı V3 decisionScore ile senkronize eder (canonical kaynak).
+ * @param {object} state
+ * @param {object} metrics — yerinde güncellenir
+ * @param {(score: number) => object} [scoreBandFn]
+ */
+export function syncCanonicalDecisionScore(state, metrics, scoreBandFn) {
+  const decisionScore = computeDecisionScore(state, metrics);
+  metrics.score = decisionScore;
+  if (typeof scoreBandFn === 'function') {
+    metrics.scoreBand = scoreBandFn(decisionScore);
+  }
+  return decisionScore;
+}
+
 function computeDecisionScoreLegacy(state = {}, metrics = {}) {
   const purposeScore = state.purchasePurpose
     ? state.purchasePurpose.includes('Yatırım')
@@ -304,6 +319,36 @@ export function buildAlternatives(scenarios = []) {
   return [...fromScenarios, ...defaults].slice(0, 3);
 }
 
+function normalizeAlternatives(alternatives = [], scenarios = []) {
+  return (alternatives || []).map((alt, index) => {
+    const scenario = scenarios[index] || {};
+    const fromEffects = [scenario.monthlyEffect, scenario.riskEffect, scenario.totalEffect]
+      .filter(Boolean)
+      .join(' · ');
+    const description =
+      String(alt.description || '').trim() ||
+      fromEffects ||
+      'Alternatif senaryo — profilinize göre değerlendirin.';
+    return {
+      ...alt,
+      description,
+      meta: alt.meta || (scenario.score != null ? `${scenario.score}/100` : alt.meta || '')
+    };
+  });
+}
+
+export function renderKonutWarningsHtml(warnings = [], esc = escapeHtml) {
+  const items = (warnings || []).filter(Boolean);
+  if (!items.length) return '';
+  return `
+    <section class="konut-v2-warnings" aria-label="Risk uyarıları">
+      <h3>Risk Uyarıları</h3>
+      <ul class="konut-v2-warnings__list">
+        ${items.map((w) => `<li>${esc(w)}</li>`).join('')}
+      </ul>
+    </section>`;
+}
+
 function buildNextSteps(state = {}, metrics = {}, riskAnalysis = []) {
   const highRisks = riskAnalysis.filter((r) => r.level === 'yüksek').map((r) => r.key);
   const steps = [
@@ -348,7 +393,10 @@ export function buildKonutResultsV2Payload({
   const totalCost = buildTotalCostView(state, metrics);
   const strengths = buildStrengths(state, metrics);
   const weaknesses = buildWeaknesses(attention, metrics);
-  const alternatives = intel.alternatives.length ? intel.alternatives : buildAlternatives(scenarios);
+  const alternatives = normalizeAlternatives(
+    intel.alternatives.length ? intel.alternatives : buildAlternatives(scenarios),
+    scenarios
+  );
   const nextSteps = intel.nextSteps;
   const overallRisk = intel.overallRisk;
 
@@ -462,9 +510,24 @@ function renderKonutResultsV2Html(model) {
     evdsMountClass: 'konut-v2-evds-mount ib-results-economic--home'
   });
 
+  const heroBadgesHtml = `
+    <div class="konut-v2-hero-badges" aria-label="Skor özeti">
+      <span class="konut-v2-hero-badge konut-v2-hero-badge--score">
+        Karar Skoru <strong>${esc(String(model.decisionScore))}/100</strong>
+      </span>
+      <span class="konut-v2-hero-badge konut-v2-hero-badge--confidence">
+        Güven <strong>${esc(String(model.confidenceScore))}/100</strong>
+      </span>
+    </div>`;
+
   return `
     <section class="konut-v2-panel" aria-label="Konut karar raporu özeti">
-      ${heroHtml}
+      <div class="konut-v2-hero-wrap">
+        ${heroHtml}
+        ${heroBadgesHtml}
+      </div>
+
+      ${renderKonutWarningsHtml(model.warnings, esc)}
 
       <div id="ib-results-detail"></div>
 

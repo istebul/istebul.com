@@ -5,6 +5,16 @@
 @import 'home-economic-indicators.css';
 @import 'results-hero-layout.css';
 
+/* V2 aktifken legacy panelleri gizle — tek kaynak V2 hero */
+body.housing-page #housing-results .konut-v2-root ~ .ib-premium-dashboard,
+body.housing-page #housing-results .konut-v2-root ~ .housing-result-grid,
+body.housing-page #housing-results .konut-v2-root ~ .housing-result-actions,
+body.housing-page #housing-results .konut-v2-root ~ .housing-result-contact,
+body.housing-page #housing-results .konut-v2-root ~ .result-disclaimer,
+body.housing-page #housing-results .konut-v2-root ~ .housing-login-hint {
+  display: none !important;
+}
+
 .konut-v2-root {
   margin: 0.75rem 0 1rem;
 }
@@ -574,4 +584,120 @@ body.housing-page #housing-results .konut-v2-rec-level {
 .konut-v2-factor-impact {
   font-weight: 800;
   color: var(--v2-accent);
+}
+
+/* Hero premium polish — score/güven rozetleri + hafif glow */
+.konut-v2-hero-wrap {
+  margin-bottom: 0.75rem;
+  padding: 0.65rem;
+  border-radius: 14px;
+  background: radial-gradient(900px 280px at 12% -20%, rgba(124, 58, 237, 0.1), transparent 58%),
+    radial-gradient(640px 220px at 92% 0%, rgba(37, 99, 235, 0.08), transparent 55%),
+    #ffffff;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.1), 0 10px 28px rgba(124, 58, 237, 0.07);
+}
+
+.konut-v2-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.konut-v2-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--v2-border);
+  background: var(--v2-elev);
+  color: var(--v2-muted);
+}
+
+.konut-v2-hero-badge strong {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--v2-text);
+}
+
+.konut-v2-hero-badge--score {
+  border-color: rgba(124, 58, 237, 0.28);
+  background: rgba(124, 58, 237, 0.08);
+}
+
+.konut-v2-hero-badge--confidence {
+  border-color: rgba(37, 99, 235, 0.28);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.konut-v2-warnings {
+  margin: 0 0 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  background: rgba(255, 251, 235, 0.92);
+}
+
+.konut-v2-warnings h3 {
+  margin: 0 0 0.45rem;
+  font-size: 0.88rem;
+  color: #92400e;
+}
+
+.konut-v2-warnings__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #78350f;
+}
+
+.konut-v2-warnings__list li + li {
+  margin-top: 0.25rem;
+}
+
+/* Mobil — yatay taşma önleme */
+@media (max-width: 768px) {
+  body.housing-page {
+    overflow-x: clip;
+  }
+
+  body.housing-page main,
+  body.housing-page #housing-flow {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body.housing-page #housing-results {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    box-sizing: border-box;
+  }
+
+  body.housing-page #housing-results > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.housing-page #housing-results .konut-v2-panel,
+  body.housing-page #housing-results .konut-v2-hero-wrap,
+  body.housing-page #housing-results .ib-results-hero-shell,
+  body.housing-page #housing-results .konut-v2-cost-dl,
+  body.housing-page #housing-results .konut-v2-rate-table {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.housing-page #housing-results .konut-v2-hero-badges {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

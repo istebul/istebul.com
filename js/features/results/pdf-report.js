@@ -384,6 +384,11 @@ h2 {
   color: #9a3412;
   font-size: 0.86rem;
 }
+.note-banner--warn {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #92400e;
+}
 .disclaimer {
   margin-top: 1.5rem;
   padding-top: 12px;
@@ -471,6 +476,8 @@ export function buildReportHtml(pdfReportData = {}) {
       data.weaknesses
     : Array.isArray(data.cautions) ? data.cautions : [];
 
+  const engineWarnings = Array.isArray(data.warnings) ? data.warnings.filter(Boolean) : [];
+
   const title = `isteBul ${label} Karar Raporu`;
   const filename = createReportFilename(category, data.generatedAt);
 
@@ -498,6 +505,15 @@ export function buildReportHtml(pdfReportData = {}) {
     </header>
     <main class="report-body">
       ${estimateNote ? `<p class="note-banner"><strong>Veri notu:</strong> ${estimateNote}</p>` : ''}
+
+      ${
+        engineWarnings.length ?
+          `<section aria-label="Risk uyarıları">
+        <h2>Risk Uyarıları</h2>
+        <div class="note-banner note-banner--warn">${listHtml(engineWarnings)}</div>
+      </section>`
+        : ''
+      }
 
       <section aria-label="Özet skorlar">
         <h2>Özet Skorlar</h2>

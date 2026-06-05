@@ -1,5 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
 const {
   computeConfidenceScore,
@@ -7,67 +12,102 @@ const {
   buildRiskAnalysis,
   buildTotalCostView,
   buildKonutResultsV2Payload,
-  buildAlternatives
+  buildAlternatives,
+  syncCanonicalDecisionScore,
+  renderKonutWarningsHtml
 } = await import('../../js/features/konut/konut-results-v2.js');
 
+const { formatKonutAlternativeDescription, buildAlternativesV3 } = await import(
+  '../../js/features/results/decision-intelligence-engine.js'
+);
+
+const { buildReportHtml } = await import('../../js/features/results/pdf-report.js');
+
+const sampleState = {
+  city: 'İstanbul',
+  district: 'Kadıköy',
+  totalBudget: 4_000_000,
+  homeType: 'Daire',
+  roomCount: '3',
+  purchasePurpose: 'Satın almak istiyorum',
+  useFinancing: 'evet',
+  monthlyIncome: 80_000,
+  monthlyCapacity: 45_000,
+  locationPreferences: ['ulasim'],
+  riskPreferences: ['Düşük aidat'],
+  squareMeters: 95
+};
+
+const sampleMetrics = {
+  score: 78,
+  budgetFit: 75,
+  locationFit: 80,
+  homeTypeFit: 82,
+  financingClarity: 85,
+  costPressure: 30,
+  investmentPotential: 70,
+  downPaymentStrength: 65,
+  riskDensity: 40,
+  dti: 35,
+  earthquakeRiskScore: 45,
+  liquidityRisk: 40,
+  risk: { label: 'Orta', score: 48 },
+  ownership: {
+    homePrice: 4_000_000,
+    downPayment: 1_200_000,
+    principal: 2_800_000,
+    monthlyPayment: 42_000,
+    titleFees: 180_000,
+    realTotal: 4_500_000
+  }
+};
+
+const housingScenarios = [
+  {
+    title: 'Daha düşük bütçeli konut',
+    monthlyEffect: '-2.100 TL',
+    totalEffect: '-%11 toplam maliyet',
+    riskEffect: 'Likidite riski azalır',
+    score: 74
+  },
+  {
+    title: 'Daha yüksek peşinat',
+    monthlyEffect: '-3.450 TL',
+    totalEffect: '-%8 faiz yükü',
+    riskEffect: 'Kredi yükü riski düşer',
+    score: 76
+  }
+];
+
 test('computeConfidenceScore drops when city missing', () => {
-  const full = computeConfidenceScore({
-    city: 'Ankara',
-    district: 'Çankaya',
-    totalBudget: 3_000_000,
-    homeType: 'Daire',
-    roomCount: '3',
-    purchasePurpose: 'Satın almak istiyorum',
-    useFinancing: 'evet',
-    monthlyIncome: 80_000,
-    monthlyCapacity: 45_000,
-    locationPreferences: ['ulasim'],
-    riskPreferences: ['Düşük aidat']
-  });
+  const full = computeConfidenceScore(sampleState);
   const partial = computeConfidenceScore({ city: 'Ankara' });
   assert.ok(full > partial);
   assert.ok(partial >= 32);
 });
 
-test('decisionScoreLabel bands', () => {
+test('decisionScore is canonical and matches payload', () => {
   const payload = buildKonutResultsV2Payload({
-    state: {
-      city: 'İstanbul',
-      totalBudget: 4_000_000,
-      homeType: 'Daire',
-      purchasePurpose: 'Satın almak istiyorum',
-      useFinancing: 'evet'
-    },
-    metrics: {
-      score: 78,
-      budgetFit: 75,
-      locationFit: 80,
-      homeTypeFit: 82,
-      financingClarity: 85,
-      costPressure: 30,
-      investmentPotential: 70,
-      downPaymentStrength: 65,
-      riskDensity: 40,
-      dti: 35,
-      earthquakeRiskScore: 45,
-      liquidityRisk: 40,
-      risk: { label: 'Orta', score: 48 },
-      ownership: {
-        homePrice: 4_000_000,
-        downPayment: 1_200_000,
-        principal: 2_800_000,
-        monthlyPayment: 42_000,
-        titleFees: 180_000,
-        realTotal: 4_500_000
-      }
-    },
-    scenarios: [],
+    state: sampleState,
+    metrics: sampleMetrics,
+    scenarios: housingScenarios,
     attention: []
   });
   assert.ok(payload.decisionScore >= 0 && payload.decisionScore <= 100);
   assert.ok(['Çok uygun', 'Uygun', 'Dikkatli değerlendir', 'Riskli karar'].includes(payload.scoreLabel));
   assert.equal(payload.riskAnalysis.length, 6);
-  assert.ok(payload.pdfReportData.decisionScore === payload.decisionScore);
+  assert.equal(payload.pdfReportData.decisionScore, payload.decisionScore);
+});
+
+test('syncCanonicalDecisionScore overwrites legacy metrics.score', () => {
+  const metrics = { ...sampleMetrics, score: 78 };
+  const decisionScore = syncCanonicalDecisionScore(sampleState, metrics, (s) => ({
+    label: s >= 75 ? 'Güçlü' : 'Orta',
+    tone: s >= 75 ? 'good' : 'mid'
+  }));
+  assert.equal(metrics.score, decisionScore);
+  assert.equal(computeDecisionScore(sampleState, sampleMetrics), decisionScore);
+  assert.equal(metrics.scoreBand.label, decisionScore >= 75 ? 'Güçlü' : 'Orta');
 });
 
 test('buildRiskAnalysis returns six categories', () => {
@@ -90,10 +130,63 @@ test('buildAlternatives always returns three items', () => {
   assert.equal(alts.length, 3);
 });
 
-test('computeDecisionScore blends with legacy metrics', () => {
-  const score = computeDecisionScore(
-    { purchasePurpose: 'Satın almak istiyorum', homeType: 'Daire' },
-    { score: 72, budgetFit: 70, locationFit: 68, homeTypeFit: 75, financingClarity: 80, costPressure: 35, investmentPotential: 65, risk: { score: 45 }, riskDensity: 30 }
-  );
-  assert.ok(score >= 40 && score <= 95);
+test('formatKonutAlternativeDescription uses scenario effects when description empty', () => {
+  const desc = formatKonutAlternativeDescription(housingScenarios[0]);
+  assert.match(desc, /-2\.100 TL/);
+  assert.match(desc, /Likidite riski azalır/);
+  assert.match(desc, /-%11 toplam maliyet/);
+});
+
+test('buildAlternativesV3 never returns empty konut descriptions', () => {
+  const alts = buildAlternativesV3('konut', {
+    extras: { scenarios: housingScenarios }
+  });
+  assert.equal(alts.length, 2);
+  assert.ok(alts.every((a) => a.description && a.description.trim().length > 0));
+  assert.match(alts[0].description, /-2\.100 TL/);
+});
+
+test('buildKonutResultsV2Payload alternatives are never empty', () => {
+  const payload = buildKonutResultsV2Payload({
+    state: { ...sampleState, totalBudget: 4_000_000 },
+    metrics: { ...sampleMetrics, dti: 50 },
+    scenarios: housingScenarios,
+    attention: []
+  });
+  assert.ok(payload.alternatives.length >= 1);
+  assert.ok(payload.alternatives.every((a) => a.description && a.description.trim().length > 0));
+});
+
+test('renderKonutWarningsHtml renders Risk Uyarıları banner', () => {
+  const html = renderKonutWarningsHtml(['Borç/gelir oranı yüksek görünüyor.']);
+  assert.match(html, /Risk Uyarıları/);
+  assert.match(html, /Borç\/gelir oranı yüksek/);
+  assert.equal(renderKonutWarningsHtml([]), '');
+});
+
+test('warnings appear in PDF when intel.warnings present', () => {
+  const payload = buildKonutResultsV2Payload({
+    state: sampleState,
+    metrics: { ...sampleMetrics, dti: 50 },
+    scenarios: housingScenarios,
+    attention: []
+  });
+  assert.ok(payload.warnings.length >= 1);
+  const pdf = buildReportHtml(payload.pdfReportData);
+  assert.match(pdf, /Risk Uyarıları/);
+  assert.match(pdf, /Borç\/gelir oranı yüksek/);
+});
+
+test('legacy suppression CSS hides panels when V2 root is present', () => {
+  const css = readFileSync(join(root, 'css/konut-results-v2.css'), 'utf8');
+  assert.match(css, /\.konut-v2-root ~ \.ib-premium-dashboard/);
+  assert.match(css, /\.konut-v2-root ~ \.housing-result-grid/);
+  assert.match(css, /display:\s*none\s*!important/);
+});
+
+test('mobile overflow containment rules exist for housing results', () => {
+  const css = readFileSync(join(root, 'css/konut-results-v2.css'), 'utf8');
+  assert.match(css, /@media \(max-width: 768px\)/);
+  assert.match(css, /body\.housing-page #housing-results/);
+  assert.match(css, /overflow-x:\s*clip/);
 });
