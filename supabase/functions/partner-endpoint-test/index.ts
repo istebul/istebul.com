@@ -3,10 +3,14 @@ import { resolveCorsOrigin } from "../_shared/cors-origins.ts";
 import { signPartnerPayload } from "../_shared/partner-dispatch.ts";
 import { assertSafePartnerWebhookUrl } from "../_shared/webhook-url.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-const sb = createClient(SUPABASE_URL, SERVICE_ROLE);
+function getServiceClient() {
+  const url = Deno.env.get("SUPABASE_URL");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !key) {
+    throw new Error("Supabase service credentials missing");
+  }
+  return createClient(url, key);
+}
 
 function corsHeaders(origin: string | null) {
   const allowedOrigin = resolveCorsOrigin(origin, "https://www.istebul.com");
@@ -34,15 +38,22 @@ type AdminAuthResult =
   | { ok: true; user: { id: string } }
   | { ok: false; status: 401 | 403; error: string };
 
-async function requireAdmin(req: Request): Promise<AdminAuthResult> {
+async function requireAdmin(
+  req: Request,
+  sb: ReturnType<typeof createClient>
+): Promise<AdminAuthResult> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return { ok: false, status: 401, error: "Authorization required" };
   }
 
-  const authClient = createClient(SUPABASE_URL, SERVICE_ROLE, {
-    global: { headers: { Authorization: authHeader } },
-  });
+  const authClient = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    {
+      global: { headers: { Authorization: authHeader } },
+    }
+  );
 
   const { data: userData, error: userError } = await authClient.auth.getUser();
   if (userError || !userData.user) {
@@ -67,8 +78,66 @@ function resolveEndpointId(body: Record<string, unknown>): string {
   return String(raw ?? "").trim();
 }
 
+const ENDPOINT_SELECT_FALLBACKS = [
+  "id, name, webhook_url, shared_secret, route_type, is_active, health_status",
+  "id, name, webhook_url, shared_secret, route_type, is_active",
+  "id, name, webhook_url, shared_secret, route_type",
+];
+
+function isMissingColumnError(message: string) {
+  const msg = message.toLowerCase();
+  return msg.includes("column") && msg.includes("does not exist");
+}
+
+async function fetchPartnerEndpoint(
+  sb: ReturnType<typeof createClient>,
+  endpointId: string
+) {
+  let lastLookupError: string | null = null;
+
+  for (const selectExpr of ENDPOINT_SELECT_FALLBACKS) {
+    const { data, error } = await sb
+      .from("partner_endpoints")
+      .select(selectExpr)
+      .eq("id", endpointId)
+      .maybeSingle();
+
+    if (error) {
+      const message = String(error.message || "lookup_failed");
+      lastLookupError = message;
+      if (isMissingColumnError(message)) continue;
+      return { endpoint: null, error: "endpoint_lookup_failed", detail: message };
+    }
+
+    if (data) {
+      return { endpoint: data, error: null, detail: null };
+    }
+  }
+
+  if (lastLookupError && isMissingColumnError(lastLookupError)) {
+    return {
+      endpoint: null,
+      error: "endpoint_lookup_failed",
+      detail: lastLookupError,
+    };
+  }
+
+  return { endpoint: null, error: "endpoint_not_found", detail: null };
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
+  let sb: ReturnType<typeof createClient>;
+  try {
+    sb = getServiceClient();
+  } catch (err) {
+    return json({
+      ok: false,
+      error: "service_unavailable",
+      detail: err instanceof Error ? err.message : "config_error",
+      status: 500,
+    }, 500, origin);
+  }
 
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders(origin) });
@@ -78,7 +147,7 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "Method not allowed", status: 405 }, 405, origin);
   }
 
-  const auth = await requireAdmin(req);
+  const auth = await requireAdmin(req, sb);
   if (!auth.ok) {
     return json({ ok: false, error: auth.error, status: auth.status }, auth.status, origin);
   }
@@ -95,22 +164,18 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "endpoint_id_required", status: 400 }, 400, origin);
   }
 
-  const { data: endpoint, error: endpointError } = await sb
-    .from("partner_endpoints")
-    .select(
-      "id, name, webhook_url, shared_secret, route_type, is_active, health_status"
-    )
-    .eq("id", endpointId)
-    .single();
-
-  if (endpointError || !endpoint) {
+  const lookup = await fetchPartnerEndpoint(sb, endpointId);
+  if (!lookup.endpoint) {
+    const status = lookup.error === "endpoint_not_found" ? 404 : 500;
     return json({
       ok: false,
-      error: "endpoint_not_found",
+      error: lookup.error || "endpoint_not_found",
       endpoint_id: endpointId,
-      status: 404,
-    }, 404, origin);
+      detail: lookup.detail,
+      status,
+    }, status, origin);
   }
+  const endpoint = lookup.endpoint;
 
   try {
     assertSafePartnerWebhookUrl(endpoint.webhook_url);
@@ -218,7 +283,7 @@ Deno.serve(async (req) => {
     .from("partner_endpoints")
     .select("health_status, consecutive_failures")
     .eq("id", endpoint.id)
-    .single();
+    .maybeSingle();
 
   return json({
     ok: false,
