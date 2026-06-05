@@ -31,7 +31,17 @@ import {
   renderResultsHeroLayout,
   scoreToneFromLabel
 } from '../results/results-hero-layout.js';
+import { withTimeout } from '../../core/async-utils.js';
 import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
+import {
+  buildEvdsAiMarketSentence,
+  buildEvdsRiskLayer,
+  mountEvdsRiskLayer
+} from '../results/results-evds-risk-layer.js';
+import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
+
+const TATIL_EVDS_TIMEOUT_MS = 5000;
+const TATIL_SUMMARY_TIMEOUT_MS = 10000;
 
 const PLAN_MID = {
   ekonomik: 40_000,
@@ -127,8 +137,30 @@ function computeConfidenceScoreLegacy(state = {}) {
   ]);
 }
 
-export function computeDecisionScore(state = {}, primaryResult = null) {
-  return buildDecisionIntelligenceResult('tatil', state, {}, { primaryResult }).decisionScore;
+export function computeDecisionScore(state = {}, primaryResult = null, canonicalCost = null) {
+  return buildDecisionIntelligenceResult('tatil', state, {}, { primaryResult, canonicalCost })
+    .decisionScore;
+}
+
+/**
+ * Tüm senaryo skorlarını ve legacy summary'yi V3 decisionScore ile senkronize eder.
+ * @param {object} state
+ * @param {Array} results — yerinde güncellenir
+ * @param {object} [summary] — fitScore / scoreBand güncellenir
+ */
+export function syncCanonicalTatilScore(state, results = [], summary = null) {
+  const primary = results[0] || null;
+  const cost = buildTotalCostView(state, primary);
+  const decisionScore = computeDecisionScore(state, primary, cost);
+  (results || []).forEach((r) => {
+    r.score = decisionScore;
+  });
+  if (summary) {
+    summary.fitScore = decisionScore;
+    summary.scoreBand =
+      decisionScore >= 80 ? 'Güçlü uyum' : decisionScore >= 65 ? 'Dengeli profil' : 'Alternatif değerlendirin';
+  }
+  return decisionScore;
 }
 
 function computeDecisionScoreLegacy(state = {}, primaryResult = null) {
@@ -224,7 +256,9 @@ export function buildTotalCostView(state = {}, primaryResult = null) {
     transport,
     food,
     activities,
+    realTotal,
     reserve,
+    reserveCost: reserve,
     perPerson,
     totalBudget,
     budgetFitPct,
@@ -382,8 +416,10 @@ function buildWeaknesses(state, primary, cost) {
   return items.slice(0, 5);
 }
 
-export function buildAlternatives(state = {}, results = []) {
-  const cost = buildTotalCostView(state, results[0]);
+export function buildAlternatives(state = {}, results = [], canonicalCost = null) {
+  const primary = results[0] || null;
+  const cost = canonicalCost || buildTotalCostView(state, primary);
+  const travelers = cost.travelers || travelersCount(state);
   const target = budgetTarget(state);
   const economicTotal = Math.round(cost.totalBudget * 0.82);
   const comfortTotal = Math.round(cost.totalBudget * 1.18);
@@ -392,33 +428,94 @@ export function buildAlternatives(state = {}, results = []) {
       ? 'Net tarih + 1 hafta esneklik'
       : 'Yoğun sezon dışı ±7 gün kaydırma';
 
+  const fromEngine = (primary?.alternatives || []).map((alt) => ({
+    title: alt.title,
+    description: `Toplam ${alt.cost} · Kişi başı ~${formatTryAmount(Math.round(cost.perPerson * (alt.score >= 85 ? 0.9 : 1.05)))}`,
+    meta: `Risk: ${alt.risk} · Uygunluk ${alt.score}/100`,
+    why: alt.delta || alt.reason || ''
+  }));
+
   const fromResults = (results || [])
     .slice(1, 3)
-    .map((r) => ({
-      title: r.title,
-      description: r.description || r.why || '',
-      meta: `${r.score}/100`
-    }));
+    .map((r) => {
+      const perPerson =
+        safeNumber(r.costs?.perPerson) ||
+        Math.round(safeNumber(r.costs?.realTotal) / Math.max(travelers, 1));
+      return {
+        title: r.title,
+        description: `Toplam ${r.estimatedCost || r.costs?.realTotalLabel || '—'} · Kişi başı ~${formatTryAmount(perPerson)}`,
+        meta: `Skor ${r.score}/100`,
+        why: r.why || r.description || ''
+      };
+    });
 
   const defaults = [
     {
       title: 'Daha ekonomik tatil alternatifi',
-      description: `Toplam ~${formatTry(economicTotal)} · konaklama/aktivite sadeleştirme`,
-      meta: 'Bütçe baskısını azaltır'
+      description: `Toplam ~${formatTryAmount(economicTotal)} · Kişi başı ~${formatTryAmount(Math.round(economicTotal / Math.max(travelers, 1)))}`,
+      meta: 'Bütçe baskısını azaltır',
+      why: 'Konaklama ve aktivite kalemlerini sadeleştirerek toplam maliyeti düşürür.'
     },
     {
       title: 'Daha konforlu tatil alternatifi',
-      description: `Toplam ~${formatTry(comfortTotal)} · premium konaklama + transfer`,
-      meta: 'Konfor odaklı'
+      description: `Toplam ~${formatTryAmount(comfortTotal)} · Kişi başı ~${formatTryAmount(Math.round(comfortTotal / Math.max(travelers, 1)))}`,
+      meta: 'Konfor odaklı',
+      why: 'Premium konaklama ve transfer ile konforu artırır.'
     },
     {
       title: 'Daha düşük riskli tarih/rota alternatifi',
-      description: `${lowRiskNote} · hedef bütçe ~${formatTry(target)}`,
-      meta: 'Sezon/iptal riskini düşürür'
+      description: `${lowRiskNote} · hedef bütçe ~${formatTryAmount(target)}`,
+      meta: 'Sezon/iptal riskini düşürür',
+      why: 'Esnek tarih ve alternatif rota ile sezon riskini azaltır.'
     }
   ];
 
-  return [...fromResults, ...defaults].slice(0, 3);
+  const merged = [...fromEngine, ...fromResults, ...defaults];
+  const seen = new Set();
+  const unique = merged.filter((item) => {
+    const key = item.title;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return unique.slice(0, 3);
+}
+
+/**
+ * V2 sonuç aksiyon çubuğu (legacy selection-bar / final-cta karşılığı).
+ */
+export function renderTatilActionsBarHtml({ userId = null, esc = escapeHtml } = {}) {
+  const loginHint = userId
+    ? ''
+    : `<p class="tatil-v2-login-hint"><a href="/profil/?returnTo=/tatil/">Giriş yapın</a> — raporunuzu profilinizde saklayın.</p>`;
+
+  return `
+    <div class="tatil-v2-actions" aria-label="Sonuç aksiyonları">
+      <button type="button" class="btn secondary tatil-v2-pdf" data-tatil-v2-pdf>
+        Tatil karar raporunu indir
+      </button>
+      <button type="button" class="btn secondary tatil-v2-restart" data-tatil-v2-restart>
+        Tekrar planla
+      </button>
+      <button type="button" class="btn secondary tatil-v2-partner" data-tatil-v2-partner>
+        Teklif iste
+      </button>
+      ${loginHint}
+      <div class="tatil-v2-lead-panel" data-tatil-v2-lead-panel hidden>
+        <p class="tatil-v2-lead-hint" data-tatil-v2-lead-hint></p>
+        <div class="tatil-v2-lead-fields">
+          <input type="text" data-tatil-v2-lead-name placeholder="Ad soyad" autocomplete="name">
+          <input type="tel" data-tatil-v2-lead-phone placeholder="Telefon" autocomplete="tel">
+          <input type="email" data-tatil-v2-lead-email placeholder="E-posta" autocomplete="email">
+        </div>
+        <button type="button" class="btn primary tatil-v2-lead-submit" data-tatil-v2-lead-submit>
+          Talebi gönder
+        </button>
+      </div>
+      <p class="tatil-v2-action-feedback" data-tatil-v2-action-feedback hidden></p>
+      <p class="tatil-v2-pdf-hint" data-tatil-v2-pdf-hint hidden></p>
+    </div>`;
 }
 
 function buildNextSteps(state, riskAnalysis) {
@@ -440,26 +537,35 @@ function buildNextSteps(state, riskAnalysis) {
 /**
  * Tam result payload.
  */
-export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
+export function buildTatilResultsV2Payload({ state = {}, results = [], evdsRates = null }) {
   const primary = results[0] || null;
   const cost = buildTotalCostView(state, primary);
-  const intel = buildDecisionIntelligenceResult('tatil', state, {}, { primaryResult: primary, results });
+  const intel = buildDecisionIntelligenceResult('tatil', state, {}, {
+    primaryResult: primary,
+    results,
+    canonicalCost: cost
+  });
+  const evdsRiskLayer = buildEvdsRiskLayer('finance', evdsRates || {});
   const riskAnalysis = intel.riskAnalysis;
   const decisionScore = intel.decisionScore;
   const confidenceScore = intel.confidenceScore;
   const overallRisk = intel.overallRisk;
   const strengths = buildStrengths(state, primary, cost);
   const weaknesses = buildWeaknesses(state, primary, cost);
-  const alternatives = intel.alternatives;
+  const alternatives = buildAlternatives(state, results, cost);
   const nextSteps = intel.nextSteps;
-  const criticalRisk = riskAnalysis.find((r) => r.level === 'yüksek')?.title || '';
 
   const { planTier } = getResultsPlanContext();
   const insightInput = buildInsightInputFromIntelligence('tatil', intel.context || {}, intel, {
     planTier,
     strengths,
     weaknesses,
-    costs: { totalBudget: cost.totalBudget, realTotal: cost.realTotal }
+    marketAssessment: buildEvdsAiMarketSentence(evdsRiskLayer),
+    costs: {
+      totalBudget: cost.totalBudget,
+      realTotal: cost.realTotal,
+      reserveCost: cost.reserveCost
+    }
   });
 
   const pdfReportData = buildPdfReportData({
@@ -513,7 +619,10 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
     criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || '',
     planTier,
     insightInput,
-    insight: buildDecisionInsight(insightInput)
+    insight: buildDecisionInsight(insightInput),
+    evdsRiskLayer,
+    state,
+    results
   };
 }
 
@@ -628,6 +737,7 @@ function renderTatilResultsV2Html(model) {
             <article class="tatil-v2-alt-card">
               <h4>${esc(a.title)}</h4>
               <p>${esc(a.description)}</p>
+              ${a.why ? `<p class="tatil-v2-alt-why"><strong>Neden önerildi?</strong> ${esc(a.why)}</p>` : ''}
               ${a.meta ? `<span class="tatil-v2-alt-meta">${esc(a.meta)}</span>` : ''}
             </article>`
             )
@@ -649,13 +759,118 @@ function renderTatilResultsV2Html(model) {
         <ol>${model.nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
       </article>
 
-      <div class="tatil-v2-actions">
-        <button type="button" class="btn secondary tatil-v2-pdf" data-tatil-v2-pdf>
-          Tatil karar raporunu indir
-        </button>
-        <p class="tatil-v2-pdf-hint" data-tatil-v2-pdf-hint hidden></p>
-      </div>
+      ${renderTatilActionsBarHtml({ userId: model.userId, esc })}
     </section>`;
+}
+
+function bindTatilV2Actions(root, { track, model, onRestart, onPartnerCta, onLeadSubmit }) {
+  const pdfBtn = root.querySelector('[data-tatil-v2-pdf]');
+  const pdfHint = root.querySelector('[data-tatil-v2-pdf-hint]');
+  const restartBtn = root.querySelector('[data-tatil-v2-restart]');
+  const partnerBtn = root.querySelector('[data-tatil-v2-partner]');
+  const leadPanel = root.querySelector('[data-tatil-v2-lead-panel]');
+  const leadHint = root.querySelector('[data-tatil-v2-lead-hint]');
+  const leadSubmit = root.querySelector('[data-tatil-v2-lead-submit]');
+  const feedbackEl = root.querySelector('[data-tatil-v2-action-feedback]');
+
+  const leadEls = { leadPanel, leadHint, feedbackEl };
+
+  pdfBtn?.addEventListener('click', () => {
+    safeTrackEvent(track, 'travel_report_print_click', {
+      category: 'tatil',
+      score: model.decisionScore
+    });
+    if (pdfHint) {
+      pdfHint.hidden = false;
+      pdfHint.textContent =
+        'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
+    }
+    if (feedbackEl) feedbackEl.hidden = true;
+    gatePdfDownload(model.pdfReportData);
+  });
+
+  restartBtn?.addEventListener('click', () => {
+    if (typeof onRestart === 'function') onRestart();
+  });
+
+  partnerBtn?.addEventListener('click', async () => {
+    if (typeof onPartnerCta === 'function') {
+      await onPartnerCta(leadEls);
+      return;
+    }
+    if (leadPanel) {
+      leadPanel.hidden = !leadPanel.hidden;
+      if (leadHint) {
+        leadHint.textContent =
+          'İletişim bilgilerinizi bırakın; size özel tatil teklifi veya danışman dönüşü için kaydedelim.';
+      }
+    }
+  });
+
+  leadSubmit?.addEventListener('click', async () => {
+    if (typeof onLeadSubmit === 'function') {
+      await onLeadSubmit(leadEls, {
+        full_name: root.querySelector('[data-tatil-v2-lead-name]')?.value?.trim() || '',
+        phone: root.querySelector('[data-tatil-v2-lead-phone]')?.value?.trim() || '',
+        email: root.querySelector('[data-tatil-v2-lead-email]')?.value?.trim() || ''
+      });
+    }
+  });
+}
+
+async function hydrateTatilResultsV2Extras(root, model, track) {
+  try {
+    const evdsSnapshot = await withTimeout(fetchEvdsRatesForEngine(), TATIL_EVDS_TIMEOUT_MS, null);
+    if (evdsSnapshot?.rates) {
+      const refreshed = buildTatilResultsV2Payload({
+        state: model.state || {},
+        results: model.results || [],
+        evdsRates: evdsSnapshot.rates
+      });
+      model.evdsRiskLayer = refreshed.evdsRiskLayer;
+      mountEvdsRiskLayer(root, model.evdsRiskLayer);
+    }
+    await withTimeout(hydrateResultsEconomicIndicators(root, 'tatil'), TATIL_EVDS_TIMEOUT_MS);
+  } catch (error) {
+    console.warn('tatil-v2-evds-hydrate-failed', error);
+  }
+
+  try {
+    const summary = await withTimeout(
+      fetchExecutiveSummaryV3('tatil', model.intelligence?.context || {}, model.intelligence || model, {
+        planTier: model.planTier,
+        strengths: model.strengths,
+        weaknesses: model.weaknesses,
+        marketAssessment: buildEvdsAiMarketSentence(model.evdsRiskLayer),
+        costs: model.totalCost
+      }),
+      TATIL_SUMMARY_TIMEOUT_MS,
+      null
+    );
+    if (!summary) return;
+
+    if (summary.insight) {
+      model.insight = summary.insight;
+      hydrateInsightBlocks(root.querySelector('[data-tatil-v2-insight-root]'), summary.insight);
+    }
+    const sourceEl = root.querySelector('[data-tatil-v2-source]');
+    if (sourceEl) {
+      sourceEl.textContent =
+        summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
+    }
+    model.executiveSummary = summary.text;
+    model.pdfReportData.executiveSummary = summary.text;
+    if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
+  } catch (error) {
+    console.warn('tatil-v2-summary-hydrate-failed', error);
+  }
+
+  safeTrackEvent(track, 'travel_result_v2_view', {
+    category: 'tatil',
+    score: model.decisionScore,
+    confidence: model.confidenceScore,
+    risk: model.overallRisk
+  });
 }
 
 /**
@@ -671,9 +886,12 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
 
   mountNode.querySelector('.tatil-v2-root')?.remove();
 
+  syncCanonicalTatilScore(state, results);
+
   const built = buildTatilResultsV2Payload({ state, results });
   const model = {
     ...built,
+    userId: payload.userId || null,
     executiveSummary: '',
     summarySourceLabel: ''
   };
@@ -683,48 +901,17 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
   root.innerHTML = renderTatilResultsV2Html(model);
   mountNode.prepend(root);
 
-  await hydrateResultsEconomicIndicators(root, 'tatil');
+  mountEvdsRiskLayer(root, model.evdsRiskLayer);
 
-  safeTrackEvent(track, 'travel_result_v2_view', {
-    category: 'tatil',
-    score: model.decisionScore,
-    confidence: model.confidenceScore,
-    risk: model.overallRisk
+  bindTatilV2Actions(root, {
+    track,
+    model,
+    onRestart: payload.onRestart,
+    onPartnerCta: payload.onPartnerCta,
+    onLeadSubmit: payload.onLeadSubmit
   });
 
-  root.querySelector('[data-tatil-v2-pdf]')?.addEventListener('click', () => {
-    safeTrackEvent(track, 'travel_report_print_click', {
-      category: 'tatil',
-      score: model.decisionScore
-    });
-    const hint = root.querySelector('[data-tatil-v2-pdf-hint]');
-    if (hint) {
-      hint.hidden = false;
-      hint.textContent =
-        'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
-    }
-    gatePdfDownload(model.pdfReportData);
-  });
-
-  const summary = await fetchExecutiveSummaryV3('tatil', model.intelligence?.context || {}, model.intelligence || model, {
-    planTier: model.planTier,
-    strengths: model.strengths,
-    weaknesses: model.weaknesses,
-    costs: model.totalCost
-  });
-
-  if (summary.insight) {
-    model.insight = summary.insight;
-    hydrateInsightBlocks(root.querySelector('[data-tatil-v2-insight-root]'), summary.insight);
-  }
-  const sourceEl = root.querySelector('[data-tatil-v2-source]');
-  if (sourceEl) {
-    sourceEl.textContent =
-      summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
-  }
-  model.executiveSummary = summary.text;
-  model.pdfReportData.executiveSummary = summary.text;
-  if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
+  void hydrateTatilResultsV2Extras(root, model, track);
 
   return model;
 }

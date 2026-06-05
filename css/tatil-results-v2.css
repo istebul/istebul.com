@@ -1,6 +1,22 @@
 /**
  * Tatil Results V2 — premium decision panel (Konut/Finansman V2 dili).
  */
+@import 'results-economic-indicators.css';
+@import 'results-hero-layout.css';
+
+/* V2 aktifken legacy panelleri gizle — tek kaynak V2 hero */
+body.vacation-page #vacation-results .tatil-v2-root ~ .ib-premium-dashboard,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-results-header,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-results-top-pick,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-result-cards,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-cost-panel,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-alternative-panel,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-results-toolbar,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-selection-bar,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-final-cta {
+  display: none !important;
+}
+
 .tatil-v2-root {
   margin: 1.25rem 0 1.75rem;
 }
@@ -228,6 +244,55 @@
   color: var(--v2-accent);
 }
 
+.tatil-v2-alt-why {
+  margin: 0.35rem 0 0;
+  font-size: 0.84rem;
+  color: var(--v2-muted);
+  line-height: 1.45;
+}
+
+.tatil-v2-login-hint {
+  margin: 0;
+  width: 100%;
+  font-size: 0.84rem;
+  color: var(--v2-muted);
+}
+
+.tatil-v2-lead-panel {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.85rem;
+  border: 1px dashed var(--v2-border);
+  border-radius: 12px;
+  background: var(--v2-elev);
+}
+
+.tatil-v2-lead-hint {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  color: var(--v2-muted);
+}
+
+.tatil-v2-lead-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.tatil-v2-lead-fields input {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tatil-v2-action-feedback {
+  margin: 0;
+  width: 100%;
+  font-size: 0.88rem;
+  color: var(--v2-success);
+}
+
 .tatil-v2-block--exec {
   background: linear-gradient(135deg, rgba(14, 165, 233, 0.10), var(--v2-elev));
   border-color: rgba(14, 165, 233, 0.28);
@@ -311,6 +376,12 @@
   font-size: 0.88rem;
   padding: 0.35rem 0;
   border-bottom: 1px dashed var(--v2-border);
+  min-width: 0;
+}
+
+.tatil-v2-cost-dl dd {
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .tatil-v2-cost-dl dt {
@@ -363,6 +434,8 @@
   align-items: flex-start;
   gap: 0.5rem;
   margin-bottom: 0.4rem;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .tatil-v2-risk-card h4 {

@@ -21,6 +21,13 @@ function safeNumber(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
+const TATIL_BUDGET_MID = {
+  ekonomik: 40_000,
+  dengeli: 100_000,
+  premium: 200_000,
+  ultra: 390_000
+};
+
 function normalizeCategory(category) {
   const c = String(category || '').toLowerCase();
   if (c === 'sigorta' || c === 'insurance') return 'sigorta';
@@ -159,21 +166,27 @@ export function buildDecisionContext(category, formData = {}, metrics = {}, extr
 
   if (cat === 'tatil') {
     const primary = extras.primaryResult || m.primaryResult || null;
+    const canonical = extras.canonicalCost || null;
     const travelers = safeNumber(state.travelers_count) || 2;
     const childFamily = state.people_type === 'cocuklu-aile';
     const flex = state.date_flexibility;
     const budgetTarget =
       state.budget_range === 'manuel' ?
         safeNumber(state.budget_total || state.budget_manual)
-      : safeNumber(primary?.costs?.realTotal) || 100_000;
-    const totalCost = safeNumber(primary?.costs?.realTotal) || budgetTarget * 1.08;
+      : TATIL_BUDGET_MID[state.budget_range] || 100_000;
+    const realTotal =
+      safeNumber(canonical?.realTotal) || safeNumber(primary?.costs?.realTotal) || budgetTarget * 1.05;
+    const totalCost =
+      safeNumber(canonical?.totalBudget) || realTotal + Math.round(realTotal * 0.12);
 
     Object.assign(base, {
       travelers,
       childFamily,
       dateFlexibility: flex,
       budgetTarget,
+      realTotal,
       totalCost,
+      reserveCost: safeNumber(canonical?.reserveCost) || Math.round(realTotal * 0.12),
       transport: state.transport_preference,
       comfort: state.comfort_expectation,
       tripNights: safeNumber(state.trip_nights),
