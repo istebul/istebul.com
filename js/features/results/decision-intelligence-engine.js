@@ -150,7 +150,7 @@ export function buildDecisionContext(category, formData = {}, metrics = {}, extr
       paymentToIncome,
       termMonths: months,
       cashPressure: primary?.metrics?.cashPressure || m.cashPressure,
-      legacyScore: safeNumber(primary?.score) || safeNumber(m.score)
+      legacyScore: 0
     });
 
     if (paymentToIncome > 45) warnings.push('Aylık ödeme/gelir oranı sınırın üzerinde modelleniyor.');
@@ -337,7 +337,7 @@ export function computeDecisionScoreV3(category, context = {}) {
   }
 
   const legacy = safeNumber(context.legacyScore);
-  if (legacy > 0) {
+  if (legacy > 0 && cat !== 'finansman') {
     score = clampScore(Math.round(score * 0.55 + legacy * 0.45));
   }
 

@@ -172,7 +172,7 @@ export function buildFinansResults(state) {
 }
 
 export function buildFinansSummary(state, results) {
-  const primary = results[0];
+  const primary = results.find((r) => r.id === state.selected_option) || results[0];
   const debtScore = computeDebtScore(state);
   const finRisk = financialRiskLabel(state, primary?.metrics?.cashPressure);
   return {
@@ -195,7 +195,7 @@ export function buildFinansSummary(state, results) {
 }
 
 export function buildFinansCommentary(state, results) {
-  const p = results[0];
+  const p = results.find((r) => r.id === state.selected_option) || results[0];
   const debtScore = computeDebtScore(state);
   return {
     summary: `${label('purpose', state.purpose)} finansmanı için ön senaryo: aylık ödeme ${formatTry(p?.metrics?.monthlyPayment)}, borçlanma skoru ${debtScore}/100.`,

@@ -2,7 +2,10 @@ import { withTimeout } from '../core/async-utils.js';
 import { formatTry } from '../tatil/tatil-utils.js';
 import { setSubmitLoading } from '../runtime/enterprise-form-ux.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
-import { mountFinansmanResultsV2 } from '../features/finansman/finansman-results-v2.js';
+import {
+  mountFinansmanResultsV2,
+  syncCanonicalFinansScores
+} from '../features/finansman/finansman-results-v2.js';
 import { mountSigortaResultsV2 } from '../features/sigorta/sigorta-results-v2.js';
 import { mountKaskoResultsV2 } from '../features/kasko/kasko-results-v2.js';
 import {
@@ -330,6 +333,9 @@ export function initDecisionFlow(config) {
 
   function getDisplayResult() {
     const selected = getSelectedResult();
+    if (config.vertical === 'finans') {
+      return selected || state.results[0] || null;
+    }
     if (state.confirmationStep && selected) return selected;
     return state.results[0] || null;
   }
@@ -347,7 +353,7 @@ export function initDecisionFlow(config) {
     }
 
     state.results = built;
-    state.selected_option = '';
+    state.selected_option = config.vertical === 'finans' && built[0]?.id ? built[0].id : '';
     state.confirmationStep = false;
     setWizardVisible(false);
     const siteCategory = VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical;
@@ -370,6 +376,13 @@ export function initDecisionFlow(config) {
     const section = el('results');
     if (!section || !state.results.length) return;
     section.hidden = false;
+
+    if (config.vertical === 'finans') {
+      if (!state.selected_option && state.results[0]?.id) {
+        state.selected_option = state.results[0].id;
+      }
+      syncCanonicalFinansScores(state, state.results, state.selected_option);
+    }
 
     const commentary = config.buildCommentary(state, state.results);
     const summary = config.buildSummary(state, state.results);
@@ -470,6 +483,8 @@ export function initDecisionFlow(config) {
       void mountFinansmanResultsV2(section, {
         state,
         results: state.results,
+        selectedOption: state.selected_option || state.results[0]?.id || '',
+        onSelectScenario: (id) => selectOption(id),
         track: (eventName, meta) => config.tracker.track(eventName, meta)
       });
     }

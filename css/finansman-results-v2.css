@@ -3,6 +3,17 @@
  */
 @import 'results-economic-indicators.css';
 @import 'results-hero-layout.css';
+
+/* V2 aktifken legacy panelleri gizle — tek kaynak V2 hero */
+body.finans-page #finans-results .finansman-v2-root ~ .ib-premium-dashboard,
+body.finans-page #finans-results .finansman-v2-root ~ .vacation-results-header,
+body.finans-page #finans-results .finansman-v2-root ~ .vacation-results-top-pick,
+body.finans-page #finans-results .finansman-v2-root ~ .vacation-result-cards,
+body.finans-page #finans-results .finansman-v2-root ~ .vacation-selection-bar,
+body.finans-page #finans-results .finansman-v2-root ~ .vacation-final-cta {
+  display: none !important;
+}
+
 .finansman-v2-root {
   margin: 1.25rem 0 1.75rem;
 }
@@ -279,11 +290,46 @@
   }
 }
 
+.finansman-v2-alts-hint {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+  color: var(--v2-muted, #64748b);
+}
+
 .finansman-v2-alt-card {
   border: 1px solid var(--v2-border);
   border-radius: 14px;
   padding: 0.85rem 0.95rem;
   background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.finansman-v2-alt-card:hover,
+.finansman-v2-alt-card:focus-visible {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.finansman-v2-alt-card.is-selected {
+  border-color: rgba(5, 150, 105, 0.55);
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.14);
+  background: rgba(236, 253, 245, 0.65);
+}
+
+.finansman-v2-alt-desc {
+  margin: 0;
+  color: var(--v2-text, #0f172a);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.finansman-v2-alt-why {
+  margin: 0.45rem 0 0;
+  font-size: 0.8rem;
+  color: var(--v2-muted, #64748b);
+  line-height: 1.5;
 }
 
 .finansman-v2-alt-card h4 {
@@ -531,4 +577,14 @@
   border: 1px solid var(--v2-border);
   padding: 0.45rem 0.6rem;
   text-align: left;
+}
+
+.finansman-v2-rate-table small {
+  color: var(--v2-muted, #64748b);
+  font-size: 0.72rem;
+}
+
+.finansman-v2-cost-dl small {
+  color: var(--v2-muted, #64748b);
+  font-size: 0.72rem;
 }
