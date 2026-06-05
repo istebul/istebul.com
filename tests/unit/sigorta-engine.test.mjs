@@ -12,6 +12,7 @@ const {
 
 const { buildSigortaAiSummary } = await import('../../js/features/sigorta/sigorta-ai-summary.js');
 const { buildSigortaPdfPayload } = await import('../../js/features/sigorta/sigorta-pdf.js');
+const { buildSigortaResults } = await import('../../js/features/sigorta/sigorta-engine.js');
 
 const sampleState = {
   insurance_type: 'saglik',
@@ -56,13 +57,16 @@ test('buildSigortaAiSummary does not mutate engine scores', () => {
 });
 
 test('buildSigortaPdfPayload includes scores and profile', () => {
-  const pdf = buildSigortaPdfPayload({ state: sampleState });
+  const results = buildSigortaResults(sampleState);
+  const pdf = buildSigortaPdfPayload({ state: sampleState, results, selectedOption: 'balanced' });
   assert.equal(pdf.category, 'sigorta');
   assert.equal(pdf.decisionScore, buildEngineResult(sampleState).decisionScore);
   assert.ok(pdf.riskAnalysis.length === 6);
   assert.ok(pdf.executiveSummary);
   assert.ok(pdf.profile.insuranceType);
   assert.ok(pdf.scoreFactors.length === 3);
+  assert.ok(pdf.totalCost.yearlyPremium.includes('₺'));
+  assert.notEqual(pdf.totalCost.yearlyPremium, buildEngineResult(sampleState).alternatives?.[1]?.description);
 });
 
 test('high risk with low budget lowers coverage score', () => {

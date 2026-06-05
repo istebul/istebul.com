@@ -2,19 +2,44 @@
  * Sigorta PDF Report V1 — buildPdfReportData üzerinden branded rapor payload.
  */
 import { buildPdfReportData } from '../results/results-engine.js';
-import { buildEngineResult, optionLabel } from './sigorta-engine.js';
+import {
+  buildEngineResult,
+  estimatePremiumBand,
+  optionLabel,
+  resolvePrimarySigortaResult
+} from './sigorta-engine.js';
 import { buildSigortaAiSummary } from './sigorta-ai-summary.js';
+
+function formatTryAmount(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    maximumFractionDigits: 0
+  }).format(n);
+}
 
 /**
  * @param {object} params
  * @param {object} params.state
  * @param {string} [params.planTier]
  * @param {object} [params.engine] — önceden hesaplanmış motor çıktısı
+ * @param {object[]} [params.results]
+ * @param {string} [params.selectedOption]
  */
-export function buildSigortaPdfPayload({ state = {}, planTier = 'free', engine = null } = {}) {
+export function buildSigortaPdfPayload({
+  state = {},
+  planTier = 'free',
+  engine = null,
+  results = [],
+  selectedOption = ''
+} = {}) {
   const intel = engine || buildEngineResult(state);
   const ai = buildSigortaAiSummary(intel, state);
-  const primaryPremium = intel.alternatives?.[0]?.meta;
+  const primary = resolvePrimarySigortaResult(results, selectedOption) || results[0];
+  const premiumBand = primary?.metrics?.premiumBand ?? estimatePremiumBand(state);
+  const yearlyPremium = formatTryAmount(premiumBand);
 
   return buildPdfReportData({
     category: 'sigorta',
@@ -27,7 +52,7 @@ export function buildSigortaPdfPayload({ state = {}, planTier = 'free', engine =
     totalCost: {
       isEstimate: true,
       estimateNote: 'Tahmini yıllık prim bandı — bağlayıcı teklif değildir.',
-      yearlyPremium: intel.alternatives?.[1]?.description,
+      yearlyPremium,
       protectionScore: intel.protectionScore,
       coverageScore: intel.coverageScore,
       costEfficiencyScore: intel.costEfficiencyScore
@@ -59,6 +84,6 @@ export function buildSigortaPdfPayload({ state = {}, planTier = 'free', engine =
     ],
     warnings: intel.weaknesses?.slice(0, 3) || [],
     recommendationLevel: intel.decisionScore >= 70 ? 'proceed' : 'review',
-    metadata: { primaryPremium }
+    metadata: { primaryPremium: yearlyPremium }
   });
 }
