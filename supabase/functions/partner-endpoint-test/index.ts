@@ -30,16 +30,24 @@ function json(
   });
 }
 
-async function requireAdmin(req: Request) {
+type AdminAuthResult =
+  | { ok: true; user: { id: string } }
+  | { ok: false; status: 401 | 403; error: string };
+
+async function requireAdmin(req: Request): Promise<AdminAuthResult> {
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader) return null;
+  if (!authHeader) {
+    return { ok: false, status: 401, error: "Authorization required" };
+  }
 
   const authClient = createClient(SUPABASE_URL, SERVICE_ROLE, {
     global: { headers: { Authorization: authHeader } },
   });
 
   const { data: userData, error: userError } = await authClient.auth.getUser();
-  if (userError || !userData.user) return null;
+  if (userError || !userData.user) {
+    return { ok: false, status: 401, error: "Unauthorized" };
+  }
 
   const { data: profile } = await sb
     .from("profiles")
@@ -47,8 +55,15 @@ async function requireAdmin(req: Request) {
     .eq("id", userData.user.id)
     .single();
 
-  if (profile?.role !== "admin" || profile?.is_banned === true) return null;
-  return userData.user;
+  if (profile?.role !== "admin" || profile?.is_banned === true) {
+    return { ok: false, status: 403, error: "Forbidden: admin only" };
+  }
+
+  return { ok: true, user: userData.user };
+}
+
+function resolveEndpointId(body: Record<string, unknown>): string {
+  return String(body.endpoint_id || body.endpointId || "").trim();
 }
 
 Deno.serve(async (req) => {
@@ -59,21 +74,25 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== "POST") {
-    return json({ error: "Method not allowed" }, 405, origin);
+    return json({ ok: false, error: "Method not allowed", status: 405 }, 405, origin);
   }
 
-  const user = await requireAdmin(req);
-  if (!user) return json({ error: "Forbidden: admin only" }, 403, origin);
+  const auth = await requireAdmin(req);
+  if (!auth.ok) {
+    return json({ ok: false, error: auth.error, status: auth.status }, auth.status, origin);
+  }
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return json({ error: "Invalid JSON body" }, 400, origin);
+    return json({ ok: false, error: "Invalid JSON body", status: 400 }, 400, origin);
   }
 
-  const endpointId = String(body.endpoint_id || "").trim();
-  if (!endpointId) return json({ error: "endpoint_id required" }, 400, origin);
+  const endpointId = resolveEndpointId(body);
+  if (!endpointId) {
+    return json({ ok: false, error: "endpoint_id required", status: 400 }, 400, origin);
+  }
 
   const { data: endpoint, error: endpointError } = await sb
     .from("partner_endpoints")
@@ -84,7 +103,7 @@ Deno.serve(async (req) => {
     .single();
 
   if (endpointError || !endpoint) {
-    return json({ error: "Endpoint not found" }, 404, origin);
+    return json({ ok: false, error: "Endpoint not found", status: 404 }, 404, origin);
   }
 
   try {
@@ -93,6 +112,7 @@ Deno.serve(async (req) => {
     return json({
       ok: false,
       error: err instanceof Error ? err.message : "Invalid webhook URL",
+      status: 400,
     }, 400, origin);
   }
 
@@ -120,6 +140,7 @@ Deno.serve(async (req) => {
     return json({
       ok: false,
       error: err instanceof Error ? err.message : "Signing failed",
+      status: 400,
     }, 400, origin);
   }
 
@@ -175,9 +196,9 @@ Deno.serve(async (req) => {
     }
     return json({
       ok: true,
-      http_status: httpStatus,
+      status: httpStatus || 200,
+      endpoint_id: endpoint.id,
       health_status: "healthy",
-      duration_ms: durationMs,
     }, 200, origin);
   }
 
@@ -195,9 +216,9 @@ Deno.serve(async (req) => {
 
   return json({
     ok: false,
-    http_status: httpStatus || null,
-    health_status: refreshed?.health_status || "degraded",
     error: errMsg || "test_failed",
-    duration_ms: durationMs,
+    status: httpStatus || 502,
+    endpoint_id: endpoint.id,
+    health_status: refreshed?.health_status || "degraded",
   }, 502, origin);
 });

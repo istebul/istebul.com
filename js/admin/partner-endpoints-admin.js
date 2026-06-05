@@ -31,7 +31,7 @@ export function initPartnerEndpointsAdmin(ctx) {
     }
 
     if (data?.ok) {
-      toast(`Test OK — HTTP ${data.http_status || 200}`, 'success');
+      toast(`Test OK — HTTP ${data.status || 200}`, 'success');
     } else {
       toast(data?.error || data?.reason || 'Test başarısız', 'error');
     }

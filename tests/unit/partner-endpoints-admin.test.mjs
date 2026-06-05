@@ -120,26 +120,62 @@ test('admin-action strips shared_secret from partner_endpoints list', () => {
   assert.match(source, /kasko_leads/);
 });
 
-test('partner-endpoint-test edge function is admin-gated', () => {
-  const source = fs.readFileSync(
+const partnerEndpointTestSource = () =>
+  fs.readFileSync(
     path.join(root, 'supabase/functions/partner-endpoint-test/index.ts'),
     'utf8'
   );
+
+test('partner-endpoint-test edge function is admin-gated', () => {
+  const source = partnerEndpointTestSource();
   assert.match(source, /requireAdmin/);
   assert.match(source, /increment_partner_endpoint_success/);
   assert.match(source, /increment_partner_endpoint_fail/);
   assert.match(source, /partner_lead_dispatch_logs/);
+  assert.doesNotMatch(source, /shared_secret.*json\(/);
 });
 
 test('partner-endpoint-test handles OPTIONS preflight with CORS', () => {
-  const source = fs.readFileSync(
-    path.join(root, 'supabase/functions/partner-endpoint-test/index.ts'),
-    'utf8'
-  );
+  const source = partnerEndpointTestSource();
   assert.match(source, /req\.method === "OPTIONS"/);
   assert.match(source, /status: 204/);
   assert.match(source, /resolveCorsOrigin/);
   assert.match(source, /Access-Control-Allow-Methods/);
+  assert.match(source, /Access-Control-Allow-Origin/);
+  assert.match(source, /https:\/\/www\.istebul\.com/);
+  assert.match(source, /POST, OPTIONS/);
+});
+
+test('partner-endpoint-test returns 401 without authorization', () => {
+  const source = partnerEndpointTestSource();
+  assert.match(source, /Authorization required/);
+  assert.match(source, /status: 401/);
+});
+
+test('partner-endpoint-test returns 403 for non-admin users', () => {
+  const source = partnerEndpointTestSource();
+  assert.match(source, /Forbidden: admin only/);
+  assert.match(source, /status: 403/);
+});
+
+test('partner-endpoint-test requires endpoint_id or endpointId', () => {
+  const source = partnerEndpointTestSource();
+  assert.match(source, /endpoint_id \|\| body\.endpointId/);
+  assert.match(source, /endpoint_id required/);
+  assert.match(source, /status: 400/);
+});
+
+test('partner-endpoint-test rejects unsafe webhook URLs', () => {
+  const source = partnerEndpointTestSource();
+  assert.match(source, /assertSafePartnerWebhookUrl/);
+  assert.match(source, /Invalid webhook URL/);
+});
+
+test('partner-endpoint-test returns ok response shape on success', () => {
+  const source = partnerEndpointTestSource();
+  assert.match(source, /ok: true/);
+  assert.match(source, /endpoint_id: endpoint\.id/);
+  assert.match(source, /health_status: "healthy"/);
 });
 
 test('production deploy includes partner-endpoint-test function', () => {
