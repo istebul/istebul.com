@@ -22,7 +22,11 @@ import {
 } from './tatil-engine.js';
 import { parseManualBudget, formatTry } from './tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
-import { mountTatilResultsV2 } from '../features/tatil/tatil-results-v2.js';
+import {
+  mountTatilResultsV2,
+  syncCanonicalTatilScore
+} from '../features/tatil/tatil-results-v2.js';
+import { setSubmitLoading } from '../runtime/enterprise-form-ux.js';
 import { bootstrapTatilFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
 
 const state = {
@@ -361,7 +365,7 @@ function renderWizard() {
   const steps = activeSteps();
   if (state.stepIndex >= steps.length) {
     mount.hidden = true;
-    renderResults();
+    void renderResults();
     return;
   }
 
@@ -568,19 +572,34 @@ function bindWizardEvents() {
   $('#vacation-next')?.addEventListener('click', async () => {
     if (!canAdvance() && currentStep()?.id !== 'note') return;
     const step = currentStep();
+    const nextBtn = $('#vacation-next');
+    const advancingToResults = state.stepIndex >= activeSteps().length - 1;
+
     if (step?.id === 'note') {
       state.user_note = $('#vacation-user-note')?.value?.trim() || '';
     }
     syncDerivedState(state);
-    await trackVacationEvent('vacation_step_completed', {
-      step: step?.id,
-      step_index: state.stepIndex
-    });
-    state.stepIndex += 1;
-    if (state.stepIndex >= activeSteps().length) {
-      showResults();
-    } else {
-      renderWizard();
+    setSubmitLoading(nextBtn, true, { busyLabel: 'Hazırlanıyor…' });
+
+    try {
+      trackVacationEvent('vacation_step_completed', {
+        step: step?.id,
+        step_index: state.stepIndex
+      });
+      state.stepIndex += 1;
+      if (state.stepIndex >= activeSteps().length) {
+        await showResults();
+      } else {
+        renderWizard();
+      }
+    } catch (error) {
+      console.warn('vacation-wizard-step-failed', error);
+      if (advancingToResults) {
+        state.stepIndex = Math.max(0, activeSteps().length - 1);
+        renderWizard();
+      }
+    } finally {
+      setSubmitLoading(nextBtn, false);
     }
   });
 }
@@ -601,21 +620,23 @@ async function showResults() {
   state.results = buildResults(state, state.scenarios);
   state.selected_option = '';
   state.confirmationStep = false;
+  state.resultsSummary = buildResultsSummary(state, state.results);
+  syncCanonicalTatilScore(state, state.results, state.resultsSummary);
   renderWizard();
-  renderResults();
-  await trackVacationEvent('vacation_results_view', {
+  await renderResults();
+  trackVacationEvent('vacation_results_view', {
     budget_range: state.budget_range,
     vacation_goal: state.vacation_goal
   });
 }
 
-function renderResults() {
+async function renderResults() {
   const section = $('#vacation-results');
   if (!section || !state.results.length) return;
   section.hidden = false;
 
   const commentary = buildAiCommentary(state, state.results);
-  const summary = buildResultsSummary(state, state.results);
+  const summary = state.resultsSummary || buildResultsSummary(state, state.results);
   const primary = getDisplayResult();
   const selectedCard = getSelectedResult();
   const costLabelMap = {
@@ -820,13 +841,57 @@ function renderResults() {
 
   bindResultsEvents(commentary);
 
-  void mountTatilResultsV2(section, {
+  await mountTatilResultsV2(section, {
     state,
     results: state.results,
     track: (eventName, meta) => {
       try {
         trackVacationEvent(eventName, meta);
       } catch {}
+    },
+    onRestart: () => {
+      state.stepIndex = 0;
+      state.selected_option = '';
+      state.confirmationStep = false;
+      state.results = [];
+      state.resultsSummary = null;
+      section.hidden = true;
+      renderWizard();
+      document.getElementById('vacation-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
+    onPartnerCta: async (leadEls) => {
+      trackVacationEvent('vacation_partner_cta_click');
+      if (leadEls?.leadPanel) {
+        leadEls.leadPanel.hidden = false;
+        if (leadEls.leadHint) {
+          leadEls.leadHint.textContent =
+            'Partner teklifleri ve danışman desteği için iletişim bilgilerinizi bırakın.';
+        }
+      }
+    },
+    onLeadSubmit: async (leadEls, contact) => {
+      const selected = state.results[0]?.id || '';
+      const payload = {
+        full_name: contact.full_name,
+        phone: contact.phone,
+        email: contact.email,
+        vacation_goal: state.vacation_goal,
+        budget_range: state.budget_range,
+        people_type: state.people_type,
+        selected_option: selected,
+        user_note: buildLeadNote(),
+        ai_summary: commentary.summary
+      };
+      const res = await saveVacationLead(payload);
+      if (leadEls?.feedbackEl) {
+        leadEls.feedbackEl.hidden = false;
+        leadEls.feedbackEl.textContent = res.ok
+          ? 'Talebiniz kaydedildi. Ekibimiz profilinize uygun seçenekleri paylaşabilir.'
+          : 'Talep şu an kaydedilemedi. Lütfen tekrar deneyin veya iletişim sayfasından ulaşın.';
+      }
+      if (res.ok) {
+        trackVacationEvent('vacation_option_selected', { source: 'v2_lead', saved: true });
+      }
     }
   });
 
@@ -1008,7 +1073,7 @@ async function init() {
   $('#vacation-hero-cta')?.addEventListener('click', scrollToWizard);
   $('#vacation-hero-cta-secondary')?.addEventListener('click', scrollToWizard);
 
-  await trackVacationEvent('vacation_page_view');
+  trackVacationEvent('vacation_page_view');
   document.body.classList.add('ib-ready');
 }
 

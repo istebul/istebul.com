@@ -1,0 +1,60 @@
+/**
+ * Tatil /tatil/ results — mobile-only layout containment (max-width 768px).
+ */
+
+@media (max-width: 768px) {
+  body.vacation-page {
+    overflow-x: clip;
+  }
+
+  body.vacation-page main,
+  body.vacation-page #vacation-flow {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body.vacation-page #vacation-results {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    box-sizing: border-box;
+  }
+
+  body.vacation-page #vacation-results > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.vacation-page #vacation-results .tatil-v2-panel,
+  body.vacation-page #vacation-results .ib-results-hero-shell,
+  body.vacation-page #vacation-results .tatil-v2-cost-dl,
+  body.vacation-page #vacation-results .tatil-v2-actions {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.vacation-page #vacation-results .tatil-v2-alt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.vacation-page #vacation-results .tatil-v2-alt-card {
+    min-height: 44px;
+    padding: 1rem;
+  }
+
+  body.vacation-page #vacation-results .tatil-v2-kpis--secondary {
+    grid-template-columns: 1fr;
+  }
+
+  body.vacation-page #vacation-results .tatil-v2-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.vacation-page #vacation-results .tatil-v2-actions .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}

@@ -1,5 +1,8 @@
 import { analytics } from '../core/analytics.js';
+import { withTimeout } from '../core/async-utils.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
+
+const INTAKE_FETCH_TIMEOUT_MS = 4000;
 
 function getEnv() {
   const url = window.__env?.SUPABASE_URL || '';
@@ -28,21 +31,29 @@ export async function callVacationIntake(payload) {
   }
 
   try {
-    const response = await fetch(`${url}/functions/v1/vacation-intake`, {
-      method: 'POST',
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        ...payload,
-        metadata: {
-          ...(payload.metadata || {}),
-          session_id: getVacationSessionId()
-        }
-      })
-    });
+    const response = await withTimeout(
+      fetch(`${url}/functions/v1/vacation-intake`, {
+        method: 'POST',
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...payload,
+          metadata: {
+            ...(payload.metadata || {}),
+            session_id: getVacationSessionId()
+          }
+        })
+      }),
+      INTAKE_FETCH_TIMEOUT_MS,
+      null
+    );
+
+    if (!response) {
+      return { ok: false, offline: true, timeout: true };
+    }
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -58,14 +69,14 @@ export function trackVacationEvent(eventType, metadata = {}) {
   if (analytics.hasConsent()) {
     mirrorLegacySiteEvent(eventType, { category: 'tatil', ...metadata });
   }
-  return callVacationIntake({
+  void callVacationIntake({
     type: 'event',
     event_type: eventType,
     metadata: {
       session_id: getVacationSessionId(),
       ...metadata
     }
-  });
+  }).catch(() => {});
 }
 
 export function saveVacationLead(formData) {
