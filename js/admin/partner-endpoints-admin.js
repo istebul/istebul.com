@@ -10,18 +10,15 @@ import {
   sanitizePartnerEndpointRow
 } from '../features/admin/partner-endpoints.js';
 
+function getSupabaseEdgeConfig() {
+  const url = window.__env?.SUPABASE_URL;
+  const key = window.__env?.SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  return { url: String(url).replace(/\/$/, ''), key };
+}
+
 export function initPartnerEndpointsAdmin(ctx) {
   const { sb, adminAction, toast } = ctx;
-
-  async function readPartnerEndpointTestPayload(error) {
-    if (!error?.context?.clone) return null;
-    try {
-      const body = await error.context.clone().json();
-      return body && typeof body === 'object' ? body : null;
-    } catch {
-      return null;
-    }
-  }
 
   async function testPartnerEndpoint(endpointId) {
     const normalizedId = String(endpointId || '').trim();
@@ -34,6 +31,12 @@ export function initPartnerEndpointsAdmin(ctx) {
       return;
     }
 
+    const config = getSupabaseEdgeConfig();
+    if (!config) {
+      toast('SUPABASE yapılandırması eksik', 'error');
+      return;
+    }
+
     const { data: sessionData } = await sb.auth.getSession();
     const token = sessionData?.session?.access_token;
     if (!token) {
@@ -41,22 +44,25 @@ export function initPartnerEndpointsAdmin(ctx) {
       return;
     }
 
-    const { data, error } = await sb.functions.invoke('partner-endpoint-test', {
-      body: { endpoint_id: normalizedId },
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (error) {
-      const payload = (await readPartnerEndpointTestPayload(error)) || data;
-      toast(formatPartnerEndpointTestError(payload) || error.message || 'Test gönderimi başarısız', 'error');
-      loadPartnerEndpoints();
-      return;
-    }
-
-    if (data?.ok) {
-      toast(`Test OK — HTTP ${data.status || 200}`, 'success');
-    } else {
-      toast(formatPartnerEndpointTestError(data), 'error');
+    let data = {};
+    try {
+      const response = await fetch(`${config.url}/functions/v1/partner-endpoint-test`, {
+        method: 'POST',
+        headers: {
+          apikey: config.key,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ endpoint_id: normalizedId })
+      });
+      data = await response.json().catch(() => ({}));
+      if (response.ok && data?.ok) {
+        toast(`Test OK — HTTP ${data.status || response.status}`, 'success');
+      } else {
+        toast(formatPartnerEndpointTestError(data), 'error');
+      }
+    } catch (err) {
+      toast(err?.message || 'Test gönderimi başarısız', 'error');
     }
     loadPartnerEndpoints();
   }
