@@ -16,7 +16,8 @@ const {
   buildBddkBandExamples,
   syncCanonicalFinansScores,
   resolvePrimaryFinansResult,
-  isGenericFinansAlternative
+  isGenericFinansAlternative,
+  renderFinansmanActionsBarHtml
 } = await import('../../js/features/finansman/finansman-results-v2.js');
 
 const sampleState = {
@@ -186,4 +187,69 @@ test('mobile overflow containment rules exist for finans results', () => {
   assert.match(css, /@media \(max-width: 768px\)/);
   assert.match(css, /body\.finans-page #finans-results/);
   assert.match(css, /overflow-x:\s*clip/);
+});
+
+test('renderFinansmanActionsBarHtml renders V2 action bar', () => {
+  const html = renderFinansmanActionsBarHtml();
+  assert.match(html, /finansman-v2-actions/);
+  assert.match(html, /aria-label="Sonuç aksiyonları"/);
+  assert.match(html, /data-finansman-v2-detail/);
+  assert.match(html, /data-finansman-v2-restart/);
+  assert.match(html, /data-finansman-v2-pdf/);
+  assert.match(html, /data-finansman-v2-partner/);
+});
+
+test('V2 action bar includes PDF save button', () => {
+  const html = renderFinansmanActionsBarHtml();
+  assert.match(html, /PDF olarak kaydet/);
+  assert.match(html, /data-finansman-v2-pdf/);
+});
+
+test('V2 action bar includes recalculate button', () => {
+  const html = renderFinansmanActionsBarHtml();
+  assert.match(html, /Tekrar hesapla/);
+  assert.match(html, /data-finansman-v2-restart/);
+});
+
+test('V2 action bar includes offer/advisor CTA', () => {
+  const html = renderFinansmanActionsBarHtml();
+  assert.match(html, /Uygun teklif \/ danışman desteği al/);
+  assert.match(html, /data-finansman-v2-partner/);
+});
+
+test('V2 action bar includes detailed analysis CTA', () => {
+  const html = renderFinansmanActionsBarHtml();
+  assert.match(html, /Detaylı finansman analizi al/);
+  assert.match(html, /data-finansman-v2-lead-panel/);
+});
+
+test('legacy actions hidden but V2 preserves user actions', () => {
+  const css = readFileSync(join(root, 'css/finansman-results-v2.css'), 'utf8');
+  assert.match(css, /\.finansman-v2-root ~ \.vacation-final-cta/);
+  const html = renderFinansmanActionsBarHtml();
+  assert.match(html, /Detaylı finansman analizi al/);
+  assert.match(html, /Tekrar hesapla/);
+  assert.match(html, /PDF olarak kaydet/);
+  assert.match(html, /Uygun teklif \/ danışman desteği al/);
+});
+
+test('selected scenario PDF payload uses chosen alternative costs', () => {
+  const logical = buildFinansmanResultsV2Payload({
+    state: sampleState,
+    results: sampleResults,
+    selectedOption: 'logical'
+  });
+  const economic = buildFinansmanResultsV2Payload({
+    state: sampleState,
+    results: sampleResults,
+    selectedOption: 'economic'
+  });
+
+  assert.notEqual(
+    logical.pdfReportData.totalCost.monthlyPayment,
+    economic.pdfReportData.totalCost.monthlyPayment
+  );
+  assert.equal(logical.pdfReportData.decisionScore, logical.decisionScore);
+  assert.equal(economic.pdfReportData.decisionScore, economic.decisionScore);
+  assert.notEqual(logical.pdfReportData.decisionScore, economic.pdfReportData.decisionScore);
 });

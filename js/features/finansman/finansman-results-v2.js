@@ -503,6 +503,40 @@ function resolveAlternatives(state, results, intelAlternatives, selectedId) {
   });
 }
 
+/**
+ * V2 sonuç aksiyon çubuğu (legacy vacation-final-cta / selection-bar karşılığı).
+ */
+export function renderFinansmanActionsBarHtml({ esc = escapeHtml } = {}) {
+  return `
+    <div class="finansman-v2-actions" aria-label="Sonuç aksiyonları">
+      <button type="button" class="btn secondary finansman-v2-detail" data-finansman-v2-detail>
+        Detaylı finansman analizi al
+      </button>
+      <button type="button" class="btn secondary finansman-v2-restart" data-finansman-v2-restart>
+        Tekrar hesapla
+      </button>
+      <button type="button" class="btn secondary finansman-v2-pdf" data-finansman-v2-pdf>
+        PDF olarak kaydet
+      </button>
+      <button type="button" class="btn secondary finansman-v2-partner" data-finansman-v2-partner>
+        Uygun teklif / danışman desteği al
+      </button>
+      <div class="finansman-v2-lead-panel" data-finansman-v2-lead-panel hidden>
+        <p class="finansman-v2-lead-hint" data-finansman-v2-lead-hint></p>
+        <div class="finansman-v2-lead-fields">
+          <input type="text" data-finansman-v2-lead-name placeholder="Ad soyad" autocomplete="name">
+          <input type="tel" data-finansman-v2-lead-phone placeholder="Telefon" autocomplete="tel">
+          <input type="email" data-finansman-v2-lead-email placeholder="E-posta" autocomplete="email">
+        </div>
+        <button type="button" class="btn primary finansman-v2-lead-submit" data-finansman-v2-lead-submit>
+          Talebi gönder
+        </button>
+      </div>
+      <p class="finansman-v2-action-feedback" data-finansman-v2-action-feedback hidden></p>
+      <p class="finansman-v2-pdf-hint" data-finansman-v2-pdf-hint hidden></p>
+    </div>`;
+}
+
 function buildNextSteps(state, riskAnalysis) {
   const high = riskAnalysis.filter((r) => r.level === 'yüksek');
   const steps = [
@@ -772,13 +806,63 @@ function renderFinansmanResultsV2Html(model) {
         <ol>${model.nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
       </article>
 
-      <div class="finansman-v2-actions">
-        <button type="button" class="btn secondary finansman-v2-pdf" data-finansman-v2-pdf>
-          Finansman karar raporunu indir
-        </button>
-        <p class="finansman-v2-pdf-hint" data-finansman-v2-pdf-hint hidden></p>
-      </div>
+      ${renderFinansmanActionsBarHtml({ esc })}
     </section>`;
+}
+
+function bindFinansmanV2Actions(root, { track, model, onRestart, onDetailedAnalysis, onPartnerCta, onLeadSubmit }) {
+  const pdfBtn = root.querySelector('[data-finansman-v2-pdf]');
+  const pdfHint = root.querySelector('[data-finansman-v2-pdf-hint]');
+  const restartBtn = root.querySelector('[data-finansman-v2-restart]');
+  const detailBtn = root.querySelector('[data-finansman-v2-detail]');
+  const partnerBtn = root.querySelector('[data-finansman-v2-partner]');
+  const leadPanel = root.querySelector('[data-finansman-v2-lead-panel]');
+  const leadHint = root.querySelector('[data-finansman-v2-lead-hint]');
+  const leadSubmit = root.querySelector('[data-finansman-v2-lead-submit]');
+  const feedbackEl = root.querySelector('[data-finansman-v2-action-feedback]');
+
+  const leadEls = { leadPanel, leadHint, feedbackEl };
+
+  pdfBtn?.addEventListener('click', () => {
+    safeTrackEvent(track, 'finance_report_print_click', {
+      category: 'finansman',
+      score: model.decisionScore,
+      selected_option: model.selectedOption
+    });
+    if (pdfHint) {
+      pdfHint.hidden = false;
+      pdfHint.textContent =
+        'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
+    }
+    if (feedbackEl) feedbackEl.hidden = true;
+    gatePdfDownload(model.pdfReportData);
+  });
+
+  restartBtn?.addEventListener('click', () => {
+    if (typeof onRestart === 'function') onRestart();
+  });
+
+  detailBtn?.addEventListener('click', async () => {
+    if (typeof onDetailedAnalysis === 'function') {
+      await onDetailedAnalysis(leadEls);
+    }
+  });
+
+  partnerBtn?.addEventListener('click', async () => {
+    if (typeof onPartnerCta === 'function') {
+      await onPartnerCta(leadEls);
+    }
+  });
+
+  leadSubmit?.addEventListener('click', async () => {
+    if (typeof onLeadSubmit !== 'function') return;
+    const formData = {
+      fullName: root.querySelector('[data-finansman-v2-lead-name]')?.value?.trim() || '',
+      phone: root.querySelector('[data-finansman-v2-lead-phone]')?.value?.trim() || '',
+      email: root.querySelector('[data-finansman-v2-lead-email]')?.value?.trim() || ''
+    };
+    await onLeadSubmit(formData, feedbackEl);
+  });
 }
 
 /**
@@ -842,21 +926,17 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
     category: 'finansman',
     score: model.decisionScore,
     confidence: model.confidenceScore,
-    risk: model.overallRisk
+    risk: model.overallRisk,
+    selected_option: model.selectedOption
   });
 
-  root.querySelector('[data-finansman-v2-pdf]')?.addEventListener('click', () => {
-    safeTrackEvent(track, 'finance_report_print_click', {
-      category: 'finansman',
-      score: model.decisionScore
-    });
-    const hint = root.querySelector('[data-finansman-v2-pdf-hint]');
-    if (hint) {
-      hint.hidden = false;
-      hint.textContent =
-        'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
-    }
-    gatePdfDownload(model.pdfReportData);
+  bindFinansmanV2Actions(root, {
+    track,
+    model,
+    onRestart: payload.onRestart,
+    onDetailedAnalysis: payload.onDetailedAnalysis,
+    onPartnerCta: payload.onPartnerCta,
+    onLeadSubmit: payload.onLeadSubmit
   });
 
   const summary = await fetchExecutiveSummaryV3(
