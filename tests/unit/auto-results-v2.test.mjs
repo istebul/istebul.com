@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {
   PREMIUM_VEHICLE_PLACEHOLDER,
   resolveVehicleImageUrl,
-  toRecommendationVehicle
+  toRecommendationVehicle,
+  vehicleImageMatchesName
 } from '../../js/auto/vehicle-image.js';
 import {
   buildRecommendationPayload,
@@ -11,10 +12,30 @@ import {
   buildWhyRecommendedCards
 } from '../../js/auto/auto-results-model.js';
 
-test('resolveVehicleImageUrl prefers image_url over placeholder', () => {
+test('resolveVehicleImageUrl prefers verified image_url over placeholder', () => {
   assert.equal(
-    resolveVehicleImageUrl({ name: '2024 Citroen C4 Max', image_url: 'https://cdn.example/c4.jpg' }),
-    'https://cdn.example/c4.jpg'
+    resolveVehicleImageUrl({
+      name: '2024 Citroen C4 Max',
+      image_url: 'https://cdn.example/citroen-c4-max.jpg'
+    }),
+    'https://cdn.example/citroen-c4-max.jpg'
+  );
+});
+
+test('resolveVehicleImageUrl rejects unverified image_url for vehicle name', () => {
+  assert.equal(
+    resolveVehicleImageUrl({
+      name: '2023 Toyota Corolla Cross Hybrid',
+      image_url: 'https://cdn.example/volkswagen-passat.jpg'
+    }),
+    PREMIUM_VEHICLE_PLACEHOLDER
+  );
+  assert.equal(
+    vehicleImageMatchesName(
+      '2023 Toyota Corolla Cross Hybrid',
+      'https://cdn.example/volkswagen-passat.jpg'
+    ),
+    false
   );
 });
 

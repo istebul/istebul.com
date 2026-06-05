@@ -20,6 +20,77 @@ function computeAnnualFuelCost(vehicle) {
   return safeNumber(vehicle?.costs?.fuel);
 }
 
+function formatTryAmount(value) {
+  const amount = safeNumber(value);
+  if (!amount) return '';
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+
+function computeFuelConsumptionLabel(vehicle, formData = {}) {
+  const profile = vehicle?.costProfile;
+  if (!profile) return '';
+
+  const km = safeNumber(formData?.km) || 15000;
+  const cityRatio = safeNumber(formData?.city_ratio);
+  const ratio = Number.isFinite(cityRatio) ? cityRatio : 0.6;
+  const fuelCity = safeNumber(profile.fuel_city);
+  const fuelHighway = safeNumber(profile.fuel_highway) || fuelCity;
+
+  if (vehicle?.fuel === 'electric') return '';
+
+  const average = fuelCity * ratio + fuelHighway * (1 - ratio);
+  if (!average) return '';
+
+  return `${average.toFixed(1)} L/100km`;
+}
+
+/**
+ * Compact card fuel metric — always a value, never a field label.
+ * @param {object} vehicle
+ * @param {object} [formData]
+ */
+export function formatVehicleFuelDisplay(vehicle, formData = {}) {
+  const annualFuel = computeAnnualFuelCost(vehicle);
+  if (annualFuel > 0) {
+    return `${formatTryAmount(annualFuel)} / yıl`;
+  }
+
+  const consumption = computeFuelConsumptionLabel(vehicle, formData);
+  if (consumption) return consumption;
+
+  if (vehicle?.fuel === 'electric') return 'Elektrik · düşük işletme';
+  if (vehicle?.fuel === 'hybrid') return 'Hibrit · dengeli tüketim';
+
+  return '—';
+}
+
+/**
+ * Compact card second-hand strength metric.
+ * @param {object} vehicle
+ */
+export function formatVehicleResaleDisplay(vehicle) {
+  const resaleRating = safeNumber(vehicle?.resale);
+  const residual = vehicle?.costs?.ownership?.depreciation?.residualPct12;
+
+  if (residual != null) {
+    const pct = Math.round(safeNumber(residual) * 100);
+    const label = pct >= 82 ? 'Yüksek' : pct >= 74 ? 'Güçlü talep' : 'Orta';
+    return `${label} · %${pct}`;
+  }
+
+  if (resaleRating > 0) {
+    const score = (resaleRating).toFixed(1);
+    const label = resaleRating >= 8.5 ? 'Yüksek' : resaleRating >= 7.5 ? 'Güçlü talep' : 'Orta';
+    return `${label} · ${score}/10`;
+  }
+
+  return 'Orta · segment ort.';
+}
+
 function computeFiveYearOwnershipTotal(vehicle) {
   const own = vehicle?.costs?.ownership;
   if (!own) return 0;

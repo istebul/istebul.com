@@ -11,8 +11,34 @@ import {
   explainRankGap,
   buildMethodologyPanel,
   buildRankIntelligence,
-  buildScoringTransparency
+  buildScoringTransparency,
+  SCORE_MIN
 } from '../engines/decision-consultant.js';
+
+const RANK_SCORE_STEP = 3;
+
+/**
+ * Spread top-3 display scores when raw values collapse (e.g. all 94).
+ * Preserves recommendVehicles ordering; only separates tied/high scores.
+ * @param {Array<{ score: number, scoreRaw?: number }>} top
+ */
+export function applyRankScoreSpread(top = []) {
+  if (top.length <= 1) return top;
+
+  const anchor = top[0].score;
+
+  for (let i = 1; i < Math.min(top.length, 3); i++) {
+    const target = Math.max(SCORE_MIN, anchor - RANK_SCORE_STEP * i);
+    if (top[i].score >= anchor - 1) {
+      top[i].score = target;
+    }
+    if (top[i].score >= top[i - 1].score) {
+      top[i].score = Math.max(SCORE_MIN, top[i - 1].score - 2);
+    }
+  }
+
+  return top;
+}
 
 export { buildMethodologyPanel, explainRankGap, buildRankIntelligence };
 
@@ -83,7 +109,7 @@ export function recommendVehicles(form, catalog = []) {
       return (b.rankingTieBreak ?? 0) - (a.rankingTieBreak ?? 0);
     });
 
-  const top = scored.slice(0, 3);
+  const top = applyRankScoreSpread(scored.slice(0, 3));
 
   top.forEach((vehicle, idx) => {
     vehicle.recommendationIntelligence = buildRecommendationIntelligence(vehicle, form, {
