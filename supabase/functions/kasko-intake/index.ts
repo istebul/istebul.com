@@ -2,20 +2,22 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { isAllowedOrigin, resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 const ALLOWED_EVENTS = new Set([
-  "insurance_page_view",
-  "insurance_analysis_started",
-  "insurance_results_view",
-  "insurance_interest",
-  "insurance_pdf_download",
-  "insurance_lead_submit",
-  "insurance_step_completed",
+  "kasko_page_view",
+  "kasko_analysis_started",
+  "kasko_wizard_complete",
+  "kasko_results_view",
+  "kasko_lead_submit",
+  "kasko_step_completed",
+  "kasko_option_selected",
+  "kasko_selection_confirmed",
+  "kasko_pdf_download",
 ]);
 
 const ALLOWED_INTERESTS = new Set([
-  "insurance_quote",
-  "insurance_review",
-  "insurance_consultation",
-  "insurance",
+  "kasko_quote",
+  "kasko_review",
+  "kasko_consultation",
+  "kasko",
 ]);
 
 function headers(origin: string | null) {
@@ -44,10 +46,10 @@ function cleanNum(value: unknown, min = 0, max = 100) {
 function calculateLeadScore(form: Record<string, unknown>) {
   let score = 40;
   const interest = String(form.interest_type || "");
-  if (interest === "insurance_quote") score += 55;
-  else if (interest === "insurance_review") score += 48;
-  else if (interest === "insurance_consultation") score += 42;
-  else if (interest === "insurance") score += 35;
+  if (interest === "kasko_quote") score += 55;
+  else if (interest === "kasko_review") score += 48;
+  else if (interest === "kasko_consultation") score += 42;
+  else if (interest === "kasko") score += 35;
 
   const decision = cleanNum(form.decision_score, 0, 100);
   if (decision >= 80) score += 20;
@@ -97,7 +99,7 @@ Deno.serve(async (req) => {
       body.metadata && typeof body.metadata === "object"
         ? (body.metadata as Record<string, unknown>)
         : {};
-    const { error } = await adminClient.from("sigorta_events").insert({
+    const { error } = await adminClient.from("kasko_events").insert({
       session_id: sessionId,
       event_type: eventType,
       payload: metadata,
@@ -136,6 +138,7 @@ Deno.serve(async (req) => {
                   "session_id",
                   "interest_type",
                   "ai_summary",
+                  "privacy_consent",
                 ].includes(k)
             )
           );
@@ -145,13 +148,8 @@ Deno.serve(async (req) => {
       full_name: cleanText(form.full_name, 120) || null,
       email: cleanText(form.email, 200) || null,
       phone: cleanText(form.phone, 30) || null,
-      interest_type: interest || "insurance_quote",
-      insurance_type: cleanText(form.insurance_type, 40) || null,
+      interest_type: interest || "kasko_quote",
       decision_score: cleanNum(form.decision_score, 0, 100) || null,
-      protection_score: cleanNum(form.protection_score, 0, 100) || null,
-      coverage_score: cleanNum(form.coverage_score, 0, 100) || null,
-      cost_efficiency_score: cleanNum(form.cost_efficiency_score, 0, 100) || null,
-      overall_risk: cleanText(form.overall_risk, 40) || null,
       ai_summary: cleanText(form.ai_summary, 4000) || null,
       profile_json: profileJson,
       selected_option: cleanText(form.selected_option, 120) || null,
@@ -159,7 +157,7 @@ Deno.serve(async (req) => {
       notes: JSON.stringify({ lead_score: leadScore, priority }).slice(0, 500),
     };
 
-    const { data, error } = await adminClient.from("sigorta_leads").insert(row).select("id").single();
+    const { data, error } = await adminClient.from("kasko_leads").insert(row).select("id").single();
     if (error) return json({ error: "Lead recording failed" }, 500, origin);
     return json({ ok: true, id: data?.id, lead_score: leadScore, priority }, 200, origin);
   }

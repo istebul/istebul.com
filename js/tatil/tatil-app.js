@@ -11,7 +11,10 @@ import {
   trackVacationEvent,
   saveVacationLead,
   loadVacationSettings,
-  loadActiveScenarios
+  loadActiveScenarios,
+  trackVacationStart,
+  trackVacationLeadOpen,
+  trackVacationLeadSubmit
 } from './tatil-intake.js';
 import {
   buildResults,
@@ -859,6 +862,7 @@ function bindResultsEvents(commentary) {
     if (!state.selected_option) return;
     state.confirmationStep = true;
     trackVacationEvent('vacation_selection_confirmed', { option: state.selected_option });
+    trackVacationLeadOpen({ option: state.selected_option });
     renderResults();
     $('#vacation-final-cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
@@ -957,7 +961,7 @@ async function submitLead(source, commentary) {
     msg.className = 'vacation-toast';
     msg.textContent = 'Tercihiniz kaydedildi. Ekibimiz profilinize uygun seçenekleri paylaşabilir.';
     $('#vacation-final-cta')?.prepend(msg);
-    trackVacationEvent('vacation_option_selected', { source, saved: true });
+    trackVacationLeadSubmit({ source, selected_option: selected });
   } else if (!full_name && !phone && !email) {
     alert('İletişim bilgisi paylaşırsanız size özel teklif hazırlayabiliriz. İsterseniz yine de devam edebilirsiniz.');
     await saveVacationLead({ ...payload, selected_option: selected });
@@ -978,6 +982,7 @@ function scrollToWizard() {
   document.getElementById('vacation-flow')?.scrollIntoView({ behavior: 'smooth' });
   state.stepIndex = 0;
   renderWizard();
+  trackVacationStart({ source: 'hero_cta' });
 }
 
 async function init() {

@@ -29,6 +29,7 @@ import {
   trackSigortaResultsView,
   saveSigortaLead
 } from '../../sigorta/sigorta-intake.js';
+import { trackLeadSubmitted } from '../../platform/site-analytics.js';
 
 const SIGORTA_SUMMARY_TIMEOUT_MS = 10000;
 
@@ -384,6 +385,9 @@ function bindSigortaV2Actions(root, { track, model, onRestart, selectedOption })
       : res.timeout
         ? 'İstek zaman aşımına uğradı; lütfen biraz sonra tekrar deneyin.'
         : 'Şu an kaydedilemedi; lütfen daha sonra tekrar deneyin.';
+    if (res.ok) {
+      trackLeadSubmitted('sigorta', { selected_option: selectedOption || model.selectedOption || '' });
+    }
     if (statusEl) statusEl.textContent = message;
     if (feedbackEl) {
       feedbackEl.hidden = false;

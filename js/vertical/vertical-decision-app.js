@@ -10,6 +10,7 @@ import { mountSigortaResultsV2, syncCanonicalSigortaScores } from '../features/s
 import { mountKaskoResultsV2, syncCanonicalKaskoScores } from '../features/kasko/kasko-results-v2.js';
 import {
   trackAnalysisStarted,
+  trackAnalysisCompleted,
   trackResultsViewed,
   trackLeadFormOpened,
   trackLeadSubmitted
@@ -372,8 +373,9 @@ export function initDecisionFlow(config) {
 
     try {
       const siteCategory = VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical;
-      trackAnalysisStarted(siteCategory, { phase: 'wizard_complete' });
+      trackAnalysisCompleted(siteCategory, { phase: 'wizard_complete' });
       trackResultsViewed(siteCategory, { results_count: state.results.length });
+      void config.tracker.trackWizardComplete?.({ results_count: state.results.length });
     } catch (error) {
       console.warn(`${verticalLabel}-results-analytics-failed`, error);
     }

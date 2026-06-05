@@ -36,14 +36,14 @@ const CATEGORY_FUNNELS = Object.freeze([
     label: 'Sigorta',
     visit: ['insurance_page_view', 'category_page_view'],
     results: ['insurance_results_view', 'results_viewed'],
-    lead: ['lead_submitted', 'insurance_interest']
+    lead: ['insurance_lead_submit', 'lead_submitted', 'insurance_interest']
   },
   {
     id: 'kasko',
     label: 'Kasko',
-    visit: ['category_page_view', 'page_view'],
-    results: [],
-    lead: ['lead_submitted']
+    visit: ['kasko_page_view', 'category_page_view'],
+    results: ['kasko_results_view', 'kasko_wizard_complete', 'results_viewed'],
+    lead: ['kasko_lead_submit', 'lead_submitted']
   }
 ]);
 

@@ -4422,7 +4422,7 @@ async function loadUnifiedFunnelDashboard(dataMode = unifiedFunnelDataMode) {
   const selectExpr =
     'event_name, event_type, session_id, metadata, created_at, is_internal, traffic_type, properties';
 
-  const [analyticsRes, housingRes, vacationRes] = await Promise.all([
+  const [analyticsRes, housingRes, vacationRes, kaskoRes, sigortaRes] = await Promise.all([
     fetchAdminTable(sb, {
       table: 'analytics_events',
       select: selectExpr,
@@ -4444,6 +4444,20 @@ async function loadUnifiedFunnelDashboard(dataMode = unifiedFunnelDataMode) {
       limit: 5000,
       order: { column: 'created_at', ascending: false },
       direct: () => sb.from('vacation_events').select('event_type, session_id, metadata, created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(5000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'kasko_events',
+      select: 'event_type, session_id, payload, created_at',
+      limit: 5000,
+      order: { column: 'created_at', ascending: false },
+      direct: () => sb.from('kasko_events').select('event_type, session_id, payload, created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(5000)
+    }),
+    fetchAdminTable(sb, {
+      table: 'sigorta_events',
+      select: 'event_type, session_id, payload, created_at',
+      limit: 5000,
+      order: { column: 'created_at', ascending: false },
+      direct: () => sb.from('sigorta_events').select('event_type, session_id, payload, created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(5000)
     })
   ]);
 
@@ -4456,10 +4470,20 @@ async function loadUnifiedFunnelDashboard(dataMode = unifiedFunnelDataMode) {
   const rows = [
     ...filteredAnalytics,
     ...(housingRes.data || []),
-    ...(vacationRes.data || [])
+    ...(vacationRes.data || []),
+    ...(kaskoRes.data || []).map((row) => ({
+      event_type: row.event_type,
+      session_id: row.session_id,
+      metadata: row.payload
+    })),
+    ...(sigortaRes.data || []).map((row) => ({
+      event_type: row.event_type,
+      session_id: row.session_id,
+      metadata: row.payload
+    }))
   ];
   const metrics = buildUnifiedFunnelMetrics(rows);
-  const banner = renderAdminDataSourceNotices([analyticsRes, housingRes, vacationRes]);
+  const banner = renderAdminDataSourceNotices([analyticsRes, housingRes, vacationRes, kaskoRes, sigortaRes]);
   const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
   const modeNote = `<p class="text-muted-sm" style="margin:0 0 12px">${escapeHtml(ANALYTICS_DATA_MODE_LABELS[dataMode] || dataMode)} · Platform eventleri ITE ile filtrelenir; konut/tatil legacy tabloları ham veridir.</p>`;
   el.innerHTML = `${banner}${dataModeToolbar}${modeNote}${renderUnifiedFunnelDashboard(metrics, escapeHtml)}`;

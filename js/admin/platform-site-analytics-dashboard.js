@@ -30,7 +30,8 @@ const EVENT_ALIASES = Object.freeze({
     'finance_page_view',
     'insurance_page_view',
     'housing_page_view',
-    'vacation_page_view'
+    'vacation_page_view',
+    'kasko_page_view'
   ],
   analysis_started: [
     'analysis_started',
@@ -40,13 +41,15 @@ const EVENT_ALIASES = Object.freeze({
     'finans_start',
     'vacation_start',
     'home_analysis_start',
-    'insurance_analysis_started'
+    'insurance_analysis_started',
+    'kasko_analysis_started'
   ],
   analysis_completed: [
     'analysis_completed',
     'auto_form_submitted',
     'auto_wizard_complete',
-    'finance_funnel_complete'
+    'finance_funnel_complete',
+    'kasko_wizard_complete'
   ],
   results_viewed: [
     'results_viewed',
@@ -57,18 +60,28 @@ const EVENT_ALIASES = Object.freeze({
     'finans_results_view',
     'vacation_results_view',
     'home_results_view',
-    'insurance_results_view'
+    'insurance_results_view',
+    'kasko_results_view'
   ],
-  lead_form_opened: ['lead_form_opened', 'auto_modal_open', 'insurance_interest'],
+  lead_form_opened: ['lead_form_opened', 'auto_modal_open', 'insurance_interest', 'vacation_lead_open'],
   lead_submitted: [
     'lead_submitted',
     'lead_submit',
     'auto_lead_submit',
     'finans_lead_submit',
     'vacation_lead_submit',
-    'home_lead_submit'
+    'home_lead_submit',
+    'insurance_lead_submit',
+    'kasko_lead_submit'
   ],
-  pdf_downloaded: ['pdf_downloaded', 'insurance_pdf_download'],
+  pdf_downloaded: [
+    'pdf_downloaded',
+    'insurance_pdf_download',
+    'kasko_pdf_download',
+    'decision_report_print_click',
+    'finance_report_print_click',
+    'travel_report_print_click'
+  ],
   cta_clicked: ['cta_clicked', 'cta_click', 'hero_cta_click']
 });
 

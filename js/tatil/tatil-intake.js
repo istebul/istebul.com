@@ -79,6 +79,18 @@ export function saveVacationLead(formData) {
   });
 }
 
+export function trackVacationStart(meta = {}) {
+  return trackVacationEvent('vacation_start', meta);
+}
+
+export function trackVacationLeadOpen(meta = {}) {
+  return trackVacationEvent('vacation_lead_open', meta);
+}
+
+export function trackVacationLeadSubmit(meta = {}) {
+  return trackVacationEvent('vacation_lead_submit', meta);
+}
+
 export async function loadVacationSettings() {
   const { url, key } = getEnv();
   if (!url || !key) return null;

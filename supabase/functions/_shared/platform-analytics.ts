@@ -78,6 +78,24 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "insurance_results_view",
   "insurance_interest",
   "insurance_pdf_download",
+  "insurance_lead_submit",
+  "kasko_page_view",
+  "kasko_analysis_started",
+  "kasko_wizard_complete",
+  "kasko_results_view",
+  "kasko_lead_submit",
+  "kasko_step_completed",
+  "kasko_pdf_download",
+  "decision_report_print_click",
+  "finance_report_print_click",
+  "travel_report_print_click",
+  "vacation_start",
+  "vacation_lead_submit",
+  "vacation_lead_open",
+  "vacation_page_view",
+  "vacation_results_view",
+  "vacation_step_completed",
+  "vacation_selection_confirmed",
   "auto_vehicle_offer_click",
   "auto_premium_report_click",
   "auto_premium_paywall_view",
@@ -212,6 +230,8 @@ export function eventCategoryFor(name: string, fallback?: string) {
   if (name.startsWith("auto_")) return "auto";
   if (name.startsWith("finance_")) return "finance";
   if (name.startsWith("insurance_")) return "decision";
+  if (name.startsWith("kasko_")) return "decision";
+  if (name.startsWith("vacation_")) return "decision";
   if (name.startsWith("auth_")) return "auth";
   if (name.startsWith("partner_")) return "partner";
   if (

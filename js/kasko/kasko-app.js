@@ -1,5 +1,6 @@
 import { initDecisionFlow } from '../vertical/vertical-decision-app.js';
 import { resolveWizardConfig } from '../vertical/wizard-i18n.js';
+import { createVerticalTracker } from '../vertical/vertical-intake.js';
 import {
   KASKO_STEPS,
   KASKO_OPTIONS,
@@ -13,11 +14,7 @@ import {
   getKaskoProgress
 } from '../features/kasko/kasko-engine.js';
 import { buildKaskoAiSummary } from '../features/kasko/kasko-ai-summary.js';
-import {
-  trackKaskoPageView,
-  trackKaskoAnalysisStarted,
-  trackKaskoStep
-} from './kasko-intake.js';
+import { trackKaskoPageView } from './kasko-intake.js';
 import { bootstrapKaskoFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
 
 export const KASKO_DOM_IDS = {
@@ -41,15 +38,7 @@ export const KASKO_DOM_IDS = {
   leadEmail: 'kasko-lead-email'
 };
 
-const tracker = {
-  trackStart: () => trackKaskoAnalysisStarted({ source: 'wizard' }),
-  trackStep: (stepId, stepIndex) => trackKaskoStep(stepId, stepIndex),
-  trackResults: (meta = {}) => trackKaskoAnalysisStarted({ phase: 'results', ...meta }),
-  trackSelect: () => {},
-  trackConfirm: () => {},
-  saveLead: () => Promise.resolve({ ok: false }),
-  events: {}
-};
+const tracker = createVerticalTracker('kasko');
 
 function isValidAge(age) {
   const n = Number(age);
@@ -152,11 +141,11 @@ function boot() {
   document.getElementById(KASKO_DOM_IDS.heroCta)?.addEventListener('click', () => {
     flowApi.scrollToFlow();
     flowApi.startWizard();
-    trackKaskoAnalysisStarted({ source: 'hero_cta' });
+    tracker.trackStart({ source: 'hero_cta' });
   });
   document.getElementById(KASKO_DOM_IDS.heroCtaSecondary)?.addEventListener('click', () => {
     flowApi.scrollToFlow();
-    trackKaskoAnalysisStarted({ source: 'hero_secondary' });
+    tracker.trackStart({ source: 'hero_secondary' });
   });
 
   trackKaskoPageView();

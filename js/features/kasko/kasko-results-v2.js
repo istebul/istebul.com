@@ -17,7 +17,8 @@ import {
   hydrateInsightBlocks,
   renderInsightBlocksHtml
 } from '../ai/ai-insight-engine.js';
-import { saveKaskoLead, trackKaskoResultsView } from '../../kasko/kasko-intake.js';
+import { saveKaskoLead, trackKaskoPdfDownload, trackKaskoResultsView } from '../../kasko/kasko-intake.js';
+import { trackLeadFormOpened, trackLeadSubmitted, trackPdfDownloaded } from '../../platform/site-analytics.js';
 
 export const KASKO_RESULTS_MOUNT_ID = 'kasko-results';
 
@@ -241,6 +242,8 @@ function bindKaskoV2Actions(root, { track, model, onRestart, selectedOption }) {
       category: 'kasko',
       score: model.decisionScore
     });
+    trackPdfDownloaded('kasko', { score: model.decisionScore });
+    trackKaskoPdfDownload({ score: model.decisionScore });
     const hint = root.querySelector('[data-kasko-v2-pdf-hint]');
     if (hint) {
       hint.hidden = false;
@@ -255,6 +258,7 @@ function bindKaskoV2Actions(root, { track, model, onRestart, selectedOption }) {
   });
 
   root.querySelector('[data-kasko-v2-quote]')?.addEventListener('click', () => {
+    trackLeadFormOpened('kasko');
     const leadPanel = root.querySelector('[data-kasko-v2-lead-panel]');
     const leadHint = root.querySelector('[data-kasko-v2-lead-hint]');
     const form = root.querySelector('[data-kasko-lead-form]');
@@ -295,6 +299,11 @@ function bindKaskoV2Actions(root, { track, model, onRestart, selectedOption }) {
       : res.timeout
         ? 'İstek zaman aşımına uğradı; lütfen biraz sonra tekrar deneyin.'
         : 'Şu an kaydedilemedi; lütfen daha sonra tekrar deneyin.';
+    if (res.ok) {
+      trackLeadSubmitted('kasko', {
+        selected_option: selectedOption || model.selectedOption || ''
+      });
+    }
     if (statusEl) statusEl.textContent = message;
     if (feedbackEl) {
       feedbackEl.hidden = false;
