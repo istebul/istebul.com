@@ -192,10 +192,12 @@ test('frontend test payload sends endpoint_id from row id', () => {
     path.join(root, 'js/admin/partner-endpoints-admin.js'),
     'utf8'
   );
-  assert.match(source, /body:\s*\{\s*endpoint_id:\s*normalizedId\s*\}/);
+  assert.match(source, /JSON\.stringify\(\{\s*endpoint_id:\s*normalizedId\s*\}\)/);
   assert.match(source, /data-id="\$\{safeAttr\(row\.id\)\}"/);
   assert.match(source, /isPartnerEndpointUuid/);
   assert.match(source, /formatPartnerEndpointTestError/);
+  assert.match(source, /fetch\(`\$\{config\.url\}\/functions\/v1\/partner-endpoint-test`/);
+  assert.doesNotMatch(source, /functions\.invoke\('partner-endpoint-test'/);
 });
 
 test('formatPartnerEndpointTestError maps known error codes', () => {
@@ -203,6 +205,20 @@ test('formatPartnerEndpointTestError maps known error codes', () => {
   assert.match(formatPartnerEndpointTestError({ error: 'endpoint_id_required' }), /gönderilmedi/i);
   assert.match(formatPartnerEndpointTestError({ error: 'webhook_failed' }), /Webhook/i);
   assert.match(formatPartnerEndpointTestError({ error: 'admin_required' }), /admin/i);
+  assert.match(
+    formatPartnerEndpointTestError({
+      error: 'endpoint_not_found',
+      endpoint_id: '660e8400-e29b-41d4-a716-446655440001'
+    }),
+    /660e8400-e29b-41d4-a716-446655440001/
+  );
+  assert.match(
+    formatPartnerEndpointTestError({
+      error: 'webhook_failed',
+      detail: 'HTTP 404'
+    }),
+    /HTTP 404/
+  );
 });
 
 test('partner-endpoint-test rejects unsafe webhook URLs', () => {

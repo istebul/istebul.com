@@ -57,7 +57,14 @@ export const PARTNER_ENDPOINT_TEST_ERRORS = Object.freeze({
 export function formatPartnerEndpointTestError(payload) {
   const code = String(payload?.error || payload?.message || '').trim();
   if (!code) return 'Test başarısız';
-  return PARTNER_ENDPOINT_TEST_ERRORS[code] || code;
+  let message = PARTNER_ENDPOINT_TEST_ERRORS[code] || code;
+  if (payload?.endpoint_id) {
+    message += ` (${payload.endpoint_id})`;
+  }
+  if (payload?.detail && code === 'webhook_failed') {
+    message += ` — ${payload.detail}`;
+  }
+  return message;
 }
 
 export function sanitizePartnerEndpointRow(row) {
