@@ -2,7 +2,7 @@
  * Pure Auto results model builders (testable, no side effects).
  */
 import { buildRecommendationIntelligence } from './recommendation-intelligence.js';
-import { buildWhyNotRanked } from '../engines/decision-consultant.js';
+import { buildWhyNotRanked, buildWhyNumberOne } from '../engines/decision-consultant.js';
 import { toRecommendationVehicle } from './vehicle-image.js';
 
 function clamp(value, min, max) {
@@ -192,6 +192,11 @@ export function buildWhyRecommendedCards(recommendation, formData) {
   ];
 }
 
+function computeMonthlyCost(vehicle) {
+  const months12 = safeNumber(vehicle?.costs?.ownership?.totals?.months12 || vehicle?.costs?.total);
+  return months12 > 0 ? Math.round(months12 / 12) : 0;
+}
+
 export function buildVehicleAlternatives(results = [], leader, formData) {
   return results.slice(1, 4).map((vehicle, idx) => {
     const rank = idx + 2;
@@ -204,12 +209,87 @@ export function buildVehicleAlternatives(results = [], leader, formData) {
     return {
       vehicle: toRecommendationVehicle(vehicle),
       score: safeNumber(vehicle.score),
+      monthlyCost: computeMonthlyCost(vehicle),
+      fuelDisplay: formatVehicleFuelDisplay(vehicle, formData),
+      resaleDisplay: formatVehicleResaleDisplay(vehicle),
       pros: pros.length ? pros : ['Profilinize uygun alternatif segment'],
       whySecond: whyNot?.summary
         || vehicle.recommendationIntelligence?.whyNotAlternatives
         || 'Birincil öneriye göre toplam uyum skoru daha düşük.'
     };
   });
+}
+
+/**
+ * Rule-based ranking commentary from existing score data (no new AI/API).
+ * @param {object[]} results
+ * @param {object} [formData]
+ */
+export function buildRankingCommentary(results = [], formData = {}) {
+  const list = (Array.isArray(results) ? results : []).slice(0, 3);
+  const leader = list[0];
+  if (!leader) return [];
+
+  const runnerUp = list[1] || null;
+  const whyFirst = buildWhyNumberOne(leader, runnerUp, formData);
+  const sections = [];
+
+  if (whyFirst) {
+    sections.push({
+      key: 'rank-1',
+      title: 'Neden birinci sırada?',
+      text: whyFirst.summary,
+      bullets: whyFirst.advantages?.slice(0, 3) || []
+    });
+  }
+
+  list.slice(1).forEach((vehicle, idx) => {
+    const rank = idx + 2;
+    const whyNot = buildWhyNotRanked(vehicle, rank, leader, formData);
+    const title = rank === 2
+      ? 'Neden ikinci sıradaki araç seçilmedi?'
+      : 'Neden üçüncü sıradaki araç geride kaldı?';
+
+    sections.push({
+      key: `rank-${rank}`,
+      title,
+      text: whyNot?.summary
+        || `${vehicle.name} toplam uyum skorunda ${leader.name} gerisinde kaldı.`,
+      bullets: [
+        ...(whyNot?.gaps || []).slice(0, 2),
+        ...(whyNot?.strengths || []).slice(0, 1)
+      ].filter(Boolean)
+    });
+  });
+
+  return sections;
+}
+
+/**
+ * Hero highlight bullets derived from recommendation intelligence scores.
+ * @param {object} recommendation
+ */
+export function buildHeroHighlights(recommendation) {
+  const intel = recommendation?.intelligence || {};
+  const items = [
+    {
+      label: 'Bütçe uyumu',
+      ok: (intel.budgetFitScore ?? 0) >= 60
+    },
+    {
+      label: 'TCO avantajı',
+      ok: (intel.operatingCostScore ?? 0) >= 60
+    },
+    {
+      label: 'Segment uyumu',
+      ok: (intel.resaleScore ?? 0) >= 55
+    },
+    {
+      label: 'Kullanım profili uyumu',
+      ok: (intel.reliabilityScore ?? 0) >= 55
+    }
+  ];
+  return items;
 }
 
 export { scoreBandLabel };
