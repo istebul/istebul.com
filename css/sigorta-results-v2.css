@@ -13,12 +13,12 @@ body.sigorta-page #sigorta-results .sigorta-v2-root ~ .vacation-final-cta {
   display: none !important;
 }
 
-body.kasko-page #kasko-results .sigorta-v2-root ~ .ib-premium-dashboard,
-body.kasko-page #kasko-results .sigorta-v2-root ~ .vacation-results-header,
-body.kasko-page #kasko-results .sigorta-v2-root ~ .vacation-results-top-pick,
-body.kasko-page #kasko-results .sigorta-v2-root ~ .vacation-result-cards,
-body.kasko-page #kasko-results .sigorta-v2-root ~ .vacation-selection-bar,
-body.kasko-page #kasko-results .sigorta-v2-root ~ .vacation-final-cta {
+body.kasko-page #kasko-results .kasko-v2-root ~ .ib-premium-dashboard,
+body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-results-header,
+body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-results-top-pick,
+body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-result-cards,
+body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-selection-bar,
+body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-final-cta {
   display: none !important;
 }
 

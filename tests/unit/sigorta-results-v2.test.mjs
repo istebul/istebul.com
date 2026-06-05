@@ -61,6 +61,7 @@ test('legacy suppression CSS hides panels when V2 root is present', () => {
   assert.match(css, /\.sigorta-v2-root ~ \.vacation-result-cards/);
   assert.match(css, /\.sigorta-v2-root ~ \.vacation-selection-bar/);
   assert.match(css, /\.sigorta-v2-root ~ \.vacation-final-cta/);
+  assert.match(css, /\.kasko-v2-root ~ \.vacation-result-cards/);
   assert.match(css, /display:\s*none\s*!important/);
 });
 
