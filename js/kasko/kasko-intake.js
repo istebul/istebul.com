@@ -18,7 +18,7 @@ async function callIntake(payload) {
   if (!url || !key) return { ok: false, offline: true };
   try {
     const response = await withTimeout(
-      fetch(`${url.replace(/\/$/, '')}/functions/v1/auto-intake`, {
+      fetch(`${url.replace(/\/$/, '')}/functions/v1/kasko-intake`, {
         method: 'POST',
         headers: {
           apikey: key,
@@ -27,7 +27,7 @@ async function callIntake(payload) {
         },
         body: JSON.stringify({
           ...payload,
-          category: 'kasko',
+          metadata: { session_id: getVerticalSessionId(VERTICAL) },
           session_id: getVerticalSessionId(VERTICAL)
         })
       }),

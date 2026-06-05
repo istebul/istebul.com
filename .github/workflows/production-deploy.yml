@@ -294,6 +294,7 @@ jobs:
             sigorta-intake
             vacation-intake
             vertical-intake
+            kasko-intake
             support-intake
             analytics-ingest
             admin-action

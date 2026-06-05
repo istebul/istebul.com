@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { isAllowedOrigin, resolveCorsOrigin } from "../_shared/cors-origins.ts";
+import { scheduleVerticalPartnerDispatch } from "../_shared/vertical-partner-dispatch.ts";
 
 const ALLOWED_EVENTS = new Set([
   "vacation_page_view",
@@ -248,6 +249,13 @@ Deno.serve(async (req) => {
         console.error("vacation lead update failed", error.code);
         return json({ error: "Lead update failed" }, 500, origin);
       }
+      scheduleVerticalPartnerDispatch(adminClient, {
+        leadTable: "vacation_leads",
+        leadId: existingId,
+        vertical: "tatil",
+        lead: leadRow,
+        trigger: "vacation_intake",
+      });
       return json({ ok: true, id: existingId, updated: true }, 200, origin);
     }
 
@@ -262,7 +270,18 @@ Deno.serve(async (req) => {
       return json({ error: "Lead recording failed" }, 500, origin);
     }
 
-    return json({ ok: true, id: data?.id }, 200, origin);
+    const leadId = data?.id || null;
+    if (leadId) {
+      scheduleVerticalPartnerDispatch(adminClient, {
+        leadTable: "vacation_leads",
+        leadId,
+        vertical: "tatil",
+        lead: leadRow,
+        trigger: "vacation_intake",
+      });
+    }
+
+    return json({ ok: true, id: leadId }, 200, origin);
   }
 
   return json({ error: "Invalid type" }, 400, origin);

@@ -1,4 +1,8 @@
 import { escapeHtml, safeAttr } from '../core/dom-safe.js';
+import {
+  renderVerticalDispatchDetail,
+  verticalDispatchBadge
+} from '../features/admin/vertical-partner-dispatch.js';
 import { fetchAdminTable, renderAdminDataSourceNotices } from './admin-query.js';
 import { setAdminRootLoading } from './admin-page-routing.js';
 
@@ -43,11 +47,13 @@ async function loadSigortaLeads(sb, adminAction, toast) {
     return;
   }
   el.innerHTML = `${warnings}<table class="table"><thead><tr>
-    <th>Tarih</th><th>İlgi</th><th>Tür</th><th>Skor</th><th>Koruma</th><th>Teminat</th><th>Verimlilik</th><th>Risk</th><th>AI özeti</th><th>Durum</th>
+    <th>Tarih</th><th>İlgi</th><th>Tür</th><th>Skor</th><th>Koruma</th><th>Teminat</th><th>Verimlilik</th><th>Risk</th><th>AI özeti</th><th>Partner</th><th>Durum</th>
   </tr></thead><tbody>${
     rows
       .map(
-        (r) => `<tr>
+        (r) => {
+          const dispatchBadge = verticalDispatchBadge(r.partner_dispatch_status);
+          return `<tr>
       <td class="cell-nowrap">${new Date(r.created_at).toLocaleString('tr-TR')}</td>
       <td>${escapeHtml(r.interest_type || '—')}</td>
       <td>${escapeHtml(r.insurance_type || '—')}</td>
@@ -57,12 +63,15 @@ async function loadSigortaLeads(sb, adminAction, toast) {
       <td>${escapeHtml(String(r.cost_efficiency_score ?? '—'))}</td>
       <td>${escapeHtml(r.overall_risk || '—')}</td>
       <td>${escapeHtml((r.ai_summary || '—').slice(0, 100))}</td>
+      <td><span class="badge ${dispatchBadge.badge}">${escapeHtml(dispatchBadge.label)}</span></td>
       <td><select class="status-select" data-action="sigorta-update-status" data-id="${safeAttr(r.id)}">
         ${['new', 'incelendi', 'arandi', 'uygun', 'partnere_yonlendirildi', 'kapandi', 'reddedildi']
           .map((s) => `<option value="${s}" ${r.status === s ? 'selected' : ''}>${s}</option>`)
           .join('')}
       </select></td>
-    </tr>`
+    </tr>
+    <tr><td colspan="11">${renderVerticalDispatchDetail(r, 'sigorta_leads')}</td></tr>`;
+        }
       )
       .join('')
   }</tbody></table>`;

@@ -1,8 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
 import {
   applyDispatchResult,
+  applyVerticalDispatchResult,
   dispatchPartnerLead,
 } from "../_shared/partner-dispatch.ts";
+import { runVerticalPartnerDispatch } from "../_shared/vertical-partner-dispatch.ts";
+import {
+  isVerticalLeadTable,
+  LEAD_TABLE_ROUTE_TYPES,
+} from "../_shared/vertical-partner-routing.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -36,6 +42,17 @@ async function requireAdmin(req: Request) {
   return profile?.role === "admin" && profile?.is_banned !== true;
 }
 
+function verticalFromLead(lead: Record<string, unknown>, leadTable: string) {
+  if (leadTable === "vertical_leads") {
+    return String(lead.vertical || "finans");
+  }
+  if (leadTable === "housing_leads") return "konut";
+  if (leadTable === "vacation_leads") return "tatil";
+  if (leadTable === "sigorta_leads") return "sigorta";
+  if (leadTable === "kasko_leads") return "kasko";
+  return LEAD_TABLE_ROUTE_TYPES[leadTable] || "konut";
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
@@ -52,8 +69,10 @@ Deno.serve(async (req) => {
   const leadId = String(body.lead_id || "").trim();
   if (!leadId) return json({ error: "lead_id required" }, 400);
 
+  const leadTable = String(body.lead_table || "auto_leads").trim();
+
   const { data: lead, error: leadError } = await sb
-    .from("auto_leads")
+    .from(leadTable)
     .select("*")
     .eq("id", leadId)
     .single();
@@ -61,6 +80,52 @@ Deno.serve(async (req) => {
   if (leadError || !lead) return json({ error: "Lead not found" }, 404);
 
   try {
+    if (isVerticalLeadTable(leadTable)) {
+      const vertical = verticalFromLead(lead, leadTable);
+      const dispatchResult = await runVerticalPartnerDispatch(sb, {
+        leadTable,
+        leadId: lead.id,
+        vertical,
+        lead,
+        trigger: "partner_dispatch",
+        attemptNumber: Number(lead.partner_dispatch_retry_count || 0) + 1,
+        manualDispatch: true,
+        skipHotCheck: Boolean(body.force),
+      });
+
+      if (!dispatchResult) {
+        return json({
+          ok: false,
+          status: "skipped",
+          reason: "not_dispatchable",
+        }, 400);
+      }
+
+      if (dispatchResult.status === "skipped") {
+        return json({
+          ok: false,
+          status: "skipped",
+          reason: dispatchResult.reason,
+        }, 400);
+      }
+
+      if (dispatchResult.status === "dispatched") {
+        return json({
+          ok: true,
+          status: "dispatched",
+          endpoint: dispatchResult.endpoint,
+          route: dispatchResult.route,
+          failover_used: dispatchResult.failover_used || false,
+        });
+      }
+
+      return json({
+        ok: false,
+        status: "dispatch_failed",
+        error: dispatchResult.reason || "dispatch failed",
+      }, 502);
+    }
+
     const dispatchResult = await dispatchPartnerLead(sb, {
       leadId: lead.id,
       payload: lead,
@@ -103,12 +168,22 @@ Deno.serve(async (req) => {
       error: dispatchResult.reason || "dispatch failed",
     }, 502);
   } catch {
-    await applyDispatchResult(
-      sb,
-      lead.id,
-      { status: "dispatch_failed", reason: "manual dispatch exception" },
-      Number(lead.dispatch_retry_count || 0)
-    );
+    if (isVerticalLeadTable(leadTable)) {
+      await applyVerticalDispatchResult(
+        sb,
+        leadTable,
+        lead.id,
+        { status: "dispatch_failed", reason: "manual dispatch exception" },
+        Number(lead.partner_dispatch_retry_count || 0)
+      );
+    } else {
+      await applyDispatchResult(
+        sb,
+        lead.id,
+        { status: "dispatch_failed", reason: "manual dispatch exception" },
+        Number(lead.dispatch_retry_count || 0)
+      );
+    }
 
     return json({
       ok: false,

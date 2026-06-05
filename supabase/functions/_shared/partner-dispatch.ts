@@ -7,6 +7,11 @@ export const FAILOVER_ROUTES: Record<string, string[]> = {
   finance_partner: ["general_sales"],
   insurance_partner: ["general_sales"],
   premium_report: ["general_sales"],
+  housing: ["general_sales"],
+  finance: ["finance_partner", "general_sales"],
+  vacation: ["general_sales"],
+  insurance: ["insurance_partner", "general_sales"],
+  kasko: ["insurance_partner", "general_sales"],
   general_sales: [],
 };
 
@@ -20,7 +25,12 @@ export type DispatchTrigger =
   | "auto_intake"
   | "partner_retry"
   | "partner_dispatch"
-  | "failover";
+  | "failover"
+  | "housing_intake"
+  | "vacation_intake"
+  | "sigorta_intake"
+  | "vertical_intake"
+  | "kasko_intake";
 
 export type DispatchResult = {
   status: "dispatched" | "dispatch_failed" | "skipped";
@@ -173,10 +183,14 @@ export function buildRouteChain(primaryRoute: string, endpoints: PartnerEndpoint
 
 async function writeDispatchLog(
   adminClient: { from: (table: string) => any },
-  entry: Record<string, unknown>
+  entry: Record<string, unknown>,
+  leadSource = "auto_leads"
 ) {
   try {
-    await adminClient.from("partner_lead_dispatch_logs").insert(entry);
+    await adminClient.from("partner_lead_dispatch_logs").insert({
+      ...entry,
+      lead_source: leadSource,
+    });
   } catch {
     // observability must not block delivery
   }
@@ -264,6 +278,7 @@ async function tryDispatchToEndpoints(
     trigger: DispatchTrigger;
     attemptNumber: number;
     manualDispatch?: boolean;
+    leadSource?: string;
   }
 ): Promise<DispatchResult> {
   const dispatchAttemptId = crypto.randomUUID();
@@ -302,20 +317,24 @@ async function tryDispatchToEndpoints(
 
       const preview = (await response.text()).slice(0, 240);
 
-      await writeDispatchLog(adminClient, {
-        lead_id: options.leadId || null,
-        partner_route: options.route,
-        endpoint_id: endpoint.id,
-        endpoint_name: endpoint.name,
-        attempt_number: options.attemptNumber,
-        trigger_source: options.trigger,
-        dispatch_attempt_id: dispatchAttemptId,
-        http_status: response.status,
-        duration_ms: durationMs,
-        success: response.ok,
-        error_message: response.ok ? null : `HTTP ${response.status}`,
-        response_preview: preview || null,
-      });
+      await writeDispatchLog(
+        adminClient,
+        {
+          lead_id: options.leadId || null,
+          partner_route: options.route,
+          endpoint_id: endpoint.id,
+          endpoint_name: endpoint.name,
+          attempt_number: options.attemptNumber,
+          trigger_source: options.trigger,
+          dispatch_attempt_id: dispatchAttemptId,
+          http_status: response.status,
+          duration_ms: durationMs,
+          success: response.ok,
+          error_message: response.ok ? null : `HTTP ${response.status}`,
+          response_preview: preview || null,
+        },
+        options.leadSource || "auto_leads"
+      );
 
       if (response.ok) {
         try {
@@ -361,18 +380,22 @@ async function tryDispatchToEndpoints(
         trigger: options.trigger,
       });
 
-      await writeDispatchLog(adminClient, {
-        lead_id: options.leadId || null,
-        partner_route: options.route,
-        endpoint_id: endpoint.id,
-        endpoint_name: endpoint.name,
-        attempt_number: options.attemptNumber,
-        trigger_source: options.trigger,
-        dispatch_attempt_id: dispatchAttemptId,
-        success: false,
-        error_message:
-          err instanceof Error ? err.message : "network_or_timeout",
-      });
+      await writeDispatchLog(
+        adminClient,
+        {
+          lead_id: options.leadId || null,
+          partner_route: options.route,
+          endpoint_id: endpoint.id,
+          endpoint_name: endpoint.name,
+          attempt_number: options.attemptNumber,
+          trigger_source: options.trigger,
+          dispatch_attempt_id: dispatchAttemptId,
+          success: false,
+          error_message:
+            err instanceof Error ? err.message : "network_or_timeout",
+        },
+        options.leadSource || "auto_leads"
+      );
 
       try {
         await adminClient.rpc("increment_partner_endpoint_fail", {
@@ -407,6 +430,7 @@ export async function dispatchPartnerLead(
     attemptNumber?: number;
     manualDispatch?: boolean;
     skipHotCheck?: boolean;
+    leadSource?: string;
   }
 ): Promise<DispatchResult> {
   const route = String(options.payload.partner_route || "");
@@ -452,6 +476,7 @@ export async function dispatchPartnerLead(
       trigger,
       attemptNumber,
       manualDispatch: options.manualDispatch,
+      leadSource: options.leadSource || String(options.payload.lead_source || "auto_leads"),
     });
 
     if (result.status === "dispatched") {
@@ -503,6 +528,50 @@ export async function applyDispatchResult(
       last_dispatch_at: new Date().toISOString(),
       next_retry_at: isDead ? null : getNextRetryTime(retry),
       last_dispatch_error: isDead
+        ? "max retry reached"
+        : result.reason || "partner webhook failed",
+    })
+    .eq("id", leadId);
+}
+
+export async function applyVerticalDispatchResult(
+  adminClient: { from: (table: string) => any },
+  leadTable: string,
+  leadId: string,
+  result: DispatchResult,
+  currentRetryCount = 0
+) {
+  if (result.status === "dispatched") {
+    await adminClient
+      .from(leadTable)
+      .update({
+        partner_dispatch_status: "sent",
+        partner_dispatch_at: new Date().toISOString(),
+        partner_dispatch_next_retry_at: null,
+        partner_dispatch_error: result.failover_used
+          ? `failover:${result.route}`
+          : null,
+        partner_endpoint_id: result.endpoint_id || null,
+      })
+      .eq("id", leadId);
+    return;
+  }
+
+  if (result.status === "skipped") {
+    return;
+  }
+
+  const retry = currentRetryCount + 1;
+  const isDead = retry >= 5;
+
+  await adminClient
+    .from(leadTable)
+    .update({
+      partner_dispatch_status: isDead ? "dead" : "failed",
+      partner_dispatch_retry_count: retry,
+      partner_dispatch_at: new Date().toISOString(),
+      partner_dispatch_next_retry_at: isDead ? null : getNextRetryTime(retry),
+      partner_dispatch_error: isDead
         ? "max retry reached"
         : result.reason || "partner webhook failed",
     })
