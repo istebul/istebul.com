@@ -349,6 +349,43 @@ export function renderKonutWarningsHtml(warnings = [], esc = escapeHtml) {
     </section>`;
 }
 
+/**
+ * Partner CTA metni — satın alma profilinde fırsat, diğerlerinde danışman/partner.
+ */
+export function resolveKonutPartnerCtaLabel(state = {}) {
+  const purpose = String(state.purchasePurpose || '');
+  if (purpose.includes('Yatırım') || purpose.includes('Kiralamak')) {
+    return 'Danışman/partner teklifi al';
+  }
+  return 'Bana uygun konut fırsatlarını göster';
+}
+
+/**
+ * V2 sonuç aksiyon çubuğu (legacy .housing-result-actions karşılığı).
+ */
+export function renderKonutActionsBarHtml({ userId = null, state = {}, esc = escapeHtml } = {}) {
+  const partnerLabel = resolveKonutPartnerCtaLabel(state);
+  const loginHint = userId
+    ? ''
+    : `<p class="konut-v2-login-hint"><a href="/profil/?returnTo=/konut/">Giriş yapın</a> — raporunuzu profilinizde saklayın.</p>`;
+
+  return `
+    <div class="konut-v2-actions" aria-label="Sonuç aksiyonları">
+      <button type="button" class="btn secondary konut-v2-pdf" data-konut-v2-pdf>
+        PDF olarak kaydet
+      </button>
+      <button type="button" class="btn secondary konut-v2-restart" data-konut-v2-restart>
+        Tekrar analiz yap
+      </button>
+      <button type="button" class="btn secondary konut-v2-partner" data-konut-v2-partner>
+        ${esc(partnerLabel)}
+      </button>
+      ${loginHint}
+      <p class="konut-v2-action-feedback" data-konut-v2-action-feedback hidden></p>
+      <p class="konut-v2-pdf-hint" data-konut-v2-pdf-hint hidden></p>
+    </div>`;
+}
+
 function buildNextSteps(state = {}, metrics = {}, riskAnalysis = []) {
   const highRisks = riskAnalysis.filter((r) => r.level === 'yüksek').map((r) => r.key);
   const steps = [
@@ -633,12 +670,7 @@ function renderKonutResultsV2Html(model) {
         <ol>${model.nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
       </article>
 
-      <div class="konut-v2-actions">
-        <button type="button" class="btn secondary konut-v2-pdf" data-konut-v2-pdf>
-          Konut karar raporunu indir
-        </button>
-        <p class="konut-v2-pdf-hint" data-konut-v2-pdf-hint hidden></p>
-      </div>
+      ${renderKonutActionsBarHtml({ userId: model.userId, state: model.state || {}, esc })}
     </section>`;
 }
 
@@ -650,6 +682,9 @@ function renderKonutResultsV2Html(model) {
  * @param {Array} [opts.scenarios]
  * @param {string[]} [opts.attention]
  * @param {Function} [opts.track]
+ * @param {string|null} [opts.userId]
+ * @param {Function} [opts.onRestart]
+ * @param {Function} [opts.onPartnerCta]
  */
 export async function mountKonutResultsV2({
   mountNode,
@@ -657,7 +692,10 @@ export async function mountKonutResultsV2({
   metrics,
   scenarios = [],
   attention = [],
-  track
+  track,
+  userId = null,
+  onRestart,
+  onPartnerCta
 }) {
   if (!mountNode || !metrics) return null;
 
@@ -673,6 +711,8 @@ export async function mountKonutResultsV2({
   });
   const model = {
     ...payload,
+    state,
+    userId,
     executiveSummary: '',
     summarySourceLabel: 'Kaynak: hazırlanıyor'
   };
@@ -693,6 +733,9 @@ export async function mountKonutResultsV2({
 
   const pdfBtn = root.querySelector('[data-konut-v2-pdf]');
   const pdfHint = root.querySelector('[data-konut-v2-pdf-hint]');
+  const restartBtn = root.querySelector('[data-konut-v2-restart]');
+  const partnerBtn = root.querySelector('[data-konut-v2-partner]');
+  const actionFeedback = root.querySelector('[data-konut-v2-action-feedback]');
 
   pdfBtn?.addEventListener('click', () => {
     safeTrackEvent(track, 'decision_report_print_click', {
@@ -705,7 +748,24 @@ export async function mountKonutResultsV2({
       pdfHint.textContent =
         'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
     }
+    if (actionFeedback) actionFeedback.hidden = true;
     gatePdfDownload(model.pdfReportData);
+  });
+
+  restartBtn?.addEventListener('click', () => {
+    if (typeof onRestart === 'function') {
+      onRestart();
+      return;
+    }
+    document.getElementById('housing-restart')?.click();
+  });
+
+  partnerBtn?.addEventListener('click', async () => {
+    if (typeof onPartnerCta === 'function') {
+      await onPartnerCta(actionFeedback);
+      return;
+    }
+    document.getElementById('housing-partner-cta')?.click();
   });
 
   const summary = await fetchExecutiveSummaryV3(
