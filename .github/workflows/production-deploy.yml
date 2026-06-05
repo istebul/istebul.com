@@ -313,6 +313,7 @@ jobs:
             lifecycle-cron
             partner-retry
             partner-dispatch
+            partner-endpoint-test
             partner-callback
             partner-application
             partner-onboarding

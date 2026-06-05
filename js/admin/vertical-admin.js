@@ -3,6 +3,7 @@
  */
 import { escapeHtml } from '../core/dom-safe.js';
 import {
+  enrichVerticalLeadsDispatch,
   renderVerticalDispatchDetail,
   verticalDispatchBadge
 } from '../features/admin/vertical-partner-dispatch.js';
@@ -67,7 +68,9 @@ export function initVerticalAdmin({ sb }) {
         return;
       }
 
-      mount.innerHTML = `${banner}${rows
+      const enrichedRows = await enrichVerticalLeadsDispatch(sb, rows);
+
+      mount.innerHTML = `${banner}${enrichedRows
         .map(
           (r) => {
             const dispatchBadge = verticalDispatchBadge(r.partner_dispatch_status);

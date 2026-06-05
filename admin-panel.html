@@ -1705,30 +1705,30 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
       <div class="page" id="page-partner-endpoints">
         <div class="page-header">
-          <h2>Partner Kanalları</h2>
-          <p>Lead yönlendirme, webhook kapasitesi ve partner performansı</p>
+          <h2>Partner Endpoints</h2>
+          <p>Lead yönlendirme webhook'ları — Auto ve dikey route type'lar. Test için <a href="https://webhook.site" target="_blank" rel="noopener">webhook.site</a> URL kullanabilirsiniz.</p>
         </div>
         <div class="card">
-          <div class="card-title">Yeni partner kanalı</div>
+          <div class="card-title">Yeni partner endpoint</div>
           <div class="form-row">
-            <div class="form-group"><label>Partner adı</label><input id="partner-name" type="text" placeholder="Örn. Dealer Antalya"></div>
-            <div class="form-group"><label>Yönlendirme tipi</label>
+            <div class="form-group"><label>Ad</label><input id="partner-name" type="text" placeholder="Örn. Konut Partner Test"></div>
+            <div class="form-group"><label>Route type</label>
               <select id="partner-route-type">
-                <option value="dealer_partner">Bayi / Galeri</option>
-                <option value="finance_partner">Finansman</option>
-                <option value="insurance_partner">Sigorta</option>
-                <option value="premium_report">Premium Rapor</option>
-                <option value="general_sales">Genel Satış</option>
+                <option value="housing">Konut</option>
               </select>
             </div>
           </div>
-          <div class="form-group"><label>Webhook URL</label><input id="partner-webhook-url" type="url" placeholder="https://partner-domain.com/api/istebul/leads"></div>
+          <div class="form-group"><label>Webhook URL (HTTPS)</label><input id="partner-webhook-url" type="url" placeholder="https://webhook.site/your-uuid"></div>
           <div class="form-row">
-            <div class="form-group"><label>Öncelik</label><input id="partner-priority-weight" type="number" value="100"></div>
-            <div class="form-group"><label>Günlük limit</label><input id="partner-daily-cap" type="number" placeholder="Boş = limitsiz"></div>
+            <div class="form-group"><label>Auth secret</label><input id="partner-auth-secret" type="password" autocomplete="new-password" placeholder="Partner webhook imza secret"></div>
+            <div class="form-group"><label>Öncelik (priority_weight)</label><input id="partner-priority-weight" type="number" value="100"></div>
+            <div class="form-group"><label>Günlük limit (daily_cap)</label><input id="partner-daily-cap" type="number" placeholder="Boş = limitsiz"></div>
           </div>
-          <div class="form-group"><label>Not</label><textarea id="partner-notes"></textarea></div>
-          <div class="actions"><button class="btn btn-primary" data-action="create-partner-endpoint">Partner kanalı ekle</button></div>
+          <div class="form-row">
+            <div class="form-group"><label><input id="partner-is-active" type="checkbox" checked> Aktif</label></div>
+          </div>
+          <div class="form-group"><label>Not</label><textarea id="partner-notes" placeholder="Ops notları"></textarea></div>
+          <div class="actions"><button type="button" class="btn btn-primary" data-action="create-partner-endpoint">Endpoint ekle</button></div>
         </div>
         <div class="card">
           <div class="card-title">Mevcut partner kanalları</div>

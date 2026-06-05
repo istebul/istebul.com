@@ -1,5 +1,6 @@
 import { escapeHtml, safeAttr } from '../core/dom-safe.js';
 import {
+  enrichVerticalLeadsDispatch,
   renderVerticalDispatchDetail,
   verticalDispatchBadge
 } from '../features/admin/vertical-partner-dispatch.js';
@@ -46,10 +47,11 @@ async function loadSigortaLeads(sb, adminAction, toast) {
     el.innerHTML = `${warnings}<p class="empty">Filtreye uygun sigorta lead kaydı yok.</p>`;
     return;
   }
+  const enrichedRows = await enrichVerticalLeadsDispatch(sb, rows);
   el.innerHTML = `${warnings}<table class="table"><thead><tr>
     <th>Tarih</th><th>İlgi</th><th>Tür</th><th>Skor</th><th>Koruma</th><th>Teminat</th><th>Verimlilik</th><th>Risk</th><th>AI özeti</th><th>Partner</th><th>Durum</th>
   </tr></thead><tbody>${
-    rows
+    enrichedRows
       .map(
         (r) => {
           const dispatchBadge = verticalDispatchBadge(r.partner_dispatch_status);

@@ -71,6 +71,27 @@ function json(body: unknown, status = 200, origin: string | null = null) {
   });
 }
 
+const ALLOWED_PARTNER_ROUTE_TYPES = new Set([
+  "dealer_partner",
+  "finance_partner",
+  "insurance_partner",
+  "premium_report",
+  "general_sales",
+  "housing",
+  "finance",
+  "vacation",
+  "insurance",
+  "kasko",
+]);
+
+function assertAllowedPartnerRouteType(routeType: unknown) {
+  const key = String(routeType || "").trim();
+  if (!ALLOWED_PARTNER_ROUTE_TYPES.has(key)) {
+    throw new Error(`invalid_route_type:${key}`);
+  }
+  return key;
+}
+
 const PARTNER_APP_ACTIONS = new Set([
   "listPartnerApplications",
   "createPartnerApplication",
@@ -436,6 +457,7 @@ Deno.serve(async (req) => {
     "finance_partners",
     "sigorta_leads",
     "sigorta_events",
+    "kasko_leads",
     "partner_endpoints",
     "partner_applications",
   ];
@@ -479,6 +501,7 @@ Deno.serve(async (req) => {
     "finance_settings",
     "sigorta_events",
     "sigorta_leads",
+    "kasko_leads",
     "analytics_exclusion_rules",
     "lifecycle_contacts",
     "lifecycle_enrollments",
@@ -906,6 +929,7 @@ Deno.serve(async (req) => {
         finance_settings: "*",
         sigorta_events: "*",
         sigorta_leads: "*",
+        kasko_leads: "*",
         lifecycle_contacts: "*",
         lifecycle_enrollments: "*",
         lifecycle_messages: "*",
@@ -931,6 +955,7 @@ Deno.serve(async (req) => {
         finance_partners: ["created_at", "institution_name"],
         sigorta_events: ["created_at", "event_type"],
         sigorta_leads: ["created_at", "decision_score", "status", "interest_type"],
+        kasko_leads: ["created_at", "decision_score", "status"],
         finance_settings: ["key", "updated_at"],
         auto_events: ["created_at"],
         analytics_events: ["created_at"],
@@ -993,7 +1018,19 @@ Deno.serve(async (req) => {
         throw error;
       }
 
-      return json({ ok: true, data: data ?? [] }, 200, origin);
+      let rows = data ?? [];
+      if (table === "partner_endpoints" && Array.isArray(rows)) {
+        rows = rows.map((row: Record<string, unknown>) => {
+          const secret = row.shared_secret;
+          const { shared_secret: _omit, ...rest } = row;
+          return {
+            ...rest,
+            has_auth_secret: Boolean(secret && String(secret).length > 0),
+          };
+        });
+      }
+
+      return json({ ok: true, data: rows }, 200, origin);
     }
 
     if (action === "delete") {
@@ -1070,13 +1107,24 @@ Deno.serve(async (req) => {
         return json({ error: `Invalid insert field: ${invalidKey}` }, 400, origin);
       }
 
-      if (table === "partner_endpoints" && typeof values.webhook_url === "string") {
-        try {
-          values.webhook_url = assertSafePartnerWebhookUrl(values.webhook_url);
-        } catch (urlError) {
-          return json({
-            error: urlError instanceof Error ? urlError.message : "Invalid webhook URL",
-          }, 400, origin);
+      if (table === "partner_endpoints") {
+        if (typeof values.route_type === "string") {
+          try {
+            values.route_type = assertAllowedPartnerRouteType(values.route_type);
+          } catch (routeError) {
+            return json({
+              error: routeError instanceof Error ? routeError.message : "Invalid route type",
+            }, 400, origin);
+          }
+        }
+        if (typeof values.webhook_url === "string") {
+          try {
+            values.webhook_url = assertSafePartnerWebhookUrl(values.webhook_url);
+          } catch (urlError) {
+            return json({
+              error: urlError instanceof Error ? urlError.message : "Invalid webhook URL",
+            }, 400, origin);
+          }
         }
       }
 
@@ -1086,11 +1134,16 @@ Deno.serve(async (req) => {
 
       if (error) throw error;
 
+      const auditKeys = Object.keys(values).filter((k) => k !== "shared_secret");
+
       await writeAdminAudit(adminClient, user, {
         action: "insert",
         entity_table: table,
         summary: `Inserted ${table} record`,
-        metadata: { keys: Object.keys(values) },
+        metadata: {
+          keys: auditKeys,
+          has_auth_secret: Boolean(values.shared_secret),
+        },
       });
 
       return json({ ok: true }, 200, origin);
@@ -1194,6 +1247,7 @@ Deno.serve(async (req) => {
         housing_settings: ["value"],
         finance_leads: ["status", "notes"],
         sigorta_leads: ["status", "notes"],
+        kasko_leads: ["status", "notes"],
         finance_partners: ["institution_name", "product_type", "min_amount", "max_amount", "min_term", "max_term", "rate_range", "affiliate_link", "is_active", "notes"],
         finance_settings: ["value"],
         partner_endpoints: ["name", "route_type", "webhook_url", "shared_secret", "is_active", "priority_weight", "daily_cap", "notes", "failover_route", "min_lead_priority", "health_status"],
@@ -1261,13 +1315,24 @@ Deno.serve(async (req) => {
         }
       }
 
-      if (table === "partner_endpoints" && typeof values.webhook_url === "string") {
-        try {
-          values.webhook_url = assertSafePartnerWebhookUrl(values.webhook_url);
-        } catch (urlError) {
-          return json({
-            error: urlError instanceof Error ? urlError.message : "Invalid webhook URL",
-          }, 400, origin);
+      if (table === "partner_endpoints") {
+        if (typeof values.route_type === "string") {
+          try {
+            values.route_type = assertAllowedPartnerRouteType(values.route_type);
+          } catch (routeError) {
+            return json({
+              error: routeError instanceof Error ? routeError.message : "Invalid route type",
+            }, 400, origin);
+          }
+        }
+        if (typeof values.webhook_url === "string") {
+          try {
+            values.webhook_url = assertSafePartnerWebhookUrl(values.webhook_url);
+          } catch (urlError) {
+            return json({
+              error: urlError instanceof Error ? urlError.message : "Invalid webhook URL",
+            }, 400, origin);
+          }
         }
       }
 
@@ -1300,12 +1365,17 @@ Deno.serve(async (req) => {
         }
       }
 
+      const auditFields = Object.keys(values).filter((k) => k !== "shared_secret");
+
       await writeAdminAudit(adminClient, user, {
         action: "update",
         entity_table: table,
         entity_id: id,
         summary: `Updated ${table}`,
-        metadata: { fields: Object.keys(values) },
+        metadata: {
+          fields: auditFields,
+          auth_secret_rotated: Object.prototype.hasOwnProperty.call(values, "shared_secret"),
+        },
       });
 
       return json({ ok: true }, 200, origin);

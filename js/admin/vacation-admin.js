@@ -2,6 +2,7 @@ import { adminList } from '../core/admin-client.js';
 import { escapeHtml, safeAttr, safeJsonParse } from '../core/dom-safe.js';
 import { normalizePhoneForWhatsapp } from '../core/phone.js';
 import {
+  enrichVerticalLeadsDispatch,
   renderVerticalDispatchDetail,
   verticalDispatchBadge
 } from '../features/admin/vertical-partner-dispatch.js';
@@ -309,6 +310,8 @@ async function loadVacationLeads(sb, adminAction, toast) {
     return;
   }
 
+  const enriched = await enrichVerticalLeadsDispatch(sb, filtered);
+
   el.innerHTML = `
     ${banner}
     <table class="table">
@@ -335,7 +338,7 @@ async function loadVacationLeads(sb, adminAction, toast) {
         </tr>
       </thead>
       <tbody>
-        ${filtered
+        ${enriched
           .map(
             (lead) => {
               const dispatchBadge = verticalDispatchBadge(lead.partner_dispatch_status);
