@@ -31,10 +31,14 @@ export function buildListingAiSummary(result = {}) {
       ? formatMoney(result.totalCostEstimate?.firstYearTotal)
       : formatMoney(result.totalCostEstimate?.totalAcquisitionCost);
 
+  const sourceNote = result.source?.listingUrl
+    ? `İlan bağlantısı (${result.source.label || 'Diğer'}) yalnızca kaynak olarak saklanmıştır; üçüncü taraf siteden otomatik veri çekilmemiştir. `
+    : '';
+
   const paragraphs = [
-    `${typeLabel} analizi tamamlandı. Karar skorunuz ${result.decisionScore}/100 (${result.scoreLabel || '—'}). Bu skor deterministik motor tarafından üretilmiştir; yapay zekâ skoru yeniden hesaplamaz.`,
+    `${typeLabel} analizi tamamlandı. Karar skorunuz ${result.decisionScore}/100 (${result.scoreLabel || '—'}). Bu skor deterministik motor tarafından üretilmiştir; yapay zekâ skoru yeniden hesaplamaz. ${sourceNote}Analiz, kullanıcı tarafından girilen alanlara dayalı bilgi amaçlı bir tahmindir; kesin fiyat veya değerleme iddiası taşımaz.`,
     `Güven skoru ${result.confidenceScore}/100, fiyat uygunluğu ${result.priceFit}/100 ve risk seviyesi "${result.riskLevel}" olarak modellenmiştir. Güçlü yönler: ${strengths}. Dikkat alanları: ${weaknesses}.`,
-    `Toplam maliyet tahmini ${totalCost}. Bu değer bilgilendirme amaçlıdır; bağlayıcı teklif veya ekspertiz yerine geçmez.`
+    `Toplam maliyet tahmini ${totalCost}. Bu değer bilgilendirme amaçlıdır; bağlayıcı teklif, ekspertiz, tapu, hasar kaydı veya rayiç araştırması yerine geçmez. Karar öncesi ekspertiz, tapu/kadastro kontrolü, hasar kaydı ve kredi/sigorta ön onayı gibi adımları manuel doğrulamanız önerilir.`
   ];
 
   return {

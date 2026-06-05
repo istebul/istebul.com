@@ -3,6 +3,10 @@
  */
 import {
   LISTING_ANALYSIS_DISCLAIMER,
+  LISTING_ANALYSIS_LEGAL_NOTICE,
+  LISTING_ANALYSIS_KVKK_NOTE,
+  LISTING_URL_HELP_TEXT,
+  LISTING_URL_PLACEHOLDER,
   LISTING_ANALYSIS_DOM_IDS,
   LISTING_ANALYSIS_TYPES,
   VEHICLE_FUEL_OPTIONS,
@@ -142,6 +146,18 @@ function initListingAnalysisApp() {
   });
 
   form.innerHTML = `
+    <label class="la-field la-field--wide la-url-field">
+      <span>İlan Linki <small class="la-optional">(opsiyonel)</small></span>
+      <input
+        type="url"
+        name="listing_url"
+        id="${LISTING_ANALYSIS_DOM_IDS.listingUrl}"
+        inputmode="url"
+        autocomplete="url"
+        maxlength="1000"
+        placeholder="${LISTING_URL_PLACEHOLDER}">
+      <small class="la-help">${LISTING_URL_HELP_TEXT}</small>
+    </label>
     <div class="la-tabs" role="tablist" aria-label="İlan türü">
       <button type="button" role="tab" class="la-tab is-active" id="${LISTING_ANALYSIS_DOM_IDS.tabVehicle}" aria-selected="true">Araç İlanı</button>
       <button type="button" role="tab" class="la-tab" id="${LISTING_ANALYSIS_DOM_IDS.tabHousing}" aria-selected="false">Konut İlanı</button>
@@ -169,6 +185,10 @@ function initListingAnalysisApp() {
       </div>
     </div>
     <p class="la-disclaimer">${LISTING_ANALYSIS_DISCLAIMER}</p>
+    <aside class="la-legal-box" role="note">
+      <p>${LISTING_ANALYSIS_LEGAL_NOTICE}</p>
+    </aside>
+    <p class="la-kvkk-note">${LISTING_ANALYSIS_KVKK_NOTE}</p>
     <button type="submit" class="la-submit" id="${LISTING_ANALYSIS_DOM_IDS.submit}">Analiz Et</button>`;
 
   const submitBtn = document.getElementById(LISTING_ANALYSIS_DOM_IDS.submit);
@@ -188,6 +208,10 @@ function initListingAnalysisApp() {
         ? document.getElementById(LISTING_ANALYSIS_DOM_IDS.panelVehicle)
         : document.getElementById(LISTING_ANALYSIS_DOM_IDS.panelHousing);
     const parsed = parsePanelInputs(panel);
+    const listingUrlInput = document.getElementById(LISTING_ANALYSIS_DOM_IDS.listingUrl);
+    if (listingUrlInput?.value?.trim()) {
+      parsed.listing_url = listingUrlInput.value.trim();
+    }
 
     const validation = buildListingAnalysisResult(type, parsed);
     if (!validation.ok) {
