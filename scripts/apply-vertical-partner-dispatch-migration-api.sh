@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 REF="${SUPABASE_PROJECT_REF:-hjfrcdstbyonmgatgwcc}"
-SQL_FILE="$ROOT/supabase/migrations/20260628_vertical_partner_dispatch.sql"
+SQL_FILE="$ROOT/supabase/migrations/20260629_vertical_partner_dispatch_repair.sql"
 
 if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then
   echo "SUPABASE_ACCESS_TOKEN required" >&2

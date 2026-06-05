@@ -96,8 +96,14 @@ create policy "kasko_leads deny client read" on public.kasko_leads
 drop policy if exists "Admins full kasko_leads" on public.kasko_leads;
 create policy "Admins full kasko_leads" on public.kasko_leads
   for all to authenticated
-  using (public.is_admin_user())
-  with check (public.is_admin_user());
+  using (exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.role = 'admin' and coalesce(p.is_banned, false) = false
+  ))
+  with check (exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.role = 'admin' and coalesce(p.is_banned, false) = false
+  ));
 
 -- Dispatch status constraints
 alter table public.housing_leads
