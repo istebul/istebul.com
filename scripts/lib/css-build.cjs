@@ -74,21 +74,47 @@ function buildHashedCssAssets(opts) {
     staged.set(originalPath, code);
   }
 
-  const provisionalRefs = new Map();
+  let refs = new Map();
   for (const [originalPath, code] of staged) {
-    provisionalRefs.set(originalPath, withHashName(originalPath, hashContent(code)));
+    refs.set(originalPath, withHashName(originalPath, hashContent(code)));
   }
 
-  const rewritten = new Map();
-  for (const [originalPath, code] of staged) {
-    const next = CSS_BUNDLE_ENTRIES.has(originalPath)
-      ? code
-      : rewriteCssImports(code, provisionalRefs, originalPath, root);
-    rewritten.set(originalPath, next);
+  let rewritten = new Map();
+  let stable = false;
+  const maxIterations = Math.max(4, entries.length);
+
+  for (let iteration = 0; iteration < maxIterations && !stable; iteration++) {
+    rewritten.clear();
+
+    for (const [originalPath, code] of staged) {
+      const next = CSS_BUNDLE_ENTRIES.has(originalPath)
+        ? code
+        : rewriteCssImports(code, refs, originalPath, root);
+      rewritten.set(originalPath, next);
+    }
+
+    const nextRefs = new Map();
+    for (const [originalPath, code] of rewritten) {
+      nextRefs.set(originalPath, withHashName(originalPath, hashContent(code)));
+    }
+
+    stable = true;
+    for (const [originalPath, hashedPath] of nextRefs) {
+      if (refs.get(originalPath) !== hashedPath) {
+        stable = false;
+        break;
+      }
+    }
+
+    refs = nextRefs;
+  }
+
+  if (!stable) {
+    throw new Error('CSS asset hashing did not stabilize — check @import graph');
   }
 
   for (const [originalPath, code] of rewritten) {
-    const hashedPath = withHashName(originalPath, hashContent(code));
+    const hashedPath = refs.get(originalPath);
     assetRefs.set(originalPath, hashedPath);
     writeFile(hashedPath, code);
   }
