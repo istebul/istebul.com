@@ -3,9 +3,14 @@ import { isAllowedOrigin, resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 const ALLOWED_EVENTS = new Set([
   "vacation_page_view",
+  "vacation_start",
   "vacation_step_completed",
+  "vacation_wizard_complete",
   "vacation_results_view",
   "vacation_option_selected",
+  "vacation_selection_confirmed",
+  "vacation_lead_open",
+  "vacation_lead_submit",
   "vacation_partner_cta_click",
 ]);
 

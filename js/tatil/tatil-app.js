@@ -24,6 +24,11 @@ import { parseManualBudget, formatTry } from './tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountTatilResultsV2 } from '../features/tatil/tatil-results-v2.js';
 import { bootstrapTatilFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
+import {
+  trackAnalysisCompleted,
+  trackLeadFormOpened,
+  trackLeadSubmitted
+} from '../platform/site-analytics.js';
 
 const state = {
   stepIndex: 0,
@@ -54,6 +59,39 @@ const state = {
   settings: { ...DEFAULT_SETTINGS },
   scenarios: []
 };
+
+let wizardCompleteFired = false;
+let leadOpenFired = false;
+const VACATION_START_KEY = 'ib_vacation_start';
+
+function hasVacationStartFired() {
+  try {
+    return sessionStorage.getItem(VACATION_START_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markVacationStartFired() {
+  try {
+    sessionStorage.setItem(VACATION_START_KEY, '1');
+  } catch {
+    /* ignore */
+  }
+}
+
+function maybeFireVacationStart(source = 'interaction') {
+  if (hasVacationStartFired()) return;
+  markVacationStartFired();
+  void trackVacationEvent('vacation_start', { source });
+}
+
+function maybeFireVacationLeadOpen(source = 'interaction') {
+  if (leadOpenFired) return;
+  leadOpenFired = true;
+  void trackVacationEvent('vacation_lead_open', { source });
+  trackLeadFormOpened('tatil', { source });
+}
 
 function $(sel, root = document) {
   return root.querySelector(sel);
@@ -440,6 +478,7 @@ function refreshNextButton() {
 function bindWizardEvents() {
   document.querySelectorAll('[data-field]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      maybeFireVacationStart('field_select');
       const field = btn.dataset.field;
       const value = btn.dataset.value;
       if (field === 'vacation_goal') {
@@ -471,6 +510,7 @@ function bindWizardEvents() {
 
   const manualInput = $('#vacation-budget-manual');
   manualInput?.addEventListener('input', (e) => {
+    maybeFireVacationStart('manual_input');
     state.budget_total = parseManualBudget(e.target.value);
     state.budget_manual = state.budget_total;
     e.target.value = state.budget_total ? formatTry(state.budget_total) : '';
@@ -567,6 +607,7 @@ function bindWizardEvents() {
 
   $('#vacation-next')?.addEventListener('click', async () => {
     if (!canAdvance() && currentStep()?.id !== 'note') return;
+    maybeFireVacationStart('next_click');
     const step = currentStep();
     if (step?.id === 'note') {
       state.user_note = $('#vacation-user-note')?.value?.trim() || '';
@@ -603,6 +644,17 @@ async function showResults() {
   state.confirmationStep = false;
   renderWizard();
   renderResults();
+  if (!wizardCompleteFired) {
+    wizardCompleteFired = true;
+    await trackVacationEvent('vacation_wizard_complete', {
+      budget_range: state.budget_range,
+      vacation_goal: state.vacation_goal
+    });
+    trackAnalysisCompleted('tatil', {
+      budget_range: state.budget_range,
+      vacation_goal: state.vacation_goal
+    });
+  }
   await trackVacationEvent('vacation_results_view', {
     budget_range: state.budget_range,
     vacation_goal: state.vacation_goal
@@ -858,6 +910,7 @@ function bindResultsEvents(commentary) {
   $('#vacation-confirm-selection')?.addEventListener('click', () => {
     if (!state.selected_option) return;
     state.confirmationStep = true;
+    maybeFireVacationLeadOpen('confirm_selection');
     trackVacationEvent('vacation_selection_confirmed', { option: state.selected_option });
     renderResults();
     $('#vacation-final-cta')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -873,6 +926,7 @@ function bindResultsEvents(commentary) {
   $('#vacation-alt-economic')?.addEventListener('click', () => regenerateVariant('economic'));
   $('#vacation-alt-comfort')?.addEventListener('click', () => regenerateVariant('comfort'));
   $('#vacation-partner-cta')?.addEventListener('click', () => {
+    maybeFireVacationLeadOpen('partner_cta');
     trackVacationEvent('vacation_partner_cta_click');
     submitLead('partner', commentary);
     window.location.href = '/iletisim.html?dikey=tatil&kaynak=partner-teklif';
@@ -957,6 +1011,8 @@ async function submitLead(source, commentary) {
     msg.className = 'vacation-toast';
     msg.textContent = 'Tercihiniz kaydedildi. Ekibimiz profilinize uygun seçenekleri paylaşabilir.';
     $('#vacation-final-cta')?.prepend(msg);
+    trackVacationEvent('vacation_lead_submit', { source, selected_option: selected });
+    trackLeadSubmitted('tatil', { source, selected_option: selected });
     trackVacationEvent('vacation_option_selected', { source, saved: true });
   } else if (!full_name && !phone && !email) {
     alert('İletişim bilgisi paylaşırsanız size özel teklif hazırlayabiliriz. İsterseniz yine de devam edebilirsiniz.');
@@ -975,6 +1031,7 @@ function setupMobileNav() {
 }
 
 function scrollToWizard() {
+  maybeFireVacationStart('hero_cta');
   document.getElementById('vacation-flow')?.scrollIntoView({ behavior: 'smooth' });
   state.stepIndex = 0;
   renderWizard();

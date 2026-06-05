@@ -8,7 +8,9 @@ const ALLOWED_EVENTS = new Set([
   "housing_scenario_selected",
   "home_analysis_start",
   "home_analysis_step_completed",
+  "home_wizard_complete",
   "home_results_view",
+  "home_lead_open",
   "home_lead_submit",
   "home_report_save",
 ]);

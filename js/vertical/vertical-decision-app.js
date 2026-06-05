@@ -10,6 +10,7 @@ import { mountSigortaResultsV2, syncCanonicalSigortaScores } from '../features/s
 import { mountKaskoResultsV2, syncCanonicalKaskoScores } from '../features/kasko/kasko-results-v2.js';
 import {
   trackAnalysisStarted,
+  trackAnalysisCompleted,
   trackResultsViewed,
   trackLeadFormOpened,
   trackLeadSubmitted
@@ -68,6 +69,30 @@ export function initDecisionFlow(config) {
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const verticalLabel = config.vertical || 'vertical';
+  const wizardStartSessionKey = `ib_wizard_start:${verticalLabel}`;
+  let wizardCompleteFired = false;
+
+  function hasWizardStartFired() {
+    try {
+      return sessionStorage.getItem(wizardStartSessionKey) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  function markWizardStartFired() {
+    try {
+      sessionStorage.setItem(wizardStartSessionKey, '1');
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function maybeFireWizardStart(source = 'interaction') {
+    if (hasWizardStartFired()) return;
+    markWizardStartFired();
+    void Promise.resolve(config.tracker.trackStart?.({ source })).catch(() => {});
+  }
 
   function clearWizardSubmitLoading(staleBtn) {
     setSubmitLoading(staleBtn, false);
@@ -197,6 +222,7 @@ export function initDecisionFlow(config) {
   function bindWizardEvents() {
     document.querySelectorAll('[data-field]').forEach((btn) => {
       btn.addEventListener('click', () => {
+        maybeFireWizardStart('field_select');
         const previousValue = state[btn.dataset.field];
         state[btn.dataset.field] = btn.dataset.value;
         if (config.onFieldChange) {
@@ -208,6 +234,7 @@ export function initDecisionFlow(config) {
 
     document.querySelectorAll('[data-action="toggle-chip"]').forEach((chip) => {
       chip.addEventListener('click', () => {
+        maybeFireWizardStart('chip_select');
         const field = chip.dataset.field;
         const value = chip.dataset.value;
         const list = state[field] || [];
@@ -230,8 +257,14 @@ export function initDecisionFlow(config) {
     };
 
     document.querySelectorAll('[data-manual]').forEach((input) => {
-      input.addEventListener('input', (e) => syncManualField(input, e.target.value));
-      input.addEventListener('change', (e) => syncManualField(input, e.target.value));
+      input.addEventListener('input', (e) => {
+        maybeFireWizardStart('manual_input');
+        syncManualField(input, e.target.value);
+      });
+      input.addEventListener('change', (e) => {
+        maybeFireWizardStart('manual_input');
+        syncManualField(input, e.target.value);
+      });
     });
 
     el('back')?.addEventListener('click', () => {
@@ -246,6 +279,7 @@ export function initDecisionFlow(config) {
       const nextBtn = el('next');
       if (!config.canAdvance(state, step) && step?.id !== 'note') return;
 
+      maybeFireWizardStart('next_click');
       clearWizardError();
       setSubmitLoading(nextBtn, true, {
         busyLabel: wt('common.processing', 'Hazırlanıyor…')
@@ -372,7 +406,10 @@ export function initDecisionFlow(config) {
 
     try {
       const siteCategory = VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical;
-      trackAnalysisStarted(siteCategory, { phase: 'wizard_complete' });
+      if (!wizardCompleteFired) {
+        wizardCompleteFired = true;
+        trackAnalysisCompleted(siteCategory, { results_count: state.results.length });
+      }
       trackResultsViewed(siteCategory, { results_count: state.results.length });
     } catch (error) {
       console.warn(`${verticalLabel}-results-analytics-failed`, error);
@@ -772,10 +809,14 @@ export function initDecisionFlow(config) {
     }
     if (!config.externalHeroBindings) {
       el('heroCta')?.addEventListener('click', () => {
+        maybeFireWizardStart('hero_cta');
         scrollToFlow();
         startWizard();
       });
-      el('heroCtaSecondary')?.addEventListener('click', scrollToFlow);
+      el('heroCtaSecondary')?.addEventListener('click', () => {
+        maybeFireWizardStart('hero_secondary');
+        scrollToFlow();
+      });
     }
     renderWizard();
     try {
@@ -787,7 +828,6 @@ export function initDecisionFlow(config) {
     } catch {
       /* i18n optional — wizard already rendered */
     }
-    void Promise.resolve(config.tracker.trackStart?.()).catch(() => {});
     document.addEventListener('ib:locale-changed', () => {
       renderWizard();
       if (state.results?.length) renderResults();

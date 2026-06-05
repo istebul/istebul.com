@@ -18,6 +18,7 @@ import { buildSigortaAiSummary } from '../features/sigorta/sigorta-ai-summary.js
 import {
   trackSigortaPageView,
   trackSigortaAnalysisStarted,
+  trackSigortaResultsView,
   trackSigortaStep,
   saveSigortaLead
 } from './sigorta-intake.js';
@@ -58,7 +59,7 @@ const tracker = {
     return trackSigortaStep(stepId, stepIndex);
   },
   trackResults(meta = {}) {
-    return trackSigortaAnalysisStarted({ phase: 'results', ...meta });
+    return trackSigortaResultsView(meta);
   },
   trackSelect(option, extra = {}) {
     return trackSigortaStep('option_selected', { option, ...extra });
