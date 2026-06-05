@@ -3,6 +3,10 @@
  */
 import { escapeHtml } from '../core/dom-safe.js';
 import {
+  renderVerticalDispatchDetail,
+  verticalDispatchBadge
+} from '../features/admin/vertical-partner-dispatch.js';
+import {
   fetchAdminTable,
   renderAdminDataSourceNotices
 } from './admin-query.js';
@@ -65,16 +69,21 @@ export function initVerticalAdmin({ sb }) {
 
       mount.innerHTML = `${banner}${rows
         .map(
-          (r) => `
+          (r) => {
+            const dispatchBadge = verticalDispatchBadge(r.partner_dispatch_status);
+            return `
       <article class="admin-card">
         <header>
           <strong>${escapeHtml(r.vertical)} · ${escapeHtml(r.selected_option || '—')}</strong>
           <span class="badge">${escapeHtml(r.status)}</span>
+          <span class="badge ${dispatchBadge.badge}">${escapeHtml(dispatchBadge.label)}</span>
         </header>
         <p>${escapeHtml(r.full_name || '—')} · ${escapeHtml(r.email || '—')} · ${escapeHtml(r.phone || '—')}</p>
         <p>Skor: ${escapeHtml(String(r.decision_score ?? '—'))} · ${escapeHtml(r.result_summary || '')}</p>
         <time>${escapeHtml(new Date(r.created_at).toLocaleString('tr-TR'))}</time>
-      </article>`
+        ${renderVerticalDispatchDetail(r, 'vertical_leads')}
+      </article>`;
+          }
         )
         .join('')}`;
     } catch (err) {

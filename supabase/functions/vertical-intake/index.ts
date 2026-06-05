@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { isAllowedOrigin, resolveCorsOrigin } from "../_shared/cors-origins.ts";
+import { scheduleVerticalPartnerDispatch } from "../_shared/vertical-partner-dispatch.ts";
 
 const ALLOWED_VERTICALS = new Set(["konut", "finans"]);
 
@@ -238,6 +239,13 @@ Deno.serve(async (req) => {
     if (existingId) {
       const { error } = await adminClient.from("vertical_leads").update(leadRow).eq("id", existingId);
       if (error) return json({ error: "Lead update failed" }, 500, origin);
+      scheduleVerticalPartnerDispatch(adminClient, {
+        leadTable: "vertical_leads",
+        leadId: existingId,
+        vertical,
+        lead: leadRow,
+        trigger: "vertical_intake",
+      });
       return json({ ok: true, id: existingId, updated: true }, 200, origin);
     }
 
@@ -248,7 +256,19 @@ Deno.serve(async (req) => {
       .single();
 
     if (error) return json({ error: "Lead recording failed" }, 500, origin);
-    return json({ ok: true, id: data?.id }, 200, origin);
+
+    const leadId = data?.id || null;
+    if (leadId) {
+      scheduleVerticalPartnerDispatch(adminClient, {
+        leadTable: "vertical_leads",
+        leadId,
+        vertical,
+        lead: leadRow,
+        trigger: "vertical_intake",
+      });
+    }
+
+    return json({ ok: true, id: leadId }, 200, origin);
   }
 
   return json({ error: "Invalid type" }, 400, origin);

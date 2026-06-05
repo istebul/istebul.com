@@ -12,6 +12,7 @@ import {
   CRM_PIPELINE_QUICK,
   funnelConversionPct
 } from './features/admin/partner-ops.js';
+import { manualVerticalDispatch } from './features/admin/vertical-partner-dispatch.js';
 import { computeMoatDashboard } from './features/admin/moat-intelligence.js';
 import {
   buildMoatMetricsFromAdminData,
@@ -4695,6 +4696,22 @@ function bindAdminPanelEvents() {
 
     if (action === 'retry-dispatch' || action === 'manual-dispatch') {
       manualDispatchLead(id, action === 'retry-dispatch');
+      return;
+    }
+
+    if (action === 'vertical-retry-dispatch') {
+      const leadTable = el.dataset.leadTable || 'housing_leads';
+      manualVerticalDispatch(sb, {
+        leadId: id,
+        leadTable,
+        force: true,
+        toast
+      }).then(() => {
+        if (leadTable === 'housing_leads') housingAdmin.loadHousingLeads();
+        else if (leadTable === 'vacation_leads') vacationAdmin.loadVacationLeads();
+        else if (leadTable === 'sigorta_leads') sigortaAdmin.loadSigortaLeads();
+        else if (leadTable === 'vertical_leads') verticalAdmin.loadVerticalLeads();
+      });
       return;
     }
 

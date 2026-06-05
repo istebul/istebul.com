@@ -2,6 +2,10 @@ import { adminList } from '../core/admin-client.js';
 import { escapeHtml, safeAttr, safeJsonParse } from '../core/dom-safe.js';
 import { normalizePhoneForWhatsapp } from '../core/phone.js';
 import {
+  renderVerticalDispatchDetail,
+  verticalDispatchBadge
+} from '../features/admin/vertical-partner-dispatch.js';
+import {
   fetchAdminTable,
   renderAdminDataSourceNotices
 } from './admin-query.js';
@@ -324,6 +328,7 @@ async function loadVacationLeads(sb, adminAction, toast) {
           <th>Seçilen seçenek</th>
           <th>Skor</th>
           <th>AI özeti</th>
+          <th>Partner</th>
           <th>Durum</th>
           <th>Takip</th>
           <th>Aksiyonlar</th>
@@ -332,7 +337,9 @@ async function loadVacationLeads(sb, adminAction, toast) {
       <tbody>
         ${filtered
           .map(
-            (lead) => `
+            (lead) => {
+              const dispatchBadge = verticalDispatchBadge(lead.partner_dispatch_status);
+              return `
           <tr>
             <td class="cell-nowrap">${new Date(lead.created_at).toLocaleString('tr-TR')}</td>
             <td>${escapeHtml(lead.full_name || '—')}</td>
@@ -348,6 +355,7 @@ async function loadVacationLeads(sb, adminAction, toast) {
             <td>${escapeHtml(lead.selected_option || '—')}</td>
             <td><strong>${lead.decision_score ?? '—'}</strong></td>
             <td>${escapeHtml((lead.ai_summary || '—').slice(0, 120))}</td>
+            <td><span class="badge ${dispatchBadge.badge}">${escapeHtml(dispatchBadge.label)}</span></td>
             <td>
               <select class="status-select" data-action="vacation-update-status" data-id="${safeAttr(lead.id)}">
                 ${['new', 'incelendi', 'arandi', 'ilgileniyor', 'kapandi', 'reddedildi']
@@ -373,7 +381,9 @@ async function loadVacationLeads(sb, adminAction, toast) {
               </div>
             </td>
           </tr>
-        `
+          <tr><td colspan="18">${renderVerticalDispatchDetail(lead, 'vacation_leads')}</td></tr>
+        `;
+            }
           )
           .join('')}
       </tbody>

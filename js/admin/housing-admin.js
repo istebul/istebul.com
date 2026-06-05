@@ -1,4 +1,9 @@
 import { escapeHtml, safeAttr } from '../core/dom-safe.js';
+import {
+  manualVerticalDispatch,
+  renderVerticalDispatchDetail,
+  verticalDispatchBadge
+} from '../features/admin/vertical-partner-dispatch.js';
 import { fetchAdminTable, renderAdminDataSourceNotices } from './admin-query.js';
 import { setAdminRootLoading } from './admin-page-routing.js';
 
@@ -102,9 +107,11 @@ async function loadHousingLeads(sb, adminAction, toast) {
   }
   el.innerHTML = `${banner}<table class="table"><thead><tr>
     <th>Tarih</th><th>Ad</th><th>Telefon</th><th>E-posta</th><th>Amaç</th><th>Tip</th><th>Bütçe</th>
-    <th>Skor</th><th>Risk</th><th>Lokasyon</th><th>Durum</th><th>Not</th><th>Takip</th>
+    <th>Skor</th><th>Risk</th><th>Lokasyon</th><th>Partner</th><th>Durum</th><th>Not</th><th>Takip</th>
   </tr></thead><tbody>${
-    rows.map((row) => `<tr data-housing-lead-id="${safeAttr(row.id)}">
+    rows.map((row) => {
+      const dispatchBadge = verticalDispatchBadge(row.partner_dispatch_status);
+      return `<tr data-housing-lead-id="${safeAttr(row.id)}">
       <td class="cell-nowrap">${new Date(row.created_at).toLocaleString('tr-TR')}</td>
       <td>${escapeHtml(row.full_name || '—')}</td>
       <td>${escapeHtml(row.phone || '—')}</td>
@@ -115,12 +122,15 @@ async function loadHousingLeads(sb, adminAction, toast) {
       <td><strong>${escapeHtml(String(row.decision_score || '—'))}</strong></td>
       <td>${escapeHtml(row.risk_level || '—')}</td>
       <td>${escapeHtml(row.location_text || '—')}</td>
+      <td><span class="badge ${dispatchBadge.badge}">${escapeHtml(dispatchBadge.label)}</span></td>
       <td><select class="status-select" data-action="housing-update-status" data-id="${safeAttr(row.id)}">
         ${['new', 'incelendi', 'arandi', 'uygun', 'partnere_yonlendirildi', 'kapandi', 'reddedildi'].map((opt) => `<option value="${opt}" ${row.status === opt ? 'selected' : ''}>${opt}</option>`).join('')}
       </select></td>
       <td><input type="text" class="form-input" data-action="housing-update-notes" data-id="${safeAttr(row.id)}" value="${safeAttr(row.notes || '')}" placeholder="Not"></td>
       <td><input type="datetime-local" class="form-input" data-action="housing-update-follow" data-id="${safeAttr(row.id)}" value="${row.follow_up_at ? new Date(row.follow_up_at).toISOString().slice(0, 16) : ''}"></td>
-    </tr>`).join('')
+    </tr>
+    <tr><td colspan="14">${renderVerticalDispatchDetail(row, 'housing_leads')}</td></tr>`;
+    }).join('')
   }</tbody></table>`;
   el.querySelectorAll('[data-action="housing-update-status"]').forEach((select) => {
     select.addEventListener('change', async () => {
