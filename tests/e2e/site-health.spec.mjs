@@ -115,6 +115,78 @@ test.describe('Site health — readability and layout', () => {
     await expect(page.locator('#sigorta-wizard button, #sigorta-wizard [role="button"]').first()).toBeVisible();
   });
 
+  async function openFinansWizard(page) {
+    await page.locator('#finans-flow').scrollIntoViewIfNeeded();
+    await page.locator('#finans-hero-cta').click({ force: true });
+    await expect(page.locator('#finans-wizard')).toBeVisible();
+  }
+
+  test('/finans/ wizard completes flow and shows V2 results', async ({ page }) => {
+    await page.goto('/finans/');
+    await page.waitForLoadState('domcontentloaded');
+    await openFinansWizard(page);
+
+    await page.locator('#finans-wizard [data-field="purpose"][data-value="konut"]').click();
+    await page.locator('#finans-next').click();
+
+    await page.locator('#finans-wizard [data-field="amount_range"][data-value="1m"]').click();
+    await page.locator('#finans-next').click();
+
+    await page.locator('#finans-wizard [data-field="term_months"][data-value="36"]').click();
+    await page.locator('#finans-next').click();
+
+    await page.locator('#finans-wizard [data-field="capacity_range"][data-value="25k"]').click();
+    await page.locator('#finans-next').click();
+
+    await page.locator('#finans-wizard [data-manual="monthly_income"]').fill('55000');
+    await page.locator('#finans-wizard [data-manual="monthly_expense"]').fill('18000');
+    await page.locator('#finans-wizard [data-manual="existing_debt"]').fill('6000');
+    await page.locator('#finans-wizard [data-field="income_type"][data-value="stabil"]').click();
+    await page.locator('#finans-wizard [data-field="early_payment"][data-value="belki"]').click();
+    await page.locator('#finans-next').click();
+
+    await page.locator('#finans-wizard [data-field="rate_sensitivity"][data-value="orta"]').click();
+    await page.locator('#finans-wizard [data-field="risk_tolerance"][data-value="dengeli"]').click();
+    await page.locator('#finans-next').click();
+
+    await expect(page.locator('#finans-results')).toBeVisible();
+    await expect(page.locator('#finans-results .finansman-v2-root')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#finans-wizard')).toBeHidden();
+    await expect(page.locator('#finans-next')).not.toHaveClass(/is-loading/);
+    await expect(page.locator('[data-finansman-v2-pdf]')).toContainText(/PDF olarak kaydet/i);
+  });
+
+  test('/finans/ @ mobile completes wizard without stuck loading', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/finans/');
+    await page.waitForLoadState('domcontentloaded');
+    await openFinansWizard(page);
+
+    await page.locator('#finans-wizard [data-field="purpose"][data-value="konut"]').click();
+    await page.locator('#finans-next').click();
+    await page.locator('#finans-wizard [data-field="amount_range"][data-value="1m"]').click();
+    await page.locator('#finans-next').click();
+    await page.locator('#finans-wizard [data-field="term_months"][data-value="36"]').click();
+    await page.locator('#finans-next').click();
+    await page.locator('#finans-wizard [data-field="capacity_range"][data-value="25k"]').click();
+    await page.locator('#finans-next').click();
+    await page.locator('#finans-wizard [data-manual="monthly_income"]').fill('55000');
+    await page.locator('#finans-wizard [data-field="income_type"][data-value="stabil"]').click();
+    await page.locator('#finans-wizard [data-field="early_payment"][data-value="belki"]').click();
+    await page.locator('#finans-next').click();
+    await page.locator('#finans-wizard [data-field="rate_sensitivity"][data-value="orta"]').click();
+    await page.locator('#finans-wizard [data-field="risk_tolerance"][data-value="dengeli"]').click();
+    await page.locator('#finans-next').click();
+
+    await expect(page.locator('#finans-results .finansman-v2-root')).toBeVisible({ timeout: 15000 });
+    const overflow = await page.evaluate(() => {
+      const el = document.getElementById('finans-results');
+      if (!el) return false;
+      return el.scrollWidth === el.clientWidth;
+    });
+    expect(overflow).toBe(true);
+  });
+
   test('/sigorta/ arac flow skips marital status and reaches results', async ({ page }) => {
     await page.goto('/sigorta/');
     await page.waitForLoadState('domcontentloaded');
