@@ -45,6 +45,7 @@ import { escapeHtml } from '../core/security.js';
 import { safeJsonParse } from '../core/dom-safe.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw, readStoredJson, writeStoredJson, removeStorageRaw } from '../core/storage-keys.js';
 import { mountAutoResultsV2 } from './auto-results-v2.js';
+import { renderVehicleImageHtml, resolveVehicleImageUrl } from './vehicle-image.js';
 import { storeCheckoutIntentPayload } from '../core/checkout-intent.js';
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
@@ -401,6 +402,9 @@ function renderCompactRecommendationCard(vehicle, index) {
 
   return `
     <article class="premium-result-card auto-rec-card" role="listitem">
+      <div class="auto-rec-card__media">
+        ${renderVehicleImageHtml(vehicle, escapeHtml, { className: 'auto-rec-card__image', width: 480, height: 270 })}
+      </div>
       <span class="auto-rec-rank ${rankClass}">${escapeHtml(rankLabel)}</span>
       <h3>${escapeHtml(vehicle.name)}</h3>
       <dl class="auto-rec-metrics">
@@ -1924,34 +1928,6 @@ function readAiCommentaryForLead() {
 }
 
 
-const vehicleImages = {
-  '2023 Toyota Corolla Cross Hybrid': '/assets/images/auto/toyota-corolla-cross-hybrid.svg',
-  '2021 Volkswagen Golf 1.0 TSI': '/assets/images/auto/volkswagen-golf-tsi.svg',
-  '2022 Honda Civic Eco': '/assets/images/auto/honda-civic-eco.svg',
-  '2023 Renault Clio Icon': '/assets/images/auto/renault-clio-icon.svg',
-  '2022 Hyundai Tucson 1.6 T-GDI': '/assets/images/auto/hyundai-tucson-tgdi.svg'
-};
-
-function getVehicleImage(name){
-  if (vehicleImages[name]) return vehicleImages[name];
-
-  if (name.includes('Toyota')) return '/assets/images/auto/toyota-corolla-cross-hybrid.svg';
-  if (name.includes('Honda')) return '/assets/images/auto/honda-civic-eco.svg';
-  if (name.includes('Hyundai')) return '/assets/images/auto/hyundai-tucson-tgdi.svg';
-  if (name.includes('Renault')) return '/assets/images/auto/renault-clio-icon.svg';
-  if (name.includes('Volkswagen')) return '/assets/images/auto/volkswagen-golf-tsi.svg';
-  if (name.includes('Togg')) return '/assets/images/auto/togg-t10x.svg';
-  if (name.includes('Tesla')) return '/assets/images/auto/tesla-model.svg';
-  if (name.includes('BYD')) return '/assets/images/auto/byd-electric.svg';
-  if (name.includes('Peugeot')) return '/assets/images/auto/peugeot-suv.svg';
-  if (name.includes('Skoda')) return '/assets/images/auto/skoda-family.svg';
-  if (name.includes('BMW')) return '/assets/images/auto/bmw-premium.svg';
-  if (name.includes('Mercedes')) return '/assets/images/auto/mercedes-premium.svg';
-
-  return '';
-}
-
-
 function getFilteredAutoResults(){
   let items = [...allResults];
 
@@ -2155,9 +2131,7 @@ function renderResults(results) {
       <div class="auto-market-media">
         <div class="auto-market-rank">${rankLabel}</div>
         <div class="auto-market-image">
-          ${vehicle.image_url
-            ? `<img src="${escapeHtml(vehicle.image_url)}" alt="${escapeHtml(vehicle.name)}" loading="lazy" decoding="async">`
-            : `<div class="vehicle-placeholder"><span>${escapeHtml(vehicle.brand || vehicle.name.split(' ')[1] || 'Araç')}</span></div>`}
+          ${renderVehicleImageHtml(vehicle, escapeHtml, { className: 'auto-market-image__img', width: 640, height: 360 })}
         </div>
       </div>
 
@@ -3507,25 +3481,6 @@ function toggleAutoFavoriteFallback(vehicle){
 }
 
 
-function getAutoFallbackImage(name){
-  name = String(name || '');
-
-  if (name.includes('Toyota')) return '/assets/images/auto/toyota-corolla-cross-hybrid.svg';
-  if (name.includes('Honda')) return '/assets/images/auto/honda-civic-eco.svg';
-  if (name.includes('Hyundai')) return '/assets/images/auto/hyundai-tucson-tgdi.svg';
-  if (name.includes('Renault')) return '/assets/images/auto/renault-clio-icon.svg';
-  if (name.includes('Volkswagen')) return '/assets/images/auto/volkswagen-golf-tsi.svg';
-  if (name.includes('Togg')) return '/assets/images/auto/togg-t10x.svg';
-  if (name.includes('Tesla')) return '/assets/images/auto/tesla-model.svg';
-  if (name.includes('BYD')) return '/assets/images/auto/byd-electric.svg';
-  if (name.includes('Peugeot')) return '/assets/images/auto/peugeot-suv.svg';
-  if (name.includes('Skoda')) return '/assets/images/auto/skoda-family.svg';
-  if (name.includes('BMW')) return '/assets/images/auto/bmw-premium.svg';
-  if (name.includes('Mercedes')) return '/assets/images/auto/mercedes-premium.svg';
-
-  return '';
-}
-
 function goToComparisonPage(){
   window.location.assign('/karsilastir');
 }
@@ -3569,7 +3524,7 @@ function addAutoComparisonFallback(vehicle){
     categoryName: 'Araç Karşılaştırma',
     sourceType: 'isteBul Auto',
     title: vehicle.name,
-    image: getAutoFallbackImage(vehicle.name),
+    image: resolveVehicleImageUrl(vehicle),
     score,
     confidenceLabel: vehicle.confidenceMeta?.label || '',
     riskLevel: vehicle.confidenceMeta?.label || (score >= 85 ? 'Dengeli profil' : 'Doğrulama önerilir'),
