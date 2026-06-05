@@ -16,7 +16,7 @@ import {
 import { TURKEY_CITIES } from './turkey-cities.js';
 import { STORAGE_KEYS, readStoredJson, userScopedKey, writeStoredJson } from '../core/storage-keys.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
-import { mountKonutResultsV2 } from '../features/konut/konut-results-v2.js';
+import { mountKonutResultsV2, syncCanonicalDecisionScore } from '../features/konut/konut-results-v2.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
 import { withTimeout } from '../core/async-utils.js';
 import { setSubmitLoading } from '../runtime/enterprise-form-ux.js';
@@ -306,7 +306,7 @@ function buildMetrics() {
   });
   const scoreBand = getScoreBand(score);
   const creditLoadScore = Math.round(100 - Math.min(dti, 100));
-  return {
+  const metrics = {
     ownership,
     dti,
     locationFit,
@@ -328,6 +328,8 @@ function buildMetrics() {
     creditLoadScore,
     creditLoadLabel: dti > 45 ? 'Yüksek baskı' : dti > 32 ? 'Orta baskı' : 'Kontrollü'
   };
+  syncCanonicalDecisionScore(state, metrics, getScoreBand);
+  return metrics;
 }
 
 function buildProfileSummary() {
@@ -807,7 +809,10 @@ async function renderResults() {
       metrics,
       scenarios,
       attention,
-      track: (eventName, meta) => trackEvent(eventName, meta)
+      userId,
+      track: (eventName, meta) => trackEvent(eventName, meta),
+      onRestart: handleHousingRestart,
+      onPartnerCta: (feedbackEl) => handleHousingPartnerCta(metrics, ai.text, feedbackEl)
     });
 
     requestAnimationFrame(() => {
@@ -833,10 +838,61 @@ async function renderResults() {
   }
 }
 
-function bindResultsEvents(metrics, ai, userId) {
+function handleHousingRestart() {
   const results = $('#housing-results');
   const wizard = $('#housing-wizard');
   const flow = $('#housing-flow');
+  state.step = 0;
+  resultsRendered = false;
+  lastResultPayload = null;
+  if (wizard) wizard.hidden = false;
+  if (results) {
+    results.hidden = false;
+    results.classList.remove('is-visible');
+    results.innerHTML = HOUSING_RESULTS_EMPTY_HTML;
+  }
+  flow?.classList.remove('has-results');
+  renderStep();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleHousingSaveReport(metrics, aiText, userId, feedbackEl) {
+  if (!userId) {
+    window.location.href = '/profil/?returnTo=/konut/';
+    return;
+  }
+  saveReportLocally(metrics, aiText);
+  const message = 'Rapor profilinize kaydedildi.';
+  if (feedbackEl) {
+    feedbackEl.hidden = false;
+    feedbackEl.textContent = message;
+    feedbackEl.className = 'konut-v2-action-feedback housing-save-ok';
+    return;
+  }
+  const msg = document.createElement('p');
+  msg.className = 'housing-save-ok';
+  msg.textContent = message;
+  $('#housing-save-report')?.insertAdjacentElement('afterend', msg);
+}
+
+async function handleHousingPartnerCta(metrics, aiText, feedbackEl) {
+  state.wantPartnerOffer = true;
+  await submitLead(metrics, aiText);
+  const message = 'Partner talebiniz alındı. Ekibimiz sizinle iletişime geçecektir.';
+  if (feedbackEl) {
+    feedbackEl.hidden = false;
+    feedbackEl.textContent = message;
+    feedbackEl.className = 'konut-v2-action-feedback housing-save-ok';
+    return;
+  }
+  const msg = document.createElement('p');
+  msg.className = 'housing-save-ok';
+  msg.textContent = message;
+  $('#housing-partner-cta')?.insertAdjacentElement('afterend', msg);
+}
+
+function bindResultsEvents(metrics, ai, userId) {
+  const results = $('#housing-results');
 
   results?.querySelectorAll('[data-result-input]').forEach((input) => {
     input.addEventListener('input', () => {
@@ -848,39 +904,13 @@ function bindResultsEvents(metrics, ai, userId) {
   });
 
   $('#housing-save-report')?.addEventListener('click', () => {
-    if (!userId) {
-      window.location.href = '/profil/?returnTo=/konut/';
-      return;
-    }
-    saveReportLocally(metrics, ai.text);
-    const msg = document.createElement('p');
-    msg.className = 'housing-save-ok';
-    msg.textContent = 'Rapor profilinize kaydedildi.';
-    $('#housing-save-report')?.insertAdjacentElement('afterend', msg);
+    handleHousingSaveReport(metrics, ai.text, userId);
   });
 
-  $('#housing-restart')?.addEventListener('click', () => {
-    state.step = 0;
-    resultsRendered = false;
-    lastResultPayload = null;
-    if (wizard) wizard.hidden = false;
-    if (results) {
-      results.hidden = false;
-      results.classList.remove('is-visible');
-      results.innerHTML = HOUSING_RESULTS_EMPTY_HTML;
-    }
-    flow?.classList.remove('has-results');
-    renderStep();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  $('#housing-restart')?.addEventListener('click', handleHousingRestart);
 
   $('#housing-partner-cta')?.addEventListener('click', async () => {
-    state.wantPartnerOffer = true;
-    await submitLead(metrics, ai.text);
-    const msg = document.createElement('p');
-    msg.className = 'housing-save-ok';
-    msg.textContent = 'Partner talebiniz alındı. Ekibimiz sizinle iletişime geçecektir.';
-    $('#housing-partner-cta')?.insertAdjacentElement('afterend', msg);
+    await handleHousingPartnerCta(metrics, ai.text);
   });
 
   $('#housing-submit-lead')?.addEventListener('click', async () => {

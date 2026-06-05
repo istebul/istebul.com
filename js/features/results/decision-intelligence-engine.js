@@ -606,6 +606,17 @@ export function buildRiskAnalysisV3(category, context = {}) {
 }
 
 /**
+ * Konut senaryo kartları için açıklama metni (monthlyEffect / riskEffect / totalEffect fallback).
+ * @param {object} scenario
+ */
+export function formatKonutAlternativeDescription(scenario = {}) {
+  if (scenario.description) return String(scenario.description).trim();
+  if (scenario.summary) return String(scenario.summary).trim();
+  const parts = [scenario.monthlyEffect, scenario.riskEffect, scenario.totalEffect].filter(Boolean);
+  return parts.length ? parts.join(' · ') : '';
+}
+
+/**
  * @param {'auto'|'konut'|'tatil'|'finansman'} category
  * @param {object} context
  */
@@ -614,11 +625,14 @@ export function buildAlternativesV3(category, context = {}) {
   const fromExtras = context.extras?.scenarios || context.extras?.results;
 
   if (cat === 'konut' && Array.isArray(fromExtras) && fromExtras.length) {
-    return fromExtras.slice(0, 3).map((s) => ({
-      title: s.title || s.name || 'Alternatif',
-      description: s.description || s.summary || '',
-      meta: s.meta || ''
-    }));
+    return fromExtras.slice(0, 3).map((s) => {
+      const description = formatKonutAlternativeDescription(s);
+      return {
+        title: s.title || s.name || 'Alternatif',
+        description: description || 'Alternatif senaryo — profilinize göre değerlendirin.',
+        meta: s.meta || (s.score != null ? `${s.score}/100` : '')
+      };
+    });
   }
 
   if (cat === 'finansman') {

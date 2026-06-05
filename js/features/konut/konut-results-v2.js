@@ -88,6 +88,21 @@ export function computeDecisionScore(state = {}, metrics = {}) {
   return buildDecisionIntelligenceResult('konut', state, metrics).decisionScore;
 }
 
+/**
+ * metrics.score ve scoreBand'ı V3 decisionScore ile senkronize eder (canonical kaynak).
+ * @param {object} state
+ * @param {object} metrics — yerinde güncellenir
+ * @param {(score: number) => object} [scoreBandFn]
+ */
+export function syncCanonicalDecisionScore(state, metrics, scoreBandFn) {
+  const decisionScore = computeDecisionScore(state, metrics);
+  metrics.score = decisionScore;
+  if (typeof scoreBandFn === 'function') {
+    metrics.scoreBand = scoreBandFn(decisionScore);
+  }
+  return decisionScore;
+}
+
 function computeDecisionScoreLegacy(state = {}, metrics = {}) {
   const purposeScore = state.purchasePurpose
     ? state.purchasePurpose.includes('Yatırım')
@@ -304,6 +319,73 @@ export function buildAlternatives(scenarios = []) {
   return [...fromScenarios, ...defaults].slice(0, 3);
 }
 
+function normalizeAlternatives(alternatives = [], scenarios = []) {
+  return (alternatives || []).map((alt, index) => {
+    const scenario = scenarios[index] || {};
+    const fromEffects = [scenario.monthlyEffect, scenario.riskEffect, scenario.totalEffect]
+      .filter(Boolean)
+      .join(' · ');
+    const description =
+      String(alt.description || '').trim() ||
+      fromEffects ||
+      'Alternatif senaryo — profilinize göre değerlendirin.';
+    return {
+      ...alt,
+      description,
+      meta: alt.meta || (scenario.score != null ? `${scenario.score}/100` : alt.meta || '')
+    };
+  });
+}
+
+export function renderKonutWarningsHtml(warnings = [], esc = escapeHtml) {
+  const items = (warnings || []).filter(Boolean);
+  if (!items.length) return '';
+  return `
+    <section class="konut-v2-warnings" aria-label="Risk uyarıları">
+      <h3>Risk Uyarıları</h3>
+      <ul class="konut-v2-warnings__list">
+        ${items.map((w) => `<li>${esc(w)}</li>`).join('')}
+      </ul>
+    </section>`;
+}
+
+/**
+ * Partner CTA metni — satın alma profilinde fırsat, diğerlerinde danışman/partner.
+ */
+export function resolveKonutPartnerCtaLabel(state = {}) {
+  const purpose = String(state.purchasePurpose || '');
+  if (purpose.includes('Yatırım') || purpose.includes('Kiralamak')) {
+    return 'Danışman/partner teklifi al';
+  }
+  return 'Bana uygun konut fırsatlarını göster';
+}
+
+/**
+ * V2 sonuç aksiyon çubuğu (legacy .housing-result-actions karşılığı).
+ */
+export function renderKonutActionsBarHtml({ userId = null, state = {}, esc = escapeHtml } = {}) {
+  const partnerLabel = resolveKonutPartnerCtaLabel(state);
+  const loginHint = userId
+    ? ''
+    : `<p class="konut-v2-login-hint"><a href="/profil/?returnTo=/konut/">Giriş yapın</a> — raporunuzu profilinizde saklayın.</p>`;
+
+  return `
+    <div class="konut-v2-actions" aria-label="Sonuç aksiyonları">
+      <button type="button" class="btn secondary konut-v2-pdf" data-konut-v2-pdf>
+        PDF olarak kaydet
+      </button>
+      <button type="button" class="btn secondary konut-v2-restart" data-konut-v2-restart>
+        Tekrar analiz yap
+      </button>
+      <button type="button" class="btn secondary konut-v2-partner" data-konut-v2-partner>
+        ${esc(partnerLabel)}
+      </button>
+      ${loginHint}
+      <p class="konut-v2-action-feedback" data-konut-v2-action-feedback hidden></p>
+      <p class="konut-v2-pdf-hint" data-konut-v2-pdf-hint hidden></p>
+    </div>`;
+}
+
 function buildNextSteps(state = {}, metrics = {}, riskAnalysis = []) {
   const highRisks = riskAnalysis.filter((r) => r.level === 'yüksek').map((r) => r.key);
   const steps = [
@@ -348,7 +430,10 @@ export function buildKonutResultsV2Payload({
   const totalCost = buildTotalCostView(state, metrics);
   const strengths = buildStrengths(state, metrics);
   const weaknesses = buildWeaknesses(attention, metrics);
-  const alternatives = intel.alternatives.length ? intel.alternatives : buildAlternatives(scenarios);
+  const alternatives = normalizeAlternatives(
+    intel.alternatives.length ? intel.alternatives : buildAlternatives(scenarios),
+    scenarios
+  );
   const nextSteps = intel.nextSteps;
   const overallRisk = intel.overallRisk;
 
@@ -462,9 +547,24 @@ function renderKonutResultsV2Html(model) {
     evdsMountClass: 'konut-v2-evds-mount ib-results-economic--home'
   });
 
+  const heroBadgesHtml = `
+    <div class="konut-v2-hero-badges" aria-label="Skor özeti">
+      <span class="konut-v2-hero-badge konut-v2-hero-badge--score">
+        Karar Skoru <strong>${esc(String(model.decisionScore))}/100</strong>
+      </span>
+      <span class="konut-v2-hero-badge konut-v2-hero-badge--confidence">
+        Güven <strong>${esc(String(model.confidenceScore))}/100</strong>
+      </span>
+    </div>`;
+
   return `
     <section class="konut-v2-panel" aria-label="Konut karar raporu özeti">
-      ${heroHtml}
+      <div class="konut-v2-hero-wrap">
+        ${heroHtml}
+        ${heroBadgesHtml}
+      </div>
+
+      ${renderKonutWarningsHtml(model.warnings, esc)}
 
       <div id="ib-results-detail"></div>
 
@@ -570,12 +670,7 @@ function renderKonutResultsV2Html(model) {
         <ol>${model.nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
       </article>
 
-      <div class="konut-v2-actions">
-        <button type="button" class="btn secondary konut-v2-pdf" data-konut-v2-pdf>
-          Konut karar raporunu indir
-        </button>
-        <p class="konut-v2-pdf-hint" data-konut-v2-pdf-hint hidden></p>
-      </div>
+      ${renderKonutActionsBarHtml({ userId: model.userId, state: model.state || {}, esc })}
     </section>`;
 }
 
@@ -587,6 +682,9 @@ function renderKonutResultsV2Html(model) {
  * @param {Array} [opts.scenarios]
  * @param {string[]} [opts.attention]
  * @param {Function} [opts.track]
+ * @param {string|null} [opts.userId]
+ * @param {Function} [opts.onRestart]
+ * @param {Function} [opts.onPartnerCta]
  */
 export async function mountKonutResultsV2({
   mountNode,
@@ -594,7 +692,10 @@ export async function mountKonutResultsV2({
   metrics,
   scenarios = [],
   attention = [],
-  track
+  track,
+  userId = null,
+  onRestart,
+  onPartnerCta
 }) {
   if (!mountNode || !metrics) return null;
 
@@ -610,6 +711,8 @@ export async function mountKonutResultsV2({
   });
   const model = {
     ...payload,
+    state,
+    userId,
     executiveSummary: '',
     summarySourceLabel: 'Kaynak: hazırlanıyor'
   };
@@ -630,6 +733,9 @@ export async function mountKonutResultsV2({
 
   const pdfBtn = root.querySelector('[data-konut-v2-pdf]');
   const pdfHint = root.querySelector('[data-konut-v2-pdf-hint]');
+  const restartBtn = root.querySelector('[data-konut-v2-restart]');
+  const partnerBtn = root.querySelector('[data-konut-v2-partner]');
+  const actionFeedback = root.querySelector('[data-konut-v2-action-feedback]');
 
   pdfBtn?.addEventListener('click', () => {
     safeTrackEvent(track, 'decision_report_print_click', {
@@ -642,7 +748,24 @@ export async function mountKonutResultsV2({
       pdfHint.textContent =
         'Rapor penceresi açıldı. Yazdır diyalogunda “PDF olarak kaydet” seçeneğini kullanabilirsiniz.';
     }
+    if (actionFeedback) actionFeedback.hidden = true;
     gatePdfDownload(model.pdfReportData);
+  });
+
+  restartBtn?.addEventListener('click', () => {
+    if (typeof onRestart === 'function') {
+      onRestart();
+      return;
+    }
+    document.getElementById('housing-restart')?.click();
+  });
+
+  partnerBtn?.addEventListener('click', async () => {
+    if (typeof onPartnerCta === 'function') {
+      await onPartnerCta(actionFeedback);
+      return;
+    }
+    document.getElementById('housing-partner-cta')?.click();
   });
 
   const summary = await fetchExecutiveSummaryV3(
