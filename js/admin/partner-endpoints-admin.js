@@ -1,7 +1,9 @@
 import { escapeHtml, safeAttr } from '../core/dom-safe.js';
 import { fetchAdminTable, renderAdminDataSourceNotices } from './admin-query.js';
 import {
+  formatPartnerEndpointTestError,
   healthStatusBadge,
+  isPartnerEndpointUuid,
   maskAuthSecret,
   renderRouteTypeOptions,
   routeTypeLabel,
@@ -11,7 +13,27 @@ import {
 export function initPartnerEndpointsAdmin(ctx) {
   const { sb, adminAction, toast } = ctx;
 
+  async function readPartnerEndpointTestPayload(error) {
+    if (!error?.context?.clone) return null;
+    try {
+      const body = await error.context.clone().json();
+      return body && typeof body === 'object' ? body : null;
+    } catch {
+      return null;
+    }
+  }
+
   async function testPartnerEndpoint(endpointId) {
+    const normalizedId = String(endpointId || '').trim();
+    if (!normalizedId) {
+      toast(formatPartnerEndpointTestError({ error: 'endpoint_id_required' }), 'error');
+      return;
+    }
+    if (!isPartnerEndpointUuid(normalizedId)) {
+      toast(`Geçersiz endpoint ID: ${normalizedId}`, 'error');
+      return;
+    }
+
     const { data: sessionData } = await sb.auth.getSession();
     const token = sessionData?.session?.access_token;
     if (!token) {
@@ -20,12 +42,13 @@ export function initPartnerEndpointsAdmin(ctx) {
     }
 
     const { data, error } = await sb.functions.invoke('partner-endpoint-test', {
-      body: { endpoint_id: endpointId },
+      body: { endpoint_id: normalizedId },
       headers: { Authorization: `Bearer ${token}` }
     });
 
     if (error) {
-      toast(error.message || 'Test gönderimi başarısız', 'error');
+      const payload = (await readPartnerEndpointTestPayload(error)) || data;
+      toast(formatPartnerEndpointTestError(payload) || error.message || 'Test gönderimi başarısız', 'error');
       loadPartnerEndpoints();
       return;
     }
@@ -33,7 +56,7 @@ export function initPartnerEndpointsAdmin(ctx) {
     if (data?.ok) {
       toast(`Test OK — HTTP ${data.status || 200}`, 'success');
     } else {
-      toast(data?.error || data?.reason || 'Test başarısız', 'error');
+      toast(formatPartnerEndpointTestError(data), 'error');
     }
     loadPartnerEndpoints();
   }

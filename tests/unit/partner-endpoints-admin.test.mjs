@@ -6,8 +6,10 @@ import path from 'node:path';
 import {
   ALLOWED_PARTNER_ROUTE_TYPES,
   endpointWithinDailyCap,
+  formatPartnerEndpointTestError,
   healthStatusBadge,
   isEndpointDispatchable,
+  isPartnerEndpointUuid,
   maskAuthSecret,
   renderRouteTypeOptions,
   routeTypeLabel,
@@ -37,9 +39,9 @@ test('validateRouteType rejects unknown route types', () => {
   assert.match(result.error, /invalid_route_type/);
 });
 
-test('sanitizePartnerEndpointRow strips shared_secret and sets has_auth_secret', () => {
+test('sanitizePartnerEndpointRow strips shared_secret and preserves id', () => {
   const row = sanitizePartnerEndpointRow({
-    id: 'ep-1',
+    id: '660e8400-e29b-41d4-a716-446655440001',
     name: 'Test',
     shared_secret: 'super-secret-value',
     route_type: 'housing'
@@ -47,6 +49,8 @@ test('sanitizePartnerEndpointRow strips shared_secret and sets has_auth_secret',
   assert.equal(row.has_auth_secret, true);
   assert.equal(row.shared_secret, undefined);
   assert.equal(row.name, 'Test');
+  assert.equal(row.id, '660e8400-e29b-41d4-a716-446655440001');
+  assert.equal(isPartnerEndpointUuid(row.id), true);
 });
 
 test('maskAuthSecret never exposes full secret', () => {
@@ -154,15 +158,51 @@ test('partner-endpoint-test returns 401 without authorization', () => {
 
 test('partner-endpoint-test returns 403 for non-admin users', () => {
   const source = partnerEndpointTestSource();
-  assert.match(source, /Forbidden: admin only/);
+  assert.match(source, /admin_required/);
   assert.match(source, /status: 403/);
 });
 
-test('partner-endpoint-test requires endpoint_id or endpointId', () => {
+test('partner-endpoint-test accepts endpoint_id, endpointId, and id', () => {
   const source = partnerEndpointTestSource();
-  assert.match(source, /endpoint_id \|\| body\.endpointId/);
-  assert.match(source, /endpoint_id required/);
+  assert.match(source, /body\.endpoint_id/);
+  assert.match(source, /body\.endpointId/);
+  assert.match(source, /body\.id/);
+});
+
+test('partner-endpoint-test returns endpoint_id_required when id missing', () => {
+  const source = partnerEndpointTestSource();
+  assert.match(source, /endpoint_id_required/);
   assert.match(source, /status: 400/);
+});
+
+test('partner-endpoint-test returns endpoint_not_found with endpoint_id', () => {
+  const source = partnerEndpointTestSource();
+  assert.match(source, /endpoint_not_found/);
+  assert.match(source, /endpoint_id: endpointId/);
+  assert.match(source, /status: 404/);
+});
+
+test('partner-endpoint-test returns webhook_failed on dispatch failure', () => {
+  const source = partnerEndpointTestSource();
+  assert.match(source, /webhook_failed/);
+});
+
+test('frontend test payload sends endpoint_id from row id', () => {
+  const source = fs.readFileSync(
+    path.join(root, 'js/admin/partner-endpoints-admin.js'),
+    'utf8'
+  );
+  assert.match(source, /body:\s*\{\s*endpoint_id:\s*normalizedId\s*\}/);
+  assert.match(source, /data-id="\$\{safeAttr\(row\.id\)\}"/);
+  assert.match(source, /isPartnerEndpointUuid/);
+  assert.match(source, /formatPartnerEndpointTestError/);
+});
+
+test('formatPartnerEndpointTestError maps known error codes', () => {
+  assert.match(formatPartnerEndpointTestError({ error: 'endpoint_not_found' }), /bulunamadı/i);
+  assert.match(formatPartnerEndpointTestError({ error: 'endpoint_id_required' }), /gönderilmedi/i);
+  assert.match(formatPartnerEndpointTestError({ error: 'webhook_failed' }), /Webhook/i);
+  assert.match(formatPartnerEndpointTestError({ error: 'admin_required' }), /admin/i);
 });
 
 test('partner-endpoint-test rejects unsafe webhook URLs', () => {

@@ -56,14 +56,15 @@ async function requireAdmin(req: Request): Promise<AdminAuthResult> {
     .single();
 
   if (profile?.role !== "admin" || profile?.is_banned === true) {
-    return { ok: false, status: 403, error: "Forbidden: admin only" };
+    return { ok: false, status: 403, error: "admin_required" };
   }
 
   return { ok: true, user: userData.user };
 }
 
 function resolveEndpointId(body: Record<string, unknown>): string {
-  return String(body.endpoint_id || body.endpointId || "").trim();
+  const raw = body.endpoint_id ?? body.endpointId ?? body.id;
+  return String(raw ?? "").trim();
 }
 
 Deno.serve(async (req) => {
@@ -91,7 +92,7 @@ Deno.serve(async (req) => {
 
   const endpointId = resolveEndpointId(body);
   if (!endpointId) {
-    return json({ ok: false, error: "endpoint_id required", status: 400 }, 400, origin);
+    return json({ ok: false, error: "endpoint_id_required", status: 400 }, 400, origin);
   }
 
   const { data: endpoint, error: endpointError } = await sb
@@ -103,7 +104,12 @@ Deno.serve(async (req) => {
     .single();
 
   if (endpointError || !endpoint) {
-    return json({ ok: false, error: "Endpoint not found", status: 404 }, 404, origin);
+    return json({
+      ok: false,
+      error: "endpoint_not_found",
+      endpoint_id: endpointId,
+      status: 404,
+    }, 404, origin);
   }
 
   try {
@@ -216,7 +222,8 @@ Deno.serve(async (req) => {
 
   return json({
     ok: false,
-    error: errMsg || "test_failed",
+    error: "webhook_failed",
+    detail: errMsg || "test_failed",
     status: httpStatus || 502,
     endpoint_id: endpoint.id,
     health_status: refreshed?.health_status || "degraded",

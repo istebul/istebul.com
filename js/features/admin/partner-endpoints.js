@@ -40,11 +40,33 @@ export function maskAuthSecret(value) {
 }
 
 /** Strip shared_secret from API rows; never export to UI or CSV. */
+const PARTNER_ENDPOINT_UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isPartnerEndpointUuid(id) {
+  return PARTNER_ENDPOINT_UUID_RE.test(String(id || '').trim());
+}
+
+export const PARTNER_ENDPOINT_TEST_ERRORS = Object.freeze({
+  endpoint_not_found: 'Endpoint bulunamadı — kayıt silinmiş veya ID hatalı',
+  endpoint_id_required: 'Endpoint ID gönderilmedi',
+  webhook_failed: 'Webhook yanıt vermedi veya hata döndü',
+  admin_required: 'Bu işlem için admin yetkisi gerekli'
+});
+
+export function formatPartnerEndpointTestError(payload) {
+  const code = String(payload?.error || payload?.message || '').trim();
+  if (!code) return 'Test başarısız';
+  return PARTNER_ENDPOINT_TEST_ERRORS[code] || code;
+}
+
 export function sanitizePartnerEndpointRow(row) {
   if (!row || typeof row !== 'object') return row;
   const { shared_secret: _secret, ...rest } = row;
+  const id = rest.id != null ? String(rest.id).trim() : rest.id;
   return {
     ...rest,
+    id,
     has_auth_secret: Boolean(_secret && String(_secret).length > 0)
   };
 }
