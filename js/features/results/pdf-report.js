@@ -127,6 +127,18 @@ function buildCostRows(data) {
       { label: 'Toplam geri ödeme', value: formatReportMoney(cost.totalRepayment) },
       { label: 'Tahmini faiz maliyeti', value: formatReportMoney(cost.interestCost) },
       { label: 'Dosya/masraf tahmini', value: formatReportMoney(cost.fileFees) },
+      {
+        label: 'KKDF/BSMV tahmini',
+        value: cost.kkdfBsmvEstimate != null ? `${formatReportMoney(cost.kkdfBsmvEstimate)} (tahmini)` : '—'
+      },
+      {
+        label: 'Sigorta tahmini',
+        value: cost.insuranceEstimate != null ? `${formatReportMoney(cost.insuranceEstimate)} (tahmini)` : '—'
+      },
+      {
+        label: 'Efektif yıllık maliyet',
+        value: cost.effectiveAnnualRate != null ? `~%${cost.effectiveAnnualRate} (tahmini)` : '—'
+      },
       { label: 'İlk 12 ay ödeme yükü', value: formatReportMoney(cost.yearlyLoad) },
       {
         label: 'Gelire göre aylık yük',

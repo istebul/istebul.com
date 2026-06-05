@@ -2,7 +2,10 @@ import { withTimeout } from '../core/async-utils.js';
 import { formatTry } from '../tatil/tatil-utils.js';
 import { setSubmitLoading } from '../runtime/enterprise-form-ux.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
-import { mountFinansmanResultsV2 } from '../features/finansman/finansman-results-v2.js';
+import {
+  mountFinansmanResultsV2,
+  syncCanonicalFinansScores
+} from '../features/finansman/finansman-results-v2.js';
 import { mountSigortaResultsV2 } from '../features/sigorta/sigorta-results-v2.js';
 import { mountKaskoResultsV2 } from '../features/kasko/kasko-results-v2.js';
 import {
@@ -330,6 +333,9 @@ export function initDecisionFlow(config) {
 
   function getDisplayResult() {
     const selected = getSelectedResult();
+    if (config.vertical === 'finans') {
+      return selected || state.results[0] || null;
+    }
     if (state.confirmationStep && selected) return selected;
     return state.results[0] || null;
   }
@@ -347,7 +353,7 @@ export function initDecisionFlow(config) {
     }
 
     state.results = built;
-    state.selected_option = '';
+    state.selected_option = config.vertical === 'finans' && built[0]?.id ? built[0].id : '';
     state.confirmationStep = false;
     setWizardVisible(false);
     const siteCategory = VERTICAL_SITE_CATEGORY[config.vertical] || config.vertical;
@@ -370,6 +376,13 @@ export function initDecisionFlow(config) {
     const section = el('results');
     if (!section || !state.results.length) return;
     section.hidden = false;
+
+    if (config.vertical === 'finans') {
+      if (!state.selected_option && state.results[0]?.id) {
+        state.selected_option = state.results[0].id;
+      }
+      syncCanonicalFinansScores(state, state.results, state.selected_option);
+    }
 
     const commentary = config.buildCommentary(state, state.results);
     const summary = config.buildSummary(state, state.results);
@@ -470,7 +483,13 @@ export function initDecisionFlow(config) {
       void mountFinansmanResultsV2(section, {
         state,
         results: state.results,
-        track: (eventName, meta) => config.tracker.track(eventName, meta)
+        selectedOption: state.selected_option || state.results[0]?.id || '',
+        onSelectScenario: (id) => selectOption(id),
+        track: (eventName, meta) => config.tracker.track(eventName, meta),
+        onRestart: restartFinansWizard,
+        onDetailedAnalysis: (leadEls) => openFinansLeadFlow(commentary, leadEls, 'detail'),
+        onPartnerCta: (leadEls) => openFinansLeadFlow(commentary, leadEls, 'partner'),
+        onLeadSubmit: (formData, feedbackEl) => submitFinansLeadFromV2(commentary, formData, feedbackEl)
       });
     }
 
@@ -498,6 +517,79 @@ export function initDecisionFlow(config) {
     state.selected_option = id;
     config.tracker.trackSelect(id, { phase: 'pick' });
     renderResults();
+  }
+
+  function restartFinansWizard() {
+    state.stepIndex = 0;
+    state.results = [];
+    state.selected_option = '';
+    state.confirmationStep = false;
+    const section = el('results');
+    if (section) {
+      section.hidden = true;
+      section.innerHTML = '';
+    }
+    setWizardVisible(true);
+    renderWizard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function openFinansLeadFlow(commentary, { leadPanel, leadHint, feedbackEl }, mode = 'detail') {
+    if (!state.selected_option && state.results[0]?.id) {
+      state.selected_option = state.results[0].id;
+    }
+    if (!state.selected_option) return;
+
+    state.confirmationStep = true;
+    trackLeadFormOpened(VERTICAL_SITE_CATEGORY.finans || 'finansman');
+    await config.tracker.trackConfirm(state.selected_option);
+
+    if (leadPanel) leadPanel.hidden = false;
+    if (leadHint) {
+      leadHint.textContent =
+        mode === 'partner'
+          ? 'Size uygun finansman teklifleri için iletişim bilgilerinizi bırakın.'
+          : 'Detaylı analiz ve karşılaştırmalı teklif için iletişim bilgilerinizi bırakın.';
+    }
+    if (feedbackEl) feedbackEl.hidden = true;
+    leadPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function submitFinansLeadFromV2(commentary, formData, feedbackEl) {
+    if (!state.selected_option && state.results[0]?.id) {
+      state.selected_option = state.results[0].id;
+    }
+    if (!state.selected_option) return;
+
+    state.confirmationStep = true;
+    const selected = getSelectedResult();
+    const payload = {
+      full_name: formData.fullName || '',
+      phone: formData.phone || '',
+      email: formData.email || '',
+      profile: { ...state },
+      selected_option: state.selected_option,
+      decision_score: selected?.score ?? null,
+      result_summary: selected?.title || '',
+      ai_summary: commentary.summary
+    };
+    const res = await config.tracker.saveLead(payload);
+    if (res.ok) {
+      trackLeadSubmitted(VERTICAL_SITE_CATEGORY.finans || 'finansman', {
+        selected_option: state.selected_option
+      });
+      const message = 'Tercihiniz kaydedildi. Ekibimiz profilinize uygun bilgilendirme yapabilir.';
+      if (feedbackEl) {
+        feedbackEl.hidden = false;
+        feedbackEl.textContent = message;
+        feedbackEl.className = 'finansman-v2-action-feedback vacation-toast';
+      } else {
+        const msg = document.createElement('p');
+        msg.className = 'vacation-toast';
+        msg.textContent = message;
+        el('finalCta')?.prepend(msg);
+      }
+    }
   }
 
   function bindResultsEvents(commentary) {
