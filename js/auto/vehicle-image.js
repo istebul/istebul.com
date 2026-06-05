@@ -1,9 +1,10 @@
 /**
  * Central vehicle image resolution for Auto results.
- * Single source: verified vehicle.image_url → premium placeholder.
+ * Resolution chain: verified image_url → local catalog asset → default fallback.
  */
 
-export const PREMIUM_VEHICLE_PLACEHOLDER = '/assets/images/auto/vehicle-premium-placeholder.svg';
+export const DEFAULT_VEHICLE_FALLBACK = '/assets/images/vehicles/default-vehicle.webp';
+export const PREMIUM_VEHICLE_PLACEHOLDER = DEFAULT_VEHICLE_FALLBACK;
 
 const GENERIC_IMAGE_PATTERNS = [
   /auto-hero/i,
@@ -17,10 +18,41 @@ const GENERIC_IMAGE_PATTERNS = [
   /pexels/i
 ];
 
+/** Local JPG/SVG assets keyed by vehicle name patterns (no external CDN). */
+const LOCAL_VEHICLE_ASSET_RULES = [
+  { pattern: /toyota.*corolla.*cross/i, path: '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg' },
+  { pattern: /toyota.*c[\s-]?hr/i, path: '/assets/images/vehicles/toyota-chr-hybrid.jpg' },
+  { pattern: /toyota.*corolla.*sedan/i, path: '/assets/images/vehicles/toyota-corolla-sedan-hybrid.jpg' },
+  { pattern: /volkswagen.*golf/i, path: '/assets/images/vehicles/volkswagen-golf.jpg' },
+  { pattern: /volkswagen.*t[\s-]?roc/i, path: '/assets/images/vehicles/volkswagen-troc.jpg' },
+  { pattern: /renault.*clio/i, path: '/assets/images/vehicles/renault-clio.jpg' },
+  { pattern: /hyundai.*i20/i, path: '/assets/images/vehicles/hyundai-i20.jpg' },
+  { pattern: /mercedes.*c\s*200/i, path: '/assets/images/vehicles/mercedes-c200.jpg' },
+  { pattern: /bmw.*320/i, path: '/assets/images/vehicles/bmw-320i.jpg' },
+  { pattern: /opel.*corsa/i, path: '/assets/images/vehicles/opel-corsa.jpg' },
+  { pattern: /peugeot.*(208|2008|e-2008)/i, path: '/assets/images/vehicles/peugeot-208.jpg' },
+  { pattern: /tesla.*model/i, path: '/assets/images/vehicles/tesla-model-3.jpg' },
+  { pattern: /togg.*t10/i, path: '/assets/images/vehicles/togg-t10x.jpg' },
+  { pattern: /audi.*a3/i, path: '/assets/images/vehicles/audi-a3.jpg' },
+  { pattern: /volvo/i, path: '/assets/images/vehicles/volvo-xc60.jpg' },
+  { pattern: /toyota.*corolla/i, path: '/assets/images/auto/toyota-corolla-cross-hybrid.svg' },
+  { pattern: /honda.*civic/i, path: '/assets/images/auto/honda-civic-eco.svg' },
+  { pattern: /hyundai.*tucson/i, path: '/assets/images/auto/hyundai-tucson-tgdi.svg' },
+  { pattern: /volkswagen|vw/i, path: '/assets/images/auto/volkswagen-golf-tsi.svg' },
+  { pattern: /skoda/i, path: '/assets/images/auto/skoda-family.svg' },
+  { pattern: /renault/i, path: '/assets/images/auto/renault-clio-icon.svg' },
+  { pattern: /peugeot/i, path: '/assets/images/auto/peugeot-suv.svg' },
+  { pattern: /mercedes/i, path: '/assets/images/auto/mercedes-premium.svg' },
+  { pattern: /bmw/i, path: '/assets/images/auto/bmw-premium.svg' },
+  { pattern: /byd/i, path: '/assets/images/auto/byd-electric.svg' },
+  { pattern: /togg/i, path: '/assets/images/auto/togg-t10x.svg' },
+  { pattern: /tesla/i, path: '/assets/images/auto/tesla-model.svg' }
+];
+
 const BRAND_ALIASES = {
   volkswagen: ['volkswagen', 'vw'],
   'mercedes-benz': ['mercedes', 'benz'],
-  'mercedes': ['mercedes', 'benz'],
+  mercedes: ['mercedes', 'benz'],
   skoda: ['skoda'],
   toyota: ['toyota'],
   honda: ['honda'],
@@ -150,12 +182,29 @@ export function vehicleImageMatchesName(name, url) {
   return modelTokens.some((token) => haystack.includes(token));
 }
 
+/**
+ * Resolve bundled static asset for a vehicle name.
+ * @param {string} name
+ */
+export function resolveLocalVehicleAsset(name) {
+  const vehicleName = String(name || '').trim();
+  if (!vehicleName) return null;
+
+  for (const rule of LOCAL_VEHICLE_ASSET_RULES) {
+    if (rule.pattern.test(vehicleName)) return rule.path;
+  }
+  return null;
+}
+
 /** @param {object|null|undefined} vehicle */
 export function resolveVehicleImageUrl(vehicle) {
   const url = String(vehicle?.image_url || '').trim();
-  if (!url) return PREMIUM_VEHICLE_PLACEHOLDER;
-  if (!vehicleImageMatchesName(vehicle?.name, url)) return PREMIUM_VEHICLE_PLACEHOLDER;
-  return url;
+  if (url && vehicleImageMatchesName(vehicle?.name, url)) return url;
+
+  const localAsset = resolveLocalVehicleAsset(vehicle?.name);
+  if (localAsset) return localAsset;
+
+  return DEFAULT_VEHICLE_FALLBACK;
 }
 
 /**
@@ -173,7 +222,73 @@ export function renderVehicleImageHtml(vehicle, esc, opts = {}) {
   const url = resolveVehicleImageUrl(vehicle);
   const alt = String(vehicle?.name || 'Araç görseli');
   const cls = className ? ` class="${esc(className)}"` : '';
-  return `<img src="${esc(url)}" alt="${esc(alt)}"${cls} loading="${esc(loading)}" decoding="async" width="${width}" height="${height}">`;
+  const vehicleName = String(vehicle?.name || '');
+  return `<img src="${esc(url)}" alt="${esc(alt)}"${cls} data-vehicle-image="1" data-fallback-src="${esc(DEFAULT_VEHICLE_FALLBACK)}" data-vehicle-name="${esc(vehicleName)}" loading="${esc(loading)}" decoding="async" width="${width}" height="${height}">`;
+}
+
+/**
+ * Attach runtime error fallback (CSP-safe — no inline onerror).
+ * @param {ParentNode|null|undefined} root
+ */
+export function bindVehicleImageFallbacks(root) {
+  if (!root?.querySelectorAll) return;
+
+  root.querySelectorAll('img[data-vehicle-image]').forEach((img) => {
+    if (img.dataset.fallbackBound === '1') return;
+    img.dataset.fallbackBound = '1';
+
+    img.addEventListener('error', () => {
+      if (img.dataset.fallbackApplied === '1') return;
+      const fallback = img.dataset.fallbackSrc || DEFAULT_VEHICLE_FALLBACK;
+      if (!fallback || img.src.endsWith(fallback)) return;
+      img.dataset.fallbackApplied = '1';
+      img.src = fallback;
+    });
+  });
+}
+
+/**
+ * Console report for vehicle image loading diagnostics.
+ * @param {ParentNode|null|undefined} root
+ */
+export function reportVehicleImageLoading(root) {
+  if (!root?.querySelectorAll) return [];
+
+  const imgs = [...root.querySelectorAll('img[data-vehicle-image]')];
+  const report = [];
+
+  const record = (img) => {
+    const entry = {
+      vehicle: img.dataset.vehicleName || img.alt || 'unknown',
+      src: img.currentSrc || img.src,
+      resolved: img.dataset.fallbackApplied === '1' ? 'fallback' : 'primary',
+      ok: img.complete && img.naturalWidth > 0
+    };
+    report.push(entry);
+    if (!entry.ok) {
+      console.warn('[Auto V2] vehicle image load failed:', entry);
+    }
+  };
+
+  imgs.forEach((img) => {
+    if (img.complete) record(img);
+    else {
+      img.addEventListener('load', () => record(img), { once: true });
+      img.addEventListener('error', () => record(img), { once: true });
+    }
+  });
+
+  if (report.length === imgs.length) {
+    console.info('[Auto V2] vehicle image loading report:', report);
+  } else {
+    queueMicrotask(() => {
+      if (report.length === imgs.length) {
+        console.info('[Auto V2] vehicle image loading report:', report);
+      }
+    });
+  }
+
+  return report;
 }
 
 /**
@@ -182,7 +297,7 @@ export function renderVehicleImageHtml(vehicle, esc, opts = {}) {
  */
 export function toRecommendationVehicle(vehicle) {
   if (!vehicle || typeof vehicle !== 'object') {
-    return { name: '', image_url: null, imageUrl: PREMIUM_VEHICLE_PLACEHOLDER };
+    return { name: '', image_url: null, imageUrl: DEFAULT_VEHICLE_FALLBACK };
   }
   return {
     ...vehicle,

@@ -30,10 +30,14 @@ import {
 } from '../features/results/results-evds-risk-layer.js';
 import { fetchEvdsRatesForEngine } from '../features/evds/evds-market-engine.js';
 import {
+  bindVehicleImageFallbacks,
   renderVehicleImageHtml,
+  reportVehicleImageLoading,
   resolveVehicleImageUrl
 } from './vehicle-image.js';
 import {
+  buildHeroHighlights,
+  buildRankingCommentary,
   buildRecommendationPayload,
   buildVehicleAlternatives,
   buildWhyRecommendedCards,
@@ -57,7 +61,7 @@ function safeNumber(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
-function renderAutoPremiumHero(recommendation, esc) {
+function renderAutoPremiumHero(recommendation, highlights, esc) {
   const vehicle = recommendation.vehicle;
   const imageHtml = renderVehicleImageHtml(vehicle, esc, {
     className: 'auto-v2-hero__image',
@@ -66,24 +70,46 @@ function renderAutoPremiumHero(recommendation, esc) {
     height: 540
   });
 
+  const highlightHtml = highlights.map((item) => `
+    <li class="auto-v2-hero__highlight${item.ok ? ' auto-v2-hero__highlight--ok' : ''}">
+      <span class="auto-v2-hero__check" aria-hidden="true">${item.ok ? '✓' : '○'}</span>
+      ${esc(item.label)}
+    </li>`).join('');
+
   return `
     <header class="auto-v2-hero" id="ib-results-hero">
       <p class="auto-v2-hero__kicker">🏆 En Uygun Araç</p>
-      <div class="auto-v2-hero__media">
-        ${imageHtml}
-      </div>
-      <div class="auto-v2-hero__body">
-        <h2 class="auto-v2-hero__title">${esc(vehicle.name)}</h2>
-        <div class="auto-v2-hero__badges">
-          <span class="auto-v2-hero__badge auto-v2-hero__badge--score">
-            Karar Skoru: <strong>${esc(formatScoreOutOf100(recommendation.decisionScore))}</strong>
-          </span>
-          <span class="auto-v2-hero__badge auto-v2-hero__badge--confidence">
-            Güven Seviyesi: <strong>${esc(recommendation.confidenceLabel)}</strong>
-          </span>
+      <div class="auto-v2-hero__layout">
+        <div class="auto-v2-hero__media">
+          ${imageHtml}
         </div>
-        <p class="auto-v2-hero__summary">${esc(String(recommendation.aiSummary || '').slice(0, 280))}</p>
+        <div class="auto-v2-hero__body">
+          <h2 class="auto-v2-hero__title">${esc(vehicle.name)}</h2>
+          <div class="auto-v2-hero__badges">
+            <span class="auto-v2-hero__badge auto-v2-hero__badge--score">
+              Karar Skoru: <strong>${esc(formatScoreOutOf100(recommendation.decisionScore))}</strong>
+            </span>
+            <span class="auto-v2-hero__badge auto-v2-hero__badge--confidence">
+              Güven Seviyesi: <strong>${esc(recommendation.confidenceLabel)}</strong>
+            </span>
+          </div>
+          <ul class="auto-v2-hero__highlights" aria-label="Uyum özeti">
+            ${highlightHtml}
+          </ul>
+          <div class="auto-v2-hero__actions">
+            <button type="button" class="btn primary auto-v2-hero__action" data-auto-v2-print>
+              Tam Rapor
+            </button>
+            <button type="button" class="btn secondary auto-v2-hero__action auto-compare-btn" data-result-index="0" data-vehicle="${esc(vehicle.name)}" data-track-compare="1">
+              Karşılaştır
+            </button>
+            <button type="button" class="btn secondary auto-v2-hero__action" data-auto-v2-expert>
+              Uzmanla Görüş
+            </button>
+          </div>
+        </div>
       </div>
+      <p class="auto-v2-hero__summary" hidden data-auto-v2-summary-slot>${esc(String(recommendation.aiSummary || '').slice(0, 280))}</p>
     </header>`;
 }
 
@@ -91,23 +117,40 @@ function renderHeroMetrics(recommendation, esc) {
   return `
     <div class="auto-v2-hero-metrics" aria-label="Karar metrikleri">
       <article class="auto-v2-hero-metric">
-        <span>Karar Skoru</span>
-        <strong>${esc(formatScoreOutOf100(recommendation.decisionScore))}</strong>
-      </article>
-      <article class="auto-v2-hero-metric">
-        <span>Yıllık Tahmini Yakıt Maliyeti</span>
+        <span>Yıllık Yakıt</span>
         <strong>${esc(recommendation.annualFuelCost ? formatTryAmount(recommendation.annualFuelCost) : '—')}</strong>
       </article>
       <article class="auto-v2-hero-metric">
-        <span>5 Yıllık Toplam Sahip Olma Maliyeti</span>
+        <span>5 Yıl TCO</span>
         <strong>${esc(recommendation.fiveYearOwnership ? formatTryAmount(recommendation.fiveYearOwnership) : '—')}</strong>
       </article>
       <article class="auto-v2-hero-metric">
-        <span>Güven Seviyesi</span>
+        <span>Güven</span>
         <strong>${esc(recommendation.confidenceLabel)}</strong>
         <small>${esc(formatScoreOutOf100(recommendation.confidenceScore))}</small>
       </article>
     </div>`;
+}
+
+function renderRankingCommentarySection(sections, esc) {
+  if (!sections.length) return '';
+
+  return `
+    <section class="auto-v2-ranking" aria-label="Sıralama gerekçesi">
+      <h3>Karar sıralaması</h3>
+      <div class="auto-v2-ranking-grid">
+        ${sections.map((section) => `
+          <article class="auto-v2-ranking-card">
+            <h4>${esc(section.title)}</h4>
+            <p>${esc(section.text)}</p>
+            ${section.bullets?.length ? `
+              <ul class="auto-v2-ranking-bullets">
+                ${section.bullets.map((b) => `<li>${esc(b)}</li>`).join('')}
+              </ul>` : ''}
+          </article>
+        `).join('')}
+      </div>
+    </section>`;
 }
 
 function renderWhyRecommendedSection(cards, esc) {
@@ -147,14 +190,32 @@ function renderAlternativesSection(alternatives, esc) {
             <article class="auto-v2-alt-card">
               <div class="auto-v2-alt-card__media">${imageHtml}</div>
               <div class="auto-v2-alt-card__body">
-                <span class="auto-v2-alt-card__rank">#${idx + 2}</span>
-                <h4>${esc(v.name)}</h4>
-                <span class="auto-v2-alt-meta">${esc(formatScoreOutOf100(alt.score))}</span>
+                <div class="auto-v2-alt-card__head">
+                  <span class="auto-v2-alt-card__rank">#${idx + 2}</span>
+                  <h4>${esc(v.name)}</h4>
+                </div>
+                <dl class="auto-v2-alt-metrics">
+                  <div>
+                    <dt>Skor</dt>
+                    <dd>${esc(formatScoreOutOf100(alt.score))}</dd>
+                  </div>
+                  <div>
+                    <dt>Aylık maliyet</dt>
+                    <dd>${esc(alt.monthlyCost ? formatTryAmount(alt.monthlyCost) : '—')}</dd>
+                  </div>
+                  <div>
+                    <dt>Yakıt</dt>
+                    <dd>${esc(alt.fuelDisplay || '—')}</dd>
+                  </div>
+                  <div>
+                    <dt>İkinci el</dt>
+                    <dd>${esc(alt.resaleDisplay || '—')}</dd>
+                  </div>
+                </dl>
                 <div class="auto-v2-alt-pros">
                   <strong>Artıları</strong>
                   <ul>${alt.pros.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
                 </div>
-                <p class="auto-v2-alt-why"><strong>Neden ikinci sırada?</strong> ${esc(alt.whySecond)}</p>
               </div>
             </article>`;
         }).join('')}
@@ -168,7 +229,7 @@ function renderAutoResultsV2Html(model) {
 
   return `
     <section class="auto-v2-panel" aria-label="Auto karar raporu özeti">
-      ${renderAutoPremiumHero(rec, esc)}
+      ${renderAutoPremiumHero(rec, model.heroHighlights, esc)}
       ${renderHeroMetrics(rec, esc)}
 
       <div class="ib-results-economic-mount auto-v2-evds-mount ib-results-economic--home" data-results-economic-mount hidden></div>
@@ -205,6 +266,7 @@ function renderAutoResultsV2Html(model) {
           planTier: model.planTier,
           insightInput: model.insightInput
         })}
+        ${renderRankingCommentarySection(model.rankingCommentary, esc)}
         <p class="auto-v2-exec-hint" data-auto-v2-source>${esc(model.summarySourceLabel)}</p>
       </article>
 
@@ -214,7 +276,7 @@ function renderAutoResultsV2Html(model) {
       </article>
 
       <div class="auto-v2-actions">
-        <button type="button" class="btn secondary auto-v2-print" data-auto-v2-print>
+        <button type="button" class="btn secondary auto-v2-print" data-auto-v2-print-secondary>
           Araç karar raporunu indir
         </button>
       </div>
@@ -255,6 +317,24 @@ function computeRiskLevel({ budget, totalCost, riskItems = [] }) {
   return { label: 'Düşük', score: 28 };
 }
 
+function wireHeroActions(root, model, track) {
+  const printHandler = () => {
+    safeTrackEvent(track, 'decision_report_print_click', { score: model.decisionScore });
+    gatePdfDownload(model.pdfReportData);
+  };
+
+  root.querySelector('[data-auto-v2-print]')?.addEventListener('click', printHandler);
+  root.querySelector('[data-auto-v2-print-secondary]')?.addEventListener('click', printHandler);
+
+  root.querySelector('[data-auto-v2-expert]')?.addEventListener('click', () => {
+    const insightRoot = root.querySelector('[data-auto-v2-insight-root]');
+    insightRoot?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    safeTrackEvent(track, 'auto_expert_commentary_open', {
+      vehicle: model.recommendation.vehicle.name
+    });
+  });
+}
+
 export async function mountAutoResultsV2({ mountNode, topResult, results, formData, track }) {
   if (!mountNode || !topResult) return null;
 
@@ -287,6 +367,8 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   const recommendation = buildRecommendationPayload(topResult, formData, results, intel);
   const whyRecommended = buildWhyRecommendedCards(recommendation, formData);
   const alternatives = buildVehicleAlternatives(results, topResult, formData);
+  const heroHighlights = buildHeroHighlights(recommendation);
+  const rankingCommentary = buildRankingCommentary(results, formData);
 
   const { planTier } = getResultsPlanContext();
 
@@ -301,6 +383,8 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   const model = {
     recommendation,
     whyRecommended,
+    heroHighlights,
+    rankingCommentary,
     decisionScore: intel.decisionScore,
     confidenceScore: intel.confidenceScore,
     riskLevel: intel.overallRisk || risk.label,
@@ -359,6 +443,12 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   root.className = 'auto-v2-root';
   root.innerHTML = renderAutoResultsV2Html(model);
   mountNode.prepend(root);
+
+  bindVehicleImageFallbacks(root);
+  reportVehicleImageLoading(root);
+
+  wireHeroActions(root, model, track);
+
   await hydrateResultsEconomicIndicators(root, 'auto');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
 
@@ -367,11 +457,6 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     confidence: model.confidenceScore,
     risk: model.riskLevel,
     vehicle: recommendation.vehicle.name
-  });
-
-  root.querySelector('[data-auto-v2-print]')?.addEventListener('click', () => {
-    safeTrackEvent(track, 'decision_report_print_click', { score: intel.decisionScore });
-    gatePdfDownload(model.pdfReportData);
   });
 
   const summary = await fetchExecutiveSummaryV3('auto', intel.context || {}, intel, {
@@ -384,7 +469,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   if (summary.text) {
     recommendation.aiSummary = summary.text;
-    const summaryEl = root.querySelector('.auto-v2-hero__summary');
+    const summaryEl = root.querySelector('[data-auto-v2-summary-slot]');
     if (summaryEl) summaryEl.textContent = String(summary.text).slice(0, 280);
   }
 

@@ -101,28 +101,35 @@ test('vehicleImageMatchesName rejects cross-model image reuse', () => {
   );
 });
 
-test('resolveVehicleImageUrl falls back to placeholder for mismatched image_url', () => {
+test('resolveVehicleImageUrl falls back to local asset for mismatched image_url', () => {
   const mismatch = {
     name: '2023 Skoda Octavia Premium',
     image_url: 'https://cdn.example.com/toyota-corolla.jpg'
   };
 
-  assert.equal(resolveVehicleImageUrl(mismatch), PREMIUM_VEHICLE_PLACEHOLDER);
+  assert.equal(resolveVehicleImageUrl(mismatch), '/assets/images/auto/skoda-family.svg');
 });
 
-test('resolveVehicleImageUrl falls back to placeholder for generic hero images', () => {
+test('resolveVehicleImageUrl ignores generic hero image_url and uses local asset', () => {
   assert.equal(
     resolveVehicleImageUrl({
       name: '2023 Toyota Corolla Sedan Hybrid',
       image_url: '/assets/images/auto-hero.jpg'
     }),
-    PREMIUM_VEHICLE_PLACEHOLDER
+    '/assets/images/vehicles/toyota-corolla-sedan-hybrid.jpg'
   );
 });
 
-test('resolveVehicleImageUrl uses placeholder when image_url is missing', () => {
+test('resolveVehicleImageUrl uses local asset when image_url is missing', () => {
   assert.equal(
     resolveVehicleImageUrl({ name: '2023 Toyota Corolla Cross Hybrid' }),
+    '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg'
+  );
+});
+
+test('resolveVehicleImageUrl uses default fallback for unmapped vehicles', () => {
+  assert.equal(
+    resolveVehicleImageUrl({ name: '2024 Citroen C4 Max' }),
     PREMIUM_VEHICLE_PLACEHOLDER
   );
 });

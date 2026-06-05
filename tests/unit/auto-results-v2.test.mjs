@@ -1,12 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  DEFAULT_VEHICLE_FALLBACK,
   PREMIUM_VEHICLE_PLACEHOLDER,
+  resolveLocalVehicleAsset,
   resolveVehicleImageUrl,
   toRecommendationVehicle,
   vehicleImageMatchesName
 } from '../../js/auto/vehicle-image.js';
 import {
+  buildRankingCommentary,
   buildRecommendationPayload,
   buildVehicleAlternatives,
   buildWhyRecommendedCards
@@ -22,13 +25,13 @@ test('resolveVehicleImageUrl prefers verified image_url over placeholder', () =>
   );
 });
 
-test('resolveVehicleImageUrl rejects unverified image_url for vehicle name', () => {
+test('resolveVehicleImageUrl rejects unverified image_url and uses local asset', () => {
   assert.equal(
     resolveVehicleImageUrl({
       name: '2023 Toyota Corolla Cross Hybrid',
       image_url: 'https://cdn.example/volkswagen-passat.jpg'
     }),
-    PREMIUM_VEHICLE_PLACEHOLDER
+    '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg'
   );
   assert.equal(
     vehicleImageMatchesName(
@@ -39,18 +42,34 @@ test('resolveVehicleImageUrl rejects unverified image_url for vehicle name', () 
   );
 });
 
-test('resolveVehicleImageUrl uses premium placeholder when no image_url', () => {
+test('resolveLocalVehicleAsset maps catalog names to bundled JPG assets', () => {
+  assert.equal(
+    resolveLocalVehicleAsset('2023 Toyota Corolla Cross Hybrid'),
+    '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg'
+  );
+  assert.equal(
+    resolveLocalVehicleAsset('2024 Volvo EX30'),
+    '/assets/images/vehicles/volvo-xc60.jpg'
+  );
+});
+
+test('resolveVehicleImageUrl uses local asset before default fallback', () => {
+  assert.equal(
+    resolveVehicleImageUrl({ name: '2023 Toyota Corolla Cross Hybrid' }),
+    '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg'
+  );
   assert.equal(
     resolveVehicleImageUrl({ name: '2024 Citroen C4 Max' }),
-    PREMIUM_VEHICLE_PLACEHOLDER
+    DEFAULT_VEHICLE_FALLBACK
   );
-  assert.equal(resolveVehicleImageUrl(null), PREMIUM_VEHICLE_PLACEHOLDER);
+  assert.equal(resolveVehicleImageUrl(null), DEFAULT_VEHICLE_FALLBACK);
+  assert.equal(PREMIUM_VEHICLE_PLACEHOLDER, DEFAULT_VEHICLE_FALLBACK);
 });
 
 test('toRecommendationVehicle keeps vehicle name and sets imageUrl', () => {
   const rec = toRecommendationVehicle({ name: '2023 Toyota Corolla Cross Hybrid', price: 1_650_000 });
   assert.equal(rec.name, '2023 Toyota Corolla Cross Hybrid');
-  assert.equal(rec.imageUrl, PREMIUM_VEHICLE_PLACEHOLDER);
+  assert.equal(rec.imageUrl, '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg');
 });
 
 test('buildRecommendationPayload uses same vehicle for title and image', () => {
@@ -76,7 +95,7 @@ test('buildRecommendationPayload uses same vehicle for title and image', () => {
   };
   const payload = buildRecommendationPayload(top, { usage: 'city' }, [top], intel);
   assert.equal(payload.vehicle.name, '2024 Citroen C4 Max');
-  assert.equal(payload.vehicle.imageUrl, PREMIUM_VEHICLE_PLACEHOLDER);
+  assert.equal(payload.vehicle.imageUrl, DEFAULT_VEHICLE_FALLBACK);
   assert.match(payload.aiSummary, /Citroen C4 Max/);
 });
 
@@ -93,6 +112,33 @@ test('buildVehicleAlternatives returns real ranked vehicles not generic advice',
   assert.equal(alts[0].vehicle.name, '2024 Citroen C4 Max');
   assert.ok(alts[0].score > 0);
   assert.ok(alts[0].whySecond);
+});
+
+test('buildRankingCommentary produces first/second/third rank explanations', () => {
+  const leader = {
+    name: '2023 Toyota Corolla Cross Hybrid',
+    score: 94,
+    scoreBreakdown: [{ label: 'Bütçe', positive: true, delta: 12, status: 'uyumlu' }],
+    reasons: ['Hibrit verim']
+  };
+  const second = {
+    name: '2024 Citroen C4 Max',
+    score: 84,
+    scoreBreakdown: [{ label: 'Bütçe', positive: true, delta: 4, status: 'sınırda' }],
+    reasons: ['Bütçe uyumu']
+  };
+  const third = {
+    name: '2024 Renault Clio Icon',
+    score: 78,
+    scoreBreakdown: [],
+    reasons: ['Şehir içi']
+  };
+
+  const sections = buildRankingCommentary([leader, second, third], { usage: 'city' });
+  assert.equal(sections.length, 3);
+  assert.match(sections[0].title, /birinci sırada/i);
+  assert.match(sections[1].title, /ikinci sıradaki/i);
+  assert.match(sections[2].title, /üçüncü sıradaki/i);
 });
 
 test('buildWhyRecommendedCards returns five recommendation cards', () => {

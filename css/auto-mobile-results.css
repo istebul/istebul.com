@@ -305,6 +305,23 @@
     grid-template-columns: 1fr;
   }
 
+  body.ib-auto #auto-results .auto-v2-hero__layout {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-auto #auto-results .auto-v2-hero__actions {
+    flex-direction: column;
+  }
+
+  body.ib-auto #auto-results .auto-v2-hero__action {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.ib-auto #auto-results .auto-v2-ranking-grid {
+    grid-template-columns: 1fr;
+  }
+
   body.ib-auto #auto-results .auto-v2-hero__media {
     aspect-ratio: 16 / 10;
   }
