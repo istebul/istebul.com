@@ -45,6 +45,7 @@ import { escapeHtml } from '../core/security.js';
 import { safeJsonParse } from '../core/dom-safe.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw, readStoredJson, writeStoredJson, removeStorageRaw } from '../core/storage-keys.js';
 import { mountAutoResultsV2 } from './auto-results-v2.js';
+import { formatVehicleFuelDisplay, formatVehicleResaleDisplay } from './auto-results-model.js';
 import { renderVehicleImageHtml, resolveVehicleImageUrl } from './vehicle-image.js';
 import { storeCheckoutIntentPayload } from '../core/checkout-intent.js';
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
@@ -382,26 +383,21 @@ function renderResultsSidebar(topResult, results) {
   `;
 }
 
-function renderCompactRecommendationCard(vehicle, index) {
+function renderCompactRecommendationCard(vehicle, index, formData = {}) {
   const monthlyImpact = Math.round((Number(vehicle.costs?.total || 0) / 12) / 100) * 100;
   const rankClass = index === 0 ? 'auto-rec-rank--best' : index === 1 ? 'auto-rec-rank--good' : 'auto-rec-rank--alt';
   const rankLabel = index === 0 ? 'En uygun' : index === 1 ? 'Çok iyi' : 'İyi';
+  const cardClass = index === 0 ? 'auto-rec-card auto-rec-card--best' : 'auto-rec-card';
   const price = Number(vehicle.price || 0);
   const priceBand = price
     ? `${formatAmount(Math.round(price * 0.97))} – ${formatAmount(Math.round(price * 1.03))}`
     : 'Fiyat bandı tahmini';
-  const fuelNote = vehicle.fuel === 'electric'
-    ? 'Elektrik · düşük işletme'
-    : vehicle.fuel === 'hybrid'
-      ? 'Hibrit · dengeli tüketim'
-      : 'Yıllık yakıt tahmini';
-  const resale = vehicle.costs?.ownership?.depreciation?.residualPct12 != null
-    ? `%${Math.round(Number(vehicle.costs.ownership.depreciation.residualPct12) * 100)} (12 ay)`
-    : 'Segment tahmini';
+  const fuelNote = formatVehicleFuelDisplay(vehicle, formData);
+  const resale = formatVehicleResaleDisplay(vehicle);
   const maintRisk = Number(vehicle.maintenance || 5) >= 7 ? 'Orta' : 'Düşük';
 
   return `
-    <article class="premium-result-card auto-rec-card" role="listitem">
+    <article class="premium-result-card ${cardClass}" role="listitem">
       <div class="auto-rec-card__media">
         ${renderVehicleImageHtml(vehicle, escapeHtml, { className: 'auto-rec-card__image', width: 480, height: 270 })}
       </div>
@@ -411,7 +407,7 @@ function renderCompactRecommendationCard(vehicle, index) {
         <div><dt>Fiyat aralığı</dt><dd>${escapeHtml(priceBand)}</dd></div>
         <div><dt>Aylık maliyet</dt><dd>${formatAmount(monthlyImpact)}</dd></div>
         <div><dt>Yakıt</dt><dd>${escapeHtml(fuelNote)}</dd></div>
-        <div><dt>İkinci el</dt><dd>${escapeHtml(resale)}</dd></div>
+        <div><dt>İkinci El Gücü</dt><dd>${escapeHtml(resale)}</dd></div>
         <div><dt>Bakım riski</dt><dd>${escapeHtml(maintRisk)}</dd></div>
       </dl>
       <div class="auto-rec-score">
@@ -2112,7 +2108,7 @@ function renderResults(results) {
     ${rankIntelPanel || ''}
 
     <div id="auto-results-cards" class="auto-results-cards auto-rec-cards" role="list" aria-label="Öne çıkan araç önerileri">
-      ${displayResults.slice(0, 3).map((vehicle, index) => renderCompactRecommendationCard(vehicle, index)).join('')}
+      ${displayResults.slice(0, 3).map((vehicle, index) => renderCompactRecommendationCard(vehicle, index, formData)).join('')}
     </div>
 
     ${renderVehicleSelectionGate(displayResults)}
