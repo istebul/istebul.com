@@ -286,4 +286,35 @@
     font-size: 0.88rem;
     padding: 0.85rem 0.95rem;
   }
+
+  /* V2 premium panel — tek sütun, taşma yok */
+  body.ib-auto #auto-results .auto-v2-panel {
+    padding: 0.85rem;
+    overflow: hidden;
+  }
+
+  body.ib-auto #auto-results .auto-v2-hero-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-auto #auto-results .auto-v2-why-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-auto #auto-results .auto-v2-alt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-auto #auto-results .auto-v2-hero__media {
+    aspect-ratio: 16 / 10;
+  }
+
+  body.ib-auto #auto-results .auto-rec-card__media {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  body.ib-auto .auto-results-cards.auto-rec-cards {
+    grid-template-columns: 1fr !important;
+  }
 }

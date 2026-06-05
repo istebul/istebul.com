@@ -40,14 +40,18 @@ test('scoreToneFromLabel maps Turkish labels', () => {
   assert.equal(scoreToneFromLabel('Yüksek risk'), 'danger');
 });
 
-test('V2 result modules import shared hero layout', () => {
+test('V2 result modules import shared vehicle image resolver', () => {
   for (const file of [
     'js/features/finansman/finansman-results-v2.js',
     'js/features/konut/konut-results-v2.js',
     'js/auto/auto-results-v2.js'
   ]) {
     const src = fs.readFileSync(path.join(root, file), 'utf8');
-    assert.match(src, /renderResultsHeroLayout/);
+    if (file.includes('auto-results-v2')) {
+      assert.match(src, /vehicle-image\.js/);
+    } else {
+      assert.match(src, /renderResultsHeroLayout/);
+    }
   }
 });
 
