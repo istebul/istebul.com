@@ -39,6 +39,7 @@ export async function fetchKaskoExecutiveSummary(engine = {}, state = {}, option
   });
   return {
     text: result.source === 'ai' ? result.text : deterministic.summary,
+    insight: result.insight || null,
     source: result.source === 'ai' ? 'ai' : 'deterministic',
     bullets: deterministic.bullets
   };

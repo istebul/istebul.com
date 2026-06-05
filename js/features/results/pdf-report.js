@@ -12,7 +12,8 @@ const CATEGORY_LABELS = {
   konut: 'Konut',
   tatil: 'Tatil',
   finansman: 'Finansman',
-  sigorta: 'Sigorta'
+  sigorta: 'Sigorta',
+  kasko: 'Kasko'
 };
 
 const DISCLAIMER =
@@ -60,7 +61,8 @@ export function createReportFilename(category, createdAt) {
     konut: 'konut',
     tatil: 'tatil',
     finansman: 'finansman',
-    sigorta: 'sigorta'
+    sigorta: 'sigorta',
+    kasko: 'kasko'
   };
   const slug = slugMap[String(category || '').toLowerCase()] || 'karar';
   const date = createdAt ? new Date(createdAt) : new Date();
@@ -152,6 +154,18 @@ function buildCostRows(data) {
       { label: 'Koruma skoru', value: formatReportScore(cost.protectionScore) },
       { label: 'Teminat yeterliliği', value: formatReportScore(cost.coverageScore) },
       { label: 'Maliyet verimliliği', value: formatReportScore(cost.costEfficiencyScore) },
+      {
+        label: 'Tahmini yıllık prim bandı',
+        value: cost.yearlyPremium ? sanitizeReportText(cost.yearlyPremium) : '—'
+      }
+    ];
+  }
+
+  if (category === 'kasko') {
+    return [
+      { label: 'Teminat skoru', value: formatReportScore(cost.coverageScore) },
+      { label: 'Onarım riski skoru', value: formatReportScore(cost.repairRiskScore) },
+      { label: 'Prim verimliliği', value: formatReportScore(cost.premiumEfficiencyScore) },
       {
         label: 'Tahmini yıllık prim bandı',
         value: cost.yearlyPremium ? sanitizeReportText(cost.yearlyPremium) : '—'

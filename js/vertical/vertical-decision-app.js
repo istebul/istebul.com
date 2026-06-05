@@ -7,7 +7,7 @@ import {
   syncCanonicalFinansScores
 } from '../features/finansman/finansman-results-v2.js';
 import { mountSigortaResultsV2, syncCanonicalSigortaScores } from '../features/sigorta/sigorta-results-v2.js';
-import { mountKaskoResultsV2 } from '../features/kasko/kasko-results-v2.js';
+import { mountKaskoResultsV2, syncCanonicalKaskoScores } from '../features/kasko/kasko-results-v2.js';
 import {
   trackAnalysisStarted,
   trackResultsViewed,
@@ -410,6 +410,13 @@ export function initDecisionFlow(config) {
       syncCanonicalSigortaScores(state, state.results, state.selected_option);
     }
 
+    if (config.vertical === 'kasko') {
+      if (!state.selected_option && state.results[0]?.id) {
+        state.selected_option = state.results[0].id;
+      }
+      syncCanonicalKaskoScores(state, state.results, state.selected_option);
+    }
+
     const commentary = config.buildCommentary(state, state.results);
     const summary = config.buildSummary(state, state.results);
     const primary = getDisplayResult();
@@ -533,7 +540,9 @@ export function initDecisionFlow(config) {
       void mountKaskoResultsV2(section, {
         state,
         results: state.results,
-        track: (eventName, meta) => config.tracker.track(eventName, meta)
+        selectedOption: state.selected_option,
+        track: (eventName, meta) => config.tracker.track(eventName, meta),
+        onRestart: restartKaskoWizard
       });
     }
 
@@ -562,6 +571,21 @@ export function initDecisionFlow(config) {
   }
 
   function restartSigortaWizard() {
+    state.stepIndex = 0;
+    state.results = [];
+    state.selected_option = '';
+    state.confirmationStep = false;
+    const section = el('results');
+    if (section) {
+      section.hidden = true;
+      section.innerHTML = '';
+    }
+    setWizardVisible(true);
+    renderWizard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function restartKaskoWizard() {
     state.stepIndex = 0;
     state.results = [];
     state.selected_option = '';

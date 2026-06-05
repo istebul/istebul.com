@@ -1,8 +1,10 @@
 import { analytics } from '../core/analytics.js';
+import { withTimeout } from '../core/async-utils.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
 import { getVerticalSessionId } from '../vertical/vertical-intake.js';
 
 const VERTICAL = 'kasko';
+const INTAKE_FETCH_TIMEOUT_MS = 4000;
 
 function getEnv() {
   return {
@@ -15,19 +17,24 @@ async function callIntake(payload) {
   const { url, key } = getEnv();
   if (!url || !key) return { ok: false, offline: true };
   try {
-    const response = await fetch(`${url.replace(/\/$/, '')}/functions/v1/auto-intake`, {
-      method: 'POST',
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        ...payload,
-        category: 'kasko',
-        session_id: getVerticalSessionId(VERTICAL)
-      })
-    });
+    const response = await withTimeout(
+      fetch(`${url.replace(/\/$/, '')}/functions/v1/auto-intake`, {
+        method: 'POST',
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...payload,
+          category: 'kasko',
+          session_id: getVerticalSessionId(VERTICAL)
+        })
+      }),
+      INTAKE_FETCH_TIMEOUT_MS,
+      null
+    );
+    if (!response) return { ok: false, timeout: true };
     const data = await response.json().catch(() => ({}));
     if (!response.ok) return { ok: false, error: data.error || 'request_failed' };
     return { ok: true, ...data };
