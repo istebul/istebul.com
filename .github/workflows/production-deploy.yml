@@ -260,15 +260,24 @@ jobs:
         if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-vertical-migration-api.sh
 
+      - name: Apply vertical partner dispatch schema fallback (Management API)
+        id: vpd_schema_fallback
+        if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
+        run: bash scripts/apply-vertical-partner-dispatch-migration-api.sh
+
+      - name: Verify vertical partner dispatch schema
+        if: steps.gate.outputs.skip != 'true'
+        run: node scripts/verify-vertical-partner-dispatch-schema.cjs
+
       - name: Require Konut/Finans schema
         if: steps.gate.outputs.skip != 'true'
         run: |
-          if [ "${{ steps.db_push.outcome }}" != "success" ] && [ "${{ steps.vertical_schema_fallback.outcome }}" != "success" ]; then
-            echo "::error::Database migrations failed and vertical schema fallback did not run."
+          if [ "${{ steps.db_push.outcome }}" != "success" ] && [ "${{ steps.vertical_schema_fallback.outcome }}" != "success" ] && [ "${{ steps.vpd_schema_fallback.outcome }}" != "success" ]; then
+            echo "::error::Database migrations failed and schema fallbacks did not run."
             exit 1
           fi
           if [ "${{ steps.db_push.outcome }}" != "success" ]; then
-            echo "::warning::db push incomplete (migration history drift). Vertical schema applied via Management API fallback."
+            echo "::warning::db push incomplete (migration history drift). Schema applied via Management API fallback where available."
           fi
 
       - name: Sync edge secrets (analytics ITE)
