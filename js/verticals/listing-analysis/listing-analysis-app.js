@@ -39,7 +39,7 @@ async function submitListingAnalysis(type, input) {
   if (!built.ok) return built;
 
   const { url, key } = getEnv();
-  if (!url || !key) {
+  if (!url || !key || key.includes('placeholder')) {
     return { ok: true, result: built.result, offline: true };
   }
 
@@ -129,7 +129,6 @@ function initListingAnalysisApp() {
   const flow = document.getElementById(LISTING_ANALYSIS_DOM_IDS.flow);
   const results = document.getElementById(LISTING_ANALYSIS_DOM_IDS.results);
   const form = document.getElementById(LISTING_ANALYSIS_DOM_IDS.form);
-  const submitBtn = document.getElementById(LISTING_ANALYSIS_DOM_IDS.submit);
   const heroCta = document.getElementById(LISTING_ANALYSIS_DOM_IDS.heroCta);
   const errorBox = document.getElementById('listing-analysis-errors');
 
@@ -137,7 +136,6 @@ function initListingAnalysisApp() {
 
   const vehicleDefaults = createEmptyVehicleInput();
   const housingDefaults = createEmptyHousingInput();
-  const getActiveType = bindTabs(flow);
 
   heroCta?.addEventListener('click', () => {
     flow.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -173,11 +171,16 @@ function initListingAnalysisApp() {
     <p class="la-disclaimer">${LISTING_ANALYSIS_DISCLAIMER}</p>
     <button type="submit" class="la-submit" id="${LISTING_ANALYSIS_DOM_IDS.submit}">Analiz Et</button>`;
 
+  const submitBtn = document.getElementById(LISTING_ANALYSIS_DOM_IDS.submit);
+  const getActiveType = bindTabs(form);
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     showErrors(errorBox, []);
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Analiz ediliyor…';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Analiz ediliyor…';
+    }
 
     const type = getActiveType();
     const panel =
@@ -189,16 +192,20 @@ function initListingAnalysisApp() {
     const validation = buildListingAnalysisResult(type, parsed);
     if (!validation.ok) {
       showErrors(errorBox, validation.errors);
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Analiz Et';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Analiz Et';
+      }
       return;
     }
 
     const response = await submitListingAnalysis(type, parsed);
     if (!response.ok) {
       showErrors(errorBox, response.errors || ['Analiz başarısız.']);
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Analiz Et';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Analiz Et';
+      }
       return;
     }
 
@@ -212,8 +219,10 @@ function initListingAnalysisApp() {
       }
     });
     results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Analiz Et';
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Analiz Et';
+    }
   });
 }
 
