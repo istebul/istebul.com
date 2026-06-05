@@ -419,7 +419,7 @@ const BADGES = {
   premium: { label: 'Geniş Teminat', className: 'is-comfort' }
 };
 
-function estimatePremiumBand(state) {
+export function estimatePremiumBand(state) {
   const type = state.insurance_type;
   let base = { arac: 18_000, konut: 9_500, saglik: 28_000, seyahat: 1_200 }[type] || 12_000;
   const budgetMul = { dusuk: 0.75, orta: 1, yuksek: 1.35 }[state.budget_level] || 1;
@@ -440,6 +440,30 @@ function estimatePremiumBand(state) {
   }
 
   return Math.round(base * budgetMul * riskMul);
+}
+
+/**
+ * Seçili veya birincil senaryoyu çözümler.
+ */
+export function resolvePrimarySigortaResult(results = [], selectedId = '') {
+  if (!results.length) return null;
+  if (selectedId) {
+    const picked = results.find((r) => r.id === selectedId);
+    if (picked) return picked;
+  }
+  return results[0] || null;
+}
+
+/**
+ * Tüm senaryo skorlarını engine.decisionScore ile senkronize eder (canonical kaynak).
+ */
+export function syncCanonicalSigortaScores(state, results = [], selectedId = '') {
+  const engine = buildEngineResult(state);
+  const canonical = engine.decisionScore;
+  (results || []).forEach((r) => {
+    r.score = canonical;
+  });
+  return resolvePrimarySigortaResult(results, selectedId);
 }
 
 export function buildSigortaResults(state = {}) {

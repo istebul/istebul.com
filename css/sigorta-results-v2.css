@@ -2,6 +2,26 @@
  * Auto Results V2 (Sprint 1) — premium SaaS panel (mobile + dark mode uyumlu).
  * Mevcut Auto premium tasarım diline uyumlu, izole sınıf isimleri.
  */
+
+/* V2 aktifken legacy panelleri gizle — tek kaynak V2 hero */
+body.sigorta-page #sigorta-results .sigorta-v2-root ~ .ib-premium-dashboard,
+body.sigorta-page #sigorta-results .sigorta-v2-root ~ .vacation-results-header,
+body.sigorta-page #sigorta-results .sigorta-v2-root ~ .vacation-results-top-pick,
+body.sigorta-page #sigorta-results .sigorta-v2-root ~ .vacation-result-cards,
+body.sigorta-page #sigorta-results .sigorta-v2-root ~ .vacation-selection-bar,
+body.sigorta-page #sigorta-results .sigorta-v2-root ~ .vacation-final-cta {
+  display: none !important;
+}
+
+body.kasko-page #kasko-results .kasko-v2-root ~ .ib-premium-dashboard,
+body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-results-header,
+body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-results-top-pick,
+body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-result-cards,
+body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-selection-bar,
+body.kasko-page #kasko-results .kasko-v2-root ~ .vacation-final-cta {
+  display: none !important;
+}
+
 .sigorta-v2-root {
   margin: 1.25rem 0 1.75rem;
 }
@@ -229,6 +249,14 @@
   color: var(--v2-accent);
 }
 
+.sigorta-v2-alt-score {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--v2-muted);
+}
+
 .sigorta-v2-block--exec {
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.10), var(--v2-elev));
   border-color: rgba(37, 99, 235, 0.28);
@@ -251,6 +279,54 @@
   flex-wrap: wrap;
   gap: 0.65rem;
   margin-top: 1rem;
+}
+
+body.sigorta-page #sigorta-results .sigorta-v2-actions,
+body.kasko-page #kasko-results .sigorta-v2-actions {
+  padding-top: 0.25rem;
+}
+
+body.sigorta-page #sigorta-results .sigorta-v2-actions .btn,
+body.kasko-page #kasko-results .sigorta-v2-actions .btn {
+  min-height: 44px;
+}
+
+.sigorta-v2-lead-panel {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--v2-border);
+  border-radius: 14px;
+  background: var(--v2-elev);
+}
+
+.sigorta-v2-lead-hint {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  color: var(--v2-muted);
+}
+
+.sigorta-v2-login-hint {
+  width: 100%;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--v2-muted);
+}
+
+.sigorta-v2-login-hint a {
+  color: var(--v2-accent);
+  font-weight: 600;
+}
+
+.sigorta-v2-action-feedback {
+  width: 100%;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--v2-text);
+}
+
+.sigorta-v2-interest-grid--panel {
+  margin-bottom: 0.65rem;
 }
 
 @media print {

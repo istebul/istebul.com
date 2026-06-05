@@ -83,6 +83,7 @@ export async function fetchSigortaExecutiveSummary(engine = {}, state = {}, opti
   const text = result.source === 'ai' ? result.text : deterministic.summary;
   return {
     text,
+    insight: result.insight || null,
     bullets: deterministic.bullets,
     paragraphs: deterministic.paragraphs,
     source: result.source === 'ai' ? 'ai' : 'deterministic',
