@@ -131,6 +131,17 @@ test('partner-endpoint-test edge function is admin-gated', () => {
   assert.match(source, /partner_lead_dispatch_logs/);
 });
 
+test('partner-endpoint-test handles OPTIONS preflight with CORS', () => {
+  const source = fs.readFileSync(
+    path.join(root, 'supabase/functions/partner-endpoint-test/index.ts'),
+    'utf8'
+  );
+  assert.match(source, /req\.method === "OPTIONS"/);
+  assert.match(source, /status: 204/);
+  assert.match(source, /resolveCorsOrigin/);
+  assert.match(source, /Access-Control-Allow-Methods/);
+});
+
 test('production deploy includes partner-endpoint-test function', () => {
   const source = fs.readFileSync(
     path.join(root, '.github/workflows/production-deploy.yml'),

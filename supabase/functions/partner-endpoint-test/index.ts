@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { resolveCorsOrigin } from "../_shared/cors-origins.ts";
 import { signPartnerPayload } from "../_shared/partner-dispatch.ts";
 import { assertSafePartnerWebhookUrl } from "../_shared/webhook-url.ts";
 
@@ -7,10 +8,25 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const sb = createClient(SUPABASE_URL, SERVICE_ROLE);
 
-function json(body: Record<string, unknown>, status = 200) {
+function corsHeaders(origin: string | null) {
+  const allowedOrigin = resolveCorsOrigin(origin, "https://www.istebul.com");
+
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+}
+
+function json(
+  body: Record<string, unknown>,
+  status = 200,
+  origin: string | null = null
+) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
   });
 }
 
@@ -36,20 +52,28 @@ async function requireAdmin(req: Request) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  const origin = req.headers.get("origin");
+
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders(origin) });
+  }
+
+  if (req.method !== "POST") {
+    return json({ error: "Method not allowed" }, 405, origin);
+  }
 
   const user = await requireAdmin(req);
-  if (!user) return json({ error: "Forbidden: admin only" }, 403);
+  if (!user) return json({ error: "Forbidden: admin only" }, 403, origin);
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return json({ error: "Invalid JSON body" }, 400);
+    return json({ error: "Invalid JSON body" }, 400, origin);
   }
 
   const endpointId = String(body.endpoint_id || "").trim();
-  if (!endpointId) return json({ error: "endpoint_id required" }, 400);
+  if (!endpointId) return json({ error: "endpoint_id required" }, 400, origin);
 
   const { data: endpoint, error: endpointError } = await sb
     .from("partner_endpoints")
@@ -59,7 +83,9 @@ Deno.serve(async (req) => {
     .eq("id", endpointId)
     .single();
 
-  if (endpointError || !endpoint) return json({ error: "Endpoint not found" }, 404);
+  if (endpointError || !endpoint) {
+    return json({ error: "Endpoint not found" }, 404, origin);
+  }
 
   try {
     assertSafePartnerWebhookUrl(endpoint.webhook_url);
@@ -67,7 +93,7 @@ Deno.serve(async (req) => {
     return json({
       ok: false,
       error: err instanceof Error ? err.message : "Invalid webhook URL",
-    }, 400);
+    }, 400, origin);
   }
 
   const testPayload = {
@@ -94,7 +120,7 @@ Deno.serve(async (req) => {
     return json({
       ok: false,
       error: err instanceof Error ? err.message : "Signing failed",
-    }, 400);
+    }, 400, origin);
   }
 
   const started = Date.now();
@@ -152,7 +178,7 @@ Deno.serve(async (req) => {
       http_status: httpStatus,
       health_status: "healthy",
       duration_ms: durationMs,
-    });
+    }, 200, origin);
   }
 
   try {
@@ -173,5 +199,5 @@ Deno.serve(async (req) => {
     health_status: refreshed?.health_status || "degraded",
     error: errMsg || "test_failed",
     duration_ms: durationMs,
-  }, 502);
+  }, 502, origin);
 });
