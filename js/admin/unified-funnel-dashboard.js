@@ -2,6 +2,9 @@
  * Unified funnel dashboard — Auto, Konut, Tatil, Finans on one admin screen.
  */
 
+export const FUNNEL_METRICS_CUTOVER_NOTE =
+  '5 Haziran 2026 sonrası wizard_start page load\u2019dan kullanıcı etkileşimine taşındı; önceki dönemle karşılaştırmada start oranları şişkin olabilir.';
+
 /** Canonical funnel stage aliases for event → stage resolution. */
 export const FUNNEL_STAGE_ALIASES = Object.freeze({
   visit: [
@@ -181,6 +184,7 @@ export function renderUnifiedFunnelDashboard(metrics, escapeHtml) {
 
   return `
     <div class="unified-funnel-dashboard">
+      <p class="text-muted-sm funnel-cutover-note" style="margin:0 0 14px;padding:10px 12px;border-left:3px solid var(--border,#d1d5db);background:var(--surface-muted,#f9fafb)">${esc(FUNNEL_METRICS_CUTOVER_NOTE)}</p>
       <div class="stat-grid" style="margin-bottom:16px">
         <article class="stat-card"><div class="stat-label">En yüksek lead</div><div class="stat-value">${esc(bestLead?.label || '—')}</div><div class="stat-sub">${bestLead?.leads ?? 0} lead</div></article>
         <article class="stat-card"><div class="stat-label">En iyi dönüşüm</div><div class="stat-value">${esc(bestCr?.label || '—')}</div><div class="stat-sub">${esc(bestCr?.overallConversion || '—')}</div></article>

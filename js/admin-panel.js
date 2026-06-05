@@ -4475,7 +4475,7 @@ async function loadUnifiedFunnelDashboard(dataMode = unifiedFunnelDataMode) {
   const metrics = buildUnifiedFunnelMetrics(rows);
   const banner = renderAdminDataSourceNotices([analyticsRes, housingRes, vacationRes, verticalRes]);
   const dataModeToolbar = renderAnalyticsDataModeToolbar(dataMode);
-  const modeNote = `<p class="text-muted-sm" style="margin:0 0 12px">${escapeHtml(ANALYTICS_DATA_MODE_LABELS[dataMode] || dataMode)} · Platform eventleri ITE ile filtrelenir; konut/tatil/vertical_events legacy tabloları ham veridir.</p>`;
+  const modeNote = `<p class="text-muted-sm" style="margin:0 0 12px">${escapeHtml(ANALYTICS_DATA_MODE_LABELS[dataMode] || dataMode)} · Platform eventleri ITE ile filtrelenir; konut/tatil/vertical_events legacy tabloları ham veridir.</p><p class="text-muted-sm funnel-cutover-note" style="margin:0 0 12px;padding:10px 12px;border-left:3px solid var(--border,#d1d5db);background:var(--surface-muted,#f9fafb)">5 Haziran 2026 sonrası wizard_start page load\u2019dan kullanıcı etkileşimine taşındı; önceki dönemle karşılaştırmada start oranları şişkin olabilir.</p>`;
   el.innerHTML = `${banner}${dataModeToolbar}${modeNote}${renderUnifiedFunnelDashboard(metrics, escapeHtml)}`;
 
   el.querySelectorAll('[data-analytics-data-mode]').forEach((btn) => {

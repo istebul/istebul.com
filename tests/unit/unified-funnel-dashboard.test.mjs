@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 
 const {
   buildUnifiedFunnelMetrics,
+  renderUnifiedFunnelDashboard,
   resolveFunnelStage,
-  FUNNEL_STAGE_ALIASES
+  FUNNEL_STAGE_ALIASES,
+  FUNNEL_METRICS_CUTOVER_NOTE
 } = await import('../../js/admin/unified-funnel-dashboard.js');
 
 test('buildUnifiedFunnelMetrics aggregates category funnel rows', () => {
@@ -57,6 +59,13 @@ test('buildUnifiedFunnelMetrics counts kasko_wizard_complete in results', () => 
   const metrics = buildUnifiedFunnelMetrics(rows);
   const kasko = metrics.find((m) => m.id === 'kasko');
   assert.ok(kasko.results >= 1);
+});
+
+test('renderUnifiedFunnelDashboard shows cutover note', () => {
+  const html = renderUnifiedFunnelDashboard(buildUnifiedFunnelMetrics([]), (s) => String(s));
+  assert.match(html, /5 Haziran 2026/);
+  assert.match(html, /wizard_start/);
+  assert.equal(FUNNEL_METRICS_CUTOVER_NOTE.includes('5 Haziran 2026'), true);
 });
 
 test('admin-panel fetch chain includes vertical_events', async () => {
