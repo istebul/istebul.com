@@ -79,6 +79,10 @@ jobs:
         if: steps.gate.outputs.skip != 'true'
         run: supabase functions deploy vacation-intake --project-ref "$SUPABASE_PROJECT_REF"
 
+      - name: Deploy partner-endpoint-test (CORS hotfix path)
+        if: steps.gate.outputs.skip != 'true'
+        run: supabase functions deploy partner-endpoint-test --project-ref "$SUPABASE_PROJECT_REF"
+
   deploy-cloudflare:
     name: Cloudflare Pages
     needs: [quality, deploy-edge-intake]
