@@ -161,7 +161,7 @@ const BADGES = {
   premium: { label: 'Geniş Teminat', className: 'is-comfort' }
 };
 
-function estimatePremium(state) {
+export function estimatePremiumBand(state) {
   let base = 14_000;
   if (state.vehicle_category === 'suv') base *= 1.08;
   if (state.vehicle_category === 'ticari_arac' || state.vehicle_category === 'ticari') base *= 1.25;
@@ -173,7 +173,7 @@ function estimatePremium(state) {
 }
 
 function buildAlternatives(state, scores) {
-  const premium = estimatePremium(state);
+  const premium = estimatePremiumBand(state);
   return [
     {
       title: 'Standart paket',
@@ -188,9 +188,30 @@ function buildAlternatives(state, scores) {
   ];
 }
 
+export function resolvePrimaryKaskoResult(results = [], selectedId = '') {
+  if (!results.length) return null;
+  if (selectedId) {
+    const picked = results.find((r) => r.id === selectedId);
+    if (picked) return picked;
+  }
+  return results[0] || null;
+}
+
+/**
+ * Tüm senaryo skorlarını engine.decisionScore ile senkronize eder (canonical kaynak).
+ */
+export function syncCanonicalKaskoScores(state, results = [], selectedId = '') {
+  const engine = buildEngineResult(state);
+  const canonical = engine.decisionScore;
+  (results || []).forEach((r) => {
+    r.score = canonical;
+  });
+  return resolvePrimaryKaskoResult(results, selectedId);
+}
+
 export function buildKaskoResults(state = {}) {
   const engine = buildEngineResult(state);
-  const premium = estimatePremium(state);
+  const premium = estimatePremiumBand(state);
   const coverageLabel = optionLabel('coverage_level', state.coverage_level) || 'Standart';
 
   return [

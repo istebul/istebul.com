@@ -35,6 +35,16 @@ test('buildKaskoResults returns scenario', () => {
     budget_level: 'yuksek'
   });
   assert.equal(results.length, 3);
+  const engine = buildEngineResult({
+    vehicle_category: 'suv',
+    vehicle_year_band: '0-3',
+    license_years: '11plus',
+    usage_type: 'ozel',
+    coverage_level: 'full',
+    risk_perception: 'yuksek',
+    budget_level: 'yuksek'
+  });
+  assert.equal(results.find((r) => r.id === 'balanced')?.score, engine.decisionScore);
   assert.ok(results[0].score >= 40);
   assert.ok(results[0].badge?.className);
   assert.ok(Array.isArray(results[0].pros) && results[0].pros.length > 0);
