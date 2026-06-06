@@ -34,6 +34,7 @@ const HOMEPAGE_EXTENSION = [
 const VERTICAL_DECISION = [
   'css/layout-guard.css',
   'css/istebul-design-system-v4.css',
+  'css/decision-engine-v3.css',
   'css/vertical-header-nav-v1.css',
   'css/rtl.css',
   'css/perf-vertical-v1.css',
@@ -55,6 +56,7 @@ const VERTICAL_SHARED = [
 const AUTO_PAGE_EXTENSION = [
   'css/vertical-brand-shell-v1.css',
   'css/vertical-nav-more-v1.css',
+  'css/decision-engine-v3.css',
   'css/auto-hero-dashboard-v1.css',
   'css/auto-results-v2.css',
   'css/home-economic-indicators.css',
@@ -71,6 +73,7 @@ const AUTO_PAGE_EXTENSION = [
 const KONUT_PAGE_EXTENSION = [
   'css/vertical-brand-shell-v1.css',
   'css/vertical-nav-more-v1.css',
+  'css/decision-engine-v3.css',
   'css/vertical-category-heroes-v1.css',
   'css/site-social-links-v1.css',
   'css/premium-decision-dashboard.css',
