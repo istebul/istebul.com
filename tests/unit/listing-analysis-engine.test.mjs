@@ -6,7 +6,9 @@ const {
   analyzeHousingListing,
   validateListingInput,
   buildListingAnalysisResult,
-  parseListingUrl
+  parseListingUrl,
+  buildListingAnalysisEventPayload,
+  buildListingAnalysisMetadata
 } = await import('../../js/verticals/listing-analysis/listing-analysis-engine.js');
 
 const { buildListingAiSummary, fetchListingExecutiveSummary } = await import(
@@ -123,7 +125,10 @@ test('valid sahibinden URL accepted', () => {
   assert.equal(parsed.isValid, true);
   assert.equal(parsed.sourceLabel, 'Sahibinden');
   assert.equal(parsed.sourceDomain, 'sahibinden.com');
+  assert.equal(parsed.inputSource, 'sahibinden');
   assert.ok(!parsed.normalizedUrl.includes('utm_'));
+  assert.ok(parsed.normalizedUrl.includes('sahibinden.com'));
+  assert.ok(!parsed.normalizedUrl.includes('www.'));
 });
 
 test('valid arabam URL accepted', () => {
@@ -136,6 +141,7 @@ test('valid emlakjet URL accepted', () => {
   const parsed = parseListingUrl('https://www.emlakjet.com/ilan/konut/456');
   assert.equal(parsed.isValid, true);
   assert.equal(parsed.sourceLabel, 'Emlakjet');
+  assert.equal(parsed.inputSource, 'emlakjet');
 });
 
 test('valid hepsiemlak URL accepted', () => {
@@ -146,6 +152,12 @@ test('valid hepsiemlak URL accepted', () => {
 
 test('javascript URL rejected', () => {
   const parsed = parseListingUrl('javascript:alert(1)');
+  assert.equal(parsed.isValid, false);
+  assert.ok(parsed.error);
+});
+
+test('data:text/html URL rejected', () => {
+  const parsed = parseListingUrl('data:text/html,<script>alert(1)</script>');
   assert.equal(parsed.isValid, false);
   assert.ok(parsed.error);
 });
@@ -172,13 +184,19 @@ test('utm params stripped from normalized URL', () => {
 test('result source object created when URL provided', () => {
   const built = buildListingAnalysisResult('vehicle', {
     ...vehicleInput,
-    listing_url: 'https://www.sahibinden.com/ilan/arac/123'
+    listing_url: 'https://www.sahibinden.com/ilan/arac/123',
+    url_mode: 'paste_url'
   });
   assert.equal(built.ok, true);
-  assert.equal(built.result.source.mode, 'user_provided_url_only');
+  assert.equal(built.result.source.mode, 'paste_url');
+  assert.equal(built.result.source.inputSource, 'sahibinden');
+  assert.equal(built.result.source.resultSource, 'rules_engine');
   assert.equal(built.result.source.label, 'Sahibinden');
   assert.ok(built.result.source.listingUrl.includes('sahibinden.com'));
   assert.equal(built.result.inputSnapshot.listing_url, built.result.source.listingUrl);
+  assert.equal(built.result.inputSnapshot.input_source, 'sahibinden');
+  assert.equal(built.result.inputSnapshot.result_source, 'rules_engine');
+  assert.equal(built.result.inputSnapshot.url_mode, 'paste_url');
 });
 
 test('V1 manual analysis works without URL', () => {
@@ -188,6 +206,9 @@ test('V1 manual analysis works without URL', () => {
   assert.equal(built.result.decisionScore, before.decisionScore);
   assert.equal(built.result.source.listingUrl, null);
   assert.equal(built.result.source.mode, null);
+  assert.equal(built.result.source.inputSource, 'manual');
+  assert.equal(built.result.source.resultSource, 'rules_engine');
+  assert.equal(built.result.source.urlMode, 'manual');
 });
 
 test('invalid listing URL blocks analysis', () => {
@@ -197,4 +218,69 @@ test('invalid listing URL blocks analysis', () => {
   });
   assert.equal(built.ok, false);
   assert.ok(built.errors.length > 0);
+});
+
+test('https://www.sahibinden.com/ilan/arac/123 accepted with sahibinden input_source', () => {
+  const built = buildListingAnalysisResult('vehicle', {
+    ...vehicleInput,
+    listing_url: 'https://www.sahibinden.com/ilan/arac/123'
+  });
+  assert.equal(built.ok, true);
+  assert.equal(built.result.inputSnapshot.input_source, 'sahibinden');
+  assert.equal(built.result.inputSnapshot.result_source, 'rules_engine');
+});
+
+test('https://www.emlakjet.com/ilan/konut/456 accepted with emlakjet input_source', () => {
+  const built = buildListingAnalysisResult('housing', {
+    ...housingInput,
+    listing_url: 'https://www.emlakjet.com/ilan/konut/456'
+  });
+  assert.equal(built.ok, true);
+  assert.equal(built.result.inputSnapshot.input_source, 'emlakjet');
+  assert.equal(built.result.inputSnapshot.result_source, 'rules_engine');
+});
+
+test('result_source is never empty for completed analysis', () => {
+  const manual = buildListingAnalysisResult('vehicle', vehicleInput);
+  const withUrl = buildListingAnalysisResult('vehicle', {
+    ...vehicleInput,
+    listing_url: 'https://www.sahibinden.com/ilan/arac/123'
+  });
+  assert.equal(manual.ok, true);
+  assert.equal(withUrl.ok, true);
+  assert.ok(manual.result.inputSnapshot.result_source);
+  assert.ok(withUrl.result.inputSnapshot.result_source);
+});
+
+test('listing_analysis_events payload metadata is populated', () => {
+  const built = buildListingAnalysisResult('vehicle', {
+    ...vehicleInput,
+    listing_url: 'https://www.sahibinden.com/ilan/arac/123',
+    url_mode: 'paste_url'
+  });
+  assert.equal(built.ok, true);
+
+  const payload = buildListingAnalysisEventPayload(
+    built.result.inputSnapshot,
+    'vehicle',
+    built.result
+  );
+
+  assert.equal(payload.listing_url, built.result.inputSnapshot.listing_url);
+  assert.equal(payload.normalized_url, built.result.inputSnapshot.normalized_url);
+  assert.equal(payload.input_source, 'sahibinden');
+  assert.equal(payload.result_source, 'rules_engine');
+  assert.equal(payload.url_mode, 'paste_url');
+  assert.equal(payload.source_label, 'Sahibinden');
+  assert.equal(payload.listing_type, 'vehicle');
+  assert.equal(payload.decision_score, built.result.decisionScore);
+  assert.equal(payload.confidence_score, built.result.confidenceScore);
+});
+
+test('buildListingAnalysisMetadata defaults manual flow without URL', () => {
+  const metadata = buildListingAnalysisMetadata({});
+  assert.equal(metadata.input_source, 'manual');
+  assert.equal(metadata.result_source, 'rules_engine');
+  assert.equal(metadata.url_mode, 'manual');
+  assert.equal(metadata.listing_url, null);
 });
