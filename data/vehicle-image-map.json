@@ -1,0 +1,126 @@
+{
+  "version": "image-v3",
+  "basePath": "/assets/images/vehicles",
+  "exact": {
+    "citroen": {
+      "c4-max": "citroen/c4-max.svg",
+      "c4": "citroen/c4-max.svg"
+    },
+    "peugeot": {
+      "308-allure": "peugeot/308-allure.jpg",
+      "308": "peugeot/308-allure.jpg",
+      "208": "peugeot-208.jpg",
+      "2008": "peugeot-208.jpg",
+      "3008": "peugeot-208.jpg"
+    },
+    "seat": {
+      "leon-fr": "seat/leon-fr.svg",
+      "leon": "seat/leon-fr.svg",
+      "ibiza": "seat/leon-fr.svg",
+      "arona": "seat/leon-fr.svg"
+    },
+    "skoda": {
+      "kamiq-elite": "skoda/kamiq-elite.svg",
+      "kamiq": "skoda/kamiq-elite.svg",
+      "karoq": "skoda/kamiq-elite.svg",
+      "octavia": "skoda/kamiq-elite.svg",
+      "fabia": "skoda/kamiq-elite.svg",
+      "scala": "skoda/kamiq-elite.svg"
+    },
+    "toyota": {
+      "corolla-cross-hybrid": "toyota-corolla-cross-hybrid.jpg",
+      "corolla-cross": "toyota-corolla-cross-hybrid.jpg",
+      "corolla-sedan-hybrid": "toyota-corolla-sedan-hybrid.jpg",
+      "corolla-sedan": "toyota-corolla-sedan-hybrid.jpg",
+      "chr-hybrid": "toyota-chr-hybrid.jpg",
+      "chr": "toyota-chr-hybrid.jpg",
+      "corolla": "toyota-corolla-cross-hybrid.jpg"
+    },
+    "volkswagen": {
+      "golf": "volkswagen-golf.jpg",
+      "t-roc": "volkswagen-troc.jpg",
+      "troc": "volkswagen-troc.jpg"
+    },
+    "renault": {
+      "clio": "renault-clio.jpg"
+    },
+    "hyundai": {
+      "i20": "hyundai-i20.jpg",
+      "tucson": "hyundai-i20.jpg"
+    },
+    "mercedes-benz": {
+      "c200": "mercedes-c200.jpg",
+      "c-200": "mercedes-c200.jpg"
+    },
+    "mercedes": {
+      "c200": "mercedes-c200.jpg",
+      "c-200": "mercedes-c200.jpg"
+    },
+    "bmw": {
+      "320i": "bmw-320i.jpg",
+      "320": "bmw-320i.jpg"
+    },
+    "opel": {
+      "corsa": "opel-corsa.jpg"
+    },
+    "tesla": {
+      "model-3": "tesla-model-3.jpg",
+      "model3": "tesla-model-3.jpg"
+    },
+    "togg": {
+      "t10x": "togg-t10x.jpg",
+      "t10": "togg-t10x.jpg"
+    },
+    "audi": {
+      "a3": "audi-a3.jpg"
+    },
+    "volvo": {
+      "xc60": "volvo-xc60.jpg",
+      "ex30": "volvo-xc60.jpg"
+    },
+    "range-rover": {
+      "evoque": "range-rover-evoque.jpg"
+    }
+  },
+  "brand": {
+    "citroen": "citroen/c4-max.svg",
+    "peugeot": "peugeot/308-allure.jpg",
+    "seat": "seat/leon-fr.svg",
+    "skoda": "skoda/kamiq-elite.svg",
+    "toyota": "toyota-corolla-cross-hybrid.jpg",
+    "volkswagen": "volkswagen-golf.jpg",
+    "vw": "volkswagen-golf.jpg",
+    "renault": "renault-clio.jpg",
+    "hyundai": "hyundai-i20.jpg",
+    "mercedes-benz": "mercedes-c200.jpg",
+    "mercedes": "mercedes-c200.jpg",
+    "bmw": "bmw-320i.jpg",
+    "opel": "opel-corsa.jpg",
+    "tesla": "tesla-model-3.jpg",
+    "togg": "togg-t10x.jpg",
+    "audi": "audi-a3.jpg",
+    "volvo": "volvo-xc60.jpg",
+    "range-rover": "range-rover-evoque.jpg",
+    "honda": "default-vehicle.webp",
+    "ford": "default-vehicle.webp",
+    "kia": "default-vehicle.webp",
+    "nissan": "default-vehicle.webp",
+    "fiat": "default-vehicle.webp",
+    "dacia": "default-vehicle.webp",
+    "byd": "default-vehicle.webp",
+    "mg": "default-vehicle.webp"
+  },
+  "segment": {
+    "suv": "default-vehicle.webp",
+    "crossover": "default-vehicle.webp",
+    "hatchback": "renault-clio.jpg",
+    "sedan": "toyota-corolla-sedan-hybrid.jpg",
+    "electric": "tesla-model-3.jpg",
+    "hybrid": "toyota-corolla-cross-hybrid.jpg",
+    "premium": "mercedes-c200.jpg",
+    "family": "volkswagen-golf.jpg",
+    "default": "default-vehicle.webp"
+  },
+  "generic": "default-vehicle.webp",
+  "placeholder": "/assets/images/auto/vehicle-premium-placeholder.svg"
+}

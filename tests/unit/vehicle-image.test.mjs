@@ -19,37 +19,40 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
-test('Peugeot 308 returns valid image or fallback', () => {
+function stripVersion(url) {
+  return String(url || '').split('?')[0];
+}
+
+test('Peugeot 308 returns brand-specific catalog image', () => {
   const url = resolveVehicleImage({ name: '2024 Peugeot 308 Allure' });
   assert.ok(url);
-  assert.notEqual(url, '');
-  assert.notEqual(url, 'undefined');
-  assert.match(url, /peugeot-208\.jpg|peugeot-suv\.svg|vehicle-premium-placeholder/);
+  assert.match(stripVersion(url), /\/peugeot\/308-allure\.jpg$/);
+  assert.match(url, /\?v=image-v3$/);
 });
 
-test('Citroen C4 returns valid image or fallback', () => {
+test('Citroen C4 returns citroen catalog image', () => {
   const url = resolveVehicleImage({ name: '2024 Citroen C4 Max' });
   assert.ok(url);
-  assert.match(url, /peugeot-208\.jpg|peugeot-suv\.svg|vehicle-premium-placeholder/);
+  assert.match(stripVersion(url), /\/citroen\/c4-max\.svg$/);
 });
 
-test('Skoda Kamiq returns valid image or fallback', () => {
+test('Skoda Kamiq returns skoda catalog image', () => {
   const url = resolveVehicleImage({ name: '2023 Skoda Kamiq Style' });
   assert.ok(url);
-  assert.match(url, /audi-a3\.jpg|skoda-family\.svg|vehicle-premium-placeholder/);
+  assert.match(stripVersion(url), /\/skoda\/kamiq-elite\.svg$/);
 });
 
-test('Seat Leon returns valid image or fallback', () => {
+test('Seat Leon returns seat catalog image', () => {
   const url = resolveVehicleImage({ name: '2024 Seat Leon FR' });
   assert.ok(url);
-  assert.match(url, /volkswagen-golf\.jpg|volkswagen-golf-tsi\.svg|vehicle-premium-placeholder/);
+  assert.match(stripVersion(url), /\/seat\/leon-fr\.svg$/);
 });
 
 test('unknown model returns segment or premium fallback', () => {
   const url = resolveVehicleImage({ name: '2099 Unknown Brand X999' });
   assert.ok(url);
   assert.equal(assertVehicleImageUrl(url), url);
-  assert.match(url, /^\/assets\/images\//);
+  assert.match(stripVersion(url), /^\/assets\/images\//);
 });
 
 test('normalizeVehicleImageSlug handles Turkish characters and spaces', () => {
@@ -61,18 +64,18 @@ test('normalizeVehicleImageSlug handles Turkish characters and spaces', () => {
 test('null and undefined input does not throw', () => {
   assert.doesNotThrow(() => resolveVehicleImage(null));
   assert.doesNotThrow(() => resolveVehicleImage(undefined));
-  assert.equal(resolveVehicleImage(null), DEFAULT_VEHICLE_FALLBACK);
-  assert.equal(resolveVehicleImage(undefined), DEFAULT_VEHICLE_FALLBACK);
+  assert.equal(stripVersion(resolveVehicleImage(null)), stripVersion(DEFAULT_VEHICLE_FALLBACK));
+  assert.equal(stripVersion(resolveVehicleImage(undefined)), stripVersion(DEFAULT_VEHICLE_FALLBACK));
 });
 
 test('assertVehicleImageUrl never returns empty or undefined', () => {
-  assert.equal(assertVehicleImageUrl(''), DEFAULT_VEHICLE_FALLBACK);
-  assert.equal(assertVehicleImageUrl(null), DEFAULT_VEHICLE_FALLBACK);
-  assert.equal(assertVehicleImageUrl(undefined), DEFAULT_VEHICLE_FALLBACK);
-  assert.equal(assertVehicleImageUrl('undefined'), DEFAULT_VEHICLE_FALLBACK);
-  assert.equal(
-    assertVehicleImageUrl('/assets/images/vehicles/peugeot-208.jpg'),
-    '/assets/images/vehicles/peugeot-208.jpg'
+  assert.equal(stripVersion(assertVehicleImageUrl('')), stripVersion(DEFAULT_VEHICLE_FALLBACK));
+  assert.equal(stripVersion(assertVehicleImageUrl(null)), stripVersion(DEFAULT_VEHICLE_FALLBACK));
+  assert.equal(stripVersion(assertVehicleImageUrl(undefined)), stripVersion(DEFAULT_VEHICLE_FALLBACK));
+  assert.equal(stripVersion(assertVehicleImageUrl('undefined')), stripVersion(DEFAULT_VEHICLE_FALLBACK));
+  assert.match(
+    assertVehicleImageUrl('/assets/images/vehicles/peugeot/308-allure.jpg'),
+    /\/peugeot\/308-allure\.jpg\?v=image-v3$/
   );
 });
 
@@ -85,20 +88,28 @@ test('resolveVehicleImageUrl is backward-compatible alias', () => {
 
 test('resolveVehicleImageFallback returns segment-based asset', () => {
   const url = resolveVehicleImageFallback({ name: 'Random SUV Model', segment: 'suv' });
-  assert.ok(url.startsWith('/assets/images/'));
+  assert.ok(stripVersion(url).startsWith('/assets/images/'));
 });
 
-test('renderVehicleImageHtml produces safe non-empty src', () => {
+test('renderVehicleImageHtml produces safe non-empty src with lazy loading', () => {
   const html = renderVehicleImageHtml({ name: '2024 Peugeot 308' }, escapeHtml);
   assert.match(html, /src="[^"]+"/);
   assert.doesNotMatch(html, /src=""/);
   assert.doesNotMatch(html, /src="undefined"/);
   assert.match(html, /data-vehicle-image="1"/);
+  assert.match(html, /data-fallback-brand="/);
+  assert.match(html, /data-fallback-segment="/);
   assert.match(html, /width="/);
   assert.match(html, /height="/);
-  assert.match(html, /aspect-ratio:/);
   assert.match(html, /loading="lazy"/);
   assert.match(html, /decoding="async"/);
+  assert.match(html, /fetchpriority="/);
+  assert.match(html, /\?v=image-v3/);
+});
+
+test('renderVehicleImageHtml sets high fetch priority for first vehicle', () => {
+  const html = renderVehicleImageHtml({ name: '2024 Peugeot 308' }, escapeHtml, { isFirst: true });
+  assert.match(html, /fetchpriority="high"/);
 });
 
 test('attachVehicleImageFallback sets src without throwing', () => {

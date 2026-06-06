@@ -15,23 +15,25 @@ import {
   buildWhyRecommendedCards
 } from '../../js/auto/auto-results-model.js';
 
+function stripVersion(url) {
+  return String(url || '').split('?')[0];
+}
+
 test('resolveVehicleImageUrl prefers verified image_url over placeholder', () => {
-  assert.equal(
-    resolveVehicleImageUrl({
-      name: '2024 Citroen C4 Max',
-      image_url: 'https://cdn.example/citroen-c4-max.jpg'
-    }),
-    'https://cdn.example/citroen-c4-max.jpg'
-  );
+  const url = resolveVehicleImageUrl({
+    name: '2024 Citroen C4 Max',
+    image_url: 'https://cdn.example/citroen-c4-max.jpg'
+  });
+  assert.match(url, /^https:\/\/cdn\.example\/citroen-c4-max\.jpg\?v=image-v3$/);
 });
 
 test('resolveVehicleImageUrl rejects unverified image_url and uses local asset', () => {
-  assert.equal(
-    resolveVehicleImageUrl({
+  assert.match(
+    stripVersion(resolveVehicleImageUrl({
       name: '2023 Toyota Corolla Cross Hybrid',
       image_url: 'https://cdn.example/volkswagen-passat.jpg'
-    }),
-    '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg'
+    })),
+    /toyota-corolla-cross-hybrid\.jpg$/
   );
   assert.equal(
     vehicleImageMatchesName(
@@ -43,33 +45,30 @@ test('resolveVehicleImageUrl rejects unverified image_url and uses local asset',
 });
 
 test('resolveLocalVehicleAsset maps catalog names to bundled SVG assets', () => {
-  assert.equal(
-    resolveLocalVehicleAsset('2023 Toyota Corolla Cross Hybrid'),
-    '/assets/images/auto/toyota-corolla-cross-hybrid.svg'
+  assert.match(
+    stripVersion(resolveLocalVehicleAsset('2024 Citroen C4 Max') || ''),
+    /\/citroen\/c4-max\.svg$/
   );
-  assert.equal(
-    resolveLocalVehicleAsset('2024 Volvo EX30'),
-    DEFAULT_VEHICLE_FALLBACK
-  );
+  assert.equal(resolveLocalVehicleAsset('2024 Volvo EX30'), null);
 });
 
 test('resolveVehicleImageUrl uses local asset before default fallback', () => {
   assert.equal(
-    resolveVehicleImageUrl({ name: '2023 Toyota Corolla Cross Hybrid' }),
+    stripVersion(resolveVehicleImageUrl({ name: '2023 Toyota Corolla Cross Hybrid' })),
     '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg'
   );
-  assert.equal(
-    resolveVehicleImageUrl({ name: '2024 Citroen C4 Max' }),
-    '/assets/images/vehicles/peugeot-208.jpg'
+  assert.match(
+    stripVersion(resolveVehicleImageUrl({ name: '2024 Citroen C4 Max' })),
+    /\/citroen\/c4-max\.svg$/
   );
-  assert.equal(resolveVehicleImageUrl(null), DEFAULT_VEHICLE_FALLBACK);
+  assert.equal(stripVersion(resolveVehicleImageUrl(null)), stripVersion(DEFAULT_VEHICLE_FALLBACK));
   assert.equal(PREMIUM_VEHICLE_PLACEHOLDER, DEFAULT_VEHICLE_FALLBACK);
 });
 
 test('toRecommendationVehicle keeps vehicle name and sets imageUrl', () => {
   const rec = toRecommendationVehicle({ name: '2023 Toyota Corolla Cross Hybrid', price: 1_650_000 });
   assert.equal(rec.name, '2023 Toyota Corolla Cross Hybrid');
-  assert.equal(rec.imageUrl, '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg');
+  assert.match(stripVersion(rec.imageUrl), /toyota-corolla-cross-hybrid\.jpg$/);
 });
 
 test('buildRecommendationPayload uses same vehicle for title and image', () => {
@@ -95,7 +94,7 @@ test('buildRecommendationPayload uses same vehicle for title and image', () => {
   };
   const payload = buildRecommendationPayload(top, { usage: 'city' }, [top], intel);
   assert.equal(payload.vehicle.name, '2024 Citroen C4 Max');
-  assert.equal(payload.vehicle.imageUrl, '/assets/images/vehicles/peugeot-208.jpg');
+  assert.match(stripVersion(payload.vehicle.imageUrl), /\/citroen\/c4-max\.svg$/);
   assert.match(payload.aiSummary, /Citroen C4 Max/);
 });
 

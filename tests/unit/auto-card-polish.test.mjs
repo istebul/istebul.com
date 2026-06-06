@@ -101,40 +101,44 @@ test('vehicleImageMatchesName rejects cross-model image reuse', () => {
   );
 });
 
-test('resolveVehicleImageUrl falls back to local asset for mismatched image_url', () => {
+test('resolveVehicleImageUrl falls back to catalog asset for mismatched image_url', () => {
   const mismatch = {
     name: '2023 Skoda Octavia Premium',
     image_url: 'https://cdn.example.com/toyota-corolla.jpg'
   };
 
-  assert.equal(resolveVehicleImageUrl(mismatch), '/assets/images/vehicles/audi-a3.jpg');
+  assert.match(stripVersion(resolveVehicleImageUrl(mismatch)), /\/skoda\/kamiq-elite\.svg$/);
 });
 
+function stripVersion(url) {
+  return String(url || '').split('?')[0];
+}
+
 test('resolveVehicleImageUrl ignores generic hero image_url and uses local asset', () => {
-  assert.equal(
-    resolveVehicleImageUrl({
+  assert.match(
+    stripVersion(resolveVehicleImageUrl({
       name: '2023 Toyota Corolla Sedan Hybrid',
       image_url: '/assets/images/auto-hero.jpg'
-    }),
-    '/assets/images/vehicles/toyota-corolla-sedan-hybrid.jpg'
+    })),
+    /toyota-corolla-sedan-hybrid\.jpg$/
   );
 });
 
 test('resolveVehicleImageUrl uses local asset when image_url is missing', () => {
-  assert.equal(
-    resolveVehicleImageUrl({ name: '2023 Toyota Corolla Cross Hybrid' }),
-    '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg'
+  assert.match(
+    stripVersion(resolveVehicleImageUrl({ name: '2023 Toyota Corolla Cross Hybrid' })),
+    /toyota-corolla-cross-hybrid\.jpg$/
   );
 });
 
-test('resolveVehicleImageUrl uses photo catalog for Citroen and Seat', () => {
-  assert.equal(
-    resolveVehicleImageUrl({ name: '2024 Citroen C4 Max' }),
-    '/assets/images/vehicles/peugeot-208.jpg'
+test('resolveVehicleImageUrl uses brand catalog for Citroen and Seat', () => {
+  assert.match(
+    stripVersion(resolveVehicleImageUrl({ name: '2024 Citroen C4 Max' })),
+    /\/citroen\/c4-max\.svg$/
   );
-  assert.equal(
-    resolveVehicleImageUrl({ name: '2024 Seat Leon FR' }),
-    '/assets/images/vehicles/volkswagen-golf.jpg'
+  assert.match(
+    stripVersion(resolveVehicleImageUrl({ name: '2024 Seat Leon FR' })),
+    /\/seat\/leon-fr\.svg$/
   );
 });
 

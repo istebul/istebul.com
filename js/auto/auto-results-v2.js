@@ -30,7 +30,9 @@ import {
 } from '../features/results/results-evds-risk-layer.js';
 import { fetchEvdsRatesForEngine } from '../features/evds/evds-market-engine.js';
 import {
+  beginVehicleImageRenderBatch,
   bindVehicleImageFallbacks,
+  endVehicleImageRenderBatch,
   renderVehicleImageHtml,
   reportVehicleImageLoading,
   resolveVehicleImageUrl
@@ -66,6 +68,7 @@ function renderAutoPremiumHero(recommendation, highlights, esc) {
   const imageHtml = renderVehicleImageHtml(vehicle, esc, {
     className: 'auto-v2-hero__image',
     loading: 'eager',
+    isFirst: true,
     width: 960,
     height: 540
   });
@@ -226,8 +229,9 @@ function renderAlternativesSection(alternatives, esc) {
 function renderAutoResultsV2Html(model) {
   const esc = escapeHtml;
   const rec = model.recommendation;
+  const batch = beginVehicleImageRenderBatch();
 
-  return `
+  const html = `
     <section class="auto-v2-panel" aria-label="Auto karar raporu özeti">
       ${renderAutoPremiumHero(rec, model.heroHighlights, esc)}
       ${renderHeroMetrics(rec, esc)}
@@ -282,6 +286,9 @@ function renderAutoResultsV2Html(model) {
       </div>
     </section>
   `;
+
+  endVehicleImageRenderBatch(batch);
+  return html;
 }
 
 function buildNextSteps({ riskLevel, budgetFit }) {
