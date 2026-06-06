@@ -5,13 +5,13 @@ const { getKaskoOptions, resetKaskoFieldsOnUsageChange } = await import('../../j
 
 test('ticari usage limits vehicle category to ticari', () => {
   const opts = getKaskoOptions('vehicle_category', { usage_type: 'ticari' }).map((o) => o.value);
-  assert.deepEqual(opts, ['ticari']);
+  assert.deepEqual(opts, ['ticari_arac']);
 });
 
 test('ozel usage excludes ticari commercial category', () => {
   const opts = getKaskoOptions('vehicle_category', { usage_type: 'ozel' }).map((o) => o.value);
   assert.ok(opts.includes('otomobil'));
-  assert.ok(!opts.includes('ticari'));
+  assert.ok(!opts.includes('ticari_arac'));
 });
 
 test('resetKaskoFieldsOnUsageChange clears mini coverage for ticari', () => {
