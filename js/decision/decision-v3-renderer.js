@@ -75,6 +75,111 @@ function renderListSection(title, items, className) {
     </section>`;
 }
 
+function qualityLevelClass(level) {
+  if (level === 'excellent' || level === 'good') return 'de-v3-quality--good';
+  if (level === 'caution') return 'de-v3-quality--mid';
+  return 'de-v3-quality--low';
+}
+
+function renderDecisionQualitySection(quality) {
+  if (!quality) return '';
+  const score = clampDisplay(quality.score);
+  return `
+    <section class="de-v3-section de-v3-section--quality">
+      <h3 class="de-v3-section__title">Karar Kalitesi</h3>
+      <article class="de-v3-card de-v3-quality-card ${qualityLevelClass(quality.level)}">
+        <div class="de-v3-quality-card__head">
+          <span class="de-v3-quality-card__level">${escapeHtml(String(quality.level))}</span>
+          <span class="de-v3-quality-card__score">${score}/100</span>
+        </div>
+        <p class="de-v3-quality-card__explanation">${escapeHtml(quality.explanation || '')}</p>
+      </article>
+    </section>`;
+}
+
+function renderBadgesSection(badges) {
+  if (!badges?.length) return '';
+  return `
+    <section class="de-v3-section de-v3-section--badges">
+      <h3 class="de-v3-section__title">Karar Etiketleri</h3>
+      <div class="de-v3-badges">
+        ${badges
+          .map(
+            (b) =>
+              `<span class="de-v3-badge de-v3-badge--${escapeHtml(b.type || 'neutral')}">${escapeHtml(b.label)}</span>`
+          )
+          .join('')}
+      </div>
+    </section>`;
+}
+
+function renderBlockingRisksSection(risks) {
+  if (!risks?.length) return '';
+  return `
+    <section class="de-v3-section de-v3-section--blocking">
+      <h3 class="de-v3-section__title">Kritik Riskler</h3>
+      <div class="de-v3-blocking-grid">
+        ${risks
+          .map(
+            (r) => `
+        <article class="de-v3-blocking-card">
+          <div class="de-v3-blocking-card__head">
+            <h4 class="de-v3-blocking-card__title">${escapeHtml(r.title)}</h4>
+            <span class="de-v3-severity de-v3-severity--${escapeHtml(r.severity)}">${escapeHtml(r.severity)}</span>
+          </div>
+          <p class="de-v3-blocking-card__explanation">${escapeHtml(r.explanation)}</p>
+          <p class="de-v3-blocking-card__mitigation"><strong>Azaltma:</strong> ${escapeHtml(r.mitigation)}</p>
+        </article>`
+          )
+          .join('')}
+      </div>
+    </section>`;
+}
+
+function renderDataQualitySection(notes) {
+  if (!notes?.length) return '';
+  return `
+    <section class="de-v3-section de-v3-section--data-quality">
+      <h3 class="de-v3-section__title">Veri Kalitesi Notları</h3>
+      <div class="de-v3-data-quality-grid">
+        ${notes
+          .map(
+            (n) => `
+        <article class="de-v3-data-note de-v3-data-note--${escapeHtml(n.status)}">
+          <span class="de-v3-data-note__field">${escapeHtml(n.field)}</span>
+          <span class="de-v3-data-note__status">${escapeHtml(n.status)}</span>
+          <p class="de-v3-data-note__text">${escapeHtml(n.note)}</p>
+        </article>`
+          )
+          .join('')}
+      </div>
+    </section>`;
+}
+
+function renderActionPlanSection(steps) {
+  if (!steps?.length) return '';
+  return `
+    <section class="de-v3-section de-v3-section--action-plan">
+      <h3 class="de-v3-section__title">Aksiyon Planı</h3>
+      <ol class="de-v3-action-plan">
+        ${steps
+          .map(
+            (s) => `
+        <li class="de-v3-action-step de-v3-action-step--${escapeHtml(s.priority)}">
+          <div class="de-v3-action-step__head">
+            <span class="de-v3-action-step__num">${s.step}</span>
+            <span class="de-v3-action-step__priority de-v3-action-step__priority--${escapeHtml(s.priority)}">${escapeHtml(s.priority)}</span>
+            <span class="de-v3-action-step__category">${escapeHtml(s.category)}</span>
+          </div>
+          <h4 class="de-v3-action-step__title">${escapeHtml(s.title)}</h4>
+          <p class="de-v3-action-step__desc">${escapeHtml(s.description)}</p>
+        </li>`
+          )
+          .join('')}
+      </ol>
+    </section>`;
+}
+
 function renderWhatIfSection(scenarios) {
   if (!scenarios?.length) return '';
   const cards = scenarios
@@ -152,6 +257,12 @@ function renderDecisionHtml(decision) {
           ${renderRadarItem('Kredi Riski', radar.creditRisk)}
         </ul>
       </section>
+
+      ${renderDecisionQualitySection(d.decisionQuality)}
+      ${renderBadgesSection(d.decisionBadges)}
+      ${renderBlockingRisksSection(d.blockingRisks)}
+      ${renderDataQualitySection(d.dataQualityNotes)}
+      ${renderActionPlanSection(d.actionPlan)}
 
       ${renderListSection('Neden Bu Sonuç?', d.explainableReasons, 'de-v3-section--reasons')}
       ${renderListSection('Alternatif Bakış', d.alternativeReasons, 'de-v3-section--alternatives')}

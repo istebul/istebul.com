@@ -55,6 +55,47 @@ const VERTICAL_FIELD_WEIGHTS = {
   insurance: ['budget', 'coverageType', 'vehiclePrice', 'monthlyIncome']
 };
 
+const FIELD_LABELS = {
+  budget: 'Bütçe',
+  usage: 'Kullanım profili',
+  fuel: 'Yakıt tipi',
+  vehiclePrice: 'Araç fiyatı',
+  monthlyIncome: 'Aylık gelir',
+  termMonths: 'Vade',
+  downPayment: 'Peşinat',
+  city: 'İl',
+  district: 'İlçe',
+  propertyType: 'Konut tipi',
+  usagePurpose: 'Kullanım amacı',
+  financingUsage: 'Finansman tercihi',
+  loanTerm: 'Kredi vadesi',
+  earthquakeRisk: 'Deprem riski',
+  liquidityNeed: 'Likidite ihtiyacı',
+  maintenanceCost: 'Bakım maliyeti',
+  expectedRent: 'Beklenen kira',
+  appreciationExpectation: 'Değer artış beklentisi',
+  riskTolerance: 'Risk toleransı',
+  requestedAmount: 'Talep edilen tutar',
+  existingDebt: 'Mevcut borç',
+  interestRate: 'Faiz oranı',
+  installment: 'Aylık taksit',
+  purpose: 'Finansman amacı',
+  paymentDiscipline: 'Erken ödeme disiplini',
+  emergencyFund: 'Acil durum fonu',
+  incomeStability: 'Gelir istikrarı',
+  duration: 'Süre',
+  travelers: 'Yolcu sayısı',
+  destination: 'Destinasyon',
+  coverageType: 'Teminat tipi'
+};
+
+const QUALITY_LEVEL_LABELS = {
+  excellent: 'Mükemmel karar kalitesi',
+  good: 'İyi karar kalitesi',
+  caution: 'Dikkatli değerlendirme gerekli',
+  weak: 'Zayıf karar kalitesi — veri ve risk revize edilmeli'
+};
+
 function safeNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
@@ -633,6 +674,391 @@ export function buildDecisionSummary(input, scores = {}) {
   };
 }
 
+function resolveQualityLevel(score, confidenceScore, riskScore) {
+  let level = 'weak';
+  if (score >= 80 && confidenceScore >= 70 && riskScore <= 45) level = 'excellent';
+  else if (score >= 65 && confidenceScore >= 55 && riskScore <= 55) level = 'good';
+  else if (score >= 45 || confidenceScore >= 40) level = 'caution';
+
+  if (confidenceScore < 40) level = 'weak';
+  else if (confidenceScore < 55 && (level === 'excellent' || level === 'good')) level = 'caution';
+  else if (confidenceScore < 70 && level === 'excellent') level = 'good';
+
+  if (riskScore >= 65 && level === 'excellent') level = 'caution';
+  if (riskScore >= 75 && (level === 'excellent' || level === 'good')) level = 'weak';
+
+  return level;
+}
+
+/**
+ * Karar kalitesi — decisionScore, confidenceScore ve riskScore birleşimi.
+ * @param {object} input
+ * @param {object} decision
+ */
+export function calculateDecisionQuality(input, decision = {}) {
+  const decisionScore = decision.decisionScore ?? calculateDecisionScore(input);
+  const confidenceScore = decision.confidenceScore ?? calculateConfidenceScore(input);
+  const riskScore = decision.riskScore ?? calculateRiskScore(input);
+
+  const score = clamp(
+    decisionScore * 0.45 + confidenceScore * 0.35 + (100 - riskScore) * 0.2
+  );
+  const level = resolveQualityLevel(score, confidenceScore, riskScore);
+
+  let explanation = QUALITY_LEVEL_LABELS[level];
+  if (confidenceScore < 55) {
+    explanation += ' Eksik veri nedeniyle güven sınırlı.';
+  }
+  if (riskScore >= 55) {
+    explanation += ' Risk skoru yüksek; kritik riskleri inceleyin.';
+  }
+  if (decisionScore >= 75 && confidenceScore >= 70 && riskScore <= 45) {
+    explanation = 'Skor, güven ve risk dengesi güçlü; aksiyon planı ile doğrulamaya geçilebilir.';
+  }
+
+  return { level, score, explanation };
+}
+
+function actionStep(step, title, description, priority, category) {
+  return { step, title, description, priority, category };
+}
+
+/**
+ * Dikey bazlı aksiyon planı — en az 4 adım.
+ * @param {object} input
+ * @param {object} decision
+ */
+export function generateActionPlan(input, decision = {}) {
+  const n = normalizeDecisionInput(input);
+  const riskScore = decision.riskScore ?? calculateRiskScore(input);
+  const financePriority = riskScore >= 55 ? 'high' : 'medium';
+
+  if (n.vertical === 'housing') {
+    return [
+      actionStep(
+        1,
+        'Tapu, iskan ve deprem riski kontrolü',
+        'Tapu kaydı, iskan durumu ve zemin/deprem raporunu resmi kaynaklarla doğrulayın.',
+        'high',
+        'verify'
+      ),
+      actionStep(
+        2,
+        'Aidat ve bakım maliyeti kontrolü',
+        'Aylık aidat, yıllık bakım ve ortak alan giderlerini 12 aylık nakit akışına ekleyin.',
+        'medium',
+        'finance'
+      ),
+      actionStep(
+        3,
+        'Bölge likiditesi kontrolü',
+        'Benzer ilanların satış süresi ve fiyat trendini 3 emsal ile karşılaştırın.',
+        safeNumber(n.liquidityNeed) > 50 ? 'high' : 'medium',
+        'risk'
+      ),
+      actionStep(
+        4,
+        'Kredi ödeme yükü kontrolü',
+        'Aylık taksit + mevcut borçların gelire oranını %40–45 bandında test edin.',
+        financePriority,
+        'finance'
+      ),
+      actionStep(
+        5,
+        'Alternatif lokasyon senaryosu',
+        'Komşu ilçe veya bir alt bütçe bandında toplam maliyeti yeniden hesaplayın.',
+        'low',
+        'compare'
+      )
+    ];
+  }
+
+  if (n.vertical === 'finance') {
+    return [
+      actionStep(
+        1,
+        'Aylık ödeme / gelir oranı kontrolü',
+        'Taksit + mevcut borçların net gelire oranını teklif öncesi hesaplayın.',
+        'high',
+        'finance'
+      ),
+      actionStep(
+        2,
+        'Alternatif vade karşılaştırması',
+        '12, 36 ve 48 ay vadelerde toplam maliyet ve aylık yük farkını tabloya dökün.',
+        'medium',
+        'compare'
+      ),
+      actionStep(
+        3,
+        'Acil durum fonu kontrolü',
+        'En az 3 aylık taksit tutarında likit tampon olup olmadığını doğrulayın.',
+        n.emergencyFund == null ? 'high' : 'medium',
+        'risk'
+      ),
+      actionStep(
+        4,
+        'Toplam faiz maliyeti kontrolü',
+        'Efektif yıllık maliyet ve KKDF/BSMV dahil toplam geri ödemeyi teklif dökümünden teyit edin.',
+        financePriority,
+        'finance'
+      ),
+      actionStep(
+        5,
+        'Banka tekliflerini karşılaştırın',
+        'En az 2–3 kurumdan yazılı teklif alın ve dosya masraflarını satır satır kıyaslayın.',
+        'medium',
+        'next_action'
+      )
+    ];
+  }
+
+  return [
+    actionStep(
+      1,
+      'Araç geçmişi ve km doğrulama',
+      'Tramer, servis geçmişi ve kilometre kaydını ekspertiz raporu ile çapraz kontrol edin.',
+      'high',
+      'verify'
+    ),
+    actionStep(
+      2,
+      'Sigorta ve kasko maliyeti kontrolü',
+      'Yıllık sigorta/kasko primlerini en az 2 farklı poliçe yapısında karşılaştırın.',
+      'medium',
+      'finance'
+    ),
+    actionStep(
+      3,
+      'Finansman ödeme yükü kontrolü',
+      'Peşinat, vade ve aylık taksitin gelir-borç dengesine etkisini senaryo tablosu ile test edin.',
+      financePriority,
+      'finance'
+    ),
+    actionStep(
+      4,
+      'Alternatif model karşılaştırması',
+      'En az 2 alternatif modelde TCO, yakıt ve segment uyumunu yan yana kıyaslayın.',
+      'medium',
+      'compare'
+    ),
+    actionStep(
+      5,
+      'Bayi teklifi ile TCO doğrulama',
+      'Toplam sahip olma maliyetini güncel bayi/finansman teklifi ile yeniden hesaplayın.',
+      'low',
+      'next_action'
+    )
+  ];
+}
+
+/**
+ * Yüksek risk durumunda kritik engelleyici riskler.
+ * @param {object} input
+ * @param {object} decision
+ */
+export function generateBlockingRisks(input, decision = {}) {
+  const n = normalizeDecisionInput(input);
+  const riskScore = decision.riskScore ?? calculateRiskScore(input);
+  const risks = [];
+  const budget = Math.max(n.budget || n.requestedAmount, 1);
+  const cost =
+    n.totalCost12 || n.vehiclePrice || (safeNumber(n.installment) > 0 ? safeNumber(n.installment) * 12 : 0);
+
+  if (cost > 0 && cost / budget > 1.05) {
+    risks.push({
+      id: 'budget-overrun',
+      title: 'Bütçe aşımı riski',
+      severity: 'high',
+      explanation: 'Toplam maliyet bütçeyi aşıyor; finansman veya segment revizyonu gerekebilir.',
+      mitigation: 'Bir alt fiyat bandı veya daha yüksek peşinat senaryosu değerlendirin.'
+    });
+  }
+
+  if (n.monthlyIncome > 0) {
+    const payment = safeNumber(n.installment) || (cost ? cost / 12 / 3 : 0);
+    const load = ((n.monthlyDebt + payment) / n.monthlyIncome) * 100;
+    if (load > 50) {
+      risks.push({
+        id: 'income-load-critical',
+        title: 'Gelir yükü kritik seviyede',
+        severity: 'high',
+        explanation: 'Aylık yük gelirin %50 üzerinde; sürdürülebilirlik riski yüksek.',
+        mitigation: 'Vade uzatma, tutar düşürme veya gelir artışı senaryosu planlayın.'
+      });
+    } else if (load > 40) {
+      risks.push({
+        id: 'income-load-elevated',
+        title: 'Gelir yükü yükselmiş',
+        severity: 'medium',
+        explanation: 'Aylık yük gelirin %40–50 bandında; marj dar.',
+        mitigation: 'Acil durum fonu ve alternatif vade senaryolarını test edin.'
+      });
+    }
+  }
+
+  if (n.vertical === 'housing' && safeNumber(n.earthquakeRisk) > 55) {
+    risks.push({
+      id: 'earthquake-risk',
+      title: 'Deprem/zemin riski',
+      severity: 'high',
+      explanation: 'Deprem risk skoru yüksek; teknik kontrol zorunlu.',
+      mitigation: 'Zemin etüdü, bina yaşı ve sigorta kapsamını uzman ile doğrulayın.'
+    });
+  }
+
+  if (n.vertical === 'finance' && safeNumber(n.interestRate) > 50) {
+    risks.push({
+      id: 'interest-cost-high',
+      title: 'Yüksek faiz maliyeti',
+      severity: 'medium',
+      explanation: 'Efektif faiz maliyeti baskı oluşturuyor.',
+      mitigation: 'Alternatif vade, erken ödeme ve farklı banka tekliflerini karşılaştırın.'
+    });
+  }
+
+  if (riskScore >= 65 && !risks.length) {
+    risks.push({
+      id: 'aggregate-risk-high',
+      title: 'Genel risk skoru yüksek',
+      severity: 'high',
+      explanation: 'Birleşik risk skoru kritik eşiğin üzerinde.',
+      mitigation: 'Aksiyon planındaki doğrulama adımlarını tamamlamadan karar vermeyin.'
+    });
+  }
+
+  if (riskScore >= 55 && risks.length === 0) {
+    risks.push({
+      id: 'aggregate-risk-elevated',
+      title: 'Genel risk skoru yükselmiş',
+      severity: 'medium',
+      explanation: 'Risk skoru orta-üst bandında; ek kontroller önerilir.',
+      mitigation: 'What-if senaryoları ile bütçe ve vade esnekliğini test edin.'
+    });
+  }
+
+  for (const r of n.risks.slice(0, 2)) {
+    if (typeof r === 'string' && r.trim()) {
+      risks.push({
+        id: `context-${risks.length + 1}`,
+        title: 'Bağlam riski',
+        severity: riskScore >= 60 ? 'medium' : 'low',
+        explanation: r.trim(),
+        mitigation: 'Bu riski gidermek için teklif ve sözleşme maddelerini doğrulayın.'
+      });
+    }
+  }
+
+  return risks.slice(0, 6);
+}
+
+/**
+ * Veri kalitesi notları — eksik/tahmini/güçlü alanlar.
+ * @param {object} input
+ * @param {object} decision
+ */
+export function generateDataQualityNotes(input, decision = {}) {
+  const n = normalizeDecisionInput(input);
+  const notes = [];
+  const fields = VERTICAL_FIELD_WEIGHTS[n.vertical] || VERTICAL_FIELD_WEIGHTS.auto;
+
+  for (const field of fields) {
+    const present = n.fieldPresence[field];
+    const label = FIELD_LABELS[field] || field;
+
+    if (!present) {
+      notes.push({
+        field,
+        status: 'missing',
+        note: `${label} bilgisi eksik; güven skoru ve karar kalitesi etkilenebilir.`
+      });
+      continue;
+    }
+
+    const isEstimated =
+      (field === 'budget' && n.budget > 0 && !n.vehiclePrice && n.totalCost12 > 0) ||
+      (field === 'vehiclePrice' && n.vehiclePrice > 0 && n.totalCost12 > 0) ||
+      (field === 'installment' && n.installment > 0 && !input.interestRate) ||
+      (field === 'maintenanceCost' && n.maintenanceCost > 0 && !input.maintenanceCost);
+
+    if (isEstimated) {
+      notes.push({
+        field,
+        status: 'estimated',
+        note: `${label} tahmini modelden türetildi; teklif ile doğrulanmalı.`
+      });
+    } else if (notes.filter((item) => item.status === 'strong').length < 4) {
+      notes.push({
+        field,
+        status: 'strong',
+        note: `${label} verisi mevcut ve skora yansıtıldı.`
+      });
+    }
+  }
+
+  if (decision.confidenceScore != null && decision.confidenceScore < 55) {
+    notes.push({
+      field: 'confidence',
+      status: 'missing',
+      note: 'Genel veri kapsamı sınırlı; ek profil bilgisi karar kalitesini artırır.'
+    });
+  }
+
+  return notes.slice(0, 8);
+}
+
+/**
+ * Karar etiketleri — özet badge'ler.
+ * @param {object} input
+ * @param {object} decision
+ */
+export function generateDecisionBadges(input, decision = {}) {
+  const n = normalizeDecisionInput(input);
+  const decisionScore = decision.decisionScore ?? calculateDecisionScore(input);
+  const confidenceScore = decision.confidenceScore ?? calculateConfidenceScore(input);
+  const riskScore = decision.riskScore ?? calculateRiskScore(input);
+  const quality = decision.decisionQuality ?? calculateDecisionQuality(input, decision);
+  const badges = [];
+
+  if (decisionScore >= 75) {
+    badges.push({ label: 'Güçlü karar skoru', type: 'positive' });
+  } else if (decisionScore < 50) {
+    badges.push({ label: 'Düşük karar skoru', type: 'warning' });
+  }
+
+  if (confidenceScore >= 70) {
+    badges.push({ label: 'Yüksek veri güveni', type: 'positive' });
+  } else if (confidenceScore < 55) {
+    badges.push({ label: 'Sınırlı veri güveni', type: 'warning' });
+  }
+
+  if (riskScore <= 40) {
+    badges.push({ label: 'Kontrollü risk', type: 'positive' });
+  } else if (riskScore >= 60) {
+    badges.push({ label: 'Yüksek risk', type: 'warning' });
+  }
+
+  if (quality.level === 'excellent' || quality.level === 'good') {
+    badges.push({ label: QUALITY_LEVEL_LABELS[quality.level], type: 'positive' });
+  } else if (quality.level === 'weak') {
+    badges.push({ label: 'Revize önerilir', type: 'warning' });
+  } else {
+    badges.push({ label: 'Ek doğrulama gerekli', type: 'neutral' });
+  }
+
+  if (n.vertical === 'auto' && n.fuel === 'hybrid') {
+    badges.push({ label: 'Düşük işletme maliyeti potansiyeli', type: 'neutral' });
+  }
+  if (n.vertical === 'housing' && n.city) {
+    badges.push({ label: 'Lokasyon profili tanımlı', type: 'neutral' });
+  }
+  if (n.vertical === 'finance' && n.incomeStability === 'stabil') {
+    badges.push({ label: 'Stabil gelir profili', type: 'positive' });
+  }
+
+  return badges.slice(0, 6);
+}
+
 /**
  * Ana karar motoru — tüm dikeyler için ortak çıktı şeması.
  * @param {object} input
@@ -649,7 +1075,7 @@ export function buildDecisionEngineV3(input = {}) {
   const whatIfScenarios = generateWhatIfScenarios(input);
   const summary = buildDecisionSummary(input, { decisionScore, riskScore });
 
-  return {
+  const decision = {
     version: 'v3',
     vertical: normalized.vertical,
     decisionScore,
@@ -662,4 +1088,12 @@ export function buildDecisionEngineV3(input = {}) {
     whatIfScenarios,
     summary
   };
+
+  decision.decisionQuality = calculateDecisionQuality(input, decision);
+  decision.actionPlan = generateActionPlan(input, decision);
+  decision.blockingRisks = generateBlockingRisks(input, decision);
+  decision.dataQualityNotes = generateDataQualityNotes(input, decision);
+  decision.decisionBadges = generateDecisionBadges(input, decision);
+
+  return decision;
 }

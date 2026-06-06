@@ -127,3 +127,99 @@ test('calculateDecisionScore is deterministic across calls', () => {
   const scores = Array.from({ length: 5 }, () => calculateDecisionScore(FULL_AUTO_INPUT));
   assert.ok(scores.every((s) => s === scores[0]));
 });
+
+const HIGH_RISK_INPUT = {
+  vertical: 'auto',
+  budget: 1_000_000,
+  vehiclePrice: 1_200_000,
+  totalCost12: 1_300_000,
+  monthlyIncome: 30_000,
+  monthlyDebt: 15_000,
+  risks: ['Sigorta primi yüksek', 'Finansman baskısı', 'Bakım maliyeti belirsiz']
+};
+
+test('buildDecisionEngineV3 returns decisionQuality', () => {
+  const result = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.ok(result.decisionQuality);
+  assert.ok(['excellent', 'good', 'caution', 'weak'].includes(result.decisionQuality.level));
+  assert.ok(result.decisionQuality.score >= 0 && result.decisionQuality.score <= 100);
+  assert.ok(result.decisionQuality.explanation);
+});
+
+test('actionPlan returns at least 4 steps with required shape', () => {
+  const result = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.ok(result.actionPlan.length >= 4);
+  for (const step of result.actionPlan) {
+    assert.ok(step.step >= 1);
+    assert.ok(step.title);
+    assert.ok(step.description);
+    assert.ok(['high', 'medium', 'low'].includes(step.priority));
+    assert.ok(['verify', 'compare', 'finance', 'risk', 'next_action'].includes(step.category));
+  }
+});
+
+test('blockingRisks returns an array', () => {
+  const result = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.ok(Array.isArray(result.blockingRisks));
+});
+
+test('dataQualityNotes marks missing fields', () => {
+  const result = buildDecisionEngineV3(PARTIAL_AUTO_INPUT);
+  assert.ok(result.dataQualityNotes.length > 0);
+  assert.ok(result.dataQualityNotes.some((n) => n.status === 'missing'));
+  for (const note of result.dataQualityNotes) {
+    assert.ok(note.field);
+    assert.ok(['missing', 'estimated', 'strong'].includes(note.status));
+    assert.ok(note.note);
+  }
+});
+
+test('decisionBadges returns badge array', () => {
+  const result = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.ok(Array.isArray(result.decisionBadges));
+  assert.ok(result.decisionBadges.length > 0);
+  for (const badge of result.decisionBadges) {
+    assert.ok(badge.label);
+    assert.ok(['positive', 'warning', 'neutral'].includes(badge.type));
+  }
+});
+
+test('low confidence prevents excellent decisionQuality', () => {
+  const result = buildDecisionEngineV3(PARTIAL_AUTO_INPUT);
+  assert.notEqual(result.decisionQuality.level, 'excellent');
+});
+
+test('high risk input produces blockingRisks', () => {
+  const result = buildDecisionEngineV3(HIGH_RISK_INPUT);
+  assert.ok(result.blockingRisks.length > 0);
+  assert.ok(result.blockingRisks.some((r) => r.severity === 'high'));
+  for (const risk of result.blockingRisks) {
+    assert.ok(risk.id);
+    assert.ok(risk.title);
+    assert.ok(risk.explanation);
+    assert.ok(risk.mitigation);
+  }
+});
+
+test('housing actionPlan has vertical-specific steps', () => {
+  const result = buildDecisionEngineV3({
+    vertical: 'housing',
+    budget: 4_000_000,
+    city: 'İstanbul',
+    monthlyIncome: 80_000
+  });
+  assert.ok(result.actionPlan.length >= 4);
+  assert.ok(result.actionPlan.some((s) => /tapu|deprem/i.test(s.title)));
+});
+
+test('finance actionPlan has vertical-specific steps', () => {
+  const result = buildDecisionEngineV3({
+    vertical: 'finance',
+    requestedAmount: 500_000,
+    monthlyIncome: 60_000,
+    installment: 18_000,
+    loanTerm: 36
+  });
+  assert.ok(result.actionPlan.length >= 4);
+  assert.ok(result.actionPlan.some((s) => /vade|faiz|gelir/i.test(s.title)));
+});
