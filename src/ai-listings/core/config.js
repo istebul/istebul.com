@@ -103,7 +103,54 @@ export function clearAiListingsLocalOverride() {
   runtimeOverride = null;
 }
 
+/** @type {boolean|null} */
+let supabaseRuntimeOverride = null;
+
+const SUPABASE_ENV_KEY = 'AI_LISTINGS_SUPABASE_ENABLED';
+
+/**
+ * Read Supabase adapter flag from window.__env.
+ * @returns {boolean|null}
+ */
+function readSupabaseEnvFlag() {
+  try {
+    const env = typeof window !== 'undefined' ? window.__env : null;
+    const raw = env?.[SUPABASE_ENV_KEY];
+    if (raw === 'false' || raw === '0') return false;
+    if (raw === 'true' || raw === '1') return true;
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+/**
+ * Supabase repository adapter is disabled unless explicitly enabled.
+ * Default: false (inactive, not wired in DI container).
+ * @returns {boolean}
+ */
+export function isAiListingsSupabaseAdapterEnabled() {
+  if (supabaseRuntimeOverride === true) return true;
+  if (supabaseRuntimeOverride === false) return false;
+
+  const env = readSupabaseEnvFlag();
+  if (env === true) return true;
+  return false;
+}
+
+/**
+ * @param {boolean} enabled
+ */
+export function setAiListingsSupabaseLocalOverride(enabled) {
+  supabaseRuntimeOverride = Boolean(enabled);
+}
+
+/** Clear Supabase adapter override (mainly for tests). */
+export function clearAiListingsSupabaseLocalOverride() {
+  supabaseRuntimeOverride = null;
+}
+
 export const AI_LISTINGS_MODULE_VERSION = '1.0.0-placeholder';
 export const AI_LISTINGS_MODULE_ID = 'ai-listings-engine-v1';
 
-export { STORAGE_KEY, URL_PARAM, ENV_KEY };
+export { STORAGE_KEY, URL_PARAM, ENV_KEY, SUPABASE_ENV_KEY };

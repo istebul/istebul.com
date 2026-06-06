@@ -5,7 +5,16 @@
  * Feature flag defaults to inactive; safe to ship as architecture scaffold.
  */
 
-export { isAiListingsEnabled, setAiListingsLocalOverride, clearAiListingsLocalOverride, AI_LISTINGS_MODULE_VERSION, AI_LISTINGS_MODULE_ID } from './core/config.js';
+export {
+  isAiListingsEnabled,
+  setAiListingsLocalOverride,
+  clearAiListingsLocalOverride,
+  isAiListingsSupabaseAdapterEnabled,
+  setAiListingsSupabaseLocalOverride,
+  clearAiListingsSupabaseLocalOverride,
+  AI_LISTINGS_MODULE_VERSION,
+  AI_LISTINGS_MODULE_ID
+} from './core/config.js';
 export { DATA_SOURCE_IDS, LISTING_CATEGORIES, DEFAULT_CURRENCY } from './core/constants.js';
 export { createAiListingsContainer } from './core/di-container.js';
 
@@ -21,3 +30,7 @@ export { createRecommendationService } from './services/recommendation-service.j
 export { processListing } from './engine/listing-engine.js';
 export { runAnalysisPipeline } from './analysis/analysis-pipeline.js';
 export { computeScores } from './scoring/scoring-engine.js';
+
+export { createSupabaseAiListingRepository, isSupabaseAiListingRepositoryAvailable } from './repository/supabase/supabase-ai-listing-repository.js';
+export { createSupabaseAiAnalysisRepository, isSupabaseAiAnalysisRepositoryAvailable } from './repository/supabase/supabase-ai-analysis-repository.js';
+export { SUPABASE_TABLES, SUPABASE_ADAPTER_INACTIVE_ERROR } from './repository/supabase/supabase-adapter-guard.js';

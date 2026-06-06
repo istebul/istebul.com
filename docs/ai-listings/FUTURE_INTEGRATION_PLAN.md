@@ -99,26 +99,21 @@
 1. Add total-cost-of-ownership to `PricingService.analyzeListing()`
 2. Surface in `AIAnalysis.cons` when ownership cost exceeds benchmark
 
-## Phase 4 — Persistence
+## Phase 4 — Persistence (Sprint-2 complete)
 
 ### 4.1 Database Tables (new, independent)
 
-```sql
--- TODO: Create via Supabase migration (do NOT alter existing tables)
-CREATE TABLE ai_listings_analyses (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  listing_id TEXT NOT NULL,
-  analysis JSONB NOT NULL,
-  model_version TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
+**Migration:** `supabase/migrations/20260701_ai_listings_engine_v1.sql`
 
-CREATE INDEX idx_ai_listings_analyses_listing_id ON ai_listings_analyses(listing_id);
-```
+Tables: `ai_listings`, `ai_listing_analyses`, `ai_listing_events`
 
-**Action:**
-1. Create `src/ai-listings/repository/supabase/ai-analysis-repository.js`
-2. Implement `AIAnalysisRepository` against new table only
+RLS: service_role only (anon/authenticated denied). See `docs/ai-listings/DATABASE_SCHEMA.md`.
+
+**Action (Sprint-3):**
+1. Implement `createSupabaseAiListingRepository` CRUD against `ai_listings`
+2. Implement `createSupabaseAiAnalysisRepository` against `ai_listing_analyses`
+3. Add `AiListingEventsRepository` for `ai_listing_events`
+4. Wire adapters in DI container when `AI_LISTINGS_SUPABASE_ENABLED=true`
 
 ## Phase 5 — Activation
 
