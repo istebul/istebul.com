@@ -95,7 +95,7 @@ test('admin panel requires localStorage gate and never hardcodes secret', () => 
   assert.equal(isAdminPanelEnabled({ getItem: () => null }), false);
   assert.equal(getAdminPanelState({ getItem: (key) => (key === ADMIN_ENABLE_KEY ? 'on' : null) }), 'no-secret');
 
-  const headers = buildEdgeRequestHeaders('');
+  const headers = buildEdgeRequestHeaders({ secret: '' });
   assert.equal(headers[SECRET_HEADER], undefined);
 });
 

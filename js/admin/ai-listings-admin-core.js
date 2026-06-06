@@ -72,13 +72,31 @@ export function getAdminPanelState(storage) {
 }
 
 /**
- * @param {string} secret
+ * @param {Record<string, unknown>} [env]
+ * @returns {string}
+ */
+export function getSupabaseAnonKey(env = {}) {
+  return String(env.SUPABASE_ANON_KEY ?? '').trim();
+}
+
+/**
+ * @param {{ secret?: string, anonKey?: string, hasBody?: boolean }} [options]
  * @returns {Record<string, string>}
  */
-export function buildEdgeRequestHeaders(secret) {
-  const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
-  const trimmed = String(secret ?? '').trim();
-  if (trimmed) headers[EDGE_SECRET_HEADER] = trimmed;
+export function buildEdgeRequestHeaders({ secret, anonKey, hasBody = false } = {}) {
+  const headers = { Accept: 'application/json' };
+
+  const trimmedAnonKey = String(anonKey ?? '').trim();
+  if (trimmedAnonKey) {
+    headers.Authorization = `Bearer ${trimmedAnonKey}`;
+    headers.apikey = trimmedAnonKey;
+  }
+
+  const trimmedSecret = String(secret ?? '').trim();
+  if (trimmedSecret) headers[EDGE_SECRET_HEADER] = trimmedSecret;
+
+  if (hasBody) headers['Content-Type'] = 'application/json';
+
   return headers;
 }
 

@@ -19,6 +19,7 @@ import {
   buildStatusFilterChipsHtml,
   getAdminPanelState,
   getEdgeSecret,
+  getSupabaseAnonKey,
   isListingPubliclyVisible,
   mapEdgeResponse,
   previewImportContent,
@@ -60,9 +61,13 @@ function setStatus(message, type = 'info') {
 async function edgeRequest(path, { method = 'GET', body } = {}) {
   const base = resolveEdgeBaseUrl(env());
   const secret = getEdgeSecret(storage());
+  const anonKey = getSupabaseAnonKey(env());
 
   if (!base) {
     return { ok: false, status: 0, message: 'SUPABASE_URL is not configured in env.js' };
+  }
+  if (!anonKey) {
+    return { ok: false, status: 0, message: 'Supabase anon key missing.' };
   }
   if (!secret) {
     return { ok: false, status: 0, message: 'Edge secret missing — set localStorage istebul_ai_listings_secret' };
@@ -70,7 +75,7 @@ async function edgeRequest(path, { method = 'GET', body } = {}) {
 
   const response = await fetch(`${base}${path}`, {
     method,
-    headers: buildEdgeRequestHeaders(secret),
+    headers: buildEdgeRequestHeaders({ secret, anonKey, hasBody: body !== undefined }),
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 

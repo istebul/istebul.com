@@ -7,6 +7,7 @@ const {
   isAdminPanelEnabled,
   getAdminPanelState,
   getEdgeSecret,
+  getSupabaseAnonKey,
   buildEdgeRequestHeaders,
   buildListingBadgesHtml,
   buildStatusFilterChipsHtml,
@@ -60,15 +61,39 @@ test('ready state when enabled with secret', () => {
   assert.equal(getAdminPanelState(storage), 'ready');
 });
 
-test('buildEdgeRequestHeaders includes secret header', () => {
-  const headers = buildEdgeRequestHeaders('abc123');
-  assert.equal(headers[EDGE_SECRET_HEADER], 'abc123');
-  assert.equal(headers['Content-Type'], 'application/json');
+test('buildEdgeRequestHeaders includes Authorization gateway header', () => {
+  const headers = buildEdgeRequestHeaders({ secret: 'abc123', anonKey: 'anon-key' });
+  assert.equal(headers.Authorization, 'Bearer anon-key');
 });
 
-test('buildEdgeRequestHeaders never hardcodes secret', () => {
-  const headers = buildEdgeRequestHeaders('');
+test('buildEdgeRequestHeaders includes apikey gateway header', () => {
+  const headers = buildEdgeRequestHeaders({ secret: 'abc123', anonKey: 'anon-key' });
+  assert.equal(headers.apikey, 'anon-key');
+});
+
+test('buildEdgeRequestHeaders includes x-ai-listings-secret header', () => {
+  const headers = buildEdgeRequestHeaders({ secret: 'abc123', anonKey: 'anon-key' });
+  assert.equal(headers[EDGE_SECRET_HEADER], 'abc123');
+});
+
+test('buildEdgeRequestHeaders includes Content-Type only when body exists', () => {
+  const withoutBody = buildEdgeRequestHeaders({ secret: 'abc123', anonKey: 'anon-key' });
+  assert.equal(withoutBody['Content-Type'], undefined);
+
+  const withBody = buildEdgeRequestHeaders({ secret: 'abc123', anonKey: 'anon-key', hasBody: true });
+  assert.equal(withBody['Content-Type'], 'application/json');
+});
+
+test('buildEdgeRequestHeaders never hardcodes secret or anon key', () => {
+  const headers = buildEdgeRequestHeaders({});
   assert.equal(headers[EDGE_SECRET_HEADER], undefined);
+  assert.equal(headers.Authorization, undefined);
+  assert.equal(headers.apikey, undefined);
+});
+
+test('getSupabaseAnonKey reads from env', () => {
+  assert.equal(getSupabaseAnonKey({ SUPABASE_ANON_KEY: '  test-key  ' }), 'test-key');
+  assert.equal(getSupabaseAnonKey({}), '');
 });
 
 test('validateAttributesJson accepts object and rejects invalid JSON', () => {
