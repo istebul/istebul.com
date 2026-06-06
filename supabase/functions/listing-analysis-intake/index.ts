@@ -64,16 +64,36 @@ const HOUSING_SQM_BENCHMARK: Record<string, number> = {
 };
 
 const MAX_URL_LENGTH = 1000;
-const BLOCKED_PROTOCOL_PREFIXES = ["javascript:", "data:", "file:", "ftp:"];
+const BLOCKED_PROTOCOL_PREFIXES = [
+  "javascript:",
+  "data:",
+  "file:",
+  "ftp:",
+  "blob:",
+  "chrome:",
+  "about:",
+];
 const DOMAIN_LABELS = [
   { match: "sahibinden.com", label: "Sahibinden" },
   { match: "arabam.com", label: "Arabam" },
   { match: "emlakjet.com", label: "Emlakjet" },
   { match: "hepsiemlak.com", label: "Hepsiemlak" },
 ];
+const INPUT_SOURCE_MAP: Record<string, string> = {
+  "sahibinden.com": "sahibinden",
+  "emlakjet.com": "emlakjet",
+  "arabam.com": "arabam",
+  "hepsiemlak.com": "hepsiemlak",
+};
+const RISKY_QUERY_PARAMS = new Set(["fbclid", "gclid", "gclsrc", "ref", "mc_eid", "mc_cid"]);
+const URL_SECURITY_ERROR = "Geçersiz bağlantı. Yalnızca http veya https adresleri kabul edilir.";
+
+function normalizeHostname(hostname: string) {
+  return String(hostname || "").toLowerCase().replace(/^www\./, "");
+}
 
 function isPrivateOrBlockedHost(hostname: string) {
-  const host = String(hostname || "").toLowerCase();
+  const host = normalizeHostname(hostname);
   if (!host) return true;
   if (host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0") return true;
   if (host.endsWith(".local") || host.endsWith(".internal")) return true;
@@ -89,7 +109,7 @@ function isPrivateOrBlockedHost(hostname: string) {
 }
 
 function resolveSourceLabel(hostname: string) {
-  const host = String(hostname || "").toLowerCase().replace(/^www\./, "");
+  const host = normalizeHostname(hostname);
   for (const entry of DOMAIN_LABELS) {
     if (host === entry.match || host.endsWith(`.${entry.match}`)) {
       return { domain: entry.match, label: entry.label };
@@ -98,18 +118,66 @@ function resolveSourceLabel(hostname: string) {
   return { domain: host, label: "Diğer" };
 }
 
+function resolveInputSource(sourceDomain: string) {
+  const domain = normalizeHostname(sourceDomain);
+  return INPUT_SOURCE_MAP[domain] || "external_url";
+}
+
+function resolveUrlMode(input: Record<string, unknown>, options: { url_mode?: string } = {}) {
+  const override = options.url_mode || String(input.url_mode || input._url_mode || "");
+  if (override === "partner_api") return "partner_api";
+  if (String(input.listing_url ?? "").trim()) return override || "paste_url";
+  return "manual";
+}
+
+function resolveResultSource(input: Record<string, unknown>, options: { result_source?: string } = {}) {
+  if (options.result_source) return options.result_source;
+  if (input.result_source) return String(input.result_source);
+  return "rules_engine";
+}
+
+function stripRiskyParams(searchParams: URLSearchParams) {
+  for (const key of [...searchParams.keys()]) {
+    const lower = key.toLowerCase();
+    if (lower.startsWith("utm_") || RISKY_QUERY_PARAMS.has(lower)) {
+      searchParams.delete(key);
+    }
+  }
+}
+
 function parseListingUrl(rawUrl: unknown) {
   const trimmed = String(rawUrl ?? "").trim();
   if (!trimmed) {
-    return { isValid: true, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: null };
+    return {
+      isValid: true,
+      normalizedUrl: null,
+      sourceDomain: null,
+      sourceLabel: null,
+      inputSource: "manual",
+      error: null,
+    };
   }
   if (trimmed.length > MAX_URL_LENGTH) {
-    return { isValid: false, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: "URL çok uzun (maksimum 1000 karakter)." };
+    return {
+      isValid: false,
+      normalizedUrl: null,
+      sourceDomain: null,
+      sourceLabel: null,
+      inputSource: null,
+      error: "URL çok uzun (maksimum 1000 karakter).",
+    };
   }
   const lower = trimmed.toLowerCase();
   for (const prefix of BLOCKED_PROTOCOL_PREFIXES) {
     if (lower.startsWith(prefix)) {
-      return { isValid: false, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: "Geçersiz URL protokolü." };
+      return {
+        isValid: false,
+        normalizedUrl: null,
+        sourceDomain: null,
+        sourceLabel: null,
+        inputSource: null,
+        error: URL_SECURITY_ERROR,
+      };
     }
   }
   let candidate = trimmed;
@@ -118,47 +186,140 @@ function parseListingUrl(rawUrl: unknown) {
   try {
     parsed = new URL(candidate);
   } catch {
-    return { isValid: false, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: "Geçersiz URL formatı." };
+    return {
+      isValid: false,
+      normalizedUrl: null,
+      sourceDomain: null,
+      sourceLabel: null,
+      inputSource: null,
+      error: "Geçersiz URL formatı.",
+    };
   }
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    return { isValid: false, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: "Yalnızca http ve https bağlantıları kabul edilir." };
+    return {
+      isValid: false,
+      normalizedUrl: null,
+      sourceDomain: null,
+      sourceLabel: null,
+      inputSource: null,
+      error: URL_SECURITY_ERROR,
+    };
   }
-  if (isPrivateOrBlockedHost(parsed.hostname)) {
-    return { isValid: false, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: "Bu bağlantı türüne izin verilmez." };
+  const normalizedHost = normalizeHostname(parsed.hostname);
+  if (isPrivateOrBlockedHost(normalizedHost)) {
+    return {
+      isValid: false,
+      normalizedUrl: null,
+      sourceDomain: null,
+      sourceLabel: null,
+      inputSource: null,
+      error: "Bu bağlantı türüne izin verilmez.",
+    };
   }
+  if (normalizedHost !== parsed.hostname) parsed.hostname = normalizedHost;
   parsed.hash = "";
-  for (const key of [...parsed.searchParams.keys()]) {
-    if (key.toLowerCase().startsWith("utm_")) parsed.searchParams.delete(key);
-  }
+  stripRiskyParams(parsed.searchParams);
   parsed.search = parsed.searchParams.toString() ? `?${parsed.searchParams.toString()}` : "";
-  const { domain, label } = resolveSourceLabel(parsed.hostname);
-  return { isValid: true, normalizedUrl: parsed.href, sourceDomain: domain, sourceLabel: label, error: null };
+  const { domain, label } = resolveSourceLabel(normalizedHost);
+  return {
+    isValid: true,
+    normalizedUrl: parsed.href,
+    sourceDomain: domain,
+    sourceLabel: label,
+    inputSource: resolveInputSource(domain),
+    error: null,
+  };
 }
 
-function attachListingUrlFields(input: Record<string, unknown>) {
+function attachListingUrlFields(
+  input: Record<string, unknown>,
+  options: { url_mode?: string; result_source?: string } = {},
+) {
   const raw = String(input.listing_url ?? "").trim();
+  const resultSource = resolveResultSource(input, options);
+  const urlMode = resolveUrlMode({ ...input, listing_url: raw || null }, options);
+
   if (!raw) {
-    return { ...input, listing_url: null, source_domain: null, source_label: null };
+    return {
+      ...input,
+      listing_url: null,
+      normalized_url: null,
+      source_domain: null,
+      source_label: null,
+      input_source: "manual",
+      result_source: resultSource,
+      url_mode: urlMode,
+    };
   }
+
   const parsed = parseListingUrl(raw);
   if (!parsed.isValid) return { ...input, _urlError: parsed.error };
   return {
     ...input,
     listing_url: parsed.normalizedUrl,
+    normalized_url: parsed.normalizedUrl,
     source_domain: parsed.sourceDomain,
     source_label: parsed.sourceLabel,
+    input_source: parsed.inputSource,
+    result_source: resultSource,
+    url_mode: urlMode,
   };
 }
 
+function buildListingAnalysisMetadata(input: Record<string, unknown>) {
+  const listingUrl = input.listing_url || null;
+  const normalizedUrl = input.normalized_url || listingUrl || null;
+  return {
+    listing_url: listingUrl,
+    normalized_url: normalizedUrl,
+    input_source: input.input_source || (listingUrl ? "external_url" : "manual"),
+    result_source: input.result_source || "rules_engine",
+    url_mode: input.url_mode || (listingUrl ? "paste_url" : "manual"),
+    source_label: input.source_label || null,
+  };
+}
+
+function buildListingAnalysisEventPayload(
+  input: Record<string, unknown>,
+  listingType: ListingType,
+  result: Record<string, unknown>,
+) {
+  return {
+    ...buildListingAnalysisMetadata(input),
+    listing_type: listingType,
+    decision_score: result.decisionScore ?? null,
+    confidence_score: result.confidenceScore ?? null,
+  };
+}
+
+function sanitizeListingInputForStorage(input: Record<string, unknown>) {
+  const clean = { ...input };
+  delete clean._urlError;
+  delete clean._url_mode;
+  return clean;
+}
+
 function buildResultSourceMeta(input: Record<string, unknown>) {
-  if (!input.listing_url) {
-    return { listingUrl: null, domain: null, label: null, mode: null };
+  const metadata = buildListingAnalysisMetadata(input);
+  if (!metadata.listing_url) {
+    return {
+      listingUrl: null,
+      domain: null,
+      label: null,
+      mode: null,
+      inputSource: metadata.input_source,
+      resultSource: metadata.result_source,
+      urlMode: metadata.url_mode,
+    };
   }
   return {
-    listingUrl: input.listing_url,
+    listingUrl: metadata.listing_url,
     domain: input.source_domain || null,
-    label: input.source_label || "Diğer",
-    mode: "user_provided_url_only",
+    label: metadata.source_label || "Diğer",
+    mode: metadata.url_mode,
+    inputSource: metadata.input_source,
+    resultSource: metadata.result_source,
+    urlMode: metadata.url_mode,
   };
 }
 
@@ -491,12 +652,17 @@ Deno.serve(async (req) => {
 
   const rawInput =
     body.input && typeof body.input === "object" ? (body.input as Record<string, unknown>) : {};
-  const input = attachListingUrlFields(rawInput);
+  const intakeOptions = {
+    url_mode: body.url_mode === "partner_api" ? "partner_api" : undefined,
+    result_source: "rules_engine",
+  };
+  const input = attachListingUrlFields(rawInput, intakeOptions);
   if ((input as Record<string, unknown>)._urlError) {
     return json({ ok: false, error: String((input as Record<string, unknown>)._urlError) }, 400, origin);
   }
 
-  const built = buildListingAnalysisResult(listingType, input);
+  const storedInput = sanitizeListingInputForStorage(input);
+  const built = buildListingAnalysisResult(listingType, storedInput);
   if (!built.ok) {
     return json({ ok: false, error: built.errors.join(" ") }, 400, origin);
   }
@@ -520,7 +686,7 @@ Deno.serve(async (req) => {
     .insert({
       user_id: userId,
       listing_type: listingType,
-      input,
+      input: storedInput,
       result: built.result,
       decision_score: built.result.decisionScore,
       confidence_score: built.result.confidenceScore,
@@ -535,15 +701,7 @@ Deno.serve(async (req) => {
     await adminClient.from("listing_analysis_events").insert({
       analysis_id: analysisId,
       event_type: "analysis_completed",
-      payload: {
-        listing_type: listingType,
-        decision_score: built.result.decisionScore,
-        confidence_score: built.result.confidenceScore,
-        listing_url: input.listing_url || null,
-        source_domain: input.source_domain || null,
-        source_label: input.source_label || null,
-        url_mode: input.listing_url ? "user_provided_url_only" : null,
-      },
+      payload: buildListingAnalysisEventPayload(storedInput, listingType, built.result),
     });
   }
 

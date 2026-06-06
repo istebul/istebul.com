@@ -212,6 +212,9 @@ function initListingAnalysisApp() {
     const listingUrlInput = document.getElementById(LISTING_ANALYSIS_DOM_IDS.listingUrl);
     if (listingUrlInput?.value?.trim()) {
       parsed.listing_url = listingUrlInput.value.trim();
+      parsed.url_mode = 'paste_url';
+    } else {
+      parsed.url_mode = 'manual';
     }
 
     const validation = buildListingAnalysisResult(type, parsed);

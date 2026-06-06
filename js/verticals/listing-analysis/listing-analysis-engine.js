@@ -2,9 +2,26 @@
  * AI İlan Analizi — deterministik karar motoru.
  * Canonical skorlar yalnızca bu modülden üretilir; AI skoru değiştiremez.
  */
-import { attachListingUrlFields, buildResultSourceMeta, parseListingUrl } from './listing-analysis-url.js';
+import {
+  attachListingUrlFields,
+  buildListingAnalysisEventPayload,
+  buildListingAnalysisMetadata,
+  buildResultSourceMeta,
+  parseListingUrl,
+  sanitizeListingInputForStorage
+} from './listing-analysis-url.js';
 
-export { parseListingUrl, attachListingUrlFields, buildResultSourceMeta } from './listing-analysis-url.js';
+export {
+  parseListingUrl,
+  attachListingUrlFields,
+  buildResultSourceMeta,
+  buildListingAnalysisMetadata,
+  buildListingAnalysisEventPayload,
+  sanitizeListingInputForStorage,
+  resolveInputSource,
+  resolveUrlMode,
+  resolveResultSource
+} from './listing-analysis-url.js';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -251,9 +268,8 @@ export function analyzeVehicleListing(input = {}) {
     scoreLabel: scoreLabel(decisionScore),
     source: buildResultSourceMeta(input),
     inputSnapshot: {
-      listing_url: input.listing_url || null,
+      ...buildListingAnalysisMetadata(input),
       source_domain: input.source_domain || null,
-      source_label: input.source_label || null,
       marka: cleanText(input.marka),
       model: cleanText(input.model),
       yil: year,
@@ -370,9 +386,8 @@ export function analyzeHousingListing(input = {}) {
     scoreLabel: scoreLabel(decisionScore),
     source: buildResultSourceMeta(input),
     inputSnapshot: {
-      listing_url: input.listing_url || null,
+      ...buildListingAnalysisMetadata(input),
       source_domain: input.source_domain || null,
-      source_label: input.source_label || null,
       il: cleanText(input.il),
       ilce: cleanText(input.ilce),
       metrekare: sqm,
