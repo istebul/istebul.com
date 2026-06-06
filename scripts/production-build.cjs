@@ -308,6 +308,19 @@ partnerCorporateEntries.forEach((entry) => {
   });
 });
 
+const decisionV3Out = path.join(dist, 'js/decision/ai-decision-engine-v3.js');
+ensureDir(decisionV3Out);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/decision/ai-decision-engine-v3.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: decisionV3Out
+});
+
 const verticalLocaleShellOut = path.join(dist, 'js/runtime/vertical-locale-shell.js');
 ensureDir(verticalLocaleShellOut);
 esbuild.buildSync({
@@ -364,7 +377,8 @@ const emitRuntimeScript = (relativePath) => {
   'js/runtime/static-cookie-consent.js',
   'js/runtime/perf-fonts-async.js',
   'js/runtime/site-social-deferred-boot.js',
-  'js/runtime/category-guides-deferred-boot.js'
+  'js/runtime/category-guides-deferred-boot.js',
+  'js/decision/decision-v3-mount.js'
 ].forEach(emitRuntimeScript);
 
 const routeBootstrapOut = path.join(dist, 'js/runtime/route-bootstrap-head.js');

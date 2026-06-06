@@ -489,6 +489,24 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     model.pdfReportData.insightBlocks = summary.insight;
   }
 
+  void import('../decision/decision-v3-mount.js')
+    .then(({ mountDecisionEngineV3Overlay }) =>
+      mountDecisionEngineV3Overlay(mountNode, {
+        category: 'auto',
+        formData,
+        metrics: { topResult, budget, totalCost },
+        extras: {
+          topResult,
+          results,
+          budget,
+          totalCost,
+          cautions,
+          title: 'Araç Kararı'
+        }
+      })
+    )
+    .catch(() => {});
+
   return model;
 }
 
