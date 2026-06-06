@@ -99,6 +99,12 @@ test('admin panel requires localStorage gate and never hardcodes secret', () => 
   assert.equal(headers[SECRET_HEADER], undefined);
 });
 
+test('bundle budget excludes isolated AI Listings admin runtime from main SPA', () => {
+  const analyzeSource = fs.readFileSync(path.join(root, 'scripts/analyze-bundle.cjs'), 'utf8');
+  assert.match(analyzeSource, /assets\\\/ai-listings-admin-runtime\\\//);
+  assert.match(analyzeSource, /css\\\/admin-ai-listings/);
+});
+
 test('admin page has robots noindex and no public HTML links reference it', () => {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
   assert.match(adminHtml, /noindex/i);

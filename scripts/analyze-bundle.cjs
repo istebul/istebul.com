@@ -20,6 +20,8 @@ const BUDGET_EXCLUDE = [
   /^assets\/finans-runtime\//,
   /^assets\/sigorta-runtime\//,
   /^assets\/kasko-runtime\//,
+  /^assets\/listing-analysis-runtime\//,
+  /^assets\/ai-listings-admin-runtime\//,
   /^js\/auto\//,
   /^js\/sigorta\//,
   /^js\/tatil\//,
@@ -45,6 +47,8 @@ const BUDGET_EXCLUDE = [
   /^css\/partner-platform/,
   /^css\/seo-landing/,
   /^css\/admin-partner-ops/,
+  /^css\/admin-ai-listings/,
+  /^css\/listing-analysis/,
   /^css\/rtl/
 ];
 
