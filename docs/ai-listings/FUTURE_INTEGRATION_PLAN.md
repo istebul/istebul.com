@@ -111,10 +111,12 @@ RLS: service_role only (anon/authenticated denied). See `docs/ai-listings/DATABA
 
 **Sprint-3 (complete):** Supabase CRUD adapters implemented — see `REPOSITORY_ADAPTERS.md`.
 
-**Action (Sprint-4):**
-1. Edge Function intake using `createSupabaseAiListingsRepositories({ client })`
-2. Wire adapters in DI container when both flags enabled in server context
-3. Emit lifecycle events via `SupabaseAiListingEventRepository`
+**Sprint-4 (complete):** Edge Function API at `supabase/functions/ai-listings/` — see `EDGE_FUNCTION_API.md`.
+
+**Action (Sprint-5):**
+1. Admin proxy route calling Edge Function with rotated secret
+2. Wire `src/ai-listings` DI container to Edge Function responses
+3. Replace placeholder pipeline with live EVDS/AI adapters
 
 ## Phase 5 — Activation
 

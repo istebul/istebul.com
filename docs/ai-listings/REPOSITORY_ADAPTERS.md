@@ -107,6 +107,11 @@ Current RLS allows **service_role only**. Production integration path:
 3. Never expose service role key to browser
 4. Anon/authenticated clients remain blocked until RLS Phase A (see `DATABASE_SCHEMA.md`)
 
+## Edge Function API (Sprint-4)
+
+Internal API at `supabase/functions/ai-listings/` uses service_role via `repositories.js`.
+See [EDGE_FUNCTION_API.md](./EDGE_FUNCTION_API.md).
+
 ## Future Admin Integration
 
 1. Admin panel calls Edge Function with admin JWT validation
