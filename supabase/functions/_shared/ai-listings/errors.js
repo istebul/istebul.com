@@ -2,6 +2,8 @@
  * isteBul AI Listings Edge API — consistent error codes.
  */
 
+import { aiListingsCorsHeaders } from './cors.js';
+
 export const EDGE_ERROR_CODES = Object.freeze({
   INVALID_REQUEST: 'INVALID_REQUEST',
   UNAUTHORIZED: 'UNAUTHORIZED',
@@ -38,11 +40,15 @@ export function successBody(data, meta) {
 /**
  * @param {unknown} body
  * @param {number} status
+ * @param {string | null | undefined} [origin]
  */
-export function jsonResponse(body, status = 200) {
+export function jsonResponse(body, status = 200, origin = null) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json' }
+    headers: {
+      'Content-Type': 'application/json',
+      ...aiListingsCorsHeaders(origin)
+    }
   });
 }
 
@@ -51,7 +57,8 @@ export function jsonResponse(body, status = 200) {
  * @param {string} message
  * @param {number} status
  * @param {unknown} [details]
+ * @param {string | null | undefined} [origin]
  */
-export function errorResponse(code, message, status, details) {
-  return jsonResponse(errorBody(code, message, details), status);
+export function errorResponse(code, message, status, details, origin = null) {
+  return jsonResponse(errorBody(code, message, details), status, origin);
 }

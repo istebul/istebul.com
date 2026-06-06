@@ -17,9 +17,10 @@ function baseEnv(overrides = {}) {
   };
 }
 
-function request(method, path, { body, secret = SECRET } = {}) {
+function request(method, path, { body, secret = SECRET, origin } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (secret !== null) headers[SECRET_HEADER] = secret;
+  if (origin !== undefined) headers.Origin = origin;
   return new Request(`https://example.supabase.co/functions/v1/ai-listings${path}`, {
     method,
     headers,
@@ -110,6 +111,49 @@ function handlerDeps(overrides = {}) {
     ...overrides
   };
 }
+
+test('OPTIONS preflight returns CORS headers for production admin origin', async () => {
+  const res = await handleAiListingsRequest(
+    request('OPTIONS', '/listings', { secret: null, origin: 'https://www.istebul.com' }),
+    handlerDeps()
+  );
+  assert.equal(res.status, 204);
+  assert.equal(res.headers.get('Access-Control-Allow-Origin'), 'https://www.istebul.com');
+  assert.match(res.headers.get('Access-Control-Allow-Headers') ?? '', /x-ai-listings-secret/i);
+  assert.match(res.headers.get('Access-Control-Allow-Methods') ?? '', /GET/);
+  assert.equal(res.headers.get('Vary'), 'Origin');
+});
+
+test('GET response includes Access-Control-Allow-Origin for allowed origin', async () => {
+  const res = await handleAiListingsRequest(
+    request('GET', '/listings', { origin: 'https://www.istebul.com' }),
+    handlerDeps()
+  );
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('Access-Control-Allow-Origin'), 'https://www.istebul.com');
+  assert.equal(res.headers.get('Vary'), 'Origin');
+});
+
+test('unknown origin does not receive Access-Control-Allow-Origin', async () => {
+  const res = await handleAiListingsRequest(
+    request('GET', '/listings', { origin: 'https://evil.example.com' }),
+    handlerDeps()
+  );
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('Access-Control-Allow-Origin'), null);
+  assert.notEqual(res.headers.get('Access-Control-Allow-Origin'), '*');
+});
+
+test('x-ai-listings-secret remains required when CORS origin is allowed', async () => {
+  const res = await handleAiListingsRequest(
+    request('GET', '/listings', { secret: null, origin: 'https://www.istebul.com' }),
+    handlerDeps()
+  );
+  assert.equal(res.status, 401);
+  const body = await res.json();
+  assert.equal(body.error.code, EDGE_ERROR_CODES.UNAUTHORIZED);
+  assert.equal(res.headers.get('Access-Control-Allow-Origin'), 'https://www.istebul.com');
+});
 
 test('unauthorized request returns 401', async () => {
   const res = await handleAiListingsRequest(request('GET', '/listings', { secret: 'wrong' }), handlerDeps());
