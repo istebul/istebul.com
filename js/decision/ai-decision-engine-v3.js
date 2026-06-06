@@ -21,8 +21,36 @@ const VERTICAL_ALIASES = {
 
 const VERTICAL_FIELD_WEIGHTS = {
   auto: ['budget', 'usage', 'fuel', 'vehiclePrice', 'monthlyIncome', 'termMonths', 'downPayment'],
-  housing: ['budget', 'monthlyIncome', 'monthlyDebt', 'city', 'squareMeters', 'downPayment', 'termMonths'],
-  finance: ['budget', 'monthlyIncome', 'monthlyDebt', 'termMonths', 'downPayment'],
+  housing: [
+    'budget',
+    'city',
+    'district',
+    'propertyType',
+    'usagePurpose',
+    'financingUsage',
+    'downPayment',
+    'loanTerm',
+    'monthlyIncome',
+    'earthquakeRisk',
+    'liquidityNeed',
+    'maintenanceCost',
+    'expectedRent',
+    'appreciationExpectation',
+    'riskTolerance'
+  ],
+  finance: [
+    'requestedAmount',
+    'monthlyIncome',
+    'existingDebt',
+    'loanTerm',
+    'interestRate',
+    'installment',
+    'purpose',
+    'riskTolerance',
+    'paymentDiscipline',
+    'emergencyFund',
+    'incomeStability'
+  ],
   vacation: ['budget', 'duration', 'travelers', 'destination'],
   insurance: ['budget', 'coverageType', 'vehiclePrice', 'monthlyIncome']
 };
@@ -38,7 +66,7 @@ function clamp(value, min = 0, max = 100) {
 
 function isPresent(value) {
   if (value == null) return false;
-  if (typeof value === 'number') return Number.isFinite(value) && value > 0;
+  if (typeof value === 'number') return Number.isFinite(value);
   if (typeof value === 'boolean') return true;
   if (Array.isArray(value)) return value.length > 0;
   return String(value).trim().length > 0;
@@ -66,21 +94,32 @@ export function normalizeDecisionInput(input = {}) {
   const metrics = input.metrics || {};
   const topResult = input.topResult || metrics.topResult || {};
 
-  const budget = safeNumber(input.budget ?? form.budget ?? form.totalBudget ?? metrics.budget);
+  const budget = safeNumber(
+    input.budget ??
+      input.requestedAmount ??
+      form.budget ??
+      form.totalBudget ??
+      metrics.budget
+  );
   const vehiclePrice = safeNumber(
     input.vehiclePrice ?? topResult.price ?? metrics.vehiclePrice ?? form.vehiclePrice
   );
   const downPayment = safeNumber(
     input.downPayment ?? form.downPayment ?? form.down_payment ?? metrics.downPayment
   );
-  const termMonths = safeNumber(
-    input.termMonths ?? form.termMonths ?? form.term_months ?? form.ownership_months ?? 48
-  ) || 48;
+  const termMonths =
+    safeNumber(
+      input.termMonths ??
+        input.loanTerm ??
+        form.termMonths ??
+        form.term_months ??
+        form.ownership_months
+    ) || 48;
   const monthlyIncome = safeNumber(
     input.monthlyIncome ?? form.monthlyIncome ?? form.monthly_income ?? metrics.monthlyIncome
   );
   const monthlyDebt = safeNumber(
-    input.monthlyDebt ?? form.monthlyDebt ?? form.existing_debt ?? metrics.monthlyDebt
+    input.monthlyDebt ?? input.existingDebt ?? form.monthlyDebt ?? form.existing_debt ?? metrics.monthlyDebt
   );
   const riskTolerance = normalizeRiskTolerance(
     input.riskTolerance ?? form.riskTolerance ?? form.risk_tolerance ?? 'medium'
@@ -99,10 +138,13 @@ export function normalizeDecisionInput(input = {}) {
   const normalized = {
     vertical,
     budget,
+    requestedAmount: safeNumber(input.requestedAmount ?? budget),
     downPayment,
     termMonths,
+    loanTerm: safeNumber(input.loanTerm ?? termMonths) || null,
     monthlyIncome,
     monthlyDebt,
+    existingDebt: input.existingDebt ?? (monthlyDebt || null),
     riskTolerance,
     vehiclePrice,
     totalCost12,
@@ -110,8 +152,23 @@ export function normalizeDecisionInput(input = {}) {
     totalCost60,
     usage: String(form.usage || input.usage || ''),
     fuel: String(form.fuel || topResult.fuel || input.fuel || ''),
-    city: String(form.city || input.city || ''),
-    squareMeters: safeNumber(form.squareMeters ?? form.square_meters),
+    city: String(input.city ?? form.city ?? ''),
+    district: String(input.district ?? form.district ?? ''),
+    propertyType: String(input.propertyType ?? form.homeType ?? ''),
+    usagePurpose: String(input.usagePurpose ?? form.purchasePurpose ?? ''),
+    financingUsage: String(input.financingUsage ?? form.useFinancing ?? ''),
+    earthquakeRisk: input.earthquakeRisk ?? null,
+    liquidityNeed: input.liquidityNeed ?? null,
+    maintenanceCost: input.maintenanceCost ?? null,
+    expectedRent: input.expectedRent ?? null,
+    appreciationExpectation: input.appreciationExpectation ?? null,
+    interestRate: input.interestRate ?? null,
+    installment: input.installment ?? null,
+    purpose: String(input.purpose ?? form.purpose ?? ''),
+    paymentDiscipline: String(input.paymentDiscipline ?? form.early_payment ?? ''),
+    emergencyFund: input.emergencyFund ?? null,
+    incomeStability: String(input.incomeStability ?? form.income_type ?? ''),
+    squareMeters: safeNumber(form.squareMeters ?? form.square_meters ?? input.squareMeters),
     duration: safeNumber(form.duration ?? form.trip_days),
     travelers: safeNumber(form.travelers ?? form.traveler_count),
     destination: String(form.destination || form.region || ''),
@@ -132,8 +189,13 @@ export function normalizeDecisionInput(input = {}) {
   };
 
   const fieldPresence = {};
-  for (const field of VERTICAL_FIELD_WEIGHTS[vertical] || VERTICAL_FIELD_WEIGHTS.auto) {
-    fieldPresence[field] = isPresent(normalized[field] ?? form[field]);
+  const weightFields = VERTICAL_FIELD_WEIGHTS[vertical] || VERTICAL_FIELD_WEIGHTS.auto;
+  for (const field of weightFields) {
+    if (Object.prototype.hasOwnProperty.call(input, field)) {
+      fieldPresence[field] = isPresent(input[field]);
+    } else {
+      fieldPresence[field] = isPresent(normalized[field] ?? form[field]);
+    }
   }
   normalized.fieldPresence = fieldPresence;
 
@@ -197,8 +259,28 @@ export function calculateDecisionScore(input) {
 
   score += usageFitBonus(n);
 
-  if (n.riskTolerance === 'high') score += 4;
-  if (n.riskTolerance === 'low') score -= 6;
+  if (n.vertical === 'housing') {
+    const eq = safeNumber(n.earthquakeRisk);
+    if (eq > 55) score -= 8;
+    else if (eq > 0 && eq <= 35) score += 4;
+    const liq = safeNumber(n.liquidityNeed);
+    if (liq > 55) score -= 5;
+  }
+
+  if (n.vertical === 'finance') {
+    const installment = safeNumber(n.installment);
+    const income = Math.max(n.monthlyIncome, 1);
+    if (installment > 0) {
+      const load = ((installment + n.monthlyDebt) / income) * 100;
+      if (load <= 35) score += 6;
+      else if (load > 50) score -= 10;
+    }
+    if (n.incomeStability === 'stabil') score += 4;
+    if (n.paymentDiscipline === 'yuksek') score += 3;
+  }
+
+  if (n.riskTolerance === 'high' || n.riskTolerance === 'yüksek') score += 4;
+  if (n.riskTolerance === 'low' || n.riskTolerance === 'düşük' || n.riskTolerance === 'muhafazakar') score -= 6;
 
   if (n.termMonths > 60) score -= 3;
   if (n.downPayment > 0 && n.budget > 0 && n.downPayment / n.budget >= 0.3) score += 5;
@@ -223,7 +305,8 @@ export function calculateConfidenceScore(input) {
 
   if (n.totalCost12 > 0) score += 8;
   if (n.vehiclePrice > 0) score += 5;
-  if (n.monthlyIncome > 0 && n.monthlyDebt >= 0) score += 4;
+  if (n.installment > 0) score += 4;
+  if (n.monthlyIncome > 0) score += 4;
 
   return clamp(score);
 }
@@ -235,8 +318,9 @@ export function calculateRiskScore(input) {
   const n = normalizeDecisionInput(input);
   let risk = 35;
 
-  const budget = Math.max(n.budget, 1);
-  const cost = n.totalCost12 || n.vehiclePrice;
+  const budget = Math.max(n.budget || n.requestedAmount, 1);
+  const cost =
+    n.totalCost12 || n.vehiclePrice || (safeNumber(n.installment) > 0 ? safeNumber(n.installment) * 12 : 0);
   if (cost > 0) {
     const pressure = cost / budget;
     if (pressure > 1.1) risk += 28;
@@ -246,7 +330,8 @@ export function calculateRiskScore(input) {
   }
 
   if (n.monthlyIncome > 0) {
-    const load = ((n.monthlyDebt + (cost ? cost / 12 / 3 : 0)) / n.monthlyIncome) * 100;
+    const paymentLoad = safeNumber(n.installment) || (cost ? cost / 12 / 3 : 0);
+    const load = ((n.monthlyDebt + paymentLoad) / n.monthlyIncome) * 100;
     if (load > 50) risk += 22;
     else if (load > 40) risk += 14;
     else if (load > 30) risk += 6;
@@ -289,7 +374,9 @@ export function generateRiskRadar(input) {
 
   const financialRisk = clamp(pressure > 1 ? 55 + (pressure - 1) * 120 : 30 + pressure * 25);
   const liquidityRisk = clamp(
-    n.vertical === 'housing' ? 45 + pressure * 20 : 35 + (n.termMonths > 48 ? 12 : 0)
+    n.vertical === 'housing'
+      ? safeNumber(n.liquidityNeed) || 45 + pressure * 20
+      : 35 + (n.termMonths > 48 ? 12 : 0)
   );
   const maintenanceRisk = clamp(
     n.vertical === 'auto'

@@ -3,6 +3,16 @@
  */
 import { escapeHtml } from '../core/security.js';
 
+const PANEL_TITLES = {
+  auto: 'AI Karar Motoru',
+  housing: 'Konut Karar Analizi',
+  finance: 'Finansman Karar Analizi'
+};
+
+function panelTitleForVertical(vertical) {
+  return PANEL_TITLES[vertical] || 'AI Decision Engine v3';
+}
+
 function clampDisplay(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return 0;
@@ -102,7 +112,7 @@ function renderDecisionHtml(decision) {
   return `
     <div class="de-v3-root" data-decision-engine-version="v3">
       <header class="de-v3-header">
-        <p class="de-v3-header__badge">AI Decision Engine v3</p>
+        <p class="de-v3-header__badge">${escapeHtml(panelTitleForVertical(d.vertical))}</p>
         <h2 class="de-v3-header__title">${escapeHtml(summary.title || 'Karar Özeti')}</h2>
         <p class="de-v3-header__verdict">${escapeHtml(summary.verdict || '')}</p>
         <p class="de-v3-header__explanation">${escapeHtml(summary.shortExplanation || '')}</p>

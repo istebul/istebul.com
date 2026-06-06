@@ -43,8 +43,7 @@ import {
   buildWhyRecommendedCards,
   scoreBandLabel
 } from './auto-results-model.js';
-import { buildDecisionEngineV3 } from '../decision/ai-decision-engine-v3.js';
-import { renderDecisionEngineV3 } from '../decision/decision-v3-renderer.js';
+import { mapAutoToDecisionV3, tryMountDecisionEngineV3 } from '../decision/decision-v3-mappers.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -320,26 +319,10 @@ function computeRiskLevel({ budget, totalCost, riskItems = [] }) {
 }
 
 function mountDecisionEngineV3Experimental(root, { formData, topResult, intel, alternatives }) {
-  try {
-    const mount = root?.querySelector('#ib-results-detail');
-    if (!mount) return;
-
-    const decision = buildDecisionEngineV3({
-      vertical: 'auto',
-      formData,
-      topResult,
-      decisionScore: intel?.decisionScore,
-      confidenceScore: intel?.confidenceScore,
-      alternatives: (alternatives || []).map((a) => ({
-        name: a.vehicle?.name,
-        title: a.vehicle?.name
-      }))
-    });
-
-    renderDecisionEngineV3(mount, decision);
-  } catch {
-    /* deneysel bölüm — ana akışı bozmamalı */
-  }
+  tryMountDecisionEngineV3(
+    root,
+    mapAutoToDecisionV3({ formData, topResult, intel, alternatives })
+  );
 }
 
 function wireHeroActions(root, model, track) {

@@ -36,6 +36,7 @@ import {
   renderResultsHeroLayout,
   scoreToneFromLabel
 } from '../results/results-hero-layout.js';
+import { mapHousingToDecisionV3, tryMountDecisionEngineV3 } from '../../decision/decision-v3-mappers.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -723,6 +724,16 @@ export async function mountKonutResultsV2({
   mountNode.prepend(root);
   await hydrateResultsEconomicIndicators(root, 'konut');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
+  tryMountDecisionEngineV3(
+    root,
+    mapHousingToDecisionV3({
+      state,
+      metrics,
+      totalCost: model.totalCost,
+      intel: model.intelligence,
+      alternatives: model.alternatives
+    })
+  );
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'konut',
