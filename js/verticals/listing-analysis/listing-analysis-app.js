@@ -149,11 +149,12 @@ function initListingAnalysisApp() {
     <label class="la-field la-field--wide la-url-field">
       <span>İlan Linki <small class="la-optional">(opsiyonel)</small></span>
       <input
-        type="url"
+        type="text"
         name="listing_url"
         id="${LISTING_ANALYSIS_DOM_IDS.listingUrl}"
         inputmode="url"
         autocomplete="url"
+        spellcheck="false"
         maxlength="1000"
         placeholder="${LISTING_URL_PLACEHOLDER}">
       <small class="la-help">${LISTING_URL_HELP_TEXT}</small>
