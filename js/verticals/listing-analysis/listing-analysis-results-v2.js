@@ -1,7 +1,8 @@
 /**
- * AI İlan Analizi V1 — Results V2 UI.
+ * AI İlan Analizi — Results V2 UI.
  */
 import { escapeHtml } from '../../core/security.js';
+import { LISTING_ANALYSIS_LEGAL_NOTICE, LISTING_SOURCE_NOTE } from './listing-analysis-config.js';
 import { buildListingAiSummary, fetchListingExecutiveSummary } from './listing-analysis-ai-summary.js';
 import { downloadListingAnalysisPdf } from './listing-analysis-pdf.js';
 
@@ -26,6 +27,21 @@ function renderList(items = [], empty = '—') {
   return items.map((item) => `<li>${escapeHtml(item)}</li>`).join('');
 }
 
+function renderSourceBlock(source = {}) {
+  if (!source?.listingUrl) return '';
+
+  const safeUrl = escapeHtml(source.listingUrl);
+  return `
+    <section class="la-v2-block la-v2-source">
+      <h3>İlan Kaynağı</h3>
+      <dl class="la-v2-source-list">
+        <div><dt>Kaynak</dt><dd>${escapeHtml(source.label || 'Diğer')}</dd></div>
+        <div><dt>Bağlantı</dt><dd><a href="${safeUrl}" target="_blank" rel="noopener noreferrer nofollow">${safeUrl}</a></dd></div>
+      </dl>
+      <p class="la-v2-muted">${escapeHtml(LISTING_SOURCE_NOTE)}</p>
+    </section>`;
+}
+
 /**
  * @param {HTMLElement} container
  * @param {object} params
@@ -43,7 +59,7 @@ export async function mountListingAnalysisResultsV2(container, { result = {}, on
     <div class="la-v2-root" data-listing-type="${escapeHtml(result.listingType)}">
       <article class="la-v2-panel">
         <header class="la-v2-hero">
-          <p class="la-v2-kicker">AI İlan Analizi V1</p>
+          <p class="la-v2-kicker">AI İlan Analizi</p>
           <h2 class="la-v2-title">Karar Skoru: ${result.decisionScore}/100 — ${escapeHtml(result.scoreLabel || '')}</h2>
         </header>
         <div class="la-v2-kpis">
@@ -52,6 +68,7 @@ export async function mountListingAnalysisResultsV2(container, { result = {}, on
           <div class="la-v2-kpi"><span>Fiyat Uygunluğu</span><strong>${result.priceFit}</strong></div>
           <div class="la-v2-kpi la-v2-kpi--${riskTone(result.riskLevel)}"><span>Risk</span><strong>${escapeHtml(result.riskLevel)}</strong></div>
         </div>
+        ${renderSourceBlock(result.source)}
         <section class="la-v2-block">
           <h3>Toplam Maliyet Tahmini</h3>
           <p class="la-v2-cost">${totalCost}</p>
@@ -71,6 +88,9 @@ export async function mountListingAnalysisResultsV2(container, { result = {}, on
           <h3>AI Executive Summary</h3>
           <p class="la-v2-summary">${escapeHtml(ai.summary)}</p>
         </section>
+        <aside class="la-legal-box la-legal-box--results" role="note">
+          <p>${escapeHtml(LISTING_ANALYSIS_LEGAL_NOTICE)}</p>
+        </aside>
         <div class="la-v2-actions">
           <button type="button" class="la-v2-btn" id="la-v2-pdf-btn">PDF Rapor İndir</button>
         </div>

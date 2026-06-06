@@ -63,6 +63,105 @@ const HOUSING_SQM_BENCHMARK: Record<string, number> = {
   bursa: 30000,
 };
 
+const MAX_URL_LENGTH = 1000;
+const BLOCKED_PROTOCOL_PREFIXES = ["javascript:", "data:", "file:", "ftp:"];
+const DOMAIN_LABELS = [
+  { match: "sahibinden.com", label: "Sahibinden" },
+  { match: "arabam.com", label: "Arabam" },
+  { match: "emlakjet.com", label: "Emlakjet" },
+  { match: "hepsiemlak.com", label: "Hepsiemlak" },
+];
+
+function isPrivateOrBlockedHost(hostname: string) {
+  const host = String(hostname || "").toLowerCase();
+  if (!host) return true;
+  if (host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0") return true;
+  if (host.endsWith(".local") || host.endsWith(".internal")) return true;
+  const match = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!match) return false;
+  const octets = match.slice(1).map((n) => Number(n));
+  if (octets.some((n) => n < 0 || n > 255)) return true;
+  const [a, b] = octets;
+  if (a === 10) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  if (a === 192 && b === 168) return true;
+  return false;
+}
+
+function resolveSourceLabel(hostname: string) {
+  const host = String(hostname || "").toLowerCase().replace(/^www\./, "");
+  for (const entry of DOMAIN_LABELS) {
+    if (host === entry.match || host.endsWith(`.${entry.match}`)) {
+      return { domain: entry.match, label: entry.label };
+    }
+  }
+  return { domain: host, label: "Diğer" };
+}
+
+function parseListingUrl(rawUrl: unknown) {
+  const trimmed = String(rawUrl ?? "").trim();
+  if (!trimmed) {
+    return { isValid: true, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: null };
+  }
+  if (trimmed.length > MAX_URL_LENGTH) {
+    return { isValid: false, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: "URL çok uzun (maksimum 1000 karakter)." };
+  }
+  const lower = trimmed.toLowerCase();
+  for (const prefix of BLOCKED_PROTOCOL_PREFIXES) {
+    if (lower.startsWith(prefix)) {
+      return { isValid: false, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: "Geçersiz URL protokolü." };
+    }
+  }
+  let candidate = trimmed;
+  if (!/^https?:\/\//i.test(candidate)) candidate = `https://${candidate}`;
+  let parsed: URL;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    return { isValid: false, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: "Geçersiz URL formatı." };
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return { isValid: false, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: "Yalnızca http ve https bağlantıları kabul edilir." };
+  }
+  if (isPrivateOrBlockedHost(parsed.hostname)) {
+    return { isValid: false, normalizedUrl: null, sourceDomain: null, sourceLabel: null, error: "Bu bağlantı türüne izin verilmez." };
+  }
+  parsed.hash = "";
+  for (const key of [...parsed.searchParams.keys()]) {
+    if (key.toLowerCase().startsWith("utm_")) parsed.searchParams.delete(key);
+  }
+  parsed.search = parsed.searchParams.toString() ? `?${parsed.searchParams.toString()}` : "";
+  const { domain, label } = resolveSourceLabel(parsed.hostname);
+  return { isValid: true, normalizedUrl: parsed.href, sourceDomain: domain, sourceLabel: label, error: null };
+}
+
+function attachListingUrlFields(input: Record<string, unknown>) {
+  const raw = String(input.listing_url ?? "").trim();
+  if (!raw) {
+    return { ...input, listing_url: null, source_domain: null, source_label: null };
+  }
+  const parsed = parseListingUrl(raw);
+  if (!parsed.isValid) return { ...input, _urlError: parsed.error };
+  return {
+    ...input,
+    listing_url: parsed.normalizedUrl,
+    source_domain: parsed.sourceDomain,
+    source_label: parsed.sourceLabel,
+  };
+}
+
+function buildResultSourceMeta(input: Record<string, unknown>) {
+  if (!input.listing_url) {
+    return { listingUrl: null, domain: null, label: null, mode: null };
+  }
+  return {
+    listingUrl: input.listing_url,
+    domain: input.source_domain || null,
+    label: input.source_label || "Diğer",
+    mode: "user_provided_url_only",
+  };
+}
+
 function normalizeCityKey(city: string) {
   const key = city.toLocaleLowerCase("tr-TR");
   if (key.includes("istanbul") || key.includes("İstanbul".toLocaleLowerCase("tr-TR"))) return "istanbul";
@@ -95,6 +194,11 @@ function computeConfidenceScore(type: ListingType, input: Record<string, unknown
 
 function validateListingInput(type: ListingType, input: Record<string, unknown>) {
   const errors: string[] = [];
+  const rawUrl = cleanText(input.listing_url, 1000);
+  if (rawUrl) {
+    const urlCheck = parseListingUrl(rawUrl);
+    if (!urlCheck.isValid) errors.push(urlCheck.error || "Geçersiz ilan bağlantısı.");
+  }
 
   if (type === "vehicle") {
     if (!cleanText(input.marka)) errors.push("Marka zorunludur.");
@@ -236,6 +340,7 @@ function analyzeVehicleListing(input: Record<string, unknown>) {
     summary: `${cleanText(input.marka)} ${cleanText(input.model)} (${year}) için karar skoru ${decisionScore}/100.`,
     factors,
     scoreLabel: scoreLabel(decisionScore),
+    source: buildResultSourceMeta(input),
   };
 }
 
@@ -342,13 +447,18 @@ function analyzeHousingListing(input: Record<string, unknown>) {
     summary: `${cleanText(input.il)} ${cleanText(input.ilce)} ${sqm} m² konut için karar skoru ${decisionScore}/100.`,
     factors,
     scoreLabel: scoreLabel(decisionScore),
+    source: buildResultSourceMeta(input),
   };
 }
 
 function buildListingAnalysisResult(type: ListingType, input: Record<string, unknown>) {
-  const validation = validateListingInput(type, input);
+  const withUrl = attachListingUrlFields(input);
+  if ((withUrl as Record<string, unknown>)._urlError) {
+    return { ok: false as const, errors: [String((withUrl as Record<string, unknown>)._urlError)] };
+  }
+  const validation = validateListingInput(type, withUrl);
   if (!validation.valid) return { ok: false as const, errors: validation.errors };
-  const result = type === "vehicle" ? analyzeVehicleListing(input) : analyzeHousingListing(input);
+  const result = type === "vehicle" ? analyzeVehicleListing(withUrl) : analyzeHousingListing(withUrl);
   return { ok: true as const, result };
 }
 
@@ -379,8 +489,12 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "Invalid listing_type" }, 400, origin);
   }
 
-  const input =
+  const rawInput =
     body.input && typeof body.input === "object" ? (body.input as Record<string, unknown>) : {};
+  const input = attachListingUrlFields(rawInput);
+  if ((input as Record<string, unknown>)._urlError) {
+    return json({ ok: false, error: String((input as Record<string, unknown>)._urlError) }, 400, origin);
+  }
 
   const built = buildListingAnalysisResult(listingType, input);
   if (!built.ok) {
@@ -425,6 +539,10 @@ Deno.serve(async (req) => {
         listing_type: listingType,
         decision_score: built.result.decisionScore,
         confidence_score: built.result.confidenceScore,
+        listing_url: input.listing_url || null,
+        source_domain: input.source_domain || null,
+        source_label: input.source_label || null,
+        url_mode: input.listing_url ? "user_provided_url_only" : null,
       },
     });
   }

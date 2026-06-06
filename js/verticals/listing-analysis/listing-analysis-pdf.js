@@ -4,6 +4,7 @@
  */
 
 import { escapeHtml } from '../../core/security.js';
+import { LISTING_ANALYSIS_LEGAL_NOTICE, LISTING_SOURCE_NOTE } from './listing-analysis-config.js';
 import { buildListingAiSummary } from './listing-analysis-ai-summary.js';
 
 function formatMoney(value) {
@@ -37,6 +38,15 @@ export function buildListingPdfHtml({ result = {}, aiSummary = null } = {}) {
 
   const strengths = (result.strengths || []).map((s) => `<li>${escapeHtml(s)}</li>`).join('');
   const weaknesses = (result.weaknesses || []).map((s) => `<li>${escapeHtml(s)}</li>`).join('');
+  const source = result.source || {};
+  const sourceSection = source.listingUrl
+    ? `<section>
+    <h2>İlan Kaynağı</h2>
+    <p><strong>Kaynak:</strong> ${escapeHtml(source.label || 'Diğer')}</p>
+    <p><strong>Bağlantı:</strong> ${escapeHtml(source.listingUrl)}</p>
+    <p>${escapeHtml(LISTING_SOURCE_NOTE)}</p>
+  </section>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="tr">
@@ -66,6 +76,7 @@ export function buildListingPdfHtml({ result = {}, aiSummary = null } = {}) {
     <div class="card"><div class="label">Fiyat Uygunluğu</div><div class="value">${result.priceFit}/100</div></div>
     <div class="card"><div class="label">Risk</div><div class="value" style="color:${riskTone(result.riskLevel)}">${escapeHtml(result.riskLevel)}</div></div>
   </div>
+  ${sourceSection}
   <section>
     <h2>Toplam Maliyet Tahmini</h2>
     <p><strong>${totalCost}</strong></p>
@@ -82,7 +93,7 @@ export function buildListingPdfHtml({ result = {}, aiSummary = null } = {}) {
     <h2>AI Executive Summary</h2>
     <p class="summary">${escapeHtml(ai.summary)}</p>
   </section>
-  <p class="meta">Bilgilendirme amaçlıdır · bağlayıcı değerlendirme değildir.</p>
+  <p class="meta">${escapeHtml(LISTING_ANALYSIS_LEGAL_NOTICE)}</p>
 </body>
 </html>`;
 }

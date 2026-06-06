@@ -1,7 +1,10 @@
 /**
- * AI İlan Analizi V1 — deterministik karar motoru.
+ * AI İlan Analizi — deterministik karar motoru.
  * Canonical skorlar yalnızca bu modülden üretilir; AI skoru değiştiremez.
  */
+import { attachListingUrlFields, buildResultSourceMeta, parseListingUrl } from './listing-analysis-url.js';
+
+export { parseListingUrl, attachListingUrlFields, buildResultSourceMeta } from './listing-analysis-url.js';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -93,6 +96,14 @@ function computeConfidenceScore(type, input) {
  */
 export function validateListingInput(type, input = {}) {
   const errors = [];
+  const rawUrl = cleanText(input.listing_url, 1000);
+
+  if (rawUrl) {
+    const urlCheck = parseListingUrl(rawUrl);
+    if (!urlCheck.isValid) {
+      errors.push(urlCheck.error || 'Geçersiz ilan bağlantısı.');
+    }
+  }
 
   if (type === 'vehicle') {
     if (!cleanText(input.marka)) errors.push('Marka zorunludur.');
@@ -238,7 +249,11 @@ export function analyzeVehicleListing(input = {}) {
     summary: `${cleanText(input.marka)} ${cleanText(input.model)} (${year}) için karar skoru ${decisionScore}/100.`,
     factors,
     scoreLabel: scoreLabel(decisionScore),
+    source: buildResultSourceMeta(input),
     inputSnapshot: {
+      listing_url: input.listing_url || null,
+      source_domain: input.source_domain || null,
+      source_label: input.source_label || null,
       marka: cleanText(input.marka),
       model: cleanText(input.model),
       yil: year,
@@ -353,7 +368,11 @@ export function analyzeHousingListing(input = {}) {
     summary: `${cleanText(input.il)} ${cleanText(input.ilce)} ${sqm} m² konut için karar skoru ${decisionScore}/100.`,
     factors,
     scoreLabel: scoreLabel(decisionScore),
+    source: buildResultSourceMeta(input),
     inputSnapshot: {
+      listing_url: input.listing_url || null,
+      source_domain: input.source_domain || null,
+      source_label: input.source_label || null,
       il: cleanText(input.il),
       ilce: cleanText(input.ilce),
       metrekare: sqm,
@@ -370,10 +389,15 @@ export function analyzeHousingListing(input = {}) {
  * @param {object} input
  */
 export function buildListingAnalysisResult(type, input = {}) {
-  const validation = validateListingInput(type, input);
+  const withUrl = attachListingUrlFields(input);
+  if (withUrl._urlError) {
+    return { ok: false, errors: [withUrl._urlError] };
+  }
+
+  const validation = validateListingInput(type, withUrl);
   if (!validation.valid) {
     return { ok: false, errors: validation.errors };
   }
-  const result = type === 'vehicle' ? analyzeVehicleListing(input) : analyzeHousingListing(input);
+  const result = type === 'vehicle' ? analyzeVehicleListing(withUrl) : analyzeHousingListing(withUrl);
   return { ok: true, result };
 }
