@@ -5,6 +5,7 @@ import { buildDecisionIntelligenceResult } from '../features/results/decision-in
 import { buildDecisionMemoryLite } from './decision-memory-lite.js';
 import { mapDecisionSnapshot, mapDecisionToRenderModel } from './decision-v3-mappers.js';
 import {
+  bindDecisionV3ReportActions,
   bindDecisionV3WhatIfSimulator,
   ensureDecisionV3Styles,
   renderDecisionV3Panel
@@ -85,6 +86,21 @@ export async function tryMountDecisionEngineV3(params = {}) {
       // silent what-if bind failure
     }
 
+    try {
+      bindDecisionV3ReportActions(wrapper, {
+        decision: {
+          ...model,
+          snapshot,
+          totalCost: snapshot.totalCost,
+          riskScore: snapshot.riskScore,
+          decisionQualityScore: snapshot.decisionQualityScore
+        },
+        memory
+      });
+    } catch {
+      // silent report bind failure
+    }
+
     return {
       intelligence,
       snapshot,
@@ -99,8 +115,16 @@ export async function tryMountDecisionEngineV3(params = {}) {
 export { buildDecisionMemoryLite } from './decision-memory-lite.js';
 export { mapDecisionSnapshot, mapDecisionToRenderModel } from './decision-v3-mappers.js';
 export {
+  bindDecisionV3ReportActions,
   bindDecisionV3WhatIfSimulator,
   ensureDecisionV3Styles,
   renderDecisionV3Panel
 } from './decision-v3-renderer.js';
+export {
+  buildDecisionReportModel,
+  buildDecisionReportSummaryText,
+  copyDecisionReportSummary,
+  downloadDecisionReportHtml,
+  renderDecisionReportHtml
+} from './decision-v3-report.js';
 export { simulateWhatIfChange, simulateWhatIfControls } from './decision-v3-whatif.js';

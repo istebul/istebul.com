@@ -119,6 +119,9 @@ test('tryMountDecisionEngineV3 mounts panel and enriches with memory-lite', asyn
   assert.match(mountNode.nodes[0].innerHTML, /Karar Profiliniz/);
   assert.match(mountNode.nodes[0].innerHTML, /What If Senaryoları/);
   assert.match(mountNode.nodes[0].innerHTML, /data-whatif-run/);
+  assert.match(mountNode.nodes[0].innerHTML, /Karar Raporu/);
+  assert.match(mountNode.nodes[0].innerHTML, /data-report-download/);
+  assert.match(mountNode.nodes[0].innerHTML, /data-report-copy/);
 });
 
 test('renderDecisionV3Panel places memory profile after action plan', () => {

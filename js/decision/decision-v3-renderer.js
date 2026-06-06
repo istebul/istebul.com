@@ -2,6 +2,11 @@
  * Decision Engine V3 renderer — deterministic decision panel with optional memory block.
  */
 import { escapeHtml } from '../core/security.js';
+import {
+  buildDecisionReportModel,
+  copyDecisionReportSummary,
+  downloadDecisionReportHtml
+} from './decision-v3-report.js';
 import { simulateWhatIfControls } from './decision-v3-whatif.js';
 
 function esc(value) {
@@ -154,6 +159,26 @@ function renderMemoryProfile(memory) {
   `;
 }
 
+function renderDecisionReportSection() {
+  return `
+    <section class="decision-v3-section decision-v3-report" data-decision-report>
+      <div class="decision-v3-section-head">
+        <h3>Karar Raporu</h3>
+        <p class="decision-v3-muted">Paylaşılabilir veya indirilebilir özet rapor</p>
+      </div>
+      <div class="decision-v3-report-actions">
+        <button type="button" class="decision-v3-report-btn decision-v3-report-btn-primary" data-report-download>
+          Raporu indir
+        </button>
+        <button type="button" class="decision-v3-report-btn decision-v3-report-btn-secondary" data-report-copy>
+          Özeti kopyala
+        </button>
+      </div>
+      <p class="decision-v3-report-feedback" data-report-feedback hidden aria-live="polite"></p>
+    </section>
+  `;
+}
+
 /**
  * @param {object} model
  * @returns {string}
@@ -229,6 +254,7 @@ export function renderDecisionV3Panel(model = {}) {
 
       ${renderWhatIfSection(model)}
       ${renderMemoryProfile(model.memory)}
+      ${renderDecisionReportSection()}
     </div>
   `;
 }
@@ -325,12 +351,84 @@ export function bindDecisionV3WhatIfSimulator(root, model = {}) {
         }
 
         updateWhatIfResultCard(section, result);
+        section._lastWhatIfResult = result;
       } catch {
         replaceWithStaticWhatIf(root, model.whatIfScenarios);
       }
     });
   } catch {
     replaceWithStaticWhatIf(root, model.whatIfScenarios);
+  }
+}
+
+function getLatestWhatIfResult(root) {
+  const section = root?.querySelector?.('[data-decision-whatif]');
+  return section?._lastWhatIfResult || null;
+}
+
+function showReportFeedback(root, message, type = 'success') {
+  const feedback = root.querySelector('[data-report-feedback]');
+  if (!feedback) return;
+
+  feedback.textContent = message;
+  feedback.hidden = false;
+  feedback.classList.toggle('is-success', type === 'success');
+  feedback.classList.toggle('is-error', type === 'error');
+
+  window.clearTimeout(feedback._hideTimer);
+  feedback._hideTimer = window.setTimeout(() => {
+    feedback.hidden = true;
+  }, 2600);
+}
+
+/**
+ * @param {HTMLElement|DocumentFragment} root
+ * @param {object} context
+ */
+export function bindDecisionV3ReportActions(root, context = {}) {
+  try {
+    if (!root) return;
+
+    const section = root.querySelector('[data-decision-report]');
+    if (!section) return;
+
+    const downloadBtn = section.querySelector('[data-report-download]');
+    const copyBtn = section.querySelector('[data-report-copy]');
+
+    const buildReport = () =>
+      buildDecisionReportModel(
+        context.decision || {},
+        context.memory || context.decision?.memory || null,
+        typeof context.getWhatIfResult === 'function'
+          ? context.getWhatIfResult()
+          : getLatestWhatIfResult(root)
+      );
+
+    downloadBtn?.addEventListener('click', () => {
+      try {
+        const ok = downloadDecisionReportHtml(buildReport());
+        showReportFeedback(root, ok ? 'Rapor indirildi.' : 'Rapor indirilemedi.', ok ? 'success' : 'error');
+      } catch {
+        showReportFeedback(root, 'Rapor indirilemedi.', 'error');
+      }
+    });
+
+    copyBtn?.addEventListener('click', () => {
+      void (async () => {
+        try {
+          const result = await copyDecisionReportSummary(buildReport());
+          showReportFeedback(
+            root,
+            result.ok ? 'Özet panoya kopyalandı.' : 'Özet kopyalanamadı.',
+            result.ok ? 'success' : 'error'
+          );
+        } catch {
+          showReportFeedback(root, 'Özet kopyalanamadı.', 'error');
+        }
+      })();
+    });
+  } catch {
+    // silent report bind failure
   }
 }
 
