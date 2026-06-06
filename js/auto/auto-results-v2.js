@@ -43,6 +43,8 @@ import {
   buildWhyRecommendedCards,
   scoreBandLabel
 } from './auto-results-model.js';
+import { buildDecisionEngineV3 } from '../decision/ai-decision-engine-v3.js';
+import { renderDecisionEngineV3 } from '../decision/decision-v3-renderer.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -317,6 +319,29 @@ function computeRiskLevel({ budget, totalCost, riskItems = [] }) {
   return { label: 'Düşük', score: 28 };
 }
 
+function mountDecisionEngineV3Experimental(root, { formData, topResult, intel, alternatives }) {
+  try {
+    const mount = root?.querySelector('#ib-results-detail');
+    if (!mount) return;
+
+    const decision = buildDecisionEngineV3({
+      vertical: 'auto',
+      formData,
+      topResult,
+      decisionScore: intel?.decisionScore,
+      confidenceScore: intel?.confidenceScore,
+      alternatives: (alternatives || []).map((a) => ({
+        name: a.vehicle?.name,
+        title: a.vehicle?.name
+      }))
+    });
+
+    renderDecisionEngineV3(mount, decision);
+  } catch {
+    /* deneysel bölüm — ana akışı bozmamalı */
+  }
+}
+
 function wireHeroActions(root, model, track) {
   const printHandler = () => {
     safeTrackEvent(track, 'decision_report_print_click', { score: model.decisionScore });
@@ -451,6 +476,12 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   await hydrateResultsEconomicIndicators(root, 'auto');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
+  mountDecisionEngineV3Experimental(root, {
+    formData,
+    topResult,
+    intel,
+    alternatives
+  });
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     score: intel.decisionScore,
