@@ -768,6 +768,9 @@ export function initDecisionFlow(config) {
     const nav = el('nav');
     if (!toggle || !nav) return;
 
+    // vertical-locale-shell already binds the same toggle via vertical-product-nav.js
+    if (toggle.dataset.ibNavBound === '1') return;
+
     const setOpen = (open) => {
       nav.classList.toggle('is-open', open);
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');

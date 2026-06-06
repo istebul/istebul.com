@@ -3,7 +3,7 @@
  * Resolution chain: verified image_url → local catalog asset → default fallback.
  */
 
-export const DEFAULT_VEHICLE_FALLBACK = '/assets/images/vehicles/default-vehicle.webp';
+export const DEFAULT_VEHICLE_FALLBACK = '/assets/images/auto/vehicle-premium-placeholder.svg';
 export const PREMIUM_VEHICLE_PLACEHOLDER = DEFAULT_VEHICLE_FALLBACK;
 
 const GENERIC_IMAGE_PATTERNS = [
@@ -18,30 +18,31 @@ const GENERIC_IMAGE_PATTERNS = [
   /pexels/i
 ];
 
-/** Local JPG/SVG assets keyed by vehicle name patterns (no external CDN). */
+/** Local SVG assets keyed by vehicle name patterns (no external CDN, no debug JPG overlays). */
 const LOCAL_VEHICLE_ASSET_RULES = [
-  { pattern: /toyota.*corolla.*cross/i, path: '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg' },
-  { pattern: /toyota.*c[\s-]?hr/i, path: '/assets/images/vehicles/toyota-chr-hybrid.jpg' },
-  { pattern: /toyota.*corolla.*sedan/i, path: '/assets/images/vehicles/toyota-corolla-sedan-hybrid.jpg' },
-  { pattern: /volkswagen.*golf/i, path: '/assets/images/vehicles/volkswagen-golf.jpg' },
-  { pattern: /volkswagen.*t[\s-]?roc/i, path: '/assets/images/vehicles/volkswagen-troc.jpg' },
-  { pattern: /renault.*clio/i, path: '/assets/images/vehicles/renault-clio.jpg' },
-  { pattern: /hyundai.*i20/i, path: '/assets/images/vehicles/hyundai-i20.jpg' },
-  { pattern: /mercedes.*c\s*200/i, path: '/assets/images/vehicles/mercedes-c200.jpg' },
-  { pattern: /bmw.*320/i, path: '/assets/images/vehicles/bmw-320i.jpg' },
-  { pattern: /opel.*corsa/i, path: '/assets/images/vehicles/opel-corsa.jpg' },
-  { pattern: /peugeot.*(208|2008|e-2008)/i, path: '/assets/images/vehicles/peugeot-208.jpg' },
-  { pattern: /tesla.*model/i, path: '/assets/images/vehicles/tesla-model-3.jpg' },
-  { pattern: /togg.*t10/i, path: '/assets/images/vehicles/togg-t10x.jpg' },
-  { pattern: /audi.*a3/i, path: '/assets/images/vehicles/audi-a3.jpg' },
-  { pattern: /volvo/i, path: '/assets/images/vehicles/volvo-xc60.jpg' },
+  { pattern: /toyota.*corolla.*cross/i, path: '/assets/images/auto/toyota-corolla-cross-hybrid.svg' },
+  { pattern: /toyota.*c[\s-]?hr/i, path: '/assets/images/auto/toyota-corolla-cross-hybrid.svg' },
+  { pattern: /toyota.*corolla.*sedan/i, path: '/assets/images/auto/toyota-corolla-cross-hybrid.svg' },
   { pattern: /toyota.*corolla/i, path: '/assets/images/auto/toyota-corolla-cross-hybrid.svg' },
-  { pattern: /honda.*civic/i, path: '/assets/images/auto/honda-civic-eco.svg' },
+  { pattern: /volkswagen.*golf/i, path: '/assets/images/auto/volkswagen-golf-tsi.svg' },
+  { pattern: /volkswagen.*t[\s-]?roc/i, path: '/assets/images/auto/volkswagen-golf-tsi.svg' },
+  { pattern: /renault.*clio/i, path: '/assets/images/auto/renault-clio-icon.svg' },
+  { pattern: /hyundai.*i20/i, path: '/assets/images/auto/hyundai-tucson-tgdi.svg' },
   { pattern: /hyundai.*tucson/i, path: '/assets/images/auto/hyundai-tucson-tgdi.svg' },
+  { pattern: /mercedes.*c\s*200/i, path: '/assets/images/auto/mercedes-premium.svg' },
+  { pattern: /bmw.*320/i, path: '/assets/images/auto/bmw-premium.svg' },
+  { pattern: /opel.*corsa/i, path: '/assets/images/auto/renault-clio-icon.svg' },
+  { pattern: /peugeot/i, path: '/assets/images/auto/peugeot-suv.svg' },
+  { pattern: /citroen/i, path: '/assets/images/auto/peugeot-suv.svg' },
+  { pattern: /seat.*leon/i, path: DEFAULT_VEHICLE_FALLBACK },
+  { pattern: /tesla.*model/i, path: '/assets/images/auto/tesla-model.svg' },
+  { pattern: /togg.*t10/i, path: '/assets/images/auto/togg-t10x.svg' },
+  { pattern: /audi.*a3/i, path: '/assets/images/auto/skoda-family.svg' },
+  { pattern: /volvo/i, path: DEFAULT_VEHICLE_FALLBACK },
+  { pattern: /honda.*civic/i, path: '/assets/images/auto/honda-civic-eco.svg' },
   { pattern: /volkswagen|vw/i, path: '/assets/images/auto/volkswagen-golf-tsi.svg' },
   { pattern: /skoda/i, path: '/assets/images/auto/skoda-family.svg' },
   { pattern: /renault/i, path: '/assets/images/auto/renault-clio-icon.svg' },
-  { pattern: /peugeot/i, path: '/assets/images/auto/peugeot-suv.svg' },
   { pattern: /mercedes/i, path: '/assets/images/auto/mercedes-premium.svg' },
   { pattern: /bmw/i, path: '/assets/images/auto/bmw-premium.svg' },
   { pattern: /byd/i, path: '/assets/images/auto/byd-electric.svg' },
