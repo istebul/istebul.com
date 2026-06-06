@@ -11,8 +11,9 @@
 import {
   ADMIN_ENABLE_KEY,
   ADMIN_SECRET_KEY,
-  buildAnalysisScoresHtml,
+  buildAnalysisDetailHtml,
   buildEdgeRequestHeaders,
+  buildEventsHtml,
   buildImportPreviewHtml,
   buildListingBadgesHtml,
   buildQualityChecklistHtml,
@@ -21,6 +22,7 @@ import {
   getAdminPanelState,
   getCategoryLabelTr,
   getEdgeSecret,
+  getListingAnalyzePath,
   getStatusLabelTr,
   getSupabaseAnonKey,
   isListingPubliclyVisible,
@@ -28,6 +30,7 @@ import {
   previewImportContent,
   resolveActiveStatusFilter,
   resolveEdgeBaseUrl,
+  resolveImportAnalyzeFlag,
   safeRenderText,
   translateAdminErrorMessage,
   validateAttributesJson,
@@ -146,21 +149,21 @@ function renderListingRow(listing) {
     </button>`;
 }
 
-function renderEvents(events) {
-  if (!events?.length) return '<p class="ai-listings-admin__muted">Olay yok.</p>';
-  return `<ul class="ai-listings-admin__events">${events
-    .map((event) => {
-      const reason =
-        event.event_type === 'listing_rejected' && event.payload?.reason
-          ? ` — ${safeRenderText(event.payload.reason)}`
-          : '';
-      return `
-      <li>
-        <span class="ai-listings-admin__event-type">${safeRenderText(event.event_type)}</span>
-        <span class="ai-listings-admin__event-time">${safeRenderText(event.created_at)}</span>${reason}
-      </li>`;
-    })
-    .join('')}</ul>`;
+async function autoAnalyzeListing(listing) {
+  const listingId = String(listing?.id ?? '').trim();
+  if (!listingId) return { ok: false, message: 'İlan kimliği bulunamadı.' };
+
+  setStatus('Analiz çalıştırılıyor…', 'info');
+  const result = await edgeRequest(getListingAnalyzePath(listingId), { method: 'POST' });
+  if (!result.ok) {
+    setStatus(result.message, 'error');
+    return result;
+  }
+
+  setStatus('Analiz tamamlandı.', 'success');
+  await loadListings();
+  await showListingDetail(listing);
+  return result;
 }
 
 function renderPublicVisibilityNote(status) {
@@ -249,13 +252,12 @@ async function showListingDetail(listing) {
       <dt>Kaynak URL</dt><dd>${safeRenderText(listingData.source_url)}</dd>
       <dt>Kaynak tipi</dt><dd>${safeRenderText(listingData.source_type)}</dd>
     </dl>
+    ${buildAnalysisDetailHtml(latest)}
     <h4>Kalite Kontrol Listesi</h4>
     ${buildQualityChecklistHtml(listingData, latest)}
     ${renderPublicVisibilityNote(status)}
-    <h4>Son Analiz</h4>
-    ${buildAnalysisScoresHtml(latest)}
     <h4>Olay Geçmişi</h4>
-    ${renderEvents(events)}
+    ${buildEventsHtml(events)}
     <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
       <label>
         Red nedeni
@@ -267,7 +269,6 @@ async function showListingDetail(listing) {
     <h4>İşlemler</h4>
     <div class="ai-listings-admin__actions">
       ${buildQaActionsHtml(status)}
-      <button type="button" id="ai-listings-analyze-btn" class="ai-listings-admin__btn">Analiz et</button>
       <button type="button" id="ai-listings-refresh-detail-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Yenile</button>
     </div>`;
 
@@ -283,7 +284,6 @@ async function showListingDetail(listing) {
     });
   });
 
-  $('ai-listings-analyze-btn')?.addEventListener('click', () => analyzeListing(id));
   $('ai-listings-refresh-detail-btn')?.addEventListener('click', () => showListingDetail(listingData));
   $('ai-listings-confirm-reject-btn')?.addEventListener('click', () => {
     const reason = $('ai-listings-reject-reason')?.value?.trim() ?? '';
@@ -331,18 +331,6 @@ async function runQaAction(id, action, body) {
   await loadListings();
 }
 
-async function analyzeListing(id) {
-  setStatus('Analiz çalıştırılıyor…', 'info');
-  const result = await edgeRequest(`/listings/${id}/analyze`, { method: 'POST' });
-  if (!result.ok) {
-    setStatus(result.message, 'error');
-    return;
-  }
-  setStatus('Analiz tamamlandı.', 'success');
-  if (selectedListing) await showListingDetail(selectedListing);
-  await loadListings();
-}
-
 async function handleCreateSubmit(event) {
   event.preventDefault();
   const category = $('ai-listings-create-category')?.value?.trim();
@@ -382,11 +370,16 @@ async function handleCreateSubmit(event) {
     return;
   }
 
-  setStatus('İlan oluşturuldu.', 'success');
   event.target.reset();
-  await loadListings();
   const listing = result.data?.listing;
-  if (listing) await showListingDetail(listing);
+  if (!listing) {
+    setStatus('İlan oluşturuldu.', 'success');
+    await loadListings();
+    return;
+  }
+
+  setStatus('İlan oluşturuldu. Analiz başlatılıyor…', 'success');
+  await autoAnalyzeListing(listing);
 }
 
 function updateImportButtonState() {
@@ -430,7 +423,7 @@ async function handleImportRun() {
     $('ai-listings-import-format')?.value === 'json' ? 'json' : 'csv'
   );
   const content = $('ai-listings-import-content')?.value ?? '';
-  const analyze = Boolean($('ai-listings-import-analyze')?.checked);
+  const analyze = resolveImportAnalyzeFlag($('ai-listings-import-analyze')?.checked);
 
   setStatus('İlanlar içe aktarılıyor…', 'info');
   const result = await edgeRequest('/listings/import', {

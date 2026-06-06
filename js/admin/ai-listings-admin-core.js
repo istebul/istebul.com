@@ -392,6 +392,10 @@ export function buildImportPreviewHtml(preview) {
     </div>`;
 }
 
+export const ANALYSIS_EMPTY_MESSAGE = 'Henüz analiz yapılmamış.';
+export const EVENTS_EMPTY_MESSAGE = 'Olay geçmişi yok.';
+export const IMPORT_ANALYZE_DEFAULT = true;
+
 /**
  * @param {unknown} value
  * @returns {string|number|undefined|null}
@@ -402,33 +406,212 @@ export function formatScoreValue(value) {
 }
 
 /**
+ * @param {unknown} score
+ * @returns {string}
+ */
+export function getScoreInterpretationTr(score) {
+  const value = Number(score);
+  if (!Number.isFinite(value)) return '—';
+  if (value >= 80) return 'Çok iyi';
+  if (value >= 60) return 'İyi';
+  if (value >= 40) return 'Orta';
+  if (value >= 20) return 'Zayıf';
+  return 'Çok zayıf';
+}
+
+/**
+ * @param {unknown} riskScore
+ * @returns {string}
+ */
+export function getRiskInterpretationTr(riskScore) {
+  const value = Number(riskScore);
+  if (!Number.isFinite(value)) return '—';
+  if (value <= 30) return 'Düşük risk';
+  if (value <= 60) return 'Orta risk';
+  return 'Yüksek risk';
+}
+
+/**
+ * @param {unknown} listingId
+ * @returns {string}
+ */
+export function getListingAnalyzePath(listingId) {
+  return `/listings/${encodeURIComponent(String(listingId ?? '').trim())}/analyze`;
+}
+
+/**
+ * @param {boolean|undefined|null} checkboxChecked
+ * @returns {boolean}
+ */
+export function resolveImportAnalyzeFlag(checkboxChecked) {
+  if (checkboxChecked === undefined || checkboxChecked === null) return IMPORT_ANALYZE_DEFAULT;
+  return Boolean(checkboxChecked);
+}
+
+/**
+ * @param {unknown} value
+ * @returns {number|undefined}
+ */
+function normalizeConfidenceScore(value) {
+  const raw = Number(value);
+  if (!Number.isFinite(raw)) return undefined;
+  return raw <= 1 ? raw * 100 : raw;
+}
+
+/**
+ * @param {string} label
+ * @param {unknown} value
+ * @param {string} [interpretation]
+ * @returns {string}
+ */
+function buildScoreRowHtml(label, value, interpretation) {
+  if (value === undefined) return '';
+  const interpretationHtml = interpretation
+    ? ` <span class="ai-listings-admin__score-interpretation">(${safeRenderText(interpretation)})</span>`
+    : '';
+  return `<li><strong>${safeRenderText(label)}:</strong> ${safeRenderText(value)}${interpretationHtml}</li>`;
+}
+
+/**
+ * @param {unknown} items
+ * @param {string} emptyMessage
+ * @returns {string}
+ */
+function buildStringListHtml(items, emptyMessage) {
+  if (!Array.isArray(items) || !items.length) {
+    return `<p class="ai-listings-admin__muted">${safeRenderText(emptyMessage)}</p>`;
+  }
+  return `<ul class="ai-listings-admin__bullet-list">${items
+    .map((item) => `<li>${safeRenderText(item)}</li>`)
+    .join('')}</ul>`;
+}
+
+/**
+ * @param {unknown} tags
+ * @returns {string}
+ */
+function buildTagsHtml(tags) {
+  if (!Array.isArray(tags) || !tags.length) {
+    return '<p class="ai-listings-admin__muted">Etiket yok.</p>';
+  }
+  return `<div class="ai-listings-admin__tag-list">${tags
+    .map((tag) => `<span class="ai-listings-admin__tag">${safeRenderText(tag)}</span>`)
+    .join('')}</div>`;
+}
+
+/**
  * @param {Record<string, unknown>|null|undefined} analysis
  * @returns {string}
  */
-export function buildAnalysisScoresHtml(analysis) {
+export function buildScoresSectionHtml(analysis) {
   if (!analysis) {
-    return '<p class="ai-listings-admin__muted">Henüz analiz yok.</p>';
+    return `<p class="ai-listings-admin__muted">${ANALYSIS_EMPTY_MESSAGE}</p>`;
   }
 
+  const confidence = formatScoreValue(analysis.confidence);
+  const confidenceScore = normalizeConfidenceScore(analysis.confidence);
   const rows = [
-    ['AI Skoru', formatScoreValue(analysis.ai_score)],
-    ['Risk', formatScoreValue(analysis.risk_score)],
-    ['Piyasa', formatScoreValue(analysis.market_score)],
-    ['Fiyat', formatScoreValue(analysis.price_score)],
-    ['Güven', formatScoreValue(analysis.confidence)]
-  ]
-    .filter(([, value]) => value !== undefined)
-    .map(
-      ([label, value]) =>
-        `<p><strong>${safeRenderText(label)}:</strong> ${safeRenderText(value)}</p>`
+    buildScoreRowHtml('AI Skoru', formatScoreValue(analysis.ai_score), getScoreInterpretationTr(analysis.ai_score)),
+    buildScoreRowHtml(
+      'Risk Skoru',
+      formatScoreValue(analysis.risk_score),
+      getRiskInterpretationTr(analysis.risk_score)
+    ),
+    buildScoreRowHtml(
+      'Piyasa Skoru',
+      formatScoreValue(analysis.market_score),
+      getScoreInterpretationTr(analysis.market_score)
+    ),
+    buildScoreRowHtml(
+      'Fiyat Skoru',
+      formatScoreValue(analysis.price_score),
+      getScoreInterpretationTr(analysis.price_score)
+    ),
+    buildScoreRowHtml(
+      'Güven',
+      confidence,
+      confidenceScore !== undefined ? getScoreInterpretationTr(confidenceScore) : undefined
     )
-    .join('');
+  ].filter(Boolean);
 
-  const summary = analysis.summary
-    ? `<p><strong>Özet:</strong> ${safeRenderText(analysis.summary)}</p>`
-    : '';
+  if (!rows.length) {
+    return `<p class="ai-listings-admin__muted">${ANALYSIS_EMPTY_MESSAGE}</p>`;
+  }
 
-  return `<div class="ai-listings-admin__analysis">${rows}${summary}</div>`;
+  return `<ul class="ai-listings-admin__score-list">${rows.join('')}</ul>`;
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @returns {string}
+ */
+export function buildAnalysisDetailHtml(analysis) {
+  if (!analysis) {
+    return `
+      <h4>AI Analizi</h4>
+      <p class="ai-listings-admin__muted">${ANALYSIS_EMPTY_MESSAGE}</p>
+      <h4>Skorlar</h4>
+      <p class="ai-listings-admin__muted">${ANALYSIS_EMPTY_MESSAGE}</p>
+      <h4>Güçlü Yönler</h4>
+      <p class="ai-listings-admin__muted">${ANALYSIS_EMPTY_MESSAGE}</p>
+      <h4>Riskler</h4>
+      <p class="ai-listings-admin__muted">${ANALYSIS_EMPTY_MESSAGE}</p>
+      <h4>Etiketler</h4>
+      <p class="ai-listings-admin__muted">${ANALYSIS_EMPTY_MESSAGE}</p>`;
+  }
+
+  const summary = String(analysis.summary ?? '').trim();
+  const summaryHtml = summary
+    ? `<p class="ai-listings-admin__analysis-summary">${safeRenderText(summary)}</p>`
+    : `<p class="ai-listings-admin__muted">Özet yok.</p>`;
+
+  return `
+    <h4>AI Analizi</h4>
+    ${summaryHtml}
+    <h4>Skorlar</h4>
+    ${buildScoresSectionHtml(analysis)}
+    <h4>Güçlü Yönler</h4>
+    ${buildStringListHtml(analysis.pros, 'Güçlü yön bulunamadı.')}
+    <h4>Riskler</h4>
+    ${buildStringListHtml(analysis.cons, 'Risk bulunamadı.')}
+    <h4>Etiketler</h4>
+    ${buildTagsHtml(analysis.tags)}`;
+}
+
+/**
+ * @param {Array<Record<string, unknown>>|null|undefined} events
+ * @returns {string}
+ */
+export function buildEventsHtml(events) {
+  if (!events?.length) {
+    return `<p class="ai-listings-admin__muted">${EVENTS_EMPTY_MESSAGE}</p>`;
+  }
+
+  return `<ul class="ai-listings-admin__events">${events
+    .map((event) => {
+      const reason =
+        event.event_type === 'listing_rejected' && event.payload?.reason
+          ? ` — ${safeRenderText(event.payload.reason)}`
+          : '';
+      return `
+      <li>
+        <span class="ai-listings-admin__event-type">${safeRenderText(event.event_type)}</span>
+        <span class="ai-listings-admin__event-time">${safeRenderText(event.created_at)}</span>${reason}
+      </li>`;
+    })
+    .join('')}</ul>`;
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @returns {string}
+ * @deprecated Use buildAnalysisDetailHtml for the full detail panel.
+ */
+export function buildAnalysisScoresHtml(analysis) {
+  if (!analysis) {
+    return `<p class="ai-listings-admin__muted">${ANALYSIS_EMPTY_MESSAGE}</p>`;
+  }
+  return buildScoresSectionHtml(analysis);
 }
 
 /**

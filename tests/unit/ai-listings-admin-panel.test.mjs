@@ -9,6 +9,9 @@ const {
   STATUS_LABELS_TR,
   CATEGORY_LABELS_TR,
   STATUS_FILTER_CHIPS_TR,
+  ANALYSIS_EMPTY_MESSAGE,
+  EVENTS_EMPTY_MESSAGE,
+  IMPORT_ANALYZE_DEFAULT,
   isAdminPanelEnabled,
   getAdminPanelState,
   getEdgeSecret,
@@ -20,9 +23,16 @@ const {
   buildQaActionsHtml,
   buildImportPreviewHtml,
   buildAnalysisScoresHtml,
+  buildAnalysisDetailHtml,
+  buildScoresSectionHtml,
+  buildEventsHtml,
   previewImportContent,
   getAvailableQaActions,
   resolveActiveStatusFilter,
+  resolveImportAnalyzeFlag,
+  getListingAnalyzePath,
+  getScoreInterpretationTr,
+  getRiskInterpretationTr,
   isListingPubliclyVisible,
   formatAnalysisDate,
   extractLatestAnalysis,
@@ -38,6 +48,7 @@ const {
 } = await import('../../js/admin/ai-listings-admin-core.js');
 
 const adminHtmlPath = path.join(process.cwd(), 'admin/ai-listings.html');
+const adminJsPath = path.join(process.cwd(), 'js/admin/ai-listings-admin.js');
 
 function mockStorage(values = {}) {
   return {
@@ -252,22 +263,111 @@ test('extractLatestAnalysis reads nested latest_analysis', () => {
   assert.equal(extractLatestAnalysis({}), null);
 });
 
-test('buildAnalysisScoresHtml renders Turkish score labels', () => {
-  const html = buildAnalysisScoresHtml({
+test('getScoreInterpretationTr maps score bands to Turkish labels', () => {
+  assert.equal(getScoreInterpretationTr(90), 'Çok iyi');
+  assert.equal(getScoreInterpretationTr(80), 'Çok iyi');
+  assert.equal(getScoreInterpretationTr(79), 'İyi');
+  assert.equal(getScoreInterpretationTr(60), 'İyi');
+  assert.equal(getScoreInterpretationTr(59), 'Orta');
+  assert.equal(getScoreInterpretationTr(40), 'Orta');
+  assert.equal(getScoreInterpretationTr(39), 'Zayıf');
+  assert.equal(getScoreInterpretationTr(20), 'Zayıf');
+  assert.equal(getScoreInterpretationTr(19), 'Çok zayıf');
+  assert.equal(getScoreInterpretationTr(0), 'Çok zayıf');
+});
+
+test('getRiskInterpretationTr maps risk bands to Turkish labels', () => {
+  assert.equal(getRiskInterpretationTr(0), 'Düşük risk');
+  assert.equal(getRiskInterpretationTr(30), 'Düşük risk');
+  assert.equal(getRiskInterpretationTr(31), 'Orta risk');
+  assert.equal(getRiskInterpretationTr(60), 'Orta risk');
+  assert.equal(getRiskInterpretationTr(61), 'Yüksek risk');
+  assert.equal(getRiskInterpretationTr(100), 'Yüksek risk');
+});
+
+test('buildScoresSectionHtml renders Turkish score labels with interpretations', () => {
+  const html = buildScoresSectionHtml({
     ai_score: 78,
     risk_score: 22,
     market_score: 70,
     price_score: 65,
-    confidence: 0.82,
-    summary: 'İyi değer'
+    confidence: 0.82
   });
 
   assert.match(html, /AI Skoru/);
-  assert.match(html, /<strong>Risk:<\/strong>/);
-  assert.match(html, /<strong>Piyasa:<\/strong>/);
-  assert.match(html, /<strong>Fiyat:<\/strong>/);
-  assert.match(html, /<strong>Güven:<\/strong>/);
-  assert.match(html, /İyi değer/);
+  assert.match(html, /Risk Skoru/);
+  assert.match(html, /Piyasa Skoru/);
+  assert.match(html, /Fiyat Skoru/);
+  assert.match(html, /Güven/);
+  assert.match(html, /İyi/);
+  assert.match(html, /Düşük risk/);
+});
+
+test('buildAnalysisScoresHtml shows Turkish empty state when analysis missing', () => {
+  const html = buildAnalysisScoresHtml(null);
+  assert.match(html, new RegExp(ANALYSIS_EMPTY_MESSAGE));
+});
+
+test('buildAnalysisDetailHtml renders latest analysis sections in Turkish', () => {
+  const html = buildAnalysisDetailHtml({
+    ai_score: 85,
+    risk_score: 25,
+    market_score: 72,
+    price_score: 68,
+    confidence: 0.9,
+    summary: 'Güçlü araç ilanı',
+    pros: ['Fiyat uygun', 'Düşük kilometre'],
+    cons: ['Eksik görsel'],
+    tags: ['vehicle', 'low-risk']
+  });
+
+  assert.match(html, />AI Analizi</);
+  assert.match(html, />Skorlar</);
+  assert.match(html, />Güçlü Yönler</);
+  assert.match(html, />Riskler</);
+  assert.match(html, />Etiketler</);
+  assert.match(html, /Güçlü araç ilanı/);
+  assert.match(html, /Fiyat uygun/);
+  assert.match(html, /Eksik görsel/);
+  assert.match(html, /low-risk/);
+  assert.match(html, /Çok iyi/);
+  assert.match(html, /Düşük risk/);
+});
+
+test('buildAnalysisDetailHtml shows empty analysis message for all sections', () => {
+  const html = buildAnalysisDetailHtml(null);
+  assert.equal((html.match(new RegExp(ANALYSIS_EMPTY_MESSAGE, 'g')) || []).length, 5);
+});
+
+test('buildEventsHtml shows Turkish empty state when no events', () => {
+  const html = buildEventsHtml([]);
+  assert.match(html, new RegExp(EVENTS_EMPTY_MESSAGE));
+});
+
+test('getListingAnalyzePath builds analyze endpoint for listing id', () => {
+  assert.equal(getListingAnalyzePath('abc-123'), '/listings/abc-123/analyze');
+});
+
+test('resolveImportAnalyzeFlag defaults analyze to true', () => {
+  assert.equal(IMPORT_ANALYZE_DEFAULT, true);
+  assert.equal(resolveImportAnalyzeFlag(undefined), true);
+  assert.equal(resolveImportAnalyzeFlag(true), true);
+  assert.equal(resolveImportAnalyzeFlag(false), false);
+});
+
+test('import analyze checkbox is checked by default in admin HTML', () => {
+  const html = fs.readFileSync(adminHtmlPath, 'utf8');
+  const checkboxMatch = html.match(/<input[^>]*id="ai-listings-import-analyze"[^>]*>/);
+  assert.ok(checkboxMatch, 'import analyze checkbox should exist');
+  assert.match(checkboxMatch[0], /\bchecked\b/);
+  assert.match(html, /İçe aktarılan ilanları otomatik analiz et/);
+});
+
+test('create listing flow triggers auto analyze call in admin JS', () => {
+  const adminJs = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(adminJs, /autoAnalyzeListing/);
+  assert.match(adminJs, /getListingAnalyzePath/);
+  assert.match(adminJs, /await autoAnalyzeListing\(listing\)/);
 });
 
 test('buildStatusFilterChipsHtml marks active chip with Turkish labels', () => {
@@ -310,8 +410,18 @@ test('buildQaActionsHtml renders Turkish workflow buttons for pending_review', (
   assert.match(html, /data-qa-action="reject"/);
   assert.match(html, />Onayla</);
   assert.match(html, />Reddet</);
+  assert.match(html, />Yeniden analiz et</);
   assert.doesNotMatch(html, /data-qa-action="submit-review"/);
   assert.doesNotMatch(html, />Approve</);
+});
+
+test('draft listings expose Yeniden analiz et and İncelemeye gönder actions', () => {
+  const html = buildQaActionsHtml('draft');
+  assert.match(html, /data-qa-action="reanalyze"/);
+  assert.match(html, /data-qa-action="submit-review"/);
+  assert.match(html, />Yeniden analiz et</);
+  assert.match(html, />İncelemeye gönder</);
+  assert.match(html, />Arşivle</);
 });
 
 test('approved does not imply public visibility in admin core', () => {

@@ -227,6 +227,50 @@
   font-weight: 600;
 }
 
+.ai-listings-admin__detail h4 {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.ai-listings-admin__analysis-summary {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.ai-listings-admin__score-list,
+.ai-listings-admin__bullet-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.875rem;
+}
+
+.ai-listings-admin__score-list li,
+.ai-listings-admin__bullet-list li {
+  margin-bottom: 0.25rem;
+}
+
+.ai-listings-admin__score-interpretation {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.ai-listings-admin__tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.ai-listings-admin__tag {
+  display: inline-flex;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  font-size: 0.75rem;
+  color: #cbd5e1;
+}
+
 .ai-listings-admin__list-meta {
   display: block;
   font-size: 0.75rem;
