@@ -11,6 +11,13 @@ const { tryMountDecisionOs } = await import('../../js/decision/decision-os-engin
 const { buildLinkedInSummaryText, renderDecisionOsReportHtml } = await import(
   '../../js/decision/decision-os-report.js'
 );
+const {
+  loadDecisionTimeline,
+  saveDecisionTimelineEntry,
+  renderDecisionTimelineHtml
+} = await import('../../js/decision/decision-os-timeline.js');
+const { buildTurkeyBenchmark } = await import('../../js/decision/decision-os-benchmark.js');
+const { buildShareCardText } = await import('../../js/decision/decision-os-share.js');
 const { buildDecisionIntelligenceResult } = await import(
   '../../js/features/results/decision-intelligence-engine.js'
 );
@@ -98,6 +105,24 @@ test('mapVerdict maps recommendation levels to AL/BEKLE/ALMA', () => {
   assert.equal(mapVerdict('avoid').color, '#DC2626');
 });
 
+test('buildDecisionOsModel produces conversational AI and Turkey benchmark', () => {
+  const intelligence = buildDecisionIntelligenceResult(
+    'auto',
+    { budget: 900_000, usage: 'city' },
+    { totalCost: 900_000 }
+  );
+  const model = buildDecisionOsModel(intelligence, {
+    vertical: 'auto',
+    totalCost: 900_000
+  });
+
+  assert.ok(model.aiCommentary.paragraphs?.length >= 1);
+  assert.match(model.aiCommentary.paragraphs[0], /Ben olsam|Şimdilik beklemek|almazdım/);
+  assert.ok(model.turkeyBenchmark?.turkey?.score >= 0);
+  assert.ok(model.proInsights?.length >= 7);
+  assert.ok(model.todaySavings != null || model.savings?.todayAmount != null);
+});
+
 test('buildDecisionOsModel produces hero reasons and risks', () => {
   const intelligence = buildDecisionIntelligenceResult(
     'konut',
@@ -148,7 +173,31 @@ test('renderDecisionOsPanel includes hero, accordions, sticky and savings', () =
       formData: { budget: 900_000 },
       metrics: { totalCost: 900_000 },
       extras: { totalCost: 900_000 }
-    }
+    },
+    turkeyBenchmark: buildTurkeyBenchmark({ vertical: 'auto', decisionScore: 88, confidenceScore: 92 }),
+    todaySavings: 19_200,
+    proInsights: [
+      { id: '12m', label: '12 ay senaryo', locked: true },
+      { id: '36m', label: '36 ay senaryo', locked: true },
+      { id: '60m', label: '60 ay senaryo', locked: true },
+      { id: 'rate', label: 'Faiz değişirse', locked: true },
+      { id: 'fx', label: 'Kur değişirse', locked: true },
+      { id: 'best-alt', label: 'En iyi alternatif', locked: true },
+      { id: 'sensitivity', label: 'Kritik değişken analizi', locked: true }
+    ],
+    timeline: [
+      {
+        id: 't1',
+        vertical: 'auto',
+        icon: '🚗',
+        label: 'Araç',
+        verdict: 'AL',
+        verdictEmoji: '🟢',
+        decisionScore: 88,
+        confidencePercent: 92,
+        createdAt: '2026-01-15T10:00:00.000Z'
+      }
+    ]
   });
 
   assert.match(html, /AI SON KARARI/);
@@ -156,16 +205,23 @@ test('renderDecisionOsPanel includes hero, accordions, sticky and savings', () =
   assert.match(html, /AL/);
   assert.match(html, /Detaylı Analizi Aç/);
   assert.match(html, /data-dos-sticky/);
-  assert.match(html, /tasarruf edebilirsiniz/);
+  assert.match(html, /tasarruf sağlayabilir/);
   assert.match(html, /AI Gelecek Önerisi/);
-  assert.match(html, /Karar Kalitesi/);
-  assert.match(html, /What If/);
+  assert.match(html, /Neden önerildi/);
+  assert.match(html, /Riskler/);
+  assert.match(html, /What-if/);
   assert.match(html, /data-dos-whatif-budget/);
   assert.doesNotMatch(html, /data-whatif-run/);
-  assert.match(html, /Sizin Karar Karakteriniz/);
+  assert.match(html, /Karar Profili/);
+  assert.match(html, /Türkiye Ort/);
   assert.match(html, /🥇 En uygun/);
-  assert.match(html, /Ben olsam/);
-  assert.match(html, /Skor Şeffaflığı/);
+  assert.match(html, /Kartı Paylaş/);
+  assert.match(html, /Karar Geçmişim/);
+  assert.match(html, /Pro Insights/);
+  assert.match(html, /12 ay senaryo/);
+  assert.match(html, /En önemli 3 neden/);
+  assert.match(html, /Detay/);
+  assert.doesNotMatch(html, /Tam Analiz/);
 });
 
 test('renderDecisionOsPanel accordions are closed by default', () => {
@@ -261,6 +317,45 @@ test('tryMountDecisionOs mounts panel when enabled', async () => {
   assert.ok(result.model);
   assert.equal(mountNode.nodes.length, 1);
   assert.match(mountNode.nodes[0].innerHTML, /data-decision-os-root/);
+});
+
+test('timeline persists entries in memory storage', () => {
+  const storage = new Map();
+  const mockStorage = {
+    getItem(key) {
+      return storage.get(key) ?? null;
+    },
+    setItem(key, value) {
+      storage.set(key, value);
+    }
+  };
+
+  saveDecisionTimelineEntry(
+    { vertical: 'auto', verdict: 'AL', verdictEmoji: '🟢', decisionScore: 85, confidencePercent: 90 },
+    mockStorage
+  );
+  const entries = loadDecisionTimeline(mockStorage);
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].label, 'Araç');
+  assert.match(renderDecisionTimelineHtml(entries), /🚗/);
+});
+
+test('buildTurkeyBenchmark returns deterministic comparison', () => {
+  const bench = buildTurkeyBenchmark({ vertical: 'konut', decisionScore: 72, confidenceScore: 80 });
+  assert.equal(bench.user.score, 72);
+  assert.ok(bench.turkey.score >= 50 && bench.turkey.score <= 100);
+  assert.equal(bench.diff.score, 72 - bench.turkey.score);
+});
+
+test('buildShareCardText includes verdict and scores', () => {
+  const text = buildShareCardText({
+    verdict: { label: 'AL', emoji: '🟢' },
+    decisionScore: 88,
+    confidencePercent: 92
+  });
+  assert.match(text, /isteBul AI/);
+  assert.match(text, /AL/);
+  assert.match(text, /88\/100/);
 });
 
 test('tryMountDecisionOs returns null when disabled', async () => {

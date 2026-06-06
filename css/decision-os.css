@@ -46,7 +46,9 @@
 
 .dos-root[data-dos-phase="hero"] .dos-accordions,
 .dos-root[data-dos-phase="hero"] .dos-savings,
-.dos-root[data-dos-phase="hero"] .dos-cross {
+.dos-root[data-dos-phase="hero"] .dos-cross,
+.dos-root[data-dos-phase="hero"] .dos-share,
+.dos-root[data-dos-phase="hero"] .dos-timeline-section {
   visibility: hidden;
   height: 0;
   overflow: hidden;
@@ -58,8 +60,12 @@
 
 .dos-root[data-dos-phase="ready"] .dos-savings,
 .dos-root[data-dos-phase="ready"] .dos-cross,
+.dos-root[data-dos-phase="ready"] .dos-share,
+.dos-root[data-dos-phase="ready"] .dos-timeline-section,
 .dos-root[data-dos-phase="expanded"] .dos-savings,
-.dos-root[data-dos-phase="expanded"] .dos-cross {
+.dos-root[data-dos-phase="expanded"] .dos-cross,
+.dos-root[data-dos-phase="expanded"] .dos-share,
+.dos-root[data-dos-phase="expanded"] .dos-timeline-section {
   visibility: visible;
   height: auto;
   overflow: visible;
@@ -183,6 +189,19 @@
 
 .dos-hero__expand:active {
   transform: scale(0.98);
+}
+
+/* Lazy render + CLS containment */
+.dos-accordions,
+.dos-timeline-section,
+.dos-share {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+}
+
+.dos-accordion[data-dos-lazy]:not([data-dos-visible]) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 64px;
 }
 
 /* Savings card */
@@ -410,9 +429,15 @@
 }
 
 /* AI voice */
+.dos-ai-voice__lead,
+.dos-ai-voice__para {
+  margin: 0 0 0.85rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #334155;
+}
+
 .dos-ai-voice__lead {
-  margin: 0 0 1rem;
-  font-size: 1.0625rem;
   font-weight: 600;
   font-style: italic;
   color: #0f172a;
@@ -741,4 +766,284 @@
 
 [data-decision-os-active] [data-dos-legacy-v2]:not([data-dos-legacy] [data-dos-legacy-v2]) {
   display: none;
+}
+
+/* Turkey benchmark */
+.dos-benchmark {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.dos-benchmark__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem 1rem;
+  align-items: center;
+}
+
+.dos-benchmark__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.dos-benchmark__value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dos-benchmark__value--up {
+  color: #16a34a;
+}
+
+.dos-benchmark__value--down {
+  color: #dc2626;
+}
+
+.dos-benchmark__sub {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* Share card — 1080×1350 aspect ratio preview */
+.dos-share {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: var(--dos-radius);
+  background: #fff;
+  box-shadow: var(--dos-shadow);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.dos-share__preview {
+  display: flex;
+  justify-content: center;
+}
+
+.dos-share__card {
+  width: min(100%, 270px);
+  aspect-ratio: 1080 / 1350;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: linear-gradient(165deg, #0f172a 0%, #1e293b 100%);
+  color: #fff;
+  text-align: center;
+}
+
+.dos-share__card-head {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.dos-share__brand {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.dos-share__vertical {
+  font-size: 0.6875rem;
+  opacity: 0.65;
+}
+
+.dos-share__verdict {
+  display: grid;
+  place-content: center;
+  gap: 0.35rem;
+}
+
+.dos-share__verdict strong {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--dos-share-verdict, #16a34a);
+}
+
+.dos-share__emoji {
+  font-size: 2rem;
+}
+
+.dos-share__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.dos-share__stats div {
+  padding: 0.5rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dos-share__stats dt {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.dos-share__stats dd {
+  margin: 0.15rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.dos-share__qr {
+  display: grid;
+  place-content: center;
+  min-height: 64px;
+  border-radius: 10px;
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+}
+
+.dos-share__qr-placeholder {
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 0.5;
+}
+
+.dos-share__feedback {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #16a34a;
+}
+
+/* Timeline */
+.dos-timeline-section {
+  padding: 1.5rem 1.75rem;
+  border-radius: var(--dos-radius);
+  background: #fff;
+  box-shadow: var(--dos-shadow);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.dos-timeline-section__title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.dos-timeline__year-label {
+  margin: 0 0 0.65rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.dos-timeline__cards {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.dos-timeline__card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.dos-timeline__icon {
+  font-size: 1.25rem;
+}
+
+.dos-timeline__body {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.dos-timeline__verdict {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.dos-timeline__meta {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Pro insights locked */
+.dos-pro {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.dos-pro__item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.dos-pro__item--locked {
+  opacity: 0.72;
+}
+
+.dos-pro__label {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.dos-pro__badge {
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.dos-pro__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+/* Cost section */
+.dos-cost__total {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.dos-cost__summary {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.dos-executive {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: #334155;
+}
+
+.dos-memory__trend {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  font-style: italic;
+  color: #475569;
 }

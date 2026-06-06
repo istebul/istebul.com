@@ -1,5 +1,5 @@
 /**
- * Decision OS v1 — interactions, live What-If, lazy render, performance.
+ * Decision OS v2 — interactions, live What-If, lazy render, performance.
  */
 import { simulateWhatIfControls } from './decision-v3-whatif.js';
 import {
@@ -7,8 +7,10 @@ import {
   copyDecisionReportSummary,
   downloadDecisionReportHtml
 } from './decision-os-report.js';
+import { copyShareCard } from './decision-os-share.js';
 
 const WHATIF_ANIM_MS = 250;
+const WHATIF_DEBOUNCE_MS = 250;
 const HERO_FOCUS_MS = 3000;
 
 function scheduleIdle(callback) {
@@ -121,7 +123,8 @@ function bindLiveWhatIf(root, model) {
 
       if (!result) return;
 
-      animateMetric(decisionEl, `${result.after.decisionScore}/100`);
+      const verdictLabel = result.after.recommendationLabel || `${result.after.decisionScore}/100`;
+      animateMetric(decisionEl, verdictLabel);
       animateMetric(riskEl, `${result.after.riskScore}/100`);
       animateMetric(costEl, formatCost(result.after.totalCost));
 
@@ -135,7 +138,7 @@ function bindLiveWhatIf(root, model) {
   const scheduleSimulation = () => {
     syncLabels();
     window.clearTimeout(debounceTimer);
-    debounceTimer = window.setTimeout(runSimulation, 80);
+    debounceTimer = window.setTimeout(runSimulation, WHATIF_DEBOUNCE_MS);
   };
 
   [budgetInput, downInput, termInput, riskInput].forEach((input) => {
@@ -232,6 +235,31 @@ function bindLazyAccordions(root) {
   });
 }
 
+function bindShareCard(root, model) {
+  const btn = root.querySelector('[data-dos-share-copy]');
+  const feedback = root.querySelector('[data-dos-share-feedback]');
+
+  btn?.addEventListener('click', () => {
+    void (async () => {
+      try {
+        const result = await copyShareCard(model);
+        if (!feedback) return;
+        feedback.textContent = result.ok ? 'Paylaşım kartı kopyalandı.' : 'Paylaşım kartı kopyalanamadı.';
+        feedback.hidden = false;
+        window.clearTimeout(feedback._hideTimer);
+        feedback._hideTimer = window.setTimeout(() => {
+          feedback.hidden = true;
+        }, 2600);
+      } catch {
+        if (feedback) {
+          feedback.textContent = 'Paylaşım kartı kopyalanamadı.';
+          feedback.hidden = false;
+        }
+      }
+    })();
+  });
+}
+
 function reserveStickySpace(root) {
   const sticky = root.querySelector('[data-dos-sticky]');
   if (!sticky || typeof window === 'undefined') return;
@@ -260,6 +288,7 @@ export function bindDecisionOsInteractions(root, model = {}) {
   scheduleIdle(() => {
     bindLiveWhatIf(root, model);
     bindReportActions(root, model);
+    bindShareCard(root, model);
     bindLazyAccordions(root);
   });
 

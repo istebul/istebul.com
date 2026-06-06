@@ -1,7 +1,10 @@
 /**
- * Decision OS v1 — premium decision-first UI renderer.
+ * Decision OS v2 — premium decision-first UI renderer.
  */
 import { escapeHtml } from '../core/security.js';
+import { renderTurkeyBenchmarkHtml } from './decision-os-benchmark.js';
+import { renderShareCardHtml } from './decision-os-share.js';
+import { renderDecisionTimelineHtml } from './decision-os-timeline.js';
 
 function esc(value) {
   return escapeHtml(String(value ?? ''));
@@ -29,6 +32,8 @@ function renderAccordion(id, title, content, options = {}) {
 
 function renderHero(model) {
   const v = model.verdict;
+  const topReasons = (model.whyReasons || []).slice(0, 3);
+
   return `
     <section class="dos-hero" data-dos-hero aria-label="AI son kararı">
       <p class="dos-hero__kicker">AI SON KARARI</p>
@@ -38,7 +43,7 @@ function renderHero(model) {
       </div>
       <div class="dos-hero__metrics">
         <div class="dos-hero__metric">
-          <span>Güven</span>
+          <span>Karar Güveni</span>
           <strong>${esc(String(model.confidencePercent))}%</strong>
         </div>
         <div class="dos-hero__metric">
@@ -47,17 +52,10 @@ function renderHero(model) {
         </div>
       </div>
       <div class="dos-hero__divider" aria-hidden="true"></div>
-      <div class="dos-hero__section">
-        <h3>Neden?</h3>
+      <div class="dos-hero__section dos-hero__section--reasons">
+        <h3>En önemli 3 neden</h3>
         <ul class="dos-list dos-list--check">
-          ${model.whyReasons.map((r) => `<li>${esc(r)}</li>`).join('')}
-        </ul>
-      </div>
-      <div class="dos-hero__divider" aria-hidden="true"></div>
-      <div class="dos-hero__section">
-        <h3>Riskler</h3>
-        <ul class="dos-list dos-list--warn">
-          ${model.risks.map((r) => `<li>${esc(r)}</li>`).join('')}
+          ${topReasons.map((r) => `<li>${esc(r)}</li>`).join('')}
         </ul>
       </div>
       <button type="button" class="dos-hero__expand" data-dos-expand-all>
@@ -69,7 +67,7 @@ function renderHero(model) {
 function renderStickyCard(model) {
   const v = model.verdict;
   return `
-    <aside class="dos-sticky" data-dos-sticky aria-label="Sabit karar kartı">
+    <aside class="dos-sticky" data-dos-sticky aria-label="Sabit karar çubuğu">
       <div class="dos-sticky__inner" style="--dos-verdict-color: ${esc(v.color)}">
         <div class="dos-sticky__verdict">
           <span aria-hidden="true">${esc(v.emoji)}</span>
@@ -77,7 +75,7 @@ function renderStickyCard(model) {
         </div>
         <div class="dos-sticky__stats">
           <div>
-            <span>Karar Skoru</span>
+            <span>Skor</span>
             <strong>${esc(String(model.decisionScore))}</strong>
           </div>
           <div>
@@ -86,28 +84,27 @@ function renderStickyCard(model) {
           </div>
         </div>
         <button type="button" class="dos-sticky__cta" data-dos-scroll-details>
-          Tam Analiz
+          Detay
         </button>
       </div>
     </aside>`;
 }
 
 function renderSavingsCard(model) {
-  const savings = model.savings || {};
-  if (!savings.amount) return '';
+  const amount = model.todaySavings ?? model.savings?.todayAmount ?? model.savings?.amount;
+  if (!amount) return '';
 
   return `
     <section class="dos-savings" data-dos-savings>
-      <p class="dos-savings__lead">Bu kararı uygularsanız</p>
-      <p class="dos-savings__years">${esc(String(savings.years))} yılda</p>
-      <p class="dos-savings__amount">${formatCost(savings.amount)}</p>
-      <p class="dos-savings__suffix">tasarruf edebilirsiniz</p>
+      <p class="dos-savings__lead">Bugünkü kararın sana yaklaşık</p>
+      <p class="dos-savings__amount">${formatCost(amount)}</p>
+      <p class="dos-savings__suffix">tasarruf sağlayabilir.</p>
       <button type="button" class="dos-savings__link" data-dos-savings-how>
         Nasıl hesaplandı?
       </button>
       <p class="dos-savings__explain" data-dos-savings-explain hidden>
         Tahmini tasarruf, toplam maliyet ve karar skorunuzdaki optimizasyon potansiyeline göre
-        %${Math.round((savings.rate || 0.08) * 100)} oranında hesaplanmıştır. Kesin garanti değildir.
+        yıllık bazda hesaplanmıştır. Kesin garanti değildir.
       </p>
     </section>`;
 }
@@ -129,6 +126,10 @@ function renderCrossDecision(model) {
 function renderProfileSection(model) {
   const profile = model.profile || {};
   const cards = profile.cards || [];
+  const benchmarkHtml = model.turkeyBenchmark
+    ? renderTurkeyBenchmarkHtml(model.turkeyBenchmark, esc)
+    : '';
+
   return `
     <div class="dos-profile">
       <p class="dos-profile__title">Sizin Karar Karakteriniz</p>
@@ -147,6 +148,7 @@ function renderProfileSection(model) {
         <strong>AI yorumu:</strong>
         <p>"${esc(profile.aiComment || '')}"</p>
       </div>
+      ${benchmarkHtml ? `<div class="dos-profile__benchmark">${benchmarkHtml}</div>` : ''}
     </div>`;
 }
 
@@ -173,6 +175,15 @@ function renderAlternatives(model) {
 
 function renderAiCommentary(model) {
   const ai = model.aiCommentary || {};
+  const paragraphs = Array.isArray(ai.paragraphs) ? ai.paragraphs : [];
+
+  if (paragraphs.length) {
+    return `
+      <div class="dos-ai-voice">
+        ${paragraphs.map((p) => `<p class="dos-ai-voice__para">${esc(p)}</p>`).join('')}
+      </div>`;
+  }
+
   return `
     <div class="dos-ai-voice">
       <p class="dos-ai-voice__lead">"${esc(ai.preferLead || '')}"</p>
@@ -180,7 +191,7 @@ function renderAiCommentary(model) {
         <strong>Sebepler</strong>
         <ul>${(ai.preferReasons || []).map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
       </div>
-      <p class="dos-ai-voice__wait">${esc(ai.waitLead || '')}</p>
+      ${ai.waitLead ? `<p class="dos-ai-voice__wait">${esc(ai.waitLead)}</p>` : ''}
       <ul class="dos-ai-voice__wait-list">
         ${(ai.waitReasons || []).map((r) => `<li>${esc(r)}</li>`).join('')}
       </ul>
@@ -215,7 +226,7 @@ function renderWhatIf(model) {
         </div>
         <div class="dos-whatif__results" data-dos-whatif-results>
           <article class="dos-whatif__metric" data-dos-whatif-decision>
-            <span>Karar Skoru</span>
+            <span>Karar</span>
             <strong>—</strong>
           </article>
           <article class="dos-whatif__metric" data-dos-whatif-risk>
@@ -223,7 +234,7 @@ function renderWhatIf(model) {
             <strong>—</strong>
           </article>
           <article class="dos-whatif__metric" data-dos-whatif-cost>
-            <span>Toplam Maliyet</span>
+            <span>Toplam maliyet</span>
             <strong>—</strong>
           </article>
         </div>
@@ -233,6 +244,14 @@ function renderWhatIf(model) {
   const scenarios = Array.isArray(model.whatIfScenarios) ? model.whatIfScenarios : [];
   if (!scenarios.length) return '<p class="dos-muted">What-if senaryosu mevcut değil.</p>';
   return `<ul class="dos-list">${scenarios.map((s) => `<li><strong>${esc(s.title)}</strong> — ${esc(s.description)}</li>`).join('')}</ul>`;
+}
+
+function renderRiskSection(risks = []) {
+  if (!risks.length) return '<p class="dos-muted">Risk verisi mevcut değil.</p>';
+  return `
+    <ul class="dos-list dos-list--warn">
+      ${risks.map((r) => `<li>${esc(r)}</li>`).join('')}
+    </ul>`;
 }
 
 function renderRiskRadar(risks) {
@@ -250,6 +269,55 @@ function renderRiskRadar(risks) {
         )
         .join('')}
     </ul>`;
+}
+
+function renderMemorySection(model) {
+  const memory = model.memory;
+  if (!memory || memory.version !== 'memory-lite-v1') {
+    return '<p class="dos-muted">Henüz yeterli karar geçmişi yok. Birkaç analiz sonrası profiliniz oluşacak.</p>';
+  }
+
+  const insights = Array.isArray(memory.insights) ? memory.insights : [];
+  const trend = memory.trend?.explanation || '';
+
+  return `
+    <div class="dos-memory">
+      ${trend ? `<p class="dos-memory__trend">${esc(trend)}</p>` : ''}
+      ${insights.length ? `<ul class="dos-list">${insights.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : ''}
+    </div>`;
+}
+
+function renderExecutiveSection(model) {
+  const summary = model.executiveSummary || model.decisionQuality?.summary || '';
+  if (!summary) return '<p class="dos-muted">Executive özet henüz hazır değil.</p>';
+  return `<p class="dos-executive">${esc(summary)}</p>`;
+}
+
+function renderCostSection(model) {
+  const cost = model.costSummary || {};
+  return `
+    <div class="dos-cost">
+      <p class="dos-cost__total">${esc(cost.formatted || '—')}</p>
+      <p class="dos-cost__summary">${esc(cost.summary || '')}</p>
+    </div>`;
+}
+
+function renderProInsights(model) {
+  const items = Array.isArray(model.proInsights) ? model.proInsights : [];
+  return `
+    <div class="dos-pro" data-dos-pro>
+      ${items
+        .map(
+          (item) => `
+        <article class="dos-pro__item dos-pro__item--locked" data-dos-pro-item="${esc(item.id)}">
+          <span class="dos-pro__lock" aria-hidden="true">🔒</span>
+          <span class="dos-pro__label">${esc(item.label)}</span>
+          <span class="dos-pro__badge">Pro</span>
+        </article>`
+        )
+        .join('')}
+      <p class="dos-pro__hint">Pro üyelikle detaylı senaryo analizlerine erişebilirsiniz.</p>
+    </div>`;
 }
 
 function renderScoreTransparency(factors) {
@@ -288,37 +356,37 @@ function renderReportSection() {
     </div>`;
 }
 
+function renderTimelineSection(model) {
+  const entries = Array.isArray(model.timeline) ? model.timeline : [];
+  return `
+    <section class="dos-timeline-section" data-dos-timeline>
+      <h3 class="dos-timeline-section__title">Karar Geçmişim</h3>
+      ${renderDecisionTimelineHtml(entries, esc)}
+    </section>`;
+}
+
 /**
  * @param {object} model
  * @returns {string}
  */
 export function renderDecisionOsPanel(model = {}) {
-  const dq = model.decisionQuality || {};
-  const dataQ = model.dataQuality || {};
-
   const accordions = [
-    renderAccordion('quality', 'Karar Kalitesi', `
-      <div class="dos-quality">
-        <div class="dos-quality__score">
-          <strong>${esc(String(dq.score ?? model.decisionQualityScore ?? '—'))}</strong>
-          <span>/100 · ${esc(dq.label || '')}</span>
-        </div>
-        <p>${esc(dq.summary || model.executiveSummary || '')}</p>
-      </div>`),
-    renderAccordion('risk-radar', 'Risk Radar', renderRiskRadar(model.riskRadar || [])),
-    renderAccordion('data-quality', 'Veri Kalitesi', `
-      <div class="dos-data-quality">
-        <p><strong>${esc(String(dataQ.score ?? '—'))}/100</strong> · ${esc(dataQ.label || '')}</p>
-        <ul class="dos-list dos-list--check">${(dataQ.notes || []).map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
-      </div>`),
-    renderAccordion('action-plan', 'Aksiyon Planı', `
-      <ol class="dos-action-list">${(model.actionPlan || []).map((s) => `<li>${esc(s)}</li>`).join('') || '<li>Sonraki adımlar hazırlanıyor.</li>'}</ol>`),
-    renderAccordion('what-if', 'What If', renderWhatIf(model)),
-    renderAccordion('profile', 'Karar Profili', renderProfileSection(model)),
-    renderAccordion('report', 'Karar Raporu', renderReportSection()),
+    renderAccordion('why', 'Neden önerildi', `
+      <ul class="dos-list dos-list--check">
+        ${(model.whyReasons || []).map((r) => `<li>${esc(r)}</li>`).join('')}
+      </ul>`),
+    renderAccordion('risks', 'Riskler', renderRiskSection(model.risks)),
+    renderAccordion('cost', 'Maliyet', renderCostSection(model)),
+    renderAccordion('ai', 'AI açıklaması', renderAiCommentary(model)),
     renderAccordion('alternatives', 'Alternatifler', renderAlternatives(model)),
-    renderAccordion('ai-commentary', 'AI Yorumu', renderAiCommentary(model)),
-    renderAccordion('score-transparency', 'Skor Şeffaflığı', renderScoreTransparency(model.scoreFactors || []))
+    renderAccordion('memory', 'Memory', renderMemorySection(model)),
+    renderAccordion('what-if', 'What-if', renderWhatIf(model)),
+    renderAccordion('executive', 'Executive', renderExecutiveSection(model)),
+    renderAccordion('report', 'Rapor', renderReportSection()),
+    renderAccordion('risk-radar', 'Risk Radar', renderRiskRadar(model.riskRadar || [])),
+    renderAccordion('profile', 'Karar Profili', renderProfileSection(model)),
+    renderAccordion('score-transparency', 'Skor Şeffaflığı', renderScoreTransparency(model.scoreFactors || [])),
+    renderAccordion('pro-insights', 'Pro Insights', renderProInsights(model))
   ].join('');
 
   return `
@@ -327,6 +395,8 @@ export function renderDecisionOsPanel(model = {}) {
         <div class="dos-main">
           ${renderHero(model)}
           ${renderSavingsCard(model)}
+          ${renderShareCardHtml(model)}
+          ${renderTimelineSection(model)}
           ${renderCrossDecision(model)}
           <div class="dos-accordions" data-dos-accordions hidden>
             ${accordions}
