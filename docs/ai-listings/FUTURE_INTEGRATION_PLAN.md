@@ -109,11 +109,12 @@ Tables: `ai_listings`, `ai_listing_analyses`, `ai_listing_events`
 
 RLS: service_role only (anon/authenticated denied). See `docs/ai-listings/DATABASE_SCHEMA.md`.
 
-**Action (Sprint-3):**
-1. Implement `createSupabaseAiListingRepository` CRUD against `ai_listings`
-2. Implement `createSupabaseAiAnalysisRepository` against `ai_listing_analyses`
-3. Add `AiListingEventsRepository` for `ai_listing_events`
-4. Wire adapters in DI container when `AI_LISTINGS_SUPABASE_ENABLED=true`
+**Sprint-3 (complete):** Supabase CRUD adapters implemented — see `REPOSITORY_ADAPTERS.md`.
+
+**Action (Sprint-4):**
+1. Edge Function intake using `createSupabaseAiListingsRepositories({ client })`
+2. Wire adapters in DI container when both flags enabled in server context
+3. Emit lifecycle events via `SupabaseAiListingEventRepository`
 
 ## Phase 5 — Activation
 

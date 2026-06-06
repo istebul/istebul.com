@@ -52,8 +52,7 @@ import { createStubAIProviderAdapter } from '../repository/adapters/stub-ai-prov
  * Create the default placeholder container (in-memory + stub adapters).
  *
  * Supabase repositories are NOT used by default.
- * TODO (Sprint-3): Pass overrides.listingRepository = createSupabaseAiListingRepository({ client })
- * when AI_LISTINGS_SUPABASE_ENABLED=true in server context.
+ * Use createAiListingsRepositories({ mode: 'supabase', client }) in server context when enabled.
  *
  * @param {Partial<AiListingsDependencies>} [overrides]
  * @returns {AiListingsContainer}

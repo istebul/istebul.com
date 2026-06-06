@@ -1,18 +1,27 @@
 /**
- * isteBul AI Listings Engine v1 — Supabase AI analysis repository (stub).
+ * isteBul AI Listings Engine v1 — Supabase AI analysis repository.
  *
- * INACTIVE BY DEFAULT. Not wired in DI container until integration phase.
+ * INACTIVE BY DEFAULT. Requires AI_LISTINGS_SUPABASE_ENABLED=true and a client.
  */
 
 import {
-  assertSupabaseAdapterActive,
-  requireSupabaseClient,
-  SUPABASE_TABLES
-} from './supabase-adapter-guard.js';
+  analysisCreateInputToRow,
+  analysisRecordFromRow
+} from './row-mappers.js';
+import { assertSupabaseAdapterActive, requireSupabaseClient, SUPABASE_TABLES } from './supabase-adapter-guard.js';
+import { runSupabaseMaybeQuery, runSupabaseQuery } from './supabase-query.js';
 
-/** @typedef {import('../ai-analysis-repository.interface.js').AIAnalysisRepository} AIAnalysisRepository */
+/** @typedef {import('./row-mappers.js').AiAnalysisCreateInput} AiAnalysisCreateInput */
 /** @typedef {import('../ai-analysis-repository.interface.js').AIAnalysisRecord} AIAnalysisRecord */
 /** @typedef {import('./supabase-adapter-guard.js').SupabaseClientLike} SupabaseClientLike */
+
+/**
+ * @typedef {Object} SupabaseAiAnalysisRepository
+ * @property {(input: AiAnalysisCreateInput) => Promise<AIAnalysisRecord>} create
+ * @property {(listingId: string) => Promise<AIAnalysisRecord|null>} getLatestByListingId
+ * @property {(listingId: string) => Promise<AIAnalysisRecord[]>} listByListingId
+ * @property {(listingId: string) => Promise<boolean>} deleteByListingId
+ */
 
 /**
  * @typedef {Object} SupabaseAiAnalysisRepositoryDeps
@@ -21,40 +30,67 @@ import {
 
 /**
  * @param {SupabaseAiAnalysisRepositoryDeps} [deps]
- * @returns {AIAnalysisRepository}
+ * @returns {SupabaseAiAnalysisRepository}
  */
 export function createSupabaseAiAnalysisRepository(deps = {}) {
-  const { client = null } = deps;
+  const getClient = () => requireSupabaseClient(deps);
 
   return {
-    async findByListingId(listingId) {
-      const sb = requireSupabaseClient(client);
-      // TODO: Implement — sb.from(SUPABASE_TABLES.ANALYSES).select('*').eq('listing_id', listingId).order('created_at', { ascending: false }).limit(1).maybeSingle()
-      void sb;
-      void listingId;
-      throw new Error('SupabaseAiAnalysisRepository.findByListingId not implemented — Sprint-3');
+    async create(input) {
+      const sb = getClient();
+      const row = analysisCreateInputToRow(input);
+      const data = await runSupabaseQuery(
+        sb.from(SUPABASE_TABLES.ANALYSES).insert(row).select('*').single(),
+        { notFoundLabel: 'Analysis' }
+      );
+      return analysisRecordFromRow(/** @type {import('./row-mappers.js').AiListingAnalysisRow} */ (data));
     },
 
-    async save(record) {
-      const sb = requireSupabaseClient(client);
-      // TODO: Implement insert — const row = analysisRecordToRow(record); sb.from(SUPABASE_TABLES.ANALYSES).insert(row).select().single()
-      void sb;
-      void record;
-      throw new Error('SupabaseAiAnalysisRepository.save not implemented — Sprint-3');
+    async getLatestByListingId(listingId) {
+      const sb = getClient();
+      const data = await runSupabaseMaybeQuery(
+        sb
+          .from(SUPABASE_TABLES.ANALYSES)
+          .select('*')
+          .eq('listing_id', listingId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        'Analysis'
+      );
+      return data
+        ? analysisRecordFromRow(/** @type {import('./row-mappers.js').AiListingAnalysisRow} */ (data))
+        : null;
+    },
+
+    async listByListingId(listingId) {
+      const sb = getClient();
+      const data = await runSupabaseQuery(
+        sb
+          .from(SUPABASE_TABLES.ANALYSES)
+          .select('*')
+          .eq('listing_id', listingId)
+          .order('created_at', { ascending: false }),
+        { allowEmpty: true, notFoundLabel: 'Analysis' }
+      );
+      const rows = Array.isArray(data) ? data : [];
+      return rows.map((row) =>
+        analysisRecordFromRow(/** @type {import('./row-mappers.js').AiListingAnalysisRow} */ (row))
+      );
     },
 
     async deleteByListingId(listingId) {
-      const sb = requireSupabaseClient(client);
-      // TODO: Implement — sb.from(SUPABASE_TABLES.ANALYSES).delete().eq('listing_id', listingId)
-      void sb;
-      void listingId;
-      throw new Error('SupabaseAiAnalysisRepository.deleteByListingId not implemented — Sprint-3');
+      const sb = getClient();
+      await runSupabaseQuery(
+        sb.from(SUPABASE_TABLES.ANALYSES).delete().eq('listing_id', listingId),
+        { allowEmpty: true, notFoundLabel: 'Analysis' }
+      );
+      return true;
     }
   };
 }
 
 /**
- * Check whether the Supabase analysis repository can be instantiated (adapter enabled).
  * @returns {boolean}
  */
 export function isSupabaseAiAnalysisRepositoryAvailable() {

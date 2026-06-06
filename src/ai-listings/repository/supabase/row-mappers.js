@@ -88,6 +88,40 @@ export function listingFromRow(row) {
 }
 
 /**
+ * @typedef {Object} AiListingCreateInput
+ * @property {string} category
+ * @property {string} title
+ * @property {string} [description]
+ * @property {string} [location]
+ * @property {number} [price]
+ * @property {string} [currency]
+ * @property {string[]} [images]
+ * @property {Record<string, string | number | boolean | null>} [attributes]
+ * @property {string} [status]
+ * @property {string} [source_type]
+ * @property {string} [source_url]
+ * @property {string} [owner_user_id]
+ */
+
+/**
+ * @typedef {Partial<AiListingCreateInput>} AiListingUpdatePatch
+ */
+
+/**
+ * @typedef {Object} AiListingEventRow
+ * @property {string} id
+ * @property {string} listing_id
+ * @property {string} event_type
+ * @property {Record<string, unknown>} [payload]
+ * @property {string} created_at
+ */
+
+/**
+ * @typedef {import('../listing-event-repository.interface.js').AiListingEvent} AiListingEvent
+ * @typedef {import('../listing-event-repository.interface.js').AiListingEventCreateInput} AiListingEventCreateInput
+ */
+
+/**
  * @param {Listing} listing
  * @returns {Omit<AiListingRow, 'created_at' | 'updated_at'> & { description: string|null, location: object|null, status: string, source_type: string }}
  */
@@ -106,6 +140,95 @@ export function listingToRow(listing) {
     source_type: 'manual',
     source_url: null,
     owner_user_id: null
+  };
+}
+
+/**
+ * @param {AiListingCreateInput} input
+ * @returns {Omit<AiListingRow, 'id' | 'created_at' | 'updated_at'>}
+ */
+export function listingCreateInputToRow(input) {
+  return {
+    category: input.category,
+    title: input.title,
+    description: input.description ?? null,
+    location: locationToJson(input.location ?? ''),
+    price: input.price ?? null,
+    currency: input.currency ?? DEFAULT_CURRENCY,
+    images: input.images ?? [],
+    attributes: input.attributes ?? {},
+    status: input.status ?? 'draft',
+    source_type: input.source_type ?? 'manual',
+    source_url: input.source_url ?? null,
+    owner_user_id: input.owner_user_id ?? null
+  };
+}
+
+/**
+ * @param {AiListingUpdatePatch} patch
+ * @returns {Record<string, unknown>}
+ */
+export function listingPatchToRow(patch) {
+  /** @type {Record<string, unknown>} */
+  const row = {};
+  if (patch.category !== undefined) row.category = patch.category;
+  if (patch.title !== undefined) row.title = patch.title;
+  if (patch.description !== undefined) row.description = patch.description ?? null;
+  if (patch.location !== undefined) row.location = locationToJson(patch.location ?? '');
+  if (patch.price !== undefined) row.price = patch.price;
+  if (patch.currency !== undefined) row.currency = patch.currency;
+  if (patch.images !== undefined) row.images = patch.images;
+  if (patch.attributes !== undefined) row.attributes = patch.attributes;
+  if (patch.status !== undefined) row.status = patch.status;
+  if (patch.source_type !== undefined) row.source_type = patch.source_type;
+  if (patch.source_url !== undefined) row.source_url = patch.source_url ?? null;
+  if (patch.owner_user_id !== undefined) row.owner_user_id = patch.owner_user_id ?? null;
+  return row;
+}
+
+/**
+ * @typedef {Object} AiAnalysisCreateInput
+ * @property {string} listing_id
+ * @property {AIAnalysis} analysis
+ * @property {string} [model_version]
+ */
+
+/**
+ * @param {AiAnalysisCreateInput} input
+ * @returns {Omit<AiListingAnalysisRow, 'id' | 'created_at'>}
+ */
+export function analysisCreateInputToRow(input) {
+  return analysisRecordToRow({
+    listing_id: input.listing_id,
+    analysis: input.analysis,
+    created_at: new Date().toISOString(),
+    model_version: input.model_version ?? 'v1'
+  });
+}
+
+/**
+ * @param {AiListingEventRow} row
+ * @returns {AiListingEvent}
+ */
+export function eventFromRow(row) {
+  return {
+    id: row.id,
+    listing_id: row.listing_id,
+    event_type: row.event_type,
+    payload: row.payload ?? {},
+    created_at: row.created_at
+  };
+}
+
+/**
+ * @param {AiListingEventCreateInput} input
+ * @returns {Omit<AiListingEventRow, 'id' | 'created_at'>}
+ */
+export function eventCreateInputToRow(input) {
+  return {
+    listing_id: input.listing_id,
+    event_type: input.event_type,
+    payload: input.payload ?? {}
   };
 }
 

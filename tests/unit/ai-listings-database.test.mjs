@@ -21,7 +21,8 @@ const {
   isSupabaseAiListingRepositoryAvailable,
   isSupabaseAiAnalysisRepositoryAvailable,
   SUPABASE_TABLES,
-  SUPABASE_ADAPTER_INACTIVE_ERROR
+  AI_LISTINGS_REPOSITORY_DISABLED,
+  AiListingsRepositoryError
 } = await import('../../src/ai-listings/index.js');
 
 const { listingFromRow, listingToRow, analysisRecordFromRow, analysisRecordToRow, locationToJson, locationFromJson } =
@@ -72,9 +73,9 @@ test('Supabase adapter is inactive by default', () => {
 test('Supabase listing repository throws when adapter inactive', async () => {
   clearAiListingsSupabaseLocalOverride();
   const repo = createSupabaseAiListingRepository();
-  await assert.rejects(repo.findById('test-id'), (err) => {
-    assert.ok(err instanceof Error);
-    assert.equal(err.message, SUPABASE_ADAPTER_INACTIVE_ERROR);
+  await assert.rejects(repo.getById('test-id'), (err) => {
+    assert.ok(err instanceof AiListingsRepositoryError);
+    assert.equal(err.code, AI_LISTINGS_REPOSITORY_DISABLED);
     return true;
   });
 });
@@ -82,9 +83,9 @@ test('Supabase listing repository throws when adapter inactive', async () => {
 test('Supabase analysis repository throws when adapter inactive', async () => {
   clearAiListingsSupabaseLocalOverride();
   const repo = createSupabaseAiAnalysisRepository();
-  await assert.rejects(repo.findByListingId('test-id'), (err) => {
-    assert.ok(err instanceof Error);
-    assert.equal(err.message, SUPABASE_ADAPTER_INACTIVE_ERROR);
+  await assert.rejects(repo.getLatestByListingId('test-id'), (err) => {
+    assert.ok(err instanceof AiListingsRepositoryError);
+    assert.equal(err.code, AI_LISTINGS_REPOSITORY_DISABLED);
     return true;
   });
 });
@@ -92,7 +93,11 @@ test('Supabase analysis repository throws when adapter inactive', async () => {
 test('Supabase adapter requires client when enabled', async () => {
   setAiListingsSupabaseLocalOverride(true);
   const repo = createSupabaseAiListingRepository();
-  await assert.rejects(repo.findById('test-id'), /Supabase client required/);
+  await assert.rejects(repo.getById('test-id'), (err) => {
+    assert.ok(err instanceof AiListingsRepositoryError);
+    assert.equal(err.code, 'AI_LISTINGS_SUPABASE_CONFIG_MISSING');
+    return true;
+  });
   clearAiListingsSupabaseLocalOverride();
 });
 

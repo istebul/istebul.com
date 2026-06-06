@@ -31,6 +31,19 @@ export { processListing } from './engine/listing-engine.js';
 export { runAnalysisPipeline } from './analysis/analysis-pipeline.js';
 export { computeScores } from './scoring/scoring-engine.js';
 
+export {
+  createAiListingsRepositories,
+  createSupabaseAiListingsRepositories,
+  resolveRepositoryBackend
+} from './repository/repository-factory.js';
+export {
+  AiListingsRepositoryError,
+  AI_LISTINGS_REPOSITORY_DISABLED,
+  AI_LISTINGS_SUPABASE_CONFIG_MISSING,
+  AI_LISTINGS_RECORD_NOT_FOUND,
+  AI_LISTINGS_DB_ERROR
+} from './repository/repository-errors.js';
 export { createSupabaseAiListingRepository, isSupabaseAiListingRepositoryAvailable } from './repository/supabase/supabase-ai-listing-repository.js';
 export { createSupabaseAiAnalysisRepository, isSupabaseAiAnalysisRepositoryAvailable } from './repository/supabase/supabase-ai-analysis-repository.js';
+export { createSupabaseAiListingEventRepository, isSupabaseAiListingEventRepositoryAvailable } from './repository/supabase/supabase-ai-listing-event-repository.js';
 export { SUPABASE_TABLES, SUPABASE_ADAPTER_INACTIVE_ERROR } from './repository/supabase/supabase-adapter-guard.js';

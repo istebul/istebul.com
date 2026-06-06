@@ -3,6 +3,7 @@
  */
 
 import { isAiListingsSupabaseAdapterEnabled } from '../../core/config.js';
+import { repositoryDisabledError, supabaseConfigMissingError } from '../repository-errors.js';
 
 export const SUPABASE_TABLES = Object.freeze({
   LISTINGS: 'ai_listings',
@@ -10,8 +11,35 @@ export const SUPABASE_TABLES = Object.freeze({
   EVENTS: 'ai_listing_events'
 });
 
-export const SUPABASE_ADAPTER_INACTIVE_ERROR =
-  'Supabase AI Listings adapter is inactive — set AI_LISTINGS_SUPABASE_ENABLED=true to activate';
+/** @deprecated Use AiListingsRepositoryError with AI_LISTINGS_REPOSITORY_DISABLED */
+export const SUPABASE_ADAPTER_INACTIVE_ERROR = repositoryDisabledError().message;
+
+/**
+ * @typedef {Object} SupabaseClientConfig
+ * @property {string} [url]
+ * @property {string} [key]
+ * @property {SupabaseClientLike} [client]
+ */
+
+/**
+ * @typedef {Object} SupabaseClientLike
+ * @property {(table: string) => SupabaseQueryBuilderLike} from
+ */
+
+/**
+ * @typedef {Object} SupabaseQueryBuilderLike
+ * @property {(...args: unknown[]) => SupabaseQueryBuilderLike} select
+ * @property {(...args: unknown[]) => SupabaseQueryBuilderLike} insert
+ * @property {(...args: unknown[]) => SupabaseQueryBuilderLike} update
+ * @property {(...args: unknown[]) => SupabaseQueryBuilderLike} delete
+ * @property {(...args: unknown[]) => SupabaseQueryBuilderLike} eq
+ * @property {(...args: unknown[]) => SupabaseQueryBuilderLike} order
+ * @property {(...args: unknown[]) => SupabaseQueryBuilderLike} limit
+ * @property {(...args: unknown[]) => SupabaseQueryBuilderLike} range
+ * @property {() => Promise<{ data: unknown, error: { code?: string, message?: string }|null }>} single
+ * @property {() => Promise<{ data: unknown, error: { code?: string, message?: string }|null }>} maybeSingle
+ * @property {() => Promise<{ data: unknown, error: { code?: string, message?: string }|null }>} then
+ */
 
 /**
  * Assert Supabase adapter is enabled before any DB operation.
@@ -19,24 +47,30 @@ export const SUPABASE_ADAPTER_INACTIVE_ERROR =
  */
 export function assertSupabaseAdapterActive() {
   if (!isAiListingsSupabaseAdapterEnabled()) {
-    throw new Error(SUPABASE_ADAPTER_INACTIVE_ERROR);
+    throw repositoryDisabledError();
   }
 }
 
 /**
- * @typedef {Object} SupabaseClientLike
- * @property {(table: string) => { select: Function, insert: Function, update: Function, delete: Function, upsert: Function }} from
- */
-
-/**
- * Validate a Supabase client is provided when adapter is active.
- * @param {SupabaseClientLike|null|undefined} client
+ * Resolve Supabase client from deps.
+ * @param {{ client?: SupabaseClientLike|null }} [deps]
  * @returns {SupabaseClientLike}
  */
-export function requireSupabaseClient(client) {
+export function requireSupabaseClient(deps = {}) {
   assertSupabaseAdapterActive();
-  if (!client || typeof client.from !== 'function') {
-    throw new Error('Supabase client required — inject via createSupabaseAiListingRepository({ client })');
+
+  const client = deps.client ?? null;
+  if (client && typeof client.from === 'function') {
+    return client;
   }
-  return client;
+
+  throw supabaseConfigMissingError();
+}
+
+/**
+ * @param {SupabaseClientConfig} [config]
+ * @returns {boolean}
+ */
+export function hasValidSupabaseClientConfig(config = {}) {
+  return Boolean(config.client && typeof config.client.from === 'function');
 }

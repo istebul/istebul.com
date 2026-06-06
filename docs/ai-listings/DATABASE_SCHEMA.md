@@ -80,19 +80,25 @@ Audit and analytics event log for listing lifecycle.
 
 Public read is intentionally disabled. Client-side Supabase (`anon` key) cannot read or write these tables.
 
-## Repository Adapters
+## Repository Adapters (Sprint-3)
 
 | Adapter | File | Default |
 |---------|------|---------|
 | In-memory (tests) | `repository/in-memory/` | **Active** in DI container |
-| Supabase (stub) | `repository/supabase/` | **Inactive** (`AI_LISTINGS_SUPABASE_ENABLED=false`) |
+| Supabase CRUD | `repository/supabase/` | **Inactive** (`AI_LISTINGS_SUPABASE_ENABLED=false`) |
+
+See [REPOSITORY_ADAPTERS.md](./REPOSITORY_ADAPTERS.md) for full API, error mapping, and factory usage.
 
 Activate Supabase adapter only in server/Edge Function context with `service_role`:
 
 ```javascript
-// Future Sprint-3 — not wired yet
-setAiListingsSupabaseLocalOverride(true);
-const repo = createSupabaseAiListingRepository({ client: serviceRoleClient });
+import { createAiListingsRepositories } from 'src/ai-listings/index.js';
+
+const repos = createAiListingsRepositories({
+  mode: 'supabase',
+  client: serviceRoleClient // requires AI_LISTINGS_SUPABASE_ENABLED=true
+});
+// repos.listingRepository.create(), .archive(), etc.
 ```
 
 ## Future RLS Plan
