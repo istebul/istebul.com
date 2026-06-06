@@ -29,7 +29,30 @@ export { createRecommendationService } from './services/recommendation-service.j
 
 export { processListing } from './engine/listing-engine.js';
 export { runAnalysisPipeline } from './analysis/analysis-pipeline.js';
-export { computeScores } from './scoring/scoring-engine.js';
+export { computeScores, SCORING_ENGINE_VERSION } from './scoring/scoring-engine.js';
+export {
+  computeVehicleAgeScore,
+  computeVehicleMileageScore,
+  computeVehicleFuelScore,
+  computeVehiclePriceScore,
+  computeVehicleRiskScore,
+  computeVehicleScores
+} from './scoring/vehicle-scoring.js';
+export {
+  computeHousingLocationScore,
+  computeHousingSizeScore,
+  computeHousingBuildingAgeScore,
+  computeHousingPriceScore,
+  computeHousingRiskScore,
+  computeHousingScores
+} from './scoring/housing-scoring.js';
+export {
+  getAllSeedListings,
+  validateSeedListingShape,
+  VEHICLE_SEED_LISTINGS,
+  HOUSING_SEED_LISTINGS,
+  SEED_SOURCE_TYPE
+} from './seed/seed-data.js';
 
 export {
   createAiListingsRepositories,

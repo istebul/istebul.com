@@ -112,6 +112,46 @@ export function resolveEdgeBaseUrl(env = {}) {
  * @param {unknown} body
  * @returns {{ ok: boolean, message: string, status: number, data?: unknown }}
  */
+/**
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @returns {string}
+ */
+export function formatAnalysisDate(analysis) {
+  const raw = analysis?.created_at;
+  if (!raw) return '—';
+  const date = new Date(String(raw));
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @returns {Record<string, unknown>|null}
+ */
+export function extractLatestAnalysis(listing) {
+  const nested = listing.latest_analysis;
+  if (nested && typeof nested === 'object') return /** @type {Record<string, unknown>} */ (nested);
+  return null;
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @returns {string}
+ */
+export function buildListingBadgesHtml(listing) {
+  const category = safeRenderText(listing.category ?? '—');
+  const analysis = extractLatestAnalysis(listing);
+  const aiScore = analysis?.ai_score ?? '—';
+  const riskScore = analysis?.risk_score ?? '—';
+  const analysisDate = formatAnalysisDate(analysis);
+
+  return `
+    <span class="ai-listings-admin__badge ai-listings-admin__badge--category">${category}</span>
+    <span class="ai-listings-admin__badge ai-listings-admin__badge--ai">AI ${safeRenderText(aiScore)}</span>
+    <span class="ai-listings-admin__badge ai-listings-admin__badge--risk">Risk ${safeRenderText(riskScore)}</span>
+    <span class="ai-listings-admin__badge ai-listings-admin__badge--date">${safeRenderText(analysisDate)}</span>`;
+}
+
 export function mapEdgeResponse(response, body) {
   const payload = body && typeof body === 'object' ? body : {};
   const error = /** @type {{ code?: string, message?: string }} */ (payload.error ?? {});

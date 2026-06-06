@@ -130,5 +130,5 @@ test('services operate when engine is enabled', async () => {
 
 test('module version is exported', () => {
   assert.equal(typeof AI_LISTINGS_MODULE_VERSION, 'string');
-  assert.ok(AI_LISTINGS_MODULE_VERSION.includes('placeholder'));
+  assert.ok(AI_LISTINGS_MODULE_VERSION.includes('sprint6'));
 });

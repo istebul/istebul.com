@@ -8,6 +8,9 @@ const {
   getAdminPanelState,
   getEdgeSecret,
   buildEdgeRequestHeaders,
+  buildListingBadgesHtml,
+  formatAnalysisDate,
+  extractLatestAnalysis,
   validateSourceUrl,
   validateAttributesJson,
   safeRenderText,
@@ -101,4 +104,32 @@ test('resolveEdgeBaseUrl builds functions path', () => {
     resolveEdgeBaseUrl({ SUPABASE_URL: 'https://abc.supabase.co/' }),
     'https://abc.supabase.co/functions/v1/ai-listings'
   );
+});
+
+test('buildListingBadgesHtml renders category ai risk and date badges', () => {
+  const html = buildListingBadgesHtml({
+    category: 'vehicle',
+    latest_analysis: {
+      ai_score: 78,
+      risk_score: 22,
+      created_at: '2026-06-06T12:00:00.000Z'
+    }
+  });
+
+  assert.match(html, /ai-listings-admin__badge--category/);
+  assert.match(html, /vehicle/);
+  assert.match(html, /AI 78/);
+  assert.match(html, /Risk 22/);
+  assert.match(html, /2026-06-06/);
+});
+
+test('formatAnalysisDate returns dash when analysis missing', () => {
+  assert.equal(formatAnalysisDate(null), '—');
+  assert.equal(formatAnalysisDate({}), '—');
+});
+
+test('extractLatestAnalysis reads nested latest_analysis', () => {
+  const analysis = { ai_score: 65, risk_score: 35 };
+  assert.deepEqual(extractLatestAnalysis({ latest_analysis: analysis }), analysis);
+  assert.equal(extractLatestAnalysis({}), null);
 });

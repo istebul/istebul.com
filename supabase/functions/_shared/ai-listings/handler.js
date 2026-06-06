@@ -84,7 +84,13 @@ export async function handleAiListingsRequest(req, deps) {
     if (route.id === null && req.method === 'GET') {
       const filters = parseListFilters(url.searchParams);
       const listings = await repos.listListings(filters);
-      return jsonResponse(successBody({ listings, filters }));
+      const enriched = await Promise.all(
+        listings.map(async (listing) => ({
+          ...listing,
+          latest_analysis: await repos.getLatestAnalysis(listing.id)
+        }))
+      );
+      return jsonResponse(successBody({ listings: enriched, filters }));
     }
 
     if (!route.id) {

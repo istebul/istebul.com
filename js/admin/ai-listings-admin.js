@@ -10,6 +10,7 @@ import {
   ADMIN_ENABLE_KEY,
   ADMIN_SECRET_KEY,
   buildEdgeRequestHeaders,
+  buildListingBadgesHtml,
   getAdminPanelState,
   getEdgeSecret,
   mapEdgeResponse,
@@ -88,12 +89,12 @@ function renderSecretWarning() {
 function renderListingRow(listing) {
   const id = safeRenderText(listing.id);
   const title = safeRenderText(listing.title);
-  const category = safeRenderText(listing.category);
   const status = safeRenderText(listing.status);
   return `
     <button type="button" class="ai-listings-admin__list-item" data-listing-id="${id}">
       <span class="ai-listings-admin__list-title">${title}</span>
-      <span class="ai-listings-admin__list-meta">${category} · ${status}</span>
+      <span class="ai-listings-admin__list-badges">${buildListingBadgesHtml(listing)}</span>
+      <span class="ai-listings-admin__list-meta">${status}</span>
     </button>`;
 }
 

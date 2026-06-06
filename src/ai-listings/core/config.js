@@ -150,7 +150,7 @@ export function clearAiListingsSupabaseLocalOverride() {
   supabaseRuntimeOverride = null;
 }
 
-export const AI_LISTINGS_MODULE_VERSION = '1.0.0-placeholder';
+export const AI_LISTINGS_MODULE_VERSION = '1.0.0-sprint6';
 export const AI_LISTINGS_MODULE_ID = 'ai-listings-engine-v1';
 
 export { STORAGE_KEY, URL_PARAM, ENV_KEY, SUPABASE_ENV_KEY };
