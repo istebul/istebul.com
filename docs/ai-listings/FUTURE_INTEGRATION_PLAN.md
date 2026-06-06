@@ -113,8 +113,10 @@ RLS: service_role only (anon/authenticated denied). See `docs/ai-listings/DATABA
 
 **Sprint-4 (complete):** Edge Function API at `supabase/functions/ai-listings/` — see `EDGE_FUNCTION_API.md`.
 
-**Action (Sprint-5):**
-1. Admin proxy route calling Edge Function with rotated secret
+**Sprint-5 (complete):** Internal admin test panel — see `ADMIN_TEST_PANEL.md`.
+
+**Action (Sprint-6):**
+1. Server-side admin proxy (no secret in browser localStorage)
 2. Wire `src/ai-listings` DI container to Edge Function responses
 3. Replace placeholder pipeline with live EVDS/AI adapters
 

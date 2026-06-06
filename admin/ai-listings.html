@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Internal AI Listings test panel — not public">
+  <title>AI Listings Admin (Internal) | isteBul</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="stylesheet" href="/css/admin-ai-listings.css?v=1">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/admin/ai-listings-admin.js"></script>
+</head>
+<body class="ai-listings-admin">
+  <header class="ai-listings-admin__header">
+    <h1>AI Listings — Internal Test Panel</h1>
+    <p class="ai-listings-admin__subtitle">Not public. Hidden unless explicitly enabled via localStorage.</p>
+  </header>
+
+  <main id="ai-listings-admin-root" class="ai-listings-admin__main">
+    <div id="ai-listings-secret-warning" class="ai-listings-admin__warning" hidden></div>
+    <p id="ai-listings-status" class="ai-listings-admin__status" aria-live="polite"></p>
+
+    <div class="ai-listings-admin__grid">
+      <section class="ai-listings-admin__panel">
+        <h2>Create listing</h2>
+        <form id="ai-listings-create-form" class="ai-listings-admin__form">
+          <label>
+            Category
+            <input id="ai-listings-create-category" name="category" required placeholder="vehicle">
+          </label>
+          <label>
+            Title
+            <input id="ai-listings-create-title" name="title" required>
+          </label>
+          <label>
+            Description
+            <textarea id="ai-listings-create-description" name="description" rows="3"></textarea>
+          </label>
+          <label>
+            Price
+            <input id="ai-listings-create-price" name="price" type="number" min="0" step="1">
+          </label>
+          <label>
+            Currency
+            <input id="ai-listings-create-currency" name="currency" value="TRY">
+          </label>
+          <label>
+            Source URL (http/https)
+            <input id="ai-listings-create-source-url" name="source_url" type="url" placeholder="https://">
+          </label>
+          <label>
+            Attributes JSON
+            <textarea id="ai-listings-create-attributes" name="attributes" rows="4" placeholder='{"year":2020}'></textarea>
+          </label>
+          <button type="submit" class="ai-listings-admin__btn">Create listing</button>
+        </form>
+      </section>
+
+      <section class="ai-listings-admin__panel">
+        <div class="ai-listings-admin__panel-head">
+          <h2>Listings</h2>
+          <button type="button" id="ai-listings-refresh-list-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Refresh</button>
+        </div>
+        <div class="ai-listings-admin__filters">
+          <input id="ai-listings-filter-category" placeholder="category">
+          <input id="ai-listings-filter-status" placeholder="status">
+          <input id="ai-listings-filter-source" placeholder="source_type">
+          <input id="ai-listings-filter-limit" type="number" min="1" max="100" placeholder="limit">
+        </div>
+        <div id="ai-listings-list" class="ai-listings-admin__list"></div>
+      </section>
+
+      <section class="ai-listings-admin__panel ai-listings-admin__panel--wide">
+        <h2>Listing detail</h2>
+        <div id="ai-listings-detail" class="ai-listings-admin__detail">
+          <p class="ai-listings-admin__muted">Select a listing to view detail, analysis, and events.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

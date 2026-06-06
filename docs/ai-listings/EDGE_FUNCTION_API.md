@@ -203,6 +203,10 @@ index.ts (Deno entry)
 3. **Phase C — Partner API:** API keys per partner, rate limits, scoped `source_type=partner`
 4. **Phase D — Public read:** Published listings only (`status=active`), CDN-cached GET
 
+## Internal test panel (Sprint-5)
+
+Hidden page: `admin/ai-listings.html` — see [ADMIN_TEST_PANEL.md](./ADMIN_TEST_PANEL.md).
+
 ## Future admin integration
 
 - Admin queue view over `GET /listings?status=draft`
