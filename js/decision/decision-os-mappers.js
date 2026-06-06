@@ -1,8 +1,9 @@
 /**
- * Decision OS v1 — intelligence / V2 payload → render model.
+ * Decision OS v2 — intelligence / V2 payload → render model.
  */
 import { clampScore } from '../features/results/results-engine.js';
 import { mapDecisionSnapshot } from './decision-v3-mappers.js';
+import { buildTurkeyBenchmark } from './decision-os-benchmark.js';
 
 const VERDICT_MAP = Object.freeze({
   proceed: { label: 'AL', emoji: '🟢', color: '#16A34A', level: 'proceed' },
@@ -135,12 +136,23 @@ function buildProfileAiComment(memory, vertical) {
 function estimateSavings(intelligence = {}, extras = {}) {
   const totalCost = safeNumber(extras.totalCost ?? extras.metrics?.totalCost);
   const decisionScore = clampScore(intelligence.decisionScore || 0);
-  if (!totalCost) return { amount: null, years: 5, rate: 0.08 };
+  if (!totalCost) return { amount: null, years: 5, rate: 0.08, todayAmount: null };
 
   const savingsRate = decisionScore >= 75 ? 0.12 : decisionScore >= 60 ? 0.08 : 0.05;
   const amount = Math.round(totalCost * savingsRate);
-  return { amount, years: 5, rate: savingsRate };
+  const todayAmount = Math.round(amount / 5);
+  return { amount, years: 5, rate: savingsRate, todayAmount };
 }
+
+const PRO_INSIGHTS_LOCKED = Object.freeze([
+  { id: '12m', label: '12 ay senaryo', locked: true },
+  { id: '36m', label: '36 ay senaryo', locked: true },
+  { id: '60m', label: '60 ay senaryo', locked: true },
+  { id: 'rate', label: 'Faiz değişirse', locked: true },
+  { id: 'fx', label: 'Kur değişirse', locked: true },
+  { id: 'best-alt', label: 'En iyi alternatif', locked: true },
+  { id: 'sensitivity', label: 'Kritik değişken analizi', locked: true }
+]);
 
 function buildAlternatives(extras = {}) {
   const raw = Array.isArray(extras.alternatives) ? extras.alternatives : [];
@@ -152,36 +164,79 @@ function buildAlternatives(extras = {}) {
   }));
 }
 
-function buildAiCommentary(intelligence = {}, extras = {}) {
+function buildConversationalLead(verdict = {}) {
+  const level = verdict.level || 'wait';
+  if (level === 'proceed') return 'Ben olsam bugün alırdım çünkü';
+  if (level === 'avoid') return 'Ben olsam şu an almazdım çünkü';
+  return 'Şimdilik beklemek daha mantıklı çünkü';
+}
+
+function buildAiCommentary(intelligence = {}, extras = {}, verdict = {}) {
   const insight = extras.insight || {};
-  const preferReasons = [];
-  const waitReasons = [];
+  const reasons = [];
+  const paragraphs = [];
 
   if (Array.isArray(insight.bullets)) {
-    insight.bullets.slice(0, 3).forEach((b) => preferReasons.push(b));
+    insight.bullets.slice(0, 2).forEach((b) => reasons.push(b));
   }
   if (Array.isArray(extras.strengths)) {
-    extras.strengths.slice(0, 2).forEach((s) => preferReasons.push(s));
+    extras.strengths.slice(0, 2).forEach((s) => reasons.push(s));
   }
-  if (Array.isArray(extras.cautions)) {
-    extras.cautions.slice(0, 3).forEach((c) => waitReasons.push(c));
-  }
-  if (Array.isArray(intelligence.warnings)) {
-    intelligence.warnings.slice(0, 2).forEach((w) => waitReasons.push(w));
+  const factors = Array.isArray(intelligence.scoreFactors) ? intelligence.scoreFactors : [];
+  factors
+    .filter((f) => f?.reason)
+    .slice(0, 2)
+    .forEach((f) => reasons.push(f.reason));
+
+  if (!reasons.length) {
+    reasons.push('Maliyet ve risk dengesi profilinize uygun görünüyor.');
+    reasons.push('Piyasa verileri kararı destekliyor.');
   }
 
-  if (!preferReasons.length) {
-    preferReasons.push('Maliyet ve risk dengesi profilinize uygun.', 'Piyasa verileri kararı destekliyor.');
+  const lead = buildConversationalLead(verdict);
+  paragraphs.push(`${lead} ${reasons[0] || 'profilinizle uyumlu bir denge var.'}`);
+
+  if (reasons[1]) {
+    paragraphs.push(`Bir de şunu söyleyeyim: ${reasons[1]}`);
   }
-  if (!waitReasons.length) {
-    waitReasons.push('Piyasa koşulları değişebilir.', 'Alternatif senaryoları karşılaştırmak faydalı olabilir.');
+
+  const cautions = [];
+  if (Array.isArray(extras.cautions)) extras.cautions.slice(0, 2).forEach((c) => cautions.push(c));
+  if (Array.isArray(intelligence.warnings)) intelligence.warnings.slice(0, 1).forEach((w) => cautions.push(w));
+
+  if (cautions.length) {
+    paragraphs.push(`Ama dikkat: ${cautions[0]}`);
+  } else if (verdict.level === 'wait') {
+    paragraphs.push('Piyasa biraz dalgalı; acele etmene gerek yok.');
+  }
+
+  if (verdict.level === 'proceed') {
+    paragraphs.push('Özetle, bugün harekete geçmek mantıklı görünüyor.');
+  } else if (verdict.level === 'avoid') {
+    paragraphs.push('Kısacası, şu an için uzak durmak daha doğru.');
+  } else {
+    paragraphs.push('İstersen birkaç hafta sonra tekrar bakarız.');
   }
 
   return {
-    preferLead: 'Ben olsam bu seçeneği tercih ederdim.',
-    preferReasons: preferReasons.slice(0, 3),
-    waitLead: 'Ancak şu durumda beklemek daha doğru olabilir:',
-    waitReasons: waitReasons.slice(0, 3)
+    lead,
+    paragraphs: paragraphs.slice(0, 4),
+    preferLead: lead,
+    preferReasons: reasons.slice(0, 3),
+    waitLead: cautions[0] ? `Şunu da bil: ${cautions[0]}` : '',
+    waitReasons: cautions.slice(0, 3)
+  };
+}
+
+function buildCostSummary(snapshot = {}, intelligence = {}) {
+  const totalCost = safeNumber(snapshot.totalCost);
+  if (!totalCost) return { totalCost: null, summary: 'Maliyet verisi henüz hesaplanmadı.' };
+  const formatted = `≈ ₺${Math.round(totalCost).toLocaleString('tr-TR')}`;
+  const risk = intelligence.overallRisk || 'Orta';
+  return {
+    totalCost,
+    formatted,
+    summary: `Toplam maliyet ${formatted} bandında. Genel risk seviyesi: ${risk}.`
   };
 }
 
@@ -264,8 +319,16 @@ export function buildDecisionOsModel(intelligence = {}, context = {}) {
       aiComment: buildProfileAiComment(context.memory, vertical)
     },
     savings,
+    todaySavings: savings.todayAmount,
     alternatives: buildAlternatives(context),
-    aiCommentary: buildAiCommentary(intelligence, context),
+    aiCommentary: buildAiCommentary(intelligence, context, verdict),
+    costSummary: buildCostSummary(snapshot, intelligence),
+    turkeyBenchmark: buildTurkeyBenchmark({
+      vertical,
+      decisionScore,
+      confidenceScore
+    }),
+    proInsights: PRO_INSIGHTS_LOCKED,
     crossDecision,
     memory: context.memory || null,
     snapshot,

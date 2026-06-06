@@ -1,5 +1,5 @@
 /**
- * Decision OS v1 — unified mount engine (progressive enhancement over V2).
+ * Decision OS v2 — unified mount engine (progressive enhancement over V2).
  */
 import { buildDecisionIntelligenceResult } from '../features/results/decision-intelligence-engine.js';
 import { buildDecisionMemoryLite } from './decision-memory-lite.js';
@@ -8,6 +8,11 @@ import { buildDecisionOsModel } from './decision-os-mappers.js';
 import { bindDecisionOsInteractions } from './decision-os-bindings.js';
 import { ensureDecisionOsStyles, renderDecisionOsPanel } from './decision-os-renderer.js';
 import { resolveTotalCost } from './decision-v3-whatif.js';
+import {
+  buildTimelineEntryFromModel,
+  loadDecisionTimeline,
+  saveDecisionTimelineEntry
+} from './decision-os-timeline.js';
 
 const V2_ROOT_SELECTORS = [
   '.auto-v2-root',
@@ -115,6 +120,9 @@ export async function tryMountDecisionOs(params = {}) {
       whatIfInput,
       evdsAvailable: Boolean(extras.evdsRiskLayer || v2Model?.evdsRiskLayer)
     });
+
+    saveDecisionTimelineEntry(buildTimelineEntryFromModel(osModel), storage);
+    osModel.timeline = loadDecisionTimeline(storage);
 
     const existing = mountNode.querySelector('[data-decision-os-root]');
     if (existing) existing.remove();
