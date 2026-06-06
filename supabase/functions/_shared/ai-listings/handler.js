@@ -3,6 +3,7 @@
  */
 
 import { authorizeRequest } from './auth.js';
+import { preflightResponse } from './cors.js';
 import { runListingAnalysisPipeline } from './analysis-pipeline.js';
 import { createEdgeRepositories } from './repositories.js';
 import { parseAiListingsRoute } from './router.js';
@@ -152,14 +153,16 @@ export async function executeListingsImport(repos, runAnalysis, normalizedRows, 
  * @param {HandlerDeps} deps
  */
 export async function handleAiListingsRequest(req, deps) {
+  const origin = req.headers.get('Origin');
+
   try {
     if (req.method === 'OPTIONS') {
-      return new Response(null, { status: 204 });
+      return preflightResponse(origin);
     }
 
     const auth = authorizeRequest(req, deps.env);
     if (!auth.ok) {
-      return errorResponse(auth.code, auth.message, auth.status);
+      return errorResponse(auth.code, auth.message, auth.status, undefined, origin);
     }
 
     const supabaseUrl = deps.env.SUPABASE_URL;
@@ -168,7 +171,9 @@ export async function handleAiListingsRequest(req, deps) {
       return errorResponse(
         EDGE_ERROR_CODES.INTERNAL_ERROR,
         'Supabase service configuration is missing',
-        500
+        500,
+        undefined,
+        origin
       );
     }
 
@@ -180,7 +185,7 @@ export async function handleAiListingsRequest(req, deps) {
     const route = parseAiListingsRoute(url.pathname);
 
     if (route.resource !== 'listings') {
-      return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Route not found', 404);
+      return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Route not found', 404, undefined, origin);
     }
 
     // POST /listings
@@ -188,7 +193,7 @@ export async function handleAiListingsRequest(req, deps) {
       const body = await req.json().catch(() => null);
       const validation = validateCreateListingBody(body);
       if (!validation.ok) {
-        return errorResponse(validation.code, validation.message, 400, validation.details);
+        return errorResponse(validation.code, validation.message, 400, validation.details, origin);
       }
 
       const listing = await repos.createListing(validation.value);
@@ -198,7 +203,7 @@ export async function handleAiListingsRequest(req, deps) {
         payload: { source_type: listing.source_type, category: listing.category }
       });
 
-      return jsonResponse(successBody({ listing }), 201);
+      return jsonResponse(successBody({ listing }), 201, origin);
     }
 
     // POST /listings/import
@@ -206,7 +211,7 @@ export async function handleAiListingsRequest(req, deps) {
       const body = await req.json().catch(() => null);
       const requestValidation = validateImportRequestBody(body);
       if (!requestValidation.ok) {
-        return errorResponse(EDGE_ERROR_CODES.INVALID_REQUEST, requestValidation.message, 400);
+        return errorResponse(EDGE_ERROR_CODES.INVALID_REQUEST, requestValidation.message, 400, undefined, origin);
       }
 
       let preview;
@@ -219,7 +224,9 @@ export async function handleAiListingsRequest(req, deps) {
         return errorResponse(
           EDGE_ERROR_CODES.INVALID_REQUEST,
           err instanceof Error ? err.message : 'Import content is invalid',
-          400
+          400,
+          undefined,
+          origin
         );
       }
 
@@ -239,7 +246,8 @@ export async function handleAiListingsRequest(req, deps) {
           created_ids: importResult.created_ids,
           errors: [...preview.row_errors, ...importResult.errors]
         }),
-        201
+        201,
+        origin
       );
     }
 
@@ -253,21 +261,21 @@ export async function handleAiListingsRequest(req, deps) {
           latest_analysis: await repos.getLatestAnalysis(listing.id)
         }))
       );
-      return jsonResponse(successBody({ listings: enriched, filters }));
+      return jsonResponse(successBody({ listings: enriched, filters }), 200, origin);
     }
 
     if (!route.id) {
-      return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Route not found', 404);
+      return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Route not found', 404, undefined, origin);
     }
 
     // GET /listings/:id
     if (route.action === null && req.method === 'GET') {
       const listing = await repos.getListingById(route.id);
       if (!listing) {
-        return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Listing not found', 404);
+        return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Listing not found', 404, undefined, origin);
       }
       const latest_analysis = await repos.getLatestAnalysis(route.id);
-      return jsonResponse(successBody({ listing, latest_analysis }));
+      return jsonResponse(successBody({ listing, latest_analysis }), 200, origin);
     }
 
     // PATCH /listings/:id
@@ -275,12 +283,12 @@ export async function handleAiListingsRequest(req, deps) {
       const body = await req.json().catch(() => null);
       const validation = validatePatchListingBody(body);
       if (!validation.ok) {
-        return errorResponse(validation.code, validation.message, 400, validation.details);
+        return errorResponse(validation.code, validation.message, 400, validation.details, origin);
       }
 
       const existing = await repos.getListingById(route.id);
       if (!existing) {
-        return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Listing not found', 404);
+        return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Listing not found', 404, undefined, origin);
       }
 
       const listing = await repos.updateListing(route.id, validation.value);
@@ -290,21 +298,21 @@ export async function handleAiListingsRequest(req, deps) {
         payload: { fields: Object.keys(validation.value) }
       });
 
-      return jsonResponse(successBody({ listing }));
+      return jsonResponse(successBody({ listing }), 200, origin);
     }
 
     // POST /listings/:id/submit-review
     if (route.action === QA_ACTIONS.SUBMIT_REVIEW && req.method === 'POST') {
       const result = await applyWorkflowTransition(repos, route.id, QA_ACTIONS.SUBMIT_REVIEW);
-      if (!result.ok) return errorResponse(result.code, result.message, result.status);
-      return jsonResponse(successBody({ listing: result.listing }));
+      if (!result.ok) return errorResponse(result.code, result.message, result.status, undefined, origin);
+      return jsonResponse(successBody({ listing: result.listing }), 200, origin);
     }
 
     // POST /listings/:id/approve
     if (route.action === QA_ACTIONS.APPROVE && req.method === 'POST') {
       const result = await applyWorkflowTransition(repos, route.id, QA_ACTIONS.APPROVE);
-      if (!result.ok) return errorResponse(result.code, result.message, result.status);
-      return jsonResponse(successBody({ listing: result.listing }));
+      if (!result.ok) return errorResponse(result.code, result.message, result.status, undefined, origin);
+      return jsonResponse(successBody({ listing: result.listing }), 200, origin);
     }
 
     // POST /listings/:id/reject
@@ -312,28 +320,28 @@ export async function handleAiListingsRequest(req, deps) {
       const body = await req.json().catch(() => null);
       const validation = validateRejectBody(body);
       if (!validation.ok) {
-        return errorResponse(validation.code, validation.message, 400);
+        return errorResponse(validation.code, validation.message, 400, undefined, origin);
       }
 
       const result = await applyWorkflowTransition(repos, route.id, QA_ACTIONS.REJECT, {
         reason: validation.value.reason
       });
-      if (!result.ok) return errorResponse(result.code, result.message, result.status);
-      return jsonResponse(successBody({ listing: result.listing, reason: validation.value.reason }));
+      if (!result.ok) return errorResponse(result.code, result.message, result.status, undefined, origin);
+      return jsonResponse(successBody({ listing: result.listing, reason: validation.value.reason }), 200, origin);
     }
 
     // POST /listings/:id/archive
     if (route.action === QA_ACTIONS.ARCHIVE && req.method === 'POST') {
       const result = await applyWorkflowTransition(repos, route.id, QA_ACTIONS.ARCHIVE);
-      if (!result.ok) return errorResponse(result.code, result.message, result.status);
-      return jsonResponse(successBody({ listing: result.listing }));
+      if (!result.ok) return errorResponse(result.code, result.message, result.status, undefined, origin);
+      return jsonResponse(successBody({ listing: result.listing }), 200, origin);
     }
 
     // POST /listings/:id/analyze
     if (route.action === 'analyze' && req.method === 'POST') {
       const listing = await repos.getListingById(route.id);
       if (!listing) {
-        return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Listing not found', 404);
+        return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Listing not found', 404, undefined, origin);
       }
 
       const pipeline = await runAnalysis({ listing });
@@ -342,7 +350,8 @@ export async function handleAiListingsRequest(req, deps) {
           EDGE_ERROR_CODES.INTERNAL_ERROR,
           'Analysis pipeline failed',
           500,
-          pipeline.errors
+          pipeline.errors,
+          origin
         );
       }
 
@@ -362,7 +371,9 @@ export async function handleAiListingsRequest(req, deps) {
           listing,
           analysis: saved,
           context: pipeline.context
-        })
+        }),
+        200,
+        origin
       );
     }
 
@@ -370,12 +381,12 @@ export async function handleAiListingsRequest(req, deps) {
     if (route.action === QA_ACTIONS.REANALYZE && req.method === 'POST') {
       const listing = await repos.getListingById(route.id);
       if (!listing) {
-        return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Listing not found', 404);
+        return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Listing not found', 404, undefined, origin);
       }
 
       const transition = resolveStatusTransition(listing.status, QA_ACTIONS.REANALYZE);
       if (!transition.ok) {
-        return errorResponse(EDGE_ERROR_CODES.INVALID_REQUEST, transition.message, 400);
+        return errorResponse(EDGE_ERROR_CODES.INVALID_REQUEST, transition.message, 400, undefined, origin);
       }
 
       const pipeline = await runAnalysis({ listing });
@@ -384,7 +395,8 @@ export async function handleAiListingsRequest(req, deps) {
           EDGE_ERROR_CODES.INTERNAL_ERROR,
           'Analysis pipeline failed',
           500,
-          pipeline.errors
+          pipeline.errors,
+          origin
         );
       }
 
@@ -404,7 +416,9 @@ export async function handleAiListingsRequest(req, deps) {
           listing,
           analysis: saved,
           context: pipeline.context
-        })
+        }),
+        200,
+        origin
       );
     }
 
@@ -412,14 +426,14 @@ export async function handleAiListingsRequest(req, deps) {
     if (route.action === 'events' && req.method === 'GET') {
       const listing = await repos.getListingById(route.id);
       if (!listing) {
-        return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Listing not found', 404);
+        return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Listing not found', 404, undefined, origin);
       }
 
       const events = await repos.listEventsByListingId(route.id);
-      return jsonResponse(successBody({ listing_id: route.id, events }));
+      return jsonResponse(successBody({ listing_id: route.id, events }), 200, origin);
     }
 
-    return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Route not found', 404);
+    return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Route not found', 404, undefined, origin);
   } catch (err) {
     const mapped = /** @type {{ code?: string, message?: string, cause?: unknown }} */ (err);
     if (mapped?.code && Object.values(EDGE_ERROR_CODES).includes(mapped.code)) {
@@ -429,13 +443,15 @@ export async function handleAiListingsRequest(req, deps) {
           : mapped.code === EDGE_ERROR_CODES.DB_ERROR
             ? 500
             : 500;
-      return errorResponse(mapped.code, mapped.message || mapped.code, status);
+      return errorResponse(mapped.code, mapped.message || mapped.code, status, undefined, origin);
     }
 
     return errorResponse(
       EDGE_ERROR_CODES.INTERNAL_ERROR,
       'Unexpected server error',
-      500
+      500,
+      undefined,
+      origin
     );
   }
 }
