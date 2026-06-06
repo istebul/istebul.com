@@ -1,7 +1,9 @@
 /**
- * isteBul AI Listings — internal admin test panel (Sprint-5).
+ * isteBul AI Listings — internal admin test panel (Sprint-7 QA workflow).
  *
  * INTERNAL TEST ONLY. Not linked from homepage, categories, or admin nav.
+ * approved means internally approved only; public publishing remains disabled.
+ *
  * Enable locally: localStorage.setItem('istebul_ai_listings_admin', 'on')
  * Set secret: localStorage.setItem('istebul_ai_listings_secret', '<AI_LISTINGS_EDGE_SECRET>')
  */
@@ -11,9 +13,14 @@ import {
   ADMIN_SECRET_KEY,
   buildEdgeRequestHeaders,
   buildListingBadgesHtml,
+  buildQualityChecklistHtml,
+  buildQaActionsHtml,
+  buildStatusFilterChipsHtml,
   getAdminPanelState,
   getEdgeSecret,
+  isListingPubliclyVisible,
   mapEdgeResponse,
+  resolveActiveStatusFilter,
   resolveEdgeBaseUrl,
   safeRenderText,
   validateAttributesJson,
@@ -22,6 +29,9 @@ import {
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
+
+/** @type {string} */
+let activeStatusFilter = '';
 
 function $(id) {
   return document.getElementById(id);
@@ -86,6 +96,19 @@ function renderSecretWarning() {
     <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_SECRET_KEY}', '&lt;secret&gt;')</pre>`;
 }
 
+function renderStatusFilterChips() {
+  const container = $('ai-listings-status-filters');
+  if (!container) return;
+  container.innerHTML = buildStatusFilterChipsHtml(activeStatusFilter);
+  container.querySelectorAll('[data-status-filter]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      activeStatusFilter = resolveActiveStatusFilter(chip.getAttribute('data-status-filter'));
+      renderStatusFilterChips();
+      loadListings();
+    });
+  });
+}
+
 function renderListingRow(listing) {
   const id = safeRenderText(listing.id);
   const title = safeRenderText(listing.title);
@@ -113,14 +136,26 @@ function renderAnalysis(analysis) {
 function renderEvents(events) {
   if (!events?.length) return '<p class="ai-listings-admin__muted">No events.</p>';
   return `<ul class="ai-listings-admin__events">${events
-    .map(
-      (event) => `
+    .map((event) => {
+      const reason =
+        event.event_type === 'listing_rejected' && event.payload?.reason
+          ? ` — ${safeRenderText(event.payload.reason)}`
+          : '';
+      return `
       <li>
         <span class="ai-listings-admin__event-type">${safeRenderText(event.event_type)}</span>
-        <span class="ai-listings-admin__event-time">${safeRenderText(event.created_at)}</span>
-      </li>`
-    )
+        <span class="ai-listings-admin__event-time">${safeRenderText(event.created_at)}</span>${reason}
+      </li>`;
+    })
     .join('')}</ul>`;
+}
+
+function renderPublicVisibilityNote(status) {
+  const visible = isListingPubliclyVisible(status);
+  if (visible) {
+    return '<p class="ai-listings-admin__error">Public visibility enabled — unexpected in Sprint-7.</p>';
+  }
+  return '<p class="ai-listings-admin__muted">Public publishing disabled. Approved status is internal QA only.</p>';
 }
 
 async function loadListings() {
@@ -129,11 +164,10 @@ async function loadListings() {
 
   const params = new URLSearchParams();
   const category = $('ai-listings-filter-category')?.value?.trim();
-  const status = $('ai-listings-filter-status')?.value?.trim();
   const sourceType = $('ai-listings-filter-source')?.value?.trim();
   const limit = $('ai-listings-filter-limit')?.value?.trim();
   if (category) params.set('category', category);
-  if (status) params.set('status', status);
+  if (activeStatusFilter) params.set('status', activeStatusFilter);
   if (sourceType) params.set('source_type', sourceType);
   if (limit) params.set('limit', limit);
 
@@ -183,34 +217,102 @@ async function showListingDetail(listing) {
   }
 
   const data = /** @type {Record<string, unknown>} */ (detailRes.data ?? {});
+  const listingData = /** @type {Record<string, unknown>} */ (data.listing ?? listing);
   const latest = /** @type {Record<string, unknown>|null} */ (data.latest_analysis ?? null);
   const events = /** @type {Array<Record<string, unknown>>} */ (
     eventsRes.ok ? eventsRes.data?.events ?? [] : []
   );
+  const status = String(listingData.status ?? 'draft');
 
   detailEl.innerHTML = `
-    <h3>${safeRenderText(data.listing?.title ?? listing.title)}</h3>
+    <h3>${safeRenderText(listingData.title ?? listing.title)}</h3>
     <dl class="ai-listings-admin__fields">
-      <dt>ID</dt><dd>${safeRenderText(data.listing?.id ?? id)}</dd>
-      <dt>Category</dt><dd>${safeRenderText(data.listing?.category)}</dd>
-      <dt>Status</dt><dd>${safeRenderText(data.listing?.status)}</dd>
-      <dt>Price</dt><dd>${safeRenderText(data.listing?.price)} ${safeRenderText(data.listing?.currency)}</dd>
-      <dt>Location</dt><dd>${safeRenderText(data.listing?.location)}</dd>
-      <dt>Source URL</dt><dd>${safeRenderText(data.listing?.source_url)}</dd>
+      <dt>ID</dt><dd>${safeRenderText(listingData.id ?? id)}</dd>
+      <dt>Category</dt><dd>${safeRenderText(listingData.category)}</dd>
+      <dt>Status</dt><dd>${safeRenderText(status)}</dd>
+      <dt>Price</dt><dd>${safeRenderText(listingData.price)} ${safeRenderText(listingData.currency)}</dd>
+      <dt>Location</dt><dd>${safeRenderText(listingData.location)}</dd>
+      <dt>Source URL</dt><dd>${safeRenderText(listingData.source_url)}</dd>
     </dl>
+    <h4>Quality checklist</h4>
+    ${buildQualityChecklistHtml(listingData, latest)}
+    ${renderPublicVisibilityNote(status)}
     <h4>Latest analysis</h4>
     ${renderAnalysis(latest)}
     <h4>Events</h4>
     ${renderEvents(events)}
+    <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
+      <label>
+        Rejection reason
+        <textarea id="ai-listings-reject-reason" rows="3" placeholder="Explain why this listing was rejected"></textarea>
+      </label>
+      <button type="button" id="ai-listings-confirm-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--warn">Confirm reject</button>
+      <button type="button" id="ai-listings-cancel-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Cancel</button>
+    </div>
     <div class="ai-listings-admin__actions">
+      ${buildQaActionsHtml(status)}
       <button type="button" id="ai-listings-analyze-btn" class="ai-listings-admin__btn">Analyze</button>
-      <button type="button" id="ai-listings-archive-btn" class="ai-listings-admin__btn ai-listings-admin__btn--warn">Archive</button>
       <button type="button" id="ai-listings-refresh-detail-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Refresh</button>
     </div>`;
 
+  detailEl.querySelectorAll('[data-qa-action]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-qa-action');
+      if (!action) return;
+      if (action === 'reject') {
+        $('ai-listings-reject-form')?.removeAttribute('hidden');
+        return;
+      }
+      runQaAction(id, action);
+    });
+  });
+
   $('ai-listings-analyze-btn')?.addEventListener('click', () => analyzeListing(id));
-  $('ai-listings-archive-btn')?.addEventListener('click', () => archiveListing(id));
-  $('ai-listings-refresh-detail-btn')?.addEventListener('click', () => showListingDetail(listing));
+  $('ai-listings-refresh-detail-btn')?.addEventListener('click', () => showListingDetail(listingData));
+  $('ai-listings-confirm-reject-btn')?.addEventListener('click', () => {
+    const reason = $('ai-listings-reject-reason')?.value?.trim() ?? '';
+    if (!reason) {
+      setStatus('Rejection reason is required.', 'error');
+      return;
+    }
+    runQaAction(id, 'reject', { reason });
+  });
+  $('ai-listings-cancel-reject-btn')?.addEventListener('click', () => {
+    $('ai-listings-reject-form')?.setAttribute('hidden', '');
+    const reasonEl = $('ai-listings-reject-reason');
+    if (reasonEl) reasonEl.value = '';
+  });
+}
+
+async function runQaAction(id, action, body) {
+  const labels = {
+    'submit-review': 'Submitting for review',
+    approve: 'Approving',
+    reject: 'Rejecting',
+    archive: 'Archiving',
+    reanalyze: 'Re-analyzing'
+  };
+  setStatus(`${labels[action] ?? 'Processing'}…`, 'info');
+
+  const result = await edgeRequest(`/listings/${id}/${action}`, {
+    method: 'POST',
+    body
+  });
+
+  if (!result.ok) {
+    setStatus(result.message, 'error');
+    return;
+  }
+
+  setStatus(`${labels[action] ?? 'Action'} complete.`, 'success');
+  const updated = result.data?.listing;
+  if (updated) {
+    selectedListing = updated;
+    await showListingDetail(updated);
+  } else if (selectedListing) {
+    await showListingDetail(selectedListing);
+  }
+  await loadListings();
 }
 
 async function analyzeListing(id) {
@@ -221,18 +323,6 @@ async function analyzeListing(id) {
     return;
   }
   setStatus('Analysis complete.', 'success');
-  if (selectedListing) await showListingDetail(selectedListing);
-  await loadListings();
-}
-
-async function archiveListing(id) {
-  setStatus('Archiving…', 'info');
-  const result = await edgeRequest(`/listings/${id}/archive`, { method: 'POST' });
-  if (!result.ok) {
-    setStatus(result.message, 'error');
-    return;
-  }
-  setStatus('Listing archived.', 'success');
   if (selectedListing) await showListingDetail(selectedListing);
   await loadListings();
 }
@@ -300,6 +390,7 @@ export function initAiListingsAdmin() {
     renderSecretWarning();
   }
 
+  renderStatusFilterChips();
   bindEvents();
   loadListings();
 }

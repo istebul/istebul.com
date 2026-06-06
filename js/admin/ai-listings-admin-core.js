@@ -3,10 +3,25 @@
  *
  * INTERNAL TEST ONLY — not linked from public navigation.
  * Panel is hidden unless localStorage istebul_ai_listings_admin === "on".
+ *
+ * approved means internally approved only; public publishing remains disabled.
  */
 
 import { escapeHtml } from '../core/dom-safe.js';
 import { isHttpOrHttpsUrl } from '../../supabase/functions/_shared/ai-listings/validation.js';
+import {
+  STATUS_FILTER_CHIPS,
+  QA_ACTIONS,
+  normalizeStatusFilter,
+  resolveStatusTransition,
+  isListingPubliclyVisible
+} from '../../supabase/functions/_shared/ai-listings/status-workflow.js';
+import {
+  buildQualityChecklist,
+  countChecklistPassed
+} from '../../supabase/functions/_shared/ai-listings/quality-checklist.js';
+
+export { STATUS_FILTER_CHIPS, isListingPubliclyVisible };
 
 export const ADMIN_ENABLE_KEY = 'istebul_ai_listings_admin';
 export const ADMIN_SECRET_KEY = 'istebul_ai_listings_secret';
@@ -144,12 +159,105 @@ export function buildListingBadgesHtml(listing) {
   const aiScore = analysis?.ai_score ?? '—';
   const riskScore = analysis?.risk_score ?? '—';
   const analysisDate = formatAnalysisDate(analysis);
+  const status = safeRenderText(listing.status ?? 'draft');
 
   return `
     <span class="ai-listings-admin__badge ai-listings-admin__badge--category">${category}</span>
+    <span class="ai-listings-admin__badge ai-listings-admin__badge--status">${status}</span>
     <span class="ai-listings-admin__badge ai-listings-admin__badge--ai">AI ${safeRenderText(aiScore)}</span>
     <span class="ai-listings-admin__badge ai-listings-admin__badge--risk">Risk ${safeRenderText(riskScore)}</span>
     <span class="ai-listings-admin__badge ai-listings-admin__badge--date">${safeRenderText(analysisDate)}</span>`;
+}
+
+/**
+ * @param {string} activeValue
+ * @returns {string}
+ */
+export function buildStatusFilterChipsHtml(activeValue = '') {
+  const active = normalizeStatusFilter(activeValue);
+  return STATUS_FILTER_CHIPS.map((chip) => {
+    const isActive = chip.value === active;
+    const valueAttr = chip.value ? ` data-status-filter="${safeRenderText(chip.value)}"` : ' data-status-filter=""';
+    const activeClass = isActive ? ' ai-listings-admin__chip--active' : '';
+    return `<button type="button" class="ai-listings-admin__chip${activeClass}"${valueAttr}>${safeRenderText(chip.label)}</button>`;
+  }).join('');
+}
+
+/**
+ * @param {unknown} chipValue
+ * @returns {string}
+ */
+export function resolveActiveStatusFilter(chipValue) {
+  return normalizeStatusFilter(chipValue);
+}
+
+/** @type {ReadonlyArray<{ action: string, label: string, variant?: string }>} */
+const QA_ACTION_BUTTONS = Object.freeze([
+  { action: QA_ACTIONS.SUBMIT_REVIEW, label: 'Submit for review' },
+  { action: QA_ACTIONS.APPROVE, label: 'Approve', variant: 'success' },
+  { action: QA_ACTIONS.REJECT, label: 'Reject', variant: 'warn' },
+  { action: QA_ACTIONS.ARCHIVE, label: 'Archive', variant: 'warn' },
+  { action: QA_ACTIONS.REANALYZE, label: 'Re-analyze' }
+]);
+
+/**
+ * @param {string} status
+ * @returns {string[]}
+ */
+export function getAvailableQaActions(status) {
+  return QA_ACTION_BUTTONS.filter((btn) => resolveStatusTransition(status, btn.action).ok).map(
+    (btn) => btn.action
+  );
+}
+
+/**
+ * @param {string} status
+ * @returns {string}
+ */
+export function buildQaActionsHtml(status) {
+  const available = new Set(getAvailableQaActions(status));
+  const buttons = QA_ACTION_BUTTONS.filter((btn) => available.has(btn.action))
+    .map((btn) => {
+      const variant = btn.variant ? ` ai-listings-admin__btn--${btn.variant}` : '';
+      return `<button type="button" class="ai-listings-admin__btn${variant}" data-qa-action="${safeRenderText(btn.action)}">${safeRenderText(btn.label)}</button>`;
+    })
+    .join('');
+
+  return buttons || '<p class="ai-listings-admin__muted">No workflow actions available for this status.</p>';
+}
+
+const CHECKLIST_LABELS = Object.freeze({
+  has_title: 'Title',
+  has_price: 'Price',
+  has_location: 'Location',
+  has_description: 'Description',
+  has_attributes: 'Attributes',
+  has_analysis: 'Analysis',
+  has_images: 'Images'
+});
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null} [latestAnalysis]
+ * @returns {string}
+ */
+export function buildQualityChecklistHtml(listing, latestAnalysis = null) {
+  const checklist = buildQualityChecklist(listing, latestAnalysis);
+  const passed = countChecklistPassed(checklist);
+  const total = Object.keys(checklist).length;
+
+  const items = Object.entries(checklist)
+    .map(([key, ok]) => {
+      const label = CHECKLIST_LABELS[key] ?? key;
+      const stateClass = ok ? 'ai-listings-admin__check--pass' : 'ai-listings-admin__check--fail';
+      const mark = ok ? '✓' : '✗';
+      return `<li class="ai-listings-admin__check ${stateClass}"><span class="ai-listings-admin__check-mark">${mark}</span> ${safeRenderText(label)}</li>`;
+    })
+    .join('');
+
+  return `
+    <p class="ai-listings-admin__check-summary">${passed}/${total} checks passed</p>
+    <ul class="ai-listings-admin__checklist">${items}</ul>`;
 }
 
 export function mapEdgeResponse(response, body) {

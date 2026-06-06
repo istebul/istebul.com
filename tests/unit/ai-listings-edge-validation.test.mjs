@@ -5,6 +5,7 @@ const {
   isHttpOrHttpsUrl,
   validateCreateListingBody,
   validatePatchListingBody,
+  validateRejectBody,
   parseListFilters
 } = await import('../../supabase/functions/_shared/ai-listings/validation.js');
 
@@ -70,4 +71,24 @@ test('parseListFilters maps query params', () => {
   assert.equal(filters.status, 'draft');
   assert.equal(filters.limit, 20);
   assert.equal(filters.offset, 5);
+});
+
+test('validateCreateListingBody rejects invalid status', () => {
+  const result = validateCreateListingBody({
+    category: 'vehicle',
+    title: 'Car',
+    status: 'published'
+  });
+  assert.equal(result.ok, false);
+});
+
+test('validatePatchListingBody rejects invalid status', () => {
+  const result = validatePatchListingBody({ status: 'live' });
+  assert.equal(result.ok, false);
+});
+
+test('validateRejectBody stores trimmed reason', () => {
+  const result = validateRejectBody({ reason: '  Incomplete listing  ' });
+  assert.equal(result.ok, true);
+  if (result.ok) assert.equal(result.value.reason, 'Incomplete listing');
 });

@@ -3,6 +3,7 @@
  */
 
 import { EDGE_ERROR_CODES } from './errors.js';
+import { isValidListingStatus } from './status-workflow.js';
 
 const HTTP_URL_PATTERN = /^https?:\/\/.+/i;
 const BLOCKED_PROTOCOL_PREFIXES = ['javascript:', 'data:', 'file:', 'ftp:', 'blob:'];
@@ -88,6 +89,16 @@ export function validateCreateListingBody(body) {
     }
   }
 
+  if (input.status !== undefined && input.status !== null && String(input.status).trim()) {
+    if (!isValidListingStatus(input.status)) {
+      return {
+        ok: false,
+        code: EDGE_ERROR_CODES.INVALID_REQUEST,
+        message: 'status must be draft, pending_review, approved, rejected, or archived'
+      };
+    }
+  }
+
   return {
     ok: true,
     value: {
@@ -167,7 +178,42 @@ export function validatePatchListingBody(body) {
     patch.source_url = String(patch.source_url).trim();
   }
 
+  if (patch.status !== undefined && patch.status !== null && String(patch.status).trim()) {
+    if (!isValidListingStatus(patch.status)) {
+      return {
+        ok: false,
+        code: EDGE_ERROR_CODES.INVALID_REQUEST,
+        message: 'status must be draft, pending_review, approved, rejected, or archived'
+      };
+    }
+    patch.status = String(patch.status).trim();
+  }
+
   return { ok: true, value: patch };
+}
+
+/**
+ * @param {unknown} body
+ * @returns {{ ok: true, value: { reason: string } } | { ok: false, code: string, message: string }}
+ */
+export function validateRejectBody(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return {
+      ok: false,
+      code: EDGE_ERROR_CODES.INVALID_REQUEST,
+      message: 'Request body must be a JSON object'
+    };
+  }
+
+  const reason = String(/** @type {Record<string, unknown>} */ (body).reason ?? '').trim();
+  if (!reason) {
+    return { ok: false, code: EDGE_ERROR_CODES.INVALID_REQUEST, message: 'reason is required' };
+  }
+  if (reason.length > 2000) {
+    return { ok: false, code: EDGE_ERROR_CODES.INVALID_REQUEST, message: 'reason must be at most 2000 characters' };
+  }
+
+  return { ok: true, value: { reason } };
 }
 
 /**

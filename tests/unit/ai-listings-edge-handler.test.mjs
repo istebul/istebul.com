@@ -58,7 +58,8 @@ function createMockRepos() {
     },
     async updateListing(id, patch) {
       if (id !== listing.id) throw { code: EDGE_ERROR_CODES.NOT_FOUND, message: 'Listing not found' };
-      return { ...listing, ...patch };
+      Object.assign(listing, patch);
+      return { ...listing };
     },
     async listListings() {
       return [listing];
@@ -232,4 +233,93 @@ test('GET /listings/:id/events lists events', async () => {
   assert.equal(res.status, 200);
   const body = await res.json();
   assert.equal(body.data.events.length, 1);
+});
+
+test('POST /listings/:id/submit-review transitions draft to pending_review with event', async () => {
+  const repos = createMockRepos();
+  const listingId = repos._listing.id;
+
+  const res = await handleAiListingsRequest(
+    request('POST', `/listings/${listingId}/submit-review`),
+    handlerDeps({ repos })
+  );
+
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.data.listing.status, 'pending_review');
+  const event = repos._events.at(-1);
+  assert.equal(event.event_type, 'listing_submitted_for_review');
+  assert.equal(event.payload.from_status, 'draft');
+  assert.equal(event.payload.to_status, 'pending_review');
+});
+
+test('POST /listings/:id/approve transitions pending_review to approved with event', async () => {
+  const repos = createMockRepos();
+  const listingId = repos._listing.id;
+  repos._listing.status = 'pending_review';
+
+  const res = await handleAiListingsRequest(
+    request('POST', `/listings/${listingId}/approve`),
+    handlerDeps({ repos })
+  );
+
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.data.listing.status, 'approved');
+  assert.equal(repos._events.at(-1).event_type, 'listing_approved');
+});
+
+test('POST /listings/:id/reject requires reason and writes payload.reason', async () => {
+  const repos = createMockRepos();
+  const listingId = repos._listing.id;
+  repos._listing.status = 'pending_review';
+
+  const missing = await handleAiListingsRequest(
+    request('POST', `/listings/${listingId}/reject`, { body: {} }),
+    handlerDeps({ repos })
+  );
+  assert.equal(missing.status, 400);
+
+  const res = await handleAiListingsRequest(
+    request('POST', `/listings/${listingId}/reject`, { body: { reason: 'Low quality images' } }),
+    handlerDeps({ repos })
+  );
+
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.data.listing.status, 'rejected');
+  assert.equal(body.data.reason, 'Low quality images');
+  const event = repos._events.at(-1);
+  assert.equal(event.event_type, 'listing_rejected');
+  assert.equal(event.payload.reason, 'Low quality images');
+});
+
+test('POST /listings/:id/reanalyze writes listing_reanalyzed event without status change', async () => {
+  const repos = createMockRepos();
+  const listingId = repos._listing.id;
+  repos._listing.status = 'approved';
+
+  const res = await handleAiListingsRequest(
+    request('POST', `/listings/${listingId}/reanalyze`),
+    handlerDeps({ repos })
+  );
+
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.data.listing.status, 'approved');
+  assert.equal(repos._events.at(-1).event_type, 'listing_reanalyzed');
+});
+
+test('POST /listings/:id/approve rejects invalid transition from draft', async () => {
+  const repos = createMockRepos();
+  const listingId = repos._listing.id;
+
+  const res = await handleAiListingsRequest(
+    request('POST', `/listings/${listingId}/approve`),
+    handlerDeps({ repos })
+  );
+
+  assert.equal(res.status, 400);
+  const body = await res.json();
+  assert.equal(body.error.code, EDGE_ERROR_CODES.INVALID_REQUEST);
 });

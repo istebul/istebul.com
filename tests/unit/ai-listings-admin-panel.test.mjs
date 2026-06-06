@@ -9,6 +9,12 @@ const {
   getEdgeSecret,
   buildEdgeRequestHeaders,
   buildListingBadgesHtml,
+  buildStatusFilterChipsHtml,
+  buildQualityChecklistHtml,
+  buildQaActionsHtml,
+  getAvailableQaActions,
+  resolveActiveStatusFilter,
+  isListingPubliclyVisible,
   formatAnalysisDate,
   extractLatestAnalysis,
   validateSourceUrl,
@@ -132,4 +138,45 @@ test('extractLatestAnalysis reads nested latest_analysis', () => {
   const analysis = { ai_score: 65, risk_score: 35 };
   assert.deepEqual(extractLatestAnalysis({ latest_analysis: analysis }), analysis);
   assert.equal(extractLatestAnalysis({}), null);
+});
+
+test('buildStatusFilterChipsHtml marks active chip', () => {
+  const html = buildStatusFilterChipsHtml('draft');
+  assert.match(html, /ai-listings-admin__chip--active/);
+  assert.match(html, /data-status-filter="draft"/);
+  assert.match(html, />All</);
+  assert.match(html, />Pending Review</);
+});
+
+test('resolveActiveStatusFilter normalizes chip selection', () => {
+  assert.equal(resolveActiveStatusFilter(''), '');
+  assert.equal(resolveActiveStatusFilter('approved'), 'approved');
+  assert.equal(resolveActiveStatusFilter('bogus'), '');
+});
+
+test('buildQualityChecklistHtml renders pass and fail states', () => {
+  const html = buildQualityChecklistHtml(
+    { title: 'Car', price: 100, location: 'Ankara', description: 'Nice', attributes: { a: 1 }, images: [] },
+    { ai_score: 70 }
+  );
+  assert.match(html, /ai-listings-admin__check--pass/);
+  assert.match(html, /ai-listings-admin__check--fail/);
+  assert.match(html, /6\/7 checks passed/);
+});
+
+test('getAvailableQaActions exposes actions per status', () => {
+  assert.deepEqual(getAvailableQaActions('draft'), ['submit-review', 'archive', 'reanalyze']);
+  assert.deepEqual(getAvailableQaActions('pending_review'), ['approve', 'reject', 'archive', 'reanalyze']);
+  assert.deepEqual(getAvailableQaActions('archived'), []);
+});
+
+test('buildQaActionsHtml renders workflow buttons for pending_review', () => {
+  const html = buildQaActionsHtml('pending_review');
+  assert.match(html, /data-qa-action="approve"/);
+  assert.match(html, /data-qa-action="reject"/);
+  assert.doesNotMatch(html, /data-qa-action="submit-review"/);
+});
+
+test('approved does not imply public visibility in admin core', () => {
+  assert.equal(isListingPubliclyVisible('approved'), false);
 });
