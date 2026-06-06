@@ -507,6 +507,31 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     )
     .catch(() => {});
 
+  void import('../decision/decision-os-mount.js')
+    .then(({ mountDecisionOsOverlay }) =>
+      mountDecisionOsOverlay(mountNode, {
+        category: 'auto',
+        formData,
+        metrics: { topResult, budget, totalCost },
+        intelligence: intel,
+        model,
+        extras: {
+          topResult,
+          results,
+          budget,
+          totalCost,
+          cautions,
+          title: 'Araç Kararı',
+          strengths: model.strengths,
+          alternatives: model.alternatives,
+          insight: model.insight,
+          executiveSummary: model.executiveSummary,
+          evdsRiskLayer: model.evdsRiskLayer
+        }
+      })
+    )
+    .catch(() => {});
+
   return model;
 }
 

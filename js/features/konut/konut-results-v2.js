@@ -817,5 +817,27 @@ export async function mountKonutResultsV2({
     )
     .catch(() => {});
 
+  void import('../../decision/decision-os-mount.js')
+    .then(({ mountDecisionOsOverlay }) =>
+      mountDecisionOsOverlay(mountNode, {
+        category: 'konut',
+        formData: state,
+        metrics,
+        intelligence: model.intelligence,
+        model,
+        extras: {
+          totalCost: model.totalCost?.value ?? metrics.totalCost ?? null,
+          title: 'Konut Kararı',
+          strengths: model.strengths,
+          cautions: model.weaknesses,
+          alternatives: model.alternatives,
+          insight: model.insight,
+          executiveSummary: model.executiveSummary,
+          evdsRiskLayer: model.evdsRiskLayer
+        }
+      })
+    )
+    .catch(() => {});
+
   return model;
 }

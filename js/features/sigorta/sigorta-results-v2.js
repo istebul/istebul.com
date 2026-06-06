@@ -492,6 +492,27 @@ export async function mountSigortaResultsV2(mountNode, payload = {}) {
 
   void hydrateSigortaExtras(root, model, track);
 
+  void import('../../decision/decision-os-mount.js')
+    .then(({ mountDecisionOsOverlay }) =>
+      mountDecisionOsOverlay(target, {
+        category: 'sigorta',
+        formData: state,
+        metrics: { totalCost: model.totalCost?.value ?? null },
+        intelligence: model.intelligence,
+        model,
+        extras: {
+          totalCost: model.totalCost?.value ?? null,
+          title: 'Sigorta Kararı',
+          strengths: model.strengths,
+          cautions: model.weaknesses,
+          alternatives: model.alternatives,
+          insight: model.insight,
+          executiveSummary: model.executiveSummary
+        }
+      })
+    )
+    .catch(() => {});
+
   return model;
 }
 

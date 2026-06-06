@@ -726,5 +726,26 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
   model.pdfReportData.executiveSummary = summary.text;
   if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
 
+  void import('../../decision/decision-os-mount.js')
+    .then(({ mountDecisionOsOverlay }) =>
+      mountDecisionOsOverlay(mountNode, {
+        category: 'tatil',
+        formData: state,
+        metrics: { totalCost: model.totalCost?.value ?? null },
+        intelligence: model.intelligence,
+        model,
+        extras: {
+          totalCost: model.totalCost?.value ?? null,
+          title: 'Tatil Kararı',
+          strengths: model.strengths,
+          cautions: model.weaknesses,
+          alternatives: model.alternatives,
+          insight: model.insight,
+          executiveSummary: model.executiveSummary
+        }
+      })
+    )
+    .catch(() => {});
+
   return model;
 }
