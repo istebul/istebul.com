@@ -12,6 +12,7 @@ import {
   ADMIN_ENABLE_KEY,
   ADMIN_SECRET_KEY,
   buildEdgeRequestHeaders,
+  buildImportPreviewHtml,
   buildListingBadgesHtml,
   buildQualityChecklistHtml,
   buildQaActionsHtml,
@@ -20,6 +21,7 @@ import {
   getEdgeSecret,
   isListingPubliclyVisible,
   mapEdgeResponse,
+  previewImportContent,
   resolveActiveStatusFilter,
   resolveEdgeBaseUrl,
   safeRenderText,
@@ -32,6 +34,9 @@ let selectedListing = null;
 
 /** @type {string} */
 let activeStatusFilter = '';
+
+/** @type {number} */
+let importValidRowCount = 0;
 
 function $(id) {
   return document.getElementById(id);
@@ -373,9 +378,83 @@ async function handleCreateSubmit(event) {
   if (listing) await showListingDetail(listing);
 }
 
+function updateImportButtonState() {
+  const importBtn = $('ai-listings-import-run-btn');
+  if (!importBtn) return;
+  importBtn.disabled = importValidRowCount <= 0;
+}
+
+function handleImportPreview() {
+  const format = /** @type {'csv'|'json'} */ (
+    $('ai-listings-import-format')?.value === 'json' ? 'json' : 'csv'
+  );
+  const content = $('ai-listings-import-content')?.value ?? '';
+  const previewEl = $('ai-listings-import-preview');
+
+  const result = previewImportContent(format, content);
+  if (!result.ok) {
+    importValidRowCount = 0;
+    updateImportButtonState();
+    if (previewEl) previewEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(result.message)}</p>`;
+    setStatus(result.message, 'error');
+    return;
+  }
+
+  importValidRowCount = result.preview.valid_rows;
+  updateImportButtonState();
+  if (previewEl) previewEl.innerHTML = buildImportPreviewHtml(result.preview);
+  setStatus(
+    `Preview ready: ${result.preview.valid_rows} valid, ${result.preview.invalid_rows} invalid.`,
+    'success'
+  );
+}
+
+async function handleImportRun() {
+  if (importValidRowCount <= 0) {
+    setStatus('No valid rows to import. Run preview first.', 'error');
+    return;
+  }
+
+  const format = /** @type {'csv'|'json'} */ (
+    $('ai-listings-import-format')?.value === 'json' ? 'json' : 'csv'
+  );
+  const content = $('ai-listings-import-content')?.value ?? '';
+  const analyze = Boolean($('ai-listings-import-analyze')?.checked);
+
+  setStatus('Importing listings…', 'info');
+  const result = await edgeRequest('/listings/import', {
+    method: 'POST',
+    body: { format, content, analyze }
+  });
+
+  if (!result.ok) {
+    setStatus(result.message, 'error');
+    return;
+  }
+
+  const summary = result.data ?? {};
+  setStatus(
+    `Import complete: ${summary.created_count ?? 0} created, ${summary.invalid_count ?? 0} invalid, ${summary.analyzed_count ?? 0} analyzed.`,
+    'success'
+  );
+  importValidRowCount = 0;
+  updateImportButtonState();
+  await loadListings();
+}
+
 function bindEvents() {
   $('ai-listings-create-form')?.addEventListener('submit', handleCreateSubmit);
   $('ai-listings-refresh-list-btn')?.addEventListener('click', () => loadListings());
+  $('ai-listings-import-preview-btn')?.addEventListener('click', handleImportPreview);
+  $('ai-listings-import-run-btn')?.addEventListener('click', handleImportRun);
+  $('ai-listings-import-content')?.addEventListener('input', () => {
+    importValidRowCount = 0;
+    updateImportButtonState();
+  });
+  $('ai-listings-import-format')?.addEventListener('change', () => {
+    importValidRowCount = 0;
+    updateImportButtonState();
+  });
 }
 
 export function initAiListingsAdmin() {
@@ -392,6 +471,7 @@ export function initAiListingsAdmin() {
 
   renderStatusFilterChips();
   bindEvents();
+  updateImportButtonState();
   loadListings();
 }
 

@@ -12,6 +12,8 @@ const {
   buildStatusFilterChipsHtml,
   buildQualityChecklistHtml,
   buildQaActionsHtml,
+  buildImportPreviewHtml,
+  previewImportContent,
   getAvailableQaActions,
   resolveActiveStatusFilter,
   isListingPubliclyVisible,
@@ -179,4 +181,33 @@ test('buildQaActionsHtml renders workflow buttons for pending_review', () => {
 
 test('approved does not imply public visibility in admin core', () => {
   assert.equal(isListingPubliclyVisible('approved'), false);
+});
+
+test('previewImportContent returns valid and invalid row counts', () => {
+  const csv = `category,title
+vehicle,Valid
+,Invalid`;
+  const result = previewImportContent('csv', csv);
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.preview.total_count, 2);
+    assert.equal(result.preview.valid_rows, 1);
+    assert.equal(result.preview.invalid_rows, 1);
+  }
+});
+
+test('buildImportPreviewHtml renders totals and row errors', () => {
+  const html = buildImportPreviewHtml({
+    total_count: 2,
+    valid_rows: 1,
+    invalid_rows: 1,
+    row_errors: [{ row: 2, messages: ['title is required'] }],
+    normalized_rows: [{ category: 'vehicle', title: 'Valid' }]
+  });
+
+  assert.match(html, /Total rows/);
+  assert.match(html, /Valid rows/);
+  assert.match(html, /Invalid rows/);
+  assert.match(html, /Row 2/);
+  assert.match(html, /title is required/);
 });

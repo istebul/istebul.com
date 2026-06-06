@@ -23,6 +23,10 @@ import {
   eventTypeForAction,
   resolveStatusTransition
 } from './status-workflow.js';
+import {
+  buildImportPreview,
+  validateImportRequestBody
+} from './import-parser.js';
 
 /**
  * @typedef {Object} HandlerDeps
@@ -71,6 +75,76 @@ async function applyWorkflowTransition(repos, listingId, action, eventPayload = 
   });
 
   return { ok: true, listing };
+}
+
+/**
+ * @param {Awaited<ReturnType<typeof createEdgeRepositories>>} repos
+ * @param {typeof runListingAnalysisPipeline} runAnalysis
+ * @param {Record<string, unknown>[]} normalizedRows
+ * @param {boolean} analyze
+ */
+export async function executeListingsImport(repos, runAnalysis, normalizedRows, analyze) {
+  const created_ids = [];
+  const errors = [];
+  let analyzed_count = 0;
+
+  for (const row of normalizedRows) {
+    try {
+      const listing = await repos.createListing({
+        ...row,
+        source_type: 'admin_import',
+        status: 'draft'
+      });
+
+      await repos.createEvent({
+        listing_id: listing.id,
+        event_type: 'listing_imported',
+        payload: {
+          source_type: 'admin_import',
+          category: listing.category,
+          import_format: 'bulk'
+        }
+      });
+
+      created_ids.push(listing.id);
+
+      if (analyze) {
+        const pipeline = await runAnalysis({ listing });
+        if (!pipeline.ok || !pipeline.analysis) {
+          errors.push({
+            listing_id: listing.id,
+            message: 'Analysis pipeline failed',
+            details: pipeline.errors ?? null
+          });
+        } else {
+          const saved = await repos.createAnalysis(listing.id, pipeline.analysis, 'v1-edge');
+          await repos.createEvent({
+            listing_id: listing.id,
+            event_type: 'listing_analyzed',
+            payload: {
+              analysis_id: saved.id,
+              ai_score: saved.ai_score,
+              rank_score: pipeline.context?.recommendation?.rank_score ?? null,
+              import_batch: true
+            }
+          });
+          analyzed_count += 1;
+        }
+      }
+    } catch (err) {
+      errors.push({
+        message: err instanceof Error ? err.message : 'Failed to create listing',
+        row: row
+      });
+    }
+  }
+
+  return {
+    created_count: created_ids.length,
+    analyzed_count,
+    created_ids,
+    errors
+  };
 }
 
 /**
@@ -125,6 +199,48 @@ export async function handleAiListingsRequest(req, deps) {
       });
 
       return jsonResponse(successBody({ listing }), 201);
+    }
+
+    // POST /listings/import
+    if (route.id === 'import' && route.action === null && req.method === 'POST') {
+      const body = await req.json().catch(() => null);
+      const requestValidation = validateImportRequestBody(body);
+      if (!requestValidation.ok) {
+        return errorResponse(EDGE_ERROR_CODES.INVALID_REQUEST, requestValidation.message, 400);
+      }
+
+      let preview;
+      try {
+        preview = buildImportPreview(
+          requestValidation.value.format,
+          requestValidation.value.content
+        );
+      } catch (err) {
+        return errorResponse(
+          EDGE_ERROR_CODES.INVALID_REQUEST,
+          err instanceof Error ? err.message : 'Import content is invalid',
+          400
+        );
+      }
+
+      const importResult = await executeListingsImport(
+        repos,
+        runAnalysis,
+        preview.normalized_rows,
+        requestValidation.value.analyze
+      );
+
+      return jsonResponse(
+        successBody({
+          total_count: preview.total_count,
+          created_count: importResult.created_count,
+          invalid_count: preview.invalid_rows,
+          analyzed_count: importResult.analyzed_count,
+          created_ids: importResult.created_ids,
+          errors: [...preview.row_errors, ...importResult.errors]
+        }),
+        201
+      );
     }
 
     // GET /listings

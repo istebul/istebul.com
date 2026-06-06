@@ -370,3 +370,57 @@
   color: #f8fafc;
   box-sizing: border-box;
 }
+
+.ai-listings-admin__warning-inline {
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #f59e0b;
+  background: #422006;
+  color: #fde68a;
+  font-size: 0.8125rem;
+}
+
+.ai-listings-admin__form select {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #f8fafc;
+  box-sizing: border-box;
+}
+
+.ai-listings-admin__checkbox {
+  display: flex !important;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.ai-listings-admin__checkbox input {
+  width: auto;
+  margin: 0;
+}
+
+.ai-listings-admin__import-preview-wrap {
+  margin-top: 0.75rem;
+}
+
+.ai-listings-admin__import-preview {
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  font-size: 0.875rem;
+}
+
+.ai-listings-admin__import-errors {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.ai-listings-admin__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

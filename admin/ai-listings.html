@@ -72,6 +72,33 @@
       </section>
 
       <section class="ai-listings-admin__panel ai-listings-admin__panel--wide">
+        <h2>Bulk import</h2>
+        <p class="ai-listings-admin__warning-inline">Internal admin import only. Public publishing remains disabled.</p>
+        <div class="ai-listings-admin__form">
+          <label>
+            Format
+            <select id="ai-listings-import-format">
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+          </label>
+          <label>
+            CSV / JSON content
+            <textarea id="ai-listings-import-content" rows="8" placeholder="category,title,description,price,currency,location,source_url,images,attributes"></textarea>
+          </label>
+          <label class="ai-listings-admin__checkbox">
+            <input id="ai-listings-import-analyze" type="checkbox">
+            Run deterministic analysis after import
+          </label>
+          <div class="ai-listings-admin__actions">
+            <button type="button" id="ai-listings-import-preview-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Preview</button>
+            <button type="button" id="ai-listings-import-run-btn" class="ai-listings-admin__btn" disabled>Import valid rows</button>
+          </div>
+          <div id="ai-listings-import-preview" class="ai-listings-admin__import-preview-wrap"></div>
+        </div>
+      </section>
+
+      <section class="ai-listings-admin__panel ai-listings-admin__panel--wide">
         <h2>Listing detail</h2>
         <div id="ai-listings-detail" class="ai-listings-admin__detail">
           <p class="ai-listings-admin__muted">Select a listing to view detail, analysis, and events.</p>

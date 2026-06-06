@@ -20,8 +20,14 @@ import {
   buildQualityChecklist,
   countChecklistPassed
 } from '../../supabase/functions/_shared/ai-listings/quality-checklist.js';
+import {
+  buildImportPreview,
+  measureImportContentBytes,
+  IMPORT_MAX_CONTENT_BYTES,
+  IMPORT_MAX_ROWS
+} from '../../supabase/functions/_shared/ai-listings/import-parser.js';
 
-export { STATUS_FILTER_CHIPS, isListingPubliclyVisible };
+export { STATUS_FILTER_CHIPS, isListingPubliclyVisible, IMPORT_MAX_ROWS, IMPORT_MAX_CONTENT_BYTES };
 
 export const ADMIN_ENABLE_KEY = 'istebul_ai_listings_admin';
 export const ADMIN_SECRET_KEY = 'istebul_ai_listings_secret';
@@ -258,6 +264,54 @@ export function buildQualityChecklistHtml(listing, latestAnalysis = null) {
   return `
     <p class="ai-listings-admin__check-summary">${passed}/${total} checks passed</p>
     <ul class="ai-listings-admin__checklist">${items}</ul>`;
+}
+
+/**
+ * @param {'csv'|'json'} format
+ * @param {string} content
+ * @returns {{ ok: true, preview: ReturnType<typeof buildImportPreview> } | { ok: false, message: string }}
+ */
+export function previewImportContent(format, content) {
+  const trimmed = String(content ?? '').trim();
+  if (!trimmed) return { ok: false, message: 'Import content is required.' };
+  if (measureImportContentBytes(trimmed) > IMPORT_MAX_CONTENT_BYTES) {
+    return { ok: false, message: `Content exceeds ${IMPORT_MAX_CONTENT_BYTES} byte limit.` };
+  }
+
+  try {
+    const preview = buildImportPreview(format, trimmed);
+    return { ok: true, preview };
+  } catch (err) {
+    return {
+      ok: false,
+      message: err instanceof Error ? err.message : 'Import preview failed.'
+    };
+  }
+}
+
+/**
+ * @param {ReturnType<typeof buildImportPreview>} preview
+ * @returns {string}
+ */
+export function buildImportPreviewHtml(preview) {
+  const errorItems = preview.row_errors
+    .map(
+      (entry) =>
+        `<li><strong>Row ${safeRenderText(entry.row)}:</strong> ${safeRenderText(entry.messages.join('; '))}</li>`
+    )
+    .join('');
+
+  const errorsBlock = errorItems
+    ? `<ul class="ai-listings-admin__import-errors">${errorItems}</ul>`
+    : '<p class="ai-listings-admin__muted">No row-level errors.</p>';
+
+  return `
+    <div class="ai-listings-admin__import-preview">
+      <p><strong>Total rows:</strong> ${safeRenderText(preview.total_count)}</p>
+      <p><strong>Valid rows:</strong> ${safeRenderText(preview.valid_rows)}</p>
+      <p><strong>Invalid rows:</strong> ${safeRenderText(preview.invalid_rows)}</p>
+      ${errorsBlock}
+    </div>`;
 }
 
 export function mapEdgeResponse(response, body) {

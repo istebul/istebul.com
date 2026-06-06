@@ -323,3 +323,131 @@ test('POST /listings/:id/approve rejects invalid transition from draft', async (
   const body = await res.json();
   assert.equal(body.error.code, EDGE_ERROR_CODES.INVALID_REQUEST);
 });
+
+function createImportMockRepos() {
+  const events = [];
+  const analyses = [];
+  const listings = [];
+  let counter = 0;
+
+  return {
+    async createListing(input) {
+      counter += 1;
+      const listing = {
+        id: `import-${counter}`,
+        status: 'draft',
+        source_type: 'admin_import',
+        created_at: '2026-06-06T10:00:00.000Z',
+        updated_at: '2026-06-06T10:00:00.000Z',
+        images: [],
+        attributes: {},
+        ...input
+      };
+      listings.push(listing);
+      return listing;
+    },
+    async getListingById(id) {
+      return listings.find((item) => item.id === id) ?? null;
+    },
+    async updateListing() {
+      throw new Error('not used in import tests');
+    },
+    async listListings() {
+      return listings;
+    },
+    async archiveListing() {
+      throw new Error('not used in import tests');
+    },
+    async createAnalysis(listingId, analysis) {
+      const saved = {
+        id: `analysis-${analyses.length + 1}`,
+        listing_id: listingId,
+        ...analysis,
+        analysis_version: 'v1-edge',
+        created_at: '2026-06-06T11:00:00.000Z'
+      };
+      analyses.push(saved);
+      return saved;
+    },
+    async getLatestAnalysis(listingId) {
+      return analyses.filter((a) => a.listing_id === listingId).at(-1) ?? null;
+    },
+    async createEvent(input) {
+      const event = {
+        id: `evt-${events.length + 1}`,
+        created_at: new Date().toISOString(),
+        ...input
+      };
+      events.push(event);
+      return event;
+    },
+    async listEventsByListingId(listingId) {
+      return events.filter((e) => e.listing_id === listingId);
+    },
+    _events: events,
+    _analyses: analyses,
+    _listings: listings
+  };
+}
+
+test('POST /listings/import creates valid rows and returns summary', async () => {
+  const repos = createImportMockRepos();
+  const content = `category,title,price
+vehicle,Import One,100000
+,Missing title,
+vehicle,Import Two,200000`;
+
+  const res = await handleAiListingsRequest(
+    request('POST', '/listings/import', {
+      body: { format: 'csv', content, analyze: false }
+    }),
+    handlerDeps({ repos })
+  );
+
+  assert.equal(res.status, 201);
+  const body = await res.json();
+  assert.equal(body.data.total_count, 3);
+  assert.equal(body.data.created_count, 2);
+  assert.equal(body.data.invalid_count, 1);
+  assert.equal(body.data.created_ids.length, 2);
+  assert.equal(repos._listings.length, 2);
+  assert.equal(repos._listings[0].source_type, 'admin_import');
+  assert.ok(repos._events.some((event) => event.event_type === 'listing_imported'));
+});
+
+test('POST /listings/import with analyze=true creates analyses', async () => {
+  const repos = createImportMockRepos();
+  const runAnalysis = async () => ({
+    ok: true,
+    analysis: {
+      ai_score: 75,
+      risk_score: 25,
+      market_score: 10,
+      price_score: 40,
+      confidence: 0.7,
+      summary: 'Import analysis',
+      pros: [],
+      cons: [],
+      tags: []
+    },
+    context: { recommendation: { rank_score: 70 } }
+  });
+
+  const res = await handleAiListingsRequest(
+    request('POST', '/listings/import', {
+      body: {
+        format: 'json',
+        content: JSON.stringify([{ category: 'vehicle', title: 'Analyzed Import', price: 500000 }]),
+        analyze: true
+      }
+    }),
+    handlerDeps({ repos, runAnalysis })
+  );
+
+  assert.equal(res.status, 201);
+  const body = await res.json();
+  assert.equal(body.data.created_count, 1);
+  assert.equal(body.data.analyzed_count, 1);
+  assert.equal(repos._analyses.length, 1);
+  assert.ok(repos._events.some((event) => event.event_type === 'listing_analyzed'));
+});
