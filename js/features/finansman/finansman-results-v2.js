@@ -998,5 +998,21 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
 
   void hydrateFinansmanResultsV2Extras(root, model, track);
 
+  void import('../../decision/decision-v3-mount.js')
+    .then(({ mountDecisionEngineV3Overlay }) =>
+      mountDecisionEngineV3Overlay(mountNode, {
+        category: 'finansman',
+        formData: state,
+        metrics: { totalCost: model.totalCost?.value ?? null },
+        extras: {
+          primaryResult: results.find((item) => item.id === model.selectedOption) || results[0],
+          results,
+          totalCost: model.totalCost?.value ?? null,
+          title: 'Finansman Kararı'
+        }
+      })
+    )
+    .catch(() => {});
+
   return model;
 }

@@ -803,5 +803,19 @@ export async function mountKonutResultsV2({
   model.pdfReportData.executiveSummary = summary.text;
   if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
 
+  void import('../../decision/decision-v3-mount.js')
+    .then(({ mountDecisionEngineV3Overlay }) =>
+      mountDecisionEngineV3Overlay(mountNode, {
+        category: 'konut',
+        formData: state,
+        metrics,
+        extras: {
+          totalCost: model.totalCost?.value ?? metrics.totalCost ?? null,
+          title: 'Konut Kararı'
+        }
+      })
+    )
+    .catch(() => {});
+
   return model;
 }
