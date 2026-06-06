@@ -1014,5 +1014,28 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
     )
     .catch(() => {});
 
+  void import('../../decision/decision-os-mount.js')
+    .then(({ mountDecisionOsOverlay }) =>
+      mountDecisionOsOverlay(mountNode, {
+        category: 'finansman',
+        formData: state,
+        metrics: { totalCost: model.totalCost?.value ?? null },
+        intelligence: model.intelligence,
+        model,
+        extras: {
+          primaryResult: results.find((item) => item.id === model.selectedOption) || results[0],
+          results,
+          totalCost: model.totalCost?.value ?? null,
+          title: 'Finansman Kararı',
+          strengths: model.strengths,
+          cautions: model.weaknesses,
+          alternatives: model.alternatives,
+          insight: model.insight,
+          executiveSummary: model.executiveSummary
+        }
+      })
+    )
+    .catch(() => {});
+
   return model;
 }
