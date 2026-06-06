@@ -29,6 +29,32 @@ import {
 
 export { STATUS_FILTER_CHIPS, isListingPubliclyVisible, IMPORT_MAX_ROWS, IMPORT_MAX_CONTENT_BYTES };
 
+/** @type {Readonly<Record<string, string>>} */
+export const STATUS_LABELS_TR = Object.freeze({
+  draft: 'Taslak',
+  pending_review: 'İncelemede',
+  approved: 'Onaylandı',
+  rejected: 'Reddedildi',
+  archived: 'Arşivlendi'
+});
+
+/** @type {Readonly<Record<string, string>>} */
+export const CATEGORY_LABELS_TR = Object.freeze({
+  vehicle: 'Araç',
+  housing: 'Konut',
+  real_estate: 'Konut',
+  vacation: 'Tatil'
+});
+
+export const STATUS_FILTER_CHIPS_TR = Object.freeze([
+  { value: '', label: 'Tümü' },
+  { value: 'draft', label: 'Taslak' },
+  { value: 'pending_review', label: 'İncelemede' },
+  { value: 'approved', label: 'Onaylandı' },
+  { value: 'rejected', label: 'Reddedildi' },
+  { value: 'archived', label: 'Arşivlendi' }
+]);
+
 export const ADMIN_ENABLE_KEY = 'istebul_ai_listings_admin';
 export const ADMIN_SECRET_KEY = 'istebul_ai_listings_secret';
 export const EDGE_SECRET_HEADER = 'x-ai-listings-secret';
@@ -120,11 +146,11 @@ export function validateAttributesJson(text) {
   try {
     const parsed = JSON.parse(raw);
     if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-      return { ok: false, message: 'attributes must be a JSON object' };
+      return { ok: false, message: 'Geçersiz JSON' };
     }
     return { ok: true, value: parsed };
   } catch {
-    return { ok: false, message: 'attributes JSON is invalid' };
+    return { ok: false, message: 'Geçersiz JSON' };
   }
 }
 
@@ -134,6 +160,25 @@ export function validateAttributesJson(text) {
  */
 export function safeRenderText(value) {
   return escapeHtml(String(value ?? ''));
+}
+
+/**
+ * @param {unknown} status
+ * @returns {string}
+ */
+export function getStatusLabelTr(status) {
+  const key = String(status ?? 'draft').trim();
+  return STATUS_LABELS_TR[key] ?? key;
+}
+
+/**
+ * @param {unknown} category
+ * @returns {string}
+ */
+export function getCategoryLabelTr(category) {
+  const key = String(category ?? '').trim().toLowerCase();
+  if (!key) return '—';
+  return CATEGORY_LABELS_TR[key] ?? String(category ?? '—');
 }
 
 /**
@@ -178,19 +223,34 @@ export function extractLatestAnalysis(listing) {
  * @returns {string}
  */
 export function buildListingBadgesHtml(listing) {
-  const category = safeRenderText(listing.category ?? '—');
+  const category = safeRenderText(getCategoryLabelTr(listing.category));
   const analysis = extractLatestAnalysis(listing);
-  const aiScore = analysis?.ai_score ?? '—';
-  const riskScore = analysis?.risk_score ?? '—';
+  const aiScore = analysis?.ai_score;
+  const riskScore = analysis?.risk_score;
   const analysisDate = formatAnalysisDate(analysis);
-  const status = safeRenderText(listing.status ?? 'draft');
+  const status = safeRenderText(getStatusLabelTr(listing.status ?? 'draft'));
+  const sourceType = safeRenderText(listing.source_type ?? '—');
+
+  const aiBadge =
+    aiScore !== undefined && aiScore !== null
+      ? `<span class="ai-listings-admin__badge ai-listings-admin__badge--ai">AI Skoru ${safeRenderText(aiScore)}</span>`
+      : '';
+  const riskBadge =
+    riskScore !== undefined && riskScore !== null
+      ? `<span class="ai-listings-admin__badge ai-listings-admin__badge--risk">Risk ${safeRenderText(riskScore)}</span>`
+      : '';
+  const dateBadge =
+    analysis && analysisDate !== '—'
+      ? `<span class="ai-listings-admin__badge ai-listings-admin__badge--date">${safeRenderText(analysisDate)}</span>`
+      : '';
 
   return `
     <span class="ai-listings-admin__badge ai-listings-admin__badge--category">${category}</span>
     <span class="ai-listings-admin__badge ai-listings-admin__badge--status">${status}</span>
-    <span class="ai-listings-admin__badge ai-listings-admin__badge--ai">AI ${safeRenderText(aiScore)}</span>
-    <span class="ai-listings-admin__badge ai-listings-admin__badge--risk">Risk ${safeRenderText(riskScore)}</span>
-    <span class="ai-listings-admin__badge ai-listings-admin__badge--date">${safeRenderText(analysisDate)}</span>`;
+    ${aiBadge}
+    ${riskBadge}
+    ${dateBadge}
+    <span class="ai-listings-admin__badge ai-listings-admin__badge--source">${sourceType}</span>`;
 }
 
 /**
@@ -199,7 +259,7 @@ export function buildListingBadgesHtml(listing) {
  */
 export function buildStatusFilterChipsHtml(activeValue = '') {
   const active = normalizeStatusFilter(activeValue);
-  return STATUS_FILTER_CHIPS.map((chip) => {
+  return STATUS_FILTER_CHIPS_TR.map((chip) => {
     const isActive = chip.value === active;
     const valueAttr = chip.value ? ` data-status-filter="${safeRenderText(chip.value)}"` : ' data-status-filter=""';
     const activeClass = isActive ? ' ai-listings-admin__chip--active' : '';
@@ -217,11 +277,11 @@ export function resolveActiveStatusFilter(chipValue) {
 
 /** @type {ReadonlyArray<{ action: string, label: string, variant?: string }>} */
 const QA_ACTION_BUTTONS = Object.freeze([
-  { action: QA_ACTIONS.SUBMIT_REVIEW, label: 'Submit for review' },
-  { action: QA_ACTIONS.APPROVE, label: 'Approve', variant: 'success' },
-  { action: QA_ACTIONS.REJECT, label: 'Reject', variant: 'warn' },
-  { action: QA_ACTIONS.ARCHIVE, label: 'Archive', variant: 'warn' },
-  { action: QA_ACTIONS.REANALYZE, label: 'Re-analyze' }
+  { action: QA_ACTIONS.SUBMIT_REVIEW, label: 'İncelemeye gönder' },
+  { action: QA_ACTIONS.APPROVE, label: 'Onayla', variant: 'success' },
+  { action: QA_ACTIONS.REJECT, label: 'Reddet', variant: 'warn' },
+  { action: QA_ACTIONS.ARCHIVE, label: 'Arşivle', variant: 'warn' },
+  { action: QA_ACTIONS.REANALYZE, label: 'Yeniden analiz et' }
 ]);
 
 /**
@@ -247,17 +307,17 @@ export function buildQaActionsHtml(status) {
     })
     .join('');
 
-  return buttons || '<p class="ai-listings-admin__muted">No workflow actions available for this status.</p>';
+  return buttons || '<p class="ai-listings-admin__muted">Bu durum için işlem yok.</p>';
 }
 
 const CHECKLIST_LABELS = Object.freeze({
-  has_title: 'Title',
-  has_price: 'Price',
-  has_location: 'Location',
-  has_description: 'Description',
-  has_attributes: 'Attributes',
-  has_analysis: 'Analysis',
-  has_images: 'Images'
+  has_title: 'Başlık var',
+  has_price: 'Fiyat var',
+  has_location: 'Konum var',
+  has_description: 'Açıklama var',
+  has_attributes: 'Özellikler var',
+  has_analysis: 'Analiz var',
+  has_images: 'Görsel var'
 });
 
 /**
@@ -280,7 +340,7 @@ export function buildQualityChecklistHtml(listing, latestAnalysis = null) {
     .join('');
 
   return `
-    <p class="ai-listings-admin__check-summary">${passed}/${total} checks passed</p>
+    <p class="ai-listings-admin__check-summary">${passed}/${total} kontrol geçti</p>
     <ul class="ai-listings-admin__checklist">${items}</ul>`;
 }
 
@@ -332,21 +392,83 @@ export function buildImportPreviewHtml(preview) {
     </div>`;
 }
 
+/**
+ * @param {unknown} value
+ * @returns {string|number|undefined|null}
+ */
+export function formatScoreValue(value) {
+  if (value === undefined || value === null || value === '') return undefined;
+  return value;
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @returns {string}
+ */
+export function buildAnalysisScoresHtml(analysis) {
+  if (!analysis) {
+    return '<p class="ai-listings-admin__muted">Henüz analiz yok.</p>';
+  }
+
+  const rows = [
+    ['AI Skoru', formatScoreValue(analysis.ai_score)],
+    ['Risk', formatScoreValue(analysis.risk_score)],
+    ['Piyasa', formatScoreValue(analysis.market_score)],
+    ['Fiyat', formatScoreValue(analysis.price_score)],
+    ['Güven', formatScoreValue(analysis.confidence)]
+  ]
+    .filter(([, value]) => value !== undefined)
+    .map(
+      ([label, value]) =>
+        `<p><strong>${safeRenderText(label)}:</strong> ${safeRenderText(value)}</p>`
+    )
+    .join('');
+
+  const summary = analysis.summary
+    ? `<p><strong>Özet:</strong> ${safeRenderText(analysis.summary)}</p>`
+    : '';
+
+  return `<div class="ai-listings-admin__analysis">${rows}${summary}</div>`;
+}
+
+/**
+ * @param {string} message
+ * @returns {string}
+ */
+export function translateAdminErrorMessage(message) {
+  const text = String(message ?? '').trim();
+  if (!text) return 'İstek başarısız';
+
+  const lower = text.toLowerCase();
+  if (lower === 'unauthorized' || lower.includes('invalid secret')) return 'Yetkisiz erişim';
+  if (lower.includes('edge secret missing')) return 'Edge secret eksik';
+  if (lower.includes('supabase anon key missing')) return 'Supabase anon key eksik';
+  if (lower.includes('invalid json') || lower.includes('json is invalid')) return 'Geçersiz JSON';
+  if (lower.includes('invalid url') || lower.includes('http or https')) return 'Geçersiz URL';
+  if (lower.startsWith('request failed')) return 'İstek başarısız';
+
+  return text;
+}
+
 export function mapEdgeResponse(response, body) {
   const payload = body && typeof body === 'object' ? body : {};
   const error = /** @type {{ code?: string, message?: string }} */ (payload.error ?? {});
 
   if (response.status === 503 && (error.code === 'MODULE_DISABLED' || error.message?.includes('disabled'))) {
-    return { ok: false, status: 503, message: 'AI Listings module is disabled.' };
+    return { ok: false, status: 503, message: 'AI Listings modülü devre dışı.' };
   }
   if (response.status === 401) {
-    return { ok: false, status: 401, message: error.message || 'Unauthorized' };
+    return {
+      ok: false,
+      status: 401,
+      message: translateAdminErrorMessage(error.message || 'Unauthorized')
+    };
   }
   if (!response.ok) {
     return {
       ok: false,
       status: response.status,
-      message: error.message || `Request failed (${response.status})`
+      message: translateAdminErrorMessage(error.message || `Request failed (${response.status})`)
     };
   }
 
