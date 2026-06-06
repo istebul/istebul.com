@@ -31,6 +31,7 @@ const result = await container.services.aiAnalysisService.analyze(listing);
 
 ## Documentation
 
+- [Documentation index](../../docs/ai-listings/README.md)
 - [Architecture](../../docs/ai-listings/ARCHITECTURE.md)
 - [Dependency Graph](../../docs/ai-listings/DEPENDENCY_GRAPH.md)
 - [Future Integration Plan](../../docs/ai-listings/FUTURE_INTEGRATION_PLAN.md)

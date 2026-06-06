@@ -41,6 +41,10 @@ https://<project-ref>.supabase.co/functions/v1/ai-listings
 
 ## Endpoints
 
+### POST `/listings/import`
+
+Bulk import valid rows from CSV or JSON (admin only). See [IMPORT_PIPELINE.md](./IMPORT_PIPELINE.md).
+
 ### POST `/listings`
 
 Create a listing.
