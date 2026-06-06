@@ -610,6 +610,21 @@ body.ib-auto .auto-partner-next--branch {
   }
 }
 
+@media (max-width: 768px) {
+  body.ib-auto .auto-vehicle-selection-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.ib-auto .auto-vehicle-select-card {
+    min-width: 0;
+  }
+
+  body.ib-auto .auto-vehicle-select-card strong {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+}
+
 @media (max-width: 560px) {
   body.ib-auto .auto-trust-benefits,
   body.ib-auto .auto-partner-next {

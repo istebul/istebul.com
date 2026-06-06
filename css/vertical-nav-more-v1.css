@@ -114,8 +114,7 @@
   }
 
   .ib-vertical-header .ib-vertical-nav-more-btn {
-    width: 100%;
-    justify-content: space-between;
+    display: none;
   }
 
   .ib-vertical-header .ib-vertical-nav-more-menu {
