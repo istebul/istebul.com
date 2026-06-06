@@ -451,6 +451,18 @@
   line-height: 1.4;
 }
 
+.ib-afad-risk-layer__ai {
+  margin: 0 0 0.55rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--v2-text, #334155);
+}
+
+.ib-afad-risk-layer__recent {
+  margin-bottom: 0.55rem;
+  font-size: 0.8rem;
+}
+
 @media (max-width: 480px) {
   .ib-evds-risk-layer {
     padding: 0.85rem 0.9rem;
