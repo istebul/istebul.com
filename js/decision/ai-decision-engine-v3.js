@@ -4,7 +4,12 @@
 import { buildDecisionIntelligenceResult } from '../features/results/decision-intelligence-engine.js';
 import { buildDecisionMemoryLite } from './decision-memory-lite.js';
 import { mapDecisionSnapshot, mapDecisionToRenderModel } from './decision-v3-mappers.js';
-import { renderDecisionV3Panel } from './decision-v3-renderer.js';
+import {
+  bindDecisionV3WhatIfSimulator,
+  ensureDecisionV3Styles,
+  renderDecisionV3Panel
+} from './decision-v3-renderer.js';
+import { resolveTotalCost, simulateWhatIfChange, simulateWhatIfControls } from './decision-v3-whatif.js';
 
 /**
  * @param {{
@@ -31,6 +36,8 @@ export async function tryMountDecisionEngineV3(params = {}) {
 
     if (!mountNode) return null;
 
+    ensureDecisionV3Styles();
+
     const intelligence = buildDecisionIntelligenceResult(category, formData, metrics, extras);
     const snapshot = mapDecisionSnapshot(intelligence, {
       vertical: category,
@@ -47,10 +54,21 @@ export async function tryMountDecisionEngineV3(params = {}) {
       memory = null;
     }
 
+    const whatIfInput = {
+      category,
+      formData,
+      metrics,
+      extras: {
+        ...extras,
+        totalCost: extras.totalCost ?? metrics.totalCost ?? resolveTotalCost(intelligence, { category, metrics, extras })
+      }
+    };
+
     const model = mapDecisionToRenderModel(intelligence, {
       vertical: category,
       memory,
-      title: extras.title
+      title: extras.title,
+      whatIfInput
     });
 
     const existing = mountNode.querySelector('[data-decision-v3-root]');
@@ -60,6 +78,12 @@ export async function tryMountDecisionEngineV3(params = {}) {
     wrapper.className = 'decision-v3-mount';
     wrapper.innerHTML = renderDecisionV3Panel(model);
     mountNode.prepend(wrapper);
+
+    try {
+      bindDecisionV3WhatIfSimulator(wrapper, model);
+    } catch {
+      // silent what-if bind failure
+    }
 
     return {
       intelligence,
@@ -74,4 +98,9 @@ export async function tryMountDecisionEngineV3(params = {}) {
 
 export { buildDecisionMemoryLite } from './decision-memory-lite.js';
 export { mapDecisionSnapshot, mapDecisionToRenderModel } from './decision-v3-mappers.js';
-export { renderDecisionV3Panel } from './decision-v3-renderer.js';
+export {
+  bindDecisionV3WhatIfSimulator,
+  ensureDecisionV3Styles,
+  renderDecisionV3Panel
+} from './decision-v3-renderer.js';
+export { simulateWhatIfChange, simulateWhatIfControls } from './decision-v3-whatif.js';

@@ -69,6 +69,21 @@ export function mapDecisionSnapshot(intelligence = {}, context = {}) {
  * @param {object} intelligence
  * @param {object} [extras]
  */
+export const DEFAULT_WHAT_IF_SCENARIOS = Object.freeze([
+  {
+    title: 'Bütçe +10%',
+    description: 'Bütçeyi %10 artırdığınızda seçenekler genişleyebilir; toplam maliyet baskısı artabilir.'
+  },
+  {
+    title: 'Peşinat +15%',
+    description: 'Peşinat artışı aylık yükü azaltabilir; likidite ihtiyacı yükselir.'
+  },
+  {
+    title: 'Vade 48 ay',
+    description: 'Vade uzadıkça aylık ödeme düşer; toplam faiz maliyeti artabilir.'
+  }
+]);
+
 export function mapDecisionToRenderModel(intelligence = {}, extras = {}) {
   return {
     vertical: normalizeVertical(extras.vertical || intelligence.context?.category),
@@ -83,6 +98,8 @@ export function mapDecisionToRenderModel(intelligence = {}, extras = {}) {
     recommendationLabel: intelligence.recommendationLabel || 'Değerlendirme',
     warnings: Array.isArray(intelligence.warnings) ? intelligence.warnings : [],
     memory: extras.memory || null,
-    title: extras.title || 'Karar Özeti'
+    title: extras.title || 'Karar Özeti',
+    whatIfInput: extras.whatIfInput || null,
+    whatIfScenarios: Array.isArray(extras.whatIfScenarios) ? extras.whatIfScenarios : DEFAULT_WHAT_IF_SCENARIOS
   };
 }
