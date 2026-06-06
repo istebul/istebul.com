@@ -11,6 +11,7 @@
 import {
   ADMIN_ENABLE_KEY,
   ADMIN_SECRET_KEY,
+  buildAnalysisScoresHtml,
   buildEdgeRequestHeaders,
   buildImportPreviewHtml,
   buildListingBadgesHtml,
@@ -18,7 +19,9 @@ import {
   buildQaActionsHtml,
   buildStatusFilterChipsHtml,
   getAdminPanelState,
+  getCategoryLabelTr,
   getEdgeSecret,
+  getStatusLabelTr,
   getSupabaseAnonKey,
   isListingPubliclyVisible,
   mapEdgeResponse,
@@ -26,6 +29,7 @@ import {
   resolveActiveStatusFilter,
   resolveEdgeBaseUrl,
   safeRenderText,
+  translateAdminErrorMessage,
   validateAttributesJson,
   validateSourceUrl
 } from './ai-listings-admin-core.js';
@@ -64,13 +68,17 @@ async function edgeRequest(path, { method = 'GET', body } = {}) {
   const anonKey = getSupabaseAnonKey(env());
 
   if (!base) {
-    return { ok: false, status: 0, message: 'SUPABASE_URL is not configured in env.js' };
+    return { ok: false, status: 0, message: 'env.js içinde SUPABASE_URL yapılandırılmamış' };
   }
   if (!anonKey) {
-    return { ok: false, status: 0, message: 'Supabase anon key missing.' };
+    return { ok: false, status: 0, message: 'Supabase anon key eksik' };
   }
   if (!secret) {
-    return { ok: false, status: 0, message: 'Edge secret missing — set localStorage istebul_ai_listings_secret' };
+    return {
+      ok: false,
+      status: 0,
+      message: 'Edge secret eksik — localStorage istebul_ai_listings_secret ayarlayın'
+    };
   }
 
   const response = await fetch(`${base}${path}`, {
@@ -80,7 +88,11 @@ async function edgeRequest(path, { method = 'GET', body } = {}) {
   });
 
   const json = await response.json().catch(() => ({}));
-  return mapEdgeResponse(response, json);
+  const mapped = mapEdgeResponse(response, json);
+  if (!mapped.ok) {
+    return { ...mapped, message: translateAdminErrorMessage(mapped.message) };
+  }
+  return mapped;
 }
 
 function renderDisabledState() {
@@ -88,10 +100,10 @@ function renderDisabledState() {
   if (!root) return;
   root.innerHTML = `
     <div class="ai-listings-admin__gate">
-      <h2>AI Listings Admin — Disabled</h2>
-      <p>This internal test panel is hidden by default.</p>
+      <h2>Yapay Zeka Destekli İlanlar — Devre Dışı</h2>
+      <p>Bu iç test paneli varsayılan olarak gizlidir.</p>
       <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_ENABLE_KEY}', 'on')</pre>
-      <p>Reload the page after enabling. See docs/ai-listings/ADMIN_TEST_PANEL.md</p>
+      <p>Etkinleştirdikten sonra sayfayı yenileyin. Bkz. docs/ai-listings/ADMIN_TEST_PANEL.md</p>
     </div>`;
 }
 
@@ -100,9 +112,9 @@ function renderSecretWarning() {
   if (!warn) return;
   warn.hidden = false;
   warn.innerHTML = `
-    <strong>Setup required:</strong>
-    Set <code>localStorage.${ADMIN_SECRET_KEY}</code> to your
-    <code>AI_LISTINGS_EDGE_SECRET</code> value, then refresh.
+    <strong>Kurulum gerekli:</strong>
+    <code>localStorage.${ADMIN_SECRET_KEY}</code> değerini
+    <code>AI_LISTINGS_EDGE_SECRET</code> ile ayarlayın, ardından yenileyin.
     <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_SECRET_KEY}', '&lt;secret&gt;')</pre>`;
 }
 
@@ -122,29 +134,20 @@ function renderStatusFilterChips() {
 function renderListingRow(listing) {
   const id = safeRenderText(listing.id);
   const title = safeRenderText(listing.title);
-  const status = safeRenderText(listing.status);
+  const category = safeRenderText(getCategoryLabelTr(listing.category));
+  const status = safeRenderText(getStatusLabelTr(listing.status));
+  const sourceType = safeRenderText(listing.source_type ?? '—');
+
   return `
     <button type="button" class="ai-listings-admin__list-item" data-listing-id="${id}">
       <span class="ai-listings-admin__list-title">${title}</span>
       <span class="ai-listings-admin__list-badges">${buildListingBadgesHtml(listing)}</span>
-      <span class="ai-listings-admin__list-meta">${status}</span>
+      <span class="ai-listings-admin__list-meta">${category} · ${status} · ${sourceType}</span>
     </button>`;
 }
 
-function renderAnalysis(analysis) {
-  if (!analysis) return '<p class="ai-listings-admin__muted">No analysis yet.</p>';
-  return `
-    <div class="ai-listings-admin__analysis">
-      <p><strong>AI score:</strong> ${safeRenderText(analysis.ai_score)}</p>
-      <p><strong>Risk:</strong> ${safeRenderText(analysis.risk_score)}</p>
-      <p><strong>Market:</strong> ${safeRenderText(analysis.market_score)}</p>
-      <p><strong>Price:</strong> ${safeRenderText(analysis.price_score)}</p>
-      <p><strong>Summary:</strong> ${safeRenderText(analysis.summary)}</p>
-    </div>`;
-}
-
 function renderEvents(events) {
-  if (!events?.length) return '<p class="ai-listings-admin__muted">No events.</p>';
+  if (!events?.length) return '<p class="ai-listings-admin__muted">Olay yok.</p>';
   return `<ul class="ai-listings-admin__events">${events
     .map((event) => {
       const reason =
@@ -163,9 +166,9 @@ function renderEvents(events) {
 function renderPublicVisibilityNote(status) {
   const visible = isListingPubliclyVisible(status);
   if (visible) {
-    return '<p class="ai-listings-admin__error">Public visibility enabled — unexpected in Sprint-7.</p>';
+    return '<p class="ai-listings-admin__error">Herkese açık görünürlük etkin — Sprint-7 için beklenmiyor.</p>';
   }
-  return '<p class="ai-listings-admin__muted">Public publishing disabled. Approved status is internal QA only.</p>';
+  return '<p class="ai-listings-admin__muted">Yayına alma kapalıdır. Onaylandı durumu yalnızca iç QA içindir.</p>';
 }
 
 async function loadListings() {
@@ -182,7 +185,7 @@ async function loadListings() {
   if (limit) params.set('limit', limit);
 
   const query = params.toString() ? `?${params.toString()}` : '';
-  listEl.innerHTML = '<p class="ai-listings-admin__muted">Loading…</p>';
+  listEl.innerHTML = '<p class="ai-listings-admin__muted">Yükleniyor…</p>';
 
   const result = await edgeRequest(`/listings${query}`);
   if (!result.ok) {
@@ -193,7 +196,7 @@ async function loadListings() {
 
   const listings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
   if (!listings.length) {
-    listEl.innerHTML = '<p class="ai-listings-admin__muted">No listings found.</p>';
+    listEl.innerHTML = '<p class="ai-listings-admin__muted">İlan bulunamadı.</p>';
     return;
   }
 
@@ -205,7 +208,7 @@ async function loadListings() {
       if (listing) showListingDetail(listing);
     });
   });
-  setStatus(`Loaded ${listings.length} listing(s).`, 'success');
+  setStatus(`${listings.length} ilan yüklendi.`, 'success');
 }
 
 async function showListingDetail(listing) {
@@ -214,7 +217,7 @@ async function showListingDetail(listing) {
   if (!detailEl) return;
 
   const id = String(listing.id);
-  detailEl.innerHTML = '<p class="ai-listings-admin__muted">Loading detail…</p>';
+  detailEl.innerHTML = '<p class="ai-listings-admin__muted">Detay yükleniyor…</p>';
 
   const [detailRes, eventsRes] = await Promise.all([
     edgeRequest(`/listings/${id}`),
@@ -235,34 +238,37 @@ async function showListingDetail(listing) {
   const status = String(listingData.status ?? 'draft');
 
   detailEl.innerHTML = `
-    <h3>${safeRenderText(listingData.title ?? listing.title)}</h3>
+    <h3>İlan Detayı</h3>
+    <p class="ai-listings-admin__detail-title">${safeRenderText(listingData.title ?? listing.title)}</p>
     <dl class="ai-listings-admin__fields">
       <dt>ID</dt><dd>${safeRenderText(listingData.id ?? id)}</dd>
-      <dt>Category</dt><dd>${safeRenderText(listingData.category)}</dd>
-      <dt>Status</dt><dd>${safeRenderText(status)}</dd>
-      <dt>Price</dt><dd>${safeRenderText(listingData.price)} ${safeRenderText(listingData.currency)}</dd>
-      <dt>Location</dt><dd>${safeRenderText(listingData.location)}</dd>
-      <dt>Source URL</dt><dd>${safeRenderText(listingData.source_url)}</dd>
+      <dt>Kategori</dt><dd>${safeRenderText(getCategoryLabelTr(listingData.category))}</dd>
+      <dt>Durum</dt><dd>${safeRenderText(getStatusLabelTr(status))}</dd>
+      <dt>Fiyat</dt><dd>${safeRenderText(listingData.price)} ${safeRenderText(listingData.currency)}</dd>
+      <dt>Konum</dt><dd>${safeRenderText(listingData.location)}</dd>
+      <dt>Kaynak URL</dt><dd>${safeRenderText(listingData.source_url)}</dd>
+      <dt>Kaynak tipi</dt><dd>${safeRenderText(listingData.source_type)}</dd>
     </dl>
-    <h4>Quality checklist</h4>
+    <h4>Kalite Kontrol Listesi</h4>
     ${buildQualityChecklistHtml(listingData, latest)}
     ${renderPublicVisibilityNote(status)}
-    <h4>Latest analysis</h4>
-    ${renderAnalysis(latest)}
-    <h4>Events</h4>
+    <h4>Son Analiz</h4>
+    ${buildAnalysisScoresHtml(latest)}
+    <h4>Olay Geçmişi</h4>
     ${renderEvents(events)}
     <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
       <label>
-        Rejection reason
-        <textarea id="ai-listings-reject-reason" rows="3" placeholder="Explain why this listing was rejected"></textarea>
+        Red nedeni
+        <textarea id="ai-listings-reject-reason" rows="3" placeholder="Bu ilanın neden reddedildiğini açıklayın"></textarea>
       </label>
-      <button type="button" id="ai-listings-confirm-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--warn">Confirm reject</button>
-      <button type="button" id="ai-listings-cancel-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Cancel</button>
+      <button type="button" id="ai-listings-confirm-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--warn">Reddi onayla</button>
+      <button type="button" id="ai-listings-cancel-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">İptal</button>
     </div>
+    <h4>İşlemler</h4>
     <div class="ai-listings-admin__actions">
       ${buildQaActionsHtml(status)}
-      <button type="button" id="ai-listings-analyze-btn" class="ai-listings-admin__btn">Analyze</button>
-      <button type="button" id="ai-listings-refresh-detail-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Refresh</button>
+      <button type="button" id="ai-listings-analyze-btn" class="ai-listings-admin__btn">Analiz et</button>
+      <button type="button" id="ai-listings-refresh-detail-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Yenile</button>
     </div>`;
 
   detailEl.querySelectorAll('[data-qa-action]').forEach((btn) => {
@@ -282,7 +288,7 @@ async function showListingDetail(listing) {
   $('ai-listings-confirm-reject-btn')?.addEventListener('click', () => {
     const reason = $('ai-listings-reject-reason')?.value?.trim() ?? '';
     if (!reason) {
-      setStatus('Rejection reason is required.', 'error');
+      setStatus('Red nedeni zorunludur.', 'error');
       return;
     }
     runQaAction(id, 'reject', { reason });
@@ -296,13 +302,13 @@ async function showListingDetail(listing) {
 
 async function runQaAction(id, action, body) {
   const labels = {
-    'submit-review': 'Submitting for review',
-    approve: 'Approving',
-    reject: 'Rejecting',
-    archive: 'Archiving',
-    reanalyze: 'Re-analyzing'
+    'submit-review': 'İncelemeye gönderiliyor',
+    approve: 'Onaylanıyor',
+    reject: 'Reddediliyor',
+    archive: 'Arşivleniyor',
+    reanalyze: 'Yeniden analiz ediliyor'
   };
-  setStatus(`${labels[action] ?? 'Processing'}…`, 'info');
+  setStatus(`${labels[action] ?? 'İşleniyor'}…`, 'info');
 
   const result = await edgeRequest(`/listings/${id}/${action}`, {
     method: 'POST',
@@ -314,7 +320,7 @@ async function runQaAction(id, action, body) {
     return;
   }
 
-  setStatus(`${labels[action] ?? 'Action'} complete.`, 'success');
+  setStatus(`${labels[action] ?? 'İşlem'} tamamlandı.`, 'success');
   const updated = result.data?.listing;
   if (updated) {
     selectedListing = updated;
@@ -326,13 +332,13 @@ async function runQaAction(id, action, body) {
 }
 
 async function analyzeListing(id) {
-  setStatus('Running analysis…', 'info');
+  setStatus('Analiz çalıştırılıyor…', 'info');
   const result = await edgeRequest(`/listings/${id}/analyze`, { method: 'POST' });
   if (!result.ok) {
     setStatus(result.message, 'error');
     return;
   }
-  setStatus('Analysis complete.', 'success');
+  setStatus('Analiz tamamlandı.', 'success');
   if (selectedListing) await showListingDetail(selectedListing);
   await loadListings();
 }
@@ -348,12 +354,12 @@ async function handleCreateSubmit(event) {
   const attributesText = $('ai-listings-create-attributes')?.value ?? '';
 
   if (!category || !title) {
-    setStatus('Category and title are required.', 'error');
+    setStatus('Kategori ve başlık zorunludur.', 'error');
     return;
   }
 
   if (!validateSourceUrl(sourceUrl)) {
-    setStatus('source_url must be http or https.', 'error');
+    setStatus('Geçersiz URL', 'error');
     return;
   }
 
@@ -369,14 +375,14 @@ async function handleCreateSubmit(event) {
   if (priceRaw) body.price = Number(priceRaw);
   if (sourceUrl) body.source_url = sourceUrl;
 
-  setStatus('Creating listing…', 'info');
+  setStatus('İlan oluşturuluyor…', 'info');
   const result = await edgeRequest('/listings', { method: 'POST', body });
   if (!result.ok) {
     setStatus(result.message, 'error');
     return;
   }
 
-  setStatus('Listing created.', 'success');
+  setStatus('İlan oluşturuldu.', 'success');
   event.target.reset();
   await loadListings();
   const listing = result.data?.listing;
@@ -409,14 +415,14 @@ function handleImportPreview() {
   updateImportButtonState();
   if (previewEl) previewEl.innerHTML = buildImportPreviewHtml(result.preview);
   setStatus(
-    `Preview ready: ${result.preview.valid_rows} valid, ${result.preview.invalid_rows} invalid.`,
+    `Önizleme hazır: ${result.preview.valid_rows} geçerli, ${result.preview.invalid_rows} geçersiz.`,
     'success'
   );
 }
 
 async function handleImportRun() {
   if (importValidRowCount <= 0) {
-    setStatus('No valid rows to import. Run preview first.', 'error');
+    setStatus('İçe aktarılacak geçerli satır yok. Önce önizleme yapın.', 'error');
     return;
   }
 
@@ -426,7 +432,7 @@ async function handleImportRun() {
   const content = $('ai-listings-import-content')?.value ?? '';
   const analyze = Boolean($('ai-listings-import-analyze')?.checked);
 
-  setStatus('Importing listings…', 'info');
+  setStatus('İlanlar içe aktarılıyor…', 'info');
   const result = await edgeRequest('/listings/import', {
     method: 'POST',
     body: { format, content, analyze }
@@ -439,7 +445,7 @@ async function handleImportRun() {
 
   const summary = result.data ?? {};
   setStatus(
-    `Import complete: ${summary.created_count ?? 0} created, ${summary.invalid_count ?? 0} invalid, ${summary.analyzed_count ?? 0} analyzed.`,
+    `İçe aktarım tamamlandı: ${summary.created_count ?? 0} oluşturuldu, ${summary.invalid_count ?? 0} geçersiz, ${summary.analyzed_count ?? 0} analiz edildi.`,
     'success'
   );
   importValidRowCount = 0;

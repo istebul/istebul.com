@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <meta name="description" content="Internal AI Listings test panel — not public">
-  <title>AI Listings Admin (Internal) | isteBul</title>
+  <meta name="description" content="Yapay zeka destekli ilanlar iç test paneli — herkese açık değil">
+  <title>Yapay Zeka Destekli İlanlar Admin (İç) | isteBul</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="stylesheet" href="/css/admin-ai-listings.css?v=1">
   <script src="/env.js" defer></script>
@@ -13,8 +13,8 @@
 </head>
 <body class="ai-listings-admin">
   <header class="ai-listings-admin__header">
-    <h1>AI Listings — Internal Test Panel</h1>
-    <p class="ai-listings-admin__subtitle">Not public. Hidden unless explicitly enabled via localStorage.</p>
+    <h1>Yapay Zeka Destekli İlanlar — İç Test Paneli</h1>
+    <p class="ai-listings-admin__subtitle">Herkese açık değil. Yalnızca localStorage ile açıkça etkinleştirildiğinde görünür.</p>
   </header>
 
   <main id="ai-listings-admin-root" class="ai-listings-admin__main">
@@ -23,57 +23,57 @@
 
     <div class="ai-listings-admin__grid">
       <section class="ai-listings-admin__panel">
-        <h2>Create listing</h2>
+        <h2>İlan oluştur</h2>
         <form id="ai-listings-create-form" class="ai-listings-admin__form">
           <label>
-            Category
+            Kategori
             <input id="ai-listings-create-category" name="category" required placeholder="vehicle">
           </label>
           <label>
-            Title
+            Başlık
             <input id="ai-listings-create-title" name="title" required>
           </label>
           <label>
-            Description
+            Açıklama
             <textarea id="ai-listings-create-description" name="description" rows="3"></textarea>
           </label>
           <label>
-            Price
+            Fiyat
             <input id="ai-listings-create-price" name="price" type="number" min="0" step="1">
           </label>
           <label>
-            Currency
+            Para birimi
             <input id="ai-listings-create-currency" name="currency" value="TRY">
           </label>
           <label>
-            Source URL (http/https)
-            <input id="ai-listings-create-source-url" name="source_url" type="url" placeholder="https://">
+            Kaynak URL (http/https)
+            <input id="ai-listings-create-source-url" name="source_url" type="url">
           </label>
           <label>
-            Attributes JSON
+            Özellikler JSON
             <textarea id="ai-listings-create-attributes" name="attributes" rows="4" placeholder='{"year":2020}'></textarea>
           </label>
-          <button type="submit" class="ai-listings-admin__btn">Create listing</button>
+          <button type="submit" class="ai-listings-admin__btn">İlan oluştur</button>
         </form>
       </section>
 
       <section class="ai-listings-admin__panel">
         <div class="ai-listings-admin__panel-head">
-          <h2>Listings</h2>
-          <button type="button" id="ai-listings-refresh-list-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Refresh</button>
+          <h2>İlanlar</h2>
+          <button type="button" id="ai-listings-refresh-list-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Yenile</button>
         </div>
         <div class="ai-listings-admin__filters">
-          <div id="ai-listings-status-filters" class="ai-listings-admin__chips" aria-label="Status filter"></div>
-          <input id="ai-listings-filter-category" placeholder="category">
-          <input id="ai-listings-filter-source" placeholder="source_type">
+          <div id="ai-listings-status-filters" class="ai-listings-admin__chips" aria-label="Durum filtresi"></div>
+          <input id="ai-listings-filter-category" placeholder="kategori">
+          <input id="ai-listings-filter-source" placeholder="kaynak_tipi">
           <input id="ai-listings-filter-limit" type="number" min="1" max="100" placeholder="limit">
         </div>
         <div id="ai-listings-list" class="ai-listings-admin__list"></div>
       </section>
 
       <section class="ai-listings-admin__panel ai-listings-admin__panel--wide">
-        <h2>Bulk import</h2>
-        <p class="ai-listings-admin__warning-inline">Internal admin import only. Public publishing remains disabled.</p>
+        <h2>Toplu içe aktarım</h2>
+        <p class="ai-listings-admin__warning-inline">Sadece iç admin içe aktarımıdır. Yayına alma kapalıdır.</p>
         <div class="ai-listings-admin__form">
           <label>
             Format
@@ -83,25 +83,25 @@
             </select>
           </label>
           <label>
-            CSV / JSON content
+            CSV / JSON içeriği
             <textarea id="ai-listings-import-content" rows="8" placeholder="category,title,description,price,currency,location,source_url,images,attributes"></textarea>
           </label>
           <label class="ai-listings-admin__checkbox">
             <input id="ai-listings-import-analyze" type="checkbox">
-            Run deterministic analysis after import
+            İçe aktarımdan sonra deterministik analiz çalıştır
           </label>
           <div class="ai-listings-admin__actions">
-            <button type="button" id="ai-listings-import-preview-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Preview</button>
-            <button type="button" id="ai-listings-import-run-btn" class="ai-listings-admin__btn" disabled>Import valid rows</button>
+            <button type="button" id="ai-listings-import-preview-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Önizleme</button>
+            <button type="button" id="ai-listings-import-run-btn" class="ai-listings-admin__btn" disabled>Geçerli satırları içe aktar</button>
           </div>
           <div id="ai-listings-import-preview" class="ai-listings-admin__import-preview-wrap"></div>
         </div>
       </section>
 
       <section class="ai-listings-admin__panel ai-listings-admin__panel--wide">
-        <h2>Listing detail</h2>
+        <h2>İlan detayı</h2>
         <div id="ai-listings-detail" class="ai-listings-admin__detail">
-          <p class="ai-listings-admin__muted">Select a listing to view detail, analysis, and events.</p>
+          <p class="ai-listings-admin__muted">Detay, analiz ve olayları görmek için bir ilan seçin.</p>
         </div>
       </section>
     </div>

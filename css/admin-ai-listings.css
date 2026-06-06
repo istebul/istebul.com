@@ -215,6 +215,18 @@
   border-color: #475569;
 }
 
+.ai-listings-admin__badge--source {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: #64748b;
+}
+
+.ai-listings-admin__detail-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 .ai-listings-admin__list-meta {
   display: block;
   font-size: 0.75rem;
