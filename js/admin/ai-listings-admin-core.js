@@ -969,7 +969,7 @@ export function buildListingCardHtml(listing, isActive = false, options = {}) {
       : '';
 
   return `
-    <button type="button" class="ai-listings-admin__listing-card${activeClass}" data-listing-id="${id}">
+    <button type="button" class="ai-listings-admin__listing-card${activeClass}" data-listing-id="${id}" tabindex="0" aria-selected="${isActive ? 'true' : 'false'}">
       <span class="ai-listings-admin__listing-card-icon" aria-hidden="true">${emoji}</span>
       <span class="ai-listings-admin__listing-card-title">${title}</span>
       <span class="ai-listings-admin__listing-card-row">

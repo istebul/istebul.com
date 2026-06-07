@@ -21,6 +21,14 @@ import { buildExplainabilityShellHtml } from '../ai-decision-explainability/expl
 import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
 import { buildCompareShellHtml, buildCompareToolbarHtml } from '../ai-compare-intelligence/compare-card-builder.js';
 import { runDecisionFlow, buildCalibrationBlockHtml } from '../ai-decision-flow/index.js';
+import {
+  toSelectOptions,
+  CATEGORY_LABELS,
+  USAGE_TYPE_LABELS,
+  RISK_TOLERANCE_LABELS,
+  PRIORITY_LABELS
+} from './ai-listings-admin-labels.js';
+import { buildScenarioShellHtml } from '../ai-scenario-simulator/scenario-card-builder.js';
 
 /**
  * @param {unknown} value
@@ -35,25 +43,33 @@ export function safeRenderText(value) {
  * @returns {string}
  */
 export function buildRecommendationProfileFormHtml(profile = {}) {
-  const categoryOptions = CATEGORY_OPTIONS.map(
-    (value) =>
-      `<option value="${safeRenderText(value)}"${profile.category === value ? ' selected' : ''}>${safeRenderText(value)}</option>`
-  ).join('');
+  const categoryOptions = toSelectOptions(CATEGORY_OPTIONS, CATEGORY_LABELS)
+    .map(
+      (opt) =>
+        `<option value="${safeRenderText(opt.value)}"${profile.category === opt.value ? ' selected' : ''}>${safeRenderText(opt.label)}</option>`
+    )
+    .join('');
 
-  const usageOptions = USAGE_TYPE_OPTIONS.map(
-    (value) =>
-      `<option value="${safeRenderText(value)}"${profile.usage_type === value ? ' selected' : ''}>${safeRenderText(value)}</option>`
-  ).join('');
+  const usageOptions = toSelectOptions(USAGE_TYPE_OPTIONS, USAGE_TYPE_LABELS)
+    .map(
+      (opt) =>
+        `<option value="${safeRenderText(opt.value)}"${profile.usage_type === opt.value ? ' selected' : ''}>${safeRenderText(opt.label)}</option>`
+    )
+    .join('');
 
-  const riskOptions = RISK_TOLERANCE_OPTIONS.map(
-    (value) =>
-      `<option value="${safeRenderText(value)}"${profile.risk_tolerance === value ? ' selected' : ''}>${safeRenderText(value)}</option>`
-  ).join('');
+  const riskOptions = toSelectOptions(RISK_TOLERANCE_OPTIONS, RISK_TOLERANCE_LABELS)
+    .map(
+      (opt) =>
+        `<option value="${safeRenderText(opt.value)}"${profile.risk_tolerance === opt.value ? ' selected' : ''}>${safeRenderText(opt.label)}</option>`
+    )
+    .join('');
 
-  const priorityOptions = PRIORITY_OPTIONS.map(
-    (value) =>
-      `<option value="${safeRenderText(value)}"${profile.priority === value ? ' selected' : ''}>${safeRenderText(value)}</option>`
-  ).join('');
+  const priorityOptions = toSelectOptions(PRIORITY_OPTIONS, PRIORITY_LABELS)
+    .map(
+      (opt) =>
+        `<option value="${safeRenderText(opt.value)}"${profile.priority === opt.value ? ' selected' : ''}>${safeRenderText(opt.label)}</option>`
+    )
+    .join('');
 
   return `
     <form class="ai-rec-form" id="ai-rec-profile-form" aria-label="Kullanıcı profili">
@@ -159,6 +175,7 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
       ${buildExplainabilityShellHtml()}
       ${buildExecutiveReportShellHtml()}
       ${buildCompareShellHtml()}
+      ${buildScenarioShellHtml()}
     </div>`;
 
   return { html, result };
