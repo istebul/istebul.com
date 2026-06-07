@@ -11,6 +11,14 @@ import { filterBySimilarityThreshold, enrichWithSimilarity } from './similarity-
 import { buildTokenIndex } from './tokenizer.js';
 import { sanitizeSearchQuery } from './normalizer.js';
 import { buildSearchSummary } from './summary.js';
+import {
+  SEARCHABLE_FIELDS,
+  buildSearchableText,
+  documentMatchesSearchQuery
+} from './search-fields.js';
+import { MIN_SIMILARITY_THRESHOLD } from './ranking-engine.js';
+
+export { SEARCHABLE_FIELDS, buildSearchableText, documentMatchesSearchQuery };
 
 /** @type {Map<string, { documents: Array<Record<string, unknown>>, tokenIndex: Map<string, Set<string>>, cacheKey: string }>} */
 const memoCache = new Map();
@@ -45,8 +53,19 @@ export function buildSearchDocument(record, listing) {
     listing.attributes && typeof listing.attributes === 'object' && !Array.isArray(listing.attributes)
       ? /** @type {Record<string, unknown>} */ (listing.attributes)
       : {};
+  const analysis =
+    listing.latest_analysis && typeof listing.latest_analysis === 'object'
+      ? /** @type {Record<string, unknown>} */ (listing.latest_analysis)
+      : {};
+  const tags = Array.isArray(analysis.tags) ? analysis.tags.map(String) : [];
+  const featuresRaw = attributes.features ?? attributes.ozellikler ?? attributes.highlights ?? [];
+  const features = Array.isArray(featuresRaw)
+    ? featuresRaw.map(String)
+    : featuresRaw
+      ? [String(featuresRaw)]
+      : [];
 
-  return {
+  const doc = {
     ...record,
     description: String(canonical.description ?? listing.description ?? ''),
     km: canonical.km ?? null,
@@ -54,8 +73,14 @@ export function buildSearchDocument(record, listing) {
     transmission: String(canonical.transmission ?? ''),
     body_type: String(attributes.body_type ?? attributes.segment ?? attributes.kasa_tipi ?? ''),
     segment: String(attributes.segment ?? attributes.body_type ?? ''),
-    attributes
+    attributes,
+    tags,
+    features
   };
+
+  doc.normalizedText = buildSearchableText(doc);
+  doc.searchableText = doc.normalizedText;
+  return doc;
 }
 
 /**
@@ -262,13 +287,25 @@ export function runRepositorySearch(listings, options = {}) {
 
   const ranked = filtered.map((doc) => {
     const { score } = rankDocument(doc, parsed);
-    return enrichWithSimilarity({ ...doc, search_score: score });
+    let finalScore = score;
+    if (
+      documentMatchesSearchQuery(doc, parsed, query) &&
+      finalScore > 0 &&
+      finalScore < MIN_SIMILARITY_THRESHOLD
+    ) {
+      finalScore = MIN_SIMILARITY_THRESHOLD;
+    }
+    return enrichWithSimilarity({ ...doc, search_score: finalScore });
   });
 
-  let results = filterBySimilarityThreshold(ranked, {
-    threshold: options.threshold,
-    includeBelowThreshold: options.includeBelowThreshold
-  });
+  let results = ranked.filter((doc) => documentMatchesSearchQuery(doc, parsed, query));
+
+  if (options.includeBelowThreshold === true) {
+    results = filterBySimilarityThreshold(ranked, {
+      threshold: options.threshold,
+      includeBelowThreshold: true
+    });
+  }
 
   results = sortSearchResults(results, options.sortBy ?? 'best_match');
 

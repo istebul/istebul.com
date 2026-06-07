@@ -35,6 +35,9 @@ export {
 export { buildSearchSummary } from './summary.js';
 
 export {
+  SEARCHABLE_FIELDS,
+  buildSearchableText,
+  documentMatchesSearchQuery,
   SEARCH_SORT_OPTIONS,
   SEARCH_FILTER_CHIPS,
   buildSearchDocument,

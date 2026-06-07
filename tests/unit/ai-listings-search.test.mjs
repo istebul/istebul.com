@@ -37,7 +37,10 @@ const {
   buildSearchSuggestions,
   suggestionsAreFromDataset,
   buildSearchResults,
-  buildResultSummary
+  buildResultSummary,
+  SEARCHABLE_FIELDS,
+  buildSearchableText,
+  documentMatchesSearchQuery
 } = await import('../../js/ai-listings-search/index.js');
 
 const {
@@ -399,6 +402,28 @@ test('buildSearchSuggestions does not hallucinate unknown brands', () => {
   const docs = buildSearchDocuments(listings);
   const suggestions = buildSearchSuggestions(docs, 'Ferrari');
   assert.equal(suggestions.length, 0);
+});
+
+test('Yetkili servis search returns matching listing', () => {
+  clearSearchMemoCache();
+  const result = runRepositorySearch([vehicleListing], { query: 'Yetkili servis' });
+  assert.equal(result.results.length, 1);
+  assert.ok(Number(result.results[0].search_score) >= 40);
+});
+
+test('documentMatchesSearchQuery matches authorized service in description', () => {
+  clearSearchMemoCache();
+  const docs = buildSearchDocuments([vehicleListing]);
+  const parsed = parseSearchQuery('Yetkili servis');
+  assert.equal(documentMatchesSearchQuery(docs[0], parsed, 'Yetkili servis'), true);
+});
+
+test('buildSearchableText includes title description tags attributes features', () => {
+  const docs = buildSearchDocuments([vehicleListing]);
+  const text = buildSearchableText(docs[0]);
+  assert.ok(text.includes('yetkili'));
+  assert.ok(text.includes('bmw'));
+  assert.ok(SEARCHABLE_FIELDS.includes('tags'));
 });
 
 test('runRepositorySearch finds BMW 2022 düşük km matches', () => {

@@ -3,6 +3,7 @@
  */
 
 import { normalizeText } from './normalizer.js';
+import { buildSearchableText } from './search-fields.js';
 
 /** @type {Readonly<Record<string, number>>} */
 export const RANKING_WEIGHTS = Object.freeze({
@@ -131,11 +132,11 @@ export function rankDocument(doc, parsed) {
     breakdown.transmission = RANKING_WEIGHTS.transmission;
   }
 
+  const searchableText = doc.searchableText ?? buildSearchableText(doc);
+
   for (const attribute of parsed.attributes) {
     if (attribute === 'low_km') continue;
-    const haystack = normalizeText(
-      `${doc.title ?? ''} ${doc.description ?? ''} ${JSON.stringify(doc.attributes ?? {})}`
-    );
+    const haystack = searchableText;
     if (attribute === 'authorized_service' && (haystack.includes('yetkili') || haystack.includes('authorized'))) {
       breakdown.attribute += RANKING_WEIGHTS.attribute;
     } else if (
@@ -151,9 +152,7 @@ export function rankDocument(doc, parsed) {
 
   const textTerms = [...parsed.text_terms, parsed.brand, parsed.model].filter(Boolean);
   if (textTerms.length) {
-    const haystack = normalizeText(
-      `${doc.title ?? ''} ${doc.description ?? ''} ${doc.brand ?? ''} ${doc.model ?? ''}`
-    );
+    const haystack = searchableText;
     const hits = textTerms.filter((term) => haystack.includes(normalizeText(term))).length;
     if (hits > 0) {
       breakdown.text = Math.round((hits / textTerms.length) * RANKING_WEIGHTS.text);
@@ -173,7 +172,8 @@ export function rankDocument(doc, parsed) {
 
   let score = Object.values(breakdown).reduce((sum, value) => sum + value, 0);
 
-  const hasPrimaryMatch = breakdown.brand > 0 || breakdown.model > 0 || breakdown.year > 0;
+  const hasPrimaryMatch =
+    breakdown.brand > 0 || breakdown.model > 0 || breakdown.year > 0 || breakdown.attribute > 0;
   if (hasPrimaryMatch && score > 0 && score < MIN_SIMILARITY_THRESHOLD) {
     score += 20;
   }

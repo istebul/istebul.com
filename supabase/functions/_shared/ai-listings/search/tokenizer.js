@@ -3,6 +3,7 @@
  */
 
 import { normalizeText, normalizeToken } from './normalizer.js';
+import { buildSearchableText } from './search-fields.js';
 
 /**
  * @param {unknown} value
@@ -39,6 +40,12 @@ export function buildTokenIndex(documents) {
       doc.description,
       doc.brand,
       doc.model,
+      doc.year,
+      doc.tags,
+      doc.attributes,
+      doc.features,
+      doc.normalizedText,
+      doc.searchableText ?? buildSearchableText(doc),
       doc.fuel,
       doc.transmission,
       doc.body_type,

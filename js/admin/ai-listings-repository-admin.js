@@ -13,10 +13,14 @@ import {
   runRepositorySearch,
   SEARCH_SORT_OPTIONS,
   SEARCH_FILTER_CHIPS,
+  SEARCHABLE_FIELDS,
+  buildSearchableText,
   buildSearchSuggestions,
   buildSearchResults,
-  sanitizeSearchQuery
+  sanitizeSearchQuery,
+  tokenize
 } from '../ai-listings-search/index.js';
+import { rankDocument } from '../ai-listings-search/ranking-engine.js';
 import {
   buildAdminRepositorySnapshot,
   debugRepositoryRenderPipeline,
@@ -442,6 +446,24 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
     filters: options.filters ?? [],
     sortBy: hasAiSearch ? (options.sortBy ?? 'best_match') : (options.sortBy ?? 'newest')
   });
+
+  if (hasAiSearch && dataset[0]) {
+    const sample = searchResult.documents[0] ?? dataset[0];
+    console.table({
+      title: sample.title ?? '',
+      description: sample.description ?? '',
+      tags: Array.isArray(sample.tags) ? sample.tags.join(', ') : '',
+      attributes: JSON.stringify(sample.attributes ?? {}),
+      features: Array.isArray(sample.features) ? sample.features.join(', ') : '',
+      normalizedText: sample.normalizedText ?? '',
+      searchableText: sample.searchableText ?? buildSearchableText(sample)
+    });
+    console.log('searchableFields', SEARCHABLE_FIELDS);
+    console.log(tokenize(aiSearch));
+    console.log(buildSearchableText(sample));
+    const { score } = rankDocument(sample, searchResult.parsed);
+    console.log('score', score);
+  }
 
   const query = runRepositoryQuery(listings, {
     records: dataset,
