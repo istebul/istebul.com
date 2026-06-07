@@ -30,8 +30,23 @@ export async function verifyAdminSessionAccess() {
  */
 export function resolveAdminPanelAccess(storage, options = {}) {
   if (!options.sessionIsAdmin) return 'disabled';
-  if (!getEdgeSecret(storage)) return 'no-secret';
   return 'ready';
+}
+
+/**
+ * Returns admin session access token for edge API auth (alternative to localStorage secret).
+ *
+ * @returns {Promise<string>}
+ */
+export async function getAdminAccessToken() {
+  try {
+    const { getAdminSupabaseClient } = await import('../core/supabase.js');
+    const sb = getAdminSupabaseClient();
+    const { data } = await sb.auth.getSession();
+    return String(data?.session?.access_token ?? '').trim();
+  } catch {
+    return '';
+  }
 }
 
 /**

@@ -101,6 +101,15 @@ test('buildEdgeRequestHeaders includes Authorization gateway header', () => {
   assert.equal(headers.Authorization, 'Bearer anon-key');
 });
 
+test('buildEdgeRequestHeaders prefers admin access token over anon key', () => {
+  const headers = buildEdgeRequestHeaders({
+    anonKey: 'anon-key',
+    accessToken: 'admin-session-token'
+  });
+  assert.equal(headers.Authorization, 'Bearer admin-session-token');
+  assert.equal(headers.apikey, 'anon-key');
+});
+
 test('buildEdgeRequestHeaders includes apikey gateway header', () => {
   const headers = buildEdgeRequestHeaders({ secret: 'abc123', anonKey: 'anon-key' });
   assert.equal(headers.apikey, 'anon-key');

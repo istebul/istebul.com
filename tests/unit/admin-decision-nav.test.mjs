@@ -29,7 +29,7 @@ const {
 test('resolveAdminPanelAccess requires admin session', () => {
   const storage = { getItem: () => null };
   assert.equal(resolveAdminPanelAccess(storage, { sessionIsAdmin: false }), 'disabled');
-  assert.equal(resolveAdminPanelAccess(storage, { sessionIsAdmin: true }), 'no-secret');
+  assert.equal(resolveAdminPanelAccess(storage, { sessionIsAdmin: true }), 'ready');
   assert.equal(
     resolveAdminPanelAccess(
       { getItem: (key) => (key === ADMIN_SECRET_KEY ? 'secret' : null) },

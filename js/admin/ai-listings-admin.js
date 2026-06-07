@@ -22,6 +22,7 @@ import {
   buildPremiumDashboardHtml,
   buildStatusFilterChipsHtml,
   computeKpiStats,
+  extractLatestAnalysis,
   getEdgeSecret,
   getListingAnalyzePath,
   getSupabaseAnonKey,
@@ -38,7 +39,8 @@ import {
 } from './ai-listings-admin-core.js';
 import {
   verifyAdminSessionAccess,
-  resolveAdminPanelAccess
+  resolveAdminPanelAccess,
+  getAdminAccessToken
 } from './ai-listings-admin-access.js';
 import {
   enforceAdminRoute,
@@ -155,6 +157,7 @@ import { buildExecutiveDecisionShellHtml } from '../ai-purchase-decision/executi
 import { buildExplainabilityShellHtml } from '../ai-decision-explainability/explainability-card-builder.js';
 import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
 import { buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-builder.js';
+import { formatErrorFallbackLabel } from './ai-listings-admin-labels.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
@@ -164,6 +167,12 @@ let selectedRecommendation = null;
 
 /** @type {string} */
 let lastWorkspaceListingId = '';
+
+/** @type {number} */
+let detailRequestSeq = 0;
+
+/** @type {number} */
+const EDGE_REQUEST_TIMEOUT_MS = 15000;
 
 /** @type {ReturnType<typeof createInitialDrawerState>} */
 let aiDrawerState = createInitialDrawerState();
@@ -312,9 +321,27 @@ function setStatus(message, type = 'info') {
   el.textContent = message;
 }
 
-async function edgeRequest(path, { method = 'GET', body } = {}) {
-  const base = resolveEdgeBaseUrl(env());
+async function resolveEdgeAuthHeaders(hasBody = false) {
   const secret = getEdgeSecret(storage());
+  const anonKey = getSupabaseAnonKey(env());
+  const accessToken = secret ? '' : await getAdminAccessToken();
+
+  if (!secret && !accessToken) {
+    return {
+      ok: false,
+      message:
+        'Edge kimlik doğrulaması eksik — admin oturumu açın veya localStorage istebul_ai_listings_secret ayarlayın'
+    };
+  }
+
+  return {
+    ok: true,
+    headers: buildEdgeRequestHeaders({ secret, anonKey, accessToken, hasBody })
+  };
+}
+
+async function edgeRequest(path, { method = 'GET', body, timeoutMs = EDGE_REQUEST_TIMEOUT_MS } = {}) {
+  const base = resolveEdgeBaseUrl(env());
   const anonKey = getSupabaseAnonKey(env());
 
   if (!base) {
@@ -323,26 +350,37 @@ async function edgeRequest(path, { method = 'GET', body } = {}) {
   if (!anonKey) {
     return { ok: false, status: 0, message: 'Supabase anon key eksik' };
   }
-  if (!secret) {
-    return {
-      ok: false,
-      status: 0,
-      message: 'Edge secret eksik — localStorage istebul_ai_listings_secret ayarlayın'
-    };
+
+  const auth = await resolveEdgeAuthHeaders(body !== undefined);
+  if (!auth.ok) {
+    return { ok: false, status: 0, message: auth.message };
   }
 
-  const response = await fetch(`${base}${path}`, {
-    method,
-    headers: buildEdgeRequestHeaders({ secret, anonKey, hasBody: body !== undefined }),
-    body: body !== undefined ? JSON.stringify(body) : undefined
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  const json = await response.json().catch(() => ({}));
-  const mapped = mapEdgeResponse(response, json);
-  if (!mapped.ok) {
-    return { ...mapped, message: translateAdminErrorMessage(mapped.message) };
+  try {
+    const response = await fetch(`${base}${path}`, {
+      method,
+      headers: auth.headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controller.signal
+    });
+
+    const json = await response.json().catch(() => ({}));
+    const mapped = mapEdgeResponse(response, json);
+    if (!mapped.ok) {
+      return { ...mapped, message: translateAdminErrorMessage(mapped.message) };
+    }
+    return mapped;
+  } catch (error) {
+    if (/** @type {{ name?: string }} */ (error).name === 'AbortError') {
+      return { ok: false, status: 0, message: 'İstek zaman aşımına uğradı — tekrar deneyin' };
+    }
+    return { ok: false, status: 0, message: 'Ağ hatası — bağlantıyı kontrol edin' };
+  } finally {
+    clearTimeout(timer);
   }
-  return mapped;
 }
 
 function renderDisabledState(options = {}) {
@@ -371,9 +409,9 @@ function renderSecretWarning() {
   if (!warn) return;
   warn.hidden = false;
   warn.innerHTML = `
-    <strong>Kurulum gerekli:</strong>
-    <code>localStorage.${ADMIN_SECRET_KEY}</code> değerini
-    <code>AI_LISTINGS_EDGE_SECRET</code> ile ayarlayın, ardından yenileyin.
+    <strong>İsteğe bağlı:</strong> Admin oturumu ile API çağrıları çalışır.
+    CI/script entegrasyonu için <code>localStorage.${ADMIN_SECRET_KEY}</code> değerini
+    <code>AI_LISTINGS_EDGE_SECRET</code> ile eşleştirebilirsiniz.
     <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_SECRET_KEY}', '&lt;secret&gt;')</pre>`;
 }
 
@@ -2266,36 +2304,14 @@ function mountGlobalPanelHosts() {
   main.appendChild(wrap);
 }
 
-async function showListingDetail(listing) {
-  normalizeSelectedContext(listing);
-  const detailEl = $('ai-listings-detail');
-  if (!detailEl) return;
-
-  const id = String(listing.id);
-  mountGlobalPanelHosts();
-  renderDecisionWorkspace(listing, { loadingDetail: true });
-  renderListingsList(cachedListings);
-
-  const [detailRes, eventsRes] = await Promise.all([
-    edgeRequest(`/listings/${id}`),
-    edgeRequest(`/listings/${id}/events`)
-  ]);
-
-  if (!detailRes.ok) {
-    renderDecisionWorkspace(listing);
-    const mount = detailEl.querySelector('#ai-ws-detail-mount');
-    if (mount) {
-      mount.innerHTML = buildWorkspaceErrorHtml(translateAdminErrorMessage(detailRes.message));
-    }
-    return;
-  }
-
-  const data = /** @type {Record<string, unknown>} */ (detailRes.data ?? {});
-  const listingData = /** @type {Record<string, unknown>} */ (data.listing ?? listing);
-  const latest = /** @type {Record<string, unknown>|null} */ (data.latest_analysis ?? null);
-  const events = /** @type {Array<Record<string, unknown>>} */ (
-    eventsRes.ok ? eventsRes.data?.events ?? [] : []
-  );
+/**
+ * @param {HTMLElement} detailEl
+ * @param {Record<string, unknown>} listingData
+ * @param {Record<string, unknown>|null} latest
+ * @param {Array<Record<string, unknown>>} events
+ */
+function renderListingDetailContent(detailEl, listingData, latest, events) {
+  const id = String(listingData.id ?? '');
   const status = String(listingData.status ?? 'draft');
 
   const matchedListingId = extractDuplicateFromEvents(events).matched_listing_id;
@@ -2359,6 +2375,75 @@ async function showListingDetail(listing) {
   });
 
   bindDuplicateDetailActions(detailEl);
+}
+
+async function showListingDetail(listing) {
+  normalizeSelectedContext(listing);
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+
+  const id = String(listing.id ?? '').trim();
+  if (!id) return;
+
+  const seq = ++detailRequestSeq;
+  const cached = cachedListings.find((item) => String(item.id) === id) ?? listing;
+
+  mountGlobalPanelHosts();
+  renderDecisionWorkspace(cached, { loadingDetail: true });
+  renderListingsList(cachedListings);
+
+  try {
+    const [detailRes, eventsRes] = await Promise.all([
+      edgeRequest(`/listings/${id}`),
+      edgeRequest(`/listings/${id}/events`)
+    ]);
+
+    if (seq !== detailRequestSeq) return;
+
+    let listingData = /** @type {Record<string, unknown>} */ ({ ...cached });
+    let latest = /** @type {Record<string, unknown>|null} */ (extractLatestAnalysis(cached));
+    let events = /** @type {Array<Record<string, unknown>>} */ ([]);
+
+    if (detailRes.ok) {
+      const data = /** @type {Record<string, unknown>} */ (detailRes.data ?? {});
+      listingData = /** @type {Record<string, unknown>} */ (data.listing ?? cached);
+      latest = /** @type {Record<string, unknown>|null} */ (data.latest_analysis ?? latest);
+    } else if (!latest) {
+      renderDecisionWorkspace(listing);
+      const mount = detailEl.querySelector('#ai-ws-detail-mount');
+      if (mount) {
+        mount.innerHTML = buildWorkspaceErrorHtml(translateAdminErrorMessage(detailRes.message));
+      }
+      setStatus(detailRes.message, 'error');
+      return;
+    } else {
+      setStatus(`Detay API yanıt vermedi; önbellek verisi gösteriliyor. (${detailRes.message})`, 'info');
+    }
+
+    if (eventsRes.ok) {
+      events = /** @type {Array<Record<string, unknown>>} */ (eventsRes.data?.events ?? []);
+    }
+
+    renderListingDetailContent(detailEl, listingData, latest, events);
+  } catch (error) {
+    if (seq !== detailRequestSeq) return;
+
+    const latest = extractLatestAnalysis(cached);
+    if (latest || cached.title) {
+      renderListingDetailContent(detailEl, cached, latest, []);
+      setStatus('Detay yüklenirken hata oluştu; önbellek verisi gösteriliyor.', 'error');
+      console.error('[ai-listings-admin] showListingDetail failed:', error);
+      return;
+    }
+
+    renderDecisionWorkspace(listing);
+    const mount = detailEl.querySelector('#ai-ws-detail-mount');
+    if (mount) {
+      mount.innerHTML = buildWorkspaceErrorHtml(formatErrorFallbackLabel('detail'));
+    }
+    setStatus('İlan detayı yüklenemedi.', 'error');
+    console.error('[ai-listings-admin] showListingDetail failed:', error);
+  }
 }
 
 function bindDuplicateDetailActions(root) {
@@ -2887,7 +2972,7 @@ export async function initAiListingsAdmin() {
     return;
   }
 
-  if (state === 'no-secret') {
+  if (!getEdgeSecret(storage())) {
     renderSecretWarning();
   }
 

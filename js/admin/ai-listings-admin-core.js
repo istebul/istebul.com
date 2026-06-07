@@ -152,13 +152,14 @@ export function getSupabaseAnonKey(env = {}) {
  * @param {{ secret?: string, anonKey?: string, hasBody?: boolean }} [options]
  * @returns {Record<string, string>}
  */
-export function buildEdgeRequestHeaders({ secret, anonKey, hasBody = false } = {}) {
+export function buildEdgeRequestHeaders({ secret, anonKey, accessToken, hasBody = false } = {}) {
   const headers = { Accept: 'application/json' };
 
   const trimmedAnonKey = String(anonKey ?? '').trim();
   if (trimmedAnonKey) {
-    headers.Authorization = `Bearer ${trimmedAnonKey}`;
     headers.apikey = trimmedAnonKey;
+    const trimmedAccessToken = String(accessToken ?? '').trim();
+    headers.Authorization = `Bearer ${trimmedAccessToken || trimmedAnonKey}`;
   }
 
   const trimmedSecret = String(secret ?? '').trim();
@@ -1974,7 +1975,7 @@ export function buildPremiumDashboardHtml(listing, analysis, events, status, mat
         <dt>Kaynak tipi</dt><dd>${safeRenderText(listing.source_type ?? '—')}</dd>
       </dl>
     </details>
-    <p class="ai-listings-admin__muted ai-listings-admin__visibility-note">Yayına alma kapalıdır. Onaylandı durumu yalnızca iç QA içindir.</p>`;
+    <p class="ai-listings-admin__muted ai-listings-admin__visibility-note">Yayın için ilan onaylandıktan sonra &quot;Yayına al&quot; aksiyonu kullanılır. site_settings.ai_listings_public_enabled ile genel görünürlük kontrol edilir.</p>`;
 
   const analysisPanel = `
     ${buildScoreCardsHtml(analysis)}

@@ -2,7 +2,7 @@
  * isteBul AI Listings Edge API — request handler (testable).
  */
 
-import { authorizeRequestWithPublicRead } from './auth.js';
+import { authorizeRequestWithPublicReadAsync, verifyAdminBearerSession } from './auth.js';
 import {
   handleDataPoolRoute,
   handleLearningRoute,
@@ -185,7 +185,13 @@ export async function handleAiListingsRequest(req, deps) {
       return preflightResponse(origin);
     }
 
-    const auth = authorizeRequestWithPublicRead(req, deps.env);
+    const verifyAdminSession =
+      deps.verifyAdminSession ??
+      ((request) => verifyAdminBearerSession(request, deps.env, deps.createServiceClient));
+
+    const auth = await authorizeRequestWithPublicReadAsync(req, deps.env, {
+      verifyAdminSession
+    });
     if (!auth.ok) {
       return errorResponse(auth.code, auth.message, auth.status, undefined, origin);
     }
