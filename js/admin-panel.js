@@ -49,6 +49,7 @@ import {
 } from './features/sales/partner-crm-pipeline.js';
 import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
 import { initAdminShell } from './admin/admin-shell.js';
+import { injectDecisionCenterNav } from './admin/admin-decision-nav.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
@@ -206,6 +207,7 @@ async function showApp() {
   const topAvatar = document.getElementById('admin-topbar-avatar');
   if (topEmail) topEmail.textContent = email;
   if (topAvatar) topAvatar.textContent = email[0]?.toUpperCase() || 'A';
+  injectDecisionCenterNav();
   initPartnerApplicationsShell();
   loadDashboard();
   loadSettings();
@@ -4424,6 +4426,13 @@ function bindAdminPanelEvents() {
       if (window.matchMedia('(max-width: 900px)').matches) {
         closeAdminSidebar();
       }
+    });
+  });
+
+  document.querySelectorAll('[data-nav-href]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const href = el.getAttribute('data-nav-href');
+      if (href) window.location.assign(href);
     });
   });
 

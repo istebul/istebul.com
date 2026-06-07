@@ -83,6 +83,14 @@
 # Physical /blog/:slug/index.html files are served directly when present.
 # Missing slugs fall through to /* SPA fallback below.
 
+# --- Admin Decision Center aliases (before SPA fallback) ---
+/admin/listings /admin/ai-listings.html 200
+/admin/listings/ /admin/ai-listings.html 200
+/admin/decision-center /admin/ai-listings.html 200
+/admin/decision-center/ /admin/ai-listings.html 200
+/admin/karar-merkezi /admin/ai-listings.html 200
+/admin/karar-merkezi/ /admin/ai-listings.html 200
+
 # --- API (Pages Functions — skip SPA /* fallback; fixes HEAD Content-Type) ---
 /api/* /api/:splat 200
 
