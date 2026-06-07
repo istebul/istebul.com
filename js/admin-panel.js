@@ -47,7 +47,11 @@ import {
   getPartnerCrmWinProbability,
   renderPartnerPipelineBoardHtml
 } from './features/sales/partner-crm-pipeline.js';
-import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
+import {
+  registerAdminPageHandlers,
+  showAdminPage,
+  bootAdminPageFromUrl
+} from './admin/admin-page-routing.js';
 import { initAdminShell } from './admin/admin-shell.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initVerticalAdmin } from './admin/vertical-admin.js';
@@ -224,6 +228,7 @@ async function showApp() {
   partnerEndpointsAdmin.loadPartnerEndpoints();
   loadPartnerApplications();
   loadPartnerDispatchLogs();
+  bootAdminPageFromUrl();
 }
 
 function closeAdminSidebar() {

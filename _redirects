@@ -1,6 +1,7 @@
 # Cloudflare Pages routing — keep dynamic rules under 100 (CF limit).
 # Static files (/*.html, /auto/index.html, /admin/index.html, …) are served directly.
-# Admin panel: dist/admin/index.html — no _redirects rules required.
+# Admin panel: dist/admin/index.html + dist/admin/<slug>/index.html — no _redirects rules.
+# Deep links (/admin/listings, /admin/decision-center, …) are physical build output (before /* SPA fallback).
 
 # --- Static asset passthrough (before SPA fallback) ---
 /css/*       /css/:splat       200

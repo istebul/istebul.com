@@ -27,6 +27,8 @@ const required = [
   'dist/css/seo-landing.css',
   'dist/js/runtime/route-bootstrap-head.js',
   'dist/admin/index.html',
+  'dist/admin/listings/index.html',
+  'dist/admin/decision-center/index.html',
   'dist/admin-panel.html',
   'dist/js/admin-panel.js'
 ];
