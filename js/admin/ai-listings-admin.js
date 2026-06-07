@@ -50,6 +50,12 @@ import {
   buildAnalyticsKpiCardsHtml
 } from './ai-listings-analytics-admin.js';
 import { hydrateLazyCharts } from '../ai-listings-analytics/chart-builder.js';
+import {
+  buildCollectorDashboardHtml,
+  buildCollectorPreviewHtml,
+  buildCollectorErrorsExportText,
+  previewCollectorContent
+} from './ai-listings-collector-admin.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 
 /** @type {Record<string, unknown>|null} */
@@ -88,7 +94,7 @@ let pendingBuilderResult = null;
 /** @type {string} */
 let lastKpiStatsKey = '';
 
-/** @type {'decision'|'repository'|'analytics'} */
+/** @type {'decision'|'repository'|'analytics'|'collector'} */
 let activeAdminView = 'decision';
 
 /** @type {string} */
@@ -105,6 +111,9 @@ let lastAnalyticsKpiStatsKey = '';
 
 /** @type {Record<string, () => string>} */
 let analyticsChartBuilders = {};
+
+/** @type {Record<string, unknown>|null} */
+let collectorPreviewResult = null;
 
 function $(id) {
   return document.getElementById(id);
@@ -259,7 +268,13 @@ function renderAnalyticsKpiCards(listings) {
 
 function setAdminView(view) {
   const next =
-    view === 'repository' ? 'repository' : view === 'analytics' ? 'analytics' : 'decision';
+    view === 'repository'
+      ? 'repository'
+      : view === 'analytics'
+        ? 'analytics'
+        : view === 'collector'
+          ? 'collector'
+          : 'decision';
   activeAdminView = next;
 
   document.querySelectorAll('[data-admin-view]').forEach((tab) => {
@@ -271,7 +286,10 @@ function setAdminView(view) {
   $('ai-listings-kpi')?.toggleAttribute('hidden', next !== 'decision');
   $('ai-listings-repo-kpi')?.toggleAttribute('hidden', next !== 'repository');
   $('ai-listings-analytics-kpi')?.toggleAttribute('hidden', next !== 'analytics');
-  $('ai-listings-sidebar')?.toggleAttribute('hidden', next === 'repository' || next === 'analytics');
+  $('ai-listings-sidebar')?.toggleAttribute(
+    'hidden',
+    next === 'repository' || next === 'analytics' || next === 'collector'
+  );
 
   if (next === 'repository') {
     selectedListing = null;
@@ -281,10 +299,129 @@ function setAdminView(view) {
     selectedListing = null;
     renderAnalyticsView();
     renderAnalyticsKpiCards(cachedListings);
+  } else if (next === 'collector') {
+    selectedListing = null;
+    renderCollectorView();
   } else {
     renderExecutiveDashboard();
     renderKpiCards(cachedListings);
   }
+}
+
+function renderCollectorView() {
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+
+  detailEl.innerHTML = buildCollectorDashboardHtml(collectorPreviewResult);
+  bindCollectorDashboardEvents(detailEl);
+  updateCollectorActionState();
+  clearTimelineHost();
+}
+
+function updateCollectorActionState() {
+  const root = $('ai-listings-detail');
+  const readyCount = Number(collectorPreviewResult?.repository_ready_rows ?? 0);
+  const hasErrors = (collectorPreviewResult?.errors?.length ?? 0) > 0;
+  const saveBtn = root?.querySelector('[data-collector-action="save"]');
+  const analyzeBtn = root?.querySelector('[data-collector-action="save-analyze"]');
+  const downloadBtn = root?.querySelector('[data-collector-action="download-errors"]');
+
+  if (readyCount > 0) {
+    saveBtn?.removeAttribute('disabled');
+    analyzeBtn?.removeAttribute('disabled');
+  } else {
+    saveBtn?.setAttribute('disabled', '');
+    analyzeBtn?.setAttribute('disabled', '');
+  }
+
+  if (hasErrors) downloadBtn?.removeAttribute('disabled');
+  else downloadBtn?.setAttribute('disabled', '');
+}
+
+function handleCollectorPreview() {
+  const format = $('ai-collector-format')?.value ?? 'csv';
+  const content = $('ai-collector-content')?.value ?? '';
+  collectorPreviewResult = previewCollectorContent(format, content, cachedListings);
+
+  const host = $('ai-collector-preview-host');
+  if (host) host.innerHTML = buildCollectorPreviewHtml(collectorPreviewResult);
+
+  updateCollectorActionState();
+  setStatus(collectorPreviewResult.summary?.text ?? 'Collector önizlemesi hazır.', 'success');
+}
+
+async function handleCollectorSave(analyzeAfter = false) {
+  const payloads = collectorPreviewResult?.repository_ready_payloads;
+  if (!Array.isArray(payloads) || !payloads.length) {
+    setStatus('Kaydedilecek geçerli kayıt yok.', 'error');
+    return;
+  }
+
+  setStatus('Geçerli kayıtlar kaydediliyor…', 'info');
+  let created = 0;
+  let analyzed = 0;
+
+  for (let offset = 0; offset < payloads.length; offset += IMPORT_MAX_ROWS) {
+    const chunk = payloads.slice(offset, offset + IMPORT_MAX_ROWS);
+    const result = await edgeRequest('/listings/import', {
+      method: 'POST',
+      body: { format: 'json', content: JSON.stringify(chunk), analyze: analyzeAfter }
+    });
+
+    if (!result.ok) {
+      setStatus(result.message, 'error');
+      return;
+    }
+
+    const summary = result.data ?? {};
+    created += Number(summary.created_count ?? 0);
+    analyzed += Number(summary.analyzed_count ?? 0);
+  }
+
+  setStatus(
+    `Collector kaydı tamamlandı: ${created} oluşturuldu, ${analyzed} analiz edildi.`,
+    'success'
+  );
+  collectorPreviewResult = null;
+  await loadListings();
+  renderCollectorView();
+}
+
+function handleCollectorDownloadErrors() {
+  const text = buildCollectorErrorsExportText(
+    /** @type {Array<{ row: number, messages: string[] }>} */ (collectorPreviewResult?.errors ?? [])
+  );
+  if (!text) {
+    setStatus('İndirilecek hata yok.', 'info');
+    return;
+  }
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = 'ai-listings-collector-errors.txt';
+  anchor.click();
+  URL.revokeObjectURL(url);
+  setStatus('Hata raporu indirildi.', 'success');
+}
+
+function bindCollectorDashboardEvents(root) {
+  root.querySelector('#ai-collector-format')?.addEventListener('change', () => {
+    collectorPreviewResult = null;
+    updateCollectorActionState();
+  });
+  root.querySelector('#ai-collector-content')?.addEventListener('input', () => {
+    collectorPreviewResult = null;
+    updateCollectorActionState();
+  });
+  root.querySelector('[data-collector-action="preview"]')?.addEventListener('click', handleCollectorPreview);
+  root.querySelector('[data-collector-action="save"]')?.addEventListener('click', () => {
+    void handleCollectorSave(false);
+  });
+  root.querySelector('[data-collector-action="save-analyze"]')?.addEventListener('click', () => {
+    void handleCollectorSave(true);
+  });
+  root.querySelector('[data-collector-action="download-errors"]')?.addEventListener('click', handleCollectorDownloadErrors);
 }
 
 function renderAnalyticsView() {
@@ -846,6 +983,8 @@ async function loadListings() {
     renderRepositoryView();
   } else if (activeAdminView === 'analytics') {
     renderAnalyticsView();
+  } else if (activeAdminView === 'collector') {
+    renderCollectorView();
   } else {
     renderExecutiveDashboard();
   }
