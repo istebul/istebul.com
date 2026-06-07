@@ -14,6 +14,10 @@ import { runMarketEngine } from './market/market-engine.js';
 import { runRiskEngine, getRiskLevel } from './risk/risk-engine.js';
 import { runDecisionEngine, getRecommendationLabel } from './decision/decision-engine.js';
 import { ENGINE_VERSION } from './scoring/score-utils.js';
+import {
+  parsePersistedAnalysisFields,
+  parseTagNumber
+} from '../../supabase/functions/_shared/ai-listings/engine/canonical-engine.js';
 
 export { ENGINE_VERSION };
 export { createCanonicalListing, mergeCanonicalListing } from './models/canonical-listing.js';
@@ -22,6 +26,7 @@ export { runQualityEngine } from './quality/quality-engine.js';
 export { runMarketEngine } from './market/market-engine.js';
 export { runRiskEngine, getRiskLevel } from './risk/risk-engine.js';
 export { runDecisionEngine, getRecommendationLabel } from './decision/decision-engine.js';
+export { parsePersistedAnalysisFields, parseTagNumber } from '../../supabase/functions/_shared/ai-listings/engine/canonical-engine.js';
 
 /**
  * @typedef {Object} EngineRunOptions
@@ -95,8 +100,35 @@ export function processListing(rawInput, options = {}) {
  * @param {EngineRunOptions} [options]
  */
 export function getListingEngineMetrics(rawInput, options = {}) {
-  const result = runAiListingsEngine(rawInput, options);
   const analysis = options.existingAnalysis ?? null;
+  const parsed = parsePersistedAnalysisFields(analysis);
+  const hasPersistedScores =
+    parsed.hasDbAnalysis &&
+    (Number.isFinite(Number(analysis?.ai_score)) ||
+      Number.isFinite(Number(analysis?.risk_score)) ||
+      parsed.isEngineV1);
+
+  if (hasPersistedScores) {
+    const clientFallback =
+      parsed.quality_score === null || !parsed.recommendation_label
+        ? runAiListingsEngine(rawInput, options)
+        : null;
+
+    return {
+      ai:
+        parsed.decision_score ??
+        (Number.isFinite(Number(analysis?.ai_score)) ? Number(analysis.ai_score) : null),
+      risk: Number.isFinite(Number(analysis?.risk_score)) ? Number(analysis.risk_score) : null,
+      market: Number.isFinite(Number(analysis?.market_score)) ? Number(analysis.market_score) : null,
+      quality: parsed.quality_score ?? clientFallback?.quality.quality_score ?? null,
+      decision:
+        parsed.recommendation_label ?? clientFallback?.decision.recommendation_label ?? 'Analiz Bekleniyor',
+      decision_type: analysis?.recommendation ?? clientFallback?.decision.recommendation ?? 'pending',
+      from_db: true
+    };
+  }
+
+  const result = runAiListingsEngine(rawInput, options);
   const aiScore = Number(analysis?.ai_score);
 
   return {
@@ -105,7 +137,8 @@ export function getListingEngineMetrics(rawInput, options = {}) {
     market: result.market.market_score,
     quality: result.quality.quality_score,
     decision: result.decision.recommendation_label,
-    decision_type: result.decision.recommendation
+    decision_type: result.decision.recommendation,
+    from_db: false
   };
 }
 
