@@ -73,11 +73,21 @@ test('parseListFilters maps query params', () => {
   assert.equal(filters.offset, 5);
 });
 
-test('validateCreateListingBody rejects invalid status', () => {
+test('validateCreateListingBody accepts published status', () => {
   const result = validateCreateListingBody({
     category: 'vehicle',
     title: 'Car',
     status: 'published'
+  });
+  assert.equal(result.ok, true);
+  if (result.ok) assert.equal(result.value.status, 'published');
+});
+
+test('validateCreateListingBody rejects invalid status', () => {
+  const result = validateCreateListingBody({
+    category: 'vehicle',
+    title: 'Car',
+    status: 'live'
   });
   assert.equal(result.ok, false);
 });

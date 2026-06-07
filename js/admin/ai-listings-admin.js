@@ -249,19 +249,42 @@ let compareModeEnabled = false;
 /** @type {Array<Record<string, unknown>>} */
 let cachedLearningEvents = [];
 
+const LEARNING_SESSION_KEY = 'istebul_ai_learning_session_id';
+
+/**
+ * @returns {string}
+ */
+function getLearningSessionId() {
+  const storageRef = storage();
+  if (!storageRef) return 'admin-session';
+  let sessionId = storageRef.getItem(LEARNING_SESSION_KEY);
+  if (!sessionId) {
+    sessionId = `admin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    storageRef.setItem(LEARNING_SESSION_KEY, sessionId);
+  }
+  return sessionId;
+}
+
 /**
  * @param {string} eventType
  * @param {Record<string, unknown>} [payload]
  */
 function recordLearningEvent(eventType, payload = {}) {
-  cachedLearningEvents.push({
+  const event = {
     event_type: eventType,
     timestamp: new Date().toISOString(),
+    session_id: getLearningSessionId(),
     ...payload
-  });
+  };
+  cachedLearningEvents.push(event);
   if (cachedLearningEvents.length > 100) {
     cachedLearningEvents = cachedLearningEvents.slice(-100);
   }
+
+  edgeRequest('/learning/events', {
+    method: 'POST',
+    body: { events: [event] }
+  }).catch(() => {});
 }
 
 function $(id) {
@@ -2338,6 +2361,8 @@ async function runQaAction(id, action, body) {
   const labels = {
     'submit-review': 'İncelemeye gönderiliyor',
     approve: 'Onaylanıyor',
+    publish: 'Yayınlanıyor',
+    unpublish: 'Yayından kaldırılıyor',
     reject: 'Reddediliyor',
     archive: 'Arşivleniyor',
     reanalyze: 'Yeniden analiz ediliyor'

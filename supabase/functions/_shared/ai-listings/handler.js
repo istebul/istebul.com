@@ -2,7 +2,13 @@
  * isteBul AI Listings Edge API — request handler (testable).
  */
 
-import { authorizeRequest } from './auth.js';
+import { authorizeRequestWithPublicRead } from './auth.js';
+import {
+  handleDataPoolRoute,
+  handleLearningRoute,
+  handlePersonalizationRoute,
+  handlePublicListingsRoute
+} from './platform-handlers.js';
 import { preflightResponse } from './cors.js';
 import { runListingAnalysisPipeline, ANALYSIS_ENGINE_VERSION } from './analysis-pipeline.js';
 import { createEdgeRepositories } from './repositories.js';
@@ -179,7 +185,7 @@ export async function handleAiListingsRequest(req, deps) {
       return preflightResponse(origin);
     }
 
-    const auth = authorizeRequest(req, deps.env);
+    const auth = authorizeRequestWithPublicRead(req, deps.env);
     if (!auth.ok) {
       return errorResponse(auth.code, auth.message, auth.status, undefined, origin);
     }
@@ -203,8 +209,24 @@ export async function handleAiListingsRequest(req, deps) {
     const url = new URL(req.url);
     const route = parseAiListingsRoute(url.pathname);
 
+    if (route.resource === 'learning') {
+      return handleLearningRoute(repos, req, route, deps.env, origin);
+    }
+
+    if (route.resource === 'data-pool') {
+      return handleDataPoolRoute(repos, req, route, origin);
+    }
+
+    if (route.resource === 'personalization') {
+      return handlePersonalizationRoute(req, route, origin);
+    }
+
     if (route.resource !== 'listings') {
       return errorResponse(EDGE_ERROR_CODES.NOT_FOUND, 'Route not found', 404, undefined, origin);
+    }
+
+    if (route.id === 'public' && route.action === null && req.method === 'GET') {
+      return handlePublicListingsRoute(repos, deps.env, origin);
     }
 
     // POST /listings
@@ -402,6 +424,20 @@ export async function handleAiListingsRequest(req, deps) {
         200,
         origin
       );
+    }
+
+    // POST /listings/:id/publish
+    if (route.action === QA_ACTIONS.PUBLISH && req.method === 'POST') {
+      const result = await applyWorkflowTransition(repos, route.id, QA_ACTIONS.PUBLISH);
+      if (!result.ok) return errorResponse(result.code, result.message, result.status, undefined, origin);
+      return jsonResponse(successBody({ listing: result.listing }), 200, origin);
+    }
+
+    // POST /listings/:id/unpublish
+    if (route.action === QA_ACTIONS.UNPUBLISH && req.method === 'POST') {
+      const result = await applyWorkflowTransition(repos, route.id, QA_ACTIONS.UNPUBLISH);
+      if (!result.ok) return errorResponse(result.code, result.message, result.status, undefined, origin);
+      return jsonResponse(successBody({ listing: result.listing }), 200, origin);
     }
 
     // POST /listings/:id/reanalyze

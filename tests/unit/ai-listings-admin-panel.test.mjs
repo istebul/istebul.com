@@ -209,12 +209,14 @@ test('Turkish status labels cover all workflow statuses', () => {
   assert.equal(getStatusLabelTr('draft'), 'Taslak');
   assert.equal(getStatusLabelTr('pending_review'), 'İncelemede');
   assert.equal(getStatusLabelTr('approved'), 'Onaylandı');
+  assert.equal(getStatusLabelTr('published'), 'Yayında');
   assert.equal(getStatusLabelTr('rejected'), 'Reddedildi');
   assert.equal(getStatusLabelTr('archived'), 'Arşivlendi');
   assert.deepEqual(Object.keys(STATUS_LABELS_TR), [
     'draft',
     'pending_review',
     'approved',
+    'published',
     'rejected',
     'archived'
   ]);

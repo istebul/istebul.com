@@ -30,6 +30,8 @@ import { trackPricingViewForUpgrade } from './features/revenue/revenue-ops-clien
 import { mountHelpCenterWidget } from './ui/help-center-widget.js';
 import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
+import { loadPublicAiListings } from './core/ai-listings-public-api.js';
+import { submitUserListingToAiEngine } from './core/ai-listings-bridge.js';
 import { scoreVehicleMatch } from './engines/decision-consultant.js';
 import {
   ensureAccountManager,
@@ -627,8 +629,25 @@ class App {
             this.ui.showLoading('#listings-grid');
 
             const listings = await API.getListings(options);
+            const publicAiListings =
+                !options.userId && !options.ownedOnly
+                    ? (await loadPublicAiListings(window.__env || {}, {
+                          category: options.category,
+                          limit: options.limit ?? 24
+                      })).map((listing) => ({
+                          ...listing,
+                          external_url: listing.source_url ?? listing.external_url ?? null,
+                          metadata: {
+                              ...(listing.attributes ?? {}),
+                              ai_score: listing.latest_analysis?.ai_score ?? null,
+                              source: 'ai_listings'
+                          }
+                      }))
+                    : [];
             const localListings = this.getLocalListings(options);
-            this.currentListings = this.sortListings(this.mergeListings(localListings, listings || []));
+            this.currentListings = this.sortListings(
+                this.mergeListings(localListings, listings || [], publicAiListings)
+            );
             this.renderCurrentListings();
             this.renderListingFilterSummary(options);
 
@@ -4618,6 +4637,16 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 console.error('Failed to create listing remotely, saving local fallback:', error);
                 listing = this.createLocalListing(listingPayload);
                 savedLocally = true;
+            }
+
+            const env = window.__env || {};
+            const edgeSecret = localStorage.getItem('istebul_ai_listings_secret');
+            if (env.SUPABASE_URL && env.SUPABASE_ANON_KEY && edgeSecret) {
+                submitUserListingToAiEngine(listingPayload, {
+                    baseUrl: `${env.SUPABASE_URL}/functions/v1/ai-listings`,
+                    secret: edgeSecret,
+                    anonKey: env.SUPABASE_ANON_KEY
+                }).catch(() => {});
             }
 
             form.reset();
