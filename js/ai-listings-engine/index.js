@@ -27,6 +27,12 @@ export { runMarketEngine } from './market/market-engine.js';
 export { runRiskEngine, getRiskLevel } from './risk/risk-engine.js';
 export { runDecisionEngine, getRecommendationLabel } from './decision/decision-engine.js';
 export { parsePersistedAnalysisFields, parseTagNumber } from '../../supabase/functions/_shared/ai-listings/engine/canonical-engine.js';
+export {
+  runDuplicateEngine,
+  resolveDuplicateStatus,
+  buildDuplicateSummary
+} from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
+export { extractDuplicateFromEvents } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-workflow.js';
 
 /**
  * @typedef {Object} EngineRunOptions
@@ -124,6 +130,7 @@ export function getListingEngineMetrics(rawInput, options = {}) {
       decision:
         parsed.recommendation_label ?? clientFallback?.decision.recommendation_label ?? 'Analiz Bekleniyor',
       decision_type: analysis?.recommendation ?? clientFallback?.decision.recommendation ?? 'pending',
+      duplicate: null,
       from_db: true
     };
   }
@@ -138,6 +145,7 @@ export function getListingEngineMetrics(rawInput, options = {}) {
     quality: result.quality.quality_score,
     decision: result.decision.recommendation_label,
     decision_type: result.decision.recommendation,
+    duplicate: null,
     from_db: false
   };
 }

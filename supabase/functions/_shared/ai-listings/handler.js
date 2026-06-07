@@ -28,6 +28,11 @@ import {
   buildImportPreview,
   validateImportRequestBody
 } from './import-parser.js';
+import {
+  detectListingDuplicate,
+  emitDuplicateEvents,
+  toDuplicateOutput
+} from './duplicate/duplicate-workflow.js';
 
 /**
  * @typedef {Object} HandlerDeps
@@ -80,6 +85,18 @@ async function applyWorkflowTransition(repos, listingId, action, eventPayload = 
 
 /**
  * @param {Awaited<ReturnType<typeof createEdgeRepositories>>} repos
+ * @param {Record<string, unknown>} listing
+ * @param {Array<Record<string, unknown>>} [candidates]
+ */
+async function runPostCreateDuplicateCheck(repos, listing, candidates) {
+  const pool = candidates ?? (await repos.listListings({ limit: 500 }));
+  const duplicate = detectListingDuplicate(listing, pool, { excludeId: String(listing.id ?? '') });
+  await emitDuplicateEvents(repos, String(listing.id), duplicate);
+  return duplicate;
+}
+
+/**
+ * @param {Awaited<ReturnType<typeof createEdgeRepositories>>} repos
  * @param {typeof runListingAnalysisPipeline} runAnalysis
  * @param {Record<string, unknown>[]} normalizedRows
  * @param {boolean} analyze
@@ -106,6 +123,8 @@ export async function executeListingsImport(repos, runAnalysis, normalizedRows, 
           import_format: 'bulk'
         }
       });
+
+      await runPostCreateDuplicateCheck(repos, listing);
 
       created_ids.push(listing.id);
 
@@ -203,7 +222,9 @@ export async function handleAiListingsRequest(req, deps) {
         payload: { source_type: listing.source_type, category: listing.category }
       });
 
-      return jsonResponse(successBody({ listing }), 201, origin);
+      const duplicate = await runPostCreateDuplicateCheck(repos, listing);
+
+      return jsonResponse(successBody({ listing, duplicate: toDuplicateOutput(duplicate) }), 201, origin);
     }
 
     // POST /listings/import
@@ -356,6 +377,9 @@ export async function handleAiListingsRequest(req, deps) {
       }
 
       const saved = await repos.createAnalysis(route.id, pipeline.analysis, ANALYSIS_ENGINE_VERSION);
+      const duplicate = detectListingDuplicate(listing, await repos.listListings({ limit: 500 }), {
+        excludeId: route.id
+      });
       await repos.createEvent({
         listing_id: route.id,
         event_type: 'listing_analyzed',
@@ -370,7 +394,10 @@ export async function handleAiListingsRequest(req, deps) {
         successBody({
           listing,
           analysis: saved,
-          context: pipeline.context
+          context: {
+            ...pipeline.context,
+            duplicate: toDuplicateOutput(duplicate)
+          }
         }),
         200,
         origin
@@ -401,6 +428,9 @@ export async function handleAiListingsRequest(req, deps) {
       }
 
       const saved = await repos.createAnalysis(route.id, pipeline.analysis, ANALYSIS_ENGINE_VERSION);
+      const duplicate = detectListingDuplicate(listing, await repos.listListings({ limit: 500 }), {
+        excludeId: route.id
+      });
       await repos.createEvent({
         listing_id: route.id,
         event_type: eventTypeForAction(QA_ACTIONS.REANALYZE),
@@ -415,7 +445,10 @@ export async function handleAiListingsRequest(req, deps) {
         successBody({
           listing,
           analysis: saved,
-          context: pipeline.context
+          context: {
+            ...pipeline.context,
+            duplicate: toDuplicateOutput(duplicate)
+          }
         }),
         200,
         origin
