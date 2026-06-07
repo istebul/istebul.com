@@ -57,6 +57,7 @@ import {
   previewCollectorContent
 } from './ai-listings-collector-admin.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
+import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
@@ -102,6 +103,12 @@ let repoCategoryTab = 'all';
 
 /** @type {string[]} */
 let repoFilters = [];
+
+/** @type {string} */
+let repoAiSearchQuery = '';
+
+/** @type {string} */
+let repoSearchSort = 'best_match';
 
 /** @type {string} */
 let lastRepoKpiStatsKey = '';
@@ -453,6 +460,40 @@ function bindRepositoryDashboardEvents(root) {
     });
   });
 
+  root.querySelectorAll('[data-repo-search-filter]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const filterId = chip.getAttribute('data-repo-search-filter') ?? '';
+      repoFilters = toggleRepositoryFilter(repoFilters, filterId);
+      renderRepositoryView();
+      renderRepositoryKpiCards(cachedListings);
+    });
+  });
+
+  const aiSearchInput = root.querySelector('#ai-listings-repo-ai-search');
+  if (aiSearchInput) {
+    aiSearchInput.addEventListener('input', (event) => {
+      repoAiSearchQuery = sanitizeSearchQuery(/** @type {HTMLInputElement} */ (event.target).value);
+      renderRepositoryView();
+      renderRepositoryKpiCards(cachedListings);
+    });
+  }
+
+  const sortSelect = root.querySelector('[data-repo-search-sort]');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', (event) => {
+      repoSearchSort = /** @type {HTMLSelectElement} */ (event.target).value || 'best_match';
+      renderRepositoryView();
+    });
+  }
+
+  root.querySelectorAll('[data-repo-search-suggestion]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      repoAiSearchQuery = sanitizeSearchQuery(btn.getAttribute('data-repo-search-suggestion') ?? '');
+      renderRepositoryView();
+      renderRepositoryKpiCards(cachedListings);
+    });
+  });
+
   root.querySelectorAll('[data-repo-record-id]').forEach((card) => {
     card.addEventListener('click', () => {
       const id = card.getAttribute('data-repo-record-id');
@@ -474,6 +515,8 @@ function renderRepositoryView() {
     categoryTab: repoCategoryTab,
     filters: repoFilters,
     search: searchQuery,
+    aiSearch: repoAiSearchQuery,
+    sortBy: repoSearchSort,
     selectedId: selectedListing?.id ?? null
   });
 
