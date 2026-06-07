@@ -81,6 +81,9 @@ export function buildRecommendationCardHtml(item) {
         </button>
         <button type="button" class="ai-rec-card__exp-btn" data-rec-exp-id="${safe(item.id)}" aria-label="Neden Bu Karar">
           Neden Bu Karar?
+        </button>
+        <button type="button" class="ai-rec-card__edr-btn" data-rec-edr-id="${safe(item.id)}" aria-label="Yönetici Raporu">
+          Yönetici Raporu
         </button>` : ''}
       </footer>
     </article>`;

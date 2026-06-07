@@ -18,6 +18,7 @@ import { buildDecisionReportShellHtml } from '../ai-decision-report/report-card-
 import { buildOwnershipCostShellHtml } from '../ai-ownership-cost/cost-card-builder.js';
 import { buildExecutiveDecisionShellHtml } from '../ai-purchase-decision/executive-decision-card-builder.js';
 import { buildExplainabilityShellHtml } from '../ai-decision-explainability/explainability-card-builder.js';
+import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
 import { runDecisionFlow, buildCalibrationBlockHtml } from '../ai-decision-flow/index.js';
 
 /**
@@ -146,6 +147,7 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
       ${buildOwnershipCostShellHtml()}
       ${buildExecutiveDecisionShellHtml()}
       ${buildExplainabilityShellHtml()}
+      ${buildExecutiveReportShellHtml()}
     </div>`;
 
   return { html, result };
