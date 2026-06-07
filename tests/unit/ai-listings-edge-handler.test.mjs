@@ -202,8 +202,10 @@ test('POST /listings creates listing and listing_created event', async () => {
   const body = await res.json();
   assert.equal(body.ok, true);
   assert.equal(body.data.listing.title, 'Toyota Corolla');
-  assert.equal(repos._events.length, 1);
-  assert.equal(repos._events[0].event_type, 'listing_created');
+  assert.ok(body.data.duplicate);
+  assert.equal(body.data.duplicate.status, 'new');
+  assert.ok(repos._events.some((event) => event.event_type === 'listing_created'));
+  assert.ok(repos._events.some((event) => event.event_type === 'duplicate_checked'));
 });
 
 test('POST /listings/:id/analyze writes analysis and listing_analyzed event', async () => {
@@ -219,6 +221,7 @@ test('POST /listings/:id/analyze writes analysis and listing_analyzed event', as
   const body = await res.json();
   assert.equal(body.ok, true);
   assert.ok(body.data.analysis);
+  assert.ok(body.data.context.duplicate);
   assert.equal(repos._analyses.length, 1);
   assert.equal(repos._events.at(-1).event_type, 'listing_analyzed');
 });

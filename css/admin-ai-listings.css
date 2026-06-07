@@ -787,6 +787,11 @@
   color: #7dd3fc;
 }
 
+.ai-listings-admin__listing-metric--duplicate {
+  background: rgba(234, 179, 8, 0.16);
+  color: #fde047;
+}
+
 .ai-listings-admin__listing-metric--price {
   background: rgba(148, 163, 184, 0.12);
   color: #e2e8f0;
@@ -1913,4 +1918,68 @@
     transition: none;
     animation: none;
   }
+}
+
+.ai-listings-admin__duplicate-card {
+  margin-bottom: calc(var(--ai-grid) * 2);
+}
+
+.ai-listings-admin__duplicate-alert {
+  margin: 0 0 calc(var(--ai-grid) * 1.5);
+  padding: calc(var(--ai-grid) * 1.25);
+  border-radius: 12px;
+  background: rgba(234, 179, 8, 0.12);
+  color: #fde68a;
+  font-weight: 600;
+}
+
+.ai-listings-admin__duplicate-compare {
+  display: grid;
+  gap: calc(var(--ai-grid) * 1.25);
+  margin: 0 0 calc(var(--ai-grid) * 1.5);
+}
+
+.ai-listings-admin__duplicate-compare dt {
+  font-size: 0.75rem;
+  color: var(--ai-muted);
+  margin-bottom: 0.25rem;
+}
+
+.ai-listings-admin__duplicate-compare dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ai-listings-admin__duplicate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ai-grid) * 0.75);
+}
+
+.ai-listings-admin__duplicate-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+}
+
+.ai-listings-admin__duplicate-modal[hidden] {
+  display: none;
+}
+
+.ai-listings-admin__duplicate-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.ai-listings-admin__duplicate-modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 92vw);
+  max-height: 90vh;
+  overflow: auto;
+  padding: calc(var(--ai-grid) * 2);
 }

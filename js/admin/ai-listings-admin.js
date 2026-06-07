@@ -12,6 +12,7 @@ import {
   ADMIN_ENABLE_KEY,
   ADMIN_SECRET_KEY,
   buildAnalysisTimelineHtml,
+  buildDuplicateCheckCardHtml,
   buildEdgeRequestHeaders,
   buildExecutiveDashboardHtml,
   buildImportPreviewHtml,
@@ -35,6 +36,7 @@ import {
   validateAttributesJson,
   validateSourceUrl
 } from './ai-listings-admin-core.js';
+import { runDuplicateEngine } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
@@ -388,7 +390,9 @@ function renderListingsList(listings) {
 
   const selectedId = String(selectedListing?.id ?? '');
   listEl.innerHTML = filtered
-    .map((listing) => buildListingCardHtml(listing, String(listing.id) === selectedId))
+    .map((listing) =>
+      buildListingCardHtml(listing, String(listing.id) === selectedId, { candidates: listings })
+    )
     .join('');
 
   listEl.querySelectorAll('[data-listing-id]').forEach((btn) => {
@@ -528,8 +532,13 @@ async function showListingDetail(listing) {
   );
   const status = String(listingData.status ?? 'draft');
 
+  const matchedListingId = extractDuplicateFromEvents(events).matched_listing_id;
+  const matchedListing = matchedListingId
+    ? cachedListings.find((item) => String(item.id) === String(matchedListingId)) ?? { id: matchedListingId }
+    : null;
+
   detailEl.innerHTML = `
-    ${buildPremiumDashboardHtml(listingData, latest, events, status)}
+    ${buildPremiumDashboardHtml(listingData, latest, events, status, matchedListing)}
     <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
       <label>
         Red nedeni
@@ -640,17 +649,58 @@ async function buildCreatePayload() {
   return { ok: true, body };
 }
 
-async function handleCreateSubmit(event, { analyzeAfter = false } = {}) {
-  event?.preventDefault?.();
+/** @type {{ payload: Record<string, unknown>, duplicate: Record<string, unknown>, matchedListing: Record<string, unknown>|null }|null} */
+let pendingDuplicateCreate = null;
 
-  const payload = await buildCreatePayload();
-  if (!payload.ok) {
-    setStatus(payload.message, 'error');
-    return null;
+function clearDuplicateCreateModal() {
+  pendingDuplicateCreate = null;
+  $('ai-listings-duplicate-modal')?.setAttribute('hidden', '');
+  const host = $('ai-listings-duplicate-modal-body');
+  if (host) host.innerHTML = '';
+}
+
+function showDuplicateCreateModal(candidateBody, duplicate, matchedListing, { analyzeAfter = false } = {}) {
+  pendingDuplicateCreate = {
+    payload: candidateBody,
+    duplicate,
+    matchedListing,
+    analyzeAfter
+  };
+
+  let modal = $('ai-listings-duplicate-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'ai-listings-duplicate-modal';
+    modal.className = 'ai-listings-admin__duplicate-modal';
+    modal.innerHTML = `
+      <div class="ai-listings-admin__duplicate-modal-backdrop" data-duplicate-action="cancel"></div>
+      <div class="ai-listings-admin__duplicate-modal-panel">
+        <div id="ai-listings-duplicate-modal-body"></div>
+      </div>`;
+    document.body.appendChild(modal);
   }
 
+  const host = $('ai-listings-duplicate-modal-body');
+  if (host) {
+    host.innerHTML = buildDuplicateCheckCardHtml(
+      { title: candidateBody.title, ...candidateBody },
+      matchedListing ?? { title: '—' },
+      duplicate
+    );
+  }
+
+  modal.removeAttribute('hidden');
+  modal.querySelectorAll('[data-duplicate-action]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-duplicate-action');
+      if (action) handleDuplicateCreateAction(action);
+    });
+  });
+}
+
+async function finalizeCreateListing(body, { analyzeAfter = false } = {}) {
   setStatus('İlan oluşturuluyor…', 'info');
-  const result = await edgeRequest('/listings', { method: 'POST', body: payload.body });
+  const result = await edgeRequest('/listings', { method: 'POST', body });
   if (!result.ok) {
     setStatus(result.message, 'error');
     return null;
@@ -659,6 +709,7 @@ async function handleCreateSubmit(event, { analyzeAfter = false } = {}) {
   const form = $('ai-listings-create-form');
   form?.reset();
   closeCreateDrawer();
+  clearDuplicateCreateModal();
 
   const listing = result.data?.listing;
   if (!listing) {
@@ -677,6 +728,76 @@ async function handleCreateSubmit(event, { analyzeAfter = false } = {}) {
   await loadListings();
   await showListingDetail(listing);
   return listing;
+}
+
+async function handleDuplicateCreateAction(action) {
+  if (!pendingDuplicateCreate) return;
+
+  const { payload, matchedListing } = pendingDuplicateCreate;
+
+  if (action === 'cancel') {
+    clearDuplicateCreateModal();
+    setStatus('İlan oluşturma iptal edildi.', 'info');
+    return;
+  }
+
+  if (action === 'open-existing' && matchedListing?.id) {
+    clearDuplicateCreateModal();
+    closeCreateDrawer();
+    const existing = cachedListings.find((item) => String(item.id) === String(matchedListing.id));
+    if (existing) {
+      await showListingDetail(existing);
+      setStatus('Mevcut ilan açıldı.', 'success');
+      return;
+    }
+    setStatus('Eşleşen ilan listede bulunamadı.', 'error');
+    return;
+  }
+
+  if (action === 'update-existing' && matchedListing?.id) {
+    clearDuplicateCreateModal();
+    setStatus('Mevcut ilan güncelleniyor…', 'info');
+    const result = await edgeRequest(`/listings/${matchedListing.id}`, {
+      method: 'PATCH',
+      body: payload
+    });
+    if (!result.ok) {
+      setStatus(result.message, 'error');
+      return;
+    }
+    closeCreateDrawer();
+    $('ai-listings-create-form')?.reset();
+    await loadListings();
+    const updated = result.data?.listing;
+    if (updated) await showListingDetail(updated);
+    setStatus('Mevcut ilan güncellendi.', 'success');
+    return;
+  }
+
+  if (action === 'create-new') {
+    const analyzeAfter = pendingDuplicateCreate.analyzeAfter === true;
+    clearDuplicateCreateModal();
+    await finalizeCreateListing(payload, { analyzeAfter });
+  }
+}
+
+async function handleCreateSubmit(event, { analyzeAfter = false } = {}) {
+  event?.preventDefault?.();
+
+  const payload = await buildCreatePayload();
+  if (!payload.ok) {
+    setStatus(payload.message, 'error');
+    return null;
+  }
+
+  const duplicate = runDuplicateEngine(payload.body, cachedListings);
+  if (duplicate.status !== 'new' && duplicate.matched_listing) {
+    showDuplicateCreateModal(payload.body, duplicate, duplicate.matched_listing, { analyzeAfter });
+    setStatus('Benzer ilan tespit edildi. Lütfen bir işlem seçin.', 'info');
+    return null;
+  }
+
+  return finalizeCreateListing(payload.body, { analyzeAfter });
 }
 
 function updateImportButtonState() {

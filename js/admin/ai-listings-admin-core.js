@@ -27,6 +27,11 @@ import {
   IMPORT_MAX_ROWS
 } from '../../supabase/functions/_shared/ai-listings/import-parser.js';
 import { getListingEngineMetrics } from '../ai-listings-engine/index.js';
+import {
+  runDuplicateEngine,
+  resolveDuplicateStatus
+} from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
+import { extractDuplicateFromEvents } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-workflow.js';
 
 export { STATUS_FILTER_CHIPS, isListingPubliclyVisible, IMPORT_MAX_ROWS, IMPORT_MAX_CONTENT_BYTES };
 
@@ -604,10 +609,119 @@ export function buildListingSkeletonHtml(count = 4) {
 
 /**
  * @param {Record<string, unknown>} listing
- * @param {boolean} [isActive]
+ * @param {{ candidates?: Array<Record<string, unknown>>, events?: Array<Record<string, unknown>> }} [options]
+ * @returns {{ status: string|null, similarity: number|null, matched_listing_id: string|null, summary: string|null, label: string|null }}
+ */
+export function resolveListingDuplicateMetrics(listing, options = {}) {
+  const fromEvents = extractDuplicateFromEvents(options.events);
+  if (fromEvents.status && fromEvents.similarity !== null) {
+    return {
+      ...fromEvents,
+      label: fromEvents.similarity !== null ? `%${fromEvents.similarity}` : null
+    };
+  }
+
+  const candidates = options.candidates ?? [];
+  if (!candidates.length) {
+    return {
+      status: null,
+      similarity: null,
+      matched_listing_id: null,
+      summary: null,
+      label: null
+    };
+  }
+
+  const duplicate = runDuplicateEngine(listing, candidates, { excludeId: String(listing.id ?? '') });
+  if (duplicate.status === 'new') {
+    return {
+      status: duplicate.status,
+      similarity: duplicate.similarity,
+      matched_listing_id: null,
+      summary: duplicate.summary,
+      label: null
+    };
+  }
+
+  return {
+    status: duplicate.status,
+    similarity: duplicate.similarity,
+    matched_listing_id: duplicate.matched_listing_id,
+    summary: duplicate.summary,
+    label: `%${duplicate.similarity}`
+  };
+}
+
+/**
+ * @param {Record<string, unknown>} candidateListing
+ * @param {Record<string, unknown>} matchedListing
+ * @param {{ status?: string, similarity?: number, summary?: string }} duplicate
  * @returns {string}
  */
-export function buildListingCardHtml(listing, isActive = false) {
+export function buildDuplicateCheckCardHtml(candidateListing, matchedListing, duplicate = {}) {
+  const similarity = Number(duplicate.similarity ?? 0);
+  const status = String(duplicate.status ?? resolveDuplicateStatus(similarity));
+  const statusLabel =
+    status === 'exact' ? 'Aynı ilan bulundu' : status === 'similar' ? 'Benzer ilan bulundu' : 'Yeni kayıt';
+  const existingTitle = safeRenderText(matchedListing?.title ?? '—');
+  const candidateTitle = safeRenderText(candidateListing?.title ?? '—');
+  const summary = safeRenderText(duplicate.summary ?? '');
+
+  return `
+    <section class="ai-listings-admin__duplicate-card ai-listings-admin__glass-card" data-duplicate-card>
+      <h4 class="ai-listings-admin__section-title">Benzer İlan Kontrolü</h4>
+      <p class="ai-listings-admin__duplicate-alert">⚠ %${safeRenderText(similarity)} eşleşme bulundu — ${safeRenderText(statusLabel)}</p>
+      <dl class="ai-listings-admin__duplicate-compare">
+        <div>
+          <dt>Mevcut</dt>
+          <dd>${existingTitle}</dd>
+        </div>
+        <div>
+          <dt>Oluşturulmak istenen</dt>
+          <dd>${candidateTitle}</dd>
+        </div>
+      </dl>
+      ${summary ? `<p class="ai-listings-admin__muted">${summary}</p>` : ''}
+      <div class="ai-listings-admin__duplicate-actions">
+        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--ghost" data-duplicate-action="open-existing">Mevcut ilanı aç</button>
+        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--primary" data-duplicate-action="update-existing">Bilgileri güncelle</button>
+        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--ghost" data-duplicate-action="create-new">Yeni kayıt oluştur</button>
+        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--warn" data-duplicate-action="cancel">İptal</button>
+      </div>
+    </section>`;
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Array<Record<string, unknown>>|null|undefined} events
+ * @param {Record<string, unknown>|null|undefined} matchedListing
+ * @returns {string}
+ */
+export function buildDuplicateInsightCardHtml(listing, events, matchedListing = null) {
+  const duplicate = resolveListingDuplicateMetrics(listing, { events });
+  if (!duplicate.status || duplicate.status === 'new' || duplicate.similarity === null) {
+    return '';
+  }
+
+  const matched =
+    matchedListing ??
+    (duplicate.matched_listing_id ? { id: duplicate.matched_listing_id, title: 'Eşleşen ilan' } : null);
+  if (!matched) return '';
+
+  return buildDuplicateCheckCardHtml(listing, matched, {
+    status: duplicate.status,
+    similarity: duplicate.similarity,
+    summary: duplicate.summary ?? undefined
+  });
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {boolean} [isActive]
+ * @param {{ candidates?: Array<Record<string, unknown>>, events?: Array<Record<string, unknown>> }} [options]
+ * @returns {string}
+ */
+export function buildListingCardHtml(listing, isActive = false, options = {}) {
   const id = safeRenderText(listing.id);
   const title = safeRenderText(listing.title);
   const category = safeRenderText(getCategoryLabelTr(listing.category));
@@ -649,6 +763,14 @@ export function buildListingCardHtml(listing, isActive = false) {
   const decisionHtml = decisionLabel
     ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--decision">${safeRenderText(decisionLabel)}</span>`
     : '';
+  const duplicateMetrics = resolveListingDuplicateMetrics(listing, {
+    candidates: options.candidates,
+    events: options.events
+  });
+  const duplicateHtml =
+    duplicateMetrics.label && duplicateMetrics.status !== 'new'
+      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--duplicate">Duplicate ${safeRenderText(duplicateMetrics.label)}</span>`
+      : '';
 
   return `
     <button type="button" class="ai-listings-admin__listing-card${activeClass}" data-listing-id="${id}">
@@ -664,6 +786,7 @@ export function buildListingCardHtml(listing, isActive = false) {
         ${marketHtml}
         ${qualityHtml}
         ${decisionHtml}
+        ${duplicateHtml}
         <span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--price">${priceLabel}</span>
       </span>
       <span class="ai-listings-admin__listing-card-footer">
@@ -1188,7 +1311,10 @@ export function buildDataQualityHtml(listing, latestAnalysis = null) {
 /** @type {Readonly<Record<string, string>>} */
 const TIMELINE_EVENT_LABELS = Object.freeze({
   listing_created: 'İlan oluşturuldu',
+  duplicate_checked: 'Benzer ilan kontrol edildi',
+  duplicate_detected: 'Benzer ilan tespit edildi',
   listing_analyzed: 'AI analiz edildi',
+  analysis_completed: 'Analiz tamamlandı',
   listing_submitted: 'İncelemeye gönderildi',
   listing_approved: 'Onaylandı',
   listing_rejected: 'Reddedildi',
@@ -1204,7 +1330,12 @@ const TIMELINE_EVENT_LABELS = Object.freeze({
  */
 export function buildAnalysisTimelineHtml(listing, analysis, events) {
   const hasCreated = events?.some((e) => e.event_type === 'listing_created') || listing.created_at;
-  const hasAnalyzed = events?.some((e) => e.event_type === 'listing_analyzed') || analysis?.ai_score !== undefined;
+  const hasDuplicateChecked = events?.some((e) => e.event_type === 'duplicate_checked');
+  const hasDuplicateDetected = events?.some((e) => e.event_type === 'duplicate_detected');
+  const hasAnalyzed =
+    events?.some((e) => e.event_type === 'listing_analyzed') ||
+    events?.some((e) => e.event_type === 'analysis_completed') ||
+    analysis?.ai_score !== undefined;
   const hasSubmitted =
     events?.some((e) => e.event_type === 'listing_submitted') ||
     listing.status === 'pending_review' ||
@@ -1219,7 +1350,9 @@ export function buildAnalysisTimelineHtml(listing, analysis, events) {
   /** @type {Array<{ label: string, srLabel?: string, done: boolean, time?: string }>} */
   const steps = [
     { label: 'Oluşturuldu', done: Boolean(hasCreated), time: String(listing.created_at ?? '') },
-    { label: 'AI Analizi', srLabel: 'Analiz edildi', done: Boolean(hasAnalyzed) },
+    { label: 'Benzer İlan Kontrolü', done: Boolean(hasDuplicateChecked) },
+    { label: 'Benzer İlan Tespiti', done: Boolean(hasDuplicateDetected) },
+    { label: 'Analiz Tamamlandı', srLabel: 'Analiz edildi', done: Boolean(hasAnalyzed) },
     { label: 'İncelemeye Gönderildi', done: Boolean(hasSubmitted) },
     { label: 'Onaylandı', done: Boolean(hasApproved) },
     { label: 'Arşivlendi', done: Boolean(hasArchived) }
@@ -1334,10 +1467,14 @@ export function buildDashboardTabsHtml(generalHtml, analysisHtml, qualityHtml, e
  * @param {Record<string, unknown>|null|undefined} analysis
  * @param {Array<Record<string, unknown>>|null|undefined} events
  * @param {string} status
+ * @param {Record<string, unknown>|null} [matchedListing]
  * @returns {string}
  */
-export function buildPremiumDashboardHtml(listing, analysis, events, status) {
+export function buildPremiumDashboardHtml(listing, analysis, events, status, matchedListing = null) {
+  const duplicateInsight = buildDuplicateInsightCardHtml(listing, events, matchedListing);
+
   const generalPanel = `
+    ${duplicateInsight}
     <section class="ai-listings-admin__section ai-listings-admin__glass-card">
       <h4 class="ai-listings-admin__section-title">Piyasa Karşılaştırması</h4>
       ${buildMarketAnalysisHtml(listing, analysis)}
