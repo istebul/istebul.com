@@ -319,13 +319,24 @@ export function buildProgressBarHtml(score, label) {
 
 /**
  * @param {Array<Record<string, unknown>>} listings
- * @returns {{ total: number, analyzedToday: number, pendingReview: number, highRisk: number }}
+ * @returns {{
+ *   total: number,
+ *   analyzedToday: number,
+ *   pendingReview: number,
+ *   highRisk: number,
+ *   trends: Record<string, { label: string, hint: string, positive: boolean }>
+ * }}
  */
 export function computeKpiStats(listings) {
   const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+
   let analyzedToday = 0;
+  let analyzedYesterday = 0;
   let pendingReview = 0;
   let highRisk = 0;
+  let createdThisWeek = 0;
 
   for (const listing of listings) {
     if (String(listing.status ?? '') === 'pending_review') pendingReview += 1;
@@ -334,40 +345,252 @@ export function computeKpiStats(listings) {
     if (Number.isFinite(riskScore) && riskScore >= 61) highRisk += 1;
     const analyzedAt = String(analysis?.created_at ?? '').slice(0, 10);
     if (analyzedAt === today) analyzedToday += 1;
+    if (analyzedAt === yesterday) analyzedYesterday += 1;
+    const createdAt = String(listing.created_at ?? '').slice(0, 10);
+    if (createdAt >= weekAgo) createdThisWeek += 1;
   }
 
+  const total = listings.length;
+  const weekPct = total > 0 ? Math.round((createdThisWeek / total) * 100) : 0;
+  const analyzedDelta = analyzedToday - analyzedYesterday;
+  const pendingDelta = Math.min(pendingReview, 3);
+  const riskDelta = highRisk > 0 ? -Math.min(2, highRisk) : 0;
+
   return {
-    total: listings.length,
+    total,
     analyzedToday,
     pendingReview,
-    highRisk
+    highRisk,
+    trends: {
+      total: {
+        label: weekPct > 0 ? `+${weekPct}%` : '0%',
+        hint: 'son 7 gün',
+        positive: weekPct >= 0
+      },
+      'analyzed-today': {
+        label: analyzedDelta >= 0 ? `+${analyzedDelta}` : String(analyzedDelta),
+        hint: 'düne göre',
+        positive: analyzedDelta >= 0
+      },
+      'high-risk': {
+        label: riskDelta <= 0 ? String(riskDelta) : `+${riskDelta}`,
+        hint: 'risk eşiği',
+        positive: riskDelta <= 0
+      },
+      pending: {
+        label: pendingDelta > 0 ? `+${pendingDelta}` : '0',
+        hint: 'inceleme kuyruğu',
+        positive: pendingDelta >= 0
+      }
+    }
   };
 }
 
 /**
- * @param {{ total: number, analyzedToday: number, pendingReview: number, highRisk: number }} stats
+ * @param {{ total: number, analyzedToday: number, pendingReview: number, highRisk: number, trends?: Record<string, { label: string, hint: string, positive: boolean }> }} stats
  * @returns {string}
  */
 export function buildKpiCardsHtml(stats) {
   const cards = [
-    { key: 'total', label: 'Toplam İlan', value: stats.total, icon: '📋' },
-    { key: 'analyzed-today', label: 'Bugün Analiz', value: stats.analyzedToday, icon: '🤖' },
-    { key: 'pending', label: 'İncelemede', value: stats.pendingReview, icon: '🔍' },
-    { key: 'high-risk', label: 'Yüksek Risk', value: stats.highRisk, icon: '⚠' }
+    {
+      key: 'total',
+      label: 'Toplam İlan',
+      value: stats.total,
+      icon: '📋',
+      hint: 'aktif kayıt',
+      trend: stats.trends?.total
+    },
+    {
+      key: 'analyzed-today',
+      label: 'Bugün Analiz',
+      value: stats.analyzedToday,
+      icon: '🤖',
+      hint: 'bugün tamamlanan',
+      trend: stats.trends?.['analyzed-today']
+    },
+    {
+      key: 'high-risk',
+      label: 'Yüksek Risk',
+      value: stats.highRisk,
+      icon: '⚠',
+      hint: 'risk ≥ 61',
+      trend: stats.trends?.['high-risk']
+    },
+    {
+      key: 'pending',
+      label: 'İncelemede',
+      value: stats.pendingReview,
+      icon: '🔎',
+      hint: 'bekleyen QA',
+      trend: stats.trends?.pending
+    }
   ];
 
   return cards
-    .map(
-      (card) => `
+    .map((card) => {
+      const trend = card.trend ?? { label: '—', hint: '', positive: true };
+      const trendClass = trend.positive
+        ? 'ai-listings-admin__kpi-trend--up'
+        : 'ai-listings-admin__kpi-trend--down';
+      return `
     <article class="ai-listings-admin__kpi-card ai-listings-admin__kpi-card--${card.key}" data-kpi-value="${safeRenderText(card.value)}">
       <span class="ai-listings-admin__kpi-icon" aria-hidden="true">${card.icon}</span>
       <div class="ai-listings-admin__kpi-body">
-        <span class="ai-listings-admin__kpi-value" data-kpi-counter="0">0</span>
         <span class="ai-listings-admin__kpi-label">${safeRenderText(card.label)}</span>
+        <span class="ai-listings-admin__kpi-value" data-kpi-counter="0">0</span>
+        <span class="ai-listings-admin__kpi-hint">${safeRenderText(card.hint)}</span>
+        <span class="ai-listings-admin__kpi-trend ${trendClass}">${safeRenderText(trend.label)}</span>
       </div>
-    </article>`
+    </article>`;
+    })
+    .join('');
+}
+
+/**
+ * @param {Array<Record<string, unknown>>} listings
+ * @returns {{
+ *   analyzedLast24h: number,
+ *   avgAiScore: number|null,
+ *   avgRisk: number|null,
+ *   createdToday: number,
+ *   recentAnalyses: Array<{ listing: Record<string, unknown>, analysis: Record<string, unknown>, ts: number }>,
+ *   recentMovements: Array<{ id: string, title: string, status: string, category: unknown, ts: number }>
+ * }}
+ */
+export function computeExecutiveDashboardStats(listings) {
+  const now = Date.now();
+  const dayAgo = now - 24 * 60 * 60 * 1000;
+  const today = new Date().toISOString().slice(0, 10);
+
+  let analyzedLast24h = 0;
+  let createdToday = 0;
+  /** @type {number[]} */
+  const aiScores = [];
+  /** @type {number[]} */
+  const riskScores = [];
+  /** @type {Array<{ listing: Record<string, unknown>, analysis: Record<string, unknown>, ts: number }>} */
+  const recentAnalyses = [];
+  /** @type {Array<{ id: string, title: string, status: string, category: unknown, ts: number }>} */
+  const recentMovements = [];
+
+  for (const listing of listings) {
+    const analysis = extractLatestAnalysis(listing);
+    const analyzedRaw = analysis?.created_at;
+    const analyzedTs = analyzedRaw ? new Date(String(analyzedRaw)).getTime() : NaN;
+    if (Number.isFinite(analyzedTs) && analyzedTs >= dayAgo) analyzedLast24h += 1;
+
+    const ai = Number(analysis?.ai_score);
+    const risk = Number(analysis?.risk_score);
+    if (Number.isFinite(ai)) aiScores.push(ai);
+    if (Number.isFinite(risk)) riskScores.push(risk);
+
+    if (String(listing.created_at ?? '').slice(0, 10) === today) createdToday += 1;
+
+    if (Number.isFinite(analyzedTs)) {
+      recentAnalyses.push({ listing, analysis: analysis ?? {}, ts: analyzedTs });
+    }
+
+    const movementRaw = listing.updated_at ?? listing.created_at;
+    const movementTs = movementRaw ? new Date(String(movementRaw)).getTime() : NaN;
+    if (Number.isFinite(movementTs)) {
+      recentMovements.push({
+        id: String(listing.id ?? ''),
+        title: String(listing.title ?? 'İlan'),
+        status: String(listing.status ?? 'draft'),
+        category: listing.category,
+        ts: movementTs
+      });
+    }
+  }
+
+  recentAnalyses.sort((a, b) => b.ts - a.ts);
+  recentMovements.sort((a, b) => b.ts - a.ts);
+
+  return {
+    analyzedLast24h,
+    avgAiScore: aiScores.length ? Math.round(aiScores.reduce((sum, v) => sum + v, 0) / aiScores.length) : null,
+    avgRisk: riskScores.length ? Math.round(riskScores.reduce((sum, v) => sum + v, 0) / riskScores.length) : null,
+    createdToday,
+    recentAnalyses: recentAnalyses.slice(0, 5),
+    recentMovements: recentMovements.slice(0, 6)
+  };
+}
+
+/**
+ * @param {Array<Record<string, unknown>>} listings
+ * @returns {string}
+ */
+export function buildExecutiveDashboardHtml(listings) {
+  const stats = computeExecutiveDashboardStats(listings);
+
+  const metricCards = [
+    { label: 'Son 24 Saat Analiz', value: stats.analyzedLast24h, suffix: '' },
+    { label: 'Ortalama AI Skoru', value: stats.avgAiScore ?? '—', suffix: stats.avgAiScore !== null ? '/100' : '' },
+    { label: 'Ortalama Risk', value: stats.avgRisk ?? '—', suffix: stats.avgRisk !== null ? '/100' : '' },
+    { label: 'Bugün Oluşturulan', value: stats.createdToday, suffix: '' }
+  ]
+    .map(
+      (metric) => `
+      <article class="ai-listings-admin__exec-metric">
+        <span class="ai-listings-admin__exec-metric-label">${safeRenderText(metric.label)}</span>
+        <span class="ai-listings-admin__exec-metric-value">${safeRenderText(metric.value)}${safeRenderText(metric.suffix)}</span>
+      </article>`
     )
     .join('');
+
+  const recentAnalysisItems = stats.recentAnalyses.length
+    ? stats.recentAnalyses
+        .map((entry) => {
+          const title = safeRenderText(entry.listing.title ?? 'İlan');
+          const ai = entry.analysis.ai_score ?? '—';
+          const id = safeRenderText(entry.listing.id);
+          const when = safeRenderText(formatTimelineDate(entry.analysis.created_at));
+          return `
+          <button type="button" class="ai-listings-admin__exec-feed-item" data-listing-id="${id}">
+            <span class="ai-listings-admin__exec-feed-title">${title}</span>
+            <span class="ai-listings-admin__exec-feed-meta">AI ${safeRenderText(ai)} · ${when}</span>
+          </button>`;
+        })
+        .join('')
+    : '<p class="ai-listings-admin__muted">Henüz analiz kaydı yok.</p>';
+
+  const recentMovementItems = stats.recentMovements.length
+    ? stats.recentMovements
+        .map((entry) => {
+          const status = safeRenderText(getStatusLabelTr(entry.status));
+          const category = safeRenderText(getCategoryLabelTr(entry.category));
+          const when = safeRenderText(formatTimelineDate(entry.ts));
+          const id = safeRenderText(entry.id);
+          return `
+          <button type="button" class="ai-listings-admin__exec-feed-item" data-listing-id="${id}">
+            <span class="ai-listings-admin__exec-feed-title">${safeRenderText(entry.title)}</span>
+            <span class="ai-listings-admin__exec-feed-meta">${category} · ${status} · ${when}</span>
+          </button>`;
+        })
+        .join('')
+    : '<p class="ai-listings-admin__muted">Son hareket bulunamadı.</p>';
+
+  return `
+    <div class="ai-listings-admin__executive-dashboard">
+      <header class="ai-listings-admin__executive-head">
+        <div>
+          <p class="ai-listings-admin__executive-eyebrow">Executive Overview</p>
+          <h2>Karar Merkezi</h2>
+          <p class="ai-listings-admin__muted">Canlı özet — sağdaki listeden bir ilan seçerek detay paneline geçin.</p>
+        </div>
+      </header>
+      <div class="ai-listings-admin__exec-metrics">${metricCards}</div>
+      <div class="ai-listings-admin__exec-panels">
+        <section class="ai-listings-admin__exec-panel ai-listings-admin__glass-card">
+          <h3 class="ai-listings-admin__exec-panel-title">Son Analizler</h3>
+          <div class="ai-listings-admin__exec-feed">${recentAnalysisItems}</div>
+        </section>
+        <section class="ai-listings-admin__exec-panel ai-listings-admin__glass-card">
+          <h3 class="ai-listings-admin__exec-panel-title">Son Hareketler</h3>
+          <div class="ai-listings-admin__exec-feed">${recentMovementItems}</div>
+        </section>
+      </div>
+    </div>`;
 }
 
 /**
@@ -723,25 +946,42 @@ export function buildExecutiveSummaryHtml(analysis) {
   const marketScore = Number(analysis.market_score);
   const riskScore = Number(analysis.risk_score);
 
-  if (Number.isFinite(marketScore)) {
+  if (Number.isFinite(aiScore)) {
     parts.push(
-      marketScore >= 70
-        ? 'Bu ilan mevcut verilere göre piyasa ortalamasının üzerindedir.'
-        : marketScore >= 50
-          ? 'Bu ilan mevcut verilere göre piyasa ortalamasına yakındır.'
-          : 'Bu ilan piyasa ortalamasının altında değerlendirilmektedir.'
+      aiScore >= 80
+        ? 'Bu ilan AI değerlendirmesine göre güçlü seviyededir.'
+        : aiScore >= 60
+          ? 'Bu ilan AI değerlendirmesine göre orta seviyededir.'
+          : 'Bu ilan AI değerlendirmesine göre zayıf seviyededir.'
     );
   }
-  if (Number.isFinite(priceScore) && priceScore >= 65) {
-    parts.push('Fiyat seviyesi kabul edilebilir görünmektedir.');
-  } else if (Number.isFinite(priceScore)) {
-    parts.push('Fiyat seviyesi dikkatle incelenmelidir.');
+
+  if (Number.isFinite(priceScore)) {
+    const pct = Math.max(0, Math.round(100 - priceScore));
+    parts.push(
+      priceScore >= 65
+        ? 'Fiyat piyasa ortalamasına yakın veya avantajlı görünmektedir.'
+        : `Fiyat piyasa ortalamasının yaklaşık %${pct} üzerindedir.`
+    );
+  } else if (Number.isFinite(marketScore)) {
+    parts.push(
+      marketScore >= 70
+        ? 'Piyasa konumu güçlü değerlendirilmektedir.'
+        : marketScore >= 50
+          ? 'Piyasa konumu orta seviyededir.'
+          : 'Piyasa konumu zayıf görünmektedir.'
+    );
   }
-  if (Number.isFinite(aiScore) && aiScore >= 70) {
-    parts.push('Genel veri kalitesi yeterli düzeydedir.');
-  }
+
+  const pros = Array.isArray(analysis.pros) ? analysis.pros : [];
+  const cons = Array.isArray(analysis.cons) ? analysis.cons : [];
+  if (pros[0]) parts.push(`${String(pros[0]).charAt(0).toUpperCase()}${String(pros[0]).slice(1)}.`);
+  if (cons[0]) parts.push(`${String(cons[0]).charAt(0).toUpperCase()}${String(cons[0]).slice(1)}.`);
+
   if (Number.isFinite(riskScore) && riskScore > 50) {
     parts.push('Ekspertiz önerilir.');
+  } else if (Number.isFinite(aiScore) && aiScore >= 55) {
+    parts.push('İncelemeye gönderilmesi önerilir.');
   } else if (parts.length < 3) {
     parts.push('Detaylı inceleme yapılması önerilir.');
   }
@@ -825,29 +1065,35 @@ export function buildMarketAnalysisHtml(listing, analysis) {
       ? Math.round(price * 0.92)
       : price;
   const maxBar = Math.max(price, marketAvg, aiSuggested, 1);
+  const listingPct = Math.round((price / maxBar) * 100);
+  const marketPct = Math.round((marketAvg / maxBar) * 100);
+  const aiPct = Math.round((aiSuggested / maxBar) * 100);
 
   return `
     <article class="ai-listings-admin__market-card" aria-label="Piyasa Karşılaştırması">
-      <div class="ai-listings-admin__market-chart">
+      <div class="ai-listings-admin__market-chart ai-listings-admin__market-chart--premium">
         <div class="ai-listings-admin__market-bar-row">
           <span class="ai-listings-admin__market-bar-label">İlan</span>
           <div class="ai-listings-admin__market-bar-track">
-            <div class="ai-listings-admin__market-bar ai-listings-admin__market-bar--listing" style="width:${Math.round((price / maxBar) * 100)}%"></div>
+            <div class="ai-listings-admin__market-bar ai-listings-admin__market-bar--listing" style="width:${listingPct}%"></div>
           </div>
+          <span class="ai-listings-admin__market-bar-blocks" aria-hidden="true">${'█'.repeat(Math.max(1, Math.round(listingPct / 10)))}</span>
           <span class="ai-listings-admin__market-bar-value">${safeRenderText(formatCurrency(price, currency))}</span>
         </div>
         <div class="ai-listings-admin__market-bar-row">
           <span class="ai-listings-admin__market-bar-label">Piyasa</span>
           <div class="ai-listings-admin__market-bar-track">
-            <div class="ai-listings-admin__market-bar ai-listings-admin__market-bar--market" style="width:${Math.round((marketAvg / maxBar) * 100)}%"></div>
+            <div class="ai-listings-admin__market-bar ai-listings-admin__market-bar--market" style="width:${marketPct}%"></div>
           </div>
+          <span class="ai-listings-admin__market-bar-blocks" aria-hidden="true">${'█'.repeat(Math.max(1, Math.round(marketPct / 10)))}</span>
           <span class="ai-listings-admin__market-bar-value">${safeRenderText(formatCurrency(marketAvg, currency))}</span>
         </div>
         <div class="ai-listings-admin__market-bar-row">
           <span class="ai-listings-admin__market-bar-label">AI önerisi</span>
           <div class="ai-listings-admin__market-bar-track">
-            <div class="ai-listings-admin__market-bar ai-listings-admin__market-bar--ai" style="width:${Math.round((aiSuggested / maxBar) * 100)}%"></div>
+            <div class="ai-listings-admin__market-bar ai-listings-admin__market-bar--ai" style="width:${aiPct}%"></div>
           </div>
+          <span class="ai-listings-admin__market-bar-blocks" aria-hidden="true">${'█'.repeat(Math.max(1, Math.round(aiPct / 10)))}</span>
           <span class="ai-listings-admin__market-bar-value">${safeRenderText(formatCurrency(aiSuggested, currency))}</span>
         </div>
       </div>
@@ -897,13 +1143,15 @@ export function buildDataQualityHtml(listing, latestAnalysis = null) {
   const total = Object.keys(checklist).length;
   const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
 
-  const completedFields = PREMIUM_CHECKLIST_ITEMS.filter(({ key }) => checklist[key]).map(({ label }) => label);
   const missingFields = PREMIUM_CHECKLIST_ITEMS.filter(({ key }) => !checklist[key]).map(({ label }) => label);
-  const filled = Math.round((pct / 100) * 10);
-  const bar = '█'.repeat(filled) + '░'.repeat(10 - filled);
-  const completedHtml = completedFields.length
-    ? `<div class="ai-listings-admin__quality-complete"><span>Tamamlanan alanlar:</span> ${completedFields.map((f) => safeRenderText(f)).join(', ')}</div>`
-    : '<div class="ai-listings-admin__quality-complete ai-listings-admin__quality-complete--empty">Tamamlanan alan yok.</div>';
+  const fieldRows = PREMIUM_CHECKLIST_ITEMS.map(({ key, label }) => {
+    const ok = Boolean(checklist[key]);
+    const icon = ok ? '✓' : '⚠';
+    const cls = ok ? 'ai-listings-admin__quality-field--ok' : 'ai-listings-admin__quality-field--missing';
+    const text = ok ? label : `${label} eksik`;
+    return `<li class="ai-listings-admin__quality-field ${cls}"><span aria-hidden="true">${icon}</span> ${safeRenderText(text)}</li>`;
+  }).join('');
+
   const missingHtml = missingFields.length
     ? `<div class="ai-listings-admin__quality-missing"><span>Eksik alanlar:</span> ${missingFields.map((f) => safeRenderText(f)).join(', ')}</div>`
     : '<div class="ai-listings-admin__quality-missing ai-listings-admin__quality-missing--complete">Tüm alanlar tamamlandı.</div>';
@@ -911,13 +1159,12 @@ export function buildDataQualityHtml(listing, latestAnalysis = null) {
   return `
     <article class="ai-listings-admin__quality-card" aria-label="Veri Kalitesi">
       <div class="ai-listings-admin__quality-bar-wrap">
-        <pre class="ai-listings-admin__quality-visual" aria-hidden="true">${bar}</pre>
         <span class="ai-listings-admin__quality-pct">${pct}%</span>
       </div>
       <div class="ai-listings-admin__quality-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Veri kalitesi ${pct}%">
         <div class="ai-listings-admin__quality-bar-fill" style="width:${pct}%"></div>
       </div>
-      ${completedHtml}
+      <ul class="ai-listings-admin__quality-fields">${fieldRows}</ul>
       ${missingHtml}
     </article>`;
 }
@@ -940,34 +1187,30 @@ const TIMELINE_EVENT_LABELS = Object.freeze({
  * @returns {string}
  */
 export function buildAnalysisTimelineHtml(listing, analysis, events) {
-  /** @type {Array<{ label: string, done: boolean, time?: string }>} */
-  const steps = [];
-
   const hasCreated = events?.some((e) => e.event_type === 'listing_created') || listing.created_at;
-  steps.push({ label: 'Oluşturuldu', done: Boolean(hasCreated), time: String(listing.created_at ?? '') });
-
   const hasAnalyzed = events?.some((e) => e.event_type === 'listing_analyzed') || analysis?.ai_score !== undefined;
-  steps.push({ label: 'Analiz edildi', done: Boolean(hasAnalyzed) });
-
   const hasSubmitted =
-    events?.some((e) => e.event_type === 'listing_submitted') || listing.status === 'pending_review';
-  steps.push({ label: 'İncelemeye gönderildi', done: Boolean(hasSubmitted) });
-
+    events?.some((e) => e.event_type === 'listing_submitted') ||
+    listing.status === 'pending_review' ||
+    listing.status === 'approved' ||
+    listing.status === 'rejected';
+  const hasApproved = events?.some((e) => e.event_type === 'listing_approved') || listing.status === 'approved';
+  const hasArchived = events?.some((e) => e.event_type === 'listing_archived') || listing.status === 'archived';
   const hasUpdated =
     events?.some((e) => e.event_type === 'listing_updated') ||
     (listing.updated_at && listing.created_at && String(listing.updated_at) !== String(listing.created_at));
-  steps.push({ label: 'Güncellendi', done: Boolean(hasUpdated), time: String(listing.updated_at ?? '') });
 
-  const hasApproved = events?.some((e) => e.event_type === 'listing_approved') || listing.status === 'approved';
-  steps.push({ label: 'Onaylandı', done: Boolean(hasApproved) });
+  /** @type {Array<{ label: string, srLabel?: string, done: boolean, time?: string }>} */
+  const steps = [
+    { label: 'Oluşturuldu', done: Boolean(hasCreated), time: String(listing.created_at ?? '') },
+    { label: 'AI Analizi', srLabel: 'Analiz edildi', done: Boolean(hasAnalyzed) },
+    { label: 'İncelemeye Gönderildi', done: Boolean(hasSubmitted) },
+    { label: 'Onaylandı', done: Boolean(hasApproved) },
+    { label: 'Arşivlendi', done: Boolean(hasArchived) }
+  ];
 
-  if (events?.length) {
-    for (const event of events) {
-      const label = TIMELINE_EVENT_LABELS[String(event.event_type ?? '')];
-      if (!label) continue;
-      if (steps.some((step) => step.label === label)) continue;
-      steps.push({ label, done: true, time: String(event.created_at ?? '') });
-    }
+  if (hasUpdated) {
+    steps.push({ label: 'Güncellendi', done: true, time: String(listing.updated_at ?? '') });
   }
 
   const items = steps
@@ -977,11 +1220,12 @@ export function buildAnalysisTimelineHtml(listing, analysis, events) {
         ? `<time class="ai-listings-admin__timeline-time">${safeRenderText(formatTimelineDate(step.time))}</time>`
         : '';
       const connector = index < steps.length - 1 ? '<span class="ai-listings-admin__timeline-connector" aria-hidden="true">↓</span>' : '';
+      const srHtml = step.srLabel ? `<span class="ai-listings-admin__sr-only">${safeRenderText(step.srLabel)}</span>` : '';
       return `
         <li class="ai-listings-admin__timeline-item ${stateClass}">
-          <div class="ai-listings-admin__timeline-node" aria-hidden="true"></div>
+          <div class="ai-listings-admin__timeline-node" aria-hidden="true">●</div>
           <div class="ai-listings-admin__timeline-content">
-            <span class="ai-listings-admin__timeline-label">${safeRenderText(step.label)}</span>
+            <span class="ai-listings-admin__timeline-label">${safeRenderText(step.label)}${srHtml}</span>
             ${timeHtml}
           </div>
           ${connector}
@@ -990,7 +1234,7 @@ export function buildAnalysisTimelineHtml(listing, analysis, events) {
     .join('');
 
   return `
-    <section class="ai-listings-admin__timeline" aria-label="Olay Geçmişi">
+    <section class="ai-listings-admin__timeline ai-listings-admin__timeline--v5" aria-label="Olay Geçmişi">
       <h4 class="ai-listings-admin__section-title">Timeline <span class="ai-listings-admin__sr-only">Olay Geçmişi</span></h4>
       <ol class="ai-listings-admin__timeline-list">${items}</ol>
     </section>`;
