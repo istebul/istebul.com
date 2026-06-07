@@ -2335,3 +2335,216 @@
   margin: 0;
   padding-left: 1.1rem;
 }
+
+/* Repository view (Sprint-11) */
+.ai-listings-admin__view-nav {
+  display: flex;
+  gap: calc(var(--ai-grid) * 0.75);
+  margin-bottom: calc(var(--ai-grid) * 2);
+  padding: calc(var(--ai-grid) * 0.5);
+  border-radius: calc(var(--ai-radius) * 0.75);
+  background: rgba(14, 20, 34, 0.55);
+  border: 1px solid var(--ai-border);
+  width: fit-content;
+}
+
+.ai-listings-admin__view-tab {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ai-muted);
+  padding: calc(var(--ai-grid) * 0.75) calc(var(--ai-grid) * 1.5);
+  border-radius: calc(var(--ai-radius) * 0.5);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.ai-listings-admin__view-tab:hover {
+  color: var(--ai-text);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.ai-listings-admin__view-tab--active {
+  color: var(--ai-text);
+  background: rgba(37, 99, 235, 0.18);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.ai-listings-admin__kpi-row--repo {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.ai-listings-admin__repo-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ai-grid) * 2);
+}
+
+.ai-listings-admin__repo-head h2 {
+  margin: 0 0 calc(var(--ai-grid) * 0.5);
+  font-size: 1.35rem;
+}
+
+.ai-listings-admin__repo-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: calc(var(--ai-grid) * 1.25);
+  padding: calc(var(--ai-grid) * 2);
+  border-radius: var(--ai-radius);
+  background: var(--ai-surface);
+  border: 1px solid var(--ai-border);
+  backdrop-filter: blur(12px);
+}
+
+.ai-listings-admin__repo-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ai-grid) * 0.35);
+}
+
+.ai-listings-admin__repo-summary-label {
+  font-size: 0.72rem;
+  color: var(--ai-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ai-listings-admin__repo-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ai-grid) * 0.75);
+}
+
+.ai-listings-admin__repo-tab {
+  appearance: none;
+  border: 1px solid var(--ai-border);
+  background: rgba(14, 20, 34, 0.6);
+  color: var(--ai-muted);
+  padding: calc(var(--ai-grid) * 0.65) calc(var(--ai-grid) * 1.25);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.ai-listings-admin__repo-tab--active {
+  color: var(--ai-text);
+  border-color: rgba(59, 130, 246, 0.45);
+  background: rgba(37, 99, 235, 0.16);
+}
+
+.ai-listings-admin__repo-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ai-grid) * 0.75);
+}
+
+.ai-listings-admin__repo-count {
+  margin: 0;
+  color: var(--ai-muted);
+  font-size: 0.8125rem;
+}
+
+.ai-listings-admin__repo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: calc(var(--ai-grid) * 1.5);
+}
+
+.ai-listings-admin__repo-card {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ai-grid) * 1.25);
+  padding: calc(var(--ai-grid) * 1.75);
+  border-radius: var(--ai-radius);
+  background: rgba(14, 20, 34, 0.55);
+  border: 1px solid var(--ai-border);
+  cursor: pointer;
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
+}
+
+.ai-listings-admin__repo-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.45);
+  background: rgba(20, 28, 44, 0.82);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  outline: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.ai-listings-admin__repo-card--active {
+  border-color: rgba(59, 130, 246, 0.55);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25);
+}
+
+.ai-listings-admin__repo-card--duplicate {
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.ai-listings-admin__repo-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ai-grid) * 0.5);
+}
+
+.ai-listings-admin__repo-card-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+
+.ai-listings-admin__repo-card-category {
+  font-size: 0.75rem;
+  color: var(--ai-muted);
+}
+
+.ai-listings-admin__repo-card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--ai-grid) * 0.5);
+}
+
+.ai-listings-admin__repo-metric {
+  font-size: 0.75rem;
+  color: rgba(203, 213, 225, 0.92);
+}
+
+.ai-listings-admin__repo-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--ai-grid) * 0.75);
+  margin-top: auto;
+}
+
+.ai-listings-admin__repo-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--ai-border);
+}
+
+.ai-listings-admin__repo-badge--dup {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.ai-listings-admin__repo-badge--source {
+  color: #93c5fd;
+  border-color: rgba(147, 197, 253, 0.25);
+}
+
+.ai-listings-admin__repo-date {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  color: var(--ai-muted);
+}

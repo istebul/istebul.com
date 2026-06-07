@@ -41,6 +41,11 @@ import { runDuplicateEngine } from '../../supabase/functions/_shared/ai-listings
 import { IMPORT_MAX_ROWS } from '../../supabase/functions/_shared/ai-listings/import-parser.js';
 import { buildAcquisitionEventPayload } from '../../supabase/functions/_shared/ai-listings/acquisition/acquisition-events.js';
 import { runAiListingBuilder, logBuilderStage, logBuilderError } from '../ai-listings-builder/index.js';
+import {
+  buildRepositoryDashboardHtml,
+  buildRepositoryKpiCardsHtml
+} from './ai-listings-repository-admin.js';
+import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
@@ -77,6 +82,18 @@ let pendingBuilderResult = null;
 
 /** @type {string} */
 let lastKpiStatsKey = '';
+
+/** @type {'decision'|'repository'} */
+let activeAdminView = 'decision';
+
+/** @type {string} */
+let repoCategoryTab = 'all';
+
+/** @type {string[]} */
+let repoFilters = [];
+
+/** @type {string} */
+let lastRepoKpiStatsKey = '';
 
 function $(id) {
   return document.getElementById(id);
@@ -166,12 +183,16 @@ function renderStatusFilterChips() {
   });
 }
 
-function animateKpiCounters() {
+function animateKpiCounters(root = document) {
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.querySelectorAll('[data-kpi-counter]').forEach((el) => {
+  root.querySelectorAll('[data-kpi-counter]').forEach((el) => {
     const card = el.closest('[data-kpi-value]');
-    const target = Number(card?.getAttribute('data-kpi-value') ?? 0);
-    if (!Number.isFinite(target)) return;
+    const targetRaw = card?.getAttribute('data-kpi-value') ?? '0';
+    const target = Number(targetRaw);
+    if (!Number.isFinite(target)) {
+      el.textContent = String(targetRaw);
+      return;
+    }
     if (prefersReduced) {
       el.textContent = String(target);
       return;
@@ -196,7 +217,93 @@ function renderKpiCards(listings) {
   if (statsKey === lastKpiStatsKey && kpiEl.childElementCount > 0) return;
   lastKpiStatsKey = statsKey;
   kpiEl.innerHTML = buildKpiCardsHtml(stats);
-  animateKpiCounters();
+  if (activeAdminView === 'decision') animateKpiCounters(kpiEl);
+}
+
+function renderRepositoryKpiCards(listings) {
+  const kpiEl = $('ai-listings-repo-kpi');
+  if (!kpiEl) return;
+  const { query } = buildRepositoryDashboardHtml(listings, {
+    categoryTab: repoCategoryTab,
+    filters: repoFilters,
+    search: searchQuery
+  });
+  const statsKey = JSON.stringify(query.stats);
+  if (statsKey === lastRepoKpiStatsKey && kpiEl.childElementCount > 0) return;
+  lastRepoKpiStatsKey = statsKey;
+  kpiEl.innerHTML = buildRepositoryKpiCardsHtml(query.stats);
+  if (activeAdminView === 'repository') animateKpiCounters(kpiEl);
+}
+
+function setAdminView(view) {
+  const next = view === 'repository' ? 'repository' : 'decision';
+  activeAdminView = next;
+
+  document.querySelectorAll('[data-admin-view]').forEach((tab) => {
+    const isActive = tab.getAttribute('data-admin-view') === next;
+    tab.classList.toggle('ai-listings-admin__view-tab--active', isActive);
+    tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  $('ai-listings-kpi')?.toggleAttribute('hidden', next === 'repository');
+  $('ai-listings-repo-kpi')?.toggleAttribute('hidden', next !== 'repository');
+  $('ai-listings-sidebar')?.toggleAttribute('hidden', next === 'repository');
+
+  if (next === 'repository') {
+    selectedListing = null;
+    renderRepositoryView();
+    renderRepositoryKpiCards(cachedListings);
+  } else {
+    renderExecutiveDashboard();
+    renderKpiCards(cachedListings);
+  }
+}
+
+function bindRepositoryDashboardEvents(root) {
+  root.querySelectorAll('[data-repo-category-tab]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      repoCategoryTab = tab.getAttribute('data-repo-category-tab') ?? 'all';
+      renderRepositoryView();
+      renderRepositoryKpiCards(cachedListings);
+    });
+  });
+
+  root.querySelectorAll('[data-repo-filter]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const filterId = chip.getAttribute('data-repo-filter') ?? '';
+      repoFilters = toggleRepositoryFilter(repoFilters, filterId);
+      renderRepositoryView();
+      renderRepositoryKpiCards(cachedListings);
+    });
+  });
+
+  root.querySelectorAll('[data-repo-record-id]').forEach((card) => {
+    card.addEventListener('click', () => {
+      const id = card.getAttribute('data-repo-record-id');
+      const listing = cachedListings.find((item) => String(item.id) === id);
+      if (listing) {
+        activeAdminView = 'decision';
+        setAdminView('decision');
+        void showListingDetail(listing);
+      }
+    });
+  });
+}
+
+function renderRepositoryView() {
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+
+  const { html } = buildRepositoryDashboardHtml(cachedListings, {
+    categoryTab: repoCategoryTab,
+    filters: repoFilters,
+    search: searchQuery,
+    selectedId: selectedListing?.id ?? null
+  });
+
+  detailEl.innerHTML = html;
+  bindRepositoryDashboardEvents(detailEl);
+  clearTimelineHost();
 }
 
 function bindExecutiveDashboardEvents(root) {
@@ -690,10 +797,13 @@ async function loadListings() {
 
   cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
   renderKpiCards(cachedListings);
+  renderRepositoryKpiCards(cachedListings);
   renderListingsList(cachedListings);
   if (selectedListing) {
     const refreshed = cachedListings.find((item) => String(item.id) === String(selectedListing.id));
     if (refreshed) selectedListing = refreshed;
+  } else if (activeAdminView === 'repository') {
+    renderRepositoryView();
   } else {
     renderExecutiveDashboard();
   }
@@ -1219,7 +1329,18 @@ function bindEvents() {
 
   $('ai-listings-search')?.addEventListener('input', (event) => {
     searchQuery = /** @type {HTMLInputElement} */ (event.target).value;
-    renderListingsList(cachedListings);
+    if (activeAdminView === 'repository') {
+      renderRepositoryView();
+      renderRepositoryKpiCards(cachedListings);
+    } else {
+      renderListingsList(cachedListings);
+    }
+  });
+
+  document.querySelectorAll('[data-admin-view]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      setAdminView(tab.getAttribute('data-admin-view') ?? 'decision');
+    });
   });
 
   ['ai-listings-filter-category', 'ai-listings-filter-source', 'ai-listings-filter-limit'].forEach((id) => {
@@ -1253,8 +1374,7 @@ export function initAiListingsAdmin() {
 
   renderStatusFilterChips();
   bindEvents();
-  renderExecutiveDashboard();
-  renderKpiCards([]);
+  setAdminView('decision');
   loadListings();
 }
 

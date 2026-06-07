@@ -7,7 +7,7 @@
   <meta name="description" content="Yapay zeka karar merkezi — iç ilan yönetim paneli">
   <title>AI Decision Center | Yapay Zeka İlanları Admin</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="stylesheet" href="/css/admin-ai-listings.css?v=5">
+  <link rel="stylesheet" href="/css/admin-ai-listings.css?v=6">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/admin/ai-listings-admin.js"></script>
 </head>
@@ -52,7 +52,13 @@
     <div id="ai-listings-secret-warning" class="ai-listings-admin__warning" hidden></div>
     <p id="ai-listings-status" class="ai-listings-admin__status" aria-live="polite"></p>
 
+    <nav id="ai-listings-view-nav" class="ai-listings-admin__view-nav" aria-label="Admin görünümü">
+      <button type="button" class="ai-listings-admin__view-tab ai-listings-admin__view-tab--active" data-admin-view="decision" aria-selected="true">Karar Merkezi</button>
+      <button type="button" class="ai-listings-admin__view-tab" data-admin-view="repository" aria-selected="false">Repository</button>
+    </nav>
+
     <section id="ai-listings-kpi" class="ai-listings-admin__kpi-row" aria-label="Özet metrikler"></section>
+    <section id="ai-listings-repo-kpi" class="ai-listings-admin__kpi-row ai-listings-admin__kpi-row--repo" aria-label="Repository metrikleri" hidden></section>
 
     <div class="ai-listings-admin__workspace">
       <section class="ai-listings-admin__center" id="ai-listings-center-panel" aria-label="AI Karar Merkezi">
