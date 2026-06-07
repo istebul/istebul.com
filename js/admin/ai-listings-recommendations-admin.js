@@ -15,6 +15,7 @@ import { buildRecommendationCardsGridHtml } from '../ai-recommendation-engine/re
 import { buildDecisionCoachShellHtml } from '../ai-decision-coach/coach-card-builder.js';
 import { buildSimulatorShellHtml } from '../ai-decision-simulator/simulator-card-builder.js';
 import { buildDecisionReportShellHtml } from '../ai-decision-report/report-card-builder.js';
+import { runDecisionFlow, buildCalibrationBlockHtml } from '../ai-decision-flow/index.js';
 
 /**
  * @param {unknown} value
@@ -114,6 +115,12 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
   const result = options.generated ? runRecommendationEngine(listings, parsedProfile) : null;
 
   const summaryHtml = result ? buildRecommendationSummaryHtml(result.summary) : '';
+  const calibrationHtml =
+    result && result.top?.length
+      ? buildCalibrationBlockHtml(
+          runDecisionFlow(listings, parsedProfile, { selectedId: String(result.top[0].id) }).calibration
+        )
+      : '';
   const cardsHtml = result ? buildRecommendationCardsGridHtml(result.top) : '';
   const countLabel = result
     ? `${result.top.length} öneri · ${result.total_evaluated} kayıt değerlendirildi`
@@ -128,6 +135,7 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
       ${buildRecommendationProfileFormHtml(parsedProfile)}
       <p class="ai-rec-dashboard__count">${safeRenderText(countLabel)}</p>
       ${summaryHtml}
+      ${calibrationHtml}
       ${cardsHtml}
       ${buildDecisionCoachShellHtml()}
       ${buildSimulatorShellHtml()}
