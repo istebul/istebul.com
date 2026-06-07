@@ -7,6 +7,12 @@ import { logBuilderStage } from './debug-log.js';
 import { normalizeCanonicalListing } from '../../supabase/functions/_shared/ai-listings/engine/canonical-engine.js';
 import { runMarketIntelligence } from '../ai-listings-engine/market-intelligence/market-intelligence.js';
 import { buildMarketIntelligencePreviewHtml } from '../ai-listings-engine/market-intelligence/market-summary.js';
+import { runQualityEngine } from '../../supabase/functions/_shared/ai-listings/engine/quality-engine.js';
+import { runMarketEngine } from '../../supabase/functions/_shared/ai-listings/engine/market-engine.js';
+import { runRiskEngine } from '../../supabase/functions/_shared/ai-listings/engine/risk-engine.js';
+import { runDecisionEngine } from '../../supabase/functions/_shared/ai-listings/engine/decision-engine.js';
+import { runExecutiveEngine } from '../ai-listings-engine/executive/executive-engine.js';
+import { buildExecutivePreviewHtml } from '../ai-listings-engine/executive/executive-preview.js';
 
 /** @type {Readonly<Record<string, string>>} */
 const INPUT_TYPE_LABELS = Object.freeze({
@@ -62,6 +68,20 @@ export function buildPreviewHtml(canonical) {
   const marketIntelligence = runMarketIntelligence(marketListing);
   const marketIntelligenceHtml = buildMarketIntelligencePreviewHtml(marketIntelligence);
 
+  const quality = runQualityEngine(marketListing);
+  const market = runMarketEngine(marketListing);
+  const risk = runRiskEngine(marketListing, quality);
+  const decision = runDecisionEngine(marketListing, quality, market, risk);
+  const executive = runExecutiveEngine(marketListing, {
+    quality,
+    price_intelligence: market,
+    market_intelligence: marketIntelligence,
+    risk,
+    duplicate: null,
+    decision
+  });
+  const executivePreviewHtml = buildExecutivePreviewHtml(executive);
+
   const html = `
     <section class="ai-listings-builder__preview" data-builder-preview>
       <header class="ai-listings-builder__preview-head">
@@ -93,6 +113,7 @@ export function buildPreviewHtml(canonical) {
         ${warningsHtml}
       </div>
       ${marketIntelligenceHtml}
+      ${executivePreviewHtml}
       <details class="ai-listings-builder__json-details">
         <summary>JSON önizleme</summary>
         <pre class="ai-listings-builder__json">${escapeHtml(buildPreviewJson(canonical))}</pre>
