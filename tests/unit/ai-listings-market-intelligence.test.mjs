@@ -327,9 +327,8 @@ test('buildMarketIntelligenceCardHtml renders admin card fields', () => {
   assert.match(html, /Premium Sedan/);
   assert.match(html, /Talep/);
   assert.match(html, /Likidite/);
-  assert.match(html, /Piyasa Bağlam Skoru/);
   assert.match(html, /Eğilim/);
-  assert.match(html, /Nedenler/);
+  assert.doesNotMatch(html, /Piyasa Bağlam Skoru/);
 });
 
 test('resolveMarketIntelligenceForListing falls back when tags missing', () => {
