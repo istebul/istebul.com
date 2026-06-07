@@ -1,8 +1,19 @@
 /**
- * AI Listings Search — tokenizer with Turkish normalization (Sprint-15).
+ * AI Listings Search — tokenizer with Turkish normalization (Sprint-16 v2).
+ * Cached tokenizer for performance at 10k+ records.
  */
 
 import { normalizeText, normalizeToken } from './normalizer.js';
+
+/** @type {Map<string, string[]>} */
+const tokenCache = new Map();
+
+/**
+ * Clear tokenizer cache (testing).
+ */
+export function clearTokenCache() {
+  tokenCache.clear();
+}
 
 /**
  * @param {unknown} value
@@ -11,7 +22,19 @@ import { normalizeText, normalizeToken } from './normalizer.js';
 export function tokenize(value) {
   const normalized = normalizeText(value);
   if (!normalized) return [];
-  return normalized.split(' ').map((token) => normalizeToken(token)).filter(Boolean);
+
+  const cached = tokenCache.get(normalized);
+  if (cached) return cached;
+
+  const tokens = normalized.split(' ').map((token) => normalizeToken(token)).filter(Boolean);
+  tokenCache.set(normalized, tokens);
+
+  if (tokenCache.size > 1000) {
+    const oldest = tokenCache.keys().next().value;
+    if (oldest) tokenCache.delete(oldest);
+  }
+
+  return tokens;
 }
 
 /**
@@ -39,13 +62,18 @@ export function buildTokenIndex(documents) {
       doc.description,
       doc.brand,
       doc.model,
+      doc.year,
       doc.fuel,
       doc.transmission,
       doc.body_type,
       doc.segment,
       doc.executive_label,
       doc.source,
-      doc.category
+      doc.category,
+      doc.searchableText,
+      doc.normalizedText,
+      Array.isArray(doc.tags) ? doc.tags.join(' ') : doc.tags,
+      doc.features
     ];
 
     const tokens = new Set();
@@ -63,4 +91,45 @@ export function buildTokenIndex(documents) {
   }
 
   return index;
+}
+
+/**
+ * @param {Map<string, Set<string>>} tokenIndex
+ * @param {string[]} queryTokens
+ * @returns {Set<string>|null}
+ */
+export function findCandidateIds(tokenIndex, queryTokens) {
+  const tokens = queryTokens.filter((token) => token.length >= 2);
+  if (!tokens.length) return null;
+
+  /** @type {Set<string>|null} */
+  let candidates = null;
+
+  for (const token of tokens) {
+    const bucket = tokenIndex.get(token);
+    if (!bucket || !bucket.size) continue;
+
+    if (!candidates) {
+      candidates = new Set(bucket);
+    } else {
+      for (const id of candidates) {
+        if (!bucket.has(id)) candidates.delete(id);
+      }
+    }
+
+    if (candidates.size === 0) break;
+  }
+
+  if (candidates && candidates.size > 0) return candidates;
+
+  /** @type {Set<string>} */
+  const union = new Set();
+  for (const token of tokens) {
+    const bucket = tokenIndex.get(token);
+    if (bucket) {
+      for (const id of bucket) union.add(id);
+    }
+  }
+
+  return union.size > 0 ? union : null;
 }

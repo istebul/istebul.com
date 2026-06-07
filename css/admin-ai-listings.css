@@ -2659,6 +2659,62 @@
   border: 1px solid rgba(34, 197, 94, 0.25);
 }
 
+.ai-listings-admin__repo-similarity-label {
+  grid-column: 1 / -1;
+  font-weight: 600;
+  color: #86efac;
+}
+
+.ai-listings-admin__repo-stars {
+  grid-column: 1 / -1;
+  letter-spacing: 0.1em;
+  color: #fbbf24;
+  font-size: 0.85rem;
+}
+
+.ai-listings-admin__repo-match-reasons {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.45rem;
+  background: rgba(30, 41, 59, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.ai-listings-admin__repo-match-reasons-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ai-muted);
+}
+
+.ai-listings-admin__repo-match-reasons-list {
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  white-space: pre-line;
+  color: #cbd5e1;
+}
+
+.ai-listings-admin__repo-search-summary-count {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.ai-listings-admin__repo-search-summary-row,
+.ai-listings-admin__repo-search-summary-top {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0.2rem 0;
+  font-size: 0.85rem;
+}
+
+.ai-listings-admin__repo-search-summary-row span,
+.ai-listings-admin__repo-search-summary-top span {
+  color: var(--ai-muted);
+  min-width: 5rem;
+}
+
 .ai-listings-admin__repo-card-details {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));

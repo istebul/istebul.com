@@ -308,15 +308,48 @@ export function buildAiSearchSectionHtml(aiSearchQuery = '', suggestions = []) {
 }
 
 /**
- * @param {{ message: string }} summary
+ * @param {{
+ *   message: string,
+ *   brand_label?: string|null,
+ *   model_label?: string|null,
+ *   feature_label?: string|null,
+ *   top_match_title?: string|null
+ * }} summary
  * @returns {string}
  */
 export function buildSearchResultSummaryHtml(summary) {
-  const lines = String(summary.message ?? '').split('\n');
-  return `
+  const lines = String(summary.message ?? '').split('\n').filter((line) => line.trim().length > 0);
+  const hasStructured =
+    summary.brand_label || summary.model_label || summary.feature_label || summary.top_match_title;
+
+  if (!hasStructured) {
+    return `
     <p class="ai-listings-admin__repo-search-summary" aria-live="polite">
       ${lines.map((line) => safeRenderText(line)).join('<br>')}
     </p>`;
+  }
+
+  const detailRows = [];
+  if (summary.brand_label) {
+    detailRows.push(`<div class="ai-listings-admin__repo-search-summary-row"><span>Marka:</span><strong>${safeRenderText(summary.brand_label)}</strong></div>`);
+  }
+  if (summary.model_label) {
+    detailRows.push(`<div class="ai-listings-admin__repo-search-summary-row"><span>Model:</span><strong>${safeRenderText(summary.model_label)}</strong></div>`);
+  }
+  if (summary.feature_label) {
+    detailRows.push(`<div class="ai-listings-admin__repo-search-summary-row"><span>Özellik:</span><strong>${safeRenderText(summary.feature_label)}</strong></div>`);
+  }
+
+  const topMatch = summary.top_match_title
+    ? `<div class="ai-listings-admin__repo-search-summary-top"><span>En iyi eşleşme:</span><strong>${safeRenderText(summary.top_match_title)}</strong></div>`
+    : '';
+
+  return `
+    <div class="ai-listings-admin__repo-search-summary" aria-live="polite">
+      <p class="ai-listings-admin__repo-search-summary-count">${safeRenderText(lines[0] ?? '')}</p>
+      ${detailRows.join('')}
+      ${topMatch}
+    </div>`;
 }
 
 /**
@@ -337,19 +370,35 @@ export function buildRepositoryCardHtml(record, isActive = false, isSearchResult
     ? String(record.highlighted.title)
     : safeRenderText(record.title || '—');
 
+  const similarityPercent = Number(record.similarity_percent ?? record.search_score ?? 0);
   const similarityBadge = isSearchResult
-    ? `<span class="ai-listings-admin__repo-similarity">${safeRenderText(record.similarity_percent ?? 0)}%</span>`
+    ? `<span class="ai-listings-admin__repo-similarity" title="Benzerlik">%${safeRenderText(similarityPercent)}</span>`
+    : '';
+
+  const starsHtml = isSearchResult && record.similarity_stars
+    ? `<span class="ai-listings-admin__repo-stars" aria-label="Benzerlik yıldızları">${String(record.similarity_stars)}</span>`
+    : '';
+
+  const matchExplanation = isSearchResult && record.match_explanation
+    ? `
+      <div class="ai-listings-admin__repo-match-reasons">
+        <p class="ai-listings-admin__repo-match-reasons-title">Neden eşleşti?</p>
+        <pre class="ai-listings-admin__repo-match-reasons-list">${safeRenderText(String(record.match_explanation))}</pre>
+      </div>`
     : '';
 
   const detailRows = isSearchResult
     ? `
       <div class="ai-listings-admin__repo-card-details">
+        <span class="ai-listings-admin__repo-similarity-label">${safeRenderText(record.similarity_label ?? `Benzerlik %${similarityPercent}`)}</span>
+        ${starsHtml}
         <span>Marka: ${record.highlighted?.brand ? String(record.highlighted.brand) : safeRenderText(record.brand || '—')}</span>
         <span>Model: ${record.highlighted?.model ? String(record.highlighted.model) : safeRenderText(record.model || '—')}</span>
         <span>Yıl: ${safeRenderText(record.year ?? '—')}</span>
         <span>KM: ${safeRenderText(formatRepositoryKm(record.km))}</span>
         <span>Fiyat: ${safeRenderText(formatRepositoryPrice(record.price, String(record.currency ?? 'TRY')))}</span>
-      </div>`
+      </div>
+      ${matchExplanation}`
     : '';
 
   return `

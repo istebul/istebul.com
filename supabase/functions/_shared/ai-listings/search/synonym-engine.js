@@ -1,6 +1,8 @@
 /**
- * AI Listings Search — Turkish + English synonym mapping (Sprint-15).
+ * AI Listings Search — Turkish + English synonym mapping (Sprint-16 v2).
  */
+
+import { normalizeText } from './normalizer.js';
 
 /** @type {Readonly<Record<string, string>>} */
 export const SYNONYM_MAP = Object.freeze({
@@ -20,6 +22,7 @@ export const SYNONYM_MAP = Object.freeze({
   hibrit: 'hybrid',
   hybrid: 'hybrid',
   suv: 'suv',
+  jeep: 'suv',
   crossover: 'suv',
   sedan: 'sedan',
   hatchback: 'hatchback',
@@ -42,6 +45,9 @@ export const SYNONYM_MAP = Object.freeze({
   'lokal boya': 'paint_one_piece',
   paint: 'paint_one_piece',
   boya: 'paint_one_piece',
+  'm sport': 'm_sport',
+  msport: 'm_sport',
+  'm-sport': 'm_sport',
   arac: 'vehicle',
   araç: 'vehicle',
   vehicle: 'vehicle',
@@ -51,13 +57,18 @@ export const SYNONYM_MAP = Object.freeze({
   vacation: 'vacation'
 });
 
+/** @type {Readonly<Record<string, string>>} */
+const NORMALIZED_SYNONYM_MAP = Object.freeze(
+  Object.fromEntries(Object.entries(SYNONYM_MAP).map(([key, value]) => [normalizeText(key), value]))
+);
+
 /**
  * @param {unknown} token
  * @returns {string}
  */
 export function resolveSynonym(token) {
-  const key = String(token ?? '').trim().toLowerCase();
-  return SYNONYM_MAP[key] ?? key;
+  const key = normalizeText(token);
+  return NORMALIZED_SYNONYM_MAP[key] ?? key;
 }
 
 /**
@@ -73,6 +84,6 @@ export function resolveSynonymTokens(tokens) {
  * @returns {string|null}
  */
 export function resolvePhraseSynonym(phrase) {
-  const key = String(phrase ?? '').trim().toLowerCase();
-  return SYNONYM_MAP[key] ?? null;
+  const key = normalizeText(phrase);
+  return NORMALIZED_SYNONYM_MAP[key] ?? null;
 }
