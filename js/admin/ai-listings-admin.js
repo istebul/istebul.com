@@ -1,5 +1,5 @@
 /**
- * isteBul AI Listings — internal admin test panel (Sprint-7 QA workflow).
+ * isteBul AI Listings — internal admin test panel (Premium Decision Center V3).
  *
  * INTERNAL TEST ONLY. Not linked from homepage, categories, or admin nav.
  * approved means internally approved only; public publishing remains disabled.
@@ -13,14 +13,12 @@ import {
   ADMIN_SECRET_KEY,
   buildEdgeRequestHeaders,
   buildImportPreviewHtml,
-  buildListingBadgesHtml,
+  buildListingCardHtml,
   buildPremiumDashboardHtml,
   buildStatusFilterChipsHtml,
   getAdminPanelState,
-  getCategoryLabelTr,
   getEdgeSecret,
   getListingAnalyzePath,
-  getStatusLabelTr,
   getSupabaseAnonKey,
   mapEdgeResponse,
   previewImportContent,
@@ -41,6 +39,15 @@ let activeStatusFilter = '';
 
 /** @type {number} */
 let importValidRowCount = 0;
+
+/** @type {Array<Record<string, unknown>>} */
+let cachedListings = [];
+
+/** @type {string} */
+let activeNavView = 'dashboard';
+
+/** @type {string} */
+let searchQuery = '';
 
 function $(id) {
   return document.getElementById(id);
@@ -99,7 +106,7 @@ function renderDisabledState() {
   if (!root) return;
   root.innerHTML = `
     <div class="ai-listings-admin__gate">
-      <h2>Yapay Zeka Destekli İlanlar — Devre Dışı</h2>
+      <h2>Yapay Zeka Karar Merkezi — Devre Dışı</h2>
       <p>Bu iç test paneli varsayılan olarak gizlidir.</p>
       <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_ENABLE_KEY}', 'on')</pre>
       <p>Etkinleştirdikten sonra sayfayı yenileyin. Bkz. docs/ai-listings/ADMIN_TEST_PANEL.md</p>
@@ -130,19 +137,97 @@ function renderStatusFilterChips() {
   });
 }
 
-function renderListingRow(listing) {
-  const id = safeRenderText(listing.id);
-  const title = safeRenderText(listing.title);
-  const category = safeRenderText(getCategoryLabelTr(listing.category));
-  const status = safeRenderText(getStatusLabelTr(listing.status));
-  const sourceType = safeRenderText(listing.source_type ?? '—');
+function setNavView(view) {
+  activeNavView = view;
+  document.querySelectorAll('[data-nav-view]').forEach((btn) => {
+    btn.classList.toggle('ai-listings-admin__nav-btn--active', btn.getAttribute('data-nav-view') === view);
+  });
 
-  return `
-    <button type="button" class="ai-listings-admin__list-item" data-listing-id="${id}">
-      <span class="ai-listings-admin__list-title">${title}</span>
-      <span class="ai-listings-admin__list-badges">${buildListingBadgesHtml(listing)}</span>
-      <span class="ai-listings-admin__list-meta">${category} · ${status} · ${sourceType}</span>
-    </button>`;
+  const dashboardView = $('ai-listings-dashboard-view');
+  const importView = $('ai-listings-import-view');
+  const sidebar = $('ai-listings-sidebar');
+
+  if (view === 'import') {
+    dashboardView?.setAttribute('hidden', '');
+    importView?.removeAttribute('hidden');
+    sidebar?.classList.add('ai-listings-admin__sidebar--collapsed');
+  } else {
+    importView?.setAttribute('hidden', '');
+    dashboardView?.removeAttribute('hidden');
+    sidebar?.classList.remove('ai-listings-admin__sidebar--collapsed');
+  }
+
+  if (view === 'create') {
+    openCreateDrawer();
+    return;
+  }
+
+  if (view === 'listings') {
+    sidebar?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function openCreateDrawer() {
+  $('ai-listings-create-drawer')?.removeAttribute('hidden');
+  $('ai-listings-drawer-backdrop')?.removeAttribute('hidden');
+  document.body.classList.add('ai-listings-admin--drawer-open');
+}
+
+function closeCreateDrawer() {
+  $('ai-listings-create-drawer')?.setAttribute('hidden', '');
+  $('ai-listings-drawer-backdrop')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--drawer-open');
+  if (activeNavView === 'create') {
+    setNavView('dashboard');
+  }
+}
+
+function filterListingsBySearch(listings) {
+  const query = searchQuery.trim().toLowerCase();
+  if (!query) return listings;
+  return listings.filter((listing) => {
+    const haystack = [
+      listing.title,
+      listing.category,
+      listing.status,
+      listing.source_type,
+      listing.location,
+      listing.id
+    ]
+      .map((value) => String(value ?? '').toLowerCase())
+      .join(' ');
+    return haystack.includes(query);
+  });
+}
+
+function renderListingsList(listings) {
+  const listEl = $('ai-listings-list');
+  const countEl = $('ai-listings-list-count');
+  if (!listEl) return;
+
+  const filtered = filterListingsBySearch(listings);
+  if (countEl) countEl.textContent = String(filtered.length);
+
+  if (!filtered.length) {
+    listEl.innerHTML = '<p class="ai-listings-admin__muted">İlan bulunamadı.</p>';
+    return;
+  }
+
+  const selectedId = String(selectedListing?.id ?? '');
+  listEl.innerHTML = filtered
+    .map((listing) => buildListingCardHtml(listing, String(listing.id) === selectedId))
+    .join('');
+
+  listEl.querySelectorAll('[data-listing-id]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-listing-id');
+      const listing = listings.find((item) => String(item.id) === id);
+      if (listing) {
+        setNavView('dashboard');
+        showListingDetail(listing);
+      }
+    });
+  });
 }
 
 async function autoAnalyzeListing(listing) {
@@ -183,10 +268,10 @@ function handlePdfExport(listing, analysis) {
   .score { font-size: 1.25rem; font-weight: 600; }
 </style></head><body>
 <h1>${title}</h1>
-<p class="meta">isteBul AI Listings — İç Rapor</p>
+<p class="meta">isteBul AI Karar Merkezi — İç Rapor</p>
 <div class="scores">
   <div class="score">AI Skoru: ${aiScore}</div>
-  <div class="score">Risk: ${riskScore}</div>
+  <div class="score">Risk Skoru: ${riskScore}</div>
 </div>
 <p>${summary}</p>
 <p class="meta">Oluşturulma: ${new Date().toLocaleString('tr-TR')}</p>
@@ -219,21 +304,9 @@ async function loadListings() {
     return;
   }
 
-  const listings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
-  if (!listings.length) {
-    listEl.innerHTML = '<p class="ai-listings-admin__muted">İlan bulunamadı.</p>';
-    return;
-  }
-
-  listEl.innerHTML = listings.map(renderListingRow).join('');
-  listEl.querySelectorAll('[data-listing-id]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-listing-id');
-      const listing = listings.find((item) => String(item.id) === id);
-      if (listing) showListingDetail(listing);
-    });
-  });
-  setStatus(`${listings.length} ilan yüklendi.`, 'success');
+  cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
+  renderListingsList(cachedListings);
+  setStatus(`${cachedListings.length} ilan yüklendi.`, 'success');
 }
 
 async function showListingDetail(listing) {
@@ -243,6 +316,7 @@ async function showListingDetail(listing) {
 
   const id = String(listing.id);
   detailEl.innerHTML = '<p class="ai-listings-admin__muted">Detay yükleniyor…</p>';
+  renderListingsList(cachedListings);
 
   const [detailRes, eventsRes] = await Promise.all([
     edgeRequest(`/listings/${id}`),
@@ -283,6 +357,10 @@ async function showListingDetail(listing) {
       }
       if (action === 'pdf') {
         handlePdfExport(listingData, latest);
+        return;
+      }
+      if (action === 'delete-ui') {
+        setStatus('Kalıcı silme bu test panelinde desteklenmiyor. Arşivlemek için Arşivle düğmesini kullanın.', 'error');
         return;
       }
       runQaAction(id, action);
@@ -374,6 +452,7 @@ async function handleCreateSubmit(event) {
   }
 
   event.target.reset();
+  closeCreateDrawer();
   const listing = result.data?.listing;
   if (!listing) {
     setStatus('İlan oluşturuldu.', 'success');
@@ -389,6 +468,16 @@ function updateImportButtonState() {
   const importBtn = $('ai-listings-import-run-btn');
   if (!importBtn) return;
   importBtn.disabled = importValidRowCount <= 0;
+}
+
+function setImportFormat(format) {
+  const select = $('ai-listings-import-format');
+  if (select) select.value = format;
+  document.querySelectorAll('[data-import-format-tab]').forEach((tab) => {
+    const isActive = tab.getAttribute('data-import-format-tab') === format;
+    tab.classList.toggle('ai-listings-admin__format-tab--active', isActive);
+    tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
 }
 
 function handleImportPreview() {
@@ -449,6 +538,25 @@ async function handleImportRun() {
   await loadListings();
 }
 
+function handleImportFileSelect(event) {
+  const input = /** @type {HTMLInputElement|null} */ (event.target);
+  const file = input?.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const content = String(reader.result ?? '');
+    const textarea = $('ai-listings-import-content');
+    if (textarea) textarea.value = content;
+    const format = file.name.toLowerCase().endsWith('.json') ? 'json' : 'csv';
+    setImportFormat(format);
+    importValidRowCount = 0;
+    updateImportButtonState();
+    setStatus(`${file.name} dosyası yüklendi.`, 'success');
+  };
+  reader.readAsText(file);
+}
+
 function bindEvents() {
   $('ai-listings-create-form')?.addEventListener('submit', handleCreateSubmit);
   $('ai-listings-refresh-list-btn')?.addEventListener('click', () => loadListings());
@@ -461,6 +569,34 @@ function bindEvents() {
   $('ai-listings-import-format')?.addEventListener('change', () => {
     importValidRowCount = 0;
     updateImportButtonState();
+  });
+  $('ai-listings-import-file')?.addEventListener('change', handleImportFileSelect);
+  $('ai-listings-drawer-close')?.addEventListener('click', closeCreateDrawer);
+  $('ai-listings-drawer-backdrop')?.addEventListener('click', closeCreateDrawer);
+
+  document.querySelectorAll('[data-nav-view]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const view = btn.getAttribute('data-nav-view') ?? 'dashboard';
+      setNavView(view);
+    });
+  });
+
+  document.querySelectorAll('[data-import-format-tab]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const format = tab.getAttribute('data-import-format-tab') === 'json' ? 'json' : 'csv';
+      setImportFormat(format);
+      importValidRowCount = 0;
+      updateImportButtonState();
+    });
+  });
+
+  $('ai-listings-search')?.addEventListener('input', (event) => {
+    searchQuery = /** @type {HTMLInputElement} */ (event.target).value;
+    renderListingsList(cachedListings);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeCreateDrawer();
   });
 }
 
@@ -479,6 +615,7 @@ export function initAiListingsAdmin() {
   renderStatusFilterChips();
   bindEvents();
   updateImportButtonState();
+  setNavView('dashboard');
   loadListings();
 }
 
