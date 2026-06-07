@@ -169,7 +169,22 @@ test('enrichListing suggests title without inventing fuel', () => {
 
   assert.match(String(canonical.title), /2022 BMW 320i/);
   assert.equal(canonical.attributes.fuel, undefined);
+  assert.deepEqual(canonical.missing_fields, []);
   assert.ok(canonical.extraction_warnings.some((item) => /Yakıt tipi belirlenemedi/i.test(String(item))));
+});
+
+test('runAiListingBuilder rejects empty input with Turkish message', () => {
+  const result = runAiListingBuilder('   ');
+  assert.equal(result.ok, false);
+  assert.match(result.message, /boş/i);
+});
+
+test('runAiListingBuilder resolves BMW sample with title in preview', () => {
+  const result = runAiListingBuilder(BMW_SAMPLE);
+  assert.equal(result.ok, true);
+  assert.equal(result.canonical.title, '2022 BMW 320i M Sport');
+  assert.deepEqual(result.canonical.missing_fields, []);
+  assert.ok(result.preview_html.includes('2022 BMW 320i M Sport'));
 });
 
 test('buildPreviewHtml escapes HTML and includes actions', () => {

@@ -3,6 +3,7 @@
  */
 
 import { escapeHtml } from '../core/dom-safe.js';
+import { logBuilderStage } from './debug-log.js';
 
 /** @type {Readonly<Record<string, string>>} */
 const INPUT_TYPE_LABELS = Object.freeze({
@@ -90,6 +91,14 @@ export function buildPreviewHtml(canonical) {
         <button type="button" class="ai-listings-admin__btn" data-builder-action="save-analyze">Kaydet ve Analiz Et</button>
       </div>
     </section>`;
+
+  logBuilderStage('preview-builder', {
+    html_length: html.length,
+    title: canonical.title,
+    confidence: canonical.confidence
+  });
+
+  return html;
 }
 
 export { INPUT_TYPE_LABELS };

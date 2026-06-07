@@ -2,6 +2,8 @@
  * AI Auto Listing Builder — input type detection.
  */
 
+import { logBuilderStage } from './debug-log.js';
+
 /** @typedef {'text'|'url'|'json'|'csv'} BuilderInputType */
 
 /**
@@ -69,13 +71,26 @@ function looksLikeCsv(value) {
  */
 export function detectInputType(rawInput) {
   const value = String(rawInput ?? '').trim();
-  if (!value) return 'text';
+  if (!value) {
+    logBuilderStage('input-detector', { detected: 'text', empty: true });
+    return 'text';
+  }
 
-  if (looksLikeHttpUrl(value)) return 'url';
+  if (looksLikeHttpUrl(value)) {
+    logBuilderStage('input-detector', { detected: 'url' });
+    return 'url';
+  }
 
-  if (looksLikeJson(value)) return 'json';
+  if (looksLikeJson(value)) {
+    logBuilderStage('input-detector', { detected: 'json' });
+    return 'json';
+  }
 
-  if (looksLikeCsv(value)) return 'csv';
+  if (looksLikeCsv(value)) {
+    logBuilderStage('input-detector', { detected: 'csv' });
+    return 'csv';
+  }
 
+  logBuilderStage('input-detector', { detected: 'text', length: value.length });
   return 'text';
 }

@@ -2,6 +2,9 @@
  * AI Auto Listing Builder — safe enrichment (no hallucination).
  */
 
+import { collectMissingFieldsFromListing } from './canonical-builder.js';
+import { logBuilderStage } from './debug-log.js';
+
 /**
  * @param {Record<string, unknown>} listing
  */
@@ -45,6 +48,13 @@ export function enrichListing(listing) {
   }
   enriched.tags = [...tags].slice(0, 8);
   enriched.extraction_warnings = [...new Set(warnings)];
+  enriched.missing_fields = collectMissingFieldsFromListing(enriched);
+
+  logBuilderStage('enrichment-engine', {
+    title: enriched.title,
+    missing_fields: enriched.missing_fields,
+    warning_count: enriched.extraction_warnings.length
+  });
 
   return enriched;
 }

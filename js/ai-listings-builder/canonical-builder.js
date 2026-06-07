@@ -4,6 +4,7 @@
 
 import { parsePriceValue, parseKmValue, parseYearValue } from './text-parser.js';
 import { isSafeBuilderUrl } from './url-parser.js';
+import { logBuilderStage } from './debug-log.js';
 
 /**
  * @param {Record<string, { value: unknown, confidence: number }>} fieldMap
@@ -68,6 +69,18 @@ function collectMissingFields(fields) {
     if (!readString(readField(fields, key).value)) missing.push(key);
   }
 
+  return missing;
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @returns {string[]}
+ */
+export function collectMissingFieldsFromListing(listing) {
+  /** @type {string[]} */
+  const missing = [];
+  if (!String(listing.category ?? '').trim()) missing.push('category');
+  if (!String(listing.title ?? '').trim()) missing.push('title');
   return missing;
 }
 
@@ -151,6 +164,13 @@ export function buildCanonicalListing(input) {
     missing_fields: collectMissingFields(fields),
     input_type
   };
+
+  logBuilderStage('canonical-builder', {
+    title: listing.title,
+    category: listing.category,
+    missing_fields: listing.missing_fields,
+    confidence: listing.confidence
+  });
 
   return listing;
 }
