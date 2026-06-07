@@ -45,6 +45,11 @@ import {
   buildRepositoryDashboardHtml,
   buildRepositoryKpiCardsHtml
 } from './ai-listings-repository-admin.js';
+import {
+  buildAnalyticsDashboardHtml,
+  buildAnalyticsKpiCardsHtml
+} from './ai-listings-analytics-admin.js';
+import { hydrateLazyCharts } from '../ai-listings-analytics/chart-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 
 /** @type {Record<string, unknown>|null} */
@@ -83,7 +88,7 @@ let pendingBuilderResult = null;
 /** @type {string} */
 let lastKpiStatsKey = '';
 
-/** @type {'decision'|'repository'} */
+/** @type {'decision'|'repository'|'analytics'} */
 let activeAdminView = 'decision';
 
 /** @type {string} */
@@ -94,6 +99,12 @@ let repoFilters = [];
 
 /** @type {string} */
 let lastRepoKpiStatsKey = '';
+
+/** @type {string} */
+let lastAnalyticsKpiStatsKey = '';
+
+/** @type {Record<string, () => string>} */
+let analyticsChartBuilders = {};
 
 function $(id) {
   return document.getElementById(id);
@@ -235,8 +246,20 @@ function renderRepositoryKpiCards(listings) {
   if (activeAdminView === 'repository') animateKpiCounters(kpiEl);
 }
 
+function renderAnalyticsKpiCards(listings) {
+  const kpiEl = $('ai-listings-analytics-kpi');
+  if (!kpiEl) return;
+  const { analytics } = buildAnalyticsDashboardHtml(listings);
+  const statsKey = JSON.stringify(analytics.kpi);
+  if (statsKey === lastAnalyticsKpiStatsKey && kpiEl.childElementCount > 0) return;
+  lastAnalyticsKpiStatsKey = statsKey;
+  kpiEl.innerHTML = buildAnalyticsKpiCardsHtml(analytics.kpi ?? {});
+  if (activeAdminView === 'analytics') animateKpiCounters(kpiEl);
+}
+
 function setAdminView(view) {
-  const next = view === 'repository' ? 'repository' : 'decision';
+  const next =
+    view === 'repository' ? 'repository' : view === 'analytics' ? 'analytics' : 'decision';
   activeAdminView = next;
 
   document.querySelectorAll('[data-admin-view]').forEach((tab) => {
@@ -245,18 +268,34 @@ function setAdminView(view) {
     tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
 
-  $('ai-listings-kpi')?.toggleAttribute('hidden', next === 'repository');
+  $('ai-listings-kpi')?.toggleAttribute('hidden', next !== 'decision');
   $('ai-listings-repo-kpi')?.toggleAttribute('hidden', next !== 'repository');
-  $('ai-listings-sidebar')?.toggleAttribute('hidden', next === 'repository');
+  $('ai-listings-analytics-kpi')?.toggleAttribute('hidden', next !== 'analytics');
+  $('ai-listings-sidebar')?.toggleAttribute('hidden', next === 'repository' || next === 'analytics');
 
   if (next === 'repository') {
     selectedListing = null;
     renderRepositoryView();
     renderRepositoryKpiCards(cachedListings);
+  } else if (next === 'analytics') {
+    selectedListing = null;
+    renderAnalyticsView();
+    renderAnalyticsKpiCards(cachedListings);
   } else {
     renderExecutiveDashboard();
     renderKpiCards(cachedListings);
   }
+}
+
+function renderAnalyticsView() {
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+
+  const { html, chartBuilders } = buildAnalyticsDashboardHtml(cachedListings);
+  analyticsChartBuilders = chartBuilders;
+  detailEl.innerHTML = html;
+  hydrateLazyCharts(detailEl, chartBuilders);
+  clearTimelineHost();
 }
 
 function bindRepositoryDashboardEvents(root) {
@@ -798,12 +837,15 @@ async function loadListings() {
   cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
   renderKpiCards(cachedListings);
   renderRepositoryKpiCards(cachedListings);
+  renderAnalyticsKpiCards(cachedListings);
   renderListingsList(cachedListings);
   if (selectedListing) {
     const refreshed = cachedListings.find((item) => String(item.id) === String(selectedListing.id));
     if (refreshed) selectedListing = refreshed;
   } else if (activeAdminView === 'repository') {
     renderRepositoryView();
+  } else if (activeAdminView === 'analytics') {
+    renderAnalyticsView();
   } else {
     renderExecutiveDashboard();
   }
@@ -1332,6 +1374,9 @@ function bindEvents() {
     if (activeAdminView === 'repository') {
       renderRepositoryView();
       renderRepositoryKpiCards(cachedListings);
+    } else if (activeAdminView === 'analytics') {
+      renderAnalyticsView();
+      renderAnalyticsKpiCards(cachedListings);
     } else {
       renderListingsList(cachedListings);
     }
