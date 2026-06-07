@@ -97,6 +97,20 @@ import { buildCompareInput, runCompareEngine } from '../ai-compare-intelligence/
 import { buildComparePanelHtml } from '../ai-compare-intelligence/compare-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
+import {
+  buildDecisionWorkspaceHtml,
+  buildDecisionWorkspaceEmptyHtml
+} from './ai-listings-decision-workspace.js';
+import {
+  buildScenarioInput,
+  runScenarioSimulator
+} from '../ai-scenario-simulator/index.js';
+import { buildScenarioPanelHtml, buildScenarioShellHtml } from '../ai-scenario-simulator/scenario-card-builder.js';
+import { buildOwnershipCostInput as buildOcInput } from '../ai-ownership-cost/index.js';
+import { buildExecutiveDecisionShellHtml } from '../ai-purchase-decision/executive-decision-card-builder.js';
+import { buildExplainabilityShellHtml } from '../ai-decision-explainability/explainability-card-builder.js';
+import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
+import { buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-builder.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
@@ -567,6 +581,7 @@ function bindRepositoryDashboardEvents(root) {
       const id = card.getAttribute('data-repo-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
+        selectedListing = listing;
         activeAdminView = 'decision';
         setAdminView('decision');
         void showListingDetail(listing);
@@ -1158,6 +1173,7 @@ function bindRecommendationsDashboardEvents(root) {
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
+        selectedListing = listing;
         activeAdminView = 'decision';
         setAdminView('decision');
         void showListingDetail(listing);
@@ -1201,9 +1217,161 @@ function renderExecutiveDashboard() {
   if (selectedListing) return;
   const detailEl = $('ai-listings-detail');
   if (!detailEl) return;
-  detailEl.innerHTML = buildExecutiveDashboardHtml(cachedListings);
+  detailEl.innerHTML = `
+    <div class="ai-ws-overview-wrap">
+      ${buildDecisionWorkspaceEmptyHtml()}
+      <section class="ai-ws-overview-compact" aria-label="Karar merkezi özeti">
+        ${buildExecutiveDashboardHtml(cachedListings)}
+      </section>
+    </div>`;
   bindExecutiveDashboardEvents(detailEl);
   clearTimelineHost();
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @returns {Record<string, unknown>|null}
+ */
+function findRecommendationForListing(listing) {
+  const id = String(listing?.id ?? '');
+  if (!id || !cachedRecommendationResult?.top?.length) return null;
+  return cachedRecommendationResult.top.find((item) => String(item.id) === id) ?? null;
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null} [recommendation]
+ * @returns {Record<string, unknown>}
+ */
+function resolveWorkspaceContext(listing, recommendation = null) {
+  const rec = recommendation ?? findRecommendationForListing(listing);
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const analysis = /** @type {Record<string, unknown>} */ (listing.latest_analysis ?? {});
+
+  /** @type {Record<string, unknown>} */
+  const ctx = {
+    listing,
+    recommendation: rec,
+    limitedData: !listing.title || !listing.price,
+    aiScore: analysis.ai_score ?? analysis.decision_score ?? rec?.decision_score ?? '—',
+    qualityScore: rec?.quality_score ?? analysis.quality_score ?? '—',
+    riskScore: rec?.risk_score ?? analysis.risk_score ?? '—',
+    riskLabel: '—',
+    decisionScore: '—',
+    confidenceScore: '—',
+    explanationScore: '—',
+    reportScore: '—',
+    trustScore: '—',
+    decisionLabel: '—',
+    riskLevel: '—',
+    decisionSummary: rec?.reasons_text ?? 'Mevcut verilerle karar değerlendirmesi yapılabilir.',
+    hasOwnershipCost: false,
+    hasNegotiation: false,
+    hasCompare: compareSelectedIds.length >= 2,
+    duplicateLabel: null,
+    missingCount: 0,
+    scenarioTeaser: 'Fiyat, maliyet ve risk senaryolarını tahmini olarak değerlendirin.'
+  };
+
+  if (!rec?.id) return ctx;
+
+  try {
+    const pdInput = buildPurchaseDecisionInput(rec, profile);
+    const pd = runPurchaseDecisionEngine(pdInput, { skipCache: true });
+    const expInput = buildExplainabilityInput(rec, profile);
+    const exp = runExplainabilityEngine(expInput, { skipCache: true });
+    const cost = runOwnershipCostSimulator(buildOcInput(rec, profile), { skipCache: true });
+    const edr = runExecutiveReportEngine(buildExecutiveReportInput(rec, profile), { skipCache: true });
+
+    ctx.decisionScore = pd?.decisionScore ?? '—';
+    ctx.confidenceScore = pd?.confidenceScore ?? '—';
+    ctx.decisionLabel = pd?.decisionLabel ?? '—';
+    ctx.riskLevel = pd?.riskLevel ?? '—';
+    ctx.riskLabel = pd?.riskLabel ?? ctx.riskScore;
+    ctx.explanationScore = exp?.explanationScore ?? '—';
+    ctx.trustScore = exp?.decisionSnapshot?.trustScore ?? rec?.trust_score ?? '—';
+    ctx.reportScore = edr?.reportScore ?? '—';
+    ctx.hasOwnershipCost = Boolean(cost?.total_cost);
+    ctx.hasNegotiation = Array.isArray(pd?.negotiationScenario) && pd.negotiationScenario.length > 0;
+    ctx.decisionSummary = pd?.summary ?? ctx.decisionSummary;
+    ctx.scenarioTeaser = `Tahmini karar skoru ${pd?.decisionScore ?? '—'}; senaryolarla etkiyi inceleyin.`;
+  } catch {
+    ctx.limitedData = true;
+  }
+
+  return ctx;
+}
+
+/**
+ * @param {HTMLElement} root
+ */
+function bindWorkspaceEvents(root) {
+  root.querySelectorAll('[data-ws-action]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-ws-action');
+      const listingId = root.querySelector('[data-ws-listing-id]')?.getAttribute('data-ws-listing-id');
+      if (!listingId || !selectedListing) return;
+      const rec = findRecommendationForListing(selectedListing);
+      if (action === 'purchase' && rec) openPurchaseDecisionPanel(root, listingId);
+      else if (action === 'explain' && rec) openExplainabilityPanel(root, listingId);
+      else if (action === 'report' && rec) openExecutiveReportPanel(root, listingId);
+      else if (action === 'compare') {
+        if (activeAdminView !== 'recommendations') {
+          activeAdminView = 'recommendations';
+          setAdminView('recommendations');
+        }
+        compareModeEnabled = true;
+        if (!compareSelectedIds.includes(listingId)) compareSelectedIds.push(listingId);
+        renderRecommendationsView();
+      } else if (action === 'scenario' && rec) openScenarioPanel(root, listingId, 'price_minus_5');
+      else if (action === 'negotiation' && rec) openPurchaseDecisionPanel(root, listingId);
+      else if (action === 'quality' && rec) openExplainabilityPanel(root, listingId);
+    });
+  });
+}
+
+function closeScenarioPanel(root) {
+  const host = root.querySelector('#ai-ss-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-ss-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--ss-open');
+}
+
+function openScenarioPanel(root, recordId, scenarioKey = 'price_minus_5') {
+  const rec = findRecommendationForListing(
+    cachedListings.find((item) => String(item.id) === String(recordId)) ?? selectedListing ?? {}
+  );
+  if (!rec) {
+    const host = root.querySelector('#ai-ss-panel-host') ?? document.querySelector('#ai-ss-panel-host');
+    if (!host) return;
+    host.innerHTML = buildScenarioPanelHtml(null);
+    host.hidden = false;
+    document.body.classList.add('ai-listings-admin--ss-open');
+    host.querySelector('[data-ss-action="close"]')?.addEventListener('click', () => closeScenarioPanel(root));
+    return;
+  }
+
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const simulation = runScenarioSimulator(buildScenarioInput(rec, profile, scenarioKey));
+  const host = root.querySelector('#ai-ss-panel-host') ?? document.querySelector('#ai-ss-panel-host');
+  if (!host) return;
+
+  host.innerHTML = buildScenarioPanelHtml(simulation, { title: String(rec.title ?? 'Senaryo Simülasyonu') });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--ss-open');
+
+  const close = () => closeScenarioPanel(root);
+  host.querySelector('[data-ss-action="close"]')?.addEventListener('click', close);
+  host.querySelector('[data-ss-backdrop]')?.addEventListener('click', close);
+  host.querySelectorAll('[data-ss-scenario]').forEach((preset) => {
+    preset.addEventListener('click', () => {
+      const key = preset.getAttribute('data-ss-scenario');
+      if (key) openScenarioPanel(root, recordId, key);
+    });
+  });
 }
 
 function closeAllDrawers() {
@@ -1575,13 +1743,22 @@ function renderListingsList(listings) {
     )
     .join('');
 
+  const selectListingCard = (btn) => {
+    const id = btn.getAttribute('data-listing-id');
+    const listing = listings.find((item) => String(item.id) === id);
+    if (listing) {
+      selectedListing = listing;
+      void showListingDetail(listing);
+      toggleFilterPanel(false);
+    }
+  };
+
   listEl.querySelectorAll('[data-listing-id]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-listing-id');
-      const listing = listings.find((item) => String(item.id) === id);
-      if (listing) {
-        showListingDetail(listing);
-        toggleFilterPanel(false);
+    btn.addEventListener('click', () => selectListingCard(btn));
+    btn.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectListingCard(btn);
       }
     });
   });
@@ -1693,14 +1870,33 @@ async function loadListings() {
   setStatus(`${cachedListings.length} ilan yüklendi.`, 'success');
 }
 
+function mountGlobalPanelHosts() {
+  const main = $('ai-listings-admin');
+  if (!main || main.querySelector('#ai-ss-panel-host')) return;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = [
+    buildExecutiveDecisionShellHtml(),
+    buildExplainabilityShellHtml(),
+    buildExecutiveReportShellHtml(),
+    buildCompareShellHtml(),
+    buildScenarioShellHtml()
+  ].join('');
+  main.appendChild(wrap);
+}
+
 async function showListingDetail(listing) {
   selectedListing = listing;
   const detailEl = $('ai-listings-detail');
   if (!detailEl) return;
 
   const id = String(listing.id);
-  showDetailSkeleton();
+  mountGlobalPanelHosts();
+  const workspaceCtx = resolveWorkspaceContext(listing);
+  detailEl.innerHTML = buildDecisionWorkspaceHtml(workspaceCtx);
+  bindWorkspaceEvents(detailEl);
   renderListingsList(cachedListings);
+  const mount = detailEl.querySelector('#ai-ws-detail-mount');
+  if (mount) mount.innerHTML = buildListingSkeletonHtml();
 
   const [detailRes, eventsRes] = await Promise.all([
     edgeRequest(`/listings/${id}`),
@@ -1725,16 +1921,26 @@ async function showListingDetail(listing) {
     ? cachedListings.find((item) => String(item.id) === String(matchedListingId)) ?? { id: matchedListingId }
     : null;
 
-  detailEl.innerHTML = `
-    ${buildPremiumDashboardHtml(listingData, latest, events, status, matchedListing)}
-    <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
-      <label>
-        Red nedeni
-        <textarea id="ai-listings-reject-reason" rows="3" placeholder="Bu ilanın neden reddedildiğini açıklayın"></textarea>
-      </label>
-      <button type="button" id="ai-listings-confirm-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--warn">Reddi onayla</button>
-      <button type="button" id="ai-listings-cancel-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">İptal</button>
-    </div>`;
+  const refreshedCtx = resolveWorkspaceContext(listingData, findRecommendationForListing(listingData));
+  const workspaceHost = detailEl.querySelector('.ai-decision-workspace');
+  if (workspaceHost) {
+    workspaceHost.outerHTML = buildDecisionWorkspaceHtml(refreshedCtx);
+    bindWorkspaceEvents(detailEl);
+  }
+
+  const detailMount = detailEl.querySelector('#ai-ws-detail-mount');
+  if (detailMount) {
+    detailMount.innerHTML = `
+      ${buildPremiumDashboardHtml(listingData, latest, events, status, matchedListing)}
+      <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
+        <label>
+          Red nedeni
+          <textarea id="ai-listings-reject-reason" rows="3" placeholder="Bu ilanın neden reddedildiğini açıklayın"></textarea>
+        </label>
+        <button type="button" id="ai-listings-confirm-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--warn">Reddi onayla</button>
+        <button type="button" id="ai-listings-cancel-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">İptal</button>
+      </div>`;
+  }
 
   detailEl.classList.add('ai-listings-admin__detail--loaded');
   requestAnimationFrame(() => detailEl.classList.remove('ai-listings-admin__detail--loaded'));
@@ -2295,6 +2501,7 @@ export function initAiListingsAdmin() {
   }
 
   renderStatusFilterChips();
+  mountGlobalPanelHosts();
   bindEvents();
   setAdminView('decision');
   loadListings();

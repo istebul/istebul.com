@@ -4,6 +4,7 @@
 
 import { escapeHtml } from '../core/dom-safe.js';
 import { ALTERNATIVE_TAG_LABELS_TR } from '../../supabase/functions/_shared/ai-listings/recommendation/alternative-ranker.js';
+import { formatAdminMetricLabel } from '../admin/ai-listings-admin-labels.js';
 
 /**
  * @param {unknown} value
@@ -57,9 +58,9 @@ export function buildRecommendationCardHtml(item, options = {}) {
         <span>Karşılaştır</span>
       </label>` : ''}
       <div class="ai-rec-card__metrics">
-        <span>Kalite: ${safe(item.quality_score ?? '—')}</span>
-        <span>Risk: ${safe(item.risk_score ?? '—')}</span>
-        <span>AI: ${safe(item.decision_score ?? '—')}</span>
+        <span>${safe(formatAdminMetricLabel('quality_score'))}: ${safe(item.quality_score ?? '—')}</span>
+        <span>${safe(formatAdminMetricLabel('risk_score'))}: ${safe(item.risk_score ?? '—')}</span>
+        <span>${safe(formatAdminMetricLabel('decision_score'))}: ${safe(item.decision_score ?? '—')}</span>
         <span>Kaynak: ${safe(item.source ?? '—')}</span>
       </div>
       <section class="ai-rec-card__explain">
