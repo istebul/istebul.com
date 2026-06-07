@@ -12,6 +12,7 @@ import {
   runMarketIntelligence,
   buildMarketIntelligenceTags
 } from '../market-intelligence/market-intelligence.js';
+import { runExecutiveEngine, buildExecutiveTags } from '../executive/executive-engine.js';
 
 export const ANALYSIS_ENGINE_VERSION = ENGINE_VERSION;
 
@@ -73,11 +74,12 @@ export function normalizeCanonicalListing(listing) {
  *   risk: ReturnType<typeof runRiskEngine>,
  *   decision: ReturnType<typeof runDecisionEngine>,
  *   price_intelligence?: ReturnType<typeof runPriceIntelligence>,
- *   market_intelligence?: ReturnType<typeof runMarketIntelligence>
+ *   market_intelligence?: ReturnType<typeof runMarketIntelligence>,
+ *   executive?: ReturnType<typeof runExecutiveEngine>
  * }} engines
  */
 export function buildAnalysisRecord(listing, engines) {
-  const { quality, market, risk, decision, price_intelligence, market_intelligence } = engines;
+  const { quality, market, risk, decision, price_intelligence, market_intelligence, executive } = engines;
 
   const tags = [
     ENGINE_VERSION,
@@ -90,6 +92,10 @@ export function buildAnalysisRecord(listing, engines) {
 
   if (market_intelligence) {
     tags.push(...buildMarketIntelligenceTags(market_intelligence));
+  }
+
+  if (executive) {
+    tags.push(...buildExecutiveTags(executive));
   }
 
   const piTags = price_intelligence ? buildPriceIntelligenceTags(price_intelligence) : [];
@@ -195,13 +201,22 @@ export function runCanonicalEngine(input) {
   const market_intelligence = runMarketIntelligence(canonical, { quality, risk, market });
   const decision = runDecisionEngine(canonical, quality, market, risk);
   const price_intelligence = runPriceIntelligence(canonical);
+  const executive = runExecutiveEngine(canonical, {
+    quality,
+    price_intelligence: { ...price_intelligence, price_score: market.price_score },
+    market_intelligence,
+    risk,
+    duplicate: null,
+    decision
+  });
   const analysis = buildAnalysisRecord(canonical, {
     quality,
     market,
     risk,
     decision,
     price_intelligence,
-    market_intelligence
+    market_intelligence,
+    executive
   });
 
   return {
@@ -216,6 +231,7 @@ export function runCanonicalEngine(input) {
       decision,
       price_intelligence,
       market_intelligence,
+      executive,
       recommendation: {
         label: decision.recommendation_label,
         score: decision.decision_score

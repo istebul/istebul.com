@@ -49,6 +49,14 @@ import {
   getLiquidityLabel
 } from '../../supabase/functions/_shared/ai-listings/market-intelligence/market-model.js';
 import { buildMarketReasons } from '../../supabase/functions/_shared/ai-listings/market-intelligence/market-summary.js';
+import { runQualityEngine } from '../../supabase/functions/_shared/ai-listings/engine/quality-engine.js';
+import { runMarketEngine } from '../../supabase/functions/_shared/ai-listings/engine/market-engine.js';
+import { runRiskEngine } from '../../supabase/functions/_shared/ai-listings/engine/risk-engine.js';
+import { runDecisionEngine } from '../../supabase/functions/_shared/ai-listings/engine/decision-engine.js';
+import {
+  runExecutiveEngine,
+  parseExecutiveFromTags
+} from '../../supabase/functions/_shared/ai-listings/executive/executive-engine.js';
 
 export { STATUS_FILTER_CHIPS, isListingPubliclyVisible, IMPORT_MAX_ROWS, IMPORT_MAX_CONTENT_BYTES };
 
@@ -1257,6 +1265,102 @@ export function buildMarketIntelligenceCardHtml(listing, analysis = null) {
 }
 
 /**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @param {Array<Record<string, unknown>>|null|undefined} [events]
+ * @returns {ReturnType<typeof runExecutiveEngine>}
+ */
+export function resolveExecutiveForListing(listing, analysis = null, events = null) {
+  const canonical = normalizeCanonicalListing({
+    ...listing,
+    id: String(listing.id ?? 'admin-preview')
+  });
+  const quality = runQualityEngine(canonical);
+  const market = runMarketEngine(canonical);
+  const risk = runRiskEngine(canonical, quality);
+  const market_intelligence = runMarketIntelligence(canonical, { quality, risk, market });
+  const decision = runDecisionEngine(canonical, quality, market, risk);
+  const duplicateMeta = extractDuplicateFromEvents(events);
+  const duplicate =
+    duplicateMeta.status && duplicateMeta.status !== 'new'
+      ? {
+          status: duplicateMeta.status,
+          similarity: duplicateMeta.similarity
+        }
+      : null;
+
+  const computed = runExecutiveEngine(canonical, {
+    quality,
+    price_intelligence: market,
+    market_intelligence,
+    risk,
+    duplicate,
+    decision
+  });
+
+  const fromTags = parseExecutiveFromTags(Array.isArray(analysis?.tags) ? analysis.tags : []);
+  if (fromTags.executive_score === undefined && !fromTags.executive_label) {
+    return computed;
+  }
+
+  return {
+    ...computed,
+    executive_score: fromTags.executive_score ?? computed.executive_score,
+    executive_confidence: fromTags.executive_confidence ?? computed.executive_confidence,
+    executive_label: fromTags.executive_label ?? computed.executive_label
+  };
+}
+
+/**
+ * @param {string[]} items
+ * @param {string} emptyLabel
+ * @returns {string}
+ */
+function buildExecutiveListHtml(items, emptyLabel) {
+  if (!items.length) {
+    return `<p class="ai-listings-admin__muted">${safeRenderText(emptyLabel)}</p>`;
+  }
+  return `<ul class="ai-listings-admin__executive-list">${items
+    .map((item) => `<li>${safeRenderText(item)}</li>`)
+    .join('')}</ul>`;
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @param {Array<Record<string, unknown>>|null|undefined} [events]
+ * @returns {string}
+ */
+export function buildExecutiveDecisionCardHtml(listing, analysis = null, events = null) {
+  const executive = resolveExecutiveForListing(listing, analysis, events);
+
+  return `
+    <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--executive" aria-label="AI Yönetici Kararı">
+      <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">🎯</span> AI Yönetici Kararı</h4>
+      <dl class="ai-listings-admin__executive-grid">
+        <div><dt>Executive Score</dt><dd>${safeRenderText(executive.executive_score)}</dd></div>
+        <div><dt>Karar Güveni</dt><dd>${safeRenderText(executive.executive_confidence)}%</dd></div>
+        <div><dt>Karar</dt><dd>${safeRenderText(executive.executive_label)}</dd></div>
+      </dl>
+      <p class="ai-listings-admin__executive-summary">${safeRenderText(executive.executive_summary)}</p>
+      <div class="ai-listings-admin__executive-columns">
+        <div>
+          <h5 class="ai-listings-admin__subsection-title">Güçlü Yönler</h5>
+          ${buildExecutiveListHtml(executive.strengths, 'Güçlü yön bulunamadı.')}
+        </div>
+        <div>
+          <h5 class="ai-listings-admin__subsection-title">Riskler</h5>
+          ${buildExecutiveListHtml(executive.risks, 'Risk bulunamadı.')}
+        </div>
+        <div>
+          <h5 class="ai-listings-admin__subsection-title">Öneriler</h5>
+          ${buildExecutiveListHtml(executive.recommendations, 'Öneri bulunamadı.')}
+        </div>
+      </div>
+    </article>`;
+}
+
+/**
  * @param {number} amount
  * @param {string} currency
  * @returns {string}
@@ -1656,6 +1760,7 @@ export function buildPremiumDashboardHtml(listing, analysis, events, status, mat
 
   const analysisPanel = `
     ${buildScoreCardsHtml(analysis)}
+    ${buildExecutiveDecisionCardHtml(listing, analysis, events)}
     ${buildMarketIntelligenceCardHtml(listing, analysis)}
     <div class="ai-listings-admin__insights-grid">
       ${buildStrengthsCardHtml(analysis)}
