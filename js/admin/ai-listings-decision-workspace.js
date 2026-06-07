@@ -46,17 +46,25 @@ export function buildDecisionPipeline(ctx) {
   const hasExp = Number(ctx.explanationScore) > 0;
   const hasReport = Number(ctx.reportScore) > 0;
   const hasCompare = Boolean(ctx.hasCompare);
+  const dataCompleteness = Number(ctx.dataCompleteness);
+  const entityConfidence = Number(ctx.entityConfidence);
+  const hasLearning = Number(ctx.learningEventCount) > 0;
+  const hasPersonalization = Boolean(ctx.hasPersonalization);
 
   return [
     { id: 'listing', label: 'İlan', status: hasListing ? 'completed' : 'missing', note: hasListing ? 'İlan verisi mevcut' : 'Eksik veri' },
+    { id: 'data_pool', label: 'Veri havuzu', status: dataCompleteness >= 60 ? 'completed' : dataCompleteness > 0 ? 'partial' : 'missing', note: dataCompleteness > 0 ? `Veri tamlığı: ${dataCompleteness}%` : 'Eksik veri' },
+    { id: 'entity', label: 'Varlık çözümleme', status: entityConfidence >= 60 ? 'completed' : entityConfidence > 0 ? 'partial' : 'missing', note: entityConfidence > 0 ? `Varlık güveni: ${entityConfidence}%` : 'Eksik veri' },
     { id: 'quality', label: 'Kalite', status: quality >= 60 ? 'completed' : quality > 0 ? 'partial' : 'missing', note: quality > 0 ? `Kalite skoru: ${quality}` : 'Eksik veri' },
     { id: 'trust', label: 'Güven', status: trust >= 60 ? 'completed' : trust > 0 ? 'partial' : 'missing', note: trust > 0 ? `Güven skoru: ${trust}` : 'Eksik veri' },
     { id: 'cost', label: 'Toplam maliyet', status: hasCost ? 'completed' : 'missing', note: hasCost ? 'Maliyet simülasyonu mevcut' : 'Eksik veri' },
     { id: 'negotiation', label: 'Pazarlık', status: hasNegotiation ? 'completed' : 'partial', note: hasNegotiation ? 'Pazarlık sinyali mevcut' : 'Eksik veri' },
     { id: 'purchase', label: 'Al kararı', status: hasPd ? 'completed' : 'missing', note: hasPd ? `Karar skoru: ${ctx.decisionScore}` : 'Eksik veri' },
     { id: 'explain', label: 'Açıklama', status: hasExp ? 'completed' : 'partial', note: hasExp ? `Açıklama skoru: ${ctx.explanationScore}` : 'Eksik veri' },
+    { id: 'personalization', label: 'Kişiselleştirme', status: hasPersonalization ? 'completed' : hasPd ? 'partial' : 'missing', note: hasPersonalization ? 'Tercih profili aktif' : 'Tercih profili bekleniyor' },
     { id: 'report', label: 'Yönetici raporu', status: hasReport ? 'completed' : 'partial', note: hasReport ? `Rapor skoru: ${ctx.reportScore}` : 'Eksik veri' },
-    { id: 'compare', label: 'Karşılaştırma', status: hasCompare ? 'completed' : 'partial', note: hasCompare ? 'Karşılaştırma hazır' : 'En az 2 öneri gerekir' }
+    { id: 'compare', label: 'Karşılaştırma', status: hasCompare ? 'completed' : 'partial', note: hasCompare ? 'Karşılaştırma hazır' : 'En az 2 öneri gerekir' },
+    { id: 'learning', label: 'Öğrenme', status: hasLearning ? 'completed' : 'partial', note: hasLearning ? `${ctx.learningEventCount} etkileşim` : 'Kullanım verisi toplanıyor' }
   ];
 }
 
@@ -127,6 +135,24 @@ export function buildActionCenterActions(ctx) {
       label: 'Kalite ve Güven',
       enabled: hasRec && Number(ctx.qualityScore) > 0,
       hint: INSUFFICIENT_DATA_HINT
+    },
+    {
+      key: 'learning',
+      label: 'Öğrenme Öngörüleri',
+      enabled: Number(ctx.learningEventCount) > 0,
+      hint: 'Henüz yeterli kullanım verisi yok.'
+    },
+    {
+      key: 'preferences',
+      label: 'Tercih Profili',
+      enabled: Boolean(ctx.hasPersonalization) || hasRec,
+      hint: hasRec ? '' : noRecHint
+    },
+    {
+      key: 'data_pool',
+      label: 'Veri Havuzu',
+      enabled: Boolean(ctx.listing?.id),
+      hint: 'İlan seçildiğinde veri havuzu analizi çalışır.'
     }
   ];
 }

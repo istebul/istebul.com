@@ -297,8 +297,8 @@ test('risk level displayed in Turkish', () => {
   assert.match(html, /Orta/);
 });
 
-test('pipeline has 9 steps', () => {
-  assert.equal(buildDecisionPipeline(ctx).length, 9);
+test('pipeline has 13 steps', () => {
+  assert.equal(buildDecisionPipeline(ctx).length, 13);
 });
 
 test('heat map max 3 per group', () => {

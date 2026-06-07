@@ -139,9 +139,9 @@ test('duplicate label shown when present', () => {
 
 // --- PIPELINE ---
 
-test('pipeline steps render 9 steps', () => {
+test('pipeline steps render 13 steps', () => {
   const pipeline = buildDecisionPipeline(fullCtx());
-  assert.equal(pipeline.length, 9);
+  assert.equal(pipeline.length, 13);
 });
 
 test('pipeline step labels are Turkish', () => {
@@ -149,14 +149,18 @@ test('pipeline step labels are Turkish', () => {
   const labels = pipeline.map((s) => s.label);
   assert.deepEqual(labels, [
     'İlan',
+    'Veri havuzu',
+    'Varlık çözümleme',
     'Kalite',
     'Güven',
     'Toplam maliyet',
     'Pazarlık',
     'Al kararı',
     'Açıklama',
+    'Kişiselleştirme',
     'Yönetici raporu',
-    'Karşılaştırma'
+    'Karşılaştırma',
+    'Öğrenme'
   ]);
 });
 
@@ -242,9 +246,9 @@ test('heat map HTML includes chip groups', () => {
 
 // --- ACTION CENTER ---
 
-test('action center has 7 buttons', () => {
+test('action center has 10 buttons', () => {
   const actions = buildActionCenterActions(fullCtx());
-  assert.equal(actions.length, 7);
+  assert.equal(actions.length, 10);
 });
 
 test('action center buttons include Turkish labels', () => {
@@ -257,6 +261,9 @@ test('action center buttons include Turkish labels', () => {
   assert.ok(labels.includes('Senaryo Simülasyonu'));
   assert.ok(labels.includes('Pazarlık Analizi'));
   assert.ok(labels.includes('Kalite ve Güven'));
+  assert.ok(labels.includes('Öğrenme Öngörüleri'));
+  assert.ok(labels.includes('Tercih Profili'));
+  assert.ok(labels.includes('Veri Havuzu'));
 });
 
 test('action center purchase disabled without recommendation', () => {
@@ -475,6 +482,13 @@ test('listing card role button present', () => {
 test('admin.js uses renderDecisionWorkspace', () => {
   const src = fs.readFileSync(adminJsPath, 'utf8');
   assert.match(src, /renderDecisionWorkspace/);
+});
+
+test('admin.js imports decision platform 2 modules', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /ai-user-learning/);
+  assert.match(src, /ai-listing-data-pool/);
+  assert.match(src, /ai-personalization/);
 });
 
 test('insufficient data hint on disabled action', () => {
