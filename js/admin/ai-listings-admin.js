@@ -83,6 +83,11 @@ import {
   runPurchaseDecisionEngine
 } from '../ai-purchase-decision/index.js';
 import { buildExecutiveDecisionPanelHtml } from '../ai-purchase-decision/executive-decision-card-builder.js';
+import {
+  buildExplainabilityInput,
+  runExplainabilityEngine
+} from '../ai-decision-explainability/index.js';
+import { buildExplainabilityPanelHtml } from '../ai-decision-explainability/explainability-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
@@ -621,6 +626,16 @@ function closePurchaseDecisionPanel(root) {
   document.body.classList.remove('ai-listings-admin--pd-open');
 }
 
+function closeExplainabilityPanel(root) {
+  const host = root.querySelector('#ai-exp-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-exp-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--exp-open');
+}
+
 /**
  * @param {HTMLElement} root
  * @returns {Record<string, unknown>}
@@ -788,6 +803,7 @@ function openOwnershipCostPanel(root, recordId) {
   closeDecisionSimulatorPanel(root);
   closeDecisionReportPanel(root);
   closePurchaseDecisionPanel(root);
+  closeExplainabilityPanel(root);
 
   const profile = cachedRecommendationResult.profile ?? recommendationProfile;
   const costInput = buildOwnershipCostInput(selected, profile);
@@ -821,6 +837,7 @@ function openPurchaseDecisionPanel(root, recordId) {
   closeDecisionSimulatorPanel(root);
   closeDecisionReportPanel(root);
   closeOwnershipCostPanel(root);
+  closeExplainabilityPanel(root);
 
   const profile = cachedRecommendationResult.profile ?? recommendationProfile;
   const pdInput = buildPurchaseDecisionInput(selected, profile);
@@ -844,6 +861,40 @@ function openPurchaseDecisionPanel(root, recordId) {
   });
 }
 
+function openExplainabilityPanel(root, recordId) {
+  if (!cachedRecommendationResult?.top?.length) return;
+
+  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
+  if (!selected) return;
+
+  closeDecisionCoachPanel(root);
+  closeDecisionSimulatorPanel(root);
+  closeDecisionReportPanel(root);
+  closeOwnershipCostPanel(root);
+  closePurchaseDecisionPanel(root);
+
+  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const expInput = buildExplainabilityInput(selected, profile);
+  const explainability = runExplainabilityEngine(expInput);
+
+  const host = root.querySelector('#ai-exp-panel-host');
+  if (!host) return;
+
+  host.innerHTML = buildExplainabilityPanelHtml(explainability, {
+    title: String(selected.title ?? 'Karar Açıklaması'),
+    recordId: String(recordId)
+  });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--exp-open');
+
+  host.querySelector('[data-exp-action="close"]')?.addEventListener('click', () => {
+    closeExplainabilityPanel(root);
+  });
+  host.querySelector('[data-exp-backdrop]')?.addEventListener('click', () => {
+    closeExplainabilityPanel(root);
+  });
+}
+
 function bindRecommendationsDashboardEvents(root) {
   root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
     recommendationProfile = readRecommendationProfileFromForm(root);
@@ -853,6 +904,7 @@ function bindRecommendationsDashboardEvents(root) {
     closeDecisionReportPanel(root);
     closeOwnershipCostPanel(root);
     closePurchaseDecisionPanel(root);
+    closeExplainabilityPanel(root);
     renderRecommendationsView();
   });
 
@@ -907,9 +959,18 @@ function bindRecommendationsDashboardEvents(root) {
     });
   });
 
+  root.querySelectorAll('[data-rec-exp-id]').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = btn.getAttribute('data-rec-exp-id');
+      if (id) openExplainabilityPanel(root, id);
+    });
+  });
+
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-pd-id]')) return;
+      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-pd-id], [data-rec-exp-id]')) return;
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {

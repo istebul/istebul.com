@@ -78,6 +78,9 @@ export function buildRecommendationCardHtml(item) {
         ${item.id ? `
         <button type="button" class="ai-rec-card__pd-btn" data-rec-pd-id="${safe(item.id)}" aria-label="Al Kararı">
           Al Kararı
+        </button>
+        <button type="button" class="ai-rec-card__exp-btn" data-rec-exp-id="${safe(item.id)}" aria-label="Neden Bu Karar">
+          Neden Bu Karar?
         </button>` : ''}
       </footer>
     </article>`;
