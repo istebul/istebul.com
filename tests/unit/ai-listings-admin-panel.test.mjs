@@ -34,7 +34,10 @@ const {
   buildDataQualityHtml,
   buildAnalysisTimelineHtml,
   buildStickyActionBarHtml,
+  buildListingCardHtml,
+  buildAiTagsSectionHtml,
   getAiDecision,
+  getScoreTier,
   buildStarsHtml,
   previewImportContent,
   getAvailableQaActions,
@@ -339,7 +342,8 @@ test('buildAnalysisDetailHtml renders latest analysis sections in Turkish', () =
   assert.match(html, /Güçlü araç ilanı/);
   assert.match(html, /Fiyat uygun/);
   assert.match(html, /Eksik görsel/);
-  assert.match(html, /low-risk/);
+  assert.match(html, /Düşük Risk/);
+  assert.match(html, /Araç/);
   assert.match(html, /Çok iyi/);
   assert.match(html, /Düşük risk/);
 });
@@ -370,7 +374,7 @@ test('import analyze checkbox is checked by default in admin HTML', () => {
   const checkboxMatch = html.match(/<input[^>]*id="ai-listings-import-analyze"[^>]*>/);
   assert.ok(checkboxMatch, 'import analyze checkbox should exist');
   assert.match(checkboxMatch[0], /\bchecked\b/);
-  assert.match(html, /İçe aktarılan ilanları otomatik analiz et/);
+  assert.match(html, /Otomatik analiz/);
 });
 
 test('create listing flow triggers auto analyze call in admin JS', () => {
@@ -420,16 +424,16 @@ test('buildQaActionsHtml renders Turkish workflow buttons for pending_review', (
   assert.match(html, /data-qa-action="reject"/);
   assert.match(html, />Onayla</);
   assert.match(html, />Reddet</);
-  assert.match(html, />Yeniden Analiz Et</);
+  assert.match(html, />Yeniden Analiz</);
   assert.doesNotMatch(html, /data-qa-action="submit-review"/);
   assert.doesNotMatch(html, />Approve</);
 });
 
-test('draft listings expose Yeniden Analiz Et and İncelemeye Gönder actions', () => {
+test('draft listings expose Yeniden Analiz and İncelemeye Gönder actions', () => {
   const html = buildQaActionsHtml('draft');
   assert.match(html, /data-qa-action="reanalyze"/);
   assert.match(html, /data-qa-action="submit-review"/);
-  assert.match(html, />Yeniden Analiz Et</);
+  assert.match(html, />Yeniden Analiz</);
   assert.match(html, />İncelemeye Gönder</);
   assert.match(html, />Arşivle</);
 });
@@ -460,10 +464,10 @@ test('buildImportPreviewHtml renders totals and row errors', () => {
     normalized_rows: [{ category: 'vehicle', title: 'Valid' }]
   });
 
-  assert.match(html, /Total rows/);
-  assert.match(html, /Valid rows/);
-  assert.match(html, /Invalid rows/);
-  assert.match(html, /Row 2/);
+  assert.match(html, /Toplam satır/);
+  assert.match(html, /Geçerli satır/);
+  assert.match(html, /Geçersiz satır/);
+  assert.match(html, /Satır 2/);
   assert.match(html, /title is required/);
 });
 
@@ -483,12 +487,14 @@ test('buildStarsHtml renders filled and empty stars', () => {
 
 test('buildHeroDecisionCardHtml renders title decision and score', () => {
   const html = buildHeroDecisionCardHtml(
-    { title: 'Test Araç' },
-    { ai_score: 85, risk_score: 20 }
+    { title: 'Test Araç', category: 'vehicle', status: 'pending_review' },
+    { ai_score: 92, risk_score: 20 }
   );
   assert.match(html, /Test Araç/);
-  assert.match(html, /Satın Alınabilir/);
+  assert.match(html, /Araç/);
+  assert.match(html, /İncelemede/);
   assert.match(html, /AI Karar Skoru/);
+  assert.match(html, /Çok İyi/);
   assert.match(html, /ai-listings-admin__hero/);
 });
 
@@ -501,7 +507,7 @@ test('buildScoreCardsHtml renders five premium score cards', () => {
     confidence: 0.82
   });
   assert.match(html, /AI Skoru/);
-  assert.match(html, /Risk/);
+  assert.match(html, /Risk Skoru/);
   assert.match(html, /Piyasa/);
   assert.match(html, /Fiyat/);
   assert.match(html, /Güven/);
@@ -519,9 +525,10 @@ test('buildMarketAnalysisHtml renders comparison with advantage indicator', () =
     { price: 900000, currency: 'TRY' },
     { price_score: 80 }
   );
-  assert.match(html, /Benzer ilan ortalaması/);
-  assert.match(html, /Bu ilan/);
-  assert.match(html, /Fark/);
+  assert.match(html, /Piyasa Karşılaştırması|ai-listings-admin__market-chart/);
+  assert.match(html, /İlan/);
+  assert.match(html, /Piyasa/);
+  assert.match(html, /AI önerisi/);
   assert.match(html, /ai-listings-admin__market-advantage/);
 });
 
@@ -531,51 +538,95 @@ test('buildDataQualityHtml renders progress bar and checklist', () => {
     { ai_score: 70 }
   );
   assert.match(html, /role="progressbar"/);
-  assert.match(html, /Başlık/);
-  assert.match(html, /Görsel/);
-  assert.match(html, /ai-listings-admin__quality-item--pass/);
-  assert.match(html, /ai-listings-admin__quality-item--fail/);
+  assert.match(html, /Eksik alanlar:/);
+  assert.match(html, /Fotoğraf/);
+  assert.match(html, /Konum/);
 });
 
-test('buildAnalysisTimelineHtml renders five timeline steps', () => {
+test('buildAnalysisTimelineHtml renders event history timeline', () => {
   const html = buildAnalysisTimelineHtml(
-    { created_at: '2026-01-01', updated_at: '2026-01-02' },
+    { created_at: '2026-01-01', updated_at: '2026-01-02', status: 'approved' },
     { ai_score: 70, risk_score: 30, market_score: 65 },
-    [{ event_type: 'listing_created' }]
+    [{ event_type: 'listing_created' }, { event_type: 'listing_approved' }]
   );
-  assert.match(html, /Analiz Geçmişi/);
-  assert.match(html, /İlan oluşturuldu/);
-  assert.match(html, /AI analiz edildi/);
-  assert.match(html, /Risk hesaplandı/);
-  assert.match(html, /Piyasa analizi/);
+  assert.match(html, /Olay Geçmişi/);
+  assert.match(html, /Oluşturuldu/);
+  assert.match(html, /Analiz edildi/);
   assert.match(html, /Güncellendi/);
+  assert.match(html, /Onaylandı/);
 });
 
 test('buildStickyActionBarHtml renders premium action buttons with aria labels', () => {
   const html = buildStickyActionBarHtml('pending_review');
   assert.match(html, /ai-listings-admin__action-bar/);
   assert.match(html, /aria-label="Onayla"/);
-  assert.match(html, /aria-label="PDF Oluştur"/);
+  assert.match(html, /aria-label="PDF"/);
+  assert.match(html, /aria-label="Sil"/);
   assert.match(html, /data-qa-action="pdf"/);
+  assert.match(html, /data-qa-action="delete-ui"/);
 });
 
 test('buildPremiumDashboardHtml assembles full decision dashboard', () => {
   const html = buildPremiumDashboardHtml(
     { id: '1', title: 'Premium Test', price: 500000, currency: 'TRY', category: 'vehicle' },
-    { ai_score: 75, risk_score: 25, market_score: 70, price_score: 68, confidence: 0.85, summary: 'Test özet', pros: ['Avantaj'], cons: ['Risk'] },
+    { ai_score: 75, risk_score: 25, market_score: 70, price_score: 68, confidence: 0.85, summary: 'Test özet', pros: ['Avantaj'], cons: ['Risk'], tags: ['low-risk'] },
     [{ event_type: 'listing_created' }],
     'pending_review'
   );
   assert.match(html, /ai-listings-admin__dashboard/);
-  assert.match(html, /Yapay Zeka Yorumu/);
+  assert.match(html, /AI Yönetici Özeti/);
   assert.match(html, /Güçlü Yönler/);
   assert.match(html, /Riskler/);
+  assert.match(html, /AI Etiketleri/);
   assert.match(html, /Veri Kalitesi/);
+  assert.match(html, /Piyasa Karşılaştırması/);
   assert.match(html, /ai-listings-admin__action-bar/);
+});
+
+test('getScoreTier maps score bands to Turkish labels and classes', () => {
+  assert.equal(getScoreTier(92).label, 'Çok İyi');
+  assert.equal(getScoreTier(92).tier, 'excellent');
+  assert.equal(getScoreTier(75).tier, 'good');
+  assert.equal(getScoreTier(55).tier, 'fair');
+  assert.equal(getScoreTier(25).tier, 'poor');
+});
+
+test('buildListingCardHtml renders premium listing card metrics', () => {
+  const html = buildListingCardHtml({
+    id: 'abc',
+    title: 'BMW 320i',
+    category: 'vehicle',
+    status: 'pending_review',
+    price: 900000,
+    updated_at: '2026-06-06T12:00:00.000Z',
+    latest_analysis: { ai_score: 91, risk_score: 18, price_score: 82 }
+  });
+  assert.match(html, /BMW 320i/);
+  assert.match(html, /AI 91/);
+  assert.match(html, /Risk 18/);
+  assert.match(html, /Piyasa/);
+  assert.match(html, /ai-listings-admin__listing-card/);
+});
+
+test('buildAiTagsSectionHtml renders translated tag chips', () => {
+  const html = buildAiTagsSectionHtml({ tags: ['low-risk', 'premium'] });
+  assert.match(html, /Düşük Risk/);
+  assert.match(html, /Premium/);
+  assert.match(html, /ai-listings-admin__tag/);
 });
 
 test('admin JS uses premium dashboard for listing detail', () => {
   const adminJs = fs.readFileSync(adminJsPath, 'utf8');
   assert.match(adminJs, /buildPremiumDashboardHtml/);
+  assert.match(adminJs, /buildListingCardHtml/);
   assert.match(adminJs, /handlePdfExport/);
+});
+
+test('admin HTML exposes V3 decision center layout and drawer', () => {
+  const html = fs.readFileSync(adminHtmlPath, 'utf8');
+  assert.match(html, /Karar Merkezi/);
+  assert.match(html, /ai-listings-admin__workspace/);
+  assert.match(html, /ai-listings-create-drawer/);
+  assert.match(html, /ai-listings-search/);
+  assert.doesNotMatch(html, /İlan oluştur/);
 });

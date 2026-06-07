@@ -219,6 +219,94 @@ export function extractLatestAnalysis(listing) {
 }
 
 /**
+ * @param {unknown} rawDate
+ * @returns {string}
+ */
+export function formatTimelineDate(rawDate) {
+  const date = new Date(String(rawDate ?? ''));
+  if (Number.isNaN(date.getTime())) return String(rawDate ?? '');
+  return date.toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+/**
+ * @param {unknown} tag
+ * @returns {string}
+ */
+export function translateTagTr(tag) {
+  const raw = String(tag ?? '').trim();
+  if (!raw) return '—';
+  const lower = raw.toLowerCase();
+  if (CATEGORY_LABELS_TR[lower]) return CATEGORY_LABELS_TR[lower];
+  if (TAG_LABELS_TR[lower]) return TAG_LABELS_TR[lower];
+  if (lower.startsWith('fuel:')) return `Yakıt: ${raw.split(':')[1] ?? ''}`;
+  if (lower.startsWith('year:')) return `Yıl: ${raw.split(':')[1] ?? ''}`;
+  if (lower.startsWith('usage:')) return `Kullanım: ${raw.split(':')[1] ?? ''}`;
+  if (lower.startsWith('factor:')) return raw.replace('factor:', '').replace(':', ' ');
+  return raw.replace(/[_-]/g, ' ');
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @returns {string}
+ */
+export function computeMarketDeltaLabel(listing, analysis = null) {
+  const nested = analysis ?? extractLatestAnalysis(listing);
+  const price = Number(listing.price);
+  const priceScore = Number(nested?.price_score);
+  if (!Number.isFinite(price) || !Number.isFinite(priceScore) || priceScore <= 0) return '—';
+  const marketAvg = price / (priceScore / 100);
+  const pct = marketAvg > 0 ? ((price - marketAvg) / marketAvg) * 100 : 0;
+  const rounded = Math.round(pct);
+  if (rounded > 0) return `Piyasa +${rounded}%`;
+  if (rounded < 0) return `Piyasa ${rounded}%`;
+  return 'Piyasa 0%';
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {boolean} [isActive]
+ * @returns {string}
+ */
+export function buildListingCardHtml(listing, isActive = false) {
+  const id = safeRenderText(listing.id);
+  const title = safeRenderText(listing.title);
+  const category = safeRenderText(getCategoryLabelTr(listing.category));
+  const status = safeRenderText(getStatusLabelTr(listing.status));
+  const emoji = getCategoryEmoji(listing.category);
+  const analysis = extractLatestAnalysis(listing);
+  const aiScore = analysis?.ai_score;
+  const riskScore = analysis?.risk_score;
+  const marketDelta = safeRenderText(computeMarketDeltaLabel(listing, analysis));
+  const dateRaw = listing.updated_at ?? listing.created_at ?? '';
+  const date = safeRenderText(formatTimelineDate(dateRaw));
+  const activeClass = isActive ? ' ai-listings-admin__listing-card--active' : '';
+  const aiHtml =
+    aiScore !== undefined && aiScore !== null
+      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--ai">AI ${safeRenderText(aiScore)}</span>`
+      : '';
+  const riskHtml =
+    riskScore !== undefined && riskScore !== null
+      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--risk">Risk ${safeRenderText(riskScore)}</span>`
+      : '';
+
+  return `
+    <button type="button" class="ai-listings-admin__listing-card${activeClass}" data-listing-id="${id}">
+      <span class="ai-listings-admin__listing-card-icon" aria-hidden="true">${emoji}</span>
+      <span class="ai-listings-admin__listing-card-title">${title}</span>
+      <span class="ai-listings-admin__listing-card-metrics">
+        ${aiHtml}
+        ${riskHtml}
+        <span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--market">${marketDelta}</span>
+      </span>
+      <span class="ai-listings-admin__listing-card-footer">
+        <span class="ai-listings-admin__listing-card-status">${status}</span>
+        <span class="ai-listings-admin__listing-card-category">${category}</span>
+        <span class="ai-listings-admin__listing-card-date">${date}</span>
+      </span>
+    </button>`;
+}
+
+/**
  * @param {Record<string, unknown>} listing
  * @returns {string}
  */
@@ -277,16 +365,17 @@ export function resolveActiveStatusFilter(chipValue) {
 
 /** @type {ReadonlyArray<{ action: string, label: string, variant?: string, icon?: string }>} */
 const QA_ACTION_BUTTONS = Object.freeze([
-  { action: QA_ACTIONS.REANALYZE, label: 'Yeniden Analiz Et', icon: '🔄' },
+  { action: QA_ACTIONS.REANALYZE, label: 'Yeniden Analiz', icon: '🔄' },
   { action: QA_ACTIONS.APPROVE, label: 'Onayla', variant: 'success', icon: '✅' },
-  { action: QA_ACTIONS.SUBMIT_REVIEW, label: 'İncelemeye Gönder', icon: '🟡' },
-  { action: QA_ACTIONS.REJECT, label: 'Reddet', variant: 'warn', icon: '❌' },
-  { action: QA_ACTIONS.ARCHIVE, label: 'Arşivle', variant: 'warn', icon: '🗄' }
+  { action: 'pdf', label: 'PDF', icon: '📄' },
+  { action: QA_ACTIONS.SUBMIT_REVIEW, label: 'İncelemeye Gönder', icon: '📤' },
+  { action: QA_ACTIONS.ARCHIVE, label: 'Arşivle', variant: 'warn', icon: '🗄' },
+  { action: QA_ACTIONS.REJECT, label: 'Reddet', variant: 'warn', icon: '❌' }
 ]);
 
-/** @type {ReadonlyArray<{ action: string, label: string, icon: string }>} */
+/** @type {ReadonlyArray<{ action: string, label: string, icon: string, uiOnly?: boolean }>} */
 const PREMIUM_EXTRA_ACTIONS = Object.freeze([
-  { action: 'pdf', label: 'PDF Oluştur', icon: '📄' }
+  { action: 'delete-ui', label: 'Sil', icon: '🗑', uiOnly: true }
 ]);
 
 /**
@@ -344,6 +433,39 @@ export function getAiDecision(analysis) {
 }
 
 /**
+ * @param {unknown} category
+ * @returns {string}
+ */
+export function getCategoryEmoji(category) {
+  const key = String(category ?? '').trim().toLowerCase();
+  if (key === 'vehicle') return '🚗';
+  if (key === 'housing' || key === 'real_estate') return '🏠';
+  if (key === 'vacation' || key === 'travel') return '✈️';
+  return '📋';
+}
+
+/**
+ * @param {unknown} score
+ * @returns {{ tier: string, label: string, cssClass: string }}
+ */
+export function getScoreTier(score) {
+  const value = Number(score);
+  if (!Number.isFinite(value)) {
+    return { tier: 'unknown', label: '—', cssClass: 'ai-listings-admin__score-tier--unknown' };
+  }
+  if (value >= 90) {
+    return { tier: 'excellent', label: 'Çok İyi', cssClass: 'ai-listings-admin__score-tier--excellent' };
+  }
+  if (value >= 70) {
+    return { tier: 'good', label: 'İyi', cssClass: 'ai-listings-admin__score-tier--good' };
+  }
+  if (value >= 50) {
+    return { tier: 'fair', label: 'Orta', cssClass: 'ai-listings-admin__score-tier--fair' };
+  }
+  return { tier: 'poor', label: 'Zayıf', cssClass: 'ai-listings-admin__score-tier--poor' };
+}
+
+/**
  * @param {unknown} score
  * @returns {string}
  */
@@ -368,35 +490,45 @@ export function buildStarsHtml(score) {
  */
 export function buildHeroDecisionCardHtml(listing, analysis) {
   const title = safeRenderText(listing.title ?? '—');
-  const decision = getAiDecision(analysis);
+  const category = safeRenderText(getCategoryLabelTr(listing.category));
+  const status = safeRenderText(getStatusLabelTr(listing.status ?? 'draft'));
+  const emoji = getCategoryEmoji(listing.category);
   const aiScore = Number(analysis?.ai_score);
   const scoreDisplay = Number.isFinite(aiScore) ? Math.round(aiScore) : '—';
+  const tier = getScoreTier(analysis?.ai_score);
 
   return `
-    <section class="ai-listings-admin__hero ${decision.cssClass}" aria-label="AI Karar Kartı">
+    <section class="ai-listings-admin__hero ${tier.cssClass}" aria-label="AI Karar Kartı">
       <div class="ai-listings-admin__hero-content">
-        <p class="ai-listings-admin__hero-kicker">AI Karar Paneli</p>
-        <h3 class="ai-listings-admin__hero-title">${title}</h3>
-        <div class="ai-listings-admin__hero-decision">
-          <span class="ai-listings-admin__hero-emoji" aria-hidden="true">${decision.emoji}</span>
-          <span class="ai-listings-admin__hero-decision-label">${safeRenderText(decision.label)}</span>
+        <div class="ai-listings-admin__hero-top">
+          <span class="ai-listings-admin__hero-category-icon" aria-hidden="true">${emoji}</span>
+          <div class="ai-listings-admin__hero-meta">
+            <h3 class="ai-listings-admin__hero-title">${title}</h3>
+            <div class="ai-listings-admin__hero-tags">
+              <span class="ai-listings-admin__hero-pill">${category}</span>
+              <span class="ai-listings-admin__hero-pill ai-listings-admin__hero-pill--status">${status}</span>
+            </div>
+          </div>
         </div>
-        <div class="ai-listings-admin__hero-score">
-          <span class="ai-listings-admin__hero-score-label">AI Karar Skoru</span>
-          <span class="ai-listings-admin__hero-score-value">${safeRenderText(scoreDisplay)}<small>/100</small></span>
-          ${buildStarsHtml(analysis?.ai_score)}
+        <div class="ai-listings-admin__hero-score-panel">
+          <p class="ai-listings-admin__hero-score-kicker">AI Karar Skoru</p>
+          <div class="ai-listings-admin__hero-score-main">
+            <span class="ai-listings-admin__hero-score-value">${safeRenderText(scoreDisplay)}</span>
+            ${buildStarsHtml(analysis?.ai_score)}
+            <span class="ai-listings-admin__hero-score-tier">${safeRenderText(tier.label)}</span>
+          </div>
         </div>
       </div>
     </section>`;
 }
 
-/** @type {ReadonlyArray<{ key: string, icon: string, label: string, scoreKey: string, badgeFn: (v: number) => string }>} */
+/** @type {ReadonlyArray<{ key: string, icon: string, label: string, scoreKey: string, badgeFn: (v: number) => string, hint: string }>} */
 const SCORE_CARD_CONFIG = Object.freeze([
-  { key: 'ai', icon: '🤖', label: 'AI Skoru', scoreKey: 'ai_score', badgeFn: getScoreInterpretationTr },
-  { key: 'risk', icon: '⚠', label: 'Risk', scoreKey: 'risk_score', badgeFn: getRiskInterpretationTr },
-  { key: 'market', icon: '📈', label: 'Piyasa', scoreKey: 'market_score', badgeFn: getScoreInterpretationTr },
-  { key: 'price', icon: '💰', label: 'Fiyat', scoreKey: 'price_score', badgeFn: getScoreInterpretationTr },
-  { key: 'confidence', icon: '🔒', label: 'Güven', scoreKey: 'confidence', badgeFn: (v) => getScoreInterpretationTr(v <= 1 ? v * 100 : v) }
+  { key: 'ai', icon: '🤖', label: 'AI Skoru', scoreKey: 'ai_score', badgeFn: getScoreInterpretationTr, hint: 'Genel kalite' },
+  { key: 'risk', icon: '⚠', label: 'Risk Skoru', scoreKey: 'risk_score', badgeFn: getRiskInterpretationTr, hint: 'Risk seviyesi' },
+  { key: 'price', icon: '💰', label: 'Fiyat', scoreKey: 'price_score', badgeFn: getScoreInterpretationTr, hint: 'Fiyat uyumu' },
+  { key: 'market', icon: '📈', label: 'Piyasa', scoreKey: 'market_score', badgeFn: getScoreInterpretationTr, hint: 'Piyasa konumu' },
+  { key: 'confidence', icon: '🔒', label: 'Güven', scoreKey: 'confidence', badgeFn: (v) => getScoreInterpretationTr(v <= 1 ? v * 100 : v), hint: 'Veri güveni' }
 ]);
 
 /**
@@ -428,6 +560,7 @@ export function buildScoreCardsHtml(analysis) {
         <span class="ai-listings-admin__score-card-icon" aria-hidden="true">${cfg.icon}</span>
         <span class="ai-listings-admin__score-card-value">${safeRenderText(value)}</span>
         <span class="ai-listings-admin__score-card-label">${safeRenderText(cfg.label)}</span>
+        <span class="ai-listings-admin__score-card-hint">${safeRenderText(cfg.hint)}</span>
         <span class="ai-listings-admin__score-badge ${badgeClass}">${safeRenderText(badge)}</span>
       </article>`;
   }).filter(Boolean);
@@ -495,10 +628,10 @@ export function buildExecutiveSummaryHtml(analysis) {
  */
 export function buildStrengthsCardHtml(analysis) {
   const items = Array.isArray(analysis?.pros) ? analysis.pros : [];
-  const content = buildStringListHtml(items, 'Güçlü yön bulunamadı.');
+  const content = buildCheckListHtml(items, 'Güçlü yön bulunamadı.', 'ai-listings-admin__check-item--strength');
   return `
     <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--strengths">
-      <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">✅</span> Güçlü Yönler</h4>
+      <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">✓</span> Güçlü Yönler</h4>
       ${content}
     </article>`;
 }
@@ -509,7 +642,7 @@ export function buildStrengthsCardHtml(analysis) {
  */
 export function buildRisksCardHtml(analysis) {
   const items = Array.isArray(analysis?.cons) ? analysis.cons : [];
-  const content = buildStringListHtml(items, 'Risk bulunamadı.');
+  const content = buildCheckListHtml(items, 'Risk bulunamadı.', 'ai-listings-admin__check-item--risk');
   return `
     <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--risks">
       <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">⚠</span> Riskler</h4>
@@ -556,19 +689,41 @@ export function buildMarketAnalysisHtml(listing, analysis) {
       ? `%${Math.abs(pct).toFixed(1)} dezavantaj`
       : 'Eşit';
 
+  const aiSuggested = isAdvantage
+    ? Math.round(price * 0.98)
+    : diff > 0
+      ? Math.round(price * 0.92)
+      : price;
+  const maxBar = Math.max(price, marketAvg, aiSuggested, 1);
+
   return `
-    <article class="ai-listings-admin__market-card" aria-label="Piyasa Analizi">
-      <div class="ai-listings-admin__market-row">
-        <span class="ai-listings-admin__market-label">Benzer ilan ortalaması</span>
-        <span class="ai-listings-admin__market-value">${safeRenderText(formatCurrency(marketAvg, currency))}</span>
+    <article class="ai-listings-admin__market-card" aria-label="Piyasa Karşılaştırması">
+      <div class="ai-listings-admin__market-chart">
+        <div class="ai-listings-admin__market-bar-row">
+          <span class="ai-listings-admin__market-bar-label">İlan</span>
+          <div class="ai-listings-admin__market-bar-track">
+            <div class="ai-listings-admin__market-bar ai-listings-admin__market-bar--listing" style="width:${Math.round((price / maxBar) * 100)}%"></div>
+          </div>
+          <span class="ai-listings-admin__market-bar-value">${safeRenderText(formatCurrency(price, currency))}</span>
+        </div>
+        <div class="ai-listings-admin__market-bar-row">
+          <span class="ai-listings-admin__market-bar-label">Piyasa</span>
+          <div class="ai-listings-admin__market-bar-track">
+            <div class="ai-listings-admin__market-bar ai-listings-admin__market-bar--market" style="width:${Math.round((marketAvg / maxBar) * 100)}%"></div>
+          </div>
+          <span class="ai-listings-admin__market-bar-value">${safeRenderText(formatCurrency(marketAvg, currency))}</span>
+        </div>
+        <div class="ai-listings-admin__market-bar-row">
+          <span class="ai-listings-admin__market-bar-label">AI önerisi</span>
+          <div class="ai-listings-admin__market-bar-track">
+            <div class="ai-listings-admin__market-bar ai-listings-admin__market-bar--ai" style="width:${Math.round((aiSuggested / maxBar) * 100)}%"></div>
+          </div>
+          <span class="ai-listings-admin__market-bar-value">${safeRenderText(formatCurrency(aiSuggested, currency))}</span>
+        </div>
       </div>
       <div class="ai-listings-admin__market-row">
-        <span class="ai-listings-admin__market-label">Bu ilan</span>
+        <span class="ai-listings-admin__market-label">Fiyat</span>
         <span class="ai-listings-admin__market-value ai-listings-admin__market-value--highlight">${safeRenderText(formatCurrency(price, currency))}</span>
-      </div>
-      <div class="ai-listings-admin__market-row">
-        <span class="ai-listings-admin__market-label">Fark</span>
-        <span class="ai-listings-admin__market-value ${diffClass}">${safeRenderText(formatCurrency(Math.abs(diff), currency))}</span>
       </div>
       <div class="ai-listings-admin__market-advantage ${diffClass}">
         ${safeRenderText(pctLabel)}
@@ -583,9 +738,23 @@ const PREMIUM_CHECKLIST_ITEMS = Object.freeze([
   { key: 'has_price', label: 'Fiyat' },
   { key: 'has_attributes', label: 'Özellik' },
   { key: 'has_analysis', label: 'Analiz' },
-  { key: 'has_images', label: 'Görsel' },
+  { key: 'has_images', label: 'Fotoğraf' },
   { key: 'has_location', label: 'Konum' }
 ]);
+
+/** @type {Readonly<Record<string, string>>} */
+const TAG_LABELS_TR = Object.freeze({
+  'low-risk': 'Düşük Risk',
+  premium: 'Premium',
+  opportunity: 'Fırsat',
+  'high-demand': 'Yüksek Talep',
+  'family-car': 'Aile Aracı',
+  'low-km': 'Düşük KM',
+  'low-mileage': 'Düşük KM',
+  manual_seed: 'Manuel Kayıt',
+  placeholder: 'Yer Tutucu',
+  inactive: 'Pasif'
+});
 
 /**
  * @param {Record<string, unknown>} listing
@@ -598,26 +767,23 @@ export function buildDataQualityHtml(listing, latestAnalysis = null) {
   const total = Object.keys(checklist).length;
   const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
 
-  const items = PREMIUM_CHECKLIST_ITEMS.map(({ key, label }) => {
-    const ok = checklist[key];
-    const mark = ok ? '✔' : '✖';
-    const stateClass = ok ? 'ai-listings-admin__quality-item--pass' : 'ai-listings-admin__quality-item--fail';
-    return `<li class="ai-listings-admin__quality-item ${stateClass}"><span aria-hidden="true">${mark}</span> ${safeRenderText(label)}</li>`;
-  }).join('');
-
-  const filled = Math.round((pct / 100) * 12);
-  const bar = '█'.repeat(filled) + '░'.repeat(12 - filled);
+  const missingFields = PREMIUM_CHECKLIST_ITEMS.filter(({ key }) => !checklist[key]).map(({ label }) => label);
+  const filled = Math.round((pct / 100) * 10);
+  const bar = '█'.repeat(filled) + '░'.repeat(10 - filled);
+  const missingHtml = missingFields.length
+    ? `<div class="ai-listings-admin__quality-missing"><span>Eksik alanlar:</span> ${missingFields.map((f) => safeRenderText(f)).join(', ')}</div>`
+    : '<div class="ai-listings-admin__quality-missing ai-listings-admin__quality-missing--complete">Tüm alanlar tamamlandı.</div>';
 
   return `
     <article class="ai-listings-admin__quality-card" aria-label="Veri Kalitesi">
       <div class="ai-listings-admin__quality-bar-wrap">
-        <div class="ai-listings-admin__quality-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Veri kalitesi ${pct}%">
-          <div class="ai-listings-admin__quality-bar-fill" style="width:${pct}%"></div>
-        </div>
+        <pre class="ai-listings-admin__quality-visual" aria-hidden="true">${bar}</pre>
         <span class="ai-listings-admin__quality-pct">${pct}%</span>
       </div>
-      <pre class="ai-listings-admin__quality-visual" aria-hidden="true">${bar}</pre>
-      <ul class="ai-listings-admin__quality-list">${items}</ul>
+      <div class="ai-listings-admin__quality-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Veri kalitesi ${pct}%">
+        <div class="ai-listings-admin__quality-bar-fill" style="width:${pct}%"></div>
+      </div>
+      ${missingHtml}
     </article>`;
 }
 
@@ -643,28 +809,34 @@ export function buildAnalysisTimelineHtml(listing, analysis, events) {
   const steps = [];
 
   const hasCreated = events?.some((e) => e.event_type === 'listing_created') || listing.created_at;
-  steps.push({ label: 'İlan oluşturuldu', done: Boolean(hasCreated), time: String(listing.created_at ?? '') });
+  steps.push({ label: 'Oluşturuldu', done: Boolean(hasCreated), time: String(listing.created_at ?? '') });
 
   const hasAnalyzed = events?.some((e) => e.event_type === 'listing_analyzed') || analysis?.ai_score !== undefined;
-  steps.push({ label: 'AI analiz edildi', done: Boolean(hasAnalyzed) });
-
-  const hasRisk = analysis?.risk_score !== undefined;
-  steps.push({ label: 'Risk hesaplandı', done: Boolean(hasRisk) });
-
-  const hasMarket = analysis?.market_score !== undefined;
-  steps.push({ label: 'Piyasa analizi', done: Boolean(hasMarket) });
+  steps.push({ label: 'Analiz edildi', done: Boolean(hasAnalyzed) });
 
   const hasUpdated =
     events?.some((e) => e.event_type === 'listing_updated') ||
     (listing.updated_at && listing.created_at && String(listing.updated_at) !== String(listing.created_at));
   steps.push({ label: 'Güncellendi', done: Boolean(hasUpdated), time: String(listing.updated_at ?? '') });
 
+  const hasApproved = events?.some((e) => e.event_type === 'listing_approved') || listing.status === 'approved';
+  steps.push({ label: 'Onaylandı', done: Boolean(hasApproved) });
+
+  if (events?.length) {
+    for (const event of events) {
+      const label = TIMELINE_EVENT_LABELS[String(event.event_type ?? '')];
+      if (!label) continue;
+      if (steps.some((step) => step.label === label)) continue;
+      steps.push({ label, done: true, time: String(event.created_at ?? '') });
+    }
+  }
+
   const items = steps
     .map((step) => {
-      const icon = step.done ? '✔' : '○';
+      const icon = step.done ? '✓' : '○';
       const stateClass = step.done ? 'ai-listings-admin__timeline-item--done' : 'ai-listings-admin__timeline-item--pending';
       const timeHtml = step.time
-        ? `<time class="ai-listings-admin__timeline-time">${safeRenderText(step.time)}</time>`
+        ? `<time class="ai-listings-admin__timeline-time">${safeRenderText(formatTimelineDate(step.time))}</time>`
         : '';
       return `
         <li class="ai-listings-admin__timeline-item ${stateClass}">
@@ -676,8 +848,8 @@ export function buildAnalysisTimelineHtml(listing, analysis, events) {
     .join('');
 
   return `
-    <section class="ai-listings-admin__timeline" aria-label="Analiz Geçmişi">
-      <h4 class="ai-listings-admin__section-title">Analiz Geçmişi</h4>
+    <section class="ai-listings-admin__timeline" aria-label="Olay Geçmişi">
+      <h4 class="ai-listings-admin__section-title">Olay Geçmişi</h4>
       <ol class="ai-listings-admin__timeline-list">${items}</ol>
     </section>`;
 }
@@ -688,7 +860,7 @@ export function buildAnalysisTimelineHtml(listing, analysis, events) {
  */
 export function buildStickyActionBarHtml(status) {
   const available = new Set(getAvailableQaActions(status));
-  const qaButtons = QA_ACTION_BUTTONS.filter((btn) => available.has(btn.action))
+  const qaButtons = QA_ACTION_BUTTONS.filter((btn) => btn.action === 'pdf' || available.has(btn.action))
     .map((btn) => {
       const variant = btn.variant ? ` ai-listings-admin__action-btn--${btn.variant}` : '';
       const icon = btn.icon ? `<span class="ai-listings-admin__action-icon" aria-hidden="true">${btn.icon}</span>` : '';
@@ -697,7 +869,8 @@ export function buildStickyActionBarHtml(status) {
     .join('');
 
   const extraButtons = PREMIUM_EXTRA_ACTIONS.map((btn) => {
-    return `<button type="button" class="ai-listings-admin__action-btn ai-listings-admin__action-btn--ghost" data-qa-action="${safeRenderText(btn.action)}" aria-label="${safeRenderText(btn.label)}"><span class="ai-listings-admin__action-icon" aria-hidden="true">${btn.icon}</span><span>${safeRenderText(btn.label)}</span></button>`;
+    const uiOnly = btn.uiOnly ? ' data-ui-only="true"' : '';
+    return `<button type="button" class="ai-listings-admin__action-btn ai-listings-admin__action-btn--danger" data-qa-action="${safeRenderText(btn.action)}" aria-label="${safeRenderText(btn.label)}"${uiOnly}><span class="ai-listings-admin__action-icon" aria-hidden="true">${btn.icon}</span><span>${safeRenderText(btn.label)}</span></button>`;
   }).join('');
 
   const buttons = qaButtons + extraButtons;
@@ -706,7 +879,7 @@ export function buildStickyActionBarHtml(status) {
   }
 
   return `
-    <nav class="ai-listings-admin__action-bar" aria-label="İlan işlemleri">
+    <nav class="ai-listings-admin__action-bar" aria-label="Aksiyonlar">
       <div class="ai-listings-admin__action-bar-inner">${buttons}</div>
     </nav>`;
 }
@@ -723,21 +896,25 @@ export function buildPremiumDashboardHtml(listing, analysis, events, status) {
     <div class="ai-listings-admin__dashboard">
       ${buildHeroDecisionCardHtml(listing, analysis)}
       ${buildScoreCardsHtml(analysis)}
-      <section class="ai-listings-admin__section ai-listings-admin__section--summary">
-        <h4 class="ai-listings-admin__section-title">Yapay Zeka Yorumu</h4>
+      <section class="ai-listings-admin__section ai-listings-admin__section--summary ai-listings-admin__glass-card">
+        <h4 class="ai-listings-admin__section-title"><span aria-hidden="true">🧠</span> AI Yönetici Özeti</h4>
         ${buildExecutiveSummaryHtml(analysis)}
       </section>
       <div class="ai-listings-admin__insights-grid">
         ${buildStrengthsCardHtml(analysis)}
         ${buildRisksCardHtml(analysis)}
       </div>
-      <section class="ai-listings-admin__section">
-        <h4 class="ai-listings-admin__section-title">Piyasa Analizi</h4>
-        ${buildMarketAnalysisHtml(listing, analysis)}
+      <section class="ai-listings-admin__section ai-listings-admin__glass-card">
+        <h4 class="ai-listings-admin__section-title">AI Etiketleri</h4>
+        ${buildAiTagsSectionHtml(analysis)}
       </section>
-      <section class="ai-listings-admin__section">
+      <section class="ai-listings-admin__section ai-listings-admin__glass-card">
         <h4 class="ai-listings-admin__section-title">Veri Kalitesi</h4>
         ${buildDataQualityHtml(listing, analysis)}
+      </section>
+      <section class="ai-listings-admin__section ai-listings-admin__glass-card">
+        <h4 class="ai-listings-admin__section-title">Piyasa Karşılaştırması</h4>
+        ${buildMarketAnalysisHtml(listing, analysis)}
       </section>
       ${buildAnalysisTimelineHtml(listing, analysis, events)}
       <details class="ai-listings-admin__meta-details">
@@ -822,19 +999,19 @@ export function buildImportPreviewHtml(preview) {
   const errorItems = preview.row_errors
     .map(
       (entry) =>
-        `<li><strong>Row ${safeRenderText(entry.row)}:</strong> ${safeRenderText(entry.messages.join('; '))}</li>`
+        `<li><strong>Satır ${safeRenderText(entry.row)}:</strong> ${safeRenderText(entry.messages.join('; '))}</li>`
     )
     .join('');
 
   const errorsBlock = errorItems
     ? `<ul class="ai-listings-admin__import-errors">${errorItems}</ul>`
-    : '<p class="ai-listings-admin__muted">No row-level errors.</p>';
+    : '<p class="ai-listings-admin__muted">Satır düzeyinde hata yok.</p>';
 
   return `
     <div class="ai-listings-admin__import-preview">
-      <p><strong>Total rows:</strong> ${safeRenderText(preview.total_count)}</p>
-      <p><strong>Valid rows:</strong> ${safeRenderText(preview.valid_rows)}</p>
-      <p><strong>Invalid rows:</strong> ${safeRenderText(preview.invalid_rows)}</p>
+      <p><strong>Toplam satır:</strong> ${safeRenderText(preview.total_count)}</p>
+      <p><strong>Geçerli satır:</strong> ${safeRenderText(preview.valid_rows)}</p>
+      <p><strong>Geçersiz satır:</strong> ${safeRenderText(preview.invalid_rows)}</p>
       ${errorsBlock}
     </div>`;
 }
@@ -934,6 +1111,20 @@ function buildStringListHtml(items, emptyMessage) {
 }
 
 /**
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @returns {string}
+ */
+export function buildAiTagsSectionHtml(analysis) {
+  const tags = Array.isArray(analysis?.tags) ? analysis.tags : [];
+  if (!tags.length) {
+    return '<p class="ai-listings-admin__muted">Etiket bulunamadı.</p>';
+  }
+  return `<div class="ai-listings-admin__tag-list">${tags
+    .map((tag) => `<span class="ai-listings-admin__tag">${safeRenderText(translateTagTr(tag))}</span>`)
+    .join('')}</div>`;
+}
+
+/**
  * @param {unknown} tags
  * @returns {string}
  */
@@ -942,8 +1133,23 @@ function buildTagsHtml(tags) {
     return '<p class="ai-listings-admin__muted">Etiket yok.</p>';
   }
   return `<div class="ai-listings-admin__tag-list">${tags
-    .map((tag) => `<span class="ai-listings-admin__tag">${safeRenderText(tag)}</span>`)
+    .map((tag) => `<span class="ai-listings-admin__tag">${safeRenderText(translateTagTr(tag))}</span>`)
     .join('')}</div>`;
+}
+
+/**
+ * @param {unknown} items
+ * @param {string} emptyMessage
+ * @param {string} itemClass
+ * @returns {string}
+ */
+function buildCheckListHtml(items, emptyMessage, itemClass) {
+  if (!Array.isArray(items) || !items.length) {
+    return `<p class="ai-listings-admin__muted">${safeRenderText(emptyMessage)}</p>`;
+  }
+  return `<ul class="ai-listings-admin__check-list">${items
+    .map((item) => `<li class="ai-listings-admin__check-item ${itemClass}"><span aria-hidden="true">✓</span> ${safeRenderText(item)}</li>`)
+    .join('')}</ul>`;
 }
 
 /**
