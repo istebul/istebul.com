@@ -56,6 +56,10 @@ import {
   buildCollectorErrorsExportText,
   previewCollectorContent
 } from './ai-listings-collector-admin.js';
+import {
+  buildRecommendationsDashboardHtml,
+  readRecommendationProfileFromForm
+} from './ai-listings-recommendations-admin.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
@@ -95,7 +99,7 @@ let pendingBuilderResult = null;
 /** @type {string} */
 let lastKpiStatsKey = '';
 
-/** @type {'decision'|'repository'|'analytics'|'collector'} */
+/** @type {'decision'|'repository'|'analytics'|'collector'|'recommendations'} */
 let activeAdminView = 'decision';
 
 /** @type {string} */
@@ -121,6 +125,21 @@ let analyticsChartBuilders = {};
 
 /** @type {Record<string, unknown>|null} */
 let collectorPreviewResult = null;
+
+/** @type {Record<string, unknown>} */
+let recommendationProfile = {
+  category: 'vehicle',
+  budget: '',
+  city: '',
+  usage_type: 'family',
+  family_size: '',
+  annual_km: '',
+  risk_tolerance: 'medium',
+  priority: 'total_cost'
+};
+
+/** @type {boolean} */
+let recommendationGenerated = false;
 
 function $(id) {
   return document.getElementById(id);
@@ -281,7 +300,9 @@ function setAdminView(view) {
         ? 'analytics'
         : view === 'collector'
           ? 'collector'
-          : 'decision';
+          : view === 'recommendations'
+            ? 'recommendations'
+            : 'decision';
   activeAdminView = next;
 
   document.querySelectorAll('[data-admin-view]').forEach((tab) => {
@@ -295,7 +316,7 @@ function setAdminView(view) {
   $('ai-listings-analytics-kpi')?.toggleAttribute('hidden', next !== 'analytics');
   $('ai-listings-sidebar')?.toggleAttribute(
     'hidden',
-    next === 'repository' || next === 'analytics' || next === 'collector'
+    next === 'repository' || next === 'analytics' || next === 'collector' || next === 'recommendations'
   );
 
   if (next === 'repository') {
@@ -309,6 +330,9 @@ function setAdminView(view) {
   } else if (next === 'collector') {
     selectedListing = null;
     renderCollectorView();
+  } else if (next === 'recommendations') {
+    selectedListing = null;
+    renderRecommendationsView();
   } else {
     renderExecutiveDashboard();
     renderKpiCards(cachedListings);
@@ -497,6 +521,39 @@ function bindRepositoryDashboardEvents(root) {
   root.querySelectorAll('[data-repo-record-id]').forEach((card) => {
     card.addEventListener('click', () => {
       const id = card.getAttribute('data-repo-record-id');
+      const listing = cachedListings.find((item) => String(item.id) === id);
+      if (listing) {
+        activeAdminView = 'decision';
+        setAdminView('decision');
+        void showListingDetail(listing);
+      }
+    });
+  });
+}
+
+function renderRecommendationsView() {
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+
+  const { html } = buildRecommendationsDashboardHtml(cachedListings, recommendationProfile, {
+    generated: recommendationGenerated
+  });
+
+  detailEl.innerHTML = html;
+  bindRecommendationsDashboardEvents(detailEl);
+  clearTimelineHost();
+}
+
+function bindRecommendationsDashboardEvents(root) {
+  root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
+    recommendationProfile = readRecommendationProfileFromForm(root);
+    recommendationGenerated = true;
+    renderRecommendationsView();
+  });
+
+  root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
+    card.addEventListener('click', () => {
+      const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
         activeAdminView = 'decision';
