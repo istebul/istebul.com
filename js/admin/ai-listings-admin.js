@@ -1,5 +1,5 @@
 /**
- * isteBul AI Listings — internal admin test panel (Premium Decision Center V3).
+ * isteBul AI Listings — internal admin test panel (Premium Decision Center V4).
  *
  * INTERNAL TEST ONLY. Not linked from homepage, categories, or admin nav.
  * approved means internally approved only; public publishing remains disabled.
@@ -11,11 +11,15 @@
 import {
   ADMIN_ENABLE_KEY,
   ADMIN_SECRET_KEY,
+  buildAnalysisTimelineHtml,
   buildEdgeRequestHeaders,
   buildImportPreviewHtml,
+  buildKpiCardsHtml,
   buildListingCardHtml,
+  buildListingSkeletonHtml,
   buildPremiumDashboardHtml,
   buildStatusFilterChipsHtml,
+  computeKpiStats,
   getAdminPanelState,
   getEdgeSecret,
   getListingAnalyzePath,
@@ -44,10 +48,19 @@ let importValidRowCount = 0;
 let cachedListings = [];
 
 /** @type {string} */
-let activeNavView = 'dashboard';
+let searchQuery = '';
+
+/** @type {'create'|'import'|null} */
+let openDrawerType = null;
+
+/** @type {boolean} */
+let createDrawerMounted = false;
+
+/** @type {boolean} */
+let importDrawerMounted = false;
 
 /** @type {string} */
-let searchQuery = '';
+let lastKpiStatsKey = '';
 
 function $(id) {
   return document.getElementById(id);
@@ -137,49 +150,186 @@ function renderStatusFilterChips() {
   });
 }
 
-function setNavView(view) {
-  activeNavView = view;
-  document.querySelectorAll('[data-nav-view]').forEach((btn) => {
-    btn.classList.toggle('ai-listings-admin__nav-btn--active', btn.getAttribute('data-nav-view') === view);
+function animateKpiCounters() {
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('[data-kpi-counter]').forEach((el) => {
+    const card = el.closest('[data-kpi-value]');
+    const target = Number(card?.getAttribute('data-kpi-value') ?? 0);
+    if (!Number.isFinite(target)) return;
+    if (prefersReduced) {
+      el.textContent = String(target);
+      return;
+    }
+    const duration = 600;
+    const start = performance.now();
+    const tick = (now) => {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - (1 - progress) ** 3;
+      el.textContent = String(Math.round(target * eased));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   });
+}
 
-  const dashboardView = $('ai-listings-dashboard-view');
-  const importView = $('ai-listings-import-view');
-  const sidebar = $('ai-listings-sidebar');
+function renderKpiCards(listings) {
+  const kpiEl = $('ai-listings-kpi');
+  if (!kpiEl) return;
+  const stats = computeKpiStats(listings);
+  const statsKey = JSON.stringify(stats);
+  if (statsKey === lastKpiStatsKey && kpiEl.childElementCount > 0) return;
+  lastKpiStatsKey = statsKey;
+  kpiEl.innerHTML = buildKpiCardsHtml(stats);
+  animateKpiCounters();
+}
 
-  if (view === 'import') {
-    dashboardView?.setAttribute('hidden', '');
-    importView?.removeAttribute('hidden');
-    sidebar?.classList.add('ai-listings-admin__sidebar--collapsed');
-  } else {
-    importView?.setAttribute('hidden', '');
-    dashboardView?.removeAttribute('hidden');
-    sidebar?.classList.remove('ai-listings-admin__sidebar--collapsed');
-  }
+function closeAllDrawers() {
+  $('ai-listings-create-drawer')?.setAttribute('hidden', '');
+  $('ai-listings-import-drawer')?.setAttribute('hidden', '');
+  $('ai-listings-drawer-backdrop')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--drawer-open');
+  openDrawerType = null;
+  closeNewMenu();
+}
 
-  if (view === 'create') {
-    openCreateDrawer();
-    return;
-  }
+function mountDrawerTemplate(templateId, bodyId, onMounted) {
+  const template = /** @type {HTMLTemplateElement|null} */ ($(templateId));
+  const body = $(bodyId);
+  if (!template || !body || body.childElementCount > 0) return false;
+  body.appendChild(template.content.cloneNode(true));
+  onMounted?.();
+  return true;
+}
 
-  if (view === 'listings') {
-    sidebar?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
+function bindCreateFormEvents() {
+  $('ai-listings-create-form')?.addEventListener('submit', (event) => handleCreateSubmit(event));
+  $('ai-listings-create-analyze-btn')?.addEventListener('click', async (event) => {
+    await handleCreateSubmit(event, { analyzeAfter: true });
+  });
+}
+
+function bindImportFormEvents() {
+  $('ai-listings-import-preview-btn')?.addEventListener('click', handleImportPreview);
+  $('ai-listings-import-run-btn')?.addEventListener('click', handleImportRun);
+  $('ai-listings-import-content')?.addEventListener('input', () => {
+    importValidRowCount = 0;
+    updateImportButtonState();
+  });
+  $('ai-listings-import-format')?.addEventListener('change', () => {
+    importValidRowCount = 0;
+    updateImportButtonState();
+  });
+  $('ai-listings-import-file')?.addEventListener('change', handleImportFileSelect);
+  document.querySelectorAll('[data-import-format-tab]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const format = tab.getAttribute('data-import-format-tab') === 'json' ? 'json' : 'csv';
+      setImportFormat(format);
+      importValidRowCount = 0;
+      updateImportButtonState();
+    });
+  });
+  updateImportButtonState();
+}
+
+function mountCreateDrawer() {
+  if (createDrawerMounted) return;
+  const mounted = mountDrawerTemplate('ai-listings-create-template', 'ai-listings-create-drawer-body', bindCreateFormEvents);
+  if (mounted) createDrawerMounted = true;
+}
+
+function mountImportDrawer() {
+  if (importDrawerMounted) return;
+  const mounted = mountDrawerTemplate('ai-listings-import-template', 'ai-listings-import-drawer-body', bindImportFormEvents);
+  if (mounted) importDrawerMounted = true;
 }
 
 function openCreateDrawer() {
+  mountCreateDrawer();
+  closeAllDrawers();
   $('ai-listings-create-drawer')?.removeAttribute('hidden');
   $('ai-listings-drawer-backdrop')?.removeAttribute('hidden');
   document.body.classList.add('ai-listings-admin--drawer-open');
+  openDrawerType = 'create';
+}
+
+function openImportDrawer(format = 'csv') {
+  mountImportDrawer();
+  closeAllDrawers();
+  $('ai-listings-import-drawer')?.removeAttribute('hidden');
+  $('ai-listings-drawer-backdrop')?.removeAttribute('hidden');
+  document.body.classList.add('ai-listings-admin--drawer-open');
+  openDrawerType = 'import';
+  setImportFormat(format);
+}
+
+function bindDashboardTabs(root) {
+  const tabsRoot = root.querySelector('[data-dashboard-tabs]');
+  if (!tabsRoot) return;
+
+  const tabs = tabsRoot.querySelectorAll('[data-dashboard-tab]');
+  const panels = tabsRoot.querySelectorAll('[data-dashboard-panel]');
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const target = tab.getAttribute('data-dashboard-tab');
+      tabs.forEach((item) => {
+        const isActive = item === tab;
+        item.classList.toggle('ai-listings-admin__tab--active', isActive);
+        item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      panels.forEach((panel) => {
+        const isActive = panel.getAttribute('data-dashboard-panel') === target;
+        panel.classList.toggle('ai-listings-admin__tab-panel--active', isActive);
+        panel.hidden = !isActive;
+      });
+    });
+  });
+}
+
+function renderTimelineHost(listing, analysis, events) {
+  const host = $('ai-listings-timeline-host');
+  if (!host) return;
+  host.innerHTML = buildAnalysisTimelineHtml(listing, analysis, events);
+  host.hidden = false;
+}
+
+function clearTimelineHost() {
+  const host = $('ai-listings-timeline-host');
+  if (!host) return;
+  host.innerHTML = '';
+  host.hidden = true;
 }
 
 function closeCreateDrawer() {
-  $('ai-listings-create-drawer')?.setAttribute('hidden', '');
-  $('ai-listings-drawer-backdrop')?.setAttribute('hidden', '');
-  document.body.classList.remove('ai-listings-admin--drawer-open');
-  if (activeNavView === 'create') {
-    setNavView('dashboard');
-  }
+  if (openDrawerType === 'create') closeAllDrawers();
+}
+
+function closeImportDrawer() {
+  if (openDrawerType === 'import') closeAllDrawers();
+}
+
+function toggleNewMenu(forceOpen) {
+  const menu = $('ai-listings-new-menu');
+  const btn = $('ai-listings-new-menu-btn');
+  if (!menu || !btn) return;
+  const shouldOpen = forceOpen ?? menu.hidden;
+  menu.hidden = !shouldOpen;
+  btn.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+}
+
+function closeNewMenu() {
+  toggleNewMenu(false);
+}
+
+function toggleFilterPanel(forceOpen) {
+  const sidebar = $('ai-listings-sidebar');
+  const btn = $('ai-listings-filter-toggle');
+  if (!sidebar || !btn) return;
+  const isMobile = window.matchMedia('(max-width: 1100px)').matches;
+  if (!isMobile) return;
+  const shouldOpen = forceOpen ?? !sidebar.classList.contains('ai-listings-admin__sidebar--open');
+  sidebar.classList.toggle('ai-listings-admin__sidebar--open', shouldOpen);
+  btn.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
 }
 
 function filterListingsBySearch(listings) {
@@ -223,11 +373,22 @@ function renderListingsList(listings) {
       const id = btn.getAttribute('data-listing-id');
       const listing = listings.find((item) => String(item.id) === id);
       if (listing) {
-        setNavView('dashboard');
         showListingDetail(listing);
+        toggleFilterPanel(false);
       }
     });
   });
+}
+
+function showDetailSkeleton() {
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+  detailEl.innerHTML = `
+    <div class="ai-listings-admin__detail-skeleton">
+      <div class="ai-listings-admin__skeleton-block ai-listings-admin__skeleton-block--hero"></div>
+      <div class="ai-listings-admin__skeleton-block"></div>
+      <div class="ai-listings-admin__skeleton-block"></div>
+    </div>`;
 }
 
 async function autoAnalyzeListing(listing) {
@@ -295,16 +456,18 @@ async function loadListings() {
   if (limit) params.set('limit', limit);
 
   const query = params.toString() ? `?${params.toString()}` : '';
-  listEl.innerHTML = '<p class="ai-listings-admin__muted">Yükleniyor…</p>';
+  listEl.innerHTML = buildListingSkeletonHtml(5);
 
   const result = await edgeRequest(`/listings${query}`);
   if (!result.ok) {
     listEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(result.message)}</p>`;
+    renderKpiCards([]);
     setStatus(result.message, 'error');
     return;
   }
 
   cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
+  renderKpiCards(cachedListings);
   renderListingsList(cachedListings);
   setStatus(`${cachedListings.length} ilan yüklendi.`, 'success');
 }
@@ -315,7 +478,7 @@ async function showListingDetail(listing) {
   if (!detailEl) return;
 
   const id = String(listing.id);
-  detailEl.innerHTML = '<p class="ai-listings-admin__muted">Detay yükleniyor…</p>';
+  showDetailSkeleton();
   renderListingsList(cachedListings);
 
   const [detailRes, eventsRes] = await Promise.all([
@@ -346,6 +509,11 @@ async function showListingDetail(listing) {
       <button type="button" id="ai-listings-confirm-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--warn">Reddi onayla</button>
       <button type="button" id="ai-listings-cancel-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">İptal</button>
     </div>`;
+
+  detailEl.classList.add('ai-listings-admin__detail--loaded');
+  requestAnimationFrame(() => detailEl.classList.remove('ai-listings-admin__detail--loaded'));
+  bindDashboardTabs(detailEl);
+  renderTimelineHost(listingData, latest, events);
 
   detailEl.querySelectorAll('[data-qa-action]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -412,8 +580,7 @@ async function runQaAction(id, action, body) {
   await loadListings();
 }
 
-async function handleCreateSubmit(event) {
-  event.preventDefault();
+async function buildCreatePayload() {
   const category = $('ai-listings-create-category')?.value?.trim();
   const title = $('ai-listings-create-title')?.value?.trim();
   const description = $('ai-listings-create-description')?.value?.trim();
@@ -423,19 +590,16 @@ async function handleCreateSubmit(event) {
   const attributesText = $('ai-listings-create-attributes')?.value ?? '';
 
   if (!category || !title) {
-    setStatus('Kategori ve başlık zorunludur.', 'error');
-    return;
+    return { ok: false, message: 'Kategori ve başlık zorunludur.' };
   }
 
   if (!validateSourceUrl(sourceUrl)) {
-    setStatus('Geçersiz URL', 'error');
-    return;
+    return { ok: false, message: 'Geçersiz URL' };
   }
 
   const attrs = validateAttributesJson(attributesText);
   if (!attrs.ok) {
-    setStatus(attrs.message, 'error');
-    return;
+    return { ok: false, message: attrs.message };
   }
 
   /** @type {Record<string, unknown>} */
@@ -444,24 +608,46 @@ async function handleCreateSubmit(event) {
   if (priceRaw) body.price = Number(priceRaw);
   if (sourceUrl) body.source_url = sourceUrl;
 
+  return { ok: true, body };
+}
+
+async function handleCreateSubmit(event, { analyzeAfter = false } = {}) {
+  event?.preventDefault?.();
+
+  const payload = await buildCreatePayload();
+  if (!payload.ok) {
+    setStatus(payload.message, 'error');
+    return null;
+  }
+
   setStatus('İlan oluşturuluyor…', 'info');
-  const result = await edgeRequest('/listings', { method: 'POST', body });
+  const result = await edgeRequest('/listings', { method: 'POST', body: payload.body });
   if (!result.ok) {
     setStatus(result.message, 'error');
-    return;
+    return null;
   }
 
-  event.target.reset();
+  const form = $('ai-listings-create-form');
+  form?.reset();
   closeCreateDrawer();
+
   const listing = result.data?.listing;
   if (!listing) {
-    setStatus('İlan oluşturuldu.', 'success');
+    setStatus('Kayıt tamamlandı.', 'success');
     await loadListings();
-    return;
+    return null;
   }
 
-  setStatus('İlan oluşturuldu. Analiz başlatılıyor…', 'success');
-  await autoAnalyzeListing(listing);
+  if (analyzeAfter) {
+    setStatus('İlan kaydedildi. Analiz başlatılıyor…', 'success');
+    await autoAnalyzeListing(listing);
+    return listing;
+  }
+
+  setStatus('Kayıt tamamlandı.', 'success');
+  await loadListings();
+  await showListingDetail(listing);
+  return listing;
 }
 
 function updateImportButtonState() {
@@ -535,6 +721,7 @@ async function handleImportRun() {
   );
   importValidRowCount = 0;
   updateImportButtonState();
+  closeImportDrawer();
   await loadListings();
 }
 
@@ -558,45 +745,47 @@ function handleImportFileSelect(event) {
 }
 
 function bindEvents() {
-  $('ai-listings-create-form')?.addEventListener('submit', handleCreateSubmit);
   $('ai-listings-refresh-list-btn')?.addEventListener('click', () => loadListings());
-  $('ai-listings-import-preview-btn')?.addEventListener('click', handleImportPreview);
-  $('ai-listings-import-run-btn')?.addEventListener('click', handleImportRun);
-  $('ai-listings-import-content')?.addEventListener('input', () => {
-    importValidRowCount = 0;
-    updateImportButtonState();
-  });
-  $('ai-listings-import-format')?.addEventListener('change', () => {
-    importValidRowCount = 0;
-    updateImportButtonState();
-  });
-  $('ai-listings-import-file')?.addEventListener('change', handleImportFileSelect);
   $('ai-listings-drawer-close')?.addEventListener('click', closeCreateDrawer);
-  $('ai-listings-drawer-backdrop')?.addEventListener('click', closeCreateDrawer);
+  $('ai-listings-import-drawer-close')?.addEventListener('click', closeImportDrawer);
+  $('ai-listings-drawer-backdrop')?.addEventListener('click', closeAllDrawers);
 
-  document.querySelectorAll('[data-nav-view]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const view = btn.getAttribute('data-nav-view') ?? 'dashboard';
-      setNavView(view);
+  $('ai-listings-new-menu-btn')?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    toggleNewMenu();
+  });
+
+  document.querySelectorAll('[data-menu-action]').forEach((item) => {
+    item.addEventListener('click', () => {
+      const action = item.getAttribute('data-menu-action');
+      closeNewMenu();
+      if (action === 'create') openCreateDrawer();
+      if (action === 'import-csv') openImportDrawer('csv');
+      if (action === 'import-json') openImportDrawer('json');
     });
   });
 
-  document.querySelectorAll('[data-import-format-tab]').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const format = tab.getAttribute('data-import-format-tab') === 'json' ? 'json' : 'csv';
-      setImportFormat(format);
-      importValidRowCount = 0;
-      updateImportButtonState();
-    });
-  });
+  $('ai-listings-filter-toggle')?.addEventListener('click', () => toggleFilterPanel());
 
   $('ai-listings-search')?.addEventListener('input', (event) => {
     searchQuery = /** @type {HTMLInputElement} */ (event.target).value;
     renderListingsList(cachedListings);
   });
 
+  ['ai-listings-filter-category', 'ai-listings-filter-source', 'ai-listings-filter-limit'].forEach((id) => {
+    $(id)?.addEventListener('change', () => loadListings());
+    $(id)?.addEventListener('keydown', (event) => {
+      if (/** @type {KeyboardEvent} */ (event).key === 'Enter') loadListings();
+    });
+  });
+
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeCreateDrawer();
+    if (event.key === 'Escape') closeAllDrawers();
+  });
+
+  document.addEventListener('click', (event) => {
+    const target = /** @type {HTMLElement} */ (event.target);
+    if (!target.closest('.ai-listings-admin__menu-wrap')) closeNewMenu();
   });
 }
 
@@ -614,8 +803,8 @@ export function initAiListingsAdmin() {
 
   renderStatusFilterChips();
   bindEvents();
-  updateImportButtonState();
-  setNavView('dashboard');
+  clearTimelineHost();
+  renderKpiCards([]);
   loadListings();
 }
 

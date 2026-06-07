@@ -5,39 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta name="description" content="Yapay zeka karar merkezi — iç ilan yönetim paneli">
-  <title>Karar Merkezi | Yapay Zeka İlanları Admin</title>
+  <title>AI Decision Center | Yapay Zeka İlanları Admin</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="stylesheet" href="/css/admin-ai-listings.css?v=3">
+  <link rel="stylesheet" href="/css/admin-ai-listings.css?v=4">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/admin/ai-listings-admin.js"></script>
 </head>
 <body class="ai-listings-admin">
   <header class="ai-listings-admin__topbar" id="ai-listings-topbar">
     <div class="ai-listings-admin__topbar-left">
-      <nav class="ai-listings-admin__nav" aria-label="Ana menü">
-        <button type="button" class="ai-listings-admin__nav-btn ai-listings-admin__nav-btn--active" data-nav-view="dashboard">Dashboard</button>
-        <button type="button" class="ai-listings-admin__nav-btn" data-nav-view="listings">İlanlar</button>
-        <button type="button" class="ai-listings-admin__nav-btn" data-nav-view="create">Yeni İlan</button>
-        <button type="button" class="ai-listings-admin__nav-btn" data-nav-view="import">Toplu Aktarım</button>
-      </nav>
-    </div>
-    <div class="ai-listings-admin__topbar-center">
-      <span class="ai-listings-admin__brand-mark" aria-hidden="true">◆</span>
-      <h1 class="ai-listings-admin__brand-title">Karar Merkezi</h1>
+      <div class="ai-listings-admin__brand">
+        <p class="ai-listings-admin__brand-eyebrow">Yapay Zeka Destekli İlanlar</p>
+        <h1 class="ai-listings-admin__brand-title">AI Decision Center</h1>
+        <p class="ai-listings-admin__brand-subtitle ai-listings-admin__sr-only">Karar Merkezi</p>
+      </div>
     </div>
     <div class="ai-listings-admin__topbar-right">
+      <label class="ai-listings-admin__search-wrap">
+        <span class="ai-listings-admin__sr-only">Ara</span>
+        <span class="ai-listings-admin__search-icon" aria-hidden="true">⌕</span>
+        <input id="ai-listings-search" class="ai-listings-admin__search-input" type="search" placeholder="İlan ara…" autocomplete="off">
+      </label>
+      <button type="button" id="ai-listings-filter-toggle" class="ai-listings-admin__icon-btn" aria-label="Filtre" title="Filtre" aria-expanded="false" aria-controls="ai-listings-sidebar">
+        <span aria-hidden="true">⚙</span>
+        <span class="ai-listings-admin__icon-btn-label">Filtre</span>
+      </button>
       <button type="button" id="ai-listings-refresh-list-btn" class="ai-listings-admin__icon-btn" aria-label="Yenile" title="Yenile">
         <span aria-hidden="true">↻</span>
         <span class="ai-listings-admin__icon-btn-label">Yenile</span>
       </button>
-      <label class="ai-listings-admin__search-wrap">
-        <span class="ai-listings-admin__sr-only">Arama</span>
-        <span class="ai-listings-admin__search-icon" aria-hidden="true">⌕</span>
-        <input id="ai-listings-search" class="ai-listings-admin__search-input" type="search" placeholder="İlan ara…" autocomplete="off">
-      </label>
-      <div class="ai-listings-admin__user-pill" title="İç test kullanıcısı">
-        <span class="ai-listings-admin__user-avatar" aria-hidden="true">K</span>
-        <span class="ai-listings-admin__user-label">Kullanıcı</span>
+      <div class="ai-listings-admin__menu-wrap">
+        <button type="button" id="ai-listings-new-menu-btn" class="ai-listings-admin__btn ai-listings-admin__btn--primary ai-listings-admin__new-btn" aria-haspopup="true" aria-expanded="false">
+          <span aria-hidden="true">+</span> Yeni İlan
+        </button>
+        <div id="ai-listings-new-menu" class="ai-listings-admin__dropdown" hidden>
+          <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="create">Yeni İlan</button>
+          <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="import-csv">CSV İçe Aktar</button>
+          <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="import-json">JSON İçe Aktar</button>
+        </div>
       </div>
     </div>
   </header>
@@ -46,8 +51,10 @@
     <div id="ai-listings-secret-warning" class="ai-listings-admin__warning" hidden></div>
     <p id="ai-listings-status" class="ai-listings-admin__status" aria-live="polite"></p>
 
+    <section id="ai-listings-kpi" class="ai-listings-admin__kpi-row" aria-label="Özet metrikler"></section>
+
     <div class="ai-listings-admin__workspace">
-      <section class="ai-listings-admin__center" id="ai-listings-center-panel" aria-label="AI Karar Paneli">
+      <section class="ai-listings-admin__center" id="ai-listings-center-panel" aria-label="AI Karar Merkezi">
         <div id="ai-listings-dashboard-view" class="ai-listings-admin__center-view">
           <div id="ai-listings-detail" class="ai-listings-admin__detail">
             <div class="ai-listings-admin__empty-state">
@@ -57,60 +64,9 @@
             </div>
           </div>
         </div>
-
-        <section id="ai-listings-import-view" class="ai-listings-admin__center-view ai-listings-admin__import-panel" hidden>
-          <article class="ai-listings-admin__glass-card ai-listings-admin__import-card">
-            <header class="ai-listings-admin__import-card-head">
-              <span class="ai-listings-admin__import-card-icon" aria-hidden="true">📥</span>
-              <div>
-                <h2>Toplu İçe Aktarım</h2>
-                <p class="ai-listings-admin__muted">CSV veya JSON dosyası ile toplu ilan yükleyin.</p>
-              </div>
-            </header>
-            <p class="ai-listings-admin__warning-inline">Sadece iç admin içe aktarımıdır. Yayına alma kapalıdır.</p>
-            <div class="ai-listings-admin__import-format-tabs" role="tablist" aria-label="İçe aktarım formatı">
-              <button type="button" class="ai-listings-admin__format-tab ai-listings-admin__format-tab--active" data-import-format-tab="csv" role="tab" aria-selected="true">CSV</button>
-              <button type="button" class="ai-listings-admin__format-tab" data-import-format-tab="json" role="tab" aria-selected="false">JSON</button>
-            </div>
-            <div class="ai-listings-admin__form ai-listings-admin__import-form">
-              <select id="ai-listings-import-format" class="ai-listings-admin__sr-only" aria-hidden="true" tabindex="-1">
-                <option value="csv">CSV</option>
-                <option value="json">JSON</option>
-              </select>
-              <label class="ai-listings-admin__file-drop">
-                <span class="ai-listings-admin__file-drop-label">Dosya Seç</span>
-                <input id="ai-listings-import-file" type="file" accept=".csv,.json,text/csv,application/json">
-                <span class="ai-listings-admin__file-drop-hint">veya içeriği aşağıya yapıştırın</span>
-              </label>
-              <label>
-                CSV / JSON içeriği
-                <textarea id="ai-listings-import-content" rows="8" placeholder="category,title,description,price,currency,location,source_url,images,attributes"></textarea>
-              </label>
-              <div class="ai-listings-admin__import-options">
-                <label class="ai-listings-admin__checkbox">
-                  <input id="ai-listings-import-analyze" type="checkbox" checked>
-                  Otomatik analiz
-                </label>
-                <label class="ai-listings-admin__checkbox">
-                  <input id="ai-listings-import-dedupe" type="checkbox" checked>
-                  Mükerrer kontrolü
-                </label>
-                <label class="ai-listings-admin__checkbox">
-                  <input id="ai-listings-import-price-ai" type="checkbox" checked>
-                  AI fiyat analizi
-                </label>
-              </div>
-              <div class="ai-listings-admin__actions">
-                <button type="button" id="ai-listings-import-preview-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Önizleme</button>
-                <button type="button" id="ai-listings-import-run-btn" class="ai-listings-admin__btn" disabled>İçe Aktar</button>
-              </div>
-              <div id="ai-listings-import-preview" class="ai-listings-admin__import-preview-wrap"></div>
-            </div>
-          </article>
-        </section>
       </section>
 
-      <aside class="ai-listings-admin__sidebar" id="ai-listings-sidebar" aria-label="İlan listesi">
+      <aside class="ai-listings-admin__sidebar" id="ai-listings-sidebar" aria-label="İlanlar">
         <div class="ai-listings-admin__sidebar-head">
           <h2>İlanlar</h2>
           <span id="ai-listings-list-count" class="ai-listings-admin__list-count">0</span>
@@ -124,10 +80,13 @@
         <div id="ai-listings-list" class="ai-listings-admin__list"></div>
       </aside>
     </div>
+
+    <section id="ai-listings-timeline-host" class="ai-listings-admin__timeline-host" hidden aria-label="İlan zaman çizelgesi"></section>
   </main>
 
   <div id="ai-listings-drawer-backdrop" class="ai-listings-admin__backdrop" hidden></div>
-  <aside id="ai-listings-create-drawer" class="ai-listings-admin__drawer" aria-label="Yeni ilan formu" hidden>
+
+  <aside id="ai-listings-create-drawer" class="ai-listings-admin__drawer ai-listings-admin__drawer--right" aria-label="Yeni ilan formu" hidden>
     <header class="ai-listings-admin__drawer-head">
       <div>
         <span class="ai-listings-admin__drawer-icon" aria-hidden="true">➕</span>
@@ -135,6 +94,21 @@
       </div>
       <button type="button" id="ai-listings-drawer-close" class="ai-listings-admin__drawer-close" aria-label="Kapat">✕</button>
     </header>
+    <div id="ai-listings-create-drawer-body"></div>
+  </aside>
+
+  <aside id="ai-listings-import-drawer" class="ai-listings-admin__drawer ai-listings-admin__drawer--right ai-listings-admin__drawer--wide" aria-label="Toplu içe aktarım" hidden>
+    <header class="ai-listings-admin__drawer-head">
+      <div>
+        <span class="ai-listings-admin__drawer-icon" aria-hidden="true">📥</span>
+        <h2>Toplu İçe Aktarım</h2>
+      </div>
+      <button type="button" id="ai-listings-import-drawer-close" class="ai-listings-admin__drawer-close" aria-label="Kapat">✕</button>
+    </header>
+    <div id="ai-listings-import-drawer-body"></div>
+  </aside>
+
+  <template id="ai-listings-create-template">
     <form id="ai-listings-create-form" class="ai-listings-admin__form ai-listings-admin__drawer-form">
       <label>
         Kategori
@@ -158,7 +132,7 @@
         <input id="ai-listings-create-price" name="price" type="number" min="0" step="1">
       </label>
       <label>
-        Para birimi
+        Para Birimi
         <input id="ai-listings-create-currency" name="currency" value="TRY">
       </label>
       <label>
@@ -166,11 +140,59 @@
         <input id="ai-listings-create-source-url" name="source_url" type="url">
       </label>
       <label>
-        Özellikler JSON
+        JSON
         <textarea id="ai-listings-create-attributes" name="attributes" rows="4" placeholder='{"year":2020}'></textarea>
       </label>
-      <button type="submit" class="ai-listings-admin__btn ai-listings-admin__btn--primary">İlan Oluştur</button>
+      <div class="ai-listings-admin__drawer-actions">
+        <button type="submit" class="ai-listings-admin__btn ai-listings-admin__btn--primary">Kaydet</button>
+        <button type="button" id="ai-listings-create-analyze-btn" class="ai-listings-admin__btn">Kaydet ve Analiz Et</button>
+      </div>
     </form>
-  </aside>
+  </template>
+
+  <template id="ai-listings-import-template">
+    <article class="ai-listings-admin__import-card">
+      <p class="ai-listings-admin__muted">CSV veya JSON dosyası ile toplu ilan yükleyin.</p>
+      <p class="ai-listings-admin__warning-inline">Sadece iç admin içe aktarımıdır. Yayına alma kapalıdır.</p>
+      <div class="ai-listings-admin__import-format-tabs" role="tablist" aria-label="İçe aktarım formatı">
+        <button type="button" class="ai-listings-admin__format-tab ai-listings-admin__format-tab--active" data-import-format-tab="csv" role="tab" aria-selected="true">CSV</button>
+        <button type="button" class="ai-listings-admin__format-tab" data-import-format-tab="json" role="tab" aria-selected="false">JSON</button>
+      </div>
+      <div class="ai-listings-admin__form ai-listings-admin__import-form">
+        <select id="ai-listings-import-format" class="ai-listings-admin__sr-only" aria-hidden="true" tabindex="-1">
+          <option value="csv">CSV</option>
+          <option value="json">JSON</option>
+        </select>
+        <label class="ai-listings-admin__file-drop">
+          <span class="ai-listings-admin__file-drop-label">Dosya Seç</span>
+          <input id="ai-listings-import-file" type="file" accept=".csv,.json,text/csv,application/json">
+          <span class="ai-listings-admin__file-drop-hint">veya içeriği aşağıya yapıştırın</span>
+        </label>
+        <label>
+          CSV / JSON içeriği
+          <textarea id="ai-listings-import-content" rows="8" placeholder="category,title,description,price,currency,location,source_url,images,attributes"></textarea>
+        </label>
+        <div class="ai-listings-admin__import-options">
+          <label class="ai-listings-admin__checkbox">
+            <input id="ai-listings-import-analyze" type="checkbox" checked>
+            Otomatik analiz
+          </label>
+          <label class="ai-listings-admin__checkbox">
+            <input id="ai-listings-import-dedupe" type="checkbox" checked>
+            Mükerrer kontrolü
+          </label>
+          <label class="ai-listings-admin__checkbox">
+            <input id="ai-listings-import-price-ai" type="checkbox" checked>
+            AI fiyat analizi
+          </label>
+        </div>
+        <div class="ai-listings-admin__actions">
+          <button type="button" id="ai-listings-import-preview-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Önizleme</button>
+          <button type="button" id="ai-listings-import-run-btn" class="ai-listings-admin__btn" disabled>İçe Aktar</button>
+        </div>
+        <div id="ai-listings-import-preview" class="ai-listings-admin__import-preview-wrap"></div>
+      </div>
+    </article>
+  </template>
 </body>
 </html>
