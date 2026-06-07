@@ -74,6 +74,8 @@ import {
   buildSimulatorDrawerPanelHtml,
   buildSimulatorPanelHtml
 } from '../ai-decision-simulator/simulator-card-builder.js';
+import { buildReportInput, runDecisionReport } from '../ai-decision-report/index.js';
+import { buildDecisionReportPanelHtml } from '../ai-decision-report/report-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
@@ -582,6 +584,16 @@ function closeDecisionSimulatorPanel(root) {
   document.body.classList.remove('ai-listings-admin--sim-open');
 }
 
+function closeDecisionReportPanel(root) {
+  const host = root.querySelector('#ai-report-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-report-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--report-open');
+}
+
 /**
  * @param {HTMLElement} root
  * @returns {Record<string, unknown>}
@@ -708,12 +720,44 @@ function openDecisionSimulatorPanel(root, recordId) {
   host.querySelector('[data-sim-action="run"]')?.addEventListener('click', handleSimulatorRun);
 }
 
+function openDecisionReportPanel(root, recordId) {
+  if (!cachedRecommendationResult?.top?.length) return;
+
+  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
+  if (!selected) return;
+
+  closeDecisionCoachPanel(root);
+  closeDecisionSimulatorPanel(root);
+
+  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const reportInput = buildReportInput(selected, profile, cachedRecommendationResult.top);
+  const report = runDecisionReport(reportInput);
+
+  const host = root.querySelector('#ai-report-panel-host');
+  if (!host) return;
+
+  host.innerHTML = buildDecisionReportPanelHtml(report, {
+    title: String(selected.title ?? 'AI Decision Report'),
+    recordId: String(recordId)
+  });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--report-open');
+
+  host.querySelector('[data-report-action="close"]')?.addEventListener('click', () => {
+    closeDecisionReportPanel(root);
+  });
+  host.querySelector('[data-report-backdrop]')?.addEventListener('click', () => {
+    closeDecisionReportPanel(root);
+  });
+}
+
 function bindRecommendationsDashboardEvents(root) {
   root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
     recommendationProfile = readRecommendationProfileFromForm(root);
     recommendationGenerated = true;
     closeDecisionCoachPanel(root);
     closeDecisionSimulatorPanel(root);
+    closeDecisionReportPanel(root);
     renderRecommendationsView();
   });
 
@@ -722,6 +766,7 @@ function bindRecommendationsDashboardEvents(root) {
       event.preventDefault();
       event.stopPropagation();
       closeDecisionSimulatorPanel(root);
+      closeDecisionReportPanel(root);
       const id = btn.getAttribute('data-rec-coach-id');
       if (id) openDecisionCoachPanel(root, id);
     });
@@ -731,14 +776,24 @@ function bindRecommendationsDashboardEvents(root) {
     btn.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
+      closeDecisionReportPanel(root);
       const id = btn.getAttribute('data-rec-sim-id');
       if (id) openDecisionSimulatorPanel(root, id);
     });
   });
 
+  root.querySelectorAll('[data-rec-report-id]').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = btn.getAttribute('data-rec-report-id');
+      if (id) openDecisionReportPanel(root, id);
+    });
+  });
+
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id]')) return;
+      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id]')) return;
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
