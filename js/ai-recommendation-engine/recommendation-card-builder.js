@@ -4,6 +4,7 @@
 
 import { escapeHtml } from '../core/dom-safe.js';
 import { ALTERNATIVE_TAG_LABELS_TR } from '../../supabase/functions/_shared/ai-listings/recommendation/alternative-ranker.js';
+import { shouldShowQualityButton } from '../ai-listing-quality/quality-card-builder.js';
 
 /**
  * @param {unknown} value
@@ -75,6 +76,10 @@ export function buildRecommendationCardHtml(item) {
         <button type="button" class="ai-rec-card__cost-btn" data-rec-cost-id="${safe(item.id)}" aria-label="Sahip Olma Maliyeti">
           Sahip Olma Maliyeti
         </button>
+        ${shouldShowQualityButton(item) ? `
+        <button type="button" class="ai-rec-card__quality-btn" data-rec-quality-id="${safe(item.id)}" aria-label="Kalite ve Güven">
+          Kalite ve Güven
+        </button>` : ''}
       </footer>
     </article>`;
 }

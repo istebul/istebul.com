@@ -78,6 +78,8 @@ import { buildReportInput, runDecisionReport } from '../ai-decision-report/index
 import { buildDecisionReportPanelHtml } from '../ai-decision-report/report-card-builder.js';
 import { buildOwnershipCostInput, runOwnershipCostSimulator } from '../ai-ownership-cost/index.js';
 import { buildOwnershipCostPanelHtml } from '../ai-ownership-cost/cost-card-builder.js';
+import { buildListingQualityInput, runListingQualityTrust } from '../ai-listing-quality/index.js';
+import { buildQualityPanelHtml } from '../ai-listing-quality/quality-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
@@ -606,6 +608,16 @@ function closeOwnershipCostPanel(root) {
   document.body.classList.remove('ai-listings-admin--cost-open');
 }
 
+function closeListingQualityPanel(root) {
+  const host = root.querySelector('#ai-lqt-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-lqt-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--lqt-open');
+}
+
 /**
  * @param {HTMLElement} root
  * @returns {Record<string, unknown>}
@@ -772,6 +784,7 @@ function openOwnershipCostPanel(root, recordId) {
   closeDecisionCoachPanel(root);
   closeDecisionSimulatorPanel(root);
   closeDecisionReportPanel(root);
+  closeListingQualityPanel(root);
 
   const profile = cachedRecommendationResult.profile ?? recommendationProfile;
   const costInput = buildOwnershipCostInput(selected, profile);
@@ -795,6 +808,39 @@ function openOwnershipCostPanel(root, recordId) {
   });
 }
 
+function openListingQualityPanel(root, recordId) {
+  if (!cachedRecommendationResult?.top?.length) return;
+
+  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
+  if (!selected) return;
+
+  closeDecisionCoachPanel(root);
+  closeDecisionSimulatorPanel(root);
+  closeDecisionReportPanel(root);
+  closeOwnershipCostPanel(root);
+
+  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const qualityInput = buildListingQualityInput(selected, profile);
+  const quality = runListingQualityTrust(qualityInput);
+
+  const host = root.querySelector('#ai-lqt-panel-host');
+  if (!host) return;
+
+  host.innerHTML = buildQualityPanelHtml(quality, {
+    title: String(selected.title ?? 'Kalite ve Güven'),
+    recordId: String(recordId)
+  });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--lqt-open');
+
+  host.querySelector('[data-lqt-action="close"]')?.addEventListener('click', () => {
+    closeListingQualityPanel(root);
+  });
+  host.querySelector('[data-lqt-backdrop]')?.addEventListener('click', () => {
+    closeListingQualityPanel(root);
+  });
+}
+
 function bindRecommendationsDashboardEvents(root) {
   root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
     recommendationProfile = readRecommendationProfileFromForm(root);
@@ -803,6 +849,7 @@ function bindRecommendationsDashboardEvents(root) {
     closeDecisionSimulatorPanel(root);
     closeDecisionReportPanel(root);
     closeOwnershipCostPanel(root);
+    closeListingQualityPanel(root);
     renderRecommendationsView();
   });
 
@@ -813,6 +860,7 @@ function bindRecommendationsDashboardEvents(root) {
       closeDecisionSimulatorPanel(root);
       closeDecisionReportPanel(root);
       closeOwnershipCostPanel(root);
+      closeListingQualityPanel(root);
       const id = btn.getAttribute('data-rec-coach-id');
       if (id) openDecisionCoachPanel(root, id);
     });
@@ -824,6 +872,7 @@ function bindRecommendationsDashboardEvents(root) {
       event.stopPropagation();
       closeDecisionReportPanel(root);
       closeOwnershipCostPanel(root);
+      closeListingQualityPanel(root);
       const id = btn.getAttribute('data-rec-sim-id');
       if (id) openDecisionSimulatorPanel(root, id);
     });
@@ -834,6 +883,7 @@ function bindRecommendationsDashboardEvents(root) {
       event.preventDefault();
       event.stopPropagation();
       closeOwnershipCostPanel(root);
+      closeListingQualityPanel(root);
       const id = btn.getAttribute('data-rec-report-id');
       if (id) openDecisionReportPanel(root, id);
     });
@@ -843,14 +893,24 @@ function bindRecommendationsDashboardEvents(root) {
     btn.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
+      closeListingQualityPanel(root);
       const id = btn.getAttribute('data-rec-cost-id');
       if (id) openOwnershipCostPanel(root, id);
     });
   });
 
+  root.querySelectorAll('[data-rec-quality-id]').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = btn.getAttribute('data-rec-quality-id');
+      if (id) openListingQualityPanel(root, id);
+    });
+  });
+
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id]')) return;
+      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-quality-id]')) return;
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
