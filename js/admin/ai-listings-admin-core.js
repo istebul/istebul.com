@@ -26,6 +26,7 @@ import {
   IMPORT_MAX_CONTENT_BYTES,
   IMPORT_MAX_ROWS
 } from '../../supabase/functions/_shared/ai-listings/import-parser.js';
+import { getListingEngineMetrics } from '../ai-listings-engine/index.js';
 
 export { STATUS_FILTER_CHIPS, isListingPubliclyVisible, IMPORT_MAX_ROWS, IMPORT_MAX_CONTENT_BYTES };
 
@@ -613,9 +614,15 @@ export function buildListingCardHtml(listing, isActive = false) {
   const status = safeRenderText(getStatusLabelTr(listing.status));
   const emoji = getCategoryEmoji(listing.category);
   const analysis = extractLatestAnalysis(listing);
-  const aiScore = analysis?.ai_score;
-  const riskScore = analysis?.risk_score;
-  const marketScore = analysis?.market_score;
+  const engineMetrics = getListingEngineMetrics(listing, {
+    sourceType: String(listing.source_type ?? 'manual'),
+    existingAnalysis: analysis
+  });
+  const aiScore = analysis?.ai_score ?? engineMetrics.ai;
+  const riskScore = analysis?.risk_score ?? engineMetrics.risk;
+  const marketScore = analysis?.market_score ?? engineMetrics.market;
+  const qualityScore = engineMetrics.quality;
+  const decisionLabel = engineMetrics.decision;
   const marketDelta = safeRenderText(computeMarketDeltaLabel(listing, analysis));
   const dateRaw = listing.updated_at ?? listing.created_at ?? '';
   const date = safeRenderText(formatTimelineDate(dateRaw));
@@ -635,6 +642,13 @@ export function buildListingCardHtml(listing, isActive = false) {
     marketScore !== undefined && marketScore !== null
       ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--market">Piyasa ${safeRenderText(marketScore)}</span>`
       : `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--market">${marketDelta}</span>`;
+  const qualityHtml =
+    qualityScore !== undefined && qualityScore !== null
+      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--quality">Kalite ${safeRenderText(qualityScore)}</span>`
+      : '';
+  const decisionHtml = decisionLabel
+    ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--decision">${safeRenderText(decisionLabel)}</span>`
+    : '';
 
   return `
     <button type="button" class="ai-listings-admin__listing-card${activeClass}" data-listing-id="${id}">
@@ -648,6 +662,8 @@ export function buildListingCardHtml(listing, isActive = false) {
         ${aiHtml}
         ${riskHtml}
         ${marketHtml}
+        ${qualityHtml}
+        ${decisionHtml}
         <span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--price">${priceLabel}</span>
       </span>
       <span class="ai-listings-admin__listing-card-footer">

@@ -777,6 +777,16 @@
   color: #93c5fd;
 }
 
+.ai-listings-admin__listing-metric--quality {
+  background: rgba(168, 85, 247, 0.14);
+  color: #d8b4fe;
+}
+
+.ai-listings-admin__listing-metric--decision {
+  background: rgba(14, 165, 233, 0.14);
+  color: #7dd3fc;
+}
+
 .ai-listings-admin__listing-metric--price {
   background: rgba(148, 163, 184, 0.12);
   color: #e2e8f0;
