@@ -80,17 +80,20 @@ import { buildOwnershipCostInput, runOwnershipCostSimulator } from '../ai-owners
 import { buildOwnershipCostPanelHtml } from '../ai-ownership-cost/cost-card-builder.js';
 import {
   buildPurchaseDecisionInput,
-  runPurchaseDecisionEngine
+  runPurchaseDecisionEngine,
+  clearPurchaseDecisionMemoCache
 } from '../ai-purchase-decision/index.js';
 import { buildExecutiveDecisionPanelHtml } from '../ai-purchase-decision/executive-decision-card-builder.js';
 import {
   buildExplainabilityInput,
-  runExplainabilityEngine
+  runExplainabilityEngine,
+  clearExplainabilityMemoCache
 } from '../ai-decision-explainability/index.js';
 import { buildExplainabilityPanelHtml } from '../ai-decision-explainability/explainability-card-builder.js';
 import {
   buildExecutiveReportInput,
-  runExecutiveReportEngine
+  runExecutiveReportEngine,
+  clearExecutiveReportMemoCache
 } from '../ai-executive-decision-report/index.js';
 import { buildExecutiveReportPanelHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
 import { buildCompareInput, runCompareEngine } from '../ai-compare-intelligence/index.js';
@@ -99,8 +102,25 @@ import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 import {
   buildDecisionWorkspaceHtml,
-  buildDecisionWorkspaceEmptyHtml
+  buildDecisionWorkspaceEmptyHtml,
+  buildWorkspaceDetailSkeletonHtml,
+  buildWorkspaceErrorHtml
 } from './ai-listings-decision-workspace.js';
+import {
+  createInitialDrawerState,
+  openDrawerState,
+  closeDrawerState,
+  resetDrawerState,
+  isDrawerOpen,
+  getDrawerTitleTr,
+  getModuleUnavailableMessageTr,
+  getDrawerHostId,
+  getDrawerBodyClass,
+  getActiveDrawerBodyClasses,
+  buildCompareSelectionKey
+} from './ai-listings-admin-drawer-state.js';
+import { computeNormalizedKpiStats, filterListingsForDisplay } from './ai-listings-admin-kpi.js';
+import { clearScenarioSimulatorMemoCache } from '../ai-scenario-simulator/index.js';
 import {
   buildScenarioInput,
   runScenarioSimulator
@@ -114,6 +134,15 @@ import { buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-b
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
+
+/** @type {Record<string, unknown>|null} */
+let selectedRecommendation = null;
+
+/** @type {string} */
+let lastWorkspaceListingId = '';
+
+/** @type {ReturnType<typeof createInitialDrawerState>} */
+let aiDrawerState = createInitialDrawerState();
 
 /** @type {string} */
 let activeStatusFilter = '';
@@ -316,7 +345,7 @@ function animateKpiCounters(root = document) {
 function renderKpiCards(listings) {
   const kpiEl = $('ai-listings-kpi');
   if (!kpiEl) return;
-  const stats = computeKpiStats(listings);
+  const stats = computeNormalizedKpiStats(listings, { searchQuery });
   const statsKey = JSON.stringify(stats);
   if (statsKey === lastKpiStatsKey && kpiEl.childElementCount > 0) return;
   lastKpiStatsKey = statsKey;
@@ -701,31 +730,35 @@ function updateCompareToolbar(root) {
   if (toggle) toggle.checked = compareModeEnabled;
 }
 
-function openComparePanel(root) {
+function openComparePanel(root, options = {}) {
+  const host = root.querySelector('#ai-cmp-panel-host') ?? document.querySelector('#ai-cmp-panel-host');
+  if (!host) return;
+
+  const title = options.title ?? getDrawerTitleTr('compare');
+
   if (compareSelectedIds.length < 2) {
-    const host = root.querySelector('#ai-cmp-panel-host');
-    if (!host) return;
-    host.innerHTML = buildComparePanelHtml(null, { title: 'Karşılaştırma Analizi' });
+    host.innerHTML = buildComparePanelHtml(null, { title });
     host.hidden = false;
     document.body.classList.add('ai-listings-admin--cmp-open');
     const body = host.querySelector('.ai-cmp-panel__body');
     if (body) {
       body.innerHTML = '<p class="ai-cmp-panel__empty">Karşılaştırma için en az iki öneri seçin.</p>';
     }
-    host.querySelector('[data-cmp-panel-action="close"]')?.addEventListener('click', () => closeComparePanel(root));
-    host.querySelector('[data-cmp-backdrop]')?.addEventListener('click', () => closeComparePanel(root));
+    bindComparePanelClose(host, root);
     return;
   }
 
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  closeDecisionCoachPanel(root);
-  closeDecisionSimulatorPanel(root);
-  closeDecisionReportPanel(root);
-  closeOwnershipCostPanel(root);
-  closePurchaseDecisionPanel(root);
-  closeExplainabilityPanel(root);
-  closeExecutiveReportPanel(root);
+  if (!cachedRecommendationResult?.top?.length) {
+    host.innerHTML = buildComparePanelHtml(null, { title });
+    host.hidden = false;
+    document.body.classList.add('ai-listings-admin--cmp-open');
+    const body = host.querySelector('.ai-cmp-panel__body');
+    if (body) {
+      body.innerHTML = `<p class="ai-cmp-panel__empty">${getModuleUnavailableMessageTr('compare')}</p>`;
+    }
+    bindComparePanelClose(host, root);
+    return;
+  }
 
   const selected = cachedRecommendationResult.top.filter((item) =>
     compareSelectedIds.includes(String(item.id))
@@ -735,21 +768,25 @@ function openComparePanel(root) {
   const cmpInput = buildCompareInput(selected, profile);
   const compareIntelligence = runCompareEngine(cmpInput);
 
-  const host = root.querySelector('#ai-cmp-panel-host');
-  if (!host) return;
-
   host.innerHTML = buildComparePanelHtml(compareIntelligence, {
-    title: `Karşılaştırma Analizi (${selected.length} seçenek)`
+    title: `${title} (${selected.length} seçenek)`
   });
   host.hidden = false;
   document.body.classList.add('ai-listings-admin--cmp-open');
+  bindComparePanelClose(host, root);
+}
 
-  host.querySelector('[data-cmp-panel-action="close"]')?.addEventListener('click', () => {
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} root
+ */
+function bindComparePanelClose(host, root) {
+  const close = () => {
     closeComparePanel(root);
-  });
-  host.querySelector('[data-cmp-backdrop]')?.addEventListener('click', () => {
-    closeComparePanel(root);
-  });
+    closeAiListingsDrawer(root);
+  };
+  host.querySelector('[data-cmp-panel-action="close"]')?.addEventListener('click', close);
+  host.querySelector('[data-cmp-backdrop]')?.addEventListener('click', close);
 }
 
 /**
@@ -944,108 +981,107 @@ function openOwnershipCostPanel(root, recordId) {
   });
 }
 
-function openPurchaseDecisionPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
-
-  closeDecisionCoachPanel(root);
-  closeDecisionSimulatorPanel(root);
-  closeDecisionReportPanel(root);
-  closeOwnershipCostPanel(root);
-  closeExplainabilityPanel(root);
-  closeExecutiveReportPanel(root);
-
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
-  const pdInput = buildPurchaseDecisionInput(selected, profile);
-  const purchaseDecision = runPurchaseDecisionEngine(pdInput);
-
-  const host = root.querySelector('#ai-pd-panel-host');
+function openPurchaseDecisionPanel(root, recordId, options = {}) {
+  const host = root.querySelector('#ai-pd-panel-host') ?? document.querySelector('#ai-pd-panel-host');
   if (!host) return;
 
+  const selected =
+    cachedRecommendationResult?.top?.find((item) => String(item.id) === String(recordId)) ??
+    selectedRecommendation;
+  if (!selected?.id) {
+    host.innerHTML = buildExecutiveDecisionPanelHtml(null, {
+      title: options.title ?? getDrawerTitleTr('purchase')
+    });
+    host.hidden = false;
+    bindPanelClose(host, root, 'pd', () => closePurchaseDecisionPanel(root));
+    return;
+  }
+
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const pdInput = buildPurchaseDecisionInput(selected, profile);
+  const purchaseDecision = runPurchaseDecisionEngine(pdInput, { skipCache: false });
+
   host.innerHTML = buildExecutiveDecisionPanelHtml(purchaseDecision, {
-    title: String(selected.title ?? 'Al Kararı Analizi'),
+    title: String(options.title ?? selected.title ?? getDrawerTitleTr('purchase')),
     recordId: String(recordId)
   });
   host.hidden = false;
   document.body.classList.add('ai-listings-admin--pd-open');
-
-  host.querySelector('[data-pd-action="close"]')?.addEventListener('click', () => {
-    closePurchaseDecisionPanel(root);
-  });
-  host.querySelector('[data-pd-backdrop]')?.addEventListener('click', () => {
-    closePurchaseDecisionPanel(root);
-  });
+  bindPanelClose(host, root, 'pd', () => closePurchaseDecisionPanel(root));
 }
 
-function openExplainabilityPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
-
-  closeDecisionCoachPanel(root);
-  closeDecisionSimulatorPanel(root);
-  closeDecisionReportPanel(root);
-  closeOwnershipCostPanel(root);
-  closePurchaseDecisionPanel(root);
-  closeExecutiveReportPanel(root);
-
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
-  const expInput = buildExplainabilityInput(selected, profile);
-  const explainability = runExplainabilityEngine(expInput);
-
-  const host = root.querySelector('#ai-exp-panel-host');
+function openExplainabilityPanel(root, recordId, options = {}) {
+  const host = root.querySelector('#ai-exp-panel-host') ?? document.querySelector('#ai-exp-panel-host');
   if (!host) return;
 
+  const selected =
+    cachedRecommendationResult?.top?.find((item) => String(item.id) === String(recordId)) ??
+    selectedRecommendation;
+  if (!selected?.id) {
+    host.innerHTML = buildExplainabilityPanelHtml(null, {
+      title: options.title ?? getDrawerTitleTr('explain')
+    });
+    host.hidden = false;
+    bindPanelClose(host, root, 'exp', () => closeExplainabilityPanel(root));
+    return;
+  }
+
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const expInput = buildExplainabilityInput(selected, profile);
+  const explainability = runExplainabilityEngine(expInput, { skipCache: false });
+
   host.innerHTML = buildExplainabilityPanelHtml(explainability, {
-    title: String(selected.title ?? 'Karar Açıklaması'),
+    title: String(options.title ?? selected.title ?? getDrawerTitleTr('explain')),
     recordId: String(recordId)
   });
   host.hidden = false;
   document.body.classList.add('ai-listings-admin--exp-open');
-
-  host.querySelector('[data-exp-action="close"]')?.addEventListener('click', () => {
-    closeExplainabilityPanel(root);
-  });
-  host.querySelector('[data-exp-backdrop]')?.addEventListener('click', () => {
-    closeExplainabilityPanel(root);
-  });
+  bindPanelClose(host, root, 'exp', () => closeExplainabilityPanel(root));
 }
 
-function openExecutiveReportPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
+function openExecutiveReportPanel(root, recordId, options = {}) {
+  const host = root.querySelector('#ai-edr-panel-host') ?? document.querySelector('#ai-edr-panel-host');
+  if (!host) return;
 
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
-
-  closeDecisionCoachPanel(root);
-  closeDecisionSimulatorPanel(root);
-  closeDecisionReportPanel(root);
-  closeOwnershipCostPanel(root);
-  closePurchaseDecisionPanel(root);
-  closeExplainabilityPanel(root);
+  const selected =
+    cachedRecommendationResult?.top?.find((item) => String(item.id) === String(recordId)) ??
+    selectedRecommendation;
+  if (!selected?.id) {
+    host.innerHTML = buildExecutiveReportPanelHtml(null, {
+      title: options.title ?? getDrawerTitleTr('report')
+    });
+    host.hidden = false;
+    bindPanelClose(host, root, 'edr', () => closeExecutiveReportPanel(root));
+    return;
+  }
 
   const profile = cachedRecommendationResult.profile ?? recommendationProfile;
   const edrInput = buildExecutiveReportInput(selected, profile);
-  const executiveDecisionReport = runExecutiveReportEngine(edrInput);
-
-  const host = root.querySelector('#ai-edr-panel-host');
-  if (!host) return;
+  const executiveDecisionReport = runExecutiveReportEngine(edrInput, { skipCache: false });
 
   host.innerHTML = buildExecutiveReportPanelHtml(executiveDecisionReport, {
-    title: String(selected.title ?? 'Executive Decision Report'),
+    title: String(options.title ?? selected.title ?? getDrawerTitleTr('report')),
     recordId: String(recordId)
   });
   host.hidden = false;
   document.body.classList.add('ai-listings-admin--edr-open');
+  bindPanelClose(host, root, 'edr', () => closeExecutiveReportPanel(root));
+}
 
-  host.querySelector('[data-edr-action="close"]')?.addEventListener('click', () => {
-    closeExecutiveReportPanel(root);
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} root
+ * @param {string} prefix
+ * @param {() => void} closeFn
+ */
+function bindPanelClose(host, root, prefix, closeFn) {
+  host.querySelector(`[data-${prefix}-action="close"]`)?.addEventListener('click', () => {
+    closeFn();
+    closeAiListingsDrawer(root);
   });
-  host.querySelector('[data-edr-backdrop]')?.addEventListener('click', () => {
-    closeExecutiveReportPanel(root);
+  host.querySelector(`[data-${prefix}-backdrop]`)?.addEventListener('click', () => {
+    closeFn();
+    closeAiListingsDrawer(root);
   });
 }
 
@@ -1225,6 +1261,7 @@ function renderExecutiveDashboard() {
       </section>
     </div>`;
   bindExecutiveDashboardEvents(detailEl);
+  bindWorkspaceEmptyEvents(detailEl);
   clearTimelineHost();
 }
 
@@ -1308,24 +1345,37 @@ function resolveWorkspaceContext(listing, recommendation = null) {
 function bindWorkspaceEvents(root) {
   root.querySelectorAll('[data-ws-action]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      if (btn.hasAttribute('disabled')) return;
       const action = btn.getAttribute('data-ws-action');
       const listingId = root.querySelector('[data-ws-listing-id]')?.getAttribute('data-ws-listing-id');
       if (!listingId || !selectedListing) return;
-      const rec = findRecommendationForListing(selectedListing);
-      if (action === 'purchase' && rec) openPurchaseDecisionPanel(root, listingId);
-      else if (action === 'explain' && rec) openExplainabilityPanel(root, listingId);
-      else if (action === 'report' && rec) openExecutiveReportPanel(root, listingId);
+
+      const rec = selectedRecommendation ?? findRecommendationForListing(selectedListing);
+      const drawerContext = {
+        listingId,
+        recommendationId: String(rec?.id ?? ''),
+        compareSelectionKey: buildCompareSelectionKey(compareSelectedIds)
+      };
+
+      if (action === 'purchase') openAiListingsDrawer(root, 'purchase', drawerContext);
+      else if (action === 'explain') openAiListingsDrawer(root, 'explain', drawerContext);
+      else if (action === 'report') openAiListingsDrawer(root, 'report', drawerContext);
       else if (action === 'compare') {
-        if (activeAdminView !== 'recommendations') {
-          activeAdminView = 'recommendations';
-          setAdminView('recommendations');
-        }
+        if (activeAdminView !== 'recommendations') setAdminView('recommendations');
         compareModeEnabled = true;
         if (!compareSelectedIds.includes(listingId)) compareSelectedIds.push(listingId);
         renderRecommendationsView();
-      } else if (action === 'scenario' && rec) openScenarioPanel(root, listingId, 'price_minus_5');
-      else if (action === 'negotiation' && rec) openPurchaseDecisionPanel(root, listingId);
-      else if (action === 'quality' && rec) openExplainabilityPanel(root, listingId);
+        openAiListingsDrawer(root, 'compare', {
+          ...drawerContext,
+          compareSelectionKey: buildCompareSelectionKey(compareSelectedIds)
+        });
+      } else if (action === 'scenario') {
+        openAiListingsDrawer(root, 'scenario', { ...drawerContext, scenarioKey: 'price_minus_5' });
+      } else if (action === 'negotiation') {
+        openAiListingsDrawer(root, 'negotiation', drawerContext);
+      } else if (action === 'quality') {
+        openAiListingsDrawer(root, 'quality', drawerContext);
+      }
     });
   });
 }
@@ -1340,36 +1390,53 @@ function closeScenarioPanel(root) {
   document.body.classList.remove('ai-listings-admin--ss-open');
 }
 
-function openScenarioPanel(root, recordId, scenarioKey = 'price_minus_5') {
-  const rec = findRecommendationForListing(
-    cachedListings.find((item) => String(item.id) === String(recordId)) ?? selectedListing ?? {}
-  );
-  if (!rec) {
-    const host = root.querySelector('#ai-ss-panel-host') ?? document.querySelector('#ai-ss-panel-host');
-    if (!host) return;
-    host.innerHTML = buildScenarioPanelHtml(null);
+function openScenarioPanel(root, recordId, scenarioKey = 'price_minus_5', options = {}) {
+  const host = root.querySelector('#ai-ss-panel-host') ?? document.querySelector('#ai-ss-panel-host');
+  if (!host) return;
+
+  const rec =
+    findRecommendationForListing(
+      cachedListings.find((item) => String(item.id) === String(recordId)) ?? selectedListing ?? {}
+    ) ?? selectedRecommendation;
+
+  const title = options.title ?? getDrawerTitleTr('scenario');
+
+  if (!rec?.id) {
+    host.innerHTML = buildScenarioPanelHtml(null, { title });
     host.hidden = false;
     document.body.classList.add('ai-listings-admin--ss-open');
-    host.querySelector('[data-ss-action="close"]')?.addEventListener('click', () => closeScenarioPanel(root));
+    bindScenarioPanelClose(host, root, recordId);
     return;
   }
 
   const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
-  const simulation = runScenarioSimulator(buildScenarioInput(rec, profile, scenarioKey));
-  const host = root.querySelector('#ai-ss-panel-host') ?? document.querySelector('#ai-ss-panel-host');
-  if (!host) return;
-
-  host.innerHTML = buildScenarioPanelHtml(simulation, { title: String(rec.title ?? 'Senaryo Simülasyonu') });
+  const simulation = runScenarioSimulator(buildScenarioInput(rec, profile, scenarioKey), { skipCache: false });
+  host.innerHTML = buildScenarioPanelHtml(simulation, { title: String(rec.title ?? title) });
   host.hidden = false;
   document.body.classList.add('ai-listings-admin--ss-open');
+  bindScenarioPanelClose(host, root, recordId, scenarioKey);
+}
 
-  const close = () => closeScenarioPanel(root);
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} root
+ * @param {string} recordId
+ * @param {string} [scenarioKey]
+ */
+function bindScenarioPanelClose(host, root, recordId, scenarioKey = 'price_minus_5') {
+  const close = () => {
+    closeScenarioPanel(root);
+    closeAiListingsDrawer(root);
+  };
   host.querySelector('[data-ss-action="close"]')?.addEventListener('click', close);
   host.querySelector('[data-ss-backdrop]')?.addEventListener('click', close);
   host.querySelectorAll('[data-ss-scenario]').forEach((preset) => {
     preset.addEventListener('click', () => {
       const key = preset.getAttribute('data-ss-scenario');
-      if (key) openScenarioPanel(root, recordId, key);
+      if (key) {
+        aiDrawerState = openDrawerState(aiDrawerState, 'scenario', { scenarioKey: key });
+        openScenarioPanel(root, recordId, key, { title: getDrawerTitleTr('scenario') });
+      }
     });
   });
 }
@@ -1706,20 +1773,159 @@ function toggleFilterPanel(forceOpen) {
 }
 
 function filterListingsBySearch(listings) {
-  const query = searchQuery.trim().toLowerCase();
-  if (!query) return listings;
-  return listings.filter((listing) => {
-    const haystack = [
-      listing.title,
-      listing.category,
-      listing.status,
-      listing.source_type,
-      listing.location,
-      listing.id
-    ]
-      .map((value) => String(value ?? '').toLowerCase())
-      .join(' ');
-    return haystack.includes(query);
+  return filterListingsForDisplay(listings, searchQuery);
+}
+
+function clearWorkspaceModuleCaches() {
+  clearPurchaseDecisionMemoCache();
+  clearExplainabilityMemoCache();
+  clearExecutiveReportMemoCache();
+  clearScenarioSimulatorMemoCache();
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @returns {{ listing: Record<string, unknown>, recommendation: Record<string, unknown>|null }}
+ */
+function normalizeSelectedContext(listing) {
+  const rec = findRecommendationForListing(listing);
+  selectedListing = listing;
+  selectedRecommendation = rec;
+  return { listing, recommendation: rec };
+}
+
+/**
+ * @param {Record<string, unknown>|null} listing
+ * @param {{ loadingDetail?: boolean }} [options]
+ */
+function renderDecisionWorkspace(listing, options = {}) {
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+
+  if (!listing) {
+    detailEl.innerHTML = `
+      <div class="ai-ws-overview-wrap">
+        ${buildDecisionWorkspaceEmptyHtml()}
+      </div>`;
+    bindWorkspaceEmptyEvents(detailEl);
+    return;
+  }
+
+  const listingId = String(listing.id ?? '');
+  if (listingId && listingId !== lastWorkspaceListingId) {
+    clearWorkspaceModuleCaches();
+    lastWorkspaceListingId = listingId;
+  }
+
+  const ctx = resolveWorkspaceContext(listing, selectedRecommendation);
+  const existing = detailEl.querySelector('.ai-decision-workspace');
+  if (existing) {
+    existing.outerHTML = buildDecisionWorkspaceHtml(ctx);
+  } else {
+    detailEl.innerHTML = buildDecisionWorkspaceHtml(ctx);
+  }
+  bindWorkspaceEvents(detailEl);
+
+  const mount = detailEl.querySelector('#ai-ws-detail-mount');
+  if (mount && options.loadingDetail) {
+    mount.innerHTML = buildWorkspaceDetailSkeletonHtml();
+  }
+}
+
+function resetAiListingsDrawerState() {
+  aiDrawerState = resetDrawerState();
+}
+
+function closeAiListingsDrawer(root = document) {
+  closeAllAiPanelHosts(root);
+  aiDrawerState = closeDrawerState(aiDrawerState);
+  syncDrawerBodyScroll();
+}
+
+/**
+ * @param {Document|HTMLElement} root
+ */
+function closeAllAiPanelHosts(root) {
+  closeDecisionCoachPanel(root);
+  closeDecisionSimulatorPanel(root);
+  closeDecisionReportPanel(root);
+  closeOwnershipCostPanel(root);
+  closePurchaseDecisionPanel(root);
+  closeExplainabilityPanel(root);
+  closeExecutiveReportPanel(root);
+  closeComparePanel(root);
+  closeScenarioPanel(root);
+}
+
+function syncDrawerBodyScroll() {
+  const open = isDrawerOpen(aiDrawerState);
+  document.body.classList.toggle('ai-listings-admin--ai-drawer-open', open);
+  if (!open) {
+    getActiveDrawerBodyClasses().forEach((cls) => document.body.classList.remove(cls));
+  }
+}
+
+/**
+ * @param {HTMLElement} root
+ * @param {string} type
+ * @param {Record<string, unknown>} [context]
+ */
+function openAiListingsDrawer(root, type, context = {}) {
+  closeAiListingsDrawer(root);
+
+  const listingId = String(context.listingId ?? selectedListing?.id ?? '');
+  const recommendationId = String(context.recommendationId ?? selectedRecommendation?.id ?? '');
+  const compareSelectionKey =
+    context.compareSelectionKey ?? buildCompareSelectionKey(compareSelectedIds);
+
+  aiDrawerState = openDrawerState(aiDrawerState, type, {
+    listingId,
+    recommendationId,
+    compareSelectionKey,
+    scenarioKey: String(context.scenarioKey ?? 'price_minus_5')
+  });
+
+  renderActiveAiListingsDrawer(root);
+
+  const bodyClass = getDrawerBodyClass(type);
+  if (bodyClass) document.body.classList.add(bodyClass);
+  syncDrawerBodyScroll();
+}
+
+/**
+ * @param {HTMLElement} root
+ */
+function renderActiveAiListingsDrawer(root) {
+  const type = aiDrawerState.activeDrawerType;
+  if (!type) return;
+
+  const listingId = aiDrawerState.activeDrawerListingId;
+  const title = getDrawerTitleTr(type);
+
+  if (type === 'purchase' || type === 'negotiation') {
+    openPurchaseDecisionPanel(root, listingId, { title, focus: type });
+  } else if (type === 'explain' || type === 'quality') {
+    openExplainabilityPanel(root, listingId, { title, focus: type });
+  } else if (type === 'report') {
+    openExecutiveReportPanel(root, listingId, { title });
+  } else if (type === 'compare') {
+    openComparePanel(root, { title });
+  } else if (type === 'scenario') {
+    openScenarioPanel(root, listingId, aiDrawerState.scenarioKey, { title });
+  }
+}
+
+/**
+ * @param {HTMLElement} root
+ */
+function bindWorkspaceEmptyEvents(root) {
+  root.querySelectorAll('[data-ws-empty-action]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-ws-empty-action');
+      if (action === 'recommendations') setAdminView('recommendations');
+      else if (action === 'create') openCreateDrawer();
+      else if (action === 'repository') setAdminView('repository');
+    });
   });
 }
 
@@ -1747,7 +1953,12 @@ function renderListingsList(listings) {
     const id = btn.getAttribute('data-listing-id');
     const listing = listings.find((item) => String(item.id) === id);
     if (listing) {
-      selectedListing = listing;
+      normalizeSelectedContext(listing);
+      listEl.querySelectorAll('[data-listing-id]').forEach((card) => {
+        const isActive = card === btn;
+        card.classList.toggle('ai-listings-admin__listing-card--active', isActive);
+        card.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
       void showListingDetail(listing);
       toggleFilterPanel(false);
     }
@@ -1885,18 +2096,14 @@ function mountGlobalPanelHosts() {
 }
 
 async function showListingDetail(listing) {
-  selectedListing = listing;
+  normalizeSelectedContext(listing);
   const detailEl = $('ai-listings-detail');
   if (!detailEl) return;
 
   const id = String(listing.id);
   mountGlobalPanelHosts();
-  const workspaceCtx = resolveWorkspaceContext(listing);
-  detailEl.innerHTML = buildDecisionWorkspaceHtml(workspaceCtx);
-  bindWorkspaceEvents(detailEl);
+  renderDecisionWorkspace(listing, { loadingDetail: true });
   renderListingsList(cachedListings);
-  const mount = detailEl.querySelector('#ai-ws-detail-mount');
-  if (mount) mount.innerHTML = buildListingSkeletonHtml();
 
   const [detailRes, eventsRes] = await Promise.all([
     edgeRequest(`/listings/${id}`),
@@ -1904,7 +2111,11 @@ async function showListingDetail(listing) {
   ]);
 
   if (!detailRes.ok) {
-    detailEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(detailRes.message)}</p>`;
+    renderDecisionWorkspace(listing);
+    const mount = detailEl.querySelector('#ai-ws-detail-mount');
+    if (mount) {
+      mount.innerHTML = buildWorkspaceErrorHtml(translateAdminErrorMessage(detailRes.message));
+    }
     return;
   }
 
@@ -1921,12 +2132,8 @@ async function showListingDetail(listing) {
     ? cachedListings.find((item) => String(item.id) === String(matchedListingId)) ?? { id: matchedListingId }
     : null;
 
-  const refreshedCtx = resolveWorkspaceContext(listingData, findRecommendationForListing(listingData));
-  const workspaceHost = detailEl.querySelector('.ai-decision-workspace');
-  if (workspaceHost) {
-    workspaceHost.outerHTML = buildDecisionWorkspaceHtml(refreshedCtx);
-    bindWorkspaceEvents(detailEl);
-  }
+  selectedRecommendation = findRecommendationForListing(listingData);
+  renderDecisionWorkspace(listingData);
 
   const detailMount = detailEl.querySelector('#ai-ws-detail-mount');
   if (detailMount) {
@@ -2479,7 +2686,13 @@ function bindEvents() {
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeAllDrawers();
+    if (event.key === 'Escape') {
+      if (isDrawerOpen(aiDrawerState)) {
+        closeAiListingsDrawer(document);
+      } else {
+        closeAllDrawers();
+      }
+    }
   });
 
   document.addEventListener('click', (event) => {

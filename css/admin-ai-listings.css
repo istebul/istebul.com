@@ -6115,3 +6115,110 @@
     min-width: 0;
   }
 }
+
+/* --- Sprint-29: UX polish --- */
+
+.ai-ws-loading,
+.ai-ws-detail-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.ai-ws-loading__skeleton,
+.ai-ws-detail-skeleton__block {
+  border-radius: 0.55rem;
+  background: linear-gradient(90deg, rgba(51, 65, 85, 0.45) 0%, rgba(71, 85, 105, 0.65) 50%, rgba(51, 65, 85, 0.45) 100%);
+  background-size: 200% 100%;
+  animation: ai-ws-skeleton-pulse 1.4s ease-in-out infinite;
+  min-height: 3.5rem;
+}
+
+.ai-ws-loading__skeleton--hero,
+.ai-ws-detail-skeleton__block--hero {
+  min-height: 5.5rem;
+}
+
+.ai-ws-loading__text,
+.ai-ws-detail-skeleton__text {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.ai-ws-error {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  color: #fca5a5;
+  font-size: 0.82rem;
+}
+
+.ai-ws-empty__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+.ai-ws-empty__btn {
+  font-size: 0.76rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(56, 189, 248, 0.12);
+  color: #7dd3fc;
+  cursor: pointer;
+}
+
+.ai-ws-empty__btn--ghost {
+  background: transparent;
+  border-color: rgba(148, 163, 184, 0.25);
+  color: #94a3b8;
+}
+
+.ai-listings-admin__kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.ai-listings-admin--ai-drawer-open {
+  overflow: hidden;
+}
+
+@keyframes ai-ws-skeleton-pulse {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (max-width: 1024px) {
+  .ai-ss-panel,
+  .ai-pd-panel,
+  .ai-exp-panel,
+  .ai-edr-panel,
+  .ai-cmp-panel {
+    width: min(100vw, 28rem);
+    max-width: 100vw;
+  }
+}
+
+@media (max-width: 640px) {
+  .ai-ss-panel,
+  .ai-pd-panel,
+  .ai-exp-panel,
+  .ai-edr-panel,
+  .ai-cmp-panel {
+    width: 100vw;
+    max-width: 100vw;
+  }
+
+  .ai-listings-admin__kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

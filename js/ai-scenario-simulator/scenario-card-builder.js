@@ -32,11 +32,11 @@ function renderList(items) {
 export function buildScenarioPanelHtml(result, meta = {}) {
   if (!result || typeof result !== 'object' || result.baseDecisionScore == null) {
     return `
-    <aside class="ai-ss-panel" role="dialog" aria-label="Senaryo Simülasyonu">
+    <aside class="ai-ss-panel" role="dialog" aria-modal="true" aria-labelledby="ai-ss-panel-title" aria-label="Senaryo Simülasyonu">
       <header class="ai-ss-panel__head">
         <div>
           <p class="ai-ss-panel__eyebrow">Senaryo Simülasyonu</p>
-          <h3 class="ai-ss-panel__title">${safe(meta.title ?? 'Senaryo')}</h3>
+          <h3 id="ai-ss-panel-title" class="ai-ss-panel__title">${safe(meta.title ?? 'Senaryo')}</h3>
         </div>
         <button type="button" class="ai-ss-panel__close" data-ss-action="close" aria-label="Kapat">×</button>
       </header>
@@ -51,11 +51,11 @@ export function buildScenarioPanelHtml(result, meta = {}) {
   const selected = /** @type {Record<string, unknown>|null} */ (result.selectedScenario ?? null);
 
   return `
-    <aside class="ai-ss-panel" role="dialog" aria-label="Senaryo Simülasyonu">
+    <aside class="ai-ss-panel" role="dialog" aria-modal="true" aria-labelledby="ai-ss-panel-title" aria-label="Senaryo Simülasyonu">
       <header class="ai-ss-panel__head">
         <div>
           <p class="ai-ss-panel__eyebrow">Senaryo Simülasyonu</p>
-          <h3 class="ai-ss-panel__title">${safe(meta.title ?? 'Senaryo Simülasyonu')}</h3>
+          <h3 id="ai-ss-panel-title" class="ai-ss-panel__title">${safe(meta.title ?? 'Senaryo Simülasyonu')}</h3>
         </div>
         <button type="button" class="ai-ss-panel__close" data-ss-action="close" aria-label="Kapat">×</button>
       </header>

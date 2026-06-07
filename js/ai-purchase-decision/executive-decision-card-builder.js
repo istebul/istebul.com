@@ -119,7 +119,7 @@ function renderMissingInfoImpact(impact) {
 export function buildExecutiveDecisionPanelHtml(result, meta = {}) {
   if (!result || typeof result !== 'object' || result.decisionScore == null) {
     return `
-      <aside class="ai-pd-panel" role="dialog" aria-label="Al Kararı Analizi">
+      <aside class="ai-pd-panel" role="dialog" aria-modal="true" aria-label="Al Kararı Analizi">
         <header class="ai-pd-panel__head">
           <div>
             <p class="ai-pd-panel__eyebrow">Al Kararı Analizi</p>
@@ -143,7 +143,7 @@ export function buildExecutiveDecisionPanelHtml(result, meta = {}) {
         : 'ai-pd-panel__decision--neutral';
 
   return `
-    <aside class="ai-pd-panel" data-pd-panel${meta.recordId ? ` data-pd-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-label="Al Kararı Analizi">
+    <aside class="ai-pd-panel" data-pd-panel${meta.recordId ? ` data-pd-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-modal="true" aria-label="Al Kararı Analizi">
       <header class="ai-pd-panel__head">
         <div>
           <p class="ai-pd-panel__eyebrow">Al Kararı Analizi</p>

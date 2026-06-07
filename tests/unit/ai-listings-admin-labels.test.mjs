@@ -15,7 +15,15 @@ const {
   formatStatusLabel,
   formatAdminMetricLabel,
   toSelectOption,
-  toSelectOptions
+  toSelectOptions,
+  formatSourceTypeLabel,
+  formatRiskLevelLabel,
+  formatDuplicateLabel,
+  formatUiStatusLabel,
+  formatLoadingLabel,
+  formatErrorFallbackLabel,
+  translateAdminUiError,
+  humanizeSnakeCaseTr
 } = await import('../../js/admin/ai-listings-admin-labels.js');
 
 // --- CATEGORY LABELS ---
@@ -51,7 +59,8 @@ test('formatCategoryLabel preserves internal value in toSelectOption', () => {
 });
 
 test('formatCategoryLabel unknown value graceful fallback', () => {
-  assert.equal(formatCategoryLabel('unknown_cat'), 'unknown cat');
+  assert.equal(formatCategoryLabel('unknown_cat'), 'Unknown cat');
+  assert.ok(!formatCategoryLabel('unknown_cat').includes('_'));
 });
 
 test('formatCategoryLabel empty returns dash', () => {
@@ -259,12 +268,13 @@ test('toSelectOptions for all status options', () => {
 
 // --- ADDITIONAL COVERAGE ---
 
-test('formatAdminMetricLabel unknown key uses underscore replacement', () => {
-  assert.equal(formatAdminMetricLabel('source_type'), 'source type');
+test('formatAdminMetricLabel unknown key uses humanized fallback', () => {
+  assert.equal(formatAdminMetricLabel('source_type'), 'Source type');
+  assert.ok(!formatAdminMetricLabel('source_type').includes('_'));
 });
 
-test('formatAdminMetricLabel empty returns empty-ish', () => {
-  assert.equal(formatAdminMetricLabel(''), '');
+test('formatAdminMetricLabel empty returns dash', () => {
+  assert.equal(formatAdminMetricLabel(''), '—');
 });
 
 test('CATEGORY_LABELS includes konut alias', () => {
@@ -289,4 +299,41 @@ test('METRIC_LABELS has trust_score', () => {
 
 test('METRIC_LABELS has confidence_score', () => {
   assert.equal(formatAdminMetricLabel('confidence_score'), 'Güven skoru');
+});
+
+test('formatSourceTypeLabel collector', () => {
+  assert.equal(formatSourceTypeLabel('collector'), 'Toplayıcı');
+});
+
+test('formatRiskLevelLabel medium', () => {
+  assert.equal(formatRiskLevelLabel('medium'), 'Orta');
+});
+
+test('formatDuplicateLabel mukerrer', () => {
+  assert.equal(formatDuplicateLabel('mukerrer'), 'Mükerrer');
+});
+
+test('formatUiStatusLabel unavailable', () => {
+  assert.equal(formatUiStatusLabel('unavailable'), 'Kullanılamıyor');
+});
+
+test('formatLoadingLabel default', () => {
+  assert.equal(formatLoadingLabel(), 'Yükleniyor…');
+});
+
+test('formatErrorFallbackLabel quality', () => {
+  assert.match(formatErrorFallbackLabel('quality_unavailable'), /Kalite ve güven/);
+});
+
+test('humanizeSnakeCaseTr no underscores in output', () => {
+  assert.ok(!humanizeSnakeCaseTr('total_cost').includes('_'));
+});
+
+test('translateAdminUiError missing data', () => {
+  assert.match(translateAdminUiError('missing data'), /Eksik veri/);
+});
+
+test('internal value vehicle unchanged in toSelectOption', () => {
+  const opt = toSelectOption('vehicle', CATEGORY_LABELS);
+  assert.equal(opt.value, 'vehicle');
 });
