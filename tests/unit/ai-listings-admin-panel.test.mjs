@@ -449,7 +449,7 @@ vehicle,Valid
   const result = previewImportContent('csv', csv);
   assert.equal(result.ok, true);
   if (result.ok) {
-    assert.equal(result.preview.total_count, 2);
+    assert.equal(result.preview.total_rows, 2);
     assert.equal(result.preview.valid_rows, 1);
     assert.equal(result.preview.invalid_rows, 1);
   }

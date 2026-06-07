@@ -57,6 +57,11 @@ import {
   runExecutiveEngine,
   parseExecutiveFromTags
 } from '../../supabase/functions/_shared/ai-listings/executive/executive-engine.js';
+import { runAcquisitionEngine } from '../../supabase/functions/_shared/ai-listings/acquisition/acquisition-engine.js';
+import {
+  buildAcquisitionPreviewHtml,
+  formatAcquisitionErrorsText
+} from '../../js/ai-listings-acquisition/acquisition-preview.js';
 
 export { STATUS_FILTER_CHIPS, isListingPubliclyVisible, IMPORT_MAX_ROWS, IMPORT_MAX_CONTENT_BYTES };
 
@@ -1835,19 +1840,37 @@ export function buildQualityChecklistHtml(listing, latestAnalysis = null) {
 export function previewImportContent(format, content) {
   const trimmed = String(content ?? '').trim();
   if (!trimmed) return { ok: false, message: 'Import content is required.' };
-  if (measureImportContentBytes(trimmed) > IMPORT_MAX_CONTENT_BYTES) {
-    return { ok: false, message: `Content exceeds ${IMPORT_MAX_CONTENT_BYTES} byte limit.` };
+
+  const acquisition = runAcquisitionEngine({
+    format,
+    content: trimmed,
+    source_type: format === 'json' ? 'json' : 'csv'
+  });
+
+  if (acquisition.errors.some((entry) => entry.row === 0) && acquisition.valid_rows === 0) {
+    const message = acquisition.errors[0]?.messages?.[0] ?? 'Import preview failed.';
+    if (message.includes('bayt sınırını') || message.includes('Maksimum')) {
+      return { ok: false, message };
+    }
   }
 
-  try {
-    const preview = buildImportPreview(format, trimmed);
-    return { ok: true, preview };
-  } catch (err) {
-    return {
-      ok: false,
-      message: err instanceof Error ? err.message : 'Import preview failed.'
-    };
-  }
+  return { ok: true, preview: acquisition, acquisition };
+}
+
+/**
+ * @param {ReturnType<typeof runAcquisitionEngine>} acquisition
+ * @returns {string}
+ */
+export function buildAcquisitionPreviewHtmlFromResult(acquisition) {
+  return buildAcquisitionPreviewHtml(acquisition);
+}
+
+/**
+ * @param {ReturnType<typeof runAcquisitionEngine>} acquisition
+ * @returns {string}
+ */
+export function buildAcquisitionErrorsExportText(acquisition) {
+  return formatAcquisitionErrorsText(acquisition.errors);
 }
 
 /**
@@ -1855,6 +1878,10 @@ export function previewImportContent(format, content) {
  * @returns {string}
  */
 export function buildImportPreviewHtml(preview) {
+  if (preview && typeof preview === 'object' && 'summary' in preview && 'normalized_rows' in preview) {
+    return buildAcquisitionPreviewHtml(/** @type {ReturnType<typeof runAcquisitionEngine>} */ (preview));
+  }
+
   const errorItems = preview.row_errors
     .map(
       (entry) =>

@@ -15,6 +15,8 @@ import { runRiskEngine } from '../../supabase/functions/_shared/ai-listings/engi
 import { runDecisionEngine } from '../../supabase/functions/_shared/ai-listings/engine/decision-engine.js';
 import { runExecutiveEngine } from '../ai-listings-engine/executive/executive-engine.js';
 import { buildExecutivePreviewHtml } from '../ai-listings-engine/executive/executive-preview.js';
+import { runAcquisitionEngine } from '../ai-listings-acquisition/acquisition-summary.js';
+import { buildAcquisitionPreviewHtml } from '../ai-listings-acquisition/acquisition-preview.js';
 
 /** @type {Readonly<Record<string, string>>} */
 const INPUT_TYPE_LABELS = Object.freeze({
@@ -87,6 +89,24 @@ export function buildPreviewHtml(canonical) {
   });
   const executivePreviewHtml = buildExecutivePreviewHtml(executive);
 
+  const acquisition = runAcquisitionEngine({
+    rows: [
+      {
+        category: canonical.category,
+        title: canonical.title,
+        description: canonical.description,
+        price: canonical.price,
+        currency: canonical.currency,
+        location: canonical.location,
+        images: canonical.images,
+        attributes: attrs,
+        source_url: canonical.source_url
+      }
+    ],
+    source_type: 'ai_builder'
+  });
+  const acquisitionPreviewHtml = buildAcquisitionPreviewHtml(acquisition, { compact: true });
+
   const html = `
     <section class="ai-listings-builder__preview" data-builder-preview>
       <header class="ai-listings-builder__preview-head">
@@ -120,6 +140,7 @@ export function buildPreviewHtml(canonical) {
       ${priceIntelligenceHtml}
       ${marketIntelligenceHtml}
       ${executivePreviewHtml}
+      ${acquisitionPreviewHtml}
       <details class="ai-listings-builder__json-details">
         <summary>JSON önizleme</summary>
         <pre class="ai-listings-builder__json">${escapeHtml(buildPreviewJson(canonical))}</pre>
