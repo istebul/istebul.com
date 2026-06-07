@@ -28,6 +28,7 @@ import {
   getSupabaseAnonKey,
   mapEdgeResponse,
   previewImportContent,
+  buildAcquisitionErrorsExportText,
   resolveActiveStatusFilter,
   resolveEdgeBaseUrl,
   resolveImportAnalyzeFlag,
@@ -37,6 +38,8 @@ import {
   validateSourceUrl
 } from './ai-listings-admin-core.js';
 import { runDuplicateEngine } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
+import { IMPORT_MAX_ROWS } from '../../supabase/functions/_shared/ai-listings/import-parser.js';
+import { buildAcquisitionEventPayload } from '../../supabase/functions/_shared/ai-listings/acquisition/acquisition-events.js';
 import { runAiListingBuilder, logBuilderStage, logBuilderError } from '../ai-listings-builder/index.js';
 
 /** @type {Record<string, unknown>|null} */
@@ -47,6 +50,9 @@ let activeStatusFilter = '';
 
 /** @type {number} */
 let importValidRowCount = 0;
+
+/** @type {Record<string, unknown>|null} */
+let acquisitionResult = null;
 
 /** @type {Array<Record<string, unknown>>} */
 let cachedListings = [];
@@ -423,18 +429,22 @@ function bindImportFormEvents() {
   $('ai-listings-import-run-btn')?.addEventListener('click', handleImportRun);
   $('ai-listings-import-content')?.addEventListener('input', () => {
     importValidRowCount = 0;
+    acquisitionResult = null;
     updateImportButtonState();
   });
   $('ai-listings-import-format')?.addEventListener('change', () => {
     importValidRowCount = 0;
+    acquisitionResult = null;
     updateImportButtonState();
   });
   $('ai-listings-import-file')?.addEventListener('change', handleImportFileSelect);
+  $('ai-listings-import-preview')?.addEventListener('click', handleAcquisitionActionClick);
   document.querySelectorAll('[data-import-format-tab]').forEach((tab) => {
     tab.addEventListener('click', () => {
       const format = tab.getAttribute('data-import-format-tab') === 'json' ? 'json' : 'csv';
       setImportFormat(format);
       importValidRowCount = 0;
+      acquisitionResult = null;
       updateImportButtonState();
     });
   });
@@ -1017,13 +1027,114 @@ function handleImportPreview() {
     return;
   }
 
-  importValidRowCount = result.preview.valid_rows;
+  importValidRowCount = result.preview.valid_rows ?? 0;
+  acquisitionResult = result.acquisition ?? result.preview;
   updateImportButtonState();
   if (previewEl) previewEl.innerHTML = buildImportPreviewHtml(result.preview);
   setStatus(
-    `Önizleme hazır: ${result.preview.valid_rows} geçerli, ${result.preview.invalid_rows} geçersiz.`,
+    `Önizleme hazır: ${result.preview.valid_rows} geçerli, ${result.preview.invalid_rows} hatalı, ${result.preview.duplicate_candidates ?? 0} duplicate adayı.`,
     'success'
   );
+}
+
+function handleAcquisitionActionClick(event) {
+  const target = /** @type {HTMLElement|null} */ (event.target instanceof HTMLElement ? event.target.closest('[data-acquisition-action]') : null);
+  if (!target || !acquisitionResult) return;
+
+  const action = target.getAttribute('data-acquisition-action');
+  if (action === 'save') {
+    void handleAcquisitionImport(false);
+  } else if (action === 'save-analyze') {
+    void handleAcquisitionImport(true);
+  } else if (action === 'copy-errors') {
+    handleCopyAcquisitionErrors();
+  } else if (action === 'download-errors') {
+    handleDownloadAcquisitionErrors();
+  }
+}
+
+async function handleAcquisitionImport(analyzeAfter) {
+  if (!acquisitionResult?.normalized_rows?.length) {
+    setStatus('Kaydedilecek geçerli satır yok. Önce önizleme yapın.', 'error');
+    return;
+  }
+
+  const rows = /** @type {Record<string, unknown>[]} */ (acquisitionResult.normalized_rows);
+  setStatus('Geçerli kayıtlar içe aktarılıyor…', 'info');
+
+  let created = 0;
+  let invalid = 0;
+  let analyzed = 0;
+
+  for (let offset = 0; offset < rows.length; offset += IMPORT_MAX_ROWS) {
+    const chunk = rows.slice(offset, offset + IMPORT_MAX_ROWS);
+    const result = await edgeRequest('/listings/import', {
+      method: 'POST',
+      body: { format: 'json', content: JSON.stringify(chunk), analyze: analyzeAfter }
+    });
+
+    if (!result.ok) {
+      setStatus(result.message, 'error');
+      console.info('[acquisition]', buildAcquisitionEventPayload('acquisition_failed', acquisitionResult, { message: result.message }));
+      return;
+    }
+
+    const summary = result.data ?? {};
+    created += Number(summary.created_count ?? 0);
+    invalid += Number(summary.invalid_count ?? 0);
+    analyzed += Number(summary.analyzed_count ?? 0);
+  }
+
+  console.info(
+    '[acquisition]',
+    buildAcquisitionEventPayload('acquisition_imported', acquisitionResult, {
+      created_count: created,
+      analyzed_count: analyzed
+    })
+  );
+
+  setStatus(
+    `Veri alma tamamlandı: ${created} kayıt oluşturuldu, ${invalid} geçersiz, ${analyzed} analiz edildi.`,
+    'success'
+  );
+  acquisitionResult = null;
+  importValidRowCount = 0;
+  updateImportButtonState();
+  closeImportDrawer();
+  await loadListings();
+}
+
+function handleCopyAcquisitionErrors() {
+  if (!acquisitionResult) return;
+  const text = buildAcquisitionErrorsExportText(acquisitionResult);
+  if (!text) {
+    setStatus('Kopyalanacak hata yok.', 'info');
+    return;
+  }
+  if (navigator.clipboard?.writeText) {
+    void navigator.clipboard.writeText(text).then(() => {
+      setStatus('Hatalar panoya kopyalandı.', 'success');
+    });
+    return;
+  }
+  setStatus(text, 'info');
+}
+
+function handleDownloadAcquisitionErrors() {
+  if (!acquisitionResult) return;
+  const text = buildAcquisitionErrorsExportText(acquisitionResult);
+  if (!text) {
+    setStatus('İndirilecek hata yok.', 'info');
+    return;
+  }
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = 'ai-listings-acquisition-errors.txt';
+  anchor.click();
+  URL.revokeObjectURL(url);
+  setStatus('Hata raporu indirildi.', 'success');
 }
 
 async function handleImportRun() {
@@ -1055,6 +1166,7 @@ async function handleImportRun() {
     'success'
   );
   importValidRowCount = 0;
+  acquisitionResult = null;
   updateImportButtonState();
   closeImportDrawer();
   await loadListings();
@@ -1073,6 +1185,7 @@ function handleImportFileSelect(event) {
     const format = file.name.toLowerCase().endsWith('.json') ? 'json' : 'csv';
     setImportFormat(format);
     importValidRowCount = 0;
+    acquisitionResult = null;
     updateImportButtonState();
     setStatus(`${file.name} dosyası yüklendi.`, 'success');
   };

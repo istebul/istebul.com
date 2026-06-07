@@ -4,8 +4,19 @@
 
 import { escapeHtml } from '../core/dom-safe.js';
 import { logBuilderStage } from './debug-log.js';
+import { normalizeCanonicalListing } from '../../supabase/functions/_shared/ai-listings/engine/canonical-engine.js';
 import { runPriceIntelligence } from '../ai-listings-engine/price/price-intelligence.js';
 import { buildPricePreviewBlockHtml } from '../ai-listings-engine/price/price-summary.js';
+import { runMarketIntelligence } from '../ai-listings-engine/market-intelligence/market-intelligence.js';
+import { buildMarketIntelligencePreviewHtml } from '../ai-listings-engine/market-intelligence/market-summary.js';
+import { runQualityEngine } from '../../supabase/functions/_shared/ai-listings/engine/quality-engine.js';
+import { runMarketEngine } from '../../supabase/functions/_shared/ai-listings/engine/market-engine.js';
+import { runRiskEngine } from '../../supabase/functions/_shared/ai-listings/engine/risk-engine.js';
+import { runDecisionEngine } from '../../supabase/functions/_shared/ai-listings/engine/decision-engine.js';
+import { runExecutiveEngine } from '../ai-listings-engine/executive/executive-engine.js';
+import { buildExecutivePreviewHtml } from '../ai-listings-engine/executive/executive-preview.js';
+import { runAcquisitionEngine } from '../ai-listings-acquisition/acquisition-summary.js';
+import { buildAcquisitionPreviewHtml } from '../ai-listings-acquisition/acquisition-preview.js';
 
 /** @type {Readonly<Record<string, string>>} */
 const INPUT_TYPE_LABELS = Object.freeze({
@@ -57,6 +68,45 @@ export function buildPreviewHtml(canonical) {
   const priceIntelligence = runPriceIntelligence(canonical);
   const priceIntelligenceHtml = buildPricePreviewBlockHtml(priceIntelligence);
 
+  const marketListing = normalizeCanonicalListing({
+    id: 'builder-preview',
+    ...canonical
+  });
+  const marketIntelligence = runMarketIntelligence(marketListing);
+  const marketIntelligenceHtml = buildMarketIntelligencePreviewHtml(marketIntelligence);
+
+  const quality = runQualityEngine(marketListing);
+  const market = runMarketEngine(marketListing);
+  const risk = runRiskEngine(marketListing, quality);
+  const decision = runDecisionEngine(marketListing, quality, market, risk);
+  const executive = runExecutiveEngine(marketListing, {
+    quality,
+    price_intelligence: market,
+    market_intelligence: marketIntelligence,
+    risk,
+    duplicate: null,
+    decision
+  });
+  const executivePreviewHtml = buildExecutivePreviewHtml(executive);
+
+  const acquisition = runAcquisitionEngine({
+    rows: [
+      {
+        category: canonical.category,
+        title: canonical.title,
+        description: canonical.description,
+        price: canonical.price,
+        currency: canonical.currency,
+        location: canonical.location,
+        images: canonical.images,
+        attributes: attrs,
+        source_url: canonical.source_url
+      }
+    ],
+    source_type: 'ai_builder'
+  });
+  const acquisitionPreviewHtml = buildAcquisitionPreviewHtml(acquisition, { compact: true });
+
   const html = `
     <section class="ai-listings-builder__preview" data-builder-preview>
       <header class="ai-listings-builder__preview-head">
@@ -88,6 +138,9 @@ export function buildPreviewHtml(canonical) {
         ${warningsHtml}
       </div>
       ${priceIntelligenceHtml}
+      ${marketIntelligenceHtml}
+      ${executivePreviewHtml}
+      ${acquisitionPreviewHtml}
       <details class="ai-listings-builder__json-details">
         <summary>JSON önizleme</summary>
         <pre class="ai-listings-builder__json">${escapeHtml(buildPreviewJson(canonical))}</pre>

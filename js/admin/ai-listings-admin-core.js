@@ -37,6 +37,31 @@ import {
   parsePriceIntelligenceFromTags
 } from '../../supabase/functions/_shared/ai-listings/price/price-intelligence.js';
 import { getPricePositionLabelTr } from '../../supabase/functions/_shared/ai-listings/price/price-summary.js';
+import {
+  normalizeCanonicalListing
+} from '../../supabase/functions/_shared/ai-listings/engine/canonical-engine.js';
+import {
+  runMarketIntelligence,
+  parseMarketIntelligenceFromTags
+} from '../../supabase/functions/_shared/ai-listings/market-intelligence/market-intelligence.js';
+import {
+  getDemandLabel,
+  getLiquidityLabel
+} from '../../supabase/functions/_shared/ai-listings/market-intelligence/market-model.js';
+import { buildMarketReasons } from '../../supabase/functions/_shared/ai-listings/market-intelligence/market-summary.js';
+import { runQualityEngine } from '../../supabase/functions/_shared/ai-listings/engine/quality-engine.js';
+import { runMarketEngine } from '../../supabase/functions/_shared/ai-listings/engine/market-engine.js';
+import { runRiskEngine } from '../../supabase/functions/_shared/ai-listings/engine/risk-engine.js';
+import { runDecisionEngine } from '../../supabase/functions/_shared/ai-listings/engine/decision-engine.js';
+import {
+  runExecutiveEngine,
+  parseExecutiveFromTags
+} from '../../supabase/functions/_shared/ai-listings/executive/executive-engine.js';
+import { runAcquisitionEngine } from '../../supabase/functions/_shared/ai-listings/acquisition/acquisition-engine.js';
+import {
+  buildAcquisitionPreviewHtml,
+  formatAcquisitionErrorsText
+} from '../../js/ai-listings-acquisition/acquisition-preview.js';
 
 export { STATUS_FILTER_CHIPS, isListingPubliclyVisible, IMPORT_MAX_ROWS, IMPORT_MAX_CONTENT_BYTES };
 
@@ -1165,6 +1190,182 @@ export function buildRisksCardHtml(analysis) {
 }
 
 /**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @returns {ReturnType<typeof runMarketIntelligence>|null}
+ */
+export function resolveMarketIntelligenceForListing(listing, analysis = null) {
+  const canonical = normalizeCanonicalListing({
+    ...listing,
+    id: String(listing.id ?? 'admin-preview')
+  });
+  const computed = runMarketIntelligence(canonical);
+  const fromTags = parseMarketIntelligenceFromTags(
+    Array.isArray(analysis?.tags) ? analysis.tags : []
+  );
+
+  if (!fromTags.segment && fromTags.demand_score === undefined) {
+    return computed;
+  }
+
+  const demandScore = fromTags.demand_score ?? computed.demand_score;
+  const liquidityScore = fromTags.liquidity_score ?? computed.liquidity_score;
+
+  return {
+    segment: fromTags.segment ?? computed.segment,
+    segment_label: fromTags.segment_label ?? computed.segment_label,
+    demand_score: demandScore,
+    demand_label: getDemandLabel(demandScore),
+    liquidity_score: liquidityScore,
+    liquidity_label: getLiquidityLabel(liquidityScore),
+    market_context_score: fromTags.market_context_score ?? computed.market_context_score,
+    market_trend: fromTags.market_trend ?? computed.market_trend,
+    market_summary: computed.market_summary,
+    market_reasons: buildMarketReasons({
+      segment: fromTags.segment ?? computed.segment,
+      demand_score: demandScore,
+      liquidity_score: liquidityScore,
+      market_context_score: fromTags.market_context_score ?? computed.market_context_score,
+      market_trend: fromTags.market_trend ?? computed.market_trend
+    })
+  };
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @returns {string}
+ */
+export function buildMarketIntelligenceCardHtml(listing, analysis = null) {
+  const marketIntelligence = resolveMarketIntelligenceForListing(listing, analysis);
+  if (!marketIntelligence) {
+    return `<p class="ai-listings-admin__muted">Piyasa zekâsı verisi oluşturulamadı.</p>`;
+  }
+
+  const reasons = Array.isArray(marketIntelligence.market_reasons)
+    ? marketIntelligence.market_reasons
+    : [];
+  const reasonsHtml = reasons.length
+    ? `<ul class="ai-listings-admin__market-intelligence-reasons">${reasons
+        .map((reason) => `<li>${safeRenderText(reason)}</li>`)
+        .join('')}</ul>`
+    : '<p class="ai-listings-admin__muted">Neden listesi oluşturulamadı.</p>';
+
+  return `
+    <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--market-intelligence" aria-label="Piyasa Zekâsı">
+      <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">📊</span> Piyasa Zekâsı</h4>
+      <dl class="ai-listings-admin__market-intelligence-grid">
+        <div><dt>Segment</dt><dd>${safeRenderText(marketIntelligence.segment_label)}</dd></div>
+        <div><dt>Talep</dt><dd>${safeRenderText(marketIntelligence.demand_label)} (${safeRenderText(marketIntelligence.demand_score)})</dd></div>
+        <div><dt>Likidite</dt><dd>${safeRenderText(marketIntelligence.liquidity_label)} (${safeRenderText(marketIntelligence.liquidity_score)})</dd></div>
+        <div><dt>Piyasa Bağlam Skoru</dt><dd>${safeRenderText(marketIntelligence.market_context_score)}</dd></div>
+        <div><dt>Eğilim</dt><dd>${safeRenderText(marketIntelligence.market_trend)}</dd></div>
+      </dl>
+      <p class="ai-listings-admin__market-intelligence-summary">${safeRenderText(marketIntelligence.market_summary)}</p>
+      <div class="ai-listings-admin__market-intelligence-reasons-wrap">
+        <h5 class="ai-listings-admin__subsection-title">Nedenler</h5>
+        ${reasonsHtml}
+      </div>
+    </article>`;
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @param {Array<Record<string, unknown>>|null|undefined} [events]
+ * @returns {ReturnType<typeof runExecutiveEngine>}
+ */
+export function resolveExecutiveForListing(listing, analysis = null, events = null) {
+  const canonical = normalizeCanonicalListing({
+    ...listing,
+    id: String(listing.id ?? 'admin-preview')
+  });
+  const quality = runQualityEngine(canonical);
+  const market = runMarketEngine(canonical);
+  const risk = runRiskEngine(canonical, quality);
+  const market_intelligence = runMarketIntelligence(canonical, { quality, risk, market });
+  const decision = runDecisionEngine(canonical, quality, market, risk);
+  const duplicateMeta = extractDuplicateFromEvents(events);
+  const duplicate =
+    duplicateMeta.status && duplicateMeta.status !== 'new'
+      ? {
+          status: duplicateMeta.status,
+          similarity: duplicateMeta.similarity
+        }
+      : null;
+
+  const computed = runExecutiveEngine(canonical, {
+    quality,
+    price_intelligence: market,
+    market_intelligence,
+    risk,
+    duplicate,
+    decision
+  });
+
+  const fromTags = parseExecutiveFromTags(Array.isArray(analysis?.tags) ? analysis.tags : []);
+  if (fromTags.executive_score === undefined && !fromTags.executive_label) {
+    return computed;
+  }
+
+  return {
+    ...computed,
+    executive_score: fromTags.executive_score ?? computed.executive_score,
+    executive_confidence: fromTags.executive_confidence ?? computed.executive_confidence,
+    executive_label: fromTags.executive_label ?? computed.executive_label
+  };
+}
+
+/**
+ * @param {string[]} items
+ * @param {string} emptyLabel
+ * @returns {string}
+ */
+function buildExecutiveListHtml(items, emptyLabel) {
+  if (!items.length) {
+    return `<p class="ai-listings-admin__muted">${safeRenderText(emptyLabel)}</p>`;
+  }
+  return `<ul class="ai-listings-admin__executive-list">${items
+    .map((item) => `<li>${safeRenderText(item)}</li>`)
+    .join('')}</ul>`;
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @param {Array<Record<string, unknown>>|null|undefined} [events]
+ * @returns {string}
+ */
+export function buildExecutiveDecisionCardHtml(listing, analysis = null, events = null) {
+  const executive = resolveExecutiveForListing(listing, analysis, events);
+
+  return `
+    <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--executive" aria-label="AI Yönetici Kararı">
+      <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">🎯</span> AI Yönetici Kararı</h4>
+      <dl class="ai-listings-admin__executive-grid">
+        <div><dt>Executive Score</dt><dd>${safeRenderText(executive.executive_score)}</dd></div>
+        <div><dt>Karar Güveni</dt><dd>${safeRenderText(executive.executive_confidence)}%</dd></div>
+        <div><dt>Karar</dt><dd>${safeRenderText(executive.executive_label)}</dd></div>
+      </dl>
+      <p class="ai-listings-admin__executive-summary">${safeRenderText(executive.executive_summary)}</p>
+      <div class="ai-listings-admin__executive-columns">
+        <div>
+          <h5 class="ai-listings-admin__subsection-title">Güçlü Yönler</h5>
+          ${buildExecutiveListHtml(executive.strengths, 'Güçlü yön bulunamadı.')}
+        </div>
+        <div>
+          <h5 class="ai-listings-admin__subsection-title">Riskler</h5>
+          ${buildExecutiveListHtml(executive.risks, 'Risk bulunamadı.')}
+        </div>
+        <div>
+          <h5 class="ai-listings-admin__subsection-title">Öneriler</h5>
+          ${buildExecutiveListHtml(executive.recommendations, 'Öneri bulunamadı.')}
+        </div>
+      </div>
+    </article>`;
+}
+
+/**
  * @param {number} amount
  * @param {string} currency
  * @returns {string}
@@ -1564,6 +1765,8 @@ export function buildPremiumDashboardHtml(listing, analysis, events, status, mat
 
   const analysisPanel = `
     ${buildScoreCardsHtml(analysis)}
+    ${buildExecutiveDecisionCardHtml(listing, analysis, events)}
+    ${buildMarketIntelligenceCardHtml(listing, analysis)}
     <div class="ai-listings-admin__insights-grid">
       ${buildStrengthsCardHtml(analysis)}
       ${buildRisksCardHtml(analysis)}
@@ -1637,19 +1840,37 @@ export function buildQualityChecklistHtml(listing, latestAnalysis = null) {
 export function previewImportContent(format, content) {
   const trimmed = String(content ?? '').trim();
   if (!trimmed) return { ok: false, message: 'Import content is required.' };
-  if (measureImportContentBytes(trimmed) > IMPORT_MAX_CONTENT_BYTES) {
-    return { ok: false, message: `Content exceeds ${IMPORT_MAX_CONTENT_BYTES} byte limit.` };
+
+  const acquisition = runAcquisitionEngine({
+    format,
+    content: trimmed,
+    source_type: format === 'json' ? 'json' : 'csv'
+  });
+
+  if (acquisition.errors.some((entry) => entry.row === 0) && acquisition.valid_rows === 0) {
+    const message = acquisition.errors[0]?.messages?.[0] ?? 'Import preview failed.';
+    if (message.includes('bayt sınırını') || message.includes('Maksimum')) {
+      return { ok: false, message };
+    }
   }
 
-  try {
-    const preview = buildImportPreview(format, trimmed);
-    return { ok: true, preview };
-  } catch (err) {
-    return {
-      ok: false,
-      message: err instanceof Error ? err.message : 'Import preview failed.'
-    };
-  }
+  return { ok: true, preview: acquisition, acquisition };
+}
+
+/**
+ * @param {ReturnType<typeof runAcquisitionEngine>} acquisition
+ * @returns {string}
+ */
+export function buildAcquisitionPreviewHtmlFromResult(acquisition) {
+  return buildAcquisitionPreviewHtml(acquisition);
+}
+
+/**
+ * @param {ReturnType<typeof runAcquisitionEngine>} acquisition
+ * @returns {string}
+ */
+export function buildAcquisitionErrorsExportText(acquisition) {
+  return formatAcquisitionErrorsText(acquisition.errors);
 }
 
 /**
@@ -1657,6 +1878,10 @@ export function previewImportContent(format, content) {
  * @returns {string}
  */
 export function buildImportPreviewHtml(preview) {
+  if (preview && typeof preview === 'object' && 'summary' in preview && 'normalized_rows' in preview) {
+    return buildAcquisitionPreviewHtml(/** @type {ReturnType<typeof runAcquisitionEngine>} */ (preview));
+  }
+
   const errorItems = preview.row_errors
     .map(
       (entry) =>
