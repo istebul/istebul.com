@@ -1,4 +1,7 @@
 export {
+  MIN_FILTER_SIMILARITY_THRESHOLD,
+  isFilterOnlyQuery,
+  resolveSimilarityThreshold,
   passesSimilarityThreshold,
   filterBySimilarityThreshold,
   enrichWithSimilarity,

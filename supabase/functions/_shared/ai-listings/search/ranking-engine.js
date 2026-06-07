@@ -1,20 +1,22 @@
 /**
- * AI Listings Search — deterministic ranking engine (Sprint-15).
+ * AI Listings Search — deterministic ranking engine (Sprint-16 v2).
+ * Delegates semantic scoring and boosts to dedicated engines.
  */
 
-import { normalizeText } from './normalizer.js';
+import { computeSemanticScores } from './semantic-engine.js';
+import { computeBoosts } from './boost-engine.js';
+import { buildMatchExplanation } from './explain-engine.js';
 
 /** @type {Readonly<Record<string, number>>} */
 export const RANKING_WEIGHTS = Object.freeze({
-  brand: 20,
+  brand: 25,
   model: 20,
-  year: 10,
-  km: 10,
-  fuel: 8,
-  transmission: 8,
-  attribute: 10,
-  text: 8,
-  quality_boost: 4,
+  year: 15,
+  attributes: 10,
+  description: 10,
+  tags: 10,
+  fuel: 5,
+  transmission: 5,
   duplicate_penalty: -10
 });
 
@@ -37,148 +39,34 @@ export function scoreToSimilarityPercent(score) {
 }
 
 /**
- * @param {unknown} a
- * @param {unknown} b
- * @returns {boolean}
- */
-function textMatch(a, b) {
-  const left = normalizeText(a);
-  const right = normalizeText(b);
-  if (!left || !right) return false;
-  return left === right || left.includes(right) || right.includes(left);
-}
-
-/**
- * @param {unknown} fuel
- * @returns {string}
- */
-function normalizeFuel(fuel) {
-  const value = normalizeText(fuel);
-  if (!value) return '';
-  if (value.includes('dizel') || value.includes('diesel')) return 'diesel';
-  if (value.includes('benzin') || value.includes('gasoline') || value.includes('petrol')) return 'gasoline';
-  if (value.includes('lpg')) return 'lpg';
-  if (value.includes('elektr') || value.includes('electric')) return 'electric';
-  if (value.includes('hibrit') || value.includes('hybrid')) return 'hybrid';
-  return value;
-}
-
-/**
- * @param {unknown} transmission
- * @returns {string}
- */
-function normalizeTransmission(transmission) {
-  const value = normalizeText(transmission);
-  if (!value) return '';
-  if (value.includes('otomatik') || value.includes('automatic') || value.includes('auto')) return 'automatic';
-  if (value.includes('manuel') || value.includes('manual')) return 'manual';
-  return value;
-}
-
-/**
  * @param {Record<string, unknown>} doc
  * @param {import('./query-parser.js').ParsedSearchQuery} parsed
- * @returns {{ score: number, breakdown: Record<string, number> }}
+ * @param {string} [rawQuery]
+ * @returns {{ score: number, breakdown: Record<string, number>, boosts: Record<string, number>, match_reasons: string[] }}
  */
-export function rankDocument(doc, parsed) {
-  /** @type {Record<string, number>} */
-  const breakdown = {
-    brand: 0,
-    model: 0,
-    year: 0,
-    km: 0,
-    fuel: 0,
-    transmission: 0,
-    attribute: 0,
-    text: 0,
-    quality_boost: 0,
-    duplicate_penalty: 0
-  };
-
-  if (parsed.brand && textMatch(doc.brand, parsed.brand)) {
-    breakdown.brand = RANKING_WEIGHTS.brand;
-  }
-
-  if (parsed.model && textMatch(doc.model, parsed.model)) {
-    breakdown.model = RANKING_WEIGHTS.model;
-  }
-
-  if (parsed.year && Number(doc.year) === parsed.year) {
-    breakdown.year = RANKING_WEIGHTS.year;
-  }
-
-  if (parsed.km !== null && doc.km !== null && doc.km !== undefined) {
-    const docKm = Number(doc.km);
-    if (Number.isFinite(docKm)) {
-      const diff = Math.abs(docKm - parsed.km);
-      if (diff <= 5000) breakdown.km = RANKING_WEIGHTS.km;
-      else if (diff <= 20000) breakdown.km = Math.round(RANKING_WEIGHTS.km * 0.5);
-    }
-  }
-
-  if (parsed.attributes.includes('low_km')) {
-    const docKm = Number(doc.km);
-    if (Number.isFinite(docKm) && docKm <= 50000) {
-      breakdown.km = Math.max(breakdown.km, RANKING_WEIGHTS.km);
-    }
-  }
-
-  if (parsed.fuel && normalizeFuel(doc.fuel) === parsed.fuel) {
-    breakdown.fuel = RANKING_WEIGHTS.fuel;
-  }
-
-  if (parsed.transmission && normalizeTransmission(doc.transmission) === parsed.transmission) {
-    breakdown.transmission = RANKING_WEIGHTS.transmission;
-  }
-
-  for (const attribute of parsed.attributes) {
-    if (attribute === 'low_km') continue;
-    const haystack = normalizeText(
-      `${doc.title ?? ''} ${doc.description ?? ''} ${JSON.stringify(doc.attributes ?? {})}`
-    );
-    if (attribute === 'authorized_service' && (haystack.includes('yetkili') || haystack.includes('authorized'))) {
-      breakdown.attribute += RANKING_WEIGHTS.attribute;
-    } else if (
-      attribute === 'paint_one_piece' &&
-      (haystack.includes('tek parca') ||
-        haystack.includes('tek parça') ||
-        haystack.includes('lokal boya') ||
-        haystack.includes('paint'))
-    ) {
-      breakdown.attribute += RANKING_WEIGHTS.attribute;
-    }
-  }
-
-  const textTerms = [...parsed.text_terms, parsed.brand, parsed.model].filter(Boolean);
-  if (textTerms.length) {
-    const haystack = normalizeText(
-      `${doc.title ?? ''} ${doc.description ?? ''} ${doc.brand ?? ''} ${doc.model ?? ''}`
-    );
-    const hits = textTerms.filter((term) => haystack.includes(normalizeText(term))).length;
-    if (hits > 0) {
-      breakdown.text = Math.round((hits / textTerms.length) * RANKING_WEIGHTS.text);
-    }
-  }
-
-  const quality = Number(doc.quality_score);
-  const ai = Number(doc.decision_score);
-  if (Number.isFinite(quality) || Number.isFinite(ai)) {
-    const avg = [quality, ai].filter(Number.isFinite).reduce((sum, v) => sum + v, 0) / 2;
-    breakdown.quality_boost = Math.round((avg / 100) * RANKING_WEIGHTS.quality_boost);
-  }
+export function rankDocument(doc, parsed, rawQuery = '') {
+  const { breakdown } = computeSemanticScores(doc, parsed);
+  const { boosts, total: boostTotal } = computeBoosts(doc, parsed, rawQuery);
 
   if (doc.duplicate_status === 'exact' || doc.duplicate_status === 'similar') {
     breakdown.duplicate_penalty = RANKING_WEIGHTS.duplicate_penalty;
   }
 
-  let score = Object.values(breakdown).reduce((sum, value) => sum + value, 0);
+  let score = Object.values(breakdown).reduce((sum, value) => sum + value, 0) + boostTotal;
 
   const hasPrimaryMatch = breakdown.brand > 0 || breakdown.model > 0 || breakdown.year > 0;
   if (hasPrimaryMatch && score > 0 && score < MIN_SIMILARITY_THRESHOLD) {
-    score += 20;
+    score += 15;
   }
 
-  return { score: clampScore(score), breakdown };
+  const match_reasons = buildMatchExplanation(doc, parsed, breakdown, boosts);
+
+  return {
+    score: clampScore(score),
+    breakdown,
+    boosts,
+    match_reasons
+  };
 }
 
 /**

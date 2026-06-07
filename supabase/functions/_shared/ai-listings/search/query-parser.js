@@ -201,7 +201,8 @@ const CANONICAL_SYNONYM_VALUES = new Set([
   'vacation',
   'low_km',
   'authorized_service',
-  'paint_one_piece'
+  'paint_one_piece',
+  'm_sport'
 ]);
 
 /**
@@ -251,6 +252,7 @@ function applyParsedValue(parsed, value) {
     case 'low_km':
     case 'authorized_service':
     case 'paint_one_piece':
+    case 'm_sport':
       if (!parsed.attributes.includes(value)) parsed.attributes.push(value);
       break;
     default:

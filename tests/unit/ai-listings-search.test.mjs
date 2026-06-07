@@ -300,7 +300,7 @@ test('rankDocument scores low km query', () => {
   const docs = buildSearchDocuments([vehicleListing]);
   const parsed = parseSearchQuery('düşük km');
   const { breakdown } = rankDocument(docs[0], parsed);
-  assert.ok(breakdown.km >= RANKING_WEIGHTS.km * 0.5);
+  assert.ok(breakdown.attributes >= RANKING_WEIGHTS.attributes * 0.5);
 });
 
 test('rankDocument scores fuel match', () => {
@@ -321,7 +321,7 @@ test('rankDocument scores attribute match for authorized service', () => {
   const docs = buildSearchDocuments([vehicleListing]);
   const parsed = parseSearchQuery('yetkili servis');
   const { breakdown } = rankDocument(docs[0], parsed);
-  assert.equal(breakdown.attribute, RANKING_WEIGHTS.attribute);
+  assert.equal(breakdown.attributes, RANKING_WEIGHTS.attributes);
 });
 
 test('rankDocument applies duplicate penalty', () => {
@@ -468,9 +468,11 @@ test('sortSearchResults sorts by highest quality', () => {
 
 test('buildSearchSummary reports count and top match', () => {
   const results = [{ title: 'BMW 320i', brand: 'BMW', model: '320i', similarity_percent: 94, search_score: 94 }];
-  const summary = buildSearchSummary(results, 'BMW');
-  assert.match(summary.message, /1 kayıt bulundu/);
+  const parsed = parseSearchQuery('BMW');
+  const summary = buildSearchSummary(results, 'BMW', parsed);
+  assert.match(summary.message, /1 sonuç bulundu/);
   assert.match(summary.message, /%94/);
+  assert.equal(summary.brand_label, 'BMW');
 });
 
 test('buildSearchSummary reports no result message', () => {
@@ -524,8 +526,9 @@ test('buildRepositoryDashboardHtml shows empty data message', () => {
 
 test('buildRepositoryDashboardHtml renders search summary when query active', () => {
   const { html } = buildRepositoryDashboardHtml(listings, { aiSearch: 'BMW' });
-  assert.match(html, /kayıt bulundu/);
+  assert.match(html, /sonuç bulundu|kayıt bulundu/);
   assert.match(html, /ai-listings-admin__repo-card--search/);
+  assert.match(html, /Neden eşleşti/);
 });
 
 test('buildSearchResultSummaryHtml escapes summary output', () => {

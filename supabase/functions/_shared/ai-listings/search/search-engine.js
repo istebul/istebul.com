@@ -1,5 +1,5 @@
 /**
- * AI Listings Search Engine v1 — deterministic repository search (Sprint-15).
+ * AI Listings Search Engine v2 — semantic repository search (Sprint-16).
  * Derives from existing listings + analysis; no endpoint or DB schema change.
  */
 
@@ -8,9 +8,11 @@ import { buildRepositoryRecords } from '../repository/repository-engine.js';
 import { parseSearchQuery, extractKnownBrandsModels } from './query-parser.js';
 import { rankDocument, sortSearchResults } from './ranking-engine.js';
 import { filterBySimilarityThreshold, enrichWithSimilarity } from './similarity-engine.js';
-import { buildTokenIndex } from './tokenizer.js';
+import { buildTokenIndex, findCandidateIds, tokenize } from './tokenizer.js';
 import { sanitizeSearchQuery } from './normalizer.js';
 import { buildSearchSummary } from './summary.js';
+import { buildSearchableText, clearNormalizedTextCache } from './semantic-engine.js';
+import { clearTokenCache } from './tokenizer.js';
 
 /** @type {Map<string, { documents: Array<Record<string, unknown>>, tokenIndex: Map<string, Set<string>>, cacheKey: string }>} */
 const memoCache = new Map();
@@ -46,6 +48,27 @@ export function buildSearchDocument(record, listing) {
       ? /** @type {Record<string, unknown>} */ (listing.attributes)
       : {};
 
+  const analysis = listing.latest_analysis && typeof listing.latest_analysis === 'object'
+    ? /** @type {Record<string, unknown>} */ (listing.latest_analysis)
+    : {};
+
+  const tags = Array.isArray(analysis.tags) ? analysis.tags.map(String) : [];
+  const features = Array.isArray(attributes.features)
+    ? attributes.features.map(String)
+    : Array.isArray(listing.features)
+      ? listing.features.map(String)
+      : [];
+
+  const searchableText = buildSearchableText({
+    ...record,
+    description: String(canonical.description ?? listing.description ?? ''),
+    fuel: String(canonical.fuel ?? ''),
+    transmission: String(canonical.transmission ?? ''),
+    tags,
+    features,
+    attributes
+  });
+
   return {
     ...record,
     description: String(canonical.description ?? listing.description ?? ''),
@@ -54,7 +77,11 @@ export function buildSearchDocument(record, listing) {
     transmission: String(canonical.transmission ?? ''),
     body_type: String(attributes.body_type ?? attributes.segment ?? attributes.kasa_tipi ?? ''),
     segment: String(attributes.segment ?? attributes.body_type ?? ''),
-    attributes
+    attributes,
+    tags,
+    features,
+    searchableText,
+    normalizedText: searchableText
   };
 }
 
@@ -222,6 +249,34 @@ export function applySearchFilters(records, activeFilters) {
 }
 
 /**
+ * @param {Array<Record<string, unknown>>} filtered
+ * @param {Map<string, Set<string>>} tokenIndex
+ * @param {import('./query-parser.js').ParsedSearchQuery} parsed
+ * @returns {Array<Record<string, unknown>>}
+ */
+function selectRankingCandidates(filtered, tokenIndex, parsed) {
+  const queryTokens = [
+    ...parsed.tokens,
+    parsed.brand,
+    parsed.model,
+    parsed.fuel,
+    parsed.transmission,
+    parsed.body_type,
+    ...parsed.attributes
+  ]
+    .filter(Boolean)
+    .map((t) => String(t).toLowerCase());
+  const candidateIds = findCandidateIds(tokenIndex, queryTokens);
+
+  if (!candidateIds || candidateIds.size === 0) {
+    return filtered;
+  }
+
+  const narrowed = filtered.filter((doc) => candidateIds.has(String(doc.id ?? '')));
+  return narrowed.length > 0 ? narrowed : filtered;
+}
+
+/**
  * @typedef {Object} SearchQueryOptions
  * @property {string} [query]
  * @property {string} [categoryTab]
@@ -238,7 +293,7 @@ export function applySearchFilters(records, activeFilters) {
  */
 export function runRepositorySearch(listings, options = {}) {
   const query = sanitizeSearchQuery(options.query ?? '');
-  const { documents } = getSearchIndex(listings);
+  const { documents, tokenIndex } = getSearchIndex(listings);
 
   let filtered = filterRepositoryByCategoryTab(documents, options.categoryTab ?? 'all');
   filtered = applyRepositoryFilters(filtered, options.filters);
@@ -260,21 +315,30 @@ export function runRepositorySearch(listings, options = {}) {
   const { brands, models } = extractKnownBrandsModels(documents);
   const parsed = parseSearchQuery(query, { knownBrands: brands, knownModels: models });
 
-  const ranked = filtered.map((doc) => {
-    const { score } = rankDocument(doc, parsed);
-    return enrichWithSimilarity({ ...doc, search_score: score });
+  const candidates = selectRankingCandidates(filtered, tokenIndex, parsed);
+
+  const ranked = candidates.map((doc) => {
+    const { score, breakdown, boosts, match_reasons } = rankDocument(doc, parsed, query);
+    return enrichWithSimilarity({
+      ...doc,
+      search_score: score,
+      score_breakdown: breakdown,
+      score_boosts: boosts,
+      match_reasons
+    });
   });
 
   let results = filterBySimilarityThreshold(ranked, {
     threshold: options.threshold,
-    includeBelowThreshold: options.includeBelowThreshold
+    includeBelowThreshold: options.includeBelowThreshold,
+    parsed
   });
 
   results = sortSearchResults(results, options.sortBy ?? 'best_match');
 
   return {
     results,
-    summary: buildSearchSummary(results, query),
+    summary: buildSearchSummary(results, query, parsed),
     parsed,
     documents
   };
@@ -285,4 +349,6 @@ export function runRepositorySearch(listings, options = {}) {
  */
 export function clearSearchMemoCache() {
   memoCache.clear();
+  clearNormalizedTextCache();
+  clearTokenCache();
 }
