@@ -9,6 +9,11 @@ import {
   REPOSITORY_FILTER_CHIPS,
   runRepositoryQuery
 } from '../ai-listings-repository/index.js';
+import {
+  formatAdminAverageValue,
+  formatAdminCountValue,
+  normalizeAdminDataset
+} from './ai-listings-dataset.js';
 
 /** @type {Readonly<Record<string, string>>} */
 export const REPOSITORY_SOURCE_LABELS_TR = Object.freeze({
@@ -92,17 +97,18 @@ export function formatRepositoryScore(value) {
 
 /**
  * @param {ReturnType<typeof runRepositoryQuery>['stats']} stats
+ * @param {Array<Record<string, unknown>>} [listings]
  * @returns {string}
  */
-export function buildRepositoryKpiCardsHtml(stats) {
+export function buildRepositoryKpiCardsHtml(stats, listings = []) {
+  const dataset = normalizeAdminDataset(listings);
   const cards = [
-    { key: 'total', label: 'Toplam kayıt', value: stats.total, hint: 'tüm kayıtlar' },
-    { key: 'active', label: 'Aktif kayıt', value: stats.active, hint: 'arşiv hariç' },
-    { key: 'duplicate', label: 'Duplicate', value: stats.duplicate, hint: 'exact + similar' },
-    { key: 'average_ai', label: 'Ortalama AI', value: stats.average_ai ?? '—', hint: 'decision score' },
-    { key: 'average_risk', label: 'Ortalama Risk', value: stats.average_risk ?? '—', hint: 'risk score' },
-    { key: 'average_quality', label: 'Ortalama Kalite', value: stats.average_quality ?? '—', hint: 'quality score' },
-    { key: 'today', label: 'Bugün eklenen', value: stats.today, hint: 'bugün oluşturulan' }
+    { key: 'total', label: 'Toplam kayıt', value: formatAdminCountValue(dataset, stats.total), hint: 'tüm kayıtlar' },
+    { key: 'active', label: 'Aktif kayıt', value: formatAdminCountValue(dataset, stats.active), hint: 'arşiv hariç' },
+    { key: 'duplicate', label: 'Duplicate', value: formatAdminCountValue(dataset, stats.duplicate), hint: 'exact + similar' },
+    { key: 'average_ai', label: 'Ortalama AI', value: formatAdminAverageValue(dataset, stats.average_ai), hint: 'decision score' },
+    { key: 'average_quality', label: 'Ortalama Kalite', value: formatAdminAverageValue(dataset, stats.average_quality), hint: 'quality score' },
+    { key: 'today', label: 'Bugün eklenen', value: formatAdminCountValue(dataset, stats.today), hint: 'bugün oluşturulan' }
   ];
 
   return cards
@@ -251,7 +257,8 @@ export function buildRepositoryCardsGridHtml(records, selectedId = null) {
  * @returns {{ html: string, query: ReturnType<typeof runRepositoryQuery> }}
  */
 export function buildRepositoryDashboardHtml(listings, options = {}) {
-  const query = runRepositoryQuery(listings, {
+  const dataset = normalizeAdminDataset(listings);
+  const query = runRepositoryQuery(dataset, {
     categoryTab: options.categoryTab ?? 'all',
     filters: options.filters ?? [],
     search: options.search ?? ''
@@ -263,7 +270,6 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
         <h2>Repository</h2>
         <p class="ai-listings-admin__muted">Ortak veri merkezi — mevcut ilanlardan türetilmiş görünüm</p>
       </header>
-      ${buildRepositorySummaryHtml(query.summary)}
       <div class="ai-listings-admin__repo-tabs" role="tablist" aria-label="Kategori">
         ${buildRepositoryCategoryTabsHtml(options.categoryTab ?? 'all')}
       </div>

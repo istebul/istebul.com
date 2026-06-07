@@ -7,7 +7,7 @@
   <meta name="description" content="Yapay zeka karar merkezi — iç ilan yönetim paneli">
   <title>AI Decision Center | Yapay Zeka İlanları Admin</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="stylesheet" href="/css/admin-ai-listings.css?v=8">
+  <link rel="stylesheet" href="/css/admin-ai-listings.css?v=9">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/admin/ai-listings-admin.js"></script>
 </head>
@@ -63,13 +63,24 @@
     <section id="ai-listings-repo-kpi" class="ai-listings-admin__kpi-row ai-listings-admin__kpi-row--repo" aria-label="Repository metrikleri" hidden></section>
     <section id="ai-listings-analytics-kpi" class="ai-listings-admin__kpi-row ai-listings-admin__kpi-row--analytics" aria-label="Analytics metrikleri" hidden></section>
 
-    <div class="ai-listings-admin__workspace">
-      <section class="ai-listings-admin__center" id="ai-listings-center-panel" aria-label="AI Karar Merkezi">
-        <div id="ai-listings-dashboard-view" class="ai-listings-admin__center-view">
-          <div id="ai-listings-detail" class="ai-listings-admin__detail" aria-live="polite">
-            <div class="ai-listings-admin__empty-state ai-listings-admin__sr-only">
-              <h2>Karar Merkezi</h2>
+    <div id="ai-listings-workspace" class="ai-listings-admin__workspace ai-listings-admin__workspace--decision">
+      <section class="ai-listings-admin__center" id="ai-listings-center-panel" aria-label="Admin içerik alanı">
+        <div id="ai-listings-view-panels" class="ai-listings-admin__view-panels">
+          <div id="ai-listings-decision-panel" class="ai-listings-admin__view-panel" data-admin-panel="decision">
+            <div id="ai-listings-detail" class="ai-listings-admin__detail" aria-live="polite">
+              <div class="ai-listings-admin__empty-state ai-listings-admin__sr-only">
+                <h2>Karar Merkezi</h2>
+              </div>
             </div>
+          </div>
+          <div id="ai-listings-repository-panel" class="ai-listings-admin__view-panel" data-admin-panel="repository" hidden>
+            <div id="ai-listings-repository-content" class="ai-listings-admin__detail" aria-live="polite"></div>
+          </div>
+          <div id="ai-listings-analytics-panel" class="ai-listings-admin__view-panel" data-admin-panel="analytics" hidden>
+            <div id="ai-listings-analytics-content" class="ai-listings-admin__detail" aria-live="polite"></div>
+          </div>
+          <div id="ai-listings-collector-panel" class="ai-listings-admin__view-panel" data-admin-panel="collector" hidden>
+            <div id="ai-listings-collector-content" class="ai-listings-admin__detail" aria-live="polite"></div>
           </div>
         </div>
       </section>

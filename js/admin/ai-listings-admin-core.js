@@ -426,12 +426,14 @@ export function computeKpiStats(listings) {
  * @param {{ total: number, analyzedToday: number, pendingReview: number, highRisk: number, trends?: Record<string, { label: string, hint: string, positive: boolean }> }} stats
  * @returns {string}
  */
-export function buildKpiCardsHtml(stats) {
+export function buildKpiCardsHtml(stats, listings = []) {
+  const isEmpty = !Array.isArray(listings) || listings.length === 0;
+  const countValue = (value) => (isEmpty ? '—' : value);
   const cards = [
     {
       key: 'total',
       label: 'Toplam İlan',
-      value: stats.total,
+      value: countValue(stats.total),
       icon: '📋',
       hint: 'aktif kayıt',
       trend: stats.trends?.total
@@ -439,7 +441,7 @@ export function buildKpiCardsHtml(stats) {
     {
       key: 'analyzed-today',
       label: 'Bugün Analiz',
-      value: stats.analyzedToday,
+      value: countValue(stats.analyzedToday),
       icon: '🤖',
       hint: 'bugün tamamlanan',
       trend: stats.trends?.['analyzed-today']
@@ -447,7 +449,7 @@ export function buildKpiCardsHtml(stats) {
     {
       key: 'high-risk',
       label: 'Yüksek Risk',
-      value: stats.highRisk,
+      value: countValue(stats.highRisk),
       icon: '⚠',
       hint: 'risk ≥ 61',
       trend: stats.trends?.['high-risk']
@@ -455,7 +457,7 @@ export function buildKpiCardsHtml(stats) {
     {
       key: 'pending',
       label: 'İncelemede',
-      value: stats.pendingReview,
+      value: countValue(stats.pendingReview),
       icon: '🔎',
       hint: 'bekleyen QA',
       trend: stats.trends?.pending
@@ -558,12 +560,14 @@ export function computeExecutiveDashboardStats(listings) {
  */
 export function buildExecutiveDashboardHtml(listings) {
   const stats = computeExecutiveDashboardStats(listings);
+  const isEmpty = !Array.isArray(listings) || listings.length === 0;
+  const countValue = (value) => (isEmpty ? '—' : value);
 
   const metricCards = [
-    { label: 'Son 24 Saat Analiz', value: stats.analyzedLast24h, suffix: '' },
+    { label: 'Son 24 Saat Analiz', value: countValue(stats.analyzedLast24h), suffix: '' },
     { label: 'Ortalama AI Skoru', value: stats.avgAiScore ?? '—', suffix: stats.avgAiScore !== null ? '/100' : '' },
     { label: 'Ortalama Risk', value: stats.avgRisk ?? '—', suffix: stats.avgRisk !== null ? '/100' : '' },
-    { label: 'Bugün Oluşturulan', value: stats.createdToday, suffix: '' }
+    { label: 'Bugün Oluşturulan', value: countValue(stats.createdToday), suffix: '' }
   ]
     .map(
       (metric) => `

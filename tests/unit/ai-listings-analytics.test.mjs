@@ -33,7 +33,12 @@ const { computeQualityDistribution } = await import('../../js/ai-listings-analyt
 const { countHighRiskRecords } = await import('../../js/ai-listings-analytics/risk-engine.js');
 const { countNonNewDuplicates } = await import('../../js/ai-listings-analytics/duplicate-engine.js');
 const { countExecutiveBucket } = await import('../../js/ai-listings-analytics/executive-engine.js');
-const { buildBarChartSvg, buildTopListHtml } = await import('../../js/ai-listings-analytics/chart-builder.js');
+const {
+  buildBarChartSvg,
+  buildTopListHtml,
+  buildChartFallbackHtml,
+  CHART_FALLBACK_MESSAGE
+} = await import('../../js/ai-listings-analytics/chart-builder.js');
 const {
   buildAnalyticsDashboardHtml,
   buildAnalyticsKpiCardsHtml,
@@ -320,6 +325,13 @@ test('buildBarChartSvg renders svg chart', () => {
   assert.match(html, /Test/);
 });
 
+test('buildBarChartSvg shows fallback when no chart data', () => {
+  const html = buildBarChartSvg([], { title: 'Boş' });
+  assert.match(html, /Yeterli veri yok/);
+  assert.equal(CHART_FALLBACK_MESSAGE, 'Yeterli veri yok');
+  assert.match(buildChartFallbackHtml(), /Yeterli veri yok/);
+});
+
 test('buildTopListHtml renders ranked list', () => {
   const html = buildTopListHtml([{ label: 'BMW', count: 5 }], { title: 'Marka' });
   assert.match(html, /BMW/);
@@ -327,11 +339,14 @@ test('buildTopListHtml renders ranked list', () => {
 });
 
 test('buildAnalyticsKpiCardsHtml renders six kpi cards', () => {
-  const kpi = computeAnalyticsKpi(enrichRecordsWithDuplicateSimilarity([vehicle, housing]), now);
-  const html = buildAnalyticsKpiCardsHtml(kpi);
+  const listings = [vehicle, housing];
+  const kpi = computeAnalyticsKpi(enrichRecordsWithDuplicateSimilarity(listings), now);
+  const html = buildAnalyticsKpiCardsHtml(kpi, listings);
   assert.match(html, /Toplam İlan/);
+  assert.match(html, /Duplicate Oranı/);
   assert.match(html, /Yüksek Risk/);
   assert.match(html, /data-kpi-counter/);
+  assert.equal((html.match(/<article class="ai-listings-admin__kpi-card/g) ?? []).length, 6);
 });
 
 test('buildAnalyticsSummaryHtml renders summary block', () => {
