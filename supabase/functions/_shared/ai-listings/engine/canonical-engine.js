@@ -7,6 +7,7 @@ import { runQualityEngine } from './quality-engine.js';
 import { runMarketEngine } from './market-engine.js';
 import { runRiskEngine } from './risk-engine.js';
 import { runDecisionEngine } from './decision-engine.js';
+import { runPriceIntelligence, buildPriceIntelligenceTags } from '../price/price-intelligence.js';
 
 export const ANALYSIS_ENGINE_VERSION = ENGINE_VERSION;
 
@@ -66,11 +67,12 @@ export function normalizeCanonicalListing(listing) {
  *   quality: ReturnType<typeof runQualityEngine>,
  *   market: ReturnType<typeof runMarketEngine>,
  *   risk: ReturnType<typeof runRiskEngine>,
- *   decision: ReturnType<typeof runDecisionEngine>
+ *   decision: ReturnType<typeof runDecisionEngine>,
+ *   price_intelligence?: ReturnType<typeof runPriceIntelligence>
  * }} engines
  */
 export function buildAnalysisRecord(listing, engines) {
-  const { quality, market, risk, decision } = engines;
+  const { quality, market, risk, decision, price_intelligence } = engines;
 
   const tags = [
     ENGINE_VERSION,
@@ -81,8 +83,15 @@ export function buildAnalysisRecord(listing, engines) {
     String(listing.category ?? 'general')
   ];
 
-  if (market.deviation_pct !== undefined) {
+  const piTags = price_intelligence ? buildPriceIntelligenceTags(price_intelligence) : [];
+  const hasPiDeviation = piTags.some((tag) => tag.startsWith('deviation_pct:'));
+
+  if (!hasPiDeviation && market.deviation_pct !== undefined) {
     tags.push(`deviation_pct:${market.deviation_pct}`);
+  }
+
+  if (piTags.length) {
+    tags.push(...piTags);
   }
 
   return {
@@ -175,7 +184,8 @@ export function runCanonicalEngine(input) {
   const market = runMarketEngine(canonical);
   const risk = runRiskEngine(canonical, quality);
   const decision = runDecisionEngine(canonical, quality, market, risk);
-  const analysis = buildAnalysisRecord(canonical, { quality, market, risk, decision });
+  const price_intelligence = runPriceIntelligence(canonical);
+  const analysis = buildAnalysisRecord(canonical, { quality, market, risk, decision, price_intelligence });
 
   return {
     ok: true,
@@ -187,6 +197,7 @@ export function runCanonicalEngine(input) {
       market,
       risk,
       decision,
+      price_intelligence,
       recommendation: {
         label: decision.recommendation_label,
         score: decision.decision_score

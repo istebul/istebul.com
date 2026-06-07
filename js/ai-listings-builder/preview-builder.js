@@ -4,6 +4,8 @@
 
 import { escapeHtml } from '../core/dom-safe.js';
 import { logBuilderStage } from './debug-log.js';
+import { runPriceIntelligence } from '../ai-listings-engine/price/price-intelligence.js';
+import { buildPricePreviewBlockHtml } from '../ai-listings-engine/price/price-summary.js';
 
 /** @type {Readonly<Record<string, string>>} */
 const INPUT_TYPE_LABELS = Object.freeze({
@@ -52,7 +54,10 @@ export function buildPreviewHtml(canonical) {
         .join('')}</ul>`
     : '<p class="ai-listings-builder__ok">Uyarı yok.</p>';
 
-  return `
+  const priceIntelligence = runPriceIntelligence(canonical);
+  const priceIntelligenceHtml = buildPricePreviewBlockHtml(priceIntelligence);
+
+  const html = `
     <section class="ai-listings-builder__preview" data-builder-preview>
       <header class="ai-listings-builder__preview-head">
         <h3>Önizleme</h3>
@@ -82,6 +87,7 @@ export function buildPreviewHtml(canonical) {
         <h4>Uyarılar</h4>
         ${warningsHtml}
       </div>
+      ${priceIntelligenceHtml}
       <details class="ai-listings-builder__json-details">
         <summary>JSON önizleme</summary>
         <pre class="ai-listings-builder__json">${escapeHtml(buildPreviewJson(canonical))}</pre>
