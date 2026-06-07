@@ -3,10 +3,14 @@ import assert from 'node:assert/strict';
 
 const {
   normalizeRepositoryListing,
+  normalizeRepository,
   extractRawAnalyses,
   buildRepositoryDataset,
-  buildAdminRepositorySnapshot
+  buildAdminRepositorySnapshot,
+  traceRepositoryFilterPipeline
 } = await import('../../js/admin/ai-listings-dataset.js');
+
+const { runRepositoryQuery } = await import('../../js/ai-listings-repository/index.js');
 
 const { buildRepositoryDashboardHtml } = await import('../../js/admin/ai-listings-repository-admin.js');
 
@@ -76,4 +80,32 @@ test('repository dashboard returns full dataset when aiSearch and filters empty'
     filters: []
   });
   assert.equal(query.filtered.length, 2);
+});
+
+test('normalizeRepository batch-normalizes listings', () => {
+  const normalized = normalizeRepository([vehicleListing, housingListing]);
+  assert.equal(normalized.length, 2);
+});
+
+test('runRepositoryQuery accepts prebuilt records dataset', () => {
+  const dataset = buildRepositoryDataset([vehicleListing, housingListing], {
+    includeDuplicateDetection: false
+  });
+  const result = runRepositoryQuery([], { records: dataset, categoryTab: 'all' });
+  assert.equal(result.records.length, 2);
+  assert.equal(result.filtered.length, 2);
+});
+
+test('traceRepositoryFilterPipeline applies category and chip filters', () => {
+  const dataset = buildRepositoryDataset([vehicleListing, housingListing], {
+    includeDuplicateDetection: false
+  });
+  const traced = traceRepositoryFilterPipeline(dataset, {
+    categoryTab: 'vehicle',
+    filters: [],
+    search: ''
+  });
+  assert.equal(traced.stages.before, 2);
+  assert.equal(traced.stages.afterCategory, 1);
+  assert.equal(traced.filtered.length, 1);
 });

@@ -17,6 +17,11 @@ import {
   buildSearchResults,
   sanitizeSearchQuery
 } from '../ai-listings-search/index.js';
+import {
+  buildAdminRepositorySnapshot,
+  debugRepositoryRenderPipeline,
+  traceRepositoryFilterPipeline
+} from './ai-listings-dataset.js';
 
 /** @type {Readonly<Record<string, string>>} */
 export const REPOSITORY_SOURCE_LABELS_TR = Object.freeze({
@@ -400,7 +405,11 @@ export function buildRepositoryCardsGridHtml(records, selectedId = null, isSearc
  *   search?: string,
  *   aiSearch?: string,
  *   sortBy?: string,
- *   selectedId?: string|null
+ *   selectedId?: string|null,
+ *   repositoryDataset?: Array<Record<string, unknown>>,
+ *   activeCategory?: string,
+ *   activeSource?: string,
+ *   searchQuery?: string
  * }} [options]
  * @returns {{ html: string, query: ReturnType<typeof runRepositoryQuery>, searchResult?: ReturnType<typeof runRepositorySearch> }}
  */
@@ -408,6 +417,8 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
   const aiSearch = sanitizeSearchQuery(options.aiSearch ?? '');
   const hasAiSearch = aiSearch.length > 0;
   const hasListings = Array.isArray(listings) && listings.length > 0;
+  const snapshot = hasListings ? buildAdminRepositorySnapshot(listings) : null;
+  const dataset = options.repositoryDataset ?? snapshot?.repositoryDataset ?? [];
 
   if (!hasListings) {
     const emptyHtml = `
@@ -433,14 +444,37 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
   });
 
   const query = runRepositoryQuery(listings, {
+    records: dataset,
     categoryTab: options.categoryTab ?? 'all',
-    filters: options.filters ?? []
+    filters: options.filters ?? [],
+    search: ''
+  });
+
+  const traced = traceRepositoryFilterPipeline(dataset, {
+    categoryTab: options.categoryTab ?? 'all',
+    filters: options.filters ?? [],
+    search: '',
+    searchQuery: options.searchQuery ?? '',
+    activeCategory: options.activeCategory ?? options.categoryTab ?? 'all',
+    activeSource: options.activeSource ?? ''
   });
 
   const suggestions = buildSearchSuggestions(searchResult.documents, aiSearch);
   const displayRecords = hasAiSearch
     ? buildSearchResults(searchResult.results, searchResult.parsed, aiSearch)
-    : query.filtered;
+    : traced.filtered;
+
+  debugRepositoryRenderPipeline({
+    rawListings: snapshot?.rawListings ?? listings,
+    cachedListings: snapshot?.cachedListings ?? listings,
+    repositoryDataset: dataset,
+    normalized: snapshot?.normalized ?? [],
+    searchQuery: hasAiSearch ? aiSearch : (options.searchQuery ?? ''),
+    activeCategory: options.activeCategory ?? options.categoryTab ?? 'all',
+    activeSource: options.activeSource ?? '',
+    filtered: displayRecords,
+    stage: hasAiSearch ? 'render:ai-search' : 'render:full-dataset'
+  });
 
   const summaryHtml = hasAiSearch
     ? buildSearchResultSummaryHtml(searchResult.summary)

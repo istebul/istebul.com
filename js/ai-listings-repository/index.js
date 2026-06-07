@@ -72,9 +72,11 @@ export {
  * @returns {RepositoryQueryResult}
  */
 export function runRepositoryQuery(listings, options = {}) {
-  const records = buildRepositoryRecords(listings, {
-    includeDuplicateDetection: options.includeDuplicateDetection !== false
-  });
+  const records = Array.isArray(options.records)
+    ? [...options.records]
+    : buildRepositoryRecords(listings, {
+        includeDuplicateDetection: options.includeDuplicateDetection !== false
+      });
 
   let filtered = filterRepositoryByCategoryTab(records, options.categoryTab ?? 'all');
   filtered = applyRepositoryFilters(filtered, options.filters);

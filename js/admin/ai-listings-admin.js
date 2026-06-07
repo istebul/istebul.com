@@ -58,7 +58,10 @@ import {
 } from './ai-listings-collector-admin.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
-import { buildAdminRepositorySnapshot, debugRepositoryDataset } from './ai-listings-dataset.js';
+import {
+  buildAdminRepositorySnapshot,
+  debugRepositoryRenderPipeline
+} from './ai-listings-dataset.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
@@ -251,31 +254,47 @@ function renderKpiCards(listings) {
   if (activeAdminView === 'decision') animateKpiCounters(kpiEl);
 }
 
+function getActiveSidebarFilters() {
+  return {
+    activeCategory: $('ai-listings-filter-category')?.value?.trim() ?? '',
+    activeSource: $('ai-listings-filter-source')?.value?.trim() ?? ''
+  };
+}
+
 function syncRepositoryDataset(listings = cachedListings) {
   const snapshot = buildAdminRepositorySnapshot(listings);
   repositoryDataset = snapshot.repositoryDataset;
   return snapshot;
 }
 
-function logRepositoryDatasetDebug(context = '') {
+function logRepositoryRenderDebug(stage, filtered = repositoryDataset) {
   const snapshot = syncRepositoryDataset(cachedListings);
-  debugRepositoryDataset({
-    ...snapshot,
-    activeAdminView,
-    repoCategoryTab,
-    repoFilters,
-    repoAiSearchQuery,
-    searchQuery,
-    context
+  const { activeCategory, activeSource } = getActiveSidebarFilters();
+
+  debugRepositoryRenderPipeline({
+    rawListings: snapshot.rawListings,
+    cachedListings: snapshot.cachedListings,
+    repositoryDataset: snapshot.repositoryDataset,
+    normalized: snapshot.normalized,
+    searchQuery: repoAiSearchQuery || searchQuery,
+    activeCategory: repoCategoryTab || activeCategory,
+    activeSource,
+    filtered,
+    stage
   });
 }
 
 function renderRepositoryKpiCards(listings) {
   const kpiEl = $('ai-listings-repo-kpi');
   if (!kpiEl) return;
+  const { activeCategory, activeSource } = getActiveSidebarFilters();
   const { query } = buildRepositoryDashboardHtml(listings, {
     categoryTab: repoCategoryTab,
-    filters: repoFilters
+    filters: repoFilters,
+    repositoryDataset,
+    activeCategory: repoCategoryTab || activeCategory,
+    activeSource,
+    searchQuery
   });
   const statsKey = JSON.stringify(query.stats);
   if (statsKey === lastRepoKpiStatsKey && kpiEl.childElementCount > 0) return;
@@ -322,7 +341,7 @@ function setAdminView(view) {
 
   if (next === 'repository') {
     selectedListing = null;
-    logRepositoryDatasetDebug('setAdminView:repository');
+    logRepositoryRenderDebug('setAdminView:repository');
     renderRepositoryView();
     renderRepositoryKpiCards(cachedListings);
   } else if (next === 'analytics') {
@@ -534,15 +553,22 @@ function renderRepositoryView() {
   const detailEl = $('ai-listings-detail');
   if (!detailEl) return;
 
-  logRepositoryDatasetDebug('renderRepositoryView');
+  const { activeCategory, activeSource } = getActiveSidebarFilters();
+  const snapshot = syncRepositoryDataset(cachedListings);
 
-  const { html } = buildRepositoryDashboardHtml(cachedListings, {
+  const { html, query } = buildRepositoryDashboardHtml(cachedListings, {
     categoryTab: repoCategoryTab,
     filters: repoFilters,
     aiSearch: repoAiSearchQuery,
     sortBy: repoSearchSort,
-    selectedId: selectedListing?.id ?? null
+    selectedId: selectedListing?.id ?? null,
+    repositoryDataset: snapshot.repositoryDataset,
+    activeCategory: repoCategoryTab || activeCategory,
+    activeSource,
+    searchQuery
   });
+
+  logRepositoryRenderDebug('renderRepositoryView', query.filtered);
 
   detailEl.innerHTML = html;
   bindRepositoryDashboardEvents(detailEl);
@@ -1038,9 +1064,12 @@ async function loadListings() {
     return;
   }
 
-  cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
-  syncRepositoryDataset(cachedListings);
-  logRepositoryDatasetDebug('loadListings');
+  const rawListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
+  cachedListings = rawListings;
+  const snapshot = syncRepositoryDataset(cachedListings);
+
+  console.log('fetchListings', rawListings.length);
+  logRepositoryRenderDebug('loadListings:fetch', snapshot.repositoryDataset);
   renderKpiCards(cachedListings);
   renderRepositoryKpiCards(cachedListings);
   renderAnalyticsKpiCards(cachedListings);
