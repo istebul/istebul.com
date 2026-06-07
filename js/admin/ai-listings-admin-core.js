@@ -32,6 +32,11 @@ import {
   resolveDuplicateStatus
 } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
 import { extractDuplicateFromEvents } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-workflow.js';
+import {
+  runPriceIntelligence,
+  parsePriceIntelligenceFromTags
+} from '../../supabase/functions/_shared/ai-listings/price/price-intelligence.js';
+import { getPricePositionLabelTr } from '../../supabase/functions/_shared/ai-listings/price/price-summary.js';
 
 export { STATUS_FILTER_CHIPS, isListingPubliclyVisible, IMPORT_MAX_ROWS, IMPORT_MAX_CONTENT_BYTES };
 
@@ -1176,6 +1181,67 @@ function formatCurrency(amount, currency = 'TRY') {
 /**
  * @param {Record<string, unknown>} listing
  * @param {Record<string, unknown>|null|undefined} analysis
+ * @returns {ReturnType<typeof runPriceIntelligence>}
+ */
+export function resolvePriceIntelligenceForDisplay(listing, analysis = null) {
+  const tags = Array.isArray(analysis?.tags) ? analysis.tags.map(String) : [];
+  const fromTags = parsePriceIntelligenceFromTags(tags);
+  const computed = runPriceIntelligence(listing);
+
+  if (!fromTags) return computed;
+
+  return {
+    ...computed,
+    estimated_market_value: fromTags.estimated_market_value || computed.estimated_market_value,
+    deviation_pct: fromTags.deviation_pct ?? computed.deviation_pct,
+    price_position: fromTags.price_position ?? computed.price_position,
+    price_confidence: fromTags.price_confidence ?? computed.price_confidence,
+    deviation_amount:
+      fromTags.estimated_market_value && computed.listing_price
+        ? Math.round(computed.listing_price - fromTags.estimated_market_value)
+        : computed.deviation_amount
+  };
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @param {ReturnType<typeof runPriceIntelligence>|null} [priceIntelligence]
+ * @returns {string}
+ */
+export function buildPriceIntelligenceCardHtml(listing, analysis = null, priceIntelligence = null) {
+  const pi = priceIntelligence ?? resolvePriceIntelligenceForDisplay(listing, analysis);
+  const currency = String(listing.currency ?? 'TRY');
+  const positionLabel = getPricePositionLabelTr(pi.price_position);
+  const confidencePct = Number.isFinite(pi.price_confidence) ? Math.round(pi.price_confidence * 100) : 0;
+  const deviationPctLabel = Number.isFinite(pi.deviation_pct)
+    ? `${pi.deviation_pct > 0 ? '+' : ''}${pi.deviation_pct.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
+    : '—';
+
+  return `
+    <article class="ai-listings-admin__price-intelligence-card" aria-label="Fiyat Zekâsı">
+      <h4 class="ai-listings-admin__section-title">Fiyat Zekâsı</h4>
+      <dl class="ai-listings-admin__price-intelligence-fields">
+        <dt>Tahmini değer</dt>
+        <dd>${safeRenderText(formatCurrency(pi.estimated_market_value, currency))}</dd>
+        <dt>İlan fiyatı</dt>
+        <dd>${safeRenderText(formatCurrency(pi.listing_price, currency))}</dd>
+        <dt>Sapma TL</dt>
+        <dd>${safeRenderText(formatCurrency(pi.deviation_amount, currency))}</dd>
+        <dt>Sapma %</dt>
+        <dd>${safeRenderText(deviationPctLabel)}</dd>
+        <dt>Pozisyon</dt>
+        <dd><span class="ai-listings-admin__price-position ai-listings-admin__price-position--${safeRenderText(pi.price_position)}">${safeRenderText(positionLabel)}</span></dd>
+        <dt>Güven</dt>
+        <dd>${safeRenderText(`%${confidencePct}`)}</dd>
+      </dl>
+      <p class="ai-listings-admin__price-intelligence-summary">${safeRenderText(pi.price_summary)}</p>
+    </article>`;
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
  * @returns {string}
  */
 export function buildMarketAnalysisHtml(listing, analysis) {
@@ -1475,6 +1541,9 @@ export function buildPremiumDashboardHtml(listing, analysis, events, status, mat
 
   const generalPanel = `
     ${duplicateInsight}
+    <section class="ai-listings-admin__section ai-listings-admin__glass-card">
+      ${buildPriceIntelligenceCardHtml(listing, analysis)}
+    </section>
     <section class="ai-listings-admin__section ai-listings-admin__glass-card">
       <h4 class="ai-listings-admin__section-title">Piyasa Karşılaştırması</h4>
       ${buildMarketAnalysisHtml(listing, analysis)}

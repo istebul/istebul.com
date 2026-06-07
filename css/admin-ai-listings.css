@@ -2063,3 +2063,101 @@
   flex-wrap: wrap;
   gap: calc(var(--ai-grid) * 0.75);
 }
+
+.ai-listings-admin__price-intelligence-card {
+  display: grid;
+  gap: calc(var(--ai-grid) * 1);
+}
+
+.ai-listings-admin__price-intelligence-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--ai-grid) * 0.75) calc(var(--ai-grid) * 1.5);
+  margin: 0;
+}
+
+.ai-listings-admin__price-intelligence-fields dt {
+  font-size: 0.75rem;
+  color: var(--ai-muted);
+}
+
+.ai-listings-admin__price-intelligence-fields dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ai-listings-admin__price-intelligence-summary {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ai-muted);
+  line-height: 1.5;
+}
+
+.ai-listings-admin__price-position {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ai-listings-admin__price-position--underpriced {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+}
+
+.ai-listings-admin__price-position--fair {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+
+.ai-listings-admin__price-position--slightly_overpriced {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fde68a;
+}
+
+.ai-listings-admin__price-position--overpriced {
+  background: rgba(248, 113, 113, 0.15);
+  color: #fca5a5;
+}
+
+.ai-listings-admin__price-position--unknown {
+  background: rgba(148, 163, 184, 0.15);
+  color: #cbd5e1;
+}
+
+.ai-listings-builder__price-intelligence {
+  margin-top: calc(var(--ai-grid) * 1);
+  padding: calc(var(--ai-grid) * 1);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.ai-listings-builder__price-intelligence h4 {
+  margin: 0 0 calc(var(--ai-grid) * 0.75);
+  font-size: 0.9375rem;
+}
+
+.ai-listings-builder__price-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--ai-grid) * 0.5) calc(var(--ai-grid) * 1);
+  margin: 0 0 calc(var(--ai-grid) * 0.75);
+}
+
+.ai-listings-builder__price-fields dt {
+  font-size: 0.75rem;
+  color: var(--ai-muted, #94a3b8);
+}
+
+.ai-listings-builder__price-fields dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ai-listings-builder__price-warning {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #fde68a;
+}
