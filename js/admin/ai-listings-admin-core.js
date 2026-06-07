@@ -263,6 +263,122 @@ export function computeMarketDeltaLabel(listing, analysis = null) {
 }
 
 /**
+ * @param {unknown} score
+ * @returns {string}
+ */
+export function getScoreColorClass(score) {
+  const value = Number(score);
+  if (!Number.isFinite(value)) return 'ai-listings-admin__score-color--unknown';
+  if (value >= 90) return 'ai-listings-admin__score-color--excellent';
+  if (value >= 70) return 'ai-listings-admin__score-color--good';
+  if (value >= 50) return 'ai-listings-admin__score-color--fair';
+  return 'ai-listings-admin__score-color--poor';
+}
+
+/**
+ * @param {unknown} score
+ * @param {string} [label]
+ * @returns {string}
+ */
+export function buildProgressRingHtml(score, label = '') {
+  const value = Number(score);
+  const pct = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+  const colorClass = getScoreColorClass(score);
+  const dash = (pct / 100) * 283;
+  const aria = label ? ` aria-label="${safeRenderText(label)} ${Math.round(pct)}%"` : '';
+  return `
+    <div class="ai-listings-admin__progress-ring ${colorClass}"${aria} role="img">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="ai-listings-admin__progress-ring-bg" cx="50" cy="50" r="45"></circle>
+        <circle class="ai-listings-admin__progress-ring-fill" cx="50" cy="50" r="45" style="stroke-dasharray:${dash} 283"></circle>
+      </svg>
+      <span class="ai-listings-admin__progress-ring-value">${Number.isFinite(value) ? Math.round(value) : '—'}</span>
+    </div>`;
+}
+
+/**
+ * @param {unknown} score
+ * @param {string} label
+ * @returns {string}
+ */
+export function buildProgressBarHtml(score, label) {
+  const value = Number(score);
+  const pct = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+  const colorClass = getScoreColorClass(score);
+  return `
+    <div class="ai-listings-admin__progress-bar-wrap">
+      <div class="ai-listings-admin__progress-bar-header">
+        <span class="ai-listings-admin__progress-bar-label">${safeRenderText(label)}</span>
+        <span class="ai-listings-admin__progress-bar-value">${Number.isFinite(value) ? Math.round(value) : '—'}</span>
+      </div>
+      <div class="ai-listings-admin__progress-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="${safeRenderText(label)}">
+        <div class="ai-listings-admin__progress-bar-fill ${colorClass}" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+}
+
+/**
+ * @param {Array<Record<string, unknown>>} listings
+ * @returns {{ total: number, analyzedToday: number, pendingReview: number, highRisk: number }}
+ */
+export function computeKpiStats(listings) {
+  const today = new Date().toISOString().slice(0, 10);
+  let analyzedToday = 0;
+  let pendingReview = 0;
+  let highRisk = 0;
+
+  for (const listing of listings) {
+    if (String(listing.status ?? '') === 'pending_review') pendingReview += 1;
+    const analysis = extractLatestAnalysis(listing);
+    const riskScore = Number(analysis?.risk_score);
+    if (Number.isFinite(riskScore) && riskScore >= 61) highRisk += 1;
+    const analyzedAt = String(analysis?.created_at ?? '').slice(0, 10);
+    if (analyzedAt === today) analyzedToday += 1;
+  }
+
+  return {
+    total: listings.length,
+    analyzedToday,
+    pendingReview,
+    highRisk
+  };
+}
+
+/**
+ * @param {{ total: number, analyzedToday: number, pendingReview: number, highRisk: number }} stats
+ * @returns {string}
+ */
+export function buildKpiCardsHtml(stats) {
+  const cards = [
+    { key: 'total', label: 'Toplam İlan', value: stats.total, icon: '📋' },
+    { key: 'analyzed-today', label: 'Bugün Analiz', value: stats.analyzedToday, icon: '🤖' },
+    { key: 'pending', label: 'İncelemede', value: stats.pendingReview, icon: '🔍' },
+    { key: 'high-risk', label: 'Yüksek Risk', value: stats.highRisk, icon: '⚠' }
+  ];
+
+  return cards
+    .map(
+      (card) => `
+    <article class="ai-listings-admin__kpi-card ai-listings-admin__kpi-card--${card.key}" data-kpi-value="${safeRenderText(card.value)}">
+      <span class="ai-listings-admin__kpi-icon" aria-hidden="true">${card.icon}</span>
+      <div class="ai-listings-admin__kpi-body">
+        <span class="ai-listings-admin__kpi-value" data-kpi-counter="0">0</span>
+        <span class="ai-listings-admin__kpi-label">${safeRenderText(card.label)}</span>
+      </div>
+    </article>`
+    )
+    .join('');
+}
+
+/**
+ * @param {number} [count]
+ * @returns {string}
+ */
+export function buildListingSkeletonHtml(count = 4) {
+  return Array.from({ length: count }, () => '<div class="ai-listings-admin__skeleton-card" aria-hidden="true"></div>').join('');
+}
+
+/**
  * @param {Record<string, unknown>} listing
  * @param {boolean} [isActive]
  * @returns {string}
@@ -276,9 +392,13 @@ export function buildListingCardHtml(listing, isActive = false) {
   const analysis = extractLatestAnalysis(listing);
   const aiScore = analysis?.ai_score;
   const riskScore = analysis?.risk_score;
+  const marketScore = analysis?.market_score;
   const marketDelta = safeRenderText(computeMarketDeltaLabel(listing, analysis));
   const dateRaw = listing.updated_at ?? listing.created_at ?? '';
   const date = safeRenderText(formatTimelineDate(dateRaw));
+  const price = Number(listing.price);
+  const currency = String(listing.currency ?? 'TRY');
+  const priceLabel = Number.isFinite(price) ? safeRenderText(formatCurrency(price, currency)) : '—';
   const activeClass = isActive ? ' ai-listings-admin__listing-card--active' : '';
   const aiHtml =
     aiScore !== undefined && aiScore !== null
@@ -288,19 +408,26 @@ export function buildListingCardHtml(listing, isActive = false) {
     riskScore !== undefined && riskScore !== null
       ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--risk">Risk ${safeRenderText(riskScore)}</span>`
       : '';
+  const marketHtml =
+    marketScore !== undefined && marketScore !== null
+      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--market">Piyasa ${safeRenderText(marketScore)}</span>`
+      : `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--market">${marketDelta}</span>`;
 
   return `
     <button type="button" class="ai-listings-admin__listing-card${activeClass}" data-listing-id="${id}">
       <span class="ai-listings-admin__listing-card-icon" aria-hidden="true">${emoji}</span>
       <span class="ai-listings-admin__listing-card-title">${title}</span>
+      <span class="ai-listings-admin__listing-card-row">
+        <span class="ai-listings-admin__listing-card-category">${category}</span>
+        <span class="ai-listings-admin__listing-card-status">${status}</span>
+      </span>
       <span class="ai-listings-admin__listing-card-metrics">
         ${aiHtml}
         ${riskHtml}
-        <span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--market">${marketDelta}</span>
+        ${marketHtml}
+        <span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--price">${priceLabel}</span>
       </span>
       <span class="ai-listings-admin__listing-card-footer">
-        <span class="ai-listings-admin__listing-card-status">${status}</span>
-        <span class="ai-listings-admin__listing-card-category">${category}</span>
         <span class="ai-listings-admin__listing-card-date">${date}</span>
       </span>
     </button>`;
@@ -493,8 +620,6 @@ export function buildHeroDecisionCardHtml(listing, analysis) {
   const category = safeRenderText(getCategoryLabelTr(listing.category));
   const status = safeRenderText(getStatusLabelTr(listing.status ?? 'draft'));
   const emoji = getCategoryEmoji(listing.category);
-  const aiScore = Number(analysis?.ai_score);
-  const scoreDisplay = Number.isFinite(aiScore) ? Math.round(aiScore) : '—';
   const tier = getScoreTier(analysis?.ai_score);
 
   return `
@@ -509,13 +634,15 @@ export function buildHeroDecisionCardHtml(listing, analysis) {
               <span class="ai-listings-admin__hero-pill ai-listings-admin__hero-pill--status">${status}</span>
             </div>
           </div>
+          <div class="ai-listings-admin__hero-ring-wrap">
+            ${buildProgressRingHtml(analysis?.ai_score, 'AI Karar Skoru')}
+            <span class="ai-listings-admin__hero-score-tier">${safeRenderText(tier.label)}</span>
+          </div>
         </div>
         <div class="ai-listings-admin__hero-score-panel">
           <p class="ai-listings-admin__hero-score-kicker">AI Karar Skoru</p>
           <div class="ai-listings-admin__hero-score-main">
-            <span class="ai-listings-admin__hero-score-value">${safeRenderText(scoreDisplay)}</span>
             ${buildStarsHtml(analysis?.ai_score)}
-            <span class="ai-listings-admin__hero-score-tier">${safeRenderText(tier.label)}</span>
           </div>
         </div>
       </div>
@@ -551,17 +678,20 @@ export function buildScoreCardsHtml(analysis) {
 
     const numVal = Number(value);
     const badge = Number.isFinite(numVal) ? cfg.badgeFn(numVal) : '—';
+    const scoreForBar = cfg.key === 'risk' ? Math.max(0, 100 - numVal) : numVal;
     const badgeClass = cfg.key === 'risk'
       ? (numVal <= 30 ? 'ai-listings-admin__score-badge--good' : numVal <= 60 ? 'ai-listings-admin__score-badge--warn' : 'ai-listings-admin__score-badge--bad')
       : (numVal >= 70 ? 'ai-listings-admin__score-badge--good' : numVal >= 40 ? 'ai-listings-admin__score-badge--warn' : 'ai-listings-admin__score-badge--bad');
 
     return `
       <article class="ai-listings-admin__score-card ai-listings-admin__score-card--${cfg.key}" aria-label="${safeRenderText(cfg.label)}">
-        <span class="ai-listings-admin__score-card-icon" aria-hidden="true">${cfg.icon}</span>
-        <span class="ai-listings-admin__score-card-value">${safeRenderText(value)}</span>
-        <span class="ai-listings-admin__score-card-label">${safeRenderText(cfg.label)}</span>
+        <div class="ai-listings-admin__score-card-head">
+          <span class="ai-listings-admin__score-card-icon" aria-hidden="true">${cfg.icon}</span>
+          <span class="ai-listings-admin__score-card-label">${safeRenderText(cfg.label)}</span>
+          <span class="ai-listings-admin__score-badge ${badgeClass}">${safeRenderText(badge)}</span>
+        </div>
+        ${buildProgressBarHtml(scoreForBar, cfg.label)}
         <span class="ai-listings-admin__score-card-hint">${safeRenderText(cfg.hint)}</span>
-        <span class="ai-listings-admin__score-badge ${badgeClass}">${safeRenderText(badge)}</span>
       </article>`;
   }).filter(Boolean);
 
@@ -628,10 +758,10 @@ export function buildExecutiveSummaryHtml(analysis) {
  */
 export function buildStrengthsCardHtml(analysis) {
   const items = Array.isArray(analysis?.pros) ? analysis.pros : [];
-  const content = buildCheckListHtml(items, 'Güçlü yön bulunamadı.', 'ai-listings-admin__check-item--strength');
+  const content = buildCheckListHtml(items, 'Güçlü yön bulunamadı.', 'ai-listings-admin__check-item--strength', '✔');
   return `
     <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--strengths">
-      <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">✓</span> Güçlü Yönler</h4>
+      <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">✔</span> Güçlü Yönler</h4>
       ${content}
     </article>`;
 }
@@ -642,7 +772,7 @@ export function buildStrengthsCardHtml(analysis) {
  */
 export function buildRisksCardHtml(analysis) {
   const items = Array.isArray(analysis?.cons) ? analysis.cons : [];
-  const content = buildCheckListHtml(items, 'Risk bulunamadı.', 'ai-listings-admin__check-item--risk');
+  const content = buildCheckListHtml(items, 'Risk bulunamadı.', 'ai-listings-admin__check-item--risk', '⚠');
   return `
     <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--risks">
       <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">⚠</span> Riskler</h4>
@@ -814,6 +944,10 @@ export function buildAnalysisTimelineHtml(listing, analysis, events) {
   const hasAnalyzed = events?.some((e) => e.event_type === 'listing_analyzed') || analysis?.ai_score !== undefined;
   steps.push({ label: 'Analiz edildi', done: Boolean(hasAnalyzed) });
 
+  const hasSubmitted =
+    events?.some((e) => e.event_type === 'listing_submitted') || listing.status === 'pending_review';
+  steps.push({ label: 'İncelemeye gönderildi', done: Boolean(hasSubmitted) });
+
   const hasUpdated =
     events?.some((e) => e.event_type === 'listing_updated') ||
     (listing.updated_at && listing.created_at && String(listing.updated_at) !== String(listing.created_at));
@@ -832,24 +966,27 @@ export function buildAnalysisTimelineHtml(listing, analysis, events) {
   }
 
   const items = steps
-    .map((step) => {
-      const icon = step.done ? '✓' : '○';
+    .map((step, index) => {
       const stateClass = step.done ? 'ai-listings-admin__timeline-item--done' : 'ai-listings-admin__timeline-item--pending';
       const timeHtml = step.time
         ? `<time class="ai-listings-admin__timeline-time">${safeRenderText(formatTimelineDate(step.time))}</time>`
         : '';
+      const connector = index < steps.length - 1 ? '<span class="ai-listings-admin__timeline-connector" aria-hidden="true">↓</span>' : '';
       return `
         <li class="ai-listings-admin__timeline-item ${stateClass}">
-          <span class="ai-listings-admin__timeline-icon" aria-hidden="true">${icon}</span>
-          <span class="ai-listings-admin__timeline-label">${safeRenderText(step.label)}</span>
-          ${timeHtml}
+          <div class="ai-listings-admin__timeline-node" aria-hidden="true"></div>
+          <div class="ai-listings-admin__timeline-content">
+            <span class="ai-listings-admin__timeline-label">${safeRenderText(step.label)}</span>
+            ${timeHtml}
+          </div>
+          ${connector}
         </li>`;
     })
     .join('');
 
   return `
     <section class="ai-listings-admin__timeline" aria-label="Olay Geçmişi">
-      <h4 class="ai-listings-admin__section-title">Olay Geçmişi</h4>
+      <h4 class="ai-listings-admin__section-title">Timeline <span class="ai-listings-admin__sr-only">Olay Geçmişi</span></h4>
       <ol class="ai-listings-admin__timeline-list">${items}</ol>
     </section>`;
 }
@@ -893,20 +1030,25 @@ export function buildStickyActionBarHtml(status) {
  */
 export function buildPremiumDashboardHtml(listing, analysis, events, status) {
   return `
-    <div class="ai-listings-admin__dashboard">
-      ${buildHeroDecisionCardHtml(listing, analysis)}
-      ${buildScoreCardsHtml(analysis)}
-      <section class="ai-listings-admin__section ai-listings-admin__section--summary ai-listings-admin__glass-card">
-        <h4 class="ai-listings-admin__section-title"><span aria-hidden="true">🧠</span> AI Yönetici Özeti</h4>
-        ${buildExecutiveSummaryHtml(analysis)}
-      </section>
-      <div class="ai-listings-admin__insights-grid">
-        ${buildStrengthsCardHtml(analysis)}
-        ${buildRisksCardHtml(analysis)}
+    <div class="ai-listings-admin__dashboard ai-listings-admin__dashboard--v4">
+      <div class="ai-listings-admin__dashboard-hero">
+        ${buildHeroDecisionCardHtml(listing, analysis)}
+        <section class="ai-listings-admin__section ai-listings-admin__section--summary ai-listings-admin__glass-card">
+          <h4 class="ai-listings-admin__section-title"><span aria-hidden="true">🧠</span> AI Yönetici Özeti</h4>
+          ${buildExecutiveSummaryHtml(analysis)}
+        </section>
       </div>
-      <section class="ai-listings-admin__section ai-listings-admin__glass-card">
-        <h4 class="ai-listings-admin__section-title">AI Etiketleri</h4>
-        ${buildAiTagsSectionHtml(analysis)}
+      <section class="ai-listings-admin__section ai-listings-admin__section--analysis ai-listings-admin__glass-card">
+        <h4 class="ai-listings-admin__section-title">AI Analizi</h4>
+        ${buildScoreCardsHtml(analysis)}
+        <div class="ai-listings-admin__insights-grid">
+          ${buildStrengthsCardHtml(analysis)}
+          ${buildRisksCardHtml(analysis)}
+        </div>
+        <div class="ai-listings-admin__analysis-tags">
+          <h5 class="ai-listings-admin__subsection-title">AI Etiketleri</h5>
+          ${buildAiTagsSectionHtml(analysis)}
+        </div>
       </section>
       <section class="ai-listings-admin__section ai-listings-admin__glass-card">
         <h4 class="ai-listings-admin__section-title">Veri Kalitesi</h4>
@@ -917,6 +1059,7 @@ export function buildPremiumDashboardHtml(listing, analysis, events, status) {
         ${buildMarketAnalysisHtml(listing, analysis)}
       </section>
       ${buildAnalysisTimelineHtml(listing, analysis, events)}
+      ${buildStickyActionBarHtml(status)}
       <details class="ai-listings-admin__meta-details">
         <summary>İlan meta verileri</summary>
         <dl class="ai-listings-admin__fields">
@@ -930,7 +1073,6 @@ export function buildPremiumDashboardHtml(listing, analysis, events, status) {
         </dl>
       </details>
       <p class="ai-listings-admin__muted ai-listings-admin__visibility-note">Yayına alma kapalıdır. Onaylandı durumu yalnızca iç QA içindir.</p>
-      ${buildStickyActionBarHtml(status)}
     </div>`;
 }
 
@@ -1143,12 +1285,12 @@ function buildTagsHtml(tags) {
  * @param {string} itemClass
  * @returns {string}
  */
-function buildCheckListHtml(items, emptyMessage, itemClass) {
+function buildCheckListHtml(items, emptyMessage, itemClass, mark = '✓') {
   if (!Array.isArray(items) || !items.length) {
     return `<p class="ai-listings-admin__muted">${safeRenderText(emptyMessage)}</p>`;
   }
   return `<ul class="ai-listings-admin__check-list">${items
-    .map((item) => `<li class="ai-listings-admin__check-item ${itemClass}"><span aria-hidden="true">✓</span> ${safeRenderText(item)}</li>`)
+    .map((item) => `<li class="ai-listings-admin__check-item ${itemClass}"><span aria-hidden="true">${mark}</span> ${safeRenderText(item)}</li>`)
     .join('')}</ul>`;
 }
 
