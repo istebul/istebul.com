@@ -7,7 +7,7 @@
   <meta name="description" content="Yapay zeka karar merkezi — iç ilan yönetim paneli">
   <title>AI Decision Center | Yapay Zeka İlanları Admin</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="stylesheet" href="/css/admin-ai-listings.css?v=4">
+  <link rel="stylesheet" href="/css/admin-ai-listings.css?v=5">
   <script src="/env.js" defer></script>
   <script type="module" src="/js/admin/ai-listings-admin.js"></script>
 </head>
@@ -56,11 +56,9 @@
     <div class="ai-listings-admin__workspace">
       <section class="ai-listings-admin__center" id="ai-listings-center-panel" aria-label="AI Karar Merkezi">
         <div id="ai-listings-dashboard-view" class="ai-listings-admin__center-view">
-          <div id="ai-listings-detail" class="ai-listings-admin__detail">
-            <div class="ai-listings-admin__empty-state">
-              <span class="ai-listings-admin__empty-icon" aria-hidden="true">🧠</span>
+          <div id="ai-listings-detail" class="ai-listings-admin__detail" aria-live="polite">
+            <div class="ai-listings-admin__empty-state ai-listings-admin__sr-only">
               <h2>Karar Merkezi</h2>
-              <p class="ai-listings-admin__muted">Detay, analiz ve karar panelini görmek için sağdaki listeden bir ilan seçin.</p>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 /**
- * isteBul AI Listings — internal admin test panel (Premium Decision Center V4).
+ * isteBul AI Listings — internal admin test panel (Executive AI Decision Center V5).
  *
  * INTERNAL TEST ONLY. Not linked from homepage, categories, or admin nav.
  * approved means internally approved only; public publishing remains disabled.
@@ -13,6 +13,7 @@ import {
   ADMIN_SECRET_KEY,
   buildAnalysisTimelineHtml,
   buildEdgeRequestHeaders,
+  buildExecutiveDashboardHtml,
   buildImportPreviewHtml,
   buildKpiCardsHtml,
   buildListingCardHtml,
@@ -181,6 +182,28 @@ function renderKpiCards(listings) {
   lastKpiStatsKey = statsKey;
   kpiEl.innerHTML = buildKpiCardsHtml(stats);
   animateKpiCounters();
+}
+
+function bindExecutiveDashboardEvents(root) {
+  root.querySelectorAll('[data-listing-id]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-listing-id');
+      const listing = cachedListings.find((item) => String(item.id) === id);
+      if (listing) {
+        showListingDetail(listing);
+        toggleFilterPanel(false);
+      }
+    });
+  });
+}
+
+function renderExecutiveDashboard() {
+  if (selectedListing) return;
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+  detailEl.innerHTML = buildExecutiveDashboardHtml(cachedListings);
+  bindExecutiveDashboardEvents(detailEl);
+  clearTimelineHost();
 }
 
 function closeAllDrawers() {
@@ -469,6 +492,12 @@ async function loadListings() {
   cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
   renderKpiCards(cachedListings);
   renderListingsList(cachedListings);
+  if (selectedListing) {
+    const refreshed = cachedListings.find((item) => String(item.id) === String(selectedListing.id));
+    if (refreshed) selectedListing = refreshed;
+  } else {
+    renderExecutiveDashboard();
+  }
   setStatus(`${cachedListings.length} ilan yüklendi.`, 'success');
 }
 
@@ -803,7 +832,7 @@ export function initAiListingsAdmin() {
 
   renderStatusFilterChips();
   bindEvents();
-  clearTimelineHost();
+  renderExecutiveDashboard();
   renderKpiCards([]);
   loadListings();
 }
