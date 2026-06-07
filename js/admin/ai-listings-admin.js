@@ -11,13 +11,10 @@
 import {
   ADMIN_ENABLE_KEY,
   ADMIN_SECRET_KEY,
-  buildAnalysisDetailHtml,
   buildEdgeRequestHeaders,
-  buildEventsHtml,
   buildImportPreviewHtml,
   buildListingBadgesHtml,
-  buildQualityChecklistHtml,
-  buildQaActionsHtml,
+  buildPremiumDashboardHtml,
   buildStatusFilterChipsHtml,
   getAdminPanelState,
   getCategoryLabelTr,
@@ -25,7 +22,6 @@ import {
   getListingAnalyzePath,
   getStatusLabelTr,
   getSupabaseAnonKey,
-  isListingPubliclyVisible,
   mapEdgeResponse,
   previewImportContent,
   resolveActiveStatusFilter,
@@ -166,12 +162,38 @@ async function autoAnalyzeListing(listing) {
   return result;
 }
 
-function renderPublicVisibilityNote(status) {
-  const visible = isListingPubliclyVisible(status);
-  if (visible) {
-    return '<p class="ai-listings-admin__error">Herkese açık görünürlük etkin — Sprint-7 için beklenmiyor.</p>';
+function handlePdfExport(listing, analysis) {
+  const printWindow = window.open('', '_blank', 'noopener,noreferrer');
+  if (!printWindow) {
+    setStatus('PDF penceresi açılamadı. Pop-up engelleyiciyi kontrol edin.', 'error');
+    return;
   }
-  return '<p class="ai-listings-admin__muted">Yayına alma kapalıdır. Onaylandı durumu yalnızca iç QA içindir.</p>';
+
+  const title = String(listing.title ?? 'İlan Raporu');
+  const summary = String(analysis?.summary ?? 'Analiz özeti mevcut değil.');
+  const aiScore = analysis?.ai_score ?? '—';
+  const riskScore = analysis?.risk_score ?? '—';
+
+  printWindow.document.write(`<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>${title} — AI Rapor</title>
+<style>
+  body { font-family: system-ui, sans-serif; padding: 2rem; color: #111; }
+  h1 { font-size: 1.5rem; } .meta { color: #666; font-size: 0.875rem; }
+  .scores { display: flex; gap: 1.5rem; margin: 1rem 0; }
+  .score { font-size: 1.25rem; font-weight: 600; }
+</style></head><body>
+<h1>${title}</h1>
+<p class="meta">isteBul AI Listings — İç Rapor</p>
+<div class="scores">
+  <div class="score">AI Skoru: ${aiScore}</div>
+  <div class="score">Risk: ${riskScore}</div>
+</div>
+<p>${summary}</p>
+<p class="meta">Oluşturulma: ${new Date().toLocaleString('tr-TR')}</p>
+<script>window.onload = () => { window.print(); }<\/script>
+</body></html>`);
+  printWindow.document.close();
+  setStatus('PDF raporu hazırlandı.', 'success');
 }
 
 async function loadListings() {
@@ -241,23 +263,7 @@ async function showListingDetail(listing) {
   const status = String(listingData.status ?? 'draft');
 
   detailEl.innerHTML = `
-    <h3>İlan Detayı</h3>
-    <p class="ai-listings-admin__detail-title">${safeRenderText(listingData.title ?? listing.title)}</p>
-    <dl class="ai-listings-admin__fields">
-      <dt>ID</dt><dd>${safeRenderText(listingData.id ?? id)}</dd>
-      <dt>Kategori</dt><dd>${safeRenderText(getCategoryLabelTr(listingData.category))}</dd>
-      <dt>Durum</dt><dd>${safeRenderText(getStatusLabelTr(status))}</dd>
-      <dt>Fiyat</dt><dd>${safeRenderText(listingData.price)} ${safeRenderText(listingData.currency)}</dd>
-      <dt>Konum</dt><dd>${safeRenderText(listingData.location)}</dd>
-      <dt>Kaynak URL</dt><dd>${safeRenderText(listingData.source_url)}</dd>
-      <dt>Kaynak tipi</dt><dd>${safeRenderText(listingData.source_type)}</dd>
-    </dl>
-    ${buildAnalysisDetailHtml(latest)}
-    <h4>Kalite Kontrol Listesi</h4>
-    ${buildQualityChecklistHtml(listingData, latest)}
-    ${renderPublicVisibilityNote(status)}
-    <h4>Olay Geçmişi</h4>
-    ${buildEventsHtml(events)}
+    ${buildPremiumDashboardHtml(listingData, latest, events, status)}
     <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
       <label>
         Red nedeni
@@ -265,11 +271,6 @@ async function showListingDetail(listing) {
       </label>
       <button type="button" id="ai-listings-confirm-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--warn">Reddi onayla</button>
       <button type="button" id="ai-listings-cancel-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">İptal</button>
-    </div>
-    <h4>İşlemler</h4>
-    <div class="ai-listings-admin__actions">
-      ${buildQaActionsHtml(status)}
-      <button type="button" id="ai-listings-refresh-detail-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Yenile</button>
     </div>`;
 
   detailEl.querySelectorAll('[data-qa-action]').forEach((btn) => {
@@ -280,11 +281,13 @@ async function showListingDetail(listing) {
         $('ai-listings-reject-form')?.removeAttribute('hidden');
         return;
       }
+      if (action === 'pdf') {
+        handlePdfExport(listingData, latest);
+        return;
+      }
       runQaAction(id, action);
     });
   });
-
-  $('ai-listings-refresh-detail-btn')?.addEventListener('click', () => showListingDetail(listingData));
   $('ai-listings-confirm-reject-btn')?.addEventListener('click', () => {
     const reason = $('ai-listings-reject-reason')?.value?.trim() ?? '';
     if (!reason) {
