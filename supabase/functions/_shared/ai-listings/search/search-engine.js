@@ -30,7 +30,7 @@ export const SEARCH_FILTER_CHIPS = Object.freeze([
   { id: 'housing', label: 'Konut' },
   { id: 'vacation', label: 'Tatil' },
   { id: 'manual', label: 'Manual' },
-  { id: 'ai_builder', label: 'AI Builder' },
+  { id: 'ai_builder', label: 'AI İlan Oluşturucu' },
   { id: 'csv', label: 'CSV' },
   { id: 'json', label: 'JSON' },
   { id: 'partner_api', label: 'Partner' }

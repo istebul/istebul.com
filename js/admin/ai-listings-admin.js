@@ -76,6 +76,8 @@ import {
 } from '../ai-decision-simulator/simulator-card-builder.js';
 import { buildReportInput, runDecisionReport } from '../ai-decision-report/index.js';
 import { buildDecisionReportPanelHtml } from '../ai-decision-report/report-card-builder.js';
+import { buildOwnershipCostInput, runOwnershipCostSimulator } from '../ai-ownership-cost/index.js';
+import { buildOwnershipCostPanelHtml } from '../ai-ownership-cost/cost-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
@@ -594,6 +596,16 @@ function closeDecisionReportPanel(root) {
   document.body.classList.remove('ai-listings-admin--report-open');
 }
 
+function closeOwnershipCostPanel(root) {
+  const host = root.querySelector('#ai-cost-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-cost-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--cost-open');
+}
+
 /**
  * @param {HTMLElement} root
  * @returns {Record<string, unknown>}
@@ -663,7 +675,7 @@ function openDecisionCoachPanel(root, recordId) {
   if (!host) return;
 
   host.innerHTML = buildDecisionCoachPanelHtml(coach, {
-    title: String(selected.title ?? 'Decision Coach'),
+    title: String(selected.title ?? 'Karar Koçu'),
     recordId: String(recordId)
   });
   host.hidden = false;
@@ -693,7 +705,7 @@ function openDecisionSimulatorPanel(root, recordId) {
   if (!host) return;
 
   host.innerHTML = buildSimulatorDrawerPanelHtml({
-    title: String(selected.title ?? 'Decision Simulator'),
+    title: String(selected.title ?? 'Karar Simülatörü'),
     recordId: String(recordId),
     scenario: defaultScenario
   });
@@ -708,7 +720,7 @@ function openDecisionSimulatorPanel(root, recordId) {
 
     const { result, coach } = computed;
     host.innerHTML = buildSimulatorPanelHtml(result, {
-      title: String(selected.title ?? 'Decision Simulator'),
+      title: String(selected.title ?? 'Karar Simülatörü'),
       coachLabel: String(coach.coach_label ?? '—'),
       recordId: String(recordId),
       scenario
@@ -737,7 +749,7 @@ function openDecisionReportPanel(root, recordId) {
   if (!host) return;
 
   host.innerHTML = buildDecisionReportPanelHtml(report, {
-    title: String(selected.title ?? 'AI Decision Report'),
+    title: String(selected.title ?? 'AI Karar Raporu'),
     recordId: String(recordId)
   });
   host.hidden = false;
@@ -751,6 +763,38 @@ function openDecisionReportPanel(root, recordId) {
   });
 }
 
+function openOwnershipCostPanel(root, recordId) {
+  if (!cachedRecommendationResult?.top?.length) return;
+
+  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
+  if (!selected) return;
+
+  closeDecisionCoachPanel(root);
+  closeDecisionSimulatorPanel(root);
+  closeDecisionReportPanel(root);
+
+  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const costInput = buildOwnershipCostInput(selected, profile);
+  const cost = runOwnershipCostSimulator(costInput);
+
+  const host = root.querySelector('#ai-cost-panel-host');
+  if (!host) return;
+
+  host.innerHTML = buildOwnershipCostPanelHtml(cost, {
+    title: String(selected.title ?? 'Sahip Olma Maliyeti'),
+    recordId: String(recordId)
+  });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--cost-open');
+
+  host.querySelector('[data-cost-action="close"]')?.addEventListener('click', () => {
+    closeOwnershipCostPanel(root);
+  });
+  host.querySelector('[data-cost-backdrop]')?.addEventListener('click', () => {
+    closeOwnershipCostPanel(root);
+  });
+}
+
 function bindRecommendationsDashboardEvents(root) {
   root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
     recommendationProfile = readRecommendationProfileFromForm(root);
@@ -758,6 +802,7 @@ function bindRecommendationsDashboardEvents(root) {
     closeDecisionCoachPanel(root);
     closeDecisionSimulatorPanel(root);
     closeDecisionReportPanel(root);
+    closeOwnershipCostPanel(root);
     renderRecommendationsView();
   });
 
@@ -767,6 +812,7 @@ function bindRecommendationsDashboardEvents(root) {
       event.stopPropagation();
       closeDecisionSimulatorPanel(root);
       closeDecisionReportPanel(root);
+      closeOwnershipCostPanel(root);
       const id = btn.getAttribute('data-rec-coach-id');
       if (id) openDecisionCoachPanel(root, id);
     });
@@ -777,6 +823,7 @@ function bindRecommendationsDashboardEvents(root) {
       event.preventDefault();
       event.stopPropagation();
       closeDecisionReportPanel(root);
+      closeOwnershipCostPanel(root);
       const id = btn.getAttribute('data-rec-sim-id');
       if (id) openDecisionSimulatorPanel(root, id);
     });
@@ -786,14 +833,24 @@ function bindRecommendationsDashboardEvents(root) {
     btn.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
+      closeOwnershipCostPanel(root);
       const id = btn.getAttribute('data-rec-report-id');
       if (id) openDecisionReportPanel(root, id);
     });
   });
 
+  root.querySelectorAll('[data-rec-cost-id]').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = btn.getAttribute('data-rec-cost-id');
+      if (id) openOwnershipCostPanel(root, id);
+    });
+  });
+
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id]')) return;
+      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id]')) return;
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {

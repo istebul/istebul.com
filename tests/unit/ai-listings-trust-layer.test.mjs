@@ -282,7 +282,7 @@ test('new listing menu uses + Yeni label and emoji menu items', () => {
   const html = fs.readFileSync(adminHtmlPath, 'utf8');
   assert.match(html, />\s*Yeni\s*</);
   assert.doesNotMatch(html, /\+\s*Yeni İlan/);
-  assert.match(html, /🤖 AI Builder/);
+  assert.match(html, /🤖 AI İlan Oluşturucu/);
   assert.match(html, /📝 Manuel İlan/);
   assert.match(html, /📄 CSV İçe Aktar/);
   assert.match(html, /📦 JSON İçe Aktar/);

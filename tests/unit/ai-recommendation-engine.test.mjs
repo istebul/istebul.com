@@ -406,7 +406,7 @@ test('buildRecommendationProfileFormHtml renders all fields', () => {
 
 test('buildRecommendationsDashboardHtml renders before generate', () => {
   const { html } = buildRecommendationsDashboardHtml(listings, profile, { generated: false });
-  assert.match(html, /Recommendations/);
+  assert.match(html, /Öneriler/);
   assert.match(html, /Profil bilgilerini doldurup/);
 });
 
@@ -421,7 +421,7 @@ test('buildRecommendationCardHtml renders fit score and label', () => {
   clearRecommendationMemoCache();
   const result = runRecommendationEngine(listings, profile);
   const html = buildRecommendationCardHtml(result.top[0]);
-  assert.match(html, /Fit/);
+  assert.match(html, /Uyum Skoru/);
   assert.match(html, /Neden önerildi/);
 });
 
@@ -452,7 +452,7 @@ test('guard: no schema change for recommendation tables', () => {
 test('guard: admin html has recommendations view tab', () => {
   const html = fs.readFileSync(adminHtmlPath, 'utf8');
   assert.match(html, /data-admin-view="recommendations"/);
-  assert.match(html, /Recommendations/);
+  assert.match(html, /Öneriler/);
 });
 
 test('guard: shared recommendation module exists', () => {

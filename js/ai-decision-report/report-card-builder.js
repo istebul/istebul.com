@@ -61,7 +61,7 @@ function labelClass(label) {
  * @returns {string}
  */
 export function buildDecisionReportPanelHtml(report, meta = {}) {
-  const title = safe(meta.title ?? 'AI Decision Report');
+  const title = safe(meta.title ?? 'AI Karar Raporu');
   const rec = report.recommendation ?? {};
   const coach = report.decision_coach ?? {};
   const sim = report.decision_simulator ?? {};
@@ -99,38 +99,38 @@ export function buildDecisionReportPanelHtml(report, meta = {}) {
 
   const sections = [
     timelineSection(
-      'Executive',
+      'Yönetici Özeti',
       `<p class="ai-report__summary">${safe(report.executive_summary)}</p>`,
       1
     ),
     timelineSection(
-      'Recommendation',
-      `<p><span class="ai-report__label ${labelClass(rec.label)}">${safe(rec.label)}</span> · Fit ${safe(rec.fit_score)}</p>
+      'Öneri',
+      `<p><span class="ai-report__label ${labelClass(rec.label)}">${safe(rec.label)}</span> · Uyum Skoru ${safe(rec.fit_score)}</p>
        <p class="ai-report__muted">${safe(rec.summary)}</p>
        ${renderList(rec.reasons)}`,
       2
     ),
     timelineSection(
-      'Coach',
+      'Karar Koçu',
       `<p><span class="ai-report__coach-label">${safe(coach.label)}</span> · ${safe(coach.confidence)}% güven</p>
        <p class="ai-report__muted">${safe(coach.summary)}</p>
        ${renderList(coach.should_consider, 'ai-report__list ai-report__list--positive')}`,
       3
     ),
-    timelineSection('Simulator', simBody, 4),
-    timelineSection('Strengths', renderList(report.strengths, 'ai-report__list ai-report__list--positive'), 5),
-    timelineSection('Weaknesses', renderList(report.weaknesses, 'ai-report__list ai-report__list--negative'), 6),
-    timelineSection('Risk', `<p><strong>${safe(risk.level)}</strong> risk · ${safe(risk.summary)}</p>${renderList(risk.reasons)}`, 7),
+    timelineSection('Karar Simülatörü', simBody, 4),
+    timelineSection('Güçlü Yönler', renderList(report.strengths, 'ai-report__list ai-report__list--positive'), 5),
+    timelineSection('Zayıf Yönler', renderList(report.weaknesses, 'ai-report__list ai-report__list--negative'), 6),
+    timelineSection('Risk Analizi', `<p><strong>${safe(risk.level)}</strong> risk · ${safe(risk.summary)}</p>${renderList(risk.reasons)}`, 7),
     timelineSection(
-      'Checklist',
+      'Doğrulama Listesi',
       `<ul class="ai-report__checklist">${checklistHtml || '<li>□ doğrulama maddesi yok</li>'}</ul>`,
       8
     ),
-    timelineSection('Alternatives', altHtml, 9),
+    timelineSection('Alternatif Seçenekler', altHtml, 9),
     `<section class="ai-report__section ai-report__section--final">
       <div class="ai-report__section-head">
         <span class="ai-report__step">10</span>
-        <h4>Final Decision</h4>
+        <h4>Nihai Karar</h4>
       </div>
       <div class="ai-report__section-body">
         <p><span class="ai-report__label ${labelClass(final.label)}">${safe(final.label)}</span> · ${safe(final.confidence)}% güven</p>
@@ -140,7 +140,7 @@ export function buildDecisionReportPanelHtml(report, meta = {}) {
   ].join('');
 
   return `
-    <aside class="ai-report-panel" data-report-panel${meta.recordId ? ` data-report-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-label="AI Decision Report">
+    <aside class="ai-report-panel" data-report-panel${meta.recordId ? ` data-report-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-label="AI Karar Raporu">
       <header class="ai-report-panel__head">
         <div>
           <p class="ai-report-panel__eyebrow">Karar Raporu</p>

@@ -515,7 +515,7 @@ test('SEARCH_FILTER_CHIPS includes category and source chips', () => {
 
 test('buildAiSearchSectionHtml renders AI Search title and input', () => {
   const html = buildAiSearchSectionHtml('', []);
-  assert.match(html, /AI Search/);
+  assert.match(html, /AI Arama/);
   assert.match(html, /ai-listings-repo-ai-search/);
 });
 

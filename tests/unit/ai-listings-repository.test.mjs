@@ -334,13 +334,13 @@ test('buildRepositoryFilterChipsHtml marks active filters', () => {
 
 test('buildRepositoryDashboardHtml builds full dashboard', () => {
   const { html, query } = buildRepositoryDashboardHtml([vehicleListing, housingListing]);
-  assert.match(html, /Repository/);
+  assert.match(html, /Veri Havuzu/);
   assert.match(html, /ai-listings-admin__repo-grid/);
   assert.ok(query.filtered.length >= 1);
 });
 
 test('getRepositorySourceLabelTr maps source types', () => {
-  assert.equal(getRepositorySourceLabelTr('ai_builder'), 'AI Builder');
+  assert.equal(getRepositorySourceLabelTr('ai_builder'), 'AI İlan Oluşturucu');
   assert.equal(getRepositorySourceLabelTr('future_partner'), 'Gelecek Partner');
 });
 

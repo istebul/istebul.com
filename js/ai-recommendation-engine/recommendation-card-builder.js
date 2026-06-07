@@ -39,7 +39,7 @@ export function buildRecommendationCardHtml(item) {
       <header class="ai-rec-card__head">
         <div class="ai-rec-card__score-wrap">
           <span class="ai-rec-card__score">${safe(item.fit_score)}</span>
-          <span class="ai-rec-card__score-label">Fit</span>
+          <span class="ai-rec-card__score-label">Uyum Skoru</span>
         </div>
         <div class="ai-rec-card__meta">
           <h3 class="ai-rec-card__title">${safe(item.title ?? '—')}</h3>
@@ -63,14 +63,17 @@ export function buildRecommendationCardHtml(item) {
         <pre class="ai-rec-card__risks-list">${safe(item.risks_text)}</pre>
       </section>` : ''}
       <footer class="ai-rec-card__actions">
-        <button type="button" class="ai-rec-card__coach-btn" data-rec-coach-id="${safe(item.id)}" aria-label="Decision Coach">
-          Decision Coach
+        <button type="button" class="ai-rec-card__coach-btn" data-rec-coach-id="${safe(item.id)}" aria-label="Karar Koçu">
+          Karar Koçu
         </button>
-        <button type="button" class="ai-rec-card__sim-btn" data-rec-sim-id="${safe(item.id)}" aria-label="Decision Simulator">
-          Decision Simulator
+        <button type="button" class="ai-rec-card__sim-btn" data-rec-sim-id="${safe(item.id)}" aria-label="Karar Simülatörü">
+          Karar Simülatörü
         </button>
-        <button type="button" class="ai-rec-card__report-btn" data-rec-report-id="${safe(item.id)}" aria-label="AI Decision Report">
-          AI Decision Report
+        <button type="button" class="ai-rec-card__report-btn" data-rec-report-id="${safe(item.id)}" aria-label="AI Karar Raporu">
+          AI Karar Raporu
+        </button>
+        <button type="button" class="ai-rec-card__cost-btn" data-rec-cost-id="${safe(item.id)}" aria-label="Sahip Olma Maliyeti">
+          Sahip Olma Maliyeti
         </button>
       </footer>
     </article>`;

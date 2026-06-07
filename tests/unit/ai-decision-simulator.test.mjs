@@ -498,10 +498,10 @@ test('lazy compute 10k performance guard', () => {
 
 // --- ADMIN RENDER ---
 
-test('buildRecommendationCardHtml includes Decision Simulator button', () => {
+test('buildRecommendationCardHtml includes Karar Simülatörü button', () => {
   const rec = getTopRecommendation();
   const html = buildRecommendationCardHtml(rec);
-  assert.match(html, /Decision Simulator/);
+  assert.match(html, /Karar Simülatörü/);
   assert.match(html, /data-rec-sim-id/);
 });
 
@@ -519,10 +519,10 @@ test('buildSimulatorFormHtml renders budget select', () => {
 test('buildSimulatorPanelHtml renders timeline', () => {
   const result = runSim({ budget_delta_pct: 10 });
   const html = buildSimulatorPanelHtml(result, { title: 'BMW', coachLabel: 'İncelenebilir' });
-  assert.match(html, /Recommendation/);
-  assert.match(html, /Decision Coach/);
-  assert.match(html, /Scenario Change/);
-  assert.match(html, /New Decision/);
+  assert.match(html, /Öneri/);
+  assert.match(html, /Karar Koçu/);
+  assert.match(html, /Senaryo Değişikliği/);
+  assert.match(html, /Yeni Karar/);
 });
 
 test('buildSimulatorDrawerPanelHtml renders form drawer', () => {
