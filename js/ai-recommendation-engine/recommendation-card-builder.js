@@ -69,6 +69,9 @@ export function buildRecommendationCardHtml(item) {
         <button type="button" class="ai-rec-card__sim-btn" data-rec-sim-id="${safe(item.id)}" aria-label="Decision Simulator">
           Decision Simulator
         </button>
+        <button type="button" class="ai-rec-card__report-btn" data-rec-report-id="${safe(item.id)}" aria-label="AI Decision Report">
+          AI Decision Report
+        </button>
       </footer>
     </article>`;
 }
