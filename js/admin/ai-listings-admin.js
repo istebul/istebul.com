@@ -357,6 +357,7 @@ async function loadListings() {
   const result = await edgeRequest(`/listings${query}`);
   if (!result.ok) {
     listEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(result.message)}</p>`;
+    renderKpiCards([]);
     setStatus(result.message, 'error');
     return;
   }
@@ -721,6 +722,7 @@ export function initAiListingsAdmin() {
   renderStatusFilterChips();
   bindEvents();
   updateImportButtonState();
+  renderKpiCards([]);
   loadListings();
 }
 
