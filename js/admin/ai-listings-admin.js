@@ -78,6 +78,11 @@ import { buildReportInput, runDecisionReport } from '../ai-decision-report/index
 import { buildDecisionReportPanelHtml } from '../ai-decision-report/report-card-builder.js';
 import { buildOwnershipCostInput, runOwnershipCostSimulator } from '../ai-ownership-cost/index.js';
 import { buildOwnershipCostPanelHtml } from '../ai-ownership-cost/cost-card-builder.js';
+import {
+  buildPurchaseDecisionInput,
+  runPurchaseDecisionEngine
+} from '../ai-purchase-decision/index.js';
+import { buildExecutiveDecisionPanelHtml } from '../ai-purchase-decision/executive-decision-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
@@ -606,6 +611,16 @@ function closeOwnershipCostPanel(root) {
   document.body.classList.remove('ai-listings-admin--cost-open');
 }
 
+function closePurchaseDecisionPanel(root) {
+  const host = root.querySelector('#ai-pd-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-pd-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--pd-open');
+}
+
 /**
  * @param {HTMLElement} root
  * @returns {Record<string, unknown>}
@@ -772,6 +787,7 @@ function openOwnershipCostPanel(root, recordId) {
   closeDecisionCoachPanel(root);
   closeDecisionSimulatorPanel(root);
   closeDecisionReportPanel(root);
+  closePurchaseDecisionPanel(root);
 
   const profile = cachedRecommendationResult.profile ?? recommendationProfile;
   const costInput = buildOwnershipCostInput(selected, profile);
@@ -795,6 +811,39 @@ function openOwnershipCostPanel(root, recordId) {
   });
 }
 
+function openPurchaseDecisionPanel(root, recordId) {
+  if (!cachedRecommendationResult?.top?.length) return;
+
+  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
+  if (!selected) return;
+
+  closeDecisionCoachPanel(root);
+  closeDecisionSimulatorPanel(root);
+  closeDecisionReportPanel(root);
+  closeOwnershipCostPanel(root);
+
+  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const pdInput = buildPurchaseDecisionInput(selected, profile);
+  const purchaseDecision = runPurchaseDecisionEngine(pdInput);
+
+  const host = root.querySelector('#ai-pd-panel-host');
+  if (!host) return;
+
+  host.innerHTML = buildExecutiveDecisionPanelHtml(purchaseDecision, {
+    title: String(selected.title ?? 'Al Kararı Analizi'),
+    recordId: String(recordId)
+  });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--pd-open');
+
+  host.querySelector('[data-pd-action="close"]')?.addEventListener('click', () => {
+    closePurchaseDecisionPanel(root);
+  });
+  host.querySelector('[data-pd-backdrop]')?.addEventListener('click', () => {
+    closePurchaseDecisionPanel(root);
+  });
+}
+
 function bindRecommendationsDashboardEvents(root) {
   root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
     recommendationProfile = readRecommendationProfileFromForm(root);
@@ -803,6 +852,7 @@ function bindRecommendationsDashboardEvents(root) {
     closeDecisionSimulatorPanel(root);
     closeDecisionReportPanel(root);
     closeOwnershipCostPanel(root);
+    closePurchaseDecisionPanel(root);
     renderRecommendationsView();
   });
 
@@ -848,9 +898,18 @@ function bindRecommendationsDashboardEvents(root) {
     });
   });
 
+  root.querySelectorAll('[data-rec-pd-id]').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = btn.getAttribute('data-rec-pd-id');
+      if (id) openPurchaseDecisionPanel(root, id);
+    });
+  });
+
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id]')) return;
+      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-pd-id]')) return;
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {

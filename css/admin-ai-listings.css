@@ -4122,3 +4122,340 @@
 .ai-listings-admin--cost-open {
   overflow: hidden;
 }
+
+/* --- Purchase Decision Intelligence (Sprint-24) --- */
+
+.ai-rec-card__pd-btn {
+  appearance: none;
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(30, 41, 59, 0.92));
+  color: #e0e7ff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ai-rec-card__pd-btn:hover {
+  border-color: rgba(167, 139, 250, 0.75);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(30, 41, 59, 0.95));
+}
+
+.ai-pd-panel-host {
+  position: fixed;
+  inset: 0;
+  z-index: 1240;
+  pointer-events: none;
+}
+
+.ai-pd-panel-host:not([hidden]) {
+  pointer-events: auto;
+}
+
+.ai-pd-panel__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.78);
+  backdrop-filter: blur(4px);
+  z-index: 1240;
+}
+
+.ai-pd-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(520px, 100vw);
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.97) 0%, rgba(17, 24, 39, 0.98) 50%, rgba(11, 18, 32, 0.99) 100%);
+  border-left: 1px solid rgba(148, 163, 184, 0.24);
+  box-shadow: -16px 0 56px rgba(0, 0, 0, 0.55);
+  z-index: 1241;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(16px);
+}
+
+.ai-pd-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.35rem 1.35rem 0.85rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(30, 41, 59, 0.35);
+}
+
+.ai-pd-panel__eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a78bfa;
+}
+
+.ai-pd-panel__title {
+  margin: 0.3rem 0 0;
+  font-size: 1.05rem;
+  color: #f8fafc;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.ai-pd-panel__close {
+  appearance: none;
+  border: none;
+  background: rgba(30, 41, 59, 0.85);
+  color: #cbd5e1;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ai-pd-panel__body {
+  padding: 1rem 1.25rem 1.75rem;
+}
+
+.ai-pd-panel__hero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  margin-bottom: 1rem;
+}
+
+.ai-pd-panel__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ai-pd-panel__metric-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.ai-pd-panel__metric-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.ai-pd-panel__metric-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #eef2ff;
+}
+
+.ai-pd-panel__metric--sm .ai-pd-panel__metric-value {
+  font-size: 0.95rem;
+}
+
+.ai-pd-panel__decision {
+  display: inline-block;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.ai-pd-panel__decision--strong {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.ai-pd-panel__decision--avoid {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.ai-pd-panel__decision--neutral {
+  color: #fde68a;
+  background: rgba(234, 179, 8, 0.15);
+}
+
+.ai-pd-panel__badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.ai-pd-panel__badge--low {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.ai-pd-panel__badge--mid {
+  color: #fde68a;
+  background: rgba(234, 179, 8, 0.15);
+}
+
+.ai-pd-panel__badge--high {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.ai-pd-panel__action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.ai-pd-panel__action-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.ai-pd-panel__action-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e0e7ff;
+}
+
+.ai-pd-panel__section {
+  margin-bottom: 1rem;
+}
+
+.ai-pd-panel__section h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.ai-pd-panel__section h5 {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  color: #cbd5e1;
+}
+
+.ai-pd-panel__summary {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+
+.ai-pd-panel__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.ai-pd-panel__list--positive {
+  color: #86efac;
+}
+
+.ai-pd-panel__list--risk {
+  color: #fdba74;
+}
+
+.ai-pd-panel__empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.ai-pd-panel__scenario-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.ai-pd-panel__scenario-item {
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.ai-pd-panel__scenario-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.ai-pd-panel__scenario-pct {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e0e7ff;
+}
+
+.ai-pd-panel__scenario-score {
+  font-size: 0.75rem;
+  color: #a78bfa;
+}
+
+.ai-pd-panel__scenario-price,
+.ai-pd-panel__scenario-text {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
+.ai-pd-panel__wait-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.ai-pd-panel__wait-text,
+.ai-pd-panel__impact-text {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.ai-pd-panel__wait-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.65rem;
+}
+
+@media (max-width: 480px) {
+  .ai-pd-panel__wait-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-pd-panel__metric-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ai-pd-panel__impact-lift,
+.ai-pd-panel__impact-fields {
+  margin: 0.25rem 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.ai-listings-admin--pd-open {
+  overflow: hidden;
+}
