@@ -60,6 +60,11 @@ import {
   buildRecommendationsDashboardHtml,
   readRecommendationProfileFromForm
 } from './ai-listings-recommendations-admin.js';
+import {
+  buildDecisionCoachInput,
+  runDecisionCoach
+} from '../ai-decision-coach/index.js';
+import { buildDecisionCoachPanelHtml } from '../ai-decision-coach/coach-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
@@ -140,6 +145,9 @@ let recommendationProfile = {
 
 /** @type {boolean} */
 let recommendationGenerated = false;
+
+/** @type {ReturnType<typeof import('../ai-recommendation-engine/index.js').runRecommendationEngine>|null} */
+let cachedRecommendationResult = null;
 
 function $(id) {
   return document.getElementById(id);
@@ -535,24 +543,79 @@ function renderRecommendationsView() {
   const detailEl = $('ai-listings-detail');
   if (!detailEl) return;
 
-  const { html } = buildRecommendationsDashboardHtml(cachedListings, recommendationProfile, {
+  const { html, result } = buildRecommendationsDashboardHtml(cachedListings, recommendationProfile, {
     generated: recommendationGenerated
   });
+  if (result) cachedRecommendationResult = result;
 
   detailEl.innerHTML = html;
   bindRecommendationsDashboardEvents(detailEl);
   clearTimelineHost();
 }
 
+function closeDecisionCoachPanel(root) {
+  const host = root.querySelector('#ai-coach-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-coach-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--coach-open');
+}
+
+function openDecisionCoachPanel(root, recordId) {
+  if (!cachedRecommendationResult?.top?.length) return;
+
+  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
+  if (!selected) return;
+
+  const input = buildDecisionCoachInput(
+    cachedRecommendationResult.profile ?? recommendationProfile,
+    selected,
+    cachedRecommendationResult.top
+  );
+  const coach = runDecisionCoach(input);
+
+  const host = root.querySelector('#ai-coach-panel-host');
+  if (!host) return;
+
+  host.innerHTML = buildDecisionCoachPanelHtml(coach, {
+    title: String(selected.title ?? 'Decision Coach'),
+    recordId: String(recordId)
+  });
+  host.hidden = false;
+
+  const backdrop = root.querySelector('[data-coach-backdrop]');
+  backdrop?.removeAttribute('hidden');
+
+  document.body.classList.add('ai-listings-admin--coach-open');
+
+  host.querySelector('[data-coach-action="close"]')?.addEventListener('click', () => {
+    closeDecisionCoachPanel(root);
+  });
+  backdrop?.addEventListener('click', () => closeDecisionCoachPanel(root));
+}
+
 function bindRecommendationsDashboardEvents(root) {
   root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
     recommendationProfile = readRecommendationProfileFromForm(root);
     recommendationGenerated = true;
+    closeDecisionCoachPanel(root);
     renderRecommendationsView();
   });
 
+  root.querySelectorAll('[data-rec-coach-id]').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = btn.getAttribute('data-rec-coach-id');
+      if (id) openDecisionCoachPanel(root, id);
+    });
+  });
+
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (event) => {
+      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id]')) return;
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {

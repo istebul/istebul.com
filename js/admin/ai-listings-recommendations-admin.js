@@ -12,6 +12,7 @@ import {
   CATEGORY_OPTIONS
 } from '../ai-recommendation-engine/index.js';
 import { buildRecommendationCardsGridHtml } from '../ai-recommendation-engine/recommendation-card-builder.js';
+import { buildDecisionCoachShellHtml } from '../ai-decision-coach/coach-card-builder.js';
 
 /**
  * @param {unknown} value
@@ -126,6 +127,7 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
       <p class="ai-rec-dashboard__count">${safeRenderText(countLabel)}</p>
       ${summaryHtml}
       ${cardsHtml}
+      ${buildDecisionCoachShellHtml()}
     </div>`;
 
   return { html, result };
