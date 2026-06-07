@@ -62,6 +62,11 @@ export function buildRecommendationCardHtml(item) {
         <p class="ai-rec-card__risks-title">Riskler</p>
         <pre class="ai-rec-card__risks-list">${safe(item.risks_text)}</pre>
       </section>` : ''}
+      <footer class="ai-rec-card__actions">
+        <button type="button" class="ai-rec-card__coach-btn" data-rec-coach-id="${safe(item.id)}" aria-label="Decision Coach">
+          Decision Coach
+        </button>
+      </footer>
     </article>`;
 }
 
