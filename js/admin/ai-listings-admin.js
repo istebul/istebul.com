@@ -65,6 +65,15 @@ import {
   runDecisionCoach
 } from '../ai-decision-coach/index.js';
 import { buildDecisionCoachPanelHtml } from '../ai-decision-coach/coach-card-builder.js';
+import {
+  buildDefaultScenario,
+  buildSimulatorInput,
+  runDecisionSimulator
+} from '../ai-decision-simulator/index.js';
+import {
+  buildSimulatorDrawerPanelHtml,
+  buildSimulatorPanelHtml
+} from '../ai-decision-simulator/simulator-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
@@ -563,6 +572,68 @@ function closeDecisionCoachPanel(root) {
   document.body.classList.remove('ai-listings-admin--coach-open');
 }
 
+function closeDecisionSimulatorPanel(root) {
+  const host = root.querySelector('#ai-sim-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-sim-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--sim-open');
+}
+
+/**
+ * @param {HTMLElement} root
+ * @returns {Record<string, unknown>}
+ */
+function readSimulatorScenarioFromForm(root) {
+  /** @type {Record<string, unknown>} */
+  const scenario = {};
+  root.querySelectorAll('[data-sim-field]').forEach((field) => {
+    const key = field.getAttribute('data-sim-field');
+    if (!key) return;
+    const value = /** @type {HTMLInputElement|HTMLSelectElement} */ (field).value;
+    if (key === 'budget_delta_pct' || key === 'annual_km') {
+      scenario[key] = Number(value);
+    } else {
+      scenario[key] = value;
+    }
+  });
+  return scenario;
+}
+
+/**
+ * @param {string} recordId
+ * @param {Record<string, unknown>} scenario
+ * @returns {{ result: ReturnType<typeof runDecisionSimulator>, coach: ReturnType<typeof runDecisionCoach>, selected: Record<string, unknown> }|null}
+ */
+function runSimulatorForPanel(recordId, scenario) {
+  if (!cachedRecommendationResult?.top?.length) return null;
+
+  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
+  if (!selected) return null;
+
+  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const coachInput = buildDecisionCoachInput(profile, selected, cachedRecommendationResult.top);
+  const coach = runDecisionCoach(coachInput);
+  const simInput = buildSimulatorInput(selected, coach, profile);
+  const result = runDecisionSimulator(simInput, scenario);
+  return { result, coach, selected };
+}
+
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} root
+ */
+function bindSimulatorPanelEvents(host, root) {
+  host.querySelector('[data-sim-action="close"]')?.addEventListener('click', () => {
+    closeDecisionSimulatorPanel(root);
+  });
+  host.querySelector('[data-sim-backdrop]')?.addEventListener('click', () => {
+    closeDecisionSimulatorPanel(root);
+  });
+}
+
 function openDecisionCoachPanel(root, recordId) {
   if (!cachedRecommendationResult?.top?.length) return;
 
@@ -596,11 +667,53 @@ function openDecisionCoachPanel(root, recordId) {
   backdrop?.addEventListener('click', () => closeDecisionCoachPanel(root));
 }
 
+function openDecisionSimulatorPanel(root, recordId) {
+  if (!cachedRecommendationResult?.top?.length) return;
+
+  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
+  if (!selected) return;
+
+  closeDecisionCoachPanel(root);
+
+  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const defaultScenario = buildDefaultScenario(profile);
+  const host = root.querySelector('#ai-sim-panel-host');
+  if (!host) return;
+
+  host.innerHTML = buildSimulatorDrawerPanelHtml({
+    title: String(selected.title ?? 'Decision Simulator'),
+    recordId: String(recordId),
+    scenario: defaultScenario
+  });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--sim-open');
+  bindSimulatorPanelEvents(host, root);
+
+  const handleSimulatorRun = () => {
+    const scenario = readSimulatorScenarioFromForm(host);
+    const computed = runSimulatorForPanel(recordId, scenario);
+    if (!computed) return;
+
+    const { result, coach } = computed;
+    host.innerHTML = buildSimulatorPanelHtml(result, {
+      title: String(selected.title ?? 'Decision Simulator'),
+      coachLabel: String(coach.coach_label ?? '—'),
+      recordId: String(recordId),
+      scenario
+    });
+    bindSimulatorPanelEvents(host, root);
+    host.querySelector('[data-sim-action="run"]')?.addEventListener('click', handleSimulatorRun);
+  };
+
+  host.querySelector('[data-sim-action="run"]')?.addEventListener('click', handleSimulatorRun);
+}
+
 function bindRecommendationsDashboardEvents(root) {
   root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
     recommendationProfile = readRecommendationProfileFromForm(root);
     recommendationGenerated = true;
     closeDecisionCoachPanel(root);
+    closeDecisionSimulatorPanel(root);
     renderRecommendationsView();
   });
 
@@ -608,14 +721,24 @@ function bindRecommendationsDashboardEvents(root) {
     btn.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
+      closeDecisionSimulatorPanel(root);
       const id = btn.getAttribute('data-rec-coach-id');
       if (id) openDecisionCoachPanel(root, id);
     });
   });
 
+  root.querySelectorAll('[data-rec-sim-id]').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = btn.getAttribute('data-rec-sim-id');
+      if (id) openDecisionSimulatorPanel(root, id);
+    });
+  });
+
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id]')) return;
+      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id]')) return;
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {

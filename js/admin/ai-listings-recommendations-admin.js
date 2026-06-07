@@ -13,6 +13,7 @@ import {
 } from '../ai-recommendation-engine/index.js';
 import { buildRecommendationCardsGridHtml } from '../ai-recommendation-engine/recommendation-card-builder.js';
 import { buildDecisionCoachShellHtml } from '../ai-decision-coach/coach-card-builder.js';
+import { buildSimulatorShellHtml } from '../ai-decision-simulator/simulator-card-builder.js';
 
 /**
  * @param {unknown} value
@@ -128,6 +129,7 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
       ${summaryHtml}
       ${cardsHtml}
       ${buildDecisionCoachShellHtml()}
+      ${buildSimulatorShellHtml()}
     </div>`;
 
   return { html, result };

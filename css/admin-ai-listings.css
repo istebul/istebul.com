@@ -3154,6 +3154,8 @@
 .ai-rec-card__actions {
   display: flex;
   justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid rgba(148, 163, 184, 0.15);
@@ -3324,5 +3326,272 @@
 }
 
 .ai-listings-admin--coach-open {
+  overflow: hidden;
+}
+
+.ai-rec-card__sim-btn {
+  appearance: none;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.18), rgba(30, 41, 59, 0.9));
+  color: #bae6fd;
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.ai-rec-card__sim-btn:hover {
+  border-color: rgba(125, 211, 252, 0.75);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(30, 41, 59, 0.95));
+}
+
+.ai-sim-panel-host {
+  position: fixed;
+  inset: 0;
+  z-index: 1210;
+  pointer-events: none;
+}
+
+.ai-sim-panel-host:not([hidden]) {
+  pointer-events: auto;
+}
+
+.ai-sim-panel__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.74);
+  backdrop-filter: blur(3px);
+  z-index: 1210;
+}
+
+.ai-sim-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(480px, 100vw);
+  height: 100vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.98) 55%, rgba(11, 18, 32, 0.99) 100%);
+  border-left: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: -14px 0 48px rgba(0, 0, 0, 0.5);
+  z-index: 1211;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(12px);
+}
+
+.ai-sim-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.ai-sim-panel__eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #38bdf8;
+}
+
+.ai-sim-panel__title {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  color: #f8fafc;
+}
+
+.ai-sim-panel__close {
+  appearance: none;
+  border: none;
+  background: rgba(30, 41, 59, 0.8);
+  color: #cbd5e1;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ai-sim-panel__body {
+  padding: 1rem 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ai-sim-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.ai-sim-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.ai-sim-form__field--wide {
+  grid-column: 1 / -1;
+}
+
+.ai-sim-form__field select {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 0.45rem;
+  color: #e2e8f0;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.8rem;
+}
+
+.ai-sim-panel__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem;
+  border-radius: 0.75rem;
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.ai-sim-timeline__step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.ai-sim-timeline__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.2);
+  color: #7dd3fc;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ai-sim-timeline__label {
+  margin: 0 0 0.2rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.ai-sim-timeline__arrow {
+  text-align: center;
+  color: #475569;
+  font-size: 0.85rem;
+  padding-left: 0.35rem;
+}
+
+.ai-sim-timeline__changes {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+}
+
+.ai-sim-panel__label {
+  display: inline-flex;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.ai-sim-panel__label--excellent { color: #86efac; background: rgba(34, 197, 94, 0.15); }
+.ai-sim-panel__label--good { color: #93c5fd; background: rgba(59, 130, 246, 0.15); }
+.ai-sim-panel__label--review { color: #fde68a; background: rgba(234, 179, 8, 0.15); }
+.ai-sim-panel__label--caution { color: #fdba74; background: rgba(249, 115, 22, 0.15); }
+.ai-sim-panel__label--avoid { color: #fca5a5; background: rgba(239, 68, 68, 0.15); }
+
+.ai-sim-panel__coach {
+  font-size: 0.78rem;
+  color: #c7d2fe;
+}
+
+.ai-sim-panel__scores {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+}
+
+.ai-sim-panel__delta {
+  font-weight: 700;
+  padding: 0.2rem 0.45rem;
+  border-radius: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.ai-sim-panel__delta--up { color: #86efac; background: rgba(34, 197, 94, 0.15); }
+.ai-sim-panel__delta--down { color: #fca5a5; background: rgba(239, 68, 68, 0.15); }
+.ai-sim-panel__delta--flat { color: #94a3b8; background: rgba(100, 116, 139, 0.2); }
+
+.ai-sim-panel__confidence {
+  font-size: 0.72rem;
+  color: #7dd3fc;
+  margin-left: auto;
+}
+
+.ai-sim-panel__section h4 {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ai-sim-panel__explanation {
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  white-space: pre-line;
+  color: #cbd5e1;
+}
+
+.ai-sim-panel__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.ai-sim-panel__list--positive { color: #bbf7d0; }
+.ai-sim-panel__list--negative { color: #fecaca; }
+
+.ai-sim-panel__recommendation,
+.ai-sim-panel__summary {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #e2e8f0;
+}
+
+.ai-sim-panel__empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.ai-listings-admin--sim-open {
   overflow: hidden;
 }
