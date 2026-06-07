@@ -15,6 +15,7 @@ import { buildRecommendationCardsGridHtml } from '../ai-recommendation-engine/re
 import { buildDecisionCoachShellHtml } from '../ai-decision-coach/coach-card-builder.js';
 import { buildSimulatorShellHtml } from '../ai-decision-simulator/simulator-card-builder.js';
 import { buildDecisionReportShellHtml } from '../ai-decision-report/report-card-builder.js';
+import { buildOwnershipCostShellHtml } from '../ai-ownership-cost/cost-card-builder.js';
 import { runDecisionFlow, buildCalibrationBlockHtml } from '../ai-decision-flow/index.js';
 
 /**
@@ -129,8 +130,8 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
   const html = `
     <div class="ai-rec-dashboard">
       <header class="ai-rec-dashboard__head">
-        <h2>Recommendations</h2>
-        <p class="ai-listings-admin__muted">Mevcut repository kayıtlarından profil bazlı karar önerileri</p>
+        <h2>Öneriler</h2>
+        <p class="ai-listings-admin__muted">Mevcut veri havuzu kayıtlarından profil bazlı karar önerileri</p>
       </header>
       ${buildRecommendationProfileFormHtml(parsedProfile)}
       <p class="ai-rec-dashboard__count">${safeRenderText(countLabel)}</p>
@@ -140,6 +141,7 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
       ${buildDecisionCoachShellHtml()}
       ${buildSimulatorShellHtml()}
       ${buildDecisionReportShellHtml()}
+      ${buildOwnershipCostShellHtml()}
     </div>`;
 
   return { html, result };

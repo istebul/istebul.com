@@ -218,18 +218,18 @@ test('buildCollectorPreviewStatsHtml renders metrics', () => {
   const result = runCollectorEngine({ format: 'csv', content: csvContent });
   const html = buildCollectorPreviewStatsHtml(result);
   assert.match(html, /Toplam kayıt/);
-  assert.match(html, /Duplicate adayı/);
+  assert.match(html, /Mükerrer adayı/);
 });
 
 test('buildCollectorPreviewHtml renders preview block', () => {
   const result = runCollectorEngine({ format: 'json', content: jsonContent });
   const html = buildCollectorPreviewHtml(result);
-  assert.match(html, /Repository hazır/);
+  assert.match(html, /Veri havuzu hazır/);
 });
 
 test('buildCollectorDashboardHtml renders collector UI', () => {
   const html = buildCollectorDashboardHtml(null);
-  assert.match(html, /Collector Preview/);
+  assert.match(html, /Veri Toplayıcı Önizleme/);
   assert.match(html, /data-collector-action="preview"/);
   assert.match(html, /Kaydet ve analiz et/);
 });

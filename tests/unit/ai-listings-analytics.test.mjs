@@ -336,13 +336,13 @@ test('buildAnalyticsKpiCardsHtml renders six kpi cards', () => {
 
 test('buildAnalyticsSummaryHtml renders summary block', () => {
   const html = buildAnalyticsSummaryHtml('Test summary text.');
-  assert.match(html, /Executive Summary/);
+  assert.match(html, /Yönetici Özeti/);
   assert.match(html, /Test summary text/);
 });
 
 test('buildAnalyticsDashboardHtml builds full dashboard', () => {
   const { html, analytics, chartBuilders } = buildAnalyticsDashboardHtml([vehicle, vehicleSimilar, housing]);
-  assert.match(html, /Analytics/);
+  assert.match(html, /Analitik/);
   assert.match(html, /data-lazy-chart/);
   assert.ok(Object.keys(chartBuilders).length >= 10);
   assert.ok(analytics.summary);
@@ -351,7 +351,7 @@ test('buildAnalyticsDashboardHtml builds full dashboard', () => {
 test('admin html includes Analytics tab', () => {
   const html = fs.readFileSync(adminHtmlPath, 'utf8');
   assert.match(html, /data-admin-view="analytics"/);
-  assert.match(html, /Analytics/);
+  assert.match(html, /Analitik/);
 });
 
 test('no endpoint URL changes in router', () => {

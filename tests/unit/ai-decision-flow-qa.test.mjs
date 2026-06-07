@@ -384,10 +384,10 @@ test('dashboard no calibration block before generate', () => {
 test('buildCalibrationBlockHtml renders score and alignment', () => {
   const flow = runFlow(listings, profile, bmwListing.id);
   const html = buildCalibrationBlockHtml(flow.calibration);
-  assert.match(html, /Recommendation/);
-  assert.match(html, /Coach/);
-  assert.match(html, /Simulator/);
-  assert.match(html, /Report/);
+  assert.match(html, /Öneri/);
+  assert.match(html, /Karar Koçu/);
+  assert.match(html, /Karar Simülatörü/);
+  assert.match(html, /Karar Raporu/);
 });
 
 test('buildCalibrationBlockHtml escapes XSS', () => {

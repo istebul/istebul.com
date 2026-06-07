@@ -171,10 +171,10 @@ export function buildCalibrationBlockHtml(calibration) {
       </header>
       <p class="ai-flow-cal__status">${safe(calibration.status)}</p>
       <div class="ai-flow-cal__alignment">
-        <span>${dot(align.recommendation)} Recommendation</span>
-        <span>${dot(align.coach)} Coach</span>
-        <span>${dot(align.simulator)} Simulator</span>
-        <span>${dot(align.report)} Report</span>
+        <span>${dot(align.recommendation)} Öneri</span>
+        <span>${dot(align.coach)} Karar Koçu</span>
+        <span>${dot(align.simulator)} Karar Simülatörü</span>
+        <span>${dot(align.report)} Karar Raporu</span>
       </div>
       <p class="ai-flow-cal__summary">${safe(calibration.summary)}</p>
       ${warnHtml}

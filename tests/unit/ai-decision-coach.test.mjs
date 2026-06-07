@@ -670,10 +670,10 @@ test('buildDecisionCoachInput handles null selection', () => {
 
 // --- ADMIN RENDER ---
 
-test('buildRecommendationCardHtml includes Decision Coach button', () => {
+test('buildRecommendationCardHtml includes Karar Koçu button', () => {
   const result = getRecommendationResult();
   const html = buildRecommendationCardHtml(result.top[0]);
-  assert.match(html, /Decision Coach/);
+  assert.match(html, /Karar Koçu/);
   assert.match(html, /data-rec-coach-id/);
 });
 
@@ -687,7 +687,7 @@ test('buildDecisionCoachPanelHtml renders all sections', () => {
   const result = getRecommendationResult();
   const coach = runDecisionCoach(getCoachInput(result.top[0], result.top));
   const html = buildDecisionCoachPanelHtml(coach, { title: 'BMW 320i' });
-  assert.match(html, /Karar Danışmanı/);
+  assert.match(html, /Karar Koçu/);
   assert.match(html, /Neden değerlendirilmeli/);
   assert.match(html, /Hangi durumda vazgeçilmeli/);
   assert.match(html, /Doğrulama soruları/);
@@ -749,7 +749,7 @@ test('guard: client decision coach module exists', () => {
 test('guard: admin recommendations tab unchanged', () => {
   const html = fs.readFileSync(adminHtmlPath, 'utf8');
   assert.match(html, /data-admin-view="recommendations"/);
-  assert.match(html, /Recommendations/);
+  assert.match(html, /Öneriler/);
 });
 
 test('runDecisionCoach returns complete output shape', () => {

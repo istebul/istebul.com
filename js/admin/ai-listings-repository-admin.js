@@ -21,7 +21,7 @@ import {
 /** @type {Readonly<Record<string, string>>} */
 export const REPOSITORY_SOURCE_LABELS_TR = Object.freeze({
   manual: 'Manuel',
-  ai_builder: 'AI Builder',
+  ai_builder: 'AI İlan Oluşturucu',
   csv: 'CSV',
   json: 'JSON',
   partner_api: 'Partner API',
@@ -31,8 +31,8 @@ export const REPOSITORY_SOURCE_LABELS_TR = Object.freeze({
 /** @type {Readonly<Record<string, string>>} */
 export const REPOSITORY_DUPLICATE_LABELS_TR = Object.freeze({
   new: 'Yeni',
-  exact: 'Exact',
-  similar: 'Similar'
+  exact: 'Birebir',
+  similar: 'Benzer'
 });
 
 /** @type {Readonly<Record<string, string>>} */
@@ -127,7 +127,7 @@ export function buildRepositoryKpiCardsHtml(stats) {
   const cards = [
     { key: 'total', label: 'Toplam kayıt', value: stats.total, hint: 'tüm kayıtlar' },
     { key: 'active', label: 'Aktif kayıt', value: stats.active, hint: 'arşiv hariç' },
-    { key: 'duplicate', label: 'Duplicate', value: stats.duplicate, hint: 'exact + similar' },
+    { key: 'duplicate', label: 'Mükerrer', value: stats.duplicate, hint: 'birebir + benzer' },
     { key: 'average_ai', label: 'Ortalama AI', value: stats.average_ai ?? '—', hint: 'decision score' },
     { key: 'average_risk', label: 'Ortalama Risk', value: stats.average_risk ?? '—', hint: 'risk score' },
     { key: 'average_quality', label: 'Ortalama Kalite', value: stats.average_quality ?? '—', hint: 'quality score' },
@@ -154,7 +154,7 @@ export function buildRepositoryKpiCardsHtml(stats) {
  */
 export function buildRepositorySummaryHtml(summary) {
   return `
-    <section class="ai-listings-admin__repo-summary" aria-label="Repository özeti">
+    <section class="ai-listings-admin__repo-summary" aria-label="Veri havuzu özeti">
       <div class="ai-listings-admin__repo-summary-item">
         <span class="ai-listings-admin__repo-summary-label">Toplam kayıt</span>
         <strong>${safeRenderText(summary.total_records)}</strong>
@@ -287,9 +287,9 @@ export function buildSearchSuggestionsHtml(query, suggestions = []) {
 export function buildAiSearchSectionHtml(aiSearchQuery = '', suggestions = []) {
   const safeQuery = sanitizeSearchQuery(aiSearchQuery);
   return `
-    <section class="ai-listings-admin__repo-search" aria-label="AI Search">
+    <section class="ai-listings-admin__repo-search" aria-label="AI Arama">
       <div class="ai-listings-admin__repo-search-head">
-        <h3>AI Search</h3>
+        <h3>AI Arama</h3>
         ${buildSearchSortSelectHtml()}
       </div>
       <div class="ai-listings-admin__repo-search-input-wrap">
@@ -301,7 +301,7 @@ export function buildAiSearchSectionHtml(aiSearchQuery = '', suggestions = []) {
           placeholder="BMW 2022 düşük km&#10;Audi otomatik&#10;SUV dizel&#10;Yetkili servis&#10;Tek parça boya"
           autocomplete="off"
           spellcheck="false"
-          aria-label="AI Search" />
+          aria-label="AI Arama" />
         ${buildSearchSuggestionsHtml(safeQuery, suggestions)}
       </div>
     </section>`;
@@ -432,7 +432,7 @@ export function buildRepositoryCardHtml(record, isActive = false, isSearchResult
  */
 export function buildRepositoryCardsGridHtml(records, selectedId = null, isSearchResult = false) {
   if (!records.length) {
-    return '<p class="ai-listings-admin__empty-state">Repository kaydı bulunamadı.</p>';
+    return '<p class="ai-listings-admin__empty-state">Veri havuzu kaydı bulunamadı.</p>';
   }
 
   return `
@@ -462,7 +462,7 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
     const emptyHtml = `
       <div class="ai-listings-admin__repo-dashboard">
         <header class="ai-listings-admin__repo-head">
-          <h2>Repository</h2>
+          <h2>Veri Havuzu</h2>
           <p class="ai-listings-admin__muted">Ortak veri merkezi — mevcut ilanlardan türetilmiş görünüm</p>
         </header>
         ${buildAiSearchSectionHtml(aiSearch, [])}
@@ -503,7 +503,7 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
   const html = `
     <div class="ai-listings-admin__repo-dashboard">
       <header class="ai-listings-admin__repo-head">
-        <h2>Repository</h2>
+        <h2>Veri Havuzu</h2>
         <p class="ai-listings-admin__muted">Ortak veri merkezi — mevcut ilanlardan türetilmiş görünüm</p>
       </header>
       ${buildRepositorySummaryHtml(query.summary)}
@@ -512,7 +512,7 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
       <div class="ai-listings-admin__repo-tabs" role="tablist" aria-label="Kategori">
         ${buildRepositoryCategoryTabsHtml(options.categoryTab ?? 'all')}
       </div>
-      <div class="ai-listings-admin__repo-filters" aria-label="Repository filtreleri">
+      <div class="ai-listings-admin__repo-filters" aria-label="Veri havuzu filtreleri">
         ${buildRepositoryFilterChipsHtml(options.filters ?? [])}
       </div>
       <div class="ai-listings-admin__repo-search-filters" aria-label="Arama filtreleri">

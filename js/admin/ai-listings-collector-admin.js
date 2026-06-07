@@ -45,8 +45,8 @@ export function buildCollectorPreviewStatsHtml(result) {
       <div><dt>Toplam kayıt</dt><dd>${safeRenderText(result.total_rows ?? 0)}</dd></div>
       <div><dt>Geçerli kayıt</dt><dd>${safeRenderText(result.valid_rows ?? 0)}</dd></div>
       <div><dt>Hatalı kayıt</dt><dd>${safeRenderText(result.invalid_rows ?? 0)}</dd></div>
-      <div><dt>Duplicate adayı</dt><dd>${safeRenderText(result.duplicate_candidates ?? 0)}</dd></div>
-      <div><dt>Repository hazır</dt><dd>${safeRenderText(result.repository_ready_rows ?? 0)}</dd></div>
+      <div><dt>Mükerrer adayı</dt><dd>${safeRenderText(result.duplicate_candidates ?? 0)}</dd></div>
+      <div><dt>Veri havuzu hazır</dt><dd>${safeRenderText(result.repository_ready_rows ?? 0)}</dd></div>
     </dl>`;
 }
 
@@ -79,8 +79,8 @@ export function buildCollectorDashboardHtml(result = null) {
   return `
     <div class="ai-collector-dashboard">
       <header class="ai-collector-dashboard__head">
-        <h2>Collector Preview</h2>
-        <p class="ai-listings-admin__muted">CSV, JSON, XML, Partner Feed, Manual ve AI Builder kaynakları</p>
+        <h2>Veri Toplayıcı Önizleme</h2>
+        <p class="ai-listings-admin__muted">CSV, JSON, XML, Partner Feed, Manuel ve AI İlan Oluşturucu kaynakları</p>
       </header>
       <div class="ai-collector-dashboard__form">
         <label>
@@ -91,7 +91,7 @@ export function buildCollectorDashboardHtml(result = null) {
             <option value="xml">XML</option>
             <option value="partner_feed">Partner Feed</option>
             <option value="manual">Manual</option>
-            <option value="ai_builder">AI Builder</option>
+            <option value="ai_builder">AI İlan Oluşturucu</option>
           </select>
         </label>
         <label>

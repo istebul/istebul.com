@@ -123,7 +123,7 @@ export function buildSimulatorResultBodyHtml(result, meta = {}) {
           <div class="ai-sim-timeline__step">
             <span class="ai-sim-timeline__badge">1</span>
             <div>
-              <p class="ai-sim-timeline__label">Recommendation</p>
+              <p class="ai-sim-timeline__label">Öneri</p>
               <span class="ai-sim-panel__label ${labelClass(result.old_label)}">${safe(result.old_label)}</span>
             </div>
           </div>
@@ -131,7 +131,7 @@ export function buildSimulatorResultBodyHtml(result, meta = {}) {
           <div class="ai-sim-timeline__step">
             <span class="ai-sim-timeline__badge">2</span>
             <div>
-              <p class="ai-sim-timeline__label">Decision Coach</p>
+              <p class="ai-sim-timeline__label">Karar Koçu</p>
               <span class="ai-sim-panel__coach">${coachLabel}</span>
             </div>
           </div>
@@ -139,7 +139,7 @@ export function buildSimulatorResultBodyHtml(result, meta = {}) {
           <div class="ai-sim-timeline__step">
             <span class="ai-sim-timeline__badge">3</span>
             <div>
-              <p class="ai-sim-timeline__label">Scenario Change</p>
+              <p class="ai-sim-timeline__label">Senaryo Değişikliği</p>
               <p class="ai-sim-timeline__changes">${safe((result.scenario_changes ?? []).join(' · ') || 'Parametre değişikliği')}</p>
             </div>
           </div>
@@ -147,7 +147,7 @@ export function buildSimulatorResultBodyHtml(result, meta = {}) {
           <div class="ai-sim-timeline__step ai-sim-timeline__step--final">
             <span class="ai-sim-timeline__badge">4</span>
             <div>
-              <p class="ai-sim-timeline__label">New Decision</p>
+              <p class="ai-sim-timeline__label">Yeni Karar</p>
               <span class="ai-sim-panel__label ${labelClass(result.new_label)}">${safe(result.new_label)}</span>
             </div>
           </div>
@@ -191,11 +191,11 @@ export function buildSimulatorResultBodyHtml(result, meta = {}) {
  * @returns {string}
  */
 export function buildSimulatorPanelHtml(result, meta = {}) {
-  const title = safe(meta.title ?? 'Decision Simulator');
+  const title = safe(meta.title ?? 'Karar Simülatörü');
   const scenario = meta.scenario ?? result.scenario ?? {};
 
   return `
-    <aside class="ai-sim-panel" data-sim-panel${meta.recordId ? ` data-sim-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-label="Decision Simulator">
+    <aside class="ai-sim-panel" data-sim-panel${meta.recordId ? ` data-sim-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-label="Karar Simülatörü">
       <header class="ai-sim-panel__head">
         <div>
           <p class="ai-sim-panel__eyebrow">Karar Simülatörü</p>
@@ -216,11 +216,11 @@ export function buildSimulatorPanelHtml(result, meta = {}) {
  * @returns {string}
  */
 export function buildSimulatorDrawerPanelHtml(meta = {}) {
-  const title = safe(meta.title ?? 'Decision Simulator');
+  const title = safe(meta.title ?? 'Karar Simülatörü');
   const scenario = meta.scenario ?? {};
 
   return `
-    <aside class="ai-sim-panel ai-sim-panel--drawer" data-sim-panel${meta.recordId ? ` data-sim-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-label="Decision Simulator">
+    <aside class="ai-sim-panel ai-sim-panel--drawer" data-sim-panel${meta.recordId ? ` data-sim-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-label="Karar Simülatörü">
       <header class="ai-sim-panel__head">
         <div>
           <p class="ai-sim-panel__eyebrow">Karar Simülatörü</p>

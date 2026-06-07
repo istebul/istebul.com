@@ -745,7 +745,7 @@ export function buildExecutiveDashboardHtml(listings) {
     <div class="ai-listings-admin__executive-dashboard">
       <header class="ai-listings-admin__executive-head">
         <div>
-          <p class="ai-listings-admin__executive-eyebrow">Executive Overview</p>
+          <p class="ai-listings-admin__executive-eyebrow">Yönetici Özeti</p>
           <h2>Karar Merkezi</h2>
           <p class="ai-listings-admin__muted">Canlı özet — sağdaki listeden bir ilan seçerek detay paneline geçin.</p>
         </div>
@@ -1580,7 +1580,7 @@ export function buildExecutiveDecisionCardHtml(listing, analysis = null, events 
     <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--executive" aria-label="AI Yönetici Kararı">
       <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">🎯</span> AI Yönetici Kararı</h4>
       <dl class="ai-listings-admin__executive-grid">
-        <div><dt>Executive Score</dt><dd>${safeRenderText(executive.executive_score)}</dd></div>
+        <div><dt>Yönetici Skoru</dt><dd>${safeRenderText(executive.executive_score)}</dd></div>
         <div><dt>Karar Güveni</dt><dd>${safeRenderText(executive.executive_confidence)}%</dd></div>
         <div><dt>Karar</dt><dd>${safeRenderText(executive.executive_label)}</dd></div>
       </dl>

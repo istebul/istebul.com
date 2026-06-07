@@ -477,10 +477,10 @@ test('lazy compute 10k performance guard', () => {
 
 // --- ADMIN RENDER ---
 
-test('buildRecommendationCardHtml includes AI Decision Report button', () => {
+test('buildRecommendationCardHtml includes AI Karar Raporu button', () => {
   const rec = getRecResult().top[0];
   const html = buildRecommendationCardHtml(rec);
-  assert.match(html, /AI Decision Report/);
+  assert.match(html, /AI Karar Raporu/);
   assert.match(html, /data-rec-report-id/);
 });
 
@@ -492,16 +492,16 @@ test('buildRecommendationsDashboardHtml includes report host', () => {
 test('buildDecisionReportPanelHtml renders timeline sections', () => {
   const report = runReport();
   const html = buildDecisionReportPanelHtml(report, { title: 'BMW 320i' });
-  assert.match(html, /Executive/);
-  assert.match(html, /Recommendation/);
-  assert.match(html, /Coach/);
-  assert.match(html, /Simulator/);
-  assert.match(html, /Strengths/);
-  assert.match(html, /Weaknesses/);
-  assert.match(html, /Risk/);
-  assert.match(html, /Checklist/);
-  assert.match(html, /Alternatives/);
-  assert.match(html, /Final Decision/);
+  assert.match(html, /Yönetici Özeti/);
+  assert.match(html, /Öneri/);
+  assert.match(html, /Karar Koçu/);
+  assert.match(html, /Karar Simülatörü/);
+  assert.match(html, /Güçlü Yönler/);
+  assert.match(html, /Zayıf Yönler/);
+  assert.match(html, /Risk Analizi/);
+  assert.match(html, /Doğrulama Listesi/);
+  assert.match(html, /Alternatif Seçenekler/);
+  assert.match(html, /Nihai Karar/);
 });
 
 test('buildDecisionReportPanelHtml escapes XSS', () => {

@@ -53,14 +53,14 @@ function confidenceClass(confidence) {
  * @returns {string}
  */
 export function buildDecisionCoachPanelHtml(coach, meta = {}) {
-  const title = safe(meta.title ?? 'Decision Coach');
+  const title = safe(meta.title ?? 'Karar Koçu');
   const recordId = safe(meta.recordId ?? '');
 
   return `
-    <aside class="ai-coach-panel" data-coach-panel${recordId ? ` data-coach-record-id="${recordId}"` : ''} role="dialog" aria-label="Decision Coach">
+    <aside class="ai-coach-panel" data-coach-panel${recordId ? ` data-coach-record-id="${recordId}"` : ''} role="dialog" aria-label="Karar Koçu">
       <header class="ai-coach-panel__head">
         <div>
-          <p class="ai-coach-panel__eyebrow">Karar Danışmanı</p>
+          <p class="ai-coach-panel__eyebrow">Karar Koçu</p>
           <h3 class="ai-coach-panel__title">${title}</h3>
         </div>
         <button type="button" class="ai-coach-panel__close" data-coach-action="close" aria-label="Kapat">×</button>

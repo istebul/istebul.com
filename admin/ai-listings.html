@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta name="description" content="Yapay zeka karar merkezi — iç ilan yönetim paneli">
-  <title>AI Decision Center | Yapay Zeka İlanları Admin</title>
+  <title>Karar Merkezi | Yapay Zeka İlanları Admin</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="stylesheet" href="/css/admin-ai-listings.css?v=8">
   <script src="/env.js" defer></script>
@@ -16,7 +16,7 @@
     <div class="ai-listings-admin__topbar-left">
       <div class="ai-listings-admin__brand">
         <p class="ai-listings-admin__brand-eyebrow">Yapay Zeka Destekli İlanlar</p>
-        <h1 class="ai-listings-admin__brand-title">AI Decision Center</h1>
+        <h1 class="ai-listings-admin__brand-title">Karar Merkezi</h1>
         <p class="ai-listings-admin__brand-subtitle ai-listings-admin__sr-only">Karar Merkezi</p>
       </div>
     </div>
@@ -39,7 +39,7 @@
           <span aria-hidden="true">+</span> Yeni
         </button>
         <div id="ai-listings-new-menu" class="ai-listings-admin__dropdown" hidden>
-          <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="ai-builder">🤖 AI Builder</button>
+          <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="ai-builder">🤖 AI İlan Oluşturucu</button>
           <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="create">📝 Manuel İlan</button>
           <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="import-csv">📄 CSV İçe Aktar</button>
           <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="import-json">📦 JSON İçe Aktar</button>
@@ -54,15 +54,15 @@
 
     <nav id="ai-listings-view-nav" class="ai-listings-admin__view-nav" aria-label="Admin görünümü">
       <button type="button" class="ai-listings-admin__view-tab ai-listings-admin__view-tab--active" data-admin-view="decision" aria-selected="true">Karar Merkezi</button>
-      <button type="button" class="ai-listings-admin__view-tab" data-admin-view="repository" aria-selected="false">Repository</button>
-      <button type="button" class="ai-listings-admin__view-tab" data-admin-view="analytics" aria-selected="false">Analytics</button>
-      <button type="button" class="ai-listings-admin__view-tab" data-admin-view="collector" aria-selected="false">Collector</button>
-      <button type="button" class="ai-listings-admin__view-tab" data-admin-view="recommendations" aria-selected="false">Recommendations</button>
+      <button type="button" class="ai-listings-admin__view-tab" data-admin-view="repository" aria-selected="false">Veri Havuzu</button>
+      <button type="button" class="ai-listings-admin__view-tab" data-admin-view="analytics" aria-selected="false">Analitik</button>
+      <button type="button" class="ai-listings-admin__view-tab" data-admin-view="collector" aria-selected="false">Veri Toplayıcı</button>
+      <button type="button" class="ai-listings-admin__view-tab" data-admin-view="recommendations" aria-selected="false">Öneriler</button>
     </nav>
 
     <section id="ai-listings-kpi" class="ai-listings-admin__kpi-row" aria-label="Özet metrikler"></section>
-    <section id="ai-listings-repo-kpi" class="ai-listings-admin__kpi-row ai-listings-admin__kpi-row--repo" aria-label="Repository metrikleri" hidden></section>
-    <section id="ai-listings-analytics-kpi" class="ai-listings-admin__kpi-row ai-listings-admin__kpi-row--analytics" aria-label="Analytics metrikleri" hidden></section>
+    <section id="ai-listings-repo-kpi" class="ai-listings-admin__kpi-row ai-listings-admin__kpi-row--repo" aria-label="Veri havuzu metrikleri" hidden></section>
+    <section id="ai-listings-analytics-kpi" class="ai-listings-admin__kpi-row ai-listings-admin__kpi-row--analytics" aria-label="Analitik metrikleri" hidden></section>
 
     <div class="ai-listings-admin__workspace">
       <section class="ai-listings-admin__center" id="ai-listings-center-panel" aria-label="AI Karar Merkezi">
