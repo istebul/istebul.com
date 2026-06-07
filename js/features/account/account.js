@@ -485,7 +485,8 @@ export class AccountManager {
             history: this.readDecisionHistory(user.id),
             favorites: this.readFavorites(),
             hasPremium,
-            membershipLabel
+            membershipLabel,
+            decisionPlatform: this.app?.getUserDecisionPanelData?.() ?? {}
         });
         document.getElementById('profil')?.classList.add('profil-has-dashboard');
         const hubTab = ACCOUNT_HUB_TABS.includes(this.activeTab) ? this.activeTab : 'settings';

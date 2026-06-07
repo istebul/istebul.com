@@ -15,6 +15,7 @@ const HOMEPAGE_EXTENSION = [
   'css/help-center.css',
   'css/user-dashboard.css',
   'css/dashboard-v2.css',
+  'css/user-decision-center.css',
   'css/billing-v1.css',
   'css/payments-ui.css',
   'css/listing-gallery.css',

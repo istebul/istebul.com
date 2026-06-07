@@ -18,6 +18,7 @@ import {
   renderProBadge
 } from '../billing/paywall-v1.js';
 import { PRO_FEATURE } from '../billing/pro-features.js';
+import { buildUserDecisionPanelHtml, bindUserDecisionPanel } from '../../user-decision-center/user-decision-panel.js';
 
 const EMPTY_CTAS = [
   { label: 'Araç Analizi', href: '/auto/' },
@@ -117,6 +118,7 @@ export function buildDashboardV2Data(ctx = {}) {
     profile: ctx.profile,
     hasPremium,
     membershipLabel: ctx.membershipLabel || 'Ücretsiz',
+    decisionPlatform: ctx.decisionPlatform ?? {},
     summary: {
       totalAnalyses: analysesMap.size,
       lastPdfLabel: lastPdf
@@ -272,6 +274,10 @@ export function renderDashboardV2(data) {
 
       ${renderSummaryCards(data.summary, data.hasPremium)}
 
+      <section class="dashboard-v2-section dashboard-v2-decision-platform" aria-label="Karar Merkezi paneli">
+        ${buildUserDecisionPanelHtml(data.decisionPlatform ?? {})}
+      </section>
+
       ${data.isEmpty ? renderEmptyState() : ''}
 
       <section class="dashboard-v2-section" aria-labelledby="dashboard-v2-recent-title">
@@ -371,6 +377,15 @@ export function renderDashboardV2Guest() {
  */
 export function bindDashboardV2(root, ctx = {}) {
   if (!root) return;
+
+  const decisionPanel = root.querySelector('[data-udc-panel]');
+  if (decisionPanel) {
+    bindUserDecisionPanel(decisionPanel, {
+      onTabChange: (tab) => {
+        if (typeof ctx.onDecisionTabChange === 'function') ctx.onDecisionTabChange(tab);
+      }
+    });
+  }
 
   root.addEventListener('click', (event) => {
     const compareBtn = event.target.closest('[data-dashboard-v2-compare]');
