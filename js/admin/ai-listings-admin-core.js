@@ -75,6 +75,7 @@ export const STATUS_LABELS_TR = Object.freeze({
   draft: 'Taslak',
   pending_review: 'İncelemede',
   approved: 'Onaylandı',
+  published: 'Yayında',
   rejected: 'Reddedildi',
   archived: 'Arşivlendi'
 });
@@ -92,6 +93,7 @@ export const STATUS_FILTER_CHIPS_TR = Object.freeze([
   { value: 'draft', label: 'Taslak' },
   { value: 'pending_review', label: 'İncelemede' },
   { value: 'approved', label: 'Onaylandı' },
+  { value: 'published', label: 'Yayında' },
   { value: 'rejected', label: 'Reddedildi' },
   { value: 'archived', label: 'Arşivlendi' }
 ]);
@@ -1014,6 +1016,8 @@ export function resolveActiveStatusFilter(chipValue) {
 const QA_ACTION_BUTTONS = Object.freeze([
   { action: QA_ACTIONS.REANALYZE, label: 'Yeniden Analiz', icon: '🔄' },
   { action: QA_ACTIONS.APPROVE, label: 'Onayla', variant: 'success', icon: '✅' },
+  { action: QA_ACTIONS.PUBLISH, label: 'Yayınla', variant: 'success', icon: '🌐' },
+  { action: QA_ACTIONS.UNPUBLISH, label: 'Yayından Kaldır', variant: 'warn', icon: '🔒' },
   { action: 'pdf', label: 'PDF', icon: '📄' },
   { action: QA_ACTIONS.SUBMIT_REVIEW, label: 'İncelemeye Gönder', icon: '📤' },
   { action: QA_ACTIONS.ARCHIVE, label: 'Arşivle', variant: 'warn', icon: '🗄' },
@@ -1785,6 +1789,8 @@ const TIMELINE_EVENT_LABELS = Object.freeze({
   analysis_completed: 'Analiz tamamlandı',
   listing_submitted: 'İncelemeye gönderildi',
   listing_approved: 'Onaylandı',
+  listing_published: 'Yayınlandı',
+  listing_unpublished: 'Yayından kaldırıldı',
   listing_rejected: 'Reddedildi',
   listing_archived: 'Arşivlendi',
   listing_updated: 'Güncellendi'
@@ -1809,7 +1815,12 @@ export function buildAnalysisTimelineHtml(listing, analysis, events) {
     listing.status === 'pending_review' ||
     listing.status === 'approved' ||
     listing.status === 'rejected';
-  const hasApproved = events?.some((e) => e.event_type === 'listing_approved') || listing.status === 'approved';
+  const hasApproved =
+    events?.some((e) => e.event_type === 'listing_approved') ||
+    listing.status === 'approved' ||
+    listing.status === 'published';
+  const hasPublished =
+    events?.some((e) => e.event_type === 'listing_published') || listing.status === 'published';
   const hasArchived = events?.some((e) => e.event_type === 'listing_archived') || listing.status === 'archived';
   const hasUpdated =
     events?.some((e) => e.event_type === 'listing_updated') ||
@@ -1823,6 +1834,7 @@ export function buildAnalysisTimelineHtml(listing, analysis, events) {
     { label: 'Analiz Tamamlandı', srLabel: 'Analiz edildi', done: Boolean(hasAnalyzed) },
     { label: 'İncelemeye Gönderildi', done: Boolean(hasSubmitted) },
     { label: 'Onaylandı', done: Boolean(hasApproved) },
+    { label: 'Yayınlandı', done: Boolean(hasPublished) },
     { label: 'Arşivlendi', done: Boolean(hasArchived) }
   ];
 

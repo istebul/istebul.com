@@ -1170,7 +1170,8 @@ Deno.serve(async (req) => {
         "finance_cashflow_weight",        "finance_ai_prompt_template",
         "analytics_clean_start_at",
         "live_providers_enabled",
-        "live_finance_feed_url"
+        "live_finance_feed_url",
+        "ai_listings_public_enabled"
       ];
 
       for (const row of values) {

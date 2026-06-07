@@ -344,10 +344,12 @@ test('getRepositorySourceLabelTr maps source types', () => {
   assert.equal(getRepositorySourceLabelTr('future_partner'), 'Gelecek Partner');
 });
 
-test('no endpoint URL changes in router', () => {
+test('router keeps listings resource and adds platform resources', () => {
   const router = fs.readFileSync(routerPath, 'utf8');
-  assert.match(router, /resource: 'listings'/);
-  assert.doesNotMatch(router, /repository/i);
+  assert.match(router, /'listings'/);
+  assert.match(router, /'learning'/);
+  assert.match(router, /'data-pool'/);
+  assert.match(router, /'personalization'/);
 });
 
 test('no auth header changes', () => {

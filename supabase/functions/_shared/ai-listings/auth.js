@@ -52,4 +52,50 @@ export function authorizeRequest(req, env) {
   return { ok: true };
 }
 
+/**
+ * Public read routes that may bypass the edge secret when publish is enabled.
+ * @type {ReadonlySet<string>}
+ */
+export const PUBLIC_READ_PATHS = new Set(['/listings/public']);
+
+/**
+ * @param {string} pathname
+ * @returns {boolean}
+ */
+export function isPublicReadPath(pathname) {
+  const normalized = pathname
+    .replace(/^\/functions\/v1\/ai-listings/, '')
+    .replace(/^\/ai-listings/, '')
+    .replace(/\/$/, '') || '/';
+  return PUBLIC_READ_PATHS.has(normalized);
+}
+
+/**
+ * @param {Request} req
+ * @param {Record<string, string|undefined>} env
+ * @returns {{ ok: true, publicRead?: boolean } | { ok: false, code: string, message: string, status: number }}
+ */
+export function authorizeRequestWithPublicRead(req, env) {
+  if (!isAiListingsModuleEnabled(env)) {
+    return {
+      ok: false,
+      code: EDGE_ERROR_CODES.MODULE_DISABLED,
+      message: 'AI Listings module is disabled',
+      status: 503
+    };
+  }
+
+  const url = new URL(req.url);
+  const publishEnabled = String(env.AI_LISTINGS_PUBLIC_PUBLISH_ENABLED ?? '').trim().toLowerCase();
+  if (
+    req.method === 'GET' &&
+    isPublicReadPath(url.pathname) &&
+    (publishEnabled === 'true' || publishEnabled === '1')
+  ) {
+    return { ok: true, publicRead: true };
+  }
+
+  return authorizeRequest(req, env);
+}
+
 export { SECRET_HEADER };

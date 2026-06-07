@@ -31,6 +31,7 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 | `ANALYTICS_HASH_SALT` | Rastgele uzun string — internal traffic exclusion (`analytics-ingest`, edge) |
 | `SUPABASE_DB_PASSWORD` | (Opsiyonel) Eski CLI veya açık postgres şifresi gerektiğinde |
 | `SUPABASE_DATABASE_URL` | (Opsiyonel) Pooler connection string — `db push --db-url` yedek yolu |
+| `AI_LISTINGS_EDGE_SECRET` | Rastgele uzun string (`openssl rand -hex 32`) — admin Karar Merkezi + `ai-listings` edge auth |
 
 ## Opsiyonel
 
