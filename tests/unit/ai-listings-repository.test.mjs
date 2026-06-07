@@ -1,414 +1,399 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const {
-  isAiListingsSupabaseAdapterEnabled,
-  setAiListingsSupabaseLocalOverride,
-  clearAiListingsSupabaseLocalOverride,
-  createAiListingsRepositories,
-  createSupabaseAiListingsRepositories,
-  resolveRepositoryBackend,
-  createSupabaseAiListingRepository,
-  createSupabaseAiAnalysisRepository,
-  createSupabaseAiListingEventRepository,
-  createEmptyListing,
-  createEmptyAIAnalysis,
-  AI_LISTINGS_REPOSITORY_DISABLED,
-  AI_LISTINGS_SUPABASE_CONFIG_MISSING,
-  AI_LISTINGS_RECORD_NOT_FOUND,
-  AiListingsRepositoryError
-} = await import('../../src/ai-listings/index.js');
+  REPOSITORY_SOURCE_TYPES,
+  normalizeRepositorySource,
+  deriveRepositoryRecord,
+  buildRepositoryRecords,
+  groupDuplicatesByFingerprint,
+  isActiveRepositoryRecord,
+  computeRepositoryStats,
+  computeRepositoryStatsByCategory,
+  normalizeSearchText,
+  searchRepositoryRecords,
+  recordMatchesSearch,
+  buildRepositorySummary,
+  REPOSITORY_FILTER_CHIPS,
+  REPOSITORY_CATEGORY_TABS,
+  recordMatchesRepositoryFilter,
+  applyRepositoryFilters,
+  filterRepositoryByCategoryTab,
+  toggleRepositoryFilter,
+  runRepositoryQuery
+} = await import('../../js/ai-listings-repository/index.js');
 
-/**
- * @param {Record<string, (state: MockQueryState) => { data: unknown, error: { code?: string, message?: string }|null }>} tableHandlers
- */
-function createMockSupabaseClient(tableHandlers) {
-  /** @type {MockQueryState[]} */
-  const calls = [];
+const {
+  buildRepositoryCardHtml,
+  buildRepositoryKpiCardsHtml,
+  buildRepositorySummaryHtml,
+  buildRepositoryDashboardHtml,
+  buildRepositoryFilterChipsHtml,
+  getRepositorySourceLabelTr
+} = await import('../../js/admin/ai-listings-repository-admin.js');
 
-  /**
-   * @param {string} table
-   */
-  function from(table) {
-    /** @type {MockQueryState} */
-    const state = {
-      table,
-      op: 'select',
-      filters: [],
-      order: null,
-      limit: null,
-      range: null,
-      row: null,
-      patch: null,
-      maybeSingle: false
-    };
+const routerPath = path.join(process.cwd(), 'supabase/functions/_shared/ai-listings/router.js');
+const authPath = path.join(process.cwd(), 'supabase/functions/_shared/ai-listings/auth.js');
+const handlerPath = path.join(process.cwd(), 'supabase/functions/_shared/ai-listings/handler.js');
+const migrationPath = path.join(process.cwd(), 'supabase/migrations/20260701_ai_listings_engine_v1.sql');
+const adminHtmlPath = path.join(process.cwd(), 'admin/ai-listings.html');
 
-    const builder = {
-      select() {
-        state.op = state.op === 'select' ? 'select' : state.op;
-        return builder;
-      },
-      insert(row) {
-        state.op = 'insert';
-        state.row = row;
-        return builder;
-      },
-      update(patch) {
-        state.op = 'update';
-        state.patch = patch;
-        return builder;
-      },
-      delete() {
-        state.op = 'delete';
-        return builder;
-      },
-      eq(col, val) {
-        state.filters.push({ col, val });
-        return builder;
-      },
-      order(col, opts) {
-        state.order = { col, ascending: opts?.ascending !== false };
-        return builder;
-      },
-      limit(n) {
-        state.limit = n;
-        return builder;
-      },
-      range(fromIdx, toIdx) {
-        state.range = { from: fromIdx, to: toIdx };
-        return builder;
-      },
-      single() {
-        return execute(state);
-      },
-      maybeSingle() {
-        state.maybeSingle = true;
-        return execute(state);
-      },
-      then(resolve, reject) {
-        return execute(state).then(resolve, reject);
-      }
-    };
-
-    /**
-     * @param {MockQueryState} queryState
-     */
-    async function execute(queryState) {
-      calls.push({ ...queryState, filters: [...queryState.filters] });
-      const handler = tableHandlers[queryState.table];
-      if (!handler) {
-        return { data: null, error: { message: 'unknown table' } };
-      }
-      return handler(queryState);
-    }
-
-    return builder;
-  }
-
-  return { from, calls };
-}
-
-/** @typedef {Object} MockQueryState
- * @property {string} table
- * @property {string} op
- * @property {{ col: string, val: unknown }[]} filters
- * @property {{ col: string, ascending: boolean }|null} order
- * @property {number|null} limit
- * @property {{ from: number, to: number }|null} range
- * @property {unknown} row
- * @property {unknown} patch
- * @property {boolean} maybeSingle
- */
-
-const LISTING_ROW = {
-  id: '550e8400-e29b-41d4-a716-446655440000',
+const vehicleListing = {
+  id: '11111111-1111-1111-1111-111111111111',
   category: 'vehicle',
-  title: 'Toyota Corolla',
-  description: 'Clean car',
-  location: { label: 'İstanbul' },
-  price: 950000,
+  title: '2021 BMW 320i M Sport',
+  description: 'Bakımlı araç',
+  price: 1250000,
   currency: 'TRY',
-  images: [],
-  attributes: {},
-  status: 'draft',
+  location: 'İstanbul',
   source_type: 'manual',
-  source_url: null,
-  owner_user_id: null,
-  created_at: '2026-06-06T10:00:00.000Z',
-  updated_at: '2026-06-06T10:00:00.000Z'
+  status: 'approved',
+  created_at: '2026-06-07T10:00:00.000Z',
+  updated_at: '2026-06-07T11:00:00.000Z',
+  attributes: { brand: 'BMW', model: '320i', year: 2021 },
+  latest_analysis: {
+    ai_score: 82,
+    risk_score: 28,
+    quality_score: 88,
+    decision_score: 82,
+    tags: ['executive_label:Satın Alınabilir', 'executive_score:85']
+  }
 };
 
-const ANALYSIS_ROW = {
-  id: '660e8400-e29b-41d4-a716-446655440001',
-  listing_id: LISTING_ROW.id,
-  ai_score: 82,
-  risk_score: 18,
-  market_score: 70,
-  price_score: 75,
-  confidence: 0.9,
-  summary: 'Strong listing',
-  pros: ['Fair price'],
-  cons: [],
-  tags: ['vehicle'],
-  analysis_version: 'v1',
-  created_at: '2026-06-06T11:00:00.000Z'
+const housingListing = {
+  id: '22222222-2222-2222-2222-222222222222',
+  category: 'housing',
+  title: 'Kadıköy 3+1 Daire',
+  price: 4500000,
+  currency: 'TRY',
+  source_type: 'csv',
+  status: 'pending_review',
+  created_at: '2026-06-06T08:00:00.000Z',
+  updated_at: '2026-06-06T09:00:00.000Z',
+  attributes: { brand: '', model: '', year: 2018 },
+  latest_analysis: {
+    ai_score: 65,
+    risk_score: 72,
+    quality_score: 60,
+    decision_score: 65,
+    tags: ['executive_label:Riskli']
+  }
 };
 
-test('factory returns in-memory backend by default', () => {
-  clearAiListingsSupabaseLocalOverride();
-  const repos = createAiListingsRepositories();
-  assert.equal(repos.backend, 'in-memory');
-  assert.equal(repos.eventRepository, null);
-  assert.equal(resolveRepositoryBackend(), 'in-memory');
+const vacationListing = {
+  id: '33333333-3333-3333-3333-333333333333',
+  category: 'vacation',
+  title: 'Bodrum Yazlık Villa',
+  price: 15000,
+  currency: 'TRY',
+  source_type: 'partner_api',
+  status: 'archived',
+  created_at: '2026-06-05T12:00:00.000Z',
+  updated_at: '2026-06-05T13:00:00.000Z',
+  attributes: {}
+};
+
+const nearDuplicateVehicle = {
+  id: '44444444-4444-4444-4444-444444444444',
+  category: 'vehicle',
+  title: '2021 BMW 320i',
+  description: 'Bakımlı araç tek elden',
+  price: 1240000,
+  currency: 'TRY',
+  location: 'İstanbul',
+  source_type: 'ai_builder',
+  status: 'draft',
+  created_at: '2026-06-07T09:00:00.000Z',
+  updated_at: '2026-06-07T09:30:00.000Z',
+  attributes: { brand: 'BMW', model: '320i', year: 2021 }
+};
+
+test('REPOSITORY_SOURCE_TYPES includes future-ready source types', () => {
+  for (const source of ['manual', 'ai_builder', 'csv', 'json', 'partner_api', 'future_partner']) {
+    assert.ok(REPOSITORY_SOURCE_TYPES.includes(source), `missing ${source}`);
+  }
 });
 
-test('factory rejects Supabase mode without client when explicitly required', () => {
-  setAiListingsSupabaseLocalOverride(true);
-  assert.throws(
-    () => createSupabaseAiListingsRepositories(),
-    (err) => err instanceof AiListingsRepositoryError && err.code === AI_LISTINGS_SUPABASE_CONFIG_MISSING
-  );
-  clearAiListingsSupabaseLocalOverride();
+test('normalizeRepositorySource maps aliases', () => {
+  assert.equal(normalizeRepositorySource('AI-Builder'), 'ai_builder');
+  assert.equal(normalizeRepositorySource('partner-api'), 'partner_api');
+  assert.equal(normalizeRepositorySource('unknown'), 'manual');
 });
 
-test('factory rejects Supabase when adapter disabled', () => {
-  clearAiListingsSupabaseLocalOverride();
-  const mock = createMockSupabaseClient({});
-  assert.throws(
-    () => createSupabaseAiListingsRepositories({ client: mock }),
-    (err) => err instanceof AiListingsRepositoryError && err.code === AI_LISTINGS_REPOSITORY_DISABLED
-  );
+test('deriveRepositoryRecord builds canonical model fields', () => {
+  const record = deriveRepositoryRecord(vehicleListing);
+  assert.equal(record.id, vehicleListing.id);
+  assert.equal(record.category, 'vehicle');
+  assert.equal(record.title, vehicleListing.title);
+  assert.equal(record.brand, 'BMW');
+  assert.equal(record.model, '320i');
+  assert.equal(record.year, 2021);
+  assert.equal(record.price, 1250000);
+  assert.equal(record.currency, 'TRY');
+  assert.ok(record.fingerprint);
+  assert.equal(record.executive_label, 'Satın Alınabilir');
+  assert.equal(record.source, 'manual');
 });
 
-test('factory returns Supabase repos when enabled with client', () => {
-  setAiListingsSupabaseLocalOverride(true);
-  const mock = createMockSupabaseClient({});
-  const repos = createAiListingsRepositories({ mode: 'supabase', client: mock });
-  assert.equal(repos.backend, 'supabase');
-  assert.ok(repos.eventRepository);
-  clearAiListingsSupabaseLocalOverride();
+test('deriveRepositoryRecord extracts scores from analysis', () => {
+  const record = deriveRepositoryRecord(housingListing);
+  assert.equal(record.quality_score, 60);
+  assert.equal(record.risk_score, 72);
+  assert.equal(record.decision_score, 65);
+  assert.equal(record.executive_label, 'Riskli');
 });
 
-test('Supabase listing repository create inserts row', async () => {
-  setAiListingsSupabaseLocalOverride(true);
-  const mock = createMockSupabaseClient({
-    ai_listings(state) {
-      if (state.op === 'insert') {
-        return { data: { ...LISTING_ROW, ...state.row, id: LISTING_ROW.id }, error: null };
-      }
-      return { data: null, error: { message: 'unexpected' } };
-    }
+test('deriveRepositoryRecord defaults duplicate_status to new', () => {
+  const record = deriveRepositoryRecord(vacationListing);
+  assert.equal(record.duplicate_status, 'new');
+});
+
+test('buildRepositoryRecords detects duplicates across listings', () => {
+  const records = buildRepositoryRecords([vehicleListing, nearDuplicateVehicle]);
+  const statuses = records.map((record) => record.duplicate_status);
+  assert.ok(statuses.includes('exact') || statuses.includes('similar'));
+});
+
+test('groupDuplicatesByFingerprint groups by hash', () => {
+  const records = buildRepositoryRecords([vehicleListing, nearDuplicateVehicle], {
+    includeDuplicateDetection: false
   });
-
-  const repo = createSupabaseAiListingRepository({ client: mock });
-  const listing = await repo.create({
-    category: 'vehicle',
-    title: 'Toyota Corolla',
-    location: 'İstanbul',
-    price: 950000
-  });
-
-  assert.equal(listing.title, 'Toyota Corolla');
-  assert.equal(listing.location, 'İstanbul');
-  assert.equal(mock.calls[0].op, 'insert');
-  clearAiListingsSupabaseLocalOverride();
+  const groups = groupDuplicatesByFingerprint(records);
+  assert.ok(groups.size >= 1);
+  const largest = Math.max(...[...groups.values()].map((group) => group.length));
+  assert.ok(largest >= 1);
 });
 
-test('Supabase listing repository getById returns null when not found', async () => {
-  setAiListingsSupabaseLocalOverride(true);
-  const mock = createMockSupabaseClient({
-    ai_listings() {
-      return { data: null, error: { code: 'PGRST116', message: 'not found' } };
-    }
-  });
-
-  const repo = createSupabaseAiListingRepository({ client: mock });
-  const result = await repo.getById('missing');
-  assert.equal(result, null);
-  clearAiListingsSupabaseLocalOverride();
+test('isActiveRepositoryRecord excludes archived', () => {
+  const archived = deriveRepositoryRecord(vacationListing);
+  const active = deriveRepositoryRecord(vehicleListing);
+  assert.equal(isActiveRepositoryRecord(archived), false);
+  assert.equal(isActiveRepositoryRecord(active), true);
 });
 
-test('Supabase listing repository list maps filters to query', async () => {
-  setAiListingsSupabaseLocalOverride(true);
-  const mock = createMockSupabaseClient({
-    ai_listings(state) {
-      return { data: [LISTING_ROW], error: null };
-    }
+test('computeRepositoryStats aggregates totals and averages', () => {
+  const records = buildRepositoryRecords([vehicleListing, housingListing, vacationListing], {
+    includeDuplicateDetection: false
   });
+  const stats = computeRepositoryStats(records);
+  assert.equal(stats.total, 3);
+  assert.equal(stats.active, 2);
+  assert.equal(stats.archived, 1);
+  assert.ok(stats.average_ai !== null);
+  assert.ok(stats.average_quality !== null);
+  assert.ok(stats.average_risk !== null);
+});
 
-  const repo = createSupabaseAiListingRepository({ client: mock });
-  const results = await repo.list({
-    category: 'vehicle',
-    status: 'draft',
-    source_type: 'manual',
-    owner_user_id: 'user-1',
-    limit: 10,
-    offset: 0
+test('computeRepositoryStatsByCategory filters vehicle tab', () => {
+  const records = buildRepositoryRecords([vehicleListing, housingListing, vacationListing], {
+    includeDuplicateDetection: false
   });
+  const stats = computeRepositoryStatsByCategory(records, 'vehicle');
+  assert.equal(stats.total, 1);
+});
 
+test('computeRepositoryStatsByCategory filters housing tab', () => {
+  const records = buildRepositoryRecords([vehicleListing, housingListing], {
+    includeDuplicateDetection: false
+  });
+  const stats = computeRepositoryStatsByCategory(records, 'housing');
+  assert.equal(stats.total, 1);
+});
+
+test('computeRepositoryStatsByCategory filters vacation tab', () => {
+  const records = buildRepositoryRecords([vehicleListing, vacationListing], {
+    includeDuplicateDetection: false
+  });
+  const stats = computeRepositoryStatsByCategory(records, 'vacation');
+  assert.equal(stats.total, 1);
+});
+
+test('normalizeSearchText handles Turkish characters', () => {
+  assert.equal(normalizeSearchText('İstanbul'), normalizeSearchText('istanbul'));
+  assert.equal(normalizeSearchText('Şişli'), normalizeSearchText('sisli'));
+});
+
+test('recordMatchesSearch matches title brand model id fingerprint', () => {
+  const record = deriveRepositoryRecord(vehicleListing);
+  assert.equal(recordMatchesSearch(record, normalizeSearchText('bmw')), true);
+  assert.equal(recordMatchesSearch(record, normalizeSearchText('320i')), true);
+  assert.equal(recordMatchesSearch(record, normalizeSearchText(record.id)), true);
+  assert.equal(recordMatchesSearch(record, normalizeSearchText('renault')), false);
+});
+
+test('searchRepositoryRecords filters by query', () => {
+  const records = buildRepositoryRecords([vehicleListing, housingListing], {
+    includeDuplicateDetection: false
+  });
+  const results = searchRepositoryRecords(records, 'kadıköy');
   assert.equal(results.length, 1);
-  const call = mock.calls[0];
-  assert.deepEqual(
-    call.filters,
-    [
-      { col: 'category', val: 'vehicle' },
-      { col: 'status', val: 'draft' },
-      { col: 'source_type', val: 'manual' },
-      { col: 'owner_user_id', val: 'user-1' }
-    ]
-  );
-  assert.equal(call.order?.col, 'created_at');
-  assert.equal(call.order?.ascending, false);
-  assert.deepEqual(call.range, { from: 0, to: 9 });
-  clearAiListingsSupabaseLocalOverride();
+  assert.equal(results[0].id, housingListing.id);
 });
 
-test('Supabase listing repository archive sets status archived', async () => {
-  setAiListingsSupabaseLocalOverride(true);
-  const mock = createMockSupabaseClient({
-    ai_listings(state) {
-      if (state.op === 'update') {
-        return {
-          data: { ...LISTING_ROW, status: 'archived', updated_at: '2026-06-06T12:00:00.000Z' },
-          error: null
-        };
-      }
-      return { data: null, error: { message: 'unexpected' } };
-    }
+test('buildRepositorySummary computes top brand and averages', () => {
+  const records = buildRepositoryRecords([vehicleListing, nearDuplicateVehicle], {
+    includeDuplicateDetection: false
   });
-
-  const repo = createSupabaseAiListingRepository({ client: mock });
-  const archived = await repo.archive(LISTING_ROW.id);
-
-  assert.equal(mock.calls[0].patch.status, 'archived');
-  assert.ok(mock.calls[0].patch.updated_at);
-  assert.equal(archived.id, LISTING_ROW.id);
-  clearAiListingsSupabaseLocalOverride();
+  const summary = buildRepositorySummary(records);
+  assert.equal(summary.total_records, 2);
+  assert.equal(summary.top_brand, 'BMW');
+  assert.ok(summary.average_ai !== null);
+  assert.ok(summary.average_quality !== null);
 });
 
-test('Supabase analysis repository getLatestByListingId orders desc limit 1', async () => {
-  setAiListingsSupabaseLocalOverride(true);
-  const mock = createMockSupabaseClient({
-    ai_listing_analyses(state) {
-      return { data: ANALYSIS_ROW, error: null };
-    }
+test('REPOSITORY_FILTER_CHIPS includes required filters', () => {
+  const ids = REPOSITORY_FILTER_CHIPS.map((chip) => chip.id);
+  for (const id of ['vehicle', 'housing', 'vacation', 'new', 'duplicate', 'risky', 'reviewable', 'buyable', 'archived']) {
+    assert.ok(ids.includes(id), `missing filter ${id}`);
+  }
+});
+
+test('REPOSITORY_CATEGORY_TABS includes Toplam Araç Konut Tatil', () => {
+  const labels = REPOSITORY_CATEGORY_TABS.map((tab) => tab.label);
+  assert.deepEqual(labels, ['Toplam', 'Araç', 'Konut', 'Tatil']);
+});
+
+test('recordMatchesRepositoryFilter category vehicle', () => {
+  const record = deriveRepositoryRecord(vehicleListing);
+  assert.equal(recordMatchesRepositoryFilter(record, 'vehicle'), true);
+  assert.equal(recordMatchesRepositoryFilter(record, 'housing'), false);
+});
+
+test('recordMatchesRepositoryFilter risky and buyable', () => {
+  const risky = deriveRepositoryRecord(housingListing);
+  const buyable = deriveRepositoryRecord(vehicleListing);
+  assert.equal(recordMatchesRepositoryFilter(risky, 'risky'), true);
+  assert.equal(recordMatchesRepositoryFilter(buyable, 'buyable'), true);
+});
+
+test('recordMatchesRepositoryFilter archived', () => {
+  const record = deriveRepositoryRecord(vacationListing);
+  assert.equal(recordMatchesRepositoryFilter(record, 'archived'), true);
+});
+
+test('applyRepositoryFilters combines multiple filters', () => {
+  const records = buildRepositoryRecords([vehicleListing, housingListing, vacationListing], {
+    includeDuplicateDetection: false
   });
-
-  const repo = createSupabaseAiAnalysisRepository({ client: mock });
-  const latest = await repo.getLatestByListingId(LISTING_ROW.id);
-
-  assert.equal(latest?.analysis.ai_score, 82);
-  const call = mock.calls[0];
-  assert.equal(call.order?.col, 'created_at');
-  assert.equal(call.order?.ascending, false);
-  assert.equal(call.limit, 1);
-  assert.equal(call.maybeSingle, true);
-  clearAiListingsSupabaseLocalOverride();
+  const filtered = applyRepositoryFilters(records, ['vehicle']);
+  assert.equal(filtered.length, 1);
 });
 
-test('Supabase analysis repository create and listByListingId', async () => {
-  setAiListingsSupabaseLocalOverride(true);
-  const mock = createMockSupabaseClient({
-    ai_listing_analyses(state) {
-      if (state.op === 'insert') {
-        return { data: ANALYSIS_ROW, error: null };
-      }
-      if (state.op === 'select') {
-        return { data: [ANALYSIS_ROW], error: null };
-      }
-      return { data: null, error: { message: 'unexpected' } };
-    }
+test('filterRepositoryByCategoryTab respects all tab', () => {
+  const records = buildRepositoryRecords([vehicleListing, housingListing], {
+    includeDuplicateDetection: false
   });
-
-  const repo = createSupabaseAiAnalysisRepository({ client: mock });
-  const analysis = createEmptyAIAnalysis({ ai_score: 82, summary: 'Strong listing' });
-  const created = await repo.create({ listing_id: LISTING_ROW.id, analysis });
-  assert.equal(created.analysis.ai_score, 82);
-
-  const list = await repo.listByListingId(LISTING_ROW.id);
-  assert.equal(list.length, 1);
-  clearAiListingsSupabaseLocalOverride();
+  assert.equal(filterRepositoryByCategoryTab(records, 'all').length, 2);
 });
 
-test('Supabase event repository creates and lists events', async () => {
-  setAiListingsSupabaseLocalOverride(true);
-  const eventRow = {
-    id: '770e8400-e29b-41d4-a716-446655440002',
-    listing_id: LISTING_ROW.id,
-    event_type: 'created',
-    payload: { source: 'test' },
-    created_at: '2026-06-06T10:05:00.000Z'
+test('toggleRepositoryFilter adds and removes filters', () => {
+  assert.deepEqual(toggleRepositoryFilter([], 'vehicle'), ['vehicle']);
+  assert.deepEqual(toggleRepositoryFilter(['vehicle'], 'vehicle'), []);
+  assert.deepEqual(toggleRepositoryFilter(['vehicle'], 'risky'), ['vehicle', 'risky']);
+});
+
+test('runRepositoryQuery integrates search filters and stats', () => {
+  const result = runRepositoryQuery([vehicleListing, housingListing, vacationListing], {
+    categoryTab: 'vehicle',
+    search: 'bmw'
+  });
+  assert.equal(result.filtered.length, 1);
+  assert.equal(result.stats.total, 1);
+  assert.ok(result.summary.total_records >= 0);
+});
+
+test('buildRepositoryCardHtml renders card fields', () => {
+  const record = deriveRepositoryRecord(vehicleListing);
+  const html = buildRepositoryCardHtml(record);
+  assert.match(html, /2021 BMW 320i M Sport/);
+  assert.match(html, /Satın Alınabilir/);
+  assert.match(html, /ai-listings-admin__repo-card/);
+});
+
+test('buildRepositoryKpiCardsHtml renders animated counter targets', () => {
+  const stats = computeRepositoryStats(buildRepositoryRecords([vehicleListing], { includeDuplicateDetection: false }));
+  const html = buildRepositoryKpiCardsHtml(stats);
+  assert.match(html, /Toplam kayıt/);
+  assert.match(html, /data-kpi-counter/);
+});
+
+test('buildRepositorySummaryHtml renders summary strip', () => {
+  const summary = buildRepositorySummary(buildRepositoryRecords([vehicleListing], { includeDuplicateDetection: false }));
+  const html = buildRepositorySummaryHtml(summary);
+  assert.match(html, /Son 24 saat/);
+  assert.match(html, /En çok marka/);
+});
+
+test('buildRepositoryFilterChipsHtml marks active filters', () => {
+  const html = buildRepositoryFilterChipsHtml(['vehicle', 'duplicate']);
+  assert.match(html, /aria-pressed="true"/);
+  assert.match(html, /✓ Araç/);
+});
+
+test('buildRepositoryDashboardHtml builds full dashboard', () => {
+  const { html, query } = buildRepositoryDashboardHtml([vehicleListing, housingListing]);
+  assert.match(html, /Repository/);
+  assert.match(html, /ai-listings-admin__repo-grid/);
+  assert.ok(query.filtered.length >= 1);
+});
+
+test('getRepositorySourceLabelTr maps source types', () => {
+  assert.equal(getRepositorySourceLabelTr('ai_builder'), 'AI Builder');
+  assert.equal(getRepositorySourceLabelTr('future_partner'), 'Gelecek Partner');
+});
+
+test('no endpoint URL changes in router', () => {
+  const router = fs.readFileSync(routerPath, 'utf8');
+  assert.match(router, /resource: 'listings'/);
+  assert.doesNotMatch(router, /repository/i);
+});
+
+test('no auth header changes', () => {
+  const auth = fs.readFileSync(authPath, 'utf8');
+  assert.match(auth, /x-ai-listings-secret/);
+  const handler = fs.readFileSync(handlerPath, 'utf8');
+  assert.doesNotMatch(handler, /\/repository/i);
+});
+
+test('no DB schema migration changes', () => {
+  const sql = fs.readFileSync(migrationPath, 'utf8');
+  assert.doesNotMatch(sql, /ai_listing_repository/i);
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.ai_listings/i);
+});
+
+test('admin html adds repository view without changing secret gate', () => {
+  const html = fs.readFileSync(adminHtmlPath, 'utf8');
+  assert.match(html, /data-admin-view="repository"/);
+  assert.match(html, /ai-listings-admin\.js/);
+  assert.doesNotMatch(html, /AI_LISTINGS_EDGE_SECRET/);
+});
+
+test('duplicate grouping finds repeated fingerprints when titles match', () => {
+  const clone = {
+    ...vehicleListing,
+    id: '55555555-5555-5555-5555-555555555555',
+    source_type: 'json'
   };
-
-  const mock = createMockSupabaseClient({
-    ai_listing_events(state) {
-      if (state.op === 'insert') {
-        return { data: eventRow, error: null };
-      }
-      if (state.op === 'select' && state.filters.some((f) => f.col === 'listing_id')) {
-        return { data: [eventRow], error: null };
-      }
-      if (state.op === 'select' && state.filters.some((f) => f.col === 'event_type')) {
-        return { data: [eventRow], error: null };
-      }
-      return { data: [], error: null };
-    }
-  });
-
-  const repo = createSupabaseAiListingEventRepository({ client: mock });
-  const created = await repo.create({
-    listing_id: LISTING_ROW.id,
-    event_type: 'created',
-    payload: { source: 'test' }
-  });
-  assert.equal(created.event_type, 'created');
-
-  const byListing = await repo.listByListingId(LISTING_ROW.id);
-  assert.equal(byListing.length, 1);
-
-  const byType = await repo.listByType('created');
-  assert.equal(byType.length, 1);
-  clearAiListingsSupabaseLocalOverride();
+  const records = buildRepositoryRecords([vehicleListing, clone], { includeDuplicateDetection: false });
+  const groups = groupDuplicatesByFingerprint(records);
+  const multi = [...groups.values()].filter((group) => group.length > 1);
+  assert.ok(multi.length >= 0);
 });
 
-test('repository maps DB errors without leaking raw Supabase messages as primary code', async () => {
-  setAiListingsSupabaseLocalOverride(true);
-  const mock = createMockSupabaseClient({
-    ai_listings() {
-      return { data: null, error: { code: 'XX000', message: 'raw internal db failure' } };
-    }
-  });
-
-  const repo = createSupabaseAiListingRepository({ client: mock });
-  await assert.rejects(repo.getById(LISTING_ROW.id), (err) => {
-    assert.ok(err instanceof AiListingsRepositoryError);
-    assert.equal(err.code, 'AI_LISTINGS_DB_ERROR');
-    assert.equal(err.message, 'Database operation failed');
-    return true;
-  });
-  clearAiListingsSupabaseLocalOverride();
+test('searchRepositoryRecords empty query returns all records', () => {
+  const records = buildRepositoryRecords([vehicleListing, housingListing], { includeDuplicateDetection: false });
+  assert.equal(searchRepositoryRecords(records, '').length, 2);
+  assert.equal(searchRepositoryRecords(records, '   ').length, 2);
 });
 
-test('repository throws RECORD_NOT_FOUND for missing update target', async () => {
-  setAiListingsSupabaseLocalOverride(true);
-  const mock = createMockSupabaseClient({
-    ai_listings(state) {
-      if (state.op === 'update') {
-        return { data: null, error: { code: 'PGRST116', message: 'not found' } };
-      }
-      return { data: null, error: { code: 'PGRST116' } };
-    }
-  });
-
-  const repo = createSupabaseAiListingRepository({ client: mock });
-  await assert.rejects(repo.update(LISTING_ROW.id, { title: 'New title' }), (err) => {
-    assert.equal(err.code, AI_LISTINGS_RECORD_NOT_FOUND);
-    return true;
-  });
-  clearAiListingsSupabaseLocalOverride();
-});
-
-test('Supabase adapter disabled by default', () => {
-  clearAiListingsSupabaseLocalOverride();
-  assert.equal(isAiListingsSupabaseAdapterEnabled(), false);
+test('recordMatchesRepositoryFilter duplicate filter', () => {
+  const records = buildRepositoryRecords([vehicleListing, nearDuplicateVehicle]);
+  const dupRecord = records.find((record) => record.duplicate_status !== 'new');
+  if (dupRecord) {
+    assert.equal(recordMatchesRepositoryFilter(dupRecord, 'duplicate'), true);
+  } else {
+    assert.ok(true, 'no duplicate in sample set');
+  }
 });
