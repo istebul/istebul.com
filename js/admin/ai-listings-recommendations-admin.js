@@ -19,6 +19,7 @@ import { buildOwnershipCostShellHtml } from '../ai-ownership-cost/cost-card-buil
 import { buildExecutiveDecisionShellHtml } from '../ai-purchase-decision/executive-decision-card-builder.js';
 import { buildExplainabilityShellHtml } from '../ai-decision-explainability/explainability-card-builder.js';
 import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
+import { buildCompareShellHtml, buildCompareToolbarHtml } from '../ai-compare-intelligence/compare-card-builder.js';
 import { runDecisionFlow, buildCalibrationBlockHtml } from '../ai-decision-flow/index.js';
 
 /**
@@ -111,7 +112,7 @@ export function buildRecommendationSummaryHtml(summary) {
 /**
  * @param {Array<Record<string, unknown>>} listings
  * @param {Record<string, unknown>} [profile]
- * @param {{ generated?: boolean }} [options]
+ * @param {{ generated?: boolean, compareMode?: boolean, compareSelectedIds?: string[] }} [options]
  * @returns {{ html: string, result: ReturnType<typeof runRecommendationEngine>|null }}
  */
 export function buildRecommendationsDashboardHtml(listings, profile = {}, options = {}) {
@@ -125,13 +126,21 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
           runDecisionFlow(listings, parsedProfile, { selectedId: String(result.top[0].id) }).calibration
         )
       : '';
-  const cardsHtml = result ? buildRecommendationCardsGridHtml(result.top) : '';
+  const cardsHtml = result
+    ? buildRecommendationCardsGridHtml(result.top, {
+        compareMode: Boolean(options.compareMode),
+        compareSelectedIds: options.compareSelectedIds ?? []
+      })
+    : '';
   const countLabel = result
     ? `${result.top.length} öneri · ${result.total_evaluated} kayıt değerlendirildi`
     : 'Profil bilgilerini doldurup öneri üretin';
 
+  const compareModeClass = options.compareMode ? ' ai-rec-dashboard--compare-mode' : '';
+  const selectedCount = (options.compareSelectedIds ?? []).length;
+
   const html = `
-    <div class="ai-rec-dashboard">
+    <div class="ai-rec-dashboard${compareModeClass}">
       <header class="ai-rec-dashboard__head">
         <h2>Öneriler</h2>
         <p class="ai-listings-admin__muted">Mevcut veri havuzu kayıtlarından profil bazlı karar önerileri</p>
@@ -140,6 +149,7 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
       <p class="ai-rec-dashboard__count">${safeRenderText(countLabel)}</p>
       ${summaryHtml}
       ${calibrationHtml}
+      ${result ? buildCompareToolbarHtml(selectedCount) : ''}
       ${cardsHtml}
       ${buildDecisionCoachShellHtml()}
       ${buildSimulatorShellHtml()}
@@ -148,6 +158,7 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
       ${buildExecutiveDecisionShellHtml()}
       ${buildExplainabilityShellHtml()}
       ${buildExecutiveReportShellHtml()}
+      ${buildCompareShellHtml()}
     </div>`;
 
   return { html, result };
