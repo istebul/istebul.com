@@ -20,7 +20,7 @@ Only these five values are valid. Create/patch requests and workflow actions rej
 
 ## Admin action flow
 
-Actions are available in `admin/ai-listings.html` when the panel is enabled via localStorage.
+Actions are available in `admin/ai-listings.html` when the panel is enabled via localStorage **and** you are signed in with an admin session (or legacy `istebul_ai_listings_secret` in localStorage for QA).
 
 | Action | Route | From status | To status | Event type |
 |--------|-------|-------------|-----------|------------|

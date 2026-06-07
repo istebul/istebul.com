@@ -23,6 +23,7 @@ import {
 import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
+  renderRiskAnalysisHtml,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
 import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
@@ -610,24 +611,7 @@ function renderKonutResultsV2Html(model) {
         </dl>
       </section>
 
-      <section class="konut-v2-risks" aria-label="Risk analizi">
-        <h3>Risk Analizi</h3>
-        <div class="konut-v2-risk-grid">
-          ${model.riskAnalysis
-            .map(
-              (r) => `
-            <article class="konut-v2-risk-card">
-              <div class="konut-v2-risk-card-head">
-                <h4>${esc(r.title)}</h4>
-                <span class="konut-v2-risk konut-v2-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level)}</span>
-              </div>
-              <p>${esc(r.description)}</p>
-              <p class="konut-v2-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>
-            </article>`
-            )
-            .join('')}
-        </div>
-      </section>
+      ${renderRiskAnalysisHtml(model.riskAnalysis, 'konut-v2')}
 
       <div class="konut-v2-grid">
         <article class="konut-v2-block konut-v2-block--pros">
@@ -810,7 +794,11 @@ export async function mountKonutResultsV2({
         formData: state,
         metrics,
         extras: {
-          totalCost: model.totalCost?.value ?? metrics.totalCost ?? null,
+          totalCost:
+            model.totalCost?.firstYearTotal ??
+            model.totalCost?.realTotal ??
+            metrics.totalCost ??
+            null,
           title: 'Konut Kararı'
         }
       })
@@ -826,7 +814,11 @@ export async function mountKonutResultsV2({
         intelligence: model.intelligence,
         model,
         extras: {
-          totalCost: model.totalCost?.value ?? metrics.totalCost ?? null,
+          totalCost:
+            model.totalCost?.firstYearTotal ??
+            model.totalCost?.realTotal ??
+            metrics.totalCost ??
+            null,
           title: 'Konut Kararı',
           strengths: model.strengths,
           cautions: model.weaknesses,

@@ -301,6 +301,10 @@ function recordLearningEvent(eventType, payload = {}) {
     body: { events: [event] }
   }).catch((error) => {
     console.warn('[ai-listings-admin] learning event sync failed:', error);
+    setStatus(
+      'Öğrenme olayı kaydedilemedi. Bağlantınızı kontrol edip tekrar deneyin.',
+      'error'
+    );
   });
 }
 

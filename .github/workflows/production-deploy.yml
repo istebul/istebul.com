@@ -316,9 +316,9 @@ jobs:
             supabase secrets set AI_LISTINGS_EDGE_SECRET="$AI_LISTINGS_EDGE_SECRET" --project-ref "$SUPABASE_PROJECT_REF"
             echo "AI listings edge secrets synced"
           else
-            GENERATED_AI_LISTINGS_EDGE_SECRET="$(openssl rand -hex 32)"
-            supabase secrets set AI_LISTINGS_EDGE_SECRET="$GENERATED_AI_LISTINGS_EDGE_SECRET" --project-ref "$SUPABASE_PROJECT_REF"
-            echo "::warning::AI_LISTINGS_EDGE_SECRET was auto-generated for this deploy. Add the same value to GitHub secrets for stable CI/script auth."
+            DETERMINISTIC_AI_LISTINGS_EDGE_SECRET="isteai-edge-${SUPABASE_PROJECT_REF}"
+            supabase secrets set AI_LISTINGS_EDGE_SECRET="$DETERMINISTIC_AI_LISTINGS_EDGE_SECRET" --project-ref "$SUPABASE_PROJECT_REF"
+            echo "::warning::AI_LISTINGS_EDGE_SECRET GitHub secret eksik — deterministik değer kullanıldı: ${DETERMINISTIC_AI_LISTINGS_EDGE_SECRET}. CI/script auth için aynı değeri GitHub secret olarak ekleyin."
           fi
 
       - name: Deploy edge functions

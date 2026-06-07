@@ -4950,6 +4950,38 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         };
     }
 
+    async loadUserDecisionPanelData({ listingId = '', autoSelect = true } = {}) {
+        let resolvedListingId = String(listingId || '').trim();
+        if (!resolvedListingId && autoSelect && Array.isArray(this.userDecisionRecords) && this.userDecisionRecords.length) {
+            resolvedListingId = String(this.userDecisionRecords[0]?.listing_id || '').trim();
+        }
+        if (!resolvedListingId) {
+            return this.getUserDecisionPanelData(null);
+        }
+
+        let listing = this.getLocalListingById(resolvedListingId);
+        if (!listing) {
+            try {
+                listing = await Promise.race([
+                    API.getListing(resolvedListingId),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Listing detail timeout')), 5000)
+                    )
+                ]);
+            } catch (error) {
+                console.warn('loadUserDecisionPanelData listing fetch failed:', error);
+                listing = this.getListingFallbackById(resolvedListingId);
+            }
+        }
+
+        if (!listing) {
+            return this.getUserDecisionPanelData(null);
+        }
+
+        const decisionContext = await this.resolveUserDecisionForListing(listing);
+        return this.getUserDecisionPanelData(decisionContext);
+    }
+
     createComparisonItemFromListing(listing) {
         const categoryId = listing.category || 'genel';
         const profile = this.getCostProfile(listing.category);

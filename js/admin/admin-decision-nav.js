@@ -42,8 +42,13 @@ export function injectAdminListingManagementNav() {
 
   const listingsItem = nav.querySelector('[data-page-target="listings"]');
   if (listingsItem) {
+    listingsItem.setAttribute('title', 'Klasik ilan/ürün CRUD — AI karar analizi için AI İlan Yönetimi\'ni kullanın');
     const aiListings = buildExternalNavItem(ADMIN_LISTING_MANAGEMENT_HREF, 'AI İlan Yönetimi', '◈');
     aiListings.setAttribute(NAV_MARKER, 'ai-listings');
+    aiListings.setAttribute(
+      'title',
+      'Karar Merkezi analizi, onay akışı ve AI ilan motoru — klasik İlan/Ürünler\'den farklıdır'
+    );
     listingsItem.insertAdjacentElement('afterend', aiListings);
   }
 
