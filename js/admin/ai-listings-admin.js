@@ -37,6 +37,7 @@ import {
   validateSourceUrl
 } from './ai-listings-admin-core.js';
 import { runDuplicateEngine } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
+import { runAiListingBuilder } from '../ai-listings-builder/index.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
@@ -53,7 +54,7 @@ let cachedListings = [];
 /** @type {string} */
 let searchQuery = '';
 
-/** @type {'create'|'import'|null} */
+/** @type {'create'|'import'|'builder'|null} */
 let openDrawerType = null;
 
 /** @type {boolean} */
@@ -61,6 +62,12 @@ let createDrawerMounted = false;
 
 /** @type {boolean} */
 let importDrawerMounted = false;
+
+/** @type {boolean} */
+let builderDrawerMounted = false;
+
+/** @type {{ create_payload?: Record<string, unknown> }|null} */
+let pendingBuilderResult = null;
 
 /** @type {string} */
 let lastKpiStatsKey = '';
@@ -211,6 +218,7 @@ function renderExecutiveDashboard() {
 function closeAllDrawers() {
   $('ai-listings-create-drawer')?.setAttribute('hidden', '');
   $('ai-listings-import-drawer')?.setAttribute('hidden', '');
+  $('ai-listings-builder-drawer')?.setAttribute('hidden', '');
   $('ai-listings-drawer-backdrop')?.setAttribute('hidden', '');
   document.body.classList.remove('ai-listings-admin--drawer-open');
   openDrawerType = null;
@@ -231,6 +239,113 @@ function bindCreateFormEvents() {
   $('ai-listings-create-analyze-btn')?.addEventListener('click', async (event) => {
     await handleCreateSubmit(event, { analyzeAfter: true });
   });
+}
+
+function bindBuilderFormEvents() {
+  $('ai-listings-builder-preview-btn')?.addEventListener('click', handleBuilderPreview);
+  $('ai-listings-builder-save-btn')?.addEventListener('click', () => handleBuilderSave(false));
+  $('ai-listings-builder-save-analyze-btn')?.addEventListener('click', () => handleBuilderSave(true));
+  $('ai-listings-builder-input')?.addEventListener('input', () => {
+    pendingBuilderResult = null;
+    $('ai-listings-builder-save-btn')?.setAttribute('disabled', '');
+    $('ai-listings-builder-save-analyze-btn')?.setAttribute('disabled', '');
+  });
+}
+
+function mountBuilderDrawer() {
+  if (builderDrawerMounted) return;
+  const mounted = mountDrawerTemplate(
+    'ai-listings-builder-template',
+    'ai-listings-builder-drawer-body',
+    bindBuilderFormEvents
+  );
+  if (mounted) builderDrawerMounted = true;
+}
+
+function openBuilderDrawer() {
+  mountBuilderDrawer();
+  closeAllDrawers();
+  $('ai-listings-builder-drawer')?.removeAttribute('hidden');
+  $('ai-listings-drawer-backdrop')?.removeAttribute('hidden');
+  document.body.classList.add('ai-listings-admin--drawer-open');
+  openDrawerType = 'builder';
+}
+
+function closeBuilderDrawer() {
+  if (openDrawerType === 'builder') closeAllDrawers();
+}
+
+function updateBuilderActionState(enabled) {
+  const saveBtn = $('ai-listings-builder-save-btn');
+  const analyzeBtn = $('ai-listings-builder-save-analyze-btn');
+  if (enabled) {
+    saveBtn?.removeAttribute('disabled');
+    analyzeBtn?.removeAttribute('disabled');
+  } else {
+    saveBtn?.setAttribute('disabled', '');
+    analyzeBtn?.setAttribute('disabled', '');
+  }
+}
+
+function handleBuilderPreview() {
+  const input = $('ai-listings-builder-input')?.value ?? '';
+  const previewEl = $('ai-listings-builder-preview');
+  const result = runAiListingBuilder(input);
+
+  if (!result.ok) {
+    pendingBuilderResult = null;
+    updateBuilderActionState(false);
+    if (previewEl) {
+      previewEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(result.message)}</p>`;
+    }
+    setStatus(result.message, 'error');
+    return;
+  }
+
+  pendingBuilderResult = result;
+  updateBuilderActionState(true);
+  if (previewEl) previewEl.innerHTML = result.preview_html;
+
+  previewEl?.querySelectorAll('[data-builder-action]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-builder-action');
+      if (action === 'save') handleBuilderSave(false);
+      if (action === 'save-analyze') handleBuilderSave(true);
+    });
+  });
+
+  setStatus(`Önizleme hazır (${result.input_type}). Güven: %${result.canonical.confidence}.`, 'success');
+}
+
+async function handleBuilderSave(analyzeAfter = false) {
+  if (!pendingBuilderResult?.create_payload) {
+    setStatus('Önce önizleme oluşturun.', 'error');
+    return;
+  }
+
+  const payload = pendingBuilderResult.create_payload;
+  if (!String(payload.title ?? '').trim() || !String(payload.category ?? '').trim()) {
+    setStatus('Başlık ve kategori zorunludur. Girdiyi düzenleyip tekrar önizleyin.', 'error');
+    return;
+  }
+
+  const duplicate = runDuplicateEngine(payload, cachedListings);
+  if (duplicate.status !== 'new' && duplicate.matched_listing) {
+    showDuplicateCreateModal(payload, duplicate, duplicate.matched_listing, { analyzeAfter });
+    setStatus('Benzer ilan tespit edildi. Lütfen bir işlem seçin.', 'info');
+    return;
+  }
+
+  const listing = await finalizeCreateListing(payload, { analyzeAfter });
+  if (listing) {
+    pendingBuilderResult = null;
+    const inputEl = $('ai-listings-builder-input');
+    if (inputEl) inputEl.value = '';
+    const previewEl = $('ai-listings-builder-preview');
+    if (previewEl) previewEl.innerHTML = '';
+    updateBuilderActionState(false);
+    closeBuilderDrawer();
+  }
 }
 
 function bindImportFormEvents() {
@@ -898,6 +1013,7 @@ function bindEvents() {
   $('ai-listings-refresh-list-btn')?.addEventListener('click', () => loadListings());
   $('ai-listings-drawer-close')?.addEventListener('click', closeCreateDrawer);
   $('ai-listings-import-drawer-close')?.addEventListener('click', closeImportDrawer);
+  $('ai-listings-builder-drawer-close')?.addEventListener('click', closeBuilderDrawer);
   $('ai-listings-drawer-backdrop')?.addEventListener('click', closeAllDrawers);
 
   $('ai-listings-new-menu-btn')?.addEventListener('click', (event) => {
@@ -910,6 +1026,7 @@ function bindEvents() {
       const action = item.getAttribute('data-menu-action');
       closeNewMenu();
       if (action === 'create') openCreateDrawer();
+      if (action === 'ai-builder') openBuilderDrawer();
       if (action === 'import-csv') openImportDrawer('csv');
       if (action === 'import-json') openImportDrawer('json');
     });

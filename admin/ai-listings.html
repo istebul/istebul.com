@@ -40,6 +40,7 @@
         </button>
         <div id="ai-listings-new-menu" class="ai-listings-admin__dropdown" hidden>
           <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="create">Yeni İlan</button>
+          <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="ai-builder">AI İlan Oluşturucu</button>
           <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="import-csv">CSV İçe Aktar</button>
           <button type="button" class="ai-listings-admin__dropdown-item" data-menu-action="import-json">JSON İçe Aktar</button>
         </div>
@@ -146,6 +147,33 @@
         <button type="button" id="ai-listings-create-analyze-btn" class="ai-listings-admin__btn">Kaydet ve Analiz Et</button>
       </div>
     </form>
+  </template>
+
+  <aside id="ai-listings-builder-drawer" class="ai-listings-admin__drawer ai-listings-admin__drawer--right ai-listings-admin__drawer--wide" aria-label="AI ilan oluşturucu" hidden>
+    <header class="ai-listings-admin__drawer-head">
+      <div>
+        <span class="ai-listings-admin__drawer-icon" aria-hidden="true">🤖</span>
+        <h2>AI İlan Oluşturucu</h2>
+      </div>
+      <button type="button" id="ai-listings-builder-drawer-close" class="ai-listings-admin__drawer-close" aria-label="Kapat">✕</button>
+    </header>
+    <div id="ai-listings-builder-drawer-body"></div>
+  </aside>
+
+  <template id="ai-listings-builder-template">
+    <article class="ai-listings-admin__builder-card">
+      <p class="ai-listings-admin__muted">Serbest metin, URL, JSON veya CSV yapıştırın. Sistem alanları otomatik çıkarır.</p>
+      <label>
+        İlan içeriği
+        <textarea id="ai-listings-builder-input" rows="10" placeholder="2022 BMW 320i M Sport&#10;58.000 km&#10;Benzin&#10;Otomatik&#10;1.780.000 TL"></textarea>
+      </label>
+      <div class="ai-listings-admin__drawer-actions">
+        <button type="button" id="ai-listings-builder-preview-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">Önizle</button>
+        <button type="button" id="ai-listings-builder-save-btn" class="ai-listings-admin__btn ai-listings-admin__btn--primary" disabled>Kaydet</button>
+        <button type="button" id="ai-listings-builder-save-analyze-btn" class="ai-listings-admin__btn" disabled>Kaydet ve Analiz Et</button>
+      </div>
+      <div id="ai-listings-builder-preview" class="ai-listings-builder__preview-host"></div>
+    </article>
   </template>
 
   <template id="ai-listings-import-template">
