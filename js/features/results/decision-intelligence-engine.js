@@ -13,7 +13,8 @@ import {
   buildConfidenceScore,
   buildRiskItem,
   clampScore,
-  resolveScoreLabel
+  resolveScoreLabel,
+  riskLevelToTone
 } from './results-engine.js';
 
 function safeNumber(value) {
@@ -853,6 +854,40 @@ export async function fetchExecutiveSummaryV3(category, context = {}, intelligen
  * @param {Array<{label,impact,reason}>} scoreFactors
  * @param {string} classPrefix
  */
+/**
+ * @param {Array<{title?: string, level?: string, description?: string, recommendation?: string}>} riskAnalysis
+ * @param {string} classPrefix
+ */
+export function renderRiskAnalysisHtml(riskAnalysis, classPrefix = 'konut-v2') {
+  const risks = Array.isArray(riskAnalysis) ? riskAnalysis : [];
+  if (!risks.length) return '';
+
+  const esc = escapeHtml;
+  return `
+    <section class="${esc(classPrefix)}-risks" aria-label="Risk analizi">
+      <h3>Risk Özeti</h3>
+      <div class="${esc(classPrefix)}-risk-grid">
+        ${risks
+          .map(
+            (r) => `
+          <article class="${esc(classPrefix)}-risk-card">
+            <div class="${esc(classPrefix)}-risk-card-head">
+              <h4>${esc(r.title || r.key || 'Risk')}</h4>
+              <span class="${esc(classPrefix)}-risk ${esc(classPrefix)}-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level || '—')}</span>
+            </div>
+            <p>${esc(r.description || '')}</p>
+            ${
+              r.recommendation
+                ? `<p class="${esc(classPrefix)}-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>`
+                : ''
+            }
+          </article>`
+          )
+          .join('')}
+      </div>
+    </section>`;
+}
+
 export function renderScoreFactorsHtml(scoreFactors, classPrefix = 'konut-v2') {
   const factors = Array.isArray(scoreFactors) ? scoreFactors : [];
   if (!factors.length) return '';

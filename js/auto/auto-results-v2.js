@@ -20,7 +20,8 @@ import {
 import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
-  renderScoreFactorsHtml
+  renderScoreFactorsHtml,
+  renderRiskAnalysisHtml
 } from '../features/results/decision-intelligence-engine.js';
 import { hydrateResultsEconomicIndicators } from '../features/results/results-economic-indicators.js';
 import {
@@ -124,7 +125,7 @@ function renderHeroMetrics(recommendation, esc) {
         <strong>${esc(recommendation.annualFuelCost ? formatTryAmount(recommendation.annualFuelCost) : '—')}</strong>
       </article>
       <article class="auto-v2-hero-metric">
-        <span>5 Yıl TCO</span>
+        <span>${esc(recommendation.ownershipHorizonLabel || '5 Yıl Net Maliyet')}</span>
         <strong>${esc(recommendation.fiveYearOwnership ? formatTryAmount(recommendation.fiveYearOwnership) : '—')}</strong>
       </article>
       <article class="auto-v2-hero-metric">
@@ -250,6 +251,8 @@ function renderAutoResultsV2Html(model) {
       </details>`
           : ''
       }
+
+      ${renderRiskAnalysisHtml(model.riskAnalysis, 'auto-v2')}
 
       <div class="auto-v2-grid">
         <article class="auto-v2-block auto-v2-block--pros">
@@ -397,6 +400,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     riskLevel: intel.overallRisk || risk.label,
     riskTone: riskLevelToTone(intel.overallRisk || risk.label),
     scoreFactors: intel.scoreFactors,
+    riskAnalysis: intel.riskAnalysis,
     warnings: intel.warnings,
     recommendationLevel: intel.recommendationLevel,
     recommendationLabel: intel.recommendationLabel,

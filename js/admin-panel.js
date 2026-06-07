@@ -24,6 +24,7 @@ import {
   fetchAdminRowById,
   renderAdminDataSourceNotices
 } from './admin/admin-query.js';
+import { isAdminProfile } from './admin/admin-route-guard.js';
 import {
   computeExecutiveFunnel,
   computeChannelBreakdown,
@@ -193,7 +194,7 @@ async function showApp() {
     .eq('id', currentUser.id)
     .single();
 
-  if (error || !profile || profile.role !== 'admin' || profile.is_banned === true) {
+  if (error || !profile || !isAdminProfile(profile)) {
     await sb.auth.signOut();
     currentUser = null;
     document.getElementById('app').style.display = 'none';

@@ -299,7 +299,9 @@ function recordLearningEvent(eventType, payload = {}) {
   edgeRequest('/learning/events', {
     method: 'POST',
     body: { events: [event] }
-  }).catch(() => {});
+  }).catch((error) => {
+    console.warn('[ai-listings-admin] learning event sync failed:', error);
+  });
 }
 
 function $(id) {

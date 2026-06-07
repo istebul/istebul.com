@@ -485,6 +485,52 @@ body.ib-auto #auto-results .auto-v2-root ~ .auto-decision-dashboard {
   color: var(--v2-danger);
 }
 
+.auto-v2-risks {
+  margin: 0.75rem 0 1rem;
+}
+
+.auto-v2-risks h3 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+}
+
+.auto-v2-risk-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.auto-v2-risk-card {
+  border: 1px solid var(--v2-border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: var(--v2-elev);
+}
+
+.auto-v2-risk-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.auto-v2-risk-card h4 {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.auto-v2-risk-card p {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--v2-muted);
+}
+
+.auto-v2-risk-rec {
+  margin-top: 0.45rem;
+  font-size: 0.82rem;
+}
+
 .auto-v2-factors-details {
   margin: 0 0 0.6rem;
   border: 1px solid var(--v2-border);
