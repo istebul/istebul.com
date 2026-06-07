@@ -491,6 +491,17 @@ test('admin.js imports decision platform 2 modules', () => {
   assert.match(src, /ai-personalization/);
 });
 
+test('action center learning enabled when listing selected', () => {
+  const actions = buildActionCenterActions(fullCtx({ learningEventCount: 0 }));
+  assert.equal(actions.find((a) => a.key === 'learning')?.enabled, true);
+});
+
+test('admin.js auto-resolves recommendations on listing load', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /syncRecommendationCache/);
+  assert.match(src, /ai-listings-recommendation-resolver/);
+});
+
 test('insufficient data hint on disabled action', () => {
   const html = buildDecisionWorkspaceHtml(fullCtx({ recommendation: null }));
   assert.match(html, /disabled/);

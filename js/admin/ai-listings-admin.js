@@ -70,6 +70,12 @@ import {
   readRecommendationProfileFromForm
 } from './ai-listings-recommendations-admin.js';
 import {
+  buildListingRecommendationRecord,
+  ensureRecommendationCache,
+  findCachedRecommendation,
+  resolveRecommendationForListing
+} from './ai-listings-recommendation-resolver.js';
+import {
   buildDecisionCoachInput,
   runDecisionCoach
 } from '../ai-decision-coach/index.js';
@@ -793,23 +799,23 @@ function openComparePanel(root, options = {}) {
     return;
   }
 
-  if (!cachedRecommendationResult?.top?.length) {
+  const selected = compareSelectedIds
+    .map((id) => getRecommendationById(id))
+    .filter((item) => item?.id);
+
+  if (selected.length < 2) {
     host.innerHTML = buildComparePanelHtml(null, { title });
     host.hidden = false;
     document.body.classList.add('ai-listings-admin--cmp-open');
     const body = host.querySelector('.ai-cmp-panel__body');
     if (body) {
-      body.innerHTML = `<p class="ai-cmp-panel__empty">${getModuleUnavailableMessageTr('compare')}</p>`;
+      body.innerHTML = '<p class="ai-cmp-panel__empty">Karşılaştırma için en az iki ilan seçin.</p>';
     }
     bindComparePanelClose(host, root);
     return;
   }
 
-  const selected = cachedRecommendationResult.top.filter((item) =>
-    compareSelectedIds.includes(String(item.id))
-  );
-
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
   const cmpInput = buildCompareInput(selected, profile);
   const compareIntelligence = runCompareEngine(cmpInput);
 
@@ -860,13 +866,17 @@ function readSimulatorScenarioFromForm(root) {
  * @returns {{ result: ReturnType<typeof runDecisionSimulator>, coach: ReturnType<typeof runDecisionCoach>, selected: Record<string, unknown> }|null}
  */
 function runSimulatorForPanel(recordId, scenario) {
-  if (!cachedRecommendationResult?.top?.length) return null;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return null;
 
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return null;
-
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
-  const coachInput = buildDecisionCoachInput(profile, selected, cachedRecommendationResult.top);
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const top =
+    cachedRecommendationResult?.top?.length > 0
+      ? cachedRecommendationResult.top
+      : cachedListings
+          .map((listing) => getRecommendationById(String(listing.id)))
+          .filter((item) => item?.id);
+  const coachInput = buildDecisionCoachInput(profile, selected, top);
   const coach = runDecisionCoach(coachInput);
   const simInput = buildSimulatorInput(selected, coach, profile);
   const result = runDecisionSimulator(simInput, scenario);
@@ -887,16 +897,17 @@ function bindSimulatorPanelEvents(host, root) {
 }
 
 function openDecisionCoachPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
-
-  const input = buildDecisionCoachInput(
-    cachedRecommendationResult.profile ?? recommendationProfile,
-    selected,
-    cachedRecommendationResult.top
-  );
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const top =
+    cachedRecommendationResult?.top?.length > 0
+      ? cachedRecommendationResult.top
+      : cachedListings
+          .map((listing) => getRecommendationById(String(listing.id)))
+          .filter((item) => item?.id);
+  const input = buildDecisionCoachInput(profile, selected, top);
   const coach = runDecisionCoach(input);
 
   const host = root.querySelector('#ai-coach-panel-host');
@@ -920,14 +931,12 @@ function openDecisionCoachPanel(root, recordId) {
 }
 
 function openDecisionSimulatorPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
   closeDecisionCoachPanel(root);
 
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
   const defaultScenario = buildDefaultScenario(profile);
   const host = root.querySelector('#ai-sim-panel-host');
   if (!host) return;
@@ -961,16 +970,20 @@ function openDecisionSimulatorPanel(root, recordId) {
 }
 
 function openDecisionReportPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
   closeDecisionCoachPanel(root);
   closeDecisionSimulatorPanel(root);
 
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
-  const reportInput = buildReportInput(selected, profile, cachedRecommendationResult.top);
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const top =
+    cachedRecommendationResult?.top?.length > 0
+      ? cachedRecommendationResult.top
+      : cachedListings
+          .map((listing) => getRecommendationById(String(listing.id)))
+          .filter((item) => item?.id);
+  const reportInput = buildReportInput(selected, profile, top);
   const report = runDecisionReport(reportInput);
 
   const host = root.querySelector('#ai-report-panel-host');
@@ -992,10 +1005,8 @@ function openDecisionReportPanel(root, recordId) {
 }
 
 function openOwnershipCostPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
   closeDecisionCoachPanel(root);
   closeDecisionSimulatorPanel(root);
@@ -1004,7 +1015,7 @@ function openOwnershipCostPanel(root, recordId) {
   closeExplainabilityPanel(root);
   closeExecutiveReportPanel(root);
 
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
   const costInput = buildOwnershipCostInput(selected, profile);
   const cost = runOwnershipCostSimulator(costInput);
 
@@ -1031,8 +1042,7 @@ function openPurchaseDecisionPanel(root, recordId, options = {}) {
   if (!host) return;
 
   const selected =
-    cachedRecommendationResult?.top?.find((item) => String(item.id) === String(recordId)) ??
-    selectedRecommendation;
+    getRecommendationById(recordId) ?? selectedRecommendation;
   if (!selected?.id) {
     host.innerHTML = buildExecutiveDecisionPanelHtml(null, {
       title: options.title ?? getDrawerTitleTr('purchase')
@@ -1060,8 +1070,7 @@ function openExplainabilityPanel(root, recordId, options = {}) {
   if (!host) return;
 
   const selected =
-    cachedRecommendationResult?.top?.find((item) => String(item.id) === String(recordId)) ??
-    selectedRecommendation;
+    getRecommendationById(recordId) ?? selectedRecommendation;
   if (!selected?.id) {
     host.innerHTML = buildExplainabilityPanelHtml(null, {
       title: options.title ?? getDrawerTitleTr('explain')
@@ -1131,8 +1140,7 @@ function openExecutiveReportPanel(root, recordId, options = {}) {
   if (!host) return;
 
   const selected =
-    cachedRecommendationResult?.top?.find((item) => String(item.id) === String(recordId)) ??
-    selectedRecommendation;
+    getRecommendationById(recordId) ?? selectedRecommendation;
   if (!selected?.id) {
     host.innerHTML = buildExecutiveReportPanelHtml(null, {
       title: options.title ?? getDrawerTitleTr('report')
@@ -1357,9 +1365,35 @@ function renderExecutiveDashboard() {
  * @returns {Record<string, unknown>|null}
  */
 function findRecommendationForListing(listing) {
-  const id = String(listing?.id ?? '');
-  if (!id || !cachedRecommendationResult?.top?.length) return null;
-  return cachedRecommendationResult.top.find((item) => String(item.id) === id) ?? null;
+  return resolveRecommendationForListing(listing, {
+    profile: cachedRecommendationResult?.profile ?? recommendationProfile,
+    cachedResult: cachedRecommendationResult,
+    allListings: cachedListings
+  });
+}
+
+/**
+ * @param {string} recordId
+ * @returns {Record<string, unknown>|null}
+ */
+function getRecommendationById(recordId) {
+  const listing =
+    cachedListings.find((item) => String(item.id) === String(recordId)) ??
+    (String(selectedListing?.id ?? '') === String(recordId) ? selectedListing : null);
+  if (!listing) return selectedRecommendation;
+  return resolveRecommendationForListing(listing, {
+    profile: cachedRecommendationResult?.profile ?? recommendationProfile,
+    cachedResult: cachedRecommendationResult,
+    allListings: cachedListings
+  });
+}
+
+function syncRecommendationCache() {
+  const result = ensureRecommendationCache(cachedListings, recommendationProfile);
+  if (result) {
+    cachedRecommendationResult = result;
+    recommendationGenerated = true;
+  }
 }
 
 /**
@@ -1410,7 +1444,13 @@ function resolveWorkspaceContext(listing, recommendation = null) {
     ctx.entityConfidence = 0;
   }
 
-  if (!rec?.id) return ctx;
+  if (!rec?.id) {
+    const analysis = /** @type {Record<string, unknown>} */ (listing.latest_analysis ?? {});
+    if (analysis.quality_score != null) ctx.qualityScore = analysis.quality_score;
+    if (analysis.risk_score != null) ctx.riskScore = analysis.risk_score;
+    if (analysis.decision_score != null) ctx.decisionScore = analysis.decision_score;
+    return ctx;
+  }
 
   try {
     const pdInput = buildPurchaseDecisionInput(rec, profile);
@@ -1504,10 +1544,7 @@ function openScenarioPanel(root, recordId, scenarioKey = 'price_minus_5', option
   const host = root.querySelector('#ai-ss-panel-host') ?? document.querySelector('#ai-ss-panel-host');
   if (!host) return;
 
-  const rec =
-    findRecommendationForListing(
-      cachedListings.find((item) => String(item.id) === String(recordId)) ?? selectedListing ?? {}
-    ) ?? selectedRecommendation;
+  const rec = getRecommendationById(recordId) ?? selectedRecommendation;
 
   const title = options.title ?? getDrawerTitleTr('scenario');
 
@@ -2172,6 +2209,7 @@ async function loadListings() {
   }
 
   cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
+  syncRecommendationCache();
   renderKpiCards(cachedListings);
   renderRepositoryKpiCards(cachedListings);
   renderAnalyticsKpiCards(cachedListings);
