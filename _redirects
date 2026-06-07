@@ -89,12 +89,6 @@
 /decision-center /profil/ 301
 /decision-center/ /profil/ 301
 
-# --- Admin-only listing management (client route guard required) ---
-/admin/listings /admin/ai-listings.html 200
-/admin/listings/ /admin/ai-listings.html 200
-/admin/ai-listings /admin/ai-listings.html 200
-/admin/ai-listings/ /admin/ai-listings.html 200
-
 # --- API (Pages Functions — skip SPA /* fallback; fixes HEAD Content-Type) ---
 /api/* /api/:splat 200
 

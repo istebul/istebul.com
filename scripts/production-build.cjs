@@ -551,13 +551,21 @@ bundleVerticalPage(
   /\/js\/verticals\/listing-analysis\/listing-analysis-app\.js/g
 );
 
-// AI Listings internal admin test panel (hidden unless localStorage enabled)
+// AI Listings admin CRUD — static HTML only (no _redirects; see cloudflare-redirects-audit)
 bundleVerticalPage(
   'js/admin/ai-listings-admin.js',
   'admin/ai-listings.html',
   'ai-listings-admin-runtime',
   /\/js\/admin\/ai-listings-admin\.js/g
 );
+
+const aiListingsAdminHtmlPath = path.join(dist, 'admin', 'ai-listings.html');
+if (fs.existsSync(aiListingsAdminHtmlPath)) {
+  const aiListingsAdminHtml = fs.readFileSync(aiListingsAdminHtmlPath, 'utf8');
+  ['admin/listings/index.html', 'admin/ai-listings/index.html'].forEach((aliasRel) => {
+    writeFile(aliasRel, aiListingsAdminHtml);
+  });
+}
 
 if (fs.existsSync(path.join(root, 'js/sigorta'))) {
   copyDir('js/sigorta');

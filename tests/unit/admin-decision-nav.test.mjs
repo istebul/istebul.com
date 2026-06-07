@@ -75,9 +75,11 @@ test('public decision center routes redirect to profil', () => {
   assert.doesNotMatch(redirects, /\/admin\/decision-center/);
 });
 
-test('admin routes remain under /admin/listings', () => {
+test('admin listing routes are static (no _redirects under /admin)', () => {
   const redirects = fs.readFileSync(path.join(process.cwd(), '_redirects'), 'utf8');
-  assert.match(redirects, /\/admin\/listings \/admin\/ai-listings\.html 200/);
+  assert.doesNotMatch(redirects, /^\/admin\//m);
+  const buildScript = fs.readFileSync(path.join(process.cwd(), 'scripts/production-build.cjs'), 'utf8');
+  assert.match(buildScript, /admin\/listings\/index\.html/);
 });
 
 test('admin route guard paths', () => {
