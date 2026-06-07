@@ -434,8 +434,7 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
 
   const query = runRepositoryQuery(listings, {
     categoryTab: options.categoryTab ?? 'all',
-    filters: options.filters ?? [],
-    search: options.search ?? ''
+    filters: options.filters ?? []
   });
 
   const suggestions = buildSearchSuggestions(searchResult.documents, aiSearch);

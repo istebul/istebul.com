@@ -58,6 +58,7 @@ import {
 } from './ai-listings-collector-admin.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
+import { buildAdminRepositorySnapshot, debugRepositoryDataset } from './ai-listings-dataset.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
@@ -73,6 +74,9 @@ let acquisitionResult = null;
 
 /** @type {Array<Record<string, unknown>>} */
 let cachedListings = [];
+
+/** @type {Array<Record<string, unknown>>} */
+let repositoryDataset = [];
 
 /** @type {string} */
 let searchQuery = '';
@@ -247,13 +251,31 @@ function renderKpiCards(listings) {
   if (activeAdminView === 'decision') animateKpiCounters(kpiEl);
 }
 
+function syncRepositoryDataset(listings = cachedListings) {
+  const snapshot = buildAdminRepositorySnapshot(listings);
+  repositoryDataset = snapshot.repositoryDataset;
+  return snapshot;
+}
+
+function logRepositoryDatasetDebug(context = '') {
+  const snapshot = syncRepositoryDataset(cachedListings);
+  debugRepositoryDataset({
+    ...snapshot,
+    activeAdminView,
+    repoCategoryTab,
+    repoFilters,
+    repoAiSearchQuery,
+    searchQuery,
+    context
+  });
+}
+
 function renderRepositoryKpiCards(listings) {
   const kpiEl = $('ai-listings-repo-kpi');
   if (!kpiEl) return;
   const { query } = buildRepositoryDashboardHtml(listings, {
     categoryTab: repoCategoryTab,
-    filters: repoFilters,
-    search: searchQuery
+    filters: repoFilters
   });
   const statsKey = JSON.stringify(query.stats);
   if (statsKey === lastRepoKpiStatsKey && kpiEl.childElementCount > 0) return;
@@ -300,6 +322,7 @@ function setAdminView(view) {
 
   if (next === 'repository') {
     selectedListing = null;
+    logRepositoryDatasetDebug('setAdminView:repository');
     renderRepositoryView();
     renderRepositoryKpiCards(cachedListings);
   } else if (next === 'analytics') {
@@ -511,10 +534,11 @@ function renderRepositoryView() {
   const detailEl = $('ai-listings-detail');
   if (!detailEl) return;
 
+  logRepositoryDatasetDebug('renderRepositoryView');
+
   const { html } = buildRepositoryDashboardHtml(cachedListings, {
     categoryTab: repoCategoryTab,
     filters: repoFilters,
-    search: searchQuery,
     aiSearch: repoAiSearchQuery,
     sortBy: repoSearchSort,
     selectedId: selectedListing?.id ?? null
@@ -1015,6 +1039,8 @@ async function loadListings() {
   }
 
   cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
+  syncRepositoryDataset(cachedListings);
+  logRepositoryDatasetDebug('loadListings');
   renderKpiCards(cachedListings);
   renderRepositoryKpiCards(cachedListings);
   renderAnalyticsKpiCards(cachedListings);
@@ -1554,8 +1580,7 @@ function bindEvents() {
   $('ai-listings-search')?.addEventListener('input', (event) => {
     searchQuery = /** @type {HTMLInputElement} */ (event.target).value;
     if (activeAdminView === 'repository') {
-      renderRepositoryView();
-      renderRepositoryKpiCards(cachedListings);
+      return;
     } else if (activeAdminView === 'analytics') {
       renderAnalyticsView();
       renderAnalyticsKpiCards(cachedListings);
