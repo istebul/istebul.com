@@ -88,6 +88,11 @@ import {
   runExplainabilityEngine
 } from '../ai-decision-explainability/index.js';
 import { buildExplainabilityPanelHtml } from '../ai-decision-explainability/explainability-card-builder.js';
+import {
+  buildExecutiveReportInput,
+  runExecutiveReportEngine
+} from '../ai-executive-decision-report/index.js';
+import { buildExecutiveReportPanelHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
@@ -636,6 +641,16 @@ function closeExplainabilityPanel(root) {
   document.body.classList.remove('ai-listings-admin--exp-open');
 }
 
+function closeExecutiveReportPanel(root) {
+  const host = root.querySelector('#ai-edr-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-edr-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--edr-open');
+}
+
 /**
  * @param {HTMLElement} root
  * @returns {Record<string, unknown>}
@@ -804,6 +819,7 @@ function openOwnershipCostPanel(root, recordId) {
   closeDecisionReportPanel(root);
   closePurchaseDecisionPanel(root);
   closeExplainabilityPanel(root);
+  closeExecutiveReportPanel(root);
 
   const profile = cachedRecommendationResult.profile ?? recommendationProfile;
   const costInput = buildOwnershipCostInput(selected, profile);
@@ -838,6 +854,7 @@ function openPurchaseDecisionPanel(root, recordId) {
   closeDecisionReportPanel(root);
   closeOwnershipCostPanel(root);
   closeExplainabilityPanel(root);
+  closeExecutiveReportPanel(root);
 
   const profile = cachedRecommendationResult.profile ?? recommendationProfile;
   const pdInput = buildPurchaseDecisionInput(selected, profile);
@@ -872,6 +889,7 @@ function openExplainabilityPanel(root, recordId) {
   closeDecisionReportPanel(root);
   closeOwnershipCostPanel(root);
   closePurchaseDecisionPanel(root);
+  closeExecutiveReportPanel(root);
 
   const profile = cachedRecommendationResult.profile ?? recommendationProfile;
   const expInput = buildExplainabilityInput(selected, profile);
@@ -895,6 +913,41 @@ function openExplainabilityPanel(root, recordId) {
   });
 }
 
+function openExecutiveReportPanel(root, recordId) {
+  if (!cachedRecommendationResult?.top?.length) return;
+
+  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
+  if (!selected) return;
+
+  closeDecisionCoachPanel(root);
+  closeDecisionSimulatorPanel(root);
+  closeDecisionReportPanel(root);
+  closeOwnershipCostPanel(root);
+  closePurchaseDecisionPanel(root);
+  closeExplainabilityPanel(root);
+
+  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const edrInput = buildExecutiveReportInput(selected, profile);
+  const executiveDecisionReport = runExecutiveReportEngine(edrInput);
+
+  const host = root.querySelector('#ai-edr-panel-host');
+  if (!host) return;
+
+  host.innerHTML = buildExecutiveReportPanelHtml(executiveDecisionReport, {
+    title: String(selected.title ?? 'Executive Decision Report'),
+    recordId: String(recordId)
+  });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--edr-open');
+
+  host.querySelector('[data-edr-action="close"]')?.addEventListener('click', () => {
+    closeExecutiveReportPanel(root);
+  });
+  host.querySelector('[data-edr-backdrop]')?.addEventListener('click', () => {
+    closeExecutiveReportPanel(root);
+  });
+}
+
 function bindRecommendationsDashboardEvents(root) {
   root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
     recommendationProfile = readRecommendationProfileFromForm(root);
@@ -905,6 +958,7 @@ function bindRecommendationsDashboardEvents(root) {
     closeOwnershipCostPanel(root);
     closePurchaseDecisionPanel(root);
     closeExplainabilityPanel(root);
+    closeExecutiveReportPanel(root);
     renderRecommendationsView();
   });
 
@@ -968,9 +1022,18 @@ function bindRecommendationsDashboardEvents(root) {
     });
   });
 
+  root.querySelectorAll('[data-rec-edr-id]').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = btn.getAttribute('data-rec-edr-id');
+      if (id) openExecutiveReportPanel(root, id);
+    });
+  });
+
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-pd-id], [data-rec-exp-id]')) return;
+      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-pd-id], [data-rec-exp-id], [data-rec-edr-id]')) return;
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
