@@ -37,7 +37,7 @@ import {
   validateSourceUrl
 } from './ai-listings-admin-core.js';
 import { runDuplicateEngine } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
-import { runAiListingBuilder } from '../ai-listings-builder/index.js';
+import { runAiListingBuilder, logBuilderStage, logBuilderError } from '../ai-listings-builder/index.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
@@ -241,34 +241,74 @@ function bindCreateFormEvents() {
   });
 }
 
+/** @type {boolean} */
+let builderEventsBound = false;
+
+/**
+ * @returns {HTMLElement|null}
+ */
+function getBuilderDrawerBody() {
+  return $('ai-listings-builder-drawer-body');
+}
+
 function bindBuilderFormEvents() {
-  $('ai-listings-builder-preview-btn')?.addEventListener('click', handleBuilderPreview);
-  $('ai-listings-builder-save-btn')?.addEventListener('click', () => handleBuilderSave(false));
-  $('ai-listings-builder-save-analyze-btn')?.addEventListener('click', () => handleBuilderSave(true));
-  $('ai-listings-builder-input')?.addEventListener('input', () => {
+  const body = getBuilderDrawerBody();
+  if (!body || builderEventsBound) return;
+
+  body.querySelector('#ai-listings-builder-preview-btn')?.addEventListener('click', handleBuilderPreview);
+  body.querySelector('#ai-listings-builder-save-btn')?.addEventListener('click', () => handleBuilderSave(false));
+  body.querySelector('#ai-listings-builder-save-analyze-btn')?.addEventListener('click', () => handleBuilderSave(true));
+  body.querySelector('#ai-listings-builder-input')?.addEventListener('input', () => {
     pendingBuilderResult = null;
-    $('ai-listings-builder-save-btn')?.setAttribute('disabled', '');
-    $('ai-listings-builder-save-analyze-btn')?.setAttribute('disabled', '');
+    body.querySelector('#ai-listings-builder-save-btn')?.setAttribute('disabled', '');
+    body.querySelector('#ai-listings-builder-save-analyze-btn')?.setAttribute('disabled', '');
   });
+
+  builderEventsBound = true;
+  logBuilderStage('admin:events-bound', { has_preview_btn: Boolean(body.querySelector('#ai-listings-builder-preview-btn')) });
 }
 
 function mountBuilderDrawer() {
-  if (builderDrawerMounted) return;
-  const mounted = mountDrawerTemplate(
-    'ai-listings-builder-template',
-    'ai-listings-builder-drawer-body',
-    bindBuilderFormEvents
-  );
-  if (mounted) builderDrawerMounted = true;
+  const body = getBuilderDrawerBody();
+  if (!body) {
+    logBuilderStage('admin:mount-failed', { reason: 'drawer-body-missing' });
+    return false;
+  }
+
+  const hasForm = Boolean(body.querySelector('#ai-listings-builder-preview-btn'));
+  if (!hasForm) {
+    if (body.childElementCount > 0) body.innerHTML = '';
+    const mounted = mountDrawerTemplate(
+      'ai-listings-builder-template',
+      'ai-listings-builder-drawer-body',
+      bindBuilderFormEvents
+    );
+    if (!mounted) {
+      logBuilderStage('admin:mount-failed', { reason: 'template-mount-failed' });
+      return false;
+    }
+    builderDrawerMounted = true;
+    return true;
+  }
+
+  bindBuilderFormEvents();
+  builderDrawerMounted = true;
+  logBuilderStage('admin:mount-reused', { has_form: true });
+  return true;
 }
 
 function openBuilderDrawer() {
-  mountBuilderDrawer();
+  if (!mountBuilderDrawer()) {
+    setStatus('AI İlan Oluşturucu formu yüklenemedi. Sayfayı yenileyin.', 'error');
+    return;
+  }
+
   closeAllDrawers();
   $('ai-listings-builder-drawer')?.removeAttribute('hidden');
   $('ai-listings-drawer-backdrop')?.removeAttribute('hidden');
   document.body.classList.add('ai-listings-admin--drawer-open');
   openDrawerType = 'builder';
+  logBuilderStage('admin:drawer-opened');
 }
 
 function closeBuilderDrawer() {
@@ -276,8 +316,9 @@ function closeBuilderDrawer() {
 }
 
 function updateBuilderActionState(enabled) {
-  const saveBtn = $('ai-listings-builder-save-btn');
-  const analyzeBtn = $('ai-listings-builder-save-analyze-btn');
+  const body = getBuilderDrawerBody();
+  const saveBtn = body?.querySelector('#ai-listings-builder-save-btn');
+  const analyzeBtn = body?.querySelector('#ai-listings-builder-save-analyze-btn');
   if (enabled) {
     saveBtn?.removeAttribute('disabled');
     analyzeBtn?.removeAttribute('disabled');
@@ -288,25 +329,54 @@ function updateBuilderActionState(enabled) {
 }
 
 function handleBuilderPreview() {
-  const input = $('ai-listings-builder-input')?.value ?? '';
-  const previewEl = $('ai-listings-builder-preview');
-  const result = runAiListingBuilder(input);
+  const body = getBuilderDrawerBody();
+  const input = body?.querySelector('#ai-listings-builder-input')?.value ?? '';
+  const previewEl = body?.querySelector('#ai-listings-builder-preview');
+
+  logBuilderStage('admin:preview-click', {
+    input_length: input.length,
+    has_preview_host: Boolean(previewEl),
+    drawer_mounted: Boolean(body?.querySelector('#ai-listings-builder-preview-btn'))
+  });
+
+  if (!previewEl) {
+    logBuilderStage('admin:preview-host-missing');
+    setStatus('Önizleme alanı bulunamadı. Lütfen sayfayı yenileyin.', 'error');
+    return;
+  }
+
+  let result;
+  try {
+    result = runAiListingBuilder(input);
+  } catch (error) {
+    logBuilderError('admin:preview-exception', error);
+    pendingBuilderResult = null;
+    updateBuilderActionState(false);
+    previewEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText('Önizleme oluşturulamadı.')}</p>`;
+    setStatus('Önizleme oluşturulamadı.', 'error');
+    return;
+  }
 
   if (!result.ok) {
     pendingBuilderResult = null;
     updateBuilderActionState(false);
-    if (previewEl) {
-      previewEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(result.message)}</p>`;
-    }
+    previewEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(result.message)}</p>`;
     setStatus(result.message, 'error');
+    logBuilderStage('admin:preview-failed', { message: result.message });
     return;
   }
 
   pendingBuilderResult = result;
   updateBuilderActionState(true);
-  if (previewEl) previewEl.innerHTML = result.preview_html;
+  previewEl.innerHTML = result.preview_html;
 
-  previewEl?.querySelectorAll('[data-builder-action]').forEach((btn) => {
+  logBuilderStage('admin:preview-rendered', {
+    html_length: result.preview_html.length,
+    title: result.canonical?.title ?? null,
+    preview_child_count: previewEl.childElementCount
+  });
+
+  previewEl.querySelectorAll('[data-builder-action]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const action = btn.getAttribute('data-builder-action');
       if (action === 'save') handleBuilderSave(false);

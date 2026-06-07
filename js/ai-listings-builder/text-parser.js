@@ -2,6 +2,8 @@
  * AI Auto Listing Builder — free-text parser.
  */
 
+import { logBuilderStage } from './debug-log.js';
+
 /** @typedef {Record<string, { value: unknown, confidence: number }>} ParsedFieldMap */
 
 const KNOWN_BRANDS = [
@@ -224,6 +226,12 @@ export function parseTextInput(rawInput) {
 
   fields.description = { value: raw_text, confidence: raw_text.length >= 20 ? 0.82 : 0.6 };
   fields.tags = { value: buildTags(lines, fields), confidence: 0.75 };
+
+  logBuilderStage('text-parser', {
+    line_count: lines.length,
+    title: fields.title?.value ?? null,
+    field_count: Object.keys(fields).length
+  });
 
   return { fields, raw_text, lines };
 }
