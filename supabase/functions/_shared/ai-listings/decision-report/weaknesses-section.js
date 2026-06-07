@@ -42,7 +42,12 @@ export function buildWeaknessesSection(ctx) {
   }
 
   const duplicate = String(ctx.recommendation?.duplicate_status ?? '');
-  if ((duplicate === 'exact' || duplicate === 'similar') && !weaknesses.includes('duplicate')) {
+  const dupPenalty = Number(ctx.recommendation?.breakdown?.duplicate_penalty ?? 0);
+  const coachDup = (ctx.coach?.red_flags ?? []).some((f) => /duplicate/i.test(String(f)));
+  if (
+    (duplicate === 'exact' || duplicate === 'similar' || dupPenalty < 0 || coachDup) &&
+    !weaknesses.some((w) => /duplicate/i.test(w))
+  ) {
     weaknesses.push('duplicate');
   }
 
