@@ -16,6 +16,7 @@ import { buildDecisionCoachShellHtml } from '../ai-decision-coach/coach-card-bui
 import { buildSimulatorShellHtml } from '../ai-decision-simulator/simulator-card-builder.js';
 import { buildDecisionReportShellHtml } from '../ai-decision-report/report-card-builder.js';
 import { buildOwnershipCostShellHtml } from '../ai-ownership-cost/cost-card-builder.js';
+import { buildNegotiationShellHtml } from '../ai-negotiation-intelligence/negotiation-card-builder.js';
 import { runDecisionFlow, buildCalibrationBlockHtml } from '../ai-decision-flow/index.js';
 
 /**
@@ -142,6 +143,7 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
       ${buildSimulatorShellHtml()}
       ${buildDecisionReportShellHtml()}
       ${buildOwnershipCostShellHtml()}
+      ${buildNegotiationShellHtml()}
     </div>`;
 
   return { html, result };

@@ -3922,6 +3922,205 @@
   background: linear-gradient(135deg, rgba(52, 211, 153, 0.32), rgba(30, 41, 59, 0.95));
 }
 
+.ai-rec-card__neg-btn {
+  appearance: none;
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.22), rgba(30, 41, 59, 0.9));
+  color: #ddd6fe;
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.ai-rec-card__neg-btn:hover {
+  border-color: rgba(196, 181, 253, 0.75);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(30, 41, 59, 0.95));
+}
+
+.ai-neg-panel-host {
+  position: fixed;
+  inset: 0;
+  z-index: 1240;
+  pointer-events: none;
+}
+
+.ai-neg-panel-host:not([hidden]) {
+  pointer-events: auto;
+}
+
+.ai-neg-panel__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.78);
+  backdrop-filter: blur(4px);
+  z-index: 1240;
+}
+
+.ai-neg-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(500px, 100vw);
+  height: 100vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.97) 0%, rgba(24, 20, 45, 0.98) 50%, rgba(11, 18, 32, 0.99) 100%);
+  border-left: 1px solid rgba(167, 139, 250, 0.24);
+  box-shadow: -16px 0 56px rgba(0, 0, 0, 0.55);
+  z-index: 1241;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(16px);
+}
+
+.ai-neg-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.35rem 1.35rem 0.85rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(46, 36, 78, 0.35);
+}
+
+.ai-neg-panel__eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #c4b5fd;
+}
+
+.ai-neg-panel__title {
+  margin: 0.3rem 0 0;
+  font-size: 1.05rem;
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.ai-neg-panel__close {
+  appearance: none;
+  border: none;
+  background: rgba(46, 36, 78, 0.85);
+  color: #cbd5e1;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ai-neg-panel__body {
+  padding: 1rem 1.25rem 1.75rem;
+}
+
+.ai-neg-panel__hero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  margin-bottom: 1rem;
+}
+
+.ai-neg-panel__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ai-neg-panel__metric-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.ai-neg-panel__metric-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.ai-neg-panel__metric-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ede9fe;
+}
+
+.ai-neg-panel__metric-value--range {
+  font-size: 1rem;
+}
+
+.ai-neg-panel__metric--sm .ai-neg-panel__metric-value {
+  font-size: 0.95rem;
+}
+
+.ai-neg-panel__risk {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.ai-neg-panel__risk--low { color: #86efac; background: rgba(34, 197, 94, 0.15); }
+.ai-neg-panel__risk--mid { color: #fde68a; background: rgba(234, 179, 8, 0.15); }
+.ai-neg-panel__risk--high { color: #fca5a5; background: rgba(239, 68, 68, 0.15); }
+
+.ai-neg-panel__confidence {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.ai-neg-panel__section {
+  margin-bottom: 1rem;
+}
+
+.ai-neg-panel__section h4 {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.ai-neg-panel__summary {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #e2e8f0;
+}
+
+.ai-neg-panel__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.ai-neg-panel__list--check {
+  color: #ddd6fe;
+}
+
+.ai-neg-panel__empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.ai-listings-admin--neg-open {
+  overflow: hidden;
+}
+
 .ai-cost-panel-host {
   position: fixed;
   inset: 0;
