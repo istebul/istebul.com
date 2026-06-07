@@ -11,6 +11,7 @@
 import {
   ADMIN_ENABLE_KEY,
   ADMIN_SECRET_KEY,
+  buildAnalysisTimelineHtml,
   buildEdgeRequestHeaders,
   buildImportPreviewHtml,
   buildKpiCardsHtml,
@@ -51,6 +52,15 @@ let searchQuery = '';
 
 /** @type {'create'|'import'|null} */
 let openDrawerType = null;
+
+/** @type {boolean} */
+let createDrawerMounted = false;
+
+/** @type {boolean} */
+let importDrawerMounted = false;
+
+/** @type {string} */
+let lastKpiStatsKey = '';
 
 function $(id) {
   return document.getElementById(id);
@@ -166,6 +176,9 @@ function renderKpiCards(listings) {
   const kpiEl = $('ai-listings-kpi');
   if (!kpiEl) return;
   const stats = computeKpiStats(listings);
+  const statsKey = JSON.stringify(stats);
+  if (statsKey === lastKpiStatsKey && kpiEl.childElementCount > 0) return;
+  lastKpiStatsKey = statsKey;
   kpiEl.innerHTML = buildKpiCardsHtml(stats);
   animateKpiCounters();
 }
@@ -179,7 +192,59 @@ function closeAllDrawers() {
   closeNewMenu();
 }
 
+function mountDrawerTemplate(templateId, bodyId, onMounted) {
+  const template = /** @type {HTMLTemplateElement|null} */ ($(templateId));
+  const body = $(bodyId);
+  if (!template || !body || body.childElementCount > 0) return false;
+  body.appendChild(template.content.cloneNode(true));
+  onMounted?.();
+  return true;
+}
+
+function bindCreateFormEvents() {
+  $('ai-listings-create-form')?.addEventListener('submit', (event) => handleCreateSubmit(event));
+  $('ai-listings-create-analyze-btn')?.addEventListener('click', async (event) => {
+    await handleCreateSubmit(event, { analyzeAfter: true });
+  });
+}
+
+function bindImportFormEvents() {
+  $('ai-listings-import-preview-btn')?.addEventListener('click', handleImportPreview);
+  $('ai-listings-import-run-btn')?.addEventListener('click', handleImportRun);
+  $('ai-listings-import-content')?.addEventListener('input', () => {
+    importValidRowCount = 0;
+    updateImportButtonState();
+  });
+  $('ai-listings-import-format')?.addEventListener('change', () => {
+    importValidRowCount = 0;
+    updateImportButtonState();
+  });
+  $('ai-listings-import-file')?.addEventListener('change', handleImportFileSelect);
+  document.querySelectorAll('[data-import-format-tab]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const format = tab.getAttribute('data-import-format-tab') === 'json' ? 'json' : 'csv';
+      setImportFormat(format);
+      importValidRowCount = 0;
+      updateImportButtonState();
+    });
+  });
+  updateImportButtonState();
+}
+
+function mountCreateDrawer() {
+  if (createDrawerMounted) return;
+  const mounted = mountDrawerTemplate('ai-listings-create-template', 'ai-listings-create-drawer-body', bindCreateFormEvents);
+  if (mounted) createDrawerMounted = true;
+}
+
+function mountImportDrawer() {
+  if (importDrawerMounted) return;
+  const mounted = mountDrawerTemplate('ai-listings-import-template', 'ai-listings-import-drawer-body', bindImportFormEvents);
+  if (mounted) importDrawerMounted = true;
+}
+
 function openCreateDrawer() {
+  mountCreateDrawer();
   closeAllDrawers();
   $('ai-listings-create-drawer')?.removeAttribute('hidden');
   $('ai-listings-drawer-backdrop')?.removeAttribute('hidden');
@@ -188,12 +253,51 @@ function openCreateDrawer() {
 }
 
 function openImportDrawer(format = 'csv') {
+  mountImportDrawer();
   closeAllDrawers();
   $('ai-listings-import-drawer')?.removeAttribute('hidden');
   $('ai-listings-drawer-backdrop')?.removeAttribute('hidden');
   document.body.classList.add('ai-listings-admin--drawer-open');
   openDrawerType = 'import';
   setImportFormat(format);
+}
+
+function bindDashboardTabs(root) {
+  const tabsRoot = root.querySelector('[data-dashboard-tabs]');
+  if (!tabsRoot) return;
+
+  const tabs = tabsRoot.querySelectorAll('[data-dashboard-tab]');
+  const panels = tabsRoot.querySelectorAll('[data-dashboard-panel]');
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const target = tab.getAttribute('data-dashboard-tab');
+      tabs.forEach((item) => {
+        const isActive = item === tab;
+        item.classList.toggle('ai-listings-admin__tab--active', isActive);
+        item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      panels.forEach((panel) => {
+        const isActive = panel.getAttribute('data-dashboard-panel') === target;
+        panel.classList.toggle('ai-listings-admin__tab-panel--active', isActive);
+        panel.hidden = !isActive;
+      });
+    });
+  });
+}
+
+function renderTimelineHost(listing, analysis, events) {
+  const host = $('ai-listings-timeline-host');
+  if (!host) return;
+  host.innerHTML = buildAnalysisTimelineHtml(listing, analysis, events);
+  host.hidden = false;
+}
+
+function clearTimelineHost() {
+  const host = $('ai-listings-timeline-host');
+  if (!host) return;
+  host.innerHTML = '';
+  host.hidden = true;
 }
 
 function closeCreateDrawer() {
@@ -408,6 +512,8 @@ async function showListingDetail(listing) {
 
   detailEl.classList.add('ai-listings-admin__detail--loaded');
   requestAnimationFrame(() => detailEl.classList.remove('ai-listings-admin__detail--loaded'));
+  bindDashboardTabs(detailEl);
+  renderTimelineHost(listingData, latest, events);
 
   detailEl.querySelectorAll('[data-qa-action]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -639,22 +745,7 @@ function handleImportFileSelect(event) {
 }
 
 function bindEvents() {
-  $('ai-listings-create-form')?.addEventListener('submit', (event) => handleCreateSubmit(event));
-  $('ai-listings-create-analyze-btn')?.addEventListener('click', async (event) => {
-    await handleCreateSubmit(event, { analyzeAfter: true });
-  });
   $('ai-listings-refresh-list-btn')?.addEventListener('click', () => loadListings());
-  $('ai-listings-import-preview-btn')?.addEventListener('click', handleImportPreview);
-  $('ai-listings-import-run-btn')?.addEventListener('click', handleImportRun);
-  $('ai-listings-import-content')?.addEventListener('input', () => {
-    importValidRowCount = 0;
-    updateImportButtonState();
-  });
-  $('ai-listings-import-format')?.addEventListener('change', () => {
-    importValidRowCount = 0;
-    updateImportButtonState();
-  });
-  $('ai-listings-import-file')?.addEventListener('change', handleImportFileSelect);
   $('ai-listings-drawer-close')?.addEventListener('click', closeCreateDrawer);
   $('ai-listings-import-drawer-close')?.addEventListener('click', closeImportDrawer);
   $('ai-listings-drawer-backdrop')?.addEventListener('click', closeAllDrawers);
@@ -675,15 +766,6 @@ function bindEvents() {
   });
 
   $('ai-listings-filter-toggle')?.addEventListener('click', () => toggleFilterPanel());
-
-  document.querySelectorAll('[data-import-format-tab]').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const format = tab.getAttribute('data-import-format-tab') === 'json' ? 'json' : 'csv';
-      setImportFormat(format);
-      importValidRowCount = 0;
-      updateImportButtonState();
-    });
-  });
 
   $('ai-listings-search')?.addEventListener('input', (event) => {
     searchQuery = /** @type {HTMLInputElement} */ (event.target).value;
@@ -721,7 +803,7 @@ export function initAiListingsAdmin() {
 
   renderStatusFilterChips();
   bindEvents();
-  updateImportButtonState();
+  clearTimelineHost();
   renderKpiCards([]);
   loadListings();
 }

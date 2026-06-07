@@ -80,6 +80,8 @@
         <div id="ai-listings-list" class="ai-listings-admin__list"></div>
       </aside>
     </div>
+
+    <section id="ai-listings-timeline-host" class="ai-listings-admin__timeline-host" hidden aria-label="İlan zaman çizelgesi"></section>
   </main>
 
   <div id="ai-listings-drawer-backdrop" class="ai-listings-admin__backdrop" hidden></div>
@@ -92,6 +94,21 @@
       </div>
       <button type="button" id="ai-listings-drawer-close" class="ai-listings-admin__drawer-close" aria-label="Kapat">✕</button>
     </header>
+    <div id="ai-listings-create-drawer-body"></div>
+  </aside>
+
+  <aside id="ai-listings-import-drawer" class="ai-listings-admin__drawer ai-listings-admin__drawer--right ai-listings-admin__drawer--wide" aria-label="Toplu içe aktarım" hidden>
+    <header class="ai-listings-admin__drawer-head">
+      <div>
+        <span class="ai-listings-admin__drawer-icon" aria-hidden="true">📥</span>
+        <h2>Toplu İçe Aktarım</h2>
+      </div>
+      <button type="button" id="ai-listings-import-drawer-close" class="ai-listings-admin__drawer-close" aria-label="Kapat">✕</button>
+    </header>
+    <div id="ai-listings-import-drawer-body"></div>
+  </aside>
+
+  <template id="ai-listings-create-template">
     <form id="ai-listings-create-form" class="ai-listings-admin__form ai-listings-admin__drawer-form">
       <label>
         Kategori
@@ -128,19 +145,12 @@
       </label>
       <div class="ai-listings-admin__drawer-actions">
         <button type="submit" class="ai-listings-admin__btn ai-listings-admin__btn--primary">Kaydet</button>
-        <button type="button" id="ai-listings-create-analyze-btn" class="ai-listings-admin__btn">Analiz Et</button>
+        <button type="button" id="ai-listings-create-analyze-btn" class="ai-listings-admin__btn">Kaydet ve Analiz Et</button>
       </div>
     </form>
-  </aside>
+  </template>
 
-  <aside id="ai-listings-import-drawer" class="ai-listings-admin__drawer ai-listings-admin__drawer--right ai-listings-admin__drawer--wide" aria-label="Toplu içe aktarım" hidden>
-    <header class="ai-listings-admin__drawer-head">
-      <div>
-        <span class="ai-listings-admin__drawer-icon" aria-hidden="true">📥</span>
-        <h2>Toplu İçe Aktarım</h2>
-      </div>
-      <button type="button" id="ai-listings-import-drawer-close" class="ai-listings-admin__drawer-close" aria-label="Kapat">✕</button>
-    </header>
+  <template id="ai-listings-import-template">
     <article class="ai-listings-admin__import-card">
       <p class="ai-listings-admin__muted">CSV veya JSON dosyası ile toplu ilan yükleyin.</p>
       <p class="ai-listings-admin__warning-inline">Sadece iç admin içe aktarımıdır. Yayına alma kapalıdır.</p>
@@ -183,6 +193,6 @@
         <div id="ai-listings-import-preview" class="ai-listings-admin__import-preview-wrap"></div>
       </div>
     </article>
-  </aside>
+  </template>
 </body>
 </html>

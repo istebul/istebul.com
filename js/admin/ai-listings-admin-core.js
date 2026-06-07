@@ -897,9 +897,13 @@ export function buildDataQualityHtml(listing, latestAnalysis = null) {
   const total = Object.keys(checklist).length;
   const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
 
+  const completedFields = PREMIUM_CHECKLIST_ITEMS.filter(({ key }) => checklist[key]).map(({ label }) => label);
   const missingFields = PREMIUM_CHECKLIST_ITEMS.filter(({ key }) => !checklist[key]).map(({ label }) => label);
   const filled = Math.round((pct / 100) * 10);
   const bar = '█'.repeat(filled) + '░'.repeat(10 - filled);
+  const completedHtml = completedFields.length
+    ? `<div class="ai-listings-admin__quality-complete"><span>Tamamlanan alanlar:</span> ${completedFields.map((f) => safeRenderText(f)).join(', ')}</div>`
+    : '<div class="ai-listings-admin__quality-complete ai-listings-admin__quality-complete--empty">Tamamlanan alan yok.</div>';
   const missingHtml = missingFields.length
     ? `<div class="ai-listings-admin__quality-missing"><span>Eksik alanlar:</span> ${missingFields.map((f) => safeRenderText(f)).join(', ')}</div>`
     : '<div class="ai-listings-admin__quality-missing ai-listings-admin__quality-missing--complete">Tüm alanlar tamamlandı.</div>';
@@ -913,6 +917,7 @@ export function buildDataQualityHtml(listing, latestAnalysis = null) {
       <div class="ai-listings-admin__quality-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Veri kalitesi ${pct}%">
         <div class="ai-listings-admin__quality-bar-fill" style="width:${pct}%"></div>
       </div>
+      ${completedHtml}
       ${missingHtml}
     </article>`;
 }
@@ -1007,7 +1012,8 @@ export function buildStickyActionBarHtml(status) {
 
   const extraButtons = PREMIUM_EXTRA_ACTIONS.map((btn) => {
     const uiOnly = btn.uiOnly ? ' data-ui-only="true"' : '';
-    return `<button type="button" class="ai-listings-admin__action-btn ai-listings-admin__action-btn--danger" data-qa-action="${safeRenderText(btn.action)}" aria-label="${safeRenderText(btn.label)}"${uiOnly}><span class="ai-listings-admin__action-icon" aria-hidden="true">${btn.icon}</span><span>${safeRenderText(btn.label)}</span></button>`;
+    const disabled = btn.uiOnly ? ' disabled aria-disabled="true" title="Backend desteklemiyor"' : '';
+    return `<button type="button" class="ai-listings-admin__action-btn ai-listings-admin__action-btn--danger" data-qa-action="${safeRenderText(btn.action)}" aria-label="${safeRenderText(btn.label)}"${uiOnly}${disabled}><span class="ai-listings-admin__action-icon" aria-hidden="true">${btn.icon}</span><span>${safeRenderText(btn.label)}</span></button>`;
   }).join('');
 
   const buttons = qaButtons + extraButtons;
@@ -1021,6 +1027,48 @@ export function buildStickyActionBarHtml(status) {
     </nav>`;
 }
 
+/** @type {ReadonlyArray<{ id: string, label: string }>} */
+export const DASHBOARD_TABS = Object.freeze([
+  { id: 'general', label: 'Genel' },
+  { id: 'analysis', label: 'AI Analizi' },
+  { id: 'quality', label: 'Veri Kalitesi' },
+  { id: 'events', label: 'Olay Geçmişi' }
+]);
+
+/**
+ * @param {string} generalHtml
+ * @param {string} analysisHtml
+ * @param {string} qualityHtml
+ * @param {string} eventsHtml
+ * @returns {string}
+ */
+export function buildDashboardTabsHtml(generalHtml, analysisHtml, qualityHtml, eventsHtml) {
+  const tabButtons = DASHBOARD_TABS.map((tab, index) => {
+    const activeClass = index === 0 ? ' ai-listings-admin__tab--active' : '';
+    const selected = index === 0 ? 'true' : 'false';
+    return `<button type="button" class="ai-listings-admin__tab${activeClass}" data-dashboard-tab="${safeRenderText(tab.id)}" role="tab" aria-selected="${selected}" aria-controls="ai-tab-panel-${safeRenderText(tab.id)}">${safeRenderText(tab.label)}</button>`;
+  }).join('');
+
+  const panels = [
+    { id: 'general', html: generalHtml },
+    { id: 'analysis', html: analysisHtml },
+    { id: 'quality', html: qualityHtml },
+    { id: 'events', html: eventsHtml }
+  ]
+    .map((panel, index) => {
+      const activeClass = index === 0 ? ' ai-listings-admin__tab-panel--active' : '';
+      const hidden = index === 0 ? '' : ' hidden';
+      return `<div id="ai-tab-panel-${safeRenderText(panel.id)}" class="ai-listings-admin__tab-panel${activeClass}" data-dashboard-panel="${safeRenderText(panel.id)}" role="tabpanel"${hidden}>${panel.html}</div>`;
+    })
+    .join('');
+
+  return `
+    <div class="ai-listings-admin__tabs" data-dashboard-tabs>
+      <div class="ai-listings-admin__tab-list" role="tablist" aria-label="Karar merkezi sekmeleri">${tabButtons}</div>
+      <div class="ai-listings-admin__tab-panels">${panels}</div>
+    </div>`;
+}
+
 /**
  * @param {Record<string, unknown>} listing
  * @param {Record<string, unknown>|null|undefined} analysis
@@ -1029,6 +1077,44 @@ export function buildStickyActionBarHtml(status) {
  * @returns {string}
  */
 export function buildPremiumDashboardHtml(listing, analysis, events, status) {
+  const generalPanel = `
+    <section class="ai-listings-admin__section ai-listings-admin__glass-card">
+      <h4 class="ai-listings-admin__section-title">Piyasa Karşılaştırması</h4>
+      ${buildMarketAnalysisHtml(listing, analysis)}
+    </section>
+    <details class="ai-listings-admin__meta-details">
+      <summary>İlan meta verileri</summary>
+      <dl class="ai-listings-admin__fields">
+        <dt>ID</dt><dd>${safeRenderText(listing.id)}</dd>
+        <dt>Kategori</dt><dd>${safeRenderText(getCategoryLabelTr(listing.category))}</dd>
+        <dt>Durum</dt><dd>${safeRenderText(getStatusLabelTr(status))}</dd>
+        <dt>Fiyat</dt><dd>${safeRenderText(listing.price)} ${safeRenderText(listing.currency)}</dd>
+        <dt>Konum</dt><dd>${safeRenderText(listing.location ?? '—')}</dd>
+        <dt>Kaynak URL</dt><dd>${safeRenderText(listing.source_url ?? '—')}</dd>
+        <dt>Kaynak tipi</dt><dd>${safeRenderText(listing.source_type ?? '—')}</dd>
+      </dl>
+    </details>
+    <p class="ai-listings-admin__muted ai-listings-admin__visibility-note">Yayına alma kapalıdır. Onaylandı durumu yalnızca iç QA içindir.</p>`;
+
+  const analysisPanel = `
+    ${buildScoreCardsHtml(analysis)}
+    <div class="ai-listings-admin__insights-grid">
+      ${buildStrengthsCardHtml(analysis)}
+      ${buildRisksCardHtml(analysis)}
+    </div>
+    <div class="ai-listings-admin__analysis-tags">
+      <h5 class="ai-listings-admin__subsection-title">AI Etiketleri</h5>
+      ${buildAiTagsSectionHtml(analysis)}
+    </div>`;
+
+  const qualityPanel = buildDataQualityHtml(listing, analysis);
+  const eventsPanel = `
+    ${buildAnalysisTimelineHtml(listing, analysis, events)}
+    <div class="ai-listings-admin__events-block">
+      <h5 class="ai-listings-admin__subsection-title">Detaylı olaylar</h5>
+      ${buildEventsHtml(events)}
+    </div>`;
+
   return `
     <div class="ai-listings-admin__dashboard ai-listings-admin__dashboard--v4">
       <div class="ai-listings-admin__dashboard-hero">
@@ -1038,41 +1124,8 @@ export function buildPremiumDashboardHtml(listing, analysis, events, status) {
           ${buildExecutiveSummaryHtml(analysis)}
         </section>
       </div>
-      <section class="ai-listings-admin__section ai-listings-admin__section--analysis ai-listings-admin__glass-card">
-        <h4 class="ai-listings-admin__section-title">AI Analizi</h4>
-        ${buildScoreCardsHtml(analysis)}
-        <div class="ai-listings-admin__insights-grid">
-          ${buildStrengthsCardHtml(analysis)}
-          ${buildRisksCardHtml(analysis)}
-        </div>
-        <div class="ai-listings-admin__analysis-tags">
-          <h5 class="ai-listings-admin__subsection-title">AI Etiketleri</h5>
-          ${buildAiTagsSectionHtml(analysis)}
-        </div>
-      </section>
-      <section class="ai-listings-admin__section ai-listings-admin__glass-card">
-        <h4 class="ai-listings-admin__section-title">Veri Kalitesi</h4>
-        ${buildDataQualityHtml(listing, analysis)}
-      </section>
-      <section class="ai-listings-admin__section ai-listings-admin__glass-card">
-        <h4 class="ai-listings-admin__section-title">Piyasa Karşılaştırması</h4>
-        ${buildMarketAnalysisHtml(listing, analysis)}
-      </section>
-      ${buildAnalysisTimelineHtml(listing, analysis, events)}
+      ${buildDashboardTabsHtml(generalPanel, analysisPanel, qualityPanel, eventsPanel)}
       ${buildStickyActionBarHtml(status)}
-      <details class="ai-listings-admin__meta-details">
-        <summary>İlan meta verileri</summary>
-        <dl class="ai-listings-admin__fields">
-          <dt>ID</dt><dd>${safeRenderText(listing.id)}</dd>
-          <dt>Kategori</dt><dd>${safeRenderText(getCategoryLabelTr(listing.category))}</dd>
-          <dt>Durum</dt><dd>${safeRenderText(getStatusLabelTr(status))}</dd>
-          <dt>Fiyat</dt><dd>${safeRenderText(listing.price)} ${safeRenderText(listing.currency)}</dd>
-          <dt>Konum</dt><dd>${safeRenderText(listing.location ?? '—')}</dd>
-          <dt>Kaynak URL</dt><dd>${safeRenderText(listing.source_url ?? '—')}</dd>
-          <dt>Kaynak tipi</dt><dd>${safeRenderText(listing.source_type ?? '—')}</dd>
-        </dl>
-      </details>
-      <p class="ai-listings-admin__muted ai-listings-admin__visibility-note">Yayına alma kapalıdır. Onaylandı durumu yalnızca iç QA içindir.</p>
     </div>`;
 }
 
