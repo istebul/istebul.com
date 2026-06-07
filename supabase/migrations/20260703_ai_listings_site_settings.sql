@@ -2,8 +2,8 @@
 
 INSERT INTO public.site_settings (key, value, updated_at)
 VALUES
-  ('ai_listings_public_enabled', 'false', now())
-ON CONFLICT (key) DO NOTHING;
+  ('ai_listings_public_enabled', 'true', now())
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = EXCLUDED.updated_at;
 
 DROP POLICY IF EXISTS "Public read allowlisted site_settings" ON public.site_settings;
 

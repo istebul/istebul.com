@@ -60,3 +60,7 @@ CREATE POLICY "ai_listing_analyses public read published"
         AND l.status = 'published'
     )
   );
+
+-- RLS policies require SELECT grant (20260701 revoked client access)
+GRANT SELECT ON public.ai_listings TO anon, authenticated;
+GRANT SELECT ON public.ai_listing_analyses TO anon, authenticated;
