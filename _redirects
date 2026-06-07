@@ -83,6 +83,12 @@
 # Physical /blog/:slug/index.html files are served directly when present.
 # Missing slugs fall through to /* SPA fallback below.
 
+# --- Public Decision Center (user-facing Karar Merkezi) ---
+/karar-merkezi /profil/ 301
+/karar-merkezi/ /profil/ 301
+/decision-center /profil/ 301
+/decision-center/ /profil/ 301
+
 # --- API (Pages Functions — skip SPA /* fallback; fixes HEAD Content-Type) ---
 /api/* /api/:splat 200
 

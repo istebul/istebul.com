@@ -23,7 +23,7 @@ const copyGrowthDataDir = () => copyDataSubdir('growth');
 const copySalesDataDir = () => copyDataSubdir('sales');
 const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'metodoloji/index.html', 'veri-kaynaklari/index.html', 'konut/index.html', 'tatil/index.html', 'finans/index.html', 'sigorta/index.html', 'kasko/index.html', 'ilan-analizi/index.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'cerez-politikasi.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'partner-closing-kit.html', 'karar-moat.html', 'css/seo-landing.css', 'css/istebul-ui-final-v5.css', 'css/istebul-ui-product-cards-v6.css', 'css/istebul-premium-final-v7.css', 'css/home-header-saas-v1.css', 'css/home-product-cards-enterprise-v1.css', 'css/corporate-pages.css', 'css/partner-platform.css', 'css/partner-funnel-form-v1.css', 'css/admin-partner-ops.css',
     'css/admin-internal-dashboards.css',
-    'css/admin-ops-ai-assistant.css', 'css/admin-ai-listings.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css', 'admin/ai-listings.html'];
+    'css/admin-ops-ai-assistant.css', 'css/admin-ai-listings.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css', 'admin/ai-listings.html', 'admin/forbidden.html'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const { patchSpaShellHtml, loadRouteMeta } = require('./lib/spa-shell-meta.cjs');
 const { injectLocaleShellMeta, loadLocaleIds } = require('./lib/locale-shell-meta.cjs');
@@ -551,13 +551,21 @@ bundleVerticalPage(
   /\/js\/verticals\/listing-analysis\/listing-analysis-app\.js/g
 );
 
-// AI Listings internal admin test panel (hidden unless localStorage enabled)
+// AI Listings admin CRUD — static HTML only (no _redirects; see cloudflare-redirects-audit)
 bundleVerticalPage(
   'js/admin/ai-listings-admin.js',
   'admin/ai-listings.html',
   'ai-listings-admin-runtime',
   /\/js\/admin\/ai-listings-admin\.js/g
 );
+
+const aiListingsAdminHtmlPath = path.join(dist, 'admin', 'ai-listings.html');
+if (fs.existsSync(aiListingsAdminHtmlPath)) {
+  const aiListingsAdminHtml = fs.readFileSync(aiListingsAdminHtmlPath, 'utf8');
+  ['admin/listings/index.html', 'admin/ai-listings/index.html'].forEach((aliasRel) => {
+    writeFile(aliasRel, aiListingsAdminHtml);
+  });
+}
 
 if (fs.existsSync(path.join(root, 'js/sigorta'))) {
   copyDir('js/sigorta');

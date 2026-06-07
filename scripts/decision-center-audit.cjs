@@ -23,7 +23,9 @@ function pass(msg) {
 
 const mustExist = [
   'admin/ai-listings.html',
+  'admin/forbidden.html',
   'js/admin/ai-listings-admin.js',
+  'js/admin/admin-route-guard.js',
   'js/admin/ai-listings-decision-workspace.js',
   'js/admin/ai-listings-admin-drawer-state.js',
   'css/admin-ai-listings.css'
@@ -53,6 +55,20 @@ if (!drawer.includes('drawer')) {
   fail('Drawer state module incomplete');
 } else {
   pass('Drawer state module present');
+}
+
+const redirects = read('_redirects');
+if (!redirects.includes('/karar-merkezi /profil/')) {
+  fail('Public Karar Merkezi redirect missing');
+} else {
+  pass('Public Karar Merkezi redirect present');
+}
+
+const guard = read('js/admin/admin-route-guard.js');
+if (!guard.includes('enforceAdminRoute')) {
+  fail('Admin route guard missing');
+} else {
+  pass('Admin route guard present');
 }
 
 console.log(`\nDecision Center audit errors: ${failed}`);

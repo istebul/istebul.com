@@ -22,7 +22,6 @@ import {
   buildPremiumDashboardHtml,
   buildStatusFilterChipsHtml,
   computeKpiStats,
-  getAdminPanelState,
   getEdgeSecret,
   getListingAnalyzePath,
   getSupabaseAnonKey,
@@ -37,6 +36,16 @@ import {
   validateAttributesJson,
   validateSourceUrl
 } from './ai-listings-admin-core.js';
+import {
+  verifyAdminSessionAccess,
+  resolveAdminPanelAccess
+} from './ai-listings-admin-access.js';
+import {
+  enforceAdminRoute,
+  renderAdminForbiddenHtml,
+  PUBLIC_DECISION_CENTER_PATH,
+  ADMIN_LOGIN_PATH
+} from './admin-route-guard.js';
 import { runDuplicateEngine } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
 import { IMPORT_MAX_ROWS } from '../../supabase/functions/_shared/ai-listings/import-parser.js';
 import { buildAcquisitionEventPayload } from '../../supabase/functions/_shared/ai-listings/acquisition/acquisition-events.js';
@@ -307,15 +316,24 @@ async function edgeRequest(path, { method = 'GET', body } = {}) {
   return mapped;
 }
 
-function renderDisabledState() {
+function renderDisabledState(options = {}) {
   const root = $('ai-listings-admin-root');
   if (!root) return;
+
+  const adminLoginHint = options.showAdminLogin
+    ? `<p class="ai-listings-admin__gate-actions">
+        <a class="ai-listings-admin__btn ai-listings-admin__btn--primary" href="${ADMIN_LOGIN_PATH}">Admin paneline giriş yap</a>
+        <a class="ai-listings-admin__btn ai-listings-admin__btn--ghost" href="${PUBLIC_DECISION_CENTER_PATH}">Karar Merkezi (kullanıcı)</a>
+      </p>`
+    : '';
+
   root.innerHTML = `
     <div class="ai-listings-admin__gate">
-      <h2>Yapay Zeka Karar Merkezi — Devre Dışı</h2>
-      <p>Bu iç test paneli varsayılan olarak gizlidir.</p>
-      <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_ENABLE_KEY}', 'on')</pre>
-      <p>Etkinleştirdikten sonra sayfayı yenileyin. Bkz. docs/ai-listings/ADMIN_TEST_PANEL.md</p>
+      <h2>AI İlan Yönetimi — Admin Erişimi Gerekli</h2>
+      <p>Bu ekran yalnızca admin rolüne sahip kullanıcılar içindir. Kullanıcı Karar Merkezi için profil panelini kullanın.</p>
+      ${adminLoginHint}
+      <p>Edge API secret (admin):</p>
+      <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_SECRET_KEY}', '&lt;secret&gt;')</pre>
     </div>`;
 }
 
@@ -2793,11 +2811,16 @@ function bindEvents() {
   });
 }
 
-export function initAiListingsAdmin() {
-  const state = getAdminPanelState(storage());
+export async function initAiListingsAdmin() {
+  const sessionAccess = await verifyAdminSessionAccess();
+  if (!sessionAccess.sessionIsAdmin) {
+    await enforceAdminRoute({ returnTo: window.location.pathname });
+    return;
+  }
 
+  const state = resolveAdminPanelAccess(storage(), sessionAccess);
   if (state === 'disabled') {
-    renderDisabledState();
+    renderAdminForbiddenHtml($('ai-listings-admin-root'), { showPublicLink: true });
     return;
   }
 
@@ -2812,8 +2835,23 @@ export function initAiListingsAdmin() {
   loadListings();
 }
 
+async function bootstrapAiListingsAdmin() {
+  try {
+    await initAiListingsAdmin();
+  } catch (error) {
+    console.error('[ai-listings-admin] bootstrap failed:', error);
+    const root = $('ai-listings-admin-root');
+    if (root) {
+      root.innerHTML =
+        '<div class="ai-listings-admin__gate"><h2>Karar Merkezi yüklenemedi</h2><p>Sayfayı yenileyin veya admin panelinden tekrar giriş yapın.</p></div>';
+    }
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initAiListingsAdmin);
+  document.addEventListener('DOMContentLoaded', () => {
+    void bootstrapAiListingsAdmin();
+  });
 } else {
-  initAiListingsAdmin();
+  void bootstrapAiListingsAdmin();
 }
