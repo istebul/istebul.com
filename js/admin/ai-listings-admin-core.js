@@ -55,8 +55,12 @@ import { runRiskEngine } from '../../supabase/functions/_shared/ai-listings/engi
 import { runDecisionEngine } from '../../supabase/functions/_shared/ai-listings/engine/decision-engine.js';
 import {
   runExecutiveEngine,
-  parseExecutiveFromTags
+  parseExecutiveFromTags,
+  buildExplainability
 } from '../../supabase/functions/_shared/ai-listings/executive/executive-engine.js';
+import {
+  containsForbiddenExecutivePhrase
+} from '../../supabase/functions/_shared/ai-listings/executive/executive-recommendation.js';
 import { runAcquisitionEngine } from '../../supabase/functions/_shared/ai-listings/acquisition/acquisition-engine.js';
 import {
   buildAcquisitionPreviewHtml,
@@ -285,17 +289,129 @@ export function translateTagTr(tag) {
  * @param {Record<string, unknown>} listing
  * @returns {string}
  */
+export const INSUFFICIENT_DATA_LABEL = 'Yeterli veri yok';
+
+/** @type {Readonly<{ exact: number, highlySimilar: number, similar: number }>} */
+export const DUPLICATE_DISPLAY_THRESHOLDS = Object.freeze({
+  exact: 95,
+  highlySimilar: 80,
+  similar: 60
+});
+
+/** @type {ReadonlyArray<string>} */
+export const ADMIN_FORBIDDEN_EXECUTIVE_PHRASES = Object.freeze([
+  'kesinlikle alın',
+  'garanti',
+  'gerçek piyasa',
+  'yatırım tavsiyesi',
+  'kesin değer'
+]);
+
+/** @type {Readonly<Record<string, string>>} */
+export const EXPLAINABILITY_LABELS_TR = Object.freeze({
+  quality: 'Kalite skoru',
+  price_score: 'Fiyat pozisyonu',
+  market_context: 'Talep/Likidite',
+  risk: 'Risk',
+  decision: 'Karar',
+  missing_photos: 'Eksik fotoğraf',
+  missing_location: 'Eksik konum',
+  missing_source_url: 'Eksik kaynak',
+  missing_description: 'Eksik açıklama',
+  duplicate_exact: 'Duplicate riski',
+  duplicate_similar: 'Duplicate riski'
+});
+
+/**
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+export function isMeaningfulScore(value) {
+  const num = Number(value);
+  return Number.isFinite(num) && num > 0;
+}
+
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
+export function formatMetricScoreDisplay(value) {
+  if (!isMeaningfulScore(value)) return INSUFFICIENT_DATA_LABEL;
+  return String(Math.round(Number(value)));
+}
+
+/**
+ * @param {unknown} similarity
+ * @returns {string|null}
+ */
+export function getDuplicateDisplayLabel(similarity) {
+  const score = Number(similarity);
+  if (!Number.isFinite(score) || score < DUPLICATE_DISPLAY_THRESHOLDS.similar) return null;
+  if (score >= DUPLICATE_DISPLAY_THRESHOLDS.exact) return 'Aynı ilan bulundu';
+  if (score >= DUPLICATE_DISPLAY_THRESHOLDS.highlySimilar) return 'Çok benzer ilan';
+  return 'Benzer ilan';
+}
+
+/**
+ * @param {unknown} similarity
+ * @returns {string}
+ */
+export function getDuplicateTooltipText(similarity) {
+  const score = Number(similarity);
+  if (!Number.isFinite(score)) return '';
+  return `Teknik benzerlik: %${Math.round(score)}`;
+}
+
+/**
+ * @param {unknown} marketContextScore
+ * @param {unknown} pricePosition
+ * @returns {boolean}
+ */
+export function shouldShowMarketBadge(marketContextScore, pricePosition) {
+  if (isMeaningfulScore(marketContextScore)) return true;
+  const position = String(pricePosition ?? '').trim();
+  return Boolean(position && position !== 'unknown');
+}
+
+/**
+ * @param {number|null} avg
+ * @returns {string|number}
+ */
+export function formatExecutiveAverageDisplay(avg) {
+  if (avg === null || avg === undefined || !Number.isFinite(Number(avg)) || Number(avg) <= 0) {
+    return '—';
+  }
+  return avg;
+}
+
+/**
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function containsAdminForbiddenPhrase(text) {
+  const normalized = String(text ?? '').toLocaleLowerCase('tr-TR');
+  return (
+    containsForbiddenExecutivePhrase(text) ||
+    ADMIN_FORBIDDEN_EXECUTIVE_PHRASES.some((phrase) => normalized.includes(phrase))
+  );
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @returns {string}
+ */
 export function computeMarketDeltaLabel(listing, analysis = null) {
   const nested = analysis ?? extractLatestAnalysis(listing);
   const price = Number(listing.price);
   const priceScore = Number(nested?.price_score);
-  if (!Number.isFinite(price) || !Number.isFinite(priceScore) || priceScore <= 0) return '—';
+  if (!Number.isFinite(price) || !Number.isFinite(priceScore) || priceScore <= 0) return INSUFFICIENT_DATA_LABEL;
   const marketAvg = price / (priceScore / 100);
   const pct = marketAvg > 0 ? ((price - marketAvg) / marketAvg) * 100 : 0;
   const rounded = Math.round(pct);
+  if (rounded === 0) return INSUFFICIENT_DATA_LABEL;
   if (rounded > 0) return `Piyasa +${rounded}%`;
-  if (rounded < 0) return `Piyasa ${rounded}%`;
-  return 'Piyasa 0%';
+  return `Piyasa ${rounded}%`;
 }
 
 /**
@@ -517,8 +633,8 @@ export function computeExecutiveDashboardStats(listings) {
 
     const ai = Number(analysis?.ai_score);
     const risk = Number(analysis?.risk_score);
-    if (Number.isFinite(ai)) aiScores.push(ai);
-    if (Number.isFinite(risk)) riskScores.push(risk);
+    if (Number.isFinite(ai) && ai > 0) aiScores.push(ai);
+    if (Number.isFinite(risk) && risk > 0) riskScores.push(risk);
 
     if (String(listing.created_at ?? '').slice(0, 10) === today) createdToday += 1;
 
@@ -560,16 +676,27 @@ export function buildExecutiveDashboardHtml(listings) {
   const stats = computeExecutiveDashboardStats(listings);
 
   const metricCards = [
-    { label: 'Son 24 Saat Analiz', value: stats.analyzedLast24h, suffix: '' },
-    { label: 'Ortalama AI Skoru', value: stats.avgAiScore ?? '—', suffix: stats.avgAiScore !== null ? '/100' : '' },
-    { label: 'Ortalama Risk', value: stats.avgRisk ?? '—', suffix: stats.avgRisk !== null ? '/100' : '' },
-    { label: 'Bugün Oluşturulan', value: stats.createdToday, suffix: '' }
+    { label: 'Son 24 Saat Analiz', value: stats.analyzedLast24h, suffix: '', hint: 'son 24 saat' },
+    {
+      label: 'Ortalama AI Skoru',
+      value: formatExecutiveAverageDisplay(stats.avgAiScore),
+      suffix: stats.avgAiScore && stats.avgAiScore > 0 ? '/100' : '',
+      hint: 'tamamlanan analizler'
+    },
+    {
+      label: 'Ortalama Risk',
+      value: formatExecutiveAverageDisplay(stats.avgRisk),
+      suffix: stats.avgRisk && stats.avgRisk > 0 ? '/100' : '',
+      hint: 'tamamlanan analizler'
+    },
+    { label: 'Bugün Oluşturulan', value: stats.createdToday, suffix: '', hint: '' }
   ]
     .map(
       (metric) => `
       <article class="ai-listings-admin__exec-metric">
         <span class="ai-listings-admin__exec-metric-label">${safeRenderText(metric.label)}</span>
         <span class="ai-listings-admin__exec-metric-value">${safeRenderText(metric.value)}${safeRenderText(metric.suffix)}</span>
+        ${metric.hint ? `<span class="ai-listings-admin__exec-metric-hint">${safeRenderText(metric.hint)}</span>` : ''}
       </article>`
     )
     .join('');
@@ -581,10 +708,18 @@ export function buildExecutiveDashboardHtml(listings) {
           const ai = entry.analysis.ai_score ?? '—';
           const id = safeRenderText(entry.listing.id);
           const when = safeRenderText(formatTimelineDate(entry.analysis.created_at));
+          const engineMetrics = getListingEngineMetrics(entry.listing, {
+            sourceType: String(entry.listing.source_type ?? 'manual'),
+            existingAnalysis: entry.analysis
+          });
+          const decisionLabel = safeRenderText(engineMetrics.decision ?? '—');
           return `
           <button type="button" class="ai-listings-admin__exec-feed-item" data-listing-id="${id}">
             <span class="ai-listings-admin__exec-feed-title">${title}</span>
-            <span class="ai-listings-admin__exec-feed-meta">AI ${safeRenderText(ai)} · ${when}</span>
+            <span class="ai-listings-admin__exec-feed-meta">
+              <span class="ai-listings-admin__exec-feed-decision">${decisionLabel}</span>
+              · AI ${safeRenderText(ai)} · ${when}
+            </span>
           </button>`;
         })
         .join('')
@@ -647,7 +782,7 @@ export function resolveListingDuplicateMetrics(listing, options = {}) {
   if (fromEvents.status && fromEvents.similarity !== null) {
     return {
       ...fromEvents,
-      label: fromEvents.similarity !== null ? `%${fromEvents.similarity}` : null
+      label: getDuplicateDisplayLabel(fromEvents.similarity)
     };
   }
 
@@ -678,7 +813,7 @@ export function resolveListingDuplicateMetrics(listing, options = {}) {
     similarity: duplicate.similarity,
     matched_listing_id: duplicate.matched_listing_id,
     summary: duplicate.summary,
-    label: `%${duplicate.similarity}`
+    label: getDuplicateDisplayLabel(duplicate.similarity)
   };
 }
 
@@ -686,37 +821,53 @@ export function resolveListingDuplicateMetrics(listing, options = {}) {
  * @param {Record<string, unknown>} candidateListing
  * @param {Record<string, unknown>} matchedListing
  * @param {{ status?: string, similarity?: number, summary?: string }} duplicate
+ * @param {{ variant?: 'create'|'detail', matchedListingId?: string }} [options]
  * @returns {string}
  */
-export function buildDuplicateCheckCardHtml(candidateListing, matchedListing, duplicate = {}) {
+export function buildDuplicateCheckCardHtml(candidateListing, matchedListing, duplicate = {}, options = {}) {
   const similarity = Number(duplicate.similarity ?? 0);
   const status = String(duplicate.status ?? resolveDuplicateStatus(similarity));
   const statusLabel =
-    status === 'exact' ? 'Aynı ilan bulundu' : status === 'similar' ? 'Benzer ilan bulundu' : 'Yeni kayıt';
+    getDuplicateDisplayLabel(similarity) ??
+    (status === 'new' ? 'Yeni kayıt' : 'Benzer ilan');
   const existingTitle = safeRenderText(matchedListing?.title ?? '—');
   const candidateTitle = safeRenderText(candidateListing?.title ?? '—');
   const summary = safeRenderText(duplicate.summary ?? '');
+  const tooltip = safeRenderText(getDuplicateTooltipText(similarity));
+  const variant = options.variant ?? 'create';
+  const matchedId = safeRenderText(
+    options.matchedListingId ?? matchedListing?.id ?? duplicate.matched_listing_id ?? ''
+  );
+
+  const createActions = `
+        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--ghost" data-duplicate-action="open-existing"${matchedId ? ` data-matched-listing-id="${matchedId}"` : ''}>Mevcut ilanı aç</button>
+        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--primary" data-duplicate-action="create-new">Yeni kayıt olarak bırak</button>`;
+
+  const detailActions = `
+        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--ghost" data-duplicate-detail-action="open-existing"${matchedId ? ` data-matched-listing-id="${matchedId}"` : ''}>Mevcut ilanı aç</button>
+        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--ghost" data-duplicate-detail-action="leave-as-new">Yeni kayıt olarak bırak</button>`;
 
   return `
     <section class="ai-listings-admin__duplicate-card ai-listings-admin__glass-card" data-duplicate-card>
       <h4 class="ai-listings-admin__section-title">Benzer İlan Kontrolü</h4>
-      <p class="ai-listings-admin__duplicate-alert">⚠ %${safeRenderText(similarity)} eşleşme bulundu — ${safeRenderText(statusLabel)}</p>
+      <p class="ai-listings-admin__duplicate-status">
+        <span class="ai-listings-admin__duplicate-status-label">Durum:</span>
+        <strong title="${tooltip}">${safeRenderText(statusLabel)}</strong>
+      </p>
       <dl class="ai-listings-admin__duplicate-compare">
         <div>
           <dt>Mevcut</dt>
           <dd>${existingTitle}</dd>
         </div>
         <div>
-          <dt>Oluşturulmak istenen</dt>
+          <dt>Bu ilan</dt>
           <dd>${candidateTitle}</dd>
         </div>
       </dl>
-      ${summary ? `<p class="ai-listings-admin__muted">${summary}</p>` : ''}
+      ${summary ? `<p class="ai-listings-admin__muted ai-listings-admin__duplicate-detail" title="${tooltip}">${summary}</p>` : ''}
+      <p class="ai-listings-admin__duplicate-disclaimer">Bu kontrol teknik benzerlik skoruna dayanır; nihai kayıt kararı admine aittir.</p>
       <div class="ai-listings-admin__duplicate-actions">
-        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--ghost" data-duplicate-action="open-existing">Mevcut ilanı aç</button>
-        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--primary" data-duplicate-action="update-existing">Bilgileri güncelle</button>
-        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--ghost" data-duplicate-action="create-new">Yeni kayıt oluştur</button>
-        <button type="button" class="ai-listings-admin__btn ai-listings-admin__btn--warn" data-duplicate-action="cancel">İptal</button>
+        ${variant === 'detail' ? detailActions : createActions}
       </div>
     </section>`;
 }
@@ -741,7 +892,11 @@ export function buildDuplicateInsightCardHtml(listing, events, matchedListing = 
   return buildDuplicateCheckCardHtml(listing, matched, {
     status: duplicate.status,
     similarity: duplicate.similarity,
-    summary: duplicate.summary ?? undefined
+    summary: duplicate.summary ?? undefined,
+    matched_listing_id: duplicate.matched_listing_id
+  }, {
+    variant: 'detail',
+    matchedListingId: String(matched?.id ?? duplicate.matched_listing_id ?? '')
   });
 }
 
@@ -767,39 +922,50 @@ export function buildListingCardHtml(listing, isActive = false, options = {}) {
   const marketScore = engineMetrics.market ?? analysis?.market_score;
   const qualityScore = engineMetrics.quality;
   const decisionLabel = engineMetrics.decision;
-  const marketDelta = safeRenderText(computeMarketDeltaLabel(listing, analysis));
+  const priceIntel = resolvePriceIntelligenceForDisplay(listing, analysis);
+  const marketIntel = resolveMarketIntelligenceForListing(listing, analysis);
+  const marketContextScore = marketIntel?.market_context_score;
+  const pricePosition = priceIntel?.price_position;
+  const pricePositionLabel =
+    pricePosition && pricePosition !== 'unknown' ? getPricePositionLabelTr(pricePosition) : null;
   const dateRaw = listing.updated_at ?? listing.created_at ?? '';
   const date = safeRenderText(formatTimelineDate(dateRaw));
   const price = Number(listing.price);
   const currency = String(listing.currency ?? 'TRY');
   const priceLabel = Number.isFinite(price) ? safeRenderText(formatCurrency(price, currency)) : '—';
   const activeClass = isActive ? ' ai-listings-admin__listing-card--active' : '';
-  const aiHtml =
-    aiScore !== undefined && aiScore !== null
-      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--ai">AI ${safeRenderText(aiScore)}</span>`
-      : '';
-  const riskHtml =
-    riskScore !== undefined && riskScore !== null
-      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--risk">Risk ${safeRenderText(riskScore)}</span>`
-      : '';
-  const marketHtml =
-    marketScore !== undefined && marketScore !== null
-      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--market">Piyasa ${safeRenderText(marketScore)}</span>`
-      : `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--market">${marketDelta}</span>`;
-  const qualityHtml =
-    qualityScore !== undefined && qualityScore !== null
-      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--quality">Kalite ${safeRenderText(qualityScore)}</span>`
-      : '';
+
   const decisionHtml = decisionLabel
     ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--decision">${safeRenderText(decisionLabel)}</span>`
     : '';
+  const aiHtml = isMeaningfulScore(aiScore)
+    ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--ai">AI ${safeRenderText(Math.round(Number(aiScore)))}</span>`
+    : '';
+  const riskHtml =
+    riskScore !== undefined && riskScore !== null && Number.isFinite(Number(riskScore))
+      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--risk">${safeRenderText(getRiskInterpretationTr(riskScore))}</span>`
+      : '';
+  const qualityHtml = isMeaningfulScore(qualityScore)
+    ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--quality">Kalite ${safeRenderText(Math.round(Number(qualityScore)))}</span>`
+    : '';
+
+  let marketOrPriceHtml = '';
+  if (pricePositionLabel) {
+    marketOrPriceHtml = `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--price-position">${safeRenderText(pricePositionLabel)}</span>`;
+  } else if (shouldShowMarketBadge(marketContextScore, pricePosition) && isMeaningfulScore(marketScore)) {
+    marketOrPriceHtml = `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--market">Piyasa ${safeRenderText(formatMetricScoreDisplay(marketScore))}</span>`;
+  } else if (shouldShowMarketBadge(marketContextScore, pricePosition)) {
+    marketOrPriceHtml = `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--market">${safeRenderText(formatMetricScoreDisplay(marketContextScore))}</span>`;
+  }
+
   const duplicateMetrics = resolveListingDuplicateMetrics(listing, {
     candidates: options.candidates,
     events: options.events
   });
+  const duplicateTooltip = safeRenderText(getDuplicateTooltipText(duplicateMetrics.similarity));
   const duplicateHtml =
-    duplicateMetrics.label && duplicateMetrics.status !== 'new'
-      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--duplicate">Duplicate ${safeRenderText(duplicateMetrics.label)}</span>`
+    duplicateMetrics.label
+      ? `<span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--duplicate" title="${duplicateTooltip}">${safeRenderText(duplicateMetrics.label)}</span>`
       : '';
 
   return `
@@ -811,11 +977,11 @@ export function buildListingCardHtml(listing, isActive = false, options = {}) {
         <span class="ai-listings-admin__listing-card-status">${status}</span>
       </span>
       <span class="ai-listings-admin__listing-card-metrics">
+        ${decisionHtml}
         ${aiHtml}
         ${riskHtml}
-        ${marketHtml}
         ${qualityHtml}
-        ${decisionHtml}
+        ${marketOrPriceHtml}
         ${duplicateHtml}
         <span class="ai-listings-admin__listing-metric ai-listings-admin__listing-metric--price">${priceLabel}</span>
       </span>
@@ -1096,69 +1262,149 @@ export function buildScoreCardsHtml(analysis) {
 
 /**
  * @param {Record<string, unknown>|null|undefined} analysis
+ * @param {Record<string, unknown>} [listing]
+ * @param {Array<Record<string, unknown>>|null|undefined} [events]
  * @returns {string}
  */
-export function buildExecutiveSummaryHtml(analysis) {
+export function buildExecutiveManagerOneLiner(analysis, listing = {}, events = null) {
+  if (!analysis) return '';
+
+  const existing = String(analysis.summary ?? '').trim();
+  if (existing && !containsAdminForbiddenPhrase(existing)) {
+    const firstSentence = existing.split(/(?<=[.!?])\s+/).filter(Boolean)[0] ?? existing;
+    if (!containsAdminForbiddenPhrase(firstSentence)) {
+      return firstSentence;
+    }
+  }
+
+  const riskLabel = getRiskInterpretationTr(Number(analysis.risk_score))
+    .replace(/\srisk$/i, '')
+    .toLocaleLowerCase('tr-TR');
+  const priceIntel = resolvePriceIntelligenceForDisplay(listing, analysis);
+  const pricePosition = priceIntel?.price_position;
+  const priceNote =
+    pricePosition && pricePosition !== 'unknown'
+      ? `fiyat ön değerlendirmesi ${getPricePositionLabelTr(pricePosition).toLocaleLowerCase('tr-TR')}`
+      : 'fiyat ön değerlendirmesi sınırlı';
+
+  /** @type {string[]} */
+  const missingNotes = [];
+  const quality = runQualityEngine(
+    normalizeCanonicalListing({ ...listing, id: String(listing.id ?? 'admin-preview') })
+  );
+  const missing = quality.missing_fields ?? [];
+  if (missing.includes('Fotoğraf')) missingNotes.push('fotoğraf');
+  if (missing.includes('Konum')) missingNotes.push('konum');
+  if (missing.includes('Açıklama')) missingNotes.push('açıklama');
+
+  const duplicateMeta = extractDuplicateFromEvents(events);
+  const duplicateLabel = getDuplicateDisplayLabel(duplicateMeta.similarity);
+  if (duplicateLabel) missingNotes.push('benzer kayıt sinyali');
+
+  let summary = `Mevcut bilgilerle risk ${riskLabel}, ${priceNote}`;
+  if (missingNotes.length) {
+    summary += `; ${missingNotes.slice(0, 2).join(' ve ')} eksik`;
+  }
+  summary += '.';
+
+  if (containsAdminForbiddenPhrase(summary)) {
+    summary =
+      'Mevcut bilgilerle ön değerlendirme tamamlandı; detaylı inceleme önerilir.';
+  }
+
+  return summary;
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @param {Array<Record<string, unknown>>|null|undefined} [events]
+ * @returns {Array<{ id: string, impact: number }>}
+ */
+export function resolveExplainabilityItems(listing, analysis = null, events = null) {
+  const executive = resolveExecutiveForListing(listing, analysis, events);
+  if (Array.isArray(executive.explainability) && executive.explainability.length) {
+    return executive.explainability;
+  }
+
+  const canonical = normalizeCanonicalListing({
+    ...listing,
+    id: String(listing.id ?? 'admin-preview')
+  });
+  const quality = runQualityEngine(canonical);
+  const market = runMarketEngine(canonical);
+  const risk = runRiskEngine(canonical, quality);
+  const market_intelligence = runMarketIntelligence(canonical, { quality, risk, market });
+  const decision = runDecisionEngine(canonical, quality, market, risk);
+  const duplicateMeta = extractDuplicateFromEvents(events);
+  const duplicate =
+    duplicateMeta.status && duplicateMeta.status !== 'new'
+      ? { status: duplicateMeta.status, similarity: duplicateMeta.similarity }
+      : null;
+
+  return buildExplainability(
+    {
+      quality,
+      price_intelligence: market,
+      market_intelligence,
+      risk,
+      duplicate,
+      decision
+    },
+    canonical
+  );
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @param {Array<Record<string, unknown>>|null|undefined} [events]
+ * @returns {string}
+ */
+export function buildExplainabilityPreviewHtml(listing, analysis = null, events = null) {
+  const items = resolveExplainabilityItems(listing, analysis, events);
+  if (!items.length) {
+    return `<p class="ai-listings-admin__muted">Açıklama verisi oluşturulamadı.</p>`;
+  }
+
+  const positive = items.filter((item) => item.impact >= 0);
+  const negative = items.filter((item) => item.impact < 0);
+
+  const renderItem = (item, sign) => {
+    const label = EXPLAINABILITY_LABELS_TR[item.id] ?? item.id;
+    return `<li class="ai-listings-admin__explain-item ai-listings-admin__explain-item--${sign === '+' ? 'positive' : 'negative'}"><span aria-hidden="true">${sign}</span> ${safeRenderText(label)}</li>`;
+  };
+
+  const positiveHtml = positive.map((item) => renderItem(item, '+')).join('');
+  const negativeHtml = negative.map((item) => renderItem(item, '−')).join('');
+
+  return `
+    <section class="ai-listings-admin__explainability-preview" aria-label="Karar açıklaması">
+      <h5 class="ai-listings-admin__subsection-title">Neden bu karar?</h5>
+      <ul class="ai-listings-admin__explain-list">
+        ${positiveHtml}
+        ${negativeHtml}
+      </ul>
+    </section>`;
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} analysis
+ * @param {Record<string, unknown>} [listing]
+ * @param {Array<Record<string, unknown>>|null|undefined} [events]
+ * @returns {string}
+ */
+export function buildExecutiveSummaryHtml(analysis, listing = {}, events = null) {
   if (!analysis) {
     return `<p class="ai-listings-admin__muted">${ANALYSIS_EMPTY_MESSAGE}</p>`;
   }
 
-  const existing = String(analysis.summary ?? '').trim();
-  if (existing) {
-    const sentences = existing.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0, 5);
-    return `<p class="ai-listings-admin__executive-summary">${sentences.map((s) => safeRenderText(s)).join(' ')}</p>`;
+  const oneLiner = buildExecutiveManagerOneLiner(analysis, listing, events);
+  if (oneLiner) {
+    return `<p class="ai-listings-admin__executive-summary">${safeRenderText(oneLiner)}</p>`;
   }
 
-  const parts = [];
-  const aiScore = Number(analysis.ai_score);
-  const priceScore = Number(analysis.price_score);
-  const marketScore = Number(analysis.market_score);
-  const riskScore = Number(analysis.risk_score);
-
-  if (Number.isFinite(aiScore)) {
-    parts.push(
-      aiScore >= 80
-        ? 'Bu ilan AI değerlendirmesine göre güçlü seviyededir.'
-        : aiScore >= 60
-          ? 'Bu ilan AI değerlendirmesine göre orta seviyededir.'
-          : 'Bu ilan AI değerlendirmesine göre zayıf seviyededir.'
-    );
-  }
-
-  if (Number.isFinite(priceScore)) {
-    const pct = Math.max(0, Math.round(100 - priceScore));
-    parts.push(
-      priceScore >= 65
-        ? 'Fiyat piyasa ortalamasına yakın veya avantajlı görünmektedir.'
-        : `Fiyat piyasa ortalamasının yaklaşık %${pct} üzerindedir.`
-    );
-  } else if (Number.isFinite(marketScore)) {
-    parts.push(
-      marketScore >= 70
-        ? 'Piyasa konumu güçlü değerlendirilmektedir.'
-        : marketScore >= 50
-          ? 'Piyasa konumu orta seviyededir.'
-          : 'Piyasa konumu zayıf görünmektedir.'
-    );
-  }
-
-  const pros = Array.isArray(analysis.pros) ? analysis.pros : [];
-  const cons = Array.isArray(analysis.cons) ? analysis.cons : [];
-  if (pros[0]) parts.push(`${String(pros[0]).charAt(0).toUpperCase()}${String(pros[0]).slice(1)}.`);
-  if (cons[0]) parts.push(`${String(cons[0]).charAt(0).toUpperCase()}${String(cons[0]).slice(1)}.`);
-
-  if (Number.isFinite(riskScore) && riskScore > 50) {
-    parts.push('Ekspertiz önerilir.');
-  } else if (Number.isFinite(aiScore) && aiScore >= 55) {
-    parts.push('İncelemeye gönderilmesi önerilir.');
-  } else if (parts.length < 3) {
-    parts.push('Detaylı inceleme yapılması önerilir.');
-  }
-
-  const summary = parts.slice(0, 5).join(' ');
-  return summary
-    ? `<p class="ai-listings-admin__executive-summary">${safeRenderText(summary)}</p>`
-    : `<p class="ai-listings-admin__muted">Özet oluşturulamadı.</p>`;
+  return `<p class="ai-listings-admin__muted">Özet oluşturulamadı.</p>`;
 }
 
 /**
@@ -1238,34 +1484,24 @@ export function resolveMarketIntelligenceForListing(listing, analysis = null) {
  */
 export function buildMarketIntelligenceCardHtml(listing, analysis = null) {
   const marketIntelligence = resolveMarketIntelligenceForListing(listing, analysis);
-  if (!marketIntelligence) {
-    return `<p class="ai-listings-admin__muted">Piyasa zekâsı verisi oluşturulamadı.</p>`;
+  if (!marketIntelligence || !shouldShowMarketBadge(marketIntelligence.market_context_score, null)) {
+    return `
+    <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--market-intelligence" aria-label="Piyasa Zekâsı">
+      <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">📊</span> Piyasa Zekâsı</h4>
+      <p class="ai-listings-admin__muted">${safeRenderText(INSUFFICIENT_DATA_LABEL)}</p>
+    </article>`;
   }
-
-  const reasons = Array.isArray(marketIntelligence.market_reasons)
-    ? marketIntelligence.market_reasons
-    : [];
-  const reasonsHtml = reasons.length
-    ? `<ul class="ai-listings-admin__market-intelligence-reasons">${reasons
-        .map((reason) => `<li>${safeRenderText(reason)}</li>`)
-        .join('')}</ul>`
-    : '<p class="ai-listings-admin__muted">Neden listesi oluşturulamadı.</p>';
 
   return `
     <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--market-intelligence" aria-label="Piyasa Zekâsı">
       <h4 class="ai-listings-admin__insight-title"><span aria-hidden="true">📊</span> Piyasa Zekâsı</h4>
       <dl class="ai-listings-admin__market-intelligence-grid">
         <div><dt>Segment</dt><dd>${safeRenderText(marketIntelligence.segment_label)}</dd></div>
-        <div><dt>Talep</dt><dd>${safeRenderText(marketIntelligence.demand_label)} (${safeRenderText(marketIntelligence.demand_score)})</dd></div>
-        <div><dt>Likidite</dt><dd>${safeRenderText(marketIntelligence.liquidity_label)} (${safeRenderText(marketIntelligence.liquidity_score)})</dd></div>
-        <div><dt>Piyasa Bağlam Skoru</dt><dd>${safeRenderText(marketIntelligence.market_context_score)}</dd></div>
+        <div><dt>Talep</dt><dd>${safeRenderText(marketIntelligence.demand_label)}</dd></div>
+        <div><dt>Likidite</dt><dd>${safeRenderText(marketIntelligence.liquidity_label)}</dd></div>
         <div><dt>Eğilim</dt><dd>${safeRenderText(marketIntelligence.market_trend)}</dd></div>
       </dl>
       <p class="ai-listings-admin__market-intelligence-summary">${safeRenderText(marketIntelligence.market_summary)}</p>
-      <div class="ai-listings-admin__market-intelligence-reasons-wrap">
-        <h5 class="ai-listings-admin__subsection-title">Nedenler</h5>
-        ${reasonsHtml}
-      </div>
     </article>`;
 }
 
@@ -1338,6 +1574,7 @@ function buildExecutiveListHtml(items, emptyLabel) {
  */
 export function buildExecutiveDecisionCardHtml(listing, analysis = null, events = null) {
   const executive = resolveExecutiveForListing(listing, analysis, events);
+  const managerOneLiner = buildExecutiveManagerOneLiner(analysis, listing, events);
 
   return `
     <article class="ai-listings-admin__insight-card ai-listings-admin__insight-card--executive" aria-label="AI Yönetici Kararı">
@@ -1347,7 +1584,9 @@ export function buildExecutiveDecisionCardHtml(listing, analysis = null, events 
         <div><dt>Karar Güveni</dt><dd>${safeRenderText(executive.executive_confidence)}%</dd></div>
         <div><dt>Karar</dt><dd>${safeRenderText(executive.executive_label)}</dd></div>
       </dl>
+      ${managerOneLiner ? `<p class="ai-listings-admin__executive-oneliner">${safeRenderText(managerOneLiner)}</p>` : ''}
       <p class="ai-listings-admin__executive-summary">${safeRenderText(executive.executive_summary)}</p>
+      ${buildExplainabilityPreviewHtml(listing, analysis, events)}
       <div class="ai-listings-admin__executive-columns">
         <div>
           <h5 class="ai-listings-admin__subsection-title">Güçlü Yönler</h5>
@@ -1790,7 +2029,7 @@ export function buildPremiumDashboardHtml(listing, analysis, events, status, mat
         ${buildHeroDecisionCardHtml(listing, analysis)}
         <section class="ai-listings-admin__section ai-listings-admin__section--summary ai-listings-admin__glass-card">
           <h4 class="ai-listings-admin__section-title"><span aria-hidden="true">🧠</span> AI Yönetici Özeti</h4>
-          ${buildExecutiveSummaryHtml(analysis)}
+          ${buildExecutiveSummaryHtml(analysis, listing, events)}
         </section>
       </div>
       ${buildDashboardTabsHtml(generalPanel, analysisPanel, qualityPanel, eventsPanel)}

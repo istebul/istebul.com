@@ -603,8 +603,8 @@ test('buildListingCardHtml renders premium listing card metrics', () => {
   });
   assert.match(html, /BMW 320i/);
   assert.match(html, /AI 91/);
-  assert.match(html, /Risk 18/);
-  assert.match(html, /Piyasa/);
+  assert.match(html, /Düşük risk/);
+  assert.match(html, /Yüksek fiyat|Makul aralık|listing-metric--price-position/);
   assert.match(html, /ai-listings-admin__listing-card/);
 });
 

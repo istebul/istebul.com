@@ -780,6 +780,42 @@ async function showListingDetail(listing) {
     const reasonEl = $('ai-listings-reject-reason');
     if (reasonEl) reasonEl.value = '';
   });
+
+  bindDuplicateDetailActions(detailEl);
+}
+
+function bindDuplicateDetailActions(root) {
+  root.querySelectorAll('[data-duplicate-detail-action]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-duplicate-detail-action');
+      if (action === 'open-existing') {
+        const matchedId = btn.getAttribute('data-matched-listing-id');
+        if (!matchedId) {
+          setStatus('Eşleşen ilan kimliği bulunamadı.', 'error');
+          return;
+        }
+        const existing = cachedListings.find((item) => String(item.id) === String(matchedId));
+        if (existing) {
+          showListingDetail(existing);
+          const card = document.querySelector(
+            `.ai-listings-admin__listing-card[data-listing-id="${CSS.escape(String(matchedId))}"]`
+          );
+          card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          card?.focus?.();
+          setStatus('Mevcut ilan açıldı.', 'success');
+          return;
+        }
+        setStatus('Eşleşen ilan listede bulunamadı.', 'error');
+        return;
+      }
+
+      if (action === 'leave-as-new') {
+        const card = root.querySelector('[data-duplicate-card]');
+        card?.setAttribute('hidden', '');
+        setStatus('Bu kayıt yeni ilan olarak bırakıldı.', 'info');
+      }
+    });
+  });
 }
 
 async function runQaAction(id, action, body) {
