@@ -15,9 +15,13 @@ function safe(value) {
 
 /**
  * @param {Record<string, unknown>} item
+ * @param {{ compareMode?: boolean, compareSelectedIds?: string[] }} [options]
  * @returns {string}
  */
-export function buildRecommendationCardHtml(item) {
+export function buildRecommendationCardHtml(item, options = {}) {
+  const compareMode = Boolean(options.compareMode);
+  const selectedIds = Array.isArray(options.compareSelectedIds) ? options.compareSelectedIds : [];
+  const isCompareSelected = selectedIds.includes(String(item.id ?? ''));
   const tags = Array.isArray(item.alternative_labels) ? item.alternative_labels : [];
   const tagHtml = tags
     .map((tag) => `<span class="ai-rec-card__alt-tag">${safe(tag)}</span>`)
@@ -47,6 +51,11 @@ export function buildRecommendationCardHtml(item) {
         </div>
       </header>
       ${tagHtml ? `<div class="ai-rec-card__tags">${tagHtml}</div>` : ''}
+      ${compareMode && item.id ? `
+      <label class="ai-rec-card__compare">
+        <input type="checkbox" class="ai-rec-card__compare-check" data-rec-compare-id="${safe(item.id)}"${isCompareSelected ? ' checked' : ''} aria-label="Karşılaştırmaya ekle" />
+        <span>Karşılaştır</span>
+      </label>` : ''}
       <div class="ai-rec-card__metrics">
         <span>Kalite: ${safe(item.quality_score ?? '—')}</span>
         <span>Risk: ${safe(item.risk_score ?? '—')}</span>
@@ -91,13 +100,14 @@ export function buildRecommendationCardHtml(item) {
 
 /**
  * @param {Array<Record<string, unknown>>} items
+ * @param {{ compareMode?: boolean, compareSelectedIds?: string[] }} [options]
  * @returns {string}
  */
-export function buildRecommendationCardsGridHtml(items) {
+export function buildRecommendationCardsGridHtml(items, options = {}) {
   if (!items.length) {
     return '<p class="ai-listings-admin__empty-state">Bu profil için öneri bulunamadı.</p>';
   }
-  return `<div class="ai-rec-grid">${items.map((item) => buildRecommendationCardHtml(item)).join('')}</div>`;
+  return `<div class="ai-rec-grid">${items.map((item) => buildRecommendationCardHtml(item, options)).join('')}</div>`;
 }
 
 export { ALTERNATIVE_TAG_LABELS_TR };

@@ -93,6 +93,8 @@ import {
   runExecutiveReportEngine
 } from '../ai-executive-decision-report/index.js';
 import { buildExecutiveReportPanelHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
+import { buildCompareInput, runCompareEngine } from '../ai-compare-intelligence/index.js';
+import { buildComparePanelHtml } from '../ai-compare-intelligence/compare-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
 
@@ -176,6 +178,12 @@ let recommendationGenerated = false;
 
 /** @type {ReturnType<typeof import('../ai-recommendation-engine/index.js').runRecommendationEngine>|null} */
 let cachedRecommendationResult = null;
+
+/** @type {string[]} */
+let compareSelectedIds = [];
+
+/** @type {boolean} */
+let compareModeEnabled = false;
 
 function $(id) {
   return document.getElementById(id);
@@ -572,7 +580,9 @@ function renderRecommendationsView() {
   if (!detailEl) return;
 
   const { html, result } = buildRecommendationsDashboardHtml(cachedListings, recommendationProfile, {
-    generated: recommendationGenerated
+    generated: recommendationGenerated,
+    compareMode: compareModeEnabled,
+    compareSelectedIds
   });
   if (result) cachedRecommendationResult = result;
 
@@ -649,6 +659,82 @@ function closeExecutiveReportPanel(root) {
   }
   root.querySelector('[data-edr-backdrop]')?.setAttribute('hidden', '');
   document.body.classList.remove('ai-listings-admin--edr-open');
+}
+
+function closeComparePanel(root) {
+  const host = root.querySelector('#ai-cmp-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-cmp-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--cmp-open');
+}
+
+/**
+ * @param {HTMLElement} root
+ */
+function updateCompareToolbar(root) {
+  const countEl = root.querySelector('[data-cmp-count]');
+  const compareBtn = root.querySelector('[data-cmp-action="compare"]');
+  const clearBtn = root.querySelector('[data-cmp-action="clear"]');
+  const toggle = root.querySelector('[data-cmp-action="toggle-mode"]');
+
+  if (countEl) countEl.textContent = `${compareSelectedIds.length} seçili`;
+  if (compareBtn) compareBtn.disabled = compareSelectedIds.length < 2;
+  if (clearBtn) clearBtn.hidden = compareSelectedIds.length === 0;
+  if (toggle) toggle.checked = compareModeEnabled;
+}
+
+function openComparePanel(root) {
+  if (compareSelectedIds.length < 2) {
+    const host = root.querySelector('#ai-cmp-panel-host');
+    if (!host) return;
+    host.innerHTML = buildComparePanelHtml(null, { title: 'Karşılaştırma Analizi' });
+    host.hidden = false;
+    document.body.classList.add('ai-listings-admin--cmp-open');
+    const body = host.querySelector('.ai-cmp-panel__body');
+    if (body) {
+      body.innerHTML = '<p class="ai-cmp-panel__empty">Karşılaştırma için en az iki öneri seçin.</p>';
+    }
+    host.querySelector('[data-cmp-panel-action="close"]')?.addEventListener('click', () => closeComparePanel(root));
+    host.querySelector('[data-cmp-backdrop]')?.addEventListener('click', () => closeComparePanel(root));
+    return;
+  }
+
+  if (!cachedRecommendationResult?.top?.length) return;
+
+  closeDecisionCoachPanel(root);
+  closeDecisionSimulatorPanel(root);
+  closeDecisionReportPanel(root);
+  closeOwnershipCostPanel(root);
+  closePurchaseDecisionPanel(root);
+  closeExplainabilityPanel(root);
+  closeExecutiveReportPanel(root);
+
+  const selected = cachedRecommendationResult.top.filter((item) =>
+    compareSelectedIds.includes(String(item.id))
+  );
+
+  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const cmpInput = buildCompareInput(selected, profile);
+  const compareIntelligence = runCompareEngine(cmpInput);
+
+  const host = root.querySelector('#ai-cmp-panel-host');
+  if (!host) return;
+
+  host.innerHTML = buildComparePanelHtml(compareIntelligence, {
+    title: `Karşılaştırma Analizi (${selected.length} seçenek)`
+  });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--cmp-open');
+
+  host.querySelector('[data-cmp-panel-action="close"]')?.addEventListener('click', () => {
+    closeComparePanel(root);
+  });
+  host.querySelector('[data-cmp-backdrop]')?.addEventListener('click', () => {
+    closeComparePanel(root);
+  });
 }
 
 /**
@@ -959,6 +1045,8 @@ function bindRecommendationsDashboardEvents(root) {
     closePurchaseDecisionPanel(root);
     closeExplainabilityPanel(root);
     closeExecutiveReportPanel(root);
+    closeComparePanel(root);
+    compareSelectedIds = [];
     renderRecommendationsView();
   });
 
@@ -1031,9 +1119,42 @@ function bindRecommendationsDashboardEvents(root) {
     });
   });
 
+  root.querySelector('[data-cmp-action="toggle-mode"]')?.addEventListener('change', (event) => {
+    compareModeEnabled = /** @type {HTMLInputElement} */ (event.target).checked;
+    renderRecommendationsView();
+  });
+
+  root.querySelector('[data-cmp-action="compare"]')?.addEventListener('click', () => {
+    openComparePanel(root);
+  });
+
+  root.querySelector('[data-cmp-action="clear"]')?.addEventListener('click', () => {
+    compareSelectedIds = [];
+    updateCompareToolbar(root);
+    root.querySelectorAll('[data-rec-compare-id]').forEach((cb) => {
+      /** @type {HTMLInputElement} */ (cb).checked = false;
+    });
+  });
+
+  root.querySelectorAll('[data-rec-compare-id]').forEach((checkbox) => {
+    checkbox.addEventListener('change', (event) => {
+      event.stopPropagation();
+      const id = checkbox.getAttribute('data-rec-compare-id');
+      if (!id) return;
+      if (/** @type {HTMLInputElement} */ (checkbox).checked) {
+        if (!compareSelectedIds.includes(id)) compareSelectedIds.push(id);
+      } else {
+        compareSelectedIds = compareSelectedIds.filter((item) => item !== id);
+      }
+      updateCompareToolbar(root);
+    });
+  });
+
+  updateCompareToolbar(root);
+
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-pd-id], [data-rec-exp-id], [data-rec-edr-id]')) return;
+      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-pd-id], [data-rec-exp-id], [data-rec-edr-id], [data-rec-compare-id], .ai-rec-card__compare]')) return;
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
