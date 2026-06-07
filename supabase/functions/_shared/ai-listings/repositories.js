@@ -3,6 +3,7 @@
  */
 
 import { EDGE_ERROR_CODES } from './errors.js';
+import { parsePersistedAnalysisFields } from './engine/canonical-engine.js';
 
 const TABLES = Object.freeze({
   LISTINGS: 'ai_listings',
@@ -41,7 +42,7 @@ function listingFromRow(row) {
 }
 
 function analysisFromRow(row) {
-  return {
+  const base = {
     id: row.id,
     listing_id: row.listing_id,
     ai_score: Number(row.ai_score ?? 0),
@@ -55,6 +56,14 @@ function analysisFromRow(row) {
     tags: Array.isArray(row.tags) ? row.tags.map(String) : [],
     analysis_version: row.analysis_version ?? 'v1',
     created_at: row.created_at
+  };
+  const parsed = parsePersistedAnalysisFields(base);
+  return {
+    ...base,
+    quality_score: parsed.quality_score,
+    decision_score: parsed.decision_score,
+    recommendation_label: parsed.recommendation_label,
+    is_engine_v1: parsed.isEngineV1
   };
 }
 

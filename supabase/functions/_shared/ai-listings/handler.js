@@ -4,7 +4,7 @@
 
 import { authorizeRequest } from './auth.js';
 import { preflightResponse } from './cors.js';
-import { runListingAnalysisPipeline } from './analysis-pipeline.js';
+import { runListingAnalysisPipeline, ANALYSIS_ENGINE_VERSION } from './analysis-pipeline.js';
 import { createEdgeRepositories } from './repositories.js';
 import { parseAiListingsRoute } from './router.js';
 import {
@@ -118,14 +118,14 @@ export async function executeListingsImport(repos, runAnalysis, normalizedRows, 
             details: pipeline.errors ?? null
           });
         } else {
-          const saved = await repos.createAnalysis(listing.id, pipeline.analysis, 'v1-edge');
+          const saved = await repos.createAnalysis(listing.id, pipeline.analysis, ANALYSIS_ENGINE_VERSION);
           await repos.createEvent({
             listing_id: listing.id,
             event_type: 'listing_analyzed',
             payload: {
               analysis_id: saved.id,
               ai_score: saved.ai_score,
-              rank_score: pipeline.context?.recommendation?.rank_score ?? null,
+              rank_score: pipeline.context?.recommendation?.score ?? saved.ai_score ?? null,
               import_batch: true
             }
           });
@@ -355,14 +355,14 @@ export async function handleAiListingsRequest(req, deps) {
         );
       }
 
-      const saved = await repos.createAnalysis(route.id, pipeline.analysis, 'v1-edge');
+      const saved = await repos.createAnalysis(route.id, pipeline.analysis, ANALYSIS_ENGINE_VERSION);
       await repos.createEvent({
         listing_id: route.id,
         event_type: 'listing_analyzed',
         payload: {
           analysis_id: saved.id,
           ai_score: saved.ai_score,
-          rank_score: pipeline.context?.recommendation?.rank_score ?? null
+          rank_score: pipeline.context?.recommendation?.score ?? saved.ai_score ?? null
         }
       });
 
@@ -400,14 +400,14 @@ export async function handleAiListingsRequest(req, deps) {
         );
       }
 
-      const saved = await repos.createAnalysis(route.id, pipeline.analysis, 'v1-edge');
+      const saved = await repos.createAnalysis(route.id, pipeline.analysis, ANALYSIS_ENGINE_VERSION);
       await repos.createEvent({
         listing_id: route.id,
         event_type: eventTypeForAction(QA_ACTIONS.REANALYZE),
         payload: {
           analysis_id: saved.id,
           ai_score: saved.ai_score,
-          rank_score: pipeline.context?.recommendation?.rank_score ?? null
+          rank_score: pipeline.context?.recommendation?.score ?? saved.ai_score ?? null
         }
       });
 

@@ -618,9 +618,9 @@ export function buildListingCardHtml(listing, isActive = false) {
     sourceType: String(listing.source_type ?? 'manual'),
     existingAnalysis: analysis
   });
-  const aiScore = analysis?.ai_score ?? engineMetrics.ai;
-  const riskScore = analysis?.risk_score ?? engineMetrics.risk;
-  const marketScore = analysis?.market_score ?? engineMetrics.market;
+  const aiScore = engineMetrics.ai ?? analysis?.ai_score;
+  const riskScore = engineMetrics.risk ?? analysis?.risk_score;
+  const marketScore = engineMetrics.market ?? analysis?.market_score;
   const qualityScore = engineMetrics.quality;
   const decisionLabel = engineMetrics.decision;
   const marketDelta = safeRenderText(computeMarketDeltaLabel(listing, analysis));
