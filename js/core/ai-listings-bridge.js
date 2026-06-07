@@ -64,19 +64,21 @@ export function mapLegacyListingToAiPayload(legacyRow) {
 }
 
 /**
- * Submit user listing to AI listings edge API.
+ * Submit user listing via public intake edge (anon key only — site pattern).
  * @param {Record<string, unknown>} listingData
- * @param {{ baseUrl: string, secret: string, anonKey: string }} config
+ * @param {{ baseUrl: string, anonKey: string, accessToken?: string }} config
  */
 export async function submitUserListingToAiEngine(listingData, config) {
   const payload = mapLegacyListingToAiPayload(listingData);
-  const response = await fetch(`${config.baseUrl}/listings`, {
+  const intakeUrl = `${config.baseUrl.replace(/\/$/, '')}/functions/v1/ai-listings-intake`;
+  const token = config.accessToken || config.anonKey;
+
+  const response = await fetch(intakeUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       apikey: config.anonKey,
-      Authorization: `Bearer ${config.anonKey}`,
-      'x-ai-listings-secret': config.secret
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify(payload)
   });
@@ -86,9 +88,9 @@ export async function submitUserListingToAiEngine(listingData, config) {
     return {
       ok: false,
       status: response.status,
-      message: json?.message ?? json?.error?.message ?? 'AI ilan kaydı başarısız'
+      message: json?.error ?? json?.message ?? 'AI ilan kaydı başarısız'
     };
   }
 
-  return { ok: true, data: json?.data ?? json };
+  return { ok: true, data: json };
 }

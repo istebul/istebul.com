@@ -1,15 +1,26 @@
 /**
- * Public AI listings client — reads published listings via Supabase anon key or edge public route.
+ * Public AI listings client — reads published listings via Supabase anon key (site_settings gated).
+ * Same connection pattern as listing-analysis and live-data integrations.
  */
 
 import { supabase } from './supabase.js';
+import {
+  fetchAiListingsSettings,
+  isAiListingsPublicEnabledFromBootstrap
+} from '../runtime/ai-listings-integrations.js';
 
 /**
  * @param {Record<string, unknown>} [env]
  * @returns {boolean}
  */
 export function isAiListingsPublicEnabled(env = {}) {
-  const raw = String(env.AI_LISTINGS_PUBLIC_PUBLISH_ENABLED ?? env.aiListingsPublicPublishEnabled ?? '')
+  if (isAiListingsPublicEnabledFromBootstrap()) return true;
+  const raw = String(
+    env.AI_LISTINGS_PUBLIC_PUBLISH_ENABLED ??
+      env.aiListingsPublicPublishEnabled ??
+      env.ai_listings_public_enabled ??
+      ''
+  )
     .trim()
     .toLowerCase();
   return raw === 'true' || raw === '1';
@@ -123,7 +134,9 @@ export async function getPublishedAiListingsViaEdge(env = {}) {
  * @returns {Promise<Array<Record<string, unknown>>>}
  */
 export async function loadPublicAiListings(env = {}, options = {}) {
-  if (!isAiListingsPublicEnabled(env)) return [];
+  const settings = await fetchAiListingsSettings();
+  const enabled = settings.aiListingsPublicEnabled || isAiListingsPublicEnabled(env);
+  if (!enabled) return [];
 
   try {
     const direct = await getPublishedAiListings(options);

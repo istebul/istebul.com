@@ -107,6 +107,7 @@ import {
     saveMarketData
 } from './data/market-data.js';
 import { bootstrapLiveDataIntegrations } from './runtime/live-data-integrations.js';
+import { bootstrapAiListingsIntegrations } from './runtime/ai-listings-integrations.js';
 import { estimateListingPeriodicCost } from './engines/cost-engine.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from './core/storage-keys.js';
 import {
@@ -167,6 +168,7 @@ class App {
     async init() {
         try {
             this.marketData = await bootstrapLiveDataIntegrations(this.marketData);
+            await bootstrapAiListingsIntegrations();
 
             const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
             initEnterpriseUx();
@@ -4640,12 +4642,12 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             }
 
             const env = window.__env || {};
-            const edgeSecret = localStorage.getItem('istebul_ai_listings_secret');
-            if (env.SUPABASE_URL && env.SUPABASE_ANON_KEY && edgeSecret) {
+            if (env.SUPABASE_URL && env.SUPABASE_ANON_KEY) {
+                const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
                 submitUserListingToAiEngine(listingPayload, {
-                    baseUrl: `${env.SUPABASE_URL}/functions/v1/ai-listings`,
-                    secret: edgeSecret,
-                    anonKey: env.SUPABASE_ANON_KEY
+                    baseUrl: env.SUPABASE_URL,
+                    anonKey: env.SUPABASE_ANON_KEY,
+                    accessToken: session?.access_token
                 }).catch(() => {});
             }
 
