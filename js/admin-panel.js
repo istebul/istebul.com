@@ -49,7 +49,7 @@ import {
 } from './features/sales/partner-crm-pipeline.js';
 import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
 import { initAdminShell } from './admin/admin-shell.js';
-import { injectDecisionCenterNav } from './admin/admin-decision-nav.js';
+import { injectAdminListingManagementNav } from './admin/admin-decision-nav.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
@@ -173,7 +173,11 @@ async function login() {
     return;
   }
   currentUser = data.user;
-  showApp();
+  await showApp();
+  const returnTo = new URLSearchParams(window.location.search).get('returnTo');
+  if (returnTo && returnTo.startsWith('/admin')) {
+    window.location.assign(returnTo);
+  }
 }
 
 async function logout() {
@@ -207,7 +211,7 @@ async function showApp() {
   const topAvatar = document.getElementById('admin-topbar-avatar');
   if (topEmail) topEmail.textContent = email;
   if (topAvatar) topAvatar.textContent = email[0]?.toUpperCase() || 'A';
-  injectDecisionCenterNav();
+  injectAdminListingManagementNav();
   initPartnerApplicationsShell();
   loadDashboard();
   loadSettings();

@@ -40,6 +40,12 @@ import {
   verifyAdminSessionAccess,
   resolveAdminPanelAccess
 } from './ai-listings-admin-access.js';
+import {
+  enforceAdminRoute,
+  renderAdminForbiddenHtml,
+  PUBLIC_DECISION_CENTER_PATH,
+  ADMIN_LOGIN_PATH
+} from './admin-route-guard.js';
 import { runDuplicateEngine } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
 import { IMPORT_MAX_ROWS } from '../../supabase/functions/_shared/ai-listings/import-parser.js';
 import { buildAcquisitionEventPayload } from '../../supabase/functions/_shared/ai-listings/acquisition/acquisition-events.js';
@@ -316,19 +322,18 @@ function renderDisabledState(options = {}) {
 
   const adminLoginHint = options.showAdminLogin
     ? `<p class="ai-listings-admin__gate-actions">
-        <a class="ai-listings-admin__btn ai-listings-admin__btn--primary" href="/admin-panel.html">Admin paneline giriş yap</a>
-        <span class="ai-listings-admin__gate-or">veya</span>
+        <a class="ai-listings-admin__btn ai-listings-admin__btn--primary" href="${ADMIN_LOGIN_PATH}">Admin paneline giriş yap</a>
+        <a class="ai-listings-admin__btn ai-listings-admin__btn--ghost" href="${PUBLIC_DECISION_CENTER_PATH}">Karar Merkezi (kullanıcı)</a>
       </p>`
     : '';
 
   root.innerHTML = `
     <div class="ai-listings-admin__gate">
-      <h2>Yapay Zeka Karar Merkezi — Erişim Gerekli</h2>
-      <p>Bu panel yalnızca admin kullanıcılar veya etkinleştirilmiş test oturumları için kullanılabilir.</p>
+      <h2>AI İlan Yönetimi — Admin Erişimi Gerekli</h2>
+      <p>Bu ekran yalnızca admin rolüne sahip kullanıcılar içindir. Kullanıcı Karar Merkezi için profil panelini kullanın.</p>
       ${adminLoginHint}
-      <p>Geliştirici testi için:</p>
-      <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_ENABLE_KEY}', 'on')</pre>
-      <p>Etkinleştirdikten sonra sayfayı yenileyin. Bkz. docs/ai-listings/ADMIN_TEST_PANEL.md</p>
+      <p>Edge API secret (admin):</p>
+      <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_SECRET_KEY}', '&lt;secret&gt;')</pre>
     </div>`;
 }
 
@@ -2808,10 +2813,14 @@ function bindEvents() {
 
 export async function initAiListingsAdmin() {
   const sessionAccess = await verifyAdminSessionAccess();
-  const state = resolveAdminPanelAccess(storage(), sessionAccess);
+  if (!sessionAccess.sessionIsAdmin) {
+    await enforceAdminRoute({ returnTo: window.location.pathname });
+    return;
+  }
 
+  const state = resolveAdminPanelAccess(storage(), sessionAccess);
   if (state === 'disabled') {
-    renderDisabledState({ showAdminLogin: true });
+    renderAdminForbiddenHtml($('ai-listings-admin-root'), { showPublicLink: true });
     return;
   }
 

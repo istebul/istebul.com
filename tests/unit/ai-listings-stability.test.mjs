@@ -88,14 +88,16 @@ test('edge auth requires module enabled and x-ai-listings-secret', async () => {
   assert.equal(isAiListingsModuleEnabled({ AI_LISTINGS_SUPABASE_ENABLED: 'true' }), true);
 });
 
-test('admin panel access supports localStorage gate or admin session and never hardcodes secret', () => {
+test('admin listing UI requires admin session and never hardcodes secret', () => {
   const core = fs.readFileSync(adminCorePath, 'utf8');
   const accessPath = path.join(root, 'js/admin/ai-listings-admin-access.js');
   const access = fs.readFileSync(accessPath, 'utf8');
+  const guardPath = path.join(root, 'js/admin/admin-route-guard.js');
 
   assert.match(core, /ADMIN_ENABLE_KEY/);
   assert.match(access, /verifyAdminSessionAccess/);
   assert.match(access, /resolveAdminPanelAccess/);
+  assert.match(fs.readFileSync(guardPath, 'utf8'), /enforceAdminRoute/);
   assert.doesNotMatch(core, /AI_LISTINGS_EDGE_SECRET\s*=\s*['"][^'"]+['"]/);
   assert.equal(isAdminPanelEnabled({ getItem: () => null }), false);
   assert.equal(getAdminPanelState({ getItem: (key) => (key === ADMIN_ENABLE_KEY ? 'on' : null) }), 'no-secret');

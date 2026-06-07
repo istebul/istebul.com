@@ -1,14 +1,11 @@
 /**
- * Admin CRM — Decision Center navigation injection (runtime, no static HTML links).
+ * Admin CRM — listing management navigation (admin-only, runtime injection).
  */
 
-/** @type {Readonly<string>} */
-export const DECISION_CENTER_HREF = '/admin/ai-listings.html';
+/** Admin listing CRUD — NOT public Decision Center (/profil/). */
+export const ADMIN_LISTING_MANAGEMENT_HREF = '/admin/listings';
 
-/** @type {Readonly<string>} */
-export const AI_LISTINGS_HREF = '/admin/listings';
-
-const NAV_MARKER = 'data-decision-nav-injected';
+const NAV_MARKER = 'data-admin-listing-nav-injected';
 
 /**
  * @param {string} href
@@ -18,8 +15,9 @@ const NAV_MARKER = 'data-decision-nav-injected';
  */
 function buildExternalNavItem(href, label, icon) {
   const item = document.createElement('div');
-  item.className = 'nav-item nav-item--external';
+  item.className = 'nav-item nav-item--external nav-item--admin-only';
   item.setAttribute('data-nav-href', href);
+  item.setAttribute('data-admin-only', 'true');
   item.setAttribute('role', 'link');
   item.setAttribute('tabindex', '0');
   item.innerHTML = `<span class="nav-icon" aria-hidden="true">${icon}</span><span class="nav-label">${label}</span>`;
@@ -36,31 +34,17 @@ function navigateExternalNavItem(item) {
 }
 
 /**
- * Injects Karar Merkezi + AI İlan Yönetimi links into admin sidebar after admin auth.
+ * Injects admin-only AI listing management link after successful admin auth.
  */
-export function injectDecisionCenterNav() {
+export function injectAdminListingManagementNav() {
   const nav = document.getElementById('admin-nav');
   if (!nav || nav.querySelector(`[${NAV_MARKER}]`)) return;
 
   const listingsItem = nav.querySelector('[data-page-target="listings"]');
   if (listingsItem) {
-    const aiListings = buildExternalNavItem(AI_LISTINGS_HREF, 'AI İlan Yönetimi', '◈');
+    const aiListings = buildExternalNavItem(ADMIN_LISTING_MANAGEMENT_HREF, 'AI İlan Yönetimi', '◈');
     aiListings.setAttribute(NAV_MARKER, 'ai-listings');
     listingsItem.insertAdjacentElement('afterend', aiListings);
-  }
-
-  const aiGroup = Array.from(nav.querySelectorAll('.nav-group')).find((group) => {
-    const toggle = group.querySelector('.nav-group-toggle');
-    return toggle?.textContent?.includes('AI Karar Motoru');
-  });
-
-  if (aiGroup) {
-    const body = aiGroup.querySelector('.nav-group-body');
-    if (body) {
-      const decisionCenter = buildExternalNavItem(DECISION_CENTER_HREF, 'Karar Merkezi', '◆');
-      decisionCenter.setAttribute(NAV_MARKER, 'decision-center');
-      body.prepend(decisionCenter);
-    }
   }
 
   nav.querySelectorAll('.nav-item--external').forEach((item) => {
@@ -75,3 +59,6 @@ export function injectDecisionCenterNav() {
     });
   });
 }
+
+/** @deprecated Use injectAdminListingManagementNav */
+export const injectDecisionCenterNav = injectAdminListingManagementNav;
