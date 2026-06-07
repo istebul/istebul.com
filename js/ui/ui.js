@@ -629,7 +629,7 @@ export class UIManager {
         this.loadIcons();
     }
 
-    async renderListingDetail(listing, favoriteIds = [], decisionProfile = null, comparisonSignatures = []) {
+    async renderListingDetail(listing, favoriteIds = [], decisionProfile = null, comparisonSignatures = [], userDecisionContext = null) {
         const section = document.getElementById('listing-detail-content');
         if (!section) return;
 
@@ -675,6 +675,7 @@ export class UIManager {
                     </div>
                 </div>
                 ${this.getListingDetailDecisionMarkup(decisionProfile, listing)}
+                <div class="listing-detail-decision-center">${await this.getUserDecisionCenterMarkup(userDecisionContext, listing)}</div>
             </div>
         `;
 
@@ -682,6 +683,15 @@ export class UIManager {
         this.loadIcons();
     }
 
+    async getUserDecisionCenterMarkup(ctx, listing = {}) {
+        const { buildUserDecisionCenterHtml, buildUserDecisionCenterEmptyHtml } = await import(
+            '../user-decision-center/index.js'
+        );
+        if (!ctx) {
+            return buildUserDecisionCenterEmptyHtml('Bu ilan için karar analizi henüz hazır değil.');
+        }
+        return buildUserDecisionCenterHtml({ ...ctx, listing: ctx.listing ?? listing });
+    }
 
     getListingDetailDecisionMarkup(profile, listing = {}) {
         if (!profile) return '';

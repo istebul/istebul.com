@@ -138,6 +138,10 @@ class App {
         this.comparisonItems = [];
         this.comingSoonCategories = [];
         this.decisionHistory = [];
+        this.userDecisionEvents = [];
+        this.userDecisionRecords = [];
+        this.userPreferenceSignals = [];
+        this.userFeedbackOutcomes = [];
         this.localListings = [];
         this.previewCategory = 'arac';
         this.catalog = this.createDecisionCatalog();
@@ -4839,6 +4843,82 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         };
     }
 
+    buildUserDecisionIntentForListing(listing = {}) {
+        const categoryMap = { arac: 'vehicle', ev: 'housing', tatil: 'vacation', konut: 'housing' };
+        const category = categoryMap[listing.category] || listing.category || 'vehicle';
+        return {
+            category,
+            budget: Number(listing.price || 0) * 1.1 || 500000,
+            city: listing.location || 'İstanbul',
+            usage_type: 'family',
+            family_size: 4,
+            annual_km: 15000,
+            risk_tolerance: 'medium',
+            priority: 'total_cost',
+            ownership_period: 5
+        };
+    }
+
+    async resolveUserDecisionForListing(listing) {
+        const { resolveUserDecisionContext } = await import('./user-decision-center/index.js');
+        const userIntent = this.buildUserDecisionIntentForListing(listing);
+        return resolveUserDecisionContext(listing, userIntent, { lazyScenario: true });
+    }
+
+    async recordUserDecisionEvent(listing, eventType) {
+        const {
+            createHistoryEvent,
+            appendHistoryEvent,
+            normalizeHistoryRecord
+        } = await import('./decision-history/index.js');
+        const { createSignalsFromEvent, aggregatePreferenceProfile } = await import(
+            './preference-intelligence/index.js'
+        );
+
+        const userId = this.currentUser?.id || 'guest';
+        const listingId = String(listing?.id ?? '');
+        const existing = this.userDecisionRecords.find((r) => String(r.listing_id) === listingId) || {};
+
+        const { events, record } = appendHistoryEvent(this.userDecisionEvents, existing, {
+            userId,
+            listingId,
+            eventType,
+            listingTitle: listing?.title,
+            listingCategory: listing?.category
+        });
+
+        this.userDecisionEvents = events;
+        const recordIdx = this.userDecisionRecords.findIndex((r) => String(r.listing_id) === listingId);
+        const nextRecord = normalizeHistoryRecord({ ...record, user_id: userId });
+        if (recordIdx >= 0) this.userDecisionRecords[recordIdx] = nextRecord;
+        else this.userDecisionRecords.unshift(nextRecord);
+
+        const newSignals = createSignalsFromEvent({ userId, eventType });
+        this.userPreferenceSignals = [...newSignals, ...this.userPreferenceSignals].slice(0, 200);
+        this.userPreferenceProfile = aggregatePreferenceProfile(this.userPreferenceSignals, {
+            user_id: userId,
+            ...(this.userPreferenceProfile || {})
+        });
+
+        return createHistoryEvent({ userId, listingId, eventType });
+    }
+
+    getUserDecisionPanelData(decisionContext = null) {
+        return {
+            activeTab: 'overview',
+            decisionContext,
+            history: {
+                events: this.userDecisionEvents,
+                records: this.userDecisionRecords
+            },
+            preferences: this.userPreferenceProfile || {},
+            feedback: {
+                listingId: decisionContext?.listing?.id,
+                outcomes: this.userFeedbackOutcomes
+            }
+        };
+    }
+
     createComparisonItemFromListing(listing) {
         const categoryId = listing.category || 'genel';
         const profile = this.getCostProfile(listing.category);
@@ -5050,10 +5130,24 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     async loadListingDetail(listingId) {
+        const renderDetail = async (listing) => {
+            this.currentDetailListing = listing;
+            const decisionProfile = this.createComparisonItemFromListing(listing);
+            const userDecisionContext = await this.resolveUserDecisionForListing(listing);
+            await this.recordUserDecisionEvent(listing, 'listing_viewed');
+            await this.recordUserDecisionEvent(listing, 'decision_center_opened');
+            await this.ui.renderListingDetail(
+                listing,
+                this.getFavoriteIds(),
+                decisionProfile,
+                this.getComparisonSignatures(),
+                userDecisionContext
+            );
+        };
+
         const localListing = this.getLocalListingById(listingId);
         if (localListing) {
-            this.currentDetailListing = localListing;
-            this.ui.renderListingDetail(localListing, this.getFavoriteIds(), this.createComparisonItemFromListing(localListing), this.getComparisonSignatures());
+            await renderDetail(localListing);
             return;
         }
 
@@ -5068,14 +5162,12 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 this.ui.showError('İlan detayları bulunamadı.');
                 return;
             }
-            this.currentDetailListing = fallbackListing;
-            this.ui.renderListingDetail(fallbackListing, this.getFavoriteIds(), this.createComparisonItemFromListing(fallbackListing), this.getComparisonSignatures());
+            await renderDetail(fallbackListing);
         } catch (error) {
             console.error('Failed to load listing detail:', error);
             const fallbackListing = this.getListingFallbackById(listingId);
             if (fallbackListing) {
-                this.currentDetailListing = fallbackListing;
-                this.ui.renderListingDetail(fallbackListing, this.getFavoriteIds(), this.createComparisonItemFromListing(fallbackListing), this.getComparisonSignatures());
+                await renderDetail(fallbackListing);
                 this.ui.showError('Canlı ilan detayına ulaşılamadı.');
                 return;
             }
