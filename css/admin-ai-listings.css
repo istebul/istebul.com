@@ -2063,3 +2063,59 @@
   flex-wrap: wrap;
   gap: calc(var(--ai-grid) * 0.75);
 }
+
+.ai-listings-builder__market-intelligence {
+  margin-top: calc(var(--ai-grid) * 1);
+  padding: calc(var(--ai-grid) * 1);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.ai-listings-builder__market-intelligence h4 {
+  margin: 0 0 calc(var(--ai-grid) * 0.75);
+  font-size: 0.95rem;
+}
+
+.ai-listings-builder__fields--compact {
+  grid-template-columns: minmax(5rem, auto) 1fr;
+}
+
+.ai-listings-builder__market-intelligence-note {
+  margin: calc(var(--ai-grid) * 0.75) 0 0;
+  font-size: 0.78rem;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.ai-listings-admin__insight-card--market-intelligence {
+  margin-bottom: calc(var(--ai-grid) * 1.25);
+}
+
+.ai-listings-admin__market-intelligence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: calc(var(--ai-grid) * 0.75);
+  margin: 0 0 calc(var(--ai-grid) * 1);
+}
+
+.ai-listings-admin__market-intelligence-grid dt {
+  font-size: 0.72rem;
+  color: rgba(148, 163, 184, 0.95);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ai-listings-admin__market-intelligence-grid dd {
+  margin: 0.15rem 0 0;
+  font-weight: 600;
+}
+
+.ai-listings-admin__market-intelligence-summary {
+  margin: 0 0 calc(var(--ai-grid) * 0.75);
+  line-height: 1.5;
+}
+
+.ai-listings-admin__market-intelligence-reasons {
+  margin: 0;
+  padding-left: 1.1rem;
+}

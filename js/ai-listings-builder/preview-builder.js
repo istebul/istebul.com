@@ -4,6 +4,9 @@
 
 import { escapeHtml } from '../core/dom-safe.js';
 import { logBuilderStage } from './debug-log.js';
+import { normalizeCanonicalListing } from '../../supabase/functions/_shared/ai-listings/engine/canonical-engine.js';
+import { runMarketIntelligence } from '../ai-listings-engine/market-intelligence/market-intelligence.js';
+import { buildMarketIntelligencePreviewHtml } from '../ai-listings-engine/market-intelligence/market-summary.js';
 
 /** @type {Readonly<Record<string, string>>} */
 const INPUT_TYPE_LABELS = Object.freeze({
@@ -52,7 +55,14 @@ export function buildPreviewHtml(canonical) {
         .join('')}</ul>`
     : '<p class="ai-listings-builder__ok">Uyarı yok.</p>';
 
-  return `
+  const marketListing = normalizeCanonicalListing({
+    id: 'builder-preview',
+    ...canonical
+  });
+  const marketIntelligence = runMarketIntelligence(marketListing);
+  const marketIntelligenceHtml = buildMarketIntelligencePreviewHtml(marketIntelligence);
+
+  const html = `
     <section class="ai-listings-builder__preview" data-builder-preview>
       <header class="ai-listings-builder__preview-head">
         <h3>Önizleme</h3>
@@ -82,6 +92,7 @@ export function buildPreviewHtml(canonical) {
         <h4>Uyarılar</h4>
         ${warningsHtml}
       </div>
+      ${marketIntelligenceHtml}
       <details class="ai-listings-builder__json-details">
         <summary>JSON önizleme</summary>
         <pre class="ai-listings-builder__json">${escapeHtml(buildPreviewJson(canonical))}</pre>

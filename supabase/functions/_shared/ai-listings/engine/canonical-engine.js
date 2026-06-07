@@ -7,6 +7,10 @@ import { runQualityEngine } from './quality-engine.js';
 import { runMarketEngine } from './market-engine.js';
 import { runRiskEngine } from './risk-engine.js';
 import { runDecisionEngine } from './decision-engine.js';
+import {
+  runMarketIntelligence,
+  buildMarketIntelligenceTags
+} from '../market-intelligence/market-intelligence.js';
 
 export const ANALYSIS_ENGINE_VERSION = ENGINE_VERSION;
 
@@ -66,11 +70,12 @@ export function normalizeCanonicalListing(listing) {
  *   quality: ReturnType<typeof runQualityEngine>,
  *   market: ReturnType<typeof runMarketEngine>,
  *   risk: ReturnType<typeof runRiskEngine>,
- *   decision: ReturnType<typeof runDecisionEngine>
+ *   decision: ReturnType<typeof runDecisionEngine>,
+ *   market_intelligence: ReturnType<typeof runMarketIntelligence>
  * }} engines
  */
 export function buildAnalysisRecord(listing, engines) {
-  const { quality, market, risk, decision } = engines;
+  const { quality, market, risk, decision, market_intelligence } = engines;
 
   const tags = [
     ENGINE_VERSION,
@@ -80,6 +85,10 @@ export function buildAnalysisRecord(listing, engines) {
     `risk_level:${risk.risk_label}`,
     String(listing.category ?? 'general')
   ];
+
+  if (market_intelligence) {
+    tags.push(...buildMarketIntelligenceTags(market_intelligence));
+  }
 
   if (market.deviation_pct !== undefined) {
     tags.push(`deviation_pct:${market.deviation_pct}`);
@@ -174,8 +183,15 @@ export function runCanonicalEngine(input) {
   const quality = runQualityEngine(canonical);
   const market = runMarketEngine(canonical);
   const risk = runRiskEngine(canonical, quality);
+  const market_intelligence = runMarketIntelligence(canonical, { quality, risk, market });
   const decision = runDecisionEngine(canonical, quality, market, risk);
-  const analysis = buildAnalysisRecord(canonical, { quality, market, risk, decision });
+  const analysis = buildAnalysisRecord(canonical, {
+    quality,
+    market,
+    risk,
+    decision,
+    market_intelligence
+  });
 
   return {
     ok: true,
@@ -187,6 +203,7 @@ export function runCanonicalEngine(input) {
       market,
       risk,
       decision,
+      market_intelligence,
       recommendation: {
         label: decision.recommendation_label,
         score: decision.decision_score
