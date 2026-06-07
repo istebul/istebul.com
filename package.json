@@ -55,6 +55,7 @@
     "verify:deploy": "node scripts/verify-deploy-setup.cjs",
     "go-live:verify": "node scripts/go-live-production.cjs",
     "audit:gsc-index": "node scripts/gsc-index-readiness-audit.cjs",
+    "audit:decision-platform-2": "node scripts/decision-platform-2-audit.cjs && node scripts/decision-center-audit.cjs && node scripts/personalization-audit.cjs && node scripts/data-quality-audit.cjs",
     "metrics:investor": "node scripts/investor-metrics-snapshot.cjs",
     "metrics:unit-economics": "node scripts/unit-economics-snapshot.cjs",
     "metrics:investor:pack": "node scripts/investor-readiness-pack.cjs",

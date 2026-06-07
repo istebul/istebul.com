@@ -127,6 +127,15 @@ import {
 } from '../ai-scenario-simulator/index.js';
 import { buildScenarioPanelHtml, buildScenarioShellHtml } from '../ai-scenario-simulator/scenario-card-builder.js';
 import { buildOwnershipCostInput as buildOcInput } from '../ai-ownership-cost/index.js';
+import {
+  runLearningInsightsEngine,
+  buildLearningInsightsPanelHtml
+} from '../ai-user-learning/index.js';
+import { runListingDataPoolEngine, buildDataPoolPanelHtml } from '../ai-listing-data-pool/index.js';
+import {
+  runPersonalizationSuite,
+  buildPreferenceProfilePanelHtml
+} from '../ai-personalization/index.js';
 import { buildExecutiveDecisionShellHtml } from '../ai-purchase-decision/executive-decision-card-builder.js';
 import { buildExplainabilityShellHtml } from '../ai-decision-explainability/explainability-card-builder.js';
 import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
@@ -227,6 +236,24 @@ let compareSelectedIds = [];
 
 /** @type {boolean} */
 let compareModeEnabled = false;
+
+/** @type {Array<Record<string, unknown>>} */
+let cachedLearningEvents = [];
+
+/**
+ * @param {string} eventType
+ * @param {Record<string, unknown>} [payload]
+ */
+function recordLearningEvent(eventType, payload = {}) {
+  cachedLearningEvents.push({
+    event_type: eventType,
+    timestamp: new Date().toISOString(),
+    ...payload
+  });
+  if (cachedLearningEvents.length > 100) {
+    cachedLearningEvents = cachedLearningEvents.slice(-100);
+  }
+}
 
 function $(id) {
   return document.getElementById(id);
@@ -1039,6 +1066,48 @@ function openExplainabilityPanel(root, recordId, options = {}) {
   bindPanelClose(host, root, 'exp', () => closeExplainabilityPanel(root));
 }
 
+function openLearningInsightsPanel(root, listing, recommendation = null) {
+  const mount = root.querySelector('#ai-ws-detail-mount');
+  if (!mount) return;
+
+  recordLearningEvent('decision_center_viewed', {
+    listing_id: String(listing?.id ?? ''),
+    category: String(listing?.category ?? 'general')
+  });
+
+  const insights = runLearningInsightsEngine(cachedLearningEvents, [], [], { skipCache: true });
+  mount.innerHTML = buildLearningInsightsPanelHtml(insights);
+  mount.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function openPreferenceProfilePanel(root, listing, recommendation, profile) {
+  const mount = root.querySelector('#ai-ws-detail-mount');
+  if (!mount || !recommendation?.id) {
+    setStatus('Tercih profili için önce bir öneri oluşturun.', 'info');
+    return;
+  }
+
+  recordLearningEvent('recommendation_viewed', {
+    listing_id: String(listing?.id ?? recommendation.id),
+    category: String(listing?.category ?? recommendation.category ?? 'general')
+  });
+
+  const pdInput = buildPurchaseDecisionInput(recommendation, profile);
+  const pd = runPurchaseDecisionEngine(pdInput, { skipCache: true });
+  const suite = runPersonalizationSuite(recommendation, pd, {}, profile, { skipCache: true });
+  mount.innerHTML = buildPreferenceProfilePanelHtml(suite.profile, suite);
+  mount.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function openDataPoolPanel(root, listing) {
+  const mount = root.querySelector('#ai-ws-detail-mount');
+  if (!mount || !listing?.id) return;
+
+  const pool = runListingDataPoolEngine([listing], { skipCache: true });
+  mount.innerHTML = buildDataPoolPanelHtml(pool);
+  mount.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 function openExecutiveReportPanel(root, recordId, options = {}) {
   const host = root.querySelector('#ai-edr-panel-host') ?? document.querySelector('#ai-edr-panel-host');
   if (!host) return;
@@ -1307,8 +1376,21 @@ function resolveWorkspaceContext(listing, recommendation = null) {
     hasCompare: compareSelectedIds.length >= 2,
     duplicateLabel: null,
     missingCount: 0,
-    scenarioTeaser: 'Fiyat, maliyet ve risk senaryolarını tahmini olarak değerlendirin.'
+    scenarioTeaser: 'Fiyat, maliyet ve risk senaryolarını tahmini olarak değerlendirin.',
+    dataCompleteness: 0,
+    entityConfidence: 0,
+    learningEventCount: cachedLearningEvents.length,
+    hasPersonalization: false
   };
+
+  try {
+    const pool = runListingDataPoolEngine([listing], { skipCache: true });
+    ctx.dataCompleteness = Number(pool.avgDataCompleteness ?? 0);
+    ctx.entityConfidence = Number(pool.avgEntityConfidence ?? 0);
+  } catch {
+    ctx.dataCompleteness = 0;
+    ctx.entityConfidence = 0;
+  }
 
   if (!rec?.id) return ctx;
 
@@ -1332,6 +1414,9 @@ function resolveWorkspaceContext(listing, recommendation = null) {
     ctx.hasNegotiation = Array.isArray(pd?.negotiationScenario) && pd.negotiationScenario.length > 0;
     ctx.decisionSummary = pd?.summary ?? ctx.decisionSummary;
     ctx.scenarioTeaser = `Tahmini karar skoru ${pd?.decisionScore ?? '—'}; senaryolarla etkiyi inceleyin.`;
+
+    const personalization = runPersonalizationSuite(rec, pd, {}, profile);
+    ctx.hasPersonalization = Boolean(personalization?.personalization);
   } catch {
     ctx.limitedData = true;
   }
@@ -1356,6 +1441,7 @@ function bindWorkspaceEvents(root) {
         recommendationId: String(rec?.id ?? ''),
         compareSelectionKey: buildCompareSelectionKey(compareSelectedIds)
       };
+      const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
 
       if (action === 'purchase') openAiListingsDrawer(root, 'purchase', drawerContext);
       else if (action === 'explain') openAiListingsDrawer(root, 'explain', drawerContext);
@@ -1375,6 +1461,12 @@ function bindWorkspaceEvents(root) {
         openAiListingsDrawer(root, 'negotiation', drawerContext);
       } else if (action === 'quality') {
         openAiListingsDrawer(root, 'quality', drawerContext);
+      } else if (action === 'learning') {
+        openLearningInsightsPanel(root, selectedListing, rec);
+      } else if (action === 'preferences') {
+        openPreferenceProfilePanel(root, selectedListing, rec, profile);
+      } else if (action === 'data_pool') {
+        openDataPoolPanel(root, selectedListing);
       }
     });
   });
