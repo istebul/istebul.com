@@ -146,7 +146,7 @@ function renderConfidenceExplanation(confidence) {
 export function buildExplainabilityPanelHtml(result, meta = {}) {
   if (!result || typeof result !== 'object' || result.explanationScore == null) {
     return `
-      <aside class="ai-exp-panel" role="dialog" aria-label="Karar Açıklaması">
+      <aside class="ai-exp-panel" role="dialog" aria-modal="true" aria-label="Karar Açıklaması">
         <header class="ai-exp-panel__head">
           <div>
             <p class="ai-exp-panel__eyebrow">Karar Açıklaması</p>
@@ -170,7 +170,7 @@ export function buildExplainabilityPanelHtml(result, meta = {}) {
         : 'ai-exp-panel__level--neutral';
 
   return `
-    <aside class="ai-exp-panel" data-exp-panel${meta.recordId ? ` data-exp-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-label="Karar Açıklaması">
+    <aside class="ai-exp-panel" data-exp-panel${meta.recordId ? ` data-exp-record-id="${safe(meta.recordId)}"` : ''} role="dialog" aria-modal="true" aria-label="Karar Açıklaması">
       <header class="ai-exp-panel__head">
         <div>
           <p class="ai-exp-panel__eyebrow">Karar Açıklaması</p>

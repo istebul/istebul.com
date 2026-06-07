@@ -8,6 +8,7 @@
  */
 
 import { escapeHtml } from '../core/dom-safe.js';
+import { computeNormalizedKpiStats } from './ai-listings-admin-kpi.js';
 import { isHttpOrHttpsUrl } from '../../supabase/functions/_shared/ai-listings/validation.js';
 import {
   STATUS_FILTER_CHIPS,
@@ -479,63 +480,8 @@ export function buildProgressBarHtml(score, label) {
  *   trends: Record<string, { label: string, hint: string, positive: boolean }>
  * }}
  */
-export function computeKpiStats(listings) {
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-
-  let analyzedToday = 0;
-  let analyzedYesterday = 0;
-  let pendingReview = 0;
-  let highRisk = 0;
-  let createdThisWeek = 0;
-
-  for (const listing of listings) {
-    if (String(listing.status ?? '') === 'pending_review') pendingReview += 1;
-    const analysis = extractLatestAnalysis(listing);
-    const riskScore = Number(analysis?.risk_score);
-    if (Number.isFinite(riskScore) && riskScore >= 61) highRisk += 1;
-    const analyzedAt = String(analysis?.created_at ?? '').slice(0, 10);
-    if (analyzedAt === today) analyzedToday += 1;
-    if (analyzedAt === yesterday) analyzedYesterday += 1;
-    const createdAt = String(listing.created_at ?? '').slice(0, 10);
-    if (createdAt >= weekAgo) createdThisWeek += 1;
-  }
-
-  const total = listings.length;
-  const weekPct = total > 0 ? Math.round((createdThisWeek / total) * 100) : 0;
-  const analyzedDelta = analyzedToday - analyzedYesterday;
-  const pendingDelta = Math.min(pendingReview, 3);
-  const riskDelta = highRisk > 0 ? -Math.min(2, highRisk) : 0;
-
-  return {
-    total,
-    analyzedToday,
-    pendingReview,
-    highRisk,
-    trends: {
-      total: {
-        label: weekPct > 0 ? `+${weekPct}%` : '0%',
-        hint: 'son 7 gün',
-        positive: weekPct >= 0
-      },
-      'analyzed-today': {
-        label: analyzedDelta >= 0 ? `+${analyzedDelta}` : String(analyzedDelta),
-        hint: 'düne göre',
-        positive: analyzedDelta >= 0
-      },
-      'high-risk': {
-        label: riskDelta <= 0 ? String(riskDelta) : `+${riskDelta}`,
-        hint: 'risk eşiği',
-        positive: riskDelta <= 0
-      },
-      pending: {
-        label: pendingDelta > 0 ? `+${pendingDelta}` : '0',
-        hint: 'inceleme kuyruğu',
-        positive: pendingDelta >= 0
-      }
-    }
-  };
+export function computeKpiStats(listings, options = {}) {
+  return computeNormalizedKpiStats(listings, options);
 }
 
 /**
@@ -546,35 +492,51 @@ export function buildKpiCardsHtml(stats) {
   const cards = [
     {
       key: 'total',
-      label: 'Toplam İlan',
-      value: stats.total,
+      label: 'Toplam Kayıt',
+      value: stats.total ?? 0,
       icon: '📋',
-      hint: 'aktif kayıt',
+      hint: 'görünür kayıtlar',
       trend: stats.trends?.total
     },
     {
-      key: 'analyzed-today',
-      label: 'Bugün Analiz',
-      value: stats.analyzedToday,
+      key: 'active',
+      label: 'Aktif Kayıt',
+      value: stats.active ?? stats.total ?? 0,
+      icon: '✅',
+      hint: 'arşiv hariç',
+      trend: stats.trends?.total
+    },
+    {
+      key: 'duplicate',
+      label: 'Mükerrer',
+      value: stats.duplicate ?? 0,
+      icon: '🔗',
+      hint: 'mükerrer tespit',
+      trend: stats.trends?.pending
+    },
+    {
+      key: 'avg-ai',
+      label: 'Ortalama AI',
+      value: stats.averageAi ?? 0,
       icon: '🤖',
-      hint: 'bugün tamamlanan',
+      hint: 'AI skoru ort.',
       trend: stats.trends?.['analyzed-today']
     },
     {
       key: 'high-risk',
       label: 'Yüksek Risk',
-      value: stats.highRisk,
+      value: stats.highRisk ?? 0,
       icon: '⚠',
       hint: 'risk ≥ 61',
       trend: stats.trends?.['high-risk']
     },
     {
-      key: 'pending',
-      label: 'İncelemede',
-      value: stats.pendingReview,
-      icon: '🔎',
-      hint: 'bekleyen QA',
-      trend: stats.trends?.pending
+      key: 'today-added',
+      label: 'Bugün Eklenen',
+      value: stats.todayAdded ?? stats.analyzedToday ?? 0,
+      icon: '📅',
+      hint: 'bugün eklenen',
+      trend: stats.trends?.['analyzed-today']
     }
   ];
 
@@ -969,7 +931,7 @@ export function buildListingCardHtml(listing, isActive = false, options = {}) {
       : '';
 
   return `
-    <button type="button" class="ai-listings-admin__listing-card${activeClass}" data-listing-id="${id}" tabindex="0" aria-selected="${isActive ? 'true' : 'false'}">
+    <button type="button" class="ai-listings-admin__listing-card${activeClass}" data-listing-id="${id}" role="button" tabindex="0" aria-selected="${isActive ? 'true' : 'false'}" aria-label="${title}">
       <span class="ai-listings-admin__listing-card-icon" aria-hidden="true">${emoji}</span>
       <span class="ai-listings-admin__listing-card-title">${title}</span>
       <span class="ai-listings-admin__listing-card-row">

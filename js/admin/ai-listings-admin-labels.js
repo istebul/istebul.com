@@ -1,5 +1,5 @@
 /**
- * AI Listings Admin — Turkish UI label helpers (Sprint-28).
+ * AI Listings Admin — Turkish UI label helpers (Sprint-28/29).
  * Internal values are preserved; only display labels are translated.
  */
 
@@ -60,6 +60,60 @@ export const STATUS_LABELS = Object.freeze({
 });
 
 /** @type {Readonly<Record<string, string>>} */
+export const SOURCE_TYPE_LABELS = Object.freeze({
+  manual: 'Manuel',
+  import: 'İçe aktarma',
+  collector: 'Toplayıcı',
+  builder: 'Oluşturucu',
+  api: 'API',
+  scrape: 'Kazıma'
+});
+
+/** @type {Readonly<Record<string, string>>} */
+export const RISK_LEVEL_LABELS = Object.freeze({
+  low: 'Düşük',
+  medium: 'Orta',
+  high: 'Yüksek'
+});
+
+/** @type {Readonly<Record<string, string>>} */
+export const DUPLICATE_LABELS = Object.freeze({
+  duplicate: 'Mükerrer',
+  mukerrer: 'Mükerrer',
+  same_listing_found: 'Aynı ilan bulundu',
+  high_price: 'Yüksek fiyat'
+});
+
+/** @type {Readonly<Record<string, string>>} */
+export const UI_STATUS_LABELS = Object.freeze({
+  loading: 'Yükleniyor…',
+  error: 'Hata',
+  unavailable: 'Kullanılamıyor',
+  missing_data: 'Eksik veri',
+  insufficient_data: 'Yetersiz veri'
+});
+
+/** @type {Readonly<Record<string, string>>} */
+export const LOADING_LABELS = Object.freeze({
+  default: 'Yükleniyor…',
+  analysis: 'Analiz hazırlanıyor…',
+  workspace: 'Karar çalışma alanı hazırlanıyor…',
+  drawer: 'Analiz paneli hazırlanıyor…'
+});
+
+/** @type {Readonly<Record<string, string>>} */
+export const ERROR_FALLBACK_LABELS = Object.freeze({
+  negotiation_unavailable: 'Pazarlık analizi şu anda üretilemedi.',
+  purchase_unavailable: 'Al kararı analizi şu anda üretilemedi.',
+  explain_unavailable: 'Karar açıklaması şu anda üretilemedi.',
+  report_unavailable: 'Yönetici raporu şu anda üretilemedi.',
+  compare_unavailable: 'Karşılaştırma analizi şu anda üretilemedi.',
+  scenario_unavailable: 'Senaryo simülasyonu şu anda üretilemedi.',
+  quality_unavailable: 'Kalite ve güven analizi şu anda üretilemedi.',
+  insufficient_data: 'Bu analiz için yeterli veri bulunamadı.'
+});
+
+/** @type {Readonly<Record<string, string>>} */
 export const METRIC_LABELS = Object.freeze({
   fit_score: 'Uyum skoru',
   decision_score: 'Karar skoru',
@@ -79,10 +133,28 @@ export const METRIC_LABELS = Object.freeze({
  * @param {Readonly<Record<string, string>>} map
  * @returns {string}
  */
+/**
+ * @param {string} key
+ * @returns {string}
+ */
+export function humanizeSnakeCaseTr(key) {
+  const normalized = String(key ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, ' ');
+  if (!normalized) return '—';
+  return normalized.charAt(0).toLocaleUpperCase('tr-TR') + normalized.slice(1);
+}
+
+/**
+ * @param {unknown} value
+ * @param {Readonly<Record<string, string>>} map
+ * @returns {string}
+ */
 function formatLabel(value, map) {
   const key = String(value ?? '').trim().toLowerCase();
   if (!key) return '—';
-  return map[key] ?? key.replace(/_/g, ' ');
+  return map[key] ?? humanizeSnakeCaseTr(key);
 }
 
 /**
@@ -131,7 +203,77 @@ export function formatStatusLabel(status) {
  */
 export function formatAdminMetricLabel(metricKey) {
   const key = String(metricKey ?? '').trim();
-  return METRIC_LABELS[key] ?? key.replace(/_/g, ' ');
+  return METRIC_LABELS[key] ?? humanizeSnakeCaseTr(key);
+}
+
+/**
+ * @param {unknown} sourceType
+ * @returns {string}
+ */
+export function formatSourceTypeLabel(sourceType) {
+  return formatLabel(sourceType, SOURCE_TYPE_LABELS);
+}
+
+/**
+ * @param {unknown} riskLevel
+ * @returns {string}
+ */
+export function formatRiskLevelLabel(riskLevel) {
+  return formatLabel(riskLevel, RISK_LEVEL_LABELS);
+}
+
+/**
+ * @param {unknown} duplicateKey
+ * @returns {string}
+ */
+export function formatDuplicateLabel(duplicateKey) {
+  return formatLabel(duplicateKey, DUPLICATE_LABELS);
+}
+
+/**
+ * @param {unknown} uiStatus
+ * @returns {string}
+ */
+export function formatUiStatusLabel(uiStatus) {
+  return formatLabel(uiStatus, UI_STATUS_LABELS);
+}
+
+/**
+ * @param {unknown} loadingKey
+ * @returns {string}
+ */
+export function formatLoadingLabel(loadingKey = 'default') {
+  const key = String(loadingKey ?? 'default').toLowerCase();
+  return LOADING_LABELS[key] ?? LOADING_LABELS.default;
+}
+
+/**
+ * @param {unknown} errorKey
+ * @returns {string}
+ */
+export function formatErrorFallbackLabel(errorKey) {
+  const key = String(errorKey ?? '').trim().toLowerCase();
+  return ERROR_FALLBACK_LABELS[key] ?? ERROR_FALLBACK_LABELS.insufficient_data;
+}
+
+/**
+ * @param {unknown} message
+ * @returns {string}
+ */
+export function translateAdminUiError(message) {
+  const lower = String(message ?? '').trim().toLowerCase();
+  if (!lower) return formatErrorFallbackLabel('insufficient_data');
+  if (lower.includes('negotiation unavailable')) return formatErrorFallbackLabel('negotiation_unavailable');
+  if (lower.includes('purchase decision unavailable')) return formatErrorFallbackLabel('purchase_unavailable');
+  if (lower.includes('explainability unavailable')) return formatErrorFallbackLabel('explain_unavailable');
+  if (lower.includes('executive report unavailable')) return formatErrorFallbackLabel('report_unavailable');
+  if (lower.includes('compare unavailable')) return formatErrorFallbackLabel('compare_unavailable');
+  if (lower.includes('scenario unavailable')) return formatErrorFallbackLabel('scenario_unavailable');
+  if (lower.includes('unavailable')) return formatUiStatusLabel('unavailable');
+  if (lower.includes('missing data')) return formatUiStatusLabel('missing_data');
+  if (lower.includes('loading')) return formatLoadingLabel('default');
+  if (lower.includes('error')) return formatUiStatusLabel('error');
+  return String(message ?? formatErrorFallbackLabel('insufficient_data'));
 }
 
 /**

@@ -206,10 +206,10 @@ function renderActionPlan(actionPlan) {
 export function buildExecutiveReportPanelHtml(result, meta = {}) {
   if (!result || typeof result !== 'object' || result.reportScore == null) {
     return `
-    <aside class="ai-edr-panel" role="dialog" aria-label="Executive Decision Report">
+    <aside class="ai-edr-panel" role="dialog" aria-modal="true" aria-label="Yönetici Karar Raporu">
       <header class="ai-edr-panel__head">
         <div>
-          <p class="ai-edr-panel__eyebrow">Executive Decision Report</p>
+          <p class="ai-edr-panel__eyebrow">Yönetici Karar Raporu</p>
           <h3 class="ai-edr-panel__title">${safe(meta.title ?? 'Yönetici Raporu')}</h3>
         </div>
         <button type="button" class="ai-edr-panel__close" data-edr-action="close" aria-label="Kapat">×</button>
@@ -224,10 +224,10 @@ export function buildExecutiveReportPanelHtml(result, meta = {}) {
   const levelLabel = REPORT_LEVEL_LABELS[String(result.reportLevel)] ?? safe(result.reportLabel);
 
   return `
-    <aside class="ai-edr-panel" role="dialog" aria-label="Executive Decision Report" data-edr-record-id="${safe(meta.recordId ?? '')}">
+    <aside class="ai-edr-panel" role="dialog" aria-modal="true" aria-label="Yönetici Karar Raporu" data-edr-record-id="${safe(meta.recordId ?? '')}">
       <header class="ai-edr-panel__head">
         <div>
-          <p class="ai-edr-panel__eyebrow">Executive Decision Report</p>
+          <p class="ai-edr-panel__eyebrow">Yönetici Karar Raporu</p>
           <h3 class="ai-edr-panel__title">${safe(meta.title ?? 'Yönetici Raporu')}</h3>
         </div>
         <button type="button" class="ai-edr-panel__close" data-edr-action="close" aria-label="Kapat">×</button>

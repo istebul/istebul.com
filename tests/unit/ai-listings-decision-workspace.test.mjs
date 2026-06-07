@@ -8,7 +8,9 @@ const {
   buildHeatMapSignals,
   buildActionCenterActions,
   buildDecisionWorkspaceHtml,
-  buildDecisionWorkspaceEmptyHtml
+  buildDecisionWorkspaceEmptyHtml,
+  buildWorkspaceLoadingHtml,
+  buildWorkspaceDetailSkeletonHtml
 } = await import('../../js/admin/ai-listings-decision-workspace.js');
 
 const { buildListingCardHtml } = await import('../../js/admin/ai-listings-admin-core.js');
@@ -448,4 +450,34 @@ test('missing recommendation fallback still shows listing', () => {
 test('action center scenario disabled without recommendation', () => {
   const actions = buildActionCenterActions(fullCtx({ recommendation: null }));
   assert.equal(actions.find((a) => a.key === 'scenario')?.enabled, false);
+});
+
+test('empty state includes CTA Öneri üret', () => {
+  const html = buildDecisionWorkspaceEmptyHtml();
+  assert.match(html, /Öneri üret/);
+});
+
+test('workspace loading html has skeleton blocks', () => {
+  const html = buildWorkspaceLoadingHtml();
+  assert.match(html, /ai-ws-loading__skeleton/);
+});
+
+test('detail skeleton separate from workspace root', () => {
+  const html = buildWorkspaceDetailSkeletonHtml();
+  assert.match(html, /ai-ws-detail-skeleton/);
+});
+
+test('listing card role button present', () => {
+  const html = buildListingCardHtml(bmwListing, false);
+  assert.match(html, /role="button"/);
+});
+
+test('admin.js uses renderDecisionWorkspace', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /renderDecisionWorkspace/);
+});
+
+test('insufficient data hint on disabled action', () => {
+  const html = buildDecisionWorkspaceHtml(fullCtx({ recommendation: null }));
+  assert.match(html, /disabled/);
 });

@@ -6,7 +6,11 @@ import { escapeHtml } from '../core/dom-safe.js';
 import {
   formatCategoryLabel,
   formatStatusLabel,
-  formatAdminMetricLabel
+  formatAdminMetricLabel,
+  formatRiskLevelLabel,
+  formatLoadingLabel,
+  formatErrorFallbackLabel,
+  translateAdminUiError
 } from './ai-listings-admin-labels.js';
 import { buildScenarioTeaserHtml } from '../ai-scenario-simulator/scenario-card-builder.js';
 
@@ -92,17 +96,69 @@ export function buildHeatMapSignals(ctx) {
  * @param {Record<string, unknown>} ctx
  * @returns {Array<Record<string, unknown>>}
  */
+const INSUFFICIENT_DATA_HINT = 'Bu analiz için yeterli veri yok.';
+
+/**
+ * @param {Record<string, unknown>} ctx
+ * @returns {Array<Record<string, unknown>>}
+ */
 export function buildActionCenterActions(ctx) {
   const hasRec = Boolean(ctx.recommendation?.id);
+  const noRecHint = 'Henüz öneri oluşturulmadı.';
   return [
-    { key: 'purchase', label: 'Al Kararı', enabled: hasRec, hint: hasRec ? '' : 'Öneri üretin' },
-    { key: 'explain', label: 'Neden Bu Karar?', enabled: hasRec, hint: hasRec ? '' : 'Öneri üretin' },
-    { key: 'report', label: 'Yönetici Raporu', enabled: hasRec, hint: hasRec ? '' : 'Öneri üretin' },
-    { key: 'compare', label: 'Karşılaştır', enabled: Boolean(ctx.hasCompare), hint: ctx.hasCompare ? '' : 'En az 2 öneri seçin' },
-    { key: 'scenario', label: 'Senaryo Simülasyonu', enabled: hasRec, hint: hasRec ? '' : 'Öneri üretin' },
-    { key: 'negotiation', label: 'Pazarlık Analizi', enabled: hasRec && ctx.hasNegotiation, hint: 'Pazarlık verisi sınırlı' },
-    { key: 'quality', label: 'Kalite ve Güven', enabled: Number(ctx.qualityScore) > 0, hint: 'Kalite verisi eksik' }
+    { key: 'purchase', label: 'Al Kararı', enabled: hasRec, hint: hasRec ? '' : noRecHint },
+    { key: 'explain', label: 'Neden Bu Karar?', enabled: hasRec, hint: hasRec ? '' : noRecHint },
+    { key: 'report', label: 'Yönetici Raporu', enabled: hasRec, hint: hasRec ? '' : noRecHint },
+    {
+      key: 'compare',
+      label: 'Karşılaştır',
+      enabled: Boolean(ctx.hasCompare),
+      hint: ctx.hasCompare ? '' : 'Karşılaştırma için en az iki öneri seçin.'
+    },
+    { key: 'scenario', label: 'Senaryo Simülasyonu', enabled: hasRec, hint: hasRec ? '' : noRecHint },
+    {
+      key: 'negotiation',
+      label: 'Pazarlık Analizi',
+      enabled: hasRec && ctx.hasNegotiation,
+      hint: INSUFFICIENT_DATA_HINT
+    },
+    {
+      key: 'quality',
+      label: 'Kalite ve Güven',
+      enabled: hasRec && Number(ctx.qualityScore) > 0,
+      hint: INSUFFICIENT_DATA_HINT
+    }
   ];
+}
+
+/**
+ * @param {string} [message]
+ * @returns {string}
+ */
+export function buildWorkspaceLoadingHtml(message) {
+  const text = safe(message ?? formatLoadingLabel('workspace'));
+  return `
+    <div class="ai-ws-loading" role="status" aria-live="polite">
+      <div class="ai-ws-loading__skeleton ai-ws-loading__skeleton--hero"></div>
+      <div class="ai-ws-loading__skeleton"></div>
+      <div class="ai-ws-loading__skeleton"></div>
+      <p class="ai-ws-loading__text">${text}</p>
+    </div>`;
+}
+
+/**
+ * @param {string} [message]
+ * @returns {string}
+ */
+export function buildWorkspaceDetailSkeletonHtml(message) {
+  const text = safe(message ?? formatLoadingLabel('analysis'));
+  return `
+    <div class="ai-ws-detail-skeleton" role="status" aria-live="polite">
+      <div class="ai-ws-detail-skeleton__block ai-ws-detail-skeleton__block--hero"></div>
+      <div class="ai-ws-detail-skeleton__block"></div>
+      <div class="ai-ws-detail-skeleton__block"></div>
+      <p class="ai-ws-detail-skeleton__text">${text}</p>
+    </div>`;
 }
 
 /**
@@ -123,11 +179,7 @@ function formatPrice(listing) {
  */
 export function buildDecisionWorkspaceHtml(ctx) {
   if (!ctx?.listing) {
-    return `
-      <div class="ai-ws-empty">
-        <p class="ai-ws-empty__title">AI Karar Çalışma Alanı</p>
-        <p class="ai-ws-empty__text">Detayları görmek için sağdan bir ilan seçin.</p>
-      </div>`;
+    return buildDecisionWorkspaceEmptyHtml();
   }
 
   const listing = /** @type {Record<string, unknown>} */ (ctx.listing);
@@ -158,7 +210,11 @@ export function buildDecisionWorkspaceHtml(ctx) {
   const actionsHtml = actions
     .map(
       (action) => `
-      <button type="button" class="ai-ws-action__btn" data-ws-action="${safe(action.key)}"${action.enabled ? '' : ' disabled title="' + safe(action.hint) + '"'}>
+      <button type="button" class="ai-ws-action__btn" data-ws-action="${safe(action.key)}"${
+        action.enabled
+          ? ` aria-label="${safe(action.label)}"`
+          : ` disabled aria-disabled="true" title="${safe(action.hint)}"`
+      }>
         ${safe(action.label)}
       </button>`
     )
@@ -197,7 +253,7 @@ export function buildDecisionWorkspaceHtml(ctx) {
             <div><span>Karar etiketi</span><strong>${safe(ctx.decisionLabel ?? '—')}</strong></div>
             <div><span>${safe(formatAdminMetricLabel('decisionScore'))}</span><strong>${safe(ctx.decisionScore ?? '—')}</strong></div>
             <div><span>${safe(formatAdminMetricLabel('confidence_score'))}</span><strong>${safe(ctx.confidenceScore ?? '—')}</strong></div>
-            <div><span>Risk seviyesi</span><strong>${safe(ctx.riskLevel ?? '—')}</strong></div>
+            <div><span>Risk seviyesi</span><strong>${safe(formatRiskLevelLabel(ctx.riskLevel) || ctx.riskLevel || '—')}</strong></div>
             <div><span>${safe(formatAdminMetricLabel('trust_score'))}</span><strong>${safe(ctx.trustScore ?? '—')}</strong></div>
             <div><span>${safe(formatAdminMetricLabel('explanation_score'))}</span><strong>${safe(ctx.explanationScore ?? '—')}</strong></div>
             <div><span>${safe(formatAdminMetricLabel('report_score'))}</span><strong>${safe(ctx.reportScore ?? '—')}</strong></div>
@@ -230,5 +286,22 @@ export function buildDecisionWorkspaceHtml(ctx) {
  * @returns {string}
  */
 export function buildDecisionWorkspaceEmptyHtml() {
-  return buildDecisionWorkspaceHtml({ listing: null });
+  return `
+    <div class="ai-ws-empty">
+      <p class="ai-ws-empty__title">AI Karar Çalışma Alanı</p>
+      <p class="ai-ws-empty__text">Detayları görmek için sağdan bir ilan seçin.</p>
+      <div class="ai-ws-empty__cta">
+        <button type="button" class="ai-ws-empty__btn" data-ws-empty-action="recommendations">Öneri üret</button>
+        <button type="button" class="ai-ws-empty__btn ai-ws-empty__btn--ghost" data-ws-empty-action="create">Yeni ilan ekle</button>
+        <button type="button" class="ai-ws-empty__btn ai-ws-empty__btn--ghost" data-ws-empty-action="repository">Veri havuzuna git</button>
+      </div>
+    </div>`;
+}
+
+/**
+ * @param {string} [message]
+ * @returns {string}
+ */
+export function buildWorkspaceErrorHtml(message) {
+  return `<p class="ai-ws-error" role="alert">${safe(translateAdminUiError(message))}</p>`;
 }

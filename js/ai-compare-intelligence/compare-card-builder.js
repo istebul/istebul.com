@@ -107,7 +107,7 @@ export function buildCompareToolbarHtml(selectedCount = 0) {
 export function buildComparePanelHtml(result, meta = {}) {
   if (!result || typeof result !== 'object' || result.compareScore == null) {
     return `
-    <aside class="ai-cmp-panel" role="dialog" aria-label="Karşılaştırma Analizi">
+    <aside class="ai-cmp-panel" role="dialog" aria-modal="true" aria-label="Karşılaştırma Analizi">
       <header class="ai-cmp-panel__head">
         <div>
           <p class="ai-cmp-panel__eyebrow">Karşılaştırma Analizi</p>
@@ -126,7 +126,7 @@ export function buildComparePanelHtml(result, meta = {}) {
   const winner = /** @type {Record<string, unknown>|null} */ (result.winner ?? null);
 
   return `
-    <aside class="ai-cmp-panel" role="dialog" aria-label="Karşılaştırma Analizi">
+    <aside class="ai-cmp-panel" role="dialog" aria-modal="true" aria-label="Karşılaştırma Analizi">
       <header class="ai-cmp-panel__head">
         <div>
           <p class="ai-cmp-panel__eyebrow">Karşılaştırma Analizi</p>
