@@ -15,6 +15,10 @@
 /ilanlar /secenekler/ 301
 /ilanlar/ /secenekler/ 301
 
+# --- Legacy karar-analizi → canonical karar-asistani ---
+/karar-analizi /karar-asistani/ 301
+/karar-analizi/ /karar-asistani/ 301
+
 # --- Legacy account URL ---
 /account.html /profil/ 301
 

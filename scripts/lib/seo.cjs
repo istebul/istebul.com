@@ -997,7 +997,14 @@ function injectCorporateMeta(distDir) {
 }
 
 /** Hubs backed by Supabase + client hydration — must not emit static seo-page index.html. */
-const DYNAMIC_CONTENT_SPA_HUBS = new Set(['blog', 'duyurular', 'kampanyalar']);
+const DYNAMIC_CONTENT_SPA_HUBS = new Set([
+  'blog',
+  'duyurular',
+  'kampanyalar',
+  'karar-asistani',
+  'secenekler',
+  'karsilastir'
+]);
 
 function buildSeoPages(distDir) {
   const site = loadJson('data/seo/site.json');

@@ -35,7 +35,7 @@ const SPA_SHELL_OK = new Set([
   '/duyurular',
   '/kampanyalar',
   '/karar-asistani',
-  '/karar-analizi'
+  '/karar-asistani'
 ]);
 
 function resolveDistPath(href) {

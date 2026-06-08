@@ -2356,7 +2356,7 @@ async function loadListings() {
   if (!data.length) {
     el.innerHTML = res.error
       ? `<p class="empty">İlanlar yüklenemedi: ${escapeHtml(res.error.message)}</p>`
-      : '<p class="empty">Henüz ilan yok.</p>';
+      : '<p class="empty">Henüz değerlendirilebilir seçenek yok.</p>';
     return;
   }
   el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Kategori</th><th>Fiyat</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +

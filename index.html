@@ -268,8 +268,8 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     <main id="main-content">
         <noscript>
             <div class="container" style="padding:2rem 1rem">
-                <h1>isteBul — Araç karar zekâsı platformu</h1>
-                <p>Tam deneyim için JavaScript gerekir. <a href="/auto/">Ücretsiz araç analizini başlatın</a> veya <a href="/planlar">planları görün</a>.</p>
+                <h1>isteBul — AI destekli karar platformu</h1>
+                <p>Tam deneyim için JavaScript gerekir. <a href="/karar-asistani/">Ücretsiz karar analizini başlatın</a> veya <a href="/planlar">planları görün</a>.</p>
             </div>
         </noscript>
         <!-- Home Section -->
@@ -661,24 +661,24 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             </div>
         </section>
 
-        <section id="page-karar-analizi" class="hidden" data-private-section aria-label="Karar analizi" hidden>
+        <section id="page-karar-analizi" class="hidden" data-private-section aria-label="Karar asistanı" hidden>
             <div class="ib-prerender-seo" data-prerender-for="page-karar-analizi">
                 <div class="container ib-premium-noscript">
-                    <p class="section-kicker">Karar analizi</p>
-                    <h1>Araç alım karar analizi</h1>
-                    <p class="ib-premium-lead">Bütçe, kullanım ve finansman tercihinize göre toplam sahip olma maliyetini görün. Tam analiz için Auto akışına geçin.</p>
-                    <ul class="ib-check-list"><li>~2 dakikada rehberli analiz</li>
-                <li>Karar skoru ve TCO özeti</li>
+                    <p class="section-kicker">Karar merkezi</p>
+                    <h1>Hangi kategoride karar vermek istiyorsunuz?</h1>
+                    <p class="ib-premium-lead">Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk sinyallerini tek merkezden başlatın.</p>
+                    <ul class="ib-check-list"><li>6 kategori karar merkezi</li>
+                <li>Kural tabanlı skor ve TCO özeti</li>
                 <li>Karşılaştırma merkezi entegrasyonu</li>
                 <li>Bilgilendirme amaçlı — bağlayıcı teklif değil</li></ul>
                     <p class="ib-prerender-actions">
-                        <a href="/auto/" class="btn btn-primary">Ücretsiz analiz başlat</a>
+                        <a href="/karar-asistani" class="btn btn-primary">Karar akışını başlat</a>
                         <a href="/metodoloji/" class="btn btn-outline">Metodolojiyi incele</a>
                     </p>
                 </div>
             </div>
 
-            <noscript><div class="container ib-premium-noscript"><h1>Karar analizi</h1><p>Toplam maliyet, finansman etkisi ve karar skoru — <a href="/auto/">ücretsiz analiz</a>.</p></div></noscript>
+            <noscript><div class="container ib-premium-noscript"><h1>Karar asistanı</h1><p>Skor, TCO, risk ve uygunluk — <a href="/karar-asistani">karar merkezi</a>.</p></div></noscript>
             <div id="premium-karar-analizi-root"></div>
         </section>
 
@@ -887,7 +887,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             <option value="priceAsc">Fiyat artan</option>
                             <option value="priceDesc">Fiyat azalan</option>
                         </select>
-                        <div class="listing-view-toggle" aria-label="İlan görünümü">
+                        <div class="listing-view-toggle" aria-label="Seçenek görünümü">
                             <button type="button" class="active" data-listing-view="grid" aria-pressed="true" title="Kart görünümü"><i data-lucide="layout-grid"></i></button>
                             <button type="button" data-listing-view="compact" aria-pressed="false" title="Kompakt görünüm"><i data-lucide="rows-3"></i></button>
                         </div>
@@ -914,9 +914,9 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
             <div class="container">
                 <div class="section-header">
                     <div>
-                        <span class="section-kicker">Karşılaştırma merkezi</span>
-                        <h2>Seçenekleri yan yana değerlendirin</h2>
-                        <p>Karar skoru, maliyet, risk ve öne çıkan farkları tek tabloda görün.</p>
+                        <span class="section-kicker">Karar kriteri karşılaştırma</span>
+                        <h2>Skor, maliyet, risk ve gerekçeyi yan yana okuyun</h2>
+                        <p>Karar kriteri karşılaştırma merkezi — uygunluk skoru, toplam maliyet, risk sinyalleri ve AI gerekçeleri tek tabloda.</p>
                     </div>
                 </div>
                 <div id="comparison-content" class="comparison-content" data-route-mount aria-live="polite"></div>
@@ -989,7 +989,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                             <input type="url" id="listing-image-url" name="image_url" placeholder="https://...">
                         </div>
                         <div class="form-group">
-                            <label for="listing-external-url">Dış ilan URL</label>
+                            <label for="listing-external-url">Seçenek kaynak URL</label>
                             <input type="url" id="listing-external-url" name="external_url" placeholder="https://...">
                         </div>
                     </div>
@@ -1006,7 +1006,7 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
                 <div class="section-header">
                     <span class="section-kicker">İletişim</span>
                     <h2>Mesajlar</h2>
-                    <p>İlan ve karar süreciyle ilgili mesajlarınız hesabınıza bağlı görüntülenir.</p>
+                    <p>Seçenek ve karar süreciyle ilgili mesajlarınız hesabınıza bağlı görüntülenir.</p>
                 </div>
                 <div id="messages-list" class="messages-list" role="log" aria-live="polite"></div>
             </div>

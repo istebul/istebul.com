@@ -58,7 +58,7 @@ export class ListingsUI {
                              height="250">
                         <div class="listing-badges">
                             <span class="listing-ai-score" title="Yapay zeka uyum skoru"><i data-lucide="sparkles"></i> AI uyum ${this.escapeHtml(aiScore)}/100</span>
-                            <span>${this.escapeHtml(categoryLabel || 'İlan')}</span>
+                            <span>${this.escapeHtml(categoryLabel || 'Seçenek')}</span>
                         </div>
                         ${mediaCount > 1 ? `<span class="listing-media-count"><i data-lucide="images"></i> ${mediaCount}</span>` : ''}
                     </div>

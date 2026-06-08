@@ -11,11 +11,11 @@
 | sitemap URL count | 178 |
 | canonical issues | 0 |
 | orphan HTML (vs sitemap) | 4 |
-| internal /rehber/ links (sample) | 460 |
+| internal /rehber/ links (sample) | 478 |
 | FAQ schema pages (scan) | 23 |
 | Rehber BreadcrumbList pages | 14 |
 | Invalid JSON-LD blocks | 0 |
-| Indexable public HTML (estimate) | 58 |
+| Indexable public HTML (estimate) | 59 |
 
 ## noindex pages
 
