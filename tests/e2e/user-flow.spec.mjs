@@ -213,10 +213,20 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
-    await page.waitForFunction(() => window.app?.buildDecisionResult, null, { timeout: 15000 });
+    await page.waitForSelector('#premium-karar-analizi-root #assistant-results', { state: 'attached', timeout: 15000 });
+    await page.waitForSelector('#assistant-category-rail .assistant-category', { state: 'attached', timeout: 15000 });
+    await page.waitForFunction(
+      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+      null,
+      { timeout: 15000 }
+    );
 
-    await page.evaluate(() => {
+    const renderStatus = await page.evaluate(() => {
       const app = window.app;
+      if (!app?.buildDecisionResult || !app?.ui?.renderDecisionResults) {
+        return { ok: false, reason: 'assistant api not ready' };
+      }
+
       app.assistantCategory = 'arac';
       app.assistantAnswers = {
         province: 'İstanbul',
@@ -228,9 +238,21 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
         body: 'sedan',
         priority: 'lowCost'
       };
-      const result = app.buildDecisionResult(app.getResolvedDecisionAssistantConfig().arac, app.assistantAnswers);
+
+      const categoryConfig = app.getResolvedDecisionAssistantConfig()?.arac;
+      if (!categoryConfig) {
+        return { ok: false, reason: 'arac config missing' };
+      }
+
+      const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+      if (!result?.recommendations?.[0]) {
+        return { ok: false, reason: 'no primary recommendation' };
+      }
+
       app.ui.renderDecisionResults(result);
+      return { ok: true };
     });
+    expect(renderStatus).toEqual({ ok: true });
 
     const summary = page.locator('[data-decision-result-summary]');
     await expect(summary).toBeVisible({ timeout: 15000 });
