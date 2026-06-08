@@ -20,6 +20,11 @@ import {
     buildDecisionHistorySignalStrip,
     renderDecisionHistorySignalStripHtml
 } from './decision-history-signal-strip.js';
+import { canAddHistoryEntryToComparison } from './decision-history-comparison.js';
+import {
+    buildRecentDecisionHistorySnippetModel,
+    renderRecentDecisionHistorySnippetHtml
+} from './decision-history-recent-snippet.js';
 
 export class AssistantUI {
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
@@ -593,6 +598,7 @@ export class AssistantUI {
                 buildDecisionHistorySignalStrip(item),
                 this.escapeHtml.bind(this)
             );
+            const canCompare = canAddHistoryEntryToComparison(item);
 
             return `
             <article class="decision-history-card ${isAuto ? 'decision-history-card-auto' : ''}">
@@ -621,14 +627,35 @@ export class AssistantUI {
                     <button type="button" class="btn btn-primary" data-decision-repeat="${this.escapeHtml(item.id)}">
                         <i data-lucide="refresh-cw"></i> ${isAuto ? 'Yeni Auto analizi' : 'Tekrar aç'}
                     </button>
+                    ${canCompare ? `<button type="button" class="btn btn-outline" data-decision-compare-add="${this.escapeHtml(item.id)}">
+                        <i data-lucide="scale"></i> Karşılaştırmaya ekle
+                    </button>` : ''}
                     <button type="button" class="btn btn-outline" data-decision-delete="${this.escapeHtml(item.id)}">
                         <i data-lucide="trash-2"></i> Sil
                     </button>
                 </div>
+                ${canCompare ? `<div class="decision-history-actions-links">
+                    <a href="/karsilastir/" class="decision-history-compare-link" data-native-route>Karşılaştırma merkezine git</a>
+                </div>` : ''}
             </article>
         `}).join('');
 
         this.loadIcons();
+    }
+
+    renderRecentDecisionHistorySnippet(history = []) {
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const host = doc.getElementById('decision-history-recent-snippet-host');
+        if (!host) return;
+
+        const html = renderRecentDecisionHistorySnippetHtml(
+            buildRecentDecisionHistorySnippetModel(history),
+            this.escapeHtml.bind(this),
+            this.formatDate.bind(this)
+        );
+        host.innerHTML = html;
+        if (html) this.loadIcons();
     }
 
     getCostMarkup(costs = []) {

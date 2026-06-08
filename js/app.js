@@ -50,6 +50,7 @@ import {
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { buildDecisionHistoryEntry, mergeDecisionHistoryEntry } from './ui/decision-history-entry.js';
+import { buildComparisonItemFromHistoryEntry } from './ui/decision-history-comparison.js';
 import { Router } from './core/router.js';
 import { state } from './core/state.js';
 import { supabase } from './core/supabase.js';
@@ -1060,6 +1061,12 @@ class App {
                 this.deleteDecision(deleteDecisionBtn.dataset.decisionDelete);
             }
 
+            const addHistoryCompareBtn = e.target.closest('[data-decision-compare-add]');
+            if (addHistoryCompareBtn) {
+                e.preventDefault();
+                this.addHistoryEntryToComparison(addHistoryCompareBtn.dataset.decisionCompareAdd);
+            }
+
             const historyLoginBtn = e.target.closest('[data-history-login]');
             if (historyLoginBtn) {
                 e.preventDefault();
@@ -1150,7 +1157,7 @@ class App {
             }
 
             if (route === 'compare') {
-                this.ui.renderComparison(this.comparisonItems);
+                this.loadComparisonItems();
             }
 
             if (route === 'profil') {
@@ -2344,6 +2351,7 @@ class App {
             stepIndex: this.assistantStep,
             steps
         });
+        this.ui.renderRecentDecisionHistorySnippet?.(this.decisionHistory);
     }
 
     getAssistantWizardSteps(categoryConfig) {
@@ -3660,6 +3668,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
             this.decisionHistory = this.readStoredArray(storageKey);
             this.ui.renderDecisionHistory?.(this.decisionHistory);
+            this.ui.renderRecentDecisionHistorySnippet?.(this.decisionHistory);
             this.injectDecisionHistoryUpsell();
             this.injectDecisionHistoryProductFeedback();
         } catch (error) {
@@ -4767,7 +4776,11 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         void this._addComparisonItem(item);
     }
 
-    async _addComparisonItem(item) {
+    async _addComparisonItem(item, options = {}) {
+        const navigate = options.navigate !== false;
+        const successMessage = options.successMessage || 'Seçenek karşılaştırmaya eklendi.';
+        const duplicateMessage = options.duplicateMessage || 'Bu seçenek zaten karşılaştırmada.';
+
         const existingCategory = this.comparisonItems[0]?.categoryId;
         if (existingCategory && existingCategory !== item.categoryId) {
             this.ui.showError('Net sonuç için aynı tabloda yalnızca aynı kategoriden seçenekler karşılaştırılır.');
@@ -4775,8 +4788,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
 
         if (this.comparisonItems.some((current) => current.signature === item.signature)) {
-            this.ui.showSuccess('Bu seçenek zaten karşılaştırmada.');
-            if (this.router?.navigate) {
+            this.ui.showSuccess(duplicateMessage);
+            if (navigate && this.router?.navigate) {
                 this.router.navigate('/karsilastir');
             }
             return;
@@ -4810,10 +4823,33 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         this.comparisonItems = [...this.comparisonItems, item];
         this.saveComparisonItems();
-        this.ui.showSuccess('Seçenek karşılaştırmaya eklendi.');
-        if (this.router?.navigate) {
+        this.ui.showSuccess(successMessage);
+        if (navigate && this.router?.navigate) {
             this.router.navigate('/karsilastir');
         }
+    }
+
+    addHistoryEntryToComparison(decisionId) {
+        const entry = this.decisionHistory.find((item) => item.id === decisionId);
+        if (!entry) {
+            this.ui.showError('Karşılaştırmaya eklenecek geçmiş kaydı bulunamadı.');
+            return;
+        }
+
+        const item = buildComparisonItemFromHistoryEntry(
+            entry,
+            this.createComparisonItemFromRecommendation.bind(this)
+        );
+        if (!item) {
+            this.ui.showError('Bu geçmiş kaydında karşılaştırılabilir seçenek bulunamadı.');
+            return;
+        }
+
+        void this._addComparisonItem(item, {
+            navigate: false,
+            successMessage: 'Karar geçmişi karşılaştırmaya eklendi.',
+            duplicateMessage: 'Bu karar zaten karşılaştırmada.'
+        });
     }
 
     removeComparisonItem(itemId) {
