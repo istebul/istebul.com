@@ -51,6 +51,10 @@ import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
 import { buildDecisionHistoryEntry, mergeDecisionHistoryEntry } from './ui/decision-history-entry.js';
 import { buildComparisonItemFromHistoryEntry } from './ui/decision-history-comparison.js';
+import {
+    findDecisionHistoryEntryByActionId,
+    matchesDecisionHistoryActionId
+} from './ui/decision-history-compat.js';
 import { Router } from './core/router.js';
 import { state } from './core/state.js';
 import { supabase } from './core/supabase.js';
@@ -3731,7 +3735,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     repeatDecision(decisionId) {
-        const record = this.decisionHistory.find((item) => item.id === decisionId);
+        const record = findDecisionHistoryEntryByActionId(this.decisionHistory, decisionId);
         if (!record) {
             this.ui.showError('Kaydedilen karar bulunamadı.');
             return;
@@ -3764,7 +3768,9 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             return;
         }
 
-        this.decisionHistory = this.decisionHistory.filter((item) => item.id !== decisionId);
+        this.decisionHistory = this.decisionHistory.filter(
+            (item) => !matchesDecisionHistoryActionId(item, decisionId)
+        );
         this.writeStoredValue(storageKey, this.decisionHistory);
         this.ui.renderDecisionHistory?.(this.decisionHistory);
         this.ui.showSuccess('Karar geçmişten silindi.');
@@ -4830,7 +4836,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     addHistoryEntryToComparison(decisionId) {
-        const entry = this.decisionHistory.find((item) => item.id === decisionId);
+        const entry = findDecisionHistoryEntryByActionId(this.decisionHistory, decisionId);
         if (!entry) {
             this.ui.showError('Karşılaştırmaya eklenecek geçmiş kaydı bulunamadı.');
             return;

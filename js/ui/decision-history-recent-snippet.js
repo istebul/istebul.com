@@ -5,6 +5,7 @@
 
 import { buildDecisionHistorySignalStrip } from './decision-history-signal-strip.js';
 import { normalizeHistoryEntryCategory } from './decision-history-category.js';
+import { normalizeDecisionHistoryList } from './decision-history-compat.js';
 
 export const RECENT_DECISION_HISTORY_MAX = 3;
 
@@ -24,7 +25,7 @@ export function selectRecentDecisionHistoryEntries(history = [], max = RECENT_DE
  * @returns {object | null}
  */
 export function buildRecentDecisionHistorySnippetModel(history = [], max = RECENT_DECISION_HISTORY_MAX) {
-    const entries = selectRecentDecisionHistoryEntries(history, max);
+    const entries = selectRecentDecisionHistoryEntries(normalizeDecisionHistoryList(history), max);
     if (!entries.length) return null;
 
     return {

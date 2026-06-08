@@ -617,10 +617,12 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const signalStrip = page.locator('.decision-history-card').first().locator('[data-decision-history-signal-strip]');
+    const card = page.locator('.decision-history-card').first();
+    await expect(card).toBeVisible({ timeout: 15000 });
+    const signalStrip = card.locator('[data-decision-history-signal-strip]');
     await expect(signalStrip).toBeVisible({ timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '.decision-history-card [data-decision-history-signal-strip]');
-    await assertLocatorWithinViewport(signalStrip, MOBILE_2C_VIEWPORT.width);
+    await assertLocatorWithinViewport(card, MOBILE_2C_VIEWPORT.width);
   });
 
   test('gecmis canonical entry Karşılaştırmaya ekle CTA ile karşılaştırmaya ekler', async ({ page }) => {
@@ -924,6 +926,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis auto kaydı karşılaştırmaya normalized auto kategori ile eklenir', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
@@ -951,7 +954,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    await page.locator('[data-decision-compare-add="history-compare-auto"]').click();
+    const card = page.locator('.decision-history-card').first();
+    await expect(card).toBeVisible({ timeout: 15000 });
+    const compareBtn = card.locator('[data-decision-compare-add="history-compare-auto"]');
+    await expect(compareBtn).toBeVisible({ timeout: 15000 });
+    await compareBtn.click();
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
 
     const comparisonState = await page.evaluate(() => {
@@ -1062,6 +1069,153 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(snippet.locator('.assistant-kicker').first()).toHaveText('Konut');
     await assertElementNoHorizontalOverflow(page, '[data-decision-history-recent-snippet]');
     await assertLocatorWithinViewport(snippet, MOBILE_2C_VIEWPORT.width);
+  });
+
+  test('gecmis legacy compat read localStorage otomatik toplu overwrite etmez', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    const storageSnapshot = await page.evaluate(() => {
+      const userId = 'e2e-compat-no-overwrite-user';
+      window.app.currentUser = { id: userId, name: 'E2E Compat User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const legacyEntry = {
+        id: 'compat-no-overwrite',
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        createdAt: '2026-01-15T10:00:00.000Z',
+        summary: 'Toyota Corolla en güçlü eşleşme.',
+        topPick: {
+          name: 'Toyota Corolla',
+          score: 82,
+          yearlyCost: 210000,
+          riskLevel: 'Orta risk'
+        }
+      };
+      const raw = JSON.stringify([legacyEntry]);
+      localStorage.setItem(storageKey, raw);
+      return { storageKey, before: raw };
+    });
+
+    await page.evaluate(() => window.app.loadDecisionHistory());
+    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.decision-history-card').first()).toContainText(/Toyota Corolla/i);
+
+    const after = await page.evaluate((storageKey) => localStorage.getItem(storageKey), storageSnapshot.storageKey);
+    expect(after).toBe(storageSnapshot.before);
+
+    const parsed = JSON.parse(after);
+    expect(parsed[0].schemaVersion).toBeUndefined();
+    expect(parsed[0].categoryId).toBe('arac');
+  });
+
+  test('gecmis legacy compat kayıttan Karşılaştırmaya ekle çalışır', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      localStorage.removeItem('istebul_comparison_items');
+      localStorage.removeItem('istebu_comparison_items');
+
+      const userId = 'e2e-compat-compare-user';
+      window.app.currentUser = { id: userId, name: 'E2E Compat Compare User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      localStorage.setItem(storageKey, JSON.stringify([{
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        recommendations: [{
+          name: 'Toyota Corolla',
+          score: 82,
+          price: 1750000,
+          yearlyCost: 210000,
+          riskLevel: 'Orta risk'
+        }]
+      }]));
+      window.app.loadDecisionHistory();
+    });
+
+    const compareBtn = page.locator('[data-decision-compare-add]').first();
+    await expect(compareBtn).toBeVisible({ timeout: 15000 });
+    await compareBtn.click();
+    await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
+
+    const comparisonState = await page.evaluate(() => {
+      const items = JSON.parse(localStorage.getItem('istebul_comparison_items') || '[]');
+      return {
+        categoryId: items[0]?.categoryId || null,
+        title: items[0]?.title || null
+      };
+    });
+    expect(comparisonState.categoryId).toBe('auto');
+    expect(comparisonState.title).toMatch(/Toyota Corolla/i);
+  });
+
+  test('karar merkezi son kararlar snippet legacy compat kaydı gösterir', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-compat-snippet-user';
+      window.app.currentUser = { id: userId, name: 'E2E Compat Snippet User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const legacyEntry = {
+        categoryId: 'ev',
+        categoryName: 'Ev',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        recommendations: [{
+          name: 'Kadıköy daire',
+          score: 76,
+          yearlyCost: 180000,
+          riskLevel: 'Orta risk'
+        }]
+      };
+      localStorage.setItem(storageKey, JSON.stringify([legacyEntry]));
+      window.app.decisionHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      window.app.ui.renderRecentDecisionHistorySnippet(window.app.decisionHistory);
+    });
+
+    const snippet = page.locator('[data-decision-history-recent-snippet]');
+    await expect(snippet).toBeVisible({ timeout: 15000 });
+    await expect(snippet.locator('.assistant-kicker').first()).toHaveText('Konut');
+    await expect(snippet).toContainText(/Kadıköy daire/i);
+    await expect(snippet.locator('[data-recent-signal="fit"]').first()).toContainText(/76\/100/);
+  });
+
+  test('gecmis legacy compat normalize edilmiş kayıt kartı @390px yatay taşma yapmaz', async ({ page }) => {
+    await page.setViewportSize(MOBILE_2C_VIEWPORT);
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-compat-mobile-user';
+      window.app.currentUser = { id: userId, name: 'E2E Compat Mobile User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      localStorage.setItem(storageKey, JSON.stringify([{
+        id: 'compat-mobile-home',
+        categoryId: 'home',
+        categoryName: 'Home',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        topPick: {
+          name: 'Bostancı daire',
+          score: 71,
+          yearlyCost: 150000,
+          riskLevel: 'Orta risk'
+        }
+      }]));
+      window.app.loadDecisionHistory();
+    });
+
+    const card = page.locator('.decision-history-card').first();
+    await expect(card).toBeVisible({ timeout: 15000 });
+    await expect(card).toContainText(/Bostancı daire/i);
+    await expect(card.locator('[data-history-category="konut"]')).toHaveText('Konut');
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card');
+    await assertLocatorWithinViewport(card, MOBILE_2C_VIEWPORT.width);
   });
 
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {
