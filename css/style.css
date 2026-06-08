@@ -6010,6 +6010,57 @@ main > section:not(.hero-section) {
     gap: 0.65rem;
 }
 
+.decision-result-summary {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: clamp(1rem, 2vw, 1.35rem);
+    border: 1px solid rgba(102, 124, 153, 0.18);
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(31, 111, 235, 0.06), rgba(15, 118, 110, 0.08)), rgba(255, 255, 255, 0.9);
+    box-shadow: var(--shadow);
+}
+
+.decision-result-summary-head h3 {
+    margin: 0.15rem 0 0;
+    color: var(--text-primary);
+    letter-spacing: 0;
+}
+
+.decision-result-summary-head p {
+    margin: 0.35rem 0 0;
+    color: var(--text-secondary);
+}
+
+.decision-result-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.decision-result-summary-item {
+    min-width: 0;
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.95rem 1rem;
+    border: 1px solid rgba(102, 124, 153, 0.16);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.84);
+}
+
+.decision-result-summary-item span,
+.decision-result-summary-item small {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+.decision-result-summary-item strong {
+    color: var(--text-primary);
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    line-height: 1.2;
+}
+
 .comparison-toolbar,
 .comparison-matrix,
 .comparison-card {
@@ -6271,6 +6322,16 @@ main > section:not(.hero-section) {
     border-color: rgba(148, 163, 184, 0.18);
 }
 
+:root[data-theme="dark"] .decision-result-summary {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(45, 212, 191, 0.1)), rgba(15, 23, 42, 0.82);
+    border-color: rgba(148, 163, 184, 0.18);
+}
+
+:root[data-theme="dark"] .decision-result-summary-item {
+    background: rgba(15, 23, 42, 0.76);
+    border-color: rgba(148, 163, 184, 0.18);
+}
+
 :root[data-theme="dark"] .comparison-toolbar,
 :root[data-theme="dark"] .comparison-matrix,
 :root[data-theme="dark"] .comparison-card,
@@ -6310,6 +6371,10 @@ main > section:not(.hero-section) {
 
     .comparison-decision-cta-actions .btn {
         width: 100%;
+    }
+
+    .decision-result-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .comparison-toolbar,

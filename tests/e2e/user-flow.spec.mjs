@@ -209,6 +209,37 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(tcoCta).toHaveClass(/btn-outline/);
   });
 
+  test('karar asistanı sonuç ekranında decision result summary görünür', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.waitForFunction(() => window.app?.buildDecisionResult, null, { timeout: 15000 });
+
+    await page.evaluate(() => {
+      const app = window.app;
+      app.assistantCategory = 'arac';
+      app.assistantAnswers = {
+        province: 'İstanbul',
+        district: 'Kadıköy',
+        carModel: 'Toyota|Corolla',
+        usage: 'city',
+        budget: '1850000',
+        fuel: 'hybrid',
+        body: 'sedan',
+        priority: 'lowCost'
+      };
+      const result = app.buildDecisionResult(app.getResolvedDecisionAssistantConfig().arac, app.assistantAnswers);
+      app.ui.renderDecisionResults(result);
+    });
+
+    const summary = page.locator('[data-decision-result-summary]');
+    await expect(summary).toBeVisible({ timeout: 15000 });
+    await expect(summary.locator('[data-result-summary-field="fit-summary"] span').first()).toHaveText('Uygunluk özeti');
+    await expect(summary.locator('[data-result-summary-field="risk-summary"] span').first()).toHaveText('Risk özeti');
+    await expect(summary.locator('[data-result-summary-field="tco-summary"] span').first()).toHaveText('TCO özeti');
+    await expect(summary.locator('[data-result-summary-field="profile-summary"] span').first()).toHaveText('Karar profili özeti');
+  });
+
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);

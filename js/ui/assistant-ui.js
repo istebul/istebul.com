@@ -1,6 +1,12 @@
 // Lazy-loaded AI assistant UI renderer
 // Extracted from UIManager to keep the initial app bundle smaller.
 
+import {
+    buildDecisionResultSummary,
+    renderDecisionResultSummaryHtml,
+    shouldRenderDecisionResultSummary
+} from './decision-result-summary.js';
+
 export class AssistantUI {
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
         const categoryRail = document.getElementById('assistant-category-rail');
@@ -158,6 +164,10 @@ export class AssistantUI {
         }
 
         const bestFinance = primary.financeComparisons?.[0];
+        const resultSummary = buildDecisionResultSummary(result);
+        const resultSummaryHtml = shouldRenderDecisionResultSummary(result)
+            ? renderDecisionResultSummaryHtml(resultSummary, (value) => this.escapeHtml(value))
+            : '';
 
         container.innerHTML =
             '<section class="assistant-decision-panel">' +
@@ -183,6 +193,7 @@ export class AssistantUI {
                     '<a href="/karsilastir/" class="btn btn-outline btn-sm" data-native-route><i data-lucide="columns-3"></i> Karşılaştırma merkezine git</a>' +
                     '<button type="button" class="btn btn-primary" data-browse-decision-listings><i data-lucide="list-checks"></i> Eşleşen seçenekleri aç</button>' +
                 '</div>' +
+                resultSummaryHtml +
                 this.getExecutiveMetricsMarkup(result.categoryId, primary, bestFinance) +
                 this.getDataHealthMarkup(result.dataHealth) +
                 '<div class="assistant-answer-summary">' + result.answers.map((answer) =>
