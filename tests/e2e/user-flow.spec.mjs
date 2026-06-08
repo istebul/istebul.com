@@ -835,6 +835,89 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(historyCta).toContainText(/Tüm karar geçmişini gör/i);
   });
 
+  test('karar merkezi karar hafızası bağlamı ≥2 kayıtta görünür', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-memory-context-user';
+      window.app.currentUser = { id: userId, name: 'E2E Memory Context User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const entries = [
+        {
+          id: 'context-1',
+          schemaVersion: 1,
+          categoryId: 'auto',
+          categoryName: 'Araba',
+          createdAt: '2026-06-08T12:00:00.000Z',
+          score: 88,
+          riskLevel: 'Düşük risk',
+          decisionProfile: 'Dengeli araç profili',
+          topPick: { name: 'Toyota Corolla Hybrid', score: 88, riskLevel: 'Düşük risk' }
+        },
+        {
+          id: 'context-2',
+          schemaVersion: 1,
+          categoryId: 'auto',
+          categoryName: 'Araba',
+          createdAt: '2026-06-07T12:00:00.000Z',
+          score: 82,
+          riskLevel: 'Düşük risk',
+          decisionProfile: 'Dengeli araç profili',
+          topPick: { name: 'Honda Civic', score: 82, riskLevel: 'Düşük risk' }
+        }
+      ];
+      localStorage.setItem(storageKey, JSON.stringify(entries));
+      window.app.decisionHistory = entries;
+      window.app.ui.renderDecisionMemoryContext(entries);
+    });
+
+    const context = page.locator('[data-decision-memory-context]');
+    await expect(context).toBeVisible({ timeout: 15000 });
+    await expect(context).toContainText(/Karar hafızasından bağlam/i);
+    await expect(context.locator('[data-memory-context-summary]')).toContainText(/düşük risk profili daha sık görülüyor/i);
+    await expect(context.locator('[data-memory-context="top-category"]')).toContainText(/Araba \(2 karar\)/);
+    await expect(context.locator('[data-memory-context="risk-tendency"]')).toContainText(/Düşük risk \(2\/2\)/);
+    await expect(context.locator('[data-memory-context="top-profile"]')).toContainText(/Dengeli araç profili/);
+
+    const storageSnapshot = await page.evaluate(() => {
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const stored = localStorage.getItem(storageKey);
+      const parsed = JSON.parse(stored || '[]');
+      return { count: parsed.length, firstId: parsed[0]?.id || null };
+    });
+    expect(storageSnapshot.count).toBe(2);
+    expect(storageSnapshot.firstId).toBe('context-1');
+  });
+
+  test('karar merkezi karar hafızası bağlamı 2 kayıttan az iken görünmez', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-memory-context-empty-user';
+      window.app.currentUser = { id: userId, name: 'E2E Memory Context Empty User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      localStorage.setItem(storageKey, JSON.stringify([{
+        id: 'context-single',
+        schemaVersion: 1,
+        categoryId: 'auto',
+        categoryName: 'Araba',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        score: 88,
+        riskLevel: 'Düşük risk',
+        topPick: { name: 'Toyota Corolla Hybrid', score: 88, riskLevel: 'Düşük risk' }
+      }]));
+      window.app.decisionHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      window.app.ui.renderDecisionMemoryContext(window.app.decisionHistory);
+    });
+
+    await expect(page.locator('[data-decision-memory-context]')).toHaveCount(0);
+    await expect(page.locator('#decision-memory-context-host')).toBeEmpty();
+  });
+
   test('gecmis Karşılaştırmaya ekle CTA @390px yatay taşma yapmaz', async ({ page }) => {
     await page.setViewportSize(MOBILE_2C_VIEWPORT);
     await page.goto('/gecmis/');

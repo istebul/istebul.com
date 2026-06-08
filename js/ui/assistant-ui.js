@@ -30,6 +30,10 @@ import {
     renderDecisionMemoryInsightsHtml,
     DECISION_MEMORY_INSIGHTS_MIN
 } from './decision-memory-insights.js';
+import {
+    buildDecisionMemoryContextModel,
+    renderDecisionMemoryContextHtml
+} from './decision-memory-context.js';
 import { normalizeHistoryEntryCategory } from './decision-history-category.js';
 import { normalizeDecisionHistoryList } from './decision-history-compat.js';
 
@@ -623,6 +627,18 @@ export class AssistantUI {
             .catch(() => {
                 /* commentary chunk optional; insights panel remains */
             });
+    }
+
+    renderDecisionMemoryContext(history = []) {
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const host = doc.getElementById('decision-memory-context-host');
+        if (!host) return;
+
+        const model = buildDecisionMemoryContextModel(history);
+        host.innerHTML = model
+            ? renderDecisionMemoryContextHtml(model, this.escapeHtml.bind(this))
+            : '';
     }
 
     renderDecisionHistory(history = []) {

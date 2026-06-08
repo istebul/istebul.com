@@ -159,6 +159,8 @@ export class PremiumPages {
         </div>
       </div>
 
+      <div id="decision-memory-context-host" data-route-mount aria-live="polite"></div>
+
       <div id="decision-history-recent-snippet-host"></div>
 
       <section id="premium-assistant" class="ib-premium-block ib-premium-assistant" aria-label="Karar asistanı">

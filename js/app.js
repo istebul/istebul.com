@@ -2360,6 +2360,7 @@ class App {
             steps
         });
         this.ui.renderRecentDecisionHistorySnippet?.(this.decisionHistory);
+        this.ui.renderDecisionMemoryContext?.(this.decisionHistory);
     }
 
     getAssistantWizardSteps(categoryConfig) {
@@ -3678,6 +3679,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             this.ui.renderDecisionMemoryInsights?.(this.decisionHistory);
             this.ui.renderDecisionHistory?.(this.decisionHistory);
             this.ui.renderRecentDecisionHistorySnippet?.(this.decisionHistory);
+            this.ui.renderDecisionMemoryContext?.(this.decisionHistory);
             this.injectDecisionHistoryUpsell();
             this.injectDecisionHistoryProductFeedback();
         } catch (error) {
