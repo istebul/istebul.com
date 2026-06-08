@@ -5,6 +5,11 @@
 import { escapeHtml } from '../core/dom-safe.js';
 import { runAnalyticsEngine } from '../ai-listings-analytics/index.js';
 import { buildBarChartSvg, buildTrendChartSvg, buildTopListHtml } from '../ai-listings-analytics/chart-builder.js';
+import {
+  formatAdminCountValue,
+  formatDuplicateRateValue,
+  normalizeAdminDataset
+} from './ai-listings-dataset.js';
 
 /**
  * @param {unknown} value
@@ -16,16 +21,18 @@ export function safeRenderText(value) {
 
 /**
  * @param {Record<string, unknown>} kpi
+ * @param {Array<Record<string, unknown>>} [listings]
  * @returns {string}
  */
-export function buildAnalyticsKpiCardsHtml(kpi) {
+export function buildAnalyticsKpiCardsHtml(kpi, listings = []) {
+  const dataset = normalizeAdminDataset(listings);
   const cards = [
-    { key: 'total', label: 'Toplam İlan', value: kpi.total, hint: 'tüm kayıtlar' },
-    { key: 'today', label: 'Bugün', value: kpi.today, hint: 'bugün eklenen' },
-    { key: 'last_7_days', label: 'Son 7 Gün', value: kpi.last_7_days, hint: '7 gün' },
-    { key: 'last_30_days', label: 'Son 30 Gün', value: kpi.last_30_days, hint: '30 gün' },
-    { key: 'duplicate', label: 'Mükerrer', value: kpi.duplicate, hint: 'mükerrer' },
-    { key: 'high_risk', label: 'Yüksek Risk', value: kpi.high_risk, hint: 'risk ≥ 61' }
+    { key: 'total', label: 'Toplam İlan', value: formatAdminCountValue(dataset, kpi.total), hint: 'tüm kayıtlar' },
+    { key: 'today', label: 'Bugün', value: formatAdminCountValue(dataset, kpi.today), hint: 'bugün eklenen' },
+    { key: 'last_7_days', label: 'Son 7 Gün', value: formatAdminCountValue(dataset, kpi.last_7_days), hint: '7 gün' },
+    { key: 'last_30_days', label: 'Son 30 Gün', value: formatAdminCountValue(dataset, kpi.last_30_days), hint: '30 gün' },
+    { key: 'duplicate_rate', label: 'Duplicate Oranı', value: formatDuplicateRateValue(dataset, kpi.duplicate), hint: 'mükerrer oranı' },
+    { key: 'high_risk', label: 'Yüksek Risk', value: formatAdminCountValue(dataset, kpi.high_risk), hint: 'risk ≥ 61' }
   ];
 
   return cards
@@ -59,7 +66,8 @@ export function buildAnalyticsSummaryHtml(summary) {
  * @returns {{ html: string, analytics: ReturnType<typeof runAnalyticsEngine>, chartBuilders: Record<string, () => string> }}
  */
 export function buildAnalyticsDashboardHtml(listings) {
-  const analytics = runAnalyticsEngine(listings);
+  const dataset = normalizeAdminDataset(listings);
+  const analytics = runAnalyticsEngine(dataset);
   const distributions = /** @type {Record<string, Array<{ label: string, count: number }>>} */ (
     analytics.distributions ?? {}
   );
@@ -72,9 +80,9 @@ export function buildAnalyticsDashboardHtml(listings) {
     quality: () => buildBarChartSvg(distributions.quality ?? [], { title: 'Kalite Dağılımı', id: 'quality' }),
     risk: () => buildBarChartSvg(distributions.risk ?? [], { title: 'Risk Dağılımı', id: 'risk' }),
     executive: () => buildBarChartSvg(distributions.executive ?? [], { title: 'Executive Dağılımı', id: 'executive' }),
-    duplicate: () => buildBarChartSvg(distributions.duplicate ?? [], { title: 'Duplicate Analizi', id: 'duplicate' }),
-    source: () => buildBarChartSvg(distributions.source ?? [], { title: 'Kaynak Analizi', id: 'source' }),
-    category: () => buildBarChartSvg(distributions.category ?? [], { title: 'Kategori Analizi', id: 'category' }),
+    duplicate: () => buildBarChartSvg(distributions.duplicate ?? [], { title: 'Duplicate Dağılımı', id: 'duplicate' }),
+    source: () => buildBarChartSvg(distributions.source ?? [], { title: 'Kaynak Dağılımı', id: 'source' }),
+    category: () => buildBarChartSvg(distributions.category ?? [], { title: 'Kategori Dağılımı', id: 'category' }),
     'trend-24h': () => buildTrendChartSvg(trends['24h']?.buckets ?? [], { title: 'Son 24 Saat', id: 'trend-24h' }),
     'trend-7d': () => buildTrendChartSvg(trends['7d']?.buckets ?? [], { title: 'Son 7 Gün', id: 'trend-7d' }),
     'trend-30d': () => buildTrendChartSvg(trends['30d']?.buckets ?? [], { title: 'Son 30 Gün', id: 'trend-30d' })
@@ -97,10 +105,10 @@ export function buildAnalyticsDashboardHtml(listings) {
         ${chartPanel('ai-score', 'AI Score Dağılımı')}
         ${chartPanel('risk', 'Risk Dağılımı')}
         ${chartPanel('quality', 'Kalite Dağılımı')}
-        ${chartPanel('executive', 'Yönetici Dağılımı')}
-        ${chartPanel('duplicate', 'Mükerrer Analizi')}
-        ${chartPanel('source', 'Kaynak Analizi')}
-        ${chartPanel('category', 'Kategori Analizi')}
+        ${chartPanel('executive', 'Executive Dağılımı')}
+        ${chartPanel('duplicate', 'Duplicate Dağılımı')}
+        ${chartPanel('source', 'Kaynak Dağılımı')}
+        ${chartPanel('category', 'Kategori Dağılımı')}
       </div>
       <div class="ai-analytics-dashboard__lists">
         ${buildTopListHtml(/** @type {Array<{ label: string, count: number }>} */ (analytics.top_brands ?? []), { title: 'İlk 10 Marka', limit: 10 })}

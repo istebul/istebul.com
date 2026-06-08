@@ -391,6 +391,26 @@
   min-height: calc(100vh - 180px);
 }
 
+.ai-listings-admin__workspace--full {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ai-listings-admin__workspace--full .ai-listings-admin__sidebar {
+  display: none !important;
+}
+
+.ai-listings-admin__view-panels {
+  min-width: 0;
+}
+
+.ai-listings-admin__view-panel[hidden] {
+  display: none !important;
+}
+
+.ai-listings-admin__view-panel:not([hidden]) {
+  animation: ai-fade-in 0.35s ease;
+}
+
 .ai-listings-admin__center {
   min-width: 0;
   min-height: 0;
@@ -1810,8 +1830,14 @@
     grid-template-columns: 1fr;
   }
 
-  .ai-listings-admin__workspace {
+  .ai-listings-admin__workspace,
+  .ai-listings-admin__workspace--decision,
+  .ai-listings-admin__workspace--full {
     grid-template-columns: 1fr;
+  }
+
+  .ai-listings-admin__workspace--full .ai-listings-admin__sidebar {
+    display: none !important;
   }
 
   .ai-listings-admin__sidebar {
@@ -2374,7 +2400,7 @@
 }
 
 .ai-listings-admin__kpi-row--repo {
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .ai-listings-admin__repo-dashboard {
@@ -2732,7 +2758,20 @@
 
 /* Analytics view (Sprint-12) */
 .ai-listings-admin__kpi-row--analytics {
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.ai-analytics-chart-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 10rem;
+  padding: calc(var(--ai-grid) * 2);
+  border-radius: 12px;
+  border: 1px dashed var(--ai-border);
+  color: var(--ai-muted);
+  font-size: 0.875rem;
+  text-align: center;
 }
 
 .ai-analytics-dashboard {

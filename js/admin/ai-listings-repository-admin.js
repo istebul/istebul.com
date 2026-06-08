@@ -10,13 +10,10 @@ import {
   runRepositoryQuery
 } from '../ai-listings-repository/index.js';
 import {
-  runRepositorySearch,
-  SEARCH_SORT_OPTIONS,
-  SEARCH_FILTER_CHIPS,
-  buildSearchSuggestions,
-  buildSearchResults,
-  sanitizeSearchQuery
-} from '../ai-listings-search/index.js';
+  formatAdminAverageValue,
+  formatAdminCountValue,
+  normalizeAdminDataset
+} from './ai-listings-dataset.js';
 
 /** @type {Readonly<Record<string, string>>} */
 export const REPOSITORY_SOURCE_LABELS_TR = Object.freeze({
@@ -121,17 +118,18 @@ export function formatRepositoryPrice(value, currency = 'TRY') {
 
 /**
  * @param {ReturnType<typeof runRepositoryQuery>['stats']} stats
+ * @param {Array<Record<string, unknown>>} [listings]
  * @returns {string}
  */
-export function buildRepositoryKpiCardsHtml(stats) {
+export function buildRepositoryKpiCardsHtml(stats, listings = []) {
+  const dataset = normalizeAdminDataset(listings);
   const cards = [
-    { key: 'total', label: 'Toplam kayıt', value: stats.total, hint: 'tüm kayıtlar' },
-    { key: 'active', label: 'Aktif kayıt', value: stats.active, hint: 'arşiv hariç' },
-    { key: 'duplicate', label: 'Mükerrer', value: stats.duplicate, hint: 'birebir + benzer' },
-    { key: 'average_ai', label: 'Ortalama AI', value: stats.average_ai ?? '—', hint: 'decision score' },
-    { key: 'average_risk', label: 'Ortalama Risk', value: stats.average_risk ?? '—', hint: 'risk score' },
-    { key: 'average_quality', label: 'Ortalama Kalite', value: stats.average_quality ?? '—', hint: 'quality score' },
-    { key: 'today', label: 'Bugün eklenen', value: stats.today, hint: 'bugün oluşturulan' }
+    { key: 'total', label: 'Toplam kayıt', value: formatAdminCountValue(dataset, stats.total), hint: 'tüm kayıtlar' },
+    { key: 'active', label: 'Aktif kayıt', value: formatAdminCountValue(dataset, stats.active), hint: 'arşiv hariç' },
+    { key: 'duplicate', label: 'Duplicate', value: formatAdminCountValue(dataset, stats.duplicate), hint: 'exact + similar' },
+    { key: 'average_ai', label: 'Ortalama AI', value: formatAdminAverageValue(dataset, stats.average_ai), hint: 'decision score' },
+    { key: 'average_quality', label: 'Ortalama Kalite', value: formatAdminAverageValue(dataset, stats.average_quality), hint: 'quality score' },
+    { key: 'today', label: 'Bugün eklenen', value: formatAdminCountValue(dataset, stats.today), hint: 'bugün oluşturulan' }
   ];
 
   return cards
@@ -454,34 +452,8 @@ export function buildRepositoryCardsGridHtml(records, selectedId = null, isSearc
  * @returns {{ html: string, query: ReturnType<typeof runRepositoryQuery>, searchResult?: ReturnType<typeof runRepositorySearch> }}
  */
 export function buildRepositoryDashboardHtml(listings, options = {}) {
-  const aiSearch = sanitizeSearchQuery(options.aiSearch ?? '');
-  const hasAiSearch = aiSearch.length > 0;
-  const hasListings = Array.isArray(listings) && listings.length > 0;
-
-  if (!hasListings) {
-    const emptyHtml = `
-      <div class="ai-listings-admin__repo-dashboard">
-        <header class="ai-listings-admin__repo-head">
-          <h2>Veri Havuzu</h2>
-          <p class="ai-listings-admin__muted">Ortak veri merkezi — mevcut ilanlardan türetilmiş görünüm</p>
-        </header>
-        ${buildAiSearchSectionHtml(aiSearch, [])}
-        <p class="ai-listings-admin__empty-state">Yeterli veri yok</p>
-      </div>`;
-    return {
-      html: emptyHtml,
-      query: runRepositoryQuery([], options)
-    };
-  }
-
-  const searchResult = runRepositorySearch(listings, {
-    query: aiSearch,
-    categoryTab: options.categoryTab ?? 'all',
-    filters: options.filters ?? [],
-    sortBy: hasAiSearch ? (options.sortBy ?? 'best_match') : (options.sortBy ?? 'newest')
-  });
-
-  const query = runRepositoryQuery(listings, {
+  const dataset = normalizeAdminDataset(listings);
+  const query = runRepositoryQuery(dataset, {
     categoryTab: options.categoryTab ?? 'all',
     filters: options.filters ?? [],
     search: options.search ?? ''
@@ -506,9 +478,6 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
         <h2>Veri Havuzu</h2>
         <p class="ai-listings-admin__muted">Ortak veri merkezi — mevcut ilanlardan türetilmiş görünüm</p>
       </header>
-      ${buildRepositorySummaryHtml(query.summary)}
-      ${buildAiSearchSectionHtml(aiSearch, suggestions)}
-      ${summaryHtml}
       <div class="ai-listings-admin__repo-tabs" role="tablist" aria-label="Kategori">
         ${buildRepositoryCategoryTabsHtml(options.categoryTab ?? 'all')}
       </div>

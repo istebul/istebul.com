@@ -491,17 +491,22 @@ export function computeKpiStats(listings, options = {}) {
  * @param {{ total: number, analyzedToday: number, pendingReview: number, highRisk: number, trends?: Record<string, { label: string, hint: string, positive: boolean }> }} stats
  * @returns {string}
  */
-export function buildKpiCardsHtml(stats) {
+export function buildKpiCardsHtml(stats, listings = []) {
+  const isEmpty = !Array.isArray(listings) || listings.length === 0;
+  const countValue = (value) => (isEmpty ? '—' : value);
   const cards = [
     {
       key: 'total',
-      label: 'Toplam Kayıt',
-      value: stats.total ?? 0,
+      label: 'Toplam İlan',
+      value: countValue(stats.total),
       icon: '📋',
       hint: 'görünür kayıtlar',
       trend: stats.trends?.total
     },
     {
+      key: 'analyzed-today',
+      label: 'Bugün Analiz',
+      value: countValue(stats.analyzedToday),
       key: 'active',
       label: 'Aktif Kayıt',
       value: stats.active ?? stats.total ?? 0,
@@ -528,12 +533,19 @@ export function buildKpiCardsHtml(stats) {
     {
       key: 'high-risk',
       label: 'Yüksek Risk',
+      value: countValue(stats.highRisk),
       value: stats.highRisk ?? 0,
       icon: '⚠',
       hint: 'risk ≥ 61',
       trend: stats.trends?.['high-risk']
     },
     {
+      key: 'pending',
+      label: 'İncelemede',
+      value: countValue(stats.pendingReview),
+      icon: '🔎',
+      hint: 'bekleyen QA',
+      trend: stats.trends?.pending
       key: 'today-added',
       label: 'Bugün Eklenen',
       value: stats.todayAdded ?? stats.analyzedToday ?? 0,
@@ -639,6 +651,8 @@ export function computeExecutiveDashboardStats(listings) {
  */
 export function buildExecutiveDashboardHtml(listings) {
   const stats = computeExecutiveDashboardStats(listings);
+  const isEmpty = !Array.isArray(listings) || listings.length === 0;
+  const countValue = (value) => (isEmpty ? '—' : value);
 
   const metricCards = [
     { label: 'Son 24 Saat Analiz', value: stats.analyzedLast24h, suffix: '', hint: 'son 24 saat' },
