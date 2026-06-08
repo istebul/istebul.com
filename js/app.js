@@ -49,6 +49,7 @@ import {
 } from './runtime/lazy-app-modules.js';
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
+import { buildDecisionHistoryEntry, mergeDecisionHistoryEntry } from './ui/decision-history-entry.js';
 import { Router } from './core/router.js';
 import { state } from './core/state.js';
 import { supabase } from './core/supabase.js';
@@ -3690,34 +3691,12 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             return false;
         }
 
-        const topPick = result.recommendations[0];
-        const record = {
-            id: result.id,
-            categoryId: result.categoryId,
-            categoryName: result.categoryName,
-            createdAt: result.createdAt,
-            rawAnswers: result.rawAnswers,
-            answers: result.answers,
-            summary: result.summary,
-            insight: result.insight,
-            dataHealth: result.dataHealth,
-            topPick: topPick ? {
-                name: topPick.name,
-                score: topPick.score,
-                price: topPick.price,
-                yearlyCost: topPick.yearlyCost,
-                monthlyPayment: topPick.financeComparisons?.[0]?.monthlyPayment || 0
-            } : null,
-            recommendations: result.recommendations.map((item) => ({
-                name: item.name,
-                score: item.score,
-                price: item.price,
-                yearlyCost: item.yearlyCost
-            }))
-        };
+        const record = buildDecisionHistoryEntry(result);
+        if (!record) return false;
 
+        const topPick = result.recommendations[0];
         const history = this.readStoredArray(storageKey);
-        const filtered = [record, ...history.filter((item) => item.id !== record.id)].slice(0, 12);
+        const filtered = mergeDecisionHistoryEntry(history, record, 12);
         this.writeStoredValue(storageKey, filtered);
         this.decisionHistory = filtered;
         this.ui.renderDecisionHistory?.(this.decisionHistory);
