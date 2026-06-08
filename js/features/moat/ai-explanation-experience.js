@@ -45,7 +45,7 @@ export function buildExplanationBundle(results = [], formData = {}) {
     identity: {
       title: 'Karar asistanı',
       subtitle: 'Tahmin makinesi değil — deterministik skor + sınırlı yorum katmanı',
-      badge: 'AI decision assistant'
+      badge: 'Yapay zeka karar asistanı'
     },
     profileSummary,
     reasoning,

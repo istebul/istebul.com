@@ -55,8 +55,8 @@ export function buildAnalyticsKpiCardsHtml(kpi, listings = []) {
  */
 export function buildAnalyticsSummaryHtml(summary) {
   return `
-    <section class="ai-analytics-summary" aria-label="Executive summary">
-      <h3>Executive Summary</h3>
+    <section class="ai-analytics-summary" aria-label="Yönetici özeti">
+      <h3>Yönetici Özeti</h3>
       <p class="ai-analytics-summary__text">${safeRenderText(summary)}</p>
     </section>`;
 }
@@ -97,7 +97,7 @@ export function buildAnalyticsDashboardHtml(listings) {
   const html = `
     <div class="ai-analytics-dashboard">
       <header class="ai-analytics-dashboard__head">
-        <h2>Analytics</h2>
+        <h2>Analitik</h2>
         <p class="ai-listings-admin__muted">Mevcut ilan ve analiz verilerinden türetilmiş deterministik rapor</p>
       </header>
       ${buildAnalyticsSummaryHtml(String(analytics.summary ?? ''))}
@@ -111,11 +111,11 @@ export function buildAnalyticsDashboardHtml(listings) {
         ${chartPanel('category', 'Kategori Dağılımı')}
       </div>
       <div class="ai-analytics-dashboard__lists">
-        ${buildTopListHtml(/** @type {Array<{ label: string, count: number }>} */ (analytics.top_brands ?? []), { title: 'Top 10 Marka', limit: 10 })}
-        ${buildTopListHtml(/** @type {Array<{ label: string, count: number }>} */ (analytics.top_models ?? []), { title: 'Top 10 Model', limit: 10 })}
+        ${buildTopListHtml(/** @type {Array<{ label: string, count: number }>} */ (analytics.top_brands ?? []), { title: 'İlk 10 Marka', limit: 10 })}
+        ${buildTopListHtml(/** @type {Array<{ label: string, count: number }>} */ (analytics.top_models ?? []), { title: 'İlk 10 Model', limit: 10 })}
       </div>
       <div class="ai-analytics-dashboard__trends">
-        <h3>Trend</h3>
+        <h3>Eğilim</h3>
         <div class="ai-analytics-dashboard__trend-grid">
           ${chartPanel('trend-24h', 'Son 24 Saat')}
           ${chartPanel('trend-7d', 'Son 7 Gün')}

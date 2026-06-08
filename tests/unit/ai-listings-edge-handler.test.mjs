@@ -155,6 +155,26 @@ test('x-ai-listings-secret remains required when CORS origin is allowed', async 
   assert.equal(res.headers.get('Access-Control-Allow-Origin'), 'https://www.istebul.com');
 });
 
+test('verified admin session can access listings without edge secret', async () => {
+  const res = await handleAiListingsRequest(
+    new Request('https://example.supabase.co/functions/v1/ai-listings/listings', {
+      method: 'GET',
+      headers: {
+        Authorization: 'Bearer admin-session-token',
+        'Content-Type': 'application/json',
+        Origin: 'https://www.istebul.com'
+      }
+    }),
+    handlerDeps({
+      env: baseEnv({ AI_LISTINGS_EDGE_SECRET: '' }),
+      verifyAdminSession: async () => true
+    })
+  );
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.ok, true);
+});
+
 test('unauthorized request returns 401', async () => {
   const res = await handleAiListingsRequest(request('GET', '/listings', { secret: 'wrong' }), handlerDeps());
   assert.equal(res.status, 401);

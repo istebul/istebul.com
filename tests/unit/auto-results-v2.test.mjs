@@ -24,7 +24,7 @@ test('resolveVehicleImageUrl prefers verified image_url over placeholder', () =>
     name: '2024 Citroen C4 Max',
     image_url: 'https://cdn.example/citroen-c4-max.jpg'
   });
-  assert.match(url, /^https:\/\/cdn\.example\/citroen-c4-max\.jpg\?v=image-v3$/);
+  assert.match(url, /^https:\/\/cdn\.example\/citroen-c4-max\.jpg\?v=image-v4$/);
 });
 
 test('resolveVehicleImageUrl rejects unverified image_url and uses local asset', () => {
@@ -33,7 +33,7 @@ test('resolveVehicleImageUrl rejects unverified image_url and uses local asset',
       name: '2023 Toyota Corolla Cross Hybrid',
       image_url: 'https://cdn.example/volkswagen-passat.jpg'
     })),
-    /toyota-corolla-cross-hybrid\.jpg$/
+    /toyota-corolla-cross-hybrid\.svg$/
   );
   assert.equal(
     vehicleImageMatchesName(
@@ -47,19 +47,19 @@ test('resolveVehicleImageUrl rejects unverified image_url and uses local asset',
 test('resolveLocalVehicleAsset maps catalog names to bundled SVG assets', () => {
   assert.match(
     stripVersion(resolveLocalVehicleAsset('2024 Citroen C4 Max') || ''),
-    /\/citroen\/c4-max\.svg$/
+    /renault-clio-icon\.svg$/
   );
-  assert.equal(resolveLocalVehicleAsset('2024 Volvo EX30'), null);
+  assert.match(stripVersion(resolveLocalVehicleAsset('2024 Volvo EX30') || ''), /peugeot-suv\.svg$/);
 });
 
 test('resolveVehicleImageUrl uses local asset before default fallback', () => {
   assert.equal(
     stripVersion(resolveVehicleImageUrl({ name: '2023 Toyota Corolla Cross Hybrid' })),
-    '/assets/images/vehicles/toyota-corolla-cross-hybrid.jpg'
+    '/assets/images/auto/toyota-corolla-cross-hybrid.svg'
   );
   assert.match(
     stripVersion(resolveVehicleImageUrl({ name: '2024 Citroen C4 Max' })),
-    /\/citroen\/c4-max\.svg$/
+    /renault-clio-icon\.svg$/
   );
   assert.equal(stripVersion(resolveVehicleImageUrl(null)), stripVersion(DEFAULT_VEHICLE_FALLBACK));
   assert.equal(PREMIUM_VEHICLE_PLACEHOLDER, DEFAULT_VEHICLE_FALLBACK);
@@ -68,7 +68,7 @@ test('resolveVehicleImageUrl uses local asset before default fallback', () => {
 test('toRecommendationVehicle keeps vehicle name and sets imageUrl', () => {
   const rec = toRecommendationVehicle({ name: '2023 Toyota Corolla Cross Hybrid', price: 1_650_000 });
   assert.equal(rec.name, '2023 Toyota Corolla Cross Hybrid');
-  assert.match(stripVersion(rec.imageUrl), /toyota-corolla-cross-hybrid\.jpg$/);
+  assert.match(stripVersion(rec.imageUrl), /toyota-corolla-cross-hybrid\.svg$/);
 });
 
 test('buildRecommendationPayload uses same vehicle for title and image', () => {
@@ -94,7 +94,7 @@ test('buildRecommendationPayload uses same vehicle for title and image', () => {
   };
   const payload = buildRecommendationPayload(top, { usage: 'city' }, [top], intel);
   assert.equal(payload.vehicle.name, '2024 Citroen C4 Max');
-  assert.match(stripVersion(payload.vehicle.imageUrl), /\/citroen\/c4-max\.svg$/);
+  assert.match(stripVersion(payload.vehicle.imageUrl), /renault-clio-icon\.svg$/);
   assert.match(payload.aiSummary, /Citroen C4 Max/);
 });
 

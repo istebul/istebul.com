@@ -467,6 +467,23 @@ function showVehicleSelectionRequiredNotice() {
   }, 2400);
 }
 
+function formatVehicleTcoBreakdown(vehicle) {
+  const costs = vehicle?.costs || {};
+  const total12 = Number(costs.total || 0);
+  const fuel = Number(costs.fuel || costs.ownership?.annual?.fuel || 0);
+  const insurance = Number(costs.insurance || costs.ownership?.annual?.insurance || 0);
+  const kasko = Number(costs.kasko || costs.ownership?.annual?.kasko || 0);
+  const maintenance = Number(costs.maintenance || costs.ownership?.annual?.maintenance || 0);
+  const parts = [
+    total12 ? `12 ay TCO ≈ ${formatAmount(total12)}` : null,
+    fuel ? `yakıt ${formatAmount(fuel)}` : null,
+    insurance ? `sigorta ${formatAmount(insurance)}` : null,
+    kasko ? `kasko ${formatAmount(kasko)}` : null,
+    maintenance ? `bakım ${formatAmount(maintenance)}` : null
+  ].filter(Boolean);
+  return parts.length ? parts.join(' · ') : '';
+}
+
 function renderVehicleSelectionGate(displayResults) {
   const selected = readSelectedVehicle();
   const cards = (displayResults || []).slice(0, 3);
@@ -475,15 +492,16 @@ function renderVehicleSelectionGate(displayResults) {
   return `
     <section id="auto-vehicle-selection" class="auto-vehicle-selection" aria-labelledby="auto-vehicle-selection-title">
       <div class="section-head">
-        <p class="kicker">Zorunlu adım</p>
+        <p class="kicker">Son karar turu</p>
         <h2 id="auto-vehicle-selection-title">Tek bir aracı seçin</h2>
-        <p class="section-subtitle">Sonraki adımda kredi, sigorta veya bayi yönlendirmesi seçtiğiniz modele göre ilerler.</p>
+        <p class="section-subtitle">3 öneriden birini onaylayın; kredi, sigorta veya bayi yönlendirmesi seçtiğiniz modele göre ilerler.</p>
       </div>
       <div class="auto-vehicle-selection-grid" role="radiogroup" aria-label="Araç seçimi">
         ${cards
           .map((vehicle, index) => {
             const isSelected = selected?.name === vehicle.name;
             const monthlyImpact = Math.round((Number(vehicle.costs?.total || 0) / 12) / 100) * 100;
+            const tcoLine = formatVehicleTcoBreakdown(vehicle);
             return `
           <button
             type="button"
@@ -497,6 +515,7 @@ function renderVehicleSelectionGate(displayResults) {
             <strong>${escapeHtml(vehicle.name)}</strong>
             <span class="auto-vehicle-select-score">${escapeHtml(formatScoreOutOf100(vehicle.score))} uyum</span>
             <span class="auto-vehicle-select-cost">~${escapeHtml(formatAmount(monthlyImpact))} / ay</span>
+            ${tcoLine ? `<span class="auto-vehicle-select-tco text-muted-sm">${escapeHtml(tcoLine)}</span>` : ''}
             <span class="auto-vehicle-select-cta">${isSelected ? '✓ Seçildi' : 'Bu aracı seç'}</span>
           </button>`;
           })

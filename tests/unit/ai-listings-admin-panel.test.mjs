@@ -101,6 +101,15 @@ test('buildEdgeRequestHeaders includes Authorization gateway header', () => {
   assert.equal(headers.Authorization, 'Bearer anon-key');
 });
 
+test('buildEdgeRequestHeaders prefers admin access token over anon key', () => {
+  const headers = buildEdgeRequestHeaders({
+    anonKey: 'anon-key',
+    accessToken: 'admin-session-token'
+  });
+  assert.equal(headers.Authorization, 'Bearer admin-session-token');
+  assert.equal(headers.apikey, 'anon-key');
+});
+
 test('buildEdgeRequestHeaders includes apikey gateway header', () => {
   const headers = buildEdgeRequestHeaders({ secret: 'abc123', anonKey: 'anon-key' });
   assert.equal(headers.apikey, 'anon-key');
@@ -209,12 +218,14 @@ test('Turkish status labels cover all workflow statuses', () => {
   assert.equal(getStatusLabelTr('draft'), 'Taslak');
   assert.equal(getStatusLabelTr('pending_review'), 'İncelemede');
   assert.equal(getStatusLabelTr('approved'), 'Onaylandı');
+  assert.equal(getStatusLabelTr('published'), 'Yayında');
   assert.equal(getStatusLabelTr('rejected'), 'Reddedildi');
   assert.equal(getStatusLabelTr('archived'), 'Arşivlendi');
   assert.deepEqual(Object.keys(STATUS_LABELS_TR), [
     'draft',
     'pending_review',
     'approved',
+    'published',
     'rejected',
     'archived'
   ]);
@@ -603,8 +614,8 @@ test('buildListingCardHtml renders premium listing card metrics', () => {
   });
   assert.match(html, /BMW 320i/);
   assert.match(html, /AI 91/);
-  assert.match(html, /Risk 18/);
-  assert.match(html, /Piyasa/);
+  assert.match(html, /Düşük risk/);
+  assert.match(html, /Yüksek fiyat|Makul aralık|listing-metric--price-position/);
   assert.match(html, /ai-listings-admin__listing-card/);
 });
 

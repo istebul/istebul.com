@@ -328,7 +328,7 @@ test('buildExecutiveDecisionCardHtml renders admin card', () => {
     tags: ['executive_score:82', 'executive_confidence:84', 'executive_label:İncelenebilir']
   });
   assert.match(html, /AI Yönetici Kararı/);
-  assert.match(html, /Executive Score/);
+  assert.match(html, /Yönetici Skoru/);
   assert.match(html, /Karar Güveni/);
   assert.match(html, /Güçlü Yönler/);
   assert.match(html, /Riskler/);

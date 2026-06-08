@@ -419,11 +419,23 @@ body.admin-enterprise .main-content {
 }
 
 body.admin-enterprise .table-wrap,
-body.admin-enterprise table {
+body.admin-enterprise .admin-table-scroll,
+body.admin-enterprise .ib-dash-table-wrap,
+body.admin-enterprise [id$='-leads-list'],
+body.admin-enterprise [id$='-list']:has(> table) {
   display: block;
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.admin-enterprise table,
+body.admin-enterprise .table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
 }
 
 body.admin-enterprise .layout {

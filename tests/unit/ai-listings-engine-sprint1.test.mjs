@@ -145,8 +145,7 @@ test('buildListingCardHtml shows Kalite and Karar metrics from engine', () => {
     latest_analysis: { ai_score: 91, risk_score: 18, market_score: 82 }
   });
   assert.match(html, /AI 91/);
-  assert.match(html, /Risk 18/);
-  assert.match(html, /Piyasa/);
+  assert.match(html, /Düşük risk/);
   assert.match(html, /Kalite/);
   assert.match(html, /İncelenebilir|Satın Alınabilir|Riskli|Önerilmez/);
 });

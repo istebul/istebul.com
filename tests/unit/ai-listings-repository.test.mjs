@@ -334,21 +334,23 @@ test('buildRepositoryFilterChipsHtml marks active filters', () => {
 
 test('buildRepositoryDashboardHtml builds full dashboard without duplicate summary strip', () => {
   const { html, query } = buildRepositoryDashboardHtml([vehicleListing, housingListing]);
-  assert.match(html, /Repository/);
+  assert.match(html, /Veri Havuzu/);
   assert.match(html, /ai-listings-admin__repo-grid/);
   assert.doesNotMatch(html, /ai-listings-admin__repo-summary/);
   assert.ok(query.filtered.length >= 1);
 });
 
 test('getRepositorySourceLabelTr maps source types', () => {
-  assert.equal(getRepositorySourceLabelTr('ai_builder'), 'AI Builder');
+  assert.equal(getRepositorySourceLabelTr('ai_builder'), 'AI İlan Oluşturucu');
   assert.equal(getRepositorySourceLabelTr('future_partner'), 'Gelecek Partner');
 });
 
-test('no endpoint URL changes in router', () => {
+test('router keeps listings resource and adds platform resources', () => {
   const router = fs.readFileSync(routerPath, 'utf8');
-  assert.match(router, /resource: 'listings'/);
-  assert.doesNotMatch(router, /repository/i);
+  assert.match(router, /'listings'/);
+  assert.match(router, /'learning'/);
+  assert.match(router, /'data-pool'/);
+  assert.match(router, /'personalization'/);
 });
 
 test('no auth header changes', () => {

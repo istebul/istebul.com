@@ -3,6 +3,12 @@
  */
 import { escapeHtml } from '../core/security.js';
 import {
+  ensureAiPlatformStyles,
+  renderAiPlatformBanner,
+  resolveRiskDetailTr,
+  resolveRiskTitleTr
+} from '../ui/ai-platform-surface.js';
+import {
   buildDecisionReportModel,
   copyDecisionReportSummary,
   downloadDecisionReportHtml
@@ -46,8 +52,8 @@ function renderStaticWhatIfScenarios(scenarios = []) {
   return `
     <section class="decision-v3-section decision-v3-whatif decision-v3-whatif-static" data-decision-whatif-static>
       <div class="decision-v3-section-head">
-        <h3>What If Senaryoları</h3>
-        <p class="decision-v3-muted">Örnek senaryo notları (statik)</p>
+        <h3>Senaryo Simülasyonu</h3>
+        <p class="decision-v3-muted">Örnek senaryo notları</p>
       </div>
       <ul class="decision-v3-whatif-list">
         ${items
@@ -65,8 +71,8 @@ function renderInteractiveWhatIf() {
   return `
     <section class="decision-v3-section decision-v3-whatif decision-v3-whatif-interactive" data-decision-whatif>
       <div class="decision-v3-section-head">
-        <h3>What If Senaryoları</h3>
-        <p class="decision-v3-muted">Parametreleri değiştirip deterministik simülasyon çalıştırın</p>
+        <h3>Senaryo Simülasyonu</h3>
+        <p class="decision-v3-muted">Parametreleri değiştirip AI destekli simülasyon çalıştırın</p>
       </div>
 
       <div class="decision-v3-whatif-controls">
@@ -191,6 +197,11 @@ export function renderDecisionV3Panel(model = {}) {
 
   return `
     <div class="decision-v3-root" data-decision-v3-root data-vertical="${esc(model.vertical)}">
+      ${renderAiPlatformBanner({
+        title: 'Yapay Zeka Karar Analizi',
+        subtitle: 'Skor ve risk hesaplaması deterministiktir; AI yorumu kararınızı Türkçe olarak açıklar.',
+        variant: 'compact'
+      })}
       <section class="decision-v3-section decision-v3-hero">
         <div class="decision-v3-hero-copy">
           <p class="decision-v3-kicker">${esc(model.recommendationLabel)}</p>
@@ -226,10 +237,11 @@ export function renderDecisionV3Panel(model = {}) {
               <h3>Risk Özeti</h3>
               <ul class="decision-v3-risk-list">
                 ${riskAnalysis
-                  .map(
-                    (risk) =>
-                      `<li><strong>${esc(risk.label || risk.key)}</strong> · ${esc(risk.level)} · ${esc(risk.detail || risk.reason || '')}</li>`
-                  )
+                  .map((risk) => {
+                    const detail = resolveRiskDetailTr(risk);
+                    const detailSuffix = detail ? ` · ${detail}` : '';
+                    return `<li><strong>${esc(resolveRiskTitleTr(risk))}</strong> · ${esc(risk.level)}${esc(detailSuffix)}</li>`;
+                  })
                   .join('')}
               </ul>
             </section>`
@@ -434,6 +446,8 @@ export function bindDecisionV3ReportActions(root, context = {}) {
 
 export function ensureDecisionV3Styles() {
   if (typeof document === 'undefined' || typeof document.querySelector !== 'function') return;
+
+  ensureAiPlatformStyles();
 
   const existing = document.querySelector('link[data-decision-v3-styles]');
   if (existing) return;

@@ -44,6 +44,7 @@ export function resolveContentRouteSurface(pathname = '/') {
 }
 
 const APP_PATHS = Object.freeze({
+    '/secenekler': 'ilanlar',
     '/ilanlar': 'ilanlar',
     '/karsilastir': 'compare',
     '/favoriler': 'favoriler',

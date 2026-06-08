@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="/css/admin-partner-applications-table.css">
 <link rel="stylesheet" href="/css/admin-internal-dashboards.css">
 <link rel="stylesheet" href="/css/admin-ops-ai-assistant.css">
+<link rel="stylesheet" href="/css/ai-platform-surface.css">
 <link rel="stylesheet" href="/css/admin-premium-polish.css?v=2">
 <link rel="stylesheet" href="/css/final-enterprise-release.css">
 <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=8">
@@ -58,6 +59,8 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);color:var(--muted);cursor:pointer;transition:all .15s;font-size:13px;font-weight:500;margin-bottom:2px;}
 .nav-item:hover{background:var(--surface2);color:var(--text);}
 .nav-item.active{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;}
+.nav-item--external{border:1px dashed rgba(37,99,235,.25);}
+.nav-item--external:hover{border-color:rgba(37,99,235,.45);color:#2563eb;}
 .sidebar-footer{padding:16px;border-top:1px solid var(--border);flex-shrink:0;}
 .user-info{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .user-avatar{width:32px;height:32px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;}
@@ -444,6 +447,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <div class="nav-item" data-page-target="housing-scoring"><span class="nav-label">Konut Scoring Ayarları</span></div>
             <div class="nav-item" data-page-target="finance-leads"><span class="nav-label">Finans Leadleri</span></div>
             <div class="nav-item" data-page-target="sigorta-leads"><span class="nav-label">Sigorta Leadleri</span></div>
+            <div class="nav-item" data-page-target="kasko-leads"><span class="nav-label">Kasko Leadleri</span></div>
             <div class="nav-item" data-page-target="finance-partners"><span class="nav-label">Finans Partnerleri</span></div>
             <div class="nav-item" data-page-target="finance-scoring"><span class="nav-label">Finans Scoring Ayarları</span></div>
           </div>
@@ -464,7 +468,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <div class="nav-item" data-page-target="category-dominance"><span class="nav-label">Skor &amp; moat</span></div>
           </div>
         </div>
-        <div class="nav-item" data-page-target="listings"><span class="nav-icon" aria-hidden="true">▣</span><span class="nav-label">İlan / Ürünler</span></div>
+        <div class="nav-item" data-page-target="listings"><span class="nav-icon" aria-hidden="true">▣</span><span class="nav-label">Karar Seçenekleri</span></div>
         <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">İçerik Yönetimi</button>
           <div class="nav-group-items">
@@ -554,6 +558,19 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
         </div>
       </header>
 
+      <div class="admin-ai-platform-strip ib-ai-platform-banner ib-ai-platform-banner--compact" role="note" aria-label="Yapay zeka karar platformu">
+        <div class="ib-ai-platform-banner__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="ib-ai-platform-banner__copy">
+          <strong>isteBul Yapay Zeka Karar Platformu — Admin</strong>
+          <p>Lead CRM, skor motoru ve analitik bu panelden yönetilir. Her kullanıcı sorgusu AI destekli karar deneyimi yaşar.</p>
+        </div>
+        <span class="ib-ai-platform-banner__live"><span class="ib-ai-platform-banner__pulse" aria-hidden="true"></span>AI motoru aktif</span>
+      </div>
+
       <div class="page active" id="page-dashboard">
         <div class="page-header"><h2>Operasyon merkezi</h2><p>AI destekli karar platformu — canlı özet</p></div>
         <div class="kpi-grid kpi-grid--premium stat-grid">
@@ -631,7 +648,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           </div>
         </div>
         <div class="stat-grid stat-grid--secondary">
-          <div class="stat-card"><div class="stat-label">İlan</div><div class="stat-value" id="stat-listings">—</div></div>
+          <div class="stat-card"><div class="stat-label">Seçenek</div><div class="stat-value" id="stat-listings">—</div></div>
           <div class="stat-card"><div class="stat-label">Duyuru</div><div class="stat-value" id="stat-ann">—</div></div>
           <div class="stat-card"><div class="stat-label">SSS</div><div class="stat-value" id="stat-faqs">—</div></div>
           <div class="stat-card"><div class="stat-label">Blog</div><div class="stat-value" id="stat-posts">—</div></div>
@@ -728,7 +745,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <div class="form-group">
             <label>Canlı finans / faiz feed URL (edge)</label>
             <input type="url" id="s-live_finance_feed_url" placeholder="https://…" autocomplete="off" />
-            <small class="text-muted">Boş bırakılırsa simülasyon katalog kullanılır. Açmadan önce feed’in çalıştığını doğrulayın.</small>
+            <small class="text-muted">Boş bırakılırsa simülasyon katalog kullanılır. Canlı mod yalnızca geçerli feed URL ile açılabilir.</small>
           </div>
           <p class="text-muted-sm" id="live-data-admin-hint" role="status">Plan: docs/LIVE_DATA_30DAY_CHECKLIST.md</p>
         </div>
@@ -820,7 +837,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
               <label class="toggle">
                 <input type="checkbox" id="s-home_category_kasko_enabled" />
                 <div class="toggle-track"><div class="toggle-thumb"></div></div>
-                <span class="text-muted-sm">Kasko (yakında) kategorisi görünür</span>
+                <span class="text-muted-sm">Kasko kategorisi canlı — /kasko/ karar analizi</span>
               </label>
             </div>
           </div>
@@ -1098,7 +1115,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
       </div>
 
       <div class="page" id="page-listings">
-        <div class="page-header"><h2>İlanlar</h2><p>Platforma eklenen ilanları yönetin</p></div>
+        <div class="page-header"><h2>Karar Seçenekleri</h2><p>Platforma eklenen değerlendirilebilir seçenekleri yönetin</p></div>
         <div class="card"><div id="listings-list"><div class="empty">Yükleniyor...</div></div></div>
       </div>
 
@@ -1413,6 +1430,36 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             </select>
           </div>
           <div id="sigorta-leads-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-kasko-leads">
+        <div class="page-header">
+          <h2>Kasko Leadleri</h2>
+          <p>Kasko karar analizi lead yönetimi — skorlar deterministik motordan; AI yalnızca özet üretir</p>
+        </div>
+        <div class="card">
+          <div class="auto-leads-toolbar">
+            <input id="kasko-leads-search" class="form-input" type="search" placeholder="Araç, teminat, telefon veya AI özeti ara...">
+            <select id="kasko-leads-category-filter" class="status-select">
+              <option value="">Tüm araç kategorileri</option>
+              <option value="otomobil">Otomobil</option>
+              <option value="suv">SUV / crossover</option>
+              <option value="motosiklet">Motosiklet</option>
+              <option value="ticari_arac">Ticari araç</option>
+            </select>
+            <select id="kasko-leads-status-filter" class="status-select">
+              <option value="">Tüm durumlar</option>
+              <option value="new">yeni</option>
+              <option value="incelendi">incelendi</option>
+              <option value="arandi">arandı</option>
+              <option value="uygun">uygun</option>
+              <option value="partnere_yonlendirildi">partnere yönlendirildi</option>
+              <option value="kapandi">kapandı</option>
+              <option value="reddedildi">reddedildi</option>
+            </select>
+          </div>
+          <div id="kasko-leads-list"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
 

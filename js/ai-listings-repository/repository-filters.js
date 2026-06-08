@@ -61,6 +61,17 @@ export function recordMatchesRepositoryFilter(record, filterId) {
       return executiveLabel === 'Satın Alınabilir';
     case 'archived':
       return status === 'archived';
+    case 'manual':
+      return String(record.source ?? '') === 'manual';
+    case 'ai_builder':
+      return String(record.source ?? '') === 'ai_builder';
+    case 'csv':
+      return String(record.source ?? '') === 'csv';
+    case 'json':
+      return String(record.source ?? '') === 'json';
+    case 'partner':
+    case 'partner_api':
+      return String(record.source ?? '') === 'partner_api' || String(record.source ?? '') === 'future_partner';
     default:
       return true;
   }

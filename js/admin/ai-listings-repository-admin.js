@@ -1,5 +1,5 @@
 /**
- * AI Listings Repository — admin UI builders (Sprint-11).
+ * AI Listings Repository — admin UI builders (Sprint-11 + Sprint-15 AI Search).
  * Client-side derive only; no endpoint, auth, or schema changes.
  */
 
@@ -18,7 +18,7 @@ import {
 /** @type {Readonly<Record<string, string>>} */
 export const REPOSITORY_SOURCE_LABELS_TR = Object.freeze({
   manual: 'Manuel',
-  ai_builder: 'AI Builder',
+  ai_builder: 'AI İlan Oluşturucu',
   csv: 'CSV',
   json: 'JSON',
   partner_api: 'Partner API',
@@ -28,8 +28,8 @@ export const REPOSITORY_SOURCE_LABELS_TR = Object.freeze({
 /** @type {Readonly<Record<string, string>>} */
 export const REPOSITORY_DUPLICATE_LABELS_TR = Object.freeze({
   new: 'Yeni',
-  exact: 'Exact',
-  similar: 'Similar'
+  exact: 'Birebir',
+  similar: 'Benzer'
 });
 
 /** @type {Readonly<Record<string, string>>} */
@@ -96,6 +96,27 @@ export function formatRepositoryScore(value) {
 }
 
 /**
+ * @param {number|null|undefined} value
+ * @returns {string}
+ */
+export function formatRepositoryKm(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  return `${num.toLocaleString('tr-TR')} km`;
+}
+
+/**
+ * @param {number|null|undefined} value
+ * @param {string} [currency]
+ * @returns {string}
+ */
+export function formatRepositoryPrice(value, currency = 'TRY') {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  return `${num.toLocaleString('tr-TR')} ${safeRenderText(currency)}`;
+}
+
+/**
  * @param {ReturnType<typeof runRepositoryQuery>['stats']} stats
  * @param {Array<Record<string, unknown>>} [listings]
  * @returns {string}
@@ -131,7 +152,7 @@ export function buildRepositoryKpiCardsHtml(stats, listings = []) {
  */
 export function buildRepositorySummaryHtml(summary) {
   return `
-    <section class="ai-listings-admin__repo-summary" aria-label="Repository özeti">
+    <section class="ai-listings-admin__repo-summary" aria-label="Veri havuzu özeti">
       <div class="ai-listings-admin__repo-summary-item">
         <span class="ai-listings-admin__repo-summary-label">Toplam kayıt</span>
         <strong>${safeRenderText(summary.total_records)}</strong>
@@ -197,25 +218,196 @@ export function buildRepositoryFilterChipsHtml(activeFilters = []) {
 }
 
 /**
- * @param {Record<string, unknown>} record
- * @param {boolean} [isActive]
+ * @param {string[]} activeFilters
  * @returns {string}
  */
-export function buildRepositoryCardHtml(record, isActive = false) {
+export function buildSearchFilterChipsHtml(activeFilters = []) {
+  const active = new Set(activeFilters.map((value) => String(value).trim().toLowerCase()));
+  return SEARCH_FILTER_CHIPS.map((chip) => {
+    const isActive = active.has(chip.id);
+    return `
+      <button type="button"
+        class="ai-listings-admin__chip ai-listings-admin__chip--search${isActive ? ' ai-listings-admin__chip--active' : ''}"
+        data-repo-search-filter="${safeRenderText(chip.id)}"
+        aria-pressed="${isActive ? 'true' : 'false'}">
+        ${isActive ? '✓ ' : ''}${safeRenderText(chip.label)}
+      </button>`;
+  }).join('');
+}
+
+/**
+ * @param {string} activeSort
+ * @returns {string}
+ */
+export function buildSearchSortSelectHtml(activeSort = 'best_match') {
+  const current = String(activeSort ?? 'best_match').trim().toLowerCase();
+  return `
+    <label class="ai-listings-admin__repo-search-sort">
+      <span class="ai-listings-admin__muted">Sıralama</span>
+      <select id="ai-listings-repo-search-sort" data-repo-search-sort>
+        ${SEARCH_SORT_OPTIONS.map(
+          (option) => `
+          <option value="${safeRenderText(option.id)}"${option.id === current ? ' selected' : ''}>
+            ${safeRenderText(option.label)}
+          </option>`
+        ).join('')}
+      </select>
+    </label>`;
+}
+
+/**
+ * @param {string} query
+ * @param {string[]} suggestions
+ * @returns {string}
+ */
+export function buildSearchSuggestionsHtml(query, suggestions = []) {
+  if (!query.trim() || !suggestions.length) return '';
+  return `
+    <ul class="ai-listings-admin__repo-search-suggestions" role="listbox" aria-label="Arama önerileri">
+      ${suggestions
+        .map(
+          (item) => `
+        <li>
+          <button type="button" class="ai-listings-admin__repo-search-suggestion" data-repo-search-suggestion="${safeRenderText(item)}">
+            ${safeRenderText(item)}
+          </button>
+        </li>`
+        )
+        .join('')}
+    </ul>`;
+}
+
+/**
+ * @param {string} aiSearchQuery
+ * @param {string[]} suggestions
+ * @returns {string}
+ */
+export function buildAiSearchSectionHtml(aiSearchQuery = '', suggestions = []) {
+  const safeQuery = sanitizeSearchQuery(aiSearchQuery);
+  return `
+    <section class="ai-listings-admin__repo-search" aria-label="AI Arama">
+      <div class="ai-listings-admin__repo-search-head">
+        <h3>AI Arama</h3>
+        ${buildSearchSortSelectHtml()}
+      </div>
+      <div class="ai-listings-admin__repo-search-input-wrap">
+        <input
+          id="ai-listings-repo-ai-search"
+          class="ai-listings-admin__repo-search-input"
+          type="search"
+          value="${safeRenderText(safeQuery)}"
+          placeholder="BMW 2022 düşük km&#10;Audi otomatik&#10;SUV dizel&#10;Yetkili servis&#10;Tek parça boya"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="AI Arama" />
+        ${buildSearchSuggestionsHtml(safeQuery, suggestions)}
+      </div>
+    </section>`;
+}
+
+/**
+ * @param {{
+ *   message: string,
+ *   brand_label?: string|null,
+ *   model_label?: string|null,
+ *   feature_label?: string|null,
+ *   top_match_title?: string|null
+ * }} summary
+ * @returns {string}
+ */
+export function buildSearchResultSummaryHtml(summary) {
+  const lines = String(summary.message ?? '').split('\n').filter((line) => line.trim().length > 0);
+  const hasStructured =
+    summary.brand_label || summary.model_label || summary.feature_label || summary.top_match_title;
+
+  if (!hasStructured) {
+    return `
+    <p class="ai-listings-admin__repo-search-summary" aria-live="polite">
+      ${lines.map((line) => safeRenderText(line)).join('<br>')}
+    </p>`;
+  }
+
+  const detailRows = [];
+  if (summary.brand_label) {
+    detailRows.push(`<div class="ai-listings-admin__repo-search-summary-row"><span>Marka:</span><strong>${safeRenderText(summary.brand_label)}</strong></div>`);
+  }
+  if (summary.model_label) {
+    detailRows.push(`<div class="ai-listings-admin__repo-search-summary-row"><span>Model:</span><strong>${safeRenderText(summary.model_label)}</strong></div>`);
+  }
+  if (summary.feature_label) {
+    detailRows.push(`<div class="ai-listings-admin__repo-search-summary-row"><span>Özellik:</span><strong>${safeRenderText(summary.feature_label)}</strong></div>`);
+  }
+
+  const topMatch = summary.top_match_title
+    ? `<div class="ai-listings-admin__repo-search-summary-top"><span>En iyi eşleşme:</span><strong>${safeRenderText(summary.top_match_title)}</strong></div>`
+    : '';
+
+  return `
+    <div class="ai-listings-admin__repo-search-summary" aria-live="polite">
+      <p class="ai-listings-admin__repo-search-summary-count">${safeRenderText(lines[0] ?? '')}</p>
+      ${detailRows.join('')}
+      ${topMatch}
+    </div>`;
+}
+
+/**
+ * @param {Record<string, unknown>} record
+ * @param {boolean} [isActive]
+ * @param {boolean} [isSearchResult]
+ * @returns {string}
+ */
+export function buildRepositoryCardHtml(record, isActive = false, isSearchResult = false) {
   const activeClass = isActive ? ' ai-listings-admin__repo-card--active' : '';
   const duplicateClass =
     record.duplicate_status === 'exact' || record.duplicate_status === 'similar'
       ? ' ai-listings-admin__repo-card--duplicate'
       : '';
+  const searchClass = isSearchResult ? ' ai-listings-admin__repo-card--search' : '';
+
+  const titleHtml = isSearchResult && record.highlighted?.title
+    ? String(record.highlighted.title)
+    : safeRenderText(record.title || '—');
+
+  const similarityPercent = Number(record.similarity_percent ?? record.search_score ?? 0);
+  const similarityBadge = isSearchResult
+    ? `<span class="ai-listings-admin__repo-similarity" title="Benzerlik">%${safeRenderText(similarityPercent)}</span>`
+    : '';
+
+  const starsHtml = isSearchResult && record.similarity_stars
+    ? `<span class="ai-listings-admin__repo-stars" aria-label="Benzerlik yıldızları">${String(record.similarity_stars)}</span>`
+    : '';
+
+  const matchExplanation = isSearchResult && record.match_explanation
+    ? `
+      <div class="ai-listings-admin__repo-match-reasons">
+        <p class="ai-listings-admin__repo-match-reasons-title">Neden eşleşti?</p>
+        <pre class="ai-listings-admin__repo-match-reasons-list">${safeRenderText(String(record.match_explanation))}</pre>
+      </div>`
+    : '';
+
+  const detailRows = isSearchResult
+    ? `
+      <div class="ai-listings-admin__repo-card-details">
+        <span class="ai-listings-admin__repo-similarity-label">${safeRenderText(record.similarity_label ?? `Benzerlik %${similarityPercent}`)}</span>
+        ${starsHtml}
+        <span>Marka: ${record.highlighted?.brand ? String(record.highlighted.brand) : safeRenderText(record.brand || '—')}</span>
+        <span>Model: ${record.highlighted?.model ? String(record.highlighted.model) : safeRenderText(record.model || '—')}</span>
+        <span>Yıl: ${safeRenderText(record.year ?? '—')}</span>
+        <span>KM: ${safeRenderText(formatRepositoryKm(record.km))}</span>
+        <span>Fiyat: ${safeRenderText(formatRepositoryPrice(record.price, String(record.currency ?? 'TRY')))}</span>
+      </div>
+      ${matchExplanation}`
+    : '';
 
   return `
-    <article class="ai-listings-admin__repo-card${activeClass}${duplicateClass}"
+    <article class="ai-listings-admin__repo-card${activeClass}${duplicateClass}${searchClass}"
       data-repo-record-id="${safeRenderText(record.id)}"
       tabindex="0">
       <header class="ai-listings-admin__repo-card-head">
-        <h3 class="ai-listings-admin__repo-card-title">${safeRenderText(record.title || '—')}</h3>
+        <h3 class="ai-listings-admin__repo-card-title">${titleHtml}${similarityBadge}</h3>
         <span class="ai-listings-admin__repo-card-category">${safeRenderText(getRepositoryCategoryLabelTr(record.category))}</span>
       </header>
+      ${detailRows}
       <div class="ai-listings-admin__repo-card-metrics">
         <span class="ai-listings-admin__repo-metric">Karar: ${safeRenderText(record.executive_label ?? '—')}</span>
         <span class="ai-listings-admin__repo-metric">AI: ${safeRenderText(formatRepositoryScore(record.decision_score))}</span>
@@ -233,16 +425,17 @@ export function buildRepositoryCardHtml(record, isActive = false) {
 /**
  * @param {Array<Record<string, unknown>>} records
  * @param {string|null} [selectedId]
+ * @param {boolean} [isSearchResult]
  * @returns {string}
  */
-export function buildRepositoryCardsGridHtml(records, selectedId = null) {
+export function buildRepositoryCardsGridHtml(records, selectedId = null, isSearchResult = false) {
   if (!records.length) {
-    return '<p class="ai-listings-admin__empty-state">Repository kaydı bulunamadı.</p>';
+    return '<p class="ai-listings-admin__empty-state">Veri havuzu kaydı bulunamadı.</p>';
   }
 
   return `
     <div class="ai-listings-admin__repo-grid">
-      ${records.map((record) => buildRepositoryCardHtml(record, selectedId && String(record.id) === String(selectedId))).join('')}
+      ${records.map((record) => buildRepositoryCardHtml(record, selectedId && String(record.id) === String(selectedId), isSearchResult)).join('')}
     </div>`;
 }
 
@@ -252,9 +445,11 @@ export function buildRepositoryCardsGridHtml(records, selectedId = null) {
  *   categoryTab?: string,
  *   filters?: string[],
  *   search?: string,
+ *   aiSearch?: string,
+ *   sortBy?: string,
  *   selectedId?: string|null
  * }} [options]
- * @returns {{ html: string, query: ReturnType<typeof runRepositoryQuery> }}
+ * @returns {{ html: string, query: ReturnType<typeof runRepositoryQuery>, searchResult?: ReturnType<typeof runRepositorySearch> }}
  */
 export function buildRepositoryDashboardHtml(listings, options = {}) {
   const dataset = normalizeAdminDataset(listings);
@@ -264,21 +459,37 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
     search: options.search ?? ''
   });
 
+  const suggestions = buildSearchSuggestions(searchResult.documents, aiSearch);
+  const displayRecords = hasAiSearch
+    ? buildSearchResults(searchResult.results, searchResult.parsed, aiSearch)
+    : query.filtered;
+
+  const summaryHtml = hasAiSearch
+    ? buildSearchResultSummaryHtml(searchResult.summary)
+    : '';
+
+  const countLabel = hasAiSearch
+    ? `${displayRecords.length} kayıt bulundu`
+    : `${displayRecords.length} kayıt gösteriliyor`;
+
   const html = `
     <div class="ai-listings-admin__repo-dashboard">
       <header class="ai-listings-admin__repo-head">
-        <h2>Repository</h2>
+        <h2>Veri Havuzu</h2>
         <p class="ai-listings-admin__muted">Ortak veri merkezi — mevcut ilanlardan türetilmiş görünüm</p>
       </header>
       <div class="ai-listings-admin__repo-tabs" role="tablist" aria-label="Kategori">
         ${buildRepositoryCategoryTabsHtml(options.categoryTab ?? 'all')}
       </div>
-      <div class="ai-listings-admin__repo-filters" aria-label="Repository filtreleri">
+      <div class="ai-listings-admin__repo-filters" aria-label="Veri havuzu filtreleri">
         ${buildRepositoryFilterChipsHtml(options.filters ?? [])}
       </div>
-      <p class="ai-listings-admin__repo-count">${safeRenderText(query.filtered.length)} kayıt gösteriliyor</p>
-      ${buildRepositoryCardsGridHtml(query.filtered, options.selectedId ?? null)}
+      <div class="ai-listings-admin__repo-search-filters" aria-label="Arama filtreleri">
+        ${buildSearchFilterChipsHtml(options.filters ?? [])}
+      </div>
+      <p class="ai-listings-admin__repo-count">${safeRenderText(countLabel)}</p>
+      ${buildRepositoryCardsGridHtml(displayRecords, options.selectedId ?? null, hasAiSearch)}
     </div>`;
 
-  return { html, query };
+  return { html, query, searchResult };
 }

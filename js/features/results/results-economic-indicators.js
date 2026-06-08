@@ -41,6 +41,11 @@ export const RESULTS_ECONOMIC_PRESETS = Object.freeze({
     { key: 'usdTry', label: 'USD/TRY', kind: 'fx', rateKey: 'usdTry', dateKey: 'usdTry' },
     { key: 'eurTry', label: 'EUR/TRY', kind: 'fx', rateKey: 'eurTry', dateKey: 'eurTry' },
     { key: 'cpiAnnual', label: 'TÜFE (yıllık)', kind: 'pct', rateKey: 'cpiAnnual', dateKey: 'cpiAnnual' }
+  ]),
+  sigorta: Object.freeze([
+    { key: 'cpiAnnual', label: 'TÜFE', kind: 'pct', rateKey: 'cpiAnnual', dateKey: 'cpiAnnual' },
+    { key: 'policyRate', label: 'Politika faizi', kind: 'pct', rateKey: 'policyRate', dateKey: 'policyRate' },
+    { key: 'usdTry', label: 'USD/TRY', kind: 'fx', rateKey: 'usdTry', dateKey: 'usdTry' }
   ])
 });
 
@@ -51,6 +56,7 @@ const FALLBACK_MESSAGE = 'Veri geçici olarak alınamadı';
 
 /** Sonuç ekranları — ana sayfa ile aynı kompakt EVDS kartı. */
 const HOME_LAYOUT_PRESETS = new Set(['auto', 'konut']);
+const MAX_SERIES_AGE_DAYS = 45;
 
 function usesHomeLayout(preset) {
   return HOME_LAYOUT_PRESETS.has(String(preset || '').trim());
@@ -58,6 +64,56 @@ function usesHomeLayout(preset) {
 
 function formatIndicatorValue(kind, value) {
   return kind === 'fx' ? formatFxTry(value) : formatPercentTr(value);
+}
+
+function parseSeriesDate(value) {
+  const text = String(value || '').trim();
+  if (!text) return null;
+  const monthly = text.match(/^(\d{4})-(\d{1,2})$/);
+  if (monthly) {
+    const year = Number(monthly[1]);
+    const month = Number(monthly[2]);
+    if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) return null;
+    return new Date(year, month - 1, 1);
+  }
+  const daily = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (daily) {
+    const year = Number(daily[1]);
+    const month = Number(daily[2]);
+    const day = Number(daily[3]);
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+    return new Date(year, month - 1, day);
+  }
+  const parsed = new Date(text);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function validateSeriesDate(value) {
+  const parsed = parseSeriesDate(value);
+  if (!parsed) return { ok: false, reason: 'missing' };
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (parsed.getTime() > today.getTime()) {
+    return { ok: false, reason: 'future' };
+  }
+  const ageMs = today.getTime() - parsed.getTime();
+  const ageDays = Math.floor(ageMs / 86400000);
+  if (ageDays > MAX_SERIES_AGE_DAYS) {
+    return { ok: false, reason: 'stale', ageDays };
+  }
+  return { ok: true, ageDays };
+}
+
+function formatValidatedSeriesDateLabel(date) {
+  const validation = validateSeriesDate(date);
+  const label = formatSeriesDateLabel(date);
+  if (!validation.ok && validation.reason === 'future') {
+    return `${label} (tarih doğrulanamadı)`;
+  }
+  if (!validation.ok && validation.reason === 'stale') {
+    return `${label} (güncelleniyor)`;
+  }
+  return label;
 }
 
 function renderHomeStyleHead(preset) {
@@ -83,7 +139,7 @@ function renderHomeStyleItems(indicators, rates, seriesDates, { empty = false } 
       </article>`;
       }
       const displayValue = formatIndicatorValue(kind, rates[rateKey]);
-      const displayDate = formatSeriesDateLabel(seriesDates[dateKey]);
+      const displayDate = formatValidatedSeriesDateLabel(seriesDates[dateKey]);
       return `
       <article class="ib-home-economic__item" data-economic-key="${escapeHtml(key)}">
         <h3 class="ib-home-economic__label">${escapeHtml(label)}</h3>
@@ -185,7 +241,7 @@ export function renderResultsEconomicCardHtml(data, preset) {
       const value = rates[rateKey];
       const date = seriesDates[dateKey];
       const displayValue = formatIndicatorValue(kind, value);
-      const displayDate = formatSeriesDateLabel(date);
+      const displayDate = formatValidatedSeriesDateLabel(date);
 
       return `
       <article class="ib-results-economic__item" data-economic-key="${escapeHtml(key)}">
@@ -279,7 +335,7 @@ export function renderResultsEconomicSkeletonHtml(preset) {
 
 /**
  * @param {HTMLElement | null} root — sonuç v2 kökü ([data-results-economic-mount] içerir)
- * @param {'finansman'|'konut'|'auto'|'tatil'} preset
+ * @param {'finansman'|'konut'|'auto'|'tatil'|'sigorta'} preset
  */
 export async function hydrateResultsEconomicIndicators(root, preset) {
   if (!root || !resolvePreset(preset)) return;

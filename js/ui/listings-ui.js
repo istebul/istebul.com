@@ -1,4 +1,5 @@
 import { listingMediaCount } from './listing-gallery-ui.js';
+import { renderAiPlatformBanner } from './ai-platform-surface.js';
 
 export class ListingsUI {
     renderListings(listings, favoriteIds = [], comparisonSignatures = [], options = {}) {
@@ -9,26 +10,33 @@ export class ListingsUI {
 
         if (listings.length === 0) {
             const ownedOnly = !!(options.ownedOnly || options.userId);
-            container.innerHTML = ownedOnly ? `
+            container.innerHTML = (ownedOnly ? `
                 <div class="empty-state marketplace-empty-state">
                     <i data-lucide="badge-plus"></i>
                     <h3>Henüz kayıtlı seçeneğiniz yok</h3>
                     <p>İlk seçeneğinizi eklediğinizde burada görünür ve karşılaştırma akışına dahil olur.</p>
-                    <a href="/ilan-ekle/" class="btn btn-primary"><i data-lucide="plus"></i> Seçenek ekle</a>
+                    <a href="/ilan-analizi/" class="btn btn-primary"><i data-lucide="scan-search"></i> Seçenek analizi</a>
+                    <a href="/ilan-ekle/" class="btn btn-outline"><i data-lucide="plus"></i> Seçenek gönder</a>
                 </div>
             ` : `
                 <div class="empty-state marketplace-empty-state">
                     <i data-lucide="search"></i>
                     <h3>Canlı seçenek bulunamadı veya filtre dar</h3>
-                    <p>Bu alan karar skoruna göre keşif içindir — klasik ilan sitesi değildir. Ana karar akışı Auto TCO analizidir; ardından sonuçları burada veya karşılaştırmada sürdürebilirsiniz.</p>
+                    <p>Bu alan yapay zeka destekli karar skoruna göre keşif içindir — klasik ilan sitesi değildir. Ana karar akışı Auto TCO analizidir; ardından sonuçları burada veya karşılaştırmada sürdürebilirsiniz.</p>
                     <div class="empty-state-actions">
-                      <a href="/auto/" class="btn btn-primary"><i data-lucide="sparkles"></i> TCO analizini başlat</a>
+                      <a href="/karar-asistani/" class="btn btn-primary" data-native-route><i data-lucide="sparkles"></i> Karar analizini başlat</a>
+                      <a href="/auto/" class="btn btn-outline"><i data-lucide="car"></i> TCO analizini başlat</a>
                       <a href="/karsilastir" class="btn btn-outline">Karşılaştırma merkezi</a>
                     </div>
                 </div>
-            `;
+            `);
         } else {
-            container.innerHTML = listings.map(listing => {
+            const aiStrip = renderAiPlatformBanner({
+                title: 'Yapay Zeka Destekli Seçenek Keşfi',
+                subtitle: 'Her seçenek metodolojik uyum skoru ile sıralanır — karar vermeden önce AI analizini kullanın.',
+                variant: 'compact'
+            });
+            container.innerHTML = `<div class="listings-ai-strip">${aiStrip}</div>` + listings.map(listing => {
                 const listingId = this.escapeHtml(listing.id);
                 const imageUrl = this.safeImageUrl(listing.images?.[0]);
                 const externalUrl = this.safeExternalUrl(listing.external_url);
@@ -50,8 +58,8 @@ export class ListingsUI {
                              width="400"
                              height="250">
                         <div class="listing-badges">
-                            <span class="listing-ai-score" title="Metodolojik uyum skoru"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScore)}/100</span>
-                            <span>${this.escapeHtml(categoryLabel || 'İlan')}</span>
+                            <span class="listing-ai-score" title="Yapay zeka uyum skoru"><i data-lucide="sparkles"></i> AI uyum ${this.escapeHtml(aiScore)}/100</span>
+                            <span>${this.escapeHtml(categoryLabel || 'Seçenek')}</span>
                         </div>
                         ${mediaCount > 1 ? `<span class="listing-media-count"><i data-lucide="images"></i> ${mediaCount}</span>` : ''}
                     </div>

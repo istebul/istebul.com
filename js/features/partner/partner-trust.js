@@ -39,6 +39,7 @@ export const PARTNER_TRUST_PILLARS = Object.freeze([
     points: [
       'Genel aydınlatma: <a href="/kvkk.html">KVKK aydınlatma metni</a> · <a href="/gizlilik.html">Gizlilik politikası</a>.',
       'Lead formunda KVKK / gizlilik / partner paylaşımı onayı toplanır (ürün akışına bağlı).',
+      'Partner lead aktarımı için Veri İşleme Sözleşmesi (DPA) imzalanması zorunludur; şablon talep için <a href="mailto:info@istebul.com?subject=Partner%20DPA%20Talebi">info@istebul.com</a>.',
       'Veri işleyen / iş ortağı rolleri ve aktarım şartları ticari sözleşme ile netleştirilir.',
       'KVKK başvuruları <a href="/iletisim.html">iletişim</a> kanalı üzerinden alınır.'
     ],

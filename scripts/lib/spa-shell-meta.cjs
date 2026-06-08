@@ -12,7 +12,10 @@ const SPA_SHELL_ROUTE_MAP = {
   'ilan-ekle': 'add-listing',
   blog: 'page-blog',
   duyurular: 'page-duyurular',
-  kampanyalar: 'page-kampanyalar'
+  kampanyalar: 'page-kampanyalar',
+  'karar-asistani': 'page-karar-analizi',
+  secenekler: 'ilanlar',
+  karsilastir: 'compare'
 };
 
 function escapeAttr(value) {
