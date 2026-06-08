@@ -55,6 +55,10 @@ import {
     findDecisionHistoryEntryByActionId,
     matchesDecisionHistoryActionId
 } from './ui/decision-history-compat.js';
+import {
+    resolveAssistantCategoryFromHistoryEntry,
+    shouldRedirectHistoryEntryToAutoVertical
+} from './ui/decision-history-category.js';
 import { Router } from './core/router.js';
 import { state } from './core/state.js';
 import { supabase } from './core/supabase.js';
@@ -3741,17 +3745,18 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             return;
         }
 
-        if (record.categoryId === 'auto') {
+        if (shouldRedirectHistoryEntryToAutoVertical(record)) {
             window.location.href = '/auto/';
             return;
         }
 
-        if (!this.decisionAssistant[record.categoryId]) {
+        const assistantCategory = resolveAssistantCategoryFromHistoryEntry(record);
+        if (!assistantCategory || !this.decisionAssistant[assistantCategory]) {
             this.ui.showError('Kaydedilen karar bulunamadı.');
             return;
         }
 
-        this.assistantCategory = record.categoryId;
+        this.assistantCategory = assistantCategory;
         this.assistantAnswers = record.rawAnswers || {};
         this.assistantStep = Math.max(this.getAssistantWizardSteps(this.getResolvedDecisionAssistantConfig()[this.assistantCategory]).length - 1, 0);
         this.router.navigate('/karar-asistani');

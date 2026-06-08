@@ -1218,6 +1218,110 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await assertLocatorWithinViewport(card, MOBILE_2C_VIEWPORT.width);
   });
 
+  test('gecmis delete action kaydı siler ve localStorage günceller', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-history-delete-user';
+      window.app.currentUser = { id: userId, name: 'E2E Delete User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      localStorage.setItem(storageKey, JSON.stringify([
+        {
+          id: 'delete-target',
+          schemaVersion: 1,
+          categoryId: 'arac',
+          categoryName: 'Araç',
+          createdAt: '2026-06-08T12:00:00.000Z',
+          topPick: { name: 'Toyota Corolla', score: 82, yearlyCost: 210000, riskLevel: 'Orta risk' },
+          summary: 'Silinecek kayıt.'
+        },
+        {
+          id: 'delete-keep',
+          schemaVersion: 1,
+          categoryId: 'ev',
+          categoryName: 'Ev',
+          createdAt: '2026-06-07T12:00:00.000Z',
+          topPick: { name: 'Kadıköy daire', score: 76, yearlyCost: 180000, riskLevel: 'Orta risk' },
+          summary: 'Kalacak kayıt.'
+        }
+      ]));
+      window.app.loadDecisionHistory();
+    });
+
+    await expect(page.locator('.decision-history-card')).toHaveCount(2, { timeout: 15000 });
+    await page.locator('[data-decision-delete="delete-target"]').click();
+    await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişten silindi/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.decision-history-card')).toHaveCount(1);
+    await expect(page.locator('.decision-history-card').first()).toContainText(/Kadıköy daire/i);
+
+    const remaining = await page.evaluate(() => {
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      return JSON.parse(localStorage.getItem(storageKey) || '[]').map((entry) => entry.id);
+    });
+    expect(remaining).toEqual(['delete-keep']);
+  });
+
+  test('gecmis canonical ev kaydı Tekrar aç ile karar asistanını açar', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-history-repeat-ev-user';
+      window.app.currentUser = { id: userId, name: 'E2E Repeat Ev User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      localStorage.setItem(storageKey, JSON.stringify([{
+        id: 'repeat-ev-canonical',
+        schemaVersion: 1,
+        categoryId: 'konut',
+        categoryName: 'Konut',
+        originalCategoryId: 'ev',
+        originalCategoryName: 'Ev',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        rawAnswers: { province: 'İstanbul', district: 'Kadıköy', budget: '5000000' },
+        topPick: { name: 'Kadıköy daire', score: 76, yearlyCost: 180000, riskLevel: 'Orta risk' },
+        summary: 'Kadıköy daire en güçlü eşleşme.'
+      }]));
+      window.app.loadDecisionHistory();
+    });
+
+    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
+    await page.locator('[data-decision-repeat="repeat-ev-canonical"]').click();
+    await expect(page).toHaveURL(/\/karar-asistani\/?$/, { timeout: 15000 });
+
+    const assistantState = await page.waitForFunction(() => {
+      if (window.app?.assistantCategory !== 'ev') return null;
+      return {
+        category: window.app.assistantCategory,
+        budget: window.app.assistantAnswers?.budget || null,
+        hasWizard: Boolean(document.querySelector('#assistant-category-rail .assistant-category'))
+      };
+    }, null, { timeout: 15000 }).then((handle) => handle.jsonValue());
+
+    expect(assistantState.category).toBe('ev');
+    expect(String(assistantState.budget)).toBe('5000000');
+    expect(assistantState.hasWizard).toBe(true);
+  });
+
+  test('gecmis boş durum authenticated kullanıcıda görünür', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-history-empty-user';
+      window.app.currentUser = { id: userId, name: 'E2E Empty User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      localStorage.setItem(storageKey, '[]');
+      window.app.loadDecisionHistory();
+    });
+
+    await expect(page.locator('#history-list .empty-state h3')).toHaveText('Geçmiş bulunamadı', { timeout: 15000 });
+    await expect(page.locator('#history-list .decision-history-card')).toHaveCount(0);
+  });
+
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
