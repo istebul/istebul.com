@@ -4,6 +4,7 @@
  */
 
 import { buildDecisionHistorySignalStrip } from './decision-history-signal-strip.js';
+import { normalizeHistoryEntryCategory } from './decision-history-category.js';
 
 export const RECENT_DECISION_HISTORY_MAX = 3;
 
@@ -32,9 +33,10 @@ export function buildRecentDecisionHistorySnippetModel(history = [], max = RECEN
         ctaHref: '/gecmis/',
         items: entries.map((entry) => {
             const signals = buildDecisionHistorySignalStrip(entry);
+            const category = normalizeHistoryEntryCategory(entry);
             return {
                 id: entry.id,
-                categoryName: entry.categoryName || 'Karar',
+                categoryName: category.categoryName,
                 createdAt: entry.createdAt,
                 title: entry.topPick?.name || entry.recommendations?.[0]?.name || 'Kaydedilen karar',
                 fit: signals?.fit?.value || '—',

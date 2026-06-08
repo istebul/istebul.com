@@ -4,13 +4,12 @@
  */
 
 import { buildDecisionResultSummary } from './decision-result-summary.js';
+import {
+    normalizeDecisionCategory,
+    resolveDecisionCategorySource
+} from './decision-history-category.js';
 
 export const DECISION_HISTORY_SCHEMA_VERSION = 1;
-
-const SOURCE_BY_CATEGORY = Object.freeze({
-    auto: 'auto',
-    konut: 'konut'
-});
 
 /**
  * @param {string | undefined} categoryId
@@ -19,7 +18,7 @@ const SOURCE_BY_CATEGORY = Object.freeze({
  */
 export function resolveDecisionHistorySource(categoryId, explicitSource) {
     if (explicitSource) return explicitSource;
-    return SOURCE_BY_CATEGORY[categoryId] || 'assistant';
+    return resolveDecisionCategorySource(categoryId);
 }
 
 /**
@@ -67,12 +66,24 @@ export function buildDecisionHistoryEntry(result, options = {}) {
         monthlyPayment: toNullableNumber(primary.financeComparisons?.[0]?.monthlyPayment) ?? 0
     };
 
+    const category = normalizeDecisionCategory({
+        categoryId: result.categoryId,
+        categoryName: result.categoryName
+    });
+    const preserveOriginalCategory = category.originalCategoryId !== category.categoryId
+        || (category.originalCategoryName && category.originalCategoryName !== category.label);
+
     return {
         id: result.id,
-        categoryId: result.categoryId,
-        categoryName: result.categoryName,
+        categoryId: category.categoryId,
+        categoryName: category.label,
         createdAt: result.createdAt || new Date().toISOString(),
         schemaVersion: DECISION_HISTORY_SCHEMA_VERSION,
+
+        ...(preserveOriginalCategory ? {
+            originalCategoryId: category.originalCategoryId,
+            originalCategoryName: category.originalCategoryName
+        } : {}),
 
         score,
         riskLevel,
@@ -87,7 +98,7 @@ export function buildDecisionHistoryEntry(result, options = {}) {
 
         topPick,
 
-        source: resolveDecisionHistorySource(result.categoryId, options.source || result.source),
+        source: resolveDecisionHistorySource(category.categoryId, options.source || result.source),
 
         // Backward-compatible fields for existing history UI and readers
         summary: result.summary,

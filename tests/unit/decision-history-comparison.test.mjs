@@ -62,7 +62,9 @@ test('buildComparisonItemFromHistoryEntry works with canonical entry', () => {
     assert.equal(item.score, 88);
     assert.equal(item.riskLevel, 'Düşük risk');
     assert.equal(item.periodicCost, 240000);
-    assert.equal(item.signature, 'recommendation:arac:Toyota Corolla Hybrid');
+    assert.equal(item.categoryId, 'auto');
+    assert.equal(item.categoryName, 'Araba');
+    assert.equal(item.signature, 'recommendation:auto:Toyota Corolla Hybrid');
 });
 
 test('buildComparisonItemFromHistoryEntry falls back to legacy recommendations[0]', () => {
@@ -87,5 +89,6 @@ test('resolveHistoryPick prefers canonical fields over legacy topPick', () => {
     assert.ok(pick);
     assert.equal(pick.recommendation.name, 'Toyota Corolla Hybrid');
     assert.equal(pick.recommendation.score, 88);
-    assert.equal(pick.result.categoryId, 'arac');
+    assert.equal(pick.result.categoryId, 'auto');
+    assert.equal(pick.result.categoryName, 'Araba');
 });
