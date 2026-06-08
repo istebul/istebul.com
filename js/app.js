@@ -1117,7 +1117,7 @@ class App {
             if (route === 'add-listing' && !this.currentUser) {
                 this.router.navigate('/secenekler');
                 this.auth.showLoginModal();
-                this.ui.showError('İlan vermek için giriş yapın veya üye olun.');
+                this.ui.showError('Seçenek göndermek için giriş yapın veya üye olun.');
                 return;
             }
 

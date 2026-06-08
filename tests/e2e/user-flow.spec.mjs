@@ -77,11 +77,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('#auth-modal')).toBeVisible();
   });
 
-  test('ilan ekleme akışı kimlik doğrulama gerektirir', async ({ page }) => {
+  test('seçenek gönderme akışı kimlik doğrulama gerektirir', async ({ page }) => {
     await page.goto('/ilan-ekle/');
     await waitForSpaReady(page);
 
-    await expect(page).toHaveURL(/ilanlar/);
+    await expect(page).toHaveURL(/secenekler|ilanlar/);
     await page.waitForSelector('#auth-modal.show', { timeout: 10000 });
     await expect(page.locator('#auth-modal')).toBeVisible();
   });
