@@ -24,6 +24,71 @@ const openMobileMenuIfNeeded = async (page) => {
   }
 };
 
+const MOBILE_2C_VIEWPORT = { width: 390, height: 844 };
+
+const renderKararAsistaniSampleResult = async (page) => {
+  await page.waitForSelector('#premium-karar-analizi-root #assistant-results', { state: 'attached', timeout: 15000 });
+  await page.waitForSelector('#assistant-category-rail .assistant-category', { state: 'attached', timeout: 15000 });
+  await page.waitForFunction(
+    () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+    null,
+    { timeout: 15000 }
+  );
+
+  return page.evaluate(() => {
+    const app = window.app;
+    if (!app?.buildDecisionResult || !app?.ui?.renderDecisionResults) {
+      return { ok: false, reason: 'assistant api not ready' };
+    }
+
+    app.assistantCategory = 'arac';
+    app.assistantAnswers = {
+      province: 'İstanbul',
+      district: 'Kadıköy',
+      carModel: 'Toyota|Corolla',
+      usage: 'city',
+      budget: '1850000',
+      fuel: 'hybrid',
+      body: 'sedan',
+      priority: 'lowCost'
+    };
+
+    const categoryConfig = app.getResolvedDecisionAssistantConfig()?.arac;
+    if (!categoryConfig) return { ok: false, reason: 'arac config missing' };
+
+    const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+    if (!result?.recommendations?.[0]) return { ok: false, reason: 'no primary recommendation' };
+
+    app.ui.renderDecisionResults(result);
+    return { ok: true };
+  });
+};
+
+const assertElementNoHorizontalOverflow = async (page, selector) => {
+  const layout = await page.evaluate((sel) => {
+    const el = document.querySelector(sel);
+    if (!el) return { found: false, overflow: true };
+    const rect = el.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    return {
+      found: true,
+      overflow: rect.right > viewportWidth + 1 || rect.left < -1,
+      right: rect.right,
+      viewportWidth
+    };
+  }, selector);
+
+  expect(layout.found).toBe(true);
+  expect(layout.overflow).toBe(false);
+};
+
+const assertLocatorWithinViewport = async (locator, viewportWidth) => {
+  const box = await locator.boundingBox();
+  expect(box).toBeTruthy();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(viewportWidth + 1);
+};
+
 test.describe('isteBul kritik kullanıcı akışları', () => {
   test('ana sayfa ve seçenekler hub yüklenir', async ({ page }) => {
     await page.goto('/');
@@ -376,6 +441,30 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     const feedback = shareCard.locator('[data-decision-result-share-feedback]');
     await expect(feedback).toBeVisible({ timeout: 15000 });
     await expect(feedback).toContainText(/panoya kopyalandı/i);
+  });
+
+  test('karar asistanı sonuç ekranı @390px 2C bileşenleri yatay taşma yapmaz', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.setViewportSize(MOBILE_2C_VIEWPORT);
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    const renderStatus = await renderKararAsistaniSampleResult(page);
+    expect(renderStatus).toEqual({ ok: true });
+
+    await assertElementNoHorizontalOverflow(page, '[data-decision-result-summary]');
+    await assertElementNoHorizontalOverflow(page, '[data-decision-result-ai-rationale]');
+    await assertElementNoHorizontalOverflow(page, '[data-decision-result-share]');
+
+    const copyBtn = page.locator('[data-decision-result-share-copy]');
+    await expect(copyBtn).toBeVisible();
+    await assertLocatorWithinViewport(copyBtn, MOBILE_2C_VIEWPORT.width);
+
+    await copyBtn.click();
+    const feedback = page.locator('[data-decision-result-share-feedback]');
+    await expect(feedback).toBeVisible({ timeout: 15000 });
+    await assertLocatorWithinViewport(feedback, MOBILE_2C_VIEWPORT.width);
   });
 
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {
