@@ -11,6 +11,11 @@ import {
     hydrateDecisionResultAiRationale,
     renderDecisionResultAiRationaleHtml
 } from './decision-result-ai-rationale.js';
+import {
+    bindDecisionResultShareCard,
+    renderDecisionResultShareHtml,
+    shouldRenderDecisionResultShare
+} from './decision-result-share.js';
 
 export class AssistantUI {
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
@@ -181,6 +186,9 @@ export class AssistantUI {
                 aiRationaleHtml
             )
             : '';
+        const shareCardHtml = shouldRenderDecisionResultShare(resultSummary)
+            ? renderDecisionResultShareHtml((value) => this.escapeHtml(value))
+            : '';
 
         container.innerHTML =
             '<section class="assistant-decision-panel">' +
@@ -207,6 +215,7 @@ export class AssistantUI {
                     '<button type="button" class="btn btn-primary" data-browse-decision-listings><i data-lucide="list-checks"></i> Eşleşen seçenekleri aç</button>' +
                 '</div>' +
                 resultSummaryHtml +
+                shareCardHtml +
                 this.getExecutiveMetricsMarkup(result.categoryId, primary, bestFinance) +
                 this.getDataHealthMarkup(result.dataHealth) +
                 '<div class="assistant-answer-summary">' + result.answers.map((answer) =>
@@ -248,6 +257,7 @@ export class AssistantUI {
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.loadIcons();
         hydrateDecisionResultAiRationale(container, resultSummary);
+        bindDecisionResultShareCard(container, resultSummary);
     }
 
     getAIDecisionExtrasMarkup(result) {

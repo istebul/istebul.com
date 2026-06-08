@@ -433,6 +433,7 @@ assert(read('css/style.css').includes('p4-premium-product.css'), 'P4 premium sty
     uiManager.renderDecisionResults(result);
     assert(resultContainer.innerHTML.includes('decision-result-summary'), 'Decision result UI should render decision result summary card.');
     assert(resultContainer.innerHTML.includes('decision-result-ai-rationale'), 'Decision result UI should render AI decision rationale layer.');
+    assert(resultContainer.innerHTML.includes('decision-result-share'), 'Decision result UI should render decision share card.');
     assert(resultContainer.innerHTML.includes('assistant-choice-summary'), 'Decision result UI should render choice summary.');
     assert(resultContainer.innerHTML.includes('assistant-recommendation-verdict'), 'Decision result UI should render recommendation verdicts.');
     assert(resultContainer.innerHTML.includes('Karşılaştırma merkezine git'), 'Decision result toolbar should link to compare center.');

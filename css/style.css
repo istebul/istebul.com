@@ -6137,6 +6137,47 @@ main > section:not(.hero-section) {
     line-height: 1.45;
 }
 
+.decision-result-share {
+    display: grid;
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+    padding: clamp(0.95rem, 1.8vw, 1.2rem);
+    border: 1px solid rgba(102, 124, 153, 0.16);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: var(--shadow);
+}
+
+.decision-result-share-head h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.decision-result-share-lead {
+    margin: 0.35rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.decision-result-share-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+.decision-result-share-feedback {
+    margin: 0;
+    color: var(--success, #0f766e);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.decision-result-share-feedback[hidden] {
+    display: none;
+}
+
 .comparison-toolbar,
 .comparison-matrix,
 .comparison-card {
@@ -6417,6 +6458,11 @@ main > section:not(.hero-section) {
 :root[data-theme="dark"] .decision-result-ai-rationale-list li {
     background: rgba(15, 23, 42, 0.82);
     border-color: rgba(148, 163, 184, 0.16);
+}
+
+:root[data-theme="dark"] .decision-result-share {
+    background: rgba(15, 23, 42, 0.82);
+    border-color: rgba(148, 163, 184, 0.18);
 }
 
 :root[data-theme="dark"] .comparison-toolbar,
