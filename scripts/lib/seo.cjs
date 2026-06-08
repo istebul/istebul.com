@@ -512,6 +512,7 @@ const GUIDE_CTAS = {
 function formatDataSourceStatus(status) {
   const map = {
     active: { label: 'Aktif', className: 'is-active' },
+    reference: { label: 'Manuel referans', className: 'is-reference' },
     planned: { label: 'Planlanan', className: 'is-planned' }
   };
   return map[status] || { label: 'Bilinmiyor', className: '' };

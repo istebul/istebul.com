@@ -607,6 +607,12 @@
     <changefreq>yearly</changefreq>
   </url>
   <url>
+    <loc>https://www.istebul.com/gdpr.html</loc>
+    <lastmod>2026-06-08</lastmod>
+    <priority>0.3</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+  <url>
     <loc>https://www.istebul.com/kvkk.html</loc>
     <lastmod>2026-06-08</lastmod>
     <priority>0.3</priority>

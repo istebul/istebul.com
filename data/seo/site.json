@@ -31,6 +31,7 @@
     { "loc": "/partner-docs.html", "priority": "0.55", "changefreq": "monthly" },
     { "loc": "/partner-guven.html", "priority": "0.55", "changefreq": "monthly" },
     { "loc": "/gizlilik.html", "priority": "0.3", "changefreq": "yearly" },
+    { "loc": "/gdpr.html", "priority": "0.3", "changefreq": "yearly" },
     { "loc": "/kvkk.html", "priority": "0.3", "changefreq": "yearly" },
     { "loc": "/kullanim-sartlari.html", "priority": "0.3", "changefreq": "yearly" },
     { "loc": "/abonelik-iptal.html", "priority": "0.4", "changefreq": "yearly" },

@@ -78,7 +78,7 @@
     },
     {
       "heading": "Veri Kaynakları",
-      "body": "Katalog segmentleri, ortalama işletme maliyeti sinyalleri, finansman parametreleri ve kullanıcı girdileri birleştirilir. Kamuya açık TÜİK ve TCMB EVDS referansları ile planlanan iş ortağı beslemeleri /veri-kaynaklari/ adresinde listelenir. Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz.",
+      "body": "Katalog segmentleri, ortalama işletme maliyeti sinyalleri, finansman parametreleri ve kullanıcı girdileri birleştirilir. TCMB EVDS canlı API ile; TÜİK yayınları manuel referans olarak kalibrasyon varsayımlarına yansıtılır. Planlanan iş ortağı beslemeleri /veri-kaynaklari/ adresinde listelenir. Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz.",
       "subsections": [
         {
           "heading": "Güncelleme",
