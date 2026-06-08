@@ -528,6 +528,98 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
     await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
     await expect(page.locator('.decision-history-card').first()).toContainText(/Toyota Corolla/i);
+
+    const signalStrip = page.locator('[data-decision-history-signal-strip]').first();
+    await expect(signalStrip).toBeVisible();
+    await expect(signalStrip.locator('[data-history-signal="history-fit"]')).toContainText(/Uygunluk/i);
+    await expect(signalStrip.locator('[data-history-signal="history-risk"]')).toContainText(/Risk/i);
+    await expect(signalStrip.locator('[data-history-signal="history-tco"]')).toContainText(/TCO/i);
+    await expect(signalStrip.locator('[data-history-signal="history-profile"]')).toContainText(/Profil/i);
+    await expect(signalStrip.locator('[data-history-signal="history-fit"]')).toContainText(/\/100/);
+    await expect(signalStrip.locator('[data-history-signal="history-risk"]')).not.toContainText(/^—$/);
+    await expect(signalStrip.locator('[data-history-signal="history-tco"]')).not.toContainText(/^—$/);
+    await expect(signalStrip.locator('[data-history-signal="history-profile"]')).not.toContainText(/^—$/);
+  });
+
+  test('karar geçmişi legacy entry ile yüklenir ve sinyal şeridi fallback gösterir', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-legacy-history-user';
+      window.app.currentUser = { id: userId, name: 'E2E Legacy User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const legacyEntry = {
+        id: 'legacy-history-1',
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        createdAt: '2026-01-15T10:00:00.000Z',
+        summary: 'Toyota Corolla en güçlü eşleşme.',
+        insight: { headline: 'Dengeli araç profili öne çıkıyor.' },
+        topPick: {
+          name: 'Toyota Corolla',
+          score: 82,
+          price: 1750000,
+          yearlyCost: 210000,
+          monthlyPayment: 16500,
+          riskLevel: 'Orta risk'
+        },
+        answers: [{ label: 'İl', value: 'İstanbul' }]
+      };
+      localStorage.setItem(storageKey, JSON.stringify([legacyEntry]));
+      window.app.loadDecisionHistory();
+    });
+
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
+    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.decision-history-card').first()).toContainText(/Toyota Corolla/i);
+
+    const signalStrip = page.locator('[data-decision-history-signal-strip]').first();
+    await expect(signalStrip).toBeVisible();
+    await expect(signalStrip.locator('[data-history-signal="history-fit"]')).toContainText('82/100');
+    await expect(signalStrip.locator('[data-history-signal="history-risk"]')).toContainText(/Orta risk/i);
+    await expect(signalStrip.locator('[data-history-signal="history-profile"]')).toContainText(/Dengeli araç profili/i);
+  });
+
+  test('karar geçmişi sinyal şeridi @390px yatay taşma yapmaz', async ({ page }) => {
+    await page.setViewportSize(MOBILE_2C_VIEWPORT);
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-history-mobile-user';
+      window.app.currentUser = { id: userId, name: 'E2E Mobile User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const entry = {
+        id: 'mobile-history-1',
+        schemaVersion: 1,
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        score: 88,
+        riskLevel: 'Düşük risk',
+        yearlyCost: 240000,
+        decisionProfile: 'Toyota Corolla, araç kararınızda en dengeli seçenek olarak öne çıkıyor.',
+        summary: 'Toyota Corolla en güçlü eşleşme.',
+        topPick: {
+          name: 'Toyota Corolla Hybrid',
+          score: 88,
+          price: 1850000,
+          yearlyCost: 240000,
+          monthlyPayment: 18500,
+          riskLevel: 'Düşük risk'
+        },
+        answers: [{ label: 'İl', value: 'İstanbul' }]
+      };
+      localStorage.setItem(storageKey, JSON.stringify([entry]));
+      window.app.loadDecisionHistory();
+    });
+
+    await expect(page.locator('[data-decision-history-signal-strip]').first()).toBeVisible({ timeout: 15000 });
+    await assertElementNoHorizontalOverflow(page, '[data-decision-history-signal-strip]');
+    await assertLocatorWithinViewport(page.locator('[data-decision-history-signal-strip]').first(), MOBILE_2C_VIEWPORT.width);
   });
 
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {

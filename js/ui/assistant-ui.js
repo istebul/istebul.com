@@ -16,6 +16,10 @@ import {
     renderDecisionResultShareHtml,
     shouldRenderDecisionResultShare
 } from './decision-result-share.js';
+import {
+    buildDecisionHistorySignalStrip,
+    renderDecisionHistorySignalStripHtml
+} from './decision-history-signal-strip.js';
 
 export class AssistantUI {
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
@@ -585,6 +589,10 @@ export class AssistantUI {
             const answers = Array.isArray(item.answers)
                 ? item.answers
                 : Object.entries(item.answers || {}).map(([label, value]) => ({ label, value }));
+            const signalStripHtml = renderDecisionHistorySignalStripHtml(
+                buildDecisionHistorySignalStrip(item),
+                this.escapeHtml.bind(this)
+            );
 
             return `
             <article class="decision-history-card ${isAuto ? 'decision-history-card-auto' : ''}">
@@ -595,10 +603,11 @@ export class AssistantUI {
                         <p>${this.escapeHtml(item.summary || 'Özet bulunamadı.')}</p>
                     </div>
                     <div class="decision-history-score">
-                        <strong>${this.escapeHtml(item.topPick?.score || '-')}</strong>
+                        <strong>${this.escapeHtml(item.score ?? item.topPick?.score ?? '-')}</strong>
                         <span>/100</span>
                     </div>
                 </div>
+                ${signalStripHtml}
                 <div class="decision-history-metrics">
                     <span><strong>${isAuto ? 'Tahmini fiyat' : 'Fiyat'}:</strong> ${this.formatPrice(item.topPick?.price || 0)}</span>
                     <span><strong>${isAuto ? '12 aylık maliyet' : 'Dönemsel maliyet'}:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)}</span>
