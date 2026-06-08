@@ -447,6 +447,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <div class="nav-item" data-page-target="housing-scoring"><span class="nav-label">Konut Scoring Ayarları</span></div>
             <div class="nav-item" data-page-target="finance-leads"><span class="nav-label">Finans Leadleri</span></div>
             <div class="nav-item" data-page-target="sigorta-leads"><span class="nav-label">Sigorta Leadleri</span></div>
+            <div class="nav-item" data-page-target="kasko-leads"><span class="nav-label">Kasko Leadleri</span></div>
             <div class="nav-item" data-page-target="finance-partners"><span class="nav-label">Finans Partnerleri</span></div>
             <div class="nav-item" data-page-target="finance-scoring"><span class="nav-label">Finans Scoring Ayarları</span></div>
           </div>
@@ -1429,6 +1430,36 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             </select>
           </div>
           <div id="sigorta-leads-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-kasko-leads">
+        <div class="page-header">
+          <h2>Kasko Leadleri</h2>
+          <p>Kasko karar analizi lead yönetimi — skorlar deterministik motordan; AI yalnızca özet üretir</p>
+        </div>
+        <div class="card">
+          <div class="auto-leads-toolbar">
+            <input id="kasko-leads-search" class="form-input" type="search" placeholder="Araç, teminat, telefon veya AI özeti ara...">
+            <select id="kasko-leads-category-filter" class="status-select">
+              <option value="">Tüm araç kategorileri</option>
+              <option value="otomobil">Otomobil</option>
+              <option value="suv">SUV / crossover</option>
+              <option value="motosiklet">Motosiklet</option>
+              <option value="ticari_arac">Ticari araç</option>
+            </select>
+            <select id="kasko-leads-status-filter" class="status-select">
+              <option value="">Tüm durumlar</option>
+              <option value="new">yeni</option>
+              <option value="incelendi">incelendi</option>
+              <option value="arandi">arandı</option>
+              <option value="uygun">uygun</option>
+              <option value="partnere_yonlendirildi">partnere yönlendirildi</option>
+              <option value="kapandi">kapandı</option>
+              <option value="reddedildi">reddedildi</option>
+            </select>
+          </div>
+          <div id="kasko-leads-list"><div class="empty">Yükleniyor...</div></div>
         </div>
       </div>
 
