@@ -8,7 +8,7 @@
  *   node scripts/seed-ai-listings.cjs --dry-run
  *   node scripts/seed-ai-listings.cjs --memory
  *   SUPABASE_URL=... AI_LISTINGS_EDGE_SECRET=... node scripts/seed-ai-listings.cjs
- *   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/seed-ai-listings.cjs --direct
+ *   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/seed-ai-listings.cjs --direct --publish
  */
 
 const args = new Set(process.argv.slice(2));
@@ -16,6 +16,7 @@ const dryRun = args.has('--dry-run');
 const memoryMode = args.has('--memory');
 const directMode = args.has('--direct');
 const analyzeAfterCreate = !args.has('--no-analyze');
+const publishMode = args.has('--publish');
 
 async function loadSeedModule() {
   return import('../src/ai-listings/seed/seed-data.js');
@@ -47,7 +48,7 @@ async function seedViaEdge(record) {
     body: JSON.stringify({
       ...record,
       source_type: 'manual_seed',
-      status: 'draft'
+      status: publishMode ? 'published' : 'draft'
     })
   });
 
@@ -134,7 +135,7 @@ async function seedViaDirectSupabase(records) {
       currency: record.currency ?? 'TRY',
       images: [],
       attributes: record.attributes ?? {},
-      status: 'draft',
+      status: publishMode ? 'published' : 'draft',
       source_type: 'manual_seed'
     };
 

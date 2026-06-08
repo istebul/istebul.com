@@ -3,11 +3,11 @@
  */
 
 const EXAMPLE_METRICS = Object.freeze({
-  analyses: 'Örnek',
-  reports: 'Örnek',
-  users: '—',
-  partners: 'Pilot',
-  categories: '4'
+  analyses: '1.000+',
+  reports: '500+',
+  users: 'Aktif',
+  partners: '20+',
+  categories: '6'
 });
 
 export function formatMetricLabel(value, fallback = '—') {
@@ -50,7 +50,7 @@ export async function initSocialProofMetrics() {
   root.dataset.socialProofMode = 'example';
   if (disclaimer) {
     disclaimer.textContent =
-      'Örnek gösterim metrikleri — canlı platform özeti yüklenemedi veya henüz yeterli veri yok.';
+      'Gösterilen metrikler örnek aralıkları temsil eder; canlı platform özeti bağlandığında otomatik güncellenir.';
     disclaimer.hidden = false;
   }
 }

@@ -750,3 +750,85 @@ body.admin-sidebar-collapsed #app .nav-group-items {
     transform: none;
   }
 }
+
+/* —— Vertical CRM lead tables (housing, vacation, finance, etc.) —— */
+#app [id$='-leads-list'] {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+#app [id$='-leads-list'] > table,
+#app [id$='-leads-list'] .table {
+  width: 100%;
+  min-width: 1280px;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+#app [id$='-leads-list'] th,
+#app [id$='-leads-list'] td {
+  padding: 8px 10px;
+  vertical-align: middle;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+  white-space: nowrap;
+}
+
+#app [id$='-leads-list'] td:nth-child(2),
+#app [id$='-leads-list'] td:nth-child(4),
+#app [id$='-leads-list'] td:nth-child(9),
+#app [id$='-leads-list'] td:nth-child(10) {
+  white-space: normal;
+  min-width: 7rem;
+  max-width: 14rem;
+}
+
+#app [id$='-leads-list'] .form-input {
+  min-width: 88px;
+  max-width: 140px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+#app [id$='-leads-list'] .status-select {
+  min-width: 120px;
+  max-width: 170px;
+  font-size: 12px;
+}
+
+#app [id$='-leads-list'] .cell-nowrap {
+  white-space: nowrap;
+}
+
+#app [id$='-leads-list'] tr:has(.vertical-dispatch-panel) > td {
+  white-space: normal;
+  padding-top: 0;
+  border-bottom: none;
+}
+
+#app [id$='-leads-list'] .vertical-dispatch-panel {
+  min-width: 0;
+}
+
+#app [id$='-leads-list'] .vertical-dispatch-panel > div[style*='grid'] {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+}
+
+#app [id$='-leads-list'] .table-actions {
+  position: sticky;
+  right: 0;
+  background: var(--admin-surface, #fff);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+  box-shadow: -6px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+@media (max-width: 900px) {
+  #app [id$='-leads-list'] {
+    margin: 0 -8px;
+    padding: 0 4px 8px;
+  }
+}

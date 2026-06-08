@@ -10,8 +10,8 @@
       "id": "tuik",
       "name": "Türkiye İstatistik Kurumu (TÜİK)",
       "providerType": "public",
-      "status": "active",
-      "purpose": "Tüketici fiyatları, enflasyon ve hanehalkı harcama yapısı gibi makro göstergeler; TCO ve bütçe bandı varsayımlarının kalibrasyonu için referans.",
+      "status": "reference",
+      "purpose": "Tüketici fiyatları, enflasyon ve hanehalkı harcama yapısı gibi makro göstergeler; TCO ve bütçe bandı varsayımlarının manuel kalibrasyonu için referans. Canlı API entegrasyonu planlanmaktadır; ham TÜİK tabloları yeniden yayınlanmaz.",
       "categories": [
         "Tüketici fiyat endeksi (TÜFE)",
         "Yıllık enflasyon oranları",
@@ -61,10 +61,10 @@
           "note": "Enflasyon ve satın alma gücü — finansman vadesi ve TCO projeksiyonlarında maliyet güncellemesi."
         }
       ],
-      "lastUpdated": "2026-05-28",
+      "lastUpdated": "2026-06-08",
       "officialUrl": "https://www.tuik.gov.tr/",
-      "accessMode": "Kamuya açık web yayınları ve Data Portal",
-      "licenseNote": "Kaynak atıfı TÜİK yayın kurallarına uygun yapılır; ham veri yeniden satılmaz."
+      "accessMode": "Manuel referans — resmi web yayınları periyodik gözden geçirilir; otomatik API beslemesi yoktur",
+      "licenseNote": "Kaynak atıfı TÜİK yayın kurallarına uygun yapılır; ham veri yeniden satılmaz veya ticari olarak paketlenmez."
     },
     {
       "id": "tcmb-evds",
@@ -78,10 +78,10 @@
         "Tüketici kredisi / konut kredisi referans serileri (seçili)",
         "Enflasyon beklentisi serileri (seçili)"
       ],
-      "lastUpdated": "2026-06-02",
-      "officialUrl": "https://evds2.tcmb.gov.tr/",
-      "accessMode": "EVDS API veya resmi web arayüzü (iş ortaklığı anahtarı ile)",
-      "licenseNote": "TCMB kullanım koşulları geçerlidir; ticari yeniden dağıtım kısıtlarına uyulur."
+      "lastUpdated": "2026-06-08",
+      "officialUrl": "https://evds3.tcmb.gov.tr/",
+      "accessMode": "EVDS API (sunucu tarafı anahtar; istemciye açılmaz) — saatlik önbellek",
+      "licenseNote": "TCMB EVDS kullanım koşulları geçerlidir. Veriler bilgilendirme amaçlı referans olarak gösterilir; ham seriler ticari olarak yeniden dağıtılmaz. Atıf: TCMB EVDS."
     },
     {
       "id": "partner-feeds",
@@ -104,7 +104,7 @@
   "disclaimer": {
     "heading": "Veri kullanımı ve sorumluluk",
     "paragraphs": [
-      "isteBul, listelenen kaynaklardan alınan verileri olduğu gibi veya kural tabanlı dönüşümlerle kullanır; resmi kurumların güncel yayınları her zaman platform çıktısından önce güncellenmiş olabilir.",
+      "isteBul, listelenen kaynaklardan alınan verileri olduğu gibi veya kural tabanlı dönüşümlerle kullanır; resmi kurumların güncel yayınları her zaman platform çıktısından önce güncellenmiş olabilir. TÜİK verileri manuel referans olarak kullanılır; canlı TÜİK API beslemesi henüz devrede değildir.",
       "Gösterilen simülasyonlar, skorlar ve TCO bantları bilgilendirme amaçlıdır; banka onayı, sigorta poliçesi veya bağlayıcı fiyat teklifi yerine geçmez.",
       "Üçüncü taraf sitelere yönlendirme (ilan, sigorta karşılaştırma vb.) kullanıcı tercihine bağlıdır; isteBul bu sitelerin içeriğinden sorumlu değildir.",
       "Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz. Veri silme ve erişim talepleri destek kanallarından yürütülür."
@@ -122,7 +122,11 @@
       "subsections": [
         {
           "heading": "Manuel ve otomatik güncelleme",
-          "body": "TÜİK ve TCMB serileri periyodik olarak gözden geçirilir. EVDS veya benzeri API anahtarı bağlandığında güncelleme sıklığı ürün sürüm notlarında belirtilir."
+          "body": "TCMB EVDS serileri API üzerinden saatlik önbellekle güncellenir. TÜİK yayınları periyodik manuel gözden geçirme ile kalibrasyon varsayımlarına yansıtılır; otomatik TÜİK API entegrasyonu planlanmaktadır."
+        },
+        {
+          "heading": "TCMB EVDS kullanım koşulları (özet)",
+          "body": "EVDS verileri yalnızca bilgilendirme amaçlı referans olarak gösterilir; bağlayıcı teklif, resmi kurum taahhüdü veya yatırım tavsiyesi niteliği taşımaz. Ham seriler ticari olarak yeniden paketlenmez veya satılmaz. API anahtarı sunucu tarafında tutulur; istemciye açılmaz. Önbellek süresi en fazla 1 saattir. Resmi koşullar: evds3.tcmb.gov.tr"
         }
       ]
     }

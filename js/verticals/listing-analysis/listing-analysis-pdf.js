@@ -52,7 +52,7 @@ export function buildListingPdfHtml({ result = {}, aiSummary = null } = {}) {
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <title>isteBul İlan Analizi Raporu</title>
+  <title>isteBul Seçenek Analizi Raporu</title>
   <style>
     body { font-family: system-ui, sans-serif; color: #0f172a; margin: 24px; }
     h1 { font-size: 1.4rem; margin: 0 0 8px; }
@@ -68,7 +68,7 @@ export function buildListingPdfHtml({ result = {}, aiSummary = null } = {}) {
   </style>
 </head>
 <body>
-  <h1>isteBul — AI İlan Analizi Raporu</h1>
+  <h1>isteBul — AI Seçenek Analizi Raporu</h1>
   <p class="meta">${escapeHtml(typeLabel)} · ${new Date().toLocaleString('tr-TR')}</p>
   <div class="grid">
     <div class="card"><div class="label">Karar Skoru</div><div class="value">${result.decisionScore}/100</div></div>

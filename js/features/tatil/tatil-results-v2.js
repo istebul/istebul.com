@@ -227,6 +227,7 @@ export function buildTotalCostView(state = {}, primaryResult = null) {
     reserve,
     perPerson,
     totalBudget,
+    realTotal,
     budgetFitPct,
     travelers,
     nights: safeNumber(state.trip_nights) || primaryResult?.costs?.nights || null
@@ -450,7 +451,12 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
   const overallRisk = intel.overallRisk;
   const strengths = buildStrengths(state, primary, cost);
   const weaknesses = buildWeaknesses(state, primary, cost);
-  const alternatives = intel.alternatives;
+  const localAlternatives = (results || []).slice(1, 3).map((item) => ({
+    title: item.title || 'Alternatif rota',
+    description: item.description || item.summary || 'Profilinize uygun alternatif tatil senaryosu.',
+    meta: item.score != null ? `${item.score}/100` : formatTryAmount(item.costs?.realTotal || item.costs?.totalBudget)
+  }));
+  const alternatives = localAlternatives.length ? localAlternatives : intel.alternatives;
   const nextSteps = intel.nextSteps;
   const criticalRisk = riskAnalysis.find((r) => r.level === 'yüksek')?.title || '';
 
@@ -509,6 +515,10 @@ export function buildTatilResultsV2Payload({ state = {}, results = [] }) {
     intelligence: intel,
     pdfReportData,
     goalLabel: optionLabel('goal', state.vacation_goal),
+    typeLabel: optionLabel('type', state.vacation_type),
+    primaryTitle: primary?.title || optionLabel('goal', state.vacation_goal),
+    primarySubtitle: primary?.description || '',
+    primaryImageUrl: primary?.image_url || '/assets/images/demo/lara-resort.svg',
     totalLabel: formatTryAmount(cost.totalBudget),
     criticalRisk: riskAnalysis.find((r) => r.level === 'yüksek')?.title || '',
     planTier,
@@ -530,9 +540,11 @@ function renderTatilResultsV2Html(model) {
     subtitle: 'Profilinize göre en uygun tatil senaryosu belirlendi.',
     recommendation: {
       kicker: 'Önerilen rota',
-      title: model.goalLabel || 'Tatil paketi',
+      title: model.primaryTitle || model.goalLabel || 'Tatil paketi',
+      subtitle: model.primarySubtitle || model.typeLabel || '',
       badge: model.recommendationLabel || 'En uygun',
-      badgeTone: 'success'
+      badgeTone: 'success',
+      imageUrl: model.primaryImageUrl || '/assets/images/demo/lara-resort.svg'
     },
     specs: [
       { label: 'Toplam bütçe', value: formatTryAmount(cost.totalBudget) },
@@ -636,7 +648,7 @@ function renderTatilResultsV2Html(model) {
       </section>
 
       <article class="tatil-v2-block tatil-v2-block--exec" data-tatil-v2-insight-root>
-        <h3>AI karar yorumu</h3>
+        <h3>Yapay zeka karar yorumu</h3>
         ${renderInsightBlocksHtml(model.insight, esc, {
           planTier: model.planTier,
           insightInput: model.insightInput
@@ -731,11 +743,11 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
       mountDecisionOsOverlay(mountNode, {
         category: 'tatil',
         formData: state,
-        metrics: { totalCost: model.totalCost?.value ?? null },
+        metrics: { totalCost: model.totalCost?.totalBudget ?? model.totalCost?.realTotal ?? null },
         intelligence: model.intelligence,
         model,
         extras: {
-          totalCost: model.totalCost?.value ?? null,
+          totalCost: model.totalCost?.totalBudget ?? model.totalCost?.realTotal ?? null,
           title: 'Tatil Kararı',
           strengths: model.strengths,
           cautions: model.weaknesses,

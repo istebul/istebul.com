@@ -1,6 +1,6 @@
 # GDPR notice (English summary) — isteBul
 
-**Last updated:** 2026-06-01  
+**Last updated:** 2026-06-08  
 **Controller:** isteBul (see `/kvkk.html` for Turkish legal text)
 
 ## Scope

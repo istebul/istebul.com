@@ -7,8 +7,8 @@
       "path": "/"
     },
     "page-karar-analizi": {
-      "title": "Karar Asistanı | isteBul — AI Karar Analizi",
-      "description": "Büyük satın alma kararlarını toplam maliyet, risk ve finansman etkisiyle analiz edin. Ücretsiz başlayın, Auto ile araç kararını derinleştirin.",
+      "title": "Karar Asistanı | isteBul — Hangi kategoride karar vermek istiyorsunuz?",
+      "description": "Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk analizini tek merkezden başlatın.",
       "path": "/karar-asistani"
     },
     "page-planlar": {
@@ -37,23 +37,23 @@
       "path": "/blog"
     },
     "ilanlar": {
-      "title": "Araç Seçenekleri | isteBul",
-      "description": "Karar skoruna göre sıralanmış araç seçeneklerini keşfedin ve karşılaştırın.",
-      "path": "/ilanlar"
+      "title": "Değerlendirilebilir Seçenekler | isteBul",
+      "description": "Karar skoruna göre sıralanmış değerlendirilebilir seçenekleri keşfedin — karar platformu yüzeyi.",
+      "path": "/secenekler"
     },
     "listing-detail": {
       "title": "Seçenek Detayı | isteBul",
-      "description": "Seçtiğiniz aracın karar skoru, maliyet kırılımı ve finansman etkisi.",
-      "path": "/ilanlar"
+      "description": "Seçtiğiniz seçeneğin karar skoru, maliyet kırılımı ve finansman etkisi.",
+      "path": "/secenekler"
     },
     "compare": {
-      "title": "Karşılaştırma Merkezi | isteBul",
-      "description": "Araç seçeneklerini karar skoru, maliyet ve risk sinyalleriyle yan yana değerlendirin.",
+      "title": "Karar Kriteri Karşılaştırma | isteBul",
+      "description": "Seçenekleri skor, maliyet, risk, uygunluk ve gerekçe boyutunda yan yana karşılaştırın.",
       "path": "/karsilastir"
     },
     "favoriler": {
       "title": "Favoriler | isteBul",
-      "description": "Kaydettiğiniz araç seçeneklerini tek yerden yönetin.",
+      "description": "Kaydettiğiniz seçenekleri tek yerden yönetin.",
       "path": "/favoriler"
     },
     "history": {
@@ -73,7 +73,7 @@
     },
     "messages": {
       "title": "Mesajlar | isteBul",
-      "description": "İlan ve karar süreci mesajlarınız.",
+      "description": "Karar süreci ve seçenek inceleme mesajlarınız.",
       "path": "/messages"
     },
     "add-listing": {

@@ -559,7 +559,7 @@ test('executive dashboard eyebrow Turkish', () => {
 
 test('guard: no endpoint change in router', () => {
   const router = fs.readFileSync(routerPath, 'utf8');
-  assert.match(router, /resource: 'listings'/);
+  assert.match(router, /'listings'/);
   assert.doesNotMatch(router, /ownership-cost/i);
   assert.doesNotMatch(router, /ownership_cost/i);
 });

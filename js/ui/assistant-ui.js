@@ -1,6 +1,49 @@
 // Lazy-loaded AI assistant UI renderer
 // Extracted from UIManager to keep the initial app bundle smaller.
 
+import {
+    buildDecisionResultSummary,
+    renderDecisionResultSummaryHtml,
+    shouldRenderDecisionResultSummary
+} from './decision-result-summary.js';
+import {
+    buildDeterministicDecisionResultRationale,
+    hydrateDecisionResultAiRationale,
+    renderDecisionResultAiRationaleHtml
+} from './decision-result-ai-rationale.js';
+import {
+    bindDecisionResultShareCard,
+    renderDecisionResultShareHtml,
+    shouldRenderDecisionResultShare
+} from './decision-result-share.js';
+import {
+    buildDecisionHistorySignalStrip,
+    renderDecisionHistorySignalStripHtml
+} from './decision-history-signal-strip.js';
+import { canAddHistoryEntryToComparison } from './decision-history-comparison.js';
+import {
+    buildRecentDecisionHistorySnippetModel,
+    renderRecentDecisionHistorySnippetHtml
+} from './decision-history-recent-snippet.js';
+import {
+    buildDecisionMemoryInsightsModel,
+    renderDecisionMemoryInsightsHtml,
+    DECISION_MEMORY_INSIGHTS_MIN
+} from './decision-memory-insights.js';
+import {
+    buildDecisionMemoryContextModel,
+    renderDecisionMemoryContextHtml
+} from './decision-memory-context.js';
+import { normalizeHistoryEntryCategory } from './decision-history-category.js';
+import { normalizeDecisionHistoryList } from './decision-history-compat.js';
+
+/** Local gate for lazy commentary chunk — mirrors shouldRenderDecisionMemoryAiCommentary without eager bundle pull. */
+function shouldLazyLoadDecisionMemoryCommentary(model) {
+    if (!model || model.softState) return false;
+    if (!Array.isArray(model.insights) || !model.insights.length) return false;
+    return Number(model.entryCount || 0) >= DECISION_MEMORY_INSIGHTS_MIN;
+}
+
 export class AssistantUI {
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
         const categoryRail = document.getElementById('assistant-category-rail');
@@ -158,6 +201,21 @@ export class AssistantUI {
         }
 
         const bestFinance = primary.financeComparisons?.[0];
+        const resultSummary = buildDecisionResultSummary(result);
+        const deterministicRationale = buildDeterministicDecisionResultRationale(resultSummary);
+        const aiRationaleHtml = deterministicRationale
+            ? renderDecisionResultAiRationaleHtml(deterministicRationale, { source: 'rules', state: 'ready' })
+            : '';
+        const resultSummaryHtml = shouldRenderDecisionResultSummary(result)
+            ? renderDecisionResultSummaryHtml(
+                resultSummary,
+                (value) => this.escapeHtml(value),
+                aiRationaleHtml
+            )
+            : '';
+        const shareCardHtml = shouldRenderDecisionResultShare(resultSummary)
+            ? renderDecisionResultShareHtml((value) => this.escapeHtml(value))
+            : '';
 
         container.innerHTML =
             '<section class="assistant-decision-panel">' +
@@ -180,8 +238,11 @@ export class AssistantUI {
                 '</div>' +
                 '<div class="assistant-decision-toolbar">' +
                     '<button type="button" class="btn btn-outline" data-assistant-edit="0"><i data-lucide="sliders-horizontal"></i> Kriterleri güncelle</button>' +
+                    '<a href="/karsilastir/" class="btn btn-outline btn-sm" data-native-route><i data-lucide="columns-3"></i> Karşılaştırma merkezine git</a>' +
                     '<button type="button" class="btn btn-primary" data-browse-decision-listings><i data-lucide="list-checks"></i> Eşleşen seçenekleri aç</button>' +
                 '</div>' +
+                resultSummaryHtml +
+                shareCardHtml +
                 this.getExecutiveMetricsMarkup(result.categoryId, primary, bestFinance) +
                 this.getDataHealthMarkup(result.dataHealth) +
                 '<div class="assistant-answer-summary">' + result.answers.map((answer) =>
@@ -222,6 +283,8 @@ export class AssistantUI {
 
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.loadIcons();
+        hydrateDecisionResultAiRationale(container, resultSummary);
+        bindDecisionResultShareCard(container, resultSummary);
     }
 
     getAIDecisionExtrasMarkup(result) {
@@ -510,6 +573,8 @@ export class AssistantUI {
 
     renderHistoryAuthGate() {
         const container = document.getElementById('history-list');
+        const insightsHost = document.getElementById('decision-memory-insights-host');
+        if (insightsHost) insightsHost.innerHTML = '';
         if (!container) return;
 
         container.innerHTML = `
@@ -526,13 +591,65 @@ export class AssistantUI {
         this.loadIcons();
     }
 
+    renderDecisionMemoryInsights(history = []) {
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const host = doc.getElementById('decision-memory-insights-host');
+        if (!host) return;
+
+        const model = buildDecisionMemoryInsightsModel(history);
+        host.innerHTML = renderDecisionMemoryInsightsHtml(model, this.escapeHtml.bind(this));
+
+        if (!shouldLazyLoadDecisionMemoryCommentary(model)) return;
+
+        void import('./decision-memory-ai-commentary.js')
+            .then((mod) => {
+                if (!host.isConnected) return;
+
+                const currentModel = buildDecisionMemoryInsightsModel(history);
+                if (currentModel.softState) return;
+                if (!mod.shouldRenderDecisionMemoryAiCommentary(currentModel)) return;
+                if (host.querySelector('[data-decision-memory-ai-commentary]')) return;
+
+                const commentary = mod.buildDeterministicDecisionMemoryCommentary(currentModel);
+                const insightsPanel = host.querySelector('[data-decision-memory-insights]');
+                if (insightsPanel && commentary) {
+                    insightsPanel.insertAdjacentHTML(
+                        'beforeend',
+                        mod.renderDecisionMemoryAiCommentaryHtml(commentary, {
+                            source: 'rules',
+                            state: 'ready'
+                        })
+                    );
+                }
+                mod.hydrateDecisionMemoryAiCommentary(host, currentModel);
+            })
+            .catch(() => {
+                /* commentary chunk optional; insights panel remains */
+            });
+    }
+
+    renderDecisionMemoryContext(history = []) {
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const host = doc.getElementById('decision-memory-context-host');
+        if (!host) return;
+
+        const model = buildDecisionMemoryContextModel(history);
+        host.innerHTML = model
+            ? renderDecisionMemoryContextHtml(model, this.escapeHtml.bind(this))
+            : '';
+    }
+
     renderDecisionHistory(history = []) {
         const doc = globalThis.document;
         if (!doc?.getElementById) return;
         const container = doc.getElementById('history-list');
         if (!container) return;
 
-        if (!history.length) {
+        const normalizedHistory = normalizeDecisionHistoryList(history);
+
+        if (!normalizedHistory.length) {
             container.innerHTML = `
                 <div class="empty-state">
                     <i data-lucide="clock"></i>
@@ -544,25 +661,32 @@ export class AssistantUI {
             return;
         }
 
-        container.innerHTML = history.map((item) => {
-            const isAuto = item.categoryId === 'auto';
+        container.innerHTML = normalizedHistory.map((item) => {
+            const category = normalizeHistoryEntryCategory(item);
+            const isAuto = category.isAuto;
             const answers = Array.isArray(item.answers)
                 ? item.answers
                 : Object.entries(item.answers || {}).map(([label, value]) => ({ label, value }));
+            const signalStripHtml = renderDecisionHistorySignalStripHtml(
+                buildDecisionHistorySignalStrip(item),
+                this.escapeHtml.bind(this)
+            );
+            const canCompare = canAddHistoryEntryToComparison(item);
 
             return `
             <article class="decision-history-card ${isAuto ? 'decision-history-card-auto' : ''}">
                 <div class="decision-history-main">
                     <div>
-                        <span class="assistant-kicker">${this.escapeHtml(item.categoryName || 'Karar')}</span>
+                        <span class="assistant-kicker" data-history-category="${this.escapeHtml(category.categoryId)}">${this.escapeHtml(category.categoryName)}</span>
                         <h3>${this.escapeHtml(item.topPick?.name || 'Kaydedilen karar')}</h3>
                         <p>${this.escapeHtml(item.summary || 'Özet bulunamadı.')}</p>
                     </div>
                     <div class="decision-history-score">
-                        <strong>${this.escapeHtml(item.topPick?.score || '-')}</strong>
+                        <strong>${this.escapeHtml(item.score ?? item.topPick?.score ?? '-')}</strong>
                         <span>/100</span>
                     </div>
                 </div>
+                ${signalStripHtml}
                 <div class="decision-history-metrics">
                     <span><strong>${isAuto ? 'Tahmini fiyat' : 'Fiyat'}:</strong> ${this.formatPrice(item.topPick?.price || 0)}</span>
                     <span><strong>${isAuto ? '12 aylık maliyet' : 'Dönemsel maliyet'}:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)}</span>
@@ -576,14 +700,36 @@ export class AssistantUI {
                     <button type="button" class="btn btn-primary" data-decision-repeat="${this.escapeHtml(item.id)}">
                         <i data-lucide="refresh-cw"></i> ${isAuto ? 'Yeni Auto analizi' : 'Tekrar aç'}
                     </button>
+                    ${canCompare ? `<button type="button" class="btn btn-outline" data-decision-compare-add="${this.escapeHtml(item.id)}">
+                        <i data-lucide="scale"></i> Karşılaştırmaya ekle
+                    </button>` : ''}
                     <button type="button" class="btn btn-outline" data-decision-delete="${this.escapeHtml(item.id)}">
                         <i data-lucide="trash-2"></i> Sil
                     </button>
                 </div>
+                ${canCompare ? `<div class="decision-history-actions-links">
+                    <a href="/karsilastir/" class="decision-history-compare-link" data-native-route>Karşılaştırma merkezine git</a>
+                </div>` : ''}
             </article>
         `}).join('');
 
         this.loadIcons();
+    }
+
+    renderRecentDecisionHistorySnippet(history = []) {
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const host = doc.getElementById('decision-history-recent-snippet-host');
+        if (!host) return;
+
+        const normalizedHistory = normalizeDecisionHistoryList(history);
+        const html = renderRecentDecisionHistorySnippetHtml(
+            buildRecentDecisionHistorySnippetModel(normalizedHistory),
+            this.escapeHtml.bind(this),
+            this.formatDate.bind(this)
+        );
+        host.innerHTML = html;
+        if (html) this.loadIcons();
     }
 
     getCostMarkup(costs = []) {
@@ -614,12 +760,12 @@ export class AssistantUI {
         const firstChannel = item.channels?.[0]?.url || 'https://www.sahibinden.com/';
         const plans = {
             arac: [
-                { icon: 'search-check', title: 'Gerçek ilanı doğrula', text: 'KM, tramer, fiyat ve satıcı bilgisini aynı model ilanlarla karşılaştırın.', url: firstChannel },
+                { icon: 'search-check', title: 'Seçeneği doğrula', text: 'KM, tramer, fiyat ve satıcı bilgisini aynı model ilanlarla karşılaştırın.', url: firstChannel },
                 { icon: 'landmark', title: 'Krediyi netleştir', text: 'Aylık taksit yerine toplam geri ödeme ve kredi kullandırım oranını kontrol edin.', url: 'https://www.hangikredi.com/kredi/tasit-kredisi' },
                 { icon: 'shield-check', title: 'Sigorta + ekspertiz', text: 'Kasko, trafik sigortası ve ekspertiz sonucu olmadan kapora göndermeyin.', url: 'https://www.sigortam.net/' }
             ],
             ev: [
-                { icon: 'map-pinned', title: 'Emsal ilan analizi', text: 'Aynı il/ilçede m2, bina yaşı, aidat ve ulaşım etkisini yan yana okuyun.', url: firstChannel },
+                { icon: 'map-pinned', title: 'Benzer seçenek analizi', text: 'Aynı il/ilçede m2, bina yaşı, aidat ve ulaşım etkisini yan yana okuyun.', url: firstChannel },
                 { icon: 'landmark', title: 'Konut kredisi', text: 'Ekspertiz değeri, peşinat ihtiyacı ve toplam geri ödeme planını netleştirin.', url: 'https://www.hangikredi.com/kredi/konut-kredisi' },
                 { icon: 'file-check-2', title: 'Tapu + deprem kontrolü', text: 'Tapu, imar, DASK, deprem performansı ve aidat borcunu satın alma öncesi doğrulayın.', url: 'https://www.tkgm.gov.tr/' }
             ],
@@ -694,7 +840,7 @@ export class AssistantUI {
                     <i data-lucide="${this.escapeHtml(this.getCategoryVisualIcon(category.id, category.icon))}"></i>
                 </span>
                 <h3>${this.escapeHtml(category.name)}</h3>
-                <span class="category-count">${category.id === 'arac' ? 'Karar analizi' : this.escapeHtml(category.count || 0) + ' ilan'}</span>
+                <span class="category-count">${category.id === 'arac' ? 'Karar analizi' : this.escapeHtml(category.count || 0) + ' seçenek'}</span>
             </button>
         `;
     }

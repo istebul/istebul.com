@@ -113,21 +113,21 @@ export class PremiumPages {
       <header class="ib-premium-hero ib-premium-hero--analysis">
         <div class="container ib-premium-hero-grid">
           <div class="ib-premium-hero-copy">
-            <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> ${BRAND_VOICE.categoryLabel}</span>
-            <h1>${BRAND_VOICE.positioningLine}</h1>
-            <p class="ib-premium-lead">${BRAND_VOICE.leadLine} Canlı analiz için Auto akışına geçin.</p>
+            <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> Karar merkezi</span>
+            <h1>Hangi kategoride karar vermek istiyorsunuz?</h1>
+            <p class="ib-premium-lead">Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk sinyallerini tek merkezden başlatın.</p>
             <div class="ib-premium-hero-actions">
-              <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_hero" title="${BRAND_VOICE.cta.primaryAutoLong}">
-                <i data-lucide="car-front"></i> ${BRAND_VOICE.cta.primaryAuto}
+              <a href="#premium-assistant" class="btn btn-primary btn-lg" data-analytics-cta="cta_decision_hub" data-analytics-placement="premium_hero" title="Kategori seçerek karar akışını başlatın">
+                <i data-lucide="layout-grid"></i> Kategori seçin
               </a>
               <a href="/metodoloji" class="btn btn-outline btn-lg" data-native-route>
                 <i data-lucide="microscope"></i> ${BRAND_VOICE.cta.methodology}
               </a>
             </div>
             <ul class="ib-premium-hero-stats" aria-label="Platform metrikleri">
-              <li><strong>~2 dk</strong><span>Auto analizi</span></li>
+              <li><strong>6</strong><span>Kategori</span></li>
               <li><strong>12 ay</strong><span>TCO görünümü</span></li>
-              <li><strong>5 adım</strong><span>Rehberli akış</span></li>
+              <li><strong>Kural</strong><span>Tabanlı skor</span></li>
             </ul>
           </div>
           <div class="ib-premium-hero-visual" aria-hidden="true">
@@ -158,6 +158,10 @@ export class PremiumPages {
           <span><i data-lucide="ban"></i> ${escapeHtml(spaText('premiumKarar.trustNoPressure', 'Satıcı baskısı yok'))}</span>
         </div>
       </div>
+
+      <div id="decision-memory-context-host" data-route-mount aria-live="polite"></div>
+
+      <div id="decision-history-recent-snippet-host"></div>
 
       <section id="premium-assistant" class="ib-premium-block ib-premium-assistant" aria-label="Karar asistanı">
         <div class="container">
@@ -215,6 +219,9 @@ export class PremiumPages {
             </table>
           </div>
           <p class="ib-premium-note">Örnek veriler gösterim amaçlıdır; canlı analizde gerçek girdilerinize göre hesaplanır.</p>
+          <div class="ib-premium-compare-preview-actions">
+            <a href="/karsilastir/" class="btn btn-outline btn-sm" data-native-route>Karşılaştırma merkezine git</a>
+          </div>
         </div>
       </section>
 

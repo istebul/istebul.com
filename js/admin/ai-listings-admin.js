@@ -22,7 +22,7 @@ import {
   buildPremiumDashboardHtml,
   buildStatusFilterChipsHtml,
   computeKpiStats,
-  getAdminPanelState,
+  extractLatestAnalysis,
   getEdgeSecret,
   getListingAnalyzePath,
   getSupabaseAnonKey,
@@ -37,6 +37,17 @@ import {
   validateAttributesJson,
   validateSourceUrl
 } from './ai-listings-admin-core.js';
+import {
+  verifyAdminSessionAccess,
+  resolveAdminPanelAccess,
+  getAdminAccessToken
+} from './ai-listings-admin-access.js';
+import {
+  enforceAdminRoute,
+  renderAdminForbiddenHtml,
+  PUBLIC_DECISION_CENTER_PATH,
+  ADMIN_LOGIN_PATH
+} from './admin-route-guard.js';
 import { runDuplicateEngine } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
 import { IMPORT_MAX_ROWS } from '../../supabase/functions/_shared/ai-listings/import-parser.js';
 import { buildAcquisitionEventPayload } from '../../supabase/functions/_shared/ai-listings/acquisition/acquisition-events.js';
@@ -61,6 +72,12 @@ import {
   readRecommendationProfileFromForm
 } from './ai-listings-recommendations-admin.js';
 import {
+  buildListingRecommendationRecord,
+  ensureRecommendationCache,
+  findCachedRecommendation,
+  resolveRecommendationForListing
+} from './ai-listings-recommendation-resolver.js';
+import {
   buildDecisionCoachInput,
   runDecisionCoach
 } from '../ai-decision-coach/index.js';
@@ -82,9 +99,65 @@ import { buildListingQualityInput, runListingQualityTrust } from '../ai-listing-
 import { buildQualityPanelHtml } from '../ai-listing-quality/quality-card-builder.js';
 import { toggleRepositoryFilter } from '../ai-listings-repository/index.js';
 import { sanitizeSearchQuery } from '../ai-listings-search/index.js';
+import {
+  buildDecisionWorkspaceHtml,
+  buildDecisionWorkspaceEmptyHtml,
+  buildWorkspaceDetailSkeletonHtml,
+  buildWorkspaceErrorHtml
+} from './ai-listings-decision-workspace.js';
+import {
+  createInitialDrawerState,
+  openDrawerState,
+  closeDrawerState,
+  resetDrawerState,
+  isDrawerOpen,
+  getDrawerTitleTr,
+  getModuleUnavailableMessageTr,
+  getDrawerHostId,
+  getDrawerBodyClass,
+  getActiveDrawerBodyClasses,
+  buildCompareSelectionKey
+} from './ai-listings-admin-drawer-state.js';
+import { computeNormalizedKpiStats, filterListingsForDisplay } from './ai-listings-admin-kpi.js';
+import { clearScenarioSimulatorMemoCache } from '../ai-scenario-simulator/index.js';
+import {
+  buildScenarioInput,
+  runScenarioSimulator
+} from '../ai-scenario-simulator/index.js';
+import { buildScenarioPanelHtml, buildScenarioShellHtml } from '../ai-scenario-simulator/scenario-card-builder.js';
+import { buildOwnershipCostInput as buildOcInput } from '../ai-ownership-cost/index.js';
+import {
+  runLearningInsightsEngine,
+  buildLearningInsightsPanelHtml
+} from '../ai-user-learning/index.js';
+import { runListingDataPoolEngine, buildDataPoolPanelHtml } from '../ai-listing-data-pool/index.js';
+import {
+  runPersonalizationSuite,
+  buildPreferenceProfilePanelHtml
+} from '../ai-personalization/index.js';
+import { buildExecutiveDecisionShellHtml } from '../ai-purchase-decision/executive-decision-card-builder.js';
+import { buildExplainabilityShellHtml } from '../ai-decision-explainability/explainability-card-builder.js';
+import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
+import { buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-builder.js';
+import { formatErrorFallbackLabel } from './ai-listings-admin-labels.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
+
+/** @type {Record<string, unknown>|null} */
+let selectedRecommendation = null;
+
+/** @type {string} */
+let lastWorkspaceListingId = '';
+
+/** @type {number} */
+let detailRequestSeq = 0;
+
+/** @type {number} */
+const EDGE_REQUEST_TIMEOUT_MS = 15000;
+
+/** @type {ReturnType<typeof createInitialDrawerState>} */
+let aiDrawerState = createInitialDrawerState();
 
 /** @type {string} */
 let activeStatusFilter = '';
@@ -164,6 +237,59 @@ let recommendationGenerated = false;
 /** @type {ReturnType<typeof import('../ai-recommendation-engine/index.js').runRecommendationEngine>|null} */
 let cachedRecommendationResult = null;
 
+/** @type {string[]} */
+let compareSelectedIds = [];
+
+/** @type {boolean} */
+let compareModeEnabled = false;
+
+/** @type {Array<Record<string, unknown>>} */
+let cachedLearningEvents = [];
+
+const LEARNING_SESSION_KEY = 'istebul_ai_learning_session_id';
+
+/**
+ * @returns {string}
+ */
+function getLearningSessionId() {
+  const storageRef = storage();
+  if (!storageRef) return 'admin-session';
+  let sessionId = storageRef.getItem(LEARNING_SESSION_KEY);
+  if (!sessionId) {
+    sessionId = `admin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    storageRef.setItem(LEARNING_SESSION_KEY, sessionId);
+  }
+  return sessionId;
+}
+
+/**
+ * @param {string} eventType
+ * @param {Record<string, unknown>} [payload]
+ */
+function recordLearningEvent(eventType, payload = {}) {
+  const event = {
+    event_type: eventType,
+    timestamp: new Date().toISOString(),
+    session_id: getLearningSessionId(),
+    ...payload
+  };
+  cachedLearningEvents.push(event);
+  if (cachedLearningEvents.length > 100) {
+    cachedLearningEvents = cachedLearningEvents.slice(-100);
+  }
+
+  edgeRequest('/learning/events', {
+    method: 'POST',
+    body: { events: [event] }
+  }).catch((error) => {
+    console.warn('[ai-listings-admin] learning event sync failed:', error);
+    setStatus(
+      'Öğrenme olayı kaydedilemedi. Bağlantınızı kontrol edip tekrar deneyin.',
+      'error'
+    );
+  });
+}
+
 function $(id) {
   return document.getElementById(id);
 }
@@ -183,9 +309,27 @@ function setStatus(message, type = 'info') {
   el.textContent = message;
 }
 
-async function edgeRequest(path, { method = 'GET', body } = {}) {
-  const base = resolveEdgeBaseUrl(env());
+async function resolveEdgeAuthHeaders(hasBody = false) {
   const secret = getEdgeSecret(storage());
+  const anonKey = getSupabaseAnonKey(env());
+  const accessToken = secret ? '' : await getAdminAccessToken();
+
+  if (!secret && !accessToken) {
+    return {
+      ok: false,
+      message:
+        'Edge kimlik doğrulaması eksik — admin oturumu açın veya localStorage istebul_ai_listings_secret ayarlayın'
+    };
+  }
+
+  return {
+    ok: true,
+    headers: buildEdgeRequestHeaders({ secret, anonKey, accessToken, hasBody })
+  };
+}
+
+async function edgeRequest(path, { method = 'GET', body, timeoutMs = EDGE_REQUEST_TIMEOUT_MS } = {}) {
+  const base = resolveEdgeBaseUrl(env());
   const anonKey = getSupabaseAnonKey(env());
 
   if (!base) {
@@ -194,37 +338,57 @@ async function edgeRequest(path, { method = 'GET', body } = {}) {
   if (!anonKey) {
     return { ok: false, status: 0, message: 'Supabase anon key eksik' };
   }
-  if (!secret) {
-    return {
-      ok: false,
-      status: 0,
-      message: 'Edge secret eksik — localStorage istebul_ai_listings_secret ayarlayın'
-    };
+
+  const auth = await resolveEdgeAuthHeaders(body !== undefined);
+  if (!auth.ok) {
+    return { ok: false, status: 0, message: auth.message };
   }
 
-  const response = await fetch(`${base}${path}`, {
-    method,
-    headers: buildEdgeRequestHeaders({ secret, anonKey, hasBody: body !== undefined }),
-    body: body !== undefined ? JSON.stringify(body) : undefined
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  const json = await response.json().catch(() => ({}));
-  const mapped = mapEdgeResponse(response, json);
-  if (!mapped.ok) {
-    return { ...mapped, message: translateAdminErrorMessage(mapped.message) };
+  try {
+    const response = await fetch(`${base}${path}`, {
+      method,
+      headers: auth.headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controller.signal
+    });
+
+    const json = await response.json().catch(() => ({}));
+    const mapped = mapEdgeResponse(response, json);
+    if (!mapped.ok) {
+      return { ...mapped, message: translateAdminErrorMessage(mapped.message) };
+    }
+    return mapped;
+  } catch (error) {
+    if (/** @type {{ name?: string }} */ (error).name === 'AbortError') {
+      return { ok: false, status: 0, message: 'İstek zaman aşımına uğradı — tekrar deneyin' };
+    }
+    return { ok: false, status: 0, message: 'Ağ hatası — bağlantıyı kontrol edin' };
+  } finally {
+    clearTimeout(timer);
   }
-  return mapped;
 }
 
-function renderDisabledState() {
+function renderDisabledState(options = {}) {
   const root = $('ai-listings-admin-root');
   if (!root) return;
+
+  const adminLoginHint = options.showAdminLogin
+    ? `<p class="ai-listings-admin__gate-actions">
+        <a class="ai-listings-admin__btn ai-listings-admin__btn--primary" href="${ADMIN_LOGIN_PATH}">Admin paneline giriş yap</a>
+        <a class="ai-listings-admin__btn ai-listings-admin__btn--ghost" href="${PUBLIC_DECISION_CENTER_PATH}">Karar Merkezi (kullanıcı)</a>
+      </p>`
+    : '';
+
   root.innerHTML = `
     <div class="ai-listings-admin__gate">
-      <h2>Yapay Zeka Karar Merkezi — Devre Dışı</h2>
-      <p>Bu iç test paneli varsayılan olarak gizlidir.</p>
-      <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_ENABLE_KEY}', 'on')</pre>
-      <p>Etkinleştirdikten sonra sayfayı yenileyin. Bkz. docs/ai-listings/ADMIN_TEST_PANEL.md</p>
+      <h2>AI İlan Yönetimi — Admin Erişimi Gerekli</h2>
+      <p>Bu ekran yalnızca admin rolüne sahip kullanıcılar içindir. Kullanıcı Karar Merkezi için profil panelini kullanın.</p>
+      ${adminLoginHint}
+      <p>Edge API secret (admin):</p>
+      <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_SECRET_KEY}', '&lt;secret&gt;')</pre>
     </div>`;
 }
 
@@ -233,9 +397,9 @@ function renderSecretWarning() {
   if (!warn) return;
   warn.hidden = false;
   warn.innerHTML = `
-    <strong>Kurulum gerekli:</strong>
-    <code>localStorage.${ADMIN_SECRET_KEY}</code> değerini
-    <code>AI_LISTINGS_EDGE_SECRET</code> ile ayarlayın, ardından yenileyin.
+    <strong>İsteğe bağlı:</strong> Admin oturumu ile API çağrıları çalışır.
+    CI/script entegrasyonu için <code>localStorage.${ADMIN_SECRET_KEY}</code> değerini
+    <code>AI_LISTINGS_EDGE_SECRET</code> ile eşleştirebilirsiniz.
     <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_SECRET_KEY}', '&lt;secret&gt;')</pre>`;
 }
 
@@ -281,7 +445,7 @@ function animateKpiCounters(root = document) {
 function renderKpiCards(listings) {
   const kpiEl = $('ai-listings-kpi');
   if (!kpiEl) return;
-  const stats = computeKpiStats(listings);
+  const stats = computeNormalizedKpiStats(listings, { searchQuery });
   const statsKey = JSON.stringify(stats);
   if (statsKey === lastKpiStatsKey && kpiEl.childElementCount > 0) return;
   lastKpiStatsKey = statsKey;
@@ -546,6 +710,7 @@ function bindRepositoryDashboardEvents(root) {
       const id = card.getAttribute('data-repo-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
+        selectedListing = listing;
         activeAdminView = 'decision';
         setAdminView('decision');
         void showListingDetail(listing);
@@ -559,7 +724,9 @@ function renderRecommendationsView() {
   if (!detailEl) return;
 
   const { html, result } = buildRecommendationsDashboardHtml(cachedListings, recommendationProfile, {
-    generated: recommendationGenerated
+    generated: recommendationGenerated,
+    compareMode: compareModeEnabled,
+    compareSelectedIds
   });
   if (result) cachedRecommendationResult = result;
 
@@ -644,13 +811,17 @@ function readSimulatorScenarioFromForm(root) {
  * @returns {{ result: ReturnType<typeof runDecisionSimulator>, coach: ReturnType<typeof runDecisionCoach>, selected: Record<string, unknown> }|null}
  */
 function runSimulatorForPanel(recordId, scenario) {
-  if (!cachedRecommendationResult?.top?.length) return null;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return null;
 
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return null;
-
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
-  const coachInput = buildDecisionCoachInput(profile, selected, cachedRecommendationResult.top);
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const top =
+    cachedRecommendationResult?.top?.length > 0
+      ? cachedRecommendationResult.top
+      : cachedListings
+          .map((listing) => getRecommendationById(String(listing.id)))
+          .filter((item) => item?.id);
+  const coachInput = buildDecisionCoachInput(profile, selected, top);
   const coach = runDecisionCoach(coachInput);
   const simInput = buildSimulatorInput(selected, coach, profile);
   const result = runDecisionSimulator(simInput, scenario);
@@ -671,16 +842,17 @@ function bindSimulatorPanelEvents(host, root) {
 }
 
 function openDecisionCoachPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
-
-  const input = buildDecisionCoachInput(
-    cachedRecommendationResult.profile ?? recommendationProfile,
-    selected,
-    cachedRecommendationResult.top
-  );
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const top =
+    cachedRecommendationResult?.top?.length > 0
+      ? cachedRecommendationResult.top
+      : cachedListings
+          .map((listing) => getRecommendationById(String(listing.id)))
+          .filter((item) => item?.id);
+  const input = buildDecisionCoachInput(profile, selected, top);
   const coach = runDecisionCoach(input);
 
   const host = root.querySelector('#ai-coach-panel-host');
@@ -704,14 +876,12 @@ function openDecisionCoachPanel(root, recordId) {
 }
 
 function openDecisionSimulatorPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
   closeDecisionCoachPanel(root);
 
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
   const defaultScenario = buildDefaultScenario(profile);
   const host = root.querySelector('#ai-sim-panel-host');
   if (!host) return;
@@ -745,16 +915,20 @@ function openDecisionSimulatorPanel(root, recordId) {
 }
 
 function openDecisionReportPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
   closeDecisionCoachPanel(root);
   closeDecisionSimulatorPanel(root);
 
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
-  const reportInput = buildReportInput(selected, profile, cachedRecommendationResult.top);
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const top =
+    cachedRecommendationResult?.top?.length > 0
+      ? cachedRecommendationResult.top
+      : cachedListings
+          .map((listing) => getRecommendationById(String(listing.id)))
+          .filter((item) => item?.id);
+  const reportInput = buildReportInput(selected, profile, top);
   const report = runDecisionReport(reportInput);
 
   const host = root.querySelector('#ai-report-panel-host');
@@ -776,17 +950,15 @@ function openDecisionReportPanel(root, recordId) {
 }
 
 function openOwnershipCostPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
   closeDecisionCoachPanel(root);
   closeDecisionSimulatorPanel(root);
   closeDecisionReportPanel(root);
   closeListingQualityPanel(root);
 
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
   const costInput = buildOwnershipCostInput(selected, profile);
   const cost = runOwnershipCostSimulator(costInput);
 
@@ -914,6 +1086,7 @@ function bindRecommendationsDashboardEvents(root) {
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
+        selectedListing = listing;
         activeAdminView = 'decision';
         setAdminView('decision');
         void showListingDetail(listing);
@@ -957,9 +1130,244 @@ function renderExecutiveDashboard() {
   if (selectedListing) return;
   const detailEl = $('ai-listings-detail');
   if (!detailEl) return;
-  detailEl.innerHTML = buildExecutiveDashboardHtml(cachedListings);
+  detailEl.innerHTML = `
+    <div class="ai-ws-overview-wrap">
+      ${buildDecisionWorkspaceEmptyHtml()}
+      <section class="ai-ws-overview-compact" aria-label="Karar merkezi özeti">
+        ${buildExecutiveDashboardHtml(cachedListings)}
+      </section>
+    </div>`;
   bindExecutiveDashboardEvents(detailEl);
+  bindWorkspaceEmptyEvents(detailEl);
   clearTimelineHost();
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @returns {Record<string, unknown>|null}
+ */
+function findRecommendationForListing(listing) {
+  return resolveRecommendationForListing(listing, {
+    profile: cachedRecommendationResult?.profile ?? recommendationProfile,
+    cachedResult: cachedRecommendationResult,
+    allListings: cachedListings
+  });
+}
+
+/**
+ * @param {string} recordId
+ * @returns {Record<string, unknown>|null}
+ */
+function getRecommendationById(recordId) {
+  const listing =
+    cachedListings.find((item) => String(item.id) === String(recordId)) ??
+    (String(selectedListing?.id ?? '') === String(recordId) ? selectedListing : null);
+  if (!listing) return selectedRecommendation;
+  return resolveRecommendationForListing(listing, {
+    profile: cachedRecommendationResult?.profile ?? recommendationProfile,
+    cachedResult: cachedRecommendationResult,
+    allListings: cachedListings
+  });
+}
+
+function syncRecommendationCache() {
+  const result = ensureRecommendationCache(cachedListings, recommendationProfile);
+  if (result) {
+    cachedRecommendationResult = result;
+    recommendationGenerated = true;
+  }
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @param {Record<string, unknown>|null} [recommendation]
+ * @returns {Record<string, unknown>}
+ */
+function resolveWorkspaceContext(listing, recommendation = null) {
+  const rec = recommendation ?? findRecommendationForListing(listing);
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const analysis = /** @type {Record<string, unknown>} */ (listing.latest_analysis ?? {});
+
+  /** @type {Record<string, unknown>} */
+  const ctx = {
+    listing,
+    recommendation: rec,
+    limitedData: !listing.title || !listing.price,
+    aiScore: analysis.ai_score ?? analysis.decision_score ?? rec?.decision_score ?? '—',
+    qualityScore: rec?.quality_score ?? analysis.quality_score ?? '—',
+    riskScore: rec?.risk_score ?? analysis.risk_score ?? '—',
+    riskLabel: '—',
+    decisionScore: '—',
+    confidenceScore: '—',
+    explanationScore: '—',
+    reportScore: '—',
+    trustScore: '—',
+    decisionLabel: '—',
+    riskLevel: '—',
+    decisionSummary: rec?.reasons_text ?? 'Mevcut verilerle karar değerlendirmesi yapılabilir.',
+    hasOwnershipCost: false,
+    hasNegotiation: false,
+    hasCompare: compareSelectedIds.length >= 2,
+    duplicateLabel: null,
+    missingCount: 0,
+    scenarioTeaser: 'Fiyat, maliyet ve risk senaryolarını tahmini olarak değerlendirin.',
+    dataCompleteness: 0,
+    entityConfidence: 0,
+    learningEventCount: cachedLearningEvents.length,
+    hasPersonalization: false
+  };
+
+  try {
+    const pool = runListingDataPoolEngine([listing], { skipCache: true });
+    ctx.dataCompleteness = Number(pool.avgDataCompleteness ?? 0);
+    ctx.entityConfidence = Number(pool.avgEntityConfidence ?? 0);
+  } catch {
+    ctx.dataCompleteness = 0;
+    ctx.entityConfidence = 0;
+  }
+
+  if (!rec?.id) {
+    const analysis = /** @type {Record<string, unknown>} */ (listing.latest_analysis ?? {});
+    if (analysis.quality_score != null) ctx.qualityScore = analysis.quality_score;
+    if (analysis.risk_score != null) ctx.riskScore = analysis.risk_score;
+    if (analysis.decision_score != null) ctx.decisionScore = analysis.decision_score;
+    return ctx;
+  }
+
+  try {
+    const pdInput = buildPurchaseDecisionInput(rec, profile);
+    const pd = runPurchaseDecisionEngine(pdInput, { skipCache: true });
+    const expInput = buildExplainabilityInput(rec, profile);
+    const exp = runExplainabilityEngine(expInput, { skipCache: true });
+    const cost = runOwnershipCostSimulator(buildOcInput(rec, profile), { skipCache: true });
+    const edr = runExecutiveReportEngine(buildExecutiveReportInput(rec, profile), { skipCache: true });
+
+    ctx.decisionScore = pd?.decisionScore ?? '—';
+    ctx.confidenceScore = pd?.confidenceScore ?? '—';
+    ctx.decisionLabel = pd?.decisionLabel ?? '—';
+    ctx.riskLevel = pd?.riskLevel ?? '—';
+    ctx.riskLabel = pd?.riskLabel ?? ctx.riskScore;
+    ctx.explanationScore = exp?.explanationScore ?? '—';
+    ctx.trustScore = exp?.decisionSnapshot?.trustScore ?? rec?.trust_score ?? '—';
+    ctx.reportScore = edr?.reportScore ?? '—';
+    ctx.hasOwnershipCost = Boolean(cost?.total_cost);
+    ctx.hasNegotiation = Array.isArray(pd?.negotiationScenario) && pd.negotiationScenario.length > 0;
+    ctx.decisionSummary = pd?.summary ?? ctx.decisionSummary;
+    ctx.scenarioTeaser = `Tahmini karar skoru ${pd?.decisionScore ?? '—'}; senaryolarla etkiyi inceleyin.`;
+
+    const personalization = runPersonalizationSuite(rec, pd, {}, profile);
+    ctx.hasPersonalization = Boolean(personalization?.personalization);
+  } catch {
+    ctx.limitedData = true;
+  }
+
+  return ctx;
+}
+
+/**
+ * @param {HTMLElement} root
+ */
+function bindWorkspaceEvents(root) {
+  root.querySelectorAll('[data-ws-action]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.hasAttribute('disabled')) return;
+      const action = btn.getAttribute('data-ws-action');
+      const listingId = root.querySelector('[data-ws-listing-id]')?.getAttribute('data-ws-listing-id');
+      if (!listingId || !selectedListing) return;
+
+      const rec = selectedRecommendation ?? findRecommendationForListing(selectedListing);
+      const drawerContext = {
+        listingId,
+        recommendationId: String(rec?.id ?? ''),
+        compareSelectionKey: buildCompareSelectionKey(compareSelectedIds)
+      };
+      const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+
+      if (action === 'purchase') openAiListingsDrawer(root, 'purchase', drawerContext);
+      else if (action === 'explain') openAiListingsDrawer(root, 'explain', drawerContext);
+      else if (action === 'report') openAiListingsDrawer(root, 'report', drawerContext);
+      else if (action === 'compare') {
+        if (activeAdminView !== 'recommendations') setAdminView('recommendations');
+        compareModeEnabled = true;
+        if (!compareSelectedIds.includes(listingId)) compareSelectedIds.push(listingId);
+        renderRecommendationsView();
+        openAiListingsDrawer(root, 'compare', {
+          ...drawerContext,
+          compareSelectionKey: buildCompareSelectionKey(compareSelectedIds)
+        });
+      } else if (action === 'scenario') {
+        openAiListingsDrawer(root, 'scenario', { ...drawerContext, scenarioKey: 'price_minus_5' });
+      } else if (action === 'negotiation') {
+        openAiListingsDrawer(root, 'negotiation', drawerContext);
+      } else if (action === 'quality') {
+        openAiListingsDrawer(root, 'quality', drawerContext);
+      } else if (action === 'learning') {
+        openLearningInsightsPanel(root, selectedListing, rec);
+      } else if (action === 'preferences') {
+        openPreferenceProfilePanel(root, selectedListing, rec, profile);
+      } else if (action === 'data_pool') {
+        openDataPoolPanel(root, selectedListing);
+      }
+    });
+  });
+}
+
+function closeScenarioPanel(root) {
+  const host = root.querySelector('#ai-ss-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-ss-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--ss-open');
+}
+
+function openScenarioPanel(root, recordId, scenarioKey = 'price_minus_5', options = {}) {
+  const host = root.querySelector('#ai-ss-panel-host') ?? document.querySelector('#ai-ss-panel-host');
+  if (!host) return;
+
+  const rec = getRecommendationById(recordId) ?? selectedRecommendation;
+
+  const title = options.title ?? getDrawerTitleTr('scenario');
+
+  if (!rec?.id) {
+    host.innerHTML = buildScenarioPanelHtml(null, { title });
+    host.hidden = false;
+    document.body.classList.add('ai-listings-admin--ss-open');
+    bindScenarioPanelClose(host, root, recordId);
+    return;
+  }
+
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const simulation = runScenarioSimulator(buildScenarioInput(rec, profile, scenarioKey), { skipCache: false });
+  host.innerHTML = buildScenarioPanelHtml(simulation, { title: String(rec.title ?? title) });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--ss-open');
+  bindScenarioPanelClose(host, root, recordId, scenarioKey);
+}
+
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} root
+ * @param {string} recordId
+ * @param {string} [scenarioKey]
+ */
+function bindScenarioPanelClose(host, root, recordId, scenarioKey = 'price_minus_5') {
+  const close = () => {
+    closeScenarioPanel(root);
+    closeAiListingsDrawer(root);
+  };
+  host.querySelector('[data-ss-action="close"]')?.addEventListener('click', close);
+  host.querySelector('[data-ss-backdrop]')?.addEventListener('click', close);
+  host.querySelectorAll('[data-ss-scenario]').forEach((preset) => {
+    preset.addEventListener('click', () => {
+      const key = preset.getAttribute('data-ss-scenario');
+      if (key) {
+        aiDrawerState = openDrawerState(aiDrawerState, 'scenario', { scenarioKey: key });
+        openScenarioPanel(root, recordId, key, { title: getDrawerTitleTr('scenario') });
+      }
+    });
+  });
 }
 
 function closeAllDrawers() {
@@ -1294,20 +1702,159 @@ function toggleFilterPanel(forceOpen) {
 }
 
 function filterListingsBySearch(listings) {
-  const query = searchQuery.trim().toLowerCase();
-  if (!query) return listings;
-  return listings.filter((listing) => {
-    const haystack = [
-      listing.title,
-      listing.category,
-      listing.status,
-      listing.source_type,
-      listing.location,
-      listing.id
-    ]
-      .map((value) => String(value ?? '').toLowerCase())
-      .join(' ');
-    return haystack.includes(query);
+  return filterListingsForDisplay(listings, searchQuery);
+}
+
+function clearWorkspaceModuleCaches() {
+  clearPurchaseDecisionMemoCache();
+  clearExplainabilityMemoCache();
+  clearExecutiveReportMemoCache();
+  clearScenarioSimulatorMemoCache();
+}
+
+/**
+ * @param {Record<string, unknown>} listing
+ * @returns {{ listing: Record<string, unknown>, recommendation: Record<string, unknown>|null }}
+ */
+function normalizeSelectedContext(listing) {
+  const rec = findRecommendationForListing(listing);
+  selectedListing = listing;
+  selectedRecommendation = rec;
+  return { listing, recommendation: rec };
+}
+
+/**
+ * @param {Record<string, unknown>|null} listing
+ * @param {{ loadingDetail?: boolean }} [options]
+ */
+function renderDecisionWorkspace(listing, options = {}) {
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+
+  if (!listing) {
+    detailEl.innerHTML = `
+      <div class="ai-ws-overview-wrap">
+        ${buildDecisionWorkspaceEmptyHtml()}
+      </div>`;
+    bindWorkspaceEmptyEvents(detailEl);
+    return;
+  }
+
+  const listingId = String(listing.id ?? '');
+  if (listingId && listingId !== lastWorkspaceListingId) {
+    clearWorkspaceModuleCaches();
+    lastWorkspaceListingId = listingId;
+  }
+
+  const ctx = resolveWorkspaceContext(listing, selectedRecommendation);
+  const existing = detailEl.querySelector('.ai-decision-workspace');
+  if (existing) {
+    existing.outerHTML = buildDecisionWorkspaceHtml(ctx);
+  } else {
+    detailEl.innerHTML = buildDecisionWorkspaceHtml(ctx);
+  }
+  bindWorkspaceEvents(detailEl);
+
+  const mount = detailEl.querySelector('#ai-ws-detail-mount');
+  if (mount && options.loadingDetail) {
+    mount.innerHTML = buildWorkspaceDetailSkeletonHtml();
+  }
+}
+
+function resetAiListingsDrawerState() {
+  aiDrawerState = resetDrawerState();
+}
+
+function closeAiListingsDrawer(root = document) {
+  closeAllAiPanelHosts(root);
+  aiDrawerState = closeDrawerState(aiDrawerState);
+  syncDrawerBodyScroll();
+}
+
+/**
+ * @param {Document|HTMLElement} root
+ */
+function closeAllAiPanelHosts(root) {
+  closeDecisionCoachPanel(root);
+  closeDecisionSimulatorPanel(root);
+  closeDecisionReportPanel(root);
+  closeOwnershipCostPanel(root);
+  closePurchaseDecisionPanel(root);
+  closeExplainabilityPanel(root);
+  closeExecutiveReportPanel(root);
+  closeComparePanel(root);
+  closeScenarioPanel(root);
+}
+
+function syncDrawerBodyScroll() {
+  const open = isDrawerOpen(aiDrawerState);
+  document.body.classList.toggle('ai-listings-admin--ai-drawer-open', open);
+  if (!open) {
+    getActiveDrawerBodyClasses().forEach((cls) => document.body.classList.remove(cls));
+  }
+}
+
+/**
+ * @param {HTMLElement} root
+ * @param {string} type
+ * @param {Record<string, unknown>} [context]
+ */
+function openAiListingsDrawer(root, type, context = {}) {
+  closeAiListingsDrawer(root);
+
+  const listingId = String(context.listingId ?? selectedListing?.id ?? '');
+  const recommendationId = String(context.recommendationId ?? selectedRecommendation?.id ?? '');
+  const compareSelectionKey =
+    context.compareSelectionKey ?? buildCompareSelectionKey(compareSelectedIds);
+
+  aiDrawerState = openDrawerState(aiDrawerState, type, {
+    listingId,
+    recommendationId,
+    compareSelectionKey,
+    scenarioKey: String(context.scenarioKey ?? 'price_minus_5')
+  });
+
+  renderActiveAiListingsDrawer(root);
+
+  const bodyClass = getDrawerBodyClass(type);
+  if (bodyClass) document.body.classList.add(bodyClass);
+  syncDrawerBodyScroll();
+}
+
+/**
+ * @param {HTMLElement} root
+ */
+function renderActiveAiListingsDrawer(root) {
+  const type = aiDrawerState.activeDrawerType;
+  if (!type) return;
+
+  const listingId = aiDrawerState.activeDrawerListingId;
+  const title = getDrawerTitleTr(type);
+
+  if (type === 'purchase' || type === 'negotiation') {
+    openPurchaseDecisionPanel(root, listingId, { title, focus: type });
+  } else if (type === 'explain' || type === 'quality') {
+    openExplainabilityPanel(root, listingId, { title, focus: type });
+  } else if (type === 'report') {
+    openExecutiveReportPanel(root, listingId, { title });
+  } else if (type === 'compare') {
+    openComparePanel(root, { title });
+  } else if (type === 'scenario') {
+    openScenarioPanel(root, listingId, aiDrawerState.scenarioKey, { title });
+  }
+}
+
+/**
+ * @param {HTMLElement} root
+ */
+function bindWorkspaceEmptyEvents(root) {
+  root.querySelectorAll('[data-ws-empty-action]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-ws-empty-action');
+      if (action === 'recommendations') setAdminView('recommendations');
+      else if (action === 'create') openCreateDrawer();
+      else if (action === 'repository') setAdminView('repository');
+    });
   });
 }
 
@@ -1331,13 +1878,27 @@ function renderListingsList(listings) {
     )
     .join('');
 
+  const selectListingCard = (btn) => {
+    const id = btn.getAttribute('data-listing-id');
+    const listing = listings.find((item) => String(item.id) === id);
+    if (listing) {
+      normalizeSelectedContext(listing);
+      listEl.querySelectorAll('[data-listing-id]').forEach((card) => {
+        const isActive = card === btn;
+        card.classList.toggle('ai-listings-admin__listing-card--active', isActive);
+        card.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      void showListingDetail(listing);
+      toggleFilterPanel(false);
+    }
+  };
+
   listEl.querySelectorAll('[data-listing-id]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-listing-id');
-      const listing = listings.find((item) => String(item.id) === id);
-      if (listing) {
-        showListingDetail(listing);
-        toggleFilterPanel(false);
+    btn.addEventListener('click', () => selectListingCard(btn));
+    btn.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectListingCard(btn);
       }
     });
   });
@@ -1430,6 +1991,7 @@ async function loadListings() {
   }
 
   cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
+  syncRecommendationCache();
   renderKpiCards(cachedListings);
   renderRepositoryKpiCards(cachedListings);
   renderAnalyticsKpiCards(cachedListings);
@@ -1449,31 +2011,28 @@ async function loadListings() {
   setStatus(`${cachedListings.length} ilan yüklendi.`, 'success');
 }
 
-async function showListingDetail(listing) {
-  selectedListing = listing;
-  const detailEl = $('ai-listings-detail');
-  if (!detailEl) return;
+function mountGlobalPanelHosts() {
+  const main = $('ai-listings-admin');
+  if (!main || main.querySelector('#ai-ss-panel-host')) return;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = [
+    buildExecutiveDecisionShellHtml(),
+    buildExplainabilityShellHtml(),
+    buildExecutiveReportShellHtml(),
+    buildCompareShellHtml(),
+    buildScenarioShellHtml()
+  ].join('');
+  main.appendChild(wrap);
+}
 
-  const id = String(listing.id);
-  showDetailSkeleton();
-  renderListingsList(cachedListings);
-
-  const [detailRes, eventsRes] = await Promise.all([
-    edgeRequest(`/listings/${id}`),
-    edgeRequest(`/listings/${id}/events`)
-  ]);
-
-  if (!detailRes.ok) {
-    detailEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(detailRes.message)}</p>`;
-    return;
-  }
-
-  const data = /** @type {Record<string, unknown>} */ (detailRes.data ?? {});
-  const listingData = /** @type {Record<string, unknown>} */ (data.listing ?? listing);
-  const latest = /** @type {Record<string, unknown>|null} */ (data.latest_analysis ?? null);
-  const events = /** @type {Array<Record<string, unknown>>} */ (
-    eventsRes.ok ? eventsRes.data?.events ?? [] : []
-  );
+/**
+ * @param {HTMLElement} detailEl
+ * @param {Record<string, unknown>} listingData
+ * @param {Record<string, unknown>|null} latest
+ * @param {Array<Record<string, unknown>>} events
+ */
+function renderListingDetailContent(detailEl, listingData, latest, events) {
+  const id = String(listingData.id ?? '');
   const status = String(listingData.status ?? 'draft');
 
   const matchedListingId = extractDuplicateFromEvents(events).matched_listing_id;
@@ -1481,16 +2040,22 @@ async function showListingDetail(listing) {
     ? cachedListings.find((item) => String(item.id) === String(matchedListingId)) ?? { id: matchedListingId }
     : null;
 
-  detailEl.innerHTML = `
-    ${buildPremiumDashboardHtml(listingData, latest, events, status, matchedListing)}
-    <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
-      <label>
-        Red nedeni
-        <textarea id="ai-listings-reject-reason" rows="3" placeholder="Bu ilanın neden reddedildiğini açıklayın"></textarea>
-      </label>
-      <button type="button" id="ai-listings-confirm-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--warn">Reddi onayla</button>
-      <button type="button" id="ai-listings-cancel-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">İptal</button>
-    </div>`;
+  selectedRecommendation = findRecommendationForListing(listingData);
+  renderDecisionWorkspace(listingData);
+
+  const detailMount = detailEl.querySelector('#ai-ws-detail-mount');
+  if (detailMount) {
+    detailMount.innerHTML = `
+      ${buildPremiumDashboardHtml(listingData, latest, events, status, matchedListing)}
+      <div id="ai-listings-reject-form" class="ai-listings-admin__reject-form" hidden>
+        <label>
+          Red nedeni
+          <textarea id="ai-listings-reject-reason" rows="3" placeholder="Bu ilanın neden reddedildiğini açıklayın"></textarea>
+        </label>
+        <button type="button" id="ai-listings-confirm-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--warn">Reddi onayla</button>
+        <button type="button" id="ai-listings-cancel-reject-btn" class="ai-listings-admin__btn ai-listings-admin__btn--ghost">İptal</button>
+      </div>`;
+  }
 
   detailEl.classList.add('ai-listings-admin__detail--loaded');
   requestAnimationFrame(() => detailEl.classList.remove('ai-listings-admin__detail--loaded'));
@@ -1533,6 +2098,75 @@ async function showListingDetail(listing) {
   bindDuplicateDetailActions(detailEl);
 }
 
+async function showListingDetail(listing) {
+  normalizeSelectedContext(listing);
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+
+  const id = String(listing.id ?? '').trim();
+  if (!id) return;
+
+  const seq = ++detailRequestSeq;
+  const cached = cachedListings.find((item) => String(item.id) === id) ?? listing;
+
+  mountGlobalPanelHosts();
+  renderDecisionWorkspace(cached, { loadingDetail: true });
+  renderListingsList(cachedListings);
+
+  try {
+    const [detailRes, eventsRes] = await Promise.all([
+      edgeRequest(`/listings/${id}`),
+      edgeRequest(`/listings/${id}/events`)
+    ]);
+
+    if (seq !== detailRequestSeq) return;
+
+    let listingData = /** @type {Record<string, unknown>} */ ({ ...cached });
+    let latest = /** @type {Record<string, unknown>|null} */ (extractLatestAnalysis(cached));
+    let events = /** @type {Array<Record<string, unknown>>} */ ([]);
+
+    if (detailRes.ok) {
+      const data = /** @type {Record<string, unknown>} */ (detailRes.data ?? {});
+      listingData = /** @type {Record<string, unknown>} */ (data.listing ?? cached);
+      latest = /** @type {Record<string, unknown>|null} */ (data.latest_analysis ?? latest);
+    } else if (!latest) {
+      renderDecisionWorkspace(listing);
+      const mount = detailEl.querySelector('#ai-ws-detail-mount');
+      if (mount) {
+        mount.innerHTML = buildWorkspaceErrorHtml(translateAdminErrorMessage(detailRes.message));
+      }
+      setStatus(detailRes.message, 'error');
+      return;
+    } else {
+      setStatus(`Detay API yanıt vermedi; önbellek verisi gösteriliyor. (${detailRes.message})`, 'info');
+    }
+
+    if (eventsRes.ok) {
+      events = /** @type {Array<Record<string, unknown>>} */ (eventsRes.data?.events ?? []);
+    }
+
+    renderListingDetailContent(detailEl, listingData, latest, events);
+  } catch (error) {
+    if (seq !== detailRequestSeq) return;
+
+    const latest = extractLatestAnalysis(cached);
+    if (latest || cached.title) {
+      renderListingDetailContent(detailEl, cached, latest, []);
+      setStatus('Detay yüklenirken hata oluştu; önbellek verisi gösteriliyor.', 'error');
+      console.error('[ai-listings-admin] showListingDetail failed:', error);
+      return;
+    }
+
+    renderDecisionWorkspace(listing);
+    const mount = detailEl.querySelector('#ai-ws-detail-mount');
+    if (mount) {
+      mount.innerHTML = buildWorkspaceErrorHtml(formatErrorFallbackLabel('detail'));
+    }
+    setStatus('İlan detayı yüklenemedi.', 'error');
+    console.error('[ai-listings-admin] showListingDetail failed:', error);
+  }
+}
+
 function bindDuplicateDetailActions(root) {
   root.querySelectorAll('[data-duplicate-detail-action]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1571,6 +2205,8 @@ async function runQaAction(id, action, body) {
   const labels = {
     'submit-review': 'İncelemeye gönderiliyor',
     approve: 'Onaylanıyor',
+    publish: 'Yayınlanıyor',
+    unpublish: 'Yayından kaldırılıyor',
     reject: 'Reddediliyor',
     archive: 'Arşivleniyor',
     reanalyze: 'Yeniden analiz ediliyor'
@@ -2029,7 +2665,13 @@ function bindEvents() {
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeAllDrawers();
+    if (event.key === 'Escape') {
+      if (isDrawerOpen(aiDrawerState)) {
+        closeAiListingsDrawer(document);
+      } else {
+        closeAllDrawers();
+      }
+    }
   });
 
   document.addEventListener('click', (event) => {
@@ -2038,26 +2680,47 @@ function bindEvents() {
   });
 }
 
-export function initAiListingsAdmin() {
-  const state = getAdminPanelState(storage());
-
-  if (state === 'disabled') {
-    renderDisabledState();
+export async function initAiListingsAdmin() {
+  const sessionAccess = await verifyAdminSessionAccess();
+  if (!sessionAccess.sessionIsAdmin) {
+    await enforceAdminRoute({ returnTo: window.location.pathname });
     return;
   }
 
-  if (state === 'no-secret') {
+  const state = resolveAdminPanelAccess(storage(), sessionAccess);
+  if (state === 'disabled') {
+    renderAdminForbiddenHtml($('ai-listings-admin-root'), { showPublicLink: true });
+    return;
+  }
+
+  if (!getEdgeSecret(storage())) {
     renderSecretWarning();
   }
 
   renderStatusFilterChips();
+  mountGlobalPanelHosts();
   bindEvents();
   setAdminView('decision');
   loadListings();
 }
 
+async function bootstrapAiListingsAdmin() {
+  try {
+    await initAiListingsAdmin();
+  } catch (error) {
+    console.error('[ai-listings-admin] bootstrap failed:', error);
+    const root = $('ai-listings-admin-root');
+    if (root) {
+      root.innerHTML =
+        '<div class="ai-listings-admin__gate"><h2>Karar Merkezi yüklenemedi</h2><p>Sayfayı yenileyin veya admin panelinden tekrar giriş yapın.</p></div>';
+    }
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initAiListingsAdmin);
+  document.addEventListener('DOMContentLoaded', () => {
+    void bootstrapAiListingsAdmin();
+  });
 } else {
-  initAiListingsAdmin();
+  void bootstrapAiListingsAdmin();
 }

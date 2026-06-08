@@ -43,7 +43,7 @@ const requiredSitemapPaths = [
   'https://www.istebul.com/veri-kaynaklari/',
   'https://www.istebul.com/karar-asistani/',
   'https://www.istebul.com/planlar',
-  'https://www.istebul.com/ilanlar/',
+  'https://www.istebul.com/secenekler/',
   'https://www.istebul.com/karsilastir/',
   'https://www.istebul.com/yardim.html',
   'https://www.istebul.com/blog',
