@@ -258,6 +258,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     await expect(page.locator('[data-comparison-empty-state]')).toBeVisible({ timeout: 15000 });
     await expect(page.locator('[data-comparison-ai-commentary]')).toHaveCount(0);
+    await expect(page.locator('[data-comparison-decision-cta]')).toHaveCount(0);
   });
 
   test('karsilastir dolu durumda karar özeti ve dört etiket görünür', async ({ page }) => {
@@ -309,6 +310,64 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(summary.locator('[data-summary-field="lowest-risk"] span').first()).toHaveText('En düşük risk profili');
     await expect(summary.locator('[data-summary-field="highest-fit"] span').first()).toHaveText('En yüksek ihtiyaç uyumu');
     await expect(summary.locator('[data-summary-field="most-balanced"] span').first()).toHaveText('En dengeli seçenek');
+  });
+
+  test('karsilastir dolu durumda karar merkezine dönüş CTA görünür', async ({ page }) => {
+    const comparisonItems = [
+      {
+        id: 'cmp-e2e-cta-1',
+        signature: 'e2e:arac:cta-1',
+        sourceType: 'Test',
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        title: 'E2E Seçenek A',
+        price: 500000,
+        periodicCost: 120000,
+        monthlyPayment: 15000,
+        totalPayment: 600000,
+        score: 78,
+        riskLevel: 'Kontrollü risk',
+        createdAt: '2026-01-01T00:00:00.000Z'
+      },
+      {
+        id: 'cmp-e2e-cta-2',
+        signature: 'e2e:arac:cta-2',
+        sourceType: 'Test',
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        title: 'E2E Seçenek B',
+        price: 450000,
+        periodicCost: 95000,
+        monthlyPayment: 14000,
+        totalPayment: 550000,
+        score: 88,
+        riskLevel: 'Düşük risk',
+        createdAt: '2026-01-01T00:00:00.000Z'
+      }
+    ];
+
+    await page.addInitScript((items) => {
+      localStorage.setItem('istebul_comparison_items', JSON.stringify(items));
+    }, comparisonItems);
+
+    await page.goto('/karsilastir/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    const decisionCta = page.locator('[data-comparison-decision-cta]');
+    await expect(decisionCta).toBeVisible({ timeout: 15000 });
+
+    const primaryCta = decisionCta.locator('[data-comparison-decision-cta-primary]');
+    await expect(primaryCta).toBeVisible();
+    await expect(primaryCta).toHaveText(/Karar analizine devam et/i);
+    await expect(primaryCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(primaryCta).toHaveClass(/btn-primary/);
+
+    const secondaryCta = decisionCta.locator('[data-comparison-decision-cta-secondary]');
+    await expect(secondaryCta).toBeVisible();
+    await expect(secondaryCta).toHaveText(/Daha fazla seçenek incele/i);
+    await expect(secondaryCta).toHaveAttribute('href', /\/secenekler\/?$/);
+    await expect(secondaryCta).toHaveClass(/btn-outline/);
   });
 
   test('karsilastir dolu durumda AI karar yorumu görünür ve açıklayıcıdır', async ({ page }) => {
