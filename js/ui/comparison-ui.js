@@ -5,6 +5,10 @@ import {
     resolvePaywallState
 } from '../features/billing/paywall-v1.js';
 import { PRO_FEATURE } from '../features/billing/pro-features.js';
+import {
+    buildComparisonDecisionSummary,
+    renderComparisonDecisionSummaryHtml
+} from './comparison-decision-summary.js';
 
 export class ComparisonUI {
     renderComparison(items = []) {
@@ -13,10 +17,10 @@ export class ComparisonUI {
 
         if (!Array.isArray(items) || !items.length) {
             container.innerHTML =
-                '<div class="empty-state">' +
+                '<div class="empty-state comparison-empty-state" data-comparison-empty-state>' +
                     '<i data-lucide="columns-3"></i>' +
-                    '<h3>Karşılaştırma listeniz boş</h3>' +
-                    '<p>Karar analizi sonuçlarından veya seçenek kartlarından &quot;Karşılaştır&quot; ile ekleyin. Skor, maliyet, risk, uygunluk ve gerekçe yan yana okunur.</p>' +
+                    '<h3>Karar öncesi seçenekleri burada toplayın</h3>' +
+                    '<p>Önce karar asistanından öneri alın veya seçenek kartlarından ekleyin; ardından TCO, risk ve ihtiyaç uyumunu yan yana okuyarak net bir karar özeti oluşturun.</p>' +
                     '<div class="empty-state-actions">' +
                       '<a href="/karar-asistani/" class="btn btn-primary">Karar analizini başlat</a>' +
                       '<a href="/secenekler/" class="btn btn-outline">Seçenekleri incele</a>' +
@@ -33,6 +37,8 @@ export class ComparisonUI {
             monthlyPayment: Math.max(...items.map((item) => Number(item.monthlyPayment || 0)), 1)
         };
 
+        const decisionSummary = buildComparisonDecisionSummary(items);
+
         container.innerHTML =
             '<div class="comparison-toolbar">' +
                 '<div>' +
@@ -43,6 +49,7 @@ export class ComparisonUI {
                 '<button type="button" class="btn btn-outline" data-comparison-clear><i data-lucide="trash-2"></i> Temizle</button>' +
                 '<button type="button" class="btn btn-outline" data-upsell-trigger="decision_export" data-upsell-placement="compare_export"><i data-lucide="file-down"></i> PDF export</button>' +
             '</div>' +
+            renderComparisonDecisionSummaryHtml(decisionSummary, (value) => this.escapeHtml(value)) +
             '<div class="comparison-grid">' + items.map((item) => this.getComparisonCardMarkup(item, maxValues, items)).join('') + '</div>' +
             this.getComparisonAdvancedSection(items);
 

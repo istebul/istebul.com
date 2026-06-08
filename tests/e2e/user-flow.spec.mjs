@@ -220,6 +220,83 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('#assistant-category-rail .assistant-category').first()).toBeVisible();
   });
 
+  test('karsilastir boş durumda karar odaklı başlık ve CTA hiyerarşisi görünür', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.removeItem('istebul_comparison_items');
+      localStorage.removeItem('istebu_comparison_items');
+    });
+
+    await page.goto('/karsilastir/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'compare');
+
+    const emptyState = page.locator('[data-comparison-empty-state]');
+    await expect(emptyState).toBeVisible({ timeout: 15000 });
+    await expect(emptyState.getByRole('heading', { name: /Karar öncesi seçenekleri burada toplayın/i })).toBeVisible();
+
+    const primaryCta = emptyState.getByRole('link', { name: /Karar analizini başlat/i });
+    await expect(primaryCta).toBeVisible();
+    await expect(primaryCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(primaryCta).toHaveClass(/btn-primary/);
+
+    const secondaryCta = emptyState.getByRole('link', { name: /Seçenekleri incele/i });
+    await expect(secondaryCta).toBeVisible();
+    await expect(secondaryCta).toHaveAttribute('href', /\/secenekler\/?$/);
+    await expect(secondaryCta).toHaveClass(/btn-outline/);
+  });
+
+  test('karsilastir dolu durumda karar özeti ve dört etiket görünür', async ({ page }) => {
+    const comparisonItems = [
+      {
+        id: 'cmp-e2e-1',
+        signature: 'e2e:arac:1',
+        sourceType: 'Test',
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        title: 'E2E Seçenek A',
+        price: 500000,
+        periodicCost: 120000,
+        monthlyPayment: 15000,
+        totalPayment: 600000,
+        score: 78,
+        riskLevel: 'Kontrollü risk',
+        createdAt: '2026-01-01T00:00:00.000Z'
+      },
+      {
+        id: 'cmp-e2e-2',
+        signature: 'e2e:arac:2',
+        sourceType: 'Test',
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        title: 'E2E Seçenek B',
+        price: 450000,
+        periodicCost: 95000,
+        monthlyPayment: 14000,
+        totalPayment: 550000,
+        score: 88,
+        riskLevel: 'Düşük risk',
+        createdAt: '2026-01-01T00:00:00.000Z'
+      }
+    ];
+
+    await page.addInitScript((items) => {
+      localStorage.setItem('istebul_comparison_items', JSON.stringify(items));
+    }, comparisonItems);
+
+    await page.goto('/karsilastir/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'compare');
+
+    const summary = page.locator('[data-comparison-decision-summary]');
+    await expect(summary).toBeVisible({ timeout: 15000 });
+    await expect(summary.getByText('En düşük TCO')).toBeVisible();
+    await expect(summary.getByText('En düşük risk profili')).toBeVisible();
+    await expect(summary.getByText('En yüksek ihtiyaç uyumu')).toBeVisible();
+    await expect(summary.getByText('En dengeli seçenek')).toBeVisible();
+  });
+
   test('karar asistanı karşılaştırma önizlemesinde merkez CTA görünür', async ({ page }) => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
