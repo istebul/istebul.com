@@ -16,6 +16,7 @@
   margin: 0 0 1.5rem;
   padding-bottom: var(--dos-sticky-offset);
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #0f172a;
 }
 
 .dos-layout {
