@@ -1,0 +1,83 @@
+/* Faz 2B-liteA — cross-hub decision journey strip */
+
+.ib-decision-journey-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin: 0 0 1.25rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--primary-color, #2563eb) 16%, #e2e8f0);
+  background: color-mix(in srgb, var(--primary-color, #2563eb) 4%, #fff);
+}
+
+.ib-decision-journey-kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary, #64748b);
+  white-space: nowrap;
+}
+
+.ib-decision-journey-steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ib-decision-journey-steps li {
+  display: flex;
+  align-items: center;
+}
+
+.ib-decision-journey-steps li:not(:last-child)::after {
+  content: '›';
+  margin-left: 0.35rem;
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.ib-decision-journey-step {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-secondary, #475569);
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.ib-decision-journey-step:hover {
+  color: var(--primary-color, #2563eb);
+  background: color-mix(in srgb, var(--primary-color, #2563eb) 8%, #fff);
+}
+
+.ib-decision-journey-step.is-active {
+  color: var(--primary-color, #2563eb);
+  border-color: color-mix(in srgb, var(--primary-color, #2563eb) 28%, #e2e8f0);
+  background: color-mix(in srgb, var(--primary-color, #2563eb) 10%, #fff);
+  pointer-events: none;
+}
+
+#page-karar-analizi .ib-decision-journey-strip {
+  margin: 0 auto 1rem;
+  max-width: var(--container-max, 1200px);
+  width: calc(100% - 2rem);
+}
+
+@media (max-width: 640px) {
+  .ib-decision-journey-strip {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
