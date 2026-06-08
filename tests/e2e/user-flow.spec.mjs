@@ -326,6 +326,56 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     await expect(page.locator('[data-decision-result-summary]')).toHaveCount(0);
     await expect(page.locator('[data-decision-result-ai-rationale]')).toHaveCount(0);
+    await expect(page.locator('[data-decision-result-share]')).toHaveCount(0);
+  });
+
+  test('karar asistanı sonuç ekranında decision share card görünür ve kopyalama başarılı', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.waitForSelector('#premium-karar-analizi-root #assistant-results', { state: 'attached', timeout: 15000 });
+    await page.waitForSelector('#assistant-category-rail .assistant-category', { state: 'attached', timeout: 15000 });
+    await page.waitForFunction(
+      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+      null,
+      { timeout: 15000 }
+    );
+
+    const renderStatus = await page.evaluate(() => {
+      const app = window.app;
+      app.assistantCategory = 'arac';
+      app.assistantAnswers = {
+        province: 'İstanbul',
+        district: 'Kadıköy',
+        carModel: 'Toyota|Corolla',
+        usage: 'city',
+        budget: '1850000',
+        fuel: 'hybrid',
+        body: 'sedan',
+        priority: 'lowCost'
+      };
+
+      const categoryConfig = app.getResolvedDecisionAssistantConfig()?.arac;
+      if (!categoryConfig) return { ok: false, reason: 'arac config missing' };
+
+      const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+      if (!result?.recommendations?.[0]) return { ok: false, reason: 'no primary recommendation' };
+
+      app.ui.renderDecisionResults(result);
+      return { ok: true };
+    });
+    expect(renderStatus).toEqual({ ok: true });
+
+    const shareCard = page.locator('[data-decision-result-share]');
+    await expect(shareCard).toBeVisible({ timeout: 15000 });
+    await expect(shareCard.getByRole('heading', { name: /Karar özetini paylaş/i })).toBeVisible();
+    await expect(shareCard.getByRole('button', { name: /Karar özetini kopyala/i })).toBeVisible();
+
+    await shareCard.getByRole('button', { name: /Karar özetini kopyala/i }).click();
+    const feedback = shareCard.locator('[data-decision-result-share-feedback]');
+    await expect(feedback).toBeVisible({ timeout: 15000 });
+    await expect(feedback).toContainText(/panoya kopyalandı/i);
   });
 
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {
