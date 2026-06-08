@@ -1,13 +1,13 @@
 # SEO Indexability Report
 
-**Generated:** 2026-06-06  
+**Generated:** 2026-06-08  
 **Build artifact:** `dist/` present
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| noindex pages (repo scan) | 10 |
+| noindex pages (repo scan) | 14 |
 | sitemap URL count | 178 |
 | canonical issues | 0 |
 | orphan HTML (vs sitemap) | 4 |
@@ -23,7 +23,11 @@
 - `partner-basvuru.html`
 - `partner-closing-kit.html`
 - `partner-onboarding.html`
+- `dist/admin/ai-listings/index.html`
+- `dist/admin/ai-listings.html`
+- `dist/admin/forbidden.html`
 - `dist/admin/index.html`
+- `dist/admin/listings/index.html`
 - `dist/admin-panel.html`
 - `dist/ilan-analizi/index.html`
 - `dist/partner-basvuru.html`

@@ -121,7 +121,7 @@
       "subsections": [
         {
           "heading": "Sigorta ve kasko",
-          "body": "Sigorta karar analizi /sigorta/ adresinde canlıdır (koruma, teminat, prim verimliliği). Kasko modülü yakında; Auto sonuçlarında sigorta kalemi TCO içinde ayrıştırılmıştır."
+          "body": "Sigorta karar analizi /sigorta/ adresinde canlıdır (koruma, teminat, prim verimliliği). Kasko karar analizi /kasko/ adresinde canlıdır (hasar riski, teminat kapsamı, prim verimliliği). Auto sonuçlarında sigorta ve kasko kalemleri TCO içinde ayrıştırılmıştır."
         }
       ]
     },

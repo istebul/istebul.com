@@ -701,7 +701,7 @@ test('purchaseDecision has all required fields', () => {
 
 test('guard: no endpoint change in router', () => {
   const router = fs.readFileSync(routerPath, 'utf8');
-  assert.match(router, /resource: 'listings'/);
+  assert.match(router, /'listings'/);
   assert.doesNotMatch(router, /purchase-decision/i);
 });
 

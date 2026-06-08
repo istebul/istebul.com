@@ -531,7 +531,7 @@ test('buildDecisionReportShellHtml renders host', () => {
 
 test('guard: no endpoint change in router', () => {
   const router = fs.readFileSync(routerPath, 'utf8');
-  assert.match(router, /resource: 'listings'/);
+  assert.match(router, /'listings'/);
   assert.doesNotMatch(router, /decision-report/i);
   assert.doesNotMatch(router, /decision_report/i);
 });

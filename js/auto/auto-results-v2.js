@@ -481,7 +481,11 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   if (summary.text) {
     recommendation.aiSummary = summary.text;
     const summaryEl = root.querySelector('[data-auto-v2-summary-slot]');
-    if (summaryEl) summaryEl.textContent = String(summary.text).slice(0, 280);
+    if (summaryEl) {
+      summaryEl.textContent = String(summary.text).slice(0, 280);
+      summaryEl.hidden = false;
+      summaryEl.removeAttribute('hidden');
+    }
   }
 
   if (summary.insight) {
