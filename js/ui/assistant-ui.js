@@ -6,6 +6,11 @@ import {
     renderDecisionResultSummaryHtml,
     shouldRenderDecisionResultSummary
 } from './decision-result-summary.js';
+import {
+    buildDeterministicDecisionResultRationale,
+    hydrateDecisionResultAiRationale,
+    renderDecisionResultAiRationaleHtml
+} from './decision-result-ai-rationale.js';
 
 export class AssistantUI {
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
@@ -165,8 +170,16 @@ export class AssistantUI {
 
         const bestFinance = primary.financeComparisons?.[0];
         const resultSummary = buildDecisionResultSummary(result);
+        const deterministicRationale = buildDeterministicDecisionResultRationale(resultSummary);
+        const aiRationaleHtml = deterministicRationale
+            ? renderDecisionResultAiRationaleHtml(deterministicRationale, { source: 'rules', state: 'ready' })
+            : '';
         const resultSummaryHtml = shouldRenderDecisionResultSummary(result)
-            ? renderDecisionResultSummaryHtml(resultSummary, (value) => this.escapeHtml(value))
+            ? renderDecisionResultSummaryHtml(
+                resultSummary,
+                (value) => this.escapeHtml(value),
+                aiRationaleHtml
+            )
             : '';
 
         container.innerHTML =
@@ -234,6 +247,7 @@ export class AssistantUI {
 
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.loadIcons();
+        hydrateDecisionResultAiRationale(container, resultSummary);
     }
 
     getAIDecisionExtrasMarkup(result) {

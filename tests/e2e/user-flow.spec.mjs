@@ -262,6 +262,72 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(summary.locator('[data-result-summary-field="profile-summary"] span').first()).toHaveText('Karar profili özeti');
   });
 
+  test('karar asistanı sonuç ekranında AI destekli karar gerekçesi görünür', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.waitForSelector('#premium-karar-analizi-root #assistant-results', { state: 'attached', timeout: 15000 });
+    await page.waitForSelector('#assistant-category-rail .assistant-category', { state: 'attached', timeout: 15000 });
+    await page.waitForFunction(
+      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+      null,
+      { timeout: 15000 }
+    );
+
+    const renderStatus = await page.evaluate(() => {
+      const app = window.app;
+      app.assistantCategory = 'arac';
+      app.assistantAnswers = {
+        province: 'İstanbul',
+        district: 'Kadıköy',
+        carModel: 'Toyota|Corolla',
+        usage: 'city',
+        budget: '1850000',
+        fuel: 'hybrid',
+        body: 'sedan',
+        priority: 'lowCost'
+      };
+
+      const categoryConfig = app.getResolvedDecisionAssistantConfig()?.arac;
+      if (!categoryConfig) return { ok: false, reason: 'arac config missing' };
+
+      const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+      if (!result?.recommendations?.[0]) return { ok: false, reason: 'no primary recommendation' };
+
+      app.ui.renderDecisionResults(result);
+      return { ok: true };
+    });
+    expect(renderStatus).toEqual({ ok: true });
+
+    const rationale = page.locator('[data-decision-result-ai-rationale]');
+    await expect(rationale).toBeVisible({ timeout: 15000 });
+    await expect(rationale.getByRole('heading', { name: /AI destekli karar gerekçesi/i })).toBeVisible();
+    await expect(rationale).toContainText(/mevcut skor, risk, TCO ve uygunluk sinyallerini açıklar/i);
+
+    const rationaleText = await rationale.innerText();
+    expect(rationaleText).toMatch(/skor|TCO|risk|uygunluk/i);
+    expect(rationaleText).not.toMatch(/bunu seçmelisiniz|en doğru karar|kesinlikle bunu alın|tek doğru seçenek|sizin için en iyi karar/i);
+  });
+
+  test('karar asistanı hata durumunda AI karar gerekçesi görünmez', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.waitForSelector('#premium-karar-analizi-root #assistant-results', { state: 'attached', timeout: 15000 });
+    await page.waitForFunction(
+      () => typeof window.app?.ui?.renderDecisionResults === 'function',
+      null,
+      { timeout: 15000 }
+    );
+
+    await page.evaluate(() => {
+      window.app.ui.renderDecisionResults({ recommendations: [] });
+    });
+
+    await expect(page.locator('[data-decision-result-summary]')).toHaveCount(0);
+    await expect(page.locator('[data-decision-result-ai-rationale]')).toHaveCount(0);
+  });
+
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
