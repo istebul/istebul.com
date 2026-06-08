@@ -9,6 +9,15 @@ import {
     buildComparisonDecisionSummary,
     renderComparisonDecisionSummaryHtml
 } from './comparison-decision-summary.js';
+import {
+    buildDeterministicComparisonExplanation,
+    hydrateComparisonAiExplanation,
+    renderComparisonAiExplanationHtml
+} from './comparison-ai-explanation.js';
+import {
+    renderComparisonDecisionCtaHtml,
+    shouldRenderComparisonDecisionCta
+} from './comparison-decision-cta.js';
 
 export class ComparisonUI {
     renderComparison(items = []) {
@@ -38,6 +47,13 @@ export class ComparisonUI {
         };
 
         const decisionSummary = buildComparisonDecisionSummary(items);
+        const deterministicExplanation = buildDeterministicComparisonExplanation(decisionSummary, items);
+        const aiExplanationHtml = deterministicExplanation
+            ? renderComparisonAiExplanationHtml(deterministicExplanation, { source: 'rules', state: 'ready' })
+            : '';
+        const decisionCtaHtml = shouldRenderComparisonDecisionCta(items)
+            ? renderComparisonDecisionCtaHtml()
+            : '';
 
         container.innerHTML =
             '<div class="comparison-toolbar">' +
@@ -49,11 +65,16 @@ export class ComparisonUI {
                 '<button type="button" class="btn btn-outline" data-comparison-clear><i data-lucide="trash-2"></i> Temizle</button>' +
                 '<button type="button" class="btn btn-outline" data-upsell-trigger="decision_export" data-upsell-placement="compare_export"><i data-lucide="file-down"></i> PDF export</button>' +
             '</div>' +
-            renderComparisonDecisionSummaryHtml(decisionSummary, (value) => this.escapeHtml(value)) +
+            renderComparisonDecisionSummaryHtml(
+                decisionSummary,
+                (value) => this.escapeHtml(value),
+                aiExplanationHtml + decisionCtaHtml
+            ) +
             '<div class="comparison-grid">' + items.map((item) => this.getComparisonCardMarkup(item, maxValues, items)).join('') + '</div>' +
             this.getComparisonAdvancedSection(items);
 
         this.loadIcons();
+        hydrateComparisonAiExplanation(container, decisionSummary, items);
     }
 
     getComparisonCardMarkup(item, maxValues, allItems = []) {
