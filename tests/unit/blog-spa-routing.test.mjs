@@ -8,7 +8,12 @@ const root = path.resolve(import.meta.dirname, '../..');
 test('buildSeoPages skips dynamic content hubs (blog, duyurular, kampanyalar, decision surfaces)', () => {
   const seo = fs.readFileSync(path.join(root, 'scripts/lib/seo.cjs'), 'utf8');
   assert.match(seo, /DYNAMIC_CONTENT_SPA_HUBS/);
-  assert.match(seo, /blog', 'duyurular', 'kampanyalar', 'karar-asistani', 'secenekler', 'karsilastir/);
+  assert.match(seo, /'blog'/);
+  assert.match(seo, /'duyurular'/);
+  assert.match(seo, /'kampanyalar'/);
+  assert.match(seo, /'karar-asistani'/);
+  assert.match(seo, /'secenekler'/);
+  assert.match(seo, /'karsilastir'/);
 });
 
 test('production build emits SPA shells for dynamic content list routes', () => {
