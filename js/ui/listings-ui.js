@@ -15,7 +15,7 @@ export class ListingsUI {
                     <i data-lucide="badge-plus"></i>
                     <h3>Henüz kayıtlı seçeneğiniz yok</h3>
                     <p>İlk seçeneğinizi eklediğinizde burada görünür ve karşılaştırma akışına dahil olur.</p>
-                    <a href="/ilan-analizi/" class="btn btn-primary"><i data-lucide="scan-search"></i> Dış ilan analizi</a>
+                    <a href="/ilan-analizi/" class="btn btn-primary"><i data-lucide="scan-search"></i> Seçenek analizi</a>
                     <a href="/ilan-ekle/" class="btn btn-outline"><i data-lucide="plus"></i> Seçenek gönder</a>
                 </div>
             ` : `

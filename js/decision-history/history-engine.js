@@ -12,7 +12,7 @@ export const DECISION_HISTORY_EVENT_TYPES = Object.freeze([
 ]);
 
 export const DECISION_HISTORY_EVENT_LABELS = Object.freeze({
-  listing_viewed: 'İlan görüntülendi',
+  listing_viewed: 'Seçenek görüntülendi',
   recommendation_opened: 'Öneri açıldı',
   compare_opened: 'Karşılaştırma açıldı',
   report_opened: 'Rapor açıldı',

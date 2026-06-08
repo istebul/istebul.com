@@ -647,7 +647,7 @@ class App {
 
             if (!this.currentListings.length && !options.userId && !options.ownedOnly) {
                 this.ui.showInfo?.(
-                    'Şu an yayınlanmış seçenek bulunmuyor. Karar analizi için Auto veya İlan Analizi akışını kullanabilirsiniz.'
+                    'Şu an yayınlanmış seçenek bulunmuyor. Karar analizi için Auto veya Seçenek Analizi akışını kullanabilirsiniz.'
                 );
             }
         } catch (error) {
@@ -5035,7 +5035,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const details = [
             { label: 'Kategori', value: categoryName },
             { label: 'Konum', value: listing.location || 'Belirtilmemiş' },
-            { label: 'Kaynak', value: listing.external_url ? 'Dış ilan bağlantılı' : 'Platform içi kayıt' },
+            { label: 'Kaynak', value: listing.external_url ? 'Harici kaynak bağlantılı' : 'Platform içi kayıt' },
             { label: 'Güncellik', value: listing.created_at ? new Date(listing.created_at).toLocaleDateString('tr-TR') : 'Tarih yok' }
         ];
 

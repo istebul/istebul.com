@@ -59,7 +59,7 @@ export async function mountListingAnalysisResultsV2(container, { result = {}, on
     <div class="la-v2-root" data-listing-type="${escapeHtml(result.listingType)}">
       <article class="la-v2-panel">
         <header class="la-v2-hero">
-          <p class="la-v2-kicker">AI İlan Analizi</p>
+          <p class="la-v2-kicker">AI Seçenek Analizi</p>
           <h2 class="la-v2-title">Karar Skoru: ${result.decisionScore}/100 — ${escapeHtml(result.scoreLabel || '')}</h2>
         </header>
         <div class="la-v2-kpis">
