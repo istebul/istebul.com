@@ -6,6 +6,8 @@ import {
     normalizeHistoryEntryCategory,
     resolveDecisionCategoryLabel,
     resolveDecisionCategorySource,
+    resolveAssistantCategoryFromHistoryEntry,
+    shouldRedirectHistoryEntryToAutoVertical,
     DECISION_CATEGORY_UNKNOWN_ID,
     DECISION_CATEGORY_UNKNOWN_LABEL
 } from '../../js/ui/decision-history-category.js';
@@ -104,4 +106,44 @@ test('buildComparisonItemFromHistoryEntry uses normalized comparison category', 
     assert.equal(item.categoryId, 'konut');
     assert.equal(item.categoryName, 'Konut');
     assert.equal(item.title, 'Kadıköy daire');
+});
+
+test('resolveAssistantCategoryFromHistoryEntry maps canonical and legacy ids to assistant keys', () => {
+    assert.equal(resolveAssistantCategoryFromHistoryEntry({
+        categoryId: 'auto',
+        originalCategoryId: 'arac'
+    }), 'arac');
+    assert.equal(resolveAssistantCategoryFromHistoryEntry({
+        categoryId: 'konut',
+        originalCategoryId: 'ev'
+    }), 'ev');
+    assert.equal(resolveAssistantCategoryFromHistoryEntry({
+        categoryId: 'arac',
+        categoryName: 'Araç'
+    }), 'arac');
+    assert.equal(resolveAssistantCategoryFromHistoryEntry({
+        categoryId: 'ev',
+        categoryName: 'Ev'
+    }), 'ev');
+    assert.equal(resolveAssistantCategoryFromHistoryEntry({
+        categoryId: 'tatil',
+        categoryName: 'Tatil'
+    }), 'tatil');
+});
+
+test('shouldRedirectHistoryEntryToAutoVertical distinguishes Auto vertical from assistant arac', () => {
+    assert.equal(shouldRedirectHistoryEntryToAutoVertical({
+        id: 'auto-123',
+        categoryId: 'auto',
+        categoryName: 'Araç Karar Analizi'
+    }), true);
+    assert.equal(shouldRedirectHistoryEntryToAutoVertical({
+        categoryId: 'auto',
+        originalCategoryId: 'arac',
+        categoryName: 'Araba'
+    }), false);
+    assert.equal(shouldRedirectHistoryEntryToAutoVertical({
+        categoryId: 'arac',
+        categoryName: 'Araç'
+    }), false);
 });

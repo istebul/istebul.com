@@ -134,3 +134,56 @@ export function normalizeHistoryEntryCategory(entry) {
         isKonut: normalized.categoryId === 'konut'
     };
 }
+
+const ASSISTANT_CATEGORY_BY_CANONICAL = Object.freeze({
+    auto: 'arac',
+    konut: 'ev',
+    tatil: 'tatil',
+    finansman: 'finansman',
+    sigorta: 'sigorta',
+    kasko: 'kasko'
+});
+
+const ASSISTANT_CATEGORY_IDS = new Set(Object.values(ASSISTANT_CATEGORY_BY_CANONICAL));
+
+/**
+ * Maps a stored history entry to the Karar Asistanı category key used by decisionAssistant.
+ * @param {object | null | undefined} entry
+ * @returns {string | null}
+ */
+export function resolveAssistantCategoryFromHistoryEntry(entry) {
+    if (!entry || typeof entry !== 'object') return null;
+
+    const originalCategoryId = String(entry.originalCategoryId || '').trim();
+    if (originalCategoryId) {
+        if (ASSISTANT_CATEGORY_IDS.has(originalCategoryId)) return originalCategoryId;
+        const normalizedOriginal = normalizeDecisionCategory({ categoryId: originalCategoryId });
+        return ASSISTANT_CATEGORY_BY_CANONICAL[normalizedOriginal.categoryId] || null;
+    }
+
+    const rawCategoryId = String(entry.categoryId || '').trim();
+    if (ASSISTANT_CATEGORY_IDS.has(rawCategoryId)) return rawCategoryId;
+
+    const normalized = normalizeDecisionCategory(entry);
+    if (normalized.categoryId === DECISION_CATEGORY_UNKNOWN_ID) return null;
+
+    return ASSISTANT_CATEGORY_BY_CANONICAL[normalized.categoryId] || null;
+}
+
+/**
+ * @param {object | null | undefined} entry
+ * @returns {boolean}
+ */
+export function shouldRedirectHistoryEntryToAutoVertical(entry) {
+    if (!entry || typeof entry !== 'object') return false;
+
+    const rawCategoryId = String(entry.categoryId || '').trim();
+    const originalCategoryId = String(entry.originalCategoryId || '').trim();
+
+    if (originalCategoryId === 'arac' || originalCategoryId === 'araba') return false;
+    if (rawCategoryId === 'arac' || rawCategoryId === 'araba') return false;
+    if (rawCategoryId === 'auto') return true;
+    if (String(entry.id || '').startsWith('auto-')) return true;
+
+    return false;
+}
