@@ -5,6 +5,19 @@ import {
     resolvePaywallState
 } from '../features/billing/paywall-v1.js';
 import { PRO_FEATURE } from '../features/billing/pro-features.js';
+import {
+    buildComparisonDecisionSummary,
+    renderComparisonDecisionSummaryHtml
+} from './comparison-decision-summary.js';
+import {
+    buildDeterministicComparisonExplanation,
+    hydrateComparisonAiExplanation,
+    renderComparisonAiExplanationHtml
+} from './comparison-ai-explanation.js';
+import {
+    renderComparisonDecisionCtaHtml,
+    shouldRenderComparisonDecisionCta
+} from './comparison-decision-cta.js';
 
 export class ComparisonUI {
     renderComparison(items = []) {
@@ -13,40 +26,55 @@ export class ComparisonUI {
 
         if (!Array.isArray(items) || !items.length) {
             container.innerHTML =
-                '<div class="empty-state">' +
+                '<div class="empty-state comparison-empty-state" data-comparison-empty-state>' +
                     '<i data-lucide="columns-3"></i>' +
-                    '<h3>Karşılaştırma listeniz boş</h3>' +
-                    '<p>Auto analiz sonuçlarından veya seçenek kartlarından &quot;Karşılaştır&quot; ile ekleyin. Skor, maliyet ve riskler yan yana okunur.</p>' +
+                    '<h3>Karar öncesi seçenekleri burada toplayın</h3>' +
+                    '<p>Önce karar asistanından öneri alın veya seçenek kartlarından ekleyin; ardından TCO, risk ve ihtiyaç uyumunu yan yana okuyarak net bir karar özeti oluşturun.</p>' +
                     '<div class="empty-state-actions">' +
-                      '<a href="/auto/" class="btn btn-primary">TCO analizini başlat</a>' +
-                      '<a href="/ilanlar/" class="btn btn-outline">Seçeneklere git</a>' +
+                      '<a href="/karar-asistani/" class="btn btn-primary">Karar analizini başlat</a>' +
+                      '<a href="/secenekler/" class="btn btn-outline">Seçenekleri incele</a>' +
                     '</div>' +
                 '</div>';
             this.loadIcons();
             return;
         }
 
-        const categoryName = items[0]?.categoryName || 'Karşılaştırma';
+        const categoryName = items[0]?.categoryName || 'Karar kriteri karşılaştırma';
         const maxValues = {
             price: Math.max(...items.map((item) => Number(item.price || 0)), 1),
             periodicCost: Math.max(...items.map((item) => Number(item.periodicCost || 0)), 1),
             monthlyPayment: Math.max(...items.map((item) => Number(item.monthlyPayment || 0)), 1)
         };
 
+        const decisionSummary = buildComparisonDecisionSummary(items);
+        const deterministicExplanation = buildDeterministicComparisonExplanation(decisionSummary, items);
+        const aiExplanationHtml = deterministicExplanation
+            ? renderComparisonAiExplanationHtml(deterministicExplanation, { source: 'rules', state: 'ready' })
+            : '';
+        const decisionCtaHtml = shouldRenderComparisonDecisionCta(items)
+            ? renderComparisonDecisionCtaHtml()
+            : '';
+
         container.innerHTML =
             '<div class="comparison-toolbar">' +
                 '<div>' +
                     '<span class="assistant-kicker">' + this.escapeHtml(categoryName) + '</span>' +
                     '<h3>' + this.escapeHtml(items.length) + ' seçenek yan yana</h3>' +
-                    '<p>Fiyat, dönemsel maliyet, kredi yükü, risk ve karar detayları aynı tabloda okunur.</p>' +
+                    '<p>Skor, toplam maliyet, finansman yükü, risk, uygunluk ve gerekçe aynı tabloda okunur.</p>' +
                 '</div>' +
                 '<button type="button" class="btn btn-outline" data-comparison-clear><i data-lucide="trash-2"></i> Temizle</button>' +
                 '<button type="button" class="btn btn-outline" data-upsell-trigger="decision_export" data-upsell-placement="compare_export"><i data-lucide="file-down"></i> PDF export</button>' +
             '</div>' +
+            renderComparisonDecisionSummaryHtml(
+                decisionSummary,
+                (value) => this.escapeHtml(value),
+                aiExplanationHtml + decisionCtaHtml
+            ) +
             '<div class="comparison-grid">' + items.map((item) => this.getComparisonCardMarkup(item, maxValues, items)).join('') + '</div>' +
             this.getComparisonAdvancedSection(items);
 
         this.loadIcons();
+        hydrateComparisonAiExplanation(container, decisionSummary, items);
     }
 
     getComparisonCardMarkup(item, maxValues, allItems = []) {
@@ -55,7 +83,7 @@ export class ComparisonUI {
         const isLeader = item.score && Number(item.score) >= maxScore && maxScore > 0;
 
         return '<article class="comparison-card ' + (item.sourceType === 'isteBul Auto' ? 'comparison-card-auto' : '') + '">' +
-            (item.image ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(item.image) + '" alt="' + this.escapeHtml(item.title || 'Araç') + '" loading="lazy" decoding="async"></div>' : '') +
+            (item.image ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(item.image) + '" alt="' + this.escapeHtml(item.title || 'Seçenek') + '" loading="lazy" decoding="async"></div>' : '') +
             (isLeader ? '<div class="comparison-leader-badge">🏆 En güçlü eşleşme</div>' : '') +
             '<div class="comparison-card-head">' +
                 '<div>' +

@@ -5,16 +5,31 @@ import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '../..');
 
-test('buildSeoPages skips dynamic content hubs (blog, duyurular, kampanyalar)', () => {
+test('buildSeoPages skips dynamic content hubs (blog, duyurular, kampanyalar, decision surfaces)', () => {
   const seo = fs.readFileSync(path.join(root, 'scripts/lib/seo.cjs'), 'utf8');
   assert.match(seo, /DYNAMIC_CONTENT_SPA_HUBS/);
-  assert.match(seo, /blog', 'duyurular', 'kampanyalar/);
+  assert.match(seo, /'blog'/);
+  assert.match(seo, /'duyurular'/);
+  assert.match(seo, /'kampanyalar'/);
+  assert.match(seo, /'karar-asistani'/);
+  assert.match(seo, /'secenekler'/);
+  assert.match(seo, /'karsilastir'/);
 });
 
 test('production build emits SPA shells for dynamic content list routes', () => {
   const build = fs.readFileSync(path.join(root, 'scripts/production-build.cjs'), 'utf8');
-  assert.match(build, /dynamicContentSpaRoutes = \['blog', 'duyurular', 'kampanyalar'\]/);
+  assert.match(build, /dynamicContentSpaRoutes = \[/);
+  assert.match(build, /'karar-asistani'/);
+  assert.match(build, /'secenekler'/);
+  assert.match(build, /'karsilastir'/);
   assert.match(build, /patchSpaShellHtml\(shellHtml, route, routeDocumentMeta\)/);
+});
+
+test('SPA shell route map covers decision hub surfaces', () => {
+  const meta = fs.readFileSync(path.join(root, 'scripts/lib/spa-shell-meta.cjs'), 'utf8');
+  assert.match(meta, /'karar-asistani': 'page-karar-analizi'/);
+  assert.match(meta, /secenekler: 'ilanlar'/);
+  assert.match(meta, /karsilastir: 'compare'/);
 });
 
 test('_redirects serves blog list hub from SPA shell without wildcard override', () => {

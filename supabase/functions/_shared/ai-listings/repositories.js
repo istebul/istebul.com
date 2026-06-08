@@ -8,7 +8,8 @@ import { parsePersistedAnalysisFields } from './engine/canonical-engine.js';
 const TABLES = Object.freeze({
   LISTINGS: 'ai_listings',
   ANALYSES: 'ai_listing_analyses',
-  EVENTS: 'ai_listing_events'
+  EVENTS: 'ai_listing_events',
+  LEARNING_EVENTS: 'ai_learning_events'
 });
 
 function locationToJson(location) {
@@ -74,6 +75,20 @@ function eventFromRow(row) {
     event_type: row.event_type,
     payload: row.payload ?? {},
     created_at: row.created_at
+  };
+}
+
+function learningEventFromRow(row) {
+  return {
+    id: row.id,
+    event_type: row.event_type,
+    module: row.module ?? null,
+    listing_id: row.listing_id ?? null,
+    session_id: row.session_id ?? null,
+    user_id: row.user_id ?? null,
+    payload: row.payload ?? {},
+    created_at: row.created_at,
+    timestamp: row.created_at
   };
 }
 
@@ -216,6 +231,36 @@ export function createEdgeRepositories(client) {
 
       if (error) throw mapDbError(error);
       return (data ?? []).map(eventFromRow);
+    },
+
+    async createLearningEvent(input) {
+      const row = {
+        event_type: input.event_type,
+        module: input.module ?? null,
+        listing_id: input.listing_id ?? null,
+        session_id: input.session_id ?? null,
+        user_id: input.user_id ?? null,
+        payload: input.payload ?? {}
+      };
+
+      const { data, error } = await client.from(TABLES.LEARNING_EVENTS).insert(row).select('*').single();
+      if (error) throw mapDbError(error);
+      return learningEventFromRow(data);
+    },
+
+    async listLearningEvents(filters = {}) {
+      let query = client.from(TABLES.LEARNING_EVENTS).select('*').order('created_at', { ascending: false });
+
+      if (filters.session_id) query = query.eq('session_id', filters.session_id);
+      if (filters.user_id) query = query.eq('user_id', filters.user_id);
+      if (filters.event_type) query = query.eq('event_type', filters.event_type);
+
+      const limit = filters.limit ?? 100;
+      query = query.limit(Math.min(Math.max(Number(limit) || 100, 1), 500));
+
+      const { data, error } = await query;
+      if (error) throw mapDbError(error);
+      return (data ?? []).map(learningEventFromRow);
     }
   };
 }

@@ -139,8 +139,8 @@ export function buildActionCenterActions(ctx) {
     {
       key: 'learning',
       label: 'Öğrenme Öngörüleri',
-      enabled: Number(ctx.learningEventCount) > 0,
-      hint: 'Henüz yeterli kullanım verisi yok.'
+      enabled: Boolean(ctx.listing?.id),
+      hint: 'İlan seçildiğinde öğrenme paneli açılır.'
     },
     {
       key: 'preferences',

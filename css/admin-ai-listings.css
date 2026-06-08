@@ -6340,3 +6340,33 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Sprint-33: Admin access + CRM navigation --- */
+
+.ai-listings-admin__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-right: 0.75rem;
+  color: var(--ai-muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.ai-listings-admin__back-link:hover {
+  color: var(--ai-text);
+}
+
+.ai-listings-admin__gate-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin: 0.75rem 0;
+}
+
+.ai-listings-admin__gate-or {
+  color: var(--ai-muted);
+  font-size: 0.85rem;
+}

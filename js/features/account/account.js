@@ -41,6 +41,7 @@ export class AccountManager {
         this.loading = false;
         this.app = null;
         this._openBillingPortal = false;
+        this._profileListingId = '';
     }
 
     handleQueryParams(params = new URLSearchParams()) {
@@ -51,6 +52,10 @@ export class AccountManager {
         const paymentSuccess = params.get('payment') === 'success';
         const paymentFailed = params.get('payment') === 'failed';
         const tab = params.get('tab');
+        const listing = params.get('listing');
+        if (listing) {
+            this._profileListingId = String(listing).trim();
+        }
 
         const allowedTabs = ['overview', 'analyses', 'favorites', 'comparisons', 'recommendations', 'notifications', 'settings', 'security', 'help'];
         if (tab === 'subscription') {
@@ -137,7 +142,15 @@ export class AccountManager {
                 console.warn('Entitlements could not be loaded:', entError);
             }
 
-            this.renderAccount(currentUser, profile, entitlements);
+            const decisionPlatform =
+                (await this.app?.loadUserDecisionPanelData?.({
+                    listingId: this._profileListingId,
+                    autoSelect: !this._profileListingId
+                })) ??
+                this.app?.getUserDecisionPanelData?.() ??
+                {};
+
+            this.renderAccount(currentUser, profile, entitlements, decisionPlatform);
             this.maybeShowOnboarding(profile);
             if (this.subscription?.status === 'past_due') {
                 enrollBillingHelp({
@@ -457,7 +470,7 @@ export class AccountManager {
         `;
     }
 
-    renderAccount(user, profile, entitlements = []) {
+    renderAccount(user, profile, entitlements = [], decisionPlatform = null) {
         const root = document.getElementById('account-root');
         if (!root) return;
 
@@ -486,7 +499,10 @@ export class AccountManager {
             favorites: this.readFavorites(),
             hasPremium,
             membershipLabel,
-            decisionPlatform: this.app?.getUserDecisionPanelData?.() ?? {}
+            decisionPlatform:
+                decisionPlatform ??
+                this.app?.getUserDecisionPanelData?.() ??
+                {}
         });
         document.getElementById('profil')?.classList.add('profil-has-dashboard');
         const hubTab = ACCOUNT_HUB_TABS.includes(this.activeTab) ? this.activeTab : 'settings';

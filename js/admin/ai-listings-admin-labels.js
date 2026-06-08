@@ -55,6 +55,7 @@ export const STATUS_LABELS = Object.freeze({
   pending_review: 'İncelemede',
   review: 'İncelemede',
   approved: 'Onaylandı',
+  published: 'Yayında',
   rejected: 'Reddedildi',
   archived: 'Arşivlendi'
 });

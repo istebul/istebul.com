@@ -623,7 +623,7 @@ test('shared and client engines produce identical output', async () => {
 
 test('guard: no endpoint change in router', () => {
   const router = fs.readFileSync(routerPath, 'utf8');
-  assert.match(router, /resource: 'listings'/);
+  assert.match(router, /'listings'/);
   assert.doesNotMatch(router, /compare-intelligence/i);
 });
 

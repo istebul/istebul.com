@@ -100,6 +100,15 @@ html.ib-ds-v4.ib-premium-v7 .account-root .dashboard-v2-guest .dashboard-v2-lead
   color: #cbd5e1;
 }
 
+html.ib-ds-v4.ib-premium-v7 .account-root .dashboard-v2-hero .ib-ai-platform-banner,
+html.ib-ds-v4.ib-premium-v7 .account-root .dashboard-v2-hero .ib-ai-platform-banner__copy strong {
+  color: #f8fafc;
+}
+
+html.ib-ds-v4.ib-premium-v7 .account-root .dashboard-v2-hero .ib-ai-platform-banner__copy p {
+  color: #e2e8f0;
+}
+
 html.ib-ds-v4.ib-premium-v7 .account-root .dashboard-v2-section h3 {
   color: #0f172a;
 }

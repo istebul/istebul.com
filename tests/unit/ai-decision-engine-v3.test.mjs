@@ -117,7 +117,7 @@ test('tryMountDecisionEngineV3 mounts panel and enriches with memory-lite', asyn
   assert.match(mountNode.nodes[0].innerHTML, /data-decision-v3-root/);
   assert.match(mountNode.nodes[0].innerHTML, /data-decision-memory-lite/);
   assert.match(mountNode.nodes[0].innerHTML, /Karar Profiliniz/);
-  assert.match(mountNode.nodes[0].innerHTML, /What If Senaryoları/);
+  assert.match(mountNode.nodes[0].innerHTML, /Senaryo Simülasyonu/);
   assert.match(mountNode.nodes[0].innerHTML, /data-whatif-run/);
   assert.match(mountNode.nodes[0].innerHTML, /Karar Raporu/);
   assert.match(mountNode.nodes[0].innerHTML, /data-report-download/);
@@ -186,7 +186,7 @@ test('renderDecisionV3Panel renders static what-if fallback without input', () =
     whatIfScenarios: [{ title: 'Bütçe +10%', description: 'Statik senaryo' }]
   });
 
-  assert.match(html, /What If Senaryoları/);
+  assert.match(html, /Senaryo Simülasyonu/);
   assert.match(html, /Statik senaryo/);
   assert.doesNotMatch(html, /data-whatif-run/);
 });

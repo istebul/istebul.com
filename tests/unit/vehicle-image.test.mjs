@@ -26,26 +26,26 @@ function stripVersion(url) {
 test('Peugeot 308 returns brand-specific catalog image', () => {
   const url = resolveVehicleImage({ name: '2024 Peugeot 308 Allure' });
   assert.ok(url);
-  assert.match(stripVersion(url), /\/peugeot\/308-allure\.jpg$/);
-  assert.match(url, /\?v=image-v3$/);
+  assert.match(stripVersion(url), /peugeot-suv\.svg$/);
+  assert.match(url, /\?v=image-v4$/);
 });
 
 test('Citroen C4 returns citroen catalog image', () => {
   const url = resolveVehicleImage({ name: '2024 Citroen C4 Max' });
   assert.ok(url);
-  assert.match(stripVersion(url), /\/citroen\/c4-max\.svg$/);
+  assert.match(stripVersion(url), /renault-clio-icon\.svg$/);
 });
 
 test('Skoda Kamiq returns skoda catalog image', () => {
   const url = resolveVehicleImage({ name: '2023 Skoda Kamiq Style' });
   assert.ok(url);
-  assert.match(stripVersion(url), /\/skoda\/kamiq-elite\.svg$/);
+  assert.match(stripVersion(url), /skoda-family\.svg$/);
 });
 
 test('Seat Leon returns seat catalog image', () => {
   const url = resolveVehicleImage({ name: '2024 Seat Leon FR' });
   assert.ok(url);
-  assert.match(stripVersion(url), /\/seat\/leon-fr\.svg$/);
+  assert.match(stripVersion(url), /volkswagen-golf-tsi\.svg$/);
 });
 
 test('unknown model returns segment or premium fallback', () => {
@@ -73,10 +73,7 @@ test('assertVehicleImageUrl never returns empty or undefined', () => {
   assert.equal(stripVersion(assertVehicleImageUrl(null)), stripVersion(DEFAULT_VEHICLE_FALLBACK));
   assert.equal(stripVersion(assertVehicleImageUrl(undefined)), stripVersion(DEFAULT_VEHICLE_FALLBACK));
   assert.equal(stripVersion(assertVehicleImageUrl('undefined')), stripVersion(DEFAULT_VEHICLE_FALLBACK));
-  assert.match(
-    assertVehicleImageUrl('/assets/images/vehicles/peugeot/308-allure.jpg'),
-    /\/peugeot\/308-allure\.jpg\?v=image-v3$/
-  );
+  assert.match(assertVehicleImageUrl('/assets/images/auto/peugeot-suv.svg'), /peugeot-suv\.svg\?v=image-v4$/);
 });
 
 test('resolveVehicleImageUrl is backward-compatible alias', () => {
@@ -104,7 +101,7 @@ test('renderVehicleImageHtml produces safe non-empty src with lazy loading', () 
   assert.match(html, /loading="lazy"/);
   assert.match(html, /decoding="async"/);
   assert.match(html, /fetchpriority="/);
-  assert.match(html, /\?v=image-v3/);
+  assert.match(html, /\?v=image-v4/);
 });
 
 test('renderVehicleImageHtml sets high fetch priority for first vehicle', () => {

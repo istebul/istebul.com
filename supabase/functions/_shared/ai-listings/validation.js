@@ -94,7 +94,7 @@ export function validateCreateListingBody(body) {
       return {
         ok: false,
         code: EDGE_ERROR_CODES.INVALID_REQUEST,
-        message: 'status must be draft, pending_review, approved, rejected, or archived'
+        message: 'status must be draft, pending_review, approved, published, rejected, or archived'
       };
     }
   }
@@ -183,7 +183,7 @@ export function validatePatchListingBody(body) {
       return {
         ok: false,
         code: EDGE_ERROR_CODES.INVALID_REQUEST,
-        message: 'status must be draft, pending_review, approved, rejected, or archived'
+        message: 'status must be draft, pending_review, approved, published, rejected, or archived'
       };
     }
     patch.status = String(patch.status).trim();
@@ -234,4 +234,116 @@ export function parseListFilters(params) {
     if (Number.isFinite(offset) && offset >= 0) filters.offset = offset;
   }
   return filters;
+}
+
+/**
+ * @param {unknown} body
+ * @returns {{ ok: true, value: { events: Array<Record<string, unknown>> } } | { ok: false, message: string }}
+ */
+export function validateLearningEventsBody(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return { ok: false, message: 'Request body must be a JSON object' };
+  }
+
+  const input = /** @type {Record<string, unknown>} */ (body);
+  const rawEvents = Array.isArray(input.events) ? input.events : input.event ? [input.event] : [input];
+  if (!rawEvents.length) {
+    return { ok: false, message: 'At least one learning event is required' };
+  }
+  if (rawEvents.length > 100) {
+    return { ok: false, message: 'Maximum 100 learning events per request' };
+  }
+
+  const events = rawEvents.map((event) => {
+    const row = /** @type {Record<string, unknown>} */ (event ?? {});
+    return {
+      event_type: String(row.event_type ?? row.type ?? '').trim(),
+      module: row.module !== undefined ? String(row.module) : undefined,
+      listing_id: row.listing_id !== undefined ? String(row.listing_id) : undefined,
+      session_id: row.session_id !== undefined ? String(row.session_id) : undefined,
+      user_id: row.user_id !== undefined ? String(row.user_id) : undefined,
+      payload: row.payload && typeof row.payload === 'object' ? row.payload : row
+    };
+  });
+
+  for (const event of events) {
+    if (!event.event_type) {
+      return { ok: false, message: 'Each learning event requires event_type' };
+    }
+  }
+
+  return { ok: true, value: { events } };
+}
+
+/**
+ * @param {unknown} body
+ * @returns {{ ok: true, value: Record<string, unknown> } | { ok: false, message: string }}
+ */
+export function validateDataPoolBatchBody(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return { ok: false, message: 'Request body must be a JSON object' };
+  }
+
+  const input = /** @type {Record<string, unknown>} */ (body);
+  const useRepository = input.use_repository === true || input.use_repository === 'true';
+  const listings = Array.isArray(input.listings) ? input.listings : [];
+
+  if (!useRepository && listings.length === 0) {
+    return { ok: false, message: 'listings array is required unless use_repository is true' };
+  }
+  if (listings.length > 500) {
+    return { ok: false, message: 'Maximum 500 listings per data pool batch' };
+  }
+
+  const limit = input.limit !== undefined ? Number(input.limit) : 200;
+  const status = input.status !== undefined ? String(input.status) : undefined;
+
+  return {
+    ok: true,
+    value: {
+      listings,
+      use_repository: useRepository,
+      limit: Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 500) : 200,
+      status
+    }
+  };
+}
+
+/**
+ * @param {unknown} body
+ * @returns {{ ok: true, value: Record<string, unknown> } | { ok: false, message: string }}
+ */
+export function validatePersonalizationBody(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return { ok: false, message: 'Request body must be a JSON object' };
+  }
+
+  const input = /** @type {Record<string, unknown>} */ (body);
+  const recommendation = input.recommendation && typeof input.recommendation === 'object' ? input.recommendation : {};
+  const decisionResult =
+    input.decisionResult && typeof input.decisionResult === 'object'
+      ? input.decisionResult
+      : input.decision_result && typeof input.decision_result === 'object'
+        ? input.decision_result
+        : {};
+
+  return {
+    ok: true,
+    value: {
+      recommendation,
+      decisionResult,
+      profile:
+        input.profile && typeof input.profile === 'object'
+          ? input.profile
+          : input.explicitProfile && typeof input.explicitProfile === 'object'
+            ? input.explicitProfile
+            : {},
+      behaviorSignals:
+        input.behaviorSignals && typeof input.behaviorSignals === 'object'
+          ? input.behaviorSignals
+          : input.behavior_signals && typeof input.behavior_signals === 'object'
+            ? input.behavior_signals
+            : {}
+    }
+  };
 }

@@ -414,7 +414,11 @@ Deno.serve(async (req) => {
     return json({ error: "Profile not found" }, 403, origin);
   }
 
-  if (profile.role !== "admin" || profile.is_banned === true) {
+  const role = String(profile.role ?? "").toLowerCase();
+  const isAdminActor =
+    (role === "admin" || role === "super_admin") && profile.is_banned !== true;
+
+  if (!isAdminActor) {
     return json({ error: "Forbidden" }, 403, origin);
   }
 
@@ -1170,7 +1174,8 @@ Deno.serve(async (req) => {
         "finance_cashflow_weight",        "finance_ai_prompt_template",
         "analytics_clean_start_at",
         "live_providers_enabled",
-        "live_finance_feed_url"
+        "live_finance_feed_url",
+        "ai_listings_public_enabled"
       ];
 
       for (const row of values) {
@@ -1181,6 +1186,22 @@ Deno.serve(async (req) => {
         if (!allowedSettingKeys.includes(String(row.key || ""))) {
           return json({ error: `Invalid settings key: ${row.key}` }, 400, origin);
         }
+      }
+
+      const settingsByKey = Object.fromEntries(
+        values.map((row: Record<string, unknown>) => [String(row.key || "").trim(), String(row.value ?? "")])
+      );
+      const liveEnabled = String(settingsByKey.live_providers_enabled || "").toLowerCase() === "true";
+      const liveFeedUrl = String(settingsByKey.live_finance_feed_url || "").trim();
+      if (liveEnabled && !liveFeedUrl) {
+        return json(
+          {
+            error:
+              "Canlı sağlayıcı modu açılamaz: live_finance_feed_url boş. Önce geçerli bir feed URL kaydedin.",
+          },
+          400,
+          origin
+        );
       }
 
       const normalizedSettings = values.map((row: Record<string, unknown>) => ({

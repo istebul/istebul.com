@@ -14,7 +14,9 @@ Deno.serve(async (req) => {
   const env = {
     AI_LISTINGS_SUPABASE_ENABLED: Deno.env.get("AI_LISTINGS_SUPABASE_ENABLED") ?? undefined,
     AI_LISTINGS_EDGE_SECRET: Deno.env.get("AI_LISTINGS_EDGE_SECRET") ?? undefined,
+    AI_LISTINGS_PUBLIC_PUBLISH_ENABLED: Deno.env.get("AI_LISTINGS_PUBLIC_PUBLISH_ENABLED") ?? undefined,
     SUPABASE_URL: Deno.env.get("SUPABASE_URL") ?? undefined,
+    SUPABASE_ANON_KEY: Deno.env.get("SUPABASE_ANON_KEY") ?? undefined,
     SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? undefined,
   };
 

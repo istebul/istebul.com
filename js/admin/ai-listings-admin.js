@@ -22,7 +22,7 @@ import {
   buildPremiumDashboardHtml,
   buildStatusFilterChipsHtml,
   computeKpiStats,
-  getAdminPanelState,
+  extractLatestAnalysis,
   getEdgeSecret,
   getListingAnalyzePath,
   getSupabaseAnonKey,
@@ -37,6 +37,17 @@ import {
   validateAttributesJson,
   validateSourceUrl
 } from './ai-listings-admin-core.js';
+import {
+  verifyAdminSessionAccess,
+  resolveAdminPanelAccess,
+  getAdminAccessToken
+} from './ai-listings-admin-access.js';
+import {
+  enforceAdminRoute,
+  renderAdminForbiddenHtml,
+  PUBLIC_DECISION_CENTER_PATH,
+  ADMIN_LOGIN_PATH
+} from './admin-route-guard.js';
 import { runDuplicateEngine } from '../../supabase/functions/_shared/ai-listings/duplicate/duplicate-engine.js';
 import { IMPORT_MAX_ROWS } from '../../supabase/functions/_shared/ai-listings/import-parser.js';
 import { buildAcquisitionEventPayload } from '../../supabase/functions/_shared/ai-listings/acquisition/acquisition-events.js';
@@ -60,6 +71,12 @@ import {
   buildRecommendationsDashboardHtml,
   readRecommendationProfileFromForm
 } from './ai-listings-recommendations-admin.js';
+import {
+  buildListingRecommendationRecord,
+  ensureRecommendationCache,
+  findCachedRecommendation,
+  resolveRecommendationForListing
+} from './ai-listings-recommendation-resolver.js';
 import {
   buildDecisionCoachInput,
   runDecisionCoach
@@ -140,6 +157,7 @@ import { buildExecutiveDecisionShellHtml } from '../ai-purchase-decision/executi
 import { buildExplainabilityShellHtml } from '../ai-decision-explainability/explainability-card-builder.js';
 import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
 import { buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-builder.js';
+import { formatErrorFallbackLabel } from './ai-listings-admin-labels.js';
 
 /** @type {Record<string, unknown>|null} */
 let selectedListing = null;
@@ -149,6 +167,12 @@ let selectedRecommendation = null;
 
 /** @type {string} */
 let lastWorkspaceListingId = '';
+
+/** @type {number} */
+let detailRequestSeq = 0;
+
+/** @type {number} */
+const EDGE_REQUEST_TIMEOUT_MS = 15000;
 
 /** @type {ReturnType<typeof createInitialDrawerState>} */
 let aiDrawerState = createInitialDrawerState();
@@ -240,19 +264,48 @@ let compareModeEnabled = false;
 /** @type {Array<Record<string, unknown>>} */
 let cachedLearningEvents = [];
 
+const LEARNING_SESSION_KEY = 'istebul_ai_learning_session_id';
+
+/**
+ * @returns {string}
+ */
+function getLearningSessionId() {
+  const storageRef = storage();
+  if (!storageRef) return 'admin-session';
+  let sessionId = storageRef.getItem(LEARNING_SESSION_KEY);
+  if (!sessionId) {
+    sessionId = `admin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    storageRef.setItem(LEARNING_SESSION_KEY, sessionId);
+  }
+  return sessionId;
+}
+
 /**
  * @param {string} eventType
  * @param {Record<string, unknown>} [payload]
  */
 function recordLearningEvent(eventType, payload = {}) {
-  cachedLearningEvents.push({
+  const event = {
     event_type: eventType,
     timestamp: new Date().toISOString(),
+    session_id: getLearningSessionId(),
     ...payload
-  });
+  };
+  cachedLearningEvents.push(event);
   if (cachedLearningEvents.length > 100) {
     cachedLearningEvents = cachedLearningEvents.slice(-100);
   }
+
+  edgeRequest('/learning/events', {
+    method: 'POST',
+    body: { events: [event] }
+  }).catch((error) => {
+    console.warn('[ai-listings-admin] learning event sync failed:', error);
+    setStatus(
+      'Öğrenme olayı kaydedilemedi. Bağlantınızı kontrol edip tekrar deneyin.',
+      'error'
+    );
+  });
 }
 
 function $(id) {
@@ -274,9 +327,27 @@ function setStatus(message, type = 'info') {
   el.textContent = message;
 }
 
-async function edgeRequest(path, { method = 'GET', body } = {}) {
-  const base = resolveEdgeBaseUrl(env());
+async function resolveEdgeAuthHeaders(hasBody = false) {
   const secret = getEdgeSecret(storage());
+  const anonKey = getSupabaseAnonKey(env());
+  const accessToken = secret ? '' : await getAdminAccessToken();
+
+  if (!secret && !accessToken) {
+    return {
+      ok: false,
+      message:
+        'Edge kimlik doğrulaması eksik — admin oturumu açın veya localStorage istebul_ai_listings_secret ayarlayın'
+    };
+  }
+
+  return {
+    ok: true,
+    headers: buildEdgeRequestHeaders({ secret, anonKey, accessToken, hasBody })
+  };
+}
+
+async function edgeRequest(path, { method = 'GET', body, timeoutMs = EDGE_REQUEST_TIMEOUT_MS } = {}) {
+  const base = resolveEdgeBaseUrl(env());
   const anonKey = getSupabaseAnonKey(env());
 
   if (!base) {
@@ -285,37 +356,57 @@ async function edgeRequest(path, { method = 'GET', body } = {}) {
   if (!anonKey) {
     return { ok: false, status: 0, message: 'Supabase anon key eksik' };
   }
-  if (!secret) {
-    return {
-      ok: false,
-      status: 0,
-      message: 'Edge secret eksik — localStorage istebul_ai_listings_secret ayarlayın'
-    };
+
+  const auth = await resolveEdgeAuthHeaders(body !== undefined);
+  if (!auth.ok) {
+    return { ok: false, status: 0, message: auth.message };
   }
 
-  const response = await fetch(`${base}${path}`, {
-    method,
-    headers: buildEdgeRequestHeaders({ secret, anonKey, hasBody: body !== undefined }),
-    body: body !== undefined ? JSON.stringify(body) : undefined
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  const json = await response.json().catch(() => ({}));
-  const mapped = mapEdgeResponse(response, json);
-  if (!mapped.ok) {
-    return { ...mapped, message: translateAdminErrorMessage(mapped.message) };
+  try {
+    const response = await fetch(`${base}${path}`, {
+      method,
+      headers: auth.headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controller.signal
+    });
+
+    const json = await response.json().catch(() => ({}));
+    const mapped = mapEdgeResponse(response, json);
+    if (!mapped.ok) {
+      return { ...mapped, message: translateAdminErrorMessage(mapped.message) };
+    }
+    return mapped;
+  } catch (error) {
+    if (/** @type {{ name?: string }} */ (error).name === 'AbortError') {
+      return { ok: false, status: 0, message: 'İstek zaman aşımına uğradı — tekrar deneyin' };
+    }
+    return { ok: false, status: 0, message: 'Ağ hatası — bağlantıyı kontrol edin' };
+  } finally {
+    clearTimeout(timer);
   }
-  return mapped;
 }
 
-function renderDisabledState() {
+function renderDisabledState(options = {}) {
   const root = $('ai-listings-admin-root');
   if (!root) return;
+
+  const adminLoginHint = options.showAdminLogin
+    ? `<p class="ai-listings-admin__gate-actions">
+        <a class="ai-listings-admin__btn ai-listings-admin__btn--primary" href="${ADMIN_LOGIN_PATH}">Admin paneline giriş yap</a>
+        <a class="ai-listings-admin__btn ai-listings-admin__btn--ghost" href="${PUBLIC_DECISION_CENTER_PATH}">Karar Merkezi (kullanıcı)</a>
+      </p>`
+    : '';
+
   root.innerHTML = `
     <div class="ai-listings-admin__gate">
-      <h2>Yapay Zeka Karar Merkezi — Devre Dışı</h2>
-      <p>Bu iç test paneli varsayılan olarak gizlidir.</p>
-      <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_ENABLE_KEY}', 'on')</pre>
-      <p>Etkinleştirdikten sonra sayfayı yenileyin. Bkz. docs/ai-listings/ADMIN_TEST_PANEL.md</p>
+      <h2>AI İlan Yönetimi — Admin Erişimi Gerekli</h2>
+      <p>Bu ekran yalnızca admin rolüne sahip kullanıcılar içindir. Kullanıcı Karar Merkezi için profil panelini kullanın.</p>
+      ${adminLoginHint}
+      <p>Edge API secret (admin):</p>
+      <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_SECRET_KEY}', '&lt;secret&gt;')</pre>
     </div>`;
 }
 
@@ -324,9 +415,9 @@ function renderSecretWarning() {
   if (!warn) return;
   warn.hidden = false;
   warn.innerHTML = `
-    <strong>Kurulum gerekli:</strong>
-    <code>localStorage.${ADMIN_SECRET_KEY}</code> değerini
-    <code>AI_LISTINGS_EDGE_SECRET</code> ile ayarlayın, ardından yenileyin.
+    <strong>İsteğe bağlı:</strong> Admin oturumu ile API çağrıları çalışır.
+    CI/script entegrasyonu için <code>localStorage.${ADMIN_SECRET_KEY}</code> değerini
+    <code>AI_LISTINGS_EDGE_SECRET</code> ile eşleştirebilirsiniz.
     <pre class="ai-listings-admin__code">localStorage.setItem('${ADMIN_SECRET_KEY}', '&lt;secret&gt;')</pre>`;
 }
 
@@ -775,23 +866,23 @@ function openComparePanel(root, options = {}) {
     return;
   }
 
-  if (!cachedRecommendationResult?.top?.length) {
+  const selected = compareSelectedIds
+    .map((id) => getRecommendationById(id))
+    .filter((item) => item?.id);
+
+  if (selected.length < 2) {
     host.innerHTML = buildComparePanelHtml(null, { title });
     host.hidden = false;
     document.body.classList.add('ai-listings-admin--cmp-open');
     const body = host.querySelector('.ai-cmp-panel__body');
     if (body) {
-      body.innerHTML = `<p class="ai-cmp-panel__empty">${getModuleUnavailableMessageTr('compare')}</p>`;
+      body.innerHTML = '<p class="ai-cmp-panel__empty">Karşılaştırma için en az iki ilan seçin.</p>';
     }
     bindComparePanelClose(host, root);
     return;
   }
 
-  const selected = cachedRecommendationResult.top.filter((item) =>
-    compareSelectedIds.includes(String(item.id))
-  );
-
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
   const cmpInput = buildCompareInput(selected, profile);
   const compareIntelligence = runCompareEngine(cmpInput);
 
@@ -842,13 +933,17 @@ function readSimulatorScenarioFromForm(root) {
  * @returns {{ result: ReturnType<typeof runDecisionSimulator>, coach: ReturnType<typeof runDecisionCoach>, selected: Record<string, unknown> }|null}
  */
 function runSimulatorForPanel(recordId, scenario) {
-  if (!cachedRecommendationResult?.top?.length) return null;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return null;
 
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return null;
-
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
-  const coachInput = buildDecisionCoachInput(profile, selected, cachedRecommendationResult.top);
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const top =
+    cachedRecommendationResult?.top?.length > 0
+      ? cachedRecommendationResult.top
+      : cachedListings
+          .map((listing) => getRecommendationById(String(listing.id)))
+          .filter((item) => item?.id);
+  const coachInput = buildDecisionCoachInput(profile, selected, top);
   const coach = runDecisionCoach(coachInput);
   const simInput = buildSimulatorInput(selected, coach, profile);
   const result = runDecisionSimulator(simInput, scenario);
@@ -869,16 +964,17 @@ function bindSimulatorPanelEvents(host, root) {
 }
 
 function openDecisionCoachPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
-
-  const input = buildDecisionCoachInput(
-    cachedRecommendationResult.profile ?? recommendationProfile,
-    selected,
-    cachedRecommendationResult.top
-  );
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const top =
+    cachedRecommendationResult?.top?.length > 0
+      ? cachedRecommendationResult.top
+      : cachedListings
+          .map((listing) => getRecommendationById(String(listing.id)))
+          .filter((item) => item?.id);
+  const input = buildDecisionCoachInput(profile, selected, top);
   const coach = runDecisionCoach(input);
 
   const host = root.querySelector('#ai-coach-panel-host');
@@ -902,14 +998,12 @@ function openDecisionCoachPanel(root, recordId) {
 }
 
 function openDecisionSimulatorPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
   closeDecisionCoachPanel(root);
 
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
   const defaultScenario = buildDefaultScenario(profile);
   const host = root.querySelector('#ai-sim-panel-host');
   if (!host) return;
@@ -943,16 +1037,20 @@ function openDecisionSimulatorPanel(root, recordId) {
 }
 
 function openDecisionReportPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
   closeDecisionCoachPanel(root);
   closeDecisionSimulatorPanel(root);
 
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
-  const reportInput = buildReportInput(selected, profile, cachedRecommendationResult.top);
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+  const top =
+    cachedRecommendationResult?.top?.length > 0
+      ? cachedRecommendationResult.top
+      : cachedListings
+          .map((listing) => getRecommendationById(String(listing.id)))
+          .filter((item) => item?.id);
+  const reportInput = buildReportInput(selected, profile, top);
   const report = runDecisionReport(reportInput);
 
   const host = root.querySelector('#ai-report-panel-host');
@@ -974,10 +1072,8 @@ function openDecisionReportPanel(root, recordId) {
 }
 
 function openOwnershipCostPanel(root, recordId) {
-  if (!cachedRecommendationResult?.top?.length) return;
-
-  const selected = cachedRecommendationResult.top.find((item) => String(item.id) === String(recordId));
-  if (!selected) return;
+  const selected = getRecommendationById(recordId);
+  if (!selected?.id) return;
 
   closeDecisionCoachPanel(root);
   closeDecisionSimulatorPanel(root);
@@ -986,7 +1082,7 @@ function openOwnershipCostPanel(root, recordId) {
   closeExplainabilityPanel(root);
   closeExecutiveReportPanel(root);
 
-  const profile = cachedRecommendationResult.profile ?? recommendationProfile;
+  const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
   const costInput = buildOwnershipCostInput(selected, profile);
   const cost = runOwnershipCostSimulator(costInput);
 
@@ -1013,8 +1109,7 @@ function openPurchaseDecisionPanel(root, recordId, options = {}) {
   if (!host) return;
 
   const selected =
-    cachedRecommendationResult?.top?.find((item) => String(item.id) === String(recordId)) ??
-    selectedRecommendation;
+    getRecommendationById(recordId) ?? selectedRecommendation;
   if (!selected?.id) {
     host.innerHTML = buildExecutiveDecisionPanelHtml(null, {
       title: options.title ?? getDrawerTitleTr('purchase')
@@ -1042,8 +1137,7 @@ function openExplainabilityPanel(root, recordId, options = {}) {
   if (!host) return;
 
   const selected =
-    cachedRecommendationResult?.top?.find((item) => String(item.id) === String(recordId)) ??
-    selectedRecommendation;
+    getRecommendationById(recordId) ?? selectedRecommendation;
   if (!selected?.id) {
     host.innerHTML = buildExplainabilityPanelHtml(null, {
       title: options.title ?? getDrawerTitleTr('explain')
@@ -1113,8 +1207,7 @@ function openExecutiveReportPanel(root, recordId, options = {}) {
   if (!host) return;
 
   const selected =
-    cachedRecommendationResult?.top?.find((item) => String(item.id) === String(recordId)) ??
-    selectedRecommendation;
+    getRecommendationById(recordId) ?? selectedRecommendation;
   if (!selected?.id) {
     host.innerHTML = buildExecutiveReportPanelHtml(null, {
       title: options.title ?? getDrawerTitleTr('report')
@@ -1339,9 +1432,35 @@ function renderExecutiveDashboard() {
  * @returns {Record<string, unknown>|null}
  */
 function findRecommendationForListing(listing) {
-  const id = String(listing?.id ?? '');
-  if (!id || !cachedRecommendationResult?.top?.length) return null;
-  return cachedRecommendationResult.top.find((item) => String(item.id) === id) ?? null;
+  return resolveRecommendationForListing(listing, {
+    profile: cachedRecommendationResult?.profile ?? recommendationProfile,
+    cachedResult: cachedRecommendationResult,
+    allListings: cachedListings
+  });
+}
+
+/**
+ * @param {string} recordId
+ * @returns {Record<string, unknown>|null}
+ */
+function getRecommendationById(recordId) {
+  const listing =
+    cachedListings.find((item) => String(item.id) === String(recordId)) ??
+    (String(selectedListing?.id ?? '') === String(recordId) ? selectedListing : null);
+  if (!listing) return selectedRecommendation;
+  return resolveRecommendationForListing(listing, {
+    profile: cachedRecommendationResult?.profile ?? recommendationProfile,
+    cachedResult: cachedRecommendationResult,
+    allListings: cachedListings
+  });
+}
+
+function syncRecommendationCache() {
+  const result = ensureRecommendationCache(cachedListings, recommendationProfile);
+  if (result) {
+    cachedRecommendationResult = result;
+    recommendationGenerated = true;
+  }
 }
 
 /**
@@ -1392,7 +1511,13 @@ function resolveWorkspaceContext(listing, recommendation = null) {
     ctx.entityConfidence = 0;
   }
 
-  if (!rec?.id) return ctx;
+  if (!rec?.id) {
+    const analysis = /** @type {Record<string, unknown>} */ (listing.latest_analysis ?? {});
+    if (analysis.quality_score != null) ctx.qualityScore = analysis.quality_score;
+    if (analysis.risk_score != null) ctx.riskScore = analysis.risk_score;
+    if (analysis.decision_score != null) ctx.decisionScore = analysis.decision_score;
+    return ctx;
+  }
 
   try {
     const pdInput = buildPurchaseDecisionInput(rec, profile);
@@ -1486,10 +1611,7 @@ function openScenarioPanel(root, recordId, scenarioKey = 'price_minus_5', option
   const host = root.querySelector('#ai-ss-panel-host') ?? document.querySelector('#ai-ss-panel-host');
   if (!host) return;
 
-  const rec =
-    findRecommendationForListing(
-      cachedListings.find((item) => String(item.id) === String(recordId)) ?? selectedListing ?? {}
-    ) ?? selectedRecommendation;
+  const rec = getRecommendationById(recordId) ?? selectedRecommendation;
 
   const title = options.title ?? getDrawerTitleTr('scenario');
 
@@ -2154,6 +2276,7 @@ async function loadListings() {
   }
 
   cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
+  syncRecommendationCache();
   renderKpiCards(cachedListings);
   renderRepositoryKpiCards(cachedListings);
   renderAnalyticsKpiCards(cachedListings);
@@ -2187,36 +2310,14 @@ function mountGlobalPanelHosts() {
   main.appendChild(wrap);
 }
 
-async function showListingDetail(listing) {
-  normalizeSelectedContext(listing);
-  const detailEl = $('ai-listings-detail');
-  if (!detailEl) return;
-
-  const id = String(listing.id);
-  mountGlobalPanelHosts();
-  renderDecisionWorkspace(listing, { loadingDetail: true });
-  renderListingsList(cachedListings);
-
-  const [detailRes, eventsRes] = await Promise.all([
-    edgeRequest(`/listings/${id}`),
-    edgeRequest(`/listings/${id}/events`)
-  ]);
-
-  if (!detailRes.ok) {
-    renderDecisionWorkspace(listing);
-    const mount = detailEl.querySelector('#ai-ws-detail-mount');
-    if (mount) {
-      mount.innerHTML = buildWorkspaceErrorHtml(translateAdminErrorMessage(detailRes.message));
-    }
-    return;
-  }
-
-  const data = /** @type {Record<string, unknown>} */ (detailRes.data ?? {});
-  const listingData = /** @type {Record<string, unknown>} */ (data.listing ?? listing);
-  const latest = /** @type {Record<string, unknown>|null} */ (data.latest_analysis ?? null);
-  const events = /** @type {Array<Record<string, unknown>>} */ (
-    eventsRes.ok ? eventsRes.data?.events ?? [] : []
-  );
+/**
+ * @param {HTMLElement} detailEl
+ * @param {Record<string, unknown>} listingData
+ * @param {Record<string, unknown>|null} latest
+ * @param {Array<Record<string, unknown>>} events
+ */
+function renderListingDetailContent(detailEl, listingData, latest, events) {
+  const id = String(listingData.id ?? '');
   const status = String(listingData.status ?? 'draft');
 
   const matchedListingId = extractDuplicateFromEvents(events).matched_listing_id;
@@ -2282,6 +2383,75 @@ async function showListingDetail(listing) {
   bindDuplicateDetailActions(detailEl);
 }
 
+async function showListingDetail(listing) {
+  normalizeSelectedContext(listing);
+  const detailEl = $('ai-listings-detail');
+  if (!detailEl) return;
+
+  const id = String(listing.id ?? '').trim();
+  if (!id) return;
+
+  const seq = ++detailRequestSeq;
+  const cached = cachedListings.find((item) => String(item.id) === id) ?? listing;
+
+  mountGlobalPanelHosts();
+  renderDecisionWorkspace(cached, { loadingDetail: true });
+  renderListingsList(cachedListings);
+
+  try {
+    const [detailRes, eventsRes] = await Promise.all([
+      edgeRequest(`/listings/${id}`),
+      edgeRequest(`/listings/${id}/events`)
+    ]);
+
+    if (seq !== detailRequestSeq) return;
+
+    let listingData = /** @type {Record<string, unknown>} */ ({ ...cached });
+    let latest = /** @type {Record<string, unknown>|null} */ (extractLatestAnalysis(cached));
+    let events = /** @type {Array<Record<string, unknown>>} */ ([]);
+
+    if (detailRes.ok) {
+      const data = /** @type {Record<string, unknown>} */ (detailRes.data ?? {});
+      listingData = /** @type {Record<string, unknown>} */ (data.listing ?? cached);
+      latest = /** @type {Record<string, unknown>|null} */ (data.latest_analysis ?? latest);
+    } else if (!latest) {
+      renderDecisionWorkspace(listing);
+      const mount = detailEl.querySelector('#ai-ws-detail-mount');
+      if (mount) {
+        mount.innerHTML = buildWorkspaceErrorHtml(translateAdminErrorMessage(detailRes.message));
+      }
+      setStatus(detailRes.message, 'error');
+      return;
+    } else {
+      setStatus(`Detay API yanıt vermedi; önbellek verisi gösteriliyor. (${detailRes.message})`, 'info');
+    }
+
+    if (eventsRes.ok) {
+      events = /** @type {Array<Record<string, unknown>>} */ (eventsRes.data?.events ?? []);
+    }
+
+    renderListingDetailContent(detailEl, listingData, latest, events);
+  } catch (error) {
+    if (seq !== detailRequestSeq) return;
+
+    const latest = extractLatestAnalysis(cached);
+    if (latest || cached.title) {
+      renderListingDetailContent(detailEl, cached, latest, []);
+      setStatus('Detay yüklenirken hata oluştu; önbellek verisi gösteriliyor.', 'error');
+      console.error('[ai-listings-admin] showListingDetail failed:', error);
+      return;
+    }
+
+    renderDecisionWorkspace(listing);
+    const mount = detailEl.querySelector('#ai-ws-detail-mount');
+    if (mount) {
+      mount.innerHTML = buildWorkspaceErrorHtml(formatErrorFallbackLabel('detail'));
+    }
+    setStatus('İlan detayı yüklenemedi.', 'error');
+    console.error('[ai-listings-admin] showListingDetail failed:', error);
+  }
+}
+
 function bindDuplicateDetailActions(root) {
   root.querySelectorAll('[data-duplicate-detail-action]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -2320,6 +2490,8 @@ async function runQaAction(id, action, body) {
   const labels = {
     'submit-review': 'İncelemeye gönderiliyor',
     approve: 'Onaylanıyor',
+    publish: 'Yayınlanıyor',
+    unpublish: 'Yayından kaldırılıyor',
     reject: 'Reddediliyor',
     archive: 'Arşivleniyor',
     reanalyze: 'Yeniden analiz ediliyor'
@@ -2793,15 +2965,20 @@ function bindEvents() {
   });
 }
 
-export function initAiListingsAdmin() {
-  const state = getAdminPanelState(storage());
-
-  if (state === 'disabled') {
-    renderDisabledState();
+export async function initAiListingsAdmin() {
+  const sessionAccess = await verifyAdminSessionAccess();
+  if (!sessionAccess.sessionIsAdmin) {
+    await enforceAdminRoute({ returnTo: window.location.pathname });
     return;
   }
 
-  if (state === 'no-secret') {
+  const state = resolveAdminPanelAccess(storage(), sessionAccess);
+  if (state === 'disabled') {
+    renderAdminForbiddenHtml($('ai-listings-admin-root'), { showPublicLink: true });
+    return;
+  }
+
+  if (!getEdgeSecret(storage())) {
     renderSecretWarning();
   }
 
@@ -2812,8 +2989,23 @@ export function initAiListingsAdmin() {
   loadListings();
 }
 
+async function bootstrapAiListingsAdmin() {
+  try {
+    await initAiListingsAdmin();
+  } catch (error) {
+    console.error('[ai-listings-admin] bootstrap failed:', error);
+    const root = $('ai-listings-admin-root');
+    if (root) {
+      root.innerHTML =
+        '<div class="ai-listings-admin__gate"><h2>Karar Merkezi yüklenemedi</h2><p>Sayfayı yenileyin veya admin panelinden tekrar giriş yapın.</p></div>';
+    }
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initAiListingsAdmin);
+  document.addEventListener('DOMContentLoaded', () => {
+    void bootstrapAiListingsAdmin();
+  });
 } else {
-  initAiListingsAdmin();
+  void bootstrapAiListingsAdmin();
 }

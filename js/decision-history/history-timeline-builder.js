@@ -75,8 +75,8 @@ export function buildHistoryTimelineHtml(data = {}) {
 
       <div class="udc-history__grid">
         <div class="udc-history__block">
-          <h5>Son görüntülenen ilanlar</h5>
-          ${renderMiniList(recentListings, 'Henüz görüntülenen ilan yok.')}
+          <h5>Son görüntülenen seçenekler</h5>
+          ${renderMiniList(recentListings, 'Henüz görüntülenen seçenek yok.')}
         </div>
         <div class="udc-history__block">
           <h5>Son karşılaştırmalar</h5>

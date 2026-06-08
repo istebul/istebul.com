@@ -23,7 +23,7 @@ test('isValidListingStatus accepts only supported statuses', () => {
   for (const status of LISTING_STATUSES) {
     assert.equal(isValidListingStatus(status), true);
   }
-  assert.equal(isValidListingStatus('published'), false);
+  assert.equal(isValidListingStatus('published'), true);
   assert.equal(isValidListingStatus(''), false);
   assert.equal(isValidListingStatus(null), false);
 });
@@ -50,6 +50,14 @@ test('resolveStatusTransition allows valid workflow paths', () => {
     nextStatus: 'archived'
   });
   assert.deepEqual(resolveStatusTransition('approved', QA_ACTIONS.REANALYZE), {
+    ok: true,
+    nextStatus: 'approved'
+  });
+  assert.deepEqual(resolveStatusTransition('approved', QA_ACTIONS.PUBLISH), {
+    ok: true,
+    nextStatus: 'published'
+  });
+  assert.deepEqual(resolveStatusTransition('published', QA_ACTIONS.UNPUBLISH), {
     ok: true,
     nextStatus: 'approved'
   });
@@ -128,9 +136,12 @@ test('STATUS_FILTER_CHIPS includes All and each status', () => {
   assert.deepEqual(values, LISTING_STATUSES);
 });
 
-test('approved does not imply public visibility', () => {
+test('only published listings are publicly visible when publish flag is enabled', () => {
+  const env = { AI_LISTINGS_PUBLIC_PUBLISH_ENABLED: 'true' };
   for (const status of LISTING_STATUSES) {
-    assert.equal(isListingPubliclyVisible(status), false);
+    const visible = isListingPubliclyVisible(status, env);
+    assert.equal(visible, status === 'published');
   }
-  assert.equal(isListingPubliclyVisible('approved'), false);
+  assert.equal(isListingPubliclyVisible('approved', env), false);
+  assert.equal(isListingPubliclyVisible('published', {}), false);
 });

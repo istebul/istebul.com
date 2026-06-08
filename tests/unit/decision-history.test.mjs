@@ -146,8 +146,8 @@ test('timeline html renders Karar Geçmişi', () => {
   assert.match(buildHistoryTimelineHtml({}), /Karar Geçmişi/);
 });
 
-test('timeline html shows Son görüntülenen ilanlar', () => {
-  assert.match(buildHistoryTimelineHtml({}), /Son görüntülenen ilanlar/);
+test('timeline html shows Son görüntülenen seçenekler', () => {
+  assert.match(buildHistoryTimelineHtml({}), /Son görüntülenen seçenekler/);
 });
 
 test('timeline html shows Son karşılaştırmalar', () => {

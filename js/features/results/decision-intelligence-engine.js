@@ -13,7 +13,8 @@ import {
   buildConfidenceScore,
   buildRiskItem,
   clampScore,
-  resolveScoreLabel
+  resolveScoreLabel,
+  riskLevelToTone
 } from './results-engine.js';
 
 function safeNumber(value) {
@@ -108,6 +109,7 @@ export function buildDecisionContext(category, formData = {}, metrics = {}, extr
     const sqm = safeNumber(state.squareMeters);
     const pricePerSqm = sqm > 0 && budget > 0 ? budget / sqm : null;
     const isInvestment = String(state.purchasePurpose || '').includes('Yatırım');
+    const isRental = String(state.purchasePurpose || '').includes('Kiralamak');
     const liquidity = safeNumber(m.liquidityRisk);
     const eq = safeNumber(m.earthquakeRiskScore);
 
@@ -120,6 +122,7 @@ export function buildDecisionContext(category, formData = {}, metrics = {}, extr
       budget,
       pricePerSqm,
       isInvestment,
+      isRental,
       liquidity,
       earthquakeRisk: eq,
       locationFit: safeNumber(m.locationFit),
@@ -227,7 +230,7 @@ export function computeDecisionScoreV3(category, context = {}) {
     const dti = safeNumber(context.dti);
     const budgetFit = safeNumber(context.budgetFit) || 65;
     const locationFit = safeNumber(context.locationFit) || 60;
-    const purpose = context.isInvestment ? 72 : 84;
+    const purpose = context.isInvestment ? 72 : context.isRental ? 76 : 84;
 
     score = Math.round(
       budgetFit * 0.22 +
@@ -432,7 +435,14 @@ export function buildRiskAnalysisV3(category, context = {}) {
       ),
       buildRiskItem(
         'dues',
-        safeNumber(context.metrics?.ownership?.dues) > 4000 ? 'orta' : 'düşük',
+        (() => {
+          const duesMonthly =
+            safeNumber(context.formData?.dues) ||
+            safeNumber(context.formData?.duesExpectation) ||
+            safeNumber(context.metrics?.ownership?.duesMonthly) ||
+            safeNumber(context.metrics?.ownership?.annualDues) / 12;
+          return duesMonthly > 4000 ? 'orta' : 'düşük';
+        })(),
         'Aidat ve ek giderler',
         'Aidat ve bakım kalemleri toplam yükü etkiler.',
         'Yıllık aidat ve sigorta maliyetini tabloya ekleyin.'
@@ -735,6 +745,21 @@ export function buildNextStepsV3(category, context = {}) {
   const level = context.recommendationLevel;
 
   if (cat === 'konut') {
+    const purpose = String(context.formData?.purchasePurpose || '');
+    if (purpose.includes('Kiralamak')) {
+      const rentalSteps = [
+        'Kira sözleşmesi ve yıllık toplam yaşam maliyetini karşılaştırın.',
+        'Depozito ve aidat kalemlerini netleştirin.',
+        'Bölge kira trendini 3 benzer daire ile doğrulayın.',
+        'Ulaşım ve okul/hastane erişimini yerinde kontrol edin.',
+        'Sözleşmedeki yıllık artış ve tahliye koşullarını okuyun.'
+      ];
+      if (level === 'avoid' || level === 'wait') {
+        rentalSteps.unshift('Kira bütçesi ve depozito planını revize etmeden ilerlemeyin.');
+      }
+      return rentalSteps.slice(0, 6);
+    }
+
     const steps = [
       'Bölge emsallerini ve m² fiyat bandını karşılaştırın.',
       'Kredi ön onayı ve faiz senaryolarını tablolaştırın.',
@@ -838,7 +863,7 @@ export async function fetchExecutiveSummaryV3(category, context = {}, intelligen
   const result = await fetchInsightWithProxy(input, {
     executiveOnly: true,
     skipProxy: options.skipProxy,
-    timeoutMs: options.timeoutMs
+    timeoutMs: options.timeoutMs ?? 10000
   });
 
   return {
@@ -853,6 +878,40 @@ export async function fetchExecutiveSummaryV3(category, context = {}, intelligen
  * @param {Array<{label,impact,reason}>} scoreFactors
  * @param {string} classPrefix
  */
+/**
+ * @param {Array<{title?: string, level?: string, description?: string, recommendation?: string}>} riskAnalysis
+ * @param {string} classPrefix
+ */
+export function renderRiskAnalysisHtml(riskAnalysis, classPrefix = 'konut-v2') {
+  const risks = Array.isArray(riskAnalysis) ? riskAnalysis : [];
+  if (!risks.length) return '';
+
+  const esc = escapeHtml;
+  return `
+    <section class="${esc(classPrefix)}-risks" aria-label="Risk analizi">
+      <h3>Risk Özeti</h3>
+      <div class="${esc(classPrefix)}-risk-grid">
+        ${risks
+          .map(
+            (r) => `
+          <article class="${esc(classPrefix)}-risk-card">
+            <div class="${esc(classPrefix)}-risk-card-head">
+              <h4>${esc(r.title || r.key || 'Risk')}</h4>
+              <span class="${esc(classPrefix)}-risk ${esc(classPrefix)}-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level || '—')}</span>
+            </div>
+            <p>${esc(r.description || '')}</p>
+            ${
+              r.recommendation
+                ? `<p class="${esc(classPrefix)}-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>`
+                : ''
+            }
+          </article>`
+          )
+          .join('')}
+      </div>
+    </section>`;
+}
+
 export function renderScoreFactorsHtml(scoreFactors, classPrefix = 'konut-v2') {
   const factors = Array.isArray(scoreFactors) ? scoreFactors : [];
   if (!factors.length) return '';
