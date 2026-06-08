@@ -115,9 +115,31 @@
   margin: 0 0 1.25rem;
 }
 
-/* Dashboard AI hero accent */
+/* Dashboard AI hero accent — light copy on dark gradient hero */
 .dashboard-v2-hero .ib-ai-platform-banner {
   margin-top: 0.85rem;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+.dashboard-v2-hero .ib-ai-platform-banner__icon {
+  background: rgba(255, 255, 255, 0.14);
+  color: #bfdbfe;
+}
+
+.dashboard-v2-hero .ib-ai-platform-banner__copy strong {
+  color: #f8fafc;
+}
+
+.dashboard-v2-hero .ib-ai-platform-banner__copy p {
+  color: #e2e8f0;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+html.ib-ds-v4.ib-premium-v7 .account-root .dashboard-v2-hero .ib-ai-platform-banner__copy p {
+  color: #e2e8f0;
 }
 
 .dashboard-v2-analysis-card .ib-ai-badge {
