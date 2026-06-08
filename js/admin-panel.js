@@ -651,7 +651,7 @@ async function loadOpsCommandCenter() {
       direct: () =>
         sb
           .from('partner_lead_dispatch_logs')
-          .select('success, created_at, duration_ms')
+          .select('success, created_at, latency_ms')
           .gte('created_at', since24h)
           .limit(500)
     }),

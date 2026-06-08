@@ -16,9 +16,9 @@ describe('partner-ops-monitor', () => {
 
   it('summarizeDispatchLogs24h computes fail rate', () => {
     const s = summarizeDispatchLogs24h([
-      { success: true, duration_ms: 100 },
-      { success: false, duration_ms: 200 },
-      { success: true, duration_ms: 300 }
+      { success: true, latency_ms: 100 },
+      { success: false, latency_ms: 200 },
+      { success: true, latency_ms: 300 }
     ]);
     assert.equal(s.attempts24h, 3);
     assert.equal(s.failCount24h, 1);
@@ -59,7 +59,7 @@ describe('partner-ops-monitor', () => {
       config: { sla: { dispatchLatencyP95Ms: 900000 } },
       dispatchLogs24h: Array.from({ length: 5 }, () => ({
         success: true,
-        duration_ms: 1_000_000
+        latency_ms: 1_000_000
       })),
       endpoints: [],
       leads: [],

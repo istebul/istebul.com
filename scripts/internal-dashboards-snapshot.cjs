@@ -54,7 +54,7 @@ async function main() {
         .limit(3000),
       sb
         .from('partner_lead_dispatch_logs')
-        .select('success, duration_ms, created_at')
+        .select('success, latency_ms, created_at')
         .gte('created_at', since24h)
         .limit(3000),
       sb.from('lifecycle_enrollments').select('flow_id, status').gte('enrolled_at', since7d),
