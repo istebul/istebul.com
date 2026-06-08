@@ -21,15 +21,7 @@
   to = "/index.html"
   status = 200
 
-[[redirects]]
-  from = "/admin"
-  to = "/admin-panel.html"
-  status = 302
-
-[[redirects]]
-  from = "/admin/"
-  to = "/admin-panel.html"
-  status = 302
+# Admin: served from dist/admin/index.html (see production-build.cjs) — no redirect rules.
 
 [[redirects]]
   from = "/partner"

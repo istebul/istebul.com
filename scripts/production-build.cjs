@@ -798,6 +798,7 @@ if (gscCode) {
   );
 }
 
+const { getAdminDeepLinkSlugs } = require('./lib/admin-deep-links.cjs');
 const {
   getGa4MeasurementId,
   applyGa4ConsentHeadToHtmlFiles
@@ -808,6 +809,19 @@ if (ga4Id) {
   console.log(`[ga4] consent-mode head snippet injected into ${ga4Result.injected} HTML file(s)`);
 } else {
   console.warn('[ga4] GA4_MEASUREMENT_ID not set — skip gtag head (see docs/ZIYARETCI_ANALITIK_KURULUM.md)');
+}
+
+/** Admin deep links — physical shells so /admin/* is not rewritten by /* SPA fallback */
+const adminIndexPath = path.join(dist, 'admin', 'index.html');
+if (fs.existsSync(adminIndexPath)) {
+  const adminShellHtml = fs.readFileSync(adminIndexPath, 'utf8');
+  const adminDeepLinkSlugs = getAdminDeepLinkSlugs();
+  adminDeepLinkSlugs.forEach((slug) => {
+    const routeDir = path.join(dist, 'admin', slug);
+    fs.mkdirSync(routeDir, { recursive: true });
+    fs.writeFileSync(path.join(routeDir, 'index.html'), adminShellHtml);
+  });
+  console.log(`[admin] deep-link shells: ${adminDeepLinkSlugs.length} route(s)`);
 }
 
 console.log('Production build complete: dist/');
