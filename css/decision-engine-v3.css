@@ -82,11 +82,16 @@
 .decision-v3-factor-list,
 .decision-v3-risk-list,
 .decision-v3-warning-list,
-.decision-v3-action-list,
 .decision-v3-insights,
 .decision-v3-whatif-list {
   margin: 0;
   padding-left: 1.1rem;
+}
+
+/* Action list uses custom counter in ai-platform-surface.css */
+.decision-v3-action-list {
+  margin: 0;
+  padding-left: 0;
 }
 
 .decision-v3-profile-grid {

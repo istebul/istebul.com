@@ -326,7 +326,7 @@ function renderSigortaResultsV2Html(model) {
       </section>
 
       <article class="sigorta-v2-block sigorta-v2-block--exec" data-sigorta-v2-insight-root>
-        <h3>AI karar yorumu</h3>
+        <h3>Yapay zeka karar yorumu</h3>
         ${renderInsightBlocksHtml(model.insight, esc, {
           planTier: model.planTier,
           insightInput: model.insightInput

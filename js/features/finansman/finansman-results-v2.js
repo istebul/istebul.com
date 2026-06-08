@@ -778,7 +778,7 @@ function renderFinansmanResultsV2Html(model) {
       </section>
 
       <article class="finansman-v2-block finansman-v2-block--exec" data-finansman-v2-insight-root>
-        <h3>AI karar yorumu</h3>
+        <h3>Yapay zeka karar yorumu</h3>
         ${renderInsightBlocksHtml(model.insight, esc, {
           planTier: model.planTier,
           insightInput: model.insightInput
