@@ -1840,6 +1840,55 @@ img {
     background: linear-gradient(180deg, rgba(31, 111, 235, 0.04), transparent);
 }
 
+.decision-memory-insights {
+    margin-bottom: 1.25rem;
+    padding: 1.15rem 1.25rem;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.decision-memory-insights-head h3 {
+    margin: 0 0 0.35rem;
+    font-size: 1.08rem;
+}
+
+.decision-memory-insights-head p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.decision-memory-insights-soft {
+    margin: 0.85rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.decision-memory-insights-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0.95rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.decision-memory-insights-item {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.decision-memory-insights-label {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+}
+
+.decision-memory-insights-value {
+    font-size: 0.98rem;
+    font-weight: 600;
+}
+
 .decision-history-recent-snippet-inner {
     display: grid;
     gap: 1rem;
@@ -2794,6 +2843,7 @@ body::selection {
 :root[data-theme="dark"] .assistant-recommendation,
 :root[data-theme="dark"] .assistant-insight,
 :root[data-theme="dark"] .decision-history-card,
+:root[data-theme="dark"] .decision-memory-insights,
 :root[data-theme="dark"] .admin-panel-card,
 :root[data-theme="dark"] .admin-stat,
 :root[data-theme="dark"] .admin-finance-list div,

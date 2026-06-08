@@ -3675,6 +3675,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             }
 
             this.decisionHistory = this.readStoredArray(storageKey);
+            this.ui.renderDecisionMemoryInsights?.(this.decisionHistory);
             this.ui.renderDecisionHistory?.(this.decisionHistory);
             this.ui.renderRecentDecisionHistorySnippet?.(this.decisionHistory);
             this.injectDecisionHistoryUpsell();
@@ -3716,6 +3717,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const filtered = mergeDecisionHistoryEntry(history, record, 12);
         this.writeStoredValue(storageKey, filtered);
         this.decisionHistory = filtered;
+        this.ui.renderDecisionMemoryInsights?.(this.decisionHistory);
         this.ui.renderDecisionHistory?.(this.decisionHistory);
         void this.injectDecisionHistoryUpsell();
         this.saveSearchHistory(`Karar Asistanı: ${result.categoryName} - ${topPick?.name || 'Sonuç'}`);
@@ -3777,6 +3779,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             (item) => !matchesDecisionHistoryActionId(item, decisionId)
         );
         this.writeStoredValue(storageKey, this.decisionHistory);
+        this.ui.renderDecisionMemoryInsights?.(this.decisionHistory);
         this.ui.renderDecisionHistory?.(this.decisionHistory);
         this.ui.showSuccess('Karar geçmişten silindi.');
     }
