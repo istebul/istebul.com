@@ -467,6 +467,69 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await assertLocatorWithinViewport(feedback, MOBILE_2C_VIEWPORT.width);
   });
 
+  test('karar geçmişi canonical entry schemaVersion=1 kaydeder ve geçmiş sayfası yüklenir', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.waitForSelector('#premium-karar-analizi-root #assistant-results', { state: 'attached', timeout: 15000 });
+    await page.waitForFunction(
+      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.saveDecisionHistory === 'function',
+      null,
+      { timeout: 15000 }
+    );
+
+    const historyState = await page.evaluate(() => {
+      const app = window.app;
+      const userId = 'e2e-canonical-history-user';
+      app.currentUser = { id: userId, name: 'E2E User' };
+
+      app.assistantCategory = 'arac';
+      app.assistantAnswers = {
+        province: 'İstanbul',
+        district: 'Kadıköy',
+        carModel: 'Toyota|Corolla',
+        usage: 'city',
+        budget: '1850000',
+        fuel: 'hybrid',
+        body: 'sedan',
+        priority: 'lowCost'
+      };
+
+      const categoryConfig = app.getResolvedDecisionAssistantConfig()?.arac;
+      if (!categoryConfig) return { ok: false, reason: 'arac config missing' };
+
+      const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+      const saved = app.saveDecisionHistory(result);
+      const storageKey = app.getUserHistoryStorageKey('istebul_decision_history');
+      const stored = storageKey ? JSON.parse(localStorage.getItem(storageKey) || '[]') : [];
+
+      return {
+        ok: true,
+        saved,
+        entry: stored[0] || null
+      };
+    });
+
+    expect(historyState.ok).toBe(true);
+    expect(historyState.saved).toBe(true);
+    expect(historyState.entry?.schemaVersion).toBe(1);
+    expect(historyState.entry?.score).toBeTruthy();
+    expect(historyState.entry?.riskLevel).toBeTruthy();
+    expect(historyState.entry?.yearlyCost).toBeTruthy();
+    expect(historyState.entry?.decisionProfile).toBeTruthy();
+
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.evaluate(() => {
+      window.app.currentUser = { id: 'e2e-canonical-history-user', name: 'E2E User' };
+      window.app.loadDecisionHistory();
+    });
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
+    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.decision-history-card').first()).toContainText(/Toyota Corolla/i);
+  });
+
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);

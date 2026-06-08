@@ -503,6 +503,9 @@ assert(read('css/style.css').includes('p4-premium-product.css'), 'P4 premium sty
   assert.strictEqual(app.decisionHistory.length, 1, 'Decision history was not saved.');
   assert(app.decisionHistory[0].topPick.name.includes('Toyota Corolla'));
   assert(app.decisionHistory[0].dataHealth.confidenceScore >= 65, 'Decision history did not save data health.');
+  assert.strictEqual(app.decisionHistory[0].schemaVersion, 1, 'Decision history should persist canonical schemaVersion.');
+  assert.ok(app.decisionHistory[0].riskLevel, 'Decision history should persist riskLevel.');
+  assert.ok(app.decisionHistory[0].decisionProfile, 'Decision history should persist decisionProfile.');
   const persisted = app.readStoredArray(decisionHistoryKey);
   assert.strictEqual(persisted.length, 1, 'Decision history should persist to storage.');
   assert(app.getDemoListings({ category: 'ev' }).length >= 2, 'Demo home listings are missing.');
