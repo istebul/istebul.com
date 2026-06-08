@@ -219,4 +219,19 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('#page-karar-analizi')).toBeVisible();
     await expect(page.locator('#assistant-category-rail .assistant-category').first()).toBeVisible();
   });
+
+  test('karar asistanı karşılaştırma önizlemesinde merkez CTA görünür', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    const preview = page.locator('.ib-premium-compare-preview');
+    await expect(preview).toBeVisible({ timeout: 15000 });
+
+    const compareCta = preview.locator('.ib-premium-compare-preview-actions a');
+    await expect(compareCta).toBeVisible();
+    await expect(compareCta).toHaveText(/Karşılaştırma merkezine git/i);
+    await expect(compareCta).toHaveAttribute('href', /\/karsilastir\/?$/);
+    await expect(compareCta).toHaveClass(/btn-outline/);
+  });
 });
