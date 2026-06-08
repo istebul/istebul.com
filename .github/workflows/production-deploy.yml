@@ -79,6 +79,10 @@ jobs:
         if: steps.gate.outputs.skip != 'true'
         run: supabase functions deploy vacation-intake --project-ref "$SUPABASE_PROJECT_REF"
 
+      - name: Deploy ai-listings-intake
+        if: steps.gate.outputs.skip != 'true'
+        run: supabase functions deploy ai-listings-intake --project-ref "$SUPABASE_PROJECT_REF"
+
       - name: Deploy partner-endpoint-test (CORS hotfix path)
         if: steps.gate.outputs.skip != 'true'
         run: supabase functions deploy partner-endpoint-test --project-ref "$SUPABASE_PROJECT_REF"
@@ -269,6 +273,11 @@ jobs:
         if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-vertical-partner-dispatch-migration-api.sh
 
+      - name: Apply AI listings schema fallback (Management API)
+        id: ai_listings_schema_fallback
+        if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
+        run: bash scripts/apply-ai-listings-migration-api.sh
+
       - name: Verify vertical partner dispatch schema
         if: steps.gate.outputs.skip != 'true'
         run: node scripts/verify-vertical-partner-dispatch-schema.cjs
@@ -294,6 +303,22 @@ jobs:
             echo "ANALYTICS_HASH_SALT synced to edge"
           else
             echo "::warning::Set GitHub secret ANALYTICS_HASH_SALT for internal traffic exclusion hashing"
+          fi
+
+      - name: Sync AI listings edge secrets
+        if: steps.gate.outputs.skip != 'true'
+        env:
+          AI_LISTINGS_EDGE_SECRET: ${{ secrets.AI_LISTINGS_EDGE_SECRET }}
+        run: |
+          supabase secrets set AI_LISTINGS_SUPABASE_ENABLED=true --project-ref "$SUPABASE_PROJECT_REF"
+          supabase secrets set AI_LISTINGS_PUBLIC_PUBLISH_ENABLED=true --project-ref "$SUPABASE_PROJECT_REF"
+          if [ -n "$AI_LISTINGS_EDGE_SECRET" ]; then
+            supabase secrets set AI_LISTINGS_EDGE_SECRET="$AI_LISTINGS_EDGE_SECRET" --project-ref "$SUPABASE_PROJECT_REF"
+            echo "AI listings edge secrets synced"
+          else
+            DETERMINISTIC_AI_LISTINGS_EDGE_SECRET="isteai-edge-${SUPABASE_PROJECT_REF}"
+            supabase secrets set AI_LISTINGS_EDGE_SECRET="$DETERMINISTIC_AI_LISTINGS_EDGE_SECRET" --project-ref "$SUPABASE_PROJECT_REF"
+            echo "::warning::AI_LISTINGS_EDGE_SECRET GitHub secret eksik — deterministik değer kullanıldı: ${DETERMINISTIC_AI_LISTINGS_EDGE_SECRET}. CI/script auth için aynı değeri GitHub secret olarak ekleyin."
           fi
 
       - name: Deploy edge functions
@@ -331,6 +356,8 @@ jobs:
             paytr-create-payment-session
             paytr-webhook
             payment-provider-status
+            ai-listings
+            ai-listings-intake
           )
           for fn in "${FUNCTIONS[@]}"; do
             echo "Deploying $fn..."

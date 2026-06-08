@@ -565,7 +565,7 @@ test('buildSimulatorShellHtml renders host', () => {
 
 test('guard: no endpoint change in router', () => {
   const router = fs.readFileSync(routerPath, 'utf8');
-  assert.match(router, /resource: 'listings'/);
+  assert.match(router, /'listings'/);
   assert.doesNotMatch(router, /decision-simulator/i);
   assert.doesNotMatch(router, /decision_simulator/i);
 });

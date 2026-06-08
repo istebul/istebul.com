@@ -1,3 +1,7 @@
+/**
+ * @deprecated Canlı /konut/ sihirbazı `real-estate-app.js` + `konut-flow.js` kullanır.
+ * Üretim akışı değişikliklerini bu dosyada yapmayın.
+ */
 export const KONUT_STEPS = [
   {
     id: 'profile',
@@ -33,7 +37,7 @@ export const KONUT_STEPS = [
     id: 'risks',
     label: 'Riskler',
     title: 'Öncelikli risk alanlarınız',
-    subtitle: 'En fazla 5 risk faktörü seçebilirsiniz.'
+    subtitle: 'En fazla 6 risk faktörü seçebilirsiniz.'
   }
 ];
 

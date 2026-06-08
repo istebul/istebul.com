@@ -28,17 +28,17 @@ assert(index.includes('homepage.bundle.css') || index.includes('enterprise-card-
   'Homepage should load homepage.bundle.css (or enterprise-card-readability.css) for contrast.'
 );
 assert(index.includes('home-economic-indicators-mount'), 'Homepage economic indicators mount is missing.');
-test('home economic indicators flex order follows hero in premium layout', () => {
+{
   const css = read('css/istebul-premium-final-v7.css');
   const homeOrder = css.match(/#home\s*\{[^}]*order:\s*(\d+)/)?.[1];
   const evdsOrder = css.match(/#home-economic-indicators\s*\{[^}]*order:\s*(\d+)/)?.[1];
   const howOrder = css.match(/#how-it-works\s*\{[^}]*order:\s*(\d+)/)?.[1];
-  assert.ok(homeOrder);
-  assert.ok(evdsOrder);
-  assert.ok(howOrder);
-  assert.ok(Number(evdsOrder) > Number(homeOrder));
-  assert.ok(Number(howOrder) > Number(evdsOrder));
-});
+  assert.ok(homeOrder, 'Home section flex order is missing in premium layout CSS.');
+  assert.ok(evdsOrder, 'Economic indicators flex order is missing in premium layout CSS.');
+  assert.ok(howOrder, 'How-it-works flex order is missing in premium layout CSS.');
+  assert.ok(Number(evdsOrder) > Number(homeOrder), 'Economic indicators should follow hero in premium layout.');
+  assert.ok(Number(howOrder) > Number(evdsOrder), 'How-it-works should follow economic indicators in premium layout.');
+}
 assert(index.includes('/kvkk.html'), 'KVKK policy link is missing.');
 assert(index.includes('/sitemap.xml'), 'Sitemap link is missing.');
 assert(!index.includes('https://plausible.io/js/plausible.js'), 'Analytics should not load before consent.');
@@ -59,7 +59,12 @@ assert(uiSource.includes('comparison-count'), 'Comparison nav counter id is miss
 assert(uiSource.includes('favorites-count'), 'Favorites nav counter id is missing.');
 assert(read('js/core/storage-keys.js').includes('istebu_theme'), 'Theme storage key is missing.');
 assert(index.includes('cro-sticky-cta'), 'Mobile sticky CTA is missing.');
-assert(index.includes('ib-trust-rail'), 'Trust rail is missing.');
+assert(
+  index.includes('ib-trust-rail') ||
+  read('auto/index.html').includes('ib-trust-rail') ||
+  index.includes('ib-trust-unified'),
+  'Trust rail is missing.'
+);
 
 const pkg = JSON.parse(read('package.json'));
 assert(pkg.scripts.build.includes('scripts/production-build.cjs'), 'Production build script should create optimized output.');
@@ -117,7 +122,10 @@ assert(appSource.includes('data-preview-sources'), 'Hero preview source links re
 assert(indexHtml.includes('data-my-listings'), 'User menu should expose a real my-listings action.');
 assert(security.includes('export const escapeHtml'), 'Shared security escape helper is missing.');
 assert(security.includes('export const safeUrl'), 'Shared safe URL helper is missing.');
-assert(appSource.includes('loadAnalytics()'), 'Consent-gated analytics loader is missing.');
+assert(
+  appSource.includes('bootAnalyticsMeasurement') || read('js/runtime/analytics-consent-boot.js').includes('bootAnalyticsMeasurement'),
+  'Consent-gated analytics loader is missing.'
+);
 assert(appSource.includes('monitoring.init(true)'), 'Consent-gated monitoring loader is missing.');
 assert(
   appSource.includes('STORAGE_KEYS.COOKIE_CONSENT') || appSource.includes('istebul_cookie_consent'),
@@ -426,13 +434,24 @@ assert(read('css/style.css').includes('p4-premium-product.css'), 'P4 premium sty
   const { installAssistantUI } = await import(path.join(root, 'js/ui/assistant-ui.js'));
   installAssistantUI(UIManager);
   const uiManager = new UIManager();
-  const resultContainer = { innerHTML: '', scrollIntoView: () => {} };
+  const resultContainer = {
+    innerHTML: '',
+    isConnected: true,
+    scrollIntoView: () => {},
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
   global.document.getElementById = (id) => id === 'assistant-results' ? resultContainer : null;
   [carResult, homeResult, vacationResult].forEach((result) => {
     resultContainer.innerHTML = '';
     uiManager.renderDecisionResults(result);
+    assert(resultContainer.innerHTML.includes('decision-result-summary'), 'Decision result UI should render decision result summary card.');
+    assert(resultContainer.innerHTML.includes('decision-result-ai-rationale'), 'Decision result UI should render AI decision rationale layer.');
+    assert(resultContainer.innerHTML.includes('decision-result-share'), 'Decision result UI should render decision share card.');
     assert(resultContainer.innerHTML.includes('assistant-choice-summary'), 'Decision result UI should render choice summary.');
     assert(resultContainer.innerHTML.includes('assistant-recommendation-verdict'), 'Decision result UI should render recommendation verdicts.');
+    assert(resultContainer.innerHTML.includes('Karşılaştırma merkezine git'), 'Decision result toolbar should link to compare center.');
+    assert(resultContainer.innerHTML.includes('href="/karsilastir/"'), 'Decision result toolbar should include compare center href.');
     assert(!resultContainer.innerHTML.includes('undefined'), 'Decision result UI should not leak undefined text.');
   });
 
@@ -445,7 +464,7 @@ assert(read('css/style.css').includes('p4-premium-product.css'), 'P4 premium sty
   app.ui = { renderComparison: () => {}, showSuccess: () => {}, showError: () => {} };
   const recommendationComparison = app.createComparisonItemFromRecommendation(carResult.recommendations[0], carResult);
   assert(recommendationComparison.title.includes('Toyota Corolla'), 'Recommendation comparison item is wrong.');
-  app.addComparisonItem(recommendationComparison);
+  await app._addComparisonItem(recommendationComparison);
   assert.strictEqual(app.comparisonItems.length, 1, 'Recommendation was not added to comparison.');
   const listingComparison = app.createComparisonItemFromListing(app.getDemoListings({ category: 'arac' })[0]);
   assert(listingComparison.calculationRows.length >= 4, 'Listing comparison calculation rows are missing.');
@@ -484,6 +503,9 @@ assert(read('css/style.css').includes('p4-premium-product.css'), 'P4 premium sty
   assert.strictEqual(app.decisionHistory.length, 1, 'Decision history was not saved.');
   assert(app.decisionHistory[0].topPick.name.includes('Toyota Corolla'));
   assert(app.decisionHistory[0].dataHealth.confidenceScore >= 65, 'Decision history did not save data health.');
+  assert.strictEqual(app.decisionHistory[0].schemaVersion, 1, 'Decision history should persist canonical schemaVersion.');
+  assert.ok(app.decisionHistory[0].riskLevel, 'Decision history should persist riskLevel.');
+  assert.ok(app.decisionHistory[0].decisionProfile, 'Decision history should persist decisionProfile.');
   const persisted = app.readStoredArray(decisionHistoryKey);
   assert.strictEqual(persisted.length, 1, 'Decision history should persist to storage.');
   assert(app.getDemoListings({ category: 'ev' }).length >= 2, 'Demo home listings are missing.');

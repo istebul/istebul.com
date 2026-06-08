@@ -47,7 +47,7 @@ async function main() {
   const [logsRes, endpointsRes, leadsRes] = await Promise.all([
     sb
       .from('partner_lead_dispatch_logs')
-      .select('success, duration_ms, created_at, endpoint_id, http_status')
+      .select('success, latency_ms, created_at, endpoint_id, http_status')
       .gte('created_at', since24h)
       .order('created_at', { ascending: false })
       .limit(5000),

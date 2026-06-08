@@ -24,6 +24,7 @@ import {
   fetchAdminRowById,
   renderAdminDataSourceNotices
 } from './admin/admin-query.js';
+import { isAdminProfile } from './admin/admin-route-guard.js';
 import {
   computeExecutiveFunnel,
   computeChannelBreakdown,
@@ -49,11 +50,13 @@ import {
 } from './features/sales/partner-crm-pipeline.js';
 import { registerAdminPageHandlers, showAdminPage } from './admin/admin-page-routing.js';
 import { initAdminShell } from './admin/admin-shell.js';
+import { injectAdminListingManagementNav } from './admin/admin-decision-nav.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
 import { initFinanceAdmin } from './admin/finance-admin.js';
 import { initSigortaAdmin } from './admin/sigorta-admin.js';
+import { initKaskoAdmin } from './admin/kasko-admin.js';
 import { initPartnerEndpointsAdmin } from './admin/partner-endpoints-admin.js';
 import { loadPaymentsAdminPage } from './admin/payments-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
@@ -172,7 +175,11 @@ async function login() {
     return;
   }
   currentUser = data.user;
-  showApp();
+  await showApp();
+  const returnTo = new URLSearchParams(window.location.search).get('returnTo');
+  if (returnTo && returnTo.startsWith('/admin')) {
+    window.location.assign(returnTo);
+  }
 }
 
 async function logout() {
@@ -188,7 +195,7 @@ async function showApp() {
     .eq('id', currentUser.id)
     .single();
 
-  if (error || !profile || profile.role !== 'admin' || profile.is_banned === true) {
+  if (error || !profile || !isAdminProfile(profile)) {
     await sb.auth.signOut();
     currentUser = null;
     document.getElementById('app').style.display = 'none';
@@ -206,6 +213,7 @@ async function showApp() {
   const topAvatar = document.getElementById('admin-topbar-avatar');
   if (topEmail) topEmail.textContent = email;
   if (topAvatar) topAvatar.textContent = email[0]?.toUpperCase() || 'A';
+  injectAdminListingManagementNav();
   initPartnerApplicationsShell();
   loadDashboard();
   loadSettings();
@@ -643,7 +651,7 @@ async function loadOpsCommandCenter() {
       direct: () =>
         sb
           .from('partner_lead_dispatch_logs')
-          .select('success, created_at, duration_ms')
+          .select('success, created_at, latency_ms')
           .gte('created_at', since24h)
           .limit(500)
     }),
@@ -1639,6 +1647,7 @@ const verticalAdmin = initVerticalAdmin({ sb });
 const housingAdmin = initHousingAdmin({ sb, adminAction, toast });
 const financeAdmin = initFinanceAdmin({ sb, adminAction, toast });
 const sigortaAdmin = initSigortaAdmin({ sb, adminAction, toast });
+const kaskoAdmin = initKaskoAdmin({ sb, adminAction, toast });
 const partnerEndpointsAdmin = initPartnerEndpointsAdmin({ sb, adminAction, toast });
 
 async function loadDashboard() {
@@ -1786,7 +1795,7 @@ async function loadEvdsStatusCard() {
 const KEYS = ['phone','email','address','instagram','twitter','facebook','linkedin','youtube','tiktok',
               'site-name','site-subtitle','hero-eyebrow','hero-title','hero-desc','title','description','auto_whatsapp_phone',
               'analytics_clean_start_at','live_finance_feed_url'];
-const BOOLEAN_SETTING_KEYS = ['maintenance','live_providers_enabled','home_category_auto_enabled','home_category_konut_enabled','home_category_tatil_enabled','home_category_finans_enabled','home_category_sigorta_enabled','home_category_kasko_enabled'];
+const BOOLEAN_SETTING_KEYS = ['maintenance','live_providers_enabled','ai_listings_public_enabled','home_category_auto_enabled','home_category_konut_enabled','home_category_tatil_enabled','home_category_finans_enabled','home_category_sigorta_enabled','home_category_kasko_enabled'];
 
 async function loadSettings() {
   const res = await fetchAdminTable(sb, {
@@ -1823,6 +1832,7 @@ async function loadSettings() {
   }
   loadAnalyticsExclusionSettings();
   warnIfSocialSettingsEmpty();
+  updateLiveDataAdminHint();
 }
 
 async function loadAnalyticsExclusionSettings() {
@@ -1952,6 +1962,16 @@ function warnIfSocialSettingsEmpty({ notify = false } = {}) {
 
 async function saveSettings() {
   warnIfSocialSettingsEmpty({ notify: true });
+  const liveToggle = document.getElementById('s-live_providers_enabled');
+  const liveFeedInput = document.getElementById('s-live_finance_feed_url');
+  const liveEnabled = Boolean(liveToggle?.checked);
+  const liveFeedUrl = String(liveFeedInput?.value || '').trim();
+  if (liveEnabled && !liveFeedUrl) {
+    toast('Canlı sağlayıcı modu için önce geçerli bir feed URL girin.', 'error');
+    liveFeedInput?.focus();
+    updateLiveDataAdminHint();
+    return;
+  }
   const rows = KEYS.map((f) => {
     let value = document.getElementById('s-' + f)?.value || '';
     if (f === 'analytics_clean_start_at' && value) {
@@ -1973,6 +1993,29 @@ async function saveSettings() {
   const cleanRow = rows.find((r) => r.key === 'analytics_clean_start_at');
   if (cleanRow?.value) analyticsCleanStartAt = cleanRow.value;
   toast('Kaydedildi!');
+  updateLiveDataAdminHint();
+}
+
+function updateLiveDataAdminHint() {
+  const hint = document.getElementById('live-data-admin-hint');
+  const liveToggle = document.getElementById('s-live_providers_enabled');
+  const liveFeedInput = document.getElementById('s-live_finance_feed_url');
+  if (!hint) return;
+  const liveEnabled = Boolean(liveToggle?.checked);
+  const liveFeedUrl = String(liveFeedInput?.value || '').trim();
+  if (liveEnabled && liveFeedUrl) {
+    hint.textContent = 'Canlı mod açık — feed URL kayıtlı. UI etiketlerinin doğru göründüğünü doğrulayın.';
+    hint.style.color = '';
+  } else if (liveEnabled && !liveFeedUrl) {
+    hint.textContent = 'Uyarı: Canlı mod seçili ama feed URL boş — kayıt reddedilir.';
+    hint.style.color = '#dc2626';
+  } else if (!liveEnabled && liveFeedUrl) {
+    hint.textContent = 'Feed URL kayıtlı; canlı mod kapalı (simülasyon). Açmak için toggle’ı işaretleyin.';
+    hint.style.color = '';
+  } else {
+    hint.textContent = 'Simülasyon modu — canlı mod için feed URL + toggle gerekir. Plan: docs/LIVE_DATA_30DAY_CHECKLIST.md';
+    hint.style.color = '';
+  }
 }
 
 async function loadAnnouncements() {
@@ -2313,7 +2356,7 @@ async function loadListings() {
   if (!data.length) {
     el.innerHTML = res.error
       ? `<p class="empty">İlanlar yüklenemedi: ${escapeHtml(res.error.message)}</p>`
-      : '<p class="empty">Henüz ilan yok.</p>';
+      : '<p class="empty">Henüz değerlendirilebilir seçenek yok.</p>';
     return;
   }
   el.innerHTML = '<table class="table"><thead><tr><th>Başlık</th><th>Kategori</th><th>Fiyat</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
@@ -4376,6 +4419,7 @@ registerAdminPageHandlers({
   'finance-partners': () => financeAdmin.loadFinancePartners(),
   'finance-scoring': () => financeAdmin.loadFinanceScoring(),
   'sigorta-leads': () => sigortaAdmin.loadSigortaLeads(),
+  'kasko-leads': () => kaskoAdmin.loadKaskoLeads(),
   'unified-funnel': () => loadUnifiedFunnelDashboard(),
   'auto-analytics': () => loadAutoAnalytics(),
   'platform-analytics': () => loadPlatformAnalytics(),
@@ -4427,11 +4471,24 @@ function bindAdminPanelEvents() {
     });
   });
 
+  document.querySelectorAll('[data-nav-href]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const href = el.getAttribute('data-nav-href');
+      if (href) window.location.assign(href);
+    });
+  });
+
   initAdminMobileNav();
   initAdminShell();
 
   document.querySelectorAll('[data-action="save-settings"]').forEach((el) => {
     el.addEventListener('click', saveSettings);
+  });
+  ['s-live_providers_enabled', 's-live_finance_feed_url'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', updateLiveDataAdminHint);
+    el.addEventListener('input', updateLiveDataAdminHint);
   });
 
   document.querySelector('[data-action="save-announcement"]')?.addEventListener('click', saveAnnouncement);
@@ -4448,6 +4505,7 @@ function bindAdminPanelEvents() {
     if (await housingAdmin.handleHousingAction(event, el)) return;
     if (await financeAdmin.handleFinanceAction(event, el)) return;
     if (await sigortaAdmin.handleSigortaAction(event, el)) return;
+    if (await kaskoAdmin.handleKaskoAction(event, el)) return;
     if (await partnerEndpointsAdmin.handlePartnerEndpointsAction(event, el)) return;
 
     const { action, id, active, role } = el.dataset;
@@ -4576,6 +4634,7 @@ function bindAdminPanelEvents() {
         if (leadTable === 'housing_leads') housingAdmin.loadHousingLeads();
         else if (leadTable === 'vacation_leads') vacationAdmin.loadVacationLeads();
         else if (leadTable === 'sigorta_leads') sigortaAdmin.loadSigortaLeads();
+        else if (leadTable === 'kasko_leads') kaskoAdmin.loadKaskoLeads();
         else if (leadTable === 'vertical_leads') verticalAdmin.loadVerticalLeads();
       });
       return;
@@ -4750,6 +4809,10 @@ document.addEventListener('change', (event) => {
   ['sigorta-leads-search', 'sigorta-leads-status-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => sigortaAdmin.loadSigortaLeads());
     document.getElementById(id)?.addEventListener('change', () => sigortaAdmin.loadSigortaLeads());
+  });
+  ['kasko-leads-search', 'kasko-leads-status-filter', 'kasko-leads-category-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => kaskoAdmin.loadKaskoLeads());
+    document.getElementById(id)?.addEventListener('change', () => kaskoAdmin.loadKaskoLeads());
   });
   ['vertical-leads-search', 'vertical-leads-vertical-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => verticalAdmin.loadVerticalLeads());

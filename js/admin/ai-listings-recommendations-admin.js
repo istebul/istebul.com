@@ -18,6 +18,14 @@ import { buildDecisionReportShellHtml } from '../ai-decision-report/report-card-
 import { buildOwnershipCostShellHtml } from '../ai-ownership-cost/cost-card-builder.js';
 import { buildNegotiationShellHtml } from '../ai-negotiation-intelligence/negotiation-card-builder.js';
 import { runDecisionFlow, buildCalibrationBlockHtml } from '../ai-decision-flow/index.js';
+import {
+  toSelectOptions,
+  CATEGORY_LABELS,
+  USAGE_TYPE_LABELS,
+  RISK_TOLERANCE_LABELS,
+  PRIORITY_LABELS
+} from './ai-listings-admin-labels.js';
+import { buildScenarioShellHtml } from '../ai-scenario-simulator/scenario-card-builder.js';
 
 /**
  * @param {unknown} value
@@ -32,25 +40,33 @@ export function safeRenderText(value) {
  * @returns {string}
  */
 export function buildRecommendationProfileFormHtml(profile = {}) {
-  const categoryOptions = CATEGORY_OPTIONS.map(
-    (value) =>
-      `<option value="${safeRenderText(value)}"${profile.category === value ? ' selected' : ''}>${safeRenderText(value)}</option>`
-  ).join('');
+  const categoryOptions = toSelectOptions(CATEGORY_OPTIONS, CATEGORY_LABELS)
+    .map(
+      (opt) =>
+        `<option value="${safeRenderText(opt.value)}"${profile.category === opt.value ? ' selected' : ''}>${safeRenderText(opt.label)}</option>`
+    )
+    .join('');
 
-  const usageOptions = USAGE_TYPE_OPTIONS.map(
-    (value) =>
-      `<option value="${safeRenderText(value)}"${profile.usage_type === value ? ' selected' : ''}>${safeRenderText(value)}</option>`
-  ).join('');
+  const usageOptions = toSelectOptions(USAGE_TYPE_OPTIONS, USAGE_TYPE_LABELS)
+    .map(
+      (opt) =>
+        `<option value="${safeRenderText(opt.value)}"${profile.usage_type === opt.value ? ' selected' : ''}>${safeRenderText(opt.label)}</option>`
+    )
+    .join('');
 
-  const riskOptions = RISK_TOLERANCE_OPTIONS.map(
-    (value) =>
-      `<option value="${safeRenderText(value)}"${profile.risk_tolerance === value ? ' selected' : ''}>${safeRenderText(value)}</option>`
-  ).join('');
+  const riskOptions = toSelectOptions(RISK_TOLERANCE_OPTIONS, RISK_TOLERANCE_LABELS)
+    .map(
+      (opt) =>
+        `<option value="${safeRenderText(opt.value)}"${profile.risk_tolerance === opt.value ? ' selected' : ''}>${safeRenderText(opt.label)}</option>`
+    )
+    .join('');
 
-  const priorityOptions = PRIORITY_OPTIONS.map(
-    (value) =>
-      `<option value="${safeRenderText(value)}"${profile.priority === value ? ' selected' : ''}>${safeRenderText(value)}</option>`
-  ).join('');
+  const priorityOptions = toSelectOptions(PRIORITY_OPTIONS, PRIORITY_LABELS)
+    .map(
+      (opt) =>
+        `<option value="${safeRenderText(opt.value)}"${profile.priority === opt.value ? ' selected' : ''}>${safeRenderText(opt.label)}</option>`
+    )
+    .join('');
 
   return `
     <form class="ai-rec-form" id="ai-rec-profile-form" aria-label="Kullanıcı profili">
@@ -109,7 +125,7 @@ export function buildRecommendationSummaryHtml(summary) {
 /**
  * @param {Array<Record<string, unknown>>} listings
  * @param {Record<string, unknown>} [profile]
- * @param {{ generated?: boolean }} [options]
+ * @param {{ generated?: boolean, compareMode?: boolean, compareSelectedIds?: string[] }} [options]
  * @returns {{ html: string, result: ReturnType<typeof runRecommendationEngine>|null }}
  */
 export function buildRecommendationsDashboardHtml(listings, profile = {}, options = {}) {
@@ -123,13 +139,21 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
           runDecisionFlow(listings, parsedProfile, { selectedId: String(result.top[0].id) }).calibration
         )
       : '';
-  const cardsHtml = result ? buildRecommendationCardsGridHtml(result.top) : '';
+  const cardsHtml = result
+    ? buildRecommendationCardsGridHtml(result.top, {
+        compareMode: Boolean(options.compareMode),
+        compareSelectedIds: options.compareSelectedIds ?? []
+      })
+    : '';
   const countLabel = result
     ? `${result.top.length} öneri · ${result.total_evaluated} kayıt değerlendirildi`
     : 'Profil bilgilerini doldurup öneri üretin';
 
+  const compareModeClass = options.compareMode ? ' ai-rec-dashboard--compare-mode' : '';
+  const selectedCount = (options.compareSelectedIds ?? []).length;
+
   const html = `
-    <div class="ai-rec-dashboard">
+    <div class="ai-rec-dashboard${compareModeClass}">
       <header class="ai-rec-dashboard__head">
         <h2>Öneriler</h2>
         <p class="ai-listings-admin__muted">Mevcut veri havuzu kayıtlarından profil bazlı karar önerileri</p>
@@ -138,6 +162,7 @@ export function buildRecommendationsDashboardHtml(listings, profile = {}, option
       <p class="ai-rec-dashboard__count">${safeRenderText(countLabel)}</p>
       ${summaryHtml}
       ${calibrationHtml}
+      ${result ? buildCompareToolbarHtml(selectedCount) : ''}
       ${cardsHtml}
       ${buildDecisionCoachShellHtml()}
       ${buildSimulatorShellHtml()}

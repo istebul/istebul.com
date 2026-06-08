@@ -25,6 +25,7 @@ import {
 import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
+  renderRiskAnalysisHtml,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
 import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
@@ -745,24 +746,7 @@ function renderFinansmanResultsV2Html(model) {
         </dl>
       </section>
 
-      <section class="finansman-v2-risks" aria-label="Risk analizi">
-        <h3>Risk Analizi</h3>
-        <div class="finansman-v2-risk-grid">
-          ${model.riskAnalysis
-            .map(
-              (r) => `
-            <article class="finansman-v2-risk-card">
-              <div class="finansman-v2-risk-card-head">
-                <h4>${esc(r.title)}</h4>
-                <span class="finansman-v2-risk finansman-v2-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level)}</span>
-              </div>
-              <p>${esc(r.description)}</p>
-              <p class="finansman-v2-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>
-            </article>`
-            )
-            .join('')}
-        </div>
-      </section>
+      ${renderRiskAnalysisHtml(model.riskAnalysis, 'finansman-v2')}
 
       <div class="finansman-v2-grid">
         <article class="finansman-v2-block finansman-v2-block--pros">
@@ -794,7 +778,7 @@ function renderFinansmanResultsV2Html(model) {
       </section>
 
       <article class="finansman-v2-block finansman-v2-block--exec" data-finansman-v2-insight-root>
-        <h3>AI karar yorumu</h3>
+        <h3>Yapay zeka karar yorumu</h3>
         ${renderInsightBlocksHtml(model.insight, esc, {
           planTier: model.planTier,
           insightInput: model.insightInput
@@ -1003,11 +987,13 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
       mountDecisionEngineV3Overlay(mountNode, {
         category: 'finansman',
         formData: state,
-        metrics: { totalCost: model.totalCost?.value ?? null },
+        metrics: {
+          totalCost: model.totalCost?.totalRepayment ?? model.totalCost?.yearlyLoad ?? null
+        },
         extras: {
           primaryResult: results.find((item) => item.id === model.selectedOption) || results[0],
           results,
-          totalCost: model.totalCost?.value ?? null,
+          totalCost: model.totalCost?.totalRepayment ?? model.totalCost?.yearlyLoad ?? null,
           title: 'Finansman Kararı'
         }
       })
@@ -1019,13 +1005,15 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
       mountDecisionOsOverlay(mountNode, {
         category: 'finansman',
         formData: state,
-        metrics: { totalCost: model.totalCost?.value ?? null },
+        metrics: {
+          totalCost: model.totalCost?.totalRepayment ?? model.totalCost?.yearlyLoad ?? null
+        },
         intelligence: model.intelligence,
         model,
         extras: {
           primaryResult: results.find((item) => item.id === model.selectedOption) || results[0],
           results,
-          totalCost: model.totalCost?.value ?? null,
+          totalCost: model.totalCost?.totalRepayment ?? model.totalCost?.yearlyLoad ?? null,
           title: 'Finansman Kararı',
           strengths: model.strengths,
           cautions: model.weaknesses,

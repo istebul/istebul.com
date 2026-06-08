@@ -26,7 +26,11 @@ location.reload();
 
 Without this flag, the page shows a hard **Disabled** gate.
 
-### 2. Set the Edge Function secret
+### 2. Authenticate to the Edge API
+
+**Preferred (production / admin session):** sign in at `/admin/` with an admin account. The panel sends `Authorization: Bearer <supabase_access_token>`; the edge function accepts a valid admin JWT when `AI_LISTINGS_EDGE_SECRET` is not supplied.
+
+**Legacy QA fallback (local only):**
 
 ```javascript
 localStorage.setItem('istebul_ai_listings_secret', '<AI_LISTINGS_EDGE_SECRET>');
@@ -34,6 +38,8 @@ location.reload();
 ```
 
 The secret is **never hardcoded** in source. It must match the Supabase function env `AI_LISTINGS_EDGE_SECRET`.
+
+**CI / deploy:** set GitHub secret `AI_LISTINGS_EDGE_SECRET`. If missing, production deploy uses a deterministic fallback: `isteai-edge-<SUPABASE_PROJECT_REF>` (see `.github/workflows/production-deploy.yml`).
 
 ### 3. Ensure backend is active
 
@@ -59,7 +65,7 @@ The panel reads `window.__env.SUPABASE_URL` to call:
 | Key | Value | Purpose |
 |-----|-------|---------|
 | `istebul_ai_listings_admin` | `"on"` | Enables panel UI |
-| `istebul_ai_listings_secret` | secret string | Sent as `x-ai-listings-secret` header |
+| `istebul_ai_listings_secret` | secret string | Optional QA fallback; sent as `x-ai-listings-secret` when no admin session token |
 
 ## Test workflows
 

@@ -43,7 +43,7 @@
       "name": "YouTube",
       "utm": { "utm_source": "youtube", "utm_medium": "video" },
       "clickIds": ["gclid", "gbraid"],
-      "landingPaths": ["/auto/", "/karar-analizi"],
+      "landingPaths": ["/auto/", "/karar-asistani/"],
       "capi": "google_ads",
       "funnelGoal": "lead_submit",
       "remarketingAudiences": ["auto_results_no_lead_14d"]

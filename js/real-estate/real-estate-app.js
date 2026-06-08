@@ -75,7 +75,7 @@ const state = {
   monthlyCapacity: '',
   useFinancing: '',
   termMonths: '120',
-  interestRate: '3.2',
+  interestRate: '42',
   extraCostTolerance: '',
   loanAmount: '',
   monthlyIncome: '',

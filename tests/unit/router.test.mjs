@@ -127,6 +127,7 @@ test('marketing section constants include pricing and lean home blocks', () => {
 test('matchRoute resolves exact and dynamic listing routes', () => {
     const router = new Router();
 
+    assert.deepEqual(router.matchRoute('/secenekler'), { component: 'ilanlar', params: {} });
     assert.deepEqual(router.matchRoute('/ilanlar'), { component: 'ilanlar', params: {} });
     assert.deepEqual(router.matchRoute('/ilan/test%20id'), {
         component: 'listing-detail',

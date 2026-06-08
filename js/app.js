@@ -6,6 +6,7 @@ import {
   handleAuthRouteEntry
 } from './runtime/auth-return.js';
 import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
+import { initDecisionJourneyStrip } from './ui/decision-journey-strip.js';
 import { initHomeCategories } from './runtime/home-categories.js';
 import { initHomeEconomicIndicators } from './features/home/home-economic-indicators.js';
 import { trackHomepageView } from './platform/site-analytics.js';
@@ -30,6 +31,13 @@ import { trackPricingViewForUpgrade } from './features/revenue/revenue-ops-clien
 import { mountHelpCenterWidget } from './ui/help-center-widget.js';
 import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
+import {
+    loadDecisionOptions,
+    loadUserDecisionOptions,
+    getDecisionOptionById,
+    toAiCategory
+} from './core/decision-options-api.js';
+import { submitUserListingToAiEngine } from './core/ai-listings-bridge.js';
 import { scoreVehicleMatch } from './engines/decision-consultant.js';
 import {
   ensureAccountManager,
@@ -41,6 +49,16 @@ import {
 } from './runtime/lazy-app-modules.js';
 import { AuthManager } from './features/auth/auth.js';
 import { UIManager } from './ui/ui.js';
+import { buildDecisionHistoryEntry, mergeDecisionHistoryEntry } from './ui/decision-history-entry.js';
+import { buildComparisonItemFromHistoryEntry } from './ui/decision-history-comparison.js';
+import {
+    findDecisionHistoryEntryByActionId,
+    matchesDecisionHistoryActionId
+} from './ui/decision-history-compat.js';
+import {
+    resolveAssistantCategoryFromHistoryEntry,
+    shouldRedirectHistoryEntryToAutoVertical
+} from './ui/decision-history-category.js';
 import { Router } from './core/router.js';
 import { state } from './core/state.js';
 import { supabase } from './core/supabase.js';
@@ -105,6 +123,7 @@ import {
     saveMarketData
 } from './data/market-data.js';
 import { bootstrapLiveDataIntegrations } from './runtime/live-data-integrations.js';
+import { bootstrapAiListingsIntegrations } from './runtime/ai-listings-integrations.js';
 import { estimateListingPeriodicCost } from './engines/cost-engine.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from './core/storage-keys.js';
 import {
@@ -138,6 +157,10 @@ class App {
         this.comparisonItems = [];
         this.comingSoonCategories = [];
         this.decisionHistory = [];
+        this.userDecisionEvents = [];
+        this.userDecisionRecords = [];
+        this.userPreferenceSignals = [];
+        this.userFeedbackOutcomes = [];
         this.localListings = [];
         this.previewCategory = 'arac';
         this.catalog = this.createDecisionCatalog();
@@ -161,6 +184,7 @@ class App {
     async init() {
         try {
             this.marketData = await bootstrapLiveDataIntegrations(this.marketData);
+            await bootstrapAiListingsIntegrations();
 
             const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
             initEnterpriseUx();
@@ -200,6 +224,7 @@ class App {
             // Initialize router
             this.router.init();
             initDecisionSurfaceBanners();
+            initDecisionJourneyStrip();
 
             this.setupCookieConsent();
             this.renderHeroDecisionPreview();
@@ -592,29 +617,29 @@ class App {
 
         this.activeCategory = category;
         this.renderCategorySurfaces();
-        this.router.navigate('/ilanlar');
+        this.router.navigate('/secenekler');
         await this.loadListings({ category });
     }
 
     async clearCategoryFilter() {
         this.activeCategory = null;
         this.renderCategorySurfaces();
-        this.router.navigate('/ilanlar');
+        this.router.navigate('/secenekler');
         await this.loadListings();
     }
 
     async showMyListings() {
         if (!this.currentUser) {
             this.auth.showLoginModal();
-            this.ui.showError('Kendi ilanlarınızı görmek için giriş yapın.');
+            this.ui.showError('Seçeneklerinizi görmek için giriş yapın.');
             return;
         }
 
         this.activeCategory = null;
         this.renderCategorySurfaces();
-        this.router.navigate('/ilanlar');
+        this.router.navigate('/secenekler');
         await this.loadListings({ userId: this.currentUser.id, ownedOnly: true, limit: 20 });
-        this.ui.showSuccess('Size ait ilanlar gösteriliyor.');
+        this.ui.showSuccess('Size ait seçenek kayıtları gösteriliyor (inceleme sürecinde olabilir).');
     }
 
     async loadListings(options = {}) {
@@ -622,22 +647,27 @@ class App {
         try {
             this.ui.showLoading('#listings-grid');
 
-            const listings = await API.getListings(options);
-            const localListings = this.getLocalListings(options);
-            this.currentListings = this.sortListings(this.mergeListings(localListings, listings || []));
+            const env = window.__env || {};
+            const decisionOptions =
+                options.userId || options.ownedOnly
+                    ? await loadUserDecisionOptions(options.userId || this.currentUser?.id, options)
+                    : await loadDecisionOptions(env, options);
+
+            this.currentListings = this.sortListings(decisionOptions);
             this.renderCurrentListings();
             this.renderListingFilterSummary(options);
 
             if (!this.currentListings.length && !options.userId && !options.ownedOnly) {
-                this.ui.showInfo?.('Şu an canlı ilan bulunmuyor. Size uygun araç profili için karar asistanını kullanabilirsiniz.');
+                this.ui.showInfo?.(
+                    'Şu an yayınlanmış seçenek bulunmuyor. Karar analizi için Auto veya Seçenek Analizi akışını kullanabilirsiniz.'
+                );
             }
         } catch (error) {
-            console.error('Failed to load listings:', error);
-            const localListings = this.getLocalListings(options);
-            this.currentListings = this.sortListings(this.mergeListings(localListings));
+            console.error('Failed to load decision options:', error);
+            this.currentListings = [];
             this.renderCurrentListings();
             this.renderListingFilterSummary(options);
-            this.ui.showError('Canlı ilanlara şu anda ulaşılamadı. Lütfen kısa süre sonra tekrar deneyin.');
+            this.ui.showError('Seçeneklere şu anda ulaşılamadı. Lütfen kısa süre sonra tekrar deneyin.');
         } finally {
             this.ui.hideLoading('#listings-grid');
         }
@@ -903,7 +933,9 @@ class App {
                 return;
             }
 
-            const allListingsLink = e.target.closest('a[href="/ilanlar/"]:not([data-category])');
+            const allListingsLink = e.target.closest(
+                'a[href="/secenekler/"]:not([data-category]), a[href="/ilanlar/"]:not([data-category])'
+            );
             if (allListingsLink) {
                 e.preventDefault();
                 this.clearCategoryFilter();
@@ -1037,6 +1069,12 @@ class App {
                 this.deleteDecision(deleteDecisionBtn.dataset.decisionDelete);
             }
 
+            const addHistoryCompareBtn = e.target.closest('[data-decision-compare-add]');
+            if (addHistoryCompareBtn) {
+                e.preventDefault();
+                this.addHistoryEntryToComparison(addHistoryCompareBtn.dataset.decisionCompareAdd);
+            }
+
             const historyLoginBtn = e.target.closest('[data-history-login]');
             if (historyLoginBtn) {
                 e.preventDefault();
@@ -1095,9 +1133,9 @@ class App {
             }
 
             if (route === 'add-listing' && !this.currentUser) {
-                this.router.navigate('/ilanlar');
+                this.router.navigate('/secenekler');
                 this.auth.showLoginModal();
-                this.ui.showError('İlan vermek için giriş yapın veya üye olun.');
+                this.ui.showError('Seçenek göndermek için giriş yapın veya üye olun.');
                 return;
             }
 
@@ -1127,7 +1165,7 @@ class App {
             }
 
             if (route === 'compare') {
-                this.ui.renderComparison(this.comparisonItems);
+                this.loadComparisonItems();
             }
 
             if (route === 'profil') {
@@ -2321,6 +2359,8 @@ class App {
             stepIndex: this.assistantStep,
             steps
         });
+        this.ui.renderRecentDecisionHistorySnippet?.(this.decisionHistory);
+        this.ui.renderDecisionMemoryContext?.(this.decisionHistory);
     }
 
     getAssistantWizardSteps(categoryConfig) {
@@ -3636,7 +3676,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             }
 
             this.decisionHistory = this.readStoredArray(storageKey);
+            this.ui.renderDecisionMemoryInsights?.(this.decisionHistory);
             this.ui.renderDecisionHistory?.(this.decisionHistory);
+            this.ui.renderRecentDecisionHistorySnippet?.(this.decisionHistory);
+            this.ui.renderDecisionMemoryContext?.(this.decisionHistory);
             this.injectDecisionHistoryUpsell();
             this.injectDecisionHistoryProductFeedback();
         } catch (error) {
@@ -3668,36 +3711,15 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             return false;
         }
 
-        const topPick = result.recommendations[0];
-        const record = {
-            id: result.id,
-            categoryId: result.categoryId,
-            categoryName: result.categoryName,
-            createdAt: result.createdAt,
-            rawAnswers: result.rawAnswers,
-            answers: result.answers,
-            summary: result.summary,
-            insight: result.insight,
-            dataHealth: result.dataHealth,
-            topPick: topPick ? {
-                name: topPick.name,
-                score: topPick.score,
-                price: topPick.price,
-                yearlyCost: topPick.yearlyCost,
-                monthlyPayment: topPick.financeComparisons?.[0]?.monthlyPayment || 0
-            } : null,
-            recommendations: result.recommendations.map((item) => ({
-                name: item.name,
-                score: item.score,
-                price: item.price,
-                yearlyCost: item.yearlyCost
-            }))
-        };
+        const record = buildDecisionHistoryEntry(result);
+        if (!record) return false;
 
+        const topPick = result.recommendations[0];
         const history = this.readStoredArray(storageKey);
-        const filtered = [record, ...history.filter((item) => item.id !== record.id)].slice(0, 12);
+        const filtered = mergeDecisionHistoryEntry(history, record, 12);
         this.writeStoredValue(storageKey, filtered);
         this.decisionHistory = filtered;
+        this.ui.renderDecisionMemoryInsights?.(this.decisionHistory);
         this.ui.renderDecisionHistory?.(this.decisionHistory);
         void this.injectDecisionHistoryUpsell();
         this.saveSearchHistory(`Karar Asistanı: ${result.categoryName} - ${topPick?.name || 'Sonuç'}`);
@@ -3721,23 +3743,24 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     repeatDecision(decisionId) {
-        const record = this.decisionHistory.find((item) => item.id === decisionId);
+        const record = findDecisionHistoryEntryByActionId(this.decisionHistory, decisionId);
         if (!record) {
             this.ui.showError('Kaydedilen karar bulunamadı.');
             return;
         }
 
-        if (record.categoryId === 'auto') {
+        if (shouldRedirectHistoryEntryToAutoVertical(record)) {
             window.location.href = '/auto/';
             return;
         }
 
-        if (!this.decisionAssistant[record.categoryId]) {
+        const assistantCategory = resolveAssistantCategoryFromHistoryEntry(record);
+        if (!assistantCategory || !this.decisionAssistant[assistantCategory]) {
             this.ui.showError('Kaydedilen karar bulunamadı.');
             return;
         }
 
-        this.assistantCategory = record.categoryId;
+        this.assistantCategory = assistantCategory;
         this.assistantAnswers = record.rawAnswers || {};
         this.assistantStep = Math.max(this.getAssistantWizardSteps(this.getResolvedDecisionAssistantConfig()[this.assistantCategory]).length - 1, 0);
         this.router.navigate('/karar-asistani');
@@ -3754,8 +3777,11 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             return;
         }
 
-        this.decisionHistory = this.decisionHistory.filter((item) => item.id !== decisionId);
+        this.decisionHistory = this.decisionHistory.filter(
+            (item) => !matchesDecisionHistoryActionId(item, decisionId)
+        );
         this.writeStoredValue(storageKey, this.decisionHistory);
+        this.ui.renderDecisionMemoryInsights?.(this.decisionHistory);
         this.ui.renderDecisionHistory?.(this.decisionHistory);
         this.ui.showSuccess('Karar geçmişten silindi.');
     }
@@ -3957,19 +3983,19 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         try {
             this.activeCategory = null;
             this.renderCategorySurfaces();
-            this.router.navigate('/ilanlar');
+            this.router.navigate('/secenekler');
             this.ui.showLoading('#listings-grid');
 
             const searchOptions = { search: query, limit: 20 };
             this.lastListingOptions = searchOptions;
-            const listings = await API.getListings(searchOptions);
+            const listings = await loadDecisionOptions(window.__env || {}, searchOptions);
             this.currentListings = this.sortListings(listings || []);
             this.renderCurrentListings();
             this.renderListingFilterSummary(searchOptions);
             this.saveSearchHistory(query);
 
             if (!this.currentListings.length) {
-                this.ui.showInfo?.('Bu arama için canlı ilan bulunamadı. İsterseniz karar asistanıyla size uygun araç profilini çıkarabiliriz.');
+                this.ui.showInfo?.('Bu arama için yayınlanmış seçenek bulunamadı. Auto karar analiziyle size uygun profili çıkarabilirsiniz.');
             }
         } catch (error) {
             console.error('Search failed:', error);
@@ -3978,7 +4004,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             this.currentListings = [];
             this.renderCurrentListings();
             this.renderListingFilterSummary(searchOptions);
-            this.ui.showError('Canlı arama şu anda yapılamıyor. Lütfen tekrar deneyin.');
+            this.ui.showError('Arama şu anda yapılamıyor. Lütfen tekrar deneyin.');
         } finally {
             this.ui.hideLoading('#listings-grid');
         }
@@ -4045,11 +4071,11 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         this.activeCategory = options.category || null;
         this.renderCategorySurfaces();
-        this.router.navigate('/ilanlar');
+        this.router.navigate('/secenekler');
         this.applyListingFilterFormOptions(options);
         await this.loadListings(options);
         this.saveSearchHistory('Karar sonucu: ' + (this.getListingFilterChips(options).slice(0, 4).join(' / ') || 'Sonuca uygun seçenekler'));
-        this.ui.showSuccess('Karar sonucuna uygun ilanlar filtrelendi.');
+        this.ui.showSuccess('Karar sonucuna uygun seçenekler filtrelendi.');
     }
 
 
@@ -4084,8 +4110,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const options = this.getListingFilterOptionsFromForm();
         this.activeCategory = options.category || null;
         this.renderCategorySurfaces();
-        if (!String(this.router?.currentRoute || '').includes('/ilanlar')) {
-            this.router.navigate('/ilanlar');
+        if (!String(this.router?.currentRoute || '').match(/\/(ilanlar|secenekler)/)) {
+            this.router.navigate('/secenekler');
         }
         const filterForm = document.getElementById('listing-filter-form');
         const filterHint = document.getElementById('listing-filter-auto-hint');
@@ -4584,46 +4610,57 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const externalUrl = formData.get('external_url')?.toString().trim();
 
         if (!title || title.length < 5 || !description || description.length < 20 || !Number.isFinite(price) || price < 0 || !category || !location) {
-            this.ui.showError('Lütfen ilan bilgilerini eksiksiz ve doğru doldurun.');
+            this.ui.showError('Lütfen seçenek bilgilerini eksiksiz ve doğru doldurun.');
             return;
         }
 
-        const listingPayload = {
-            user_id: this.currentUser.id,
-            title,
-            description,
-            price,
-            currency: 'TRY',
-            category,
-            location,
-            province: this.extractProvinceFromLocation(location),
-            district: this.extractDistrictFromLocation(location),
-            images: imageUrl ? [imageUrl] : [],
-            external_url: externalUrl || null
-        };
-
         try {
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Yayınlanıyor...';
+            submitBtn.textContent = 'İncelemeye gönderiliyor...';
 
-            let listing;
-            let savedLocally = false;
-            try {
-                listing = await API.createListing(listingPayload);
-            } catch (error) {
-                console.error('Failed to create listing remotely, saving local fallback:', error);
-                listing = this.createLocalListing(listingPayload);
-                savedLocally = true;
+            const env = window.__env || {};
+            if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
+                this.ui.showError('Seçenek kaydı şu an kullanılamıyor. Lütfen daha sonra tekrar deneyin.');
+                return;
+            }
+
+            const aiCategory = toAiCategory(category) || 'vehicle';
+            const intakePayload = {
+                user_id: this.currentUser.id,
+                title,
+                description,
+                price,
+                currency: 'TRY',
+                category: aiCategory,
+                location,
+                province: this.extractProvinceFromLocation(location),
+                district: this.extractDistrictFromLocation(location),
+                images: imageUrl ? [imageUrl] : [],
+                external_url: externalUrl || null
+            };
+
+            const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+            const intakeResult = await submitUserListingToAiEngine(intakePayload, {
+                baseUrl: env.SUPABASE_URL,
+                anonKey: env.SUPABASE_ANON_KEY,
+                accessToken: session?.access_token
+            });
+
+            if (!intakeResult.ok) {
+                this.ui.showError(intakeResult.message || 'Seçenek incelemeye gönderilemedi.');
+                return;
             }
 
             form.reset();
-            this.ui.showSuccess(savedLocally ? 'Canlı servis yanıt vermedi; ilanınız bu cihazda güvenli şekilde kaydedildi.' : 'İlanınız yayınlandı.');
+            this.ui.showSuccess(
+                'Seçeneğiniz Karar Merkezi incelemesine alındı. Onay sonrası yayınlanır — bu bir ilan sitesi değil, karar platformu akışıdır.'
+            );
             await this.loadCategories();
-            await this.loadListings({ category });
-            this.router.navigate(listing?.id ? `/ilan/${listing.id}` : '/ilanlar');
+            await this.loadListings({ ownedOnly: true, userId: this.currentUser.id, limit: 20 });
+            this.router.navigate('/secenekler');
         } catch (error) {
-            console.error('Failed to create listing:', error);
-            this.ui.showError('İlan yayınlanırken bir hata oluştu.');
+            console.error('Failed to submit decision option:', error);
+            this.ui.showError('Seçenek gönderilirken bir hata oluştu.');
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
@@ -4755,7 +4792,11 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         void this._addComparisonItem(item);
     }
 
-    async _addComparisonItem(item) {
+    async _addComparisonItem(item, options = {}) {
+        const navigate = options.navigate !== false;
+        const successMessage = options.successMessage || 'Seçenek karşılaştırmaya eklendi.';
+        const duplicateMessage = options.duplicateMessage || 'Bu seçenek zaten karşılaştırmada.';
+
         const existingCategory = this.comparisonItems[0]?.categoryId;
         if (existingCategory && existingCategory !== item.categoryId) {
             this.ui.showError('Net sonuç için aynı tabloda yalnızca aynı kategoriden seçenekler karşılaştırılır.');
@@ -4763,8 +4804,8 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         }
 
         if (this.comparisonItems.some((current) => current.signature === item.signature)) {
-            this.ui.showSuccess('Bu seçenek zaten karşılaştırmada.');
-            if (this.router?.navigate) {
+            this.ui.showSuccess(duplicateMessage);
+            if (navigate && this.router?.navigate) {
                 this.router.navigate('/karsilastir');
             }
             return;
@@ -4798,10 +4839,33 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         this.comparisonItems = [...this.comparisonItems, item];
         this.saveComparisonItems();
-        this.ui.showSuccess('Seçenek karşılaştırmaya eklendi.');
-        if (this.router?.navigate) {
+        this.ui.showSuccess(successMessage);
+        if (navigate && this.router?.navigate) {
             this.router.navigate('/karsilastir');
         }
+    }
+
+    addHistoryEntryToComparison(decisionId) {
+        const entry = findDecisionHistoryEntryByActionId(this.decisionHistory, decisionId);
+        if (!entry) {
+            this.ui.showError('Karşılaştırmaya eklenecek geçmiş kaydı bulunamadı.');
+            return;
+        }
+
+        const item = buildComparisonItemFromHistoryEntry(
+            entry,
+            this.createComparisonItemFromRecommendation.bind(this)
+        );
+        if (!item) {
+            this.ui.showError('Bu geçmiş kaydında karşılaştırılabilir seçenek bulunamadı.');
+            return;
+        }
+
+        void this._addComparisonItem(item, {
+            navigate: false,
+            successMessage: 'Karar geçmişi karşılaştırmaya eklendi.',
+            duplicateMessage: 'Bu karar zaten karşılaştırmada.'
+        });
     }
 
     removeComparisonItem(itemId) {
@@ -4837,6 +4901,114 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             comment: recommendation.realisticComment || recommendation.scoreNote || '',
             createdAt: new Date().toISOString()
         };
+    }
+
+    buildUserDecisionIntentForListing(listing = {}) {
+        const categoryMap = { arac: 'vehicle', ev: 'housing', tatil: 'vacation', konut: 'housing' };
+        const category = categoryMap[listing.category] || listing.category || 'vehicle';
+        return {
+            category,
+            budget: Number(listing.price || 0) * 1.1 || 500000,
+            city: listing.location || 'İstanbul',
+            usage_type: 'family',
+            family_size: 4,
+            annual_km: 15000,
+            risk_tolerance: 'medium',
+            priority: 'total_cost',
+            ownership_period: 5
+        };
+    }
+
+    async resolveUserDecisionForListing(listing) {
+        const { resolveUserDecisionContext } = await import('./user-decision-center/index.js');
+        const userIntent = this.buildUserDecisionIntentForListing(listing);
+        return resolveUserDecisionContext(listing, userIntent, { lazyScenario: true });
+    }
+
+    async recordUserDecisionEvent(listing, eventType) {
+        const {
+            createHistoryEvent,
+            appendHistoryEvent,
+            normalizeHistoryRecord
+        } = await import('./decision-history/index.js');
+        const { createSignalsFromEvent, aggregatePreferenceProfile } = await import(
+            './preference-intelligence/index.js'
+        );
+
+        const userId = this.currentUser?.id || 'guest';
+        const listingId = String(listing?.id ?? '');
+        const existing = this.userDecisionRecords.find((r) => String(r.listing_id) === listingId) || {};
+
+        const { events, record } = appendHistoryEvent(this.userDecisionEvents, existing, {
+            userId,
+            listingId,
+            eventType,
+            listingTitle: listing?.title,
+            listingCategory: listing?.category
+        });
+
+        this.userDecisionEvents = events;
+        const recordIdx = this.userDecisionRecords.findIndex((r) => String(r.listing_id) === listingId);
+        const nextRecord = normalizeHistoryRecord({ ...record, user_id: userId });
+        if (recordIdx >= 0) this.userDecisionRecords[recordIdx] = nextRecord;
+        else this.userDecisionRecords.unshift(nextRecord);
+
+        const newSignals = createSignalsFromEvent({ userId, eventType });
+        this.userPreferenceSignals = [...newSignals, ...this.userPreferenceSignals].slice(0, 200);
+        this.userPreferenceProfile = aggregatePreferenceProfile(this.userPreferenceSignals, {
+            user_id: userId,
+            ...(this.userPreferenceProfile || {})
+        });
+
+        return createHistoryEvent({ userId, listingId, eventType });
+    }
+
+    getUserDecisionPanelData(decisionContext = null) {
+        return {
+            activeTab: 'overview',
+            decisionContext,
+            history: {
+                events: this.userDecisionEvents,
+                records: this.userDecisionRecords
+            },
+            preferences: this.userPreferenceProfile || {},
+            feedback: {
+                listingId: decisionContext?.listing?.id,
+                outcomes: this.userFeedbackOutcomes
+            }
+        };
+    }
+
+    async loadUserDecisionPanelData({ listingId = '', autoSelect = true } = {}) {
+        let resolvedListingId = String(listingId || '').trim();
+        if (!resolvedListingId && autoSelect && Array.isArray(this.userDecisionRecords) && this.userDecisionRecords.length) {
+            resolvedListingId = String(this.userDecisionRecords[0]?.listing_id || '').trim();
+        }
+        if (!resolvedListingId) {
+            return this.getUserDecisionPanelData(null);
+        }
+
+        let listing = this.getLocalListingById(resolvedListingId);
+        if (!listing) {
+            try {
+                listing = await Promise.race([
+                    getDecisionOptionById(resolvedListingId),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Listing detail timeout')), 5000)
+                    )
+                ]);
+            } catch (error) {
+                console.warn('loadUserDecisionPanelData listing fetch failed:', error);
+                listing = this.getListingFallbackById(resolvedListingId);
+            }
+        }
+
+        if (!listing) {
+            return this.getUserDecisionPanelData(null);
+        }
+
+        const decisionContext = await this.resolveUserDecisionForListing(listing);
+        return this.getUserDecisionPanelData(decisionContext);
     }
 
     createComparisonItemFromListing(listing) {
@@ -4896,7 +5068,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const details = [
             { label: 'Kategori', value: categoryName },
             { label: 'Konum', value: listing.location || 'Belirtilmemiş' },
-            { label: 'Kaynak', value: listing.external_url ? 'Dış ilan bağlantılı' : 'Platform içi kayıt' },
+            { label: 'Kaynak', value: listing.external_url ? 'Harici kaynak bağlantılı' : 'Platform içi kayıt' },
             { label: 'Güncellik', value: listing.created_at ? new Date(listing.created_at).toLocaleDateString('tr-TR') : 'Tarih yok' }
         ];
 
@@ -5050,37 +5222,49 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     }
 
     async loadListingDetail(listingId) {
+        const renderDetail = async (listing) => {
+            this.currentDetailListing = listing;
+            const decisionProfile = this.createComparisonItemFromListing(listing);
+            const userDecisionContext = await this.resolveUserDecisionForListing(listing);
+            await this.recordUserDecisionEvent(listing, 'listing_viewed');
+            await this.recordUserDecisionEvent(listing, 'decision_center_opened');
+            await this.ui.renderListingDetail(
+                listing,
+                this.getFavoriteIds(),
+                decisionProfile,
+                this.getComparisonSignatures(),
+                userDecisionContext
+            );
+        };
+
         const localListing = this.getLocalListingById(listingId);
         if (localListing) {
-            this.currentDetailListing = localListing;
-            this.ui.renderListingDetail(localListing, this.getFavoriteIds(), this.createComparisonItemFromListing(localListing), this.getComparisonSignatures());
+            await renderDetail(localListing);
             return;
         }
 
         try {
             const listing = await Promise.race([
-                API.getListing(listingId),
+                getDecisionOptionById(listingId),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('Listing detail timeout')), 6000))
             ]);
             const fallbackListing = listing || this.getListingFallbackById(listingId);
             if (!fallbackListing) {
-                this.ui.renderListingDetailEmpty?.('Bu ilan canlı veri içinde bulunamadı veya yayından kaldırılmış olabilir.');
-                this.ui.showError('İlan detayları bulunamadı.');
+                this.ui.renderListingDetailEmpty?.('Bu seçenek bulunamadı veya henüz yayınlanmamış olabilir.');
+                this.ui.showError('Seçenek detayları bulunamadı.');
                 return;
             }
-            this.currentDetailListing = fallbackListing;
-            this.ui.renderListingDetail(fallbackListing, this.getFavoriteIds(), this.createComparisonItemFromListing(fallbackListing), this.getComparisonSignatures());
+            await renderDetail(fallbackListing);
         } catch (error) {
-            console.error('Failed to load listing detail:', error);
+            console.error('Failed to load decision option detail:', error);
             const fallbackListing = this.getListingFallbackById(listingId);
             if (fallbackListing) {
-                this.currentDetailListing = fallbackListing;
-                this.ui.renderListingDetail(fallbackListing, this.getFavoriteIds(), this.createComparisonItemFromListing(fallbackListing), this.getComparisonSignatures());
-                this.ui.showError('Canlı ilan detayına ulaşılamadı.');
+                await renderDetail(fallbackListing);
+                this.ui.showError('Canlı seçenek detayına ulaşılamadı.');
                 return;
             }
-            this.ui.renderListingDetailEmpty?.('İlan detayları yüklenirken bir hata oluştu. Lütfen seçenekler listesinden tekrar deneyin.');
-            this.ui.showError('İlan detayları yüklenirken bir hata oluştu.');
+            this.ui.renderListingDetailEmpty?.('Seçenek detayları yüklenirken bir hata oluştu. Lütfen listeden tekrar deneyin.');
+            this.ui.showError('Seçenek detayları yüklenirken bir hata oluştu.');
         }
     }
 
@@ -5470,7 +5654,7 @@ function applyProductionRouteVisibility() {
 
     const routeMap = {
         '/': 'home',
-        '/ilanlar': 'ilanlar',
+        '/secenekler': 'ilanlar',
         '/karsilastir': 'compare',
         '/karar-asistani': 'page-karar-analizi',
         '/favoriler': 'favoriler',

@@ -2,6 +2,7 @@
  * Auto Results V2 (Sprint 1) — premium SaaS panel (mobile + dark mode uyumlu).
  * Mevcut Auto premium tasarım diline uyumlu, izole sınıf isimleri.
  */
+@import 'results-hero-layout.css';
 
 /* V2 aktifken legacy panelleri gizle — tek kaynak V2 hero */
 body.sigorta-page #sigorta-results .sigorta-v2-root ~ .ib-premium-dashboard,

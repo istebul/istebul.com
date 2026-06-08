@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.20] — 2026-06-08
+
+### Added
+- Pre-launch legal compliance pack: `/gdpr.html` (English GDPR summary)
+- Live data guardrail: `live_providers_enabled` blocked without `live_finance_feed_url` (admin + edge)
+- Partner trust: mandatory DPA reference for lead sharing
+- TCMB EVDS usage terms on `/veri-kaynaklari/`
+
+### Changed
+- TÜİK data source status: **Aktif** → **Manuel referans** (matches actual integration state)
+- Expanded `/kullanim-sartlari.html`: liability, subscription/refund, jurisdiction, IP, simulation disclosure
+- KVKK page: GDPR EN link, KVKK authority link, legal note
+- Methodology copy: TÜİK manual reference vs TCMB EVDS live API clarified
+
 ## [2.2.19] — 2026-06-01
 
 ### Fixed
