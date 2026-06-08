@@ -78,7 +78,8 @@ export function calculateOwnershipCost(input) {
   const totalRepayment = calculateTotalRepayment(monthlyPayment, months);
   const totalInterest = Math.max(totalRepayment - principal, 0);
   const titleFees = Math.round(homePrice * 0.045);
-  const annualDues = (Number(input.dues) || 0) * 12;
+  const duesMonthly = Number(input.dues) || Number(input.duesExpectation) || 0;
+  const annualDues = duesMonthly * 12;
   const renovation = Number(input.renovationCost) || 0;
   const transportation = (Number(input.transportCost) || 0) * 12 * 10;
   const realTotal = homePrice + totalInterest + titleFees + annualDues * 10 + renovation + transportation;
@@ -92,6 +93,7 @@ export function calculateOwnershipCost(input) {
     totalInterest,
     titleFees,
     annualDues,
+    duesMonthly,
     renovation,
     transportation,
     realTotal

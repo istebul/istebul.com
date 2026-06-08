@@ -14,7 +14,7 @@ export function percentile(sorted, p) {
 }
 
 /**
- * @param {Array<{ success?: boolean, duration_ms?: number|null, created_at?: string }>} logs
+ * @param {Array<{ success?: boolean, latency_ms?: number|null, created_at?: string }>} logs
  */
 export function summarizeDispatchLogs24h(logs = []) {
   const durations = [];
@@ -24,7 +24,7 @@ export function summarizeDispatchLogs24h(logs = []) {
   for (const row of logs) {
     if (row.success === true) success += 1;
     else if (row.success === false) fail += 1;
-    const ms = Number(row.duration_ms);
+    const ms = Number(row.latency_ms);
     if (Number.isFinite(ms) && ms >= 0) durations.push(ms);
   }
 

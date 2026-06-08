@@ -572,9 +572,16 @@ body.ib-auto .auto-vehicle-select-rank {
 }
 
 body.ib-auto .auto-vehicle-select-score,
-body.ib-auto .auto-vehicle-select-cost {
+body.ib-auto .auto-vehicle-select-cost,
+body.ib-auto .auto-vehicle-select-tco {
   font-size: 0.78rem;
   color: var(--auto-muted);
+}
+
+body.ib-auto .auto-vehicle-select-tco {
+  margin-top: 0.25rem;
+  line-height: 1.4;
+  color: #475569;
 }
 
 body.ib-auto .auto-vehicle-select-cta {

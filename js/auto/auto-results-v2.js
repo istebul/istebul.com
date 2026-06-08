@@ -20,7 +20,8 @@ import {
 import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
-  renderScoreFactorsHtml
+  renderScoreFactorsHtml,
+  renderRiskAnalysisHtml
 } from '../features/results/decision-intelligence-engine.js';
 import { hydrateResultsEconomicIndicators } from '../features/results/results-economic-indicators.js';
 import {
@@ -124,7 +125,7 @@ function renderHeroMetrics(recommendation, esc) {
         <strong>${esc(recommendation.annualFuelCost ? formatTryAmount(recommendation.annualFuelCost) : '—')}</strong>
       </article>
       <article class="auto-v2-hero-metric">
-        <span>5 Yıl TCO</span>
+        <span>${esc(recommendation.ownershipHorizonLabel || '5 Yıl Net Maliyet')}</span>
         <strong>${esc(recommendation.fiveYearOwnership ? formatTryAmount(recommendation.fiveYearOwnership) : '—')}</strong>
       </article>
       <article class="auto-v2-hero-metric">
@@ -251,6 +252,8 @@ function renderAutoResultsV2Html(model) {
           : ''
       }
 
+      ${renderRiskAnalysisHtml(model.riskAnalysis, 'auto-v2')}
+
       <div class="auto-v2-grid">
         <article class="auto-v2-block auto-v2-block--pros">
           <h3>Güçlü Yönler</h3>
@@ -265,7 +268,7 @@ function renderAutoResultsV2Html(model) {
       ${renderAlternativesSection(model.alternatives, esc)}
 
       <article class="auto-v2-block auto-v2-block--exec" data-auto-v2-insight-root>
-        <h3>AI karar yorumu</h3>
+        <h3>Yapay zeka karar yorumu</h3>
         ${renderInsightBlocksHtml(model.insight, esc, {
           planTier: model.planTier,
           insightInput: model.insightInput
@@ -397,6 +400,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     riskLevel: intel.overallRisk || risk.label,
     riskTone: riskLevelToTone(intel.overallRisk || risk.label),
     scoreFactors: intel.scoreFactors,
+    riskAnalysis: intel.riskAnalysis,
     warnings: intel.warnings,
     recommendationLevel: intel.recommendationLevel,
     recommendationLabel: intel.recommendationLabel,
@@ -477,7 +481,11 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   if (summary.text) {
     recommendation.aiSummary = summary.text;
     const summaryEl = root.querySelector('[data-auto-v2-summary-slot]');
-    if (summaryEl) summaryEl.textContent = String(summary.text).slice(0, 280);
+    if (summaryEl) {
+      summaryEl.textContent = String(summary.text).slice(0, 280);
+      summaryEl.hidden = false;
+      summaryEl.removeAttribute('hidden');
+    }
   }
 
   if (summary.insight) {

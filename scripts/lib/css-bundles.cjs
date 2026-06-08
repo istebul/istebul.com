@@ -15,6 +15,7 @@ const HOMEPAGE_EXTENSION = [
   'css/help-center.css',
   'css/user-dashboard.css',
   'css/dashboard-v2.css',
+  'css/user-decision-center.css',
   'css/billing-v1.css',
   'css/payments-ui.css',
   'css/listing-gallery.css',
@@ -27,13 +28,15 @@ const HOMEPAGE_EXTENSION = [
   'css/home-newsletter-fix-critical-v1.css',
   'css/site-social-links-v1.css',
   'css/perf-home-v1.css',
-  'css/home-economic-indicators.css'
+  'css/home-economic-indicators.css',
+  'css/ai-platform-surface.css'
 ];
 
 /** Design system + readability for vertical decision pages (replaces 3–4 link tags). */
 const VERTICAL_DECISION = [
   'css/layout-guard.css',
   'css/istebul-design-system-v4.css',
+  'css/ai-platform-surface.css',
   'css/decision-engine-v3.css',
   'css/decision-os.css',
   'css/vertical-header-nav-v1.css',
@@ -57,6 +60,7 @@ const VERTICAL_SHARED = [
 const AUTO_PAGE_EXTENSION = [
   'css/vertical-brand-shell-v1.css',
   'css/vertical-nav-more-v1.css',
+  'css/ai-platform-surface.css',
   'css/decision-engine-v3.css',
   'css/decision-os.css',
   'css/auto-hero-dashboard-v1.css',
@@ -75,6 +79,7 @@ const AUTO_PAGE_EXTENSION = [
 const KONUT_PAGE_EXTENSION = [
   'css/vertical-brand-shell-v1.css',
   'css/vertical-nav-more-v1.css',
+  'css/ai-platform-surface.css',
   'css/decision-engine-v3.css',
   'css/decision-os.css',
   'css/vertical-category-heroes-v1.css',

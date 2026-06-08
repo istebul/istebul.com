@@ -15,7 +15,7 @@ const SURFACE_COPY = Object.freeze({
     title: 'Seçenekleri yan yana — Auto veya ilan kartlarından ekleyin',
     body: 'Karşılaştırma listesi hesabınızda ve bu oturumda saklanır. Henüz seçenek yoksa önce Auto sonucundan veya bir seçenek kartından ekleyin.',
     primary: { href: '/auto/', label: 'Analizle başla' },
-    secondary: { href: '/ilanlar/', label: 'Seçeneklere git', native: false }
+    secondary: { href: '/secenekler/', label: 'Seçeneklere git', native: false }
   }
 });
 
@@ -66,6 +66,6 @@ export function initDecisionSurfaceBanners() {
   });
 
   const path = window.location.pathname.replace(/\/$/, '') || '/';
-  if (path === '/ilanlar') mountBanner('ilanlar');
+  if (path === '/secenekler' || path === '/ilanlar') mountBanner('ilanlar');
   if (path === '/karsilastir' || path === '/compare') mountBanner('compare');
 }

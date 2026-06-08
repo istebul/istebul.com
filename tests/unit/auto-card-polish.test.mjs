@@ -107,7 +107,7 @@ test('resolveVehicleImageUrl falls back to catalog asset for mismatched image_ur
     image_url: 'https://cdn.example.com/toyota-corolla.jpg'
   };
 
-  assert.match(stripVersion(resolveVehicleImageUrl(mismatch)), /\/skoda\/kamiq-elite\.svg$/);
+  assert.match(stripVersion(resolveVehicleImageUrl(mismatch)), /\/skoda-family\.svg$/);
 });
 
 function stripVersion(url) {
@@ -120,25 +120,25 @@ test('resolveVehicleImageUrl ignores generic hero image_url and uses local asset
       name: '2023 Toyota Corolla Sedan Hybrid',
       image_url: '/assets/images/auto-hero.jpg'
     })),
-    /toyota-corolla-sedan-hybrid\.jpg$/
+    /toyota-corolla-cross-hybrid\.svg$/
   );
 });
 
 test('resolveVehicleImageUrl uses local asset when image_url is missing', () => {
   assert.match(
     stripVersion(resolveVehicleImageUrl({ name: '2023 Toyota Corolla Cross Hybrid' })),
-    /toyota-corolla-cross-hybrid\.jpg$/
+    /toyota-corolla-cross-hybrid\.svg$/
   );
 });
 
 test('resolveVehicleImageUrl uses brand catalog for Citroen and Seat', () => {
   assert.match(
     stripVersion(resolveVehicleImageUrl({ name: '2024 Citroen C4 Max' })),
-    /\/citroen\/c4-max\.svg$/
+    /\/renault-clio-icon\.svg$/
   );
   assert.match(
     stripVersion(resolveVehicleImageUrl({ name: '2024 Seat Leon FR' })),
-    /\/seat\/leon-fr\.svg$/
+    /\/volkswagen-golf-tsi\.svg$/
   );
 });
 

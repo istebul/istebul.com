@@ -32,6 +32,7 @@ export const ADMIN_PAGE_IDS = [
   'housing-scoring',
   'finance-leads',
   'sigorta-leads',
+  'kasko-leads',
   'finance-partners',
   'finance-scoring',
   'auto-analytics',
@@ -60,6 +61,38 @@ export const ADMIN_PAGE_IDS = [
   'partner-dispatch-logs',
   'payments'
 ];
+
+/** URL slug → sidebar page id (e.g. /admin/decision-center → ops-ai-assistant) */
+export const ADMIN_PATH_ALIASES = Object.freeze({
+  'decision-center': 'ops-ai-assistant'
+});
+
+/**
+ * @param {string} [pathname]
+ * @returns {string | null}
+ */
+export function resolveAdminPageFromPath(pathname = '/') {
+  const match = String(pathname).match(/^\/admin\/([^/]+)\/?$/);
+  if (!match) return null;
+  const slug = decodeURIComponent(match[1]);
+  return ADMIN_PATH_ALIASES[slug] || slug;
+}
+
+/**
+ * Open the admin page matching the current URL path (/admin/listings, …).
+ * @returns {boolean}
+ */
+export function bootAdminPageFromUrl() {
+  const pageId = resolveAdminPageFromPath(window.location.pathname);
+  if (!pageId) return false;
+  const nav = document.querySelector(`[data-page-target="${pageId}"]`);
+  if (!nav) {
+    console.warn('[admin] no nav target for path page:', pageId);
+    return false;
+  }
+  showAdminPage(pageId, nav);
+  return true;
+}
 
 /**
  * @param {Record<string, () => void | Promise<void>>} handlers

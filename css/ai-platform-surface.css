@@ -1,0 +1,404 @@
+/**
+ * AI platform surface — shared branding, readability, overflow containment.
+ */
+
+.ib-ai-platform-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  margin: 0 0 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(99, 102, 241, 0.06));
+  color: #0f172a;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.ib-ai-platform-banner--compact {
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.ib-ai-platform-banner__icon {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.14);
+  color: #2563eb;
+}
+
+.ib-ai-platform-banner__copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.ib-ai-platform-banner__copy strong {
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  margin-bottom: 0.2rem;
+}
+
+.ib-ai-platform-banner__copy p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #475569;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ib-ai-platform-banner__live {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.ib-ai-platform-banner__pulse {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #10b981;
+  animation: ib-ai-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes ib-ai-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+}
+
+.ib-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  white-space: nowrap;
+}
+
+.ib-ai-badge::before {
+  content: '✦';
+  font-size: 0.65rem;
+}
+
+/* Listings AI strip */
+.listings-ai-strip {
+  margin: 0 0 1.25rem;
+}
+
+/* Dashboard AI hero accent — light copy on dark gradient hero */
+.dashboard-v2-hero .ib-ai-platform-banner {
+  margin-top: 0.85rem;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+.dashboard-v2-hero .ib-ai-platform-banner__icon {
+  background: rgba(255, 255, 255, 0.14);
+  color: #bfdbfe;
+}
+
+.dashboard-v2-hero .ib-ai-platform-banner__copy strong {
+  color: #f8fafc;
+}
+
+.dashboard-v2-hero .ib-ai-platform-banner__copy p {
+  color: #e2e8f0;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+html.ib-ds-v4.ib-premium-v7 .account-root .dashboard-v2-hero .ib-ai-platform-banner__copy p {
+  color: #e2e8f0;
+}
+
+.dashboard-v2-analysis-card .ib-ai-badge {
+  margin-left: 0.35rem;
+}
+
+/* Admin AI strip */
+.admin-ai-platform-strip {
+  margin: 0 2rem 1rem;
+  max-width: calc(1280px - 4rem);
+}
+
+/* Results readability — all category V2 + decision overlays */
+.finansman-v2-root,
+.auto-v2-root,
+.konut-v2-root,
+.tatil-v2-root,
+.sigorta-v2-root,
+.kasko-v2-root,
+.decision-v3-root,
+.decision-v3-mount,
+.dos-root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+  box-sizing: border-box;
+}
+
+.finansman-v2-panel,
+.auto-v2-panel,
+.konut-v2-panel,
+.tatil-v2-panel,
+.sigorta-v2-panel,
+.kasko-v2-panel,
+.decision-v3-root {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Reliable numbered action lists (avoids broken ::marker with custom fonts) */
+.decision-v3-action-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  counter-reset: ib-action-step;
+}
+
+.decision-v3-action-list > li {
+  counter-increment: ib-action-step;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.35rem 0;
+  line-height: 1.55;
+  font-size: 0.92rem;
+  color: #334155;
+  min-width: 0;
+}
+
+.decision-v3-action-list > li::before {
+  content: counter(ib-action-step) '.';
+  flex-shrink: 0;
+  min-width: 1.35rem;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.decision-v3-risk-list > li,
+.decision-v3-factor-list > li,
+.decision-v3-warning-list > li {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.55;
+}
+
+@media (max-width: 768px) {
+  .ib-ai-platform-banner {
+    flex-wrap: wrap;
+  }
+
+  .ib-ai-platform-banner__live {
+    margin-left: 2.75rem;
+  }
+
+  .ib-ai-platform-banner--compact .ib-ai-platform-banner__live {
+    margin-left: 0;
+  }
+
+  /* Category results — mobile overflow containment */
+  body.finans-page #finans-results,
+  body.auto-page #auto-results,
+  body.konut-page #housing-results,
+  body.vacation-page #vacation-results,
+  body.sigorta-page #sigorta-results,
+  body.kasko-page #kasko-results {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    box-sizing: border-box;
+  }
+
+  body.finans-page #finans-results > *,
+  body.auto-page #auto-results > *,
+  body.konut-page #housing-results > *,
+  body.vacation-page #vacation-results > *,
+  body.sigorta-page #sigorta-results > *,
+  body.kasko-page #kasko-results > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .decision-v3-root,
+  .decision-v3-mount,
+  .finansman-v2-panel,
+  .auto-v2-panel,
+  .konut-v2-panel,
+  .tatil-v2-panel,
+  .sigorta-v2-panel,
+  .kasko-v2-panel,
+  .ib-results-hero-shell {
+    padding-left: clamp(0.65rem, 2vw, 1rem);
+    padding-right: clamp(0.65rem, 2vw, 1rem);
+  }
+
+  .finansman-v2-rate-table,
+  .auto-v2-rate-table,
+  .konut-v2-rate-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .finansman-v2-alt-grid,
+  .auto-v2-alt-grid,
+  .konut-v2-alt-grid,
+  .tatil-v2-alt-grid,
+  .sigorta-v2-alt-grid,
+  .kasko-v2-alt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-ai-platform-strip {
+    margin: 0 1rem 1rem;
+  }
+}
+
+/* ── Dark vertical pages: AI/decision panels must stay readable on light surfaces ── */
+body.housing-page #housing-results .decision-v3-root,
+body.housing-page #housing-results .decision-v3-mount,
+body.housing-page #housing-results .dos-root,
+body.housing-page #housing-results .decision-os-mount,
+body.vacation-page #vacation-results .decision-v3-root,
+body.vacation-page #vacation-results .decision-v3-mount,
+body.vacation-page #vacation-results .dos-root,
+body.vacation-page #vacation-results .decision-os-mount,
+body.finans-page #finans-results .decision-v3-root,
+body.finans-page #finans-results .decision-v3-mount,
+body.finans-page #finans-results .dos-root,
+body.finans-page #finans-results .decision-os-mount,
+body.sigorta-page #sigorta-results .decision-v3-root,
+body.sigorta-page #sigorta-results .decision-v3-mount,
+body.sigorta-page #sigorta-results .dos-root,
+body.sigorta-page #sigorta-results .decision-os-mount,
+body.kasko-page #kasko-results .decision-v3-root,
+body.kasko-page #kasko-results .decision-v3-mount,
+body.kasko-page #kasko-results .dos-root,
+body.kasko-page #kasko-results .decision-os-mount,
+body.ib-auto #auto-results .decision-v3-root,
+body.ib-auto #auto-results .decision-v3-mount,
+body.ib-auto #auto-results .dos-root,
+body.ib-auto #auto-results .decision-os-mount {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+body.housing-page #housing-results .decision-v3-root .ib-ai-platform-banner,
+body.vacation-page #vacation-results .decision-v3-root .ib-ai-platform-banner,
+body.finans-page #finans-results .decision-v3-root .ib-ai-platform-banner,
+body.sigorta-page #sigorta-results .decision-v3-root .ib-ai-platform-banner,
+body.kasko-page #kasko-results .decision-v3-root .ib-ai-platform-banner,
+body.ib-auto #auto-results .decision-v3-root .ib-ai-platform-banner {
+  color: #0f172a;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(99, 102, 241, 0.05));
+}
+
+body.housing-page #housing-results .decision-v3-root :is(h2, h3, strong, .decision-v3-profile-value),
+body.vacation-page #vacation-results .decision-v3-root :is(h2, h3, strong, .decision-v3-profile-value),
+body.finans-page #finans-results .decision-v3-root :is(h2, h3, strong, .decision-v3-profile-value),
+body.sigorta-page #sigorta-results .decision-v3-root :is(h2, h3, strong, .decision-v3-profile-value),
+body.kasko-page #kasko-results .decision-v3-root :is(h2, h3, strong, .decision-v3-profile-value),
+body.ib-auto #auto-results .decision-v3-root :is(h2, h3, strong, .decision-v3-profile-value) {
+  color: #0f172a !important;
+}
+
+body.housing-page #housing-results .decision-v3-root :is(p:not(.decision-v3-kicker), li, .decision-v3-muted, .decision-v3-trend, .decision-v3-insights li),
+body.vacation-page #vacation-results .decision-v3-root :is(p:not(.decision-v3-kicker), li, .decision-v3-muted, .decision-v3-trend, .decision-v3-insights li),
+body.finans-page #finans-results .decision-v3-root :is(p:not(.decision-v3-kicker), li, .decision-v3-muted, .decision-v3-trend, .decision-v3-insights li),
+body.sigorta-page #sigorta-results .decision-v3-root :is(p:not(.decision-v3-kicker), li, .decision-v3-muted, .decision-v3-trend, .decision-v3-insights li),
+body.kasko-page #kasko-results .decision-v3-root :is(p:not(.decision-v3-kicker), li, .decision-v3-muted, .decision-v3-trend, .decision-v3-insights li),
+body.ib-auto #auto-results .decision-v3-root :is(p:not(.decision-v3-kicker), li, .decision-v3-muted, .decision-v3-trend, .decision-v3-insights li) {
+  color: #334155 !important;
+}
+
+body.housing-page #housing-results .decision-v3-kicker,
+body.vacation-page #vacation-results .decision-v3-kicker,
+body.finans-page #finans-results .decision-v3-kicker,
+body.sigorta-page #sigorta-results .decision-v3-kicker,
+body.kasko-page #kasko-results .decision-v3-kicker,
+body.ib-auto #auto-results .decision-v3-kicker {
+  color: #2563eb !important;
+}
+
+body.housing-page #housing-results .decision-v3-action-list > li::before,
+body.vacation-page #vacation-results .decision-v3-action-list > li::before,
+body.finans-page #finans-results .decision-v3-action-list > li::before,
+body.sigorta-page #sigorta-results .decision-v3-action-list > li::before,
+body.kasko-page #kasko-results .decision-v3-action-list > li::before,
+body.ib-auto #auto-results .decision-v3-action-list > li::before {
+  color: #2563eb !important;
+}
+
+body.housing-page #housing-results .decision-v3-score-card,
+body.vacation-page #vacation-results .decision-v3-score-card,
+body.finans-page #finans-results .decision-v3-score-card,
+body.sigorta-page #sigorta-results .decision-v3-score-card,
+body.kasko-page #kasko-results .decision-v3-score-card,
+body.ib-auto #auto-results .decision-v3-score-card {
+  color: #f8fafc !important;
+}
+
+/* V2 panels on dark verticals — enforce light surface (tatil/finans/sigorta/kasko) */
+body.vacation-page #vacation-results .tatil-v2-root,
+body.vacation-page #vacation-results .tatil-v2-panel,
+body.finans-page #finans-results .finansman-v2-root,
+body.finans-page #finans-results .finansman-v2-panel,
+body.sigorta-page #sigorta-results .sigorta-v2-root,
+body.sigorta-page #sigorta-results .sigorta-v2-panel,
+body.kasko-page #kasko-results .kasko-v2-root,
+body.kasko-page #kasko-results .kasko-v2-panel {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
+body.vacation-page #vacation-results .tatil-v2-panel :is(h2, h3, h4, strong),
+body.finans-page #finans-results .finansman-v2-panel :is(h2, h3, h4, strong),
+body.sigorta-page #sigorta-results .sigorta-v2-panel :is(h2, h3, h4, strong),
+body.kasko-page #kasko-results .kasko-v2-panel :is(h2, h3, h4, strong) {
+  color: #0f172a;
+}
+
+body.vacation-page #vacation-results .tatil-v2-panel :is(p, li, span, small),
+body.finans-page #finans-results .finansman-v2-panel :is(p, li, span, small),
+body.sigorta-page #sigorta-results .sigorta-v2-panel :is(p, li, span, small),
+body.kasko-page #kasko-results .kasko-v2-panel :is(p, li, span, small) {
+  color: #334155;
+}

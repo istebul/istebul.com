@@ -298,6 +298,10 @@ body.ib-premium-route-active .navbar {
   color: #64748b;
 }
 
+.ib-premium-compare-preview-actions {
+  margin-top: 1rem;
+}
+
 .ib-faq-list {
   display: grid;
   gap: 0.65rem;

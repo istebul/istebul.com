@@ -68,6 +68,7 @@ export class Router {
     constructor() {
         this.routes = [
             { path: '/', component: 'home' },
+            { path: '/secenekler', component: 'ilanlar' },
             { path: '/ilanlar', component: 'ilanlar' },
             { path: '/karsilastir', component: 'compare' },
             { path: '/karar-analizi', component: 'page-karar-analizi' },
@@ -393,7 +394,7 @@ export class Router {
             document.querySelector(`a[href="${activePath}"]`) ||
             document.querySelector(`a[href="${activePath}/"]`) ||
             (activePath.startsWith('/ilan/')
-                ? document.querySelector('a[href="/ilanlar/"]')
+                ? document.querySelector('a[href="/secenekler/"]')
                 : null);
 
         if (activeLink) {
