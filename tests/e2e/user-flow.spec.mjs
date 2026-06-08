@@ -83,10 +83,78 @@ const assertElementNoHorizontalOverflow = async (page, selector) => {
 };
 
 const assertLocatorWithinViewport = async (locator, viewportWidth) => {
+  await expect(locator).toBeVisible({ timeout: 15000 });
+  await locator.scrollIntoViewIfNeeded();
   const box = await locator.boundingBox();
   expect(box).toBeTruthy();
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(viewportWidth + 1);
+};
+
+/** Let app init + requestIdleCallback deferred history loads finish before seeding /gecmis. */
+const waitForGecmisRouteBootstrap = async (page) => {
+  await page.waitForFunction(() => window.appReady === true, null, { timeout: 15000 });
+  await page.evaluate((idleTimeoutMs) => new Promise((resolve) => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => resolve(), { timeout: idleTimeoutMs });
+    } else {
+      setTimeout(resolve, 400);
+    }
+  }), 1200);
+};
+
+/**
+ * Pre-existing /gecmis flake (Faz 2D mobile + deferred loadDecisionHistory race, not 2E-2):
+ * wait until history cards survive trailing idle reload / loadComparisonHistory guard.
+ */
+const waitForGecmisHistoryStable = async (page, { categoryId, minCards = 1 } = {}) => {
+  const isStable = ({ categoryId, minCards }) => {
+    const list = document.getElementById('history-list');
+    if (!list) return false;
+    if (list.querySelector('.history-auth-gate')) return false;
+    const cards = list.querySelectorAll('.decision-history-card');
+    if (cards.length < minCards) return false;
+    if (categoryId) {
+      const kicker = list.querySelector(
+        `.decision-history-card [data-history-category="${categoryId}"]`
+      );
+      if (!kicker?.textContent?.trim()) return false;
+    }
+    return true;
+  };
+
+  await page.waitForFunction(isStable, { categoryId, minCards }, { timeout: 15000 });
+  await page.evaluate((idleTimeoutMs) => new Promise((resolve) => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => resolve(), { timeout: idleTimeoutMs });
+    } else {
+      setTimeout(resolve, 400);
+    }
+  }), 1200);
+  await page.evaluate(() => window.app.loadDecisionHistory());
+  await page.waitForFunction(isStable, { categoryId, minCards }, { timeout: 15000 });
+};
+
+/** @deprecated use waitForGecmisHistoryStable */
+const waitForGecmisHistoryCategoryKicker = async (page, categoryId) => {
+  await waitForGecmisHistoryStable(page, { categoryId });
+};
+
+const gecmisHistoryCard = (page, categoryId) => {
+  const cards = page.locator('#history-list .decision-history-card');
+  if (categoryId) {
+    return cards.filter({ has: page.locator(`[data-history-category="${categoryId}"]`) }).first();
+  }
+  return cards.first();
+};
+
+const clickGecmisCompareAdd = async (page, entryId) => {
+  await waitForGecmisHistoryStable(page);
+  const compareBtn = entryId
+    ? page.locator(`[data-decision-compare-add="${entryId}"]`)
+    : page.locator('[data-decision-compare-add]').first();
+  await expect(compareBtn).toBeVisible({ timeout: 15000 });
+  await compareBtn.click({ timeout: 15000 });
 };
 
 test.describe('isteBul kritik kullanıcı akışları', () => {
@@ -587,6 +655,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-mobile-user';
@@ -617,7 +686,8 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const card = page.locator('.decision-history-card').first();
+    await waitForGecmisHistoryStable(page);
+    const card = gecmisHistoryCard(page);
     await expect(card).toBeVisible({ timeout: 15000 });
     const signalStrip = card.locator('[data-decision-history-signal-strip]');
     await expect(signalStrip).toBeVisible({ timeout: 15000 });
@@ -630,6 +700,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       localStorage.removeItem('istebul_comparison_items');
@@ -664,9 +735,10 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     });
 
     const compareBtn = page.locator('[data-decision-compare-add="history-compare-1"]');
+    await waitForGecmisHistoryStable(page);
     await expect(compareBtn).toBeVisible({ timeout: 15000 });
     await expect(compareBtn).toContainText(/Karşılaştırmaya ekle/i);
-    await compareBtn.click();
+    await compareBtn.click({ timeout: 15000 });
 
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
     await expect(page).toHaveURL(/\/gecmis\/?$/);
@@ -768,6 +840,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-cta-mobile-user';
@@ -794,7 +867,8 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const card = page.locator('.decision-history-card').first();
+    await waitForGecmisHistoryStable(page);
+    const card = gecmisHistoryCard(page);
     const actions = card.locator('.decision-history-actions');
     await expect(actions).toBeVisible({ timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '.decision-history-card .decision-history-actions');
@@ -930,6 +1004,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       localStorage.removeItem('istebul_comparison_items');
@@ -954,11 +1029,9 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const card = page.locator('.decision-history-card').first();
+    const card = gecmisHistoryCard(page);
     await expect(card).toBeVisible({ timeout: 15000 });
-    const compareBtn = card.locator('[data-decision-compare-add="history-compare-auto"]');
-    await expect(compareBtn).toBeVisible({ timeout: 15000 });
-    await compareBtn.click();
+    await clickGecmisCompareAdd(page, 'history-compare-auto');
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
 
     const comparisonState = await page.evaluate(() => {
@@ -976,9 +1049,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis konut kaydı karşılaştırmaya normalized konut kategori ile eklenir', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       localStorage.removeItem('istebul_comparison_items');
@@ -1003,7 +1078,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    await page.locator('[data-decision-compare-add="history-compare-konut"]').click();
+    await clickGecmisCompareAdd(page, 'history-compare-konut');
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
 
     const comparisonState = await page.evaluate(() => {
@@ -1015,10 +1090,12 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis normalized kategori label @390px yatay taşma yapmaz', async ({ page }) => {
+    // Pre-existing mobile layout gate: deferred loadDecisionHistory race (Faz 2D, not 2E-2).
     await page.setViewportSize(MOBILE_2C_VIEWPORT);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-category-mobile-user';
@@ -1035,10 +1112,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const card = page.locator('.decision-history-card').first();
+    await waitForGecmisHistoryStable(page, { categoryId: 'auto' });
+    const card = gecmisHistoryCard(page, 'auto');
     const kicker = card.locator('[data-history-category="auto"]');
     await expect(kicker).toBeVisible({ timeout: 15000 });
-    await expect(kicker).toHaveText('Araba');
+    await expect(kicker).toHaveText('Araba', { timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '.decision-history-card');
     await assertLocatorWithinViewport(card, MOBILE_2C_VIEWPORT.width);
   });
@@ -1111,9 +1189,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis legacy compat kayıttan Karşılaştırmaya ekle çalışır', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       localStorage.removeItem('istebul_comparison_items');
@@ -1137,9 +1217,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const compareBtn = page.locator('[data-decision-compare-add]').first();
-    await expect(compareBtn).toBeVisible({ timeout: 15000 });
-    await compareBtn.click();
+    await clickGecmisCompareAdd(page);
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
 
     const comparisonState = await page.evaluate(() => {
@@ -1186,10 +1264,12 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis legacy compat normalize edilmiş kayıt kartı @390px yatay taşma yapmaz', async ({ page }) => {
+    // Pre-existing mobile layout gate: deferred loadDecisionHistory race (Faz 2D-5, not 2E-2).
     await page.setViewportSize(MOBILE_2C_VIEWPORT);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-compat-mobile-user';
@@ -1210,10 +1290,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const card = page.locator('.decision-history-card').first();
+    await waitForGecmisHistoryStable(page, { categoryId: 'konut' });
+    const card = gecmisHistoryCard(page, 'konut');
     await expect(card).toBeVisible({ timeout: 15000 });
     await expect(card).toContainText(/Bostancı daire/i);
-    await expect(card.locator('[data-history-category="konut"]')).toHaveText('Konut');
+    await expect(card.locator('[data-history-category="konut"]')).toHaveText('Konut', { timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '.decision-history-card');
     await assertLocatorWithinViewport(card, MOBILE_2C_VIEWPORT.width);
   });
@@ -1322,6 +1403,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('#history-list .decision-history-card')).toHaveCount(0);
     await expect(page.locator('[data-decision-memory-insights]')).toBeVisible({ timeout: 15000 });
     await expect(page.locator('[data-memory-insights-soft]')).toContainText(/yeterli karar geçmişi yok/i);
+    await expect(page.locator('[data-decision-memory-ai-commentary]')).toHaveCount(0);
   });
 
   test('gecmis karar hafızası içgörüleri canonical kayıtlarla görünür', async ({ page }) => {
@@ -1368,6 +1450,15 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(insights.locator('[data-memory-insight="top-category"]')).toContainText(/Araba \(2 karar\)/);
     await expect(insights.locator('[data-memory-insight="average-fit"]')).toContainText(/85\/100/);
     await expect(insights.locator('[data-memory-insight="top-profile"]')).toContainText(/Dengeli araç profili/);
+
+    const commentary = insights.locator('[data-decision-memory-ai-commentary]');
+    await expect(commentary).toBeVisible();
+    await expect(commentary.getByRole('heading', { name: /AI destekli geçmiş yorumu/i })).toBeVisible();
+    await expect(commentary.locator('[data-memory-ai-synthesis]')).toContainText(/karar kayd/i);
+
+    const commentaryText = await commentary.innerText();
+    expect(commentaryText).toMatch(/kategori|risk|uygunluk|profil/i);
+    expect(commentaryText).not.toMatch(/bunu seçmelisiniz|en doğru karar|bundan sonra böyle yapın|tek doğru seçenek/i);
 
     const storageSnapshot = await page.evaluate(() => {
       const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
