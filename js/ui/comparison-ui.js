@@ -19,7 +19,7 @@ export class ComparisonUI {
                     '<p>Auto analiz sonuçlarından veya seçenek kartlarından &quot;Karşılaştır&quot; ile ekleyin. Skor, maliyet ve riskler yan yana okunur.</p>' +
                     '<div class="empty-state-actions">' +
                       '<a href="/auto/" class="btn btn-primary">TCO analizini başlat</a>' +
-                      '<a href="/ilanlar/" class="btn btn-outline">Seçeneklere git</a>' +
+                      '<a href="/secenekler/" class="btn btn-outline">Seçeneklere git</a>' +
                     '</div>' +
                 '</div>';
             this.loadIcons();
