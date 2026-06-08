@@ -25,6 +25,10 @@ import {
     buildRecentDecisionHistorySnippetModel,
     renderRecentDecisionHistorySnippetHtml
 } from './decision-history-recent-snippet.js';
+import {
+    buildDecisionMemoryInsightsModel,
+    renderDecisionMemoryInsightsHtml
+} from './decision-memory-insights.js';
 import { normalizeHistoryEntryCategory } from './decision-history-category.js';
 import { normalizeDecisionHistoryList } from './decision-history-compat.js';
 
@@ -557,6 +561,8 @@ export class AssistantUI {
 
     renderHistoryAuthGate() {
         const container = document.getElementById('history-list');
+        const insightsHost = document.getElementById('decision-memory-insights-host');
+        if (insightsHost) insightsHost.innerHTML = '';
         if (!container) return;
 
         container.innerHTML = `
@@ -571,6 +577,16 @@ export class AssistantUI {
             </div>
         `;
         this.loadIcons();
+    }
+
+    renderDecisionMemoryInsights(history = []) {
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const host = doc.getElementById('decision-memory-insights-host');
+        if (!host) return;
+
+        const model = buildDecisionMemoryInsightsModel(history);
+        host.innerHTML = renderDecisionMemoryInsightsHtml(model, this.escapeHtml.bind(this));
     }
 
     renderDecisionHistory(history = []) {

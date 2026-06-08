@@ -1320,6 +1320,68 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     await expect(page.locator('#history-list .empty-state h3')).toHaveText('Geçmiş bulunamadı', { timeout: 15000 });
     await expect(page.locator('#history-list .decision-history-card')).toHaveCount(0);
+    await expect(page.locator('[data-decision-memory-insights]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-memory-insights-soft]')).toContainText(/yeterli karar geçmişi yok/i);
+  });
+
+  test('gecmis karar hafızası içgörüleri canonical kayıtlarla görünür', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-memory-insights-user';
+      window.app.currentUser = { id: userId, name: 'E2E Insights User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      localStorage.setItem(storageKey, JSON.stringify([
+        {
+          id: 'insights-1',
+          schemaVersion: 1,
+          categoryId: 'auto',
+          categoryName: 'Araba',
+          originalCategoryId: 'arac',
+          createdAt: '2026-06-08T12:00:00.000Z',
+          score: 88,
+          riskLevel: 'Düşük risk',
+          decisionProfile: 'Dengeli araç profili',
+          topPick: { name: 'Toyota Corolla Hybrid', score: 88, riskLevel: 'Düşük risk' }
+        },
+        {
+          id: 'insights-2',
+          schemaVersion: 1,
+          categoryId: 'auto',
+          categoryName: 'Araba',
+          originalCategoryId: 'arac',
+          createdAt: '2026-06-07T12:00:00.000Z',
+          score: 82,
+          riskLevel: 'Orta risk',
+          decisionProfile: 'Dengeli araç profili',
+          topPick: { name: 'Honda Civic', score: 82, riskLevel: 'Orta risk' }
+        }
+      ]));
+      window.app.loadDecisionHistory();
+    });
+
+    const insights = page.locator('[data-decision-memory-insights]');
+    await expect(insights).toBeVisible({ timeout: 15000 });
+    await expect(insights).toContainText(/Karar hafızası içgörüleri/i);
+    await expect(insights.locator('[data-memory-insight="top-category"]')).toContainText(/Araba \(2 karar\)/);
+    await expect(insights.locator('[data-memory-insight="average-fit"]')).toContainText(/85\/100/);
+    await expect(insights.locator('[data-memory-insight="top-profile"]')).toContainText(/Dengeli araç profili/);
+
+    const storageSnapshot = await page.evaluate(() => {
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const stored = localStorage.getItem(storageKey);
+      const parsed = JSON.parse(stored || '[]');
+      return {
+        count: parsed.length,
+        firstId: parsed[0]?.id || null,
+        schemaVersion: parsed[0]?.schemaVersion ?? null
+      };
+    });
+    expect(storageSnapshot.count).toBe(2);
+    expect(storageSnapshot.firstId).toBe('insights-1');
+    expect(storageSnapshot.schemaVersion).toBe(1);
   });
 
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {
