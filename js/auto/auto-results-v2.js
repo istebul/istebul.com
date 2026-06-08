@@ -268,7 +268,7 @@ function renderAutoResultsV2Html(model) {
       ${renderAlternativesSection(model.alternatives, esc)}
 
       <article class="auto-v2-block auto-v2-block--exec" data-auto-v2-insight-root>
-        <h3>AI karar yorumu</h3>
+        <h3>Yapay zeka karar yorumu</h3>
         ${renderInsightBlocksHtml(model.insight, esc, {
           planTier: model.planTier,
           insightInput: model.insightInput

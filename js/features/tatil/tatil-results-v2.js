@@ -648,7 +648,7 @@ function renderTatilResultsV2Html(model) {
       </section>
 
       <article class="tatil-v2-block tatil-v2-block--exec" data-tatil-v2-insight-root>
-        <h3>AI karar yorumu</h3>
+        <h3>Yapay zeka karar yorumu</h3>
         ${renderInsightBlocksHtml(model.insight, esc, {
           planTier: model.planTier,
           insightInput: model.insightInput
