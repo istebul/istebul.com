@@ -1830,6 +1830,7 @@ async function loadSettings() {
   }
   loadAnalyticsExclusionSettings();
   warnIfSocialSettingsEmpty();
+  updateLiveDataAdminHint();
 }
 
 async function loadAnalyticsExclusionSettings() {
@@ -1959,6 +1960,16 @@ function warnIfSocialSettingsEmpty({ notify = false } = {}) {
 
 async function saveSettings() {
   warnIfSocialSettingsEmpty({ notify: true });
+  const liveToggle = document.getElementById('s-live_providers_enabled');
+  const liveFeedInput = document.getElementById('s-live_finance_feed_url');
+  const liveEnabled = Boolean(liveToggle?.checked);
+  const liveFeedUrl = String(liveFeedInput?.value || '').trim();
+  if (liveEnabled && !liveFeedUrl) {
+    toast('Canlı sağlayıcı modu için önce geçerli bir feed URL girin.', 'error');
+    liveFeedInput?.focus();
+    updateLiveDataAdminHint();
+    return;
+  }
   const rows = KEYS.map((f) => {
     let value = document.getElementById('s-' + f)?.value || '';
     if (f === 'analytics_clean_start_at' && value) {
@@ -1980,6 +1991,29 @@ async function saveSettings() {
   const cleanRow = rows.find((r) => r.key === 'analytics_clean_start_at');
   if (cleanRow?.value) analyticsCleanStartAt = cleanRow.value;
   toast('Kaydedildi!');
+  updateLiveDataAdminHint();
+}
+
+function updateLiveDataAdminHint() {
+  const hint = document.getElementById('live-data-admin-hint');
+  const liveToggle = document.getElementById('s-live_providers_enabled');
+  const liveFeedInput = document.getElementById('s-live_finance_feed_url');
+  if (!hint) return;
+  const liveEnabled = Boolean(liveToggle?.checked);
+  const liveFeedUrl = String(liveFeedInput?.value || '').trim();
+  if (liveEnabled && liveFeedUrl) {
+    hint.textContent = 'Canlı mod açık — feed URL kayıtlı. UI etiketlerinin doğru göründüğünü doğrulayın.';
+    hint.style.color = '';
+  } else if (liveEnabled && !liveFeedUrl) {
+    hint.textContent = 'Uyarı: Canlı mod seçili ama feed URL boş — kayıt reddedilir.';
+    hint.style.color = '#dc2626';
+  } else if (!liveEnabled && liveFeedUrl) {
+    hint.textContent = 'Feed URL kayıtlı; canlı mod kapalı (simülasyon). Açmak için toggle’ı işaretleyin.';
+    hint.style.color = '';
+  } else {
+    hint.textContent = 'Simülasyon modu — canlı mod için feed URL + toggle gerekir. Plan: docs/LIVE_DATA_30DAY_CHECKLIST.md';
+    hint.style.color = '';
+  }
 }
 
 async function loadAnnouncements() {
@@ -4446,6 +4480,12 @@ function bindAdminPanelEvents() {
 
   document.querySelectorAll('[data-action="save-settings"]').forEach((el) => {
     el.addEventListener('click', saveSettings);
+  });
+  ['s-live_providers_enabled', 's-live_finance_feed_url'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', updateLiveDataAdminHint);
+    el.addEventListener('input', updateLiveDataAdminHint);
   });
 
   document.querySelector('[data-action="save-announcement"]')?.addEventListener('click', saveAnnouncement);

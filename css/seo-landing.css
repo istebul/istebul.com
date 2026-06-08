@@ -407,6 +407,12 @@
   background: #fffbeb;
 }
 
+.seo-data-source-badge--is-reference {
+  border-color: #c4b5fd;
+  color: #5b21b6;
+  background: #f5f3ff;
+}
+
 .seo-data-source-purpose {
   margin: 0 0 0.85rem;
   font-size: 0.92rem;
