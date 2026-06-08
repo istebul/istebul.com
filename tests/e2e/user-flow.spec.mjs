@@ -246,6 +246,20 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(secondaryCta).toHaveClass(/btn-outline/);
   });
 
+  test('karsilastir boş durumda AI karar yorumu görünmez', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.removeItem('istebul_comparison_items');
+      localStorage.removeItem('istebu_comparison_items');
+    });
+
+    await page.goto('/karsilastir/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await expect(page.locator('[data-comparison-empty-state]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-comparison-ai-commentary]')).toHaveCount(0);
+  });
+
   test('karsilastir dolu durumda karar özeti ve dört etiket görünür', async ({ page }) => {
     const comparisonItems = [
       {
@@ -295,6 +309,58 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(summary.getByText('En düşük risk profili')).toBeVisible();
     await expect(summary.getByText('En yüksek ihtiyaç uyumu')).toBeVisible();
     await expect(summary.getByText('En dengeli seçenek')).toBeVisible();
+  });
+
+  test('karsilastir dolu durumda AI karar yorumu görünür ve açıklayıcıdır', async ({ page }) => {
+    const comparisonItems = [
+      {
+        id: 'cmp-e2e-ai-1',
+        signature: 'e2e:arac:ai-1',
+        sourceType: 'Test',
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        title: 'E2E Seçenek A',
+        price: 500000,
+        periodicCost: 120000,
+        monthlyPayment: 15000,
+        totalPayment: 600000,
+        score: 78,
+        riskLevel: 'Kontrollü risk',
+        createdAt: '2026-01-01T00:00:00.000Z'
+      },
+      {
+        id: 'cmp-e2e-ai-2',
+        signature: 'e2e:arac:ai-2',
+        sourceType: 'Test',
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        title: 'E2E Seçenek B',
+        price: 450000,
+        periodicCost: 95000,
+        monthlyPayment: 14000,
+        totalPayment: 550000,
+        score: 88,
+        riskLevel: 'Düşük risk',
+        createdAt: '2026-01-01T00:00:00.000Z'
+      }
+    ];
+
+    await page.addInitScript((items) => {
+      localStorage.setItem('istebul_comparison_items', JSON.stringify(items));
+    }, comparisonItems);
+
+    await page.goto('/karsilastir/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    const aiCommentary = page.locator('[data-comparison-ai-commentary]');
+    await expect(aiCommentary).toBeVisible({ timeout: 15000 });
+    await expect(aiCommentary.getByRole('heading', { name: /AI destekli karar yorumu/i })).toBeVisible();
+    await expect(aiCommentary).toContainText(/mevcut skor, TCO ve risk sinyallerini açıklar/i);
+
+    const commentaryText = await aiCommentary.innerText();
+    expect(commentaryText).toMatch(/skor|TCO|risk|uyum/i);
+    expect(commentaryText).not.toMatch(/bunu seçmelisiniz|en doğru karar/i);
   });
 
   test('karar asistanı karşılaştırma önizlemesinde merkez CTA görünür', async ({ page }) => {

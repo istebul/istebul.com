@@ -158,12 +158,14 @@ function buildBalancedDetail(item) {
 /**
  * @param {ComparisonDecisionSummary | null} summary
  * @param {(value: string) => string} escapeHtml
+ * @param {string} [aiExplanationHtml]
  * @returns {string}
  */
-export function renderComparisonDecisionSummaryHtml(summary, escapeHtml) {
+export function renderComparisonDecisionSummaryHtml(summary, escapeHtml, aiExplanationHtml = '') {
     if (!summary) return '';
 
     const safe = typeof escapeHtml === 'function' ? escapeHtml : (value) => String(value ?? '');
+    const aiSlot = String(aiExplanationHtml || '');
 
     const cards = SUMMARY_FIELDS.map((field) => {
         const highlight = summary[field.key];
@@ -184,5 +186,6 @@ export function renderComparisonDecisionSummaryHtml(summary, escapeHtml) {
             '<p>Skor, toplam maliyet ve risk etiketlerinden türetilen deterministik özet — nihai karar size aittir.</p>' +
         '</div>' +
         '<div class="comparison-decision-summary-grid">' + cards + '</div>' +
+        aiSlot +
     '</section>';
 }
