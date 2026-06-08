@@ -3,6 +3,8 @@
  * Uses existing createComparisonItemFromRecommendation factory — no new score calculations.
  */
 
+import { normalizeHistoryEntryCategory } from './decision-history-category.js';
+
 /**
  * @param {unknown} insight
  * @returns {string | null}
@@ -30,7 +32,8 @@ export function resolveHistoryPick(entry) {
     const topPick = entry.topPick && typeof entry.topPick === 'object' ? entry.topPick : null;
     const recommendation = Array.isArray(entry.recommendations) ? entry.recommendations[0] : null;
     const name = topPick?.name || recommendation?.name;
-    if (!name || !entry.categoryId) return null;
+    const category = normalizeHistoryEntryCategory(entry);
+    if (!name || category.categoryId === 'unknown') return null;
 
     const monthlyPayment = topPick?.monthlyPayment;
     const financeComparisons = recommendation?.financeComparisons
@@ -57,8 +60,8 @@ export function resolveHistoryPick(entry) {
             calculationTable: recommendation?.calculationTable
         },
         result: {
-            categoryId: entry.categoryId,
-            categoryName: entry.categoryName
+            categoryId: category.categoryId,
+            categoryName: category.categoryName
         }
     };
 }

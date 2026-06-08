@@ -47,7 +47,9 @@ test('buildDecisionHistoryEntry produces canonical fields from full result', () 
     assert.ok(entry);
     assert.equal(entry.schemaVersion, DECISION_HISTORY_SCHEMA_VERSION);
     assert.equal(entry.id, 'decision-123');
-    assert.equal(entry.categoryId, 'arac');
+    assert.equal(entry.categoryId, 'auto');
+    assert.equal(entry.categoryName, 'Araba');
+    assert.equal(entry.originalCategoryId, 'arac');
     assert.equal(entry.score, 88);
     assert.equal(entry.riskLevel, 'Düşük risk');
     assert.equal(entry.yearlyCost, 240000);
@@ -55,7 +57,7 @@ test('buildDecisionHistoryEntry produces canonical fields from full result', () 
     assert.deepEqual(entry.profileTags, ['Güçlü eşleşme', 'Düşük yan maliyet']);
     assert.equal(entry.confidenceLabel, 'Orta band');
     assert.equal(entry.tcoLabel, 'Toplam dönemsel maliyet');
-    assert.equal(entry.source, 'assistant');
+    assert.equal(entry.source, 'auto');
     assert.equal(entry.topPick.riskLevel, 'Düşük risk');
     assert.ok(entry.summary);
     assert.ok(Array.isArray(entry.recommendations));
@@ -84,6 +86,9 @@ test('buildDecisionHistoryEntry uses safe fallbacks for missing risk, TCO and pr
     });
 
     assert.ok(entry);
+    assert.equal(entry.categoryId, 'konut');
+    assert.equal(entry.categoryName, 'Konut');
+    assert.equal(entry.originalCategoryId, 'ev');
     assert.equal(entry.riskLevel, null);
     assert.equal(entry.yearlyCost, null);
     assert.deepEqual(entry.profileTags, []);
@@ -94,7 +99,8 @@ test('buildDecisionHistoryEntry uses safe fallbacks for missing risk, TCO and pr
 test('resolveDecisionHistorySource maps category and explicit source', () => {
     assert.equal(resolveDecisionHistorySource('auto'), 'auto');
     assert.equal(resolveDecisionHistorySource('konut'), 'konut');
-    assert.equal(resolveDecisionHistorySource('arac'), 'assistant');
+    assert.equal(resolveDecisionHistorySource('arac'), 'auto');
+    assert.equal(resolveDecisionHistorySource('ev'), 'konut');
     assert.equal(resolveDecisionHistorySource('arac', 'bridge'), 'bridge');
 });
 

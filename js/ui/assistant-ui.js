@@ -25,6 +25,7 @@ import {
     buildRecentDecisionHistorySnippetModel,
     renderRecentDecisionHistorySnippetHtml
 } from './decision-history-recent-snippet.js';
+import { normalizeHistoryEntryCategory } from './decision-history-category.js';
 
 export class AssistantUI {
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
@@ -590,7 +591,8 @@ export class AssistantUI {
         }
 
         container.innerHTML = history.map((item) => {
-            const isAuto = item.categoryId === 'auto';
+            const category = normalizeHistoryEntryCategory(item);
+            const isAuto = category.isAuto;
             const answers = Array.isArray(item.answers)
                 ? item.answers
                 : Object.entries(item.answers || {}).map(([label, value]) => ({ label, value }));
@@ -604,7 +606,7 @@ export class AssistantUI {
             <article class="decision-history-card ${isAuto ? 'decision-history-card-auto' : ''}">
                 <div class="decision-history-main">
                     <div>
-                        <span class="assistant-kicker">${this.escapeHtml(item.categoryName || 'Karar')}</span>
+                        <span class="assistant-kicker" data-history-category="${this.escapeHtml(category.categoryId)}">${this.escapeHtml(category.categoryName)}</span>
                         <h3>${this.escapeHtml(item.topPick?.name || 'Kaydedilen karar')}</h3>
                         <p>${this.escapeHtml(item.summary || 'Özet bulunamadı.')}</p>
                     </div>
