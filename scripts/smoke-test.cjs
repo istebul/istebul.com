@@ -431,6 +431,7 @@ assert(read('css/style.css').includes('p4-premium-product.css'), 'P4 premium sty
   [carResult, homeResult, vacationResult].forEach((result) => {
     resultContainer.innerHTML = '';
     uiManager.renderDecisionResults(result);
+    assert(resultContainer.innerHTML.includes('decision-result-summary'), 'Decision result UI should render decision result summary card.');
     assert(resultContainer.innerHTML.includes('assistant-choice-summary'), 'Decision result UI should render choice summary.');
     assert(resultContainer.innerHTML.includes('assistant-recommendation-verdict'), 'Decision result UI should render recommendation verdicts.');
     assert(resultContainer.innerHTML.includes('Karşılaştırma merkezine git'), 'Decision result toolbar should link to compare center.');
