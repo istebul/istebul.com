@@ -4,7 +4,7 @@
 
 import { escapeHtml } from '../core/dom-safe.js';
 import { ALTERNATIVE_TAG_LABELS_TR } from '../../supabase/functions/_shared/ai-listings/recommendation/alternative-ranker.js';
-import { formatAdminMetricLabel } from '../admin/ai-listings-admin-labels.js';
+import { shouldShowQualityButton } from '../ai-listing-quality/quality-card-builder.js';
 
 /**
  * @param {unknown} value
@@ -85,15 +85,9 @@ export function buildRecommendationCardHtml(item, options = {}) {
         <button type="button" class="ai-rec-card__cost-btn" data-rec-cost-id="${safe(item.id)}" aria-label="Sahip Olma Maliyeti">
           Sahip Olma Maliyeti
         </button>
-        ${item.id ? `
-        <button type="button" class="ai-rec-card__pd-btn" data-rec-pd-id="${safe(item.id)}" aria-label="Al Kararı">
-          Al Kararı
-        </button>
-        <button type="button" class="ai-rec-card__exp-btn" data-rec-exp-id="${safe(item.id)}" aria-label="Neden Bu Karar">
-          Neden Bu Karar?
-        </button>
-        <button type="button" class="ai-rec-card__edr-btn" data-rec-edr-id="${safe(item.id)}" aria-label="Yönetici Raporu">
-          Yönetici Raporu
+        ${shouldShowQualityButton(item) ? `
+        <button type="button" class="ai-rec-card__quality-btn" data-rec-quality-id="${safe(item.id)}" aria-label="Kalite ve Güven">
+          Kalite ve Güven
         </button>` : ''}
       </footer>
     </article>`;
