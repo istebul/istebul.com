@@ -172,6 +172,43 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'home');
   });
 
+  test('karar yolculuğu şeridi üç hubda görünür', async ({ page }) => {
+    const assertJourneyStrip = async (path, activeLabel) => {
+      await page.goto(path);
+      await waitForSpaReady(page);
+      await dismissCookieBanner(page);
+
+      const strip = page.locator('[data-decision-journey-strip]');
+      await expect(strip).toBeVisible({ timeout: 15000 });
+      await expect(strip).toContainText('Karar yolculuğu');
+      await expect(strip.getByRole('link', { name: 'Karar Merkezi' })).toBeVisible();
+      await expect(strip.getByRole('link', { name: 'Seçenekler' })).toBeVisible();
+      await expect(strip.getByRole('link', { name: 'Karşılaştır' })).toBeVisible();
+      await expect(strip.locator('.ib-decision-journey-step.is-active')).toHaveText(activeLabel);
+    };
+
+    await assertJourneyStrip('/karar-asistani/', 'Karar Merkezi');
+    await assertJourneyStrip('/secenekler/', 'Seçenekler');
+    await assertJourneyStrip('/karsilastir/', 'Karşılaştır');
+  });
+
+  test('secenekler boş durumda birincil CTA karar merkezine gider', async ({ page }) => {
+    await page.goto('/secenekler/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    const emptyState = page.locator('#listings-grid .marketplace-empty-state');
+    await expect(emptyState).toBeVisible({ timeout: 15000 });
+
+    const primaryCta = emptyState.getByRole('link', { name: /Karar analizini başlat/i });
+    await expect(primaryCta).toBeVisible();
+    await expect(primaryCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+
+    const tcoCta = emptyState.getByRole('link', { name: /TCO analizini başlat/i });
+    await expect(tcoCta).toBeVisible();
+    await expect(tcoCta).toHaveClass(/btn-outline/);
+  });
+
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);

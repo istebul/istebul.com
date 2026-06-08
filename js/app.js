@@ -6,6 +6,7 @@ import {
   handleAuthRouteEntry
 } from './runtime/auth-return.js';
 import { initDecisionSurfaceBanners } from './runtime/decision-surface-banners.js';
+import { initDecisionJourneyStrip } from './ui/decision-journey-strip.js';
 import { initHomeCategories } from './runtime/home-categories.js';
 import { initHomeEconomicIndicators } from './features/home/home-economic-indicators.js';
 import { trackHomepageView } from './platform/site-analytics.js';
@@ -213,6 +214,7 @@ class App {
             // Initialize router
             this.router.init();
             initDecisionSurfaceBanners();
+            initDecisionJourneyStrip();
 
             this.setupCookieConsent();
             this.renderHeroDecisionPreview();
