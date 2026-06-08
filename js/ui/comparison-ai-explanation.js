@@ -163,7 +163,9 @@ export function parseComparisonExplanation(raw) {
 
     const out = {};
     for (const key of COMPARISON_EXPLANATION_KEYS) {
-        const value = sanitizeComparisonExplanationText(parsed[key], key === 'synthesis' ? 520 : 360);
+        const rawValue = String(parsed[key] || '');
+        if (!rawValue || containsPrescriptiveDecisionPhrase(rawValue)) return null;
+        const value = sanitizeComparisonExplanationText(rawValue, key === 'synthesis' ? 520 : 360);
         if (!value || containsPrescriptiveDecisionPhrase(value)) return null;
         out[key] = value;
     }

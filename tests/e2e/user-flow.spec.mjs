@@ -305,10 +305,10 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     const summary = page.locator('[data-comparison-decision-summary]');
     await expect(summary).toBeVisible({ timeout: 15000 });
-    await expect(summary.getByText('En düşük TCO')).toBeVisible();
-    await expect(summary.getByText('En düşük risk profili')).toBeVisible();
-    await expect(summary.getByText('En yüksek ihtiyaç uyumu')).toBeVisible();
-    await expect(summary.getByText('En dengeli seçenek')).toBeVisible();
+    await expect(summary.locator('[data-summary-field="lowest-tco"] span').first()).toHaveText('En düşük TCO');
+    await expect(summary.locator('[data-summary-field="lowest-risk"] span').first()).toHaveText('En düşük risk profili');
+    await expect(summary.locator('[data-summary-field="highest-fit"] span').first()).toHaveText('En yüksek ihtiyaç uyumu');
+    await expect(summary.locator('[data-summary-field="most-balanced"] span').first()).toHaveText('En dengeli seçenek');
   });
 
   test('karsilastir dolu durumda AI karar yorumu görünür ve açıklayıcıdır', async ({ page }) => {
