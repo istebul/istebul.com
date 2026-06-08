@@ -433,6 +433,8 @@ assert(read('css/style.css').includes('p4-premium-product.css'), 'P4 premium sty
     uiManager.renderDecisionResults(result);
     assert(resultContainer.innerHTML.includes('assistant-choice-summary'), 'Decision result UI should render choice summary.');
     assert(resultContainer.innerHTML.includes('assistant-recommendation-verdict'), 'Decision result UI should render recommendation verdicts.');
+    assert(resultContainer.innerHTML.includes('Karşılaştırma merkezine git'), 'Decision result toolbar should link to compare center.');
+    assert(resultContainer.innerHTML.includes('href="/karsilastir/"'), 'Decision result toolbar should include compare center href.');
     assert(!resultContainer.innerHTML.includes('undefined'), 'Decision result UI should not leak undefined text.');
   });
 

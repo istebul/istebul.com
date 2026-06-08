@@ -180,6 +180,7 @@ export class AssistantUI {
                 '</div>' +
                 '<div class="assistant-decision-toolbar">' +
                     '<button type="button" class="btn btn-outline" data-assistant-edit="0"><i data-lucide="sliders-horizontal"></i> Kriterleri güncelle</button>' +
+                    '<a href="/karsilastir/" class="btn btn-outline btn-sm" data-native-route><i data-lucide="columns-3"></i> Karşılaştırma merkezine git</a>' +
                     '<button type="button" class="btn btn-primary" data-browse-decision-listings><i data-lucide="list-checks"></i> Eşleşen seçenekleri aç</button>' +
                 '</div>' +
                 this.getExecutiveMetricsMarkup(result.categoryId, primary, bestFinance) +
