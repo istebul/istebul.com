@@ -55,7 +55,7 @@ function bindNavIntentPrefetch() {
   document.addEventListener(
     'click',
     (event) => {
-      const link = event.target.closest?.('a[href^="/ilanlar"], a[href^="/planlar"]');
+      const link = event.target.closest?.('a[href^="/secenekler"], a[href^="/ilanlar"], a[href^="/planlar"]');
       if (!link || event.defaultPrevented) return;
       const href = link.getAttribute('href') || '';
       if (href.startsWith('/planlar')) {

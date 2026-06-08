@@ -11,6 +11,10 @@
 /data/*      /data/:splat      200
 /docs/*      /docs/:splat      200
 
+# --- Legacy ilanlar URL → seçenekler (karar platformu) ---
+/ilanlar /secenekler/ 301
+/ilanlar/ /secenekler/ 301
+
 # --- Legacy account URL ---
 /account.html /profil/ 301
 

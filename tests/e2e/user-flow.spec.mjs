@@ -25,7 +25,7 @@ const openMobileMenuIfNeeded = async (page) => {
 };
 
 test.describe('isteBul kritik kullanıcı akışları', () => {
-  test('ana sayfa ve ilanlar hub yüklenir', async ({ page }) => {
+  test('ana sayfa ve seçenekler hub yüklenir', async ({ page }) => {
     await page.goto('/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
@@ -36,9 +36,9 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('#hero-v4-title')).toContainText(/yalnız değilsiniz|not alone/i);
     await expect(page.locator('#home')).toBeVisible();
 
-    await page.goto('/ilanlar/');
+    await page.goto('/secenekler/');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page).toHaveTitle(/İlan|isteBul/i);
+    await expect(page).toHaveTitle(/Seçenek|isteBul/i);
     await expect(page.locator('main.seo-main, .seo-main')).toBeVisible();
 
     await page.goto('/karar-asistani/');
@@ -154,12 +154,12 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await mobileContext.close();
   });
 
-  test('ilanlar hub ve ana sayfa geri navigasyon', async ({ page }) => {
+  test('secenekler hub ve ana sayfa geri navigasyon', async ({ page }) => {
     await page.goto('/');
     await waitForSpaReady(page);
-    await page.goto('/ilanlar/');
+    await page.goto('/secenekler/');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page).toHaveTitle(/İlan|isteBul/i);
+    await expect(page).toHaveTitle(/Seçenek|isteBul/i);
 
     await page.goto('/');
     await waitForSpaReady(page);
