@@ -575,8 +575,8 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
     await expect(page.locator('.decision-history-card').first()).toContainText(/Toyota Corolla/i);
 
-    const signalStrip = page.locator('[data-decision-history-signal-strip]').first();
-    await expect(signalStrip).toBeVisible();
+    const signalStrip = page.locator('.decision-history-card').first().locator('[data-decision-history-signal-strip]');
+    await expect(signalStrip).toBeVisible({ timeout: 15000 });
     await expect(signalStrip.locator('[data-history-signal="history-fit"]')).toContainText('82/100');
     await expect(signalStrip.locator('[data-history-signal="history-risk"]')).toContainText(/Orta risk/i);
     await expect(signalStrip.locator('[data-history-signal="history-profile"]')).toContainText(/Dengeli araç profili/i);
@@ -620,6 +620,217 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('[data-decision-history-signal-strip]').first()).toBeVisible({ timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '[data-decision-history-signal-strip]');
     await assertLocatorWithinViewport(page.locator('[data-decision-history-signal-strip]').first(), MOBILE_2C_VIEWPORT.width);
+  });
+
+  test('gecmis canonical entry Karşılaştırmaya ekle CTA ile karşılaştırmaya ekler', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      localStorage.removeItem('istebul_comparison_items');
+      localStorage.removeItem('istebu_comparison_items');
+
+      const userId = 'e2e-history-compare-user';
+      window.app.currentUser = { id: userId, name: 'E2E Compare User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const entry = {
+        id: 'history-compare-1',
+        schemaVersion: 1,
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        score: 88,
+        riskLevel: 'Düşük risk',
+        yearlyCost: 240000,
+        decisionProfile: 'Toyota Corolla dengeli profil',
+        summary: 'Toyota Corolla en güçlü eşleşme.',
+        topPick: {
+          name: 'Toyota Corolla Hybrid',
+          score: 88,
+          price: 1850000,
+          yearlyCost: 240000,
+          monthlyPayment: 18500,
+          riskLevel: 'Düşük risk'
+        },
+        answers: [{ label: 'İl', value: 'İstanbul' }]
+      };
+      localStorage.setItem(storageKey, JSON.stringify([entry]));
+      window.app.loadDecisionHistory();
+    });
+
+    const compareBtn = page.locator('[data-decision-compare-add="history-compare-1"]');
+    await expect(compareBtn).toBeVisible({ timeout: 15000 });
+    await expect(compareBtn).toContainText(/Karşılaştırmaya ekle/i);
+    await compareBtn.click();
+
+    await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
+    await expect(page).toHaveURL(/\/gecmis\/?$/);
+
+    const comparisonState = await page.evaluate(() => {
+      const items = JSON.parse(localStorage.getItem('istebul_comparison_items') || '[]');
+      return {
+        count: items.length,
+        title: items[0]?.title || null
+      };
+    });
+    expect(comparisonState.count).toBe(1);
+    expect(comparisonState.title).toMatch(/Toyota Corolla Hybrid/i);
+
+    await page.goto('/karsilastir/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.evaluate(() => window.app.loadComparisonItems());
+    await expect(page.locator('.comparison-card').first()).toContainText(/Toyota Corolla Hybrid/i, { timeout: 15000 });
+  });
+
+  test('gecmis eksik topPick entry Karşılaştırmaya ekle CTA göstermez', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-history-no-pick-user';
+      window.app.currentUser = { id: userId, name: 'E2E No Pick User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const entry = {
+        id: 'history-no-pick',
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        summary: 'Eksik seçenek kaydı'
+      };
+      localStorage.setItem(storageKey, JSON.stringify([entry]));
+      window.app.loadDecisionHistory();
+    });
+
+    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-decision-compare-add]')).toHaveCount(0);
+  });
+
+  test('karar merkezi son kararlar snippet görünür ve geçmişe bağlanır', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-recent-snippet-user';
+      window.app.currentUser = { id: userId, name: 'E2E Snippet User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const entries = [
+        {
+          id: 'recent-1',
+          schemaVersion: 1,
+          categoryId: 'arac',
+          categoryName: 'Araç',
+          createdAt: '2026-06-08T12:00:00.000Z',
+          score: 88,
+          riskLevel: 'Düşük risk',
+          yearlyCost: 240000,
+          topPick: { name: 'Toyota Corolla Hybrid', score: 88, yearlyCost: 240000, riskLevel: 'Düşük risk' }
+        },
+        {
+          id: 'recent-2',
+          schemaVersion: 1,
+          categoryId: 'ev',
+          categoryName: 'Konut',
+          createdAt: '2026-06-07T12:00:00.000Z',
+          score: 76,
+          riskLevel: 'Orta risk',
+          yearlyCost: 180000,
+          topPick: { name: 'Kadıköy daire', score: 76, yearlyCost: 180000, riskLevel: 'Orta risk' }
+        }
+      ];
+      localStorage.setItem(storageKey, JSON.stringify(entries));
+      window.app.decisionHistory = entries;
+      window.app.ui.renderRecentDecisionHistorySnippet(entries);
+    });
+
+    const snippet = page.locator('[data-decision-history-recent-snippet]');
+    await expect(snippet).toBeVisible({ timeout: 15000 });
+    await expect(snippet).toContainText(/Son kararlarınız/i);
+    await expect(snippet.locator('[data-recent-history-id="recent-1"]')).toContainText(/Toyota Corolla Hybrid/i);
+    await expect(snippet.locator('[data-recent-signal="fit"]').first()).toContainText(/Uygunluk/i);
+    await expect(snippet.locator('[data-recent-signal="risk"]').first()).toContainText(/Risk/i);
+    await expect(snippet.locator('[data-recent-signal="tco"]').first()).toContainText(/TCO/i);
+
+    const historyCta = snippet.locator('[data-recent-history-cta]');
+    await expect(historyCta).toHaveAttribute('href', '/gecmis/');
+    await expect(historyCta).toContainText(/Tüm karar geçmişini gör/i);
+  });
+
+  test('gecmis Karşılaştırmaya ekle CTA @390px yatay taşma yapmaz', async ({ page }) => {
+    await page.setViewportSize(MOBILE_2C_VIEWPORT);
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-history-cta-mobile-user';
+      window.app.currentUser = { id: userId, name: 'E2E Mobile CTA User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const entry = {
+        id: 'history-mobile-cta',
+        schemaVersion: 1,
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        score: 88,
+        riskLevel: 'Düşük risk',
+        yearlyCost: 240000,
+        topPick: {
+          name: 'Toyota Corolla Hybrid',
+          score: 88,
+          price: 1850000,
+          yearlyCost: 240000,
+          riskLevel: 'Düşük risk'
+        }
+      };
+      localStorage.setItem(storageKey, JSON.stringify([entry]));
+      window.app.loadDecisionHistory();
+    });
+
+    const actions = page.locator('.decision-history-actions').first();
+    await expect(actions).toBeVisible({ timeout: 15000 });
+    await assertElementNoHorizontalOverflow(page, '.decision-history-actions');
+    await assertLocatorWithinViewport(actions, MOBILE_2C_VIEWPORT.width);
+  });
+
+  test('karar merkezi son kararlar snippet @390px yatay taşma yapmaz', async ({ page }) => {
+    await page.setViewportSize(MOBILE_2C_VIEWPORT);
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-snippet-mobile-user';
+      window.app.currentUser = { id: userId, name: 'E2E Snippet Mobile User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const entry = {
+        id: 'snippet-mobile-1',
+        schemaVersion: 1,
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        score: 88,
+        riskLevel: 'Düşük risk',
+        yearlyCost: 240000,
+        topPick: {
+          name: 'Toyota Corolla Hybrid',
+          score: 88,
+          yearlyCost: 240000,
+          riskLevel: 'Düşük risk'
+        }
+      };
+      localStorage.setItem(storageKey, JSON.stringify([entry]));
+      window.app.decisionHistory = [entry];
+      window.app.ui.renderRecentDecisionHistorySnippet([entry]);
+    });
+
+    const snippet = page.locator('[data-decision-history-recent-snippet]');
+    await expect(snippet).toBeVisible({ timeout: 15000 });
+    await assertElementNoHorizontalOverflow(page, '[data-decision-history-recent-snippet]');
+    await assertLocatorWithinViewport(snippet, MOBILE_2C_VIEWPORT.width);
   });
 
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {

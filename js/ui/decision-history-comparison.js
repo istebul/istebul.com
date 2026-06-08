@@ -1,0 +1,83 @@
+/**
+ * Build comparison items from Decision History entries.
+ * Uses existing createComparisonItemFromRecommendation factory — no new score calculations.
+ */
+
+/**
+ * @param {unknown} insight
+ * @returns {string | null}
+ */
+function resolveInsightHeadline(insight) {
+    if (!insight) return null;
+    if (typeof insight === 'string') {
+        const trimmed = insight.trim();
+        return trimmed || null;
+    }
+    if (typeof insight === 'object' && insight.headline) {
+        const trimmed = String(insight.headline).trim();
+        return trimmed || null;
+    }
+    return null;
+}
+
+/**
+ * @param {object | null | undefined} entry
+ * @returns {{ recommendation: object, result: object } | null}
+ */
+export function resolveHistoryPick(entry) {
+    if (!entry || typeof entry !== 'object') return null;
+
+    const topPick = entry.topPick && typeof entry.topPick === 'object' ? entry.topPick : null;
+    const recommendation = Array.isArray(entry.recommendations) ? entry.recommendations[0] : null;
+    const name = topPick?.name || recommendation?.name;
+    if (!name || !entry.categoryId) return null;
+
+    const monthlyPayment = topPick?.monthlyPayment;
+    const financeComparisons = recommendation?.financeComparisons
+        || (monthlyPayment !== undefined && monthlyPayment !== null
+            ? [{ monthlyPayment }]
+            : []);
+
+    return {
+        recommendation: {
+            name,
+            score: entry.score ?? topPick?.score ?? recommendation?.score,
+            price: topPick?.price ?? recommendation?.price,
+            yearlyCost: entry.yearlyCost ?? topPick?.yearlyCost ?? recommendation?.yearlyCost,
+            riskLevel: entry.riskLevel ?? topPick?.riskLevel ?? recommendation?.riskLevel,
+            financeComparisons,
+            decisionTags: Array.isArray(entry.profileTags) ? entry.profileTags : (recommendation?.decisionTags || []),
+            scoreNote: typeof entry.summary === 'string' ? entry.summary : (recommendation?.scoreNote || ''),
+            realisticComment: resolveInsightHeadline(entry.insight)
+                || (typeof entry.summary === 'string' ? entry.summary : '')
+                || recommendation?.realisticComment
+                || recommendation?.scoreNote
+                || '',
+            details: recommendation?.details || [],
+            calculationTable: recommendation?.calculationTable
+        },
+        result: {
+            categoryId: entry.categoryId,
+            categoryName: entry.categoryName
+        }
+    };
+}
+
+/**
+ * @param {object | null | undefined} entry
+ * @returns {boolean}
+ */
+export function canAddHistoryEntryToComparison(entry) {
+    return Boolean(resolveHistoryPick(entry));
+}
+
+/**
+ * @param {object | null | undefined} entry
+ * @param {(recommendation: object, result: object) => object} createComparisonItemFromRecommendation
+ * @returns {object | null}
+ */
+export function buildComparisonItemFromHistoryEntry(entry, createComparisonItemFromRecommendation) {
+    const pick = resolveHistoryPick(entry);
+    if (!pick || typeof createComparisonItemFromRecommendation !== 'function') return null;
+    return createComparisonItemFromRecommendation(pick.recommendation, pick.result);
+}
