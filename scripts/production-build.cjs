@@ -641,7 +641,7 @@ writeFile('build-manifest.json', JSON.stringify(manifest, null, 2));
 
 
 // Create physical SPA route entrypoints to avoid Cloudflare Pages clean-url redirects.
-// App-only SPA shells (SEO hubs /rehber/, /ilanlar/, /karsilastir/ are static HTML from buildSeoPages)
+// App-only SPA shells (SEO hubs /rehber/, /secenekler/, /karsilastir/ are static HTML from buildSeoPages)
 const spaRoutes = ['favoriler', 'gecmis', 'profil', 'ilan-ekle', 'messages'];
 const routeDocumentMeta = loadRouteMeta(root);
 
@@ -696,7 +696,7 @@ const rewriteSeoHtmlAssets = () => {
   const seoRoots = [
     'rehber',
     'karar-asistani',
-    'ilanlar',
+    'secenekler',
     'karsilastir',
     'metodoloji',
     'veri-kaynaklari',

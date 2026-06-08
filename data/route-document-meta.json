@@ -37,14 +37,14 @@
       "path": "/blog"
     },
     "ilanlar": {
-      "title": "Araç Seçenekleri | isteBul",
-      "description": "Karar skoruna göre sıralanmış araç seçeneklerini keşfedin ve karşılaştırın.",
-      "path": "/ilanlar"
+      "title": "AI Destekli Seçenekler | isteBul",
+      "description": "Karar skoruna göre sıralanmış araç ve konut seçeneklerini keşfedin — karar platformu kataloğu.",
+      "path": "/secenekler"
     },
     "listing-detail": {
       "title": "Seçenek Detayı | isteBul",
-      "description": "Seçtiğiniz aracın karar skoru, maliyet kırılımı ve finansman etkisi.",
-      "path": "/ilanlar"
+      "description": "Seçtiğiniz seçeneğin karar skoru, maliyet kırılımı ve finansman etkisi.",
+      "path": "/secenekler"
     },
     "compare": {
       "title": "Karşılaştırma Merkezi | isteBul",

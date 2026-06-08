@@ -21,7 +21,7 @@
     { "loc": "/planlar", "priority": "0.9", "changefreq": "weekly" },
     { "loc": "/karar-analizi", "priority": "0.85", "changefreq": "weekly" },
     { "loc": "/karar-asistani/", "priority": "0.85", "changefreq": "weekly" },
-    { "loc": "/ilanlar/", "priority": "0.85", "changefreq": "weekly" },
+    { "loc": "/secenekler/", "priority": "0.85", "changefreq": "weekly" },
     { "loc": "/karsilastir/", "priority": "0.85", "changefreq": "weekly" },
     { "loc": "/cerez-politikasi.html", "priority": "0.3", "changefreq": "yearly" },
     { "loc": "/hakkimizda.html", "priority": "0.5", "changefreq": "monthly" },

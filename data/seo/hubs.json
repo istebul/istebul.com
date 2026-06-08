@@ -18,20 +18,20 @@
       "relatedLandings": ["arac-alim-karar-asistani", "tco-rehberi", "arac-karsilastirma-rehberi"]
     },
     {
-      "slug": "ilanlar",
-      "path": "/ilanlar/",
-      "title": "Araç İlanları ve Karar Desteği | isteBul",
-      "description": "İlan seçmeden önce bütçe ve toplam maliyet analizi yapın. isteBul ile araç ilanlarını karar skoru ve TCO ile değerlendirin.",
-      "h1": "Araç ilanı seçmeden önce kararınızı güçlendirin",
-      "intro": "Piyasada yüzlerce ilan arasında kaybolmak yerine önce ihtiyacınızı ve maliyet sınırlarınızı netleştirin. isteBul analizi sonrası ilanları daha bilinçli filtreleyebilirsiniz.",
+      "slug": "secenekler",
+      "path": "/secenekler/",
+      "title": "AI Destekli Seçenekler | isteBul",
+      "description": "Karar skoruna göre sıralanmış araç ve konut seçeneklerini keşfedin. isteBul ilan sitesi değil — karar platformu kataloğu.",
+      "h1": "Yapay zeka destekli seçenekler",
+      "intro": "Bu alan klasik ilan listesi değildir. QA sürecinden geçmiş, karar skoru ve risk sinyalleriyle zenginleştirilmiş seçenekleri görürsünüz. Satın alma öncesi Auto TCO analizi ile birlikte kullanın.",
       "bullets": [
-        "Bütçe üst sınırı ve aylık taşıma maliyeti",
-        "Kullanım tipine göre segment önerisi",
-        "İkinci el risk sinyalleri için kontrol listesi",
-        "Partner galerilere hazır lead akışı"
+        "Karar uygunluk skoru ile sıralama",
+        "Toplam maliyet (TCO) odaklı değerlendirme",
+        "Dış ilana güvenli yönlendirme (source_url)",
+        "Karar Merkezi QA sürecinden geçmiş kayıtlar"
       ],
       "ctaHref": "/auto/",
-      "ctaLabel": "Ücretsiz analiz",
+      "ctaLabel": "Karar analizini başlat",
       "relatedLandings": ["ikinci-el-rehberi", "sifir-arac-mi-ikinci-el-mi", "arac-alim-karar-asistani"]
     },
     {

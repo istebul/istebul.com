@@ -34,7 +34,7 @@ const liveRoutes = [
   },
   { path: '/karar-asistani/', must: ['Araç karar asistanı', 'seo-page'], status: 200, optional: true },
   { path: '/karsilastir/', must: ['Karşılaştır', 'seo-page'], status: 200, optional: true },
-  { path: '/ilanlar/', must: ['Araç ilanı', 'seo-page'], status: 200, optional: true },
+  { path: '/secenekler/', must: ['Seçenek', 'seo-page'], status: 200, optional: true },
   { path: '/planlar', must: ['Planlar ve fiyatlandırma', 'seo-page'], status: 200, optional: true },
   { path: '/blog', must: ['Karar rehberleri', 'seo-page'], status: 200, optional: true },
   { path: '/duyurular', must: ['isteBul duyuruları', 'seo-page'], status: 200, optional: true },

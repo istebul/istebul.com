@@ -469,7 +469,7 @@ function renderSeoFooter({ site, guideLinks }) {
         <ul>
           <li><a href="/">Ana sayfa</a></li>
           <li><a href="/auto/">Ücretsiz analiz</a></li>
-          <li><a href="/ilanlar/">İlanlar</a></li>
+          <li><a href="/secenekler/">Seçenekler</a></li>
           <li><a href="/karsilastir/">Karşılaştır</a></li>
         </ul>
       </div>
