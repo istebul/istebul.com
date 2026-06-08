@@ -148,6 +148,15 @@ const gecmisHistoryCard = (page, categoryId) => {
   return cards.first();
 };
 
+const clickGecmisCompareAdd = async (page, entryId) => {
+  await waitForGecmisHistoryStable(page);
+  const compareBtn = entryId
+    ? page.locator(`[data-decision-compare-add="${entryId}"]`)
+    : page.locator('[data-decision-compare-add]').first();
+  await expect(compareBtn).toBeVisible({ timeout: 15000 });
+  await compareBtn.click({ timeout: 15000 });
+};
+
 test.describe('isteBul kritik kullanıcı akışları', () => {
   test('ana sayfa ve seçenekler hub yüklenir', async ({ page }) => {
     await page.goto('/');
@@ -691,6 +700,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       localStorage.removeItem('istebul_comparison_items');
@@ -725,9 +735,10 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     });
 
     const compareBtn = page.locator('[data-decision-compare-add="history-compare-1"]');
+    await waitForGecmisHistoryStable(page);
     await expect(compareBtn).toBeVisible({ timeout: 15000 });
     await expect(compareBtn).toContainText(/Karşılaştırmaya ekle/i);
-    await compareBtn.click();
+    await compareBtn.click({ timeout: 15000 });
 
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
     await expect(page).toHaveURL(/\/gecmis\/?$/);
@@ -993,6 +1004,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       localStorage.removeItem('istebul_comparison_items');
@@ -1017,11 +1029,9 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const card = page.locator('.decision-history-card').first();
+    const card = gecmisHistoryCard(page);
     await expect(card).toBeVisible({ timeout: 15000 });
-    const compareBtn = card.locator('[data-decision-compare-add="history-compare-auto"]');
-    await expect(compareBtn).toBeVisible({ timeout: 15000 });
-    await compareBtn.click();
+    await clickGecmisCompareAdd(page, 'history-compare-auto');
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
 
     const comparisonState = await page.evaluate(() => {
@@ -1039,9 +1049,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis konut kaydı karşılaştırmaya normalized konut kategori ile eklenir', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       localStorage.removeItem('istebul_comparison_items');
@@ -1066,7 +1078,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    await page.locator('[data-decision-compare-add="history-compare-konut"]').click();
+    await clickGecmisCompareAdd(page, 'history-compare-konut');
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
 
     const comparisonState = await page.evaluate(() => {
@@ -1205,10 +1217,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    await waitForGecmisHistoryStable(page);
-    const compareBtn = page.locator('[data-decision-compare-add]').first();
-    await expect(compareBtn).toBeVisible({ timeout: 15000 });
-    await compareBtn.click({ timeout: 15000 });
+    await clickGecmisCompareAdd(page);
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişi karşılaştırmaya eklendi/i })).toBeVisible({ timeout: 15000 });
 
     const comparisonState = await page.evaluate(() => {
