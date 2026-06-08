@@ -4,6 +4,7 @@
  */
 
 import { normalizeHistoryEntryCategory } from './decision-history-category.js';
+import { normalizeDecisionHistoryEntry } from './decision-history-compat.js';
 
 /**
  * @param {unknown} insight
@@ -27,12 +28,17 @@ function resolveInsightHeadline(insight) {
  * @returns {{ recommendation: object, result: object } | null}
  */
 export function resolveHistoryPick(entry) {
-    if (!entry || typeof entry !== 'object') return null;
+    const normalizedEntry = normalizeDecisionHistoryEntry(entry);
+    if (!normalizedEntry) return null;
 
-    const topPick = entry.topPick && typeof entry.topPick === 'object' ? entry.topPick : null;
-    const recommendation = Array.isArray(entry.recommendations) ? entry.recommendations[0] : null;
+    const topPick = normalizedEntry.topPick && typeof normalizedEntry.topPick === 'object'
+        ? normalizedEntry.topPick
+        : null;
+    const recommendation = Array.isArray(normalizedEntry.recommendations)
+        ? normalizedEntry.recommendations[0]
+        : null;
     const name = topPick?.name || recommendation?.name;
-    const category = normalizeHistoryEntryCategory(entry);
+    const category = normalizeHistoryEntryCategory(normalizedEntry);
     if (!name || category.categoryId === 'unknown') return null;
 
     const monthlyPayment = topPick?.monthlyPayment;
@@ -44,15 +50,19 @@ export function resolveHistoryPick(entry) {
     return {
         recommendation: {
             name,
-            score: entry.score ?? topPick?.score ?? recommendation?.score,
+            score: normalizedEntry.score ?? topPick?.score ?? recommendation?.score,
             price: topPick?.price ?? recommendation?.price,
-            yearlyCost: entry.yearlyCost ?? topPick?.yearlyCost ?? recommendation?.yearlyCost,
-            riskLevel: entry.riskLevel ?? topPick?.riskLevel ?? recommendation?.riskLevel,
+            yearlyCost: normalizedEntry.yearlyCost ?? topPick?.yearlyCost ?? recommendation?.yearlyCost,
+            riskLevel: normalizedEntry.riskLevel ?? topPick?.riskLevel ?? recommendation?.riskLevel,
             financeComparisons,
-            decisionTags: Array.isArray(entry.profileTags) ? entry.profileTags : (recommendation?.decisionTags || []),
-            scoreNote: typeof entry.summary === 'string' ? entry.summary : (recommendation?.scoreNote || ''),
-            realisticComment: resolveInsightHeadline(entry.insight)
-                || (typeof entry.summary === 'string' ? entry.summary : '')
+            decisionTags: Array.isArray(normalizedEntry.profileTags)
+                ? normalizedEntry.profileTags
+                : (recommendation?.decisionTags || []),
+            scoreNote: typeof normalizedEntry.summary === 'string'
+                ? normalizedEntry.summary
+                : (recommendation?.scoreNote || ''),
+            realisticComment: resolveInsightHeadline(normalizedEntry.insight)
+                || (typeof normalizedEntry.summary === 'string' ? normalizedEntry.summary : '')
                 || recommendation?.realisticComment
                 || recommendation?.scoreNote
                 || '',

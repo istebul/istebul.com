@@ -26,6 +26,7 @@ import {
     renderRecentDecisionHistorySnippetHtml
 } from './decision-history-recent-snippet.js';
 import { normalizeHistoryEntryCategory } from './decision-history-category.js';
+import { normalizeDecisionHistoryList } from './decision-history-compat.js';
 
 export class AssistantUI {
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
@@ -578,7 +579,9 @@ export class AssistantUI {
         const container = doc.getElementById('history-list');
         if (!container) return;
 
-        if (!history.length) {
+        const normalizedHistory = normalizeDecisionHistoryList(history);
+
+        if (!normalizedHistory.length) {
             container.innerHTML = `
                 <div class="empty-state">
                     <i data-lucide="clock"></i>
@@ -590,7 +593,7 @@ export class AssistantUI {
             return;
         }
 
-        container.innerHTML = history.map((item) => {
+        container.innerHTML = normalizedHistory.map((item) => {
             const category = normalizeHistoryEntryCategory(item);
             const isAuto = category.isAuto;
             const answers = Array.isArray(item.answers)
@@ -651,8 +654,9 @@ export class AssistantUI {
         const host = doc.getElementById('decision-history-recent-snippet-host');
         if (!host) return;
 
+        const normalizedHistory = normalizeDecisionHistoryList(history);
         const html = renderRecentDecisionHistorySnippetHtml(
-            buildRecentDecisionHistorySnippetModel(history),
+            buildRecentDecisionHistorySnippetModel(normalizedHistory),
             this.escapeHtml.bind(this),
             this.formatDate.bind(this)
         );
