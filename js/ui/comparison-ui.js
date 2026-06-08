@@ -16,17 +16,17 @@ export class ComparisonUI {
                 '<div class="empty-state">' +
                     '<i data-lucide="columns-3"></i>' +
                     '<h3>Karşılaştırma listeniz boş</h3>' +
-                    '<p>Auto analiz sonuçlarından veya seçenek kartlarından &quot;Karşılaştır&quot; ile ekleyin. Skor, maliyet ve riskler yan yana okunur.</p>' +
+                    '<p>Karar analizi sonuçlarından veya seçenek kartlarından &quot;Karşılaştır&quot; ile ekleyin. Skor, maliyet, risk, uygunluk ve gerekçe yan yana okunur.</p>' +
                     '<div class="empty-state-actions">' +
-                      '<a href="/auto/" class="btn btn-primary">TCO analizini başlat</a>' +
-                      '<a href="/secenekler/" class="btn btn-outline">Seçeneklere git</a>' +
+                      '<a href="/karar-asistani/" class="btn btn-primary">Karar analizini başlat</a>' +
+                      '<a href="/secenekler/" class="btn btn-outline">Seçenekleri incele</a>' +
                     '</div>' +
                 '</div>';
             this.loadIcons();
             return;
         }
 
-        const categoryName = items[0]?.categoryName || 'Karşılaştırma';
+        const categoryName = items[0]?.categoryName || 'Karar kriteri karşılaştırma';
         const maxValues = {
             price: Math.max(...items.map((item) => Number(item.price || 0)), 1),
             periodicCost: Math.max(...items.map((item) => Number(item.periodicCost || 0)), 1),
@@ -38,7 +38,7 @@ export class ComparisonUI {
                 '<div>' +
                     '<span class="assistant-kicker">' + this.escapeHtml(categoryName) + '</span>' +
                     '<h3>' + this.escapeHtml(items.length) + ' seçenek yan yana</h3>' +
-                    '<p>Fiyat, dönemsel maliyet, kredi yükü, risk ve karar detayları aynı tabloda okunur.</p>' +
+                    '<p>Skor, toplam maliyet, finansman yükü, risk, uygunluk ve gerekçe aynı tabloda okunur.</p>' +
                 '</div>' +
                 '<button type="button" class="btn btn-outline" data-comparison-clear><i data-lucide="trash-2"></i> Temizle</button>' +
                 '<button type="button" class="btn btn-outline" data-upsell-trigger="decision_export" data-upsell-placement="compare_export"><i data-lucide="file-down"></i> PDF export</button>' +
@@ -55,7 +55,7 @@ export class ComparisonUI {
         const isLeader = item.score && Number(item.score) >= maxScore && maxScore > 0;
 
         return '<article class="comparison-card ' + (item.sourceType === 'isteBul Auto' ? 'comparison-card-auto' : '') + '">' +
-            (item.image ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(item.image) + '" alt="' + this.escapeHtml(item.title || 'Araç') + '" loading="lazy" decoding="async"></div>' : '') +
+            (item.image ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(item.image) + '" alt="' + this.escapeHtml(item.title || 'Seçenek') + '" loading="lazy" decoding="async"></div>' : '') +
             (isLeader ? '<div class="comparison-leader-badge">🏆 En güçlü eşleşme</div>' : '') +
             '<div class="comparison-card-head">' +
                 '<div>' +

@@ -694,7 +694,7 @@ export class AssistantUI {
                     <i data-lucide="${this.escapeHtml(this.getCategoryVisualIcon(category.id, category.icon))}"></i>
                 </span>
                 <h3>${this.escapeHtml(category.name)}</h3>
-                <span class="category-count">${category.id === 'arac' ? 'Karar analizi' : this.escapeHtml(category.count || 0) + ' ilan'}</span>
+                <span class="category-count">${category.id === 'arac' ? 'Karar analizi' : this.escapeHtml(category.count || 0) + ' seçenek'}</span>
             </button>
         `;
     }

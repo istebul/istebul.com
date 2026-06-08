@@ -3,53 +3,53 @@
     {
       "slug": "karar-asistani",
       "path": "/karar-asistani/",
-      "title": "Araç Karar Asistanı | isteBul",
-      "description": "Bütçe, kullanım, kredi ve toplam sahip olma maliyetine göre araç seçeneklerini skorlayan ücretsiz karar asistanı. Türkiye pazarı için optimize edilmiş analiz.",
-      "h1": "Araç karar asistanı ile doğru modeli netleştirin",
-      "intro": "Karar asistanı; satın alma bütçenizi, günlük kullanımınızı, yakıt ve sigorta maliyetlerini ve finansman tercihinizi tek akışta değerlendirir. Sonuçta size uygun araç profillerini öncelik sırasıyla görürsünüz.",
+      "title": "Karar Asistanı | isteBul — AI Karar Merkezi",
+      "description": "Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk analizini tek merkezden başlatın. isteBul karar platformudur.",
+      "h1": "Hangi kategoride karar vermek istiyorsunuz?",
+      "intro": "Karar asistanı; bütçe, kullanım, finansman ve toplam maliyet sinyallerini kategori seçiminize göre değerlendirir. Skor ve TCO kural tabanlıdır; AI yalnızca gerekçe ve özet üretir.",
       "bullets": [
-        "2 dakikada başlayan rehberli analiz",
-        "Toplam sahip olma maliyeti (TCO) görünürlüğü",
-        "Kredi ve peşin senaryolarının karşılaştırması",
-        "Tarafsız sıralama — tek markaya bağlı değil"
+        "6 kategori: araba, konut, tatil, finansman, sigorta, kasko",
+        "Kural tabanlı skor ve TCO görünürlüğü",
+        "Risk ve uygunluk sinyalleri tek akışta",
+        "Tarafsız karar desteği — tek markaya bağlı değil"
       ],
-      "ctaHref": "/auto/",
-      "ctaLabel": "Karar analizini başlat",
-      "relatedLandings": ["arac-alim-karar-asistani", "tco-rehberi", "arac-karsilastirma-rehberi"]
+      "ctaHref": "/karar-asistani",
+      "ctaLabel": "Karar akışını başlat",
+      "relatedLandings": ["arac-alim-karar-asistani", "tco-rehberi", "finansman-rehberi"]
     },
     {
       "slug": "secenekler",
       "path": "/secenekler/",
-      "title": "AI Destekli Seçenekler | isteBul",
-      "description": "Karar skoruna göre sıralanmış araç ve konut seçeneklerini keşfedin. isteBul ilan sitesi değil — karar platformu kataloğu.",
-      "h1": "Yapay zeka destekli seçenekler",
-      "intro": "Bu alan klasik ilan listesi değildir. QA sürecinden geçmiş, karar skoru ve risk sinyalleriyle zenginleştirilmiş seçenekleri görürsünüz. Satın alma öncesi Auto TCO analizi ile birlikte kullanın.",
+      "title": "Değerlendirilebilir Seçenekler | isteBul",
+      "description": "Karar skoruna göre sıralanmış araç, konut ve diğer seçenekleri keşfedin. isteBul karar platformu yüzeyi — klasik ilan listesi değil.",
+      "h1": "Değerlendirilebilir seçenekler",
+      "intro": "Bu alan klasik ilan listesi değildir. QA sürecinden geçmiş, karar skoru ve risk sinyalleriyle zenginleştirilmiş seçenekleri görürsünüz. Karar analizi sonrası uygun seçenekleri burada sürdürün.",
       "bullets": [
         "Karar uygunluk skoru ile sıralama",
         "Toplam maliyet (TCO) odaklı değerlendirme",
-        "Dış ilana güvenli yönlendirme (source_url)",
+        "Kaynak bağlantısı ile güvenli inceleme",
         "Karar Merkezi QA sürecinden geçmiş kayıtlar"
       ],
-      "ctaHref": "/auto/",
+      "ctaHref": "/karar-asistani/",
       "ctaLabel": "Karar analizini başlat",
       "relatedLandings": ["ikinci-el-rehberi", "sifir-arac-mi-ikinci-el-mi", "arac-alim-karar-asistani"]
     },
     {
       "slug": "karsilastir",
       "path": "/karsilastir/",
-      "title": "Araç Karşılaştırma | isteBul",
-      "description": "İki veya daha fazla aracı toplam maliyet, finansman etkisi ve kullanım uyumuna göre yan yana karşılaştırın. Türkiye için araç karşılaştırma merkezi.",
-      "h1": "Araçları toplam maliyetle karşılaştırın",
-      "intro": "Liste fiyatı yanıltıcı olabilir. Karşılaştırma merkezi; yakıt, bakım, sigorta, vergi ve kredi etkisini aynı tabloda sunarak hangi seçeneğin uzun vadede daha mantıklı olduğunu gösterir.",
+      "title": "Karar Kriteri Karşılaştırma | isteBul",
+      "description": "Seçenekleri skor, maliyet, risk, uygunluk ve gerekçe boyutunda yan yana karşılaştırın. Karar kriteri karşılaştırma merkezi.",
+      "h1": "Karar kriterlerini yan yana değerlendirin",
+      "intro": "Karşılaştırma merkezi; skor, toplam maliyet, finansman yükü, risk sinyalleri ve AI gerekçelerini aynı tabloda sunarak hangi seçeneğin kararınıza daha uygun olduğunu gösterir.",
       "bullets": [
-        "Karar skoru ve maliyet farkı özeti",
+        "Skor ve maliyet farkı özeti",
+        "Risk ve uygunluk sinyalleri",
         "Finansman senaryoları (vade, faiz, peşinat)",
-        "Kullanım kilometrelerine duyarlı maliyet",
         "Şeffaf metodoloji açıklaması"
       ],
-      "ctaHref": "/auto/",
-      "ctaLabel": "Karşılaştırmaya başla",
-      "relatedLandings": ["arac-karsilastirma-rehberi", "suv-mi-sedan-mi", "elektrikli-arac-rehberi"]
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Karar analizini başlat",
+      "relatedLandings": ["arac-karsilastirma-rehberi", "suv-mi-sedan-mi", "finansman-rehberi"]
     },
     {
       "slug": "planlar",

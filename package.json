@@ -1,7 +1,7 @@
 {
   "name": "istebu-v2",
   "version": "2.2.20",
-  "description": "Modern Turkish marketplace platform - isteBu v2",
+  "description": "AI destekli karar platformu — isteBul",
   "main": "js/app.js",
   "scripts": {
     "start": "node server.cjs",

@@ -4069,7 +4069,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.applyListingFilterFormOptions(options);
         await this.loadListings(options);
         this.saveSearchHistory('Karar sonucu: ' + (this.getListingFilterChips(options).slice(0, 4).join(' / ') || 'Sonuca uygun seçenekler'));
-        this.ui.showSuccess('Karar sonucuna uygun ilanlar filtrelendi.');
+        this.ui.showSuccess('Karar sonucuna uygun seçenekler filtrelendi.');
     }
 
 

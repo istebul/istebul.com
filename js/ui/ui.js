@@ -460,11 +460,11 @@ export class UIManager {
 
     getListingPrimaryActionLabel(categoryId) {
         const labels = {
-            arac: 'İlana Git',
-            ev: 'Emlak Kaynağı',
-            tatil: 'Paketi Gör'
+            arac: 'Seçeneği İncele',
+            ev: 'Seçeneği İncele',
+            tatil: 'Seçeneği İncele'
         };
-        return labels[categoryId] || 'İlana Git';
+        return labels[categoryId] || 'Karar Detayını İncele';
     }
 
     getListingInsightItems(listing = {}, aiScore = 0) {
@@ -550,8 +550,8 @@ export class UIManager {
         if (options.vacationType) parts.push(vacationLabels[options.vacationType] || options.vacationType);
         if (options.search) parts.push('Arama: ' + options.search);
 
-        if (options.ownedOnly || options.userId) return count ? 'Yayınladığınız ilanlar' : 'Henüz ilan yayınlamadınız';
-        if (!count) return 'Henüz ilan yok. İlk ilan yayınlandığında burada görünecek.';
+        if (options.ownedOnly || options.userId) return count ? 'Yayınladığınız seçenekler' : 'Henüz seçenek yayınlamadınız';
+        if (!count) return 'Henüz değerlendirilebilir seçenek yok. İlk seçenek eklendiğinde burada görünecek.';
         return parts.length ? parts.join(' · ') : 'Türkiye geneli · karar skoruna göre keşif';
     }
 
@@ -602,13 +602,13 @@ export class UIManager {
             <div class="listing-detail-card listing-detail-premium">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>İlan detayları hazırlanıyor...</p>
+                    <p>Seçenek detayı hazırlanıyor...</p>
                 </div>
             </div>
         `;
     }
 
-    renderListingDetailEmpty(message = 'İlan detayları bulunamadı.') {
+    renderListingDetailEmpty(message = 'Seçenek detayı bulunamadı.') {
         const section = document.getElementById('listing-detail-content');
         if (!section) return;
 
@@ -616,7 +616,7 @@ export class UIManager {
             <div class="listing-detail-card listing-detail-premium">
                 <div class="empty-state">
                     <i data-lucide="search-x"></i>
-                    <h3>İlan bulunamadı</h3>
+                    <h3>Seçenek bulunamadı</h3>
                     <p>${this.escapeHtml(message)}</p>
                     <div class="listing-actions">
                         <a href="/" class="btn btn-outline" data-native-route>Ana sayfaya dön</a>
@@ -650,7 +650,7 @@ export class UIManager {
             <div class="listing-detail-card listing-detail-premium">
                 <div class="listing-detail-header">
                     <div>
-                        <span class="assistant-kicker">${this.escapeHtml(categoryLabel || 'İlan')} detay analizi</span>
+                        <span class="assistant-kicker">${this.escapeHtml(categoryLabel || 'Seçenek')} detay analizi</span>
                         <h2>${this.escapeHtml(listing.title)}</h2>
                         <div class="listing-detail-badges">
                             <span title="Metodolojik uyum skoru; kesin sonuç değildir"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScore)}/100</span>
@@ -688,7 +688,7 @@ export class UIManager {
             '../user-decision-center/index.js'
         );
         if (!ctx) {
-            return buildUserDecisionCenterEmptyHtml('Bu ilan için karar analizi henüz hazır değil.');
+            return buildUserDecisionCenterEmptyHtml('Bu seçenek için karar analizi henüz hazır değil.');
         }
         return buildUserDecisionCenterHtml({ ...ctx, listing: ctx.listing ?? listing });
     }
@@ -758,7 +758,7 @@ export class UIManager {
                         <button class="btn btn-outline" data-favorite-id="${this.escapeHtml(listing.id)}"><i data-lucide="heart-off"></i> Kaldır</button>
                         <button class="btn btn-outline" data-action="detail" data-listing-id="${this.escapeHtml(listing.id)}"><i data-lucide="eye"></i> Detay</button>
                         <button class="btn btn-outline" data-action="compare" data-listing-id="${this.escapeHtml(listing.id)}"><i data-lucide="columns-3"></i> Karşılaştır</button>
-                        <a href="${this.safeExternalUrl(listing.external_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> İlanı Gör</a>
+                        <a href="${this.safeExternalUrl(listing.external_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> Seçeneği İncele</a>
                     </div>
                 </div>
             </div>
@@ -1286,7 +1286,7 @@ export class UIManager {
                 <div class="empty-state messages-empty-state">
                     <i data-lucide="message-square"></i>
                     <h3>Henüz mesaj yok</h3>
-                    <p>İlan veya karar süreciyle ilgili mesajlarınız burada görünür.</p>
+                    <p>Karar süreci ve seçenek inceleme mesajlarınız burada görünür.</p>
                 </div>
             `;
             this.loadIcons?.();

@@ -663,7 +663,14 @@ const blogBuild = spawnSync(process.execPath, [path.join(root, 'scripts/build-bl
 if (blogBuild.status !== 0) process.exit(blogBuild.status || 1);
 
 /** Dynamic content list routes — SPA shells (must run after SEO/blog static pass). */
-const dynamicContentSpaRoutes = ['blog', 'duyurular', 'kampanyalar'];
+const dynamicContentSpaRoutes = [
+  'blog',
+  'duyurular',
+  'kampanyalar',
+  'karar-asistani',
+  'secenekler',
+  'karsilastir'
+];
 dynamicContentSpaRoutes.forEach((route) => {
   const routeDir = path.join(dist, route);
   fs.mkdirSync(routeDir, { recursive: true });
