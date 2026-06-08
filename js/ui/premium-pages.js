@@ -215,6 +215,9 @@ export class PremiumPages {
             </table>
           </div>
           <p class="ib-premium-note">Örnek veriler gösterim amaçlıdır; canlı analizde gerçek girdilerinize göre hesaplanır.</p>
+          <div class="ib-premium-compare-preview-actions">
+            <a href="/karsilastir/" class="btn btn-outline btn-sm" data-native-route>Karşılaştırma merkezine git</a>
+          </div>
         </div>
       </section>
 
