@@ -83,11 +83,29 @@ const assertElementNoHorizontalOverflow = async (page, selector) => {
 };
 
 const assertLocatorWithinViewport = async (locator, viewportWidth) => {
+  await expect(locator).toBeVisible({ timeout: 15000 });
+  await locator.scrollIntoViewIfNeeded();
   const box = await locator.boundingBox();
   expect(box).toBeTruthy();
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(viewportWidth + 1);
 };
+
+/** Pre-existing /gecmis mobile layout tests: wait for normalized category kicker after loadDecisionHistory. */
+const waitForGecmisHistoryCategoryKicker = async (page, categoryId) => {
+  await page.waitForFunction(
+    (expectedCategoryId) => {
+      const kicker = document.querySelector(
+        `#history-list .decision-history-card [data-history-category="${expectedCategoryId}"]`
+      );
+      return Boolean(kicker?.textContent?.trim());
+    },
+    categoryId,
+    { timeout: 15000 }
+  );
+};
+
+const gecmisHistoryCard = (page) => page.locator('#history-list .decision-history-card').first();
 
 test.describe('isteBul kritik kullanıcı akışları', () => {
   test('ana sayfa ve seçenekler hub yüklenir', async ({ page }) => {
@@ -617,7 +635,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const card = page.locator('.decision-history-card').first();
+    const card = gecmisHistoryCard(page);
     await expect(card).toBeVisible({ timeout: 15000 });
     const signalStrip = card.locator('[data-decision-history-signal-strip]');
     await expect(signalStrip).toBeVisible({ timeout: 15000 });
@@ -794,7 +812,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const card = page.locator('.decision-history-card').first();
+    const card = gecmisHistoryCard(page);
     const actions = card.locator('.decision-history-actions');
     await expect(actions).toBeVisible({ timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '.decision-history-card .decision-history-actions');
@@ -1015,6 +1033,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis normalized kategori label @390px yatay taşma yapmaz', async ({ page }) => {
+    // Pre-existing mobile layout gate: category kicker can paint after card shell (Faz 2D, not 2E-2).
     await page.setViewportSize(MOBILE_2C_VIEWPORT);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
@@ -1035,10 +1054,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const card = page.locator('.decision-history-card').first();
+    await waitForGecmisHistoryCategoryKicker(page, 'auto');
+    const card = gecmisHistoryCard(page);
     const kicker = card.locator('[data-history-category="auto"]');
     await expect(kicker).toBeVisible({ timeout: 15000 });
-    await expect(kicker).toHaveText('Araba');
+    await expect(kicker).toHaveText('Araba', { timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '.decision-history-card');
     await assertLocatorWithinViewport(card, MOBILE_2C_VIEWPORT.width);
   });
@@ -1186,6 +1206,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis legacy compat normalize edilmiş kayıt kartı @390px yatay taşma yapmaz', async ({ page }) => {
+    // Pre-existing mobile layout gate: legacy normalize kicker paints after card mount (Faz 2D-5, not 2E-2).
     await page.setViewportSize(MOBILE_2C_VIEWPORT);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
@@ -1210,10 +1231,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    const card = page.locator('.decision-history-card').first();
+    await waitForGecmisHistoryCategoryKicker(page, 'konut');
+    const card = gecmisHistoryCard(page);
     await expect(card).toBeVisible({ timeout: 15000 });
     await expect(card).toContainText(/Bostancı daire/i);
-    await expect(card.locator('[data-history-category="konut"]')).toHaveText('Konut');
+    await expect(card.locator('[data-history-category="konut"]')).toHaveText('Konut', { timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '.decision-history-card');
     await assertLocatorWithinViewport(card, MOBILE_2C_VIEWPORT.width);
   });
