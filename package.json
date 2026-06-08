@@ -21,6 +21,7 @@
     "deploy:cf": "npm run build && wrangler pages deploy dist --project-name=istebul-com",
     "check": "node scripts/check-syntax.cjs && node scripts/check-console.cjs",
     "type-check": "node scripts/check-syntax.cjs",
+    "typecheck": "npm run type-check",
     "production:audit": "node scripts/production-health-audit.cjs",
     "audit:analytics": "node scripts/analytics-deploy-readiness-audit.cjs",
     "assets:generate": "node scripts/generate-assets.cjs",

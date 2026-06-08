@@ -414,7 +414,11 @@ Deno.serve(async (req) => {
     return json({ error: "Profile not found" }, 403, origin);
   }
 
-  if (profile.role !== "admin" || profile.is_banned === true) {
+  const role = String(profile.role ?? "").toLowerCase();
+  const isAdminActor =
+    (role === "admin" || role === "super_admin") && profile.is_banned !== true;
+
+  if (!isAdminActor) {
     return json({ error: "Forbidden" }, 403, origin);
   }
 

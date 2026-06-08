@@ -39,9 +39,16 @@
   </header>
 
   <main class="ib-partner-funnel section legal-page">
-    <div id="partner-funnel-root" aria-live="polite">
-      <p>Yükleniyor…</p>
+    <div id="partner-funnel-root" data-corporate-mount-root aria-live="polite">
+      <p data-corporate-loading>Yükleniyor…</p>
     </div>
+    <noscript>
+      <div class="ib-corporate-mount-error" role="alert">
+        <h2>Partner başvurusu</h2>
+        <p>Bu sayfa JavaScript gerektirir. Tarayıcınızda JavaScript kapalı veya desteklenmiyor.</p>
+        <p>Manuel başvuru için <a href="/iletisim.html">iletişim</a> sayfamızı kullanın veya <a href="/partner-olun.html">partner programı</a> sayfasından bilgi alın.</p>
+      </div>
+    </noscript>
   </main>
 
   <footer class="corporate-footer">
@@ -71,6 +78,29 @@
   <script src="/env.js" defer></script>
   <script type="module" src="/js/runtime/site-social-init.js"></script>
   <script type="module" src="/js/corporate/partner-basvuru.js"></script>
+  <script>
+    (function () {
+      var timeoutMs = 15000;
+      setTimeout(function () {
+        if (document.documentElement.classList.contains('ib-corporate-mounted')) return;
+        var root = document.querySelector('[data-corporate-mount-root]') || document.getElementById('partner-funnel-root');
+        if (!root || root.querySelector('.ib-corporate-mount-error')) return;
+        var panel = document.createElement('div');
+        panel.className = 'ib-corporate-mount-error';
+        panel.setAttribute('role', 'alert');
+        panel.innerHTML =
+          '<h2>Partner başvurusu</h2>' +
+          '<p>Sayfa yüklenemedi. Bağlantınızı kontrol edin veya <a href="/iletisim.html">iletişime</a> geçin.</p>' +
+          '<p><a href="/partner-olun.html">Partner programı</a> · <button type="button" data-reload-page>Yeniden dene</button></p>';
+        panel.querySelector('[data-reload-page]')?.addEventListener('click', function () {
+          window.location.reload();
+        });
+        var loading = root.querySelector('[data-corporate-loading]');
+        if (loading) loading.replaceWith(panel);
+        else root.prepend(panel);
+      }, timeoutMs);
+    })();
+  </script>
   <div class="static-cookie-consent" id="static-cookie-consent" role="region" aria-label="Çerez tercihi" hidden>
   <p>Çerez ve analitik tercihinizi yönetin. <a href="/cerez-politikasi.html">Çerez politikası</a> · Ana sitede <a href="/">tam tercih paneli</a>.</p>
   <div class="static-cookie-consent__actions">

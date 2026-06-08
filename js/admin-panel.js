@@ -56,6 +56,7 @@ import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
 import { initFinanceAdmin } from './admin/finance-admin.js';
 import { initSigortaAdmin } from './admin/sigorta-admin.js';
+import { initKaskoAdmin } from './admin/kasko-admin.js';
 import { initPartnerEndpointsAdmin } from './admin/partner-endpoints-admin.js';
 import { loadPaymentsAdminPage } from './admin/payments-admin.js';
 import { fetchOpsJson } from './admin/fetch-ops-json.js';
@@ -1646,6 +1647,7 @@ const verticalAdmin = initVerticalAdmin({ sb });
 const housingAdmin = initHousingAdmin({ sb, adminAction, toast });
 const financeAdmin = initFinanceAdmin({ sb, adminAction, toast });
 const sigortaAdmin = initSigortaAdmin({ sb, adminAction, toast });
+const kaskoAdmin = initKaskoAdmin({ sb, adminAction, toast });
 const partnerEndpointsAdmin = initPartnerEndpointsAdmin({ sb, adminAction, toast });
 
 async function loadDashboard() {
@@ -4417,6 +4419,7 @@ registerAdminPageHandlers({
   'finance-partners': () => financeAdmin.loadFinancePartners(),
   'finance-scoring': () => financeAdmin.loadFinanceScoring(),
   'sigorta-leads': () => sigortaAdmin.loadSigortaLeads(),
+  'kasko-leads': () => kaskoAdmin.loadKaskoLeads(),
   'unified-funnel': () => loadUnifiedFunnelDashboard(),
   'auto-analytics': () => loadAutoAnalytics(),
   'platform-analytics': () => loadPlatformAnalytics(),
@@ -4502,6 +4505,7 @@ function bindAdminPanelEvents() {
     if (await housingAdmin.handleHousingAction(event, el)) return;
     if (await financeAdmin.handleFinanceAction(event, el)) return;
     if (await sigortaAdmin.handleSigortaAction(event, el)) return;
+    if (await kaskoAdmin.handleKaskoAction(event, el)) return;
     if (await partnerEndpointsAdmin.handlePartnerEndpointsAction(event, el)) return;
 
     const { action, id, active, role } = el.dataset;
@@ -4630,6 +4634,7 @@ function bindAdminPanelEvents() {
         if (leadTable === 'housing_leads') housingAdmin.loadHousingLeads();
         else if (leadTable === 'vacation_leads') vacationAdmin.loadVacationLeads();
         else if (leadTable === 'sigorta_leads') sigortaAdmin.loadSigortaLeads();
+        else if (leadTable === 'kasko_leads') kaskoAdmin.loadKaskoLeads();
         else if (leadTable === 'vertical_leads') verticalAdmin.loadVerticalLeads();
       });
       return;
@@ -4804,6 +4809,10 @@ document.addEventListener('change', (event) => {
   ['sigorta-leads-search', 'sigorta-leads-status-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => sigortaAdmin.loadSigortaLeads());
     document.getElementById(id)?.addEventListener('change', () => sigortaAdmin.loadSigortaLeads());
+  });
+  ['kasko-leads-search', 'kasko-leads-status-filter', 'kasko-leads-category-filter'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => kaskoAdmin.loadKaskoLeads());
+    document.getElementById(id)?.addEventListener('change', () => kaskoAdmin.loadKaskoLeads());
   });
   ['vertical-leads-search', 'vertical-leads-vertical-filter'].forEach((id) => {
     document.getElementById(id)?.addEventListener('input', () => verticalAdmin.loadVerticalLeads());
