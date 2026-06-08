@@ -27,16 +27,18 @@ import {
 } from './decision-history-recent-snippet.js';
 import {
     buildDecisionMemoryInsightsModel,
-    renderDecisionMemoryInsightsHtml
+    renderDecisionMemoryInsightsHtml,
+    DECISION_MEMORY_INSIGHTS_MIN
 } from './decision-memory-insights.js';
-import {
-    buildDeterministicDecisionMemoryCommentary,
-    hydrateDecisionMemoryAiCommentary,
-    renderDecisionMemoryAiCommentaryHtml,
-    shouldRenderDecisionMemoryAiCommentary
-} from './decision-memory-ai-commentary.js';
 import { normalizeHistoryEntryCategory } from './decision-history-category.js';
 import { normalizeDecisionHistoryList } from './decision-history-compat.js';
+
+/** Local gate for lazy commentary chunk — mirrors shouldRenderDecisionMemoryAiCommentary without eager bundle pull. */
+function shouldLazyLoadDecisionMemoryCommentary(model) {
+    if (!model || model.softState) return false;
+    if (!Array.isArray(model.insights) || !model.insights.length) return false;
+    return Number(model.entryCount || 0) >= DECISION_MEMORY_INSIGHTS_MIN;
+}
 
 export class AssistantUI {
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
@@ -594,20 +596,33 @@ export class AssistantUI {
         const model = buildDecisionMemoryInsightsModel(history);
         host.innerHTML = renderDecisionMemoryInsightsHtml(model, this.escapeHtml.bind(this));
 
-        if (shouldRenderDecisionMemoryAiCommentary(model)) {
-            const commentary = buildDeterministicDecisionMemoryCommentary(model);
-            const insightsPanel = host.querySelector('[data-decision-memory-insights]');
-            if (insightsPanel && commentary) {
-                insightsPanel.insertAdjacentHTML(
-                    'beforeend',
-                    renderDecisionMemoryAiCommentaryHtml(commentary, {
-                        source: 'rules',
-                        state: 'ready'
-                    })
-                );
-            }
-            hydrateDecisionMemoryAiCommentary(host, model);
-        }
+        if (!shouldLazyLoadDecisionMemoryCommentary(model)) return;
+
+        void import('./decision-memory-ai-commentary.js')
+            .then((mod) => {
+                if (!host.isConnected) return;
+
+                const currentModel = buildDecisionMemoryInsightsModel(history);
+                if (currentModel.softState) return;
+                if (!mod.shouldRenderDecisionMemoryAiCommentary(currentModel)) return;
+                if (host.querySelector('[data-decision-memory-ai-commentary]')) return;
+
+                const commentary = mod.buildDeterministicDecisionMemoryCommentary(currentModel);
+                const insightsPanel = host.querySelector('[data-decision-memory-insights]');
+                if (insightsPanel && commentary) {
+                    insightsPanel.insertAdjacentHTML(
+                        'beforeend',
+                        mod.renderDecisionMemoryAiCommentaryHtml(commentary, {
+                            source: 'rules',
+                            state: 'ready'
+                        })
+                    );
+                }
+                mod.hydrateDecisionMemoryAiCommentary(host, currentModel);
+            })
+            .catch(() => {
+                /* commentary chunk optional; insights panel remains */
+            });
     }
 
     renderDecisionHistory(history = []) {
