@@ -14,6 +14,10 @@ import {
     hydrateComparisonAiExplanation,
     renderComparisonAiExplanationHtml
 } from './comparison-ai-explanation.js';
+import {
+    renderComparisonDecisionCtaHtml,
+    shouldRenderComparisonDecisionCta
+} from './comparison-decision-cta.js';
 
 export class ComparisonUI {
     renderComparison(items = []) {
@@ -47,6 +51,9 @@ export class ComparisonUI {
         const aiExplanationHtml = deterministicExplanation
             ? renderComparisonAiExplanationHtml(deterministicExplanation, { source: 'rules', state: 'ready' })
             : '';
+        const decisionCtaHtml = shouldRenderComparisonDecisionCta(items)
+            ? renderComparisonDecisionCtaHtml()
+            : '';
 
         container.innerHTML =
             '<div class="comparison-toolbar">' +
@@ -61,7 +68,7 @@ export class ComparisonUI {
             renderComparisonDecisionSummaryHtml(
                 decisionSummary,
                 (value) => this.escapeHtml(value),
-                aiExplanationHtml
+                aiExplanationHtml + decisionCtaHtml
             ) +
             '<div class="comparison-grid">' + items.map((item) => this.getComparisonCardMarkup(item, maxValues, items)).join('') + '</div>' +
             this.getComparisonAdvancedSection(items);
