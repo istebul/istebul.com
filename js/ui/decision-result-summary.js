@@ -81,12 +81,14 @@ export function buildDecisionResultSummary(result) {
 /**
  * @param {Record<string, { label: string, value: string, detail: string }> | null} summary
  * @param {(value: string) => string} escapeHtml
+ * @param {string} [aiRationaleHtml]
  * @returns {string}
  */
-export function renderDecisionResultSummaryHtml(summary, escapeHtml) {
+export function renderDecisionResultSummaryHtml(summary, escapeHtml, aiRationaleHtml = '') {
     if (!summary) return '';
 
     const safe = typeof escapeHtml === 'function' ? escapeHtml : (value) => String(value ?? '');
+    const aiSlot = String(aiRationaleHtml || '');
 
     const cards = DECISION_RESULT_SUMMARY_FIELDS.map((field) => {
         const item = summary[field.key] || {};
@@ -104,5 +106,6 @@ export function renderDecisionResultSummaryHtml(summary, escapeHtml) {
             '<p>Uygunluk, risk, TCO ve profil özeti mevcut deterministik sonuçlardan okunur — nihai karar size aittir.</p>' +
         '</div>' +
         '<div class="decision-result-summary-grid">' + cards + '</div>' +
+        aiSlot +
     '</section>';
 }
