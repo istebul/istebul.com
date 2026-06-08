@@ -168,8 +168,12 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
   test('karar asistanı hub sayfası erişilebilir', async ({ page }) => {
     await page.goto('/karar-asistani/');
-    await page.waitForLoadState('domcontentloaded');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
     await expect(page).toHaveTitle(/Karar|isteBul/i);
-    await expect(page.locator('a[href*="/auto"], .seo-cta-btn').first()).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'page-karar-analizi');
+    await expect(page.getByRole('heading', { name: /Hangi kategoride karar vermek istiyorsunuz/i })).toBeVisible();
+    await expect(page.locator('#page-karar-analizi')).toBeVisible();
+    await expect(page.locator('#assistant-category-rail .assistant-category').first()).toBeVisible();
   });
 });
