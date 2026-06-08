@@ -37,9 +37,15 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('#home')).toBeVisible();
 
     await page.goto('/secenekler/');
-    await page.waitForLoadState('domcontentloaded');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
     await expect(page).toHaveTitle(/Seçenek|isteBul/i);
-    await expect(page.locator('main.seo-main, .seo-main')).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'ilanlar');
+    await expect(page.locator('#ilanlar')).toBeVisible();
+    await expect(page.locator('#listings-grid')).toBeVisible();
+    await expect(
+      page.locator('#listings-grid .marketplace-empty-state, #listings-grid .listing-card').first()
+    ).toBeVisible({ timeout: 15000 });
 
     await page.goto('/karar-asistani/');
     await page.waitForLoadState('domcontentloaded');
