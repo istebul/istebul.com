@@ -29,6 +29,12 @@ import {
     buildDecisionMemoryInsightsModel,
     renderDecisionMemoryInsightsHtml
 } from './decision-memory-insights.js';
+import {
+    buildDeterministicDecisionMemoryCommentary,
+    hydrateDecisionMemoryAiCommentary,
+    renderDecisionMemoryAiCommentaryHtml,
+    shouldRenderDecisionMemoryAiCommentary
+} from './decision-memory-ai-commentary.js';
 import { normalizeHistoryEntryCategory } from './decision-history-category.js';
 import { normalizeDecisionHistoryList } from './decision-history-compat.js';
 
@@ -587,6 +593,21 @@ export class AssistantUI {
 
         const model = buildDecisionMemoryInsightsModel(history);
         host.innerHTML = renderDecisionMemoryInsightsHtml(model, this.escapeHtml.bind(this));
+
+        if (shouldRenderDecisionMemoryAiCommentary(model)) {
+            const commentary = buildDeterministicDecisionMemoryCommentary(model);
+            const insightsPanel = host.querySelector('[data-decision-memory-insights]');
+            if (insightsPanel && commentary) {
+                insightsPanel.insertAdjacentHTML(
+                    'beforeend',
+                    renderDecisionMemoryAiCommentaryHtml(commentary, {
+                        source: 'rules',
+                        state: 'ready'
+                    })
+                );
+            }
+            hydrateDecisionMemoryAiCommentary(host, model);
+        }
     }
 
     renderDecisionHistory(history = []) {

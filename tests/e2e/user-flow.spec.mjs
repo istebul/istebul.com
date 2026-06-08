@@ -1322,6 +1322,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(page.locator('#history-list .decision-history-card')).toHaveCount(0);
     await expect(page.locator('[data-decision-memory-insights]')).toBeVisible({ timeout: 15000 });
     await expect(page.locator('[data-memory-insights-soft]')).toContainText(/yeterli karar geçmişi yok/i);
+    await expect(page.locator('[data-decision-memory-ai-commentary]')).toHaveCount(0);
   });
 
   test('gecmis karar hafızası içgörüleri canonical kayıtlarla görünür', async ({ page }) => {
@@ -1368,6 +1369,15 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(insights.locator('[data-memory-insight="top-category"]')).toContainText(/Araba \(2 karar\)/);
     await expect(insights.locator('[data-memory-insight="average-fit"]')).toContainText(/85\/100/);
     await expect(insights.locator('[data-memory-insight="top-profile"]')).toContainText(/Dengeli araç profili/);
+
+    const commentary = insights.locator('[data-decision-memory-ai-commentary]');
+    await expect(commentary).toBeVisible();
+    await expect(commentary.getByRole('heading', { name: /AI destekli geçmiş yorumu/i })).toBeVisible();
+    await expect(commentary.locator('[data-memory-ai-synthesis]')).toContainText(/karar kayd/i);
+
+    const commentaryText = await commentary.innerText();
+    expect(commentaryText).toMatch(/kategori|risk|uygunluk|profil/i);
+    expect(commentaryText).not.toMatch(/bunu seçmelisiniz|en doğru karar|bundan sonra böyle yapın|tek doğru seçenek/i);
 
     const storageSnapshot = await page.evaluate(() => {
       const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
