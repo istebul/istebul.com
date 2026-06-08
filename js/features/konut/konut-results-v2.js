@@ -37,6 +37,9 @@ import {
   renderResultsHeroLayout,
   scoreToneFromLabel
 } from '../results/results-hero-layout.js';
+import { withTimeout } from '../../core/async-utils.js';
+
+const KONUT_SUMMARY_TIMEOUT_MS = 10000;
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -242,7 +245,8 @@ export function buildTotalCostView(state = {}, metrics = {}) {
   const loanNeed = safeNumber(o.principal) || Math.max(homePrice - down, 0);
   const monthly = safeNumber(o.monthlyPayment);
   const titleFees = safeNumber(o.titleFees) || Math.round(homePrice * 0.045);
-  const duesMonthly = safeNumber(state.duesExpectation || state.dues);
+  const duesMonthly =
+    safeNumber(state.dues) || safeNumber(state.duesExpectation) || safeNumber(o.duesMonthly);
   const yearlyLoad = monthly * 12 + duesMonthly * 12;
   const firstYear = homePrice * 0.02 + titleFees + yearlyLoad + down * 0.05;
 
@@ -514,19 +518,26 @@ export function buildKonutResultsV2Payload({
   };
 }
 
+function isKonutRentalPurpose(purpose = '') {
+  return String(purpose || '').includes('Kiralamak');
+}
+
 function renderKonutResultsV2Html(model) {
   const esc = escapeHtml;
   const cost = model.totalCost || {};
   const costNote = cost.isEstimate
     ? `<p class="konut-v2-estimate-note">${esc(cost.estimateNote || 'Tahmini model')}</p>`
     : '';
+  const isRental = isKonutRentalPurpose(model.purpose);
 
   const heroHtml = renderResultsHeroLayout({
     vertical: 'housing',
-    title: 'Konut Alım Öneriniz',
-    subtitle: 'Profilinize göre en uygun konut senaryosu belirlendi.',
+    title: isRental ? 'Konut Kiralama Öneriniz' : 'Konut Alım Öneriniz',
+    subtitle: isRental
+      ? 'Profilinize göre en uygun kiralama senaryosu belirlendi.'
+      : 'Profilinize göre en uygun konut senaryosu belirlendi.',
     recommendation: {
-      kicker: 'Önerilen Konut',
+      kicker: isRental ? 'Önerilen Kiralık' : 'Önerilen Konut',
       title: model.primaryTitle || `${model.homeType || 'Konut'} · ${model.locationLabel || 'Seçilen bölge'}`,
       subtitle: model.purpose !== '—' ? model.purpose : '',
       badge: model.recommendationLabel || 'En Uygun',
@@ -534,14 +545,23 @@ function renderKonutResultsV2Html(model) {
       imageUrl: model.primaryImageUrl || '/assets/images/demo/kadikoy-daire.svg',
       imageAlt: model.primaryTitle || 'Konut önerisi'
     },
-    specs: [
-      { label: 'Bütçe', value: model.budgetLabel || '—' },
-      { label: 'Aylık ödeme', value: formatTryAmount(cost.monthlyPayment) },
-      { label: 'Peşinat', value: formatTryAmount(cost.downPayment) },
-      { label: 'Kredi ihtiyacı', value: formatTryAmount(cost.loanNeed) },
-      { label: 'İlk yıl toplam', value: formatTryAmount(cost.firstYearTotal) },
-      { label: 'Genel risk', value: model.overallRisk || '—' }
-    ],
+    specs: isRental
+      ? [
+          { label: 'Aylık kira bütçesi', value: model.budgetLabel || '—' },
+          { label: 'Konut tipi', value: model.homeType || '—' },
+          { label: 'Lokasyon', value: model.locationLabel || '—' },
+          { label: 'Aidat (aylık tahmini)', value: formatTryAmount(cost.duesMonthly) },
+          { label: 'İlk yıl toplam yük', value: formatTryAmount(cost.yearlyLoad) },
+          { label: 'Genel risk', value: model.overallRisk || '—' }
+        ]
+      : [
+          { label: 'Bütçe', value: model.budgetLabel || '—' },
+          { label: 'Aylık ödeme', value: formatTryAmount(cost.monthlyPayment) },
+          { label: 'Peşinat', value: formatTryAmount(cost.downPayment) },
+          { label: 'Kredi ihtiyacı', value: formatTryAmount(cost.loanNeed) },
+          { label: 'İlk yıl toplam', value: formatTryAmount(cost.firstYearTotal) },
+          { label: 'Genel risk', value: model.overallRisk || '—' }
+        ],
     score: model.decisionScore,
     scoreLabel: model.scoreLabel || 'Uygunluk Skoru',
     scoreTone: scoreToneFromLabel(model.scoreLabel),
@@ -642,6 +662,7 @@ function renderKonutResultsV2Html(model) {
 
       <article class="konut-v2-block konut-v2-block--exec" data-konut-v2-insight-root>
         <h3>Yapay zeka karar yorumu</h3>
+        <p class="konut-v2-exec-text" data-konut-v2-exec-text>${esc(model.executiveSummary || 'Yorum hazırlanıyor…')}</p>
         ${renderInsightBlocksHtml(model.insight, esc, {
           planTier: model.planTier,
           insightInput: model.insightInput
@@ -752,40 +773,55 @@ export async function mountKonutResultsV2({
     document.getElementById('housing-partner-cta')?.click();
   });
 
-  const summary = await fetchExecutiveSummaryV3(
-    'konut',
-    model.intelligence?.context || {},
-    model.intelligence || {
-      decisionScore: model.decisionScore,
-      confidenceScore: model.confidenceScore,
-      scoreFactors: model.scoreFactors,
-      riskAnalysis: model.riskAnalysis,
-      recommendationLevel: model.recommendationLevel,
-      recommendationLabel: model.recommendationLabel,
-      overallRisk: model.overallRisk,
-      warnings: model.warnings
-    },
-    {
-      planTier: model.planTier,
-      strengths: model.strengths,
-      weaknesses: model.weaknesses,
-      marketAssessment: buildEvdsAiMarketSentence(model.evdsRiskLayer),
-      costs: model.totalCost
-    }
-  );
+  try {
+    const summary = await withTimeout(
+      fetchExecutiveSummaryV3(
+        'konut',
+        model.intelligence?.context || {},
+        model.intelligence || {
+          decisionScore: model.decisionScore,
+          confidenceScore: model.confidenceScore,
+          scoreFactors: model.scoreFactors,
+          riskAnalysis: model.riskAnalysis,
+          recommendationLevel: model.recommendationLevel,
+          recommendationLabel: model.recommendationLabel,
+          overallRisk: model.overallRisk,
+          warnings: model.warnings
+        },
+        {
+          planTier: model.planTier,
+          strengths: model.strengths,
+          weaknesses: model.weaknesses,
+          marketAssessment: buildEvdsAiMarketSentence(model.evdsRiskLayer),
+          costs: model.totalCost,
+          timeoutMs: KONUT_SUMMARY_TIMEOUT_MS
+        }
+      ),
+      KONUT_SUMMARY_TIMEOUT_MS,
+      null
+    );
 
-  if (summary.insight) {
-    model.insight = summary.insight;
-    hydrateInsightBlocks(root.querySelector('[data-konut-v2-insight-root]'), summary.insight);
+    if (!summary) return model;
+
+    if (summary.insight) {
+      model.insight = summary.insight;
+      hydrateInsightBlocks(root.querySelector('[data-konut-v2-insight-root]'), summary.insight);
+    }
+    const execTextEl = root.querySelector('[data-konut-v2-exec-text]');
+    if (execTextEl && summary.text) {
+      execTextEl.textContent = summary.text;
+    }
+    const sourceEl = root.querySelector('[data-konut-v2-source]');
+    if (sourceEl) {
+      sourceEl.textContent =
+        summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
+    }
+    model.executiveSummary = summary.text;
+    model.pdfReportData.executiveSummary = summary.text;
+    if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
+  } catch (error) {
+    console.warn('konut-v2-summary-hydrate-failed', error);
   }
-  const sourceEl = root.querySelector('[data-konut-v2-source]');
-  if (sourceEl) {
-    sourceEl.textContent =
-      summary.source === 'ai' ? 'Kaynak: AI destekli yorum' : 'Kaynak: Kural tabanlı karar yorumu';
-  }
-  model.executiveSummary = summary.text;
-  model.pdfReportData.executiveSummary = summary.text;
-  if (summary.insight) model.pdfReportData.insightBlocks = summary.insight;
 
   void import('../../decision/decision-v3-mount.js')
     .then(({ mountDecisionEngineV3Overlay }) =>

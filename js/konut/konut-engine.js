@@ -1,3 +1,6 @@
+/**
+ * @deprecated Canlı /konut/ sonuçları `konut-results-v2.js` + `decision-intelligence-engine.js` kullanır.
+ */
 import { KONUT_OPTIONS } from './konut-config.js';
 import { formatTry, parseManualBudget } from '../tatil/tatil-utils.js';
 
