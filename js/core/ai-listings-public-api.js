@@ -44,7 +44,7 @@ function locationFromJson(value) {
  * @param {Record<string, unknown>} row
  * @returns {Record<string, unknown>}
  */
-function mapPublishedListing(row) {
+export function mapPublishedListing(row) {
   return {
     id: row.id,
     category: row.category,

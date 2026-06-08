@@ -431,7 +431,7 @@ export class UIManager {
         if (!container) return;
 
         container.innerHTML = categories.map(category => `
-            <a href="/ilanlar/" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçenekleri</a>
+            <a href="/secenekler/" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçenekleri</a>
         `).join('');
     }
 
@@ -620,7 +620,7 @@ export class UIManager {
                     <p>${this.escapeHtml(message)}</p>
                     <div class="listing-actions">
                         <a href="/" class="btn btn-outline" data-native-route>Ana sayfaya dön</a>
-                        <a href="/ilanlar/" class="btn btn-primary" data-native-route>Seçenekleri incele</a>
+                        <a href="/secenekler/" class="btn btn-primary" data-native-route>Seçenekleri incele</a>
                     </div>
                 </div>
             </div>
@@ -741,7 +741,7 @@ export class UIManager {
                     <p>Karar skoruna göre seçenekleri keşfedin; beğendiklerinizi favorilere ekleyin.</p>
                     <div class="empty-state-actions">
                         <a href="/auto/" class="btn btn-primary">Ücretsiz maliyet analizi</a>
-                        <a href="/ilanlar" class="btn btn-outline" data-native-route>Seçenekleri gör</a>
+                        <a href="/secenekler" class="btn btn-outline" data-native-route>Seçenekleri gör</a>
                     </div>
                 </div>
             `;

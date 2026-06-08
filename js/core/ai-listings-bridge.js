@@ -4,6 +4,7 @@
 
 import { runAiListingBuilder } from '../ai-listings-builder/index.js';
 import { mapUserListingRowToListing } from '../../src/ai-listings/repository/adapters/user-listings-repository.js';
+import { toAiCategory } from './decision-options-api.js';
 
 /**
  * @param {Record<string, unknown>} listingData
@@ -48,7 +49,7 @@ export async function buildAiListingFromUserInput(listingData) {
 export function mapLegacyListingToAiPayload(legacyRow) {
   const listing = mapUserListingRowToListing(legacyRow);
   return {
-    category: listing.category,
+    category: toAiCategory(listing.category) || listing.category || 'vehicle',
     title: listing.title,
     description: listing.description,
     location: listing.location,

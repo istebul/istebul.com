@@ -68,6 +68,7 @@ export class Router {
     constructor() {
         this.routes = [
             { path: '/', component: 'home' },
+            { path: '/secenekler', component: 'ilanlar' },
             { path: '/ilanlar', component: 'ilanlar' },
             { path: '/karsilastir', component: 'compare' },
             { path: '/karar-analizi', component: 'page-karar-analizi' },
