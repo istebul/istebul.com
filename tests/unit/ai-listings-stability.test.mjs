@@ -12,9 +12,8 @@ const edgeIndexPath = path.join(root, 'supabase/functions/ai-listings/index.ts')
 const adminHtmlPath = path.join(root, 'admin/ai-listings.html');
 const adminCorePath = path.join(root, 'js/admin/ai-listings-admin-core.js');
 
-const { authorizeRequest, isAiListingsModuleEnabled } = await import(
-  '../../supabase/functions/_shared/ai-listings/auth.js'
-);
+const { authorizeRequest, authorizeRequestWithPublicReadAsync, isAiListingsModuleEnabled } =
+  await import('../../supabase/functions/_shared/ai-listings/auth.js');
 const { SECRET_HEADER } = await import('../../supabase/functions/_shared/ai-listings/auth.js');
 const {
   ADMIN_ENABLE_KEY,
@@ -58,11 +57,22 @@ test('migration RLS denies anon/authenticated and grants service_role', () => {
   assert.match(sql, /REVOKE ALL ON public\.ai_listings FROM anon, authenticated/i);
 });
 
-test('edge function uses only SUPABASE_SERVICE_ROLE_KEY', () => {
+test('edge function uses service role and anon key for admin session auth', () => {
   const source = fs.readFileSync(edgeIndexPath, 'utf8');
   assert.match(source, /SUPABASE_SERVICE_ROLE_KEY/);
-  assert.doesNotMatch(source, /SUPABASE_ANON_KEY/i);
-  assert.doesNotMatch(source, /Deno\.env\.get\(["']SUPABASE_ANON/i);
+  assert.match(source, /SUPABASE_ANON_KEY/);
+});
+
+test('edge async auth allows verified admin session without edge secret', async () => {
+  const ok = await authorizeRequestWithPublicReadAsync(
+    new Request('https://example.com/functions/v1/ai-listings/listings', {
+      headers: { Authorization: 'Bearer admin-token' }
+    }),
+    { AI_LISTINGS_SUPABASE_ENABLED: 'true', AI_LISTINGS_EDGE_SECRET: '' },
+    { verifyAdminSession: async () => true }
+  );
+  assert.equal(ok.ok, true);
+  if (ok.ok) assert.equal(ok.adminSession, true);
 });
 
 test('edge auth requires module enabled and x-ai-listings-secret', async () => {
@@ -88,9 +98,16 @@ test('edge auth requires module enabled and x-ai-listings-secret', async () => {
   assert.equal(isAiListingsModuleEnabled({ AI_LISTINGS_SUPABASE_ENABLED: 'true' }), true);
 });
 
-test('admin panel requires localStorage gate and never hardcodes secret', () => {
+test('admin listing UI requires admin session and never hardcodes secret', () => {
   const core = fs.readFileSync(adminCorePath, 'utf8');
+  const accessPath = path.join(root, 'js/admin/ai-listings-admin-access.js');
+  const access = fs.readFileSync(accessPath, 'utf8');
+  const guardPath = path.join(root, 'js/admin/admin-route-guard.js');
+
   assert.match(core, /ADMIN_ENABLE_KEY/);
+  assert.match(access, /verifyAdminSessionAccess/);
+  assert.match(access, /resolveAdminPanelAccess/);
+  assert.match(fs.readFileSync(guardPath, 'utf8'), /enforceAdminRoute/);
   assert.doesNotMatch(core, /AI_LISTINGS_EDGE_SECRET\s*=\s*['"][^'"]+['"]/);
   assert.equal(isAdminPanelEnabled({ getItem: () => null }), false);
   assert.equal(getAdminPanelState({ getItem: (key) => (key === ADMIN_ENABLE_KEY ? 'on' : null) }), 'no-secret');

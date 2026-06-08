@@ -326,3 +326,25 @@ html.ib-ds-v4 body.housing-page #housing-results .ib-premium-dashboard {
   color: #0f172a;
   border-color: #e2e8f0;
 }
+
+/* Decision Engine V3 / Decision OS — koyu konut sayfasında okunaklı yüzey */
+body.housing-page #housing-results .decision-v3-root,
+body.housing-page #housing-results .decision-v3-mount,
+body.housing-page #housing-results .dos-root,
+body.housing-page #housing-results .decision-os-mount {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+body.housing-page #housing-results .decision-v3-root :is(h2, h3, strong) {
+  color: #0f172a !important;
+}
+
+body.housing-page #housing-results .decision-v3-root :is(p:not(.decision-v3-kicker), li) {
+  color: #334155 !important;
+}
+
+body.housing-page #housing-results .decision-v3-kicker {
+  color: #2563eb !important;
+}

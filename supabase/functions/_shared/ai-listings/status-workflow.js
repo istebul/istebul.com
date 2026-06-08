@@ -8,6 +8,7 @@ export const LISTING_STATUSES = Object.freeze([
   'draft',
   'pending_review',
   'approved',
+  'published',
   'rejected',
   'archived'
 ]);
@@ -18,7 +19,9 @@ export const QA_EVENT_TYPES = Object.freeze({
   APPROVED: 'listing_approved',
   REJECTED: 'listing_rejected',
   ARCHIVED: 'listing_archived',
-  REANALYZED: 'listing_reanalyzed'
+  REANALYZED: 'listing_reanalyzed',
+  PUBLISHED: 'listing_published',
+  UNPUBLISHED: 'listing_unpublished'
 });
 
 /** @type {Readonly<Record<string, string>>} */
@@ -27,7 +30,9 @@ export const QA_ACTIONS = Object.freeze({
   APPROVE: 'approve',
   REJECT: 'reject',
   ARCHIVE: 'archive',
-  REANALYZE: 'reanalyze'
+  REANALYZE: 'reanalyze',
+  PUBLISH: 'publish',
+  UNPUBLISH: 'unpublish'
 });
 
 export const STATUS_FILTER_CHIPS = Object.freeze([
@@ -35,18 +40,30 @@ export const STATUS_FILTER_CHIPS = Object.freeze([
   { value: 'draft', label: 'Draft' },
   { value: 'pending_review', label: 'Pending Review' },
   { value: 'approved', label: 'Approved' },
+  { value: 'published', label: 'Published' },
   { value: 'rejected', label: 'Rejected' },
   { value: 'archived', label: 'Archived' }
 ]);
 
 /**
- * Public marketplace visibility gate — always false in Sprint-7.
- * approved means internally approved only; public publishing remains disabled.
- * @param {string} [_status]
+ * @param {Record<string, string|undefined>} [env]
  * @returns {boolean}
  */
-export function isListingPubliclyVisible(_status) {
-  return false;
+export function isPublicPublishEnabled(env = {}) {
+  const raw = String(env.AI_LISTINGS_PUBLIC_PUBLISH_ENABLED ?? '').trim().toLowerCase();
+  return raw === 'true' || raw === '1';
+}
+
+/**
+ * Public marketplace visibility gate.
+ * approved means internally approved only; published + feature flag enables public read.
+ * @param {string} status
+ * @param {Record<string, string|undefined>} [env]
+ * @returns {boolean}
+ */
+export function isListingPubliclyVisible(status, env = {}) {
+  if (!isPublicPublishEnabled(env)) return false;
+  return String(status ?? '').trim() === 'published';
 }
 
 /**
@@ -92,6 +109,16 @@ export function resolveStatusTransition(current, action) {
     return { ok: true, nextStatus: status };
   }
 
+  if (action === QA_ACTIONS.PUBLISH) {
+    if (status === 'approved') return { ok: true, nextStatus: 'published' };
+    return { ok: false, message: 'Only approved listings can be published.' };
+  }
+
+  if (action === QA_ACTIONS.UNPUBLISH) {
+    if (status === 'published') return { ok: true, nextStatus: 'approved' };
+    return { ok: false, message: 'Only published listings can be unpublished.' };
+  }
+
   return { ok: false, message: `Unknown workflow action: ${action}` };
 }
 
@@ -111,6 +138,10 @@ export function eventTypeForAction(action) {
       return QA_EVENT_TYPES.ARCHIVED;
     case QA_ACTIONS.REANALYZE:
       return QA_EVENT_TYPES.REANALYZED;
+    case QA_ACTIONS.PUBLISH:
+      return QA_EVENT_TYPES.PUBLISHED;
+    case QA_ACTIONS.UNPUBLISH:
+      return QA_EVENT_TYPES.UNPUBLISHED;
     default:
       return 'listing_workflow_action';
   }

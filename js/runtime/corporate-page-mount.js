@@ -3,16 +3,40 @@
  */
 import { initCorporateUx } from './corporate-ux.js';
 
+const CORPORATE_MOUNT_TIMEOUT_MS = 12_000;
+
+let corporateMountWatchdogId = 0;
+
+function clearCorporateMountWatchdog() {
+  if (corporateMountWatchdogId) {
+    clearTimeout(corporateMountWatchdogId);
+    corporateMountWatchdogId = 0;
+  }
+}
+
+function scheduleCorporateMountWatchdog(label, timeoutMs = CORPORATE_MOUNT_TIMEOUT_MS) {
+  clearCorporateMountWatchdog();
+  corporateMountWatchdogId = setTimeout(() => {
+    if (document.documentElement.classList.contains('ib-corporate-mounted')) return;
+    showCorporateMountError(label, { message: 'mount_timeout' });
+  }, timeoutMs);
+}
+
 export function mountCorporatePage(mountFn, options = {}) {
   const label = options.label || 'Sayfa';
+  const timeoutMs = Number(options.timeoutMs) > 0 ? Number(options.timeoutMs) : CORPORATE_MOUNT_TIMEOUT_MS;
+
+  scheduleCorporateMountWatchdog(label, timeoutMs);
 
   const run = async () => {
     try {
       initCorporateUx();
       await mountFn();
       document.documentElement.classList.add('ib-corporate-mounted');
+      clearCorporateMountWatchdog();
       document.querySelector('[data-corporate-loading]')?.remove();
     } catch (error) {
+      clearCorporateMountWatchdog();
       console.error(`[corporate] ${label} mount failed`, error);
       showCorporateMountError(label, error);
     }
@@ -33,9 +57,12 @@ function showCorporateMountError(label, error) {
     document.querySelector('main') ||
     document.body;
 
-  const message = error?.message === 'no_config'
-    ? 'Yapılandırma yüklenemedi. Lütfen sayfayı yenileyin veya <a href="/iletisim.html">iletişime</a> geçin.'
-    : 'İçerik yüklenirken bir sorun oluştu. Sayfayı yenileyin veya bağlantınızı kontrol edin.';
+  const message =
+    error?.message === 'no_config'
+      ? 'Yapılandırma yüklenemedi. Lütfen sayfayı yenileyin veya <a href="/iletisim.html">iletişime</a> geçin.'
+      : error?.message === 'mount_timeout'
+        ? 'Sayfa beklenenden uzun sürdü. Bağlantınızı kontrol edin veya <a href="/iletisim.html">iletişime</a> geçin.'
+        : 'İçerik yüklenirken bir sorun oluştu. Sayfayı yenileyin veya bağlantınızı kontrol edin.';
 
   const panel = document.createElement('div');
   panel.className = 'ib-corporate-mount-error';

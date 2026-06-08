@@ -100,6 +100,10 @@ export function buildAnalysisRecord(listing, engines) {
     tags.push(`deviation_pct:${market.deviation_pct}`);
   }
 
+  if (piTags.length) {
+    tags.push(...piTags);
+  }
+
   return {
     ai_score: decision.decision_score,
     risk_score: risk.risk_score,

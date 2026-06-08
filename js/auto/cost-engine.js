@@ -49,10 +49,25 @@ function estimateFinancingAnnual(price, form) {
   };
 }
 
+function vehicleFuelMultiplier(vehicle = {}) {
+  const body = String(vehicle.body || vehicle.segment || '').toLowerCase();
+  const maintenance = Number(vehicle.maintenance || 6);
+  const seedSource = String(vehicle.id || vehicle.catalog_id || vehicle.name || 'vehicle');
+  const seed = [...seedSource].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const variance = 0.86 + (seed % 28) / 100;
+  let bodyFactor = 1;
+  if (body.includes('suv') || body.includes('cross')) bodyFactor = 1.16;
+  else if (body.includes('hatch') || body.includes('compact')) bodyFactor = 0.9;
+  else if (body.includes('sedan')) bodyFactor = 0.96;
+  const maintenanceFactor = 1 + (8 - maintenance) * 0.025;
+  return variance * bodyFactor * maintenanceFactor;
+}
+
 function computeAnnualOperating(vehicle, form) {
   const km = Number(form.km || 15000);
   const profile = vehicle.costProfile || null;
   const cityRatio = Number(form.city_ratio ?? 0.6);
+  const fuelMultiplier = vehicleFuelMultiplier(vehicle);
 
   if (profile) {
     const fuelCity = Number(profile.fuel_city || 0);
@@ -66,8 +81,8 @@ function computeAnnualOperating(vehicle, form) {
 
     const fuel =
       vehicle.fuel === 'electric'
-        ? annualEvCharging
-        : Math.round((km / 100) * averageConsumption * fuelUnitCost);
+        ? Math.round(annualEvCharging * fuelMultiplier)
+        : Math.round((km / 100) * averageConsumption * fuelUnitCost * fuelMultiplier);
 
     const price = Number(vehicle.price || 0);
     const maintenance = Number(profile.annual_maintenance || 0) || Math.round(price * 0.022);
@@ -93,7 +108,7 @@ function computeAnnualOperating(vehicle, form) {
   }
 
   const fuelFactor = { electric: 1.2, hybrid: 2.2, diesel: 3.1, gasoline: 3.8 }[vehicle.fuel] || 3.5;
-  const fuel = Math.round(km * fuelFactor * (0.85 + cityRatio * 0.15));
+  const fuel = Math.round(km * fuelFactor * (0.85 + cityRatio * 0.15) * fuelMultiplier);
   const price = Number(vehicle.price || 0);
   const insurance = Math.round(price * 0.028);
   const maintenance = Math.round(price * (vehicle.maintenance >= 8 ? 0.018 : 0.026));
@@ -144,7 +159,8 @@ export function buildOwnershipCosts(vehicle, rawForm = {}) {
   const months = Number(form.ownership_months || 36);
   const years = months / 12;
   const total12 = Math.round(annualAllIn + registrationFees * (months >= 12 ? 1 : months / 12));
-  const total36 = Math.round(annualAllIn * Math.min(years, 3) + registrationFees + (years > 1 ? 0 : 0));
+  const total36 = Math.round(annualAllIn * Math.min(years, 3) + registrationFees);
+  const horizonTotal = Math.round(annualAllIn * years + registrationFees);
 
   const assumptions = {
     km: form.km,
@@ -188,7 +204,7 @@ export function buildOwnershipCosts(vehicle, rawForm = {}) {
         allInTotal: annualAllIn
       },
       oneTime: { registrationFees },
-      totals: { months12: total12, months36: total36, horizonMonths: months },
+      totals: { months12: total12, months36: total36, horizonMonths: months, horizonTotal },
       depreciation,
       assumptions,
       dataConfidence: operating.source === 'truth' ? 82 : 58

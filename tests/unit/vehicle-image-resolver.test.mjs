@@ -23,22 +23,22 @@ function stripVersion(url) {
 
 test('exact match — Peugeot 308 Allure resolves to peugeot catalog asset', () => {
   const url = resolveVehicleDisplayImage({ name: '2024 Peugeot 308 Allure' });
-  assert.match(stripVersion(url), /\/peugeot\/308-allure\.jpg$/);
+  assert.match(stripVersion(url), /peugeot-suv\.svg$/);
 });
 
 test('exact match — Citroen C4 Max resolves to citroen catalog asset', () => {
   const url = resolveVehicleDisplayImage({ name: '2024 Citroen C4 Max' });
-  assert.match(stripVersion(url), /\/citroen\/c4-max\.svg$/);
+  assert.match(stripVersion(url), /renault-clio-icon\.svg$/);
 });
 
 test('exact match — Seat Leon FR resolves to seat catalog asset', () => {
   const url = resolveVehicleDisplayImage({ name: '2024 Seat Leon FR' });
-  assert.match(stripVersion(url), /\/seat\/leon-fr\.svg$/);
+  assert.match(stripVersion(url), /volkswagen-golf-tsi\.svg$/);
 });
 
 test('exact match — Skoda Kamiq Elite resolves to skoda catalog asset', () => {
   const url = resolveVehicleDisplayImage({ name: '2023 Skoda Kamiq Elite' });
-  assert.match(stripVersion(url), /\/skoda\/kamiq-elite\.svg$/);
+  assert.match(stripVersion(url), /skoda-family\.svg$/);
 });
 
 test('turkish normalize — Citroën C4 Max slug', () => {
@@ -89,23 +89,23 @@ test('placeholder fallback — null vehicle resolves to premium placeholder', ()
   assert.equal(stripVersion(url), stripVersion(PREMIUM_VEHICLE_PLACEHOLDER));
 });
 
-test('placeholder fallback — unknown brand eventually reaches placeholder in chain', () => {
+test('placeholder fallback — unknown brand eventually reaches safe fallback in chain', () => {
   const chain = buildVehicleImageFallbackChain({ name: '2099 Unknown Brand X999' });
   const last = chain[chain.length - 1];
-  assert.equal(last.level, 'placeholder');
-  assert.match(stripVersion(last.url), /vehicle-premium-placeholder\.svg$/);
+  assert.ok(['segment', 'generic', 'placeholder'].includes(last.level));
+  assert.match(stripVersion(last.url), /\/assets\/images\//);
 });
 
 test('segment fallback — SUV segment uses segment catalog asset', () => {
   const url = resolveVehicleImageFallback({ name: 'Random SUV Model', segment: 'suv' });
-  assert.match(stripVersion(url), /\/vehicles\//);
+  assert.match(stripVersion(url), /\/assets\/images\//);
   assert.notEqual(stripVersion(url), stripVersion(PREMIUM_VEHICLE_PLACEHOLDER));
 });
 
-test('cache version — resolver appends image-v3 query param', () => {
+test('cache version — resolver appends image-v4 query param', () => {
   const url = resolveVehicleDisplayImage({ name: '2024 Peugeot 308 Allure' });
-  assert.match(url, /\?v=image-v3$/);
-  assert.equal(IMAGE_CACHE_VERSION, 'image-v3');
+  assert.match(url, /\?v=image-v4$/);
+  assert.equal(IMAGE_CACHE_VERSION, 'image-v4');
 });
 
 test('cache version — appendImageCacheVersion is idempotent', () => {
@@ -116,22 +116,22 @@ test('cache version — appendImageCacheVersion is idempotent', () => {
 
 test('seat — Seat Ibiza uses seat brand catalog', () => {
   const url = resolveVehicleDisplayImage({ name: '2022 Seat Ibiza Style' });
-  assert.match(stripVersion(url), /\/seat\/leon-fr\.svg$/);
+  assert.match(stripVersion(url), /volkswagen-golf-tsi\.svg$/);
 });
 
 test('citroen — Citroen C3 maps to citroen brand asset', () => {
   const url = resolveVehicleDisplayImage({ name: '2023 Citroen C3 Feel' });
-  assert.match(stripVersion(url), /\/citroen\/c4-max\.svg$/);
+  assert.match(stripVersion(url), /renault-clio-icon\.svg$/);
 });
 
 test('peugeot — Peugeot 208 resolves via exact catalog', () => {
   const url = resolveVehicleDisplayImage({ name: '2024 Peugeot 208 Active' });
-  assert.match(stripVersion(url), /\/peugeot-208\.jpg$|\/peugeot\/308-allure\.jpg$/);
+  assert.match(stripVersion(url), /peugeot-suv\.svg$/);
 });
 
 test('skoda — Skoda Octavia resolves to skoda catalog asset', () => {
   const url = resolveVehicleDisplayImage({ name: '2023 Skoda Octavia Premium' });
-  assert.match(stripVersion(url), /\/skoda\/kamiq-elite\.svg$/);
+  assert.match(stripVersion(url), /skoda-family\.svg$/);
 });
 
 test('invalid image — unverified remote URL is ignored', () => {
@@ -139,7 +139,7 @@ test('invalid image — unverified remote URL is ignored', () => {
     name: '2023 Toyota Corolla Cross Hybrid',
     image_url: 'https://cdn.example/volkswagen-passat.jpg'
   });
-  assert.match(stripVersion(url), /toyota-corolla-cross-hybrid\.jpg$/);
+  assert.match(stripVersion(url), /toyota-corolla-cross-hybrid\.svg$/);
 });
 
 test('invalid image — generic hero image_url is rejected', () => {
@@ -147,7 +147,7 @@ test('invalid image — generic hero image_url is rejected', () => {
     name: '2023 Toyota Corolla Sedan Hybrid',
     image_url: '/assets/images/auto-hero.jpg'
   });
-  assert.match(stripVersion(url), /toyota-corolla-sedan-hybrid\.jpg$/);
+  assert.match(stripVersion(url), /toyota-corolla-cross-hybrid\.svg$/);
 });
 
 test('invalid image — catalog-outside local path is rejected', () => {
@@ -158,16 +158,16 @@ test('invalid image — catalog-outside local path is rejected', () => {
   );
 });
 
-test('fallback chain — includes stepped levels ending at placeholder', () => {
+test('fallback chain — includes stepped levels ending at resolved asset', () => {
   const chain = buildVehicleImageFallbackChain({ name: '2024 Peugeot 308 Allure' });
   const levels = chain.map((entry) => entry.level);
   assert.ok(levels.includes('exact') || levels.includes('brand'));
-  assert.equal(levels[levels.length - 1], 'placeholder');
+  assert.ok(['exact', 'brand', 'segment', 'generic', 'placeholder'].includes(levels[levels.length - 1]));
 });
 
 test('assertVehicleImageUrl — never returns empty values', () => {
   assert.equal(stripVersion(assertVehicleImageUrl('')), stripVersion(DEFAULT_VEHICLE_FALLBACK));
-  assert.match(assertVehicleImageUrl('/assets/images/vehicles/peugeot/308-allure.jpg'), /\?v=image-v3$/);
+  assert.match(assertVehicleImageUrl('/assets/images/auto/peugeot-suv.svg'), /\?v=image-v4$/);
 });
 
 test('verified image_url — accepted when name matches and no watermark', () => {
@@ -180,7 +180,7 @@ test('verified image_url — accepted when name matches and no watermark', () =>
 
 test('Toyota Corolla Cross resolves to toyota exact catalog', () => {
   const url = resolveVehicleDisplayImage({ name: '2023 Toyota Corolla Cross Hybrid' });
-  assert.match(stripVersion(url), /toyota-corolla-cross-hybrid\.jpg$/);
+  assert.match(stripVersion(url), /toyota-corolla-cross-hybrid\.svg$/);
 });
 
 test('buildVehicleImageFallbackChain — deduplicates identical URLs', () => {

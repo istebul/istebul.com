@@ -469,7 +469,7 @@ function renderSeoFooter({ site, guideLinks }) {
         <ul>
           <li><a href="/">Ana sayfa</a></li>
           <li><a href="/auto/">Ücretsiz analiz</a></li>
-          <li><a href="/ilanlar/">İlanlar</a></li>
+          <li><a href="/secenekler/">Seçenekler</a></li>
           <li><a href="/karsilastir/">Karşılaştır</a></li>
         </ul>
       </div>
@@ -512,6 +512,7 @@ const GUIDE_CTAS = {
 function formatDataSourceStatus(status) {
   const map = {
     active: { label: 'Aktif', className: 'is-active' },
+    reference: { label: 'Manuel referans', className: 'is-reference' },
     planned: { label: 'Planlanan', className: 'is-planned' }
   };
   return map[status] || { label: 'Bilinmiyor', className: '' };
@@ -996,7 +997,14 @@ function injectCorporateMeta(distDir) {
 }
 
 /** Hubs backed by Supabase + client hydration — must not emit static seo-page index.html. */
-const DYNAMIC_CONTENT_SPA_HUBS = new Set(['blog', 'duyurular', 'kampanyalar']);
+const DYNAMIC_CONTENT_SPA_HUBS = new Set([
+  'blog',
+  'duyurular',
+  'kampanyalar',
+  'karar-asistani',
+  'secenekler',
+  'karsilastir'
+]);
 
 function buildSeoPages(distDir) {
   const site = loadJson('data/seo/site.json');

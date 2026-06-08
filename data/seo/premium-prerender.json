@@ -11,12 +11,12 @@
     ]
   },
   "page-karar-analizi": {
-    "title": "Karar analizi",
-    "h1": "Araç alım karar analizi",
-    "lead": "Bütçe, kullanım ve finansman tercihinize göre toplam sahip olma maliyetini görün. Tam analiz için Auto akışına geçin.",
+    "title": "Karar asistanı",
+    "h1": "Hangi kategoride karar vermek istiyorsunuz?",
+    "lead": "Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk sinyallerini tek merkezden başlatın.",
     "bullets": [
-      "~2 dakikada rehberli analiz",
-      "Karar skoru ve TCO özeti",
+      "6 kategori karar merkezi",
+      "Kural tabanlı skor ve TCO özeti",
       "Karşılaştırma merkezi entegrasyonu",
       "Bilgilendirme amaçlı — bağlayıcı teklif değil"
     ]

@@ -1,126 +1,185 @@
 {
-  "version": "image-v3",
+  "version": "image-v4",
   "basePath": "/assets/images/vehicles",
   "exact": {
     "citroen": {
-      "c4-max": "citroen/c4-max.svg",
-      "c4": "citroen/c4-max.svg"
+      "c4-max": "/assets/images/auto/renault-clio-icon.svg",
+      "c4": "/assets/images/auto/renault-clio-icon.svg"
     },
     "peugeot": {
-      "308-allure": "peugeot/308-allure.jpg",
-      "308": "peugeot/308-allure.jpg",
-      "208": "peugeot-208.jpg",
-      "2008": "peugeot-208.jpg",
-      "3008": "peugeot-208.jpg"
+      "308-allure": "/assets/images/auto/peugeot-suv.svg",
+      "308": "/assets/images/auto/peugeot-suv.svg",
+      "208": "/assets/images/auto/peugeot-suv.svg",
+      "2008": "/assets/images/auto/peugeot-suv.svg",
+      "3008": "/assets/images/auto/peugeot-suv.svg",
+      "e-2008": "/assets/images/auto/peugeot-suv.svg"
     },
     "seat": {
-      "leon-fr": "seat/leon-fr.svg",
-      "leon": "seat/leon-fr.svg",
-      "ibiza": "seat/leon-fr.svg",
-      "arona": "seat/leon-fr.svg"
+      "leon-fr": "/assets/images/auto/volkswagen-golf-tsi.svg",
+      "leon": "/assets/images/auto/volkswagen-golf-tsi.svg",
+      "ibiza": "/assets/images/auto/volkswagen-golf-tsi.svg",
+      "arona": "/assets/images/auto/peugeot-suv.svg"
     },
     "skoda": {
-      "kamiq-elite": "skoda/kamiq-elite.svg",
-      "kamiq": "skoda/kamiq-elite.svg",
-      "karoq": "skoda/kamiq-elite.svg",
-      "octavia": "skoda/kamiq-elite.svg",
-      "fabia": "skoda/kamiq-elite.svg",
-      "scala": "skoda/kamiq-elite.svg"
+      "kamiq-elite": "/assets/images/auto/skoda-family.svg",
+      "kamiq": "/assets/images/auto/skoda-family.svg",
+      "karoq": "/assets/images/auto/skoda-family.svg",
+      "octavia": "/assets/images/auto/skoda-family.svg",
+      "fabia": "/assets/images/auto/skoda-family.svg",
+      "scala": "/assets/images/auto/skoda-family.svg"
     },
     "toyota": {
-      "corolla-cross-hybrid": "toyota-corolla-cross-hybrid.jpg",
-      "corolla-cross": "toyota-corolla-cross-hybrid.jpg",
-      "corolla-sedan-hybrid": "toyota-corolla-sedan-hybrid.jpg",
-      "corolla-sedan": "toyota-corolla-sedan-hybrid.jpg",
-      "chr-hybrid": "toyota-chr-hybrid.jpg",
-      "chr": "toyota-chr-hybrid.jpg",
-      "corolla": "toyota-corolla-cross-hybrid.jpg"
+      "corolla-cross-hybrid": "/assets/images/auto/toyota-corolla-cross-hybrid.svg",
+      "corolla-cross": "/assets/images/auto/toyota-corolla-cross-hybrid.svg",
+      "corolla-sedan-hybrid": "/assets/images/auto/toyota-corolla-cross-hybrid.svg",
+      "corolla-sedan": "/assets/images/auto/toyota-corolla-cross-hybrid.svg",
+      "chr-hybrid": "/assets/images/auto/toyota-corolla-cross-hybrid.svg",
+      "chr": "/assets/images/auto/toyota-corolla-cross-hybrid.svg",
+      "corolla": "/assets/images/auto/toyota-corolla-cross-hybrid.svg"
     },
     "volkswagen": {
-      "golf": "volkswagen-golf.jpg",
-      "t-roc": "volkswagen-troc.jpg",
-      "troc": "volkswagen-troc.jpg"
+      "golf": "/assets/images/auto/volkswagen-golf-tsi.svg",
+      "t-roc": "/assets/images/auto/volkswagen-golf-tsi.svg",
+      "troc": "/assets/images/auto/volkswagen-golf-tsi.svg",
+      "tiguan": "/assets/images/auto/peugeot-suv.svg",
+      "passat": "/assets/images/auto/volkswagen-golf-tsi.svg"
     },
     "renault": {
-      "clio": "renault-clio.jpg"
+      "clio": "/assets/images/auto/renault-clio-icon.svg",
+      "austral": "/assets/images/auto/peugeot-suv.svg",
+      "megane": "/assets/images/auto/renault-clio-icon.svg"
     },
     "hyundai": {
-      "i20": "hyundai-i20.jpg",
-      "tucson": "hyundai-i20.jpg"
+      "i20": "/assets/images/auto/renault-clio-icon.svg",
+      "tucson": "/assets/images/auto/hyundai-tucson-tgdi.svg",
+      "bayon": "/assets/images/auto/peugeot-suv.svg",
+      "kona": "/assets/images/auto/hyundai-tucson-tgdi.svg",
+      "ioniq-5": "/assets/images/auto/byd-electric.svg"
     },
     "mercedes-benz": {
-      "c200": "mercedes-c200.jpg",
-      "c-200": "mercedes-c200.jpg"
+      "c200": "/assets/images/auto/mercedes-premium.svg",
+      "c-200": "/assets/images/auto/mercedes-premium.svg",
+      "gla-200": "/assets/images/auto/mercedes-premium.svg"
     },
     "mercedes": {
-      "c200": "mercedes-c200.jpg",
-      "c-200": "mercedes-c200.jpg"
+      "c200": "/assets/images/auto/mercedes-premium.svg",
+      "c-200": "/assets/images/auto/mercedes-premium.svg",
+      "gla-200": "/assets/images/auto/mercedes-premium.svg"
     },
     "bmw": {
-      "320i": "bmw-320i.jpg",
-      "320": "bmw-320i.jpg"
+      "320i": "/assets/images/auto/bmw-premium.svg",
+      "320": "/assets/images/auto/bmw-premium.svg",
+      "ix1": "/assets/images/auto/bmw-premium.svg",
+      "x1": "/assets/images/auto/bmw-premium.svg"
     },
     "opel": {
-      "corsa": "opel-corsa.jpg"
+      "corsa": "/assets/images/auto/renault-clio-icon.svg",
+      "astra": "/assets/images/auto/volkswagen-golf-tsi.svg"
     },
     "tesla": {
-      "model-3": "tesla-model-3.jpg",
-      "model3": "tesla-model-3.jpg"
+      "model-3": "/assets/images/auto/tesla-model.svg",
+      "model3": "/assets/images/auto/tesla-model.svg",
+      "model-y": "/assets/images/auto/tesla-model.svg"
     },
     "togg": {
-      "t10x": "togg-t10x.jpg",
-      "t10": "togg-t10x.jpg"
+      "t10x": "/assets/images/auto/togg-t10x.svg",
+      "t10": "/assets/images/auto/togg-t10x.svg"
     },
     "audi": {
-      "a3": "audi-a3.jpg"
+      "a3": "/assets/images/auto/bmw-premium.svg",
+      "q3": "/assets/images/auto/peugeot-suv.svg"
     },
     "volvo": {
-      "xc60": "volvo-xc60.jpg",
-      "ex30": "volvo-xc60.jpg"
+      "xc60": "/assets/images/auto/peugeot-suv.svg",
+      "ex30": "/assets/images/auto/byd-electric.svg",
+      "xc40": "/assets/images/auto/peugeot-suv.svg",
+      "s60": "/assets/images/auto/bmw-premium.svg"
+    },
+    "honda": {
+      "civic": "/assets/images/auto/honda-civic-eco.svg",
+      "hr-v": "/assets/images/auto/peugeot-suv.svg"
+    },
+    "fiat": {
+      "egea": "/assets/images/auto/renault-clio-icon.svg"
+    },
+    "dacia": {
+      "sandero": "/assets/images/auto/renault-clio-icon.svg",
+      "duster": "/assets/images/auto/peugeot-suv.svg"
+    },
+    "nissan": {
+      "qashqai": "/assets/images/auto/peugeot-suv.svg"
+    },
+    "kia": {
+      "sportage": "/assets/images/auto/hyundai-tucson-tgdi.svg",
+      "stonic": "/assets/images/auto/peugeot-suv.svg",
+      "ev3": "/assets/images/auto/byd-electric.svg"
+    },
+    "ford": {
+      "kuga": "/assets/images/auto/hyundai-tucson-tgdi.svg",
+      "puma": "/assets/images/auto/peugeot-suv.svg"
+    },
+    "mg": {
+      "zs": "/assets/images/auto/peugeot-suv.svg",
+      "mg4": "/assets/images/demo/mg4-electric.svg"
+    },
+    "byd": {
+      "atto-3": "/assets/images/auto/byd-electric.svg",
+      "seal": "/assets/images/auto/byd-electric.svg"
+    },
+    "jeep": {
+      "avenger": "/assets/images/auto/byd-electric.svg"
+    },
+    "lexus": {
+      "ux": "/assets/images/auto/hyundai-tucson-tgdi.svg"
+    },
+    "mini": {
+      "countryman": "/assets/images/auto/peugeot-suv.svg"
     },
     "range-rover": {
-      "evoque": "range-rover-evoque.jpg"
+      "evoque": "/assets/images/auto/mercedes-premium.svg"
     }
   },
   "brand": {
-    "citroen": "citroen/c4-max.svg",
-    "peugeot": "peugeot/308-allure.jpg",
-    "seat": "seat/leon-fr.svg",
-    "skoda": "skoda/kamiq-elite.svg",
-    "toyota": "toyota-corolla-cross-hybrid.jpg",
-    "volkswagen": "volkswagen-golf.jpg",
-    "vw": "volkswagen-golf.jpg",
-    "renault": "renault-clio.jpg",
-    "hyundai": "hyundai-i20.jpg",
-    "mercedes-benz": "mercedes-c200.jpg",
-    "mercedes": "mercedes-c200.jpg",
-    "bmw": "bmw-320i.jpg",
-    "opel": "opel-corsa.jpg",
-    "tesla": "tesla-model-3.jpg",
-    "togg": "togg-t10x.jpg",
-    "audi": "audi-a3.jpg",
-    "volvo": "volvo-xc60.jpg",
-    "range-rover": "range-rover-evoque.jpg",
-    "honda": "default-vehicle.webp",
-    "ford": "default-vehicle.webp",
-    "kia": "default-vehicle.webp",
-    "nissan": "default-vehicle.webp",
-    "fiat": "default-vehicle.webp",
-    "dacia": "default-vehicle.webp",
-    "byd": "default-vehicle.webp",
-    "mg": "default-vehicle.webp"
+    "citroen": "/assets/images/auto/renault-clio-icon.svg",
+    "peugeot": "/assets/images/auto/peugeot-suv.svg",
+    "seat": "/assets/images/auto/volkswagen-golf-tsi.svg",
+    "skoda": "/assets/images/auto/skoda-family.svg",
+    "toyota": "/assets/images/auto/toyota-corolla-cross-hybrid.svg",
+    "volkswagen": "/assets/images/auto/volkswagen-golf-tsi.svg",
+    "vw": "/assets/images/auto/volkswagen-golf-tsi.svg",
+    "renault": "/assets/images/auto/renault-clio-icon.svg",
+    "hyundai": "/assets/images/auto/hyundai-tucson-tgdi.svg",
+    "mercedes-benz": "/assets/images/auto/mercedes-premium.svg",
+    "mercedes": "/assets/images/auto/mercedes-premium.svg",
+    "bmw": "/assets/images/auto/bmw-premium.svg",
+    "opel": "/assets/images/auto/renault-clio-icon.svg",
+    "tesla": "/assets/images/auto/tesla-model.svg",
+    "togg": "/assets/images/auto/togg-t10x.svg",
+    "audi": "/assets/images/auto/bmw-premium.svg",
+    "volvo": "/assets/images/auto/peugeot-suv.svg",
+    "honda": "/assets/images/auto/honda-civic-eco.svg",
+    "ford": "/assets/images/auto/hyundai-tucson-tgdi.svg",
+    "kia": "/assets/images/auto/hyundai-tucson-tgdi.svg",
+    "nissan": "/assets/images/auto/peugeot-suv.svg",
+    "fiat": "/assets/images/auto/renault-clio-icon.svg",
+    "dacia": "/assets/images/auto/renault-clio-icon.svg",
+    "byd": "/assets/images/auto/byd-electric.svg",
+    "mg": "/assets/images/auto/peugeot-suv.svg",
+    "jeep": "/assets/images/auto/byd-electric.svg",
+    "lexus": "/assets/images/auto/hyundai-tucson-tgdi.svg",
+    "mini": "/assets/images/auto/peugeot-suv.svg",
+    "range-rover": "/assets/images/auto/mercedes-premium.svg"
   },
   "segment": {
-    "suv": "default-vehicle.webp",
-    "crossover": "default-vehicle.webp",
-    "hatchback": "renault-clio.jpg",
-    "sedan": "toyota-corolla-sedan-hybrid.jpg",
-    "electric": "tesla-model-3.jpg",
-    "hybrid": "toyota-corolla-cross-hybrid.jpg",
-    "premium": "mercedes-c200.jpg",
-    "family": "volkswagen-golf.jpg",
-    "default": "default-vehicle.webp"
+    "suv": "/assets/images/auto/peugeot-suv.svg",
+    "crossover": "/assets/images/auto/peugeot-suv.svg",
+    "hatchback": "/assets/images/auto/renault-clio-icon.svg",
+    "sedan": "/assets/images/auto/volkswagen-golf-tsi.svg",
+    "electric": "/assets/images/auto/byd-electric.svg",
+    "hybrid": "/assets/images/auto/toyota-corolla-cross-hybrid.svg",
+    "premium": "/assets/images/auto/mercedes-premium.svg",
+    "family": "/assets/images/auto/skoda-family.svg",
+    "default": "/assets/images/auto/vehicle-premium-placeholder.svg"
   },
-  "generic": "default-vehicle.webp",
-  "placeholder": "/assets/images/auto/vehicle-premium-placeholder.svg"
+  "generic": "/assets/images/auto/vehicle-premium-placeholder.svg"
 }

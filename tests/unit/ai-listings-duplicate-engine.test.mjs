@@ -181,19 +181,19 @@ test('buildDuplicateCheckCardHtml renders smart merge actions', () => {
     summary: 'test summary'
   });
   assert.match(html, /Benzer İlan Kontrolü/);
-  assert.match(html, /%97 eşleşme bulundu/);
+  assert.match(html, /Aynı ilan bulundu/);
   assert.match(html, /2021 BMW 320i/);
   assert.match(html, /Mevcut ilanı aç/);
-  assert.match(html, /Bilgileri güncelle/);
-  assert.match(html, /Yeni kayıt oluştur/);
-  assert.match(html, /İptal/);
+  assert.match(html, /Yeni kayıt olarak bırak/);
+  assert.doesNotMatch(html, /Bilgileri güncelle/);
 });
 
-test('buildListingCardHtml shows Duplicate metric for similar listings', () => {
+test('buildListingCardHtml shows duplicate label for similar listings', () => {
   const html = buildListingCardHtml(baseListing, false, {
     candidates: [nearDuplicate, differentListing]
   });
-  assert.match(html, /Duplicate %\d+/);
+  assert.match(html, /Aynı ilan bulundu|Çok benzer ilan|Benzer ilan/);
+  assert.doesNotMatch(html, /Duplicate %/);
 });
 
 test('buildAnalysisTimelineHtml includes duplicate workflow steps', () => {

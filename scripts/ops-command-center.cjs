@@ -76,7 +76,7 @@ async function main() {
     sb.from('lifecycle_messages').select('status').gte('created_at', since7d),
     sb
       .from('partner_lead_dispatch_logs')
-      .select('success, duration_ms, created_at')
+      .select('success, latency_ms, created_at')
       .gte('created_at', since24h)
       .limit(5000),
     sb
