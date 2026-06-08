@@ -32,7 +32,7 @@ const liveRoutes = [
     status: 200,
     optional: true
   },
-  { path: '/karar-asistani/', must: ['Araç karar asistanı', 'seo-page'], status: 200, optional: true },
+  { path: '/karar-asistani/', must: ['Karar merkezi', 'seo-page'], status: 200, optional: true },
   { path: '/karsilastir/', must: ['Karşılaştır', 'seo-page'], status: 200, optional: true },
   { path: '/secenekler/', must: ['Seçenek', 'seo-page'], status: 200, optional: true },
   { path: '/planlar', must: ['Planlar ve fiyatlandırma', 'seo-page'], status: 200, optional: true },

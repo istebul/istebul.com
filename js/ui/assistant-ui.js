@@ -614,12 +614,12 @@ export class AssistantUI {
         const firstChannel = item.channels?.[0]?.url || 'https://www.sahibinden.com/';
         const plans = {
             arac: [
-                { icon: 'search-check', title: 'Gerçek ilanı doğrula', text: 'KM, tramer, fiyat ve satıcı bilgisini aynı model ilanlarla karşılaştırın.', url: firstChannel },
+                { icon: 'search-check', title: 'Seçeneği doğrula', text: 'KM, tramer, fiyat ve satıcı bilgisini aynı model ilanlarla karşılaştırın.', url: firstChannel },
                 { icon: 'landmark', title: 'Krediyi netleştir', text: 'Aylık taksit yerine toplam geri ödeme ve kredi kullandırım oranını kontrol edin.', url: 'https://www.hangikredi.com/kredi/tasit-kredisi' },
                 { icon: 'shield-check', title: 'Sigorta + ekspertiz', text: 'Kasko, trafik sigortası ve ekspertiz sonucu olmadan kapora göndermeyin.', url: 'https://www.sigortam.net/' }
             ],
             ev: [
-                { icon: 'map-pinned', title: 'Emsal ilan analizi', text: 'Aynı il/ilçede m2, bina yaşı, aidat ve ulaşım etkisini yan yana okuyun.', url: firstChannel },
+                { icon: 'map-pinned', title: 'Benzer seçenek analizi', text: 'Aynı il/ilçede m2, bina yaşı, aidat ve ulaşım etkisini yan yana okuyun.', url: firstChannel },
                 { icon: 'landmark', title: 'Konut kredisi', text: 'Ekspertiz değeri, peşinat ihtiyacı ve toplam geri ödeme planını netleştirin.', url: 'https://www.hangikredi.com/kredi/konut-kredisi' },
                 { icon: 'file-check-2', title: 'Tapu + deprem kontrolü', text: 'Tapu, imar, DASK, deprem performansı ve aidat borcunu satın alma öncesi doğrulayın.', url: 'https://www.tkgm.gov.tr/' }
             ],
