@@ -57,6 +57,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .nav{padding:12px 8px;flex:1;}
 .nav-section{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px 4px;margin-top:8px;}
 .nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);color:var(--muted);cursor:pointer;transition:all .15s;font-size:13px;font-weight:500;margin-bottom:2px;}
+a.nav-item{text-decoration:none;color:inherit;}
 .nav-item:hover{background:var(--surface2);color:var(--text);}
 .nav-item.active{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;}
 .nav-item--external{border:1px dashed rgba(37,99,235,.25);}
@@ -466,9 +467,10 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <div class="nav-group-items">
             <div class="nav-item" data-page-target="ops-ai-assistant"><span class="nav-label">Ops asistan</span></div>
             <div class="nav-item" data-page-target="category-dominance"><span class="nav-label">Skor &amp; moat</span></div>
+            <div class="nav-item" data-page-target="listings" title="Klasik ilan/ürün CRUD — AI karar analizi için AI İlan Yönetimi'ni kullanın"><span class="nav-icon" aria-hidden="true">▣</span><span class="nav-label">Karar Seçenekleri</span></div>
+            <a class="nav-item nav-item--external nav-item--admin-only" href="/admin/ai-listings/" data-admin-listing-nav-injected="ai-listings" title="Karar Merkezi analizi, onay akışı ve AI ilan motoru — klasik Karar Seçenekleri'nden farklıdır"><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">AI İlan Yönetimi</span></a>
           </div>
         </div>
-        <div class="nav-item" data-page-target="listings"><span class="nav-icon" aria-hidden="true">▣</span><span class="nav-label">Karar Seçenekleri</span></div>
         <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">İçerik Yönetimi</button>
           <div class="nav-group-items">
@@ -1841,7 +1843,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
 <script type="importmap" src="/importmap.json"></script>
 <script src="/env.js"></script>
-<script type="module" src="/js/admin-panel.js?v=12"></script>
+<script type="module" src="/js/admin-panel.js?v=13"></script>
 
 <style>
 .auto-leads-toolbar{
