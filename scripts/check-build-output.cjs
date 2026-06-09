@@ -28,6 +28,7 @@ const required = [
   'dist/js/runtime/route-bootstrap-head.js',
   'dist/admin/index.html',
   'dist/admin/listings/index.html',
+  'dist/admin/ai-listings/index.html',
   'dist/admin/decision-center/index.html',
   'dist/admin-panel.html',
   'dist/js/admin-panel.js'
@@ -176,6 +177,29 @@ if (fs.existsSync(adminPanelPath)) {
   if (envIdx === -1 || adminJsIdx === -1 || envIdx > adminJsIdx) {
     failed = true;
     console.error('dist/admin-panel.html must load /env.js before admin-panel.js');
+  }
+}
+
+const { assertAdminShellHtml } = require('./lib/admin-deep-links.cjs');
+const adminListingsCrmPath = path.join(root, 'dist/admin/listings/index.html');
+const adminAiListingsPath = path.join(root, 'dist/admin/ai-listings/index.html');
+if (fs.existsSync(adminListingsCrmPath)) {
+  try {
+    assertAdminShellHtml(fs.readFileSync(adminListingsCrmPath, 'utf8'), 'dist/admin/listings/index.html');
+  } catch (err) {
+    failed = true;
+    console.error(String(err?.message || err));
+  }
+}
+if (fs.existsSync(adminAiListingsPath)) {
+  const aiListingsHtml = fs.readFileSync(adminAiListingsPath, 'utf8');
+  if (!aiListingsHtml.includes('ai-listings-admin-root')) {
+    failed = true;
+    console.error('dist/admin/ai-listings/index.html must be AI listings admin shell');
+  }
+  if (aiListingsHtml.includes('/js/admin-panel.js')) {
+    failed = true;
+    console.error('dist/admin/ai-listings/index.html must not be CRM admin-panel shell');
   }
 }
 

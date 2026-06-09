@@ -562,9 +562,8 @@ bundleVerticalPage(
 const aiListingsAdminHtmlPath = path.join(dist, 'admin', 'ai-listings.html');
 if (fs.existsSync(aiListingsAdminHtmlPath)) {
   const aiListingsAdminHtml = fs.readFileSync(aiListingsAdminHtmlPath, 'utf8');
-  ['admin/listings/index.html', 'admin/ai-listings/index.html'].forEach((aliasRel) => {
-    writeFile(aliasRel, aiListingsAdminHtml);
-  });
+  // /admin/listings/ is reserved for CRM deep-link shell (Karar Seçenekleri).
+  writeFile('admin/ai-listings/index.html', aiListingsAdminHtml);
 }
 
 if (fs.existsSync(path.join(root, 'js/sigorta'))) {

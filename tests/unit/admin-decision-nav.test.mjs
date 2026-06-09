@@ -55,8 +55,9 @@ test('verifyAdminSessionAccess returns boolean session flag', async () => {
   assert.equal(typeof result.sessionIsAdmin, 'boolean');
 });
 
-test('admin listing management href is under /admin', () => {
-  assert.equal(ADMIN_LISTING_MANAGEMENT_HREF, '/admin/listings');
+test('admin listing management href targets AI listings panel (not CRM listings)', () => {
+  assert.equal(ADMIN_LISTING_MANAGEMENT_HREF, '/admin/ai-listings/');
+  assert.notEqual(ADMIN_LISTING_MANAGEMENT_HREF, '/admin/listings');
 });
 
 test('injectAdminListingManagementNav module defines admin-only nav contract', () => {
@@ -79,7 +80,8 @@ test('admin listing routes are static (no _redirects under /admin)', () => {
   const redirects = fs.readFileSync(path.join(process.cwd(), '_redirects'), 'utf8');
   assert.doesNotMatch(redirects, /^\/admin\//m);
   const buildScript = fs.readFileSync(path.join(process.cwd(), 'scripts/production-build.cjs'), 'utf8');
-  assert.match(buildScript, /admin\/listings\/index\.html/);
+  assert.match(buildScript, /admin\/ai-listings\/index\.html/);
+  assert.doesNotMatch(buildScript, /admin\/listings\/index\.html',\s*'admin\/ai-listings/);
 });
 
 test('admin route guard paths', () => {
