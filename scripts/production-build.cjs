@@ -545,8 +545,13 @@ bundleVerticalPage(
 );
 
 const decisionCategoryCardCss = 'js/features/decision-cards/decision-category-card.css';
+const decisionCategoryCardCssDist = 'css/decision-category-card.css';
 if (fs.existsSync(path.join(root, decisionCategoryCardCss))) {
-  copyFile(decisionCategoryCardCss);
+  fs.mkdirSync(path.join(dist, 'css'), { recursive: true });
+  fs.copyFileSync(
+    path.join(root, decisionCategoryCardCss),
+    path.join(dist, decisionCategoryCardCssDist)
+  );
 }
 
 bundleVerticalPage(
