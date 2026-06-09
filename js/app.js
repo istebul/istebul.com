@@ -41,7 +41,6 @@ import { submitUserListingToAiEngine } from './core/ai-listings-bridge.js';
 import { scoreVehicleMatch } from './engines/decision-consultant.js';
 import {
   ensureAccountManager,
-  ensureCatalogData,
   ensureRevenueManager,
   ensureUpsellEngine,
   getRevenueManager,
@@ -97,8 +96,6 @@ import {
     syncHtmlRouteSurface,
     tryExternalRouteRedirect
 } from './runtime/route-surface.js';
-import { resolveVehicleImageUrl } from './auto/vehicle-image.js';
-
 window.lucide = window.lucide || {
     createIcons() {},
     icons: {}
@@ -5154,49 +5151,6 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         this.ui.showSuccess('Araç shortlist listenize eklendi.');
         this.saveFavorites();
         return true;
-    }
-
-    getAutoComparisonImage(vehicle) {
-        if (vehicle?.image || vehicle?.imageUrl || vehicle?.visual) {
-            return vehicle.image || vehicle.imageUrl || vehicle.visual;
-        }
-
-        return resolveVehicleImageUrl(vehicle);
-    }
-
-    addAutoVehicleToComparison(vehicle) {
-        if (!vehicle) return;
-
-        const score = Number(vehicle.score || 0);
-
-        this.addComparisonItem({
-            id: `auto-compare-${vehicle.name}`,
-            signature: `auto-${vehicle.name}`,
-            categoryId: 'arac',
-            categoryName: 'Araç Karşılaştırma',
-            sourceType: 'isteBul Auto',
-            title: vehicle.name,
-            image: this.getAutoComparisonImage(vehicle),
-            score,
-            riskLevel: score >= 85 ? 'Düşük risk'
-                : score >= 70 ? 'Dengeli'
-                : 'Kontrol gerekli',
-            price: Number(vehicle.price || vehicle.costs?.purchase || 0),
-            periodicCost: Number(vehicle.costs?.annual || 0),
-            yearlyCost: Number(vehicle.costs?.annual || 0),
-            monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0),
-            tags: [
-                vehicle.fuel || 'Araç',
-                vehicle.segment || 'AI analiz'
-            ],
-            comment: vehicle.reasons?.[0] || 'AI araç karar analizi sonucu önerildi.',
-            details: [
-                { label: 'En iyi kullanım', value: vehicle.usage || '-' },
-                { label: 'Yakıt tipi', value: vehicle.fuel || '-' }
-            ],
-            reasons: vehicle.reasons || [],
-            risks: vehicle.risks || []
-        });
     }
 
     toggleFavorite(listingId) {
