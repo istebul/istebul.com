@@ -22,7 +22,7 @@ test.describe('Marketing shell (anon landing)', () => {
     await expect(page.locator('#trust')).toBeHidden();
     await expect(page.locator('#home-auto-bridge')).toBeHidden();
     await expect(page.locator('#landing-faq')).toBeVisible();
-    await expect(page.getByRole('link', { name: /Hemen Başla/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Kararını analiz et/i }).first()).toBeVisible();
 
     const overflow = await page.evaluate(() => {
       const doc = document.documentElement;
