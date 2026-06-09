@@ -107,8 +107,8 @@ const waitForGecmisRouteBootstrap = async (page) => {
  * Pre-existing /gecmis flake (Faz 2D mobile + deferred loadDecisionHistory race, not 2E-2):
  * wait until history cards survive trailing idle reload / loadComparisonHistory guard.
  */
-const waitForGecmisHistoryStable = async (page, { categoryId, minCards = 1 } = {}) => {
-  const isStable = ({ categoryId, minCards }) => {
+const waitForGecmisHistoryStable = async (page, { categoryId, entryId, minCards = 1 } = {}) => {
+  const isStable = ({ categoryId, entryId, minCards }) => {
     const list = document.getElementById('history-list');
     if (!list) return false;
     if (list.querySelector('.history-auth-gate')) return false;
@@ -120,10 +120,16 @@ const waitForGecmisHistoryStable = async (page, { categoryId, minCards = 1 } = {
       );
       if (!kicker?.textContent?.trim()) return false;
     }
+    if (entryId) {
+      const actionBtn = list.querySelector(
+        `[data-decision-delete="${entryId}"], [data-decision-repeat="${entryId}"], [data-decision-compare-add="${entryId}"]`
+      );
+      if (!actionBtn) return false;
+    }
     return true;
   };
 
-  await page.waitForFunction(isStable, { categoryId, minCards }, { timeout: 15000 });
+  await page.waitForFunction(isStable, { categoryId, entryId, minCards }, { timeout: 15000 });
   await page.evaluate((idleTimeoutMs) => new Promise((resolve) => {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => resolve(), { timeout: idleTimeoutMs });
@@ -132,7 +138,7 @@ const waitForGecmisHistoryStable = async (page, { categoryId, minCards = 1 } = {
     }
   }), 1200);
   await page.evaluate(() => window.app.loadDecisionHistory());
-  await page.waitForFunction(isStable, { categoryId, minCards }, { timeout: 15000 });
+  await page.waitForFunction(isStable, { categoryId, entryId, minCards }, { timeout: 15000 });
 };
 
 /** @deprecated use waitForGecmisHistoryStable */
@@ -149,12 +155,44 @@ const gecmisHistoryCard = (page, categoryId) => {
 };
 
 const clickGecmisCompareAdd = async (page, entryId) => {
-  await waitForGecmisHistoryStable(page);
+  await waitForGecmisHistoryStable(page, { entryId });
   const compareBtn = entryId
     ? page.locator(`[data-decision-compare-add="${entryId}"]`)
     : page.locator('[data-decision-compare-add]').first();
   await expect(compareBtn).toBeVisible({ timeout: 15000 });
   await compareBtn.click({ timeout: 15000 });
+};
+
+const clickGecmisHistoryAction = async (page, { action, entryId, categoryId } = {}) => {
+  const selectors = {
+    delete: `[data-decision-delete="${entryId}"]`,
+    repeat: `[data-decision-repeat="${entryId}"]`,
+    compare: entryId ? `[data-decision-compare-add="${entryId}"]` : '[data-decision-compare-add]'
+  };
+  const selector = selectors[action];
+  if (!selector) {
+    throw new Error(`Unknown /gecmis history action: ${action}`);
+  }
+
+  await waitForGecmisHistoryStable(page, { categoryId, entryId });
+  const actionBtn = action === 'compare' && !entryId
+    ? page.locator(selector).first()
+    : page.locator(selector);
+  await expect(actionBtn).toBeVisible({ timeout: 15000 });
+  await actionBtn.click({ timeout: 15000 });
+};
+
+/** Wait for decision memory insights panel to survive deferred /gecmis re-renders. */
+const waitForGecmisInsightsReady = async (page, { minCards = 2 } = {}) => {
+  await waitForGecmisHistoryStable(page, { minCards });
+  await page.waitForFunction(({ minCards }) => {
+    const insights = document.querySelector('[data-decision-memory-insights]');
+    if (!insights) return false;
+    if (minCards >= 2) {
+      return Boolean(insights.querySelector('[data-memory-insight="top-category"]'));
+    }
+    return Boolean(insights.querySelector('[data-memory-insights-soft]'));
+  }, { minCards }, { timeout: 15000 });
 };
 
 test.describe('isteBul kritik kullanıcı akışları', () => {
@@ -589,15 +627,18 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
     await page.evaluate(() => {
       window.app.currentUser = { id: 'e2e-canonical-history-user', name: 'E2E User' };
       window.app.loadDecisionHistory();
     });
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
-    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('.decision-history-card').first()).toContainText(/Toyota Corolla/i);
+    await waitForGecmisHistoryStable(page, { categoryId: 'auto' });
+    const card = gecmisHistoryCard(page, 'auto');
+    await expect(card).toBeVisible({ timeout: 15000 });
+    await expect(card).toContainText(/Toyota Corolla/i);
 
-    const signalStrip = page.locator('[data-decision-history-signal-strip]').first();
+    const signalStrip = card.locator('[data-decision-history-signal-strip]');
     await expect(signalStrip).toBeVisible();
     await expect(signalStrip.locator('[data-history-signal="history-fit"]')).toContainText(/Uygunluk/i);
     await expect(signalStrip.locator('[data-history-signal="history-risk"]')).toContainText(/Risk/i);
@@ -613,6 +654,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-legacy-history-user';
@@ -640,10 +682,12 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     });
 
     await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
-    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('.decision-history-card').first()).toContainText(/Toyota Corolla/i);
+    await waitForGecmisHistoryStable(page, { categoryId: 'auto' });
+    const card = gecmisHistoryCard(page, 'auto');
+    await expect(card).toBeVisible({ timeout: 15000 });
+    await expect(card).toContainText(/Toyota Corolla/i);
 
-    const signalStrip = page.locator('.decision-history-card').first().locator('[data-decision-history-signal-strip]');
+    const signalStrip = card.locator('[data-decision-history-signal-strip]');
     await expect(signalStrip).toBeVisible({ timeout: 15000 });
     await expect(signalStrip.locator('[data-history-signal="history-fit"]')).toContainText('82/100');
     await expect(signalStrip.locator('[data-history-signal="history-risk"]')).toContainText(/Orta risk/i);
@@ -1383,9 +1427,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis delete action kaydı siler ve localStorage günceller', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-delete-user';
@@ -1414,8 +1460,9 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
+    await waitForGecmisHistoryStable(page, { entryId: 'delete-target', minCards: 2 });
     await expect(page.locator('.decision-history-card')).toHaveCount(2, { timeout: 15000 });
-    await page.locator('[data-decision-delete="delete-target"]').click();
+    await clickGecmisHistoryAction(page, { action: 'delete', entryId: 'delete-target' });
     await expect(page.locator('.notification.success').filter({ hasText: /Karar geçmişten silindi/i })).toBeVisible({ timeout: 15000 });
     await expect(page.locator('.decision-history-card')).toHaveCount(1);
     await expect(page.locator('.decision-history-card').first()).toContainText(/Kadıköy daire/i);
@@ -1428,9 +1475,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis canonical ev kaydı Tekrar aç ile karar asistanını açar', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-repeat-ev-user';
@@ -1451,8 +1500,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
-    await expect(page.locator('.decision-history-card').first()).toBeVisible({ timeout: 15000 });
-    await page.locator('[data-decision-repeat="repeat-ev-canonical"]').click();
+    await clickGecmisHistoryAction(page, { action: 'repeat', entryId: 'repeat-ev-canonical', categoryId: 'konut' });
     await expect(page).toHaveURL(/\/karar-asistani\/?$/, { timeout: 15000 });
 
     const assistantState = await page.waitForFunction(() => {
@@ -1490,9 +1538,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('gecmis karar hafızası içgörüleri canonical kayıtlarla görünür', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-memory-insights-user';
@@ -1527,6 +1577,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
+    await waitForGecmisInsightsReady(page, { minCards: 2 });
     const insights = page.locator('[data-decision-memory-insights]');
     await expect(insights).toBeVisible({ timeout: 15000 });
     await expect(insights).toContainText(/Karar hafızası içgörüleri/i);
