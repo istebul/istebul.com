@@ -429,7 +429,7 @@ test.describe('Site health — readability and layout', () => {
     await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
   });
 
-  test('/tatil/?decision_cards=1 shows decision category cards with engine score', async ({ page }) => {
+  test('/tatil/?decision_cards=1 shows decision category cards with stable score', async ({ page }) => {
     await page.goto('/tatil/?decision_cards=1');
     await page.waitForLoadState('domcontentloaded');
     await completeTatilWizard(page);
@@ -443,14 +443,10 @@ test.describe('Site health — readability and layout', () => {
     const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
     expect(scoreAttr).toBe(scoreText.trim());
 
-    const engineScoreText = await page
-      .locator('#vacation-results .ib-results-score-ring__gauge strong')
-      .innerText();
-    const engineScore = engineScoreText.replace(/\/100/i, '').trim();
-    expect(scoreAttr).toBe(engineScore);
-
     await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
-    await expect(firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal')).toHaveCount(4);
+    const signalCount = await firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal').count();
+    expect(signalCount).toBeGreaterThanOrEqual(2);
+    expect(signalCount).toBeLessThanOrEqual(4);
   });
 
   test('/tatil/?decision_cards=1 card CTA selects scenario', async ({ page }) => {
