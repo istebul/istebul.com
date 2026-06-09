@@ -3,12 +3,15 @@ import assert from 'node:assert/strict';
 
 const {
   buildVerticalContinueHref,
-  bootstrapKonutFromAssistantQuery,
-  mapAssistantKonutPurpose,
-  mapAssistantKonutPropertyType,
-  isValidKonutAssistantCity,
+  isValidKonutAssistantProvinceQuery,
   appendKonutAssistantQueryParams
 } = await import('../../js/features/assistant/assistant-category-bridge.js');
+
+const {
+  bootstrapKonutFromAssistantQuery,
+  mapAssistantKonutPurpose,
+  mapAssistantKonutPropertyType
+} = await import('../../js/real-estate/konut-assistant-bootstrap.js');
 
 test('buildVerticalContinueHref emits validated konut query params', () => {
   const href = buildVerticalContinueHref('ev', {
@@ -43,16 +46,21 @@ test('buildVerticalContinueHref omits yazlik propertyType', () => {
   assert.match(href, /purpose=seasonal/);
 });
 
-test('buildVerticalContinueHref rejects unknown province', () => {
-  const href = buildVerticalContinueHref('ev', {
-    province: 'Atlantis',
+test('buildVerticalContinueHref rejects invalid province format', () => {
+  const hrefDigits = buildVerticalContinueHref('ev', {
+    province: 'İstanbul34',
     district: 'Merkez',
     purpose: 'live',
     budget: '1000000'
   });
+  assert.doesNotMatch(hrefDigits, /province=/);
 
-  assert.doesNotMatch(href, /province=/);
-  assert.match(href, /budget=1000000/);
+  const hrefTooShort = buildVerticalContinueHref('ev', {
+    province: 'A',
+    purpose: 'live',
+    budget: '1000000'
+  });
+  assert.doesNotMatch(hrefTooShort, /province=/);
 });
 
 test('bootstrapKonutFromAssistantQuery maps assistant fields to konut state', () => {
@@ -118,9 +126,14 @@ test('mapAssistantKonutPurpose and propertyType mappings', () => {
   assert.equal(mapAssistantKonutPropertyType('yazlik'), null);
 });
 
-test('isValidKonutAssistantCity accepts turkey cities only', () => {
-  assert.equal(isValidKonutAssistantCity('İstanbul'), true);
-  assert.equal(isValidKonutAssistantCity('Atlantis'), false);
+test('isValidKonutAssistantProvinceQuery enforces lightweight format rules', () => {
+  assert.equal(isValidKonutAssistantProvinceQuery('İstanbul'), true);
+  assert.equal(isValidKonutAssistantProvinceQuery('Şanlıurfa'), true);
+  assert.equal(isValidKonutAssistantProvinceQuery("Mar'aş"), true);
+  assert.equal(isValidKonutAssistantProvinceQuery('Atlantis'), true);
+  assert.equal(isValidKonutAssistantProvinceQuery('A'), false);
+  assert.equal(isValidKonutAssistantProvinceQuery('İstanbul34'), false);
+  assert.equal(isValidKonutAssistantProvinceQuery(''), false);
 });
 
 test('appendKonutAssistantQueryParams never emits yazlik', () => {

@@ -2,8 +2,6 @@
  * Karar Asistanı ↔ dikey sayfa enum köprüsü ve AI insight girdisi.
  */
 
-import { TURKEY_CITIES } from '../../real-estate/turkey-cities.js';
-
 const AUTO_USAGE_TO_VERTICAL = Object.freeze({
   longRoad: 'long',
   prestige: 'business',
@@ -44,25 +42,11 @@ const VERTICAL_BY_ASSISTANT = Object.freeze({
   kasko: 'kasko'
 });
 
-const KONUT_ASSISTANT_PURPOSE_TO_LABEL = Object.freeze({
-  live: 'Satın almak istiyorum',
-  investment: 'Yatırım amaçlı düşünüyorum',
-  seasonal: 'Satın almak istiyorum',
-  premium: 'Satın almak istiyorum'
-});
+const KONUT_VALID_PURPOSE_KEYS = new Set(['live', 'investment', 'seasonal', 'premium']);
+const KONUT_VALID_PROPERTY_KEYS = new Set(['daire', 'mustakil', 'villa']);
 
-const KONUT_ASSISTANT_PROPERTY_TO_HOME_TYPE = Object.freeze({
-  daire: 'Daire',
-  mustakil: 'Müstakil',
-  villa: 'Villa'
-});
-
-const KONUT_VALID_PURPOSE_KEYS = new Set(Object.keys(KONUT_ASSISTANT_PURPOSE_TO_LABEL));
-const KONUT_VALID_PROPERTY_KEYS = new Set(Object.keys(KONUT_ASSISTANT_PROPERTY_TO_HOME_TYPE));
-const KONUT_VALID_CITIES = new Set(TURKEY_CITIES);
-
-const KONUT_PURCHASE_PURPOSE_LABELS = new Set(Object.values(KONUT_ASSISTANT_PURPOSE_TO_LABEL));
-const KONUT_HOME_TYPE_LABELS = new Set(Object.values(KONUT_ASSISTANT_PROPERTY_TO_HOME_TYPE));
+/** İl query değeri — hafif format doğrulaması (tam il listesi konut runtime'da). */
+const KONUT_PROVINCE_QUERY_PATTERN = /^[\p{L}\s'-]+$/u;
 
 export function normalizeAutoUsage(usage = '') {
   const key = String(usage || '').trim();
@@ -78,21 +62,10 @@ export function assistantVerticalId(categoryId = '') {
   return VERTICAL_BY_ASSISTANT[categoryId] || 'auto';
 }
 
-export function mapAssistantKonutPurpose(purpose = '') {
-  const key = String(purpose || '').trim();
-  if (!KONUT_VALID_PURPOSE_KEYS.has(key)) return null;
-  return KONUT_ASSISTANT_PURPOSE_TO_LABEL[key] || null;
-}
-
-export function mapAssistantKonutPropertyType(propertyType = '') {
-  const key = String(propertyType || '').trim();
-  if (!KONUT_VALID_PROPERTY_KEYS.has(key)) return null;
-  return KONUT_ASSISTANT_PROPERTY_TO_HOME_TYPE[key] || null;
-}
-
-export function isValidKonutAssistantCity(city = '') {
-  const name = String(city || '').trim();
-  return Boolean(name) && KONUT_VALID_CITIES.has(name);
+export function isValidKonutAssistantProvinceQuery(province = '') {
+  const name = String(province || '').trim();
+  if (name.length < 2 || name.length > 40) return false;
+  return KONUT_PROVINCE_QUERY_PATTERN.test(name);
 }
 
 function normalizeKonutDistrict(district = '') {
@@ -114,7 +87,7 @@ export function appendKonutAssistantQueryParams(params, answers = {}) {
   if (budget) params.set('budget', budget);
 
   const province = String(answers.province || '').trim();
-  if (isValidKonutAssistantCity(province)) params.set('province', province);
+  if (isValidKonutAssistantProvinceQuery(province)) params.set('province', province);
 
   const district = normalizeKonutDistrict(answers.district);
   if (district) params.set('district', district);
@@ -332,41 +305,3 @@ export function bootstrapKaskoFromAssistantQuery(state, params = new URLSearchPa
   return state;
 }
 
-function applyKonutPrefillField(state, field, value, allowedValues = null) {
-  if (!state || value == null || value === '') return false;
-  if (state[field]) return false;
-  if (allowedValues && !allowedValues.has(value)) return false;
-  state[field] = value;
-  return true;
-}
-
-/** Konut dikey sihirbaz — karar asistanı query profili. */
-export function bootstrapKonutFromAssistantQuery(state, params = new URLSearchParams()) {
-  if (!state || !params) return state;
-
-  let applied = false;
-
-  const budget = normalizeKonutBudget(params.get('budget'));
-  if (applyKonutPrefillField(state, 'totalBudget', budget)) applied = true;
-
-  const province = params.get('province') || params.get('city');
-  if (isValidKonutAssistantCity(province) && applyKonutPrefillField(state, 'city', String(province).trim(), KONUT_VALID_CITIES)) {
-    applied = true;
-  }
-
-  const district = normalizeKonutDistrict(params.get('district'));
-  if (applyKonutPrefillField(state, 'district', district)) applied = true;
-
-  const purchasePurpose = mapAssistantKonutPurpose(params.get('purpose'));
-  if (applyKonutPrefillField(state, 'purchasePurpose', purchasePurpose, KONUT_PURCHASE_PURPOSE_LABELS)) {
-    applied = true;
-  }
-
-  const homeType = mapAssistantKonutPropertyType(params.get('propertyType'));
-  if (applyKonutPrefillField(state, 'homeType', homeType, KONUT_HOME_TYPE_LABELS)) {
-    applied = true;
-  }
-
-  if (applied) state.assistantPrefillHint = true;
-  return state;
-}

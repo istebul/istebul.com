@@ -39,7 +39,7 @@ import {
   renderDecisionCategoryCardsGridHtml,
   syncDecisionCardsFlagToDocument
 } from '../features/decision-cards/decision-category-card-renderer.js';
-import { bootstrapKonutFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
+import { bootstrapKonutFromAssistantQuery } from './konut-assistant-bootstrap.js';
 
 function stepLabelsForState() {
   return getKonutFlow(state.purchasePurpose).stepLabels;
