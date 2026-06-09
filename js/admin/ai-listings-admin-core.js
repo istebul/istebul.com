@@ -500,41 +500,21 @@ export function buildKpiCardsHtml(stats, listings = []) {
       label: 'Toplam İlan',
       value: countValue(stats.total),
       icon: '📋',
-      hint: 'görünür kayıtlar',
+      hint: 'aktif kayıt',
       trend: stats.trends?.total
     },
     {
       key: 'analyzed-today',
       label: 'Bugün Analiz',
       value: countValue(stats.analyzedToday),
-      key: 'active',
-      label: 'Aktif Kayıt',
-      value: stats.active ?? stats.total ?? 0,
-      icon: '✅',
-      hint: 'arşiv hariç',
-      trend: stats.trends?.total
-    },
-    {
-      key: 'duplicate',
-      label: 'Mükerrer',
-      value: stats.duplicate ?? 0,
-      icon: '🔗',
-      hint: 'mükerrer tespit',
-      trend: stats.trends?.pending
-    },
-    {
-      key: 'avg-ai',
-      label: 'Ortalama AI',
-      value: stats.averageAi ?? 0,
       icon: '🤖',
-      hint: 'AI skoru ort.',
+      hint: 'bugün tamamlanan',
       trend: stats.trends?.['analyzed-today']
     },
     {
       key: 'high-risk',
       label: 'Yüksek Risk',
       value: countValue(stats.highRisk),
-      value: stats.highRisk ?? 0,
       icon: '⚠',
       hint: 'risk ≥ 61',
       trend: stats.trends?.['high-risk']
@@ -546,12 +526,6 @@ export function buildKpiCardsHtml(stats, listings = []) {
       icon: '🔎',
       hint: 'bekleyen QA',
       trend: stats.trends?.pending
-      key: 'today-added',
-      label: 'Bugün Eklenen',
-      value: stats.todayAdded ?? stats.analyzedToday ?? 0,
-      icon: '📅',
-      hint: 'bugün eklenen',
-      trend: stats.trends?.['analyzed-today']
     }
   ];
 
