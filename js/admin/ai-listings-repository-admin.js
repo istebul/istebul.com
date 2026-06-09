@@ -10,6 +10,14 @@ import {
   runRepositoryQuery
 } from '../ai-listings-repository/index.js';
 import {
+  buildSearchResults,
+  buildSearchSuggestions,
+  runRepositorySearch,
+  sanitizeSearchQuery,
+  SEARCH_FILTER_CHIPS,
+  SEARCH_SORT_OPTIONS
+} from '../ai-listings-search/index.js';
+import {
   formatAdminAverageValue,
   formatAdminCountValue,
   normalizeAdminDataset
@@ -452,7 +460,33 @@ export function buildRepositoryCardsGridHtml(records, selectedId = null, isSearc
  * @returns {{ html: string, query: ReturnType<typeof runRepositoryQuery>, searchResult?: ReturnType<typeof runRepositorySearch> }}
  */
 export function buildRepositoryDashboardHtml(listings, options = {}) {
+  const aiSearch = sanitizeSearchQuery(options.aiSearch ?? '');
+  const hasAiSearch = aiSearch.length > 0;
   const dataset = normalizeAdminDataset(listings);
+
+  if (!dataset.length) {
+    const emptyHtml = `
+      <div class="ai-listings-admin__repo-dashboard">
+        <header class="ai-listings-admin__repo-head">
+          <h2>Veri Havuzu</h2>
+          <p class="ai-listings-admin__muted">Ortak veri merkezi — mevcut ilanlardan türetilmiş görünüm</p>
+        </header>
+        ${buildAiSearchSectionHtml(aiSearch, [])}
+        <p class="ai-listings-admin__empty-state">Yeterli veri yok</p>
+      </div>`;
+    return {
+      html: emptyHtml,
+      query: runRepositoryQuery([], options)
+    };
+  }
+
+  const searchResult = runRepositorySearch(dataset, {
+    query: aiSearch,
+    categoryTab: options.categoryTab ?? 'all',
+    filters: options.filters ?? [],
+    sortBy: hasAiSearch ? (options.sortBy ?? 'best_match') : (options.sortBy ?? 'newest')
+  });
+
   const query = runRepositoryQuery(dataset, {
     categoryTab: options.categoryTab ?? 'all',
     filters: options.filters ?? [],
@@ -464,9 +498,7 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
     ? buildSearchResults(searchResult.results, searchResult.parsed, aiSearch)
     : query.filtered;
 
-  const summaryHtml = hasAiSearch
-    ? buildSearchResultSummaryHtml(searchResult.summary)
-    : '';
+  const summaryHtml = hasAiSearch ? buildSearchResultSummaryHtml(searchResult.summary) : '';
 
   const countLabel = hasAiSearch
     ? `${displayRecords.length} kayıt bulundu`
@@ -478,6 +510,8 @@ export function buildRepositoryDashboardHtml(listings, options = {}) {
         <h2>Veri Havuzu</h2>
         <p class="ai-listings-admin__muted">Ortak veri merkezi — mevcut ilanlardan türetilmiş görünüm</p>
       </header>
+      ${buildAiSearchSectionHtml(aiSearch, suggestions)}
+      ${summaryHtml}
       <div class="ai-listings-admin__repo-tabs" role="tablist" aria-label="Kategori">
         ${buildRepositoryCategoryTabsHtml(options.categoryTab ?? 'all')}
       </div>

@@ -119,6 +119,8 @@ import {
   buildCompareSelectionKey
 } from './ai-listings-admin-drawer-state.js';
 import { computeNormalizedKpiStats, filterListingsForDisplay } from './ai-listings-admin-kpi.js';
+import { normalizeAdminDataset } from './ai-listings-dataset.js';
+import { clearAnalyticsMemoCache } from './ai-listings-admin-analytics-stats.js';
 import { clearScenarioSimulatorMemoCache } from '../ai-scenario-simulator/index.js';
 import {
   buildScenarioInput,
@@ -483,6 +485,91 @@ function renderAnalyticsKpiCards(listings) {
   animateKpiCounters(kpiEl);
 }
 
+function buildAdminPanelSkeletonHtml() {
+  return `<div class="ai-listings-admin__panel-skeleton" aria-busy="true">
+    <div class="ai-listings-admin__skeleton-block"></div>
+    <div class="ai-listings-admin__skeleton-block"></div>
+    <div class="ai-listings-admin__skeleton-block ai-listings-admin__skeleton-block--short"></div>
+  </div>`;
+}
+
+/**
+ * @param {string} message
+ * @param {string} [actionLabel]
+ * @returns {string}
+ */
+function buildAdminPanelErrorHtml(message, actionLabel = 'Yeniden dene') {
+  return `<div class="ai-listings-admin__panel-error" role="alert">
+    <h3>Veri yüklenemedi</h3>
+    <p>${safeRenderText(message)}</p>
+    <button type="button" class="ai-listings-admin__btn" data-admin-retry>${safeRenderText(actionLabel)}</button>
+  </div>`;
+}
+
+/**
+ * @param {HTMLElement|null|undefined} root
+ */
+function bindAdminPanelRetry(root) {
+  root?.querySelector('[data-admin-retry]')?.addEventListener('click', () => {
+    void loadListings();
+  });
+}
+
+/**
+ * @param {string} view
+ */
+function syncAdminViewPanels(view) {
+  const workspace = $('ai-listings-workspace');
+  if (workspace) {
+    workspace.classList.toggle('ai-listings-admin__workspace--decision', view === 'decision');
+    workspace.classList.toggle('ai-listings-admin__workspace--full', view !== 'decision');
+  }
+
+  document.querySelectorAll('[data-admin-panel]').forEach((panel) => {
+    const panelView = panel.getAttribute('data-admin-panel');
+    panel.toggleAttribute('hidden', panelView !== view);
+  });
+}
+
+/**
+ * @param {string} view
+ */
+function showAdminPanelLoading(view) {
+  const hostId =
+    view === 'repository'
+      ? 'ai-listings-repository-content'
+      : view === 'analytics'
+        ? 'ai-listings-analytics-content'
+        : view === 'collector'
+          ? 'ai-listings-collector-content'
+          : view === 'recommendations'
+            ? 'ai-listings-recommendations-content'
+            : null;
+  const host = hostId ? $(hostId) : null;
+  if (host) host.innerHTML = buildAdminPanelSkeletonHtml();
+}
+
+/**
+ * @param {string} view
+ * @param {string} message
+ */
+function showAdminPanelError(view, message) {
+  const hostId =
+    view === 'repository'
+      ? 'ai-listings-repository-content'
+      : view === 'analytics'
+        ? 'ai-listings-analytics-content'
+        : view === 'collector'
+          ? 'ai-listings-collector-content'
+          : view === 'recommendations'
+            ? 'ai-listings-recommendations-content'
+            : null;
+  const host = hostId ? $(hostId) : null;
+  if (!host) return;
+  host.innerHTML = buildAdminPanelErrorHtml(message);
+  bindAdminPanelRetry(host);
+}
+
 function setAdminView(view) {
   const next =
     view === 'repository'
@@ -495,6 +582,7 @@ function setAdminView(view) {
             ? 'recommendations'
             : 'decision';
   activeAdminView = next;
+  syncAdminViewPanels(next);
 
   document.querySelectorAll('[data-admin-view]').forEach((tab) => {
     const isActive = tab.getAttribute('data-admin-view') === next;
@@ -648,7 +736,7 @@ function bindCollectorDashboardEvents(root) {
 }
 
 function renderAnalyticsView() {
-  const detailEl = $('ai-listings-detail');
+  const detailEl = $('ai-listings-analytics-content');
   if (!detailEl) return;
 
   const { html, chartBuilders } = buildAnalyticsDashboardHtml(cachedListings);
@@ -725,19 +813,26 @@ function bindRepositoryDashboardEvents(root) {
 }
 
 function renderRecommendationsView() {
-  const detailEl = $('ai-listings-detail');
+  const detailEl = $('ai-listings-recommendations-content');
   if (!detailEl) return;
 
-  const { html, result } = buildRecommendationsDashboardHtml(cachedListings, recommendationProfile, {
-    generated: recommendationGenerated,
-    compareMode: compareModeEnabled,
-    compareSelectedIds
-  });
-  if (result) cachedRecommendationResult = result;
+  try {
+    const { html, result } = buildRecommendationsDashboardHtml(cachedListings, recommendationProfile, {
+      generated: recommendationGenerated,
+      compareMode: compareModeEnabled,
+      compareSelectedIds
+    });
+    if (result) cachedRecommendationResult = result;
 
-  detailEl.innerHTML = html;
-  bindRecommendationsDashboardEvents(detailEl);
-  clearTimelineHost();
+    detailEl.innerHTML = html;
+    bindRecommendationsDashboardEvents(detailEl);
+    clearTimelineHost();
+  } catch (error) {
+    console.error('[ai-listings-admin] recommendations render failed:', error);
+    detailEl.innerHTML = buildAdminPanelErrorHtml('Öneriler görünümü yüklenemedi.');
+    bindAdminPanelRetry(detailEl);
+    clearTimelineHost();
+  }
 }
 
 function closeDecisionCoachPanel(root) {
@@ -1985,25 +2080,39 @@ async function loadListings() {
   if (limit) params.set('limit', limit);
 
   const query = params.toString() ? `?${params.toString()}` : '';
-  listEl.innerHTML = buildListingSkeletonHtml(5);
+  if (activeAdminView === 'decision') {
+    listEl.innerHTML = buildListingSkeletonHtml(5);
+  }
+  if (activeAdminView !== 'decision') {
+    showAdminPanelLoading(activeAdminView);
+  }
 
   const result = await edgeRequest(`/listings${query}`);
   if (!result.ok) {
-    listEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(result.message)}</p>`;
+    if (activeAdminView === 'decision') {
+      listEl.innerHTML = `<p class="ai-listings-admin__error">${safeRenderText(result.message)}</p>`;
+    } else {
+      showAdminPanelError(activeAdminView, result.message);
+    }
+    cachedListings = [];
+    clearAnalyticsMemoCache();
     renderKpiCards([]);
+    renderRepositoryKpiCards([]);
+    renderAnalyticsKpiCards([]);
     setStatus(result.message, 'error');
     return;
   }
 
-  cachedListings = /** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []);
+  cachedListings = normalizeAdminDataset(/** @type {Array<Record<string, unknown>>} */ (result.data?.listings ?? []));
+  clearAnalyticsMemoCache();
   syncRecommendationCache();
   renderKpiCards(cachedListings);
   renderRepositoryKpiCards(cachedListings);
   renderAnalyticsKpiCards(cachedListings);
-  renderListingsList(cachedListings);
+
   if (selectedListing) {
     const refreshed = cachedListings.find((item) => String(item.id) === String(selectedListing.id));
-    if (refreshed) selectedListing = refreshed;
+    selectedListing = refreshed ?? null;
   }
 
   if (activeAdminView === 'repository') {
@@ -2014,8 +2123,9 @@ async function loadListings() {
     renderAnalyticsView();
   } else if (activeAdminView === 'collector') {
     renderCollectorView();
+  } else if (activeAdminView === 'recommendations') {
+    renderRecommendationsView();
   } else {
-    renderKpiCards(cachedListings);
     renderListingsList(cachedListings);
     if (selectedListing) {
       void showListingDetail(selectedListing);
@@ -2023,7 +2133,13 @@ async function loadListings() {
       renderExecutiveDashboard();
     }
   }
-  setStatus(`${cachedListings.length} ilan yüklendi.`, 'success');
+
+  setStatus(
+    cachedListings.length
+      ? `${cachedListings.length} ilan yüklendi.`
+      : 'İlan bulunamadı — filtreleri kontrol edin veya yeni ilan ekleyin.',
+    cachedListings.length ? 'success' : 'info'
+  );
 }
 
 function mountGlobalPanelHosts() {

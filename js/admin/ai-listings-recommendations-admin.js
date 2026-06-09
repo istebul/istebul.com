@@ -25,7 +25,7 @@ import {
   RISK_TOLERANCE_LABELS,
   PRIORITY_LABELS
 } from './ai-listings-admin-labels.js';
-import { buildScenarioShellHtml } from '../ai-scenario-simulator/scenario-card-builder.js';
+import { buildCompareToolbarHtml } from '../ai-compare-intelligence/compare-card-builder.js';
 
 /**
  * @param {unknown} value

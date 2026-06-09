@@ -5,6 +5,7 @@
 import { escapeHtml } from '../core/dom-safe.js';
 import { ALTERNATIVE_TAG_LABELS_TR } from '../../supabase/functions/_shared/ai-listings/recommendation/alternative-ranker.js';
 import { shouldShowQualityButton } from '../ai-listing-quality/quality-card-builder.js';
+import { formatAdminMetricLabel } from '../admin/ai-listings-admin-labels.js';
 
 /**
  * @param {unknown} value

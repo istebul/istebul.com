@@ -3,13 +3,13 @@
  */
 
 import { escapeHtml } from '../core/dom-safe.js';
-import { runAnalyticsEngine } from '../ai-listings-analytics/index.js';
 import { buildBarChartSvg, buildTrendChartSvg, buildTopListHtml } from '../ai-listings-analytics/chart-builder.js';
 import {
   formatAdminCountValue,
   formatDuplicateRateValue,
   normalizeAdminDataset
 } from './ai-listings-dataset.js';
+import { computeAdminDecisionAnalytics } from './ai-listings-admin-analytics-stats.js';
 
 /**
  * @param {unknown} value
@@ -63,11 +63,10 @@ export function buildAnalyticsSummaryHtml(summary) {
 
 /**
  * @param {Array<Record<string, unknown>>} listings
- * @returns {{ html: string, analytics: ReturnType<typeof runAnalyticsEngine>, chartBuilders: Record<string, () => string> }}
+ * @returns {{ html: string, analytics: ReturnType<typeof computeAdminDecisionAnalytics>['analytics'], chartBuilders: Record<string, () => string> }}
  */
 export function buildAnalyticsDashboardHtml(listings) {
-  const dataset = normalizeAdminDataset(listings);
-  const analytics = runAnalyticsEngine(dataset);
+  const { analytics } = computeAdminDecisionAnalytics(listings);
   const distributions = /** @type {Record<string, Array<{ label: string, count: number }>>} */ (
     analytics.distributions ?? {}
   );

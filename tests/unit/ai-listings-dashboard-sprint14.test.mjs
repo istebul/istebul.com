@@ -93,11 +93,12 @@ function countDataAdminPanels(html) {
 
 test('admin html defines isolated view panels for each tab', () => {
   const html = fs.readFileSync(adminHtmlPath, 'utf8');
-  assert.equal(countDataAdminPanels(html), 4);
+  assert.equal(countDataAdminPanels(html), 5);
   assert.match(html, /data-admin-panel="decision"/);
   assert.match(html, /data-admin-panel="repository"/);
   assert.match(html, /data-admin-panel="analytics"/);
   assert.match(html, /data-admin-panel="collector"/);
+  assert.match(html, /data-admin-panel="recommendations"/);
 });
 
 test('decision panel is visible by default', () => {
@@ -140,6 +141,11 @@ test('analytics tab uses dedicated content host', () => {
 test('collector tab uses dedicated content host', () => {
   const html = fs.readFileSync(adminHtmlPath, 'utf8');
   assert.match(html, /id="ai-listings-collector-content"/);
+});
+
+test('recommendations tab uses dedicated content host', () => {
+  const html = fs.readFileSync(adminHtmlPath, 'utf8');
+  assert.match(html, /id="ai-listings-recommendations-content"/);
 });
 
 test('decision KPI row renders exactly four cards', () => {
@@ -266,8 +272,8 @@ test('analytics dashboard includes all required chart panels', () => {
     'Duplicate Dağılımı',
     'Kaynak Dağılımı',
     'Kategori Dağılımı',
-    'Top 10 Marka',
-    'Top 10 Model',
+    'İlk 10 Marka',
+    'İlk 10 Model',
     'Son 24 Saat',
     'Son 7 Gün',
     'Son 30 Gün'
@@ -287,6 +293,8 @@ test('admin js hides sidebar outside decision view', () => {
   assert.match(js, /next !== 'decision'/);
   assert.match(js, /ai-listings-repository-content/);
   assert.match(js, /ai-listings-analytics-content/);
+  assert.match(js, /ai-listings-recommendations-content/);
+  assert.match(js, /syncAdminViewPanels/);
 });
 
 test('admin js only renders listing list on decision tab', () => {
@@ -296,7 +304,8 @@ test('admin js only renders listing list on decision tab', () => {
 
 test('no endpoint URL changes in router', () => {
   const router = fs.readFileSync(routerPath, 'utf8');
-  assert.match(router, /resource: 'listings'/);
+  assert.match(router, /KNOWN_RESOURCES/);
+  assert.match(router, /'listings'/);
   assert.doesNotMatch(router, /\/repository|\/analytics|\/collector/i);
 });
 
