@@ -36,6 +36,30 @@ import {
 } from './decision-memory-context.js';
 import { normalizeHistoryEntryCategory } from './decision-history-category.js';
 import { normalizeDecisionHistoryList } from './decision-history-compat.js';
+import { buildVerticalContinueHref } from '../features/assistant/assistant-category-bridge.js';
+
+export const VERTICAL_CONTINUE_CATEGORY_LABELS = Object.freeze({
+    arac: 'Araba Karar Analizi',
+    ev: 'Konut Karar Analizi',
+    finansman: 'Finansman Karar Analizi',
+    sigorta: 'Sigorta Karar Analizi',
+    kasko: 'Kasko Karar Analizi',
+    tatil: 'Tatil Karar Analizi'
+});
+
+/** @returns {{ href: string, sectionTitle: string, ctaLabel: string, categoryLabel: string } | null} */
+export function resolveVerticalContinueHandoff(categoryId, rawAnswers = {}) {
+    const href = buildVerticalContinueHref(categoryId, rawAnswers);
+    if (href == null || href === '/') return null;
+    const categoryLabel = VERTICAL_CONTINUE_CATEGORY_LABELS[categoryId];
+    if (!categoryLabel) return null;
+    return {
+        href,
+        sectionTitle: 'Tüm kriterlerinizle detaylı analiz',
+        ctaLabel: 'Tam analize devam et',
+        categoryLabel
+    };
+}
 
 /** Local gate for lazy commentary chunk — mirrors shouldRenderDecisionMemoryAiCommentary without eager bundle pull. */
 function shouldLazyLoadDecisionMemoryCommentary(model) {
@@ -243,6 +267,7 @@ export class AssistantUI {
                 '</div>' +
                 resultSummaryHtml +
                 shareCardHtml +
+                this.getVerticalContinueHandoffMarkup(result.categoryId, result.rawAnswers) +
                 this.getExecutiveMetricsMarkup(result.categoryId, primary, bestFinance) +
                 this.getDataHealthMarkup(result.dataHealth) +
                 '<div class="assistant-answer-summary">' + result.answers.map((answer) =>
@@ -285,6 +310,24 @@ export class AssistantUI {
         this.loadIcons();
         hydrateDecisionResultAiRationale(container, resultSummary);
         bindDecisionResultShareCard(container, resultSummary);
+    }
+
+    getVerticalContinueHandoffMarkup(categoryId, rawAnswers = {}) {
+        const handoff = resolveVerticalContinueHandoff(categoryId, rawAnswers);
+        if (!handoff) return '';
+
+        return '<section class="assistant-vertical-handoff" data-assistant-vertical-handoff>' +
+            '<div class="assistant-vertical-handoff-copy">' +
+                '<span class="assistant-kicker">' + this.escapeHtml(handoff.categoryLabel) + '</span>' +
+                '<h4>' + this.escapeHtml(handoff.sectionTitle) + '</h4>' +
+            '</div>' +
+            '<div class="assistant-vertical-handoff-actions">' +
+                '<a href="' + this.escapeHtml(handoff.href) + '" class="btn btn-primary" data-native-route data-analytics-cta="assistant_vertical_continue" data-analytics-placement="decision_result_handoff">' +
+                    '<i data-lucide="arrow-right"></i> ' + this.escapeHtml(handoff.ctaLabel) +
+                '</a>' +
+                '<span class="assistant-vertical-handoff-destination">' + this.escapeHtml(handoff.categoryLabel) + '</span>' +
+            '</div>' +
+        '</section>';
     }
 
     getAIDecisionExtrasMarkup(result) {
