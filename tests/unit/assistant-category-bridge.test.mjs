@@ -22,7 +22,7 @@ test('normalizeTatilGoal maps vacation types', () => {
 
 test('bootstrapTatilFromAssistantQuery applies goal budget and travelers', async () => {
   const { bootstrapTatilFromAssistantQuery } = await import(
-    '../../js/features/assistant/assistant-category-bridge.js'
+    '../../js/features/assistant/assistant-vertical-bootstrap.js'
   );
   const state = { vacation_goal: '', budget_range: '', travelers_count: '', people_type: '' };
   bootstrapTatilFromAssistantQuery(
@@ -57,7 +57,7 @@ test('buildAssistantInsightInput enriches finansman costs', () => {
 
 test('bootstrapAutoFromAssistantQuery applies usage budget fuel and body', async () => {
   const { bootstrapAutoFromAssistantQuery } = await import(
-    '../../js/features/assistant/assistant-category-bridge.js'
+    '../../js/features/assistant/assistant-vertical-bootstrap.js'
   );
   const state = { budget: '', usage: '', fuel: '', body: '' };
   bootstrapAutoFromAssistantQuery(
@@ -71,13 +71,13 @@ test('bootstrapAutoFromAssistantQuery applies usage budget fuel and body', async
   assert.equal(state.body, 'suv');
 });
 
-test('buildVerticalContinueHref carries finansman query params', () => {
+test('buildVerticalContinueHref carries finansman query params with purpose-aware term', () => {
   const href = buildVerticalContinueHref('finansman', {
     purpose: 'konut',
     budget: '1200000',
-    term: '120'
+    term: '60'
   });
   assert.match(href, /purpose=konut/);
   assert.match(href, /amount=1200000/);
-  assert.match(href, /term=120/);
+  assert.match(href, /term=60/);
 });
