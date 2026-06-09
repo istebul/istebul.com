@@ -62,13 +62,18 @@ test('konut insight uses earthquake, dues, credit context', () => {
       totalBudget: 5_000_000,
       purchasePurpose: 'Satın almak istiyorum',
       useFinancing: 'evet',
-      duesExpectation: 7500
+      duesExpectation: 7500,
+      locationPreferences: ['ulasim', 'okul'],
+      householdSize: '3',
+      cash_buffer_months: '4-6',
+      earthquakeRiskInput: '68',
+      riskPreferences: ['Deprem riski hassasiyeti']
     },
     scores: { decision: 72, overallRisk: 'Orta' },
     costs: { budget: 5_000_000, monthlyPayment: 48_000, duesMonthly: 7500, dti: 48 },
     risks: [{ title: 'Deprem riski', level: 'yüksek', description: 'Zemin raporu gerekli' }]
   });
-  assert.match(insight.why, /aidat|kredi|deprem|zemin/i);
+  assert.match(insight.why, /aidat|kredi|deprem|zemin|güvenlik payı|ulaşım|kişilik hane/i);
   assert.match(insight.summary, /İstanbul|Kadıköy/i);
   assertNoBanned(insight.risk);
 });

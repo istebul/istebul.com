@@ -11,6 +11,14 @@ import {
 } from '../../core/user-facing-text.js';
 import { formatScore, formatScoreOutOf100 } from '../results/results-engine.js';
 import { buildAutoHouseholdInsightClause } from '../../auto/auto-wizard-profile.js';
+import {
+  buildKonutCashBufferInsightClause,
+  buildKonutCashBufferNextStepClause,
+  buildKonutCashBufferRiskClause,
+  buildKonutEarthquakeInsightClause,
+  buildKonutHouseholdInsightClause,
+  buildKonutLocationPreferenceInsightClause
+} from '../../konut/konut-wizard-profile.js';
 
 export const BANNED_WEAK_PHRASES = Object.freeze([
   'bu karar sizin için uygun olabilir',
@@ -340,8 +348,15 @@ function buildKonutInsight(input) {
   const purpose = pickAnswer(a, ['purchasePurpose']) || 'kullanım amacınız';
   const financing = pickAnswer(a, ['useFinancing']);
   const { decision, overallRisk, label } = scoreFromInput(input);
-  const eq = safeNum(a.earthquakeRiskScore ?? input.costs.earthquakeRisk);
+  const eq = safeNum(a.earthquakeRiskScore ?? a.earthquakeRiskInput ?? input.costs.earthquakeRisk);
   const dti = safeNum(input.costs.dti ?? a.dti);
+
+  const locationClause = buildKonutLocationPreferenceInsightClause(a);
+  const householdClause = buildKonutHouseholdInsightClause(a);
+  const cashBufferClause = buildKonutCashBufferInsightClause(a);
+  const earthquakeClause = buildKonutEarthquakeInsightClause(a);
+  const cashBufferRisk = buildKonutCashBufferRiskClause(a);
+  const cashBufferNext = buildKonutCashBufferNextStepClause(a);
 
   const summary = [
     `${location} için konut kararında`,
@@ -354,9 +369,13 @@ function buildKonutInsight(input) {
     .join(' ');
 
   const whyBits = [];
+  if (locationClause) whyBits.push(locationClause);
+  if (householdClause) whyBits.push(householdClause);
+  if (cashBufferClause) whyBits.push(cashBufferClause);
   if (financing === 'evet' || financing === 'yes') whyBits.push('kredi/peşinat dengesi');
   if (dues != null) whyBits.push(`aidat beklentisi (${formatTry(dues, input.locale) || 'tanımlı'})`);
-  if (eq != null && eq >= 60) whyBits.push('deprem/zemin riski skoru yüksek');
+  if (earthquakeClause) whyBits.push(earthquakeClause);
+  else if (eq != null && eq >= 60) whyBits.push('deprem/zemin riski skoru yüksek');
   else if (eq != null) whyBits.push('zemin riski görece kontrollü');
   if (dti != null && dti > 45) whyBits.push(`borç/gelir baskısı (%${Math.round(dti)})`);
 
@@ -366,17 +385,21 @@ function buildKonutInsight(input) {
     : missingDataNote('lokasyon ve finansman');
 
   const risk =
-    eq != null && eq >= 65 ?
+    cashBufferRisk ||
+    (earthquakeClause && eq != null && eq >= 55 ?
+      `${earthquakeClause.charAt(0).toUpperCase()}${earthquakeClause.slice(1)}.`
+    : eq != null && eq >= 65 ?
       'Deprem ve zemin riski bu ilçe profilinde belirleyici; güncel zemin/deprem raporu teyit edilmeli.'
     : dues != null && dues > 5000 ?
       'Aidat ve site giderleri aylık nakit akışını sıkıştırabilir.'
     : topRisk(input)?.description ||
-      'Tapu, iskan ve ekspertiz bulguları model skorunu değiştirebilir; resmi evrak kontrolü şart.';
+      'Tapu, iskan ve ekspertiz bulguları model skorunu değiştirebilir; resmi evrak kontrolü şart.');
 
-  const nextStep =
+  const defaultNextStep =
     purpose.includes('Kiralamak') ?
       'Kira sözleşmesi, depozito ve aidat kalemlerini yıllık toplam maliyetle karşılaştırın.'
     : 'Kredi ön onayı ve bölge emsali (en az 3 ilan) ile teklif aşamasına geçmeden önce ekspertiz planlayın.';
+  const nextStep = cashBufferNext ? `${cashBufferNext} ${defaultNextStep}` : defaultNextStep;
 
   return {
     summary: appendMarketAssessment(summary, input),

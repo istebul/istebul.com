@@ -31,6 +31,7 @@ import {
   validateKonutAllSteps,
   applyKonutFinancingDefaults
 } from '../konut/konut-flow.js';
+import { CASH_BUFFER_OPTIONS } from '../konut/konut-wizard-profile.js';
 
 function stepLabelsForState() {
   return getKonutFlow(state.purchasePurpose).stepLabels;
@@ -72,6 +73,7 @@ const state = {
   purchasePurpose: '',
   totalBudget: '',
   downPayment: '',
+  cash_buffer_months: '',
   monthlyCapacity: '',
   useFinancing: '',
   termMonths: '120',
@@ -215,6 +217,12 @@ function cardButtons(options, field, selected) {
   `).join('')}</div>`;
 }
 
+function cardButtonsFromPairs(pairs, field, selected) {
+  return `<div class="housing-card-grid">${pairs.map(([value, label]) => `
+    <button type="button" class="housing-option-card ${selected === value ? 'is-selected' : ''}" data-field="${field}" data-value="${escapeHtml(value)}">${escapeHtml(label)}</button>
+  `).join('')}</div>`;
+}
+
 function chipButtons(options, selectedList, action) {
   return `<div class="housing-chip-grid">${options.map((item) => {
     const val = Array.isArray(item) ? item[0] : item;
@@ -229,6 +237,10 @@ function budgetFields() {
     <div class="housing-form-grid housing-form-grid--budget">
       <label>Toplam bütçe<input data-input="totalBudget" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.totalBudget)}"></label>
       <label>Peşinat<input data-input="downPayment" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.downPayment)}"></label>
+      <div class="housing-form-span">
+        <p class="housing-field-hint">Peşinat sonrası kaç aylık güvenlik payınız kalıyor?</p>
+        ${cardButtonsFromPairs(CASH_BUFFER_OPTIONS, 'cash_buffer_months', state.cash_buffer_months)}
+      </div>
       <label>Aylık ödeyebileceğiniz maksimum tutar<input data-input="monthlyCapacity" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.monthlyCapacity)}"></label>
       <label>Aylık net gelir<input data-input="monthlyIncome" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.monthlyIncome)}"></label>
       <label>Mevcut borç ödemeleri<input data-input="currentDebt" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.currentDebt)}"></label>
