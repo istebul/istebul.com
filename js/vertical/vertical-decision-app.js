@@ -749,11 +749,26 @@ export function initDecisionFlow(config) {
     }
   }
 
+  function scrollToDecisionCompareSection() {
+    const resultsRoot = el('results');
+    if (!resultsRoot) return;
+    const target = resultsRoot.querySelector('.sigorta-v2-coverage');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   function bindResultsEvents(commentary) {
     document.querySelectorAll('.vacation-select-card-btn').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         selectOption(btn.dataset.option);
+      });
+    });
+    document.querySelectorAll('.ib-decision-card-secondary[data-action="compare"]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        scrollToDecisionCompareSection();
       });
     });
     document.querySelectorAll('.vacation-result-card[data-option], .ib-decision-category-card[data-option]').forEach((card) => {
