@@ -488,6 +488,115 @@ test.describe('Site health — readability and layout', () => {
     expect(overflow).toBe(false);
   });
 
+  async function prepareAutoPage(page, path = '/auto/') {
+    await page.addInitScript(() => {
+      try {
+        sessionStorage.setItem('istebul_auto_soft_gate_dismissed', '1');
+      } catch {
+        /* ignore */
+      }
+    });
+    await page.goto(path);
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator('.wizard-progress')).toBeVisible({ timeout: 20000 });
+  }
+
+  async function completeAutoWizard(page) {
+    await page.locator('.wizard-option', { hasText: '1 – 2 milyon TL' }).click();
+    await page.locator('.wizard-option', { hasText: 'Aile' }).click();
+    await page.getByRole('button', { name: /Devam et/i }).click();
+
+    await page.locator('.wizard-option', { hasText: 'SUV' }).first().click();
+    await page.locator('.wizard-option', { hasText: 'Hibrit' }).click();
+    await page.getByRole('button', { name: /Devam et/i }).click();
+
+    await page.locator('[data-wizard-key="km"].wizard-option', { hasText: '10.000 – 20.000 km' }).click();
+    await page.locator('[data-wizard-key="city_ratio"].wizard-option', { hasText: 'Dengeli kullanım' }).click();
+    await page.locator('[data-wizard-key="ownership_months"].wizard-option', { hasText: '36 ay' }).click();
+    await page.locator('[data-wizard-key="location"].wizard-option', { hasText: 'İzmir' }).click();
+    await page.getByRole('button', { name: /Devam et/i }).click();
+
+    await page.locator('[data-wizard-key="loan"].wizard-option', { hasText: 'Evet' }).click();
+    await page.getByRole('button', { name: /Analizi başlat/i }).click();
+
+    await expect(page.locator('#auto-results .auto-v2-root')).toBeVisible({ timeout: 20000 });
+
+    const gate = page.locator('#auto-soft-auth-gate');
+    if (await gate.isVisible().catch(() => false)) {
+      await page.getByRole('button', { name: /Önizlemeyle devam et/i }).click();
+    }
+  }
+
+  test('/auto/ without decision_cards flag keeps legacy compact cards visible', async ({ page }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page);
+    await completeAutoWizard(page);
+
+    await expect(page.locator('#auto-results .ib-decision-category-card')).toHaveCount(0);
+    await expect(page.locator('#auto-results-cards.auto-rec-cards')).toBeVisible();
+    await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
+  });
+
+  test('/auto/?decision_cards=1 shows decision category cards with vehicle score', async ({ page }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page, '/auto/?decision_cards=1');
+    await completeAutoWizard(page);
+
+    const cards = page.locator('#auto-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+    await expect(page.locator('#auto-results-cards.auto-rec-cards')).toHaveCount(0);
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    const signalCount = await firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal').count();
+    expect(signalCount).toBeGreaterThanOrEqual(2);
+    expect(signalCount).toBeLessThanOrEqual(4);
+  });
+
+  test('/auto/?decision_cards=1 card CTA selects vehicle', async ({ page }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page, '/auto/?decision_cards=1');
+    await completeAutoWizard(page);
+
+    const target = page.locator('#auto-results .ib-decision-category-card').nth(1);
+    const vehicleName = await target.locator('.ib-decision-card__title').innerText();
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#auto-vehicle-selection')).toBeVisible();
+    await expect(page.locator('.auto-vehicle-selection-confirmed')).toContainText(vehicleName.trim());
+  });
+
+  test('/auto/?decision_cards=1 secondary compare CTA does not change selection', async ({ page }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page, '/auto/?decision_cards=1');
+    await completeAutoWizard(page);
+
+    const target = page.locator('#auto-results .ib-decision-category-card').nth(1);
+    await target.locator('.ib-decision-card-secondary').click();
+
+    await expect(target).not.toHaveClass(/is-selected/);
+    await expect(page.locator('#auto-results .ib-auto-compare-matrix')).toBeVisible();
+  });
+
+  test('/auto/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    test.setTimeout(60000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await prepareAutoPage(page, '/auto/?decision_cards=1');
+    await completeAutoWizard(page);
+    await expect(page.locator('#auto-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
   test('/finans/ @ mobile completes wizard without stuck loading', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/finans/');

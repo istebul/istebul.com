@@ -1,5 +1,5 @@
 /**
- * Phase 3A — Decision Category Cards (sigorta / kasko / finans / tatil, ?decision_cards=1)
+ * Phase 3A — Decision Category Cards (sigorta / kasko / finans / tatil / auto, ?decision_cards=1)
  */
 
 .ib-decision-category-cards {
@@ -234,6 +234,19 @@ html[data-decision-cards='1'] body.kasko-page #kasko-results .kasko-v2-root ~ .v
 html[data-decision-cards='1'] body.finans-page #finans-results .finansman-v2-root ~ .vacation-selection-bar,
 html[data-decision-cards='1'] body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-selection-bar {
   display: flex !important;
+}
+
+html[data-decision-cards='1'] body.ib-auto #auto-results .auto-v2-root ~ .ib-decision-category-cards {
+  display: grid !important;
+}
+
+html[data-decision-cards='1'] body.ib-auto #auto-results .auto-v2-root ~ #auto-vehicle-selection {
+  display: block !important;
+}
+
+html[data-decision-cards='1'] body.ib-auto #auto-results .auto-v2-root ~ #auto-results-cards,
+html[data-decision-cards='1'] body.ib-auto #auto-results .auto-v2-root ~ .auto-results-cards.auto-rec-cards {
+  display: none !important;
 }
 
 html[data-decision-cards='1'] body.sigorta-page #sigorta-results .sigorta-v2-root ~ .vacation-final-cta,

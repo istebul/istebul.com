@@ -20,13 +20,14 @@ const sampleState = {
   budget_level: 'orta'
 };
 
-test('isDecisionCardsVertical gates sigorta kasko finans tatil only', () => {
+test('isDecisionCardsVertical gates sigorta kasko finans tatil auto only', () => {
   assert.equal(isDecisionCardsVertical('sigorta'), true);
   assert.equal(isDecisionCardsVertical('kasko'), true);
   assert.equal(isDecisionCardsVertical('finans'), true);
   assert.equal(isDecisionCardsVertical('tatil'), true);
+  assert.equal(isDecisionCardsVertical('auto'), true);
   assert.equal(isDecisionCardsVertical('konut'), false);
-  assert.equal(isDecisionCardsVertical('auto'), false);
+  assert.equal(isDecisionCardsVertical('araba'), false);
 });
 
 test('isDecisionCategoryCardsEnabled respects override', () => {
