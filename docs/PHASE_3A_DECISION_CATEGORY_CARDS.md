@@ -82,7 +82,7 @@ interface DecisionCardAdapterInput {
 | Phase | Scope | Production impact |
 |-------|-------|-------------------|
 | **3A-1** | Contract + adapters + unit tests | None (shadow) |
-| **3A-2** | Renderer + CSS + `?decision_cards=1` on sigorta/kasko | Opt-in only |
+| **3A-2** | Renderer + CSS + `?decision_cards=1` on sigorta/kasko | Opt-in only — **implemented** |
 | **3A-3** | Finansman + tatil | Opt-in |
 | **3A-4** | Konut + araba | Opt-in |
 | **3A-5** | Marketplace listing card signal strip | Low |
