@@ -5,6 +5,7 @@ import { buildSigortaResults, buildEngineResult } from '../../js/features/sigort
 import { adaptSigortaCard } from '../../js/features/decision-cards/adapters/sigorta-adapter.js';
 import {
   isDecisionCategoryCardsEnabled,
+  isDecisionCardsVertical,
   renderDecisionCategoryCardHtml,
   renderDecisionCategoryCardsGridHtml,
   resolveRecommendationLevelLabel,
@@ -18,6 +19,15 @@ const sampleState = {
   risk_perception: 'yuksek',
   budget_level: 'orta'
 };
+
+test('isDecisionCardsVertical gates sigorta kasko finans tatil only', () => {
+  assert.equal(isDecisionCardsVertical('sigorta'), true);
+  assert.equal(isDecisionCardsVertical('kasko'), true);
+  assert.equal(isDecisionCardsVertical('finans'), true);
+  assert.equal(isDecisionCardsVertical('tatil'), true);
+  assert.equal(isDecisionCardsVertical('konut'), false);
+  assert.equal(isDecisionCardsVertical('auto'), false);
+});
 
 test('isDecisionCategoryCardsEnabled respects override', () => {
   setDecisionCategoryCardsOverride(null);

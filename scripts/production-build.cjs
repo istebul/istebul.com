@@ -487,6 +487,13 @@ if (fs.existsSync(tatilAppSrc)) {
     if (tatilCssHashed) {
       tatilHtml = tatilHtml.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
     }
+    const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+    if (decisionCardCssHashed) {
+      tatilHtml = tatilHtml.replace(
+        /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+        `/${decisionCardCssHashed}`
+      );
+    }
     fs.writeFileSync(tatilHtmlPath, minifyHtml(tatilHtml));
   }
 }

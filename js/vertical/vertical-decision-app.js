@@ -12,6 +12,7 @@ import { buildEngineResult as buildSigortaEngineResult } from '../features/sigor
 import { buildEngineResult as buildKaskoEngineResult } from '../features/kasko/kasko-engine.js';
 import { adaptSigortaCard } from '../features/decision-cards/adapters/sigorta-adapter.js';
 import { adaptKaskoCard } from '../features/decision-cards/adapters/kasko-adapter.js';
+import { adaptFinansmanCard } from '../features/decision-cards/adapters/finansman-adapter.js';
 import {
   isDecisionCategoryCardsEnabled,
   isDecisionCardsVertical,
@@ -443,6 +444,15 @@ export function initDecisionFlow(config) {
   }
 
   function buildDecisionCategoryCardViewModels() {
+    if (config.vertical === 'finans') {
+      return state.results.map((scenario) =>
+        adaptFinansmanCard({
+          scenario,
+          state
+        })
+      );
+    }
+
     const engine =
       config.vertical === 'sigorta'
         ? buildSigortaEngineResult(state)
@@ -752,9 +762,13 @@ export function initDecisionFlow(config) {
   function scrollToDecisionCompareSection() {
     const resultsRoot = el('results');
     if (!resultsRoot) return;
-    const target = resultsRoot.querySelector('.sigorta-v2-coverage');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const selectors = ['.sigorta-v2-coverage', '.finansman-v2-rate-table', '.tatil-v2-alts'];
+    for (const selector of selectors) {
+      const target = resultsRoot.querySelector(selector);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
     }
   }
 
