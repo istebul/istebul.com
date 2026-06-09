@@ -72,6 +72,24 @@ test.describe('Site health — readability and layout', () => {
     await expect(page.locator('#kasko-wizard')).toBeVisible();
   }
 
+  async function completeKaskoWizard(page) {
+    await openKaskoWizard(page);
+    await page.locator('#kasko-wizard [data-manual="age"]').fill('35');
+    await page.locator('#kasko-wizard [data-field="license_years"][data-value="11plus"]').click();
+    await page.locator('#kasko-wizard [data-field="usage_type"][data-value="ozel"]').click();
+    await page.locator('#kasko-next').click();
+    await page.locator('#kasko-wizard [data-field="vehicle_category"][data-value="suv"]').click();
+    await page.locator('#kasko-wizard [data-field="vehicle_year_band"][data-value="0-3"]').click();
+    await page.locator('#kasko-next').click();
+    await page.locator('#kasko-wizard [data-field="coverage_level"][data-value="full"]').click();
+    await page.locator('#kasko-next').click();
+    await page.locator('#kasko-wizard [data-field="risk_perception"][data-value="yuksek"]').click();
+    await page.locator('#kasko-next').click();
+    await page.locator('#kasko-wizard [data-field="budget_level"][data-value="yuksek"]').click();
+    await page.locator('#kasko-next').click();
+    await expect(page.locator('#kasko-results')).toBeVisible();
+  }
+
   test('/kasko/ wizard shell is interactive', async ({ page }) => {
     await page.goto('/kasko/');
     await page.waitForLoadState('domcontentloaded');
@@ -81,30 +99,63 @@ test.describe('Site health — readability and layout', () => {
   test('/kasko/ completes flow and shows AI results', async ({ page }) => {
     await page.goto('/kasko/');
     await page.waitForLoadState('domcontentloaded');
-    await openKaskoWizard(page);
-
-    await page.locator('#kasko-wizard [data-manual="age"]').fill('35');
-    await page.locator('#kasko-wizard [data-field="license_years"][data-value="11plus"]').click();
-    await page.locator('#kasko-wizard [data-field="usage_type"][data-value="ozel"]').click();
-    await page.locator('#kasko-next').click();
-
-    await page.locator('#kasko-wizard [data-field="vehicle_category"][data-value="suv"]').click();
-    await page.locator('#kasko-wizard [data-field="vehicle_year_band"][data-value="0-3"]').click();
-    await page.locator('#kasko-next').click();
-
-    await page.locator('#kasko-wizard [data-field="coverage_level"][data-value="full"]').click();
-    await page.locator('#kasko-next').click();
-
-    await page.locator('#kasko-wizard [data-field="risk_perception"][data-value="yuksek"]').click();
-    await page.locator('#kasko-next').click();
-
-    await page.locator('#kasko-wizard [data-field="budget_level"][data-value="yuksek"]').click();
-    await page.locator('#kasko-next').click();
-
-    await expect(page.locator('#kasko-results')).toBeVisible();
+    await completeKaskoWizard(page);
     await expect(page.locator('#kasko-results .kasko-v2-root')).toBeVisible();
     await expect(page.locator('#kasko-results .ib-insight-blocks')).toContainText(/karar|skor|teminat|risk/i);
     await expect(page.locator('#kasko-wizard')).toBeHidden();
+  });
+
+  test('/kasko/ without decision_cards flag keeps legacy card renderer hidden', async ({ page }) => {
+    await page.goto('/kasko/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKaskoWizard(page);
+    await expect(page.locator('#kasko-results .ib-decision-category-card')).toHaveCount(0);
+    await expect(page.locator('#kasko-results .vacation-result-card').first()).toBeHidden();
+    await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
+  });
+
+  test('/kasko/?decision_cards=1 shows decision category cards with stable score', async ({ page }) => {
+    await page.goto('/kasko/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKaskoWizard(page);
+
+    const cards = page.locator('#kasko-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    await expect(firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal')).toHaveCount(4);
+  });
+
+  test('/kasko/?decision_cards=1 card CTA selects scenario', async ({ page }) => {
+    await page.goto('/kasko/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKaskoWizard(page);
+
+    const target = page.locator('#kasko-results .ib-decision-category-card[data-option="economic"]');
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#kasko-selection-bar')).toBeVisible();
+    await expect(page.locator('#kasko-confirm-selection')).toBeEnabled();
+    await expect(page.locator('#kasko-results .vacation-selection-picked')).toContainText(/ekonomik/i);
+  });
+
+  test('/kasko/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/kasko/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKaskoWizard(page);
+    await expect(page.locator('#kasko-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
   });
 
   test('/sigorta/ wizard shell is interactive', async ({ page }) => {

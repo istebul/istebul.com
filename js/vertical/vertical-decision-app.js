@@ -8,6 +8,16 @@ import {
 } from '../features/finansman/finansman-results-v2.js';
 import { mountSigortaResultsV2, syncCanonicalSigortaScores } from '../features/sigorta/sigorta-results-v2.js';
 import { mountKaskoResultsV2, syncCanonicalKaskoScores } from '../features/kasko/kasko-results-v2.js';
+import { buildEngineResult as buildSigortaEngineResult } from '../features/sigorta/sigorta-engine.js';
+import { buildEngineResult as buildKaskoEngineResult } from '../features/kasko/kasko-engine.js';
+import { adaptSigortaCard } from '../features/decision-cards/adapters/sigorta-adapter.js';
+import { adaptKaskoCard } from '../features/decision-cards/adapters/kasko-adapter.js';
+import {
+  isDecisionCategoryCardsEnabled,
+  isDecisionCardsVertical,
+  renderDecisionCategoryCardsGridHtml,
+  syncDecisionCardsFlagToDocument
+} from '../features/decision-cards/decision-category-card-renderer.js';
 import {
   trackAnalysisStarted,
   trackAnalysisCompleted,
@@ -428,6 +438,68 @@ export function initDecisionFlow(config) {
     });
   }
 
+  function shouldUseDecisionCategoryCards() {
+    return isDecisionCategoryCardsEnabled() && isDecisionCardsVertical(config.vertical);
+  }
+
+  function buildDecisionCategoryCardViewModels() {
+    const engine =
+      config.vertical === 'sigorta'
+        ? buildSigortaEngineResult(state)
+        : buildKaskoEngineResult(state);
+    const adapter = config.vertical === 'sigorta' ? adaptSigortaCard : adaptKaskoCard;
+    return state.results.map((scenario) =>
+      adapter({
+        scenario,
+        engine,
+        state
+      })
+    );
+  }
+
+  function renderScenarioCardsHtml(selectedId) {
+    if (shouldUseDecisionCategoryCards()) {
+      syncDecisionCardsFlagToDocument(true);
+      const viewModels = buildDecisionCategoryCardViewModels();
+      return renderDecisionCategoryCardsGridHtml(viewModels, {
+        selectedId,
+        ariaLabel: config.resultsTitle || wt('common.resultsTitle', 'Kişiselleştirilmiş öneriler'),
+        t: wt
+      });
+    }
+
+    syncDecisionCardsFlagToDocument(false);
+    return `
+    <div class="vacation-result-cards" role="list" aria-label="${escapeHtml(config.resultsTitle || wt('common.resultsTitle', 'Kişiselleştirilmiş öneriler'))}">
+      ${state.results
+        .map((r) => {
+          const isPicked = selectedId === r.id;
+          const selectLabel = isPicked
+            ? wt('common.selectedOption', 'Seçili senaryo')
+            : wt('common.selectOption', 'Bu seçeneği seç');
+          return `
+        <article class="vacation-result-card ${r.badge.className} ${isPicked ? 'is-selected' : ''}" role="listitem" data-option="${escapeHtml(r.id)}" aria-pressed="${isPicked ? 'true' : 'false'}">
+          <div class="vacation-result-badge">${escapeHtml(r.badge.label)}</div>
+          <div class="vacation-result-score" aria-label="${escapeHtml(wt('common.decisionScore', 'Karar skoru'))}">${r.score}<span>/100</span></div>
+          <div class="vacation-result-visual" role="presentation"></div>
+          <h3>${escapeHtml(r.title)}</h3>
+          <p>${escapeHtml(r.description)}</p>
+          <ul class="vacation-result-meta">
+            <li><strong>${escapeHtml(wt('common.estimated', 'Tahmini'))}:</strong> ${escapeHtml(r.estimatedCost)}</li>
+            <li><strong>${escapeHtml(wt('common.suitability', 'Uygunluk'))}:</strong> ${escapeHtml(r.suitability)}</li>
+          </ul>
+          <div class="vacation-result-why"><strong>${escapeHtml(wt('common.whyRecommended', 'Neden önerildi?'))}</strong><p>${escapeHtml(r.why)}</p></div>
+          <div class="vacation-result-pros"><strong>${escapeHtml(wt('common.pros', 'Artılar'))}</strong><ul>${r.pros.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
+          <div class="vacation-result-cautions"><strong>${escapeHtml(wt('common.cautions', 'Dikkat'))}</strong><ul>${r.cautions.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
+          <button type="button" class="btn btn-sm vacation-select-card-btn ${isPicked ? 'btn-primary' : 'btn-outline'}" data-option="${escapeHtml(r.id)}" aria-label="${escapeHtml(selectLabel)}: ${escapeHtml(r.title)}">
+            ${isPicked ? escapeHtml(wt('common.selected', '✓ Seçildi')) : escapeHtml(wt('common.selectOption', 'Bu seçeneği seç'))}
+          </button>
+        </article>`;
+        })
+        .join('')}
+    </div>`;
+  }
+
   function renderResults() {
     const section = el('results');
     if (!section || !state.results.length) return;
@@ -483,34 +555,7 @@ export function initDecisionFlow(config) {
     </div>
     ${dashboardHtml}
     <p class="vacation-results-top-pick">${escapeHtml(wt('common.topPick', 'Öne çıkan'))}: <strong>${escapeHtml(summary.topTitle)}</strong></p>
-    <div class="vacation-result-cards" role="list" aria-label="${escapeHtml(config.resultsTitle || wt('common.resultsTitle', 'Kişiselleştirilmiş öneriler'))}">
-      ${state.results
-        .map((r) => {
-          const isPicked = state.selected_option === r.id;
-          const selectLabel = isPicked
-            ? wt('common.selectedOption', 'Seçili senaryo')
-            : wt('common.selectOption', 'Bu seçeneği seç');
-          return `
-        <article class="vacation-result-card ${r.badge.className} ${isPicked ? 'is-selected' : ''}" role="listitem" data-option="${escapeHtml(r.id)}" aria-pressed="${isPicked ? 'true' : 'false'}">
-          <div class="vacation-result-badge">${escapeHtml(r.badge.label)}</div>
-          <div class="vacation-result-score" aria-label="${escapeHtml(wt('common.decisionScore', 'Karar skoru'))}">${r.score}<span>/100</span></div>
-          <div class="vacation-result-visual" role="presentation"></div>
-          <h3>${escapeHtml(r.title)}</h3>
-          <p>${escapeHtml(r.description)}</p>
-          <ul class="vacation-result-meta">
-            <li><strong>${escapeHtml(wt('common.estimated', 'Tahmini'))}:</strong> ${escapeHtml(r.estimatedCost)}</li>
-            <li><strong>${escapeHtml(wt('common.suitability', 'Uygunluk'))}:</strong> ${escapeHtml(r.suitability)}</li>
-          </ul>
-          <div class="vacation-result-why"><strong>${escapeHtml(wt('common.whyRecommended', 'Neden önerildi?'))}</strong><p>${escapeHtml(r.why)}</p></div>
-          <div class="vacation-result-pros"><strong>${escapeHtml(wt('common.pros', 'Artılar'))}</strong><ul>${r.pros.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
-          <div class="vacation-result-cautions"><strong>${escapeHtml(wt('common.cautions', 'Dikkat'))}</strong><ul>${r.cautions.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul></div>
-          <button type="button" class="btn btn-sm vacation-select-card-btn ${isPicked ? 'btn-primary' : 'btn-outline'}" data-option="${escapeHtml(r.id)}" aria-label="${escapeHtml(selectLabel)}: ${escapeHtml(r.title)}">
-            ${isPicked ? escapeHtml(wt('common.selected', '✓ Seçildi')) : escapeHtml(wt('common.selectOption', 'Bu seçeneği seç'))}
-          </button>
-        </article>`;
-        })
-        .join('')}
-    </div>
+    ${renderScenarioCardsHtml(state.selected_option)}
     ${
       !state.confirmationStep
         ? `
@@ -711,7 +756,7 @@ export function initDecisionFlow(config) {
         selectOption(btn.dataset.option);
       });
     });
-    document.querySelectorAll('.vacation-result-card[data-option]').forEach((card) => {
+    document.querySelectorAll('.vacation-result-card[data-option], .ib-decision-category-card[data-option]').forEach((card) => {
       card.addEventListener('click', (e) => {
         if (e.target.closest('button')) return;
         selectOption(card.dataset.option);

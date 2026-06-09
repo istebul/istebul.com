@@ -544,6 +544,11 @@ bundleVerticalPage(
   /\/js\/kasko\/kasko-app\.js/g
 );
 
+const decisionCategoryCardCss = 'js/features/decision-cards/decision-category-card.css';
+if (fs.existsSync(path.join(root, decisionCategoryCardCss))) {
+  copyFile(decisionCategoryCardCss);
+}
+
 bundleVerticalPage(
   'js/verticals/listing-analysis/listing-analysis-app.js',
   'ilan-analizi/index.html',
