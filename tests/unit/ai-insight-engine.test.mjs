@@ -33,6 +33,26 @@ test('auto insight personalizes with loan, fuel, km', () => {
   assertNoBanned(insight.why);
 });
 
+test('auto insight enriches why with household profile without new scores', () => {
+  const insight = buildDecisionInsight({
+    vertical: 'auto',
+    answers: {
+      usage: 'family',
+      fuel: 'hybrid',
+      km: 15000,
+      loan: 'yes',
+      budget: 1_500_000,
+      household_size: '5+'
+    },
+    scores: { decision: 82, overallRisk: 'Orta' },
+    costs: { budget: 1_500_000, tco12: 390_000 },
+    planTier: 'guest'
+  });
+  assert.match(insight.why, /5\+ kişilik hane/i);
+  assert.match(insight.why, /bagaj ihtiyacı|yolcu kapasitesi/i);
+  assert.match(insight.summary, /82/);
+});
+
 test('konut insight uses earthquake, dues, credit context', () => {
   const insight = buildDecisionInsight({
     vertical: 'konut',

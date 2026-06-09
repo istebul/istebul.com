@@ -10,6 +10,7 @@ import {
   stripTechnicalTokensFromCopy
 } from '../../core/user-facing-text.js';
 import { formatScore, formatScoreOutOf100 } from '../results/results-engine.js';
+import { buildAutoHouseholdInsightClause } from '../../auto/auto-wizard-profile.js';
 
 export const BANNED_WEAK_PHRASES = Object.freeze([
   'bu karar sizin için uygun olabilir',
@@ -300,10 +301,12 @@ function buildAutoInsight(input) {
     budgetTry ? `bütçe bandı ${budgetTry}` : null
   ].filter(Boolean);
 
-  const why =
+  const householdClause = buildAutoHouseholdInsightClause(a);
+  const whyCore =
     whyParts.length ?
       `${whyParts.join(', ')} ile riskin ${overallRisk.toLowerCase()} kalmasının nedeni; yakıt, bakım ve ikinci el değerinin mevcut skor modelinde dengeli okunmasıdır.`
     : missingDataNote('kullanım ve bütçe');
+  const why = householdClause ? `${householdClause}. ${whyCore}` : whyCore;
 
   const riskItem = topRisk(input);
   const risk =

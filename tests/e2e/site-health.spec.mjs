@@ -502,8 +502,9 @@ test.describe('Site health — readability and layout', () => {
   }
 
   async function completeAutoWizard(page) {
-    await page.locator('.wizard-option', { hasText: '1 – 2 milyon TL' }).click();
-    await page.locator('.wizard-option', { hasText: 'Aile' }).click();
+    await page.locator('[data-wizard-key="budget"].wizard-option', { hasText: '1 – 2 milyon TL' }).click();
+    await page.locator('[data-wizard-key="usage"].wizard-option', { hasText: 'Aile' }).click();
+    await page.locator('[data-wizard-key="household_size"].wizard-option', { hasText: '3-4 kişi' }).click();
     await page.getByRole('button', { name: /Devam et/i }).click();
 
     await page.locator('.wizard-option', { hasText: 'SUV' }).first().click();
@@ -552,6 +553,8 @@ test.describe('Site health — readability and layout', () => {
     const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
     expect(scoreAttr).toBe(scoreText.trim());
 
+    const suitabilitySignal = firstCard.locator('.ib-decision-card__signal', { hasText: /Uygunluk/i });
+    await expect(suitabilitySignal).toContainText(/3-4 kişilik hane/i);
     await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
     const signalCount = await firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal').count();
     expect(signalCount).toBeGreaterThanOrEqual(2);

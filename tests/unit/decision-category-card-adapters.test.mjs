@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { MAX_DECISION_CARD_SIGNALS } from '../../js/features/decision-cards/decision-category-card-contract.js';
+import { buildAutoSuitabilitySignalText } from '../../js/auto/auto-wizard-profile.js';
 import {
   adaptCategoryCard,
   adaptCategoryCardList,
@@ -154,6 +155,18 @@ test('auto adapter happy path', () => {
   assert.match(vm.title, /Corolla/i);
   assert.equal(vm.pros.length, 2);
   assert.equal(vm.cautions.length, 1);
+});
+
+test('auto adapter enriches suitability from household state without changing score', () => {
+  const state = { usage: 'family', household_size: '3-4' };
+  const enrichedScenario = {
+    ...autoScenario,
+    suitability: buildAutoSuitabilitySignalText(state, autoScenario.suitability)
+  };
+  const vm = adaptAutoCard({ scenario: enrichedScenario, state });
+  assert.equal(vm.decisionScore, autoScenario.score);
+  const suitability = vm.signals.find((signal) => signal.key === 'suitability');
+  assert.match(suitability?.value || '', /3-4 kişilik hane/i);
 });
 
 test('adaptCategoryCard registry resolves aliases', () => {
