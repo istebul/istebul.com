@@ -631,6 +631,59 @@ test.describe('Site health — readability and layout', () => {
     expect(overflow).toBe(true);
   });
 
+  test('/konut/ cash buffer question saves and appears in AI insight @390px', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/konut/');
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator('#housing-wizard')).toBeVisible();
+
+    const wizard = page.locator('#housing-wizard');
+    const clickNext = async () => {
+      await page.evaluate(() => document.getElementById('housing-next')?.click());
+      await page.waitForTimeout(150);
+    };
+
+    await wizard.locator('[data-field="purchasePurpose"][data-value="Satın almak istiyorum"]').click();
+    await clickNext();
+
+    await expect(wizard).toContainText(/Peşinat sonrası kaç aylık güvenlik payınız kalıyor/i);
+    await wizard.locator('[data-field="cash_buffer_months"][data-value="0-1"]').click();
+
+    await wizard.locator('[data-input="totalBudget"]').fill('4000000');
+    await wizard.locator('[data-input="downPayment"]').fill('1200000');
+    await wizard.locator('[data-input="monthlyCapacity"]').fill('45000');
+    await wizard.locator('[data-input="monthlyIncome"]').fill('80000');
+    await wizard.locator('[data-input="useFinancing"]').selectOption('evet');
+    await wizard.locator('[data-input="loanAmount"]').fill('2800000');
+    await clickNext();
+
+    await wizard.locator('[data-input="city"]').selectOption({ label: 'İstanbul' });
+    await wizard.locator('[data-input="district"]').fill('Kadıköy');
+    await wizard.locator('[data-action="toggle-location"][data-value="ulasim"]').click();
+    await clickNext();
+
+    await wizard.locator('[data-field="homeType"][data-value="Daire"]').click();
+    await wizard.locator('[data-input="householdSize"]').fill('4');
+    await clickNext();
+
+    await wizard.locator('[data-action="toggle-risk"]').filter({ hasText: 'Deprem' }).click();
+    await clickNext();
+
+    const v2Root = page.locator('#housing-results .konut-v2-root');
+    await expect(v2Root).toBeVisible({ timeout: 25000 });
+
+    await expect(v2Root.locator('[data-insight-why]')).toContainText(/güvenlik payı|nakit/i);
+    await expect(v2Root.locator('[data-insight-risk]')).toContainText(/nakit tamponu|Peşinat sonrası/i);
+    await expect(v2Root.locator('.konut-v2-hero-badge--score')).toContainText(/\d+/);
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
   test('/sigorta/ arac flow skips marital status and reaches results', async ({ page }) => {
     await page.goto('/sigorta/');
     await page.waitForLoadState('domcontentloaded');
