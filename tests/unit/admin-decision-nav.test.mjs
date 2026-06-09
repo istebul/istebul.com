@@ -65,7 +65,15 @@ test('injectAdminListingManagementNav module defines admin-only nav contract', (
   assert.match(src, /nav-item--admin-only/);
   assert.match(src, /AI İlan Yönetimi/);
   assert.match(src, /ADMIN_LISTING_MANAGEMENT_HREF/);
+  assert.match(src, /bindAdminExternalNavLinks/);
   assert.doesNotMatch(src, /DECISION_CENTER_HREF/);
+});
+
+test('admin-panel.html includes static AI İlan Yönetimi link', () => {
+  const html = fs.readFileSync(path.join(process.cwd(), 'admin-panel.html'), 'utf8');
+  assert.match(html, /href="\/admin\/ai-listings\/"/);
+  assert.match(html, /data-admin-listing-nav-injected="ai-listings"/);
+  assert.match(html, />AI İlan Yönetimi</);
 });
 
 test('public decision center routes redirect to profil', () => {

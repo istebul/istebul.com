@@ -54,7 +54,7 @@ import {
   bootAdminPageFromUrl
 } from './admin/admin-page-routing.js';
 import { initAdminShell } from './admin/admin-shell.js';
-import { injectAdminListingManagementNav } from './admin/admin-decision-nav.js';
+import { bindAdminExternalNavLinks, injectAdminListingManagementNav } from './admin/admin-decision-nav.js';
 import { initVacationAdmin } from './admin/vacation-admin.js';
 import { initVerticalAdmin } from './admin/vertical-admin.js';
 import { initHousingAdmin } from './admin/housing-admin.js';
@@ -4476,12 +4476,7 @@ function bindAdminPanelEvents() {
     });
   });
 
-  document.querySelectorAll('[data-nav-href]').forEach((el) => {
-    el.addEventListener('click', () => {
-      const href = el.getAttribute('data-nav-href');
-      if (href) window.location.assign(href);
-    });
-  });
+  bindAdminExternalNavLinks();
 
   initAdminMobileNav();
   initAdminShell();
