@@ -2,8 +2,8 @@
  * Admin CRM — listing management navigation (admin-only, runtime injection).
  */
 
-/** Admin listing CRUD — NOT public Decision Center (/profil/). */
-export const ADMIN_LISTING_MANAGEMENT_HREF = '/admin/listings';
+/** AI Listings Karar Merkezi — NOT classic CRM Karar Seçenekleri (/admin/listings). */
+export const ADMIN_LISTING_MANAGEMENT_HREF = '/admin/ai-listings/';
 
 const NAV_MARKER = 'data-admin-listing-nav-injected';
 
