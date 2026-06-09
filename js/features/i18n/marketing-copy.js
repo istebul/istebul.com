@@ -23,7 +23,7 @@ function deepMerge(target, ...sources) {
 const baseMarketingCopy = {
   tr: {
     nav: {
-      products: 'Ürünler',
+      products: 'Karar Kategorileri',
       howItWorks: 'Nasıl Çalışır?',
       methodology: 'Metodoloji',
       pricing: 'Fiyatlandırma',
@@ -32,7 +32,7 @@ const baseMarketingCopy = {
       resources: 'Kaynaklar',
       login: 'Giriş Yap',
       partnerApply: 'Partner başvurusu',
-      getStarted: 'Hemen Başla',
+      getStarted: 'Kararını analiz et',
       sampleAnalysis: 'Örnek analiz',
       blog: 'Blog',
       announcements: 'Duyurular',
@@ -40,15 +40,15 @@ const baseMarketingCopy = {
       dataSources: 'Veri Kaynakları',
       security: 'Güvenlik / KVKK',
       faq: 'SSS',
-      catAuto: 'Araba',
-      catKonut: 'Konut',
-      catTatil: 'Tatil',
-      catFinans: 'Finansman',
-      catSigorta: 'Sigorta',
-      catKasko: 'Kasko',
+      catAuto: 'Araba Kararı',
+      catKonut: 'Konut Kararı',
+      catTatil: 'Tatil Kararı',
+      catFinans: 'Finansman Kararı',
+      catSigorta: 'Sigorta Kararı',
+      catKasko: 'Kasko Kararı',
       allCategories: 'Tüm kategoriler',
       home: 'Ana sayfa',
-      productsMenu: 'Ürünler menüsü',
+      productsMenu: 'Karar Kategorileri menüsü',
       resourcesMenu: 'Kaynaklar menüsü',
       dashboard: 'Dashboard',
       myAccount: 'Hesabım',
@@ -79,6 +79,8 @@ const baseMarketingCopy = {
       analyzeLink: 'Analiz Et →',
       analyzeAction: 'Analiz et',
       soon: 'Yakında',
+      categoriesKicker: 'Karar Kategorileri',
+      categoriesTitle: 'Hangi kararda yardım istiyorsunuz?',
       categoriesGridAria: 'Karar kategorileri',
       categoriesSoonAria: 'Yakında açılacak kategoriler'
     },
@@ -128,27 +130,27 @@ const baseMarketingCopy = {
     },
     categories: {
       araba: {
-        name: 'Otomobil',
+        name: 'Araba Kararı',
         desc: 'TCO, kredi ve yakıt — tek skorda birleşir.'
       },
       konut: {
-        name: 'Konut',
+        name: 'Konut Kararı',
         desc: 'Lokasyon, aidat ve kredi yükü bir arada.'
       },
       tatil: {
-        name: 'Tatil',
+        name: 'Tatil Kararı',
         desc: 'Bütçe, sezon ve konaklama dengesi.'
       },
       finansman: {
-        name: 'Finans',
+        name: 'Finansman Kararı',
         desc: 'Vade, faiz ve nakit akışı net görünür.'
       },
       sigorta: {
-        name: 'Sigorta',
+        name: 'Sigorta Kararı',
         desc: 'Koruma, teminat ve prim dengesi — canlı analiz.'
       },
       kasko: {
-        name: 'Kasko',
+        name: 'Kasko Kararı',
         desc: 'Teminat, prim ve araç profili değerlendirmesi.'
       }
     },
@@ -159,10 +161,10 @@ const baseMarketingCopy = {
         'Bütçe, lokasyon, kredi yükü, aidat, ulaşım, deprem riski ve yaşam beklentilerini birlikte analiz ederek sizin için en doğru konut kararını görün.',
       konutCtaPrimary: 'Konut kararımı analiz et',
       konutCtaSecondary: 'AI önerilerini gör',
-      auto: 'Auto',
-      tatil: 'Tatil',
-      finans: 'Finansman',
-      konut: 'Konut'
+      auto: 'Araba Kararı',
+      tatil: 'Tatil Kararı',
+      finans: 'Finansman Kararı',
+      konut: 'Konut Kararı'
     }
   },
   en: {
@@ -223,6 +225,8 @@ const baseMarketingCopy = {
       analyzeLink: 'Analyze →',
       analyzeAction: 'Analyze',
       soon: 'Coming soon',
+      categoriesKicker: 'Decision categories',
+      categoriesTitle: 'Which decision do you need help with?',
       categoriesGridAria: 'Decision categories',
       categoriesSoonAria: 'Categories launching soon'
     },

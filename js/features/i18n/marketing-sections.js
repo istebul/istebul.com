@@ -42,7 +42,7 @@ export const marketingSections = {
     footerNav: {
       brandDesc:
         'Yapay zekâ destekli karar platformu. Toplam maliyet, risk ve uygunluk analizini şeffaf ve ölçülebilir sunar.',
-      products: 'Ürünler',
+      products: 'Karar Kategorileri',
       company: 'Şirket',
       resources: 'Kaynaklar',
       legal: 'Yasal',
