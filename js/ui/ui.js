@@ -136,7 +136,7 @@ export class UIManager {
             mobileAuthActions.id = 'mobile-auth-actions';
             mobileAuthActions.className = 'mobile-auth-actions';
             mobileAuthActions.innerHTML = `
-                <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav_mobile">TCO analizini başlat</a>
+                <a href="/karar-asistani/" class="btn btn-primary" data-native-route data-analytics-cta="cta_decision_nav_mobile" data-analytics-placement="nav_mobile">Kararını analiz et</a>
                 <button type="button" class="btn btn-outline" data-auth-open="login" data-mobile-login>Üye Girişi</button>
                 <button type="button" class="btn btn-primary" data-auth-open="register" data-mobile-register>Üye Ol</button>
             `;

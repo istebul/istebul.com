@@ -242,7 +242,7 @@ export class PremiumPages {
             <p>Önce ücretsiz TCO analizi; ihtiyaç duyduğunuzda Pro ile derin rapor ve karşılaştırma. Taahhüt yok.</p>
           </div>
           <div class="ib-premium-hero-actions">
-            <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="premium_footer" title="${BRAND_VOICE.cta.primaryAutoLong}">${BRAND_VOICE.cta.primaryAuto}</a>
+            <a href="/karar-asistani/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_decision_premium_footer" data-analytics-placement="premium_footer" title="${BRAND_VOICE.cta.primaryDecisionFree}">${BRAND_VOICE.cta.primaryDecisionFree}</a>
             <a href="/planlar" class="btn btn-outline btn-lg" data-native-route data-analytics-cta="cta_secondary_plans" data-analytics-placement="premium_footer">${BRAND_VOICE.cta.plans}</a>
           </div>
         </div>
@@ -377,7 +377,7 @@ export class PremiumPages {
             <div><i data-lucide="user-check"></i><strong>Kullanıcı kontrolü</strong><p>Veri minimizasyonu</p></div>
             <div><i data-lucide="badge-check"></i><strong>Kurumsal hazır</strong><p>Enterprise SLA</p></div>
           </div>
-          <a href="/auto/" class="btn btn-primary" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="metodoloji_trust">TCO analizini başlat</a>
+          <a href="/karar-asistani/" class="btn btn-primary" data-native-route data-analytics-cta="cta_decision_metodoloji" data-analytics-placement="metodoloji_trust">Ücretsiz karar analizi başlat</a>
         </div>
       </section>
     </div>`;
@@ -418,7 +418,7 @@ export class PremiumPages {
             <h2>Hâlâ kararsız mısınız?</h2>
             <p>Önce toplam maliyeti görün; Pro ile karşılaştırmayı derinleştirin.</p>
           </div>
-          <a href="/auto/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_primary_auto" data-analytics-placement="planlar_footer">TCO analizini başlat</a>
+          <a href="/karar-asistani/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_decision_planlar_footer" data-analytics-placement="planlar_footer">Ücretsiz karar analizi başlat</a>
         </div>
       </section>
     </div>`;

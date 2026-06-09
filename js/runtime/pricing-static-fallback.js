@@ -19,7 +19,7 @@ export function renderStaticPricingFallback() {
                 <li class="revenue-plan-feature"><span class="revenue-plan-feature-icon" aria-hidden="true">✓</span><span>Şeffaf metodoloji</span></li>
               </ul>
               <div class="revenue-plan-card-foot">
-                <a href="/auto/" class="btn btn-outline btn-block" data-analytics-cta="cta_primary_auto" data-analytics-placement="pricing_static_free">TCO analizini başlat</a>
+                <a href="/karar-asistani/" class="btn btn-outline btn-block" data-analytics-cta="cta_decision_pricing_static" data-analytics-placement="pricing_static_free">Ücretsiz karar analizi başlat</a>
               </div>
             </article>
             <article class="revenue-plan-card revenue-plan-card--featured">

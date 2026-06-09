@@ -11,13 +11,14 @@ export const BRAND_VOICE = Object.freeze({
     'Araba, ev, tatil ve finans kararlarında toplam maliyeti, riskleri ve size en uygun seçenekleri analiz edin.',
 
   cta: {
-    primaryDecision: 'Karar analizini başlat',
+    primaryDecision: 'Kararını analiz et',
+    primaryDecisionFree: 'Ücretsiz karar analizi başlat',
     primaryAuto: 'Auto analizini dene',
-    primaryAutoLegacy: 'Ücretsiz analiz başlat',
-    primaryAutoLong: 'Ücretsiz analiz başlat',
+    primaryAutoLegacy: 'Ücretsiz karar analizi başlat',
+    primaryAutoLong: 'Ücretsiz karar analizi başlat',
     methodology: 'Metodolojiyi gör',
     plans: 'Planları incele',
-    analysisStart: 'Ücretsiz analiz başlat',
+    analysisStart: 'Ücretsiz karar analizi başlat',
     saveAnalysis: 'Analizini kaydet ve devam et',
     accountLogin: 'Giriş Yap',
     accountRegister: 'Analizini kaydet',

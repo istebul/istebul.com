@@ -49,8 +49,8 @@ for (const route of requiredRoutes) {
   }
 }
 
-const heroMust = ['Kararımı Analiz Et', 'Nasıl Çalışır?'];
-const navMust = ['Fiyatlandırma', 'Hakkımızda', 'Hemen Başla'];
+const heroMust = ['Kararını analiz et', 'Nasıl Çalışır?'];
+const navMust = ['Fiyatlandırma', 'Hakkımızda', 'Kararını analiz et'];
 for (const text of [...heroMust, ...navMust]) {
   if (!html.includes(text)) {
     console.error('FAIL: homepage missing expected text:', text);

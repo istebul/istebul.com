@@ -63,7 +63,7 @@ const baseMarketingCopy = {
         'Büyük kararları verirken <span class="ib-hero-gradient-text">yalnız değilsiniz.</span>',
       heroDesc:
         'Aracınızdan tatilinize, konuttan finansman ve sigortaya kadar — yapay zeka destekli analiz ile en doğru seçimi yapın.',
-      ctaAnalyze: 'Kararımı Analiz Et',
+      ctaAnalyze: 'Kararını analiz et',
       ctaHow: 'Nasıl Çalışır?',
       disclaimer: 'Örnek skor ve maliyetler gösterim amaçlıdır · finansal tavsiye değildir',
       dashTitle: 'AI Öneri Özeti',
@@ -111,7 +111,7 @@ const baseMarketingCopy = {
       consent: 'Pazarlama e-postası almayı kabul ediyorum.',
       privacyLink: 'Gizlilik politikası',
       disclaimer: 'isteBul karar destek platformudur; nihai karar kullanıcıya aittir.',
-      freeAnalysis: 'Ücretsiz analiz başlat',
+      freeAnalysis: 'Ücretsiz karar analizi başlat',
       cookieText: 'Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz.',
       cookiePolicy: 'Çerez politikası',
       cookieDecline: 'Reddet',
@@ -120,7 +120,7 @@ const baseMarketingCopy = {
       metaKvkk: 'KVKK & gizlilik politikaları',
       metaSupport: 'Kurumsal destek hattı',
       copyright: 'Tüm hakları saklıdır.',
-      stickyCta: 'Karar analizini başlat',
+      stickyCta: 'Kararını analiz et',
       consentHtml:
         'Pazarlama e-postası almayı kabul ediyorum. <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik politikası</a>.',
       cookieHtml:

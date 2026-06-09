@@ -31,7 +31,7 @@
         "Karar Merkezi QA sürecinden geçmiş kayıtlar"
       ],
       "ctaHref": "/karar-asistani/",
-      "ctaLabel": "Karar analizini başlat",
+      "ctaLabel": "Kararını analiz et",
       "relatedLandings": ["ikinci-el-rehberi", "sifir-arac-mi-ikinci-el-mi", "arac-alim-karar-asistani"]
     },
     {
@@ -48,7 +48,7 @@
         "Şeffaf metodoloji açıklaması"
       ],
       "ctaHref": "/karar-asistani/",
-      "ctaLabel": "Karar analizini başlat",
+      "ctaLabel": "Kararını analiz et",
       "relatedLandings": ["arac-karsilastirma-rehberi", "suv-mi-sedan-mi", "finansman-rehberi"]
     },
     {

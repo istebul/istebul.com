@@ -13,7 +13,7 @@
           "id": "control",
           "weight": 50,
           "copy": {
-            "[data-hero-cta-primary]": "TCO analizini başlat",
+            "[data-hero-cta-primary]": "Kararını analiz et",
             "[data-auto-hero-cta]": "Ücretsiz maliyet analizi"
           }
         },
@@ -42,16 +42,16 @@
           "id": "control",
           "weight": 50,
           "copy": {
-            "[data-cro-cta-sticky]": "TCO analizini başlat",
-            "[data-cro-cta-methodology]": "Analizi başlat"
+            "[data-cro-cta-sticky]": "Kararını analiz et",
+            "[data-cro-cta-methodology]": "Ücretsiz karar analizi başlat"
           }
         },
         {
           "id": "outcome",
           "weight": 50,
           "copy": {
-            "[data-cro-cta-sticky]": "Maliyet riskini gör — ücretsiz",
-            "[data-cro-cta-methodology]": "TCO analizine geç"
+            "[data-cro-cta-sticky]": "Kararını analiz et",
+            "[data-cro-cta-methodology]": "Ücretsiz karar analizi başlat"
           },
           "classes": {
             "[data-cro-cta-sticky]": ["cro-cta-emphasis"]

@@ -31,7 +31,7 @@ export class ComparisonUI {
                     '<h3>Karar öncesi seçenekleri burada toplayın</h3>' +
                     '<p>Önce karar asistanından öneri alın veya seçenek kartlarından ekleyin; ardından TCO, risk ve ihtiyaç uyumunu yan yana okuyarak net bir karar özeti oluşturun.</p>' +
                     '<div class="empty-state-actions">' +
-                      '<a href="/karar-asistani/" class="btn btn-primary">Karar analizini başlat</a>' +
+                      '<a href="/karar-asistani/" class="btn btn-primary">Kararını analiz et</a>' +
                       '<a href="/secenekler/" class="btn btn-outline">Seçenekleri incele</a>' +
                     '</div>' +
                 '</div>';
