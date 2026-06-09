@@ -268,9 +268,7 @@ test.describe('Site health — readability and layout', () => {
     await expect(page.locator('#finans-wizard')).toBeVisible();
   }
 
-  test('/finans/ wizard completes flow and shows V2 results', async ({ page }) => {
-    await page.goto('/finans/');
-    await page.waitForLoadState('domcontentloaded');
+  async function completeFinansWizard(page) {
     await openFinansWizard(page);
 
     await page.locator('#finans-wizard [data-field="purpose"][data-value="konut"]').click();
@@ -298,9 +296,196 @@ test.describe('Site health — readability and layout', () => {
 
     await expect(page.locator('#finans-results')).toBeVisible();
     await expect(page.locator('#finans-results .finansman-v2-root')).toBeVisible({ timeout: 15000 });
+  }
+
+  async function completeTatilWizard(page) {
+    await page.locator('#vacation-hero-cta').click();
+    await expect(page.locator('#vacation-wizard')).toBeVisible();
+
+    await page.locator('#vacation-wizard [data-field="vacation_goal"][data-value="deniz"]').click();
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard [data-field="vacation_type"][data-value="deniz-resort"]').click();
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard [data-field="people_type"][data-value="aile"]').click();
+    await page.locator('#vacation-travelers-count').fill('4');
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard [data-field="budget_range"][data-value="dengeli"]').click();
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard input[name="date_flexibility"][value="undecided"]').check();
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard [data-field="transport_preference"][data-value="ucak"]').click();
+    await page.locator('#vacation-wizard [data-field="comfort_expectation"][data-value="dengeli"]').click();
+    await page.locator('#vacation-next').click();
+
+    await page.locator('#vacation-wizard .vacation-chip').first().click();
+    await page.locator('#vacation-next').click();
+    await page.locator('#vacation-next').click();
+
+    await expect(page.locator('#vacation-results')).toBeVisible();
+    await expect(page.locator('#vacation-results .tatil-v2-root')).toBeVisible({ timeout: 15000 });
+  }
+
+  test('/finans/ wizard completes flow and shows V2 results', async ({ page }) => {
+    await page.goto('/finans/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+
     await expect(page.locator('#finans-wizard')).toBeHidden();
     await expect(page.locator('#finans-next')).not.toHaveClass(/is-loading/);
     await expect(page.locator('[data-finansman-v2-pdf]')).toContainText(/PDF olarak kaydet/i);
+  });
+
+  test('/finans/ without decision_cards flag keeps legacy card renderer hidden', async ({ page }) => {
+    await page.goto('/finans/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+    await expect(page.locator('#finans-results .ib-decision-category-card')).toHaveCount(0);
+    await expect(page.locator('#finans-results .vacation-result-card').first()).toBeHidden();
+    await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
+  });
+
+  test('/finans/?decision_cards=1 shows decision category cards with engine score', async ({ page }) => {
+    await page.goto('/finans/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+
+    const cards = page.locator('#finans-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+
+    const engineScoreText = await page
+      .locator('#finans-results .ib-results-score-ring__gauge strong')
+      .innerText();
+    const engineScore = engineScoreText.replace(/\/100/i, '').trim();
+    expect(scoreAttr).toBe(engineScore);
+
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    await expect(firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal')).toHaveCount(4);
+  });
+
+  test('/finans/?decision_cards=1 card CTA selects scenario', async ({ page }) => {
+    await page.goto('/finans/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+
+    const target = page.locator('#finans-results .ib-decision-category-card[data-option="economic"]');
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#finans-selection-bar')).toBeVisible();
+    await expect(page.locator('#finans-confirm-selection')).toBeEnabled();
+    await expect(page.locator('#finans-results .vacation-selection-picked')).toContainText(/uzun vade|düşük taksit/i);
+  });
+
+  test('/finans/?decision_cards=1 secondary compare CTA does not change selection', async ({ page }) => {
+    await page.goto('/finans/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+
+    const defaultSelected = page.locator('#finans-results .ib-decision-category-card.is-selected').first();
+    const defaultOption = await defaultSelected.getAttribute('data-option');
+
+    const target = page.locator('#finans-results .ib-decision-category-card[data-option="economic"]');
+    await target.locator('.ib-decision-card-secondary').click();
+
+    await expect(target).not.toHaveClass(/is-selected/);
+    if (defaultOption) {
+      await expect(
+        page.locator(`#finans-results .ib-decision-category-card[data-option="${defaultOption}"]`)
+      ).toHaveClass(/is-selected/);
+    }
+    await expect(page.locator('#finans-results .finansman-v2-rate-table')).toBeVisible();
+  });
+
+  test('/finans/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/finans/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeFinansWizard(page);
+    await expect(page.locator('#finans-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
+  test('/tatil/ without decision_cards flag keeps legacy card renderer hidden', async ({ page }) => {
+    await page.goto('/tatil/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeTatilWizard(page);
+    await expect(page.locator('#vacation-results .ib-decision-category-card')).toHaveCount(0);
+    await expect(page.locator('#vacation-results .vacation-result-card').first()).toBeHidden();
+    await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
+  });
+
+  test('/tatil/?decision_cards=1 shows decision category cards with stable score', async ({ page }) => {
+    await page.goto('/tatil/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeTatilWizard(page);
+
+    const cards = page.locator('#vacation-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    const signalCount = await firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal').count();
+    expect(signalCount).toBeGreaterThanOrEqual(2);
+    expect(signalCount).toBeLessThanOrEqual(4);
+  });
+
+  test('/tatil/?decision_cards=1 card CTA selects scenario', async ({ page }) => {
+    await page.goto('/tatil/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeTatilWizard(page);
+
+    const target = page.locator('#vacation-results .ib-decision-category-card[data-option="kusadasi-didim"]');
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#vacation-selection-bar')).toBeVisible();
+    await expect(page.locator('#vacation-confirm-selection')).toBeEnabled();
+    await expect(page.locator('#vacation-results .vacation-selection-picked')).toContainText(/kuşadası|didim/i);
+  });
+
+  test('/tatil/?decision_cards=1 secondary compare CTA does not change selection', async ({ page }) => {
+    await page.goto('/tatil/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeTatilWizard(page);
+
+    const target = page.locator('#vacation-results .ib-decision-category-card[data-option="kusadasi-didim"]');
+    await target.locator('.ib-decision-card-secondary').click();
+
+    await expect(target).not.toHaveClass(/is-selected/);
+    await expect(page.locator('#vacation-results .tatil-v2-alts')).toBeVisible();
+  });
+
+  test('/tatil/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/tatil/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeTatilWizard(page);
+    await expect(page.locator('#vacation-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
   });
 
   test('/finans/ @ mobile completes wizard without stuck loading', async ({ page }) => {

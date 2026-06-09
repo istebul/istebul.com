@@ -23,6 +23,13 @@ import {
 import { parseManualBudget, formatTry } from './tatil-utils.js';
 import { renderPremiumDecisionDashboard } from '../ui/components/premium-decision-dashboard.js';
 import { mountTatilResultsV2 } from '../features/tatil/tatil-results-v2.js';
+import { adaptTatilCard } from '../features/decision-cards/adapters/tatil-adapter.js';
+import {
+  isDecisionCategoryCardsEnabled,
+  isDecisionCardsVertical,
+  renderDecisionCategoryCardsGridHtml,
+  syncDecisionCardsFlagToDocument
+} from '../features/decision-cards/decision-category-card-renderer.js';
 import { bootstrapTatilFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
 import {
   trackAnalysisCompleted,
@@ -661,56 +668,36 @@ async function showResults() {
   });
 }
 
-function renderResults() {
-  const section = $('#vacation-results');
-  if (!section || !state.results.length) return;
-  section.hidden = false;
+function shouldUseDecisionCategoryCards() {
+  return isDecisionCategoryCardsEnabled() && isDecisionCardsVertical('tatil');
+}
 
-  const commentary = buildAiCommentary(state, state.results);
-  const summary = buildResultsSummary(state, state.results);
-  const primary = getDisplayResult();
-  const selectedCard = getSelectedResult();
-  const costLabelMap = {
-    accommodation: 'Konaklama',
-    transport: 'Ulaşım / uçuş',
-    transfer: 'Transfer',
-    food: 'Yemek',
-    extras: 'Ekstra harcama',
-    children: 'Çocuk maliyeti',
-    visaDocs: 'Vize / evrak',
-    carRental: 'Araç kiralama'
-  };
-  const disclaimer =
-    state.settings.vacation_disclaimer_text || DEFAULT_SETTINGS.vacation_disclaimer_text;
-  const partnerEnabled = state.settings.vacation_partner_cta_enabled === 'true';
+function buildDecisionCategoryCardViewModels() {
+  return state.results.map((scenario) =>
+    adaptTatilCard({
+      scenario,
+      state
+    })
+  );
+}
 
-  const dashboardHtml = renderPremiumDecisionDashboard({
-    category: 'tatil',
-    kicker: 'Tatil analizi tamamlandı',
-    title: 'Kişiselleştirilmiş tatil önerileri',
-    decisionScore: summary.fitScore,
-    scoreBand: summary.scoreBand,
-    totalCostLabel: summary.totalCostLabel,
-    riskLabel: summary.seasonRisk,
-    riskDetail: primary?.scores?.risk,
-    advantages: primary?.pros || [],
-    cautions: primary?.cautions || [],
-    aiSummary: commentary.summary,
-    aiBullets: commentary.bullets,
-    nextStep: summary.nextStep || 'Bir destinasyon seçin ve sezon yoğunluğunu tekrar kontrol edin.'
-  });
+function renderScenarioCardsHtml(selectedId) {
+  if (shouldUseDecisionCategoryCards()) {
+    syncDecisionCardsFlagToDocument(true);
+    const viewModels = buildDecisionCategoryCardViewModels();
+    return renderDecisionCategoryCardsGridHtml(viewModels, {
+      selectedId,
+      ariaLabel: 'Tatil seçenekleri'
+    });
+  }
 
-  section.innerHTML = `
-    <div class="vacation-results-header">
-      <p>Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin fiyat taahhüdü değildir.</p>
-    </div>
-    ${dashboardHtml}
-    <p class="vacation-results-top-pick">Öne çıkan: <strong>${escapeHtml(summary.topTitle)}</strong></p>
+  syncDecisionCardsFlagToDocument(false);
+  return `
     <div class="vacation-result-cards" role="list" aria-label="Tatil seçenekleri">
       ${state.results
         .map(
           (r) => {
-            const isPicked = state.selected_option === r.id;
+            const isPicked = selectedId === r.id;
             return `
         <article
           class="vacation-result-card ${r.badge.className} ${isPicked ? 'is-selected' : ''}"
@@ -758,7 +745,64 @@ function renderResults() {
           }
         )
         .join('')}
+    </div>`;
+}
+
+function scrollToDecisionCompareSection() {
+  const resultsRoot = $('#vacation-results');
+  if (!resultsRoot) return;
+  const target = resultsRoot.querySelector('.tatil-v2-alts');
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function renderResults() {
+  const section = $('#vacation-results');
+  if (!section || !state.results.length) return;
+  section.hidden = false;
+
+  const commentary = buildAiCommentary(state, state.results);
+  const summary = buildResultsSummary(state, state.results);
+  const primary = getDisplayResult();
+  const selectedCard = getSelectedResult();
+  const costLabelMap = {
+    accommodation: 'Konaklama',
+    transport: 'Ulaşım / uçuş',
+    transfer: 'Transfer',
+    food: 'Yemek',
+    extras: 'Ekstra harcama',
+    children: 'Çocuk maliyeti',
+    visaDocs: 'Vize / evrak',
+    carRental: 'Araç kiralama'
+  };
+  const disclaimer =
+    state.settings.vacation_disclaimer_text || DEFAULT_SETTINGS.vacation_disclaimer_text;
+  const partnerEnabled = state.settings.vacation_partner_cta_enabled === 'true';
+
+  const dashboardHtml = renderPremiumDecisionDashboard({
+    category: 'tatil',
+    kicker: 'Tatil analizi tamamlandı',
+    title: 'Kişiselleştirilmiş tatil önerileri',
+    decisionScore: summary.fitScore,
+    scoreBand: summary.scoreBand,
+    totalCostLabel: summary.totalCostLabel,
+    riskLabel: summary.seasonRisk,
+    riskDetail: primary?.scores?.risk,
+    advantages: primary?.pros || [],
+    cautions: primary?.cautions || [],
+    aiSummary: commentary.summary,
+    aiBullets: commentary.bullets,
+    nextStep: summary.nextStep || 'Bir destinasyon seçin ve sezon yoğunluğunu tekrar kontrol edin.'
+  });
+
+  section.innerHTML = `
+    <div class="vacation-results-header">
+      <p>Tahmini skor ve maliyet aralıkları bilgilendirme amaçlıdır; kesin fiyat taahhüdü değildir.</p>
     </div>
+    ${dashboardHtml}
+    <p class="vacation-results-top-pick">Öne çıkan: <strong>${escapeHtml(summary.topTitle)}</strong></p>
+    ${renderScenarioCardsHtml(state.selected_option)}
 
     ${
       !state.confirmationStep
@@ -900,7 +944,14 @@ function bindResultsEvents(commentary) {
     });
   });
 
-  document.querySelectorAll('.vacation-result-card[data-option]').forEach((card) => {
+  document.querySelectorAll('.ib-decision-card-secondary[data-action="compare"]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      scrollToDecisionCompareSection();
+    });
+  });
+
+  document.querySelectorAll('.vacation-result-card[data-option], .ib-decision-category-card[data-option]').forEach((card) => {
     card.addEventListener('click', (e) => {
       if (e.target.closest('button')) return;
       selectVacationOption(card.dataset.option);
