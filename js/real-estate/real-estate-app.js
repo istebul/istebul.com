@@ -39,6 +39,7 @@ import {
   renderDecisionCategoryCardsGridHtml,
   syncDecisionCardsFlagToDocument
 } from '../features/decision-cards/decision-category-card-renderer.js';
+import { bootstrapKonutFromAssistantQuery } from './konut-assistant-bootstrap.js';
 
 function stepLabelsForState() {
   return getKonutFlow(state.purchasePurpose).stepLabels;
@@ -110,7 +111,8 @@ const state = {
   leadName: '',
   leadEmail: '',
   leadPhone: '',
-  wantPartnerOffer: false
+  wantPartnerOffer: false,
+  assistantPrefillHint: false
 };
 
 let lastResultPayload = null;
@@ -515,6 +517,7 @@ function renderStep() {
 
   wizard.innerHTML = `
     <section class="housing-step-card">
+      ${state.assistantPrefillHint ? '<p class="housing-assistant-prefill-hint" data-housing-assistant-prefill>Karar Asistanı profilinizden bazı bilgiler önceden dolduruldu. Detaylı analiz için kalan adımları tamamlayın.</p>' : ''}
       <h2>${body.title}</h2>
       ${body.html}
       <p class="housing-validation" id="housing-validation" role="alert"></p>
@@ -1101,6 +1104,7 @@ function bindHeroCtas() {
 }
 
 async function init() {
+  bootstrapKonutFromAssistantQuery(state, new URLSearchParams(window.location.search));
   bindHeroCtas();
   renderStep();
   await intake('event', { event_type: 'housing_page_view', metadata: {} });

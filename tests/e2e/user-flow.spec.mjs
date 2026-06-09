@@ -573,6 +573,73 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await assertLocatorWithinViewport(feedback, MOBILE_2C_VIEWPORT.width);
   });
 
+  test('karar asistanı ev sonucundan konut sihirbazına güvenli ön doldurma', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.waitForSelector('#premium-karar-analizi-root #assistant-results', { state: 'attached', timeout: 15000 });
+    await page.waitForFunction(
+      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+      null,
+      { timeout: 15000 }
+    );
+
+    const renderStatus = await page.evaluate(() => {
+      const app = window.app;
+      app.assistantCategory = 'ev';
+      app.assistantAnswers = {
+        province: 'İstanbul',
+        district: 'Kadıköy',
+        propertyType: 'daire',
+        purpose: 'live',
+        budget: '7250000',
+        location: 'central',
+        priority: 'lowMonthly'
+      };
+      const categoryConfig = app.getResolvedDecisionAssistantConfig()?.ev;
+      if (!categoryConfig) return { ok: false, reason: 'ev config missing' };
+      const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+      if (!result?.recommendations?.[0]) return { ok: false, reason: 'no primary recommendation' };
+      app.ui.renderDecisionResults(result);
+      return { ok: true };
+    });
+    expect(renderStatus).toEqual({ ok: true });
+
+    const handoff = page.locator('[data-assistant-vertical-handoff] a[data-native-route]');
+    await expect(handoff).toBeVisible({ timeout: 15000 });
+    await expect(handoff).toHaveAttribute('href', /\/konut\/\?/);
+
+    await Promise.all([
+      page.waitForURL(/\/konut\/\?/, { timeout: 15000 }),
+      handoff.click()
+    ]);
+
+    await page.waitForSelector('#housing-wizard', { timeout: 15000 });
+    const prefillHint = page.locator('[data-housing-assistant-prefill]');
+    await expect(prefillHint).toBeVisible({ timeout: 15000 });
+    await expect(prefillHint).toContainText('Karar Asistanı profilinizden bazı bilgiler önceden dolduruldu');
+
+    await expect(page.locator('[data-field="purchasePurpose"].is-selected')).toHaveAttribute(
+      'data-value',
+      'Satın almak istiyorum'
+    );
+
+    await page.locator('#housing-next').click();
+    await expect(page.locator('[data-input="totalBudget"]')).toHaveValue('7250000');
+
+    await page.locator('[data-input="monthlyIncome"]').fill('45000');
+    await page.locator('[data-input="monthlyCapacity"]').fill('25000');
+    await page.locator('select[data-input="useFinancing"]').selectOption('evet');
+    await page.locator('[data-input="loanAmount"]').fill('5000000');
+
+    await page.locator('#housing-next').click();
+    await expect(page.locator('select[data-input="city"]')).toHaveValue('İstanbul');
+    await expect(page.locator('[data-input="district"]')).toHaveValue('Kadıköy');
+
+    await page.locator('#housing-next').click();
+    await expect(page.locator('[data-field="homeType"].is-selected')).toHaveAttribute('data-value', 'Daire');
+  });
+
   test('karar geçmişi canonical entry schemaVersion=1 kaydeder ve geçmiş sayfası yüklenir', async ({ page }) => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);

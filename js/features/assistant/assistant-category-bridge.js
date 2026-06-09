@@ -42,6 +42,12 @@ const VERTICAL_BY_ASSISTANT = Object.freeze({
   kasko: 'kasko'
 });
 
+const KONUT_VALID_PURPOSE_KEYS = new Set(['live', 'investment', 'seasonal', 'premium']);
+const KONUT_VALID_PROPERTY_KEYS = new Set(['daire', 'mustakil', 'villa']);
+
+/** İl query değeri — hafif format doğrulaması (tam il listesi konut runtime'da). */
+const KONUT_PROVINCE_QUERY_PATTERN = /^[\p{L}\s'-]+$/u;
+
 export function normalizeAutoUsage(usage = '') {
   const key = String(usage || '').trim();
   return AUTO_USAGE_TO_VERTICAL[key] || key || 'city';
@@ -54,6 +60,45 @@ export function normalizeTatilGoal(vacationType = '') {
 
 export function assistantVerticalId(categoryId = '') {
   return VERTICAL_BY_ASSISTANT[categoryId] || 'auto';
+}
+
+export function isValidKonutAssistantProvinceQuery(province = '') {
+  const name = String(province || '').trim();
+  if (name.length < 2 || name.length > 40) return false;
+  return KONUT_PROVINCE_QUERY_PATTERN.test(name);
+}
+
+function normalizeKonutDistrict(district = '') {
+  const value = String(district || '').trim().slice(0, 60);
+  return value || null;
+}
+
+function normalizeKonutBudget(budget) {
+  const n = Number(String(budget ?? '').replace(/\D/g, ''));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return String(Math.round(n));
+}
+
+/** @param {URLSearchParams} params @param {Record<string, unknown>} answers */
+export function appendKonutAssistantQueryParams(params, answers = {}) {
+  if (!params || !answers) return params;
+
+  const budget = normalizeKonutBudget(answers.budget);
+  if (budget) params.set('budget', budget);
+
+  const province = String(answers.province || '').trim();
+  if (isValidKonutAssistantProvinceQuery(province)) params.set('province', province);
+
+  const district = normalizeKonutDistrict(answers.district);
+  if (district) params.set('district', district);
+
+  const purposeKey = String(answers.purpose || '').trim();
+  if (KONUT_VALID_PURPOSE_KEYS.has(purposeKey)) params.set('purpose', purposeKey);
+
+  const propertyKey = String(answers.propertyType || '').trim();
+  if (KONUT_VALID_PROPERTY_KEYS.has(propertyKey)) params.set('propertyType', propertyKey);
+
+  return params;
 }
 
 /**
@@ -125,7 +170,8 @@ export function buildVerticalContinueHref(categoryId, answers = {}) {
     return `/auto/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'ev') {
-    return '/konut/';
+    appendKonutAssistantQueryParams(params, answers);
+    return `/konut/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'tatil') {
     if (answers.vacationType) params.set('goal', normalizeTatilGoal(answers.vacationType));
@@ -258,3 +304,4 @@ export function bootstrapKaskoFromAssistantQuery(state, params = new URLSearchPa
   if (coverage) state.coverage_level = coverage;
   return state;
 }
+
