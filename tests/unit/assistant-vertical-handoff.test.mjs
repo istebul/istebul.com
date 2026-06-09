@@ -32,5 +32,10 @@ test('resolveVerticalContinueHandoff maps all category labels', () => {
 
 test('resolveVerticalContinueHandoff hides when href is unavailable', () => {
   assert.equal(resolveVerticalContinueHandoff('unknown-category', {}), null);
-  assert.equal(resolveVerticalContinueHandoff('arac', {}), null);
+});
+
+test('resolveVerticalContinueHandoff still links arac without query params', () => {
+  const handoff = resolveVerticalContinueHandoff('arac', {});
+  assert.ok(handoff);
+  assert.match(handoff.href, /^\/auto\/?/);
 });
