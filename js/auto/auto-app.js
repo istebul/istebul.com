@@ -37,6 +37,12 @@ import { analytics } from '../core/analytics.js';
 import { bootAnalyticsMeasurement } from '../runtime/analytics-consent-boot.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
 import { getAutoPartOptions, getAutoStepCopy, sanitizeWizardStateForUsage } from './auto-flow.js';
+import {
+  HOUSEHOLD_SIZE_OPTIONS,
+  buildAutoSuitabilitySignalText,
+  resolveCityRatioForSync,
+  shouldShowCityRatioField
+} from './auto-wizard-profile.js';
 import { bootstrapAutoFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
 import { mirrorLegacyAutoFunnel, trackAutoStart, trackGrowthFunnel, GROWTH_FUNNEL_EVENTS } from '../features/growth/growth-funnel.js';
 import { trackPaidFunnelStep } from '../features/growth/paid-acquisition.js';
@@ -401,13 +407,15 @@ function resolveAutoScenarioKey(vehicle = {}) {
 function buildDecisionCategoryCardViewModels(cardVehicles, formData = {}) {
   return cardVehicles.map((vehicle) => {
     const scenarioKey = resolveAutoScenarioKey(vehicle);
+    const baseSuitability = vehicle.confidenceMeta?.label || vehicle.suitability || '';
     const enriched = {
       ...vehicle,
       id: scenarioKey,
       title: vehicle.name,
       description: vehicle.reasons?.[0] || vehicle.name || '',
       fuelDisplay: formatVehicleFuelDisplay(vehicle, formData),
-      resaleDisplay: formatVehicleResaleDisplay(vehicle)
+      resaleDisplay: formatVehicleResaleDisplay(vehicle),
+      suitability: buildAutoSuitabilitySignalText(formData, baseSuitability)
     };
     return adaptAutoCard({
       scenario: enriched,
@@ -2697,9 +2705,12 @@ const WIZARD_MILESTONES = ['Bütçe', 'Araç', 'Bölge', 'Özet'];
 const WIZARD_FIELD_LABELS = {
   budget: 'toplam bütçe',
   usage: 'kullanım amacı',
+  household_size: 'hane büyüklüğü',
   body: 'araç tipi',
   fuel: 'yakıt tercihi',
   km: 'yıllık kilometre',
+  ownership_months: 'sahiplik süresi',
+  city_ratio: 'şehir / otoyol dengesi',
   location: 'şehir',
   loan: 'finansman tercihi'
 };
@@ -2734,6 +2745,12 @@ const wizardSteps = [
         title: 'Aracı en çok nasıl kullanacaksınız?',
         why: 'Kullanım profili; kasa tipi, yakıt ve konfor beklentisini doğrudan etkiler.',
         options: usageOptions
+      },
+      {
+        key: 'household_size',
+        title: 'Kaç kişilik bir hane için araç seçiyorsunuz?',
+        why: 'Yolcu ve bagaj ihtiyacı; kasa tipi ve konfor beklentisini netleştirir (skor değil, karar gerekçesi).',
+        options: HOUSEHOLD_SIZE_OPTIONS
       }
     ]
   },
@@ -2763,10 +2780,23 @@ const wizardSteps = [
     parts: [
       {
         key: 'km',
+        block: 'usage-intensity',
         title: 'Yılda yaklaşık kaç km kullanırsınız?',
         why: 'Kilometre; amortisman, yakıt ve bakım giderlerinin en güçlü girdilerinden biridir.',
         options: kmOptions,
         custom: kmCustom
+      },
+      {
+        key: 'ownership_months',
+        block: 'usage-intensity',
+        title: 'Aracı ne kadar süre kullanmayı planlıyorsunuz?',
+        why: 'Toplam maliyet ve değer kaybı görünümü bu süreye göre hesaplanır.',
+        options: [
+          { label: '12 ay', value: '12', note: 'Kısa dönem sahiplik' },
+          { label: '24 ay', value: '24', note: 'Orta vadeli plan' },
+          { label: '36 ay', value: '36', note: 'Önerilen varsayılan' },
+          { label: '48 ay', value: '48', note: 'Uzun vadeli sahiplik' }
+        ]
       },
       {
         key: 'city_ratio',
@@ -2776,17 +2806,6 @@ const wizardSteps = [
           { label: 'Ağırlıklı şehir içi', value: '0.85', note: 'Düşük ortalama hız' },
           { label: 'Dengeli kullanım', value: '0.6', note: 'Şehir + otoyol karışık' },
           { label: 'Ağırlıklı otoyol', value: '0.25', note: 'Uzun yol ağırlıklı' }
-        ]
-      },
-      {
-        key: 'ownership_months',
-        title: 'Aracı ne kadar süre kullanmayı planlıyorsunuz?',
-        why: 'Toplam maliyet ve değer kaybı görünümü bu süreye göre hesaplanır.',
-        options: [
-          { label: '12 ay', value: '12', note: 'Kısa dönem sahiplik' },
-          { label: '24 ay', value: '24', note: 'Orta vadeli plan' },
-          { label: '36 ay', value: '36', note: 'Önerilen varsayılan' },
-          { label: '48 ay', value: '48', note: 'Uzun vadeli sahiplik' }
         ]
       },
       {
@@ -2836,6 +2855,12 @@ const WIZARD_OPTION_ICONS = {
     city: '🏙',
     long: '🛣',
     business: '💼'
+  },
+  household_size: {
+    '1': '👤',
+    '2': '👥',
+    '3-4': '👨‍👩‍👧‍👦',
+    '5+': '🏠'
   },
   body: {
     suv: '🚙',
@@ -2916,9 +2941,21 @@ function renderWizardOptionButton(fieldKey, option, selected) {
 const wizardState = {};
 let wizardIndex = 0;
 
+function isWizardPartVisible(part) {
+  if (!part) return true;
+  if (part.key === 'city_ratio' && !shouldShowCityRatioField(wizardState.usage)) return false;
+  if (part.showWhen && !part.showWhen(wizardState)) return false;
+  return true;
+}
+
+function getVisibleWizardParts(step) {
+  if (!Array.isArray(step.parts)) return [];
+  return step.parts.filter((part) => isWizardPartVisible(part));
+}
+
 function getWizardStepKeys(step) {
   if (Array.isArray(step.parts) && step.parts.length) {
-    return step.parts.map((part) => part.key);
+    return getVisibleWizardParts(step).map((part) => part.key);
   }
   return step.key ? [step.key] : [];
 }
@@ -2974,6 +3011,8 @@ function syncWizardToForm() {
       return;
     }
 
+    if (key === 'city_ratio') return;
+
     const input = form.elements[key];
     if (!input) return;
 
@@ -2985,6 +3024,11 @@ function syncWizardToForm() {
 
     input.value = value;
   });
+
+  const cityRatioInput = form.elements.city_ratio;
+  if (cityRatioInput) {
+    cityRatioInput.value = resolveCityRatioForSync(wizardState.usage, wizardState.city_ratio);
+  }
 }
 
 function renderWizardDistrictField() {
@@ -3013,6 +3057,32 @@ function autoPartOptionPool(partKey) {
   const cityPart = wizardSteps[2]?.parts?.find((p) => p.key === 'city_ratio');
   if (partKey === 'city_ratio') return cityPart?.options || [];
   return [];
+}
+
+function renderGroupedWizardParts(parts) {
+  const groups = [];
+  let currentBlock = null;
+  let currentParts = [];
+
+  parts.forEach((part) => {
+    const block = part.block || null;
+    if (block !== currentBlock) {
+      if (currentParts.length) groups.push({ block: currentBlock, parts: currentParts });
+      currentBlock = block;
+      currentParts = [part];
+      return;
+    }
+    currentParts.push(part);
+  });
+  if (currentParts.length) groups.push({ block: currentBlock, parts: currentParts });
+
+  return groups
+    .map((group) => {
+      const inner = group.parts.map((part) => renderWizardPartOptions(part)).join('');
+      if (!group.block) return inner;
+      return `<div class="auto-wizard-decision-block" data-wizard-block="${escapeHtml(group.block)}">${inner}</div>`;
+    })
+    .join('');
 }
 
 function renderWizardPartOptions(part) {
@@ -3080,7 +3150,7 @@ function renderWizard() {
   let bodyHtml = '';
 
   if (isMulti) {
-    bodyHtml = step.parts.map((part) => renderWizardPartOptions(part)).join('');
+    bodyHtml = renderGroupedWizardParts(getVisibleWizardParts(step));
   } else {
     const selected = wizardState[step.key];
     const isCustom = selected === 'custom';
@@ -3344,6 +3414,9 @@ if (wizard) {
           km: kmOptions,
           city_ratio: autoPartOptionPool('city_ratio')
         });
+        if (!shouldShowCityRatioField(wizardState.usage)) {
+          delete wizardState.city_ratio;
+        }
       }
       syncWizardToForm();
       renderWizard();
