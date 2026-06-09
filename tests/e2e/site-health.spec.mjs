@@ -158,12 +158,108 @@ test.describe('Site health — readability and layout', () => {
     expect(overflow).toBe(false);
   });
 
+  async function completeSigortaWizard(page) {
+    await page.locator('#sigorta-hero-cta').click();
+    await expect(page.locator('#sigorta-wizard')).toBeVisible();
+
+    await page.locator('#sigorta-wizard [data-field="insurance_type"][data-value="arac"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-manual="age"]').fill('35');
+    await page.locator('#sigorta-wizard [data-field="license_years"][data-value="3-10"]').click();
+    await page.locator('#sigorta-wizard [data-field="usage_type"][data-value="ozel"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-field="vehicle_category"][data-value="otomobil"]').click();
+    await page.locator('#sigorta-wizard [data-field="vehicle_year_band"][data-value="4-10"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-field="risk_perception"][data-value="orta"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await page.locator('#sigorta-wizard [data-field="budget_level"][data-value="orta"]').click();
+    await page.locator('#sigorta-next').click();
+
+    await expect(page.locator('#sigorta-results')).toBeVisible();
+  }
+
   test('/sigorta/ wizard shell is interactive', async ({ page }) => {
     await page.goto('/sigorta/');
     await page.waitForLoadState('domcontentloaded');
     await page.locator('#sigorta-hero-cta').click();
     await expect(page.locator('#sigorta-wizard')).toBeVisible();
     await expect(page.locator('#sigorta-wizard button, #sigorta-wizard [role="button"]').first()).toBeVisible();
+  });
+
+  test('/sigorta/?decision_cards=1 shows decision category cards with engine score', async ({ page }) => {
+    await page.goto('/sigorta/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeSigortaWizard(page);
+
+    const cards = page.locator('#sigorta-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+
+    const engineScoreText = await page
+      .locator('#sigorta-results .sigorta-v2-kpi--decision strong')
+      .innerText();
+    const engineScore = engineScoreText.replace(/\/100/i, '').trim();
+    expect(scoreAttr).toBe(engineScore);
+
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    await expect(firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal')).toHaveCount(4);
+  });
+
+  test('/sigorta/?decision_cards=1 card CTA selects scenario', async ({ page }) => {
+    await page.goto('/sigorta/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeSigortaWizard(page);
+
+    const target = page.locator('#sigorta-results .ib-decision-category-card[data-option="economic"]');
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#sigorta-selection-bar')).toBeVisible();
+    await expect(page.locator('#sigorta-confirm-selection')).toBeEnabled();
+    await expect(page.locator('#sigorta-results .vacation-selection-picked')).toContainText(/ekonomik/i);
+  });
+
+  test('/sigorta/?decision_cards=1 secondary compare CTA does not change selection', async ({ page }) => {
+    await page.goto('/sigorta/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeSigortaWizard(page);
+
+    const defaultSelected = page.locator('#sigorta-results .ib-decision-category-card.is-selected').first();
+    const defaultOption = await defaultSelected.getAttribute('data-option');
+
+    const target = page.locator('#sigorta-results .ib-decision-category-card[data-option="economic"]');
+    await target.locator('.ib-decision-card-secondary').click();
+
+    await expect(target).not.toHaveClass(/is-selected/);
+    if (defaultOption) {
+      await expect(
+        page.locator(`#sigorta-results .ib-decision-category-card[data-option="${defaultOption}"]`)
+      ).toHaveClass(/is-selected/);
+    }
+    await expect(page.locator('#sigorta-results .sigorta-v2-coverage')).toBeVisible();
+  });
+
+  test('/sigorta/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/sigorta/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeSigortaWizard(page);
+    await expect(page.locator('#sigorta-results .ib-decision-category-card').first()).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
   });
 
   async function openFinansWizard(page) {
