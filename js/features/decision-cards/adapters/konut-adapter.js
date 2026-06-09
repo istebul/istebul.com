@@ -55,7 +55,7 @@ export function adaptKonutCard(input = {}) {
     signals: buildKonutSignals(scenario, metrics),
     aiExplanation: buildCardAiExplanation('konut', scenario, input.engine || {}, state, metrics),
     cta: {
-      primary: { label: 'Bu senaryoyu seç', action: 'select' },
+      primary: { label: 'Bu senaryoyu incele', action: 'select' },
       secondary: { label: 'Senaryoları karşılaştır', action: 'compare' }
     }
   });

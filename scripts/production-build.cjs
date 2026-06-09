@@ -628,6 +628,13 @@ if (fs.existsSync(housingAppSrc)) {
     if (housingCssHashed) {
       housingHtml = housingHtml.replace(/\/css\/real-estate(?:\.[a-f0-9]+)?\.css/g, `/${housingCssHashed}`);
     }
+    const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+    if (decisionCardCssHashed) {
+      housingHtml = housingHtml.replace(
+        /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+        `/${decisionCardCssHashed}`
+      );
+    }
     fs.writeFileSync(housingHtmlPath, minifyHtml(housingHtml));
   }
 }
