@@ -84,7 +84,8 @@ interface DecisionCardAdapterInput {
 | **3A-1** | Contract + adapters + unit tests | None (shadow) |
 | **3A-2** | Renderer + CSS + `?decision_cards=1` on sigorta/kasko | Opt-in only — **implemented** |
 | **3A-3** | Finansman + tatil (`/finans/`, `/tatil/`) | Opt-in only — **implemented** |
-| **3A-4** | Konut + araba | Opt-in |
+| **3A-4A** | Araba (`/auto/`) | Opt-in only — **implemented** |
+| **3A-4B** | Konut | Opt-in |
 | **3A-5** | Marketplace listing card signal strip | Low |
 | **3A-6** | Homepage category cards | Marketing layer |
 

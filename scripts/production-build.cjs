@@ -647,6 +647,13 @@ if (fs.existsSync(autoHtmlPath)) {
     /\/assets\/auto-runtime\/auto-app(?:\.[a-f0-9]+)?\.js(?:\?v=[^"']+)?/g,
     `/assets/auto-runtime/${autoAppFile}`
   );
+  const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+  if (decisionCardCssHashed) {
+    autoHtml = autoHtml.replace(
+      /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+      `/${decisionCardCssHashed}`
+    );
+  }
   fs.writeFileSync(autoHtmlPath, minifyHtml(autoHtml));
 }
 

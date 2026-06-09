@@ -46,6 +46,13 @@ import { safeJsonParse } from '../core/dom-safe.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw, readStoredJson, writeStoredJson, removeStorageRaw } from '../core/storage-keys.js';
 import { mountAutoResultsV2 } from './auto-results-v2.js';
 import { formatVehicleFuelDisplay, formatVehicleResaleDisplay } from './auto-results-model.js';
+import { adaptAutoCard } from '../features/decision-cards/adapters/auto-adapter.js';
+import {
+  isDecisionCategoryCardsEnabled,
+  isDecisionCardsVertical,
+  renderDecisionCategoryCardsGridHtml,
+  syncDecisionCardsFlagToDocument
+} from '../features/decision-cards/decision-category-card-renderer.js';
 import { renderVehicleImageHtml, resolveVehicleImageUrl } from './vehicle-image.js';
 import { storeCheckoutIntentPayload } from '../core/checkout-intent.js';
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
@@ -381,6 +388,119 @@ function renderResultsSidebar(topResult, results) {
       ` : ''}
     </aside>
   `;
+}
+
+function shouldUseDecisionCategoryCards() {
+  return isDecisionCategoryCardsEnabled() && isDecisionCardsVertical('auto');
+}
+
+function resolveAutoScenarioKey(vehicle = {}) {
+  return String(vehicle.id || vehicle.catalog_id || vehicle.name || 'unknown');
+}
+
+function buildDecisionCategoryCardViewModels(cardVehicles, formData = {}) {
+  return cardVehicles.map((vehicle) => {
+    const scenarioKey = resolveAutoScenarioKey(vehicle);
+    const enriched = {
+      ...vehicle,
+      id: scenarioKey,
+      title: vehicle.name,
+      description: vehicle.reasons?.[0] || vehicle.name || '',
+      fuelDisplay: formatVehicleFuelDisplay(vehicle, formData),
+      resaleDisplay: formatVehicleResaleDisplay(vehicle)
+    };
+    return adaptAutoCard({
+      scenario: enriched,
+      state: formData
+    });
+  });
+}
+
+function renderScenarioCardsHtml(cardVehicles, formData = {}) {
+  const selected = readSelectedVehicle();
+  const selectedId = selected?.id
+    ? String(selected.id)
+    : selected?.name
+      ? String(selected.name)
+      : '';
+
+  if (shouldUseDecisionCategoryCards()) {
+    syncDecisionCardsFlagToDocument(true);
+    const viewModels = buildDecisionCategoryCardViewModels(cardVehicles, formData);
+    return renderDecisionCategoryCardsGridHtml(viewModels, {
+      selectedId,
+      ariaLabel: 'Öne çıkan araç önerileri'
+    });
+  }
+
+  syncDecisionCardsFlagToDocument(false);
+  return `
+    <div id="auto-results-cards" class="auto-results-cards auto-rec-cards" role="list" aria-label="Öne çıkan araç önerileri">
+      ${cardVehicles.map((vehicle, index) => renderCompactRecommendationCard(vehicle, index, formData)).join('')}
+    </div>`;
+}
+
+function scrollToAutoCompareSection() {
+  const resultsRoot = document.getElementById('auto-results');
+  const target = resultsRoot?.querySelector('.ib-auto-compare-matrix, .comparison-matrix');
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function selectAutoVehicleFromDecisionCard(optionId, cardVehicles) {
+  const matchOption = (item) => resolveAutoScenarioKey(item) === String(optionId);
+  const vehicle =
+    cardVehicles.find(matchOption) || allResults.find(matchOption);
+  if (!vehicle) return;
+
+  const index = allResults.findIndex(matchOption);
+  writeSelectedVehicle({
+    ...vehicle,
+    id: resolveAutoScenarioKey(vehicle),
+    index: index >= 0 ? index : undefined
+  });
+  trackAutoEvent('auto_vehicle_selected', {
+    vehicle: vehicle.name,
+    index: index >= 0 ? index : null,
+    score: vehicle.score,
+    source: 'decision_card'
+  });
+  captureVehicleRecommendedSelected({
+    vehicle: vehicle.name,
+    interestType: 'vehicle_selected',
+    form: readForm(document.getElementById('auto-form'))
+  });
+
+  renderFilteredAutoResults();
+  mountAutoPartnerNextSteps();
+  renderDecisionStepper();
+
+  const partnerMount = document.getElementById('auto-partner-next-mount');
+  partnerMount?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function bindDecisionCardEvents(root, cardVehicles) {
+  if (!root || !shouldUseDecisionCategoryCards()) return;
+
+  root.querySelectorAll('.ib-decision-card-select').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      selectAutoVehicleFromDecisionCard(button.dataset.option, cardVehicles);
+    });
+  });
+
+  root.querySelectorAll('.ib-decision-card-secondary[data-action="compare"]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      scrollToAutoCompareSection();
+    });
+  });
+
+  root.querySelectorAll('.ib-decision-category-card[data-option]').forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('button')) return;
+      selectAutoVehicleFromDecisionCard(card.dataset.option, cardVehicles);
+    });
+  });
 }
 
 function renderCompactRecommendationCard(vehicle, index, formData = {}) {
@@ -2126,9 +2246,7 @@ function renderResults(results) {
 
     ${rankIntelPanel || ''}
 
-    <div id="auto-results-cards" class="auto-results-cards auto-rec-cards" role="list" aria-label="Öne çıkan araç önerileri">
-      ${displayResults.slice(0, 3).map((vehicle, index) => renderCompactRecommendationCard(vehicle, index, formData)).join('')}
-    </div>
+    ${renderScenarioCardsHtml(displayResults.slice(0, 3), formData)}
 
     ${renderVehicleSelectionGate(displayResults)}
 
@@ -2326,6 +2444,7 @@ function renderResults(results) {
   renderDecisionStepper();
   mountAutoPartnerNextSteps();
   bindVehicleSelectionGate(root);
+  bindDecisionCardEvents(root, displayResults.slice(0, 3));
 
   root.querySelectorAll('[data-auto-scroll-selection]').forEach((button) => {
     button.addEventListener('click', scrollToVehicleSelection);

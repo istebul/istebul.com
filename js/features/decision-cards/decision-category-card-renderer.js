@@ -61,7 +61,7 @@ export function syncDecisionCardsFlagToDocument(enabled = isDecisionCategoryCard
 }
 
 /**
- * @param {'sigorta'|'kasko'|'finans'|'tatil'} vertical
+ * @param {'sigorta'|'kasko'|'finans'|'tatil'|'auto'} vertical
  * @returns {boolean}
  */
 export function isDecisionCardsVertical(vertical) {
@@ -69,7 +69,8 @@ export function isDecisionCardsVertical(vertical) {
     vertical === 'sigorta' ||
     vertical === 'kasko' ||
     vertical === 'finans' ||
-    vertical === 'tatil'
+    vertical === 'tatil' ||
+    vertical === 'auto'
   );
 }
 
