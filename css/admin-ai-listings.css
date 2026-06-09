@@ -578,6 +578,43 @@
   height: 200px;
 }
 
+.ai-listings-admin__skeleton-block--short {
+  height: 72px;
+}
+
+.ai-listings-admin__panel-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ai-grid) * 2);
+  padding: calc(var(--ai-grid) * 2);
+}
+
+.ai-listings-admin__panel-error {
+  padding: calc(var(--ai-grid) * 3);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  border-radius: var(--ai-radius);
+  background: rgba(127, 29, 29, 0.15);
+}
+
+.ai-listings-admin__panel-error h3 {
+  margin: 0 0 var(--ai-grid);
+  font-size: 1.05rem;
+}
+
+.ai-listings-admin__panel-error p {
+  margin: 0 0 calc(var(--ai-grid) * 2);
+  color: var(--ai-muted);
+}
+
+.ai-listings-admin__view-panels,
+.ai-listings-admin__detail,
+.ai-rec-dashboard,
+.ai-analytics-dashboard,
+.ai-listings-admin__repo-dashboard {
+  min-width: 0;
+  overflow-x: auto;
+}
+
 .ai-listings-admin__detail--loaded .ai-listings-admin__dashboard {
   animation: ai-fade-in 0.35s ease;
 }
@@ -1888,12 +1925,27 @@
     justify-content: space-between;
   }
 
+  .ai-listings-admin__view-nav {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ai-listings-admin__workspace,
+  .ai-listings-admin__main {
+    max-width: 100%;
+    min-width: 0;
+  }
+
   .ai-listings-admin__icon-btn-label {
     display: none;
   }
 
   .ai-listings-admin__search-input {
-    width: 120px;
+    width: min(120px, 100%);
+    max-width: 100%;
   }
 
   .ai-listings-admin__insights-grid,
