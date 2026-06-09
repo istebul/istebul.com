@@ -2,7 +2,6 @@
  * Bridge legacy user listings flow to AI listings engine intake.
  */
 
-import { runAiListingBuilder } from '../ai-listings-builder/index.js';
 import { mapUserListingRowToListing } from '../../src/ai-listings/repository/adapters/user-listings-repository.js';
 import { toAiCategory } from './decision-options-api.js';
 
@@ -25,6 +24,7 @@ export async function buildAiListingFromUserInput(listingData) {
   }
 
   try {
+    const { runAiListingBuilder } = await import('../ai-listings-builder/index.js');
     const result = await runAiListingBuilder({ input, inputType: 'text' });
     if (!result?.canonical) {
       return { ok: false, message: 'AI ilan oluşturucu sonuç üretemedi.' };
