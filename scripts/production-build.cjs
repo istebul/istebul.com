@@ -217,6 +217,16 @@ staticFiles.forEach((file) => {
   }
 });
 
+const decisionCategoryCardCssSrc = 'js/features/decision-cards/decision-category-card.css';
+const decisionCategoryCardCssEntry = 'css/decision-category-card.css';
+if (fs.existsSync(path.join(root, decisionCategoryCardCssSrc))) {
+  fs.mkdirSync(path.join(root, 'css'), { recursive: true });
+  fs.copyFileSync(
+    path.join(root, decisionCategoryCardCssSrc),
+    path.join(root, decisionCategoryCardCssEntry)
+  );
+}
+
 buildHashedCssAssets({
   root,
   assetRefs,
@@ -510,6 +520,7 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
   const tatilCssHashed = assetRefs.get('css/tatil.css');
   const themesCssHashed = assetRefs.get('css/vertical-themes.css');
   const finansHeroCssHashed = assetRefs.get('css/finans-hero.css');
+  const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
   if (tatilCssHashed) {
     html = html.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
   }
@@ -518,6 +529,12 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
   }
   if (finansHeroCssHashed) {
     html = html.replace(/\/css\/finans-hero(?:\.[a-f0-9]+)?\.css/g, `/${finansHeroCssHashed}`);
+  }
+  if (decisionCardCssHashed) {
+    html = html.replace(
+      /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+      `/${decisionCardCssHashed}`
+    );
   }
   fs.writeFileSync(htmlPath, minifyHtml(html));
 }
@@ -543,16 +560,6 @@ bundleVerticalPage(
   'kasko-runtime',
   /\/js\/kasko\/kasko-app\.js/g
 );
-
-const decisionCategoryCardCss = 'js/features/decision-cards/decision-category-card.css';
-const decisionCategoryCardCssDist = 'css/decision-category-card.css';
-if (fs.existsSync(path.join(root, decisionCategoryCardCss))) {
-  fs.mkdirSync(path.join(dist, 'css'), { recursive: true });
-  fs.copyFileSync(
-    path.join(root, decisionCategoryCardCss),
-    path.join(dist, decisionCategoryCardCssDist)
-  );
-}
 
 bundleVerticalPage(
   'js/verticals/listing-analysis/listing-analysis-app.js',
