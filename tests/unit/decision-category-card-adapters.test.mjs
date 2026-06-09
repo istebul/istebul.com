@@ -147,6 +147,8 @@ test('konut adapter happy path', () => {
   });
   assertViewModelBasics(vm, 'konut', konutScenario);
   assert.ok(vm.signals.some((s) => s.key === 'dti'));
+  assert.match(vm.cta.primary.label, /incele/i);
+  assert.match(vm.cta.secondary.label, /karşılaştır/i);
 });
 
 test('auto adapter happy path', () => {

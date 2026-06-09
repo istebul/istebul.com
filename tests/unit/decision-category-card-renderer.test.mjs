@@ -20,13 +20,13 @@ const sampleState = {
   budget_level: 'orta'
 };
 
-test('isDecisionCardsVertical gates sigorta kasko finans tatil auto only', () => {
+test('isDecisionCardsVertical gates sigorta kasko finans tatil auto konut', () => {
   assert.equal(isDecisionCardsVertical('sigorta'), true);
   assert.equal(isDecisionCardsVertical('kasko'), true);
   assert.equal(isDecisionCardsVertical('finans'), true);
   assert.equal(isDecisionCardsVertical('tatil'), true);
   assert.equal(isDecisionCardsVertical('auto'), true);
-  assert.equal(isDecisionCardsVertical('konut'), false);
+  assert.equal(isDecisionCardsVertical('konut'), true);
   assert.equal(isDecisionCardsVertical('araba'), false);
 });
 

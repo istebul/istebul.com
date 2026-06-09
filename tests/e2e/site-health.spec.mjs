@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { completeKonutWizard } from './helpers/konut-wizard.mjs';
 
 const PAGES = [
   { path: '/', heading: /yalnız değilsiniz/i },
@@ -676,6 +677,94 @@ test.describe('Site health — readability and layout', () => {
     await expect(v2Root.locator('[data-insight-why]')).toContainText(/güvenlik payı|nakit/i);
     await expect(v2Root.locator('[data-insight-risk]')).toContainText(/nakit tamponu|Peşinat sonrası/i);
     await expect(v2Root.locator('.konut-v2-hero-badge--score')).toContainText(/\d+/);
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
+  test('/konut/ without decision_cards flag keeps decision cards hidden', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.goto('/konut/');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+
+    await expect(page.locator('#housing-results .ib-decision-category-card')).toHaveCount(0);
+    await expect(page.locator('#housing-results .konut-v2-root')).toBeVisible();
+    await expect(page.locator('html')).not.toHaveAttribute('data-decision-cards', '1');
+  });
+
+  test('/konut/?decision_cards=1 shows decision category cards with scenario score', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.goto('/konut/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+
+    const cards = page.locator('#housing-results .ib-decision-category-card');
+    await expect(cards).toHaveCount(4);
+    await expect(page.locator('html')).toHaveAttribute('data-decision-cards', '1');
+
+    const firstCard = cards.first();
+    const scoreAttr = await firstCard.getAttribute('data-decision-score');
+    const scoreText = await firstCard.locator('.ib-decision-card__score-value').innerText();
+    expect(scoreAttr).toBe(scoreText.trim());
+    await expect(firstCard.locator('.ib-decision-card__ai-summary')).not.toBeEmpty();
+    await expect(firstCard.locator('.ib-decision-card__signals .ib-decision-card__signal')).toHaveCount(4);
+  });
+
+  test('/konut/?decision_cards=1 primary CTA highlights scenario card', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.goto('/konut/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+
+    const target = page.locator('#housing-results .ib-decision-category-card[data-option="lower-budget"]');
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(target.locator('.ib-decision-card-select')).toContainText(/incele/i);
+  });
+
+  test('/konut/?decision_cards=1 secondary compare CTA does not change selection', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.goto('/konut/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+
+    const target = page.locator('#housing-results .ib-decision-category-card').nth(1);
+    await target.locator('.ib-decision-card-select').click();
+    await expect(target).toHaveClass(/is-selected/);
+
+    await target.locator('.ib-decision-card-secondary').click();
+    await expect(target).toHaveClass(/is-selected/);
+    await expect(page.locator('#housing-results .konut-v2-alts')).toBeVisible();
+  });
+
+  test('/konut/?decision_cards=1 keeps cash_buffer AI insight @390px without overflow', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/konut/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page, { cashBuffer: '0-1' });
+
+    await expect(page.locator('#housing-results .ib-decision-category-card').first()).toBeVisible();
+    await expect(page.locator('#housing-results [data-insight-why]')).toContainText(/güvenlik payı|nakit/i);
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth > doc.clientWidth + 2;
+    });
+    expect(overflow).toBe(false);
+  });
+
+  test('/konut/?decision_cards=1 @390px decision cards avoid horizontal overflow', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/konut/?decision_cards=1');
+    await page.waitForLoadState('domcontentloaded');
+    await completeKonutWizard(page);
+    await expect(page.locator('#housing-results .ib-decision-category-card').first()).toBeVisible();
 
     const overflow = await page.evaluate(() => {
       const doc = document.documentElement;
