@@ -371,7 +371,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     const emptyState = page.locator('#listings-grid .marketplace-empty-state');
     await expect(emptyState).toBeVisible({ timeout: 15000 });
 
-    const primaryCta = emptyState.getByRole('link', { name: /Karar analizini başlat/i });
+    const primaryCta = emptyState.getByRole('link', { name: /Kararını analiz et/i });
     await expect(primaryCta).toBeVisible();
     await expect(primaryCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
 
@@ -1702,7 +1702,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(emptyState).toBeVisible({ timeout: 15000 });
     await expect(emptyState.getByRole('heading', { name: /Karar öncesi seçenekleri burada toplayın/i })).toBeVisible();
 
-    const primaryCta = emptyState.getByRole('link', { name: /Karar analizini başlat/i });
+    const primaryCta = emptyState.getByRole('link', { name: /Kararını analiz et/i });
     await expect(primaryCta).toBeVisible();
     await expect(primaryCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
     await expect(primaryCta).toHaveClass(/btn-primary/);

@@ -49,7 +49,7 @@ for (const route of requiredRoutes) {
   }
 }
 
-const heroMust = ['Kararımı Analiz Et', 'Nasıl Çalışır?'];
+const heroMust = ['Kararını analiz et', 'Nasıl Çalışır?'];
 const navMust = ['Fiyatlandırma', 'Hakkımızda', 'Hemen Başla'];
 for (const text of [...heroMust, ...navMust]) {
   if (!html.includes(text)) {

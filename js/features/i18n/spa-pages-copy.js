@@ -29,7 +29,7 @@ const tr = {
     proBullet: 'Pro: derin TCO, AI karar notu, premium export',
     enterpriseBullet: 'Enterprise: API, webhook, SLA',
     cancelBullet: 'İstediğiniz zaman iptal',
-    ctaPrimary: 'Ücretsiz analiz başlat',
+    ctaPrimary: 'Ücretsiz karar analizi başlat',
     ctaSecondary: 'Metodolojiyi incele'
   },
   premiumKarar: {
