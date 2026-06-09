@@ -43,7 +43,7 @@ import {
   resolveCityRatioForSync,
   shouldShowCityRatioField
 } from './auto-wizard-profile.js';
-import { bootstrapAutoFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
+import { bootstrapAutoFromAssistantQuery } from '../features/assistant/assistant-vertical-bootstrap.js';
 import { mirrorLegacyAutoFunnel, trackAutoStart, trackGrowthFunnel, GROWTH_FUNNEL_EVENTS } from '../features/growth/growth-funnel.js';
 import { trackPaidFunnelStep } from '../features/growth/paid-acquisition.js';
 import { sendServerPaidConversion } from '../features/growth/paid-capi-bridge.js';

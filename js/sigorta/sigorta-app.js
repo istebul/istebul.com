@@ -22,7 +22,7 @@ import {
   trackSigortaStep,
   saveSigortaLead
 } from './sigorta-intake.js';
-import { bootstrapSigortaFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
+import { bootstrapSigortaFromAssistantQuery } from '../features/assistant/assistant-vertical-bootstrap.js';
 
 /** Sigorta sayfası DOM id’leri — vacation-* id’leri ile çakışmayı önler */
 export const SIGORTA_DOM_IDS = {

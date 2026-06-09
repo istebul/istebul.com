@@ -30,7 +30,7 @@ import {
   renderDecisionCategoryCardsGridHtml,
   syncDecisionCardsFlagToDocument
 } from '../features/decision-cards/decision-category-card-renderer.js';
-import { bootstrapTatilFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
+import { bootstrapTatilFromAssistantQuery } from '../features/assistant/assistant-vertical-bootstrap.js';
 import {
   trackAnalysisCompleted,
   trackLeadFormOpened,
