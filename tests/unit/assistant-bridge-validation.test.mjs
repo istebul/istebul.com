@@ -223,6 +223,126 @@ test('bootstrapKaskoFromAssistantQuery rejects invalid coverage enum', () => {
   assert.equal(state.coverage_level, 'full');
 });
 
+test('bootstrapKaskoFromAssistantQuery round-trips usage_type risk and budget_level', () => {
+  const state = {
+    vehicle_category: '',
+    vehicle_year_band: '',
+    usage_type: '',
+    coverage_level: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapKaskoFromAssistantQuery(
+    state,
+    new URLSearchParams(
+      'vehicle=otomobil&usage_type=ozel&coverage=standard&risk=orta&budget_level=orta&year=0-3'
+    )
+  );
+  assert.equal(state.vehicle_category, 'otomobil');
+  assert.equal(state.vehicle_year_band, '0-3');
+  assert.equal(state.usage_type, 'ozel');
+  assert.equal(state.coverage_level, 'standard');
+  assert.equal(state.risk_perception, 'orta');
+  assert.equal(state.budget_level, 'orta');
+});
+
+test('bootstrapKaskoFromAssistantQuery maps risk param to risk_perception state', () => {
+  const state = {
+    vehicle_category: 'otomobil',
+    vehicle_year_band: '',
+    usage_type: 'ozel',
+    coverage_level: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapKaskoFromAssistantQuery(state, new URLSearchParams('risk=yuksek'));
+  assert.equal(state.risk_perception, 'yuksek');
+});
+
+test('bootstrapKaskoFromAssistantQuery accepts risk_perception alias', () => {
+  const state = {
+    vehicle_category: 'suv',
+    vehicle_year_band: '',
+    usage_type: 'ozel',
+    coverage_level: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapKaskoFromAssistantQuery(state, new URLSearchParams('risk_perception=yuksek'));
+  assert.equal(state.risk_perception, 'yuksek');
+});
+
+test('bootstrapKaskoFromAssistantQuery rejects invalid usage_type risk and budget_level', () => {
+  const state = {
+    vehicle_category: 'otomobil',
+    vehicle_year_band: '0-3',
+    usage_type: 'ozel',
+    coverage_level: 'standard',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  };
+  bootstrapKaskoFromAssistantQuery(
+    state,
+    new URLSearchParams('usage_type=invalid&risk=invalid&budget_level=invalid')
+  );
+  assert.equal(state.usage_type, 'ozel');
+  assert.equal(state.risk_perception, 'orta');
+  assert.equal(state.budget_level, 'orta');
+});
+
+test('bootstrapKaskoFromAssistantQuery rejects suv coverage mini without setting coverage', () => {
+  const state = {
+    vehicle_category: '',
+    vehicle_year_band: '',
+    usage_type: '',
+    coverage_level: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapKaskoFromAssistantQuery(
+    state,
+    new URLSearchParams('vehicle=suv&usage_type=ozel&coverage=mini')
+  );
+  assert.equal(state.vehicle_category, 'suv');
+  assert.equal(state.usage_type, 'ozel');
+  assert.equal(state.coverage_level, '');
+});
+
+test('bootstrapKaskoFromAssistantQuery rejects ticari_arac usage ozel', () => {
+  const state = {
+    vehicle_category: '',
+    vehicle_year_band: '',
+    usage_type: '',
+    coverage_level: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapKaskoFromAssistantQuery(
+    state,
+    new URLSearchParams('vehicle=ticari_arac&usage_type=ozel')
+  );
+  assert.equal(state.vehicle_category, 'ticari_arac');
+  assert.equal(state.usage_type, '');
+});
+
+test('bootstrapKaskoFromAssistantQuery rejects motosiklet coverage full', () => {
+  const state = {
+    vehicle_category: '',
+    vehicle_year_band: '',
+    usage_type: '',
+    coverage_level: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapKaskoFromAssistantQuery(
+    state,
+    new URLSearchParams('vehicle=motosiklet&usage_type=ozel&coverage=full')
+  );
+  assert.equal(state.vehicle_category, 'motosiklet');
+  assert.equal(state.usage_type, 'ozel');
+  assert.equal(state.coverage_level, '');
+});
+
 test('finansman konut fork limits term options to vertical wizard values', () => {
   const questions = [
     {

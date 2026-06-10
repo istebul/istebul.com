@@ -47,7 +47,32 @@ const SIGORTA_TYPES = new Set(['arac', 'konut', 'saglik', 'seyahat']);
 const TRI_LEVEL = new Set(['dusuk', 'orta', 'yuksek']);
 const KASKO_VEHICLES = new Set(['otomobil', 'suv', 'motosiklet', 'ticari_arac']);
 const KASKO_YEARS = new Set(['0-3', '4-10', '11plus']);
+const KASKO_USAGE_TYPES = new Set(['ozel', 'ticari']);
 const KASKO_COVERAGE = new Set(['mini', 'standard', 'full']);
+const KASKO_USAGE_BY_VEHICLE = Object.freeze({
+  otomobil: new Set(['ozel', 'ticari']),
+  suv: new Set(['ozel']),
+  motosiklet: new Set(['ozel']),
+  ticari_arac: new Set(['ticari'])
+});
+const KASKO_COVERAGE_BY_VEHICLE_USAGE = Object.freeze({
+  otomobil: { ozel: new Set(['mini', 'standard', 'full']), ticari: new Set(['mini', 'standard', 'full']) },
+  suv: { ozel: new Set(['standard', 'full']) },
+  motosiklet: { ozel: new Set(['mini', 'standard']) },
+  ticari_arac: { ticari: new Set(['standard', 'full']) }
+});
+const KASKO_RISK_BY_VEHICLE = Object.freeze({
+  otomobil: new Set(['dusuk', 'orta', 'yuksek']),
+  suv: new Set(['orta', 'yuksek']),
+  motosiklet: new Set(['orta', 'yuksek']),
+  ticari_arac: new Set(['orta', 'yuksek'])
+});
+const KASKO_BUDGET_BY_VEHICLE = Object.freeze({
+  otomobil: new Set(['dusuk', 'orta', 'yuksek']),
+  suv: new Set(['orta', 'yuksek']),
+  motosiklet: new Set(['dusuk', 'orta']),
+  ticari_arac: new Set(['orta', 'yuksek'])
+});
 
 function isValidPositiveInteger(value) {
   const raw = String(value ?? '').trim();
@@ -121,6 +146,31 @@ function readFinansRateSensitivityParam(params, purpose = '') {
     if (raw && isValidFinansRateSensitivityForPurpose(purpose, raw)) return raw;
   }
   return null;
+}
+
+function isValidKaskoUsageForVehicle(vehicle = '', usage = '') {
+  const allowed = KASKO_USAGE_BY_VEHICLE[String(vehicle ?? '').trim()];
+  const value = String(usage ?? '').trim();
+  return Boolean(allowed && value && allowed.has(value));
+}
+
+function isValidKaskoCoverageForVehicleUsage(vehicle = '', usage = '', coverage = '') {
+  const byUsage = KASKO_COVERAGE_BY_VEHICLE_USAGE[String(vehicle ?? '').trim()];
+  const allowed = byUsage?.[String(usage ?? '').trim()];
+  const value = String(coverage ?? '').trim();
+  return Boolean(allowed && value && allowed.has(value));
+}
+
+function isValidKaskoRiskForVehicle(vehicle = '', risk = '') {
+  const allowed = KASKO_RISK_BY_VEHICLE[String(vehicle ?? '').trim()];
+  const value = String(risk ?? '').trim();
+  return Boolean(allowed && value && allowed.has(value));
+}
+
+function isValidKaskoBudgetForVehicle(vehicle = '', budgetLevel = '') {
+  const allowed = KASKO_BUDGET_BY_VEHICLE[String(vehicle ?? '').trim()];
+  const value = String(budgetLevel ?? '').trim();
+  return Boolean(allowed && value && allowed.has(value));
 }
 
 export function bootstrapAutoFromAssistantQuery(state, params = new URLSearchParams()) {
@@ -228,9 +278,34 @@ export function bootstrapSigortaFromAssistantQuery(state, params = new URLSearch
 export function bootstrapKaskoFromAssistantQuery(state, params = new URLSearchParams()) {
   if (!state || !params) return state;
 
-  applyPrefillField(state, 'vehicle_category', readAllowedParam(params, ['vehicle', 'vehicle_category'], KASKO_VEHICLES));
+  const vehicle = readAllowedParam(params, ['vehicle', 'vehicle_category'], KASKO_VEHICLES);
+  applyPrefillField(state, 'vehicle_category', vehicle);
+  const vehicleFork = state.vehicle_category || vehicle;
+
   applyPrefillField(state, 'vehicle_year_band', readAllowedParam(params, ['year', 'vehicle_year_band'], KASKO_YEARS));
-  applyPrefillField(state, 'coverage_level', readAllowedParam(params, ['coverage', 'coverage_level'], KASKO_COVERAGE));
+
+  const usageFromQuery = pickEnum(params.get('usage_type'), KASKO_USAGE_TYPES);
+  if (usageFromQuery && vehicleFork && isValidKaskoUsageForVehicle(vehicleFork, usageFromQuery)) {
+    applyPrefillField(state, 'usage_type', usageFromQuery);
+  }
+  const usageFork = state.usage_type ||
+    (usageFromQuery && vehicleFork && isValidKaskoUsageForVehicle(vehicleFork, usageFromQuery) ? usageFromQuery : null);
+
+  const coverageFromQuery = readAllowedParam(params, ['coverage', 'coverage_level'], KASKO_COVERAGE);
+  if (coverageFromQuery && vehicleFork && usageFork &&
+    isValidKaskoCoverageForVehicleUsage(vehicleFork, usageFork, coverageFromQuery)) {
+    applyPrefillField(state, 'coverage_level', coverageFromQuery);
+  }
+
+  const riskFromQuery = readAllowedParam(params, ['risk', 'risk_perception'], TRI_LEVEL);
+  if (riskFromQuery && vehicleFork && isValidKaskoRiskForVehicle(vehicleFork, riskFromQuery)) {
+    applyPrefillField(state, 'risk_perception', riskFromQuery);
+  }
+
+  const budgetFromQuery = readAllowedParam(params, 'budget_level', TRI_LEVEL);
+  if (budgetFromQuery && vehicleFork && isValidKaskoBudgetForVehicle(vehicleFork, budgetFromQuery)) {
+    applyPrefillField(state, 'budget_level', budgetFromQuery);
+  }
 
   return state;
 }

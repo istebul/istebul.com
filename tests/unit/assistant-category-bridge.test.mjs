@@ -91,3 +91,81 @@ test('buildVerticalContinueHref carries finansman query params with purpose-awar
   assert.match(href, /capacity=40k/);
   assert.match(href, /rate_sensitivity=dusuk/);
 });
+
+test('buildVerticalContinueHref carries kasko deep prefill with fork-gated fields', () => {
+  const href = buildVerticalContinueHref('kasko', {
+    vehicle_category: 'otomobil',
+    vehicle_year_band: '0-3',
+    usage_type: 'ozel',
+    coverage_level: 'standard',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /vehicle=otomobil/);
+  assert.match(href, /year=0-3/);
+  assert.match(href, /usage_type=ozel/);
+  assert.match(href, /coverage=standard/);
+  assert.match(href, /risk=orta/);
+  assert.match(href, /budget_level=orta/);
+});
+
+test('buildVerticalContinueHref omits numeric budget from kasko href', () => {
+  const href = buildVerticalContinueHref('kasko', {
+    vehicle_category: 'otomobil',
+    vehicle_year_band: '0-3',
+    usage_type: 'ozel',
+    coverage_level: 'standard',
+    risk_perception: 'orta',
+    budget_level: 'orta',
+    budget: '50000'
+  });
+  assert.match(href, /usage_type=ozel/);
+  assert.match(href, /risk=orta/);
+  assert.match(href, /budget_level=orta/);
+  assert.doesNotMatch(href, /budget=50000/);
+  assert.doesNotMatch(href, /amount=/);
+});
+
+test('buildVerticalContinueHref omits kasko coverage when vehicle fork rejects mini for suv', () => {
+  const href = buildVerticalContinueHref('kasko', {
+    vehicle_category: 'suv',
+    vehicle_year_band: '0-3',
+    usage_type: 'ozel',
+    coverage_level: 'mini',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /vehicle=suv/);
+  assert.match(href, /usage_type=ozel/);
+  assert.doesNotMatch(href, /coverage=mini/);
+  assert.doesNotMatch(href, /coverage=/);
+});
+
+test('buildVerticalContinueHref omits kasko usage when vehicle fork rejects ozel for ticari_arac', () => {
+  const href = buildVerticalContinueHref('kasko', {
+    vehicle_category: 'ticari_arac',
+    vehicle_year_band: '4-10',
+    usage_type: 'ozel',
+    coverage_level: 'standard',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /vehicle=ticari_arac/);
+  assert.doesNotMatch(href, /usage_type=ozel/);
+  assert.doesNotMatch(href, /coverage=/);
+});
+
+test('buildVerticalContinueHref omits kasko coverage full for motosiklet fork', () => {
+  const href = buildVerticalContinueHref('kasko', {
+    vehicle_category: 'motosiklet',
+    vehicle_year_band: '0-3',
+    usage_type: 'ozel',
+    coverage_level: 'full',
+    risk_perception: 'orta',
+    budget_level: 'dusuk'
+  });
+  assert.match(href, /vehicle=motosiklet/);
+  assert.match(href, /usage_type=ozel/);
+  assert.doesNotMatch(href, /coverage=full/);
+  assert.doesNotMatch(href, /coverage=/);
+});
