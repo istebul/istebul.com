@@ -423,7 +423,7 @@ a.nav-item{text-decoration:none;color:inherit;}
         </div>
       </div>
       <nav class="nav" id="admin-nav" aria-label="Admin menü">
-        <div class="nav-item active" data-page-target="dashboard"><span class="nav-icon" aria-hidden="true">◆</span><span class="nav-label">Dashboard</span></div>
+        <div class="nav-item active" data-page-target="dashboard"><span class="nav-icon" aria-hidden="true">◆</span><span class="nav-label">Operasyon Özeti</span></div>
         <div class="nav-item" data-page-target="users"><span class="nav-icon" aria-hidden="true">◎</span><span class="nav-label">Kullanıcılar</span></div>
         <div class="nav-item" data-page-target="auto-leads"><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">Lead CRM</span></div>
         <div class="nav-group">
@@ -459,7 +459,7 @@ a.nav-item{text-decoration:none;color:inherit;}
             <div class="nav-item" data-page-target="partner-endpoints"><span class="nav-label">Partner kanalları</span></div>
             <div class="nav-item" data-page-target="partner-applications"><span class="nav-label">Başvurular</span></div>
             <div class="nav-item" data-page-target="partner-dispatch-logs"><span class="nav-label">Teslimat logları</span></div>
-            <div class="nav-item" data-page-target="dashboard-partner-ops"><span class="nav-label">Partner ops</span></div>
+            <div class="nav-item" data-page-target="dashboard-partner-ops"><span class="nav-label">Partner Operasyon Özeti</span></div>
           </div>
         </div>
         <div class="nav-group">
@@ -485,23 +485,23 @@ a.nav-item{text-decoration:none;color:inherit;}
         <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">Analitik</button>
           <div class="nav-group-items">
-            <div class="nav-item" data-page-target="unified-funnel"><span class="nav-label">Unified Funnel</span></div>
+            <div class="nav-item" data-page-target="unified-funnel"><span class="nav-label">Birleşik Funnel</span></div>
             <div class="nav-item" data-page-target="auto-analytics"><span class="nav-label">Auto analitik</span></div>
             <div class="nav-item" data-page-target="platform-analytics"><span class="nav-label">Platform analitik</span></div>
-            <div class="nav-item" data-page-target="dashboard-ceo"><span class="nav-label">CEO</span></div>
-            <div class="nav-item" data-page-target="dashboard-growth"><span class="nav-label">Growth</span></div>
-            <div class="nav-item" data-page-target="dashboard-support"><span class="nav-label">Support</span></div>
-            <div class="nav-item" data-page-target="investor-metrics"><span class="nav-label">Executive KPIs</span></div>
+            <div class="nav-item" data-page-target="dashboard-ceo"><span class="nav-label">CEO Özeti</span></div>
+            <div class="nav-item" data-page-target="dashboard-growth"><span class="nav-label">Büyüme Özeti</span></div>
+            <div class="nav-item" data-page-target="dashboard-support"><span class="nav-label">Destek Özeti</span></div>
+            <div class="nav-item" data-page-target="investor-metrics"><span class="nav-label">Yatırımcı KPI</span></div>
           </div>
         </div>
-        <div class="nav-item" data-page-target="dashboard-revenue"><span class="nav-icon" aria-hidden="true">₺</span><span class="nav-label">Revenue</span></div>
+        <div class="nav-item" data-page-target="dashboard-revenue"><span class="nav-icon" aria-hidden="true">₺</span><span class="nav-label">Gelir Özeti</span></div>
         <div class="nav-item" data-page-target="payments"><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">Payments</span></div>
         <div class="nav-item" data-page-target="settings"><span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Ayarlar</span></div>
         <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">Sistem Logları</button>
           <div class="nav-group-items">
             <div class="nav-item" data-page-target="observability"><span class="nav-label">Observability</span></div>
-            <div class="nav-item" data-page-target="ops-command-center"><span class="nav-label">Ops command</span></div>
+            <div class="nav-item" data-page-target="ops-command-center"><span class="nav-label">Operasyon Komuta Merkezi</span></div>
           </div>
         </div>
         <div class="nav-group" data-default-collapsed="true">
@@ -544,7 +544,7 @@ a.nav-item{text-decoration:none;color:inherit;}
           <div class="admin-topbar-profile">
             <div class="user-avatar" id="admin-topbar-avatar" aria-hidden="true">A</div>
             <div class="admin-topbar-profile-copy">
-              <span class="admin-topbar-title" id="admin-topbar-title">Dashboard</span>
+              <span class="admin-topbar-title" id="admin-topbar-title">Operasyon Özeti</span>
               <span class="user-email" id="admin-topbar-email">—</span>
             </div>
           </div>
@@ -556,7 +556,7 @@ a.nav-item{text-decoration:none;color:inherit;}
         </button>
         <div>
           <span class="admin-mobile-kicker">isteBul Admin</span>
-          <span class="admin-mobile-title" id="admin-mobile-title">Genel Bakış</span>
+          <span class="admin-mobile-title" id="admin-mobile-title">Operasyon Özeti</span>
         </div>
       </header>
 
@@ -574,7 +574,13 @@ a.nav-item{text-decoration:none;color:inherit;}
       </div>
 
       <div class="page active" id="page-dashboard">
-        <div class="page-header"><h2>Operasyon merkezi</h2><p>AI destekli karar platformu — canlı özet</p></div>
+        <div class="page-header">
+          <h2>Operasyon Özeti</h2>
+          <p>Karar platformu operasyon girişi — CRM KPI özeti; canlı executive, funnel ve komuta detayları için ilgili panellere gidin.</p>
+        </div>
+        <div class="card admin-landing-notice" role="note">
+          <p class="text-muted-sm" style="margin:0">Üst KPI kartları canlı CRM verisidir. Aşağıdaki grafik alanları yönlendirme/örnek görsel içindir; birleşik funnel, executive rollup ve partner ops için <strong>Operasyon panelleri</strong> bölümünü kullanın.</p>
+        </div>
         <div class="kpi-grid kpi-grid--premium stat-grid">
           <article class="stat-card kpi-card kpi-card--accent"><div class="stat-label">Toplam kullanıcı</div><div class="stat-value" id="stat-users">—</div><div class="stat-sub kpi-trend kpi-trend--up">Kayıtlı profiller</div></article>
           <article class="stat-card kpi-card"><div class="stat-label">Bugünkü analiz</div><div class="stat-value" id="stat-analyses-today">—</div><div class="stat-sub">Bugün oluşan lead</div></article>
@@ -584,8 +590,8 @@ a.nav-item{text-decoration:none;color:inherit;}
           <article class="stat-card kpi-card kpi-card--warn"><div class="stat-label">Sistem uyarıları</div><div class="stat-value" id="stat-system-alerts">0</div><div class="stat-sub"><button type="button" class="btn btn-ghost btn-sm" data-page-target="observability">Logları aç</button></div></article>
         </div>
         <div class="admin-analytics-grid">
-          <article class="card admin-chart-card">
-            <div class="card-title">Kategori bazlı kullanım</div>
+          <article class="card admin-chart-card admin-chart-card--sample" aria-label="Örnek kategori dağılımı — canlı veri değil">
+            <div class="card-title">Kategori bazlı kullanım <span class="text-muted-sm">(örnek görsel)</span></div>
             <div class="admin-donut" style="--seg-auto:42;--seg-home:18;--seg-travel:12;--seg-fin:28" aria-hidden="true">
               <div class="admin-donut-center"><strong>Auto</strong><span>öncelik</span></div>
             </div>
@@ -595,14 +601,14 @@ a.nav-item{text-decoration:none;color:inherit;}
               <li><span class="admin-legend-dot admin-legend-dot--travel"></span>Tatil %12</li>
               <li><span class="admin-legend-dot admin-legend-dot--fin"></span>Finans %28</li>
             </ul>
-            <p class="text-muted-sm admin-chart-note">Gösterim: örnek dağılım · canlı veri için Platform Analytics</p>
+            <p class="text-muted-sm admin-chart-note">Örnek dağılım · canlı kategori analizi için <button type="button" class="btn btn-ghost btn-sm" data-page-target="platform-analytics">Platform analitik</button> veya <button type="button" class="btn btn-ghost btn-sm" data-page-target="unified-funnel">Birleşik Funnel</button></p>
           </article>
-          <article class="card admin-chart-card">
-            <div class="card-title">Lead dönüşüm trendi</div>
+          <article class="card admin-chart-card admin-chart-card--sample" aria-label="Örnek trend görseli — canlı veri değil">
+            <div class="card-title">Lead dönüşüm trendi <span class="text-muted-sm">(örnek görsel)</span></div>
             <div class="admin-spark-bars" aria-hidden="true">
               <span style="--h:35%"></span><span style="--h:52%"></span><span style="--h:48%"></span><span style="--h:61%"></span><span style="--h:58%"></span><span style="--h:72%"></span><span style="--h:68%"></span>
             </div>
-            <p class="text-muted-sm admin-chart-note">Son 7 gün · <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-analytics">Detay</button></p>
+            <p class="text-muted-sm admin-chart-note">Örnek trend · canlı funnel için <button type="button" class="btn btn-ghost btn-sm" data-page-target="unified-funnel">Birleşik Funnel</button> veya <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-analytics">Auto analitik</button></p>
           </article>
           <article class="card admin-chart-card admin-chart-card--compact">
             <div class="card-title">Lead durum dağılımı</div>
@@ -612,8 +618,18 @@ a.nav-item{text-decoration:none;color:inherit;}
               <li><span class="lead-pill lead-pill--interested">Teklif</span><strong>—</strong></li>
               <li><span class="lead-pill lead-pill--closed">Kazanıldı</span><strong>—</strong></li>
             </ul>
-            <p class="text-muted-sm admin-chart-note"><button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-leads">CRM aç</button></p>
+            <p class="text-muted-sm admin-chart-note">Yalnızca &quot;Yeni&quot; sayacı canlı · tam pipeline için <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-leads">Lead CRM</button></p>
           </article>
+        </div>
+        <div class="card">
+          <div class="card-title">Operasyon panelleri</div>
+          <p class="text-muted-sm">Canlı executive, funnel ve komuta rollup — detay panelleri</p>
+          <div class="quick-actions">
+            <button type="button" class="btn btn-primary btn-sm" data-page-target="ops-command-center">Operasyon Komuta Merkezi</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-page-target="unified-funnel">Birleşik Funnel</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-page-target="dashboard-partner-ops">Partner Operasyon Özeti</button>
+            <a class="btn btn-ghost btn-sm" href="/admin/ai-listings/">AI Karar Merkezi</a>
+          </div>
         </div>
         <div class="card">
           <div class="card-title">Hızlı işlemler</div>
@@ -659,17 +675,17 @@ a.nav-item{text-decoration:none;color:inherit;}
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-ceo">
-        <div class="page-header"><h2>CEO Dashboard</h2><p>Executive summary, MRR, funnel, partner quality, early-intervention alerts</p></div>
+        <div class="page-header"><h2>CEO Özeti</h2><p>Executive özet, MRR, funnel, partner kalitesi ve erken müdahale uyarıları</p></div>
         <div class="card"><div id="dashboard-ceo-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-growth">
-        <div class="page-header"><h2>Growth Dashboard</h2><p>Funnel, channels, experiments, paid acquisition, retention</p></div>
+        <div class="page-header"><h2>Büyüme Özeti</h2><p>Funnel, kanallar, deneyler, ücretli edinim ve retention</p></div>
         <div class="card"><div id="dashboard-growth-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-revenue">
-        <div class="page-header"><h2>Revenue Dashboard</h2><p>MRR, churn, checkout, RevOps signals, pipeline</p></div>
+        <div class="page-header"><h2>Gelir Özeti</h2><p>MRR, churn, checkout, RevOps sinyalleri ve pipeline</p></div>
         <div class="card"><div id="dashboard-revenue-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
@@ -682,12 +698,12 @@ a.nav-item{text-decoration:none;color:inherit;}
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-partner-ops">
-        <div class="page-header"><h2>Partner Ops Dashboard</h2><p>Dispatch health, SLA, retry queue, webhook endpoints</p></div>
+        <div class="page-header"><h2>Partner Operasyon Özeti</h2><p>Dispatch sağlığı, SLA, retry kuyruğu ve webhook uç noktaları</p></div>
         <div class="card"><div id="dashboard-partner-ops-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-support">
-        <div class="page-header"><h2>Support Dashboard</h2><p>FAQ, lifecycle, support workflows, deflection metrics</p></div>
+        <div class="page-header"><h2>Destek Özeti</h2><p>SSS, lifecycle, destek iş akışları ve deflection metrikleri</p></div>
         <div class="card"><div id="dashboard-support-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
@@ -1538,8 +1554,8 @@ a.nav-item{text-decoration:none;color:inherit;}
 
       <div class="page" id="page-unified-funnel">
         <div class="page-header">
-          <h2>Unified Funnel Dashboard</h2>
-          <p>Auto · Konut · Tatil · Finans — ziyaret, sonuç, lead ve dönüşüm karşılaştırması</p>
+          <h2>Birleşik Funnel</h2>
+          <p>Auto · Konut · Tatil · Finans — ziyaret, sonuç, lead ve dönüşüm karşılaştırması (canlı analytics)</p>
         </div>
         <div id="unified-funnel-root"><div class="empty">Yükleniyor…</div></div>
       </div>
@@ -1566,8 +1582,8 @@ a.nav-item{text-decoration:none;color:inherit;}
 
       <div class="page" id="page-investor-metrics">
         <div class="page-header">
-          <h2>Executive KPIs (CEO)</h2>
-          <p>Traffic, funnel, conversion, retention, churn, ARPU, partner quality — <code>npm run metrics:executive</code></p>
+          <h2>Yatırımcı KPI</h2>
+          <p>Trafik, funnel, dönüşüm, retention, churn, ARPU, partner kalitesi — <code>npm run metrics:executive</code></p>
         </div>
         <div class="card">
           <div id="investor-metrics-root"><div class="empty">Yükleniyor...</div></div>
@@ -1586,8 +1602,8 @@ a.nav-item{text-decoration:none;color:inherit;}
 
       <div class="page" id="page-ops-command-center">
         <div class="page-header">
-          <h2>Ops Command Center (P9)</h2>
-          <p>Revenue · customer · partner · analytics · lifecycle · ops · AI — automated rollups and threshold alerts</p>
+          <h2>Operasyon Komuta Merkezi</h2>
+          <p>Gelir · müşteri · partner · analitik · lifecycle · ops · AI — otomatik rollup ve eşik uyarıları</p>
         </div>
         <div class="card">
           <div id="ops-command-center-root"><div class="empty">Yükleniyor...</div></div>
