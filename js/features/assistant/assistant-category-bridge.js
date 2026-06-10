@@ -46,6 +46,36 @@ const FINANS_RATE_SENSITIVITY = {
   isletme: ',orta,yuksek,'
 };
 
+const KASKO_VEHICLES_CSV = ',otomobil,suv,motosiklet,ticari_arac,';
+const KASKO_YEARS_CSV = ',0-3,4-10,11plus,';
+const KASKO_USAGE_CSV = ',ozel,ticari,';
+const KASKO_COVERAGE_CSV = ',mini,standard,full,';
+const KASKO_TRI_LEVEL_CSV = ',dusuk,orta,yuksek,';
+const KASKO_USAGE_BY_VEHICLE = Object.freeze({
+  otomobil: ',ozel,ticari,',
+  suv: ',ozel,',
+  motosiklet: ',ozel,',
+  ticari_arac: ',ticari,'
+});
+const KASKO_COVERAGE_BY_VEHICLE_USAGE = Object.freeze({
+  otomobil: { ozel: ',mini,standard,full,', ticari: ',mini,standard,full,' },
+  suv: { ozel: ',standard,full,' },
+  motosiklet: { ozel: ',mini,standard,' },
+  ticari_arac: { ticari: ',standard,full,' }
+});
+const KASKO_RISK_BY_VEHICLE = Object.freeze({
+  otomobil: ',dusuk,orta,yuksek,',
+  suv: ',orta,yuksek,',
+  motosiklet: ',orta,yuksek,',
+  ticari_arac: ',orta,yuksek,'
+});
+const KASKO_BUDGET_BY_VEHICLE = Object.freeze({
+  otomobil: ',dusuk,orta,yuksek,',
+  suv: ',orta,yuksek,',
+  motosiklet: ',dusuk,orta,',
+  ticari_arac: ',orta,yuksek,'
+});
+
 /** İl query değeri — hafif format doğrulaması (tam il listesi konut runtime'da). */
 const KONUT_PROVINCE_QUERY_PATTERN = /^[\p{L}\s'-]+$/u;
 
@@ -59,6 +89,31 @@ function isValidPositiveInteger(value) {
 function pickCsv(value, csv) {
   const v = String(value ?? '').trim();
   return v && csv.includes(`,${v},`) ? v : null;
+}
+
+function isValidKaskoUsageForVehicle(vehicle = '', usage = '') {
+  const csv = KASKO_USAGE_BY_VEHICLE[String(vehicle ?? '').trim()];
+  const value = String(usage ?? '').trim();
+  return Boolean(csv && value && csv.includes(`,${value},`));
+}
+
+function isValidKaskoCoverageForVehicleUsage(vehicle = '', usage = '', coverage = '') {
+  const byUsage = KASKO_COVERAGE_BY_VEHICLE_USAGE[String(vehicle ?? '').trim()];
+  const csv = byUsage?.[String(usage ?? '').trim()];
+  const value = String(coverage ?? '').trim();
+  return Boolean(csv && value && csv.includes(`,${value},`));
+}
+
+function isValidKaskoRiskForVehicle(vehicle = '', risk = '') {
+  const csv = KASKO_RISK_BY_VEHICLE[String(vehicle ?? '').trim()];
+  const value = String(risk ?? '').trim();
+  return Boolean(csv && value && csv.includes(`,${value},`));
+}
+
+function isValidKaskoBudgetForVehicle(vehicle = '', budgetLevel = '') {
+  const csv = KASKO_BUDGET_BY_VEHICLE[String(vehicle ?? '').trim()];
+  const value = String(budgetLevel ?? '').trim();
+  return Boolean(csv && value && csv.includes(`,${value},`));
 }
 
 export function normalizeAutoUsage(usage = '') {
@@ -223,9 +278,28 @@ export function buildVerticalContinueHref(categoryId, answers = {}) {
     return `/sigorta/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'kasko') {
-    if (answers.vehicle_category) params.set('vehicle', answers.vehicle_category);
-    if (answers.vehicle_year_band) params.set('year', answers.vehicle_year_band);
-    if (answers.coverage_level) params.set('coverage', answers.coverage_level);
+    const vehicle = pickCsv(answers.vehicle_category, KASKO_VEHICLES_CSV);
+    if (vehicle) params.set('vehicle', vehicle);
+    const year = pickCsv(answers.vehicle_year_band, KASKO_YEARS_CSV);
+    if (year) params.set('year', year);
+    const usage = pickCsv(answers.usage_type, KASKO_USAGE_CSV);
+    if (vehicle && usage && isValidKaskoUsageForVehicle(vehicle, usage)) {
+      params.set('usage_type', usage);
+    }
+    const coverage = pickCsv(answers.coverage_level, KASKO_COVERAGE_CSV);
+    const usageForCoverage = usage && isValidKaskoUsageForVehicle(vehicle, usage) ? usage : null;
+    if (vehicle && usageForCoverage && coverage &&
+      isValidKaskoCoverageForVehicleUsage(vehicle, usageForCoverage, coverage)) {
+      params.set('coverage', coverage);
+    }
+    const risk = pickCsv(answers.risk_perception, KASKO_TRI_LEVEL_CSV);
+    if (vehicle && risk && isValidKaskoRiskForVehicle(vehicle, risk)) {
+      params.set('risk', risk);
+    }
+    const budgetLevel = pickCsv(answers.budget_level, KASKO_TRI_LEVEL_CSV);
+    if (vehicle && budgetLevel && isValidKaskoBudgetForVehicle(vehicle, budgetLevel)) {
+      params.set('budget_level', budgetLevel);
+    }
     return `/kasko/${params.toString() ? `?${params}` : ''}`;
   }
   return '/';
