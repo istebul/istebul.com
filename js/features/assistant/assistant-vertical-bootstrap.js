@@ -1,7 +1,7 @@
 /**
  * Dikey sihirbaz query bootstrap — budget dışı runtime import yolu.
  */
-import { normalizeAutoUsage, normalizeTatilGoal } from './assistant-category-bridge.js';
+import { normalizeAutoBody, normalizeAutoUsage, normalizeTatilGoal } from './assistant-category-bridge.js';
 
 const ASSISTANT_TATIL_TRAVELERS_MAP = Object.freeze({
   solo: { people_type: 'tek', travelers_count: '1' },
@@ -102,7 +102,9 @@ export function bootstrapAutoFromAssistantQuery(state, params = new URLSearchPar
   }
 
   applyPrefillField(state, 'fuel', readAllowedParam(params, 'fuel', AUTO_WIZARD_FUEL));
-  applyPrefillField(state, 'body', readAllowedParam(params, 'body', AUTO_WIZARD_BODY));
+  const bodyRaw = readAllowedParam(params, 'body', AUTO_WIZARD_BODY);
+  const body = bodyRaw ? normalizeAutoBody(bodyRaw) : null;
+  if (body && AUTO_WIZARD_BODY.has(body)) applyPrefillField(state, 'body', body);
 
   return state;
 }

@@ -52,6 +52,13 @@ export function normalizeAutoUsage(usage = '') {
   return AUTO_USAGE_TO_VERTICAL[key] || key || 'city';
 }
 
+/** MPV kasa tercihi vertical sihirbazda SUV ile modellenir. */
+export function normalizeAutoBody(body = '') {
+  const key = String(body || '').trim();
+  if (key === 'mpv') return 'suv';
+  return key;
+}
+
 export function normalizeTatilGoal(vacationType = '') {
   const key = String(vacationType || '').trim();
   return TATIL_ASSISTANT_TO_VERTICAL[key] || key;
@@ -166,7 +173,7 @@ export function buildVerticalContinueHref(categoryId, answers = {}) {
     if (pickCsv(usage, ',family,city,long,business,')) params.set('usage', usage);
     const fuel = pickCsv(answers.fuel, ',any,hybrid,electric,gasoline,diesel,');
     if (fuel) params.set('fuel', fuel);
-    const body = pickCsv(answers.body, ',suv,sedan,hatchback,');
+    const body = pickCsv(normalizeAutoBody(answers.body), ',suv,sedan,hatchback,');
     if (body) params.set('body', body);
     return `/auto/${params.toString() ? `?${params}` : ''}`;
   }

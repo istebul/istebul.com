@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 const { buildVerticalContinueHref, appendKonutAssistantQueryParams } = await import(
   '../../js/features/assistant/assistant-category-bridge.js'
 );
+const { applyAssistantQuestionFlow } = await import('../../js/features/assistant/assistant-flow.js');
 
 const {
   bootstrapAutoFromAssistantQuery,
@@ -13,7 +14,7 @@ const {
   bootstrapKaskoFromAssistantQuery
 } = await import('../../js/features/assistant/assistant-vertical-bootstrap.js');
 
-test('buildVerticalContinueHref rejects unsupported auto body mpv', () => {
+test('buildVerticalContinueHref maps auto body mpv to suv', () => {
   const href = buildVerticalContinueHref('arac', {
     body: 'mpv',
     fuel: 'hybrid',
@@ -21,14 +22,21 @@ test('buildVerticalContinueHref rejects unsupported auto body mpv', () => {
     budget: '900000'
   });
 
-  assert.doesNotMatch(href, /body=/);
+  assert.match(href, /body=suv/);
   assert.match(href, /fuel=hybrid/);
   assert.match(href, /usage=family/);
 });
 
-test('bootstrapAutoFromAssistantQuery ignores unsupported body and preserves state', () => {
-  const state = { body: 'suv', fuel: '', usage: '', budget: '' };
+test('bootstrapAutoFromAssistantQuery maps mpv body to suv', () => {
+  const state = { body: '', fuel: '', usage: '', budget: '' };
   bootstrapAutoFromAssistantQuery(state, new URLSearchParams('body=mpv&fuel=diesel'));
+  assert.equal(state.body, 'suv');
+  assert.equal(state.fuel, 'diesel');
+});
+
+test('bootstrapAutoFromAssistantQuery preserves existing body when query body invalid', () => {
+  const state = { body: 'suv', fuel: '', usage: '', budget: '' };
+  bootstrapAutoFromAssistantQuery(state, new URLSearchParams('body=unknown&fuel=diesel'));
   assert.equal(state.body, 'suv');
   assert.equal(state.fuel, 'diesel');
 });
@@ -116,6 +124,25 @@ test('bootstrapKaskoFromAssistantQuery rejects invalid coverage enum', () => {
   assert.equal(state.vehicle_category, 'suv');
   assert.equal(state.vehicle_year_band, '0-3');
   assert.equal(state.coverage_level, 'full');
+});
+
+test('finansman konut fork limits term options to vertical wizard values', () => {
+  const questions = [
+    {
+      id: 'term',
+      options: [
+        { value: '36', label: '36 ay' },
+        { value: '48', label: '48 ay' },
+        { value: '60', label: '60 ay' },
+        { value: '120', label: '120 ay' }
+      ]
+    }
+  ];
+  const filtered = applyAssistantQuestionFlow('finansman', questions, { purpose: 'konut' });
+  assert.deepEqual(
+    filtered[0].options.map((option) => option.value),
+    ['36', '48', '60']
+  );
 });
 
 test('appendKonutAssistantQueryParams still rejects yazlik propertyType', () => {
