@@ -1,5 +1,14 @@
 /**
  * Admin panel navigation — every sidebar page maps to a refresh handler.
+ *
+ * Nav contract (Faz 4A-1a):
+ * - ADMIN_PAGE_IDS is the single source of truth for in-panel pages + deep-link slugs.
+ * - Sidebar targets in admin-panel.html must match this list exactly.
+ * - "Karar" terminology:
+ *   - listings → Karar Seçenekleri (classic CRM / listings table CRUD)
+ *   - /admin/ai-listings/ → AI İlan Yönetimi (external admin-only link; AI engine workspace)
+ *   - ops-ai-assistant ← /admin/decision-center alias (Ops AI karar motoru)
+ *   - Public Karar Merkezi lives at /profil/ (not an admin page id)
  */
 
 import { syncAdminHeaderTitle } from './admin-shell.js';
@@ -15,10 +24,12 @@ export const ADMIN_PAGE_IDS = [
   'announcements',
   'campaigns',
   'faqs',
+  'home-news',
   'blog',
   'listings',
   'users',
   'auto-leads',
+  'vertical-leads',
   'vacation-analytics',
   'vacation-leads',
   'vacation-scenarios',
@@ -35,6 +46,7 @@ export const ADMIN_PAGE_IDS = [
   'kasko-leads',
   'finance-partners',
   'finance-scoring',
+  'unified-funnel',
   'auto-analytics',
   'platform-analytics',
   'dashboard-ceo',

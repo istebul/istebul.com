@@ -3,6 +3,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
+/** Parse _redirects into active rule source paths (ignore comments and blanks). */
+function parseRedirectRuleSources(redirectsText) {
+  return String(redirectsText)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => line.split(/\s+/)[0])
+    .filter(Boolean);
+}
+
 const {
   resolveAdminPanelAccess,
   verifyAdminSessionAccess
@@ -74,19 +84,45 @@ test('admin-panel.html includes static AI İlan Yönetimi link', () => {
   assert.match(html, /href="\/admin\/ai-listings\/"/);
   assert.match(html, /data-admin-listing-nav-injected="ai-listings"/);
   assert.match(html, />AI İlan Yönetimi</);
+  assert.match(html, /data-page-target="listings"/);
+  assert.match(html, />Karar Seçenekleri</);
+  assert.doesNotMatch(html, /data-page-target="decision-center"/);
+});
+
+test('Karar Seçenekleri and AI İlan Yönetimi titles distinguish classic CRM from AI engine', () => {
+  const html = fs.readFileSync(path.join(process.cwd(), 'admin-panel.html'), 'utf8');
+  const listingsNav = html.match(/data-page-target="listings"[^>]*title="([^"]+)"/);
+  assert.ok(listingsNav, 'listings nav has title tooltip');
+  assert.match(listingsNav[1], /AI İlan Yönetimi/);
+  const aiNav = html.match(/href="\/admin\/ai-listings\/"[^>]*title="([^"]+)"/);
+  assert.ok(aiNav, 'AI listings nav has title tooltip');
+  assert.match(aiNav[1], /Karar Seçenekleri/);
 });
 
 test('public decision center routes redirect to profil', () => {
   const redirects = fs.readFileSync(path.join(process.cwd(), '_redirects'), 'utf8');
-  assert.match(redirects, /\/karar-merkezi \/profil\/ 301/);
-  assert.match(redirects, /\/decision-center \/profil\/ 301/);
-  assert.doesNotMatch(redirects, /\/admin\/karar-merkezi/);
-  assert.doesNotMatch(redirects, /\/admin\/decision-center/);
+  const rules = parseRedirectRuleSources(redirects);
+  assert.ok(
+    rules.some((src) => src === '/karar-merkezi' || src === '/karar-merkezi/'),
+    'karar-merkezi redirect rule exists'
+  );
+  assert.ok(
+    rules.some((src) => src === '/decision-center' || src === '/decision-center/'),
+    'decision-center redirect rule exists'
+  );
+  assert.ok(
+    rules.every((src) => !src.startsWith('/admin/')),
+    'no /admin/* redirect rules (comments must not count)'
+  );
 });
 
 test('admin listing routes are static (no _redirects under /admin)', () => {
   const redirects = fs.readFileSync(path.join(process.cwd(), '_redirects'), 'utf8');
-  assert.doesNotMatch(redirects, /^\/admin\//m);
+  const rules = parseRedirectRuleSources(redirects);
+  assert.ok(
+    rules.every((src) => !src.startsWith('/admin/')),
+    'admin deep links are physical build output, not _redirects rules'
+  );
   const buildScript = fs.readFileSync(path.join(process.cwd(), 'scripts/production-build.cjs'), 'utf8');
   assert.match(buildScript, /admin\/ai-listings\/index\.html/);
   assert.doesNotMatch(buildScript, /admin\/listings\/index\.html',\s*'admin\/ai-listings/);
