@@ -43,8 +43,31 @@ Admin Operasyon Merkezi (`admin-panel.html` + `js/admin-panel.js`) için nav/dee
 ## CI denetimleri
 
 - `node scripts/admin-panel-pages-audit.cjs` — nav ↔ handler ↔ DOM ↔ `ADMIN_PAGE_IDS` eşleşmesi
+- `node scripts/admin-dashboard-landing-audit.cjs` — operasyon landing terminoloji + CTA sözleşmesi (Faz 4A-1b)
 - `tests/unit/admin-page-routing.test.mjs` — routing sözleşmesi + terminoloji
 - `tests/unit/admin-decision-nav.test.mjs` — AI listings harici nav + Karar ayrımı
+- `tests/unit/admin-dashboard-landing.test.mjs` — landing copy/CTA/placeholder disclosure
+
+## Operasyon landing terminolojisi (Faz 4A-1b)
+
+| page id | Nav / header etiket | Rol |
+|---------|---------------------|-----|
+| `dashboard` | **Operasyon Özeti** | Varsayılan landing; CRM KPI + yönlendirme |
+| `ops-command-center` | **Operasyon Komuta Merkezi** | P9 birleşik ops rollup |
+| `dashboard-ceo` | **CEO Özeti** | Executive + CEO alerts |
+| `dashboard-growth` | **Büyüme Özeti** | Funnel/kanal/deney |
+| `dashboard-revenue` | **Gelir Özeti** | MRR/churn/RevOps |
+| `dashboard-support` | **Destek Özeti** | Lifecycle/SSS |
+| `dashboard-partner-ops` | **Partner Operasyon Özeti** | Dispatch/SLA |
+| `unified-funnel` | **Birleşik Funnel** | Dikey funnel karşılaştırma |
+| `investor-metrics` | **Yatırımcı KPI** | Deep link korunur |
+
+Landing (`page-dashboard`) kuralları:
+
+1. Üst KPI kartları CRM verisidir; grafik alanları **örnek görsel** olarak etiketlenir.
+2. **Operasyon panelleri** bölümü: Komuta Merkezi, Birleşik Funnel, Partner Operasyon Özeti, AI Karar Merkezi linkleri zorunlu.
+3. `stat-system-alerts` canlı observability rollup'a bağlanmaz.
+4. Motor/fetch (`loadDashboard`, `loadOpsCommandCenter`, P14 context) değiştirilmez.
 
 ## Kapsam dışı (bu faz)
 

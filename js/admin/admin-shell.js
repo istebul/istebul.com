@@ -2,11 +2,11 @@
  * Admin shell — sidebar collapse, nav groups, global search (no routing changes).
  *
  * Header/search labels for admin pages. Keep in sync with admin-panel.html nav labels
- * and ADMIN_PAGE_IDS in admin-page-routing.js (Faz 4A-1a nav contract).
+ * and ADMIN_PAGE_IDS in admin-page-routing.js (Faz 4A-1a/4A-1b nav contract).
  */
 
 const NAV_LABELS = {
-  dashboard: 'Dashboard',
+  dashboard: 'Operasyon Özeti',
   users: 'Kullanıcılar',
   'auto-leads': 'Lead CRM',
   'vertical-leads': 'Dikey leadler',
@@ -34,19 +34,19 @@ const NAV_LABELS = {
   faqs: 'SSS',
   'home-news': 'Güncel haberler',
   blog: 'Blog',
-  'unified-funnel': 'Unified Funnel',
+  'unified-funnel': 'Birleşik Funnel',
   'auto-analytics': 'Auto analitik',
   'platform-analytics': 'Platform analitik',
-  'dashboard-ceo': 'CEO',
-  'dashboard-growth': 'Growth',
-  'dashboard-revenue': 'Revenue',
+  'dashboard-ceo': 'CEO Özeti',
+  'dashboard-growth': 'Büyüme Özeti',
+  'dashboard-revenue': 'Gelir Özeti',
   payments: 'Payments',
-  'dashboard-partner-ops': 'Partner ops',
-  'dashboard-support': 'Support',
+  'dashboard-partner-ops': 'Partner Operasyon Özeti',
+  'dashboard-support': 'Destek Özeti',
   'ops-ai-assistant': 'Ops asistan',
-  'investor-metrics': 'Executive KPIs',
+  'investor-metrics': 'Yatırımcı KPI',
   observability: 'Observability',
-  'ops-command-center': 'Ops command',
+  'ops-command-center': 'Operasyon Komuta Merkezi',
   'startup-operating-center': 'Startup operating',
   'scale-architecture': 'Scale architecture',
   'company-operating-system': 'Company OS',
@@ -132,7 +132,7 @@ export function initAdminShell() {
 export function syncAdminHeaderTitle(pageId) {
   const title = document.getElementById('admin-mobile-title');
   const topTitle = document.getElementById('admin-topbar-title');
-  const label = NAV_LABELS[pageId] || pageId || 'Dashboard';
+  const label = NAV_LABELS[pageId] || pageId || 'Operasyon Özeti';
   if (title) title.textContent = label;
   if (topTitle) topTitle.textContent = label;
 }
