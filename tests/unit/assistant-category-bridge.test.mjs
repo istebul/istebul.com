@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const {
   normalizeAutoUsage,
+  normalizeAutoBody,
   normalizeTatilGoal,
   buildAssistantInsightInput,
   buildVerticalContinueHref
@@ -12,6 +13,11 @@ test('normalizeAutoUsage maps assistant enums to vertical', () => {
   assert.equal(normalizeAutoUsage('longRoad'), 'long');
   assert.equal(normalizeAutoUsage('prestige'), 'business');
   assert.equal(normalizeAutoUsage('city'), 'city');
+});
+
+test('normalizeAutoBody maps mpv to suv', () => {
+  assert.equal(normalizeAutoBody('mpv'), 'suv');
+  assert.equal(normalizeAutoBody('sedan'), 'sedan');
 });
 
 test('normalizeTatilGoal maps vacation types', () => {
