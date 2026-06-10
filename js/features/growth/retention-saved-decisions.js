@@ -8,6 +8,15 @@ import { trackGrowth } from './growth-engine.js';
 const SAVED_KEY = 'istebul_saved_decisions';
 const MAX_SAVED = 24;
 
+const CATEGORY_REVISIT_PATHS = Object.freeze({
+  auto: '/auto/',
+  housing: '/konut/',
+  travel: '/tatil/',
+  finance: '/finans/',
+  insurance: '/sigorta/',
+  kasko: '/kasko/'
+});
+
 /**
  * @param {string} [userId]
  */
@@ -40,7 +49,10 @@ export function saveDecisionSnapshot(snapshot = {}) {
     topVehicle: snapshot.topVehicle || snapshot.title || 'Karar',
     score: snapshot.score ?? null,
     summary: snapshot.summary || '',
-    revisitPath: snapshot.revisitPath || '/auto/',
+    revisitPath:
+      snapshot.revisitPath ||
+      CATEGORY_REVISIT_PATHS[snapshot.categoryId] ||
+      '/karar-asistani/',
     source: snapshot.source || 'auto_results'
   };
 

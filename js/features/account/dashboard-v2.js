@@ -89,7 +89,7 @@ export function buildDashboardV2Data(ctx = {}) {
       riskLevel: '—',
       dateLabel: formatDate(item.savedAt),
       savedAt: item.savedAt,
-      href: item.revisitPath || CATEGORY_META[cat]?.href || '/auto/',
+      href: item.revisitPath || CATEGORY_META[cat]?.href || '/karar-asistani/',
       summary: item.summary || '',
       source: 'saved'
     });

@@ -270,8 +270,44 @@ function renderGuideStandardBlocks(slug) {
   </div>`;
 }
 
-function renderGuideCta(cta, usePremium) {
-  if (usePremium) return renderPremiumGuideCta();
+const PREMIUM_VERTICAL_CTAS = {
+  finance: { href: '/finans/', label: 'Finans tam analizine devam et' },
+  housing: { href: '/konut/', label: 'Konut tam analizine devam et' },
+  travel: { href: '/tatil/', label: 'Tatil tam analizine devam et' },
+  insurance: { href: '/sigorta/', label: 'Sigorta tam analizine devam et' },
+  kasko: { href: '/kasko/', label: 'Kasko tam analizine devam et' },
+  auto: { href: '/auto/', label: 'Araç maliyet analizini başlat' },
+  default: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
+};
+
+const GUIDE_SLUG_VERTICAL = {
+  'finansman-rehberi': 'finance',
+  'arac-kredisi-hesaplama': 'finance',
+  'konut-karar-rehberi': 'housing',
+  'arac-sigortasi-karsilastirma': 'insurance'
+};
+
+function inferGuideVertical(slug) {
+  if (GUIDE_SLUG_VERTICAL[slug]) return GUIDE_SLUG_VERTICAL[slug];
+  if (/konut|ev-|mortgage/i.test(slug || '')) return 'housing';
+  if (/tatil|seyahat|otel/i.test(slug || '')) return 'travel';
+  if (/kasko/i.test(slug || '')) return 'kasko';
+  if (/sigorta/i.test(slug || '')) return 'insurance';
+  if (/finans|kredi/i.test(slug || '')) return 'finance';
+  if (/arac|tco|suv|sedan|elektrikli|ikinci-el|ticari-arac/i.test(slug || '')) return 'auto';
+  return 'default';
+}
+
+function resolvePremiumGuideCta(cta, guideSlug) {
+  if (cta?.href && cta?.label) {
+    return { href: cta.href, label: cta.label };
+  }
+  const vertical = inferGuideVertical(guideSlug);
+  return PREMIUM_VERTICAL_CTAS[vertical] || PREMIUM_VERTICAL_CTAS.default;
+}
+
+function renderGuideCta(cta, usePremium, guideSlug) {
+  if (usePremium) return renderPremiumGuideCta(resolvePremiumGuideCta(cta, guideSlug));
   if (!cta) return '';
   const secondary =
     cta.secondary ?
@@ -423,12 +459,12 @@ function renderInternalLinks(slug) {
   </section>`;
 }
 
-function renderPremiumGuideCta() {
+function renderPremiumGuideCta(cta = PREMIUM_VERTICAL_CTAS.default) {
   return `<section class="seo-cta seo-cta--premium" aria-labelledby="seo-premium-cta-title">
     <h2 id="seo-premium-cta-title">Kararınızı veriyle destekleyin</h2>
     <p>isteBul yapay zekâ destekli karar analizi ile maliyet, risk ve uygunluk değerlendirmesini birkaç dakika içinde oluşturun.</p>
     <div class="seo-cta-row-inner">
-      <a class="seo-cta-btn" href="/karar-asistani/">Ön değerlendirme başlat</a>
+      <a class="seo-cta-btn" href="${escapeHtml(cta.href)}">${escapeHtml(cta.label)}</a>
     </div>
     <p class="seo-cta-note">Ücretsiz · KVKK uyumlu · Bilgilendirme amaçlı — finansal tavsiye değildir</p>
   </section>`;
@@ -498,7 +534,9 @@ function renderSeoFooter({ site, guideLinks }) {
 }
 
 const GUIDE_CTAS = {
-  'finansman-rehberi': { href: '/finans/', label: 'Finansman analizini başlat' },
+  'finansman-rehberi': { href: '/finans/', label: 'Finans tam analizine devam et' },
+  'konut-karar-rehberi': { href: '/konut/', label: 'Konut tam analizine devam et' },
+  'arac-sigortasi-karsilastirma': { href: '/sigorta/', label: 'Sigorta tam analizine devam et' },
   'tco-rehberi': {
     href: '/auto/',
     label: 'Araç TCO analizini başlat',
@@ -801,7 +839,7 @@ function renderContentPage({ site, page, path, breadcrumbs, relatedLinks, cta, k
       ${faqHtml}
       ${internalLinksHtml}
       ${related}
-      ${renderGuideCta(loadGuideStandardV1()[guideSlug]?.cta || cta, usePremiumCta)}
+      ${renderGuideCta(loadGuideStandardV1()[guideSlug]?.cta || cta, usePremiumCta, guideSlug)}
       </article>
     </div>
   </main>
