@@ -1,4 +1,6 @@
 import {
+  GENERAL_PLATFORM_CTA_HREF,
+  GENERAL_PLATFORM_CTA_LABEL,
   blogPostPath,
   excerptText,
   fetchActiveAnnouncements,
@@ -188,7 +190,7 @@ export async function renderCampaignsPage(root = document) {
           <h2>${escapeHtml(item.title)}</h2>
           <p>${escapeHtml(item.summary)}</p>
           ${item.ends_at ? `<p class="ib-content-card-meta text-muted-sm">Geçerlilik: ${escapeHtml(formatContentDate(item.ends_at))}</p>` : ''}
-          <a class="btn btn-primary" href="${escapeHtml(item.cta_href || '/auto/')}">${escapeHtml(item.cta_label || 'Detay')}</a>
+          <a class="btn btn-primary" href="${escapeHtml(item.cta_href || GENERAL_PLATFORM_CTA_HREF)}">${escapeHtml(item.cta_label || 'Detay')}</a>
         </article>`
         )
         .join('')}</div>`
@@ -269,7 +271,7 @@ export async function renderBlogPostPage(root = document, slug) {
       ${proseHtml}
       <p class="ib-prerender-actions">
         <a class="btn btn-outline" href="/blog" data-native-route>← Tüm yazılar</a>
-        <a class="btn btn-primary" href="${escapeHtml(getGuideCategory(post.category)?.ctaHref || '/auto/')}" data-analytics-cta="cta_primary_auto" data-analytics-placement="blog_post">${escapeHtml(getGuideCategory(post.category)?.ctaLabel || 'Ücretsiz analiz başlat')}</a>
+        <a class="btn btn-primary" href="${escapeHtml(getGuideCategory(post.category)?.ctaHref || GENERAL_PLATFORM_CTA_HREF)}" data-analytics-cta="cta_primary_auto" data-analytics-placement="blog_post">${escapeHtml(getGuideCategory(post.category)?.ctaLabel || GENERAL_PLATFORM_CTA_LABEL)}</a>
       </p>
     </article>`;
   window.lucide?.createIcons?.();

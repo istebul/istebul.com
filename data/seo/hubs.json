@@ -64,8 +64,8 @@
         "Enterprise: API, webhook, SLA",
         "İstediğiniz zaman iptal"
       ],
-      "ctaHref": "/auto/",
-      "ctaLabel": "Ücretsiz analiz başlat",
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Ön değerlendirme başlat",
       "relatedLandings": ["tco-rehberi", "finansman-rehberi", "arac-alim-karar-asistani"]
     },
     {
@@ -81,8 +81,8 @@
         "İkinci el ve sıfır araç karşılaştırmaları",
         "Şeffaf metodoloji ve karar skoru"
       ],
-      "ctaHref": "/auto/",
-      "ctaLabel": "Analiz başlat",
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Ön değerlendirme başlat",
       "relatedLandings": ["tco-rehberi", "finansman-rehberi", "arac-karsilastirma-rehberi"]
     },
     {
@@ -98,8 +98,8 @@
         "Operasyonel bilgilendirmeler",
         "KVKK ve güvenlik duyuruları"
       ],
-      "ctaHref": "/auto/",
-      "ctaLabel": "Ücretsiz analiz",
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Ön değerlendirme başlat",
       "relatedLandings": ["arac-alim-karar-asistani", "tco-rehberi"]
     },
     {

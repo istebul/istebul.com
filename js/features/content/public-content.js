@@ -43,8 +43,11 @@ const GUIDE_SEED_BY_CATEGORY = Object.freeze({
   insurance: sigortaGuideSeed
 });
 
+export const GENERAL_PLATFORM_CTA_HREF = '/karar-asistani/';
+export const GENERAL_PLATFORM_CTA_LABEL = 'Ön değerlendirme başlat';
+
 export const GUIDE_CATEGORIES = Object.freeze([
-  { id: 'auto', label: 'Araba', ctaHref: '/auto/', ctaLabel: 'Tam analiz başlat' },
+  { id: 'auto', label: 'Araba', ctaHref: '/auto/', ctaLabel: 'Araç maliyet analizini başlat' },
   { id: 'housing', label: 'Konut', ctaHref: '/konut/', ctaLabel: 'Konut tam analizi' },
   { id: 'travel', label: 'Tatil', ctaHref: '/tatil/', ctaLabel: 'Tatil tam analizi' },
   { id: 'finance', label: 'Finansman', ctaHref: '/finans/', ctaLabel: 'Finans tam analizi' },
@@ -290,7 +293,7 @@ export function normalizePublicCampaign(raw, index = 0) {
     title: String(raw?.title || 'Kampanya').trim(),
     summary: String(raw?.summary || raw?.content || '').trim(),
     cta_label: String(raw?.cta_label || 'Detay').trim(),
-    cta_href: String(raw?.cta_href || '/auto/').trim(),
+    cta_href: String(raw?.cta_href || GENERAL_PLATFORM_CTA_HREF).trim(),
     badge: String(raw?.badge || 'Kampanya').trim(),
     ends_at: raw?.ends_at ? String(raw.ends_at) : null,
     is_active: raw?.is_active !== false,

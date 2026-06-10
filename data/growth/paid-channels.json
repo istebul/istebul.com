@@ -1,6 +1,6 @@
 {
   "version": "p5.1",
-  "primaryLanding": "/auto/",
+  "primaryLanding": "/karar-asistani/",
   "conversionEvents": {
     "landing": "paid_landing_view",
     "lead": "lead_submit",
