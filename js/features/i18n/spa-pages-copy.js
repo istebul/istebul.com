@@ -33,8 +33,10 @@ const tr = {
     ctaSecondary: 'Metodolojiyi incele'
   },
   premiumKarar: {
-    previewTitle: 'Karar önizlemesi',
-    previewLead: 'Kısa sorularla maliyet sinyallerini görün. Tam TCO analizi ve sıralama için Auto akışını kullanın.',
+    heroLead: 'Kısa sorularla kategori ve ön değerlendirme sinyallerini görün; tam skor ve detaylı analiz ilgili kategori akışında hesaplanır.',
+    roleNote: 'Karar Asistanı, hangi kategori analizine devam etmeniz gerektiğini belirler. Nihai skor ve detaylı analiz ilgili kategori akışında hesaplanır.',
+    previewTitle: 'Ön değerlendirme',
+    previewLead: 'Kısa sorularla kategori niyetinizi ve ön sinyalleri görün. Tam karar analizi için ilgili kategori wizard akışına devam edin.',
     compareTitle: 'İki seçeneği yan yana görün',
     compareLead: 'Pro ile 4 modele kadar detaylı karşılaştırma; ücretsiz planda 2 model.',
     trustKvkk: 'KVKK uyumlu',
@@ -84,8 +86,10 @@ const en = {
     ctaSecondary: 'Explore methodology'
   },
   premiumKarar: {
-    previewTitle: 'Decision preview',
-    previewLead: 'See cost signals with a short questionnaire. Use Auto flow for full TCO ranking.',
+    heroLead: 'See category intent and pre-evaluation signals with short questions; full score and detailed analysis run in the category flow.',
+    roleNote: 'The Decision Assistant identifies which category analysis to continue. Final score and detailed analysis are calculated in that category flow.',
+    previewTitle: 'Pre-evaluation',
+    previewLead: 'Answer a few questions to see category intent and early signals. Continue to the category wizard for full decision analysis.',
     compareTitle: 'Compare two options side by side',
     compareLead: 'Pro supports up to 4 models; free plan includes 2.',
     trustKvkk: 'Privacy compliant',

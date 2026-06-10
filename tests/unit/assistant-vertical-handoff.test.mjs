@@ -15,7 +15,8 @@ test('resolveVerticalContinueHandoff returns model for supported categories', ()
   });
 
   assert.ok(handoff);
-  assert.equal(handoff.sectionTitle, 'Tüm kriterlerinizle detaylı analiz');
+  assert.equal(handoff.sectionTitle, 'Tam karar analizi için kategori akışına devam edin');
+  assert.equal(handoff.sectionLead, 'Verdiğiniz bilgiler tam analizde kullanılmak üzere aktarılacak.');
   assert.equal(handoff.ctaLabel, 'Tam analize devam et');
   assert.equal(handoff.categoryLabel, VERTICAL_CONTINUE_CATEGORY_LABELS.arac);
   assert.match(handoff.href, /^\/auto\/?/);

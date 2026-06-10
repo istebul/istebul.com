@@ -115,7 +115,8 @@ export class PremiumPages {
           <div class="ib-premium-hero-copy">
             <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> Karar merkezi</span>
             <h1>Hangi kategoride karar vermek istiyorsunuz?</h1>
-            <p class="ib-premium-lead">Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk sinyallerini tek merkezden başlatın.</p>
+            <p class="ib-premium-lead">${escapeHtml(spaText('premiumKarar.heroLead', 'Kısa sorularla kategori ve ön değerlendirme sinyallerini görün; tam skor ve detaylı analiz ilgili kategori akışında hesaplanır.'))}</p>
+            <p class="ib-premium-role-note text-muted-sm">${escapeHtml(spaText('premiumKarar.roleNote', 'Karar Asistanı, hangi kategori analizine devam etmeniz gerektiğini belirler. Nihai skor ve detaylı analiz ilgili kategori akışında hesaplanır.'))}</p>
             <div class="ib-premium-hero-actions">
               <a href="#premium-assistant" class="btn btn-primary btn-lg" data-analytics-cta="cta_decision_hub" data-analytics-placement="premium_hero" title="Kategori seçerek karar akışını başlatın">
                 <i data-lucide="layout-grid"></i> Kategori seçin
@@ -167,8 +168,8 @@ export class PremiumPages {
         <div class="container">
           <div class="ib-premium-block-head">
             <span class="section-kicker">${BRAND_VOICE.kickers.preview}</span>
-            <h2>${escapeHtml(spaText('premiumKarar.previewTitle', 'Karar önizlemesi'))}</h2>
-            <p>${escapeHtml(spaText('premiumKarar.previewLead', 'Kısa sorularla maliyet sinyallerini görün. Tam TCO analizi ve sıralama için Auto akışını kullanın.'))}</p>
+            <h2>${escapeHtml(spaText('premiumKarar.previewTitle', 'Ön değerlendirme'))}</h2>
+            <p>${escapeHtml(spaText('premiumKarar.previewLead', 'Kısa sorularla kategori niyetinizi ve ön sinyalleri görün. Tam karar analizi için ilgili kategori wizard akışına devam edin.'))}</p>
           </div>
           <div class="assistant-section ib-premium-assistant-shell">
             <div class="assistant-shell">
