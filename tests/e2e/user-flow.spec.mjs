@@ -103,6 +103,51 @@ const waitForGecmisRouteBootstrap = async (page) => {
   }), 1200);
 };
 
+/** Deferred renderDecisionAssistant / loadDecisionHistory must finish before assistant DOM seeding. */
+const waitForKararAsistaniRouteBootstrap = async (page) => {
+  await page.waitForFunction(() => window.appReady === true, null, { timeout: 15000 });
+  await page.waitForSelector('#premium-karar-analizi-root #assistant-results', { state: 'attached', timeout: 15000 });
+  await page.waitForFunction(
+    () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+    null,
+    { timeout: 15000 }
+  );
+  await page.evaluate((idleTimeoutMs) => new Promise((resolve) => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => resolve(), { timeout: idleTimeoutMs });
+    } else {
+      setTimeout(resolve, 400);
+    }
+  }), 1200);
+};
+
+const assistantDecisionToolbarLocator = (page) =>
+  page.locator('.assistant-decision-toolbar a[data-analytics-placement="decision_result_toolbar"]');
+
+const renderAssistantDecisionResult = async (page, { category, answers }) => {
+  const renderStatus = await page.evaluate(({ category, answers }) => {
+    const app = window.app;
+    if (!app?.buildDecisionResult || !app?.ui?.renderDecisionResults) {
+      return { ok: false, reason: 'assistant api not ready' };
+    }
+
+    app.assistantCategory = category;
+    app.assistantAnswers = answers;
+    const categoryConfig = app.getResolvedDecisionAssistantConfig()?.[category];
+    if (!categoryConfig) return { ok: false, reason: `${category} config missing` };
+
+    const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+    if (!result?.recommendations?.[0]) return { ok: false, reason: 'no primary recommendation' };
+
+    app.ui.renderDecisionResults(result);
+    return { ok: true };
+  }, { category, answers });
+
+  expect(renderStatus).toEqual({ ok: true });
+  await expect(page.locator('.assistant-decision-hero .assistant-kicker')).toContainText(/Ön değerlendirme tamamlandı/i, { timeout: 15000 });
+  await expect(assistantDecisionToolbarLocator(page)).toBeVisible({ timeout: 15000 });
+};
+
 /**
  * Pre-existing /gecmis flake (Faz 2D mobile + deferred loadDecisionHistory race, not 2E-2):
  * wait until history cards survive trailing idle reload / loadComparisonHistory guard.
@@ -659,27 +704,19 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
-    await page.waitForFunction(
-      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
-      null,
-      { timeout: 15000 }
-    );
+    await waitForKararAsistaniRouteBootstrap(page);
 
-    await page.evaluate(() => {
-      const app = window.app;
-      app.assistantCategory = 'arac';
-      app.assistantAnswers = { budget: '900000', usage: 'city', fuel: 'hybrid', body: 'sedan' };
-      const categoryConfig = app.getResolvedDecisionAssistantConfig()?.arac;
-      const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
-      app.ui.renderDecisionResults(result);
+    await renderAssistantDecisionResult(page, {
+      category: 'arac',
+      answers: { budget: '900000', usage: 'city', fuel: 'hybrid', body: 'sedan' }
     });
 
-    const toolbarContinue = page.locator('.assistant-decision-toolbar a[data-analytics-placement="decision_result_toolbar"]');
+    const toolbarContinue = assistantDecisionToolbarLocator(page);
     await expect(toolbarContinue).toHaveClass(/btn-primary/);
     await expect(toolbarContinue).toHaveText(/Tam analize devam et/i);
 
     const browseCta = page.locator('[data-browse-decision-listings]');
-    await expect(browseCta).toBeVisible();
+    await expect(browseCta).toBeVisible({ timeout: 15000 });
     await expect(browseCta).toHaveClass(/btn-outline/);
     await expect(browseCta).toHaveText(/AI destekli seçenekleri incele/i);
   });
@@ -688,22 +725,14 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
-    await page.waitForFunction(
-      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
-      null,
-      { timeout: 15000 }
-    );
+    await waitForKararAsistaniRouteBootstrap(page);
 
-    await page.evaluate(() => {
-      const app = window.app;
-      app.assistantCategory = 'finansman';
-      app.assistantAnswers = { purpose: 'konut', amount: '500000', term: '120' };
-      const categoryConfig = app.getResolvedDecisionAssistantConfig()?.finansman;
-      const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
-      app.ui.renderDecisionResults(result);
+    await renderAssistantDecisionResult(page, {
+      category: 'finansman',
+      answers: { purpose: 'konut', amount: '500000', term: '120' }
     });
 
-    const toolbarContinue = page.locator('.assistant-decision-toolbar a[data-analytics-placement="decision_result_toolbar"]');
+    const toolbarContinue = assistantDecisionToolbarLocator(page);
     await expect(toolbarContinue).toHaveAttribute('href', /\/finans\/\?/);
     await expect(page.locator('[data-browse-decision-listings]')).toHaveCount(0);
   });
@@ -712,11 +741,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
-    await page.waitForFunction(
-      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
-      null,
-      { timeout: 15000 }
-    );
+    await waitForKararAsistaniRouteBootstrap(page);
 
     const cases = [
       { category: 'arac', answers: { budget: '900000' }, href: /\/auto\/\?budget=900000/ },
@@ -727,16 +752,9 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     ];
 
     for (const item of cases) {
-      await page.evaluate(({ category, answers }) => {
-        const app = window.app;
-        app.assistantCategory = category;
-        app.assistantAnswers = answers;
-        const categoryConfig = app.getResolvedDecisionAssistantConfig()?.[category];
-        const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
-        app.ui.renderDecisionResults(result);
-      }, item);
+      await renderAssistantDecisionResult(page, item);
 
-      const toolbarContinue = page.locator('.assistant-decision-toolbar a[data-analytics-placement="decision_result_toolbar"]');
+      const toolbarContinue = assistantDecisionToolbarLocator(page);
       await expect(toolbarContinue).toHaveAttribute('href', item.href);
       await expect(toolbarContinue).toHaveText(/Tam analize devam et/i);
     }
@@ -1049,14 +1067,17 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
   });
 
   test('karar merkezi karar hafızası bağlamı ≥2 kayıtta görünür', async ({ page }) => {
+    const memoryUserId = 'e2e-memory-context-user';
+
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
-    await page.evaluate(() => {
-      const userId = 'e2e-memory-context-user';
-      window.app.currentUser = { id: userId, name: 'E2E Memory Context User' };
-      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+    const seedStatus = await page.evaluate((userId) => {
+      const app = window.app;
+      app.currentUser = { id: userId, name: 'E2E Memory Context User' };
+      const storageKey = `${'istebul_decision_history'}:${userId}`;
       const entries = [
         {
           id: 'context-1',
@@ -1082,9 +1103,13 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
         }
       ];
       localStorage.setItem(storageKey, JSON.stringify(entries));
-      window.app.decisionHistory = entries;
-      window.app.ui.renderDecisionMemoryContext(entries);
-    });
+      app.decisionHistory = entries;
+      app.ui.renderDecisionMemoryContext(entries);
+      const stored = localStorage.getItem(storageKey);
+      const parsed = JSON.parse(stored || '[]');
+      return { count: parsed.length, firstId: parsed[0]?.id || null };
+    }, memoryUserId);
+    expect(seedStatus).toEqual({ count: 2, firstId: 'context-1' });
 
     const context = page.locator('[data-decision-memory-context]');
     await expect(context).toBeVisible({ timeout: 15000 });
@@ -1094,12 +1119,12 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(context.locator('[data-memory-context="risk-tendency"]')).toContainText(/Düşük risk \(2\/2\)/);
     await expect(context.locator('[data-memory-context="top-profile"]')).toContainText(/Dengeli araç profili/);
 
-    const storageSnapshot = await page.evaluate(() => {
-      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+    const storageSnapshot = await page.evaluate((userId) => {
+      const storageKey = `${'istebul_decision_history'}:${userId}`;
       const stored = localStorage.getItem(storageKey);
       const parsed = JSON.parse(stored || '[]');
       return { count: parsed.length, firstId: parsed[0]?.id || null };
-    });
+    }, memoryUserId);
     expect(storageSnapshot.count).toBe(2);
     expect(storageSnapshot.firstId).toBe('context-1');
   });
