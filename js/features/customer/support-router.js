@@ -100,7 +100,7 @@ export function routeSupportRequest(input = {}) {
     });
   }
   if (intent === 'onboarding') {
-    actions.push({ type: 'link', href: '/auto/', label: 'Auto analizine başla' });
+    actions.push({ type: 'link', href: '/karar-asistani/', label: 'Ön değerlendirme başlat' });
   }
   if (intent === 'pro') {
     actions.push({ type: 'link', href: '/planlar?checkout=pro', label: 'Pro planları' });

@@ -633,7 +633,7 @@ export class AccountManager {
             recommendations,
             notificationCount: recommendations.length,
             quickActions: [
-                { title: 'Yeni Analiz Başlat', description: 'İstediğiniz kategoride yeni analiz yap', href: '/auto/', icon: 'plus-circle' },
+                { title: 'Yeni Analiz Başlat', description: 'İstediğiniz kategoride yeni analiz yap', href: '/karar-asistani/', icon: 'plus-circle' },
                 { title: 'Karşılaştırma Oluştur', description: 'Seçenekleri karşılaştır', href: '/karsilastir', icon: 'scale' },
                 { title: 'Raporlarımı İndir', description: 'Tüm analiz raporlarını indir', href: '/gecmis', icon: 'download' },
                 { title: 'Favori Listemi Gör', description: 'Kaydettiğiniz tüm öğeleri görüntüleyin', href: '/favoriler', icon: 'heart' }

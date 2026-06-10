@@ -428,7 +428,7 @@ function renderPremiumGuideCta() {
     <h2 id="seo-premium-cta-title">Kararınızı veriyle destekleyin</h2>
     <p>isteBul yapay zekâ destekli karar analizi ile maliyet, risk ve uygunluk değerlendirmesini birkaç dakika içinde oluşturun.</p>
     <div class="seo-cta-row-inner">
-      <a class="seo-cta-btn" href="/auto/">Ücretsiz Analize Başla</a>
+      <a class="seo-cta-btn" href="/karar-asistani/">Ön değerlendirme başlat</a>
     </div>
     <p class="seo-cta-note">Ücretsiz · KVKK uyumlu · Bilgilendirme amaçlı — finansal tavsiye değildir</p>
   </section>`;
@@ -931,7 +931,7 @@ function buildRehberHubIndex(distDir, site, landingConfig) {
       { name: 'Rehber', path: prefix }
     ],
     relatedLinks: links.slice(0, 5),
-    cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' },
+    cta: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' },
     kicker: 'Kaynaklar · Rehber merkezi',
     extraHtml: hubListHtml
   });
@@ -986,7 +986,7 @@ function injectCorporateMeta(distDir) {
         `<nav class="seo-footer-links" aria-label="SEO rehber">
       <a href="/rehber/arac-kredisi-hesaplama/">Kredi rehberi</a>
       <a href="/rehber/tco-rehberi/">TCO rehberi</a>
-      <a href="/auto/">Karar analizi</a>
+      <a href="/karar-asistani/">Ön değerlendirme başlat</a>
     </nav>
   </footer>`
       );
@@ -1043,7 +1043,7 @@ function buildSeoPages(distDir) {
       { name: page.h1, path: pagePath }
     ];
     const relatedLinks = resolveRelatedLinks(page, landingBySlug, hubsBySlug);
-    const guideCta = GUIDE_CTAS[page.slug] || { href: '/auto/', label: 'Ücretsiz karar analizine başla' };
+    const guideCta = GUIDE_CTAS[page.slug] || { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' };
     const html = renderContentPage({
       site,
       page,
@@ -1084,7 +1084,7 @@ function buildSeoPages(distDir) {
       path: hub.path,
       breadcrumbs,
       relatedLinks,
-      cta: { href: hub.ctaHref || '/auto/', label: hub.ctaLabel || 'Başla' }
+      cta: { href: hub.ctaHref || '/karar-asistani/', label: hub.ctaLabel || 'Ön değerlendirme başlat' }
     });
 
     const segments = hub.path.replace(/^\/|\/$/g, '').split('/');

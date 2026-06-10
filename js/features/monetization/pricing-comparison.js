@@ -54,8 +54,8 @@ const COMPARE_PLANS = Object.freeze([
     name: 'Başlangıç',
     priceHint: 'Ücretsiz',
     featured: false,
-    ctaHref: '/auto/',
-    ctaLabel: 'Ücretsiz maliyet analizi',
+    ctaHref: '/karar-asistani/',
+    ctaLabel: 'Ön değerlendirme başlat',
     ctaClass: 'btn btn-outline btn-block'
   },
   {

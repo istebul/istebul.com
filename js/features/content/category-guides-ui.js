@@ -3,6 +3,7 @@
  */
 
 import {
+  GENERAL_PLATFORM_CTA_HREF,
   GUIDE_CATEGORIES,
   blogPostPath,
   excerptText,
@@ -87,7 +88,7 @@ function renderEmptyState(categoryId) {
     <div class="ib-guides-empty">
       <p><strong>${escapeHtml(cat?.label || 'Rehber')} rehberleri yakında.</strong></p>
       <p class="text-muted-sm">Pilot içerikler admin panelden yayınlandığında burada görünür.</p>
-      <a class="btn btn-outline btn-sm" href="${escapeHtml(cat?.ctaHref || '/auto/')}">${escapeHtml(cat?.ctaLabel || 'Analiz başlat')}</a>
+      <a class="btn btn-outline btn-sm" href="${escapeHtml(cat?.ctaHref || GENERAL_PLATFORM_CTA_HREF)}">${escapeHtml(cat?.ctaLabel || 'Analiz başlat')}</a>
     </div>`;
 }
 
@@ -148,7 +149,7 @@ function renderGuidesPanel(posts, categoryId, layout = 'hero') {
 
   return `
     <div class="ib-guides-panel" data-guides-panel="${escapeHtml(categoryId)}">
-      ${renderFeaturedCard(featured, cat?.ctaHref || '/auto/', cat?.ctaLabel || 'Analiz başlat')}
+      ${renderFeaturedCard(featured, cat?.ctaHref || GENERAL_PLATFORM_CTA_HREF, cat?.ctaLabel || 'Analiz başlat')}
       <div class="ib-guides-compact-list">
         ${rest.map(renderCompactItem).join('') || renderCompactItem(featured)}
       </div>
