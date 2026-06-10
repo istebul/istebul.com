@@ -64,7 +64,7 @@ if (!dashBlock) {
     }
   }
   if (!block.includes('href="/admin/ai-listings/"')) {
-    fail('landing must link to AI Karar Merkezi (/admin/ai-listings/)');
+    fail('landing must link to AI İlan Yönetimi (/admin/ai-listings/)');
   }
   if (!block.includes('örnek görsel') && !block.includes('Örnek')) {
     fail('landing charts must disclose sample/placeholder visuals');

@@ -31,7 +31,7 @@ test('landing page exposes operasyon panel CTAs', () => {
   assert.match(block, /data-page-target="unified-funnel"/);
   assert.match(block, /data-page-target="dashboard-partner-ops"/);
   assert.match(block, /href="\/admin\/ai-listings\/"/);
-  assert.match(block, /AI Karar Merkezi/);
+  assert.match(block, /AI İlan Yönetimi/);
 });
 
 test('landing charts disclose placeholder/sample visuals', () => {
