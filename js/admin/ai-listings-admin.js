@@ -1,7 +1,8 @@
 /**
- * isteBul AI Listings — internal admin test panel (Executive AI Decision Center V5).
+ * isteBul AI Listings — admin operasyon paneli (Executive AI Decision Center V5).
  *
- * INTERNAL TEST ONLY. Not linked from homepage, categories, or admin nav.
+ * Admin-only: linked from admin CRM sidebar as "AI İlan Yönetimi" (/admin/ai-listings/).
+ * Not linked from public homepage, categories, or sitemap.
  * approved means internally approved only; public publishing remains disabled.
  *
  * Enable locally: localStorage.setItem('istebul_ai_listings_admin', 'on')

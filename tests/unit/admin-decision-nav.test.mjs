@@ -74,14 +74,27 @@ test('admin-panel.html includes static AI İlan Yönetimi link', () => {
   assert.match(html, /href="\/admin\/ai-listings\/"/);
   assert.match(html, /data-admin-listing-nav-injected="ai-listings"/);
   assert.match(html, />AI İlan Yönetimi</);
+  assert.match(html, /data-page-target="listings"/);
+  assert.match(html, />Karar Seçenekleri</);
+  assert.doesNotMatch(html, /data-page-target="decision-center"/);
+});
+
+test('Karar Seçenekleri and AI İlan Yönetimi titles distinguish classic CRM from AI engine', () => {
+  const html = fs.readFileSync(path.join(process.cwd(), 'admin-panel.html'), 'utf8');
+  const listingsNav = html.match(/data-page-target="listings"[^>]*title="([^"]+)"/);
+  assert.ok(listingsNav, 'listings nav has title tooltip');
+  assert.match(listingsNav[1], /AI İlan Yönetimi/);
+  const aiNav = html.match(/href="\/admin\/ai-listings\/"[^>]*title="([^"]+)"/);
+  assert.ok(aiNav, 'AI listings nav has title tooltip');
+  assert.match(aiNav[1], /Karar Seçenekleri/);
 });
 
 test('public decision center routes redirect to profil', () => {
   const redirects = fs.readFileSync(path.join(process.cwd(), '_redirects'), 'utf8');
   assert.match(redirects, /\/karar-merkezi \/profil\/ 301/);
   assert.match(redirects, /\/decision-center \/profil\/ 301/);
-  assert.doesNotMatch(redirects, /\/admin\/karar-merkezi/);
-  assert.doesNotMatch(redirects, /\/admin\/decision-center/);
+  assert.doesNotMatch(redirects, /^\/admin\/karar-merkezi/m);
+  assert.doesNotMatch(redirects, /^\/admin\/decision-center/m);
 });
 
 test('admin listing routes are static (no _redirects under /admin)', () => {

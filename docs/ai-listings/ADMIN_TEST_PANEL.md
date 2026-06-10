@@ -2,11 +2,11 @@
 
 ## Overview
 
-Sprint-5 adds an **internal-only** test panel for exercising the `ai-listings` Edge Function. It is **hidden by default** and has **no public navigation link**.
+Sprint-5 adds an **admin-only** operasyon paneli for exercising the `ai-listings` Edge Function. It is **hidden by default** (localStorage gate) and has **no public navigation link**. Admin operators reach it via the CRM sidebar **AI İlan Yönetimi** link (`/admin/ai-listings/`).
 
 | File | Purpose |
 |------|---------|
-| `admin/ai-listings.html` | Standalone page (not in admin-panel nav) |
+| `admin/ai-listings.html` | Standalone page (external link from admin CRM nav, not an in-panel page id) |
 | `js/admin/ai-listings-admin.js` | UI wiring |
 | `js/admin/ai-listings-admin-core.js` | Testable utilities |
 | `css/admin-ai-listings.css` | Scoped styles (`.ai-listings-admin` only) |
@@ -89,7 +89,8 @@ Use filters: category, status, source_type, limit → `GET /listings`
 
 ## Safety notes
 
-- **No public nav** — page is not linked from homepage, categories, or `admin-panel.html`
+- **No public nav** — page is not linked from homepage, categories, or sitemap
+- **Admin CRM nav** — reachable via sidebar **AI İlan Yönetimi** (`/admin/ai-listings/`); distinct from in-panel **Karar Seçenekleri** (`/admin/listings`)
 - **noindex** meta tag on the page
 - **Scoped CSS** — all rules under `.ai-listings-admin`
 - **Text sanitization** — `escapeHtml` on all rendered dynamic text
@@ -99,10 +100,12 @@ Use filters: category, status, source_type, limit → `GET /listings`
 
 ## Why no public nav yet
 
-1. Edge API requires shared secret (not suitable for browsers in production)
+1. Edge API requires shared secret (not suitable for browsers in production without admin session)
 2. Module remains inactive by default (`AI_LISTINGS_SUPABASE_ENABLED=false`)
 3. RLS blocks anon/authenticated DB access
 4. Product UI integration is a separate sprint with auth proxy and RLS Phase A
+
+Admin CRM sidebar access is intentional for operators; it does not expose the panel to anonymous users.
 
 ## Disable panel
 

@@ -56,7 +56,7 @@ Use this before enabling in a non-production or staging Supabase project:
    localStorage.setItem('istebul_ai_listings_admin', 'on');
    localStorage.setItem('istebul_ai_listings_secret', '<same AI_LISTINGS_EDGE_SECRET>');
    ```
-   Open `/admin/ai-listings.html` directly (no nav link).
+   Open via admin CRM sidebar **AI İlan Yönetimi** (`/admin/ai-listings/`) or directly at `/admin/ai-listings.html`.
 
 5. **Optional seed**
    ```bash
@@ -72,7 +72,7 @@ Use this before enabling in a non-production or staging Supabase project:
 
 Before merging PR #177 or enabling in production:
 
-- [ ] No links to `/admin/ai-listings.html` in public HTML, menus, or sitemap
+- [ ] No links to `/admin/ai-listings.html` in **public** HTML, menus, or sitemap (admin CRM sidebar link is allowed)
 - [ ] `admin/ai-listings.html` has `noindex,nofollow` robots meta
 - [ ] Edge function **not** deployed until migration applied
 - [ ] `AI_LISTINGS_SUPABASE_ENABLED` left **unset/false** until deliberate activation

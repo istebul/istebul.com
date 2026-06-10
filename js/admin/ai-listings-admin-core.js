@@ -1,7 +1,8 @@
 /**
- * isteBul AI Listings — internal admin test panel utilities.
+ * isteBul AI Listings — admin operasyon paneli utilities.
  *
- * INTERNAL TEST ONLY — not linked from public navigation.
+ * Admin-only panel at /admin/ai-listings/ (sidebar: AI İlan Yönetimi).
+ * Not linked from public navigation or sitemap.
  * Panel is hidden unless localStorage istebul_ai_listings_admin === "on".
  *
  * approved means internally approved only; public publishing remains disabled.
