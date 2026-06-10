@@ -47,7 +47,7 @@
       "Bilgilendirme amaçlı — bağlayıcı teklif veya getiri taahhüdü değil",
       "KVKK uyumlu veri işleme ve iyzico / PayTR ile güvenli ödeme"
     ],
-    "ctaPrimary": { "href": "/auto/", "label": "Auto analizini dene" },
+    "ctaPrimary": { "href": "/karar-asistani/", "label": "Ön değerlendirme başlat" },
     "ctaSecondary": { "href": "/planlar", "label": "Planları incele" }
   },
   "verticals": {

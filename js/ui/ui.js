@@ -743,7 +743,7 @@ export class UIManager {
                     <h3>Henüz favori seçenek yok</h3>
                     <p>Karar skoruna göre seçenekleri keşfedin; beğendiklerinizi favorilere ekleyin.</p>
                     <div class="empty-state-actions">
-                        <a href="/auto/" class="btn btn-primary">Ücretsiz maliyet analizi</a>
+                        <a href="/karar-asistani/" class="btn btn-primary">Ön değerlendirme başlat</a>
                         <a href="/secenekler" class="btn btn-outline" data-native-route>Seçenekleri gör</a>
                     </div>
                 </div>

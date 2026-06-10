@@ -24,7 +24,7 @@ export function renderEmptyDecisionCard() {
     <article class="ud-empty-card">
       <h3>Henüz devam eden kararınız yok.</h3>
       <p>Araba, konut, tatil veya finansman kategorilerinden yeni analiz başlatabilirsiniz.</p>
-      <a href="/auto/" class="btn btn-outline btn-sm">Yeni analiz başlat</a>
+      <a href="/karar-asistani/" class="btn btn-outline btn-sm">Yeni analiz başlat</a>
     </article>
   `;
 }

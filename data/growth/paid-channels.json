@@ -13,7 +13,7 @@
       "name": "Google Search",
       "utm": { "utm_source": "google", "utm_medium": "cpc" },
       "clickIds": ["gclid", "gbraid", "wbraid"],
-      "landingPaths": ["/auto/", "/"],
+      "landingPaths": ["/karar-asistani/", "/"],
       "capi": "google_ads",
       "funnelGoal": "lead_submit",
       "remarketingAudiences": ["auto_results_no_lead_7d", "checkout_abandon_7d"]
@@ -23,7 +23,7 @@
       "name": "Meta (Facebook / Instagram)",
       "utm": { "utm_source": "meta", "utm_medium": "paid_social" },
       "clickIds": ["fbclid"],
-      "landingPaths": ["/auto/", "/"],
+      "landingPaths": ["/karar-asistani/", "/"],
       "capi": "meta",
       "funnelGoal": "lead_submit",
       "remarketingAudiences": ["auto_results_no_lead_7d", "pricing_view_no_checkout_3d"]
@@ -33,7 +33,7 @@
       "name": "TikTok Ads",
       "utm": { "utm_source": "tiktok", "utm_medium": "paid_social" },
       "clickIds": ["ttclid"],
-      "landingPaths": ["/auto/"],
+      "landingPaths": ["/karar-asistani/"],
       "capi": "tiktok",
       "funnelGoal": "lead_submit",
       "remarketingAudiences": ["auto_start_no_complete_3d"]
@@ -43,7 +43,7 @@
       "name": "YouTube",
       "utm": { "utm_source": "youtube", "utm_medium": "video" },
       "clickIds": ["gclid", "gbraid"],
-      "landingPaths": ["/auto/", "/karar-asistani/"],
+      "landingPaths": ["/karar-asistani/", "/"],
       "capi": "google_ads",
       "funnelGoal": "lead_submit",
       "remarketingAudiences": ["auto_results_no_lead_14d"]
@@ -53,7 +53,7 @@
       "name": "Retargeting (Display / RM)",
       "utm": { "utm_source": "retargeting", "utm_medium": "display" },
       "clickIds": ["gclid", "fbclid", "msclkid"],
-      "landingPaths": ["/auto/", "/planlar"],
+      "landingPaths": ["/karar-asistani/", "/planlar"],
       "capi": "multi",
       "funnelGoal": "checkout_start",
       "remarketingAudiences": ["checkout_abandon_7d", "pricing_view_no_checkout_7d", "lead_no_purchase_30d"]
