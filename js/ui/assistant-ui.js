@@ -55,7 +55,8 @@ export function resolveVerticalContinueHandoff(categoryId, rawAnswers = {}) {
     if (!categoryLabel) return null;
     return {
         href,
-        sectionTitle: 'Tüm kriterlerinizle detaylı analiz',
+        sectionTitle: 'Tam karar analizi için kategori akışına devam edin',
+        sectionLead: 'Verdiğiniz bilgiler tam analizde kullanılmak üzere aktarılacak.',
         ctaLabel: 'Tam analize devam et',
         categoryLabel
     };
@@ -135,7 +136,7 @@ export class AssistantUI {
     }
 
     getAssistantWizardTimelineMarkup(steps, activeIndex) {
-        const flow = [{ id: 'category', label: 'Kategori', done: true }].concat(steps).concat([{ id: 'result', label: 'Sonuç' }]);
+        const flow = [{ id: 'category', label: 'Kategori', done: true }].concat(steps).concat([{ id: 'result', label: 'Ön değerlendirme' }]);
         return '<div class="assistant-wizard-steps">' + flow.map((step, index) => {
             const questionIndex = index - 1;
             const isCategory = index === 0;
@@ -245,9 +246,10 @@ export class AssistantUI {
             '<section class="assistant-decision-panel">' +
                 '<div class="assistant-result-header assistant-decision-hero">' +
                     '<div>' +
-                        '<span class="assistant-kicker">Karar değerlendirme paneli</span>' +
+                        '<span class="assistant-kicker">Ön değerlendirme tamamlandı</span>' +
                         '<h3>' + this.escapeHtml(primary.name) + '</h3>' +
                         '<p>' + this.escapeHtml(result.summary) + '</p>' +
+                        '<p class="assistant-result-pre-eval-note">Tam karar analizi için ilgili kategori akışına devam edin. Verdiğiniz bilgiler tam analizde kullanılmak üzere aktarılacak.</p>' +
                         '<div class="assistant-result-badges">' +
                             '<span><i data-lucide="map-pin"></i>' + this.escapeHtml(result.categoryName) + '</span>' +
                             '<span><i data-lucide="shield-check"></i>Güven skoru ' + this.escapeHtml(primary.score) + '/100</span>' +
@@ -260,11 +262,7 @@ export class AssistantUI {
                         '<span>/100</span>' +
                     '</div>' +
                 '</div>' +
-                '<div class="assistant-decision-toolbar">' +
-                    '<button type="button" class="btn btn-outline" data-assistant-edit="0"><i data-lucide="sliders-horizontal"></i> Kriterleri güncelle</button>' +
-                    '<a href="/karsilastir/" class="btn btn-outline btn-sm" data-native-route><i data-lucide="columns-3"></i> Karşılaştırma merkezine git</a>' +
-                    '<button type="button" class="btn btn-primary" data-browse-decision-listings><i data-lucide="list-checks"></i> Eşleşen seçenekleri aç</button>' +
-                '</div>' +
+                this.getAssistantDecisionToolbarMarkup(result.categoryId, result.rawAnswers) +
                 resultSummaryHtml +
                 shareCardHtml +
                 this.getVerticalContinueHandoffMarkup(result.categoryId, result.rawAnswers) +
@@ -312,6 +310,22 @@ export class AssistantUI {
         bindDecisionResultShareCard(container, resultSummary);
     }
 
+    getAssistantDecisionToolbarMarkup(categoryId, rawAnswers = {}) {
+        const handoff = resolveVerticalContinueHandoff(categoryId, rawAnswers);
+        const continueCta = handoff
+            ? '<a href="' + this.escapeHtml(handoff.href) + '" class="btn btn-primary" data-native-route data-analytics-cta="assistant_vertical_continue" data-analytics-placement="decision_result_toolbar">' +
+                '<i data-lucide="arrow-right"></i> ' + this.escapeHtml(handoff.ctaLabel) +
+            '</a>'
+            : '';
+
+        return '<div class="assistant-decision-toolbar">' +
+            continueCta +
+            '<button type="button" class="btn btn-outline" data-assistant-edit="0"><i data-lucide="sliders-horizontal"></i> Kriterleri güncelle</button>' +
+            '<a href="/karsilastir/" class="btn btn-outline btn-sm" data-native-route><i data-lucide="columns-3"></i> Karşılaştırma merkezine git</a>' +
+            '<button type="button" class="btn btn-outline" data-browse-decision-listings><i data-lucide="list-checks"></i> Eşleşen seçenekleri aç</button>' +
+        '</div>';
+    }
+
     getVerticalContinueHandoffMarkup(categoryId, rawAnswers = {}) {
         const handoff = resolveVerticalContinueHandoff(categoryId, rawAnswers);
         if (!handoff) return '';
@@ -320,6 +334,7 @@ export class AssistantUI {
             '<div class="assistant-vertical-handoff-copy">' +
                 '<span class="assistant-kicker">' + this.escapeHtml(handoff.categoryLabel) + '</span>' +
                 '<h4>' + this.escapeHtml(handoff.sectionTitle) + '</h4>' +
+                (handoff.sectionLead ? '<p>' + this.escapeHtml(handoff.sectionLead) + '</p>' : '') +
             '</div>' +
             '<div class="assistant-vertical-handoff-actions">' +
                 '<a href="' + this.escapeHtml(handoff.href) + '" class="btn btn-primary" data-native-route data-analytics-cta="assistant_vertical_continue" data-analytics-placement="decision_result_handoff">' +
@@ -540,7 +555,7 @@ export class AssistantUI {
         const copy = categoryCopy[categoryId] || categoryCopy.arac;
 
         if (index === 0) {
-            return { icon: 'badge-check', label: 'Önerilen seçim', text: copy.primary };
+            return { icon: 'badge-check', label: 'Ön değerlendirmede öne çıkan seçenek', text: copy.primary };
         }
         if (minPrice && Number(item.price || 0) === minPrice) {
             return { icon: 'wallet-cards', label: 'Bütçe odaklı', text: copy.budget };

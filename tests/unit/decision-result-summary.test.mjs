@@ -63,6 +63,8 @@ test('renderDecisionResultSummaryHtml exposes four summary labels', () => {
     const html = renderDecisionResultSummaryHtml(summary, (value) => String(value));
 
     assert.match(html, /data-decision-result-summary/);
+    assert.match(html, /Ön değerlendirme sonucu/);
+    assert.match(html, /Ön değerlendirme sinyalleri tek bakışta/);
     assert.match(html, /Uygunluk özeti/);
     assert.match(html, /Risk özeti/);
     assert.match(html, /TCO özeti/);

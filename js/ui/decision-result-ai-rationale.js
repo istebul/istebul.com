@@ -89,9 +89,9 @@ export function buildDeterministicDecisionResultRationale(summary) {
         profile_explanation:
             `Karar profili "${profileValue}" olarak özetleniyor. ${profile.detail || 'Profil girdileri mevcut cevaplardan türetilir.'}`,
         synthesis:
-            `Karar sonucu özeti mevcut uygunluk (${fitValue}), risk (${riskValue}), TCO (${tcoValue}) ve profil sinyallerinden okunur.`,
+            `Ön değerlendirme özeti mevcut uygunluk (${fitValue}), risk (${riskValue}), TCO (${tcoValue}) ve profil sinyallerinden okunur.`,
         disclaimer:
-            'Bu gerekçe karar desteği amaçlıdır; bağlayıcı satın alma veya finansman taahhüdü değildir. Nihai karar kullanıcıya aittir.'
+            'Bu gerekçe ön değerlendirme ve karar desteği amaçlıdır; bağlayıcı satın alma veya finansman taahhüdü değildir. Tam analiz ilgili kategori akışında tamamlanır.'
     };
 }
 
@@ -126,7 +126,7 @@ export function buildDecisionResultRationalePrompt(summary) {
     };
 
     return [
-        'Görev: Karar sonucu özeti için YALNIZCA geçerli JSON üret (başka metin yok).',
+        'Görev: Ön değerlendirme özeti için YALNIZCA geçerli JSON üret (başka metin yok).',
         'Dil: Türkçe, profesyonel, açıklayıcı; pazarlama abartısı yok.',
         'YASAK: yeni skor, TCO, risk veya uygunluk üretmek; "seçmelisiniz", "en doğru karar", "kesinlikle bunu alın", "tek doğru seçenek", "sizin için en iyi karar" gibi emir kipi.',
         'İZİNLİ: verilen özet sinyallerini açıklamak, skor/risk/TCO/uygunluk farklarını yorumlamak.',
@@ -214,7 +214,7 @@ export function renderDecisionResultAiRationaleHtml(rationale, options = {}) {
         '<header class="decision-result-ai-rationale-head">' +
             '<div>' +
                 '<h4>AI destekli karar gerekçesi</h4>' +
-                '<p class="decision-result-ai-rationale-lead">Bu gerekçe mevcut skor, risk, TCO ve uygunluk sinyallerini açıklar; nihai karar kullanıcıya aittir.</p>' +
+                '<p class="decision-result-ai-rationale-lead">Bu gerekçe ön değerlendirmedeki skor, risk, TCO ve uygunluk sinyallerini açıklar; tam analiz ilgili kategori akışında tamamlanır.</p>' +
             '</div>' +
             '<span class="decision-result-ai-rationale-badge" data-decision-ai-badge>' + safe(sourceLabel) + '</span>' +
         '</header>' +

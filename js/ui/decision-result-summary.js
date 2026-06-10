@@ -99,11 +99,11 @@ export function renderDecisionResultSummaryHtml(summary, escapeHtml, aiRationale
         '</article>';
     }).join('');
 
-    return '<section class="decision-result-summary" data-decision-result-summary aria-label="Karar sonucu özeti">' +
+    return '<section class="decision-result-summary" data-decision-result-summary aria-label="Ön değerlendirme sonucu">' +
         '<div class="decision-result-summary-head">' +
-            '<span class="assistant-kicker">Karar sonucu özeti</span>' +
-            '<h3>Nihai karar sinyalleri tek bakışta</h3>' +
-            '<p>Uygunluk, risk, TCO ve profil özeti mevcut deterministik sonuçlardan okunur — nihai karar size aittir.</p>' +
+            '<span class="assistant-kicker">Ön değerlendirme sonucu</span>' +
+            '<h3>Ön değerlendirme sinyalleri tek bakışta</h3>' +
+            '<p>Uygunluk, risk, TCO ve profil özeti ön değerlendirmeden okunur; tam skor ve detaylı analiz ilgili kategori akışında hesaplanır.</p>' +
         '</div>' +
         '<div class="decision-result-summary-grid">' + cards + '</div>' +
         aiSlot +

@@ -427,6 +427,9 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     const summary = page.locator('[data-decision-result-summary]');
     await expect(summary).toBeVisible({ timeout: 15000 });
+    await expect(summary).toContainText(/Ön değerlendirme sonucu/i);
+    await expect(summary).toContainText(/Ön değerlendirme sinyalleri tek bakışta/i);
+    await expect(summary).not.toContainText(/Nihai karar sinyalleri/i);
     await expect(summary.locator('[data-result-summary-field="fit-summary"] span').first()).toHaveText('Uygunluk özeti');
     await expect(summary.locator('[data-result-summary-field="risk-summary"] span').first()).toHaveText('Risk özeti');
     await expect(summary.locator('[data-result-summary-field="tco-summary"] span').first()).toHaveText('TCO özeti');
@@ -473,7 +476,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     const rationale = page.locator('[data-decision-result-ai-rationale]');
     await expect(rationale).toBeVisible({ timeout: 15000 });
     await expect(rationale.getByRole('heading', { name: /AI destekli karar gerekçesi/i })).toBeVisible();
-    await expect(rationale).toContainText(/mevcut skor, risk, TCO ve uygunluk sinyallerini açıklar/i);
+    await expect(rationale).toContainText(/ön değerlendirmedeki skor, risk, TCO ve uygunluk sinyallerini açıklar/i);
 
     const rationaleText = await rationale.innerText();
     expect(rationaleText).toMatch(/skor|TCO|risk|uygunluk/i);
@@ -605,8 +608,18 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     });
     expect(renderStatus).toEqual({ ok: true });
 
+    await expect(page.locator('.assistant-decision-hero .assistant-kicker')).toContainText(/Ön değerlendirme tamamlandı/i);
+
+    const toolbarContinue = page.locator('.assistant-decision-toolbar a[data-analytics-placement="decision_result_toolbar"]');
+    await expect(toolbarContinue).toBeVisible({ timeout: 15000 });
+    await expect(toolbarContinue).toHaveText(/Tam analize devam et/i);
+    await expect(toolbarContinue).toHaveClass(/btn-primary/);
+    await expect(toolbarContinue).toHaveAttribute('href', /\/konut\/\?/);
+
     const handoff = page.locator('[data-assistant-vertical-handoff] a[data-native-route]');
     await expect(handoff).toBeVisible({ timeout: 15000 });
+    await expect(handoff).toHaveText(/Tam analize devam et/i);
+    await expect(handoff).toHaveClass(/btn-primary/);
     await expect(handoff).toHaveAttribute('href', /\/konut\/\?/);
 
     await Promise.all([

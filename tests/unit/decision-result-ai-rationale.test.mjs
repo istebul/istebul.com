@@ -110,7 +110,7 @@ test('renderDecisionResultAiRationaleHtml exposes rationale root and title', () 
 
     assert.match(html, /data-decision-result-ai-rationale/);
     assert.match(html, /AI destekli karar gerekçesi/);
-    assert.match(html, /mevcut skor, risk, TCO ve uygunluk sinyallerini açıklar/i);
+    assert.match(html, /ön değerlendirmedeki skor, risk, TCO ve uygunluk sinyallerini açıklar/i);
 });
 
 test('sanitizeDecisionResultRationaleText strips banned prescriptive phrases', () => {
