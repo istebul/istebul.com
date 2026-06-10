@@ -371,13 +371,15 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     const emptyState = page.locator('#listings-grid .marketplace-empty-state');
     await expect(emptyState).toBeVisible({ timeout: 15000 });
 
-    const primaryCta = emptyState.getByRole('link', { name: /Kararını analiz et/i });
+    const primaryCta = emptyState.getByRole('link', { name: /Ön değerlendirme başlat/i });
     await expect(primaryCta).toBeVisible();
     await expect(primaryCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(primaryCta).toHaveClass(/btn-primary/);
 
     const tcoCta = emptyState.getByRole('link', { name: /TCO analizini başlat/i });
     await expect(tcoCta).toBeVisible();
     await expect(tcoCta).toHaveClass(/btn-outline/);
+    await expect(tcoCta).toHaveAttribute('href', /\/auto\/?$/);
   });
 
   test('karar asistanı sonuç ekranında decision result summary görünür', async ({ page }) => {
@@ -651,6 +653,93 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     await page.locator('#housing-next').click();
     await expect(page.locator('[data-field="homeType"].is-selected')).toHaveAttribute('data-value', 'Daire');
+  });
+
+  test('karar asistanı arac sonucunda browse CTA secondary kalır', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.waitForFunction(
+      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+      null,
+      { timeout: 15000 }
+    );
+
+    await page.evaluate(() => {
+      const app = window.app;
+      app.assistantCategory = 'arac';
+      app.assistantAnswers = { budget: '900000', usage: 'city', fuel: 'hybrid', body: 'sedan' };
+      const categoryConfig = app.getResolvedDecisionAssistantConfig()?.arac;
+      const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+      app.ui.renderDecisionResults(result);
+    });
+
+    const toolbarContinue = page.locator('.assistant-decision-toolbar a[data-analytics-placement="decision_result_toolbar"]');
+    await expect(toolbarContinue).toHaveClass(/btn-primary/);
+    await expect(toolbarContinue).toHaveText(/Tam analize devam et/i);
+
+    const browseCta = page.locator('[data-browse-decision-listings]');
+    await expect(browseCta).toBeVisible();
+    await expect(browseCta).toHaveClass(/btn-outline/);
+    await expect(browseCta).toHaveText(/AI destekli seçenekleri incele/i);
+  });
+
+  test('karar asistanı finansman sonucunda browse CTA gösterilmez', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.waitForFunction(
+      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+      null,
+      { timeout: 15000 }
+    );
+
+    await page.evaluate(() => {
+      const app = window.app;
+      app.assistantCategory = 'finansman';
+      app.assistantAnswers = { purpose: 'konut', amount: '500000', term: '120' };
+      const categoryConfig = app.getResolvedDecisionAssistantConfig()?.finansman;
+      const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+      app.ui.renderDecisionResults(result);
+    });
+
+    const toolbarContinue = page.locator('.assistant-decision-toolbar a[data-analytics-placement="decision_result_toolbar"]');
+    await expect(toolbarContinue).toHaveAttribute('href', /\/finans\/\?/);
+    await expect(page.locator('[data-browse-decision-listings]')).toHaveCount(0);
+  });
+
+  test('karar asistanı canonical vertical handoff hedefleri', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.waitForFunction(
+      () => typeof window.app?.buildDecisionResult === 'function' && typeof window.app?.ui?.renderDecisionResults === 'function',
+      null,
+      { timeout: 15000 }
+    );
+
+    const cases = [
+      { category: 'arac', answers: { budget: '900000' }, href: /\/auto\/\?budget=900000/ },
+      { category: 'tatil', answers: { vacationType: 'familyResort', budget: '25000' }, href: /\/tatil\/\?/ },
+      { category: 'finansman', answers: { purpose: 'konut', budget: '500000', term: '60' }, href: /\/finans\/\?/ },
+      { category: 'sigorta', answers: { insuranceType: 'saglik', risk_perception: 'dusuk' }, href: /\/sigorta\/\?/ },
+      { category: 'kasko', answers: { vehicle_category: 'otomobil', vehicle_year_band: '0-3' }, href: /\/kasko\/\?/ }
+    ];
+
+    for (const item of cases) {
+      await page.evaluate(({ category, answers }) => {
+        const app = window.app;
+        app.assistantCategory = category;
+        app.assistantAnswers = answers;
+        const categoryConfig = app.getResolvedDecisionAssistantConfig()?.[category];
+        const result = app.buildDecisionResult(categoryConfig, app.assistantAnswers);
+        app.ui.renderDecisionResults(result);
+      }, item);
+
+      const toolbarContinue = page.locator('.assistant-decision-toolbar a[data-analytics-placement="decision_result_toolbar"]');
+      await expect(toolbarContinue).toHaveAttribute('href', item.href);
+      await expect(toolbarContinue).toHaveText(/Tam analize devam et/i);
+    }
   });
 
   test('karar geçmişi canonical entry schemaVersion=1 kaydeder ve geçmiş sayfası yüklenir', async ({ page }) => {
@@ -1554,7 +1643,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     expect(remaining).toEqual(['delete-keep']);
   });
 
-  test('gecmis canonical ev kaydı Tekrar aç ile karar asistanını açar', async ({ page }) => {
+  test('gecmis canonical ev kaydı Tam analize devam et ile konut verticalına gider', async ({ page }) => {
     test.setTimeout(60000);
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
@@ -1581,20 +1670,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     });
 
     await clickGecmisHistoryAction(page, { action: 'repeat', entryId: 'repeat-ev-canonical', categoryId: 'konut' });
-    await expect(page).toHaveURL(/\/karar-asistani\/?$/, { timeout: 15000 });
-
-    const assistantState = await page.waitForFunction(() => {
-      if (window.app?.assistantCategory !== 'ev') return null;
-      return {
-        category: window.app.assistantCategory,
-        budget: window.app.assistantAnswers?.budget || null,
-        hasWizard: Boolean(document.querySelector('#assistant-category-rail .assistant-category'))
-      };
-    }, null, { timeout: 15000 }).then((handle) => handle.jsonValue());
-
-    expect(assistantState.category).toBe('ev');
-    expect(String(assistantState.budget)).toBe('5000000');
-    expect(assistantState.hasWizard).toBe(true);
+    await expect(page).toHaveURL(/\/konut\/\?/, { timeout: 15000 });
   });
 
   test('gecmis boş durum authenticated kullanıcıda görünür', async ({ page }) => {

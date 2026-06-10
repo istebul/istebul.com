@@ -47,6 +47,9 @@ export const VERTICAL_CONTINUE_CATEGORY_LABELS = Object.freeze({
     tatil: 'Tatil Karar Analizi'
 });
 
+/** Categories with AI-assisted option marketplace on /secenekler/ */
+export const LISTING_BROWSE_CATEGORY_IDS = Object.freeze(new Set(['arac', 'ev', 'tatil']));
+
 /** @returns {{ href: string, sectionTitle: string, ctaLabel: string, categoryLabel: string } | null} */
 export function resolveVerticalContinueHandoff(categoryId, rawAnswers = {}) {
     const href = buildVerticalContinueHref(categoryId, rawAnswers);
@@ -318,11 +321,17 @@ export class AssistantUI {
             '</a>'
             : '';
 
+        const browseCta = LISTING_BROWSE_CATEGORY_IDS.has(categoryId)
+            ? '<button type="button" class="btn btn-outline btn-sm" data-browse-decision-listings data-analytics-cta="assistant_browse_listings" data-analytics-placement="decision_result_toolbar">' +
+                '<i data-lucide="list-checks"></i> AI destekli seçenekleri incele' +
+            '</button>'
+            : '';
+
         return '<div class="assistant-decision-toolbar">' +
             continueCta +
+            browseCta +
             '<button type="button" class="btn btn-outline" data-assistant-edit="0"><i data-lucide="sliders-horizontal"></i> Kriterleri güncelle</button>' +
             '<a href="/karsilastir/" class="btn btn-outline btn-sm" data-native-route><i data-lucide="columns-3"></i> Karşılaştırma merkezine git</a>' +
-            '<button type="button" class="btn btn-outline" data-browse-decision-listings><i data-lucide="list-checks"></i> Eşleşen seçenekleri aç</button>' +
         '</div>';
     }
 
@@ -756,7 +765,7 @@ export class AssistantUI {
                 </div>
                 <div class="decision-history-actions">
                     <button type="button" class="btn btn-primary" data-decision-repeat="${this.escapeHtml(item.id)}">
-                        <i data-lucide="refresh-cw"></i> ${isAuto ? 'Yeni Auto analizi' : 'Tekrar aç'}
+                        <i data-lucide="refresh-cw"></i> Tam analize devam et
                     </button>
                     ${canCompare ? `<button type="button" class="btn btn-outline" data-decision-compare-add="${this.escapeHtml(item.id)}">
                         <i data-lucide="scale"></i> Karşılaştırmaya ekle

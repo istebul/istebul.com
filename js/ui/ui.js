@@ -462,9 +462,12 @@ export class UIManager {
         const labels = {
             arac: 'Seçeneği İncele',
             ev: 'Seçeneği İncele',
-            tatil: 'Seçeneği İncele'
+            tatil: 'Seçeneği İncele',
+            finansman: 'Seçeneği İncele',
+            sigorta: 'Seçeneği İncele',
+            kasko: 'Seçeneği İncele'
         };
-        return labels[categoryId] || 'Karar Detayını İncele';
+        return labels[categoryId] || 'Seçeneği İncele';
     }
 
     getListingInsightItems(listing = {}, aiScore = 0) {
@@ -980,7 +983,10 @@ export class UIManager {
         const labels = {
             arac: 'Araç',
             ev: 'Ev',
-            tatil: 'Tatil'
+            tatil: 'Tatil',
+            finansman: 'Finansman',
+            sigorta: 'Sigorta',
+            kasko: 'Kasko'
         };
 
         return labels[categoryId] || categoryId;

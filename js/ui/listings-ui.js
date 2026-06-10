@@ -1,6 +1,24 @@
 import { listingMediaCount } from './listing-gallery-ui.js';
 import { renderAiPlatformBanner } from './ai-platform-surface.js';
 
+const VERTICAL_EMPTY_STATE_CTAS = Object.freeze({
+    arac: { href: '/auto/', label: 'TCO analizini başlat', icon: 'car' },
+    ev: { href: '/konut/', label: 'Konut tam analizine devam et', icon: 'home' },
+    tatil: { href: '/tatil/', label: 'Tatil tam analizine devam et', icon: 'plane-takeoff' },
+    finansman: { href: '/finans/', label: 'Finans tam analizine devam et', icon: 'landmark' },
+    sigorta: { href: '/sigorta/', label: 'Sigorta tam analizine devam et', icon: 'shield' },
+    kasko: { href: '/kasko/', label: 'Kasko tam analizine devam et', icon: 'shield-check' }
+});
+
+function resolveMarketplaceEmptyStateSecondaryCta(categoryId) {
+    const vertical = VERTICAL_EMPTY_STATE_CTAS[categoryId] || VERTICAL_EMPTY_STATE_CTAS.arac;
+    return {
+        href: vertical.href,
+        label: vertical.label,
+        icon: vertical.icon
+    };
+}
+
 export class ListingsUI {
     renderListings(listings, favoriteIds = [], comparisonSignatures = [], options = {}) {
         const container = document.getElementById('listings-grid');
@@ -10,6 +28,7 @@ export class ListingsUI {
 
         if (listings.length === 0) {
             const ownedOnly = !!(options.ownedOnly || options.userId);
+            const secondaryCta = resolveMarketplaceEmptyStateSecondaryCta(options.category || '');
             container.innerHTML = (ownedOnly ? `
                 <div class="empty-state marketplace-empty-state">
                     <i data-lucide="badge-plus"></i>
@@ -22,18 +41,18 @@ export class ListingsUI {
                 <div class="empty-state marketplace-empty-state">
                     <i data-lucide="search"></i>
                     <h3>Canlı seçenek bulunamadı veya filtre dar</h3>
-                    <p>Bu alan yapay zeka destekli karar skoruna göre keşif içindir — klasik ilan sitesi değildir. Ana karar akışı Auto TCO analizidir; ardından sonuçları burada veya karşılaştırmada sürdürebilirsiniz.</p>
+                    <p>Bu alan yapay zeka destekli seçenek keşfi içindir — tam karar analizi ilgili kategori akışında yapılır. Ön değerlendirme için Karar Asistanı'na, tam analiz için kategori sihirbazına devam edin.</p>
                     <div class="empty-state-actions">
-                      <a href="/karar-asistani/" class="btn btn-primary" data-native-route><i data-lucide="sparkles"></i> Kararını analiz et</a>
-                      <a href="/auto/" class="btn btn-outline"><i data-lucide="car"></i> TCO analizini başlat</a>
-                      <a href="/karsilastir" class="btn btn-outline">Karşılaştırma merkezi</a>
+                      <a href="/karar-asistani/" class="btn btn-primary" data-native-route><i data-lucide="sparkles"></i> Ön değerlendirme başlat</a>
+                      <a href="${this.escapeHtml(secondaryCta.href)}" class="btn btn-outline" data-native-route><i data-lucide="${this.escapeHtml(secondaryCta.icon)}"></i> ${this.escapeHtml(secondaryCta.label)}</a>
+                      <a href="/karsilastir/" class="btn btn-outline" data-native-route>Karşılaştırma merkezi</a>
                     </div>
                 </div>
             `);
         } else {
             const aiStrip = renderAiPlatformBanner({
                 title: 'Yapay Zeka Destekli Seçenek Keşfi',
-                subtitle: 'Her seçenek metodolojik uyum skoru ile sıralanır — karar vermeden önce AI analizini kullanın.',
+                subtitle: 'Her seçenek metodolojik uyum skoru ile sıralanır — tam analiz için ilgili kategori akışını kullanın.',
                 variant: 'compact'
             });
             container.innerHTML = `<div class="listings-ai-strip">${aiStrip}</div>` + listings.map(listing => {

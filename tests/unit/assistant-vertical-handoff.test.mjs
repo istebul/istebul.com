@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const {
+  LISTING_BROWSE_CATEGORY_IDS,
   VERTICAL_CONTINUE_CATEGORY_LABELS,
   resolveVerticalContinueHandoff
 } = await import('../../js/ui/assistant-ui.js');
@@ -39,4 +40,20 @@ test('resolveVerticalContinueHandoff still links arac without query params', () 
   const handoff = resolveVerticalContinueHandoff('arac', {});
   assert.ok(handoff);
   assert.match(handoff.href, /^\/auto\/?/);
+});
+
+test('LISTING_BROWSE_CATEGORY_IDS limits marketplace browse to listing categories', () => {
+  assert.equal(LISTING_BROWSE_CATEGORY_IDS.has('arac'), true);
+  assert.equal(LISTING_BROWSE_CATEGORY_IDS.has('ev'), true);
+  assert.equal(LISTING_BROWSE_CATEGORY_IDS.has('tatil'), true);
+  assert.equal(LISTING_BROWSE_CATEGORY_IDS.has('finansman'), false);
+  assert.equal(LISTING_BROWSE_CATEGORY_IDS.has('sigorta'), false);
+  assert.equal(LISTING_BROWSE_CATEGORY_IDS.has('kasko'), false);
+});
+
+test('resolveVerticalContinueHandoff links all canonical verticals', () => {
+  assert.match(resolveVerticalContinueHandoff('tatil', { vacationType: 'familyResort' })?.href || '', /^\/tatil\/?/);
+  assert.match(resolveVerticalContinueHandoff('finansman', { purpose: 'konut', budget: '500000' })?.href || '', /^\/finans\/?/);
+  assert.match(resolveVerticalContinueHandoff('sigorta', { insuranceType: 'saglik' })?.href || '', /^\/sigorta\/?/);
+  assert.match(resolveVerticalContinueHandoff('kasko', { vehicle_category: 'otomobil' })?.href || '', /^\/kasko\/?/);
 });

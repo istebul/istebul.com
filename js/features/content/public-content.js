@@ -44,11 +44,12 @@ const GUIDE_SEED_BY_CATEGORY = Object.freeze({
 });
 
 export const GUIDE_CATEGORIES = Object.freeze([
-  { id: 'auto', label: 'Araba', ctaHref: '/auto/', ctaLabel: 'Ücretsiz analiz' },
-  { id: 'housing', label: 'Konut', ctaHref: '/konut/', ctaLabel: 'Konut analizi' },
-  { id: 'travel', label: 'Tatil', ctaHref: '/tatil/', ctaLabel: 'Tatil planla' },
-  { id: 'finance', label: 'Finansman', ctaHref: '/finansman/', ctaLabel: 'Finans karşılaştır' },
-  { id: 'insurance', label: 'Sigorta', ctaHref: '/sigorta/', ctaLabel: 'Sigorta rehberi' }
+  { id: 'auto', label: 'Araba', ctaHref: '/auto/', ctaLabel: 'Tam analiz başlat' },
+  { id: 'housing', label: 'Konut', ctaHref: '/konut/', ctaLabel: 'Konut tam analizi' },
+  { id: 'travel', label: 'Tatil', ctaHref: '/tatil/', ctaLabel: 'Tatil tam analizi' },
+  { id: 'finance', label: 'Finansman', ctaHref: '/finans/', ctaLabel: 'Finans tam analizi' },
+  { id: 'insurance', label: 'Sigorta', ctaHref: '/sigorta/', ctaLabel: 'Sigorta tam analizi' },
+  { id: 'kasko', label: 'Kasko', ctaHref: '/kasko/', ctaLabel: 'Kasko tam analizi' }
 ]);
 
 export function normalizePostCategory(value) {
