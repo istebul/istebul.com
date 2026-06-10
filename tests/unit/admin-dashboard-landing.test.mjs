@@ -64,3 +64,15 @@ test('ADMIN_NAV_CONTRACT documents operasyon landing labels', () => {
   assert.match(doc, /Operasyon Komuta Merkezi/);
   assert.match(doc, /admin-dashboard-landing-audit/);
 });
+
+test('operation and analytics page headings stay aligned with nav labels', () => {
+  const html = read('admin-panel.html');
+  assert.match(html, /<h2>Ops asistan<\/h2>/);
+  assert.match(html, /<h2>Observability<\/h2>/);
+  assert.match(html, /<h2>Platform analitik<\/h2>/);
+  assert.match(html, /<h2>Auto analitik<\/h2>/);
+  assert.doesNotMatch(html, /<h2>AI Ops Decision Assistant<\/h2>/);
+  assert.doesNotMatch(html, /<h2>Production Observability<\/h2>/);
+  assert.doesNotMatch(html, /<h2>Platform Analytics<\/h2>/);
+  assert.doesNotMatch(html, /<h2>Auto Analytics<\/h2>/);
+});
