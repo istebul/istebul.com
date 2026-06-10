@@ -92,3 +92,18 @@ Aşağıdaki statik admin sayfalarında sidebar/topbar etiketi ile sayfa `<h2>` 
 CI: `admin-dashboard-landing-audit.cjs` + `admin-dashboard-landing.test.mjs` bu h2 ↔ NAV_LABELS eşleşmesini kilitler.
 
 Kapsam dışı (4A-1b-3A): dinamik dashboard CTA metinleri (`internal-dashboard-views.js`), P18–P26 kurumsal/gelişmiş başlıkları, AI listings workspace, router/Supabase/migration alanları.
+
+### Faz 4A-1b-3B — Internal dashboard operasyon/analitik CTA hizası
+
+P14 internal dashboard dinamik CTA butonları (yalnızca görünen etiket) admin nav/NAV_LABELS ile hizalı kalmalıdır:
+
+| page id | Canonical CTA etiket |
+|---------|----------------------|
+| `investor-metrics` | Yatırımcı KPI |
+| `ops-command-center` | Operasyon Komuta Merkezi |
+| `platform-analytics` | Platform analitik |
+| `auto-analytics` | Auto analitik |
+
+CI: `scripts/p14-internal-dashboards-audit.cjs` + `tests/unit/internal-dashboards.test.mjs`.
+
+Kapsam dışı (4A-1b-3B): `data-page-target` değerleri, route/handler yapısı, `admin-panel.js`, partner/support CTA metinleri, `<h3>`/kicker/stat kart/muted copy, P18–P26, AI listings workspace.

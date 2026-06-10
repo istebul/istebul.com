@@ -89,8 +89,8 @@ function renderCeoDashboard(ctx, escapeHtml) {
     )}
 
     <div class="ib-dash-links">
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="investor-metrics">Executive KPIs (detail)</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="ops-command-center">Ops Command Center</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="investor-metrics">Yatırımcı KPI</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="ops-command-center">Operasyon Komuta Merkezi</button>
       <button type="button" class="btn btn-ghost btn-sm" data-page-target="observability">Observability</button>
     </div>
   `;
@@ -151,8 +151,8 @@ function renderGrowthDashboard(ctx, escapeHtml) {
     </div>
 
     <div class="ib-dash-links">
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="platform-analytics">Platform Analytics</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-analytics">Auto Analytics</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="platform-analytics">Platform analitik</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-analytics">Auto analitik</button>
     </div>
   `;
 }
@@ -196,8 +196,8 @@ function renderRevenueDashboard(ctx, escapeHtml) {
     </div>
 
     <div class="ib-dash-links">
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="investor-metrics">Executive KPIs</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="ops-command-center">Ops Command Center</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="investor-metrics">Yatırımcı KPI</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="ops-command-center">Operasyon Komuta Merkezi</button>
     </div>
   `;
 }
@@ -286,7 +286,7 @@ function renderSupportDashboard(ctx, escapeHtml) {
     <div class="ib-dash-links">
       <button type="button" class="btn btn-ghost btn-sm" data-page-target="faqs">SSS Admin</button>
       <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-leads">Auto Leads</button>
-      <button type="button" class="btn btn-ghost btn-sm" data-page-target="ops-command-center">Ops Command Center</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-page-target="ops-command-center">Operasyon Komuta Merkezi</button>
     </div>
   `;
 }
