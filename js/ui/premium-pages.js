@@ -168,7 +168,7 @@ export class PremiumPages {
         <div class="container">
           <div class="ib-premium-block-head">
             <span class="section-kicker">${BRAND_VOICE.kickers.preview}</span>
-            <h2>${escapeHtml(spaText('premiumKarar.previewTitle', 'Ön değerlendirme'))}</h2>
+            <h2>${escapeHtml(spaText('premiumKarar.previewTitle', 'Karar önizlemesi'))}</h2>
             <p>${escapeHtml(spaText('premiumKarar.previewLead', 'Kısa sorularla kategori niyetinizi ve ön sinyalleri görün. Tam karar analizi için ilgili kategori wizard akışına devam edin.'))}</p>
           </div>
           <div class="assistant-section ib-premium-assistant-shell">

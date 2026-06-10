@@ -35,7 +35,7 @@ const tr = {
   premiumKarar: {
     heroLead: 'Kısa sorularla kategori ve ön değerlendirme sinyallerini görün; tam skor ve detaylı analiz ilgili kategori akışında hesaplanır.',
     roleNote: 'Karar Asistanı, hangi kategori analizine devam etmeniz gerektiğini belirler. Nihai skor ve detaylı analiz ilgili kategori akışında hesaplanır.',
-    previewTitle: 'Ön değerlendirme',
+    previewTitle: 'Karar önizlemesi',
     previewLead: 'Kısa sorularla kategori niyetinizi ve ön sinyalleri görün. Tam karar analizi için ilgili kategori wizard akışına devam edin.',
     compareTitle: 'İki seçeneği yan yana görün',
     compareLead: 'Pro ile 4 modele kadar detaylı karşılaştırma; ücretsiz planda 2 model.',
