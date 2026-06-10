@@ -65,7 +65,7 @@ Admin Operasyon Merkezi (`admin-panel.html` + `js/admin-panel.js`) için nav/dee
 Landing (`page-dashboard`) kuralları:
 
 1. Üst KPI kartları CRM verisidir; grafik alanları **örnek görsel** olarak etiketlenir.
-2. **Operasyon panelleri** bölümü: Komuta Merkezi, Birleşik Funnel, Partner Operasyon Özeti, AI Karar Merkezi linkleri zorunlu.
+2. **Operasyon panelleri** bölümü: Komuta Merkezi, Birleşik Funnel, Partner Operasyon Özeti, AI İlan Yönetimi linkleri zorunlu.
 3. `stat-system-alerts` canlı observability rollup'a bağlanmaz.
 4. Motor/fetch (`loadDashboard`, `loadOpsCommandCenter`, P14 context) değiştirilmez.
 
