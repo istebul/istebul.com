@@ -81,5 +81,42 @@ if (!adminHtml.includes('id="page-investor-metrics"')) {
   fail('investor-metrics page must remain for deep links');
 }
 
+/** Faz 4A-1b-3A — statik operasyon/analitik page h2 ↔ NAV_LABELS */
+const STATIC_PAGE_HEADERS = {
+  'ops-ai-assistant': 'Ops asistan',
+  observability: 'Observability',
+  'platform-analytics': 'Platform analitik',
+  'auto-analytics': 'Auto analitik'
+};
+
+for (const [pageId, label] of Object.entries(STATIC_PAGE_HEADERS)) {
+  const quotedKey = `'${pageId}'`;
+  if (!shell.includes(`${quotedKey}: '${label}'`) && !shell.includes(`${pageId}: '${label}'`)) {
+    fail(`NAV_LABELS must map ${pageId} → ${label}`);
+  }
+  if (!adminHtml.includes(`id="page-${pageId}"`)) {
+    fail(`admin-panel.html missing page-${pageId}`);
+  }
+  const pageBlock = adminHtml.match(
+    new RegExp(`id="page-${pageId.replace(/-/g, '\\-')}"[\\s\\S]*?id="page-`)
+  );
+  if (!pageBlock) {
+    fail(`page-${pageId} block missing`);
+  } else if (!pageBlock[0].includes(`<h2>${label}</h2>`)) {
+    fail(`page-${pageId} h2 must be ${label} (aligned with nav/NAV_LABELS)`);
+  }
+}
+
+for (const legacy of [
+  '<h2>AI Ops Decision Assistant</h2>',
+  '<h2>Production Observability</h2>',
+  '<h2>Platform Analytics</h2>',
+  '<h2>Auto Analytics</h2>'
+]) {
+  if (adminHtml.includes(legacy)) {
+    fail(`admin-panel.html must not use legacy h2 ${legacy}`);
+  }
+}
+
 if (failed) process.exit(1);
 console.log('admin-dashboard-landing-audit OK');

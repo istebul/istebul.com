@@ -77,3 +77,18 @@ Landing (`page-dashboard`) kuralları:
 - AI listings ↔ listings tablo birleşimi
 - Skor/TCO/risk/ranking motorları
 - Public UI değişikliği
+
+### Faz 4A-1b-3A — Operasyon/analitik statik başlık hizası
+
+Aşağıdaki statik admin sayfalarında sidebar/topbar etiketi ile sayfa `<h2>` başlığı aynı canonical etiketi taşımalıdır:
+
+| page id | Canonical etiket |
+|---------|------------------|
+| `ops-ai-assistant` | Ops asistan |
+| `observability` | Observability |
+| `platform-analytics` | Platform analitik |
+| `auto-analytics` | Auto analitik |
+
+CI: `admin-dashboard-landing-audit.cjs` + `admin-dashboard-landing.test.mjs` bu h2 ↔ NAV_LABELS eşleşmesini kilitler.
+
+Kapsam dışı (4A-1b-3A): dinamik dashboard CTA metinleri (`internal-dashboard-views.js`), P18–P26 kurumsal/gelişmiş başlıkları, AI listings workspace, router/Supabase/migration alanları.
