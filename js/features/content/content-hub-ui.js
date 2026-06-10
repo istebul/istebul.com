@@ -286,7 +286,7 @@ export function renderPremiumPageShell({ id, kicker, title, lead, listAttr }) {
       <div data-content-list="${escapeHtml(listAttr)}"><p class="text-muted-sm">Yükleniyor…</p></div>
       <p class="ib-content-page-back">
         <a href="/" data-native-route>← Ana sayfa</a>
-        · <a href="/auto/">Ücretsiz analiz başlat</a>
+        · <a href="/karar-asistani/">Ön değerlendirme başlat</a>
       </p>
     </div>`;
 }

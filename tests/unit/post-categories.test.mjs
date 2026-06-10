@@ -35,7 +35,8 @@ test('getGuideCategory resolves legacy query params', () => {
   assert.equal(getGuideCategory('konut')?.id, 'housing');
   assert.equal(getGuideCategory('finans')?.label, 'Finansman');
   assert.equal(getGuideCategory('') , null);
-  assert.equal(GUIDE_CATEGORIES.map((c) => c.id).join(','), 'auto,housing,travel,finance,insurance');
+  assert.equal(GUIDE_CATEGORIES.map((c) => c.id).join(','), 'auto,housing,travel,finance,insurance,kasko');
+  assert.equal(getGuideCategory('finance')?.ctaHref, '/finans/');
 });
 
 test('blogListHref emits canonical category query URLs', () => {

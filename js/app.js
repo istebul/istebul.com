@@ -55,8 +55,7 @@ import {
     matchesDecisionHistoryActionId
 } from './ui/decision-history-compat.js';
 import {
-    resolveAssistantCategoryFromHistoryEntry,
-    shouldRedirectHistoryEntryToAutoVertical
+    resolveAssistantCategoryFromHistoryEntry
 } from './ui/decision-history-category.js';
 import { Router } from './core/router.js';
 import { state } from './core/state.js';
@@ -3746,19 +3745,24 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             return;
         }
 
-        if (shouldRedirectHistoryEntryToAutoVertical(record)) {
-            window.location.href = '/auto/';
-            return;
+        const assistantCategory = resolveAssistantCategoryFromHistoryEntry(record);
+        const rawAnswers = record.rawAnswers || {};
+
+        if (assistantCategory) {
+            const verticalHref = buildVerticalContinueHref(assistantCategory, rawAnswers);
+            if (verticalHref && verticalHref !== '/') {
+                window.location.href = verticalHref;
+                return;
+            }
         }
 
-        const assistantCategory = resolveAssistantCategoryFromHistoryEntry(record);
         if (!assistantCategory || !this.decisionAssistant[assistantCategory]) {
-            this.ui.showError('Kaydedilen karar bulunamadı.');
+            this.router.navigate('/karar-asistani');
             return;
         }
 
         this.assistantCategory = assistantCategory;
-        this.assistantAnswers = record.rawAnswers || {};
+        this.assistantAnswers = rawAnswers;
         this.assistantStep = Math.max(this.getAssistantWizardSteps(this.getResolvedDecisionAssistantConfig()[this.assistantCategory]).length - 1, 0);
         this.router.navigate('/karar-asistani');
         this.renderDecisionAssistant();
@@ -4068,7 +4072,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
         this.activeCategory = options.category || null;
         this.renderCategorySurfaces();
-        this.router.navigate('/secenekler');
+        this.router.navigate('/secenekler/');
         this.applyListingFilterFormOptions(options);
         await this.loadListings(options);
         this.saveSearchHistory('Karar sonucu: ' + (this.getListingFilterChips(options).slice(0, 4).join(' / ') || 'Sonuca uygun seçenekler'));
