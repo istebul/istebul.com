@@ -190,7 +190,7 @@ function renderSeoNav() {
   return `<header class="seo-header">
     ${SEO_BRAND_LOGO}
     <nav class="seo-nav" aria-label="Ana navigasyon">
-      <a href="/auto/">Karar Analizi</a>
+      <a href="/karar-asistani/">Ön değerlendirme</a>
       <a href="/karar-asistani/">Karar Asistanı</a>
       <a href="/rehber/arac-alim-karar-asistani/">Rehber</a>
       <a href="/partner-olun.html">Partner</a>
@@ -468,7 +468,7 @@ function renderSeoFooter({ site, guideLinks }) {
         <h2>Platform</h2>
         <ul>
           <li><a href="/">Ana sayfa</a></li>
-          <li><a href="/auto/">Ücretsiz analiz</a></li>
+          <li><a href="/karar-asistani/">Ön değerlendirme başlat</a></li>
           <li><a href="/secenekler/">Seçenekler</a></li>
           <li><a href="/karsilastir/">Karşılaştır</a></li>
         </ul>
@@ -825,9 +825,9 @@ function buildCorporateRichPages(distDir, site) {
       relatedLinks: [
         { href: '/metodoloji/', label: 'Metodoloji' },
         { href: '/rehber/tco-rehberi/', label: 'TCO rehberi' },
-        { href: '/auto/', label: 'Ücretsiz analiz' }
+        { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
       ],
-      cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' }
+      cta: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
     },
     {
       filename: 'iletisim.html',
@@ -843,7 +843,7 @@ function buildCorporateRichPages(distDir, site) {
         { href: '/hakkimizda.html', label: 'Hakkımızda' },
         { href: '/kvkk.html', label: 'KVKK' }
       ],
-      cta: { href: '/auto/', label: 'Ücretsiz analiz başlat' },
+      cta: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' },
       extraHtml: renderContactCards()
     },
     {
@@ -859,9 +859,9 @@ function buildCorporateRichPages(distDir, site) {
         { href: '/iletisim.html', label: 'İletişim' },
         { href: '/kvkk.html', label: 'KVKK' },
         { href: '/planlar', label: 'Planlar' },
-        { href: '/auto/', label: 'Ücretsiz analiz' }
+        { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
       ],
-      cta: { href: '/auto/', label: 'Analize başla' },
+      cta: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' },
       extraHtml: renderHelpFaqSection()
     }
   ];
@@ -1112,7 +1112,7 @@ function buildDataSourcesPage(distDir, site) {
     { href: '/metodoloji/', label: 'Metodoloji' },
     { href: '/hakkimizda.html', label: 'Hakkımızda' },
     { href: '/gizlilik.html', label: 'Gizlilik' },
-    { href: '/auto/', label: 'Ücretsiz analiz' }
+    { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
   ];
   const extraHtml = `${renderDataSourcesCards(page.sources)}${renderDataSourcesDisclaimer(page.disclaimer)}`;
   const html = renderContentPage({
@@ -1146,7 +1146,7 @@ function buildMethodologyPage(distDir, site) {
   ];
   const relatedLinks = [
     { href: '/veri-kaynaklari/', label: 'Veri kaynakları' },
-    { href: '/auto/', label: 'Auto analiz' },
+    { href: '/auto/', label: 'Araç maliyet analizi' },
     { href: '/rehber/tco-rehberi/', label: 'TCO rehberi' },
     { href: '/karar-asistani/', label: 'Karar asistanı' }
   ];
@@ -1165,7 +1165,7 @@ function buildMethodologyPage(distDir, site) {
     path: pathName,
     breadcrumbs,
     relatedLinks,
-    cta: { href: '/auto/', label: 'Metodolojiyi dene — Auto analiz' }
+    cta: { href: '/karar-asistani/', label: 'Ön değerlendirme başlat' }
   });
 
   const outDir = path.join(distDir, 'metodoloji');
