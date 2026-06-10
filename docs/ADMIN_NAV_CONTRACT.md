@@ -107,3 +107,16 @@ P14 internal dashboard dinamik CTA butonları (yalnızca görünen etiket) admin
 CI: `scripts/p14-internal-dashboards-audit.cjs` + `tests/unit/internal-dashboards.test.mjs`.
 
 Kapsam dışı (4A-1b-3B): `data-page-target` değerleri, route/handler yapısı, `admin-panel.js`, partner/support CTA metinleri, `<h3>`/kicker/stat kart/muted copy, P18–P26, AI listings workspace.
+
+### Faz 4A-1b-3C-1 — Ops asistan dinamik CTA hizası
+
+Ops asistan dinamik toolbar CTA metinleri admin nav/NAV_LABELS canonical etiketleriyle hizalı kalmalıdır:
+
+| page id | Canonical CTA etiket |
+|---------|----------------------|
+| `ops-command-center` | Operasyon Komuta Merkezi |
+| `dashboard-ceo` | CEO Özeti |
+
+CI: `scripts/p15-ops-ai-assistant-audit.cjs` + `tests/unit/ops-decision-assistant.test.mjs`.
+
+Kapsam dışı (4A-1b-3C-1): `data-page-target`, route/handler yapısı, `admin-panel.js`, `ops-command-center.js`, `internal-dashboard-views.js`, stat kartları, tablo/metrik etiketleri, P18–P26, AI listings workspace.
