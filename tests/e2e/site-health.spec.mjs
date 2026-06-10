@@ -300,6 +300,7 @@ test.describe('Site health — readability and layout', () => {
   }
 
   async function completeTatilWizard(page) {
+    await page.waitForSelector('#vacation-hero-cta', { state: 'visible', timeout: 15000 });
     await page.locator('#vacation-hero-cta').click();
     await expect(page.locator('#vacation-wizard')).toBeVisible();
 
@@ -327,8 +328,12 @@ test.describe('Site health — readability and layout', () => {
     await page.locator('#vacation-next').click();
     await page.locator('#vacation-next').click();
 
-    await expect(page.locator('#vacation-results')).toBeVisible();
-    await expect(page.locator('#vacation-results .tatil-v2-root')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#vacation-wizard')).toBeHidden({ timeout: 15000 });
+    await expect(page.locator('#vacation-results')).toBeVisible({ timeout: 15000 });
+    await page.waitForFunction(() => {
+      const root = document.querySelector('#vacation-results .tatil-v2-root');
+      return Boolean(root?.querySelector('.tatil-v2-panel'));
+    }, null, { timeout: 15000 });
   }
 
   test('/finans/ wizard completes flow and shows V2 results', async ({ page }) => {
