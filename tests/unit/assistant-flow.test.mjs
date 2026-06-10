@@ -48,17 +48,25 @@ test('arac fork field is usage', () => {
   assert.equal(getAssistantForkField('arac'), 'usage');
 });
 
-test('finansman konut fork limits long terms only', () => {
+test('finansman konut fork limits term options to vertical wizard values', () => {
   const questions = [
     { id: 'purpose', options: [{ value: 'konut' }, { value: 'arac' }] },
-    { id: 'term', options: [{ value: '36' }, { value: '120' }, { value: '240' }] },
+    {
+      id: 'term',
+      options: [
+        { value: '36', label: '36 ay' },
+        { value: '48', label: '48 ay' },
+        { value: '60', label: '60 ay' },
+        { value: '120', label: '120 ay' }
+      ]
+    },
     { id: 'budget', type: 'number' }
   ];
   const filtered = applyAssistantQuestionFlow('finansman', questions, { purpose: 'konut' });
   const term = filtered.find((q) => q.id === 'term');
   assert.deepEqual(
     term.options.map((o) => o.value),
-    ['120', '240']
+    ['36', '48', '60']
   );
 });
 
