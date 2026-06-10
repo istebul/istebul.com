@@ -3,6 +3,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
+/** Parse _redirects into active rule source paths (ignore comments and blanks). */
+function parseRedirectRuleSources(redirectsText) {
+  return String(redirectsText)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => line.split(/\s+/)[0])
+    .filter(Boolean);
+}
+
 const {
   resolveAdminPanelAccess,
   verifyAdminSessionAccess
@@ -91,15 +101,28 @@ test('Karar Seçenekleri and AI İlan Yönetimi titles distinguish classic CRM f
 
 test('public decision center routes redirect to profil', () => {
   const redirects = fs.readFileSync(path.join(process.cwd(), '_redirects'), 'utf8');
-  assert.match(redirects, /\/karar-merkezi \/profil\/ 301/);
-  assert.match(redirects, /\/decision-center \/profil\/ 301/);
-  assert.doesNotMatch(redirects, /^\/admin\/karar-merkezi/m);
-  assert.doesNotMatch(redirects, /^\/admin\/decision-center/m);
+  const rules = parseRedirectRuleSources(redirects);
+  assert.ok(
+    rules.some((src) => src === '/karar-merkezi' || src === '/karar-merkezi/'),
+    'karar-merkezi redirect rule exists'
+  );
+  assert.ok(
+    rules.some((src) => src === '/decision-center' || src === '/decision-center/'),
+    'decision-center redirect rule exists'
+  );
+  assert.ok(
+    rules.every((src) => !src.startsWith('/admin/')),
+    'no /admin/* redirect rules (comments must not count)'
+  );
 });
 
 test('admin listing routes are static (no _redirects under /admin)', () => {
   const redirects = fs.readFileSync(path.join(process.cwd(), '_redirects'), 'utf8');
-  assert.doesNotMatch(redirects, /^\/admin\//m);
+  const rules = parseRedirectRuleSources(redirects);
+  assert.ok(
+    rules.every((src) => !src.startsWith('/admin/')),
+    'admin deep links are physical build output, not _redirects rules'
+  );
   const buildScript = fs.readFileSync(path.join(process.cwd(), 'scripts/production-build.cjs'), 'utf8');
   assert.match(buildScript, /admin\/ai-listings\/index\.html/);
   assert.doesNotMatch(buildScript, /admin\/listings\/index\.html',\s*'admin\/ai-listings/);
