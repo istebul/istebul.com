@@ -57,10 +57,36 @@ test('buildVerticalContinueHref keeps valid finans konut term 60', () => {
   const href = buildVerticalContinueHref('finansman', {
     purpose: 'konut',
     budget: '1200000',
-    term: '60'
+    term: '60',
+    capacity: '25k',
+    rateSensitivity: 'orta'
   });
 
   assert.match(href, /term=60/);
+  assert.match(href, /capacity=25k/);
+  assert.match(href, /rate_sensitivity=orta/);
+});
+
+test('buildVerticalContinueHref omits invalid finans konut capacity 15k', () => {
+  const href = buildVerticalContinueHref('finansman', {
+    purpose: 'konut',
+    capacity: '15k',
+    rateSensitivity: 'orta'
+  });
+
+  assert.doesNotMatch(href, /capacity=/);
+  assert.match(href, /rate_sensitivity=orta/);
+});
+
+test('buildVerticalContinueHref omits invalid finans tatil rate_sensitivity dusuk', () => {
+  const href = buildVerticalContinueHref('finansman', {
+    purpose: 'tatil',
+    capacity: '25k',
+    rateSensitivity: 'dusuk'
+  });
+
+  assert.match(href, /capacity=25k/);
+  assert.doesNotMatch(href, /rate_sensitivity=/);
 });
 
 test('bootstrapFinansFromAssistantQuery rejects unsupported konut term without silent fallback', () => {
@@ -75,6 +101,77 @@ test('bootstrapFinansFromAssistantQuery applies purpose-aware valid term', () =>
   bootstrapFinansFromAssistantQuery(state, new URLSearchParams('purpose=arac&term=48'));
   assert.equal(state.purpose, 'arac');
   assert.equal(state.term_months, '48');
+});
+
+test('bootstrapFinansFromAssistantQuery maps capacity param to capacity_range', () => {
+  const state = {
+    purpose: '',
+    term_months: '',
+    amount_range: '',
+    amount_manual: null,
+    capacity_range: '',
+    rate_sensitivity: ''
+  };
+  bootstrapFinansFromAssistantQuery(
+    state,
+    new URLSearchParams('purpose=konut&term=60&capacity=25k&rate_sensitivity=yuksek')
+  );
+  assert.equal(state.purpose, 'konut');
+  assert.equal(state.term_months, '60');
+  assert.equal(state.capacity_range, '25k');
+  assert.equal(state.rate_sensitivity, 'yuksek');
+});
+
+test('bootstrapFinansFromAssistantQuery accepts capacity_range and rateSensitivity camelCase alias', () => {
+  const state = {
+    purpose: '',
+    term_months: '',
+    amount_range: '',
+    amount_manual: null,
+    capacity_range: '',
+    rate_sensitivity: ''
+  };
+  bootstrapFinansFromAssistantQuery(
+    state,
+    new URLSearchParams('purpose=arac&capacity_range=40k&rateSensitivity=yuksek')
+  );
+  assert.equal(state.capacity_range, '40k');
+  assert.equal(state.rate_sensitivity, 'yuksek');
+});
+
+test('bootstrapFinansFromAssistantQuery rejects invalid capacity and rate_sensitivity', () => {
+  const state = {
+    purpose: 'konut',
+    term_months: '48',
+    amount_range: '',
+    amount_manual: null,
+    capacity_range: '40k',
+    rate_sensitivity: 'orta'
+  };
+  bootstrapFinansFromAssistantQuery(
+    state,
+    new URLSearchParams('purpose=konut&capacity=15k&rate_sensitivity=invalid')
+  );
+  assert.equal(state.capacity_range, '40k');
+  assert.equal(state.rate_sensitivity, 'orta');
+});
+
+test('bootstrapFinansFromAssistantQuery rejects tatil rate_sensitivity dusuk for purpose', () => {
+  const state = {
+    purpose: '',
+    term_months: '',
+    amount_range: '',
+    amount_manual: null,
+    capacity_range: '',
+    rate_sensitivity: ''
+  };
+  bootstrapFinansFromAssistantQuery(
+    state,
+    new URLSearchParams('purpose=tatil&rate_sensitivity=dusuk&capacity=25k')
+  );
+  assert.equal(state.purpose, 'tatil');
+  assert.equal(state.capacity_range, '25k');
+  assert.equal(state.rate_sensitivity, '');
 });
 
 test('buildVerticalContinueHref rejects invalid numeric budget for auto', () => {

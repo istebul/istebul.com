@@ -81,9 +81,13 @@ test('buildVerticalContinueHref carries finansman query params with purpose-awar
   const href = buildVerticalContinueHref('finansman', {
     purpose: 'konut',
     budget: '1200000',
-    term: '60'
+    term: '60',
+    capacity: '40k',
+    rateSensitivity: 'dusuk'
   });
   assert.match(href, /purpose=konut/);
   assert.match(href, /amount=1200000/);
   assert.match(href, /term=60/);
+  assert.match(href, /capacity=40k/);
+  assert.match(href, /rate_sensitivity=dusuk/);
 });
