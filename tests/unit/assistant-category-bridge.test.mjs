@@ -169,3 +169,70 @@ test('buildVerticalContinueHref omits kasko coverage full for motosiklet fork', 
   assert.doesNotMatch(href, /coverage=full/);
   assert.doesNotMatch(href, /coverage=/);
 });
+
+test('buildVerticalContinueHref carries sigorta arac deep prefill with type gate', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'arac',
+    license_years: '3-10',
+    usage_type: 'ozel',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /type=arac/);
+  assert.match(href, /license_years=3-10/);
+  assert.match(href, /usage_type=ozel/);
+  assert.match(href, /risk=orta/);
+  assert.match(href, /budget_level=orta/);
+});
+
+test('buildVerticalContinueHref carries sigorta konut property_role', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'konut',
+    property_role: 'malik',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /property_role=malik/);
+});
+
+test('buildVerticalContinueHref carries sigorta seyahat destination and trip duration', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'seyahat',
+    destination_type: 'schengen',
+    trip_duration: '8-15',
+    risk_perception: 'orta'
+  });
+  assert.match(href, /destination_type=schengen/);
+  assert.match(href, /trip_duration=8-15/);
+});
+
+test('buildVerticalContinueHref omits numeric budget from sigorta href', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'arac',
+    license_years: '3-10',
+    usage_type: 'ozel',
+    risk_perception: 'orta',
+    budget_level: 'orta',
+    budget: '75000'
+  });
+  assert.doesNotMatch(href, /budget=75000/);
+});
+
+test('buildVerticalContinueHref omits sigorta saglik type-gated deep prefill fields', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'saglik',
+    property_role: 'malik',
+    usage_type: 'ozel',
+    destination_type: 'schengen',
+    trip_duration: '8-15',
+    risk_perception: 'dusuk',
+    budget_level: 'orta'
+  });
+  assert.match(href, /type=saglik/);
+  assert.match(href, /risk=dusuk/);
+  assert.match(href, /budget_level=orta/);
+  assert.doesNotMatch(href, /property_role=/);
+  assert.doesNotMatch(href, /usage_type=/);
+  assert.doesNotMatch(href, /destination_type=/);
+  assert.doesNotMatch(href, /trip_duration=/);
+});

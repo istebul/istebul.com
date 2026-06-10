@@ -76,6 +76,13 @@ const KASKO_BUDGET_BY_VEHICLE = Object.freeze({
   ticari_arac: ',orta,yuksek,'
 });
 
+const SIGORTA_TYPES_CSV = ',arac,konut,saglik,seyahat,';
+const SIGORTA_LICENSE_YEARS_CSV = ',0-2,3-10,11plus,';
+const SIGORTA_USAGE_CSV = ',ozel,ticari,';
+const SIGORTA_PROPERTY_ROLE_CSV = ',malik,kiraci,';
+const SIGORTA_DESTINATION_CSV = ',yurtici,yurtdisi,schengen,';
+const SIGORTA_TRIP_DURATION_CSV = ',1-7,8-15,16plus,';
+
 /** İl query değeri — hafif format doğrulaması (tam il listesi konut runtime'da). */
 const KONUT_PROVINCE_QUERY_PATTERN = /^[\p{L}\s'-]+$/u;
 
@@ -272,9 +279,26 @@ export function buildVerticalContinueHref(categoryId, answers = {}) {
     return `/finans/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'sigorta') {
-    if (answers.insuranceType) params.set('type', answers.insuranceType);
+    const insuranceType = pickCsv(answers.insuranceType, SIGORTA_TYPES_CSV);
+    if (insuranceType) params.set('type', insuranceType);
     if (answers.risk_perception) params.set('risk', answers.risk_perception);
     if (answers.budget_level) params.set('budget_level', answers.budget_level);
+    if (insuranceType === 'arac') {
+      const licenseYears = pickCsv(answers.license_years, SIGORTA_LICENSE_YEARS_CSV);
+      if (licenseYears) params.set('license_years', licenseYears);
+      const usageType = pickCsv(answers.usage_type, SIGORTA_USAGE_CSV);
+      if (usageType) params.set('usage_type', usageType);
+    }
+    if (insuranceType === 'konut') {
+      const propertyRole = pickCsv(answers.property_role, SIGORTA_PROPERTY_ROLE_CSV);
+      if (propertyRole) params.set('property_role', propertyRole);
+    }
+    if (insuranceType === 'seyahat') {
+      const destinationType = pickCsv(answers.destination_type, SIGORTA_DESTINATION_CSV);
+      if (destinationType) params.set('destination_type', destinationType);
+      const tripDuration = pickCsv(answers.trip_duration, SIGORTA_TRIP_DURATION_CSV);
+      if (tripDuration) params.set('trip_duration', tripDuration);
+    }
     return `/sigorta/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'kasko') {

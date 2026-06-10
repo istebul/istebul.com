@@ -44,6 +44,11 @@ const FINANS_RATE_SENSITIVITY_BY_PURPOSE = Object.freeze({
   isletme: new Set(['orta', 'yuksek'])
 });
 const SIGORTA_TYPES = new Set(['arac', 'konut', 'saglik', 'seyahat']);
+const SIGORTA_LICENSE_YEARS = new Set(['0-2', '3-10', '11plus']);
+const SIGORTA_USAGE_TYPES = new Set(['ozel', 'ticari']);
+const SIGORTA_PROPERTY_ROLES = new Set(['malik', 'kiraci']);
+const SIGORTA_DESTINATION_TYPES = new Set(['yurtici', 'yurtdisi', 'schengen']);
+const SIGORTA_TRIP_DURATIONS = new Set(['1-7', '8-15', '16plus']);
 const TRI_LEVEL = new Set(['dusuk', 'orta', 'yuksek']);
 const KASKO_VEHICLES = new Set(['otomobil', 'suv', 'motosiklet', 'ticari_arac']);
 const KASKO_YEARS = new Set(['0-3', '4-10', '11plus']);
@@ -268,7 +273,26 @@ export function bootstrapFinansFromAssistantQuery(state, params = new URLSearchP
 export function bootstrapSigortaFromAssistantQuery(state, params = new URLSearchParams()) {
   if (!state || !params) return state;
 
-  applyPrefillField(state, 'insurance_type', readAllowedParam(params, ['type', 'insurance_type'], SIGORTA_TYPES));
+  const insuranceTypeFromQuery = readAllowedParam(params, ['type', 'insurance_type'], SIGORTA_TYPES);
+  applyPrefillField(state, 'insurance_type', insuranceTypeFromQuery);
+  const insuranceTypeFork = state.insurance_type || insuranceTypeFromQuery;
+
+  if (insuranceTypeFork === 'arac') {
+    applyPrefillField(state, 'license_years', readAllowedParam(params, 'license_years', SIGORTA_LICENSE_YEARS));
+    applyPrefillField(state, 'usage_type', readAllowedParam(params, 'usage_type', SIGORTA_USAGE_TYPES));
+  }
+  if (insuranceTypeFork === 'konut') {
+    applyPrefillField(state, 'property_role', readAllowedParam(params, 'property_role', SIGORTA_PROPERTY_ROLES));
+  }
+  if (insuranceTypeFork === 'seyahat') {
+    applyPrefillField(
+      state,
+      'destination_type',
+      readAllowedParam(params, 'destination_type', SIGORTA_DESTINATION_TYPES)
+    );
+    applyPrefillField(state, 'trip_duration', readAllowedParam(params, 'trip_duration', SIGORTA_TRIP_DURATIONS));
+  }
+
   applyPrefillField(state, 'risk_perception', readAllowedParam(params, ['risk', 'risk_perception'], TRI_LEVEL));
   applyPrefillField(state, 'budget_level', readAllowedParam(params, 'budget_level', TRI_LEVEL));
 
