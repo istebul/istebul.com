@@ -58,5 +58,26 @@ if (!pkg.scripts.test?.includes('p15-ops-ai-assistant-audit')) {
   fail('package.json test must include p15-ops-ai-assistant-audit');
 }
 
+/** Faz 4A-1b-3C-1 — Ops asistan dinamik CTA ↔ nav labels */
+const opsAssistantViewsSource = fs.readFileSync(
+  path.join(root, 'js/features/ops/ops-ai-assistant-views.js'),
+  'utf8'
+);
+for (const label of ['Operasyon Komuta Merkezi', 'CEO Özeti']) {
+  if (!opsAssistantViewsSource.includes(`>${label}</button>`)) {
+    fail(`Faz 4A-1b-3C-1 ops assistant CTA terminology should include ${label}`);
+  }
+}
+for (const target of ['ops-command-center', 'dashboard-ceo']) {
+  if (!opsAssistantViewsSource.includes(`data-page-target="${target}"`)) {
+    fail(`Faz 4A-1b-3C-1 ops assistant CTA target should keep ${target}`);
+  }
+}
+for (const legacy of ['Ops Command Center', 'CEO Dashboard']) {
+  if (opsAssistantViewsSource.includes(legacy)) {
+    fail(`Faz 4A-1b-3C-1 ops assistant CTA terminology should not include legacy label ${legacy}`);
+  }
+}
+
 if (failed) process.exit(1);
 console.log('P15 ops AI assistant audit OK');
