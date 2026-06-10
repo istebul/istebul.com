@@ -375,3 +375,221 @@ test('appendKonutAssistantQueryParams still rejects yazlik propertyType', () => 
   assert.equal(params.get('purpose'), 'live');
   assert.equal(params.get('province'), 'Antalya');
 });
+
+test('buildVerticalContinueHref carries sigorta arac type-gated deep prefill', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'arac',
+    license_years: '3-10',
+    usage_type: 'ozel',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /type=arac/);
+  assert.match(href, /license_years=3-10/);
+  assert.match(href, /usage_type=ozel/);
+  assert.match(href, /risk=orta/);
+  assert.match(href, /budget_level=orta/);
+});
+
+test('buildVerticalContinueHref carries sigorta konut property_role', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'konut',
+    property_role: 'malik',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  });
+  assert.match(href, /type=konut/);
+  assert.match(href, /property_role=malik/);
+  assert.match(href, /risk=orta/);
+  assert.match(href, /budget_level=orta/);
+});
+
+test('buildVerticalContinueHref carries sigorta seyahat destination and trip duration', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'seyahat',
+    destination_type: 'schengen',
+    trip_duration: '8-15',
+    risk_perception: 'orta'
+  });
+  assert.match(href, /type=seyahat/);
+  assert.match(href, /destination_type=schengen/);
+  assert.match(href, /trip_duration=8-15/);
+  assert.match(href, /risk=orta/);
+});
+
+test('buildVerticalContinueHref omits numeric budget from sigorta href', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'arac',
+    license_years: '3-10',
+    usage_type: 'ozel',
+    risk_perception: 'orta',
+    budget_level: 'orta',
+    budget: '50000'
+  });
+  assert.match(href, /license_years=3-10/);
+  assert.doesNotMatch(href, /budget=50000/);
+  assert.doesNotMatch(href, /amount=/);
+});
+
+test('buildVerticalContinueHref omits sigorta saglik type-gated fields', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'saglik',
+    property_role: 'malik',
+    usage_type: 'ticari',
+    destination_type: 'yurtdisi',
+    trip_duration: '8-15',
+    risk_perception: 'dusuk',
+    budget_level: 'orta'
+  });
+  assert.match(href, /type=saglik/);
+  assert.match(href, /risk=dusuk/);
+  assert.match(href, /budget_level=orta/);
+  assert.doesNotMatch(href, /property_role=/);
+  assert.doesNotMatch(href, /usage_type=/);
+  assert.doesNotMatch(href, /destination_type=/);
+  assert.doesNotMatch(href, /trip_duration=/);
+});
+
+test('buildVerticalContinueHref omits sigorta konut usage_type mismatch', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'konut',
+    usage_type: 'ticari',
+    property_role: 'malik',
+    risk_perception: 'orta'
+  });
+  assert.match(href, /type=konut/);
+  assert.match(href, /property_role=malik/);
+  assert.doesNotMatch(href, /usage_type=/);
+});
+
+test('buildVerticalContinueHref omits sigorta arac destination_type mismatch', () => {
+  const href = buildVerticalContinueHref('sigorta', {
+    insuranceType: 'arac',
+    destination_type: 'yurtdisi',
+    license_years: '3-10',
+    usage_type: 'ozel'
+  });
+  assert.match(href, /license_years=3-10/);
+  assert.doesNotMatch(href, /destination_type=/);
+});
+
+test('bootstrapSigortaFromAssistantQuery applies arac license_years and usage_type', () => {
+  const state = {
+    insurance_type: '',
+    license_years: '',
+    usage_type: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapSigortaFromAssistantQuery(
+    state,
+    new URLSearchParams('type=arac&license_years=3-10&usage_type=ozel&risk=orta&budget_level=orta')
+  );
+  assert.equal(state.insurance_type, 'arac');
+  assert.equal(state.license_years, '3-10');
+  assert.equal(state.usage_type, 'ozel');
+  assert.equal(state.risk_perception, 'orta');
+  assert.equal(state.budget_level, 'orta');
+});
+
+test('bootstrapSigortaFromAssistantQuery applies konut property_role', () => {
+  const state = {
+    insurance_type: '',
+    property_role: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapSigortaFromAssistantQuery(
+    state,
+    new URLSearchParams('type=konut&property_role=malik&risk=orta&budget_level=orta')
+  );
+  assert.equal(state.insurance_type, 'konut');
+  assert.equal(state.property_role, 'malik');
+  assert.equal(state.risk_perception, 'orta');
+  assert.equal(state.budget_level, 'orta');
+});
+
+test('bootstrapSigortaFromAssistantQuery applies seyahat destination and trip duration', () => {
+  const state = {
+    insurance_type: '',
+    destination_type: '',
+    trip_duration: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapSigortaFromAssistantQuery(
+    state,
+    new URLSearchParams('type=seyahat&destination_type=schengen&trip_duration=8-15&risk=orta')
+  );
+  assert.equal(state.insurance_type, 'seyahat');
+  assert.equal(state.destination_type, 'schengen');
+  assert.equal(state.trip_duration, '8-15');
+  assert.equal(state.risk_perception, 'orta');
+});
+
+test('bootstrapSigortaFromAssistantQuery rejects saglik property_role', () => {
+  const state = {
+    insurance_type: '',
+    property_role: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapSigortaFromAssistantQuery(state, new URLSearchParams('type=saglik&property_role=malik'));
+  assert.equal(state.insurance_type, 'saglik');
+  assert.equal(state.property_role, '');
+});
+
+test('bootstrapSigortaFromAssistantQuery rejects konut usage_type', () => {
+  const state = {
+    insurance_type: '',
+    usage_type: '',
+    property_role: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapSigortaFromAssistantQuery(state, new URLSearchParams('type=konut&usage_type=ticari'));
+  assert.equal(state.insurance_type, 'konut');
+  assert.equal(state.usage_type, '');
+});
+
+test('bootstrapSigortaFromAssistantQuery rejects arac destination_type', () => {
+  const state = {
+    insurance_type: '',
+    destination_type: '',
+    license_years: '',
+    usage_type: '',
+    risk_perception: '',
+    budget_level: ''
+  };
+  bootstrapSigortaFromAssistantQuery(
+    state,
+    new URLSearchParams('type=arac&destination_type=yurtdisi&license_years=3-10')
+  );
+  assert.equal(state.insurance_type, 'arac');
+  assert.equal(state.license_years, '3-10');
+  assert.equal(state.destination_type, '');
+});
+
+test('bootstrapSigortaFromAssistantQuery rejects invalid sigorta type-gated enums', () => {
+  const state = {
+    insurance_type: 'arac',
+    license_years: '3-10',
+    usage_type: 'ozel',
+    property_role: 'malik',
+    destination_type: 'schengen',
+    trip_duration: '8-15',
+    risk_perception: 'orta',
+    budget_level: 'orta'
+  };
+  bootstrapSigortaFromAssistantQuery(
+    state,
+    new URLSearchParams(
+      'type=arac&license_years=invalid&usage_type=invalid&property_role=invalid&destination_type=invalid&trip_duration=invalid'
+    )
+  );
+  assert.equal(state.license_years, '3-10');
+  assert.equal(state.usage_type, 'ozel');
+  assert.equal(state.property_role, 'malik');
+  assert.equal(state.destination_type, 'schengen');
+  assert.equal(state.trip_duration, '8-15');
+});
