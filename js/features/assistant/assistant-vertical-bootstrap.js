@@ -29,6 +29,20 @@ const FINANS_TERM_BY_PURPOSE = Object.freeze({
   ihtiyac: '12,24,36,48',
   isletme: '12,24,36,48,60'
 });
+const FINANS_CAPACITY_BY_PURPOSE = Object.freeze({
+  arac: new Set(['15k', '25k', '40k', '60k']),
+  konut: new Set(['25k', '40k', '60k']),
+  tatil: new Set(['15k', '25k', '40k']),
+  ihtiyac: new Set(['15k', '25k', '40k', '60k']),
+  isletme: new Set(['25k', '40k', '60k'])
+});
+const FINANS_RATE_SENSITIVITY_BY_PURPOSE = Object.freeze({
+  arac: new Set(['dusuk', 'orta', 'yuksek']),
+  konut: new Set(['dusuk', 'orta', 'yuksek']),
+  tatil: new Set(['orta', 'yuksek']),
+  ihtiyac: new Set(['dusuk', 'orta', 'yuksek']),
+  isletme: new Set(['orta', 'yuksek'])
+});
 const SIGORTA_TYPES = new Set(['arac', 'konut', 'saglik', 'seyahat']);
 const TRI_LEVEL = new Set(['dusuk', 'orta', 'yuksek']);
 const KASKO_VEHICLES = new Set(['otomobil', 'suv', 'motosiklet', 'ticari_arac']);
@@ -81,6 +95,34 @@ function isValidFinansTermForPurpose(purpose = '', term = '') {
   return Boolean(terms && t && terms.split(',').includes(t));
 }
 
+function isValidFinansCapacityForPurpose(purpose = '', capacity = '') {
+  const allowed = FINANS_CAPACITY_BY_PURPOSE[String(purpose ?? '').trim()];
+  const value = String(capacity ?? '').trim();
+  return Boolean(allowed && value && allowed.has(value));
+}
+
+function isValidFinansRateSensitivityForPurpose(purpose = '', rate = '') {
+  const allowed = FINANS_RATE_SENSITIVITY_BY_PURPOSE[String(purpose ?? '').trim()];
+  const value = String(rate ?? '').trim();
+  return Boolean(allowed && value && allowed.has(value));
+}
+
+function readFinansCapacityParam(params, purpose = '') {
+  for (const key of ['capacity', 'capacity_range']) {
+    const raw = String(params.get(key) ?? '').trim();
+    if (raw && isValidFinansCapacityForPurpose(purpose, raw)) return raw;
+  }
+  return null;
+}
+
+function readFinansRateSensitivityParam(params, purpose = '') {
+  for (const key of ['rate_sensitivity', 'rateSensitivity']) {
+    const raw = String(params.get(key) ?? '').trim();
+    if (raw && isValidFinansRateSensitivityForPurpose(purpose, raw)) return raw;
+  }
+  return null;
+}
+
 export function bootstrapAutoFromAssistantQuery(state, params = new URLSearchParams()) {
   if (!state || !params) return state;
 
@@ -102,9 +144,11 @@ export function bootstrapAutoFromAssistantQuery(state, params = new URLSearchPar
   }
 
   applyPrefillField(state, 'fuel', readAllowedParam(params, 'fuel', AUTO_WIZARD_FUEL));
-  const bodyRaw = readAllowedParam(params, 'body', AUTO_WIZARD_BODY);
-  const body = bodyRaw ? normalizeAutoBody(bodyRaw) : null;
-  if (body && AUTO_WIZARD_BODY.has(body)) applyPrefillField(state, 'body', body);
+  const bodyRaw = String(params.get('body') ?? '').trim();
+  if (bodyRaw) {
+    const body = normalizeAutoBody(bodyRaw);
+    if (AUTO_WIZARD_BODY.has(body)) applyPrefillField(state, 'body', body);
+  }
 
   return state;
 }
@@ -160,6 +204,13 @@ export function bootstrapFinansFromAssistantQuery(state, params = new URLSearchP
     state.amount_range = 'manuel';
     state.amount_manual = Number(amount);
   }
+
+  const purposeForPrefill = purpose || state.purpose;
+  const capacityValue = readFinansCapacityParam(params, purposeForPrefill);
+  if (capacityValue) applyPrefillField(state, 'capacity_range', capacityValue);
+
+  const rateValue = readFinansRateSensitivityParam(params, purposeForPrefill);
+  if (rateValue) applyPrefillField(state, 'rate_sensitivity', rateValue);
 
   return state;
 }

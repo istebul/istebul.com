@@ -31,6 +31,20 @@ const VERTICAL_BY_ASSISTANT = Object.freeze({
 const KONUT_PURPOSES = ',live,investment,seasonal,premium,';
 const KONUT_PROPERTIES = ',daire,mustakil,villa,';
 const FINANS_TERMS = { arac: ',12,24,36,48,60,', konut: ',36,48,60,', tatil: ',12,24,36,', ihtiyac: ',12,24,36,48,', isletme: ',12,24,36,48,60,' };
+const FINANS_CAPACITY = {
+  arac: ',15k,25k,40k,60k,',
+  konut: ',25k,40k,60k,',
+  tatil: ',15k,25k,40k,',
+  ihtiyac: ',15k,25k,40k,60k,',
+  isletme: ',25k,40k,60k,'
+};
+const FINANS_RATE_SENSITIVITY = {
+  arac: ',dusuk,orta,yuksek,',
+  konut: ',dusuk,orta,yuksek,',
+  tatil: ',orta,yuksek,',
+  ihtiyac: ',dusuk,orta,yuksek,',
+  isletme: ',orta,yuksek,'
+};
 
 /** İl query değeri — hafif format doğrulaması (tam il listesi konut runtime'da). */
 const KONUT_PROVINCE_QUERY_PATTERN = /^[\p{L}\s'-]+$/u;
@@ -196,6 +210,10 @@ export function buildVerticalContinueHref(categoryId, answers = {}) {
     if (amount) params.set('amount', amount);
     const term = String(answers.term ?? '').trim();
     if (purpose && term && FINANS_TERMS[purpose]?.includes(`,${term},`)) params.set('term', term);
+    const capacity = pickCsv(answers.capacity, FINANS_CAPACITY[purpose] || '');
+    if (purpose && capacity) params.set('capacity', capacity);
+    const rateSensitivity = pickCsv(answers.rateSensitivity, FINANS_RATE_SENSITIVITY[purpose] || '');
+    if (purpose && rateSensitivity) params.set('rate_sensitivity', rateSensitivity);
     return `/finans/${params.toString() ? `?${params}` : ''}`;
   }
   if (categoryId === 'sigorta') {
