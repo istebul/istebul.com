@@ -120,3 +120,17 @@ Ops asistan dinamik toolbar CTA metinleri admin nav/NAV_LABELS canonical etiketl
 CI: `scripts/p15-ops-ai-assistant-audit.cjs` + `tests/unit/ops-decision-assistant.test.mjs`.
 
 Kapsam dışı (4A-1b-3C-1): `data-page-target`, route/handler yapısı, `admin-panel.js`, `ops-command-center.js`, `internal-dashboard-views.js`, stat kartları, tablo/metrik etiketleri, P18–P26, AI listings workspace.
+
+### Faz 4A-1b-3C-2 — Ops Command Center domain highlight hizası
+
+`js/features/ops/ops-command-center.js` içindeki `dashboards` domain highlight metinleri admin nav/NAV_LABELS canonical etiketleriyle hizalı kalmalıdır:
+
+| Kavram | Canonical highlight etiket |
+|--------|----------------------------|
+| `investor-metrics` | Yatırımcı KPI |
+| `observability` | Observability |
+| `ops-command-center` | Operasyon Komuta Merkezi |
+
+CI: `scripts/p9-ops-automation-audit.cjs` + `tests/unit/ops-command-center.test.mjs`.
+
+Kapsam dışı (4A-1b-3C-2): `admin-panel.js`, `ops-ai-assistant-views.js`, `internal-dashboard-views.js`, route/handler yapısı, P18–P26, stat kartları, tablo/metrik etiketleri, generated ops JSON embed, AI listings workspace, `docs/OPS_AUTOMATION_ROADMAP.md`.
