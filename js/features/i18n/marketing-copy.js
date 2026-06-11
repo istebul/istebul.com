@@ -32,7 +32,7 @@ const baseMarketingCopy = {
       resources: 'Kaynaklar',
       login: 'Giriş Yap',
       partnerApply: 'Partner başvurusu',
-      getStarted: 'Kararını analiz et',
+      getStarted: 'Ön değerlendirmeye başla',
       sampleAnalysis: 'Örnek analiz',
       blog: 'Blog',
       announcements: 'Duyurular',
@@ -63,7 +63,7 @@ const baseMarketingCopy = {
         'Büyük kararları verirken <span class="ib-hero-gradient-text">yalnız değilsiniz.</span>',
       heroDesc:
         'Aracınızdan tatilinize, konuttan finansman ve sigortaya kadar — yapay zeka destekli analiz ile en doğru seçimi yapın.',
-      ctaAnalyze: 'Kararını analiz et',
+      ctaAnalyze: 'Ön değerlendirmeye başla',
       ctaHow: 'Nasıl Çalışır?',
       disclaimer: 'Örnek skor ve maliyetler gösterim amaçlıdır · finansal tavsiye değildir',
       dashTitle: 'AI Öneri Özeti',
@@ -76,8 +76,8 @@ const baseMarketingCopy = {
       viewDetails: 'Detayları Gör',
       costDistribution: 'Maliyet dağılımı',
       costTrend: '5 yıllık toplam maliyet projeksiyonu',
-      analyzeLink: 'Analiz Et →',
-      analyzeAction: 'Analiz et',
+      analyzeLink: 'Tam analize başla →',
+      analyzeAction: 'Tam analize başla',
       soon: 'Yakında',
       categoriesKicker: 'Karar Kategorileri',
       categoriesTitle: 'Hangi kararda yardım istiyorsunuz?',
@@ -122,7 +122,7 @@ const baseMarketingCopy = {
       metaKvkk: 'KVKK & gizlilik politikaları',
       metaSupport: 'Kurumsal destek hattı',
       copyright: 'Tüm hakları saklıdır.',
-      stickyCta: 'Kararını analiz et',
+      stickyCta: 'Ön değerlendirmeye başla',
       consentHtml:
         'Pazarlama e-postası almayı kabul ediyorum. <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik politikası</a>.',
       cookieHtml:

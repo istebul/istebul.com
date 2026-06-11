@@ -2189,8 +2189,19 @@ const VERTICAL_ANALYSIS_SURFACE_GUARDS = Object.freeze([
   { path: '/kasko/', selector: '#kasko-flow' }
 ]);
 
+const forceTurkishHomeLocale = async (page) => {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('istebul_locale', 'tr');
+    } catch {
+      // ignore
+    }
+  });
+};
+
 test.describe('Faz 3D-1A category journey guards', () => {
   test('ana sayfa karar CTA guard /karar-asistani/ hedeflerini korur', async ({ page }) => {
+    await forceTurkishHomeLocale(page);
     await page.goto('/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
@@ -2198,15 +2209,19 @@ test.describe('Faz 3D-1A category journey guards', () => {
     const heroCta = page.locator('[data-hero-cta-primary]');
     await expect(heroCta).toBeVisible();
     await expect(heroCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(heroCta).toContainText(/Ön değerlendirme/i);
 
-    await expect(page.locator('.nav-cta-decision')).toHaveAttribute('href', /\/karar-asistani\/?$/);
-    await expect(page.locator('.cro-sticky-cta a[data-cro-cta-sticky]')).toHaveAttribute(
-      'href',
-      /\/karar-asistani\/?$/
-    );
+    const navCta = page.locator('.nav-cta-decision');
+    await expect(navCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(navCta).toContainText(/Ön değerlendirme/i);
+
+    const stickyCta = page.locator('.cro-sticky-cta a[data-cro-cta-sticky]');
+    await expect(stickyCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(stickyCta).toContainText(/Ön değerlendirme/i);
   });
 
   test('ana sayfa kategori kartları guard vertical href canonical', async ({ page }) => {
+    await forceTurkishHomeLocale(page);
     await page.goto('/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
@@ -2220,6 +2235,7 @@ test.describe('Faz 3D-1A category journey guards', () => {
       const card = page.locator(`#home-category-grid a[data-category-id="${categoryId}"]`);
       await expect(card).toHaveCount(1);
       await expect(card).toHaveAttribute('href', href);
+      await expect(card).toContainText(/Tam analiz/i);
     }
   });
 

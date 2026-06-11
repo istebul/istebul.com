@@ -49,11 +49,21 @@ for (const route of requiredRoutes) {
   }
 }
 
-const heroMust = ['Kararını analiz et', 'Nasıl Çalışır?'];
-const navMust = ['Fiyatlandırma', 'Hakkımızda', 'Kararını analiz et'];
+const marketingCopy = fs.readFileSync(path.join(root, 'js/features/i18n/marketing-copy.js'), 'utf8');
+
+const heroMust = ['Ön değerlendirmeye başla', 'Nasıl Çalışır?'];
+const navMust = ['Fiyatlandırma', 'Hakkımızda', 'Ön değerlendirmeye başla'];
+const categoryCtaMust = ['Tam analize başla'];
 for (const text of [...heroMust, ...navMust]) {
   if (!html.includes(text)) {
     console.error('FAIL: homepage missing expected text:', text);
+    failed = true;
+  }
+}
+
+for (const text of categoryCtaMust) {
+  if (!marketingCopy.includes(text)) {
+    console.error('FAIL: homepage category CTA copy missing expected text:', text);
     failed = true;
   }
 }
