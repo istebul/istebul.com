@@ -113,13 +113,13 @@ export class PremiumPages {
       <header class="ib-premium-hero ib-premium-hero--analysis">
         <div class="container ib-premium-hero-grid">
           <div class="ib-premium-hero-copy">
-            <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> Karar merkezi</span>
+            <span class="ib-premium-eyebrow"><i data-lucide="sparkles"></i> Ön değerlendirme</span>
             <h1>Hangi kategoride karar vermek istiyorsunuz?</h1>
             <p class="ib-premium-lead">${escapeHtml(spaText('premiumKarar.heroLead', 'Kısa sorularla kategori ve ön değerlendirme sinyallerini görün; tam skor ve detaylı analiz ilgili kategori akışında hesaplanır.'))}</p>
             <p class="ib-premium-role-note text-muted-sm">${escapeHtml(spaText('premiumKarar.roleNote', 'Karar Asistanı, hangi kategori analizine devam etmeniz gerektiğini belirler. Nihai skor ve detaylı analiz ilgili kategori akışında hesaplanır.'))}</p>
             <div class="ib-premium-hero-actions">
-              <a href="#premium-assistant" class="btn btn-primary btn-lg" data-analytics-cta="cta_decision_hub" data-analytics-placement="premium_hero" title="Kategori seçerek karar akışını başlatın">
-                <i data-lucide="layout-grid"></i> Kategori seçin
+              <a href="#premium-assistant" class="btn btn-primary btn-lg" data-analytics-cta="cta_decision_hub" data-analytics-placement="premium_hero" title="${BRAND_VOICE.cta.primaryDecisionFree}">
+                <i data-lucide="layout-grid"></i> ${BRAND_VOICE.cta.primaryDecisionFree}
               </a>
               <a href="/metodoloji" class="btn btn-outline btn-lg" data-native-route>
                 <i data-lucide="microscope"></i> ${BRAND_VOICE.cta.methodology}
@@ -378,7 +378,7 @@ export class PremiumPages {
             <div><i data-lucide="user-check"></i><strong>Kullanıcı kontrolü</strong><p>Veri minimizasyonu</p></div>
             <div><i data-lucide="badge-check"></i><strong>Kurumsal hazır</strong><p>Enterprise SLA</p></div>
           </div>
-          <a href="/karar-asistani/" class="btn btn-primary" data-native-route data-analytics-cta="cta_decision_metodoloji" data-analytics-placement="metodoloji_trust">Ücretsiz karar analizi başlat</a>
+          <a href="/karar-asistani/" class="btn btn-primary" data-native-route data-analytics-cta="cta_decision_metodoloji" data-analytics-placement="metodoloji_trust">${BRAND_VOICE.cta.primaryDecisionFree}</a>
         </div>
       </section>
     </div>`;
@@ -419,7 +419,7 @@ export class PremiumPages {
             <h2>Hâlâ kararsız mısınız?</h2>
             <p>Önce toplam maliyeti görün; Pro ile karşılaştırmayı derinleştirin.</p>
           </div>
-          <a href="/karar-asistani/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_decision_planlar_footer" data-analytics-placement="planlar_footer">Ücretsiz karar analizi başlat</a>
+          <a href="/karar-asistani/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_decision_planlar_footer" data-analytics-placement="planlar_footer">${BRAND_VOICE.cta.primaryDecisionFree}</a>
         </div>
       </section>
     </div>`;

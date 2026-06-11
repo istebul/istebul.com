@@ -34,7 +34,7 @@ export function renderBillingV1PricingGrid(opts = {}) {
         <ul class="billing-v1-plan-features">
           ${free.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}
         </ul>
-        <a href="/karar-asistani/" class="btn btn-outline btn-block">Ücretsiz karar analizi başlat</a>
+        <a href="/karar-asistani/" class="btn btn-outline btn-block">Ön değerlendirmeye başla</a>
       </article>
 
       <article class="billing-v1-plan-card billing-v1-plan-card--pro" role="listitem">

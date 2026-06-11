@@ -397,13 +397,13 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       const strip = page.locator('[data-decision-journey-strip]');
       await expect(strip).toBeVisible({ timeout: 15000 });
       await expect(strip).toContainText('Karar yolculuğu');
-      await expect(strip.getByRole('link', { name: 'Karar Merkezi' })).toBeVisible();
+      await expect(strip.getByRole('link', { name: 'Ön değerlendirme' })).toBeVisible();
       await expect(strip.getByRole('link', { name: 'Seçenekler' })).toBeVisible();
       await expect(strip.getByRole('link', { name: 'Karşılaştır' })).toBeVisible();
       await expect(strip.locator('.ib-decision-journey-step.is-active')).toHaveText(activeLabel);
     };
 
-    await assertJourneyStrip('/karar-asistani/', 'Karar Merkezi');
+    await assertJourneyStrip('/karar-asistani/', 'Ön değerlendirme');
     await assertJourneyStrip('/secenekler/', 'Seçenekler');
     await assertJourneyStrip('/karsilastir/', 'Karşılaştır');
   });

@@ -66,7 +66,7 @@ export function renderUserDashboardTabPanels(ctx = {}) {
       }
       <div class="account-quick-actions">
         <a href="/karsilastir" class="btn btn-primary">Karşılaştırma Merkezine Git</a>
-        <a href="/karar-asistani/" class="btn btn-outline">Yeni analiz başlat</a>
+        <a href="/karar-asistani/" class="btn btn-outline">Ön değerlendirmeye başla</a>
       </div>
     </section>
 

@@ -430,7 +430,7 @@ export class RevenueManager {
           <p class="revenue-plan-desc">${pt('freeDesc', {}, plans.free.description)}</p>
           <ul class="revenue-plan-features">${this.renderPlanFeatureList(freeHighlights)}</ul>
           <div class="revenue-plan-card-foot">
-            <a href="/karar-asistani/" class="btn btn-outline btn-block" data-analytics-cta="cta_decision_pricing_dynamic" data-analytics-placement="pricing_dynamic_free">${pt('freeCta', {}, 'Ücretsiz karar analizi başlat')}</a>
+            <a href="/karar-asistani/" class="btn btn-outline btn-block" data-analytics-cta="cta_decision_pricing_dynamic" data-analytics-placement="pricing_dynamic_free">${pt('freeCta', {}, 'Ön değerlendirmeye başla')}</a>
           </div>
         </article>
         <article class="revenue-plan-card revenue-plan-card--featured" data-revenue-plan-pro role="listitem">
@@ -451,7 +451,7 @@ export class RevenueManager {
                 <button type="button" class="btn btn-outline btn-sm btn-block" data-payment-product="pro_yearly" data-analytics-cta="cta_secondary_checkout" data-analytics-placement="pricing_dynamic_pro_annual">Yıllık Pro</button>
                 <button type="button" class="btn btn-ghost btn-sm btn-block" data-payment-product="premium_report" data-analytics-cta="cta_premium_report" data-analytics-placement="pricing_dynamic_premium_report">Premium rapor</button>
               </div>
-              <a href="/karar-asistani/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_decision_pricing_pro_secondary" data-analytics-placement="pricing_pro_secondary">${pt('proSecondaryCta', {}, 'Önce ücretsiz karar analizi')}</a>
+              <a href="/karar-asistani/" class="btn btn-ghost btn-sm" data-analytics-cta="cta_decision_pricing_pro_secondary" data-analytics-placement="pricing_pro_secondary">${pt('proSecondaryCta', {}, 'Önce ön değerlendirmeye başla')}</a>
             </div>
             <p class="revenue-plan-hint">${pt('proPriceHint', {}, PLANS.pro.priceHint)}${this.trialEligible ? pt('trialHint', { days: PLANS.pro.trialDays }, ` · İlk abonelikte ${PLANS.pro.trialDays} gün ücretsiz`) : ''}</p>
           </div>
