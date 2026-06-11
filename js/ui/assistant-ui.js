@@ -4,7 +4,8 @@
 import {
     buildDecisionResultSummary,
     renderDecisionResultSummaryHtml,
-    shouldRenderDecisionResultSummary
+    shouldRenderDecisionResultSummary,
+    renderDecisionHistoryResultSummaryHtml
 } from './decision-result-summary.js';
 import {
     buildDeterministicDecisionResultRationale,
@@ -738,6 +739,7 @@ export class AssistantUI {
                 buildDecisionHistorySignalStrip(item),
                 this.escapeHtml.bind(this)
             );
+            const resultSummaryHtml = renderDecisionHistoryResultSummaryHtml(item.resultSummary);
             const canCompare = canAddHistoryEntryToComparison(item);
 
             return `
@@ -754,6 +756,7 @@ export class AssistantUI {
                     </div>
                 </div>
                 ${signalStripHtml}
+                    ${resultSummaryHtml}
                 <div class="decision-history-metrics">
                     <span><strong>${isAuto ? 'Tahmini fiyat' : 'Fiyat'}:</strong> ${this.formatPrice(item.topPick?.price || 0)}</span>
                     <span><strong>${isAuto ? '12 aylık maliyet' : 'Dönemsel maliyet'}:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)}</span>
