@@ -835,6 +835,14 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(signalStrip.locator('[data-history-signal="history-risk"]')).not.toContainText(/^—$/);
     await expect(signalStrip.locator('[data-history-signal="history-tco"]')).not.toContainText(/^—$/);
     await expect(signalStrip.locator('[data-history-signal="history-profile"]')).not.toContainText(/^—$/);
+
+    const resultSummary = card.locator('[data-decision-history-result-summary]');
+    await expect(resultSummary).toBeVisible({ timeout: 15000 });
+    await expect(resultSummary).toContainText(/Kayıtlı karar sinyalleri/i);
+    await expect(resultSummary).toContainText(/\/100/);
+    await expect(resultSummary).toContainText(/Risk/i);
+    await expect(resultSummary).toContainText(/TCO/i);
+    await expect(resultSummary).toContainText(/Profil/i);
   });
 
   test('karar geçmişi legacy entry ile yüklenir ve sinyal şeridi fallback gösterir', async ({ page }) => {
@@ -879,6 +887,9 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(signalStrip.locator('[data-history-signal="history-fit"]')).toContainText('82/100');
     await expect(signalStrip.locator('[data-history-signal="history-risk"]')).toContainText(/Orta risk/i);
     await expect(signalStrip.locator('[data-history-signal="history-profile"]')).toContainText(/Dengeli araç profili/i);
+
+    // 2D-1c intentionally surfaces persisted snapshots only; no legacy fallback generation.
+    await expect(card.locator('[data-decision-history-result-summary]')).toHaveCount(0);
   });
 
   test('karar geçmişi sinyal şeridi @390px yatay taşma yapmaz', async ({ page }) => {
@@ -903,6 +914,28 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
         yearlyCost: 240000,
         decisionProfile: 'Toyota Corolla, araç kararınızda en dengeli seçenek olarak öne çıkıyor.',
         summary: 'Toyota Corolla en güçlü eşleşme.',
+        resultSummary: {
+          fit: {
+            label: 'Uyum',
+            value: '88/100',
+            detail: 'Profil ile güçlü eşleşme'
+          },
+          risk: {
+            label: 'Risk',
+            value: 'Düşük risk',
+            detail: 'Yan maliyetler dengeli'
+          },
+          tco: {
+            label: 'TCO özeti',
+            value: '240.000 TL/yıl',
+            detail: 'Toplam dönemsel maliyet kontrol altında'
+          },
+          profile: {
+            label: 'Profil',
+            value: 'Toyota Corolla Hybrid',
+            detail: 'Profil detayı mobil görünümde uzun metinle taşmadan kalmalı'
+          }
+        },
         topPick: {
           name: 'Toyota Corolla Hybrid',
           score: 88,
@@ -923,6 +956,11 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     const signalStrip = card.locator('[data-decision-history-signal-strip]');
     await expect(signalStrip).toBeVisible({ timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '.decision-history-card [data-decision-history-signal-strip]');
+
+    const resultSummary = card.locator('[data-decision-history-result-summary]');
+    await expect(resultSummary).toBeVisible({ timeout: 15000 });
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card [data-decision-history-result-summary]');
+    await assertLocatorWithinViewport(resultSummary, MOBILE_2C_VIEWPORT.width);
     await assertLocatorWithinViewport(card, MOBILE_2C_VIEWPORT.width);
   });
 
