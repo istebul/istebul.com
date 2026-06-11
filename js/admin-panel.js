@@ -1530,10 +1530,10 @@ async function loadExecutiveKpis() {
 
   el.innerHTML = `
     ${renderAdminDataSourceNotices(executiveKpiBatch)}
-    <p class="text-muted-sm" style="margin:0 0 16px">CEO decision dashboard · Son ${windowDays} gün · ${dash.sampleSize.analyticsEvents} analytics event · Export: <code>npm run metrics:executive</code></p>
+    <p class="text-muted-sm" style="margin:0 0 16px">Yatırımcı KPI · Son ${windowDays} gün · ${dash.sampleSize.analyticsEvents} analytics event · Export: <code>npm run metrics:executive</code></p>
 
     <div class="stat-card" style="margin-bottom:16px;padding:14px 16px;background:rgba(37,99,235,0.08);border-radius:10px">
-      <strong>Executive summary</strong>
+      <strong>Yatırımcı özeti</strong>
       <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.55">
         ${dash.ceoSummary.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
       </ul>
@@ -1580,7 +1580,7 @@ async function loadExecutiveKpis() {
     </div>
 
     <div style="height:18px"></div>
-    <h3 style="margin:0 0 12px">Executive funnel (step CR)</h3>
+    <h3 style="margin:0 0 12px">Yatırımcı hunisi (adım CR)</h3>
     <table class="table">
       <thead><tr><th>Step</th><th>Events</th><th>Step CR</th><th>From landing</th></tr></thead>
       <tbody>
