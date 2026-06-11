@@ -13,7 +13,7 @@
           "id": "control",
           "weight": 50,
           "copy": {
-            "[data-hero-cta-primary]": "Kararını analiz et",
+            "[data-hero-cta-primary]": "Ön değerlendirmeye başla",
             "[data-auto-hero-cta]": "Ücretsiz maliyet analizi"
           }
         },
@@ -21,7 +21,7 @@
           "id": "urgency",
           "weight": 50,
           "copy": {
-            "[data-hero-cta-primary]": "2 dk'da maliyet analizi — ücretsiz",
+            "[data-hero-cta-primary]": "2 dk'da ön değerlendirme — ücretsiz",
             "[data-auto-hero-cta]": "Hemen maliyet analizi başlat"
           },
           "classes": {
@@ -42,7 +42,7 @@
           "id": "control",
           "weight": 50,
           "copy": {
-            "[data-cro-cta-sticky]": "Kararını analiz et",
+            "[data-cro-cta-sticky]": "Ön değerlendirmeye başla",
             "[data-cro-cta-methodology]": "Ücretsiz karar analizi başlat"
           }
         },
@@ -50,7 +50,7 @@
           "id": "outcome",
           "weight": 50,
           "copy": {
-            "[data-cro-cta-sticky]": "Kararını analiz et",
+            "[data-cro-cta-sticky]": "Ön değerlendirmeye başla",
             "[data-cro-cta-methodology]": "Ücretsiz karar analizi başlat"
           },
           "classes": {
