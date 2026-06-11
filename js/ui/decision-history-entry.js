@@ -92,6 +92,7 @@ export function buildDecisionHistoryEntry(result, options = {}) {
         profileTags,
         confidenceLabel,
         tcoLabel,
+        resultSummary: summary || null,
 
         rawAnswers: result.rawAnswers || {},
         answers: result.answers || [],
