@@ -28,8 +28,10 @@ describe('internal-dashboards', () => {
       analyticsEvents: [{ event_name: 'page_view', created_at: new Date().toISOString() }]
     });
     const html = renderInternalDashboard('ceo', ctx, esc);
-    assert.match(html, /CEO health/);
-    assert.match(html, /Executive summary/);
+    assert.match(html, /CEO Özeti · Son/);
+    assert.match(html, /CEO sağlığı/);
+    assert.match(html, /CEO özeti/);
+    assert.doesNotMatch(html, /Executive summary/);
   });
 
   it('operation and analytics CTA labels stay aligned with nav labels', () => {

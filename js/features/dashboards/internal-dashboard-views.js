@@ -56,23 +56,23 @@ function renderCeoDashboard(ctx, escapeHtml) {
   const c = ex.conversions.counts;
 
   return `
-    <p class="ib-dash-muted">Son ${ctx.windowDays} gün · ${ctx.sampleSize.analyticsEvents} analytics · Export: <code>npm run metrics:executive</code> · <code>npm run ceo:alerts:run</code></p>
+    <p class="ib-dash-muted">CEO Özeti · Son ${ctx.windowDays} gün · ${ctx.sampleSize.analyticsEvents} analytics · Export: <code>npm run metrics:executive</code> · <code>npm run ceo:alerts:run</code></p>
 
     <div class="ib-dash-health ${healthClass(ceo.overallHealth)}">
-      <p class="ib-dash-kicker">CEO health</p>
+      <p class="ib-dash-kicker">CEO sağlığı</p>
       <strong>${escapeHtml(ceo.overallHealth)}</strong>
-      <span class="text-muted-sm"> · ${ceo.alerts.triggeredCount} early-intervention alert(s)</span>
+      <span class="text-muted-sm"> · ${ceo.alerts.triggeredCount} erken müdahale uyarısı</span>
       ${
         ceo.alerts.triggered.length
           ? `<ul class="ib-dash-alert-list">${ceo.alerts.triggered
               .map((a) => `<li><strong>${escapeHtml(a.severity)}</strong> — ${escapeHtml(a.message)}</li>`)
               .join('')}</ul>`
-          : '<p class="text-muted-sm" style="margin:8px 0 0">No CEO threshold alerts in window.</p>'
+          : '<p class="text-muted-sm" style="margin:8px 0 0">Pencerede CEO eşik uyarısı yok.</p>'
       }
     </div>
 
     <div class="ib-dash-section">
-      <h3>Executive summary</h3>
+      <h3>CEO özeti</h3>
       <ul class="ib-dash-alert-list">${ex.ceoSummary.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ul>
     </div>
 
