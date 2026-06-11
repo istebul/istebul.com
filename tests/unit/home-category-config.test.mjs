@@ -20,6 +20,18 @@ test('home categories: six active verticals including kasko', () => {
   });
 });
 
+test('home categories: canonical vertical href map', () => {
+  const hrefById = Object.fromEntries(HOME_DECISION_CATEGORIES.map((c) => [c.id, c.href]));
+  assert.deepEqual(hrefById, {
+    araba: '/auto/',
+    konut: '/konut/',
+    tatil: '/tatil/',
+    finansman: '/finans/',
+    sigorta: '/sigorta/',
+    kasko: '/kasko/'
+  });
+});
+
 test('home categories: no coming_soon entries when all live', () => {
   const soon = getHomeCategoriesByStatus('coming_soon');
   assert.equal(soon.length, 0);

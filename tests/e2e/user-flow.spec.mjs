@@ -2165,3 +2165,82 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(compareCta).toHaveClass(/btn-outline/);
   });
 });
+
+/** Faz 3D-1A — locks hub vs vertical journey split from category journey audit. */
+const HOME_CATEGORY_VERTICAL_HREFS = Object.freeze({
+  araba: '/auto/',
+  konut: '/konut/',
+  tatil: '/tatil/',
+  finansman: '/finans/',
+  sigorta: '/sigorta/',
+  kasko: '/kasko/'
+});
+
+/**
+ * Tam analiz yüzeyi marker'ları — site-health.spec.mjs overflow smoke'ını tamamlar;
+ * orada yalnızca yatay taşma kontrol edilir, wizard/flow görünürlüğü değil.
+ */
+const VERTICAL_ANALYSIS_SURFACE_GUARDS = Object.freeze([
+  { path: '/auto/', selector: '#auto-wizard' },
+  { path: '/konut/', selector: '#housing-flow' },
+  { path: '/tatil/', selector: '#vacation-flow' },
+  { path: '/finans/', selector: '#finans-flow' },
+  { path: '/sigorta/', selector: '#sigorta-flow' },
+  { path: '/kasko/', selector: '#kasko-flow' }
+]);
+
+test.describe('Faz 3D-1A category journey guards', () => {
+  test('ana sayfa karar CTA guard /karar-asistani/ hedeflerini korur', async ({ page }) => {
+    await page.goto('/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    const heroCta = page.locator('[data-hero-cta-primary]');
+    await expect(heroCta).toBeVisible();
+    await expect(heroCta).toHaveAttribute('href', /\/karar-asistani\/?$/);
+
+    await expect(page.locator('.nav-cta-decision')).toHaveAttribute('href', /\/karar-asistani\/?$/);
+    await expect(page.locator('.cro-sticky-cta a[data-cro-cta-sticky]')).toHaveAttribute(
+      'href',
+      /\/karar-asistani\/?$/
+    );
+  });
+
+  test('ana sayfa kategori kartları guard vertical href canonical', async ({ page }) => {
+    await page.goto('/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await page.locator('#home-vertical-focus').scrollIntoViewIfNeeded();
+
+    await expect(page.locator('#home-category-grid a[data-category-id]')).toHaveCount(6, {
+      timeout: 15000
+    });
+
+    for (const [categoryId, href] of Object.entries(HOME_CATEGORY_VERTICAL_HREFS)) {
+      const card = page.locator(`#home-category-grid a[data-category-id="${categoryId}"]`);
+      await expect(card).toHaveCount(1);
+      await expect(card).toHaveAttribute('href', href);
+    }
+  });
+
+  test('karar-asistani hub assistant form guard yüklenir', async ({ page }) => {
+    await page.goto('/karar-asistani/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'page-karar-analizi');
+    await expect(page.locator('#premium-karar-analizi-root')).toBeAttached({ timeout: 15000 });
+    await expect(page.locator('#decision-assistant-form')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#assistant-category-rail .assistant-category').first()).toBeAttached({
+      timeout: 15000
+    });
+  });
+
+  for (const { path, selector } of VERTICAL_ANALYSIS_SURFACE_GUARDS) {
+    test(`vertical guard ${path} tam analiz yüzeyi yükler`, async ({ page }) => {
+      await page.goto(path);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page.locator(selector)).toBeVisible({ timeout: 15000 });
+    });
+  }
+});
