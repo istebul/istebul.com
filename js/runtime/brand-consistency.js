@@ -9,7 +9,7 @@ const DECISION_ENTRY_SELECTORS =
   '[data-analytics-placement="methodology_teaser"], [data-analytics-placement="pricing_free"], [data-analytics-placement="pricing_static_free"], [data-analytics-placement="pricing_dynamic_free"], [data-analytics-placement="pricing_mid"], [data-analytics-placement="premium_footer"], [data-analytics-placement="planlar_footer"], [data-analytics-placement="metodoloji_trust"], [data-analytics-placement="footer"], [data-analytics-placement="nav_mobile"]';
 
 const AUTO_CTA_SELECTORS =
-  '.nav-cta-auto, [data-analytics-placement="partner_enterprise"], [data-analytics-placement="premium_hero"], [data-analytics-placement="ai_engine"] .btn-outline, [data-analytics-placement="sample_preview"], [data-analytics-placement="home_auto_bridge"]';
+  '.nav-cta-auto, [data-analytics-placement="partner_enterprise"], [data-analytics-placement="ai_engine"] .btn-outline, [data-analytics-placement="sample_preview"], [data-analytics-placement="home_auto_bridge"]';
 
 export function initBrandConsistency() {
   if (typeof document === 'undefined') return;
