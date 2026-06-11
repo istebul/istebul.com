@@ -12,13 +12,13 @@ export const BRAND_VOICE = Object.freeze({
 
   cta: {
     primaryDecision: 'Kararını analiz et',
-    primaryDecisionFree: 'Ücretsiz karar analizi başlat',
+    primaryDecisionFree: 'Ön değerlendirmeye başla',
     primaryAuto: 'Auto analizini dene',
     primaryAutoLegacy: 'Ücretsiz karar analizi başlat',
     primaryAutoLong: 'Ücretsiz karar analizi başlat',
     methodology: 'Metodolojiyi gör',
     plans: 'Planları incele',
-    analysisStart: 'Ücretsiz karar analizi başlat',
+    analysisStart: 'Ön değerlendirmeye başla',
     saveAnalysis: 'Analizini kaydet ve devam et',
     accountLogin: 'Giriş Yap',
     accountRegister: 'Analizini kaydet',

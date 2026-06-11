@@ -672,7 +672,7 @@ export class UIManager {
                         <div class="listing-actions">
                             <button class="btn ${isFavorite ? 'btn-primary' : 'btn-outline'}" data-action="favorite" data-listing-id="${listingId}"><i data-lucide="heart"></i> ${isFavorite ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}</button>
                             <button class="btn ${isCompared ? 'btn-primary' : 'btn-outline'}" data-action="compare" data-listing-id="${listingId}"><i data-lucide="${isCompared ? 'check' : 'columns-3'}"></i> ${isCompared ? 'Karşılaştırmada' : 'Karşılaştır'}</button>
-                            <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Asistanda analiz et</a>
+                            <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Ön değerlendirmeye başla</a>
                             <a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> ${this.escapeHtml(actionLabel)}</a>
                         </div>
                     </div>

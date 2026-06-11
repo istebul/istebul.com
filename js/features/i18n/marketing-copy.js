@@ -113,7 +113,7 @@ const baseMarketingCopy = {
       consent: 'Pazarlama e-postası almayı kabul ediyorum.',
       privacyLink: 'Gizlilik politikası',
       disclaimer: 'isteBul karar destek platformudur; nihai karar kullanıcıya aittir.',
-      freeAnalysis: 'Ücretsiz karar analizi başlat',
+      freeAnalysis: 'Ön değerlendirmeye başla',
       cookieText: 'Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz.',
       cookiePolicy: 'Çerez politikası',
       cookieDecline: 'Reddet',

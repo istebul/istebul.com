@@ -18,7 +18,7 @@ const mustExist = [
 const mustContain = [
   ['css/style.css', 'final-enterprise-release.css'],
   ['js/runtime/enterprise-ux.js', 'initBrandConsistency'],
-  ['js/core/brand-voice.js', 'Ücretsiz karar analizi başlat'],
+  ['js/core/brand-voice.js', 'Ön değerlendirmeye başla'],
   ['js/core/conversion-copy.js', 'brand-voice.js'],
   ['index.html', 'Ön değerlendirmeye başla'],
   ['js/features/i18n/marketing-copy.js', 'Tam analize başla'],
