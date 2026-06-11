@@ -1381,6 +1381,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-arac-label-user';
@@ -1397,6 +1398,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
+    await waitForGecmisHistoryStable(page, { categoryId: 'auto' });
     const kicker = page.locator('.decision-history-card [data-history-category="auto"]').first();
     await expect(kicker).toBeVisible({ timeout: 15000 });
     await expect(kicker).toHaveText('Araba');
@@ -1406,6 +1408,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/gecmis/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-history-ev-label-user';
@@ -1422,6 +1425,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
       window.app.loadDecisionHistory();
     });
 
+    await waitForGecmisHistoryStable(page, { categoryId: 'konut' });
     const kicker = page.locator('.decision-history-card [data-history-category="konut"]').first();
     await expect(kicker).toBeVisible({ timeout: 15000 });
     await expect(kicker).toHaveText('Konut');
