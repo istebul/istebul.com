@@ -1019,6 +1019,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-recent-snippet-user';
@@ -1201,6 +1202,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-snippet-mobile-user';
@@ -1287,6 +1289,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-snippet-category-user';
@@ -1447,6 +1450,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-snippet-category-mobile-user';
@@ -1556,6 +1560,7 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await page.goto('/karar-asistani/');
     await waitForSpaReady(page);
     await dismissCookieBanner(page);
+    await waitForKararAsistaniRouteBootstrap(page);
 
     await page.evaluate(() => {
       const userId = 'e2e-compat-snippet-user';
