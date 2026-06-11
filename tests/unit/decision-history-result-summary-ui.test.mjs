@@ -37,6 +37,7 @@ const summary = {
 test('renderDecisionHistoryResultSummaryHtml returns empty string without summary', () => {
     assert.equal(renderDecisionHistoryResultSummaryHtml(null, escapeHtml), '');
     assert.equal(renderDecisionHistoryResultSummaryHtml(undefined, escapeHtml), '');
+    assert.equal(renderDecisionHistoryResultSummaryHtml({}, escapeHtml), '');
 });
 
 test('renderDecisionHistoryResultSummaryHtml renders history result summary wrapper', () => {
