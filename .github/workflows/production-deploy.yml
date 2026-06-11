@@ -364,6 +364,13 @@ jobs:
             supabase functions deploy "$fn" --project-ref "$SUPABASE_PROJECT_REF"
           done
 
+      - name: Edge function smoke guard
+        if: steps.gate.outputs.skip != 'true'
+        run: node scripts/smoke-edge-functions.cjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
   smoke-live:
     name: Live smoke (post-deploy)
     needs: [deploy-cloudflare]
