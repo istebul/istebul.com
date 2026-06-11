@@ -3586,26 +3586,7 @@ form.addEventListener('submit', async (event) => {
 
       try {
         if (getAppInstance()?.currentUser?.id && results.length) {
-          saveDecisionHistory({
-            id: `auto-${Date.now()}`,
-            categoryId: 'auto',
-            categoryName: 'Araç Karar Analizi',
-            createdAt: new Date().toISOString(),
-            rawAnswers: formData,
-            answers: formData,
-            summary: `${results[0].name} kullanım ve bütçe profilinize göre en güçlü araç eşleşmesi olarak öne çıktı.`,
-            insight: 'isteBul Auto karar analizi',
-            dataHealth: 'estimated',
-            recommendations: results.map((vehicle) => ({
-              name: vehicle.name,
-              score: vehicle.score,
-              price: vehicle.price || vehicle.costs?.purchase || 0,
-              yearlyCost: vehicle.costs?.annual || 0,
-              financeComparisons: [{
-                monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0)
-              }]
-            }))
-          });
+          saveDecisionHistory(buildAutoDecisionHistoryPayload(results, formData));
         }
       } catch (_) {}
 
@@ -3980,3 +3961,69 @@ window.addEventListener('pagehide', () => {
     /* ignore */
   }
 });
+
+
+function buildAutoDecisionHistoryPayload(results, formData) {
+  const vehicles = Array.isArray(results) ? results : [];
+  const top = vehicles[0] || {};
+  const topConfidence = top.confidenceMeta && typeof top.confidenceMeta === 'object'
+    ? top.confidenceMeta
+    : null;
+
+  const dataHealth = topConfidence
+    ? {
+        confidenceLabel: topConfidence.label || 'Orta veri güven bandı — teklif doğrulaması önerilir',
+        confidenceScore: Number.isFinite(Number(topConfidence.score)) ? Number(topConfidence.score) : null,
+        tier: topConfidence.tier || null
+      }
+    : {
+        confidenceLabel: 'Tahmini maliyet — teklifte doğrulama önerilir',
+        confidenceScore: null,
+        tier: 'medium'
+      };
+
+  const topName = top.name || 'Seçilen araç';
+  const topHeadline = Array.isArray(top.reasons) && top.reasons[0]
+    ? String(top.reasons[0])
+    : 'isteBul Auto karar analizi';
+
+  return {
+    id: `auto-${Date.now()}`,
+    categoryId: 'auto',
+    categoryName: 'Araç Karar Analizi',
+    createdAt: new Date().toISOString(),
+    source: 'auto',
+    rawAnswers: formData || {},
+    answers: formData || {},
+    summary: `${topName} kullanım ve bütçe profilinize göre en güçlü araç eşleşmesi olarak öne çıktı.`,
+    insight: { headline: topHeadline },
+    dataHealth,
+    recommendations: vehicles.map((vehicle) => {
+      const score = Number(vehicle.score || 0);
+      const reasonTags = Array.isArray(vehicle.reasons)
+        ? vehicle.reasons.map((reason) => String(reason).trim()).filter(Boolean).slice(0, 3)
+        : [];
+      const decisionTags = reasonTags.length
+        ? reasonTags
+        : [vehicle.fuel, vehicle.body, 'Kural tabanlı'].filter(Boolean).map(String).slice(0, 3);
+      const riskLevel = vehicle.confidenceMeta?.label
+        || (score >= 85 ? 'Dengeli profil' : 'Doğrulama önerilir');
+
+      return {
+        name: vehicle.name,
+        score: vehicle.score,
+        price: vehicle.price || vehicle.costs?.purchase || 0,
+        yearlyCost: vehicle.costs?.annual || 0,
+        riskLevel,
+        decisionTags,
+        scoreNote: Array.isArray(vehicle.reasons) ? vehicle.reasons[0] || null : null,
+        calculationTable: vehicle.costs?.annual
+          ? { totalLabel: '12 aylık TCO' }
+          : undefined,
+        financeComparisons: [{
+          monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0)
+        }]
+      };
+    })
+  };
+}
