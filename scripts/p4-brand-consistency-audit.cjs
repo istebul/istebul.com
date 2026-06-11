@@ -35,7 +35,8 @@ const mustNotContain = [
   ['js/core/brand-voice.js', "primaryAutoLegacy: 'Ücretsiz karar analizi başlat'"],
   ['js/core/brand-voice.js', "primaryAutoLong: 'Ücretsiz karar analizi başlat'"],
   ['js/runtime/brand-consistency.js', 'premium_hero'],
-  ['index.html', 'Ücretsiz analiz başlat']
+  ['index.html', 'Ücretsiz analiz başlat'],
+  ['auto/index.html', 'Ücretsiz analiz başlat']
 ];
 
 let failed = false;
