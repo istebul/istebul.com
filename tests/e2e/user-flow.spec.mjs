@@ -908,6 +908,85 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(signalStrip).toBeVisible();
   });
 
+  test('gecmis schemaVersion=1 kaydı resultSummary olmadan strip ve details davranışı', async ({ page }) => {
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-v1-no-summary-user';
+      window.app.currentUser = { id: userId, name: 'E2E V1 No Summary' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      const entry = {
+        id: 'v1-no-summary-1',
+        schemaVersion: 1,
+        categoryId: 'arac',
+        categoryName: 'Araç',
+        createdAt: '2026-06-08T12:00:00.000Z',
+        score: 85,
+        riskLevel: 'Orta risk',
+        yearlyCost: 220000,
+        decisionProfile: 'Toyota Corolla dengeli profil',
+        summary: 'Toyota Corolla öne çıkıyor.',
+        topPick: {
+          name: 'Toyota Corolla',
+          score: 85,
+          price: 1800000,
+          yearlyCost: 220000,
+          monthlyPayment: 17000,
+          riskLevel: 'Orta risk'
+        },
+        answers: [{ label: 'İl', value: 'Ankara' }]
+      };
+      localStorage.setItem(storageKey, JSON.stringify([entry]));
+      window.app.loadDecisionHistory();
+    });
+
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
+    await waitForGecmisHistoryStable(page, { categoryId: 'auto', entryId: 'v1-no-summary-1' });
+    const card = gecmisHistoryCard(page, 'auto');
+    await expect(card).toBeVisible({ timeout: 15000 });
+    await expect(card).toContainText(/Toyota Corolla/i);
+
+    const signalStrip = card.locator('[data-decision-history-signal-strip]');
+    await expect(signalStrip).toBeVisible({ timeout: 15000 });
+    await expect(card.locator('[data-decision-history-result-summary]')).toHaveCount(0);
+
+    const detailPanel = card.locator('[data-decision-history-detail]');
+    const metrics = card.locator('.decision-history-metrics');
+    await expect(detailPanel).toBeVisible();
+    await expect(metrics).not.toBeVisible();
+    await detailPanel.locator('.decision-history-detail-summary').click();
+    await expect(metrics).toBeVisible();
+    await expect(metrics).toContainText(/Tahmini fiyat|Fiyat/i);
+    await expect(card.locator('.decision-history-answers')).toContainText(/İl:\s*Ankara/i);
+    await expect(signalStrip).toBeVisible();
+  });
+
+  test('gecmis bozuk history localStorage JSON crash olmadan empty state gösterir', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+
+    await page.goto('/gecmis/');
+    await waitForSpaReady(page);
+    await dismissCookieBanner(page);
+    await waitForGecmisRouteBootstrap(page);
+
+    await page.evaluate(() => {
+      const userId = 'e2e-corrupt-history-user';
+      window.app.currentUser = { id: userId, name: 'E2E Corrupt User' };
+      const storageKey = window.app.getUserHistoryStorageKey('istebul_decision_history');
+      localStorage.setItem(storageKey, '{bad');
+      window.app.loadDecisionHistory();
+    });
+
+    await expect(page.locator('html')).toHaveAttribute('data-ib-route', 'history');
+    await expect(page.locator('#history-list .empty-state h3')).toHaveText('Geçmiş bulunamadı', { timeout: 15000 });
+    await expect(page.locator('#history-list .decision-history-card')).toHaveCount(0);
+    expect(pageErrors).toEqual([]);
+  });
+
   test('karar geçmişi sinyal şeridi @390px yatay taşma yapmaz', async ({ page }) => {
     await page.setViewportSize(MOBILE_2C_VIEWPORT);
     await page.goto('/gecmis/');
