@@ -6,9 +6,11 @@ const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const index = read('index.html');
+const marketingCopy = read('js/features/i18n/marketing-copy.js');
 assert(read('js/core/router.js').includes('/karar-asistani'), 'Decision assistant route is missing.');
 assert(index.includes('/auto/'), 'Primary conversion path should link to Auto.');
-assert(index.includes('Kararını analiz et'), 'Hero primary CTA should emphasize unified decision entry.');
+assert(index.includes('Ön değerlendirmeye başla'), 'Hero primary CTA should emphasize hub pre-assessment entry.');
+assert(marketingCopy.includes('Tam analize başla'), 'Category card CTA should emphasize full vertical analysis entry.');
 assert(index.includes('Karar altyapısı'), 'Homepage should position decision infrastructure.');
 const premiumPages = read('js/ui/premium-pages.js');
 const uiSource = read('js/ui/ui.js');
