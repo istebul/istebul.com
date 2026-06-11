@@ -225,9 +225,9 @@ export function buildOpsCommandCenter(input = {}) {
       label: 'Internal Dashboards',
       status: 'green',
       highlights: [
-        'Executive KPIs',
+        'Yatırımcı KPI',
         'Observability',
-        'Ops Command Center'
+        'Operasyon Komuta Merkezi'
       ],
       automations: ['admin-panel pages']
     }

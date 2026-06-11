@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildOpsCommandCenter } from '../../js/features/ops/ops-command-center.js';
@@ -32,5 +33,30 @@ describe('ops-command-center', () => {
     assert.ok(snapshot.domains.find((d) => d.id === 'revenue'));
     assert.ok(snapshot.alerts.triggeredCount >= 1);
     assert.equal(snapshot.overallHealth, 'critical');
+  });
+
+  it('internal dashboard highlights stay canonical', () => {
+    const snapshot = buildOpsCommandCenter({
+      analyticsEvents: [],
+      subscriptions: [],
+      autoLeads: [],
+      operationalEvents: [],
+      alertRules: [],
+      windowDays: 30
+    });
+    const dashboards = snapshot.domains.find((d) => d.id === 'dashboards');
+    assert.ok(dashboards);
+    assert.deepEqual(dashboards.highlights, [
+      'Yatırımcı KPI',
+      'Observability',
+      'Operasyon Komuta Merkezi'
+    ]);
+
+    const source = fs.readFileSync(
+      new URL('../../js/features/ops/ops-command-center.js', import.meta.url),
+      'utf8'
+    );
+    assert.doesNotMatch(source, /'Executive KPIs'/);
+    assert.doesNotMatch(source, /'Ops Command Center'/);
   });
 });
