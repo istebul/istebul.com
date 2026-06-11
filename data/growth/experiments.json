@@ -43,7 +43,7 @@
           "weight": 50,
           "copy": {
             "[data-cro-cta-sticky]": "Ön değerlendirmeye başla",
-            "[data-cro-cta-methodology]": "Ücretsiz karar analizi başlat"
+            "[data-cro-cta-methodology]": "Ön değerlendirmeye başla"
           }
         },
         {
@@ -51,7 +51,7 @@
           "weight": 50,
           "copy": {
             "[data-cro-cta-sticky]": "Ön değerlendirmeye başla",
-            "[data-cro-cta-methodology]": "Ücretsiz karar analizi başlat"
+            "[data-cro-cta-methodology]": "Ön değerlendirmeye başla"
           },
           "classes": {
             "[data-cro-cta-sticky]": ["cro-cta-emphasis"]

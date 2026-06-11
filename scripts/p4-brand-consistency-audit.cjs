@@ -26,7 +26,16 @@ const mustContain = [
   ['js/ui/premium-pages.js', 'BRAND_VOICE'],
   ['js/features/monetization/plans.js', 'karar altyapısı'],
   ['js/auto/auto-app.js', 'initBrandConsistency'],
-  ['js/runtime/corporate-ux.js', 'initBrandConsistency']
+  ['js/runtime/corporate-ux.js', 'initBrandConsistency'],
+  ['js/core/brand-voice.js', 'Tam analize başla'],
+  ['index.html', 'Tam analize başla']
+];
+
+const mustNotContain = [
+  ['js/core/brand-voice.js', "primaryAutoLegacy: 'Ücretsiz karar analizi başlat'"],
+  ['js/core/brand-voice.js', "primaryAutoLong: 'Ücretsiz karar analizi başlat'"],
+  ['js/runtime/brand-consistency.js', 'premium_hero'],
+  ['index.html', 'Ücretsiz analiz başlat']
 ];
 
 let failed = false;
@@ -45,6 +54,14 @@ for (const [rel, needle] of mustContain) {
   const hit = content.includes(needle);
   if (neg ? hit : !hit) {
     console.error('ASSERT FAILED:', file, neg ? 'must NOT contain' : 'must contain', needle);
+    failed = true;
+  }
+}
+
+for (const [rel, needle] of mustNotContain) {
+  const content = read(rel);
+  if (content.includes(needle)) {
+    console.error('ASSERT FAILED:', rel, 'must NOT contain', needle);
     failed = true;
   }
 }
