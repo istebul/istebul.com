@@ -741,6 +741,10 @@ export class AssistantUI {
             );
             const resultSummaryHtml = renderDecisionHistoryResultSummaryHtml(item.resultSummary);
             const canCompare = canAddHistoryEntryToComparison(item);
+            const visibleAnswers = answers.slice(0, 6);
+            const answersHtml = visibleAnswers.length
+                ? `<div class="decision-history-answers">${visibleAnswers.map((answer) => `<span>${this.escapeHtml(answer.label)}: ${this.escapeHtml(answer.value)}</span>`).join('')}</div>`
+                : '';
 
             return `
             <article class="decision-history-card ${isAuto ? 'decision-history-card-auto' : ''}">
@@ -757,15 +761,25 @@ export class AssistantUI {
                 </div>
                 ${signalStripHtml}
                     ${resultSummaryHtml}
-                <div class="decision-history-metrics">
-                    <span><strong>${isAuto ? 'Tahmini fiyat' : 'Fiyat'}:</strong> ${this.formatPrice(item.topPick?.price || 0)}</span>
-                    <span><strong>${isAuto ? '12 aylık maliyet' : 'Dönemsel maliyet'}:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)}</span>
-                    <span><strong>${isAuto ? 'Aylık bütçe etkisi' : 'Aylık kredi'}:</strong> ${this.formatPrice(item.topPick?.monthlyPayment || 0)}</span>
-                    <span><strong>Tarih:</strong> ${this.formatDate(item.createdAt)}</span>
-                </div>
-                <div class="decision-history-answers">
-                    ${answers.slice(0, 6).map((answer) => `<span>${this.escapeHtml(answer.label)}: ${this.escapeHtml(answer.value)}</span>`).join('')}
-                </div>
+                <details class="decision-history-detail" data-decision-history-detail>
+                    <summary class="decision-history-detail-summary">
+                        <span class="decision-history-detail-summary-copy">
+                            <span class="decision-history-detail-label" data-decision-history-detail-label-closed>Detayları göster</span>
+                            <span class="decision-history-detail-label" data-decision-history-detail-label-open>Detayları gizle</span>
+                            <span class="decision-history-detail-hint">Maliyet, kayıt tarihi ve yanıtlar</span>
+                        </span>
+                        <span class="decision-history-detail-chevron" aria-hidden="true"></span>
+                    </summary>
+                    <div class="decision-history-detail-panel">
+                        <div class="decision-history-metrics">
+                            <span><strong>${isAuto ? 'Tahmini fiyat' : 'Fiyat'}:</strong> ${this.formatPrice(item.topPick?.price || 0)}</span>
+                            <span><strong>${isAuto ? '12 aylık maliyet' : 'Dönemsel maliyet'}:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)}</span>
+                            <span><strong>${isAuto ? 'Aylık bütçe etkisi' : 'Aylık kredi'}:</strong> ${this.formatPrice(item.topPick?.monthlyPayment || 0)}</span>
+                            <span><strong>Tarih:</strong> ${this.formatDate(item.createdAt)}</span>
+                        </div>
+                        ${answersHtml}
+                    </div>
+                </details>
                 <div class="decision-history-actions">
                     <button type="button" class="btn btn-primary" data-decision-repeat="${this.escapeHtml(item.id)}">
                         <i data-lucide="refresh-cw"></i> Tam analize devam et

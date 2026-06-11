@@ -843,6 +843,14 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(resultSummary).toContainText(/Risk/i);
     await expect(resultSummary).toContainText(/TCO/i);
     await expect(resultSummary).toContainText(/Profil/i);
+
+    const detailPanel = card.locator('[data-decision-history-detail]');
+    const metrics = card.locator('.decision-history-metrics');
+    await expect(detailPanel).toBeVisible();
+    await expect(metrics).not.toBeVisible();
+    await detailPanel.locator('.decision-history-detail-summary').click();
+    await expect(metrics).toBeVisible();
+    await expect(metrics).toContainText(/Tahmini fiyat|Fiyat/i);
   });
 
   test('karar geçmişi legacy entry ile yüklenir ve sinyal şeridi fallback gösterir', async ({ page }) => {
@@ -890,6 +898,14 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
 
     // 2D-1c intentionally surfaces persisted snapshots only; no legacy fallback generation.
     await expect(card.locator('[data-decision-history-result-summary]')).toHaveCount(0);
+
+    const detailPanel = card.locator('[data-decision-history-detail]');
+    await expect(detailPanel).toBeVisible();
+    await expect(signalStrip).toBeVisible();
+    await detailPanel.locator('.decision-history-detail-summary').click();
+    await expect(card.locator('.decision-history-metrics')).toBeVisible();
+    await expect(card.locator('.decision-history-answers')).toContainText(/İl:\s*İstanbul/i);
+    await expect(signalStrip).toBeVisible();
   });
 
   test('karar geçmişi sinyal şeridi @390px yatay taşma yapmaz', async ({ page }) => {
@@ -961,6 +977,15 @@ test.describe('isteBul kritik kullanıcı akışları', () => {
     await expect(resultSummary).toBeVisible({ timeout: 15000 });
     await assertElementNoHorizontalOverflow(page, '.decision-history-card [data-decision-history-result-summary]');
     await assertLocatorWithinViewport(resultSummary, MOBILE_2C_VIEWPORT.width);
+
+    const detailPanel = card.locator('[data-decision-history-detail]');
+    await expect(detailPanel).toBeVisible({ timeout: 15000 });
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card [data-decision-history-detail] .decision-history-detail-summary');
+    await detailPanel.locator('.decision-history-detail-summary').click();
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card .decision-history-detail-panel');
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card .decision-history-metrics');
+    await assertElementNoHorizontalOverflow(page, '.decision-history-card .decision-history-answers');
+
     await assertLocatorWithinViewport(card, MOBILE_2C_VIEWPORT.width);
   });
 
