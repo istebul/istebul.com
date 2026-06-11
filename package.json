@@ -48,6 +48,7 @@
     "lhci": "lhci autorun",
     "smoke:live": "SMOKE_OPTIONAL=1 node scripts/smoke-live.cjs",
     "smoke:live:strict": "node scripts/smoke-live.cjs",
+    "smoke:edge": "node scripts/smoke-edge-functions.cjs",
     "cf:bot-access": "node scripts/apply-cloudflare-bot-access.cjs --apply",
     "cf:bot-access:dry": "node scripts/apply-cloudflare-bot-access.cjs",
     "analyze:bundle": "node scripts/production-build.cjs && node scripts/analyze-bundle.cjs",
