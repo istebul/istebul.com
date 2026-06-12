@@ -2496,7 +2496,6 @@ h2{
     flex-direction:column !important;
     gap:18px !important;
     padding:18px !important;
-    overflow:visible !important;
   }
 
   #auto-results .auto-market-media,
