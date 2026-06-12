@@ -27,3 +27,18 @@ test('auto trust banner CTA wraps on mobile', () => {
     /@media \(max-width: 760px\)\{[\s\S]*?\.auto-results-trust-banner \.btn\{[\s\S]*?width:100%;[\s\S]*?white-space:normal;[\s\S]*?text-align:center;/
   );
 });
+
+test('auto conversion result card mobile block avoids dead overflow visible', () => {
+  const autoCss = readFileSync(join(root, 'css/auto.css'), 'utf8');
+  const mobileResultsCss = readFileSync(join(root, 'css/auto-mobile-results.css'), 'utf8');
+
+  const mobileConversionCardBlock = autoCss.match(
+    /@media \(max-width: 768px\)\{\s*#auto-results \.auto-market-card\.conversion-result-card\{([^}]*)\}/
+  );
+  assert.ok(mobileConversionCardBlock, 'expected mobile conversion result card block in auto.css');
+  assert.doesNotMatch(mobileConversionCardBlock[1], /overflow:\s*visible/);
+  assert.match(
+    mobileResultsCss,
+    /body\.ib-auto #auto-results \.auto-market-card\.conversion-result-card[\s\S]*?overflow:\s*hidden/
+  );
+});
