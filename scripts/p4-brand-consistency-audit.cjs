@@ -28,7 +28,14 @@ const mustContain = [
   ['js/auto/auto-app.js', 'initBrandConsistency'],
   ['js/runtime/corporate-ux.js', 'initBrandConsistency'],
   ['js/core/brand-voice.js', 'Tam analize başla'],
-  ['index.html', 'Tam analize başla']
+  ['index.html', 'Tam analize başla'],
+  ['auto/index.html', 'Aracımı Analiz Et'],
+  ['auto/index.html', 'Analizi başlat']
+];
+
+const LEGACY_AUTO_EXPERIMENT_COPY = [
+  'Ücretsiz maliyet analizi',
+  'Hemen maliyet analizi başlat'
 ];
 
 const mustNotContain = [
@@ -36,7 +43,14 @@ const mustNotContain = [
   ['js/core/brand-voice.js', "primaryAutoLong: 'Ücretsiz karar analizi başlat'"],
   ['js/runtime/brand-consistency.js', 'premium_hero'],
   ['index.html', 'Ücretsiz analiz başlat'],
-  ['auto/index.html', 'Ücretsiz analiz başlat']
+  ['auto/index.html', 'Ücretsiz analiz başlat'],
+  ...LEGACY_AUTO_EXPERIMENT_COPY.flatMap((needle) => [
+    ['data/growth/experiments.json', needle],
+    ['index.html', needle],
+    ['auto/index.html', needle]
+  ]),
+  ['index.html', 'Ücretsiz karar analizi başlat'],
+  ['auto/index.html', 'Ücretsiz karar analizi başlat']
 ];
 
 let failed = false;
@@ -66,6 +80,44 @@ for (const [rel, needle] of mustNotContain) {
     failed = true;
   }
 }
+
+function assertHeroCtaCopyExperiment() {
+  const rel = 'data/growth/experiments.json';
+  const data = JSON.parse(read(rel));
+  const exp = (data.experiments || []).find((e) => e.id === 'hero_cta_copy_q2');
+  if (!exp) {
+    console.error('ASSERT FAILED:', rel, 'missing experiment hero_cta_copy_q2');
+    failed = true;
+    return;
+  }
+  const control = (exp.variants || []).find((v) => v.id === 'control');
+  const urgency = (exp.variants || []).find((v) => v.id === 'urgency');
+  const autoSelector = '[data-auto-hero-cta]';
+  const expected = {
+    control: 'Aracımı Analiz Et',
+    urgency: 'Araç analizine başla'
+  };
+  if (!control?.copy?.[autoSelector] || control.copy[autoSelector] !== expected.control) {
+    console.error(
+      'ASSERT FAILED:',
+      rel,
+      `${autoSelector} control copy must be`,
+      expected.control
+    );
+    failed = true;
+  }
+  if (!urgency?.copy?.[autoSelector] || urgency.copy[autoSelector] !== expected.urgency) {
+    console.error(
+      'ASSERT FAILED:',
+      rel,
+      `${autoSelector} urgency copy must be`,
+      expected.urgency
+    );
+    failed = true;
+  }
+}
+
+assertHeroCtaCopyExperiment();
 
 if (failed) process.exit(1);
 console.log('P4.6 brand consistency audit passed.');
