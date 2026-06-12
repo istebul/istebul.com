@@ -227,13 +227,15 @@
 }
 
 @media (max-width: 420px) {
-  .ib-results-economic--compact .ib-results-economic__grid {
-    grid-template-columns: repeat(3, minmax(72px, 1fr));
-    gap: 0.28rem;
-  }
-
   .ib-results-economic--compact .ib-results-economic__value {
     font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ib-results-economic--compact .ib-results-economic__grid {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
   }
 }
 

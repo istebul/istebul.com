@@ -954,6 +954,11 @@ body.ib-auto #auto-results .auto-v2-root ~ .auto-decision-dashboard {
     text-align: left;
     margin-left: 0;
   }
+
+  .auto-v2-evds-mount .ib-home-economic__grid {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
 }
 
 .auto-v2-factors {
