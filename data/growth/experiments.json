@@ -14,7 +14,7 @@
           "weight": 50,
           "copy": {
             "[data-hero-cta-primary]": "Ön değerlendirmeye başla",
-            "[data-auto-hero-cta]": "Ücretsiz maliyet analizi"
+            "[data-auto-hero-cta]": "Aracımı Analiz Et"
           }
         },
         {
@@ -22,7 +22,7 @@
           "weight": 50,
           "copy": {
             "[data-hero-cta-primary]": "2 dk'da ön değerlendirme — ücretsiz",
-            "[data-auto-hero-cta]": "Hemen maliyet analizi başlat"
+            "[data-auto-hero-cta]": "Araç analizine başla"
           },
           "classes": {
             "[data-hero-cta-primary]": ["cro-hero-urgency"]
