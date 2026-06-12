@@ -37,7 +37,16 @@ html.ib-ds-v4.ib-premium-v7 {
 }
 
 .ib-home-categories .category-card.is-coming-soon {
-  opacity: 0.62;
+  opacity: 1;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  background: rgba(248, 250, 252, 0.92);
+  box-shadow: none;
+}
+
+.category-card.is-coming-soon {
+  opacity: 1;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  background: rgba(248, 250, 252, 0.92);
 }
 
 .ib-how-steps-premium h3 {
