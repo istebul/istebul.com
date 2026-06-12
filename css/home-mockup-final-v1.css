@@ -152,6 +152,16 @@ html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup {
   border-top: 1px solid rgba(148, 163, 184, 0.1);
 }
 
+/* Dark band header — override light-section title colors from product-cards layers */
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .section-kicker {
+  color: #60a5fa;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .section-header.ib-section-intro h2,
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup #home-use-cases-title {
+  color: #f8fafc !important;
+}
+
 html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell {
   display: flex;
   flex-direction: column;
