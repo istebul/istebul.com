@@ -3597,6 +3597,8 @@ html body a.auto-floating-cta{
 
   .finance-bank-row .btn{
     width:100%;
+    white-space:normal;
+    text-align:center;
   }
 }
 
