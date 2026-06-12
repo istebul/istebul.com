@@ -241,9 +241,9 @@ html.ib-ds-v4.ib-premium-v7 .ib-cat-mockup.is-soon .ib-cat-mockup__overlay {
 }
 
 html.ib-ds-v4.ib-premium-v7 .ib-cat-mockup.is-soon {
-  opacity: 0.72;
-  pointer-events: none;
-  cursor: default;
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 html.ib-ds-v4.ib-premium-v7 .ib-cat-mockup__body {
