@@ -19,3 +19,11 @@ test('auto compare matrix inner scroll guard remains', () => {
   assert.match(css, /\.ib-auto-compare-matrix-scroll/);
   assert.match(css, /overflow-x:\s*auto/);
 });
+
+test('auto trust banner CTA wraps on mobile', () => {
+  const css = readFileSync(join(root, 'css/auto.css'), 'utf8');
+  assert.match(
+    css,
+    /@media \(max-width: 760px\)\{[\s\S]*?\.auto-results-trust-banner \.btn\{[\s\S]*?width:100%;[\s\S]*?white-space:normal;[\s\S]*?text-align:center;/
+  );
+});
