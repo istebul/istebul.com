@@ -47,6 +47,7 @@
 .ib-decision-journey-step {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   padding: 0.28rem 0.65rem;
   border-radius: 999px;
   border: 1px solid transparent;
