@@ -382,6 +382,7 @@ body.finans-page #finans-results .finansman-v2-actions {
 
 body.finans-page #finans-results .finansman-v2-actions .btn {
   width: 100%;
+  min-height: 44px;
   justify-content: center;
 }
 
