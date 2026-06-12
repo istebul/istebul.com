@@ -30,7 +30,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  min-height: 36px;
+  min-height: 44px;
   padding: 0.35rem 0.65rem;
   border: 1px solid var(--vacation-border, #e5e7eb);
   border-radius: 10px;
@@ -83,7 +83,7 @@
 .ib-vertical-header .ib-vertical-nav-more-menu a {
   display: flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0.45rem 0.65rem;
   border-radius: 8px;
   color: #334155;
