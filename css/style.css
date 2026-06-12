@@ -2256,6 +2256,7 @@ img {
 
 @media (max-width: 480px) {
     .decision-history-signal-strip {
+        grid-template-columns: 1fr;
         gap: 0.5rem;
     }
 
