@@ -301,6 +301,13 @@ body.housing-page #housing-results .konut-v2-rec-level {
   color: #64748b;
 }
 
+@media (max-width: 520px) {
+  .konut-v2-evds-mount .ib-home-economic__grid {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+}
+
 .konut-v2-grid {
   display: grid;
   gap: 0.5rem;
