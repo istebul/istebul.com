@@ -59,7 +59,7 @@ import {
   renderDecisionCategoryCardsGridHtml,
   syncDecisionCardsFlagToDocument
 } from '../features/decision-cards/decision-category-card-renderer.js';
-import { renderVehicleImageHtml, resolveVehicleImageUrl } from './vehicle-image.js';
+import { renderVehicleImageHtml, buildVehicleImageUiPayload } from './vehicle-image.js';
 import { storeCheckoutIntentPayload } from '../core/checkout-intent.js';
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
@@ -3705,6 +3705,8 @@ function addAutoComparisonFallback(vehicle){
 
   const score = Number(vehicle.score || 0);
 
+  const uiImage = buildVehicleImageUiPayload(vehicle);
+
   writeAutoStorage(key, [...items, {
     id: `auto-compare-${vehicle.name}`,
     signature,
@@ -3712,7 +3714,8 @@ function addAutoComparisonFallback(vehicle){
     categoryName: 'Araç Karşılaştırma',
     sourceType: 'isteBul Auto',
     title: vehicle.name,
-    image: resolveVehicleImageUrl(vehicle),
+    image: uiImage.imageUrl,
+    imageTrust: uiImage.imageTrust,
     score,
     confidenceLabel: vehicle.confidenceMeta?.label || '',
     riskLevel: vehicle.confidenceMeta?.label || (score >= 85 ? 'Dengeli profil' : 'Doğrulama önerilir'),

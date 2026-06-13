@@ -22,7 +22,8 @@ import {
   resolveVehicleDisplayImage,
   resolveVehicleImageFallback,
   resolveVehicleImageTrust,
-  vehicleImageMatchesName
+  vehicleImageMatchesName,
+  isApprovedCatalogImage
 } from './vehicle-image-resolver.js';
 
 export {
@@ -71,6 +72,82 @@ function fallbackDataAttributes(chain) {
 
 function imageSlugFromUrl(url) {
   return String(url || '').split('?')[0].trim();
+}
+
+/**
+ * True when URL points to illustrative Auto catalog SVG (not premium placeholder).
+ * @param {string} url
+ */
+function isIllustrativeAutoCatalogImageUrl(url) {
+  const slug = imageSlugFromUrl(url);
+  if (!slug || slug === imageSlugFromUrl(PREMIUM_VEHICLE_PLACEHOLDER)) return false;
+  return isApprovedCatalogImage(url) && slug.endsWith('.svg');
+}
+
+/**
+ * UI-safe image payload for Auto surfaces (placeholder-first when trust is not exact).
+ * @param {object|null|undefined} vehicle
+ */
+export function buildVehicleImageUiPayload(vehicle) {
+  if (!vehicle || typeof vehicle !== 'object') {
+    const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+    return {
+      imageUrl: placeholderUrl,
+      imageTrust: {
+        matchLevel: 'no_match',
+        sourceTrust: 'placeholder',
+        showRealImage: false,
+        reason: 'no_verified_image_source'
+      }
+    };
+  }
+
+  const trust = resolveVehicleImageTrust(vehicle);
+  return {
+    imageUrl: trust.showRealImage ? trust.url : assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK),
+    imageTrust: {
+      matchLevel: trust.matchLevel,
+      sourceTrust: trust.sourceTrust,
+      showRealImage: trust.showRealImage,
+      reason: trust.reason
+    }
+  };
+}
+
+/** UI-safe image URL — never returns catalog SVG for partial/no_match trust. */
+export function resolveVehicleImageUrlForUi(vehicle) {
+  return buildVehicleImageUiPayload(vehicle).imageUrl;
+}
+
+/**
+ * Resolve compare-card image for Auto-sourced items (legacy catalog URLs sanitized).
+ * @param {object} item
+ * @returns {{ imageUrl: string, imageAlt: string }|null}
+ */
+export function resolveAutoComparisonImageItem(item = {}) {
+  const title = String(item.title || 'Seçenek');
+  const label = VEHICLE_IMAGE_UNVERIFIED_LABEL;
+  const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+  const rawImage = String(item.image || '');
+
+  if (item.imageTrust?.showRealImage === true && rawImage) {
+    return { imageUrl: rawImage, imageAlt: title };
+  }
+
+  if (item.imageTrust && item.imageTrust.showRealImage === false) {
+    return {
+      imageUrl: rawImage || placeholderUrl,
+      imageAlt: label
+    };
+  }
+
+  if (rawImage && isIllustrativeAutoCatalogImageUrl(rawImage)) {
+    return { imageUrl: placeholderUrl, imageAlt: label };
+  }
+
+  if (!rawImage) return null;
+
+  return { imageUrl: rawImage, imageAlt: title };
 }
 
 /**
@@ -316,30 +393,13 @@ export function reportVehicleImageLoading(root) {
  */
 export function toRecommendationVehicle(vehicle) {
   if (!vehicle || typeof vehicle !== 'object') {
-    const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
-    return {
-      name: '',
-      image_url: null,
-      imageUrl: placeholderUrl,
-      imageTrust: {
-        matchLevel: 'no_match',
-        sourceTrust: 'placeholder',
-        showRealImage: false,
-        reason: 'no_verified_image_source'
-      }
-    };
+    const payload = buildVehicleImageUiPayload(null);
+    return { name: '', image_url: null, ...payload };
   }
 
-  const trust = resolveVehicleImageTrust(vehicle);
   return {
     ...vehicle,
-    imageUrl: trust.showRealImage ? trust.url : assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK),
-    imageTrust: {
-      matchLevel: trust.matchLevel,
-      sourceTrust: trust.sourceTrust,
-      showRealImage: trust.showRealImage,
-      reason: trust.reason
-    }
+    ...buildVehicleImageUiPayload(vehicle)
   };
 }
 
