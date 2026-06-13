@@ -40,6 +40,13 @@ const TRIM_STOPWORDS = new Set([
   'x', 'e', 'i', 'ev', 'phev', 'stepway', 'journey'
 ]);
 
+/** Trim tokens safe to infer from trailing name token (conservative; no fuel/body/engine). */
+const TRIM_IDENTITY_ALLOWLIST = new Set([
+  'allure', 'elite', 'premium', 'style', 'icon', 'touch', 'techno', 'eco', 'max',
+  'easy', 'journey', 'prestige', 'design', 'comfort', 'life', 'business', 'elegance',
+  'edition', 'fr', 'gt', 'gs', 'stepway', 'active', 'feel'
+]);
+
 const BRAND_ALIASES = {
   volkswagen: ['volkswagen', 'vw'],
   'mercedes-benz': ['mercedes', 'benz', 'mercedes-benz'],
@@ -217,6 +224,168 @@ export function extractVehicleImageTokens(name) {
   const modelTokens = parts.slice(1).filter((token) => !TRIM_STOPWORDS.has(token) && !/^\d/.test(token));
 
   return { brand, modelTokens };
+}
+
+/**
+ * Parse model year from leading YYYY in display name.
+ * @param {string} name
+ * @returns {number|null}
+ */
+function parseYearFromDisplayName(name) {
+  const match = String(name || '').trim().match(/^(\d{4})\b/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  if (!Number.isFinite(year) || year < 1990 || year > 2099) return null;
+  return year;
+}
+
+/**
+ * Parse trim from trailing name token when it matches conservative allowlist.
+ * @param {string} name
+ * @returns {string|null}
+ */
+function parseTrimTokenFromDisplayName(name) {
+  const parts = String(name || '')
+    .trim()
+    .replace(/^\d{4}\s+/, '')
+    .split(/\s+/)
+    .filter((token) => token.length > 1);
+
+  if (parts.length < 3) return null;
+
+  const lastToken = normalizeVehicleSlug(parts[parts.length - 1]);
+  if (!TRIM_IDENTITY_ALLOWLIST.has(lastToken)) return null;
+
+  return parts[parts.length - 1];
+}
+
+/**
+ * Parse model tokens from display name (includes numeric model codes like 308).
+ * @param {string} name
+ * @param {string|null} brand
+ * @param {string|null} trim
+ * @returns {string|null}
+ */
+function parseModelFromDisplayName(name, brand, trim) {
+  const parts = String(name || '')
+    .trim()
+    .replace(/^\d{4}\s+/, '')
+    .split(/\s+/)
+    .filter((token) => token.length > 0);
+
+  if (parts.length < 2) return null;
+
+  const brandSlug = normalizeVehicleSlug(brand || parts[0]);
+  let start = normalizeVehicleSlug(parts[0]) === brandSlug ? 1 : 0;
+  let end = parts.length;
+
+  if (trim && parts[end - 1] === trim) end -= 1;
+  if (end <= start) return null;
+
+  const modelParts = parts.slice(start, end).filter((token) => !TRIM_STOPWORDS.has(token.toLowerCase()));
+  if (!modelParts.length) return null;
+
+  return modelParts.join(' ');
+}
+
+/**
+ * Structured vehicle identity for future strict exact_match checks (Faz 3F-1E).
+ * Conservative: missing or ambiguous fields remain null — no guess-based upgrades.
+ * @param {object|null|undefined} vehicle
+ * @returns {{
+ *   brand: string|null,
+ *   model: string|null,
+ *   year: number|null,
+ *   trim: string|null,
+ *   packageName: string|null,
+ *   name: string,
+ *   hasBrand: boolean,
+ *   hasModel: boolean,
+ *   hasYear: boolean,
+ *   hasTrim: boolean,
+ *   hasPackage: boolean
+ * }}
+ */
+export function normalizeVehicleImageIdentity(vehicle) {
+  const empty = {
+    brand: null,
+    model: null,
+    year: null,
+    trim: null,
+    packageName: null,
+    name: '',
+    hasBrand: false,
+    hasModel: false,
+    hasYear: false,
+    hasTrim: false,
+    hasPackage: false
+  };
+
+  if (!vehicle || typeof vehicle !== 'object') return empty;
+
+  const name = String(vehicle.name || vehicle.title || '').trim();
+  const { brand: parsedBrand, modelTokens } = extractVehicleImageTokens(name);
+
+  const brandValue = String(vehicle.brand || parsedBrand || '').trim();
+  const brand = brandValue || null;
+
+  let year = null;
+  const yearField = vehicle.model_year ?? vehicle.year;
+  if (yearField != null && Number.isFinite(Number(yearField))) {
+    const parsed = Number(yearField);
+    if (parsed >= 1990 && parsed <= 2099) year = parsed;
+  }
+  if (year == null) year = parseYearFromDisplayName(name);
+
+  const explicitTrim = String(vehicle.trim || '').trim();
+  const trim = explicitTrim || parseTrimTokenFromDisplayName(name) || null;
+
+  const explicitModel = String(vehicle.model || '').trim();
+  const model = explicitModel
+    || parseModelFromDisplayName(name, brand, trim)
+    || (modelTokens.length ? modelTokens.join(' ') : null);
+
+  const explicitPackage = String(vehicle.package ?? vehicle.packageName ?? '').trim();
+  const packageName = explicitPackage || null;
+
+  return {
+    brand,
+    model,
+    year,
+    trim,
+    packageName,
+    name,
+    hasBrand: Boolean(brand),
+    hasModel: Boolean(model),
+    hasYear: year != null,
+    hasTrim: Boolean(trim),
+    hasPackage: Boolean(packageName)
+  };
+}
+
+/**
+ * Additive trust checks metadata (does not alter matchLevel/showRealImage).
+ * @param {ReturnType<typeof normalizeVehicleImageIdentity>} identity
+ * @param {{ matchLevel?: VehicleImageMatchLevel, sourceTrust?: VehicleImageSourceTrust, showRealImage?: boolean }} classification
+ */
+function buildVehicleImageTrustChecks(identity, classification = {}) {
+  return {
+    hasBrand: identity.hasBrand,
+    hasModel: identity.hasModel,
+    hasYear: identity.hasYear,
+    hasTrim: identity.hasTrim,
+    hasPackage: identity.hasPackage,
+    matchLevel: classification.matchLevel ?? 'no_match',
+    sourceTrust: classification.sourceTrust ?? 'placeholder',
+    showRealImage: classification.showRealImage ?? false,
+    strictExactMatchReady:
+      identity.hasBrand &&
+      identity.hasModel &&
+      identity.hasYear &&
+      identity.hasTrim &&
+      classification.sourceTrust === 'verified_external' &&
+      classification.showRealImage === true
+  };
 }
 
 /**
@@ -520,17 +689,33 @@ export function resolveVehicleDisplayImage(vehicle, options = {}) {
  *   matchLevel: VehicleImageMatchLevel,
  *   sourceTrust: VehicleImageSourceTrust,
  *   showRealImage: boolean,
- *   reason: string
+ *   reason: string,
+ *   identity: ReturnType<typeof normalizeVehicleImageIdentity>,
+ *   checks: ReturnType<typeof buildVehicleImageTrustChecks>
  * }}
  */
 export function resolveVehicleImageTrust(vehicle, options = {}) {
+  const identity = normalizeVehicleImageIdentity(vehicle);
+
   if (!vehicle || typeof vehicle !== 'object') {
     const url = assertVehicleImageUrl(PREMIUM_VEHICLE_PLACEHOLDER);
-    return { url, ...classifyVehicleImageTrust('placeholder', url) };
+    const classification = classifyVehicleImageTrust('placeholder', url);
+    return {
+      url,
+      ...classification,
+      identity,
+      checks: buildVehicleImageTrustChecks(identity, classification)
+    };
   }
 
   const selected = selectVehicleDisplayImageEntry(vehicle, options);
-  return { url: selected.url, ...classifyVehicleImageTrust(selected.level, selected.url) };
+  const classification = classifyVehicleImageTrust(selected.level, selected.url);
+  return {
+    url: selected.url,
+    ...classification,
+    identity,
+    checks: buildVehicleImageTrustChecks(identity, classification)
+  };
 }
 
 /** Reset module-level slug registry for a new results render. */
