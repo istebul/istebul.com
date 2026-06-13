@@ -768,6 +768,17 @@ a.nav-item{text-decoration:none;color:inherit;}
           <p class="text-muted-sm" id="live-data-admin-hint" role="status">Plan: docs/LIVE_DATA_30DAY_CHECKLIST.md</p>
         </div>
         <div class="card">
+          <div class="card-title">AI İlanlar — Public katalog</div>
+          <p class="text-muted-sm">Ana site switch’idir. Açık olsa bile <code>/secenekler</code> sayfasında ilan görmek için ilanların durumu <strong>Yayında (published)</strong> olmalıdır; yalnızca onaylı (approved) kayıtlar public görünürlük için yeterli değildir. Production’da ayrıca edge env gate’leri açık olmalıdır: <code>AI_LISTINGS_SUPABASE_ENABLED</code> ve <code>AI_LISTINGS_PUBLIC_PUBLISH_ENABLED</code>.</p>
+          <div class="form-group">
+            <label class="toggle">
+              <input type="checkbox" id="s-ai_listings_public_enabled" />
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span class="text-muted-sm">Public AI ilan kataloğu (/secenekler)</span>
+            </label>
+          </div>
+        </div>
+        <div class="card">
           <div class="card-title">Sistem</div>
           <div class="form-group">
             <label class="toggle">
