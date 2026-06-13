@@ -141,7 +141,8 @@ import {
 import { buildExecutiveDecisionShellHtml } from '../ai-purchase-decision/executive-decision-card-builder.js';
 import { buildExplainabilityShellHtml } from '../ai-decision-explainability/explainability-card-builder.js';
 import { buildExecutiveReportShellHtml } from '../ai-executive-decision-report/executive-report-card-builder.js';
-import { buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-builder.js';
+import { buildCompareInput, runCompareEngine } from '../ai-compare-intelligence/index.js';
+import { buildComparePanelHtml, buildCompareShellHtml } from '../ai-compare-intelligence/compare-card-builder.js';
 import { formatErrorFallbackLabel } from './ai-listings-admin-labels.js';
 
 /** @type {Record<string, unknown>|null} */
@@ -1114,6 +1115,20 @@ function openListingQualityPanel(root, recordId) {
   });
 }
 
+/**
+ * @param {HTMLInputElement} input
+ * @returns {string}
+ */
+function resolveCompareSelectionId(input) {
+  const attrId = String(input.getAttribute('data-rec-compare-id') || input.dataset.recCompareId || '').trim();
+  if (attrId) return attrId;
+
+  const value = String(input.value ?? '').trim();
+  if (value && value !== 'on') return value;
+
+  return '';
+}
+
 function bindRecommendationsDashboardEvents(root) {
   root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
     recommendationProfile = readRecommendationProfileFromForm(root);
@@ -1123,8 +1138,64 @@ function bindRecommendationsDashboardEvents(root) {
     closeDecisionReportPanel(root);
     closeOwnershipCostPanel(root);
     closeListingQualityPanel(root);
+    closeComparePanel(root);
     renderRecommendationsView();
   });
+
+  const compareToggle = root.querySelector('[data-cmp-action="toggle-mode"]');
+  if (compareToggle) {
+    /** @type {HTMLInputElement} */ (compareToggle).checked = compareModeEnabled;
+    compareToggle.addEventListener('change', () => {
+      compareModeEnabled = /** @type {HTMLInputElement} */ (compareToggle).checked;
+      if (!compareModeEnabled) compareSelectedIds = [];
+      renderRecommendationsView();
+    });
+  }
+
+  root.querySelectorAll('[data-rec-compare-id]').forEach((checkbox) => {
+    checkbox.addEventListener('change', (event) => {
+      event.stopPropagation();
+      const input = /** @type {HTMLInputElement} */ (checkbox);
+      const id = resolveCompareSelectionId(input);
+      if (!id) return;
+
+      if (input.checked) {
+        if (compareSelectedIds.includes(id)) return;
+        if (compareSelectedIds.length >= 3) {
+          input.checked = false;
+          return;
+        }
+        compareSelectedIds = [...compareSelectedIds, id];
+      } else {
+        compareSelectedIds = compareSelectedIds.filter((item) => item !== id);
+      }
+      renderRecommendationsView();
+    });
+  });
+
+  root.querySelector('[data-cmp-action="clear"]')?.addEventListener('click', () => {
+    compareSelectedIds = [];
+    renderRecommendationsView();
+  });
+
+  root.querySelector('[data-cmp-action="compare"]')?.addEventListener('click', () => {
+    if (compareSelectedIds.length < 2) {
+      setStatus('Karşılaştırma için en az 2 öneri seçin.', 'info');
+      return;
+    }
+    try {
+      openComparePanel(root, { title: getDrawerTitleTr('compare') });
+    } catch (error) {
+      console.error('[ai-listings-admin] compare panel failed:', error);
+      setStatus(getModuleUnavailableMessageTr('compare'), 'error');
+    }
+  });
+
+  const clearBtn = root.querySelector('[data-cmp-action="clear"]');
+  if (clearBtn) {
+    if (compareSelectedIds.length > 0) clearBtn.removeAttribute('hidden');
+    else clearBtn.setAttribute('hidden', '');
+  }
 
   root.querySelectorAll('[data-rec-coach-id]').forEach((btn) => {
     btn.addEventListener('click', (event) => {
@@ -1183,7 +1254,13 @@ function bindRecommendationsDashboardEvents(root) {
 
   root.querySelectorAll('[data-rec-record-id]').forEach((card) => {
     card.addEventListener('click', (event) => {
-      if (/** @type {HTMLElement} */ (event.target).closest('[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-quality-id]')) return;
+      if (
+        /** @type {HTMLElement} */ (event.target).closest(
+          '[data-rec-coach-id], [data-rec-sim-id], [data-rec-report-id], [data-rec-cost-id], [data-rec-quality-id], [data-rec-compare-id], .ai-rec-card__compare'
+        )
+      ) {
+        return;
+      }
       const id = card.getAttribute('data-rec-record-id');
       const listing = cachedListings.find((item) => String(item.id) === id);
       if (listing) {
@@ -1411,6 +1488,58 @@ function bindWorkspaceEvents(root) {
       }
     });
   });
+}
+
+function closeComparePanel(root) {
+  const host = root.querySelector('#ai-cmp-panel-host') ?? document.querySelector('#ai-cmp-panel-host');
+  if (host) {
+    host.hidden = true;
+    host.innerHTML = '';
+  }
+  root.querySelector('[data-cmp-backdrop]')?.setAttribute('hidden', '');
+  document.body.classList.remove('ai-listings-admin--cmp-open');
+}
+
+/**
+ * @param {HTMLElement} root
+ * @param {{ title?: string, result?: Record<string, unknown>|null }} [options]
+ */
+function openComparePanel(root, options = {}) {
+  const host = root.querySelector('#ai-cmp-panel-host') ?? document.querySelector('#ai-cmp-panel-host');
+  if (!host) return;
+
+  const title = options.title ?? getDrawerTitleTr('compare');
+  let result = options.result ?? null;
+
+  if (result == null && compareSelectedIds.length >= 2) {
+    const profile = cachedRecommendationResult?.profile ?? recommendationProfile;
+    const recommendations = compareSelectedIds
+      .map((id) => getRecommendationById(String(id)))
+      .filter((item) => item?.id);
+    if (recommendations.length >= 2) {
+      result = runCompareEngine(buildCompareInput(recommendations, profile), { skipCache: false });
+    }
+  }
+
+  host.innerHTML = buildComparePanelHtml(result, { title });
+  host.hidden = false;
+  document.body.classList.add('ai-listings-admin--cmp-open');
+  bindComparePanelClose(host, root);
+}
+
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} root
+ */
+function bindComparePanelClose(host, root) {
+  const close = () => {
+    closeComparePanel(root);
+    if (isDrawerOpen(aiDrawerState) && aiDrawerState.activeDrawerType === 'compare') {
+      closeAiListingsDrawer(root);
+    }
+  };
+  host.querySelector('[data-cmp-panel-action="close"]')?.addEventListener('click', close);
+  host.querySelector('[data-cmp-backdrop]')?.addEventListener('click', close);
 }
 
 function closeScenarioPanel(root) {
@@ -2143,9 +2272,20 @@ async function loadListings() {
   );
 }
 
+/**
+ * @returns {HTMLElement|null}
+ */
+function resolveAiListingsAdminMountRoot() {
+  return (
+    document.getElementById('ai-listings-admin-root') ??
+    document.getElementById('ai-listings-admin') ??
+    document.querySelector('[data-ai-listings-admin-root]')
+  );
+}
+
 function mountGlobalPanelHosts() {
-  const main = $('ai-listings-admin');
-  if (!main || main.querySelector('#ai-ss-panel-host')) return;
+  const main = resolveAiListingsAdminMountRoot();
+  if (!main || main.querySelector('#ai-cmp-panel-host')) return;
   const wrap = document.createElement('div');
   wrap.innerHTML = [
     buildExecutiveDecisionShellHtml(),

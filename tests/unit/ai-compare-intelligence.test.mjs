@@ -652,10 +652,10 @@ test('guard: all client sub-modules exist', () => {
   }
 });
 
-test('dashboard html includes compare panel shell', () => {
+test('dashboard html includes compare toolbar in generated view', () => {
   const { html } = buildRecommendationsDashboardHtml(listings, profile, { generated: true, compareMode: true });
-  assert.match(html, /ai-cmp-panel-host/);
   assert.match(html, /ai-rec-compare-bar/);
+  assert.match(html, /data-cmp-action="toggle-mode"/);
 });
 
 test('buildCompareInput preserves recommendations', () => {
@@ -812,6 +812,118 @@ test('recommendation card hides compare checkbox without compare mode', () => {
 test('dashboard compare mode adds CSS class', () => {
   const { html } = buildRecommendationsDashboardHtml(listings, profile, { generated: true, compareMode: true });
   assert.match(html, /ai-rec-dashboard--compare-mode/);
+});
+
+// --- ADMIN COMPARE TOOLBAR WIRING ---
+
+const adminJsPath = path.join(process.cwd(), 'js/admin/ai-listings-admin.js');
+
+test('admin.js defines compare panel open/close helpers', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /function openComparePanel/);
+  assert.match(src, /function closeComparePanel/);
+  assert.match(src, /buildComparePanelHtml/);
+  assert.match(src, /runCompareEngine/);
+});
+
+test('admin.js binds recommendations compare toolbar actions', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /\[data-cmp-action="toggle-mode"\]/);
+  assert.match(src, /\[data-rec-compare-id\]/);
+  assert.match(src, /\[data-cmp-action="clear"\]/);
+  assert.match(src, /\[data-cmp-action="compare"\]/);
+  assert.match(src, /compareModeEnabled/);
+  assert.match(src, /compareSelectedIds/);
+});
+
+test('admin.js compare panel uses global host and close handlers', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /#ai-cmp-panel-host/);
+  assert.match(src, /\[data-cmp-panel-action="close"\]/);
+  assert.match(src, /\[data-cmp-backdrop\]/);
+  assert.match(src, /ai-listings-admin--cmp-open/);
+  assert.match(src, /closeComparePanel\(root\)/);
+});
+
+test('admin.js mounts global panel hosts on ai-listings-admin-root', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /function mountGlobalPanelHosts/);
+  assert.match(src, /ai-listings-admin-root/);
+  assert.match(src, /#ai-cmp-panel-host/);
+  assert.doesNotMatch(src, /\$\('ai-listings-admin'\)/);
+});
+
+test('admin.js workspace compare drawer calls openComparePanel', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /type === 'compare'/);
+  assert.match(src, /openComparePanel\(root/);
+});
+
+test('admin.js resolves compare checkbox id before input.value', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /function resolveCompareSelectionId/);
+  assert.match(src, /getAttribute\('data-rec-compare-id'\)/);
+  assert.doesNotMatch(src, /input\.value \|\| input\.getAttribute\('data-rec-compare-id'\)/);
+  assert.match(src, /value !== 'on'/);
+});
+
+/**
+ * Mirrors js/admin/ai-listings-admin.js resolveCompareSelectionId for runtime-style checks.
+ * @param {{ value?: string, getAttribute?: (name: string) => string|null, dataset?: { recCompareId?: string } }} input
+ * @returns {string}
+ */
+function resolveCompareSelectionIdForTest(input) {
+  const attrId = String(input.getAttribute?.('data-rec-compare-id') || input.dataset?.recCompareId || '').trim();
+  if (attrId) return attrId;
+
+  const value = String(input.value ?? '').trim();
+  if (value && value !== 'on') return value;
+
+  return '';
+}
+
+test('compare selection id prefers data-rec-compare-id over checkbox default value', () => {
+  assert.equal(
+    resolveCompareSelectionIdForTest({
+      value: 'on',
+      getAttribute(name) {
+        return name === 'data-rec-compare-id' ? '11111111-1111-1111-1111-111111111111' : null;
+      },
+      dataset: { recCompareId: '11111111-1111-1111-1111-111111111111' }
+    }),
+    '11111111-1111-1111-1111-111111111111'
+  );
+});
+
+test('compare selection id ignores default checkbox value "on"', () => {
+  assert.equal(
+    resolveCompareSelectionIdForTest({
+      value: 'on',
+      getAttribute() {
+        return null;
+      },
+      dataset: {}
+    }),
+    ''
+  );
+});
+
+test('compare selection id returns distinct ids for two default-value checkboxes', () => {
+  const ids = ['11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222'].map(
+    (id) =>
+      resolveCompareSelectionIdForTest({
+        value: 'on',
+        getAttribute(name) {
+          return name === 'data-rec-compare-id' ? id : null;
+        },
+        dataset: { recCompareId: id }
+      })
+  );
+  assert.deepEqual(ids, [
+    '11111111-1111-1111-1111-111111111111',
+    '22222222-2222-2222-2222-222222222222'
+  ]);
+  assert.notEqual(ids[0], ids[1]);
 });
 
 test('purchaseDecisionComparison items have decisionLabel', () => {
