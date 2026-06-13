@@ -15,7 +15,7 @@ const UA =
   'Mozilla/5.0 (compatible; isteBul-production-smoke/1.0; +https://www.istebul.com)';
 
 const liveRoutes = [
-  { path: '/', must: ['data-ib-route', 'Karar analizini başlat'], status: 200 },
+  { path: '/', must: ['data-ib-route', 'Ön değerlendirmeye başla'], status: 200 },
   { path: '/auto/', must: ['auto-wizard', 'TCO'], status: 200 },
   { path: '/konut/', must: ['Konut Karar', 'housing-page', 'housing-flow'], status: 200, optional: true },
   { path: '/finans/', must: ['Finansman', 'finans-page', 'finans-flow'], status: 200, optional: true },
