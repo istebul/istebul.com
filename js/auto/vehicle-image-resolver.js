@@ -382,6 +382,97 @@ function resolveAtLevel(vehicle, level, options = {}) {
 
 const RESOLUTION_LEVELS = ['verified-url', 'exact', 'brand-model', 'brand', 'segment', 'generic', 'placeholder'];
 
+/** @typedef {'exact_match' | 'partial_match' | 'no_match'} VehicleImageMatchLevel */
+/** @typedef {'verified_external' | 'catalog_svg' | 'placeholder'} VehicleImageSourceTrust */
+
+/** @type {Set<string>} */
+const ILLUSTRATIVE_CATALOG_LEVELS = new Set(['exact', 'brand-model', 'brand', 'segment', 'generic']);
+
+/**
+ * @param {string} url
+ */
+function isPremiumPlaceholderPath(url) {
+  return imageSlugFromUrl(url) === imageSlugFromUrl(PREMIUM_VEHICLE_PLACEHOLDER);
+}
+
+/**
+ * Classify trust metadata for a resolved image level + URL.
+ * Catalog SVG assets are never treated as real vehicle photos.
+ * @param {string} level
+ * @param {string} url
+ * @returns {{ matchLevel: VehicleImageMatchLevel, sourceTrust: VehicleImageSourceTrust, showRealImage: boolean, reason: string }}
+ */
+function classifyVehicleImageTrust(level, url) {
+  if (level === 'verified-url') {
+    return {
+      matchLevel: 'exact_match',
+      sourceTrust: 'verified_external',
+      showRealImage: true,
+      reason: 'verified_external_url_passes_name_guard'
+    };
+  }
+
+  if (level === 'placeholder') {
+    return {
+      matchLevel: 'no_match',
+      sourceTrust: 'placeholder',
+      showRealImage: false,
+      reason: 'no_verified_image_source'
+    };
+  }
+
+  if (ILLUSTRATIVE_CATALOG_LEVELS.has(level)) {
+    const sourceTrust = isPremiumPlaceholderPath(url) ? 'placeholder' : 'catalog_svg';
+    return {
+      matchLevel: 'partial_match',
+      sourceTrust,
+      showRealImage: false,
+      reason: sourceTrust === 'placeholder'
+        ? `illustrative_${level}_placeholder`
+        : `illustrative_${level}_catalog_svg`
+    };
+  }
+
+  return {
+    matchLevel: 'no_match',
+    sourceTrust: 'placeholder',
+    showRealImage: false,
+    reason: 'unclassified_fallback'
+  };
+}
+
+/**
+ * Select display URL + resolution level (shared selection logic with resolveVehicleDisplayImage).
+ * @param {object} vehicle
+ * @param {{ usedSlugs?: Set<string>, registry?: Set<string> }} [options]
+ * @returns {{ level: string, url: string }}
+ */
+function selectVehicleDisplayImageEntry(vehicle, options = {}) {
+  const usedSlugs = options.usedSlugs || options.registry || renderSlugRegistry || null;
+  const chain = buildVehicleImageFallbackChain(vehicle, options);
+
+  for (const entry of chain) {
+    const slug = imageSlugFromUrl(entry.url);
+    if (!usedSlugs || !usedSlugs.has(slug)) {
+      if (usedSlugs) usedSlugs.add(slug);
+      return entry;
+    }
+  }
+
+  for (let index = 1; index < chain.length; index += 1) {
+    const entry = chain[index];
+    const slug = imageSlugFromUrl(entry.url);
+    if (!usedSlugs || !usedSlugs.has(slug)) {
+      if (usedSlugs) usedSlugs.add(slug);
+      return entry;
+    }
+  }
+
+  const url = assertVehicleImageUrl(PREMIUM_VEHICLE_PLACEHOLDER);
+  if (usedSlugs) usedSlugs.add(imageSlugFromUrl(url));
+  return { level: 'placeholder', url };
+}
+
 /**
  * @param {object|null|undefined} vehicle
  * @param {{ usedSlugs?: Set<string> }} [options]
@@ -416,29 +507,30 @@ export function resolveVehicleDisplayImage(vehicle, options = {}) {
     return assertVehicleImageUrl(PREMIUM_VEHICLE_PLACEHOLDER);
   }
 
-  const usedSlugs = options.usedSlugs || options.registry || renderSlugRegistry || null;
-  const chain = buildVehicleImageFallbackChain(vehicle, options);
+  return selectVehicleDisplayImageEntry(vehicle, options).url;
+}
 
-  for (const entry of chain) {
-    const slug = imageSlugFromUrl(entry.url);
-    if (!usedSlugs || !usedSlugs.has(slug)) {
-      if (usedSlugs) usedSlugs.add(slug);
-      return entry.url;
-    }
+/**
+ * Resolve display URL with trust metadata for UI gating (Faz 3F foundation).
+ * Does not alter resolveVehicleDisplayImage behavior; additive classification only.
+ * @param {object|null|undefined} vehicle
+ * @param {{ usedSlugs?: Set<string>, registry?: Set<string> }} [options]
+ * @returns {{
+ *   url: string,
+ *   matchLevel: VehicleImageMatchLevel,
+ *   sourceTrust: VehicleImageSourceTrust,
+ *   showRealImage: boolean,
+ *   reason: string
+ * }}
+ */
+export function resolveVehicleImageTrust(vehicle, options = {}) {
+  if (!vehicle || typeof vehicle !== 'object') {
+    const url = assertVehicleImageUrl(PREMIUM_VEHICLE_PLACEHOLDER);
+    return { url, ...classifyVehicleImageTrust('placeholder', url) };
   }
 
-  for (let index = 1; index < chain.length; index += 1) {
-    const entry = chain[index];
-    const slug = imageSlugFromUrl(entry.url);
-    if (!usedSlugs || !usedSlugs.has(slug)) {
-      if (usedSlugs) usedSlugs.add(slug);
-      return entry.url;
-    }
-  }
-
-  const placeholder = assertVehicleImageUrl(PREMIUM_VEHICLE_PLACEHOLDER);
-  if (usedSlugs) usedSlugs.add(imageSlugFromUrl(placeholder));
-  return placeholder;
+  const selected = selectVehicleDisplayImageEntry(vehicle, options);
+  return { url: selected.url, ...classifyVehicleImageTrust(selected.level, selected.url) };
 }
 
 /** Reset module-level slug registry for a new results render. */
