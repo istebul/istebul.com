@@ -4,7 +4,26 @@ Issues identified during full production audit and **safely corrected** in this 
 
 ---
 
-## 1. Smoke test drift (CI / local quality)
+## 1. Auto catalog SVG rendered as real vehicle photos (Faz 3F — 2026-06-13)
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Catalog SVG assets (e.g. brand/model icons) appeared in Auto result UI and compare cards as if they were real vehicle photos | Resolver returned illustrative catalog URLs; UI bound `src` directly without trust gating | **Faz 3F Vehicle Image Trust Layer** (PRs #326–#330, main `62b350f6`): placeholder-first UI when `showRealImage:false`; “Görsel doğrulanamadı” copy; verified external load error → placeholder (no catalog chain); compare storage + `/karsilastir` Auto cards trust-aware; legacy catalog SVG compare entries sanitized at render |
+
+**Trust boundaries (unchanged scope):**
+- Catalog SVG is never treated as a trustworthy real vehicle image.
+- `showRealImage:true` is reserved for verified external URLs that pass a strict identity gate (future phase).
+- `/secenekler` AI listings (`listing.images[]`) and dealer offer `image_url` are separate models — not routed through Auto image trust.
+
+**Production verification:** GO / PASS (CI `27477115336`, Production Deploy `27477115351`, Cloudflare pages `27477115064`; scoped unit 77/77; `smoke:live` failed=0).
+
+**Manual visual smoke note:** Auto wizard result cards and populated compare state require wizard/data in production; live visual checks were supplemented by unit tests and production bundle audit.
+
+**Key files:** `js/auto/vehicle-image-resolver.js`, `js/auto/vehicle-image.js`, `js/ui/comparison-ui.js`
+
+---
+
+## 2. Smoke test drift (CI / local quality)
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
@@ -18,7 +37,7 @@ Issues identified during full production audit and **safely corrected** in this 
 
 ---
 
-## 2. Tooling additions (no behavior change)
+## 3. Tooling additions (no behavior change)
 
 | Addition | Purpose |
 |----------|---------|
