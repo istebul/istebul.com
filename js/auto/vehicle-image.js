@@ -21,6 +21,7 @@ import {
   resolvePhotoVehicleAsset,
   resolveVehicleDisplayImage,
   resolveVehicleImageFallback,
+  resolveVehicleImageTrust,
   vehicleImageMatchesName
 } from './vehicle-image-resolver.js';
 
@@ -39,7 +40,8 @@ export {
   resolveLocalVehicleAsset,
   resolvePhotoVehicleAsset,
   resolveVehicleImageFallback,
-  vehicleImageMatchesName
+  vehicleImageMatchesName,
+  resolveVehicleImageTrust
 };
 
 export function resolveVehicleImage(vehicle, options) {
