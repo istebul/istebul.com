@@ -652,10 +652,10 @@ test('guard: all client sub-modules exist', () => {
   }
 });
 
-test('dashboard html includes compare panel shell', () => {
+test('dashboard html includes compare toolbar in generated view', () => {
   const { html } = buildRecommendationsDashboardHtml(listings, profile, { generated: true, compareMode: true });
-  assert.match(html, /ai-cmp-panel-host/);
   assert.match(html, /ai-rec-compare-bar/);
+  assert.match(html, /data-cmp-action="toggle-mode"/);
 });
 
 test('buildCompareInput preserves recommendations', () => {
@@ -812,6 +812,43 @@ test('recommendation card hides compare checkbox without compare mode', () => {
 test('dashboard compare mode adds CSS class', () => {
   const { html } = buildRecommendationsDashboardHtml(listings, profile, { generated: true, compareMode: true });
   assert.match(html, /ai-rec-dashboard--compare-mode/);
+});
+
+// --- ADMIN COMPARE TOOLBAR WIRING ---
+
+const adminJsPath = path.join(process.cwd(), 'js/admin/ai-listings-admin.js');
+
+test('admin.js defines compare panel open/close helpers', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /function openComparePanel/);
+  assert.match(src, /function closeComparePanel/);
+  assert.match(src, /buildComparePanelHtml/);
+  assert.match(src, /runCompareEngine/);
+});
+
+test('admin.js binds recommendations compare toolbar actions', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /\[data-cmp-action="toggle-mode"\]/);
+  assert.match(src, /\[data-rec-compare-id\]/);
+  assert.match(src, /\[data-cmp-action="clear"\]/);
+  assert.match(src, /\[data-cmp-action="compare"\]/);
+  assert.match(src, /compareModeEnabled/);
+  assert.match(src, /compareSelectedIds/);
+});
+
+test('admin.js compare panel uses global host and close handlers', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /#ai-cmp-panel-host/);
+  assert.match(src, /\[data-cmp-panel-action="close"\]/);
+  assert.match(src, /\[data-cmp-backdrop\]/);
+  assert.match(src, /ai-listings-admin--cmp-open/);
+  assert.match(src, /closeComparePanel\(root\)/);
+});
+
+test('admin.js workspace compare drawer calls openComparePanel', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /type === 'compare'/);
+  assert.match(src, /openComparePanel\(root/);
 });
 
 test('purchaseDecisionComparison items have decisionLabel', () => {
