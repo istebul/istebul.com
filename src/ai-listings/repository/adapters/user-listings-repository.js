@@ -88,7 +88,7 @@ export function createUserListingsRepository(supabaseClient) {
       return (data ?? []).map((row) => mapUserListingRowToListing(/** @type {Record<string, unknown>} */ (row)));
     },
 
-    async save(listing) {
+    async save(_listing) {
       throw new Error('User listings adapter is read-only — use AI listings edge API for writes');
     },
 
