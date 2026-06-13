@@ -3,11 +3,22 @@
  * Production Edge Function boot smoke — detects LOAD_FUNCTION_ERROR / stale bundle.
  * Usage: SUPABASE_URL=... SUPABASE_ANON_KEY=... node scripts/smoke-edge-functions.cjs
  */
-const FUNCTION_NAME = 'auto-intake';
-const PATH = `/functions/v1/${FUNCTION_NAME}`;
-
 const FAIL_STATUSES = new Set([502, 503, 504, 404]);
 const PASS_STATUSES = new Set([200, 204, 400, 401, 403, 405]);
+
+/** @type {Array<{ name: string, method?: string, body?: string, requireStatus?: number, requireBodyIncludes?: string }>} */
+const PROBES = [
+  { name: 'auto-intake', method: 'OPTIONS' },
+  { name: 'lifecycle-cron', method: 'OPTIONS' },
+  { name: 'lifecycle-enroll', method: 'OPTIONS' },
+  {
+    name: 'lifecycle-enroll',
+    method: 'POST',
+    body: '{}',
+    requireStatus: 400,
+    requireBodyIncludes: 'flow_id_required'
+  }
+];
 
 function normalizeBaseUrl(raw) {
   return String(raw || '').trim().replace(/\/$/, '');
@@ -33,38 +44,66 @@ function hasLoadFunctionError(bodyText, sbErrorCode) {
   return false;
 }
 
-async function smokeFunction(baseUrl, anonKey) {
-  const endpoint = `${baseUrl}${PATH}`;
+function logProbeResult(probe, status, result, detail = '') {
+  const method = probe.method || 'OPTIONS';
+  const suffix = detail ? ` (${detail})` : '';
+  console.log(`function=${probe.name} method=${method} status=${status} ${result}${suffix}`);
+}
+
+/**
+ * @param {string} baseUrl
+ * @param {string} anonKey
+ * @param {{ name: string, method?: string, body?: string, requireStatus?: number, requireBodyIncludes?: string }} probe
+ */
+async function smokeProbe(baseUrl, anonKey, probe) {
+  const path = `/functions/v1/${probe.name}`;
+  const endpoint = `${baseUrl}${path}`;
+  const method = probe.method || 'OPTIONS';
+  /** @type {Record<string, string>} */
+  const headers = { apikey: anonKey };
+
+  if (method === 'POST') {
+    headers.Authorization = `Bearer ${anonKey}`;
+    headers['Content-Type'] = 'application/json';
+  }
+
   const res = await fetch(endpoint, {
-    method: 'OPTIONS',
-    headers: {
-      apikey: anonKey
-    }
+    method,
+    headers,
+    body: probe.body
   });
 
   const bodyText = await res.text();
   const sbErrorCode = res.headers.get('sb-error-code');
 
-  console.log(
-    `function=${FUNCTION_NAME} path=${PATH} status=${res.status} sb-error-code=${sbErrorCode || '(none)'}`
-  );
-
   if (hasLoadFunctionError(bodyText, sbErrorCode)) {
-    console.error(`✗ ${FUNCTION_NAME}: LOAD_FUNCTION_ERROR detected`);
+    logProbeResult(probe, res.status, 'FAIL', 'LOAD_FUNCTION_ERROR');
     return false;
   }
 
   if (FAIL_STATUSES.has(res.status)) {
-    console.error(`✗ ${FUNCTION_NAME}: HTTP ${res.status} (gateway/boot failure)`);
+    logProbeResult(probe, res.status, 'FAIL', 'gateway/boot failure');
+    return false;
+  }
+
+  if (probe.requireBodyIncludes) {
+    const statusOk =
+      probe.requireStatus != null ? res.status === probe.requireStatus : PASS_STATUSES.has(res.status);
+    const bodyOk = bodyText.includes(probe.requireBodyIncludes);
+    if (statusOk && bodyOk) {
+      logProbeResult(probe, res.status, 'PASS');
+      return true;
+    }
+    logProbeResult(probe, res.status, 'FAIL', 'expected validation response');
     return false;
   }
 
   if (PASS_STATUSES.has(res.status)) {
-    console.log(`✓ ${FUNCTION_NAME}: worker boot OK (HTTP ${res.status})`);
+    logProbeResult(probe, res.status, 'PASS');
     return true;
   }
 
-  console.error(`✗ ${FUNCTION_NAME}: unexpected HTTP ${res.status}`);
+  logProbeResult(probe, res.status, 'FAIL', 'unexpected status');
   return false;
 }
 
@@ -77,9 +116,14 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`\nsmoke-edge-functions → ${PATH}\n`);
+  console.log(`\nsmoke-edge-functions → ${PROBES.length} probe(s)\n`);
 
-  const ok = await smokeFunction(baseUrl, anonKey);
+  let ok = true;
+  for (const probe of PROBES) {
+    const passed = await smokeProbe(baseUrl, anonKey, probe);
+    if (!passed) ok = false;
+  }
+
   console.log(ok ? '\nEdge smoke passed.\n' : '\nEdge smoke failed.\n');
   if (!ok) process.exit(1);
 }
