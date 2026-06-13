@@ -35,6 +35,31 @@ test('normalizeAiListingToOption marks ai_listings source and external url', () 
   assert.equal(option.external_url, 'https://example.com/listing');
   assert.equal(option.metadata.source, 'ai_listings');
   assert.equal(option.metadata.ai_score, 82);
+  assert.equal(option.score, 82);
+  assert.equal(option.decisionScore, 82);
+});
+
+test('normalizeAiListingToOption coerces string ai_score to numeric score fields', () => {
+  const option = normalizeAiListingToOption({
+    id: 'str',
+    category: 'vehicle',
+    latest_analysis: { ai_score: '91' }
+  });
+
+  assert.equal(option.score, 91);
+  assert.equal(option.decisionScore, 91);
+});
+
+test('normalizeAiListingToOption falls back to attributes.ai_score for score fields', () => {
+  const option = normalizeAiListingToOption({
+    id: 'attr',
+    category: 'housing',
+    attributes: { ai_score: 77 }
+  });
+
+  assert.equal(option.metadata.ai_score, 77);
+  assert.equal(option.score, 77);
+  assert.equal(option.decisionScore, 77);
 });
 
 test('filterDecisionOptions applies search and category filters', () => {
