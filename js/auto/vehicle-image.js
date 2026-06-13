@@ -55,6 +55,9 @@ export function resolveVehicleImageUrl(vehicle, options) {
 
 export { resolveVehicleDisplayImage, buildVehicleImageFallbackChain };
 
+/** Deterministic trust copy when real vehicle photo cannot be shown. */
+export const VEHICLE_IMAGE_UNVERIFIED_LABEL = 'Görsel doğrulanamadı';
+
 function fallbackDataAttributes(chain) {
   const byLevel = Object.fromEntries(chain.map((entry) => [entry.level, entry.url]));
   return {
@@ -74,6 +77,18 @@ function fallbackDataAttributes(chain) {
 export function attachVehicleImageFallback(img, vehicle) {
   if (!img || typeof img.addEventListener !== 'function') return;
 
+  const trust = resolveVehicleImageTrust(vehicle);
+  if (!trust.showRealImage) {
+    const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+    img.src = placeholderUrl;
+    img.dataset.vehicleImage = '1';
+    img.dataset.showRealImage = '0';
+    img.dataset.imageTrust = trust.sourceTrust;
+    img.dataset.imageMatch = trust.matchLevel;
+    img.dataset.vehicleName = String(vehicle?.name || img.alt || '');
+    return;
+  }
+
   const chain = buildVehicleImageFallbackChain(vehicle);
   const primary = chain[0]?.url || assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
   const fallbacks = fallbackDataAttributes(chain);
@@ -87,6 +102,9 @@ export function attachVehicleImageFallback(img, vehicle) {
   img.dataset.fallbackSrc = fallbacks.segment || fallbacks.brand || finalFallback;
   img.dataset.finalFallbackSrc = finalFallback;
   img.dataset.vehicleImage = '1';
+  img.dataset.showRealImage = '1';
+  img.dataset.imageTrust = trust.sourceTrust;
+  img.dataset.imageMatch = trust.matchLevel;
   img.dataset.vehicleName = String(vehicle?.name || img.alt || '');
 
   if (img.dataset.fallbackBound === '1') return;
@@ -132,15 +150,27 @@ export function renderVehicleImageHtml(vehicle, esc, opts = {}) {
     isFirst = false
   } = opts;
 
-  const chain = buildVehicleImageFallbackChain(vehicle);
-  const url = resolveVehicleDisplayImage(vehicle);
-  const fallbacks = fallbackDataAttributes(chain);
-  const alt = String(vehicle?.name || 'Araç görseli');
+  const trust = resolveVehicleImageTrust(vehicle);
   const cls = className ? ` class="${esc(className)}"` : '';
   const vehicleName = String(vehicle?.name || '');
   const priority = fetchPriority || (isFirst || loading === 'eager' ? 'high' : 'auto');
+  const imgAttrs = ` data-vehicle-image="1" data-image-trust="${esc(trust.sourceTrust)}" data-image-match="${esc(trust.matchLevel)}" data-show-real-image="${trust.showRealImage ? '1' : '0'}" data-vehicle-name="${esc(vehicleName)}" loading="${esc(loading)}" decoding="async" fetchpriority="${esc(priority)}" width="${width}" height="${height}"`;
 
-  return `<img src="${esc(url)}" alt="${esc(alt)}"${cls} data-vehicle-image="1" data-fallback-exact="${esc(fallbacks.exact)}" data-fallback-brand="${esc(fallbacks.brand)}" data-fallback-segment="${esc(fallbacks.segment)}" data-fallback-generic="${esc(fallbacks.generic)}" data-fallback-src="${esc(fallbacks.segment || fallbacks.brand || fallbacks.final)}" data-final-fallback-src="${esc(fallbacks.final)}" data-vehicle-name="${esc(vehicleName)}" loading="${esc(loading)}" decoding="async" fetchpriority="${esc(priority)}" width="${width}" height="${height}">`;
+  if (!trust.showRealImage) {
+    const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+    const label = VEHICLE_IMAGE_UNVERIFIED_LABEL;
+    return `<div class="auto-vehicle-image auto-vehicle-image--unverified">` +
+      `<img src="${esc(placeholderUrl)}" alt="${esc(label)}" title="${esc(label)}"${cls}${imgAttrs}>` +
+      `<span class="auto-vehicle-image__trust-copy">${esc(label)}</span>` +
+      `</div>`;
+  }
+
+  const chain = buildVehicleImageFallbackChain(vehicle);
+  const url = trust.url;
+  const fallbacks = fallbackDataAttributes(chain);
+  const alt = String(vehicle?.name || 'Araç görseli');
+
+  return `<img src="${esc(url)}" alt="${esc(alt)}"${cls}${imgAttrs} data-fallback-exact="${esc(fallbacks.exact)}" data-fallback-brand="${esc(fallbacks.brand)}" data-fallback-segment="${esc(fallbacks.segment)}" data-fallback-generic="${esc(fallbacks.generic)}" data-fallback-src="${esc(fallbacks.segment || fallbacks.brand || fallbacks.final)}" data-final-fallback-src="${esc(fallbacks.final)}">`;
 }
 
 /**
@@ -151,6 +181,7 @@ export function bindVehicleImageFallbacks(root) {
   if (!root?.querySelectorAll) return;
 
   root.querySelectorAll('img[data-vehicle-image]').forEach((img) => {
+    if (img.dataset.showRealImage === '0') return;
     const vehicleName = img.dataset.vehicleName || img.alt || '';
     attachVehicleImageFallback(img, { name: vehicleName });
   });
@@ -206,11 +237,30 @@ export function reportVehicleImageLoading(root) {
  */
 export function toRecommendationVehicle(vehicle) {
   if (!vehicle || typeof vehicle !== 'object') {
-    return { name: '', image_url: null, imageUrl: DEFAULT_VEHICLE_FALLBACK };
+    const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+    return {
+      name: '',
+      image_url: null,
+      imageUrl: placeholderUrl,
+      imageTrust: {
+        matchLevel: 'no_match',
+        sourceTrust: 'placeholder',
+        showRealImage: false,
+        reason: 'no_verified_image_source'
+      }
+    };
   }
+
+  const trust = resolveVehicleImageTrust(vehicle);
   return {
     ...vehicle,
-    imageUrl: resolveVehicleDisplayImage(vehicle)
+    imageUrl: trust.showRealImage ? trust.url : assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK),
+    imageTrust: {
+      matchLevel: trust.matchLevel,
+      sourceTrust: trust.sourceTrust,
+      showRealImage: trust.showRealImage,
+      reason: trust.reason
+    }
   };
 }
 
