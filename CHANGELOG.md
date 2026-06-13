@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.2.21] — 2026-06-13
+
+### Added
+- **Faz 3F — Auto Vehicle Image Trust Layer** (PRs [#326](https://github.com/istebul/istebul.com/pull/326)–[#330](https://github.com/istebul/istebul.com/pull/330), main `62b350f6`)
+  - `resolveVehicleImageTrust()` foundation with `identity` / `checks` metadata and `strictExactMatchReady` (metadata-only; does not change UI classification yet)
+  - Placeholder-first Auto result UI: `showRealImage:false` for catalog SVG; “Görsel doğrulanamadı” copy
+  - Verified external image load error → premium placeholder (no catalog fallback chain)
+  - Compare storage and `/karsilastir` Auto cards trust-aware; legacy catalog SVG compare entries sanitized at render
+- Production verification **GO / PASS** (CI `27477115336`, Production Deploy `27477115351`, Cloudflare pages `27477115064`)
+
+### Changed
+- Auto result cards no longer render catalog SVG assets as if they were real vehicle photos
+- Faz 3F reduced false-positive real-image risk; it did **not** expand `showRealImage:true` coverage
+
+### Fixed
+- Auto catalog SVG images could appear as real vehicle photos in result UI and compare cards
+
 ## [2.2.20] — 2026-06-08
 
 ### Added
