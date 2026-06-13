@@ -2272,9 +2272,20 @@ async function loadListings() {
   );
 }
 
+/**
+ * @returns {HTMLElement|null}
+ */
+function resolveAiListingsAdminMountRoot() {
+  return (
+    document.getElementById('ai-listings-admin-root') ??
+    document.getElementById('ai-listings-admin') ??
+    document.querySelector('[data-ai-listings-admin-root]')
+  );
+}
+
 function mountGlobalPanelHosts() {
-  const main = $('ai-listings-admin');
-  if (!main || main.querySelector('#ai-ss-panel-host')) return;
+  const main = resolveAiListingsAdminMountRoot();
+  if (!main || main.querySelector('#ai-cmp-panel-host')) return;
   const wrap = document.createElement('div');
   wrap.innerHTML = [
     buildExecutiveDecisionShellHtml(),

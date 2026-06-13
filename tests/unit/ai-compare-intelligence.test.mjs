@@ -845,6 +845,14 @@ test('admin.js compare panel uses global host and close handlers', () => {
   assert.match(src, /closeComparePanel\(root\)/);
 });
 
+test('admin.js mounts global panel hosts on ai-listings-admin-root', () => {
+  const src = fs.readFileSync(adminJsPath, 'utf8');
+  assert.match(src, /function mountGlobalPanelHosts/);
+  assert.match(src, /ai-listings-admin-root/);
+  assert.match(src, /#ai-cmp-panel-host/);
+  assert.doesNotMatch(src, /\$\('ai-listings-admin'\)/);
+});
+
 test('admin.js workspace compare drawer calls openComparePanel', () => {
   const src = fs.readFileSync(adminJsPath, 'utf8');
   assert.match(src, /type === 'compare'/);
