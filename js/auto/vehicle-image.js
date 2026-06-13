@@ -22,6 +22,7 @@ import {
   resolveVehicleDisplayImage,
   resolveVehicleImageFallback,
   resolveVehicleImageTrust,
+  normalizeVehicleImageIdentity,
   vehicleImageMatchesName,
   isApprovedCatalogImage
 } from './vehicle-image-resolver.js';
@@ -42,7 +43,8 @@ export {
   resolvePhotoVehicleAsset,
   resolveVehicleImageFallback,
   vehicleImageMatchesName,
-  resolveVehicleImageTrust
+  resolveVehicleImageTrust,
+  normalizeVehicleImageIdentity
 };
 
 export function resolveVehicleImage(vehicle, options) {
