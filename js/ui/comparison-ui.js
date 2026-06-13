@@ -18,6 +18,7 @@ import {
     renderComparisonDecisionCtaHtml,
     shouldRenderComparisonDecisionCta
 } from './comparison-decision-cta.js';
+import { resolveAutoComparisonImageItem } from '../auto/vehicle-image.js';
 
 export class ComparisonUI {
     renderComparison(items = []) {
@@ -81,9 +82,13 @@ export class ComparisonUI {
         const tags = Array.isArray(item.tags) ? item.tags : [];
         const maxScore = Math.max(...allItems.map((i) => Number(i.score || 0)), 0);
         const isLeader = item.score && Number(item.score) >= maxScore && maxScore > 0;
+        const autoVisual = item.sourceType === 'isteBul Auto' ? resolveAutoComparisonImageItem(item) : null;
+        const visualHtml = autoVisual
+            ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(autoVisual.imageUrl) + '" alt="' + this.escapeHtml(autoVisual.imageAlt) + '" loading="lazy" decoding="async"></div>'
+            : (item.image ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(item.image) + '" alt="' + this.escapeHtml(item.title || 'Seçenek') + '" loading="lazy" decoding="async"></div>' : '');
 
         return '<article class="comparison-card ' + (item.sourceType === 'isteBul Auto' ? 'comparison-card-auto' : '') + '">' +
-            (item.image ? '<div class="comparison-vehicle-visual"><img src="' + this.escapeHtml(item.image) + '" alt="' + this.escapeHtml(item.title || 'Seçenek') + '" loading="lazy" decoding="async"></div>' : '') +
+            visualHtml +
             (isLeader ? '<div class="comparison-leader-badge">🏆 En güçlü eşleşme</div>' : '') +
             '<div class="comparison-card-head">' +
                 '<div>' +

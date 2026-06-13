@@ -8,7 +8,11 @@ import {
   resolveVehicleImageUrl,
   resolveVehicleImageFallback,
   attachVehicleImageFallback,
-  renderVehicleImageHtml
+  buildVehicleImageUiPayload,
+  renderVehicleImageHtml,
+  resolveAutoComparisonImageItem,
+  resolveVehicleImageUrlForUi,
+  VEHICLE_IMAGE_UNVERIFIED_LABEL
 } from '../../js/auto/vehicle-image.js';
 
 function escapeHtml(value) {
@@ -217,4 +221,51 @@ test('attachVehicleImageFallback sets placeholder for unverified catalog vehicle
   assert.equal(img.dataset.showRealImage, '0');
   assert.equal(img.dataset.imageTrust, 'catalog_svg');
   assert.equal(img.dataset.fallbackBound, undefined);
+});
+
+test('resolveVehicleImageUrlForUi uses placeholder for catalog_svg trust', () => {
+  const url = resolveVehicleImageUrlForUi({ name: '2024 Peugeot 308 Allure' });
+  assert.match(stripVersion(url), /vehicle-premium-placeholder\.svg$/);
+  assert.doesNotMatch(url, /peugeot-suv\.svg/);
+});
+
+test('resolveVehicleImageUrlForUi keeps verified external URL', () => {
+  const url = resolveVehicleImageUrlForUi({
+    name: '2023 Toyota Corolla Cross Hybrid',
+    image_url: 'https://cdn.example/toyota-corolla-cross-2023.jpg'
+  });
+  assert.match(url, /toyota-corolla-cross-2023\.jpg/);
+});
+
+test('buildVehicleImageUiPayload includes imageTrust metadata', () => {
+  const payload = buildVehicleImageUiPayload({ name: '2024 Citroen C4 Max' });
+  assert.equal(payload.imageTrust.showRealImage, false);
+  assert.equal(payload.imageTrust.sourceTrust, 'catalog_svg');
+  assert.match(stripVersion(payload.imageUrl), /vehicle-premium-placeholder\.svg$/);
+});
+
+test('resolveAutoComparisonImageItem sanitizes legacy catalog SVG compare entries', () => {
+  const resolved = resolveAutoComparisonImageItem({
+    sourceType: 'isteBul Auto',
+    title: '2024 Citroen C4 Max',
+    image: '/assets/images/auto/renault-clio-icon.svg?v=image-v4'
+  });
+  assert.match(stripVersion(resolved.imageUrl), /vehicle-premium-placeholder\.svg$/);
+  assert.equal(resolved.imageAlt, VEHICLE_IMAGE_UNVERIFIED_LABEL);
+});
+
+test('resolveAutoComparisonImageItem preserves verified external compare image', () => {
+  const external = 'https://cdn.example/toyota-corolla-cross-2023.jpg?v=image-v4';
+  const resolved = resolveAutoComparisonImageItem({
+    sourceType: 'isteBul Auto',
+    title: '2023 Toyota Corolla Cross Hybrid',
+    image: external,
+    imageTrust: {
+      matchLevel: 'exact_match',
+      sourceTrust: 'verified_external',
+      showRealImage: true
+    }
+  });
+  assert.equal(resolved.imageUrl, external);
+  assert.equal(resolved.imageAlt, '2023 Toyota Corolla Cross Hybrid');
 });
