@@ -69,6 +69,70 @@ function fallbackDataAttributes(chain) {
   };
 }
 
+function imageSlugFromUrl(url) {
+  return String(url || '').split('?')[0].trim();
+}
+
+/**
+ * Apply placeholder-only state after verified external image load failure.
+ * @param {HTMLImageElement|object} img
+ */
+function applyVerifiedImageLoadErrorFallback(img) {
+  const placeholderUrl = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+  const label = VEHICLE_IMAGE_UNVERIFIED_LABEL;
+
+  img.src = placeholderUrl;
+  img.alt = label;
+  if ('title' in img) img.title = label;
+  img.dataset.fallbackApplied = 'verified-error-placeholder';
+  img.dataset.showRealImage = '0';
+  img.dataset.imageTrust = 'placeholder';
+  img.dataset.imageMatch = 'no_match';
+  img.dataset.imageErrorFallback = '1';
+  img.dataset.fallbackExact = '';
+  img.dataset.fallbackBrand = '';
+  img.dataset.fallbackSegment = '';
+  img.dataset.fallbackGeneric = '';
+  img.dataset.fallbackSrc = placeholderUrl;
+  img.dataset.finalFallbackSrc = placeholderUrl;
+
+  const parent = img.parentElement;
+  if (parent && typeof parent.classList?.add === 'function') {
+    parent.classList.add('auto-vehicle-image', 'auto-vehicle-image--unverified');
+    if (!parent.querySelector?.('.auto-vehicle-image__trust-copy')) {
+      const span = typeof document !== 'undefined' ? document.createElement('span') : null;
+      if (span) {
+        span.className = 'auto-vehicle-image__trust-copy';
+        span.textContent = label;
+        parent.appendChild(span);
+      }
+    }
+  }
+}
+
+/**
+ * Bind error handler for verified external images — placeholder only, no catalog chain.
+ * @param {HTMLImageElement|object} img
+ */
+function attachVerifiedExternalImageErrorFallback(img) {
+  const finalFallback = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+
+  img.dataset.fallbackExact = '';
+  img.dataset.fallbackBrand = '';
+  img.dataset.fallbackSegment = '';
+  img.dataset.fallbackGeneric = '';
+  img.dataset.fallbackSrc = finalFallback;
+  img.dataset.finalFallbackSrc = finalFallback;
+
+  if (img.dataset.fallbackBound === '1') return;
+  img.dataset.fallbackBound = '1';
+
+  img.addEventListener('error', () => {
+    if (img.dataset.fallbackApplied === 'verified-error-placeholder') return;
+    applyVerifiedImageLoadErrorFallback(img);
+  });
+}
+
 /**
  * CSP-safe per-image fallback chain: exact → brand → segment → generic → placeholder.
  * @param {HTMLImageElement|null|undefined} img
@@ -76,6 +140,11 @@ function fallbackDataAttributes(chain) {
  */
 export function attachVehicleImageFallback(img, vehicle) {
   if (!img || typeof img.addEventListener !== 'function') return;
+
+  if (img.dataset.imageTrust === 'verified_external' && img.dataset.showRealImage === '1') {
+    attachVerifiedExternalImageErrorFallback(img);
+    return;
+  }
 
   const trust = resolveVehicleImageTrust(vehicle);
   if (!trust.showRealImage) {
@@ -86,6 +155,21 @@ export function attachVehicleImageFallback(img, vehicle) {
     img.dataset.imageTrust = trust.sourceTrust;
     img.dataset.imageMatch = trust.matchLevel;
     img.dataset.vehicleName = String(vehicle?.name || img.alt || '');
+    return;
+  }
+
+  if (trust.sourceTrust === 'verified_external') {
+    const primary = trust.url;
+    const finalFallback = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
+
+    img.src = primary;
+    img.dataset.vehicleImage = '1';
+    img.dataset.showRealImage = '1';
+    img.dataset.imageTrust = trust.sourceTrust;
+    img.dataset.imageMatch = trust.matchLevel;
+    img.dataset.vehicleName = String(vehicle?.name || img.alt || '');
+    attachVerifiedExternalImageErrorFallback(img);
+    img.dataset.finalFallbackSrc = finalFallback;
     return;
   }
 
@@ -131,10 +215,6 @@ export function attachVehicleImageFallback(img, vehicle) {
   });
 }
 
-function imageSlugFromUrl(url) {
-  return String(url || '').split('?')[0].trim();
-}
-
 /**
  * @param {object|null|undefined} vehicle
  * @param {(s: unknown) => string} esc
@@ -165,12 +245,11 @@ export function renderVehicleImageHtml(vehicle, esc, opts = {}) {
       `</div>`;
   }
 
-  const chain = buildVehicleImageFallbackChain(vehicle);
   const url = trust.url;
-  const fallbacks = fallbackDataAttributes(chain);
+  const finalFallback = assertVehicleImageUrl(DEFAULT_VEHICLE_FALLBACK);
   const alt = String(vehicle?.name || 'Araç görseli');
 
-  return `<img src="${esc(url)}" alt="${esc(alt)}"${cls}${imgAttrs} data-fallback-exact="${esc(fallbacks.exact)}" data-fallback-brand="${esc(fallbacks.brand)}" data-fallback-segment="${esc(fallbacks.segment)}" data-fallback-generic="${esc(fallbacks.generic)}" data-fallback-src="${esc(fallbacks.segment || fallbacks.brand || fallbacks.final)}" data-final-fallback-src="${esc(fallbacks.final)}">`;
+  return `<img src="${esc(url)}" alt="${esc(alt)}"${cls}${imgAttrs} data-fallback-exact="" data-fallback-brand="" data-fallback-segment="" data-fallback-generic="" data-fallback-src="${esc(finalFallback)}" data-final-fallback-src="${esc(finalFallback)}">`;
 }
 
 /**

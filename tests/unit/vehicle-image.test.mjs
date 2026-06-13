@@ -133,8 +133,70 @@ test('renderVehicleImageHtml verified external keeps real image render', () => {
   assert.match(html, /data-image-trust="verified_external"/);
   assert.match(html, /data-image-match="exact_match"/);
   assert.match(html, /data-show-real-image="1"/);
-  assert.match(html, /data-fallback-brand="/);
+  assert.match(html, /data-fallback-brand=""/);
+  assert.match(html, /data-final-fallback-src="[^"]*vehicle-premium-placeholder\.svg/);
+  assert.doesNotMatch(html, /peugeot-suv\.svg/);
   assert.doesNotMatch(html, /Görsel doğrulanamadı/);
+});
+
+function createMockVehicleImage(initial = {}) {
+  const listeners = {};
+  return {
+    src: initial.src || '',
+    alt: initial.alt || '',
+    title: initial.title || '',
+    dataset: { ...(initial.dataset || {}) },
+    parentElement: initial.parentElement || null,
+    addEventListener(type, fn) {
+      listeners[type] = fn;
+    },
+    dispatchError() {
+      listeners.error?.();
+    }
+  };
+}
+
+test('attachVehicleImageFallback verified external error uses placeholder not catalog SVG', () => {
+  const img = createMockVehicleImage();
+  attachVehicleImageFallback(img, {
+    name: '2023 Toyota Corolla Cross Hybrid',
+    image_url: 'https://cdn.example/toyota-corolla-cross-2023.jpg'
+  });
+
+  assert.match(img.src, /toyota-corolla-cross-2023\.jpg/);
+  assert.equal(img.dataset.imageTrust, 'verified_external');
+  assert.equal(img.dataset.fallbackBrand, '');
+
+  img.dispatchError();
+
+  assert.match(stripVersion(img.src), /vehicle-premium-placeholder\.svg$/);
+  assert.equal(img.dataset.showRealImage, '0');
+  assert.equal(img.dataset.imageTrust, 'placeholder');
+  assert.equal(img.dataset.imageMatch, 'no_match');
+  assert.equal(img.alt, 'Görsel doğrulanamadı');
+  assert.doesNotMatch(img.src, /toyota-corolla-cross-hybrid\.svg/);
+});
+
+test('attachVehicleImageFallback preserves verified DOM img then errors to placeholder', () => {
+  const img = createMockVehicleImage({
+    src: 'https://cdn.example/toyota.jpg?v=image-v4',
+    dataset: {
+      vehicleImage: '1',
+      imageTrust: 'verified_external',
+      showRealImage: '1',
+      vehicleName: '2023 Toyota Corolla Cross Hybrid'
+    }
+  });
+
+  attachVehicleImageFallback(img, { name: '2023 Toyota Corolla Cross Hybrid' });
+
+  assert.match(img.src, /toyota\.jpg/);
+  assert.equal(img.dataset.fallbackBound, '1');
+
+  img.dispatchError();
+
+  assert.match(stripVersion(img.src), /vehicle-premium-placeholder\.svg$/);
+  assert.equal(img.alt, 'Görsel doğrulanamadı');
 });
 
 test('renderVehicleImageHtml sets high fetch priority for first vehicle', () => {
