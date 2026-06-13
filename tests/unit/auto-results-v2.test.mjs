@@ -65,10 +65,12 @@ test('resolveVehicleImageUrl uses local asset before default fallback', () => {
   assert.equal(PREMIUM_VEHICLE_PLACEHOLDER, DEFAULT_VEHICLE_FALLBACK);
 });
 
-test('toRecommendationVehicle keeps vehicle name and sets imageUrl', () => {
+test('toRecommendationVehicle keeps vehicle name and sets placeholder imageUrl for catalog SVG', () => {
   const rec = toRecommendationVehicle({ name: '2023 Toyota Corolla Cross Hybrid', price: 1_650_000 });
   assert.equal(rec.name, '2023 Toyota Corolla Cross Hybrid');
-  assert.match(stripVersion(rec.imageUrl), /toyota-corolla-cross-hybrid\.svg$/);
+  assert.match(stripVersion(rec.imageUrl), /vehicle-premium-placeholder\.svg$/);
+  assert.equal(rec.imageTrust.showRealImage, false);
+  assert.equal(rec.imageTrust.sourceTrust, 'catalog_svg');
 });
 
 test('buildRecommendationPayload uses same vehicle for title and image', () => {
@@ -94,7 +96,8 @@ test('buildRecommendationPayload uses same vehicle for title and image', () => {
   };
   const payload = buildRecommendationPayload(top, { usage: 'city' }, [top], intel);
   assert.equal(payload.vehicle.name, '2024 Citroen C4 Max');
-  assert.match(stripVersion(payload.vehicle.imageUrl), /renault-clio-icon\.svg$/);
+  assert.match(stripVersion(payload.vehicle.imageUrl), /vehicle-premium-placeholder\.svg$/);
+  assert.equal(payload.vehicle.imageTrust.showRealImage, false);
   assert.match(payload.aiSummary, /Citroen C4 Max/);
 });
 

@@ -94,8 +94,12 @@ test('renderVehicleImageHtml produces safe non-empty src with lazy loading', () 
   assert.doesNotMatch(html, /src=""/);
   assert.doesNotMatch(html, /src="undefined"/);
   assert.match(html, /data-vehicle-image="1"/);
-  assert.match(html, /data-fallback-brand="/);
-  assert.match(html, /data-fallback-segment="/);
+  assert.match(html, /data-image-trust="catalog_svg"/);
+  assert.match(html, /data-image-match="partial_match"/);
+  assert.match(html, /data-show-real-image="0"/);
+  assert.match(html, /Görsel doğrulanamadı/);
+  assert.match(html, /vehicle-premium-placeholder\.svg/);
+  assert.doesNotMatch(html, /peugeot-suv\.svg/);
   assert.match(html, /width="/);
   assert.match(html, /height="/);
   assert.match(html, /loading="lazy"/);
@@ -104,12 +108,41 @@ test('renderVehicleImageHtml produces safe non-empty src with lazy loading', () 
   assert.match(html, /\?v=image-v4/);
 });
 
+test('renderVehicleImageHtml catalog_svg trust renders placeholder not catalog SVG', () => {
+  const html = renderVehicleImageHtml({ name: '2024 Citroen C4 Max' }, escapeHtml);
+  assert.match(html, /vehicle-premium-placeholder\.svg/);
+  assert.doesNotMatch(html, /renault-clio-icon\.svg/);
+  assert.match(html, /data-image-trust="catalog_svg"/);
+  assert.match(html, /Görsel doğrulanamadı/);
+});
+
+test('renderVehicleImageHtml placeholder/no_match renders unverified placeholder', () => {
+  const html = renderVehicleImageHtml(null, escapeHtml);
+  assert.match(html, /vehicle-premium-placeholder\.svg/);
+  assert.match(html, /data-image-trust="placeholder"/);
+  assert.match(html, /data-image-match="no_match"/);
+  assert.match(html, /Görsel doğrulanamadı/);
+});
+
+test('renderVehicleImageHtml verified external keeps real image render', () => {
+  const html = renderVehicleImageHtml({
+    name: '2023 Toyota Corolla Cross Hybrid',
+    image_url: 'https://cdn.example/toyota-corolla-cross-2023.jpg'
+  }, escapeHtml);
+  assert.match(html, /https:\/\/cdn\.example\/toyota-corolla-cross-2023\.jpg\?v=image-v4/);
+  assert.match(html, /data-image-trust="verified_external"/);
+  assert.match(html, /data-image-match="exact_match"/);
+  assert.match(html, /data-show-real-image="1"/);
+  assert.match(html, /data-fallback-brand="/);
+  assert.doesNotMatch(html, /Görsel doğrulanamadı/);
+});
+
 test('renderVehicleImageHtml sets high fetch priority for first vehicle', () => {
   const html = renderVehicleImageHtml({ name: '2024 Peugeot 308' }, escapeHtml, { isFirst: true });
   assert.match(html, /fetchpriority="high"/);
 });
 
-test('attachVehicleImageFallback sets src without throwing', () => {
+test('attachVehicleImageFallback sets placeholder for unverified catalog vehicles', () => {
   const img = {
     src: '',
     alt: '',
@@ -118,5 +151,8 @@ test('attachVehicleImageFallback sets src without throwing', () => {
   };
   attachVehicleImageFallback(img, { name: '2024 Citroen C4 Max' });
   assert.ok(img.src);
-  assert.equal(img.dataset.fallbackBound, '1');
+  assert.match(stripVersion(img.src), /vehicle-premium-placeholder\.svg$/);
+  assert.equal(img.dataset.showRealImage, '0');
+  assert.equal(img.dataset.imageTrust, 'catalog_svg');
+  assert.equal(img.dataset.fallbackBound, undefined);
 });
