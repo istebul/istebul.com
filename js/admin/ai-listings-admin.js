@@ -1115,6 +1115,20 @@ function openListingQualityPanel(root, recordId) {
   });
 }
 
+/**
+ * @param {HTMLInputElement} input
+ * @returns {string}
+ */
+function resolveCompareSelectionId(input) {
+  const attrId = String(input.getAttribute('data-rec-compare-id') || input.dataset.recCompareId || '').trim();
+  if (attrId) return attrId;
+
+  const value = String(input.value ?? '').trim();
+  if (value && value !== 'on') return value;
+
+  return '';
+}
+
 function bindRecommendationsDashboardEvents(root) {
   root.querySelector('[data-rec-action="generate"]')?.addEventListener('click', () => {
     recommendationProfile = readRecommendationProfileFromForm(root);
@@ -1142,7 +1156,7 @@ function bindRecommendationsDashboardEvents(root) {
     checkbox.addEventListener('change', (event) => {
       event.stopPropagation();
       const input = /** @type {HTMLInputElement} */ (checkbox);
-      const id = String(input.value || input.getAttribute('data-rec-compare-id') || input.dataset.recCompareId || '');
+      const id = resolveCompareSelectionId(input);
       if (!id) return;
 
       if (input.checked) {
