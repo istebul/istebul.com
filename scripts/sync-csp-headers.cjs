@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Sync Content-Security-Policy lines in _headers and netlify.toml from scripts/lib/csp-policy.cjs.
+ * Sync Content-Security-Policy lines in _headers from scripts/lib/csp-policy.cjs.
  */
 const fs = require('fs');
 const path = require('path');
@@ -25,17 +25,5 @@ function patchHeaders(filePath) {
   fs.writeFileSync(filePath, `${out.join('\n')}\n`);
 }
 
-function patchNetlify(filePath) {
-  let text = fs.readFileSync(filePath, 'utf8');
-  const needle = 'Content-Security-Policy = "';
-  const start = text.indexOf(needle);
-  if (start === -1) throw new Error('netlify.toml CSP line not found');
-  const end = text.indexOf('"', start + needle.length);
-  if (end === -1) throw new Error('netlify.toml CSP line malformed');
-  text = `${text.slice(0, start + needle.length)}${CSP_PUBLIC}${text.slice(end)}`;
-  fs.writeFileSync(filePath, text);
-}
-
 patchHeaders(path.join(root, '_headers'));
-patchNetlify(path.join(root, 'netlify.toml'));
-console.log('sync-csp-headers: OK');
+console.log('sync-csp-headers: OK (_headers)');

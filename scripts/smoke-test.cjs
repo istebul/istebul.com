@@ -84,9 +84,6 @@ assert(!index.includes('cdn.lr-in-prod.com/LogRocket.min.js'), 'LogRocket should
 assert(fs.existsSync(path.join(root, 'Dockerfile')), 'Dockerfile is missing.');
 assert(fs.existsSync(path.join(root, 'docker-compose.yml')), 'docker-compose.yml is missing.');
 assert(fs.existsSync(path.join(root, 'functions/api/health.js')), 'Cloudflare health endpoint is missing.');
-if (fs.existsSync(path.join(root, 'netlify.toml'))) {
-  console.log('info: netlify.toml present (legacy preview config, not required for Cloudflare production).');
-}
 const robotsTxt = read('robots.txt');
 assert(robotsTxt.includes('Sitemap:') && robotsTxt.includes('sitemap.xml'), 'robots.txt sitemap declaration is missing.');
 const sitemapXml = read('sitemap.xml');
