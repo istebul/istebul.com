@@ -16,7 +16,8 @@ const checks = [
   ['supabase/functions/moat-health/index.ts', 'defensibilityIndex'],
   ['js/features/moat/moat-architecture-shared.js', 'MOAT_ARCHITECTURE_VERSION'],
   ['_headers', 'Cache-Control'],
-  ['netlify.toml', 'publish = "dist"'],
+  ['wrangler.toml', 'pages_build_output_dir = "dist"'],
+  ['functions/api/health.js', 'onRequestGet'],
   ['docs/P4_7_SCALE_READINESS.md', 'Venture scale'],
   ['js/core/scale-limits.js', 'SCALE_LIMITS']
 ];
