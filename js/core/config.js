@@ -43,7 +43,7 @@ export const config = {
 
     // API endpoints
     api: {
-        baseUrl: '/.netlify/functions',
+        baseUrl: '/api',
         endpoints: {
             aiProxy: '/ai-proxy'
         }
