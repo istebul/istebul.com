@@ -629,6 +629,18 @@ Merhaba [İsim], isteBul pilot teklifimiz hakkında kısa bir hatırlatma. Webho
 
 ---
 
+*LinkedIn yorum ve etkileşim: [06-linkedin-etkilesim-rehberi.md](./06-linkedin-etkilesim-rehberi.md)*
+
+---
+
+# Bölüm 6 — LinkedIn yorum ve etkileşim rehberi
+
+Bu bölümün tam metni ayrı dosyada yer alır:
+
+→ [06-linkedin-etkilesim-rehberi.md](./06-linkedin-etkilesim-rehberi.md)
+
+---
+
 *Tüm bölümler tek dosyada: [ISTEBUL-SITE-SAHIBI-TAM-PAKET.md](./ISTEBUL-SITE-SAHIBI-TAM-PAKET.md)*
 
 ---
