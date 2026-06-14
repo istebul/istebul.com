@@ -1,5 +1,5 @@
 import { isAllowedOrigin } from './_shared/cors-origins.js';
-import { callGroqChatCompletion } from './_shared/ai/groq-provider.js';
+import { resolveAiProvider } from './_shared/ai/provider-registry.js';
 import { DEFAULT_GROQ_MODEL } from './_shared/ai/types.js';
 
 const rateLimitStore = globalThis.__aiProxyRateLimit || (globalThis.__aiProxyRateLimit = new Map());
@@ -133,6 +133,16 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'Too many requests' }, 429, origin);
     }
 
+    let provider;
+    try {
+      provider = resolveAiProvider(env);
+    } catch (err) {
+      if (err?.code === 'UNSUPPORTED_AI_PROVIDER') {
+        return json({ error: err.message }, 500, origin);
+      }
+      throw err;
+    }
+
     if (!env.GROQ_API_KEY) {
       return json({ error: 'GROQ_API_KEY missing' }, 500, origin);
     }
@@ -155,15 +165,15 @@ export async function onRequestPost({ request, env }) {
       payload.response_format = { type: 'json_object' };
     }
 
-    const groq = await callGroqChatCompletion({ env, payload });
+    const completion = await provider.callChatCompletion({ env, payload });
 
-    if (!groq.ok) {
-      return json({ error: groq.error }, groq.status, origin);
+    if (!completion.ok) {
+      return json({ error: completion.error }, completion.status, origin);
     }
 
-    writePromptCache(prompt, groq.content);
+    writePromptCache(prompt, completion.content);
 
-    return json({ result: groq.content }, 200, origin);
+    return json({ result: completion.content }, 200, origin);
   } catch {
     return json({ error: 'AI proxy error' }, 500);
   }
