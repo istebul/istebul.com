@@ -121,7 +121,9 @@ curl -sS -X POST "https://<preview-host>/ai-proxy" \
 
 ## Production Aktivasyon Planı
 
-Yalnızca dokümantasyon ve checklist tamamlandıktan sonra uygulanır:
+Operatör runbook (adım adım smoke, izleme, rollback, sign-off): [`docs/AI_D5_PRODUCTION_ACTIVATION_RUNBOOK.md`](AI_D5_PRODUCTION_ACTIVATION_RUNBOOK.md)
+
+Yalnızca dokümantasyon, checklist ve Legal sign-off tamamlandıktan sonra uygulanır:
 
 1. Production’da `GROQ_API_KEY` **korunur** (rollback için).
 2. Production’da `OPENAI_API_KEY` encrypted secret olarak eklenir.
@@ -178,9 +180,10 @@ Client tarafı: skor ve fiyat kural motorundan gelir; AI proxy hatası narration
 
 ## Aktivasyon Kararı
 
-- **AI-D4-1A sonrası production OpenAI aktivasyonu hâlâ NO-GO.**
-- Production **GO** için deploy rehberleri, checklist ve compliance/subprocessor dokümanı ayrıca güncellenmelidir.
+- **AI-D5 Preview / Readiness:** Preview smoke (curl, structured JSON, `/auto/`, Groq rollback) **PASS**; runtime wiring ve rollback yolu doğrulandı.
+- **Production OpenAI aktivasyonu hâlâ NO-GO** — Legal/compliance sign-off, Production live smoke ve 24–48 saat izleme tamamlanmadan flip yapılmaz.
+- Production **GO** için: [`docs/AI_D5_PRODUCTION_ACTIVATION_RUNBOOK.md`](AI_D5_PRODUCTION_ACTIVATION_RUNBOOK.md) §0 sign-off + checklist maddeleri.
 
 ---
 
-*Son güncelleme: AI-D4-1A — env örneği + canonical runbook. Runtime kod değişikliği yok.*
+*Son güncelleme: AI-D5-2 — D5 production activation runbook referansı. Runtime kod değişikliği yok.*
