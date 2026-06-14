@@ -6,7 +6,8 @@ const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const index = read('index.html');
 const buildScript = read('scripts/production-build.cjs');
-const netlifyConfig = read('netlify.toml');
+const headersConfig = read('_headers');
+const wranglerConfig = read('wrangler.toml');
 const distIndexPath = path.join(root, 'dist', 'index.html');
 const distIndex = fs.existsSync(distIndexPath)
   ? fs.readFileSync(distIndexPath, 'utf8')
@@ -23,7 +24,8 @@ for (const tag of imageTags) {
 }
 
 assert(buildScript.includes('minify: true'), 'Production build should minify JS/CSS.');
-assert(netlifyConfig.includes('max-age=31536000'), 'Long-lived asset caching is missing.');
+assert(wranglerConfig.includes('pages_build_output_dir = "dist"'), 'Cloudflare Pages should publish optimized dist output.');
+assert(headersConfig.includes('max-age=31536000, immutable'), 'Long-lived asset cache header is missing.');
 assert(index.includes('rel="preconnect"') || index.includes('rel="dns-prefetch"'), 'Third-party delivery strategy should be explicit.');
 assert(index.includes('perf:importmap'), 'index.html should reserve an import map injection slot.');
 assert(
