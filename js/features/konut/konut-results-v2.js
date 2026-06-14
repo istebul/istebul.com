@@ -32,7 +32,16 @@ import {
   buildEvdsRiskLayer,
   mountEvdsRiskLayer
 } from '../results/results-evds-risk-layer.js';
+import {
+  buildAfadAiEarthquakeSentence,
+  buildAfadRiskLayer,
+  mountAfadRiskLayer
+} from '../results/results-afad-risk-layer.js';
 import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
+import {
+  fetchAfadRiskForEngine,
+  injectAfadIntoMetrics
+} from '../afad/afad-earthquake-engine.js';
 import {
   renderResultsHeroLayout,
   scoreToneFromLabel
@@ -422,19 +431,31 @@ export function buildKonutResultsV2Payload({
   metrics = {},
   scenarios = [],
   attention = [],
-  evdsRates = null
+  evdsRates = null,
+  afadSnapshot = null
 }) {
+  const metricsForView = { ...metrics };
+  if (afadSnapshot) {
+    injectAfadIntoMetrics(
+      metricsForView,
+      afadSnapshot,
+      Number(state.earthquakeRiskInput || metrics.earthquakeRiskScore || 40)
+    );
+  }
+
   const intel = buildDecisionIntelligenceResult('konut', state, metrics, {
     scenarios,
-    attention
+    attention,
+    afadSnapshot
   });
   const evdsRiskLayer = buildEvdsRiskLayer('konut', evdsRates || {});
+  const afadRiskLayer = buildAfadRiskLayer(afadSnapshot);
   const decisionScore = intel.decisionScore;
   const confidenceScore = intel.confidenceScore;
   const riskAnalysis = intel.riskAnalysis;
   const totalCost = buildTotalCostView(state, metrics);
-  const strengths = buildStrengths(state, metrics);
-  const weaknesses = buildWeaknesses(attention, metrics);
+  const strengths = buildStrengths(state, metricsForView);
+  const weaknesses = buildWeaknesses(attention, metricsForView);
   const alternatives = normalizeAlternatives(
     intel.alternatives.length ? intel.alternatives : buildAlternatives(scenarios),
     scenarios
@@ -448,16 +469,24 @@ export function buildKonutResultsV2Payload({
     : 'Belirtilmedi';
 
   const { planTier } = getResultsPlanContext();
+  const earthquakeAssessment = [
+    buildEvdsAiMarketSentence(evdsRiskLayer),
+    buildAfadAiEarthquakeSentence(afadRiskLayer)
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   const insightInput = buildInsightInputFromIntelligence('konut', intel.context || {}, intel, {
     planTier,
     strengths,
     weaknesses,
-    marketAssessment: buildEvdsAiMarketSentence(evdsRiskLayer),
+    marketAssessment: earthquakeAssessment,
     costs: {
       budget: state.totalBudget,
       monthlyPayment: totalCost.monthlyPayment,
       duesMonthly: totalCost.duesMonthly,
-      dti: metrics.dti
+      dti: metricsForView.dti,
+      earthquakeRisk: metricsForView.earthquakeRiskScore
     }
   });
 
@@ -483,6 +512,16 @@ export function buildKonutResultsV2Payload({
       homeType: state.homeType,
       roomCount: state.roomCount,
       financing: state.useFinancing
+    },
+    metadata: {
+      earthquakeRiskScore: metricsForView.earthquakeRiskScore,
+      earthquakeSource: metricsForView.earthquakeSource || 'manual',
+      earthquakeActivityLevel: afadRiskLayer.activityLevel || null,
+      earthquakeSummary: afadSnapshot?.earthquakeSummary || afadRiskLayer.summary || '',
+      afadRiskLayer,
+      evdsRiskLayer,
+      marketAssessment: buildEvdsAiMarketSentence(evdsRiskLayer),
+      earthquakeAssessment: buildAfadAiEarthquakeSentence(afadRiskLayer)
     }
   });
 
@@ -514,7 +553,9 @@ export function buildKonutResultsV2Payload({
     planTier,
     insightInput,
     insight: buildDecisionInsight(insightInput),
-    evdsRiskLayer
+    evdsRiskLayer,
+    afadRiskLayer,
+    metricsForView
   };
 }
 
@@ -706,13 +747,18 @@ export async function mountKonutResultsV2({
 
   mountNode.querySelector('.konut-v2-root')?.remove();
 
-  const evdsSnapshot = await fetchEvdsRatesForEngine();
+  const [evdsSnapshot, afadSnapshot] = await Promise.all([
+    fetchEvdsRatesForEngine(),
+    fetchAfadRiskForEngine({ city: state.city, district: state.district })
+  ]);
+
   const payload = buildKonutResultsV2Payload({
     state,
     metrics,
     scenarios,
     attention,
-    evdsRates: evdsSnapshot?.rates || null
+    evdsRates: evdsSnapshot?.rates || null,
+    afadSnapshot
   });
   const model = {
     ...payload,
@@ -728,6 +774,7 @@ export async function mountKonutResultsV2({
   mountNode.prepend(root);
   await hydrateResultsEconomicIndicators(root, 'konut');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
+  mountAfadRiskLayer(root, model.afadRiskLayer);
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'konut',
@@ -773,33 +820,35 @@ export async function mountKonutResultsV2({
     document.getElementById('housing-partner-cta')?.click();
   });
 
-  try {
-    const summary = await withTimeout(
-      fetchExecutiveSummaryV3(
-        'konut',
-        model.intelligence?.context || {},
-        model.intelligence || {
-          decisionScore: model.decisionScore,
-          confidenceScore: model.confidenceScore,
-          scoreFactors: model.scoreFactors,
-          riskAnalysis: model.riskAnalysis,
-          recommendationLevel: model.recommendationLevel,
-          recommendationLabel: model.recommendationLabel,
-          overallRisk: model.overallRisk,
-          warnings: model.warnings
-        },
-        {
-          planTier: model.planTier,
-          strengths: model.strengths,
-          weaknesses: model.weaknesses,
-          marketAssessment: buildEvdsAiMarketSentence(model.evdsRiskLayer),
-          costs: model.totalCost,
-          timeoutMs: KONUT_SUMMARY_TIMEOUT_MS
-        }
-      ),
-      KONUT_SUMMARY_TIMEOUT_MS,
-      null
-    );
+  const summary = await fetchExecutiveSummaryV3(
+    'konut',
+    model.intelligence?.context || {},
+    model.intelligence || {
+      decisionScore: model.decisionScore,
+      confidenceScore: model.confidenceScore,
+      scoreFactors: model.scoreFactors,
+      riskAnalysis: model.riskAnalysis,
+      recommendationLevel: model.recommendationLevel,
+      recommendationLabel: model.recommendationLabel,
+      overallRisk: model.overallRisk,
+      warnings: model.warnings
+    },
+    {
+      planTier: model.planTier,
+      strengths: model.strengths,
+      weaknesses: model.weaknesses,
+      marketAssessment: [
+        buildEvdsAiMarketSentence(model.evdsRiskLayer),
+        buildAfadAiEarthquakeSentence(model.afadRiskLayer)
+      ]
+        .filter(Boolean)
+        .join(' '),
+      costs: {
+        ...model.totalCost,
+        earthquakeRisk: model.metricsForView?.earthquakeRiskScore ?? metrics.earthquakeRiskScore
+      }
+    }
+  );
 
     if (!summary) return model;
 
@@ -861,7 +910,8 @@ export async function mountKonutResultsV2({
           alternatives: model.alternatives,
           insight: model.insight,
           executiveSummary: model.executiveSummary,
-          evdsRiskLayer: model.evdsRiskLayer
+          evdsRiskLayer: model.evdsRiskLayer,
+          afadRiskLayer: model.afadRiskLayer
         }
       })
     )

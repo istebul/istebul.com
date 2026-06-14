@@ -16,6 +16,7 @@ import {
   resolveScoreLabel,
   riskLevelToTone
 } from './results-engine.js';
+import { applyAfadToDecisionContext } from '../afad/afad-earthquake-engine.js';
 
 function safeNumber(value) {
   const n = Number(value);
@@ -812,6 +813,10 @@ export function buildNextStepsV3(category, context = {}) {
 export function buildDecisionIntelligenceResult(category, formData = {}, metrics = {}, extras = {}) {
   const cat = normalizeCategory(category);
   const context = buildDecisionContext(cat, formData, metrics, extras);
+
+  if (cat === 'konut' && extras.afadSnapshot) {
+    applyAfadToDecisionContext(context, extras.afadSnapshot);
+  }
 
   const riskAnalysis = buildRiskAnalysisV3(cat, context);
   context.riskAnalysis = riskAnalysis;
