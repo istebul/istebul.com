@@ -1,4 +1,5 @@
 import { callGroqChatCompletion } from './groq-provider.js';
+import { callOpenAiChatCompletion } from './openai-provider.js';
 import { DEFAULT_AI_PROVIDER } from './types.js';
 
 /**
@@ -28,6 +29,13 @@ export function resolveAiProvider(env = {}) {
     return {
       name: 'groq',
       callChatCompletion: callGroqChatCompletion
+    };
+  }
+
+  if (normalized === 'openai') {
+    return {
+      name: 'openai',
+      callChatCompletion: callOpenAiChatCompletion
     };
   }
 
