@@ -5,7 +5,7 @@ export const DEFAULT_GROQ_MODEL = 'llama-3.1-8b-instant';
 export const DEFAULT_AI_PROVIDER = 'groq';
 
 /** Providers registered for /ai-proxy (server-side only). */
-export const SUPPORTED_AI_PROVIDERS = Object.freeze(['groq']);
+export const SUPPORTED_AI_PROVIDERS = Object.freeze(['groq', 'openai']);
 
 /** Groq OpenAI-compatible chat completions endpoint. */
 export const GROQ_CHAT_COMPLETIONS_URL = 'https://api.groq.com/openai/v1/chat/completions';
