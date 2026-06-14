@@ -88,6 +88,26 @@ npm run deploy:cf
 
 ---
 
+## AI Provider / AI Proxy Checklist
+
+Canonical runbook: [`docs/AI_PROVIDER.md`](AI_PROVIDER.md)
+
+- [ ] `AI_PROVIDER` unset/`groq` ise `GROQ_API_KEY` mevcut
+- [ ] `AI_PROVIDER=openai` planlanıyorsa `OPENAI_API_KEY` Preview’da mevcut
+- [ ] `OPENAI_MODEL` opsiyonel override doğrulandı
+- [ ] Provider fallback olmadığı biliniyor
+- [ ] Preview `/ai-proxy` curl smoke yapıldı
+- [ ] Preview `/auto/` AI commentary kontrol edildi
+- [ ] `structured_commentary` JSON mode kontrol edildi
+- [ ] `SUBPROCESSORS` / compliance dokümanı OpenAI için güncellendi
+- [ ] Rollback planı hazır: `AI_PROVIDER` unset/`groq`
+- [ ] Production’da `AI_PROVIDER=openai` yalnızca son adımda set edilecek
+- [ ] İlk 24–48 saat 5xx, 429, latency ve maliyet izlenecek
+
+**Gate:** Production OpenAI activation is **NO-GO** until every OpenAI-specific checklist item above is complete.
+
+---
+
 ## Post-deploy verification
 
 - [ ] https://www.istebul.com/ loads (browser)
