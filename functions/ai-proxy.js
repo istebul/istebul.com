@@ -1,4 +1,6 @@
 import { isAllowedOrigin } from './_shared/cors-origins.js';
+import { callGroqChatCompletion } from './_shared/ai/groq-provider.js';
+import { DEFAULT_GROQ_MODEL } from './_shared/ai/types.js';
 
 const rateLimitStore = globalThis.__aiProxyRateLimit || (globalThis.__aiProxyRateLimit = new Map());
 const promptCache = globalThis.__aiProxyPromptCache || (globalThis.__aiProxyPromptCache = new Map());
@@ -140,7 +142,7 @@ export async function onRequestPost({ request, env }) {
       : 'Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın.';
 
     const payload = {
-      model: 'llama-3.1-8b-instant',
+      model: DEFAULT_GROQ_MODEL,
       messages: [
         { role: 'system', content: systemContent },
         { role: 'user', content: prompt }
@@ -153,25 +155,15 @@ export async function onRequestPost({ request, env }) {
       payload.response_format = { type: 'json_object' };
     }
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.GROQ_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
+    const groq = await callGroqChatCompletion({ env, payload });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return json({ error: 'Groq request failed' }, response.status, origin);
+    if (!groq.ok) {
+      return json({ error: groq.error }, groq.status, origin);
     }
 
-    const result = data?.choices?.[0]?.message?.content || '';
-    writePromptCache(prompt, result);
+    writePromptCache(prompt, groq.content);
 
-    return json({ result }, 200, origin);
+    return json({ result: groq.content }, 200, origin);
   } catch {
     return json({ error: 'AI proxy error' }, 500);
   }
