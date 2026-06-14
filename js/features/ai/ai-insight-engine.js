@@ -3,6 +3,7 @@
  * Scores and costs come from rule engines; this module only produces Turkish insight copy.
  */
 import { formatMoney } from '../../core/format.js';
+import { postAiProxy } from '../../core/ai-proxy-client.js';
 import { sanitizeAiNarrative } from '../../engines/decision-consultant.js';
 import {
   isTechnicalPreferenceValue,
@@ -1006,31 +1007,24 @@ export async function fetchInsightWithProxy(rawInput = {}, options = {}) {
   }
 
   const prompt = buildInsightProxyPrompt(input, insight);
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), options.timeoutMs || 5000);
 
   try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt,
-        context: { category: `${input.vertical}-executive-insight-v1` }
-      }),
-      signal: controller.signal
+    const proxy = await postAiProxy({
+      prompt,
+      context: { category: `${input.vertical}-executive-insight-v1` },
+      timeoutMs: options.timeoutMs || 5000
     });
-    clearTimeout(timeout);
-    if (!res.ok) {
+
+    if (!proxy.ok) {
       return { text: fallbackText, insight, source: 'fallback' };
     }
-    const data = await res.json().catch(() => ({}));
-    let text = sanitizeInsightText(extractAiProxyText(data), 950);
+
+    let text = sanitizeInsightText(extractAiProxyText(proxy.data), 950);
     if (!text || containsBannedWeakPhrase(text)) {
       return { text: fallbackText, insight, source: 'fallback' };
     }
     return { text, insight, source: 'ai' };
   } catch {
-    clearTimeout(timeout);
     return { text: fallbackText, insight, source: 'fallback' };
   }
 }
