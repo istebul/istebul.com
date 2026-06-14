@@ -10,6 +10,12 @@ export const SUPPORTED_AI_PROVIDERS = Object.freeze(['groq']);
 /** Groq OpenAI-compatible chat completions endpoint. */
 export const GROQ_CHAT_COMPLETIONS_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
+/** Default OpenAI model for /ai-proxy chat completions (adapter-only; not wired in AI-D1). */
+export const DEFAULT_OPENAI_MODEL = 'gpt-4o-mini';
+
+/** OpenAI chat completions endpoint. */
+export const OPENAI_CHAT_COMPLETIONS_URL = 'https://api.openai.com/v1/chat/completions';
+
 /**
  * /ai-proxy HTTP success contract — narration text only; scores remain rule-based.
  * @typedef {{ result: string }} AiProxySuccessBody
