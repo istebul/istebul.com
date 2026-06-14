@@ -10,6 +10,7 @@ import {
 } from '../features/growth/growth-engine.js';
 import { computePartnerMatchScores } from '../features/partner/partner-match-engine.js';
 import { trackOpsEvent } from '../core/operational-telemetry.js';
+import { postAiProxy } from '../core/ai-proxy-client.js';
 import {
   enrollAutoResultsReady,
   enrollFinanceFollowUp,
@@ -2001,23 +2002,19 @@ async function fetchAiStructuredCommentary(results, formData = {}, refinement = 
 
   const bundle = buildExplanationBundle(results, formData);
   const prompt = buildCommentaryPrompt(results, formData, bundle, refinement);
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), AI_COMMENTARY_TIMEOUT_MS);
 
   try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, format: 'structured_commentary' }),
-      signal: controller.signal
+    const proxy = await postAiProxy({
+      prompt,
+      format: 'structured_commentary',
+      timeoutMs: AI_COMMENTARY_TIMEOUT_MS
     });
 
-    if (!res.ok) {
+    if (!proxy.ok) {
       return { commentary: deterministic, synthesis: deterministic.executive_summary, source: 'rules', usedAi: false };
     }
 
-    const data = await res.json();
-    const parsed = parseStructuredCommentary(data.result || '');
+    const parsed = parseStructuredCommentary(proxy.data?.result || '');
     const { data: merged, source } = mergeCommentary(parsed, deterministic);
     const synthesis = sanitizeAiNarrative(
       merged.executive_summary || '',
@@ -2037,8 +2034,6 @@ async function fetchAiStructuredCommentary(results, formData = {}, refinement = 
       source: 'rules',
       usedAi: false
     };
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 
