@@ -104,6 +104,20 @@ SENTRY_DSN                = https://...@sentry.io/...
 LOGROCKET_APP_ID          = your-logrocket-id
 ```
 
+#### AI Proxy (Cloudflare Pages Functions — server-side)
+
+`.env.example` ile uyumlu; canonical runbook: [`docs/AI_PROVIDER.md`](AI_PROVIDER.md)
+
+| Variable | Not |
+|----------|-----|
+| `AI_PROVIDER` | Default: unset veya `groq` (Groq). |
+| `GROQ_API_KEY` | Zorunlu when `AI_PROVIDER` unset/`groq`. |
+| `OPENAI_API_KEY` | Zorunlu yalnızca `AI_PROVIDER=openai` iken. |
+| `OPENAI_MODEL` | Opsiyonel override (default: `gpt-4o-mini`). |
+| `AI_PROXY_TOKEN` | Opsiyonel ek koruma. |
+
+Provider’lar arasında **otomatik fallback yoktur**. Production OpenAI aktivasyonu için sıra ve rollback: `AI_PROVIDER.md`.
+
 ---
 
 ## 5️⃣ Deploy Flow
@@ -150,6 +164,7 @@ npx wrangler pages deploy dist --project-name=istebul-com
 - [ ] Database queries work
 - [ ] Errors appear in Sentry
 - [ ] Session tracked in LogRocket
+- [ ] (Opsiyonel) `/ai-proxy` manuel smoke — curl örneği ve adımlar: [`docs/AI_PROVIDER.md`](AI_PROVIDER.md)
 
 ---
 
