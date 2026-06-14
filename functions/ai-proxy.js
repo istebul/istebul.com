@@ -1,6 +1,6 @@
 import { isAllowedOrigin } from './_shared/cors-origins.js';
 import { resolveAiProvider } from './_shared/ai/provider-registry.js';
-import { DEFAULT_GROQ_MODEL } from './_shared/ai/types.js';
+import { DEFAULT_GROQ_MODEL, DEFAULT_OPENAI_MODEL } from './_shared/ai/types.js';
 
 const rateLimitStore = globalThis.__aiProxyRateLimit || (globalThis.__aiProxyRateLimit = new Map());
 const promptCache = globalThis.__aiProxyPromptCache || (globalThis.__aiProxyPromptCache = new Map());
@@ -28,31 +28,33 @@ function pruneRateLimitStore(now) {
   }
 }
 
-function promptCacheKey(prompt) {
+function promptCacheKey(prompt, providerName) {
   let hash = 0;
   for (let i = 0; i < prompt.length; i += 1) {
     hash = (hash * 31 + prompt.charCodeAt(i)) | 0;
   }
   const prefix = prompt.slice(0, 64);
-  return `${hash}:${prompt.length}:${prefix}`;
+  return `${providerName}:${hash}:${prompt.length}:${prefix}`;
 }
 
-function readPromptCache(prompt) {
-  const entry = promptCache.get(promptCacheKey(prompt));
+function readPromptCache(prompt, providerName) {
+  const key = promptCacheKey(prompt, providerName);
+  const entry = promptCache.get(key);
   if (!entry || Date.now() > entry.expiresAt) {
-    if (entry) promptCache.delete(promptCacheKey(prompt));
+    if (entry) promptCache.delete(key);
     return null;
   }
   return entry.result;
 }
 
-function writePromptCache(prompt, result) {
+function writePromptCache(prompt, result, providerName) {
   if (!result) return;
+  const key = promptCacheKey(prompt, providerName);
   if (promptCache.size >= PROMPT_CACHE_MAX_ENTRIES) {
     const oldest = promptCache.keys().next().value;
     if (oldest) promptCache.delete(oldest);
   }
-  promptCache.set(promptCacheKey(prompt), {
+  promptCache.set(key, {
     result,
     expiresAt: Date.now() + PROMPT_CACHE_TTL_MS
   });
@@ -123,16 +125,6 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'Invalid prompt' }, 400, origin);
     }
 
-    const cached = readPromptCache(prompt);
-    if (cached) {
-      return json({ result: cached }, 200, origin);
-    }
-
-    const clientIp = getClientIp(request);
-    if (!checkRateLimit(clientIp, AI_RATE_LIMIT_PER_MIN, 60_000)) {
-      return json({ error: 'Too many requests' }, 429, origin);
-    }
-
     let provider;
     try {
       provider = resolveAiProvider(env);
@@ -143,16 +135,27 @@ export async function onRequestPost({ request, env }) {
       throw err;
     }
 
-    if (!env.GROQ_API_KEY) {
-      return json({ error: 'GROQ_API_KEY missing' }, 500, origin);
+    const cached = readPromptCache(prompt, provider.name);
+    if (cached) {
+      return json({ result: cached }, 200, origin);
+    }
+
+    const clientIp = getClientIp(request);
+    if (!checkRateLimit(clientIp, AI_RATE_LIMIT_PER_MIN, 60_000)) {
+      return json({ error: 'Too many requests' }, 429, origin);
     }
 
     const systemContent = structured
       ? 'Sen isteBul.com otomotiv karar analistisin. Yalnızca geçerli JSON döndür. Skor üretmezsin; fiyat, faiz, banka, sigorta teklifi veya kampanya uydurmazsın. Türkçe, profesyonel, temkinli dil.'
       : 'Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın.';
 
+    const model =
+      provider.name === 'openai'
+        ? env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL
+        : DEFAULT_GROQ_MODEL;
+
     const payload = {
-      model: DEFAULT_GROQ_MODEL,
+      model,
       messages: [
         { role: 'system', content: systemContent },
         { role: 'user', content: prompt }
@@ -171,7 +174,7 @@ export async function onRequestPost({ request, env }) {
       return json({ error: completion.error }, completion.status, origin);
     }
 
-    writePromptCache(prompt, completion.content);
+    writePromptCache(prompt, completion.content, provider.name);
 
     return json({ result: completion.content }, 200, origin);
   } catch {
