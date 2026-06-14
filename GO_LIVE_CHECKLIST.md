@@ -1,8 +1,8 @@
 # isteBu v2 — Yayın Öncesi (Go‑Live) Checklist
 
-Bu doküman, projeyi **istebul.com** domain’i ile **Netlify + Supabase** üzerinde canlıya almak için gereken adımları “tamamlandı” mantığıyla listeler.
+Bu doküman, projeyi **istebul.com** domain’i ile **Cloudflare Pages + Supabase** üzerinde canlıya almak için gereken adımları “tamamlandı” mantığıyla listeler.
 
-> Not: Bu repo daha önce başka işletim sisteminde kurulmuş `node_modules` içerdiği için build hatası üretebiliyordu. Artık `package-lock.json` Netlify CLI bağımlılığı olmadan güncellendi ve temiz kurulum + build doğrulaması geçti.
+> Not: Bu repo daha önce başka işletim sisteminde kurulmuş `node_modules` içerdiği için build hatası üretebiliyordu. Artık `package-lock.json` temiz kurulum + build doğrulaması geçti.
 
 ---
 
@@ -25,7 +25,7 @@ Bu doküman, projeyi **istebul.com** domain’i ile **Netlify + Supabase** üzer
 ### 1.0 Güvenlik notu (anahtarlar)
 - [ ] **SUPABASE_SERVICE_ROLE_KEY** (ve gerekiyorsa anon key) daha önce sohbet/ekran görüntüsü vb. bir yerde paylaşıldıysa **hemen rotate edin**.
   - Supabase → Project Settings → API (veya Security) → “Rotate keys / Regenerate” adımlarını kullanın.
-  - Rotate sonrası Netlify env değişkenlerini yeni değerlerle güncelleyin.
+  - Rotate sonrası Cloudflare Pages env değişkenlerini yeni değerlerle güncelleyin.
 
 ### 1.1 Proje oluşturma
 - [ ] Supabase’de yeni bir **Production** projesi oluşturun.
@@ -52,25 +52,25 @@ Bu doküman, projeyi **istebul.com** domain’i ile **Netlify + Supabase** üzer
   - (opsiyonel staging) `https://<staging-domain>/*`
 
 ### 1.5 Key’ler
-- [ ] Aşağıdakileri hazır edin (Netlify env’e gireceğiz):
+- [ ] Aşağıdakileri hazır edin (Cloudflare Pages env + GitHub Secrets):
   - `SUPABASE_URL`
   - `SUPABASE_ANON_KEY`
   - `SUPABASE_SERVICE_ROLE_KEY` (**sadece serverless functions**)
 
 ---
 
-## 2) Netlify (Production) kurulumu
+## 2) Cloudflare Pages (Production) kurulumu
 
 ### 2.1 Site oluşturma
-- [ ] Netlify → “Add new site” → Git repo bağlayın.
-- [ ] Build settings:
+- [ ] Cloudflare Dashboard → **Workers & Pages → Create application → Pages**
+- [ ] Proje adı: `istebul-com` (workflow `CF_PAGES_PROJECT` ile eşleşmeli)
+- [ ] Build settings (GitHub Actions deploy kullanılıyorsa dashboard build opsiyonel):
   - Build command: `npm run build`
   - Publish directory: `dist`
-  - Functions directory: `netlify/functions`
 
-> Bu ayarlar `netlify.toml` ile zaten tanımlı.
+> Production deploy `.github/workflows/production-deploy.yml` üzerinden `wrangler pages deploy dist --project-name=istebul-com` ile yapılır.
 
-### 2.2 Environment Variables (Netlify)
+### 2.2 Environment Variables (Cloudflare Pages)
 - [ ] Required:
   - `SUPABASE_URL`
   - `SUPABASE_ANON_KEY`
@@ -85,41 +85,40 @@ Bu doküman, projeyi **istebul.com** domain’i ile **Netlify + Supabase** üzer
   - `ALLOWED_ORIGIN=https://istebul.com`
 
 ### 2.3 CORS / Origin kontrolü
-- [ ] `netlify/functions/*` CORS header’ları:
+- [ ] `functions/api/*` ve `functions/ai-proxy.js` CORS header’ları:
   - Varsayılan `https://istebul.com`
   - Domain değişirse:
-    - Netlify env: `ALLOWED_ORIGIN`
-    - `netlify.toml` içindeki function header’larını da güncelleyin.
+    - Cloudflare Pages env: `ALLOWED_ORIGIN`
+    - `_headers` dosyasındaki ilgili header’ları da güncelleyin.
 
 ---
 
 ## 3) Domain + DNS (istebul.com)
 
-### 3.1 Netlify’de domain bağlama
-- [ ] Netlify → Domain settings → **Add custom domain**: `istebul.com`
+### 3.1 Cloudflare’de domain bağlama
+- [ ] Cloudflare → **Workers & Pages → istebul-com → Custom domains**
+- [ ] `istebul.com` ve `www.istebul.com` ekleyin
 - [ ] `www.istebul.com` için yönlendirme kararı verin:
   - (öneri) `www` → apex redirect veya tersi.
 
 ### 3.2 DNS kayıtları
-- [ ] Netlify’nin verdiği şekilde DNS kayıtlarını girin:
-  - Apex için A/ALIAS
-  - `www` için CNAME
-- [ ] SSL sertifikası Netlify’de “Provision certificate” ile aktif mi?
+- [ ] Cloudflare DNS’te apex ve `www` kayıtları Pages projesine yönlendirilmiş mi?
+- [ ] SSL sertifikası Cloudflare’de aktif mi?
 
 ---
 
 ## 4) Yayın öncesi son kontroller
 
-- [ ] Netlify deploy preview linkinde:
+- [ ] Cloudflare Pages preview veya staging URL’de:
   - Auth (login/register)
   - İlan listeleme + detay
   - İlan oluşturma (auth required)
   - Görsel yükleme
   - Mesajlaşma (realtime)
   - Karar asistanı akışı
-- [ ] Netlify Functions:
-  - `/.netlify/functions/health` 200 dönüyor mu?
-  - `upload-image` ve `ai-proxy` yetkisizken 401 dönüyor mu?
+- [ ] Pages Functions:
+  - `/api/health` 200 dönüyor mu?
+  - `/ai-proxy` ve `upload-image` yetkisizken 401 dönüyor mu?
 - [ ] PWA:
   - Offline sayfası
   - Service worker update davranışı (cache versiyonu)
@@ -128,6 +127,7 @@ Bu doküman, projeyi **istebul.com** domain’i ile **Netlify + Supabase** üzer
 
 ## 5) Canlıya alma
 
-- [ ] Netlify → Production deploy tetikleyin (main branch push veya manuel).
+- [ ] `main` branch push veya **Actions → Production Deploy → Run workflow** ile deploy tetikleyin.
+- [ ] Live smoke strict geçti mi? (`npm run smoke:live:strict -- https://www.istebul.com`)
 - [ ] Canlı domain üzerinden smoke kontrol yapın.
 - [ ] (Opsiyonel) İzleme araçları: Sentry/LogRocket event geliyor mu?
