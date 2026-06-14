@@ -3,6 +3,7 @@
  * Explains deterministic Decision Memory Insights only — no new scores/TCO/risk.
  */
 
+import { postAiProxy } from '../core/ai-proxy-client.js';
 import { escapeHtml } from '../core/security.js';
 import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
 import { extractAiProxyText } from '../features/ai/ai-insight-engine.js';
@@ -306,32 +307,23 @@ export async function fetchDecisionMemoryAiCommentary(model, options = {}) {
     }
 
     const prompt = buildDecisionMemoryCommentaryPrompt(model);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), COMMENTARY_TIMEOUT_MS);
 
     try {
-        const res = await fetch('/ai-proxy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                prompt,
-                context: { category: 'decision-memory-commentary-v1' }
-            }),
-            signal: controller.signal
+        const proxy = await postAiProxy({
+            prompt,
+            context: { category: 'decision-memory-commentary-v1' },
+            timeoutMs: COMMENTARY_TIMEOUT_MS
         });
 
-        if (!res.ok) {
+        if (!proxy.ok) {
             return { commentary: deterministic, source: 'rules' };
         }
 
-        const data = await res.json().catch(() => ({}));
-        const parsed = parseDecisionMemoryCommentary(extractAiProxyText(data));
+        const parsed = parseDecisionMemoryCommentary(extractAiProxyText(proxy.data));
         const { data: merged, source } = mergeDecisionMemoryCommentary(parsed, deterministic);
         return { commentary: merged, source };
     } catch {
         return { commentary: deterministic, source: 'rules' };
-    } finally {
-        clearTimeout(timeoutId);
     }
 }
 

@@ -3,6 +3,7 @@
  * Explains deterministic Decision Result Summary only — never produces new scores/TCO/risk/fit.
  */
 
+import { postAiProxy } from '../core/ai-proxy-client.js';
 import { escapeHtml } from '../core/security.js';
 import { sanitizeAiNarrative } from '../engines/decision-consultant.js';
 import { extractAiProxyText } from '../features/ai/ai-insight-engine.js';
@@ -292,32 +293,23 @@ export async function fetchDecisionResultAiRationale(summary, options = {}) {
     }
 
     const prompt = buildDecisionResultRationalePrompt(summary);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), RATIONALE_TIMEOUT_MS);
 
     try {
-        const res = await fetch('/ai-proxy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                prompt,
-                context: { category: 'decision-result-rationale-v1' }
-            }),
-            signal: controller.signal
+        const proxy = await postAiProxy({
+            prompt,
+            context: { category: 'decision-result-rationale-v1' },
+            timeoutMs: RATIONALE_TIMEOUT_MS
         });
 
-        if (!res.ok) {
+        if (!proxy.ok) {
             return { rationale: deterministic, source: 'rules' };
         }
 
-        const data = await res.json().catch(() => ({}));
-        const parsed = parseDecisionResultRationale(extractAiProxyText(data));
+        const parsed = parseDecisionResultRationale(extractAiProxyText(proxy.data));
         const { data: merged, source } = mergeDecisionResultRationale(parsed, deterministic);
         return { rationale: merged, source };
     } catch {
         return { rationale: deterministic, source: 'rules' };
-    } finally {
-        clearTimeout(timeoutId);
     }
 }
 
