@@ -1,6 +1,7 @@
 // API utilities
 import { supabase } from './supabase.js';
 import config from './config.js';
+import { postAiProxy } from './ai-proxy-client.js';
 
 export class API {
     static sanitizeSearchTerm(value) {
@@ -381,19 +382,24 @@ export class API {
     static async askAI(prompt, context = {}) {
         const { data: { session } } = await supabase.auth.getSession();
 
-        const headers = {
-            'Content-Type': 'application/json'
-        };
+        const headers = {};
 
         if (session?.access_token) {
             headers.Authorization = `Bearer ${session.access_token}`;
         }
 
-        return this.request(config.api.endpoints.aiProxy, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ prompt, context })
+        const proxy = await postAiProxy({
+            prompt,
+            context,
+            headers
         });
+
+        if (!proxy.ok) {
+            console.error(`API request failed: ${config.api.endpoints.aiProxy}`, proxy.error);
+            throw new Error(`HTTP error! status: ${proxy.status}`);
+        }
+
+        return proxy.data;
     }
 }
 
