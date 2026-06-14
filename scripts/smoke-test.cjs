@@ -71,17 +71,22 @@ assert(
 const pkg = JSON.parse(read('package.json'));
 assert(pkg.scripts.build.includes('scripts/production-build.cjs'), 'Production build script should create optimized output.');
 assert(pkg.scripts['build:check'].includes('check-build-output'), 'Build output check script is missing.');
-const netlifyConfig = read('netlify.toml');
-assert(netlifyConfig.includes('publish = "dist"'), 'Netlify should publish optimized dist output.');
-assert(netlifyConfig.includes('from = "/*"'), 'Netlify SPA fallback route is missing.');
-assert(netlifyConfig.includes('Content-Security-Policy'), 'Content Security Policy is missing.');
-assert(netlifyConfig.includes('Strict-Transport-Security'), 'HSTS header is missing.');
-assert(netlifyConfig.includes('Cache-Control = "public, max-age=31536000, immutable"'), 'Long-lived asset cache header is missing.');
+const wranglerConfig = read('wrangler.toml');
+const headersConfig = read('_headers');
+const redirectsConfig = read('_redirects');
+assert(wranglerConfig.includes('pages_build_output_dir = "dist"'), 'Cloudflare Pages should publish optimized dist output.');
+assert(redirectsConfig.includes('/* /index.html 200'), 'Cloudflare SPA fallback route is missing.');
+assert(headersConfig.includes('Content-Security-Policy'), 'Content Security Policy is missing.');
+assert(headersConfig.includes('Strict-Transport-Security'), 'HSTS header is missing.');
+assert(headersConfig.includes('max-age=31536000, immutable'), 'Long-lived asset cache header is missing.');
 assert(!index.includes('browser.sentry-cdn.com/7.100.0/bundle.min.js'), 'Sentry should not load before consent.');
 assert(!index.includes('cdn.lr-in-prod.com/LogRocket.min.js'), 'LogRocket should not load before consent.');
 assert(fs.existsSync(path.join(root, 'Dockerfile')), 'Dockerfile is missing.');
 assert(fs.existsSync(path.join(root, 'docker-compose.yml')), 'docker-compose.yml is missing.');
-assert(fs.existsSync(path.join(root, 'netlify/functions/health.js')), 'Health endpoint is missing.');
+assert(fs.existsSync(path.join(root, 'functions/api/health.js')), 'Cloudflare health endpoint is missing.');
+if (fs.existsSync(path.join(root, 'netlify.toml'))) {
+  console.log('info: netlify.toml present (legacy preview config, not required for Cloudflare production).');
+}
 const robotsTxt = read('robots.txt');
 assert(robotsTxt.includes('Sitemap:') && robotsTxt.includes('sitemap.xml'), 'robots.txt sitemap declaration is missing.');
 const sitemapXml = read('sitemap.xml');
