@@ -78,7 +78,9 @@ Audit and analytics event log for listing lifecycle.
 | `authenticated` | **Denied** (all operations) |
 | `service_role` | **Full access** (bypasses RLS + explicit policy) |
 
-Public read is intentionally disabled. Client-side Supabase (`anon` key) cannot read or write these tables.
+**Base migration:** client roles denied on writes; no public read.
+
+**After `20260702_ai_listings_publish_learning_v1.sql`:** anon and authenticated may `SELECT` rows with `status = 'published'` (and analyses for those listings). Public catalog still requires `site_settings.ai_listings_public_enabled` on the SPA. Writes remain service_role / edge only.
 
 ## Repository Adapters (Sprint-3)
 
@@ -101,40 +103,25 @@ const repos = createAiListingsRepositories({
 // repos.listingRepository.create(), .archive(), etc.
 ```
 
-## Future RLS Plan
+## RLS rollout (applied in migrations)
 
-### Phase A — User ownership (authenticated)
+### Phase A — User ownership (authenticated) — `20260704_ai_listings_owner_read.sql`
 
-```sql
--- Users read/write own listings
-CREATE POLICY "ai_listings owner select"
-  ON public.ai_listings FOR SELECT TO authenticated
-  USING (owner_user_id = auth.uid());
-
-CREATE POLICY "ai_listings owner insert"
-  ON public.ai_listings FOR INSERT TO authenticated
-  WITH CHECK (owner_user_id = auth.uid());
-```
+Users may `SELECT` their own rows (`owner_user_id = auth.uid()`) and related analyses (any status — intake drafts visible to owner).
 
 ### Phase B — Admin moderation
 
-```sql
--- Admins read all via is_admin()
-CREATE POLICY "ai_listings admin select"
-  ON public.ai_listings FOR SELECT TO authenticated
-  USING (public.is_admin());
-```
+Admin reads via edge `service_role` and admin session proxies. Optional `is_admin()` policies may be added in future migrations.
 
-### Phase C — Public read (published only)
+### Phase C — Public read (published only) — `20260702_ai_listings_publish_learning_v1.sql`
 
 ```sql
--- Anon can read active listings only
-CREATE POLICY "ai_listings public read active"
-  ON public.ai_listings FOR SELECT TO anon
-  USING (status = 'active');
+CREATE POLICY "ai_listings public read published"
+  ON public.ai_listings FOR SELECT TO anon, authenticated
+  USING (status = 'published');
 ```
 
-Analyses and events remain owner/admin scoped; no public read of raw analysis until product decision.
+Published listings' analyses are readable via companion policy `ai_listing_analyses public read published`. Events and learning tables remain client-denied.
 
 ## Future Admin Integration Plan
 

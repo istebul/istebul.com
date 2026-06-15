@@ -1,8 +1,8 @@
-# AI Listings — Admin QA Workflow (Sprint-7)
+# AI Listings — Admin QA Workflow
 
-Internal quality-control workflow for seed and manual AI listings. This document describes how admins review, approve, reject, and archive listings inside the internal test panel.
+Quality-control workflow for seed, import, and user-intake AI listings. Admins review, approve, **publish**, reject, archive, and re-analyze listings in `admin/ai-listings.html`.
 
-**Public UI remains disabled.** No homepage, category route, or anonymous exposure is added in Sprint-7.
+Public catalog at `/secenekler/` consumes only **`published`** rows when `site_settings.ai_listings_public_enabled` is true. See [README.md](./README.md#public-publishing-gate-how-secenekler-works).
 
 ## Status definitions
 
@@ -10,17 +10,18 @@ Internal quality-control workflow for seed and manual AI listings. This document
 |--------|---------|
 | `draft` | New or edited listing not yet submitted for review |
 | `pending_review` | Submitted and waiting for admin decision |
-| `approved` | **Internally approved only** — not published publicly |
+| `approved` | **Internally approved only** — not on public catalog |
+| `published` | **Public catalog eligible** when site toggle is on |
 | `rejected` | Returned to author with a required rejection reason |
 | `archived` | Retired from active QA; no further workflow actions |
 
-Only these five values are valid. Create/patch requests and workflow actions reject any other status.
+Valid statuses are enforced by `status-workflow.js` (`LISTING_STATUSES`).
 
-> **approved means internally approved only; public publishing remains disabled.**
+> **approved alone is not public.** Operators must run **Publish** (`approved` → `published`) and ensure `ai_listings_public_enabled` is on for `/secenekler/` to show the row.
 
 ## Admin action flow
 
-Actions are available in `admin/ai-listings.html` when the panel is enabled via localStorage **and** you are signed in with an admin session (or legacy `istebul_ai_listings_secret` in localStorage for QA).
+Actions are available in `admin/ai-listings.html` when signed in with an admin session (or legacy `istebul_ai_listings_secret` in localStorage for QA).
 
 | Action | Route | From status | To status | Event type |
 |--------|-------|-------------|-----------|------------|
@@ -29,15 +30,28 @@ Actions are available in `admin/ai-listings.html` when the panel is enabled via 
 | Reject | `POST /listings/:id/reject` | `pending_review` | `rejected` | `listing_rejected` |
 | Archive | `POST /listings/:id/archive` | any except `archived` | `archived` | `listing_archived` |
 | Re-analyze | `POST /listings/:id/reanalyze` | any except `archived` | unchanged | `listing_reanalyzed` |
+| **Publish** | `POST /listings/:id/publish` | `approved` | `published` | `listing_published` |
+| **Unpublish** | `POST /listings/:id/unpublish` | `published` | `approved` | `listing_unpublished` |
 
 Each action:
 
-1. Validates the current status transition
+1. Validates the current status transition (`resolveStatusTransition` in `status-workflow.js`)
 2. Updates `ai_listings.status` when the transition changes status
 3. Appends an `ai_listing_events` row with `from_status`, `to_status`, and action-specific payload
 4. Refreshes the admin list and detail panels
 
-The legacy **Analyze** action (`POST /listings/:id/analyze`) remains unchanged and emits `listing_analyzed`.
+The **Analyze** action (`POST /listings/:id/analyze`) emits `listing_analyzed` without changing QA status.
+
+## Public visibility rule (code)
+
+`isListingPubliclyVisible(status, env)` in `status-workflow.js`:
+
+- Returns `false` when `AI_LISTINGS_PUBLIC_PUBLISH_ENABLED` is not truthy in `env`
+- Returns `true` only when `status === 'published'` and publish flag is on
+
+The SPA additionally gates client fetch on `site_settings.ai_listings_public_enabled` (`js/runtime/ai-listings-integrations.js`).
+
+Supabase RLS (`20260702_ai_listings_publish_learning_v1.sql`): anon/authenticated may `SELECT` `ai_listings` and related analyses **only** where parent listing `status = 'published'`.
 
 ## Rejection reason behavior
 
@@ -75,25 +89,14 @@ Status filter chips in the list panel:
 - Draft
 - Pending Review
 - Approved
+- **Published**
 - Rejected
 - Archived
 
 Selecting a chip sets the `status` query parameter on `GET /listings`.
 
-## Future public publishing gate
-
-Sprint-7 deliberately does **not** connect approved listings to the public marketplace.
-
-`isListingPubliclyVisible()` in `status-workflow.js` always returns `false`. A future sprint must introduce an explicit publish gate (for example `published` status, feature flag, or separate public index) before any listing appears on isteBul category pages or search.
-
-Until that gate ships:
-
-- Do not link AI listings from homepage or menus
-- Do not expose listings to anonymous users
-- Treat `approved` as internal QA sign-off only
-
 ## Related docs
 
 - [ADMIN_TEST_PANEL.md](./ADMIN_TEST_PANEL.md) — enabling the internal panel
 - [EDGE_FUNCTION_API.md](./EDGE_FUNCTION_API.md) — full edge API reference
-- [FUTURE_INTEGRATION_PLAN.md](./FUTURE_INTEGRATION_PLAN.md) — planned public integration
+- [FUTURE_INTEGRATION_PLAN.md](./FUTURE_INTEGRATION_PLAN.md) — remaining integrations (trust UI, partner lead, extra categories)
