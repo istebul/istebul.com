@@ -18,4 +18,23 @@ assert(!index.includes('onload="'), 'Inline onload handlers should be avoided in
 const productionBuild = read('scripts/production-build.cjs');
 assert(!productionBuild.includes('onload="'), 'production-build must not inject inline onload handlers.');
 
+// P0-1 kritik yüzey marker'ları (runtime kontrast guard ile eşleşir)
+const criticalMarkers = [
+  ['index.html', 'id="hero-v4-title"'],
+  ['index.html', 'data-hero-cta-primary'],
+  ['index.html', 'id="premium-karar-analizi-root"'],
+  ['index.html', 'id="listing-result-count"'],
+  ['auto/index.html', 'data-auto-hero-cta'],
+  ['tatil/index.html', 'id="vacation-hero-cta"'],
+  ['sigorta/index.html', 'id="sigorta-hero-cta"'],
+  ['kasko/index.html', 'id="kasko-hero-cta"'],
+  ['admin-panel.html', 'id="admin-nav"'],
+  ['admin/ai-listings.html', 'id="ai-listings-new-menu-btn"']
+];
+
+for (const [file, marker] of criticalMarkers) {
+  const source = read(file);
+  assert(source.includes(marker), `${file} must include critical marker: ${marker}`);
+}
+
 console.log('Accessibility static checks passed.');
