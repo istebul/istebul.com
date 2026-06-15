@@ -6,6 +6,12 @@ import { suggestLinkedInComments } from './linkedin-ops-comment-suggestions.js';
 const MANUAL_DISCLOSURE_TR =
   "Bu öneriler yalnızca manuel inceleme içindir; sistem LinkedIn'e otomatik yorum göndermez.";
 
+const COPY_SUCCESS_MESSAGE_TR =
+  "Yorum metni kopyalandı. LinkedIn'de manuel olarak yapıştırıp paylaşmadan önce son kez kontrol edin.";
+
+const COPY_FAILURE_MESSAGE_TR =
+  'Kopyalama başarısız oldu. Metni manuel olarak seçip kopyalayın.';
+
 const SEVERITY_LABELS = Object.freeze({
   pass: 'Geçti',
   warning: 'Uyarı',
@@ -96,7 +102,7 @@ export function buildLinkedInCommentSuggestionsHtml(result, escapeHtml = default
   }
 
   const cardsHtml = suggestions
-    .map((suggestion) => {
+    .map((suggestion, index) => {
       const lint = suggestion.lintResult || {};
       const severity = lint.severity || 'pass';
       const severityLabel = SEVERITY_LABELS[severity] || severity;
@@ -113,6 +119,10 @@ export function buildLinkedInCommentSuggestionsHtml(result, escapeHtml = default
             Kategori: ${escapeHtml(suggestion.categoryKey || category.key || '—')}
             · Şablon: <code class="linkedin-ops-code">${escapeHtml(suggestion.sourceTemplateId || '—')}</code>
           </p>
+          <div class="linkedin-comment-card-actions">
+            <button type="button" class="linkedin-comment-copy-btn" data-comment-copy-index="${index}">Yorumu kopyala</button>
+            <p class="linkedin-comment-copy-status" role="status" aria-live="polite"></p>
+          </div>
         </article>`;
     })
     .join('');
@@ -150,17 +160,55 @@ export function bindLinkedInCommentPanel(root, options = {}) {
 
   if (!generateBtn || !postTextarea || !accountSelect || !languageSelect || !resultsEl) return;
 
+  /** @type {import('./linkedin-ops-comment-suggestions.js').LinkedInCommentSuggestionsResult | null} */
+  let lastResult = null;
+
+  resultsEl.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!target || typeof target.closest !== 'function') return;
+
+    const copyBtn = target.closest('[data-comment-copy-index]');
+    if (!copyBtn || !resultsEl.contains(copyBtn)) return;
+
+    const index = Number(copyBtn.getAttribute('data-comment-copy-index'));
+    const card = copyBtn.closest('.linkedin-comment-card');
+    const statusEl = card?.querySelector('.linkedin-comment-copy-status');
+    if (!statusEl || !lastResult || !Array.isArray(lastResult.suggestions)) return;
+
+    const body = lastResult.suggestions[index]?.body;
+    if (!body) {
+      statusEl.textContent = COPY_FAILURE_MESSAGE_TR;
+      statusEl.className = 'linkedin-comment-copy-status is-error';
+      return;
+    }
+
+    void (async () => {
+      try {
+        if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+          throw new Error('clipboard unavailable');
+        }
+        await navigator.clipboard.writeText(body);
+        statusEl.textContent = COPY_SUCCESS_MESSAGE_TR;
+        statusEl.className = 'linkedin-comment-copy-status is-success';
+      } catch {
+        statusEl.textContent = COPY_FAILURE_MESSAGE_TR;
+        statusEl.className = 'linkedin-comment-copy-status is-error';
+      }
+    })();
+  });
+
   generateBtn.addEventListener('click', () => {
     try {
-      const result = suggestLinkedInComments({
+      lastResult = suggestLinkedInComments({
         postText: postTextarea.value,
         accountType: accountSelect.value,
         language: languageSelect.value,
         templatesDoc: options.templatesDoc,
         weeklyPlanDoc: options.weeklyPlanDoc
       });
-      resultsEl.innerHTML = buildLinkedInCommentSuggestionsHtml(result, escapeHtml);
+      resultsEl.innerHTML = buildLinkedInCommentSuggestionsHtml(lastResult, escapeHtml);
     } catch {
+      lastResult = null;
       resultsEl.innerHTML = `<p class="linkedin-ops-empty" role="alert">Yorum önerileri oluşturulamadı. Lütfen metni kontrol edip tekrar deneyin.</p>`;
     }
   });

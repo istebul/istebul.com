@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * P16-3A/3B/4A-2 — LinkedIn operasyon asistanı audit.
+ * P16-3A/3B/4A-2/4B — LinkedIn operasyon asistanı audit.
  */
 const fs = require('fs');
 const path = require('path');
@@ -105,8 +105,12 @@ const forbiddenRuntimePatterns = [
   /\bgroq\b/i,
   /fetchOpsJson/,
   /\bsupabase\b/i,
-  /navigator\.clipboard/
+  /\bcompletionState\b/,
+  /\bdueCard\b/,
+  /linkedin\.com/i
 ];
+const clipboardForbiddenRuntimePatterns = [/navigator\.clipboard/];
+const execCommandForbiddenPatterns = [/execCommand/];
 const runtimeFiles = [
   'js/admin/linkedin-ops-assistant.js',
   'js/features/ops/linkedin-ops-plan-views.js',
@@ -115,6 +119,8 @@ const runtimeFiles = [
   'js/features/ops/linkedin-ops-comment-views.js',
   'js/features/ops/linkedin-ops-comment-suggestions.js'
 ];
+const clipboardAllowedFile = 'js/features/ops/linkedin-ops-comment-views.js';
+
 for (const rel of runtimeFiles) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
   for (const pattern of forbiddenRuntimePatterns) {
@@ -122,9 +128,31 @@ for (const rel of runtimeFiles) {
       fail(`${rel} must not use forbidden runtime pattern: ${pattern}`);
     }
   }
-  for (const phrase of ['linkedin api', 'scraping', 'otomatik paylaşım', 'otomatik yorum']) {
-    if (source.toLowerCase().includes(phrase) && !rel.includes('plan-views')) {
-      /* plan views may mention policy negation in Turkish labels */
+  for (const pattern of execCommandForbiddenPatterns) {
+    if (pattern.test(source)) {
+      fail(`${rel} must not use forbidden runtime pattern: ${pattern}`);
+    }
+  }
+  if (rel !== clipboardAllowedFile) {
+    for (const pattern of clipboardForbiddenRuntimePatterns) {
+      if (pattern.test(source)) {
+        fail(`${rel} must not use forbidden runtime pattern: ${pattern}`);
+      }
+    }
+  }
+  const lower = source.toLowerCase();
+  if (/\bauto-post\b/.test(lower) || /\bauto-comment\b/.test(lower)) {
+    fail(`${rel} must not reference auto-post/auto-comment behavior`);
+  }
+  if (!rel.includes('plan-views')) {
+    if (lower.includes('linkedin api') || lower.includes('scraping')) {
+      fail(`${rel} must not reference linkedin api or scraping`);
+    }
+    if (lower.includes('otomatik paylaşım')) {
+      fail(`${rel} must not reference otomatik paylaşım`);
+    }
+    if (lower.includes('otomatik yorum') && !lower.includes('otomatik yorum göndermez')) {
+      fail(`${rel} must not reference otomatik yorum except disclosure negation`);
     }
   }
 }
@@ -194,6 +222,21 @@ if (
   !commentViews.includes('otomatik yorum göndermez')
 ) {
   fail('linkedin-ops-comment-views.js must include manual workflow disclosure');
+}
+if (!commentViews.includes('Yorumu kopyala')) {
+  fail('linkedin-ops-comment-views.js must include copy button label');
+}
+if (!commentViews.includes('data-comment-copy-index')) {
+  fail('linkedin-ops-comment-views.js must include data-comment-copy-index');
+}
+if (!commentViews.includes('linkedin-comment-copy-status')) {
+  fail('linkedin-ops-comment-views.js must include linkedin-comment-copy-status');
+}
+if (!commentViews.includes('navigator.clipboard.writeText')) {
+  fail('linkedin-ops-comment-views.js must use navigator.clipboard.writeText for copy UX');
+}
+if (/execCommand/.test(commentViews)) {
+  fail('linkedin-ops-comment-views.js must not use execCommand clipboard fallback');
 }
 
 const opsAiLoader = fs.readFileSync(path.join(root, 'js/admin/ops-ai-assistant.js'), 'utf8');

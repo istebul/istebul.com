@@ -394,3 +394,50 @@
   color: var(--muted, #6b7280);
   line-height: 1.45;
 }
+
+#page-linkedin-ops-assistant .linkedin-comment-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border-radius: var(--radius, 12px);
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--surface, #ffffff);
+  color: var(--text, #111827);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-copy-btn:hover {
+  border-color: var(--accent, #2563eb);
+  color: var(--accent, #2563eb);
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-copy-status {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted, #6b7280);
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-copy-status:empty {
+  display: none;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-copy-status.is-success {
+  color: #15803d;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-copy-status.is-error {
+  color: var(--danger, #dc2626);
+}
