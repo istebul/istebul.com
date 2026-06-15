@@ -4,6 +4,11 @@ import { installAssistantUI } from './assistant-ui.js';
 import { escapeHtml as escapeHtmlValue, safeImageUrl as sanitizeImageUrl, safeUrl } from '../core/security.js';
 import { refreshLucideIcons, scheduleLucideIcons } from '../runtime/lucide-loader.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
+import {
+    AI_SCORE_DISCLAIMER,
+    buildListingTrustStripHtml,
+    hasPublicSourceUrl
+} from './listing-trust-ui.js';
 
 if (typeof document !== 'undefined') {
     document.addEventListener('ib:refresh-icons', () => {
@@ -659,10 +664,13 @@ export class UIManager {
         const { renderListingGalleryHtml, bindListingGallery } = await import('./listing-gallery-ui.js');
         const listingId = this.escapeHtml(listing.id);
         const galleryHtml = renderListingGalleryHtml(listing, (s) => this.escapeHtml(s), (u) => this.safeImageUrl(u));
-        const externalUrl = this.safeExternalUrl(listing.external_url, {
-            content: listing.id || 'listing_detail',
-            campaign: listing.category || 'marketplace'
-        });
+        const hasExternalSource = hasPublicSourceUrl(listing);
+        const externalUrl = hasExternalSource
+            ? this.safeExternalUrl(listing.source_url ?? listing.external_url, {
+                content: listing.id || 'listing_detail',
+                campaign: listing.category || 'marketplace'
+            })
+            : '';
         const isFavorite = favoriteIds.includes(listing.id.toString());
         const isCompared = (Array.isArray(comparisonSignatures) ? comparisonSignatures : []).map(String).includes(this.getListingComparisonSignature(listing));
         const locationLabel = this.getListingLocationLabel(listing);
@@ -680,7 +688,7 @@ export class UIManager {
                         <span class="assistant-kicker">${this.escapeHtml(categoryLabel || 'Seçenek')} detay analizi</span>
                         <h2>${this.escapeHtml(listing.title)}</h2>
                         <div class="listing-detail-badges">
-                            ${aiScoreDisplay !== null ? `<span title="Metodolojik uyum skoru; kesin sonuç değildir"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScoreDisplay)}/100</span>` : ''}
+                            ${aiScoreDisplay !== null ? `<span title="${this.escapeHtml(AI_SCORE_DISCLAIMER)}" aria-label="Uyum skoru ${this.escapeHtml(aiScoreDisplay)}/100. ${this.escapeHtml(AI_SCORE_DISCLAIMER)}"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScoreDisplay)}/100</span>` : ''}
                             <span><i data-lucide="map-pin"></i> ${this.escapeHtml(locationLabel)}</span>
                             <span><i data-lucide="clock-3"></i> ${this.formatDate(listing.created_at)}</span>
                         </div>
@@ -691,13 +699,14 @@ export class UIManager {
                     ${galleryHtml}
                     <div class="listing-detail-info">
                         ${this.getListingInsightsMarkup(listing, aiScoreDisplay ?? undefined)}
+                        ${buildListingTrustStripHtml(listing, { escapeHtml: (value) => this.escapeHtml(value) })}
                         <p><strong>Açıklama:</strong></p>
                         <p>${this.escapeHtml(listing.description || 'Açıklama bulunamadı.')}</p>
                         <div class="listing-actions">
                             <button class="btn ${isFavorite ? 'btn-primary' : 'btn-outline'}" data-action="favorite" data-listing-id="${listingId}"><i data-lucide="heart"></i> ${isFavorite ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}</button>
                             <button class="btn ${isCompared ? 'btn-primary' : 'btn-outline'}" data-action="compare" data-listing-id="${listingId}"><i data-lucide="${isCompared ? 'check' : 'columns-3'}"></i> ${isCompared ? 'Karşılaştırmada' : 'Karşılaştır'}</button>
                             <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Ön değerlendirmeye başla</a>
-                            <a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> ${this.escapeHtml(actionLabel)}</a>
+                            ${hasExternalSource ? `<a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> ${this.escapeHtml(actionLabel)}</a>` : ''}
                         </div>
                     </div>
                 </div>
