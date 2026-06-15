@@ -736,9 +736,6 @@ export class UIManager {
             periodicCost: Math.max(Number(profile.periodicCost || 0), 1),
             monthlyPayment: Math.max(Number(profile.monthlyPayment || 0), 1)
         };
-        const actionProfile = {
-            channels: [{ url: listing.external_url || 'https://www.sahibinden.com/' }]
-        };
         return '<section class="listing-detail-decision">' +
             '<div class="listing-detail-decision-head">' +
                 '<div><span class="assistant-kicker">Karar değerlendirmesi</span><h3>' + this.escapeHtml(profile.riskLevel || 'Karar analizi') + '</h3><p>' + this.escapeHtml(profile.comment || '') + '</p></div>' +
@@ -754,7 +751,7 @@ export class UIManager {
             this.getComparisonGraphMarkup(profile, maxValues) +
             (profile.tags?.length ? '<div class="comparison-tags">' + profile.tags.map((tag) => '<span>' + this.escapeHtml(tag) + '</span>').join('') + '</div>' : '') +
             this.getListingDetailRowsMarkup(profile.calculationRows) +
-            this.getRecommendationActionPlanMarkup(profile.categoryId || listing.category, actionProfile) +
+            this.getRecommendationActionPlanMarkup(profile.categoryId || listing.category, listing) +
         '</section>';
     }
 
@@ -784,7 +781,12 @@ export class UIManager {
             return;
         }
 
-        container.innerHTML = favorites.map(listing => `
+        container.innerHTML = favorites.map(listing => {
+            const hasExternalSource = hasPublicSourceUrl(listing);
+            const externalUrl = hasExternalSource
+                ? this.safeExternalUrl(listing.source_url ?? listing.external_url)
+                : '';
+            return `
             <div class="favorite-card">
                 <div class="favorite-card-body">
                     <h4>${this.escapeHtml(listing.title)}</h4>
@@ -794,11 +796,12 @@ export class UIManager {
                         <button class="btn btn-outline" data-favorite-id="${this.escapeHtml(listing.id)}"><i data-lucide="heart-off"></i> Kaldır</button>
                         <button class="btn btn-outline" data-action="detail" data-listing-id="${this.escapeHtml(listing.id)}"><i data-lucide="eye"></i> Detay</button>
                         <button class="btn btn-outline" data-action="compare" data-listing-id="${this.escapeHtml(listing.id)}"><i data-lucide="columns-3"></i> Karşılaştır</button>
-                        <a href="${this.safeExternalUrl(listing.external_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> Seçeneği İncele</a>
+                        ${hasExternalSource ? `<a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> Seçeneği İncele</a>` : ''}
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         this.loadIcons();
     }
