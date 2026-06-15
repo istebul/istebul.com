@@ -1,15 +1,20 @@
-import { describe, it } from 'node:test';
+import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   buildLinkedInCommentPanelHtml,
-  buildLinkedInCommentSuggestionsHtml
+  buildLinkedInCommentSuggestionsHtml,
+  bindLinkedInCommentPanel
 } from '../../js/features/ops/linkedin-ops-comment-views.js';
+import { suggestLinkedInComments } from '../../js/features/ops/linkedin-ops-comment-suggestions.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, '../..');
+const templatesDoc = JSON.parse(
+  readFileSync(join(rootDir, 'data/ops/linkedin-templates.json'), 'utf8')
+);
 
 const MOCK_RESULT = {
   ok: true,
@@ -43,6 +48,110 @@ const MOCK_RESULT = {
   ]
 };
 
+const COPY_SUCCESS_MESSAGE =
+  "Yorum metni kopyalandı. LinkedIn'de manuel olarak yapıştırıp paylaşmadan önce son kez kontrol edin.";
+
+const COPY_FAILURE_MESSAGE =
+  'Kopyalama başarısız oldu. Metni manuel olarak seçip kopyalayın.';
+
+/** @type {typeof globalThis.navigator | undefined} */
+let savedNavigator;
+
+afterEach(() => {
+  if (savedNavigator === undefined) {
+    delete global.navigator;
+  } else {
+    global.navigator = savedNavigator;
+  }
+  savedNavigator = undefined;
+});
+
+function setNavigatorClipboard(mock) {
+  savedNavigator = global.navigator;
+  global.navigator = { clipboard: mock };
+}
+
+function createInteractiveResultsEl() {
+  const listeners = new Map();
+  const statusEl = { textContent: '', className: '' };
+  const copyBtn = {
+    attributes: { 'data-comment-copy-index': '0' },
+    getAttribute(name) {
+      return this.attributes[name] ?? null;
+    },
+    closest(selector) {
+      if (selector === '[data-comment-copy-index]') return this;
+      if (selector === '.linkedin-comment-card') return card;
+      return null;
+    }
+  };
+  const card = {
+    querySelector(selector) {
+      if (selector === '.linkedin-comment-copy-status') return statusEl;
+      return null;
+    }
+  };
+
+  return {
+    statusEl,
+    copyBtn,
+    _html: '',
+    set innerHTML(value) {
+      this._html = value;
+    },
+    get innerHTML() {
+      return this._html;
+    },
+    contains(node) {
+      return node === copyBtn;
+    },
+    addEventListener(type, fn) {
+      if (!listeners.has(type)) listeners.set(type, []);
+      listeners.get(type).push(fn);
+    },
+    dispatchEvent(event) {
+      for (const fn of listeners.get(event.type) || []) fn(event);
+    }
+  };
+}
+
+function createBindRoot({ resultsEl, generateBtn, postTextarea, accountSelect, languageSelect }) {
+  const root = {
+    querySelector(selector) {
+      const map = {
+        '#linkedin-comment-generate': generateBtn,
+        '#linkedin-comment-post-text': postTextarea,
+        '#linkedin-comment-account-type': accountSelect,
+        '#linkedin-comment-language': languageSelect,
+        '#linkedin-comment-results': resultsEl
+      };
+      return map[selector] || null;
+    }
+  };
+  return root;
+}
+
+function triggerCopy(resultsEl, copyBtn) {
+  resultsEl.dispatchEvent({
+    type: 'click',
+    target: copyBtn
+  });
+}
+
+function createGenerateBtn() {
+  const listeners = new Map();
+  return {
+    listeners,
+    addEventListener(type, fn) {
+      if (!listeners.has(type)) listeners.set(type, []);
+      listeners.get(type).push(fn);
+    },
+    dispatchEvent(event) {
+      for (const fn of listeners.get(event.type) || []) fn(event);
+    }
+  };
+}
+
 describe('linkedin-ops-comment-views', () => {
   it('buildLinkedInCommentPanelHtml includes form controls and results container', () => {
     const html = buildLinkedInCommentPanelHtml();
@@ -74,6 +183,20 @@ describe('linkedin-ops-comment-views', () => {
     assert.match(html, /manuel inceleme/);
   });
 
+  it('buildLinkedInCommentSuggestionsHtml renders copy button with data-comment-copy-index', () => {
+    const html = buildLinkedInCommentSuggestionsHtml(MOCK_RESULT);
+    assert.match(html, /Yorumu kopyala/);
+    assert.match(html, /class="linkedin-comment-copy-btn"/);
+    assert.match(html, /data-comment-copy-index="0"/);
+  });
+
+  it('buildLinkedInCommentSuggestionsHtml renders inline copy status region', () => {
+    const html = buildLinkedInCommentSuggestionsHtml(MOCK_RESULT);
+    assert.match(html, /class="linkedin-comment-copy-status"/);
+    assert.match(html, /role="status"/);
+    assert.match(html, /aria-live="polite"/);
+  });
+
   it('buildLinkedInCommentSuggestionsHtml handles empty suggestions safely', () => {
     const emptyHtml = buildLinkedInCommentSuggestionsHtml({
       ...MOCK_RESULT,
@@ -83,6 +206,95 @@ describe('linkedin-ops-comment-views', () => {
 
     const nullHtml = buildLinkedInCommentSuggestionsHtml(null);
     assert.match(nullHtml, /oluşturulamadı/);
+  });
+
+  it('bindLinkedInCommentPanel copies canonical suggestion body on clipboard success', async () => {
+    let copiedText = '';
+    setNavigatorClipboard({
+      writeText: async (text) => {
+        copiedText = text;
+      }
+    });
+
+    const postText =
+      'Yapay zeka ve LLM tartışmasında denetlenebilir skor çerçevesi önemli bir konu.';
+    const resultsEl = createInteractiveResultsEl();
+    const generateBtn = createGenerateBtn();
+    const postTextarea = { value: postText };
+    const accountSelect = { value: 'ceo' };
+    const languageSelect = { value: 'tr' };
+
+    const root = createBindRoot({ resultsEl, generateBtn, postTextarea, accountSelect, languageSelect });
+    bindLinkedInCommentPanel(root, { templatesDoc, weeklyPlanDoc: {} });
+
+    generateBtn.dispatchEvent({ type: 'click' });
+    assert.ok(resultsEl.innerHTML.includes('Yorumu kopyala'));
+
+    const expected = suggestLinkedInComments({
+      postText,
+      accountType: 'ceo',
+      language: 'tr',
+      templatesDoc,
+      weeklyPlanDoc: {}
+    });
+
+    triggerCopy(resultsEl, resultsEl.copyBtn);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(copiedText, expected.suggestions[0].body);
+    assert.equal(resultsEl.statusEl.textContent, COPY_SUCCESS_MESSAGE);
+    assert.equal(resultsEl.statusEl.className, 'linkedin-comment-copy-status is-success');
+  });
+
+  it('bindLinkedInCommentPanel shows failure message when clipboard is unavailable', async () => {
+    savedNavigator = global.navigator;
+    global.navigator = {};
+
+    const resultsEl = createInteractiveResultsEl();
+    const generateBtn = createGenerateBtn();
+    const postTextarea = {
+      value: 'Yapay zeka ve LLM tartışmasında denetlenebilir skor çerçevesi önemli bir konu.'
+    };
+    const accountSelect = { value: 'ceo' };
+    const languageSelect = { value: 'tr' };
+
+    const root = createBindRoot({ resultsEl, generateBtn, postTextarea, accountSelect, languageSelect });
+    bindLinkedInCommentPanel(root, { templatesDoc, weeklyPlanDoc: {} });
+
+    generateBtn.dispatchEvent({ type: 'click' });
+    triggerCopy(resultsEl, resultsEl.copyBtn);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(resultsEl.statusEl.textContent, COPY_FAILURE_MESSAGE);
+    assert.equal(resultsEl.statusEl.className, 'linkedin-comment-copy-status is-error');
+  });
+
+  it('bindLinkedInCommentPanel shows failure message when clipboard write rejects', async () => {
+    setNavigatorClipboard({
+      writeText: async () => {
+        throw new Error('permission denied');
+      }
+    });
+
+    const resultsEl = createInteractiveResultsEl();
+    const generateBtn = createGenerateBtn();
+    const postTextarea = {
+      value: 'Yapay zeka ve LLM tartışmasında denetlenebilir skor çerçevesi önemli bir konu.'
+    };
+    const accountSelect = { value: 'ceo' };
+    const languageSelect = { value: 'tr' };
+
+    const root = createBindRoot({ resultsEl, generateBtn, postTextarea, accountSelect, languageSelect });
+    bindLinkedInCommentPanel(root, { templatesDoc, weeklyPlanDoc: {} });
+
+    generateBtn.dispatchEvent({ type: 'click' });
+    triggerCopy(resultsEl, resultsEl.copyBtn);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(resultsEl.statusEl.textContent, COPY_FAILURE_MESSAGE);
+    assert.equal(resultsEl.statusEl.className, 'linkedin-comment-copy-status is-error');
   });
 
   it('view source has no forbidden runtime patterns', () => {
@@ -99,16 +311,19 @@ describe('linkedin-ops-comment-views', () => {
       'groq',
       'supabase',
       'linkedin.com',
-      'navigator.clipboard',
+      'document.execCommand',
+      'execCommand',
+      'auto-post',
+      'auto-comment',
+      'completionState',
+      'dueCard',
       'document.',
-      'window.',
-      'clipboard',
-      'copyToClipboard',
-      'Kopyala'
+      'window.'
     ];
     for (const pattern of forbidden) {
       assert.ok(!source.includes(pattern), `forbidden pattern found: ${pattern}`);
     }
+    assert.ok(source.includes('navigator.clipboard.writeText'));
   });
 
   it('view source has no AI proxy integration', () => {
