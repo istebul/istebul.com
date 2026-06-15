@@ -140,7 +140,7 @@ export class PremiumPages {
                 <small>/ 100</small>
               </div>
               <p class="ib-premium-note">Gösterim amaçlıdır; canlı analizde skor girdilerinize göre hesaplanır — kesin sonuç değildir.</p>
-              <p>Hybrid SUV · aile kullanımı · örnek kredi senaryosu</p>
+              <p>Büyük karar · aile bütçesi · örnek uygunluk senaryosu</p>
               <div class="ib-score-bars">
                 <div><span>Maliyet</span><em style="width:72%"></em></div>
                 <div><span>Finansman</span><em style="width:64%"></em></div>
@@ -198,7 +198,7 @@ export class PremiumPages {
           <div class="ib-premium-block-head">
             <span class="section-kicker">Karşılaştırma</span>
             <h2>${escapeHtml(spaText('premiumKarar.compareTitle', 'İki seçeneği yan yana görün'))}</h2>
-            <p>${escapeHtml(spaText('premiumKarar.compareLead', 'Pro ile 4 modele kadar detaylı karşılaştırma; ücretsiz planda 2 model.'))}</p>
+            <p>${escapeHtml(spaText('premiumKarar.compareLead', 'Pro ile 4 seçeneğe kadar detaylı karşılaştırma; ücretsiz planda 2 seçenek.'))}</p>
           </div>
           <div class="ib-compare-table-wrap">
             <p class="ib-sample-scenario-label ib-sample-scenario-label--block">Örnek senaryo — canlı analizde değerler girdilerinize göre hesaplanır</p>
@@ -206,14 +206,14 @@ export class PremiumPages {
               <thead>
                 <tr>
                   <th>Kriter</th>
-                  <th>Model A</th>
-                  <th>Model B</th>
+                  <th>Seçenek A</th>
+                  <th>Seçenek B</th>
                   <th>Fark</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>12 ay TCO</td><td>₺412.000</td><td>₺389.000</td><td class="ib-compare-win">−₺23.000</td></tr>
-                <tr><td>Aylık kredi yükü</td><td>₺18.400</td><td>₺17.100</td><td class="ib-compare-win">−₺1.300</td></tr>
+                <tr><td>12 ay toplam maliyet</td><td>₺412.000</td><td>₺389.000</td><td class="ib-compare-win">−₺23.000</td></tr>
+                <tr><td>Aylık ödeme yükü</td><td>₺18.400</td><td>₺17.100</td><td class="ib-compare-win">−₺1.300</td></tr>
                 <tr><td>Uyum skoru (örnek)</td><td>78</td><td>82</td><td class="ib-compare-win">+4</td></tr>
                 <tr><td>Veri güven bandı (örnek)</td><td>Orta–yüksek</td><td>Orta–yüksek</td><td>—</td></tr>
               </tbody>
@@ -239,8 +239,8 @@ export class PremiumPages {
       <section class="ib-premium-cta-band" aria-label="Sonraki adım">
         <div class="container ib-premium-cta-band-inner">
           <div>
-            <h2>Yanlış araç seçme riskini azaltın</h2>
-            <p>Önce ücretsiz TCO analizi; ihtiyaç duyduğunuzda Pro ile derin rapor ve karşılaştırma. Taahhüt yok.</p>
+            <h2>Yanlış karar maliyetini azaltın</h2>
+            <p>Önce ücretsiz karar analizi; ihtiyaç duyduğunuzda Pro ile derin rapor ve karşılaştırma. Taahhüt yok.</p>
           </div>
           <div class="ib-premium-hero-actions">
             <a href="/karar-asistani/" class="btn btn-primary btn-lg" data-native-route data-analytics-cta="cta_decision_premium_footer" data-analytics-placement="premium_footer" title="${BRAND_VOICE.cta.primaryDecisionFree}">${BRAND_VOICE.cta.primaryDecisionFree}</a>
