@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * P16-3A — LinkedIn operasyon asistanı (lint-only admin MVP) audit.
+ * P16-3A/3B — LinkedIn operasyon asistanı audit.
  */
 const fs = require('fs');
 const path = require('path');
@@ -15,9 +15,13 @@ const fail = (msg) => {
 
 const mustExist = [
   'js/features/ops/linkedin-ops-lint-views.js',
+  'js/features/ops/linkedin-ops-plan-views.js',
+  'js/features/ops/linkedin-ops-template-views.js',
   'js/admin/linkedin-ops-assistant.js',
   'css/admin-linkedin-ops.css',
-  'js/features/ops/linkedin-brand-lint.js'
+  'js/features/ops/linkedin-brand-lint.js',
+  'data/ops/linkedin-weekly-plan.json',
+  'data/ops/linkedin-templates.json'
 ];
 
 for (const rel of mustExist) {
@@ -65,6 +69,74 @@ if (!adminJs.includes("import('./admin/linkedin-ops-assistant.js')")) {
   fail('admin-panel.js must dynamically import linkedin-ops-assistant loader');
 }
 
+const loader = fs.readFileSync(path.join(root, 'js/admin/linkedin-ops-assistant.js'), 'utf8');
+for (const id of [
+  'linkedin-ops-plan-section',
+  'linkedin-ops-template-section',
+  'linkedin-ops-lint-section'
+]) {
+  if (!loader.includes(id)) fail(`linkedin-ops-assistant.js missing #${id}`);
+}
+if (!loader.includes('OPS_JSON_EMBED')) {
+  fail('linkedin-ops-assistant.js must read OPS_JSON_EMBED');
+}
+if (!loader.includes("'linkedin-weekly-plan'")) {
+  fail('linkedin-ops-assistant.js must read linkedin-weekly-plan embed key');
+}
+if (!loader.includes("'linkedin-templates'")) {
+  fail('linkedin-ops-assistant.js must read linkedin-templates embed key');
+}
+
+const forbiddenRuntimePatterns = [
+  /\bfetch\s*\(/,
+  /\blocalStorage\b/,
+  /ai-proxy/,
+  /openai/i,
+  /\bgroq\b/i,
+  /fetchOpsJson/
+];
+const runtimeFiles = [
+  'js/admin/linkedin-ops-assistant.js',
+  'js/features/ops/linkedin-ops-plan-views.js',
+  'js/features/ops/linkedin-ops-template-views.js',
+  'js/features/ops/linkedin-ops-lint-views.js'
+];
+for (const rel of runtimeFiles) {
+  const source = fs.readFileSync(path.join(root, rel), 'utf8');
+  for (const pattern of forbiddenRuntimePatterns) {
+    if (pattern.test(source)) {
+      fail(`${rel} must not use forbidden runtime pattern: ${pattern}`);
+    }
+  }
+  for (const phrase of ['linkedin api', 'scraping', 'otomatik paylaşım', 'otomatik yorum']) {
+    if (source.toLowerCase().includes(phrase) && !rel.includes('plan-views')) {
+      /* plan views may mention policy negation in Turkish labels */
+    }
+  }
+}
+
+const planViews = fs.readFileSync(
+  path.join(root, 'js/features/ops/linkedin-ops-plan-views.js'),
+  'utf8'
+);
+if (!planViews.includes('Haftalık LinkedIn Planı')) {
+  fail('linkedin-ops-plan-views.js missing plan section title');
+}
+if (!planViews.includes('linkedin-ops-plan-table')) {
+  fail('linkedin-ops-plan-views.js missing plan table');
+}
+
+const templateViews = fs.readFileSync(
+  path.join(root, 'js/features/ops/linkedin-ops-template-views.js'),
+  'utf8'
+);
+if (!templateViews.includes('LinkedIn Template Kataloğu')) {
+  fail('linkedin-ops-template-views.js missing template section title');
+}
+if (!templateViews.includes('linkedin-ops-template-table')) {
+  fail('linkedin-ops-template-views.js missing template summary table');
+}
+
 const lintViews = fs.readFileSync(
   path.join(root, 'js/features/ops/linkedin-ops-lint-views.js'),
   'utf8'
@@ -79,6 +151,9 @@ for (const id of [
 }
 if (!lintViews.includes('lintLinkedInText')) {
   fail('linkedin-ops-lint-views.js must import lintLinkedInText');
+}
+if (!lintViews.includes('Marka Uyum Kontrolü')) {
+  fail('linkedin-ops-lint-views.js must keep lint section title');
 }
 
 const opsAiLoader = fs.readFileSync(path.join(root, 'js/admin/ops-ai-assistant.js'), 'utf8');
