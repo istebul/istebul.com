@@ -99,45 +99,56 @@
 1. Add total-cost-of-ownership to `PricingService.analyzeListing()`
 2. Surface in `AIAnalysis.cons` when ownership cost exceeds benchmark
 
-## Phase 4 — Persistence (Sprint-2 complete)
+## Phase 4 — Persistence (complete)
 
-### 4.1 Database Tables (new, independent)
+### 4.1 Database Tables
 
-**Migration:** `supabase/migrations/20260701_ai_listings_engine_v1.sql`
+**Migrations:** `20260701_ai_listings_engine_v1.sql` through `20260705_legacy_bridge_and_published_seed.sql`
 
-Tables: `ai_listings`, `ai_listing_analyses`, `ai_listing_events`
+Tables: `ai_listings`, `ai_listing_analyses`, `ai_listing_events`, `ai_learning_events`
 
-RLS: service_role only (anon/authenticated denied). See `docs/ai-listings/DATABASE_SCHEMA.md`.
+RLS evolution:
 
-**Sprint-3 (complete):** Supabase CRUD adapters implemented — see `REPOSITORY_ADAPTERS.md`.
+- Base: service_role writes; client denied
+- `20260702`: public `SELECT` on `status = 'published'` + owner read policies
+- `20260704`: authenticated owner read for intake drafts
 
-**Sprint-4 (complete):** Edge Function API at `supabase/functions/ai-listings/` — see `EDGE_FUNCTION_API.md`.
+See [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md).
 
-**Sprint-5 (complete):** Internal admin test panel — see `ADMIN_TEST_PANEL.md`.
+**Sprint-3 (complete):** Supabase CRUD adapters — [REPOSITORY_ADAPTERS.md](./REPOSITORY_ADAPTERS.md).
 
-**Action (Sprint-6):**
-1. Server-side admin proxy (no secret in browser localStorage)
-2. Wire `src/ai-listings` DI container to Edge Function responses
-3. Replace placeholder pipeline with live EVDS/AI adapters
+**Sprint-4 (complete):** Edge Function API — [EDGE_FUNCTION_API.md](./EDGE_FUNCTION_API.md).
 
-## Phase 5 — Activation
+**Sprint-5 (complete):** Admin test panel — [ADMIN_TEST_PANEL.md](./ADMIN_TEST_PANEL.md).
 
-### 5.1 Feature Flag Rollout
+**Sprint-7–10 (complete):** QA workflow, `published` status, site toggle, `/secenekler/` client integration.
 
-1. Set `AI_LISTINGS_ENABLED=true` in staging environment
-2. Enable via `?ai_listings=1` for internal QA
-3. Gradual rollout: 1% → 10% → 100% via env config
+**Remaining (Phase 4.x):**
+1. Server-side admin proxy (reduce secret in browser localStorage)
+2. Live EVDS/AI adapters in production scoring path
+3. Finansman / sigorta / kasko `ai_listings` category model (or document vertical-only scope)
 
-### 5.2 Route Integration (optional, separate PR)
+## Phase 5 — Public catalog activation (partially complete)
 
-- New route: `/ai-listings/` (do NOT modify `/ilan-analizi/`)
-- Lazy-load `src/ai-listings/index.js` via dynamic import
-- Register esbuild entry in `scripts/production-build.cjs`
+### 5.1 Feature flags (complete)
 
-### 5.3 UI Integration (optional, separate PR)
+- Edge: `AI_LISTINGS_SUPABASE_ENABLED`, `AI_LISTINGS_PUBLIC_PUBLISH_ENABLED`
+- Site: `site_settings.ai_listings_public_enabled` (admin panel toggle)
+- Client bootstrap: `js/runtime/ai-listings-integrations.js`
 
-- New results component consuming `AIAnalysis` interface
-- No changes to existing `listing-analysis-results-v2.js`
+### 5.2 Route integration (complete)
+
+- [x] `/secenekler/` and `/ilanlar/` → SPA `ilanlar` section (`js/core/router.js`)
+- [x] `loadDecisionOptions()` → `ai_listings` published rows (`js/core/decision-options-api.js`)
+- [x] User intake `/ilan-ekle` → `ai-listings-intake` edge (`js/core/ai-listings-bridge.js`)
+- `/ilan-analizi/` vertical unchanged
+
+### 5.3 Public UI (MVP+ — trust layer pending)
+
+- [x] `listings-ui.js` cards, empty states, favori/karşılaştırma wiring
+- [ ] Trust badges (source, QA label, image confidence) on public cards
+- [ ] Vehicle image resolver on public catalog
+- [ ] Finansman / sigorta / kasko catalog parity
 
 ## Phase 6 — Recommendations & Personalization
 

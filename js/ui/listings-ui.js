@@ -61,7 +61,7 @@ export class ListingsUI {
                 const externalUrl = this.safeExternalUrl(listing.external_url);
                 const isFavorite = favoriteIds.includes(listing.id.toString());
                 const isCompared = comparedSignatures.has(this.getListingComparisonSignature(listing));
-                const aiScore = this.getListingQualityScore(listing);
+                const aiScoreDisplay = this.resolveListingQualityScoreDisplay(listing);
                 const categoryLabel = this.getCategoryLabel(listing.category || '');
                 const locationLabel = this.getListingLocationLabel(listing);
                 const actionLabel = this.getListingPrimaryActionLabel(listing.category || '');
@@ -77,7 +77,7 @@ export class ListingsUI {
                              width="400"
                              height="250">
                         <div class="listing-badges">
-                            <span class="listing-ai-score" title="Yapay zeka uyum skoru"><i data-lucide="sparkles"></i> AI uyum ${this.escapeHtml(aiScore)}/100</span>
+                            ${aiScoreDisplay !== null ? `<span class="listing-ai-score" title="Yapay zeka uyum skoru"><i data-lucide="sparkles"></i> AI uyum ${this.escapeHtml(aiScoreDisplay)}/100</span>` : ''}
                             <span>${this.escapeHtml(categoryLabel || 'Seçenek')}</span>
                         </div>
                         ${mediaCount > 1 ? `<span class="listing-media-count"><i data-lucide="images"></i> ${mediaCount}</span>` : ''}
@@ -89,7 +89,7 @@ export class ListingsUI {
                             <span>${this.escapeHtml(locationLabel)}</span>
                             <span>${this.formatDate(listing.created_at)}</span>
                         </div>
-                        ${this.getListingInsightsMarkup(listing, aiScore)}
+                        ${this.getListingInsightsMarkup(listing, aiScoreDisplay ?? undefined)}
                         <div class="listing-actions">
                             <button class="btn ${isFavorite ? 'btn-primary' : 'btn-outline'} favorite-btn" data-action="favorite">
                                 <i data-lucide="heart"></i> ${isFavorite ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}

@@ -3439,7 +3439,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
     getSourceTypeLabel(type) {
         const labels = {
-            listing: 'İlan kaynağı',
+            listing: 'Seçenek kaynağı',
             finance: 'Kredi kaynağı',
             insurance: 'Sigorta kaynağı',
             travel: 'Tatil/ulaşım kaynağı'
@@ -5023,10 +5023,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         return {
             id: 'cmp-listing-' + listing.id,
             signature: 'listing:' + categoryId + ':' + listing.id,
-            sourceType: 'İlan',
+            sourceType: 'Seçenek',
             categoryId,
             categoryName: this.getCategoryName(categoryId),
-            title: listing.title || 'İlan',
+            title: listing.title || 'Seçenek',
             price: Number(listing.price || 0),
             periodicCost,
             costBreakdown,
@@ -5086,10 +5086,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
     createListingComparisonRows(listing = {}, periodicCost = 0, bestFinance = {}) {
         const categoryId = listing.category;
-        const purchaseLabel = categoryId === 'arac' ? 'İlan araç bedeli' : categoryId === 'ev' ? 'İlan alım bedeli' : categoryId === 'tatil' ? 'İlan paket bedeli' : 'İlan bedeli';
+        const purchaseLabel = categoryId === 'arac' ? 'Seçenek araç bedeli' : categoryId === 'ev' ? 'Seçenek alım bedeli' : categoryId === 'tatil' ? 'Seçenek paket bedeli' : 'Seçenek bedeli';
         const periodicLabel = this.getCategoryTotalLabel(categoryId);
         return [
-            { label: purchaseLabel, value: Number(listing.price || 0), note: 'İlan üzerinde görünen ana bedel' },
+            { label: purchaseLabel, value: Number(listing.price || 0), note: 'Seçenek üzerinde görünen ana bedel' },
             { label: periodicLabel, value: periodicCost, note: this.getCategoryTotalNote(categoryId) },
             { label: 'Aylık ödeme', value: Number(bestFinance.monthlyPayment || 0), note: bestFinance.bank ? bestFinance.bank + ' simülasyonu' : 'Finansman simülasyonu yok' },
             { label: 'Toplam geri ödeme', value: Number(bestFinance.totalPayment || 0), note: bestFinance.term ? bestFinance.term + ' ay vade' : 'Finansman simülasyonu yok' }
@@ -5098,7 +5098,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
 
     getListingDecisionTags(listing = {}, score = 0) {
         const tags = [];
-        if (score >= 86) tags.push('Güçlü ilan');
+        if (score >= 86) tags.push('Güçlü seçenek');
         if (listing.external_url) tags.push('Kaynak bağlantılı');
         if (listing.created_at && (Date.now() - new Date(listing.created_at).getTime()) < 5 * 86400000) tags.push('Güncel');
         tags.push(this.getCategoryName(listing.category));
@@ -5108,7 +5108,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
     createListingComparisonComment(listing = {}, periodicCost = 0) {
         const costText = this.formatCurrency(periodicCost);
         if (listing.category === 'arac') {
-            return (listing.title || 'Bu araç') + ' için ilan bedeline ek olarak yakıt/enerji, sigorta, kasko ve bakım yükü yaklaşık ' + costText + ' seviyesinde varsayıldı. Satın alma öncesi ekspertiz, tramer ve güncel kasko teklifi kontrol edilmeli.';
+            return (listing.title || 'Bu araç') + ' için seçenek bedeline ek olarak yakıt/enerji, sigorta, kasko ve bakım yükü yaklaşık ' + costText + ' seviyesinde varsayıldı. Satın alma öncesi ekspertiz, tramer ve güncel kasko teklifi kontrol edilmeli.';
         }
         if (listing.category === 'ev') {
             return (listing.title || 'Bu ev') + ' için alım bedeline ek yıllık aidat/bakım, vergi, sigorta ve yenileme payı yaklaşık ' + costText + ' olarak ele alındı. Tapu, deprem ve gerçek m2 fiyatı doğrulanmalı.';
@@ -5116,7 +5116,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         if (listing.category === 'tatil') {
             return (listing.title || 'Bu tatil') + ' için paket dışı ulaşım, aktivite, transfer ve sigorta yükü yaklaşık ' + costText + ' olarak simüle edildi. Sezon ve iptal koşulları son fiyatı değiştirebilir.';
         }
-        return 'İlan karşılaştırması fiyat, tahmini dönemsel maliyet ve finansman simülasyonu üzerinden üretildi.';
+        return 'Seçenek karşılaştırması fiyat, tahmini dönemsel maliyet ve finansman simülasyonu üzerinden üretildi.';
     }
 
     getFavoriteIds() {
@@ -5163,7 +5163,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const existing = this.favorites.find((item) => item.id.toString() === normalizedId);
         if (existing) {
             this.favorites = this.favorites.filter((item) => item.id.toString() !== normalizedId);
-            this.ui.showSuccess('İlan favorilerinizden çıkarıldı.');
+            this.ui.showSuccess('Seçenek favorilerinizden çıkarıldı.');
         } else {
             const listing = (this.currentListings || []).find((item) => item.id.toString() === normalizedId) ||
                 (this.currentDetailListing?.id?.toString() === normalizedId ? this.currentDetailListing : null) ||
@@ -5173,7 +5173,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
                 return;
             }
             this.favorites.push(listing);
-            this.ui.showSuccess('İlan favorilerinize eklendi.');
+            this.ui.showSuccess('Seçenek favorilerinize eklendi.');
         }
 
         this.saveFavorites();

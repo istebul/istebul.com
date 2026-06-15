@@ -487,7 +487,12 @@ export class UIManager {
             base.push('Tatil analizi', 'Paket kontrolü', 'İptal koşulu');
         }
 
-        return [...base, 'Uyum skoru ' + aiScore + '/100'].slice(0, 4);
+        const items = [...base];
+        const displayScore = this.resolveListingQualityScoreDisplay(listing, aiScore);
+        if (displayScore !== null) {
+            items.push('Uyum skoru ' + displayScore + '/100');
+        }
+        return items.slice(0, 4);
     }
 
     getListingInsightsMarkup(listing = {}, aiScore = 0) {
@@ -503,6 +508,21 @@ export class UIManager {
         }
 
         return null;
+    }
+
+    /**
+     * @param {Record<string, unknown>} [listing]
+     * @param {number|null|undefined} [overrideScore]
+     * @returns {number|null}
+     */
+    resolveListingQualityScoreDisplay(listing = {}, overrideScore) {
+        const raw = overrideScore !== undefined && overrideScore !== null
+            ? overrideScore
+            : this.getListingQualityScore(listing);
+        if (raw === null || raw === undefined || raw === '') return null;
+        const num = Number(raw);
+        if (!Number.isFinite(num) || num <= 0) return null;
+        return Math.max(0, Math.min(100, Math.round(num)));
     }
 
     getListingComparisonSignature(listing = {}) {
@@ -647,7 +667,11 @@ export class UIManager {
         const isCompared = (Array.isArray(comparisonSignatures) ? comparisonSignatures : []).map(String).includes(this.getListingComparisonSignature(listing));
         const locationLabel = this.getListingLocationLabel(listing);
         const categoryLabel = this.getCategoryLabel(listing.category || '');
-        const aiScore = decisionProfile?.score || this.getListingQualityScore(listing);
+        const profileScore = decisionProfile?.score;
+        const aiScoreDisplay = this.resolveListingQualityScoreDisplay(
+            listing,
+            profileScore !== undefined && profileScore !== null ? profileScore : undefined
+        );
         const actionLabel = this.getListingPrimaryActionLabel(listing.category || '');
         section.innerHTML = `
             <div class="listing-detail-card listing-detail-premium">
@@ -656,7 +680,7 @@ export class UIManager {
                         <span class="assistant-kicker">${this.escapeHtml(categoryLabel || 'Seçenek')} detay analizi</span>
                         <h2>${this.escapeHtml(listing.title)}</h2>
                         <div class="listing-detail-badges">
-                            <span title="Metodolojik uyum skoru; kesin sonuç değildir"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScore)}/100</span>
+                            ${aiScoreDisplay !== null ? `<span title="Metodolojik uyum skoru; kesin sonuç değildir"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScoreDisplay)}/100</span>` : ''}
                             <span><i data-lucide="map-pin"></i> ${this.escapeHtml(locationLabel)}</span>
                             <span><i data-lucide="clock-3"></i> ${this.formatDate(listing.created_at)}</span>
                         </div>
@@ -666,7 +690,7 @@ export class UIManager {
                 <div class="listing-detail-body listing-detail-body-gallery">
                     ${galleryHtml}
                     <div class="listing-detail-info">
-                        ${this.getListingInsightsMarkup(listing, aiScore)}
+                        ${this.getListingInsightsMarkup(listing, aiScoreDisplay ?? undefined)}
                         <p><strong>Açıklama:</strong></p>
                         <p>${this.escapeHtml(listing.description || 'Açıklama bulunamadı.')}</p>
                         <div class="listing-actions">
