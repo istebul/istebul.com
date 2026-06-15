@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * P16-3A/3B — LinkedIn operasyon asistanı audit.
+ * P16-3A/3B/4A-2 — LinkedIn operasyon asistanı audit.
  */
 const fs = require('fs');
 const path = require('path');
@@ -17,6 +17,9 @@ const mustExist = [
   'js/features/ops/linkedin-ops-lint-views.js',
   'js/features/ops/linkedin-ops-plan-views.js',
   'js/features/ops/linkedin-ops-template-views.js',
+  'js/features/ops/linkedin-ops-comment-suggestions.js',
+  'js/features/ops/linkedin-ops-comment-views.js',
+  'tests/unit/linkedin-ops-comment-views.test.mjs',
   'js/admin/linkedin-ops-assistant.js',
   'css/admin-linkedin-ops.css',
   'js/features/ops/linkedin-brand-lint.js',
@@ -73,9 +76,16 @@ const loader = fs.readFileSync(path.join(root, 'js/admin/linkedin-ops-assistant.
 for (const id of [
   'linkedin-ops-plan-section',
   'linkedin-ops-template-section',
+  'linkedin-ops-comment-section',
   'linkedin-ops-lint-section'
 ]) {
   if (!loader.includes(id)) fail(`linkedin-ops-assistant.js missing #${id}`);
+}
+if (!loader.includes('renderLinkedInCommentPanel')) {
+  fail('linkedin-ops-assistant.js must call renderLinkedInCommentPanel');
+}
+if (!loader.includes('bindLinkedInCommentPanel')) {
+  fail('linkedin-ops-assistant.js must call bindLinkedInCommentPanel');
 }
 if (!loader.includes('OPS_JSON_EMBED')) {
   fail('linkedin-ops-assistant.js must read OPS_JSON_EMBED');
@@ -93,13 +103,17 @@ const forbiddenRuntimePatterns = [
   /ai-proxy/,
   /openai/i,
   /\bgroq\b/i,
-  /fetchOpsJson/
+  /fetchOpsJson/,
+  /\bsupabase\b/i,
+  /navigator\.clipboard/
 ];
 const runtimeFiles = [
   'js/admin/linkedin-ops-assistant.js',
   'js/features/ops/linkedin-ops-plan-views.js',
   'js/features/ops/linkedin-ops-template-views.js',
-  'js/features/ops/linkedin-ops-lint-views.js'
+  'js/features/ops/linkedin-ops-lint-views.js',
+  'js/features/ops/linkedin-ops-comment-views.js',
+  'js/features/ops/linkedin-ops-comment-suggestions.js'
 ];
 for (const rel of runtimeFiles) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
@@ -156,8 +170,40 @@ if (!lintViews.includes('Marka Uyum Kontrolü')) {
   fail('linkedin-ops-lint-views.js must keep lint section title');
 }
 
+const commentViews = fs.readFileSync(
+  path.join(root, 'js/features/ops/linkedin-ops-comment-views.js'),
+  'utf8'
+);
+for (const id of [
+  'linkedin-comment-post-text',
+  'linkedin-comment-account-type',
+  'linkedin-comment-language',
+  'linkedin-comment-generate',
+  'linkedin-comment-results'
+]) {
+  if (!commentViews.includes(id)) fail(`linkedin-ops-comment-views.js missing #${id}`);
+}
+if (!commentViews.includes('suggestLinkedInComments')) {
+  fail('linkedin-ops-comment-views.js must import suggestLinkedInComments');
+}
+if (!commentViews.includes('Üçüncü Taraf Yorum Önerisi')) {
+  fail('linkedin-ops-comment-views.js missing comment section title');
+}
+if (
+  !commentViews.includes('manuel inceleme') &&
+  !commentViews.includes('otomatik yorum göndermez')
+) {
+  fail('linkedin-ops-comment-views.js must include manual workflow disclosure');
+}
+
 const opsAiLoader = fs.readFileSync(path.join(root, 'js/admin/ops-ai-assistant.js'), 'utf8');
-for (const forbidden of ['linkedin-ops-assistant', 'linkedin-brand-lint', 'lintLinkedInText']) {
+for (const forbidden of [
+  'linkedin-ops-assistant',
+  'linkedin-brand-lint',
+  'lintLinkedInText',
+  'linkedin-ops-comment',
+  'suggestLinkedInComments'
+]) {
   if (opsAiLoader.includes(forbidden)) {
     fail(`ops-ai-assistant.js must not reference ${forbidden}`);
   }
@@ -177,6 +223,9 @@ for (const rel of publicRuntimeFiles) {
   const source = fs.readFileSync(abs, 'utf8');
   if (source.includes('linkedin-ops-assistant')) {
     fail(`public runtime file must not reference linkedin-ops-assistant: ${rel}`);
+  }
+  if (source.includes('linkedin-ops-comment')) {
+    fail(`public runtime file must not reference linkedin-ops-comment: ${rel}`);
   }
 }
 
