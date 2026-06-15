@@ -86,6 +86,11 @@ assert(fs.existsSync(path.join(root, 'docker-compose.yml')), 'docker-compose.yml
 assert(fs.existsSync(path.join(root, 'functions/api/health.js')), 'Cloudflare health endpoint is missing.');
 const robotsTxt = read('robots.txt');
 assert(robotsTxt.includes('Sitemap:') && robotsTxt.includes('sitemap.xml'), 'robots.txt sitemap declaration is missing.');
+const adsTxt = read('ads.txt');
+assert(
+  adsTxt.includes('pub-6412697542113702') && adsTxt.includes('google.com'),
+  'ads.txt should declare AdSense publisher authorization.'
+);
 const sitemapXml = read('sitemap.xml');
 assert(sitemapXml.includes('www.istebul.com/auto/') || sitemapXml.includes('karar-asistani'), 'sitemap.xml should include Auto or decision assistant URL.');
 assert(read('docs/openapi.yaml').includes('/ai-proxy'), 'OpenAPI spec should document AI proxy.');

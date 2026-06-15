@@ -10,6 +10,7 @@ const required = [
   'dist/sw.js',
   'dist/robots.txt',
   'dist/sitemap.xml',
+  'dist/ads.txt',
   'dist/build-manifest.json',
   'dist/rehber/arac-kredisi-hesaplama/index.html',
   'dist/rehber/tco-rehberi/index.html',
@@ -41,6 +42,15 @@ for (const file of required) {
   if (!fs.existsSync(fullPath) || fs.statSync(fullPath).size === 0) {
     failed = true;
     console.error('Missing build output: ' + file);
+  }
+}
+
+const adsTxtPath = path.join(root, 'dist/ads.txt');
+if (fs.existsSync(adsTxtPath)) {
+  const adsTxt = fs.readFileSync(adsTxtPath, 'utf8');
+  if (!adsTxt.includes('pub-6412697542113702')) {
+    failed = true;
+    console.error('dist/ads.txt must declare AdSense publisher ID pub-6412697542113702');
   }
 }
 
