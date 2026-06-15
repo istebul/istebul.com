@@ -46,6 +46,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Run contrast visibility guard
+        run: npm run test:contrast-visibility
       - run: npm run test:e2e:ci
 
   e2e-release:
