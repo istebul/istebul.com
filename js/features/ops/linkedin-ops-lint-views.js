@@ -30,7 +30,8 @@ export function renderLinkedInLintPanel(root, options = {}) {
   if (!root) return;
 
   root.innerHTML = `
-    <div class="linkedin-lint-panel">
+    <div class="linkedin-ops-section-inner linkedin-lint-panel">
+      <h3 class="linkedin-ops-section-title" id="linkedin-ops-lint-heading">Marka Uyum Kontrolü</h3>
       <p class="linkedin-lint-intro">LinkedIn paylaşım veya yorum metnini yapıştırın. Kontrol yalnızca tarayıcıda çalışır; metin sunucuya gönderilmez.</p>
       <div class="linkedin-lint-field">
         <label class="linkedin-lint-label" for="linkedin-lint-action-type">İçerik türü</label>
