@@ -1,0 +1,551 @@
+{
+  "version": "p16.1",
+  "updatedAt": "2026-06-15",
+  "mission": "Deterministic LinkedIn paylaşım ve yorum şablonları — admin operatörü metni kopyalar, LinkedIn'de manuel paylaşır veya yorum yapar.",
+  "contentSources": [
+    "docs/OPS_LINKEDIN_ASSISTANT.md",
+    "docs/site-owner/06-linkedin-etkilesim-rehberi.md",
+    "docs/site-owner/03-tanitim-pazarlama.md",
+    "docs/SOCIAL_MEDIA_30DAY_PLAYBOOK.md",
+    "docs/P4_6_BRAND_CONSISTENCY.md",
+    "js/core/brand-voice.js",
+    "data/ops/linkedin-weekly-plan.json"
+  ],
+  "automationPolicy": {
+    "linkedinApi": false,
+    "scraping": false,
+    "autoPost": false,
+    "autoComment": false,
+    "autoLike": false,
+    "autoFollow": false,
+    "manualReviewRequired": true,
+    "manualCopyPasteWorkflow": true
+  },
+  "manualWorkflow": {
+    "model": "copy_paste",
+    "disclosureTr": "Metni kopyalayın ve LinkedIn'de manuel paylaşın veya yorum yapın. Sistem LinkedIn'e otomatik göndermez.",
+    "disclosureEn": "Copy the text and post or comment manually on LinkedIn. The system does not publish automatically."
+  },
+  "lintRules": {
+    "firstSentenceNoBrandName": true,
+    "noGuaranteeClaims": true,
+    "noFinancialAdvice": true,
+    "noLegalAdvice": true,
+    "noInvestmentAdvice": true,
+    "noAutoPostingLanguage": true,
+    "maxHashtags": 1,
+    "maxLinks": 1,
+    "avoidSalesCTA": true,
+    "forbiddenClaims": [
+      "garanti tasarruf",
+      "kesin kazanç",
+      "en iyi karar",
+      "en iyi araç",
+      "garanti kazanç",
+      "flaş fırsat",
+      "son dakika",
+      "tüm bankalar canlı",
+      "anlık ilan",
+      "şu krediyi alın",
+      "bu evi alın",
+      "deneyin",
+      "kaydolun",
+      "link bio'da"
+    ]
+  },
+  "templateCatalog": {
+    "methodology_ai_vs_deterministic": {
+      "labelTr": "Metodoloji — Generic AI vs deterministik skor",
+      "slotThemeId": "methodology_ai_vs_deterministic",
+      "templates": [
+        {
+          "id": "methodology-company-post-tr",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "methodology_ai_vs_deterministic",
+          "language": "tr",
+          "titleTr": "Şirket paylaşımı — Metodoloji ayrımı",
+          "objectiveTr": "Generic AI ile kural tabanlı skor ayrımını anlat; karar altyapısı konumlandırmasını güçlendir.",
+          "bodyTemplate": "Büyük alımlarda sohbet AI'sı iyi bir çerçeve sunar; asıl zorluk genelde sayıların hangi girdilerle değiştiğinin denetlenebilir olmasıdır. isteBul'da skor, TCO ve risk sinyalleri kural tabanlı motorda hesaplanır; AI yalnızca gerekçeyi açıklar. İlan sitesi değil — karar destek altyapısı.\n\nSkorlar bilgilendirme amaçlıdır; finansal tavsiye veya getiri taahhüdü değildir.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/",
+            "https://www.istebul.com/rehber/{slug}/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar",
+            "https://www.istebul.com/partner-olun.html"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": true,
+          "forbiddenClaims": ["garanti tasarruf", "kesin kazanç", "en iyi karar"],
+          "notesTr": "Pilot/erken erişim dürüstlüğünü koru; canlı veri iddiası ekleme."
+        },
+        {
+          "id": "methodology-company-post-en",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "methodology_ai_vs_deterministic",
+          "language": "en",
+          "titleTr": "Şirket paylaşımı — Metodoloji (EN)",
+          "objectiveTr": "İngilizce metodoloji paylaşımı; uluslararası karar altyapısı perspektifi.",
+          "bodyTemplate": "For high-stakes purchases, conversational AI helps frame the question — but users still need to audit what inputs changed the numbers. At isteBul, scores, TCO, and risk signals are computed in a rule-based engine; AI only explains the rationale. Decision infrastructure, not classifieds.\n\nAnalysis and scores are for information only; not financial advice or return guarantees.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar",
+            "https://www.istebul.com/partner-olun.html"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": true,
+          "forbiddenClaims": ["guaranteed savings", "best decision", "guaranteed return"],
+          "notesTr": "EN paylaşımda da satış CTA ve hashtag minimum."
+        }
+      ]
+    },
+    "founder_vision_decision_literacy": {
+      "labelTr": "CEO paylaşımı — Vizyon ve karar okuryazarlığı",
+      "slotThemeId": "founder_vision_decision_literacy",
+      "templates": [
+        {
+          "id": "founder-vision-ceo-post-tr",
+          "accountType": "ceo",
+          "actionType": "post",
+          "themeId": "founder_vision_decision_literacy",
+          "language": "tr",
+          "titleTr": "CEO paylaşımı — Karar okuryazarlığı",
+          "objectiveTr": "Kurucu perspektifiyle sektör gözlemi; satış dili ve CTA yok.",
+          "bodyTemplate": "Yüksek tutarlı kararlarda en büyük risk genelde yanlış çerçeve değil, parçalı araçlara güvenmektir: ilan, banka tablosu, hesap makinesi ayrı kalınca toplam maliyet görünmez oluyor. Karar okuryazarlığı, sayıların nereden geldiğini sormayı ve hangi varsayımların skoru değiştirdiğini anlamayı gerektirir.\n\nGeneric AI fikir verir; toplam maliyet ve risk hesabı şeffaf metodoloji ister.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/",
+            "https://www.istebul.com/hakkimizda.html"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar",
+            "https://www.istebul.com/partner-olun.html"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": false,
+          "forbiddenClaims": ["garanti tasarruf", "kesin kazanç", "deneyin", "kaydolun"],
+          "notesTr": "İlk cümlede marka adı yok; link seyrek."
+        },
+        {
+          "id": "founder-vision-ceo-post-en",
+          "accountType": "ceo",
+          "actionType": "post",
+          "themeId": "founder_vision_decision_literacy",
+          "language": "en",
+          "titleTr": "CEO paylaşımı — Vizyon (EN)",
+          "objectiveTr": "İngilizce kurucu perspektifi; global karar altyapısı tartışmasına katkı.",
+          "bodyTemplate": "In high-consideration decisions, the bigger risk is often trusting fragmented tools — listings, bank tables, and calculators in silos hide true total cost. Decision literacy means asking where numbers come from and which assumptions move the score.\n\nGeneral-purpose AI helps frame questions; total cost and risk need transparent methodology.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": false,
+          "forbiddenClaims": ["guaranteed savings", "best decision"],
+          "notesTr": "CEO EN paylaşımında marka ilk cümlede yok."
+        }
+      ]
+    },
+    "tco_methodology_guide": {
+      "labelTr": "Şirket paylaşımı — TCO ve rehber",
+      "slotThemeId": "tco_methodology_guide",
+      "templates": [
+        {
+          "id": "tco-guide-company-post-tr",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "tco_methodology_guide",
+          "language": "tr",
+          "titleTr": "Şirket paylaşımı — TCO perspektifi",
+          "objectiveTr": "Toplam maliyet ve metodoloji vurgusu; rehber veya metodoloji linki uygun.",
+          "bodyTemplate": "Liste fiyatı veya aylık taksit tek başına doğru karar verdirmez. Araç, konut veya finansman kararlarında toplam maliyet (TCO), nakit akışı ve uyum skoru aynı çerçevede okunmalı. isteBul bu parçaları kural tabanlı modelde birleştirir; AI yalnızca gerekçeyi açıklar.\n\nPilot aşamadayız — erken erişim dili kullanın. Skorlar bilgilendirme amaçlıdır.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/",
+            "https://www.istebul.com/rehber/arac-toplam-sahiplik-maliyeti/",
+            "https://www.istebul.com/rehber/{slug}/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar",
+            "https://www.istebul.com/partner-olun.html"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": true,
+          "forbiddenClaims": ["garanti tasarruf", "tüm bankalar canlı", "anlık ilan"],
+          "notesTr": "UTM'li kampanya linki kullanmayın."
+        },
+        {
+          "id": "tco-guide-company-post-en",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "tco_methodology_guide",
+          "language": "en",
+          "titleTr": "Şirket paylaşımı — TCO (EN)",
+          "objectiveTr": "İngilizce TCO ve metodoloji paylaşımı.",
+          "bodyTemplate": "List price or monthly installment alone rarely supports a sound decision. For auto, housing, or credit choices, total cost of ownership, cash flow, and fit score should be read in one auditable frame. isteBul unifies these in a rule-based model; AI only explains the rationale.\n\nWe're in pilot — use early-access language. Scores are for information only.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/",
+            "https://www.istebul.com/rehber/arac-toplam-sahiplik-maliyeti/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": true,
+          "forbiddenClaims": ["guaranteed savings", "live data for all banks"],
+          "notesTr": "Pilot dürüstlüğü EN metinde de geçerli."
+        }
+      ]
+    },
+    "third_party_ai_comment": {
+      "labelTr": "Üçüncü taraf yorum — Generic AI ve sektör thread'leri",
+      "slotThemeId": "third_party_ai_comment",
+      "templates": [
+        {
+          "id": "comment-generic-ai-ceo-tr",
+          "accountType": "ceo",
+          "actionType": "comment_opportunity",
+          "themeId": "third_party_ai_comment",
+          "language": "tr",
+          "titleTr": "Yorum — Generic AI / LLM thread",
+          "objectiveTr": "Üçüncü taraf AI gönderisine uzman katkısı; ilk cümlede marka yok, CTA yok.",
+          "bodyTemplate": "Sohbet AI'sı \"hangi soruları sormam lazım\" kısmında çok iyi. Ama araç veya konut gibi kararlarda liste fiyatı, taksit ve 5 yıllık toplam maliyet aynı tabloda değilse öneri güvenilir hissettirmez. Sayıları kural motorunda tutup AI'yı yalnızca gerekçe katmanında kullanmak bu boşluğu kapatır.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar",
+            "https://www.istebul.com/partner-olun.html"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": false,
+          "forbiddenClaims": ["bizim AI'mız daha iyi", "ChatGPT yanlış", "deneyin"],
+          "notesTr": "Yorumda link nadiren; emoji minimum."
+        },
+        {
+          "id": "comment-generic-ai-ceo-en",
+          "accountType": "ceo",
+          "actionType": "comment_opportunity",
+          "themeId": "third_party_ai_comment",
+          "language": "en",
+          "titleTr": "Yorum — Generic AI / LLM (EN)",
+          "objectiveTr": "İngilizce üçüncü taraf yorum; global AI tartışmalarına katkı.",
+          "bodyTemplate": "Conversational AI is excellent for \"what questions should I ask.\" For auto or housing decisions, if list price, installment, and five-year total cost aren't in one auditable view, recommendations feel fragile. Keeping numbers in a rule engine and AI strictly in the explanation layer closes that gap.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": false,
+          "forbiddenClaims": ["our AI is better", "try now", "sign up"],
+          "notesTr": "İlk cümlede marka yok; CTA yok."
+        },
+        {
+          "id": "comment-automotiv-ceo-tr",
+          "accountType": "ceo",
+          "actionType": "comment_opportunity",
+          "themeId": "third_party_ai_comment",
+          "language": "tr",
+          "titleTr": "Yorum — Otomotiv thread",
+          "objectiveTr": "Otomotiv veya TCO tartışmasına somut katkı.",
+          "bodyTemplate": "Aylık taksit düşük göründüğünde araç \"ucuz\" sanılabiliyor; oysa yakıt, bakım, sigorta ve amortisman 3–5 yıllık tabloda fark yaratır. Karar destek araçlarında asıl değer, bu kalemleri tek denetlenebilir TCO çerçevesinde gösterebilmektir.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/rehber/arac-toplam-sahiplik-maliyeti/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": false,
+          "forbiddenClaims": ["en ucuz araç", "garanti tasarruf"],
+          "notesTr": "Otomotiv thread'lerinde TCO perspektifi ekle."
+        },
+        {
+          "id": "comment-b2b-company-tr",
+          "accountType": "company",
+          "actionType": "comment_opportunity",
+          "themeId": "third_party_ai_comment",
+          "language": "tr",
+          "titleTr": "Yorum — B2B / partner / CRM thread",
+          "objectiveTr": "B2B veya CRM tartışmasına partner perspektifi; satış dili yok.",
+          "bodyTemplate": "Yüksek tutarlı dikeylerde değer genelde ham lead hacminde değil; karar öncesi bağlamda — TCO, uyum skoru, nitelikli talep. CRM'e düşen sinyalin skorlu ve bağlamlı olması partner tarafında conversion'ı ölçülebilir kılar.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/partner-olun.html",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": false,
+          "forbiddenClaims": ["partner olun", "pilot teklifi", "fiyat"],
+          "notesTr": "Şirket hesabı B2B thread'lerinde KVKK ve güven konularına da uygun."
+        },
+        {
+          "id": "comment-kvkk-company-tr",
+          "accountType": "company",
+          "actionType": "comment_opportunity",
+          "themeId": "third_party_ai_comment",
+          "language": "tr",
+          "titleTr": "Yorum — KVKK / güven / halüsinasyon thread",
+          "objectiveTr": "Güven ve regülasyon tartışmasına mimari perspektif.",
+          "bodyTemplate": "Tüketici finansman ve otomotiv gibi dikeylerde halüsinasyon riski fiyat ve taksit gibi somut çıktılara yansıyor. Karar destek sistemlerinde \"AI skoru değiştirmez, yalnızca açıklar\" ayrımı hem regülasyon hem kullanıcı güveni için temel bir mimari tercih.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": false,
+          "forbiddenClaims": ["garanti", "kesin güvenlik"],
+          "notesTr": "KVKK thread'lerinde hukuki tavsiye verme."
+        }
+      ]
+    },
+    "auto": {
+      "labelTr": "Rotasyon — Auto / TCO",
+      "rotationThemeId": "auto",
+      "templates": [
+        {
+          "id": "rotation-auto-company-post-tr",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "auto",
+          "language": "tr",
+          "titleTr": "Rotasyon paylaşımı — Auto / TCO",
+          "objectiveTr": "Otomotiv ve toplam sahiplik maliyeti perspektifi.",
+          "bodyTemplate": "Araç alırken liste fiyatına bakmak yeterli değil: finansman, yakıt, bakım ve sigorta 12 ay TCO tablosunda farklı bir resim çıkarabilir. isteBul bu kalemleri kural tabanlı modelde bir araya getirir; AI yalnızca gerekçeyi açıklar. Karar rehberi perspektifi — ilan sitesi değil.\n\nSkorlar bilgilendirme amaçlıdır.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/",
+            "https://www.istebul.com/rehber/arac-toplam-sahiplik-maliyeti/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": true,
+          "forbiddenClaims": ["en ucuz araç", "garanti tasarruf"],
+          "notesTr": "Auto rotasyonunda /auto/ linki kullanmayın; rehber veya metodoloji tercih edin."
+        },
+        {
+          "id": "rotation-auto-company-post-en",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "auto",
+          "language": "en",
+          "titleTr": "Rotasyon paylaşımı — Auto / TCO (EN)",
+          "objectiveTr": "İngilizce otomotiv TCO paylaşımı.",
+          "bodyTemplate": "List price alone is rarely enough for a vehicle decision — financing, fuel, maintenance, and insurance can reshape the 12-month TCO picture. isteBul combines these in a rule-based model; AI only explains the rationale. Decision guide perspective, not classifieds.\n\nScores are for information only.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/",
+            "https://www.istebul.com/rehber/arac-toplam-sahiplik-maliyeti/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": true,
+          "forbiddenClaims": ["cheapest car", "guaranteed savings"],
+          "notesTr": "EN rotasyon paylaşımında satış CTA yok."
+        }
+      ]
+    },
+    "konut_finans": {
+      "labelTr": "Rotasyon — Konut veya finans",
+      "rotationThemeId": "konut_finans",
+      "templates": [
+        {
+          "id": "rotation-konut-company-post-tr",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "konut_finans",
+          "language": "tr",
+          "titleTr": "Rotasyon paylaşımı — Konut / finansman",
+          "objectiveTr": "Konut veya finansman kararlarında TCO ve nakit akışı çerçevesi.",
+          "bodyTemplate": "Ev alırken m² fiyatı tek başına yeterli değil: ipotek, aidat, vergi ve bakım aynı nakit akışı tablosunda okunmalı. Finansman tarafında en düşük faiz tablosu da tek başına \"doğru kredi\" anlamına gelmez — varlık ve peşinat bağlamında aylık yük önemli. isteBul yüksek tutarlı kararlarda bu parçaları kural tabanlı çerçevede birleştirir.\n\nKonut ve finans pilotları erken erişim aşamasında.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/",
+            "https://www.istebul.com/rehber/{slug}/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/konut/",
+            "https://www.istebul.com/finans/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": true,
+          "forbiddenClaims": ["bu evi alın", "şu krediyi alın", "garanti tasarruf"],
+          "notesTr": "Finansal tavsiye dili kullanmayın; pilot dürüstlüğü koruyun."
+        },
+        {
+          "id": "rotation-konut-company-post-en",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "konut_finans",
+          "language": "en",
+          "titleTr": "Rotasyon paylaşımı — Konut / finans (EN)",
+          "objectiveTr": "İngilizce konut veya finansman TCO perspektifi.",
+          "bodyTemplate": "Square-meter price alone doesn't tell the full housing story — mortgage, fees, tax, and maintenance belong in one cash-flow view. On the credit side, the lowest rate table isn't automatically the right loan; monthly burden depends on asset and down-payment context. isteBul unifies these pieces for high-stakes decisions in a rule-based frame.\n\nHousing and finance pilots are in early access.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/konut/",
+            "https://www.istebul.com/finans/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": true,
+          "forbiddenClaims": ["buy this home", "take this loan"],
+          "notesTr": "EN metinde yatırım tavsiyesi yok."
+        }
+      ]
+    },
+    "generic_ai_trust": {
+      "labelTr": "Rotasyon — Generic AI güven / metodoloji",
+      "rotationThemeId": "generic_ai_trust",
+      "templates": [
+        {
+          "id": "rotation-ai-trust-company-post-tr",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "generic_ai_trust",
+          "language": "tr",
+          "titleTr": "Rotasyon paylaşımı — AI güven ve metodoloji",
+          "objectiveTr": "Sohbet AI'sı ile kural tabanlı motor ayrımı; denetlenebilirlik vurgusu.",
+          "bodyTemplate": "Generic AI fikir verir; yüksek tutarlı kararlarda asıl ihtiyaç sayıların denetlenebilir olmasıdır. isteBul'da skor, TCO ve risk kural tabanlı motorda hesaplanır; AI yalnızca gerekçeyi açıklar — skoru tek başına değiştirmez. Şeffaf metodoloji karar güveninin temelidir.\n\nSkorlar bilgilendirme amaçlıdır; finansal tavsiye değildir.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": true,
+          "forbiddenClaims": ["en iyi AI", "kesin doğru"],
+          "notesTr": "AI güven rotasyonunda rakip model aşaılaması yapmayın."
+        },
+        {
+          "id": "rotation-ai-trust-company-post-en",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "generic_ai_trust",
+          "language": "en",
+          "titleTr": "Rotasyon paylaşımı — AI trust (EN)",
+          "objectiveTr": "İngilizce AI güven ve metodoloji paylaşımı.",
+          "bodyTemplate": "General-purpose AI helps frame ideas; for high-stakes decisions the real need is auditable numbers. At isteBul, scores, TCO, and risk run in a rule-based engine; AI only explains — it does not alter the score alone. Transparent methodology is the foundation of decision trust.\n\nScores are for information only; not financial advice.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": true,
+          "forbiddenClaims": ["best AI", "always correct"],
+          "notesTr": "EN paylaşımda hashtag minimum."
+        },
+        {
+          "id": "rotation-ai-trust-comment-ceo-tr",
+          "accountType": "ceo",
+          "actionType": "comment_opportunity",
+          "themeId": "generic_ai_trust",
+          "language": "tr",
+          "titleTr": "Yorum — AI güven / responsible AI thread",
+          "objectiveTr": "Responsible AI tartışmasına mimari katkı.",
+          "bodyTemplate": "Güvenlik ve hizalama kritik; tüketici finansman ve otomotiv gibi dikeylerde bir adım daha var: halüsinasyon riski fiyat ve taksit gibi somut çıktılara yansıyor. Karar destek sistemlerinde \"AI skoru değiştirmez, yalnızca açıklar\" ayrımı hem regülasyon hem kullanıcı güveni için temel bir mimari tercih.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/auto/",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": false,
+          "forbiddenClaims": ["bizim AI'mız daha iyi"],
+          "notesTr": "06 rehber §6.2 ile uyumlu."
+        }
+      ]
+    },
+    "b2b_partner": {
+      "labelTr": "Rotasyon — B2B partner",
+      "rotationThemeId": "b2b_partner",
+      "templates": [
+        {
+          "id": "rotation-b2b-company-post-tr",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "b2b_partner",
+          "language": "tr",
+          "titleTr": "Rotasyon paylaşımı — B2B partner perspektifi",
+          "objectiveTr": "Partner ve CRM perspektifi; şirket hesabı ağırlıklı; doğrudan partner CTA yok.",
+          "bodyTemplate": "Galeri ve finans partnerleri için değer genelde ham lead hacminde değil; karar öncesi bağlamda — TCO, uyum skoru, nitelikli talep. Skorlu ve bağlamlı sinyaller partner tarafında conversion'ı ölçülebilir kılar. isteBul bu perspektifle karar altyapısı sunar; ilan akışı değil.\n\nPilot partner ağı — erken erişim aşaması.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/partner-olun.html",
+            "https://www.istebul.com/planlar",
+            "https://www.istebul.com/auto/"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": false,
+          "forbiddenClaims": ["partner olun", "hemen başvurun", "garanti lead"],
+          "notesTr": "B2B rotasyonunda /partner-olun.html linki kullanmayın."
+        },
+        {
+          "id": "rotation-b2b-company-post-en",
+          "accountType": "company",
+          "actionType": "post",
+          "themeId": "b2b_partner",
+          "language": "en",
+          "titleTr": "Rotasyon paylaşımı — B2B (EN)",
+          "objectiveTr": "İngilizce B2B partner perspektifi.",
+          "bodyTemplate": "For dealership and finance partners, value often isn't raw lead volume — it's pre-decision context: TCO, fit score, qualified intent. Signals with score and context make conversion measurable on the partner side. isteBul offers decision infrastructure from this angle, not a listing feed.\n\nPilot partner network — early access stage.",
+          "allowedLinkTargets": [
+            "https://www.istebul.com/metodoloji/"
+          ],
+          "avoidLinkTargets": [
+            "https://www.istebul.com/partner-olun.html",
+            "https://www.istebul.com/planlar"
+          ],
+          "riskProfile": "low",
+          "requiredDisclaimer": false,
+          "forbiddenClaims": ["apply now", "guaranteed leads"],
+          "notesTr": "EN B2B paylaşımında satış CTA yok."
+        }
+      ]
+    }
+  },
+  "notes": [
+    "Bu dosya deterministic şablon sözleşmesidir; admin operatörü metni gözden geçirip manuel kopyalar.",
+    "Şablonlar 06-linkedin-etkilesim-rehberi ve SOCIAL_MEDIA_30DAY_PLAYBOOK'tan türetilmiştir; ürün içi buildLinkedInSummaryText tonu kullanılmaz.",
+    "themeId değerleri linkedin-weekly-plan.json slot themeId ve rotationThemeIds ile uyumludur.",
+    "Yorum şablonlarında ilk cümlede marka adı yok; paylaşım şablonlarında şirket hesabı doğal marka kullanabilir.",
+    "Linkler nadir ve organik: /metodoloji/ ve /rehber/* tercih; /auto/, /planlar, /partner-olun.html kaçınılır.",
+    "AI varyasyon (P16.1+) bu şablonları temel alır; yeni iddia veya rakam eklenmez.",
+    "Pilot dürüstlüğü: canlı veri veya tüm bankalar canlı iddiası kullanmayın."
+  ]
+}
