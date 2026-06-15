@@ -1,5 +1,10 @@
 import { listingMediaCount } from './listing-gallery-ui.js';
 import { renderAiPlatformBanner } from './ai-platform-surface.js';
+import {
+    AI_SCORE_DISCLAIMER,
+    buildListingTrustStripHtml,
+    hasPublicSourceUrl
+} from './listing-trust-ui.js';
 
 const VERTICAL_EMPTY_STATE_CTAS = Object.freeze({
     arac: { href: '/auto/', label: 'TCO analizini başlat', icon: 'car' },
@@ -58,7 +63,10 @@ export class ListingsUI {
             container.innerHTML = `<div class="listings-ai-strip">${aiStrip}</div>` + listings.map(listing => {
                 const listingId = this.escapeHtml(listing.id);
                 const imageUrl = this.safeImageUrl(listing.images?.[0]);
-                const externalUrl = this.safeExternalUrl(listing.external_url);
+                const hasExternalSource = hasPublicSourceUrl(listing);
+                const externalUrl = hasExternalSource
+                    ? this.safeExternalUrl(listing.source_url ?? listing.external_url)
+                    : '';
                 const isFavorite = favoriteIds.includes(listing.id.toString());
                 const isCompared = comparedSignatures.has(this.getListingComparisonSignature(listing));
                 const aiScoreDisplay = this.resolveListingQualityScoreDisplay(listing);
@@ -77,7 +85,7 @@ export class ListingsUI {
                              width="400"
                              height="250">
                         <div class="listing-badges">
-                            ${aiScoreDisplay !== null ? `<span class="listing-ai-score" title="Yapay zeka uyum skoru"><i data-lucide="sparkles"></i> AI uyum ${this.escapeHtml(aiScoreDisplay)}/100</span>` : ''}
+                            ${aiScoreDisplay !== null ? `<span class="listing-ai-score" title="${this.escapeHtml(AI_SCORE_DISCLAIMER)}" aria-label="AI uyum ${this.escapeHtml(aiScoreDisplay)}/100. ${this.escapeHtml(AI_SCORE_DISCLAIMER)}"><i data-lucide="sparkles"></i> AI uyum ${this.escapeHtml(aiScoreDisplay)}/100</span>` : ''}
                             <span>${this.escapeHtml(categoryLabel || 'Seçenek')}</span>
                         </div>
                         ${mediaCount > 1 ? `<span class="listing-media-count"><i data-lucide="images"></i> ${mediaCount}</span>` : ''}
@@ -90,6 +98,7 @@ export class ListingsUI {
                             <span>${this.formatDate(listing.created_at)}</span>
                         </div>
                         ${this.getListingInsightsMarkup(listing, aiScoreDisplay ?? undefined)}
+                        ${buildListingTrustStripHtml(listing, { escapeHtml: (value) => this.escapeHtml(value) })}
                         <div class="listing-actions">
                             <button class="btn ${isFavorite ? 'btn-primary' : 'btn-outline'} favorite-btn" data-action="favorite">
                                 <i data-lucide="heart"></i> ${isFavorite ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}
@@ -100,7 +109,7 @@ export class ListingsUI {
                             <button class="btn ${isCompared ? 'btn-primary' : 'btn-outline'}" data-action="compare" data-listing-id="${listingId}">
                                 <i data-lucide="${isCompared ? 'check' : 'columns-3'}"></i> ${isCompared ? 'Karşılaştırmada' : 'Karşılaştır'}
                             </button>
-                            <a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary external-btn"><i data-lucide="external-link"></i> ${this.escapeHtml(actionLabel)}</a>
+                            ${hasExternalSource ? `<a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary external-btn"><i data-lucide="external-link"></i> ${this.escapeHtml(actionLabel)}</a>` : ''}
                         </div>
                     </div>
                 </div>
