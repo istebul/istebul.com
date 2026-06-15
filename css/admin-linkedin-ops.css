@@ -293,3 +293,104 @@
   font-size: 13px;
   color: var(--muted, #6b7280);
 }
+
+#page-linkedin-ops-assistant .linkedin-comment-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 100%;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-intro {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted, #6b7280);
+  line-height: 1.5;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-disclosure {
+  margin: 0;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  max-width: 100%;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-control {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-textarea {
+  min-height: 140px;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-results {
+  max-width: 100%;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-category {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text, #111827);
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-card {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius, 12px);
+  padding: 14px 16px;
+  background: var(--surface2, #f3f4f6);
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-card-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  flex: 1 1 200px;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-lint-badge {
+  flex-shrink: 0;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-body {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  color: var(--text, #111827);
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted, #6b7280);
+  line-height: 1.45;
+}

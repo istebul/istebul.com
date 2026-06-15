@@ -1,9 +1,13 @@
 /**
- * P16-3B — Admin loader for LinkedIn operasyon asistanı (plan + templates + lint).
+ * P16-4A-2 — Admin loader for LinkedIn operasyon asistanı (plan + templates + comments + lint).
  */
 import { OPS_JSON_EMBED } from './ops-json-embed.js';
 import { renderLinkedInPlanSection } from '../features/ops/linkedin-ops-plan-views.js';
 import { renderLinkedInTemplateSection } from '../features/ops/linkedin-ops-template-views.js';
+import {
+  renderLinkedInCommentPanel,
+  bindLinkedInCommentPanel
+} from '../features/ops/linkedin-ops-comment-views.js';
 import {
   renderLinkedInLintPanel,
   bindLinkedInLintPanel
@@ -34,6 +38,7 @@ export async function loadLinkedInOpsAssistant(escapeHtml) {
       <div class="linkedin-ops-layout">
         <section id="linkedin-ops-plan-section" class="linkedin-ops-section" aria-labelledby="linkedin-ops-plan-heading"></section>
         <section id="linkedin-ops-template-section" class="linkedin-ops-section" aria-labelledby="linkedin-ops-template-heading"></section>
+        <section id="linkedin-ops-comment-section" class="linkedin-ops-section" aria-labelledby="linkedin-ops-comment-heading"></section>
         <section id="linkedin-ops-lint-section" class="linkedin-ops-section" aria-labelledby="linkedin-ops-lint-heading"></section>
       </div>
     `;
@@ -43,6 +48,14 @@ export async function loadLinkedInOpsAssistant(escapeHtml) {
     });
     renderLinkedInTemplateSection(root.querySelector('#linkedin-ops-template-section'), templatesDoc, {
       escapeHtml
+    });
+
+    const commentSection = root.querySelector('#linkedin-ops-comment-section');
+    renderLinkedInCommentPanel(commentSection, { escapeHtml });
+    bindLinkedInCommentPanel(commentSection, {
+      escapeHtml,
+      templatesDoc,
+      weeklyPlanDoc: weeklyPlan
     });
 
     const lintSection = root.querySelector('#linkedin-ops-lint-section');
