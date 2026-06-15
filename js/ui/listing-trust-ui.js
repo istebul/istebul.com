@@ -49,6 +49,24 @@ export function hasPublicSourceUrl(listing = {}) {
 }
 
 /**
+ * Resolves a safe public external URL from listing fields or first channel entry.
+ * @param {Record<string, unknown>} [record]
+ * @returns {string|null}
+ */
+export function resolvePublicExternalUrl(record = {}) {
+  if (hasPublicSourceUrl(record)) {
+    return String(record.source_url ?? record.external_url).trim();
+  }
+
+  const channelUrl = record.channels?.[0]?.url;
+  if (channelUrl == null) return null;
+
+  return hasPublicSourceUrl({ source_url: channelUrl })
+    ? String(channelUrl).trim()
+    : null;
+}
+
+/**
  * @param {Record<string, unknown>} [listing]
  * @param {{ showPublished?: boolean }} [options]
  * @returns {ListingTrustBadge[]}

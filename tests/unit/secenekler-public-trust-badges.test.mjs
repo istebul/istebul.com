@@ -9,7 +9,8 @@ import {
   formatPublicSourceLabel,
   buildListingTrustStripHtml,
   getListingTrustBadges,
-  hasPublicSourceUrl
+  hasPublicSourceUrl,
+  resolvePublicExternalUrl
 } from '../../js/ui/listing-trust-ui.js';
 
 const repoRoot = process.cwd();
@@ -199,4 +200,107 @@ test('regression guard: listings-ui does not render external CTA without resolva
   const listingsUi = readRepoFile('js/ui/listings-ui.js');
   assert.match(listingsUi, /hasPublicSourceUrl\(listing\)/);
   assert.match(listingsUi, /\$\{hasExternalSource \?/);
+});
+
+test('resolvePublicExternalUrl resolves listing fields and validated channel URLs', () => {
+  assert.equal(resolvePublicExternalUrl({ source_url: 'https://example.com/a' }), 'https://example.com/a');
+  assert.equal(resolvePublicExternalUrl({ channels: [{ url: 'https://channel.example/b' }] }), 'https://channel.example/b');
+  assert.equal(resolvePublicExternalUrl({ external_url: '' }), null);
+  assert.equal(resolvePublicExternalUrl({ channels: [{ url: '' }] }), null);
+});
+
+function createUiManagerStub() {
+  const ui = new UIManager();
+  ui.escapeHtml = (value) => String(value ?? '');
+  ui.formatPrice = (value) => `₺${value ?? 0}`;
+  ui.safeExternalUrl = (url) => String(url || '');
+  ui.loadIcons = () => {};
+  ui.getCostBreakdownMarkup = () => '';
+  ui.getComparisonGraphMarkup = () => '';
+  ui.getListingDetailRowsMarkup = () => '';
+  return ui;
+}
+
+test('favorites grid hides external CTA without source URL and avoids sahibinden fallback', () => {
+  const ui = createUiManagerStub();
+  const container = { innerHTML: '' };
+  const originalGetElementById = global.document?.getElementById;
+  global.document = {
+    getElementById: (id) => (id === 'favorites-grid' ? container : null)
+  };
+
+  try {
+    ui.renderFavorites([
+      { id: 'f1', title: 'Kaynaksız favori', price: 100, external_url: '' }
+    ]);
+    assert.doesNotMatch(container.innerHTML, /sahibinden\.com/);
+    assert.doesNotMatch(container.innerHTML, /Seçeneği İncele/);
+
+    ui.renderFavorites([
+      { id: 'f2', title: 'Kaynaklı favori', price: 200, source_url: 'https://partner.example/listing/2' }
+    ]);
+    assert.match(container.innerHTML, /Seçeneği İncele/);
+    assert.match(container.innerHTML, /https:\/\/partner\.example\/listing\/2/);
+    assert.doesNotMatch(container.innerHTML, /sahibinden\.com/);
+  } finally {
+    if (originalGetElementById) {
+      global.document.getElementById = originalGetElementById;
+    } else {
+      delete global.document;
+    }
+  }
+});
+
+test('getListingDetailDecisionMarkup omits sahibinden fallback when listing has no source URL', () => {
+  const ui = createUiManagerStub();
+  const profile = {
+    riskLevel: 'Test risk',
+    comment: 'Test yorum',
+    price: 100,
+    periodicCost: 10,
+    monthlyPayment: 5,
+    totalPayment: 120,
+    score: 80,
+    categoryId: 'arac'
+  };
+
+  const withoutSource = ui.getListingDetailDecisionMarkup(profile, { category: 'arac' });
+  assert.doesNotMatch(withoutSource, /sahibinden\.com/);
+  assert.doesNotMatch(withoutSource, /Seçeneği doğrula/);
+  assert.match(withoutSource, /Krediyi netleştir/);
+
+  const withSource = ui.getListingDetailDecisionMarkup(profile, {
+    category: 'arac',
+    source_url: 'https://partner.example/listing/3'
+  });
+  assert.match(withSource, /Seçeneği doğrula/);
+  assert.match(withSource, /partner\.example/);
+  assert.doesNotMatch(withSource, /sahibinden\.com/);
+});
+
+test('getRecommendationActionPlanMarkup skips listing-source step without URL and keeps fixed partner steps', () => {
+  const ui = createUiManagerStub();
+
+  const withoutSource = ui.getRecommendationActionPlanMarkup('arac', {});
+  assert.doesNotMatch(withoutSource, /sahibinden\.com/);
+  assert.doesNotMatch(withoutSource, /Seçeneği doğrula/);
+  assert.match(withoutSource, /Krediyi netleştir/);
+  assert.match(withoutSource, /hangikredi\.com/);
+
+  const withSource = ui.getRecommendationActionPlanMarkup('arac', {
+    source_url: 'https://listing.example/item/4'
+  });
+  assert.match(withSource, /Seçeneği doğrula/);
+  assert.match(withSource, /listing\.example/);
+  assert.doesNotMatch(withSource, /sahibinden\.com/);
+});
+
+test('regression guard: Faz 2A surfaces avoid sahibinden fallback in CTA hygiene paths', () => {
+  const uiJs = readRepoFile('js/ui/ui.js');
+  const assistantUi = readRepoFile('js/ui/assistant-ui.js');
+
+  assert.match(uiJs, /renderFavorites[\s\S]*hasPublicSourceUrl\(listing\)/);
+  assert.doesNotMatch(uiJs, /listing\.external_url \|\| 'https:\/\/www\.sahibinden\.com\/'/);
+  assert.match(assistantUi, /resolvePublicExternalUrl/);
+  assert.doesNotMatch(assistantUi, /'https:\/\/www\.sahibinden\.com\/'/);
 });
