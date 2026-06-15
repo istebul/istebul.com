@@ -1,0 +1,211 @@
+{
+  "version": "p16.0",
+  "updatedAt": "2026-06-14",
+  "timezone": "Europe/Istanbul",
+  "mission": "Varsayılan haftalık LinkedIn operasyon takvimi — admin operatörü metni kopyalar, LinkedIn'de manuel paylaşır veya yorum yapar.",
+  "contentSources": [
+    "docs/OPS_LINKEDIN_ASSISTANT.md",
+    "docs/site-owner/06-linkedin-etkilesim-rehberi.md",
+    "docs/site-owner/03-tanitim-pazarlama.md",
+    "docs/SOCIAL_MEDIA_30DAY_PLAYBOOK.md",
+    "js/core/brand-voice.js"
+  ],
+  "automationPolicy": {
+    "linkedinApi": false,
+    "scraping": false,
+    "autoPost": false,
+    "autoComment": false,
+    "autoLike": false,
+    "autoFollow": false,
+    "manualReviewRequired": true,
+    "manualCopyPasteWorkflow": true
+  },
+  "manualWorkflow": {
+    "model": "copy_paste",
+    "disclosureTr": "Metni kopyalayın ve LinkedIn'de manuel paylaşın veya yorum yapın. Sistem LinkedIn'e otomatik göndermez.",
+    "disclosureEn": "Copy the text and post or comment manually on LinkedIn. The system does not publish automatically.",
+    "disclaimerTr": "Analiz ve skorlar bilgilendirme amaçlıdır; finansal tavsiye veya getiri taahhüdü değildir.",
+    "operatorSteps": [
+      "Önerilen slot saatinde admin panelde ilgili kartı açın",
+      "Metni gözden geçirin; marka lint uyarısı varsa düzeltin",
+      "Kopyala ile panoya alın",
+      "LinkedIn'de manuel paylaşın veya üçüncü taraf gönderiye yorum yapın",
+      "Tamamladım olarak işaretleyin"
+    ]
+  },
+  "accountTypes": {
+    "ceo": {
+      "labelTr": "CEO hesabı",
+      "toneTr": "Kurucu perspektifi, sektör gözlemi, karar okuryazarlığı",
+      "brandMentionPolicy": "İlk cümlede marka adı yok; nadiren soft atıf",
+      "linkFrequency": "sparse",
+      "commentFocusTr": "Generic AI, finans, otomotiv thread'leri"
+    },
+    "company": {
+      "labelTr": "Şirket hesabı (isteBul)",
+      "toneTr": "Kurumsal, metodoloji, ürün konumlandırma",
+      "brandMentionPolicy": "Kendi paylaşımında doğal marka kullanımı",
+      "linkFrequency": "moderate",
+      "commentFocusTr": "B2B, KVKK, partner/CRM thread'leri"
+    }
+  },
+  "themeRotation": {
+    "cycleWeeks": 4,
+    "themes": [
+      {
+        "id": "auto",
+        "weekIndex": 1,
+        "labelTr": "Auto / TCO",
+        "objectiveTr": "Otomotiv ve toplam sahiplik maliyeti perspektifi; deterministik skor vurgusu"
+      },
+      {
+        "id": "konut_finans",
+        "weekIndex": 2,
+        "labelTr": "Konut veya finans",
+        "objectiveTr": "Yüksek tutarlı konut ve finansman kararlarında TCO ve nakit akışı çerçevesi"
+      },
+      {
+        "id": "generic_ai_trust",
+        "weekIndex": 3,
+        "labelTr": "Generic AI güven / metodoloji",
+        "objectiveTr": "Sohbet AI'sı ile kural tabanlı karar motoru ayrımı; denetlenebilirlik"
+      },
+      {
+        "id": "b2b_partner",
+        "weekIndex": 4,
+        "labelTr": "B2B partner",
+        "objectiveTr": "Partner ve CRM perspektifi; şirket hesabı ağırlıklı içerik",
+        "preferredAccountType": "company"
+      }
+    ]
+  },
+  "slots": [
+    {
+      "id": "slot-tuesday-company-methodology",
+      "dayOfWeek": "tuesday",
+      "localTime": "10:00",
+      "accountType": "company",
+      "actionType": "post",
+      "themeId": "methodology_ai_vs_deterministic",
+      "titleTr": "Salı — Şirket paylaşımı: Metodoloji",
+      "objectiveTr": "Generic AI ile deterministik skor ayrımını anlat; isteBul'un karar altyapısı konumlandırmasını güçlendir. İlan sitesi değil; kural tabanlı skor + AI açıklama katmanı.",
+      "suggestedLanguage": "tr",
+      "linkPolicy": {
+        "allowLink": true,
+        "preferredTargets": [
+          "https://www.istebul.com/metodoloji/",
+          "https://www.istebul.com/rehber/{slug}/"
+        ],
+        "avoidTargets": [
+          "https://www.istebul.com/auto/",
+          "https://www.istebul.com/planlar",
+          "https://www.istebul.com/partner-olun.html"
+        ],
+        "maxLinksPerPost": 1,
+        "linkNoteTr": "Metodoloji veya konuya uygun rehber linki tercih edilir; satış sayfası algısından kaçının."
+      },
+      "reminderWindowMinutes": 60,
+      "rotationThemeIds": ["generic_ai_trust", "auto"]
+    },
+    {
+      "id": "slot-thursday-ceo-vision",
+      "dayOfWeek": "thursday",
+      "localTime": "10:00",
+      "accountType": "ceo",
+      "actionType": "post",
+      "themeId": "founder_vision_decision_literacy",
+      "titleTr": "Perşembe — CEO paylaşımı: Vizyon",
+      "objectiveTr": "Kurucu perspektifiyle karar okuryazarlığı, sektör gözlemi veya yüksek consideraton kararlar üzerine kısa paylaşım. Satış dili ve CTA kullanmayın.",
+      "suggestedLanguage": "tr",
+      "linkPolicy": {
+        "allowLink": false,
+        "preferredTargets": [
+          "https://www.istebul.com/metodoloji/",
+          "https://www.istebul.com/hakkimizda.html"
+        ],
+        "avoidTargets": [
+          "https://www.istebul.com/auto/",
+          "https://www.istebul.com/planlar",
+          "https://www.istebul.com/partner-olun.html"
+        ],
+        "maxLinksPerPost": 0,
+        "linkNoteTr": "CEO paylaşımlarında link seyrek; thread derinleşmeden link eklemeyin."
+      },
+      "reminderWindowMinutes": 60,
+      "rotationThemeIds": ["generic_ai_trust", "konut_finans"]
+    },
+    {
+      "id": "slot-friday-company-tco",
+      "dayOfWeek": "friday",
+      "localTime": "11:00",
+      "accountType": "company",
+      "actionType": "post",
+      "themeId": "tco_methodology_guide",
+      "titleTr": "Cuma — Şirket paylaşımı: TCO ve rehber",
+      "objectiveTr": "Toplam maliyet, metodoloji veya karar rehberi perspektifi sun. Pilot/erken erişim dürüstlüğünü koru; canlı veri iddiası ekleme.",
+      "suggestedLanguage": "tr",
+      "linkPolicy": {
+        "allowLink": true,
+        "preferredTargets": [
+          "https://www.istebul.com/metodoloji/",
+          "https://www.istebul.com/rehber/{slug}/"
+        ],
+        "avoidTargets": [
+          "https://www.istebul.com/auto/",
+          "https://www.istebul.com/planlar",
+          "https://www.istebul.com/partner-olun.html"
+        ],
+        "maxLinksPerPost": 1,
+        "linkNoteTr": "TCO veya rehber içeriğine organik bağlantı; UTM'li kampanya linki kullanmayın."
+      },
+      "reminderWindowMinutes": 60,
+      "rotationThemeIds": ["auto", "konut_finans"]
+    },
+    {
+      "id": "slot-weekday-comment-opportunity",
+      "daysOfWeek": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+      "localTime": "14:00",
+      "accountType": "ceo_or_company",
+      "accountTypeOptions": ["ceo", "company"],
+      "actionType": "comment_opportunity",
+      "themeId": "third_party_ai_comment",
+      "titleTr": "Hafta içi — Üçüncü taraf yorum fırsatı",
+      "objectiveTr": "Uygun bir üçüncü taraf LinkedIn gönderisine uzman katkısı yorumu hazırlayın. Gönderi metnini admin panelde yapıştırın; TR ve gerekirse EN öneri alın. Günde 1–3 kaliteli yorum yeterli.",
+      "suggestedLanguage": "both",
+      "linkPolicy": {
+        "allowLink": false,
+        "preferredTargets": [
+          "https://www.istebul.com/metodoloji/"
+        ],
+        "avoidTargets": [
+          "https://www.istebul.com/auto/",
+          "https://www.istebul.com/planlar",
+          "https://www.istebul.com/partner-olun.html"
+        ],
+        "maxLinksPerPost": 0,
+        "linkNoteTr": "Yorumlarda link nadiren; en fazla 10 yorumda 1 ve yalnızca metodoloji sorusu geldiğinde."
+      },
+      "reminderWindowMinutes": 90,
+      "commentCategories": [
+        "generic_ai_llm",
+        "otomotiv",
+        "konut",
+        "finansman",
+        "tatil",
+        "sigorta",
+        "kasko",
+        "b2b_partner_crm",
+        "kvkk_guven_halusinasyon"
+      ],
+      "rotationThemeIds": ["generic_ai_trust", "b2b_partner"]
+    }
+  ],
+  "notes": [
+    "Bu dosya operasyonel başlangıç planıdır; kesin kural değildir. Admin ayarları veya JSON güncellemesiyle değiştirilebilir.",
+    "LinkedIn sıklığı hedefi: haftada 2–3 paylaşım (03-tanitim-pazarlama.md §3.2).",
+    "Üçüncü taraf yorum dili, ürün içi buildLinkedInSummaryText tonundan farklıdır: emoji minimum, CTA yok, ilk cümlede marka yok.",
+    "Pilot dürüstlüğü: tüm bankalar canlı veya anlık ilan iddiası kullanmayın.",
+    "Kaçınılacak ifadeler: garanti tasarruf, kesin kazanç, finansal/hukuki/yatırım tavsiyesi, rakip aşağılama.",
+    "Tema rotasyonu 4 haftalık döngüyle slot içeriklerini çeşitlendirir; rotationThemeIds alanı hangi rotasyon temalarının bu slota uyduğunu gösterir."
+  ]
+}
