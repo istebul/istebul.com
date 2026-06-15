@@ -298,6 +298,15 @@ async function loadOpsAiAssistantPage() {
   );
 }
 
+async function refreshLinkedInOpsAssistant() {
+  await loadLinkedInOpsAssistantPage();
+}
+
+async function loadLinkedInOpsAssistantPage() {
+  const { loadLinkedInOpsAssistant } = await import('./admin/linkedin-ops-assistant.js');
+  await loadLinkedInOpsAssistant(escapeHtml);
+}
+
 function internalDashboardDepsBase() {
   return {
     sb,
@@ -4435,6 +4444,7 @@ registerAdminPageHandlers({
     refreshInternalDashboard('partner_ops', 'dashboard-partner-ops-root'),
   'dashboard-support': () => refreshInternalDashboard('support', 'dashboard-support-root'),
   'ops-ai-assistant': () => refreshOpsAiAssistant(),
+  'linkedin-ops-assistant': () => refreshLinkedInOpsAssistant(),
   'investor-metrics': () => loadExecutiveKpis(),
   observability: () => loadOperationalHealth(),
   'ops-command-center': () => loadOpsCommandCenter(),

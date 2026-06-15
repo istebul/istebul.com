@@ -26,6 +26,7 @@ export const ADMIN_PAGE_IDS = [
   'faqs',
   'home-news',
   'blog',
+  'linkedin-ops-assistant',
   'listings',
   'users',
   'auto-leads',
@@ -76,7 +77,9 @@ export const ADMIN_PAGE_IDS = [
 
 /** URL slug → sidebar page id (e.g. /admin/decision-center → ops-ai-assistant) */
 export const ADMIN_PATH_ALIASES = Object.freeze({
-  'decision-center': 'ops-ai-assistant'
+  'decision-center': 'ops-ai-assistant',
+  'linkedin-ops': 'linkedin-ops-assistant',
+  'linkedin-ops-assistant': 'linkedin-ops-assistant'
 });
 
 /**

@@ -34,6 +34,7 @@ const NAV_LABELS = {
   faqs: 'SSS',
   'home-news': 'Güncel haberler',
   blog: 'Blog',
+  'linkedin-ops-assistant': 'LinkedIn Operasyon Asistanı',
   'unified-funnel': 'Birleşik Funnel',
   'auto-analytics': 'Auto analitik',
   'platform-analytics': 'Platform analitik',
