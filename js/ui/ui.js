@@ -661,7 +661,8 @@ export class UIManager {
         const section = document.getElementById('listing-detail-content');
         if (!section) return;
 
-        const { renderListingGalleryHtml, bindListingGallery } = await import('./listing-gallery-ui.js');
+        const { renderListingGalleryHtml, bindListingGallery, bindListingVehicleImageFallbacks } =
+            await import('./listing-gallery-ui.js');
         const listingId = this.escapeHtml(listing.id);
         const galleryHtml = renderListingGalleryHtml(listing, (s) => this.escapeHtml(s), (u) => this.safeImageUrl(u));
         const hasExternalSource = hasPublicSourceUrl(listing);
@@ -716,6 +717,7 @@ export class UIManager {
         `;
 
         bindListingGallery(section);
+        bindListingVehicleImageFallbacks(section, listing);
         this.loadIcons();
     }
 

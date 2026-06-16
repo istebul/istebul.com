@@ -1,8 +1,30 @@
 /**
  * Listing gallery + video markup for detail and grid cards.
  */
+import { attachVehicleImageFallback } from '../auto/vehicle-image.js';
 import { resolveListingImages, resolveListingVideo } from '../features/listings/listing-media.js';
-import { resolveTrustGatedListingImages } from './listing-trust-ui.js';
+import {
+  isVehicleListingCategory,
+  mapListingToVehicleImageInput,
+  resolveTrustGatedListingImages
+} from './listing-trust-ui.js';
+
+const LISTING_VEHICLE_IMAGE_SELECTOR =
+  '.listing-image, .listing-gallery-hero, .listing-gallery-thumb img';
+
+/**
+ * Bind CSP-safe runtime image error fallback for araç listing surfaces only.
+ * @param {ParentNode|null|undefined} root
+ * @param {Record<string, unknown>} [listing]
+ */
+export function bindListingVehicleImageFallbacks(root, listing = {}) {
+  if (!root?.querySelectorAll || !isVehicleListingCategory(listing.category)) return;
+
+  const vehicleInput = mapListingToVehicleImageInput(listing);
+  root.querySelectorAll(LISTING_VEHICLE_IMAGE_SELECTOR).forEach((img) => {
+    attachVehicleImageFallback(img, vehicleInput);
+  });
+}
 
 /**
  * @param {object} listing

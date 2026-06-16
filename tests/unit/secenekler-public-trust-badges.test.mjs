@@ -5,6 +5,7 @@ import path from 'node:path';
 
 import { UIManager } from '../../js/ui/ui.js';
 import { ListingsUI } from '../../js/ui/listings-ui.js';
+import { bindListingVehicleImageFallbacks } from '../../js/ui/listing-gallery-ui.js';
 import { escapeHtml } from '../../js/core/security.js';
 import {
   formatPublicSourceLabel,
@@ -498,6 +499,149 @@ test('non-vehicle listing keeps static Görsel temsili badge and legacy image pa
   assert.match(html, /Görsel temsili/);
   assert.doesNotMatch(html, /Kaynak görseli/);
   assert.doesNotMatch(html, /Görsel doğrulanamadı/);
+});
+
+function createMockListingImage(initial = {}) {
+  const listeners = {};
+  return {
+    src: initial.src || '',
+    alt: initial.alt || '',
+    title: initial.title || '',
+    dataset: { ...(initial.dataset || {}) },
+    parentElement: initial.parentElement || null,
+    addEventListener(type, fn) {
+      listeners[type] = fn;
+    },
+    dispatchError() {
+      listeners.error?.();
+    }
+  };
+}
+
+function createListingImageRoot(images = {}) {
+  const nodes = {
+    card: images.card ? createMockListingImage(images.card) : null,
+    hero: images.hero ? createMockListingImage(images.hero) : null,
+    thumb: images.thumb ? createMockListingImage(images.thumb) : null
+  };
+
+  return {
+    querySelectorAll(selector) {
+      const result = [];
+      if (selector.includes('.listing-image') && nodes.card) result.push(nodes.card);
+      if (selector.includes('.listing-gallery-hero') && nodes.hero) result.push(nodes.hero);
+      if (selector.includes('.listing-gallery-thumb img') && nodes.thumb) result.push(nodes.thumb);
+      return result;
+    }
+  };
+}
+
+function stripVersion(url) {
+  return String(url || '').replace(/\?v=[^&]+$/, '');
+}
+
+test('bindListingVehicleImageFallbacks no-ops for non-vehicle listings', () => {
+  const root = createListingImageRoot({
+    card: { src: 'https://cdn.example/konut.jpg', alt: 'Konut' }
+  });
+
+  bindListingVehicleImageFallbacks(root, {
+    category: 'ev',
+    title: 'Kadıköy daire',
+    images: ['https://cdn.example/konut.jpg']
+  });
+
+  assert.equal(root.querySelectorAll('.listing-image')[0]?.dataset.fallbackBound, undefined);
+});
+
+test('bindListingVehicleImageFallbacks binds verified external card image runtime error fallback', () => {
+  const root = createListingImageRoot({
+    card: {
+      src: 'https://cdn.example/citroen-c4-max.jpg',
+      alt: '2024 Citroen C4 Max',
+      className: 'listing-image'
+    }
+  });
+
+  bindListingVehicleImageFallbacks(root, {
+    category: 'arac',
+    title: '2024 Citroen C4 Max',
+    images: ['https://cdn.example/citroen-c4-max.jpg']
+  });
+
+  const img = root.querySelectorAll('.listing-image')[0];
+  assert.equal(img.dataset.fallbackBound, '1');
+  assert.equal(img.dataset.imageTrust, 'verified_external');
+
+  img.dispatchError();
+
+  assert.match(stripVersion(img.src), /vehicle-premium-placeholder\.svg$/);
+  assert.equal(img.alt, 'Görsel doğrulanamadı');
+});
+
+test('bindListingVehicleImageFallbacks binds gallery hero and thumb runtime error fallback', () => {
+  const root = createListingImageRoot({
+    hero: {
+      src: 'https://cdn.example/toyota-corolla-cross-2023.jpg',
+      alt: '2023 Toyota Corolla Cross Hybrid'
+    },
+    thumb: {
+      src: 'https://cdn.example/toyota-corolla-cross-2023.jpg',
+      alt: ''
+    }
+  });
+
+  bindListingVehicleImageFallbacks(root, {
+    category: 'vehicle',
+    title: '2023 Toyota Corolla Cross Hybrid',
+    images: ['https://cdn.example/toyota-corolla-cross-2023.jpg']
+  });
+
+  const hero = root.querySelectorAll('.listing-gallery-hero')[0];
+  const thumb = root.querySelectorAll('.listing-gallery-thumb img')[0];
+
+  assert.equal(hero.dataset.fallbackBound, '1');
+  assert.equal(thumb.dataset.fallbackBound, '1');
+
+  hero.dispatchError();
+  thumb.dispatchError();
+
+  assert.match(stripVersion(hero.src), /vehicle-premium-placeholder\.svg$/);
+  assert.match(stripVersion(thumb.src), /vehicle-premium-placeholder\.svg$/);
+  assert.equal(hero.alt, 'Görsel doğrulanamadı');
+  assert.equal(thumb.alt, 'Görsel doğrulanamadı');
+});
+
+test('regression guard: listings-ui binds card runtime fallback after render', () => {
+  const listingsUi = readRepoFile('js/ui/listings-ui.js');
+  assert.match(listingsUi, /bindListingVehicleImageFallbacks\(card, listing\)/);
+});
+
+test('regression guard: ui.js binds gallery runtime fallback after detail render', () => {
+  const uiJs = readRepoFile('js/ui/ui.js');
+  assert.match(uiJs, /bindListingVehicleImageFallbacks\(section, listing\)/);
+});
+
+test('regression guard: Faz 2E-mini listing image surfaces avoid inline onerror', () => {
+  const galleryUi = readRepoFile('js/ui/listing-gallery-ui.js');
+  const listingsUi = readRepoFile('js/ui/listings-ui.js');
+  const uiJs = readRepoFile('js/ui/ui.js');
+  const combined = `${galleryUi}\n${listingsUi}\n${uiJs}`;
+
+  assert.match(combined, /bindListingVehicleImageFallbacks/);
+  assert.match(combined, /attachVehicleImageFallback/);
+  assert.match(combined, /mapListingToVehicleImageInput/);
+  assert.doesNotMatch(combined, /\bonerror\s*=/);
+  assert.doesNotMatch(combined, /onerror=/);
+});
+
+test('regression guard: Faz 2E-mini defers to listing-trust-ui vehicle mapping without changing trust gate logic', () => {
+  const galleryUi = readRepoFile('js/ui/listing-gallery-ui.js');
+  const trustUi = readRepoFile('js/ui/listing-trust-ui.js');
+
+  assert.match(galleryUi, /isVehicleListingCategory\(listing\.category\)/);
+  assert.doesNotMatch(galleryUi, /resolveVehicleImageTrust/);
+  assert.doesNotMatch(trustUi, /bindListingVehicleImageFallbacks/);
 });
 
 test('regression guard: Faz 2B public trust copy avoids forbidden visual trust phrases', () => {
