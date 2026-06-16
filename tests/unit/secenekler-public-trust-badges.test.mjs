@@ -10,7 +10,12 @@ import {
   buildListingTrustStripHtml,
   getListingTrustBadges,
   hasPublicSourceUrl,
-  resolvePublicExternalUrl
+  resolvePublicExternalUrl,
+  mapListingToVehicleImageInput,
+  resolveListingImageTrust,
+  getListingImageTrustBadgeLabel,
+  resolveListingTrustGatedImageUrl,
+  isVehicleListingCategory
 } from '../../js/ui/listing-trust-ui.js';
 
 const repoRoot = process.cwd();
@@ -23,7 +28,7 @@ function createListingsUiStub() {
   const ui = Object.create(UIManager.prototype);
   Object.assign(ui, ListingsUI.prototype);
   ui.escapeHtml = (value) => String(value ?? '');
-  ui.safeImageUrl = () => '/assets/images/placeholder.svg';
+  ui.safeImageUrl = (url) => String(url || '/assets/images/placeholder.svg');
   ui.safeExternalUrl = (url) => String(url || '');
   ui.getListingComparisonSignature = () => 'listing:test:1';
   ui.getCategoryLabel = () => 'Araç';
@@ -303,4 +308,108 @@ test('regression guard: Faz 2A surfaces avoid sahibinden fallback in CTA hygiene
   assert.doesNotMatch(uiJs, /listing\.external_url \|\| 'https:\/\/www\.sahibinden\.com\/'/);
   assert.match(assistantUi, /resolvePublicExternalUrl/);
   assert.doesNotMatch(assistantUi, /'https:\/\/www\.sahibinden\.com\/'/);
+});
+
+test('mapListingToVehicleImageInput maps images[0] and listing attributes for araç rows', () => {
+  const mapped = mapListingToVehicleImageInput({
+    title: '2024 Citroen C4 Max',
+    category: 'arac',
+    images: ['https://cdn.example/citroen-c4-max.jpg'],
+    vehicleBrand: 'Citroen',
+    attributes: { model: 'C4', year: 2024, trim: 'Max' }
+  });
+
+  assert.equal(mapped.name, '2024 Citroen C4 Max');
+  assert.equal(mapped.image_url, 'https://cdn.example/citroen-c4-max.jpg');
+  assert.equal(mapped.brand, 'Citroen');
+  assert.equal(mapped.model, 'C4');
+  assert.equal(mapped.year, '2024');
+  assert.equal(mapped.trim, 'Max');
+});
+
+test('resolveListingImageTrust returns null for non-vehicle categories', () => {
+  assert.equal(resolveListingImageTrust({ category: 'ev', images: ['https://example.com/a.jpg'] }), null);
+  assert.equal(isVehicleListingCategory('tatil'), false);
+  assert.equal(isVehicleListingCategory('vehicle'), true);
+});
+
+test('araç listing with verified external image uses Kaynak görseli badge', () => {
+  const listing = {
+    category: 'arac',
+    title: '2024 Citroen C4 Max',
+    images: ['https://cdn.example/citroen-c4-max.jpg']
+  };
+
+  const trust = resolveListingImageTrust(listing);
+  assert.equal(trust?.showRealImage, true);
+  assert.equal(getListingImageTrustBadgeLabel(listing), 'Kaynak görseli');
+
+  const html = buildListingTrustStripHtml(listing);
+  assert.match(html, /Kaynak görseli/);
+  assert.doesNotMatch(html, /Doğrulanmış görsel/);
+  assert.doesNotMatch(html, /Onaylandı/);
+});
+
+test('araç listing with catalog SVG in images[] gates card and detail away from catalog SVG', async () => {
+  const listing = {
+    id: 'svg-1',
+    category: 'arac',
+    title: '2024 Citroen C4 Max',
+    price: 100,
+    images: ['/assets/images/auto/peugeot-suv.svg']
+  };
+
+  assert.equal(getListingImageTrustBadgeLabel(listing), 'Görsel doğrulanamadı');
+
+  const cardHtml = renderListingCard(listing);
+  assert.doesNotMatch(cardHtml, /peugeot-suv\.svg/);
+  assert.match(cardHtml, /vehicle-premium-placeholder\.svg/);
+  assert.match(cardHtml, /Görsel doğrulanamadı/);
+
+  const detailHtml = await renderListingDetailHtml(listing);
+  assert.doesNotMatch(detailHtml, /peugeot-suv\.svg/);
+  assert.match(detailHtml, /placeholder\.svg/);
+});
+
+test('araç listing without images keeps Görsel temsili badge and placeholder image', () => {
+  const listing = {
+    id: 'no-img',
+    category: 'arac',
+    title: '2024 Peugeot 308 Allure',
+    price: 100
+  };
+
+  assert.equal(getListingImageTrustBadgeLabel(listing), 'Görsel temsili');
+  const cardHtml = renderListingCard(listing);
+  assert.match(cardHtml, /Görsel temsili/);
+  assert.match(cardHtml, /vehicle-premium-placeholder\.svg|placeholder\.svg/);
+});
+
+test('non-vehicle listing keeps static Görsel temsili badge and legacy image path', () => {
+  const listing = {
+    category: 'ev',
+    title: 'Kadıköy daire',
+    images: ['https://cdn.example/kadikoy.jpg']
+  };
+
+  assert.equal(resolveListingTrustGatedImageUrl(listing), null);
+  assert.equal(getListingImageTrustBadgeLabel(listing), 'Görsel temsili');
+
+  const html = buildListingTrustStripHtml(listing);
+  assert.match(html, /Görsel temsili/);
+  assert.doesNotMatch(html, /Kaynak görseli/);
+  assert.doesNotMatch(html, /Görsel doğrulanamadı/);
+});
+
+test('regression guard: Faz 2B public trust copy avoids forbidden visual trust phrases', () => {
+  const trustUi = readRepoFile('js/ui/listing-trust-ui.js');
+  const listingsUi = readRepoFile('js/ui/listings-ui.js');
+  const galleryUi = readRepoFile('js/ui/listing-gallery-ui.js');
+  const combined = `${trustUi}\n${listingsUi}\n${galleryUi}`;
+
+  assert.doesNotMatch(combined, /Doğrulanmış görsel/);
+  assert.doesNotMatch(combined, /Onaylandı/);
+  assert.doesNotMatch(combined, /Resmi/);
+  assert.doesNotMatch(combined, /Garantili/);
+  assert.doesNotMatch(combined, /sahibinden\.com/);
 });

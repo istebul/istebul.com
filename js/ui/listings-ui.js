@@ -3,7 +3,8 @@ import { renderAiPlatformBanner } from './ai-platform-surface.js';
 import {
     AI_SCORE_DISCLAIMER,
     buildListingTrustStripHtml,
-    hasPublicSourceUrl
+    hasPublicSourceUrl,
+    resolveListingTrustGatedImageUrl
 } from './listing-trust-ui.js';
 
 const VERTICAL_EMPTY_STATE_CTAS = Object.freeze({
@@ -62,7 +63,10 @@ export class ListingsUI {
             });
             container.innerHTML = `<div class="listings-ai-strip">${aiStrip}</div>` + listings.map(listing => {
                 const listingId = this.escapeHtml(listing.id);
-                const imageUrl = this.safeImageUrl(listing.images?.[0]);
+                const trustGatedImageUrl = resolveListingTrustGatedImageUrl(listing);
+                const imageUrl = this.safeImageUrl(
+                    trustGatedImageUrl ?? listing.images?.[0]
+                );
                 const hasExternalSource = hasPublicSourceUrl(listing);
                 const externalUrl = hasExternalSource
                     ? this.safeExternalUrl(listing.source_url ?? listing.external_url)
