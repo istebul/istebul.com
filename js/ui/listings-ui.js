@@ -1,4 +1,4 @@
-import { listingMediaCount } from './listing-gallery-ui.js';
+import { bindListingVehicleImageFallbacks, listingMediaCount } from './listing-gallery-ui.js';
 import { renderAiPlatformBanner } from './ai-platform-surface.js';
 import {
     AI_SCORE_DISCLAIMER,
@@ -119,6 +119,14 @@ export class ListingsUI {
                 </div>
             `;
             }).join('');
+
+            const cards = container.querySelectorAll?.('.listing-card[data-listing-id]');
+            if (cards?.length) {
+                listings.forEach((listing, index) => {
+                    const card = cards[index];
+                    if (card) bindListingVehicleImageFallbacks(card, listing);
+                });
+            }
         }
 
         this.loadIcons();
