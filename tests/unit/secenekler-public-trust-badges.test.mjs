@@ -5,7 +5,10 @@ import path from 'node:path';
 
 import { UIManager } from '../../js/ui/ui.js';
 import { ListingsUI } from '../../js/ui/listings-ui.js';
-import { bindListingVehicleImageFallbacks } from '../../js/ui/listing-gallery-ui.js';
+import {
+  bindListingGenericImageFallbacks,
+  bindListingVehicleImageFallbacks
+} from '../../js/ui/listing-gallery-ui.js';
 import { escapeHtml } from '../../js/core/security.js';
 import {
   formatPublicSourceLabel,
@@ -612,14 +615,91 @@ test('bindListingVehicleImageFallbacks binds gallery hero and thumb runtime erro
   assert.equal(thumb.alt, 'Görsel doğrulanamadı');
 });
 
+test('bindListingGenericImageFallbacks binds non-vehicle card image runtime error placeholder', () => {
+  const root = createListingImageRoot({
+    card: {
+      src: 'https://cdn.example/kadikoy.jpg',
+      alt: 'Kadıköy daire'
+    }
+  });
+
+  bindListingGenericImageFallbacks(root, {
+    category: 'ev',
+    title: 'Kadıköy daire',
+    images: ['https://cdn.example/kadikoy.jpg']
+  });
+
+  const img = root.querySelectorAll('.listing-image')[0];
+  assert.equal(img.dataset.genericFallbackBound, '1');
+  assert.equal(img.dataset.fallbackBound, undefined);
+
+  img.dispatchError();
+
+  assert.equal(img.src, '/assets/images/placeholder.svg');
+  assert.equal(img.alt, 'Kadıköy daire');
+});
+
+test('bindListingGenericImageFallbacks binds non-vehicle gallery hero and thumb runtime error placeholder', () => {
+  const root = createListingImageRoot({
+    hero: {
+      src: 'https://cdn.example/bodrum-villa.jpg',
+      alt: 'Bodrum villa'
+    },
+    thumb: {
+      src: 'https://cdn.example/bodrum-villa.jpg',
+      alt: ''
+    }
+  });
+
+  bindListingGenericImageFallbacks(root, {
+    category: 'tatil',
+    title: 'Bodrum villa',
+    images: ['https://cdn.example/bodrum-villa.jpg']
+  });
+
+  const hero = root.querySelectorAll('.listing-gallery-hero')[0];
+  const thumb = root.querySelectorAll('.listing-gallery-thumb img')[0];
+
+  assert.equal(hero.dataset.genericFallbackBound, '1');
+  assert.equal(thumb.dataset.genericFallbackBound, '1');
+
+  hero.dispatchError();
+  thumb.dispatchError();
+
+  assert.equal(hero.src, '/assets/images/placeholder.svg');
+  assert.equal(thumb.src, '/assets/images/placeholder.svg');
+  assert.equal(hero.alt, 'Bodrum villa');
+  assert.equal(thumb.alt, '');
+});
+
+test('bindListingGenericImageFallbacks no-ops for vehicle listings', () => {
+  const root = createListingImageRoot({
+    card: {
+      src: 'https://cdn.example/citroen-c4-max.jpg',
+      alt: '2024 Citroen C4 Max'
+    }
+  });
+
+  bindListingGenericImageFallbacks(root, {
+    category: 'arac',
+    title: '2024 Citroen C4 Max',
+    images: ['https://cdn.example/citroen-c4-max.jpg']
+  });
+
+  const img = root.querySelectorAll('.listing-image')[0];
+  assert.equal(img.dataset.genericFallbackBound, undefined);
+});
+
 test('regression guard: listings-ui binds card runtime fallback after render', () => {
   const listingsUi = readRepoFile('js/ui/listings-ui.js');
   assert.match(listingsUi, /bindListingVehicleImageFallbacks\(card, listing\)/);
+  assert.match(listingsUi, /bindListingGenericImageFallbacks\(card, listing\)/);
 });
 
 test('regression guard: ui.js binds gallery runtime fallback after detail render', () => {
   const uiJs = readRepoFile('js/ui/ui.js');
   assert.match(uiJs, /bindListingVehicleImageFallbacks\(section, listing\)/);
+  assert.match(uiJs, /bindListingGenericImageFallbacks\(section, listing\)/);
 });
 
 test('regression guard: Faz 2E-mini listing image surfaces avoid inline onerror', () => {
@@ -629,6 +709,7 @@ test('regression guard: Faz 2E-mini listing image surfaces avoid inline onerror'
   const combined = `${galleryUi}\n${listingsUi}\n${uiJs}`;
 
   assert.match(combined, /bindListingVehicleImageFallbacks/);
+  assert.match(combined, /bindListingGenericImageFallbacks/);
   assert.match(combined, /attachVehicleImageFallback/);
   assert.match(combined, /mapListingToVehicleImageInput/);
   assert.doesNotMatch(combined, /\bonerror\s*=/);
