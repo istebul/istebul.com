@@ -5,6 +5,7 @@ import path from 'node:path';
 
 import { UIManager } from '../../js/ui/ui.js';
 import { ListingsUI } from '../../js/ui/listings-ui.js';
+import { escapeHtml } from '../../js/core/security.js';
 import {
   formatPublicSourceLabel,
   buildListingTrustStripHtml,
@@ -307,7 +308,105 @@ test('regression guard: Faz 2A surfaces avoid sahibinden fallback in CTA hygiene
   assert.match(uiJs, /renderFavorites[\s\S]*hasPublicSourceUrl\(listing\)/);
   assert.doesNotMatch(uiJs, /listing\.external_url \|\| 'https:\/\/www\.sahibinden\.com\/'/);
   assert.match(assistantUi, /resolvePublicExternalUrl/);
+  assert.match(assistantUi, /hasPublicSourceUrl/);
   assert.doesNotMatch(assistantUi, /'https:\/\/www\.sahibinden\.com\/'/);
+});
+
+const SAHIBINDEN_FALLBACK = 'https://www.sahibinden.com/';
+
+function createAssistantUrlHygieneStub() {
+  const ui = createUiManagerStub();
+  ui.safeExternalUrl = (url) => {
+    if (!url) return SAHIBINDEN_FALLBACK;
+    try {
+      const parsed = new URL(String(url));
+      if (['http:', 'https:'].includes(parsed.protocol)) return parsed.href;
+    } catch {
+      return SAHIBINDEN_FALLBACK;
+    }
+    return SAHIBINDEN_FALLBACK;
+  };
+  return ui;
+}
+
+test('getChannelsMarkup omits sahibinden fallback when channel.url is empty', () => {
+  const ui = createAssistantUrlHygieneStub();
+  const html = ui.getChannelsMarkup([{ label: 'Sahibinden', url: '' }]);
+
+  assert.doesNotMatch(html, /sahibinden\.com/);
+  assert.doesNotMatch(html, /<a\b/);
+  assert.match(html, /class="assistant-channel"/);
+  assert.match(html, /Sahibinden/);
+});
+
+test('getChannelsMarkup omits external link when channel.url is invalid', () => {
+  const ui = createAssistantUrlHygieneStub();
+  const html = ui.getChannelsMarkup([{ label: 'Geçersiz kanal', url: 'not-a-url' }]);
+
+  assert.doesNotMatch(html, /sahibinden\.com/);
+  assert.doesNotMatch(html, /target="_blank"/);
+  assert.doesNotMatch(html, /<a\b/);
+  assert.match(html, /Geçersiz kanal/);
+});
+
+test('getChannelsMarkup renders escaped label and valid https href', () => {
+  const ui = createAssistantUrlHygieneStub();
+  ui.escapeHtml = escapeHtml;
+  const html = ui.getChannelsMarkup([
+    { label: '<script>alert(1)</script>', url: 'https://channel.example/listing/9' }
+  ]);
+
+  assert.match(html, /href="https:\/\/channel\.example\/listing\/9"/);
+  assert.match(html, /target="_blank"/);
+  assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+  assert.doesNotMatch(html, /sahibinden\.com/);
+});
+
+test('getSourcePillMarkup omits sahibinden fallback when source.url is invalid', () => {
+  const ui = createAssistantUrlHygieneStub();
+  const html = ui.getSourcePillMarkup({
+    type: 'İlan',
+    name: 'Test kaynağı',
+    url: 'not-a-url',
+    status: 'Aktif'
+  });
+
+  assert.doesNotMatch(html, /sahibinden\.com/);
+  assert.doesNotMatch(html, /<a\b/);
+  assert.match(html, /class="assistant-source-pill"/);
+  assert.match(html, /Test kaynağı/);
+});
+
+test('getSourcePillMarkup keeps external link for valid source.url', () => {
+  const ui = createAssistantUrlHygieneStub();
+  const html = ui.getSourcePillMarkup({
+    type: 'İlan',
+    name: 'Partner kaynağı',
+    url: 'https://partner.example/source/2',
+    status: 'Aktif'
+  });
+
+  assert.match(html, /href="https:\/\/partner\.example\/source\/2"/);
+  assert.match(html, /target="_blank"/);
+  assert.match(html, /Partner kaynağı/);
+  assert.doesNotMatch(html, /sahibinden\.com/);
+});
+
+test('Faz 2D regression: listing-source action plan and fixed partner links remain unchanged', () => {
+  const ui = createAssistantUrlHygieneStub();
+
+  const withoutSource = ui.getRecommendationActionPlanMarkup('arac', {});
+  assert.doesNotMatch(withoutSource, /sahibinden\.com/);
+  assert.doesNotMatch(withoutSource, /Seçeneği doğrula/);
+  assert.match(withoutSource, /Krediyi netleştir/);
+  assert.match(withoutSource, /hangikredi\.com/);
+
+  const withSource = ui.getRecommendationActionPlanMarkup('arac', {
+    source_url: 'https://listing.example/item/4'
+  });
+  assert.match(withSource, /Seçeneği doğrula/);
+  assert.match(withSource, /listing\.example/);
+  assert.doesNotMatch(withSource, /sahibinden\.com/);
 });
 
 test('mapListingToVehicleImageInput maps images[0] and listing attributes for araç rows', () => {

@@ -37,7 +37,7 @@ import {
 } from './decision-memory-context.js';
 import { normalizeHistoryEntryCategory } from './decision-history-category.js';
 import { normalizeDecisionHistoryList } from './decision-history-compat.js';
-import { resolvePublicExternalUrl } from './listing-trust-ui.js';
+import { hasPublicSourceUrl, resolvePublicExternalUrl } from './listing-trust-ui.js';
 import { buildVerticalContinueHref } from '../features/assistant/assistant-category-bridge.js';
 
 export const VERTICAL_CONTINUE_CATEGORY_LABELS = Object.freeze({
@@ -477,8 +477,11 @@ export class AssistantUI {
 
     getSourcePillMarkup(source) {
         const content = '<span>' + this.escapeHtml(source.type || 'Kaynak') + '</span><strong>' + this.escapeHtml(source.name || 'Veri kaynağı') + '</strong><small>' + this.escapeHtml(source.status || source.cadence || '') + '</small>';
-        if (source.url) {
-            return '<a class="assistant-source-pill" href="' + this.safeExternalUrl(source.url) + '" target="_blank" rel="noopener noreferrer">' + content + '</a>';
+        const publicUrl = hasPublicSourceUrl({ source_url: source?.url })
+            ? String(source.url).trim()
+            : null;
+        if (publicUrl) {
+            return '<a class="assistant-source-pill" href="' + this.safeExternalUrl(publicUrl) + '" target="_blank" rel="noopener noreferrer">' + content + '</a>';
         }
         return '<div class="assistant-source-pill">' + content + '</div>';
     }
@@ -879,12 +882,22 @@ export class AssistantUI {
     }
 
     getChannelsMarkup(channels = []) {
-        return channels.map((channel) => `
-            <a href="${this.safeExternalUrl(channel.url)}" target="_blank" rel="noopener noreferrer" class="assistant-channel">
+        return channels.map((channel) => {
+            const publicUrl = hasPublicSourceUrl({ source_url: channel?.url })
+                ? String(channel.url).trim()
+                : null;
+            const label = this.escapeHtml(channel.label);
+            if (!publicUrl) {
+                return `<span class="assistant-channel">
                 <i data-lucide="external-link"></i>
-                ${this.escapeHtml(channel.label)}
-            </a>
-        `).join('');
+                ${label}
+            </span>`;
+            }
+            return `<a href="${this.safeExternalUrl(publicUrl)}" target="_blank" rel="noopener noreferrer" class="assistant-channel">
+                <i data-lucide="external-link"></i>
+                ${label}
+            </a>`;
+        }).join('');
     }
 
     setActiveCategory(categoryId, categories = []) {
