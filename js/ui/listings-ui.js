@@ -1,4 +1,8 @@
-import { bindListingVehicleImageFallbacks, listingMediaCount } from './listing-gallery-ui.js';
+import {
+    bindListingGenericImageFallbacks,
+    bindListingVehicleImageFallbacks,
+    listingMediaCount
+} from './listing-gallery-ui.js';
 import { renderAiPlatformBanner } from './ai-platform-surface.js';
 import {
     AI_SCORE_DISCLAIMER,
@@ -124,7 +128,10 @@ export class ListingsUI {
             if (cards?.length) {
                 listings.forEach((listing, index) => {
                     const card = cards[index];
-                    if (card) bindListingVehicleImageFallbacks(card, listing);
+                    if (card) {
+                        bindListingVehicleImageFallbacks(card, listing);
+                        bindListingGenericImageFallbacks(card, listing);
+                    }
                 });
             }
         }
