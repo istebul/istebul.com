@@ -2,6 +2,7 @@
  * Listing gallery + video markup for detail and grid cards.
  */
 import { resolveListingImages, resolveListingVideo } from '../features/listings/listing-media.js';
+import { resolveTrustGatedListingImages } from './listing-trust-ui.js';
 
 /**
  * @param {object} listing
@@ -11,7 +12,9 @@ import { resolveListingImages, resolveListingVideo } from '../features/listings/
 export function renderListingGalleryHtml(listing, escapeHtml, safeImageUrl) {
   const esc = escapeHtml || ((s) => String(s ?? ''));
   const img = safeImageUrl || ((u) => u);
-  const images = resolveListingImages(listing).map((url) => img(url));
+  const images = (resolveTrustGatedListingImages(listing) ?? resolveListingImages(listing)).map((url) =>
+    img(url)
+  );
   const video = resolveListingVideo(listing);
   const title = esc(listing.title || 'Araç seçeneği');
 
@@ -71,7 +74,7 @@ export function bindListingGallery(root) {
  * @param {object} listing
  */
 export function listingMediaCount(listing) {
-  const images = resolveListingImages(listing);
+  const images = resolveTrustGatedListingImages(listing) ?? resolveListingImages(listing);
   const video = resolveListingVideo(listing);
   return images.length + (video ? 1 : 0);
 }
