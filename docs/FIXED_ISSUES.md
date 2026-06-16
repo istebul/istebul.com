@@ -4,7 +4,24 @@ Issues identified during full production audit and **safely corrected** in this 
 
 ---
 
-## 0. AFAD Açık Veri OD-2B — production closure (2026-06-16)
+## 0. AFAD Açık Veri OD-2C — production closure (2026-06-16)
+
+| Item | Detail |
+|------|--------|
+| Phase | AFAD deprem aktivite bilgilendirme katmanı (OD-2C-1 module + OD-2C-2 konut mount) |
+| Merges | PR [#382](https://github.com/istebul/istebul.com/pull/382) → `a2181340` (OD-2C-1); PR [#383](https://github.com/istebul/istebul.com/pull/383) → `7b119764` (OD-2C-2) |
+| Scope | Score-neutral AFAD risk layer + konut results mount (EVDS sonrası); **not** AI narration, admin, SEO, or score engine changes |
+| Prod state | `AFAD_EARTHQUAKE_ENABLED` kapalı → HTTP 200, `ok: false`, `data.status: "disabled"`, boş `earthquakes` / `regionalSignals`; konut UI **silent** (no `data-afad-risk-layer` card) |
+| Score neutrality | `decisionScore`, `confidenceScore`, `earthquakeRiskScore` unchanged; `decision-intelligence-engine` / `real-estate-calculator` untouched |
+| Verification | CI `27651527605`, Production Deploy `27651527590`, Pages `27651527031`; regression 60/60; `npm run smoke:live` failed=0 |
+| Staging plan | `docs/OPEN_DATA_OD-2C_CLOSURE.md` §8 — preview/staging `AFAD_EARTHQUAKE_ENABLED=true` manual checklist |
+| Closure doc | `docs/OPEN_DATA_OD-2C_CLOSURE.md` |
+
+**Not a bug-fix release.** OD-2C closes the konut informational layer with production verification. **OD-2C-3** (AI narration), SEO data-sources, admin toggle, and prod flag enable are separate phases.
+
+---
+
+## 0.1. AFAD Açık Veri OD-2B — production closure (2026-06-16)
 
 | Item | Detail |
 |------|--------|
@@ -16,7 +33,7 @@ Issues identified during full production audit and **safely corrected** in this 
 | Verification | CI `27627169133`, Production Deploy `27627169096`, Pages `27627160942`; `npm run smoke:live` failed=0 |
 | Closure doc | `docs/OPEN_DATA_OD-2B_CLOSURE.md` |
 
-**Not a bug-fix release.** OD-2B closes the snapshot foundation with production verification. **OD-2C** (UI surfacing, admin controls, konut score wiring) is intentionally out of scope and tracked as a separate future phase.
+**Not a bug-fix release.** OD-2B closes the snapshot foundation with production verification. UI surfacing shipped later in **OD-2C** (see §0 above).
 
 ---
 

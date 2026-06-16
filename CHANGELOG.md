@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.23] — 2026-06-16
+
+### Added
+- **Açık Veri — AFAD Deprem Aktivite Katmanı OD-2C closure** (PRs [#382](https://github.com/istebul/istebul.com/pull/382), [#383](https://github.com/istebul/istebul.com/pull/383); closure doc on `main` at `7b119764`)
+  - OD-2C-1: isolated score-neutral AFAD risk layer module (`results-afad-risk-layer.js`)
+  - OD-2C-2: konut results mount after EVDS layers (`konut-results-v2.js`, scoped CSS)
+  - Production verification: CI `27651527605`, Production Deploy `27651527590`, Pages `27651527031`; regression **60/60 PASS**; `npm run smoke:live` PASS (`failed=0`)
+
+### Documentation
+- OD-2C recorded as **production closure with staging verification plan** — `docs/OPEN_DATA_OD-2C_CLOSURE.md`
+- Prod `AFAD_EARTHQUAKE_ENABLED` remains **off** → disabled API + silent konut UI (no DOM card)
+- OD-2C-3 (AI narration), SEO data-sources, admin toggle, and prod flag enable are **separate future phases**
+
 ## [2.2.22] — 2026-06-16
 
 ### Added
