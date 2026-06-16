@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.22] — 2026-06-16
+
+### Added
+- **Açık Veri — AFAD Deprem Snapshot OD-2B closure** (PR [#380](https://github.com/istebul/istebul.com/pull/380), merge `62d04a0c`)
+  - Production verification record for `/api/afad-earthquake-snapshot` foundation (feature-flag disabled in prod)
+  - Closure documentation: `docs/OPEN_DATA_OD-2B_CLOSURE.md`
+  - EVDS regression confirmed intact (`/api/evds-snapshot`); `npm run smoke:live` PASS (failed=0)
+
+### Documentation
+- OD-2B recorded as **docs-only production closure** — no new runtime behavior in this release
+- AFAD remains feature-flag disabled (`AFAD_EARTHQUAKE_ENABLED`); OD-2C is a separate future phase (UI/admin/konut scoring not in scope)
+
 ## [2.2.21] — 2026-06-13
 
 ### Added

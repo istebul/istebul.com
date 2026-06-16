@@ -4,6 +4,22 @@ Issues identified during full production audit and **safely corrected** in this 
 
 ---
 
+## 0. AFAD Açık Veri OD-2B — production closure (2026-06-16)
+
+| Item | Detail |
+|------|--------|
+| Phase | AFAD deprem snapshot open-data foundation (OD-2B) |
+| Merge | PR [#380](https://github.com/istebul/istebul.com/pull/380) → `62d04a0c` |
+| Scope | Server-side `/api/afad-earthquake-snapshot` endpoint + sanitized public contract; **not** a UI/admin/konut-scoring integration |
+| Prod state | `AFAD_EARTHQUAKE_ENABLED` kapalı → HTTP 200, `ok: false`, `data.status: "disabled"`, boş `earthquakes` / `regionalSignals` |
+| EVDS isolation | `/api/evds-snapshot` regression PASS (`ok: true`, `source: "evds"`) |
+| Verification | CI `27627169133`, Production Deploy `27627169096`, Pages `27627160942`; `npm run smoke:live` failed=0 |
+| Closure doc | `docs/OPEN_DATA_OD-2B_CLOSURE.md` |
+
+**Not a bug-fix release.** OD-2B closes the snapshot foundation with production verification. **OD-2C** (UI surfacing, admin controls, konut score wiring) is intentionally out of scope and tracked as a separate future phase.
+
+---
+
 ## 1. Auto catalog SVG rendered as real vehicle photos (Faz 3F — 2026-06-13)
 
 | Issue | Cause | Fix |

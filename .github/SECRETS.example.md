@@ -22,6 +22,14 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → service_role (gizli) |
 | `TCMB_EVDS_API_KEY` | [EVDS 3](https://evds3.tcmb.gov.tr/) profil → API anahtarı (yalnızca sunucu; `/api/evds-snapshot`). Cloudflare’da yanlış isimle `EVDS_API_KEY` tanımlandıysa kod bunu da okur; tercih edilen ad `TCMB_EVDS_API_KEY`. |
 
+### AFAD deprem snapshot (OD-2B) — ops notu
+
+| Variable | Açıklama |
+|----------|----------|
+| `AFAD_EARTHQUAKE_ENABLED` | Cloudflare Pages **Production** env. Varsayılan: **kapalı** (tanımsız veya `false`). `true` yapılmadan `/api/afad-earthquake-snapshot` canlı AFAD upstream çağırmaz; güvenli `disabled` yanıt döner. |
+
+**Öneri:** Production’da açmadan önce staging/preview ortamında `AFAD_EARTHQUAKE_ENABLED=true` ile endpoint contract ve sanitization doğrulaması yapın. Gerçek secret değeri bu dosyaya yazılmaz. Detay: `docs/OPEN_DATA_OD-2B_CLOSURE.md`.
+
 ## Önerilen (Supabase otomatik deploy)
 
 | Secret | Nasıl alınır |
