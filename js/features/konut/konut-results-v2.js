@@ -32,6 +32,10 @@ import {
   buildEvdsRiskLayer,
   mountEvdsRiskLayer
 } from '../results/results-evds-risk-layer.js';
+import {
+  fetchAndBuildAfadRiskLayer,
+  mountAfadRiskLayer
+} from '../results/results-afad-risk-layer.js';
 import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
 import {
   renderResultsHeroLayout,
@@ -40,6 +44,40 @@ import {
 import { withTimeout } from '../../core/async-utils.js';
 
 const KONUT_SUMMARY_TIMEOUT_MS = 10000;
+
+/**
+ * Konut state'inden AFAD snapshot province/district çözümlemesi.
+ * @param {object} [state]
+ * @returns {{ province: string, district: string }|null}
+ */
+export function resolveKonutAfadLocation(state = {}) {
+  const province = String(state.city || state.province || '').trim();
+  const district = String(state.district || '').trim();
+  if (!province && !district) return null;
+  return { province, district };
+}
+
+/**
+ * Konut sonuç hero aside — AFAD bilgilendirme katmanı (skor üretmez).
+ * @param {HTMLElement|null} root
+ * @param {object} [state]
+ * @param {typeof fetch} [fetchImpl]
+ */
+export async function hydrateKonutAfadRiskLayer(root, state = {}, fetchImpl) {
+  if (!root) return null;
+
+  const location = resolveKonutAfadLocation(state);
+  if (!location) return null;
+
+  const layer = await fetchAndBuildAfadRiskLayer({
+    province: location.province,
+    district: location.district,
+    fetchImpl
+  });
+
+  mountAfadRiskLayer(root, layer);
+  return layer;
+}
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -728,6 +766,7 @@ export async function mountKonutResultsV2({
   mountNode.prepend(root);
   await hydrateResultsEconomicIndicators(root, 'konut');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
+  await hydrateKonutAfadRiskLayer(root, state);
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'konut',

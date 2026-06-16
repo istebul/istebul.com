@@ -308,6 +308,135 @@ body.housing-page #housing-results .konut-v2-rec-level {
   }
 }
 
+/* AFAD deprem aktivite katmanı — bilgilendirme amaçlı (ana skoru değiştirmez) */
+.konut-v2-root .ib-afad-risk-layer {
+  margin: 0 0 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 119, 6, 0.22);
+  background: linear-gradient(180deg, rgba(255, 251, 235, 0.92) 0%, rgba(255, 255, 255, 1) 100%);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.konut-v2-root .ib-afad-risk-layer__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  margin-bottom: 0.5rem;
+}
+
+.konut-v2-root .ib-afad-risk-layer__title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.konut-v2-root .ib-afad-risk-layer__badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.konut-v2-root .ib-afad-risk-layer__badge--high {
+  background: rgba(239, 68, 68, 0.14);
+  color: #b91c1c;
+}
+
+.konut-v2-root .ib-afad-risk-layer__badge--medium {
+  background: rgba(245, 158, 11, 0.16);
+  color: #b45309;
+}
+
+.konut-v2-root .ib-afad-risk-layer__badge--low {
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
+}
+
+.konut-v2-root .ib-afad-risk-layer__badge--unavailable {
+  background: rgba(148, 163, 184, 0.2);
+  color: #64748b;
+}
+
+.konut-v2-root .ib-afad-risk-layer__summary {
+  margin: 0 0 0.55rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.konut-v2-root .ib-afad-risk-layer__bullets {
+  margin: 0 0 0.55rem;
+  padding-left: 1rem;
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+.konut-v2-root .ib-afad-risk-layer__bullets li + li {
+  margin-top: 0.3rem;
+}
+
+.konut-v2-root .ib-afad-risk-layer__indicators {
+  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.konut-v2-root .ib-afad-risk-layer__ind-heading {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  color: #64748b;
+}
+
+.konut-v2-root .ib-afad-risk-layer__indicators ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.konut-v2-root .ib-afad-risk-layer__indicators li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.konut-v2-root .ib-afad-risk-layer__ind-label {
+  color: #64748b;
+}
+
+.konut-v2-root .ib-afad-risk-layer__attribution {
+  margin: 0 0 0.25rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.konut-v2-root .ib-afad-risk-layer__disclaimer {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+@media (max-width: 520px) {
+  .konut-v2-root .ib-afad-risk-layer {
+    padding: 0.8rem 0.85rem;
+  }
+
+  .konut-v2-root .ib-afad-risk-layer__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 .konut-v2-grid {
   display: grid;
   gap: 0.5rem;
