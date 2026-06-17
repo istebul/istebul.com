@@ -155,3 +155,30 @@ test('ai-listings bootstrap enforces admin route guard', () => {
 test('forbidden page exists for 403 redirect', () => {
   assert.ok(fs.existsSync(path.join(process.cwd(), 'admin/forbidden.html')));
 });
+
+test('forbidden page uses shared admin polish stylesheet', () => {
+  const html = fs.readFileSync(path.join(process.cwd(), 'admin/forbidden.html'), 'utf8');
+  assert.match(html, /admin-premium-polish\.css/);
+  assert.doesNotMatch(html, /<style[\s>]/);
+  assert.match(html, /class="admin-forbidden-page"/);
+  assert.match(html, /class="admin-forbidden"/);
+  assert.match(html, /admin-forbidden__link--primary/);
+  assert.match(html, /href="\/admin-panel\.html"/);
+  assert.match(html, /href="\/profil\/"/);
+});
+
+test('admin-premium-polish defines forbidden shell accessibility styles', () => {
+  const css = fs.readFileSync(path.join(process.cwd(), 'css/admin-premium-polish.css'), 'utf8');
+  assert.match(css, /\.admin-forbidden\b/);
+  assert.match(css, /\.admin-forbidden__link:focus-visible/);
+  assert.match(css, /min-height:\s*44px/);
+});
+
+test('renderAdminForbiddenHtml uses shared forbidden shell markup', () => {
+  const src = fs.readFileSync(path.join(process.cwd(), 'js/admin/admin-route-guard.js'), 'utf8');
+  assert.match(src, /admin-forbidden__title/);
+  assert.match(src, /admin-forbidden__actions/);
+  assert.match(src, /ensureAdminForbiddenStyles/);
+  assert.match(src, /yetkili admin kullanıcılar/);
+  assert.doesNotMatch(src, /Bu sayfa yalnızca admin kullanıcılar/);
+});

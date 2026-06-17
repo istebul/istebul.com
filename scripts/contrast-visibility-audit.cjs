@@ -62,6 +62,17 @@ const CRITICAL_SURFACES = [
       'id="ai-listings-view-nav"',
       'id="ai-listings-sidebar"'
     ]
+  },
+  {
+    label: 'Admin forbidden 403 shell',
+    file: 'admin/forbidden.html',
+    markers: [
+      'class="admin-forbidden-page"',
+      'class="admin-forbidden"',
+      'admin-forbidden__title',
+      'admin-forbidden__link--primary',
+      'href="/admin-panel.html"'
+    ]
   }
 ];
 
@@ -70,6 +81,7 @@ const CSS_GUARDS = [
   ['css/style.css', ':focus-visible'],
   ['css/vertical-nav-more-v1.css', 'ib-vertical-nav-more'],
   ['css/admin-premium-polish.css', '--admin-ink'],
+  ['css/admin-premium-polish.css', '.admin-forbidden__link:focus-visible'],
   ['css/admin-ai-listings.css', 'ai-listings-admin__brand-title']
 ];
 
