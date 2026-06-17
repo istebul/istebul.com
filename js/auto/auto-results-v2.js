@@ -113,7 +113,7 @@ function renderAutoPremiumHero(recommendation, highlights, esc) {
           </div>
         </div>
       </div>
-      <p class="auto-v2-hero__summary" hidden data-auto-v2-summary-slot>${esc(String(recommendation.aiSummary || '').slice(0, 280))}</p>
+      <p class="auto-v2-hero__summary" hidden data-auto-v2-summary-slot>${esc(recommendation.aiSummary || '')}</p>
     </header>`;
 }
 
@@ -482,7 +482,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     recommendation.aiSummary = summary.text;
     const summaryEl = root.querySelector('[data-auto-v2-summary-slot]');
     if (summaryEl) {
-      summaryEl.textContent = String(summary.text).slice(0, 280);
+      summaryEl.textContent = String(summary.text);
       summaryEl.hidden = false;
       summaryEl.removeAttribute('hidden');
     }

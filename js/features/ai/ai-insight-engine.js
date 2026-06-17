@@ -890,19 +890,62 @@ export function formatInsightBlocksAsExecutive(insight) {
   );
 }
 
+export const INSIGHT_COMMENTARY_UNAVAILABLE =
+  'AI yorumu şu anda üretilemedi. Aşağıdaki kural tabanlı özet görüntüleniyor.';
+
+/**
+ * Surface a visible fallback when executive summary / AI refresh fails (UI only).
+ * @param {HTMLElement|null} root
+ * @param {{ message?: string, execTextSelector?: string, sourceSelector?: string, sourceLabel?: string, forceExecText?: boolean, showNotice?: boolean }} [options]
+ */
+export function markInsightSummaryUnavailable(root, options = {}) {
+  if (!root) return;
+
+  const message = options.message || INSIGHT_COMMENTARY_UNAVAILABLE;
+  const notice = root.querySelector('[data-insight-fallback-notice]');
+  const summaryEl = root.querySelector('[data-insight-summary]');
+  const summaryEmpty =
+    !summaryEl || !String(summaryEl.textContent || '').trim() || summaryEl.textContent.trim() === '—';
+
+  if (notice && (options.showNotice || summaryEmpty)) {
+    notice.hidden = false;
+    notice.textContent = message;
+  }
+
+  if (options.execTextSelector) {
+    const execText = root.querySelector(options.execTextSelector);
+    if (execText) {
+      const pending = /hazırlanıyor/i.test(String(execText.textContent || ''));
+      if (pending || options.forceExecText) {
+        execText.textContent = message;
+      }
+    }
+  }
+
+  if (options.sourceSelector) {
+    const sourceEl = root.querySelector(options.sourceSelector);
+    if (sourceEl) {
+      sourceEl.textContent = options.sourceLabel || 'Kaynak: Kural tabanlı karar yorumu';
+    }
+  }
+}
+
 /**
  * HTML for V2 result panels (keeps existing section wrapper).
  */
 export function renderInsightBlocksHtml(insight, esc, options = {}) {
   const e = typeof esc === 'function' ? esc : (s) => String(s);
-  const i = insight || buildDecisionInsight({});
+  const insightInput = options.insightInput || null;
+  const i =
+    insight ||
+    (insightInput ? buildDecisionInsight(normalizeInsightInput(insightInput)) : buildDecisionInsight({}));
   const planTier = normalizePlanTier(options.planTier || i.planTier);
   const isPro = planTier === 'pro';
-  const insightInput = options.insightInput || null;
   const proInsight = isPro && insightInput ? buildProInsight({ ...insightInput, planTier: 'pro' }) : null;
 
   return `
     <div class="ib-insight-blocks">
+      <p class="ib-insight-blocks__fallback" data-insight-fallback-notice hidden></p>
       <h4 class="ib-insight-blocks__title">AI karar özeti</h4>
       <p class="ib-insight-blocks__text" data-insight-summary>${e(i.summary || '—')}</p>
       <h4 class="ib-insight-blocks__title">Neden bu sonuç?</h4>
@@ -967,8 +1010,16 @@ export function renderProInsightExtensionsHtml(proInsight, planTier, insightInpu
     ${renderProSection('Sonraki 90 Gün Önerisi', next90Html, isPro, e)}`;
 }
 
-export function hydrateInsightBlocks(root, insight) {
-  if (!root || !insight) return;
+export function hydrateInsightBlocks(root, insight, options = {}) {
+  if (!root) return;
+  if (!insight) {
+    markInsightSummaryUnavailable(root, options);
+    return;
+  }
+
+  const notice = root.querySelector('[data-insight-fallback-notice]');
+  if (notice) notice.hidden = true;
+
   const set = (sel, text) => {
     const el = root.querySelector(sel);
     if (el) el.textContent = text || '—';

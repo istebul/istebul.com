@@ -18,6 +18,7 @@ import {
   buildInsightInputFromIntelligence,
   buildDecisionInsight,
   hydrateInsightBlocks,
+  markInsightSummaryUnavailable,
   renderInsightBlocksHtml
 } from '../ai/ai-insight-engine.js';
 import {
@@ -853,7 +854,14 @@ export async function mountKonutResultsV2({
       null
     );
 
-    if (!summary) return model;
+    if (!summary) {
+      markInsightSummaryUnavailable(root.querySelector('[data-konut-v2-insight-root]'), {
+        execTextSelector: '[data-konut-v2-exec-text]',
+        sourceSelector: '[data-konut-v2-source]',
+        forceExecText: true
+      });
+      return model;
+    }
 
     if (summary.insight) {
       model.insight = summary.insight;

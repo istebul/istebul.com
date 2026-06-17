@@ -20,6 +20,7 @@ import {
   buildInsightInputFromIntelligence,
   buildDecisionInsight,
   hydrateInsightBlocks,
+  markInsightSummaryUnavailable,
   renderInsightBlocksHtml
 } from '../ai/ai-insight-engine.js';
 import {
@@ -912,7 +913,12 @@ async function hydrateFinansmanResultsV2Extras(root, model, track) {
       FINANSMAN_SUMMARY_TIMEOUT_MS,
       null
     );
-    if (!summary) return;
+    if (!summary) {
+      markInsightSummaryUnavailable(root.querySelector('[data-finansman-v2-insight-root]'), {
+        sourceSelector: '[data-finansman-v2-source]'
+      });
+      return;
+    }
 
     if (summary.insight) {
       model.insight = summary.insight;
