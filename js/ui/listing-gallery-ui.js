@@ -10,7 +10,7 @@ import {
 } from './listing-trust-ui.js';
 
 const LISTING_IMAGE_SELECTOR =
-  '.listing-image, .listing-gallery-hero, .listing-gallery-thumb img';
+  '.listing-image, .listing-gallery-hero, .listing-gallery-thumb img, .comparison-vehicle-visual img';
 
 const GENERIC_LISTING_IMAGE_PLACEHOLDER = '/assets/images/placeholder.svg';
 
