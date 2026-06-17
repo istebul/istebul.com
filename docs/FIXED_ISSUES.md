@@ -14,10 +14,11 @@ Issues identified during full production audit and **safely corrected** in this 
 | Prod state | `AFAD_EARTHQUAKE_ENABLED` kapalı → HTTP 200, `ok: false`, `data.status: "disabled"`, boş `earthquakes` / `regionalSignals`; konut UI **silent** (no `data-afad-risk-layer` card) |
 | Score neutrality | `decisionScore`, `confidenceScore`, `earthquakeRiskScore` unchanged; `decision-intelligence-engine` / `real-estate-calculator` untouched |
 | Verification | CI `27651527605`, Production Deploy `27651527590`, Pages `27651527031`; regression 60/60; `npm run smoke:live` failed=0 |
-| Staging plan | `docs/OPEN_DATA_OD-2C_CLOSURE.md` §8 — preview/staging `AFAD_EARTHQUAKE_ENABLED=true` manual checklist |
+| Staging verification | **PASS** (2026-06-16) — Preview `https://2eadd6b4.istebul-com.pages.dev`; `AFAD_EARTHQUAKE_ENABLED=true` (Preview only); endpoint `connected`, konut AFAD mount after EVDS, sanitization/copy safe, scores unchanged, disabled path silent; **Production flag remains off** |
+| Staging plan / record | `docs/OPEN_DATA_OD-2C_CLOSURE.md` §8 + §8.8 |
 | Closure doc | `docs/OPEN_DATA_OD-2C_CLOSURE.md` |
 
-**Not a bug-fix release.** OD-2C closes the konut informational layer with production verification. **OD-2C-3** (AI narration), SEO data-sources, admin toggle, and prod flag enable are separate phases.
+**Not a bug-fix release.** OD-2C closes the konut informational layer with production + staging verification. **Prod flag enable** and **OD-2C-3** (AI narration), SEO data-sources, admin toggle are separate phases.
 
 ---
 

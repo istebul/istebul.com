@@ -10,6 +10,7 @@
 
 ### Documentation
 - OD-2C recorded as **production closure with staging verification plan** — `docs/OPEN_DATA_OD-2C_CLOSURE.md`
+- **Staging verification PASS** recorded (2026-06-16) — Preview `https://2eadd6b4.istebul-com.pages.dev`; connected endpoint + konut mount + sanitization + score invariance + disabled path; Production flag **remains off**
 - Prod `AFAD_EARTHQUAKE_ENABLED` remains **off** → disabled API + silent konut UI (no DOM card)
 - OD-2C-3 (AI narration), SEO data-sources, admin toggle, and prod flag enable are **separate future phases**
 

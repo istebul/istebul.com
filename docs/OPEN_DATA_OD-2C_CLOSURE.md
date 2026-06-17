@@ -1,7 +1,7 @@
 # AFAD Açık Veri — OD-2C Production Closure
 
 **Phase:** AFAD deprem aktivite bilgilendirme katmanı (OD-2C)  
-**Status:** Closed with production verification (2026-06-16)  
+**Status:** Closed with production + staging verification (2026-06-16)  
 **Runtime default:** Feature-flag disabled in production (`AFAD_EARTHQUAKE_ENABLED` kapalı)
 
 ---
@@ -209,6 +209,82 @@ node --no-warnings --test tests/unit/konut-results-v2.test.mjs
 ```
 
 Expected: **60/60 PASS**.
+
+### 8.8 Staging verification record
+
+**Result:** **PASS** (2026-06-16)  
+**Environment:** Cloudflare Pages **Preview** only — Production env unchanged.
+
+| Field | Recorded value |
+|-------|----------------|
+| Preview URL | `https://2eadd6b4.istebul-com.pages.dev` |
+| Preview env | `AFAD_EARTHQUAKE_ENABLED=true` (**Preview only**) |
+| Production env | `AFAD_EARTHQUAKE_ENABLED` **off** (unchanged) |
+
+#### Preview endpoint (`GET /api/afad-earthquake-snapshot?province=İstanbul&district=Silivri`)
+
+| Assertion | Observed |
+|-----------|----------|
+| HTTP status | `200` |
+| `ok` | `true` |
+| `data.status` | `"connected"` |
+| `data.source` | `"afad"` |
+| `meta.featureEnabled` | `true` |
+| `regionalSignals` (scoped) | `1` |
+| `eventID` in response | absent |
+| Coordinates (`latitude` / `longitude`) | absent |
+| Internal score fields (`earthquakeRiskScore`, `activityScore`, `seismicBaseRisk`) | absent |
+| Secrets / env key values in body | absent |
+
+#### Konut results UI (manual — İstanbul / Silivri)
+
+| Assertion | Result |
+|-----------|--------|
+| EVDS economic indicators visible | **PASS** |
+| EVDS risk layer (`data-evds-risk-layer`) visible | **PASS** |
+| AFAD card mounts after EVDS layer | **PASS** |
+| `data-afad-risk-layer` present in DOM | **PASS** |
+| “Deprem Aktivite Görünümü” title | **PASS** |
+| “AFAD Deprem Dairesi” attribution | **PASS** |
+| “Resmi uyarı değildir” disclaimer | **PASS** |
+
+#### HTML / copy sanitization (manual DevTools)
+
+| Assertion | Result |
+|-----------|--------|
+| No `eventID` in rendered card | **PASS** |
+| No coordinates in rendered card | **PASS** |
+| No internal score fields in rendered card | **PASS** |
+| No `/100` score copy from AFAD layer | **PASS** |
+| No secrets / env values in rendered card | **PASS** |
+| No directive phrases (`satın al`, `bekle`, `vazgeç`, etc.) | **PASS** |
+
+#### Score invariance (manual — same wizard inputs)
+
+| Score | Result |
+|-------|--------|
+| `decisionScore` | unchanged — **PASS** |
+| `confidenceScore` | unchanged — **PASS** |
+| `metrics.earthquakeRiskScore` | unchanged — **PASS** |
+
+#### Disabled path (Preview flag toggle)
+
+| Assertion | Result |
+|-----------|--------|
+| Preview `AFAD_EARTHQUAKE_ENABLED=false` → AFAD card removed | **PASS** |
+| `data-afad-risk-layer` absent when disabled | **PASS** |
+| Konut results page does not break | **PASS** |
+| EVDS layers continue to work | **PASS** |
+
+#### Production safety (post-staging — unchanged)
+
+| Assertion | Observed |
+|-----------|----------|
+| Production `AFAD_EARTHQUAKE_ENABLED` | **off** |
+| Prod endpoint | HTTP `200`, `ok: false`, `data.status: "disabled"`, `meta.featureEnabled: false` |
+| Prod konut UI | silent (no AFAD card) |
+
+**Ops note:** Staging verification **PASS** does **not** authorize production flag enablement. Enabling `AFAD_EARTHQUAKE_ENABLED` on Cloudflare Pages **Production** remains a **separate product + ops decision** (see §9).
 
 ---
 
