@@ -35,9 +35,9 @@ export const BRAND_VOICE = Object.freeze({
     railLine:
       'Skor metodolojisi açık · AI skoru tek başına değiştirmez · şeffaf TCO',
     stickyLine:
-      'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · ödeme iyzico / PayTR',
+      'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · ödeme aktivasyonu sonrası',
     pricingLine:
-      'Yanlış seçim maliyeti · 7 gün deneme · iptal tek tık',
+      'Yanlış seçim maliyeti · pilot erişim · destek kanalından iptal',
     compliance:
       'Finansal tavsiye değildir. Skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü yoktur.',
     sampleNote:

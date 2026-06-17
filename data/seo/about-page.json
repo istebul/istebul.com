@@ -21,7 +21,7 @@
     },
     {
       "heading": "KVKK ve veri güvenliği",
-      "body": "Veri minimizasyonu ilkesiyle çalışırız; gereksiz kişisel veri toplanmaz. Ödeme işlemleri iyzico ve PayTR altyapısı üzerinden güvenli şekilde alınır; kart verisi sunucularımızda tutulmaz. Pazarlama iletişimi yalnızca açık rıza ile yapılır.",
+      "body": "Veri minimizasyonu ilkesiyle çalışırız; gereksiz kişisel veri toplanmaz. Ödeme altyapısı hazırlandı; sağlayıcı aktivasyonu tamamlandığında ödeme yetkili kuruluş üzerinden alınır; kart verisi sunucularımızda tutulmaz. Pazarlama iletişimi yalnızca açık rıza ile yapılır.",
       "subsections": [
         {
           "heading": "Kullanıcı hakları",

@@ -55,9 +55,9 @@
       "slug": "planlar",
       "path": "/planlar",
       "title": "Planlar ve Fiyatlandırma | isteBul",
-      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, iyzico / PayTR ile güvenli ödeme.",
+      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. Pilot erişim — ödeme aktivasyonu sonrası bilgilendirme.",
       "h1": "Planlar ve fiyatlandırma",
-      "intro": "Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — 7 gün deneme, iyzico / PayTR ile güvenli ödeme.",
+      "intro": "Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — pilot erişim sürecinde.",
       "bullets": [
         "Başlangıç: sınırlı analiz ve 2 karşılaştırma",
         "Pro: derin TCO, AI karar notu, premium export",
@@ -110,7 +110,7 @@
       "h1": "Aktif kampanyalar",
       "intro": "Pro deneme, ücretsiz Auto analizi ve pilot partner fırsatları. Koşullar değişebilir; finansal taahhüt içermez.",
       "bullets": [
-        "Pro plan 7 gün deneme",
+        "Pro pilot erişim",
         "Ücretsiz Auto karar analizi",
         "Pilot partner fırsatları",
         "Kampanya koşulları değişebilir"

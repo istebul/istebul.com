@@ -101,15 +101,15 @@
           "weight": 50,
           "copy": {
             "[data-pricing-cta-pro]": "Karar netliği için dene",
-            "[data-revenue-checkout-cta]": "7 gün ücretsiz dene"
+            "[data-revenue-checkout-cta]": "Pro erken erişim talep et"
           }
         },
         {
           "id": "trial_first",
           "weight": 50,
           "copy": {
-            "[data-pricing-cta-pro]": "7 gün ücretsiz dene",
-            "[data-revenue-checkout-cta]": "Pro'yu ücretsiz dene"
+            "[data-pricing-cta-pro]": "Pro erken erişim talep et",
+            "[data-revenue-checkout-cta]": "Pro pilot erişim"
           },
           "classes": {
             "[data-pricing-cta-pro]": ["cro-pricing-trial"]
@@ -129,7 +129,7 @@
           "id": "control",
           "weight": 50,
           "copy": {
-            "[data-upgrade-checkout]": "7 gün ücretsiz dene"
+            "[data-upgrade-checkout]": "Pro erken erişim talep et"
           },
           "attributes": {
             "[data-upgrade-checkout]": { "data-cro-checkout-variant": "control" }

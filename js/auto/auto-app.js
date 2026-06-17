@@ -875,7 +875,7 @@ function openAutoUpgradePaywall(feature = 'premium_report') {
         ${PLANS.pro.highlights.slice(0, 4).map((item) => `<li>${item}</li>`).join('')}
       </ul>
       <div class="revenue-upgrade-actions">
-        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>Pro erken erişim talep et</a>
         <button type="button" class="btn secondary" data-auto-paywall-close>Ücretsiz önizlemeyle devam et</button>
       </div>
     </div>
@@ -906,7 +906,7 @@ function renderAutoResultsInterpretationGuide(topResult, formData = {}) {
       </ol>
       <div class="auto-results-guide-actions">
         <a class="btn secondary" href="/karsilastir/">Karşılaştırma merkezi</a>
-        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>TCO analizini derinleştir (Pro)</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>Pro özelliklerini incele</a>
       </div>
       <p class="auto-results-guide-foot text-muted-sm">Bilgilendirme amaçlıdır. Canlı ilan veya bağlayıcı teklif değildir.</p>
     </section>
@@ -923,10 +923,10 @@ function renderAutoUpgradeStrip(className = '') {
       <div class="revenue-upgrade-copy">
         <span class="revenue-upgrade-kicker">isteBul Pro</span>
         <strong>Tüm sonuçları ve premium raporu açın</strong>
-        <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma — ilk abonelikte 7 gün ücretsiz deneme.</p>
+        <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma — pilot erişim sürecinde.</p>
       </div>
       <div class="revenue-upgrade-actions">
-        <a class="btn btn-primary" href="/planlar?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>Pro erken erişim talep et</a>
         <a class="btn btn-outline" href="/planlar">Planları incele</a>
       </div>
     </aside>

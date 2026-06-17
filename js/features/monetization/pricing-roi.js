@@ -18,8 +18,8 @@ export const PRICING_ROI_DEFAULTS = Object.freeze({
 function getProYearlyCost(billing = 'monthly') {
   const monthly = PLANS.pro.billing.monthly;
   const annual = PLANS.pro.billing.annual;
-  const monthlyAmount = parseDisplayAmount(monthly.priceDisplay) || 299;
-  const annualAmount = parseDisplayAmount(annual.priceDisplay) || 2870;
+  const monthlyAmount = parseDisplayAmount(monthly.priceDisplay) || 199;
+  const annualAmount = parseDisplayAmount(annual.priceDisplay) || 1990;
 
   if (billing === 'annual') {
     return annualAmount;
@@ -36,8 +36,8 @@ export function parseDisplayAmount(display = '') {
 }
 
 export function getAnnualSavingsFacts() {
-  const monthly = parseDisplayAmount(PLANS.pro.billing.monthly.priceDisplay) || 299;
-  const annual = parseDisplayAmount(PLANS.pro.billing.annual.priceDisplay) || 2870;
+  const monthly = parseDisplayAmount(PLANS.pro.billing.monthly.priceDisplay) || 199;
+  const annual = parseDisplayAmount(PLANS.pro.billing.annual.priceDisplay) || 1990;
   const twelveMonthly = monthly * 12;
   const savingsAmount = Math.max(0, twelveMonthly - annual);
   const savingsPercent = twelveMonthly > 0

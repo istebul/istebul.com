@@ -4221,7 +4221,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
               email: this.currentUser?.email || null
             });
             if (params.get('trial') === '1') {
-                this.ui.showSuccess('7 günlük Pro denemeniz başladı. Tüm premium özellikler şimdi açık.');
+                this.ui.showSuccess('Pro özellikleri etkin. Pilot erişim sürecindesiniz.');
             } else if (params.get('plan') === 'annual') {
                 this.ui.showSuccess('Yıllık Pro aboneliğiniz aktif. İndirimli planla tüm premium özellikler açıldı.');
             } else {

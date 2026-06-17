@@ -145,8 +145,8 @@ export function fetchAllGuideSeeds(limitPerCategory = 4) {
 export const DEFAULT_CAMPAIGNS = Object.freeze([
   {
     id: 'pro-trial',
-    title: 'isteBul Pro — 7 gün ücretsiz deneme',
-    summary: 'Sınırsız karşılaştırma, premium karar raporu ve gelişmiş AI gerekçe katmanı.',
+    title: 'isteBul Pro — pilot erişim',
+    summary: 'Sınırsız karşılaştırma, premium karar raporu ve gelişmiş AI gerekçe katmanı. Ödeme aktivasyonu sonrası bilgilendirme.',
     cta_label: 'Planları incele',
     cta_href: '/planlar?checkout=pro',
     badge: 'Aktif kampanya',

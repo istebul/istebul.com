@@ -13,7 +13,7 @@
     },
     "page-planlar": {
       "title": "Planlar ve Fiyatlandırma | isteBul",
-      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, iyzico / PayTR ile güvenli ödeme.",
+      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. Pilot erişim — ödeme aktivasyonu sonrası bilgilendirme.",
       "path": "/planlar"
     },
     "page-duyurular": {
@@ -23,7 +23,7 @@
     },
     "page-kampanyalar": {
       "title": "Kampanyalar | isteBul",
-      "description": "isteBul Pro deneme, ücretsiz Auto analizi ve pilot partner kampanyaları.",
+      "description": "isteBul Pro pilot erişim, ücretsiz Auto analizi ve pilot partner kampanyaları.",
       "path": "/kampanyalar"
     },
     "page-blog": {
