@@ -33,6 +33,7 @@ import {
   mountEvdsRiskLayer
 } from '../results/results-evds-risk-layer.js';
 import {
+  buildAfadAiActivitySentence,
   fetchAndBuildAfadRiskLayer,
   mountAfadRiskLayer
 } from '../results/results-afad-risk-layer.js';
@@ -77,6 +78,18 @@ export async function hydrateKonutAfadRiskLayer(root, state = {}, fetchImpl) {
 
   mountAfadRiskLayer(root, layer);
   return layer;
+}
+
+/**
+ * Executive summary fetch context — AFAD aktivite cümlesi (OD-2C-3b, skor üretmez).
+ * @param {object} [baseContext]
+ * @param {ReturnType<typeof fetchAndBuildAfadRiskLayer>|null} [afadLayer]
+ */
+export function buildKonutExecutiveSummaryContext(baseContext = {}, afadLayer) {
+  return {
+    ...baseContext,
+    earthquakeActivityAssessment: buildAfadAiActivitySentence(afadLayer)
+  };
 }
 
 function clamp(value, min, max) {
@@ -766,7 +779,7 @@ export async function mountKonutResultsV2({
   mountNode.prepend(root);
   await hydrateResultsEconomicIndicators(root, 'konut');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
-  await hydrateKonutAfadRiskLayer(root, state);
+  const afadLayer = await hydrateKonutAfadRiskLayer(root, state);
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     category: 'konut',
@@ -816,7 +829,7 @@ export async function mountKonutResultsV2({
     const summary = await withTimeout(
       fetchExecutiveSummaryV3(
         'konut',
-        model.intelligence?.context || {},
+        buildKonutExecutiveSummaryContext(model.intelligence?.context || {}, afadLayer),
         model.intelligence || {
           decisionScore: model.decisionScore,
           confidenceScore: model.confidenceScore,
