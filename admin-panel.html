@@ -1890,9 +1890,11 @@ a.nav-item{text-decoration:none;color:inherit;}
   align-items:center;
   margin-bottom:14px;
 }
-.auto-leads-toolbar .form-input{
-  min-width:240px;
-  flex:1;
+@media (min-width: 901px) {
+  .auto-leads-toolbar .form-input{
+    min-width:240px;
+    flex:1;
+  }
 }
 .auto-leads-check{
   display:flex;
@@ -1964,6 +1966,18 @@ a.nav-item{text-decoration:none;color:inherit;}
   flex-wrap:wrap;
   gap:8px;
   justify-content:flex-start;
+}
+
+@media (max-width: 900px) {
+  .auto-leads-toolbar .form-input{
+    min-width:0;
+    width:100%;
+    flex:1 1 100%;
+  }
+
+  .auto-leads-check{
+    white-space:normal;
+  }
 }
 
 </style>
