@@ -69,7 +69,7 @@ jobs:
 
       - name: Link Supabase project
         if: steps.gate.outputs.skip != 'true'
-        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
+        run: bash scripts/lib/retry-command.sh supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
 
       - name: Deploy housing-intake
         if: steps.gate.outputs.skip != 'true'
@@ -247,7 +247,7 @@ jobs:
 
       - name: Link Supabase project
         if: steps.gate.outputs.skip != 'true'
-        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
+        run: bash scripts/lib/retry-command.sh supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
 
       - name: Push database migrations
         id: db_push

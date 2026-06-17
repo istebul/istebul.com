@@ -36,6 +36,36 @@ WHERE table_schema = 'public'
   AND column_name IN ('content_type', 'cover_image_url');
 `.trim();
 
+export const VERTICAL_KONUT_FINANS_VERIFY_QUERY = `
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_name IN ('vertical_events', 'vertical_leads');
+`.trim();
+
+export const TRANSIENT_CLI_PATTERNS = [
+  /\b502\b/i,
+  /\b503\b/i,
+  /\b504\b/i,
+  /gateway/i,
+  /timeout/i,
+  /timed out/i,
+  /network/i,
+  /ECONNRESET/i,
+  /ETIMEDOUT/i,
+  /error code:\s*50[234]/i
+];
+
+export const AUTH_CLI_PATTERNS = [
+  /\b401\b/i,
+  /\b403\b/i,
+  /unauthorized/i,
+  /forbidden/i,
+  /invalid token/i,
+  /invalid project/i,
+  /permission denied/i
+];
+
 export const DB_URL_ENV_VARS = [
   'SUPABASE_DATABASE_URL',
   'SUPABASE_DB_URL',
@@ -102,6 +132,32 @@ export function postsRequiredColumnsReady(rows) {
 }
 
 /**
+ * @param {unknown} rows
+ */
+export function verticalKonutFinansSchemaReady(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const found = new Set(list.map((r) => r?.table_name).filter(Boolean));
+  return found.has('vertical_events') && found.has('vertical_leads');
+}
+
+/**
+ * @param {string} output
+ */
+export function isAuthCliFailure(output) {
+  if (!output) return false;
+  return AUTH_CLI_PATTERNS.some((pattern) => pattern.test(output));
+}
+
+/**
+ * @param {string} output
+ */
+export function isTransientCliOutput(output) {
+  if (!output) return false;
+  if (isAuthCliFailure(output)) return false;
+  return TRANSIENT_CLI_PATTERNS.some((pattern) => pattern.test(output));
+}
+
+/**
  * @param {Record<string, string|undefined>} env
  */
 export function resolveDbUrl(env) {
@@ -120,6 +176,8 @@ export function scriptOmitsSecretsInLogs(scriptSource) {
     /echo\s+["']?\$\{SUPABASE_ACCESS_TOKEN/,
     /echo\s+["']?\$\{SUPABASE_DB_PASSWORD/,
     /echo\s+["']?\$\{SUPABASE_DATABASE_URL/,
+    /echo\s+["']?\$\{SUPABASE_DB_URL/,
+    /echo\s+["']?\$\{DATABASE_URL/,
     /cat\s+.*Authorization/
   ];
   return risky.every((re) => !re.test(scriptSource));
