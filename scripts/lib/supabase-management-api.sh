@@ -199,6 +199,36 @@ WHERE table_schema = 'public'
   return 1
 }
 
+mgmt_api_vertical_konut_finans_schema_ready() {
+  local query outfile http count
+  query="SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_name IN ('vertical_events', 'vertical_leads');"
+  outfile="$(mktemp)"
+  trap 'rm -f "$outfile"' RETURN
+
+  if [ -n "${SUPABASE_ACCESS_TOKEN:-}" ]; then
+    http="$(mgmt_api_query_with_retry "$query" "$outfile" || true)"
+    if [ "$http" = "200" ] || [ "$http" = "201" ]; then
+      count="$(jq '[.[] | select(.table_name == "vertical_events" or .table_name == "vertical_leads")] | length' "$outfile" 2>/dev/null || echo 0)"
+      [ "${count:-0}" -ge 2 ]
+      return $?
+    fi
+    if ! mgmt_api_is_retriable "$http"; then
+      return 1
+    fi
+  fi
+
+  if mgmt_api__db_url >/dev/null 2>&1; then
+    count="$(mgmt_db_query "$query" | wc -l | tr -d ' ')"
+    [ "${count:-0}" -ge 2 ]
+    return $?
+  fi
+
+  return 1
+}
+
 mgmt_api_apply_sql_file() {
   local file="$1"
   local label="$2"

@@ -21,6 +21,8 @@ const root = path.resolve(import.meta.dirname, '../..');
 const libSh = path.join(root, 'scripts/lib/supabase-management-api.sh');
 const analyticsScript = path.join(root, 'scripts/apply-analytics-ite-migration-api.sh');
 const postsScript = path.join(root, 'scripts/apply-posts-schema-migration-api.sh');
+const verticalScript = path.join(root, 'scripts/apply-vertical-migration-api.sh');
+const retrySh = path.join(root, 'scripts/lib/retry-command.sh');
 
 function bashEval(snippet, env = {}) {
   return execFileSync('bash', ['-c', `set -euo pipefail; source "${libSh}"; ${snippet}`], {
@@ -100,7 +102,7 @@ describe('supabase-management-api logging hygiene', () => {
   });
 
   it('apply scripts do not echo tokens or DB URLs', () => {
-    for (const file of [libSh, analyticsScript, postsScript]) {
+    for (const file of [libSh, analyticsScript, postsScript, verticalScript, retrySh]) {
       const source = fs.readFileSync(file, 'utf8');
       assert.equal(scriptOmitsSecretsInLogs(source), true, path.basename(file));
     }
