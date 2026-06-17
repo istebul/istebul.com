@@ -847,6 +847,26 @@ body.admin-sidebar-collapsed #app .nav-group-items {
   }
 }
 
+@media (max-width: 640px) {
+  body.admin-enterprise #app .table-actions:not(.crm-drawer-actions),
+  body.admin-enterprise #partner-applications-list .partner-applications-actions {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  body.admin-enterprise #app .table-actions:not(.crm-drawer-actions) .btn,
+  body.admin-enterprise #partner-applications-list .partner-applications-actions .btn {
+    width: auto;
+    max-width: 100%;
+    flex: 0 1 auto;
+    min-height: 44px;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+}
+
 /* —— Admin 403 / forbidden shell (standalone page + renderAdminForbiddenHtml) —— */
 body.admin-forbidden-page {
   --admin-ink: #0f172a;
