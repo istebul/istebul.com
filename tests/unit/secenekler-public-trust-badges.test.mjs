@@ -9,6 +9,8 @@ import {
   bindListingGenericImageFallbacks,
   bindListingVehicleImageFallbacks
 } from '../../js/ui/listing-gallery-ui.js';
+import { buildVehicleImageUiPayload } from '../../js/auto/vehicle-image.js';
+import { resolveListingImages } from '../../js/features/listings/listing-media.js';
 import { escapeHtml } from '../../js/core/security.js';
 import {
   formatPublicSourceLabel,
@@ -20,6 +22,7 @@ import {
   resolveListingImageTrust,
   getListingImageTrustBadgeLabel,
   resolveListingTrustGatedImageUrl,
+  resolveListingComparisonImageItem,
   isVehicleListingCategory
 } from '../../js/ui/listing-trust-ui.js';
 
@@ -736,4 +739,269 @@ test('regression guard: Faz 2B public trust copy avoids forbidden visual trust p
   assert.doesNotMatch(combined, /Resmi/);
   assert.doesNotMatch(combined, /Garantili/);
   assert.doesNotMatch(combined, /sahibinden\.com/);
+});
+
+function listingHasResolvablePublicSource(listing = {}) {
+  return hasPublicSourceUrl(listing) || Boolean(resolvePublicExternalUrl(listing));
+}
+
+function buildListingComparisonSourceDetails(listing = {}) {
+  return listingHasResolvablePublicSource(listing) ? 'Harici kaynak bağlantılı' : 'Platform içi kayıt';
+}
+
+function buildListingComparisonSourceTags(listing = {}) {
+  const tags = [];
+  if (listingHasResolvablePublicSource(listing)) tags.push('Kaynak bağlantılı');
+  return tags;
+}
+
+function buildSecenekComparisonTrustFields(listing = {}) {
+  const categoryId = listing.category || 'genel';
+  const sourceUrl = resolvePublicExternalUrl(listing) || null;
+  const isVehicle = isVehicleListingCategory(categoryId);
+  let image = null;
+  let imageTrust;
+
+  if (isVehicle) {
+    const vehicleInput = mapListingToVehicleImageInput({ ...listing, category: categoryId });
+    const uiPayload = buildVehicleImageUiPayload(vehicleInput);
+    image = resolveListingTrustGatedImageUrl({ ...listing, category: categoryId }) || uiPayload.imageUrl;
+    imageTrust = uiPayload.imageTrust;
+  } else {
+    image = resolveListingImages(listing)[0] || '/assets/images/placeholder.svg';
+  }
+
+  return {
+    sourceUrl,
+    image,
+    imageTrust,
+    listingImageSeed: {
+      category: categoryId,
+      title: listing.title || 'Seçenek',
+      images: listing.images,
+      image_url: listing.image_url ?? listing.imageUrl ?? null,
+      vehicleBrand: listing.vehicleBrand,
+      attributes: listing.attributes,
+      year: listing.year,
+      model_year: listing.model_year
+    }
+  };
+}
+
+function createComparisonUiStub() {
+  const comparisonUiSource = readRepoFile('js/ui/comparison-ui.js');
+  assert.match(comparisonUiSource, /export class ComparisonUI/);
+
+  return {
+    escapeHtml: (value) => String(value ?? ''),
+    formatPrice: (value) => `₺${value ?? 0}`,
+    getCostBreakdownMarkup: () => '',
+    getComparisonGraphMarkup: () => '',
+    getComparisonScoreBreakdownMarkup: () => '',
+    loadIcons: () => {},
+    bindComparisonListingImageFallbacks(container, items = []) {
+      if (!container?.querySelectorAll) return;
+
+      for (const item of items) {
+        if (item.sourceType !== 'Seçenek' || !item.listingImageSeed) continue;
+
+        const card = Array.from(container.querySelectorAll('[data-comparison-item-id]')).find(
+          (node) => node.dataset.comparisonItemId === String(item.id)
+        );
+        if (!card) continue;
+
+        const seed = {
+          ...item.listingImageSeed,
+          category: item.categoryId || item.listingImageSeed.category
+        };
+        bindListingVehicleImageFallbacks(card, seed);
+        bindListingGenericImageFallbacks(card, seed);
+      }
+    },
+    getComparisonCardMarkup(item, maxValues, allItems = []) {
+      const tags = Array.isArray(item.tags) ? item.tags : [];
+      const maxScore = Math.max(...allItems.map((i) => Number(i.score || 0)), 0);
+      const isLeader = item.score && Number(item.score) >= maxScore && maxScore > 0;
+      const listingVisual =
+        item.sourceType === 'Seçenek' ? resolveListingComparisonImageItem(item) : null;
+      const visualHtml = listingVisual
+        ? '<div class="comparison-vehicle-visual"><img src="' +
+          this.escapeHtml(listingVisual.imageUrl) +
+          '" alt="' +
+          this.escapeHtml(listingVisual.imageAlt) +
+          '" loading="lazy" decoding="async"></div>'
+        : '';
+
+      return (
+        '<article class="comparison-card" data-comparison-item-id="' +
+        this.escapeHtml(item.id) +
+        '">' +
+        visualHtml +
+        (isLeader ? '<div class="comparison-leader-badge">leader</div>' : '') +
+        '<h4>' +
+        this.escapeHtml(item.title || 'Karşılaştırma seçeneği') +
+        '</h4>' +
+        (tags.length
+          ? '<div class="comparison-tags">' +
+            tags.map((tag) => '<span>' + this.escapeHtml(tag) + '</span>').join('') +
+            '</div>'
+          : '') +
+        '</article>'
+      );
+    }
+  };
+}
+
+test('P0-3C: araç listing comparison trust fields set image and imageTrust', () => {
+  const listing = {
+    id: 'cmp-vehicle-1',
+    category: 'arac',
+    title: '2024 Citroen C4 Max',
+    images: ['https://cdn.example/citroen-c4-max.jpg']
+  };
+
+  const fields = buildSecenekComparisonTrustFields(listing);
+
+  assert.ok(fields.image);
+  assert.equal(fields.imageTrust?.showRealImage, true);
+  assert.equal(fields.listingImageSeed.category, 'arac');
+  assert.match(fields.image, /citroen-c4-max\.jpg|vehicle-premium-placeholder\.svg/);
+});
+
+test('P0-3C: source_url-only listing comparison source detail and tag are linked', () => {
+  const listing = { source_url: 'https://example.com/listing/source-only' };
+
+  assert.equal(buildListingComparisonSourceDetails(listing), 'Harici kaynak bağlantılı');
+  assert.deepEqual(buildListingComparisonSourceTags(listing), ['Kaynak bağlantılı']);
+});
+
+test('P0-3C: channels[0].url-only listing comparison source detail and tag are linked', () => {
+  const listing = { channels: [{ url: 'https://channel.example/listing/only' }] };
+
+  assert.equal(buildListingComparisonSourceDetails(listing), 'Harici kaynak bağlantılı');
+  assert.deepEqual(buildListingComparisonSourceTags(listing), ['Kaynak bağlantılı']);
+});
+
+test('P0-3C: invalid URL listing comparison source detail and tag are omitted', () => {
+  const listing = { external_url: 'not-a-url', channels: [{ url: 'also-invalid' }] };
+
+  assert.equal(buildListingComparisonSourceDetails(listing), 'Platform içi kayıt');
+  assert.deepEqual(buildListingComparisonSourceTags(listing), []);
+});
+
+test('P0-3C: Seçenek comparison item gates catalog SVG and untrusted vehicle image', () => {
+  const listing = {
+    sourceType: 'Seçenek',
+    categoryId: 'arac',
+    title: '2024 Citroen C4 Max',
+    listingImageSeed: {
+      category: 'arac',
+      title: '2024 Citroen C4 Max',
+      images: ['/assets/images/auto/peugeot-suv.svg']
+    },
+    image: '/assets/images/auto/peugeot-suv.svg',
+    imageTrust: {
+      showRealImage: false,
+      sourceTrust: 'catalog_svg'
+    }
+  };
+
+  const visual = resolveListingComparisonImageItem(listing);
+  assert.ok(visual);
+  assert.doesNotMatch(visual.imageUrl, /peugeot-suv\.svg/);
+  assert.match(visual.imageUrl, /vehicle-premium-placeholder\.svg/);
+  assert.equal(visual.imageAlt, 'Görsel doğrulanamadı');
+});
+
+test('P0-3C: comparison-ui Seçenek path uses resolver instead of raw item.image', () => {
+  const comparisonUi = readRepoFile('js/ui/comparison-ui.js');
+  assert.match(comparisonUi, /resolveListingComparisonImageItem\(item\)/);
+  assert.doesNotMatch(
+    comparisonUi,
+    /item\.sourceType === 'isteBul Auto'[\s\S]*item\.image \? '<div class="comparison-vehicle-visual">/
+  );
+
+  const ui = createComparisonUiStub();
+  const item = {
+    id: 'cmp-listing-1',
+    sourceType: 'Seçenek',
+    categoryId: 'arac',
+    title: '2024 Citroen C4 Max',
+    image: '/assets/images/auto/peugeot-suv.svg',
+    imageTrust: { showRealImage: false, sourceTrust: 'catalog_svg' },
+    listingImageSeed: {
+      category: 'arac',
+      title: '2024 Citroen C4 Max',
+      images: ['/assets/images/auto/peugeot-suv.svg']
+    },
+    price: 100,
+    periodicCost: 10,
+    monthlyPayment: 5,
+    score: 80,
+    tags: []
+  };
+
+  const markup = ui.getComparisonCardMarkup(item, { price: 100, periodicCost: 10, monthlyPayment: 5 }, [item]);
+  assert.doesNotMatch(markup, /peugeot-suv\.svg/);
+  assert.match(markup, /vehicle-premium-placeholder\.svg/);
+});
+
+test('P0-3C: comparison Seçenek image runtime fallback binds on render', () => {
+  const comparisonUi = readRepoFile('js/ui/comparison-ui.js');
+  assert.match(comparisonUi, /bindComparisonListingImageFallbacks\(container, items\)/);
+  assert.match(comparisonUi, /bindListingVehicleImageFallbacks\(card, seed\)/);
+  assert.match(comparisonUi, /bindListingGenericImageFallbacks\(card, seed\)/);
+
+  const ui = createComparisonUiStub();
+  const container = {
+    innerHTML: '',
+    querySelectorAll(selector) {
+      if (selector === '[data-comparison-item-id]') {
+        return [this.card];
+      }
+      return [];
+    },
+    card: {
+      dataset: { comparisonItemId: 'cmp-listing-2' },
+      querySelectorAll(selector) {
+        if (selector.includes('.comparison-vehicle-visual img')) {
+          return [this.img];
+        }
+        return [];
+      },
+      img: createMockListingImage({
+        src: 'https://cdn.example/citroen-c4-max.jpg',
+        alt: '2024 Citroen C4 Max'
+      })
+    }
+  };
+
+  const item = {
+    id: 'cmp-listing-2',
+    sourceType: 'Seçenek',
+    categoryId: 'arac',
+    listingImageSeed: {
+      category: 'arac',
+      title: '2024 Citroen C4 Max',
+      images: ['https://cdn.example/citroen-c4-max.jpg']
+    }
+  };
+
+  ui.bindComparisonListingImageFallbacks(container, [item]);
+
+  const img = container.card.img;
+  assert.equal(img.dataset.fallbackBound, '1');
+  img.dispatchError();
+  assert.match(stripVersion(img.src), /vehicle-premium-placeholder\.svg$/);
+});
+
+test('P0-3C regression guard: app.js comparison source guards use P0-3B helpers', () => {
+  const appJs = readRepoFile('js/app.js');
+  assert.match(appJs, /listingHasResolvablePublicSource\(listing\)/);
+  assert.match(appJs, /hasPublicSourceUrl\(listing\)/);
+  assert.match(appJs, /resolvePublicExternalUrl\(listing\)/);
+  assert.match(appJs, /resolveListingTrustGatedImageUrl/);
+  assert.match(appJs, /listingImageSeed/);
+  assert.doesNotMatch(appJs, /if \(listing\.external_url\) tags\.push\('Kaynak bağlantılı'\)/);
+  assert.doesNotMatch(appJs, /listing\.external_url \? 'Harici kaynak bağlantılı'/);
 });

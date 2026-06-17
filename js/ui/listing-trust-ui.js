@@ -3,6 +3,7 @@ import {
   buildVehicleImageUiPayload,
   resolveVehicleImageTrust
 } from '../auto/vehicle-image.js';
+import { resolveListingImages } from '../features/listings/listing-media.js';
 
 /** @typedef {{ id: string, label: string }} ListingTrustBadge */
 
@@ -11,6 +12,7 @@ const VEHICLE_LISTING_CATEGORIES = new Set(['arac', 'vehicle']);
 const IMAGE_REPRESENTATION_LABEL = 'Görsel temsili';
 const IMAGE_SOURCE_LABEL = 'Kaynak görseli';
 const IMAGE_UNVERIFIED_LABEL = 'Görsel doğrulanamadı';
+const GENERIC_LISTING_PLACEHOLDER = '/assets/images/placeholder.svg';
 
 export const AI_SCORE_DISCLAIMER =
   'Bu değer veri güveni değil, metodolojik uyum skorudur.';
@@ -189,6 +191,52 @@ export function getListingImageTrustBadgeLabel(listing = {}) {
 export function resolveListingTrustGatedImageUrl(listing = {}) {
   if (!isVehicleListingCategory(listing.category)) return null;
   return buildVehicleImageUiPayload(mapListingToVehicleImageInput(listing)).imageUrl;
+}
+
+/**
+ * Trust-gated compare-card image for Seçenek-sourced comparison items.
+ * @param {Record<string, unknown>} [item]
+ * @returns {{ imageUrl: string, imageAlt: string }|null}
+ */
+export function resolveListingComparisonImageItem(item = {}) {
+  if (String(item.sourceType || '') !== 'Seçenek') return null;
+
+  const title = String(item.title || 'Seçenek');
+  const seed =
+    item.listingImageSeed && typeof item.listingImageSeed === 'object'
+      ? /** @type {Record<string, unknown>} */ (item.listingImageSeed)
+      : {};
+  const category = String(item.categoryId || seed.category || '');
+  const isVehicle = isVehicleListingCategory(category);
+
+  if (isVehicle) {
+    const vehicleInput = mapListingToVehicleImageInput({
+      ...seed,
+      category,
+      title: item.title || seed.title,
+      images: seed.images || (item.image ? [item.image] : undefined)
+    });
+    const uiPayload = buildVehicleImageUiPayload(vehicleInput);
+    const trust = item.imageTrust || uiPayload.imageTrust;
+
+    if (trust?.showRealImage === true && (item.image || uiPayload.imageUrl)) {
+      return {
+        imageUrl: String(item.image || uiPayload.imageUrl),
+        imageAlt: title
+      };
+    }
+
+    return {
+      imageUrl: String(uiPayload.imageUrl),
+      imageAlt: trust?.showRealImage === false ? IMAGE_UNVERIFIED_LABEL : title
+    };
+  }
+
+  const listingLike = { ...seed, category };
+  const imageUrl =
+    item.image || resolveListingImages(listingLike, GENERIC_LISTING_PLACEHOLDER)[0] || GENERIC_LISTING_PLACEHOLDER;
+
+  return { imageUrl: String(imageUrl), imageAlt: title };
 }
 
 /**

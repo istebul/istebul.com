@@ -121,6 +121,15 @@ import {
 import { bootstrapLiveDataIntegrations } from './runtime/live-data-integrations.js';
 import { bootstrapAiListingsIntegrations } from './runtime/ai-listings-integrations.js';
 import { estimateListingPeriodicCost } from './engines/cost-engine.js';
+import { buildVehicleImageUiPayload } from './auto/vehicle-image.js';
+import { resolveListingImages } from './features/listings/listing-media.js';
+import {
+    hasPublicSourceUrl,
+    isVehicleListingCategory,
+    mapListingToVehicleImageInput,
+    resolveListingTrustGatedImageUrl,
+    resolvePublicExternalUrl
+} from './ui/listing-trust-ui.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw } from './core/storage-keys.js';
 import {
     buildCheckoutTriggerEvent,
@@ -5020,6 +5029,31 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const costBreakdown = periodicEstimate.breakdown || {};
         const bestFinance = this.createFinanceComparisons(Number(listing.price || 0), categoryId)[0] || {};
         const score = this.getListingDecisionScore(listing);
+        const sourceUrl = resolvePublicExternalUrl(listing) || null;
+        const isVehicle = isVehicleListingCategory(categoryId);
+        let image = null;
+        let imageTrust;
+
+        if (isVehicle) {
+            const vehicleInput = mapListingToVehicleImageInput({ ...listing, category: categoryId });
+            const uiPayload = buildVehicleImageUiPayload(vehicleInput);
+            image = resolveListingTrustGatedImageUrl({ ...listing, category: categoryId }) || uiPayload.imageUrl;
+            imageTrust = uiPayload.imageTrust;
+        } else {
+            image = resolveListingImages(listing)[0] || '/assets/images/placeholder.svg';
+        }
+
+        const listingImageSeed = {
+            category: categoryId,
+            title: listing.title || 'Seçenek',
+            images: listing.images,
+            image_url: listing.image_url ?? listing.imageUrl ?? null,
+            vehicleBrand: listing.vehicleBrand,
+            attributes: listing.attributes,
+            year: listing.year,
+            model_year: listing.model_year
+        };
+
         return {
             id: 'cmp-listing-' + listing.id,
             signature: 'listing:' + categoryId + ':' + listing.id,
@@ -5038,6 +5072,10 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
             calculationRows: this.createListingComparisonRows(listing, periodicCost, bestFinance),
             tags: this.getListingDecisionTags(listing, score),
             comment: this.createListingComparisonComment(listing, periodicCost),
+            sourceUrl,
+            image,
+            ...(imageTrust ? { imageTrust } : {}),
+            listingImageSeed,
             createdAt: new Date().toISOString()
         };
     }
@@ -5069,7 +5107,7 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         const details = [
             { label: 'Kategori', value: categoryName },
             { label: 'Konum', value: listing.location || 'Belirtilmemiş' },
-            { label: 'Kaynak', value: listing.external_url ? 'Harici kaynak bağlantılı' : 'Platform içi kayıt' },
+            { label: 'Kaynak', value: this.listingHasResolvablePublicSource(listing) ? 'Harici kaynak bağlantılı' : 'Platform içi kayıt' },
             { label: 'Güncellik', value: listing.created_at ? new Date(listing.created_at).toLocaleDateString('tr-TR') : 'Tarih yok' }
         ];
 
@@ -5096,10 +5134,14 @@ Skor, fiyat veya maliyet SAYISI ÜRETME — bunlar sistem tarafından hesaplanı
         ];
     }
 
+    listingHasResolvablePublicSource(listing = {}) {
+        return hasPublicSourceUrl(listing) || Boolean(resolvePublicExternalUrl(listing));
+    }
+
     getListingDecisionTags(listing = {}, score = 0) {
         const tags = [];
         if (score >= 86) tags.push('Güçlü seçenek');
-        if (listing.external_url) tags.push('Kaynak bağlantılı');
+        if (this.listingHasResolvablePublicSource(listing)) tags.push('Kaynak bağlantılı');
         if (listing.created_at && (Date.now() - new Date(listing.created_at).getTime()) < 5 * 86400000) tags.push('Güncel');
         tags.push(this.getCategoryName(listing.category));
         return tags.slice(0, 4);
