@@ -93,6 +93,22 @@ export async function enforceAdminRoute(options = {}) {
   return { allowed: false, email: access.email };
 }
 
+const ADMIN_FORBIDDEN_STYLESHEET = '/css/admin-premium-polish.css?v=3';
+
+/**
+ * Ensures shared forbidden-shell styles are available for inline renders.
+ */
+function ensureAdminForbiddenStyles() {
+  if (typeof document === 'undefined') return;
+  if (document.querySelector('link[data-admin-forbidden-styles]')) return;
+
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = ADMIN_FORBIDDEN_STYLESHEET;
+  link.setAttribute('data-admin-forbidden-styles', '');
+  document.head.appendChild(link);
+}
+
 /**
  * @param {HTMLElement|null} [root]
  * @param {{ showPublicLink?: boolean }} [options]
@@ -101,15 +117,22 @@ export function renderAdminForbiddenHtml(root, options = {}) {
   const mount = root ?? document.getElementById('ai-listings-admin-root') ?? document.body;
   if (!mount) return;
 
+  ensureAdminForbiddenStyles();
+
   const publicLink = options.showPublicLink
-    ? `<p><a href="${PUBLIC_DECISION_CENTER_PATH}">Karar Merkezi'ne git</a> (kullanıcı paneli)</p>`
+    ? `<a class="admin-forbidden__link" href="${PUBLIC_DECISION_CENTER_PATH}">
+        Karar Merkezi <span class="admin-forbidden__hint">(kullanıcı paneli)</span>
+      </a>`
     : '';
 
   mount.innerHTML = `
-    <div class="admin-forbidden" role="alert">
-      <h1>Erişim reddedildi</h1>
-      <p>Bu sayfa yalnızca admin kullanıcılar içindir.</p>
-      ${publicLink}
-      <p><a href="${ADMIN_LOGIN_PATH}">Admin girişi</a></p>
+    <div class="admin-forbidden" role="alert" aria-labelledby="admin-forbidden-inline-title">
+      <p class="admin-forbidden__eyebrow">403</p>
+      <h1 id="admin-forbidden-inline-title" class="admin-forbidden__title">Erişim reddedildi</h1>
+      <p class="admin-forbidden__lead">Bu alan yalnızca yetkili admin kullanıcılar içindir.</p>
+      <nav class="admin-forbidden__actions" aria-label="Yönlendirmeler">
+        ${publicLink}
+        <a class="admin-forbidden__link admin-forbidden__link--primary" href="${ADMIN_LOGIN_PATH}">Admin girişi</a>
+      </nav>
     </div>`;
 }
