@@ -297,6 +297,8 @@ body.admin-sidebar-collapsed #app .nav-group-items {
 }
 
 #app .main {
+  min-width: 0;
+  max-width: 100%;
   background: var(--admin-bg);
 }
 
@@ -738,6 +740,18 @@ body.admin-sidebar-collapsed #app .nav-group-items {
   #app .admin-mobile-title {
     color: var(--admin-ink);
     font-weight: 700;
+  }
+
+  body.admin-enterprise #app .sidebar {
+    position: fixed;
+    width: min(88vw, 290px);
+    height: 100vh;
+    max-width: 290px;
+    transform: translateX(-100%);
+  }
+
+  body.admin-enterprise.admin-sidebar-open #app .sidebar {
+    transform: translateX(0);
   }
 }
 
