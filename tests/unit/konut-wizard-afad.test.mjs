@@ -3,13 +3,26 @@ import assert from 'node:assert/strict';
 
 const {
   buildKonutResultsV2Payload,
+  buildKonutExecutiveSummaryContext,
   computeDecisionScore,
   hydrateKonutAfadRiskLayer,
   resolveKonutAfadLocation
 } = await import('../../js/features/konut/konut-results-v2.js');
 
-const { buildEvdsRiskLayer, mountEvdsRiskLayer } = await import(
+const { buildEvdsRiskLayer, mountEvdsRiskLayer, buildEvdsAiMarketSentence } = await import(
   '../../js/features/results/results-evds-risk-layer.js'
+);
+
+const { buildAfadRiskLayer, buildAfadAiActivitySentence } = await import(
+  '../../js/features/results/results-afad-risk-layer.js'
+);
+
+const { buildInsightInputFromIntelligence } = await import(
+  '../../js/features/ai/ai-insight-engine.js'
+);
+
+const { buildDecisionIntelligenceResult } = await import(
+  '../../js/features/results/decision-intelligence-engine.js'
 );
 
 const DISABLED_SNAPSHOT = {
@@ -263,6 +276,139 @@ test('EVDS mount still works when AFAD layer is hydrated', async () => {
   assert.match(root.html, /data-evds-risk-layer/);
   assert.match(root.html, /data-afad-risk-layer/);
   assert.ok(root.evdsIndex < root.afadIndex, 'AFAD card should mount after EVDS layer');
+});
+
+test('OD-2C-3b: connected AFAD layer yields earthquakeActivityAssessment in executive summary context', async () => {
+  const root = createKonutResultsRoot();
+  let layer = null;
+
+  await withDocumentMock(async () => {
+    layer = await hydrateKonutAfadRiskLayer(root, sampleState, async () => ({
+      ok: true,
+      async json() {
+        return CONNECTED_SNAPSHOT;
+      }
+    }));
+  });
+
+  const intel = buildDecisionIntelligenceResult('konut', sampleState, sampleMetrics);
+  const context = buildKonutExecutiveSummaryContext(intel.context || {}, layer);
+  const input = buildInsightInputFromIntelligence('konut', context, intel, {
+    marketAssessment: buildEvdsAiMarketSentence(
+      buildEvdsRiskLayer('konut', { housingLoanRate: 45, policyRate: 50, cpiAnnual: 55 })
+    )
+  });
+
+  assert.equal(layer?.hasData, true);
+  assert.ok(context.earthquakeActivityAssessment.length > 0);
+  assert.equal(input.earthquakeActivityAssessment, context.earthquakeActivityAssessment);
+  assert.match(input.earthquakeActivityAssessment, /AFAD|deprem|aktivite/i);
+});
+
+test('OD-2C-3b: disabled AFAD layer leaves earthquakeActivityAssessment empty', async () => {
+  const root = createKonutResultsRoot();
+  let layer = null;
+
+  await withDocumentMock(async () => {
+    layer = await hydrateKonutAfadRiskLayer(root, sampleState, async () => ({
+      ok: true,
+      async json() {
+        return DISABLED_SNAPSHOT;
+      }
+    }));
+  });
+
+  const intel = buildDecisionIntelligenceResult('konut', sampleState, sampleMetrics);
+  const context = buildKonutExecutiveSummaryContext(intel.context || {}, layer);
+  const input = buildInsightInputFromIntelligence('konut', context, intel, {});
+
+  assert.equal(layer?.hasData, false);
+  assert.equal(context.earthquakeActivityAssessment, '');
+  assert.equal(input.earthquakeActivityAssessment, '');
+});
+
+test('OD-2C-3b: marketAssessment EVDS behavior unchanged alongside AFAD context', () => {
+  const evdsLayer = buildEvdsRiskLayer('konut', {
+    housingLoanRate: 45,
+    policyRate: 50,
+    cpiAnnual: 55
+  });
+  const afadLayer = buildAfadRiskLayer(CONNECTED_SNAPSHOT);
+  const intel = buildDecisionIntelligenceResult('konut', sampleState, sampleMetrics);
+  const marketAssessment = buildEvdsAiMarketSentence(evdsLayer);
+  const context = buildKonutExecutiveSummaryContext(intel.context || {}, afadLayer);
+
+  const input = buildInsightInputFromIntelligence('konut', context, intel, { marketAssessment });
+
+  assert.equal(input.marketAssessment, marketAssessment);
+  assert.ok(input.marketAssessment.length > 0);
+  assert.ok(input.earthquakeActivityAssessment.length > 0);
+  assert.notEqual(input.marketAssessment, input.earthquakeActivityAssessment);
+});
+
+test('OD-2C-3b: decisionScore, confidenceScore, earthquakeRiskScore stay unchanged by narration wiring', () => {
+  const metrics = { ...sampleMetrics, earthquakeRiskScore: 62 };
+  const payload = buildKonutResultsV2Payload({
+    state: sampleState,
+    metrics,
+    evdsRates: { housingLoanRate: 45, policyRate: 50, cpiAnnual: 55 }
+  });
+  const intel = payload.intelligence;
+  const afadLayer = buildAfadRiskLayer(CONNECTED_SNAPSHOT);
+  const context = buildKonutExecutiveSummaryContext(intel.context || {}, afadLayer);
+
+  buildInsightInputFromIntelligence('konut', context, intel, {
+    marketAssessment: buildEvdsAiMarketSentence(payload.evdsRiskLayer)
+  });
+
+  assert.equal(payload.decisionScore, computeDecisionScore(sampleState, metrics));
+  assert.equal(intel.confidenceScore, payload.confidenceScore);
+  assert.equal(metrics.earthquakeRiskScore, 62);
+});
+
+test('OD-2C-3b: AFAD narration excludes internal fields and directive language', () => {
+  const layer = buildAfadRiskLayer({
+    ok: true,
+    data: {
+      status: 'connected',
+      source: 'afad',
+      regionalSignals: [
+        {
+          province: 'Ankara',
+          district: 'Çankaya',
+          eventCount: 3,
+          maxMagnitude: 3.1,
+          activityLevel: 'orta',
+          hasLiveActivity: true,
+          summary: 'earthquakeRiskScore 88/100 eventID latitude longitude'
+        }
+      ],
+      earthquakes: [
+        {
+          eventID: 'secret',
+          latitude: 39.9,
+          longitude: 32.8,
+          magnitude: 3.1,
+          province: 'Ankara',
+          district: 'Çankaya'
+        }
+      ],
+      attribution: { provider: 'AFAD Deprem Dairesi' }
+    }
+  });
+  const sentence = buildAfadAiActivitySentence(layer);
+  const context = buildKonutExecutiveSummaryContext({}, layer);
+  const blob = [sentence, context.earthquakeActivityAssessment].join(' ').toLowerCase();
+
+  assert.ok(sentence.length > 0);
+  assert.equal(context.earthquakeActivityAssessment, sentence);
+  assert.doesNotMatch(blob, /eventid/);
+  assert.doesNotMatch(blob, /latitude/);
+  assert.doesNotMatch(blob, /longitude/);
+  assert.doesNotMatch(blob, /earthquakeriskscore/);
+  assert.doesNotMatch(blob, /\b88\s*\/\s*100\b/);
+  assert.doesNotMatch(blob, /\bsatın al\b/);
+  assert.doesNotMatch(blob, /\bbekle\b/);
 });
 
 function createKonutResultsRoot() {
