@@ -24,7 +24,7 @@ const tr = {
   planlar: {
     kicker: 'Planlar',
     title: 'Planlar ve fiyatlandırma',
-    lead: 'Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — iyzico / PayTR ile güvenli ödeme.',
+    lead: 'Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — pilot erişim sürecinde.',
     starterBullet: 'Başlangıç: sınırlı analiz ve 2 karşılaştırma',
     proBullet: 'Pro: derin TCO, AI karar notu, premium export',
     enterpriseBullet: 'Enterprise: API, webhook, SLA',

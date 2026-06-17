@@ -12,19 +12,19 @@ export const marketingSections = {
       starterCta: 'Ön değerlendirmeye başla',
       proBadge: 'En popüler',
       proTitle: 'isteBul Pro',
-      proPrice: '₺299',
-      proPriceUnit: '/ ay',
+      proPrice: 'Erken erişim',
+      proPriceUnit: '',
       proDesc: 'Sınırsız karşılaştırma · AI rafine',
       proCta: 'Planları gör',
       midCtaPrimary: 'Ön değerlendirmeye başla',
       midCtaSecondary: 'Metodolojiyi incele',
       partnerHintHtml:
         'Partner galeriler için lead başına ücretlendirme modeli ayrıca sunulur — <a href="/partner-olun.html">Partner olun</a>.',
-      trialBadge: 'Türkiye ödeme altyapısı',
-      paymentBadge: 'iyzico / PayTR ile güvenli ödeme',
-      cancelBadge: 'İstediğiniz zaman iptal',
+      trialBadge: 'Pro pilot erişim',
+      paymentBadge: 'Ödeme aktivasyonu sonrası',
+      cancelBadge: 'Destek kanalından iptal',
       trustNoteHtml:
-        'Ödeme iyzico (birincil) ve PayTR (yedek) ile alınır; kart bilgileri sunucularımızda tutulmaz. Analiz ve skorlar bilgilendirme amaçlıdır. <a href="/kullanim-sartlari.html">Kullanım şartları</a> · <a href="/kvkk.html">Ziyaretçi aydınlatma</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK bilgilendirme</a>'
+        'Ödeme altyapısı hazırlandı; sağlayıcı aktivasyonu tamamlandığında ödeme alınabilecektir. Kart bilgileri sunucularımızda tutulmaz. Analiz ve skorlar bilgilendirme amaçlıdır. <a href="/kullanim-sartlari.html">Kullanım şartları</a> · <a href="/kvkk.html">Ziyaretçi aydınlatma</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK bilgilendirme</a>'
     },
     faq: {
       kicker: 'SSS',
@@ -35,7 +35,7 @@ export const marketingSections = {
       q1: 'Skorlar garanti sonuç verir mi?',
       a1: 'Hayır. Skorlar ve raporlar bilgilendirme amaçlıdır; kesin getiri, fiyat veya onay taahhüdü değildir. Karar sizde kalır — biz maliyet ve uyumu görünür kılarız.',
       q2: 'Ödeme güvenli mi?',
-      a2: 'Pro abonelik ve premium rapor ödemeleri iyzico (birincil) ve PayTR (yedek) altyapısı ile alınır; kart bilgileri isteBul sunucularında tutulmaz. İstediğiniz zaman iptal edebilirsiniz.',
+      a2: 'Pro abonelik ve premium rapor ödemeleri, ödeme sağlayıcı aktivasyonu tamamlandığında yetkili ödeme kuruluşu üzerinden alınır; kart bilgileri isteBul sunucularında tutulmaz. İptal için destek kanalını kullanabilirsiniz.',
       q3: 'Ücretsiz planda neler var?',
       a3: 'TCO özeti, sınırlı karşılaştırma ve özet çıktılar. Daha derin rapor, sınırsız karşılaştırma ve partner eşleşmesi için Pro plana geçebilirsiniz.'
     },

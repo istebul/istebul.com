@@ -63,10 +63,10 @@ const COMPARE_PLANS = Object.freeze([
     tier: 'pro',
     badge: 'En popüler',
     name: 'isteBul Pro',
-    priceHint: '₺299 / ay',
+    priceHint: 'Erken erişim',
     featured: true,
     ctaHref: '/planlar?checkout=pro',
-    ctaLabel: 'Pro’yu dene',
+    ctaLabel: 'Erken erişim talep et',
     ctaClass: 'btn btn-primary btn-block',
     checkoutButton: true
   },

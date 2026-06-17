@@ -61,7 +61,7 @@
     <section class="auto-methodology premium-methodology">
       <div><h3>Veri sorumlusu</h3></div>
       <ul>
-        <li><strong>Ticari unvan / marka:</strong> isteBul</li>
+        <li><strong>Marka / iletişim:</strong> isteBul</li>
         <li><strong>İletişim:</strong> Nadi Gürel</li>
         <li><strong>E-posta:</strong> <a href="mailto:info@istebul.com">info@istebul.com</a></li>
         <li><strong>Telefon:</strong> +90 545 678 6420</li>
@@ -76,7 +76,7 @@
         <li>Kimlik ve iletişim (ad, e-posta, telefon) — hesap, destek ve lead süreçleri</li>
         <li>Karar profili (bütçe, tercih, finansman) — TCO ve uyum skoru hesaplama</li>
         <li>İşlem güvenliği (IP, oturum, Turnstile) — kötüye kullanım önleme</li>
-        <li>Ödeme (Stripe müşteri kimliği) — abonelik; kart bilgisi sunucularımızda tutulmaz</li>
+        <li>Ödeme (abonelik referansı) — ücretli planlar; kart bilgisi sunucularımızda tutulmaz</li>
         <li>Analitik (onay sonrası) — ürün iyileştirme</li>
         <li>Partner yönlendirme — açık rızanız ile skorlu lead paylaşımı</li>
       </ul>
@@ -89,25 +89,20 @@
 
     <section class="auto-methodology premium-methodology">
       <div><h3>Yurt dışı aktarım ve alt işleyenler</h3></div>
-      <p>Altyapı sağlayıcıları (Supabase, Cloudflare, Stripe, LLM API) nedeniyle veriler yurt dışında işlenebilir. Güncel liste: docs/investor/SUBPROCESSORS.md. Sözleşmesel güvenlik önlemleri hedeflenir.</p>
+      <p>Altyapı sağlayıcıları (barındırma, güvenlik, ödeme ve yapay zekâ API hizmetleri) nedeniyle veriler yurt dışında işlenebilir. Güncel alt işleyen listesi <a href="mailto:info@istebul.com?subject=Alt%20i%C5%9Fleyen%20listesi%20talebi">info@istebul.com</a> üzerinden talep edilebilir. Sözleşmesel güvenlik önlemleri hedeflenir.</p>
     </section>
 
     <section class="auto-methodology premium-methodology">
       <div><h3>Saklama süreleri (özet)</h3></div>
-      <table class="corporate-table">
-        <thead><tr><th>Kategori</th><th>Süre</th><th>İşlem</th></tr></thead>
-        <tbody>
-          <tr><td>auto_leads_active</td><td>730 gün</td><td>review_then_anonymize</td></tr>
-          <tr><td>auto_leads_closed</td><td>365 gün</td><td>anonymize_contact_fields</td></tr>
-          <tr><td>analytics_events</td><td>730 gün</td><td>delete_or_aggregate</td></tr>
-          <tr><td>operational_events</td><td>90 gün</td><td>delete</td></tr>
-          <tr><td>partner_dispatch_logs</td><td>365 gün</td><td>delete</td></tr>
-          <tr><td>admin_audit_logs</td><td>1095 gün</td><td>retain</td></tr>
-          <tr><td>auth_accounts</td><td>Hesaba / yasal yükümlülüğe bağlı</td><td>delete_on_user_request_or_inactive_24m</td></tr>
-          <tr><td>subscriptions</td><td>Hesaba / yasal yükümlülüğe bağlı</td><td>follow_stripe_and_tax_rules</td></tr>
-        </tbody>
-      </table>
-      <p class="text-muted-sm">Detay: data/compliance/retention-schedule.json — operasyonel hedef; nihai süreler hukuk onayı ile güncellenir.</p>
+      <ul>
+        <li>Aktif lead ve partner yönlendirme kayıtları: en fazla 2 yıl, ardından iletişim alanları anonimleştirilir</li>
+        <li>Kapanmış lead kayıtları: en fazla 1 yıl</li>
+        <li>Analitik olayları: en fazla 2 yıl, ardından silinir veya toplulaştırılır</li>
+        <li>Operasyonel günlükler: en fazla 90 gün</li>
+        <li>Partner iletim logları: en fazla 1 yıl</li>
+        <li>Hesap ve abonelik kayıtları: hesap süresi ve yasal yükümlülük süresince; kullanıcı talebi veya uzun süreli hareketsizlikte silinir</li>
+      </ul>
+      <p class="text-muted-sm">Operasyonel hedef sürelerdir; nihai süreler hukuk onayı ile güncellenir.</p>
     </section>
 
     <section class="auto-methodology premium-methodology" id="hesap-silme">
@@ -117,7 +112,7 @@
         <li>Kimlik doğrulaması (oturum) gerektirir</li>
         <li>Profil, abonelik hakları ve lifecycle kayıtlarını siler veya anonimleştirir</li>
         <li>Lead kayıtlarındaki iletişim alanlarını anonimleştirir (yasal saklama gerektiren loglar hariç)</li>
-        <li>Stripe abonelik iptali ayrıca yönetilir; aktif abonelik varsa önce portal üzerinden iptal edin</li>
+        <li>Aktif ücretli abonelik varsa iptal talebi <a href="mailto:info@istebul.com?subject=Pro%20Abonelik%20%C4%B0ptali">info@istebul.com</a> veya <a href="/iletisim.html?konu=abonelik">destek</a> kanalı üzerinden iletilir</li>
       </ul>
       <p class="text-muted-sm">Alternatif: <a href="mailto:info@istebul.com?subject=KVKK%20Hesap%20Silme%20Talebi">info@istebul.com</a> — konu: KVKK Hesap Silme Talebi. Yanıt süresi en geç 30 gündür.</p>
     </section>
@@ -140,7 +135,7 @@
 
     <section class="auto-methodology premium-methodology">
       <div><h3>Yasal not</h3></div>
-      <p class="text-muted-sm">Bu metin bilgilendirme amaçlıdır; nihai hukuki metinler için KVKK danışmanı incelemesi önerilir. VERBİS kaydı ve veri envanteri operasyonel süreçlerimizin parçasıdır.</p>
+      <p class="text-muted-sm">Bu metin bilgilendirme amaçlıdır; nihai hukuki metinler için KVKK danışmanı incelemesi önerilir. VERBİS ve veri envanteri süreçleri yürütülmektedir.</p>
     </section>
   </main>
   <footer class="corporate-footer">
