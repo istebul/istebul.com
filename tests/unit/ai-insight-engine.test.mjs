@@ -5,6 +5,7 @@ import {
   BANNED_WEAK_PHRASES,
   buildDecisionInsight,
   buildExecutiveSummary,
+  buildInsightProxyPrompt,
   buildProInsight,
   buildPdfInsight,
   buildHomepageSampleInsight,
@@ -14,6 +15,8 @@ import {
   normalizeInsightInput,
   renderProInsightExtensionsHtml
 } from '../../js/features/ai/ai-insight-engine.js';
+import { EVDS_AI_MARKET_SENTENCE } from '../../js/features/results/results-evds-risk-layer.js';
+import { AFAD_AI_ACTIVITY_SENTENCE } from '../../js/features/results/results-afad-risk-layer.js';
 
 function assertNoBanned(text) {
   assert.ok(!containsBannedWeakPhrase(text), `banned phrase in: ${text}`);
@@ -230,5 +233,74 @@ test('sigorta insight uses protection and score context', () => {
   });
   assert.match(insight.summary, /sigorta|analiz/i);
   assert.match(insight.why, /Teminat dengesi/);
+  assertNoBanned(insight.summary);
+});
+
+const KONUT_AFAD_BASE = {
+  vertical: 'konut',
+  answers: { city: 'İstanbul', district: 'Silivri', totalBudget: 4_000_000 },
+  scores: { decision: 78, overallRisk: 'Orta' },
+  costs: { budget: 4_000_000, monthlyPayment: 42_000 }
+};
+
+test('OD-2C-3a: earthquakeActivityAssessment enriches konut summary when set', () => {
+  const without = buildDecisionInsight({ ...KONUT_AFAD_BASE });
+  const withAfad = buildDecisionInsight({
+    ...KONUT_AFAD_BASE,
+    earthquakeActivityAssessment: AFAD_AI_ACTIVITY_SENTENCE
+  });
+  assert.doesNotMatch(without.summary, /AFAD deprem aktivite verileri/i);
+  assert.match(withAfad.summary, /AFAD deprem aktivite verileri/i);
+  assert.match(withAfad.summary, /bilgilendirme katmanı/i);
+});
+
+test('OD-2C-3a: buildInsightProxyPrompt includes AFAD activity line when set', () => {
+  const input = normalizeInsightInput({
+    ...KONUT_AFAD_BASE,
+    earthquakeActivityAssessment: AFAD_AI_ACTIVITY_SENTENCE
+  });
+  const prompt = buildInsightProxyPrompt(input, buildDecisionInsight(input));
+  assert.match(prompt, /Deprem aktivite değerlendirmesi \(AFAD\):/);
+  assert.match(prompt, /AFAD deprem aktivite verileri/i);
+});
+
+test('OD-2C-3a: empty earthquakeActivityAssessment leaves summary and prompt unchanged', () => {
+  const input = normalizeInsightInput({ ...KONUT_AFAD_BASE, earthquakeActivityAssessment: '' });
+  const insight = buildDecisionInsight(input);
+  const prompt = buildInsightProxyPrompt(input, insight);
+  assert.doesNotMatch(insight.summary, /Deprem aktivite değerlendirmesi/i);
+  assert.doesNotMatch(prompt, /Deprem aktivite değerlendirmesi \(AFAD\):/);
+});
+
+test('OD-2C-3a: marketAssessment behavior unchanged alongside AFAD field', () => {
+  const marketOnly = buildDecisionInsight({
+    ...KONUT_AFAD_BASE,
+    marketAssessment: EVDS_AI_MARKET_SENTENCE
+  });
+  const both = buildDecisionInsight({
+    ...KONUT_AFAD_BASE,
+    marketAssessment: EVDS_AI_MARKET_SENTENCE,
+    earthquakeActivityAssessment: AFAD_AI_ACTIVITY_SENTENCE
+  });
+  assert.match(marketOnly.summary, /Piyasa verileri/i);
+  assert.match(both.summary, /Piyasa verileri/i);
+  assert.match(both.summary, /AFAD deprem aktivite verileri/i);
+});
+
+test('OD-2C-3a: AFAD narration copy stays decision-support and sanitized', () => {
+  const input = normalizeInsightInput({
+    ...KONUT_AFAD_BASE,
+    earthquakeActivityAssessment: AFAD_AI_ACTIVITY_SENTENCE
+  });
+  const insight = buildDecisionInsight(input);
+  const prompt = buildInsightProxyPrompt(input, insight);
+  const blob = `${insight.summary} ${prompt}`.toLowerCase();
+  assert.doesNotMatch(blob, /\bsatın al\b/);
+  assert.doesNotMatch(blob, /\bbekle\b/);
+  assert.doesNotMatch(blob, /\bvazgeç\b/);
+  assert.doesNotMatch(blob, /eventid/);
+  assert.doesNotMatch(blob, /latitude/);
+  assert.doesNotMatch(blob, /longitude/);
+  assert.match(blob, /değerlendirilmesi gerektiğini/);
   assertNoBanned(insight.summary);
 });
