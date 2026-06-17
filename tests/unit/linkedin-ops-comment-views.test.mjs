@@ -335,3 +335,32 @@ describe('linkedin-ops-comment-views', () => {
     assert.ok(source.includes('suggestLinkedInComments'));
   });
 });
+
+const linkedInOpsCss = readFileSync(join(rootDir, 'css/admin-linkedin-ops.css'), 'utf8');
+
+describe('linkedin-ops comment card CSS guards', () => {
+  it('defines copy button touch target and focus-visible styles', () => {
+    assert.match(linkedInOpsCss, /\.linkedin-comment-copy-btn\b/);
+    assert.match(linkedInOpsCss, /\.linkedin-comment-copy-btn[\s\S]*min-height:\s*44px/);
+    assert.match(linkedInOpsCss, /\.linkedin-comment-copy-btn:focus-visible/);
+    assert.match(linkedInOpsCss, /\.linkedin-comment-copy-btn[\s\S]*overflow-wrap:\s*anywhere/);
+  });
+
+  it('defines action row wrap and overflow guards for card text', () => {
+    assert.match(linkedInOpsCss, /\.linkedin-comment-card-actions[\s\S]*flex-wrap:\s*wrap/);
+    assert.match(linkedInOpsCss, /\.linkedin-comment-card-title[\s\S]*overflow-wrap:\s*anywhere/);
+    assert.match(linkedInOpsCss, /\.linkedin-comment-meta[\s\S]*overflow-wrap:\s*anywhere/);
+    assert.match(linkedInOpsCss, /max-width:\s*480px[\s\S]*\.linkedin-comment-copy-btn/);
+  });
+
+  it('defines comment panel generate button touch target', () => {
+    assert.match(
+      linkedInOpsCss,
+      /\.linkedin-comment-panel \.linkedin-lint-run-btn[\s\S]*min-height:\s*44px/
+    );
+    assert.match(
+      linkedInOpsCss,
+      /\.linkedin-comment-panel \.linkedin-lint-run-btn:focus-visible/
+    );
+  });
+});

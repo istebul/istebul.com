@@ -372,6 +372,9 @@
   font-weight: 600;
   line-height: 1.35;
   flex: 1 1 200px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 #page-linkedin-ops-assistant .linkedin-comment-lint-badge {
@@ -393,21 +396,28 @@
   font-size: 12px;
   color: var(--muted, #6b7280);
   line-height: 1.45;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 #page-linkedin-ops-assistant .linkedin-comment-card-actions {
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 8px;
   margin-top: 12px;
+  max-width: 100%;
+  min-width: 0;
 }
 
 #page-linkedin-ops-assistant .linkedin-comment-copy-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 14px;
+  min-height: 44px;
+  padding: 0.65rem 1rem;
   border-radius: var(--radius, 12px);
   border: 1px solid var(--border, #e5e7eb);
   background: var(--surface, #ffffff);
@@ -415,12 +425,31 @@
   font: inherit;
   font-size: 13px;
   font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
 
 #page-linkedin-ops-assistant .linkedin-comment-copy-btn:hover {
   border-color: var(--accent, #2563eb);
   color: var(--accent, #2563eb);
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-copy-btn:focus-visible {
+  outline: 2px solid var(--accent, #2563eb);
+  outline-offset: 2px;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-panel .linkedin-lint-run-btn {
+  min-height: 44px;
+}
+
+#page-linkedin-ops-assistant .linkedin-comment-panel .linkedin-lint-run-btn:focus-visible {
+  outline: 2px solid var(--accent, #2563eb);
+  outline-offset: 2px;
 }
 
 #page-linkedin-ops-assistant .linkedin-comment-copy-status {
@@ -440,4 +469,26 @@
 
 #page-linkedin-ops-assistant .linkedin-comment-copy-status.is-error {
   color: var(--danger, #dc2626);
+}
+
+@media (max-width: 480px) {
+  #page-linkedin-ops-assistant .linkedin-comment-card-actions {
+    align-items: stretch;
+  }
+
+  #page-linkedin-ops-assistant .linkedin-comment-copy-btn {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #page-linkedin-ops-assistant .linkedin-comment-panel .linkedin-lint-run-btn {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #page-linkedin-ops-assistant .linkedin-comment-copy-btn {
+    transition: none;
+  }
 }
