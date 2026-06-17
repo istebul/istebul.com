@@ -204,7 +204,8 @@ export function normalizeInsightInput(raw = {}) {
     strengths: raw.strengths || [],
     weaknesses: raw.weaknesses || raw.cautions || [],
     warnings: raw.warnings || [],
-    marketAssessment: String(raw.marketAssessment || '').trim()
+    marketAssessment: String(raw.marketAssessment || '').trim(),
+    earthquakeActivityAssessment: String(raw.earthquakeActivityAssessment || '').trim()
   };
 }
 
@@ -261,7 +262,9 @@ export function buildInsightInputFromIntelligence(category, context = {}, intell
     locale: extras.locale || 'tr-TR',
     strengths: extras.strengths,
     weaknesses: extras.weaknesses,
-    marketAssessment: extras.marketAssessment || context.marketAssessment || ''
+    marketAssessment: extras.marketAssessment || context.marketAssessment || '',
+    earthquakeActivityAssessment:
+      extras.earthquakeActivityAssessment || context.earthquakeActivityAssessment || ''
   });
 }
 
@@ -270,6 +273,13 @@ function appendMarketAssessment(summary, input) {
   if (!market) return summary;
   if (summary.includes(market.slice(0, 40))) return summary;
   return `${summary} ${market}`.trim();
+}
+
+function appendEarthquakeActivityAssessment(summary, input) {
+  const activity = String(input.earthquakeActivityAssessment || '').trim();
+  if (!activity) return summary;
+  if (summary.includes(activity.slice(0, 40))) return summary;
+  return `${summary} ${activity}`.trim();
 }
 
 function buildAutoInsight(input) {
@@ -403,7 +413,7 @@ function buildKonutInsight(input) {
   const nextStep = cashBufferNext ? `${cashBufferNext} ${defaultNextStep}` : defaultNextStep;
 
   return {
-    summary: appendMarketAssessment(summary, input),
+    summary: appendEarthquakeActivityAssessment(appendMarketAssessment(summary, input), input),
     why,
     risk,
     nextStep
@@ -986,6 +996,9 @@ export function buildInsightProxyPrompt(input, insight) {
     `Risk: ${base.risk}`,
     `Skor: ${formatScoreOutOf100(i.scores?.decision)}`,
     i.marketAssessment ? `Piyasa değerlendirmesi (TCMB EVDS): ${i.marketAssessment}` : '',
+    i.earthquakeActivityAssessment ?
+      `Deprem aktivite değerlendirmesi (AFAD): ${i.earthquakeActivityAssessment}`
+    : '',
     'Rakam yazacaksan yalnızca verilen bağlamdaki tutarları kullan; yeni rakam uydurma.'
   ]
     .filter(Boolean)
