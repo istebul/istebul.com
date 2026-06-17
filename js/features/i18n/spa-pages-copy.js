@@ -63,7 +63,7 @@ const en = {
   campaigns: {
     kicker: 'Campaigns',
     title: 'Active campaigns',
-    lead: 'Pro trial, free Auto analysis and pilot partner opportunities. Terms may change; no financial commitment.',
+    lead: 'Pro pilot access, free Auto analysis and pilot partner opportunities. Terms may change; no financial commitment.',
     backHome: '← Home',
     plans: 'Plans'
   },
@@ -77,7 +77,7 @@ const en = {
   planlar: {
     kicker: 'Plans',
     title: 'Plans and pricing',
-    lead: 'Start with a free TCO summary. Pro unlocks unlimited comparisons, premium decision reports and partner matching — secure iyzico / PayTR checkout.',
+    lead: 'Start with a free TCO summary. Pro unlocks unlimited comparisons, premium decision reports and partner matching — pilot access phase.',
     starterBullet: 'Starter: limited analysis and 2 comparisons',
     proBullet: 'Pro: deep TCO, AI decision notes, premium export',
     enterpriseBullet: 'Enterprise: API, webhook, SLA',
@@ -132,7 +132,7 @@ const de = {
     ...en.planlar,
     kicker: 'Pläne',
     title: 'Pläne und Preise',
-    lead: 'Starten Sie mit einer kostenlosen TCO-Zusammenfassung. Pro bietet unbegrenzte Vergleiche und Premium-Berichte — sichere iyzico / PayTR-Zahlung.',
+    lead: 'Starten Sie mit einer kostenlosen TCO-Zusammenfassung. Pro bietet unbegrenzte Vergleiche und Premium-Berichte — Pilotzugangsphase.',
     ctaPrimary: 'Kostenlose Analyse starten',
     ctaSecondary: 'Methodik ansehen'
   }
@@ -164,7 +164,7 @@ const ar = {
   planlar: {
     kicker: 'الخطط',
     title: 'الخطط والأسعار',
-    lead: 'ابدأ بملخص TCO مجاني. Pro يفتح مقارنات غير محدودة وتقارير قرار مميزة — دفع آمن عبر iyzico / PayTR.',
+    lead: 'ابدأ بملخص TCO مجاني. Pro يفتح مقارنات غير محدودة وتقارير قرار مميزة — مرحلة وصول تجريبي.',
     starterBullet: 'البداية: تحليل محدود ومقارنتان',
     proBullet: 'Pro: TCO عميق، ملاحظات قرار AI، تصدير مميز',
     enterpriseBullet: 'Enterprise: API، webhook، SLA',

@@ -417,7 +417,7 @@ export class AccountManager {
                     <ul class="account-trust-list">
                         <li><i data-lucide="lock"></i> Oturumlar şifreli bağlantı üzerinden korunur</li>
                         <li><i data-lucide="mail-check"></i> E-posta doğrulama ve şifre sıfırlama desteği</li>
-                        <li><i data-lucide="credit-card"></i> iyzico / PayTR ile güvenli ödeme</li>
+                        <li><i data-lucide="credit-card"></i> Pro erken erişim — ödeme aktivasyonu sonrası bilgilendirme</li>
                     </ul>
                     <div class="account-guest-actions">
                         <button type="button" class="btn btn-primary" id="account-login-btn" data-auth-open="login">Hesabına gir</button>
