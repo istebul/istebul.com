@@ -1,7 +1,7 @@
 # Supabase Backup/PITR Verification
 
-**Project ref:** `hjfrcdstbyonmgatgwcc`  
-**Site:** https://www.istebul.com  
+**Project ref:** `hjfrcdstbyonmgatgwcc`
+**Site:** https://www.istebul.com
 **Created:** 2026-06-18
 
 ---
