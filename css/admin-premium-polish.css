@@ -568,8 +568,13 @@ body.admin-sidebar-collapsed #app .nav-group-items {
   color: var(--admin-ink);
 }
 
-#app .table-wrap,
 #app .page {
+  overflow-x: clip;
+  max-width: 100%;
+  min-width: 0;
+}
+
+#app .table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
