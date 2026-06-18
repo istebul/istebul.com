@@ -221,4 +221,16 @@ describe('production deploy workflow wiring', () => {
     assert.match(retrySource, /RETRY_CMD_MAX_ATTEMPTS=5/);
     assert.match(retrySource, /10 20 40 60 60/);
   });
+
+  it('requires AI_LISTINGS_EDGE_SECRET without deterministic fallback', () => {
+    const source = fs.readFileSync(workflow, 'utf8');
+    assert.doesNotMatch(source, /isteai-edge-/);
+    assert.doesNotMatch(source, /DETERMINISTIC_AI_LISTINGS_EDGE_SECRET/);
+    assert.match(source, /::error::AI_LISTINGS_EDGE_SECRET is required for production deploy/);
+    assert.match(source, /exit 1/);
+    assert.match(
+      source,
+      /supabase secrets set AI_LISTINGS_EDGE_SECRET="\$AI_LISTINGS_EDGE_SECRET"/
+    );
+  });
 });

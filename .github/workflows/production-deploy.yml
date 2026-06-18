@@ -313,14 +313,12 @@ jobs:
         run: |
           supabase secrets set AI_LISTINGS_SUPABASE_ENABLED=true --project-ref "$SUPABASE_PROJECT_REF"
           supabase secrets set AI_LISTINGS_PUBLIC_PUBLISH_ENABLED=true --project-ref "$SUPABASE_PROJECT_REF"
-          if [ -n "$AI_LISTINGS_EDGE_SECRET" ]; then
-            supabase secrets set AI_LISTINGS_EDGE_SECRET="$AI_LISTINGS_EDGE_SECRET" --project-ref "$SUPABASE_PROJECT_REF"
-            echo "AI listings edge secrets synced"
-          else
-            DETERMINISTIC_AI_LISTINGS_EDGE_SECRET="isteai-edge-${SUPABASE_PROJECT_REF}"
-            supabase secrets set AI_LISTINGS_EDGE_SECRET="$DETERMINISTIC_AI_LISTINGS_EDGE_SECRET" --project-ref "$SUPABASE_PROJECT_REF"
-            echo "::warning::AI_LISTINGS_EDGE_SECRET GitHub secret eksik — deterministik değer kullanıldı: ${DETERMINISTIC_AI_LISTINGS_EDGE_SECRET}. CI/script auth için aynı değeri GitHub secret olarak ekleyin."
+          if [ -z "$AI_LISTINGS_EDGE_SECRET" ]; then
+            echo "::error::AI_LISTINGS_EDGE_SECRET is required for production deploy"
+            exit 1
           fi
+          supabase secrets set AI_LISTINGS_EDGE_SECRET="$AI_LISTINGS_EDGE_SECRET" --project-ref "$SUPABASE_PROJECT_REF"
+          echo "AI listings edge secrets synced"
 
       - name: Deploy edge functions
         if: steps.gate.outputs.skip != 'true'
