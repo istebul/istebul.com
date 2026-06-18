@@ -363,7 +363,7 @@ export class AccountManager {
                 bio: form.bio.value.trim()
             };
 
-            const profile = await app.profil.updateProfile(app.currentUser.id, updates);
+            const profile = await API.updateProfile(app.currentUser.id, updates);
             app.currentUser.profile = profile;
             this.ui?.updateUserUI?.(profile);
             this.ui?.showSuccess?.(config.messages.success.profileUpdated);

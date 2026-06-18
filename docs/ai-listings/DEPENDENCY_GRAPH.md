@@ -44,7 +44,7 @@ flowchart TB
     end
 
     subgraph future [Future Adapters — not wired]
-        UL[user-listings → js/features/ilan]
+        UL[user-listings → js/core/api.js + js/app.js]
         PA[partner-api-adapter]
         OD[open-data-adapter]
         EVDS[evds-adapter → js/services/evds-service]

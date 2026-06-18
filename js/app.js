@@ -145,8 +145,6 @@ class App {
         this.ui = new UIManager();
         this.router = new Router();
         this.account = null;
-        this.ilan = null;
-        this.profil = null;
         this.messagingModule = null;
         this._billingPortalInFlight = false;
         this.currentUser = null;
