@@ -359,6 +359,31 @@ test.describe('P0-1 contrast/visibility guard', () => {
     });
   }
 
+  test('admin-panel authenticated shell has no page-level horizontal overflow @ mobile', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/admin-panel.html');
+    await page.waitForLoadState('domcontentloaded');
+
+    await page.evaluate(() => {
+      document.body.classList.add('admin-enterprise');
+      const login = document.getElementById('login-screen');
+      const app = document.getElementById('app');
+      if (login) login.style.display = 'none';
+      if (app) app.style.display = 'block';
+    });
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      if (doc.scrollWidth > doc.clientWidth + 2) return 'document';
+      const pageEl = document.querySelector('#app .page');
+      if (pageEl && pageEl.scrollWidth > pageEl.clientWidth + 2) return 'page';
+      return null;
+    });
+    expect(overflow).toBeNull();
+  });
+
   test('admin-panel login shell + nav (DOM) görünürlük', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin-panel.html');
