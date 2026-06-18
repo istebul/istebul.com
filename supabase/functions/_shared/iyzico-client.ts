@@ -1,6 +1,8 @@
 /**
  * iyzico checkout initialize adapter (fetch-based).
- * Signature: IYZWSv2 per iyzico docs — full HMAC implementation TODO when keys are live.
+ * Outbound checkout auth: IYZWSv2 HMAC-SHA256 (see createIyzwsv2AuthorizationHeader).
+ * Inbound webhook verification: x-iyz-signature-v3 HMAC over raw body (see verifyIyzicoWebhookSignature).
+ * Live sandbox/production signature smoke still required before enabling paid checkout — see docs/payments-env.md.
  */
 
 import { paymentFailureUrl, paymentSuccessUrl } from "./payment-env.ts";
@@ -24,13 +26,17 @@ function baseUrl(): string {
 
 const CHECKOUT_URI = "/payment/iyzipos/checkoutform/initialize/auth/ecom";
 
-async function buildIyzwsv2Authorization(
+/**
+ * Build IYZWSv2 Authorization header with a caller-supplied randomKey.
+ * Production checkout uses buildIyzwsv2Authorization (timestamp + random).
+ */
+export async function createIyzwsv2AuthorizationHeader(
   apiKey: string,
   secretKey: string,
+  randomKey: string,
   uriPath: string,
   body: Record<string, unknown>,
 ): Promise<string> {
-  const randomKey = `${Date.now()}${Math.floor(Math.random() * 1e6)}`;
   const bodyStr = JSON.stringify(body);
   const payload = randomKey + uriPath + bodyStr;
   const enc = new TextEncoder();
@@ -48,6 +54,16 @@ async function buildIyzwsv2Authorization(
   const authorizationString = `apiKey:${apiKey}&randomKey:${randomKey}&signature:${signature}`;
   const base64 = btoa(authorizationString);
   return `IYZWSv2 ${base64}`;
+}
+
+async function buildIyzwsv2Authorization(
+  apiKey: string,
+  secretKey: string,
+  uriPath: string,
+  body: Record<string, unknown>,
+): Promise<string> {
+  const randomKey = `${Date.now()}${Math.floor(Math.random() * 1e6)}`;
+  return createIyzwsv2AuthorizationHeader(apiKey, secretKey, randomKey, uriPath, body);
 }
 
 export async function initializeIyzicoCheckout(
