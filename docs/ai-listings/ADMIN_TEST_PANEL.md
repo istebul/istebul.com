@@ -39,7 +39,7 @@ location.reload();
 
 The secret is **never hardcoded** in source. It must match the Supabase function env `AI_LISTINGS_EDGE_SECRET`.
 
-**CI / deploy:** set GitHub secret `AI_LISTINGS_EDGE_SECRET`. If missing, production deploy uses a deterministic fallback: `isteai-edge-<SUPABASE_PROJECT_REF>` (see `.github/workflows/production-deploy.yml`).
+**CI / deploy:** GitHub secret `AI_LISTINGS_EDGE_SECRET` is **required** for production deploy. If it is missing, `.github/workflows/production-deploy.yml` fails the deploy step with an error (no deterministic fallback). Store the value only in GitHub Secrets and Supabase Edge Function secrets — never in this repo.
 
 ### 3. Ensure backend is active
 
