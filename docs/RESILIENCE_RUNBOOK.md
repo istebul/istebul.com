@@ -202,7 +202,7 @@ supabase functions deploy <function-name> --project-ref <ref>
 
 ## 8. Weekly resilience checklist (15 min)
 
-- [ ] Supabase backup/PITR enabled (Dashboard screenshot quarterly)
+- [ ] Supabase backup/PITR enabled (Dashboard screenshot quarterly) — log in `docs/SUPABASE_BACKUP_PITR_VERIFICATION.md`
 - [ ] Partner Retry workflow succeeded (Actions tab)
 - [ ] Lifecycle cron succeeded (if configured)
 - [ ] `npm run metrics:ops` — zero unreviewed `critical` events
