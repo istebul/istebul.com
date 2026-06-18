@@ -14,7 +14,7 @@
 
 ### 1.1 User Listings (`user_listings`)
 
-**Target:** `js/features/ilan/ilan.js`, `js/core/api.js`
+**Target:** `js/core/api.js`, `js/core/decision-options-api.js` (listing runtime lives in `js/app.js`; removed dead `ListingManager` — see P0-3 for future split)
 
 **Action:**
 1. Create `src/ai-listings/repository/adapters/user-listings-repository.js`

@@ -138,7 +138,7 @@ Enable only during integration testing:
 | Existing Module | Relationship |
 |-----------------|--------------|
 | `js/verticals/listing-analysis/` | Parallel vertical; do not modify. Future bridge via adapter. |
-| `js/features/ilan/` | Future `UserListingsRepository` adapter target |
+| `js/app.js` + `js/core/api.js` | Active listing runtime; future `UserListingsRepository` adapter target (P0-3 split) |
 | `js/services/evds-service.js` | Future `EvdsMarketDataAdapter` target |
 | `functions/ai-proxy.js` | Future `AIProviderAdapter` target |
 

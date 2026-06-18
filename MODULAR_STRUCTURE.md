@@ -47,24 +47,19 @@ auth/
 └── profile.js       # Profile management
 ```
 
-#### `ilan/`
-```
-ilan/
-├── ilan.js          # Listing manager
-├── create.js        # Create listing
-├── edit.js          # Edit listing
-├── search.js        # Search functionality
-└── filters.js       # Filter components
-```
+#### `ilan/` (removed — P0-5)
 
-#### `profil/`
+Dead `ListingManager` (`ilan.js`) removed. Active listing/decision-option runtime lives in `js/app.js` with `js/core/api.js` and `js/core/decision-options-api.js`. Future modularization is tracked in the P0-3 `app.js` split plan.
+
+#### `profil/` (partial)
+
 ```
 profil/
-├── profil.js        # Profile manager
-├── settings.js      # Profile settings
-├── favorites.js     # Favorite listings
-└── history.js       # User history
+├── user-dashboard.js  # User dashboard helpers (active)
+└── profil.js          # REMOVED — dead ProfileManager (P0-5)
 ```
+
+Profile updates run through `js/features/account/account.js` → `API.updateProfile`. Future profile module extraction belongs in the P0-3 `app.js` split plan.
 
 #### `admin/`
 ```
@@ -168,8 +163,8 @@ app.js
 ### Feature Dependencies
 ```
 auth.js → [api.js, state.js, ui.js]
-ilan.js → [api.js, state.js, ui.js, utils.js]
-profil.js → [api.js, state.js, ui.js]
+account.js → [api.js, ui.js, auth.js]  # profile save via API.updateProfile
+app.js → [api.js, decision-options-api.js, …]  # active listing runtime
 admin.js → [api.js, state.js, ui.js, utils.js]
 quiz.js → [api.js, state.js, ui.js]
 ```
@@ -180,7 +175,7 @@ quiz.js → [api.js, state.js, ui.js]
 ```javascript
 // Dynamic imports for code splitting
 const auth = await import('./features/auth/auth.js');
-const ilan = await import('./features/ilan/ilan.js');
+const account = await import('./features/account/account.js');
 ```
 
 ### Lazy Loading

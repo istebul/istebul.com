@@ -2,7 +2,7 @@
  * isteBul AI Listings Engine v1 — Listing repository port.
  *
  * Future implementations:
- * - User listings (Supabase / js/features/ilan)
+ * - User listings (Supabase / js/core/api.js, js/app.js)
  * - Partner API ingestion
  * - Open data feeds
  */

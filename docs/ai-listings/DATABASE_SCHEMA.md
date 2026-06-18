@@ -138,7 +138,7 @@ Published listings' analyses are readable via companion policy `ai_listing_analy
 3. **RLS Phase A** — enable owner policies; user sees own drafts in account area
 4. **Analysis trigger** — on insert, enqueue analysis via `AIAnalysisService`
 5. **Event log** — write `created`, `analyzed`, `published` events to `ai_listing_events`
-6. **No modification** to existing `listings` table or `js/features/ilan/` until explicit bridge decision
+6. **No modification** to existing `listings` table or active listing runtime (`js/app.js`, `js/core/api.js`) until explicit bridge decision
 
 ## Relationship to Existing Tables
 
