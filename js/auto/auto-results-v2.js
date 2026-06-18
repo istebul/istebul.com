@@ -46,6 +46,7 @@ import {
   buildWhyRecommendedCards,
   scoreBandLabel
 } from './auto-results-model.js';
+import { mountKararMahkemesiInResultsDetail } from './auto-results-karar-mahkemesi-mount.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -462,6 +463,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   await hydrateResultsEconomicIndicators(root, 'auto');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
+  mountKararMahkemesiInResultsDetail(root, { intel, formData, topResult });
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     score: intel.decisionScore,

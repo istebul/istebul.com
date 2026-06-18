@@ -14,6 +14,8 @@ import {
   buildVehicleAlternatives,
   buildWhyRecommendedCards
 } from '../../js/auto/auto-results-model.js';
+import { mountKararMahkemesiInResultsDetail } from '../../js/auto/auto-results-karar-mahkemesi-mount.js';
+import { KARAR_MAHKEMESI_URL_PARAM } from '../../js/features/karar-mahkemesi/karar-mahkemesi-flags.js';
 
 function stripVersion(url) {
   return String(url || '').split('?')[0];
@@ -157,4 +159,141 @@ test('buildWhyRecommendedCards returns five recommendation cards', () => {
   assert.equal(cards.length, 5);
   assert.equal(cards[0].title, 'Yakıt ekonomisi');
   assert.equal(cards[4].title, 'Güvenlik avantajı');
+});
+
+function createSearchParams(query = '') {
+  return new URLSearchParams(query);
+}
+
+function createStorage(initial = {}) {
+  const store = new Map(Object.entries(initial));
+  return {
+    getItem(key) {
+      return store.has(key) ? store.get(key) : null;
+    }
+  };
+}
+
+function baseKararForm() {
+  return {
+    budget: 1_500_000,
+    usage: 'city',
+    body: 'sedan',
+    fuel: 'hybrid',
+    km: 15_000,
+    loan: 'hayir'
+  };
+}
+
+function baseKararIntel() {
+  return {
+    decisionScore: 70,
+    confidenceScore: 72,
+    recommendationLevel: 'proceed',
+    overallRisk: 'Orta',
+    riskAnalysis: [{ level: 'orta', title: 'TCO' }],
+    warnings: [],
+    scoreFactors: [{ label: 'TCO', impact: '+4', reason: '12 ay TCO bütçe ile dengeli modelleniyor.' }]
+  };
+}
+
+function baseKararTop() {
+  return {
+    score: 74,
+    costs: { ownership: { totals: { months12: 1_350_000 } } },
+    risks: ['Finansman koşulları teklif aşamasında netleşmeli.']
+  };
+}
+
+function createResultsDetailRoot() {
+  const detailNode = {
+    innerHTML: '',
+    querySelector(selector) {
+      if (selector === '[data-karar-mahkemesi-beta]') {
+        return this.innerHTML.includes('data-karar-mahkemesi-beta') ? { remove() {} } : null;
+      }
+      return null;
+    },
+    insertAdjacentHTML(position, html) {
+      if (position === 'beforeend') {
+        this.innerHTML += html;
+      }
+    }
+  };
+
+  return {
+    querySelector(selector) {
+      if (selector === '#ib-results-detail') return detailNode;
+      return null;
+    }
+  };
+}
+
+test('mountKararMahkemesiInResultsDetail does nothing when flag is off', () => {
+  const root = createResultsDetailRoot();
+  const detail = root.querySelector('#ib-results-detail');
+
+  mountKararMahkemesiInResultsDetail(root, {
+    intel: baseKararIntel(),
+    formData: baseKararForm(),
+    topResult: baseKararTop(),
+    searchParams: createSearchParams(''),
+    storage: createStorage()
+  });
+
+  assert.equal(detail.innerHTML, '');
+});
+
+test('mountKararMahkemesiInResultsDetail mounts into #ib-results-detail when flag is on', () => {
+  const root = createResultsDetailRoot();
+  const detail = root.querySelector('#ib-results-detail');
+  const params = createSearchParams(`${KARAR_MAHKEMESI_URL_PARAM}=1`);
+
+  mountKararMahkemesiInResultsDetail(root, {
+    intel: baseKararIntel(),
+    formData: baseKararForm(),
+    topResult: baseKararTop(),
+    searchParams: params,
+    storage: createStorage()
+  });
+
+  assert.match(detail.innerHTML, /data-karar-mahkemesi-beta/);
+  assert.match(detail.innerHTML, /Karar Mahkemesi Beta/);
+});
+
+test('mountKararMahkemesiInResultsDetail avoids duplicate mount on repeat render', () => {
+  const root = createResultsDetailRoot();
+  const detail = root.querySelector('#ib-results-detail');
+  const params = createSearchParams(`${KARAR_MAHKEMESI_URL_PARAM}=1`);
+  const payload = {
+    intel: baseKararIntel(),
+    formData: baseKararForm(),
+    topResult: baseKararTop(),
+    searchParams: params,
+    storage: createStorage()
+  };
+
+  mountKararMahkemesiInResultsDetail(root, payload);
+  const firstHtml = detail.innerHTML;
+  mountKararMahkemesiInResultsDetail(root, payload);
+
+  assert.equal(detail.innerHTML, firstHtml);
+  assert.equal((detail.innerHTML.match(/data-karar-mahkemesi-beta/g) || []).length, 1);
+});
+
+test('mountKararMahkemesiInResultsDetail does not throw when #ib-results-detail is missing', () => {
+  const params = createSearchParams(`${KARAR_MAHKEMESI_URL_PARAM}=1`);
+
+  assert.doesNotThrow(() => {
+    mountKararMahkemesiInResultsDetail(
+      { querySelector: () => null },
+      {
+        intel: baseKararIntel(),
+        formData: baseKararForm(),
+        topResult: baseKararTop(),
+        searchParams: params,
+        storage: createStorage()
+      }
+    );
+  });
 });
