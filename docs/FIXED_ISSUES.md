@@ -4,6 +4,22 @@ Issues identified during full production audit and **safely corrected** in this 
 
 ---
 
+## 0.2. Karar Mahkemesi Beta 2B — production closure (2026-06-19)
+
+| Item | Detail |
+|------|--------|
+| Phase | Karar Mahkemesi Beta 2B (renderer, mount, E2E guard, scoped CSS) |
+| Merges | PR [#407](https://github.com/istebul/istebul.com/pull/407) → `bba36439` (2B-1 renderer + flags); PR [#408](https://github.com/istebul/istebul.com/pull/408) → `5c0106a3` (mount); PR [#411](https://github.com/istebul/istebul.com/pull/411) → `55bb45a3` (E2E guard); PR [#412](https://github.com/istebul/istebul.com/pull/412) → `dfdf8cc9` (scoped CSS) |
+| Scope | Opt-in beta card on Auto `#ib-results-detail`; **not** Supabase, functions, migrations, workflows, package, wrangler, admin, billing, or LinkedIn changes |
+| Prod state | Flag default **off** → `[data-karar-mahkemesi-beta]` count **0**; `?karar_mahkemesi=1` → single visible card in `#ib-results-detail` |
+| Production verification | Flag off/on smoke PASS; production CSS smoke PASS (`/css/auto-results-v2.2e7b8b03fa.css`); desktop 2-col / mobile 390px single-col, no horizontal overflow |
+| Verification | Post-merge CI `27816501376`, Production Deploy `27816501355`, Pages `27816500476`; unit 32/32; E2E `karar_mahkemesi` 2/2 |
+| Closure doc | `docs/KARAR_MAHKEMESI_2B_CLOSURE.md` |
+
+**Not a bug-fix release.** 2B closes the Karar Mahkemesi beta feature stack with production verification. Flag default remains off; prod rollout is a separate decision.
+
+---
+
 ## 0. AFAD Açık Veri OD-2C — production closure (2026-06-16)
 
 | Item | Detail |
