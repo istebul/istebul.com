@@ -1,0 +1,117 @@
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+
+/** dist/{folder}/index.html folder → route-document-meta surface key */
+const SPA_SHELL_ROUTE_MAP = {
+  profil: 'profil',
+  favoriler: 'favoriler',
+  gecmis: 'history',
+  messages: 'messages',
+  'ilan-ekle': 'add-listing',
+  blog: 'page-blog',
+  duyurular: 'page-duyurular',
+  kampanyalar: 'page-kampanyalar',
+  'karar-asistani': 'page-karar-analizi',
+  secenekler: 'ilanlar',
+  karsilastir: 'compare'
+};
+
+function escapeAttr(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
+}
+
+function canonicalUrl(siteOrigin, routePath) {
+  const base = String(siteOrigin || '').replace(/\/$/, '');
+  const p = routePath || '/';
+  if (p === '/') return `${base}/`;
+  return `${base}${p.startsWith('/') ? p : `/${p}`}`;
+}
+
+/** Set data-ib-route on <html> only — never touch inline route CSS selectors. */
+function setHtmlRouteSurface(html, routeSurface) {
+  const escaped = escapeAttr(routeSurface);
+  if (/<html\b[^>]*\bdata-ib-route="/i.test(html)) {
+    return html.replace(
+      /(<html\b[^>]*\b)data-ib-route="[^"]*"/i,
+      `$1data-ib-route="${escaped}"`
+    );
+  }
+  return html.replace(
+    /<html(\s+lang="[^"]+")/i,
+    `<html$1 data-ib-route="${escaped}"`
+  );
+}
+
+/** Remove ib-route-pending from the <html> class list only. */
+function stripHtmlRoutePendingClass(html) {
+  return html.replace(
+    /(<html\b[^>]*\sclass=")([^"]*)(")/i,
+    (_match, open, classes, close) => {
+      const trimmed = classes.replace(/\bib-route-pending\b/g, '').replace(/\s+/g, ' ').trim();
+      return `${open}${trimmed}${close}`;
+    }
+  );
+}
+
+/**
+ * Patch SPA shell HTML with route-specific document meta for crawlers without JS.
+ */
+function injectSpaShellDocumentMeta(html, { routeSurface, meta, siteOrigin }) {
+  const url = canonicalUrl(siteOrigin, meta.path);
+
+  let out = html;
+
+  out = setHtmlRouteSurface(out, routeSurface);
+  out = stripHtmlRoutePendingClass(out);
+
+  out = out.replace(/<title>[^<]*<\/title>/i, `<title>${escapeAttr(meta.title)}</title>`);
+
+  const replaceMetaById = (id, content) => {
+    const re = new RegExp(`(<meta[^>]+id="${id}"[^>]+content=")[^"]*(")`, 'i');
+    if (re.test(out)) out = out.replace(re, `$1${escapeAttr(content)}$2`);
+  };
+
+  replaceMetaById('meta-description', meta.description);
+  replaceMetaById('meta-og-title', meta.title);
+  replaceMetaById('meta-og-description', meta.description);
+  replaceMetaById('meta-og-url', url);
+  replaceMetaById('meta-twitter-title', meta.title);
+  replaceMetaById('meta-twitter-description', meta.description);
+
+  const canonRe = /(<link rel="canonical" id="meta-canonical" href=")[^"]*(")/i;
+  if (canonRe.test(out)) out = out.replace(canonRe, `$1${escapeAttr(url)}$2`);
+
+  return out;
+}
+
+function loadRouteMeta(rootDir = path.join(__dirname, '../..')) {
+  return JSON.parse(
+    fs.readFileSync(path.join(rootDir, 'data/route-document-meta.json'), 'utf8')
+  );
+}
+
+function patchSpaShellHtml(html, folderName, routeMeta) {
+  const surfaceKey = SPA_SHELL_ROUTE_MAP[folderName];
+  if (!surfaceKey) return html;
+  const meta = routeMeta.surfaces?.[surfaceKey];
+  if (!meta) return html;
+  return injectSpaShellDocumentMeta(html, {
+    routeSurface: surfaceKey,
+    meta,
+    siteOrigin: routeMeta.siteOrigin
+  });
+}
+
+module.exports = {
+  SPA_SHELL_ROUTE_MAP,
+  injectSpaShellDocumentMeta,
+  patchSpaShellHtml,
+  loadRouteMeta,
+  setHtmlRouteSurface,
+  stripHtmlRoutePendingClass
+};

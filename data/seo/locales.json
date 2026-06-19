@@ -1,0 +1,15 @@
+{
+  "defaultLocale": "tr",
+  "alternates": {
+    "tr": { "pathPrefix": "", "hreflang": "tr" },
+    "en": { "pathPrefix": "/en", "hreflang": "en" },
+    "de": { "pathPrefix": "/de", "hreflang": "de" },
+    "ar": { "pathPrefix": "/ar", "hreflang": "ar" },
+    "it": { "pathPrefix": "/it", "hreflang": "it" },
+    "fr": { "pathPrefix": "/fr", "hreflang": "fr" },
+    "es": { "pathPrefix": "/es", "hreflang": "es" },
+    "ja": { "pathPrefix": "/ja", "hreflang": "ja" },
+    "zh": { "pathPrefix": "/zh", "hreflang": "zh" }
+  },
+  "xDefault": "tr"
+}

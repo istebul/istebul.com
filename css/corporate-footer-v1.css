@@ -1,0 +1,219 @@
+/**
+ * Site footers — corporate, partner, vertical (readable after HTML minify).
+ */
+
+.corporate-footer,
+footer.corporate-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 1.5rem 2rem;
+  padding: 2rem clamp(16px, 4vw, 48px) 2.25rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.95);
+  background: #f8fafc;
+  color: #475569;
+}
+
+.corporate-footer__brand strong {
+  display: block;
+  color: #0f172a;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+}
+
+.corporate-footer__brand > p:first-of-type {
+  margin: 0 0 0.75rem;
+  max-width: 42ch;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+.corporate-footer__legal,
+.corporate-footer .partner-footer-legal {
+  margin: 0.85rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.corporate-footer__legal a,
+.corporate-footer .partner-footer-legal a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.corporate-footer__legal a:hover,
+.corporate-footer .partner-footer-legal a:hover {
+  text-decoration: underline;
+}
+
+/* Flex gap survives minify — beats style.css on partner/corporate pages */
+.corporate-footer__nav,
+body.ib-enterprise .corporate-footer .corporate-footer__nav,
+body.ib-partner-page .corporate-footer .corporate-footer__nav,
+body.ib-auto .corporate-footer .corporate-footer__nav,
+.corporate-footer > nav.corporate-footer__nav {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-content: flex-start;
+  gap: 0.5rem 0.85rem !important;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0;
+}
+
+.corporate-footer__nav a,
+body.ib-enterprise .corporate-footer .corporate-footer__nav a,
+body.ib-partner-page .corporate-footer .corporate-footer__nav a {
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155 !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+}
+
+.corporate-footer__nav a:hover,
+body.ib-partner-page .corporate-footer .corporate-footer__nav a:hover {
+  color: #1d4ed8 !important;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+/* Legacy footers without BEM (auto shell, older static HTML) */
+.corporate-footer > nav:not(.corporate-footer__nav):not(.ib-site-social):not(.seo-footer-links) {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem 0.85rem !important;
+  justify-content: flex-end;
+}
+
+.corporate-footer > nav:not(.corporate-footer__nav):not(.ib-site-social):not(.seo-footer-links) a {
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155 !important;
+  text-decoration: none !important;
+}
+
+.corporate-footer > nav:not(.corporate-footer__nav):not(.ib-site-social):not(.seo-footer-links) a:hover {
+  color: #1d4ed8 !important;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.corporate-footer .seo-footer-links {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem 0.85rem !important;
+  width: 100%;
+  justify-content: flex-end;
+  margin-top: 0.35rem;
+}
+
+.corporate-footer .seo-footer-links a {
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155 !important;
+  text-decoration: none !important;
+}
+
+/* Vertical / locale footers — inline legal rows */
+.site-footer-legal,
+.vacation-footer .site-footer-legal,
+.housing-locale-footer .site-footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5rem 0 0;
+}
+
+.site-footer-legal a,
+.vacation-footer .site-footer-legal a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.vacation-footer .site-footer-legal a:hover,
+.housing-locale-footer .site-footer-legal a:hover {
+  text-decoration: underline;
+}
+
+.vacation-footer {
+  padding: 1.75rem clamp(16px, 4vw, 28px);
+  border-top: 1px solid var(--vacation-border, #e5e7eb);
+  text-align: center;
+  color: var(--vacation-muted, #64748b);
+  font-size: 0.85rem;
+  background: #f8fafc;
+}
+
+.housing-locale-footer {
+  padding: 1.25rem 0 1.75rem;
+  border-top: 1px solid var(--housing-border, rgba(148, 163, 184, 0.28));
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--housing-muted, #9eaad0);
+}
+
+.ib-partner-docs-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.ib-partner-docs-footer .ib-partner-docs-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-left: auto;
+}
+
+.ib-partner-docs-footer .ib-partner-docs-footer-links a {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ib-partner-docs-footer .ib-partner-docs-footer-links a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .corporate-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .corporate-footer__nav,
+  body.ib-partner-page .corporate-footer .corporate-footer__nav,
+  .corporate-footer > nav:not(.corporate-footer__nav):not(.ib-site-social),
+  .corporate-footer .seo-footer-links {
+    justify-content: flex-start !important;
+  }
+
+  .ib-partner-docs-footer .ib-partner-docs-footer-links {
+    margin-left: 0;
+    width: 100%;
+  }
+}

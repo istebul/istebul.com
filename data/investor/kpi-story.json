@@ -1,0 +1,57 @@
+{
+  "version": "p7.1",
+  "headline": "Every KPI in the deck maps to a production query or admin export",
+  "northStar": {
+    "primary": { "key": "qualified_leads_per_week", "label": "Qualified leads / week", "owner": "Growth" },
+    "secondary": [
+      { "key": "subscription.mrrTry", "label": "Pro MRR (TRY)", "source": "Stripe + investor-kpis" },
+      { "key": "pipeline.pipelineActualTry", "label": "Partner realized revenue (TRY)", "source": "auto_leads.actual_revenue" },
+      { "key": "blendedArrTry", "label": "Blended ARR signal", "formula": "Pro ARR + pipeline actuals (annualized signal)" }
+    ]
+  },
+  "chapters": [
+    {
+      "id": "revenue",
+      "title": "Revenue quality",
+      "talkTrack": "We report Pro MRR from Stripe normalization and partner actuals from CRM — not estimates alone.",
+      "metrics": [
+        "subscription.mrrTry",
+        "subscription.arrTry",
+        "subscription.activeSubscriptions",
+        "pipeline.pipelineActualTry",
+        "blendedArrTry"
+      ]
+    },
+    {
+      "id": "supply",
+      "title": "Partner supply",
+      "talkTrack": "Dispatch and win rate prove partner monetization is operational, not theoretical.",
+      "metrics": [
+        "pipeline.leadCount",
+        "pipeline.partnerDispatchCount",
+        "pipeline.partnerWinCount",
+        "pipeline.winRate",
+        "pipeline.realizationRate"
+      ]
+    },
+    {
+      "id": "demand",
+      "title": "Product demand",
+      "talkTrack": "Funnel is sample-capped — disclose cap in diligence; Series A needs warehouse.",
+      "metrics": [
+        "funnel.pageViews",
+        "funnel.leads",
+        "funnel.checkoutStarted",
+        "funnel.checkoutConversionPct",
+        "funnel.leadConversionPct"
+      ]
+    }
+  ],
+  "boardCadence": {
+    "weekly": ["qualified_leads_per_week", "subscription.mrrTry", "pipeline.pipelineActualTry"],
+    "monthly": ["funnel.checkoutConversionPct", "pipeline.winRate", "subscription.grossChurnSignal"],
+    "quarterly": ["blendedArrTry", "partner LOI count (offline)", "vertical roadmap % complete"]
+  },
+  "exportBinding": "metrics-story.json",
+  "commands": ["npm run metrics:investor", "npm run metrics:investor:pack", "npm run metrics:executive"]
+}

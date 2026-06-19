@@ -1,0 +1,50 @@
+{
+  "version": "p6.1",
+  "disclaimer": "Referans bantları — bağlayıcı fiyat değildir. Teklif kategori, coğrafya ve hacme göre offline imzalanır.",
+  "currency": "TRY",
+  "tiers": [
+    {
+      "id": "pilot",
+      "name": "Entegrasyon pilotu",
+      "priceDisplay": "Ücretsiz (5 lead)",
+      "billing": "Tek seferlik doğrulama",
+      "includes": ["Webhook + HMAC test", "5 hot lead", "Teslimat logları"],
+      "idealFor": "İlk entegrasyon, tek lokasyon"
+    },
+    {
+      "id": "starter",
+      "name": "Starter",
+      "priceDisplay": "CPL ₺5.000 – ₺12.000 / sıcak lead",
+      "billing": "Lead başına (sözleşme)",
+      "includes": ["≤50 lead/ay tipik", "Dispatch ≤15 dk", "Standart routing", "Platform retry"],
+      "idealFor": "Tek bayi, düşük-orta hacim"
+    },
+    {
+      "id": "growth",
+      "name": "Growth",
+      "priceDisplay": "Aylık ₺25.000 – ₺120.000 kapasite",
+      "billing": "Aylık + hacim kotası",
+      "includes": ["50–200 lead/ay", "Dispatch ≤10 dk", "Yükseltilmiş priority", "Haftalık ops özeti"],
+      "idealFor": "Çoklu hat, orta ölçek"
+    },
+    {
+      "id": "enterprise",
+      "name": "Enterprise",
+      "priceDisplay": "Platform ₺150.000+ / yıl + hacim",
+      "billing": "SOW + güvenlik incelemesi",
+      "includes": ["Çoklu endpoint", "Özel SLA", "Dedicated entegrasyon", "Özel raporlama"],
+      "idealFor": "Galeri ağı, finansman, çoklu marka"
+    }
+  ],
+  "comparisonRows": [
+    { "label": "Pilot dahil", "pilot": true, "starter": true, "growth": true, "enterprise": false },
+    { "label": "SLA dispatch", "pilot": "Test", "starter": "≤15 dk", "growth": "≤10 dk", "enterprise": "Sözleşmeli" },
+    { "label": "CRM / callback API", "pilot": true, "starter": true, "growth": true, "enterprise": true },
+    { "label": "Dedicated AE", "pilot": false, "starter": false, "growth": false, "enterprise": true }
+  ],
+  "talkTrack": {
+    "anchor": "Önce pilot ile kaliteyi ölçün; sonra CPL veya aylık kapasite teklifi.",
+    "discountPolicy": "İndirim yok — kapasite ve SLA ile değer; sahte liste fiyatı yok.",
+    "close": "Bu hafta teklif penceresi — quote linki ile başvuruya plan işlenir."
+  }
+}

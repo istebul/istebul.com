@@ -1,0 +1,71 @@
+{
+  "partner-docs": {
+    "shellId": "partner-docs-shell",
+    "kicker": "Partner platform · API reference",
+    "h1": "Webhook ve entegrasyon dokümantasyonu",
+    "lead": "Kurumsal B2B lead teslimatı: imzalı HTTPS webhook, ölçülebilir retry, failover ve callback. Skor ve TCO isteBul motorundan gelir; partner yalnızca nitelikli talep alır.",
+    "bullets": [
+      "HMAC-SHA256 imza — ham JSON gövdesi üzerinde",
+      "HTTP 2xx zorunlu; 8 sn istemci timeout",
+      "Hot / very_hot öncelikli dispatch",
+      "Callback API ile outcome geri beslemesi"
+    ],
+    "sections": [
+      {
+        "h2": "Hızlı başlangıç",
+        "p": "Self-serve başvuru → webhook URL kaydı → örnek payload ile imza doğrulama → operasyon onayı → canlı dispatch."
+      },
+      {
+        "h2": "Lead payload",
+        "p": "Bütçe, kullanım, araç tipi, lead skoru, öncelik ve partner_route alanları şemada sabittir. Tam şema JS yüklendiğinde tablo olarak görünür."
+      },
+      {
+        "h2": "Test konsolu",
+        "p": "Sayfa tam yüklendiğinde yerel HMAC hesaplama ve örnek JSON doğrulama konsolu etkinleşir."
+      }
+    ],
+    "actions": [
+      { "href": "/partner-basvuru.html", "label": "Self-serve başvuru", "primary": true },
+      { "href": "/partner-olun.html", "label": "Program özeti", "primary": false },
+      { "href": "/docs/partner-webhook-integration.md", "label": "Markdown sürüm", "primary": false }
+    ]
+  },
+  "partner-planlar": {
+    "shellId": "partner-pricing-root",
+    "kicker": "Partner · Karar altyapısı",
+    "h1": "Skorlu talep — klasik lead gen değil",
+    "lead": "Starter, Growth ve Enterprise paketleri: lead hacmi, SLA, routing ve outcome döngüsü. Fiyatlar teklif ile netleşir — bağlayıcı liste fiyatı iddiası yoktur.",
+    "bullets": [
+      "Entegrasyon pilotu — ilk sıcak lead doğrulaması",
+      "CPL ve aylık kapasite seçenekleri",
+      "Kurumsal: özel SLA ve raporlama"
+    ],
+    "sections": [
+      {
+        "h2": "Plan karşılaştırması",
+        "p": "Özellik matrisi ve SSS tam sayfa yüklendiğinde görünür."
+      }
+    ],
+    "actions": [
+      { "href": "/partner-basvuru.html", "label": "Başvuruya git", "primary": true },
+      { "href": "/partner-docs.html", "label": "API dokümantasyonu", "primary": false }
+    ]
+  },
+  "partner-guven": {
+    "shellId": "partner-trust-root",
+    "nested": true,
+    "kicker": "Partner güven",
+    "h1": "Kurumsal teslimat ve veri güveni",
+    "lead": "KVKK uyumlu işleme, imzalı webhook, denetlenebilir dispatch logları ve operasyonel şeffaflık.",
+    "bullets": [
+      "TLS ve HMAC zorunlu",
+      "Retry ve failover politikası",
+      "SSRF-safe endpoint kaydı"
+    ],
+    "sections": [],
+    "actions": [
+      { "href": "/partner-basvuru.html", "label": "Partner başvurusu", "primary": true },
+      { "href": "/partner-docs.html", "label": "API referansı", "primary": false }
+    ]
+  }
+}

@@ -1,0 +1,68 @@
+/**
+ * Homepage category cards — compact grid (overrides mockup/premium v2).
+ * Scope: #home-vertical-focus.ib-home-categories-mockup
+ */
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup {
+  --ib-cat-h: clamp(168px, 16vw, 210px);
+  padding: clamp(1.5rem, 3vw, 2.25rem) 0 clamp(1rem, 2vw, 1.5rem);
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__live,
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__soon {
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__live {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__live {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__soon {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  html.ib-ds-v4.ib-premium-v7
+    #home-vertical-focus.ib-home-categories-mockup
+    .ib-cat-mockup-shell__soon
+    .ib-cat-mockup:nth-child(1),
+  html.ib-ds-v4.ib-premium-v7
+    #home-vertical-focus.ib-home-categories-mockup
+    .ib-cat-mockup-shell__soon
+    .ib-cat-mockup:nth-child(2) {
+    grid-column: auto;
+  }
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-cat-mockup.ib-cat-mockup--premium {
+  min-height: var(--ib-cat-h);
+  border-radius: 14px;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-cat-mockup__body {
+  padding: 0.75rem 0.85rem 0.8rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-cat-mockup__title {
+  font-size: 0.98rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-cat-mockup__desc {
+  font-size: 0.72rem;
+  -webkit-line-clamp: 2;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-cat-mockup__score {
+  font-size: 0.625rem;
+  padding: 0.15rem 0.45rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-home-categories-mockup .ib-category-showcase-grid {
+  margin-top: 0;
+}

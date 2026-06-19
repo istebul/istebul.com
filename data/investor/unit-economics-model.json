@@ -1,0 +1,49 @@
+{
+  "version": "p17.0",
+  "currency": "TRY",
+  "fx": {
+    "usdTry": 34,
+    "note": "Planning FX — update monthly for investor exports"
+  },
+  "pricing": {
+    "proArpuMonthlyTry": 299,
+    "proArpuAnnualMonthlyEquivTry": 239,
+    "stripeFeePct": 3.2,
+    "stripeFixedFeeTry": 2.5
+  },
+  "targets": {
+    "grossMarginPct": 72,
+    "partnerGrossMarginPct": 70,
+    "cacProTry": 1200,
+    "ltvMonths": 14,
+    "paybackMonthsMax": 6,
+    "ltvCacRatioMin": 3
+  },
+  "variableCosts": {
+    "aiCallsPerProUserMonth": 4,
+    "aiCallsPerFreeMauMonth": 0.35,
+    "lifecycleEmailsPerMauMonth": 0.15,
+    "supportTicketsPerThousandMau": 12,
+    "supportCostPerTicketTry": 85,
+    "infraUsdPerThousandMau": 2.5
+  },
+  "partnerEconomics": {
+    "partnerTakeRatePct": 30,
+    "dispatchCostPerLeadTry": 45,
+    "avgCommissionPerWonLeadTry": 960
+  },
+  "conversionBenchmarks": {
+    "trialToPaidPct": 35,
+    "checkoutToPaidPct": 55,
+    "landingToLeadPct": 8
+  },
+  "dataSources": {
+    "arpu": "executive-dashboard / subscriptions",
+    "cac": "data/growth/paid-spend.json + analytics paid_conversion",
+    "ltv": "ARPU × gross_margin × lifetime_months",
+    "partnerMargin": "auto_leads actual vs estimated pipeline",
+    "aiCost": "infra-unit-economics + SCALE_LIMITS aiProxy budget",
+    "supportCost": "support_intent_routed + ticket model",
+    "conversions": "analytics_events funnel (executive-dashboard)"
+  }
+}

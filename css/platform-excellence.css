@@ -1,0 +1,83 @@
+/* Platform excellence — brand, revenue, tech, impact */
+.ib-platform-excellence {
+  padding: 3.5rem 0;
+  background: linear-gradient(180deg, var(--surface-color, #f8fafc) 0%, var(--background-color, #fff) 100%);
+}
+
+.ib-platform-excellence .section-kicker {
+  color: var(--primary-color, #2563eb);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+}
+
+.ib-excellence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.ib-excellence-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  padding: 1.25rem 1.35rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.ib-excellence-card h3 {
+  margin: 0.5rem 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.ib-excellence-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted, #64748b);
+  line-height: 1.55;
+}
+
+.ib-excellence-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary-color, #2563eb);
+}
+
+.ib-filter-auto-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+  margin: 0 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.filter-panel:not([hidden]) {
+  margin-bottom: 1rem;
+}
+
+.ib-seo-trust-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+}
+
+.ib-seo-trust-metrics strong {
+  color: var(--text-color, #0f172a);
+}
+
+@media (max-width: 640px) {
+  .ib-platform-excellence {
+    padding: 2.5rem 0;
+  }
+}

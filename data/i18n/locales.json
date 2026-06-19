@@ -1,0 +1,96 @@
+{
+  "defaultLocale": "tr",
+  "locales": [
+    {
+      "id": "tr",
+      "bcp47": "tr-TR",
+      "label": "Türkçe",
+      "pathPrefix": "",
+      "dir": "ltr",
+      "currency": "TRY",
+      "ogLocale": "tr_TR",
+      "hreflang": "tr",
+      "default": true
+    },
+    {
+      "id": "en",
+      "bcp47": "en-US",
+      "label": "English",
+      "pathPrefix": "/en",
+      "dir": "ltr",
+      "currency": "USD",
+      "ogLocale": "en_US",
+      "hreflang": "en"
+    },
+    {
+      "id": "de",
+      "bcp47": "de-DE",
+      "label": "Deutsch",
+      "pathPrefix": "/de",
+      "dir": "ltr",
+      "currency": "EUR",
+      "ogLocale": "de_DE",
+      "hreflang": "de"
+    },
+    {
+      "id": "ar",
+      "bcp47": "ar-SA",
+      "label": "العربية",
+      "pathPrefix": "/ar",
+      "dir": "rtl",
+      "currency": "SAR",
+      "ogLocale": "ar_SA",
+      "hreflang": "ar"
+    },
+    {
+      "id": "it",
+      "bcp47": "it-IT",
+      "label": "Italiano",
+      "pathPrefix": "/it",
+      "dir": "ltr",
+      "currency": "EUR",
+      "ogLocale": "it_IT",
+      "hreflang": "it"
+    },
+    {
+      "id": "fr",
+      "bcp47": "fr-FR",
+      "label": "Français",
+      "pathPrefix": "/fr",
+      "dir": "ltr",
+      "currency": "EUR",
+      "ogLocale": "fr_FR",
+      "hreflang": "fr"
+    },
+    {
+      "id": "es",
+      "bcp47": "es-ES",
+      "label": "Español",
+      "pathPrefix": "/es",
+      "dir": "ltr",
+      "currency": "EUR",
+      "ogLocale": "es_ES",
+      "hreflang": "es"
+    },
+    {
+      "id": "ja",
+      "bcp47": "ja-JP",
+      "label": "日本語",
+      "pathPrefix": "/ja",
+      "dir": "ltr",
+      "currency": "JPY",
+      "ogLocale": "ja_JP",
+      "hreflang": "ja"
+    },
+    {
+      "id": "zh",
+      "bcp47": "zh-CN",
+      "label": "中文",
+      "pathPrefix": "/zh",
+      "dir": "ltr",
+      "currency": "CNY",
+      "ogLocale": "zh_CN",
+      "hreflang": "zh"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "version": "p6.2",
+  "flows": [
+    {
+      "id": "ae_lead_outbound",
+      "name": "Lead → qualified",
+      "trigger": { "applicationStatus": "lead", "maxHours": 24 },
+      "steps": [
+        { "day": 0, "action": "email", "templateId": "discover_intro", "crmTouch": "outbound_email" },
+        { "day": 0, "action": "linkedin", "sequenceId": "partner_linkedin_touch", "crmTouch": "outbound_linkedin" },
+        { "day": 1, "action": "call", "note": "ICP + hacim — qualified'a taşı", "crmTouch": "discovery_call" },
+        { "day": 3, "action": "email", "sequenceId": "partner_cold_outbound", "stepId": "d3_followup" }
+      ],
+      "onSuccess": { "status": "qualified" },
+      "lifecycleFlow": "partner_sales_cadence"
+    },
+    {
+      "id": "ae_demo_book",
+      "name": "Qualified → demo",
+      "trigger": { "applicationStatus": "qualified" },
+      "steps": [
+        { "day": 0, "action": "email", "templateId": "demo_confirm", "crmTouch": "demo" },
+        { "day": 2, "action": "call", "note": "Deck + dispatch demo", "crmTouch": "demo" }
+      ],
+      "onSuccess": { "status": "demo" }
+    },
+    {
+      "id": "ae_pilot_close",
+      "name": "Demo → pilot",
+      "trigger": { "applicationStatus": "demo" },
+      "steps": [
+        { "day": 0, "action": "email", "templateId": "proposal_send", "crmTouch": "proposal_sent" },
+        { "day": 1, "action": "email", "sequenceId": "partner_cold_outbound", "stepId": "d3_followup" },
+        { "day": 3, "action": "email", "templateId": "close_contract", "crmTouch": "pilot_started" }
+      ],
+      "onSuccess": { "status": "pilot" }
+    },
+    {
+      "id": "ae_negotiation_close",
+      "name": "Pilot → negotiation → won",
+      "trigger": { "applicationStatus": "pilot" },
+      "steps": [
+        { "day": 0, "action": "email", "templateId": "close_contract", "crmTouch": "pilot_started" },
+        { "day": 2, "action": "call", "note": "Teklif / SOW", "crmTouch": "negotiation" },
+        { "day": 5, "action": "email", "sequenceId": "partner_cold_outbound", "stepId": "d7_close" }
+      ],
+      "onSuccess": { "status": "negotiation" }
+    },
+    {
+      "id": "ae_integrating_velocity",
+      "name": "Pilot stuck — onboarding hızlandır",
+      "trigger": { "applicationStatus": "pilot", "velocityHealth": ["stuck", "overdue"] },
+      "steps": [
+        { "day": 0, "action": "email", "sequenceId": "stalled_onboarding", "stepId": "nudge" },
+        { "day": 1, "action": "email", "docId": "kickoff", "crmTouch": "follow_up" }
+      ]
+    },
+    {
+      "id": "ae_won_expand",
+      "name": "Won → upsell",
+      "trigger": { "applicationStatus": "won", "minDaysLive": 30 },
+      "steps": [
+        { "day": 0, "action": "email", "templateId": "live_welcome", "crmTouch": "follow_up" },
+        { "day": 14, "action": "call", "note": "Growth kapasite", "crmTouch": "demo" }
+      ]
+    },
+    {
+      "id": "ae_lost_nurture",
+      "name": "Lost nurture",
+      "trigger": { "applicationStatus": "lost" },
+      "steps": [
+        { "day": 30, "action": "email", "templateId": "discover_intro", "crmTouch": "outbound_email" },
+        { "day": 90, "action": "email", "sequenceId": "partner_cold_outbound", "stepId": "d0_intro" }
+      ]
+    }
+  ]
+}

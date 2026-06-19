@@ -1,0 +1,121 @@
+/**
+ * Homepage layout fixes — resolves section-header grid breaking intro copy,
+ * card text contrast on light surfaces, and dark-mode marketing readability.
+ * Loaded last via style.css @import chain.
+ */
+
+/* section-header grid (style.css ~4304) breaks kicker + h2 + p stacks */
+body.ib-enterprise .section-header.ib-section-intro,
+.section-header.ib-section-intro {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 0.55rem !important;
+  grid-template-columns: unset !important;
+  max-width: min(44rem, 100%) !important;
+  width: 100% !important;
+  text-align: left !important;
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem) !important;
+}
+
+body.ib-enterprise .section-header.ib-section-intro .section-kicker {
+  margin: 0;
+}
+
+body.ib-enterprise .section-header.ib-section-intro h2 {
+  max-width: none !important;
+  width: 100% !important;
+  font-size: clamp(1.55rem, 3.2vw, 2.35rem) !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.03em !important;
+  color: #0b1528 !important;
+  text-wrap: balance;
+}
+
+body.ib-enterprise .section-header.ib-section-intro p {
+  max-width: 62ch !important;
+  width: 100% !important;
+  margin: 0 !important;
+  color: #475569 !important;
+  line-height: 1.65 !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere;
+}
+
+/* Card copy must stay readable on forced light card surfaces */
+body.ib-enterprise .trust-card,
+body.ib-enterprise .trust-card p,
+body.ib-enterprise .trust-card h3,
+body.ib-enterprise .how-step,
+body.ib-enterprise .how-step p,
+body.ib-enterprise .partner-enterprise-features li,
+body.ib-enterprise .partner-enterprise-features li strong,
+body.ib-enterprise .partner-enterprise-card,
+body.ib-enterprise .partner-enterprise-card p,
+body.ib-enterprise .partner-enterprise-card h3,
+body.ib-enterprise .revenue-plan-card,
+body.ib-enterprise .revenue-plan-card p,
+body.ib-enterprise .ib-pricing-teaser-card,
+body.ib-enterprise .ib-pricing-teaser-card p {
+  color: #334155;
+}
+
+body.ib-enterprise .trust-card h3,
+body.ib-enterprise .how-step h3,
+body.ib-enterprise .partner-enterprise-features li strong,
+body.ib-enterprise .partner-enterprise-card h3,
+body.ib-enterprise .revenue-plan-title {
+  color: #0f172a !important;
+}
+
+/* Marketing bands: predictable light canvas even in dark theme */
+body.ib-enterprise .trust-section.ib-section-venture,
+body.ib-enterprise .pricing-section.ib-section-venture,
+body.ib-enterprise .partner-enterprise-section.ib-section-venture,
+body.ib-enterprise .landing-faq-section.ib-section-venture,
+body.ib-enterprise .how-section.ib-section-venture {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+:root[data-theme="dark"] body.ib-enterprise .trust-section.ib-section-venture,
+:root[data-theme="dark"] body.ib-enterprise .pricing-section.ib-section-venture,
+:root[data-theme="dark"] body.ib-enterprise .partner-enterprise-section.ib-section-venture,
+:root[data-theme="dark"] body.ib-enterprise .landing-faq-section.ib-section-venture,
+:root[data-theme="dark"] body.ib-enterprise .how-section.ib-section-venture {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+:root[data-theme="dark"] body.ib-enterprise .section-header.ib-section-intro h2 {
+  color: #0b1528 !important;
+}
+
+:root[data-theme="dark"] body.ib-enterprise .section-header.ib-section-intro p {
+  color: #475569 !important;
+}
+
+/* Hero headline — avoid ultra-narrow ch stacking from competing rules */
+body.ib-enterprise #home .hero-content h1,
+body.ib-enterprise .ib-hero-venture .hero-content h1 {
+  max-width: min(100%, 26ch) !important;
+  line-height: 1.08 !important;
+}
+
+body.ib-enterprise .nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+body.ib-enterprise .nav-controls .theme-toggle {
+  flex-shrink: 0;
+}
+
+@media (max-width: 1180px) {
+  body.ib-enterprise .nav-controls .theme-toggle {
+    order: -1;
+  }
+}

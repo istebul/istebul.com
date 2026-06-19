@@ -1,0 +1,138 @@
+/**
+ * Shared vertical brand — isteBul wordmark + category badge (Auto, Konut, …).
+ */
+
+html.ib-ds-v4.ib-premium-v7 .ib-vertical-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+html.ib-ds-v4.ib-premium-v7 .vacation-header .logo.ib-vertical-brand,
+html.ib-ds-v4.ib-premium-v7 .vacation-header a.logo.ib-vertical-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-vertical-brand__word {
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.finans-page .vacation-header .ib-vertical-brand__word,
+html.ib-ds-v4.ib-premium-v7 body.vacation-page .vacation-header .ib-vertical-brand__word,
+html.ib-ds-v4.ib-premium-v7 body.sigorta-page .vacation-header .ib-vertical-brand__word,
+html.ib-ds-v4.ib-premium-v7 body.kasko-page .vacation-header .ib-vertical-brand__word {
+  color: #0f172a;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-vertical-brand__badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  line-height: 1.2;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-vertical-breadcrumb {
+  margin: 0;
+  padding: 12px 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-vertical-breadcrumb a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-vertical-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Konut: breadcrumb on dark page shell */
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-container--breadcrumb {
+  padding-top: 12px;
+  padding-bottom: 0;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-container--breadcrumb .ib-vertical-breadcrumb {
+  color: #94a3b8;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-container--breadcrumb .ib-vertical-breadcrumb a {
+  color: #93c5fd;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-container--breadcrumb .ib-vertical-breadcrumb span {
+  color: #cbd5e1;
+}
+
+/* Light trust rail on vertical pages (full layout — ib-car/home bundles may not load enterprise-polish) */
+html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail,
+html.ib-ds-v4.ib-premium-v7 body.ib-auto .ib-trust-rail {
+  display: block;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+  color: #475569;
+  font-size: 0.78rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail-inner,
+html.ib-ds-v4.ib-premium-v7 body.ib-auto .ib-trust-rail-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem 1.35rem;
+  width: min(1180px, 100%);
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0.55rem clamp(16px, 3vw, 28px);
+  box-sizing: border-box;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail-inner > span,
+html.ib-ds-v4.ib-premium-v7 body.ib-auto .ib-trust-rail-inner > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-auto .ib-trust-rail-inner,
+  html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail-inner {
+    gap: 0.35rem 0.75rem;
+    justify-content: flex-start;
+  }
+}
+
+/* Footer category badge */
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-locale-footer .legal-footer-mini {
+  margin-top: 0.75rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-locale-footer::before {
+  content: none;
+}

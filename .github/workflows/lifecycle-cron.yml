@@ -1,0 +1,21 @@
+name: Lifecycle CRM Cron
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  lifecycle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run lifecycle automation
+        env:
+          LIFECYCLE_CRON_URL: ${{ secrets.LIFECYCLE_CRON_URL }}
+          LIFECYCLE_CRON_SECRET: ${{ secrets.LIFECYCLE_CRON_SECRET }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          curl -fsS -X POST "$LIFECYCLE_CRON_URL" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "x-lifecycle-cron-secret: $LIFECYCLE_CRON_SECRET"

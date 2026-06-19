@@ -1,0 +1,119 @@
+/**
+ * Sigorta /sigorta/ + Kasko /kasko/ results — mobile-only layout containment (max-width 768px).
+ */
+
+@media (max-width: 768px) {
+  body.sigorta-page {
+    overflow-x: clip;
+  }
+
+  body.sigorta-page main,
+  body.sigorta-page #sigorta-flow {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body.sigorta-page #sigorta-results {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    box-sizing: border-box;
+  }
+
+  body.sigorta-page #sigorta-results > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.sigorta-page #sigorta-results .sigorta-v2-panel,
+  body.sigorta-page #sigorta-results .sigorta-v2-coverage-table,
+  body.sigorta-page #sigorta-results .sigorta-v2-alt-grid {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.sigorta-page #sigorta-results .sigorta-v2-alt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.sigorta-page #sigorta-results .sigorta-v2-alt-card {
+    min-height: 44px;
+    padding: 1rem;
+  }
+
+  body.sigorta-page #sigorta-results .sigorta-v2-coverage-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  body.sigorta-page #sigorta-results .sigorta-v2-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  body.sigorta-page #sigorta-results .sigorta-v2-actions {
+    flex-direction: column;
+  }
+
+  body.sigorta-page #sigorta-results .sigorta-v2-actions .btn {
+    width: 100%;
+  }
+
+  body.kasko-page {
+    overflow-x: clip;
+  }
+
+  body.kasko-page main,
+  body.kasko-page #kasko-flow {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body.kasko-page #kasko-results {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    box-sizing: border-box;
+  }
+
+  body.kasko-page #kasko-results > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.kasko-page #kasko-results .sigorta-v2-panel,
+  body.kasko-page #kasko-results .kasko-v2-panel,
+  body.kasko-page #kasko-results .sigorta-v2-alt-grid,
+  body.kasko-page #kasko-results .sigorta-v2-risk-grid {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.kasko-page #kasko-results .sigorta-v2-alt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.kasko-page #kasko-results .sigorta-v2-alt-card {
+    min-height: 44px;
+    padding: 1rem;
+  }
+
+  body.kasko-page #kasko-results .sigorta-v2-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  body.kasko-page #kasko-results .sigorta-v2-actions,
+  body.kasko-page #kasko-results .kasko-v2-actions {
+    flex-direction: column;
+  }
+
+  body.kasko-page #kasko-results .sigorta-v2-actions .btn,
+  body.kasko-page #kasko-results .kasko-v2-actions .btn {
+    width: 100%;
+  }
+}

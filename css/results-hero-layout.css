@@ -1,0 +1,306 @@
+/**
+ * Shared results hero layout — light premium (mockup-inspired, site-aligned).
+ */
+.ib-results-hero-shell {
+  --hero-accent: var(--primary, #2563eb);
+  --hero-accent-soft: rgba(37, 99, 235, 0.08);
+  --hero-surface: #ffffff;
+  --hero-elev: #f8fafc;
+  --hero-border: rgba(226, 232, 240, 0.95);
+  --hero-text: #0f172a;
+  --hero-muted: #64748b;
+  margin: 0 0 1rem;
+}
+
+.ib-results-hero-shell--housing {
+  --hero-accent: #7c3aed;
+  --hero-accent-soft: rgba(124, 58, 237, 0.08);
+}
+
+.ib-results-hero-shell--finance {
+  --hero-accent: #059669;
+  --hero-accent-soft: rgba(5, 150, 105, 0.08);
+}
+
+.ib-results-hero-shell--auto {
+  --hero-accent: #2563eb;
+  --hero-accent-soft: rgba(37, 99, 235, 0.08);
+}
+
+.ib-results-hero-head {
+  margin-bottom: 0.85rem;
+}
+
+.ib-results-hero-head__title {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--hero-text);
+}
+
+.ib-results-hero-head__lead {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--hero-muted);
+  max-width: 52ch;
+}
+
+.ib-results-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 280px);
+  gap: 1rem;
+  align-items: start;
+}
+
+.ib-results-hero-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ib-results-rec-card {
+  border: 1px solid var(--hero-border);
+  border-radius: 14px;
+  background: var(--hero-surface);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+.ib-results-rec-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--hero-accent-soft);
+  border-bottom: 1px solid var(--hero-border);
+}
+
+.ib-results-rec-card__kicker {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--hero-accent);
+}
+
+.ib-results-rec-card__badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.ib-results-rec-card__badge--success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.ib-results-rec-card__badge--warning {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.ib-results-rec-card__badge--neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.ib-results-rec-card__body {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  padding: 0.85rem;
+}
+
+.ib-results-rec-card__media {
+  width: 88px;
+  height: 88px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--hero-elev);
+  border: 1px solid var(--hero-border);
+}
+
+.ib-results-rec-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ib-results-rec-card__title {
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--hero-text);
+}
+
+.ib-results-rec-card__subtitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  color: var(--hero-muted);
+}
+
+.ib-results-spec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem 0.75rem;
+  margin: 0;
+}
+
+.ib-results-spec-grid__item {
+  margin: 0;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  background: var(--hero-elev);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.ib-results-spec-grid__item dt {
+  margin: 0 0 0.15rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--hero-muted);
+}
+
+.ib-results-spec-grid__item dd {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--hero-text);
+  line-height: 1.2;
+}
+
+.ib-results-score-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  border: 1px solid var(--hero-border);
+  border-radius: 14px;
+  background: var(--hero-surface);
+}
+
+.ib-results-score-ring__gauge {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--hero-accent) 0 calc(var(--score-pct, 82) * 1%),
+    #e2e8f0 0
+  );
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.ib-results-score-ring--warn .ib-results-score-ring__gauge {
+  background: conic-gradient(#d97706 0 calc(var(--score-pct, 82) * 1%), #e2e8f0 0);
+}
+
+.ib-results-score-ring--danger .ib-results-score-ring__gauge {
+  background: conic-gradient(#dc2626 0 calc(var(--score-pct, 82) * 1%), #e2e8f0 0);
+}
+
+.ib-results-score-ring__gauge::after {
+  content: '';
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.ib-results-score-ring__gauge strong {
+  position: relative;
+  z-index: 1;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--hero-text);
+  line-height: 1;
+}
+
+.ib-results-score-ring__gauge strong span {
+  font-size: 0.55em;
+  font-weight: 600;
+  color: var(--hero-muted);
+}
+
+.ib-results-score-ring__label {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--hero-text);
+}
+
+.ib-results-score-ring__link {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--hero-accent);
+  text-decoration: none;
+}
+
+.ib-results-score-ring__link:hover {
+  text-decoration: underline;
+}
+
+.ib-results-hero-aside {
+  position: sticky;
+  top: 5.5rem;
+}
+
+.ib-results-economic--sidebar {
+  margin: 0;
+}
+
+.ib-results-economic--sidebar[hidden] {
+  display: none !important;
+}
+
+.ib-results-economic--sidebar .ib-home-economic__card,
+.ib-results-economic--sidebar .ib-results-economic__card {
+  margin: 0;
+  border-radius: 14px;
+}
+
+.ib-results-economic--sidebar .ib-evds-risk-layer {
+  margin-top: 0.65rem;
+}
+
+#ib-results-detail {
+  scroll-margin-top: 5rem;
+}
+
+@media (max-width: 900px) {
+  .ib-results-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ib-results-hero-aside {
+    position: static;
+  }
+
+  .ib-results-rec-card__body {
+    grid-template-columns: 1fr;
+  }
+
+  .ib-results-rec-card__media {
+    width: 100%;
+    height: 140px;
+  }
+}
+
+@media (max-width: 520px) {
+  .ib-results-spec-grid {
+    grid-template-columns: 1fr;
+  }
+}

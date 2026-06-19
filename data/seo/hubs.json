@@ -1,0 +1,123 @@
+{
+  "hubs": [
+    {
+      "slug": "karar-asistani",
+      "path": "/karar-asistani/",
+      "title": "Karar Asistanı | isteBul — AI Karar Merkezi",
+      "description": "Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk analizini tek merkezden başlatın. isteBul karar platformudur.",
+      "h1": "Hangi kategoride karar vermek istiyorsunuz?",
+      "intro": "Karar asistanı; bütçe, kullanım, finansman ve toplam maliyet sinyallerini kategori seçiminize göre değerlendirir. Skor ve TCO kural tabanlıdır; AI yalnızca gerekçe ve özet üretir.",
+      "bullets": [
+        "6 kategori: araba, konut, tatil, finansman, sigorta, kasko",
+        "Kural tabanlı skor ve TCO görünürlüğü",
+        "Risk ve uygunluk sinyalleri tek akışta",
+        "Tarafsız karar desteği — tek markaya bağlı değil"
+      ],
+      "ctaHref": "/karar-asistani",
+      "ctaLabel": "Karar akışını başlat",
+      "relatedLandings": ["arac-alim-karar-asistani", "tco-rehberi", "finansman-rehberi"]
+    },
+    {
+      "slug": "secenekler",
+      "path": "/secenekler/",
+      "title": "Değerlendirilebilir Seçenekler | isteBul",
+      "description": "Karar skoruna göre sıralanmış araç, konut ve diğer seçenekleri keşfedin. isteBul karar platformu yüzeyi — klasik ilan listesi değil.",
+      "h1": "Değerlendirilebilir seçenekler",
+      "intro": "Bu alan klasik ilan listesi değildir. QA sürecinden geçmiş, karar skoru ve risk sinyalleriyle zenginleştirilmiş seçenekleri görürsünüz. Karar analizi sonrası uygun seçenekleri burada sürdürün.",
+      "bullets": [
+        "Karar uygunluk skoru ile sıralama",
+        "Toplam maliyet (TCO) odaklı değerlendirme",
+        "Kaynak bağlantısı ile güvenli inceleme",
+        "Karar Merkezi QA sürecinden geçmiş kayıtlar"
+      ],
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Kararını analiz et",
+      "relatedLandings": ["ikinci-el-rehberi", "sifir-arac-mi-ikinci-el-mi", "arac-alim-karar-asistani"]
+    },
+    {
+      "slug": "karsilastir",
+      "path": "/karsilastir/",
+      "title": "Karar Kriteri Karşılaştırma | isteBul",
+      "description": "Seçenekleri skor, maliyet, risk, uygunluk ve gerekçe boyutunda yan yana karşılaştırın. Karar kriteri karşılaştırma merkezi.",
+      "h1": "Karar kriterlerini yan yana değerlendirin",
+      "intro": "Karşılaştırma merkezi; skor, toplam maliyet, finansman yükü, risk sinyalleri ve AI gerekçelerini aynı tabloda sunarak hangi seçeneğin kararınıza daha uygun olduğunu gösterir.",
+      "bullets": [
+        "Skor ve maliyet farkı özeti",
+        "Risk ve uygunluk sinyalleri",
+        "Finansman senaryoları (vade, faiz, peşinat)",
+        "Şeffaf metodoloji açıklaması"
+      ],
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Kararını analiz et",
+      "relatedLandings": ["arac-karsilastirma-rehberi", "suv-mi-sedan-mi", "finansman-rehberi"]
+    },
+    {
+      "slug": "planlar",
+      "path": "/planlar",
+      "title": "Planlar ve Fiyatlandırma | isteBul",
+      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. Pilot erişim — ödeme aktivasyonu sonrası bilgilendirme.",
+      "h1": "Planlar ve fiyatlandırma",
+      "intro": "Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — pilot erişim sürecinde.",
+      "bullets": [
+        "Başlangıç: sınırlı analiz ve 2 karşılaştırma",
+        "Pro: derin TCO, AI karar notu, premium export",
+        "Enterprise: API, webhook, SLA",
+        "İstediğiniz zaman iptal"
+      ],
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Ön değerlendirme başlat",
+      "relatedLandings": ["tco-rehberi", "finansman-rehberi", "arac-alim-karar-asistani"]
+    },
+    {
+      "slug": "blog",
+      "path": "/blog",
+      "title": "Blog | isteBul — Karar rehberleri",
+      "description": "Araç alımı, TCO, finansman ve karar metodolojisi üzerine rehber yazılar.",
+      "h1": "Karar rehberleri",
+      "intro": "TCO, finansman ve araç alım kararı üzerine yazılar — bilgilendirme amaçlı; yatırım veya kredi tavsiyesi değildir.",
+      "bullets": [
+        "Toplam sahip olma maliyeti (TCO) analizi",
+        "Finansman ve kredi senaryoları",
+        "İkinci el ve sıfır araç karşılaştırmaları",
+        "Şeffaf metodoloji ve karar skoru"
+      ],
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Ön değerlendirme başlat",
+      "relatedLandings": ["tco-rehberi", "finansman-rehberi", "arac-karsilastirma-rehberi"]
+    },
+    {
+      "slug": "duyurular",
+      "path": "/duyurular",
+      "title": "Duyurular | isteBul",
+      "description": "isteBul platform duyuruları, ürün güncellemeleri ve operasyonel bilgilendirmeler.",
+      "h1": "isteBul duyuruları",
+      "intro": "Ürün güncellemeleri, metodoloji notları ve operasyonel bilgilendirmeler — bağlayıcı teklif değildir.",
+      "bullets": [
+        "Platform ve ürün güncellemeleri",
+        "Metodoloji ve skorlama notları",
+        "Operasyonel bilgilendirmeler",
+        "KVKK ve güvenlik duyuruları"
+      ],
+      "ctaHref": "/karar-asistani/",
+      "ctaLabel": "Ön değerlendirme başlat",
+      "relatedLandings": ["arac-alim-karar-asistani", "tco-rehberi"]
+    },
+    {
+      "slug": "kampanyalar",
+      "path": "/kampanyalar",
+      "title": "Kampanyalar | isteBul",
+      "description": "isteBul Pro deneme, ücretsiz Auto analizi ve pilot partner kampanyaları.",
+      "h1": "Aktif kampanyalar",
+      "intro": "Pro deneme, ücretsiz Auto analizi ve pilot partner fırsatları. Koşullar değişebilir; finansal taahhüt içermez.",
+      "bullets": [
+        "Pro pilot erişim",
+        "Ücretsiz Auto karar analizi",
+        "Pilot partner fırsatları",
+        "Kampanya koşulları değişebilir"
+      ],
+      "ctaHref": "/planlar",
+      "ctaLabel": "Planları incele",
+      "relatedLandings": ["tco-rehberi", "arac-alim-karar-asistani"]
+    }
+  ]
+}

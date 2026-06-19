@@ -4,6 +4,27 @@ import { state } from '../../core/state.js';
 import API from '../../core/api.js';
 import config from '../../core/config.js';
 import { monitoring } from '../../core/monitoring.js';
+import { analytics } from '../../core/analytics.js';
+import { mapAuthError, mapAuthErrorForCheckout } from './auth-errors.js';
+import { peekCheckoutIntent } from '../../core/checkout-intent.js';
+import { captureAuthReturnFromUrl, completeAuthReturn } from '../../runtime/auth-return.js';
+import { enrollSignupNurture } from '../lifecycle/lifecycle-client.js';
+import { enrollOnboardingHelp } from '../customer/customer-ops-client.js';
+import {
+    attributeReferralSignupFromStorage,
+    ensureServerReferralCode
+} from '../growth/referral-client.js';
+import { getStoredReferralCode } from '../growth/growth-engine.js';
+import { trackOpsEvent } from '../../core/operational-telemetry.js';
+import {
+    bindAuthModalA11y,
+    bindPasswordToggles,
+    focusFirstField,
+    setSubmitLoading,
+    showInlineFormBanner,
+    clearInlineFormBanner
+} from '../../runtime/enterprise-form-ux.js';
+import { CONVERSION_COPY, getAuthModalTitle } from '../../core/conversion-copy.js';
 
 export class AuthManager {
     constructor() {
@@ -21,6 +42,27 @@ export class AuthManager {
                 document.dispatchEvent(new CustomEvent('userLoggedIn', {
                     detail: session.user
                 }));
+
+                const nurtureKey = `istebul_lifecycle_signup:${session.user.id}`;
+                try {
+                    if (!localStorage.getItem(nurtureKey)) {
+                        enrollSignupNurture(session.user).then((result) => {
+                            if (result?.ok) localStorage.setItem(nurtureKey, '1');
+                        });
+                        enrollOnboardingHelp({
+                            email: session.user.email,
+                            user_id: session.user.id,
+                            trigger_source: 'auth_signed_in'
+                        }).catch(() => {});
+                    }
+                } catch {
+                    /* ignore */
+                }
+
+                ensureServerReferralCode().catch(() => {});
+                if (getStoredReferralCode()) {
+                    attributeReferralSignupFromStorage().catch(() => {});
+                }
 
                 this.hideAuthModal();
 
@@ -44,82 +86,189 @@ export class AuthManager {
         });
     }
 
-    showLoginModal() {
-        this.showAuthModal('login');
+    showLoginModal(options = {}) {
+        this.showAuthModal('login', options);
     }
 
-    showRegisterModal() {
-        this.showAuthModal('register');
+    showRegisterModal(options = {}) {
+        this.showAuthModal('register', options);
     }
 
-    showAuthModal(type) {
+    showCheckoutAuthGate() {
+        this.showAuthModal('register', { intent: 'checkout' });
+    }
+
+    showAuthModal(type, options = {}) {
         const modal = document.getElementById('auth-modal');
-        const modalBody = modal.querySelector('.modal-body');
+        if (!modal) {
+            console.warn('[auth] auth-modal not found on this page');
+            return;
+        }
 
-        modalBody.innerHTML = type === 'login' ? this.getLoginForm() : this.getRegisterForm();
+        const modalHeader = modal.querySelector('.modal-header h3');
+        const modalBody = modal.querySelector('.modal-body');
+        if (!modalBody) {
+            console.warn('[auth] auth-modal body missing');
+            return;
+        }
+
+        if (modalHeader) {
+            const titleKey =
+                options.intent === 'checkout'
+                    ? type === 'register'
+                        ? 'auth.checkoutRegisterTitle'
+                        : 'auth.checkoutLoginTitle'
+                    : type === 'login'
+                      ? 'auth.loginTitle'
+                      : 'auth.registerTitle';
+            modalHeader.dataset.i18n = titleKey;
+            modalHeader.textContent =
+                window.__ibI18n?.t(titleKey) || getAuthModalTitle(type, options.intent === 'checkout');
+        }
+
+        const intentBanner = options.intent === 'checkout'
+            ? `<p class="auth-intent-banner" role="note">
+                <strong>Pro ödeme adımı</strong> — ${CONVERSION_COPY.auth.checkoutIntentBanner}
+                <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a>
+              </p>`
+            : '';
+
+        modalBody.innerHTML = intentBanner + (type === 'login' ? this.getLoginForm() : this.getRegisterForm());
+        window.__ibI18n?.applyTranslations?.();
+        modal.classList.add('auth-modal', 'auth-modal-premium');
+        document.body.classList.add('modal-open');
+
+        analytics.track('auth_modal_open', { mode: type }, {
+            category: 'auth',
+            funnel: 'auth',
+            funnel_step: type === 'login' ? 'login_modal' : 'register_modal'
+        });
 
         modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
         state.setModal('auth');
+
+        bindAuthModalA11y(modal, () => this.hideAuthModal());
+        clearInlineFormBanner(modalBody);
+        bindPasswordToggles(modalBody);
 
         // Setup form handlers
         this.setupAuthForm(type);
+
+        requestAnimationFrame(() => focusFirstField(modalBody));
     }
 
     hideAuthModal() {
         const modal = document.getElementById('auth-modal');
+        if (!modal) return;
+
         modal.classList.remove('show');
+        modal.classList.remove('auth-modal');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
         state.setModal(null);
     }
 
     getLoginForm() {
         return `
-            <form id="login-form">
+            <p class="auth-trust-line">Oturum bilgileriniz şifreli bağlantı (TLS) ile iletilir. Kart bilgisi bu ekranda istenmez.</p>
+            <form id="login-form" data-enterprise-form novalidate>
                 <div class="form-group">
-                    <label for="email">E-posta</label>
+                    <label for="email" data-i18n="auth.email">E-posta</label>
                     <input type="email" id="email" name="email" autocomplete="email" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Şifre</label>
-                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                    <label for="password" data-i18n="auth.password">Şifre</label>
+                    <div class="password-field">
+                        <input type="password" id="password" name="password" autocomplete="current-password" required>
+                        <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary full-width">Giriş Yap</button>
+                <button type="submit" class="btn btn-primary full-width auth-submit">${CONVERSION_COPY.auth.loginSubmit}</button>
             </form>
+            ${this.getGoogleOAuthBlock()}
             <div class="modal-footer">
-                <p>Şifrenizi mi unuttunuz? <a href="#" id="forgot-password">Sıfırlayın</a></p>
-                <p>Hesabınız yok mu? <a href="#" id="switch-to-register">Üye olun</a></p>
+                <p><span data-i18n="auth.forgotPrompt">Şifrenizi mi unuttunuz?</span> <button type="button" class="auth-inline-link" id="forgot-password" data-i18n="auth.resetPassword">Sıfırlayın</button></p>
+                <p><span data-i18n="auth.noAccount">Hesabınız yok mu?</span> <button type="button" class="auth-inline-link" id="switch-to-register" data-i18n="auth.switchToRegister">${CONVERSION_COPY.auth.switchToRegister}</button></p>
             </div>
         `;
     }
 
+    isGoogleOAuthEnabled() {
+        const flag = typeof window !== 'undefined' && window.__env?.GOOGLE_OAUTH_ENABLED;
+        return flag === true || flag === 'true' || flag === '1';
+    }
+
+    getGoogleOAuthBlock() {
+        if (this.isGoogleOAuthEnabled()) {
+            return `
+            <div class="auth-oauth-divider" role="separator"><span>veya</span></div>
+            <button type="button" class="btn btn-outline full-width" id="google-oauth-btn">Google ile devam et</button>`;
+        }
+        return `
+            <div class="auth-oauth-placeholder" role="note">
+                <div class="auth-oauth-coming-soon">
+                    <span class="auth-oauth-coming-soon-label">Google ile giriş</span>
+                    <span class="auth-oauth-coming-soon-hint">Yakında — Supabase ve Google Console yapılandırması sonrası etkinleşir.</span>
+                </div>
+            </div>`;
+    }
+
+    async signInWithGoogle() {
+        captureAuthReturnFromUrl();
+        const redirectTo = `${window.location.origin}${window.location.pathname || '/'}${window.location.search || ''}`;
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo }
+        });
+        if (error) {
+            const modalBody = document.querySelector('#auth-modal .modal-body');
+            showInlineFormBanner(
+                modalBody,
+                error.message || 'Google ile giriş başlatılamadı. Lütfen e-posta ile deneyin.',
+                'error'
+            );
+        }
+    }
+
     getRegisterForm() {
         return `
-            <form id="register-form">
+            <p class="auth-trust-line">Kayıt bilgileriniz şifreli bağlantı (TLS) ile iletilir. Kart bilgisi bu ekranda istenmez.</p>
+            <form id="register-form" data-enterprise-form>
                 <div class="form-group">
-                    <label for="full-name">Ad Soyad</label>
+                    <label for="full-name" data-i18n="auth.fullName">Ad Soyad</label>
                     <input type="text" id="full-name" name="full-name" autocomplete="name" required>
                 </div>
                 <div class="form-group">
-                    <label for="email">E-posta</label>
+                    <label for="email" data-i18n="auth.email">E-posta</label>
                     <input type="email" id="email" name="email" autocomplete="email" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Şifre</label>
-                    <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8">
+                    <label for="password" data-i18n="auth.password">Şifre</label>
+                    <div class="password-field">
+                        <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8" aria-describedby="password-hint">
+                        <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
+                    </div>
+                    <small id="password-hint" class="form-hint">En az 8 karakter; büyük harf, küçük harf ve rakam önerilir</small>
                 </div>
                 <div class="form-group">
                     <label for="confirm-password">Şifre Tekrar</label>
-                    <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password" required>
+                    <div class="password-field">
+                        <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password" required>
+                        <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>
                         <input type="checkbox" id="terms" name="terms" required>
-                        <span>Kullanım koşullarını kabul ediyorum</span>
+                        <span><a href="/kullanim-sartlari.html" target="_blank" rel="noopener">Kullanım şartları</a> ve <a href="/kvkk.html" target="_blank" rel="noopener">KVKK</a> metnini kabul ediyorum</span>
                     </label>
                 </div>
-                <button type="submit" class="btn btn-primary full-width">Üye Ol</button>
+                <button type="submit" class="btn btn-primary full-width auth-submit" data-enterprise-form>${CONVERSION_COPY.auth.registerSubmit}</button>
             </form>
+            ${this.getGoogleOAuthBlock()}
             <div class="modal-footer">
-                <p>Zaten hesabınız var mı? <a href="#" id="switch-to-login">Giriş yapın</a></p>
+                <p><span data-i18n="auth.haveAccount">Zaten hesabınız var mı?</span> <button type="button" class="auth-inline-link" id="switch-to-login" data-i18n="auth.switchToLogin">${CONVERSION_COPY.auth.switchToLogin}</button></p>
             </div>
         `;
     }
@@ -128,9 +277,15 @@ export class AuthManager {
         const form = document.getElementById(`${type}-form`);
         const modal = document.getElementById('auth-modal');
 
+        if (!form || !modal) {
+            console.warn('[auth] Could not bind auth form', type);
+            return;
+        }
+
         if (!modal.dataset.authCloseBound) {
             modal.dataset.authCloseBound = 'true';
-            modal.querySelector('.modal-close').addEventListener('click', () => {
+            const closeBtn = modal.querySelector('.modal-close');
+            closeBtn?.addEventListener('click', () => {
                 this.hideAuthModal();
             });
 
@@ -157,17 +312,19 @@ export class AuthManager {
         const switchToLogin = document.getElementById('switch-to-login');
         const forgotPassword = document.getElementById('forgot-password');
 
+        const checkoutIntentActive = () => Boolean(peekCheckoutIntent());
+
         if (switchToRegister) {
             switchToRegister.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.showRegisterModal();
+                this.showRegisterModal(checkoutIntentActive() ? { intent: 'checkout' } : {});
             });
         }
 
         if (switchToLogin) {
             switchToLogin.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.showLoginModal();
+                this.showLoginModal(checkoutIntentActive() ? { intent: 'checkout' } : {});
             });
         }
 
@@ -177,24 +334,36 @@ export class AuthManager {
                 this.showForgotPasswordForm();
             });
         }
+
+        const googleBtn = document.getElementById('google-oauth-btn');
+        if (googleBtn) {
+            googleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.signInWithGoogle();
+            });
+        }
     }
 
     async handleLogin(form) {
         const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
 
         try {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Giriş yapılıyor...';
+            setSubmitLoading(submitBtn, true, { busyLabel: CONVERSION_COPY.auth.loginBusy });
 
             const email = form.email.value;
             const password = form.password.value;
+
+            analytics.track('auth_login_start', { email_domain: email.split('@')[1] || '' }, {
+                category: 'auth',
+                funnel: 'auth',
+                funnel_step: 'login_start'
+            });
 
             const result = await API.signIn(email, password);
             const user = result?.user || result?.session?.user;
 
             if (!user) {
-                throw new Error('Giriş tamamlanamadı. E-posta ve şifrenizi kontrol edip tekrar deneyin.');
+                throw new Error(CONVERSION_COPY.auth.loginFailed);
             }
 
             this.currentUser = user;
@@ -204,23 +373,40 @@ export class AuthManager {
                 detail: user
             }));
 
-            this.hideAuthModal();
+            analytics.track('auth_login_success', {}, { category: 'auth', funnel: 'auth', funnel_step: 'login_success' });
+
+            const pendingCheckout = Boolean(peekCheckoutIntent());
+            if (pendingCheckout) {
+                this.showAuthSuccess(CONVERSION_COPY.auth.successCheckoutLogin);
+                setTimeout(() => this.hideAuthModal(), 1200);
+            } else if (completeAuthReturn({ router: window.app?.router })) {
+                this.hideAuthModal();
+            } else {
+                this.hideAuthModal();
+            }
         } catch (error) {
             console.error('Login failed:', error);
-            this.showAuthError(error.message || config.messages.error.login);
+            analytics.track('auth_login_failed', { message: error.message || 'login_failed' }, {
+                category: 'auth',
+                funnel: 'auth',
+                funnel_step: 'login_failed'
+            });
+            trackOpsEvent('auth_login_failed', {
+                error_code: error.code || 'login_failed'
+            }, { category: 'auth', severity: 'warning' });
+            const pendingCheckout = Boolean(peekCheckoutIntent());
+            const mapFn = pendingCheckout ? mapAuthErrorForCheckout : mapAuthError;
+            this.showAuthError(mapFn(error, config.messages.error.login));
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            setSubmitLoading(submitBtn, false);
         }
     }
 
     async handleRegister(form) {
         const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
 
         try {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Hesap oluşturuluyor...';
+            setSubmitLoading(submitBtn, true, { busyLabel: CONVERSION_COPY.auth.registerBusy });
 
             const fullName = form['full-name'].value;
             const email = form.email.value;
@@ -236,42 +422,103 @@ export class AuthManager {
                 throw new Error(`Şifre en az ${config.validation.password.minLength} karakter olmalıdır`);
             }
 
-            // Profile creation is handled by the Supabase on_auth_user_created trigger.
-            await API.signUp(email, password, {
+            analytics.track('auth_register_start', {}, {
+                category: 'auth',
+                funnel: 'auth',
+                funnel_step: 'register_start'
+            });
+
+            const pendingCheckout = Boolean(peekCheckoutIntent());
+
+            const signUpResult = await API.signUp(email, password, {
                 full_name: fullName
             });
 
-            this.showAuthSuccess('Hesabınız oluşturuldu! Lütfen e-posta adresinizi doğrulayın.');
-            // Welcome email disabled until production email provider is configured.
-            setTimeout(() => this.showLoginModal(), 2000);
+            analytics.track('auth_register_success', {}, {
+                category: 'auth',
+                funnel: 'auth',
+                funnel_step: 'register_success'
+            });
+
+            const session = signUpResult?.session;
+            const signedUpUser = session?.user || signUpResult?.user;
+
+            if (session && signedUpUser) {
+                this.currentUser = signedUpUser;
+                state.setUser(signedUpUser);
+                document.dispatchEvent(new CustomEvent('userLoggedIn', { detail: signedUpUser }));
+
+                if (pendingCheckout) {
+                    this.showAuthSuccess(CONVERSION_COPY.auth.successCheckoutRegister);
+                    setTimeout(() => this.hideAuthModal(), 1200);
+                } else if (completeAuthReturn({ router: window.app?.router })) {
+                    this.hideAuthModal();
+                } else {
+                    this.hideAuthModal();
+                    this.showAuthSuccess(CONVERSION_COPY.auth.successRegister);
+                }
+                return;
+            }
+
+            if (pendingCheckout) {
+                this.showAuthSuccess(CONVERSION_COPY.auth.successRegisterVerifyCheckout);
+                setTimeout(() => this.showLoginModal({ intent: 'checkout' }), 1400);
+            } else {
+                this.showAuthSuccess(CONVERSION_COPY.auth.successRegisterVerify);
+                setTimeout(() => this.showLoginModal(), 2800);
+            }
 
         } catch (error) {
             console.error('Registration failed:', error);
-            this.showAuthError(error.message || config.messages.error.register);
+            analytics.track('auth_register_failed', { message: error.message || 'register_failed' }, {
+                category: 'auth',
+                funnel: 'auth',
+                funnel_step: 'register_failed'
+            });
+            trackOpsEvent('auth_register_failed', {
+                error_code: error.code || 'register_failed'
+            }, { category: 'auth', severity: 'warning' });
+            const pendingCheckout = Boolean(peekCheckoutIntent());
+            const mapFn = pendingCheckout ? mapAuthErrorForCheckout : mapAuthError;
+            this.showAuthError(mapFn(error, config.messages.error.register));
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            setSubmitLoading(submitBtn, false);
         }
     }
 
-    showForgotPasswordForm() {
+    showForgotPasswordForm(prefillEmail = '') {
         const modal = document.getElementById('auth-modal');
+        if (!modal) return;
+
+        const modalHeader = modal.querySelector('.modal-header h3');
         const modalBody = modal.querySelector('.modal-body');
-        modalBody.innerHTML = this.getForgotPasswordForm();
+        if (!modalBody) return;
+
+        if (modalHeader) modalHeader.textContent = 'Şifre sıfırlama';
+        modalBody.innerHTML = this.getForgotPasswordForm(prefillEmail);
+        modal.classList.add('show', 'auth-modal');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+        state.setModal('auth');
+
+        bindAuthModalA11y(modal, () => this.hideAuthModal());
         this.setupForgotPasswordForm();
+        requestAnimationFrame(() => focusFirstField(modalBody));
     }
 
-    getForgotPasswordForm() {
+    getForgotPasswordForm(prefillEmail = '') {
+        const safeEmail = String(prefillEmail || '').replace(/"/g, '&quot;');
         return `
-            <form id="forgot-password-form">
+            <form id="forgot-password-form" data-enterprise-form>
+                <p class="form-hint" style="margin-bottom:1rem;">Kayıtlı e-posta adresinize güvenli sıfırlama bağlantısı gönderilir. Bağlantı kısa süre geçerlidir.</p>
                 <div class="form-group">
                     <label for="reset-email">E-posta</label>
-                    <input type="email" id="reset-email" name="email" autocomplete="email" required>
+                    <input type="email" id="reset-email" name="email" autocomplete="email" required value="${safeEmail}">
                 </div>
-                <button type="submit" class="btn btn-primary full-width">Sıfırlama Bağlantısı Gönder</button>
+                <button type="submit" class="btn btn-primary full-width auth-submit">Sıfırlama bağlantısı gönder</button>
             </form>
             <div class="modal-footer">
-                <p>Şifrenizi hatırladınız mı? <a href="#" id="switch-to-login">Giriş yapın</a></p>
+                <p>Şifrenizi hatırladınız mı? <button type="button" class="auth-inline-link" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</button></p>
             </div>
         `;
     }
@@ -294,21 +541,18 @@ export class AuthManager {
         event.preventDefault();
         const form = event.currentTarget;
         const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
         const email = form.email.value.trim();
         if (!email) return;
 
         try {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Gönderiliyor...';
+            setSubmitLoading(submitBtn, true, { busyLabel: CONVERSION_COPY.auth.resetBusy });
             await API.resetPassword(email);
-            this.showAuthSuccess('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
+            this.showAuthSuccess(CONVERSION_COPY.auth.successReset);
         } catch (error) {
             console.error('Password reset failed:', error);
-            this.showAuthError(error.message || 'Şifre sıfırlama sırasında bir hata oluştu.');
+            this.showAuthError(mapAuthError(error, 'Şifre sıfırlama sırasında bir hata oluştu.'));
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            setSubmitLoading(submitBtn, false);
         }
     }
 
@@ -332,25 +576,28 @@ export class AuthManager {
     }
 
     showAuthMessage(message, type) {
-        const modalBody = document.querySelector('#auth-modal .modal-body');
-        const existingMessage = modalBody.querySelector('.auth-message');
+        const modal = document.getElementById('auth-modal');
+        const modalBody = modal?.querySelector('.modal-body');
+        if (!modalBody) return;
 
-        if (existingMessage) {
-            existingMessage.remove();
+        if (type === 'success' && !modal.classList.contains('show')) {
+            document.dispatchEvent(
+                new CustomEvent('ib:auth-toast', { detail: { message, type } })
+            );
+            return;
         }
 
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `auth-message ${type}`;
-        messageDiv.textContent = message;
+        const banner = showInlineFormBanner(modalBody, message, type);
+        if (banner) banner.classList.add('auth-message', type);
 
-        modalBody.insertBefore(messageDiv, modalBody.firstChild);
+        if (type === 'error') {
+            modalBody.querySelector('.ib-form-banner, .auth-message')?.focus?.();
+        }
 
-        // Auto remove after 5 seconds
         setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.remove();
-            }
-        }, 5000);
+            const banner = modalBody.querySelector('.ib-form-banner, .auth-message');
+            if (banner && banner.textContent === message) banner.remove();
+        }, type === 'error' ? 8000 : 6000);
     }
 
     isAuthenticated() {

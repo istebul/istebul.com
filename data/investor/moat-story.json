@@ -1,0 +1,54 @@
+{
+  "version": "p7.0",
+  "thesis": "We own the decision layer above listings and bank calculators — not inventory.",
+  "elevator": "Rule-based scores + TCO + explainability; LLM only narrates. Partner dispatch closes the loop.",
+  "pillars": [
+    {
+      "id": "decision_ip",
+      "title": "Decision IP",
+      "strength": "high",
+      "proof": ["decision-consultant.js", "scoring-explainability", "AI cannot override price/score"],
+      "investorLine": "Defensible software: tested scoring, confidence tiers, anti-hallucination architecture."
+    },
+    {
+      "id": "data_layer",
+      "title": "Data & truth layer",
+      "strength": "medium",
+      "proof": ["vehicle catalog migrations", "finance_offers", "cost-engine"],
+      "investorLine": "Path to strong moat: live feeds + anonymized outcome graph ('models that closed in 14d').",
+      "honestGap": "liveProvidersEnabled false until exclusive feeds — disclose on diligence."
+    },
+    {
+      "id": "network_ops",
+      "title": "Partner network",
+      "strength": "medium_high",
+      "proof": ["partner-dispatch", "HMAC webhooks", "outcome callback actual_revenue"],
+      "investorLine": "Flywheel: qualified intent → partner SLA → win data → better scoring."
+    },
+    {
+      "id": "platform",
+      "title": "Platform optionality",
+      "strength": "medium",
+      "proof": ["8-vertical roadmap", "locale registry", "category-positioning"],
+      "investorLine": "Auto beachhead funds konut, finance, insurance expansion on shared engine."
+    }
+  ],
+  "notMoat": [
+    "Generic LLM wrapper",
+    "SEO alone without retention",
+    "estimated_revenue without signed CPL contracts"
+  ],
+  "competitiveFrame": [
+    { "type": "Classifieds", "theirWedge": "Inventory", "counter": "Decision + TCO + finance fit" },
+    { "type": "Banks", "theirWedge": "Single product origination", "counter": "Neutral multi-offer comparison" },
+    { "type": "OEM", "theirWedge": "Brand bias", "counter": "Neutral rank + alternatives" },
+    { "type": "ChatGPT", "theirWedge": "Generic advice", "counter": "Deterministic numbers + CRM" }
+  ],
+  "docs": [
+    "docs/investor/MOAT_AND_DEFENSIBILITY.md",
+    "docs/COMPETITIVE_MOAT_STRATEGY.md",
+    "docs/CATEGORY_DOMINANCE_STRATEGY.md",
+    "docs/COMPETITOR_ATTACK_SCENARIO.md",
+    "docs/AI_DECISION_ENGINE.md"
+  ]
+}

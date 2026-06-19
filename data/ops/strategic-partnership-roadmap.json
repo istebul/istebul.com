@@ -1,0 +1,331 @@
+{
+  "version": "p26.0",
+  "updatedAt": "2026-05-24",
+  "mission": "Accelerate distribution (qualified traffic in) and monetization (CPL/rev-share out) via typed partner lanes — without becoming a marketplace or bank.",
+  "northStar": {
+    "distribution": "Partner-referred sessions ≥15% of decision traffic",
+    "monetization": "Partner-attributed revenue ≥40% of B2B pipeline",
+    "ops": "Dispatch success ≥90%; ≥10 active endpoints"
+  },
+  "accelerationVerdict": {
+    "wave1Focus": ["bayiler", "finans_sirketleri"],
+    "wave2Focus": ["bankalar", "sigorta"],
+    "wave3Focus": ["api_providers"],
+    "distributionLever": "marketplace",
+    "scaleLever": "affiliate_networks",
+    "firstPartnershipMotion": "bayiler",
+    "whyFirst": "Auto dispatch + dealer CRM live; fastest CPL proof and outcome loop for scoring calibration."
+  },
+  "scoringDimensions": [
+    { "id": "distribution_lift", "name": "Distribution lift", "weight": 0.25 },
+    { "id": "monetization_lift", "name": "Monetization lift", "weight": 0.25 },
+    { "id": "integration_speed", "name": "Integration speed", "weight": 0.2 },
+    { "id": "strategic_fit", "name": "Strategic fit", "weight": 0.15 },
+    { "id": "data_acceleration", "name": "Data acceleration", "weight": 0.15 }
+  ],
+  "partnerTypes": [
+    {
+      "id": "bayiler",
+      "name": "Bayiler (oto bayi / dealer)",
+      "lane": "supply_and_conversion",
+      "maturity": "live",
+      "scores": {
+        "distribution_lift": 72,
+        "monetization_lift": 88,
+        "integration_speed": 90,
+        "strategic_fit": 92,
+        "data_acceleration": 65
+      },
+      "compositeScore": 82,
+      "wave": 1,
+      "rank": 1,
+      "revenueModels": ["CPL_hot_lead", "monthly_capacity", "pilot_5_leads"],
+      "distributionPlays": [
+        "Dealer site embed: 'Karar için isteBul' CTA",
+        "Showroom QR → Auto wizard",
+        "Co-branded TCO PDF for sales advisors"
+      ],
+      "monetizationPlays": [
+        "HMAC webhook dispatch (live)",
+        "Outcome callback mandatory — actual_revenue",
+        "Regional exclusivity 6mo pilot"
+      ],
+      "integration": {
+        "path": "partner_endpoints + auto-intake",
+        "docs": ["docs/partner-webhook-integration.md", "partner-onboarding.html"],
+        "timeToLive": "2-4 weeks"
+      },
+      "kpis": ["dispatch_success_rate", "partner_won_rate", "dealer_referred_sessions"],
+      "risks": ["Multi-home dealers", "Manual CRM discipline"],
+      "blockers": ["Settlement automation TRY-only"]
+    },
+    {
+      "id": "finans_sirketleri",
+      "name": "Finans şirketleri (kredi / leasing broker)",
+      "lane": "monetization_hub",
+      "maturity": "partial",
+      "scores": {
+        "distribution_lift": 55,
+        "monetization_lift": 92,
+        "integration_speed": 75,
+        "strategic_fit": 88,
+        "data_acceleration": 70
+      },
+      "compositeScore": 78,
+      "wave": 1,
+      "rank": 2,
+      "revenueModels": ["CPL_qualified", "rev_share_on_disbursement"],
+      "distributionPlays": [
+        "Embed finance comparison in ev/arac results",
+        "Broker sends pre-qualified traffic to decision wizard"
+      ],
+      "monetizationPlays": [
+        "finance_offers truth layer + neutral rank",
+        "Lead payload: vehicle price + score + payment load",
+        "BDDK disclaimer pack before live CPL"
+      ],
+      "integration": {
+        "path": "PARTNER_OFFERS.finance + partner dispatch route",
+        "docs": ["data/platform/expansion-roadmap.json#finans"],
+        "timeToLive": "4-8 weeks"
+      },
+      "kpis": ["finance_lead_cpl", "attach_rate_post_auto", "offer_click_to_lead"],
+      "risks": ["Sponsored rate bias from banks"],
+      "blockers": ["Standalone /finans wizard", "Daily rate sync"]
+    },
+    {
+      "id": "bankalar",
+      "name": "Bankalar",
+      "lane": "monetization_enterprise",
+      "maturity": "early",
+      "scores": {
+        "distribution_lift": 48,
+        "monetization_lift": 90,
+        "integration_speed": 45,
+        "strategic_fit": 80,
+        "data_acceleration": 75
+      },
+      "compositeScore": 68,
+      "wave": 2,
+      "rank": 3,
+      "revenueModels": ["CPL", "API_referral_fee", "co_marketing"],
+      "distributionPlays": [
+        "Bank app 'araç/konut karar asistanı' white-label slice",
+        "Mortgage pre-qual funnel from ev vertical"
+      ],
+      "monetizationPlays": [
+        "Neutral multi-offer (not single-product push)",
+        "Compliance review gate per product",
+        "Enterprise SOW + dedicated endpoint"
+      ],
+      "integration": {
+        "path": "Enterprise partner pack + legal LOI",
+        "docs": ["docs/investor/loi-template.md", "partner-closing-kit.html"],
+        "timeToLive": "3-6 months"
+      },
+      "kpis": ["bank_pilot_leads", "disbursement_attributed_revenue"],
+      "risks": ["Long procurement", "Brand control"],
+      "blockers": ["Legal BDDK pack EN/TR", "Procurement cycle"]
+    },
+    {
+      "id": "sigorta",
+      "name": "Sigorta (acente / aggregator / affiliate)",
+      "lane": "attach_monetization",
+      "maturity": "stub",
+      "scores": {
+        "distribution_lift": 40,
+        "monetization_lift": 78,
+        "integration_speed": 55,
+        "strategic_fit": 85,
+        "data_acceleration": 50
+      },
+      "compositeScore": 63,
+      "wave": 2,
+      "rank": 4,
+      "revenueModels": ["CPA_policy", "CPL_quote", "affiliate_premium_share"],
+      "distributionPlays": [
+        "Post-decision attach: kasko, DASK, seyahat",
+        "Co-marketing with auto dealers after purchase intent"
+      ],
+      "monetizationPlays": [
+        "insurance_partner dispatch route",
+        "Coverage comparison engine (Pro)",
+        "SEDDK disclaimer hub"
+      ],
+      "integration": {
+        "path": "insurance_products catalog + PARTNER_OFFERS.insurance",
+        "docs": ["data/platform/expansion-roadmap.json#sigorta"],
+        "timeToLive": "6-10 weeks"
+      },
+      "kpis": ["insurance_attach_rate", "click_to_policy"],
+      "risks": ["Thin margin on affiliate only"],
+      "blockers": ["Prim truth layer", "Branş wizard"]
+    },
+    {
+      "id": "marketplace",
+      "name": "Marketplace'ler (Sahibinden, Arabam, OTA)",
+      "lane": "distribution",
+      "maturity": "affiliate_only",
+      "scores": {
+        "distribution_lift": 95,
+        "monetization_lift": 55,
+        "integration_speed": 70,
+        "strategic_fit": 75,
+        "data_acceleration": 35
+      },
+      "compositeScore": 70,
+      "wave": 3,
+      "rank": 5,
+      "revenueModels": ["rev_share_traffic", "embed_fee", "lead_swap"],
+      "distributionPlays": [
+        "'Search here, decide on isteBul' — no inventory build",
+        "Listing detail sidebar: TCO + finance load CTA",
+        "SEO coexist — capture consideration queries"
+      ],
+      "monetizationPlays": [
+        "Qualified lead back to marketplace dealer (optional)",
+        "Do not compete on listings — decision layer only",
+        "UTM + partner_id attribution"
+      ],
+      "integration": {
+        "path": "Widget/embed SDK + deep links",
+        "docs": ["docs/COMPETITOR_ATTACK_SCENARIO.md#sahibinden_ai"],
+        "timeToLive": "4-12 weeks (BD-led)"
+      },
+      "kpis": ["embed_ctr", "sessions_from_marketplace", "decision_completion_rate"],
+      "risks": ["Incumbent builds own AI", "Channel conflict"],
+      "blockers": ["BD agreement", "Brand/legal on embed"]
+    },
+    {
+      "id": "api_providers",
+      "name": "API providers (catalog, rates, vehicle data)",
+      "lane": "data_infrastructure",
+      "maturity": "planned",
+      "scores": {
+        "distribution_lift": 30,
+        "monetization_lift": 45,
+        "integration_speed": 60,
+        "strategic_fit": 88,
+        "data_acceleration": 95
+      },
+      "compositeScore": 64,
+      "wave": 3,
+      "rank": 6,
+      "revenueModels": ["data_licensing_cost", "revenue_share_optional"],
+      "distributionPlays": [
+        "Co-marketed 'live data' trust badge",
+        "OEM/dealer feed → exclusive TR catalog"
+      ],
+      "monetizationPlays": [
+        "liveProvidersEnabled true — investor moat",
+        "Better scoring calibration → higher CPL pricing power",
+        "Reduce simulation skepticism"
+      ],
+      "integration": {
+        "path": "vehicle_cost_profiles + finance_offers sync jobs",
+        "docs": ["docs/AI_DECISION_ENGINE.md"],
+        "timeToLive": "8-16 weeks (exclusivity negotiation)"
+      },
+      "kpis": ["live_catalog_coverage_pct", "scoring_accuracy_delta"],
+      "risks": ["Exclusive feed cost", "Vendor lock-in"],
+      "blockers": ["LOI exclusive TR auto", "Daily ETL + truth layer"]
+    },
+    {
+      "id": "affiliate_networks",
+      "name": "Affiliate networks",
+      "lane": "volume_distribution",
+      "maturity": "experimental",
+      "scores": {
+        "distribution_lift": 85,
+        "monetization_lift": 50,
+        "integration_speed": 80,
+        "strategic_fit": 45,
+        "data_acceleration": 25
+      },
+      "compositeScore": 58,
+      "wave": 4,
+      "rank": 7,
+      "revenueModels": ["CPA", "CPL_tiered", "hybrid"],
+      "distributionPlays": [
+        "Comparison content publishers",
+        "Performance agencies — capped spend"
+      ],
+      "monetizationPlays": [
+        "min_lead_score gate — no junk traffic",
+        "Cap payouts without outcome feedback",
+        "Separate route_type affiliate vs dealer"
+      ],
+      "integration": {
+        "path": "UTM registry + postback URL",
+        "docs": ["metrics:paid-cac", "data/growth/experiments.json"],
+        "timeToLive": "2-3 weeks tech; quality tuning ongoing"
+      },
+      "kpis": ["affiliate_cac_payback", "junk_lead_rate", "funnel_cr_by_source"],
+      "risks": ["Brand dilution", "Low-quality leads"],
+      "blockers": ["Outcome postback enforcement"]
+    }
+  ],
+  "roadmapPhases": [
+    {
+      "id": "p26_0",
+      "name": "Partnership roadmap & BD kit (shipped)",
+      "deliverables": [
+        "strategic-partnership-roadmap.json",
+        "STRATEGIC_PARTNERSHIP_ROADMAP.md",
+        "Admin Partnerships page",
+        "metrics:partnerships:roadmap snapshot"
+      ]
+    },
+    {
+      "id": "p26_1",
+      "name": "Wave 1 — Dealers + finance brokers",
+      "partnerTypes": ["bayiler", "finans_sirketleri"],
+      "targets": ["10 active endpoints", "2 exclusivity pilots", "finance CPL live"],
+      "distributionGoal": "3 dealer embed POCs",
+      "monetizationGoal": "Partner revenue ≥25% of pipeline"
+    },
+    {
+      "id": "p26_2",
+      "name": "Wave 2 — Banks + insurance",
+      "partnerTypes": ["bankalar", "sigorta"],
+      "targets": ["1 bank LOI", "insurance branş wizard MVP"],
+      "distributionGoal": "Bank pre-qual widget POC",
+      "monetizationGoal": "Insurance attach ≥20% auto leads"
+    },
+    {
+      "id": "p26_3",
+      "name": "Wave 3 — Data + marketplace distribution",
+      "partnerTypes": ["api_providers", "marketplace"],
+      "targets": ["Exclusive auto feed LOI", "1 marketplace embed"],
+      "distributionGoal": "Marketplace sessions ≥5% total",
+      "monetizationGoal": "Raise CPL tiers on live data proof"
+    },
+    {
+      "id": "p26_4",
+      "name": "Wave 4 — Affiliate scale (gated)",
+      "partnerTypes": ["affiliate_networks"],
+      "targets": ["CAC payback ≤6mo", "junk lead <10%"],
+      "distributionGoal": "Scale only after wave 1–2 outcome graph"
+    }
+  ],
+  "bdMotions": [
+    { "id": "pilot_5_leads", "label": "5 hot leads free", "conversionTarget": "paid CPL within 30d" },
+    { "id": "webhook_week", "label": "Webhook week", "conversionTarget": "endpoint live <15m p95" },
+    { "id": "exclusivity_pilot", "label": "6mo regional exclusivity", "conversionTarget": "outcome feedback SLA" },
+    { "id": "embed_poc", "label": "Embed POC", "conversionTarget": "signed distribution MOU" }
+  ],
+  "kpis": [
+    { "key": "active_partner_endpoints", "target": ">=10", "owner": "coo" },
+    { "key": "partner_referred_sessions_pct", "target": ">=15%", "owner": "vp_growth" },
+    { "key": "partner_attributed_revenue_pct", "target": ">=40%", "owner": "vp_revenue" },
+    { "key": "dispatch_success_rate", "target": ">=90%", "owner": "coo" },
+    { "key": "outcome_revenue_capture_pct", "target": ">=70%", "owner": "vp_revenue" }
+  ],
+  "linkedDocs": [
+    "docs/STRATEGIC_PARTNERSHIP_ROADMAP.md",
+    "data/partner/partner-ops.json",
+    "data/sales/partner-sales-deck.json",
+    "docs/partner-webhook-integration.md",
+    "data/ops/category-dominance-strategy.json"
+  ]
+}

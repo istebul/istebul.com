@@ -1,14 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
+import { recordPlatformEvent } from "../_shared/platform-analytics.ts";
+import { resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 function corsHeaders(origin: string | null) {
-  const allowed = new Set([
-    "https://istebul.com",
-    "https://www.istebul.com",
-    "http://localhost:3000",
-    "http://localhost:5173"
-  ]);
-
-  const allowOrigin = origin && allowed.has(origin) ? origin : "https://www.istebul.com";
+  const allowOrigin = resolveCorsOrigin(origin, "https://www.istebul.com", {
+    allowLocalDev: true,
+  });
 
   return {
     "Access-Control-Allow-Origin": allowOrigin,
@@ -35,6 +32,18 @@ function cleanPhone(value: unknown) {
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+const BILLING_ALIASES: Record<string, string> = {
+  cpl: "starter",
+  subscription: "growth",
+};
+
+function normalizePartnerBillingPlan(raw: string) {
+  const plan = String(raw || "pilot").trim().toLowerCase();
+  const mapped = BILLING_ALIASES[plan] || plan;
+  const allowed = new Set(["pilot", "starter", "growth", "enterprise"]);
+  return allowed.has(mapped) ? mapped : "pilot";
 }
 
 Deno.serve(async (req) => {
@@ -66,6 +75,10 @@ Deno.serve(async (req) => {
   const lead_capacity = clean(body.lead_capacity);
   const webhook_ready = Boolean(body.webhook_ready);
   const notes = clean(body.notes);
+  const utm_source = clean(body.utm_source);
+  const utm_medium = clean(body.utm_medium);
+  const utm_campaign = clean(body.utm_campaign);
+  const billing_plan = clean(body.billing_plan) || "pilot";
 
   const honeypot = clean(body.website);
   if (honeypot) return json({ ok: true }, 200, origin);
@@ -82,6 +95,50 @@ Deno.serve(async (req) => {
 
   const sb = createClient(supabaseUrl, serviceKey);
 
+  const clientIp =
+    req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown";
+  const rateKey = `partner_app:${clientIp}`;
+  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
+  const { data: recent } = await sb
+    .from("partner_applications")
+    .select("id")
+    .eq("email", email)
+    .gte("created_at", since)
+    .limit(1);
+
+  if (recent?.length) {
+    return json({ ok: true, duplicate: true }, 200, origin);
+  }
+
+  const { data: rateRow } = await sb
+    .from("auto_rate_limits")
+    .select("count, window_start")
+    .eq("key", rateKey)
+    .maybeSingle();
+
+  const windowStart = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  if (rateRow && new Date(rateRow.window_start).getTime() >= new Date(windowStart).getTime()) {
+    if (rateRow.count >= 5) {
+      return json({ error: "Too many requests" }, 429, origin);
+    }
+    await sb.from("auto_rate_limits").update({
+      count: rateRow.count + 1,
+      updated_at: new Date().toISOString(),
+    }).eq("key", rateKey);
+  } else {
+    await sb.from("auto_rate_limits").upsert({
+      key: rateKey,
+      count: 1,
+      window_start: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "key" });
+  }
+
+  const onboarding_token = crypto.randomUUID().replace(/-/g, "");
+
   const { data, error } = await sb
     .from("partner_applications")
     .insert({
@@ -94,12 +151,49 @@ Deno.serve(async (req) => {
       lead_capacity,
       webhook_ready,
       notes,
-      status: "new"
+      status: "lead",
+      onboarding_token,
+      utm_source: utm_source || null,
+      utm_medium: utm_medium || null,
+      utm_campaign: utm_campaign || null,
+      billing_plan: normalizePartnerBillingPlan(billing_plan),
     })
-    .select("id")
+    .select("id, onboarding_token")
     .single();
 
   if (error) return json({ error: error.message }, 500, origin);
 
-  return json({ ok: true, id: data.id }, 200, origin);
+  try {
+    await recordPlatformEvent(sb, {
+      event_name: "partner_application_submit",
+      email,
+      funnel: "partner_acquisition",
+      funnel_step: "application_submit",
+      properties: {
+        application_id: data.id,
+        category,
+        webhook_ready,
+        billing_plan,
+        utm_source: utm_source || null,
+        utm_medium: utm_medium || null,
+        utm_campaign: utm_campaign || null,
+      },
+      source: "partner_application",
+    });
+  } catch {
+    /* non-blocking */
+  }
+
+  const onboarding_path = `/partner-basvuru.html?token=${data.onboarding_token}&step=2`;
+
+  return json(
+    {
+      ok: true,
+      id: data.id,
+      onboarding_token: data.onboarding_token,
+      onboarding_path,
+    },
+    200,
+    origin
+  );
 });

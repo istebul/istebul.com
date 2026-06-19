@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "category": "tatil",
+  "editorialNote": "Karar rehberi — otel listesi değil. Her yazı sonunda /tatil/ CTA ile bitmeli.",
+  "headlines": [
+    {
+      "slug": "erken-rezervasyon-son-dakika-2026",
+      "title": "2026 erken rezervasyon vs son dakika — maliyet karşılaştırması",
+      "excerpt": "Aynı destinasyonda iki rezervasyon zamanının toplam tatil bütçesine etkisi — varsayımlı tablo.",
+      "cover_image_url": "/assets/images/demo/lara-resort.svg",
+      "source_label": "Sektör özeti",
+      "is_featured": true
+    },
+    {
+      "slug": "yurt-ici-tatil-butcesi-aile-7-gun",
+      "title": "Yurt içi tatil bütçesi: aile için 7 günlük plan",
+      "excerpt": "Konaklama, ulaşım ve aktivite kalemleri — çocuklu aile için risk ve konfor dengesi.",
+      "cover_image_url": "/assets/images/demo/urla-villa.svg",
+      "source_label": "isteBul Tatil"
+    },
+    {
+      "slug": "doviz-kuru-tatil-maliyeti",
+      "title": "Döviz kuru tatil maliyetini nasıl etkiler?",
+      "excerpt": "Yurt dışı ve döviz endeksli paketlerde bütçe tamponu — bilgilendirme amaçlı senaryo.",
+      "cover_image_url": "/assets/images/demo/lara-resort.svg",
+      "source_label": "TCMB"
+    },
+    {
+      "slug": "cocuklu-tatil-destinasyon-secimi",
+      "title": "Çocuklu tatil destinasyonu seçimi — risk ve konfor",
+      "excerpt": "Sezon skoru, ulaşım ve sağlık riski — tatil karar asistanında nasıl okunur.",
+      "cover_image_url": "/assets/images/demo/karadeniz-yayla.svg",
+      "source_label": "isteBul Tatil metodoloji"
+    },
+    {
+      "slug": "tatil-sigortasi-ne-zaman",
+      "title": "Tatil sigortası ne zaman mantıklı?",
+      "excerpt": "İptal, sağlık ve bagaj teminatları — toplam tatil maliyetine ek yük analizi.",
+      "cover_image_url": "/assets/images/demo/lara-resort.svg",
+      "source_label": "Sigorta sektör özeti"
+    }
+  ]
+}

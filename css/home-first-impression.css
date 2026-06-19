@@ -1,0 +1,58 @@
+/**
+ * Homepage first visit — contrast, typography, category wayfinding.
+ */
+html.ib-ds-v4.ib-premium-v7 {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.ib-hero-v4 .hero-content h1,
+.ib-hero-v4 .hero-lead,
+.ib-hero-v4 .hero-eyebrow {
+  color: #f8fafc;
+  text-shadow: 0 1px 3px rgba(15, 23, 42, 0.45);
+}
+
+.ib-hero-v4 .hero-lead,
+.ib-hero-v4 .ib-hero-cta-hint {
+  color: #e2e8f0;
+  max-width: 42rem;
+}
+
+.ib-hero-v4 .ib-dash-stat span,
+.ib-hero-v4 .ib-dash-score-label,
+.ib-hero-v4 .preview-category-label {
+  color: #334155;
+}
+
+.ib-home-categories .category-card:not(.is-coming-soon) {
+  border-color: rgba(37, 99, 235, 0.28);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+}
+
+.ib-home-categories .category-card:not(.is-coming-soon) h3,
+.ib-home-categories .category-card:not(.is-coming-soon) p {
+  color: var(--ib-card-ink, #0f172a);
+}
+
+.ib-home-categories .category-card.is-coming-soon {
+  opacity: 1;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  background: rgba(248, 250, 252, 0.92);
+  box-shadow: none;
+}
+
+.category-card.is-coming-soon {
+  opacity: 1;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  background: rgba(248, 250, 252, 0.92);
+}
+
+.ib-how-steps-premium h3 {
+  color: #0f172a;
+}
+
+.ib-how-steps-premium p {
+  color: #334155;
+}

@@ -1,0 +1,49 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.istebul.com/#organization",
+      "name": "isteBul",
+      "url": "https://www.istebul.com/",
+      "logo": "https://www.istebul.com/assets/icons/favicon-512.png"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://www.istebul.com/#website",
+      "url": "https://www.istebul.com/",
+      "name": "isteBul",
+      "description": "AI destekli karar zekası: büyük satın alma kararlarında toplam maliyet, risk ve finansman etkisini şeffaf analiz eder.",
+      "publisher": { "@id": "https://www.istebul.com/#organization" },
+      "inLanguage": "tr-TR",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.istebul.com/rehber/arac-alim-karar-asistani/",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://www.istebul.com/#webapp",
+      "name": "isteBul AI Karar Platformu",
+      "url": "https://www.istebul.com/",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "Büyük satın alma kararlarında toplam maliyet, risk skoru ve finansman senaryolarını analiz eder.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" },
+      "inLanguage": "tr-TR"
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://www.istebul.com/#decision-categories",
+      "name": "Karar kategorileri",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Araba", "url": "https://www.istebul.com/auto/" },
+        { "@type": "ListItem", "position": 2, "name": "Konut", "url": "https://www.istebul.com/konut/" },
+        { "@type": "ListItem", "position": 3, "name": "Tatil", "url": "https://www.istebul.com/tatil/" },
+        { "@type": "ListItem", "position": 4, "name": "Finansman", "url": "https://www.istebul.com/finans/" },
+        { "@type": "ListItem", "position": 5, "name": "Sigorta", "url": "https://www.istebul.com/sigorta/" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,278 @@
+{
+  "version": "p11-exit.0",
+  "updatedAt": "2026-05-24",
+  "phaseName": "P11 — Acquisition / exit optionality",
+  "companyStage": "seed_ready_pre_revenue_scale",
+  "executiveVerdict": {
+    "recommendedPath": "bootstrap_with_optional_seed",
+    "timingSeed": "after_90d_readiness_gate",
+    "timingStrategicDialogue": "after_partner_graph_proof",
+    "exitReadinessPct": 48,
+    "investabilityPct": 55,
+    "acquirabilityPct": 42
+  },
+  "valuationLogic": {
+    "framework": "Stage-appropriate: ARR multiple + strategic premium for decision IP + partner outcome data",
+    "primaryMetric": "blended_ARR_try",
+    "components": [
+      { "id": "pro_mrr", "weight": 0.35, "source": "Stripe subscriptions", "multipleRange": "8-15x ARR" },
+      { "id": "partner_revenue", "weight": 0.45, "source": "CPL + actual_revenue CRM", "multipleRange": "5-12x recognized revenue" },
+      { "id": "strategic_premium", "weight": 0.2, "source": "Decision IP + dispatch OS + vertical optionality", "premiumPct": "15-40% on top of financial multiple" }
+    ],
+    "disclaimer": "Illustrative TRY ranges — replace with live metrics:investor:pack before any term sheet."
+  },
+  "revenueMultiplePotential": {
+    "saasSeedBand": { "low": 5, "mid": 10, "high": 15, "note": "When ARR >₺3M and growth >80% YoY" },
+    "strategicBand": { "low": 8, "mid": 12, "high": 20, "note": "Buyer synergies: lead quality, embedded finance, data" },
+    "servicesHeavyDiscount": 0.25,
+    "whenPremiumJustified": ["outcome graph >70% capture", "10+ partner endpoints", "2+ verticals live"]
+  },
+  "bootstrapVsVc": {
+    "bootstrapCase": {
+      "when": "Partner CPL covers burn within 12mo; CAC payback ≤6mo without paid scale",
+      "pros": ["No dilution", "Strategic optionality preserved", "Forces unit economics discipline"],
+      "cons": ["Slower category expansion", "Competitor burn risk on paid"],
+      "capitalNeedTry": "0-1.5M founder/angel optional"
+    },
+    "vcCase": {
+      "when": "90d gate passed: LOIs + MRR slope + LTV:CAC ≥3 + vertical roadmap credible",
+      "pros": ["Faster ev/tatil launch", "Paid acquisition tests", "Enterprise bank BD hire"],
+      "cons": ["Dilution 15-25%", "Reporting overhead", "Pressure on vanity metrics"],
+      "typicalSeedTry": "8-25M pre-money at ₺2-6M ARR run-rate entry",
+      "typicalRaiseTry": "3-8M round size"
+    },
+    "recommendation": "Bootstrap to proof partner economics (90d), then seed for vertical + international optionality — avoid raising before outcome graph."
+  },
+  "rightTimeToInvest": {
+    "greenLights": [
+      "2+ signed partner LOIs with CPL bands",
+      "dispatch_success ≥85% for 8 weeks",
+      "Stripe MRR WoW positive 12 weeks OR partner revenue ≥40% of total",
+      "LTV:CAC ≥3 on Pro cohort (metrics:unit-economics)",
+      "npm run metrics:investor:pack fresh <7d"
+    ],
+    "redLights": [
+      "estimated_revenue without contracts",
+      "No actual_revenue on closed leads",
+      "Single partner >60% revenue concentration",
+      "liveProvidersEnabled false but claiming live data"
+    ],
+    "window": "Ideal seed conversation: after Q2 readiness gate — before competitor AI blurs category narrative"
+  },
+  "investorMetrics": [
+    { "tier": "must_show", "metrics": ["MRR_try", "partner_pipeline_try", "qualified_leads_mom", "dispatch_success_pct", "LTV_CAC_ratio"] },
+    { "tier": "strong", "metrics": ["wizard_completion_pct", "partner_win_rate", "pro_churn_monthly", "cac_payback_months", "gross_margin_pct"] },
+    { "tier": "diligence", "metrics": ["outcome_revenue_capture_pct", "active_partner_endpoints", "analytics_at_cap_flag", "cohort_retention_d30"] },
+    { "tier": "narrative", "metrics": ["verticals_live", "cross_sell_attach", "SEO_organic_share", "decision_sessions_per_mau"] }
+  ],
+  "acquisitionPotential": {
+    "overall": "medium_rising",
+    "buyerMotives": [
+      "Decision layer above listings (classifieds)",
+      "Scored lead supply for banks/insurance",
+      "White-label decision API",
+      "Outcome data for pricing models"
+    ],
+    "blockers": ["Low ARR absolute size today", "Founder dependency", "TR-only revenue"],
+    "catalysts": ["Exclusive partner graph", "Multi-vertical live", "EN market pilot"]
+  },
+  "strategicBuyers": [
+    {
+      "id": "marketplace_classifieds",
+      "examples": ["Sahibinden", "Arabam", "Hepsiemlak"],
+      "scenario": "Acquire decision engine; keep listings; reduce AI wrapper risk",
+      "fitScore": 88,
+      "synergy": "distribution",
+      "risk": "Build vs buy — internal AI team"
+    },
+    {
+      "id": "bank",
+      "examples": ["Garanti BBVA", "İş Bankası", "QNB Finansbank", "Yapı Kredi"],
+      "scenario": "Embedded mortgage/auto finance decision; lead quality for origination",
+      "fitScore": 82,
+      "synergy": "monetization",
+      "risk": "Long procurement; compliance"
+    },
+    {
+      "id": "insurance",
+      "examples": ["Anadolu Sigorta", "Allianz TR", "Aksigorta"],
+      "scenario": "Attach kasko/DASK at decision moment; risk scoring",
+      "fitScore": 75,
+      "synergy": "monetization",
+      "risk": "Regulatory; slow product"
+    },
+    {
+      "id": "automotive",
+      "examples": ["Borusan Next", "Otokoç", "Doğuş Otomotiv digital"],
+      "scenario": "Dealer group digital advisor; lead scoring for network",
+      "fitScore": 80,
+      "synergy": "distribution + monetization",
+      "risk": "Brand bias pressure"
+    },
+    {
+      "id": "fintech",
+      "examples": ["Hangikredi", "Kredim", "bank-adjacent brokers"],
+      "scenario": "Asset-context comparison vs rate table",
+      "fitScore": 78,
+      "synergy": "product",
+      "risk": "Overlap with existing comparison UX"
+    },
+    {
+      "id": "ota_travel",
+      "examples": ["Enuygun", "Jolly", "Setur"],
+      "scenario": "Budget+finance decision before booking",
+      "fitScore": 70,
+      "synergy": "distribution",
+      "risk": "Lower priority vs auto/ev"
+    },
+    {
+      "id": "global_tech",
+      "examples": ["Auto comparison platforms", "CRM/lead platforms"],
+      "scenario": "Turkey beachhead + engine license",
+      "fitScore": 55,
+      "synergy": "tech_acqui",
+      "risk": "Small scale for global strategics"
+    }
+  ],
+  "buyerScenarios": {
+    "bank": { "thesis": "Origination quality — reduce NPAs via better fit", "dealStructure": "Minority + commercial JV or acqui-hire", "valuationDriver": "Cost of lead + conversion uplift" },
+    "insurance": { "thesis": "Attach at purchase consideration", "dealStructure": "Revenue share acquisition", "valuationDriver": "Policy conversion lift" },
+    "marketplace": { "thesis": "Defend against AI disintermediation", "dealStructure": "Full acquisition or acqui-hire + earnout", "valuationDriver": "MAU retention + ARPU" },
+    "automotive": { "thesis": "Dealer network digital transformation", "dealStructure": "Strategic investment + distribution MOU", "valuationDriver": "Lead CPA reduction" },
+    "fintech": { "thesis": "Differentiated comparison moat", "dealStructure": "Merge comparison + decision", "valuationDriver": "CPL expansion" }
+  },
+  "exitReadinessGaps": [
+    { "id": "live_mrr_evidence", "severity": "high", "gap": "Stripe screenshots + 12mo MRR export in data room", "owner": "cfo_founder" },
+    { "id": "signed_lois", "severity": "high", "gap": "2+ partner LOIs with CPL — template exists unsigned", "owner": "ceo" },
+    { "id": "outcome_graph", "severity": "high", "gap": "actual_revenue <70% on closed partner leads", "owner": "coo" },
+    { "id": "cap_table_counsel", "severity": "medium", "gap": "cap-table.csv not finalized with counsel", "owner": "ceo" },
+    { "id": "ip_assignment", "severity": "medium", "gap": "Founder IP assignment to entity", "owner": "legal" },
+    { "id": "gdpr_intl", "severity": "medium", "gap": "EN legal pack for global strategics", "owner": "vp_product" },
+    { "id": "concentration", "severity": "medium", "gap": "Single partner revenue concentration risk", "owner": "vp_revenue" },
+    { "id": "warehouse_bi", "severity": "low", "gap": "Investor-grade cohort export beyond 20k cap", "owner": "scale_architect" }
+  ],
+  "dataRoom": {
+    "index": "docs/investor/DATA_ROOM_INDEX.md",
+    "p11Additions": [
+      "docs/investor/EXIT_OPTIONALITY_REPORT.md",
+      "data/ops/acquisition-exit-optionality.json",
+      "dist/acquisition-exit-snapshot.json"
+    ],
+    "folders": [
+      { "id": "01_corporate", "items": ["cap-table.csv", "incorporation", "IP assignment"] },
+      { "id": "02_financial", "items": ["financial-model-template", "STRIPE_MRR_EVIDENCE", "unit-economics snapshots"] },
+      { "id": "03_traction", "items": ["investor-readiness-pack", "partner-ops-snapshot", "dispatch logs sample"] },
+      { "id": "04_product", "items": ["ARCHITECTURE", "AI_DECISION_ENGINE", "partner-webhook-integration"] },
+      { "id": "05_legal", "items": ["kvkk", "gizlilik", "SUBPROCESSORS", "partner LOI"] },
+      { "id": "06_exit", "items": ["EXIT_OPTIONALITY_REPORT", "strategic buyer map", "scenario model"] }
+    ],
+    "weeklyRefresh": ["npm run metrics:investor:pack", "npm run metrics:exit:optionality"]
+  },
+  "pitchNarrative": {
+    "oneLine": "We are decision infrastructure for high-consideration purchases — not a marketplace.",
+    "slides": [
+      "Problem: fragmented listings + single-product banks + hallucinating AI",
+      "Solution: deterministic scores + partner closure",
+      "Traction: MRR + qualified leads + dispatch SLA",
+      "Moat: outcome graph + HMAC partner OS",
+      "Market: TR auto → ev → finance graph",
+      "Ask: seed for vertical expansion + partner density",
+      "Optionality: strategic distribution JVs parallel to raise"
+    ],
+    "avoid": ["Listing count", "Generic AI wrapper", "Uncontracted revenue"]
+  },
+  "partnerTractionProof": [
+    { "artifact": "partner_endpoints table — active count + health", "export": "metrics:partner:ops" },
+    { "artifact": "partner_lead_dispatch_logs — success rate p95", "export": "dist/partner-ops-snapshot.json" },
+    { "artifact": "auto_leads with lead_score + partner_status + actual_revenue", "export": "admin CRM + SQL" },
+    { "artifact": "Signed LOI PDF", "export": "founder" },
+    { "artifact": "Webhook sample + HMAC verification doc", "path": "docs/partner-webhook-integration.md" },
+    { "artifact": "Case study: lead → dispatch → won in <14d", "export": "founder narrative" }
+  ],
+  "revenueModelUpgrades": [
+    { "id": "contracted_cpl", "impact": "high", "action": "Replace estimated_revenue with signed CPL tiers in CRM" },
+    { "id": "outcome_pricing", "impact": "high", "action": "Bonus fee on actual_revenue > threshold" },
+    { "id": "pro_plus_vertical", "impact": "medium", "action": "Pro bundles per vertical (ev, auto)" },
+    { "id": "api_enterprise", "impact": "medium", "action": "White-label decision API — bank pilot" },
+    { "id": "data_licensing", "impact": "long", "action": "Anonymized benchmark subscription" },
+    { "id": "exclusivity_premium", "impact": "high", "action": "6-12mo regional exclusivity uplift on CPL" }
+  ],
+  "scenarios": [
+    {
+      "id": "bootstrap",
+      "name": "Bootstrap path",
+      "probability": 0.35,
+      "capital": "Minimal external; founder + partner cash flow",
+      "timelineMonths": 24,
+      "valuationImpliedTry": { "low": 0, "high": 15000000, "note": "No priced round — intrinsic at profitability" },
+      "arrTargetEndY2Try": 8000000,
+      "exitOptional": "Strategic dialogue from strength at ₺8-15M ARR",
+      "keyMoves": ["10 partner endpoints", "Ev vertical live", "No paid until LTV:CAC proven"]
+    },
+    {
+      "id": "seed",
+      "name": "Seed investment",
+      "probability": 0.5,
+      "capital": "₺3-8M raise",
+      "timelineMonths": 18,
+      "valuationPreMoneyTry": { "low": 12000000, "mid": 20000000, "high": 32000000 },
+      "arrEntryTry": { "low": 2000000, "mid": 4000000, "high": 6000000 },
+      "multipleAtEntry": { "low": 6, "mid": 8, "high": 12 },
+      "dilutionPct": { "low": 15, "high": 25 },
+      "useOfFunds": ["Partner BD", "Ev+tatil launch", "Paid tests capped", "Legal/data room"],
+      "exitOptional": "Series A or strategic at 3-5x step-up in 24-36mo"
+    },
+    {
+      "id": "strategic_acquisition",
+      "name": "Strategic acquisition",
+      "probability": 0.15,
+      "timelineMonths": 12,
+      "valuationTry": { "low": 25000000, "mid": 45000000, "high": 90000000 },
+      "multipleOnArr": { "low": 10, "mid": 14, "high": 18 },
+      "arrRequiredTry": 4000000,
+      "structure": ["Cash + earnout on partner revenue", "Founder retention 24mo", "Tech team acqui-hire"],
+      "likelyBuyers": ["marketplace_classifieds", "bank", "automotive"],
+      "trigger": "Buyer fear of AI disintermediation + proven dispatch graph"
+    }
+  ],
+  "roadmap90Days": [
+    { "week": "1-2", "workstream": "metrics", "tasks": ["Weekly metrics:investor:pack", "Fix actual_revenue CRM discipline", "Stripe evidence folder"] },
+    { "week": "3-4", "workstream": "partners", "tasks": ["2 LOI targets signed", "10 endpoint goal plan", "Partner case study doc"] },
+    { "week": "5-8", "workstream": "product", "tasks": ["Category registry MVP", "Ev decision_leads smoke", "Outcome capture ≥70%"] },
+    { "week": "9-10", "workstream": "data_room", "tasks": ["DATA_ROOM_INDEX 06_exit folder", "Deck PDF export", "Cap table counsel"] },
+    { "week": "11-12", "workstream": "optionality", "tasks": ["3 strategic teasers (NDA)", "Seed OR bootstrap decision memo", "Update financial model with live ARR"] }
+  ],
+  "metricsCollectNow": [
+    { "metric": "mrr_try", "source": "Stripe + metrics:investor", "frequency": "weekly" },
+    { "metric": "partner_revenue_try", "source": "auto_leads.actual_revenue", "frequency": "weekly" },
+    { "metric": "qualified_leads", "source": "analytics + CRM", "frequency": "weekly" },
+    { "metric": "dispatch_success_pct", "source": "partner-ops-snapshot", "frequency": "daily" },
+    { "metric": "ltv_cac_ratio", "source": "metrics:unit-economics", "frequency": "monthly" },
+    { "metric": "outcome_capture_pct", "source": "CRM", "frequency": "weekly" },
+    { "metric": "active_partner_endpoints", "source": "partner_endpoints", "frequency": "weekly" },
+    { "metric": "wizard_completion_pct", "source": "metrics:growth", "frequency": "weekly" },
+    { "metric": "pro_churn", "source": "subscriptions", "frequency": "monthly" },
+    { "metric": "concentration_top_partner_pct", "source": "finance", "frequency": "monthly" }
+  ],
+  "productBusinessGaps": [
+    { "area": "revenue", "gap": "Contracted CPL not systematized in billing", "priority": "P0" },
+    { "area": "data", "gap": "Outcome graph incomplete", "priority": "P0" },
+    { "area": "product", "gap": "Single vertical revenue concentration (auto)", "priority": "P1" },
+    { "area": "legal", "gap": "IP + cap table not DD-ready", "priority": "P1" },
+    { "area": "ops", "gap": "Investor cohort export capped", "priority": "P2" },
+    { "area": "intl", "gap": "Limits strategic buyer global comps", "priority": "P2" }
+  ],
+  "kpis": [
+    { "key": "exit_readiness_score", "target": ">=70 post-90d", "owner": "ceo" },
+    { "key": "investor_pack_freshness_days", "target": "<=7", "owner": "cfo_founder" },
+    { "key": "signed_lois", "target": ">=2", "owner": "ceo" },
+    { "key": "outcome_revenue_capture_pct", "target": ">=70", "owner": "coo" }
+  ],
+  "linkedDocs": [
+    "docs/ACQUISITION_EXIT_OPTIONALITY.md",
+    "docs/investor/EXIT_OPTIONALITY_REPORT.md",
+    "docs/investor/DATA_ROOM_INDEX.md",
+    "docs/investor/FUNDRAISING_READINESS.md",
+    "data/investor/investor-readiness.json"
+  ]
+}

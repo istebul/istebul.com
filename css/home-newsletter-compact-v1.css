@@ -1,0 +1,102 @@
+/**
+ * Footer newsletter — compact “Karar içgörüleri” card on marketing home.
+ */
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer-premium .newsletter-card.newsletter-card--compact {
+  display: grid !important;
+  gap: 0.85rem !important;
+  padding: 1rem 1.15rem !important;
+  margin-top: 1rem !important;
+  max-width: 52rem !important;
+  margin-inline: auto !important;
+  border-radius: 14px !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact h3 {
+  font-size: 0.95rem !important;
+  margin: 0;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact > div > p {
+  font-size: 0.8rem !important;
+  margin: 0.2rem 0 0;
+  max-width: 42ch;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact .newsletter-form {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 0.65rem !important;
+  width: 100% !important;
+  max-width: 36rem !important;
+  flex-wrap: nowrap !important;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact .newsletter-form input[type='email'] {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 42px;
+  font-size: 0.875rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact .newsletter-consent {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact .newsletter-consent span {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  line-height: 1.45 !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact .newsletter-submit {
+  align-self: flex-start !important;
+  width: auto !important;
+  min-width: 8.5rem;
+  min-height: 42px;
+  margin-top: 0 !important;
+}
+
+@media (min-width: 768px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) !important;
+    column-gap: 1.25rem !important;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact .newsletter-form {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      'email submit'
+      'consent consent' !important;
+    gap: 0.55rem 0.65rem !important;
+    max-width: none !important;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact .newsletter-form input[type='email'] {
+    grid-area: email !important;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact .newsletter-submit {
+    grid-area: submit !important;
+    align-self: stretch !important;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .newsletter-card.newsletter-card--compact .newsletter-consent {
+    grid-area: consent !important;
+  }
+}

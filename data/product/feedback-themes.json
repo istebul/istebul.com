@@ -1,0 +1,10 @@
+{
+  "version": "p20.0",
+  "updatedAt": "2026-05-24",
+  "themes": [
+    { "id": "checkout_clarity", "label": "Checkout / pricing clarity", "mentions": 0, "owner": "vp_growth" },
+    { "id": "decision_explainability", "label": "AI score explainability", "mentions": 0, "owner": "vp_product" },
+    { "id": "partner_followup", "label": "Partner callback speed", "mentions": 0, "owner": "vp_revenue" }
+  ],
+  "note": "Populate from product-feedback and support-intake aggregations in product review."
+}

@@ -1,0 +1,70 @@
+{
+  "version": "p7.2",
+  "asOf": "2026-05-24",
+  "currency": "TRY",
+  "fxUsdTry": 34,
+  "markets": {
+    "auto_marketplace_tr": {
+      "label": "Türkiye otomotiv marketplace (ilan + dijital perakende)",
+      "units2024": {
+        "newOdmdPcLcv": 1238509,
+        "usedOnlineIndicata": 2091918,
+        "usedNoterTuik": 7103550
+      },
+      "gmvTry": {
+        "newRetail": 1670000000000,
+        "usedNoterTransfers": 5327662500000,
+        "onlineUsedChannel": 1359747000000
+      },
+      "method": "New: ODMD units × ~₺1.35M ortalama fatura; Used noter: TÜİK devir × ~₺750K; Online: Indicata satış × ~₺650K",
+      "sources": [
+        { "org": "ODMD", "metric": "2024 Otomobil + HTA toplam 1.238.509 adet", "url": "https://www.gcmyatirim.com.tr/arastirma-analiz/ozel-raporlar/2025-01-07-2024-otomotiv-satislari-rekor-tazelendi" },
+        { "org": "TÜİK", "metric": "2024 binek otomobil devir 7.103.550", "url": "https://bigpara.hurriyet.com.tr/haberler/ekonomi-haberleri/2024-yilinda-2-el-otomobil-satislari-ilk-kez-7-milyon-adedin-uzerine-cikti-bir-rekor-da-ikinci-elden_ID1606590/" },
+        { "org": "Indicata", "metric": "2024 çevrim içi 2. el binek+HTA 2.091.918 satış", "url": "https://www.cnbce.com/otomotiv/ikinci-el-otomobil-satislari-yuzde-11-artti-en-cok-satan-markalar-hangileri-h8573" }
+      ]
+    },
+    "used_car_tr": {
+      "label": "İkinci el araç pazarı (noter devir)",
+      "volumeUnits2024": 7103550,
+      "gmvTry": 5327662500000,
+      "avgTicketTry": 750000,
+      "yoyGrowthPct": 1.99,
+      "sources": [
+        { "org": "TÜİK", "metric": "Motorlu Kara Taşıtları Aralık 2024", "url": "https://www.dunya.com/gundem/tuik-2024-yilina-ait-motorlu-kara-tasitlari-istatistiklerini-acikladi-haberi-761441" }
+      ]
+    },
+    "dealer_software_tr": {
+      "label": "Bayi yazılım (DMS/ERP) pazarı — TR",
+      "addressableDealers": 3500,
+      "avgAcvTry": 180000,
+      "samAnnualTry": 630000000,
+      "method": "~3.500 yetkili bayi × ₺180K/yıl SaaS ACV (Otosoft, Hitsoft, DealerBox segmenti)",
+      "sources": [
+        { "org": "Sector", "metric": "TR DMS sağlayıcıları: Otosoft, Hitsoft B1, iSystems DealerBox", "url": "https://otosoft.com.tr/otosoft-dms-yazilimi/" }
+      ],
+      "notes": "Paying outlet sayısı founder ile doğrulanmalı; SAM order-of-magnitude."
+    },
+    "ai_auto_sales": {
+      "label": "Yapay zekâ destekli otomotiv satış / retail AI",
+      "globalUsd2025": 8600000000,
+      "globalUsd2034": 38400000000,
+      "trSamTry2026": 450000000,
+      "method": "Global AI automotive retail ~$8.6B (2025); TR payı ~%1.5 dijital retail AI harcaması → ~$37M (~₺1.25B) üst sınır; isteBul beachhead SAM karar katmanı ~₺450M",
+      "sources": [
+        { "org": "DataIntelo", "metric": "AI in automotive retail $8.6B (2025)", "url": "https://dataintelo.com/report/ai-in-automotive-retail-market" },
+        { "org": "Research and Markets", "metric": "Automotive AI $5.2B (2024)", "url": "https://www.researchandmarkets.com/reports/6177926/ai-in-automotive-global-markets" }
+      ]
+    }
+  },
+  "macro": {
+    "housingSales2024": 1478025,
+    "mortgageSales2024": 158486,
+    "housingCreditStockBddkTry": 551700000000,
+    "vehicleCreditStockTry": 12800000000,
+    "sources": [
+      { "org": "TÜİK/AA", "metric": "Konut satış 1.478.025; ipotekli 158.486 (%10,7)", "url": "https://www.aa.com.tr/tr/ekonomi/ipotekli-konut-satislari-2024te-dip-yapti/3464168" },
+      { "org": "BDDK", "metric": "Konut kredi stoku 551,7 milyar TL", "url": "https://istanbulticaretgazetesi.com/konut-kredi-hacmi-rekor-kirdi-5517-milyar-lirayi-asti" },
+      { "org": "Matriks/BDDK", "metric": "Taşıt kredileri ~12,8 milyar TL (bireysel içinde)", "url": "https://www.matriksdata.com/website/matriks-haberler/ekonomi/5513126-kredi-kuruluslarinin-nakdi-kredileri-16-trilyon-tl-ye-yaklasti" }
+    ]
+  }
+}

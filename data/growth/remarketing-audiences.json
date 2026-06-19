@@ -1,0 +1,49 @@
+{
+  "audiences": [
+    {
+      "id": "auto_results_no_lead_7d",
+      "name": "Auto sonuç gördü, lead yok (7g)",
+      "platforms": ["google_search", "meta", "youtube"],
+      "includeEvents": ["results_view", "auto_results_rendered"],
+      "excludeEvents": ["auto_lead_submit", "lead_submit"],
+      "windowDays": 7,
+      "exportHint": "Analytics export: results_view AND NOT lead_submit"
+    },
+    {
+      "id": "auto_start_no_complete_3d",
+      "name": "Wizard başladı, tamamlamadı (3g)",
+      "platforms": ["tiktok", "meta"],
+      "includeEvents": ["auto_start", "auto_form_started"],
+      "excludeEvents": ["wizard_complete", "auto_wizard_complete"],
+      "windowDays": 3,
+      "exportHint": "auto_form_started without wizard_complete"
+    },
+    {
+      "id": "checkout_abandon_7d",
+      "name": "Checkout başladı, tamamlamadı (7g)",
+      "platforms": ["google_search", "retargeting", "meta"],
+      "includeEvents": ["checkout_start", "checkout_started"],
+      "excludeEvents": ["checkout_complete", "paid_conversion"],
+      "windowDays": 7,
+      "exportHint": "checkout_start AND checkout_abandoned"
+    },
+    {
+      "id": "pricing_view_no_checkout_7d",
+      "name": "Pricing gördü, checkout yok (7g)",
+      "platforms": ["retargeting", "meta"],
+      "includeEvents": ["pricing_view"],
+      "excludeEvents": ["checkout_start", "checkout_started"],
+      "windowDays": 7,
+      "exportHint": "pricing_view without checkout_start"
+    },
+    {
+      "id": "lead_no_purchase_30d",
+      "name": "Lead var, Pro satın almadı (30g)",
+      "platforms": ["retargeting", "google_search"],
+      "includeEvents": ["auto_lead_submit", "lead_submit"],
+      "excludeEvents": ["paid_conversion", "checkout_complete"],
+      "windowDays": 30,
+      "exportHint": "lead_submit without paid_conversion"
+    }
+  ]
+}

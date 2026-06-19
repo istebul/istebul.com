@@ -1,0 +1,52 @@
+{
+  "version": "p16.0",
+  "currency": "USD",
+  "disclaimer": "Planning assumptions for guardrails — replace with vendor dashboards monthly.",
+  "vendors": {
+    "groq": {
+      "model": "llama-3.1-8b-instant",
+      "estimatedUsdPer1kOutputTokens": 0.00008,
+      "estimatedUsdPer1kInputTokens": 0.00005,
+      "maxOutputTokens": 800,
+      "maxPromptChars": 3000,
+      "serverRateLimitPerIpPerMin": 20,
+      "clientSessionCallsPerHour": 3
+    },
+    "resend": {
+      "estimatedUsdPerEmail": 0.001,
+      "lifecycleCronMaxSendsPerRun": 50,
+      "lifecycleCronMaxEnrollmentsPerAudience": 30
+    },
+    "supabase": {
+      "analyticsRetentionDays": 90,
+      "analyticsEventsPerMauMonth": 40,
+      "storagePublicBucket": "images",
+      "edgeIngestRateLimitPerIpPerMin": 100
+    },
+    "cloudflare": {
+      "pagesFunctions": ["ai-proxy", "stripe-webhook", "create-checkout"],
+      "bandwidthAssetCacheMaxAgeSec": 31536000,
+      "noKvNoR2": true
+    },
+    "plausible": {
+      "consentGated": true,
+      "estimatedUsdPer1kPageviews": 0.0
+    }
+  },
+  "guardrails": {
+    "analyticsSampleRateLowPriority": 0.5,
+    "analyticsLowPriorityEvents": ["page_exit", "route_change"],
+    "analyticsMaxQueue": 40,
+    "analyticsFlushDebounceMs": 1500,
+    "opsTelemetryMaxQueue": 30,
+    "aiProxyMaxTokens": 400,
+    "aiProxyPromptCacheTtlMs": 600000,
+    "aiProxyPromptCacheMaxEntries": 48
+  },
+  "unitEconomicsTargets": {
+    "proArpuMonthlyTry": 299,
+    "targetGrossMarginPct": 72,
+    "maxInfraCostPerProMauUsd": 2.5,
+    "maxAiCallsPerProUserPerMonth": 12
+  }
+}

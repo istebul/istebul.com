@@ -1,0 +1,73 @@
+import {
+  hydrateHomeContentHubPreview,
+  renderAnnouncementsPage,
+  renderBlogPage,
+  renderBlogPostPage,
+  renderCampaignsPage
+} from '../features/content/content-hub-ui.js';
+import { blogSlugFromPath, resolveContentRouteSurface } from './route-surface.js';
+import { initCategoryGuidesHub } from './init-category-guides.js';
+
+export async function refreshPublicContentSurface(surfaceId) {
+  try {
+    if (surfaceId === 'home') {
+      await hydrateHomeContentHubPreview();
+      return;
+    }
+
+    if (surfaceId === 'page-duyurular') {
+      await renderAnnouncementsPage(document);
+      return;
+    }
+
+    if (surfaceId === 'page-kampanyalar') {
+      await renderCampaignsPage(document);
+      return;
+    }
+
+    if (surfaceId === 'page-blog') {
+      await renderBlogPage(document, window.location.search);
+      return;
+    }
+
+    if (surfaceId === 'page-blog-post') {
+      await renderBlogPostPage(document, blogSlugFromPath(window.location.pathname));
+    }
+  } catch (err) {
+    console.error('[public-content]', surfaceId, err);
+    const fallbackRoot =
+      surfaceId === 'page-blog-post'
+        ? document.querySelector('#page-blog-post [data-blog-post-root]')
+        : document.querySelector(`#${surfaceId} [data-content-list]`);
+    if (fallbackRoot) {
+      fallbackRoot.innerHTML =
+        '<p class="text-muted-sm">İçerik yüklenemedi. Sayfayı yenileyin veya <a href="/blog/">blog listesine</a> dönün.</p>';
+    }
+  }
+}
+
+export function initPublicContentHub() {
+  initCategoryGuidesHub();
+
+  const run = () => {
+    const surface =
+      resolveContentRouteSurface(window.location.pathname) ||
+      document.documentElement.getAttribute('data-ib-route');
+    if (surface) refreshPublicContentSurface(surface);
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    run();
+  });
+
+  window.addEventListener('popstate', run);
+  window.addEventListener('app:ready', run);
+
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('a[data-full-page]')) return;
+
+    const link = event.target.closest('a[data-native-route], a[href^="/duyurular"], a[href^="/kampanyalar"], a[href^="/blog"]');
+    if (!link) return;
+    window.setTimeout(run, 0);
+  });
+}

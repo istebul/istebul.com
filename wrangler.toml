@@ -1,3 +1,11 @@
-name = "istebul"
+name = "istebul-com"
 compatibility_date = "2026-05-15"
 pages_build_output_dir = "dist"
+
+# Build: GitHub Actions (npm run build) veya Cloudflare Dashboard → Builds → "npm run build"
+# Not: [build] burada OLMAMALI — wrangler pages deploy önceden üretilmiş dist kullanır.
+
+# Pages Functions: /functions (api/analytics-ingest, public-stats, stripe-webhook, env.js, …)
+# Runtime env: Cloudflare Dashboard → istebul-com → Settings → Environment variables
+# Required: SUPABASE_URL, SUPABASE_ANON_KEY (Production + Preview)
+# Otomatik deploy: .github/workflows/production-deploy.yml (main push)

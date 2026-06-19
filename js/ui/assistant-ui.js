@@ -1,6 +1,79 @@
 // Lazy-loaded AI assistant UI renderer
 // Extracted from UIManager to keep the initial app bundle smaller.
 
+import {
+    buildDecisionResultSummary,
+    renderDecisionResultSummaryHtml,
+    shouldRenderDecisionResultSummary,
+    renderDecisionHistoryResultSummaryHtml
+} from './decision-result-summary.js';
+import {
+    buildDeterministicDecisionResultRationale,
+    hydrateDecisionResultAiRationale,
+    renderDecisionResultAiRationaleHtml
+} from './decision-result-ai-rationale.js';
+import {
+    bindDecisionResultShareCard,
+    renderDecisionResultShareHtml,
+    shouldRenderDecisionResultShare
+} from './decision-result-share.js';
+import {
+    buildDecisionHistorySignalStrip,
+    renderDecisionHistorySignalStripHtml
+} from './decision-history-signal-strip.js';
+import { canAddHistoryEntryToComparison } from './decision-history-comparison.js';
+import {
+    buildRecentDecisionHistorySnippetModel,
+    renderRecentDecisionHistorySnippetHtml
+} from './decision-history-recent-snippet.js';
+import {
+    buildDecisionMemoryInsightsModel,
+    renderDecisionMemoryInsightsHtml,
+    DECISION_MEMORY_INSIGHTS_MIN
+} from './decision-memory-insights.js';
+import {
+    buildDecisionMemoryContextModel,
+    renderDecisionMemoryContextHtml
+} from './decision-memory-context.js';
+import { normalizeHistoryEntryCategory } from './decision-history-category.js';
+import { normalizeDecisionHistoryList } from './decision-history-compat.js';
+import { hasPublicSourceUrl, resolvePublicExternalUrl } from './listing-trust-ui.js';
+import { buildVerticalContinueHref } from '../features/assistant/assistant-category-bridge.js';
+
+export const VERTICAL_CONTINUE_CATEGORY_LABELS = Object.freeze({
+    arac: 'Araba Karar Analizi',
+    ev: 'Konut Karar Analizi',
+    finansman: 'Finansman Karar Analizi',
+    sigorta: 'Sigorta Karar Analizi',
+    kasko: 'Kasko Karar Analizi',
+    tatil: 'Tatil Karar Analizi'
+});
+
+/** Categories with AI-assisted option marketplace on /secenekler/ */
+export const LISTING_BROWSE_CATEGORY_IDS = Object.freeze(new Set(['arac', 'ev', 'tatil']));
+
+/** @returns {{ href: string, sectionTitle: string, ctaLabel: string, categoryLabel: string } | null} */
+export function resolveVerticalContinueHandoff(categoryId, rawAnswers = {}) {
+    const href = buildVerticalContinueHref(categoryId, rawAnswers);
+    if (href == null || href === '/') return null;
+    const categoryLabel = VERTICAL_CONTINUE_CATEGORY_LABELS[categoryId];
+    if (!categoryLabel) return null;
+    return {
+        href,
+        sectionTitle: 'Tam karar analizi için kategori akışına devam edin',
+        sectionLead: 'Verdiğiniz bilgiler tam analizde kullanılmak üzere aktarılacak.',
+        ctaLabel: 'Tam analize devam et',
+        categoryLabel
+    };
+}
+
+/** Local gate for lazy commentary chunk — mirrors shouldRenderDecisionMemoryAiCommentary without eager bundle pull. */
+function shouldLazyLoadDecisionMemoryCommentary(model) {
+    if (!model || model.softState) return false;
+    if (!Array.isArray(model.insights) || !model.insights.length) return false;
+    return Number(model.entryCount || 0) >= DECISION_MEMORY_INSIGHTS_MIN;
+}
+
 export class AssistantUI {
     renderDecisionAssistant(assistantConfig, activeCategory, answers = {}, wizardState = {}) {
         const categoryRail = document.getElementById('assistant-category-rail');
@@ -68,7 +141,7 @@ export class AssistantUI {
     }
 
     getAssistantWizardTimelineMarkup(steps, activeIndex) {
-        const flow = [{ id: 'category', label: 'Kategori', done: true }].concat(steps).concat([{ id: 'result', label: 'Sonuç' }]);
+        const flow = [{ id: 'category', label: 'Kategori', done: true }].concat(steps).concat([{ id: 'result', label: 'Ön değerlendirme' }]);
         return '<div class="assistant-wizard-steps">' + flow.map((step, index) => {
             const questionIndex = index - 1;
             const isCategory = index === 0;
@@ -158,18 +231,34 @@ export class AssistantUI {
         }
 
         const bestFinance = primary.financeComparisons?.[0];
+        const resultSummary = buildDecisionResultSummary(result);
+        const deterministicRationale = buildDeterministicDecisionResultRationale(resultSummary);
+        const aiRationaleHtml = deterministicRationale
+            ? renderDecisionResultAiRationaleHtml(deterministicRationale, { source: 'rules', state: 'ready' })
+            : '';
+        const resultSummaryHtml = shouldRenderDecisionResultSummary(result)
+            ? renderDecisionResultSummaryHtml(
+                resultSummary,
+                (value) => this.escapeHtml(value),
+                aiRationaleHtml
+            )
+            : '';
+        const shareCardHtml = shouldRenderDecisionResultShare(resultSummary)
+            ? renderDecisionResultShareHtml((value) => this.escapeHtml(value))
+            : '';
 
         container.innerHTML =
             '<section class="assistant-decision-panel">' +
                 '<div class="assistant-result-header assistant-decision-hero">' +
                     '<div>' +
-                        '<span class="assistant-kicker">Karar değerlendirme paneli</span>' +
+                        '<span class="assistant-kicker">Ön değerlendirme tamamlandı</span>' +
                         '<h3>' + this.escapeHtml(primary.name) + '</h3>' +
                         '<p>' + this.escapeHtml(result.summary) + '</p>' +
+                        '<p class="assistant-result-pre-eval-note">Tam karar analizi için ilgili kategori akışına devam edin. Verdiğiniz bilgiler tam analizde kullanılmak üzere aktarılacak.</p>' +
                         '<div class="assistant-result-badges">' +
                             '<span><i data-lucide="map-pin"></i>' + this.escapeHtml(result.categoryName) + '</span>' +
                             '<span><i data-lucide="shield-check"></i>Güven skoru ' + this.escapeHtml(primary.score) + '/100</span>' +
-                            (result.dataHealth ? '<span><i data-lucide="database-zap"></i>Veri güveni ' + this.escapeHtml(result.dataHealth.confidenceScore) + '/100</span>' : '') +
+                            (result.dataHealth ? '<span title="Girdi kalitesi; kesin sonuç değildir"><i data-lucide="database-zap"></i>Veri güven bandı ' + this.escapeHtml(result.dataHealth.confidenceLabel || '') + '</span>' : '') +
                             '<span><i data-lucide="clock-3"></i>' + this.escapeHtml(this.formatDate(result.createdAt)) + '</span>' +
                         '</div>' +
                     '</div>' +
@@ -178,10 +267,10 @@ export class AssistantUI {
                         '<span>/100</span>' +
                     '</div>' +
                 '</div>' +
-                '<div class="assistant-decision-toolbar">' +
-                    '<button type="button" class="btn btn-outline" data-assistant-edit="0"><i data-lucide="sliders-horizontal"></i> Kriterleri güncelle</button>' +
-                    '<button type="button" class="btn btn-primary" data-browse-decision-listings><i data-lucide="list-checks"></i> Eşleşen seçenekleri aç</button>' +
-                '</div>' +
+                this.getAssistantDecisionToolbarMarkup(result.categoryId, result.rawAnswers) +
+                resultSummaryHtml +
+                shareCardHtml +
+                this.getVerticalContinueHandoffMarkup(result.categoryId, result.rawAnswers) +
                 this.getExecutiveMetricsMarkup(result.categoryId, primary, bestFinance) +
                 this.getDataHealthMarkup(result.dataHealth) +
                 '<div class="assistant-answer-summary">' + result.answers.map((answer) =>
@@ -199,7 +288,7 @@ export class AssistantUI {
                                 '<h4>' + this.escapeHtml(item.name) + '</h4>' +
                                 '<p>' + this.escapeHtml(item.scoreNote) + '</p>' +
                             '</div>' +
-                            '<strong class="assistant-price">' + this.formatPrice(item.price) + ' ₺</strong>' +
+                            '<strong class="assistant-price">' + this.formatPrice(item.price) + '</strong>' +
                         '</div>' +
                         this.getRecommendationHighlightsMarkup(item) +
                         '<div class="assistant-recommendation-actions"><button type="button" class="btn btn-outline" data-compare-recommendation="' + this.escapeHtml(index) + '"><i data-lucide="columns-3"></i> Karşılaştırmaya ekle</button></div>' +
@@ -211,7 +300,7 @@ export class AssistantUI {
                         this.getCostChartMarkup(item.costChart) +
                         '<div class="assistant-cost-grid">' +
                             this.getCostMarkup(item.costs) +
-                            '<div class="assistant-cost total"><span>' + this.escapeHtml(item.calculationTable?.totalLabel || 'Toplam dönemsel maliyet') + '</span><strong>' + this.formatPrice(item.yearlyCost) + ' ₺</strong></div>' +
+                            '<div class="assistant-cost total"><span>' + this.escapeHtml(item.calculationTable?.totalLabel || 'Toplam dönemsel maliyet') + '</span><strong>' + this.formatPrice(item.yearlyCost) + '</strong></div>' +
                         '</div>' +
                         '<div class="assistant-finance"><h5>Banka kredi karşılaştırması</h5>' + this.getFinanceMarkup(item.financeComparisons) + '</div>' +
                         this.getRecommendationActionPlanMarkup(result.categoryId, item) +
@@ -222,10 +311,55 @@ export class AssistantUI {
 
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         this.loadIcons();
+        hydrateDecisionResultAiRationale(container, resultSummary);
+        bindDecisionResultShareCard(container, resultSummary);
+    }
+
+    getAssistantDecisionToolbarMarkup(categoryId, rawAnswers = {}) {
+        const handoff = resolveVerticalContinueHandoff(categoryId, rawAnswers);
+        const continueCta = handoff
+            ? '<a href="' + this.escapeHtml(handoff.href) + '" class="btn btn-primary" data-native-route data-analytics-cta="assistant_vertical_continue" data-analytics-placement="decision_result_toolbar">' +
+                '<i data-lucide="arrow-right"></i> ' + this.escapeHtml(handoff.ctaLabel) +
+            '</a>'
+            : '';
+
+        const browseCta = LISTING_BROWSE_CATEGORY_IDS.has(categoryId)
+            ? '<button type="button" class="btn btn-outline btn-sm" data-browse-decision-listings data-analytics-cta="assistant_browse_listings" data-analytics-placement="decision_result_toolbar">' +
+                '<i data-lucide="list-checks"></i> AI destekli seçenekleri incele' +
+            '</button>'
+            : '';
+
+        return '<div class="assistant-decision-toolbar">' +
+            continueCta +
+            browseCta +
+            '<button type="button" class="btn btn-outline" data-assistant-edit="0"><i data-lucide="sliders-horizontal"></i> Kriterleri güncelle</button>' +
+            '<a href="/karsilastir/" class="btn btn-outline btn-sm" data-native-route><i data-lucide="columns-3"></i> Karşılaştırma merkezine git</a>' +
+        '</div>';
+    }
+
+    getVerticalContinueHandoffMarkup(categoryId, rawAnswers = {}) {
+        const handoff = resolveVerticalContinueHandoff(categoryId, rawAnswers);
+        if (!handoff) return '';
+
+        return '<section class="assistant-vertical-handoff" data-assistant-vertical-handoff>' +
+            '<div class="assistant-vertical-handoff-copy">' +
+                '<span class="assistant-kicker">' + this.escapeHtml(handoff.categoryLabel) + '</span>' +
+                '<h4>' + this.escapeHtml(handoff.sectionTitle) + '</h4>' +
+                (handoff.sectionLead ? '<p>' + this.escapeHtml(handoff.sectionLead) + '</p>' : '') +
+            '</div>' +
+            '<div class="assistant-vertical-handoff-actions">' +
+                '<a href="' + this.escapeHtml(handoff.href) + '" class="btn btn-primary" data-native-route data-analytics-cta="assistant_vertical_continue" data-analytics-placement="decision_result_handoff">' +
+                    '<i data-lucide="arrow-right"></i> ' + this.escapeHtml(handoff.ctaLabel) +
+                '</a>' +
+                '<span class="assistant-vertical-handoff-destination">' + this.escapeHtml(handoff.categoryLabel) + '</span>' +
+            '</div>' +
+        '</section>';
     }
 
     getAIDecisionExtrasMarkup(result) {
         if (!result.aiGenerated) return '';
+
+        const disclaimer = '<p class="assistant-ai-disclaimer">Yapay zeka yorumu; skor ve fiyatlar kural motorundan gelir ve LLM tarafından değiştirilmez.</p>';
 
         const primary = result.recommendations?.[0];
         const pros = primary?.pros || [];
@@ -233,7 +367,7 @@ export class AssistantUI {
         const risks = result.risks || [];
         const nextSteps = result.nextSteps || [];
 
-        return '<div class="assistant-ai-extras">' +
+        return '<div class="assistant-ai-extras">' + disclaimer +
             (pros.length ? '<div class="assistant-ai-box"><h5>Avantajlar</h5><ul>' + pros.map(item => '<li>' + this.escapeHtml(item) + '</li>').join('') + '</ul></div>' : '') +
             (cons.length ? '<div class="assistant-ai-box"><h5>Dikkat edilmesi gerekenler</h5><ul>' + cons.map(item => '<li>' + this.escapeHtml(item) + '</li>').join('') + '</ul></div>' : '') +
             (risks.length ? '<div class="assistant-ai-box"><h5>Riskler</h5><ul>' + risks.map(item => '<li>' + this.escapeHtml(item) + '</li>').join('') + '</ul></div>' : '') +
@@ -278,10 +412,10 @@ export class AssistantUI {
         };
         const labels = labelSets[categoryId] || labelSets.arac;
         return '<div class="assistant-executive-metrics">' +
-            this.getDecisionMetricMarkup(labels.price, this.formatPrice(primary.price) + ' ₺', 'Seçilen kategoriye özel tahmini ana bedel', 'wallet') +
-            this.getDecisionMetricMarkup(labels.period, this.formatPrice(primary.yearlyCost) + ' ₺', labels.periodNote, 'calculator') +
-            this.getDecisionMetricMarkup(labels.monthly, this.formatPrice(monthlyPayment) + ' ₺', bestFinance ? bestFinance.bank + ' simülasyonu' : 'Banka verisi yok', 'landmark') +
-            this.getDecisionMetricMarkup(labels.total, this.formatPrice(totalPayment) + ' ₺', bestFinance ? bestFinance.term + ' ay vade' : 'Simülasyon bekliyor', 'receipt') +
+            this.getDecisionMetricMarkup(labels.price, this.formatPrice(primary.price), 'Seçilen kategoriye özel tahmini ana bedel', 'wallet') +
+            this.getDecisionMetricMarkup(labels.period, this.formatPrice(primary.yearlyCost), labels.periodNote, 'calculator') +
+            this.getDecisionMetricMarkup(labels.monthly, this.formatPrice(monthlyPayment), bestFinance ? bestFinance.bank + ' simülasyonu' : 'Banka verisi yok', 'landmark') +
+            this.getDecisionMetricMarkup(labels.total, this.formatPrice(totalPayment), bestFinance ? bestFinance.term + ' ay vade' : 'Simülasyon bekliyor', 'receipt') +
         '</div>';
     }
 
@@ -311,7 +445,8 @@ export class AssistantUI {
             '<div class="assistant-data-health-head">' +
                 '<div>' +
                     '<span class="assistant-kicker">Veri güven merkezi</span>' +
-                    '<h4>' + this.escapeHtml(dataHealth.confidenceLabel || 'Veri güveni') + '</h4>' +
+                    '<h4>' + this.escapeHtml(dataHealth.confidenceLabel || 'Veri güven bandı') + '</h4>' +
+                    '<p class="assistant-trust-hint">Metodolojik destek; kesin sonuç veya finansal taahhüt değildir.</p>' +
                     '<p>' + this.escapeHtml(dataHealth.modeLabel || '') + ' · ' + this.escapeHtml(dataHealth.updatedAtLabel || '') + '</p>' +
                 '</div>' +
                 '<div class="assistant-data-confidence"><strong>' + this.escapeHtml(dataHealth.confidenceScore || '-') + '</strong><span>/100</span></div>' +
@@ -342,8 +477,11 @@ export class AssistantUI {
 
     getSourcePillMarkup(source) {
         const content = '<span>' + this.escapeHtml(source.type || 'Kaynak') + '</span><strong>' + this.escapeHtml(source.name || 'Veri kaynağı') + '</strong><small>' + this.escapeHtml(source.status || source.cadence || '') + '</small>';
-        if (source.url) {
-            return '<a class="assistant-source-pill" href="' + this.safeExternalUrl(source.url) + '" target="_blank" rel="noopener noreferrer">' + content + '</a>';
+        const publicUrl = hasPublicSourceUrl({ source_url: source?.url })
+            ? String(source.url).trim()
+            : null;
+        if (publicUrl) {
+            return '<a class="assistant-source-pill" href="' + this.safeExternalUrl(publicUrl) + '" target="_blank" rel="noopener noreferrer">' + content + '</a>';
         }
         return '<div class="assistant-source-pill">' + content + '</div>';
     }
@@ -353,12 +491,12 @@ export class AssistantUI {
         return '<section class="assistant-calculation-table">' +
             '<div class="assistant-calculation-head">' +
                 '<div><h5>' + this.escapeHtml(table.title || 'Hesaplama tablosu') + '</h5><p>' + this.escapeHtml(table.note || '') + '</p></div>' +
-                '<strong>' + this.formatPrice(table.totalValue || 0) + ' ₺</strong>' +
+                '<strong>' + this.formatPrice(table.totalValue || 0) + '</strong>' +
             '</div>' +
             '<div class="assistant-calculation-rows">' + table.rows.map((row) =>
                 '<div class="assistant-calculation-row">' +
                     '<div><span>' + this.escapeHtml(row.label) + '</span><small>' + this.escapeHtml(row.note || '') + '</small></div>' +
-                    '<strong>' + this.formatPrice(row.value || 0) + ' ₺</strong>' +
+                    '<strong>' + this.formatPrice(row.value || 0) + '</strong>' +
                 '</div>'
             ).join('') + '</div>' +
         '</section>';
@@ -370,7 +508,7 @@ export class AssistantUI {
             '<div class="assistant-chart-head"><h5>Grafikli maliyet dağılımı</h5><span>Kalemlerin toplam içindeki payı</span></div>' +
             '<div class="assistant-chart-bars">' + chart.map((item) =>
                 '<div class="assistant-chart-row">' +
-                    '<div><span>' + this.escapeHtml(item.label) + '</span><strong>' + this.formatPrice(item.value || 0) + ' ₺</strong></div>' +
+                    '<div><span>' + this.escapeHtml(item.label) + '</span><strong>' + this.formatPrice(item.value || 0) + '</strong></div>' +
                     '<i><b style="width: ' + this.escapeHtml(item.percent || 0) + '%"></b></i>' +
                     '<small>%' + this.escapeHtml(item.percent || 0) + '</small>' +
                 '</div>'
@@ -399,7 +537,7 @@ export class AssistantUI {
                 '<strong>' + this.escapeHtml(verdict.label) + '</strong>' +
                 '<p>' + this.escapeHtml(item.name || 'Seçenek') + '</p>' +
             '</div>' +
-            '<small>' + this.escapeHtml(item.score || '-') + '/100 · ' + this.formatPrice(item.price || 0) + ' ₺</small>' +
+            '<small>' + this.escapeHtml(item.score || '-') + '/100 · ' + this.formatPrice(item.price || 0) + '</small>' +
         '</article>';
     }
 
@@ -431,7 +569,7 @@ export class AssistantUI {
         const copy = categoryCopy[categoryId] || categoryCopy.arac;
 
         if (index === 0) {
-            return { icon: 'badge-check', label: 'Önerilen seçim', text: copy.primary };
+            return { icon: 'badge-check', label: 'Ön değerlendirmede öne çıkan seçenek', text: copy.primary };
         }
         if (minPrice && Number(item.price || 0) === minPrice) {
             return { icon: 'wallet-cards', label: 'Bütçe odaklı', text: copy.budget };
@@ -455,8 +593,8 @@ export class AssistantUI {
         return '<div class="assistant-recommendation-highlights">' +
             '<span><strong>' + this.escapeHtml(item.score) + '/100</strong> uygunluk</span>' +
             '<span><strong>' + this.escapeHtml(item.riskLevel || 'Kontrol gerekli') + '</strong> risk</span>' +
-            '<span><strong>' + this.formatPrice(item.yearlyCost) + ' ₺</strong> dönemsel maliyet</span>' +
-            '<span><strong>' + (bestFinance ? this.formatPrice(bestFinance.monthlyPayment) + ' ₺/ay' : 'Yok') + '</strong> en iyi kredi</span>' +
+            '<span><strong>' + this.formatPrice(item.yearlyCost) + '</strong> dönemsel maliyet</span>' +
+            '<span><strong>' + (bestFinance ? this.formatPrice(bestFinance.monthlyPayment) + '/ay' : 'Yok') + '</strong> en iyi kredi</span>' +
         '</div>';
     }
 
@@ -507,6 +645,8 @@ export class AssistantUI {
 
     renderHistoryAuthGate() {
         const container = document.getElementById('history-list');
+        const insightsHost = document.getElementById('decision-memory-insights-host');
+        if (insightsHost) insightsHost.innerHTML = '';
         if (!container) return;
 
         container.innerHTML = `
@@ -515,19 +655,73 @@ export class AssistantUI {
                 <h3>Geçmiş için giriş yapın</h3>
                 <p>Karar, bütçe, konum ve arama geçmişiniz yalnızca hesabınıza bağlı olarak saklanır.</p>
                 <div class="history-auth-actions">
-                    <button type="button" class="btn btn-primary" data-history-login><i data-lucide="log-in"></i> Giriş Yap</button>
-                    <button type="button" class="btn btn-outline" data-history-register><i data-lucide="user-plus"></i> Üye Ol</button>
+                    <button type="button" class="btn btn-primary" data-auth-open="login" data-history-login><i data-lucide="log-in"></i> Hesabına gir</button>
+                    <button type="button" class="btn btn-outline" data-auth-open="register" data-history-register aria-label="Analizini kaydet ve devam et"><i data-lucide="user-plus"></i> Analizini kaydet</button>
                 </div>
             </div>
         `;
         this.loadIcons();
     }
 
+    renderDecisionMemoryInsights(history = []) {
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const host = doc.getElementById('decision-memory-insights-host');
+        if (!host) return;
+
+        const model = buildDecisionMemoryInsightsModel(history);
+        host.innerHTML = renderDecisionMemoryInsightsHtml(model, this.escapeHtml.bind(this));
+
+        if (!shouldLazyLoadDecisionMemoryCommentary(model)) return;
+
+        void import('./decision-memory-ai-commentary.js')
+            .then((mod) => {
+                if (!host.isConnected) return;
+
+                const currentModel = buildDecisionMemoryInsightsModel(history);
+                if (currentModel.softState) return;
+                if (!mod.shouldRenderDecisionMemoryAiCommentary(currentModel)) return;
+                if (host.querySelector('[data-decision-memory-ai-commentary]')) return;
+
+                const commentary = mod.buildDeterministicDecisionMemoryCommentary(currentModel);
+                const insightsPanel = host.querySelector('[data-decision-memory-insights]');
+                if (insightsPanel && commentary) {
+                    insightsPanel.insertAdjacentHTML(
+                        'beforeend',
+                        mod.renderDecisionMemoryAiCommentaryHtml(commentary, {
+                            source: 'rules',
+                            state: 'ready'
+                        })
+                    );
+                }
+                mod.hydrateDecisionMemoryAiCommentary(host, currentModel);
+            })
+            .catch(() => {
+                /* commentary chunk optional; insights panel remains */
+            });
+    }
+
+    renderDecisionMemoryContext(history = []) {
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const host = doc.getElementById('decision-memory-context-host');
+        if (!host) return;
+
+        const model = buildDecisionMemoryContextModel(history);
+        host.innerHTML = model
+            ? renderDecisionMemoryContextHtml(model, this.escapeHtml.bind(this))
+            : '';
+    }
+
     renderDecisionHistory(history = []) {
-        const container = document.getElementById('history-list');
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const container = doc.getElementById('history-list');
         if (!container) return;
 
-        if (!history.length) {
+        const normalizedHistory = normalizeDecisionHistoryList(history);
+
+        if (!normalizedHistory.length) {
             container.innerHTML = `
                 <div class="empty-state">
                     <i data-lucide="clock"></i>
@@ -539,53 +733,98 @@ export class AssistantUI {
             return;
         }
 
-        container.innerHTML = history.map((item) => {
-            const isAuto = item.categoryId === 'auto';
+        container.innerHTML = normalizedHistory.map((item) => {
+            const category = normalizeHistoryEntryCategory(item);
+            const isAuto = category.isAuto;
             const answers = Array.isArray(item.answers)
                 ? item.answers
                 : Object.entries(item.answers || {}).map(([label, value]) => ({ label, value }));
+            const signalStripHtml = renderDecisionHistorySignalStripHtml(
+                buildDecisionHistorySignalStrip(item),
+                this.escapeHtml.bind(this)
+            );
+            const resultSummaryHtml = renderDecisionHistoryResultSummaryHtml(item.resultSummary);
+            const canCompare = canAddHistoryEntryToComparison(item);
+            const visibleAnswers = answers.slice(0, 6);
+            const answersHtml = visibleAnswers.length
+                ? `<div class="decision-history-answers">${visibleAnswers.map((answer) => `<span>${this.escapeHtml(answer.label)}: ${this.escapeHtml(answer.value)}</span>`).join('')}</div>`
+                : '';
 
             return `
             <article class="decision-history-card ${isAuto ? 'decision-history-card-auto' : ''}">
                 <div class="decision-history-main">
                     <div>
-                        <span class="assistant-kicker">${this.escapeHtml(item.categoryName || 'Karar')}</span>
+                        <span class="assistant-kicker" data-history-category="${this.escapeHtml(category.categoryId)}">${this.escapeHtml(category.categoryName)}</span>
                         <h3>${this.escapeHtml(item.topPick?.name || 'Kaydedilen karar')}</h3>
                         <p>${this.escapeHtml(item.summary || 'Özet bulunamadı.')}</p>
                     </div>
                     <div class="decision-history-score">
-                        <strong>${this.escapeHtml(item.topPick?.score || '-')}</strong>
+                        <strong>${this.escapeHtml(item.score ?? item.topPick?.score ?? '-')}</strong>
                         <span>/100</span>
                     </div>
                 </div>
-                <div class="decision-history-metrics">
-                    <span><strong>${isAuto ? 'Tahmini fiyat' : 'Fiyat'}:</strong> ${this.formatPrice(item.topPick?.price || 0)} ₺</span>
-                    <span><strong>${isAuto ? '12 aylık maliyet' : 'Dönemsel maliyet'}:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)} ₺</span>
-                    <span><strong>${isAuto ? 'Aylık bütçe etkisi' : 'Aylık kredi'}:</strong> ${this.formatPrice(item.topPick?.monthlyPayment || 0)} ₺</span>
-                    <span><strong>Tarih:</strong> ${this.formatDate(item.createdAt)}</span>
-                </div>
-                <div class="decision-history-answers">
-                    ${answers.slice(0, 6).map((answer) => `<span>${this.escapeHtml(answer.label)}: ${this.escapeHtml(answer.value)}</span>`).join('')}
-                </div>
+                ${signalStripHtml}
+                    ${resultSummaryHtml}
+                <details class="decision-history-detail" data-decision-history-detail>
+                    <summary class="decision-history-detail-summary">
+                        <span class="decision-history-detail-summary-copy">
+                            <span class="decision-history-detail-label" data-decision-history-detail-label-closed>Detayları göster</span>
+                            <span class="decision-history-detail-label" data-decision-history-detail-label-open>Detayları gizle</span>
+                            <span class="decision-history-detail-hint">Maliyet, kayıt tarihi ve yanıtlar</span>
+                        </span>
+                        <span class="decision-history-detail-chevron" aria-hidden="true"></span>
+                    </summary>
+                    <div class="decision-history-detail-panel">
+                        <div class="decision-history-metrics">
+                            <span><strong>${isAuto ? 'Tahmini fiyat' : 'Fiyat'}:</strong> ${this.formatPrice(item.topPick?.price || 0)}</span>
+                            <span><strong>${isAuto ? '12 aylık maliyet' : 'Dönemsel maliyet'}:</strong> ${this.formatPrice(item.topPick?.yearlyCost || 0)}</span>
+                            <span><strong>${isAuto ? 'Aylık bütçe etkisi' : 'Aylık kredi'}:</strong> ${this.formatPrice(item.topPick?.monthlyPayment || 0)}</span>
+                            <span><strong>Tarih:</strong> ${this.formatDate(item.createdAt)}</span>
+                        </div>
+                        ${answersHtml}
+                    </div>
+                </details>
                 <div class="decision-history-actions">
                     <button type="button" class="btn btn-primary" data-decision-repeat="${this.escapeHtml(item.id)}">
-                        <i data-lucide="refresh-cw"></i> ${isAuto ? 'Yeni Auto analizi' : 'Tekrar aç'}
+                        <i data-lucide="refresh-cw"></i> Tam analize devam et
                     </button>
+                    ${canCompare ? `<button type="button" class="btn btn-outline" data-decision-compare-add="${this.escapeHtml(item.id)}">
+                        <i data-lucide="scale"></i> Karşılaştırmaya ekle
+                    </button>` : ''}
                     <button type="button" class="btn btn-outline" data-decision-delete="${this.escapeHtml(item.id)}">
                         <i data-lucide="trash-2"></i> Sil
                     </button>
                 </div>
+                ${canCompare ? `<div class="decision-history-actions-links">
+                    <a href="/karsilastir/" class="decision-history-compare-link" data-native-route>Karşılaştırma merkezine git</a>
+                </div>` : ''}
             </article>
         `}).join('');
 
         this.loadIcons();
     }
 
+    renderRecentDecisionHistorySnippet(history = []) {
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const host = doc.getElementById('decision-history-recent-snippet-host');
+        if (!host) return;
+
+        const normalizedHistory = normalizeDecisionHistoryList(history);
+        const html = renderRecentDecisionHistorySnippetHtml(
+            buildRecentDecisionHistorySnippetModel(normalizedHistory),
+            this.escapeHtml.bind(this),
+            this.formatDate.bind(this)
+        );
+        host.innerHTML = html;
+        if (html) this.loadIcons();
+    }
+
     getCostMarkup(costs = []) {
         return costs.map((cost) => `
             <div class="assistant-cost">
                 <span>${this.escapeHtml(cost.label)}</span>
-                <strong>${this.formatPrice(cost.value)} ₺</strong>
+                <strong>${this.formatPrice(cost.value)}</strong>
             </div>
         `).join('');
     }
@@ -596,8 +835,8 @@ export class AssistantUI {
                 ${financeComparisons.map((finance) => `
                     <div class="assistant-finance-row">
                         <span>${this.escapeHtml(finance.bank)}</span>
-                        <strong>${this.formatPrice(finance.monthlyPayment)} ₺/ay</strong>
-                        <small>${this.escapeHtml(finance.term)} ay, %${this.escapeHtml(finance.rate)} aylık, kredi ${this.formatPrice(finance.principal)} ₺</small>
+                        <strong>${this.formatPrice(finance.monthlyPayment)}/ay</strong>
+                        <small>${this.escapeHtml(finance.term)} ay, %${this.escapeHtml(finance.rate)} aylık, kredi ${this.formatPrice(finance.principal)}</small>
                     </div>
                 `).join('')}
             </div>
@@ -606,25 +845,30 @@ export class AssistantUI {
 
 
     getRecommendationActionPlanMarkup(categoryId, item = {}) {
-        const firstChannel = item.channels?.[0]?.url || 'https://www.sahibinden.com/';
-        const plans = {
+        const listingSourceUrl = resolvePublicExternalUrl(item);
+        const planTemplates = {
             arac: [
-                { icon: 'search-check', title: 'Gerçek ilanı doğrula', text: 'KM, tramer, fiyat ve satıcı bilgisini aynı model ilanlarla karşılaştırın.', url: firstChannel },
+                { icon: 'search-check', title: 'Seçeneği doğrula', text: 'KM, tramer, fiyat ve satıcı bilgisini aynı model ilanlarla karşılaştırın.', requiresListingSource: true },
                 { icon: 'landmark', title: 'Krediyi netleştir', text: 'Aylık taksit yerine toplam geri ödeme ve kredi kullandırım oranını kontrol edin.', url: 'https://www.hangikredi.com/kredi/tasit-kredisi' },
                 { icon: 'shield-check', title: 'Sigorta + ekspertiz', text: 'Kasko, trafik sigortası ve ekspertiz sonucu olmadan kapora göndermeyin.', url: 'https://www.sigortam.net/' }
             ],
             ev: [
-                { icon: 'map-pinned', title: 'Emsal ilan analizi', text: 'Aynı il/ilçede m2, bina yaşı, aidat ve ulaşım etkisini yan yana okuyun.', url: firstChannel },
+                { icon: 'map-pinned', title: 'Benzer seçenek analizi', text: 'Aynı il/ilçede m2, bina yaşı, aidat ve ulaşım etkisini yan yana okuyun.', requiresListingSource: true },
                 { icon: 'landmark', title: 'Konut kredisi', text: 'Ekspertiz değeri, peşinat ihtiyacı ve toplam geri ödeme planını netleştirin.', url: 'https://www.hangikredi.com/kredi/konut-kredisi' },
                 { icon: 'file-check-2', title: 'Tapu + deprem kontrolü', text: 'Tapu, imar, DASK, deprem performansı ve aidat borcunu satın alma öncesi doğrulayın.', url: 'https://www.tkgm.gov.tr/' }
             ],
             tatil: [
-                { icon: 'calendar-check', title: 'Rezervasyon koşulu', text: 'Sezon, oda tipi, çocuk/ek kişi ücreti ve iptal şartını paket fiyatına dahil edin.', url: firstChannel },
+                { icon: 'calendar-check', title: 'Rezervasyon koşulu', text: 'Sezon, oda tipi, çocuk/ek kişi ücreti ve iptal şartını paket fiyatına dahil edin.', requiresListingSource: true },
                 { icon: 'plane-takeoff', title: 'Ulaşımı karşılaştır', text: 'Uçuş saati, bagaj, transfer ve araç kiralama maliyetini ayrı görün.', url: 'https://www.enuygun.com/' },
                 { icon: 'shield', title: 'Seyahat güveni', text: 'Sigorta, esnek tarih ve erken rezervasyon farkını son karar öncesi kontrol edin.', url: 'https://www.etstur.com/' }
             ]
         };
-        const actions = plans[categoryId] || plans.arac;
+        const actions = (planTemplates[categoryId] || planTemplates.arac)
+            .filter((action) => !action.requiresListingSource || listingSourceUrl)
+            .map((action) => ({
+                ...action,
+                url: action.requiresListingSource ? listingSourceUrl : action.url
+            }));
         return '<section class="assistant-action-plan">' +
             '<div class="assistant-action-plan-head"><span class="assistant-kicker">Satın alma aksiyonları</span><h5>Kararı uygulamaya geçir</h5></div>' +
             '<div class="assistant-action-plan-grid">' + actions.map((action) =>
@@ -638,19 +882,31 @@ export class AssistantUI {
     }
 
     getChannelsMarkup(channels = []) {
-        return channels.map((channel) => `
-            <a href="${this.safeExternalUrl(channel.url)}" target="_blank" rel="noopener noreferrer" class="assistant-channel">
+        return channels.map((channel) => {
+            const publicUrl = hasPublicSourceUrl({ source_url: channel?.url })
+                ? String(channel.url).trim()
+                : null;
+            const label = this.escapeHtml(channel.label);
+            if (!publicUrl) {
+                return `<span class="assistant-channel">
                 <i data-lucide="external-link"></i>
-                ${this.escapeHtml(channel.label)}
-            </a>
-        `).join('');
+                ${label}
+            </span>`;
+            }
+            return `<a href="${this.safeExternalUrl(publicUrl)}" target="_blank" rel="noopener noreferrer" class="assistant-channel">
+                <i data-lucide="external-link"></i>
+                ${label}
+            </a>`;
+        }).join('');
     }
 
     setActiveCategory(categoryId, categories = []) {
-        const label = document.getElementById('active-category-label');
+        const doc = globalThis.document;
+        if (!doc?.getElementById) return;
+        const label = doc.getElementById('active-category-label');
         const category = categories.find((item) => item.id === categoryId);
 
-        document.querySelectorAll('[data-category]').forEach((element) => {
+        doc.querySelectorAll('[data-category]').forEach((element) => {
             element.classList.toggle('active', !!categoryId && element.dataset.category === categoryId);
         });
 
@@ -670,13 +926,24 @@ export class AssistantUI {
     }
 
     getCategoryCardMarkup(category, activeCategory = null) {
+        if (category.comingSoon) {
+            return `
+            <div class="category-card category-card-${this.escapeHtml(category.id)} is-coming-soon" aria-disabled="true">
+                <span class="category-visual category-visual-${this.escapeHtml(category.id)}" aria-hidden="true">
+                    <i data-lucide="${this.escapeHtml(this.getCategoryVisualIcon(category.id, category.icon))}"></i>
+                </span>
+                <h3>${this.escapeHtml(category.name)}</h3>
+                <span class="category-count">Yakında</span>
+            </div>`;
+        }
+
         return `
             <button type="button" class="category-card category-card-${this.escapeHtml(category.id)} ${category.id === activeCategory ? "active" : ""}" data-assistant-start="${this.escapeHtml(category.id)}">
                 <span class="category-visual category-visual-${this.escapeHtml(category.id)}" aria-hidden="true">
                     <i data-lucide="${this.escapeHtml(this.getCategoryVisualIcon(category.id, category.icon))}"></i>
                 </span>
                 <h3>${this.escapeHtml(category.name)}</h3>
-                <span class="category-count">${this.escapeHtml(category.count || 0)} ilan</span>
+                <span class="category-count">${category.id === 'arac' ? 'Karar analizi' : this.escapeHtml(category.count || 0) + ' seçenek'}</span>
             </button>
         `;
     }
@@ -694,11 +961,11 @@ export class AssistantUI {
 
 }
 
-let installed = false;
+const installedClasses = new WeakSet();
 
 export function installAssistantUI(UIManagerClass) {
-    if (installed) return;
-    installed = true;
+    if (!UIManagerClass || installedClasses.has(UIManagerClass)) return;
+    installedClasses.add(UIManagerClass);
 
     for (const name of Object.getOwnPropertyNames(AssistantUI.prototype)) {
         if (name === 'constructor') continue;

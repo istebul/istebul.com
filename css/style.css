@@ -341,6 +341,21 @@ h1, h2, h3, h4, h5, h6 {
     gap: 0.25rem;
 }
 
+.nav-verticals {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.15rem 0.35rem;
+    margin-right: 0.35rem;
+    padding-right: 0.5rem;
+    border-right: 1px solid var(--border-color, rgba(148, 163, 184, 0.35));
+}
+
+.nav-verticals .nav-link {
+    font-weight: 700;
+    font-size: 0.88rem;
+}
+
 .nav-link {
     position: relative;
     padding: 0.5rem 0.9rem;
@@ -416,17 +431,24 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateX(-50%) translateY(0);
 }
 
-.nav-dropdown-content a {
+.nav-dropdown-content a,
+.nav-dropdown-content .nav-dropdown-link {
     display: block;
     padding: 0.6rem 1rem;
     color: var(--text-primary);
     border-radius: var(--radius-sm);
     font-size: 0.9rem;
     transition: var(--transition);
+    border: none;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 
 .nav-dropdown-content a:hover,
-.nav-dropdown-content a.active {
+.nav-dropdown-content a.active,
+.nav-dropdown-content .nav-dropdown-link:hover {
     background: var(--surface-color);
     color: var(--primary-color);
 }

@@ -1,0 +1,43 @@
+/**
+ * P13+ — Design tokens (aliases + spacing). Canonical palette remains in style.css :root.
+ */
+:root {
+  --color-primary: var(--primary-color);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary: var(--secondary-color);
+  --color-success: var(--success-color);
+  --color-warning: var(--warning-color);
+  --color-error: var(--error-color);
+  --color-surface: var(--surface-color);
+  --color-text: var(--text-primary);
+  --color-text-muted: var(--text-secondary);
+  --color-border: var(--border-color);
+
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: clamp(1.75rem, 4vw, 2.5rem);
+
+  --line-height-tight: 1.2;
+  --line-height-body: 1.65;
+  --line-height-ui: 1.45;
+
+  --radius-button: 12px;
+  --radius-card: 24px;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.03);
+  --transition-fast: 200ms ease-out;
+
+  --z-nav: 1000;
+  --z-dropdown: 1100;
+  --z-modal: 2000;
+  --z-toast: 9999;
+}

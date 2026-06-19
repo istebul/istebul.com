@@ -1,0 +1,31 @@
+/**
+ * P5.2 CRO experiment variant hooks (dataset-driven).
+ */
+html[data-exp_hero_cta_copy_q2='urgency'] [data-hero-cta-primary] {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+}
+
+html[data-exp_cta_secondary_q2='outcome'] .cro-cta-emphasis {
+  font-weight: 600;
+}
+
+html[data-exp_wizard_next_q2='momentum'] .cro-wizard-momentum {
+  min-width: 11rem;
+}
+
+html[data-exp_pricing_cta_q2='trial_first'] .cro-pricing-trial {
+  transform: translateY(-1px);
+}
+
+html[data-exp_checkout_cta_q2='risk_reverse'] .cro-checkout-risk-reverse {
+  letter-spacing: 0.01em;
+}
+
+html[data-exp_trust_headline_q2='social_proof'] #trust.cro-trust-social-proof .trust-card {
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.wizard-cro-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+}

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>isteBul — Onay öncesi UX önizleme</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #fff;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --primary-soft: #eff6ff;
+      --border: rgba(148, 163, 184, 0.4);
+      --warn-bg: #fef3c7;
+      --warn-fg: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 40%, #f1f5f9 40%);
+      color: #0f172a;
+      line-height: 1.5;
+    }
+    .preview-banner {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--warn-bg);
+      color: var(--warn-fg);
+      padding: 0.75rem 1.25rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-bottom: 2px solid #f59e0b;
+    }
+    .preview-banner small {
+      display: block;
+      font-weight: 500;
+      margin-top: 0.25rem;
+      opacity: 0.9;
+    }
+    .preview-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.92);
+    }
+    .preview-nav a {
+      color: #e2e8f0;
+      text-decoration: none;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      font-size: 0.85rem;
+    }
+    .preview-nav a:hover { background: rgba(37, 99, 235, 0.25); border-color: var(--primary); }
+    .preview-hero {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 1rem;
+      color: #f8fafc;
+      text-align: center;
+    }
+    .preview-hero h1 { margin: 0 0 0.5rem; font-size: clamp(1.35rem, 4vw, 1.85rem); }
+    .preview-hero p { margin: 0; color: #cbd5e1; font-size: 0.95rem; }
+    section.preview-block {
+      max-width: 1120px;
+      margin: 0 auto 3rem;
+      padding: 0 1.25rem 2rem;
+    }
+    .preview-block h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.35rem;
+    }
+    .preview-block .status {
+      display: inline-block;
+      margin-bottom: 1rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .status--live { background: #d1fae5; color: #065f46; }
+    .status--pending { background: #dbeafe; color: #1e40af; }
+    .preview-lead { color: var(--muted); margin: 0 0 1.5rem; max-width: 52rem; }
+
+    /* —— Pricing (canlıdaki animasyonlu kartlar) —— */
+    .ib-pricing-cards-stage { margin-top: 1rem; }
+    .revenue-pricing-grid--cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+      align-items: stretch;
+    }
+    .revenue-plan-card {
+      display: flex;
+      flex-direction: column;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+      min-height: 100%;
+      transition: transform 0.28s ease, box-shadow 0.28s ease;
+    }
+    .revenue-plan-card:hover { transform: translateY(-6px); box-shadow: 0 22px 48px rgba(15, 23, 42, 0.12); }
+    .revenue-plan-card--featured {
+      border-color: rgba(37, 99, 235, 0.45);
+      transform: translateY(-4px);
+      box-shadow: 0 24px 56px rgba(37, 99, 235, 0.16);
+    }
+    .revenue-plan-card-head {
+      padding: 1.25rem 1.25rem 0.75rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      background: linear-gradient(180deg, #f8fafc, #fff);
+    }
+    .revenue-plan-card--featured .revenue-plan-card-head {
+      background: linear-gradient(180deg, var(--primary-soft), #fff);
+    }
+    .revenue-plan-badge {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .revenue-plan-badge--popular { color: var(--primary); }
+    .revenue-plan-title { margin: 0.35rem 0 0; font-size: 1.25rem; }
+    .revenue-plan-price { margin: 0.25rem 0 0; font-size: 1.75rem; font-weight: 800; }
+    .revenue-plan-desc, .revenue-plan-features { padding: 0 1.25rem; }
+    .revenue-plan-features { list-style: none; margin: 0 0 1rem; padding-bottom: 0; }
+    .revenue-plan-feature { font-size: 0.88rem; margin: 0.4rem 0; }
+    .revenue-plan-card-foot { margin-top: auto; padding: 0 1.25rem 1.25rem; }
+    .btn {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      padding: 0.65rem 1rem;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-outline { background: #fff; color: var(--primary); border: 2px solid var(--primary); }
+
+    @keyframes ib-pricing-card-enter {
+      from { opacity: 0; transform: translate3d(0, 28px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    .ib-pricing-cards-stage--in-view .revenue-plan-card {
+      animation: ib-pricing-card-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-delay: calc(0.07s * var(--ib-card-i, 0) + 0.05s);
+    }
+    .ib-pricing-cards-stage:not(.ib-pricing-cards-stage--in-view) .revenue-plan-card {
+      opacity: 0;
+    }
+
+    /* —— Auto final choice (öneri — henüz canlıda yok) —— */
+    .final-choice-panel {
+      background: var(--surface);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.1);
+      padding: 1.5rem;
+    }
+    .final-choice-panel .kicker {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin: 0 0 0.35rem;
+    }
+    .final-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+    .final-choice-option {
+      position: relative;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .final-choice-option:hover { border-color: rgba(37, 99, 235, 0.35); }
+    .final-choice-option.is-selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .final-choice-option input { position: absolute; opacity: 0; pointer-events: none; }
+    .final-choice-option strong { display: block; font-size: 1rem; }
+    .final-choice-option span.score {
+      display: inline-block;
+      margin-top: 0.35rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 8px;
+      background: #ecfdf5;
+      color: #047857;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .final-choice-costs {
+      margin-top: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .final-routing {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px dashed var(--border);
+    }
+    .final-routing label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .final-routing input, .final-routing select {
+      width: 100%;
+      padding: 0.55rem 0.65rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .final-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      align-items: center;
+    }
+    .final-actions .btn { width: auto; min-width: 200px; }
+    .final-disclaimer {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 1rem 0 0;
+    }
+  .approve-box {
+      margin-top: 2rem;
+      padding: 1.25rem;
+      background: #f8fafc;
+      border-radius: 16px;
+      border: 1px dashed var(--border);
+    }
+    .approve-box h3 { margin: 0 0 0.5rem; font-size: 1rem; }
+    .approve-box code { background: #e2e8f0; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85rem; }
+
+    @media (max-width: 768px) {
+      .revenue-pricing-grid--cards,
+      .final-choice-grid { grid-template-columns: 1fr; }
+      .final-routing { grid-template-columns: 1fr; }
+      .revenue-plan-card--featured { transform: none; order: -1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ib-pricing-cards-stage .revenue-plan-card { opacity: 1 !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-banner">
+    ÖNİZLEME — Canlı sitede değil
+    <small>Onayınızdan sonra uygulanır ve <code>git push origin main</code> ile deploy edilir.</small>
+  </div>
+
+  <nav class="preview-nav" aria-label="Önizleme bölümleri">
+    <a href="#planlar">1. Planlar kartları</a>
+    <a href="#final-tur">2. Auto son tur (öneri)</a>
+    <a href="#onay">Onay nasıl verilir?</a>
+  </nav>
+
+  <header class="preview-hero">
+    <h1>isteBul UX önizleme paketi</h1>
+    <p>Önce burada inceleyin → onay → sonra kod + deploy.</p>
+  </header>
+
+  <section id="planlar" class="preview-block">
+    <span class="status status--live">Canlıda (main’de)</span>
+    <h2>Planlar / fiyatlandırma — animasyonlu kartlar</h2>
+    <p class="preview-lead">
+      Ana sayfa <code>/#pricing</code> ve <code>/planlar</code> için scroll ile sıralı giriş, hover derinliği, Pro kartında hafif vurgu.
+      Bu bölüm zaten yayında; aşağıda aynı davranışın statik kopyası.
+    </p>
+
+    <div class="ib-pricing-cards-stage ib-pricing-cards-stage--in-view" id="pricing-stage">
+      <div class="revenue-pricing-grid--cards">
+        <article class="revenue-plan-card" style="--ib-card-i:0">
+          <div class="revenue-plan-card-head">
+            <span class="revenue-plan-badge">Bireysel</span>
+            <h3 class="revenue-plan-title">Başlangıç</h3>
+            <p class="revenue-plan-price">Ücretsiz</p>
+          </div>
+          <p class="revenue-plan-desc">Sınırlı TCO analizi · 2 karşılaştırma</p>
+          <ul class="revenue-plan-features">
+            <li class="revenue-plan-feature">✓ Özet karar çıktıları</li>
+          </ul>
+          <div class="revenue-plan-card-foot"><span class="btn btn-outline">TCO analizini başlat</span></div>
+        </article>
+        <article class="revenue-plan-card revenue-plan-card--featured" style="--ib-card-i:1">
+          <div class="revenue-plan-card-head">
+            <span class="revenue-plan-badge revenue-plan-badge--popular">En popüler</span>
+            <h3 class="revenue-plan-title">isteBul Pro</h3>
+            <p class="revenue-plan-price">₺299<small>/ ay</small></p>
+          </div>
+          <p class="revenue-plan-desc">Sınırsız karşılaştırma · premium rapor · AI notu</p>
+          <ul class="revenue-plan-features">
+            <li class="revenue-plan-feature">✓ 7 gün ücretsiz deneme</li>
+            <li class="revenue-plan-feature">✓ Finans partner eşleşmesi</li>
+          </ul>
+          <div class="revenue-plan-card-foot"><span class="btn btn-primary">7 gün ücretsiz dene</span></div>
+        </article>
+        <article class="revenue-plan-card" style="--ib-card-i:2">
+          <div class="revenue-plan-card-head">
+            <span class="revenue-plan-badge">Kurumsal</span>
+            <h3 class="revenue-plan-title">Enterprise</h3>
+            <p class="revenue-plan-price">Özel teklif</p>
+          </div>
+          <p class="revenue-plan-desc">API · webhook · SLA</p>
+          <div class="revenue-plan-card-foot"><span class="btn btn-outline">Kurumsal teklif al</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="final-tur" class="preview-block">
+    <span class="status status--pending">Öneri — onay bekliyor</span>
+    <h2>Auto — son tur: tek seçim + yönlendirme</h2>
+    <p class="preview-lead">
+      Vizyonunuzdaki eksik parça: 3 öneriden sonra kullanıcı <strong>tek model</strong> seçer, isteğe bağlı <strong>kredi tutarını</strong> girer,
+      ardından tek CTA ile finans / sigorta / satıcı yoluna gider. Şu an canlıda yok; onaylarsanız <code>auto-app.js</code> sonuç akışına eklenir.
+    </p>
+
+    <div class="final-choice-panel" role="group" aria-label="Son karar turu önizlemesi">
+      <p class="kicker">Adım 4 · Son karar</p>
+      <h3>Hangi modelle devam etmek istiyorsunuz?</h3>
+      <p style="margin:0;color:var(--muted);font-size:0.9rem;">Skor ve TCO kural tabanlıdır; AI yalnızca gerekçe metnidir.</p>
+
+      <div class="final-choice-grid" id="choice-grid">
+        <label class="final-choice-option is-selected">
+          <input type="radio" name="final-vehicle" value="corolla" checked />
+          <strong>Toyota Corolla 1.6</strong>
+          <span class="score">Uyum 92</span>
+          <div class="final-choice-costs">12 ay TCO ≈ ₺485.000 · yakıt · sigorta · kasko · bakım</div>
+        </label>
+        <label class="final-choice-option">
+          <input type="radio" name="final-vehicle" value="civic" />
+          <strong>Honda Civic 1.5</strong>
+          <span class="score">Uyum 88</span>
+          <div class="final-choice-costs">12 ay TCO ≈ ₺512.000</div>
+        </label>
+        <label class="final-choice-option">
+          <input type="radio" name="final-vehicle" value="megane" />
+          <strong>Renault Megane 1.3</strong>
+          <span class="score">Uyum 84</span>
+          <div class="final-choice-costs">12 ay TCO ≈ ₺468.000</div>
+        </label>
+      </div>
+
+      <div class="final-routing">
+        <div>
+          <label for="loan-amount">Kredi tutarı (siz belirlersiniz)</label>
+          <input id="loan-amount" type="number" value="450000" step="10000" min="50000" />
+          <small style="color:var(--muted)">Maks. araç değerinin ~%80’i</small>
+        </div>
+        <div>
+          <label for="next-step">Sonraki adım</label>
+          <select id="next-step">
+            <option>Kredi / finansman teklifi</option>
+            <option>Sigorta &amp; kasko karşılaştırması</option>
+            <option>Satıcı / bayi eşleşmesi</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="final-actions">
+        <button type="button" class="btn btn-primary" id="demo-cta">Seçimimle devam et →</button>
+        <button type="button" class="btn btn-outline">Sonuçlara dön</button>
+      </div>
+      <p class="final-disclaimer">Simülasyon ve bilgilendirme amaçlıdır; bağlayıcı kredi taahhüdü değildir.</p>
+    </div>
+  </section>
+
+  <section id="onay" class="preview-block">
+    <div class="approve-box">
+      <h3>Onay süreci</h3>
+      <ol style="margin:0;padding-left:1.2rem;color:var(--muted);font-size:0.9rem;">
+        <li>Bu dosyayı yerelde veya aşağıdaki komutla tarayıcıda açın.</li>
+        <li>Chat’te yazın: <strong>「Planlar OK」</strong>, <strong>「Son tur OK」</strong> veya <strong>「Hepsi OK, uygula」</strong>.</li>
+        <li>Onay sonrası kodu uygular, test eder, <code>git push origin main</code> ile deploy ederiz.</li>
+      </ol>
+    </div>
+  </section>
+
+  <script>
+    document.querySelectorAll('.final-choice-option').forEach((el) => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.final-choice-option').forEach((o) => o.classList.remove('is-selected'));
+        el.classList.add('is-selected');
+        el.querySelector('input')?.click();
+      });
+    });
+    document.getElementById('demo-cta')?.addEventListener('click', () => {
+      const v = document.querySelector('input[name="final-vehicle"]:checked')?.value || '?';
+      const amt = document.getElementById('loan-amount')?.value;
+      const step = document.getElementById('next-step')?.value;
+      alert('Önizleme demo\\n\\nSeçim: ' + v + '\\nKredi: ₺' + Number(amt).toLocaleString('tr-TR') + '\\nAdım: ' + step + '\\n\\n(Canlıda partner/lead API bağlanır)');
+    });
+    const stage = document.getElementById('pricing-stage');
+    if (stage && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      stage.classList.remove('ib-pricing-cards-stage--in-view');
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('ib-pricing-cards-stage--in-view');
+            obs.disconnect();
+          }
+        });
+      }, { threshold: 0.2 });
+      obs.observe(stage);
+      setTimeout(() => stage.classList.add('ib-pricing-cards-stage--in-view'), 400);
+    }
+  </script>
+</body>
+</html>

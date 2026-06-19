@@ -1,0 +1,15 @@
+{
+  "version": "p6.2",
+  "goal": "partner_closing",
+  "assets": {
+    "salesDeck": "partner-sales-deck.json",
+    "pricingSheet": "pricing-sheet.json",
+    "objections": "objections.json",
+    "onboardingDocs": "onboarding-docs.json",
+    "emailTemplates": "email-templates.json",
+    "followUpFlows": "follow-up-flows.json",
+    "outboundSequences": "outbound-sequences.json"
+  },
+  "closingStages": ["discover", "demo", "proposal", "negotiate", "close", "live"],
+  "northStar": "partner_application_to_live_days"
+}

@@ -1,0 +1,51 @@
+{
+  "version": "p11.0",
+  "updatedAt": "2026-05-24",
+  "goal": "Reduce human support load via self-serve FAQ, billing/onboarding flows, and AI intent routing.",
+  "workflows": [
+    {
+      "id": "support_intake",
+      "name": "Support intake & routing",
+      "channels": ["help_widget", "decision_feedback", "account_billing"],
+      "handler": "js/features/customer/support-router.js"
+    },
+    {
+      "id": "faq_automation",
+      "name": "FAQ deflection",
+      "sources": ["data/customer/faq-knowledge.json", "supabase:faqs"],
+      "handler": "js/features/customer/faq-automation.js"
+    },
+    {
+      "id": "billing_help",
+      "name": "Billing help flow",
+      "lifecycleFlow": "billing_help",
+      "triggers": ["account:past_due", "url:billing=portal", "intent:billing"]
+    },
+    {
+      "id": "onboarding_help",
+      "name": "Onboarding help",
+      "lifecycleFlow": "onboarding_help",
+      "triggers": ["auth:signup", "cron:new_user_48h", "intent:onboarding"]
+    },
+    {
+      "id": "support_follow_up",
+      "name": "Support follow-up",
+      "lifecycleFlow": "support_follow_up",
+      "triggers": ["analytics:support_escalation", "decision_feedback_contact"]
+    },
+    {
+      "id": "ai_assistant_routing",
+      "name": "AI assistant support routing",
+      "intents": ["billing", "onboarding", "auto", "pro", "privacy", "human"],
+      "handler": "js/features/customer/support-router.js",
+      "escalation": ["whatsapp", "iletisim", "support-intake edge"]
+    }
+  ],
+  "analyticsEvents": [
+    "support_help_opened",
+    "support_intent_routed",
+    "support_faq_resolved",
+    "support_escalation",
+    "support_ticket_submitted"
+  ]
+}

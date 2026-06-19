@@ -4,9 +4,12 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = config.supabase.url;
 const supabaseKey = config.supabase.anonKey;
 
-if (!supabaseUrl || !supabaseKey) {
-    console.warn('Supabase config missing. Check SUPABASE_URL and SUPABASE_ANON_KEY.');
+export function isSupabaseConfigured() {
+    return Boolean(supabaseUrl && supabaseKey);
 }
+
+export const SUPABASE_CONFIG_ERROR =
+    'Kimlik doğrulama yapılandırması eksik. SUPABASE_URL ve SUPABASE_ANON_KEY değerleri /env.js içinde tanımlı olmalıdır. Deploy ortamında bu değişkenleri ayarlayıp siteyi yeniden yayınlayın.';
 
 const createEmptyQuery = () => {
     const query = {
@@ -48,12 +51,52 @@ const createFallbackSupabaseClient = () => {
     };
 };
 
+const PUBLIC_AUTH_STORAGE_KEY = 'istebul-auth-public-v1';
+const ADMIN_AUTH_STORAGE_KEY = 'istebul-auth-admin-v1';
+
+/** @type {ReturnType<typeof createClient> | ReturnType<typeof createFallbackSupabaseClient> | null} */
+let supabaseSingleton = null;
+/** @type {ReturnType<typeof createClient> | ReturnType<typeof createFallbackSupabaseClient> | null} */
+let adminSupabaseSingleton = null;
+
+function buildSupabaseClient(storageKey) {
+    return createClient(supabaseUrl, supabaseKey, {
+        auth: {
+            storageKey,
+            detectSessionInUrl: true,
+            persistSession: true,
+            autoRefreshToken: true
+        }
+    });
+}
+
 export const getSupabaseClient = () => {
-    if (!supabaseUrl || !supabaseKey) {
-        return createFallbackSupabaseClient();
+    if (supabaseSingleton) {
+        return supabaseSingleton;
     }
 
-    return createClient(supabaseUrl, supabaseKey);
+    if (!isSupabaseConfigured()) {
+        supabaseSingleton = createFallbackSupabaseClient();
+        return supabaseSingleton;
+    }
+
+    supabaseSingleton = buildSupabaseClient(PUBLIC_AUTH_STORAGE_KEY);
+
+    return supabaseSingleton;
+};
+
+export const getAdminSupabaseClient = () => {
+    if (adminSupabaseSingleton) {
+        return adminSupabaseSingleton;
+    }
+
+    if (!isSupabaseConfigured()) {
+        adminSupabaseSingleton = createFallbackSupabaseClient();
+        return adminSupabaseSingleton;
+    }
+
+    adminSupabaseSingleton = buildSupabaseClient(ADMIN_AUTH_STORAGE_KEY);
+    return adminSupabaseSingleton;
 };
 
 export const supabase = getSupabaseClient();

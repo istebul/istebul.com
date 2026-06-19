@@ -1,0 +1,257 @@
+{
+  "version": "p22.0",
+  "updatedAt": "2026-05-24",
+  "vision": "Post-Turkey global readiness: ship en/de/ar markets on existing platform spine before new TLDs or verticals.",
+  "baselineMarket": {
+    "id": "tr",
+    "name": "Türkiye",
+    "status": "live",
+    "locale": "tr",
+    "currency": "TRY",
+    "domain": "istebul.com"
+  },
+  "readinessVerdict": {
+    "globalFoundation": "medium",
+    "firstExpansionReady": "de",
+    "multiRegionPayments": "partial",
+    "fullGdprPack": "not_ready"
+  },
+  "dimensions": [
+    {
+      "id": "i18n",
+      "name": "i18n",
+      "status": "foundation",
+      "score": 65,
+      "current": "locale-registry + i18n.js; 4 locales (tr, en, de, ar); path prefix routing",
+      "gaps": ["~90% UI copy TR-hardcoded", "AI prompts Turkish-first", "admin English/Turkish mix"],
+      "mitigation": "Top-50 string extraction; decision/*.json per locale; prompt locale param",
+      "quickWin": "data/i18n/locales.json + locale-bootstrap (shipped)"
+    },
+    {
+      "id": "currency",
+      "name": "Currency",
+      "status": "ready",
+      "score": 80,
+      "current": "formatMoney() + LOCALIZED_PRO_PRICING TRY/USD/EUR/SAR",
+      "gaps": ["Stripe Checkout still TR-centric price IDs", "FX display vs charge currency mismatch risk"],
+      "mitigation": "getStripeCurrencyForLocale() in checkout; multi-currency Price objects",
+      "quickWin": "pricing-localization.js (shipped)"
+    },
+    {
+      "id": "localization",
+      "name": "Localization",
+      "status": "partial",
+      "score": 55,
+      "current": "RTL css; date/number format; pricing display per locale",
+      "gaps": ["Marketing pages TR-only", "Auto wizard labels not in data/i18n", "legal pages Turkish"],
+      "mitigation": "Per-locale landing JSON; corporate route split; L10n vendor for EN+DE",
+      "quickWin": "/en /de /ar redirects + router strip (shipped)"
+    },
+    {
+      "id": "compliance",
+      "name": "Compliance",
+      "status": "tr_first",
+      "score": 45,
+      "current": "KVKK pages; cookie consent; retention-schedule.json",
+      "gaps": ["No GDPR EN pack", "No cookie policy EN", "DPA template missing", "Dikey regülasyon (kredi/sigorta) TR-only"],
+      "mitigation": "GDPR privacy + cookie EN; subprocessors; market-specific disclaimers",
+      "quickWin": "Document TR legal baseline in investor data room"
+    },
+    {
+      "id": "payments",
+      "name": "Payments",
+      "status": "partial",
+      "score": 60,
+      "current": "Stripe webhook; billing portal; Pro TRY pricing live",
+      "gaps": ["USD/EUR/SAR display without matching Stripe Prices", "VAT/tax not automated", "No local payment methods (iDEAL, etc.)"],
+      "mitigation": "Stripe Tax; Price IDs per locale in env; test mode per market",
+      "quickWin": "Localized price display on /en /de (shipped display-only)"
+    },
+    {
+      "id": "legal_assumptions",
+      "name": "Legal assumptions",
+      "status": "tr_assumed",
+      "score": 40,
+      "current": "Simulation disclaimers; kullanım şartları; KVKK",
+      "gaps": ["Binding terms EN/DE", "Consumer rights EU", "Financial advice disclaimers per country"],
+      "mitigation": "Counsel review per market; LOI template EN exists — extend ToS",
+      "quickWin": "docs/investor/loi-template.md EN section"
+    },
+    {
+      "id": "partner_model_portability",
+      "name": "Partner model portability",
+      "status": "portable_api",
+      "score": 70,
+      "current": "HMAC dispatch; partner_endpoints; webhook docs; retry + SLA monitor",
+      "gaps": ["Partner economics TRY-based", "Settlement manual", "Onboarding copy TR"],
+      "mitigation": "Partner tier config per region; commission currency field; EN partner kit",
+      "quickWin": "partner-webhook-integration.md + dispatch logs"
+    },
+    {
+      "id": "category_portability",
+      "name": "Category portability",
+      "status": "auto_only",
+      "score": 50,
+      "current": "Auto vertical end-to-end; ev/tatil partial; 8-vertical roadmap",
+      "gaps": ["No category registry", "Market data TR/localStorage", "Finance offers TR sim"],
+      "mitigation": "Category registry MVP; decision_leads; locale catalog seeds",
+      "quickWin": "P8 expansion-roadmap.json vertical plan"
+    },
+    {
+      "id": "seo_architecture",
+      "name": "SEO architecture",
+      "status": "partial",
+      "score": 58,
+      "current": "hreflang in seo.cjs; data/seo/locales.json; sitemap TR-heavy",
+      "gaps": ["No xhtml:link alternates all guides", "og:locale:alternate missing", "EN landing thin"],
+      "mitigation": "Per-locale sitemap; landing-pages.{locale}.json; Search Console per hreflang",
+      "quickWin": "data/seo/locales.json alternates map"
+    },
+    {
+      "id": "domain_strategy",
+      "name": "Domain strategy",
+      "status": "single_domain",
+      "score": 72,
+      "current": "istebul.com + path locales (/en, /de, /ar); Cloudflare Pages global CDN",
+      "gaps": ["No ccTLD (.de/.com.tr)", "x-default tr only", "Brand pronunciation markets"],
+      "mitigation": "Stay path-based until ARR threshold; ccTLD redirect later; x-default en for ROW",
+      "quickWin": "Path locale strategy — no subdomain split needed Phase 1"
+    }
+  ],
+  "priorityMarkets": [
+    {
+      "rank": 1,
+      "country": "Germany",
+      "locale": "de",
+      "currency": "EUR",
+      "rationale": "Locale + EUR pricing already in stack; largest EU auto market; methodology fits TCO culture.",
+      "readinessScore": 78,
+      "blockers": ["DE legal ToS", "Stripe EUR Prices", "DE marketing copy"],
+      "phase": "wave_1",
+      "effort": "low_medium"
+    },
+    {
+      "rank": 2,
+      "country": "United Kingdom",
+      "locale": "en",
+      "currency": "GBP",
+      "rationale": "English infrastructure live; high car spend; RHD catalog gap manageable for MVP.",
+      "readinessScore": 72,
+      "blockers": ["GBP Stripe Prices", "UK GDPR/FGA disclaimers", "RHD vehicle data"],
+      "phase": "wave_1",
+      "effort": "medium"
+    },
+    {
+      "rank": 3,
+      "country": "United Arab Emirates",
+      "locale": "ar",
+      "currency": "AED",
+      "rationale": "RTL ready; premium car market; expat EN overlap — test ar-SA then en-AE.",
+      "readinessScore": 68,
+      "blockers": ["AED pricing", "AR content volume", "Partner dealers UAE"],
+      "phase": "wave_1",
+      "effort": "medium"
+    },
+    {
+      "rank": 4,
+      "country": "Poland",
+      "locale": "en",
+      "currency": "PLN",
+      "rationale": "Proximity to TR; growing EU auto market; start with en + PLN display before pl locale.",
+      "readinessScore": 62,
+      "blockers": ["pl locale", "PLN Stripe", "Local finance partners"],
+      "phase": "wave_2",
+      "effort": "medium"
+    },
+    {
+      "rank": 5,
+      "country": "Netherlands",
+      "locale": "en",
+      "currency": "EUR",
+      "rationale": "High English proficiency; EUR; strong leasing culture — TCO fit.",
+      "readinessScore": 65,
+      "blockers": ["nl locale optional", "iDEAL demand", "NL legal"],
+      "phase": "wave_2",
+      "effort": "medium"
+    },
+    {
+      "rank": 6,
+      "country": "United States",
+      "locale": "en",
+      "currency": "USD",
+      "rationale": "USD pricing defined; huge TAM; crowded — defer until PMF proven in EU/GCC.",
+      "readinessScore": 55,
+      "blockers": ["State-level compliance", "Competition", "Catalog US-specific"],
+      "phase": "wave_3",
+      "effort": "high"
+    },
+    {
+      "rank": 7,
+      "country": "Saudi Arabia",
+      "locale": "ar",
+      "currency": "SAR",
+      "rationale": "SAR in pricing table; GCC expansion; align with UAE wave.",
+      "readinessScore": 64,
+      "blockers": ["Local partner network", "Zakat/commercial terms"],
+      "phase": "wave_2",
+      "effort": "medium"
+    },
+    {
+      "rank": 8,
+      "country": "France",
+      "locale": "fr",
+      "currency": "EUR",
+      "rationale": "Large EU market; requires fr locale — not in stack yet.",
+      "readinessScore": 48,
+      "blockers": ["fr locale", "FR legal", "Translation volume"],
+      "phase": "wave_3",
+      "effort": "high"
+    }
+  ],
+  "roadmapPhases": [
+    {
+      "id": "p22_0",
+      "name": "Audit & wave 1 selection (shipped)",
+      "deliverables": [
+        "international-expansion-audit.json",
+        "INTERNATIONAL_EXPANSION_AUDIT.md",
+        "Admin International Expansion page",
+        "metrics:international:audit snapshot"
+      ]
+    },
+    {
+      "id": "p22_1",
+      "name": "Wave 1 — DE + EN-GB + AR-UAE",
+      "deliverables": [
+        "Stripe EUR/GBP/AED Prices",
+        "EN+DE top-50 strings + Planlar copy",
+        "GDPR EN privacy + cookie",
+        "DE/EN SEO landing pages",
+        "Partner kit EN"
+      ],
+      "timeline": "after TR PMF stable"
+    },
+    {
+      "id": "p22_2",
+      "name": "Wave 2 — PL + NL + GCC scale",
+      "deliverables": ["pl locale", "PLN", "category registry", "warehouse analytics export"]
+    },
+    {
+      "id": "p22_3",
+      "name": "Wave 3 — US + FR + ccTLD decision",
+      "deliverables": ["US catalog", "fr locale", "optional istebul.de redirect"]
+    }
+  ],
+  "domainStrategy": {
+    "phase1": "Single domain istebul.com with path locales (recommended)",
+    "phase2": "ccTLD redirects (istebul.de → /de) when CAC justifies",
+    "xDefaultRecommendation": "Keep tr until TR is majority revenue; switch to en when export MRR >40%",
+    "cdn": "Cloudflare Pages — edge suitable globally"
+  },
+  "kpis": [
+    { "key": "locales_content_complete", "target": ">=2 full locales (en+de)", "owner": "vp_product" },
+    { "key": "stripe_multi_currency_live", "target": ">=3 charge currencies", "owner": "vp_revenue" },
+    { "key": "hreflang_coverage_pct", "target": ">=80% indexable routes", "owner": "vp_growth" },
+    { "key": "export_mrr_pct", "target": ">15% of MRR", "owner": "ceo" }
+  ]
+}

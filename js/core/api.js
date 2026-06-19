@@ -1,6 +1,7 @@
 // API utilities
 import { supabase } from './supabase.js';
 import config from './config.js';
+import { postAiProxy } from './ai-proxy-client.js';
 
 export class API {
     static sanitizeSearchTerm(value) {
@@ -85,38 +86,22 @@ export class API {
     }
 
     static async signIn(email, password) {
-        const timeout = (ms, message = 'Giriş isteği zaman aşımına uğradı. Lütfen tekrar deneyin.') => new Promise((_, reject) => {
-            setTimeout(() => reject(new Error(message)), ms);
+        const timeoutMs = 12000;
+        const signInPromise = supabase.auth.signInWithPassword({ email, password });
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(
+                () => reject(new Error('Giriş isteği zaman aşımına uğradı. Lütfen tekrar deneyin.')),
+                timeoutMs
+            );
         });
 
-        const response = await Promise.race([
-            fetch(`${config.supabase.url}/auth/v1/token?grant_type=password`, {
-                method: 'POST',
-                headers: {
-                    apikey: config.supabase.anonKey,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            }),
-            timeout(12000)
-        ]);
+        const { data, error } = await Promise.race([signInPromise, timeoutPromise]);
 
-        const payload = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-            throw new Error(payload.msg || payload.message || 'E-posta veya şifre hatalı.');
-        }
-
-        if (payload.access_token && payload.refresh_token && supabase.auth.setSession) {
-            supabase.auth.setSession({
-                access_token: payload.access_token,
-                refresh_token: payload.refresh_token
-            }).catch(() => {});
-        }
+        if (error) throw error;
 
         return {
-            session: payload,
-            user: payload.user
+            session: data.session,
+            user: data.user
         };
     }
 
@@ -126,8 +111,55 @@ export class API {
     }
 
     static async resetPassword(email) {
-        const { error } = await supabase.auth.resetPasswordForEmail(email);
+        const redirectTo = typeof window !== 'undefined'
+            ? `${window.location.origin}/?auth=reset`
+            : undefined;
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo
+        });
         if (error) throw error;
+    }
+
+    static async resendSignupConfirmation(email) {
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email
+        });
+        if (error) throw error;
+    }
+
+    static async getSubscription(userId) {
+        const { data, error } = await supabase
+            .from('subscriptions')
+            .select(
+                'status, current_period_start, current_period_end, cancel_at_period_end, stripe_price_id, provider, plan_code, updated_at'
+            )
+            .eq('user_id', userId)
+            .in('status', ['active', 'trialing', 'past_due', 'canceled', 'cancelled'])
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (error) throw error;
+        return data;
+    }
+
+    static async getUserEntitlements(userId) {
+        const { data, error } = await supabase
+            .from('user_entitlements')
+            .select('entitlement_code, status, expires_at, created_at, source_order_id')
+            .eq('user_id', userId)
+            .eq('status', 'active')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            if (error.code === '42P01' || error.message?.includes('does not exist')) {
+                return [];
+            }
+            throw error;
+        }
+        return data || [];
     }
 
     // Profile API
@@ -177,102 +209,23 @@ export class API {
         return data || [];
     }
 
-    // Listings API
+    // Listings API (legacy `listings` table — retired for public SPA; use decision-options-api.js)
+    /** @deprecated Public catalog uses ai_listings via js/core/decision-options-api.js */
     static async getListings(options = {}) {
-        const {
-            category,
-            search,
-            province,
-            district,
-            location,
-            minPrice,
-            maxPrice,
-            vehicleBrand,
-            propertyType,
-            vacationType,
-            limit = config.ui.itemsPerPage,
-            offset = 0,
-            userId,
-            status = 'active'
-        } = options;
-
-        let query = supabase
-            .from('listings')
-            .select('*')
-            .eq('status', status)
-            .order('created_at', { ascending: false })
-            .range(offset, offset + limit - 1);
-
-        if (category) {
-            query = query.eq('category', category);
-        }
-
-        if (Number.isFinite(Number(minPrice)) && Number(minPrice) > 0) {
-            query = query.gte('price', Number(minPrice));
-        }
-
-        if (Number.isFinite(Number(maxPrice)) && Number(maxPrice) > 0) {
-            query = query.lte('price', Number(maxPrice));
-        }
-
-        const locationTerm = district || province || location;
-        if (locationTerm) {
-            const safeLocation = this.sanitizeSearchTerm(locationTerm);
-            if (safeLocation) {
-                query = query.ilike('location', '%' + safeLocation + '%');
-            }
-        }
-
-        const detailTerm = vehicleBrand || propertyType || vacationType;
-        if (detailTerm) {
-            const safeDetail = this.sanitizeSearchTerm(detailTerm);
-            if (safeDetail) {
-                query = query.or('title.ilike.%' + safeDetail + '%,description.ilike.%' + safeDetail + '%');
-            }
-        }
-
-        if (search) {
-            const safeSearch = this.sanitizeSearchTerm(search);
-            if (safeSearch) {
-                query = query.or(`title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`);
-            }
-        }
-
-        if (userId) {
-            query = query.eq('user_id', userId);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-        return data;
+        console.warn('[isteBul] API.getListings is deprecated for public UI — use loadDecisionOptions()');
+        return [];
     }
 
+    /** @deprecated Use getDecisionOptionById from decision-options-api.js */
     static async getListing(id) {
-        const { data, error } = await supabase
-            .from('listings')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (error) throw error;
-        return data;
+        console.warn('[isteBul] API.getListing is deprecated — use getDecisionOptionById()');
+        return null;
     }
 
+    /** @deprecated Use submitUserListingToAiEngine via ai-listings-intake */
     static async createListing(listingData) {
-        const safeListingData = this.sanitizeListingUpdates(listingData);
-        if (listingData.user_id) {
-            safeListingData.user_id = listingData.user_id;
-        }
-
-        const { data, error } = await supabase
-            .from('listings')
-            .insert([safeListingData])
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+        console.warn('[isteBul] API.createListing is deprecated — use ai-listings-intake edge');
+        throw new Error('Legacy listings table retired — use Karar Merkezi intake');
     }
 
     static async updateListing(id, updates) {
@@ -327,16 +280,10 @@ export class API {
         return data;
     }
 
-    static async updateUserRole(userId, role) {
-        const { data, error } = await supabase
-            .from('profiles')
-            .update({ role })
-            .eq('id', userId)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+    static async updateUserRole() {
+        throw new Error(
+            'Profile role changes must use the admin panel (admin-action edge function).'
+        );
     }
 
     static async getAdminStats() {
@@ -418,23 +365,41 @@ export class API {
         return data;
     }
 
+    static async isTrialEligible(userId) {
+        if (!userId) return false;
+
+        const { data, error } = await supabase
+            .from('subscriptions')
+            .select('id')
+            .eq('user_id', userId)
+            .limit(1);
+
+        if (error) return false;
+        return !data?.length;
+    }
+
     // OpenAI proxy
     static async askAI(prompt, context = {}) {
         const { data: { session } } = await supabase.auth.getSession();
 
-        const headers = {
-            'Content-Type': 'application/json'
-        };
+        const headers = {};
 
         if (session?.access_token) {
             headers.Authorization = `Bearer ${session.access_token}`;
         }
 
-        return this.request(config.api.endpoints.aiProxy, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ prompt, context })
+        const proxy = await postAiProxy({
+            prompt,
+            context,
+            headers
         });
+
+        if (!proxy.ok) {
+            console.error(`API request failed: ${config.api.endpoints.aiProxy}`, proxy.error);
+            throw new Error(`HTTP error! status: ${proxy.status}`);
+        }
+
+        return proxy.data;
     }
 }
 

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Kurucu Fundraising Rehberi</title>
+  <style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    color: #0f172a;
+    line-height: 1.5;
+    font-size: 11pt;
+    margin: 0;
+  }
+  h1 { font-size: 22pt; margin: 0 0 8px; color: #0F172A; }
+  h2 { font-size: 14pt; margin: 20px 0 8px; color: #2563EB; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; }
+  h3 { font-size: 12pt; margin: 14px 0 6px; }
+  p { margin: 0 0 10px; }
+  ul { margin: 0 0 12px 18px; padding: 0; }
+  li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 10pt; }
+  th, td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; }
+  blockquote { margin: 12px 0; padding: 10px 14px; background: #f8fafc; border-left: 4px solid #2563EB; color: #334155; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 9pt; overflow: hidden; white-space: pre-wrap; }
+  code { font-family: ui-monospace, monospace; font-size: 9pt; }
+  .cover {
+    background: linear-gradient(135deg, #0F172A 0%, #1e3a5f 100%);
+    color: #F8FAFC;
+    min-height: 240mm;
+    padding: 48px 40px;
+    page-break-after: always;
+  }
+  .cover h1 { color: #fff; font-size: 32pt; }
+  .cover .tag { color: #94A3B8; font-size: 12pt; margin-top: 24px; }
+  .cover .meta { margin-top: 48px; font-size: 11pt; color: #94A3B8; }
+  .footer-note { margin-top: 24px; font-size: 9pt; color: #64748b; }
+  .section { padding: 0 4px; }
+  
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="brand">isteBul · Investor</div>
+    <h1>Kurucu Fundraising Rehberi</h1>
+    <p class="tag">İletişim · anlatım · toplantı · aksiyon planı</p>
+    <p class="meta">www.istebul.com · 2026-05-26 · Gizli — yalnızca yatırımcı paylaşımı</p>
+  </section>
+  <div class="section"><h1>isteBul — Kurucu Fundraising Master Rehberi</h1>
+<p>Bu rehber, yatırımcı bulma, ikna etme ve yatırım alma sürecini uçtan uca yönetmeniz için yazılmıştır. Teknik data room ile birlikte <strong>PDF/slayt paketi</strong>, <strong>iletişim şablonları</strong>, <strong>toplantı akışı</strong> ve <strong>günlük/haftalık yapılacaklar listesi</strong> içerir.</p>
+<hr>
+<h2>Bölüm 1 — Elinizdeki teslim paketi (PDF + slayt)</h2>
+<h3>1.1 Otomatik export (önerilen)</h3>
+<pre><code class="lang-bash">npm run investor:export:pdf</code></pre>
+<p>Çıktı klasörü: <code>docs/investor/export/</code></p>
+<table><thead><tr><th>Dosya</th><th>Format</th><th>Ne zaman kullanılır</th></tr></thead>
+<tbody><tr><td><code>isteBul_ONE_PAGER.pdf</code></td><td>PDF (A4)</td><td>İlk mail, intro, hızlı ön eleme</td></tr><tr><td><code>isteBul_PITCH_DECK.pdf</code></td><td>PDF slayt (16:9)</td><td>1. ve 2. görüşme sunumu</td></tr><tr><td><code>isteBul_EXECUTIVE_REPORT.pdf</code></td><td>PDF rapor</td><td>DD öncesi özet, analist paylaşımı</td></tr><tr><td><code>isteBul_FUNDRAISING_READINESS.pdf</code></td><td>PDF rapor</td><td>İç hazırlık, eksik kapatma</td></tr><tr><td><code>isteBul_FOUNDER_FUNDRAISING_GUIDE.pdf</code></td><td>PDF rehber</td><td>Bu dokümanın basılı/PDF sürümü</td></tr><tr><td><code>pitch-deck-slides.html</code></td><td>HTML slayt</td><td>Tarayıcıda sunum veya yeniden PDF</td></tr><tr><td><code>*.html</code></td><td>Kaynak</td><td>Metin güncellemesi sonrası yeniden export</td></tr></tbody>
+</table>
+<h3>1.2 Repo içi kaynak dokümanlar (düzenlenebilir)</h3>
+<table><thead><tr><th>İçerik</th><th>Kaynak</th></tr></thead>
+<tbody><tr><td>Slayt metni (Marp uyumlu)</td><td><code>docs/investor/investor-deck.md</code></td></tr><tr><td>One-pager</td><td><code>docs/investor/ONE_PAGER.md</code></td></tr><tr><td>100 yatırımcı listesi</td><td><code>docs/investor/INVESTOR_TARGET_LIST_100.csv</code></td></tr><tr><td>Outreach şablonları</td><td><code>docs/investor/OUTREACH_PLAYBOOK.md</code></td></tr><tr><td>Toplantı + DD</td><td><code>docs/investor/MEETING_FLOW_AND_DD.md</code></td></tr><tr><td>Takip disiplini</td><td><code>docs/investor/FOLLOW_UP_DISCIPLINE.md</code></td></tr><tr><td>Data room</td><td><code>docs/investor/DATA_ROOM_INDEX.md</code></td></tr><tr><td>Finansal model CSV</td><td><code>docs/investor/financial-model-template/</code></td></tr><tr><td>Cap table şablonu</td><td><code>docs/investor/cap-table.csv</code></td></tr></tbody>
+</table>
+<h3>1.3 Canlı metrik (her toplantıdan önce zorunlu)</h3>
+<pre><code class="lang-bash">SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run metrics:investor:pack</code></pre>
+<ul>
+<li>Çıktı: <code>dist/investor-readiness-pack.json</code> (gitignore — sizde lokal kalır)</li>
+<li>Pitch deck slayt 7’deki <code>[LIVE: ...]</code> alanlarını bu export ile doldurun</li>
+<li>Stripe dashboard ekran görüntüsünü <code>STRIPE_MRR_EVIDENCE.md</code> slotlarına ekleyin</li>
+</ul>
+<h3>1.4 Google Slides / Keynote’a aktarma</h3>
+<p>1. <code>isteBul_PITCH_DECK.pdf</code> → slayt başına görsel import (hızlı) 2. Veya <code>investor-deck.md</code> → Marp / manuel kopyala (düzenlenebilir) 3. Marka: arka plan <code>#0F172A</code>, vurgu <code>#2563EB</code>, font Inter veya DM Sans</p>
+<hr>
+<h2>Bölüm 2 — Yatırımcıyı ikna eden anlatım (story arc)</h2>
+<h3>2.1 60 saniyelik elevator (ezberlenebilir)</h3>
+<blockquote>Türkiye’de insanlar araç ve konut gibi ₺500 bin – 3 milyonluk kararları parçalı araçlarla veriyor: ilan sitesi envanter satıyor, banka tek ürün öneriyor, ChatGPT ise fiyat uyduruyor.   <strong>isteBul</strong>, uygunluk, toplam maliyet ve finansman yükünü tek şeffaf akışta birleştiren <strong>karar altyapısıdır</strong> — skorlar kural tabanlı ve açıklanabilir; AI sadece yorumlar.   Gelir modelimiz hibrit: <strong>Pro abonelik</strong> canlı, <strong>partner lead</strong> dispatch ve CRM ile ölçülüyor. Otomotivde başladık; konut ve finansa aynı motorla genişliyoruz.   <strong>[Tur tutarı ve 18 ay milestone]</strong> için görüşmek isteriz.</blockquote>
+<h3>2.2 3 dakikalık genişletme (1. görüşme açılışı)</h3>
+<p>1. <strong>Problem (45 sn):</strong> Parçalı araçlar, satıcı önyargısı, güven eksikliği   2. <strong>Çözüm (60 sn):</strong> Decide → Explain → Close; canlı demo isteBul Auto   3. <strong>Neden şimdi (30 sn):</strong> AI güven krizi, partner CPL baskısı, canlı ürün   4. <strong>Traction (45 sn):</strong> MRR, lead, funnel — <strong>canlı export’tan oku, tahmin etme</strong>   5. <strong>Ask (30 sn):</strong> Tur, kullanım, 18 ay milestone, sonraki adım tarihi</p>
+<h3>2.3 İkna için tekrarlanan 5 cümle (her toplantıda)</h3>
+<p>1. <strong>Kategori:</strong> “İlan sitesi değiliz — karar altyapısıyız.”   2. <strong>Güven:</strong> “LLM skoru değiştiremez; sayılar deterministik.”   3. <strong>Monetizasyon:</strong> “Pro + partner actual revenue — ikisi de production’da.”   4. <strong>Moat:</strong> “Skor IP + truth layer + partner flywheel.”   5. <strong>Opsiyonellik:</strong> “8 dikey, tek motor — otomotiv beachhead.”</p>
+<h3>2.4 Sık itirazlar ve kısa cevaplar</h3>
+<table><thead><tr><th>İtiraz</th><th>Cevap</th></tr></thead>
+<tbody><tr><td>“Sahibinden / Arabam zaten var”</td><td>Onlar envanter satar; biz <strong>karar + TCO + nötr sıralama</strong> satarız, sonra execution.</td></tr><tr><td>“AI wrapper değil misiniz?”</td><td>Skor motoru kural tabanlı; LLM guardrail ile sınırlı; test ve audit log var.</td></tr><tr><td>“Traction erken”</td><td>Canlı ürün + instrumented funnel; LOI ve pilot partner ile realization hızlanıyor.</td></tr><tr><td>“Pazar TR’de küçük”</td><td>Beachhead auto CPL yüksek; platform 4 dikey SAM ile genişler.</td></tr><tr><td>“Regülasyon?”</td><td>KVKK sayfaları, simulation etiketleri, compliance audit yol haritası data room’da.</td></tr></tbody>
+</table>
+<hr>
+<h2>Bölüm 3 — Nasıl iletişim kuracaksınız (2 katman)</h2>
+<p>Detay şablonlar: <code>OUTREACH_PLAYBOOK.md</code></p>
+<h3>3.1 Öncelik sırası (her zaman)</h3>
+<p>1. <strong>Warm intro</strong> (mevcut yatırımcı, founder, portföy, danışman)   2. Tanıştırmalı mail → intro thread   3. Ancak warm yoksa <strong>cold mail</strong> + 60 sn demo + one-pager PDF</p>
+<h3>3.2 İlk temas paketi (ekler)</h3>
+<ul>
+<li><code>isteBul_ONE_PAGER.pdf</code>  </li>
+<li>60 sn Loom demo linki (Auto wizard → skor → lead CTA)  </li>
+<li>İsteğe bağlı: <code>isteBul_PITCH_DECK.pdf</code> (2. mail veya qualified sonrası)</li>
+</ul>
+<h3>3.3 Kanal seçimi</h3>
+<table><thead><tr><th>Kanal</th><th>Ne zaman</th></tr></thead>
+<tbody><tr><td>E-posta</td><td>Varsayılan; kısa, tek CTA</td></tr><tr><td>LinkedIn</td><td>Cold veya intro sonrası hatırlatma</td></tr><tr><td>WhatsApp</td><td>Sadece tanıdık intro sonrası</td></tr><tr><td>Yüz yüze / Zoom</td><td>Qualified yatırımcı</td></tr></tbody>
+</table>
+<h3>3.4 Ton ve kurallar</h3>
+<ul>
+<li><strong>Kısa:</strong> İlk mail ≤ 150 kelime  </li>
+<li><strong>Tek CTA:</strong> “20 dk tanışma” veya “intro rica”  </li>
+<li><strong>Statik sahte sayı yok:</strong> “Pack export 7 gün içinde paylaşılır” de  </li>
+<li><strong>48 saat:</strong> Her temas sonrası follow-up (zorunlu)</li>
+</ul>
+<h3>3.5 Haftalık batch planı (100 liste)</h3>
+<table><thead><tr><th>Gün</th><th>Aktivite</th></tr></thead>
+<tbody><tr><td>Pazartesi</td><td>15 yatırımcı seç (<code>Warm intro=Evet</code> önce)</td></tr><tr><td>Salı–Çarşamba</td><td>Intro iste + cold gönder</td></tr><tr><td>Perşembe</td><td>Yanıtları sınıflandır, toplantı slotu aç</td></tr><tr><td>Cuma</td><td>Haftalık investor update + milestone tarihleri güncelle</td></tr></tbody>
+</table>
+<hr>
+<h2>Bölüm 4 — Toplantı süreci (adım adım)</h2>
+<p>Detay: <code>MEETING_FLOW_AND_DD.md</code></p>
+<h3>4.1 Toplantı 1 — Problem / çözüm / traction (30–40 dk)</h3>
+<p><strong>Hedef:</strong> Tez uyumu + ikinci görüşme veya polite pass.</p>
+<table><thead><tr><th>Dakika</th><th>İçerik</th></tr></thead>
+<tbody><tr><td>0–3</td><td>Teşekkür + agenda</td></tr><tr><td>3–8</td><td>Problem + müşteri alıntısı</td></tr><tr><td>8–15</td><td>Çözüm + <strong>canlı demo</strong> (önceden test et)</td></tr><tr><td>15–22</td><td>Traction (export’tan 4 metrik)</td></tr><tr><td>22–28</td><td>Pazar + moat (1 slayt)</td></tr><tr><td>28–35</td><td>Ask + soru-cevap</td></tr><tr><td>35–40</td><td>Sonraki adım + <strong>tarih kilitle</strong></td></tr></tbody>
+</table>
+<p><strong>Çıktı:</strong> CRM’de <code>meeting_1_done</code> + <code>next_milestone_date</code></p>
+<h3>4.2 Toplantı 2 — Metrikler / teknoloji / GTM (45–60 dk)</h3>
+<p><strong>Hedef:</strong> DD’ye geçiş onayı.</p>
+<ul>
+<li>Metrikler: MRR trend, lead hacmi, realization, funnel drop-off  </li>
+<li>Teknoloji: Skor mimarisi, LLM sınırı, dispatch güvenilirliği  </li>
+<li>GTM: SEO/PLG, partner pipeline, dikey roadmap  </li>
+<li>Finans: 36 ay model özet (Base senaryo)  </li>
+<li><strong>Çıktı:</strong> DD kickoff tarihi veya açık soru listesi (owner + deadline)</li>
+</ul>
+<h3>4.3 DD — Data room + teknik inceleme</h3>
+<p><strong>Gönderilecek paket:</strong></p>
+<p>1. <code>isteBul_EXECUTIVE_REPORT.pdf</code>   2. Data room link / zip (<code>DATA_ROOM_INDEX.md</code> maddeleri)   3. <code>investor-readiness-pack.json</code> (≤7 gün)   4. <code>cap-table.csv</code> + counsel onaylı SHA taslağı   5. 1–2 imzalı partner LOI (varsa)</p>
+<p><strong>Teknik oturum (60–90 dk):</strong></p>
+<ul>
+<li>Mimari walkthrough  </li>
+<li>KPI hesap doğrulama  </li>
+<li><code>npm run test</code> sonucu (yeşil)  </li>
+<li>Stripe ↔ CRM reconciliation</li>
+</ul>
+<p><strong>Çıktı:</strong> IC / term sheet / no-go</p>
+<hr>
+<h2>Bölüm 5 — Yatırım almak için yapmanız gerekenler (checklist)</h2>
+<h3>5.1 Tur öncesi (1 kez)</h3>
+<ul>
+<li>[ ] Tur tutarı, dilution, valuation hedefi net (counsel)  </li>
+<li>[ ] <code>cap-table.csv</code> dolduruldu  </li>
+<li>[ ] <code>investor-deck.md</code> içindeki <code>[Founder ...]</code> alanları dolduruldu  </li>
+<li>[ ] <code>npm run investor:export:pdf</code> → PDF paketi güncel  </li>
+<li>[ ] 60 sn demo Loom kaydı  </li>
+<li>[ ] CRM pipeline (Notion/Sheet): 100 yatırımcı import  </li>
+<li>[ ] Data room klasör yapısı (<code>DATA_ROOM_INDEX.md</code>)</li>
+</ul>
+<h3>5.2 Her yatırımcı thread’i için</h3>
+<ul>
+<li>[ ] Stage / sector fit kontrol  </li>
+<li>[ ] Warm intro denendi  </li>
+<li>[ ] İlk mail + PDF/demo linki  </li>
+<li>[ ] <strong>48 saat follow-up</strong>  </li>
+<li>[ ] <code>next_milestone_date</code> + <code>next_milestone_definition</code> dolu  </li>
+<li>[ ] Toplantı notları 24 saat içinde paylaşıldı  </li>
+</ul>
+<h3>5.3 Her toplantı öncesi (T-24 saat)</h3>
+<ul>
+<li>[ ] <code>metrics:investor:pack</code> export  </li>
+<li>[ ] Pitch deck slayt 7 güncellendi  </li>
+<li>[ ] Demo staging/production test  </li>
+<li>[ ] İtiraz cevapları gözden geçirildi  </li>
+<li>[ ] Soru listesi (min 5) hazır</li>
+</ul>
+<h3>5.4 Her hafta (Cuma)</h3>
+<ul>
+<li>[ ] Investor update maili (format: <code>FOLLOW_UP_DISCIPLINE.md</code>)  </li>
+<li>[ ] Pipeline durumları güncellendi  </li>
+<li>[ ] Parked / lost nedenleri kaydedildi  </li>
+<li>[ ] Gelecek hafta batch (15 yeni outreach) planlandı  </li>
+</ul>
+<h3>5.5 DD / term sheet aşaması</h3>
+<ul>
+<li>[ ] Executive report + data room tam  </li>
+<li>[ ] Stripe MRR kanıtı  </li>
+<li>[ ] LOI / partner sözleşme özetleri  </li>
+<li>[ ] Risk register walkthrough  </li>
+<li>[ ] Hukuk: SHA, SPA, bilgi hakları  </li>
+</ul>
+<h3>5.6 Kritik başarı metrikleri (süreci ölçün)</h3>
+<table><thead><tr><th>Metrik</th><th>Hedef (örnek)</th></tr></thead>
+<tbody><tr><td>İlk yanıt oranı</td><td>%15+ warm, %3–5 cold</td></tr><tr><td>Meeting 1 → Meeting 2</td><td>%40+</td></tr><tr><td>Meeting 2 → DD</td><td>%25+</td></tr><tr><td>DD → Term sheet</td><td>%15+</td></tr><tr><td>Ortalama süre (ilk mail → TS)</td><td>8–16 hafta</td></tr></tbody>
+</table>
+<hr>
+<h2>Bölüm 6 — Örnek e-postalar (kopyala-yapıştır)</h2>
+<h3>6.1 Tanıştırma isteği (aracıya)</h3>
+<pre><code>Konu: Kısa intro — isteBul (AI karar platformu)
+
+Merhaba [Ad],
+[Investor] ile örtüşen bir intro rica edeceğim.
+isteBul: yüksek tutarlı alımlarda şeffaf skor + TCO + partner kapanışı.
+Ek: one-pager PDF + 60 sn demo.
+Uygunsa 2 cümlelik forwardable intro metni paylaşırım.
+Teşekkürler.</code></pre>
+<h3>6.2 Cold mail</h3>
+<pre><code>Konu: isteBul — seed · karar altyapısı (TR otomotiv beachhead)
+
+Merhaba [Ad],
+Kısa özet: [2 cümle elevator].
+Materyal: one-pager PDF · 60 sn demo · data room index.
+20 dk tanışma için [2 slot] uygun mu?</code></pre>
+<h3>6.3 Toplantı sonrası (48 saat)</h3>
+<pre><code>Konu: Teşekkürler + materyaller + sonraki adım
+
+Merhaba [Ad],
+Özet: [3 madde].
+Ekler: pitch PDF · executive report · metrics pack (tarihli).
+Sonraki adım: [DD / 2. görüşme] — [tarih] öneriyorum.
+Next milestone: [tanım + tarih].</code></pre>
+<hr>
+<h2>Bölüm 7 — Hemen başlayın (ilk 7 gün)</h2>
+<table><thead><tr><th>Gün</th><th>Aksiyon</th></tr></thead>
+<tbody><tr><td>1</td><td>PDF export + deck’te founder alanlarını doldur</td></tr><tr><td>2</td><td>Loom demo + CRM’e 100 listeyi import</td></tr><tr><td>3</td><td>10 warm intro isteği</td></tr><tr><td>4</td><td>15 cold mail (one-pager PDF ekli)</td></tr><tr><td>5</td><td>İlk toplantıları planla</td></tr><tr><td>6</td><td>metrics pack + executive report gönder</td></tr><tr><td>7</td><td>Haftalık update #1 + pipeline review</td></tr></tbody>
+</table>
+<hr>
+<h2>İlgili dosyalar</h2>
+<ul>
+<li>Export: <code>docs/investor/export/README.md</code>  </li>
+<li>Operasyon: <code>OUTREACH_PLAYBOOK.md</code>, <code>MEETING_FLOW_AND_DD.md</code>, <code>FOLLOW_UP_DISCIPLINE.md</code>  </li>
+<li>Narrative JSON: <code>data/investor/investor-narrative.json</code></li>
+</ul></div>
+  <p class="footer-note">Canlı metrikler için: npm run metrics:investor:pack · Bu rapor statik özet içerir; toplantı öncesi snapshot güncellenmelidir.</p>
+</body>
+</html>

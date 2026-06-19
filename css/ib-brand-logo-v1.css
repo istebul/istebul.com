@@ -1,0 +1,81 @@
+/**
+ * isteBul brand lockups — icon + wordmark (nav, footer, vertical headers).
+ */
+
+.ib-brand-icon {
+  display: block;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.ib-brand-logo-nav {
+  display: block;
+  height: 36px;
+  width: auto;
+  max-width: min(168px, 42vw);
+  flex-shrink: 0;
+}
+
+.ib-brand-logo-full {
+  display: block;
+  height: auto;
+  width: min(168px, 100%);
+  max-height: 96px;
+}
+
+/* —— Homepage navbar —— */
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-brand.ib-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  text-decoration: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-brand .brand-mark {
+  display: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-brand .brand-copy .brand-title,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-brand .brand-copy .nav-subtitle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .ib-footer-v7__logo .brand-mark,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .ib-footer-v7__logo .brand-title {
+  display: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .ib-footer-v7__logo {
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+/* —— Vertical headers: icon + word + badge —— */
+html.ib-ds-v4.ib-premium-v7 .ib-vertical-brand__icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+html.ib-ds-v4.ib-premium-v7 .vacation-header .logo.ib-vertical-brand,
+html.ib-ds-v4.ib-premium-v7 .housing-header .ib-vertical-brand {
+  gap: 0.45rem;
+}
+
+@media (max-width: 480px) {
+  .ib-brand-logo-nav {
+    height: 32px;
+    max-width: 140px;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 .ib-vertical-brand__icon {
+    width: 24px;
+    height: 24px;
+  }
+}

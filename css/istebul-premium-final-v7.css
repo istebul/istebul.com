@@ -1,0 +1,500 @@
+/**
+ * isteBul Premium Final V7 — density, container, footer, samples, section flow
+ * Scope: html.ib-ds-v4.ib-premium-v7 (marketing + shared shells)
+ */
+
+html.ib-ds-v4.ib-premium-v7 {
+  --ib-v7-max: 1160px;
+  --ib-v7-pad-x: clamp(1rem, 3vw, 1.5rem);
+  --ib-v7-section-y: clamp(2.5rem, 5vw, 4.5rem);
+  --ib-v7-ink: #111827;
+  --ib-v7-muted: #4b5563;
+  --ib-v7-border: #e5e7eb;
+  --ib-v7-surface: #ffffff;
+  --ib-v7-bg: #fafaf8;
+  --ib-v7-accent: #2563eb;
+  --ib-v7-footer-link: #374151;
+}
+
+/* —— Container density —— */
+html.ib-ds-v4.ib-premium-v7 .container,
+html.ib-ds-v4.ib-premium-v7 .hero-container.container {
+  max-width: var(--ib-v7-max);
+  padding-left: var(--ib-v7-pad-x);
+  padding-right: var(--ib-v7-pad-x);
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-section-venture,
+html.ib-ds-v4.ib-premium-v7 .section-bg,
+html.ib-ds-v4.ib-premium-v7 .section-surface,
+html.ib-ds-v4.ib-premium-v7 .how-section,
+html.ib-ds-v4.ib-premium-v7 .trust-section,
+html.ib-ds-v4.ib-premium-v7 .sample-preview-section {
+  padding-block: var(--ib-v7-section-y);
+}
+
+@media (max-width: 767px) {
+  html.ib-ds-v4.ib-premium-v7 {
+    --ib-v7-section-y: 2.5rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  html.ib-ds-v4.ib-premium-v7 {
+    --ib-v7-section-y: 3.5rem;
+  }
+}
+
+/* —— Home section order (premium flow) —— */
+html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #main-content,
+html.ib-ds-v4.ib-premium-v7.ib-route-pending #main-content {
+  display: flex;
+  flex-direction: column;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home {
+  order: 10;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-economic-indicators {
+  order: 15;
+}
+
+html.ib-ds-v4.ib-premium-v7 #how-it-works {
+  order: 20;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus {
+  order: 25;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-features-strip {
+  order: 30;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview {
+  order: 35;
+}
+
+html.ib-ds-v4.ib-premium-v7 #karar-rehberi {
+  order: 50;
+}
+
+html.ib-ds-v4.ib-premium-v7 #trust {
+  order: 60;
+}
+
+html.ib-ds-v4.ib-premium-v7 #pricing {
+  order: 70;
+}
+
+html.ib-ds-v4.ib-premium-v7 #partner-enterprise {
+  order: 80;
+}
+
+html.ib-ds-v4.ib-premium-v7 #landing-faq {
+  order: 90;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-guides-strip {
+  order: 95;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-final-cta {
+  order: 100;
+}
+
+/* —— Section headings —— */
+html.ib-ds-v4.ib-premium-v7 .section-header h2 {
+  font-size: clamp(1.45rem, 2.8vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-section-lead-muted {
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--ib-v7-muted);
+}
+
+/* —— Gerçek analiz örnekleri (2×2 dashboard) —— */
+html.ib-ds-v4.ib-premium-v7 #sample-preview.sample-preview-section {
+  background: linear-gradient(180deg, #f8fafc 0%, var(--ib-v7-bg) 100%);
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-demo-header {
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-demo-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-example-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-example-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample {
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  padding: 1.1rem 1.05rem;
+  border-radius: 20px;
+  border: 1px solid var(--ib-v7-border);
+  background: var(--ib-v7-surface);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 28px rgba(15, 23, 42, 0.06);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37, 99, 235, 0.25);
+  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.1);
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-example-kicker {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__score {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ib-v7-ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__score span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__meta {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0 0 0.65rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__meta div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.84rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__meta dt {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__meta dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ib-v7-ink);
+  text-align: right;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__meta dd.is-good {
+  color: #047857;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__meta dd.is-warn {
+  color: #b45309;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__ai {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--ib-v7-muted);
+  flex: 1;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__cta {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-top: 0.75rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--ib-v7-accent);
+  text-decoration: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample__cta:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Karar rehberi grid — denser */
+html.ib-ds-v4.ib-premium-v7 #karar-rehberi .ib-example-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+@media (min-width: 1024px) {
+  html.ib-ds-v4.ib-premium-v7 #karar-rehberi .ib-example-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* —— Product cards V6 density (3 col desktop) —— */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-v6 .ib-cat-v6-grid--live {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-vertical-focus.ib-product-cards-v6 .ib-cat-v6 {
+  min-height: 400px;
+}
+
+/* —— Footer V7 —— */
+html.ib-ds-v4.ib-premium-v7 .footer.footer-premium.ib-footer-v7 {
+  background: #f3f4f6;
+  border-top: 1px solid var(--ib-v7-border);
+  padding: clamp(2.5rem, 4vw, 3.25rem) 0 5rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__inner {
+  max-width: var(--ib-v7-max);
+  margin: 0 auto;
+  padding-left: var(--ib-v7-pad-x);
+  padding-right: var(--ib-v7-pad-x);
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__top {
+  display: grid;
+  gap: 2rem 2.5rem;
+  grid-template-columns: 1fr;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--ib-v7-border);
+}
+
+@media (min-width: 900px) {
+  html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__top {
+    grid-template-columns: minmax(200px, 260px) 1fr;
+    align-items: start;
+  }
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  color: var(--ib-v7-ink);
+  margin-bottom: 0.65rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__logo .brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__logo .brand-title {
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__desc {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ib-v7-muted);
+  max-width: 28ch;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__cols.footer-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem 1.25rem;
+}
+
+@media (min-width: 640px) {
+  html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__cols.footer-content {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  html.ib-ds-v4.ib-premium-v7 .ib-footer-v7__inner {
+    overflow-x: clip;
+  }
+
+  html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section a {
+    overflow-wrap: anywhere;
+  }
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section h4 {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 0.65rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section a {
+  color: var(--ib-v7-footer-link);
+  font-size: 0.94rem;
+  font-weight: 500;
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section a:hover,
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section a:focus-visible {
+  color: var(--ib-v7-accent);
+  text-decoration: underline;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+  border-radius: 2px;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section .ib-footer-v7__subhead {
+  margin: 0.85rem 0 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section .ib-footer-v7__sublist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-section .ib-footer-v7__sublist a {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .newsletter-card {
+  margin-top: 1.75rem;
+  max-width: 100%;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-cta-row,
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .cookie-consent,
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .ib-enterprise-meta,
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .footer-bottom {
+  max-width: 100%;
+}
+
+/* —— Header tighten —— */
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .nav-container {
+  min-height: 58px;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .navbar .nav-link,
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .navbar .nav-dropdown-btn {
+  font-size: 0.86rem;
+}
+
+/* —— Hero dashboard compact —— */
+html.ib-ds-v4.ib-premium-v7 #home .ib-glass-dashboard {
+  max-width: 100%;
+}
+
+@media (min-width: 960px) {
+  html.ib-ds-v4.ib-premium-v7 #home .hero-container.ib-hero-v4-grid {
+    gap: clamp(1.25rem, 2.5vw, 2rem);
+  }
+}
+
+/* —— SEO / corporate pages container —— */
+html.ib-ds-v4.ib-premium-v7 body.seo-page .seo-main {
+  max-width: var(--ib-v7-max);
+}
+
+/* —— Overflow guard —— */
+html.ib-ds-v4.ib-premium-v7 {
+  overflow-x: clip;
+}
+
+/* Newsletter contrast (footer) */
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .newsletter-card h3 {
+  color: var(--ib-v7-ink);
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .newsletter-card p,
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .newsletter-consent span {
+  color: var(--ib-v7-muted);
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-help-fab {
+  z-index: 1040;
+}
+
+@media (max-width: 767px) {
+  html.ib-ds-v4.ib-premium-v7 body.ib-enterprise:has(.ib-help-fab) .footer.footer-premium {
+    padding-bottom: 6.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-dash-sample {
+    transition: none;
+  }
+}
+
+/* Required overrides — legacy full-width footer / 4-col samples */
+html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-example-grid {
+  grid-template-columns: 1fr !important;
+}
+
+@media (min-width: 640px) {
+  html.ib-ds-v4.ib-premium-v7 #sample-preview .ib-example-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+html.ib-ds-v4.ib-premium-v7 .footer.footer-premium .footer-content.ib-footer-v7__cols {
+  max-width: none;
+}

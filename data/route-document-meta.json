@@ -1,0 +1,85 @@
+{
+  "siteOrigin": "https://www.istebul.com",
+  "surfaces": {
+    "home": {
+      "title": "isteBul | AI ile Büyük Satın Alma Kararları",
+      "description": "Araba, ev, tatil ve finans kararlarında toplam maliyeti, riskleri ve size en uygun seçenekleri analiz edin. AI destekli karar zekası platformu.",
+      "path": "/"
+    },
+    "page-karar-analizi": {
+      "title": "Karar Asistanı | isteBul — Hangi kategoride karar vermek istiyorsunuz?",
+      "description": "Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk analizini tek merkezden başlatın.",
+      "path": "/karar-asistani"
+    },
+    "page-planlar": {
+      "title": "Planlar ve Fiyatlandırma | isteBul",
+      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. Pilot erişim — ödeme aktivasyonu sonrası bilgilendirme.",
+      "path": "/planlar"
+    },
+    "page-duyurular": {
+      "title": "Duyurular | isteBul",
+      "description": "isteBul platform duyuruları, ürün güncellemeleri ve operasyonel bilgilendirmeler.",
+      "path": "/duyurular"
+    },
+    "page-kampanyalar": {
+      "title": "Kampanyalar | isteBul",
+      "description": "isteBul Pro pilot erişim, ücretsiz Auto analizi ve pilot partner kampanyaları.",
+      "path": "/kampanyalar"
+    },
+    "page-blog": {
+      "title": "Blog | isteBul — Karar rehberleri",
+      "description": "Araç alımı, TCO, finansman ve karar metodolojisi üzerine rehber yazılar.",
+      "path": "/blog"
+    },
+    "page-blog-post": {
+      "title": "Blog yazısı | isteBul",
+      "description": "isteBul blog — karar zekası ve toplam sahip olma maliyeti rehberi.",
+      "path": "/blog"
+    },
+    "ilanlar": {
+      "title": "Değerlendirilebilir Seçenekler | isteBul",
+      "description": "Karar skoruna göre sıralanmış değerlendirilebilir seçenekleri keşfedin — karar platformu yüzeyi.",
+      "path": "/secenekler"
+    },
+    "listing-detail": {
+      "title": "Seçenek Detayı | isteBul",
+      "description": "Seçtiğiniz seçeneğin karar skoru, maliyet kırılımı ve finansman etkisi.",
+      "path": "/secenekler"
+    },
+    "compare": {
+      "title": "Karar Kriteri Karşılaştırma | isteBul",
+      "description": "Seçenekleri skor, maliyet, risk, uygunluk ve gerekçe boyutunda yan yana karşılaştırın.",
+      "path": "/karsilastir"
+    },
+    "favoriler": {
+      "title": "Favoriler | isteBul",
+      "description": "Kaydettiğiniz seçenekleri tek yerden yönetin.",
+      "path": "/favoriler"
+    },
+    "history": {
+      "title": "Karar Geçmişi | isteBul",
+      "description": "Geçmiş karar analizlerinizi ve aramalarınızı görüntüleyin.",
+      "path": "/gecmis"
+    },
+    "quiz": {
+      "title": "Karar Değerlendirmesi | isteBul",
+      "description": "Araç alım önceliklerinize göre hızlı değerlendirme.",
+      "path": "/quiz"
+    },
+    "profil": {
+      "title": "Hesabım | isteBul",
+      "description": "Profil, abonelik ve hesap ayarlarınızı yönetin.",
+      "path": "/profil"
+    },
+    "messages": {
+      "title": "Mesajlar | isteBul",
+      "description": "Karar süreci ve seçenek inceleme mesajlarınız.",
+      "path": "/messages"
+    },
+    "add-listing": {
+      "title": "Seçenek Ekle | isteBul",
+      "description": "Kendi araç seçeneğinizi ekleyin ve karar analizine dahil edin.",
+      "path": "/ilan-ekle"
+    }
+  }
+}

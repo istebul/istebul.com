@@ -1,0 +1,372 @@
+{
+  "version": "p19.0",
+  "updatedAt": "2026-05-24",
+  "assumptions": {
+    "mauDefinition": "Monthly active users with ≥1 session",
+    "eventsPerMauMonth": 40,
+    "proPenetrationPct": 8,
+    "aiNarrationPctOfMau": 10,
+    "lifecycleEmailsPerMauMonth": 0.15,
+    "partnerLeadsPerThousandMau": 25
+  },
+  "volumeEstimates": {
+    "10k": {
+      "mau": 10000,
+      "analyticsEventsPerMonth": 400000,
+      "analyticsEventsPerDay": 13333,
+      "proMau": 800,
+      "aiCallsPerMonth": 1000,
+      "lifecycleEmailsPerMonth": 1500,
+      "partnerLeadsPerMonth": 250
+    },
+    "100k": {
+      "mau": 100000,
+      "analyticsEventsPerMonth": 4000000,
+      "analyticsEventsPerDay": 133333,
+      "proMau": 8000,
+      "aiCallsPerMonth": 10000,
+      "lifecycleEmailsPerMonth": 15000,
+      "partnerLeadsPerMonth": 2500
+    },
+    "1m": {
+      "mau": 1000000,
+      "analyticsEventsPerMonth": 40000000,
+      "analyticsEventsPerDay": 1333333,
+      "proMau": 80000,
+      "aiCallsPerMonth": 100000,
+      "lifecycleEmailsPerMonth": 150000,
+      "partnerLeadsPerMonth": 25000
+    }
+  },
+  "confidenceVerdict": {
+    "10k": "high",
+    "100k": "medium_with_mitigations",
+    "1m": "requires_tier_upgrades_and_warehouse"
+  },
+  "dimensions": [
+    {
+      "id": "frontend_load",
+      "name": "Frontend load",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "API fan-out to Supabase per session; SPA ~760KB first load",
+          "mitigation": "Static CDN cache; hashed immutable assets; client analytics batching",
+          "quickImplementation": "SCALE_LIMITS queue caps; bundle budget in analyze-bundle.cjs (shipped)"
+        },
+        "100k": {
+          "risk": "low",
+          "bottleneck": "Origin latency for uncached HTML; admin bundle loaded on separate entry",
+          "mitigation": "Cloudflare edge cache; lazy-load admin-only chunks; defer non-critical JS",
+          "quickImplementation": "Route-level code split for admin-panel (next); Plausible-only on marketing"
+        },
+        "1m": {
+          "risk": "low",
+          "bottleneck": "Not CPU — third-party script weight and API concurrency per POP",
+          "mitigation": "Edge-first static; regional Supabase; reduce client telemetry volume",
+          "quickImplementation": "Raise low-priority analytics sample to 0.25 at 1M (config flag)"
+        }
+      }
+    },
+    {
+      "id": "cloudflare_pages",
+      "name": "Cloudflare Pages suitability",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "Pages Functions cold start on ai-proxy/checkout",
+          "mitigation": "Functions for stateless API; static dist global cache",
+          "quickImplementation": "_headers immutable assets; ai-proxy on Pages (shipped)"
+        },
+        "100k": {
+          "risk": "low",
+          "bottleneck": "In-memory rate limit maps per isolate (ai-proxy); no KV for shared state",
+          "mitigation": "Keep functions stateless; move shared rate limits to Supabase auto_rate_limits",
+          "quickImplementation": "Document KV migration path in SCALE_ARCHITECTURE_EXECUTION.md"
+        },
+        "1m": {
+          "risk": "medium",
+          "bottleneck": "Edge function isolate memory; Stripe webhook + AI at scale need WAF + queues",
+          "mitigation": "Workers + Queues for webhook fan-out; R2 for asset offload if needed",
+          "quickImplementation": "Enable Cloudflare WAF bot fight mode; separate worker for webhooks"
+        }
+      }
+    },
+    {
+      "id": "supabase_db",
+      "name": "Supabase DB bottlenecks",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "analytics_events write amplification; missing indexes on ad-hoc admin filters",
+          "mitigation": "BRIN on created_at; 90d retention; connection pooler on Pro",
+          "quickImplementation": "Migration 20260608_p47_scale_analytics_indexes.sql (shipped)"
+        },
+        "100k": {
+          "risk": "high",
+          "bottleneck": "~4M analytics rows/month; PostgREST max_rows 1000; full table scans in cron enroll",
+          "mitigation": "Daily rollup MV; read replica for reporting; enable pooler transaction mode",
+          "quickImplementation": "Weekly analytics-retention.yml purge; funnel_daily MV (P18.1)"
+        },
+        "1m": {
+          "risk": "critical",
+          "bottleneck": "~40M events/month; single Postgres disk IOPS; RLS per-request overhead",
+          "mitigation": "Monthly partition analytics_events; archive cold; dedicated Supabase Team/Enterprise",
+          "quickImplementation": "Warehouse export job; stop writing low-priority events to hot table"
+        }
+      }
+    },
+    {
+      "id": "auth_scaling",
+      "name": "Auth scaling",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "Magic link / OTP email rate (auth.rate_limit email_sent)",
+          "mitigation": "Supabase Auth scales horizontally; JWT 1h expiry + refresh rotation",
+          "quickImplementation": "config.toml rate limits documented; Turnstile on signup (if enabled)"
+        },
+        "100k": {
+          "risk": "medium",
+          "bottleneck": "Auth email throughput vs Resend/Supabase SMTP caps; session refresh storms",
+          "mitigation": "Custom SMTP with dedicated domain; CDN for auth UI; monitor token_refresh",
+          "quickImplementation": "Raise email_sent tier with Supabase support; captcha on auth routes"
+        },
+        "1m": {
+          "risk": "medium",
+          "bottleneck": "profiles table reads; admin JWT verification on every admin-action",
+          "mitigation": "Read replicas; cache role claims; shorten admin session scope",
+          "quickImplementation": "admin-action rate limit 120/min (shipped); edge cache public config only"
+        }
+      }
+    },
+    {
+      "id": "storage_scaling",
+      "name": "Storage scaling",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "Public images bucket; no CDN transform pipeline",
+          "mitigation": "RLS path user_id/*; Cloudflare caches public URLs",
+          "quickImplementation": "Document max upload size in partner/listing flows"
+        },
+        "100k": {
+          "risk": "medium",
+          "bottleneck": "Egress on listing images; orphan objects without lifecycle",
+          "mitigation": "R2 + CDN; periodic orphan purge; WebP/AVIF at upload",
+          "quickImplementation": "Add storage quota alert in ops command center (future)"
+        },
+        "1m": {
+          "risk": "high",
+          "bottleneck": "Supabase storage egress billing; no multi-region replication",
+          "mitigation": "Move static media to R2; signed URLs short TTL; image CDN transforms",
+          "quickImplementation": "Migrate images bucket to R2 binding in wrangler (P18.2)"
+        }
+      }
+    },
+    {
+      "id": "analytics_volume",
+      "name": "Analytics volume",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "~400K rows/month in analytics_events",
+          "mitigation": "Client dedupe; 50% sample on page_exit/route_change; 90d retention",
+          "quickImplementation": "analytics-retention purge weekly cron (shipping P19)"
+        },
+        "100k": {
+          "risk": "high",
+          "bottleneck": "Admin executiveRowLimit 2500 masks true funnel; ops export cap 20k",
+          "mitigation": "Pre-aggregate funnel_daily; CEO metrics from snapshots not live scan",
+          "quickImplementation": "metrics:executive cron only; alert analytics_sample_cap (shipped)"
+        },
+        "1m": {
+          "risk": "critical",
+          "bottleneck": "Hot table size TB-order without partition; ingest cost dominates COGS",
+          "mitigation": "Sample 10% low-priority; export to ClickHouse/BigQuery; 30d hot only",
+          "quickImplementation": "Disable duplicate auto_events double-write; event taxonomy audit"
+        }
+      }
+    },
+    {
+      "id": "event_ingestion",
+      "name": "Event ingestion",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "100 req/min/IP; 25 events/batch — sufficient for ~13K events/day",
+          "mitigation": "auto_rate_limits table; property clamp; idempotency index",
+          "quickImplementation": "analytics-ingest 100/min (shipped P16)"
+        },
+        "100k": {
+          "risk": "medium",
+          "bottleneck": "Peak traffic bursts; auto_rate_limits row contention",
+          "mitigation": "Edge queue before Postgres; batch insert COPY; regional ingest",
+          "quickImplementation": "Monitor 429 rate in operational_events; scale edge replicas"
+        },
+        "1m": {
+          "risk": "high",
+          "bottleneck": "~1.3M events/day sustained; Deno edge CPU per insert",
+          "mitigation": "Kafka/Queues buffer; bulk insert worker; separate ingest project",
+          "quickImplementation": "Plausible primary for marketing; product events sampled"
+        }
+      }
+    },
+    {
+      "id": "cron_jobs",
+      "name": "Cron jobs",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "GitHub Actions SPOF for lifecycle/partner/ops",
+          "mitigation": "Hourly lifecycle 50 sends; partner retry 50 leads; secrets in GH",
+          "quickImplementation": "Document Supabase pg_cron mirror (P18.1)"
+        },
+        "100k": {
+          "risk": "medium",
+          "bottleneck": "lifecycle-cron enroll queries scan analytics without tight indexes",
+          "mitigation": "Cap enrollments per audience; stagger workflows; idempotent enroll keys",
+          "quickImplementation": "Add created_at indexes on enroll source queries (verify migrations)"
+        },
+        "1m": {
+          "risk": "high",
+          "bottleneck": "Single hourly lifecycle cannot drain 150K+ due messages",
+          "mitigation": "Dedicated queue workers; shard by flow_id; horizontal cron every 5m",
+          "quickImplementation": "Raise processDueMessages batch via env LIFECYCLE_SEND_BATCH"
+        }
+      }
+    },
+    {
+      "id": "email_throughput",
+      "name": "Email throughput",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "50 sends/run × 24h = 1200/day max from lifecycle cron",
+          "mitigation": "Resend batch; enrollment caps 30/audience",
+          "quickImplementation": "lifecycle-cron caps in index.ts (shipped P16)"
+        },
+        "100k": {
+          "risk": "medium",
+          "bottleneck": "15K lifecycle emails/month vs Resend plan; bounce reputation",
+          "mitigation": "Dedicated sending domain; priority queues for revenue vs nurture",
+          "quickImplementation": "Upgrade Resend tier; split transactional vs marketing subdomains"
+        },
+        "1m": {
+          "risk": "high",
+          "bottleneck": "150K emails/month exceeds single-cron throughput",
+          "mitigation": "SendGrid/Resend Enterprise; background workers; suppress inactive",
+          "quickImplementation": "Env-gated send batch 200+ with worker fleet (P18.2)"
+        }
+      }
+    },
+    {
+      "id": "ai_inference",
+      "name": "AI inference load",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "~1K Groq calls/month; 20 req/min/IP edge limit",
+          "mitigation": "Deterministic scoring primary; narration optional; prompt cache 48 entries",
+          "quickImplementation": "sessionCallsPerHour=3; max_tokens=400 (shipped)"
+        },
+        "100k": {
+          "risk": "medium",
+          "bottleneck": "~10K calls/month Groq bill; in-memory rate limit not global",
+          "mitigation": "Pro-only narration; per-user monthly quota in Supabase",
+          "quickImplementation": "Track ai_proxy ops events; cap free tier to 0 LLM calls"
+        },
+        "1m": {
+          "risk": "critical",
+          "bottleneck": "~100K calls/month without hard quota burns gross margin",
+          "mitigation": "LLM off default; premium quota table; cache + smaller model",
+          "quickImplementation": "Feature flag AI_NARRATION_ENABLED=false at 1M until quota service"
+        }
+      }
+    },
+    {
+      "id": "stripe_ops",
+      "name": "Stripe operational scaling",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "Webhook handler idempotency; checkout edge cold start",
+          "mitigation": "Stripe scales; store subscription state in Supabase",
+          "quickImplementation": "stripe-webhook on Pages; portal session reuse"
+        },
+        "100k": {
+          "risk": "low",
+          "bottleneck": "Webhook retry storms; MRR snapshot script load",
+          "mitigation": "Idempotent event_id storage; async webhook queue",
+          "quickImplementation": "Verify webhook dedupe table; metrics:executive daily only"
+        },
+        "1m": {
+          "risk": "low",
+          "bottleneck": "App-side reconcile jobs, not Stripe API",
+          "mitigation": "Stripe Sigma or nightly sync job; partner settlement ledger",
+          "quickImplementation": "Document STRIPE_MRR_EVIDENCE batch window limits"
+        }
+      }
+    },
+    {
+      "id": "admin_crm",
+      "name": "Admin CRM limits",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "Client-side aggregation; auto_leads limit 5000 in ops center",
+          "mitigation": "14d analytics window; 1200–2500 row caps",
+          "quickImplementation": "SCALE_LIMITS.admin.* (shipped)"
+        },
+        "100k": {
+          "risk": "high",
+          "bottleneck": "loadPlatformAnalytics scans 1200 rows; CRM 200 lead cap misleading",
+          "mitigation": "Server-side aggregate endpoint; precomputed snapshots in dist/",
+          "quickImplementation": "Admin reads dist/*.json artifacts first; live fallback only"
+        },
+        "1m": {
+          "risk": "critical",
+          "bottleneck": "Browser cannot aggregate 1M-user funnels; PostgREST 1000 max_rows",
+          "mitigation": "Warehouse-only BI; admin KPIs from MVs; disable live event scan",
+          "quickImplementation": "Hard-disable platform-analytics live query >100k MAU flag"
+        }
+      }
+    },
+    {
+      "id": "partner_routing",
+      "name": "Partner routing capacity",
+      "tiers": {
+        "10k": {
+          "risk": "low",
+          "bottleneck": "~250 leads/month; dispatch sync HTTP to partners",
+          "mitigation": "Retry cron 50/run; circuit breaker on endpoints",
+          "quickImplementation": "partner-ops-monitor 15m; dispatch logs indexed (shipped)"
+        },
+        "100k": {
+          "risk": "medium",
+          "bottleneck": "~2500 leads/month; partner webhook timeouts; p95 SLA 15m",
+          "mitigation": "Async dispatch queue; parallel fan-out with concurrency cap",
+          "quickImplementation": "Increase partner-retry batch via env; alert dispatch_rate_low"
+        },
+        "1m": {
+          "risk": "high",
+          "bottleneck": "~25K leads/month; dead letter without ops headcount",
+          "mitigation": "Message queue for dispatch; auto-scale edge workers; partner tiering",
+          "quickImplementation": "partner-dispatch queue table + worker (P18.2)"
+        }
+      }
+    }
+  ],
+  "currentGuardrails": {
+    "source": "js/core/scale-limits.js",
+    "analyticsMaxQueue": 40,
+    "analyticsIngestPerIpPerMin": 100,
+    "analyticsBatchMax": 25,
+    "analyticsRetentionDays": 90,
+    "aiProxyPerIpPerMin": 20,
+    "aiSessionCallsPerHour": 3,
+    "lifecycleSendsPerRun": 50,
+    "adminExecutiveRowLimit": 2500,
+    "opsCommandCenterEventLimit": 20000
+  }
+}

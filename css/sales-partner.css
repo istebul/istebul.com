@@ -1,0 +1,234 @@
+/**
+ * P6 — B2B partner sales enablement UI.
+ */
+.ib-sales-enablement {
+  margin-bottom: 1.25rem;
+}
+
+.ib-sales-enablement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.ib-sales-pipeline-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+}
+
+.ib-sales-tag {
+  display: inline-block;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.25rem;
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+.ib-sales-outbound-body,
+.ib-sales-copy-block {
+  white-space: pre-wrap;
+  font-size: 0.8125rem;
+  background: rgba(15, 23, 42, 0.04);
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  max-height: 12rem;
+  overflow: auto;
+}
+
+.ib-sales-objection-compact details {
+  margin-bottom: 0.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.375rem;
+  padding: 0.35rem 0.65rem;
+}
+
+.ib-sales-objection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.ib-sales-objection-card {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.ib-sales-objection-card h3 {
+  font-size: 0.9375rem;
+  margin: 0.35rem 0;
+}
+
+.ib-sales-close {
+  font-size: 0.8125rem;
+  color: #475569;
+}
+
+.ib-partner-pricing-sales {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.ib-sales-velocity-badge {
+  font-size: 0.75rem;
+}
+
+.ib-sales-touch-select {
+  max-width: 9rem;
+  font-size: 0.75rem;
+}
+
+/* P6.1 Closing kit */
+.ib-closing-kit .ib-closing-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.ib-closing-kit .ib-closing-nav a {
+  font-size: 0.875rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.08);
+  text-decoration: none;
+}
+
+.ib-closing-section {
+  margin-bottom: 2.5rem;
+  scroll-margin-top: 4rem;
+}
+
+.ib-closing-deck-slides {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.ib-closing-slide {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  position: relative;
+}
+
+.ib-closing-slide-num {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.ib-closing-speaker-note {
+  font-size: 0.8125rem;
+  margin-top: 0.5rem;
+}
+
+.ib-pricing-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.ib-pricing-sheet-tier {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.ib-pricing-sheet-price {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0.35rem 0;
+}
+
+.ib-pricing-disclaimer {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.ib-pricing-talktrack {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(37, 99, 235, 0.06);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.ib-onboarding-doc {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.ib-onboarding-quicklinks {
+  margin: 0 0 1.25rem;
+  padding-left: 1.25rem;
+}
+
+.ib-email-template,
+.ib-followup-flow {
+  margin-bottom: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.ib-closing-admin-cta {
+  margin-top: 0.75rem;
+}
+
+/* P6.2 CRM pipeline board */
+.ib-partner-crm-board {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.ib-crm-forecast-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.ib-crm-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.5rem;
+}
+
+.ib-crm-stage-card {
+  padding: 0.65rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.ib-crm-stage-count {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.ib-crm-stage-pct {
+  display: block;
+  color: #64748b;
+  margin-top: 0.15rem;
+}

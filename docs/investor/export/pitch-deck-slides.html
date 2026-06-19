@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>isteBul Pitch Deck</title>
+  <style>
+  @page { size: 338.67mm 190.5mm; margin: 0; }
+  body { margin: 0; background: #0F172A; color: #F8FAFC; font-family: "Inter", system-ui, sans-serif; }
+  .slide {
+    width: 338.67mm;
+    height: 190.5mm;
+    padding: 28mm 24mm;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, #0F172A 0%, #172554 55%, #1e3a8a 100%);
+  }
+  .slide:last-child { page-break-after: auto; }
+  .slide h1 { font-size: 36pt; margin: 0 0 12px; color: #fff; line-height: 1.15; }
+  .slide h2 { font-size: 28pt; margin: 0 0 16px; color: #93c5fd; border: none; }
+  .slide h3 { font-size: 18pt; color: #bfdbfe; margin: 0 0 12px; }
+  .slide p, .slide li { font-size: 14pt; color: #e2e8f0; }
+  .slide ul { margin: 0 0 12px 22px; }
+  .slide table { font-size: 11pt; margin-top: 8px; }
+  .slide th { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.2); }
+  .slide td { color: #e2e8f0; border-color: rgba(255,255,255,0.15); background: rgba(15,23,42,0.4); }
+  .slide blockquote { background: rgba(37,99,235,0.2); border-left-color: #60a5fa; color: #dbeafe; }
+  .slide pre { font-size: 10pt; background: rgba(0,0,0,0.35); }
+  .slide-num { position: absolute; bottom: 12mm; right: 16mm; font-size: 10pt; color: #94A3B8; }
+  .brand { position: absolute; top: 12mm; left: 24mm; font-size: 11pt; letter-spacing: 0.08em; text-transform: uppercase; color: #60a5fa; }
+  </style>
+</head>
+<body>
+<section class="slide"><div class="brand">isteBul</div><p>&lt;!-- PDF EXPORT: Each &quot;---&quot; is one slide. Use 16:9, brand colors #0F172A / #2563EB, font Inter or DM Sans --&gt;</p>
+<h1>isteBul</h1>
+<h3>Karar altyapısı — yüksek tutarlı alımlar için şeffaf AI</h3>
+<p><strong>Seed · Türkiye · Otomotiv beachhead</strong>   www.istebul.com · [Founder adı · e-posta]</p><div class="slide-num">1 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Problem</h2>
+<ul>
+<li>Türkiye'de <strong>₺500K–₺3M</strong> tutarındaki araç ve konut kararları parçalı araçlarla alınıyor: ilan siteleri envanter satar, bankalar tek ürün önerir.</li>
+<li>Tüketici <strong>TCO, finansman yükü ve risk</strong>i tek ekranda göremiyor; satıcı önyargılı tekliflerle kalıyor.</li>
+<li>Generic AI <strong>fiyat uyduruyor</strong> — CRM, partner kapanışı ve denetlenebilir skor yok.</li>
+</ul>
+<blockquote><em>&quot;Aracın bana uyup uymadığını ve gerçek maliyetini bilmek istiyorum — sadece bayinin aylık taksitini değil.&quot;</em></blockquote><div class="slide-num">2 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Çözüm</h2>
+<table><thead><tr><th>Katman</th><th>Ne sunuyoruz</th></tr></thead>
+<tbody><tr><td><strong>Karar</strong></td><td>Çok faktörlü skor, güven seviyesi, TCO profilleri</td></tr><tr><td><strong>Açıklama</strong></td><td>LLM yalnızca deterministik sayıları anlatır — skoru değiştiremez</td></tr><tr><td><strong>Kapanış</strong></td><td>Nitelikli lead → HMAC webhook → partner CRM → <code>actual_revenue</code> geri besleme</td></tr></tbody>
+</table>
+<p><strong>Canlı demo:</strong> istebul.com/auto — girdiler değiştikçe skor güncellenir.</p><div class="slide-num">3 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Pazar fırsatı</h2>
+<ul>
+<li><strong>Sıfır araç:</strong> ODMD 2024 → <strong>1.238.509</strong> adet (rekor).</li>
+<li><strong>İkinci el:</strong> TÜİK 2024 noter devir → <strong>7.103.550</strong> binek otomobil.</li>
+<li><strong>Konut:</strong> TÜİK 2024 → <strong>1.478.025</strong> satış; ipotekli pay <strong>%10,7</strong> (dip).</li>
+<li><strong>Trend:</strong> Elektrikli pay sıfır pazarda <strong>%17+</strong> (2025 ODMD); AI güven krizi → açıklanabilir karar talebi.</li>
+</ul>
+<p>Kaynaklar: ODMD, TÜİK Motorlu Kara Taşıtları, AA/BDDK.</p><div class="slide-num">4 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>TAM · SAM · SOM</h2>
+<table><thead><tr><th>Katman</th><th>Tutar (TRY)</th><th>Mantık</th></tr></thead>
+<tbody><tr><td><strong>TAM</strong></td><td>~7,6T</td><td>Auto GMV (sıfır+2.el) + konut/finans kredi havuzu</td></tr><tr><td><strong>Platform TAM</strong></td><td>~76B</td><td>~%1 monetize edilebilir platform geliri havuzu</td></tr><tr><td><strong>SAM</strong></td><td>~7,1B</td><td>Karar oturumu × blended ARPU (4 alt pazar)</td></tr><tr><td><strong>Beachhead SAM</strong></td><td>~1,76B</td><td>TR otomotiv karar + lead</td></tr><tr><td><strong>SOM (36 ay)</strong></td><td>~47,5M ARR</td><td>Base finansal model Y3 — <strong>canlı export ile güncellenir</strong></td></tr></tbody>
+</table>
+<p>Detay: <code>MARKET_SIZING.md</code> · <code>market-research.json</code></p><div class="slide-num">5 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>İş modeli</h2>
+<p><strong>Hibrit SaaS + marketplace</strong></p>
+<table><thead><tr><th>Gelir</th><th>Mekanizma</th><th>Durum</th></tr></thead>
+<tbody><tr><td><strong>isteBul Pro</strong></td><td>₺299/ay · ₺2.870/yıl · Stripe</td><td>Canlı</td></tr><tr><td><strong>Partner CPL</strong></td><td>Sıcak lead · ₺5K–12K band</td><td>Canlı</td></tr><tr><td><strong>Premium rapor</strong></td><td>Pro-gated export</td><td>Kısmi</td></tr><tr><td><strong>Finans / sigorta</strong></td><td>Nötr çoklu teklif</td><td>Erken</td></tr></tbody>
+</table>
+<p><strong>Formül:</strong> Blended ARR ≈ Pro ARR + partner <code>actual_revenue</code> (CRM).</p><div class="slide-num">6 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Rakip analizi</h2>
+<table><thead><tr><th>Tip</th><th>Güçlü yan</th><th>isteBul farkı</th></tr></thead>
+<tbody><tr><td>İlan / marketplace</td><td>Envanter</td><td>Karar + TCO + nötr partner</td></tr><tr><td>Banka / finans</td><td>Tek ürün</td><td>Çoklu teklif karşılaştırma</td></tr><tr><td>OEM</td><td>Marka önyargısı</td><td>Nötr sıralama</td></tr><tr><td>ChatGPT</td><td>Genel sohbet</td><td>Deterministik sayı + CRM</td></tr></tbody>
+</table>
+<p><strong>Moat:</strong> Decision IP · partner flywheel · platform opsiyonelliği (8 dikey).</p><div class="slide-num">7 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Traction &amp; büyüme</h2>
+<p>&lt;!-- LIVE METRICS: npm run metrics:investor:pack → slide 7 values --&gt;</p>
+<table><thead><tr><th>Metrik</th><th>Değer</th><th>Kaynak</th></tr></thead>
+<tbody><tr><td>Pro MRR (TRY)</td><td><strong>[LIVE: subscription.mrrTry]</strong></td><td>Stripe + investor-kpis</td></tr><tr><td>Aktif Pro abone</td><td><strong>[LIVE: activeSubscriptions]</strong></td><td>Admin export</td></tr><tr><td>CRM lead</td><td><strong>[LIVE: pipeline.leadCount]</strong></td><td>auto_leads</td></tr><tr><td>Partner actual (TRY)</td><td><strong>[LIVE: pipeline.pipelineActualTry]</strong></td><td>CRM</td></tr><tr><td>Blended ARR sinyali</td><td><strong>[LIVE: blendedArrTry]</strong></td><td>Pack export</td></tr></tbody>
+</table>
+<p><strong>Büyüme motoru:</strong> SEO/organic → auto wizard → lead → dispatch → outcome → daha iyi skor.</p><div class="slide-num">8 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Go-to-market</h2>
+<table><thead><tr><th>Motion</th><th>Kanal</th><th>KPI</th></tr></thead>
+<tbody><tr><td>PLG + SEO</td><td>rehber, auto hub</td><td>Organic lead / 1K session</td></tr><tr><td>Paid test</td><td>Google, Meta</td><td>CAC vs LTV</td></tr><tr><td>Partner AE</td><td>Outbound, partner-olun</td><td>Application → won gün</td></tr><tr><td>Lifecycle</td><td>E-posta, CRM</td><td>Stale lead reactivation</td></tr></tbody>
+</table>
+<p><strong>ICP:</strong> Yüksek tutarlı alıcı (TR şehir); partner — bayi grubu, finans, sigorta.</p><div class="slide-num">9 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Finansal projeksiyonlar (Base · 3 yıl)</h2>
+<table><thead><tr><th></th><th>Y1</th><th>Y2</th><th>Y3</th></tr></thead>
+<tbody><tr><td>Pro abone (dönem sonu)</td><td>400</td><td>1.200</td><td>2.800</td></tr><tr><td>Aylık lead</td><td>120</td><td>350</td><td>800</td></tr><tr><td>Blended ARR (TRY)</td><td>~2,8M</td><td>~8,9M</td><td>~21,6M</td></tr></tbody>
+</table>
+<p>Senaryolar: Base / Bull / Bear · Detay: <code>financial-model-template/</code></p>
+<p><em>Illustrative — term sheet öncesi signed LOI + live export ile güncellenir.</em></p><div class="slide-num">10 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Birim ekonomi</h2>
+<table><thead><tr><th>Metrik</th><th>Hedef</th></tr></thead>
+<tbody><tr><td>Pro ARPU (aylık)</td><td>₺299</td></tr><tr><td>Hedef LTV (ay)</td><td>14</td></tr><tr><td>Hedef CAC (Pro)</td><td>₺1.200</td></tr><tr><td>Partner brüt marj</td><td>%70</td></tr><tr><td>Aylık burn (base)</td><td>₺450.000</td></tr></tbody>
+</table>
+<p>CAC/LTV detay: <code>UNIT_ECONOMICS.md</code> · 36 ay CSV model.</p><div class="slide-num">11 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Takım</h2>
+<table><thead><tr><th>Rol</th><th>İsim</th><th>Arka plan</th></tr></thead>
+<tbody><tr><td>CEO / Kurucu</td><td><strong>[Ad Soyad]</strong></td><td>[Önceki şirket / domain]</td></tr><tr><td>CTO / Kurucu</td><td><strong>[Ad Soyad]</strong></td><td>[Teknik liderlik]</td></tr><tr><td><strong>[Ops / Growth]</strong></td><td><strong>[Ad]</strong></td><td>[İsteğe bağlı]</td></tr></tbody>
+</table>
+<p><strong>İşe alım (seed sonrası):</strong> Head of Partnerships · Senior data engineer · Growth lead</p><div class="slide-num">12 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Yatırım talebi</h2>
+<table><thead><tr><th><strong>Round</strong></th><th>Seed · <strong>₺[15–25]M</strong> (founder doldurur)</th></tr></thead>
+<tbody><tr><td><strong>Dilution</strong></td><td>~%[15–20]</td></tr><tr><td><strong>Runway</strong></td><td>18 ay</td></tr><tr><td><strong>Kullanım</strong></td><td>%45 ürün/veri · %30 GTM · %10 hukuk · %15 ops</td></tr></tbody>
+</table>
+<p><strong>18 ay milestone:</strong> 2+ imzalı partner LOI · Pro MRR büyümesi · Live data feed · Konut vertical parity.</p><div class="slide-num">13 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Fon kullanım planı</h2>
+<pre><code>Mühendislik &amp; veri     ████████████████████  45%
+GTM &amp; ortaklıklar      ████████████          30%
+Hukuk &amp; uyum           ████                  10%
+Ops &amp; tampon           ██████                15%</code></pre>
+<ul>
+<li><strong>Ürün:</strong> Live catalog, konut, analytics warehouse  </li>
+<li><strong>GTM:</strong> Bayi/finans LOI, paid test, AE  </li>
+<li><strong>Hukuk:</strong> KVKK, DPA, abonelik şartları</li>
+</ul><div class="slide-num">14 / 15</div></section>
+<section class="slide"><div class="brand">isteBul</div><h2>Ekler &amp; data room</h2>
+<ul>
+<li><code>DATA_ROOM_INDEX.md</code> · <code>FUNDRAISING_READINESS.md</code>  </li>
+<li><code>cap-table.csv</code> · <code>loi-template.md</code> · <code>STRIPE_MRR_EVIDENCE.md</code>  </li>
+<li><code>npm run metrics:investor:pack</code></li>
+</ul>
+<p><strong>Teşekkürler — soru &amp; demo için hazırız.</strong></p><div class="slide-num">15 / 15</div></section>
+</body>
+</html>

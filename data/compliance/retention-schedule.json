@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "last_reviewed": "2026-05-23",
+  "note": "Operational targets — legal counsel must approve before enforcement automation.",
+  "schedules": [
+    {
+      "data_category": "auto_leads_active",
+      "tables": ["auto_leads"],
+      "condition": "status not in (spam, test_spam, lost) and partner pipeline active",
+      "retention_days": 730,
+      "action": "review_then_anonymize",
+      "legal_basis_hint": "contract_legitimate_interest"
+    },
+    {
+      "data_category": "auto_leads_closed",
+      "tables": ["auto_leads"],
+      "condition": "status in (lost, spam, test_spam) or dispatch_dead > 180d",
+      "retention_days": 365,
+      "action": "anonymize_contact_fields",
+      "legal_basis_hint": "legal_obligation_statistics"
+    },
+    {
+      "data_category": "analytics_events",
+      "tables": ["analytics_events"],
+      "retention_days": 730,
+      "action": "delete_or_aggregate",
+      "legal_basis_hint": "consent_legitimate_interest"
+    },
+    {
+      "data_category": "operational_events",
+      "tables": ["operational_events"],
+      "retention_days": 90,
+      "action": "delete",
+      "legal_basis_hint": "legitimate_interest_security"
+    },
+    {
+      "data_category": "partner_dispatch_logs",
+      "tables": ["partner_lead_dispatch_logs"],
+      "retention_days": 365,
+      "action": "delete",
+      "legal_basis_hint": "contract"
+    },
+    {
+      "data_category": "admin_audit_logs",
+      "tables": ["admin_audit_logs"],
+      "retention_days": 1095,
+      "action": "retain",
+      "legal_basis_hint": "legal_obligation"
+    },
+    {
+      "data_category": "auth_accounts",
+      "tables": ["auth.users", "profiles"],
+      "retention_days": null,
+      "action": "delete_on_user_request_or_inactive_24m",
+      "legal_basis_hint": "contract"
+    },
+    {
+      "data_category": "subscriptions",
+      "tables": ["subscriptions"],
+      "retention_days": null,
+      "action": "follow_stripe_and_tax_rules",
+      "legal_basis_hint": "legal_obligation_contract"
+    },
+    {
+      "data_category": "lifecycle_contacts",
+      "tables": ["lifecycle_contacts", "lifecycle_messages"],
+      "retention_days": 730,
+      "action": "delete_if_unsubscribed_24m",
+      "legal_basis_hint": "consent_contract"
+    },
+    {
+      "data_category": "newsletter_local",
+      "tables": [],
+      "storage": "browser_localStorage",
+      "retention_days": null,
+      "action": "user_controls_via_browser",
+      "legal_basis_hint": "consent"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "version": "p20.0",
+  "updatedAt": "2026-05-24",
+  "records": [
+    {
+      "id": "DR-2026-001",
+      "type": "ops",
+      "status": "approved",
+      "title": "Adopt company operating system (P20) as default management layer",
+      "owner": "ceo",
+      "decidedAt": "2026-05-24",
+      "context": "Reduce founder-dependent prioritization and reviews; align with P9–P19 automation artifacts.",
+      "options": [
+        "Continue ad-hoc founder syncs only",
+        "Document OS in repo + admin Company OS page",
+        "Hire COO before documenting"
+      ],
+      "decision": "Document OS in repo with weekly KPI structure, review cadences, RICE queue, and decision log.",
+      "consequences": "All functional leads use dist/ snapshots as pre-read; new bets require decision records.",
+      "reviewBy": "2026-06-24",
+      "linkedArtifacts": ["data/ops/company-operating-system.json", "docs/COMPANY_OPERATING_SYSTEM.md"]
+    },
+    {
+      "id": "DR-2026-002",
+      "type": "product",
+      "status": "approved",
+      "title": "Auto vertical remains reference implementation before multi-vertical CRM",
+      "owner": "vp_product",
+      "decidedAt": "2026-05-24",
+      "context": "P8 expansion roadmap; CRM unified only on auto_leads today.",
+      "options": [
+        "Ship ev/tatil CRM in parallel",
+        "Category registry + decision_leads first",
+        "Pause expansion until 100K MAU"
+      ],
+      "decision": "Category registry + decision_leads before net-new vertical launches.",
+      "consequences": "RICE queue prioritizes platform core over cosmetic vertical pages.",
+      "reviewBy": "2026-07-01",
+      "rice": { "reach": 8, "impact": 2, "confidence": 0.8, "effort": 6, "score": 2.13 }
+    },
+    {
+      "id": "DR-2026-004",
+      "type": "strategy",
+      "status": "approved",
+      "title": "Adopt P21 hiring architecture — metric-triggered sequence, max 2 reqs",
+      "owner": "ceo",
+      "decidedAt": "2026-05-24",
+      "context": "Scale team without founder-dependent hiring; align squads to Company OS.",
+      "options": [
+        "Hire ad hoc by founder network",
+        "Document 8 roles with triggers and 90-day plans",
+        "Delay all hires until profitability"
+      ],
+      "decision": "Document hiring architecture; first hire ops_manager when ops trigger fires.",
+      "consequences": "Weekly KPI reviews use hiring snapshot for next role; DR required before offer.",
+      "reviewBy": "2026-08-24",
+      "linkedArtifacts": ["data/ops/hiring-architecture.json", "docs/HIRING_ARCHITECTURE.md"]
+    },
+    {
+      "id": "DR-2026-003",
+      "type": "growth",
+      "status": "proposed",
+      "title": "Weekly growth review owns CRO experiment start/stop",
+      "owner": "vp_growth",
+      "decidedAt": null,
+      "context": "Experiments in data/growth/experiments.json without formal review gate.",
+      "options": [
+        "Founder approves each experiment",
+        "Growth review approves with logged decision",
+        "Fully autonomous CRO framework"
+      ],
+      "decision": null,
+      "consequences": null,
+      "reviewBy": "2026-06-07",
+      "rice": { "reach": 7, "impact": 1.5, "confidence": 0.9, "effort": 1, "score": 9.45 }
+    }
+  ],
+  "roadmapQueue": [
+    {
+      "id": "RQ-001",
+      "title": "Analytics retention cron + funnel_daily MV",
+      "queue": "now",
+      "owner": "scale_architect",
+      "rice": { "reach": 9, "impact": 2, "confidence": 0.85, "effort": 3, "score": 5.1 }
+    },
+    {
+      "id": "RQ-002",
+      "title": "Category registry MVP",
+      "queue": "now",
+      "owner": "vp_product",
+      "rice": { "reach": 8, "impact": 2, "confidence": 0.75, "effort": 5, "score": 2.4 }
+    },
+    {
+      "id": "RQ-003",
+      "title": "Partner settlement ledger",
+      "queue": "next",
+      "owner": "vp_revenue",
+      "rice": { "reach": 6, "impact": 1.5, "confidence": 0.6, "effort": 4, "score": 1.35 }
+    },
+    {
+      "id": "RQ-004",
+      "title": "Warehouse export (BigQuery/ClickHouse)",
+      "queue": "next",
+      "owner": "scale_architect",
+      "rice": { "reach": 10, "impact": 2.5, "confidence": 0.7, "effort": 8, "score": 2.19 }
+    },
+    {
+      "id": "RQ-005",
+      "title": "EN locale content extraction (top 50 strings)",
+      "queue": "later",
+      "owner": "vp_product",
+      "rice": { "reach": 5, "impact": 1, "confidence": 0.8, "effort": 2, "score": 2.0 }
+    }
+  ]
+}

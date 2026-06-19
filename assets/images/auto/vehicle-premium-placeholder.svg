@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="Araç görseli">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#eef2f7"/>
+    </linearGradient>
+    <linearGradient id="car" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#cbd5e1"/>
+      <stop offset="50%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#bg)"/>
+  <ellipse cx="480" cy="430" rx="320" ry="28" fill="#e2e8f0" opacity="0.85"/>
+  <path d="M180 360 Q220 280 320 250 L420 230 Q520 210 620 230 L760 260 Q840 280 860 340 L880 380 Q860 400 820 400 L780 400 Q760 420 720 420 L240 420 Q200 420 180 400 Z" fill="url(#car)"/>
+  <path d="M320 250 Q420 220 520 230 L620 250 Q660 270 680 310 L340 310 Q300 290 320 250 Z" fill="url(#shine)"/>
+  <rect x="350" y="268" width="90" height="42" rx="8" fill="#64748b" opacity="0.35"/>
+  <rect x="520" y="268" width="90" height="42" rx="8" fill="#64748b" opacity="0.35"/>
+  <circle cx="280" cy="400" r="38" fill="#475569"/>
+  <circle cx="280" cy="400" r="22" fill="#f1f5f9"/>
+  <circle cx="680" cy="400" r="38" fill="#475569"/>
+  <circle cx="680" cy="400" r="22" fill="#f1f5f9"/>
+</svg>

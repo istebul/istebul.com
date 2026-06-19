@@ -1,0 +1,182 @@
+{
+  "version": "p9.0",
+  "updatedAt": "2026-05-24",
+  "vision": "Automation-first digital company: humans handle exceptions; systems run revenue, customer, partner, analytics, lifecycle, and AI ops.",
+  "currentState": {
+    "automated": [
+      "Stripe webhook → subscriptions + analytics + ops events",
+      "Auto intake → score → lifecycle enroll → partner dispatch",
+      "Lifecycle cron (hourly) — enroll + send",
+      "Partner retry cron (15m)",
+      "CEO alerting cron (hourly)",
+      "Telegram hot-lead alerts",
+      "Deterministic scoring + bounded AI narration",
+      "Executive / investor / growth snapshot scripts",
+      "Admin observability + executive dashboards"
+    ],
+    "gaps": [
+      "No unified ops command center export (before P9)",
+      "Threshold alerts pull-only (no scheduled digest)",
+      "Partner settlement not automated",
+      "No data warehouse / cohort BI",
+      "Retention purge jobs documented but not cron'd",
+      "Multi-vertical CRM not unified"
+    ]
+  },
+  "domains": [
+    {
+      "id": "revenue",
+      "name": "Revenue Ops Automation",
+      "owner": "RevOps",
+      "automations": [
+        { "id": "stripe_mrr_sync", "status": "live", "path": "functions/api/stripe-webhook.js" },
+        { "id": "checkout_recovery_lifecycle", "status": "live", "flow": "checkout_abandon_recovery" },
+        { "id": "failed_payment_recovery", "status": "live_p10", "flow": "failed_payment_recovery" },
+        { "id": "dunning_past_due", "status": "live_p10", "flow": "dunning_past_due" },
+        { "id": "invoice_reminder", "status": "live_p10", "flow": "invoice_reminder" },
+        { "id": "renewal_nudge", "status": "live_p10", "flow": "renewal_nudge" },
+        { "id": "churn_rescue", "status": "live_p10", "flow": "churn_rescue" },
+        { "id": "downgrade_save", "status": "live_p10", "flow": "downgrade_save" },
+        { "id": "upgrade_prompt", "status": "live_p10", "flow": "upgrade_prompt" },
+        { "id": "executive_mrr_snapshot", "status": "live", "npm": "metrics:executive" },
+        { "id": "stripe_dashboard_reconcile", "status": "manual", "doc": "docs/investor/STRIPE_MRR_EVIDENCE.md" }
+      ],
+      "phase_p9": ["Daily ops rollup includes MRR + churn signals", "Alert on cancel_at_period_end spike"]
+    },
+    {
+      "id": "customer",
+      "name": "Customer Ops Automation",
+      "owner": "CX",
+      "automations": [
+        { "id": "help_center_widget", "status": "live_p11", "path": "js/ui/help-center-widget.js" },
+        { "id": "faq_automation", "status": "live_p11", "data": "data/customer/faq-knowledge.json" },
+        { "id": "support_intake", "status": "live_p11", "path": "supabase/functions/support-intake" },
+        { "id": "onboarding_help_flow", "status": "live_p11", "flow": "onboarding_help" },
+        { "id": "billing_help_flow", "status": "live_p11", "flow": "billing_help" },
+        { "id": "signup_nurture", "status": "live", "flow": "signup_nurture" },
+        { "id": "retention_habits", "status": "live", "path": "js/features/growth/retention-habits.js" },
+        { "id": "auth_checkout_resume", "status": "live", "path": "js/features/auth/auth.js" }
+      ],
+      "phase_p11": ["AI intent routing", "FAQ deflection metrics", "Support follow-up cron"]
+    },
+    {
+      "id": "partner",
+      "name": "Partner Ops Automation",
+      "owner": "Partnerships",
+      "automations": [
+        { "id": "dispatch_hmac_retry", "status": "live", "path": "supabase/functions/partner-dispatch" },
+        { "id": "partner_funnel", "status": "live", "path": "js/features/partner/partner-funnel.js" },
+        { "id": "b2b_crm_pipeline", "status": "live", "path": "js/features/sales/partner-crm-pipeline.js" },
+        { "id": "lead_telegram", "status": "live", "path": "supabase/functions/lead-alert" }
+      ],
+      "phase_p9": ["Dispatch fail alerts", "Daily partner quality in command center"],
+      "phase_p12": [
+        "Lead dispatch monitoring (24h p95)",
+        "Retry backlog alerts",
+        "SLA breach + webhook health",
+        "Partner inactivity (7d)",
+        "partner-ops-monitor.yml every 15m"
+      ]
+    },
+    {
+      "id": "analytics",
+      "name": "Analytics Automation",
+      "owner": "Growth / Data",
+      "automations": [
+        { "id": "analytics_ingest", "status": "live", "path": "supabase/functions/analytics-ingest" },
+        { "id": "growth_command_center", "status": "live", "npm": "metrics:growth:command" },
+        { "id": "cro_experiments", "status": "live", "data": "data/growth/experiments.json" }
+      ],
+      "phase_p9": ["Cap-hit info alert", "Weekly growth report in ops automation workflow"]
+    },
+    {
+      "id": "lifecycle",
+      "name": "Lifecycle Automation",
+      "owner": "Growth",
+      "automations": [
+        { "id": "lifecycle_cron", "status": "live", "workflow": ".github/workflows/lifecycle-cron.yml" },
+        { "id": "flows_config", "status": "live", "data": "data/lifecycle/flows.json" }
+      ],
+      "phase_p9": ["lifecycle-metrics-snapshot → dist/", "Failed message alert rule"]
+    },
+    {
+      "id": "dashboards",
+      "name": "Internal Dashboards",
+      "owner": "COO",
+      "automations": [
+        { "id": "admin_executive_kpis", "status": "live", "page": "investor-metrics" },
+        { "id": "admin_observability", "status": "live", "page": "observability" },
+        { "id": "ops_command_center_ui", "status": "live_p9", "page": "ops-command-center" }
+      ],
+      "phase_p9": ["Single pane: domains + alerts + runbook links"]
+    },
+    {
+      "id": "operations",
+      "name": "Operational Alerts",
+      "owner": "Platform",
+      "automations": [
+        { "id": "ops_ingest", "status": "live", "path": "supabase/functions/ops-ingest" },
+        { "id": "record_ops_event", "status": "live", "path": "functions/api/_shared/record-ops-event.js" },
+        { "id": "ops_alert_digest", "status": "live_p9", "path": "supabase/functions/ops-alert-digest" },
+        { "id": "ops_automation_workflow", "status": "live_p9", "workflow": ".github/workflows/ops-automation.yml" }
+      ],
+      "phase_p9": ["Daily Telegram digest for triggered alert rules"],
+      "phase_p13": [
+        "CEO hourly Telegram — conversion, checkout, Stripe, partner, churn, leads, analytics"
+      ]
+    },
+    {
+      "id": "ai",
+      "name": "AI-Assisted Decision Workflows",
+      "owner": "Product / AI Ops",
+      "automations": [
+        { "id": "deterministic_scoring", "status": "live", "path": "js/engines/decision-consultant.js" },
+        { "id": "ai_proxy_guardrails", "status": "live", "path": "functions/ai-proxy.js" },
+        { "id": "narration_budget", "status": "live", "path": "js/core/scale-limits.js" },
+        { "id": "decision_intelligence_api", "status": "live", "path": "supabase/functions/decision-intelligence" }
+      ],
+      "phase_p9": ["Track proxy rate-limit ops events in command center"]
+    }
+  ],
+  "implementationPhases": [
+    {
+      "id": "p9_0",
+      "name": "Command center + alerts (shipped)",
+      "deliverables": [
+        "data/ops/*.json",
+        "js/features/ops/ops-alert-engine.js",
+        "js/features/ops/ops-command-center.js",
+        "scripts/ops-command-center.cjs",
+        "scripts/ops-automation-run.cjs",
+        "admin Ops Command Center page",
+        "ops-alert-digest edge function",
+        "ops-automation GitHub workflow"
+      ]
+    },
+    {
+      "id": "p9_1",
+      "name": "Close the loop",
+      "deliverables": [
+        "PagerDuty or Slack webhook optional channel",
+        "Automated operational_events purge (90d)",
+        "Partner SLA breach auto-ticket"
+      ]
+    },
+    {
+      "id": "p9_2",
+      "name": "Scale data plane",
+      "deliverables": [
+        "Warehouse export (BigQuery/ClickHouse)",
+        "Cohort retention automation",
+        "decision_leads unified CRM automation"
+      ]
+    }
+  ],
+  "kpis": [
+    { "key": "mean_time_to_detect_hours", "target": "< 4" },
+    { "key": "alert_false_positive_rate", "target": "< 10%" },
+    { "key": "snapshot_freshness_hours", "target": "< 26" },
+    { "key": "partner_dispatch_success_pct", "target": "> 85" },
+    { "key": "lifecycle_message_success_pct", "target": "> 95" }
+  ]
+}

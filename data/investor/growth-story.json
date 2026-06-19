@@ -1,0 +1,68 @@
+{
+  "version": "p7.0",
+  "headline": "Land automotive → prove unit economics → expand decision graph",
+  "phases": [
+    {
+      "id": "phase_0",
+      "name": "Instrument & convert (now)",
+      "horizon": "0-6 months",
+      "goals": [
+        "Weekly investor + executive metric exports",
+        "CRO on auto wizard (P5.2)",
+        "Retention LTV engine (P5.4)",
+        "2+ signed partner LOIs with CPL bands"
+      ],
+      "kpis": ["qualified_leads_per_week", "pro_mrr_try", "partner_win_rate"]
+    },
+    {
+      "id": "phase_1",
+      "name": "Supply density",
+      "horizon": "6-12 months",
+      "goals": [
+        "10+ active partner endpoints",
+        "Dispatch SLA < 15m p95",
+        "SEO city hubs (İstanbul, Ankara, İzmir)",
+        "Paid CAC experiments with LTV guardrails"
+      ],
+      "kpis": ["active_partners", "dispatch_success_rate", "paid_cac"]
+    },
+    {
+      "id": "phase_2",
+      "name": "Vertical expansion",
+      "horizon": "12-24 months",
+      "goals": [
+        "Konut / tatil production parity",
+        "Standalone kredi & sigorta funnels",
+        "Cross-vertical decision history"
+      ],
+      "kpis": ["verticals_live", "cross_sell_rate"]
+    },
+    {
+      "id": "phase_3",
+      "name": "Platform & locale",
+      "horizon": "24-36 months",
+      "goals": [
+        "en/de market tests",
+        "B2B white-label API (pilot)",
+        "Outcome graph from closed deals"
+      ],
+      "kpis": ["locale_mrr_share", "api_partners"]
+    }
+  ],
+  "flywheel": [
+    "SEO + paid → auto wizard",
+    "Qualified lead → partner dispatch",
+    "Partner outcome → scoring calibration",
+    "Better scores → higher consumer trust → more leads"
+  ],
+  "retention": {
+    "consumer": ["saved decisions", "habit loops", "lifecycle email"],
+    "partner": ["CRM pipeline lead→won", "onboarding velocity SLAs"],
+    "pro": ["checkout abandon recovery", "upsell campaigns"]
+  },
+  "codeAnchors": [
+    "data/growth/channels.json",
+    "js/features/growth/growth-kpis.js",
+    "docs/GROWTH_EXECUTION_PLAN.md"
+  ]
+}

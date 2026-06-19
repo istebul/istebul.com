@@ -1,0 +1,47 @@
+{
+  "version": "p7.2",
+  "goal": "fundraising_ready",
+  "company": {
+    "name": "isteBul",
+    "tagline": "AI decision platform for high-consideration purchases",
+    "stage": "seed",
+    "market": "Turkey",
+    "beachhead": "Automotive decision + partner lead supply"
+  },
+  "assets": {
+    "investorNarrative": "investor-narrative.json",
+    "kpiStory": "kpi-story.json",
+    "metricsStory": "metrics-story.json",
+    "moatStory": "moat-story.json",
+    "marketSizing": "market-sizing.json",
+    "monetizationStory": "monetization-story.json",
+    "financialModel": "financial-model.json",
+    "growthStory": "growth-story.json",
+    "gtmNarrative": "gtm-narrative.json",
+    "deckReadiness": "deck-readiness.json",
+    "fundraisingReadiness": "fundraising-readiness.json",
+    "exitOptionality": "../ops/acquisition-exit-optionality.json",
+    "marketResearch": "market-research.json",
+    "financialModel36m": "financial-model-36m.json"
+  },
+  "narrativeDocs": {
+    "investorNarrative": "docs/investor/INVESTOR_NARRATIVE.md",
+    "kpiStory": "docs/investor/KPI_STORY.md",
+    "moatArticulation": "docs/investor/MOAT_ARTICULATION.md",
+    "marketSizing": "docs/investor/MARKET_SIZING.md",
+    "monetizationStory": "docs/investor/MONETIZATION_STORY.md",
+    "fundraisingReadiness": "docs/investor/FUNDRAISING_READINESS.md",
+    "exitOptionality": "docs/investor/EXIT_OPTIONALITY_REPORT.md",
+    "exitPlaybook": "docs/ACQUISITION_EXIT_OPTIONALITY.md"
+  },
+  "exports": {
+    "metricsSnapshot": "dist/investor-metrics-snapshot.json",
+    "unitEconomicsSnapshot": "dist/unit-economics-snapshot.json",
+    "readinessPack": "dist/investor-readiness-pack.json"
+  },
+  "commands": {
+    "liveMetrics": "npm run metrics:investor",
+    "readinessPack": "npm run metrics:investor:pack",
+    "executive": "npm run metrics:executive"
+  }
+}

@@ -1,0 +1,56 @@
+/**
+ * Unified button focus / disabled states (corporate + marketing).
+ */
+.btn,
+button.btn,
+a.btn {
+  outline-offset: 2px;
+}
+
+.btn:focus-visible,
+button.btn:focus-visible,
+a.btn:focus-visible {
+  outline: 2px solid var(--color-primary, var(--primary-color));
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn.primary:focus-visible,
+.btn-primary:focus-visible,
+.btn.btn-primary:focus-visible {
+  outline-color: var(--color-primary-dark, var(--primary-dark));
+}
+
+.ib-btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.ib-btn-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ib-spin 0.65s linear infinite;
+  color: #fff;
+}
+
+@keyframes ib-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

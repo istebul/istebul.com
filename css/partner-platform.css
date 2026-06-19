@@ -1,0 +1,789 @@
+/* P2 — Partner revenue platform surfaces */
+
+.ib-partner-acquisition-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.ib-partner-acquisition-steps article {
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #fff;
+}
+
+.ib-partner-acquisition-steps span {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #2563eb;
+  margin-bottom: 0.35rem;
+}
+
+.ib-partner-rate-grid,
+.ib-partner-offer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.ib-partner-offer-card {
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.ib-partner-offer-card--featured {
+  border-color: rgba(37, 99, 235, 0.4);
+  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.12);
+}
+
+.ib-partner-offer-tagline {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.ib-partner-offer-price {
+  font-size: 1.15rem;
+  margin: 0 0 0.35rem;
+}
+
+.ib-partner-offer-price-note {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 0 0 0.75rem;
+}
+
+.ib-partner-offer-highlights {
+  margin: 0 0 1rem;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: #475569;
+  flex: 1;
+}
+
+.ib-partner-offer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ib-partner-pilot-banner {
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(37, 99, 235, 0.35);
+  background: #f8fbff;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.ib-partner-pilot-banner p {
+  margin: 0.35rem 0 0.75rem;
+  color: #475569;
+}
+
+.ib-partner-pricing {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.ib-partner-positioning {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #f8fafc, #eff6ff);
+}
+
+.ib-partner-positioning-list {
+  margin: 1rem 0 0;
+  padding-left: 1.25rem;
+  color: #475569;
+}
+
+.ib-category-onboarding {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.auto-wizard-onboarding-tagline {
+  margin: 0.35rem 0;
+  font-size: 1.05rem;
+}
+
+.ib-category-alternatives {
+  display: grid;
+  gap: 1rem;
+}
+
+.ib-category-alt-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  background: #fff;
+}
+
+.ib-category-alt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  font-size: 0.92rem;
+}
+
+.ib-category-alt-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+@media (max-width: 720px) {
+  .ib-category-alt-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ib-partner-pricing-compare {
+  margin: 2.5rem 0;
+}
+
+.ib-partner-comparison-table th[scope='row'] {
+  font-weight: 600;
+  background: #f8fafc;
+  min-width: 10rem;
+}
+
+.ib-partner-pricing-faq details {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  margin-bottom: 0.5rem;
+  background: #fff;
+}
+
+.ib-partner-pricing-faq summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ib-partner-pricing-faq p {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.ib-partner-rate-card {
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #f8fafc;
+}
+
+.ib-partner-rate-card--featured {
+  border-color: rgba(37, 99, 235, 0.35);
+  background: linear-gradient(180deg, #f8fbff, #fff);
+  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.1);
+}
+
+.ib-partner-rate-kicker {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.ib-partner-rate-card h3 {
+  margin: 0.35rem 0;
+  font-size: 1.1rem;
+}
+
+.ib-partner-rate-card ul {
+  margin: 0.75rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.ib-partner-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.ib-partner-trust-card {
+  padding: 1rem 1.15rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: #fff;
+}
+
+.ib-partner-trust-card strong {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.ib-partner-trust-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.ib-partner-docs {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.ib-partner-docs-page .ib-partner-docs {
+  padding-top: 1.5rem;
+}
+
+.ib-partner-docs-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.ib-partner-docs-nav {
+  position: sticky;
+  top: 1.25rem;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #f8fafc;
+}
+
+.ib-partner-prerender {
+  padding: 0 0 2rem;
+}
+
+.ib-partner-prerender-hero {
+  margin-bottom: 1.5rem;
+}
+
+.ib-partner-prerender-section {
+  margin: 1.25rem 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  background: var(--surface-color, #fff);
+}
+
+.ib-partner-prerender-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.ib-partner-prerender-note {
+  margin-top: 1rem;
+}
+
+body.ib-corporate-mounted .ib-partner-prerender-note {
+  display: none;
+}
+
+.ib-corporate-mount-error {
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  background: #fef2f2;
+}
+
+.ib-decision-surface-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--primary-color, #2563eb) 18%, #e2e8f0);
+  background: color-mix(in srgb, var(--primary-color, #2563eb) 6%, #fff);
+}
+
+.ib-decision-surface-banner h3 {
+  margin: 0.35rem 0;
+  font-size: 1.05rem;
+}
+
+.ib-decision-surface-banner p {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 0.92rem;
+  color: var(--text-secondary, #475569);
+}
+
+.ib-decision-surface-banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ib-partner-docs-nav-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  color: #64748b;
+  margin: 0 0 0.75rem;
+}
+
+.ib-partner-docs-nav ol {
+  margin: 0;
+  padding: 0 0 0 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.ib-partner-docs-nav a {
+  color: #1e40af;
+  text-decoration: none;
+}
+
+.ib-partner-docs-nav a:hover {
+  text-decoration: underline;
+}
+
+.ib-partner-docs-nav-cta {
+  margin: 1rem 0 0;
+}
+
+.ib-partner-docs-hero h1 {
+  font-size: clamp(1.65rem, 3vw, 2.1rem);
+  margin-bottom: 0.5rem;
+}
+
+.ib-partner-docs-section {
+  margin: 2.5rem 0;
+  scroll-margin-top: 1.25rem;
+}
+
+.ib-partner-docs-section h2 {
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.ib-partner-docs-section h3 {
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.ib-partner-docs-steps {
+  padding-left: 1.25rem;
+  line-height: 1.55;
+}
+
+.ib-partner-docs-code {
+  overflow-x: auto;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  margin: 1rem 0;
+}
+
+.ib-partner-docs-code code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+}
+
+.ib-partner-docs-table-wrap {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.ib-partner-docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.ib-partner-docs-table th,
+.ib-partner-docs-table td {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.ib-partner-docs-table th {
+  background: #f1f5f9;
+  font-weight: 700;
+}
+
+.ib-partner-docs-callout {
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.ib-partner-docs-callout--warn {
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  background: #fffbeb;
+}
+
+.ib-partner-docs-callout ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.ib-partner-docs-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.ib-partner-console {
+  padding: 1.25rem;
+  border-radius: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: linear-gradient(180deg, #f8fbff, #fff);
+}
+
+.ib-partner-console-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.ib-partner-console textarea,
+.ib-partner-console input[type="text"],
+.ib-partner-console input[type="password"] {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+}
+
+.ib-partner-console textarea {
+  font-family: ui-monospace, monospace;
+  resize: vertical;
+  min-height: 12rem;
+}
+
+.ib-partner-console-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.ib-partner-console-result {
+  font-weight: 600;
+  margin: 0.75rem 0 0;
+}
+
+.ib-partner-console-result.is-ok {
+  color: #059669;
+}
+
+.ib-partner-console-result.is-error {
+  color: #dc2626;
+}
+
+@media (max-width: 900px) {
+  .ib-partner-docs-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ib-partner-docs-nav {
+    position: static;
+  }
+}
+
+.ib-partner-docs pre {
+  overflow-x: auto;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.82rem;
+}
+
+.ib-partner-docs code {
+  font-family: ui-monospace, monospace;
+}
+
+.ib-partner-onboarding {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.ib-partner-onboarding-steps {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.ib-partner-onboarding-steps span {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.ib-partner-onboarding-steps span.is-done {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.ib-partner-onboarding-steps span.is-current {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+/* P2.1 — Self-serve funnel */
+
+.ib-partner-landing .ib-partner-hero-cta {
+  margin: 1.5rem 0 2.5rem;
+}
+
+.ib-partner-value-grid {
+  margin: 2.5rem 0;
+}
+
+.ib-partner-funnel-overview {
+  margin: 1.25rem 0 2rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #f8fafc;
+}
+
+.ib-partner-funnel-overview ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ib-partner-bullet-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  color: #475569;
+  font-size: 0.92rem;
+}
+
+.ib-partner-pilot-offer {
+  margin: 2rem 0;
+}
+
+.ib-partner-final-cta {
+  margin-top: 2.5rem;
+}
+
+.ib-partner-funnel {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.ib-partner-funnel-stepper ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0 0 1.75rem;
+  padding: 0;
+}
+
+.ib-partner-funnel-stepper li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.ib-partner-funnel-stepper li.is-done {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.ib-partner-funnel-stepper li.is-current {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.ib-partner-funnel-step-num {
+  font-weight: 800;
+}
+
+.ib-partner-funnel-panel h1 {
+  font-size: 1.65rem;
+  margin-bottom: 0.5rem;
+}
+
+.ib-partner-funnel-sample {
+  overflow-x: auto;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  margin: 1rem 0;
+}
+
+.ib-partner-funnel-help {
+  margin-top: 1.25rem;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.ib-partner-funnel-summary {
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #f8fafc;
+  margin-bottom: 1.25rem;
+  font-size: 0.92rem;
+}
+
+.ib-partner-funnel-summary code {
+  word-break: break-all;
+  font-size: 0.82rem;
+}
+
+.ib-partner-funnel-success-inline {
+  color: #059669;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.ib-honeypot {
+  position: absolute;
+  left: -9999px;
+}
+
+/* P2.4 — Enterprise trust center */
+
+.ib-partner-trust-main {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.ib-partner-trust-layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.ib-partner-trust-disclaimer {
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: #fffbeb;
+  font-size: 0.9rem;
+  color: #78350f;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+}
+
+.ib-partner-trust-pillar {
+  margin-bottom: 2.5rem;
+  scroll-margin-top: 1.25rem;
+}
+
+.ib-partner-trust-pillar h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.ib-partner-trust-pillar-summary {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.ib-partner-trust-pillar ul {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+  line-height: 1.55;
+  font-size: 0.92rem;
+}
+
+.ib-partner-trust-not-claimed {
+  font-size: 0.82rem;
+  color: #64748b;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: #f1f5f9;
+  margin: 0;
+}
+
+.ib-partner-trust-card--link {
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ib-partner-trust-card--link:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+}
+
+.ib-partner-trust-grid--summary .ib-partner-trust-card {
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .ib-partner-trust-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ib-partner-acquisition-steps,
+  .ib-partner-rate-grid,
+  .ib-partner-offer-grid,
+  .ib-partner-trust-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ib-partner-funnel-stepper li .ib-partner-funnel-step-label {
+    display: none;
+  }
+}

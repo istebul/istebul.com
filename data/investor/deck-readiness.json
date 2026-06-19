@@ -1,0 +1,37 @@
+{
+  "version": "p7.0",
+  "targetSlides": 14,
+  "durationMinutes": 12,
+  "outlineDoc": "docs/investor/PITCH_DECK_OUTLINE.md",
+  "slides": [
+    { "n": 1, "id": "cover", "required": ["tagline", "founder", "date"], "sources": ["company"] },
+    { "n": 2, "id": "problem", "required": ["pain_points"], "sources": ["gtmNarrative"] },
+    { "n": 3, "id": "solution", "required": ["three_pillars", "demo_hook"], "sources": ["moatStory", "gtmNarrative"] },
+    { "n": 4, "id": "product", "required": ["live_surfaces"], "sources": ["growthStory"] },
+    { "n": 5, "id": "why_now", "required": ["market_timing"], "sources": ["gtmNarrative"] },
+    { "n": 6, "id": "business_model", "required": ["revenue_streams", "formula"], "sources": ["metricsStory", "financialModel"] },
+    { "n": 7, "id": "traction", "required": ["live_metrics_export"], "sources": ["metricsStory"], "blockerIfMissing": "investor-metrics-snapshot.json" },
+    { "n": 8, "id": "unit_economics", "required": ["pro_arpu", "partner_cpl"], "sources": ["financialModel"] },
+    { "n": 9, "id": "gtm", "required": ["motions", "icp"], "sources": ["gtmNarrative"] },
+    { "n": 10, "id": "growth", "required": ["phases", "flywheel"], "sources": ["growthStory"] },
+    { "n": 11, "id": "moat", "required": ["four_pillars", "honest_gaps"], "sources": ["moatStory"] },
+    { "n": 12, "id": "competition", "required": ["positioning_table"], "sources": ["moatStory"] },
+    { "n": 13, "id": "financials", "required": ["base_scenario", "use_of_funds"], "sources": ["financialModel"] },
+    { "n": 14, "id": "ask", "required": ["round", "milestones"], "sources": ["gtmNarrative", "financialModel"] }
+  ],
+  "preMeetingChecklist": [
+    "Run npm run metrics:investor:pack within 7 days of meeting",
+    "Paste live MRR / leads into slide 7 — no bracket placeholders",
+    "Attach 1–2 partner LOIs or CPL term sheets",
+    "Legal: privacy + KVKK + subprocessors linked",
+    "Export deck PDF from outline (offline)"
+  ],
+  "diligenceScorecard": [
+    { "dimension": "metrics_story", "weight": 20 },
+    { "dimension": "moat_story", "weight": 15 },
+    { "dimension": "deck_readiness", "weight": 15 },
+    { "dimension": "financial_model", "weight": 15 },
+    { "dimension": "growth_story", "weight": 15 },
+    { "dimension": "gtm_narrative", "weight": 20 }
+  ]
+}

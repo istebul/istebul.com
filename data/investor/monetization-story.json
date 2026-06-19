@@ -1,0 +1,66 @@
+{
+  "version": "p7.1",
+  "headline": "Hybrid SaaS + marketplace — two engines, one decision graph",
+  "positioning": "We monetize trust in the decision moment, not page views.",
+  "streams": [
+    {
+      "id": "pro",
+      "name": "isteBul Pro",
+      "type": "recurring",
+      "status": "live",
+      "pricing": { "monthlyTry": 299, "annualTry": 2870, "trialDays": 7 },
+      "mechanism": "Stripe checkout → subscriptions table → investor-kpis MRR normalization",
+      "investorLine": "Predictable ARR wedge; expansion via annual plan and feature gates.",
+      "code": ["js/features/monetization/plans.js", "functions/api/create-checkout.js", "functions/api/stripe-webhook.js"]
+    },
+    {
+      "id": "partner_cpl",
+      "name": "Partner leads (CPL / capacity)",
+      "type": "transactional",
+      "status": "live",
+      "pricing": {
+        "bandsTry": { "starter": "5000-8000", "growth": "8000-12000", "enterprise": "custom" }
+      },
+      "mechanism": "auto-intake → dispatch → webhook → CRM actual_revenue",
+      "investorLine": "Supply-side revenue scales with partner density; realization tracked in CRM.",
+      "code": ["supabase/functions/auto-intake/index.ts", "js/features/sales/partner-crm-pipeline.js"]
+    },
+    {
+      "id": "premium_reports",
+      "name": "Premium reports & exports",
+      "type": "addon",
+      "status": "partial",
+      "mechanism": "Pro-gated PDF/extended TCO exports",
+      "investorLine": "ARPU uplift once report SKU is merchandised on results page."
+    },
+    {
+      "id": "affiliate_finance",
+      "name": "Finance & insurance attribution",
+      "type": "affiliate",
+      "status": "early",
+      "mechanism": "Multi-offer comparison + partner outcome callbacks",
+      "investorLine": "Neutral comparison unlocks bank/insurer CPL without inventory risk."
+    },
+    {
+      "id": "b2b_api",
+      "name": "B2B white-label API",
+      "type": "platform",
+      "status": "roadmap",
+      "timing": "phase_3",
+      "investorLine": "Optionality — dealer groups license decision engine."
+    }
+  ],
+  "revenueQuality": {
+    "recurringPctTarget": 40,
+    "partnerPctTarget": 55,
+    "otherPctTarget": 5,
+    "notes": "Targets at scale; early stage may be partner-heavy."
+  },
+  "unitEconomicsRef": "docs/investor/UNIT_ECONOMICS.md",
+  "blendedFormula": "Blended ARR ≈ Pro ARR + Σ partner actual_revenue (CRM); estimates until contracts signed.",
+  "diligenceProof": [
+    "npm run metrics:investor",
+    "Admin Investor KPIs",
+    "Partner LOI / CPL term sheet (offline)"
+  ]
+}

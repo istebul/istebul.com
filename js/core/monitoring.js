@@ -1,4 +1,5 @@
 import config from './config.js';
+import { trackOpsEvent, flushOpsEvents, initPerformanceObservability } from './operational-telemetry.js';
 
 export class MonitoringManager {
     constructor() {
@@ -17,6 +18,8 @@ export class MonitoringManager {
                 this.handlersAttached = true;
             }
 
+            initPerformanceObservability();
+
             if (!consentGranted || this.initialized) {
                 return;
             }
@@ -31,31 +34,67 @@ export class MonitoringManager {
         }
     }
 
+    async loadSentryScript() {
+        if (window.Sentry) {
+            return window.Sentry;
+        }
+
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://browser.sentry-cdn.com/8.55.0/bundle.min.js';
+            script.crossOrigin = 'anonymous';
+            script.defer = true;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+
+        return window.Sentry;
+    }
+
     async initSentry() {
-        const Sentry = await import('@sentry/browser');
+        const Sentry = await this.loadSentryScript();
         this.sentry = Sentry;
 
         Sentry.init({
             dsn: this.sentryDSN,
             environment: this.getEnvironment(),
             release: config.app?.version || '2.0.0',
-            tracesSampleRate: this.getEnvironment() === 'production' ? 0.1 : 1.0,
-            attachStacktrace: true,
-            integrations: []
+            tracesSampleRate: this.getEnvironment() === 'production' ? 0.05 : 0.2,
+            attachStacktrace: true
         });
     }
 
     setupGlobalErrorHandlers() {
         window.addEventListener('unhandledrejection', (event) => {
+            trackOpsEvent('client_unhandled_rejection', {
+                message: String(event.reason?.message || event.reason || '').slice(0, 200),
+                path: window.location.pathname
+            }, { category: 'error', severity: 'error' });
             this.captureException(event.reason);
         });
 
         window.addEventListener('error', (event) => {
+            trackOpsEvent('client_unhandled_error', {
+                message: String(event.message || '').slice(0, 200),
+                path: window.location.pathname
+            }, { category: 'error', severity: 'error' });
             this.captureException(event.error);
+        });
+
+        window.addEventListener('pagehide', () => {
+            flushOpsEvents({ beacon: true });
         });
     }
 
     captureException(error, context = {}) {
+        const message = error instanceof Error ? error.message : String(error || 'unknown');
+        trackOpsEvent('client_unhandled_error', {
+            message: message.slice(0, 200),
+            context: context.context || 'app',
+            path: typeof window !== 'undefined' ? window.location.pathname : ''
+        }, { category: 'error', severity: 'error' });
+
         if (!this.initialized) return;
 
         try {

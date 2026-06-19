@@ -1,3 +1,7 @@
+/**
+ * @deprecated Unused — use `admin-panel.html` for operations admin.
+ * See `js/features/admin/README.md`.
+ */
 // Admin Feature Manager
 import API from '../../core/api.js';
 import { state } from '../../core/state.js';

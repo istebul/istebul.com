@@ -1,0 +1,70 @@
+{
+  "version": "p13.0",
+  "window": "24h",
+  "channel": "ceo",
+  "rules": [
+    {
+      "id": "ceo_conversion_crash",
+      "domain": "conversion",
+      "severity": "critical",
+      "metric": "conversion.crashSignal",
+      "op": "gte",
+      "threshold": 1,
+      "message": "Conversion crash — funnel CR dropped sharply vs prior 24h. Check CRO, landing, and auto wizard."
+    },
+    {
+      "id": "ceo_checkout_failures",
+      "domain": "revenue",
+      "severity": "error",
+      "metric": "checkout.failureAlertSignal",
+      "op": "gte",
+      "threshold": 1,
+      "message": "Checkout failures elevated — review Stripe checkout, payment errors, and abandon recovery."
+    },
+    {
+      "id": "ceo_stripe_webhook_failures",
+      "domain": "revenue",
+      "severity": "critical",
+      "metric": "stripe.webhookFailCount24h",
+      "op": "gte",
+      "threshold": 1,
+      "message": "Stripe webhook failures detected — verify signature secret, endpoint uptime, and Cloudflare worker logs."
+    },
+    {
+      "id": "ceo_partner_dispatch_failures",
+      "domain": "partner",
+      "severity": "error",
+      "metric": "partner.dispatchFailCount24h",
+      "op": "gte",
+      "threshold": 4,
+      "message": "Partner dispatch failures elevated — run partner-retry and check endpoint health."
+    },
+    {
+      "id": "ceo_unusual_churn",
+      "domain": "revenue",
+      "severity": "warning",
+      "metric": "churn.churnAlertSignal",
+      "op": "gte",
+      "threshold": 1,
+      "message": "Unusual churn signal — multiple cancel-at-period-end or churn event spike. Trigger retention outreach."
+    },
+    {
+      "id": "ceo_lead_drop_anomaly",
+      "domain": "growth",
+      "severity": "warning",
+      "metric": "leads.dropAlertSignal",
+      "op": "gte",
+      "threshold": 1,
+      "message": "Lead volume anomaly — lead submits dropped vs prior 24h. Check acquisition, SEO, and form health."
+    },
+    {
+      "id": "ceo_analytics_anomaly",
+      "domain": "analytics",
+      "severity": "warning",
+      "metric": "analytics.volumeDropAlertSignal",
+      "op": "gte",
+      "threshold": 1,
+      "message": "Analytics volume anomaly — event ingest may be broken or traffic collapsed. Check analytics-ingest and CDN."
+    }
+  ]
+}

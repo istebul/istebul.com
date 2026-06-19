@@ -1,0 +1,42 @@
+{
+  "hakkimizda.html": {
+    "title": "Hakkımızda | isteBul — Karar Zekâsı Platformu",
+    "description": "isteBul vizyonu, misyonu ve karar altyapısı yaklaşımı. Büyük satın alma kararlarında şeffaf TCO ve AI destekli gerekçe."
+  },
+  "iletisim.html": {
+    "title": "İletişim | isteBul",
+    "description": "isteBul kurumsal destek ve iş birliği talepleri için iletişim kanalları. Araç karar platformu hakkında bize ulaşın."
+  },
+  "partner-olun.html": {
+    "title": "Bayi ve Galeri Partneri | isteBul Auto Lead",
+    "description": "Satın almaya hazır araç müşteri adayları: imzalı webhook, retry, failover ve teslimat logları ile kurumsal lead dağıtımı. Partner başvurusu."
+  },
+  "partner-planlar.html": {
+    "title": "Partner Planları — Starter, Growth, Enterprise | isteBul",
+    "description": "B2B partner paketleri: lead hacmi, SLA, routing önceliği, CRM, retry, entegrasyon ve raporlama. Self-serve teklif ve başvuru."
+  },
+  "partner-docs.html": {
+    "title": "Partner API & Webhook | isteBul",
+    "description": "Partner API referansı: lead payload şeması, HMAC imza, retry ve failover, callback API, test workflow ve yerel imza konsolu."
+  },
+  "partner-guven.html": {
+    "title": "Partner Güven & Uyumluluk | isteBul",
+    "description": "Bayi ve finans partnerleri için güvenlik, KVKK, SLA, webhook güvenilirliği ve destek modeli — şeffaf kurumsal çerçeve."
+  },
+  "gizlilik.html": {
+    "title": "Gizlilik Politikası | isteBul",
+    "description": "isteBul gizlilik politikası: veri işleme, çerezler ve kullanıcı hakları hakkında bilgi."
+  },
+  "kvkk.html": {
+    "title": "KVKK Aydınlatma Metni | isteBul",
+    "description": "6698 sayılı KVKK kapsamında isteBul veri sorumlusu aydınlatma metni ve başvuru hakları."
+  },
+  "gdpr.html": {
+    "title": "GDPR Privacy Summary | isteBul",
+    "description": "English GDPR privacy summary for EU/EEA visitors. Authoritative Turkish disclosure is the KVKK notice."
+  },
+  "kullanim-sartlari.html": {
+    "title": "Kullanım Şartları | isteBul",
+    "description": "isteBul platformu kullanım şartları ve hizmet koşulları."
+  }
+}

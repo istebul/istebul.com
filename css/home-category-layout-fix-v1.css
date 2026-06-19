@@ -1,0 +1,134 @@
+/**
+ * Homepage category cards — hardening when bundle @imports fail or grid conflicts.
+ * Scoped to #home-vertical-focus; last in homepage bundle.
+ */
+
+#home-vertical-focus.ib-home-categories-mockup .ib-category-showcase-grid {
+  display: block !important;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+#home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__live,
+#home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__soon {
+  display: grid !important;
+  gap: 0.75rem !important;
+  grid-template-columns: 1fr !important;
+}
+
+@media (min-width: 640px) {
+  #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__live,
+  #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__soon {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  #home-vertical-focus.ib-home-categories-mockup .ib-cat-mockup-shell__live {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+#home-vertical-focus .ib-cat-mockup {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  overflow: hidden !important;
+  min-height: clamp(160px, 18vw, 200px) !important;
+  max-height: 220px !important;
+  aspect-ratio: 16 / 10;
+  width: 100% !important;
+  border-radius: 14px !important;
+}
+
+#home-vertical-focus .ib-cat-mockup__bg {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+#home-vertical-focus .ib-cat-mockup__bg img {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  object-fit: cover !important;
+  object-position: center 35% !important;
+}
+
+#home-vertical-focus .ib-cat-mockup__theme,
+#home-vertical-focus .ib-cat-mockup__overlay,
+#home-vertical-focus .ib-cat-mockup__glow {
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+}
+
+#home-vertical-focus .ib-cat-mockup__overlay {
+  z-index: 1 !important;
+}
+
+#home-vertical-focus .ib-cat-mockup__body {
+  position: relative !important;
+  z-index: 2 !important;
+  min-height: 0 !important;
+  flex: 0 0 auto !important;
+  padding: 0.7rem 0.8rem !important;
+}
+
+#home-vertical-focus .ib-cat-mockup__icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+}
+
+#home-vertical-focus .ib-cat-mockup__icon svg {
+  width: 18px !important;
+  height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  flex-shrink: 0 !important;
+}
+
+#home-vertical-focus .ib-cat-mockup__title {
+  font-size: 0.95rem !important;
+  line-height: 1.2 !important;
+}
+
+#home-vertical-focus .ib-cat-mockup__desc {
+  font-size: 0.72rem !important;
+  -webkit-line-clamp: 2;
+}
+
+/* Feature strip — prevent runaway SVG/icons */
+#home-features-strip .ib-features-strip-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 0.75rem !important;
+  min-width: 0 !important;
+}
+
+#home-features-strip .ib-features-strip-icon {
+  flex: 0 0 40px !important;
+  width: 40px !important;
+  height: 40px !important;
+  max-width: 40px !important;
+  max-height: 40px !important;
+  overflow: hidden !important;
+}
+
+#home-features-strip .ib-features-strip-icon svg {
+  width: 20px !important;
+  height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+}

@@ -1,0 +1,95 @@
+{
+  "version": "1.0",
+  "timezone": "Europe/Istanbul",
+  "description": "8 haftalık pilot içerik takvimi — slug'lar seed dosyalarıyla uyumlu. Durum: draft | review | published",
+  "statusLegend": {
+    "draft": "Taslak — admin'de var, yayınlanmadı",
+    "review": "Editör onayı bekliyor",
+    "published": "is_published=true"
+  },
+  "weeklyRhythm": {
+    "monday": "auto",
+    "wednesday": "finans veya sigorta",
+    "friday": "konut veya tatil"
+  },
+  "weeks": [
+    {
+      "week": 1,
+      "label": "Auto lansman",
+      "slots": {
+        "monday": { "category": "auto", "slug": "2026-trafik-cezalari-tco-etkisi", "status": "draft" },
+        "wednesday": { "category": "auto", "slug": "tasit-kredisi-faizleri-2026", "status": "draft" },
+        "friday": { "category": "auto", "slug": "sifir-km-vs-ikinci-el-2026", "status": "draft" }
+      }
+    },
+    {
+      "week": 2,
+      "label": "Auto derinleşme",
+      "slots": {
+        "monday": { "category": "auto", "slug": "ikinci-el-arac-alirken-ekspertiz", "status": "draft" },
+        "wednesday": { "category": "finans", "slug": "2026-kredi-limitleri-konut-tasit", "status": "draft" },
+        "friday": { "category": "konut", "slug": "2026-konut-kredisi-aylik-taksit", "status": "draft" }
+      }
+    },
+    {
+      "week": 3,
+      "label": "Konut pilot",
+      "slots": {
+        "monday": { "category": "auto", "slug": "mtv-2026-segment-karsilastirma", "status": "draft" },
+        "wednesday": { "category": "sigorta", "slug": "2026-kasko-prim-trendleri", "status": "draft" },
+        "friday": { "category": "konut", "slug": "kira-mi-satin-alma-mi-2026", "status": "draft" }
+      }
+    },
+    {
+      "week": 4,
+      "label": "Konut + tatil",
+      "slots": {
+        "monday": { "category": "auto", "slug": "elektrikli-arac-tco-turkiye", "status": "draft" },
+        "wednesday": { "category": "konut", "slug": "tapu-harci-masraflar-2026", "status": "draft" },
+        "friday": { "category": "tatil", "slug": "erken-rezervasyon-son-dakika-2026", "status": "draft" }
+      }
+    },
+    {
+      "week": 5,
+      "label": "Tatil pilot",
+      "slots": {
+        "monday": { "category": "auto", "slug": "kasko-primini-dusuren-faktorler", "status": "draft" },
+        "wednesday": { "category": "finans", "slug": "leasing-vs-kredi-tasit-2026", "status": "draft" },
+        "friday": { "category": "tatil", "slug": "yurt-ici-tatil-butcesi-aile-7-gun", "status": "draft" }
+      }
+    },
+    {
+      "week": 6,
+      "label": "Çapraz dikey",
+      "slots": {
+        "monday": { "category": "auto", "slug": "plaka-kaybi-calinti-2026-rehber", "status": "draft" },
+        "wednesday": { "category": "konut", "slug": "istanbul-ilce-secimi-maliyet", "status": "draft" },
+        "friday": { "category": "tatil", "slug": "cocuklu-tatil-destinasyon-secimi", "status": "draft" }
+      }
+    },
+    {
+      "week": 7,
+      "label": "Tamamlayıcı",
+      "slots": {
+        "monday": { "category": "auto", "slug": "ehliyet-yenileme-2026-maliyet", "status": "draft" },
+        "wednesday": { "category": "tatil", "slug": "doviz-kuru-tatil-maliyeti", "status": "draft" },
+        "friday": { "category": "konut", "slug": "konut-alirken-gizli-maliyetler", "status": "draft" }
+      }
+    },
+    {
+      "week": 8,
+      "label": "Kapanış + sigorta",
+      "slots": {
+        "monday": { "category": "auto", "slug": "arac-satisinda-deger-kaybi", "status": "draft" },
+        "wednesday": { "category": "sigorta", "slug": "dask-konut-policesi-karar", "status": "draft" },
+        "friday": { "category": "tatil", "slug": "tatil-sigortasi-ne-zaman", "status": "draft" }
+      }
+    }
+  ],
+  "kpisWeekly": [
+    "Yayınlanan yazı sayısı (hedef: ≥2/hafta)",
+    "Rehber → dikey CTA tıklama oranı",
+    "Organik /blog oturumları",
+    "Ortalama okuma süresi (Analytics)"
+  ]
+}

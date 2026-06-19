@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Fundraising Readiness Report</title>
+  <style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    color: #0f172a;
+    line-height: 1.5;
+    font-size: 11pt;
+    margin: 0;
+  }
+  h1 { font-size: 22pt; margin: 0 0 8px; color: #0F172A; }
+  h2 { font-size: 14pt; margin: 20px 0 8px; color: #2563EB; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; }
+  h3 { font-size: 12pt; margin: 14px 0 6px; }
+  p { margin: 0 0 10px; }
+  ul { margin: 0 0 12px 18px; padding: 0; }
+  li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 10pt; }
+  th, td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; }
+  blockquote { margin: 12px 0; padding: 10px 14px; background: #f8fafc; border-left: 4px solid #2563EB; color: #334155; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; font-size: 9pt; overflow: hidden; white-space: pre-wrap; }
+  code { font-family: ui-monospace, monospace; font-size: 9pt; }
+  .cover {
+    background: linear-gradient(135deg, #0F172A 0%, #1e3a5f 100%);
+    color: #F8FAFC;
+    min-height: 240mm;
+    padding: 48px 40px;
+    page-break-after: always;
+  }
+  .cover h1 { color: #fff; font-size: 32pt; }
+  .cover .tag { color: #94A3B8; font-size: 12pt; margin-top: 24px; }
+  .cover .meta { margin-top: 48px; font-size: 11pt; color: #94A3B8; }
+  .footer-note { margin-top: 24px; font-size: 9pt; color: #64748b; }
+  .section { padding: 0 4px; }
+  
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="brand">isteBul · Investor</div>
+    <h1>Fundraising Readiness Report</h1>
+    <p class="tag">Hazır varlıklar · eksikler · export komutları</p>
+    <p class="meta">www.istebul.com · 2026-05-26 · Gizli — yalnızca yatırımcı paylaşımı</p>
+  </section>
+  <div class="section"><h1>Fundraising Readiness Assets</h1>
+<p><strong>Version:</strong> p7.2 · <strong>Config:</strong> <code>data/investor/fundraising-readiness.json</code>   <strong>Score:</strong> <code>npm run metrics:investor:pack</code> → <code>readiness.verdict</code></p>
+<hr>
+<h2>Ready in repository</h2>
+<table><thead><tr><th>Asset</th><th>Path</th><th>Format</th></tr></thead>
+<tbody><tr><td><strong>Investor deck (PDF-ready)</strong></td><td><code>investor-deck.md</code></td><td>MD → PDF</td></tr><tr><td>Investor narrative</td><td><code>INVESTOR_NARRATIVE.md</code></td><td>MD</td></tr><tr><td>KPI story</td><td><code>KPI_STORY.md</code></td><td>MD</td></tr><tr><td>Moat articulation</td><td><code>MOAT_ARTICULATION.md</code></td><td>MD</td></tr><tr><td><strong>Market sizing (verified)</strong></td><td><code>MARKET_SIZING.md</code></td><td>MD + JSON</td></tr><tr><td>Market research data</td><td><code>data/investor/market-research.json</code></td><td>JSON</td></tr><tr><td>Monetization story</td><td><code>MONETIZATION_STORY.md</code></td><td>MD</td></tr><tr><td><strong>Cap table template</strong></td><td><code>cap-table.csv</code></td><td>CSV / Excel</td></tr><tr><td><strong>Financial model (36 mo)</strong></td><td><code>financial-model-template/*.csv</code></td><td>CSV → XLSX</td></tr><tr><td><strong>LOI template (TR + EN)</strong></td><td><code>loi-template.md</code></td><td>MD</td></tr><tr><td><strong>Stripe MRR evidence</strong></td><td><code>STRIPE_MRR_EVIDENCE.md</code></td><td>MD + screenshot slots</td></tr><tr><td>Data room index</td><td><code>DATA_ROOM_INDEX.md</code></td><td>MD</td></tr><tr><td><strong>Exit / M&amp;A optionality (P11)</strong></td><td><code>EXIT_OPTIONALITY_REPORT.md</code> · <code>../ACQUISITION_EXIT_OPTIONALITY.md</code></td><td>MD</td></tr><tr><td>Exit config</td><td><code>data/ops/acquisition-exit-optionality.json</code></td><td>JSON</td></tr></tbody>
+</table>
+<hr>
+<h2>Generate / export</h2>
+<pre><code class="lang-bash">node scripts/generate-financial-model-csv.cjs   # 36-month CSV model
+npm run metrics:investor:pack                  # Live diligence JSON
+npm run metrics:investor                         # KPI snapshot only</code></pre>
+<hr>
+<h2>Founder actions (before meetings)</h2>
+<table><thead><tr><th>Task</th><th>Asset</th></tr></thead>
+<tbody><tr><td>Export deck PDF</td><td><code>investor-deck.md</code> → Marp / Slides</td></tr><tr><td>Import CSVs to one XLSX</td><td><code>financial-model-template/</code></td></tr><tr><td>Customize cap table + SHA</td><td><code>cap-table.csv</code> + counsel</td></tr><tr><td>Sign 1–2 partner LOIs</td><td><code>loi-template.md</code></td></tr><tr><td>Paste Stripe PNGs</td><td><code>STRIPE_MRR_EVIDENCE.md</code></td></tr></tbody>
+</table>
+<hr>
+<h2>Accelerator &amp; public grants</h2>
+<h3>TÜBİTAK (1512 / 1812)</h3>
+<ul>
+<li>Ekler: <code>investor-deck.md</code> (PDF), <code>financial-model-template</code>, ekip CV  </li>
+<li>Pazar: <code>MARKET_SIZING.md</code> (TÜİK / ODMD kaynaklı)  </li>
+<li>Teknik: <code>docs/ARCHITECTURE.md</code>, <code>npm run test</code> çıktısı  </li>
+</ul>
+<h3>KOSGEB</h3>
+<ul>
+<li>İş planı TR: narrative + monetization + 36 ay CSV  </li>
+<li>Ortaklık: <code>cap-table.csv</code>  </li>
+</ul>
+<h3>VC / melek / accelerator</h3>
+<ul>
+<li>Data room: <code>DATA_ROOM_INDEX.md</code>  </li>
+<li>Canlı metrik: <code>investor-readiness-pack.json</code> (7 gün içinde)  </li>
+<li>LOI + Stripe reconciliation  </li>
+</ul>
+<hr>
+<h2>Technical diligence</h2>
+<ul>
+<li>[ ] <code>npm run test</code> green  </li>
+<li>[ ] Stripe MRR = <code>subscription.mrrTry</code>  </li>
+<li>[ ] Partner webhook HMAC örneği  </li>
+</ul>
+<hr>
+<h2>Remaining gaps (tracked in pack)</h2>
+<p><code>fundraisingGaps</code> in <code>investor-readiness-pack.json</code>:</p>
+<ul>
+<li>Signed LOI PDFs  </li>
+<li>Stripe dashboard screenshots  </li>
+<li>Exported deck PDF  </li>
+</ul></div>
+  <p class="footer-note">Canlı metrikler için: npm run metrics:investor:pack · Bu rapor statik özet içerir; toplantı öncesi snapshot güncellenmelidir.</p>
+</body>
+</html>

@@ -2,8 +2,27 @@ import { installListingsUI } from './listings-ui.js';
 import { installComparisonUI } from './comparison-ui.js';
 import { installAssistantUI } from './assistant-ui.js';
 import { escapeHtml as escapeHtmlValue, safeImageUrl as sanitizeImageUrl, safeUrl } from '../core/security.js';
+import { refreshLucideIcons, scheduleLucideIcons } from '../runtime/lucide-loader.js';
+import { revenueManager } from '../features/monetization/revenue-manager.js';
+import {
+    AI_SCORE_DISCLAIMER,
+    buildListingTrustStripHtml,
+    hasPublicSourceUrl
+} from './listing-trust-ui.js';
+
+if (typeof document !== 'undefined') {
+    document.addEventListener('ib:refresh-icons', () => {
+        scheduleLucideIcons();
+    });
+}
 // UI Manager
 import { state } from '../core/state.js';
+import { readStorageRaw, writeStorageRaw, STORAGE_KEYS } from '../core/storage-keys.js';
+import { formatMoney, formatNumber, formatRelativeTime } from '../core/format.js';
+import {
+    renderListingSkeletonGrid,
+    renderInlineSkeletonPanel
+} from '../core/loading-skeleton.js';
 
 export class UIManager {
     constructor() {
@@ -11,6 +30,7 @@ export class UIManager {
     }
 
     init() {
+        installAssistantUI(this.constructor);
         this.setupTheme();
         this.setupGlobalUI();
         this.setupResponsiveNav();
@@ -19,7 +39,7 @@ export class UIManager {
 
 
     setupTheme() {
-        const savedTheme = localStorage.getItem('istebu_theme');
+        const savedTheme = readStorageRaw(STORAGE_KEYS.THEME);
         const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
         const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
         this.applyTheme(initialTheme);
@@ -28,7 +48,7 @@ export class UIManager {
         if (themeToggle) {
             themeToggle.addEventListener('click', () => {
                 const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-                localStorage.setItem('istebu_theme', nextTheme);
+                writeStorageRaw(STORAGE_KEYS.THEME, nextTheme);
                 this.applyTheme(nextTheme);
             });
         }
@@ -73,12 +93,45 @@ export class UIManager {
     setupResponsiveNav() {
         const navMenu = document.getElementById('nav-menu');
         const navAuth = document.getElementById('nav-auth');
+        const navMoreMenu = document.getElementById('nav-more-menu');
+        const navMoreButton = document.getElementById('nav-more-btn');
+        const navMoreList = document.getElementById('nav-more-list');
+        const navProductMenu = document.getElementById('nav-product-menu');
+        const navProductButton = document.getElementById('nav-product-btn');
+        const navProductList = document.getElementById('nav-product-list');
+        const closeDropdown = (button, list) => {
+            if (!button || !list) return;
+            button.setAttribute('aria-expanded', 'false');
+            list.classList.remove('is-open');
+            list.hidden = true;
+        };
+        const toggleDropdown = (button, list) => {
+            if (!button || !list) return;
+            const isOpen = button.getAttribute('aria-expanded') === 'true';
+            button.setAttribute('aria-expanded', String(!isOpen));
+            list.classList.toggle('is-open', !isOpen);
+            list.hidden = isOpen;
+        };
+        const closeMoreMenu = () => closeDropdown(navMoreButton, navMoreList);
+        const closeProductMenu = () => closeDropdown(navProductButton, navProductList);
+        const toggleMoreMenu = () => {
+            closeProductMenu();
+            toggleDropdown(navMoreButton, navMoreList);
+        };
+        const toggleProductMenu = () => {
+            closeMoreMenu();
+            toggleDropdown(navProductButton, navProductList);
+        };
         const navToggle = document.createElement('button');
         navToggle.className = 'nav-toggle';
         navToggle.type = 'button';
         navToggle.setAttribute('aria-label', 'Menüyü aç');
         navToggle.setAttribute('aria-expanded', 'false');
-        navToggle.innerHTML = '<i data-lucide="menu"></i>';
+        navToggle.innerHTML = `
+            <span class="nav-toggle-burger" aria-hidden="true">
+                <span></span><span></span><span></span>
+            </span>
+        `;
         navToggle.style.display = 'none';
 
         document.querySelector('.nav-container').insertBefore(navToggle, navMenu);
@@ -88,8 +141,9 @@ export class UIManager {
             mobileAuthActions.id = 'mobile-auth-actions';
             mobileAuthActions.className = 'mobile-auth-actions';
             mobileAuthActions.innerHTML = `
-                <button type="button" class="btn btn-outline" data-mobile-login>Giriş Yap</button>
-                <button type="button" class="btn btn-primary" data-mobile-register>Üye Ol</button>
+                <a href="/karar-asistani/" class="btn btn-primary" data-native-route data-analytics-cta="cta_decision_nav_mobile" data-analytics-placement="nav_mobile" data-i18n="home.ctaAnalyze">Ön değerlendirmeye başla</a>
+                <button type="button" class="btn btn-outline" data-auth-open="login" data-mobile-login>Üye Girişi</button>
+                <button type="button" class="btn btn-primary" data-auth-open="register" data-mobile-register>Üye Ol</button>
             `;
             navMenu.append(mobileAuthActions);
         }
@@ -98,16 +152,50 @@ export class UIManager {
             const isOpen = navMenu.classList.toggle('show');
             navToggle.setAttribute('aria-expanded', String(isOpen));
             navToggle.setAttribute('aria-label', isOpen ? 'Menüyü kapat' : 'Menüyü aç');
+            if (!isOpen) {
+                closeMoreMenu();
+                closeProductMenu();
+            }
         });
 
+        if (navMoreButton && navMoreList && navMoreMenu) {
+            navMoreButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                toggleMoreMenu();
+            });
+            document.addEventListener('click', (event) => {
+                if (!navMoreMenu.contains(event.target)) {
+                    closeMoreMenu();
+                }
+                if (navProductMenu && !navProductMenu.contains(event.target)) {
+                    closeProductMenu();
+                }
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeMoreMenu();
+                    closeProductMenu();
+                }
+            });
+        }
+
+        if (navProductButton && navProductList && navProductMenu) {
+            navProductButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                toggleProductMenu();
+            });
+        }
+
         // Show/hide toggle based on screen size
-        const navCompactBreakpoint = 1180;
+        const navCompactBreakpoint = 1280;
         const checkScreenSize = () => {
             if (window.innerWidth < navCompactBreakpoint) {
                 navToggle.style.display = 'inline-flex';
                 navToggle.setAttribute('aria-expanded', 'false');
                 navToggle.setAttribute('aria-label', 'Menüyü aç');
                 navMenu.classList.remove('show');
+                closeMoreMenu();
+                closeProductMenu();
             } else {
                 navToggle.style.display = 'none';
                 navMenu.classList.add('show');
@@ -116,6 +204,66 @@ export class UIManager {
 
         window.addEventListener('resize', checkScreenSize);
         checkScreenSize();
+
+        this.loadIcons();
+        this.setupUserMenu();
+    }
+
+    setupUserMenu() {
+        const userMenu = document.getElementById('user-menu');
+        const userMenuBtn = document.getElementById('user-menu-btn');
+        const userDropdown = document.getElementById('user-dropdown');
+        if (!userMenu || !userMenuBtn || userMenu.dataset.userMenuBound === 'true') return;
+
+        userMenu.dataset.userMenuBound = 'true';
+
+        const closeUserMenu = () => {
+            userMenu.classList.remove('is-open');
+            userMenuBtn.setAttribute('aria-expanded', 'false');
+        };
+
+        const toggleUserMenu = () => {
+            const isOpen = userMenu.classList.toggle('is-open');
+            userMenuBtn.setAttribute('aria-expanded', String(isOpen));
+        };
+
+        userMenuBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            toggleUserMenu();
+        });
+
+        userDropdown?.addEventListener('click', (event) => {
+            const accountLink = event.target.closest('a[href="/profil/"], a[href="/profil"]');
+            if (accountLink) {
+                event.preventDefault();
+                closeUserMenu();
+                window.app?.router?.navigate?.('/profil');
+                return;
+            }
+
+            if (event.target.closest('a[href], button')) {
+                closeUserMenu();
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!userMenu.contains(event.target)) {
+                closeUserMenu();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeUserMenu();
+            }
+        });
+
+        document.getElementById('nav-dashboard-quick')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            closeUserMenu();
+            window.app?.router?.navigate?.('/profil');
+        });
     }
 
     setupKeyboardShortcuts() {
@@ -138,10 +286,11 @@ export class UIManager {
     }
 
     loadIcons() {
-        // Load Lucide icons
-        if (typeof lucide !== 'undefined') {
-            window.lucide?.createIcons();
-        }
+        scheduleLucideIcons();
+    }
+
+    async refreshIcons() {
+        await refreshLucideIcons();
     }
 
     updateCollectionBadges({ favorites = 0, comparisons = 0 } = {}) {
@@ -161,23 +310,55 @@ export class UIManager {
 
     updateAuthUI(user) {
         const navAuth = document.getElementById('nav-auth');
+        const navAuthMobile = document.getElementById('nav-auth-mobile');
         const navUser = document.getElementById('nav-user');
-        const navMessages = document.getElementById('nav-messages');
+        const navLinksAnon = document.getElementById('nav-links-anon');
+        const navLinksAuth = document.getElementById('nav-links-auth');
+        const mainNav = document.getElementById('main-nav');
+        const dashboardQuick = document.getElementById('nav-dashboard-quick');
 
         if (!navAuth || !navUser) return;
 
         if (user) {
+            document.body.classList.add('nav-signed-in');
+            mainNav?.classList.add('is-authenticated');
+
             navAuth.classList.add('hidden');
-            navUser.classList.remove('hidden');
             navAuth.style.display = 'none';
+
+            navAuthMobile?.classList.add('hidden');
+            navAuthMobile?.setAttribute('hidden', '');
+
+            navUser.classList.remove('hidden');
             navUser.style.display = 'flex';
-            if (navMessages) navMessages.style.display = 'block';
+
+            navLinksAnon?.classList.remove('hidden');
+            navLinksAuth?.classList.add('hidden');
+
+            dashboardQuick?.classList.remove('hidden');
+
+            document.getElementById('user-menu')?.classList.remove('is-open');
+            document.getElementById('user-menu-btn')?.setAttribute('aria-expanded', 'false');
         } else {
+            document.body.classList.remove('nav-signed-in');
+            mainNav?.classList.remove('is-authenticated');
+
             navAuth.classList.remove('hidden');
-            navUser.classList.add('hidden');
             navAuth.style.display = 'flex';
+
+            navAuthMobile?.classList.remove('hidden');
+            navAuthMobile?.removeAttribute('hidden');
+
+            navUser.classList.add('hidden');
             navUser.style.display = 'none';
-            if (navMessages) navMessages.style.display = 'none';
+
+            navLinksAnon?.classList.remove('hidden');
+            navLinksAuth?.classList.add('hidden');
+
+            dashboardQuick?.classList.add('hidden');
+
+            document.getElementById('user-menu')?.classList.remove('is-open');
+            document.getElementById('user-menu-btn')?.setAttribute('aria-expanded', 'false');
         }
     }
 
@@ -186,20 +367,22 @@ export class UIManager {
         if (userName && profile) {
             userName.textContent = profile.full_name || profile.email;
         }
-        this.renderProfile(profile);
     }
 
+    /** @deprecated Profile shell is rendered by AccountManager (#account-root). */
     renderProfile(profile) {
         const profileSection = document.getElementById('profil');
         if (!profileSection) return;
 
-        const profileCard = profileSection.querySelector('.profile-card');
+        const profileCard = profileSection.querySelector('.profile-card')
+            || profileSection.querySelector('#account-root');
         if (!profileCard) return;
 
         if (profile && (profile.full_name || profile.email)) {
             profileCard.innerHTML = `
                 <h3>Merhaba, ${this.escapeHtml(profile.full_name || profile.email)}</h3>
-                <p>Hesabınız hazır. Profil bilgilerinizi güncelleyebilir, seçeneklerinızı yönetebilir ve favorilerinizi takip edebilirsiniz.</p>
+                <p>Hesabınız hazır. Profil bilgilerinizi güncelleyebilir, seçeneklerinizi yönetebilir ve favorilerinizi takip edebilirsiniz.</p>
+                ${revenueManager.renderProfileSubscriptionBlock()}
                 <div class="profile-summary">
                     <div><strong>Ad Soyad:</strong> ${this.escapeHtml(profile.full_name || 'Bilinmiyor')}</div>
                     <div><strong>E-posta:</strong> ${this.escapeHtml(profile.email || 'Bilinmiyor')}</div>
@@ -213,12 +396,13 @@ export class UIManager {
         } else {
             profileCard.innerHTML = `
                 <h3>Profiliniz hazır değil</h3>
-                <p>Giriş yaparak profil bilgilerinizi görebilir ve ilan oluşturabilirsiniz.</p>
-                <button class="btn btn-primary" id="profile-login-btn">Giriş Yap veya Kayıt Ol</button>
+                <p>Giriş yaparak profil bilgilerinizi görebilir ve seçenek ekleyebilirsiniz.</p>
+                <button class="btn btn-primary" id="profile-login-btn">Hesabına gir veya analizini kaydet</button>
             `;
         }
 
         this.loadIcons();
+        revenueManager.initProfileBillingControls(profileSection);
     }
 
     showAdminLink(user = null) {
@@ -252,7 +436,7 @@ export class UIManager {
         if (!container) return;
 
         container.innerHTML = categories.map(category => `
-            <a href="/ilanlar/" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçenekleri</a>
+            <a href="/secenekler/" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçenekleri</a>
         `).join('');
     }
 
@@ -274,11 +458,6 @@ export class UIManager {
     }
 
 
-    async renderDecisionAssistant(...args) {
-        installAssistantUI(this.constructor);
-        return this.renderDecisionAssistant(...args);
-    }
-
     getListingLocationLabel(listing = {}) {
         if (listing.province) return listing.province + (listing.district ? '/' + listing.district : ' geneli');
         return listing.location || 'Konum belirtilmemiş';
@@ -286,11 +465,14 @@ export class UIManager {
 
     getListingPrimaryActionLabel(categoryId) {
         const labels = {
-            arac: 'İlana Git',
-            ev: 'Emlak Kaynağı',
-            tatil: 'Paketi Gör'
+            arac: 'Seçeneği İncele',
+            ev: 'Seçeneği İncele',
+            tatil: 'Seçeneği İncele',
+            finansman: 'Seçeneği İncele',
+            sigorta: 'Seçeneği İncele',
+            kasko: 'Seçeneği İncele'
         };
-        return labels[categoryId] || 'İlana Git';
+        return labels[categoryId] || 'Seçeneği İncele';
     }
 
     getListingInsightItems(listing = {}, aiScore = 0) {
@@ -310,7 +492,12 @@ export class UIManager {
             base.push('Tatil analizi', 'Paket kontrolü', 'İptal koşulu');
         }
 
-        return [...base, 'Karar skoru ' + aiScore + '/100'].slice(0, 4);
+        const items = [...base];
+        const displayScore = this.resolveListingQualityScoreDisplay(listing, aiScore);
+        if (displayScore !== null) {
+            items.push('Uyum skoru ' + displayScore + '/100');
+        }
+        return items.slice(0, 4);
     }
 
     getListingInsightsMarkup(listing = {}, aiScore = 0) {
@@ -328,6 +515,21 @@ export class UIManager {
         return null;
     }
 
+    /**
+     * @param {Record<string, unknown>} [listing]
+     * @param {number|null|undefined} [overrideScore]
+     * @returns {number|null}
+     */
+    resolveListingQualityScoreDisplay(listing = {}, overrideScore) {
+        const raw = overrideScore !== undefined && overrideScore !== null
+            ? overrideScore
+            : this.getListingQualityScore(listing);
+        if (raw === null || raw === undefined || raw === '') return null;
+        const num = Number(raw);
+        if (!Number.isFinite(num) || num <= 0) return null;
+        return Math.max(0, Math.min(100, Math.round(num)));
+    }
+
     getListingComparisonSignature(listing = {}) {
         return 'listing:' + (listing.category || 'genel') + ':' + (listing.id || '');
     }
@@ -342,10 +544,17 @@ export class UIManager {
 
         toolbar.hidden = false;
         if (countLabel) {
-            countLabel.textContent = count === 0 ? 'Size uygun seçenekler hazırlanıyor' : (count === 1 ? '1 sonuç' : this.formatPrice(count) + ' sonuç');
+            countLabel.textContent =
+                count === 0
+                    ? 'Size uygun seçenekler hazırlanıyor'
+                    : count === 1
+                      ? '1 sonuç'
+                      : `${this.formatNumberPlain(count)} sonuç`;
         }
         if (contextLabel) {
-            contextLabel.textContent = this.getListingToolbarContext(options, count);
+            contextLabel.textContent =
+                count === 0 ? 'Karar skoruna göre listeleniyor' : this.getListingToolbarContext(options, count);
+            contextLabel.hidden = false;
         }
         if (sortSelect && sortSelect.value !== sort) {
             sortSelect.value = sort;
@@ -369,8 +578,8 @@ export class UIManager {
         if (options.vacationType) parts.push(vacationLabels[options.vacationType] || options.vacationType);
         if (options.search) parts.push('Arama: ' + options.search);
 
-        if (options.ownedOnly || options.userId) return count ? 'Yayınladığınız ilanlar' : 'Henüz ilan yayınlamadınız';
-        if (!count) return 'Henüz ilan yok. İlk ilan yayınlandığında burada görünecek.';
+        if (options.ownedOnly || options.userId) return count ? 'Yayınladığınız seçenekler' : 'Henüz seçenek yayınlamadınız';
+        if (!count) return 'Henüz değerlendirilebilir seçenek yok. İlk seçenek eklendiğinde burada görünecek.';
         return parts.length ? parts.join(' · ') : 'Türkiye geneli · karar skoruna göre keşif';
     }
 
@@ -421,13 +630,13 @@ export class UIManager {
             <div class="listing-detail-card listing-detail-premium">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>İlan detayları hazırlanıyor...</p>
+                    <p>Seçenek detayı hazırlanıyor...</p>
                 </div>
             </div>
         `;
     }
 
-    renderListingDetailEmpty(message = 'İlan detayları bulunamadı.') {
+    renderListingDetailEmpty(message = 'Seçenek detayı bulunamadı.') {
         const section = document.getElementById('listing-detail-content');
         if (!section) return;
 
@@ -435,11 +644,11 @@ export class UIManager {
             <div class="listing-detail-card listing-detail-premium">
                 <div class="empty-state">
                     <i data-lucide="search-x"></i>
-                    <h3>İlan bulunamadı</h3>
+                    <h3>Seçenek bulunamadı</h3>
                     <p>${this.escapeHtml(message)}</p>
                     <div class="listing-actions">
                         <a href="/" class="btn btn-outline" data-native-route>Ana sayfaya dön</a>
-                        <a href="/ilanlar/" class="btn btn-primary" data-native-route>Seçenekleri incele</a>
+                        <a href="/secenekler/" class="btn btn-primary" data-native-route>Seçenekleri incele</a>
                     </div>
                 </div>
             </div>
@@ -448,56 +657,84 @@ export class UIManager {
         this.loadIcons();
     }
 
-    renderListingDetail(listing, favoriteIds = [], decisionProfile = null, comparisonSignatures = []) {
+    async renderListingDetail(listing, favoriteIds = [], decisionProfile = null, comparisonSignatures = [], userDecisionContext = null) {
         const section = document.getElementById('listing-detail-content');
         if (!section) return;
 
+        const {
+            renderListingGalleryHtml,
+            bindListingGallery,
+            bindListingGenericImageFallbacks,
+            bindListingVehicleImageFallbacks
+        } = await import('./listing-gallery-ui.js');
         const listingId = this.escapeHtml(listing.id);
-        const imageUrl = this.safeImageUrl(listing.images?.[0]);
-        const externalUrl = this.safeExternalUrl(listing.external_url);
+        const galleryHtml = renderListingGalleryHtml(listing, (s) => this.escapeHtml(s), (u) => this.safeImageUrl(u));
+        const hasExternalSource = hasPublicSourceUrl(listing);
+        const externalUrl = hasExternalSource
+            ? this.safeExternalUrl(listing.source_url ?? listing.external_url, {
+                content: listing.id || 'listing_detail',
+                campaign: listing.category || 'marketplace'
+            })
+            : '';
         const isFavorite = favoriteIds.includes(listing.id.toString());
         const isCompared = (Array.isArray(comparisonSignatures) ? comparisonSignatures : []).map(String).includes(this.getListingComparisonSignature(listing));
         const locationLabel = this.getListingLocationLabel(listing);
         const categoryLabel = this.getCategoryLabel(listing.category || '');
-        const aiScore = decisionProfile?.score || this.getListingQualityScore(listing);
+        const profileScore = decisionProfile?.score;
+        const aiScoreDisplay = this.resolveListingQualityScoreDisplay(
+            listing,
+            profileScore !== undefined && profileScore !== null ? profileScore : undefined
+        );
         const actionLabel = this.getListingPrimaryActionLabel(listing.category || '');
         section.innerHTML = `
             <div class="listing-detail-card listing-detail-premium">
                 <div class="listing-detail-header">
                     <div>
-                        <span class="assistant-kicker">${this.escapeHtml(categoryLabel || 'İlan')} detay analizi</span>
+                        <span class="assistant-kicker">${this.escapeHtml(categoryLabel || 'Seçenek')} detay analizi</span>
                         <h2>${this.escapeHtml(listing.title)}</h2>
                         <div class="listing-detail-badges">
-                            <span><i data-lucide="sparkles"></i> Karar skoru ${this.escapeHtml(aiScore)}/100</span>
+                            ${aiScoreDisplay !== null ? `<span title="${this.escapeHtml(AI_SCORE_DISCLAIMER)}" aria-label="Uyum skoru ${this.escapeHtml(aiScoreDisplay)}/100. ${this.escapeHtml(AI_SCORE_DISCLAIMER)}"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScoreDisplay)}/100</span>` : ''}
                             <span><i data-lucide="map-pin"></i> ${this.escapeHtml(locationLabel)}</span>
                             <span><i data-lucide="clock-3"></i> ${this.formatDate(listing.created_at)}</span>
                         </div>
                     </div>
-                    <p class="listing-price">${this.formatPrice(listing.price)} ₺</p>
+                    <p class="listing-price">${this.formatPrice(listing.price)}</p>
                 </div>
-                <div class="listing-detail-body">
-                    <div class="listing-detail-image">
-                        <img src="${imageUrl}" alt="${this.escapeHtml(listing.title)}">
-                    </div>
+                <div class="listing-detail-body listing-detail-body-gallery">
+                    ${galleryHtml}
                     <div class="listing-detail-info">
-                        ${this.getListingInsightsMarkup(listing, aiScore)}
+                        ${this.getListingInsightsMarkup(listing, aiScoreDisplay ?? undefined)}
+                        ${buildListingTrustStripHtml(listing, { escapeHtml: (value) => this.escapeHtml(value) })}
                         <p><strong>Açıklama:</strong></p>
                         <p>${this.escapeHtml(listing.description || 'Açıklama bulunamadı.')}</p>
                         <div class="listing-actions">
                             <button class="btn ${isFavorite ? 'btn-primary' : 'btn-outline'}" data-action="favorite" data-listing-id="${listingId}"><i data-lucide="heart"></i> ${isFavorite ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}</button>
                             <button class="btn ${isCompared ? 'btn-primary' : 'btn-outline'}" data-action="compare" data-listing-id="${listingId}"><i data-lucide="${isCompared ? 'check' : 'columns-3'}"></i> ${isCompared ? 'Karşılaştırmada' : 'Karşılaştır'}</button>
-                            <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Asistanda analiz et</a>
-                            <a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> ${this.escapeHtml(actionLabel)}</a>
+                            <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Ön değerlendirmeye başla</a>
+                            ${hasExternalSource ? `<a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> ${this.escapeHtml(actionLabel)}</a>` : ''}
                         </div>
                     </div>
                 </div>
                 ${this.getListingDetailDecisionMarkup(decisionProfile, listing)}
+                <div class="listing-detail-decision-center">${await this.getUserDecisionCenterMarkup(userDecisionContext, listing)}</div>
             </div>
         `;
 
+        bindListingGallery(section);
+        bindListingVehicleImageFallbacks(section, listing);
+        bindListingGenericImageFallbacks(section, listing);
         this.loadIcons();
     }
 
+    async getUserDecisionCenterMarkup(ctx, listing = {}) {
+        const { buildUserDecisionCenterHtml, buildUserDecisionCenterEmptyHtml } = await import(
+            '../user-decision-center/index.js'
+        );
+        if (!ctx) {
+            return buildUserDecisionCenterEmptyHtml('Bu seçenek için karar analizi henüz hazır değil.');
+        }
+        return buildUserDecisionCenterHtml({ ...ctx, listing: ctx.listing ?? listing });
+    }
 
     getListingDetailDecisionMarkup(profile, listing = {}) {
         if (!profile) return '';
@@ -506,32 +743,29 @@ export class UIManager {
             periodicCost: Math.max(Number(profile.periodicCost || 0), 1),
             monthlyPayment: Math.max(Number(profile.monthlyPayment || 0), 1)
         };
-        const actionProfile = {
-            channels: [{ url: listing.external_url || 'https://www.sahibinden.com/' }]
-        };
         return '<section class="listing-detail-decision">' +
             '<div class="listing-detail-decision-head">' +
                 '<div><span class="assistant-kicker">Karar değerlendirmesi</span><h3>' + this.escapeHtml(profile.riskLevel || 'Karar analizi') + '</h3><p>' + this.escapeHtml(profile.comment || '') + '</p></div>' +
                 '<div class="listing-detail-score"><strong>' + this.escapeHtml(profile.score || '-') + '</strong><span>/100</span></div>' +
             '</div>' +
             '<div class="comparison-metrics listing-detail-metrics">' +
-                '<div><span>Ana bedel</span><strong>' + this.formatPrice(profile.price || 0) + ' ₺</strong></div>' +
-                '<div><span>Dönemsel maliyet</span><strong>' + this.formatPrice(profile.periodicCost || 0) + ' ₺</strong></div>' +
-                '<div><span>Aylık ödeme</span><strong>' + this.formatPrice(profile.monthlyPayment || 0) + ' ₺</strong></div>' +
-                '<div><span>Toplam geri ödeme</span><strong>' + this.formatPrice(profile.totalPayment || 0) + ' ₺</strong></div>' +
+                '<div><span>Ana bedel</span><strong>' + this.formatPrice(profile.price || 0) + '</strong></div>' +
+                '<div><span>Dönemsel maliyet</span><strong>' + this.formatPrice(profile.periodicCost || 0) + '</strong></div>' +
+                '<div><span>Aylık ödeme</span><strong>' + this.formatPrice(profile.monthlyPayment || 0) + '</strong></div>' +
+                '<div><span>Toplam geri ödeme</span><strong>' + this.formatPrice(profile.totalPayment || 0) + '</strong></div>' +
             '</div>' +
             this.getCostBreakdownMarkup(profile) +
             this.getComparisonGraphMarkup(profile, maxValues) +
             (profile.tags?.length ? '<div class="comparison-tags">' + profile.tags.map((tag) => '<span>' + this.escapeHtml(tag) + '</span>').join('') + '</div>' : '') +
             this.getListingDetailRowsMarkup(profile.calculationRows) +
-            this.getRecommendationActionPlanMarkup(profile.categoryId || listing.category, actionProfile) +
+            this.getRecommendationActionPlanMarkup(profile.categoryId || listing.category, listing) +
         '</section>';
     }
 
     getListingDetailRowsMarkup(rows = []) {
         if (!Array.isArray(rows) || !rows.length) return '';
         return '<div class="listing-detail-rows">' + rows.slice(0, 6).map((row) =>
-            '<div><span>' + this.escapeHtml(row.label) + '</span><strong>' + this.formatPrice(row.value || 0) + ' ₺</strong><small>' + this.escapeHtml(row.note || '') + '</small></div>'
+            '<div><span>' + this.escapeHtml(row.label) + '</span><strong>' + this.formatPrice(row.value || 0) + '</strong><small>' + this.escapeHtml(row.note || '') + '</small></div>'
         ).join('') + '</div>';
     }
 
@@ -543,28 +777,38 @@ export class UIManager {
             container.innerHTML = `
                 <div class="empty-state">
                     <i data-lucide="heart"></i>
-                    <h3>Henüz favori ilan yok</h3>
-                    <p>Bir ilana göz atın ve kalp ikonuna basarak favorilerinize ekleyin.</p>
+                    <h3>Henüz favori seçenek yok</h3>
+                    <p>Karar skoruna göre seçenekleri keşfedin; beğendiklerinizi favorilere ekleyin.</p>
+                    <div class="empty-state-actions">
+                        <a href="/karar-asistani/" class="btn btn-primary">Ön değerlendirme başlat</a>
+                        <a href="/secenekler" class="btn btn-outline" data-native-route>Seçenekleri gör</a>
+                    </div>
                 </div>
             `;
             return;
         }
 
-        container.innerHTML = favorites.map(listing => `
+        container.innerHTML = favorites.map(listing => {
+            const hasExternalSource = hasPublicSourceUrl(listing);
+            const externalUrl = hasExternalSource
+                ? this.safeExternalUrl(listing.source_url ?? listing.external_url)
+                : '';
+            return `
             <div class="favorite-card">
                 <div class="favorite-card-body">
                     <h4>${this.escapeHtml(listing.title)}</h4>
                     <p>${this.escapeHtml(listing.location || 'Konum belirtilmemiş')}</p>
-                    <p class="listing-price">${this.formatPrice(listing.price)} ₺</p>
+                    <p class="listing-price">${this.formatPrice(listing.price)}</p>
                     <div class="listing-actions">
                         <button class="btn btn-outline" data-favorite-id="${this.escapeHtml(listing.id)}"><i data-lucide="heart-off"></i> Kaldır</button>
                         <button class="btn btn-outline" data-action="detail" data-listing-id="${this.escapeHtml(listing.id)}"><i data-lucide="eye"></i> Detay</button>
                         <button class="btn btn-outline" data-action="compare" data-listing-id="${this.escapeHtml(listing.id)}"><i data-lucide="columns-3"></i> Karşılaştır</button>
-                        <a href="${this.safeExternalUrl(listing.external_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> İlanı Gör</a>
+                        ${hasExternalSource ? `<a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> Seçeneği İncele</a>` : ''}
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         this.loadIcons();
     }
@@ -782,7 +1026,10 @@ export class UIManager {
         const labels = {
             arac: 'Araç',
             ev: 'Ev',
-            tatil: 'Tatil'
+            tatil: 'Tatil',
+            finansman: 'Finansman',
+            sigorta: 'Sigorta',
+            kasko: 'Kasko'
         };
 
         return labels[categoryId] || categoryId;
@@ -905,18 +1152,21 @@ export class UIManager {
 
     showLoading(container) {
         const element = document.querySelector(container);
-        if (element) {
-            element.innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Yükleniyor...</p>
-                </div>
-            `;
+        if (!element) return;
+
+        element.setAttribute('aria-busy', 'true');
+
+        if (container === '#listings-grid' || element.id === 'listings-grid') {
+            element.innerHTML = renderListingSkeletonGrid(6);
+            return;
         }
+
+        element.innerHTML = `<div class="loading ib-loading-legacy">${renderInlineSkeletonPanel(4)}</div>`;
     }
 
-    hideLoading(_container) {
-        // Loading is hidden when content is rendered
+    hideLoading(container) {
+        const element = typeof container === 'string' ? document.querySelector(container) : container;
+        element?.removeAttribute('aria-busy');
     }
 
     showError(message) {
@@ -1015,29 +1265,20 @@ export class UIManager {
         return sanitizeImageUrl(url);
     }
 
-    safeExternalUrl(url) {
-        return safeUrl(url);
+    safeExternalUrl(url, tracking = {}) {
+        return revenueManager.buildAffiliateUrl(safeUrl(url), tracking);
     }
 
     formatPrice(price) {
-        return new Intl.NumberFormat('tr-TR').format(price);
+        return formatMoney(price);
+    }
+
+    formatNumberPlain(value) {
+        return formatNumber(value);
     }
 
     formatDate(dateString) {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diff = now - date;
-
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(diff / 3600000);
-        const days = Math.floor(diff / 86400000);
-
-        if (minutes < 1) return 'Şimdi';
-        if (minutes < 60) return `${minutes} dakika önce`;
-        if (hours < 24) return `${hours} saat önce`;
-        if (days < 7) return `${days} gün önce`;
-
-        return date.toLocaleDateString('tr-TR');
+        return formatRelativeTime(dateString);
     }
 
     // Scroll to element
@@ -1089,6 +1330,17 @@ export class UIManager {
     renderMessages(messages, currentUserId) {
         const list = document.getElementById('messages-list');
         if (!list) return;
+        if (!messages.length) {
+            list.innerHTML = `
+                <div class="empty-state messages-empty-state">
+                    <i data-lucide="message-square"></i>
+                    <h3>Henüz mesaj yok</h3>
+                    <p>Karar süreci ve seçenek inceleme mesajlarınız burada görünür.</p>
+                </div>
+            `;
+            this.loadIcons?.();
+            return;
+        }
         list.innerHTML = messages.map(msg => `
             <div class="message ${msg.sender_id === currentUserId ? 'sent' : 'received'}">
                 <div class="message-content">${this.escapeHtmlValue(msg.content)}</div>
@@ -1098,5 +1350,9 @@ export class UIManager {
         list.scrollTop = list.scrollHeight;
     }
 }
+
+installAssistantUI(UIManager);
+installListingsUI(UIManager);
+installComparisonUI(UIManager);
 
 export default UIManager;

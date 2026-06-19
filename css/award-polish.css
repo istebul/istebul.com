@@ -1,0 +1,237 @@
+/**
+ * Site excellence layer — typography, buttons, forms, cards (final cascade).
+ * Additive only; does not replace existing component class names.
+ */
+
+:root {
+  --ib-font-display: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ib-font-body: var(--ib-font-display);
+  --ib-leading-tight: 1.2;
+  --ib-leading-body: 1.65;
+  --ib-leading-ui: 1.45;
+  --ib-radius-btn: 12px;
+  --ib-radius-card: 16px;
+  --ib-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 32px rgba(15, 23, 42, 0.07);
+  --ib-shadow-card-hover: 0 2px 4px rgba(15, 23, 42, 0.06), 0 20px 48px rgba(15, 23, 42, 0.1);
+  --ib-shadow-btn: 0 1px 2px rgba(15, 23, 42, 0.08), 0 8px 20px rgba(29, 78, 216, 0.18);
+}
+
+/* —— Typography —— */
+body.ib-enterprise,
+body.ib-auto,
+body.ib-partner-page {
+  font-family: var(--ib-font-body);
+  font-size: 1rem;
+  line-height: var(--ib-leading-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body.ib-enterprise h1,
+body.ib-auto h1 {
+  font-size: clamp(1.75rem, 4vw, 2.65rem);
+  line-height: var(--ib-leading-tight);
+  letter-spacing: -0.035em;
+  font-weight: 800;
+}
+
+body.ib-enterprise h2,
+body.ib-auto h2,
+body.ib-enterprise .section-header h2 {
+  font-size: clamp(1.35rem, 2.8vw, 1.85rem);
+  line-height: 1.25;
+  letter-spacing: -0.028em;
+}
+
+body.ib-enterprise h3,
+body.ib-auto h3 {
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+body.ib-enterprise p,
+body.ib-auto p,
+body.ib-enterprise .lead,
+body.ib-auto .lead {
+  max-width: 68ch;
+}
+
+body.ib-enterprise .kicker,
+body.ib-auto .kicker {
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— Buttons (marketing + Auto) —— */
+body.ib-enterprise .btn,
+body.ib-auto .btn,
+body.ib-enterprise a.btn,
+body.ib-auto a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--ib-radius-btn);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  line-height: var(--ib-leading-ui);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  transition:
+    transform 0.2s var(--ib-ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow 0.2s var(--ib-ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+body.ib-enterprise .btn.primary,
+body.ib-enterprise .btn-primary,
+body.ib-auto .btn.primary {
+  background: var(--ib-gradient-brand, linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%));
+  color: #fff;
+  border: 1px solid transparent;
+  box-shadow: var(--ib-shadow-btn);
+}
+
+body.ib-enterprise .btn.primary:hover,
+body.ib-enterprise .btn-primary:hover,
+body.ib-auto .btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12), 0 14px 28px rgba(29, 78, 216, 0.22);
+}
+
+body.ib-enterprise .btn.secondary,
+body.ib-enterprise .btn-outline,
+body.ib-auto .btn.secondary {
+  background: #fff;
+  color: var(--ib-ink, #0f172a);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+body.ib-enterprise .btn.secondary:hover,
+body.ib-enterprise .btn-outline:hover,
+body.ib-auto .btn.secondary:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  background: #f8fafc;
+}
+
+body.ib-enterprise .btn:active,
+body.ib-auto .btn:active {
+  transform: translateY(0);
+}
+
+/* —— Forms —— */
+body.ib-enterprise input:not([type="checkbox"]):not([type="radio"]),
+body.ib-enterprise select,
+body.ib-enterprise textarea,
+body.ib-auto input:not([type="checkbox"]):not([type="radio"]),
+body.ib-auto select,
+body.ib-auto textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: var(--ib-leading-ui);
+}
+
+body.ib-enterprise .form-group input,
+body.ib-enterprise .form-group select,
+body.ib-enterprise .form-group textarea,
+body.ib-auto .wizard-custom-input input {
+  border-radius: var(--ib-radius-sm, 10px);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.ib-enterprise .form-group input:focus,
+body.ib-enterprise .form-group select:focus,
+body.ib-enterprise .form-group textarea:focus,
+body.ib-auto .wizard-custom-input input:focus,
+body.ib-auto #finance-loan-amount:focus {
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: var(--ib-focus, 0 0 0 3px rgba(37, 99, 235, 0.22));
+  outline: none;
+}
+
+/* —— Cards & surfaces —— */
+body.ib-enterprise .listing-card,
+body.ib-enterprise .trust-card,
+body.ib-enterprise .how-step,
+body.ib-enterprise .guide-card,
+body.ib-enterprise .decision-card,
+body.ib-auto .wizard-option,
+body.ib-auto .finance-bank-row {
+  border-radius: var(--ib-radius-card);
+  box-shadow: var(--ib-shadow-card);
+  transition: box-shadow 0.25s ease, transform 0.25s var(--ib-ease, ease);
+}
+
+body.ib-enterprise .listing-card:hover,
+body.ib-enterprise .trust-card:hover,
+body.ib-auto .wizard-option:hover {
+  box-shadow: var(--ib-shadow-card-hover);
+}
+
+body.ib-auto .wizard-option.is-selected {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35), var(--ib-shadow-card);
+}
+
+/* —— Modals —— */
+body.ib-enterprise .lead-modal-card,
+body.ib-auto .lead-modal-card,
+body.ib-auto .finance-compare-card {
+  border-radius: var(--ib-radius-lg, 20px);
+  box-shadow: var(--ib-shadow-elevated, 0 24px 64px rgba(15, 23, 42, 0.14));
+}
+
+body.ib-enterprise .lead-modal-close,
+body.ib-auto .lead-modal-close {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 999px;
+}
+
+/* —— Links —— */
+body.ib-enterprise a:not(.btn):not(.nav-link):not(.logo),
+body.ib-auto a:not(.btn):not(.logo) {
+  text-underline-offset: 0.18em;
+}
+
+body.ib-enterprise a:not(.btn):focus-visible,
+body.ib-auto a:not(.btn):focus-visible {
+  outline: 2px solid var(--primary-color, #2563eb);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* —— Footer & trust —— */
+body.ib-enterprise .footer {
+  border-top: 1px solid var(--ib-border-subtle, rgba(148, 163, 184, 0.22));
+}
+
+body.ib-enterprise .ib-trust-rail {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* —— Accessibility —— */
+@media (prefers-reduced-motion: reduce) {
+  body.ib-enterprise .btn,
+  body.ib-auto .btn,
+  body.ib-enterprise .listing-card,
+  body.ib-auto .wizard-option {
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  body.ib-enterprise .btn.secondary,
+  body.ib-auto .btn.secondary {
+    border-width: 2px;
+  }
+}

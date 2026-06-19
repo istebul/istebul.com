@@ -1,0 +1,121 @@
+/* Planlar / fiyatlandırma — giriş animasyonu ve kart etkileşimi */
+
+@keyframes ib-pricing-card-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes ib-pricing-billing-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes ib-pricing-featured-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 24px 56px rgba(37, 99, 235, 0.16),
+      0 0 0 0 rgba(37, 99, 235, 0);
+  }
+  50% {
+    box-shadow:
+      0 28px 60px rgba(37, 99, 235, 0.22),
+      0 0 0 1px rgba(37, 99, 235, 0.12);
+  }
+}
+
+.ib-pricing-shell .revenue-billing-toggle {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.25s ease,
+    transform 0.2s ease;
+}
+
+.ib-pricing-shell .revenue-billing-option:has(input:checked) {
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+}
+
+.ib-pricing-shell .revenue-plan-card {
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s ease,
+    border-color 0.2s ease;
+  will-change: transform;
+}
+
+.ib-pricing-shell .revenue-plan-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.12);
+}
+
+.ib-pricing-shell .revenue-plan-card--featured:hover {
+  transform: translateY(-8px);
+}
+
+.ib-pricing-shell .revenue-plan-card:focus-within {
+  outline: 2px solid rgba(37, 99, 235, 0.45);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ib-pricing-cards-stage:not(.ib-pricing-cards-stage--in-view) .revenue-plan-card {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+  }
+
+  .ib-pricing-cards-stage:not(.ib-pricing-cards-stage--in-view) .revenue-billing-toggle {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+
+  .ib-pricing-cards-stage--in-view .revenue-billing-toggle {
+    animation: ib-pricing-billing-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .ib-pricing-cards-stage--in-view .revenue-plan-card {
+    animation: ib-pricing-card-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: calc(0.07s * var(--ib-card-i, 0) + 0.05s);
+  }
+
+  .ib-pricing-cards-stage--in-view .revenue-plan-card--featured {
+    animation:
+      ib-pricing-card-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+      ib-pricing-featured-glow 4s ease-in-out 0.8s infinite;
+    animation-delay:
+      calc(0.07s * var(--ib-card-i, 0) + 0.05s),
+      calc(0.07s * var(--ib-card-i, 0) + 0.8s);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ib-pricing-cards-stage .revenue-plan-card,
+  .ib-pricing-cards-stage .revenue-billing-toggle {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+
+  .ib-pricing-shell .revenue-plan-card:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .ib-pricing-shell .revenue-plan-card:hover,
+  .ib-pricing-shell .revenue-plan-card--featured:hover {
+    transform: none;
+  }
+}

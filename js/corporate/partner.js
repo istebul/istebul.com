@@ -1,41 +1,31 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('#partner-application-form');
-  if (!form) return;
+import { mountCorporatePage } from '../runtime/corporate-page-mount.js';
+import {
+  PARTNER_FUNNEL_EVENTS,
+  renderRateCardHtml,
+  trackPartnerFunnel
+} from '../features/partner/partner-platform.js';
+import { renderTrustSummaryGrid } from '../features/partner/partner-trust.js';
 
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
+function mountRateCard() {
+  const root = document.getElementById('partner-rate-card-root');
+  if (root) {
+    root.innerHTML = renderRateCardHtml({ origin: window.location.origin });
+  }
+}
 
-    const fd = new FormData(form);
-    const anonKey = window.__env?.SUPABASE_ANON_KEY || '';
-
-    const payload = {
-      company_name: fd.get('company_name'),
-      contact_name: fd.get('contact_name'),
-      phone: fd.get('phone'),
-      email: fd.get('email'),
-      city: fd.get('city'),
-      category: fd.get('category'),
-      lead_capacity: fd.get('lead_capacity'),
-      webhook_ready: fd.get('webhook_ready') === 'on',
-      notes: fd.get('notes') || ''
-    };
-
-    try {
-      const res = await fetch('https://hjfrcdstbyonmgatgwcc.supabase.co/functions/v1/partner-application', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: anonKey,
-          Authorization: `Bearer ${anonKey}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) throw new Error();
-
-      form.innerHTML = '<p><strong>Başvurunuz alındı. Ekibimiz sizinle iletişime geçecek.</strong></p>';
-    } catch {
-      alert('Başvuru gönderilemedi.');
-    }
+mountCorporatePage(() => {
+  trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.LANDING_VIEW, {
+    path: window.location.pathname
   });
-});
+
+  mountRateCard();
+
+  const trustRoot = document.getElementById('partner-trust-summary-root');
+  if (trustRoot) trustRoot.innerHTML = renderTrustSummaryGrid();
+
+  document.querySelectorAll('a[href="/partner-basvuru.html"]').forEach((link) => {
+    link.addEventListener('click', () => {
+      trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.APPLICATION_START, { source: 'landing_cta' }, { oncePerSession: true });
+    });
+  });
+}, { label: 'Partner programı' });

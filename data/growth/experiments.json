@@ -1,0 +1,183 @@
+{
+  "frameworkVersion": "p5.2",
+  "experiments": [
+    {
+      "id": "hero_cta_copy_q2",
+      "zone": "hero",
+      "status": "active",
+      "surfaces": ["/", "/index.html", "/auto/", "/auto/index.html"],
+      "primaryMetric": "hero_cta_click",
+      "metrics": ["cta_primary_auto", "cta_primary"],
+      "variants": [
+        {
+          "id": "control",
+          "weight": 50,
+          "copy": {
+            "[data-hero-cta-primary]": "Ön değerlendirmeye başla",
+            "[data-auto-hero-cta]": "Aracımı Analiz Et"
+          }
+        },
+        {
+          "id": "urgency",
+          "weight": 50,
+          "copy": {
+            "[data-hero-cta-primary]": "2 dk'da ön değerlendirme — ücretsiz",
+            "[data-auto-hero-cta]": "Araç analizine başla"
+          },
+          "classes": {
+            "[data-hero-cta-primary]": ["cro-hero-urgency"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "cta_secondary_q2",
+      "zone": "cta",
+      "status": "active",
+      "surfaces": ["/", "/index.html", "/metodoloji", "/planlar"],
+      "primaryMetric": "cta_click",
+      "metrics": ["cta_primary_auto", "cta_secondary_plans"],
+      "variants": [
+        {
+          "id": "control",
+          "weight": 50,
+          "copy": {
+            "[data-cro-cta-sticky]": "Ön değerlendirmeye başla",
+            "[data-cro-cta-methodology]": "Ön değerlendirmeye başla"
+          }
+        },
+        {
+          "id": "outcome",
+          "weight": 50,
+          "copy": {
+            "[data-cro-cta-sticky]": "Ön değerlendirmeye başla",
+            "[data-cro-cta-methodology]": "Ön değerlendirmeye başla"
+          },
+          "classes": {
+            "[data-cro-cta-sticky]": ["cro-cta-emphasis"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "wizard_next_q2",
+      "zone": "wizard",
+      "status": "active",
+      "surfaces": ["/auto/", "/auto/index.html"],
+      "primaryMetric": "wizard_step_advance",
+      "metrics": ["auto_wizard_next", "auto_form_submitted"],
+      "variants": [
+        {
+          "id": "control",
+          "weight": 50,
+          "copy": {
+            "[data-wizard-next]": "Devam",
+            "[data-cro-wizard-hint]": "Sonraki adım"
+          }
+        },
+        {
+          "id": "momentum",
+          "weight": 50,
+          "copy": {
+            "[data-wizard-next]": "Sonraki adıma geç",
+            "[data-cro-wizard-hint]": "Yaklaşık 1 dk kaldı"
+          },
+          "classes": {
+            "[data-wizard-next]": ["cro-wizard-momentum"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "pricing_cta_q2",
+      "zone": "pricing",
+      "status": "active",
+      "surfaces": ["/", "/index.html", "/planlar"],
+      "primaryMetric": "checkout_start",
+      "metrics": ["pricing_view", "cta_primary_checkout"],
+      "variants": [
+        {
+          "id": "control",
+          "weight": 50,
+          "copy": {
+            "[data-pricing-cta-pro]": "Karar netliği için dene",
+            "[data-revenue-checkout-cta]": "Pro erken erişim talep et"
+          }
+        },
+        {
+          "id": "trial_first",
+          "weight": 50,
+          "copy": {
+            "[data-pricing-cta-pro]": "Pro erken erişim talep et",
+            "[data-revenue-checkout-cta]": "Pro pilot erişim"
+          },
+          "classes": {
+            "[data-pricing-cta-pro]": ["cro-pricing-trial"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "checkout_cta_q2",
+      "zone": "checkout",
+      "status": "active",
+      "surfaces": ["/", "/planlar", "/profil"],
+      "primaryMetric": "checkout_start",
+      "metrics": ["cta_primary_checkout", "checkout_started"],
+      "variants": [
+        {
+          "id": "control",
+          "weight": 50,
+          "copy": {
+            "[data-upgrade-checkout]": "Pro erken erişim talep et"
+          },
+          "attributes": {
+            "[data-upgrade-checkout]": { "data-cro-checkout-variant": "control" }
+          }
+        },
+        {
+          "id": "risk_reverse",
+          "weight": 50,
+          "copy": {
+            "[data-upgrade-checkout]": "Risk almadan Pro'yu dene"
+          },
+          "attributes": {
+            "[data-upgrade-checkout]": { "data-cro-checkout-variant": "risk_reverse" }
+          },
+          "classes": {
+            "[data-upgrade-checkout]": ["cro-checkout-risk-reverse"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "trust_headline_q2",
+      "zone": "trust",
+      "status": "active",
+      "surfaces": ["/", "/index.html", "/planlar", "/metodoloji"],
+      "primaryMetric": "trust_block_view",
+      "metrics": ["cta_primary_auto"],
+      "variants": [
+        {
+          "id": "control",
+          "weight": 50,
+          "trust": {
+            "[data-cro-trust-headline]": "Karar için netlik — pazarlama söylemi değil",
+            "[data-cro-trust-rail-item='methodology']": "Denetlenebilir metodoloji"
+          }
+        },
+        {
+          "id": "social_proof",
+          "weight": 50,
+          "trust": {
+            "[data-cro-trust-headline]": "Binlerce sürücü TCO ile karar veriyor",
+            "[data-cro-trust-rail-item='methodology']": "Kural tabanlı · şeffaf skor"
+          },
+          "classes": {
+            "#trust": ["cro-trust-social-proof"]
+          }
+        }
+      ]
+    }
+  ]
+}

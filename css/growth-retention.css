@@ -1,0 +1,44 @@
+/**
+ * P5.4 — Retention revisit / reactivation banner.
+ */
+.retention-revisit-banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(14, 165, 233, 0.08));
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.retention-revisit-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.retention-revisit-text {
+  margin: 0;
+  flex: 1 1 14rem;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--text-primary, #0f172a);
+}
+
+.retention-revisit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.retention-revisit-banner[data-retention-level='reactivation'] {
+  border-color: rgba(234, 88, 12, 0.35);
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.1), rgba(251, 191, 36, 0.08));
+}

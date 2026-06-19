@@ -1,0 +1,42 @@
+{
+  "version": "p5.2",
+  "goal": "continuous_conversion_optimization",
+  "zones": [
+    {
+      "id": "hero",
+      "description": "Homepage / auto hero headline and primary CTA",
+      "defaultMetrics": ["hero_cta_click", "cta_primary_auto"]
+    },
+    {
+      "id": "cta",
+      "description": "Secondary and sticky CTAs across marketing surfaces",
+      "defaultMetrics": ["cta_click", "cta_primary_auto"]
+    },
+    {
+      "id": "wizard",
+      "description": "Auto wizard progression and next-step CTA",
+      "defaultMetrics": ["wizard_step_advance", "auto_form_submitted"]
+    },
+    {
+      "id": "pricing",
+      "description": "Pricing cards and plan selection",
+      "defaultMetrics": ["pricing_view", "checkout_start"]
+    },
+    {
+      "id": "checkout",
+      "description": "Stripe checkout triggers and paywall CTAs",
+      "defaultMetrics": ["checkout_start", "cta_primary_checkout", "checkout_complete"]
+    },
+    {
+      "id": "trust",
+      "description": "Trust rail, trust section, pricing reassurance",
+      "defaultMetrics": ["trust_block_view", "cta_primary_auto"]
+    }
+  ],
+  "metricAliases": {
+    "hero_cta_click": ["cta_primary_auto", "cta_primary"],
+    "checkout_start": ["cta_primary_checkout", "checkout_started"],
+    "wizard_step_advance": ["auto_wizard_next", "wizard_next"],
+    "trust_block_view": ["trust_section_view"]
+  }
+}

@@ -1,0 +1,25 @@
+/**
+ * Vertical pages — defer paint for below-fold blocks.
+ */
+.auto-hero-premium ~ section,
+.housing-hero ~ section,
+.vacation-hero ~ section,
+.finans-page section:nth-of-type(n+2),
+.sigorta-page section:nth-of-type(n+2) {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 640px;
+}
+
+#auto-guides-hub-mount,
+#auto-guides-hub-mount + section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 400px;
+}
+
+@media (max-width: 768px) {
+  .auto-hero-premium ~ section,
+  .housing-hero ~ section,
+  .vacation-hero ~ section {
+    contain-intrinsic-size: 1px 480px;
+  }
+}

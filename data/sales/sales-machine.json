@@ -1,0 +1,38 @@
+{
+  "version": "p6.2",
+  "goal": "b2b_partner_revenue",
+  "closingKit": "/partner-closing-kit.html",
+  "partnerCrmPipeline": "/data/sales/partner-crm-pipeline.json",
+  "partnerAePipeline": [
+    { "id": "lead", "label": "Lead", "slaHours": 24, "nextAction": "Outbound + ICP" },
+    { "id": "qualified", "label": "Qualified", "slaHours": 48, "nextAction": "BANT — demo planla" },
+    { "id": "demo", "label": "Demo", "slaHours": 72, "nextAction": "Deck + dispatch demo" },
+    { "id": "pilot", "label": "Pilot", "slaHours": 168, "nextAction": "5 lead + webhook" },
+    { "id": "negotiation", "label": "Negotiation", "slaHours": 120, "nextAction": "Teklif / SOW" },
+    { "id": "won", "label": "Won", "slaHours": null, "nextAction": "Canlı + upsell" },
+    { "id": "lost", "label": "Lost", "slaHours": null, "nextAction": "Nurture veya kapat" }
+  ],
+  "leadCrmStages": [
+    "new",
+    "first_contact",
+    "callback",
+    "proposal_sent",
+    "won",
+    "lost"
+  ],
+  "onboardingVelocity": {
+    "targetDaysToLive": 14,
+    "warnDaysStuck": 5,
+    "stepsTotal": 6
+  },
+  "pricingBands": {
+    "starter": { "cplMinTry": 5000, "cplMaxTry": 12000, "pilotLeads": 5 },
+    "growth": { "monthlyMinTry": 25000, "monthlyMaxTry": 120000 },
+    "enterprise": { "platformMinTry": 150000, "note": "Offline SOW + güvenlik incelemesi" }
+  },
+  "outboundChannel": {
+    "utm_source": "sales",
+    "utm_medium": "outbound",
+    "utm_campaign": "partner_ae"
+  }
+}

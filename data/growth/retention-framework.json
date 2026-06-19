@@ -1,0 +1,33 @@
+{
+  "version": "p5.4",
+  "goal": "ltv_growth",
+  "habitLoop": {
+    "weeklyVisitTarget": 1,
+    "streakMilestones": [2, 4, 8],
+    "engagementWeights": {
+      "route_change": 1,
+      "saved_decision": 3,
+      "wizard_complete": 5,
+      "results_view": 4,
+      "checkout_start": 6
+    }
+  },
+  "revisitTriggers": {
+    "inactiveDaysSoft": 3,
+    "inactiveDaysHard": 7,
+    "inactiveDaysReactivation": 14,
+    "promptCooldownHours": 48
+  },
+  "lifecycleFlows": {
+    "reactivation": "reactivation_ltv",
+    "habitReminder": "habit_loop_reminder",
+    "savedDecision": "saved_decision_revisit",
+    "inactive": "inactive_users",
+    "churnRisk": "retention_campaigns"
+  },
+  "reactivationPaths": {
+    "default": "/karar-asistani/",
+    "savedDecision": "/profil#gecmis",
+    "pricing": "/planlar"
+  }
+}

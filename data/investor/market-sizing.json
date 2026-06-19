@@ -1,0 +1,95 @@
+{
+  "version": "p7.2",
+  "currency": "TRY",
+  "verifiedAt": "2026-05-24",
+  "disclaimer": "TAM/SAM/SOM bottom-up model with cited public data (ODMD, TÜİK, BDDK, industry reports). Revenue SOM tied to financial-model base Y3.",
+  "methodology": "TAM = addressable transaction & credit pool; SAM = monetizable decision sessions × ARPU; SOM = 36-month base-case ARR.",
+  "researchRef": "data/investor/market-research.json",
+  "tam": {
+    "label": "TAM — Turkey high-consideration mobility & housing decisions",
+    "definition": "Annual GMV / credit pool where a neutral decision + lead layer can capture value (auto + housing + finance origination).",
+    "segments": [
+      {
+        "vertical": "Automotive (new retail ODMD)",
+        "volumeUnits": 1238509,
+        "avgTicketTry": 1350000,
+        "gmvTry": 1671987150000,
+        "source": "ODMD 2024: 1.238.509 adet × ~₺1,35M ort. fatura"
+      },
+      {
+        "vertical": "Automotive (used — TÜİK noter devir)",
+        "volumeUnits": 7103550,
+        "avgTicketTry": 750000,
+        "gmvTry": 5327662500000,
+        "source": "TÜİK 2024: 7.103.550 binek devir × ~₺750K"
+      },
+      {
+        "vertical": "Housing & mortgage (TÜİK + BDDK)",
+        "volumeUnits": 1478025,
+        "creditStockTry": 551700000000,
+        "gmvTry": 450000000000,
+        "source": "TÜİK 1,48M konut satışı; BDDK konut kredi stoku ₺551,7B"
+      },
+      {
+        "vertical": "Finance origination (vehicle + consumer)",
+        "creditPoolTry": 3600000000000,
+        "gmvTry": 120000000000,
+        "source": "BDDK bireysel kredi ~₺3,6T; taşıt ~₺12,8B kullandırım payı"
+      }
+    ],
+    "illustrativeTamTry": 7569649650000,
+    "platformRevenueTamTry": 75600000000,
+    "platformRevenueNote": "~%1,0 of auto+housing GMV as addressable platform monetization pool (CPL + SaaS + affiliate)",
+    "notes": "Full GMV TAM ≠ isteBul revenue ceiling."
+  },
+  "sam": {
+    "label": "SAM — Decision intelligence + lead monetization (TR)",
+    "definition": "High-intent wizard sessions × blended ARPU (Pro + partner CPL).",
+    "submarkets": {
+      "auto_marketplace": {
+        "label": "Otomotiv marketplace / lead gen",
+        "sessions": 500000,
+        "blendedArpuTry": 5200,
+        "samTry": 2600000000
+      },
+      "used_car_decisions": {
+        "label": "İkinci el karar & finansman",
+        "sessions": 900000,
+        "blendedArpuTry": 3800,
+        "samTry": 3420000000
+      },
+      "dealer_software_wedge": {
+        "label": "Bayi DMS karar API / lead API",
+        "outlets": 3500,
+        "arpuTry": 180000,
+        "samTry": 630000000
+      },
+      "ai_auto_retail": {
+        "label": "AI-assisted automotive sales (TR)",
+        "samTry": 450000000,
+        "source": "market-research.json#ai_auto_sales"
+      }
+    },
+    "illustrativeSamTry": 7100000000,
+    "beachheadSam": {
+      "vertical": "Auto TR (sıfır + 2. el karar)",
+      "annualDecisionSessions": 420000,
+      "blendedArpuTry": 4200,
+      "illustrativeSamTry": 1764000000
+    }
+  },
+  "som": {
+    "label": "SOM — 36-month obtainable (base case)",
+    "definition": "Base financial model Y3 blended ARR — reconciled quarterly with live exports.",
+    "sourceRef": "financial-model.json#scenarios.base.y3",
+    "illustrativeSomTry": 21566400,
+    "capturePctOfBeachheadSam": 1.2,
+    "notes": "Run npm run metrics:investor:pack for live SOM vs model."
+  },
+  "slideBullets": [
+    "TÜİK: 7,1M ikinci el binek devir (2024) — 5,3T₺ GMV pool",
+    "ODMD: 1,24M sıfır araç (2024) — 1,7T₺ GMV pool",
+    "Beachhead SAM ~₺1,76B · Platform SAM ~₺7,1B",
+    "SOM Y3 ~₺21,6M ARR (base model) — live export overrides"
+  ]
+}

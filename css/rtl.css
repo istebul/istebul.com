@@ -1,0 +1,146 @@
+/* RTL readiness — activated via html.ib-rtl (locale-bootstrap) */
+
+html.ib-rtl {
+  direction: rtl;
+}
+
+html.ib-rtl .navbar,
+html.ib-rtl .footer-content,
+html.ib-rtl .assistant-recommendation-top,
+html.ib-rtl .comparison-card-head,
+html.ib-rtl .auto-market-title-row {
+  flex-direction: row-reverse;
+}
+
+html.ib-rtl .assistant-score-breakdown li,
+html.ib-rtl .auto-score-breakdown li,
+html.ib-rtl .comparison-score-factors li {
+  flex-direction: row-reverse;
+}
+
+html.ib-rtl .locale-switcher {
+  direction: ltr;
+}
+
+html.ib-rtl input,
+html.ib-rtl textarea,
+html.ib-rtl select {
+  text-align: start;
+}
+
+html.ib-rtl input[type='number'],
+html.ib-rtl input[type='tel'],
+html.ib-rtl input[inputmode='numeric'],
+html.ib-rtl .revenue-plan-price,
+html.ib-rtl .vacation-option-card-desc {
+  direction: ltr;
+  unicode-bidi: plaintext;
+  text-align: end;
+}
+
+html.ib-rtl .form-row,
+html.ib-rtl .vacation-lead-form .form-row,
+html.ib-rtl .vacation-wizard-actions {
+  direction: rtl;
+}
+
+html.ib-rtl .vacation-progress-item {
+  direction: rtl;
+}
+
+html.ib-rtl .ib-cat-mockup__score {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.locale-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+  margin: 0.75rem auto 0.5rem;
+  max-width: 42rem;
+  padding: 0 0.5rem;
+}
+
+.locale-switcher-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.locale-switcher-dropdown {
+  position: relative;
+}
+
+.locale-switcher-more {
+  border: 1px dashed rgba(148, 163, 184, 0.65);
+  background: rgba(255, 255, 255, 0.82);
+  color: #475569;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.locale-switcher-more[aria-expanded='true'] {
+  border-color: #2563eb;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.locale-switcher-menu {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  inset-inline-end: 0;
+  z-index: 40;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+  min-width: 12rem;
+  padding: 0.45rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+.locale-switcher-menu.is-open {
+  display: grid;
+}
+
+html.ib-rtl .locale-switcher-menu {
+  inset-inline-end: auto;
+  inset-inline-start: 0;
+}
+
+@media (max-width: 480px) {
+  .locale-switcher-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 10.5rem;
+  }
+}
+
+.locale-switcher-btn {
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(255, 255, 255, 0.9);
+  color: #334155;
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.locale-switcher-btn.is-active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}

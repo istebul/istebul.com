@@ -1,0 +1,104 @@
+{
+  "version": "p9.0",
+  "updatedAt": "2026-05-24",
+  "mission": "Run isteBul as an automation-first digital company with scheduled rollups, threshold alerts, and a single ops command center.",
+  "scheduledJobs": [
+    {
+      "id": "lifecycle_cron",
+      "cadence": "hourly",
+      "workflow": ".github/workflows/lifecycle-cron.yml",
+      "handler": "supabase/functions/lifecycle-cron",
+      "domains": ["customer", "lifecycle", "revenue"]
+    },
+    {
+      "id": "partner_retry",
+      "cadence": "every_15m",
+      "workflow": ".github/workflows/partner-retry.yml",
+      "handler": "supabase/functions/partner-retry",
+      "domains": ["partner"]
+    },
+    {
+      "id": "partner_ops_monitor",
+      "cadence": "every_15m",
+      "workflow": ".github/workflows/partner-ops-monitor.yml",
+      "script": "scripts/partner-ops-automation-run.cjs",
+      "domains": ["partner", "operations"]
+    },
+    {
+      "id": "ceo_alerts",
+      "cadence": "hourly",
+      "workflow": ".github/workflows/ceo-alerts.yml",
+      "script": "scripts/ceo-alert-run.cjs",
+      "domains": ["revenue", "conversion", "partner", "analytics", "growth"]
+    },
+    {
+      "id": "ops_automation",
+      "cadence": "daily_06_utc",
+      "workflow": ".github/workflows/ops-automation.yml",
+      "script": "scripts/ops-automation-run.cjs",
+      "domains": ["operations", "analytics", "revenue", "partner", "lifecycle"]
+    },
+    {
+      "id": "production_deploy",
+      "cadence": "on_push_main",
+      "workflow": ".github/workflows/production-deploy.yml",
+      "domains": ["operations"]
+    }
+  ],
+  "snapshotScripts": [
+    { "npm": "metrics:executive", "script": "scripts/executive-kpi-snapshot.cjs", "output": "dist/executive-kpi-snapshot.json" },
+    { "npm": "metrics:investor", "script": "scripts/investor-metrics-snapshot.cjs", "output": "dist/investor-metrics-snapshot.json" },
+    { "npm": "metrics:growth", "script": "scripts/growth-weekly-report.cjs", "output": "dist/growth-weekly-report.json" },
+    { "npm": "metrics:growth:command", "script": "scripts/growth-command-center.cjs", "output": "dist/growth-command-center.json" },
+    { "npm": "metrics:lifecycle", "script": "scripts/lifecycle-metrics-snapshot.cjs", "output": "dist/lifecycle-metrics-snapshot.json" },
+    { "npm": "metrics:ops", "script": "scripts/operational-health-snapshot.cjs", "output": "dist/operational-health-snapshot.json" },
+    { "npm": "metrics:ops:center", "script": "scripts/ops-command-center.cjs", "output": "dist/ops-command-center.json" },
+    { "npm": "metrics:startup:operating", "script": "scripts/startup-operating-snapshot.cjs", "output": "dist/startup-operating-snapshot.json" },
+    { "npm": "metrics:scale:architecture", "script": "scripts/scale-architecture-snapshot.cjs", "output": "dist/scale-architecture-report.json" },
+    { "npm": "metrics:company:operating", "script": "scripts/company-operating-snapshot.cjs", "output": "dist/company-operating-snapshot.json" },
+    { "npm": "metrics:hiring:architecture", "script": "scripts/hiring-architecture-snapshot.cjs", "output": "dist/hiring-architecture-snapshot.json" },
+    { "npm": "metrics:international:audit", "script": "scripts/international-expansion-snapshot.cjs", "output": "dist/international-expansion-snapshot.json" },
+    { "npm": "metrics:category:dominance", "script": "scripts/category-dominance-snapshot.cjs", "output": "dist/category-dominance-snapshot.json" },
+    { "npm": "metrics:competitor:attack", "script": "scripts/competitor-attack-snapshot.cjs", "output": "dist/competitor-attack-snapshot.json" },
+    { "npm": "metrics:expansion:prioritization", "script": "scripts/expansion-roadmap-prioritization-snapshot.cjs", "output": "dist/expansion-roadmap-prioritization-snapshot.json" },
+    { "npm": "metrics:partnerships:roadmap", "script": "scripts/strategic-partnership-snapshot.cjs", "output": "dist/strategic-partnership-snapshot.json" },
+    { "npm": "metrics:exit:optionality", "script": "scripts/acquisition-exit-snapshot.cjs", "output": "dist/exit-optionality-snapshot.json" },
+    { "npm": "ops:automation:run", "script": "scripts/ops-automation-run.cjs", "output": "dist/ops-automation-report.json" },
+    { "npm": "metrics:partner:ops", "script": "scripts/partner-ops-snapshot.cjs", "output": "dist/partner-ops-snapshot.json" },
+    { "npm": "partner:ops:run", "script": "scripts/partner-ops-automation-run.cjs", "output": "dist/partner-ops-automation-report.json" },
+    { "npm": "metrics:ceo:alerts", "script": "scripts/ceo-alert-snapshot.cjs", "output": "dist/ceo-alerts-snapshot.json" },
+    { "npm": "ceo:alerts:run", "script": "scripts/ceo-alert-run.cjs", "output": "dist/ceo-alerts-report.json" }
+  ],
+  "realtimeAutomations": [
+    { "id": "stripe_webhook", "path": "functions/api/stripe-webhook.js", "domain": "revenue" },
+    { "id": "auto_intake_dispatch", "path": "supabase/functions/auto-intake", "domain": "partner" },
+    { "id": "lead_alert_telegram", "path": "supabase/functions/lead-alert", "domain": "partner" },
+    { "id": "ops_alert_digest", "path": "supabase/functions/ops-alert-digest", "domain": "operations" },
+    { "id": "analytics_ingest", "path": "supabase/functions/analytics-ingest", "domain": "analytics" },
+    { "id": "ops_ingest", "path": "supabase/functions/ops-ingest", "domain": "operations" },
+    { "id": "ai_proxy", "path": "functions/ai-proxy.js", "domain": "ai" }
+  ],
+  "adminSurfaces": [
+    { "page": "dashboard-ceo", "label": "CEO Dashboard" },
+    { "page": "dashboard-growth", "label": "Growth Dashboard" },
+    { "page": "dashboard-revenue", "label": "Revenue Dashboard" },
+    { "page": "dashboard-partner-ops", "label": "Partner Ops Dashboard" },
+    { "page": "dashboard-support", "label": "Support Dashboard" },
+    { "page": "ops-ai-assistant", "label": "AI Ops Decision Assistant" },
+    { "page": "investor-metrics", "label": "Executive KPIs" },
+    { "page": "observability", "label": "Observability" },
+    { "page": "ops-command-center", "label": "Ops Command Center" },
+    { "page": "startup-operating-center", "label": "Startup Operating Center" },
+    { "page": "scale-architecture", "label": "Scale Architecture" },
+    { "page": "company-operating-system", "label": "Company Operating System" },
+    { "page": "hiring-architecture", "label": "Hiring Architecture" },
+    { "page": "international-expansion", "label": "International Expansion" },
+    { "page": "category-dominance", "label": "Category Dominance" },
+    { "page": "competitor-attack", "label": "Competitor Attack" },
+    { "page": "expansion-prioritization", "label": "Expansion Prioritization" },
+    { "page": "strategic-partnerships", "label": "Strategic Partnerships" },
+    { "page": "acquisition-exit", "label": "Exit / M&A" },
+    { "page": "platform-analytics", "label": "Platform Analytics" },
+    { "page": "partner-dispatch-logs", "label": "Dispatch Logs" }
+  ]
+}

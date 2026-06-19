@@ -1,0 +1,390 @@
+/**
+ * Platform analytics SDK — consent-gated product telemetry via analytics-ingest.
+ */
+
+import {
+  isAutoPath,
+  isLandingPath,
+  trackHeroCtaClick,
+  trackLandingVisit
+} from '../features/growth/growth-funnel.js';
+import { STORAGE_KEYS, readStorageRaw } from './storage-keys.js';
+import { SCALE_LIMITS, dedupeAnalyticsQueue } from './scale-limits.js';
+import { shouldSampleAnalyticsEvent } from './unit-economics.js';
+import { buildTrafficContext } from './analytics-internal.js';
+
+const SESSION_KEY = STORAGE_KEYS.ANALYTICS_SESSION;
+const ANON_KEY = STORAGE_KEYS.ANALYTICS_ANON;
+const ATTRIBUTION_KEY = STORAGE_KEYS.ATTRIBUTION;
+const LAST_FUNNEL_KEY = STORAGE_KEYS.LAST_FUNNEL_STEP;
+
+function randomId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `s_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function readJson(key, fallback = {}) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+
+export class Analytics {
+  constructor() {
+    this.enabled = false;
+    this.queue = [];
+    this.flushTimer = null;
+    this.lastPagePath = null;
+    this.lastFunnel = null;
+  }
+
+  hasConsent() {
+    return readStorageRaw(STORAGE_KEYS.COOKIE_CONSENT) === 'accepted';
+  }
+
+  getSessionId() {
+    let id = localStorage.getItem(SESSION_KEY);
+    if (!id) {
+      id = randomId();
+      localStorage.setItem(SESSION_KEY, id);
+    }
+    return id;
+  }
+
+  getAnonymousId() {
+    let id = localStorage.getItem(ANON_KEY);
+    if (!id) {
+      id = randomId();
+      localStorage.setItem(ANON_KEY, id);
+    }
+    return id;
+  }
+
+  captureAttribution() {
+    const existing = readJson(ATTRIBUTION_KEY, null);
+    if (existing?.captured_at) return existing;
+
+    const params = new URLSearchParams(window.location.search);
+    const attribution = {
+      captured_at: new Date().toISOString(),
+      landing_path: window.location.pathname,
+      referrer: document.referrer || null,
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      ref: params.get('ref') || params.get('referral'),
+      gclid: params.get('gclid'),
+      gbraid: params.get('gbraid'),
+      wbraid: params.get('wbraid'),
+      fbclid: params.get('fbclid'),
+      msclkid: params.get('msclkid'),
+      ttclid: params.get('ttclid'),
+      twclid: params.get('twclid'),
+      paid_platform: params.get('paid_platform') || params.get('utm_platform'),
+      growth_campaign: params.get('growth_campaign') || params.get('utm_campaign')
+    };
+
+    writeJson(ATTRIBUTION_KEY, attribution);
+    return attribution;
+  }
+
+  getAttribution() {
+    return readJson(ATTRIBUTION_KEY, {});
+  }
+
+  getUserId() {
+    return window.app?.currentUser?.id || null;
+  }
+
+  getPagePath() {
+    return `${window.location.pathname}${window.location.hash || ''}`;
+  }
+
+  getDeviceType() {
+    const w = window.innerWidth || 0;
+    if (w < 768) return 'mobile';
+    if (w < 1024) return 'tablet';
+    return 'desktop';
+  }
+
+  init(options = {}) {
+    if (!this.hasConsent() && !options.force) return;
+    this.enabled = true;
+    this.captureAttribution();
+    this.trackPageView();
+    if (isLandingPath()) {
+      trackLandingVisit();
+    }
+    this.bindGlobalListeners();
+    this.scheduleFlush();
+    this.flushQueue();
+  }
+
+  bindGlobalListeners() {
+    if (document.documentElement.dataset.analyticsBound) return;
+    document.documentElement.dataset.analyticsBound = 'true';
+
+    document.addEventListener('click', (event) => {
+      const cta = event.target.closest('[data-analytics-cta], [data-upgrade-checkout], a[href^="#"]');
+      if (!cta || !this.enabled) return;
+
+      const placement = cta.dataset.analyticsPlacement || '';
+      const ctaId =
+        cta.dataset.analyticsCta ||
+        cta.dataset.upgradeCheckout ||
+        cta.getAttribute('href') ||
+        cta.id ||
+        'unknown_cta';
+
+      this.trackCta(ctaId, {
+        label: (cta.textContent || '').trim().slice(0, 80),
+        section: cta.closest('section')?.id || null,
+        placement
+      });
+
+      if (
+        placement === 'hero' ||
+        cta.closest('#home') ||
+        cta.closest('.hero-section')
+      ) {
+        trackHeroCtaClick(ctaId, {
+          placement: placement || 'hero',
+          section: cta.closest('section')?.id || null
+        });
+      }
+    });
+
+    window.addEventListener('hashchange', () => {
+      this.track('route_change', {
+        from: this.lastPagePath,
+        to: this.getPagePath()
+      }, { category: 'page', funnel_step: 'route_change' });
+      this.trackPageView();
+    });
+
+    window.addEventListener('pagehide', () => {
+      this.trackDropoff(this.lastFunnel?.funnel, this.lastFunnel?.step, {
+        reason: 'page_exit'
+      });
+      this.track('page_exit', { path: this.getPagePath() }, { category: 'page' });
+      this.flush({ beacon: true });
+    });
+
+    document.addEventListener('userLoggedIn', (event) => {
+      this.track('auth_login_success', {
+        provider: 'email'
+      }, { category: 'auth', user_id: event.detail?.id });
+      this.flush();
+    });
+
+    document.addEventListener('userLoggedOut', () => {
+      this.track('auth_logout', {}, { category: 'auth' });
+      this.flush();
+    });
+  }
+
+  async track(eventName, properties = {}, meta = {}) {
+    if (!this.hasConsent() && !meta.force) return;
+    if (!shouldSampleAnalyticsEvent(eventName)) return;
+
+    const attribution = this.getAttribution();
+    const traffic_context = await buildTrafficContext();
+    const payload = {
+      event_name: eventName,
+      event_category: meta.category,
+      session_id: this.getSessionId(),
+      user_id: meta.user_id || this.getUserId(),
+      anonymous_id: this.getAnonymousId(),
+      page_path: meta.page_path || this.getPagePath(),
+      page_section: meta.page_section || properties.section || null,
+      funnel: meta.funnel || properties.funnel || null,
+      funnel_step: meta.funnel_step || properties.funnel_step || null,
+      step_index: meta.step_index != null ? meta.step_index : properties.step_index,
+      cta_id: meta.cta_id || properties.cta_id || null,
+      element_id: meta.element_id || null,
+      email: meta.email || properties.email || null,
+      phone: meta.phone || properties.phone || null,
+      revenue_cents: meta.revenue_cents || properties.revenue_cents || 0,
+      properties: {
+        ...properties,
+        traffic_context,
+        utm_source: attribution.utm_source || null,
+        utm_medium: attribution.utm_medium || null,
+        utm_campaign: attribution.utm_campaign || null,
+        referrer: attribution.referrer || null,
+        landing_page: attribution.landing_path || this.getPagePath()
+      },
+      attribution,
+      idempotency_key: meta.idempotency_key || null
+    };
+
+    this.enqueue(payload);
+  }
+
+  enqueue(payload) {
+    const sessionId = payload.session_id || this.getSessionId();
+    this.queue = dedupeAnalyticsQueue(this.queue, payload.event_name, sessionId);
+
+    while (this.queue.length >= SCALE_LIMITS.analytics.maxQueue) {
+      this.queue.shift();
+    }
+
+    this.queue.push(payload);
+
+    if (!this.enabled) return;
+
+    this.scheduleFlush();
+  }
+
+  trackUnique(eventName, properties = {}, key = '', meta = {}) {
+    const token = `analytics:unique:${eventName}:${key}`;
+    if (sessionStorage.getItem(token)) return;
+    sessionStorage.setItem(token, '1');
+    this.track(eventName, properties, meta);
+  }
+
+  trackPageView(path = this.getPagePath()) {
+    this.lastPagePath = path;
+    this.trackUnique('page_view', { path }, path, {
+      category: 'page',
+      funnel: 'site',
+      funnel_step: 'page_view',
+      page_path: path
+    });
+  }
+
+  trackCta(ctaId, properties = {}) {
+    this.track('cta_click', {
+      ...properties,
+      cta_id: ctaId
+    }, {
+      category: 'cta',
+      cta_id: ctaId,
+      funnel: properties.funnel || 'site',
+      funnel_step: 'cta_click'
+    });
+  }
+
+  trackFunnelStep(funnel, step, stepIndex = null, properties = {}) {
+    this.lastFunnel = { funnel, step, stepIndex };
+    writeJson(LAST_FUNNEL_KEY, this.lastFunnel);
+
+    const eventName = funnel === 'auto'
+      ? (step === 'page_view' ? 'auto_page_view' : `auto_${step}`)
+      : `${funnel}_funnel_step`;
+
+    const name = funnel === 'auto' && ALLOWED_AUTO_MAP[step]
+      ? ALLOWED_AUTO_MAP[step]
+      : eventName;
+
+    this.track(name, {
+      ...properties,
+      funnel,
+      funnel_step: step,
+      step_index: stepIndex
+    }, {
+      category: funnel === 'finance' ? 'finance' : funnel === 'auto' ? 'auto' : 'page',
+      funnel,
+      funnel_step: step,
+      step_index: stepIndex
+    });
+  }
+
+  trackDropoff(funnel, step, properties = {}) {
+    if (!funnel || !step) return;
+    const eventName = funnel === 'auto' ? 'auto_wizard_dropoff' : 'finance_funnel_step';
+    this.track(eventName, {
+      ...properties,
+      funnel,
+      funnel_step: step,
+      drop_off: true
+    }, {
+      category: funnel === 'auto' ? 'auto' : 'finance',
+      funnel,
+      funnel_step: step
+    });
+  }
+
+  scheduleFlush() {
+    if (this.flushTimer) return;
+    this.flushTimer = setTimeout(() => {
+      this.flushTimer = null;
+      this.flush();
+    }, SCALE_LIMITS.analytics.flushDebounceMs);
+  }
+
+  flushQueue() {
+    if (!this.queue.length) return;
+    this.flush();
+  }
+
+  async flush(options = {}) {
+    if (!this.queue.length) return;
+    if (!this.hasConsent()) return;
+
+    const batch = this.queue.splice(0, SCALE_LIMITS.analytics.flushBatch);
+    const attribution = this.getAttribution();
+    const body = JSON.stringify({
+      session: {
+        session_id: this.getSessionId(),
+        user_id: this.getUserId(),
+        page_path: this.getPagePath(),
+        referrer: attribution.referrer,
+        utm_source: attribution.utm_source,
+        utm_medium: attribution.utm_medium,
+        utm_campaign: attribution.utm_campaign,
+        utm_content: attribution.utm_content,
+        utm_term: attribution.utm_term,
+        device_type: this.getDeviceType(),
+        consent_analytics: true
+      },
+      events: batch
+    });
+
+    const url = '/api/analytics-ingest';
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body,
+        keepalive: Boolean(options.beacon)
+      });
+      if (!res.ok) {
+        this.queue.unshift(...batch);
+      }
+    } catch {
+      this.queue.unshift(...batch);
+    }
+  }
+}
+
+const ALLOWED_AUTO_MAP = {
+  page_view: 'auto_page_view',
+  form_started: 'auto_form_started',
+  form_submitted: 'auto_form_submitted',
+  analysis_started: 'auto_analysis_started',
+  results_rendered: 'auto_results_rendered',
+  modal_open: 'auto_modal_open',
+  lead_submit: 'auto_lead_submit',
+  wizard_step: 'auto_wizard_step',
+  finance_click: 'auto_finance_click',
+  premium_paywall_view: 'auto_premium_paywall_view'
+};
+
+export const analytics = new Analytics();

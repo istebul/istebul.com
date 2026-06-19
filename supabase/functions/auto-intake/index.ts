@@ -1,15 +1,49 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  applyDispatchResult,
+  dispatchPartnerLead,
+  isTestLead,
+} from "../_shared/partner-dispatch.ts";
+import { recordPlatformEvent } from "../_shared/platform-analytics.ts";
+import {
+  cancelRecoveryFlowsByEmail,
+  enrollInFlow,
+} from "../_shared/lifecycle-engine.ts";
+import { processReferralConversion } from "../_shared/referral-engine.ts";
+import { recordOperationalEvent } from "../_shared/operational-observability.ts";
+import {
+  buildSegmentKey,
+  calibrateLeadScore,
+  priorityFromScore,
+} from "../_shared/scoring-intelligence.ts";
+import { recordOutcomeSignal } from "../_shared/outcome-capture.ts";
+import { isAllowedOrigin, resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
-const allowedOrigins = [
-  "https://istebul.com",
-  "https://www.istebul.com",
-  "https://istebul-com.pages.dev"
-];
+async function logOps(
+  adminClient: ReturnType<typeof createClient>,
+  eventName: string,
+  properties: Record<string, unknown> = {},
+  severity = "warning"
+) {
+  try {
+    await recordOperationalEvent(adminClient, {
+      event_name: eventName,
+      category: eventName.startsWith("abuse_")
+        ? "abuse"
+        : eventName.startsWith("lead_")
+          ? "lead"
+          : "api",
+      severity,
+      source: "auto_intake",
+      properties,
+    });
+  } catch {
+    /* non-blocking */
+  }
+}
 
 function corsHeaders(origin: string | null) {
-  const allowedOrigin = allowedOrigins.includes(origin || "")
-    ? origin
-    : "https://www.istebul.com";
+  const allowedOrigin = resolveCorsOrigin(origin);
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
@@ -37,16 +71,34 @@ function isValidEmail(value: unknown) {
 const ALLOWED_EVENTS = new Set([
   "auto_page_view",
   "auto_quiz_submit",
+  "auto_form_started",
+  "auto_form_submitted",
   "auto_analysis_started",
   "auto_results_view",
+  "auto_results_rendered",
   "auto_modal_open",
   "auto_lead_submit",
+  "auto_wizard_step",
+  "auto_wizard_complete",
   "auto_whatsapp_click",
   "auto_whatsapp_lead_intent",
   "auto_finance_click",
   "auto_insurance_click",
   "auto_vehicle_offer_click",
-  "auto_premium_report_click"
+  "auto_premium_report_click",
+  "auto_premium_paywall_view",
+  "auto_comparison_opened",
+  "auto_explanation_expanded",
+  "auto_financing_cta_clicked",
+  "auto_insurance_cta_clicked",
+  "auto_advisor_cta_clicked",
+  "auto_dealer_cta_clicked",
+  "ai_commentary_requested",
+  "ai_commentary_success",
+  "ai_commentary_failed",
+  "ai_commentary_fallback_shown",
+  "ai_commentary_expanded",
+  "ai_next_action_clicked"
 ]);
 
 function clampString(value: unknown, max = 64) {
@@ -72,6 +124,9 @@ function calculateLeadScore(form: Record<string, unknown>) {
   else if (interest === "premium_report") score += 75;
   else if (interest === "finance" || interest === "finance_review") score += 65;
   else if (interest === "insurance") score += 55;
+  else if (interest === "insurance_quote") score += 58;
+  else if (interest === "insurance_review") score += 52;
+  else if (interest === "insurance_consultation") score += 48;
 
   if (budget >= 2000000) score += 35;
   else if (budget >= 1000000) score += 20;
@@ -110,23 +165,6 @@ function isJunkPhone(phone?: unknown) {
   return false;
 }
 
-function isTestLead(phone?: unknown) {
-  const clean = String(phone || "").replace(/\D/g, "");
-  return TEST_PHONES.has(clean);
-}
-
-
-function getNextRetryTime(retryCount: number) {
-  const now = new Date();
-
-  if (retryCount <= 1) now.setMinutes(now.getMinutes() + 15);
-  else if (retryCount == 2) now.setHours(now.getHours() + 1);
-  else if (retryCount == 3) now.setHours(now.getHours() + 6);
-  else now.setDate(now.getDate() + 1);
-
-  return now.toISOString();
-}
-
 function getAutoFollowUp(priority: string) {
   const now = new Date();
 
@@ -153,8 +191,15 @@ function getPartnerRoute(form: Record<string, unknown>) {
   const interest = String(form.interest_type || "");
 
   if (interest === "finance" || interest === "finance_review") return "finance_partner";
-  if (interest === "insurance") return "insurance_partner";
-  if (interest === "vehicle_offer") return "dealer_partner";
+  if (
+    interest === "insurance" ||
+    interest === "insurance_quote" ||
+    interest === "insurance_review" ||
+    interest === "insurance_consultation"
+  ) {
+    return "insurance_partner";
+  }
+  if (interest === "vehicle_offer" || interest === "dealer_match") return "dealer_partner";
   if (interest === "premium_report") return "premium_report";
 
   return "general_sales";
@@ -178,149 +223,6 @@ function estimateCommission(partnerRoute: string, leadScore: number) {
   return revenue;
 }
 
-
-async function signPartnerPayload(body: string) {
-  const secret = Deno.env.get("PARTNER_WEBHOOK_SIGNING_SECRET");
-  if (!secret) return "";
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(body)
-  );
-
-  return Array.from(new Uint8Array(signature))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-
-async function getPartnerEndpoints(adminClient: any, route: string) {
-  const { data, error } = await adminClient
-    .from("partner_endpoints")
-    .select("id, name, webhook_url, priority_weight, sent_today, daily_cap")
-    .eq("route_type", route)
-    .eq("is_active", true);
-
-  if (error) throw error;
-
-  const endpoints = (data || []).filter((endpoint: any) => {
-    if (endpoint.daily_cap == null) return true;
-    return Number(endpoint.sent_today || 0) < Number(endpoint.daily_cap);
-  });
-
-  const ordered = [];
-
-  while (endpoints.length) {
-    const totalWeight = endpoints.reduce((sum: number, endpoint: any) => {
-      return sum + Math.max(Number(endpoint.priority_weight || 0), 1);
-    }, 0);
-
-    let random = Math.random() * totalWeight;
-    let selectedIndex = 0;
-
-    for (let i = 0; i < endpoints.length; i += 1) {
-      random -= Math.max(Number(endpoints[i].priority_weight || 0), 1);
-      if (random <= 0) {
-        selectedIndex = i;
-        break;
-      }
-    }
-
-    ordered.push(endpoints.splice(selectedIndex, 1)[0]);
-  }
-
-  return ordered;
-}
-
-async function dispatchPartnerLead(adminClient: any, payload: Record<string, unknown>) {
-  const route = String(payload.partner_route || "");
-  const priority = String(payload.priority || "");
-
-  if (isTestLead(payload.phone)) {
-    return { status: "skipped", reason: "test_lead" };
-  }
-
-  if (priority !== "hot" && priority !== "very_hot") {
-    return { status: "skipped", reason: "not_hot" };
-  }
-
-  const endpoints = await getPartnerEndpoints(adminClient, route);
-
-  if (!endpoints.length) {
-    return { status: "dispatch_failed", reason: "no_active_partner" };
-  }
-
-  for (const endpoint of endpoints) {
-    if (!endpoint?.webhook_url) continue;
-
-    const body = JSON.stringify({
-      ...payload,
-      partner_endpoint_id: endpoint.id,
-      partner_endpoint_name: endpoint.name
-    });
-
-    const signature = await signPartnerPayload(body);
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-
-    try {
-      const response = await fetch(endpoint.webhook_url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-istebul-signature": signature
-        },
-        body,
-        signal: controller.signal
-      });
-
-      clearTimeout(timeout);
-
-      if (response.ok) {
-        try {
-          await adminClient.rpc("increment_partner_endpoint_success", {
-            endpoint_id: endpoint.id
-          });
-        } catch {}
-
-        return {
-          status: "dispatched",
-          endpoint: endpoint.name
-        };
-      }
-
-      try {
-        await adminClient.rpc("increment_partner_endpoint_fail", {
-          endpoint_id: endpoint.id
-        });
-      } catch {}
-
-    } catch {
-      clearTimeout(timeout);
-
-      try {
-        await adminClient.rpc("increment_partner_endpoint_fail", {
-          endpoint_id: endpoint.id
-        });
-      } catch {}
-    }
-  }
-
-  return {
-    status: "dispatch_failed",
-    reason: "all_endpoints_failed"
-  };
-}
 
 async function notifyTelegramLead(payload: Record<string, unknown>) {
   const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
@@ -436,18 +338,14 @@ async function checkRateLimit(adminClient: any, key: string, limit: number, wind
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
-  const allowedOrigins = new Set([
-    "https://www.istebul.com",
-    "https://istebul.com"
-  ]);
-  const isAllowedOrigin = !origin || allowedOrigins.has(origin);
+  const isAllowedRequestOrigin = !origin || isAllowedOrigin(origin);
 
   if (req.method === "OPTIONS") {
-    if (!isAllowedOrigin) return new Response(null, { status: 403 });
+    if (!isAllowedRequestOrigin) return new Response(null, { status: 403 });
     return new Response("ok", { headers: corsHeaders(origin) });
   }
 
-  if (!isAllowedOrigin) {
+  if (!isAllowedRequestOrigin) {
     return json({ error: "Forbidden origin" }, 403, "https://www.istebul.com");
   }
 
@@ -481,6 +379,10 @@ Deno.serve(async (req) => {
     const allowed = await checkRateLimit(adminClient, `event:${clientIp}`, 30, 60 * 1000);
 
     if (!allowed) {
+      await logOps(adminClient, "abuse_rate_limit_exceeded", {
+        scope: "event",
+        ip: clientIp,
+      });
       return json({ error: "Too many requests" }, 429, origin);
     }
 
@@ -490,14 +392,22 @@ Deno.serve(async (req) => {
       return json({ error: "Invalid event name" }, 400, origin);
     }
 
-    const { error } = await adminClient.from("auto_events").insert({
-      event_name: eventName,
-      email: email || null,
-      phone: phone || null,
-      metadata,
-    });
+    try {
+      await recordPlatformEvent(adminClient, {
+        event_name: eventName,
+        email: email || null,
+        phone: phone || null,
+        session_id: String(metadata.session_id || ""),
+        funnel: "auto",
+        funnel_step: eventName,
+        properties: metadata,
+        source: "auto_intake",
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "analytics_failed";
+      return json({ error: message }, 500, origin);
+    }
 
-    if (error) return json({ error: error.message }, 500, origin);
     return json({ ok: true }, 200, origin);
   }
 
@@ -506,6 +416,10 @@ Deno.serve(async (req) => {
     const allowed = await checkRateLimit(adminClient, `lead:${clientIp}`, 5, 10 * 60 * 1000);
 
     if (!allowed) {
+      await logOps(adminClient, "abuse_rate_limit_exceeded", {
+        scope: "lead",
+        ip: clientIp,
+      });
       return json({ error: "Too many requests" }, 429, origin);
     }
 
@@ -513,14 +427,15 @@ Deno.serve(async (req) => {
       return json({ error: "Invalid contact information" }, 400, origin);
     }
 
-    let verificationFailed = false;
-
     if (!isTestLead(phone)) {
       const token = String(body.turnstile_token || metadata.turnstile_token || "").trim();
       const turnstile = await verifyTurnstile(token, clientIp);
 
       if (!turnstile.ok) {
-        verificationFailed = true;
+        await logOps(adminClient, "abuse_turnstile_failed", {
+          error: turnstile.error || "failed",
+        });
+        return json({ error: "Verification failed" }, 403, origin);
       }
     }
 
@@ -573,15 +488,84 @@ Deno.serve(async (req) => {
     const form = body.formData && typeof body.formData === "object" ? body.formData : metadata;
     const honeypot = String(form.website || form.company || form.url || "").trim();
     if (honeypot) {
+      await logOps(adminClient, "abuse_spam_honeypot", { scope: "lead" });
       return json({ ok: true, spam: true }, 200, origin);
     }
 
-    const scoring = calculateLeadScore(form);
-
-    if (verificationFailed) {
-      scoring.score = Math.min(scoring.score, 49);
-      scoring.priority = "verification_failed";
+    const privacyAccepted =
+      String(form.privacy_consent || metadata.privacy_consent || "").toLowerCase() ===
+      "accepted";
+    const marketingConsent =
+      String(form.marketing_consent || metadata.marketing_consent || "").toLowerCase() ===
+      "accepted";
+    if (!privacyAccepted) {
+      await logOps(adminClient, "api_auto_intake_consent_required", {
+        scope: "lead",
+      }, "warning");
+      return json({ error: "Privacy consent required" }, 400, origin);
     }
+
+    const segmentKey = buildSegmentKey(form);
+    const baseScoring = calculateLeadScore(form);
+
+    let calibrationDelta = 0;
+    let calibrationReason = "insufficient_outcome_data";
+    let finalScore = baseScoring.score;
+
+    try {
+      const { data: bench } = await adminClient
+        .from("moat_segment_benchmarks")
+        .select("sample_size, win_rate_pct")
+        .eq("segment_key", segmentKey)
+        .maybeSingle();
+
+      const calibrated = calibrateLeadScore(baseScoring.score, bench || undefined);
+      finalScore = calibrated.score;
+      calibrationDelta = calibrated.delta;
+      calibrationReason = calibrated.reason;
+    } catch {
+      /* benchmark view may not exist yet */
+    }
+
+    const scoring = {
+      score: finalScore,
+      priority: priorityFromScore(finalScore),
+      base_score: baseScoring.score,
+      calibration_delta: calibrationDelta,
+      calibration_reason: calibrationReason,
+    };
+
+    const decisionMeta =
+      metadata.decision && typeof metadata.decision === "object"
+        ? (metadata.decision as Record<string, unknown>)
+        : {};
+
+    const growthMeta =
+      metadata.growth && typeof metadata.growth === "object"
+        ? (metadata.growth as Record<string, unknown>)
+        : {};
+    const growthAttribution = {
+      referral_code: clampString(growthMeta.referral_code || growthMeta.ref || metadata.ref, 32) || null,
+      growth_channel: clampString(growthMeta.growth_channel, 40) || null,
+      utm_source: clampString(growthMeta.utm_source, 120) || null,
+      utm_medium: clampString(growthMeta.utm_medium, 120) || null,
+      utm_campaign: clampString(growthMeta.utm_campaign || growthMeta.growth_campaign, 120) || null,
+    };
+
+    const qualNotes = [
+      form.purchase_timeline ? `Satın alma: ${clampString(form.purchase_timeline, 20)}` : "",
+      form.financing_intent ? `Finansman niyeti: ${clampString(form.financing_intent, 20)}` : "",
+      form.trade_in ? `Takas: ${clampString(form.trade_in, 10)}` : "",
+      form.urgency ? `Aciliyet: ${clampString(form.urgency, 12)}` : "",
+      form.contact_preference ? `İletişim: ${clampString(form.contact_preference, 20)}` : "",
+    ].filter(Boolean).join(" | ");
+
+    const contextNotes = [
+      form.city ? `Şehir: ${clampString(form.city, 60)}` : "",
+      form.district ? `İlçe: ${clampString(form.district, 60)}` : "",
+      form.privacy_consent === "accepted" ? "KVKK/partner paylaşım onayı: alındı" : "",
+      qualNotes,
+    ].filter(Boolean).join(" | ");
 
     const financeNotes = [
       form.finance_bank ? `Banka: ${clampString(form.finance_bank, 80)}` : "",
@@ -590,6 +574,7 @@ Deno.serve(async (req) => {
       form.finance_monthly_payment ? `Aylık ödeme: ${clampNumber(form.finance_monthly_payment, 0, 20000000)} TL` : "",
       form.finance_total_payment ? `Toplam geri ödeme: ${clampNumber(form.finance_total_payment, 0, 200000000)} TL` : "",
     ].filter(Boolean).join(" | ");
+    const leadNotes = [contextNotes, financeNotes].filter(Boolean).join(" | ");
 
     const payload = {
       email: normalizedEmail,
@@ -606,6 +591,11 @@ Deno.serve(async (req) => {
       vehicle: clampString(form.vehicle, 120),
       lead_score: scoring.score,
       priority: scoring.priority,
+      segment_key: segmentKey,
+      decision_session_id: clampString(decisionMeta.session_id, 64) || null,
+      top_match_score: clampNumber(decisionMeta.top_match_score, 0, 100),
+      confidence_tier: clampString(decisionMeta.confidence_tier, 24) || null,
+      scoring_calibration_delta: calibrationDelta,
       partner_route: getPartnerRoute(form),
       partner_status: "pending",
       dispatch_retry_count: 0,
@@ -615,82 +605,236 @@ Deno.serve(async (req) => {
       estimated_revenue: estimateCommission(getPartnerRoute(form), scoring.score),
       follow_up_at: getAutoFollowUp(scoring.priority),
       follow_up_done: false,
-      status: isTestLead(phone) ? "test_spam" : verificationFailed ? "verification_failed" : "new",
+      status: isTestLead(phone) ? "test_spam" : "new",
       source: "auto",
-      notes: verificationFailed
-        ? `Turnstile doğrulaması başarısız oldu; manuel kontrol önerilir.${financeNotes ? " | " + financeNotes : ""}`
-        : financeNotes || null,
+      notes: leadNotes || null,
+      referral_code: growthAttribution.referral_code,
+      growth_channel: growthAttribution.growth_channel,
+      utm_source: growthAttribution.utm_source,
+      utm_medium: growthAttribution.utm_medium,
+      utm_campaign: growthAttribution.utm_campaign,
+      purchase_timeline: clampString(form.purchase_timeline, 20) || null,
+      financing_intent: clampString(form.financing_intent, 20) || null,
+      trade_in: clampString(form.trade_in, 10) || null,
+      urgency: clampString(form.urgency, 12) || null,
+      contact_preference: clampString(form.contact_preference, 20) || null,
+      ai_summary: clampString(form.ai_summary, 480) || null,
+      ai_confidence: clampString(form.ai_confidence, 24) || null,
     };
 
-    const phoneUpdate = await adminClient
+    const { data: inserted, error: insertError } = await adminClient
       .from("auto_leads")
-      .update(payload)
-      .eq("phone", phone)
-      .select("id");
+      .insert(payload)
+      .select("id")
+      .single();
 
-    if (phoneUpdate.error) return json({ error: phoneUpdate.error.message }, 500, origin);
+    if (insertError) {
+      await logOps(
+        adminClient,
+        "lead_delivery_failed",
+        { stage: "insert", message: insertError.message },
+        "error"
+      );
+      return json({ error: insertError.message }, 500, origin);
+    }
+    const leadId = inserted?.id || null;
 
-    if (!phoneUpdate.data?.length && normalizedEmail) {
-      const emailUpdate = await adminClient
-        .from("auto_leads")
-        .update(payload)
-        .eq("email", normalizedEmail)
-        .select("id");
+    const dispatchPayload = { ...payload, id: leadId };
 
-      if (emailUpdate.error) return json({ error: emailUpdate.error.message }, 500, origin);
+    try {
+      await recordOutcomeSignal(adminClient, {
+        signal_type: "lead_submitted",
+        signal_source: "user",
+        lead_id: leadId,
+        decision_session_id: payload.decision_session_id,
+        segment_key: segmentKey,
+        idempotency_key: leadId ? `lead_submitted:${leadId}` : null,
+        properties: {
+          interest_type: payload.interest_type,
+          priority: payload.priority,
+          top_match_score: payload.top_match_score,
+          confidence_tier: payload.confidence_tier,
+        },
+      });
+    } catch {
+      /* non-blocking */
+    }
 
-      if (emailUpdate.data?.length) {
-        return json({ ok: true }, 200, origin);
+    if (payload.vehicle && leadId) {
+      try {
+        await recordOutcomeSignal(adminClient, {
+          signal_type: "vehicle_recommended_selected",
+          signal_source: "user",
+          lead_id: leadId,
+          decision_session_id: payload.decision_session_id,
+          segment_key: segmentKey,
+          idempotency_key: `vehicle_selected:${leadId}`,
+          properties: {
+            vehicle_slug: String(payload.vehicle).slice(0, 80),
+            via: "lead_submit",
+          },
+        });
+      } catch {
+        /* non-blocking */
       }
     }
 
-    if (!phoneUpdate.data?.length) {
-      const { error: insertError } = await adminClient.from("auto_leads").insert(payload);
-      if (insertError) return json({ error: insertError.message }, 500, origin);
-    }
+    try {
+      await recordPlatformEvent(adminClient, {
+        event_name: "lead_submit",
+        email: normalizedEmail,
+        phone,
+        funnel: "auto",
+        funnel_step: "lead_submit",
+        properties: {
+          interest_type: payload.interest_type,
+          priority: payload.priority,
+          partner_route: payload.partner_route,
+          growth_channel: payload.growth_channel,
+          referral_code: payload.referral_code,
+          utm_source: payload.utm_source,
+          utm_medium: payload.utm_medium,
+          utm_campaign: payload.utm_campaign,
+        },
+        attribution: {
+          utm_source: payload.utm_source,
+          utm_medium: payload.utm_medium,
+          utm_campaign: payload.utm_campaign,
+        },
+        revenue_cents: Number(payload.estimated_revenue || 0) * 100,
+        source: "auto_intake",
+      });
+    } catch {}
 
     EdgeRuntime.waitUntil((async () => {
       try {
         await notifyTelegramLead(payload);
-        const dispatchResult = verificationFailed
-          ? { status: "skipped", reason: "verification_failed" }
-          : await dispatchPartnerLead(adminClient, payload);
+
+        if (normalizedEmail) {
+          await cancelRecoveryFlowsByEmail(adminClient, normalizedEmail, "lead_converted");
+        }
+
+        if (payload.referral_code) {
+          try {
+            await processReferralConversion(adminClient, {
+              referralCode: String(payload.referral_code),
+              conversionType: "lead",
+              refereeEmail: normalizedEmail,
+              sessionId: String(metadata.session_id || "").slice(0, 64) || null,
+            });
+          } catch {
+            /* non-blocking */
+          }
+        }
+
+        if (normalizedEmail) {
+          const interest = String(payload.interest_type || "");
+          if (interest === "finance" || interest === "finance_review") {
+            await enrollInFlow(adminClient, {
+              flowId: "finance_follow_up",
+              email: normalizedEmail,
+              phone,
+              leadId: leadId || undefined,
+              displayName: payload.contact_name,
+              service_opt_in: true,
+              context: { vehicle: payload.vehicle, interest_type: interest },
+              triggerSource: "auto_intake_lead",
+              restart: true,
+            });
+          } else if (interest === "vehicle_offer" || interest === "premium_report") {
+            await enrollInFlow(adminClient, {
+              flowId: "partner_follow_up",
+              email: normalizedEmail,
+              phone,
+              leadId: leadId || undefined,
+              displayName: payload.contact_name,
+              service_opt_in: true,
+              context: { vehicle: payload.vehicle, priority: payload.priority },
+              triggerSource: "auto_intake_lead",
+            });
+          }
+
+          if (marketingConsent) {
+            await enrollInFlow(adminClient, {
+              flowId: "lead_upgrade_d3",
+              email: normalizedEmail,
+              phone,
+              leadId: leadId || undefined,
+              displayName: payload.contact_name,
+              marketing_consent: true,
+              service_opt_in: true,
+              context: {
+                vehicle: payload.vehicle,
+                lead_id: leadId,
+                marketing_consent: true,
+              },
+              triggerSource: "auto_intake_lead",
+            });
+          }
+        }
+
+        if (!leadId) return;
+
+        const dispatchResult = await dispatchPartnerLead(adminClient, {
+            leadId,
+            payload: dispatchPayload,
+            trigger: "auto_intake",
+            attemptNumber: 1,
+          });
+
+        if (dispatchResult.status === "dispatch_failed" || dispatchResult.status === "dispatched") {
+          await applyDispatchResult(
+            adminClient,
+            leadId,
+            dispatchResult,
+            0
+          );
+        }
 
         if (dispatchResult.status === "dispatched") {
-          await adminClient
-            .from("auto_leads")
-            .update({
-              partner_status: "dispatched",
-              last_dispatch_at: new Date().toISOString(),
-              next_retry_at: null,
-              last_dispatch_error: null
-            })
-            .eq("phone", phone);
-        }
-
-        if (dispatchResult.status === "dispatch_failed") {
-          await adminClient
-            .from("auto_leads")
-            .update({
-              partner_status: "dispatch_failed",
-              dispatch_retry_count: 1,
-              last_dispatch_at: new Date().toISOString(),
-              next_retry_at: getNextRetryTime(1),
-              last_dispatch_error: dispatchResult.reason || "partner webhook failed"
-            })
-            .eq("phone", phone);
+          await recordPlatformEvent(adminClient, {
+            event_name: "partner_dispatch_success",
+            phone,
+            funnel: "partner",
+            funnel_step: "dispatched",
+            properties: {
+              partner_route: payload.partner_route,
+              endpoint: dispatchResult.endpoint || null,
+            },
+            revenue_cents: Number(payload.estimated_revenue || 0) * 100,
+            source: "auto_intake",
+          });
+        } else if (dispatchResult.status === "dispatch_failed") {
+          await recordPlatformEvent(adminClient, {
+            event_name: "partner_dispatch_failed",
+            phone,
+            funnel: "partner",
+            funnel_step: "dispatch_failed",
+            properties: {
+              partner_route: payload.partner_route,
+              reason: dispatchResult.reason || null,
+            },
+            source: "auto_intake",
+          });
+        } else if (dispatchResult.status === "skipped") {
+          await recordPlatformEvent(adminClient, {
+            event_name: "partner_dispatch_skipped",
+            phone,
+            funnel: "partner",
+            funnel_step: "skipped",
+            properties: { reason: dispatchResult.reason || null },
+            source: "auto_intake",
+          });
         }
       } catch {
-        await adminClient
-          .from("auto_leads")
-          .update({
-            partner_status: "dispatch_failed",
-            dispatch_retry_count: 1,
-            last_dispatch_at: new Date().toISOString(),
-            next_retry_at: getNextRetryTime(1),
-            last_dispatch_error: "dispatch exception"
-          })
-          .eq("phone", phone);
+        if (!leadId) return;
+
+        await applyDispatchResult(
+          adminClient,
+          leadId,
+          { status: "dispatch_failed", reason: "dispatch exception" },
+          0
+        );
       }
     })());
 

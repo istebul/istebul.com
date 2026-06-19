@@ -1,0 +1,293 @@
+{
+  "version": "p24.0",
+  "updatedAt": "2026-05-24",
+  "strategicThesis": "Big players can copy UI and LLM wrappers in weeks — they cannot copy closed-loop decision outcomes, partner economics, and calibrated scoring without 12–18 months of operational debt. Defend the Decision Platform layer, not feature parity.",
+  "defensibilityVerdict": {
+    "overallDefenseReadiness": 52,
+    "hardestToCopy": "partner_os_plus_outcomes",
+    "fastestCopyRisk": "generic_ai_ui",
+    "responseWindowDays": 90,
+    "narrativeForInvestors": "We win when copycats ship chat without dispatch, CRM closure, or outcome-weighted scores."
+  },
+  "attackScenarios": [
+    {
+      "id": "sahibinden_ai",
+      "name": "Sahibinden launches listing AI",
+      "archetype": "incumbent_copy",
+      "likelihood": "high",
+      "timeToMarket": "3-6 months",
+      "theirPlay": "GPT layer on listings: 'hangi araç', price hints, dealer chat — keeps users in inventory funnel",
+      "copyDepth": "shallow",
+      "whatTheyMiss": ["Deterministic TCO", "Neutral finance rank", "Partner dispatch + SLA", "Outcome calibration"],
+      "earlySignals": ["Sahibinden AI beta banner", "Dealer co-pilot PR", "SEO overlap on 'hangi araç almalıyım'"],
+      "counterNarrative": "Listeleyici AI ≠ karar motoru — arama orada, karar isteBul'da",
+      "priorityResponse": "product"
+    },
+    {
+      "id": "bank_credit_compare",
+      "name": "Bank adds in-app credit comparison",
+      "archetype": "fintech_incumbent",
+      "likelihood": "medium_high",
+      "timeToMarket": "6-12 months",
+      "theirPlay": "Single-bank or consortium rate tables inside mobile app; push own origination",
+      "copyDepth": "medium",
+      "whatTheyMiss": ["Multi-offer neutral rank", "Vehicle-context payment load", "Cross-vertical decision graph"],
+      "earlySignals": ["Bank press on 'AI kredi önerisi'", "Sponsored APR widgets in auto apps"],
+      "counterNarrative": "Bank sells one product — we show total ownership + fit across offers",
+      "priorityResponse": "partner"
+    },
+    {
+      "id": "generic_ai_auto",
+      "name": "Generic AI enters automotive vertical",
+      "archetype": "llm_platform",
+      "likelihood": "high",
+      "timeToMarket": "immediate",
+      "theirPlay": "ChatGPT/Gemini plugins, 'car advisor' GPTs, free conversational recommendations",
+      "copyDepth": "shallow",
+      "whatTheyMiss": ["Numbers engine", "Lead scoring", "CRM + actual_revenue loop", "TR-specific cost truth"],
+      "earlySignals": ["Plugin store auto advisors", "Influencer 'ChatGPT ile araba seç' content"],
+      "counterNarrative": "Sayılar motor, AI anlatır — Pro history + partner closure",
+      "priorityResponse": "brand"
+    },
+    {
+      "id": "vc_backed_rival",
+      "name": "New VC-backed decision/auto startup",
+      "archetype": "well_funded_clone",
+      "likelihood": "medium",
+      "timeToMarket": "9-18 months",
+      "theirPlay": "Clone wizard + scoring UX; burn on paid + dealer BD; undercut CPL",
+      "copyDepth": "deep_attempt",
+      "whatTheyMiss": ["Production partner ops", "Ops automation maturity", "Trust/compliance history", "Multi-vertical registry"],
+      "earlySignals": ["LinkedIn hiring spree", "TechCrunch TR auto AI", "Aggressive dealer poaching"],
+      "counterNarrative": "Ops moat + outcome data — they ship v1, we ship closed loop",
+      "priorityResponse": "distribution"
+    },
+    {
+      "id": "arabam_ai_bundle",
+      "name": "Arabam bundles AI + dealer CRM",
+      "archetype": "vertical_incumbent",
+      "likelihood": "medium",
+      "timeToMarket": "4-8 months",
+      "theirPlay": "Integrated listing + 'TCO estimate' + dealer lead routing inside their stack",
+      "copyDepth": "medium",
+      "whatTheyMiss": ["Neutral rank across dealers", "Finance offer comparison", "Pro decision history portable off platform"],
+      "earlySignals": ["Arabam product blog on AI", "Exclusive dealer packages"],
+      "counterNarrative": "Neutral decision infrastructure — not dealer-biased scoring",
+      "priorityResponse": "growth"
+    },
+    {
+      "id": "marketplace_super_app",
+      "name": "Marketplace adds decision tab (Trendyol-style)",
+      "archetype": "distribution_giant",
+      "likelihood": "low_medium",
+      "timeToMarket": "12+ months",
+      "theirPlay": "High-traffic app adds 'smart buy' for big-ticket categories",
+      "copyDepth": "shallow",
+      "whatTheyMiss": ["Consideration-depth UX", "Regulated disclaimers", "Partner webhook discipline"],
+      "earlySignals": ["Pilot category outside core commerce"],
+      "counterNarrative": "High-consideration specialist beats generic shopping AI",
+      "priorityResponse": "data"
+    }
+  ],
+  "defensePlans": [
+    {
+      "id": "product",
+      "name": "Product defense",
+      "score": 58,
+      "status": "core",
+      "principles": [
+        "LLM cannot override score or price — enforce in code + tests",
+        "Ship category registry + decision_leads before new verticals",
+        "Comparison-store + confidence tiers visible on every result"
+      ],
+      "plays": [
+        "Anti-copy checklist in AI_DECISION_ENGINE.md — public methodology",
+        "Wizard completion <3 min mobile; export PDF Pro",
+        "Feature flags to accelerate exclusivity-only partner routes"
+      ],
+      "metrics": [
+        { "key": "wizard_completion_rate", "target": ">=35%" },
+        { "key": "decision_engine_test_coverage", "target": "no regression in npm test" }
+      ],
+      "ifAttacked": {
+        "sahibinden_ai": "Ship side-by-side 'listing AI vs decision engine' landing within 14d",
+        "generic_ai_auto": "Launch 'verified numbers' badge + methodology strip A/B",
+        "vc_backed_rival": "Accelerate registry MVP; do not chase vanity features"
+      }
+    },
+    {
+      "id": "data",
+      "name": "Data defense",
+      "score": 38,
+      "status": "build",
+      "principles": [
+        "Outcome graph is the moat — actual_revenue on every closed lead",
+        "Honest simulation labels until liveProvidersEnabled",
+        "Anonymized benchmarks become marketing IP"
+      ],
+      "plays": [
+        "Mandatory partner outcome feedback; scoring weight monthly calibration",
+        "Exclusive TR auto feed LOI — block clone data parity",
+        "Publish 'models that closed in 14d' SEO once N>100"
+      ],
+      "metrics": [
+        { "key": "outcome_revenue_capture_pct", "target": ">=70%" },
+        { "key": "live_providers_enabled", "target": true }
+      ],
+      "ifAttacked": {
+        "bank_credit_compare": "Deepen finance_offers freshness + asset-context API narrative",
+        "vc_backed_rival": "Do not disclose raw scoring weights; accelerate outcome density"
+      }
+    },
+    {
+      "id": "growth",
+      "name": "Growth defense",
+      "score": 48,
+      "status": "active",
+      "principles": [
+        "Own consideration SEO before they buy keywords",
+        "CAC payback gate — do not match clone burn blindly",
+        "Competitor comparison pages (Sahibinden, Arabam, ChatGPT)"
+      ],
+      "plays": [
+        "Triple down TCO + 'hangi araç' content cluster",
+        "Retargeting on wizard abandon with methodology proof",
+        "Limit paid if funnel CR drops >20% QoQ (signal of AI substitution)"
+      ],
+      "metrics": [
+        { "key": "competitor_comparison_organic_top5", "target": "3 keywords" },
+        { "key": "cac_payback_months", "target": "<=6" }
+      ],
+      "ifAttacked": {
+        "sahibinden_ai": "Launch affiliate 'search there decide here' co-marketing with dealers",
+        "generic_ai_auto": "YouTube/SEO 'ChatGPT yanlış fiyat verir' evidence content",
+        "vc_backed_rival": "Partner co-traffic deals over paid keyword wars"
+      }
+    },
+    {
+      "id": "brand",
+      "name": "Brand defense",
+      "score": 35,
+      "status": "forming",
+      "principles": [
+        "Trust beats feature checklists in TR high-consideration",
+        "Own 'Decision Platform' category name in PR",
+        "Transparency as brand (simulation vs live)"
+      ],
+      "plays": [
+        "Press: neutral advisor vs marketplace AI",
+        "Customer proof: Pro PDF + decision history",
+        "KVKK/GDPR-forward trust page EN for intl credibility"
+      ],
+      "metrics": [
+        { "key": "nps_decision_flow", "target": ">=40" },
+        { "key": "branded_search_growth", "target": "WoW positive 8w" }
+      ],
+      "ifAttacked": {
+        "generic_ai_auto": "Influencer audits: same prompt, isteBul vs ChatGPT numbers",
+        "sahibinden_ai": "Third-party methodology review (E-E-A-T)"
+      }
+    },
+    {
+      "id": "partner",
+      "name": "Partner defense",
+      "score": 62,
+      "status": "strongest",
+      "principles": [
+        "Exclusivity + outcome-weighted lead score",
+        "Dispatch SLA <15m p95 — operational proof",
+        "Partners lose if they multi-home without data feedback"
+      ],
+      "plays": [
+        "6–12mo regional exclusivity contracts (2 pilots now)",
+        "Win-rate dashboard per partner; delist bad actors",
+        "EN partner kit + HMAC docs as BD weapon vs clones"
+      ],
+      "metrics": [
+        { "key": "dispatch_success_rate", "target": ">=90%" },
+        { "key": "active_partner_endpoints", "target": ">=10" }
+      ],
+      "ifAttacked": {
+        "bank_credit_compare": "Position as lead router to banks, not bank competitor",
+        "vc_backed_rival": "Preemptive exclusivity with top 5 dealers",
+        "arabam_ai_bundle": "Neutral dispatch — dealers keep isteBul route for qualified score"
+      }
+    },
+    {
+      "id": "distribution",
+      "name": "Distribution defense",
+      "score": 45,
+      "status": "building",
+      "principles": [
+        "Embed decision where inventory already lives",
+        "Dealer sends traffic to decision, not more listings",
+        "API/partner pack for B2B2C — clones lack production ops"
+      ],
+      "plays": [
+        "Widget/embed POC on dealer sites (decision CTA)",
+        "WhatsApp/share decision summary viral loop",
+        "Partner API beta for CRM ingest — switching cost"
+      ],
+      "metrics": [
+        { "key": "partner_referred_sessions_pct", "target": ">=15%" },
+        { "key": "embed_pilot_count", "target": ">=3 live" }
+      ],
+      "ifAttacked": {
+        "sahibinden_ai": "Do not build listings — double dealer embed + SEO hub",
+        "vc_backed_rival": "Bundle Pro + dispatch in partner contract",
+        "marketplace_super_app": "Decline shallow integration; deepen auto beachhead"
+      }
+    }
+  ],
+  "responsePlaybook": [
+    {
+      "phase": "detect",
+      "name": "Detect (week 0–2)",
+      "actions": [
+        "Monitor competitor SEO + App Store + dealer BD chatter",
+        "CEO alert if funnel CR -20% WoW or dispatch success <85%",
+        "Log attack scenario id in decision-log when triggered"
+      ]
+    },
+    {
+      "phase": "respond",
+      "name": "Respond (week 2–8)",
+      "actions": [
+        "Execute priority pillar ifAttacked plays from defensePlans",
+        "Ship one public methodology artifact",
+        "Freeze scope: no new vertical until beachhead metrics green"
+      ]
+    },
+    {
+      "phase": "compound",
+      "name": "Compound (month 3–12)",
+      "actions": [
+        "Outcome graph publication + partner exclusivity scale",
+        "Raise Pro value (history, PDF, multi-vertical)",
+        "Series A narrative: defensible company, not feature startup"
+      ]
+    }
+  ],
+  "warGameMatrix": [
+    { "attackId": "sahibinden_ai", "primaryDefense": "product", "secondaryDefense": "growth", "doNotDo": "Build listing inventory" },
+    { "attackId": "bank_credit_compare", "primaryDefense": "partner", "secondaryDefense": "data", "doNotDo": "Become a bank" },
+    { "attackId": "generic_ai_auto", "primaryDefense": "brand", "secondaryDefense": "product", "doNotDo": "Race to generic chat UI" },
+    { "attackId": "vc_backed_rival", "primaryDefense": "partner", "secondaryDefense": "distribution", "doNotDo": "Burn on paid CAC arms race" },
+    { "attackId": "arabam_ai_bundle", "primaryDefense": "growth", "secondaryDefense": "product", "doNotDo": "Dealer-biased scoring" },
+    { "attackId": "marketplace_super_app", "primaryDefense": "data", "secondaryDefense": "brand", "doNotDo": "Low-consideration categories" }
+  ],
+  "kpis": [
+    { "key": "defense_readiness_score", "target": ">=65 by month 6", "owner": "ceo" },
+    { "key": "outcome_revenue_capture_pct", "target": ">=70%", "owner": "vp_revenue" },
+    { "key": "partner_dispatch_success", "target": ">=90%", "owner": "coo" },
+    { "key": "funnel_cr_vs_prior_quarter", "target": "not down >15%", "owner": "vp_growth" },
+    { "key": "competitor_attack_drills_per_quarter", "target": ">=1", "owner": "ceo" }
+  ],
+  "linkedDocs": [
+    "docs/COMPETITOR_ATTACK_SCENARIO.md",
+    "docs/CATEGORY_DOMINANCE_STRATEGY.md",
+    "docs/COMPETITIVE_MOAT_STRATEGY.md",
+    "data/ops/category-dominance-strategy.json",
+    "data/investor/moat-story.json"
+  ]
+}

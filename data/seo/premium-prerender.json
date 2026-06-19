@@ -1,0 +1,24 @@
+{
+  "page-planlar": {
+    "title": "Planlar",
+    "h1": "Planlar ve fiyatlandırma",
+    "lead": "Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — pilot erişim sürecinde.",
+    "bullets": [
+      "Başlangıç: sınırlı analiz ve 2 karşılaştırma",
+      "Pro: derin TCO, AI karar notu, premium export",
+      "Enterprise: API, webhook, SLA",
+      "İstediğiniz zaman destek kanalından iptal"
+    ]
+  },
+  "page-karar-analizi": {
+    "title": "Karar asistanı",
+    "h1": "Hangi kategoride karar vermek istiyorsunuz?",
+    "lead": "Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk sinyallerini tek merkezden başlatın.",
+    "bullets": [
+      "6 kategori karar merkezi",
+      "Kural tabanlı skor ve TCO özeti",
+      "Karşılaştırma merkezi entegrasyonu",
+      "Bilgilendirme amaçlı — bağlayıcı teklif değil"
+    ]
+  }
+}

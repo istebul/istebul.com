@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-label="Seat Leon">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eff6ff"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="car" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="50%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" rx="24" fill="url(#bg)"/>
+  <ellipse cx="480" cy="430" rx="320" ry="28" fill="#93c5fd" opacity="0.45"/>
+  <path d="M200 370 Q240 300 340 265 L440 245 Q540 225 640 245 L780 275 Q850 295 870 350 L885 385 Q865 405 825 405 L785 405 Q765 425 725 425 L255 425 Q215 425 195 405 Z" fill="url(#car)"/>
+  <path d="M340 265 Q440 235 540 245 L640 265 Q680 285 700 320 L360 320 Q320 300 340 265 Z" fill="#ffffff" opacity="0.22"/>
+  <rect x="370" y="283" width="95" height="44" rx="8" fill="#ffffff" opacity="0.32"/>
+  <rect x="540" y="283" width="95" height="44" rx="8" fill="#ffffff" opacity="0.32"/>
+  <circle cx="290" cy="405" r="38" fill="#111827"/>
+  <circle cx="290" cy="405" r="22" fill="#f9fafb"/>
+  <circle cx="690" cy="405" r="38" fill="#111827"/>
+  <circle cx="690" cy="405" r="22" fill="#f9fafb"/>
+</svg>

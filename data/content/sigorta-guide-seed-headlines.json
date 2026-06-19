@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "category": "sigorta",
+  "editorialNote": "Karar rehberi — sigortacı değiliz. Her yazı sonunda /sigorta/ CTA ile bitmeli.",
+  "headlines": [
+    {
+      "slug": "2026-kasko-prim-trendleri",
+      "title": "2026 kasko prim trendleri — TCO payı",
+      "excerpt": "Segment, hasar geçmişi ve park profilinin prim bandına etkisi — bilgilendirme amaçlı.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "Sektör özeti",
+      "is_featured": true
+    },
+    {
+      "slug": "dask-konut-policesi-karar",
+      "title": "DASK ve konut poliçesi — karar çerçevesi 2026",
+      "excerpt": "Zorunlu DASK ile ihtiyari konut teminatı — konut TCO içinde sigorta kalemi.",
+      "cover_image_url": "/assets/images/demo/kadikoy-daire.svg",
+      "source_label": "Sigorta ve Reasürans"
+    },
+    {
+      "slug": "trafik-sigortasi-tco-payi",
+      "title": "Trafik sigortası zorunluluğu ve TCO payı",
+      "excerpt": "Yıllık trafik poliçesi maliyetinin araç sahipliği bütçesindeki yeri.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "Resmi düzenleme özeti"
+    },
+    {
+      "slug": "tamamlayici-saglik-arac-sigortasi",
+      "title": "Tamamlayıcı sağlık ve araç sigortası birlikte planlanmalı mı?",
+      "excerpt": "Aile bütçesinde çift poliçe yükü — önceliklendirme matrisi.",
+      "cover_image_url": "/assets/images/og-image.svg",
+      "source_label": "isteBul Sigorta"
+    },
+    {
+      "slug": "hasarsizlik-indirimi-koruma",
+      "title": "Hasarsızlık indirimi nasıl korunur?",
+      "excerpt": "Kısmi hasar, mini onarım ve prim artışı — uzun vadeli TCO etkisi.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "isteBul metodoloji"
+    }
+  ]
+}
