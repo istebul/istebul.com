@@ -43,11 +43,11 @@ export async function loadPaidChannelsConfig() {
   if (paidChannelsCache) return paidChannelsCache;
   try {
     const res = await fetch('/data/growth/paid-channels.json');
-    if (!res.ok) return { platforms: [], primaryLanding: '/auto/' };
+    if (!res.ok) return { platforms: [], primaryLanding: '/karar-asistani/' };
     paidChannelsCache = await res.json();
     return paidChannelsCache;
   } catch {
-    return { platforms: [], primaryLanding: '/auto/' };
+    return { platforms: [], primaryLanding: '/karar-asistani/' };
   }
 }
 
@@ -148,15 +148,15 @@ export function capturePaidAttribution() {
 /**
  * Recommended landing path for current paid platform.
  */
-export function resolvePaidLandingPath(attribution = {}, fallback = '/auto/') {
+export function resolvePaidLandingPath(attribution = {}, fallback = '/karar-asistani/') {
   const platform = resolvePaidPlatform(attribution);
   if (!platform) return fallback;
 
   const landings = {
-    [PAID_PLATFORMS.GOOGLE_SEARCH]: '/auto/',
-    [PAID_PLATFORMS.META]: '/auto/',
-    [PAID_PLATFORMS.TIKTOK]: '/auto/',
-    [PAID_PLATFORMS.YOUTUBE]: '/auto/',
+    [PAID_PLATFORMS.GOOGLE_SEARCH]: '/karar-asistani/',
+    [PAID_PLATFORMS.META]: '/karar-asistani/',
+    [PAID_PLATFORMS.TIKTOK]: '/karar-asistani/',
+    [PAID_PLATFORMS.YOUTUBE]: '/karar-asistani/',
     [PAID_PLATFORMS.RETARGETING]: '/planlar'
   };
 

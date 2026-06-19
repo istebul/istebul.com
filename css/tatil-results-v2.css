@@ -1,6 +1,18 @@
 /**
  * Tatil Results V2 — premium decision panel (Konut/Finansman V2 dili).
  */
+@import 'results-economic-indicators.css';
+@import 'home-economic-indicators.css';
+@import 'results-hero-layout.css';
+
+body.vacation-page #vacation-results .tatil-v2-root ~ .ib-premium-dashboard,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-result-cards,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-result-cost,
+body.vacation-page #vacation-results .tatil-v2-root ~ .vacation-result-actions,
+body.vacation-page #vacation-results .tatil-v2-root ~ .result-disclaimer {
+  display: none !important;
+}
+
 .tatil-v2-root {
   margin: 1.25rem 0 1.75rem;
 }

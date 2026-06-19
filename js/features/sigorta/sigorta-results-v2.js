@@ -29,8 +29,42 @@ import {
   trackSigortaResultsView,
   saveSigortaLead
 } from '../../sigorta/sigorta-intake.js';
+import { renderRiskAnalysisHtml } from '../results/decision-intelligence-engine.js';
+import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
+import {
+  renderResultsHeroLayout,
+  scoreToneFromLabel
+} from '../results/results-hero-layout.js';
 
 const SIGORTA_SUMMARY_TIMEOUT_MS = 10000;
+
+export function buildSigortaCostView(state = {}, primary = null) {
+  const premiumBand = Number(primary?.metrics?.premiumBand);
+  const annualPremium = Number.isFinite(premiumBand) ? premiumBand : null;
+  const monthlyPremium = annualPremium != null ? Math.round(annualPremium / 12) : null;
+  const economicBand = Number(state?.economic_premium);
+  const estimatedAnnualSavings =
+    Number.isFinite(annualPremium) && Number.isFinite(economicBand) && economicBand < annualPremium
+      ? Math.round(annualPremium - economicBand)
+      : null;
+
+  return {
+    isEstimate: true,
+    estimateNote: 'Tahmini prim bandı — kesin teklif sigorta şirketinden alınmalıdır.',
+    premiumBand: annualPremium,
+    annualPremium,
+    monthlyPremium,
+    totalFirstYearPremium: annualPremium,
+    estimatedAnnualSavings
+  };
+}
+
+function resolveSigortaTotalCost(cost = {}) {
+  if (cost?.value != null) return cost.value;
+  if (cost?.annualPremium != null) return cost.annualPremium;
+  if (cost?.premiumBand != null) return cost.premiumBand;
+  return null;
+}
 
 function formatTryAmount(value) {
   const n = Number(value);
@@ -54,6 +88,8 @@ export function buildSigortaResultsV2Payload({
   const { planTier } = getResultsPlanContext();
   const primary = resolvePrimarySigortaResult(results, selectedOption) || results[0];
   const premiumBand = primary?.metrics?.premiumBand;
+  const totalCost = buildSigortaCostView(state, primary);
+  const insuranceTypeLabel = optionLabel('insurance_type', state.insurance_type);
 
   const pdfReportData = buildSigortaPdfPayload({
     state,
@@ -91,6 +127,9 @@ export function buildSigortaResultsV2Payload({
     pdfReportData,
     planTier,
     premiumLabel: premiumBand ? formatTryAmount(premiumBand) : '—',
+    totalCost,
+    insuranceTypeLabel,
+    primaryTitle: primary?.title || insuranceTypeLabel || 'Sigorta önerisi',
     coverageMatrix,
     engine,
     ai,
@@ -158,30 +197,47 @@ export function renderSigortaActionsBarHtml({ userId = null, esc = escapeHtml } 
 
 function renderSigortaResultsV2Html(model) {
   const esc = escapeHtml;
+  const cost = model.totalCost || {};
+  const estimateNote = cost.isEstimate
+    ? `<p class="sigorta-v2-estimate-note">${esc(cost.estimateNote)}</p>`
+    : '';
+
+  const heroHtml = renderResultsHeroLayout({
+    vertical: 'finance',
+    title: 'Sigorta Karar Öneriniz',
+    subtitle: 'Profilinize göre en uygun teminat ve prim dengesi belirlendi.',
+    recommendation: {
+      kicker: 'Önerilen Paket',
+      title: model.primaryTitle || model.insuranceTypeLabel || 'Dengeli teminat',
+      subtitle: model.scoreLabel || '',
+      badge: model.recommendationLabel || 'En Uygun',
+      badgeTone: 'success'
+    },
+    specs: [
+      { label: 'Ürün tipi', value: model.insuranceTypeLabel || '—' },
+      { label: 'Yıllık prim (tahmini)', value: formatTryAmount(cost.annualPremium) },
+      { label: 'Aylık prim', value: formatTryAmount(cost.monthlyPremium) },
+      { label: 'Koruma skoru', value: `${model.protectionScore}/100` },
+      { label: 'Teminat skoru', value: `${model.coverageScore}/100` },
+      { label: 'Genel risk', value: model.overallRisk || '—' }
+    ],
+    score: model.decisionScore,
+    scoreLabel: model.scoreLabel || 'Uygunluk Skoru',
+    scoreTone: scoreToneFromLabel(model.scoreLabel),
+    evdsMountClass: 'sigorta-v2-evds-mount ib-results-economic--compact'
+  });
 
   return `
     <section class="sigorta-v2-panel" aria-label="Sigorta Decision Results V2">
-      <header class="sigorta-v2-hero">
-        <p class="sigorta-v2-kicker">AI destekli sigorta karar analizi</p>
-        <h2 class="sigorta-v2-title">Sigorta karar raporu</h2>
-        <p class="sigorta-v2-band">${esc(model.scoreLabel)} · ${esc(String(model.decisionScore))}/100</p>
-      </header>
+      ${heroHtml}
 
-      <div class="sigorta-v2-kpis">
+      <div id="ib-results-detail"></div>
+
+      <div class="sigorta-v2-kpis sigorta-v2-kpis--secondary">
         <article class="sigorta-v2-kpi sigorta-v2-kpi--decision">
           <span>Karar skoru</span>
           <strong>${esc(String(model.decisionScore))}<small>/100</small></strong>
           <div class="sigorta-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.decisionScore))}%"></span></div>
-        </article>
-        <article class="sigorta-v2-kpi">
-          <span>Koruma skoru</span>
-          <strong>${esc(String(model.protectionScore))}<small>/100</small></strong>
-          <div class="sigorta-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.protectionScore))}%"></span></div>
-        </article>
-        <article class="sigorta-v2-kpi">
-          <span>Teminat yeterliliği</span>
-          <strong>${esc(String(model.coverageScore))}<small>/100</small></strong>
-          <div class="sigorta-v2-bar" aria-hidden="true"><span style="width:${esc(String(model.coverageScore))}%"></span></div>
         </article>
         <article class="sigorta-v2-kpi">
           <span>Maliyet verimliliği</span>
@@ -194,6 +250,22 @@ function renderSigortaResultsV2Html(model) {
           <small>Tahmini prim: ${esc(model.premiumLabel)}</small>
         </article>
       </div>
+
+      ${estimateNote}
+
+      <section class="sigorta-v2-cost-grid" aria-label="Net maliyet özeti">
+        <h3>Net maliyet özeti</h3>
+        <dl class="sigorta-v2-cost-dl">
+          <div><dt>Tahmini yıllık prim</dt><dd>${esc(formatTryAmount(cost.annualPremium))}</dd></div>
+          <div><dt>Aylık prim</dt><dd>${esc(formatTryAmount(cost.monthlyPremium))}</dd></div>
+          <div><dt>İlk yıl toplam prim</dt><dd>${esc(formatTryAmount(cost.totalFirstYearPremium))}</dd></div>
+          ${
+            Number.isFinite(cost.estimatedAnnualSavings) && cost.estimatedAnnualSavings > 0
+              ? `<div><dt>Tasarruf potansiyeli</dt><dd>${esc(formatTryAmount(cost.estimatedAnnualSavings))}</dd></div>`
+              : ''
+          }
+        </dl>
+      </section>
 
       <section class="sigorta-v2-coverage" aria-label="Teminat karşılaştırma">
         <h3>Teminat karşılaştırma (${esc(model.coverageMatrix?.typeLabel || 'Sigorta')})</h3>
@@ -223,24 +295,7 @@ function renderSigortaResultsV2Html(model) {
         <p class="sigorta-v2-coverage-note text-muted-sm">${esc(model.coverageMatrix?.disclaimer || '')}</p>
       </section>
 
-      <section class="sigorta-v2-risks" aria-label="Risk analizi">
-        <h3>Risk analizi</h3>
-        <div class="sigorta-v2-risk-grid">
-          ${model.riskAnalysis
-            .map(
-              (r) => `
-            <article class="sigorta-v2-risk-card">
-              <div class="sigorta-v2-risk-card-head">
-                <h4>${esc(r.title)}</h4>
-                <span class="sigorta-v2-risk sigorta-v2-risk--${esc(riskLevelToTone(r.level))}">${esc(r.level)}</span>
-              </div>
-              <p>${esc(r.description)}</p>
-              <p class="sigorta-v2-risk-rec"><strong>Öneri:</strong> ${esc(r.recommendation)}</p>
-            </article>`
-            )
-            .join('')}
-        </div>
-      </section>
+      ${renderRiskAnalysisHtml(model.riskAnalysis, 'sigorta-v2')}
 
       <div class="sigorta-v2-grid">
         <article class="sigorta-v2-block sigorta-v2-block--pros">
@@ -271,7 +326,7 @@ function renderSigortaResultsV2Html(model) {
       </section>
 
       <article class="sigorta-v2-block sigorta-v2-block--exec" data-sigorta-v2-insight-root>
-        <h3>AI karar yorumu</h3>
+        <h3>Yapay zeka karar yorumu</h3>
         ${renderInsightBlocksHtml(model.insight, esc, {
           planTier: model.planTier,
           insightInput: model.insightInput
@@ -491,6 +546,30 @@ export async function mountSigortaResultsV2(mountNode, payload = {}) {
   });
 
   void hydrateSigortaExtras(root, model, track);
+  void hydrateResultsEconomicIndicators(root, 'sigorta');
+
+  const totalCostMetric = resolveSigortaTotalCost(model.totalCost);
+
+  void import('../../decision/decision-os-mount.js')
+    .then(({ mountDecisionOsOverlay }) =>
+      mountDecisionOsOverlay(target, {
+        category: 'sigorta',
+        formData: state,
+        metrics: { totalCost: totalCostMetric },
+        intelligence: model.intelligence,
+        model,
+        extras: {
+          totalCost: totalCostMetric,
+          title: 'Sigorta Kararı',
+          strengths: model.strengths,
+          cautions: model.weaknesses,
+          alternatives: model.alternatives,
+          insight: model.insight,
+          executiveSummary: model.executiveSummary
+        }
+      })
+    )
+    .catch(() => {});
 
   return model;
 }

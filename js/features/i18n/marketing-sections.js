@@ -9,22 +9,22 @@ export const marketingSections = {
       starterTitle: 'Başlangıç',
       starterPrice: 'Ücretsiz',
       starterDesc: 'TCO özeti · 2 karşılaştırma',
-      starterCta: 'Ücretsiz analiz',
+      starterCta: 'Ön değerlendirmeye başla',
       proBadge: 'En popüler',
       proTitle: 'isteBul Pro',
-      proPrice: '₺299',
-      proPriceUnit: '/ ay',
+      proPrice: 'Erken erişim',
+      proPriceUnit: '',
       proDesc: 'Sınırsız karşılaştırma · AI rafine',
       proCta: 'Planları gör',
-      midCtaPrimary: 'Ücretsiz analiz başlat',
+      midCtaPrimary: 'Ön değerlendirmeye başla',
       midCtaSecondary: 'Metodolojiyi incele',
       partnerHintHtml:
         'Partner galeriler için lead başına ücretlendirme modeli ayrıca sunulur — <a href="/partner-olun.html">Partner olun</a>.',
-      trialBadge: 'Türkiye ödeme altyapısı',
-      paymentBadge: 'iyzico / PayTR ile güvenli ödeme',
-      cancelBadge: 'İstediğiniz zaman iptal',
+      trialBadge: 'Pro pilot erişim',
+      paymentBadge: 'Ödeme aktivasyonu sonrası',
+      cancelBadge: 'Destek kanalından iptal',
       trustNoteHtml:
-        'Ödeme iyzico (birincil) ve PayTR (yedek) ile alınır; kart bilgileri sunucularımızda tutulmaz. Analiz ve skorlar bilgilendirme amaçlıdır. <a href="/kullanim-sartlari.html">Kullanım şartları</a> · <a href="/kvkk.html">Ziyaretçi aydınlatma</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK bilgilendirme</a>'
+        'Ödeme altyapısı hazırlandı; sağlayıcı aktivasyonu tamamlandığında ödeme alınabilecektir. Kart bilgileri sunucularımızda tutulmaz. Analiz ve skorlar bilgilendirme amaçlıdır. <a href="/kullanim-sartlari.html">Kullanım şartları</a> · <a href="/kvkk.html">Ziyaretçi aydınlatma</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK bilgilendirme</a>'
     },
     faq: {
       kicker: 'SSS',
@@ -35,14 +35,14 @@ export const marketingSections = {
       q1: 'Skorlar garanti sonuç verir mi?',
       a1: 'Hayır. Skorlar ve raporlar bilgilendirme amaçlıdır; kesin getiri, fiyat veya onay taahhüdü değildir. Karar sizde kalır — biz maliyet ve uyumu görünür kılarız.',
       q2: 'Ödeme güvenli mi?',
-      a2: 'Pro abonelik ve premium rapor ödemeleri iyzico (birincil) ve PayTR (yedek) altyapısı ile alınır; kart bilgileri isteBul sunucularında tutulmaz. İstediğiniz zaman iptal edebilirsiniz.',
+      a2: 'Pro abonelik ve premium rapor ödemeleri, ödeme sağlayıcı aktivasyonu tamamlandığında yetkili ödeme kuruluşu üzerinden alınır; kart bilgileri isteBul sunucularında tutulmaz. İptal için destek kanalını kullanabilirsiniz.',
       q3: 'Ücretsiz planda neler var?',
       a3: 'TCO özeti, sınırlı karşılaştırma ve özet çıktılar. Daha derin rapor, sınırsız karşılaştırma ve partner eşleşmesi için Pro plana geçebilirsiniz.'
     },
     footerNav: {
       brandDesc:
         'Yapay zekâ destekli karar platformu. Toplam maliyet, risk ve uygunluk analizini şeffaf ve ölçülebilir sunar.',
-      products: 'Ürünler',
+      products: 'Karar Kategorileri',
       company: 'Şirket',
       resources: 'Kaynaklar',
       legal: 'Yasal',
@@ -97,19 +97,19 @@ export const marketingSections = {
       starterCta: 'Free analysis',
       proBadge: 'Most popular',
       proTitle: 'isteBul Pro',
-      proPrice: '$19',
-      proPriceUnit: '/ mo',
+      proPrice: 'Early access',
+      proPriceUnit: '',
       proDesc: 'Unlimited comparisons · AI refine',
       proCta: 'View plans',
       midCtaPrimary: 'Start free analysis',
       midCtaSecondary: 'Explore methodology',
       partnerHintHtml:
         'Per-lead pricing for partner galleries is also available — <a href="/partner-olun.html">Become a partner</a>.',
-      trialBadge: '7-day free trial',
-      paymentBadge: 'Secure payment via iyzico / PayTR',
-      cancelBadge: 'Cancel anytime',
+      trialBadge: 'Pro pilot access',
+      paymentBadge: 'After payment activation',
+      cancelBadge: 'Cancel via support',
       trustNoteHtml:
-        'Payments are processed via iyzico (primary) and PayTR (fallback); card data is not stored on our servers. Scores are informational. <a href="/kullanim-sartlari.html">Terms</a> · <a href="/kvkk.html">Visitor notice</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK info</a>'
+        'Payment infrastructure is prepared; charges begin after provider activation. Card data is not stored on our servers. Scores are informational. <a href="/kullanim-sartlari.html">Terms</a> · <a href="/kvkk.html">Visitor notice</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK info</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -120,7 +120,7 @@ export const marketingSections = {
       q1: 'Do scores guarantee results?',
       a1: 'No. Scores and reports are informational, not guarantees of returns, prices or approvals. The decision stays yours — we make cost and fit visible.',
       q2: 'Is payment secure?',
-      a2: 'Pro subscriptions are billed via iyzico / PayTR; card details are not stored on isteBul servers. You can cancel anytime.',
+      a2: 'Pro subscriptions and premium reports will be processed through authorised payment providers after activation; card details are not stored on isteBul servers. Cancel via support.',
       q3: 'What is included in the free plan?',
       a3: 'TCO summary, limited comparisons and summary outputs. Upgrade to Pro for deeper reports, unlimited comparisons and partner matching.'
     },
@@ -182,19 +182,19 @@ export const marketingSections = {
       starterCta: 'Kostenlose Analyse',
       proBadge: 'Am beliebtesten',
       proTitle: 'isteBul Pro',
-      proPrice: '€18',
-      proPriceUnit: '/ Mon.',
+      proPrice: 'Früher Zugang',
+      proPriceUnit: '',
       proDesc: 'Unbegrenzte Vergleiche · KI-Verfeinerung',
       proCta: 'Pläne ansehen',
       midCtaPrimary: 'Kostenlose Analyse starten',
       midCtaSecondary: 'Methodik erkunden',
       partnerHintHtml:
         'Lead-Preise für Partner-Galerien ebenfalls verfügbar — <a href="/partner-olun.html">Partner werden</a>.',
-      trialBadge: '7 Tage kostenlos testen',
-      paymentBadge: 'Sichere Zahlung via iyzico / PayTR',
-      cancelBadge: 'Jederzeit kündbar',
+      trialBadge: 'Pro-Pilotzugang',
+      paymentBadge: 'Nach Zahlungsaktivierung',
+      cancelBadge: 'Kündigung über Support',
       trustNoteHtml:
-        'Zahlungen über iyzico / PayTR; Kartendaten werden nicht auf unseren Servern gespeichert. Scores sind informativ. <a href="/kullanim-sartlari.html">AGB</a> · <a href="/kvkk.html">Besucherhinweis</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK-Info</a>'
+        'Zahlungsinfrastruktur ist vorbereitet; nach Aktivierung des Anbieters sind Zahlungen möglich. Kartendaten werden nicht auf unseren Servern gespeichert. Scores sind informativ. <a href="/kullanim-sartlari.html">AGB</a> · <a href="/kvkk.html">Besucherhinweis</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK-Info</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -205,7 +205,7 @@ export const marketingSections = {
       q1: 'Garantieren Scores Ergebnisse?',
       a1: 'Nein. Scores und Berichte sind informativ, keine Garantie für Rendite, Preise oder Genehmigungen. Die Entscheidung bleibt bei Ihnen — wir machen Kosten und Fit sichtbar.',
       q2: 'Ist die Zahlung sicher?',
-      a2: 'Pro-Abonnements werden über iyzico / PayTR abgerechnet; Kartendaten werden nicht auf isteBul-Servern gespeichert. Jederzeit kündbar.',
+      a2: 'Pro-Abonnements und Premium-Berichte werden nach Aktivierung des Zahlungsanbieters über autorisierte Anbieter abgewickelt; Kartendaten werden nicht auf isteBul-Servern gespeichert. Kündigung über den Support.',
       q3: 'Was ist im kostenlosen Plan enthalten?',
       a3: 'TCO-Übersicht, begrenzte Vergleiche und Zusammenfassungen. Upgrade auf Pro für tiefere Berichte, unbegrenzte Vergleiche und Partner-Matching.'
     },
@@ -267,19 +267,19 @@ export const marketingSections = {
       starterCta: 'تحليل مجاني',
       proBadge: 'الأكثر شعبية',
       proTitle: 'isteBul Pro',
-      proPrice: '69 ر.س',
-      proPriceUnit: '/ شهر',
+      proPrice: 'وصول مبكر',
+      proPriceUnit: '',
       proDesc: 'مقارنات غير محدودة · تحسين بالذكاء الاصطناعي',
       proCta: 'عرض الخطط',
       midCtaPrimary: 'ابدأ تحليلاً مجانياً',
       midCtaSecondary: 'استكشف المنهجية',
       partnerHintHtml:
         'تسعير لكل lead للمعارض الشريكة متاح أيضاً — <a href="/partner-olun.html">كن شريكاً</a>.',
-      trialBadge: 'تجربة مجانية 7 أيام',
-      paymentBadge: 'دفع آمن عبر iyzico / PayTR',
-      cancelBadge: 'إلغاء في أي وقت',
+      trialBadge: 'وصول تجريبي Pro',
+      paymentBadge: 'بعد تفعيل الدفع',
+      cancelBadge: 'إلغاء عبر الدعم',
       trustNoteHtml:
-        'المدفوعات عبر iyzico وPayTR؛ بيانات البطاقة لا تُخزّن على خوادمنا. الدرجات للمعلومات فقط. <a href="/kullanim-sartlari.html">الشروط</a> · <a href="/kvkk.html">إشعار الزوار</a> · <a href="/kvkk.html#kvkk-bilgilendirme">معلومات KVKK</a>'
+        'البنية التحتية للدفع جاهزة؛ تبدأ المدفوعات بعد تفعيل المزود. بيانات البطاقة لا تُخزّن على خوادمنا. الدرجات للمعلومات فقط. <a href="/kullanim-sartlari.html">الشروط</a> · <a href="/kvkk.html">إشعار الزوار</a> · <a href="/kvkk.html#kvkk-bilgilendirme">معلومات KVKK</a>'
     },
     faq: {
       kicker: 'الأسئلة الشائعة',
@@ -290,7 +290,7 @@ export const marketingSections = {
       q1: 'هل تضمن الدرجات النتائج؟',
       a1: 'لا. الدرجات والتقارير للمعلومات فقط، وليست ضماناً للعوائد أو الأسعار أو الموافقات. القرار لك — نحن نجعل التكلفة والملاءمة مرئية.',
       q2: 'هل الدفع آمن؟',
-      a2: 'اشتراكات Pro تُفوتر عبر iyzico / PayTR؛ تفاصيل البطاقة لا تُخزّن على خوادم isteBul. يمكنك الإلغاء في أي وقت.',
+      a2: 'ستُعالج اشتراكات Pro وتقارير Premium عبر مزودي دفع معتمدين بعد التفعيل؛ تفاصيل البطاقة لا تُخزّن على خوادم isteBul. الإلغاء عبر الدعم.',
       q3: 'ماذا يتضمن الخطة المجانية؟',
       a3: 'ملخص TCO ومقارنات محدودة ومخرجات موجزة. ترقّ إلى Pro لتقارير أعمق ومقارنات غير محدودة ومطابقة شركاء.'
     },
@@ -352,19 +352,19 @@ export const marketingSections = {
       starterCta: 'Analisi gratuita',
       proBadge: 'Più popolare',
       proTitle: 'isteBul Pro',
-      proPrice: '€18',
-      proPriceUnit: '/ mese',
+      proPrice: 'Accesso anticipato',
+      proPriceUnit: '',
       proDesc: 'Confronti illimitati · raffinamento IA',
       proCta: 'Vedi i piani',
       midCtaPrimary: 'Avvia analisi gratuita',
       midCtaSecondary: 'Esplora la metodologia',
       partnerHintHtml:
         'Prezzi per lead per gallerie partner disponibili — <a href="/partner-olun.html">Diventa partner</a>.',
-      trialBadge: 'Prova gratuita 7 giorni',
-      paymentBadge: 'Pagamento sicuro via iyzico / PayTR',
-      cancelBadge: 'Annulla quando vuoi',
+      trialBadge: 'Accesso pilota Pro',
+      paymentBadge: 'Dopo attivazione pagamenti',
+      cancelBadge: 'Annullamento via supporto',
       trustNoteHtml:
-        'Pagamenti tramite iyzico / PayTR; i dati carta non sono sui nostri server. I punteggi sono informativi. <a href="/kullanim-sartlari.html">Termini</a> · <a href="/kvkk.html">Informativa visitatori</a> · <a href="/kvkk.html#kvkk-bilgilendirme">Info KVKK</a>'
+        'L\'infrastruttura di pagamento è pronta; gli addebiti iniziano dopo l\'attivazione del provider. I dati carta non sono sui nostri server. I punteggi sono informativi. <a href="/kullanim-sartlari.html">Termini</a> · <a href="/kvkk.html">Informativa visitatori</a> · <a href="/kvkk.html#kvkk-bilgilendirme">Info KVKK</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -375,7 +375,7 @@ export const marketingSections = {
       q1: 'I punteggi garantiscono risultati?',
       a1: 'No. Punteggi e report sono informativi, non garanzie di rendimento, prezzi o approvazioni. La decisione resta tua — rendiamo visibili costo e adeguatezza.',
       q2: 'Il pagamento è sicuro?',
-      a2: 'Gli abbonamenti Pro passano da iyzico / PayTR; i dati carta non sono sui server isteBul. Puoi annullare quando vuoi.',
+      a2: 'Gli abbonamenti Pro e i report premium saranno elaborati tramite provider autorizzati dopo l\'attivazione; i dati carta non sono sui server isteBul. Annullamento via supporto.',
       q3: 'Cosa include il piano gratuito?',
       a3: 'Riepilogo TCO, confronti limitati e output riassuntivi. Passa a Pro per report più profondi, confronti illimitati e matching partner.'
     },
@@ -437,19 +437,19 @@ export const marketingSections = {
       starterCta: 'Analyse gratuite',
       proBadge: 'Le plus populaire',
       proTitle: 'isteBul Pro',
-      proPrice: '€18',
-      proPriceUnit: '/ mois',
+      proPrice: 'Accès anticipé',
+      proPriceUnit: '',
       proDesc: 'Comparaisons illimitées · affinage IA',
       proCta: 'Voir les offres',
       midCtaPrimary: 'Lancer une analyse gratuite',
       midCtaSecondary: 'Explorer la méthodologie',
       partnerHintHtml:
         'Tarification par lead pour galeries partenaires — <a href="/partner-olun.html">Devenir partenaire</a>.',
-      trialBadge: 'Essai gratuit 7 jours',
-      paymentBadge: 'Paiement sécurisé via iyzico / PayTR',
-      cancelBadge: 'Annulation à tout moment',
+      trialBadge: 'Accès pilote Pro',
+      paymentBadge: 'Après activation des paiements',
+      cancelBadge: 'Annulation via le support',
       trustNoteHtml:
-        'Paiements via iyzico et PayTR ; les données carte ne sont pas stockées chez nous. Les scores sont informatifs. <a href="/kullanim-sartlari.html">Conditions</a> · <a href="/kvkk.html">Notice visiteurs</a> · <a href="/kvkk.html#kvkk-bilgilendirme">Info KVKK</a>'
+        'L\'infrastructure de paiement est prête ; les prélèvements commencent après activation du fournisseur. Les données carte ne sont pas stockées chez nous. Les scores sont informatifs. <a href="/kullanim-sartlari.html">Conditions</a> · <a href="/kvkk.html">Notice visiteurs</a> · <a href="/kvkk.html#kvkk-bilgilendirme">Info KVKK</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -460,7 +460,7 @@ export const marketingSections = {
       q1: 'Les scores garantissent-ils des résultats ?',
       a1: 'Non. Scores et rapports sont informatifs, pas des garanties de rendement, prix ou approbations. La décision reste la vôtre — nous rendons coût et adéquation visibles.',
       q2: 'Le paiement est-il sécurisé ?',
-      a2: 'Les abonnements Pro passent par iyzico / PayTR ; les données carte ne sont pas stockées sur les serveurs isteBul. Annulation à tout moment.',
+      a2: 'Les abonnements Pro et rapports premium seront traités via des prestataires autorisés après activation ; les données carte ne sont pas stockées sur les serveurs isteBul. Annulation via le support.',
       q3: 'Que comprend l\'offre gratuite ?',
       a3: 'Résumé TCO, comparaisons limitées et sorties synthétiques. Passez à Pro pour des rapports plus profonds, comparaisons illimitées et matching partenaire.'
     },
@@ -522,19 +522,19 @@ export const marketingSections = {
       starterCta: 'Análisis gratuito',
       proBadge: 'Más popular',
       proTitle: 'isteBul Pro',
-      proPrice: '€18',
-      proPriceUnit: '/ mes',
+      proPrice: 'Acceso anticipado',
+      proPriceUnit: '',
       proDesc: 'Comparaciones ilimitadas · refinamiento IA',
       proCta: 'Ver planes',
       midCtaPrimary: 'Iniciar análisis gratuito',
       midCtaSecondary: 'Explorar metodología',
       partnerHintHtml:
         'Precio por lead para galerías partner — <a href="/partner-olun.html">Ser partner</a>.',
-      trialBadge: 'Prueba gratis 7 días',
-      paymentBadge: 'Pago seguro vía iyzico / PayTR',
-      cancelBadge: 'Cancelar cuando quiera',
+      trialBadge: 'Acceso piloto Pro',
+      paymentBadge: 'Tras activación de pagos',
+      cancelBadge: 'Cancelación vía soporte',
       trustNoteHtml:
-        'Pagos vía iyzico / PayTR; datos de tarjeta no se guardan en nuestros servidores. Puntuaciones informativas. <a href="/kullanim-sartlari.html">Términos</a> · <a href="/kvkk.html">Aviso visitantes</a> · <a href="/kvkk.html#kvkk-bilgilendirme">Info KVKK</a>'
+        'La infraestructura de pago está preparada; los cargos comienzan tras la activación del proveedor. Los datos de tarjeta no se guardan en nuestros servidores. Puntuaciones informativas. <a href="/kullanim-sartlari.html">Términos</a> · <a href="/kvkk.html">Aviso visitantes</a> · <a href="/kvkk.html#kvkk-bilgilendirme">Info KVKK</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -545,7 +545,7 @@ export const marketingSections = {
       q1: '¿Las puntuaciones garantizan resultados?',
       a1: 'No. Puntuaciones e informes son informativos, no garantías de rendimiento, precios o aprobaciones. La decisión es suya — hacemos visibles coste y adecuación.',
       q2: '¿Es seguro el pago?',
-      a2: 'Suscripciones Pro vía iyzico / PayTR; datos de tarjeta no en servidores isteBul. Cancelación en cualquier momento.',
+      a2: 'Las suscripciones Pro y informes premium se procesarán mediante proveedores autorizados tras la activación; los datos de tarjeta no se almacenan en los servidores de isteBul. Cancelación vía soporte.',
       q3: '¿Qué incluye el plan gratuito?',
       a3: 'Resumen TCO, comparaciones limitadas y salidas resumidas. Pase a Pro para informes más profundos, comparaciones ilimitadas y matching partner.'
     },
@@ -607,19 +607,19 @@ export const marketingSections = {
       starterCta: '無料分析',
       proBadge: '最も人気',
       proTitle: 'isteBul Pro',
-      proPrice: '¥2,980',
-      proPriceUnit: '/ 月',
+      proPrice: '早期アクセス',
+      proPriceUnit: '',
       proDesc: '無制限比較 · AIリファイン',
       proCta: 'プランを見る',
       midCtaPrimary: '無料分析を開始',
       midCtaSecondary: '方法論を見る',
       partnerHintHtml:
         'パートナーギャラリー向けリード単価も提供 — <a href="/partner-olun.html">パートナーになる</a>。',
-      trialBadge: '7日間無料トライアル',
-      paymentBadge: 'iyzico / PayTR 安全決済',
-      cancelBadge: 'いつでも解約',
+      trialBadge: 'Proパイロットアクセス',
+      paymentBadge: '決済有効化後',
+      cancelBadge: 'サポート経由で解約',
       trustNoteHtml:
-        '決済は iyzico / PayTR 経由。カード情報は当社サーバーに保存しません。スコアは参考情報です。<a href="/kullanim-sartlari.html">利用規約</a> · <a href="/kvkk.html">訪問者向け通知</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK情報</a>'
+        '決済基盤は準備済みです。プロバイダー有効化後に課金が開始されます。カード情報は当社サーバーに保存しません。スコアは参考情報です。<a href="/kullanim-sartlari.html">利用規約</a> · <a href="/kvkk.html">訪問者向け通知</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK情報</a>'
     },
     faq: {
       kicker: 'FAQ',
@@ -630,7 +630,7 @@ export const marketingSections = {
       q1: 'スコアは結果を保証しますか？',
       a1: 'いいえ。スコアとレポートは参考情報であり、リターン、価格、承認の保証ではありません。決定はお客様に — コストと適合を可視化します。',
       q2: '支払いは安全ですか？',
-      a2: 'Proサブスクリプションは iyzico / PayTR 経由。カード情報はisteBulサーバーに保存されません。いつでも解約可能。',
+      a2: 'Proサブスクリプションとプレミアムレポートは、有効化後に認可された決済プロバイダー経由で処理されます。カード情報はisteBulサーバーに保存されません。解約はサポート経由です。',
       q3: '無料プランに含まれるものは？',
       a3: 'TCO概要、限定比較、概要出力。Proで詳細レポート、無制限比較、パートナーマッチング。'
     },
@@ -692,19 +692,19 @@ export const marketingSections = {
       starterCta: '免费分析',
       proBadge: '最受欢迎',
       proTitle: 'isteBul Pro',
-      proPrice: '¥128',
-      proPriceUnit: '/ 月',
+      proPrice: '早期访问',
+      proPriceUnit: '',
       proDesc: '无限对比 · AI 优化',
       proCta: '查看方案',
       midCtaPrimary: '开始免费分析',
       midCtaSecondary: '了解方法论',
       partnerHintHtml:
         '合作展厅按 lead 计费 — <a href="/partner-olun.html">成为合作伙伴</a>。',
-      trialBadge: '7 天免费试用',
-      paymentBadge: 'iyzico / PayTR 安全支付',
-      cancelBadge: '随时取消',
+      trialBadge: 'Pro 试点访问',
+      paymentBadge: '支付激活后',
+      cancelBadge: '通过支持渠道取消',
       trustNoteHtml:
-        '支付经 iyzico / PayTR 处理；卡信息不存于我们的服务器。分数仅供参考。<a href="/kullanim-sartlari.html">使用条款</a> · <a href="/kvkk.html">访客说明</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK 说明</a>'
+        '支付基础设施已就绪；提供商激活后开始扣款。卡信息不存于我们的服务器。分数仅供参考。<a href="/kullanim-sartlari.html">使用条款</a> · <a href="/kvkk.html">访客说明</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK 说明</a>'
     },
     faq: {
       kicker: '常见问题',
@@ -715,7 +715,7 @@ export const marketingSections = {
       q1: '分数保证结果吗？',
       a1: '不保证。分数和报告仅供参考，不是收益、价格或审批的保证。决定权在您 — 我们让成本和适配度可见。',
       q2: '支付安全吗？',
-      a2: 'Pro 订阅通过 iyzico / PayTR 计费；卡信息不存储在 isteBul 服务器。可随时取消。',
+      a2: 'Pro 订阅和高级报告将在支付提供商激活后通过授权渠道处理；卡信息不存储在 isteBul 服务器。请通过支持渠道取消。',
       q3: '免费方案包含什么？',
       a3: 'TCO 摘要、有限对比和摘要输出。升级 Pro 获得更深报告、无限对比和合作伙伴匹配。'
     },

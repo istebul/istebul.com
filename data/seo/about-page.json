@@ -10,7 +10,7 @@
       "subsections": [
         {
           "heading": "Karar kategorileri",
-          "body": "Auto (TCO, kredi, risk), konut (ödeme yükü, lokasyon), tatil (bütçe, sezon) ve finansman (nakit akışı, vade) canlıdır. Sigorta ve kasko yol haritasındadır."
+          "body": "Auto (TCO, kredi, risk), konut (ödeme yükü, lokasyon), tatil (bütçe, sezon), finansman (nakit akışı, vade), sigorta (teminat, prim) ve kasko (hasar riski, teminat) canlıdır."
         }
       ]
     },
@@ -21,7 +21,7 @@
     },
     {
       "heading": "KVKK ve veri güvenliği",
-      "body": "Veri minimizasyonu ilkesiyle çalışırız; gereksiz kişisel veri toplanmaz. Ödeme işlemleri iyzico ve PayTR altyapısı üzerinden güvenli şekilde alınır; kart verisi sunucularımızda tutulmaz. Pazarlama iletişimi yalnızca açık rıza ile yapılır.",
+      "body": "Veri minimizasyonu ilkesiyle çalışırız; gereksiz kişisel veri toplanmaz. Ödeme altyapısı hazırlandı; sağlayıcı aktivasyonu tamamlandığında ödeme yetkili kuruluş üzerinden alınır; kart verisi sunucularımızda tutulmaz. Pazarlama iletişimi yalnızca açık rıza ile yapılır.",
       "subsections": [
         {
           "heading": "Kullanıcı hakları",

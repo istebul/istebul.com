@@ -10,6 +10,13 @@ const waitForAppReady = async (page) => {
 
 test.describe('Marketing shell (anon landing)', () => {
   test('ana sayfa yalnızca landing bölümlerini gösterir', async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem('istebul_locale', 'tr');
+      } catch {
+        // ignore
+      }
+    });
     await page.goto('/');
     await waitForAppReady(page);
 
@@ -22,7 +29,7 @@ test.describe('Marketing shell (anon landing)', () => {
     await expect(page.locator('#trust')).toBeHidden();
     await expect(page.locator('#home-auto-bridge')).toBeHidden();
     await expect(page.locator('#landing-faq')).toBeVisible();
-    await expect(page.getByRole('link', { name: /Hemen Başla/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Ön değerlendirme/i }).first()).toBeVisible();
 
     const overflow = await page.evaluate(() => {
       const doc = document.documentElement;

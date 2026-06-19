@@ -443,6 +443,18 @@ entrypoint = "./functions/admin-action/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/admin-action/*.html" ]
 
+[functions.ai-listings]
+enabled = true
+verify_jwt = false
+import_map = "./functions/ai-listings/deno.json"
+entrypoint = "./functions/ai-listings/index.ts"
+
+[functions.ai-listings-intake]
+enabled = true
+verify_jwt = false
+import_map = "./functions/ai-listings-intake/deno.json"
+entrypoint = "./functions/ai-listings-intake/index.ts"
+
 [functions.user-account]
 enabled = true
 verify_jwt = false

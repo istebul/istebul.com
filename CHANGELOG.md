@@ -1,5 +1,62 @@
 # Changelog
 
+## [2.2.23] — 2026-06-16
+
+### Added
+- **Açık Veri — AFAD Deprem Aktivite Katmanı OD-2C closure** (PRs [#382](https://github.com/istebul/istebul.com/pull/382), [#383](https://github.com/istebul/istebul.com/pull/383); closure doc on `main` at `7b119764`)
+  - OD-2C-1: isolated score-neutral AFAD risk layer module (`results-afad-risk-layer.js`)
+  - OD-2C-2: konut results mount after EVDS layers (`konut-results-v2.js`, scoped CSS)
+  - Production verification: CI `27651527605`, Production Deploy `27651527590`, Pages `27651527031`; regression **60/60 PASS**; `npm run smoke:live` PASS (`failed=0`)
+
+### Documentation
+- OD-2C recorded as **production closure with staging verification plan** — `docs/OPEN_DATA_OD-2C_CLOSURE.md`
+- **Staging verification PASS** recorded (2026-06-16) — Preview `https://2eadd6b4.istebul-com.pages.dev`; connected endpoint + konut mount + sanitization + score invariance + disabled path; Production flag **remains off**
+- Prod `AFAD_EARTHQUAKE_ENABLED` remains **off** → disabled API + silent konut UI (no DOM card)
+- OD-2C-3 (AI narration), SEO data-sources, admin toggle, and prod flag enable are **separate future phases**
+
+## [2.2.22] — 2026-06-16
+
+### Added
+- **Açık Veri — AFAD Deprem Snapshot OD-2B closure** (PR [#380](https://github.com/istebul/istebul.com/pull/380), merge `62d04a0c`)
+  - Production verification record for `/api/afad-earthquake-snapshot` foundation (feature-flag disabled in prod)
+  - Closure documentation: `docs/OPEN_DATA_OD-2B_CLOSURE.md`
+  - EVDS regression confirmed intact (`/api/evds-snapshot`); `npm run smoke:live` PASS (failed=0)
+
+### Documentation
+- OD-2B recorded as **docs-only production closure** — no new runtime behavior in this release
+- AFAD remains feature-flag disabled (`AFAD_EARTHQUAKE_ENABLED`); OD-2C is a separate future phase (UI/admin/konut scoring not in scope)
+
+## [2.2.21] — 2026-06-13
+
+### Added
+- **Faz 3F — Auto Vehicle Image Trust Layer** (PRs [#326](https://github.com/istebul/istebul.com/pull/326)–[#330](https://github.com/istebul/istebul.com/pull/330), main `62b350f6`)
+  - `resolveVehicleImageTrust()` foundation with `identity` / `checks` metadata and `strictExactMatchReady` (metadata-only; does not change UI classification yet)
+  - Placeholder-first Auto result UI: `showRealImage:false` for catalog SVG; “Görsel doğrulanamadı” copy
+  - Verified external image load error → premium placeholder (no catalog fallback chain)
+  - Compare storage and `/karsilastir` Auto cards trust-aware; legacy catalog SVG compare entries sanitized at render
+- Production verification **GO / PASS** (CI `27477115336`, Production Deploy `27477115351`, Cloudflare pages `27477115064`)
+
+### Changed
+- Auto result cards no longer render catalog SVG assets as if they were real vehicle photos
+- Faz 3F reduced false-positive real-image risk; it did **not** expand `showRealImage:true` coverage
+
+### Fixed
+- Auto catalog SVG images could appear as real vehicle photos in result UI and compare cards
+
+## [2.2.20] — 2026-06-08
+
+### Added
+- Pre-launch legal compliance pack: `/gdpr.html` (English GDPR summary)
+- Live data guardrail: `live_providers_enabled` blocked without `live_finance_feed_url` (admin + edge)
+- Partner trust: mandatory DPA reference for lead sharing
+- TCMB EVDS usage terms on `/veri-kaynaklari/`
+
+### Changed
+- TÜİK data source status: **Aktif** → **Manuel referans** (matches actual integration state)
+- Expanded `/kullanim-sartlari.html`: liability, subscription/refund, jurisdiction, IP, simulation disclosure
+- KVKK page: GDPR EN link, KVKK authority link, legal note
+- Methodology copy: TÜİK manual reference vs TCMB EVDS live API clarified
+
 ## [2.2.19] — 2026-06-01
 
 ### Fixed

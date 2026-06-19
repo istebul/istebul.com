@@ -21,7 +21,7 @@ test('hero V4 markup exposes required CTAs and categories', () => {
   const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const categories = fs.readFileSync(path.join(root, 'js/runtime/home-categories.js'), 'utf8');
   assert.match(index, /ib-hero-v4/);
-  assert.match(index, /Kararımı Analiz Et/);
+  assert.match(index, /Ön değerlendirmeye başla/);
   assert.match(categories, /ib-soon-badge/);
   assert.match(index, /data-preview-title/);
 });

@@ -78,7 +78,7 @@
     },
     {
       "heading": "Veri Kaynakları",
-      "body": "Katalog segmentleri, ortalama işletme maliyeti sinyalleri, finansman parametreleri ve kullanıcı girdileri birleştirilir. Kamuya açık TÜİK ve TCMB EVDS referansları ile planlanan iş ortağı beslemeleri /veri-kaynaklari/ adresinde listelenir. Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz.",
+      "body": "Katalog segmentleri, ortalama işletme maliyeti sinyalleri, finansman parametreleri ve kullanıcı girdileri birleştirilir. TCMB EVDS canlı API ile; TÜİK yayınları manuel referans olarak kalibrasyon varsayımlarına yansıtılır. Planlanan iş ortağı beslemeleri /veri-kaynaklari/ adresinde listelenir. Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz.",
       "subsections": [
         {
           "heading": "Güncelleme",
@@ -92,7 +92,7 @@
     },
     {
       "heading": "Gizlilik ve Güvenlik",
-      "body": "TLS şifreleme, Turnstile bot koruması (Auto), iyzico / PayTR ile ödeme ve rol tabanlı admin erişimi temel kontrollerdir. Admin paneli ve oturum rotaları robots.txt ile taranmaz.",
+      "body": "TLS şifreleme, Turnstile bot koruması (Auto), ödeme altyapısı (aktivasyon sonrası) ve rol tabanlı admin erişimi temel kontrollerdir. Admin paneli ve oturum rotaları robots.txt ile taranmaz.",
       "subsections": [
         {
           "heading": "Saklama",
@@ -121,7 +121,7 @@
       "subsections": [
         {
           "heading": "Sigorta ve kasko",
-          "body": "Sigorta karar analizi /sigorta/ adresinde canlıdır (koruma, teminat, prim verimliliği). Kasko modülü yakında; Auto sonuçlarında sigorta kalemi TCO içinde ayrıştırılmıştır."
+          "body": "Sigorta karar analizi /sigorta/ adresinde canlıdır (koruma, teminat, prim verimliliği). Kasko karar analizi /kasko/ adresinde canlıdır (hasar riski, teminat kapsamı, prim verimliliği). Auto sonuçlarında sigorta ve kasko kalemleri TCO içinde ayrıştırılmıştır."
         }
       ]
     },
@@ -142,7 +142,7 @@
     },
     {
       "heading": "Kullanıcı hakları ve şeffaflık",
-      "body": "KVKK kapsamında aydınlatma metinleri, çerez politikası ve abonelik iptal akışları erişilebilirdir. Kullanıcı verilerini silme talepleri destek kanalı üzerinden işlenir. Pazarlama e-postası yalnızca açık onayla gönderilir. Karar geçmişi hesapta saklanabilir; bu veri reklam ağlarıyla satılmaz. Ödeme işlemleri iyzico ve PayTR üzerinden alınır; kart verisi isteBul sunucularında tutulmaz.",
+      "body": "KVKK kapsamında aydınlatma metinleri, çerez politikası ve abonelik iptal akışları erişilebilirdir. Kullanıcı verilerini silme talepleri destek kanalı üzerinden işlenir. Pazarlama e-postası yalnızca açık onayla gönderilir. Karar geçmişi hesapta saklanabilir; bu veri reklam ağlarıyla satılmaz. Ücretli ödemeler sağlayıcı aktivasyonu sonrasında yetkili ödeme kuruluşu üzerinden alınır; kart verisi isteBul sunucularında tutulmaz.",
       "subsections": []
     },
     {

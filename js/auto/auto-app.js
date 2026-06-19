@@ -10,6 +10,7 @@ import {
 } from '../features/growth/growth-engine.js';
 import { computePartnerMatchScores } from '../features/partner/partner-match-engine.js';
 import { trackOpsEvent } from '../core/operational-telemetry.js';
+import { postAiProxy } from '../core/ai-proxy-client.js';
 import {
   enrollAutoResultsReady,
   enrollFinanceFollowUp,
@@ -37,7 +38,13 @@ import { analytics } from '../core/analytics.js';
 import { bootAnalyticsMeasurement } from '../runtime/analytics-consent-boot.js';
 import { mirrorLegacySiteEvent } from '../platform/site-analytics.js';
 import { getAutoPartOptions, getAutoStepCopy, sanitizeWizardStateForUsage } from './auto-flow.js';
-import { bootstrapAutoFromAssistantQuery } from '../features/assistant/assistant-category-bridge.js';
+import {
+  HOUSEHOLD_SIZE_OPTIONS,
+  buildAutoSuitabilitySignalText,
+  resolveCityRatioForSync,
+  shouldShowCityRatioField
+} from './auto-wizard-profile.js';
+import { bootstrapAutoFromAssistantQuery } from '../features/assistant/assistant-vertical-bootstrap.js';
 import { mirrorLegacyAutoFunnel, trackAutoStart, trackGrowthFunnel, GROWTH_FUNNEL_EVENTS } from '../features/growth/growth-funnel.js';
 import { trackPaidFunnelStep } from '../features/growth/paid-acquisition.js';
 import { sendServerPaidConversion } from '../features/growth/paid-capi-bridge.js';
@@ -46,7 +53,14 @@ import { safeJsonParse } from '../core/dom-safe.js';
 import { STORAGE_KEYS, readStorageRaw, writeStorageRaw, readStoredJson, writeStoredJson, removeStorageRaw } from '../core/storage-keys.js';
 import { mountAutoResultsV2 } from './auto-results-v2.js';
 import { formatVehicleFuelDisplay, formatVehicleResaleDisplay } from './auto-results-model.js';
-import { renderVehicleImageHtml, resolveVehicleImageUrl } from './vehicle-image.js';
+import { adaptAutoCard } from '../features/decision-cards/adapters/auto-adapter.js';
+import {
+  isDecisionCategoryCardsEnabled,
+  isDecisionCardsVertical,
+  renderDecisionCategoryCardsGridHtml,
+  syncDecisionCardsFlagToDocument
+} from '../features/decision-cards/decision-category-card-renderer.js';
+import { renderVehicleImageHtml, buildVehicleImageUiPayload } from './vehicle-image.js';
 import { storeCheckoutIntentPayload } from '../core/checkout-intent.js';
 import { saveDecisionHistory, getAppInstance } from '../core/app-bridge.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
@@ -383,6 +397,121 @@ function renderResultsSidebar(topResult, results) {
   `;
 }
 
+function shouldUseDecisionCategoryCards() {
+  return isDecisionCategoryCardsEnabled() && isDecisionCardsVertical('auto');
+}
+
+function resolveAutoScenarioKey(vehicle = {}) {
+  return String(vehicle.id || vehicle.catalog_id || vehicle.name || 'unknown');
+}
+
+function buildDecisionCategoryCardViewModels(cardVehicles, formData = {}) {
+  return cardVehicles.map((vehicle) => {
+    const scenarioKey = resolveAutoScenarioKey(vehicle);
+    const baseSuitability = vehicle.confidenceMeta?.label || vehicle.suitability || '';
+    const enriched = {
+      ...vehicle,
+      id: scenarioKey,
+      title: vehicle.name,
+      description: vehicle.reasons?.[0] || vehicle.name || '',
+      fuelDisplay: formatVehicleFuelDisplay(vehicle, formData),
+      resaleDisplay: formatVehicleResaleDisplay(vehicle),
+      suitability: buildAutoSuitabilitySignalText(formData, baseSuitability)
+    };
+    return adaptAutoCard({
+      scenario: enriched,
+      state: formData
+    });
+  });
+}
+
+function renderScenarioCardsHtml(cardVehicles, formData = {}) {
+  const selected = readSelectedVehicle();
+  const selectedId = selected?.id
+    ? String(selected.id)
+    : selected?.name
+      ? String(selected.name)
+      : '';
+
+  if (shouldUseDecisionCategoryCards()) {
+    syncDecisionCardsFlagToDocument(true);
+    const viewModels = buildDecisionCategoryCardViewModels(cardVehicles, formData);
+    return renderDecisionCategoryCardsGridHtml(viewModels, {
+      selectedId,
+      ariaLabel: 'Öne çıkan araç önerileri'
+    });
+  }
+
+  syncDecisionCardsFlagToDocument(false);
+  return `
+    <div id="auto-results-cards" class="auto-results-cards auto-rec-cards" role="list" aria-label="Öne çıkan araç önerileri">
+      ${cardVehicles.map((vehicle, index) => renderCompactRecommendationCard(vehicle, index, formData)).join('')}
+    </div>`;
+}
+
+function scrollToAutoCompareSection() {
+  const resultsRoot = document.getElementById('auto-results');
+  const target = resultsRoot?.querySelector('.ib-auto-compare-matrix, .comparison-matrix');
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function selectAutoVehicleFromDecisionCard(optionId, cardVehicles) {
+  const matchOption = (item) => resolveAutoScenarioKey(item) === String(optionId);
+  const vehicle =
+    cardVehicles.find(matchOption) || allResults.find(matchOption);
+  if (!vehicle) return;
+
+  const index = allResults.findIndex(matchOption);
+  writeSelectedVehicle({
+    ...vehicle,
+    id: resolveAutoScenarioKey(vehicle),
+    index: index >= 0 ? index : undefined
+  });
+  trackAutoEvent('auto_vehicle_selected', {
+    vehicle: vehicle.name,
+    index: index >= 0 ? index : null,
+    score: vehicle.score,
+    source: 'decision_card'
+  });
+  captureVehicleRecommendedSelected({
+    vehicle: vehicle.name,
+    interestType: 'vehicle_selected',
+    form: readForm(document.getElementById('auto-form'))
+  });
+
+  renderFilteredAutoResults();
+  mountAutoPartnerNextSteps();
+  renderDecisionStepper();
+
+  const partnerMount = document.getElementById('auto-partner-next-mount');
+  partnerMount?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function bindDecisionCardEvents(root, cardVehicles) {
+  if (!root || !shouldUseDecisionCategoryCards()) return;
+
+  root.querySelectorAll('.ib-decision-card-select').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      selectAutoVehicleFromDecisionCard(button.dataset.option, cardVehicles);
+    });
+  });
+
+  root.querySelectorAll('.ib-decision-card-secondary[data-action="compare"]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      scrollToAutoCompareSection();
+    });
+  });
+
+  root.querySelectorAll('.ib-decision-category-card[data-option]').forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('button')) return;
+      selectAutoVehicleFromDecisionCard(card.dataset.option, cardVehicles);
+    });
+  });
+}
+
 function renderCompactRecommendationCard(vehicle, index, formData = {}) {
   const monthlyImpact = Math.round((Number(vehicle.costs?.total || 0) / 12) / 100) * 100;
   const rankClass = index === 0 ? 'auto-rec-rank--best' : index === 1 ? 'auto-rec-rank--good' : 'auto-rec-rank--alt';
@@ -467,6 +596,23 @@ function showVehicleSelectionRequiredNotice() {
   }, 2400);
 }
 
+function formatVehicleTcoBreakdown(vehicle) {
+  const costs = vehicle?.costs || {};
+  const total12 = Number(costs.total || 0);
+  const fuel = Number(costs.fuel || costs.ownership?.annual?.fuel || 0);
+  const insurance = Number(costs.insurance || costs.ownership?.annual?.insurance || 0);
+  const kasko = Number(costs.kasko || costs.ownership?.annual?.kasko || 0);
+  const maintenance = Number(costs.maintenance || costs.ownership?.annual?.maintenance || 0);
+  const parts = [
+    total12 ? `12 ay TCO ≈ ${formatAmount(total12)}` : null,
+    fuel ? `yakıt ${formatAmount(fuel)}` : null,
+    insurance ? `sigorta ${formatAmount(insurance)}` : null,
+    kasko ? `kasko ${formatAmount(kasko)}` : null,
+    maintenance ? `bakım ${formatAmount(maintenance)}` : null
+  ].filter(Boolean);
+  return parts.length ? parts.join(' · ') : '';
+}
+
 function renderVehicleSelectionGate(displayResults) {
   const selected = readSelectedVehicle();
   const cards = (displayResults || []).slice(0, 3);
@@ -475,15 +621,16 @@ function renderVehicleSelectionGate(displayResults) {
   return `
     <section id="auto-vehicle-selection" class="auto-vehicle-selection" aria-labelledby="auto-vehicle-selection-title">
       <div class="section-head">
-        <p class="kicker">Zorunlu adım</p>
+        <p class="kicker">Son karar turu</p>
         <h2 id="auto-vehicle-selection-title">Tek bir aracı seçin</h2>
-        <p class="section-subtitle">Sonraki adımda kredi, sigorta veya bayi yönlendirmesi seçtiğiniz modele göre ilerler.</p>
+        <p class="section-subtitle">3 öneriden birini onaylayın; kredi, sigorta veya bayi yönlendirmesi seçtiğiniz modele göre ilerler.</p>
       </div>
       <div class="auto-vehicle-selection-grid" role="radiogroup" aria-label="Araç seçimi">
         ${cards
           .map((vehicle, index) => {
             const isSelected = selected?.name === vehicle.name;
             const monthlyImpact = Math.round((Number(vehicle.costs?.total || 0) / 12) / 100) * 100;
+            const tcoLine = formatVehicleTcoBreakdown(vehicle);
             return `
           <button
             type="button"
@@ -497,6 +644,7 @@ function renderVehicleSelectionGate(displayResults) {
             <strong>${escapeHtml(vehicle.name)}</strong>
             <span class="auto-vehicle-select-score">${escapeHtml(formatScoreOutOf100(vehicle.score))} uyum</span>
             <span class="auto-vehicle-select-cost">~${escapeHtml(formatAmount(monthlyImpact))} / ay</span>
+            ${tcoLine ? `<span class="auto-vehicle-select-tco text-muted-sm">${escapeHtml(tcoLine)}</span>` : ''}
             <span class="auto-vehicle-select-cta">${isSelected ? '✓ Seçildi' : 'Bu aracı seç'}</span>
           </button>`;
           })
@@ -727,7 +875,7 @@ function openAutoUpgradePaywall(feature = 'premium_report') {
         ${PLANS.pro.highlights.slice(0, 4).map((item) => `<li>${item}</li>`).join('')}
       </ul>
       <div class="revenue-upgrade-actions">
-        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>Pro erken erişim talep et</a>
         <button type="button" class="btn secondary" data-auto-paywall-close>Ücretsiz önizlemeyle devam et</button>
       </div>
     </div>
@@ -758,7 +906,7 @@ function renderAutoResultsInterpretationGuide(topResult, formData = {}) {
       </ol>
       <div class="auto-results-guide-actions">
         <a class="btn secondary" href="/karsilastir/">Karşılaştırma merkezi</a>
-        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>TCO analizini derinleştir (Pro)</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>Pro özelliklerini incele</a>
       </div>
       <p class="auto-results-guide-foot text-muted-sm">Bilgilendirme amaçlıdır. Canlı ilan veya bağlayıcı teklif değildir.</p>
     </section>
@@ -775,10 +923,10 @@ function renderAutoUpgradeStrip(className = '') {
       <div class="revenue-upgrade-copy">
         <span class="revenue-upgrade-kicker">isteBul Pro</span>
         <strong>Tüm sonuçları ve premium raporu açın</strong>
-        <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma — ilk abonelikte 7 gün ücretsiz deneme.</p>
+        <p>Ücretsiz planda ${FREE_LIMITS.maxAutoResultsPreview} model önerisi görürsünüz. Pro ile sınırsız karşılaştırma — pilot erişim sürecinde.</p>
       </div>
       <div class="revenue-upgrade-actions">
-        <a class="btn btn-primary" href="/planlar?checkout=pro" data-auto-checkout-intent>7 gün ücretsiz dene</a>
+        <a class="btn primary" href="/planlar?checkout=pro" data-auto-checkout-intent>Pro erken erişim talep et</a>
         <a class="btn btn-outline" href="/planlar">Planları incele</a>
       </div>
     </aside>
@@ -1854,23 +2002,19 @@ async function fetchAiStructuredCommentary(results, formData = {}, refinement = 
 
   const bundle = buildExplanationBundle(results, formData);
   const prompt = buildCommentaryPrompt(results, formData, bundle, refinement);
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), AI_COMMENTARY_TIMEOUT_MS);
 
   try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, format: 'structured_commentary' }),
-      signal: controller.signal
+    const proxy = await postAiProxy({
+      prompt,
+      format: 'structured_commentary',
+      timeoutMs: AI_COMMENTARY_TIMEOUT_MS
     });
 
-    if (!res.ok) {
+    if (!proxy.ok) {
       return { commentary: deterministic, synthesis: deterministic.executive_summary, source: 'rules', usedAi: false };
     }
 
-    const data = await res.json();
-    const parsed = parseStructuredCommentary(data.result || '');
+    const parsed = parseStructuredCommentary(proxy.data?.result || '');
     const { data: merged, source } = mergeCommentary(parsed, deterministic);
     const synthesis = sanitizeAiNarrative(
       merged.executive_summary || '',
@@ -1890,8 +2034,6 @@ async function fetchAiStructuredCommentary(results, formData = {}, refinement = 
       source: 'rules',
       usedAi: false
     };
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 
@@ -2107,9 +2249,7 @@ function renderResults(results) {
 
     ${rankIntelPanel || ''}
 
-    <div id="auto-results-cards" class="auto-results-cards auto-rec-cards" role="list" aria-label="Öne çıkan araç önerileri">
-      ${displayResults.slice(0, 3).map((vehicle, index) => renderCompactRecommendationCard(vehicle, index, formData)).join('')}
-    </div>
+    ${renderScenarioCardsHtml(displayResults.slice(0, 3), formData)}
 
     ${renderVehicleSelectionGate(displayResults)}
 
@@ -2307,6 +2447,7 @@ function renderResults(results) {
   renderDecisionStepper();
   mountAutoPartnerNextSteps();
   bindVehicleSelectionGate(root);
+  bindDecisionCardEvents(root, displayResults.slice(0, 3));
 
   root.querySelectorAll('[data-auto-scroll-selection]').forEach((button) => {
     button.addEventListener('click', scrollToVehicleSelection);
@@ -2559,9 +2700,12 @@ const WIZARD_MILESTONES = ['Bütçe', 'Araç', 'Bölge', 'Özet'];
 const WIZARD_FIELD_LABELS = {
   budget: 'toplam bütçe',
   usage: 'kullanım amacı',
+  household_size: 'hane büyüklüğü',
   body: 'araç tipi',
   fuel: 'yakıt tercihi',
   km: 'yıllık kilometre',
+  ownership_months: 'sahiplik süresi',
+  city_ratio: 'şehir / otoyol dengesi',
   location: 'şehir',
   loan: 'finansman tercihi'
 };
@@ -2596,6 +2740,12 @@ const wizardSteps = [
         title: 'Aracı en çok nasıl kullanacaksınız?',
         why: 'Kullanım profili; kasa tipi, yakıt ve konfor beklentisini doğrudan etkiler.',
         options: usageOptions
+      },
+      {
+        key: 'household_size',
+        title: 'Kaç kişilik bir hane için araç seçiyorsunuz?',
+        why: 'Yolcu ve bagaj ihtiyacı; kasa tipi ve konfor beklentisini netleştirir (skor değil, karar gerekçesi).',
+        options: HOUSEHOLD_SIZE_OPTIONS
       }
     ]
   },
@@ -2625,10 +2775,23 @@ const wizardSteps = [
     parts: [
       {
         key: 'km',
+        block: 'usage-intensity',
         title: 'Yılda yaklaşık kaç km kullanırsınız?',
         why: 'Kilometre; amortisman, yakıt ve bakım giderlerinin en güçlü girdilerinden biridir.',
         options: kmOptions,
         custom: kmCustom
+      },
+      {
+        key: 'ownership_months',
+        block: 'usage-intensity',
+        title: 'Aracı ne kadar süre kullanmayı planlıyorsunuz?',
+        why: 'Toplam maliyet ve değer kaybı görünümü bu süreye göre hesaplanır.',
+        options: [
+          { label: '12 ay', value: '12', note: 'Kısa dönem sahiplik' },
+          { label: '24 ay', value: '24', note: 'Orta vadeli plan' },
+          { label: '36 ay', value: '36', note: 'Önerilen varsayılan' },
+          { label: '48 ay', value: '48', note: 'Uzun vadeli sahiplik' }
+        ]
       },
       {
         key: 'city_ratio',
@@ -2638,17 +2801,6 @@ const wizardSteps = [
           { label: 'Ağırlıklı şehir içi', value: '0.85', note: 'Düşük ortalama hız' },
           { label: 'Dengeli kullanım', value: '0.6', note: 'Şehir + otoyol karışık' },
           { label: 'Ağırlıklı otoyol', value: '0.25', note: 'Uzun yol ağırlıklı' }
-        ]
-      },
-      {
-        key: 'ownership_months',
-        title: 'Aracı ne kadar süre kullanmayı planlıyorsunuz?',
-        why: 'Toplam maliyet ve değer kaybı görünümü bu süreye göre hesaplanır.',
-        options: [
-          { label: '12 ay', value: '12', note: 'Kısa dönem sahiplik' },
-          { label: '24 ay', value: '24', note: 'Orta vadeli plan' },
-          { label: '36 ay', value: '36', note: 'Önerilen varsayılan' },
-          { label: '48 ay', value: '48', note: 'Uzun vadeli sahiplik' }
         ]
       },
       {
@@ -2698,6 +2850,12 @@ const WIZARD_OPTION_ICONS = {
     city: '🏙',
     long: '🛣',
     business: '💼'
+  },
+  household_size: {
+    '1': '👤',
+    '2': '👥',
+    '3-4': '👨‍👩‍👧‍👦',
+    '5+': '🏠'
   },
   body: {
     suv: '🚙',
@@ -2778,9 +2936,21 @@ function renderWizardOptionButton(fieldKey, option, selected) {
 const wizardState = {};
 let wizardIndex = 0;
 
+function isWizardPartVisible(part) {
+  if (!part) return true;
+  if (part.key === 'city_ratio' && !shouldShowCityRatioField(wizardState.usage)) return false;
+  if (part.showWhen && !part.showWhen(wizardState)) return false;
+  return true;
+}
+
+function getVisibleWizardParts(step) {
+  if (!Array.isArray(step.parts)) return [];
+  return step.parts.filter((part) => isWizardPartVisible(part));
+}
+
 function getWizardStepKeys(step) {
   if (Array.isArray(step.parts) && step.parts.length) {
-    return step.parts.map((part) => part.key);
+    return getVisibleWizardParts(step).map((part) => part.key);
   }
   return step.key ? [step.key] : [];
 }
@@ -2836,6 +3006,8 @@ function syncWizardToForm() {
       return;
     }
 
+    if (key === 'city_ratio') return;
+
     const input = form.elements[key];
     if (!input) return;
 
@@ -2847,6 +3019,11 @@ function syncWizardToForm() {
 
     input.value = value;
   });
+
+  const cityRatioInput = form.elements.city_ratio;
+  if (cityRatioInput) {
+    cityRatioInput.value = resolveCityRatioForSync(wizardState.usage, wizardState.city_ratio);
+  }
 }
 
 function renderWizardDistrictField() {
@@ -2875,6 +3052,32 @@ function autoPartOptionPool(partKey) {
   const cityPart = wizardSteps[2]?.parts?.find((p) => p.key === 'city_ratio');
   if (partKey === 'city_ratio') return cityPart?.options || [];
   return [];
+}
+
+function renderGroupedWizardParts(parts) {
+  const groups = [];
+  let currentBlock = null;
+  let currentParts = [];
+
+  parts.forEach((part) => {
+    const block = part.block || null;
+    if (block !== currentBlock) {
+      if (currentParts.length) groups.push({ block: currentBlock, parts: currentParts });
+      currentBlock = block;
+      currentParts = [part];
+      return;
+    }
+    currentParts.push(part);
+  });
+  if (currentParts.length) groups.push({ block: currentBlock, parts: currentParts });
+
+  return groups
+    .map((group) => {
+      const inner = group.parts.map((part) => renderWizardPartOptions(part)).join('');
+      if (!group.block) return inner;
+      return `<div class="auto-wizard-decision-block" data-wizard-block="${escapeHtml(group.block)}">${inner}</div>`;
+    })
+    .join('');
 }
 
 function renderWizardPartOptions(part) {
@@ -2942,7 +3145,7 @@ function renderWizard() {
   let bodyHtml = '';
 
   if (isMulti) {
-    bodyHtml = step.parts.map((part) => renderWizardPartOptions(part)).join('');
+    bodyHtml = renderGroupedWizardParts(getVisibleWizardParts(step));
   } else {
     const selected = wizardState[step.key];
     const isCustom = selected === 'custom';
@@ -3206,6 +3409,9 @@ if (wizard) {
           km: kmOptions,
           city_ratio: autoPartOptionPool('city_ratio')
         });
+        if (!shouldShowCityRatioField(wizardState.usage)) {
+          delete wizardState.city_ratio;
+        }
       }
       syncWizardToForm();
       renderWizard();
@@ -3375,26 +3581,7 @@ form.addEventListener('submit', async (event) => {
 
       try {
         if (getAppInstance()?.currentUser?.id && results.length) {
-          saveDecisionHistory({
-            id: `auto-${Date.now()}`,
-            categoryId: 'auto',
-            categoryName: 'Araç Karar Analizi',
-            createdAt: new Date().toISOString(),
-            rawAnswers: formData,
-            answers: formData,
-            summary: `${results[0].name} kullanım ve bütçe profilinize göre en güçlü araç eşleşmesi olarak öne çıktı.`,
-            insight: 'isteBul Auto karar analizi',
-            dataHealth: 'estimated',
-            recommendations: results.map((vehicle) => ({
-              name: vehicle.name,
-              score: vehicle.score,
-              price: vehicle.price || vehicle.costs?.purchase || 0,
-              yearlyCost: vehicle.costs?.annual || 0,
-              financeComparisons: [{
-                monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0)
-              }]
-            }))
-          });
+          saveDecisionHistory(buildAutoDecisionHistoryPayload(results, formData));
         }
       } catch (_) {}
 
@@ -3513,6 +3700,8 @@ function addAutoComparisonFallback(vehicle){
 
   const score = Number(vehicle.score || 0);
 
+  const uiImage = buildVehicleImageUiPayload(vehicle);
+
   writeAutoStorage(key, [...items, {
     id: `auto-compare-${vehicle.name}`,
     signature,
@@ -3520,7 +3709,8 @@ function addAutoComparisonFallback(vehicle){
     categoryName: 'Araç Karşılaştırma',
     sourceType: 'isteBul Auto',
     title: vehicle.name,
-    image: resolveVehicleImageUrl(vehicle),
+    image: uiImage.imageUrl,
+    imageTrust: uiImage.imageTrust,
     score,
     confidenceLabel: vehicle.confidenceMeta?.label || '',
     riskLevel: vehicle.confidenceMeta?.label || (score >= 85 ? 'Dengeli profil' : 'Doğrulama önerilir'),
@@ -3769,3 +3959,69 @@ window.addEventListener('pagehide', () => {
     /* ignore */
   }
 });
+
+
+function buildAutoDecisionHistoryPayload(results, formData) {
+  const vehicles = Array.isArray(results) ? results : [];
+  const top = vehicles[0] || {};
+  const topConfidence = top.confidenceMeta && typeof top.confidenceMeta === 'object'
+    ? top.confidenceMeta
+    : null;
+
+  const dataHealth = topConfidence
+    ? {
+        confidenceLabel: topConfidence.label || 'Orta veri güven bandı — teklif doğrulaması önerilir',
+        confidenceScore: Number.isFinite(Number(topConfidence.score)) ? Number(topConfidence.score) : null,
+        tier: topConfidence.tier || null
+      }
+    : {
+        confidenceLabel: 'Tahmini maliyet — teklifte doğrulama önerilir',
+        confidenceScore: null,
+        tier: 'medium'
+      };
+
+  const topName = top.name || 'Seçilen araç';
+  const topHeadline = Array.isArray(top.reasons) && top.reasons[0]
+    ? String(top.reasons[0])
+    : 'isteBul Auto karar analizi';
+
+  return {
+    id: `auto-${Date.now()}`,
+    categoryId: 'auto',
+    categoryName: 'Araç Karar Analizi',
+    createdAt: new Date().toISOString(),
+    source: 'auto',
+    rawAnswers: formData || {},
+    answers: formData || {},
+    summary: `${topName} kullanım ve bütçe profilinize göre en güçlü araç eşleşmesi olarak öne çıktı.`,
+    insight: { headline: topHeadline },
+    dataHealth,
+    recommendations: vehicles.map((vehicle) => {
+      const score = Number(vehicle.score || 0);
+      const reasonTags = Array.isArray(vehicle.reasons)
+        ? vehicle.reasons.map((reason) => String(reason).trim()).filter(Boolean).slice(0, 3)
+        : [];
+      const decisionTags = reasonTags.length
+        ? reasonTags
+        : [vehicle.fuel, vehicle.body, 'Kural tabanlı'].filter(Boolean).map(String).slice(0, 3);
+      const riskLevel = vehicle.confidenceMeta?.label
+        || (score >= 85 ? 'Dengeli profil' : 'Doğrulama önerilir');
+
+      return {
+        name: vehicle.name,
+        score: vehicle.score,
+        price: vehicle.price || vehicle.costs?.purchase || 0,
+        yearlyCost: vehicle.costs?.annual || 0,
+        riskLevel,
+        decisionTags,
+        scoreNote: Array.isArray(vehicle.reasons) ? vehicle.reasons[0] || null : null,
+        calculationTable: vehicle.costs?.annual
+          ? { totalLabel: '12 aylık TCO' }
+          : undefined,
+        financeComparisons: [{
+          monthlyPayment: Math.round((Number(vehicle.costs?.total || 0) / 12) || 0)
+        }]
+      };
+    })
+  };
+}

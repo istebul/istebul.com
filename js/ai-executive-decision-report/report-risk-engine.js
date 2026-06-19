@@ -1,0 +1,5 @@
+/**
+ * Executive Decision Report v1 — client re-export (Sprint-26).
+ */
+
+export * from '../../supabase/functions/_shared/ai-listings/executive-report/report-risk-engine.js';

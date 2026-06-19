@@ -1,4 +1,6 @@
 import { isAllowedOrigin } from './_shared/cors-origins.js';
+import { resolveAiProvider } from './_shared/ai/provider-registry.js';
+import { DEFAULT_GROQ_MODEL, DEFAULT_OPENAI_MODEL } from './_shared/ai/types.js';
 
 const rateLimitStore = globalThis.__aiProxyRateLimit || (globalThis.__aiProxyRateLimit = new Map());
 const promptCache = globalThis.__aiProxyPromptCache || (globalThis.__aiProxyPromptCache = new Map());
@@ -26,31 +28,33 @@ function pruneRateLimitStore(now) {
   }
 }
 
-function promptCacheKey(prompt) {
+function promptCacheKey(prompt, providerName) {
   let hash = 0;
   for (let i = 0; i < prompt.length; i += 1) {
     hash = (hash * 31 + prompt.charCodeAt(i)) | 0;
   }
   const prefix = prompt.slice(0, 64);
-  return `${hash}:${prompt.length}:${prefix}`;
+  return `${providerName}:${hash}:${prompt.length}:${prefix}`;
 }
 
-function readPromptCache(prompt) {
-  const entry = promptCache.get(promptCacheKey(prompt));
+function readPromptCache(prompt, providerName) {
+  const key = promptCacheKey(prompt, providerName);
+  const entry = promptCache.get(key);
   if (!entry || Date.now() > entry.expiresAt) {
-    if (entry) promptCache.delete(promptCacheKey(prompt));
+    if (entry) promptCache.delete(key);
     return null;
   }
   return entry.result;
 }
 
-function writePromptCache(prompt, result) {
+function writePromptCache(prompt, result, providerName) {
   if (!result) return;
+  const key = promptCacheKey(prompt, providerName);
   if (promptCache.size >= PROMPT_CACHE_MAX_ENTRIES) {
     const oldest = promptCache.keys().next().value;
     if (oldest) promptCache.delete(oldest);
   }
-  promptCache.set(promptCacheKey(prompt), {
+  promptCache.set(key, {
     result,
     expiresAt: Date.now() + PROMPT_CACHE_TTL_MS
   });
@@ -121,7 +125,17 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'Invalid prompt' }, 400, origin);
     }
 
-    const cached = readPromptCache(prompt);
+    let provider;
+    try {
+      provider = resolveAiProvider(env);
+    } catch (err) {
+      if (err?.code === 'UNSUPPORTED_AI_PROVIDER') {
+        return json({ error: err.message }, 500, origin);
+      }
+      throw err;
+    }
+
+    const cached = readPromptCache(prompt, provider.name);
     if (cached) {
       return json({ result: cached }, 200, origin);
     }
@@ -131,16 +145,17 @@ export async function onRequestPost({ request, env }) {
       return json({ error: 'Too many requests' }, 429, origin);
     }
 
-    if (!env.GROQ_API_KEY) {
-      return json({ error: 'GROQ_API_KEY missing' }, 500, origin);
-    }
-
     const systemContent = structured
       ? 'Sen isteBul.com otomotiv karar analistisin. Yalnızca geçerli JSON döndür. Skor üretmezsin; fiyat, faiz, banka, sigorta teklifi veya kampanya uydurmazsın. Türkçe, profesyonel, temkinli dil.'
       : 'Sen isteBul.com için Türkçe konuşan, net, pratik ve tarafsız bir karar asistanısın.';
 
+    const model =
+      provider.name === 'openai'
+        ? env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL
+        : DEFAULT_GROQ_MODEL;
+
     const payload = {
-      model: 'llama-3.1-8b-instant',
+      model,
       messages: [
         { role: 'system', content: systemContent },
         { role: 'user', content: prompt }
@@ -153,25 +168,15 @@ export async function onRequestPost({ request, env }) {
       payload.response_format = { type: 'json_object' };
     }
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.GROQ_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
+    const completion = await provider.callChatCompletion({ env, payload });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return json({ error: 'Groq request failed' }, response.status, origin);
+    if (!completion.ok) {
+      return json({ error: completion.error }, completion.status, origin);
     }
 
-    const result = data?.choices?.[0]?.message?.content || '';
-    writePromptCache(prompt, result);
+    writePromptCache(prompt, completion.content, provider.name);
 
-    return json({ result }, 200, origin);
+    return json({ result: completion.content }, 200, origin);
   } catch {
     return json({ error: 'AI proxy error' }, 500);
   }

@@ -91,20 +91,43 @@ export function formatVehicleResaleDisplay(vehicle) {
   return 'Orta · segment ort.';
 }
 
-function computeFiveYearOwnershipTotal(vehicle) {
+function computeOwnershipHorizonSummary(vehicle, formData = {}) {
   const own = vehicle?.costs?.ownership;
-  if (!own) return 0;
+  if (!own) {
+    return { net: 0, gross: 0, years: 5, label: '5 Yıl Net Maliyet' };
+  }
 
   const annual = own.annual || {};
-  const years = 5;
-  const vehiclePrice = safeNumber(own.purchaseCost || vehicle.price);
-  const creditCost = Math.round(safeNumber(own.financing?.annual) * years);
-  const insurance = Math.round((safeNumber(annual.insurance) + safeNumber(annual.kasko)) * years);
-  const fuel = Math.round(safeNumber(annual.fuel) * years);
-  const maintenance = Math.round(
-    (safeNumber(annual.maintenance) + safeNumber(annual.inspection) + safeNumber(annual.tires)) * years
+  const months = clamp(Number(formData?.ownership_months || own.totals?.horizonMonths || 60), 12, 60);
+  const years = months / 12;
+  const annualCash = safeNumber(
+    annual.allInTotal ||
+      annual.operatingTotal ||
+      annual.fuel +
+        annual.insurance +
+        annual.kasko +
+        annual.maintenance +
+        annual.inspection +
+        annual.tires +
+        annual.mtv +
+        annual.financing
   );
-  return vehiclePrice + creditCost + insurance + fuel + maintenance;
+  const registration = safeNumber(own.oneTime?.registrationFees);
+  const purchase = safeNumber(own.purchaseCost || vehicle.price);
+  const dep = own.depreciation || {};
+  const residualPct = safeNumber(dep.residualPct12 || 0.78);
+  const residualValue = Math.round(purchase * Math.pow(residualPct, years));
+
+  const gross = Math.round(annualCash * years + registration + purchase);
+  const net = Math.round(annualCash * years + registration + purchase - residualValue);
+  const roundedYears = Math.round(years);
+
+  return {
+    net,
+    gross,
+    years: roundedYears,
+    label: `${roundedYears} Yıl Net Maliyet`
+  };
 }
 
 function confidenceTierLabel(vehicle, fallbackScore = 0) {
@@ -120,6 +143,7 @@ export function buildRecommendationPayload(topResult, formData, results, intel) 
   const vehicle = toRecommendationVehicle(topResult);
   const intelScores = topResult?.recommendationIntelligence
     || buildRecommendationIntelligence(topResult, formData, { alternatives: results, rank: 0, leader: topResult });
+  const ownership = computeOwnershipHorizonSummary(topResult, formData);
 
   return {
     vehicle,
@@ -127,7 +151,9 @@ export function buildRecommendationPayload(topResult, formData, results, intel) 
     confidenceLabel: confidenceTierLabel(topResult, intel.confidenceScore),
     confidenceScore: intel.confidenceScore,
     annualFuelCost: computeAnnualFuelCost(topResult),
-    fiveYearOwnership: computeFiveYearOwnershipTotal(topResult),
+    fiveYearOwnership: ownership.net,
+    ownershipHorizonLabel: ownership.label,
+    ownershipGrossTotal: ownership.gross,
     aiSummary: intel.executiveSummary || (topResult?.reasons || [])[0] || '',
     intelligence: intelScores,
     recommendationLabel: intel.recommendationLabel || 'En Uygun'
@@ -151,11 +177,15 @@ export function buildWhyRecommendedCards(recommendation, formData) {
       icon: '⛽',
       title: 'Yakıt ekonomisi',
       score: intel.operatingCostScore ?? 70,
-      text: vehicle.fuel === 'electric'
-        ? 'Elektrikli segment — düşük işletme maliyeti profili.'
-        : vehicle.fuel === 'hybrid'
-          ? 'Hibrit motor — şehir içi tüketimde verimli profil.'
-          : 'Yakıt maliyeti profilinize göre segment ortalamasıyla uyumlu.'
+      text: (() => {
+        const annualFuel = computeAnnualFuelCost(recommendation.vehicle);
+        if (annualFuel > 0) {
+          return `Tahmini yıllık yakıt/enerji: ${formatTryAmount(annualFuel)}.`;
+        }
+        if (vehicle.fuel === 'electric') return 'Elektrikli segment — düşük işletme maliyeti profili.';
+        if (vehicle.fuel === 'hybrid') return 'Hibrit motor — şehir içi tüketimde verimli profil.';
+        return 'Yakıt maliyeti profilinize göre segment ortalamasıyla uyumlu.';
+      })()
     },
     {
       icon: '💰',
@@ -278,7 +308,9 @@ export function buildHeroHighlights(recommendation) {
     },
     {
       label: 'TCO avantajı',
-      ok: (intel.operatingCostScore ?? 0) >= 60
+      ok:
+        (intel.operatingCostScore ?? 0) >= 60 ||
+        safeNumber(recommendation?.fiveYearOwnership) > 0
     },
     {
       label: 'Segment uyumu',

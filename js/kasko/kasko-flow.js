@@ -10,7 +10,7 @@ export function getKaskoOptions(field, state = {}) {
   const options = KASKO_OPTIONS[field] || [];
   if (field === 'vehicle_category') {
     if (state.usage_type === 'ticari') {
-      return pickOptions(options, ['ticari']);
+      return pickOptions(options, ['ticari_arac']);
     }
     if (state.usage_type === 'ozel') {
       return pickOptions(options, ['otomobil', 'suv']);

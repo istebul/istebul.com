@@ -20,11 +20,20 @@ const BUDGET_EXCLUDE = [
   /^assets\/finans-runtime\//,
   /^assets\/sigorta-runtime\//,
   /^assets\/kasko-runtime\//,
+  /^assets\/listing-analysis-runtime\//,
+  /^assets\/ai-listings-admin-runtime\//,
   /^js\/auto\//,
   /^js\/sigorta\//,
   /^js\/tatil\//,
   /^js\/finans\//,
   /^js\/real-estate\//,
+  /** Vertical page entry — not loaded by homepage SPA shell. */
+  /^js\/runtime\/vertical-locale-shell\.js$/,
+  /** Lazy-loaded on vertical results surfaces only. */
+  /^js\/decision\/ai-decision-engine-v3\.js$/,
+  /^js\/decision\/decision-v3-mount\.js$/,
+  /** Standalone copy for vertical shells; homepage ships analytics via app.bundle. */
+  /^js\/runtime\/site-analytics-boot\.js$/,
   /^css\/bundles\//,
   /^assets\/lucide\.min\.js$/,
   /^env\.js$/,
@@ -45,6 +54,8 @@ const BUDGET_EXCLUDE = [
   /^css\/partner-platform/,
   /^css\/seo-landing/,
   /^css\/admin-partner-ops/,
+  /^css\/admin-ai-listings/,
+  /^css\/listing-analysis/,
   /^css\/rtl/
 ];
 

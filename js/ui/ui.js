@@ -4,6 +4,11 @@ import { installAssistantUI } from './assistant-ui.js';
 import { escapeHtml as escapeHtmlValue, safeImageUrl as sanitizeImageUrl, safeUrl } from '../core/security.js';
 import { refreshLucideIcons, scheduleLucideIcons } from '../runtime/lucide-loader.js';
 import { revenueManager } from '../features/monetization/revenue-manager.js';
+import {
+    AI_SCORE_DISCLAIMER,
+    buildListingTrustStripHtml,
+    hasPublicSourceUrl
+} from './listing-trust-ui.js';
 
 if (typeof document !== 'undefined') {
     document.addEventListener('ib:refresh-icons', () => {
@@ -136,7 +141,7 @@ export class UIManager {
             mobileAuthActions.id = 'mobile-auth-actions';
             mobileAuthActions.className = 'mobile-auth-actions';
             mobileAuthActions.innerHTML = `
-                <a href="/auto/" class="btn btn-primary" data-analytics-cta="cta_primary_auto" data-analytics-placement="nav_mobile">TCO analizini başlat</a>
+                <a href="/karar-asistani/" class="btn btn-primary" data-native-route data-analytics-cta="cta_decision_nav_mobile" data-analytics-placement="nav_mobile" data-i18n="home.ctaAnalyze">Ön değerlendirmeye başla</a>
                 <button type="button" class="btn btn-outline" data-auth-open="login" data-mobile-login>Üye Girişi</button>
                 <button type="button" class="btn btn-primary" data-auth-open="register" data-mobile-register>Üye Ol</button>
             `;
@@ -431,7 +436,7 @@ export class UIManager {
         if (!container) return;
 
         container.innerHTML = categories.map(category => `
-            <a href="/ilanlar/" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçenekleri</a>
+            <a href="/secenekler/" data-category="${this.escapeHtml(category.id)}" class="${category.id === activeCategory ? 'active' : ''}">${this.escapeHtml(category.name)} Seçenekleri</a>
         `).join('');
     }
 
@@ -460,11 +465,14 @@ export class UIManager {
 
     getListingPrimaryActionLabel(categoryId) {
         const labels = {
-            arac: 'İlana Git',
-            ev: 'Emlak Kaynağı',
-            tatil: 'Paketi Gör'
+            arac: 'Seçeneği İncele',
+            ev: 'Seçeneği İncele',
+            tatil: 'Seçeneği İncele',
+            finansman: 'Seçeneği İncele',
+            sigorta: 'Seçeneği İncele',
+            kasko: 'Seçeneği İncele'
         };
-        return labels[categoryId] || 'İlana Git';
+        return labels[categoryId] || 'Seçeneği İncele';
     }
 
     getListingInsightItems(listing = {}, aiScore = 0) {
@@ -484,7 +492,12 @@ export class UIManager {
             base.push('Tatil analizi', 'Paket kontrolü', 'İptal koşulu');
         }
 
-        return [...base, 'Uyum skoru ' + aiScore + '/100'].slice(0, 4);
+        const items = [...base];
+        const displayScore = this.resolveListingQualityScoreDisplay(listing, aiScore);
+        if (displayScore !== null) {
+            items.push('Uyum skoru ' + displayScore + '/100');
+        }
+        return items.slice(0, 4);
     }
 
     getListingInsightsMarkup(listing = {}, aiScore = 0) {
@@ -500,6 +513,21 @@ export class UIManager {
         }
 
         return null;
+    }
+
+    /**
+     * @param {Record<string, unknown>} [listing]
+     * @param {number|null|undefined} [overrideScore]
+     * @returns {number|null}
+     */
+    resolveListingQualityScoreDisplay(listing = {}, overrideScore) {
+        const raw = overrideScore !== undefined && overrideScore !== null
+            ? overrideScore
+            : this.getListingQualityScore(listing);
+        if (raw === null || raw === undefined || raw === '') return null;
+        const num = Number(raw);
+        if (!Number.isFinite(num) || num <= 0) return null;
+        return Math.max(0, Math.min(100, Math.round(num)));
     }
 
     getListingComparisonSignature(listing = {}) {
@@ -550,8 +578,8 @@ export class UIManager {
         if (options.vacationType) parts.push(vacationLabels[options.vacationType] || options.vacationType);
         if (options.search) parts.push('Arama: ' + options.search);
 
-        if (options.ownedOnly || options.userId) return count ? 'Yayınladığınız ilanlar' : 'Henüz ilan yayınlamadınız';
-        if (!count) return 'Henüz ilan yok. İlk ilan yayınlandığında burada görünecek.';
+        if (options.ownedOnly || options.userId) return count ? 'Yayınladığınız seçenekler' : 'Henüz seçenek yayınlamadınız';
+        if (!count) return 'Henüz değerlendirilebilir seçenek yok. İlk seçenek eklendiğinde burada görünecek.';
         return parts.length ? parts.join(' · ') : 'Türkiye geneli · karar skoruna göre keşif';
     }
 
@@ -602,13 +630,13 @@ export class UIManager {
             <div class="listing-detail-card listing-detail-premium">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>İlan detayları hazırlanıyor...</p>
+                    <p>Seçenek detayı hazırlanıyor...</p>
                 </div>
             </div>
         `;
     }
 
-    renderListingDetailEmpty(message = 'İlan detayları bulunamadı.') {
+    renderListingDetailEmpty(message = 'Seçenek detayı bulunamadı.') {
         const section = document.getElementById('listing-detail-content');
         if (!section) return;
 
@@ -616,11 +644,11 @@ export class UIManager {
             <div class="listing-detail-card listing-detail-premium">
                 <div class="empty-state">
                     <i data-lucide="search-x"></i>
-                    <h3>İlan bulunamadı</h3>
+                    <h3>Seçenek bulunamadı</h3>
                     <p>${this.escapeHtml(message)}</p>
                     <div class="listing-actions">
                         <a href="/" class="btn btn-outline" data-native-route>Ana sayfaya dön</a>
-                        <a href="/ilanlar/" class="btn btn-primary" data-native-route>Seçenekleri incele</a>
+                        <a href="/secenekler/" class="btn btn-primary" data-native-route>Seçenekleri incele</a>
                     </div>
                 </div>
             </div>
@@ -629,31 +657,43 @@ export class UIManager {
         this.loadIcons();
     }
 
-    async renderListingDetail(listing, favoriteIds = [], decisionProfile = null, comparisonSignatures = []) {
+    async renderListingDetail(listing, favoriteIds = [], decisionProfile = null, comparisonSignatures = [], userDecisionContext = null) {
         const section = document.getElementById('listing-detail-content');
         if (!section) return;
 
-        const { renderListingGalleryHtml, bindListingGallery } = await import('./listing-gallery-ui.js');
+        const {
+            renderListingGalleryHtml,
+            bindListingGallery,
+            bindListingGenericImageFallbacks,
+            bindListingVehicleImageFallbacks
+        } = await import('./listing-gallery-ui.js');
         const listingId = this.escapeHtml(listing.id);
         const galleryHtml = renderListingGalleryHtml(listing, (s) => this.escapeHtml(s), (u) => this.safeImageUrl(u));
-        const externalUrl = this.safeExternalUrl(listing.external_url, {
-            content: listing.id || 'listing_detail',
-            campaign: listing.category || 'marketplace'
-        });
+        const hasExternalSource = hasPublicSourceUrl(listing);
+        const externalUrl = hasExternalSource
+            ? this.safeExternalUrl(listing.source_url ?? listing.external_url, {
+                content: listing.id || 'listing_detail',
+                campaign: listing.category || 'marketplace'
+            })
+            : '';
         const isFavorite = favoriteIds.includes(listing.id.toString());
         const isCompared = (Array.isArray(comparisonSignatures) ? comparisonSignatures : []).map(String).includes(this.getListingComparisonSignature(listing));
         const locationLabel = this.getListingLocationLabel(listing);
         const categoryLabel = this.getCategoryLabel(listing.category || '');
-        const aiScore = decisionProfile?.score || this.getListingQualityScore(listing);
+        const profileScore = decisionProfile?.score;
+        const aiScoreDisplay = this.resolveListingQualityScoreDisplay(
+            listing,
+            profileScore !== undefined && profileScore !== null ? profileScore : undefined
+        );
         const actionLabel = this.getListingPrimaryActionLabel(listing.category || '');
         section.innerHTML = `
             <div class="listing-detail-card listing-detail-premium">
                 <div class="listing-detail-header">
                     <div>
-                        <span class="assistant-kicker">${this.escapeHtml(categoryLabel || 'İlan')} detay analizi</span>
+                        <span class="assistant-kicker">${this.escapeHtml(categoryLabel || 'Seçenek')} detay analizi</span>
                         <h2>${this.escapeHtml(listing.title)}</h2>
                         <div class="listing-detail-badges">
-                            <span title="Metodolojik uyum skoru; kesin sonuç değildir"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScore)}/100</span>
+                            ${aiScoreDisplay !== null ? `<span title="${this.escapeHtml(AI_SCORE_DISCLAIMER)}" aria-label="Uyum skoru ${this.escapeHtml(aiScoreDisplay)}/100. ${this.escapeHtml(AI_SCORE_DISCLAIMER)}"><i data-lucide="sparkles"></i> Uyum skoru ${this.escapeHtml(aiScoreDisplay)}/100</span>` : ''}
                             <span><i data-lucide="map-pin"></i> ${this.escapeHtml(locationLabel)}</span>
                             <span><i data-lucide="clock-3"></i> ${this.formatDate(listing.created_at)}</span>
                         </div>
@@ -663,25 +703,38 @@ export class UIManager {
                 <div class="listing-detail-body listing-detail-body-gallery">
                     ${galleryHtml}
                     <div class="listing-detail-info">
-                        ${this.getListingInsightsMarkup(listing, aiScore)}
+                        ${this.getListingInsightsMarkup(listing, aiScoreDisplay ?? undefined)}
+                        ${buildListingTrustStripHtml(listing, { escapeHtml: (value) => this.escapeHtml(value) })}
                         <p><strong>Açıklama:</strong></p>
                         <p>${this.escapeHtml(listing.description || 'Açıklama bulunamadı.')}</p>
                         <div class="listing-actions">
                             <button class="btn ${isFavorite ? 'btn-primary' : 'btn-outline'}" data-action="favorite" data-listing-id="${listingId}"><i data-lucide="heart"></i> ${isFavorite ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}</button>
                             <button class="btn ${isCompared ? 'btn-primary' : 'btn-outline'}" data-action="compare" data-listing-id="${listingId}"><i data-lucide="${isCompared ? 'check' : 'columns-3'}"></i> ${isCompared ? 'Karşılaştırmada' : 'Karşılaştır'}</button>
-                            <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Asistanda analiz et</a>
-                            <a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> ${this.escapeHtml(actionLabel)}</a>
+                            <a href="/karar-asistani/" class="btn btn-outline"><i data-lucide="sparkles"></i> Ön değerlendirmeye başla</a>
+                            ${hasExternalSource ? `<a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> ${this.escapeHtml(actionLabel)}</a>` : ''}
                         </div>
                     </div>
                 </div>
                 ${this.getListingDetailDecisionMarkup(decisionProfile, listing)}
+                <div class="listing-detail-decision-center">${await this.getUserDecisionCenterMarkup(userDecisionContext, listing)}</div>
             </div>
         `;
 
         bindListingGallery(section);
+        bindListingVehicleImageFallbacks(section, listing);
+        bindListingGenericImageFallbacks(section, listing);
         this.loadIcons();
     }
 
+    async getUserDecisionCenterMarkup(ctx, listing = {}) {
+        const { buildUserDecisionCenterHtml, buildUserDecisionCenterEmptyHtml } = await import(
+            '../user-decision-center/index.js'
+        );
+        if (!ctx) {
+            return buildUserDecisionCenterEmptyHtml('Bu seçenek için karar analizi henüz hazır değil.');
+        }
+        return buildUserDecisionCenterHtml({ ...ctx, listing: ctx.listing ?? listing });
+    }
 
     getListingDetailDecisionMarkup(profile, listing = {}) {
         if (!profile) return '';
@@ -689,9 +742,6 @@ export class UIManager {
             price: Math.max(Number(profile.price || 0), 1),
             periodicCost: Math.max(Number(profile.periodicCost || 0), 1),
             monthlyPayment: Math.max(Number(profile.monthlyPayment || 0), 1)
-        };
-        const actionProfile = {
-            channels: [{ url: listing.external_url || 'https://www.sahibinden.com/' }]
         };
         return '<section class="listing-detail-decision">' +
             '<div class="listing-detail-decision-head">' +
@@ -708,7 +758,7 @@ export class UIManager {
             this.getComparisonGraphMarkup(profile, maxValues) +
             (profile.tags?.length ? '<div class="comparison-tags">' + profile.tags.map((tag) => '<span>' + this.escapeHtml(tag) + '</span>').join('') + '</div>' : '') +
             this.getListingDetailRowsMarkup(profile.calculationRows) +
-            this.getRecommendationActionPlanMarkup(profile.categoryId || listing.category, actionProfile) +
+            this.getRecommendationActionPlanMarkup(profile.categoryId || listing.category, listing) +
         '</section>';
     }
 
@@ -730,15 +780,20 @@ export class UIManager {
                     <h3>Henüz favori seçenek yok</h3>
                     <p>Karar skoruna göre seçenekleri keşfedin; beğendiklerinizi favorilere ekleyin.</p>
                     <div class="empty-state-actions">
-                        <a href="/auto/" class="btn btn-primary">Ücretsiz maliyet analizi</a>
-                        <a href="/ilanlar" class="btn btn-outline" data-native-route>Seçenekleri gör</a>
+                        <a href="/karar-asistani/" class="btn btn-primary">Ön değerlendirme başlat</a>
+                        <a href="/secenekler" class="btn btn-outline" data-native-route>Seçenekleri gör</a>
                     </div>
                 </div>
             `;
             return;
         }
 
-        container.innerHTML = favorites.map(listing => `
+        container.innerHTML = favorites.map(listing => {
+            const hasExternalSource = hasPublicSourceUrl(listing);
+            const externalUrl = hasExternalSource
+                ? this.safeExternalUrl(listing.source_url ?? listing.external_url)
+                : '';
+            return `
             <div class="favorite-card">
                 <div class="favorite-card-body">
                     <h4>${this.escapeHtml(listing.title)}</h4>
@@ -748,11 +803,12 @@ export class UIManager {
                         <button class="btn btn-outline" data-favorite-id="${this.escapeHtml(listing.id)}"><i data-lucide="heart-off"></i> Kaldır</button>
                         <button class="btn btn-outline" data-action="detail" data-listing-id="${this.escapeHtml(listing.id)}"><i data-lucide="eye"></i> Detay</button>
                         <button class="btn btn-outline" data-action="compare" data-listing-id="${this.escapeHtml(listing.id)}"><i data-lucide="columns-3"></i> Karşılaştır</button>
-                        <a href="${this.safeExternalUrl(listing.external_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> İlanı Gör</a>
+                        ${hasExternalSource ? `<a href="${externalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i data-lucide="external-link"></i> Seçeneği İncele</a>` : ''}
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         this.loadIcons();
     }
@@ -970,7 +1026,10 @@ export class UIManager {
         const labels = {
             arac: 'Araç',
             ev: 'Ev',
-            tatil: 'Tatil'
+            tatil: 'Tatil',
+            finansman: 'Finansman',
+            sigorta: 'Sigorta',
+            kasko: 'Kasko'
         };
 
         return labels[categoryId] || categoryId;
@@ -1276,7 +1335,7 @@ export class UIManager {
                 <div class="empty-state messages-empty-state">
                     <i data-lucide="message-square"></i>
                     <h3>Henüz mesaj yok</h3>
-                    <p>İlan veya karar süreciyle ilgili mesajlarınız burada görünür.</p>
+                    <p>Karar süreci ve seçenek inceleme mesajlarınız burada görünür.</p>
                 </div>
             `;
             this.loadIcons?.();

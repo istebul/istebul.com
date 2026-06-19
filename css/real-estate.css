@@ -123,6 +123,18 @@ html:has(body.housing-page) {
 .housing-step-card { padding: 20px; }
 .housing-step-card h2 { margin: 0 0 14px; font-size: 1.2rem; }
 
+.housing-assistant-prefill-hint {
+  margin: 0 0 14px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.06);
+  color: #1e3a8a;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
 .housing-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .housing-option-card, .housing-chip {
   min-height: 44px; border-radius: 12px; border: 1px solid var(--housing-border); background: rgba(7, 14, 33, .86); color: var(--housing-text); cursor: pointer; padding: 12px; text-align: left;
@@ -146,6 +158,7 @@ html:has(body.housing-page) {
 
 .housing-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .housing-form-grid--budget { grid-template-columns: 1fr; gap: 12px; }
+.housing-form-span { grid-column: 1 / -1; }
 @media (min-width: 640px) {
   .housing-form-grid--budget { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -325,4 +338,33 @@ html.ib-ds-v4 body.housing-page #housing-results .ib-premium-dashboard {
   background: #ffffff;
   color: #0f172a;
   border-color: #e2e8f0;
+}
+
+/* Decision Engine V3 / Decision OS — koyu konut sayfasında okunaklı yüzey */
+body.housing-page #housing-results .decision-v3-root,
+body.housing-page #housing-results .decision-v3-mount,
+body.housing-page #housing-results .dos-root,
+body.housing-page #housing-results .decision-os-mount {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+body.housing-page #housing-results .decision-v3-root :is(h2, h3, strong) {
+  color: #0f172a !important;
+}
+
+body.housing-page #housing-results .decision-v3-root :is(p:not(.decision-v3-kicker), li) {
+  color: #334155 !important;
+}
+
+body.housing-page #housing-results .decision-v3-kicker {
+  color: #2563eb !important;
+}
+
+@media (max-width: 390px) {
+  .housing-assistant-prefill-hint {
+    font-size: 0.82rem;
+    padding: 0.65rem 0.75rem;
+  }
 }

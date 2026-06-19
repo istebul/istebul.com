@@ -1,5 +1,5 @@
 /**
- * Shared Content-Security-Policy strings for _headers and netlify.toml.
+ * Shared Content-Security-Policy strings for Cloudflare Pages _headers.
  * Keep script-src without 'unsafe-inline' on public pages (inline scripts → external files).
  */
 

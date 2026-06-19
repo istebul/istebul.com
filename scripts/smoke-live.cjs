@@ -15,7 +15,7 @@ const UA =
   'Mozilla/5.0 (compatible; isteBul-production-smoke/1.0; +https://www.istebul.com)';
 
 const liveRoutes = [
-  { path: '/', must: ['data-ib-route', 'Karar analizini başlat'], status: 200 },
+  { path: '/', must: ['data-ib-route', 'Ön değerlendirmeye başla'], status: 200 },
   { path: '/auto/', must: ['auto-wizard', 'TCO'], status: 200 },
   { path: '/konut/', must: ['Konut Karar', 'housing-page', 'housing-flow'], status: 200, optional: true },
   { path: '/finans/', must: ['Finansman', 'finans-page', 'finans-flow'], status: 200, optional: true },
@@ -32,9 +32,9 @@ const liveRoutes = [
     status: 200,
     optional: true
   },
-  { path: '/karar-asistani/', must: ['Araç karar asistanı', 'seo-page'], status: 200, optional: true },
+  { path: '/karar-asistani/', must: ['Karar merkezi', 'seo-page'], status: 200, optional: true },
   { path: '/karsilastir/', must: ['Karşılaştır', 'seo-page'], status: 200, optional: true },
-  { path: '/ilanlar/', must: ['Araç ilanı', 'seo-page'], status: 200, optional: true },
+  { path: '/secenekler/', must: ['Seçenek', 'seo-page'], status: 200, optional: true },
   { path: '/planlar', must: ['Planlar ve fiyatlandırma', 'seo-page'], status: 200, optional: true },
   { path: '/blog', must: ['Karar rehberleri', 'seo-page'], status: 200, optional: true },
   { path: '/duyurular', must: ['isteBul duyuruları', 'seo-page'], status: 200, optional: true },

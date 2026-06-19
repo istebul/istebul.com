@@ -20,13 +20,13 @@
 | Dead admin modules unclear | Deprecation headers + README in `js/admin/`, `js/features/admin/` |
 | Duplicate partner_status block in edge fn | Removed duplicate in `admin-action` |
 | Architecture undocumented | `docs/ARCHITECTURE.md` |
+| Dead `ListingManager` / `ProfileManager` modules | Removed `js/features/ilan/ilan.js`, `js/features/profil/profil.js`; profile save uses `API.updateProfile` in `account.js` (P0-5) |
 
 ## Remaining backlog (prioritized)
 
 ### P0 — High risk
 
-1. **Split `js/app.js` (~4k lines)** — extract `decision-assistant/`, `listings/`, `billing/`; keep bootstrap only.
-2. **Wire or remove `ListingManager` / `ProfileManager`** — currently constructed but unused.
+1. **Split `js/app.js` (~4k lines)** — extract `decision-assistant/`, `listings/`, `billing/`; keep bootstrap only (see P0-3 modularization plan).
 
 ### P1 — Medium
 

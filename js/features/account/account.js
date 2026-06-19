@@ -41,6 +41,7 @@ export class AccountManager {
         this.loading = false;
         this.app = null;
         this._openBillingPortal = false;
+        this._profileListingId = '';
     }
 
     handleQueryParams(params = new URLSearchParams()) {
@@ -51,6 +52,10 @@ export class AccountManager {
         const paymentSuccess = params.get('payment') === 'success';
         const paymentFailed = params.get('payment') === 'failed';
         const tab = params.get('tab');
+        const listing = params.get('listing');
+        if (listing) {
+            this._profileListingId = String(listing).trim();
+        }
 
         const allowedTabs = ['overview', 'analyses', 'favorites', 'comparisons', 'recommendations', 'notifications', 'settings', 'security', 'help'];
         if (tab === 'subscription') {
@@ -137,7 +142,15 @@ export class AccountManager {
                 console.warn('Entitlements could not be loaded:', entError);
             }
 
-            this.renderAccount(currentUser, profile, entitlements);
+            const decisionPlatform =
+                (await this.app?.loadUserDecisionPanelData?.({
+                    listingId: this._profileListingId,
+                    autoSelect: !this._profileListingId
+                })) ??
+                this.app?.getUserDecisionPanelData?.() ??
+                {};
+
+            this.renderAccount(currentUser, profile, entitlements, decisionPlatform);
             this.maybeShowOnboarding(profile);
             if (this.subscription?.status === 'past_due') {
                 enrollBillingHelp({
@@ -350,7 +363,7 @@ export class AccountManager {
                 bio: form.bio.value.trim()
             };
 
-            const profile = await app.profil.updateProfile(app.currentUser.id, updates);
+            const profile = await API.updateProfile(app.currentUser.id, updates);
             app.currentUser.profile = profile;
             this.ui?.updateUserUI?.(profile);
             this.ui?.showSuccess?.(config.messages.success.profileUpdated);
@@ -404,7 +417,7 @@ export class AccountManager {
                     <ul class="account-trust-list">
                         <li><i data-lucide="lock"></i> Oturumlar şifreli bağlantı üzerinden korunur</li>
                         <li><i data-lucide="mail-check"></i> E-posta doğrulama ve şifre sıfırlama desteği</li>
-                        <li><i data-lucide="credit-card"></i> iyzico / PayTR ile güvenli ödeme</li>
+                        <li><i data-lucide="credit-card"></i> Pro erken erişim — ödeme aktivasyonu sonrası bilgilendirme</li>
                     </ul>
                     <div class="account-guest-actions">
                         <button type="button" class="btn btn-primary" id="account-login-btn" data-auth-open="login">Hesabına gir</button>
@@ -457,7 +470,7 @@ export class AccountManager {
         `;
     }
 
-    renderAccount(user, profile, entitlements = []) {
+    renderAccount(user, profile, entitlements = [], decisionPlatform = null) {
         const root = document.getElementById('account-root');
         if (!root) return;
 
@@ -485,7 +498,11 @@ export class AccountManager {
             history: this.readDecisionHistory(user.id),
             favorites: this.readFavorites(),
             hasPremium,
-            membershipLabel
+            membershipLabel,
+            decisionPlatform:
+                decisionPlatform ??
+                this.app?.getUserDecisionPanelData?.() ??
+                {}
         });
         document.getElementById('profil')?.classList.add('profil-has-dashboard');
         const hubTab = ACCOUNT_HUB_TABS.includes(this.activeTab) ? this.activeTab : 'settings';
@@ -616,7 +633,7 @@ export class AccountManager {
             recommendations,
             notificationCount: recommendations.length,
             quickActions: [
-                { title: 'Yeni Analiz Başlat', description: 'İstediğiniz kategoride yeni analiz yap', href: '/auto/', icon: 'plus-circle' },
+                { title: 'Yeni Analiz Başlat', description: 'İstediğiniz kategoride yeni analiz yap', href: '/karar-asistani/', icon: 'plus-circle' },
                 { title: 'Karşılaştırma Oluştur', description: 'Seçenekleri karşılaştır', href: '/karsilastir', icon: 'scale' },
                 { title: 'Raporlarımı İndir', description: 'Tüm analiz raporlarını indir', href: '/gecmis', icon: 'download' },
                 { title: 'Favori Listemi Gör', description: 'Kaydettiğiniz tüm öğeleri görüntüleyin', href: '/favoriler', icon: 'heart' }

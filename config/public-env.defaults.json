@@ -2,5 +2,6 @@
   "SUPABASE_URL": "https://hjfrcdstbyonmgatgwcc.supabase.co",
   "PLAUSIBLE_DOMAIN": "istebul.com",
   "GA4_MEASUREMENT_ID": "G-SEV413SX9T",
-  "GOOGLE_OAUTH_ENABLED": "true"
+  "GOOGLE_OAUTH_ENABLED": "true",
+  "DECISION_OS_ENABLED": "true"
 }

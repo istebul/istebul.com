@@ -21,9 +21,9 @@ const copyDataSubdir = (subdir) => {
 };
 const copyGrowthDataDir = () => copyDataSubdir('growth');
 const copySalesDataDir = () => copyDataSubdir('sales');
-const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'metodoloji/index.html', 'veri-kaynaklari/index.html', 'konut/index.html', 'tatil/index.html', 'finans/index.html', 'sigorta/index.html', 'kasko/index.html', 'ilan-analizi/index.html', 'gizlilik.html', 'kvkk.html', 'kullanim-sartlari.html', 'cerez-politikasi.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'partner-closing-kit.html', 'karar-moat.html', 'css/seo-landing.css', 'css/istebul-ui-final-v5.css', 'css/istebul-ui-product-cards-v6.css', 'css/istebul-premium-final-v7.css', 'css/home-header-saas-v1.css', 'css/home-product-cards-enterprise-v1.css', 'css/corporate-pages.css', 'css/partner-platform.css', 'css/partner-funnel-form-v1.css', 'css/admin-partner-ops.css',
+const staticFiles = ['_headers', '_redirects', '_routes.json', 'index.html', 'offline.html', 'manifest.json', 'sw.js', 'robots.txt', 'sitemap.xml', 'ads.txt', 'admin-panel.html', 'importmap.json', 'favicon.ico', 'auto/index.html', 'metodoloji/index.html', 'veri-kaynaklari/index.html', 'konut/index.html', 'tatil/index.html', 'finans/index.html', 'sigorta/index.html', 'kasko/index.html', 'ilan-analizi/index.html', 'gizlilik.html', 'kvkk.html', 'gdpr.html', 'kullanim-sartlari.html', 'cerez-politikasi.html', 'partner-olun.html', 'partner-planlar.html', 'partner-guven.html', 'partner-docs.html', 'partner-onboarding.html', 'partner-basvuru.html', 'partner-closing-kit.html', 'karar-moat.html', 'css/seo-landing.css', 'css/istebul-ui-final-v5.css', 'css/istebul-ui-product-cards-v6.css', 'css/istebul-premium-final-v7.css', 'css/home-header-saas-v1.css', 'css/home-product-cards-enterprise-v1.css', 'css/corporate-pages.css', 'css/partner-platform.css', 'css/partner-funnel-form-v1.css', 'css/admin-partner-ops.css',
     'css/admin-internal-dashboards.css',
-    'css/admin-ops-ai-assistant.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css'];
+    'css/admin-ops-ai-assistant.css', 'css/admin-ai-listings.css', 'css/growth-cro.css', 'css/growth-retention.css', 'css/help-center.css', 'css/sales-partner.css', 'admin/ai-listings.html', 'admin/forbidden.html'];
 const { buildSeoPages, generateSitemap, generateRobots } = require('./lib/seo.cjs');
 const { patchSpaShellHtml, loadRouteMeta } = require('./lib/spa-shell-meta.cjs');
 const { injectLocaleShellMeta, loadLocaleIds } = require('./lib/locale-shell-meta.cjs');
@@ -217,6 +217,16 @@ staticFiles.forEach((file) => {
   }
 });
 
+const decisionCategoryCardCssSrc = 'js/features/decision-cards/decision-category-card.css';
+const decisionCategoryCardCssEntry = 'css/decision-category-card.css';
+if (fs.existsSync(path.join(root, decisionCategoryCardCssSrc))) {
+  fs.mkdirSync(path.join(root, 'css'), { recursive: true });
+  fs.copyFileSync(
+    path.join(root, decisionCategoryCardCssSrc),
+    path.join(root, decisionCategoryCardCssEntry)
+  );
+}
+
 buildHashedCssAssets({
   root,
   assetRefs,
@@ -308,6 +318,19 @@ partnerCorporateEntries.forEach((entry) => {
   });
 });
 
+const decisionV3Out = path.join(dist, 'js/decision/ai-decision-engine-v3.js');
+ensureDir(decisionV3Out);
+esbuild.buildSync({
+  entryPoints: [path.join(root, 'js/decision/ai-decision-engine-v3.js')],
+  bundle: true,
+  format: 'esm',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  sourcemap: false,
+  outfile: decisionV3Out
+});
+
 const verticalLocaleShellOut = path.join(dist, 'js/runtime/vertical-locale-shell.js');
 ensureDir(verticalLocaleShellOut);
 esbuild.buildSync({
@@ -364,7 +387,8 @@ const emitRuntimeScript = (relativePath) => {
   'js/runtime/static-cookie-consent.js',
   'js/runtime/perf-fonts-async.js',
   'js/runtime/site-social-deferred-boot.js',
-  'js/runtime/category-guides-deferred-boot.js'
+  'js/runtime/category-guides-deferred-boot.js',
+  'js/decision/decision-v3-mount.js'
 ].forEach(emitRuntimeScript);
 
 const routeBootstrapOut = path.join(dist, 'js/runtime/route-bootstrap-head.js');
@@ -463,6 +487,13 @@ if (fs.existsSync(tatilAppSrc)) {
     if (tatilCssHashed) {
       tatilHtml = tatilHtml.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
     }
+    const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+    if (decisionCardCssHashed) {
+      tatilHtml = tatilHtml.replace(
+        /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+        `/${decisionCardCssHashed}`
+      );
+    }
     fs.writeFileSync(tatilHtmlPath, minifyHtml(tatilHtml));
   }
 }
@@ -496,6 +527,7 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
   const tatilCssHashed = assetRefs.get('css/tatil.css');
   const themesCssHashed = assetRefs.get('css/vertical-themes.css');
   const finansHeroCssHashed = assetRefs.get('css/finans-hero.css');
+  const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
   if (tatilCssHashed) {
     html = html.replace(/\/css\/tatil(?:\.[a-f0-9]+)?\.css/g, `/${tatilCssHashed}`);
   }
@@ -504,6 +536,12 @@ function bundleVerticalPage(entryRel, htmlRel, runtimeFolder, scriptPattern) {
   }
   if (finansHeroCssHashed) {
     html = html.replace(/\/css\/finans-hero(?:\.[a-f0-9]+)?\.css/g, `/${finansHeroCssHashed}`);
+  }
+  if (decisionCardCssHashed) {
+    html = html.replace(
+      /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+      `/${decisionCardCssHashed}`
+    );
   }
   fs.writeFileSync(htmlPath, minifyHtml(html));
 }
@@ -536,6 +574,21 @@ bundleVerticalPage(
   'listing-analysis-runtime',
   /\/js\/verticals\/listing-analysis\/listing-analysis-app\.js/g
 );
+
+// AI Listings admin CRUD — static HTML only (no _redirects; see cloudflare-redirects-audit)
+bundleVerticalPage(
+  'js/admin/ai-listings-admin.js',
+  'admin/ai-listings.html',
+  'ai-listings-admin-runtime',
+  /\/js\/admin\/ai-listings-admin\.js/g
+);
+
+const aiListingsAdminHtmlPath = path.join(dist, 'admin', 'ai-listings.html');
+if (fs.existsSync(aiListingsAdminHtmlPath)) {
+  const aiListingsAdminHtml = fs.readFileSync(aiListingsAdminHtmlPath, 'utf8');
+  // /admin/listings/ is reserved for CRM deep-link shell (Karar Seçenekleri).
+  writeFile('admin/ai-listings/index.html', aiListingsAdminHtml);
+}
 
 if (fs.existsSync(path.join(root, 'js/sigorta'))) {
   copyDir('js/sigorta');
@@ -575,6 +628,13 @@ if (fs.existsSync(housingAppSrc)) {
     if (housingCssHashed) {
       housingHtml = housingHtml.replace(/\/css\/real-estate(?:\.[a-f0-9]+)?\.css/g, `/${housingCssHashed}`);
     }
+    const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+    if (decisionCardCssHashed) {
+      housingHtml = housingHtml.replace(
+        /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+        `/${decisionCardCssHashed}`
+      );
+    }
     fs.writeFileSync(housingHtmlPath, minifyHtml(housingHtml));
   }
 }
@@ -594,6 +654,13 @@ if (fs.existsSync(autoHtmlPath)) {
     /\/assets\/auto-runtime\/auto-app(?:\.[a-f0-9]+)?\.js(?:\?v=[^"']+)?/g,
     `/assets/auto-runtime/${autoAppFile}`
   );
+  const decisionCardCssHashed = assetRefs.get(decisionCategoryCardCssEntry);
+  if (decisionCardCssHashed) {
+    autoHtml = autoHtml.replace(
+      /\/css\/decision-category-card(?:\.[a-f0-9]+)?\.css(?:\?v=\d+)?/g,
+      `/${decisionCardCssHashed}`
+    );
+  }
   fs.writeFileSync(autoHtmlPath, minifyHtml(autoHtml));
 }
 
@@ -611,7 +678,7 @@ writeFile('build-manifest.json', JSON.stringify(manifest, null, 2));
 
 
 // Create physical SPA route entrypoints to avoid Cloudflare Pages clean-url redirects.
-// App-only SPA shells (SEO hubs /rehber/, /ilanlar/, /karsilastir/ are static HTML from buildSeoPages)
+// App-only SPA shells (SEO hubs /rehber/, /secenekler/, /karsilastir/ are static HTML from buildSeoPages)
 const spaRoutes = ['favoriler', 'gecmis', 'profil', 'ilan-ekle', 'messages'];
 const routeDocumentMeta = loadRouteMeta(root);
 
@@ -633,7 +700,14 @@ const blogBuild = spawnSync(process.execPath, [path.join(root, 'scripts/build-bl
 if (blogBuild.status !== 0) process.exit(blogBuild.status || 1);
 
 /** Dynamic content list routes — SPA shells (must run after SEO/blog static pass). */
-const dynamicContentSpaRoutes = ['blog', 'duyurular', 'kampanyalar'];
+const dynamicContentSpaRoutes = [
+  'blog',
+  'duyurular',
+  'kampanyalar',
+  'karar-asistani',
+  'secenekler',
+  'karsilastir'
+];
 dynamicContentSpaRoutes.forEach((route) => {
   const routeDir = path.join(dist, route);
   fs.mkdirSync(routeDir, { recursive: true });
@@ -666,7 +740,7 @@ const rewriteSeoHtmlAssets = () => {
   const seoRoots = [
     'rehber',
     'karar-asistani',
-    'ilanlar',
+    'secenekler',
     'karsilastir',
     'metodoloji',
     'veri-kaynaklari',
@@ -761,6 +835,7 @@ if (gscCode) {
   );
 }
 
+const { getAdminDeepLinkSlugs } = require('./lib/admin-deep-links.cjs');
 const {
   getGa4MeasurementId,
   applyGa4ConsentHeadToHtmlFiles
@@ -771,6 +846,19 @@ if (ga4Id) {
   console.log(`[ga4] consent-mode head snippet injected into ${ga4Result.injected} HTML file(s)`);
 } else {
   console.warn('[ga4] GA4_MEASUREMENT_ID not set — skip gtag head (see docs/ZIYARETCI_ANALITIK_KURULUM.md)');
+}
+
+/** Admin deep links — physical shells so /admin/* is not rewritten by /* SPA fallback */
+const adminIndexPath = path.join(dist, 'admin', 'index.html');
+if (fs.existsSync(adminIndexPath)) {
+  const adminShellHtml = fs.readFileSync(adminIndexPath, 'utf8');
+  const adminDeepLinkSlugs = getAdminDeepLinkSlugs();
+  adminDeepLinkSlugs.forEach((slug) => {
+    const routeDir = path.join(dist, 'admin', slug);
+    fs.mkdirSync(routeDir, { recursive: true });
+    fs.writeFileSync(path.join(routeDir, 'index.html'), adminShellHtml);
+  });
+  console.log(`[admin] deep-link shells: ${adminDeepLinkSlugs.length} route(s)`);
 }
 
 console.log('Production build complete: dist/');

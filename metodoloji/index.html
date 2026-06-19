@@ -51,7 +51,7 @@
       <img class="ib-brand-logo-nav" src="/assets/brand/istebul-logo-nav.svg" alt="" width="120" height="28" decoding="async">
     </a>
     <nav class="seo-nav" aria-label="Ana navigasyon">
-      <a href="/auto/">Karar Analizi</a>
+      <a href="/karar-asistani/">Ön değerlendirme</a>
       <a href="/karar-asistani/">Karar Asistanı</a>
       <a href="/rehber/arac-alim-karar-asistani/">Rehber</a>
       <a href="/partner-olun.html">Partner</a>
@@ -114,7 +114,7 @@
       </section>
 <section class="seo-section" id="veri-kaynaklari">
         <h2>Veri Kaynakları</h2>
-        <p>Katalog segmentleri, ortalama işletme maliyeti sinyalleri, finansman parametreleri ve kullanıcı girdileri birleştirilir. Kamuya açık TÜİK ve TCMB EVDS referansları ile planlanan iş ortağı beslemeleri /veri-kaynaklari/ adresinde listelenir. Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz.</p>
+        <p>Katalog segmentleri, ortalama işletme maliyeti sinyalleri, finansman parametreleri ve kullanıcı girdileri birleştirilir. TCMB EVDS canlı API ile; TÜİK yayınları manuel referans olarak kalibrasyon varsayımlarına yansıtılır. Planlanan iş ortağı beslemeleri /veri-kaynaklari/ adresinde listelenir. Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz.</p>
         <h3>Güncelleme</h3>
         <p>Piyasa verileri periyodik güncellenir; kritik değişiklikler metodoloji notlarında ve veri kaynakları merkezinde yansıtılır. Geçmiş analizleriniz hesabınızda saklanabilir — silme talebi destek kanalından yapılır.</p>
 <h3>Şeffaflık merkezi</h3>
@@ -122,7 +122,7 @@
       </section>
 <section class="seo-section" id="gizlilik-ve-guvenlik">
         <h2>Gizlilik ve Güvenlik</h2>
-        <p>TLS şifreleme, Turnstile bot koruması (Auto), iyzico / PayTR ile ödeme ve rol tabanlı admin erişimi temel kontrollerdir. Admin paneli ve oturum rotaları robots.txt ile taranmaz.</p>
+        <p>TLS şifreleme, Turnstile bot koruması (Auto), ödeme altyapısı (aktivasyon sonrası) ve rol tabanlı admin erişimi temel kontrollerdir. Admin paneli ve oturum rotaları robots.txt ile taranmaz.</p>
         <h3>Saklama</h3>
         <p>Veri saklama süreleri uyumluluk dokümantasyonunda tanımlıdır. Pazarlama iletişimi yalnızca açık rıza ile yapılır.</p>
       </section>
@@ -141,7 +141,7 @@
         <h2>Kategori genişlemesi: Auto, konut, tatil, finans</h2>
         <p>Karar motoru çekirdeği kategoriler arasında paylaşılır; her dikey kendi girdi şeması ve risk faktör setini kullanır. Auto’da TCO ve kredi etkisi ön plandayken konutta lokasyon, aidat ve deprem riski ağırlık kazanır. Tatilde sezon, konaklama tipi ve iptal koşulları maliyet bandını genişletir. Finansman dikeyinde vade, faiz ve nakit akışı stres testi öne çıkar. Bu ayrım, tek bir «genel sohbet» modeli yerine yapılandırılmış karar çıktısı üretmeyi mümkün kılar. Yeni kategori eklerken önce girdi şeması ve kural seti tanımlanır; AI katmanı en son bağlanır.</p>
         <h3>Sigorta ve kasko</h3>
-        <p>Sigorta karar analizi /sigorta/ adresinde canlıdır (koruma, teminat, prim verimliliği). Kasko modülü yakında; Auto sonuçlarında sigorta kalemi TCO içinde ayrıştırılmıştır.</p>
+        <p>Sigorta karar analizi /sigorta/ adresinde canlıdır (koruma, teminat, prim verimliliği). Kasko karar analizi /kasko/ adresinde canlıdır (hasar riski, teminat kapsamı, prim verimliliği). Auto sonuçlarında sigorta ve kasko kalemleri TCO içinde ayrıştırılmıştır.</p>
       </section>
 <section class="seo-section" id="kalite-guvence-ve-regresyon">
         <h2>Kalite güvence ve regresyon</h2>
@@ -156,7 +156,7 @@
       </section>
 <section class="seo-section" id="kullanici-haklari-ve-seffaflik">
         <h2>Kullanıcı hakları ve şeffaflık</h2>
-        <p>KVKK kapsamında aydınlatma metinleri, çerez politikası ve abonelik iptal akışları erişilebilirdir. Kullanıcı verilerini silme talepleri destek kanalı üzerinden işlenir. Pazarlama e-postası yalnızca açık onayla gönderilir. Karar geçmişi hesapta saklanabilir; bu veri reklam ağlarıyla satılmaz. Ödeme işlemleri iyzico ve PayTR üzerinden alınır; kart verisi isteBul sunucularında tutulmaz.</p>
+        <p>KVKK kapsamında aydınlatma metinleri, çerez politikası ve abonelik iptal akışları erişilebilirdir. Kullanıcı verilerini silme talepleri destek kanalı üzerinden işlenir. Pazarlama e-postası yalnızca açık onayla gönderilir. Karar geçmişi hesapta saklanabilir; bu veri reklam ağlarıyla satılmaz. Ücretli ödemeler sağlayıcı aktivasyonu sonrasında yetkili ödeme kuruluşu üzerinden alınır; kart verisi isteBul sunucularında tutulmaz.</p>
         
       </section>
 <section class="seo-section" id="olcum-deneyler-ve-surekli-iyilestirme">
@@ -182,11 +182,11 @@
       
       <section class="seo-section seo-related">
         <h2>Sonraki rehber önerileri</h2>
-        <ul><li><a href="/veri-kaynaklari/">Veri kaynakları</a></li><li><a href="/auto/">Auto analiz</a></li><li><a href="/rehber/tco-rehberi/">TCO rehberi</a></li><li><a href="/karar-asistani/">Karar asistanı</a></li></ul>
+        <ul><li><a href="/veri-kaynaklari/">Veri kaynakları</a></li><li><a href="/auto/">Araç maliyet analizi</a></li><li><a href="/rehber/tco-rehberi/">TCO rehberi</a></li><li><a href="/karar-asistani/">Karar asistanı</a></li></ul>
       </section>
       <div class="seo-cta">
         <div class="seo-cta-row-inner">
-          <a class="seo-cta-btn" href="/auto/">Metodolojiyi dene — Auto analiz</a>
+          <a class="seo-cta-btn" href="/karar-asistani/">Ön değerlendirme başlat</a>
           
         </div>
         <p class="seo-cta-note">Ücretsiz · KVKK uyumlu · Skorlar kural motorundan gelir</p>
@@ -205,8 +205,8 @@
         <h2>Platform</h2>
         <ul>
           <li><a href="/">Ana sayfa</a></li>
-          <li><a href="/auto/">Ücretsiz analiz</a></li>
-          <li><a href="/ilanlar/">İlanlar</a></li>
+          <li><a href="/karar-asistani/">Ön değerlendirme başlat</a></li>
+          <li><a href="/secenekler/">Seçenekler</a></li>
           <li><a href="/karsilastir/">Karşılaştır</a></li>
         </ul>
       </div>
@@ -214,7 +214,7 @@
         <h2>Rehber</h2>
         <ul>
           <li><a href="/veri-kaynaklari/">Veri kaynakları</a></li>
-          <li><a href="/auto/">Auto analiz</a></li>
+          <li><a href="/auto/">Araç maliyet analizi</a></li>
           <li><a href="/rehber/tco-rehberi/">TCO rehberi</a></li>
           <li><a href="/karar-asistani/">Karar asistanı</a></li>
         </ul>

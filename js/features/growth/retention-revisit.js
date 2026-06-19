@@ -62,7 +62,7 @@ export function evaluateRevisitTrigger(config = {}) {
       savedCount: saved.length,
       streakWeeks: habit.streakWeeks,
       engagementScore: score,
-      ctaPath: saved[0]?.revisitPath || '/auto/',
+      ctaPath: saved[0]?.revisitPath || '/karar-asistani/',
       message:
         'Uzun süredir görüşemedik — kayıtlı kararınıza dönmek veya yeni analiz başlatmak için tek tık.'
     };

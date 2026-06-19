@@ -4,6 +4,10 @@
  */
 const fs = require('fs');
 const path = require('path');
+const {
+  REQUIRED_ADMIN_DEEP_LINK_SLUGS,
+  assertAdminShellHtml
+} = require('./lib/admin-deep-links.cjs');
 
 const root = process.cwd();
 const redirectsPath = path.join(root, 'dist', '_redirects');
@@ -51,6 +55,32 @@ if (adminRedirectRules.length) {
 const adminIndexPath = path.join(root, 'dist', 'admin', 'index.html');
 if (!fs.existsSync(adminIndexPath) || fs.statSync(adminIndexPath).size === 0) {
   errors.push('dist/admin/index.html missing — run npm run build');
+} else {
+  try {
+    assertAdminShellHtml(fs.readFileSync(adminIndexPath, 'utf8'), 'dist/admin/index.html');
+  } catch (err) {
+    errors.push(err.message);
+  }
+}
+
+for (const slug of REQUIRED_ADMIN_DEEP_LINK_SLUGS) {
+  const shellPath = path.join(root, 'dist', 'admin', slug, 'index.html');
+  if (!fs.existsSync(shellPath) || fs.statSync(shellPath).size === 0) {
+    errors.push(
+      `dist/admin/${slug}/index.html missing — admin deep links must be static (not /* SPA fallback)`
+    );
+    continue;
+  }
+  try {
+    assertAdminShellHtml(fs.readFileSync(shellPath, 'utf8'), `dist/admin/${slug}/index.html`);
+  } catch (err) {
+    errors.push(err.message);
+  }
+}
+
+const spaFallback = rules.find((r) => r.source === '/*');
+if (spaFallback?.destination === '/admin/index.html') {
+  errors.push('SPA fallback must not target admin — use physical dist/admin/*/index.html shells');
 }
 
 const spaIdx = rules.findIndex((r) => r.source === '/*');

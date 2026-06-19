@@ -20,7 +20,8 @@ import {
 import {
   buildDecisionIntelligenceResult,
   fetchExecutiveSummaryV3,
-  renderScoreFactorsHtml
+  renderScoreFactorsHtml,
+  renderRiskAnalysisHtml
 } from '../features/results/decision-intelligence-engine.js';
 import { hydrateResultsEconomicIndicators } from '../features/results/results-economic-indicators.js';
 import {
@@ -30,7 +31,9 @@ import {
 } from '../features/results/results-evds-risk-layer.js';
 import { fetchEvdsRatesForEngine } from '../features/evds/evds-market-engine.js';
 import {
+  beginVehicleImageRenderBatch,
   bindVehicleImageFallbacks,
+  endVehicleImageRenderBatch,
   renderVehicleImageHtml,
   reportVehicleImageLoading,
   resolveVehicleImageUrl
@@ -67,6 +70,7 @@ function renderAutoPremiumHero(recommendation, highlights, esc) {
   const imageHtml = renderVehicleImageHtml(vehicle, esc, {
     className: 'auto-v2-hero__image',
     loading: 'eager',
+    isFirst: true,
     width: 960,
     height: 540
   });
@@ -110,7 +114,7 @@ function renderAutoPremiumHero(recommendation, highlights, esc) {
           </div>
         </div>
       </div>
-      <p class="auto-v2-hero__summary" hidden data-auto-v2-summary-slot>${esc(String(recommendation.aiSummary || '').slice(0, 280))}</p>
+      <p class="auto-v2-hero__summary" hidden data-auto-v2-summary-slot>${esc(recommendation.aiSummary || '')}</p>
     </header>`;
 }
 
@@ -122,7 +126,7 @@ function renderHeroMetrics(recommendation, esc) {
         <strong>${esc(recommendation.annualFuelCost ? formatTryAmount(recommendation.annualFuelCost) : '—')}</strong>
       </article>
       <article class="auto-v2-hero-metric">
-        <span>5 Yıl TCO</span>
+        <span>${esc(recommendation.ownershipHorizonLabel || '5 Yıl Net Maliyet')}</span>
         <strong>${esc(recommendation.fiveYearOwnership ? formatTryAmount(recommendation.fiveYearOwnership) : '—')}</strong>
       </article>
       <article class="auto-v2-hero-metric">
@@ -227,8 +231,9 @@ function renderAlternativesSection(alternatives, esc) {
 function renderAutoResultsV2Html(model) {
   const esc = escapeHtml;
   const rec = model.recommendation;
+  const batch = beginVehicleImageRenderBatch();
 
-  return `
+  const html = `
     <section class="auto-v2-panel" aria-label="Auto karar raporu özeti">
       ${renderAutoPremiumHero(rec, model.heroHighlights, esc)}
       ${renderHeroMetrics(rec, esc)}
@@ -248,6 +253,8 @@ function renderAutoResultsV2Html(model) {
           : ''
       }
 
+      ${renderRiskAnalysisHtml(model.riskAnalysis, 'auto-v2')}
+
       <div class="auto-v2-grid">
         <article class="auto-v2-block auto-v2-block--pros">
           <h3>Güçlü Yönler</h3>
@@ -262,7 +269,7 @@ function renderAutoResultsV2Html(model) {
       ${renderAlternativesSection(model.alternatives, esc)}
 
       <article class="auto-v2-block auto-v2-block--exec" data-auto-v2-insight-root>
-        <h3>AI karar yorumu</h3>
+        <h3>Yapay zeka karar yorumu</h3>
         ${renderInsightBlocksHtml(model.insight, esc, {
           planTier: model.planTier,
           insightInput: model.insightInput
@@ -283,6 +290,9 @@ function renderAutoResultsV2Html(model) {
       </div>
     </section>
   `;
+
+  endVehicleImageRenderBatch(batch);
+  return html;
 }
 
 function buildNextSteps({ riskLevel, budgetFit }) {
@@ -398,6 +408,7 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
     riskLevel: intel.overallRisk || risk.label,
     riskTone: riskLevelToTone(intel.overallRisk || risk.label),
     scoreFactors: intel.scoreFactors,
+    riskAnalysis: intel.riskAnalysis,
     warnings: intel.warnings,
     recommendationLevel: intel.recommendationLevel,
     recommendationLabel: intel.recommendationLabel,
@@ -484,7 +495,11 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   if (summary.text) {
     recommendation.aiSummary = summary.text;
     const summaryEl = root.querySelector('[data-auto-v2-summary-slot]');
-    if (summaryEl) summaryEl.textContent = String(summary.text).slice(0, 280);
+    if (summaryEl) {
+      summaryEl.textContent = String(summary.text);
+      summaryEl.hidden = false;
+      summaryEl.removeAttribute('hidden');
+    }
   }
 
   if (summary.insight) {
@@ -502,6 +517,49 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
   if (summary.insight) {
     model.pdfReportData.insightBlocks = summary.insight;
   }
+
+  void import('../decision/decision-v3-mount.js')
+    .then(({ mountDecisionEngineV3Overlay }) =>
+      mountDecisionEngineV3Overlay(mountNode, {
+        category: 'auto',
+        formData,
+        metrics: { topResult, budget, totalCost },
+        extras: {
+          topResult,
+          results,
+          budget,
+          totalCost,
+          cautions,
+          title: 'Araç Kararı'
+        }
+      })
+    )
+    .catch(() => {});
+
+  void import('../decision/decision-os-mount.js')
+    .then(({ mountDecisionOsOverlay }) =>
+      mountDecisionOsOverlay(mountNode, {
+        category: 'auto',
+        formData,
+        metrics: { topResult, budget, totalCost },
+        intelligence: intel,
+        model,
+        extras: {
+          topResult,
+          results,
+          budget,
+          totalCost,
+          cautions,
+          title: 'Araç Kararı',
+          strengths: model.strengths,
+          alternatives: model.alternatives,
+          insight: model.insight,
+          executiveSummary: model.executiveSummary,
+          evdsRiskLayer: model.evdsRiskLayer
+        }
+      })
+    )
+    .catch(() => {});
 
   return model;
 }

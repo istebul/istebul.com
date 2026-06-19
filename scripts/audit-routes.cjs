@@ -38,7 +38,9 @@ if (fs.existsSync(distDir)) {
     'robots.txt',
     'sitemap.xml',
     'build-manifest.json',
-    'karar-asistani/index.html'
+    'karar-asistani/index.html',
+    'secenekler/index.html',
+    'karsilastir/index.html'
   ];
   for (const rel of distRequired) {
     const full = path.join(distDir, rel);

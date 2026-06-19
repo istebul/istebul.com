@@ -4,7 +4,76 @@ Issues identified during full production audit and **safely corrected** in this 
 
 ---
 
-## 1. Smoke test drift (CI / local quality)
+## 0.2. Karar Mahkemesi Beta 2B — production closure (2026-06-19)
+
+| Item | Detail |
+|------|--------|
+| Phase | Karar Mahkemesi Beta 2B (renderer, mount, E2E guard, scoped CSS) |
+| Merges | PR [#407](https://github.com/istebul/istebul.com/pull/407) → `bba36439` (2B-1 renderer + flags); PR [#408](https://github.com/istebul/istebul.com/pull/408) → `5c0106a3` (mount); PR [#411](https://github.com/istebul/istebul.com/pull/411) → `55bb45a3` (E2E guard); PR [#412](https://github.com/istebul/istebul.com/pull/412) → `dfdf8cc9` (scoped CSS) |
+| Scope | Opt-in beta card on Auto `#ib-results-detail`; **not** Supabase, functions, migrations, workflows, package, wrangler, admin, billing, or LinkedIn changes |
+| Prod state | Flag default **off** → `[data-karar-mahkemesi-beta]` count **0**; `?karar_mahkemesi=1` → single visible card in `#ib-results-detail` |
+| Production verification | Flag off/on smoke PASS; production CSS smoke PASS (`/css/auto-results-v2.2e7b8b03fa.css`); desktop 2-col / mobile 390px single-col, no horizontal overflow |
+| Verification | Post-merge CI `27816501376`, Production Deploy `27816501355`, Pages `27816500476`; unit 32/32; E2E `karar_mahkemesi` 2/2 |
+| Closure doc | `docs/KARAR_MAHKEMESI_2B_CLOSURE.md` |
+
+**Not a bug-fix release.** 2B closes the Karar Mahkemesi beta feature stack with production verification. Flag default remains off; prod rollout is a separate decision.
+
+---
+
+## 0. AFAD Açık Veri OD-2C — production closure (2026-06-16)
+
+| Item | Detail |
+|------|--------|
+| Phase | AFAD deprem aktivite bilgilendirme katmanı (OD-2C-1 module + OD-2C-2 konut mount) |
+| Merges | PR [#382](https://github.com/istebul/istebul.com/pull/382) → `a2181340` (OD-2C-1); PR [#383](https://github.com/istebul/istebul.com/pull/383) → `7b119764` (OD-2C-2) |
+| Scope | Score-neutral AFAD risk layer + konut results mount (EVDS sonrası); **not** AI narration, admin, SEO, or score engine changes |
+| Prod state | `AFAD_EARTHQUAKE_ENABLED` kapalı → HTTP 200, `ok: false`, `data.status: "disabled"`, boş `earthquakes` / `regionalSignals`; konut UI **silent** (no `data-afad-risk-layer` card) |
+| Score neutrality | `decisionScore`, `confidenceScore`, `earthquakeRiskScore` unchanged; `decision-intelligence-engine` / `real-estate-calculator` untouched |
+| Verification | CI `27651527605`, Production Deploy `27651527590`, Pages `27651527031`; regression 60/60; `npm run smoke:live` failed=0 |
+| Staging verification | **PASS** (2026-06-16) — Preview `https://2eadd6b4.istebul-com.pages.dev`; `AFAD_EARTHQUAKE_ENABLED=true` (Preview only); endpoint `connected`, konut AFAD mount after EVDS, sanitization/copy safe, scores unchanged, disabled path silent; **Production flag remains off** |
+| Staging plan / record | `docs/OPEN_DATA_OD-2C_CLOSURE.md` §8 + §8.8 |
+| Closure doc | `docs/OPEN_DATA_OD-2C_CLOSURE.md` |
+
+**Not a bug-fix release.** OD-2C closes the konut informational layer with production + staging verification. **Prod flag enable** and **OD-2C-3** (AI narration), SEO data-sources, admin toggle are separate phases.
+
+---
+
+## 0.1. AFAD Açık Veri OD-2B — production closure (2026-06-16)
+
+| Item | Detail |
+|------|--------|
+| Phase | AFAD deprem snapshot open-data foundation (OD-2B) |
+| Merge | PR [#380](https://github.com/istebul/istebul.com/pull/380) → `62d04a0c` |
+| Scope | Server-side `/api/afad-earthquake-snapshot` endpoint + sanitized public contract; **not** a UI/admin/konut-scoring integration |
+| Prod state | `AFAD_EARTHQUAKE_ENABLED` kapalı → HTTP 200, `ok: false`, `data.status: "disabled"`, boş `earthquakes` / `regionalSignals` |
+| EVDS isolation | `/api/evds-snapshot` regression PASS (`ok: true`, `source: "evds"`) |
+| Verification | CI `27627169133`, Production Deploy `27627169096`, Pages `27627160942`; `npm run smoke:live` failed=0 |
+| Closure doc | `docs/OPEN_DATA_OD-2B_CLOSURE.md` |
+
+**Not a bug-fix release.** OD-2B closes the snapshot foundation with production verification. UI surfacing shipped later in **OD-2C** (see §0 above).
+
+---
+
+## 1. Auto catalog SVG rendered as real vehicle photos (Faz 3F — 2026-06-13)
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Catalog SVG assets (e.g. brand/model icons) appeared in Auto result UI and compare cards as if they were real vehicle photos | Resolver returned illustrative catalog URLs; UI bound `src` directly without trust gating | **Faz 3F Vehicle Image Trust Layer** (PRs #326–#330, main `62b350f6`): placeholder-first UI when `showRealImage:false`; “Görsel doğrulanamadı” copy; verified external load error → placeholder (no catalog chain); compare storage + `/karsilastir` Auto cards trust-aware; legacy catalog SVG compare entries sanitized at render |
+
+**Trust boundaries (unchanged scope):**
+- Catalog SVG is never treated as a trustworthy real vehicle image.
+- `showRealImage:true` is reserved for verified external URLs that pass a strict identity gate (future phase).
+- `/secenekler` AI listings (`listing.images[]`) and dealer offer `image_url` are separate models — not routed through Auto image trust.
+
+**Production verification:** GO / PASS (CI `27477115336`, Production Deploy `27477115351`, Cloudflare pages `27477115064`; scoped unit 77/77; `smoke:live` failed=0).
+
+**Manual visual smoke note:** Auto wizard result cards and populated compare state require wizard/data in production; live visual checks were supplemented by unit tests and production bundle audit.
+
+**Key files:** `js/auto/vehicle-image-resolver.js`, `js/auto/vehicle-image.js`, `js/ui/comparison-ui.js`
+
+---
+
+## 2. Smoke test drift (CI / local quality)
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
@@ -18,7 +87,7 @@ Issues identified during full production audit and **safely corrected** in this 
 
 ---
 
-## 2. Tooling additions (no behavior change)
+## 3. Tooling additions (no behavior change)
 
 | Addition | Purpose |
 |----------|---------|

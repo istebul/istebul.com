@@ -114,7 +114,7 @@ export async function fetchInternalDashboardContext(deps) {
       direct: () =>
         sb
           .from('partner_lead_dispatch_logs')
-          .select('success, duration_ms, created_at')
+          .select('success, latency_ms, created_at')
           .gte('created_at', since24h)
           .limit(500)
     }),

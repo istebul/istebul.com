@@ -23,7 +23,7 @@ function deepMerge(target, ...sources) {
 const baseMarketingCopy = {
   tr: {
     nav: {
-      products: 'Ürünler',
+      products: 'Karar Kategorileri',
       howItWorks: 'Nasıl Çalışır?',
       methodology: 'Metodoloji',
       pricing: 'Fiyatlandırma',
@@ -32,7 +32,7 @@ const baseMarketingCopy = {
       resources: 'Kaynaklar',
       login: 'Giriş Yap',
       partnerApply: 'Partner başvurusu',
-      getStarted: 'Hemen Başla',
+      getStarted: 'Ön değerlendirmeye başla',
       sampleAnalysis: 'Örnek analiz',
       blog: 'Blog',
       announcements: 'Duyurular',
@@ -40,15 +40,15 @@ const baseMarketingCopy = {
       dataSources: 'Veri Kaynakları',
       security: 'Güvenlik / KVKK',
       faq: 'SSS',
-      catAuto: 'Araba',
-      catKonut: 'Konut',
-      catTatil: 'Tatil',
-      catFinans: 'Finansman',
-      catSigorta: 'Sigorta',
-      catKasko: 'Kasko',
+      catAuto: 'Araba Kararı',
+      catKonut: 'Konut Kararı',
+      catTatil: 'Tatil Kararı',
+      catFinans: 'Finansman Kararı',
+      catSigorta: 'Sigorta Kararı',
+      catKasko: 'Kasko Kararı',
       allCategories: 'Tüm kategoriler',
       home: 'Ana sayfa',
-      productsMenu: 'Ürünler menüsü',
+      productsMenu: 'Karar Kategorileri menüsü',
       resourcesMenu: 'Kaynaklar menüsü',
       dashboard: 'Dashboard',
       myAccount: 'Hesabım',
@@ -63,7 +63,7 @@ const baseMarketingCopy = {
         'Büyük kararları verirken <span class="ib-hero-gradient-text">yalnız değilsiniz.</span>',
       heroDesc:
         'Aracınızdan tatilinize, konuttan finansman ve sigortaya kadar — yapay zeka destekli analiz ile en doğru seçimi yapın.',
-      ctaAnalyze: 'Kararımı Analiz Et',
+      ctaAnalyze: 'Ön değerlendirmeye başla',
       ctaHow: 'Nasıl Çalışır?',
       disclaimer: 'Örnek skor ve maliyetler gösterim amaçlıdır · finansal tavsiye değildir',
       dashTitle: 'AI Öneri Özeti',
@@ -76,9 +76,11 @@ const baseMarketingCopy = {
       viewDetails: 'Detayları Gör',
       costDistribution: 'Maliyet dağılımı',
       costTrend: '5 yıllık toplam maliyet projeksiyonu',
-      analyzeLink: 'Analiz Et →',
-      analyzeAction: 'Analiz et',
+      analyzeLink: 'Tam analize başla →',
+      analyzeAction: 'Tam analize başla',
       soon: 'Yakında',
+      categoriesKicker: 'Karar Kategorileri',
+      categoriesTitle: 'Hangi kararda yardım istiyorsunuz?',
       categoriesGridAria: 'Karar kategorileri',
       categoriesSoonAria: 'Yakında açılacak kategoriler'
     },
@@ -111,7 +113,7 @@ const baseMarketingCopy = {
       consent: 'Pazarlama e-postası almayı kabul ediyorum.',
       privacyLink: 'Gizlilik politikası',
       disclaimer: 'isteBul karar destek platformudur; nihai karar kullanıcıya aittir.',
-      freeAnalysis: 'Ücretsiz analiz başlat',
+      freeAnalysis: 'Ön değerlendirmeye başla',
       cookieText: 'Analitik çerezleri yalnızca ürün deneyimini iyileştirmek için kullanırız; veri satışı yapılmaz.',
       cookiePolicy: 'Çerez politikası',
       cookieDecline: 'Reddet',
@@ -120,7 +122,7 @@ const baseMarketingCopy = {
       metaKvkk: 'KVKK & gizlilik politikaları',
       metaSupport: 'Kurumsal destek hattı',
       copyright: 'Tüm hakları saklıdır.',
-      stickyCta: 'Karar analizini başlat',
+      stickyCta: 'Ön değerlendirmeye başla',
       consentHtml:
         'Pazarlama e-postası almayı kabul ediyorum. <a href="/gizlilik.html" target="_blank" rel="noopener">Gizlilik politikası</a>.',
       cookieHtml:
@@ -128,27 +130,27 @@ const baseMarketingCopy = {
     },
     categories: {
       araba: {
-        name: 'Otomobil',
+        name: 'Araba Kararı',
         desc: 'TCO, kredi ve yakıt — tek skorda birleşir.'
       },
       konut: {
-        name: 'Konut',
+        name: 'Konut Kararı',
         desc: 'Lokasyon, aidat ve kredi yükü bir arada.'
       },
       tatil: {
-        name: 'Tatil',
+        name: 'Tatil Kararı',
         desc: 'Bütçe, sezon ve konaklama dengesi.'
       },
       finansman: {
-        name: 'Finans',
+        name: 'Finansman Kararı',
         desc: 'Vade, faiz ve nakit akışı net görünür.'
       },
       sigorta: {
-        name: 'Sigorta',
+        name: 'Sigorta Kararı',
         desc: 'Koruma, teminat ve prim dengesi — canlı analiz.'
       },
       kasko: {
-        name: 'Kasko',
+        name: 'Kasko Kararı',
         desc: 'Teminat, prim ve araç profili değerlendirmesi.'
       }
     },
@@ -159,10 +161,10 @@ const baseMarketingCopy = {
         'Bütçe, lokasyon, kredi yükü, aidat, ulaşım, deprem riski ve yaşam beklentilerini birlikte analiz ederek sizin için en doğru konut kararını görün.',
       konutCtaPrimary: 'Konut kararımı analiz et',
       konutCtaSecondary: 'AI önerilerini gör',
-      auto: 'Auto',
-      tatil: 'Tatil',
-      finans: 'Finansman',
-      konut: 'Konut'
+      auto: 'Araba Kararı',
+      tatil: 'Tatil Kararı',
+      finans: 'Finansman Kararı',
+      konut: 'Konut Kararı'
     }
   },
   en: {
@@ -189,7 +191,7 @@ const baseMarketingCopy = {
       catTatil: 'Travel',
       catFinans: 'Finance',
       catSigorta: 'Insurance',
-      catKasko: 'Comprehensive (Soon)',
+      catKasko: 'Comprehensive',
       allCategories: 'All categories',
       home: 'Home',
       productsMenu: 'Products menu',
@@ -223,6 +225,8 @@ const baseMarketingCopy = {
       analyzeLink: 'Analyze →',
       analyzeAction: 'Analyze',
       soon: 'Coming soon',
+      categoriesKicker: 'Decision categories',
+      categoriesTitle: 'Which decision do you need help with?',
       categoriesGridAria: 'Decision categories',
       categoriesSoonAria: 'Categories launching soon'
     },
@@ -333,7 +337,7 @@ const baseMarketingCopy = {
       catTatil: 'Reise',
       catFinans: 'Finanzierung',
       catSigorta: 'Versicherung',
-      catKasko: 'Kasko (Bald)',
+      catKasko: 'Kasko',
       allCategories: 'Alle Kategorien',
       home: 'Startseite',
       productsMenu: 'Produkte-Menü',
@@ -457,7 +461,7 @@ const baseMarketingCopy = {
       catTatil: 'السفر',
       catFinans: 'التمويل',
       catSigorta: 'التأمين',
-      catKasko: 'تأمين شامل (قريباً)',
+      catKasko: 'تأمين شامل',
       allCategories: 'جميع الفئات',
       home: 'الرئيسية',
       productsMenu: 'قائمة المنتجات',

@@ -24,19 +24,21 @@ const tr = {
   planlar: {
     kicker: 'Planlar',
     title: 'Planlar ve fiyatlandırma',
-    lead: 'Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — iyzico / PayTR ile güvenli ödeme.',
+    lead: 'Ücretsiz TCO özeti ile başlayın. Pro ile sınırsız karşılaştırma, premium karar raporu ve partner eşleşmesi — pilot erişim sürecinde.',
     starterBullet: 'Başlangıç: sınırlı analiz ve 2 karşılaştırma',
     proBullet: 'Pro: derin TCO, AI karar notu, premium export',
     enterpriseBullet: 'Enterprise: API, webhook, SLA',
     cancelBullet: 'İstediğiniz zaman iptal',
-    ctaPrimary: 'Ücretsiz analiz başlat',
+    ctaPrimary: 'Ön değerlendirmeye başla',
     ctaSecondary: 'Metodolojiyi incele'
   },
   premiumKarar: {
+    heroLead: 'Kısa sorularla kategori ve ön değerlendirme sinyallerini görün; tam skor ve detaylı analiz ilgili kategori akışında hesaplanır.',
+    roleNote: 'Karar Asistanı, hangi kategori analizine devam etmeniz gerektiğini belirler. Nihai skor ve detaylı analiz ilgili kategori akışında hesaplanır.',
     previewTitle: 'Karar önizlemesi',
-    previewLead: 'Kısa sorularla maliyet sinyallerini görün. Tam TCO analizi ve sıralama için Auto akışını kullanın.',
+    previewLead: 'Kısa sorularla kategori niyetinizi ve ön sinyalleri görün. Tam karar analizi için ilgili kategori wizard akışına devam edin.',
     compareTitle: 'İki seçeneği yan yana görün',
-    compareLead: 'Pro ile 4 modele kadar detaylı karşılaştırma; ücretsiz planda 2 model.',
+    compareLead: 'Pro ile 4 seçeneğe kadar detaylı karşılaştırma; ücretsiz planda 2 seçenek.',
     trustKvkk: 'KVKK uyumlu',
     trustTls: 'TLS şifreleme',
     trustScoring: 'Açık skorlama',
@@ -61,7 +63,7 @@ const en = {
   campaigns: {
     kicker: 'Campaigns',
     title: 'Active campaigns',
-    lead: 'Pro trial, free Auto analysis and pilot partner opportunities. Terms may change; no financial commitment.',
+    lead: 'Pro pilot access, free Auto analysis and pilot partner opportunities. Terms may change; no financial commitment.',
     backHome: '← Home',
     plans: 'Plans'
   },
@@ -75,7 +77,7 @@ const en = {
   planlar: {
     kicker: 'Plans',
     title: 'Plans and pricing',
-    lead: 'Start with a free TCO summary. Pro unlocks unlimited comparisons, premium decision reports and partner matching — secure iyzico / PayTR checkout.',
+    lead: 'Start with a free TCO summary. Pro unlocks unlimited comparisons, premium decision reports and partner matching — pilot access phase.',
     starterBullet: 'Starter: limited analysis and 2 comparisons',
     proBullet: 'Pro: deep TCO, AI decision notes, premium export',
     enterpriseBullet: 'Enterprise: API, webhook, SLA',
@@ -84,10 +86,12 @@ const en = {
     ctaSecondary: 'Explore methodology'
   },
   premiumKarar: {
-    previewTitle: 'Decision preview',
-    previewLead: 'See cost signals with a short questionnaire. Use Auto flow for full TCO ranking.',
+    heroLead: 'See category intent and pre-evaluation signals with short questions; full score and detailed analysis run in the category flow.',
+    roleNote: 'The Decision Assistant identifies which category analysis to continue. Final score and detailed analysis are calculated in that category flow.',
+    previewTitle: 'Pre-evaluation',
+    previewLead: 'Answer a few questions to see category intent and early signals. Continue to the category wizard for full decision analysis.',
     compareTitle: 'Compare two options side by side',
-    compareLead: 'Pro supports up to 4 models; free plan includes 2.',
+    compareLead: 'Pro supports up to 4 options; free plan includes 2.',
     trustKvkk: 'Privacy compliant',
     trustTls: 'TLS encryption',
     trustScoring: 'Transparent scoring',
@@ -128,7 +132,7 @@ const de = {
     ...en.planlar,
     kicker: 'Pläne',
     title: 'Pläne und Preise',
-    lead: 'Starten Sie mit einer kostenlosen TCO-Zusammenfassung. Pro bietet unbegrenzte Vergleiche und Premium-Berichte — sichere iyzico / PayTR-Zahlung.',
+    lead: 'Starten Sie mit einer kostenlosen TCO-Zusammenfassung. Pro bietet unbegrenzte Vergleiche und Premium-Berichte — Pilotzugangsphase.',
     ctaPrimary: 'Kostenlose Analyse starten',
     ctaSecondary: 'Methodik ansehen'
   }
@@ -160,7 +164,7 @@ const ar = {
   planlar: {
     kicker: 'الخطط',
     title: 'الخطط والأسعار',
-    lead: 'ابدأ بملخص TCO مجاني. Pro يفتح مقارنات غير محدودة وتقارير قرار مميزة — دفع آمن عبر iyzico / PayTR.',
+    lead: 'ابدأ بملخص TCO مجاني. Pro يفتح مقارنات غير محدودة وتقارير قرار مميزة — مرحلة وصول تجريبي.',
     starterBullet: 'البداية: تحليل محدود ومقارنتان',
     proBullet: 'Pro: TCO عميق، ملاحظات قرار AI، تصدير مميز',
     enterpriseBullet: 'Enterprise: API، webhook، SLA',

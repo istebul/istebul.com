@@ -6,7 +6,7 @@
 
 | Capability | Implementation |
 |------------|----------------|
-| Lead dispatch monitoring | `partner-ops-monitor.js` → 24h success/fail counts, p50/p95 `duration_ms` from `partner_lead_dispatch_logs` |
+| Lead dispatch monitoring | `partner-ops-monitor.js` → 24h success/fail counts, p50/p95 `latency_ms` from `partner_lead_dispatch_logs` |
 | Retry automation | Existing `partner-retry` edge function + `.github/workflows/partner-retry.yml` (every 15m) |
 | Failure alerting | P12 rules in `data/ops/alert-rules.json` + `partner:ops:run` → `ops-alert-digest` (Telegram) |
 | Partner SLA monitoring | p95 dispatch latency vs **15m** (`900000` ms) — aligns with `data/investor/growth-story.json` |

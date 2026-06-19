@@ -369,7 +369,8 @@
 
   body.ib-auto .auto-vehicle-select-cta {
     margin-top: 0.5rem;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   /* Prevent compact result cards from overlapping on scroll */

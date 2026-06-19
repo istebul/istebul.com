@@ -32,8 +32,12 @@ if (!migration.includes('live_providers_enabled')) {
 }
 
 const adminAction = read('supabase/functions/admin-action/index.ts');
-if (!adminAction.includes('live_providers_enabled')) {
-  fail('admin-action must allow live_providers_enabled');
+if (!adminAction.includes('live_finance_feed_url')) {
+  fail('admin-action must allow live_finance_feed_url');
+}
+
+if (!adminAction.includes('Canlı sağlayıcı modu açılamaz')) {
+  fail('admin-action must block live_providers_enabled without feed URL');
 }
 
 const adminPanel = read('admin-panel.html');

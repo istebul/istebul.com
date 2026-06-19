@@ -19,6 +19,8 @@
 <link rel="stylesheet" href="/css/admin-partner-applications-table.css">
 <link rel="stylesheet" href="/css/admin-internal-dashboards.css">
 <link rel="stylesheet" href="/css/admin-ops-ai-assistant.css">
+<link rel="stylesheet" href="/css/admin-linkedin-ops.css">
+<link rel="stylesheet" href="/css/ai-platform-surface.css">
 <link rel="stylesheet" href="/css/admin-premium-polish.css?v=2">
 <link rel="stylesheet" href="/css/final-enterprise-release.css">
 <link rel="stylesheet" href="/css/istebul-design-system-v4.css?v=8">
@@ -56,8 +58,11 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 .nav{padding:12px 8px;flex:1;}
 .nav-section{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px 4px;margin-top:8px;}
 .nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);color:var(--muted);cursor:pointer;transition:all .15s;font-size:13px;font-weight:500;margin-bottom:2px;}
+a.nav-item{text-decoration:none;color:inherit;}
 .nav-item:hover{background:var(--surface2);color:var(--text);}
 .nav-item.active{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;}
+.nav-item--external{border:1px dashed rgba(37,99,235,.25);}
+.nav-item--external:hover{border-color:rgba(37,99,235,.45);color:#2563eb;}
 .sidebar-footer{padding:16px;border-top:1px solid var(--border);flex-shrink:0;}
 .user-info{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .user-avatar{width:32px;height:32px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;}
@@ -419,7 +424,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
         </div>
       </div>
       <nav class="nav" id="admin-nav" aria-label="Admin menü">
-        <div class="nav-item active" data-page-target="dashboard"><span class="nav-icon" aria-hidden="true">◆</span><span class="nav-label">Dashboard</span></div>
+        <div class="nav-item active" data-page-target="dashboard"><span class="nav-icon" aria-hidden="true">◆</span><span class="nav-label">Operasyon Özeti</span></div>
         <div class="nav-item" data-page-target="users"><span class="nav-icon" aria-hidden="true">◎</span><span class="nav-label">Kullanıcılar</span></div>
         <div class="nav-item" data-page-target="auto-leads"><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">Lead CRM</span></div>
         <div class="nav-group">
@@ -444,6 +449,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <div class="nav-item" data-page-target="housing-scoring"><span class="nav-label">Konut Scoring Ayarları</span></div>
             <div class="nav-item" data-page-target="finance-leads"><span class="nav-label">Finans Leadleri</span></div>
             <div class="nav-item" data-page-target="sigorta-leads"><span class="nav-label">Sigorta Leadleri</span></div>
+            <div class="nav-item" data-page-target="kasko-leads"><span class="nav-label">Kasko Leadleri</span></div>
             <div class="nav-item" data-page-target="finance-partners"><span class="nav-label">Finans Partnerleri</span></div>
             <div class="nav-item" data-page-target="finance-scoring"><span class="nav-label">Finans Scoring Ayarları</span></div>
           </div>
@@ -454,7 +460,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <div class="nav-item" data-page-target="partner-endpoints"><span class="nav-label">Partner kanalları</span></div>
             <div class="nav-item" data-page-target="partner-applications"><span class="nav-label">Başvurular</span></div>
             <div class="nav-item" data-page-target="partner-dispatch-logs"><span class="nav-label">Teslimat logları</span></div>
-            <div class="nav-item" data-page-target="dashboard-partner-ops"><span class="nav-label">Partner ops</span></div>
+            <div class="nav-item" data-page-target="dashboard-partner-ops"><span class="nav-label">Partner Operasyon Özeti</span></div>
           </div>
         </div>
         <div class="nav-group">
@@ -462,9 +468,10 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <div class="nav-group-items">
             <div class="nav-item" data-page-target="ops-ai-assistant"><span class="nav-label">Ops asistan</span></div>
             <div class="nav-item" data-page-target="category-dominance"><span class="nav-label">Skor &amp; moat</span></div>
+            <div class="nav-item" data-page-target="listings" title="Klasik ilan/ürün CRUD — AI karar analizi için AI İlan Yönetimi'ni kullanın"><span class="nav-icon" aria-hidden="true">▣</span><span class="nav-label">Karar Seçenekleri</span></div>
+            <a class="nav-item nav-item--external nav-item--admin-only" href="/admin/ai-listings/" data-admin-listing-nav-injected="ai-listings" title="Karar Merkezi analizi, onay akışı ve AI ilan motoru — klasik Karar Seçenekleri'nden farklıdır"><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">AI İlan Yönetimi</span></a>
           </div>
         </div>
-        <div class="nav-item" data-page-target="listings"><span class="nav-icon" aria-hidden="true">▣</span><span class="nav-label">İlan / Ürünler</span></div>
         <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">İçerik Yönetimi</button>
           <div class="nav-group-items">
@@ -474,28 +481,29 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
             <div class="nav-item" data-page-target="faqs"><span class="nav-label">SSS</span></div>
             <div class="nav-item" data-page-target="home-news"><span class="nav-label">Güncel haberler</span></div>
             <div class="nav-item" data-page-target="blog"><span class="nav-label">Blog</span></div>
+            <div class="nav-item" data-page-target="linkedin-ops-assistant"><span class="nav-label">LinkedIn Operasyon Asistanı</span></div>
           </div>
         </div>
         <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">Analitik</button>
           <div class="nav-group-items">
-            <div class="nav-item" data-page-target="unified-funnel"><span class="nav-label">Unified Funnel</span></div>
+            <div class="nav-item" data-page-target="unified-funnel"><span class="nav-label">Birleşik Funnel</span></div>
             <div class="nav-item" data-page-target="auto-analytics"><span class="nav-label">Auto analitik</span></div>
             <div class="nav-item" data-page-target="platform-analytics"><span class="nav-label">Platform analitik</span></div>
-            <div class="nav-item" data-page-target="dashboard-ceo"><span class="nav-label">CEO</span></div>
-            <div class="nav-item" data-page-target="dashboard-growth"><span class="nav-label">Growth</span></div>
-            <div class="nav-item" data-page-target="dashboard-support"><span class="nav-label">Support</span></div>
-            <div class="nav-item" data-page-target="investor-metrics"><span class="nav-label">Executive KPIs</span></div>
+            <div class="nav-item" data-page-target="dashboard-ceo"><span class="nav-label">CEO Özeti</span></div>
+            <div class="nav-item" data-page-target="dashboard-growth"><span class="nav-label">Büyüme Özeti</span></div>
+            <div class="nav-item" data-page-target="dashboard-support"><span class="nav-label">Destek Özeti</span></div>
+            <div class="nav-item" data-page-target="investor-metrics"><span class="nav-label">Yatırımcı KPI</span></div>
           </div>
         </div>
-        <div class="nav-item" data-page-target="dashboard-revenue"><span class="nav-icon" aria-hidden="true">₺</span><span class="nav-label">Revenue</span></div>
+        <div class="nav-item" data-page-target="dashboard-revenue"><span class="nav-icon" aria-hidden="true">₺</span><span class="nav-label">Gelir Özeti</span></div>
         <div class="nav-item" data-page-target="payments"><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">Payments</span></div>
         <div class="nav-item" data-page-target="settings"><span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Ayarlar</span></div>
         <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">Sistem Logları</button>
           <div class="nav-group-items">
             <div class="nav-item" data-page-target="observability"><span class="nav-label">Observability</span></div>
-            <div class="nav-item" data-page-target="ops-command-center"><span class="nav-label">Ops command</span></div>
+            <div class="nav-item" data-page-target="ops-command-center"><span class="nav-label">Operasyon Komuta Merkezi</span></div>
           </div>
         </div>
         <div class="nav-group" data-default-collapsed="true">
@@ -538,7 +546,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <div class="admin-topbar-profile">
             <div class="user-avatar" id="admin-topbar-avatar" aria-hidden="true">A</div>
             <div class="admin-topbar-profile-copy">
-              <span class="admin-topbar-title" id="admin-topbar-title">Dashboard</span>
+              <span class="admin-topbar-title" id="admin-topbar-title">Operasyon Özeti</span>
               <span class="user-email" id="admin-topbar-email">—</span>
             </div>
           </div>
@@ -550,12 +558,31 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
         </button>
         <div>
           <span class="admin-mobile-kicker">isteBul Admin</span>
-          <span class="admin-mobile-title" id="admin-mobile-title">Genel Bakış</span>
+          <span class="admin-mobile-title" id="admin-mobile-title">Operasyon Özeti</span>
         </div>
       </header>
 
+      <div class="admin-ai-platform-strip ib-ai-platform-banner ib-ai-platform-banner--compact" role="note" aria-label="Yapay zeka karar platformu">
+        <div class="ib-ai-platform-banner__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="ib-ai-platform-banner__copy">
+          <strong>isteBul Yapay Zeka Karar Platformu — Admin</strong>
+          <p>Lead CRM, skor motoru ve analitik bu panelden yönetilir. Her kullanıcı sorgusu AI destekli karar deneyimi yaşar.</p>
+        </div>
+        <span class="ib-ai-platform-banner__live"><span class="ib-ai-platform-banner__pulse" aria-hidden="true"></span>AI motoru aktif</span>
+      </div>
+
       <div class="page active" id="page-dashboard">
-        <div class="page-header"><h2>Operasyon merkezi</h2><p>AI destekli karar platformu — canlı özet</p></div>
+        <div class="page-header">
+          <h2>Operasyon Özeti</h2>
+          <p>Karar platformu operasyon girişi — CRM KPI özeti; canlı executive, funnel ve komuta detayları için ilgili panellere gidin.</p>
+        </div>
+        <div class="card admin-landing-notice" role="note">
+          <p class="text-muted-sm" style="margin:0">Üst KPI kartları canlı CRM verisidir. Aşağıdaki grafik alanları yönlendirme/örnek görsel içindir; birleşik funnel, executive rollup ve partner ops için <strong>Operasyon panelleri</strong> bölümünü kullanın.</p>
+        </div>
         <div class="kpi-grid kpi-grid--premium stat-grid">
           <article class="stat-card kpi-card kpi-card--accent"><div class="stat-label">Toplam kullanıcı</div><div class="stat-value" id="stat-users">—</div><div class="stat-sub kpi-trend kpi-trend--up">Kayıtlı profiller</div></article>
           <article class="stat-card kpi-card"><div class="stat-label">Bugünkü analiz</div><div class="stat-value" id="stat-analyses-today">—</div><div class="stat-sub">Bugün oluşan lead</div></article>
@@ -565,8 +592,8 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <article class="stat-card kpi-card kpi-card--warn"><div class="stat-label">Sistem uyarıları</div><div class="stat-value" id="stat-system-alerts">0</div><div class="stat-sub"><button type="button" class="btn btn-ghost btn-sm" data-page-target="observability">Logları aç</button></div></article>
         </div>
         <div class="admin-analytics-grid">
-          <article class="card admin-chart-card">
-            <div class="card-title">Kategori bazlı kullanım</div>
+          <article class="card admin-chart-card admin-chart-card--sample" aria-label="Örnek kategori dağılımı — canlı veri değil">
+            <div class="card-title">Kategori bazlı kullanım <span class="text-muted-sm">(örnek görsel)</span></div>
             <div class="admin-donut" style="--seg-auto:42;--seg-home:18;--seg-travel:12;--seg-fin:28" aria-hidden="true">
               <div class="admin-donut-center"><strong>Auto</strong><span>öncelik</span></div>
             </div>
@@ -576,14 +603,14 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
               <li><span class="admin-legend-dot admin-legend-dot--travel"></span>Tatil %12</li>
               <li><span class="admin-legend-dot admin-legend-dot--fin"></span>Finans %28</li>
             </ul>
-            <p class="text-muted-sm admin-chart-note">Gösterim: örnek dağılım · canlı veri için Platform Analytics</p>
+            <p class="text-muted-sm admin-chart-note">Örnek dağılım · canlı kategori analizi için <button type="button" class="btn btn-ghost btn-sm" data-page-target="platform-analytics">Platform analitik</button> veya <button type="button" class="btn btn-ghost btn-sm" data-page-target="unified-funnel">Birleşik Funnel</button></p>
           </article>
-          <article class="card admin-chart-card">
-            <div class="card-title">Lead dönüşüm trendi</div>
+          <article class="card admin-chart-card admin-chart-card--sample" aria-label="Örnek trend görseli — canlı veri değil">
+            <div class="card-title">Lead dönüşüm trendi <span class="text-muted-sm">(örnek görsel)</span></div>
             <div class="admin-spark-bars" aria-hidden="true">
               <span style="--h:35%"></span><span style="--h:52%"></span><span style="--h:48%"></span><span style="--h:61%"></span><span style="--h:58%"></span><span style="--h:72%"></span><span style="--h:68%"></span>
             </div>
-            <p class="text-muted-sm admin-chart-note">Son 7 gün · <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-analytics">Detay</button></p>
+            <p class="text-muted-sm admin-chart-note">Örnek trend · canlı funnel için <button type="button" class="btn btn-ghost btn-sm" data-page-target="unified-funnel">Birleşik Funnel</button> veya <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-analytics">Auto analitik</button></p>
           </article>
           <article class="card admin-chart-card admin-chart-card--compact">
             <div class="card-title">Lead durum dağılımı</div>
@@ -593,8 +620,18 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
               <li><span class="lead-pill lead-pill--interested">Teklif</span><strong>—</strong></li>
               <li><span class="lead-pill lead-pill--closed">Kazanıldı</span><strong>—</strong></li>
             </ul>
-            <p class="text-muted-sm admin-chart-note"><button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-leads">CRM aç</button></p>
+            <p class="text-muted-sm admin-chart-note">Yalnızca &quot;Yeni&quot; sayacı canlı · tam pipeline için <button type="button" class="btn btn-ghost btn-sm" data-page-target="auto-leads">Lead CRM</button></p>
           </article>
+        </div>
+        <div class="card">
+          <div class="card-title">Operasyon panelleri</div>
+          <p class="text-muted-sm">Canlı executive, funnel ve komuta rollup — detay panelleri</p>
+          <div class="quick-actions">
+            <button type="button" class="btn btn-primary btn-sm" data-page-target="ops-command-center">Operasyon Komuta Merkezi</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-page-target="unified-funnel">Birleşik Funnel</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-page-target="dashboard-partner-ops">Partner Operasyon Özeti</button>
+            <a class="btn btn-ghost btn-sm" href="/admin/ai-listings/">AI İlan Yönetimi</a>
+          </div>
         </div>
         <div class="card">
           <div class="card-title">Hızlı işlemler</div>
@@ -631,7 +668,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           </div>
         </div>
         <div class="stat-grid stat-grid--secondary">
-          <div class="stat-card"><div class="stat-label">İlan</div><div class="stat-value" id="stat-listings">—</div></div>
+          <div class="stat-card"><div class="stat-label">Seçenek</div><div class="stat-value" id="stat-listings">—</div></div>
           <div class="stat-card"><div class="stat-label">Duyuru</div><div class="stat-value" id="stat-ann">—</div></div>
           <div class="stat-card"><div class="stat-label">SSS</div><div class="stat-value" id="stat-faqs">—</div></div>
           <div class="stat-card"><div class="stat-label">Blog</div><div class="stat-value" id="stat-posts">—</div></div>
@@ -640,17 +677,17 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-ceo">
-        <div class="page-header"><h2>CEO Dashboard</h2><p>Executive summary, MRR, funnel, partner quality, early-intervention alerts</p></div>
+        <div class="page-header"><h2>CEO Özeti</h2><p>CEO özeti, MRR, funnel, partner kalitesi ve erken müdahale uyarıları</p></div>
         <div class="card"><div id="dashboard-ceo-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-growth">
-        <div class="page-header"><h2>Growth Dashboard</h2><p>Funnel, channels, experiments, paid acquisition, retention</p></div>
+        <div class="page-header"><h2>Büyüme Özeti</h2><p>Funnel, kanallar, deneyler, ücretli edinim ve retention</p></div>
         <div class="card"><div id="dashboard-growth-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-revenue">
-        <div class="page-header"><h2>Revenue Dashboard</h2><p>MRR, churn, checkout, RevOps signals, pipeline</p></div>
+        <div class="page-header"><h2>Gelir Özeti</h2><p>MRR, churn, checkout, RevOps sinyalleri ve pipeline</p></div>
         <div class="card"><div id="dashboard-revenue-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
@@ -663,21 +700,29 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-partner-ops">
-        <div class="page-header"><h2>Partner Ops Dashboard</h2><p>Dispatch health, SLA, retry queue, webhook endpoints</p></div>
+        <div class="page-header"><h2>Partner Operasyon Özeti</h2><p>Dispatch sağlığı, SLA, retry kuyruğu ve webhook uç noktaları</p></div>
         <div class="card"><div id="dashboard-partner-ops-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page page--dashboard" id="page-dashboard-support">
-        <div class="page-header"><h2>Support Dashboard</h2><p>FAQ, lifecycle, support workflows, deflection metrics</p></div>
+        <div class="page-header"><h2>Destek Özeti</h2><p>SSS, lifecycle, destek iş akışları ve deflection metrikleri</p></div>
         <div class="card"><div id="dashboard-support-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page page--ops-ai" id="page-ops-ai-assistant">
         <div class="page-header">
-          <h2>AI Ops Decision Assistant</h2>
+          <h2>Ops asistan</h2>
           <p>Growth · funnel anomalies · churn · partner quality · pricing · conversion — deterministic + optional Groq summary</p>
         </div>
         <div class="card"><div id="ops-ai-assistant-root"><div class="empty">Yükleniyor…</div></div></div>
+      </div>
+
+      <div class="page page--linkedin-ops" id="page-linkedin-ops-assistant">
+        <div class="page-header">
+          <h2>LinkedIn Operasyon Asistanı</h2>
+          <p>LinkedIn paylaşım ve yorum metinleri için marka uyum kontrolü — yalnızca tarayıcıda, manuel kopyala-yapıştır iş akışı.</p>
+        </div>
+        <div class="card"><div id="linkedin-ops-assistant-root"><div class="empty">Yükleniyor…</div></div></div>
       </div>
 
       <div class="page" id="page-settings">
@@ -728,9 +773,20 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
           <div class="form-group">
             <label>Canlı finans / faiz feed URL (edge)</label>
             <input type="url" id="s-live_finance_feed_url" placeholder="https://…" autocomplete="off" />
-            <small class="text-muted">Boş bırakılırsa simülasyon katalog kullanılır. Açmadan önce feed’in çalıştığını doğrulayın.</small>
+            <small class="text-muted">Boş bırakılırsa simülasyon katalog kullanılır. Canlı mod yalnızca geçerli feed URL ile açılabilir.</small>
           </div>
           <p class="text-muted-sm" id="live-data-admin-hint" role="status">Plan: docs/LIVE_DATA_30DAY_CHECKLIST.md</p>
+        </div>
+        <div class="card">
+          <div class="card-title">AI İlanlar — Public katalog</div>
+          <p class="text-muted-sm">Ana site switch’idir. Açık olsa bile <code>/secenekler</code> sayfasında ilan görmek için ilanların durumu <strong>Yayında (published)</strong> olmalıdır; yalnızca onaylı (approved) kayıtlar public görünürlük için yeterli değildir. Production’da ayrıca edge env gate’leri açık olmalıdır: <code>AI_LISTINGS_SUPABASE_ENABLED</code> ve <code>AI_LISTINGS_PUBLIC_PUBLISH_ENABLED</code>.</p>
+          <div class="form-group">
+            <label class="toggle">
+              <input type="checkbox" id="s-ai_listings_public_enabled" />
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              <span class="text-muted-sm">Public AI ilan kataloğu (/secenekler)</span>
+            </label>
+          </div>
         </div>
         <div class="card">
           <div class="card-title">Sistem</div>
@@ -820,7 +876,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
               <label class="toggle">
                 <input type="checkbox" id="s-home_category_kasko_enabled" />
                 <div class="toggle-track"><div class="toggle-thumb"></div></div>
-                <span class="text-muted-sm">Kasko (yakında) kategorisi görünür</span>
+                <span class="text-muted-sm">Kasko kategorisi canlı — /kasko/ karar analizi</span>
               </label>
             </div>
           </div>
@@ -1098,7 +1154,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
       </div>
 
       <div class="page" id="page-listings">
-        <div class="page-header"><h2>İlanlar</h2><p>Platforma eklenen ilanları yönetin</p></div>
+        <div class="page-header"><h2>Karar Seçenekleri</h2><p>Platforma eklenen değerlendirilebilir seçenekleri yönetin</p></div>
         <div class="card"><div id="listings-list"><div class="empty">Yükleniyor...</div></div></div>
       </div>
 
@@ -1416,6 +1472,36 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
         </div>
       </div>
 
+      <div class="page" id="page-kasko-leads">
+        <div class="page-header">
+          <h2>Kasko Leadleri</h2>
+          <p>Kasko karar analizi lead yönetimi — skorlar deterministik motordan; AI yalnızca özet üretir</p>
+        </div>
+        <div class="card">
+          <div class="auto-leads-toolbar">
+            <input id="kasko-leads-search" class="form-input" type="search" placeholder="Araç, teminat, telefon veya AI özeti ara...">
+            <select id="kasko-leads-category-filter" class="status-select">
+              <option value="">Tüm araç kategorileri</option>
+              <option value="otomobil">Otomobil</option>
+              <option value="suv">SUV / crossover</option>
+              <option value="motosiklet">Motosiklet</option>
+              <option value="ticari_arac">Ticari araç</option>
+            </select>
+            <select id="kasko-leads-status-filter" class="status-select">
+              <option value="">Tüm durumlar</option>
+              <option value="new">yeni</option>
+              <option value="incelendi">incelendi</option>
+              <option value="arandi">arandı</option>
+              <option value="uygun">uygun</option>
+              <option value="partnere_yonlendirildi">partnere yönlendirildi</option>
+              <option value="kapandi">kapandı</option>
+              <option value="reddedildi">reddedildi</option>
+            </select>
+          </div>
+          <div id="kasko-leads-list"><div class="empty">Yükleniyor...</div></div>
+        </div>
+      </div>
+
       <div class="page" id="page-finance-leads">
         <div class="page-header">
           <h2>Finans Leadleri</h2>
@@ -1489,15 +1575,15 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
       <div class="page" id="page-unified-funnel">
         <div class="page-header">
-          <h2>Unified Funnel Dashboard</h2>
-          <p>Auto · Konut · Tatil · Finans — ziyaret, sonuç, lead ve dönüşüm karşılaştırması</p>
+          <h2>Birleşik Funnel</h2>
+          <p>Auto · Konut · Tatil · Finans — ziyaret, sonuç, lead ve dönüşüm karşılaştırması (canlı analytics)</p>
         </div>
         <div id="unified-funnel-root"><div class="empty">Yükleniyor…</div></div>
       </div>
 
       <div class="page" id="page-auto-analytics">
         <div class="page-header">
-          <h2>Auto Analytics</h2>
+          <h2>Auto analitik</h2>
           <p>AI araç funnel performansı (legacy + unified events)</p>
         </div>
         <div class="card">
@@ -1507,7 +1593,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
       <div class="page" id="page-platform-analytics">
         <div class="page-header">
-          <h2>Platform Analytics</h2>
+          <h2>Platform analitik</h2>
           <p>Site geneli funnel, kategori, sayfa path, event/aksiyon ve UTM kaynakları. Varsayılan: gerçek kullanıcı verisi (Ayarlar → Analytics).</p>
         </div>
         <div class="card">
@@ -1517,8 +1603,8 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
       <div class="page" id="page-investor-metrics">
         <div class="page-header">
-          <h2>Executive KPIs (CEO)</h2>
-          <p>Traffic, funnel, conversion, retention, churn, ARPU, partner quality — <code>npm run metrics:executive</code></p>
+          <h2>Yatırımcı KPI</h2>
+          <p>Trafik, funnel, dönüşüm, retention, churn, ARPU, partner kalitesi — <code>npm run metrics:executive</code></p>
         </div>
         <div class="card">
           <div id="investor-metrics-root"><div class="empty">Yükleniyor...</div></div>
@@ -1527,7 +1613,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
       <div class="page" id="page-observability">
         <div class="page-header">
-          <h2>Production Observability</h2>
+          <h2>Observability</h2>
           <p>Son 24 saat — hatalar, API/webhook, lead teslimat, auth, ödeme, performans, abuse, admin audit</p>
         </div>
         <div class="card">
@@ -1537,8 +1623,8 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
       <div class="page" id="page-ops-command-center">
         <div class="page-header">
-          <h2>Ops Command Center (P9)</h2>
-          <p>Revenue · customer · partner · analytics · lifecycle · ops · AI — automated rollups and threshold alerts</p>
+          <h2>Operasyon Komuta Merkezi</h2>
+          <p>Gelir · müşteri · partner · analitik · lifecycle · ops · AI — otomatik rollup ve eşik uyarıları</p>
         </div>
         <div class="card">
           <div id="ops-command-center-root"><div class="empty">Yükleniyor...</div></div>
@@ -1794,7 +1880,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
 
 <script type="importmap" src="/importmap.json"></script>
 <script src="/env.js"></script>
-<script type="module" src="/js/admin-panel.js?v=12"></script>
+<script type="module" src="/js/admin-panel.js?v=13"></script>
 
 <style>
 .auto-leads-toolbar{
@@ -1804,9 +1890,11 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
   align-items:center;
   margin-bottom:14px;
 }
-.auto-leads-toolbar .form-input{
-  min-width:240px;
-  flex:1;
+@media (min-width: 901px) {
+  .auto-leads-toolbar .form-input{
+    min-width:240px;
+    flex:1;
+  }
 }
 .auto-leads-check{
   display:flex;
@@ -1878,6 +1966,18 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,
   flex-wrap:wrap;
   gap:8px;
   justify-content:flex-start;
+}
+
+@media (max-width: 900px) {
+  .auto-leads-toolbar .form-input{
+    min-width:0;
+    width:100%;
+    flex:1 1 100%;
+  }
+
+  .auto-leads-check{
+    white-space:normal;
+  }
 }
 
 </style>

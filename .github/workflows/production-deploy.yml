@@ -69,7 +69,7 @@ jobs:
 
       - name: Link Supabase project
         if: steps.gate.outputs.skip != 'true'
-        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
+        run: bash scripts/lib/retry-command.sh supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
 
       - name: Deploy housing-intake
         if: steps.gate.outputs.skip != 'true'
@@ -78,6 +78,10 @@ jobs:
       - name: Deploy vacation-intake
         if: steps.gate.outputs.skip != 'true'
         run: supabase functions deploy vacation-intake --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy ai-listings-intake
+        if: steps.gate.outputs.skip != 'true'
+        run: supabase functions deploy ai-listings-intake --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Deploy partner-endpoint-test (CORS hotfix path)
         if: steps.gate.outputs.skip != 'true'
@@ -175,6 +179,7 @@ jobs:
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
       SUPABASE_PROJECT_REF: hjfrcdstbyonmgatgwcc
     steps:
       - uses: actions/checkout@v4
@@ -242,7 +247,7 @@ jobs:
 
       - name: Link Supabase project
         if: steps.gate.outputs.skip != 'true'
-        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
+        run: bash scripts/lib/retry-command.sh supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
 
       - name: Push database migrations
         id: db_push
@@ -268,6 +273,11 @@ jobs:
         id: vpd_schema_fallback
         if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
         run: bash scripts/apply-vertical-partner-dispatch-migration-api.sh
+
+      - name: Apply AI listings schema fallback (Management API)
+        id: ai_listings_schema_fallback
+        if: steps.db_push.outcome == 'failure' && steps.gate.outputs.skip != 'true'
+        run: bash scripts/apply-ai-listings-migration-api.sh
 
       - name: Verify vertical partner dispatch schema
         if: steps.gate.outputs.skip != 'true'
@@ -295,6 +305,20 @@ jobs:
           else
             echo "::warning::Set GitHub secret ANALYTICS_HASH_SALT for internal traffic exclusion hashing"
           fi
+
+      - name: Sync AI listings edge secrets
+        if: steps.gate.outputs.skip != 'true'
+        env:
+          AI_LISTINGS_EDGE_SECRET: ${{ secrets.AI_LISTINGS_EDGE_SECRET }}
+        run: |
+          supabase secrets set AI_LISTINGS_SUPABASE_ENABLED=true --project-ref "$SUPABASE_PROJECT_REF"
+          supabase secrets set AI_LISTINGS_PUBLIC_PUBLISH_ENABLED=true --project-ref "$SUPABASE_PROJECT_REF"
+          if [ -z "$AI_LISTINGS_EDGE_SECRET" ]; then
+            echo "::error::AI_LISTINGS_EDGE_SECRET is required for production deploy"
+            exit 1
+          fi
+          supabase secrets set AI_LISTINGS_EDGE_SECRET="$AI_LISTINGS_EDGE_SECRET" --project-ref "$SUPABASE_PROJECT_REF"
+          echo "AI listings edge secrets synced"
 
       - name: Deploy edge functions
         if: steps.gate.outputs.skip != 'true'
@@ -331,11 +355,20 @@ jobs:
             paytr-create-payment-session
             paytr-webhook
             payment-provider-status
+            ai-listings
+            ai-listings-intake
           )
           for fn in "${FUNCTIONS[@]}"; do
             echo "Deploying $fn..."
             supabase functions deploy "$fn" --project-ref "$SUPABASE_PROJECT_REF"
           done
+
+      - name: Edge function smoke guard
+        if: steps.gate.outputs.skip != 'true'
+        run: node scripts/smoke-edge-functions.cjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
   smoke-live:
     name: Live smoke (post-deploy)
@@ -350,9 +383,7 @@ jobs:
       - name: Wait for CDN propagation
         run: sleep 45
       - name: HTTP smoke www
-        run: node scripts/smoke-live.cjs https://www.istebul.com
-        env:
-          SMOKE_OPTIONAL: '1'
+        run: npm run smoke:live:strict -- https://www.istebul.com
 
       - name: Bot access verification
         run: node scripts/verify-bot-access.cjs https://www.istebul.com

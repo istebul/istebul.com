@@ -24,7 +24,7 @@ export function renderRetentionPrompt(trigger) {
     <div class="retention-revisit-inner">
       <p class="retention-revisit-text">${escapeHtml(trigger.message)}</p>
       <div class="retention-revisit-actions">
-        <a class="btn btn-primary btn-sm" href="${escapeHtml(trigger.ctaPath || '/auto/')}" data-retention-cta="primary">Devam et</a>
+        <a class="btn btn-primary btn-sm" href="${escapeHtml(trigger.ctaPath || '/karar-asistani/')}" data-retention-cta="primary">Devam et</a>
         <button type="button" class="btn btn-ghost btn-sm" data-retention-dismiss aria-label="Kapat">Kapat</button>
       </div>
     </div>

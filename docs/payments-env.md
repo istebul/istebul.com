@@ -11,7 +11,7 @@ Aşağıdaki değerleri **Supabase Dashboard → Project Settings → Edge Funct
 | `IYZICO_API_KEY` | iyzico API anahtarı |
 | `IYZICO_SECRET_KEY` | iyzico gizli anahtar |
 | `IYZICO_BASE_URL` | `https://api.iyzipay.com` veya sandbox URL |
-| `IYZICO_WEBHOOK_SECRET` | Webhook imza doğrulama (IYZWSv2 — `iyzico-webhook`) |
+| `IYZICO_WEBHOOK_SECRET` | Webhook imza doğrulama — inbound `x-iyz-signature-v3` header (HMAC-SHA256 over raw body; `iyzico-webhook`) |
 | `PAYTR_MERCHANT_ID` | PayTR mağaza no |
 | `PAYTR_MERCHANT_KEY` | PayTR merchant key |
 | `PAYTR_MERCHANT_SALT` | PayTR merchant salt |
@@ -26,6 +26,25 @@ Stripe (pasif / legacy Cloudflare webhook):
 |--------|----------|
 | `STRIPE_SECRET_KEY` | Sadece legacy `/api/stripe-webhook` için |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook imzası |
+
+## İmza modeli (iyzico)
+
+| Yön | Mekanizma | Kod |
+|-----|-----------|-----|
+| **Outbound checkout** | `Authorization: IYZWSv2 …` — HMAC-SHA256 over `randomKey + uriPath + JSON(body)` | `createIyzwsv2AuthorizationHeader` / `create-payment-session` |
+| **Inbound webhook** | `x-iyz-signature-v3` — HMAC-SHA256 hex over raw request body | `verifyIyzicoWebhookSignature` / `iyzico-webhook` |
+
+Checkout outbound auth **IYZWSv2** kullanır; webhook inbound doğrulama **`x-iyz-signature-v3`** header'ı ile yapılır (aynı IYZWSv2 terimi değildir).
+
+## Canlıya geçmeden önce (sandbox smoke)
+
+Secret değerlerini repoya yazmayın. Sandbox'ta şunları doğrulayın:
+
+1. `create-payment-session` → iyzico checkout initialize **200/success**
+2. Test ödemesi sonrası `iyzico-webhook` loglarında `signature_valid: true`
+3. Entitlement (`user_entitlements` / Pro) oluştu
+
+Runbook: `docs/OPS_SUPABASE_IYZICO_RUNBOOK.md`
 
 ## Webhook URL’leri
 

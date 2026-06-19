@@ -18,6 +18,8 @@ import {
   renderProBadge
 } from '../billing/paywall-v1.js';
 import { PRO_FEATURE } from '../billing/pro-features.js';
+import { buildUserDecisionPanelHtml, bindUserDecisionPanel } from '../../user-decision-center/user-decision-panel.js';
+import { renderAiPlatformBanner } from '../../ui/ai-platform-surface.js';
 
 const EMPTY_CTAS = [
   { label: 'Araç Analizi', href: '/auto/' },
@@ -87,7 +89,7 @@ export function buildDashboardV2Data(ctx = {}) {
       riskLevel: '—',
       dateLabel: formatDate(item.savedAt),
       savedAt: item.savedAt,
-      href: item.revisitPath || CATEGORY_META[cat]?.href || '/auto/',
+      href: item.revisitPath || CATEGORY_META[cat]?.href || '/karar-asistani/',
       summary: item.summary || '',
       source: 'saved'
     });
@@ -117,6 +119,7 @@ export function buildDashboardV2Data(ctx = {}) {
     profile: ctx.profile,
     hasPremium,
     membershipLabel: ctx.membershipLabel || 'Ücretsiz',
+    decisionPlatform: ctx.decisionPlatform ?? {},
     summary: {
       totalAnalyses: analysesMap.size,
       lastPdfLabel: lastPdf
@@ -178,6 +181,7 @@ function renderAnalysisCard(item) {
     <article class="dashboard-v2-analysis-card" data-category="${esc(item.category)}">
       <header>
         <span class="dashboard-v2-cat-badge">${esc(item.categoryLabel || meta.label)}</span>
+        <span class="ib-ai-badge">AI analiz</span>
         <time datetime="${esc(item.savedAt || '')}">${esc(item.dateLabel || formatDate(item.savedAt))}</time>
       </header>
       <div class="dashboard-v2-analysis-scores">
@@ -262,15 +266,24 @@ export function renderDashboardV2(data) {
     <div class="dashboard-v2-root" data-dashboard-v2>
       <header class="dashboard-v2-hero">
         <div>
-          <p class="dashboard-v2-kicker">Karar Merkezi</p>
+          <p class="dashboard-v2-kicker">Karar Merkezi · Yapay Zeka Destekli</p>
           <h2 class="dashboard-v2-title">Merhaba ${esc(name)}, kararlarınız tek panelde</h2>
-          <p class="dashboard-v2-lead">Son analizler, PDF geçmişi, favoriler ve karşılaştırma seçimleriniz.</p>
+          <p class="dashboard-v2-lead">Son analizler, PDF geçmişi, favoriler ve karşılaştırma seçimleriniz — AI executive summary ile.</p>
+          ${renderAiPlatformBanner({
+            title: 'isteBul Karar Merkezi',
+            subtitle: 'Her analiz yapay zeka destekli karar motoru ile skorlanır; geçmişiniz burada yaşar.',
+            variant: 'compact'
+          })}
         </div>
         <a href="/karsilastir" class="btn btn-outline btn-sm dashboard-v2-hero-cta" data-native-route>Karşılaştırma merkezi</a>
         <button type="button" class="btn btn-outline btn-sm dashboard-v2-hero-cta" data-dashboard-tab="settings">Hesap ayarları</button>
       </header>
 
       ${renderSummaryCards(data.summary, data.hasPremium)}
+
+      <section class="dashboard-v2-section dashboard-v2-decision-platform" aria-label="Karar Merkezi paneli">
+        ${buildUserDecisionPanelHtml(data.decisionPlatform ?? {})}
+      </section>
 
       ${data.isEmpty ? renderEmptyState() : ''}
 
@@ -371,6 +384,15 @@ export function renderDashboardV2Guest() {
  */
 export function bindDashboardV2(root, ctx = {}) {
   if (!root) return;
+
+  const decisionPanel = root.querySelector('[data-udc-panel]');
+  if (decisionPanel) {
+    bindUserDecisionPanel(decisionPanel, {
+      onTabChange: (tab) => {
+        if (typeof ctx.onDecisionTabChange === 'function') ctx.onDecisionTabChange(tab);
+      }
+    });
+  }
 
   root.addEventListener('click', (event) => {
     const compareBtn = event.target.closest('[data-dashboard-v2-compare]');

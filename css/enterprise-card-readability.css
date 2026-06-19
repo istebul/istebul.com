@@ -489,3 +489,70 @@ html.ib-ds-v4 body.vacation-page .vacation-selected-recap p {
     background: var(--ib-card-surface);
   }
 }
+
+/* —— Shared AI insight blocks (all vertical result panels) —— */
+.ib-insight-blocks {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.ib-insight-blocks__title {
+  margin: 0.35rem 0 0.15rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ib-card-muted, var(--ib-card-label, #64748b));
+}
+
+.ib-insight-blocks__title:first-child {
+  margin-top: 0;
+}
+
+.ib-insight-blocks__text,
+.ib-insight-blocks__fallback,
+.ib-insight-blocks__disclaimer {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  white-space: normal;
+  overflow: visible;
+  max-height: none;
+  -webkit-line-clamp: unset;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ib-insight-blocks__fallback {
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  color: var(--ib-card-body, #334155);
+}
+
+.ib-insight-blocks__fallback[hidden] {
+  display: none !important;
+}
+
+[class*='-v2-block--exec'] .ib-insight-blocks,
+[class*='-v2-block--exec'] .konut-v2-exec-text,
+[class*='-v2-block--exec'] .auto-v2-exec,
+[class*='-v2-exec-text'] {
+  overflow: visible;
+  max-height: none;
+  -webkit-line-clamp: unset;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+  .ib-insight-blocks,
+  [class*='-v2-block--exec'] {
+    overflow: visible;
+    max-height: none;
+  }
+}
