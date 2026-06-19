@@ -335,6 +335,70 @@ async function loadCompanyDashboard(kind, rootId) {
   );
 }
 
+/**
+ * Dashboard KPI + topbar badge: critical + error operational_events (24h).
+ * @param {number} alertCount
+ */
+function applyDashboardSystemAlerts(alertCount) {
+  const count = Number.isFinite(Number(alertCount)) ? Math.max(0, Math.floor(Number(alertCount))) : 0;
+  const statEl = document.getElementById('stat-system-alerts');
+  if (statEl) statEl.textContent = String(count);
+
+  const badgeEl = document.getElementById('admin-notify-badge');
+  if (!badgeEl) return;
+  if (count > 0) {
+    badgeEl.textContent = String(count);
+    badgeEl.hidden = false;
+  } else {
+    badgeEl.textContent = '0';
+    badgeEl.hidden = true;
+  }
+}
+
+/**
+ * @param {Array<{ severity?: string, events?: number }>} severityRows
+ * @returns {number}
+ */
+function sumCriticalErrorAlertCount(severityRows) {
+  let total = 0;
+  for (const row of severityRows || []) {
+    if (row.severity === 'critical' || row.severity === 'error') {
+      total += Number(row.events) || 0;
+    }
+  }
+  return total;
+}
+
+async function refreshDashboardSystemAlerts() {
+  try {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const opsEventsRes = await fetchAdminTable(sb, {
+      table: 'operational_events',
+      select: 'created_at, severity',
+      limit: 2000,
+      order: { column: 'created_at', ascending: false },
+      direct: () =>
+        sb
+          .from('operational_events')
+          .select('created_at, severity')
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(2000)
+    });
+
+    if (opsEventsRes.error && !(opsEventsRes.data || []).length) {
+      applyDashboardSystemAlerts(0);
+      return;
+    }
+
+    const { rollupSeverity24h } = await import('./features/ops/ops-health.js');
+    const alertCount = sumCriticalErrorAlertCount(rollupSeverity24h(opsEventsRes.data || []));
+    applyDashboardSystemAlerts(alertCount);
+  } catch {
+    applyDashboardSystemAlerts(0);
+  }
+}
+
 async function loadOperationalHealth() {
   const el = document.getElementById('observability-root');
   if (!el) return;
@@ -1763,7 +1827,7 @@ async function loadDashboard() {
     const convPct =
       leads.length > 0 ? Math.round((wonLeads.length / leads.length) * 1000) / 10 : 0;
     setStat('stat-conversion', leads.length ? `%${convPct}` : '—');
-    setStat('stat-system-alerts', '0');
+    await refreshDashboardSystemAlerts();
     await loadEvdsStatusCard();
   } catch {
     /* dashboard stats are best-effort */

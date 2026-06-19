@@ -76,3 +76,29 @@ test('operation and analytics page headings stay aligned with nav labels', () =>
   assert.doesNotMatch(html, /<h2>Platform Analytics<\/h2>/);
   assert.doesNotMatch(html, /<h2>Auto Analytics<\/h2>/);
 });
+
+test('dashboard system alerts KPI is wired to operational_events rollup', () => {
+  const panel = read('js/admin-panel.js');
+  assert.doesNotMatch(panel, /setStat\(\s*['"]stat-system-alerts['"]\s*,\s*['"]0['"]\s*\)/);
+  assert.match(panel, /refreshDashboardSystemAlerts/);
+  assert.match(panel, /applyDashboardSystemAlerts/);
+  assert.match(panel, /sumCriticalErrorAlertCount/);
+  assert.match(panel, /rollupSeverity24h/);
+  assert.match(panel, /table:\s*['"]operational_events['"]/);
+  assert.match(panel, /await refreshDashboardSystemAlerts\(\)/);
+});
+
+test('dashboard KPI and notify badge share applyDashboardSystemAlerts helper', () => {
+  const panel = read('js/admin-panel.js');
+  const helperBlock = panel.match(/function applyDashboardSystemAlerts[\s\S]*?\n\}/)?.[0] ?? '';
+  assert.ok(helperBlock.length > 0, 'applyDashboardSystemAlerts helper exists');
+  assert.match(helperBlock, /stat-system-alerts/);
+  assert.match(helperBlock, /admin-notify-badge/);
+  assert.match(helperBlock, /badgeEl\.hidden = false/);
+  assert.match(helperBlock, /badgeEl\.hidden = true/);
+});
+
+test('admin notify badge defaults to hidden in shell HTML', () => {
+  const html = read('admin-panel.html');
+  assert.match(html, /id="admin-notify-badge"[^>]*hidden/);
+});
