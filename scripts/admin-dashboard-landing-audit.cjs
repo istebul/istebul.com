@@ -84,7 +84,7 @@ if (!adminHtml.includes('id="page-investor-metrics"')) {
 /** Faz 4A-1b-3A — statik operasyon/analitik page h2 ↔ NAV_LABELS */
 const STATIC_PAGE_HEADERS = {
   'ops-ai-assistant': 'Ops asistan',
-  observability: 'Observability',
+  observability: 'Gözlemlenebilirlik',
   'platform-analytics': 'Platform analitik',
   'auto-analytics': 'Auto analitik'
 };
