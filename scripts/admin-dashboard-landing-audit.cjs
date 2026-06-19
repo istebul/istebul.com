@@ -86,7 +86,18 @@ const STATIC_PAGE_HEADERS = {
   'ops-ai-assistant': 'Ops asistan',
   observability: 'Gözlemlenebilirlik',
   'platform-analytics': 'Platform analitik',
-  'auto-analytics': 'Auto analitik'
+  'auto-analytics': 'Auto analitik',
+  settings: 'Ayarlar',
+  'vertical-leads': 'Dikey leadler',
+  'vacation-destinations': 'Destinasyon Yönetimi',
+  'vacation-partners': 'Partner Yönetimi',
+  'vacation-scoring': 'AI Prompt / Scoring',
+  'housing-leads': 'Konut Leadleri',
+  'housing-locations': 'Lokasyon Yönetimi',
+  content: 'Sayfa içerikleri',
+  'partner-endpoints': 'Partner kanalları',
+  'partner-applications': 'Başvurular',
+  'partner-dispatch-logs': 'Teslimat logları'
 };
 
 for (const [pageId, label] of Object.entries(STATIC_PAGE_HEADERS)) {
@@ -111,7 +122,9 @@ for (const legacy of [
   '<h2>AI Ops Decision Assistant</h2>',
   '<h2>Production Observability</h2>',
   '<h2>Platform Analytics</h2>',
-  '<h2>Auto Analytics</h2>'
+  '<h2>Auto Analytics</h2>',
+  '<h2>Partner Endpoints</h2>',
+  '<h2>Site Bilgileri</h2>'
 ]) {
   if (adminHtml.includes(legacy)) {
     fail(`admin-panel.html must not use legacy h2 ${legacy}`);

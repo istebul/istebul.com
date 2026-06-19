@@ -136,3 +136,51 @@ test('admin notify badge defaults to hidden in shell HTML', () => {
   const html = read('admin-panel.html');
   assert.match(html, /id="admin-notify-badge"[^>]*hidden/);
 });
+
+test('TR-2a CRM and partner page headings align with nav labels', () => {
+  const html = read('admin-panel.html');
+  const shell = read('js/admin/admin-shell.js');
+  const pairs = [
+    ['settings', 'Ayarlar'],
+    ['vertical-leads', 'Dikey leadler'],
+    ['vacation-destinations', 'Destinasyon Yönetimi'],
+    ['vacation-partners', 'Partner Yönetimi'],
+    ['vacation-scoring', 'AI Prompt / Scoring'],
+    ['housing-leads', 'Konut Leadleri'],
+    ['housing-locations', 'Lokasyon Yönetimi'],
+    ['content', 'Sayfa içerikleri'],
+    ['partner-endpoints', 'Partner kanalları'],
+    ['partner-applications', 'Başvurular'],
+    ['partner-dispatch-logs', 'Teslimat logları']
+  ];
+  for (const [pageId, label] of pairs) {
+    const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const navPattern = pageId.includes('-')
+      ? new RegExp(`'${pageId}':\\s*'${escapedLabel}'`)
+      : new RegExp(`${pageId}:\\s*'${escapedLabel}'`);
+    assert.match(shell, navPattern, `NAV_LABELS maps ${pageId} → ${label}`);
+    const pageBlock = html.match(
+      new RegExp(`id="page-${pageId.replace(/-/g, '\\-')}"[\\s\\S]*?id="page-`)
+    );
+    assert.ok(pageBlock, `page-${pageId} block exists`);
+    assert.match(pageBlock[0], new RegExp(`<h2>${escapedLabel}<\\/h2>`));
+  }
+  assert.doesNotMatch(html, /<h2>Partner Endpoints<\/h2>/);
+  assert.doesNotMatch(html, /<h2>Site Bilgileri<\/h2>/);
+});
+
+test('loadOperationalHealth observability table headers use TR-2a labels', () => {
+  const panel = read('js/admin-panel.js');
+  const block = panel.match(/async function loadOperationalHealth\(\)[\s\S]*?^async function/m)?.[0] ?? '';
+  assert.match(block, /<th>Kaynak<\/th><th>Detay<\/th>/);
+  assert.match(block, /<th>Aktör<\/th><th>İşlem<\/th><th>Varlık<\/th><th>Özet<\/th>/);
+  assert.match(block, /<th>Rota<\/th><th>Uç nokta<\/th><th>HTTP<\/th>/);
+  assert.doesNotMatch(block, /<th>Source<\/th>/);
+  assert.doesNotMatch(block, /<th>Actor<\/th>/);
+});
+
+test('payments admin page does not expose raw TODO text', () => {
+  const payments = read('js/admin/payments-admin.js');
+  assert.doesNotMatch(payments, /TODO:/);
+  assert.match(payments, /Partner self-servis kontör satın alma paneli/);
+});

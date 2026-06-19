@@ -538,7 +538,7 @@ async function loadOperationalHealth() {
 
     <p class="text-muted-sm mb-12">Sentry (client) + <code>operational_events</code> + partner dispatch logs + admin audit. Export: <code>npm run metrics:ops</code></p>
 
-    ${opsEventsRes.error && !allOpsEvents.length ? `<p class="empty">Ops events yüklenemedi: ${escapeHtml(opsEventsRes.error.message)} — <code>supabase/migrations/20260530_operational_observability.sql</code> deploy edin.</p>` : ''}
+    ${opsEventsRes.error && !allOpsEvents.length ? `<p class="empty">Operasyon olayları yüklenemedi: ${escapeHtml(opsEventsRes.error.message)} — <code>supabase/migrations/20260530_operational_observability.sql</code> deploy edin.</p>` : ''}
 
     <h3 style="margin:16px 0 10px">Öne çıkan sinyaller (24s özet)</h3>
     ${healthTable.length ? `
@@ -557,12 +557,12 @@ async function loadOperationalHealth() {
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="empty">Henüz operational event yok.</p>'}
+    ` : '<p class="empty">Henüz operasyon olayı yok.</p>'}
 
     <h3 style="margin:20px 0 10px">Son kritik / hata olayları</h3>
     ${recentEvents.length ? `
       <table class="table">
-        <thead><tr><th>Zaman</th><th>Şiddet</th><th>Olay</th><th>Source</th><th>Detail</th></tr></thead>
+        <thead><tr><th>Zaman</th><th>Şiddet</th><th>Olay</th><th>Kaynak</th><th>Detay</th></tr></thead>
         <tbody>
           ${recentEvents.slice(0, 40).map((row) => `
             <tr>
@@ -575,7 +575,7 @@ async function loadOperationalHealth() {
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="empty">Son 24 saatte critical/error yok.</p>'}
+    ` : '<p class="empty">Son 24 saatte kritik veya hata olayı yok.</p>'}
 
     <h3 style="margin:20px 0 10px">Lead teslimat hataları</h3>
     ${failedLeads.length ? `
@@ -592,12 +592,12 @@ async function loadOperationalHealth() {
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="empty">dispatch_failed lead yok.</p>'}
+    ` : '<p class="empty">Gönderim hatası (dispatch_failed) lead kaydı yok.</p>'}
 
     <h3 style="margin:20px 0 10px">Partner webhook hataları (log)</h3>
     ${failedDispatchLogs.length ? `
       <table class="table">
-        <thead><tr><th>Zaman</th><th>Route</th><th>Endpoint</th><th>HTTP</th><th>Hata</th></tr></thead>
+        <thead><tr><th>Zaman</th><th>Rota</th><th>Uç nokta</th><th>HTTP</th><th>Hata</th></tr></thead>
         <tbody>
           ${failedDispatchLogs.map((row) => `
             <tr>
@@ -610,12 +610,12 @@ async function loadOperationalHealth() {
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="empty">Webhook fail log yok.</p>'}
+    ` : '<p class="empty">Başarısız webhook log kaydı yok.</p>'}
 
-    <h3 style="margin:20px 0 10px">Admin audit (son 40)</h3>
+    <h3 style="margin:20px 0 10px">Yönetici denetimi (son 40)</h3>
     ${(auditRes.data || []).length ? `
       <table class="table">
-        <thead><tr><th>Zaman</th><th>Actor</th><th>Action</th><th>Entity</th><th>Summary</th></tr></thead>
+        <thead><tr><th>Zaman</th><th>Aktör</th><th>İşlem</th><th>Varlık</th><th>Özet</th></tr></thead>
         <tbody>
           ${auditRes.data.map((row) => `
             <tr>
@@ -628,7 +628,7 @@ async function loadOperationalHealth() {
           `).join('')}
         </tbody>
       </table>
-    ` : '<p class="empty">Audit kaydı yok.</p>'}
+    ` : '<p class="empty">Denetim kaydı yok.</p>'}
   `;
 }
 
@@ -3408,7 +3408,7 @@ async function loadPartnerDispatchLogs() {
             <td>${escapeHtml(row.trigger_source)}</td>
             <td>${row.http_status ?? '—'}</td>
             <td>${row.duration_ms != null ? row.duration_ms + 'ms' : '—'}</td>
-            <td>${row.success ? '<span class="badge badge-green">OK</span>' : '<span class="badge badge-red">FAIL</span>'}</td>
+            <td>${row.success ? '<span class="badge badge-green">Başarılı</span>' : '<span class="badge badge-red">Başarısız</span>'}</td>
             <td title="${safeAttr(row.error_message || '')}">${escapeHtml(formatDispatchError(row.error_message))}</td>
           </tr>
         `).join('')}
@@ -4010,7 +4010,7 @@ function renderDispatchPanelHtml(lead, logs) {
             <td>${formatShortDate(row.created_at)}</td>
             <td>${escapeHtml(row.endpoint_name || '—')}</td>
             <td>${row.http_status ?? '—'}</td>
-            <td>${row.success ? '<span class="badge badge-green">OK</span>' : `<span class="badge badge-red" title="${safeAttr(row.error_message || '')}">FAIL</span>`}</td>
+            <td>${row.success ? '<span class="badge badge-green">Başarılı</span>' : `<span class="badge badge-red" title="${safeAttr(row.error_message || '')}">Başarısız</span>`}</td>
           </tr>
         `).join('')}
       </tbody>
