@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from './storage-keys.js';
+import { PAYMENT_SECURE_SHORT_TR } from '../payments/payment-copy.js';
 
 /**
  * @typedef {{ billing?: 'monthly' | 'annual', useTrial?: boolean }} CheckoutIntent
@@ -72,7 +73,12 @@ export function buildCheckoutTriggerEvent(intent) {
  * @returns {string}
  */
 export function mapCheckoutApiError(status, data = {}) {
-  const code = (data.error || data.message || '').toString();
+  const errField = data.error;
+  const code = (
+    typeof errField === 'object' && errField !== null
+      ? errField.message || errField.code
+      : errField || data.message || ''
+  ).toString();
 
   if (status === 401 || /invalid token|authorization/i.test(code)) {
     return 'Oturumunuz sona ermiş olabilir. Lütfen tekrar giriş yapıp ödemeye devam edin.';
@@ -94,7 +100,7 @@ export function mapCheckoutApiError(status, data = {}) {
 
 export const CHECKOUT_REASSURANCE_HTML = `
   <p class="revenue-risk-reversal checkout-reassurance" role="note">
-    <span>7 gün ücretsiz deneme</span>
-    <span>Stripe ile güvenli ödeme</span>
-    <span>İstediğiniz zaman iptal</span>
+    <span>Pro pilot erişim</span>
+    <span>${PAYMENT_SECURE_SHORT_TR}</span>
+    <span>Destek kanalından iptal</span>
   </p>`;

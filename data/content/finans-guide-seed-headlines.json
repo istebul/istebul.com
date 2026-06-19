@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "category": "finans",
+  "editorialNote": "Karar rehberi — banka değiliz. Her yazı sonunda /finansman/ CTA ile bitmeli.",
+  "headlines": [
+    {
+      "slug": "2026-kredi-limitleri-konut-tasit",
+      "title": "2026 konut ve taşıt kredi limitleri — özet tablo",
+      "excerpt": "BDDK çerçevesi ve banka uygulamalarında limit mantığı — bilgilendirme amaçlı, teklif değildir.",
+      "cover_image_url": "/assets/images/og-image.svg",
+      "source_label": "BDDK / TCMB özeti",
+      "is_featured": true
+    },
+    {
+      "slug": "leasing-vs-kredi-tasit-2026",
+      "title": "Leasing vs kredi — taşıt finansmanı 2026 karar çerçevesi",
+      "excerpt": "Aylık yük, mülkiyet ve erken çıkış maliyeti — aynı araç için iki senaryo.",
+      "cover_image_url": "/assets/images/og-image.svg",
+      "source_label": "isteBul Finansman"
+    },
+    {
+      "slug": "faiz-degisimi-aylik-taksit",
+      "title": "Faiz oranı değişince aylık taksit nasıl hesaplanır?",
+      "excerpt": "Sabit ve değişken faiz senaryolarında nakit akışı — konut ve taşıt için ortak mantık.",
+      "cover_image_url": "/assets/images/og-image.svg",
+      "source_label": "isteBul metodoloji"
+    },
+    {
+      "slug": "erken-kapama-yapilandirma-maliyet",
+      "title": "Erken kapama ve yapılandırma — gizli maliyetler",
+      "excerpt": "Kapama cezası ve vade uzatma kalemleri toplam finansman maliyetini nasıl etkiler.",
+      "cover_image_url": "/assets/images/og-image.svg",
+      "source_label": "Bankacılık mevzuatı özeti"
+    },
+    {
+      "slug": "kredi-notu-onay-sureci",
+      "title": "Kredi notu ve onay süreci — gerçekçi beklenti",
+      "excerpt": "Skor, gelir belgesi ve kefil — başvuru öncesi kontrol listesi.",
+      "cover_image_url": "/assets/images/og-image.svg",
+      "source_label": "Kredi kayıt bürosu özeti"
+    }
+  ]
+}

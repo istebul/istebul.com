@@ -1,0 +1,434 @@
+/**
+ * Partner onboarding funnel — form layout, plan picker, step panel (steps 1–6).
+ */
+
+.ib-partner-funnel {
+  max-width: min(44rem, 100%);
+  margin: 0 auto;
+  padding: clamp(1.25rem, 4vw, 2.5rem) clamp(1rem, 4vw, 1.5rem) 3.5rem;
+}
+
+.ib-partner-funnel-panel {
+  margin-top: 0.5rem;
+  padding: clamp(1.35rem, 4vw, 2rem);
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 12px 40px rgba(15, 23, 42, 0.06);
+}
+
+.ib-partner-funnel-panel .kicker {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #0d9488;
+}
+
+.ib-partner-funnel-panel h1 {
+  margin: 0 0 0.65rem;
+  font-size: clamp(1.45rem, 4vw, 1.75rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.ib-partner-funnel-panel .lead {
+  margin: 0 0 1.5rem;
+  max-width: 52ch;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #475569;
+}
+
+/* —— Stepper —— */
+.ib-partner-funnel-stepper {
+  margin-bottom: 1.25rem;
+}
+
+.ib-partner-funnel-stepper ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ib-partner-funnel-stepper li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid transparent;
+}
+
+.ib-partner-funnel-stepper li.is-done {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.ib-partner-funnel-stepper li.is-current {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: rgba(37, 99, 235, 0.25);
+  font-weight: 700;
+}
+
+.ib-partner-funnel-step-num {
+  font-weight: 800;
+}
+
+/* —— Form base —— */
+.ib-partner-funnel-form.partner-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 0;
+}
+
+.ib-partner-funnel-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.ib-partner-funnel-field > label,
+.ib-partner-funnel-field > span.ib-partner-funnel-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.ib-partner-funnel-field input,
+.ib-partner-funnel-field select,
+.ib-partner-funnel-field textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
+  font: inherit;
+  font-size: 0.9375rem;
+  color: #0f172a;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ib-partner-funnel-field textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.ib-partner-funnel-field input:focus,
+.ib-partner-funnel-field select:focus,
+.ib-partner-funnel-field textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.ib-partner-funnel-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.ib-partner-funnel-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  .ib-partner-funnel-grid--2 {
+    grid-template-columns: 1fr;
+  }
+
+  .ib-partner-funnel-stepper li .ib-partner-funnel-step-label {
+    display: none;
+  }
+}
+
+/* —— Plan picker (step 1) —— */
+.ib-partner-plan-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+.ib-partner-plan-picker__title,
+.ib-partner-plan-picker legend.ib-partner-plan-picker__title {
+  margin: 0;
+  padding: 0;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #0f172a;
+  float: none;
+  width: 100%;
+}
+
+.ib-partner-plan-picker__hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.ib-partner-plan-picker__hint a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ib-partner-plan-picker__hint a:hover {
+  text-decoration: underline;
+}
+
+.ib-partner-plan-picker__grid {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ib-partner-plan-option {
+  display: block;
+  cursor: pointer;
+}
+
+.ib-partner-plan-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ib-partner-plan-option__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ib-partner-plan-option__body strong {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ib-partner-plan-option__body span {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.ib-partner-plan-option input:focus-visible + .ib-partner-plan-option__body {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.ib-partner-plan-option input:checked + .ib-partner-plan-option__body {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+}
+
+.ib-partner-plan-option:hover .ib-partner-plan-option__body {
+  border-color: #94a3b8;
+}
+
+/* —— Checkbox / consent —— */
+.ib-partner-funnel-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.ib-partner-funnel-check input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+  accent-color: #2563eb;
+}
+
+/* —— Interest types grid (step 3) —— */
+.ib-partner-check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.ib-partner-check-grid legend {
+  grid-column: 1 / -1;
+  margin-bottom: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.ib-partner-check-grid .ib-partner-funnel-check {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+}
+
+/* —— Meta strip (step 3 category) —— */
+.ib-partner-funnel-meta {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #f1f5f9;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.ib-partner-funnel-meta strong {
+  color: #0f172a;
+}
+
+/* —— Actions —— */
+.ib-partner-funnel-form .btn.primary {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 0.35rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+}
+
+.ib-partner-funnel-form .btn.secondary {
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+.ib-partner-funnel-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.ib-partner-funnel-actions-row .btn {
+  flex: 1 1 auto;
+  min-width: min(100%, 10rem);
+}
+
+.ib-partner-funnel-help {
+  margin: 1rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.ib-partner-funnel-help a {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.ib-partner-funnel-sample {
+  overflow-x: auto;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  margin: 0 0 1rem;
+}
+
+.ib-partner-funnel-summary {
+  padding: 1.15rem 1.25rem;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #f8fafc, #ffffff);
+  margin-bottom: 1.25rem;
+}
+
+.ib-partner-funnel-summary p {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.ib-partner-funnel-summary p:last-child {
+  margin-bottom: 0;
+}
+
+.ib-partner-funnel-summary code {
+  font-size: 0.8rem;
+  word-break: break-all;
+  color: #1e40af;
+}
+
+.ib-partner-success {
+  padding: 1rem 1.15rem;
+  border-radius: 14px;
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+  margin-bottom: 1rem;
+}
+
+.ib-partner-success p {
+  margin: 0 0 0.35rem;
+  color: #065f46;
+  line-height: 1.55;
+}
+
+.ib-partner-success p:last-child {
+  margin-bottom: 0;
+}
+
+.ib-partner-funnel-success-inline {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.ib-partner-funnel-skip {
+  margin-top: 0.75rem;
+}
+
+.ib-partner-funnel-panel .final-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+}
+
+.ib-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

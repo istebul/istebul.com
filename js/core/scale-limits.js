@@ -25,10 +25,11 @@ export const SCALE_LIMITS = Object.freeze({
     partnerFunnelRowLimit: 1500
   },
   aiProxy: {
-    maxPromptChars: 3000,
-    maxNarrativeChars: 380,
-    maxOutputTokens: 400,
-    sessionCallsPerHour: 3
+    maxPromptChars: 4000,
+    maxNarrativeChars: 900,
+    maxOutputTokens: 800,
+    sessionCallsPerHour: 12,
+    proSessionCallsPerHour: 40
   }
 });
 
@@ -45,9 +46,11 @@ export function dedupeAnalyticsQueue(queue, eventName, sessionId) {
 
 const AI_SESSION_KEY = 'istebul_ai_narration_budget';
 
-function readAiNarrationBudget(now = Date.now()) {
+function readAiNarrationBudget(now = Date.now(), options = {}) {
   const hourMs = 60 * 60 * 1000;
-  const max = SCALE_LIMITS.aiProxy.sessionCallsPerHour;
+  const max = options.pro
+    ? SCALE_LIMITS.aiProxy.proSessionCallsPerHour
+    : SCALE_LIMITS.aiProxy.sessionCallsPerHour;
   const raw = sessionStorage.getItem(AI_SESSION_KEY);
   let budget = raw ? JSON.parse(raw) : { count: 0, windowStart: now };
 
@@ -61,11 +64,11 @@ function readAiNarrationBudget(now = Date.now()) {
 /**
  * Check narration budget without consuming a slot (UI / gating).
  */
-export function hasAiNarrationBudget() {
+export function hasAiNarrationBudget(options = {}) {
   if (typeof sessionStorage === 'undefined') return true;
 
   try {
-    const { budget, max } = readAiNarrationBudget();
+    const { budget, max } = readAiNarrationBudget(Date.now(), options);
     return budget.count < max;
   } catch {
     return true;
@@ -75,13 +78,13 @@ export function hasAiNarrationBudget() {
 /**
  * Client-side Groq narration budget (per tab session / hour).
  */
-export function canCallAiNarration() {
+export function canCallAiNarration(options = {}) {
   if (typeof sessionStorage === 'undefined') return true;
 
   const now = Date.now();
 
   try {
-    const { budget, max } = readAiNarrationBudget(now);
+    const { budget, max } = readAiNarrationBudget(now, options);
     if (budget.count >= max) return false;
 
     budget.count += 1;
@@ -90,4 +93,12 @@ export function canCallAiNarration() {
   } catch {
     return true;
   }
+}
+
+export function getAiNarrationBudgetMessage(options = {}) {
+  if (hasAiNarrationBudget(options)) return '';
+  const max = options.pro
+    ? SCALE_LIMITS.aiProxy.proSessionCallsPerHour
+    : SCALE_LIMITS.aiProxy.sessionCallsPerHour;
+  return `Saatlik AI sentez kotası doldu (${max}/saat). Skor, TCO ve yapılandırılmış gerekçe kartları geçerlidir; bir süre sonra tekrar deneyin.`;
 }

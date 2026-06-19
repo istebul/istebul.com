@@ -1,7 +1,7 @@
 {
   "hakkimizda.html": {
-    "title": "Hakkımızda | isteBul — Araç Alım Karar Platformu",
-    "description": "isteBul; Türkiye'de araç satın alma kararlarını toplam maliyet, kredi etkisi ve kullanım ihtiyacına göre şeffaf biçimde değerlendiren karar destek platformudur."
+    "title": "Hakkımızda | isteBul — Karar Zekâsı Platformu",
+    "description": "isteBul vizyonu, misyonu ve karar altyapısı yaklaşımı. Büyük satın alma kararlarında şeffaf TCO ve AI destekli gerekçe."
   },
   "iletisim.html": {
     "title": "İletişim | isteBul",
@@ -30,6 +30,10 @@
   "kvkk.html": {
     "title": "KVKK Aydınlatma Metni | isteBul",
     "description": "6698 sayılı KVKK kapsamında isteBul veri sorumlusu aydınlatma metni ve başvuru hakları."
+  },
+  "gdpr.html": {
+    "title": "GDPR Privacy Summary | isteBul",
+    "description": "English GDPR privacy summary for EU/EEA visitors. Authoritative Turkish disclosure is the KVKK notice."
   },
   "kullanim-sartlari.html": {
     "title": "Kullanım Şartları | isteBul",

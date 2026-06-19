@@ -1,0 +1,196 @@
+/* Footer social links from site_settings + enterprise meta spacing */
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .ib-site-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.65rem;
+  margin-top: 0.85rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .ib-site-social[hidden] {
+  display: none !important;
+}
+
+/* —— Homepage (light footer) — high-contrast pills —— */
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer.footer-premium.ib-footer-v7 .ib-site-social-block {
+  margin-top: 1.1rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer.footer-premium.ib-footer-v7 .ib-site-social-block:has(.ib-site-social[hidden]) {
+  display: none;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer.footer-premium.ib-footer-v7 .ib-site-social-label {
+  margin: 0 0 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer.footer-premium.ib-footer-v7 .ib-site-social--home {
+  margin-top: 0;
+  gap: 0.55rem 0.65rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer.footer-premium.ib-footer-v7 .ib-site-social--home .ib-site-social__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  min-width: 7.5rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid #94a3b8;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 4px 14px rgba(15, 23, 42, 0.06);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer.footer-premium.ib-footer-v7 .ib-site-social--home .ib-site-social__link:hover {
+  transform: translateY(-1px);
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.18);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer.footer-premium.ib-footer-v7 .ib-site-social--home .ib-site-social__link--instagram:hover {
+  border-color: #db2777;
+  background: #fdf2f8;
+  color: #9d174d;
+  box-shadow: 0 6px 18px rgba(219, 39, 119, 0.15);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer.footer-premium.ib-footer-v7 .ib-site-social--home .ib-site-social__link--facebook:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer.footer-premium.ib-footer-v7 .ib-site-social--home .ib-site-social__link--linkedin:hover {
+  border-color: #0284c7;
+  background: #f0f9ff;
+  color: #075985;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.ib-enterprise .footer.footer-premium.ib-footer-v7 .ib-site-social--home .ib-site-social__link:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Dark / tinted footers (fallback if used outside ib-footer-v7) */
+html.ib-ds-v4.ib-premium-v7 .ib-site-social__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-site-social__link:hover {
+  background: rgba(37, 99, 235, 0.18);
+  border-color: rgba(96, 165, 250, 0.55);
+  color: #fff;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .ib-enterprise-meta {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.35rem;
+  justify-content: center;
+}
+
+html.ib-ds-v4.ib-premium-v7 .ib-footer-v7 .ib-enterprise-meta > span {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* SEO / corporate / vertical footers */
+.seo-footer .ib-site-social,
+.corporate-footer .ib-site-social,
+.vacation-footer .ib-site-social,
+.housing-locale-footer .ib-site-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.65rem;
+  margin-top: 0.75rem;
+  justify-content: flex-start;
+}
+
+.seo-footer .ib-site-social[hidden],
+.corporate-footer .ib-site-social[hidden],
+.vacation-footer .ib-site-social[hidden],
+.housing-locale-footer .ib-site-social[hidden] {
+  display: none !important;
+}
+
+.seo-footer .ib-site-social__link,
+.vacation-footer .ib-site-social__link,
+.housing-locale-footer .ib-site-social__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.corporate-footer .ib-site-social__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.seo-footer .ib-site-social__link:hover,
+.vacation-footer .ib-site-social__link:hover,
+.housing-locale-footer .ib-site-social__link:hover {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: rgba(96, 165, 250, 0.5);
+  color: #fff;
+}
+
+.corporate-footer .ib-site-social__link:hover {
+  background: #eff6ff;
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #1d4ed8;
+}
+
+.vacation-footer .ib-site-social,
+.housing-locale-footer .ib-site-social {
+  margin-bottom: 0.5rem;
+}

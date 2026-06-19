@@ -29,13 +29,13 @@ for (const rel of mustExist) {
 const cfg = JSON.parse(
   fs.readFileSync(path.join(root, 'data/ops/infra-unit-economics.json'), 'utf8')
 );
-if (cfg.vendors?.groq?.maxOutputTokens !== 400) {
-  fail('infra config groq.maxOutputTokens must be 400');
+if (cfg.vendors?.groq?.maxOutputTokens !== 800) {
+  fail('infra config groq.maxOutputTokens must be 800');
 }
 
 const aiProxy = fs.readFileSync(path.join(root, 'functions/ai-proxy.js'), 'utf8');
-if (!aiProxy.includes('AI_MAX_OUTPUT_TOKENS = 400')) {
-  fail('ai-proxy must set AI_MAX_OUTPUT_TOKENS = 400');
+if (!aiProxy.includes('AI_MAX_OUTPUT_TOKENS = 800')) {
+  fail('ai-proxy must set AI_MAX_OUTPUT_TOKENS = 800');
 }
 if (!aiProxy.includes('readPromptCache')) fail('ai-proxy needs prompt cache');
 if (!aiProxy.includes('AI_RATE_LIMIT_PER_MIN = 20')) {
@@ -44,7 +44,7 @@ if (!aiProxy.includes('AI_RATE_LIMIT_PER_MIN = 20')) {
 
 const scale = fs.readFileSync(path.join(root, 'js/core/scale-limits.js'), 'utf8');
 if (!scale.includes('maxQueue: 40')) fail('scale-limits analytics maxQueue must be 40');
-if (!scale.includes('maxOutputTokens: 400')) fail('scale-limits aiProxy maxOutputTokens 400');
+if (!scale.includes('maxOutputTokens: 800')) fail('scale-limits aiProxy maxOutputTokens 800');
 
 const analytics = fs.readFileSync(path.join(root, 'js/core/analytics.js'), 'utf8');
 if (!analytics.includes('shouldSampleAnalyticsEvent')) {
@@ -52,7 +52,7 @@ if (!analytics.includes('shouldSampleAnalyticsEvent')) {
 }
 
 const app = fs.readFileSync(path.join(root, 'js/app.js'), 'utf8');
-if (!app.includes('canCallAiNarration()')) {
+if (!app.includes('canCallAiNarration(')) {
   fail('app.js karar asistanı must gate AI with canCallAiNarration');
 }
 

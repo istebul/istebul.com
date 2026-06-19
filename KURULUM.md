@@ -6,7 +6,7 @@
 - Node.js 18 veya üzeri
 - npm veya yarn
 - Supabase hesabı
-- Netlify hesabı (dağıtım için)
+- Cloudflare hesabı (dağıtım için)
 
 ### 2. Projeyi İndirin ve Kurun
 
@@ -63,9 +63,10 @@ isteBu-v2-src/
 │   │   ├── admin/     # Admin paneli
 │   │   └── quiz/      # Quiz sistemi
 │   └── ui/            # UI bileşenleri
-├── netlify/
-│   ├── functions/     # Sunucusuz fonksiyonlar
-│   └── toml          # Netlify yapılandırması
+├── functions/         # Cloudflare Pages Functions (API, ai-proxy)
+│   ├── api/           # /api/* uçları
+│   └── ai-proxy.js    # /ai-proxy
+├── _headers           # Cloudflare Pages güvenlik header'ları
 └── assets/            # Statik dosyalar
 ```
 
@@ -90,18 +91,20 @@ Proje aşağıdaki Supabase tablolarını kullanır:
 
 ## 🚀 Dağıtım
 
-### Netlify ile Dağıtım
+### Cloudflare Pages ile Dağıtım
 
-1. GitHub reposunu Netlify'e bağlayın
-2. Build komutu: `npm run build`
-3. Yayın dizini: `.`
-4. Ortam değişkenlerini Netlify dashboard'da ayarlayın
-5. Dağıtın!
+Production deploy GitHub Actions üzerinden otomatik yapılır:
+
+1. GitHub Secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`
+2. `main` branch'e push → **Production Deploy** workflow
+3. Cloudflare Pages env değişkenlerini dashboard'da ayarlayın
+4. Detay: `docs/deployment-setup.md` ve `.github/SECRETS.example.md`
 
 ### Manuel Dağıtım
 
 ```bash
-npm run deploy
+npm run build
+npx wrangler pages deploy dist --project-name=istebul-com
 ```
 
 ## 🧪 Test
@@ -118,9 +121,9 @@ npm test
    - `.env.local` dosyasındaki URL ve anahtarları kontrol edin
    - Supabase projenizin aktif olduğundan emin olun
 
-2. **Netlify fonksiyonları çalışmıyor**
-   - `netlify.toml` yapılandırmasını kontrol edin
-   - Ortam değişkenlerinin doğru ayarlandığından emin olun
+2. **Pages Functions çalışmıyor**
+   - Cloudflare Pages env değişkenlerini kontrol edin (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`)
+   - `/api/health` uç noktasını test edin
 
 3. **Resim yükleme hatası**
    - Supabase storage bucket'ının oluşturulduğunu kontrol edin

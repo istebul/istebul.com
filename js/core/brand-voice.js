@@ -1,42 +1,53 @@
 /**
  * P4.6 — Single brand voice: premium, güvenilir, akıllı, net, profesyonel.
- * Karar altyapısı tonu; ilan pazarı veya startup jargonu değil.
+ * AI destekli karar zekası platformu tonu.
  */
 
 export const BRAND_VOICE = Object.freeze({
   productName: 'isteBul',
-  categoryLabel: 'Karar altyapısı',
-  positioningLine: 'İlan bulmak başka, doğru karar vermek başka.',
+  categoryLabel: 'AI destekli karar zekası',
+  positioningLine: 'AI ile büyük satın alma kararlarını daha doğru ver',
   leadLine:
-    'Toplam sahip olma maliyetine göre karar verin — bütçe, finansman ve TCO tek deterministik modelde. İlan listesi veya sohbet botu değil.',
+    'Araba, ev, tatil ve finans kararlarında toplam maliyeti, riskleri ve size en uygun seçenekleri analiz edin.',
 
   cta: {
-    primaryAuto: 'TCO analizini başlat',
-    primaryAutoLong: 'Ücretsiz TCO analizi başlat',
-    methodology: 'Metodolojiyi incele',
+    primaryDecision: 'Kararını analiz et',
+    primaryDecisionFree: 'Ön değerlendirmeye başla',
+    primaryAuto: 'Auto analizini dene',
+    primaryAutoLegacy: 'Tam analize başla',
+    primaryAutoLong: 'Tam analize başla',
+    methodology: 'Metodolojiyi gör',
     plans: 'Planları incele',
-    analysisStart: 'Analizi başlat',
+    analysisStart: 'Ön değerlendirmeye başla',
     saveAnalysis: 'Analizini kaydet ve devam et',
-    accountLogin: 'Hesabına gir',
+    accountLogin: 'Giriş Yap',
     accountRegister: 'Analizini kaydet',
     addOption: 'Seçenek ekle',
     publishOption: 'Seçeneği kaydet',
-    continueFree: 'Ücretsiz önizlemeyle devam et',
+    continueFree: 'Önizlemeyle devam et',
+    detailReport: 'Detaylı raporu aç',
+    partnerOffer: 'Partner teklifine yönlen',
     externalSource: 'Kaynağı görüntüle'
   },
 
   trust: {
-    heroHint: '~2 dk · KVKK uyumlu · bağlayıcı teklif değil',
+    heroHint: 'Pilot aşama · ~2 dk · KVKK uyumlu',
     railLine:
-      'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · metodolojik destek',
+      'Skor metodolojisi açık · AI skoru tek başına değiştirmez · şeffaf TCO',
     stickyLine:
-      'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · ödeme Stripe ile',
+      'Skor ve TCO kural tabanlı · AI yalnızca gerekçe · ödeme aktivasyonu sonrası',
     pricingLine:
-      '7 gün deneme · iptal tek tık · fatura Stripe müşteri panelinden',
+      'Yanlış seçim maliyeti · pilot erişim · destek kanalından iptal',
     compliance:
-      'Skorlar ve bantlar metodolojik destek sunar; kesin sonuç veya finansal taahhüt değildir.',
+      'Finansal tavsiye değildir. Skorlar bilgilendirme amaçlıdır; kesin sonuç veya getiri taahhüdü yoktur.',
     sampleNote:
-      'Gösterim amaçlıdır; canlı analizde değerler girdilerinize göre hesaplanır.'
+      'Gösterim amaçlıdır; canlı analizde değerler girdilerinize göre hesaplanır.',
+    pilotMetrics: {
+      stage: 'Pilot aşama',
+      region: 'İzmir odaklı ilk partner ağı',
+      access: 'Erken erişim',
+      infra: 'Gerçek veri entegrasyonları için hazırlanan altyapı'
+    }
   },
 
   kickers: {
@@ -48,14 +59,17 @@ export const BRAND_VOICE = Object.freeze({
     compare: 'Karşılaştırma',
     preview: 'Karar önizlemesi',
     faq: 'SSS',
-    category: 'Kategori çerçevesi'
+    category: 'Kategori çerçevesi',
+    problem: 'Problem',
+    aiEngine: 'Karar motoru',
+    tco: 'Maliyet merceği'
   },
 
   headings: {
-    trust: 'Karar için netlik — pazarlama söylemi değil',
+    trust: 'Güven katmanı — şeffaf karar desteği',
     options: 'Öne çıkan seçenekler',
     compare: 'Seçenekleri yan yana değerlendirin',
-    howItWorks: 'Üç adımda karar çıktısı'
+    howItWorks: 'isteBul nasıl karar verir?'
   },
 
   labels: {

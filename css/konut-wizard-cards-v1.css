@@ -1,0 +1,153 @@
+/**
+ * Konut wizard — premium light option cards + hero önizleme (DS v4 uyumlu).
+ * Loads last on /konut/ to override real-estate dark chip defaults.
+ */
+
+/* —— Trust rail (belt-and-suspenders with vertical-brand-shell) —— */
+html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail-inner {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem 1.35rem;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .ib-trust-rail-inner > span {
+  display: inline-flex !important;
+  white-space: nowrap;
+}
+
+/* —— Hero önizleme paneli — açık kart dili —— */
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-hero .hero-dashboard.glass-card {
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.1);
+  color: #0f172a;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-hero .hero-dashboard .hero-metric {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  color: #0f172a;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-hero .hero-dashboard .hero-metric span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-hero .hero-dashboard .hero-metric strong {
+  color: #0f172a;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-hero .hero-dashboard .hero-metric.hero-score {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), #f8fafc);
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-hero .hero-dashboard .hero-metric.hero-score strong {
+  color: #2563eb;
+  font-size: 2rem;
+}
+
+/* —— Wizard adım kartı —— */
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card {
+  color: #0f172a;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card h2 {
+  color: #0f172a;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-progress-item {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-progress-item.is-active {
+  background: rgba(37, 99, 235, 0.18);
+  color: #e0e7ff;
+  border-color: rgba(96, 165, 250, 0.55);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-card-grid {
+  gap: 0.75rem;
+}
+
+/* —— Seçenek kartları (soru adımları) —— */
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-option-card,
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-chip,
+body.housing-page .housing-step-card .housing-option-card,
+body.housing-page .housing-step-card .housing-chip {
+  min-height: 52px;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #0f172a !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease,
+    color 0.16s ease;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-option-card:hover,
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-chip:hover,
+body.housing-page .housing-step-card .housing-option-card:hover,
+body.housing-page .housing-step-card .housing-chip:hover {
+  border-color: #93c5fd;
+  background: #f8fafc;
+  color: #0f172a !important;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-option-card.is-selected,
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-chip.is-selected,
+body.housing-page .housing-step-card .housing-option-card.is-selected,
+body.housing-page .housing-step-card .housing-chip.is-selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1e40af !important;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.28), 0 8px 20px rgba(37, 99, 235, 0.1);
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-option-card:focus-visible,
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-chip:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-field-hint {
+  color: #64748b;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-form-grid label {
+  color: #475569;
+}
+
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-form-grid input,
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-form-grid select,
+html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-step-card .housing-form-grid textarea {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+}
+
+@media (max-width: 640px) {
+  html.ib-ds-v4.ib-premium-v7 body.housing-page .housing-card-grid {
+    grid-template-columns: 1fr;
+  }
+}

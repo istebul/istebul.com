@@ -1,0 +1,76 @@
+{
+  "auto": [
+    {
+      "q": "isteBul Auto ücretsiz mi?",
+      "a": "Temel karar analizi ücretsiz başlatılabilir; Pro plan derin rapor ve ek özellikler sunar. Koşullar planlar sayfasında güncellenir."
+    },
+    {
+      "q": "Skor nasıl hesaplanır?",
+      "a": "Skor kural tabanlı motordadır; bütçe, kullanım, TCO ve risk sinyalleri birleştirilir. AI skoru değiştirmez."
+    },
+    {
+      "q": "TCO ne kadar güvenilir?",
+      "a": "TCO varsayımlara dayalı bilgilendirme amaçlı projeksiyondur; bayi teklifi ve ekspertiz ile doğrulanmalıdır."
+    },
+    {
+      "q": "Partner teklifleri zorunlu mu?",
+      "a": "Hayır. Lead paylaşımı yalnızca onayınızla yapılır."
+    }
+  ],
+  "konut": [
+    {
+      "q": "Konut analizi finansal tavsiye midir?",
+      "a": "Hayır. Sonuçlar bilgilendirme amaçlıdır; kredi onayı bankaya aittir."
+    },
+    {
+      "q": "Hangi girdiler kullanılır?",
+      "a": "Bütçe, lokasyon, kredi yükü, aidat, ulaşım ve risk toleransı gibi profil alanları."
+    },
+    {
+      "q": "Deprem riski dahil mi?",
+      "a": "Risk katmanında bölgesel sinyaller dikkate alınabilir; nihai teknik değerlendirme uzman gerektirir."
+    }
+  ],
+  "tatil": [
+    {
+      "q": "Tatil karar asistanı ne ölçer?",
+      "a": "Bütçe, sezon, konfor ve tercihlerinize göre tahmini maliyet ve uygunluk skoru üretir."
+    },
+    {
+      "q": "Fiyat garantisi var mı?",
+      "a": "Hayır. Gösterilen tutarlar tahmini analizdir; rezervasyon koşulları sağlayıcıya bağlıdır."
+    },
+    {
+      "q": "Kişisel veriler nasıl işlenir?",
+      "a": "KVKK kapsamında; ayrıntılar gizlilik politikasında."
+    }
+  ],
+  "finans": [
+    {
+      "q": "Finansman simülasyonu onay mı?",
+      "a": "Hayır. Vade ve ödeme projeksiyonu bilgilendirme amaçlıdır."
+    },
+    {
+      "q": "Hangi senaryolar karşılaştırılır?",
+      "a": "Kredi tutarı, vade, peşinat ve aylık taşıma kapasitesi kombinasyonları."
+    },
+    {
+      "q": "isteBul banka mı?",
+      "a": "Hayır. Karar destek platformudur; teklifler partner veya kullanıcı kaynaklıdır."
+    }
+  ],
+  "metodoloji": [
+    {
+      "q": "AI skoru değiştirebilir mi?",
+      "a": "Hayır. Skor deterministik motordadır; AI yalnızca açıklama üretir."
+    },
+    {
+      "q": "Verilerim satılıyor mu?",
+      "a": "Hayır. Partner paylaşımı yalnızca onaylı lead akışıyla sınırlıdır."
+    },
+    {
+      "q": "Metodoloji ne sıklıkla güncellenir?",
+      "a": "Kural seti ürün sürümleriyle birlikte gözden geçirilir; önemli değişiklikler bu sayfada yansıtılır."
+    }
+  ]
+}

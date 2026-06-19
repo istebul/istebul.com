@@ -2,9 +2,9 @@
 import { BRAND_VOICE } from '../../core/brand-voice.js';
 
 export const PRICING_MESSAGING = Object.freeze({
-  headline: 'Yanlış araç kararının maliyetini küçültün',
+  headline: 'Yanlış araç seçimi yıllık maliyette çok daha pahalıya patlar',
   subhead:
-    'Pro, karar altyapısının derin katmanıdır — TCO, karşılaştırma ve raporla seçim riskini görünür kılar. Başlangıç ücretsiz; ihtiyaç halinde derinleştirin.',
+    'Bakım, yakıt, kredi, sigorta ve değer kaybı birlikte düşünülmezse “ucuz araç” pahalıya çıkar. isteBul karar altyapısı: ücretsiz temel analiz; Pro ile senaryo karşılaştırma ve gelişmiş AI açıklaması.',
   popularBadge: 'En popüler',
   roiTitle: 'Karar maliyeti hesabı',
   roiDisclaimer:
@@ -16,61 +16,63 @@ export const PLANS = {
     id: 'free',
     name: 'Başlangıç',
     priceLabel: 'Ücretsiz',
-    description: 'TCO özeti ve 2 model karşılaştırma — satın alma öncesi yanlış seçim riskini görün',
+    description: 'Temel analiz — TCO özeti ve önizleme; üyelik zorunlu değil',
     highlights: [
-      '5 adımlı maliyet analizi (Auto)',
-      '2 araç TCO karşılaştırma',
-      'İsteğe bağlı partner teklif talebi',
-      'Şeffaf metodoloji özeti'
+      'Temel TCO ve uyum skoru',
+      '2 araç karşılaştırma',
+      'Karar önizlemesi',
+      'Saatlik AI gerekçe kotası'
     ]
   },
   pro: {
     id: 'pro',
     name: 'isteBul Pro',
-    priceLabel: 'Aylık abonelik',
-    priceHint: 'Stripe ile güvenli ödeme · dilediğiniz zaman iptal',
-    description: 'Derin TCO raporu, sınırsız karşılaştırma ve öncelikli yönlendirme — tek yanlış seçim maliyetine göre düşük risk',
-    trialDays: 7,
-    trialLabel: '7 gün ücretsiz dene',
+    priceLabel: 'Erken erişim',
+    priceHint: 'Ödeme aktivasyonu sonrası bilgilendirme · pilot erişim sürecinde',
+    description: 'Detaylı TCO, senaryo karşılaştırma, gelişmiş AI açıklama ve premium rapor',
+    trialDays: 0,
+    trialLabel: 'Erken erişim talep et',
     billing: {
       monthly: {
         id: 'monthly',
         label: 'Aylık',
-        priceDisplay: '₺299',
-        periodLabel: '/ ay',
-        checkoutLabel: 'Aylık Pro — karar netliğini aç'
+        priceDisplay: 'Erken erişim',
+        periodLabel: '',
+        checkoutLabel: 'Pro erken erişim talep et'
       },
       annual: {
         id: 'annual',
         label: 'Yıllık',
-        priceDisplay: '₺2.870',
-        periodLabel: '/ yıl',
-        monthlyEquivalent: '₺239 / ay',
-        savingsLabel: '12 aylık ödemeye göre daha az',
-        discountPercent: 20,
-        checkoutLabel: 'Yıllık Pro — aylık ₺239 ile devam et'
+        priceDisplay: 'Pilot erişim',
+        periodLabel: '',
+        monthlyEquivalent: 'Aktivasyon sonrası',
+        savingsLabel: 'Fiyat aktivasyon sonrası duyurulur',
+        discountPercent: 0,
+        checkoutLabel: 'Pro pilot erişim talep et'
       }
     },
     highlights: [
       'Sınırsız karşılaştırma',
-      'Detaylı premium karar raporu',
-      'Şeffaf AI gerekçe özeti (skoru değiştirmez)',
-      'Öncelikli partner eşleşmesi',
-      'Karar geçmişi ve export'
+      'Premium karar raporu',
+      'Derin TCO kırılımı',
+      'AI karar özeti (skoru değiştirmez)',
+      'Finans partner eşleşmesi',
+      'Öncelikli destek ve müzakere içgörüleri',
+      'Premium export / raporlama'
     ],
-    cta: 'Karar riskini azalt'
+    cta: 'Erken erişim talep et'
   },
   enterprise: {
     id: 'enterprise',
     name: 'Enterprise',
     priceLabel: 'Özel teklif',
-    description: 'Kurumsal karar ekipleri ve yüksek hacimli partner operasyonları için özel metodoloji ve SLA',
+    description: 'Sıcak lead, CRM, webhook/API ve pilot partner operasyonları',
     highlights: [
-      'Özel SLA ve destek hattı',
-      'API / webhook entegrasyonu',
-      'Çoklu kullanıcı ve rol yönetimi',
-      'Özel metodoloji ve raporlama',
-      'Beyaz etiket seçenekleri'
+      'Skorlu sıcak lead',
+      'CRM ve webhook/API',
+      'Pilot çalışma ve SLA',
+      'Özel metodoloji',
+      'Kurumsal destek'
     ],
     cta: 'Kurumsal teklif al',
     contactHref: '/iletisim.html?konu=enterprise'
@@ -81,7 +83,7 @@ export const FREE_LIMITS = {
   maxComparisons: 2,
   maxAutoResultsPreview: 3,
   premiumReport: false,
-  advancedAiSummary: false,
+  advancedAiSummary: true,
   priorityPartner: false
 };
 

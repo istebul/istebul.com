@@ -38,7 +38,7 @@ describe('startup-operating-center', () => {
     });
 
     assert.equal(snapshot.version, 'p18.0');
-    assert.equal(snapshot.pillars.length, 8);
+    assert.equal(snapshot.pillars.length, (config.scalePillars || []).length);
     assert.ok(snapshot.bottlenecks[0].urgencyScore >= snapshot.bottlenecks[1]?.urgencyScore);
     assert.ok(['foundation', 'scaling', 'scale_ready'].includes(snapshot.scaleStage));
     assert.ok(snapshot.executiveSummary.length >= 2);

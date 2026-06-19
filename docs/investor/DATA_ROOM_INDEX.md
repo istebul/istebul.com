@@ -1,6 +1,6 @@
-# isteBul — Investor Data Room Index
+# isteBul — Investor Data Room Index (Final)
 
-**Purpose:** VC / angel due diligence navigation.  
+**Purpose:** VC / angel due diligence navigation + outreach operations.  
 **Product:** AI decision platform for high-consideration purchases (Auto live; konut/tatil/finance expansion).  
 **Production:** https://www.istebul.com · Cloudflare Pages + Supabase.
 
@@ -28,8 +28,15 @@
 | **LOI template (TR+EN)** | `docs/investor/loi-template.md` |
 | **Stripe MRR evidence** | `docs/investor/STRIPE_MRR_EVIDENCE.md` |
 | **Market research (cited)** | `data/investor/market-research.json` |
+| **100 investor target list** | `docs/investor/INVESTOR_TARGET_LIST_100.csv` |
+| **Outreach playbook** | `docs/investor/OUTREACH_PLAYBOOK.md` |
+| **Meeting flow + DD plan** | `docs/investor/MEETING_FLOW_AND_DD.md` |
+| **Follow-up discipline** | `docs/investor/FOLLOW_UP_DISCIPLINE.md` |
+| **Founder master guide** | `docs/investor/FOUNDER_FUNDRAISING_MASTER_GUIDE.md` |
+| **Deliverables index** | `docs/investor/INVESTOR_DELIVERABLES.md` |
+| **PDF + slide export pack** | `docs/investor/export/` · `npm run investor:export:pdf` |
 
-**Gap:** Signed LOI PDFs, Stripe PNG screenshots, deck PDF export — see `FUNDRAISING_READINESS.md`.
+**Gap:** Signed LOI PDFs, Stripe PNG screenshots — see `FUNDRAISING_READINESS.md`. Deck PDF: `npm run investor:export:pdf`.
 
 ---
 
@@ -72,6 +79,7 @@
 | Production observability | `docs/PRODUCTION_OBSERVABILITY.md` |
 | **Production resilience / BCP** | `docs/PRODUCTION_RESILIENCE_AUDIT.md` |
 | Resilience runbook (ops) | `docs/RESILIENCE_RUNBOOK.md` |
+| **Supabase Backup/PITR Verification evidence** | `docs/SUPABASE_BACKUP_PITR_VERIFICATION.md` · Pending manual evidence |
 | SQL views (optional) | `supabase/migrations/20260528_investor_metrics_views.sql` |
 
 **Export commands:**
@@ -149,4 +157,14 @@ npm run metrics:investor:pack
 
 ---
 
-*Last updated with P7.1 fundraising readiness (`p7.1`) on `main`.*
+## 08 — Fundraising execution cadence
+
+- [ ] Intro-first outreach sent to Tier-1 targets each week
+- [ ] Cold outreach batch includes 60 sn demo + one-pager link
+- [ ] Each investor receives 48-hour follow-up after interaction
+- [ ] Weekly investor update mail sent (single source of truth)
+- [ ] Every open thread has a visible **next milestone date**
+
+---
+
+*Last updated for final fundraising operating pack on `main`.*

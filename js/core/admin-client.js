@@ -21,7 +21,9 @@ export async function invokeAdminFunction(supabaseClient, payload) {
     let detail = error.message;
     try {
       const body = await error.context?.clone?.().json?.();
-      detail = body?.error || body?.message || detail;
+      const parts = [body?.message, body?.error, body?.details, body?.hint].filter(Boolean);
+      detail = parts.length ? parts.join(' — ') : detail;
+      if (body?.code) detail = `[${body.code}] ${detail}`;
     } catch {
       try {
         const text = await error.context?.clone?.().text?.();

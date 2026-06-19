@@ -15,7 +15,7 @@ const mustExist = [
 ];
 
 const mustContain = [
-  ['css/style.css', 'p4-3-mobile-premium.css'],
+  ['css/style.css', 'mobile-perfection.css'],
   ['js/runtime/enterprise-ux.js', 'initMobilePremiumUx'],
   ['js/auto/auto-app.js', 'initMobilePremiumUx'],
   ['scripts/production-build.cjs', 'p4-3-mobile-premium.css'],

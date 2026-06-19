@@ -1,11 +1,15 @@
 openapi: 3.0.3
 info:
-  title: isteBu Netlify Functions API
+  title: isteBu Cloudflare Pages API
   version: 2.0.0
-  description: Netlify Functions üzerinden yayınlanan isteBu API uçları.
+  description: Cloudflare Pages Functions üzerinden yayınlanan isteBu API uçları.
 servers:
-  - url: https://istebul.com/.netlify/functions
-  - url: http://localhost:3000/.netlify/functions
+  - url: https://istebul.com/api
+    description: Cloudflare Pages API (health, checkout, analytics, …)
+  - url: https://istebul.com
+    description: Same-origin AI proxy
+  - url: http://localhost:3000/api
+  - url: http://localhost:3000
 security:
   - bearerAuth: []
 paths:

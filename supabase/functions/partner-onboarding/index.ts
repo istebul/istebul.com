@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { assertSafePartnerWebhookUrl } from "../_shared/webhook-url.ts";
 import { recordPlatformEvent } from "../_shared/platform-analytics.ts";
+import { resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 const SAMPLE_WEBHOOK_PAYLOAD = {
   email: "ornek@firma.com",
@@ -19,13 +20,9 @@ const SAMPLE_WEBHOOK_PAYLOAD = {
 };
 
 function corsHeaders(origin: string | null) {
-  const allowed = new Set([
-    "https://istebul.com",
-    "https://www.istebul.com",
-    "http://localhost:3000",
-    "http://localhost:5173",
-  ]);
-  const allowOrigin = origin && allowed.has(origin) ? origin : "https://www.istebul.com";
+  const allowOrigin = resolveCorsOrigin(origin, "https://www.istebul.com", {
+    allowLocalDev: true,
+  });
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",

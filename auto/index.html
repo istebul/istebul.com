@@ -1,24 +1,31 @@
 <!doctype html>
-<html lang="tr">
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>isteBul Auto | Ücretsiz Araç Alım Karar Analizi — TCO ve Kredi</title>
-  <meta name="description" content="2 dakikada TCO, kredi ve kullanımı tek ekranda görün. Yanlış araç seçme riskini azaltın — ücretsiz, tarafsız karar altyapısı.">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
+  <title>isteBul Auto | AI Araç Karar Analizi — TCO, Kredi ve Risk</title>
+  <meta name="description" content="Toplam sahip olma maliyeti, kredi etkisi, sigorta ve değer kaybını tek analizde görün. Sahte teklif yok — danışman ve partner akışına bağlı lead.">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <link rel="canonical" href="https://www.istebul.com/auto/">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
   <meta property="og:locale" content="tr_TR">
   <meta property="og:site_name" content="isteBul">
-  <meta property="og:title" content="isteBul Auto | Araç Karar Analizi">
-  <meta property="og:description" content="Bütçe, kredi ve TCO ile araç seçeneklerinizi skorlayın. KVKK uyumlu, Turnstile korumalı form.">
+  <meta property="og:title" content="isteBul Auto | AI Otomotiv Karar Zekası">
+  <meta property="og:description" content="36 ay TCO, risk skoru, likidite ve karşılaştırma matrisi. KVKK uyumlu, Turnstile korumalı form.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.istebul.com/auto/">
-  <meta property="og:image" content="https://www.istebul.com/assets/images/og-image.svg">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/auto-hero-1280.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="isteBul Auto">
   <meta name="twitter:description" content="Araç alım karar analizi — TCO, finansman ve segment önerisi.">
-  <meta name="twitter:image" content="https://www.istebul.com/assets/images/og-image.svg">
+  <meta name="twitter:image" content="https://www.istebul.com/assets/images/auto-hero-1280.jpg">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -29,7 +36,7 @@
         "url": "https://www.istebul.com/auto/",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
-        "description": "Araç satın alma karar analizi: bütçe, kullanım, kredi ve toplam maliyet.",
+        "description": "AI destekli otomotiv karar analizi: TCO, kredi, sigorta, değer kaybı ve risk skoru.",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" },
         "inLanguage": "tr-TR",
         "provider": { "@type": "Organization", "name": "isteBul", "url": "https://www.istebul.com/" }
@@ -44,31 +51,66 @@
     ]
   }
   </script>
-  <link rel="preconnect" href="https://challenges.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
+  <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
   <link rel="preload" href="/assets/auto-runtime/ib-car.css" as="style">
   <link rel="stylesheet" href="/assets/auto-runtime/ib-car.css">
-  <script src="/env.js" defer></script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=7">
+  <link rel="stylesheet" href="/css/bundles/auto-page.bundle.css?v=6">
+  <link rel="stylesheet" href="/css/decision-category-card.css">
+
+  <script src="/js/auto/auto-document-ready.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js?v=2"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"isteBul Auto ücretsiz mi?","acceptedAnswer":{"@type":"Answer","text":"Temel karar analizi ücretsiz başlatılabilir; Pro plan derin rapor ve ek özellikler sunar. Koşullar planlar sayfasında güncellenir."}},{"@type":"Question","name":"Skor nasıl hesaplanır?","acceptedAnswer":{"@type":"Answer","text":"Skor kural tabanlı motordadır; bütçe, kullanım, TCO ve risk sinyalleri birleştirilir. AI skoru değiştirmez."}},{"@type":"Question","name":"TCO ne kadar güvenilir?","acceptedAnswer":{"@type":"Answer","text":"TCO varsayımlara dayalı bilgilendirme amaçlı projeksiyondur; bayi teklifi ve ekspertiz ile doğrulanmalıdır."}},{"@type":"Question","name":"Partner teklifleri zorunlu mu?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Lead paylaşımı yalnızca onayınızla yapılır."}}]}</script>
 </head>
-<body class="ib-enterprise ib-auto">
-  <header class="auto-header">
-    <a class="logo brand-logo-link" href="/" aria-label="isteBul Auto ana sayfa">
-      <img src="/assets/brand/istebul-auto-logo.svg?v=2" alt="isteBul Auto" width="168" height="40" decoding="async" fetchpriority="high">
+<body class="ib-auto">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--auto">
+    <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
+      <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
+      <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">Auto</span>
     </a>
-    <button class="auto-nav-toggle" type="button" aria-controls="auto-nav" aria-expanded="false">
-      <span>Menü</span>
-      <span class="auto-nav-toggle-lines" aria-hidden="true"></span>
-    </button>
-    <nav id="auto-nav" aria-label="Auto navigasyonu">
-      <a href="#nasil-calisir">Nasıl çalışır?</a>
-      <a href="#analiz">Karar Analizi</a>
-      <a href="#gelir">Teklifler</a>
-      <a href="/partner-olun.html">Partner olun</a>
-      <a href="/iletisim.html">İletişim</a>
+    <button class="vacation-nav-toggle" type="button" aria-controls="auto-nav" aria-expanded="false">Menü</button>
+    <nav id="auto-nav" aria-label="Ana navigasyon">
+      <div class="ib-vertical-nav-primary">
+        <a href="/" data-i18n="nav.home">Ana sayfa</a>
+        <a href="/auto/" class="is-active" aria-current="page" data-i18n="nav.catAuto">Araç</a>
+        <a href="/konut/" data-i18n="vertical.konut">Konut</a>
+        <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
+        <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+        <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
+        <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
+      </div>
+      <div class="ib-vertical-nav-more">
+        <button
+          type="button"
+          class="ib-vertical-nav-more-btn"
+          id="auto-nav-more-btn"
+          aria-expanded="false"
+          aria-controls="auto-nav-more-menu"
+          aria-haspopup="menu"
+        >
+          Bu sayfa
+        </button>
+        <div class="ib-vertical-nav-more-menu" id="auto-nav-more-menu" role="menu" hidden>
+          <a href="#nasil-calisir" role="menuitem">Nasıl çalışır</a>
+          <a href="#analiz" role="menuitem">Analiz sonuçları</a>
+          <a href="#gelir" role="menuitem">Teklifler</a>
+          <a href="/metodoloji/" role="menuitem" data-i18n="nav.methodology">Metodoloji</a>
+          <a href="/iletisim.html" role="menuitem" data-i18n="nav.contact">İletişim</a>
+        </div>
+      </div>
     </nav>
   </header>
 
-  <div class="ib-trust-rail ib-trust-rail--auto" role="complementary" aria-label="Auto güvenilirliği">
+  <div class="vacation-container vacation-container--breadcrumb">
+    <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana sayfa</a> › <span>Araç karar analizi</span>
+    </nav>
+  </div>
+
+  <div class="ib-trust-rail" role="complementary" aria-label="Güvenilirlik">
     <div class="ib-trust-rail-inner">
       <span>Kurumsal karar motoru</span>
       <span>KVKK uyumlu işleme</span>
@@ -77,34 +119,54 @@
   </div>
 
   <main>
-    <section class="hero auto-hero-premium">
+    <section class="hero auto-hero-premium auto-hero-decision">
       <div class="hero-copy">
-        <p class="kicker">isteBul Auto · Karar altyapısı</p>
-        <h1>İlan bulmak başka, doğru karar vermek başka</h1>
-        <p class="lead">Toplam sahip olma maliyetine göre karar verin. İlan listesi değil — bütçe, kredi, kullanım ve TCO tek deterministik akışta. Generic AI fikir verir; isteBul skor ve maliyet modeli sunar.</p>
+        <p class="kicker">isteBul Auto · AI karar motoru</p>
+        <h1>Araç almadan önce gerçek maliyeti ve en doğru seçeneği görün.</h1>
+        <p class="lead">isteBul Auto; bütçe, kullanım amacı, yakıt, kredi, sigorta, bakım ve ikinci el değerini birlikte analiz ederek size karar skoru sunar.</p>
 
-        <div class="hero-cta-row">
-          <a class="btn primary" href="#auto-wizard" data-auto-hero-cta data-analytics-cta="cta_primary_auto" data-analytics-placement="auto_hero"><span class="growth-exp-label">Ücretsiz maliyet analizi</span></a>
-          <a class="btn secondary" href="#nasil-calisir">Nasıl çalışır?</a>
+        <div class="hero-cta-row auto-hero-cta-row">
+          <a class="btn primary" href="#auto-wizard" data-auto-hero-cta data-analytics-cta="cta_primary_auto" data-analytics-placement="auto_hero">Aracımı Analiz Et</a>
+          <a class="btn secondary" href="#auto-wizard" data-analytics-cta="cta_primary_auto" data-analytics-placement="auto_hero_secondary">Bana En Uygun Aracı Bul</a>
         </div>
-
-        <div class="auto-social-proof">Karar altyapısı · ~2 dk · TCO + skor kural tabanlı · ilan sitesi değil</div>
+        <p class="auto-hero-route-hint text-muted-sm">~2 dk · sonuçlar <a href="#analiz">analiz bölümünde</a> · bilgilendirme amaçlıdır</p>
+        <p class="auto-sample-note">Skor ve maliyetler kural tabanlıdır; AI yalnızca gerekçe metnini açıklar.</p>
       </div>
 
-      <div class="hero-trust-panel" aria-label="isteBul Auto güven göstergeleri">
-        <div><strong>Toplam maliyet</strong><span>12 aylık TCO, kredi yükü ve kullanım maliyetini bir arada görün.</span></div>
-        <div><strong>Karar çıktısı</strong><span>İlan taraması değil; toplam maliyete göre model önerileri.</span></div>
-        <div><strong>Risk azaltma</strong><span>Güçlü ve zayıf yönler açık metodoloji ile sunulur.</span></div>
-      </div>
+      <aside class="auto-hero-dashboard" aria-label="Örnek Auto karar paneli">
+        <p class="auto-hero-dashboard__kicker">Örnek analiz · bilgilendirme</p>
+        <article class="auto-hero-dash-card auto-hero-dash-card--score">
+          <div class="auto-hero-dash-card__copy">
+            <span>Karar skoru</span>
+            <strong>86<small>/100</small></strong>
+            <small>Uyum · bütçe · kullanım</small>
+          </div>
+          <div class="auto-hero-dash-gauge" aria-hidden="true">
+            <svg viewBox="0 0 88 52" fill="none" role="presentation">
+              <path d="M8 44 A36 36 0 0 1 80 44" stroke="#e2e8f0" stroke-width="6" stroke-linecap="round"/>
+              <path d="M8 44 A36 36 0 0 1 80 44" stroke="#2563eb" stroke-width="6" stroke-linecap="round" stroke-dasharray="74 113"/>
+            </svg>
+          </div>
+        </article>
+        <div class="auto-hero-dash-grid">
+          <article class="auto-hero-dash-card">
+            <span>12 ay TCO</span>
+            <strong>₺412.800</strong>
+            <small>Finansman dahil</small>
+          </article>
+          <article class="auto-hero-dash-card">
+            <span>Risk bandı</span>
+            <strong>Şeffaf</strong>
+            <small>Kural tabanlı skor</small>
+          </article>
+        </div>
+        <p class="auto-hero-dashboard__note">Gerçek skor ve maliyetler sizin cevaplarınıza göre hesaplanır; AI yalnızca gerekçe metnini açıklar.</p>
+      </aside>
 
-      <div class="auto-trust-strip" aria-label="Auto analiz avantajları">
-        <span>✓ ~2 dakikada özet</span>
-        <span>✓ Fiyat + kredi + TCO</span>
-        <span>✓ KVKK uyumlu</span>
-        <span>✓ İsteğe bağlı uzman desteği</span>
+      <div class="auto-hero-wizard-col">
+        <div id="auto-decision-stepper-mount" class="auto-decision-stepper" aria-label="Karar akışı özeti" hidden></div>
+        <div id="auto-wizard" class="auto-wizard" aria-label="Araç karar analizi"></div>
       </div>
-
-      <div id="auto-wizard" class="auto-wizard" aria-label="Araç karar analizi"></div>
 
       <form id="auto-form" class="quiz hero-quiz auto-engine-form" aria-hidden="true">
         <input type="hidden" name="city" value="">
@@ -151,7 +213,11 @@
           </select>
         </label>
 
-        <button class="btn primary" type="submit">Maliyet analizini başlat</button>
+        <input type="hidden" name="ownership_months" value="36">
+        <input type="hidden" name="household_size" value="">
+        <input type="hidden" name="city_ratio" value="0.6">
+
+        <button class="btn primary" type="submit">Analizi başlat</button>
       </form>
     </section>
 
@@ -171,15 +237,23 @@
     <section id="analiz" class="section analysis">
       <div class="section-head">
         <p class="kicker">Karar analizi sonuçları</p>
-        <h2>Size uygun araç önerileri</h2>
+        <h2>AI destekli araç önerileri</h2>
+        <p class="section-subtitle">En uygun üç seçenek — toplam maliyet ve uyum skoruna göre sıralanır (örnek / hesaplanmış çıktı).</p>
       </div>
 
       <div class="auto-urgency-banner" role="note">
-  <strong>Sonuçlar metodolojik destek sunar.</strong>
-  <span>Canlı ilan veya bağlayıcı teklif değildir; finansman ve sigorta koşulları kuruma göre değişir.</span>
-</div>
+        <strong>Örnek / hesaplanmış analiz çıktısıdır.</strong>
+        <span>Canlı ilan veya bağlayıcı teklif değildir; finansman ve sigorta koşulları kuruma göre değişir.</span>
+      </div>
 
-<div id="auto-results" class="results"></div>
+      <div id="auto-results" class="results auto-results-root" aria-live="polite">
+        <div class="auto-results-empty-state">
+          <h2>Sonuçlar</h2>
+          <p>Analizi tamamladığınızda karar skoru, maliyet özeti ve araç önerileri burada görünür.</p>
+        </div>
+      </div>
+
+      <div id="auto-partner-next-mount" class="auto-partner-next-wrap" hidden></div>
 
       <aside class="auto-methodology premium-methodology" aria-label="Hesaplama ve veri notu">
         <div>
@@ -192,9 +266,23 @@
           <li><strong>Uyum skoru</strong> sıralama içindir; <strong>veri güven bandı</strong> girdi kalitesini gösterir — kesin sonuç değildir.</li>
           <li>AI yalnızca gerekçe metni üretir; skor ve maliyet kural tabanlıdır.</li>
           <li>Partner kapanış sinyalleri anonim segment benchmark ve skor kalibrasyonuna girer — <a href="/karar-moat.html">savunulabilir karar moat</a>.</li>
-          <li>Kredi, sigorta ve satın alma koşulları banka, bayi ve partner kurumlarda değişebilir. <a href="/kvkk.html">KVKK</a> · <a href="/gizlilik.html">Gizlilik</a></li>
+          <li>Kredi, sigorta ve satın alma koşulları banka, bayi ve partner kurumlarda değişebilir. <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a> · <a href="/gizlilik.html">Gizlilik</a></li>
         </ul>
       </aside>
+    </section>
+
+    <section class="section auto-trust-section" aria-labelledby="auto-trust-title">
+      <div class="section-head">
+        <p class="kicker">Güven</p>
+        <h2 id="auto-trust-title">Neden isteBul Auto?</h2>
+      </div>
+      <div class="auto-trust-benefits">
+        <article><h3>Tarafsız AI analizi</h3><p>Skor kural tabanlı; AI gerekçeyi açıklar.</p></article>
+        <article><h3>Zaman tasarrufu</h3><p>Kriterlerinizi tek akışta toplayın.</p></article>
+        <article><h3>Toplam maliyet</h3><p>TCO, finansman ve işletme birlikte.</p></article>
+        <article><h3>Güvenli süreç</h3><p>KVKK · Turnstile korumalı form.</p></article>
+        <article><h3>Uygun teklifler</h3><p>İsteğe bağlı partner yönlendirme.</p></article>
+      </div>
     </section>
 
     <section id="gelir" class="section final-cta-section">
@@ -211,18 +299,29 @@
     </section>
   </main>
 
+  <div id="auto-guides-hub-mount" class="container ib-guides-hub--compact" style="margin: 2rem auto 0; max-width: 1120px; padding: 0 1rem;"></div>
+
   <footer class="corporate-footer">
-    <div>
-      <strong>isteBul Auto</strong>
-      <p>Araç alımında fiyat, kredi ve toplam maliyeti birlikte değerlendiren karar altyapısı. Bilgilendirme amaçlıdır; yatırım veya kredi taahhüdü içermez.</p>
+    <div class="corporate-footer__brand">
+      <strong>isteBul</strong>
+      <p>Karar zekâsı platformu — bilgilendirme amaçlıdır; finansal taahhüt içermez.</p>
+      <nav class="ib-site-social ib-site-social--footer" data-site-social-links aria-label="Sosyal medya" hidden></nav>
+      <p class="corporate-footer__legal"><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a> · <a href="/cerez-politikasi.html">Çerez politikası</a></p>
     </div>
-    <nav>
+    <nav class="corporate-footer__nav" aria-label="Site bağlantıları">
       <a href="/hakkimizda.html">Hakkımızda</a>
+      <a href="/metodoloji/">Metodoloji</a>
+      <a href="/veri-kaynaklari/">Veri Kaynakları</a>
       <a href="/iletisim.html">İletişim</a>
       <a href="/gizlilik.html">Gizlilik</a>
-      <a href="/kvkk.html">KVKK</a>
+      <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a>
+      <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a>
+      <a href="/cerez-politikasi.html">Çerez politikası</a>
       <a href="/kullanim-sartlari.html">Kullanım şartları</a>
       <a href="/partner-olun.html">Partner olun</a>
+      <a href="/rehber/arac-kredisi-hesaplama/">Kredi rehberi</a>
+      <a href="/rehber/tco-rehberi/">TCO rehberi</a>
+      <a href="/auto/">Karar analizi</a>
     </nav>
   </footer>
   <a
@@ -236,6 +335,18 @@
   </a>
 
 
-  <script type="module" src="/assets/auto-runtime/auto-app.js" defer></script>
+  <script type="module" src="/assets/auto-runtime/auto-app.js"></script>
+  <script type="module" src="/js/runtime/category-guides-deferred-boot.js"></script>
+  <div class="static-cookie-consent" id="static-cookie-consent" role="region" aria-label="Çerez tercihi" hidden>
+  <p>Çerez ve analitik tercihinizi yönetin. <a href="/cerez-politikasi.html">Çerez politikası</a> · Ana sitede <a href="/">tam tercih paneli</a>.</p>
+  <div class="static-cookie-consent__actions">
+    <button type="button" class="btn btn-primary btn-sm" data-static-cookie-accept>Kabul et</button>
+    <button type="button" class="btn btn-outline btn-sm" data-static-cookie-decline>Reddet</button>
+  </div>
+</div>
+  <script type="module" src="/js/runtime/static-cookie-consent.js"></script>
+  <script type="module" src="/js/runtime/site-social-deferred-boot.js"></script>
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/runtime/site-social-init.js"></script>
 </body>
 </html>

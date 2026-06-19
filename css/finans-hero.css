@@ -1,0 +1,428 @@
+/* Finansman hero — scoped premium fintech presentation (finans/index.html only) */
+
+body.finans-page {
+  --finans-navy: #050a18;
+  --finans-blue: #0066ff;
+  --finans-teal: #00f2fe;
+  --finans-glass: rgba(8, 16, 36, 0.55);
+  --finans-glass-border: rgba(255, 255, 255, 0.1);
+  --finans-glow: rgba(0, 102, 255, 0.35);
+}
+
+body.finans-page.vacation-page {
+  background:
+    radial-gradient(900px 520px at 75% -5%, rgba(0, 242, 254, 0.18), transparent 60%),
+    radial-gradient(700px 420px at 0% 40%, rgba(0, 102, 255, 0.22), transparent 55%),
+    radial-gradient(600px 400px at 50% 100%, rgba(0, 102, 255, 0.12), transparent 50%),
+    linear-gradient(180deg, #050a18 0%, #0a1628 42%, #061018 100%);
+}
+
+/* Hero shell */
+body.finans-page .finans-hero {
+  min-height: clamp(480px, 42vw, 620px);
+  align-items: stretch;
+  padding: clamp(32px, 4vw, 48px) 0 clamp(24px, 3vw, 36px);
+  background: transparent;
+  overflow: visible;
+}
+
+body.finans-page .finans-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 85% 15%, rgba(0, 242, 254, 0.14), transparent 55%),
+    radial-gradient(ellipse 50% 45% at 15% 60%, rgba(0, 102, 255, 0.16), transparent 50%);
+}
+
+body.finans-page .finans-hero-overlay {
+  background:
+    linear-gradient(105deg, rgba(5, 10, 24, 0.55) 0%, rgba(5, 10, 24, 0.15) 45%, transparent 65%),
+    linear-gradient(0deg, rgba(5, 10, 24, 0.35) 0%, transparent 50%);
+}
+
+body.finans-page .finans-hero-overlay::after {
+  background:
+    radial-gradient(ellipse 80% 60% at 75% 25%, rgba(0, 242, 254, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(0, 102, 255, 0.1), transparent 50%);
+}
+
+body.finans-page .finans-hero-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 1.05fr);
+  gap: clamp(24px, 3vw, 40px);
+  align-items: center;
+  padding-bottom: clamp(20px, 3vw, 32px);
+}
+
+body.finans-page .finans-hero-copy {
+  max-width: 52ch;
+}
+
+body.finans-page .finans-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(0, 242, 254, 0.08);
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  color: #a5f3fc;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  margin-bottom: 16px;
+}
+
+body.finans-page .finans-hero-badge svg {
+  flex-shrink: 0;
+  color: var(--finans-teal);
+}
+
+body.finans-page .finans-hero h1 {
+  font-size: clamp(1.85rem, 4.2vw, 2.75rem);
+  max-width: 18ch;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  margin-bottom: 16px;
+}
+
+body.finans-page .finans-hero-lead {
+  color: #cbd5e1;
+  font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+  line-height: 1.6;
+  max-width: 44ch;
+  margin-bottom: 28px;
+}
+
+body.finans-page .finans-hero-actions {
+  gap: 14px;
+}
+
+body.finans-page .finans-hero-actions .btn-primary {
+  background: linear-gradient(135deg, #0066ff 0%, #0088ff 50%, #00b4d8 100%);
+  box-shadow: 0 8px 28px rgba(0, 102, 255, 0.4);
+  padding: 12px 22px;
+}
+
+body.finans-page .finans-hero-actions .btn-primary svg,
+body.finans-page .finans-hero-actions .btn-ghost svg {
+  flex-shrink: 0;
+}
+
+body.finans-page .finans-hero-actions .btn-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 12px 20px;
+}
+
+body.finans-page .finans-hero-disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+body.finans-page .finans-hero-disclaimer svg {
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+/* Right visual column */
+body.finans-page .finans-hero-visual {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(12px, 2vw, 20px);
+  align-items: center;
+  position: relative;
+}
+
+body.finans-page .finans-hero-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--finans-glass-border);
+  background: var(--finans-glass);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+body.finans-page .finans-dash-card {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(2, 8, 24, 0.5);
+}
+
+body.finans-page .finans-dash-card span {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+body.finans-page .finans-dash-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #f8fafc;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+body.finans-page .finans-dash-card small {
+  display: block;
+  margin-top: 4px;
+  color: #7dd3fc;
+  font-size: 0.75rem;
+}
+
+body.finans-page .finans-dash-card--score {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(0, 102, 255, 0.22) 0%, rgba(0, 242, 254, 0.1) 100%);
+  border-color: rgba(0, 242, 254, 0.2);
+}
+
+body.finans-page .finans-dash-card--score strong {
+  font-size: 1.65rem;
+}
+
+body.finans-page .finans-score-gauge {
+  width: 88px;
+  height: 52px;
+  flex-shrink: 0;
+}
+
+body.finans-page .finans-score-gauge svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* AI hologram illustration */
+body.finans-page .finans-hero-holo {
+  position: relative;
+  width: clamp(80px, 12vw, 120px);
+  height: clamp(140px, 18vw, 200px);
+  flex-shrink: 0;
+}
+
+body.finans-page .finans-holo-base {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 242, 254, 0.5) 0%, rgba(0, 102, 255, 0.2) 45%, transparent 70%);
+  filter: blur(4px);
+}
+
+body.finans-page .finans-holo-beam {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 60%;
+  background: linear-gradient(180deg, rgba(0, 242, 254, 0.25) 0%, transparent 100%);
+  clip-path: polygon(30% 100%, 70% 100%, 55% 0%, 45% 0%);
+  opacity: 0.7;
+}
+
+body.finans-page .finans-holo-screen {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) perspective(400px) rotateX(8deg);
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  background: linear-gradient(160deg, rgba(0, 102, 255, 0.25) 0%, rgba(8, 16, 36, 0.85) 100%);
+  box-shadow:
+    0 0 24px rgba(0, 242, 254, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+body.finans-page .finans-holo-chart-line {
+  height: 28px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(0, 242, 254, 0.08) 0%, transparent 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 28' preserveAspectRatio='none'%3E%3Cpolyline points='0,22 12,18 24,20 36,10 48,14 60,6 72,8 80,4' fill='none' stroke='%2300f2fe' stroke-width='1.5' opacity='0.85'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+body.finans-page .finans-holo-chart-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+body.finans-page .finans-holo-bars {
+  flex: 1;
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 32px;
+}
+
+body.finans-page .finans-holo-bars span {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(180deg, #0066ff, rgba(0, 102, 255, 0.3));
+}
+
+body.finans-page .finans-holo-bars span:nth-child(1) { height: 45%; }
+body.finans-page .finans-holo-bars span:nth-child(2) { height: 70%; }
+body.finans-page .finans-holo-bars span:nth-child(3) { height: 55%; }
+body.finans-page .finans-holo-bars span:nth-child(4) { height: 85%; }
+
+body.finans-page .finans-holo-pie {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: conic-gradient(#0066ff 0deg 120deg, #00f2fe 120deg 220deg, rgba(255, 255, 255, 0.15) 220deg 360deg);
+  box-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+}
+
+/* Value proposition band */
+body.finans-page .finans-value-band {
+  position: relative;
+  z-index: 2;
+  margin-top: clamp(8px, 2vw, 16px);
+  padding: clamp(16px, 2.5vw, 24px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 16, 36, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+body.finans-page .finans-value-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 20px);
+}
+
+body.finans-page .finans-value-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: clamp(12px, 1.5vw, 16px);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(2, 8, 24, 0.35);
+  transition: border-color 0.2s;
+}
+
+body.finans-page .finans-value-card:hover {
+  border-color: rgba(0, 242, 254, 0.2);
+}
+
+body.finans-page .finans-value-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0, 102, 255, 0.25), rgba(0, 242, 254, 0.15));
+  border: 1px solid rgba(0, 242, 254, 0.25);
+  color: #67e8f9;
+}
+
+body.finans-page .finans-value-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+body.finans-page .finans-value-card h3 {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  line-height: 1.3;
+}
+
+body.finans-page .finans-value-card p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  body.finans-page .finans-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.finans-page .finans-hero-visual {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+
+  body.finans-page .finans-hero-holo {
+    display: none;
+  }
+
+  body.finans-page .finans-value-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  body.finans-page .finans-hero {
+    min-height: auto;
+    padding: 24px 0 20px;
+  }
+
+  body.finans-page .finans-hero h1 {
+    max-width: none;
+  }
+
+  body.finans-page .finans-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.finans-page .finans-hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  body.finans-page .finans-value-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.finans-page .finans-hero-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  body.finans-page .finans-dash-card--score {
+    grid-template-columns: 1fr;
+  }
+
+  body.finans-page .finans-score-gauge {
+    justify-self: start;
+  }
+}

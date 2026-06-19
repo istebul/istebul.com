@@ -1,4 +1,8 @@
-import { estimateAnnualCost } from './auto-cost-engine.js?v=cost2';
+import { buildOwnershipCosts } from './cost-engine.js';
+import {
+  buildRecommendationIntelligence,
+  computeAutoRankingTieBreak
+} from './recommendation-intelligence.js';
 import {
   scoreVehicleMatch,
   computeConfidenceMeta,
@@ -7,8 +11,34 @@ import {
   explainRankGap,
   buildMethodologyPanel,
   buildRankIntelligence,
-  buildScoringTransparency
+  buildScoringTransparency,
+  SCORE_MIN
 } from '../engines/decision-consultant.js';
+
+const RANK_SCORE_STEP = 3;
+
+/**
+ * Spread top-3 display scores when raw values collapse (e.g. all 94).
+ * Preserves recommendVehicles ordering; only separates tied/high scores.
+ * @param {Array<{ score: number, scoreRaw?: number }>} top
+ */
+export function applyRankScoreSpread(top = []) {
+  if (top.length <= 1) return top;
+
+  const anchor = top[0].score;
+
+  for (let i = 1; i < Math.min(top.length, 3); i++) {
+    const target = Math.max(SCORE_MIN, anchor - RANK_SCORE_STEP * i);
+    if (top[i].score >= anchor - 1) {
+      top[i].score = target;
+    }
+    if (top[i].score >= top[i - 1].score) {
+      top[i].score = Math.max(SCORE_MIN, top[i - 1].score - 2);
+    }
+  }
+
+  return top;
+}
 
 export { buildMethodologyPanel, explainRankGap, buildRankIntelligence };
 
@@ -43,8 +73,8 @@ export function recommendVehicles(form, catalog = []) {
 
   const scored = pool
     .map((vehicle) => {
-      const { score, scoreBreakdown } = scoreVehicleMatch(vehicle, form);
-      const costs = estimateAnnualCost(vehicle, form);
+      const { score, scoreBreakdown, scoreRaw } = scoreVehicleMatch(vehicle, form);
+      const costs = buildOwnershipCosts(vehicle, form);
       const costSource = costs.source === 'truth' ? 'truth' : 'estimate';
 
       const confidenceMeta = computeConfidenceMeta({
@@ -57,9 +87,10 @@ export function recommendVehicles(form, catalog = []) {
         vehiclePrice: vehicle.price
       });
 
-      return {
+      const enriched = {
         ...vehicle,
         score,
+        scoreRaw,
         scoreBreakdown,
         confidence: confidenceMeta.score,
         confidenceMeta,
@@ -69,10 +100,24 @@ export function recommendVehicles(form, catalog = []) {
         matchTier,
         methodology: buildMethodologyPanel()
       };
+      enriched.rankingTieBreak = computeAutoRankingTieBreak(enriched, form);
+      return enriched;
     })
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => {
+      const byScore = (b.score ?? 0) - (a.score ?? 0);
+      if (byScore !== 0) return byScore;
+      return (b.rankingTieBreak ?? 0) - (a.rankingTieBreak ?? 0);
+    });
 
-  const top = scored.slice(0, 3);
+  const top = applyRankScoreSpread(scored.slice(0, 3));
+
+  top.forEach((vehicle, idx) => {
+    vehicle.recommendationIntelligence = buildRecommendationIntelligence(vehicle, form, {
+      alternatives: top,
+      rank: idx,
+      leader: top[0]
+    });
+  });
 
   const rankIntelligence = buildRankIntelligence(top, form);
   if (rankIntelligence) {

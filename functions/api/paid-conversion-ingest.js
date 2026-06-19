@@ -2,23 +2,14 @@ import { createClient } from '@supabase/supabase-js';
 import { buildGoogleAdsConversionPayload, buildMetaCapiPayload } from './_shared/paid-capi-payloads.js';
 import { recordOpsEvent } from './_shared/record-ops-event.js';
 
-const allowedOrigins = [
-  'https://istebul.com',
-  'https://www.istebul.com',
-  'https://istebul-com.pages.dev'
-];
+import { isAllowedOrigin } from '../_shared/cors-origins.js';
+import { API_ERROR_CODES } from '../_shared/api-response.js';
+import { buildCorsJsonHeaders, corsJson, corsJsonError } from '../_shared/cors-json.js';
 
-const corsHeaders = (origin = null) => ({
-  'Access-Control-Allow-Origin': allowedOrigins.includes(origin || '')
-    ? origin
-    : 'https://istebul.com',
-  'Access-Control-Allow-Headers': 'Content-Type, x-paid-conversion-secret',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json'
-});
-
-const json = (body, status = 200, origin = null) =>
-  new Response(JSON.stringify(body), { status, headers: corsHeaders(origin) });
+const paidCorsHeaders = (origin = null) =>
+  buildCorsJsonHeaders(origin, {
+    'Access-Control-Allow-Headers': 'Content-Type, x-paid-conversion-secret'
+  });
 
 const QUALIFIED_EVENTS = new Set([
   'paid_landing_view',
@@ -77,7 +68,7 @@ async function recordAnalyticsEvent(env, row) {
 }
 
 export async function onRequestOptions({ request }) {
-  return new Response(null, { status: 204, headers: corsHeaders(request.headers.get('Origin')) });
+  return new Response(null, { status: 204, headers: paidCorsHeaders(request.headers.get('Origin')) });
 }
 
 export async function onRequestPost({ request, env }) {
@@ -88,18 +79,29 @@ export async function onRequestPost({ request, env }) {
     if (secret) {
       const header = request.headers.get('x-paid-conversion-secret');
       if (header !== secret) {
-        return json({ error: 'Forbidden' }, 403, origin);
+        return corsJsonError(403, API_ERROR_CODES.FORBIDDEN, 'Forbidden', origin, undefined, {
+          'Access-Control-Allow-Headers': 'Content-Type, x-paid-conversion-secret'
+        });
       }
     }
 
     if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
-      return json({ error: 'Server not configured' }, 500, origin);
+      return corsJsonError(
+        500,
+        API_ERROR_CODES.SERVER_MISCONFIGURED,
+        'Server not configured',
+        origin,
+        undefined,
+        { 'Access-Control-Allow-Headers': 'Content-Type, x-paid-conversion-secret' }
+      );
     }
 
     const body = await request.json();
     const eventName = String(body.event_name || '');
     if (!QUALIFIED_EVENTS.has(eventName)) {
-      return json({ error: 'Invalid event_name' }, 400, origin);
+      return corsJsonError(400, API_ERROR_CODES.BAD_REQUEST, 'Invalid event_name', origin, undefined, {
+        'Access-Control-Allow-Headers': 'Content-Type, x-paid-conversion-secret'
+      });
     }
 
     const eventTime = Number(body.event_time) || Math.floor(Date.now() / 1000);
@@ -164,7 +166,9 @@ export async function onRequestPost({ request, env }) {
       capi_results: capiResults
     });
 
-    return json({ ok: true, capi: capiResults }, 200, origin);
+    return corsJson({ ok: true, capi: capiResults }, 200, origin, {
+      'Access-Control-Allow-Headers': 'Content-Type, x-paid-conversion-secret'
+    });
   } catch (err) {
     console.error('paid-conversion-ingest error:', err);
     if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -178,6 +182,8 @@ export async function onRequestPost({ request, env }) {
         properties: { message: String(err.message || err).slice(0, 200) }
       }).catch(() => {});
     }
-    return json({ error: 'Server error' }, 500, origin);
+    return corsJsonError(500, API_ERROR_CODES.INTERNAL_ERROR, 'Server error', origin, undefined, {
+      'Access-Control-Allow-Headers': 'Content-Type, x-paid-conversion-secret'
+    });
   }
 }

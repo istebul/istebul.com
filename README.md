@@ -1,5 +1,7 @@
 # istebul.com
 
+Ziyaretçi analitiği kurulumu: [docs/ZIYARETCI_ANALITIK_KURULUM.md](docs/ZIYARETCI_ANALITIK_KURULUM.md)
+
 Yapay zeka destekli karar platformu — yüksek tutarlı satın alma kararları (Auto canlı; çok dikey yol haritası).
 
 ## Investor / due diligence

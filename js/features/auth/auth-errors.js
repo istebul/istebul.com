@@ -25,7 +25,7 @@ export function mapAuthErrorForCheckout(error, fallback = 'İşlem tamamlanamad�
     const base = mapAuthError(error, fallback);
 
     if (/email not confirmed/i.test(raw)) {
-        return `${base} Pro ödeme adımınız kayıtlı — e-postanızı doğruladıktan sonra giriş yaparak Stripe ile devam edebilirsiniz.`;
+        return `${base} Pro erken erişim adımınız kayıtlı — e-postanızı doğruladıktan sonra giriş yaparak devam edebilirsiniz.`;
     }
     return base;
 }

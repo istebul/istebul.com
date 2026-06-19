@@ -3,37 +3,76 @@
  */
 import { BRAND_VOICE } from '../core/brand-voice.js';
 
-const PRIMARY_AUTO_SELECTORS =
-  '.nav-cta-auto, [data-analytics-placement="hero"] .btn-primary, [data-analytics-placement="sticky"], [data-analytics-placement="methodology_teaser"], [data-analytics-placement="premium_hero"], [data-analytics-placement="premium_footer"]';
+const DECISION_ENTRY_HREF = '/karar-asistani/';
+
+const DECISION_ENTRY_SELECTORS =
+  '[data-analytics-placement="methodology_teaser"], [data-analytics-placement="pricing_free"], [data-analytics-placement="pricing_static_free"], [data-analytics-placement="pricing_dynamic_free"], [data-analytics-placement="pricing_mid"], [data-analytics-placement="premium_footer"], [data-analytics-placement="planlar_footer"], [data-analytics-placement="metodoloji_trust"], [data-analytics-placement="footer"], [data-analytics-placement="nav_mobile"]';
+
+const AUTO_CTA_SELECTORS =
+  '.nav-cta-auto, [data-analytics-placement="partner_enterprise"], [data-analytics-placement="ai_engine"] .btn-outline, [data-analytics-placement="sample_preview"], [data-analytics-placement="home_auto_bridge"]';
 
 export function initBrandConsistency() {
   if (typeof document === 'undefined') return;
 
-  applyPrimaryAutoCtas();
+  applyDecisionEntryCtas();
+  applyAutoCtas();
+  applySecondaryCtas();
   normalizeSectionKickers();
 
   document.addEventListener('routeChanged', () => {
-    applyPrimaryAutoCtas();
+    applyDecisionEntryCtas();
+    applyAutoCtas();
+    applySecondaryCtas();
     normalizeSectionKickers();
   });
 }
 
-function applyPrimaryAutoCtas() {
-  document.querySelectorAll(PRIMARY_AUTO_SELECTORS).forEach((el) => {
-    if (!(el instanceof HTMLAnchorElement) && !(el instanceof HTMLButtonElement)) return;
-    const label = el.getAttribute('data-brand-cta') || BRAND_VOICE.cta.primaryAuto;
-    if (el.textContent.includes('maliyet analizi') || el.textContent.includes('Ücretsiz')) {
-      el.textContent = label;
-    }
-    el.setAttribute('title', BRAND_VOICE.cta.primaryAutoLong);
-    el.setAttribute('aria-label', BRAND_VOICE.cta.primaryAutoLong);
-  });
-
-  const sticky = document.querySelector('.cro-sticky-cta .btn-primary');
-  if (sticky instanceof HTMLElement && !sticky.dataset.brandApplied) {
-    sticky.textContent = BRAND_VOICE.cta.primaryAuto;
-    sticky.dataset.brandApplied = '1';
+function applyLabel(el, label) {
+  const labelEl = el.querySelector('.growth-exp-label');
+  if (labelEl) {
+    labelEl.textContent = label;
+  } else {
+    el.textContent = label;
   }
+  el.setAttribute('title', label);
+  el.setAttribute('aria-label', label);
+}
+
+function applyDecisionEntryCtas() {
+  document.querySelectorAll(DECISION_ENTRY_SELECTORS).forEach((el) => {
+    if (!(el instanceof HTMLAnchorElement) && !(el instanceof HTMLButtonElement)) return;
+    if (el.hasAttribute('data-hero-cta-primary') || el.classList.contains('nav-cta-decision')) return;
+    const label = el.getAttribute('data-brand-cta') || BRAND_VOICE.cta.primaryDecisionFree;
+    applyLabel(el, label);
+    if (el instanceof HTMLAnchorElement) {
+      el.href = DECISION_ENTRY_HREF;
+    }
+  });
+}
+
+function applyAutoCtas() {
+  document.querySelectorAll(AUTO_CTA_SELECTORS).forEach((el) => {
+    if (!(el instanceof HTMLAnchorElement) && !(el instanceof HTMLButtonElement)) return;
+    const label = el.getAttribute('data-brand-cta') || BRAND_VOICE.cta.primaryAutoLegacy;
+    applyLabel(el, label);
+    if (el instanceof HTMLAnchorElement) {
+      el.href = '/auto/';
+    }
+    el.setAttribute('title', label);
+    el.setAttribute('aria-label', label);
+  });
+}
+
+function applySecondaryCtas() {
+  document.querySelectorAll('[data-cro-cta-secondary]').forEach((el) => {
+    if (el instanceof HTMLElement && !el.dataset.brandSecondary) {
+      const label = el.getAttribute('data-brand-cta-secondary') || BRAND_VOICE.cta.methodology;
+      if (!el.textContent.includes('Metodoloji')) {
+        el.textContent = label;
+      }
+      el.dataset.brandSecondary = '1';
+    }
+  });
 }
 
 function normalizeSectionKickers() {

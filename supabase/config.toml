@@ -422,6 +422,16 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/lifecycle-cron/index.ts"
 
+[functions.vacation-intake]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/vacation-intake/index.ts"
+
+[functions.vertical-intake]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/vertical-intake/index.ts"
+
 [functions.admin-action]
 enabled = true
 verify_jwt = true
@@ -432,3 +442,21 @@ entrypoint = "./functions/admin-action/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/admin-action/*.html" ]
+
+[functions.ai-listings]
+enabled = true
+verify_jwt = false
+import_map = "./functions/ai-listings/deno.json"
+entrypoint = "./functions/ai-listings/index.ts"
+
+[functions.ai-listings-intake]
+enabled = true
+verify_jwt = false
+import_map = "./functions/ai-listings-intake/deno.json"
+entrypoint = "./functions/ai-listings-intake/index.ts"
+
+[functions.user-account]
+enabled = true
+verify_jwt = false
+import_map = "./functions/user-account/deno.json"
+entrypoint = "./functions/user-account/index.ts"

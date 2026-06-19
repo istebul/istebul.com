@@ -24,6 +24,9 @@ for (const file of ['css/design-tokens.css', 'css/layout-guard.css', 'js/runtime
 
 const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
 if (!style.includes("design-tokens.css")) fail('style.css must import design-tokens.css');
+if (!style.includes('final-enterprise-release.css') && !style.includes("award-polish.css")) {
+  fail('style.css must import final-enterprise-release.css or award-polish.css');
+}
 if (!style.includes('DUPLICATE_REMOVED')) fail('style.css should mark deduped blocks');
 
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');

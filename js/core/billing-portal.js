@@ -1,5 +1,5 @@
 /**
- * Client helpers for Stripe Customer Portal (no secrets).
+ * Client helpers for legacy billing portal (Stripe — passive for new TR checkouts).
  */
 
 /**
@@ -45,7 +45,7 @@ export function setBillingPortalButtonsLoading(loading, sourceEvent) {
       }
       btn.disabled = true;
       btn.setAttribute('aria-busy', 'true');
-      btn.textContent = 'Stripe paneli açılıyor…';
+      btn.textContent = 'Abonelik paneli açılıyor…';
     } else {
       btn.disabled = false;
       btn.removeAttribute('aria-busy');
@@ -62,5 +62,7 @@ export function setBillingPortalButtonsLoading(loading, sourceEvent) {
  */
 export function canOpenBillingPortal(subscription) {
   if (!subscription?.status) return false;
+  const provider = String(subscription.provider || '').toLowerCase();
+  if (provider && provider !== 'stripe') return false;
   return ['active', 'trialing', 'past_due', 'canceled'].includes(subscription.status);
 }

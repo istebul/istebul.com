@@ -1,0 +1,365 @@
+/* Decision Engine V3 — panel, memory profile, what-if simulator */
+
+.decision-v3-mount,
+.decision-v3-root {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.decision-v3-root {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  color: #0f172a;
+}
+
+.decision-v3-section {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.decision-v3-section-head {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.decision-v3-section h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.3;
+  color: #0f172a;
+}
+
+.decision-v3-hero-copy h2 {
+  margin: 0.15rem 0 0.5rem;
+  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+  line-height: 1.25;
+  color: #0f172a;
+}
+
+.decision-v3-hero-copy p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.6;
+  font-size: 0.92rem;
+}
+
+.decision-v3-factor-list li,
+.decision-v3-risk-list li,
+.decision-v3-warning-list li,
+.decision-v3-whatif-list li {
+  color: #334155;
+  line-height: 1.55;
+}
+
+.decision-v3-factor-list strong,
+.decision-v3-risk-list strong,
+.decision-v3-whatif-list strong {
+  color: #0f172a;
+}
+
+.decision-v3-trend {
+  margin: 0;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.decision-v3-insights li {
+  color: #334155;
+}
+
+.decision-v3-profile-label {
+  color: #475569;
+}
+
+.decision-v3-profile-value {
+  color: #0f172a;
+}
+
+.decision-v3-muted {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.decision-v3-hero {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 1rem;
+}
+
+.decision-v3-score-card {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: center;
+  min-width: 7.5rem;
+  padding: 0.85rem;
+  border-radius: 14px;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.decision-v3-score-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.decision-v3-score-meta,
+.decision-v3-risk-pill {
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.decision-v3-kicker {
+  margin: 0;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.decision-v3-factor-list,
+.decision-v3-risk-list,
+.decision-v3-warning-list,
+.decision-v3-insights,
+.decision-v3-whatif-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+/* Action list uses custom counter in ai-platform-surface.css */
+.decision-v3-action-list {
+  margin: 0;
+  padding-left: 0;
+}
+
+.decision-v3-profile-grid {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.decision-v3-profile-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) minmax(0, 2fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.decision-v3-profile-track {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.decision-v3-profile-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb, #0ea5e9);
+}
+
+.decision-v3-privacy-note {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.decision-v3-whatif-controls {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.decision-v3-slider-field,
+.decision-v3-select-field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.decision-v3-slider-field span,
+.decision-v3-select-field span {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.decision-v3-slider-field small {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.decision-v3-slider-field input[type='range'] {
+  width: 100%;
+  max-width: 100%;
+}
+
+.decision-v3-select-field select {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.decision-v3-whatif-run {
+  justify-self: start;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.decision-v3-whatif-run:hover {
+  background: #1d4ed8;
+}
+
+.decision-v3-whatif-result {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border-radius: 12px;
+  background: #eff6ff;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+.decision-v3-whatif-result[hidden] {
+  display: none !important;
+}
+
+.decision-v3-whatif-result-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.decision-v3-whatif-metric {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.decision-v3-whatif-metric span {
+  color: #475569;
+  font-size: 0.75rem;
+}
+
+.decision-v3-whatif-metric strong {
+  font-size: 0.875rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.decision-v3-whatif-explanation {
+  margin: 0;
+  color: #334155;
+  font-size: 0.875rem;
+}
+
+.decision-v3-whatif-list li {
+  display: grid;
+  gap: 0.2rem;
+  margin-bottom: 0.65rem;
+}
+
+.decision-v3-report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.decision-v3-report-btn {
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.decision-v3-report-btn-primary {
+  background: #0f172a;
+  color: #fff;
+}
+
+.decision-v3-report-btn-primary:hover {
+  background: #1e293b;
+}
+
+.decision-v3-report-btn-secondary {
+  background: #fff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.decision-v3-report-btn-secondary:hover {
+  background: #f8fafc;
+}
+
+.decision-v3-report-feedback {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.decision-v3-report-feedback[hidden] {
+  display: none !important;
+}
+
+.decision-v3-report-feedback.is-success {
+  color: #047857;
+}
+
+.decision-v3-report-feedback.is-error {
+  color: #b45309;
+}
+
+@media (max-width: 768px) {
+  .decision-v3-root {
+    padding: 0.85rem;
+  }
+
+  .decision-v3-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .decision-v3-score-card {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .decision-v3-profile-row {
+    grid-template-columns: 1fr;
+  }
+
+  .decision-v3-whatif-result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .decision-v3-report-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .decision-v3-report-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

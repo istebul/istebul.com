@@ -57,7 +57,7 @@ body.ib-enterprise .ib-hero-venture .hero-content h1 {
   font-size: clamp(2.35rem, 4.8vw, 3.75rem);
   line-height: 1.05;
   letter-spacing: -0.035em;
-  max-width: 14ch;
+  max-width: min(100%, 26ch);
   color: var(--ib-hero-ink);
   font-weight: 800;
 }

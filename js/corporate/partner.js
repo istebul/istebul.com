@@ -1,4 +1,4 @@
-import { initCorporateUx } from '../runtime/corporate-ux.js';
+import { mountCorporatePage } from '../runtime/corporate-page-mount.js';
 import {
   PARTNER_FUNNEL_EVENTS,
   renderRateCardHtml,
@@ -13,8 +13,7 @@ function mountRateCard() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  initCorporateUx();
+mountCorporatePage(() => {
   trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.LANDING_VIEW, {
     path: window.location.pathname
   });
@@ -29,4 +28,4 @@ document.addEventListener('DOMContentLoaded', () => {
       trackPartnerFunnel(PARTNER_FUNNEL_EVENTS.APPLICATION_START, { source: 'landing_cta' }, { oncePerSession: true });
     });
   });
-});
+}, { label: 'Partner programı' });

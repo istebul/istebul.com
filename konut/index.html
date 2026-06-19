@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
+  <title>Konut Karar Asistanı | isteBul</title>
+  <meta name="description" content="Konut karar simülasyonu: toplam sahip olma maliyeti, kredi yükü, lokasyon uyumu ve riskleri birlikte analiz edin.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://www.istebul.com/konut/">
+  <meta property="og:title" content="Yapay zekâ destekli konut karar asistanı">
+  <meta property="og:description" content="Tahmini analiz: toplam maliyet, lokasyon, kredi yükü ve risk dengesiyle konut kararınızı güçlendirin.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.istebul.com/konut/">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/konut-hero-1280.jpg">
+  <link rel="preload" href="/assets/images/konut-hero.webp" as="image" type="image/webp" fetchpriority="high">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
+  <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://www.istebul.com/assets/images/konut-hero-1280.jpg">
+  <link rel="stylesheet" href="/css/real-estate.css?v=3">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=8">
+  <link rel="stylesheet" href="/css/bundles/konut-page.bundle.css?v=8">
+  <link rel="stylesheet" href="/css/konut-results-v2.css?v=8">
+  <link rel="stylesheet" href="/css/decision-category-card.css">
+  <link rel="stylesheet" href="/css/home-economic-indicators.css?v=3">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/real-estate/real-estate-app.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Konut analizi finansal tavsiye midir?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Sonuçlar bilgilendirme amaçlıdır; kredi onayı bankaya aittir."}},{"@type":"Question","name":"Hangi girdiler kullanılır?","acceptedAnswer":{"@type":"Answer","text":"Bütçe, lokasyon, kredi yükü, aidat, ulaşım ve risk toleransı gibi profil alanları."}},{"@type":"Question","name":"Deprem riski dahil mi?","acceptedAnswer":{"@type":"Answer","text":"Risk katmanında bölgesel sinyaller dikkate alınabilir; nihai teknik değerlendirme uzman gerektirir."}}]}</script>
+</head>
+<body class="housing-page">
+  <header class="housing-header ib-vertical-header ib-vertical-header--konut">
+    <div class="housing-container housing-nav">
+      <a class="housing-brand ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
+        <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
+        <span class="ib-vertical-brand__word">isteBul</span>
+        <span class="ib-vertical-brand__badge">Konut</span>
+      </a>
+      <button
+        type="button"
+        class="housing-nav-toggle"
+        aria-controls="housing-nav"
+        aria-expanded="false"
+      >
+        Menü
+      </button>
+      <nav id="housing-nav" aria-label="Ana navigasyon">
+        <div class="ib-vertical-nav-primary">
+          <a href="/" data-i18n="nav.home">Ana sayfa</a>
+          <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
+          <a href="/konut/" class="is-active" aria-current="page" data-i18n="vertical.konut">Konut</a>
+          <a href="/tatil/" data-i18n="vertical.tatil">Tatil</a>
+          <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+          <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
+          <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
+        </div>
+        <div class="ib-vertical-nav-more">
+          <button
+            type="button"
+            class="ib-vertical-nav-more-btn"
+            id="housing-nav-more-btn"
+            aria-expanded="false"
+            aria-controls="housing-nav-more-menu"
+            aria-haspopup="menu"
+          >
+            Bu sayfa
+          </button>
+          <div class="ib-vertical-nav-more-menu" id="housing-nav-more-menu" role="menu" hidden>
+            <a href="#housing-flow" role="menuitem">Analiz başlat</a>
+            <a href="#housing-results" role="menuitem">Sonuçlar</a>
+            <a href="/metodoloji/" role="menuitem" data-i18n="nav.methodology">Metodoloji</a>
+            <a href="/iletisim.html" role="menuitem" data-i18n="nav.contact">İletişim</a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="housing-container housing-container--breadcrumb">
+    <nav class="ib-vertical-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana sayfa</a> › <span>Konut karar analizi</span>
+    </nav>
+  </div>
+
+  <div class="ib-trust-rail" role="complementary" aria-label="Güvenilirlik">
+    <div class="ib-trust-rail-inner">
+      <span>Kurumsal karar motoru</span>
+      <span>KVKK uyumlu işleme</span>
+      <span>Bilgilendirme amaçlı analiz</span>
+    </div>
+  </div>
+
+  <section class="housing-hero">
+    <div class="housing-hero-media" aria-hidden="true">
+      <picture>
+        <source srcset="/assets/images/konut-hero.webp" type="image/webp">
+        <img
+          src="/assets/images/konut-hero-1280.jpg"
+          alt=""
+          width="1280"
+          height="853"
+          decoding="async"
+          fetchpriority="high"
+          loading="eager">
+      </picture>
+    </div>
+    <div class="housing-hero-overlay" aria-hidden="true"></div>
+    <div class="housing-container housing-hero-grid">
+      <article class="glass-card hero-copy">
+        <span class="hero-badge" data-i18n="vertical.konutHeroBadge">AI destekli konut karar motoru</span>
+        <h1 data-i18n="vertical.konutHeroTitle">Yapay zekâ destekli konut karar asistanı</h1>
+        <p data-i18n="vertical.konutHeroDesc">Bütçe, lokasyon, kredi yükü, aidat, ulaşım, deprem riski ve yaşam beklentilerini birlikte analiz ederek sizin için en doğru konut kararını görün.</p>
+        <div class="hero-actions">
+          <button type="button" class="btn-primary" id="housing-hero-cta" data-i18n="vertical.konutCtaPrimary">Konut kararımı analiz et</button>
+          <button type="button" class="btn-secondary" id="housing-hero-secondary" data-i18n="vertical.konutCtaSecondary">AI önerilerini gör</button>
+        </div>
+      </article>
+      <aside class="glass-card hero-dashboard" aria-label="Premium karar paneli">
+        <div class="hero-metric hero-score"><span>Konut Karar Skoru</span><strong>89/100</strong></div>
+        <div class="hero-metric-grid">
+          <div class="hero-metric"><span>Tahmini Toplam Maliyet</span><strong>5.250.000 TL</strong></div>
+          <div class="hero-metric"><span>Aylık Ödeme Yükü</span><strong>24.850 TL</strong></div>
+          <div class="hero-metric"><span>Lokasyon Uyumu</span><strong>%92</strong></div>
+          <div class="hero-metric"><span>Risk Seviyesi</span><strong>Düşük-Orta</strong></div>
+          <div class="hero-metric"><span>Yatırım Potansiyeli</span><strong>88/100</strong></div>
+          <div class="hero-metric"><span>Karar Tipi</span><strong>Tahmini analiz</strong></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <main class="housing-main">
+    <div class="housing-container housing-layout" id="housing-flow">
+      <section>
+        <div id="housing-progress" class="housing-progress"></div>
+        <div id="housing-wizard"></div>
+        <section id="housing-results" aria-live="polite">
+          <div class="housing-results-empty-state">
+            <h2>Sonuçlar</h2>
+            <p>Analizi tamamladığınızda konut skoru, maliyet tahmini ve senaryolar burada listelenir.</p>
+          </div>
+        </section>
+      </section>
+      <aside class="glass-card housing-side-panel" aria-label="Konut karar asistanı özeti">
+        <div id="housing-live-preview">
+          <h3>Konut karar asistanınız</h3>
+          <p>Form adımlarını tamamladıkça skor ve maliyet önizlemesi burada güncellenir.</p>
+        </div>
+        <ul class="housing-side-notes">
+          <li>Toplam maliyet, kredi yükü ve lokasyon uyumu birlikte hesaplanır.</li>
+          <li>AI yorumu başarısız olursa güvenli fallback devreye girer.</li>
+          <li>Bilgilendirme amaçlıdır; bağlayıcı teklif değildir.</li>
+        </ul>
+      </aside>
+    </div>
+  </main>
+  <footer class="housing-locale-footer">
+    <div class="housing-container">
+      <nav class="ib-site-social" data-site-social-links aria-label="Sosyal medya" hidden></nav>
+      <p class="legal-footer-mini site-footer-legal"><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a></p>
+      <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi" data-i18n-aria="meta.language"></div>
+    </div>
+  </footer>
+  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
+  <script type="module" src="/js/runtime/site-social-deferred-boot.js"></script>
+</body>
+</html>

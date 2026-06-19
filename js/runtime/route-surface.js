@@ -10,20 +10,41 @@ export const ROUTE_DOCUMENT_META = Object.freeze(routeMeta.surfaces);
 
 export const MARKETING_SURFACE_IDS = Object.freeze([
     'home',
-    'trust',
+    'home-economic-indicators',
     'how-it-works',
+    'home-vertical-focus',
+    'home-features-strip',
     'pricing',
-    'categories'
+    'partner-enterprise',
+    'landing-faq'
 ]);
 
 const PREMIUM_PATHS = Object.freeze({
     '/karar-analizi': 'page-karar-analizi',
-    '/metodoloji': 'page-metodoloji',
     '/planlar': 'page-planlar',
-    '/karar-asistani': 'page-karar-analizi'
+    '/karar-asistani': 'page-karar-analizi',
+    '/duyurular': 'page-duyurular',
+    '/kampanyalar': 'page-kampanyalar',
+    '/blog': 'page-blog'
 });
 
+export function blogSlugFromPath(pathname = '/') {
+    const path = stripPathname(pathname);
+    if (!path.startsWith('/blog/')) return '';
+    return decodeURIComponent(path.slice('/blog/'.length)).replace(/\/$/, '');
+}
+
+export function resolveContentRouteSurface(pathname = '/') {
+    const path = stripPathname(pathname);
+    if (path === '/duyurular') return 'page-duyurular';
+    if (path === '/kampanyalar') return 'page-kampanyalar';
+    if (path === '/blog') return 'page-blog';
+    if (path.startsWith('/blog/') && path.length > '/blog/'.length) return 'page-blog-post';
+    return null;
+}
+
 const APP_PATHS = Object.freeze({
+    '/secenekler': 'ilanlar',
     '/ilanlar': 'ilanlar',
     '/karsilastir': 'compare',
     '/favoriler': 'favoriler',
@@ -43,7 +64,9 @@ const MARKETING_ALIASES = Object.freeze({
 });
 
 const EXTERNAL_REDIRECTS = Object.freeze({
-    '/admin': '/admin-panel.html',
+    '/admin': '/admin/',
+  '/araba': '/auto/',
+  '/finansman': '/finans/',
     '/partner': '/partner-olun.html',
     '/partner-planlar': '/partner-planlar.html',
     '/partner-hub': '/partner-basvuru.html',
@@ -69,6 +92,11 @@ export function getExternalRedirect(path) {
  */
 export function resolveRouteSurface(pathname = '/') {
     const path = stripPathname(pathname);
+
+    const contentSurface = resolveContentRouteSurface(pathname);
+    if (contentSurface) {
+        return contentSurface;
+    }
 
     if (PREMIUM_PATHS[path]) {
         return PREMIUM_PATHS[path];
@@ -132,13 +160,31 @@ export function syncHtmlRouteSurface(surfaceId, pathname = '/') {
     root.setAttribute('data-ib-route', normalized);
     root.classList?.remove?.('ib-route-pending');
 
+    const appSurfaces = new Set([
+        'ilanlar',
+        'listing-detail',
+        'compare',
+        'favoriler',
+        'history',
+        'quiz',
+        'profil',
+        'messages',
+        'add-listing'
+    ]);
+
     if (normalized === 'home') {
         document.body.classList.remove('app-route-active', 'ib-premium-route-active');
+        document.body.classList.add('marketing-shell');
+        document.body.classList.remove('app-shell');
     } else if (String(normalized).startsWith('page-')) {
-        document.body.classList.add('app-route-active', 'ib-premium-route-active');
+        document.body.classList.add('app-route-active', 'ib-premium-route-active', 'marketing-shell');
+        document.body.classList.remove('app-shell');
+    } else if (appSurfaces.has(normalized)) {
+        document.body.classList.add('app-route-active', 'app-shell');
+        document.body.classList.remove('marketing-shell', 'ib-premium-route-active');
     } else {
         document.body.classList.add('app-route-active');
-        document.body.classList.remove('ib-premium-route-active');
+        document.body.classList.remove('ib-premium-route-active', 'marketing-shell', 'app-shell');
     }
 
     syncRouteDocumentMeta(normalized, pathname);

@@ -83,6 +83,22 @@ export function clearInlineFormBanner(container) {
   container?.querySelectorAll('.ib-form-banner').forEach((el) => el.remove());
 }
 
+export function bindPasswordToggles(container = document) {
+  container.querySelectorAll('[data-password-toggle]').forEach((btn) => {
+    if (btn.dataset.pwBound) return;
+    btn.dataset.pwBound = '1';
+    btn.addEventListener('click', () => {
+      const wrap = btn.closest('.password-field');
+      const input = wrap?.querySelector('input[type="password"], input[type="text"]');
+      if (!(input instanceof HTMLInputElement)) return;
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.setAttribute('aria-label', show ? 'Şifreyi gizle' : 'Şifreyi göster');
+      btn.setAttribute('aria-pressed', String(show));
+    });
+  });
+}
+
 export function setFieldError(field, message) {
   const formGroup = field?.closest?.('.form-group, .field, label');
   if (!formGroup) return;

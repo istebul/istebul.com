@@ -2,43 +2,58 @@
   "siteOrigin": "https://www.istebul.com",
   "surfaces": {
     "home": {
-      "title": "isteBul | 2 Dakikada TCO ile Araç Alım Kararı",
-      "description": "Toplam maliyet, kredi ve kullanımı tek ekranda karşılaştırın. Yanlış araç seçme riskini azaltın — ücretsiz, tarafsız karar altyapısı.",
+      "title": "isteBul | AI ile Büyük Satın Alma Kararları",
+      "description": "Araba, ev, tatil ve finans kararlarında toplam maliyeti, riskleri ve size en uygun seçenekleri analiz edin. AI destekli karar zekası platformu.",
       "path": "/"
     },
     "page-karar-analizi": {
-      "title": "Karar Analizi | isteBul — TCO ve Finansman",
-      "description": "Araç alımında fiyat, kredi ve toplam maliyeti birlikte görün. Eğitim ve önizleme sayfası; analiz için Auto akışına geçin.",
-      "path": "/karar-analizi"
-    },
-    "page-metodoloji": {
-      "title": "Metodoloji | isteBul",
-      "description": "Skorlar nasıl hesaplanır? TCO, finansman ve risk sinyallerinin şeffaf birleşimi — ilan sitesi değil, karar altyapısı.",
-      "path": "/metodoloji"
+      "title": "Karar Asistanı | isteBul — Hangi kategoride karar vermek istiyorsunuz?",
+      "description": "Araba, konut, tatil, finansman, sigorta ve kasko kararlarında skor, TCO, risk ve uygunluk analizini tek merkezden başlatın.",
+      "path": "/karar-asistani"
     },
     "page-planlar": {
       "title": "Planlar ve Fiyatlandırma | isteBul",
-      "description": "Ücretsiz TCO analizi; Pro ile derin rapor ve sınırsız karşılaştırma. 7 gün deneme, Stripe ile güvenli ödeme.",
+      "description": "Ücretsiz karar analizi; Pro ile derin rapor ve sınırsız karşılaştırma. Pilot erişim — ödeme aktivasyonu sonrası bilgilendirme.",
       "path": "/planlar"
     },
+    "page-duyurular": {
+      "title": "Duyurular | isteBul",
+      "description": "isteBul platform duyuruları, ürün güncellemeleri ve operasyonel bilgilendirmeler.",
+      "path": "/duyurular"
+    },
+    "page-kampanyalar": {
+      "title": "Kampanyalar | isteBul",
+      "description": "isteBul Pro pilot erişim, ücretsiz Auto analizi ve pilot partner kampanyaları.",
+      "path": "/kampanyalar"
+    },
+    "page-blog": {
+      "title": "Blog | isteBul — Karar rehberleri",
+      "description": "Araç alımı, TCO, finansman ve karar metodolojisi üzerine rehber yazılar.",
+      "path": "/blog"
+    },
+    "page-blog-post": {
+      "title": "Blog yazısı | isteBul",
+      "description": "isteBul blog — karar zekası ve toplam sahip olma maliyeti rehberi.",
+      "path": "/blog"
+    },
     "ilanlar": {
-      "title": "Araç Seçenekleri | isteBul",
-      "description": "Karar skoruna göre sıralanmış araç seçeneklerini keşfedin ve karşılaştırın.",
-      "path": "/ilanlar"
+      "title": "Değerlendirilebilir Seçenekler | isteBul",
+      "description": "Karar skoruna göre sıralanmış değerlendirilebilir seçenekleri keşfedin — karar platformu yüzeyi.",
+      "path": "/secenekler"
     },
     "listing-detail": {
       "title": "Seçenek Detayı | isteBul",
-      "description": "Seçtiğiniz aracın karar skoru, maliyet kırılımı ve finansman etkisi.",
-      "path": "/ilanlar"
+      "description": "Seçtiğiniz seçeneğin karar skoru, maliyet kırılımı ve finansman etkisi.",
+      "path": "/secenekler"
     },
     "compare": {
-      "title": "Karşılaştırma Merkezi | isteBul",
-      "description": "Araç seçeneklerini karar skoru, maliyet ve risk sinyalleriyle yan yana değerlendirin.",
+      "title": "Karar Kriteri Karşılaştırma | isteBul",
+      "description": "Seçenekleri skor, maliyet, risk, uygunluk ve gerekçe boyutunda yan yana karşılaştırın.",
       "path": "/karsilastir"
     },
     "favoriler": {
       "title": "Favoriler | isteBul",
-      "description": "Kaydettiğiniz araç seçeneklerini tek yerden yönetin.",
+      "description": "Kaydettiğiniz seçenekleri tek yerden yönetin.",
       "path": "/favoriler"
     },
     "history": {
@@ -58,7 +73,7 @@
     },
     "messages": {
       "title": "Mesajlar | isteBul",
-      "description": "İlan ve karar süreci mesajlarınız.",
+      "description": "Karar süreci ve seçenek inceleme mesajlarınız.",
       "path": "/messages"
     },
     "add-listing": {

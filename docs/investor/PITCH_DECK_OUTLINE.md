@@ -1,8 +1,9 @@
-# isteBul — Pitch Deck Outline
+# isteBul — Pitch Deck Outline (Final Fundraising Version)
 
-**Format:** 12–14 slides · 10–12 dk pitch · TR veya EN  
-**Audience:** Seed / pre-seed VC, angels, strategic (OEM, bank, marketplace)  
-**Data room:** `docs/investor/DATA_ROOM_INDEX.md` · Live metrics: Admin → Investor KPIs
+**Format:** 12–14 slides · 10–12 dk pitch · TR/EN  
+**Audience:** Pre-seed/Seed VC, angels, strategic (OEM, bank, marketplace)  
+**Data room:** `docs/investor/DATA_ROOM_INDEX.md` · Live metrics: Admin → Investor KPIs  
+**Outreach assets:** 60 sn demo + one-pager + intro/cold email templates (`OUTREACH_PLAYBOOK.md`)
 
 ---
 
@@ -102,7 +103,7 @@ Revenue = Pro_MRR + Σ(partner_actual_revenue)
 
 ## Slide 7 — Traction
 
-**Replace brackets with live export before each meeting.**
+**Toplantı öncesi canlı export ile güncelle.**
 
 | Metric | Source |
 |--------|--------|
@@ -204,9 +205,9 @@ Revenue = Pro_MRR + Σ(partner_actual_revenue)
 
 ---
 
-## Slide 13 — Financials & ask
+## Slide 13 — Financials & ask (meeting-ready)
 
-**Round:** [e.g. Seed ₺X · $Y]
+**Round:** Pre-seed / Seed [Founder value]
 
 **Use of funds (typical seed split):**
 
@@ -228,7 +229,7 @@ Revenue = Pro_MRR + Σ(partner_actual_revenue)
 
 ---
 
-## Slide 14 — Risks & close
+## Slide 14 — Risks, process, close
 
 **We are honest about:**
 
@@ -237,6 +238,10 @@ Revenue = Pro_MRR + Σ(partner_actual_revenue)
 - Legal pack upgrade in progress
 
 **Risk detail:** `RISK_REGISTER.md`
+
+**Process line (single bullet):**
+
+- 1. görüşme: Problem/çözüm/traction · 2. görüşme: Metrikler/teknoloji/GTM · DD: data room + teknik inceleme
 
 **Close:**
 

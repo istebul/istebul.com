@@ -35,6 +35,7 @@
 - **Indexation:** `robots` index on public pages; `Disallow` admin, profil, messages, favoriler, gecmis.
 - **Crawl:** Statik HTML öncelikli; SPA catch-all yalnızca oturum rotaları (`/profil/`, vb.).
 - **Build:** `scripts/lib/seo.cjs` → `buildSeoPages`, `generateSitemap`, `generateRobots` (`npm run build`).
+- **Search Console:** `GOOGLE_SITE_VERIFICATION` GitHub secret → build sırasında `<meta name="google-site-verification">` enjekte edilir (`scripts/lib/gsc-verification.cjs`). GSC’de sitemap: `https://www.istebul.com/sitemap.xml`.
 
 ## Performance SEO Blockers (bilinen)
 

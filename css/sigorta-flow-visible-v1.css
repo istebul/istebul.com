@@ -1,0 +1,81 @@
+/**
+ * Sigorta & Kasko — wizard akışı her zaman görünür (hero altı); boş / gizli kalmasın.
+ */
+body.sigorta-page .vacation-main,
+body.kasko-page .vacation-main {
+  display: block;
+  width: 100%;
+}
+
+body.sigorta-page #sigorta-flow,
+body.kasko-page #kasko-flow {
+  display: block !important;
+  visibility: visible !important;
+  min-height: min(70vh, 720px);
+  scroll-margin-top: 5rem;
+}
+
+body.sigorta-page #sigorta-wizard:not([hidden]),
+body.kasko-page #kasko-wizard:not([hidden]) {
+  display: block !important;
+  visibility: visible !important;
+  min-height: 12rem;
+}
+
+body.sigorta-page #sigorta-wizard[hidden],
+body.kasko-page #kasko-wizard[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  min-height: 0 !important;
+  pointer-events: none;
+}
+
+body.sigorta-page #sigorta-wizard .vacation-wizard-card,
+body.sigorta-page #sigorta-wizard .sigorta-wizard-skeleton,
+body.kasko-page #kasko-wizard .vacation-wizard-card {
+  background: #fff;
+  color: #0f172a;
+}
+
+body.sigorta-page #sigorta-wizard .sigorta-wizard-skeleton {
+  border-radius: var(--vacation-radius, 16px);
+  padding: 1.5rem;
+  border: 1px solid var(--vacation-border, #e2e8f0);
+  box-shadow: var(--vacation-shadow, 0 12px 40px rgba(15, 23, 42, 0.08));
+}
+
+body.sigorta-page #sigorta-wizard .sigorta-wizard-skeleton h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: #0f172a;
+}
+
+body.sigorta-page #sigorta-wizard .sigorta-wizard-skeleton p {
+  margin: 0 0 1rem;
+  color: #64748b;
+}
+
+body.sigorta-page #sigorta-wizard .sigorta-type-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+body.sigorta-page #sigorta-wizard .sigorta-type-skeleton-grid button {
+  min-height: 72px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+body.sigorta-page #sigorta-wizard .sigorta-type-skeleton-grid button:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+body.sigorta-page #sigorta-wizard[data-ib-hydrated='1'] .sigorta-wizard-skeleton {
+  display: none;
+}

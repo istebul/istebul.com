@@ -1,33 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
     <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#0f172a"/>
-      <stop offset="0.58" stop-color="#1d4ed8"/>
-      <stop offset="1" stop-color="#14b8a6"/>
+      <stop offset="0" stop-color="#0f67a4"/>
+      <stop offset="0.55" stop-color="#10a37f"/>
+      <stop offset="1" stop-color="#f59e0b"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect x="76" y="72" width="1048" height="486" rx="38" fill="#ffffff" opacity="0.96"/>
-
-  <circle cx="962" cy="246" r="132" fill="#2563eb" opacity="0.10"/>
-  <circle cx="1018" cy="350" r="158" fill="#14b8a6" opacity="0.12"/>
-
-  <text x="126" y="165" fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="800">isteBul Auto</text>
-  <text x="126" y="228" fill="#1d4ed8" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="800">AI destekli araç karar analizi</text>
-
-  <text x="126" y="306" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="31">Toplam sahip olma maliyeti, finansman etkisi</text>
-  <text x="126" y="350" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="31">ve kullanım ihtiyacınızı birlikte değerlendirin.</text>
-
-  <rect x="126" y="424" width="270" height="56" rx="16" fill="#1d4ed8"/>
-  <text x="158" y="461" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800">Karar analizini başlat</text>
-
-  <rect x="424" y="424" width="250" height="56" rx="16" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="454" y="461" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800">Şeffaf metodoloji</text>
-
-  <rect x="820" y="204" width="220" height="156" rx="28" fill="#f8fafc" stroke="#e2e8f0"/>
-  <text x="850" y="262" fill="#1d4ed8" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="900">91/100</text>
-  <text x="850" y="306" fill="#64748b" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700">Karar skoru</text>
-
-  <path d="M842 410h198" stroke="#0f172a" stroke-width="14" stroke-linecap="round" opacity="0.86"/>
-  <path d="M842 450h156" stroke="#0f172a" stroke-width="14" stroke-linecap="round" opacity="0.42"/>
+  <rect x="76" y="72" width="1048" height="486" rx="34" fill="#ffffff" opacity="0.94"/>
+  <text x="126" y="174" fill="#0f172a" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800">isteBu</text>
+  <text x="126" y="245" fill="#334155" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="600">AI destekli seçim ve satın alma platformu</text>
+  <text x="126" y="326" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="30">Araç, ev ve tatil kararlarında toplam maliyet, kredi ve</text>
+  <text x="126" y="370" fill="#475569" font-family="Arial, Helvetica, sans-serif" font-size="30">satın alma kanallarını tek sonuç ekranında karşılaştırın.</text>
+  <rect x="126" y="432" width="210" height="54" rx="16" fill="#0f67a4"/>
+  <text x="157" y="468" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Karar Asistanı</text>
+  <rect x="366" y="432" width="176" height="54" rx="16" fill="#ecfdf5" stroke="#10a37f"/>
+  <text x="396" y="468" fill="#047857" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">AI Skoru</text>
+  <circle cx="930" cy="238" r="92" fill="#0f67a4" opacity="0.12"/>
+  <circle cx="986" cy="320" r="122" fill="#10a37f" opacity="0.14"/>
+  <path d="M852 403h208" stroke="#0f172a" stroke-width="18" stroke-linecap="round"/>
+  <path d="M884 343h176" stroke="#0f172a" stroke-width="18" stroke-linecap="round" opacity="0.64"/>
+  <path d="M916 283h144" stroke="#0f172a" stroke-width="18" stroke-linecap="round" opacity="0.38"/>
 </svg>

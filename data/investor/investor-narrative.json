@@ -1,5 +1,5 @@
 {
-  "version": "p7.1",
+  "version": "p7.2-final-fundraising-pack",
   "headline": "Decision infrastructure for high-consideration purchases in Turkey",
   "elevator": [
     "Consumers make ₺500K–₺3M decisions with fragmented listings and biased sellers.",
@@ -39,7 +39,7 @@
     "Platform roadmap: 8 verticals on shared engine + locale registry"
   ],
   "ask": {
-    "round": "[Founder: e.g. seed ₺X]",
+    "round": "Pre-seed / Seed (founder-defined amount)",
     "runwayMonths": 18,
     "milestones": [
       "2+ signed partner LOIs with CPL bands",
@@ -49,5 +49,19 @@
     ],
     "useOfFundsRef": "financial-model.json#useOfFunds"
   },
-  "docs": ["docs/investor/INVESTOR_NARRATIVE.md", "docs/investor/ONE_PAGER.md"]
+  "fundraisingExecution": {
+    "targetList": "docs/investor/INVESTOR_TARGET_LIST_100.csv",
+    "outreachPlaybook": "docs/investor/OUTREACH_PLAYBOOK.md",
+    "meetingFlow": "docs/investor/MEETING_FLOW_AND_DD.md",
+    "followUpDiscipline": "docs/investor/FOLLOW_UP_DISCIPLINE.md",
+    "founderMasterGuide": "docs/investor/FOUNDER_FUNDRAISING_MASTER_GUIDE.md",
+    "pdfExportPack": "docs/investor/export/",
+    "exportCommand": "npm run investor:export:pdf"
+  },
+  "docs": [
+    "docs/investor/INVESTOR_NARRATIVE.md",
+    "docs/investor/ONE_PAGER.md",
+    "docs/investor/PITCH_DECK_OUTLINE.md",
+    "docs/investor/DATA_ROOM_INDEX.md"
+  ]
 }

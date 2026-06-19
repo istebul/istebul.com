@@ -20,6 +20,7 @@ export const STORAGE_KEYS = Object.freeze({
   AUTO_LEAD_EMAIL: 'istebul_auto_lead_email',
   AUTO_LEAD_PAYLOAD: 'istebul_auto_lead_payload',
   AUTO_FINANCE_LEAD_CONTEXT: 'istebul_last_finance_lead_context',
+  AUTO_SELECTED_VEHICLE: 'istebul_auto_selected_vehicle',
   ANALYTICS_SESSION: 'istebul_analytics_session',
   ANALYTICS_ANON: 'istebul_analytics_anon',
   ATTRIBUTION: 'istebul_attribution',

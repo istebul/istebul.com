@@ -1,0 +1,182 @@
+{
+  "title": "Metodoloji | isteBul — Şeffaf Karar Altyapısı ve Skorlama",
+  "description": "Karar skoru, güven skoru, risk analizi, TCO hesabı, AI executive summary ve partner eşleştirme mantığı. isteBul karar motoru metodolojisi — finansal tavsiye değildir.",
+  "h1": "isteBul karar altyapısı metodolojisi",
+  "intro": "isteBul bir ilan sitesi veya genel amaçlı sohbet botu değildir. Platform; büyük tutarlı satın alma kararlarında toplam maliyet, risk ve uygunluğu ölçen kural tabanlı bir karar motoru üzerine kuruludur. Yapay zeka yalnızca motor çıktısını açıklar; skorları veya fiyatları üretmez. Bu sayfa, Google ve kullanıcılar için denetlenebilir metodolojimizi açıklar.",
+  "sections": [
+    {
+      "heading": "Karar Skoru Nedir?",
+      "body": "Karar skoru, profilinizde toplanan bütçe, kullanım senaryosu, finansman tercihi ve risk toleransının segment ve maliyet sinyalleriyle eşleştirilmesiyle üretilen 0–100 arası bir uygunluk göstergesidir. Skor «bu araç kesin alınmalı» demez; «mevcut girdilerinizle bu seçenek ne kadar tutarlı» sorusuna yanıt verir.",
+      "subsections": [
+        {
+          "heading": "Skor bileşenleri",
+          "body": "Bütçe uyumu, aylık taşıma kapasitesi, TCO bandı, segment özellikleri (yakıt, bakım, sigorta) ve kullanım tipi (şehir içi, uzun yol, aile) ağırlıklı olarak birleştirilir. Ağırlıklar ürün sürümünde dokümante edilir; gizli «tek marka» önceliği yoktur."
+        },
+        {
+          "heading": "Skorun sınırları",
+          "body": "Ekspertiz, hukuki inceleme veya bağlayıcı kredi onayı skorun yerine geçmez. Skor bilgilendirme amaçlıdır; nihai sözleşme ve taahhüt kullanıcı ile yetkili kurumlar arasındadır."
+        }
+      ]
+    },
+    {
+      "heading": "Güven Skoru Nedir?",
+      "body": "Güven skoru, girdi kalitesi ve veri tamlığına dayanır. Eksik bütçe, çelişkili kullanım bilgisi veya aşırı dar segment seçimi güven bandını düşürür; böylece yüksek karar skoruna rağmen «düşük güven» uyarısı görebilirsiniz.",
+      "subsections": [
+        {
+          "heading": "Ne zaman yükselir?",
+          "body": "Tutarlı yanıtlar, gerçekçi bütçe bandı ve finansman senaryosu netliği güven skorunu artırır. İsteğe bağlı doğrulama adımları (ör. telefon) operasyonel güven için kullanılabilir; skor motorunu değiştirmez."
+        }
+      ]
+    },
+    {
+      "heading": "Risk Analizi Nasıl Çalışır?",
+      "body": "Risk katmanı; finansman baskısı, beklenmedik bakım payı, likidite (ikinci el satılabilirlik sinyali) ve kullanım yoğunluğunu bir araya getirir. Sonuç «Düşük / Orta / Yüksek» gibi okunabilir bantlarda sunulur.",
+      "subsections": [
+        {
+          "heading": "Deterministik kurallar",
+          "body": "Aynı girdi seti aynı risk çıktısını üretir. AI bu çıktıyı yorumlar; risk seviyesini keyfi olarak yükseltmez veya düşürmez."
+        },
+        {
+          "heading": "Kategori farkları",
+          "body": "Auto, konut, tatil ve finansman dikeylerinde risk faktörleri farklıdır (ör. konutta lokasyon ve deprem riski, tatilde sezon ve iptal koşulları). Her dikey kendi kural setini kullanır."
+        }
+      ]
+    },
+    {
+      "heading": "Toplam Sahiplik Maliyeti (TCO) Hesabı",
+      "body": "TCO; satın alma, finansman faizi, yakıt veya enerji, periyodik bakım, sigorta (trafik/kasko), vergi ve tahmini değer kaybını kapsar. Liste fiyatı yerine 12–60 ay projeksiyon sunulabilir.",
+      "subsections": [
+        {
+          "heading": "Türkiye pazarı varsayımları",
+          "body": "Yakıt fiyatı, MTV, kasko prim aralıkları ve segment bakım maliyetleri piyasa verileri ve kural tabanlı varsayımlarla modellenir. Kullanıcı özel teklif girdiyse simülasyon buna göre güncellenir."
+        },
+        {
+          "heading": "Şeffaflık",
+          "body": "TCO kalemleri sonuç ekranında ayrıştırılır; gizli «paket» maliyeti yoktur. Finansman simülasyonu bilgilendirme amaçlıdır — banka onayı değildir."
+        }
+      ]
+    },
+    {
+      "heading": "AI Executive Summary Nasıl Üretilir?",
+      "body": "Motor skor, TCO ve risk çıktısını ürettikten sonra yapay zeka katmanı bu sayıları özetleyen Türkçe bir «yönetici özeti» yazar. Prompt, skoru değiştirmeyecek şekilde kısıtlanmıştır; uydurma fiyat veya garanti içermez.",
+      "subsections": [
+        {
+          "heading": "Fallback",
+          "body": "AI servisi erişilemezse kural tabanlı şablon metin gösterilir; kullanıcı boş ekran görmez. Bu, üretim güvenilirliği için zorunludur."
+        }
+      ]
+    },
+    {
+      "heading": "Partner Eşleştirme Mantığı",
+      "body": "Kullanıcı onayıyla skorlu lead, kategori ve bölgeye uygun partnerlere iletilir. Eşleştirme «en yüksek komisyon» değil; tanımlı servis seviyesi, kategori uyumu ve kullanıcı tercihine dayanır.",
+      "subsections": [
+        {
+          "heading": "Webhook ve ölçüm",
+          "body": "Partner tarafında outcome (randevu, satış, iptal) geri bildirimi kalibrasyon için kullanılır; bireysel kullanıcı skorunu geriye dönük manipüle etmez."
+        }
+      ]
+    },
+    {
+      "heading": "Veri Kaynakları",
+      "body": "Katalog segmentleri, ortalama işletme maliyeti sinyalleri, finansman parametreleri ve kullanıcı girdileri birleştirilir. TCMB EVDS canlı API ile; TÜİK yayınları manuel referans olarak kalibrasyon varsayımlarına yansıtılır. Planlanan iş ortağı beslemeleri /veri-kaynaklari/ adresinde listelenir. Kişisel veriler KVKK kapsamında işlenir; gereksiz alan toplanmaz.",
+      "subsections": [
+        {
+          "heading": "Güncelleme",
+          "body": "Piyasa verileri periyodik güncellenir; kritik değişiklikler metodoloji notlarında ve veri kaynakları merkezinde yansıtılır. Geçmiş analizleriniz hesabınızda saklanabilir — silme talebi destek kanalından yapılır."
+        },
+        {
+          "heading": "Şeffaflık merkezi",
+          "body": "Kaynak adı, kullanım amacı, veri kategorileri ve son güncelleme tarihleri için Veri Kaynakları sayfasına bakın: /veri-kaynaklari/"
+        }
+      ]
+    },
+    {
+      "heading": "Gizlilik ve Güvenlik",
+      "body": "TLS şifreleme, Turnstile bot koruması (Auto), ödeme altyapısı (aktivasyon sonrası) ve rol tabanlı admin erişimi temel kontrollerdir. Admin paneli ve oturum rotaları robots.txt ile taranmaz.",
+      "subsections": [
+        {
+          "heading": "Saklama",
+          "body": "Veri saklama süreleri uyumluluk dokümantasyonunda tanımlıdır. Pazarlama iletişimi yalnızca açık rıza ile yapılır."
+        }
+      ]
+    },
+    {
+      "heading": "Denetlenebilirlik ve sürümleme",
+      "body": "Kural setleri ürün sürümüyle etiketlenir; aynı sürüm ve aynı girdi aynı skoru üretir. Regresyon testleri kritik senaryolarda otomatik çalıştırılır. AI prompt değişiklikleri skor motorundan ayrı versiyonlanır. Bu ayrım, «model her seferinde farklı sonuç verdi» algısını azaltır ve kurumsal alıcılar için denetim izi sağlar.",
+      "subsections": [
+        {
+          "heading": "İnsan onayı",
+          "body": "Yüksek tutarlı lead iletiminde kullanıcı onayı ve KVKK aydınlatması zorunludur; otomatik paylaşım yapılmaz."
+        }
+      ]
+    },
+    {
+      "heading": "Sınırlamalar ve sorumluluk reddi",
+      "body": "isteBul banka, sigorta şirketi veya bayi değildir. Sunulan simülasyonlar piyasa koşullarına göre değişir; bağlayıcı teklif yerine geçmez. Kullanıcı, ekspertiz ve hukuki inceleme sorumluluğunu üstlenir. Platform, üçüncü taraf partnerlerin performansını garanti etmez; outcome verisi kalibrasyon içindir.",
+      "subsections": []
+    },
+    {
+      "heading": "Kategori genişlemesi: Auto, konut, tatil, finans",
+      "body": "Karar motoru çekirdeği kategoriler arasında paylaşılır; her dikey kendi girdi şeması ve risk faktör setini kullanır. Auto’da TCO ve kredi etkisi ön plandayken konutta lokasyon, aidat ve deprem riski ağırlık kazanır. Tatilde sezon, konaklama tipi ve iptal koşulları maliyet bandını genişletir. Finansman dikeyinde vade, faiz ve nakit akışı stres testi öne çıkar. Bu ayrım, tek bir «genel sohbet» modeli yerine yapılandırılmış karar çıktısı üretmeyi mümkün kılar. Yeni kategori eklerken önce girdi şeması ve kural seti tanımlanır; AI katmanı en son bağlanır.",
+      "subsections": [
+        {
+          "heading": "Sigorta ve kasko",
+          "body": "Sigorta karar analizi /sigorta/ adresinde canlıdır (koruma, teminat, prim verimliliği). Kasko karar analizi /kasko/ adresinde canlıdır (hasar riski, teminat kapsamı, prim verimliliği). Auto sonuçlarında sigorta ve kasko kalemleri TCO içinde ayrıştırılmıştır."
+        }
+      ]
+    },
+    {
+      "heading": "Kalite güvence ve regresyon",
+      "body": "Skor motoru değişiklikleri regresyon senaryolarıyla test edilir: sabit girdi setleri, beklenen skor aralıkları ve TCO bantları. AI metin çıktılarında halüsinasyon kontrolü için sayısal ideler prompt’a enjekte edilir; modelin skor uydurması engellenir. Üretimde AI erişilemezse kural tabanlı özet devreye girer. Kullanıcı geri bildirimi («sonuç yararlı mı») ürün iyileştirmesi içindir; bireysel skoru geriye dönük değiştirmez. Partner outcome verisi toplu kalibrasyon için kullanılır; bireysel kullanıcıya ceza uygulanmaz.",
+      "subsections": []
+    },
+    {
+      "heading": "Organik arama ve içerik stratejisi",
+      "body": "Rehber sayfaları (/rehber/) statik HTML olarak üretilir; SPA fallback’inden önce sunulur. Sitemap lastmod alanları build tarihi ile güncellenir. BreadcrumbList ve FAQPage şemaları zengin sonuçlar için eklenir. Admin, profil ve partner onboarding sayfaları noindex ile korunur. Eski WordPress veya kategori URL’leri 410/301 ile temizlenir. İç linkleme ana sayfa «Karar Rehberi» bloğu ve footer rehber linkleriyle güçlendirilir.",
+      "subsections": [
+        {
+          "heading": "hreflang",
+          "body": "Çoklu dil yayılımında alternates kullanılır; şu an Türkiye odaklı tr-TR ağırlıklıdır."
+        }
+      ]
+    },
+    {
+      "heading": "Kullanıcı hakları ve şeffaflık",
+      "body": "KVKK kapsamında aydınlatma metinleri, çerez politikası ve abonelik iptal akışları erişilebilirdir. Kullanıcı verilerini silme talepleri destek kanalı üzerinden işlenir. Pazarlama e-postası yalnızca açık onayla gönderilir. Karar geçmişi hesapta saklanabilir; bu veri reklam ağlarıyla satılmaz. Ücretli ödemeler sağlayıcı aktivasyonu sonrasında yetkili ödeme kuruluşu üzerinden alınır; kart verisi isteBul sunucularında tutulmaz.",
+      "subsections": []
+    },
+    {
+      "heading": "Ölçüm, deneyler ve sürekli iyileştirme",
+      "body": "Ürün ekibi funnel adımlarını (analiz başlatma, sonuç görüntüleme, lead onayı) anonim ve toplu olarak izler. A/B deneyleri etik sınırlar içinde yürütülür; skor algoritması deneylerde keyfi değiştirilmez. Partner tarafında randevu ve satış outcome metrikleri kalibrasyon için kullanılır. Hata durumlarında error boundary ve operasyonel telemetri devreye girer; kullanıcıya teknik detay sızdırılmaz. Metodoloji güncellemeleri bu sayfada ve duyurular kanalında paylaşılır. Yatırımcı veya basın taleplerinde «karar platformu» konumlandırması korunur: ilan sitesi veya getiri vaadi değil, şeffaf karar altyapısı anlatılır. Gelecekte açılacak kategorilerde aynı «motor önce, AI sonra» ilkesi uygulanacaktır.",
+      "subsections": [
+        {
+          "heading": "Topluluk ve geri bildirim",
+          "body": "Kullanıcı önerileri ürün yol haritasına girer; bireysel skor manipülasyonu yapılmaz. Hata bildirimleri için info@istebul.com kanalı kullanılabilir."
+        },
+        {
+          "heading": "Dokümantasyon",
+          "body": "Partner API ve webhook dokümantasyonu ayrı sayfalarda sunulur; metodoloji sayfası tüketici ve SEO otoritesi odaklıdır."
+        }
+      ]
+    }
+  ],
+  "faqs": [
+    {
+      "q": "isteBul finansal tavsiye veriyor mu?",
+      "a": "Hayır. Analizler bilgilendirme amaçlıdır; bağlayıcı kredi onayı, yatırım veya sigorta taahhüdü değildir."
+    },
+    {
+      "q": "AI skorumu değiştirebilir mi?",
+      "a": "Hayır. Skor ve TCO deterministik motordadır; AI yalnızca açıklama üretir."
+    },
+    {
+      "q": "Partner teklifleri tarafsız mı?",
+      "a": "Sıralama kullanıcı profiline göre yapılır; gizli tek marka önceliği yoktur. Partner ilişkisi açıkça işaretlenir."
+    },
+    {
+      "q": "Metodoloji ne sıklıkla güncellenir?",
+      "a": "Kural seti ve veri kaynakları ürün sürümleriyle birlikte gözden geçirilir; önemli değişiklikler bu sayfada yansıtılır."
+    }
+  ],
+  "conclusion": "Özetle: isteBul kararları önce sayılarla, sonra açıklamayla sunar. Karar skoru uygunluğu, güven skoru veri kalitesini, risk analizi finansman ve kullanım baskısını, TCO ise uzun vadeli nakit çıkışını ölçer. AI executive summary bu çıktıları anlaşılır Türkçe ile özetler; skoru değiştirmez. Partner eşleştirme yalnızca onaylı lead ile çalışır; gizli öncelik yoktur. Veri kaynakları segment sinyalleri ve kullanıcı girdilerinden oluşur; KVKK ve güvenlik kontrolleri üretim mimarisinin parçasıdır. Şeffaflık, tekrarlanabilirlik ve kullanıcı hakları organik arama otoritesi ile güven için temel önceliğimizdir. Araç kararınızı somutlaştırmak için Auto analizini başlatabilir, /rehber/ yazılarımızı okuyabilir veya /karsilastir/ merkezinde alternatifleri yan yana değerlendirebilirsiniz. Finansal tavsiye veya getiri taahhüdü yoktur; ekspertiz ve banka onayı nihai adımlardır."
+}

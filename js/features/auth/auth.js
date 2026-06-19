@@ -7,6 +7,7 @@ import { monitoring } from '../../core/monitoring.js';
 import { analytics } from '../../core/analytics.js';
 import { mapAuthError, mapAuthErrorForCheckout } from './auth-errors.js';
 import { peekCheckoutIntent } from '../../core/checkout-intent.js';
+import { captureAuthReturnFromUrl, completeAuthReturn } from '../../runtime/auth-return.js';
 import { enrollSignupNurture } from '../lifecycle/lifecycle-client.js';
 import { enrollOnboardingHelp } from '../customer/customer-ops-client.js';
 import {
@@ -17,6 +18,7 @@ import { getStoredReferralCode } from '../growth/growth-engine.js';
 import { trackOpsEvent } from '../../core/operational-telemetry.js';
 import {
     bindAuthModalA11y,
+    bindPasswordToggles,
     focusFirstField,
     setSubmitLoading,
     showInlineFormBanner,
@@ -111,7 +113,17 @@ export class AuthManager {
         }
 
         if (modalHeader) {
-            modalHeader.textContent = getAuthModalTitle(type, options.intent === 'checkout');
+            const titleKey =
+                options.intent === 'checkout'
+                    ? type === 'register'
+                        ? 'auth.checkoutRegisterTitle'
+                        : 'auth.checkoutLoginTitle'
+                    : type === 'login'
+                      ? 'auth.loginTitle'
+                      : 'auth.registerTitle';
+            modalHeader.dataset.i18n = titleKey;
+            modalHeader.textContent =
+                window.__ibI18n?.t(titleKey) || getAuthModalTitle(type, options.intent === 'checkout');
         }
 
         const intentBanner = options.intent === 'checkout'
@@ -122,7 +134,8 @@ export class AuthManager {
             : '';
 
         modalBody.innerHTML = intentBanner + (type === 'login' ? this.getLoginForm() : this.getRegisterForm());
-        modal.classList.add('auth-modal');
+        window.__ibI18n?.applyTranslations?.();
+        modal.classList.add('auth-modal', 'auth-modal-premium');
         document.body.classList.add('modal-open');
 
         analytics.track('auth_modal_open', { mode: type }, {
@@ -137,6 +150,7 @@ export class AuthManager {
 
         bindAuthModalA11y(modal, () => this.hideAuthModal());
         clearInlineFormBanner(modalBody);
+        bindPasswordToggles(modalBody);
 
         // Setup form handlers
         this.setupAuthForm(type);
@@ -157,43 +171,92 @@ export class AuthManager {
 
     getLoginForm() {
         return `
+            <p class="auth-trust-line">Oturum bilgileriniz şifreli bağlantı (TLS) ile iletilir. Kart bilgisi bu ekranda istenmez.</p>
             <form id="login-form" data-enterprise-form novalidate>
                 <div class="form-group">
-                    <label for="email">E-posta</label>
+                    <label for="email" data-i18n="auth.email">E-posta</label>
                     <input type="email" id="email" name="email" autocomplete="email" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Şifre</label>
-                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                    <label for="password" data-i18n="auth.password">Şifre</label>
+                    <div class="password-field">
+                        <input type="password" id="password" name="password" autocomplete="current-password" required>
+                        <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary full-width auth-submit">${CONVERSION_COPY.auth.loginSubmit}</button>
             </form>
+            ${this.getGoogleOAuthBlock()}
             <div class="modal-footer">
-                <p>Şifrenizi mi unuttunuz? <a href="#" id="forgot-password">Sıfırlayın</a></p>
-                <p>Hesabınız yok mu? <a href="#" id="switch-to-register">${CONVERSION_COPY.auth.switchToRegister}</a></p>
+                <p><span data-i18n="auth.forgotPrompt">Şifrenizi mi unuttunuz?</span> <button type="button" class="auth-inline-link" id="forgot-password" data-i18n="auth.resetPassword">Sıfırlayın</button></p>
+                <p><span data-i18n="auth.noAccount">Hesabınız yok mu?</span> <button type="button" class="auth-inline-link" id="switch-to-register" data-i18n="auth.switchToRegister">${CONVERSION_COPY.auth.switchToRegister}</button></p>
             </div>
         `;
     }
 
+    isGoogleOAuthEnabled() {
+        const flag = typeof window !== 'undefined' && window.__env?.GOOGLE_OAUTH_ENABLED;
+        return flag === true || flag === 'true' || flag === '1';
+    }
+
+    getGoogleOAuthBlock() {
+        if (this.isGoogleOAuthEnabled()) {
+            return `
+            <div class="auth-oauth-divider" role="separator"><span>veya</span></div>
+            <button type="button" class="btn btn-outline full-width" id="google-oauth-btn">Google ile devam et</button>`;
+        }
+        return `
+            <div class="auth-oauth-placeholder" role="note">
+                <div class="auth-oauth-coming-soon">
+                    <span class="auth-oauth-coming-soon-label">Google ile giriş</span>
+                    <span class="auth-oauth-coming-soon-hint">Yakında — Supabase ve Google Console yapılandırması sonrası etkinleşir.</span>
+                </div>
+            </div>`;
+    }
+
+    async signInWithGoogle() {
+        captureAuthReturnFromUrl();
+        const redirectTo = `${window.location.origin}${window.location.pathname || '/'}${window.location.search || ''}`;
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo }
+        });
+        if (error) {
+            const modalBody = document.querySelector('#auth-modal .modal-body');
+            showInlineFormBanner(
+                modalBody,
+                error.message || 'Google ile giriş başlatılamadı. Lütfen e-posta ile deneyin.',
+                'error'
+            );
+        }
+    }
+
     getRegisterForm() {
         return `
+            <p class="auth-trust-line">Kayıt bilgileriniz şifreli bağlantı (TLS) ile iletilir. Kart bilgisi bu ekranda istenmez.</p>
             <form id="register-form" data-enterprise-form>
                 <div class="form-group">
-                    <label for="full-name">Ad Soyad</label>
+                    <label for="full-name" data-i18n="auth.fullName">Ad Soyad</label>
                     <input type="text" id="full-name" name="full-name" autocomplete="name" required>
                 </div>
                 <div class="form-group">
-                    <label for="email">E-posta</label>
+                    <label for="email" data-i18n="auth.email">E-posta</label>
                     <input type="email" id="email" name="email" autocomplete="email" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Şifre</label>
-                    <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8" aria-describedby="password-hint">
+                    <label for="password" data-i18n="auth.password">Şifre</label>
+                    <div class="password-field">
+                        <input type="password" id="password" name="password" autocomplete="new-password" required minlength="8" aria-describedby="password-hint">
+                        <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
+                    </div>
                     <small id="password-hint" class="form-hint">En az 8 karakter; büyük harf, küçük harf ve rakam önerilir</small>
                 </div>
                 <div class="form-group">
                     <label for="confirm-password">Şifre Tekrar</label>
-                    <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password" required>
+                    <div class="password-field">
+                        <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password" required>
+                        <button type="button" class="password-toggle" data-password-toggle aria-label="Şifreyi göster" aria-pressed="false">Göster</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>
@@ -203,8 +266,9 @@ export class AuthManager {
                 </div>
                 <button type="submit" class="btn btn-primary full-width auth-submit" data-enterprise-form>${CONVERSION_COPY.auth.registerSubmit}</button>
             </form>
+            ${this.getGoogleOAuthBlock()}
             <div class="modal-footer">
-                <p>Zaten hesabınız var mı? <a href="#" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</a></p>
+                <p><span data-i18n="auth.haveAccount">Zaten hesabınız var mı?</span> <button type="button" class="auth-inline-link" id="switch-to-login" data-i18n="auth.switchToLogin">${CONVERSION_COPY.auth.switchToLogin}</button></p>
             </div>
         `;
     }
@@ -270,6 +334,14 @@ export class AuthManager {
                 this.showForgotPasswordForm();
             });
         }
+
+        const googleBtn = document.getElementById('google-oauth-btn');
+        if (googleBtn) {
+            googleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.signInWithGoogle();
+            });
+        }
     }
 
     async handleLogin(form) {
@@ -307,6 +379,8 @@ export class AuthManager {
             if (pendingCheckout) {
                 this.showAuthSuccess(CONVERSION_COPY.auth.successCheckoutLogin);
                 setTimeout(() => this.hideAuthModal(), 1200);
+            } else if (completeAuthReturn({ router: window.app?.router })) {
+                this.hideAuthModal();
             } else {
                 this.hideAuthModal();
             }
@@ -373,11 +447,14 @@ export class AuthManager {
                 this.currentUser = signedUpUser;
                 state.setUser(signedUpUser);
                 document.dispatchEvent(new CustomEvent('userLoggedIn', { detail: signedUpUser }));
-                this.hideAuthModal();
 
                 if (pendingCheckout) {
                     this.showAuthSuccess(CONVERSION_COPY.auth.successCheckoutRegister);
+                    setTimeout(() => this.hideAuthModal(), 1200);
+                } else if (completeAuthReturn({ router: window.app?.router })) {
+                    this.hideAuthModal();
                 } else {
+                    this.hideAuthModal();
                     this.showAuthSuccess(CONVERSION_COPY.auth.successRegister);
                 }
                 return;
@@ -441,7 +518,7 @@ export class AuthManager {
                 <button type="submit" class="btn btn-primary full-width auth-submit">Sıfırlama bağlantısı gönder</button>
             </form>
             <div class="modal-footer">
-                <p>Şifrenizi hatırladınız mı? <a href="#" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</a></p>
+                <p>Şifrenizi hatırladınız mı? <button type="button" class="auth-inline-link" id="switch-to-login">${CONVERSION_COPY.auth.switchToLogin}</button></p>
             </div>
         `;
     }

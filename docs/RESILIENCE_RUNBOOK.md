@@ -141,7 +141,45 @@ Use admin DB access only with audit log entry. Prefer Stripe Dashboard customer 
 
 ---
 
-## 6. Deploy rollback
+## 6. AI proxy (`/ai-proxy`) outage and provider rollback
+
+**Canonical runbook:** [`docs/AI_PROVIDER.md`](AI_PROVIDER.md)
+
+### Symptoms
+
+- `500` + `GROQ_API_KEY missing` — `AI_PROVIDER` unset/`groq` but key absent
+- `500` + `OPENAI_API_KEY missing` — `AI_PROVIDER=openai` but key absent
+- `500` + `Unsupported AI_PROVIDER: <value>`
+- Upstream `429`, quota exceeded, or elevated latency from Groq/OpenAI
+
+### Impact
+
+- AI narration / commentary affected (`/auto/`, decision rationale, ops narration)
+- Deterministic scoring, risk, TCO **not** affected
+- Client may fall back to rule-based explanation text
+
+### Triage
+
+1. Cloudflare Dashboard → Pages → Functions logs (`ai-proxy`)
+2. Verify `AI_PROVIDER` env (unset/`groq` vs `openai`)
+3. Verify selected provider API key in Cloudflare env (Production / Preview)
+4. Check Groq or OpenAI dashboard for usage, quota, rate limits
+5. Confirm no accidental `AI_PROVIDER=openai` without `OPENAI_API_KEY`
+
+### Rollback
+
+1. Set `AI_PROVIDER` to unset or `groq` (or delete the variable)
+2. Keep `GROQ_API_KEY` in Production for default provider
+3. **No code rollback required** — env-only change
+4. Re-run curl smoke per `AI_PROVIDER.md`
+
+### No automatic failover
+
+The system does **not** fail over between Groq and OpenAI. If OpenAI is degraded, rollback to Groq via env; do not expect Groq to activate while `AI_PROVIDER=openai`.
+
+---
+
+## 7. Deploy rollback
 
 ### Frontend (Cloudflare Pages)
 
@@ -162,9 +200,9 @@ supabase functions deploy <function-name> --project-ref <ref>
 
 ---
 
-## 7. Weekly resilience checklist (15 min)
+## 8. Weekly resilience checklist (15 min)
 
-- [ ] Supabase backup/PITR enabled (Dashboard screenshot quarterly)
+- [ ] Supabase backup/PITR enabled (Dashboard screenshot quarterly) — log in `docs/SUPABASE_BACKUP_PITR_VERIFICATION.md`
 - [ ] Partner Retry workflow succeeded (Actions tab)
 - [ ] Lifecycle cron succeeded (if configured)
 - [ ] `npm run metrics:ops` — zero unreviewed `critical` events
@@ -174,7 +212,7 @@ supabase functions deploy <function-name> --project-ref <ref>
 
 ---
 
-## 8. Contacts (fill in)
+## 9. Contacts (fill in)
 
 | Role | Name | Contact |
 |------|------|---------|

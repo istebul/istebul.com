@@ -108,6 +108,35 @@ export async function flushOpsEvents(options = {}) {
 export function initPerformanceObservability() {
   if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
 
+  initNavigationTimingBaseline();
+  initCoreWebVitalsObservers();
+}
+
+function initNavigationTimingBaseline() {
+  try {
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const nav = performance.getEntriesByType('navigation')[0];
+        if (!nav) return;
+        trackOpsEvent(
+          'performance_navigation_timing',
+          {
+            path: window.location.pathname,
+            ttfb_ms: Math.round(nav.responseStart - nav.requestStart),
+            dom_content_loaded_ms: Math.round(nav.domContentLoadedEventEnd - nav.startTime),
+            load_event_ms: Math.round(nav.loadEventEnd - nav.startTime),
+            transfer_kb: Math.round((nav.transferSize || 0) / 1024)
+          },
+          { category: 'performance', severity: 'info' }
+        );
+      }, 0);
+    });
+  } catch {
+    /* unsupported */
+  }
+}
+
+function initCoreWebVitalsObservers() {
   try {
     const lcpObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries();
@@ -138,6 +167,25 @@ export function initPerformanceObservability() {
       }
     });
     longTaskObserver.observe({ type: 'longtask', buffered: true });
+  } catch {
+    /* unsupported */
+  }
+
+  try {
+    const clsObserver = new PerformanceObserver((list) => {
+      let cls = 0;
+      for (const entry of list.getEntries()) {
+        if (!entry.hadRecentInput) cls += entry.value;
+      }
+      if (cls > 0.1) {
+        trackOpsEvent(
+          'performance_cls_elevated',
+          { cls: Number(cls.toFixed(3)), path: window.location.pathname },
+          { category: 'performance', severity: 'warning' }
+        );
+      }
+    });
+    clsObserver.observe({ type: 'layout-shift', buffered: true });
   } catch {
     /* unsupported */
   }

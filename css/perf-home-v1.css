@@ -1,0 +1,34 @@
+/**
+ * Homepage LCP / below-fold paint — content-visibility without layout shift.
+ */
+
+html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #how-it-works,
+html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #home-vertical-focus,
+html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #home-features-strip,
+html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #pricing,
+html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #partner-enterprise,
+html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #landing-faq,
+html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #home-guides-strip {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 720px;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home.ib-hero-premium-dark {
+  contain: layout style paint;
+}
+
+html.ib-ds-v4.ib-premium-v7 #home-category-grid {
+  min-height: 12rem;
+}
+
+@media (max-width: 768px) {
+  html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #how-it-works,
+  html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #home-vertical-focus,
+  html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #home-features-strip,
+  html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #pricing,
+  html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #partner-enterprise,
+  html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #landing-faq,
+  html.ib-ds-v4.ib-premium-v7[data-ib-route='home'] #home-guides-strip {
+    contain-intrinsic-size: 1px 560px;
+  }
+}

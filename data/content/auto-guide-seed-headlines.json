@@ -1,0 +1,78 @@
+{
+  "version": "1.0",
+  "category": "auto",
+  "editorialNote": "Karar rehberi — haber değil. Her yazı sonunda /auto/ CTA ile bitmeli.",
+  "headlines": [
+    {
+      "slug": "2026-trafik-cezalari-tco-etkisi",
+      "title": "2026 trafik cezaları TCO'yu nasıl etkiler?",
+      "excerpt": "Ceza ve MTV kalemlerinin 36 aylık toplam sahip olma maliyetine yansıması — varsayımlarla örnek tablo.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "Resmi Gazete / Ulaştırma",
+      "is_featured": true
+    },
+    {
+      "slug": "plaka-kaybi-calinti-2026-rehber",
+      "title": "Plakanın kaybolması veya çalınması — 2026 rehberi",
+      "excerpt": "Yenileme süreci, maliyet ve sigorta bildirimi; araç kullanımına devam ederken dikkat edilecekler.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "Nüfus ve Vatandaşlık"
+    },
+    {
+      "slug": "ehliyet-yenileme-2026-maliyet",
+      "title": "Ehliyet yenileme rehberi 2026 — maliyet ve süre",
+      "excerpt": "Randevu, harç ve sağlık raporu adımları; filo ve bireysel sürücü için kontrol listesi.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "e-Devlet"
+    },
+    {
+      "slug": "ikinci-el-arac-alirken-ekspertiz",
+      "title": "İkinci el araç alırken ekspertiz ne kadar kritik?",
+      "excerpt": "Gizli hasar riskinin TCO ve yeniden satış değerine etkisi — skor katmanında nasıl kullanılır.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "isteBul metodoloji"
+    },
+    {
+      "slug": "tasit-kredisi-faizleri-2026",
+      "title": "2026 taşıt kredisi faizleri — aylık yük tablosu",
+      "excerpt": "Peşinat ve vade senaryolarında aylık ödeme simülasyonu; bilgilendirme amaçlı, teklif değildir.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "BDDK / piyasa özeti"
+    },
+    {
+      "slug": "mtv-2026-segment-karsilastirma",
+      "title": "2026 MTV: segment bazında yıllık maliyet karşılaştırması",
+      "excerpt": "Binek, SUV ve hibrit gruplarında vergi farkı — bütçe planına nasıl yansır.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "Gelir İdaresi"
+    },
+    {
+      "slug": "elektrikli-arac-tco-turkiye",
+      "title": "Elektrikli araç TCO Türkiye 2026 — gerçekçi senaryo",
+      "excerpt": "Şarj, batarya amortismanı ve teşvik varsayımları; benzinli alternatifle kıyas çerçevesi.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "isteBul Auto"
+    },
+    {
+      "slug": "kasko-primini-dusuren-faktorler",
+      "title": "Kasko primini düşüren 5 karar faktörü",
+      "excerpt": "Hasarsızlık, park profili ve kullanım tipi — sigorta kaleminin TCO payını nasıl azaltır.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "Sigorta sektör özeti"
+    },
+    {
+      "slug": "sifir-km-vs-ikinci-el-2026",
+      "title": "Sıfır km mi ikinci el mi? 2026 karar çerçevesi",
+      "excerpt": "Değer kaybı, garanti ve finansman farkı — aynı bütçede iki senaryo tablosu.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "isteBul Auto"
+    },
+    {
+      "slug": "arac-satisinda-deger-kaybi",
+      "title": "Araç satışında değer kaybını öngörmek",
+      "excerpt": "Segment, kilometre ve model yılı — 3 yıl sonra elden çıkarma maliyetini planlama.",
+      "cover_image_url": "/assets/images/auto-hero.jpg",
+      "source_label": "TÜİK / piyasa"
+    }
+  ]
+}

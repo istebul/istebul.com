@@ -6,18 +6,18 @@
     {
       "id": "billing-portal",
       "category": "billing",
-      "keywords": ["fatura", "kart", "ödeme", "stripe", "abonelik", "iptal", "yenileme", "past_due"],
+      "keywords": ["fatura", "kart", "ödeme", "iyzico", "paytr", "abonelik", "iptal", "yenileme", "past_due"],
       "question": "Aboneliğimi ve faturamı nasıl yönetirim?",
-      "answer": "Hesabım → Abonelik → «Aboneliği yönet» ile Stripe müşteri paneline gidin. Kart güncelleme, fatura indirme ve iptal buradan yapılır.",
-      "action": { "type": "link", "href": "/account.html?tab=subscription&billing=portal", "label": "Faturalandırmayı aç" }
+      "answer": "Hesabım → Abonelik bölümünden planınızı görüntüleyin; iptal ve destek için «Aboneliği yönet» veya destek kanalını kullanın. Kart ve fatura işlemleri ödeme sağlayıcısı üzerinden yönetilir.",
+      "action": { "type": "link", "href": "/profil/?tab=settings&billing=portal", "label": "Faturalandırmayı aç" }
     },
     {
       "id": "billing-failed",
       "category": "billing",
       "keywords": ["başarısız", "reddedildi", "ödeme hatası", "past due", "gecikmiş"],
       "question": "Ödemem neden başarısız oldu?",
-      "answer": "Kart limiti, 3D Secure veya banka reddi olabilir. Stripe panelinden kartı güncelleyin; sistem otomatik yeniden dener.",
-      "action": { "type": "link", "href": "/account.html?tab=subscription&billing=portal", "label": "Kartı güncelle" }
+      "answer": "Kart limiti, 3D Secure veya banka reddi olabilir. Hesabınızdan ödemeyi tekrar deneyin veya destek ile iletişime geçin; bankanız onay verdiğinde işlem tamamlanır.",
+      "action": { "type": "link", "href": "/profil/?tab=settings&billing=portal", "label": "Kartı güncelle" }
     },
     {
       "id": "onboarding-auto-start",
@@ -33,7 +33,7 @@
       "keywords": ["doğrulama", "e-posta", "onay", "spam"],
       "question": "Doğrulama e-postası gelmedi",
       "answer": "Spam klasörünü kontrol edin. Hesabım → Ayarlar’dan «Doğrulama e-postasını yeniden gönder» kullanın.",
-      "action": { "type": "link", "href": "/account.html?tab=settings", "label": "Hesap ayarları" }
+      "action": { "type": "link", "href": "/profil/?tab=settings", "label": "Hesap ayarları" }
     },
     {
       "id": "pro-benefits",

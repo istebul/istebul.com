@@ -1,26 +1,12 @@
 const getSiteUrl = (context) => (context.env.SITE_URL || 'https://istebul.com').replace(/\/$/, '');
 
-const allowedOrigins = [
-  'https://istebul.com',
-  'https://www.istebul.com',
-  'https://istebul-com.pages.dev'
-];
-
-const corsHeaders = (origin = null) => ({
-  'Access-Control-Allow-Origin': allowedOrigins.includes(origin || '')
-    ? origin
-    : 'https://istebul.com',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json'
-});
+import { isAllowedOrigin } from '../_shared/cors-origins.js';
+import { API_ERROR_CODES } from '../_shared/api-response.js';
+import { buildCorsJsonHeaders, corsJson, corsJsonError } from '../_shared/cors-json.js';
 
 import { recordOpsEvent } from './_shared/record-ops-event.js';
 import { fetchStripeCustomerIdForUser } from './_shared/stripe-customer.js';
 import { createClient } from '@supabase/supabase-js';
-
-const json = (body, status = 200, origin = null) =>
-  new Response(JSON.stringify(body), { status, headers: corsHeaders(origin) });
 
 const getSupabaseAdmin = (env) => {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -56,36 +42,39 @@ const getAuthenticatedUser = async (context, token) => {
 export async function onRequestPost(context) {
   const origin = context.request.headers.get('Origin');
 
-  if (origin && !allowedOrigins.includes(origin)) {
-    return json({ error: 'Forbidden' }, 403, origin);
+  if (origin && !isAllowedOrigin(origin)) {
+    return corsJsonError(403, API_ERROR_CODES.FORBIDDEN, 'Forbidden', origin);
   }
 
   try {
     const STRIPE_SECRET_KEY = context.env.STRIPE_SECRET_KEY;
 
     if (!STRIPE_SECRET_KEY) {
-      return json({ error: 'Stripe not configured' }, 500, origin);
+      return corsJsonError(500, API_ERROR_CODES.SERVER_MISCONFIGURED, 'Stripe not configured', origin);
     }
 
     const token = getBearerToken(context.request);
 
     if (!token) {
-      return json({ error: 'Authorization required' }, 401, origin);
+      return corsJsonError(401, API_ERROR_CODES.UNAUTHORIZED, 'Authorization required', origin);
     }
 
     const user = await getAuthenticatedUser(context, token);
 
     if (!user?.id) {
-      return json({ error: 'Invalid token' }, 401, origin);
+      return corsJsonError(401, API_ERROR_CODES.UNAUTHORIZED, 'Invalid token', origin);
     }
 
     const customerId = await fetchStripeCustomerIdForUser(user.id, context.env);
 
     if (!customerId) {
-      return json({
-        error: 'no_billing_customer',
-        message: 'Aktif abonelik veya ödeme geçmişi bulunamadı. Önce Pro planına abone olun.'
-      }, 404, origin);
+      return corsJsonError(
+        404,
+        API_ERROR_CODES.NOT_FOUND,
+        'Aktif abonelik veya ödeme geçmişi bulunamadı. Önce Pro planına abone olun.',
+        origin,
+        { code: 'no_billing_customer' }
+      );
     }
 
     const returnUrl = `${getSiteUrl(context)}/profil?billing=managed`;
@@ -124,10 +113,15 @@ export async function onRequestPost(context) {
           stripe_error: data?.error?.type || 'stripe_error'
         }
       });
-      return json({ error: 'Billing portal could not be created' }, 502, origin);
+      return corsJsonError(
+        502,
+        API_ERROR_CODES.UPSTREAM_ERROR,
+        'Billing portal could not be created',
+        origin
+      );
     }
 
-    return json({ url: data.url }, 200, origin);
+    return corsJson({ ok: true, url: data.url }, 200, origin);
   } catch (err) {
     console.error('create-billing-portal error:', err);
     const supabase = getSupabaseAdmin(context.env);
@@ -138,13 +132,13 @@ export async function onRequestPost(context) {
       source: 'create_billing_portal',
       properties: { message: err.message || 'internal_error' }
     });
-    return json({ error: 'Internal server error' }, 500, origin);
+    return corsJsonError(500, API_ERROR_CODES.INTERNAL_ERROR, 'Internal server error', origin);
   }
 }
 
 export async function onRequestOptions(context) {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders(context.request.headers.get('Origin'))
+    headers: buildCorsJsonHeaders(context.request.headers.get('Origin'))
   });
 }

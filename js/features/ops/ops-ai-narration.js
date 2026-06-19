@@ -1,6 +1,7 @@
 /**
  * P15 — Bounded LLM narration for ops decision brief (admin only).
  */
+import { postAiProxy } from '../../core/ai-proxy-client.js';
 import { buildSanitizedOpsBriefForAi } from './ops-decision-assistant.js';
 
 const OPS_AI_BUDGET_KEY = 'istebul_ops_ai_narration_budget';
@@ -52,19 +53,24 @@ JSON:
 ${payload}`;
 
   try {
-    const res = await fetch('/ai-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
+    const proxy = await postAiProxy({ prompt });
+
+    if (!proxy.ok) {
+      if (proxy.status === 0) {
+        return {
+          ok: false,
+          error: 'network',
+          message: proxy.error || 'Bağlantı hatası'
+        };
+      }
       return {
         ok: false,
-        error: data.error || `http_${res.status}`,
+        error: proxy.data?.error || proxy.error || `http_${proxy.status}`,
         message: 'AI özeti alınamadı — deterministik öneriler geçerli.'
       };
     }
+
+    const data = proxy.data;
     const text = String(data.result || data.text || data.content || data.message || '').trim();
     if (!text) {
       return { ok: false, error: 'empty_response', message: 'Boş AI yanıtı.' };

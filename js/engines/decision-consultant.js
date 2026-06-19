@@ -215,6 +215,11 @@ export function scoreVehicleMatch(vehicle, form, options = {}) {
     pushFactor(breakdown, 'USAGE_FIT', 'Uzun yol', delta, delta > 8);
     score += delta;
   }
+  if (usage === 'business' || usage === 'prestige') {
+    const delta = Math.round((vehicle.prestige || vehicle.long || 0) * 1.6);
+    pushFactor(breakdown, 'USAGE_FIT', 'Konfor / prestij', delta, delta > 8);
+    score += delta;
+  }
 
   const resaleDelta = Math.round((vehicle.resale || 0) * 1.4);
   pushFactor(breakdown, 'RESALE', `Likidite ${vehicle.resale || 0}/10`, resaleDelta, resaleDelta > 6);

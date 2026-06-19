@@ -29,6 +29,7 @@
 ## Generate / export
 
 ```bash
+npm run investor:export:pdf                    # PDF + HTML slayt paketi → docs/investor/export/
 node scripts/generate-financial-model-csv.cjs   # 36-month CSV model
 npm run metrics:investor:pack                  # Live diligence JSON
 npm run metrics:investor                         # KPI snapshot only

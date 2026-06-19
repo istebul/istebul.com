@@ -12,6 +12,7 @@ export const ANALYTICS_CATEGORIES = new Set([
   "revenue",
   "growth",
   "lifecycle",
+  "compliance",
 ]);
 
 export const ALLOWED_ANALYTICS_EVENTS = new Set([
@@ -19,6 +20,7 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "page_view",
   "page_exit",
   "route_change",
+  "manual_test",
   // CTA
   "cta_click",
   // Auth
@@ -71,6 +73,11 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "auto_whatsapp_lead_intent",
   "auto_finance_click",
   "auto_insurance_click",
+  "insurance_page_view",
+  "insurance_analysis_started",
+  "insurance_results_view",
+  "insurance_interest",
+  "insurance_pdf_download",
   "auto_vehicle_offer_click",
   "auto_premium_report_click",
   "auto_premium_paywall_view",
@@ -128,6 +135,17 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "upsell_view",
   "upsell_click",
   "upsell_conversion",
+  // Site-wide measurement (homepage + verticals)
+  "homepage_view",
+  "category_card_click",
+  "category_page_view",
+  "analysis_started",
+  "analysis_completed",
+  "results_viewed",
+  "lead_form_opened",
+  "lead_submitted",
+  "pdf_downloaded",
+  "cta_clicked",
   // Canonical growth funnel (P1.5)
   "landing_visit",
   "hero_cta_click",
@@ -182,6 +200,7 @@ export const ALLOWED_ANALYTICS_EVENTS = new Set([
   "lifecycle_enroll_requested",
   "lifecycle_unsubscribe",
   "lifecycle_enroll_requested",
+  "user_account_deleted",
 ]);
 
 const AUTO_EVENT_NAMES = new Set(
@@ -192,6 +211,7 @@ export function eventCategoryFor(name: string, fallback?: string) {
   if (fallback && ANALYTICS_CATEGORIES.has(fallback)) return fallback;
   if (name.startsWith("auto_")) return "auto";
   if (name.startsWith("finance_")) return "finance";
+  if (name.startsWith("insurance_")) return "decision";
   if (name.startsWith("auth_")) return "auth";
   if (name.startsWith("partner_")) return "partner";
   if (
@@ -211,6 +231,16 @@ export function eventCategoryFor(name: string, fallback?: string) {
     name.startsWith("growth_") ||
     name.startsWith("referral_") ||
     name === "newsletter_subscribe" ||
+    name === "homepage_view" ||
+    name === "category_card_click" ||
+    name === "category_page_view" ||
+    name === "analysis_started" ||
+    name === "analysis_completed" ||
+    name === "results_viewed" ||
+    name === "lead_form_opened" ||
+    name === "lead_submitted" ||
+    name === "pdf_downloaded" ||
+    name === "cta_clicked" ||
     name === "landing_visit" ||
     name === "hero_cta_click" ||
     name === "auto_start" ||
@@ -225,6 +255,7 @@ export function eventCategoryFor(name: string, fallback?: string) {
     return "growth";
   }
   if (name.startsWith("lifecycle_")) return "lifecycle";
+  if (name.startsWith("user_account_")) return "compliance";
   if (name.startsWith("page_") || name === "route_change") return "page";
   if (name.startsWith("cta_")) return "cta";
   if (
@@ -267,6 +298,17 @@ export type PlatformEventInput = {
   attribution?: Record<string, unknown>;
   source?: string;
   idempotency_key?: string | null;
+  is_internal?: boolean;
+  internal_reason?: string | null;
+  traffic_type?: string | null;
+  ip_hash?: string | null;
+  device_hash?: string | null;
+  user_agent_hash?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  referrer?: string | null;
+  landing_page?: string | null;
 };
 
 function clampString(value: unknown, max = 120) {
@@ -350,6 +392,23 @@ export async function recordPlatformEvent(
   }
 
   const category = eventCategoryFor(eventName, input.event_category);
+  const properties = {
+    ...clampProperties(input.properties),
+    is_internal: input.is_internal === true,
+    internal_reason: input.internal_reason
+      ? clampString(input.internal_reason, 40)
+      : null,
+    traffic_type: input.traffic_type
+      ? clampString(input.traffic_type, 20)
+      : "unknown",
+    utm_source: input.utm_source ? clampString(input.utm_source, 120) : null,
+    utm_medium: input.utm_medium ? clampString(input.utm_medium, 120) : null,
+    utm_campaign: input.utm_campaign ? clampString(input.utm_campaign, 120) : null,
+    referrer: input.referrer ? clampString(input.referrer, 500) : null,
+    landing_page: input.landing_page ? clampString(input.landing_page, 200) : null,
+    session_id: input.session_id ? clampString(input.session_id, 64) : null,
+  };
+
   const row = {
     event_name: eventName,
     event_category: category,
@@ -370,21 +429,40 @@ export async function recordPlatformEvent(
     phone: input.phone ? clampString(input.phone, 20) : null,
     revenue_cents: Math.max(0, Math.min(Number(input.revenue_cents || 0), 100000000)),
     currency: clampString(input.currency || "TRY", 8),
-    properties: clampProperties(input.properties),
+    properties,
     attribution: clampProperties(input.attribution),
     source: clampString(input.source || "web", 32),
     idempotency_key: input.idempotency_key
       ? clampString(input.idempotency_key, 120)
       : null,
+    is_internal: input.is_internal === true,
+    internal_reason: input.internal_reason
+      ? clampString(input.internal_reason, 40)
+      : null,
+    traffic_type: clampString(input.traffic_type || "unknown", 20),
+    ip_hash: input.ip_hash ? clampString(input.ip_hash, 128) : null,
+    device_hash: input.device_hash ? clampString(input.device_hash, 128) : null,
+    user_agent_hash: input.user_agent_hash
+      ? clampString(input.user_agent_hash, 128)
+      : null,
+    utm_source: input.utm_source ? clampString(input.utm_source, 120) : null,
+    utm_medium: input.utm_medium ? clampString(input.utm_medium, 120) : null,
+    utm_campaign: input.utm_campaign ? clampString(input.utm_campaign, 120) : null,
+    referrer: input.referrer ? clampString(input.referrer, 500) : null,
+    landing_page: input.landing_page ? clampString(input.landing_page, 200) : null,
   };
 
   const { error } = await adminClient.from("analytics_events").insert(row);
   if (error) {
     if (error.code === "23505") return { ok: true, duplicate: true };
-    throw error;
+    const message =
+      typeof error.message === "string" && error.message
+        ? error.message
+        : "analytics_events_insert_failed";
+    throw new Error(message);
   }
 
-  if (isAutoLegacyEvent(eventName)) {
+  if (isAutoLegacyEvent(eventName) && !row.is_internal) {
     await adminClient.from("auto_events").insert({
       event_name: eventName,
       email: row.email,

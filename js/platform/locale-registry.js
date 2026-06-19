@@ -63,6 +63,61 @@ export const LOCALE_DEFINITIONS = Object.freeze({
     ogLocale: 'ar_SA',
     hreflang: 'ar',
     default: false
+  },
+  it: {
+    id: 'it',
+    bcp47: 'it-IT',
+    label: 'Italiano',
+    pathPrefix: '/it',
+    dir: 'ltr',
+    currency: 'EUR',
+    ogLocale: 'it_IT',
+    hreflang: 'it',
+    default: false
+  },
+  fr: {
+    id: 'fr',
+    bcp47: 'fr-FR',
+    label: 'Français',
+    pathPrefix: '/fr',
+    dir: 'ltr',
+    currency: 'EUR',
+    ogLocale: 'fr_FR',
+    hreflang: 'fr',
+    default: false
+  },
+  es: {
+    id: 'es',
+    bcp47: 'es-ES',
+    label: 'Español',
+    pathPrefix: '/es',
+    dir: 'ltr',
+    currency: 'EUR',
+    ogLocale: 'es_ES',
+    hreflang: 'es',
+    default: false
+  },
+  ja: {
+    id: 'ja',
+    bcp47: 'ja-JP',
+    label: '日本語',
+    pathPrefix: '/ja',
+    dir: 'ltr',
+    currency: 'JPY',
+    ogLocale: 'ja_JP',
+    hreflang: 'ja',
+    default: false
+  },
+  zh: {
+    id: 'zh',
+    bcp47: 'zh-CN',
+    label: '中文',
+    pathPrefix: '/zh',
+    dir: 'ltr',
+    currency: 'CNY',
+    ogLocale: 'zh_CN',
+    hreflang: 'zh',
+    default: false
   }
 });
 
@@ -106,8 +161,13 @@ export function resolveLocale({
 
   if (stored && LOCALE_DEFINITIONS[stored]) return stored;
 
-  const header = String(acceptLanguage || '').split(',')[0]?.trim().slice(0, 2).toLowerCase();
-  if (header && LOCALE_DEFINITIONS[header]) return header;
+  const headerTag = String(acceptLanguage || '').split(',')[0]?.trim().toLowerCase();
+  if (headerTag) {
+    if (headerTag.startsWith('zh')) return 'zh';
+    if (headerTag.startsWith('ja')) return 'ja';
+    const short = headerTag.slice(0, 2);
+    if (LOCALE_DEFINITIONS[short]) return short;
+  }
 
   return DEFAULT_LOCALE;
 }

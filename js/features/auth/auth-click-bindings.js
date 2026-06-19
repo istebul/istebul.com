@@ -8,6 +8,7 @@ const LOGIN_SELECTORS = [
     '#profile-login-btn',
     '[data-history-login]',
     '[data-mobile-login]',
+    '[data-mobile-header-login]',
     '#account-login-btn',
     '#switch-to-login'
 ].join(', ');
@@ -21,11 +22,25 @@ const REGISTER_SELECTORS = [
     '#switch-to-register'
 ].join(', ');
 
+function authReturnPath() {
+    if (typeof window === 'undefined') return '/';
+    const path = `${window.location.pathname || '/'}${window.location.search || ''}`;
+    return path.startsWith('/') ? path : '/';
+}
+
+function redirectToAuth(mode) {
+    const ret = encodeURIComponent(authReturnPath());
+    const target = mode === 'register' ? `/kayit?return=${ret}` : `/giris?return=${ret}`;
+    window.location.assign(target);
+    return true;
+}
+
 function openAuth(mode) {
     const auth = window.app?.auth;
-    if (!auth) {
-        console.warn('[auth] App not ready — retry after init');
-        return false;
+    const hasModal = Boolean(document.getElementById('auth-modal'));
+
+    if (!hasModal || !auth) {
+        return redirectToAuth(mode);
     }
 
     if (mode === 'register') {
@@ -39,8 +54,6 @@ function openAuth(mode) {
 }
 
 function handleAuthClick(event) {
-    if (!document.getElementById('auth-modal')) return;
-
     const registerTrigger = event.target.closest(REGISTER_SELECTORS);
     if (registerTrigger) {
         event.preventDefault();

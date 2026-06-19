@@ -38,6 +38,8 @@ test('buildExplanationBundle includes structured sections', () => {
   assert.ok(bundle.reasoning.length >= 4);
   assert.equal(bundle.financial.rows.length, 2);
   assert.equal(bundle.rationales.length, 2);
+  assert.ok(bundle.expertCommentary?.facts);
+  assert.ok(bundle.expertCommentary?.interpretation);
   assert.ok(bundle.uncertainty.bullets.length >= 2);
 });
 
@@ -54,6 +56,15 @@ test('renderAiExplanationExperience uses decision assistant framing', () => {
   assert.match(html, /Tahmin makinesi değil/);
   assert.match(html, /Yapılandırılmış akıl yürütme/);
   assert.match(html, /data-ai-synthesis/);
+  assert.match(html, /data-ai-commentary-mount|data-ai-commentary-root/);
+});
+
+test('renderAiExplanationExperience shows full panels for free users', () => {
+  const html = renderAiExplanationExperience(buildExplanationBundle(sampleResults, {}), { pro: false });
+  assert.doesNotMatch(html, /ib-ai-experience--locked/);
+  assert.match(html, /Finansal bağlam/);
+  assert.match(html, /Öneri gerekçeleri/);
+  assert.match(html, /data-ai-refine-upsell/);
 });
 
 test('sanitizeAiNarrative strips false certainty claims', () => {

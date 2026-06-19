@@ -252,6 +252,7 @@ Haftalık: `metrics:investor:pack` + `metrics:exit:optionality`
 
 ```bash
 npm run metrics:exit:optionality
+# → docs/exit-optionality-report.md + dist/exit-optionality-snapshot.json
 npm run metrics:investor:pack
 node scripts/p11-exit-optionality-audit.cjs
 ```

@@ -9,7 +9,7 @@ import { SCALE_LIMITS } from '../../js/core/scale-limits.js';
 
 describe('unit-economics', () => {
   it('SCALE_LIMITS aligns with infra guardrails', () => {
-    assert.equal(SCALE_LIMITS.aiProxy.maxOutputTokens, 400);
+    assert.equal(SCALE_LIMITS.aiProxy.maxOutputTokens, 800);
     assert.equal(SCALE_LIMITS.analytics.maxQueue, 40);
     assert.equal(SCALE_LIMITS.analytics.flushDebounceMs, 1500);
   });

@@ -1,15 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import { recordPlatformEvent } from "../_shared/platform-analytics.ts";
+import { resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 function corsHeaders(origin: string | null) {
-  const allowed = new Set([
-    "https://istebul.com",
-    "https://www.istebul.com",
-    "http://localhost:3000",
-    "http://localhost:5173"
-  ]);
-
-  const allowOrigin = origin && allowed.has(origin) ? origin : "https://www.istebul.com";
+  const allowOrigin = resolveCorsOrigin(origin, "https://www.istebul.com", {
+    allowLocalDev: true,
+  });
 
   return {
     "Access-Control-Allow-Origin": allowOrigin,

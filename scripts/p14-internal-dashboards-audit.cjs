@@ -56,5 +56,32 @@ if (!pkg.scripts.test?.includes('p14-internal-dashboards-audit')) {
   fail('package.json test must include p14-internal-dashboards-audit');
 }
 
+/** Faz 4A-1b-3B — internal dashboard operasyon/analitik CTA ↔ nav labels */
+const viewsSrc = fs.readFileSync(
+  path.join(root, 'js/features/dashboards/internal-dashboard-views.js'),
+  'utf8'
+);
+for (const label of [
+  'Yatırımcı KPI',
+  'Operasyon Komuta Merkezi',
+  'Platform analitik',
+  'Auto analitik'
+]) {
+  if (!viewsSrc.includes(`>${label}</button>`)) {
+    fail(`internal-dashboard-views must use canonical CTA label: ${label}`);
+  }
+}
+for (const legacy of [
+  'Executive KPIs (detail)',
+  'Executive KPIs',
+  'Ops Command Center',
+  'Platform Analytics',
+  'Auto Analytics'
+]) {
+  if (viewsSrc.includes(legacy)) {
+    fail(`internal-dashboard-views must not use legacy CTA label: ${legacy}`);
+  }
+}
+
 if (failed) process.exit(1);
 console.log('P14 internal dashboards audit OK');

@@ -1,0 +1,107 @@
+/**
+ * Category hero photography — auto, konut, finans, kasko (sigorta/tatil pattern).
+ */
+
+/* —— Konut —— */
+body.housing-page .housing-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(36px, 5vw, 52px) 0;
+  min-height: clamp(380px, 34vw, 520px);
+  display: flex;
+  align-items: center;
+}
+
+body.housing-page .housing-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+body.housing-page .housing-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 55% 40%;
+}
+
+body.housing-page .housing-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(100deg, rgba(5, 10, 24, 0.88) 0%, rgba(8, 16, 38, 0.55) 42%, rgba(8, 16, 38, 0.25) 58%),
+    linear-gradient(0deg, rgba(5, 10, 24, 0.55) 0%, transparent 48%);
+}
+
+body.housing-page .housing-hero-grid {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  body.housing-page .housing-hero-media img {
+    object-position: 60% center;
+  }
+
+  body.housing-page .housing-hero-overlay {
+    background:
+      linear-gradient(180deg, rgba(5, 10, 24, 0.92) 0%, rgba(8, 16, 38, 0.7) 50%, rgba(8, 16, 38, 0.4) 100%);
+  }
+}
+
+/* —— Finans —— */
+body.finans-page .finans-hero .vacation-hero-media img {
+  object-fit: cover;
+  object-position: 62% 38%;
+}
+
+body.finans-page .finans-hero-overlay {
+  background:
+    linear-gradient(105deg, rgba(5, 10, 24, 0.78) 0%, rgba(5, 10, 24, 0.35) 45%, rgba(5, 10, 24, 0.12) 62%),
+    linear-gradient(0deg, rgba(5, 10, 24, 0.45) 0%, transparent 50%);
+}
+
+@media (max-width: 768px) {
+  body.finans-page .finans-hero .vacation-hero-media img {
+    object-position: 65% center;
+  }
+
+  body.finans-page .finans-hero-overlay {
+    background:
+      linear-gradient(180deg, rgba(5, 10, 24, 0.9) 0%, rgba(5, 10, 24, 0.55) 48%, rgba(6, 16, 24, 0.35) 100%);
+  }
+}
+
+/* —— Kasko —— */
+body.kasko-page .vacation-hero {
+  background: #0f172a;
+}
+
+body.kasko-page .vacation-hero-media img {
+  object-fit: cover;
+  object-position: 55% 42%;
+}
+
+body.kasko-page .vacation-hero-overlay {
+  background:
+    linear-gradient(100deg, rgba(8, 18, 36, 0.82) 0%, rgba(12, 40, 80, 0.45) 42%, rgba(15, 23, 42, 0.2) 58%),
+    linear-gradient(0deg, rgba(8, 18, 36, 0.5) 0%, transparent 48%);
+}
+
+@media (max-width: 768px) {
+  body.kasko-page .vacation-hero-media img {
+    object-position: 65% center;
+  }
+
+  body.kasko-page .vacation-hero-overlay {
+    background:
+      linear-gradient(180deg, rgba(8, 18, 36, 0.88) 0%, rgba(8, 18, 36, 0.55) 45%, rgba(15, 23, 42, 0.35) 100%);
+  }
+}
+
+/* —— Auto hero dashboard: see auto-hero-dashboard-v1.css —— */

@@ -2,14 +2,29 @@
 const browserEnv = typeof window !== 'undefined' ? window.__env || window.env || {} : {};
 const nodeEnv = typeof process !== 'undefined' && process.env ? process.env : {};
 
-// Validate required environment variables
+const ENV_ALIASES = {
+    SUPABASE_URL: ['SUPABASE_URL', 'VITE_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL'],
+    SUPABASE_ANON_KEY: [
+        'SUPABASE_ANON_KEY',
+        'VITE_SUPABASE_ANON_KEY',
+        'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+    ]
+};
+
 const getRequiredEnv = (key, isBrowser = false) => {
-    const source = isBrowser ? browserEnv : nodeEnv;
-    const value = source[key] || nodeEnv[key];
-    if (!value && typeof window !== 'undefined') {
-        console.warn(`⚠️ Missing environment variable: ${key}. App may not function properly.`);
+    const aliases = ENV_ALIASES[key] || [key];
+    if (isBrowser) {
+        for (const alias of aliases) {
+            const value = browserEnv[alias];
+            if (value) return String(value);
+        }
+        return '';
     }
-    return value || '';
+    for (const alias of aliases) {
+        const value = nodeEnv[alias];
+        if (value) return String(value);
+    }
+    return '';
 };
 
 export const config = {
@@ -28,7 +43,7 @@ export const config = {
 
     // API endpoints
     api: {
-        baseUrl: '/.netlify/functions',
+        baseUrl: '/api',
         endpoints: {
             aiProxy: '/ai-proxy'
         }

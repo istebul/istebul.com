@@ -42,7 +42,7 @@ Domain alındı ve aktif; **otomatik deploy** için aşağıdaki zincirin tamam�
 | Secret adı | Değer |
 |------------|--------|
 | `SUPABASE_ACCESS_TOKEN` | [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) |
-| `SUPABASE_DB_PASSWORD` | Supabase → Database → database password |
+| `SUPABASE_DB_PASSWORD` | (Opsiyonel) Database password — `SUPABASE_ACCESS_TOKEN` ile `db push` genelde yeterli |
 
 ### Adım 3 — Cloudflare Pages proje ayarı (10 dk)
 
@@ -67,8 +67,26 @@ Domain alındı ve aktif; **otomatik deploy** için aşağıdaki zincirin tamam�
 | `LOGROCKET_APP_ID` | (opsiyonel) |
 
 5. **Settings → Functions** — Pages Functions için runtime secrets (checkout, AI, partner):  
-   `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_*`, `GROQ_API_KEY`, `TURNSTILE_SECRET`, `SITE_URL=https://www.istebul.com`  
+   `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_*`, `TURNSTILE_SECRET`, `SITE_URL=https://www.istebul.com`, `PARTNER_*`
    (Bunlar Dashboard’da; GitHub secret değil.)
+
+   **AI provider (`/ai-proxy`)** — canonical: [`docs/AI_PROVIDER.md`](AI_PROVIDER.md)
+
+   | Ortam | Değişkenler | Not |
+   |-------|-------------|-----|
+   | Production (default) | `GROQ_API_KEY` (+ opsiyonel `AI_PROVIDER=groq` veya unset) | Mevcut production default Groq. |
+   | Preview (OpenAI test) | `OPENAI_API_KEY` → sonra `AI_PROVIDER=openai` | Önce Preview’da manuel smoke; production’a geçmeden önce. |
+   | Production (OpenAI) | `GROQ_API_KEY` korunur → `OPENAI_API_KEY` → opsiyonel `OPENAI_MODEL` → **en son** `AI_PROVIDER=openai` | Provider fallback yok. |
+
+   **Preview smoke (OpenAI test öncesi zorunlu):**
+
+   1. Preview ortamına `OPENAI_API_KEY` ekle (encrypted).
+   2. Yalnızca Preview’da `AI_PROVIDER=openai` set et.
+   3. `/ai-proxy` curl smoke + `/auto/` AI commentary + `structured_commentary` akışını doğrula.
+
+   **Rollback:** Production’da `AI_PROVIDER` unset veya `groq`; `GROQ_API_KEY` korunmalı; kod rollback gerekmez.
+
+   **Production OpenAI activation is NO-GO** until deployment checklist, subprocessor/compliance docs, and Preview smoke are complete.
 
 ### Adım 4 — DNS kontrolü (domain aktifse genelde hazır)
 

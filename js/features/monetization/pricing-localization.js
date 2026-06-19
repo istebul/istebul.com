@@ -8,8 +8,8 @@ import { getLocaleDefinition } from '../../platform/locale-registry.js';
 export const LOCALIZED_PRO_PRICING = Object.freeze({
   tr: {
     currency: 'TRY',
-    monthly: { amount: 299, display: '₺299' },
-    annual: { amount: 2870, display: '₺2.870', monthlyEquivalent: '₺239 / ay' }
+    monthly: { amount: 199, display: 'Erken erişim' },
+    annual: { amount: 1990, display: 'Pilot erişim', monthlyEquivalent: 'Aktivasyon sonrası' }
   },
   en: {
     currency: 'USD',

@@ -62,7 +62,7 @@
     { "npm": "metrics:competitor:attack", "script": "scripts/competitor-attack-snapshot.cjs", "output": "dist/competitor-attack-snapshot.json" },
     { "npm": "metrics:expansion:prioritization", "script": "scripts/expansion-roadmap-prioritization-snapshot.cjs", "output": "dist/expansion-roadmap-prioritization-snapshot.json" },
     { "npm": "metrics:partnerships:roadmap", "script": "scripts/strategic-partnership-snapshot.cjs", "output": "dist/strategic-partnership-snapshot.json" },
-    { "npm": "metrics:exit:optionality", "script": "scripts/acquisition-exit-snapshot.cjs", "output": "dist/acquisition-exit-snapshot.json" },
+    { "npm": "metrics:exit:optionality", "script": "scripts/acquisition-exit-snapshot.cjs", "output": "dist/exit-optionality-snapshot.json" },
     { "npm": "ops:automation:run", "script": "scripts/ops-automation-run.cjs", "output": "dist/ops-automation-report.json" },
     { "npm": "metrics:partner:ops", "script": "scripts/partner-ops-snapshot.cjs", "output": "dist/partner-ops-snapshot.json" },
     { "npm": "partner:ops:run", "script": "scripts/partner-ops-automation-run.cjs", "output": "dist/partner-ops-automation-report.json" },

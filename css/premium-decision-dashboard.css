@@ -1,0 +1,207 @@
+/**
+ * Unified premium decision dashboard — Konut, Tatil, Finans (+ shared vertical UX)
+ */
+
+.ib-premium-dashboard {
+  --ib-dash-navy: #111827;
+  --ib-dash-blue: #2563eb;
+  --ib-dash-line: #e5e7eb;
+  --ib-dash-surface: #ffffff;
+  margin: 0 0 1.5rem;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border-radius: 24px;
+  border: 1px solid var(--ib-dash-line);
+  background: var(--ib-dash-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+body.finans-page .ib-premium-dashboard,
+body.vacation-page .ib-premium-dashboard,
+body.housing-page .ib-premium-dashboard {
+  --ib-dash-surface: #ffffff;
+  color: #111827;
+}
+
+.ib-premium-dashboard__kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.ib-premium-dashboard__title {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.8vw, 1.65rem);
+  line-height: 1.2;
+  color: var(--ib-dash-navy);
+}
+
+body.finans-page .ib-premium-dashboard__title,
+body.vacation-page .ib-premium-dashboard__title,
+body.housing-page .ib-premium-dashboard__title {
+  color: var(--ib-dash-navy);
+}
+
+.ib-premium-dashboard__band {
+  margin: 0.5rem 0 0;
+  font-size: 0.92rem;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.ib-premium-dashboard__kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.ib-premium-dashboard__kpis--extra {
+  margin-top: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.ib-premium-kpi {
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--ib-dash-line);
+  background: rgba(248, 250, 252, 0.9);
+}
+
+body.finans-page .ib-premium-kpi,
+body.vacation-page .ib-premium-kpi,
+body.housing-page .ib-premium-kpi {
+  background: #fafaf8;
+}
+
+.ib-premium-kpi span {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 0.35rem;
+}
+
+.ib-premium-kpi strong {
+  display: block;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  color: var(--ib-dash-navy);
+}
+
+body.finans-page .ib-premium-kpi strong,
+body.vacation-page .ib-premium-kpi strong,
+body.housing-page .ib-premium-kpi strong {
+  color: var(--ib-dash-navy);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.ib-premium-kpi strong small {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.ib-premium-kpi small {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.ib-premium-kpi--score strong {
+  color: #2563eb;
+}
+
+.ib-premium-dashboard__dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.ib-premium-block {
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid var(--ib-dash-line);
+  background: rgba(248, 250, 252, 0.65);
+}
+
+body.finans-page .ib-premium-block,
+body.vacation-page .ib-premium-block,
+body.housing-page .ib-premium-block {
+  background: #f8fafc;
+  border-color: var(--ib-dash-line);
+}
+
+body.housing-page .ib-premium-block h3 {
+  color: var(--ib-dash-navy);
+}
+
+.ib-premium-block h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  color: var(--ib-dash-navy);
+}
+
+body.housing-page .ib-premium-block--next p {
+  margin: 0;
+  line-height: 1.55;
+  color: #334155;
+}
+
+.ib-premium-block ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #475569;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+body.finans-page .ib-premium-block ul,
+body.vacation-page .ib-premium-block ul,
+body.housing-page .ib-premium-block ul {
+  color: #475569;
+}
+
+.ib-premium-block--ai,
+.ib-premium-block--next {
+  margin-top: 0.85rem;
+}
+
+.ib-premium-ai-lead {
+  margin: 0;
+  line-height: 1.55;
+  color: #334155;
+}
+
+body.finans-page .ib-premium-ai-lead,
+body.vacation-page .ib-premium-ai-lead,
+body.housing-page .ib-premium-ai-lead {
+  color: #334155;
+}
+
+body.housing-page .ib-premium-ai-bullets {
+  color: #475569;
+}
+
+body.housing-page .ib-premium-dashboard__kicker {
+  color: #64748b;
+}
+
+.ib-premium-ai-bullets {
+  margin: 0.65rem 0 0;
+  padding-left: 1.1rem;
+  color: #475569;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 720px) {
+  .ib-premium-dashboard__kpis,
+  .ib-premium-dashboard__dual {
+    grid-template-columns: 1fr;
+  }
+}

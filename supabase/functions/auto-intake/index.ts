@@ -17,6 +17,7 @@ import {
   priorityFromScore,
 } from "../_shared/scoring-intelligence.ts";
 import { recordOutcomeSignal } from "../_shared/outcome-capture.ts";
+import { isAllowedOrigin, resolveCorsOrigin } from "../_shared/cors-origins.ts";
 
 async function logOps(
   adminClient: ReturnType<typeof createClient>,
@@ -41,16 +42,8 @@ async function logOps(
   }
 }
 
-const allowedOrigins = [
-  "https://istebul.com",
-  "https://www.istebul.com",
-  "https://istebul-com.pages.dev"
-];
-
 function corsHeaders(origin: string | null) {
-  const allowedOrigin = allowedOrigins.includes(origin || "")
-    ? origin
-    : "https://www.istebul.com";
+  const allowedOrigin = resolveCorsOrigin(origin);
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
@@ -93,7 +86,19 @@ const ALLOWED_EVENTS = new Set([
   "auto_insurance_click",
   "auto_vehicle_offer_click",
   "auto_premium_report_click",
-  "auto_premium_paywall_view"
+  "auto_premium_paywall_view",
+  "auto_comparison_opened",
+  "auto_explanation_expanded",
+  "auto_financing_cta_clicked",
+  "auto_insurance_cta_clicked",
+  "auto_advisor_cta_clicked",
+  "auto_dealer_cta_clicked",
+  "ai_commentary_requested",
+  "ai_commentary_success",
+  "ai_commentary_failed",
+  "ai_commentary_fallback_shown",
+  "ai_commentary_expanded",
+  "ai_next_action_clicked"
 ]);
 
 function clampString(value: unknown, max = 64) {
@@ -119,6 +124,9 @@ function calculateLeadScore(form: Record<string, unknown>) {
   else if (interest === "premium_report") score += 75;
   else if (interest === "finance" || interest === "finance_review") score += 65;
   else if (interest === "insurance") score += 55;
+  else if (interest === "insurance_quote") score += 58;
+  else if (interest === "insurance_review") score += 52;
+  else if (interest === "insurance_consultation") score += 48;
 
   if (budget >= 2000000) score += 35;
   else if (budget >= 1000000) score += 20;
@@ -183,8 +191,15 @@ function getPartnerRoute(form: Record<string, unknown>) {
   const interest = String(form.interest_type || "");
 
   if (interest === "finance" || interest === "finance_review") return "finance_partner";
-  if (interest === "insurance") return "insurance_partner";
-  if (interest === "vehicle_offer") return "dealer_partner";
+  if (
+    interest === "insurance" ||
+    interest === "insurance_quote" ||
+    interest === "insurance_review" ||
+    interest === "insurance_consultation"
+  ) {
+    return "insurance_partner";
+  }
+  if (interest === "vehicle_offer" || interest === "dealer_match") return "dealer_partner";
   if (interest === "premium_report") return "premium_report";
 
   return "general_sales";
@@ -323,18 +338,14 @@ async function checkRateLimit(adminClient: any, key: string, limit: number, wind
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
-  const allowedOrigins = new Set([
-    "https://www.istebul.com",
-    "https://istebul.com"
-  ]);
-  const isAllowedOrigin = !origin || allowedOrigins.has(origin);
+  const isAllowedRequestOrigin = !origin || isAllowedOrigin(origin);
 
   if (req.method === "OPTIONS") {
-    if (!isAllowedOrigin) return new Response(null, { status: 403 });
+    if (!isAllowedRequestOrigin) return new Response(null, { status: 403 });
     return new Response("ok", { headers: corsHeaders(origin) });
   }
 
-  if (!isAllowedOrigin) {
+  if (!isAllowedRequestOrigin) {
     return json({ error: "Forbidden origin" }, 403, "https://www.istebul.com");
   }
 
@@ -541,10 +552,19 @@ Deno.serve(async (req) => {
       utm_campaign: clampString(growthMeta.utm_campaign || growthMeta.growth_campaign, 120) || null,
     };
 
+    const qualNotes = [
+      form.purchase_timeline ? `Satın alma: ${clampString(form.purchase_timeline, 20)}` : "",
+      form.financing_intent ? `Finansman niyeti: ${clampString(form.financing_intent, 20)}` : "",
+      form.trade_in ? `Takas: ${clampString(form.trade_in, 10)}` : "",
+      form.urgency ? `Aciliyet: ${clampString(form.urgency, 12)}` : "",
+      form.contact_preference ? `İletişim: ${clampString(form.contact_preference, 20)}` : "",
+    ].filter(Boolean).join(" | ");
+
     const contextNotes = [
       form.city ? `Şehir: ${clampString(form.city, 60)}` : "",
       form.district ? `İlçe: ${clampString(form.district, 60)}` : "",
       form.privacy_consent === "accepted" ? "KVKK/partner paylaşım onayı: alındı" : "",
+      qualNotes,
     ].filter(Boolean).join(" | ");
 
     const financeNotes = [
@@ -593,6 +613,13 @@ Deno.serve(async (req) => {
       utm_source: growthAttribution.utm_source,
       utm_medium: growthAttribution.utm_medium,
       utm_campaign: growthAttribution.utm_campaign,
+      purchase_timeline: clampString(form.purchase_timeline, 20) || null,
+      financing_intent: clampString(form.financing_intent, 20) || null,
+      trade_in: clampString(form.trade_in, 10) || null,
+      urgency: clampString(form.urgency, 12) || null,
+      contact_preference: clampString(form.contact_preference, 20) || null,
+      ai_summary: clampString(form.ai_summary, 480) || null,
+      ai_confidence: clampString(form.ai_confidence, 24) || null,
     };
 
     const { data: inserted, error: insertError } = await adminClient

@@ -7,33 +7,40 @@ import {
     getActiveLocale
 } from '../platform/locale-registry.js';
 import {
+    blogSlugFromPath,
     resolveRouteSurface,
+    stripPathname,
     syncHtmlRouteSurface,
     syncRouteDocumentMeta,
     tryExternalRouteRedirect
 } from '../runtime/route-surface.js';
 import { pulseRouteSection } from '../runtime/perceived-performance.js';
+import { isFullPageNavigation, resolveFullPageNavigation } from '../runtime/full-page-navigation.js';
 
 /** Marketing sections on index.html (long-scroll landing). */
 export const HOMEPAGE_SECTION_IDS = Object.freeze([
     'home',
-    'trust',
-    'methodology-teaser',
+    'home-economic-indicators',
     'how-it-works',
-    'category-ownership',
+    'home-vertical-focus',
+    'home-features-strip',
     'pricing',
-    'categories'
+    'partner-enterprise',
+    'landing-faq',
+    'home-guides-strip'
 ]);
 
 /** Hash targets on the marketing page. */
 export const MARKETING_HASH_IDS = Object.freeze([
     'home',
-    'trust',
-    'methodology-teaser',
+    'home-economic-indicators',
+    'home-vertical-focus',
+    'home-features-strip',
     'how-it-works',
-    'category-ownership',
     'pricing',
-    'categories'
+    'partner-enterprise',
+    'landing-faq',
+    'home-guides-strip'
 ]);
 
 /** Legacy hash shortcuts on homepage (long-scroll). */
@@ -42,22 +49,33 @@ const MARKETING_PATH_ALIASES = Object.freeze({
     '/planlar-ozet': 'pricing'
 });
 
+/** Clears inline display overrides (e.g. showHomeSections uses !important). */
+function clearSectionDisplayOverride(section) {
+    section?.style?.removeProperty?.('display');
+}
+
 /** Premium full-page routes (dedicated sections). */
 export const PREMIUM_PAGE_ROUTES = Object.freeze({
     '/karar-analizi': 'page-karar-analizi',
     '/metodoloji': 'page-metodoloji',
-    '/planlar': 'page-planlar'
+    '/planlar': 'page-planlar',
+    '/duyurular': 'page-duyurular',
+    '/kampanyalar': 'page-kampanyalar',
+    '/blog': 'page-blog'
 });
 
 export class Router {
     constructor() {
         this.routes = [
             { path: '/', component: 'home' },
+            { path: '/secenekler', component: 'ilanlar' },
             { path: '/ilanlar', component: 'ilanlar' },
             { path: '/karsilastir', component: 'compare' },
             { path: '/karar-analizi', component: 'page-karar-analizi' },
-            { path: '/metodoloji', component: 'page-metodoloji' },
             { path: '/planlar', component: 'page-planlar' },
+            { path: '/duyurular', component: 'page-duyurular' },
+            { path: '/kampanyalar', component: 'page-kampanyalar' },
+            { path: '/blog', component: 'page-blog' },
             { path: '/karar-asistani', component: 'page-karar-analizi' },
             { path: '/favoriler', component: 'favoriler' },
             { path: '/gecmis', component: 'history' },
@@ -91,14 +109,52 @@ export class Router {
 
             const link = e.target.closest('a[href^="/"]');
             if (!link) return;
-            if (link.hasAttribute('data-native-route')) return;
+            if (link.hasAttribute('data-full-page')) return;
 
             const rawHref = link.getAttribute('href') || '/';
+            if (link.hasAttribute('data-native-route')) {
+                try {
+                    const path = stripPathname(new URL(rawHref, window.location.origin).pathname);
+                    const search = new URL(rawHref, window.location.origin).search || '';
+                    if (
+                        path === '/blog' ||
+                        path === '/duyurular' ||
+                        path === '/kampanyalar' ||
+                        blogSlugFromPath(path)
+                    ) {
+                        e.preventDefault();
+                        this.navigate(`${path}${search}`);
+                        return;
+                    }
+                } catch {
+                    /* full navigation for other native routes */
+                }
+                return;
+            }
             if (rawHref.startsWith('/#')) {
                 e.preventDefault();
                 const targetId = rawHref.slice(2).split('?')[0];
                 if (targetId && document.getElementById(targetId)) {
                     this.goToMarketingHash(targetId);
+                }
+                return;
+            }
+
+            if (isFullPageNavigation(rawHref)) {
+                const target = resolveFullPageNavigation(rawHref);
+                if (target) {
+                    const dest = new URL(target, window.location.origin);
+                    const source = new URL(rawHref, window.location.origin);
+                    dest.search = source.search;
+                    dest.hash = source.hash;
+                    if (
+                        dest.pathname !== window.location.pathname ||
+                        dest.search !== window.location.search ||
+                        dest.hash !== window.location.hash
+                    ) {
+                        window.location.assign(dest.href);
+                    }
+                    e.preventDefault();
                 }
                 return;
             }
@@ -112,21 +168,29 @@ export class Router {
      * Show full marketing landing sections (fixes blank body after SPA routes).
      */
     showHomeSections() {
-        document.body.classList.remove('app-route-active');
+        document.body.classList.remove('app-route-active', 'ib-premium-mounted');
 
         document.querySelectorAll('[data-private-section]').forEach((section) => {
             section.classList.remove('route-visible');
+            section.style.setProperty('display', 'none', 'important');
+            section.setAttribute('hidden', '');
+            section.setAttribute('aria-hidden', 'true');
+            section.classList.add('hidden');
         });
 
         document.querySelectorAll('section[id]').forEach((section) => {
             const isMarketing = HOMEPAGE_SECTION_IDS.includes(section.id);
-            if (isMarketing) {
+            if (isMarketing && !section.hasAttribute('data-landing-excluded')) {
                 section.classList.remove('hidden');
-                section.style.display = 'block';
+                section.removeAttribute('hidden');
+                section.removeAttribute('aria-hidden');
+                section.style.setProperty('display', 'block', 'important');
                 return;
             }
 
             section.style.display = 'none';
+            section.setAttribute('hidden', '');
+            section.setAttribute('aria-hidden', 'true');
             if (section.hasAttribute('data-private-section')) {
                 section.classList.add('hidden');
             }
@@ -154,12 +218,23 @@ export class Router {
     }
 
     navigate(path, { force = false } = {}) {
-        const hashPart = path.includes('#') ? path.slice(path.indexOf('#')) : '';
+        let targetUrl;
+        try {
+            targetUrl = new URL(path, window.location.origin);
+        } catch {
+            targetUrl = new URL('/', window.location.origin);
+        }
+
+        const hashPart = targetUrl.hash || '';
+        const searchPart = targetUrl.search || '';
         const normalized = this.normalizePath(path);
         const displayPath = buildLocalizedPath(normalized, getActiveLocale());
+        const nextUrl = `${displayPath}${searchPart}${hashPart}`;
+        const routeChanged = normalized !== this.currentRoute;
+        const queryChanged = searchPart !== window.location.search;
 
-        if (force || normalized !== this.currentRoute) {
-            window.history.pushState(null, '', displayPath + hashPart);
+        if (force || routeChanged || queryChanged) {
+            window.history.pushState(null, '', nextUrl);
             this.currentRoute = normalized;
             this.handleRoute();
             return;
@@ -199,15 +274,22 @@ export class Router {
         setActiveLocale(localeId);
         applyDocumentLocale(localeId);
         const path = stripped.replace(/\/$/, '') || '/';
+
+        const fullPageTarget = resolveFullPageNavigation(path);
+        if (fullPageTarget && fullPageTarget !== rawPath) {
+            window.location.replace(fullPageTarget);
+            return;
+        }
+
         this.currentRoute = path;
         syncHtmlRouteSurface(resolveRouteSurface(path), path);
 
-        const premiumPage = PREMIUM_PAGE_ROUTES[path];
-        if (premiumPage) {
-            this.showPremiumPage(premiumPage);
+        const surfaceId = resolveRouteSurface(path);
+        if (String(surfaceId).startsWith('page-')) {
+            this.showPremiumPage(surfaceId);
             this.updateNavLinks(path);
-            this.updateTitle(premiumPage);
-            this.dispatchRoute(premiumPage, {}, path);
+            this.updateTitle(surfaceId);
+            this.dispatchRoute(surfaceId, {}, path);
             return;
         }
 
@@ -312,7 +394,7 @@ export class Router {
             document.querySelector(`a[href="${activePath}"]`) ||
             document.querySelector(`a[href="${activePath}/"]`) ||
             (activePath.startsWith('/ilan/')
-                ? document.querySelector('a[href="/ilanlar/"]')
+                ? document.querySelector('a[href="/secenekler/"]')
                 : null);
 
         if (activeLink) {
@@ -323,14 +405,18 @@ export class Router {
     showPremiumPage(pageId) {
         document.body.classList.add('app-route-active', 'ib-premium-route-active');
 
-        document.querySelectorAll('[data-private-section]').forEach((section) => {
-            section.classList.remove('route-visible');
-        });
-
         document.querySelectorAll('section[id]').forEach((section) => {
-            section.style.display = 'none';
-            if (section.hasAttribute('data-private-section')) {
+            clearSectionDisplayOverride(section);
+            section.classList.remove('route-visible');
+            if (section.id === pageId) return;
+
+            if (
+                section.hasAttribute('data-private-section') ||
+                HOMEPAGE_SECTION_IDS.includes(section.id)
+            ) {
                 section.classList.add('hidden');
+                section.setAttribute('hidden', '');
+                section.setAttribute('aria-hidden', 'true');
             }
         });
 
@@ -341,14 +427,20 @@ export class Router {
         }
 
         target.classList.remove('hidden');
+        target.removeAttribute('hidden');
+        target.removeAttribute('aria-hidden');
         target.classList.add('route-visible');
-        target.style.display = 'block';
+        clearSectionDisplayOverride(target);
         pulseRouteSection(target);
         window.scrollTo({ top: 0, behavior: 'auto' });
+        document.body.classList.add('ib-premium-mounted');
+        import('../runtime/init-public-content.js')
+            .then((m) => m.refreshPublicContentSurface(pageId))
+            .catch(() => {});
     }
 
     showSection(routeId) {
-        document.body.classList.remove('ib-premium-route-active');
+        document.body.classList.remove('ib-premium-route-active', 'ib-premium-mounted');
 
         if (routeId === 'home') {
             this.showHomeSections();
@@ -364,10 +456,19 @@ export class Router {
 
         document.querySelectorAll('[data-private-section]').forEach((section) => {
             section.classList.remove('route-visible');
+            section.style.setProperty('display', 'none', 'important');
+        });
+
+        HOMEPAGE_SECTION_IDS.forEach((sectionId) => {
+            const marketingSection = document.getElementById(sectionId);
+            if (!marketingSection) return;
+            marketingSection.style.setProperty('display', 'none', 'important');
+            marketingSection.setAttribute('hidden', '');
+            marketingSection.setAttribute('aria-hidden', 'true');
         });
 
         document.querySelectorAll('section[id]').forEach((section) => {
-            section.style.display = 'none';
+            section.style.setProperty('display', 'none', 'important');
         });
 
         if (routeId === 'auth-login' || routeId === 'auth-register') {
@@ -382,13 +483,16 @@ export class Router {
         const targetSection = document.getElementById(routeId);
         if (targetSection) {
             targetSection.classList.remove('hidden');
+            targetSection.removeAttribute('hidden');
+            targetSection.removeAttribute('aria-hidden');
 
             if (targetSection.hasAttribute('data-private-section')) {
                 targetSection.classList.add('route-visible');
             }
 
-            targetSection.style.display = 'block';
+            targetSection.style.setProperty('display', 'block', 'important');
             pulseRouteSection(targetSection);
+            window.scrollTo({ top: 0, behavior: 'auto' });
             return;
         }
 

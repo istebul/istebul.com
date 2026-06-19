@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="tr" class="ib-ds-v4 ib-premium-v7">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/istebul-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
+  <title>Tatil Karar Asistanı | isteBul — Bütçe ve tercihlere göre tatil analizi</title>
+  <meta name="description" content="Bütçe, konfor, tarih ve beklentilere göre en doğru tatil kararını yapay zekâ desteğiyle verin. Tahmini maliyet ve güvenli öneriler.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://www.istebul.com/tatil/">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:site_name" content="isteBul">
+  <meta property="og:title" content="Tatil Karar Asistanı | isteBul">
+  <meta property="og:description" content="Bütçenize ve seyahat tercihlerinize göre tatil seçeneklerini analiz edin.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.istebul.com/tatil/">
+  <meta property="og:image" content="https://www.istebul.com/assets/images/tatil-hero-1280.jpg">
+  <link rel="preload" href="/assets/images/tatil-hero.webp" as="image" type="image/webp" fetchpriority="high">
+  <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
+  <noscript><link rel="stylesheet" href="/css/perf-fonts.css?v=1"></noscript>
+  <link rel="stylesheet" href="/css/tatil.css">
+  <link rel="stylesheet" href="/css/site-social-links-v1.css?v=1">
+  <link rel="stylesheet" href="/css/premium-decision-dashboard.css?v=1">
+  <link rel="stylesheet" href="/css/tatil-results-v2.css?v=1">
+  <link rel="stylesheet" href="/css/decision-category-card.css">
+  <link rel="stylesheet" href="/css/bundles/vertical-decision.bundle.css?v=7">
+  <script src="/env.js" defer></script>
+  <script type="module" src="/js/tatil/tatil-app.js"></script>
+  <script type="module" src="/js/runtime/vertical-locale-shell.js"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Tatil karar asistanı ne ölçer?","acceptedAnswer":{"@type":"Answer","text":"Bütçe, sezon, konfor ve tercihlerinize göre tahmini maliyet ve uygunluk skoru üretir."}},{"@type":"Question","name":"Fiyat garantisi var mı?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Gösterilen tutarlar tahmini analizdir; rezervasyon koşulları sağlayıcıya bağlıdır."}},{"@type":"Question","name":"Kişisel veriler nasıl işlenir?","acceptedAnswer":{"@type":"Answer","text":"KVKK kapsamında; ayrıntılar gizlilik politikasında."}}]}</script>
+</head>
+<body class="vacation-page">
+  <header class="vacation-header ib-vertical-header ib-vertical-header--tatil">
+    <a class="logo ib-vertical-brand" href="/" aria-label="isteBul ana sayfa">
+      <img class="ib-vertical-brand__icon" src="/assets/brand/istebul-icon.svg" alt="" width="28" height="28" decoding="async">
+      <span class="ib-vertical-brand__word">isteBul</span>
+      <span class="ib-vertical-brand__badge">Tatil</span>
+    </a>
+    <button class="vacation-nav-toggle" type="button" aria-controls="vacation-nav" aria-expanded="false">Menü</button>
+    <nav id="vacation-nav" aria-label="Ana navigasyon">
+      <div class="ib-vertical-nav-primary">
+        <a href="/" data-i18n="nav.home">Ana sayfa</a>
+        <a href="/auto/" data-i18n="nav.catAuto">Araç</a>
+        <a href="/konut/" data-i18n="vertical.konut">Konut</a>
+        <a href="/tatil/" class="is-active" aria-current="page" data-i18n="vertical.tatil">Tatil</a>
+        <a href="/finans/" data-i18n="vertical.finans">Finansman</a>
+        <a href="/sigorta/" data-i18n="nav.catSigorta">Sigorta</a>
+        <a href="/kasko/" data-i18n="nav.catKasko">Kasko</a>
+      </div>
+      <div class="ib-vertical-nav-more">
+        <button
+          type="button"
+          class="ib-vertical-nav-more-btn"
+          id="vacation-nav-more-btn"
+          aria-expanded="false"
+          aria-controls="vacation-nav-more-menu"
+          aria-haspopup="menu"
+        >
+          Bu sayfa
+        </button>
+        <div class="ib-vertical-nav-more-menu" id="vacation-nav-more-menu" role="menu" hidden>
+          <a href="#vacation-flow" role="menuitem">Analiz başlat</a>
+          <a href="#vacation-results" role="menuitem">Sonuçlar</a>
+          <a href="/metodoloji/" role="menuitem" data-i18n="nav.methodology">Metodoloji</a>
+          <a href="/iletisim.html" role="menuitem" data-i18n="nav.contact">İletişim</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="vacation-container vacation-container--breadcrumb">
+    <nav class="vacation-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Ana sayfa</a> › <span>Tatil karar analizi</span>
+    </nav>
+  </div>
+
+  <section class="vacation-hero" aria-labelledby="vacation-hero-title">
+    <div class="vacation-hero-media" aria-hidden="true">
+      <picture>
+        <source srcset="/assets/images/tatil-hero.webp" type="image/webp">
+        <img
+          src="/assets/images/tatil-hero-1280.jpg"
+          alt=""
+          width="1280"
+          height="853"
+          decoding="async"
+          fetchpriority="high"
+          loading="eager">
+      </picture>
+    </div>
+    <div class="vacation-hero-overlay" aria-hidden="true"></div>
+    <div class="vacation-container vacation-hero-inner">
+      <div class="vacation-hero-copy">
+      <span class="vacation-hero-badge">🏖️ Tatil karar analizi</span>
+      <h1 id="vacation-hero-title">Yapay zekâ destekli tatil karar asistanı</h1>
+      <p class="vacation-hero-lead">Bütçe, tarih, aile yapısı, konfor beklentisi, ulaşım maliyeti ve riskleri birlikte analiz ederek size en uygun tatili bulun.</p>
+      <div class="vacation-hero-actions">
+        <button type="button" class="btn btn-primary" id="vacation-hero-cta">✨ Tatilimi analiz et</button>
+        <button type="button" class="btn btn-ghost" id="vacation-hero-cta-secondary">AI önerilerini gör</button>
+      </div>
+      </div>
+      <aside class="vacation-hero-dashboard" aria-label="AI skor paneli">
+        <article class="vh-card vh-card-score">
+          <span>Genel uygunluk</span>
+          <strong>91/100</strong>
+          <small>Düşük riskli denge</small>
+        </article>
+        <article class="vh-card">
+          <span>Toplam maliyet</span>
+          <strong>₺126.400</strong>
+          <small>Kişi başı ₺31.600</small>
+        </article>
+        <article class="vh-card vh-card-chart">
+          <span>5 gece maliyet trendi</span>
+          <div class="vh-mini-chart" aria-hidden="true"></div>
+        </article>
+        <article class="vh-card vh-card-destinations">
+          <span>Önerilen destinasyonlar</span>
+          <ul>
+            <li>Antalya · Aile resort</li>
+            <li>Datça · Düşük yoğunluk</li>
+            <li>Kaş · Bütçe dengeli</li>
+          </ul>
+        </article>
+      </aside>
+    </div>
+  </section>
+
+  <main class="vacation-main">
+    <div class="vacation-container vacation-layout" id="vacation-flow">
+      <div class="vacation-flow-main">
+        <div class="vacation-progress" id="vacation-step-progress"></div>
+        <div id="vacation-wizard"></div>
+        <section id="vacation-results" class="vacation-results-section" aria-live="polite">
+          <div class="vacation-results-empty-state">
+            <h2>Sonuçlar</h2>
+            <p>Analizi tamamladığınızda kişiselleştirilmiş tatil senaryoları burada listelenir.</p>
+          </div>
+        </section>
+      </div>
+      <aside class="vacation-aside" aria-label="Yapay zeka asistanı">
+        <div class="vacation-ai-panel">
+          <h3>✨ Yapay Zekâ Asistanınız</h3>
+          <p>Tercihlerinize göre kişiselleştirilmiş tatil profilini birlikte netleştirelim.</p>
+          <p class="sr-only" id="vacation-ai-summary-label">Şu ana kadar seçtiğiniz tercihler</p>
+          <ul id="vacation-ai-summary" aria-labelledby="vacation-ai-summary-label"></ul>
+          <p class="vacation-ai-eta">Tahmini tamamlama: 2–3 dakika</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="vacation-footer">
+    <nav class="ib-site-social" data-site-social-links aria-label="Sosyal medya" hidden></nav>
+    <p>isteBul — karar zekâsı platformu. Fiyatlar tahminidir; kesin teklif partner onayı ile sunulur.</p>
+    <p class="site-footer-legal"><a href="/gizlilik.html">Gizlilik</a> · <a href="/kvkk.html">Ziyaretçi Aydınlatma Metni</a> · <a href="/kvkk.html#kvkk-bilgilendirme">KVKK hakkında bilgilendirme</a></p>
+    <div class="locale-switcher" id="locale-switcher" role="navigation" aria-label="Dil seçimi" data-i18n-aria="meta.language"></div>
+  </footer>
+</body>
+</html>

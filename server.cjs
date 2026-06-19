@@ -19,16 +19,12 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/env.js', (_req, res) => {
-  const publicEnv = {
-    SUPABASE_URL: process.env.SUPABASE_URL || '',
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
-    SENTRY_DSN: process.env.SENTRY_DSN || '',
-    LOGROCKET_APP_ID: process.env.LOGROCKET_APP_ID || ''
-  };
+  const { buildPublicEnv, formatEnvJs } = require('./scripts/lib/public-env.cjs');
+  const publicEnv = buildPublicEnv(process.env);
 
   res.type('application/javascript');
   res.set('Cache-Control', 'no-store');
-  res.send(`window.__env = Object.assign({}, window.__env || {}, ${JSON.stringify(publicEnv)});`);
+  res.send(formatEnvJs(publicEnv));
 });
 
 
@@ -75,9 +71,35 @@ app.use('/api', (req, res) => {
   });
 });
 
-// Serve dev index with unhashed bundle for SPA routes
-app.get('*', (_req, res) => {
-  let html = require('fs').readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+// Static HTML / Auto — do not SPA-fallback over standalone pages
+app.get('*', (req, res, next) => {
+  const fs = require('fs');
+  const raw = req.path.split('?')[0];
+  const rel = raw.replace(/^\//, '');
+
+  if (rel.endsWith('.html')) {
+    const file = path.join(__dirname, rel);
+    if (fs.existsSync(file) && fs.statSync(file).isFile()) {
+      return res.sendFile(file);
+    }
+    return next();
+  }
+
+  if (raw === '/auto' || raw === '/auto/') {
+    const autoIndex = path.join(__dirname, 'auto', 'index.html');
+    if (fs.existsSync(autoIndex)) {
+      return res.sendFile(autoIndex);
+    }
+  }
+
+  if (raw.startsWith('/auto/') && !path.extname(raw)) {
+    const autoIndex = path.join(__dirname, 'auto', 'index.html');
+    if (fs.existsSync(autoIndex)) {
+      return res.sendFile(autoIndex);
+    }
+  }
+
+  let html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
   html = html.replace(/js\/app\.bundle-[A-Z0-9]+\.js/g, 'js/app.bundle.js');
   res.type('html').send(html);
 });

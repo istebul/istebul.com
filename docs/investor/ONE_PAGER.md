@@ -1,61 +1,68 @@
-# isteBul — Investor One-Pager
+# isteBul — Investor One-Pager (Final)
 
-## One line
+## One-line thesis
 
-**isteBul is an AI decision platform for high-consideration purchases** — starting with automotive in Turkey, expanding to housing, credit, insurance, and travel.
+**isteBul, yüksek tutarlı satın alma kararları için şeffaf karar altyapısıdır**: otomotivde canlı, konut/finans/sigorta ve seyahate genişleyen hibrit SaaS + marketplace modeli.
 
 ## Problem
 
-Consumers make ₺500K–₺3M decisions (vehicle, home, finance) with fragmented tools: classifieds show listings, banks show rates, nobody unifies **fit, total cost, finance load, and risk** in one transparent workflow.
+Kullanıcılar ₺500K–₺3M arası kararları ilan siteleri, banka hesaplayıcıları ve satıcı yönlendirmeleri arasında parçalı şekilde veriyor. Mevcut akışlarda tek bir yerde **uygunluk, toplam maliyet (TCO), finansman yükü ve risk** birlikte gösterilmiyor.
 
-## Solution
+## Çözüm
 
-- **Rule-based decision engine** with explainable scores (not black-box AI prices)
-- **LLM narration layer** only for summary — cannot override deterministic numbers
-- **Lead → partner dispatch** for monetization (dealers, finance, insurance)
-- **isteBul Pro** subscription for advanced analysis and unlimited comparison
+- **Kural tabanlı, açıklanabilir skor motoru** (black-box tahmin değil)
+- **LLM anlatım katmanı** sadece yorum üretir; deterministik hesapları değiştiremez
+- **Lead → partner dispatch** ile gelir üretimi (bayi, finans, sigorta)
+- **isteBul Pro** ile premium analiz ve sınırsız karşılaştırma
 
-## Business model (hybrid SaaS + marketplace)
+## İş modeli (hibrit SaaS + marketplace)
 
-| Stream | Mechanism | Stage |
-|--------|-----------|--------|
-| **Pro subscription** | Stripe · ₺299/mo · ₺2,870/yr | Live |
-| **Partner leads** | Auto intake → webhook dispatch → CRM | Live |
-| **Premium reports** | Pro-gated exports | Partial |
-| **Affiliate / finance** | Attribution + partner CPL | Early |
+| Gelir kalemi | Mekanizma | Durum |
+|--------------|-----------|-------|
+| **Pro abonelik** | Stripe · ₺299/ay · ₺2,870/yıl | Canlı |
+| **Partner lead geliri** | Auto intake → webhook dispatch → CRM | Canlı |
+| **Premium raporlar** | Pro-gated export | Kısmi |
+| **Affiliate / finans** | Attribution + CPL | Erken |
 
-## Traction signals (instrumented)
+## Traction ve doğrulanabilir metrikler
 
-- First-party analytics: auth, checkout, auto funnel, partner dispatch (`analytics_events`)
-- CRM: `auto_leads` with estimated/actual revenue, pipeline stages
-- Admin **Investor KPIs** dashboard + JSON export script
+- 1P analytics: auth, checkout, auto funnel, partner dispatch (`analytics_events`)
+- CRM: `auto_leads` (estimated/actual revenue, stage progression)
+- Admin panel: **Investor KPIs** + canlı JSON export (`npm run metrics:investor:pack`)
 
-*Investors should request latest `investor-metrics-snapshot.json` — not static numbers in this doc.*
+> Bu doküman statik sayı taşımaz. Her toplantı öncesi güncel snapshot paylaşılır.
 
 ## Defensibility
 
-1. **Proprietary scoring** — multi-factor match + confidence model (`decision-consultant.js`)
-2. **Truth-layer catalog** — vehicle cost profiles + finance offers (Supabase)
-3. **Operational moat** — partner dispatch, circuit breaker, audit logs
-4. **Expansion platform** — locale registry, vertical roadmap (8 categories)
+1. **Skorlama IP’si:** multi-factor match + confidence model (`decision-consultant.js`)
+2. **Truth layer:** araç maliyet profilleri + finansman teklif altyapısı (Supabase)
+3. **Operasyonel moat:** retry/circuit-breaker/audit log destekli partner dispatch
+4. **Platform etkisi:** 8 kategoriye genişleyebilen ortak karar altyapısı
 
-Full competitive moat strategy: `docs/COMPETITIVE_MOAT_STRATEGY.md`
+## Pazar ve genişleme
 
-## Market & expansion
+- **Bugün:** Türkiye otomotiv karar + lead üretimi
+- **Sonraki faz:** Konut/tatil parity, kredi/sigorta standalone akışları
+- **Uluslararası hazırlık:** tr/en/de/ar locale altyapısı
 
-- **Now:** Turkey automotive decision + lead gen
-- **Next:** Konut/tatil production parity, standalone kredi/sigorta
-- **Global:** i18n foundation (tr/en/de/ar), hreflang SEO
+## Yatırım turu ask (toplantı sürümü)
 
-## Team / ask
+- **Tur tipi:** Pre-seed / Seed
+- **Hedef kullanım alanları:** ürünleşme, partner onboarding, GTM hızlandırma
+- **Çıktı hedefi (18 ay):** Pro MRR büyümesi, partner realization rate artışı, en az 1 yeni dikeyin production parity’si
 
-*[Founder fills: team, round size, use of funds, milestones]*
+## Bağlantılı final dokümanlar
 
-## Pitch deck
+- Pitch deck iskeleti: `docs/investor/PITCH_DECK_OUTLINE.md`
+- Data room index: `docs/investor/DATA_ROOM_INDEX.md`
+- 100 yatırımcı hedef listesi: `docs/investor/INVESTOR_TARGET_LIST_100.csv`
+- Outreach playbook: `docs/investor/OUTREACH_PLAYBOOK.md`
+- Toplantı akışı + DD: `docs/investor/MEETING_FLOW_AND_DD.md`
+- Takip disiplini: `docs/investor/FOLLOW_UP_DISCIPLINE.md`
+- PDF paketi: `docs/investor/export/` · `npm run investor:export:pdf`
+- Kurucu rehberi: `docs/investor/FOUNDER_FUNDRAISING_MASTER_GUIDE.md`
 
-Slide-by-slide outline: `docs/investor/PITCH_DECK_OUTLINE.md`
+## İletişim
 
-## Contact
-
-- Product: https://www.istebul.com  
+- Ürün: https://www.istebul.com
 - Data room: `docs/investor/DATA_ROOM_INDEX.md`

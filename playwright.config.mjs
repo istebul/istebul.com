@@ -11,10 +11,10 @@ export default defineConfig({
     trace: 'on-first-retry'
   },
   webServer: process.env.E2E_BASE_URL ? undefined : {
-    command: 'npm run dev',
-    url: 'http://127.0.0.1:3000',
+    command: 'npm run build && node scripts/e2e-static-server.cjs',
+    url: 'http://127.0.0.1:3000/auto/',
     reuseExistingServer: true,
-    timeout: 120000
+    timeout: 180000
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
