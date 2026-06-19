@@ -494,14 +494,18 @@ test.describe('Site health — readability and layout', () => {
     expect(overflow).toBe(false);
   });
 
-  async function prepareAutoPage(page, path = '/auto/') {
-    await page.addInitScript(() => {
+  async function prepareAutoPage(page, path = '/auto/', options = {}) {
+    const { clearKararMahkemesiStorage = false } = options;
+    await page.addInitScript((clearKarar) => {
       try {
         sessionStorage.setItem('istebul_auto_soft_gate_dismissed', '1');
+        if (clearKarar) {
+          localStorage.removeItem('kararMahkemesiBeta');
+        }
       } catch {
         /* ignore */
       }
-    });
+    }, clearKararMahkemesiStorage);
     await page.goto(path);
     await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('.wizard-progress')).toBeVisible({ timeout: 20000 });
@@ -604,6 +608,32 @@ test.describe('Site health — readability and layout', () => {
       return doc.scrollWidth > doc.clientWidth + 2;
     });
     expect(overflow).toBe(false);
+  });
+
+  test('/auto/ without karar_mahkemesi flag keeps beta card hidden', async ({ page }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page, '/auto/', { clearKararMahkemesiStorage: true });
+    await completeAutoWizard(page);
+
+    await expect(page.locator('#auto-results .auto-v2-root')).toBeVisible();
+    await expect(page.locator('#ib-results-detail [data-karar-mahkemesi-beta]')).toHaveCount(0);
+    await expect(page.locator('#auto-results [data-karar-mahkemesi-beta]')).toHaveCount(0);
+  });
+
+  test('/auto/?karar_mahkemesi=1 mounts single Karar Mahkemesi beta card in results detail', async ({
+    page
+  }) => {
+    test.setTimeout(60000);
+    await prepareAutoPage(page, '/auto/?karar_mahkemesi=1');
+    await completeAutoWizard(page);
+
+    await expect(page.locator('#auto-results .auto-v2-root')).toBeVisible();
+    await expect(page.locator('#ib-results-detail')).toBeVisible();
+
+    const detailBeta = page.locator('#ib-results-detail [data-karar-mahkemesi-beta]');
+    await expect(detailBeta).toHaveCount(1);
+    await expect(page.locator('#auto-results [data-karar-mahkemesi-beta]')).toHaveCount(1);
+    await expect(detailBeta).toHaveCount(1);
   });
 
   test('/finans/ @ mobile completes wizard without stuck loading', async ({ page }) => {
