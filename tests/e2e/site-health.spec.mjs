@@ -636,6 +636,35 @@ test.describe('Site health — readability and layout', () => {
     await expect(detailBeta).toHaveCount(1);
   });
 
+  test('/auto/?karar_mahkemesi=1 @390px karar mahkemesi beta card does not overflow on mobile', async ({
+    page
+  }) => {
+    test.setTimeout(60000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await prepareAutoPage(page, '/auto/?karar_mahkemesi=1');
+    await completeAutoWizard(page);
+
+    await expect(page.locator('#auto-results .auto-v2-root')).toBeVisible();
+    await expect(page.locator('#ib-results-detail [data-karar-mahkemesi-beta]')).toHaveCount(1);
+    await expect(page.locator('#auto-results [data-karar-mahkemesi-beta]')).toHaveCount(1);
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      const betaCard = document.querySelector('#ib-results-detail [data-karar-mahkemesi-beta]');
+      const metrics = document.querySelector(
+        '#ib-results-detail [data-karar-mahkemesi-beta] .karar-mahkemesi-beta__metrics'
+      );
+      return {
+        document: doc.scrollWidth > doc.clientWidth + 2,
+        betaCard: betaCard ? betaCard.scrollWidth > betaCard.clientWidth + 2 : false,
+        metrics: metrics ? metrics.scrollWidth > metrics.clientWidth + 2 : false
+      };
+    });
+    expect(overflow.document).toBe(false);
+    expect(overflow.betaCard).toBe(false);
+    expect(overflow.metrics).toBe(false);
+  });
+
   test('/finans/ @ mobile completes wizard without stuck loading', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/finans/');
