@@ -40,14 +40,10 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16.png">
     <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/favicon-192.png">
     <script src="/env.js" defer></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
-    <link rel="stylesheet" href="/css/perf-fonts.css?v=1" media="all">
-    <!-- perf:preload-style -->
-    <link rel="stylesheet" href="css/style.css?v=69">
-    <!-- perf:preload-homepage-bundle -->
-    <link rel="stylesheet" href="css/bundles/homepage.bundle.css?v=8">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=51">
 
 <style>
 .hidden{display:none!important;}
@@ -1189,7 +1185,8 @@ body.ib-premium-mounted .ib-prerender-seo{display:none!important}
     </main>
 
         <!-- Private app sections are mounted lazily by JavaScript after route/auth checks. -->
-    <div id="auth-modal" class="modal auth-modal-premium" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+    </main>
+    <div id="auth-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="auth-modal-title" data-i18n="auth.login">Giriş Yap</h3>
