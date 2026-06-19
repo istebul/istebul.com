@@ -2,313 +2,224 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const {
-  tryMountDecisionEngineV3,
-  renderDecisionV3Panel,
-  simulateWhatIfChange
+  normalizeDecisionInput,
+  calculateDecisionScore,
+  calculateConfidenceScore,
+  calculateRiskScore,
+  calculateTotalCost,
+  generateRiskRadar,
+  generateWhatIfScenarios,
+  buildDecisionEngineV3
 } = await import('../../js/decision/ai-decision-engine-v3.js');
-const { buildDecisionIntelligenceResult } = await import(
-  '../../js/features/results/decision-intelligence-engine.js'
-);
 
-function createMemoryStorage() {
-  /** @type {Record<string, string>} */
-  const store = {};
-  return {
-    getItem(key) {
-      return Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null;
-    },
-    setItem(key, value) {
-      store[key] = String(value);
-    },
-    removeItem(key) {
-      delete store[key];
-    }
-  };
-}
-
-function createMountNode() {
-  const nodes = [];
-  return {
-    nodes,
-    querySelector(selector) {
-      for (const node of nodes) {
-        if (node.matches(selector)) return node;
-        const nested = node.querySelector(selector);
-        if (nested) return nested;
+const FULL_AUTO_INPUT = {
+  vertical: 'auto',
+  formData: {
+    budget: 1_500_000,
+    usage: 'family',
+    fuel: 'hybrid',
+    monthlyIncome: 80_000,
+    monthlyDebt: 5_000,
+    downPayment: 300_000,
+    termMonths: 48
+  },
+  topResult: {
+    price: 1_350_000,
+    fuel: 'hybrid',
+    reasons: ['Bütçe uyumu güçlü', 'Hibrit yakıt avantajı'],
+    risks: ['Sigorta primi değişken'],
+    costs: {
+      ownership: {
+        totals: {
+          months12: 420_000,
+          months36: 1_100_000,
+          months60: 1_650_000
+        }
       }
-      return null;
-    },
-    prepend(node) {
-      nodes.unshift(node);
     }
-  };
-}
+  }
+};
 
-function createDomNode({ className = '', innerHTML = '' } = {}) {
-  const childNodes = [];
-  const node = {
-    className,
-    innerHTML,
-    childNodes,
-    rel: '',
-    href: '',
-    setAttribute(name, value) {
-      this[name] = value;
-    },
-    remove() {
-      const parent = childNodes.length ? null : node;
-      if (parent) {
-        const index = childNodes.indexOf(node);
-        if (index >= 0) childNodes.splice(index, 1);
-      }
-    },
-    matches(selector) {
-      if (selector.startsWith('.')) {
-        return className.split(/\s+/).includes(selector.slice(1));
-      }
-      if (selector.startsWith('[data-')) {
-        const attr = selector.slice(1, -1);
-        return innerHTML.includes(attr);
-      }
-      return false;
-    },
-    querySelector(selector) {
-      if (selector.startsWith('[data-') && innerHTML.includes(selector.slice(1, -1))) {
-        return {};
-      }
-      return null;
-    }
-  };
-  return node;
-}
+const PARTIAL_AUTO_INPUT = {
+  vertical: 'auto',
+  formData: {
+    budget: 1_200_000
+  }
+};
 
-test('tryMountDecisionEngineV3 returns null without mount node', async () => {
-  const result = await tryMountDecisionEngineV3({ category: 'konut' });
-  assert.equal(result, null);
+test('same input produces same output (deterministic)', () => {
+  const a = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  const b = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.deepEqual(a, b);
 });
 
-test('tryMountDecisionEngineV3 mounts panel and enriches with memory-lite', async () => {
-  const mountNode = createMountNode();
-  const storage = createMemoryStorage();
-  global.document = {
-    querySelector() {
-      return null;
-    },
-    createElement() {
-      return createDomNode();
-    },
-    head: {
-      appendChild() {}
-    }
-  };
+test('scores are normalized to 0-100 range', () => {
+  const result = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.ok(result.decisionScore >= 0 && result.decisionScore <= 100);
+  assert.ok(result.confidenceScore >= 0 && result.confidenceScore <= 100);
+  assert.ok(result.riskScore >= 0 && result.riskScore <= 100);
 
-  const result = await tryMountDecisionEngineV3({
-    mountNode,
-    category: 'konut',
-    formData: { city: 'İzmir', totalBudget: 3_500_000, purchasePurpose: 'Oturmak' },
-    metrics: { dti: 32 },
-    storage
+  const radar = result.riskRadar;
+  for (const key of Object.keys(radar)) {
+    assert.ok(radar[key] >= 0 && radar[key] <= 100, `${key} out of range`);
+  }
+});
+
+test('missing data lowers confidence score', () => {
+  const full = calculateConfidenceScore(FULL_AUTO_INPUT);
+  const partial = calculateConfidenceScore(PARTIAL_AUTO_INPUT);
+  assert.ok(full > partial, `full=${full} should exceed partial=${partial}`);
+});
+
+test('risk radar returns all required fields', () => {
+  const radar = generateRiskRadar(FULL_AUTO_INPUT);
+  assert.ok('financialRisk' in radar);
+  assert.ok('liquidityRisk' in radar);
+  assert.ok('maintenanceRisk' in radar);
+  assert.ok('depreciationRisk' in radar);
+  assert.ok('creditRisk' in radar);
+});
+
+test('what-if scenarios return at least 5 items with required shape', () => {
+  const scenarios = generateWhatIfScenarios(FULL_AUTO_INPUT);
+  assert.ok(scenarios.length >= 5);
+
+  for (const s of scenarios) {
+    assert.ok(s.id);
+    assert.ok(s.title);
+    assert.ok(s.changedField);
+    assert.ok('before' in s);
+    assert.ok('after' in s);
+    assert.ok(s.impact);
+    assert.ok(s.explanation);
+  }
+});
+
+test('total cost returns 1/3/5 year projections', () => {
+  const cost = calculateTotalCost(FULL_AUTO_INPUT);
+  assert.equal(cost.currency, 'TRY');
+  assert.ok(cost.oneYear > 0);
+  assert.ok(cost.threeYear >= cost.oneYear);
+  assert.ok(cost.fiveYear >= cost.threeYear);
+});
+
+test('buildDecisionEngineV3 output matches v3 schema', () => {
+  const result = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.equal(result.version, 'v3');
+  assert.equal(result.vertical, 'auto');
+  assert.ok(Array.isArray(result.explainableReasons));
+  assert.ok(Array.isArray(result.alternativeReasons));
+  assert.ok(result.summary.title);
+  assert.ok(result.summary.verdict);
+  assert.ok(result.summary.shortExplanation);
+  assert.ok(result.summary.nextBestAction);
+});
+
+test('normalizeDecisionInput maps vertical aliases', () => {
+  const konut = normalizeDecisionInput({ vertical: 'konut', formData: { totalBudget: 3_000_000 } });
+  const finans = normalizeDecisionInput({ category: 'finansman', formData: { monthly_income: 50_000 } });
+  assert.equal(konut.vertical, 'housing');
+  assert.equal(finans.vertical, 'finance');
+  assert.equal(konut.budget, 3_000_000);
+});
+
+test('calculateDecisionScore is deterministic across calls', () => {
+  const scores = Array.from({ length: 5 }, () => calculateDecisionScore(FULL_AUTO_INPUT));
+  assert.ok(scores.every((s) => s === scores[0]));
+});
+
+const HIGH_RISK_INPUT = {
+  vertical: 'auto',
+  budget: 1_000_000,
+  vehiclePrice: 1_200_000,
+  totalCost12: 1_300_000,
+  monthlyIncome: 30_000,
+  monthlyDebt: 15_000,
+  risks: ['Sigorta primi yüksek', 'Finansman baskısı', 'Bakım maliyeti belirsiz']
+};
+
+test('buildDecisionEngineV3 returns decisionQuality', () => {
+  const result = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.ok(result.decisionQuality);
+  assert.ok(['excellent', 'good', 'caution', 'weak'].includes(result.decisionQuality.level));
+  assert.ok(result.decisionQuality.score >= 0 && result.decisionQuality.score <= 100);
+  assert.ok(result.decisionQuality.explanation);
+});
+
+test('actionPlan returns at least 4 steps with required shape', () => {
+  const result = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.ok(result.actionPlan.length >= 4);
+  for (const step of result.actionPlan) {
+    assert.ok(step.step >= 1);
+    assert.ok(step.title);
+    assert.ok(step.description);
+    assert.ok(['high', 'medium', 'low'].includes(step.priority));
+    assert.ok(['verify', 'compare', 'finance', 'risk', 'next_action'].includes(step.category));
+  }
+});
+
+test('blockingRisks returns an array', () => {
+  const result = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.ok(Array.isArray(result.blockingRisks));
+});
+
+test('dataQualityNotes marks missing fields', () => {
+  const result = buildDecisionEngineV3(PARTIAL_AUTO_INPUT);
+  assert.ok(result.dataQualityNotes.length > 0);
+  assert.ok(result.dataQualityNotes.some((n) => n.status === 'missing'));
+  for (const note of result.dataQualityNotes) {
+    assert.ok(note.field);
+    assert.ok(['missing', 'estimated', 'strong'].includes(note.status));
+    assert.ok(note.note);
+  }
+});
+
+test('decisionBadges returns badge array', () => {
+  const result = buildDecisionEngineV3(FULL_AUTO_INPUT);
+  assert.ok(Array.isArray(result.decisionBadges));
+  assert.ok(result.decisionBadges.length > 0);
+  for (const badge of result.decisionBadges) {
+    assert.ok(badge.label);
+    assert.ok(['positive', 'warning', 'neutral'].includes(badge.type));
+  }
+});
+
+test('low confidence prevents excellent decisionQuality', () => {
+  const result = buildDecisionEngineV3(PARTIAL_AUTO_INPUT);
+  assert.notEqual(result.decisionQuality.level, 'excellent');
+});
+
+test('high risk input produces blockingRisks', () => {
+  const result = buildDecisionEngineV3(HIGH_RISK_INPUT);
+  assert.ok(result.blockingRisks.length > 0);
+  assert.ok(result.blockingRisks.some((r) => r.severity === 'high'));
+  for (const risk of result.blockingRisks) {
+    assert.ok(risk.id);
+    assert.ok(risk.title);
+    assert.ok(risk.explanation);
+    assert.ok(risk.mitigation);
+  }
+});
+
+test('housing actionPlan has vertical-specific steps', () => {
+  const result = buildDecisionEngineV3({
+    vertical: 'housing',
+    budget: 4_000_000,
+    city: 'İstanbul',
+    monthlyIncome: 80_000
   });
-
-  assert.ok(result);
-  assert.ok(result.intelligence);
-  assert.equal(result.memory.version, 'memory-lite-v1');
-  assert.equal(mountNode.nodes.length, 1);
-  assert.match(mountNode.nodes[0].innerHTML, /data-decision-v3-root/);
-  assert.match(mountNode.nodes[0].innerHTML, /data-decision-memory-lite/);
-  assert.match(mountNode.nodes[0].innerHTML, /Karar Profiliniz/);
-  assert.match(mountNode.nodes[0].innerHTML, /Senaryo Simülasyonu/);
-  assert.match(mountNode.nodes[0].innerHTML, /data-whatif-run/);
-  assert.match(mountNode.nodes[0].innerHTML, /Karar Raporu/);
-  assert.match(mountNode.nodes[0].innerHTML, /data-report-download/);
-  assert.match(mountNode.nodes[0].innerHTML, /data-report-copy/);
+  assert.ok(result.actionPlan.length >= 4);
+  assert.ok(result.actionPlan.some((s) => /tapu|deprem/i.test(s.title)));
 });
 
-test('renderDecisionV3Panel places memory profile after action plan', () => {
-  const html = renderDecisionV3Panel({
-    vertical: 'auto',
-    title: 'Test',
-    decisionScore: 75,
-    confidenceScore: 70,
-    overallRisk: 'Orta',
-    scoreLabel: 'Güçlü',
-    executiveSummary: 'Özet',
-    recommendationLabel: 'Dikkatli ilerle',
-    nextSteps: ['Adım 1'],
-    scoreFactors: [],
-    riskAnalysis: [],
-    warnings: [],
-    memory: {
-      version: 'memory-lite-v1',
-      profile: {
-        riskPreference: 55,
-        budgetDiscipline: 60,
-        comfortPriority: 58,
-        investmentFocus: 52,
-        financeSensitivity: 49
-      },
-      trend: { direction: 'stable', explanation: 'Trend metni' },
-      insights: ['Insight A', 'Insight B'],
-      historyCount: 3
-    }
+test('finance actionPlan has vertical-specific steps', () => {
+  const result = buildDecisionEngineV3({
+    vertical: 'finance',
+    requestedAmount: 500_000,
+    monthlyIncome: 60_000,
+    installment: 18_000,
+    loanTerm: 36
   });
-
-  assert.match(html, /Aksiyon Planı/);
-  assert.match(html, /Karar Profiliniz/);
-  assert.match(html, /Risk Tercihi/);
-  assert.match(html, /Bütçe Disiplini/);
-  assert.match(html, /Konfor Önceliği/);
-  assert.match(html, /Yatırım Odağı/);
-  assert.match(html, /Finansman Hassasiyeti/);
-  assert.match(html, /Trend metni/);
-  assert.match(html, /Insight A/);
-  assert.match(html, /yalnızca cihazınızdaki analiz geçmişinden/i);
-
-  const actionIndex = html.indexOf('Aksiyon Planı');
-  const profileIndex = html.indexOf('Karar Profiliniz');
-  assert.ok(actionIndex >= 0 && profileIndex > actionIndex);
-});
-
-test('renderDecisionV3Panel renders static what-if fallback without input', () => {
-  const html = renderDecisionV3Panel({
-    vertical: 'finansman',
-    title: 'Test',
-    decisionScore: 70,
-    confidenceScore: 65,
-    overallRisk: 'Orta',
-    scoreLabel: 'Orta',
-    executiveSummary: 'Özet',
-    recommendationLabel: 'Değerlendirme',
-    nextSteps: ['Adım 1'],
-    scoreFactors: [],
-    riskAnalysis: [],
-    warnings: [],
-    whatIfScenarios: [{ title: 'Bütçe +10%', description: 'Statik senaryo' }]
-  });
-
-  assert.match(html, /Senaryo Simülasyonu/);
-  assert.match(html, /Statik senaryo/);
-  assert.doesNotMatch(html, /data-whatif-run/);
-});
-
-test('renderDecisionV3Panel renders interactive what-if controls with input', () => {
-  const html = renderDecisionV3Panel({
-    vertical: 'konut',
-    title: 'Test',
-    decisionScore: 70,
-    confidenceScore: 65,
-    overallRisk: 'Orta',
-    scoreLabel: 'Orta',
-    executiveSummary: 'Özet',
-    recommendationLabel: 'Değerlendirme',
-    nextSteps: ['Adım 1'],
-    scoreFactors: [],
-    riskAnalysis: [],
-    warnings: [],
-    whatIfInput: {
-      category: 'konut',
-      formData: { totalBudget: 3_000_000 },
-      metrics: { totalCost: 3_000_000 },
-      extras: { totalCost: 3_000_000 }
-    }
-  });
-
-  assert.match(html, /Simülasyonu çalıştır/);
-  assert.match(html, /data-whatif-budget/);
-  assert.match(html, /data-whatif-downpayment/);
-  assert.match(html, /data-whatif-term/);
-  assert.match(html, /data-whatif-risk/);
-});
-
-test('simulateWhatIfChange is exported', () => {
-  assert.equal(typeof simulateWhatIfChange, 'function');
-});
-
-test('simulateWhatIfChange produces output for budget increase', () => {
-  const input = {
-    category: 'konut',
-    formData: { totalBudget: 3_000_000, city: 'İzmir' },
-    metrics: { totalCost: 3_000_000, dti: 30 },
-    extras: { totalCost: 3_000_000 }
-  };
-
-  const result = simulateWhatIfChange(input, { field: 'budget', value: 10, mode: 'percent' });
-  assert.ok(result);
-  assert.ok(result.before);
-  assert.ok(result.after);
-  assert.ok(Number.isFinite(result.delta.decisionScore));
-  assert.ok(typeof result.explanation === 'string' && result.explanation.length > 0);
-});
-
-test('simulateWhatIfChange riskTolerance can affect scores', () => {
-  const input = {
-    category: 'finansman',
-    formData: { monthly_income: 60_000, existing_debt: 4_000 },
-    metrics: { totalCost: 500_000 },
-    extras: { totalCost: 500_000, primaryResult: { metrics: { monthlyPayment: 18_000 } } }
-  };
-
-  const low = simulateWhatIfChange(input, { field: 'riskTolerance', value: 'düşük', mode: 'toggle' });
-  const high = simulateWhatIfChange(input, { field: 'riskTolerance', value: 'yüksek', mode: 'toggle' });
-
-  assert.ok(low && high);
-  assert.notEqual(low.after.riskScore, high.after.riskScore);
-});
-
-test('simulateWhatIfChange returns delta fields', () => {
-  const result = simulateWhatIfChange(
-    {
-      category: 'auto',
-      formData: { budget: 900_000 },
-      metrics: { totalCost: 900_000 },
-      extras: { totalCost: 900_000 }
-    },
-    { field: 'downPayment', value: 20, mode: 'percent' }
-  );
-
-  assert.ok(result);
-  assert.ok(Object.prototype.hasOwnProperty.call(result.delta, 'decisionScore'));
-  assert.ok(Object.prototype.hasOwnProperty.call(result.delta, 'confidenceScore'));
-  assert.ok(Object.prototype.hasOwnProperty.call(result.delta, 'riskScore'));
-  assert.ok(Object.prototype.hasOwnProperty.call(result.delta, 'totalCost'));
-});
-
-test('simulateWhatIfChange does not throw on invalid input', () => {
-  assert.equal(simulateWhatIfChange(null, { field: 'budget', value: 10, mode: 'percent' }), null);
-  assert.equal(simulateWhatIfChange({}, null), null);
-  assert.doesNotThrow(() => {
-    simulateWhatIfChange({}, { field: '', value: 0, mode: 'absolute' });
-  });
-});
-
-test('tryMountDecisionEngineV3 swallows mount errors silently', async () => {
-  const badNode = {
-    querySelector() {
-      throw new Error('dom failure');
-    },
-    prepend() {
-      throw new Error('dom failure');
-    }
-  };
-
-  const result = await tryMountDecisionEngineV3({
-    mountNode: badNode,
-    category: 'finansman',
-    formData: {},
-    metrics: {}
-  });
-
-  assert.equal(result, null);
-});
-
-test('buildDecisionIntelligenceResult remains usable through v3 mount path', async () => {
-  const intelligence = buildDecisionIntelligenceResult(
-    'finansman',
-    { monthly_income: 70_000, existing_debt: 5_000 },
-    {},
-    { primaryResult: { metrics: { monthlyPayment: 16_000 } } }
-  );
-
-  assert.ok(intelligence.decisionScore >= 0 && intelligence.decisionScore <= 100);
-  assert.ok(Array.isArray(intelligence.nextSteps));
+  assert.ok(result.actionPlan.length >= 4);
+  assert.ok(result.actionPlan.some((s) => /vade|faiz|gelir/i.test(s.title)));
 });

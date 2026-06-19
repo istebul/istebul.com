@@ -1,464 +1,294 @@
 /**
- * Decision Engine V3 renderer — deterministic decision panel with optional memory block.
+ * Decision Engine V3 — ortak sonuç UI renderer.
  */
 import { escapeHtml } from '../core/security.js';
-import {
-  ensureAiPlatformStyles,
-  renderAiPlatformBanner,
-  resolveRiskDetailTr,
-  resolveRiskTitleTr
-} from '../ui/ai-platform-surface.js';
-import {
-  buildDecisionReportModel,
-  copyDecisionReportSummary,
-  downloadDecisionReportHtml
-} from './decision-v3-report.js';
-import { simulateWhatIfControls } from './decision-v3-whatif.js';
 
-function esc(value) {
-  return escapeHtml(String(value ?? ''));
+const PANEL_TITLES = {
+  auto: 'AI Karar Motoru',
+  housing: 'Konut Karar Analizi',
+  finance: 'Finansman Karar Analizi'
+};
+
+function panelTitleForVertical(vertical) {
+  return PANEL_TITLES[vertical] || 'AI Decision Engine v3';
 }
 
-function formatDelta(value, suffix = '') {
+function clampDisplay(value) {
   const n = Number(value);
-  if (!Number.isFinite(n) || n === 0) return '0';
-  const sign = n > 0 ? '+' : '';
-  return `${sign}${Math.round(n)}${suffix}`;
+  if (!Number.isFinite(n)) return 0;
+  return Math.min(100, Math.max(0, Math.round(n)));
 }
 
-function formatCost(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return '—';
-  return `₺${Math.round(n).toLocaleString('tr-TR')}`;
+function formatTry(value) {
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    maximumFractionDigits: 0
+  }).format(Number(value) || 0);
 }
 
-function renderScoreBar(label, score) {
-  const safeScore = Math.min(100, Math.max(0, Number(score) || 0));
+function scoreTone(score) {
+  if (score >= 75) return 'de-v3-score--good';
+  if (score >= 55) return 'de-v3-score--mid';
+  return 'de-v3-score--low';
+}
+
+function riskTone(score) {
+  if (score <= 35) return 'de-v3-score--good';
+  if (score <= 55) return 'de-v3-score--mid';
+  return 'de-v3-score--low';
+}
+
+function renderScoreCard(label, value, toneClass, suffix = '/100') {
   return `
-    <div class="decision-v3-profile-row">
-      <div class="decision-v3-profile-label">${esc(label)}</div>
-      <div class="decision-v3-profile-track" aria-hidden="true">
-        <span style="width:${safeScore}%"></span>
-      </div>
-      <strong class="decision-v3-profile-value">${esc(String(safeScore))}</strong>
-    </div>
-  `;
+    <article class="de-v3-card de-v3-score-card">
+      <h4 class="de-v3-card__label">${label}</h4>
+      <p class="de-v3-score ${toneClass}" aria-label="${label}: ${value}${suffix}">
+        <span class="de-v3-score__value">${value}</span>
+        <span class="de-v3-score__suffix">${suffix}</span>
+      </p>
+    </article>`;
 }
 
-function renderStaticWhatIfScenarios(scenarios = []) {
-  const items = Array.isArray(scenarios) ? scenarios : [];
-  if (!items.length) return '';
-
+function renderRadarItem(label, value) {
+  const pct = clampDisplay(value);
   return `
-    <section class="decision-v3-section decision-v3-whatif decision-v3-whatif-static" data-decision-whatif-static>
-      <div class="decision-v3-section-head">
-        <h3>Senaryo Simülasyonu</h3>
-        <p class="decision-v3-muted">Örnek senaryo notları</p>
+    <li class="de-v3-radar__item">
+      <div class="de-v3-radar__head">
+        <span class="de-v3-radar__label">${label}</span>
+        <span class="de-v3-radar__value">${pct}</span>
       </div>
-      <ul class="decision-v3-whatif-list">
-        ${items
+      <div class="de-v3-radar__track" role="presentation">
+        <div class="de-v3-radar__fill" style="width:${pct}%"></div>
+      </div>
+    </li>`;
+}
+
+function renderListSection(title, items, className) {
+  if (!items?.length) return '';
+  return `
+    <section class="de-v3-section ${className}">
+      <h3 class="de-v3-section__title">${title}</h3>
+      <ul class="de-v3-list">
+        ${items.map((item) => `<li>${escapeHtml(String(item))}</li>`).join('')}
+      </ul>
+    </section>`;
+}
+
+function qualityLevelClass(level) {
+  if (level === 'excellent' || level === 'good') return 'de-v3-quality--good';
+  if (level === 'caution') return 'de-v3-quality--mid';
+  return 'de-v3-quality--low';
+}
+
+function renderDecisionQualitySection(quality) {
+  if (!quality) return '';
+  const score = clampDisplay(quality.score);
+  return `
+    <section class="de-v3-section de-v3-section--quality">
+      <h3 class="de-v3-section__title">Karar Kalitesi</h3>
+      <article class="de-v3-card de-v3-quality-card ${qualityLevelClass(quality.level)}">
+        <div class="de-v3-quality-card__head">
+          <span class="de-v3-quality-card__level">${escapeHtml(String(quality.level))}</span>
+          <span class="de-v3-quality-card__score">${score}/100</span>
+        </div>
+        <p class="de-v3-quality-card__explanation">${escapeHtml(quality.explanation || '')}</p>
+      </article>
+    </section>`;
+}
+
+function renderBadgesSection(badges) {
+  if (!badges?.length) return '';
+  return `
+    <section class="de-v3-section de-v3-section--badges">
+      <h3 class="de-v3-section__title">Karar Etiketleri</h3>
+      <div class="de-v3-badges">
+        ${badges
           .map(
-            (item) =>
-              `<li><strong>${esc(item.title)}</strong><span>${esc(item.description)}</span></li>`
+            (b) =>
+              `<span class="de-v3-badge de-v3-badge--${escapeHtml(b.type || 'neutral')}">${escapeHtml(b.label)}</span>`
           )
           .join('')}
-      </ul>
-    </section>
-  `;
+      </div>
+    </section>`;
 }
 
-function renderInteractiveWhatIf() {
+function renderBlockingRisksSection(risks) {
+  if (!risks?.length) return '';
   return `
-    <section class="decision-v3-section decision-v3-whatif decision-v3-whatif-interactive" data-decision-whatif>
-      <div class="decision-v3-section-head">
-        <h3>Senaryo Simülasyonu</h3>
-        <p class="decision-v3-muted">Parametreleri değiştirip AI destekli simülasyon çalıştırın</p>
-      </div>
-
-      <div class="decision-v3-whatif-controls">
-        <label class="decision-v3-slider-field">
-          <span>Bütçe değişimi <strong data-whatif-budget-label>0%</strong></span>
-          <input type="range" min="-20" max="20" step="1" value="0" data-whatif-budget aria-label="Bütçe değişimi yüzdesi">
-          <small>-20% / +20%</small>
-        </label>
-
-        <label class="decision-v3-slider-field">
-          <span>Peşinat değişimi <strong data-whatif-downpayment-label>0%</strong></span>
-          <input type="range" min="0" max="30" step="1" value="0" data-whatif-downpayment aria-label="Peşinat yüzdesi">
-          <small>0% / +30%</small>
-        </label>
-
-        <label class="decision-v3-slider-field">
-          <span>Vade değişimi <strong data-whatif-term-label>36 ay</strong></span>
-          <input type="range" min="12" max="60" step="6" value="36" data-whatif-term aria-label="Vade ay sayısı">
-          <small>12 / 60 ay</small>
-        </label>
-
-        <label class="decision-v3-select-field">
-          <span>Risk toleransı</span>
-          <select data-whatif-risk aria-label="Risk toleransı">
-            <option value="düşük">Düşük</option>
-            <option value="orta" selected>Orta</option>
-            <option value="yüksek">Yüksek</option>
-          </select>
-        </label>
-
-        <button type="button" class="decision-v3-whatif-run" data-whatif-run>Simülasyonu çalıştır</button>
-      </div>
-
-      <div class="decision-v3-whatif-result" data-whatif-result hidden>
-        <div class="decision-v3-whatif-result-grid">
-          <div class="decision-v3-whatif-metric">
-            <span>Karar Skoru</span>
-            <strong data-whatif-result-decision>—</strong>
+    <section class="de-v3-section de-v3-section--blocking">
+      <h3 class="de-v3-section__title">Kritik Riskler</h3>
+      <div class="de-v3-blocking-grid">
+        ${risks
+          .map(
+            (r) => `
+        <article class="de-v3-blocking-card">
+          <div class="de-v3-blocking-card__head">
+            <h4 class="de-v3-blocking-card__title">${escapeHtml(r.title)}</h4>
+            <span class="de-v3-severity de-v3-severity--${escapeHtml(r.severity)}">${escapeHtml(r.severity)}</span>
           </div>
-          <div class="decision-v3-whatif-metric">
-            <span>Risk Skoru</span>
-            <strong data-whatif-result-risk>—</strong>
+          <p class="de-v3-blocking-card__explanation">${escapeHtml(r.explanation)}</p>
+          <p class="de-v3-blocking-card__mitigation"><strong>Azaltma:</strong> ${escapeHtml(r.mitigation)}</p>
+        </article>`
+          )
+          .join('')}
+      </div>
+    </section>`;
+}
+
+function renderDataQualitySection(notes) {
+  if (!notes?.length) return '';
+  return `
+    <section class="de-v3-section de-v3-section--data-quality">
+      <h3 class="de-v3-section__title">Veri Kalitesi Notları</h3>
+      <div class="de-v3-data-quality-grid">
+        ${notes
+          .map(
+            (n) => `
+        <article class="de-v3-data-note de-v3-data-note--${escapeHtml(n.status)}">
+          <span class="de-v3-data-note__field">${escapeHtml(n.field)}</span>
+          <span class="de-v3-data-note__status">${escapeHtml(n.status)}</span>
+          <p class="de-v3-data-note__text">${escapeHtml(n.note)}</p>
+        </article>`
+          )
+          .join('')}
+      </div>
+    </section>`;
+}
+
+function renderActionPlanSection(steps) {
+  if (!steps?.length) return '';
+  return `
+    <section class="de-v3-section de-v3-section--action-plan">
+      <h3 class="de-v3-section__title">Aksiyon Planı</h3>
+      <ol class="de-v3-action-plan">
+        ${steps
+          .map(
+            (s) => `
+        <li class="de-v3-action-step de-v3-action-step--${escapeHtml(s.priority)}">
+          <div class="de-v3-action-step__head">
+            <span class="de-v3-action-step__num">${s.step}</span>
+            <span class="de-v3-action-step__priority de-v3-action-step__priority--${escapeHtml(s.priority)}">${escapeHtml(s.priority)}</span>
+            <span class="de-v3-action-step__category">${escapeHtml(s.category)}</span>
           </div>
-          <div class="decision-v3-whatif-metric">
-            <span>Toplam Maliyet</span>
-            <strong data-whatif-result-cost>—</strong>
-          </div>
-        </div>
-        <p class="decision-v3-whatif-explanation" data-whatif-result-explanation></p>
-      </div>
-    </section>
-  `;
+          <h4 class="de-v3-action-step__title">${escapeHtml(s.title)}</h4>
+          <p class="de-v3-action-step__desc">${escapeHtml(s.description)}</p>
+        </li>`
+          )
+          .join('')}
+      </ol>
+    </section>`;
 }
 
-function renderWhatIfSection(model = {}) {
-  if (model.whatIfInput && typeof model.whatIfInput === 'object') {
-    return renderInteractiveWhatIf();
-  }
-  return renderStaticWhatIfScenarios(model.whatIfScenarios);
-}
-
-function renderMemoryProfile(memory) {
-  if (!memory || memory.version !== 'memory-lite-v1') return '';
-
-  const profile = memory.profile || {};
-  const insights = Array.isArray(memory.insights) ? memory.insights.slice(0, 3) : [];
-  const trend = memory.trend || { direction: 'unknown', explanation: '' };
+function renderWhatIfSection(scenarios) {
+  if (!scenarios?.length) return '';
+  const cards = scenarios
+    .map(
+      (s) => `
+    <article class="de-v3-whatif-card">
+      <h4 class="de-v3-whatif-card__title">${escapeHtml(s.title)}</h4>
+      <p class="de-v3-whatif-card__change">
+        <span class="de-v3-whatif-card__field">${escapeHtml(s.changedField)}</span>:
+        ${escapeHtml(String(s.before))} → ${escapeHtml(String(s.after))}
+      </p>
+      <p class="de-v3-whatif-card__impact">${escapeHtml(s.impact)}</p>
+      <p class="de-v3-whatif-card__explanation">${escapeHtml(s.explanation)}</p>
+    </article>`
+    )
+    .join('');
 
   return `
-    <section class="decision-v3-section decision-v3-memory" data-decision-memory-lite>
-      <div class="decision-v3-section-head">
-        <h3>Karar Profiliniz</h3>
-        <p class="decision-v3-muted">Son ${esc(String(memory.historyCount || 0))} analiz kaydına göre tahmini profil</p>
-      </div>
-      <div class="decision-v3-profile-grid">
-        ${renderScoreBar('Risk Tercihi', profile.riskPreference)}
-        ${renderScoreBar('Bütçe Disiplini', profile.budgetDiscipline)}
-        ${renderScoreBar('Konfor Önceliği', profile.comfortPriority)}
-        ${renderScoreBar('Yatırım Odağı', profile.investmentFocus)}
-        ${renderScoreBar('Finansman Hassasiyeti', profile.financeSensitivity)}
-      </div>
-      <p class="decision-v3-trend">${esc(trend.explanation || '')}</p>
-      ${
-        insights.length
-          ? `<ul class="decision-v3-insights">${insights.map((item) => `<li>${esc(item)}</li>`).join('')}</ul>`
-          : ''
-      }
-      <p class="decision-v3-privacy-note">Bu profil yalnızca cihazınızdaki analiz geçmişinden tahmini olarak oluşturulur.</p>
-    </section>
-  `;
+    <section class="de-v3-section de-v3-section--whatif">
+      <h3 class="de-v3-section__title">What If Senaryoları</h3>
+      <div class="de-v3-whatif-grid">${cards}</div>
+    </section>`;
 }
 
-function renderDecisionReportSection() {
-  return `
-    <section class="decision-v3-section decision-v3-report" data-decision-report>
-      <div class="decision-v3-section-head">
-        <h3>Karar Raporu</h3>
-        <p class="decision-v3-muted">Paylaşılabilir veya indirilebilir özet rapor</p>
-      </div>
-      <div class="decision-v3-report-actions">
-        <button type="button" class="decision-v3-report-btn decision-v3-report-btn-primary" data-report-download>
-          Raporu indir
-        </button>
-        <button type="button" class="decision-v3-report-btn decision-v3-report-btn-secondary" data-report-copy>
-          Özeti kopyala
-        </button>
-      </div>
-      <p class="decision-v3-report-feedback" data-report-feedback hidden aria-live="polite"></p>
-    </section>
-  `;
-}
+function renderDecisionHtml(decision) {
+  const d = decision || {};
+  const summary = d.summary || {};
+  const totalCost = d.totalCost || {};
+  const radar = d.radar || d.riskRadar || {};
 
-/**
- * @param {object} model
- * @returns {string}
- */
-export function renderDecisionV3Panel(model = {}) {
-  const nextSteps = Array.isArray(model.nextSteps) ? model.nextSteps : [];
-  const warnings = Array.isArray(model.warnings) ? model.warnings : [];
-  const scoreFactors = Array.isArray(model.scoreFactors) ? model.scoreFactors.slice(0, 6) : [];
-  const riskAnalysis = Array.isArray(model.riskAnalysis) ? model.riskAnalysis.slice(0, 4) : [];
+  const decisionScore = clampDisplay(d.decisionScore);
+  const confidenceScore = clampDisplay(d.confidenceScore);
+  const riskScore = clampDisplay(d.riskScore);
 
   return `
-    <div class="decision-v3-root" data-decision-v3-root data-vertical="${esc(model.vertical)}">
-      ${renderAiPlatformBanner({
-        title: 'Yapay Zeka Karar Analizi',
-        subtitle: 'Skor ve risk hesaplaması deterministiktir; AI yorumu kararınızı Türkçe olarak açıklar.',
-        variant: 'compact'
-      })}
-      <section class="decision-v3-section decision-v3-hero">
-        <div class="decision-v3-hero-copy">
-          <p class="decision-v3-kicker">${esc(model.recommendationLabel)}</p>
-          <h2>${esc(model.title)}</h2>
-          <p>${esc(model.executiveSummary)}</p>
-        </div>
-        <div class="decision-v3-score-card" aria-label="Karar skoru">
-          <span class="decision-v3-score-value">${esc(String(model.decisionScore))}</span>
-          <span class="decision-v3-score-meta">${esc(model.scoreLabel)} · ${esc(String(model.confidenceScore))}/100 güven</span>
-          <span class="decision-v3-risk-pill">${esc(model.overallRisk)} risk</span>
+    <div class="de-v3-root" data-decision-engine-version="v3">
+      <header class="de-v3-header">
+        <p class="de-v3-header__badge">${escapeHtml(panelTitleForVertical(d.vertical))}</p>
+        <h2 class="de-v3-header__title">${escapeHtml(summary.title || 'Karar Özeti')}</h2>
+        <p class="de-v3-header__verdict">${escapeHtml(summary.verdict || '')}</p>
+        <p class="de-v3-header__explanation">${escapeHtml(summary.shortExplanation || '')}</p>
+      </header>
+
+      <div class="de-v3-scores">
+        ${renderScoreCard('Karar Skoru', decisionScore, scoreTone(decisionScore))}
+        ${renderScoreCard('Güven Skoru', confidenceScore, scoreTone(confidenceScore))}
+        ${renderScoreCard('Risk Skoru', riskScore, riskTone(riskScore))}
+      </div>
+
+      <section class="de-v3-section de-v3-section--cost">
+        <h3 class="de-v3-section__title">Toplam Maliyet</h3>
+        <div class="de-v3-cost-grid">
+          <article class="de-v3-card de-v3-cost-card">
+            <span class="de-v3-cost-card__period">1 Yıl</span>
+            <span class="de-v3-cost-card__amount">${formatTry(totalCost.oneYear)}</span>
+          </article>
+          <article class="de-v3-card de-v3-cost-card">
+            <span class="de-v3-cost-card__period">3 Yıl</span>
+            <span class="de-v3-cost-card__amount">${formatTry(totalCost.threeYear)}</span>
+          </article>
+          <article class="de-v3-card de-v3-cost-card">
+            <span class="de-v3-cost-card__period">5 Yıl</span>
+            <span class="de-v3-cost-card__amount">${formatTry(totalCost.fiveYear)}</span>
+          </article>
         </div>
       </section>
 
-      ${
-        scoreFactors.length
-          ? `<section class="decision-v3-section">
-              <h3>Skor Faktörleri</h3>
-              <ul class="decision-v3-factor-list">
-                ${scoreFactors
-                  .map(
-                    (factor) =>
-                      `<li><strong>${esc(factor.label)}</strong> ${esc(factor.impact || '')} · ${esc(factor.reason || '')}</li>`
-                  )
-                  .join('')}
-              </ul>
-            </section>`
-          : ''
-      }
-
-      ${
-        riskAnalysis.length
-          ? `<section class="decision-v3-section">
-              <h3>Risk Özeti</h3>
-              <ul class="decision-v3-risk-list">
-                ${riskAnalysis
-                  .map((risk) => {
-                    const detail = resolveRiskDetailTr(risk);
-                    const detailSuffix = detail ? ` · ${detail}` : '';
-                    return `<li><strong>${esc(resolveRiskTitleTr(risk))}</strong> · ${esc(risk.level)}${esc(detailSuffix)}</li>`;
-                  })
-                  .join('')}
-              </ul>
-            </section>`
-          : ''
-      }
-
-      ${
-        warnings.length
-          ? `<section class="decision-v3-section">
-              <h3>Dikkat</h3>
-              <ul class="decision-v3-warning-list">${warnings.map((item) => `<li>${esc(item)}</li>`).join('')}</ul>
-            </section>`
-          : ''
-      }
-
-      <section class="decision-v3-section decision-v3-action-plan">
-        <h3>Aksiyon Planı</h3>
-        <ol class="decision-v3-action-list">
-          ${nextSteps.length ? nextSteps.map((step) => `<li>${esc(step)}</li>`).join('') : '<li>Sonraki adımlar hazırlanıyor.</li>'}
-        </ol>
+      <section class="de-v3-section de-v3-section--radar">
+        <h3 class="de-v3-section__title">Risk Radar</h3>
+        <ul class="de-v3-radar">
+          ${renderRadarItem('Finansal Risk', radar.financialRisk)}
+          ${renderRadarItem('Likidite Riski', radar.liquidityRisk)}
+          ${renderRadarItem('Bakım Riski', radar.maintenanceRisk)}
+          ${renderRadarItem('Değer Kaybı', radar.depreciationRisk)}
+          ${renderRadarItem('Kredi Riski', radar.creditRisk)}
+        </ul>
       </section>
 
-      ${renderWhatIfSection(model)}
-      ${renderMemoryProfile(model.memory)}
-      ${renderDecisionReportSection()}
-    </div>
-  `;
-}
+      ${renderDecisionQualitySection(d.decisionQuality)}
+      ${renderBadgesSection(d.decisionBadges)}
+      ${renderBlockingRisksSection(d.blockingRisks)}
+      ${renderDataQualitySection(d.dataQualityNotes)}
+      ${renderActionPlanSection(d.actionPlan)}
 
-function updateWhatIfResultCard(root, result) {
-  const card = root.querySelector('[data-whatif-result]');
-  if (!card || !result) return;
+      ${renderListSection('Neden Bu Sonuç?', d.explainableReasons, 'de-v3-section--reasons')}
+      ${renderListSection('Alternatif Bakış', d.alternativeReasons, 'de-v3-section--alternatives')}
+      ${renderWhatIfSection(d.whatIfScenarios)}
 
-  const decisionEl = card.querySelector('[data-whatif-result-decision]');
-  const riskEl = card.querySelector('[data-whatif-result-risk]');
-  const costEl = card.querySelector('[data-whatif-result-cost]');
-  const explanationEl = card.querySelector('[data-whatif-result-explanation]');
-
-  if (decisionEl) {
-    decisionEl.textContent = `${formatDelta(result.delta.decisionScore)} (${result.before.decisionScore} → ${result.after.decisionScore})`;
-  }
-  if (riskEl) {
-    riskEl.textContent = `${formatDelta(result.delta.riskScore)} (${result.before.riskScore} → ${result.after.riskScore})`;
-  }
-  if (costEl) {
-    const costDelta = Number.isFinite(result.delta.totalCost)
-      ? `${formatDelta(result.delta.totalCost, ' ₺')} (${formatCost(result.before.totalCost)} → ${formatCost(result.after.totalCost)})`
-      : `${formatCost(result.before.totalCost)} → ${formatCost(result.after.totalCost)}`;
-    costEl.textContent = costDelta;
-  }
-  if (explanationEl) {
-    explanationEl.textContent = result.explanation || '';
-  }
-
-  card.hidden = false;
-}
-
-function replaceWithStaticWhatIf(root, scenarios = []) {
-  const section = root.querySelector('[data-decision-whatif]');
-  if (!section) return;
-
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = renderStaticWhatIfScenarios(scenarios);
-  const fallback = wrapper.firstElementChild;
-  if (fallback) section.replaceWith(fallback);
+      <footer class="de-v3-footer">
+        <h3 class="de-v3-footer__title">Sonraki En Mantıklı Aksiyon</h3>
+        <p class="de-v3-footer__action">${escapeHtml(summary.nextBestAction || '')}</p>
+      </footer>
+    </div>`;
 }
 
 /**
- * @param {HTMLElement|DocumentFragment} root
- * @param {object} model
+ * Decision Engine V3 sonuçlarını container'a render eder.
+ * @param {HTMLElement|null} container
+ * @param {object} decision — buildDecisionEngineV3 çıktısı
  */
-export function bindDecisionV3WhatIfSimulator(root, model = {}) {
+export function renderDecisionEngineV3(container, decision) {
+  if (!container || !decision) return null;
+
   try {
-    if (!root || !model.whatIfInput) return;
-
-    const section = root.querySelector('[data-decision-whatif]');
-    if (!section) return;
-
-    const budgetInput = section.querySelector('[data-whatif-budget]');
-    const downPaymentInput = section.querySelector('[data-whatif-downpayment]');
-    const termInput = section.querySelector('[data-whatif-term]');
-    const riskInput = section.querySelector('[data-whatif-risk]');
-    const runButton = section.querySelector('[data-whatif-run]');
-
-    const budgetLabel = section.querySelector('[data-whatif-budget-label]');
-    const downPaymentLabel = section.querySelector('[data-whatif-downpayment-label]');
-    const termLabel = section.querySelector('[data-whatif-term-label]');
-
-    const syncLabels = () => {
-      if (budgetLabel && budgetInput) {
-        const value = Number(budgetInput.value) || 0;
-        budgetLabel.textContent = `${value > 0 ? '+' : ''}${value}%`;
-      }
-      if (downPaymentLabel && downPaymentInput) {
-        downPaymentLabel.textContent = `${Number(downPaymentInput.value) || 0}%`;
-      }
-      if (termLabel && termInput) {
-        termLabel.textContent = `${Number(termInput.value) || 36} ay`;
-      }
-    };
-
-    [budgetInput, downPaymentInput, termInput].forEach((input) => {
-      input?.addEventListener('input', syncLabels);
-    });
-    syncLabels();
-
-    runButton?.addEventListener('click', () => {
-      try {
-        const result = simulateWhatIfControls(model.whatIfInput, {
-          budgetPercent: Number(budgetInput?.value) || 0,
-          downPaymentPercent: Number(downPaymentInput?.value) || 0,
-          termMonths: Number(termInput?.value) || 36,
-          riskTolerance: riskInput?.value || 'orta'
-        });
-
-        if (!result) {
-          replaceWithStaticWhatIf(root, model.whatIfScenarios);
-          return;
-        }
-
-        updateWhatIfResultCard(section, result);
-        section._lastWhatIfResult = result;
-      } catch {
-        replaceWithStaticWhatIf(root, model.whatIfScenarios);
-      }
-    });
+    container.innerHTML = renderDecisionHtml(decision);
+    container.classList.add('de-v3-mount');
+    container.removeAttribute('hidden');
+    return container;
   } catch {
-    replaceWithStaticWhatIf(root, model.whatIfScenarios);
+    return null;
   }
 }
-
-function getLatestWhatIfResult(root) {
-  const section = root?.querySelector?.('[data-decision-whatif]');
-  return section?._lastWhatIfResult || null;
-}
-
-function showReportFeedback(root, message, type = 'success') {
-  const feedback = root.querySelector('[data-report-feedback]');
-  if (!feedback) return;
-
-  feedback.textContent = message;
-  feedback.hidden = false;
-  feedback.classList.toggle('is-success', type === 'success');
-  feedback.classList.toggle('is-error', type === 'error');
-
-  window.clearTimeout(feedback._hideTimer);
-  feedback._hideTimer = window.setTimeout(() => {
-    feedback.hidden = true;
-  }, 2600);
-}
-
-/**
- * @param {HTMLElement|DocumentFragment} root
- * @param {object} context
- */
-export function bindDecisionV3ReportActions(root, context = {}) {
-  try {
-    if (!root) return;
-
-    const section = root.querySelector('[data-decision-report]');
-    if (!section) return;
-
-    const downloadBtn = section.querySelector('[data-report-download]');
-    const copyBtn = section.querySelector('[data-report-copy]');
-
-    const buildReport = () =>
-      buildDecisionReportModel(
-        context.decision || {},
-        context.memory || context.decision?.memory || null,
-        typeof context.getWhatIfResult === 'function'
-          ? context.getWhatIfResult()
-          : getLatestWhatIfResult(root)
-      );
-
-    downloadBtn?.addEventListener('click', () => {
-      try {
-        const ok = downloadDecisionReportHtml(buildReport());
-        showReportFeedback(root, ok ? 'Rapor indirildi.' : 'Rapor indirilemedi.', ok ? 'success' : 'error');
-      } catch {
-        showReportFeedback(root, 'Rapor indirilemedi.', 'error');
-      }
-    });
-
-    copyBtn?.addEventListener('click', () => {
-      void (async () => {
-        try {
-          const result = await copyDecisionReportSummary(buildReport());
-          showReportFeedback(
-            root,
-            result.ok ? 'Özet panoya kopyalandı.' : 'Özet kopyalanamadı.',
-            result.ok ? 'success' : 'error'
-          );
-        } catch {
-          showReportFeedback(root, 'Özet kopyalanamadı.', 'error');
-        }
-      })();
-    });
-  } catch {
-    // silent report bind failure
-  }
-}
-
-export function ensureDecisionV3Styles() {
-  if (typeof document === 'undefined' || typeof document.querySelector !== 'function') return;
-
-  ensureAiPlatformStyles();
-
-  const existing = document.querySelector('link[data-decision-v3-styles]');
-  if (existing) return;
-
-  if (typeof document.createElement !== 'function') return;
-
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = '/css/decision-engine-v3.css';
-  link.setAttribute('data-decision-v3-styles', '1');
-  document.head?.appendChild(link);
-}
-
-export { esc as escapeDecisionV3Html };

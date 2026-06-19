@@ -41,6 +41,7 @@ import {
   renderResultsHeroLayout,
   scoreToneFromLabel
 } from '../results/results-hero-layout.js';
+import { mapFinanceToDecisionV3, tryMountDecisionEngineV3 } from '../../decision/decision-v3-mappers.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -985,6 +986,17 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
     onPartnerCta: payload.onPartnerCta,
     onLeadSubmit: payload.onLeadSubmit
   });
+
+  tryMountDecisionEngineV3(
+    root,
+    mapFinanceToDecisionV3({
+      state,
+      totalCost: model.totalCost,
+      intel: model.intelligence,
+      primaryResult: results.find((r) => r.id === model.selectedOption) || results[0],
+      alternatives: model.alternatives
+    })
+  );
 
   void hydrateFinansmanResultsV2Extras(root, model, track);
 

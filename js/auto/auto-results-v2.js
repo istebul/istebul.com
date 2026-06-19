@@ -46,7 +46,7 @@ import {
   buildWhyRecommendedCards,
   scoreBandLabel
 } from './auto-results-model.js';
-import { mountKararMahkemesiInResultsDetail } from './auto-results-karar-mahkemesi-mount.js';
+import { mapAutoToDecisionV3, tryMountDecisionEngineV3 } from '../decision/decision-v3-mappers.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -328,6 +328,13 @@ function computeRiskLevel({ budget, totalCost, riskItems = [] }) {
   return { label: 'Düşük', score: 28 };
 }
 
+function mountDecisionEngineV3Experimental(root, { formData, topResult, intel, alternatives }) {
+  tryMountDecisionEngineV3(
+    root,
+    mapAutoToDecisionV3({ formData, topResult, intel, alternatives })
+  );
+}
+
 function wireHeroActions(root, model, track) {
   const printHandler = () => {
     safeTrackEvent(track, 'decision_report_print_click', { score: model.decisionScore });
@@ -463,7 +470,12 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
 
   await hydrateResultsEconomicIndicators(root, 'auto');
   mountEvdsRiskLayer(root, model.evdsRiskLayer);
-  mountKararMahkemesiInResultsDetail(root, { intel, formData, topResult });
+  mountDecisionEngineV3Experimental(root, {
+    formData,
+    topResult,
+    intel,
+    alternatives
+  });
 
   safeTrackEvent(track, 'decision_result_v2_view', {
     score: intel.decisionScore,
