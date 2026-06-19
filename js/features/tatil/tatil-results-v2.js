@@ -27,11 +27,7 @@ import {
   fetchExecutiveSummaryV3,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
-import {
-  renderResultsHeroLayout,
-  scoreToneFromLabel
-} from '../results/results-hero-layout.js';
-import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
+import { mountResultsV3 } from '../results/results-v3-ui.js';
 
 const PLAN_MID = {
   ekonomik: 40_000,
@@ -758,6 +754,14 @@ export async function mountTatilResultsV2(mountNode, payload = {}) {
       })
     )
     .catch(() => {});
+
+  mountResultsV3(mountNode, {
+    category: 'tatil',
+    model,
+    formData: state,
+    metrics: built.metrics,
+    track
+  });
 
   return model;
 }

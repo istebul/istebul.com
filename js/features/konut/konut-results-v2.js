@@ -27,71 +27,7 @@ import {
   renderRiskAnalysisHtml,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
-import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
-import {
-  buildEvdsAiMarketSentence,
-  buildEvdsRiskLayer,
-  mountEvdsRiskLayer
-} from '../results/results-evds-risk-layer.js';
-import {
-  buildAfadAiActivitySentence,
-  fetchAndBuildAfadRiskLayer,
-  mountAfadRiskLayer
-} from '../results/results-afad-risk-layer.js';
-import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
-import {
-  renderResultsHeroLayout,
-  scoreToneFromLabel
-} from '../results/results-hero-layout.js';
-import { withTimeout } from '../../core/async-utils.js';
-
-const KONUT_SUMMARY_TIMEOUT_MS = 10000;
-
-/**
- * Konut state'inden AFAD snapshot province/district çözümlemesi.
- * @param {object} [state]
- * @returns {{ province: string, district: string }|null}
- */
-export function resolveKonutAfadLocation(state = {}) {
-  const province = String(state.city || state.province || '').trim();
-  const district = String(state.district || '').trim();
-  if (!province && !district) return null;
-  return { province, district };
-}
-
-/**
- * Konut sonuç hero aside — AFAD bilgilendirme katmanı (skor üretmez).
- * @param {HTMLElement|null} root
- * @param {object} [state]
- * @param {typeof fetch} [fetchImpl]
- */
-export async function hydrateKonutAfadRiskLayer(root, state = {}, fetchImpl) {
-  if (!root) return null;
-
-  const location = resolveKonutAfadLocation(state);
-  if (!location) return null;
-
-  const layer = await fetchAndBuildAfadRiskLayer({
-    province: location.province,
-    district: location.district,
-    fetchImpl
-  });
-
-  mountAfadRiskLayer(root, layer);
-  return layer;
-}
-
-/**
- * Executive summary fetch context — AFAD aktivite cümlesi (OD-2C-3b, skor üretmez).
- * @param {object} [baseContext]
- * @param {ReturnType<typeof fetchAndBuildAfadRiskLayer>|null} [afadLayer]
- */
-export function buildKonutExecutiveSummaryContext(baseContext = {}, afadLayer) {
-  return {
-    ...baseContext,
-    earthquakeActivityAssessment: buildAfadAiActivitySentence(afadLayer)
-  };
-}
+import { mountResultsV3 } from '../results/results-v3-ui.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -926,6 +862,14 @@ export async function mountKonutResultsV2({
       })
     )
     .catch(() => {});
+
+  mountResultsV3(mountNode, {
+    category: 'konut',
+    model,
+    formData: state,
+    metrics,
+    track
+  });
 
   return model;
 }

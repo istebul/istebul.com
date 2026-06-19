@@ -29,18 +29,7 @@ import {
   renderRiskAnalysisHtml,
   renderScoreFactorsHtml
 } from '../results/decision-intelligence-engine.js';
-import { hydrateResultsEconomicIndicators } from '../results/results-economic-indicators.js';
-import {
-  buildEvdsAiMarketSentence,
-  buildEvdsRiskLayer,
-  mountEvdsRiskLayer
-} from '../results/results-evds-risk-layer.js';
-import { fetchEvdsRatesForEngine } from '../evds/evds-market-engine.js';
-import { withTimeout } from '../../core/async-utils.js';
-import {
-  renderResultsHeroLayout,
-  scoreToneFromLabel
-} from '../results/results-hero-layout.js';
+import { mountResultsV3 } from '../results/results-v3-ui.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -1030,6 +1019,14 @@ export async function mountFinansmanResultsV2(mountNode, payload = {}) {
       })
     )
     .catch(() => {});
+
+  mountResultsV3(mountNode, {
+    category: 'finansman',
+    model,
+    formData: state,
+    metrics: built.metrics,
+    track
+  });
 
   return model;
 }

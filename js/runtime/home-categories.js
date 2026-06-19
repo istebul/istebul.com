@@ -114,21 +114,28 @@ function renderActiveCard(category, index) {
       style="--ib-cat-i: ${index}"
       aria-label="${escapeHtml(title)} — ${escapeHtml(analyzeAction)}"
     >
-      ${renderCardImage(category, index, index < 2)}
-      <div class="ib-cat-mockup__theme" aria-hidden="true"></div>
-      <div class="ib-cat-mockup__overlay" aria-hidden="true"></div>
-      <div class="ib-cat-mockup__glow" aria-hidden="true"></div>
-      <div class="ib-cat-mockup__body">
-        <div class="ib-cat-mockup__top">
-          <span class="ib-cat-mockup__icon">${categoryIconMarkup(category.id)}</span>
-          <span class="ib-cat-mockup__score">${escapeHtml(score)}<span class="ib-cat-mockup__score-suffix">/100</span></span>
-        </div>
-        <div class="ib-cat-mockup__panel">
-          <h3 class="ib-cat-mockup__title">${escapeHtml(title)}</h3>
-          <p class="ib-cat-mockup__desc">${escapeHtml(desc)}</p>
-          <span class="ib-cat-mockup__link">${escapeHtml(analyzeLabel)}</span>
-        </div>
+      <span class="ib-category-showcase-badge">AI destekli</span>
+      <h3><i data-lucide="${escapeHtml(category.icon)}" aria-hidden="true"></i> ${escapeHtml(category.name)}</h3>
+      <p>${escapeHtml(category.description)}</p>
+      <dl class="ib-category-showcase-summary">
+        <div><dt>Karar skoru</dt><dd>${escapeHtml(category.sampleScore ?? '—')}/100</dd></div>
+        <div><dt>Risk analizi</dt><dd>${escapeHtml(category.riskValue || '—')}</dd></div>
+        <div><dt>${escapeHtml(category.totalCostLabel || 'Toplam maliyet')}</dt><dd>${escapeHtml(category.totalCostValue || '—')}</dd></div>
+      </dl>
+      <div class="home-v3-category-pills" aria-label="Öne çıkan yetenekler">
+        <span>Karar Skoru</span><span>Risk Analizi</span><span>Toplam Maliyet</span><span>AI Değerlendirmesi</span>
       </div>
+      <p class="ib-category-showcase-ai"><strong>AI gerekçesi:</strong> ${escapeHtml(category.aiRationale || 'Kişisel veriye göre yorum üretilecektir.')}</p>
+      <p class="ib-category-showcase-next"><strong>Sonraki adım:</strong> ${escapeHtml(category.nextStep || 'Detay analizi başlat')}</p>
+      <ul class="ib-category-showcase-points">
+        ${highlights.map((point) => `<li>${escapeHtml(point)}</li>`).join('')}
+      </ul>
+      <span class="ib-category-showcase-cta">${escapeHtml(category.ctaLabel || 'Analiz Et')} →</span>
+      ${
+        category.sampleScore != null
+          ? `<span class="ib-category-showcase-score" aria-label="Örnek karar skoru">${category.sampleScore}<span>/100</span></span>`
+          : ''
+      }
     </a>
   `;
 }

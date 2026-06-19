@@ -23,30 +23,7 @@ import {
   renderScoreFactorsHtml,
   renderRiskAnalysisHtml
 } from '../features/results/decision-intelligence-engine.js';
-import { hydrateResultsEconomicIndicators } from '../features/results/results-economic-indicators.js';
-import {
-  buildEvdsAiMarketSentence,
-  buildEvdsRiskLayer,
-  mountEvdsRiskLayer
-} from '../features/results/results-evds-risk-layer.js';
-import { fetchEvdsRatesForEngine } from '../features/evds/evds-market-engine.js';
-import {
-  beginVehicleImageRenderBatch,
-  bindVehicleImageFallbacks,
-  endVehicleImageRenderBatch,
-  renderVehicleImageHtml,
-  reportVehicleImageLoading,
-  resolveVehicleImageUrl
-} from './vehicle-image.js';
-import {
-  buildHeroHighlights,
-  buildRankingCommentary,
-  buildRecommendationPayload,
-  buildVehicleAlternatives,
-  buildWhyRecommendedCards,
-  scoreBandLabel
-} from './auto-results-model.js';
-import { mountKararMahkemesiInResultsDetail } from './auto-results-karar-mahkemesi-mount.js';
+import { mountResultsV3 } from '../features/results/results-v3-ui.js';
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -548,6 +525,13 @@ export async function mountAutoResultsV2({ mountNode, topResult, results, formDa
       })
     )
     .catch(() => {});
+
+  mountResultsV3(mountNode, {
+    category: 'auto',
+    model,
+    formData,
+    track
+  });
 
   return model;
 }

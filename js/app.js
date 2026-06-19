@@ -29,6 +29,16 @@ import {
 } from './features/lifecycle/lifecycle-client.js';
 import { trackPricingViewForUpgrade } from './features/revenue/revenue-ops-client.js';
 import { mountHelpCenterWidget } from './ui/help-center-widget.js';
+import {
+    bindContextualUpsell,
+    flushUpsellConversion,
+    openUpsellCheckout,
+    renderContextualUpsellCard,
+    shouldShowUpsell,
+    trackUpsellClick
+} from './features/monetization/upsell-engine.js';
+import { initHomeCategories } from './runtime/home-categories.js';
+import { initHomeV3 } from './runtime/home-v3.js';
 import { initPricingCardsMotion } from './runtime/pricing-cards-motion.js';
 import { CONVERSION_COPY } from './core/conversion-copy.js';
 import {
@@ -192,7 +202,7 @@ class App {
             const { initEnterpriseUx } = await import('./runtime/enterprise-ux.js');
             initEnterpriseUx();
             initHomeCategories();
-            initHomeEconomicIndicators();
+            initHomeV3();
 
             const deferNonCritical = (work, timeout = 1200) => {
                 if ('requestIdleCallback' in window) {
