@@ -1022,3 +1022,154 @@ body.ib-auto #auto-results .auto-v2-root ~ .auto-decision-dashboard {
   font-weight: 800;
   color: var(--v2-accent);
 }
+
+/* —— Karar Mahkemesi Beta (feature-flagged detail card) —— */
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta {
+  margin-top: 0.75rem;
+  padding: clamp(0.75rem, 2.2vw, 0.95rem);
+  border: 1px solid var(--v2-border);
+  border-radius: 12px;
+  background: var(--v2-elev);
+  color: var(--v2-text);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__header {
+  margin-bottom: 0.55rem;
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__title {
+  margin: 0 0 0.15rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--v2-text);
+  line-height: 1.3;
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__subtitle {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--v2-muted);
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.55rem;
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__metric {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--v2-border);
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__metric-label {
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--v2-muted);
+  line-height: 1.3;
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__metric-value,
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__aksiyon {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--v2-text);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__aksiyon {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--v2-border);
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--v2-accent);
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta[data-aksiyon='al'] .karar-mahkemesi-beta__aksiyon {
+  background: rgba(22, 163, 74, 0.14);
+  color: var(--v2-success);
+  border-color: rgba(22, 163, 74, 0.28);
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta[data-aksiyon='bekle'] .karar-mahkemesi-beta__aksiyon {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--v2-accent);
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta[data-aksiyon='pazarlik'] .karar-mahkemesi-beta__aksiyon {
+  background: rgba(217, 119, 6, 0.14);
+  color: var(--v2-warning);
+  border-color: rgba(217, 119, 6, 0.28);
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta[data-aksiyon='vazgec'] .karar-mahkemesi-beta__aksiyon {
+  background: rgba(220, 38, 38, 0.12);
+  color: var(--v2-danger);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta[data-aksiyon='daha-fazla-veri'] .karar-mahkemesi-beta__aksiyon {
+  background: rgba(100, 116, 139, 0.12);
+  color: var(--v2-muted);
+  border-color: rgba(100, 116, 139, 0.28);
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__gerekceler {
+  margin: 0 0 0.55rem;
+  padding-left: 1rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--v2-text);
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__gerekce {
+  color: #475569;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__gerekce + .karar-mahkemesi-beta__gerekce {
+  margin-top: 0.2rem;
+}
+
+body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__disclaimer {
+  margin: 0;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--v2-border);
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--v2-muted);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 520px) {
+  body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta {
+    padding: 0.7rem 0.75rem;
+  }
+
+  body.ib-auto #auto-results #ib-results-detail .karar-mahkemesi-beta__metrics {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+}
