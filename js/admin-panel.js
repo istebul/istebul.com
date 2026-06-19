@@ -503,35 +503,35 @@ async function loadOperationalHealth() {
     ${renderAdminDataSourceNotices(opsHealthBatch)}
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-label">Critical (24h)</div>
+        <div class="stat-label">Kritik (24s)</div>
         <div class="stat-value" style="color:var(--danger)">${bySeverity.critical || 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Errors (24h)</div>
+        <div class="stat-label">Hatalar (24s)</div>
         <div class="stat-value" style="color:var(--danger)">${bySeverity.error || 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Warnings (24h)</div>
+        <div class="stat-label">Uyarılar (24s)</div>
         <div class="stat-value">${bySeverity.warning || 0}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Webhook / dispatch fails</div>
+        <div class="stat-label">Webhook / teslimat hataları</div>
         <div class="stat-value">${webhookFails}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Auth failures</div>
+        <div class="stat-label">Kimlik doğrulama hataları</div>
         <div class="stat-value">${authFails}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Payment failures</div>
+        <div class="stat-label">Ödeme hataları</div>
         <div class="stat-value">${paymentFails}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Performance regressions</div>
+        <div class="stat-label">Performans gerilemeleri</div>
         <div class="stat-value">${perfWarns}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Abuse signals</div>
+        <div class="stat-label">Kötüye kullanım sinyalleri</div>
         <div class="stat-value">${abuseHits}</div>
       </div>
     </div>
@@ -540,10 +540,10 @@ async function loadOperationalHealth() {
 
     ${opsEventsRes.error && !allOpsEvents.length ? `<p class="empty">Ops events yüklenemedi: ${escapeHtml(opsEventsRes.error.message)} — <code>supabase/migrations/20260530_operational_observability.sql</code> deploy edin.</p>` : ''}
 
-    <h3 style="margin:16px 0 10px">Top signals (24h rollup)</h3>
+    <h3 style="margin:16px 0 10px">Öne çıkan sinyaller (24s özet)</h3>
     ${healthTable.length ? `
       <table class="table">
-        <thead><tr><th>Category</th><th>Event</th><th>Severity</th><th>Count</th><th>Errors</th><th>Last</th></tr></thead>
+        <thead><tr><th>Kategori</th><th>Olay</th><th>Şiddet</th><th>Adet</th><th>Hatalar</th><th>Son</th></tr></thead>
         <tbody>
           ${healthTable.map((row) => `
             <tr>
@@ -559,10 +559,10 @@ async function loadOperationalHealth() {
       </table>
     ` : '<p class="empty">Henüz operational event yok.</p>'}
 
-    <h3 style="margin:20px 0 10px">Recent critical / error events</h3>
+    <h3 style="margin:20px 0 10px">Son kritik / hata olayları</h3>
     ${recentEvents.length ? `
       <table class="table">
-        <thead><tr><th>Zaman</th><th>Severity</th><th>Event</th><th>Source</th><th>Detail</th></tr></thead>
+        <thead><tr><th>Zaman</th><th>Şiddet</th><th>Olay</th><th>Source</th><th>Detail</th></tr></thead>
         <tbody>
           ${recentEvents.slice(0, 40).map((row) => `
             <tr>
@@ -577,10 +577,10 @@ async function loadOperationalHealth() {
       </table>
     ` : '<p class="empty">Son 24 saatte critical/error yok.</p>'}
 
-    <h3 style="margin:20px 0 10px">Lead delivery failures</h3>
+    <h3 style="margin:20px 0 10px">Lead teslimat hataları</h3>
     ${failedLeads.length ? `
       <table class="table">
-        <thead><tr><th>Lead</th><th>Zaman</th><th>Status</th><th>Hata</th></tr></thead>
+        <thead><tr><th>Lead</th><th>Zaman</th><th>Durum</th><th>Hata</th></tr></thead>
         <tbody>
           ${failedLeads.map((row) => `
             <tr>
@@ -594,7 +594,7 @@ async function loadOperationalHealth() {
       </table>
     ` : '<p class="empty">dispatch_failed lead yok.</p>'}
 
-    <h3 style="margin:20px 0 10px">Partner webhook failures (log)</h3>
+    <h3 style="margin:20px 0 10px">Partner webhook hataları (log)</h3>
     ${failedDispatchLogs.length ? `
       <table class="table">
         <thead><tr><th>Zaman</th><th>Route</th><th>Endpoint</th><th>HTTP</th><th>Hata</th></tr></thead>

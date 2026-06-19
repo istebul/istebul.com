@@ -497,12 +497,12 @@ a.nav-item{text-decoration:none;color:inherit;}
           </div>
         </div>
         <div class="nav-item" data-page-target="dashboard-revenue"><span class="nav-icon" aria-hidden="true">₺</span><span class="nav-label">Gelir Özeti</span></div>
-        <div class="nav-item" data-page-target="payments"><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">Payments</span></div>
+        <div class="nav-item" data-page-target="payments"><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">Ödemeler</span></div>
         <div class="nav-item" data-page-target="settings"><span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Ayarlar</span></div>
         <div class="nav-group">
           <button type="button" class="nav-group-toggle" aria-expanded="true">Sistem Logları</button>
           <div class="nav-group-items">
-            <div class="nav-item" data-page-target="observability"><span class="nav-label">Observability</span></div>
+            <div class="nav-item" data-page-target="observability"><span class="nav-label">Gözlemlenebilirlik</span></div>
             <div class="nav-item" data-page-target="ops-command-center"><span class="nav-label">Operasyon Komuta Merkezi</span></div>
           </div>
         </div>
@@ -538,7 +538,7 @@ a.nav-item{text-decoration:none;color:inherit;}
         </div>
         <div class="admin-topbar-actions">
           <span class="admin-system-pill" id="admin-system-status" title="Oturum aktif"><span class="admin-system-dot" aria-hidden="true"></span>Sistem hazır</span>
-          <button type="button" class="admin-topbar-icon-btn" id="admin-notify-btn" aria-label="Bildirimler" title="Observability">
+          <button type="button" class="admin-topbar-icon-btn" id="admin-notify-btn" aria-label="Bildirimler" title="Gözlemlenebilirlik">
             <span aria-hidden="true">🔔</span>
             <span class="admin-notify-badge" id="admin-notify-badge" hidden>0</span>
           </button>
@@ -588,7 +588,7 @@ a.nav-item{text-decoration:none;color:inherit;}
           <article class="stat-card kpi-card"><div class="stat-label">Bugünkü analiz</div><div class="stat-value" id="stat-analyses-today">—</div><div class="stat-sub">Bugün oluşan lead</div></article>
           <article class="stat-card kpi-card"><div class="stat-label">Tamamlanan formlar</div><div class="stat-value" id="stat-forms-done">—</div><div class="stat-sub">İşlenmiş lead</div></article>
           <article class="stat-card kpi-card"><div class="stat-label">Yeni lead</div><div class="stat-value" id="stat-new-leads">—</div><div class="stat-sub kpi-trend">Pipeline girişi</div></article>
-          <article class="stat-card kpi-card"><div class="stat-label">Conversion rate</div><div class="stat-value" id="stat-conversion">—</div><div class="stat-sub">Kazanılan / toplam</div></article>
+          <article class="stat-card kpi-card"><div class="stat-label">Dönüşüm oranı</div><div class="stat-value" id="stat-conversion">—</div><div class="stat-sub">Kazanılan / toplam</div></article>
           <article class="stat-card kpi-card kpi-card--warn"><div class="stat-label">Sistem uyarıları</div><div class="stat-value" id="stat-system-alerts">0</div><div class="stat-sub"><button type="button" class="btn btn-ghost btn-sm" data-page-target="observability">Logları aç</button></div></article>
         </div>
         <div class="admin-analytics-grid">
@@ -693,7 +693,7 @@ a.nav-item{text-decoration:none;color:inherit;}
 
       <div class="page" id="page-payments">
         <div class="page-header">
-          <h2>Payments</h2>
+          <h2>Ödemeler</h2>
           <p>iyzico / PayTR siparişleri, abonelikler, haklar ve webhook logları</p>
         </div>
         <div class="card"><div id="payments-admin-root"><div class="empty">Yükleniyor…</div></div></div>
@@ -1613,7 +1613,7 @@ a.nav-item{text-decoration:none;color:inherit;}
 
       <div class="page" id="page-observability">
         <div class="page-header">
-          <h2>Observability</h2>
+          <h2>Gözlemlenebilirlik</h2>
           <p>Son 24 saat — hatalar, API/webhook, lead teslimat, auth, ödeme, performans, abuse, admin audit</p>
         </div>
         <div class="card">
